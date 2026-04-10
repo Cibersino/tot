@@ -119,12 +119,12 @@
     // =============================================================================
     // Helpers
     // =============================================================================
-    function tr(path, fallback) {
-      return tRenderer(path, fallback);
+    function tr(path) {
+      return tRenderer(path);
     }
 
-    function mr(path, params, fallback) {
-      return msgRenderer(path, params, fallback);
+    function mr(path, params) {
+      return msgRenderer(path, params);
     }
 
     function normalizeLanguage(language, fallback = DEFAULT_LANG) {
@@ -189,38 +189,14 @@
     // Rendering
     // =============================================================================
     function renderStaticText() {
-      document.title = tr(
-        'renderer.reading_test.questions.title',
-        'Reading Comprehension Questions'
-      );
-      title.textContent = tr(
-        'renderer.reading_test.questions.title',
-        'Reading Comprehension Questions'
-      );
-      intro.textContent = tr(
-        'renderer.reading_test.questions.intro',
-        'Answering these reading comprehension questions is optional and does not affect your final score. They are only meant to help you assess the text\'s difficulty and whether your reading pace and style allowed you to reach a basic level of comprehension. Your answers are not saved or sent to the developers or to anyone else.'
-      );
-      randomTitle.textContent = tr(
-        'renderer.reading_test.questions.random_title',
-        'Random guess baseline'
-      );
-      feedbackTitle.textContent = tr(
-        'renderer.reading_test.questions.feedback_title',
-        'Feedback'
-      );
-      feedbackPrefix.textContent = tr(
-        'renderer.reading_test.questions.feedback_prefix',
-        'For complaints:'
-      );
-      btnCheck.textContent = tr(
-        'renderer.reading_test.questions.buttons.check',
-        'Check result'
-      );
-      btnContinue.textContent = tr(
-        'renderer.reading_test.questions.buttons.continue',
-        'Continue'
-      );
+      document.title = tr('renderer.reading_test.questions.title');
+      title.textContent = tr('renderer.reading_test.questions.title');
+      intro.textContent = tr('renderer.reading_test.questions.intro');
+      randomTitle.textContent = tr('renderer.reading_test.questions.random_title');
+      feedbackTitle.textContent = tr('renderer.reading_test.questions.feedback_title');
+      feedbackPrefix.textContent = tr('renderer.reading_test.questions.feedback_prefix');
+      btnCheck.textContent = tr('renderer.reading_test.questions.buttons.check');
+      btnContinue.textContent = tr('renderer.reading_test.questions.buttons.continue');
     }
 
     function renderFeedbackLink() {
@@ -232,18 +208,14 @@
       const randomGuessPercentage = questionsCore.computeRandomGuessPercentage(state.questions);
       randomValue.textContent = mr(
         'renderer.reading_test.questions.random_value',
-        { percentage: formatPercentage(randomGuessPercentage) },
-        `Expected score under random guessing: ${formatPercentage(randomGuessPercentage)}%`
+        { percentage: formatPercentage(randomGuessPercentage) }
       );
     }
 
     function renderStatusMessages() {
       setMessage(
         incompleteMessage,
-        tr(
-          'renderer.reading_test.questions.incomplete_warning',
-          'All questions must be answered before evaluating.'
-        ),
+        tr('renderer.reading_test.questions.incomplete_warning'),
         { tone: 'warn', visible: state.showIncompleteWarning }
       );
 
@@ -259,8 +231,7 @@
               correct: state.lastScore.correct,
               total: state.lastScore.total,
               percentage: formatPercentage(state.lastScore.percentage),
-            },
-            `${state.lastScore.correct} out of ${state.lastScore.total} correct (${formatPercentage(state.lastScore.percentage)}%)`
+            }
           ),
           { tone: 'info', visible: true }
         );
@@ -271,8 +242,7 @@
             'renderer.reading_test.questions.chance_at_least_observed',
             {
               percentage: formatPercentage(state.lastScore.probabilityAtLeastObserved * 100),
-            },
-            `Chance of getting at least this score by random guessing: ${formatPercentage(state.lastScore.probabilityAtLeastObserved * 100)}%`
+            }
           ),
           { tone: 'note', visible: true }
         );
@@ -280,7 +250,7 @@
 
       setMessage(
         fatalMessage,
-        tr(state.fatalKey || INVALID_PAYLOAD_KEY, 'The questions payload is invalid.'),
+        tr(state.fatalKey || INVALID_PAYLOAD_KEY),
         { tone: 'error', visible: !!state.fatalKey }
       );
     }
@@ -307,8 +277,7 @@
         const legend = document.createElement('legend');
         const headingText = mr(
           'renderer.reading_test.questions.question_heading',
-          { number: index + 1, prompt: question.prompt },
-          `${index + 1}. ${question.prompt}`
+          { number: index + 1, prompt: question.prompt }
         );
         legend.textContent = headingText;
         legend.className = 'reading-test-questions__legend-sr';

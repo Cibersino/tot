@@ -212,18 +212,13 @@
 
   function getCategoryDisplayLabel(category) {
     const key = `renderer.snapshot_save_tags.labels.${category}`;
-    const fallbackByCategory = {
-      language: 'Language',
-      type: 'Type',
-      difficulty: 'Difficulty',
-    };
-    return tRenderer(key, fallbackByCategory[category] || category);
+    return tRenderer(key);
   }
 
   function getOptionLabel(category, value) {
     const option = optionValueLookupByCategory[category].get(value);
     if (option) {
-      return tRenderer(option.labelKey, option.fallback);
+      return tRenderer(option.labelKey);
     }
     return value;
   }
@@ -319,18 +314,14 @@
   function renderEligibleCount() {
     eligibleCount.textContent = msgRenderer(
       'renderer.reading_test.entry.eligible_count',
-      { count: filterState.eligibleCount },
-      `Eligible files: ${filterState.eligibleCount}`
+      { count: filterState.eligibleCount }
     );
   }
 
   function renderWarningBox() {
     if (poolExhausted) {
       warningBox.hidden = false;
-      warningBox.textContent = tRenderer(
-        'renderer.reading_test.entry.pool_exhausted_message',
-        'There are no remaining unused test files. Reset the pool or add more files.'
-      );
+      warningBox.textContent = tRenderer('renderer.reading_test.entry.pool_exhausted_message');
       return;
     }
 
@@ -344,45 +335,23 @@
     introToggle.textContent = tRenderer(
       introExpanded
         ? 'renderer.reading_test.entry.buttons.hide_instructions'
-        : 'renderer.reading_test.entry.buttons.show_instructions',
-      introExpanded ? 'Hide instructions' : 'Show instructions'
+        : 'renderer.reading_test.entry.buttons.show_instructions'
     );
   }
 
   function render() {
-    title.textContent = tRenderer(
-      'renderer.reading_test.entry.title',
-      'Reading speed test'
-    );
-    intro.textContent = tRenderer(
-      'renderer.reading_test.entry.intro',
-      'This test is meant to estimate your real reading speed through a guided session. The app will open the text, start the timer, and ask you to read normally; when you finish, press Pause (⏸) in the Floating Window. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.'
-    );
+    title.textContent = tRenderer('renderer.reading_test.entry.title');
+    intro.textContent = tRenderer('renderer.reading_test.entry.intro');
     renderIntroVisibility();
     btnClose.setAttribute(
       'aria-label',
-      tRenderer('renderer.reading_test.entry.close_aria', 'Close reading speed test dialog')
+      tRenderer('renderer.reading_test.entry.close_aria')
     );
-    getMoreFilesLink.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.get_more_files',
-      'Get more files'
-    );
-    importButton.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.import_files',
-      'Import files...'
-    );
-    resetButton.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.reset_pool',
-      'Reset pool'
-    );
-    btnStart.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.start_random_text',
-      'Start with random text'
-    );
-    btnStartCurrentText.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.start_current_text',
-      'Start with current text'
-    );
+    getMoreFilesLink.textContent = tRenderer('renderer.reading_test.entry.buttons.get_more_files');
+    importButton.textContent = tRenderer('renderer.reading_test.entry.buttons.import_files');
+    resetButton.textContent = tRenderer('renderer.reading_test.entry.buttons.reset_pool');
+    btnStart.textContent = tRenderer('renderer.reading_test.entry.buttons.start_random_text');
+    btnStartCurrentText.textContent = tRenderer('renderer.reading_test.entry.buttons.start_current_text');
 
     renderEligibleCount();
     renderWarningBox();
@@ -547,32 +516,16 @@
   function buildImportDialogPayload() {
     return {
       conflictDialog: {
-        conflictTitle: tRenderer(
-          'renderer.reading_test.entry.import_conflict.title',
-          'Import files'
-        ),
-        conflictMessage: tRenderer(
-          'renderer.reading_test.entry.import_conflict.message',
-          'Some imported files already exist in the pool. How should duplicates be handled?'
-        ),
+        conflictTitle: tRenderer('renderer.reading_test.entry.import_conflict.title'),
+        conflictMessage: tRenderer('renderer.reading_test.entry.import_conflict.message'),
         conflictDetail: msgRenderer(
           'renderer.reading_test.entry.import_conflict.detail',
-          { count: '{count}' },
-          '{count} destination filename(s) already exist in the pool.'
+          { count: '{count}' }
         ),
         buttons: {
-          skip: tRenderer(
-            'renderer.reading_test.entry.import_conflict.buttons.skip',
-            'Skip duplicates'
-          ),
-          replace: tRenderer(
-            'renderer.reading_test.entry.import_conflict.buttons.replace',
-            'Replace duplicates'
-          ),
-          cancel: tRenderer(
-            'renderer.reading_test.entry.import_conflict.buttons.cancel',
-            'Cancel import'
-          ),
+          skip: tRenderer('renderer.reading_test.entry.import_conflict.buttons.skip'),
+          replace: tRenderer('renderer.reading_test.entry.import_conflict.buttons.replace'),
+          cancel: tRenderer('renderer.reading_test.entry.import_conflict.buttons.cancel'),
         },
       },
     };

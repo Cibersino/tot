@@ -48,7 +48,7 @@ const deepMerge = (base, overlay) => {
     return result;
 };
 
-function resolveMenuLabel(obj, key, fallback) {
+function resolveMenuLabel(obj, key, fallback = key) {
     if (obj && typeof obj[key] === 'string') return obj[key];
     log.warnOnce(
         `menu_builder.missingKey:${key}`,
@@ -58,7 +58,7 @@ function resolveMenuLabel(obj, key, fallback) {
     return fallback;
 }
 
-function resolveDialogText(dialogTexts, key, fallback, opts = {}) {
+function resolveDialogText(dialogTexts, key, fallback = key, opts = {}) {
     if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
     const logger = opts.log || log;
     const prefix = opts.warnPrefix || 'menu_builder.dialog.missing';
@@ -89,7 +89,7 @@ function resolveDialogText(dialogTexts, key, fallback, opts = {}) {
 // Behavior:
 // - If a candidate file is missing, we try the next one.
 // - If a file is empty/invalid JSON, we log once and try the next one.
-// - If nothing can be loaded, we return {} and the menu uses hardcoded labels.
+// - If nothing can be loaded, we return {} and the menu falls back to translation keys.
 
 function loadMainTranslations(lang) {
     const requested = normalizeLangTag(lang);
@@ -322,27 +322,27 @@ function buildAppMenu(lang, opts = {}) {
     // - Each click emits a stable action id (string).
     const menuTemplate = [
         {
-            label: resolveMenuLabel(m, 'como_usar', 'Como usar la app?'),
+            label: resolveMenuLabel(m, 'como_usar'),
             submenu: [
                 {
-                    label: resolveMenuLabel(m, 'guia_basica', 'Guide'),
+                    label: resolveMenuLabel(m, 'guia_basica'),
                     click: () => sendMenuClick('guia_basica'),
                 },
                 {
-                    label: resolveMenuLabel(m, 'instrucciones_completas', 'Instructions'),
+                    label: resolveMenuLabel(m, 'instrucciones_completas'),
                     click: () => sendMenuClick('instrucciones_completas'),
                 },
                 {
-                    label: resolveMenuLabel(m, 'faq', 'FAQ'),
+                    label: resolveMenuLabel(m, 'faq'),
                     click: () => sendMenuClick('faq'),
                 },
             ],
         },
         {
-            label: resolveMenuLabel(m, 'preferencias', 'Preferences'),
+            label: resolveMenuLabel(m, 'preferencias'),
             submenu: [
                 {
-                    label: resolveMenuLabel(m, 'idioma', 'Language'),
+                    label: resolveMenuLabel(m, 'idioma'),
                     // The window lifecycle is handled by main.js; this module only calls the hook.
                     click: () => {
                         if (!canDispatchMenuAction('menu.language')) return;
@@ -365,53 +365,53 @@ function buildAppMenu(lang, opts = {}) {
                     },
                 },
                 {
-                    label: resolveMenuLabel(m, 'diseno', 'Design'),
+                    label: resolveMenuLabel(m, 'diseno'),
                     submenu: [
                         {
-                            label: resolveMenuLabel(m, 'skins', 'Skins'),
+                            label: resolveMenuLabel(m, 'skins'),
                             click: () => sendMenuClick('diseno_skins'),
                         },
                         {
-                            label: resolveMenuLabel(m, 'crono_flotante', 'FW'),
+                            label: resolveMenuLabel(m, 'crono_flotante'),
                             click: () => sendMenuClick('diseno_crono_flotante'),
                         },
                         {
-                            label: resolveMenuLabel(m, 'fuentes', 'Fonts'),
+                            label: resolveMenuLabel(m, 'fuentes'),
                             click: () => sendMenuClick('diseno_fuentes'),
                         },
                         {
-                            label: resolveMenuLabel(m, 'colores', 'Colors'),
+                            label: resolveMenuLabel(m, 'colores'),
                             click: () => sendMenuClick('diseno_colores'),
                         },
                     ],
                 },
                 {
-                    label: resolveMenuLabel(m, 'shortcuts', 'Shortcuts'),
+                    label: resolveMenuLabel(m, 'shortcuts'),
                     click: () => sendMenuClick('shortcuts'),
                 },
                 {
-                    label: resolveMenuLabel(m, 'presets_por_defecto', 'Default presets'),
+                    label: resolveMenuLabel(m, 'presets_por_defecto'),
                     click: () => sendMenuClick('presets_por_defecto'),
                 },
                 {
-                    label: resolveMenuLabel(m, 'disconnect_google_ocr', 'Disconnect Google OCR'),
+                    label: resolveMenuLabel(m, 'disconnect_google_ocr'),
                     click: () => sendMenuClick('disconnect_google_ocr'),
                 },
             ],
         },
         {
-            label: resolveMenuLabel(m, 'links_interes', 'Links'),
+            label: resolveMenuLabel(m, 'links_interes'),
             click: () => sendMenuClick('links_interes'),
         },
         {
-            label: resolveMenuLabel(m, 'ayuda', '?'),
+            label: resolveMenuLabel(m, 'ayuda'),
             submenu: [
                 {
-                    label: resolveMenuLabel(m, 'actualizar_version', 'Update'),
+                    label: resolveMenuLabel(m, 'actualizar_version'),
                     click: () => sendMenuClick('actualizar_version'),
                 },
                 {
-                    label: resolveMenuLabel(m, 'acerca_de', 'About'),
+                    label: resolveMenuLabel(m, 'acerca_de'),
                     click: () => sendMenuClick('acerca_de'),
                 },
             ],
@@ -424,10 +424,10 @@ function buildAppMenu(lang, opts = {}) {
     const showDevMenu = process.env.SHOW_DEV_MENU === '1';
     if (!app.isPackaged && showDevMenu) {
         menuTemplate.push({
-            label: resolveMenuLabel(m, 'desarrollo', 'Development'),
+            label: resolveMenuLabel(m, 'desarrollo'),
             submenu: [
                 {
-                    label: resolveMenuLabel(m, 'recargar', 'Reload'),
+                    label: resolveMenuLabel(m, 'recargar'),
                     accelerator: 'CommandOrControl+R',
                     click: () => {
                         if (!canDispatchMenuAction('dev.reload')) return;
@@ -445,7 +445,7 @@ function buildAppMenu(lang, opts = {}) {
                     },
                 },
                 {
-                    label: resolveMenuLabel(m, 'forcereload', 'Force reload'),
+                    label: resolveMenuLabel(m, 'forcereload'),
                     accelerator: 'CommandOrControl+Shift+R',
                     click: () => {
                         if (!canDispatchMenuAction('dev.forceReload')) return;
@@ -463,7 +463,7 @@ function buildAppMenu(lang, opts = {}) {
                     },
                 },
                 {
-                    label: resolveMenuLabel(m, 'toggle_devtools', 'Toggle DevTools'),
+                    label: resolveMenuLabel(m, 'toggle_devtools'),
                     accelerator: 'Ctrl+Shift+I',
                     click: () => {
                         if (!canDispatchMenuAction('dev.toggleDevTools')) return;

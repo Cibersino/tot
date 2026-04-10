@@ -552,18 +552,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       }
 
       const dialogTexts = getDialogTexts();
-      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-      const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-      let message = resolveDialogText(
-        dialogTexts,
-        'task_delete_confirm',
-        'Delete this task list?'
-      );
+      const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+      const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+      let message = resolveDialogText(dialogTexts, 'task_delete_confirm');
       message = message.replace('{name}', path.basename(targetReal));
 
       const res = await dialog.showMessageBox(taskEditorWin || null, {
         type: 'none',
-        buttons: [yesLabel, noLabel],
+        buttons: [continueLabel, cancelLabel],
         defaultId: 1,
         cancelId: 1,
         message,
@@ -646,17 +642,13 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
 
       if (existingIdx >= 0) {
         const dialogTexts = getDialogTexts();
-        const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-        const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-        let message = resolveDialogText(
-          dialogTexts,
-          'task_library_row_save_overwrite',
-          'Overwrite existing library entry?'
-        );
+        const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+        const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+        let message = resolveDialogText(dialogTexts, 'task_library_row_save_overwrite');
         message = message.replace('{name}', resEntry.entry.texto);
         const resp = await dialog.showMessageBox(taskEditorWin || null, {
           type: 'none',
-          buttons: [yesLabel, noLabel],
+          buttons: [continueLabel, cancelLabel],
           defaultId: 1,
           cancelId: 1,
           message,
@@ -706,17 +698,13 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       if (idx < 0) return { ok: false, code: 'NOT_FOUND' };
 
       const dialogTexts = getDialogTexts();
-      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-      const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-      let message = resolveDialogText(
-        dialogTexts,
-        'task_library_row_delete',
-        'Delete this library entry?'
-      );
+      const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+      const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+      let message = resolveDialogText(dialogTexts, 'task_library_row_delete');
       message = message.replace('{name}', items[idx].texto || texto);
       const resp = await dialog.showMessageBox(taskEditorWin || null, {
         type: 'none',
-        buttons: [yesLabel, noLabel],
+        buttons: [continueLabel, cancelLabel],
         defaultId: 1,
         cancelId: 1,
         message,
@@ -826,18 +814,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         }
 
         const dialogTexts = getDialogTexts();
-        const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-        const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-        let message = resolveDialogText(
-          dialogTexts,
-          'task_path_confirm',
-          'Open this local file?'
-        );
+        const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+        const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+        let message = resolveDialogText(dialogTexts, 'task_path_confirm');
         message = message.replace('{path}', raw);
 
         const resp = await dialog.showMessageBox(taskEditorWin || null, {
           type: 'none',
-          buttons: [yesLabel, noLabel],
+          buttons: [continueLabel, cancelLabel],
           defaultId: 1,
           cancelId: 1,
           message,
@@ -873,23 +857,15 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
 
         if (!trusted) {
           const dialogTexts = getDialogTexts();
-          const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-          const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-          let message = resolveDialogText(
-            dialogTexts,
-            'task_link_confirm',
-            'Open this link?'
-          );
+          const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+          const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+          let message = resolveDialogText(dialogTexts, 'task_link_confirm');
           message = message.replace('{url}', parsed.toString());
-          const checkboxLabel = resolveDialogText(
-            dialogTexts,
-            'task_link_trust_host',
-            'Trust this host from now on'
-          );
+          const checkboxLabel = resolveDialogText(dialogTexts, 'task_link_trust_host');
 
           const resp = await dialog.showMessageBox(taskEditorWin || null, {
             type: 'none',
-            buttons: [yesLabel, noLabel],
+            buttons: [continueLabel, cancelLabel],
             defaultId: 1,
             cancelId: 1,
             message,

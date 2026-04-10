@@ -87,34 +87,13 @@
       : 1;
     const initialRepeat = normalizeRepeatForModal(defaultRepeat, safeMaxRepeat);
 
-    const titleText = tRenderer(
-      'renderer.alerts.import_extract_apply_modal_title',
-      'Apply extracted text'
-    );
-    const messageText = tRenderer(
-      'renderer.alerts.import_extract_apply_modal_message',
-      'Choose how to apply the extracted text.'
-    );
-    const repeatLabelText = tRenderer(
-      'renderer.alerts.import_extract_apply_modal_repeat_label',
-      'Repetitions'
-    );
-    const overwriteText = tRenderer(
-      'renderer.alerts.import_extract_apply_modal_overwrite_button',
-      'Overwrite'
-    );
-    const appendText = tRenderer(
-      'renderer.alerts.import_extract_apply_modal_append_button',
-      'Append'
-    );
-    const cancelText = tRenderer(
-      'renderer.alerts.import_extract_apply_modal_cancel_button',
-      'Cancel'
-    );
-    const closeAriaText = tRenderer(
-      'renderer.alerts.import_extract_apply_modal_close_aria',
-      'Close apply extracted text dialog'
-    );
+    const titleText = tRenderer('renderer.alerts.import_extract_apply_modal_title');
+    const messageText = tRenderer('renderer.alerts.import_extract_apply_modal_message');
+    const repeatLabelText = tRenderer('renderer.alerts.import_extract_apply_modal_repeat_label');
+    const overwriteText = tRenderer('renderer.alerts.import_extract_apply_modal_overwrite_button');
+    const appendText = tRenderer('renderer.alerts.import_extract_apply_modal_append_button');
+    const cancelText = tRenderer('renderer.alerts.import_extract_apply_modal_cancel_button');
+    const closeAriaText = tRenderer('renderer.alerts.import_extract_apply_modal_close_aria');
 
     title.textContent = titleText;
     message.textContent = messageText;

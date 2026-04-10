@@ -138,8 +138,8 @@ if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
   throw new Error('[editor] RendererI18n unavailable; cannot continue');
 }
 
-const tr = (path, fallback) => tRenderer(path, fallback);
-const trMsg = (path, params, fallback) => msgRenderer(path, params, fallback);
+const tr = (path) => tRenderer(path);
+const trMsg = (path, params) => msgRenderer(path, params);
 
 function applyDocumentLanguage() {
   const langTag = (idiomaActual || DEFAULT_LANG).toLowerCase();
@@ -174,8 +174,7 @@ function updateEditorTextSizeUi() {
   if (textSizeValue) {
     const valueText = trMsg(
       'renderer.editor.text_size_value',
-      { value: editorFontSizePx },
-      `${editorFontSizePx} px`
+      { value: editorFontSizePx }
     );
     textSizeValue.textContent = valueText;
     textSizeValue.setAttribute('aria-label', valueText);
@@ -203,51 +202,51 @@ async function ensureEditorTranslations(lang) {
 async function applyEditorTranslations() {
   await ensureEditorTranslations(idiomaActual);
   applyDocumentLanguage();
-  document.title = tr('renderer.editor.title', document.title);
-  if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder', editor.getAttribute('placeholder') || ''));
+  document.title = tr('renderer.editor.title');
+  if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder'));
   if (btnCalc) {
-    const calcText = tr('renderer.editor.calc_button', btnCalc.getAttribute('data-label') || '');
+    const calcText = tr('renderer.editor.calc_button');
     btnCalc.setAttribute('data-label', calcText);
     btnCalc.setAttribute('aria-label', calcText);
   }
   if (calcLabel) {
-    const calcWhileTypingText = tr('renderer.editor.calc_while_typing', calcLabel.getAttribute('data-label') || '');
+    const calcWhileTypingText = tr('renderer.editor.calc_while_typing');
     calcLabel.setAttribute('data-label', calcWhileTypingText);
     if (calcWhileTyping) calcWhileTyping.setAttribute('aria-label', calcWhileTypingText);
   }
   if (spellcheckLabel) {
-    const spellcheckText = tr('renderer.editor.spellcheck', spellcheckLabel.getAttribute('data-label') || '');
+    const spellcheckText = tr('renderer.editor.spellcheck');
     spellcheckLabel.setAttribute('data-label', spellcheckText);
     if (spellcheckToggle) spellcheckToggle.setAttribute('aria-label', spellcheckText);
   }
   if (textSizeControls) {
-    const textSizeGroupText = tr('renderer.editor.text_size_label', textSizeControls.getAttribute('aria-label') || '');
+    const textSizeGroupText = tr('renderer.editor.text_size_label');
     textSizeControls.setAttribute('aria-label', textSizeGroupText);
     if (textSizeLabel) textSizeLabel.textContent = textSizeGroupText;
   }
   if (btnTextSizeDecrease) {
-    const decreaseText = tr('renderer.editor.decrease_text_size', btnTextSizeDecrease.title || '');
+    const decreaseText = tr('renderer.editor.decrease_text_size');
     btnTextSizeDecrease.setAttribute('aria-label', decreaseText);
     btnTextSizeDecrease.title = decreaseText;
   }
   if (btnTextSizeIncrease) {
-    const increaseText = tr('renderer.editor.increase_text_size', btnTextSizeIncrease.title || '');
+    const increaseText = tr('renderer.editor.increase_text_size');
     btnTextSizeIncrease.setAttribute('aria-label', increaseText);
     btnTextSizeIncrease.title = increaseText;
   }
   if (btnTextSizeReset) {
-    const resetText = tr('renderer.editor.reset_text_size', btnTextSizeReset.title || '');
+    const resetText = tr('renderer.editor.reset_text_size');
     btnTextSizeReset.setAttribute('aria-label', resetText);
     btnTextSizeReset.title = resetText;
   }
   if (btnTrash) {
-    const clearText = tr('renderer.editor.clear', btnTrash.getAttribute('data-label') || '');
+    const clearText = tr('renderer.editor.clear');
     btnTrash.setAttribute('data-label', clearText);
     btnTrash.setAttribute('aria-label', clearText);
-    btnTrash.title = tr('renderer.editor.clear_title', btnTrash.title || clearText || '');
+    btnTrash.title = tr('renderer.editor.clear_title');
   }
   if (bottomBar) {
-    bottomBar.setAttribute('aria-label', tr('renderer.editor.title', bottomBar.getAttribute('aria-label') || ''));
+    bottomBar.setAttribute('aria-label', tr('renderer.editor.title'));
   }
   updateEditorTextSizeUi();
 }

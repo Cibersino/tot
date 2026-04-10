@@ -30,8 +30,8 @@
     },
     "dialog": {
       "ok": "Aceptar",
-      "yes": "Sí, continuar",
-      "no": "No, cancelar",
+      "continue_button": "Sí, continuar",
+      "cancel_button": "No, cancelar",
       "snapshot_overwrite_save": "¿Sobrescribir el snapshot existente?",
       "snapshot_overwrite_load": "¿Reemplazar el texto actual con el snapshot seleccionado \"{name}\"?",
       "task_delete_confirm": "¿Eliminar la lista de tareas \"{name}\"?",

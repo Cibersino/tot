@@ -32,7 +32,7 @@ if (!loadRendererTranslations || !tRenderer) {
   throw new Error('[editor-find] RendererI18n unavailable; cannot continue.');
 }
 
-const tr = (path, fallback) => tRenderer(path, fallback);
+const tr = (path) => tRenderer(path);
 const findApi = window.editorFindAPI;
 if (!findApi) {
   throw new Error('[editor-find] editorFindAPI unavailable; verify editor_find_preload.js.');
@@ -102,10 +102,10 @@ async function ensureTranslations(lang) {
 
 function resolveStatusText() {
   if (!findState.query) {
-    return tr('renderer.editor_find.status_empty_query', statusEl.textContent || '');
+    return tr('renderer.editor_find.status_empty_query');
   }
   if (findState.matches <= 0) {
-    return tr('renderer.editor_find.status_no_matches', statusEl.textContent || '');
+    return tr('renderer.editor_find.status_no_matches');
   }
   const current = Math.max(1, Math.min(findState.activeMatchOrdinal || 1, findState.matches));
   return `${current}/${findState.matches}`;
@@ -125,20 +125,20 @@ function applyUiState() {
 async function applyTranslations() {
   await ensureTranslations(idiomaActual);
 
-  const title = tr('renderer.editor_find.label', document.title || 'Find');
+  const title = tr('renderer.editor_find.label');
   document.title = title;
   labelEl.textContent = title;
 
-  inputEl.placeholder = tr('renderer.editor_find.input_placeholder', inputEl.placeholder || '');
-  inputEl.setAttribute('aria-label', tr('renderer.editor_find.input_aria', inputEl.getAttribute('aria-label') || ''));
+  inputEl.placeholder = tr('renderer.editor_find.input_placeholder');
+  inputEl.setAttribute('aria-label', tr('renderer.editor_find.input_aria'));
 
-  prevEl.textContent = tr('renderer.editor_find.prev', prevEl.textContent || '');
-  nextEl.textContent = tr('renderer.editor_find.next', nextEl.textContent || '');
-  closeEl.textContent = tr('renderer.editor_find.close', closeEl.textContent || '');
+  prevEl.textContent = tr('renderer.editor_find.prev');
+  nextEl.textContent = tr('renderer.editor_find.next');
+  closeEl.textContent = tr('renderer.editor_find.close');
 
-  prevEl.title = tr('renderer.editor_find.prev_title', prevEl.title || prevEl.textContent || '');
-  nextEl.title = tr('renderer.editor_find.next_title', nextEl.title || nextEl.textContent || '');
-  closeEl.title = tr('renderer.editor_find.close_title', closeEl.title || closeEl.textContent || '');
+  prevEl.title = tr('renderer.editor_find.prev_title');
+  nextEl.title = tr('renderer.editor_find.next_title');
+  closeEl.title = tr('renderer.editor_find.close_title');
 
   applyUiState();
 }

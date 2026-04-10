@@ -27,12 +27,10 @@
     devLogoLink: Object.freeze({
       url: 'https://totapp.org/',
       tooltipKey: 'renderer.main.tooltips.cibersino_website',
-      fallbackLabel: 'Open Cibersino website',
     }),
     patreonLogoLink: Object.freeze({
       url: 'https://www.patreon.com/Cibersino',
       tooltipKey: 'renderer.main.tooltips.cibersino_patreon',
-      fallbackLabel: 'Open Cibersino Patreon',
     }),
   });
 
@@ -62,7 +60,7 @@
     if (typeof tRenderer !== 'function') {
       log.warnOnce(
         'main_logo_links.tRenderer.missing',
-        'tRenderer unavailable; using fallback main logo link labels.'
+        'tRenderer unavailable; keeping current main logo link labels.'
       );
       return;
     }
@@ -70,8 +68,8 @@
     Object.entries(LOGO_LINK_CONFIG).forEach(([id, config]) => {
       const element = getLogoControl(id);
       if (!element) return;
-      const translatedLabel = tRenderer(config.tooltipKey, element.title || config.fallbackLabel);
-      setControlLabel(element, translatedLabel || config.fallbackLabel);
+      const translatedLabel = tRenderer(config.tooltipKey);
+      setControlLabel(element, translatedLabel);
     });
   }
 
