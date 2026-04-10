@@ -246,7 +246,7 @@ function createController(options = {}) {
     try {
       return settingsState.getSettings();
     } catch (err) {
-      log.warn('Reading-test settings fallback applied (ignored):', err);
+      log.warn('Reading-test settings read failed; using fallback settings.', err);
       return { language: DEFAULT_LANG, modeConteo: 'preciso', presets_by_language: {} };
     }
   }
