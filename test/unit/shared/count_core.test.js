@@ -7,6 +7,8 @@ const {
   createCountUtils,
 } = require('../../../public/js/lib/count_core');
 
+const TEST_DEFAULT_LANG = 'es';
+
 function createLogSpy() {
   const warnCalls = [];
   const warnOnceCalls = [];
@@ -25,7 +27,7 @@ function createLogSpy() {
 }
 
 test('createCountUtils simple mode counts words and characters by whitespace rules', () => {
-  const utils = createCountUtils({ DEFAULT_LANG: 'es' });
+  const utils = createCountUtils({ DEFAULT_LANG: TEST_DEFAULT_LANG });
 
   assert.deepEqual(
     utils.contarTexto('hola mundo', { modoConteo: 'simple' }),
@@ -47,10 +49,38 @@ test('createCountUtils precise mode joins hyphenated compounds into one word', (
   assert.ok(result.sinEspacios > 0);
 });
 
+test('createCountUtils uses injected DEFAULT_LANG for direct precise counting when language is omitted', () => {
+  const seenLanguages = [];
+  const utils = createCountUtils({
+    DEFAULT_LANG: TEST_DEFAULT_LANG,
+    intlObject: {
+      Segmenter: class SegmenterMock {
+        constructor(language, options) {
+          seenLanguages.push({ language, granularity: options && options.granularity });
+        }
+
+        segment(text) {
+          if (seenLanguages[seenLanguages.length - 1].granularity === 'grapheme') {
+            return [{ segment: text }];
+          }
+          return [{ segment: text, isWordLike: true }];
+        }
+      },
+    },
+  });
+
+  utils.contarTextoPreciso('hola', undefined);
+
+  assert.deepEqual(seenLanguages, [
+    { language: TEST_DEFAULT_LANG, granularity: 'grapheme' },
+    { language: TEST_DEFAULT_LANG, granularity: 'word' },
+  ]);
+});
+
 test('createCountUtils falls back when Intl.Segmenter is unavailable', () => {
   const { log, warnOnceCalls } = createLogSpy();
   const utils = createCountUtils({
-    DEFAULT_LANG: 'es',
+    DEFAULT_LANG: TEST_DEFAULT_LANG,
     log,
     intlObject: {},
   });
@@ -79,7 +109,7 @@ test('createCountUtils warns and uses ASCII fallback when unicode property escap
 
   try {
     createCountUtils({
-      DEFAULT_LANG: 'es',
+      DEFAULT_LANG: TEST_DEFAULT_LANG,
       log,
       intlObject: {},
     });
@@ -88,4 +118,11 @@ test('createCountUtils warns and uses ASCII fallback when unicode property escap
   }
 
   assert.equal(warnCalls.length, 1);
+});
+
+test('createCountUtils requires DEFAULT_LANG to be injected', () => {
+  assert.throws(
+    () => createCountUtils(),
+    /\[count_core\] DEFAULT_LANG is required/
+  );
 });

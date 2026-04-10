@@ -18,7 +18,13 @@
 const fs = require('fs');
 const { BrowserWindow, clipboard } = require('electron');
 const Log = require('./log');
-const { MAX_TEXT_CHARS, MAX_IPC_MULTIPLIER, MAX_IPC_CHARS, MAX_META_STR_CHARS } = require('./constants_main');
+const {
+  DEFAULT_LANG,
+  MAX_TEXT_CHARS,
+  MAX_IPC_MULTIPLIER,
+  MAX_IPC_CHARS,
+  MAX_META_STR_CHARS,
+} = require('./constants_main');
 
 const log = Log.get('text-state');
 log.debug('Text state starting...');
@@ -114,7 +120,7 @@ function persistCurrentTextOnQuit() {
     // Maintain previous behavior: ensure settings file exists.
     if (loadJson && saveJson && settingsFile) {
       const settingsDefaults = {
-        language: 'es',
+        language: DEFAULT_LANG,
         presets_by_language: {},
         disabled_default_presets: {},
       };
