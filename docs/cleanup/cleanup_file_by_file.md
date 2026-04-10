@@ -445,7 +445,7 @@ Hard constraints:
 * Keep the logger mechanism defined by runtime context (`electron/log.js` and `public/js/log.js` headers): main/renderer keep repo logger usage; preload stays console-based.
 * Call-site style is mandatory: use `log.warn|warnOnce|error|errorOnce` directly; do not add local wrappers/aliases for these methods.
 * Scope edits to `<TARGET_FILE>` only.
-* If a more specific applicable policy already defines how the feature module should consume a public API at the call site, preserve that pattern; do not introduce local guards or enforcement that contradict it.
+* If a more specific applicable policy already defines how the feature module should consume a public API at the call site, preserve that pattern; do not introduce local guards or enforcement that contradict it (for example, `window.Notify` must be consumed directly in feature files, so do not add feature-level `typeof window.Notify...` checks).
 * You MAY change failure-path behavior (miswire/missing/invalid bridge) to comply with the convention.
   Do NOT claim “changes failure timing/behavior” as Level 4 evidence unless HEALTHY-PATH changes too.
 
