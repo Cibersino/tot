@@ -132,27 +132,12 @@
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
-  function mapExternalFailureReasonToKey(reason) {
-    if (reason === 'blocked') return 'renderer.info.external.blocked';
-    return 'renderer.info.external.error';
-  }
-
-  function handleReadingTestNotice(notice) {
-    if (!isPayloadObject(notice) || typeof notice.key !== 'string' || notice.key.length < 1) {
-      log.warnOnce(
-        'reading-speed-test.notice.invalid',
-        'Reading-test notice payload invalid (ignored):',
-        notice
-      );
-      return;
-    }
-    const type = typeof notice.type === 'string' ? notice.type : 'info';
-    const params = isPayloadObject(notice.params) ? notice.params : {};
-    if (type === 'info') {
-      window.Notify.toastMain(notice.key, { type: 'info', params });
-      return;
-    }
-    window.Notify.notifyMain(notice.key, params);
+  function normalizeSessionState(rawState) {
+    return {
+      active: !!(rawState && rawState.active),
+      stage: rawState && typeof rawState.stage === 'string' ? rawState.stage : 'idle',
+      blocked: !!(rawState && rawState.blocked),
+    };
   }
 
   function isModalOpen() {
@@ -175,12 +160,11 @@
     }
   }
 
-  function normalizeSessionState(rawState) {
-    return {
-      active: !!(rawState && rawState.active),
-      stage: rawState && typeof rawState.stage === 'string' ? rawState.stage : 'idle',
-      blocked: !!(rawState && rawState.blocked),
-    };
+  function rememberPreviousFocus() {
+    const activeElement = document.activeElement;
+    previousFocus = activeElement && typeof activeElement.focus === 'function'
+      ? activeElement
+      : null;
   }
 
   function restorePreviousFocus() {
@@ -190,13 +174,6 @@
     } catch (err) {
       log.warn('Reading-test focus restore failed (ignored):', err);
     }
-  }
-
-  function rememberPreviousFocus() {
-    const activeElement = document.activeElement;
-    previousFocus = activeElement && typeof activeElement.focus === 'function'
-      ? activeElement
-      : null;
   }
 
   function setModalVisible(visible) {
@@ -465,6 +442,17 @@
     }
   }
 
+  async function refreshEntryDataAfterPoolMutation() {
+    const result = await requestEntryData();
+    if (!result) return false;
+    if (!await refreshPoolEntriesFromResult(result)) {
+      return false;
+    }
+    rebuildFilterState();
+    render();
+    return true;
+  }
+
   async function openEntryFlow() {
     if (stabilizing || isSessionActive()) return;
 
@@ -561,17 +549,6 @@
     };
   }
 
-  async function refreshEntryDataAfterPoolMutation() {
-    const result = await requestEntryData();
-    if (!result) return false;
-    if (!await refreshPoolEntriesFromResult(result)) {
-      return false;
-    }
-    rebuildFilterState();
-    render();
-    return true;
-  }
-
   async function handleImportFiles() {
     if (stabilizing || isSessionActive()) return;
 
@@ -624,6 +601,11 @@
       log.error('Reading-test pool import failed unexpectedly:', err);
       window.Notify.notifyMain('renderer.alerts.reading_test_pool_import_failed');
     }
+  }
+
+  function mapExternalFailureReasonToKey(reason) {
+    if (reason === 'blocked') return 'renderer.info.external.blocked';
+    return 'renderer.info.external.error';
   }
 
   function handleOpenDriveFolder(event) {
@@ -756,6 +738,24 @@
         closeModal();
       }
     });
+  }
+
+  function handleReadingTestNotice(notice) {
+    if (!isPayloadObject(notice) || typeof notice.key !== 'string' || notice.key.length < 1) {
+      log.warnOnce(
+        'reading-speed-test.notice.invalid',
+        'Reading-test notice payload invalid (ignored):',
+        notice
+      );
+      return;
+    }
+    const type = typeof notice.type === 'string' ? notice.type : 'info';
+    const params = isPayloadObject(notice.params) ? notice.params : {};
+    if (type === 'info') {
+      window.Notify.toastMain(notice.key, { type: 'info', params });
+      return;
+    }
+    window.Notify.notifyMain(notice.key, params);
   }
 
   function installIpcSubscriptions() {
