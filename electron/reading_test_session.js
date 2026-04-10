@@ -1001,27 +1001,17 @@ function createController(options = {}) {
         ? payload.token
         : '';
       if (!token) {
-        log.warnOnce(
-          'reading-test-session.countdown_ready_missing_token',
-          'Reading-test countdown ready ack ignored: missing token.'
-        );
+        log.warn('Reading-test countdown ready ack ignored: missing token.');
         return;
       }
 
       const pendingAck = pendingCountdownReadyAcks.get(token);
       if (!pendingAck) {
-        log.warnOnce(
-          'reading-test-session.countdown_ready_unknown_token',
-          'Reading-test countdown ready ack ignored: token not pending.',
-          { token }
-        );
+        log.warn('Reading-test countdown ready ack ignored: token not pending.', { token });
         return;
       }
       if (pendingAck.sender !== event.sender) {
-        log.warnOnce(
-          'reading-test-session.countdown_ready_sender_mismatch',
-          'Reading-test countdown ready ack ignored: sender mismatch.'
-        );
+        log.warn('Reading-test countdown ready ack ignored: sender mismatch.');
         return;
       }
 
