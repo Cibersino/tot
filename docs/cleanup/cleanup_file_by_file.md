@@ -636,7 +636,7 @@ Objective:
 Align logging in `<TARGET_FILE>` with the project logging policy and established style, so that:
 - Levels match recoverability (error vs warn vs info vs debug),
 - Fallbacks are never silent (per policy),
-- High-frequency repeatable events where additional occurrences add no new diagnostic value are deduplicated (use warnOnce/errorOnce),
+- High-frequency repeatable events where additional occurrences add no new diagnostic value may be deduplicated (use warnOnce/errorOnce only when the code path is clearly high-frequency),
 - Developer diagnostics in `.js` warning/error logs are English-only (non-UI diagnostics),
 - Messages are short, actionable, and consistent with the repo (see `electron/main.js` patterns).
 
@@ -696,8 +696,9 @@ Definition (to avoid ambiguity):
    - Do NOT embed dynamic payloads or error objects in an explicit dedupe key; keep dynamic details in the log args/message.
 
 5) Best-effort window sends (races):
-   - If a send is part of an intended action that is being dropped, log warnOnce using “failed (ignored):” style.
-   - Use a stable key, optionally with a CONTROLLED variant suffix for the target/window (per-window buckets are allowed).
+   - If a send is part of an intended action that is being dropped, log warn using “failed (ignored):” style.
+   - Upgrade to warnOnce only when the code path is clearly high-frequency and additional occurrences add no new diagnostic value.
+   - If warnOnce is justified, use a stable key, optionally with a CONTROLLED variant suffix for the target/window (per-window buckets are allowed).
    - If a send is truly optional and contractually “do nothing if missing”, it may remain silent; do not add noise.
 
 Anti “refactor that makes it worse” rule:
