@@ -443,7 +443,7 @@
       sessionState = normalizeSessionState(nextState);
       syncLockState();
     } catch (err) {
-      log.warn('Reading-test initial session-state fetch failed (ignored):', err);
+      log.warn('BOOTSTRAP: reading-test initial session-state fetch failed (ignored):', err);
     }
   }
 
@@ -619,22 +619,27 @@
       return;
     }
 
-    openExternalUrl(DRIVE_FOLDER_URL)
-      .then((result) => {
-        if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
-          log.error('Reading-test pool external link result invalid:', result);
+    try {
+      Promise.resolve(openExternalUrl(DRIVE_FOLDER_URL))
+        .then((result) => {
+          if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
+            log.error('Reading-test pool external link result invalid:', result);
+            window.Notify.notifyMain('renderer.info.external.error');
+            return;
+          }
+          if (result.ok !== true) {
+            window.Notify.notifyMain(mapExternalFailureReasonToKey(result.reason));
+            log.warn('Reading-test pool external link blocked or failed:', DRIVE_FOLDER_URL, result);
+          }
+        })
+        .catch((err) => {
+          log.error('Reading-test pool external link request failed:', err);
           window.Notify.notifyMain('renderer.info.external.error');
-          return;
-        }
-        if (result.ok !== true) {
-          window.Notify.notifyMain(mapExternalFailureReasonToKey(result.reason));
-          log.warn('Reading-test pool external link blocked or failed:', DRIVE_FOLDER_URL, result);
-        }
-      })
-      .catch((err) => {
-        log.error('Reading-test pool external link request failed:', err);
-        window.Notify.notifyMain('renderer.info.external.error');
-      });
+        });
+    } catch (err) {
+      log.error('Reading-test pool external link request failed:', err);
+      window.Notify.notifyMain('renderer.info.external.error');
+    }
   }
 
   async function runStartReadingTest(startReadingTest, payload) {
@@ -753,22 +758,29 @@
   function installIpcSubscriptions() {
     const onStateChanged = readElectronMethod('onReadingTestStateChanged');
     if (onStateChanged) {
-      onStateChanged((nextState) => {
-        if (!isPayloadObject(nextState)) {
-          log.warnOnce(
-            'reading-speed-test.onStateChanged.invalid',
-            'Reading-test state-changed payload invalid; using defaults.',
-            nextState
-          );
-        }
-        sessionState = normalizeSessionState(nextState);
-        if (sessionState.active && isModalOpen()) {
-          closeModal();
-        } else {
-          render();
-          syncLockState();
-        }
-      });
+      try {
+        onStateChanged((nextState) => {
+          if (!isPayloadObject(nextState)) {
+            log.warnOnce(
+              'reading-speed-test.onStateChanged.invalid',
+              'Reading-test state-changed payload invalid; using defaults.',
+              nextState
+            );
+          }
+          sessionState = normalizeSessionState(nextState);
+          if (sessionState.active && isModalOpen()) {
+            closeModal();
+          } else {
+            render();
+            syncLockState();
+          }
+        });
+      } catch (err) {
+        log.warn(
+          'BOOTSTRAP: onReadingTestStateChanged registration failed; renderer lock state will not live-sync.',
+          err
+        );
+      }
     } else {
       log.warnOnce(
         'BOOTSTRAP:reading-speed-test.onStateChanged.missing',
@@ -778,13 +790,20 @@
 
     const onNotice = readElectronMethod('onReadingTestNotice');
     if (onNotice) {
-      onNotice((notice) => {
-        try {
-          handleReadingTestNotice(notice);
-        } catch (err) {
-          log.error('Reading-test notice handler failed:', err);
-        }
-      });
+      try {
+        onNotice((notice) => {
+          try {
+            handleReadingTestNotice(notice);
+          } catch (err) {
+            log.error('Reading-test notice handler failed:', err);
+          }
+        });
+      } catch (err) {
+        log.warn(
+          'BOOTSTRAP: onReadingTestNotice registration failed; reading-test notices will not surface in renderer.',
+          err
+        );
+      }
     } else {
       log.warnOnce(
         'BOOTSTRAP:reading-speed-test.onNotice.missing',
@@ -794,24 +813,31 @@
 
     const onApplyWpmEvent = readElectronMethod('onReadingTestApplyWpm');
     if (onApplyWpmEvent) {
-      onApplyWpmEvent((payload) => {
-        const nextWpm = payload && typeof payload.wpm === 'number'
-          ? payload.wpm
-          : NaN;
-        if (!Number.isFinite(nextWpm)) {
-          log.warnOnce(
-            'reading-speed-test.applyWpm.invalid',
-            'Reading-test apply-WPM payload invalid (ignored):',
-            payload
-          );
-          return;
-        }
-        try {
-          onApplyWpm(nextWpm);
-        } catch (err) {
-          log.error('Reading-test WPM apply callback failed:', err);
-        }
-      });
+      try {
+        onApplyWpmEvent((payload) => {
+          const nextWpm = payload && typeof payload.wpm === 'number'
+            ? payload.wpm
+            : NaN;
+          if (!Number.isFinite(nextWpm)) {
+            log.warnOnce(
+              'reading-speed-test.applyWpm.invalid',
+              'Reading-test apply-WPM payload invalid (ignored):',
+              payload
+            );
+            return;
+          }
+          try {
+            onApplyWpm(nextWpm);
+          } catch (err) {
+            log.error('Reading-test WPM apply callback failed:', err);
+          }
+        });
+      } catch (err) {
+        log.warn(
+          'BOOTSTRAP: onReadingTestApplyWpm registration failed; computed WPM will not sync into main renderer.',
+          err
+        );
+      }
     } else {
       log.warnOnce(
         'BOOTSTRAP:reading-speed-test.onApplyWpm.missing',
