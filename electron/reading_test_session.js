@@ -66,50 +66,28 @@ function createController(options = {}) {
     openPresetWindow,
   } = options;
 
-  if (typeof resolveMainWindow !== 'function') {
-    throw new Error('[reading-test-session] createController requires resolveMainWindow()');
-  }
-  if (typeof getPreconditionContext !== 'function') {
-    throw new Error('[reading-test-session] createController requires getPreconditionContext()');
-  }
-  if (typeof isProcessingModeActive !== 'function') {
-    throw new Error('[reading-test-session] createController requires isProcessingModeActive()');
-  }
-  if (typeof ensureEditorWindow !== 'function') {
-    throw new Error('[reading-test-session] createController requires ensureEditorWindow()');
-  }
-  if (typeof showEditorWindow !== 'function') {
-    throw new Error('[reading-test-session] createController requires showEditorWindow()');
-  }
-  if (typeof ensureFlotanteWindow !== 'function') {
-    throw new Error('[reading-test-session] createController requires ensureFlotanteWindow()');
-  }
-  if (typeof closeEditorWindow !== 'function') {
-    throw new Error('[reading-test-session] createController requires closeEditorWindow()');
-  }
-  if (typeof closeFlotanteWindow !== 'function') {
-    throw new Error('[reading-test-session] createController requires closeFlotanteWindow()');
-  }
-  if (typeof startCrono !== 'function') {
-    throw new Error('[reading-test-session] createController requires startCrono()');
-  }
-  if (typeof resetCrono !== 'function') {
-    throw new Error('[reading-test-session] createController requires resetCrono()');
-  }
-  if (typeof stopCrono !== 'function') {
-    throw new Error('[reading-test-session] createController requires stopCrono()');
-  }
-  if (typeof getCronoState !== 'function') {
-    throw new Error('[reading-test-session] createController requires getCronoState()');
-  }
-  if (typeof getCurrentText !== 'function') {
-    throw new Error('[reading-test-session] createController requires getCurrentText()');
-  }
-  if (typeof applyCurrentText !== 'function') {
-    throw new Error('[reading-test-session] createController requires applyCurrentText()');
-  }
-  if (typeof openPresetWindow !== 'function') {
-    throw new Error('[reading-test-session] createController requires openPresetWindow()');
+  const requiredOptionFns = [
+    ['resolveMainWindow', resolveMainWindow],
+    ['getPreconditionContext', getPreconditionContext],
+    ['isProcessingModeActive', isProcessingModeActive],
+    ['ensureEditorWindow', ensureEditorWindow],
+    ['showEditorWindow', showEditorWindow],
+    ['ensureFlotanteWindow', ensureFlotanteWindow],
+    ['closeEditorWindow', closeEditorWindow],
+    ['closeFlotanteWindow', closeFlotanteWindow],
+    ['startCrono', startCrono],
+    ['resetCrono', resetCrono],
+    ['stopCrono', stopCrono],
+    ['getCronoState', getCronoState],
+    ['getCurrentText', getCurrentText],
+    ['applyCurrentText', applyCurrentText],
+    ['openPresetWindow', openPresetWindow],
+  ];
+
+  for (const [name, fn] of requiredOptionFns) {
+    if (typeof fn !== 'function') {
+      throw new Error(`[reading-test-session] createController requires ${name}()`);
+    }
   }
 
   const countUtils = countCore.createCountUtils({
