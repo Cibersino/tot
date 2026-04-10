@@ -11,6 +11,9 @@
 // - Compute enabled/disabled checkbox state from real remaining combinations.
 // - Support both browser-script and CommonJS consumers.
 
+// =============================================================================
+// Module bootstrap / dual export wrapper
+// =============================================================================
 (function initReadingTestFiltersCore(root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) {
@@ -20,8 +23,14 @@
     root.ReadingTestFiltersCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+  // =============================================================================
+  // Constants / config
+  // =============================================================================
   const CATEGORY_KEYS = Object.freeze(['language', 'type', 'difficulty']);
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function normalizeValue(value) {
     return typeof value === 'string' ? value.trim() : '';
   }
@@ -157,6 +166,9 @@
     };
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   return {
     CATEGORY_KEYS,
     normalizeSelection,
