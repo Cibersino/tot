@@ -128,23 +128,31 @@
       : null;
   }
 
-  function notifyUnavailable() {
-    window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
+  function isPayloadObject(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
-  function notifyGuidance(guidanceKey, params = {}, { type = 'error' } = {}) {
-    if (!guidanceKey) return;
-    if (type === 'info' && typeof window.Notify.toastMain === 'function') {
-      window.Notify.toastMain(guidanceKey, { type: 'info', params });
-      return;
-    }
-    window.Notify.notifyMain(guidanceKey, params);
+  function mapExternalFailureReasonToKey(reason) {
+    if (reason === 'blocked') return 'renderer.info.external.blocked';
+    return 'renderer.info.external.error';
   }
 
   function handleReadingTestNotice(notice) {
-    if (!notice || typeof notice !== 'object' || !notice.key) return;
+    if (!isPayloadObject(notice) || typeof notice.key !== 'string' || notice.key.length < 1) {
+      log.warnOnce(
+        'reading-speed-test.notice.invalid',
+        'Reading-test notice payload invalid (ignored):',
+        notice
+      );
+      return;
+    }
     const type = typeof notice.type === 'string' ? notice.type : 'info';
-    notifyGuidance(notice.key, notice.params || {}, { type });
+    const params = isPayloadObject(notice.params) ? notice.params : {};
+    if (type === 'info') {
+      window.Notify.toastMain(notice.key, { type: 'info', params });
+      return;
+    }
+    window.Notify.notifyMain(notice.key, params);
   }
 
   function isModalOpen() {
@@ -370,18 +378,43 @@
   }
 
   async function refreshPoolEntriesFromResult(result) {
-    if (!result || result.ok !== true) {
-      notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_pool_error');
+    if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
+      log.error('Reading-test entry-flow result invalid:', result);
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
+      return false;
+    }
+    if (result.ok !== true) {
+      window.Notify.notifyMain(
+        typeof result.guidanceKey === 'string'
+          ? result.guidanceKey
+          : 'renderer.alerts.reading_test_pool_error'
+      );
+      return false;
+    }
+    if (typeof result.canOpen !== 'boolean') {
+      log.error('Reading-test entry-flow result missing canOpen flag:', result);
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
       return false;
     }
     if (!result.canOpen) {
-      notifyGuidance(result.guidanceKey || 'renderer.alerts.reading_test_precondition_blocked');
+      window.Notify.notifyMain(
+        typeof result.guidanceKey === 'string'
+          ? result.guidanceKey
+          : 'renderer.alerts.reading_test_precondition_blocked'
+      );
+      return false;
+    }
+    if (!Array.isArray(result.entries)
+      || typeof result.poolExhausted !== 'boolean'
+      || typeof result.currentTextAvailable !== 'boolean') {
+      log.error('Reading-test entry-flow success payload invalid:', result);
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
       return false;
     }
 
-    poolExhausted = !!result.poolExhausted;
-    currentTextAvailable = !!result.currentTextAvailable;
-    poolEntries = Array.isArray(result.entries) ? result.entries : [];
+    poolExhausted = result.poolExhausted;
+    currentTextAvailable = result.currentTextAvailable;
+    poolEntries = result.entries;
     rebuildFilterState();
     return true;
   }
@@ -393,7 +426,7 @@
         'reading-speed-test.getEntryData.missing',
         'getReadingTestEntryData unavailable; reading speed test entry flow skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return null;
     }
 
@@ -401,7 +434,7 @@
       return await getEntryData();
     } catch (err) {
       log.error('Reading-test entry data request failed:', err);
-      notifyGuidance('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
       return null;
     }
   }
@@ -410,14 +443,22 @@
     const getState = readElectronMethod('getReadingTestState');
     if (!getState) {
       log.warnOnce(
-        'reading-speed-test.getState.missing',
+        'BOOTSTRAP:reading-speed-test.getState.missing',
         'getReadingTestState unavailable; reading-test session sync disabled.'
       );
       return;
     }
 
     try {
-      sessionState = normalizeSessionState(await getState());
+      const nextState = await getState();
+      if (!isPayloadObject(nextState)) {
+        log.warnOnce(
+          'BOOTSTRAP:reading-speed-test.getState.invalid',
+          'Reading-test initial session-state payload invalid; using defaults.',
+          nextState
+        );
+      }
+      sessionState = normalizeSessionState(nextState);
       syncLockState();
     } catch (err) {
       log.warn('Reading-test initial session-state fetch failed (ignored):', err);
@@ -455,7 +496,7 @@
         'reading-speed-test.resetPool.missing',
         'resetReadingTestPool unavailable; pool reset skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return;
     }
 
@@ -472,7 +513,7 @@
       }
     } catch (err) {
       log.error('Reading-test pool reset failed:', err);
-      notifyGuidance('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
     }
 
     stabilizing = false;
@@ -490,26 +531,15 @@
       ? 'info'
       : (totalFailed > 0 || (Number(result.skippedDuplicates) || 0) > 0 ? 'warn' : 'info');
 
-    if (typeof window.Notify.toastMain === 'function') {
-      window.Notify.toastMain('renderer.reading_test.entry.import_summary', {
-        type: toastType,
-        params: {
-          imported: Number(result.imported) || 0,
-          skippedDuplicates: Number(result.skippedDuplicates) || 0,
-          failedValidation: Number(result.failedValidation) || 0,
-          failedArchiveEntries: Number(result.failedArchiveEntries) || 0,
-          failedWrites: Number(result.failedWrites) || 0,
-        },
-      });
-      return;
-    }
-
-    notifyGuidance('renderer.reading_test.entry.import_summary', {
-      imported: Number(result.imported) || 0,
-      skippedDuplicates: Number(result.skippedDuplicates) || 0,
-      failedValidation: Number(result.failedValidation) || 0,
-      failedArchiveEntries: Number(result.failedArchiveEntries) || 0,
-      failedWrites: Number(result.failedWrites) || 0,
+    window.Notify.toastMain('renderer.reading_test.entry.import_summary', {
+      type: toastType,
+      params: {
+        imported: Number(result.imported) || 0,
+        skippedDuplicates: Number(result.skippedDuplicates) || 0,
+        failedValidation: Number(result.failedValidation) || 0,
+        failedArchiveEntries: Number(result.failedArchiveEntries) || 0,
+        failedWrites: Number(result.failedWrites) || 0,
+      },
     });
   }
 
@@ -551,7 +581,7 @@
         'reading-speed-test.import.missing',
         'importReadingTestPoolFiles unavailable; reading-test pool import skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return;
     }
 
@@ -560,10 +590,22 @@
 
     try {
       const result = await importReadingTestPoolFiles(buildImportDialogPayload());
-      if (!result || result.ok !== true) {
+      if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
         stabilizing = false;
         render();
-        notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_pool_import_failed');
+        log.error('Reading-test pool import result invalid:', result);
+        window.Notify.notifyMain('renderer.alerts.reading_test_pool_import_failed');
+        return;
+      }
+
+      if (result.ok !== true) {
+        stabilizing = false;
+        render();
+        window.Notify.notifyMain(
+          typeof result.guidanceKey === 'string'
+            ? result.guidanceKey
+            : 'renderer.alerts.reading_test_pool_import_failed'
+        );
         return;
       }
 
@@ -580,7 +622,7 @@
       stabilizing = false;
       render();
       log.error('Reading-test pool import failed unexpectedly:', err);
-      notifyGuidance('renderer.alerts.reading_test_pool_import_failed');
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_import_failed');
     }
   }
 
@@ -594,7 +636,7 @@
     if (!openExternalUrl) {
       log.warnOnce(
         'reading-speed-test.external-link.missing',
-        'openExternalUrl unavailable; reading-test external link disabled.'
+        'openExternalUrl unavailable; reading-test external link open failed (ignored).'
       );
       window.Notify.notifyMain('renderer.info.external.blocked');
       return;
@@ -602,12 +644,13 @@
 
     openExternalUrl(DRIVE_FOLDER_URL)
       .then((result) => {
-        if (!result || result.ok !== true) {
-          window.Notify.notifyMain(
-            result && result.reason === 'blocked'
-              ? 'renderer.info.external.blocked'
-              : 'renderer.info.external.error'
-          );
+        if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
+          log.error('Reading-test pool external link result invalid:', result);
+          window.Notify.notifyMain('renderer.info.external.error');
+          return;
+        }
+        if (result.ok !== true) {
+          window.Notify.notifyMain(mapExternalFailureReasonToKey(result.reason));
           log.warn('Reading-test pool external link blocked or failed:', DRIVE_FOLDER_URL, result);
         }
       })
@@ -626,8 +669,17 @@
       stabilizing = false;
       render();
 
-      if (!result || result.ok !== true) {
-        notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_start_failed');
+      if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
+        log.error('Reading-test start result invalid:', result);
+        window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
+        return;
+      }
+      if (result.ok !== true) {
+        window.Notify.notifyMain(
+          typeof result.guidanceKey === 'string'
+            ? result.guidanceKey
+            : 'renderer.alerts.reading_test_start_failed'
+        );
         return;
       }
 
@@ -636,7 +688,7 @@
       stabilizing = false;
       render();
       log.error('Reading-test start failed unexpectedly:', err);
-      notifyGuidance('renderer.alerts.reading_test_start_failed');
+      window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
     }
   }
 
@@ -649,7 +701,7 @@
         'reading-speed-test.start.missing',
         'startReadingTest unavailable; reading speed test start skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return;
     }
 
@@ -665,7 +717,7 @@
         'reading-speed-test.start-current-text.missing',
         'startReadingTest unavailable; current-text reading speed test start skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return;
     }
 
@@ -705,6 +757,13 @@
     const onStateChanged = readElectronMethod('onReadingTestStateChanged');
     if (onStateChanged) {
       onStateChanged((nextState) => {
+        if (!isPayloadObject(nextState)) {
+          log.warnOnce(
+            'reading-speed-test.onStateChanged.invalid',
+            'Reading-test state-changed payload invalid; using defaults.',
+            nextState
+          );
+        }
         sessionState = normalizeSessionState(nextState);
         if (sessionState.active && isModalOpen()) {
           closeModal();
@@ -715,7 +774,7 @@
       });
     } else {
       log.warnOnce(
-        'reading-speed-test.onStateChanged.missing',
+        'BOOTSTRAP:reading-speed-test.onStateChanged.missing',
         'onReadingTestStateChanged unavailable; renderer lock state will not live-sync.'
       );
     }
@@ -731,7 +790,7 @@
       });
     } else {
       log.warnOnce(
-        'reading-speed-test.onNotice.missing',
+        'BOOTSTRAP:reading-speed-test.onNotice.missing',
         'onReadingTestNotice unavailable; reading-test notices will not surface in renderer.'
       );
     }
@@ -758,7 +817,7 @@
       });
     } else {
       log.warnOnce(
-        'reading-speed-test.onApplyWpm.missing',
+        'BOOTSTRAP:reading-speed-test.onApplyWpm.missing',
         'onReadingTestApplyWpm unavailable; computed WPM will not sync into main renderer.'
       );
     }
