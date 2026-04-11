@@ -103,8 +103,10 @@ const importExtractProcessingModeController = importExtractProcessingModeIpc.cre
   onStateChanged: (state) => {
     try {
       const targetWin = resolveMainWindow();
-      if (targetWin) {
+      if (hasLiveWebContents(targetWin)) {
         targetWin.webContents.send('import-extract-processing-mode-changed', state);
+      } else {
+        log.warn('import-extract-processing-mode-changed broadcast skipped (ignored): main window unavailable.');
       }
       if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
         pendingMainWindowCloseAfterProcessingAbort = false;
@@ -152,6 +154,10 @@ function isPlainObject(x) {
 
 function isAliveWindow(win) {
   return !!(win && !win.isDestroyed());
+}
+
+function hasLiveWebContents(win) {
+  return !!(isAliveWindow(win) && win.webContents && !win.webContents.isDestroyed());
 }
 
 function isMainInteractive() {
@@ -217,7 +223,8 @@ function resolveMainWindow() {
 }
 
 function sendEditorInitText(logContext) {
-  if (!isAliveWindow(editorWin) || !editorWin.webContents || editorWin.webContents.isDestroyed()) {
+  if (!hasLiveWebContents(editorWin)) {
+    log.warn('editor-init-text skipped (ignored): editor window unavailable.', logContext);
     return;
   }
 
@@ -233,10 +240,13 @@ function sendEditorInitText(logContext) {
 }
 
 function notifyMainEditorReady(logContext) {
+  if (!hasLiveWebContents(mainWin)) {
+    log.warn('editor-ready notification skipped (ignored): main window unavailable.', logContext);
+    return;
+  }
+
   try {
-    if (isAliveWindow(mainWin)) {
-      mainWin.webContents.send('editor-ready');
-    }
+    mainWin.webContents.send('editor-ready');
   } catch (err) {
     log.warn(`Unable to notify editor-ready from ${logContext}:`, err);
   }
@@ -522,13 +532,20 @@ function createMainWindow() {
 
   mainWin.webContents.on('did-finish-load', () => {
     try {
-      if (!isAliveWindow(mainWin)) return;
+      if (!hasLiveWebContents(mainWin)) {
+        log.warn('Main did-finish-load state seed skipped (ignored): main window unavailable.');
+        return;
+      }
       mainWin.webContents.send(
         'import-extract-processing-mode-changed',
         importExtractProcessingModeController.getState()
       );
       if (readingTestSessionController) {
         mainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
+      } else {
+        log.warn(
+          'reading-test-state-changed seed skipped (ignored): readingTestSessionController unavailable.'
+        );
       }
     } catch (err) {
       log.warn('Failed to seed processing-mode state on renderer load (ignored):', err);
@@ -1195,8 +1212,10 @@ async function createFlotanteWindow(options = {}) {
 
     // Best-effort notification: main renderer may update UI state.
     try {
-      if (isAliveWindow(mainWin) && mainWin.webContents && !mainWin.webContents.isDestroyed()) {
+      if (hasLiveWebContents(mainWin)) {
         mainWin.webContents.send('flotante-closed');
+      } else {
+        log.warn('flotante-closed notification skipped (ignored): main window unavailable.');
       }
     } catch (err) {
       log.warnOnce('mainWin.send.flotante-closed', "mainWin send('flotante-closed') failed (ignored):", err);
@@ -1265,7 +1284,14 @@ function broadcastCronoState() {
   const state = getCronoState();
 
   try {
-    if (isAliveWindow(mainWin)) mainWin.webContents.send('crono-state', state);
+    if (hasLiveWebContents(mainWin)) {
+      mainWin.webContents.send('crono-state', state);
+    } else {
+      log.warnOnce(
+        'crono-state.mainWindowUnavailable',
+        'crono-state broadcast skipped (ignored): main window unavailable.'
+      );
+    }
   } catch (err) {
     log.warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', err);
   }
@@ -1531,7 +1557,10 @@ ipcMain.handle('open-editor', () => {
 ipcMain.on('task-editor-confirm-close', (event) => {
   try {
     const senderWin = BrowserWindow.fromWebContents(event.sender);
-    if (!taskEditorWin || senderWin !== taskEditorWin) return;
+    if (!taskEditorWin || senderWin !== taskEditorWin) {
+      log.warnOnce('task-editor-confirm-close.unauthorized', 'task-editor-confirm-close unauthorized (ignored).');
+      return;
+    }
     taskEditorForceClose = true;
     taskEditorWin.close();
   } catch (err) {
