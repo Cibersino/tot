@@ -1112,7 +1112,7 @@ function setupToggleModoPreciso() {
 async function runStartupOrchestrator() {
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
-      dedupeKey: 'renderer.ipc.getAppConfig.unavailable',
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getAppConfig.unavailable',
       unavailableMessage: 'getAppConfig unavailable; bootstrap will use default limits.'
     });
     if (getAppConfig) {
@@ -1136,7 +1136,7 @@ async function runStartupOrchestrator() {
     let settingsSnapshot = {};
     // Load user settings once at renderer startup
     const getSettings = getOptionalElectronMethod('getSettings', {
-      dedupeKey: 'renderer.ipc.getSettings.unavailable',
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getSettings.unavailable',
       unavailableMessage: 'getSettings unavailable; bootstrap will use default settings.'
     });
     if (getSettings) {
@@ -1170,7 +1170,7 @@ async function runStartupOrchestrator() {
 
     // Get current initial text (state-only)
     const getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getCurrentText.unavailable',
       unavailableMessage: 'getCurrentText unavailable; bootstrap will use empty text.'
     });
     if (getCurrentText) {
@@ -1186,7 +1186,7 @@ async function runStartupOrchestrator() {
     }
 
     const getImportExtractProcessingMode = getOptionalElectronMethod('getImportExtractProcessingMode', {
-      dedupeKey: 'renderer.ipc.getImportExtractProcessingMode.unavailable',
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getImportExtractProcessingMode.unavailable',
       unavailableMessage: 'getImportExtractProcessingMode unavailable; processing mode defaults to inactive.'
     });
     if (getImportExtractProcessingMode) {
@@ -1422,13 +1422,20 @@ async function hydrateAboutEnvironment(container) {
       window.electronAPI
       && typeof window.electronAPI.getAppDocAvailability === 'function'
     ) {
-      const [licenseAvailability, noticeAvailability] = await Promise.all([
-        window.electronAPI.getAppDocAvailability('license-import-extract-image-processing-runtime'),
-        window.electronAPI.getAppDocAvailability('notice-import-extract-image-processing-runtime'),
-      ]);
-      if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !(licenseAvailability && licenseAvailability.available);
-      if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !(noticeAvailability && noticeAvailability.available);
+      try {
+        const [licenseAvailability, noticeAvailability] = await Promise.all([
+          window.electronAPI.getAppDocAvailability('license-import-extract-image-processing-runtime'),
+          window.electronAPI.getAppDocAvailability('notice-import-extract-image-processing-runtime'),
+        ]);
+        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !(licenseAvailability && licenseAvailability.available);
+        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !(noticeAvailability && noticeAvailability.available);
+      } catch (err) {
+        log.warn('getAppDocAvailability failed; About modal document availability defaults to hidden:', err);
+        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+      }
     } else {
+      log.warn('getAppDocAvailability unavailable; About modal document availability defaults to hidden.');
       if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
       if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
     }
@@ -1904,6 +1911,7 @@ async function resolveDroppedFilePath(file) {
       if (typeof resolvedPath === 'string' && resolvedPath.trim()) {
         return resolvedPath.trim();
       }
+      log.warn('getPathForFile returned empty/invalid; falling back to File.path.');
     } catch (err) {
       log.error('Failed to resolve dropped file path via electronAPI.getPathForFile:', err);
     }
@@ -1912,6 +1920,9 @@ async function resolveDroppedFilePath(file) {
   const fallbackPath = file && typeof file.path === 'string'
     ? file.path.trim()
     : '';
+  if (!fallbackPath) {
+    log.warn('Dropped file path unresolved; returning empty path.');
+  }
   return fallbackPath;
 }
 
