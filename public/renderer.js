@@ -693,12 +693,12 @@ function renderEstimatedTime(totalSeconds) {
 async function updatePreviewAndResults(text) {
   const normalizedText = normalizeText(text);
   const displayText = normalizedText.replace(/\r?\n/g, '   ');
-  const n = displayText.length;
+  const displayLength = displayText.length;
 
-  if (n === 0) {
+  if (displayLength === 0) {
     const emptyMsg = tRenderer('renderer.main.selector_empty');
     textPreview.textContent = emptyMsg;
-  } else if (n <= PREVIEW_INLINE_THRESHOLD) {
+  } else if (displayLength <= PREVIEW_INLINE_THRESHOLD) {
     textPreview.textContent = displayText;
   } else {
     const start = displayText.slice(0, PREVIEW_START_CHARS);
@@ -1026,7 +1026,7 @@ function armIpcSubscriptions() {
           );
           return;
         }
-        hideeditorLoader();
+        hideEditorLoader();
       });
     } else {
       log.warnOnce(
@@ -1175,8 +1175,8 @@ async function runStartupOrchestrator() {
     });
     if (getCurrentText) {
       try {
-        const t = await getCurrentText();
-        installCurrentTextState(t || '');
+        const initialText = await getCurrentText();
+        installCurrentTextState(initialText || '');
       } catch (err) {
         log.error('Error loading initial current text:', err);
         installCurrentTextState('');
@@ -1750,9 +1750,9 @@ wpmSlider.addEventListener('input', () => {
 
 wpmInput.addEventListener('blur', () => {
   if (!guardUserAction('wpm-input-blur')) return;
-  let val = Number(wpmInput.value);
-  if (isNaN(val)) val = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
-  wpm = syncWpmControls(val);
+  let requestedWpm = Number(wpmInput.value);
+  if (isNaN(requestedWpm)) requestedWpm = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
+  wpm = syncWpmControls(requestedWpm);
   resetPresetSelection();
   updateTimeOnlyFromStats();
 });
@@ -2088,32 +2088,32 @@ btnAppendClipboard.addEventListener('click', async () => {
   }
 });
 
-function showeditorLoader() {
+function showEditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
   if (btnEdit) btnEdit.disabled = true;
 }
 
-function hideeditorLoader() {
+function hideEditorLoader() {
   if (editorLoader) editorLoader.classList.remove('visible');
   if (btnEdit) btnEdit.disabled = false;
 }
 
 btnEdit.addEventListener('click', async () => {
   if (!guardUserAction('open-editor')) return;
-  showeditorLoader();
+  showEditorLoader();
   try {
     const openEditor = getOptionalElectronMethod('openEditor', {
       dedupeKey: 'renderer.ipc.openEditor.unavailable',
       unavailableMessage: 'openEditor unavailable; editor launch skipped.'
     });
     if (!openEditor) {
-      hideeditorLoader();
+      hideEditorLoader();
       return;
     }
     await openEditor();
   } catch (err) {
     log.error('Error opening editor:', err);
-    hideeditorLoader();
+    hideEditorLoader();
   }
 });
 
