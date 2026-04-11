@@ -22,31 +22,34 @@ Leyenda:
 
 Regla operativa:
 * Este baseline aplica **solo** al artefacto inspeccionado. Si se re-empaqueta, se debe re-ejecutar el Post-packaging Gate.
-* Este archivo es la **línea base reusable** para releases futuros; cada release debe completar estados/evidencias sobre esta misma estructura.
+* Este archivo es la **línea base reusable** para releases futuros; cada release debe completar estados/evidencias sobre esta misma estructura, pero la plantilla debe mantenerse alineada con el comportamiento **actual** del producto.
+* Si se usa otro release/baseline como referencia, registrar la referencia exacta (doc/ruta/tag/commit) y el delta observado; no asumir que una versión previa quedó “cerrada” si después hubo correcciones documentales, de packaging o de superficie runtime.
 
 ---
 
-## 1) Veredicto del release
+## 1) Veredicto actual
 
 **Veredicto actual:** `<PASS | BLOCKER | PENDING>`  
 **Decisión:** `<OK publicar | NO publicar>`
 
 Estado por gate:
-* **Ship Gate (repo/código + release hygiene):** `<PASS | BLOCKER | PENDING>`
+* **Ship Gate (repo/código + higiene de distribución):** `<PASS | BLOCKER | PENDING>`
   * Postura de seguridad del runtime (secciones 2–9): `<PASS | BLOCKER | PENDING>`
-  * Release hygiene (sección 10): `<PASS | BLOCKER | PENDING>`
+  * Higiene de distribución (sección 10): `<PASS | BLOCKER | PENDING>`
 * **Post-packaging Gate (artefacto build):** `<PASS | BLOCKER | PENDING>`
 
 Notas:
 * Si el veredicto es PASS, registrar el identificador del artefacto validado (nombre exacto + hash o evidencia equivalente).
 * Si el veredicto es BLOCKER/PENDING, registrar el/los ítems bloqueantes y el plan de cierre.
-* Registrar siempre el **delta de seguridad** del release (canales IPC nuevos/modificados, ventanas nuevas, cambios CSP, rutas nuevas de persistencia, cambios en updater/enlaces externos).
+* Registrar siempre qué cambió en seguridad respecto de la referencia elegida (canales IPC nuevos/modificados, ventanas nuevas, cambios CSP, cambios de persistencia, cambios en updater y enlaces externos).
 * En el baseline actual, el delta de seguridad debe registrar explícitamente cualquier cambio en:
-  * la superficie IPC/preload de `import/extract`,
-  * la postura OAuth/Google Drive del flujo OCR,
-  * las rutas persistidas bajo `config/import_extract_state.json` y `config/ocr_google_drive/*`,
-  * y el tratamiento del material OCR empaquetado (`electron/assets/ocr_google_drive/credentials.json`).
-  * y cualquier nueva dependencia runtime redistribuida (por ejemplo `adm-zip` para importación local de `.zip` del reading speed test).
+  * la superficie IPC/preload de flujos sensibles,
+  * la autenticación, permisos y proveedor de cualquier flujo conectado con servicios externos,
+  * el inventario y la política de persistencia propia de la app,
+  * el tratamiento de cualquier material sensible incluido en el build o creado en runtime.
+  * cualquier nueva dependencia runtime redistribuida.
+  * cualquier nueva forma de entrada de archivos o contenido externo (picker nativo, drag-drop, archivos locales, archivos comprimidos, enlaces públicos, etc.).
+  * cualquier cambio en cómo la app abre enlaces externos o documentación.
 
 ---
 
@@ -61,14 +64,15 @@ Checklist:
 * [PENDING] La app no depende de cargar contenido remoto arbitrario para operar.
 
 Notas / evidencia:
-* Indicar superficies con input no confiable y su control (texto principal, editor, presets, task editor, links externos, snapshots, clipboard, picker/drag-drop de import/extract, archivos fuente elegidos por el usuario, respuestas/provider errors de Google OCR y estado local de token OCR).
+* Indicar el inventario vigente de superficies con input no confiable y su control, sin depender de una lista heredada de otra versión.
+* Matriz mínima sugerida: `superficie | de dónde viene el input | frontera de confianza | controles principales | evidencia`.
 * Indicar cómo se acota riesgo de inyección/escalamiento (CSP + sandbox + IPC whitelist + restricción de navegación).
 
 ---
 
 ## 3) BrowserWindow posture — Ship Gate
 
-**Invariantes requeridas en todas las ventanas** (main / editor / task_editor / preset / language / flotante / otras):
+**Invariantes requeridas en todas las ventanas renderer vigentes del producto**:
 
 Checklist:
 * [PENDING] `contextIsolation: true`
@@ -85,7 +89,7 @@ Criterio de bloqueo:
 * Falta de control de navegación no deseada en ventanas renderer con contenido interactivo.
 
 Evidencia mínima sugerida:
-* Lista exhaustiva de ventanas y dónde se setean `webPreferences` (archivo + referencia aproximada de línea).
+* Inventario vigente de ventanas renderer (`ventana | propósito | HTML/preload | dónde se setean webPreferences | notas`) en vez de una lista heredada.
 * Evidencia del control de navegación/ventanas emergentes y del flujo permitido para salidas externas.
 
 ---
@@ -93,14 +97,14 @@ Evidencia mínima sugerida:
 ## 4) Preload posture (superficie expuesta) — Ship Gate
 
 Principios operativos:
-* API expuesta a renderer debe ser **pequeña, intencional y whitelist-based**.
+* La API expuesta a renderer debe ser **pequeña, intencional y cerrada**.
 * Renderer no debe poder invocar capacidades privilegiadas “genéricas” (ej. `invoke(channel, payload)` libre).
 
 Checklist:
 * [PENDING] Preloads exponen API vía `contextBridge` y no exponen Node a renderer.
 * [PENDING] Preloads no implementan file I/O, network I/O, ni ejecución dinámica.
 * [PENDING] Preloads no exponen superficies amplias (ej. acceso directo a `ipcRenderer` sin wrapper de propósito).
-* [PENDING] APIs preload se mantienen separadas por ventana y con propósito explícito (ej. `electronAPI`, `editorAPI`, `taskEditorAPI`, `presetAPI`, `languageAPI`, `flotanteAPI`).
+* [PENDING] APIs preload se mantienen separadas por ventana y con propósito explícito, de acuerdo con el inventario vigente del producto.
 * [PENDING] Logging en preload es mínimo; decisiones de seguridad se aplican en main.
 
 Criterio de bloqueo:
@@ -109,18 +113,7 @@ Criterio de bloqueo:
 Evidencia mínima sugerida:
 * Enumeración de APIs expuestas (`window.*API`) + lista de métodos y su propósito (por preload).
 * Confirmación de que no se expone `ipcRenderer` crudo, `require`, `process`, `fs` o primitivos de ejecución dinámica.
-* En este baseline, incluir también la superficie `electronAPI` nueva de import/extract:
-  * `openImportExtractPicker`
-  * `getPathForFile`
-  * `checkImportExtractPreconditions`
-  * `prepareImportExtractOcrActivation`
-  * `launchImportExtractOcrActivation`
-  * `disconnectImportExtractOcr`
-  * `prepareImportExtractSelectedFile`
-  * `executePreparedImportExtract`
-  * `getImportExtractProcessingMode`
-  * `requestImportExtractAbort`
-  * `onImportExtractProcessingModeChanged`
+* Incluir el inventario vigente de bridges preload (`API | métodos | propósito | ventana/superficie | controles relevantes`) en vez de copiar listas de otra versión.
 
 ---
 
@@ -131,13 +124,13 @@ Evidencia mínima sugerida:
 Requisitos mínimos (aplican a canales de impacto: clipboard, texto, presets, apertura de modales/ventanas, apertura de URLs/docs, etc.):
 
 Checklist:
-* [PENDING] Disciplina de esquema (plain object donde corresponde; coerción/normalización de tipos).
-* [PENDING] Whitelisting de campos (ignorar/dropear campos desconocidos; no “passthrough”).
+* [PENDING] Disciplina de esquema (objetos simples donde corresponde; coerción/normalización de tipos).
+* [PENDING] Lista cerrada de campos (ignorar o rechazar campos desconocidos; no “passthrough”).
 * [PENDING] Size fuses para strings controlables por el renderer (texto, nombres/descripciones, meta).
 * [PENDING] Size fuses cubren también entradas de Task Editor (texto, enlace, comentario y payloads de listas/biblioteca).
 * [PENDING] Sender restriction cuando el canal debe pertenecer a una ventana específica.
 * [PENDING] Fallos recuperables devuelven respuesta estructurada `{ ok:false, ... }` y feedback UX cuando aplica.
-* [PENDING] Flujos multi-step sensibles mantienen estado efímero app-owned y no confían en payload reinyectado por renderer (por ejemplo `prepareId` one-shot + TTL + revalidación por fingerprint antes de `execute`).
+* [PENDING] Flujos sensibles de varios pasos mantienen estado temporal propio de la app y no confían en payload reinyectado por renderer (por ejemplo `prepareId` de un solo uso + vencimiento + revalidación antes de `execute`).
 
 Mapa de superficies “de impacto” (completar por release, al menos con los canales relevantes):
 * [PENDING] Clipboard bridge (lectura/escritura si existe): tamaño + control de origen.
@@ -147,10 +140,11 @@ Mapa de superficies “de impacto” (completar por release, al menos con los ca
 * [PENDING] Apertura de enlaces/docs: allowlist + validación + no “open arbitrary”.
 * [PENDING] Task Editor (listas/biblioteca/enlaces): esquema + sender guard + límites + política de apertura de links/paths.
 * [PENDING] Snapshots de texto: validación de esquema + contención de ruta + confirmación de sobreescritura.
-* [PENDING] Import/extract picker + preconditions: `import-extract-open-picker` y `import-extract-check-preconditions` con sender guard de main window y retorno estructurado.
-* [PENDING] Import/extract prepare/execute: `import-extract-prepare-selected-file` y `import-extract-execute-prepared` con validación de payload, prepared-record TTL, fingerprint freshness y route choice acotado.
-* [PENDING] Import/extract processing mode: `import-extract-get-processing-mode` / `import-extract-request-abort` con sender guard y sanitización de meta (`source`/`reason`).
-* [PENDING] OCR activation/disconnect: `import-extract-prepare-ocr-activation`, `import-extract-launch-ocr-activation` e `import-extract-disconnect-ocr` con sender guard, paths resueltos en main y sin scopes/endpoints controlables por renderer.
+* [PENDING] Flujos sensibles de selección/precondiciones usan sender guard de la ventana autorizada y retorno estructurado.
+* [PENDING] Flujos de prepare/execute usan validación de payload, estado temporal propio de la app, vencimiento/revalidación cuando aplique y decisiones acotadas.
+* [PENDING] Flujos de procesamiento activo/cancelación usan sender guard y sanitización de meta/razón cuando aplique.
+* [PENDING] Flujos de activación/conexión/desconexión con servicios externos resuelven rutas, secretos, permisos, endpoints y proveedores en main; renderer no controla esos parámetros.
+* [PENDING] Cualquier nueva superficie de adquisición/importación local o remota usa sender guard, picker/flujo mediado por main, validación estructurada, resolución explícita de duplicados/conflictos cuando aplique y límites consistentes con el modelo de riesgo.
 
 Criterio de bloqueo:
 * Añadir un canal IPC nuevo de impacto sin: whitelist, size fuse y (si aplica) sender guard.
@@ -159,7 +153,7 @@ Evidencia mínima sugerida:
 * Lista de canales IPC “de impacto” y dónde se registran (archivo + referencia aproximada).
 * Para cada canal: shape de request/response y validaciones relevantes.
 * Tabla explícita de cambios IPC respecto al release anterior (canal nuevo/modificado/eliminado + riesgo + veredicto).
-* En este release, incluir explícitamente los canales nuevos/modificados de import/extract/OCR y el archivo de preload donde quedan expuestos.
+* En este release, incluir explícitamente los canales nuevos/modificados de cualquier flujo sensible y el preload/superficie donde quedan expuestos.
 
 ---
 
@@ -196,7 +190,7 @@ Evidencia mínima sugerida:
 ## 7) File boundaries (lectura/escritura) — Ship Gate
 
 Principio:
-* Escrituras persistentes acotadas a storage propio de la app con nombres de archivo conocidos.
+* Escrituras persistentes acotadas a almacenamiento propio de la app con nombres de archivo conocidos.
 * Renderer no aporta rutas arbitrarias a operaciones de I/O del main.
 
 Checklist:
@@ -206,19 +200,16 @@ Checklist:
 * [PENDING] Rutas seleccionadas por diálogos (`save/open`) se normalizan y confinan al root esperado (p. ej. `tasks/lists`, `saved_current_texts`).
 * [PENDING] Lecturas i18n limitadas al árbol `i18n/` y las claves/tags se normalizan.
 * [PENDING] Import/extract acepta rutas de archivos fuente solo desde selección explícita del usuario (picker nativo o `File`/drag-drop ya concedido por el navegador de archivos del sistema) y nunca usa esas rutas como destino de escritura arbitraria.
-* [PENDING] El estado persistido específico de import/extract/OCR permanece app-owned y con rutas fijas:
-  * `config/import_extract_state.json`
-  * `config/ocr_google_drive/credentials.json`
-  * `config/ocr_google_drive/token.json`
-* [PENDING] `config/ocr_google_drive/credentials.json` se materializa/repara desde `electron/assets/ocr_google_drive/credentials.json`; el renderer no importa ni elige un `credentials.json` arbitrario.
-* [PENDING] `config/ocr_google_drive/token.json` se escribe/borrar solo desde main con `safeStorage`; si la plataforma usa backend más débil (por ejemplo `basic_text` en Linux), el riesgo residual queda documentado antes de PASS.
+* [PENDING] Toda persistencia específica de features o sensible permanece bajo control de la app, con rutas fijas declaradas en el inventario vigente del release.
+* [PENDING] Si existe material sensible de runtime (por ejemplo credenciales empaquetadas, tokens locales o estado de activación), su origen, creación, lectura/escritura y exclusión del artefacto/repo quedan documentados según la implementación real.
+* [PENDING] Cualquier nueva superficie con persistencia propia evita escape de ruta desde nombres de archivo, entradas de archivo comprimido o payloads equivalentes.
 
 Criterio de bloqueo:
 * Introducir rutas controladas por renderer para lectura/escritura sin validación estricta y sin rediseño de seguridad.
-* Permitir importación manual arbitraria de credenciales OCR o persistencia de token OCR fuera del storage controlado por la app.
+* Permitir credenciales, tokens o material sensible fuera del almacenamiento controlado por la app o con una política distinta a la documentada para el producto.
 
 Evidencia mínima sugerida:
-* Inventario de archivos persistidos esperados (p. ej. `user_settings.json`, `current_text.json`, `presets_defaults/*`, `tasks/*`, `saved_current_texts/*`, `import_extract_state.json`, `ocr_google_drive/*`) + ubicación base + quién puede escribirlos.
+* Inventario vigente de persistencia (`archivo/subárbol | ubicación base | propósito | quién escribe | controles`) en vez de una lista copiada de otra versión.
 * Enumeración de rutas abiertas por diálogos del sistema (si existen) y cómo se validan.
 
 ---
@@ -250,51 +241,56 @@ Checklist:
 * [PENDING] No existe descarga silenciosa de binarios.
 * [PENDING] No existe ejecución automática de instaladores.
 * [PENDING] No existe auto-update in-app (download/quitAndInstall/etc.).
-* [PENDING] La activación OCR usa navegador del sistema para OAuth; no existe webview/embedded browser para autenticación Google.
-* [PENDING] La ruta OCR usa un scope fijo y mínimo (`drive.file`) y ese scope no es controlable por renderer.
-* [PENDING] Endpoints/proveedor del flujo OCR están fijos al modelo documentado del producto (Google OAuth + Google Drive/Docs); renderer no puede inyectar host, scope o provider alternativo.
-* [PENDING] OCR solo envía a Google archivos elegidos explícitamente por el usuario y la app intenta limpieza remota del documento temporal tras exportar.
-* [PENDING] No existe backend del desarrollador en el medio para OCR ni reenvío de archivos a servicios no documentados.
+* [PENDING] Si existe autenticación contra servicios externos, usa el mecanismo previsto por el producto y no contenido embebido inseguro; renderer no puede redirigir proveedor, host, permiso, endpoint o credenciales.
+* [PENDING] Si existe un flujo conectado que procesa archivos o contenido del usuario, solo envía material elegido explícitamente por el usuario y su política de borrado/retención queda documentada.
+* [PENDING] No existe backend intermedio ni reenvío a servicios no documentados fuera del modelo aprobado del producto.
+* [PENDING] Las aperturas externas y de documentación siguen siendo iniciadas por el usuario, validadas y mediadas por main; esto incluye sitio web, soporte, docs in-app y cualquier enlace externo fijo incorporado por la app.
 
 Riesgo residual (completar si aplica):
 * [PENDING] Si no hay verificación criptográfica propia de artefactos, justificar por qué el modelo de updater no descarga/ejecuta automáticamente.
-* [PENDING] Si el target usa un backend `safeStorage` más débil o si el proveedor OCR responde con fallas de conectividad/cuota/API deshabilitada, registrar el riesgo residual sin degradar el modelo de permisos.
+* [PENDING] Si la plataforma usa un backend de protección local más débil o si un proveedor externo introduce límites o fallas operativas, registrar el riesgo residual sin degradar el modelo de permisos.
 
 Criterio de bloqueo:
 * Cualquier flujo que descargue/ejecute updates dentro de la app sin una revisión de seguridad separada.
-* Cualquier flujo OCR que permita credenciales/scopes/endpoints controlables por renderer o autenticación dentro de contenido embebido.
-* Cualquier flujo OCR que envíe archivos sin acción explícita del usuario o a través de un backend intermedio no documentado.
+* Cualquier flujo conectado que permita credenciales, permisos, endpoints o proveedores controlables por renderer, o autenticación dentro de contenido embebido.
+* Cualquier flujo conectado que envíe archivos/contenido sin acción explícita del usuario o a través de un backend intermedio no documentado.
 
 Evidencia mínima sugerida:
 * Endpoint usado + decisión de UX + confirmación de que no existe auto-update.
 * Referencias de código del handler IPC y del flujo de confirmación UX.
-* Para OCR: referencias al scope fijo, flujo `authenticate(...)`, validación de setup y limpieza remota best-effort.
+* Para flujos conectados: referencias a autenticación, permisos, validación de setup, política de envío de contenido y borrado/retención cuando aplique.
 
 ---
 
-## 10) Release hygiene (repo + configuración de release) — Ship Gate
+## 10) Higiene de distribución (repo + configuración) — Ship Gate
 
 Este bloque es relevante para seguridad de distribución porque controla supply-chain accidental (secrets, material dev, artefactos no intencionados) y configuración de build.
 
 Checklist:
-* [PENDING] Secret hygiene:
+* [PENDING] Hygiene de secretos:
   * No hay llaves/tokens/credenciales hardcodeadas (incluye `.env`, tokens en JS, URLs con credenciales, etc.).
   * No hay archivos de volcado/logs de desarrollo con datos sensibles versionados.
   * Si se detecta un secreto: incidente y bloquea publicación hasta rotación/remoción.
-  * Tratar `electron/assets/ocr_google_drive/credentials.json` como material app-owned controlado del release: no committed en git, no editable por renderer, y con trazabilidad explícita en revisión.
-  * `config/ocr_google_drive/token.json` nunca pertenece al repo ni al artefacto empaquetado final.
+  * Cualquier material sensible empaquetado o creado por la app se trata como material controlado del release: no editable por renderer, con trazabilidad clara de ruta/origen/política repo+artefacto en la revisión y con verificación de coherencia con la política vigente del producto.
+  * Cualquier token/credencial mutable de usuario nunca pertenece al repo ni al artefacto empaquetado final.
 
 * [PENDING] Packaging excludes (política “no arrastrar dev”):
   * La configuración de empaquetado usa allowlist estricta de runtime (`build.files`) o excludes explícitos equivalentes.
   * Quedan fuera directorios no distribuibles (mínimo: `tools_local/` y equivalentes).
   * Excluye backups, evidence folders, scripts internos que no sean runtime.
-  * Excluye cualquier token OCR mutable de usuario y cualquier volcado/debug output del flujo import/extract/OCR.
+  * Excluye cualquier token/credencial mutable de usuario y cualquier volcado/debug output de flujos sensibles.
 
 * [PENDING] External-link allowlist coherente con canales públicos:
-  * Si el release modifica enlaces públicos (sitio web, contacto, redes, docs in-app), verificar que `electron/link_openers.js` mantenga política de mínimo privilegio.
+  * Si el release modifica enlaces públicos (sitio web, contacto, redes, docs in-app), verificar que la implementación efectiva mantenga política de mínimo privilegio.
   * `https` solo para hosts explícitamente allowlistados.
   * `mailto` solo para direcciones explícitamente allowlistadas.
   * Si no hay cambios de enlaces/hosts en el release, dejar evidencia breve de “no delta”.
+
+* [PENDING] Alineación documental / anti-drift:
+  * No hay drift entre la postura de seguridad implementada y la documentación user-facing relevante (`PRIVACY.md`, documentación informativa in-app, disclosures de flujos sensibles y `website/public/**` si aplica al release).
+  * No hay drift entre esa postura implementada y la documentación interna relevante (`docs/releases/security_baseline.md`, `docs/releases/release_checklist.md`, `docs/releases/legal_baseline.md` cuando comparta postura de privacidad/enlaces/servicios, `docs/tree_folders_files.md`, `CHANGELOG.md`, `docs/changelog_detailed.md`, `docs/test_suite.md` cuando cambien checks o flujos).
+  * La plantilla reusable evita fijar versiones o inventarios mutables cuando basta con referirse a la fuente de verdad actual; los valores exactos quedan en el baseline versionado y en la evidencia del artefacto.
+  * Si se detecta divergencia entre implementación y docs, registrar delta + plan de cierre antes de PASS.
 
 * [PENDING] DevTools / Debug hooks (política para build distribuible):
   * En build empaquetado: DevTools **no se abre automáticamente**.
@@ -309,14 +305,14 @@ Criterio de bloqueo:
 * Cualquier secreto encontrado en repo o incluido por build.
 * `tools_local/` (o equivalentes) no excluido por configuración antes de empaquetar.
 * Build empaquetado configurado para abrir DevTools automáticamente o dejar debug hooks no intencionales.
+* Claims de seguridad/privacidad/conectividad en documentación user-facing o interna que contradicen la implementación real del release.
 
 Evidencia mínima sugerida:
 * Comandos/outputs usados para verificar (p. ej. grep de secretos, inspección de config build, etc.).
 * Resumen de archivos efectivamente incluidos por configuración de empaquetado.
-* En releases con import/extract/OCR, evidencia específica sobre:
-  * presencia esperada de `electron/assets/ocr_google_drive/credentials.json` como material controlado,
-  * ausencia de `config/ocr_google_drive/token.json` en repo y en packaging input,
-  * y dependencias runtime nuevas (`@google-cloud/local-auth`, `googleapis`, `mammoth`, `pdf-parse`, `sharp`, `adm-zip` y runtime nativo asociado cuando aplique).
+* Matriz anti-drift `claim/superficie | implementación/fuente de verdad | doc user-facing | doc interna | estado`.
+* En releases con material sensible empaquetado o materializado, evidencia específica sobre su presencia/ausencia esperada, su política repo+artefacto y la exclusión de tokens/credenciales mutables de usuario.
+* En releases que agreguen nuevas dependencias runtime o nuevas superficies de adquisición/importación/conexión, evidencia específica sobre rutas/runtime nuevos, validación/contención de entradas y política efectiva de destinos/hosts/permissions permitidos cuando aplique.
 
 ---
 
@@ -338,14 +334,7 @@ Checklist:
   * Enumerar `resources/app.asar/node_modules` o ruta equivalente y registrar nombres + versiones.
   * Resultado (pegar debajo):
     * `<TBD: lista exacta o “no hay node_modules en artefacto”>`
-  * En el baseline actual, verificar explícitamente la presencia/ausencia esperada de:
-    * `@google-cloud/local-auth`
-    * `googleapis`
-    * `mammoth`
-    * `pdf-parse`
-    * `sharp`
-    * `adm-zip`
-    * y el runtime nativo de `sharp` correspondiente a la plataforma empaquetada
+  * Verificar explícitamente la presencia/ausencia esperada de dependencias runtime sensibles, nativas o recientemente introducidas según el inventario vigente del producto.
 
 * [PENDING] Sanity check de vulnerabilidades sobre dependencias runtime (mínimo: ausencia de CVEs críticas conocidas en deps incluidas o justificación/mitigación si existen).
 
@@ -361,25 +350,25 @@ Checklist:
   * Confirmar que solo incluye lo esperado (app + recursos + runtime).
   * Confirmar ausencia de archivos sensibles (tokens, llaves, `.env`, dumps, logs de dev).
   * Confirmar ausencia de material de desarrollo no intencionado (herramientas locales, evidence folders, backups).
-  * Confirmar que las páginas renderer incluidas corresponden al set esperado (main/editor/task_editor/preset/language/flotante/info u otras explícitamente aprobadas).
-  * Confirmar tratamiento correcto del material import/extract/OCR:
-    * presencia esperada de `electron/assets/ocr_google_drive/credentials.json` según el baseline actual del producto,
-    * ausencia de `config/ocr_google_drive/token.json` u otro token OCR mutable de usuario,
-    * presencia solo de los módulos runtime esperados del flujo import/extract/OCR.
+  * Confirmar que las páginas/superficies renderer incluidas corresponden al inventario esperado del producto.
+  * Confirmar tratamiento correcto de material sensible y dependencias runtime específicas:
+    * presencia/ausencia coherente con el baseline actual del producto,
+    * ausencia de tokens/credenciales mutables de usuario,
+    * presencia solo de módulos/runtime específicos esperados para las features habilitadas.
 
 * [PENDING] Smoke “renderer containment” sobre el artefacto:
   * Confirmar que renderer no expone Node (`window.require` / `window.process`).
   * Confirmar que funcionalidades principales operan sin pedir permisos no esperados.
   * Confirmar que navegación externa no controlada queda bloqueada (solo flujos permitidos vía main/allowlist).
-  * Confirmar que import/extract/OCR funciona bajo el mismo modelo de aislamiento:
-    * picker y OAuth salen por diálogos/sistema operativo, no por permisos directos de renderer,
-    * renderer no puede redirigir el provider OCR ni abrir destinos externos fuera del flujo permitido.
+  * Confirmar que los flujos sensibles/conectados funcionan bajo el mismo modelo de aislamiento:
+    * selección de archivos, autenticación o interacciones equivalentes salen por diálogos/sistema operativo o mecanismos explícitamente aprobados, no por permisos directos de renderer,
+    * renderer no puede redirigir providers, destinos o permisos fuera del flujo permitido.
 
 Criterio de bloqueo:
 * Cualquier hallazgo de material dev/sensible dentro del artefacto.
 * Inclusión de páginas renderer/HTML no esperadas (no revisadas) en el artefacto.
 * Señales de escalamiento renderer→Node (existencia de `window.require`/`window.process` en renderer).
-* Inclusión de token OCR mutable de usuario en el artefacto o tratamiento incorrecto del material OCR empaquetado respecto al baseline del producto.
+* Inclusión de tokens/credenciales mutables de usuario en el artefacto o tratamiento incorrecto de material sensible respecto al baseline del producto.
 
 Evidencia mínima sugerida:
 * Evidencia de inspección (lista de archivos o capturas del árbol) + prueba mínima de “no Node en renderer”.
@@ -388,8 +377,8 @@ Evidencia mínima sugerida:
 
 ## 13) Resultado final (cómo cerrar el veredicto)
 
-La app queda marcada como **“suficientemente segura para distribuir este release”** únicamente cuando:
-* Ship Gate: todo PASS (incluye runtime security posture + release hygiene), y
+La app queda marcada como **“suficientemente segura para distribuir el artefacto evaluado”** únicamente cuando:
+* Ship Gate: todo PASS (incluye runtime security posture + higiene de distribución), y
 * Post-packaging Gate: todo PASS (incluyendo dependencias runtime listadas y revisadas).
 
 Veredicto final: `<PASS/BLOCKER>`  
