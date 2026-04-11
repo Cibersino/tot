@@ -639,6 +639,27 @@ function dispatchNativeInputEvent() {
   }
 }
 
+function restorePreviousActiveElement(prevActive, warnKey) {
+  try {
+    if (prevActive && prevActive !== editor) prevActive.focus();
+  } catch (err) {
+    log.warnOnce(warnKey, 'prevActive.focus() failed (ignored):', err);
+  }
+}
+
+function replaceEditorValueHidden(nextValue) {
+  try {
+    editor.style.visibility = 'hidden';
+    editor.value = nextValue;
+    dispatchNativeInputEvent();
+  } catch {
+    editor.value = nextValue;
+    dispatchNativeInputEvent();
+  } finally {
+    editor.style.visibility = '';
+  }
+}
+
 function handleTextTransferInsert(ev, transferConfig) {
   const source = transferConfig && transferConfig.source ? transferConfig.source : 'transfer';
   const noTextAlertKey = transferConfig && transferConfig.noTextAlertKey
@@ -745,23 +766,12 @@ async function applyExternalUpdate(payload) {
               editor.value = editor.value + toInsert;
               dispatchNativeInputEvent();
             } finally {
-              try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-              catch (err) { log.warnOnce('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
+              restorePreviousActiveElement(prevActive, 'focus.prevActive.append_newline.native');
             }
             return;
           } else {
-            try {
-              editor.style.visibility = 'hidden';
-              editor.value = newText;
-              dispatchNativeInputEvent();
-            } catch {
-              editor.value = newText;
-              dispatchNativeInputEvent();
-            } finally {
-              editor.style.visibility = '';
-              try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-              catch (err) { log.warnOnce('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
-            }
+            replaceEditorValueHidden(newText);
+            restorePreviousActiveElement(prevActive, 'focus.prevActive.append_newline.full');
             if (truncated) {
               notifyTextTruncated()
             }
@@ -790,26 +800,15 @@ async function applyExternalUpdate(payload) {
             editor.value = newText;
             dispatchNativeInputEvent();
           } finally {
-            try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { log.warnOnce('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
+            restorePreviousActiveElement(prevActive, 'focus.prevActive.main.native');
           }
           if (truncated) {
             notifyTextTruncated()
           }
           return;
         } else {
-          try {
-            editor.style.visibility = 'hidden';
-            editor.value = newText;
-            dispatchNativeInputEvent();
-          } catch {
-            editor.value = newText;
-            dispatchNativeInputEvent();
-          } finally {
-            editor.style.visibility = '';
-            try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { log.warnOnce('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
-          }
+          replaceEditorValueHidden(newText);
+          restorePreviousActiveElement(prevActive, 'focus.prevActive.main.full');
           if (truncated) {
             notifyTextTruncated()
           }
@@ -818,16 +817,7 @@ async function applyExternalUpdate(payload) {
       }
 
       // fallback
-      try {
-        editor.style.visibility = 'hidden';
-        editor.value = newText;
-        dispatchNativeInputEvent();
-      } catch {
-        editor.value = newText;
-        dispatchNativeInputEvent();
-      } finally {
-        editor.style.visibility = '';
-      }
+      replaceEditorValueHidden(newText);
       if (truncated) {
         notifyTextTruncated()
       }
