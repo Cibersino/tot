@@ -1,122 +1,110 @@
-# Release checklist
+# Checklist operativo de release
 
-Checklist mecánico para preparar y publicar una nueva versión.
+Este documento responde una sola pregunta: `¿este release está listo para publicarse?`
 
-Fecha: `<YYYY-MM-DD>`
-Tag objetivo (GitHub): `v<MAJOR.MINOR.PATCH>`
-Commit freeze (Git): `<SHA_COMMIT>`
-Artefacto inspeccionado: `<ZIP/INSTALLER>`
-SHA256(artefacto): `<SHA256>`
+La plantilla reusable debe contener solo requisitos estables del proceso.  
+Todo dato mutable de un release concreto debe vivir en su documento versionado:
+`docs/releases/<release-id>/release_checklist_<release_file_id>.md`
+Aquí, `<release_file_id>` significa el identificador del release normalizado para nombre de archivo.
 
-## 0. Regla de versión (SemVer)
-* Usar SemVer estricto: `MAJOR.MINOR.PATCH`.
-* Si aplica pre-release: `-alpha.N`, `-beta.N`, `-rc.N` (sobre base `MAJOR.MINOR.PATCH`).
-* Tag de release obligatorio en GitHub: `vX.Y.Z` (p. ej. `v0.1.0`), o `vX.Y.Z-rc.N` si aplica.
+## Reglas de mantenimiento
 
-## 1. Tracker (GitHub Issues), milestone y Roadmap
-* [ ] GitHub Issues: revisar el milestone `X.Y.Z`:
-  * [ ] Issues resueltos: cerrar (idealmente referenciando commit/PR si existe).
-  * [ ] Issues no resueltos: mover al próximo milestone (p. ej. `X.Y.(Z+1)` o `X.(Y+1).0`).
-  * [ ] Labels mínimos:
-    * [ ] Cada `bug` tiene `area:*` y severidad `S0–S3`.
-    * [ ] Quitar `status:needs-triage` si ya hay repro/confirmación y clasificación suficiente.
-* [ ] Roadmap (GitHub Project “toT Roadmap”):
-  * [ ] Vista por milestone: filtrar por `X.Y.Z` (o equivalente) y verificar consistencia con el milestone del repo.
-  * [ ] Para cada Issue del release:
-    * [ ] `Status`: dejar en estado final (p. ej. Done) si se cerró, o mover fuera del release si se postergó.
-    * [ ] Si el Issue cambió de milestone, reflejar el cambio también en el Project (mismo milestone/campo).
-  * [ ] No dejar Issues “fantasma”: todo Issue relevante del release debe estar en el Project (si no, agregarlo).
-* Nota: `ToDo.md` es un stub fijo que apunta al Project; no se usa para mantener estado.
+- No registrar aquí versiones exactas, hashes, hosts, rutas internas cambiantes, resultados de comandos ni evidencia de un release específico.
+- Si un release requiere una excepción de una sola vez, documentarla solo en el documento versionado del release.
+- Si cambia el proceso base del producto, primero cerrar el release en el documento versionado y luego actualizar esta plantilla.
+- Los tres documentos versionados del release deben apuntar al mismo `release-id`, al mismo `commit freeze` y al mismo conjunto de artefactos inspeccionados.
 
-## 2. Documentación del release (antes del freeze)
+## Campos mínimos del release versionado
 
-### 2.1 Preparación del changelog
-* [ ] `docs/changelog_detailed.md`: reflejar el release `X.Y.Z` con detalle.
-* [ ] `CHANGELOG.md`: reflejar el release `X.Y.Z` con resumen.
-* [ ] La fecha `YYYY-MM-DD` del release debe ser consistente entre `CHANGELOG.md` y `docs/changelog_detailed.md`.
+- Fecha de ejecución: `<YYYY-MM-DD>`
+- Release ID: `<release-id>`
+- Tag público: `<tag>`
+- Commit freeze: `<sha>`
+- Artefactos inspeccionados: `<artifacto-1>, <artifacto-2>`
+- Hashes de artefacto: `<sha256>`
+- Referencia base para comparar delta: `<tag|release-id|commit>`
+- Veredicto final: `<PASS | BLOCKER | PENDING>`
 
-Nota: diff útil para generar changelog (excluye `docs/`)
-```pwsh
-mkdir tools_local\diffs -Force | Out-Null
-$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-# Base por defecto: último tag. (Si no hay tags aún, usar manualmente un base apropiado.)
-$base = (git describe --tags --abbrev=0)
-$outFile = "tools_local/diffs/changes_since_$base-$stamp.diff"
-git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
-```
+## 1. Criterio de cierre
 
-### 2.2 Documentación pública y de apoyo
+- [ ] Existe carpeta `docs/releases/<release-id>/` para este release.
+- [ ] Existen los tres documentos versionados del release.
+- [ ] El baseline versionado de seguridad termina en `PASS`.
+- [ ] El baseline versionado legal termina en `PASS`.
+- [ ] El checklist versionado de release termina en `PASS`.
+- [ ] El artefacto publicado es exactamente el artefacto inspeccionado por los tres documentos.
+- [ ] Si cambia el `commit freeze` o se reempaqueta el build, se vuelven a ejecutar los tres documentos versionados.
 
-* [ ] `README.md`: verificar que no quede desactualizado.
-* [ ] `public/info/instrucciones.*.html`: verificar que no queden desactualizados.
-* [ ] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
-* [ ] `website/public/`: verificar que el sitio público no quede desalineado con el release.
+## 2. Inventarios obligatorios del release
 
-### 2.3 Gate de alineación del sitio web (obligatorio en cada release)
+- [ ] Identidad del release cerrada.
+Registro requerido en el documento versionado: fuente de verdad de versión, tag, commit freeze, plataformas y arquitecturas objetivo, nombres exactos de artefacto, hashes, canal de publicación y relación entre release ID y tag público.
 
-* [ ] Verificar `https://totapp.org/es/` y `https://totapp.org/en/` (o preview equivalente del commit):
-  * [ ] Carga correcta sin errores visibles.
-* [ ] Privacidad/Cookies del sitio:
-  * [ ] Rutas vigentes: `/privacy-cookies/`, `/es/privacy-cookies/`, `/en/privacy-cookies/`.
-* [ ] Descargas:
-  * [ ] CTA del SO apunta al artefacto estable correcto del release vigente.
-  * [ ] Fallback manual a `https://github.com/Cibersino/tot/releases/latest` funciona.
-* [ ] Enlaces externos del sitio:
-  * [ ] Redes/social/support vigentes (Patreon, Instagram, X, YouTube, Twitch) y sin enlaces rotos.
+- [ ] Delta del release cerrado.
+Registro requerido en el documento versionado: funcionalidades nuevas, modificadas, retiradas, corregidas o postergadas; riesgos aceptados; issues o follow-ups abiertos; y referencia exacta usada para comparar contra el release anterior.
 
-## 3. Alinear la versión (freeze justo antes del empaquetado)
+- [ ] Inventario de build y packaging cerrado.
+Registro requerido en el documento versionado: comandos usados para generar el build, archivos/configuración de packaging tocados, dependencias runtime cambiadas, diferencias relevantes de contenido empaquetado y cualquier cambio de plataforma o formato de artefacto.
 
-* [ ] `package.json`: `"version": "X.Y.Z"` (fuente de verdad; `app.getVersion()`).
-* [ ] `package-lock.json`: consistente con `package.json` (actualizar/regenerar según flujo del repo: npm install).
-* [ ] Confirmar que `tools_local/` (y equivalentes) no está tracked ni entró al commit del release.
-* [ ] Working tree limpio (sin cambios locales).
-* [ ] Commit final del release creado antes de empaquetar.
-  * Commit: `<HASH>`
+- [ ] Inventario de validación cerrado.
+Registro requerido en el documento versionado: suites automáticas corridas, smoke/regression manual ejecutado, alcance real cubierto, issues encontrados, issues aceptados y criterio por el cual no bloquean publicación.
 
-* Nota: Este commit, desde el cual se genearará el artefacto, será el que se utilice para el tag del release.
+- [ ] Inventario documental cerrado.
+Registro requerido en el documento versionado: cambios o `sin delta` para `CHANGELOG.md`, `docs/changelog_detailed.md`, `README.md`, `PRIVACY.md`, `public/info/**`, `website/public/**`, `docs/tree_folders_files.md` y cualquier otra superficie user-facing o interna que el release haya tocado.
 
-## 4. Packaging (generar artefacto final)
+- [ ] Inventario de publicación cerrado.
+Registro requerido en el documento versionado: GitHub Release, notas públicas, adjuntos, cambios en sitio web o descargas, milestone, roadmap/project y estado final de los issues del release.
 
-* [ ] Generar el artefacto final (ZIP/installer) desde el estado freeze.
-* [ ] Registrar identificador del artefacto final:
-  * Nombre exacto: `<TBD>`
-* [ ] Sanity: ejecutar la app desde el artefacto empaquetado (modo “packaged”, no `npm start`).
+## 3. Preparación antes del freeze
 
-## 5. Baseline de seguridad
+- [ ] El scope del release está cerrado contra milestone, roadmap y issues relevantes.
+- [ ] `CHANGELOG.md` y `docs/changelog_detailed.md` describen el delta real del release.
+- [ ] La documentación user-facing e interna tocada por el release está actualizada o el release deja constancia explícita de `sin delta`.
+- [ ] `package.json` refleja la versión que se pretende publicar.
+- [ ] `package-lock.json` está alineado con `package.json` cuando el release cambia versión o dependencias.
+- [ ] Cualquier cambio relevante en `README.md`, `PRIVACY.md`, `public/info/**`, `website/public/**` o `docs/tree_folders_files.md` ya quedó resuelto antes del freeze o está clasificado como blocker.
+- [ ] El working tree y el estado de la rama quedan registrados de forma consistente con el release que se quiere empaquetar.
 
-* [ ] `docs/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:
-  * [ ] Ship Gate: todo `[PASS]`.
-  * [ ] Post-packaging Gate: ejecutado sobre el artefacto final y todo `[PASS]`.
-  * [ ] Si queda `[PENDING]` o `[BLOCKER]`: no publicar.
+## 4. Freeze y build
 
-## 6. Baseline legal (licencias/redistribución)
+- [ ] Existe un `commit freeze` explícito y registrado.
+- [ ] El build se genera desde el `commit freeze`, no desde un árbol local ambiguo.
+- [ ] Los comandos reales de build quedan registrados en el documento versionado.
+- [ ] Cada artefacto generado queda identificado por nombre exacto y hash.
+- [ ] El release registra si hubo un solo artefacto o más de uno y cuál de ellos fue inspeccionado.
+- [ ] Si el build depende de material controlado o archivos no versionados, ese hecho queda inventariado en los baselines legal y de seguridad del release.
 
-* [ ] `docs/legal_baseline.md`: ejecutar el baseline sobre el artefacto final y asegurar veredicto consistente:
-  * [ ] Ship Gate: completado y en `PASS` (inventarios + documentos requeridos).
-  * [ ] Post-packaging Gate: ejecutado sobre el artefacto final y en `PASS` (contenido, deps runtime, docs, servicios).
-  * [ ] Si queda `PENDING` o `BLOCKER`: no publicar.
+## 5. Validación del release
 
-## 7. Manual test gate (sobre el build empaquetado)
+- [ ] La app empaquetada se ejecuta al menos una vez en modo `packaged`.
+- [ ] Las pruebas automáticas relevantes para el delta se ejecutan antes de publicar.
+- [ ] La validación manual se corre contra el artefacto empaquetado usando `docs/test_suite.md` según el nivel de riesgo del release.
+- [ ] Todo issue encontrado durante la validación queda clasificado como `blocker`, `aceptado para este release` o `postergado`, con referencia concreta.
+- [ ] Los baselines versionados de seguridad y legal se ejecutan sobre el artefacto final, no sobre uno preliminar.
 
-* [ ] Corre **Release smoke** desde `docs/test_suite.md` (SM-01 … SM-10) y registra resultados (Pass/Fail + notes + issue links).
-* [ ] Si hay cambios de alto riesgo, corre **Full regression** desde `docs/test_suite.md`.
+## 6. Publicación y cierre
 
-## 8. Publicación (GitHub tag + release + cierre)
+- [ ] El tag público apunta al `commit freeze`.
+- [ ] La GitHub Release usa el mismo tag y los mismos artefactos inspeccionados.
+- [ ] Las release notes públicas son coherentes con `CHANGELOG.md`.
+- [ ] El sitio web y/o las rutas de descarga públicas se actualizan cuando el release lo requiere, o el documento versionado deja constancia explícita de `sin delta`.
+- [ ] Milestone, roadmap/project e issues del release quedan reconciliados al cerrar la publicación.
+- [ ] Los tres documentos versionados del release quedan guardados en `docs/releases/<release-id>/`.
+- [ ] Cualquier riesgo residual aceptado queda consignado como follow-up explícito y no como texto abierto o ambiguo.
 
-* [ ] GitHub tag del release: `vX.Y.Z` (prefijo `v` obligatorio) apuntando al commit del freeze.
-* [ ] Publicar GitHub Release `vX.Y.Z` (Latest si corresponde) y adjuntar el artefacto final.
-* [ ] Release notes: usar el resumen de `CHANGELOG.md` (y/o link explícito a `docs/changelog_detailed.md`).
-* [ ] Cerrar el milestone `X.Y.Z` al publicar el release (y crear el siguiente si corresponde).
+## 7. No publicar si ocurre cualquiera
 
-## 9. Documentación del release (commit/PR)
+- `security_baseline` o `legal_baseline` del release no llegan a `PASS`.
+- El tag, el `commit freeze` y el artefacto final no coinciden entre sí.
+- Falta cualquier inventario obligatorio del release.
+- El changelog y las notas públicas no representan el delta real del release.
+- El build publicado no es el mismo que fue validado.
+- Existe un blocker abierto en pruebas, packaging, seguridad o legalidad.
 
-Guardar la documentación específica del release en `docs/releases/<X.Y.Z>/`.  
-**No es gate de publicación** (puede mergearse antes o después del release).
+## 8. Cierre del veredicto
 
-* [ ] Agregar:
-  * [ ] `docs/releases/<X.Y.Z>/release_checklist_<X_Y_Z>.md`
-  * [ ] `docs/releases/<X.Y.Z>/security_baseline_<X_Y_Z>.md`
-  * [ ] `docs/releases/<X.Y.Z>/legal_baseline_<X_Y_Z>.md`
-* [ ] En los 3 docs registrar: `tag vX.Y.Z`, `SHA commit freeze`, nombre del artefacto, `SHA256` del artefacto.
+El release queda en `PASS` únicamente cuando:
 
-* [ ] Commits en rama (no `main`) + PR + merge a `main`.
+- Los tres documentos versionados están completos y consistentes entre sí.
+- El mismo conjunto de artefactos fue validado por release, legal y seguridad.
+- No queda ningún blocker abierto para publicación.
