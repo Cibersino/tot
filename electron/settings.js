@@ -11,7 +11,8 @@
 // - Keep language tags consistent (normalize language tag + base language).
 // - Ensure numberFormatting[langBase] exists (from i18n/<lang>/numberFormat.json or safe defaults).
 // - Provide a small state API (init/getSettings/saveSettings) backed by an in-memory cache.
-// - Register IPC handlers (get-settings, set-language, set-mode-conteo, set-selected-preset) and broadcast settings-updated.
+// - Register IPC handlers (get-settings, set-language, set-mode-conteo, set-selected-preset,
+//   set-spellcheck-enabled, set-editor-font-size-px) and broadcast settings-updated.
 // - Apply a logged fallback language when the language modal closes without a selection.
 // =============================================================================
 
@@ -522,6 +523,8 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - set-language
  * - set-mode-conteo
  * - set-selected-preset
+ * - set-spellcheck-enabled
+ * - set-editor-font-size-px
  */
 function registerIpc(
   ipcMain,
@@ -533,6 +536,17 @@ function registerIpc(
 ) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
+  }
+
+  function publishSettingsUpdated(settings, windows) {
+    try {
+      if (typeof onSettingsUpdated === 'function') {
+        onSettingsUpdated(settings);
+      }
+    } catch (err) {
+      log.warn('onSettingsUpdated callback failed (ignored):', err);
+    }
+    broadcastSettingsUpdated(settings, windows);
   }
 
   // get-settings: returns the current settings object (normalized)
@@ -548,17 +562,6 @@ function registerIpc(
       return normalizeSettings(createDefaultSettings(DEFAULT_LANG));
     }
   });
-
-  function publishSettingsUpdated(settings, windows) {
-    try {
-      if (typeof onSettingsUpdated === 'function') {
-        onSettingsUpdated(settings);
-      }
-    } catch (err) {
-      log.warn('onSettingsUpdated callback failed (ignored):', err);
-    }
-    broadcastSettingsUpdated(settings, windows);
-  }
 
   // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
