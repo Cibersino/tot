@@ -421,14 +421,15 @@ function getSettings() {
  */
 function saveSettings(nextSettings) {
   if (!nextSettings) return getSettings();
+  if (!_saveJson || !_settingsFile) {
+    throw new Error('[settings] saveSettings called before init');
+  }
 
   const normalized = normalizeSettings(nextSettings);
   _currentSettings = normalized;
 
   try {
-    if (_saveJson && _settingsFile) {
-      _saveJson(_settingsFile, normalized);
-    }
+    _saveJson(_settingsFile, normalized);
   } catch (err) {
     log.errorOnce(
       'settings.saveSettings.persist',
@@ -526,18 +527,58 @@ function registerIpc(
   }
 
   function publishSettingsUpdated(settings, windows) {
-    try {
-      if (typeof onSettingsUpdated === 'function') {
+    if (typeof onSettingsUpdated !== 'function') {
+      log.warnOnce(
+        'settings.onSettingsUpdated.unavailable',
+        'onSettingsUpdated callback unavailable; settings callback publish skipped.'
+      );
+    } else {
+      try {
         onSettingsUpdated(settings);
+      } catch (err) {
+        log.warn('onSettingsUpdated callback failed (ignored):', err);
       }
-    } catch (err) {
-      log.warn('onSettingsUpdated callback failed (ignored):', err);
     }
     broadcastSettingsUpdated(settings, windows);
   }
 
   function resolveWindows() {
-    return typeof getWindows === 'function' ? getWindows() : {};
+    if (typeof getWindows !== 'function') {
+      log.warnOnce(
+        'settings.getWindows.unavailable',
+        'getWindows unavailable; window-targeted updates skipped.'
+      );
+      return {};
+    }
+
+    try {
+      const windows = getWindows();
+      if (!windows || typeof windows !== 'object') {
+        log.warnOnce(
+          'settings.getWindows.invalid',
+          'getWindows returned no windows object; window-targeted updates skipped.'
+        );
+        return {};
+      }
+      return windows;
+    } catch (err) {
+      log.warnOnce(
+        'settings.getWindows.failed',
+        'getWindows failed (window-targeted updates skipped):',
+        err
+      );
+      return {};
+    }
+  }
+
+  function hideWindowMenu(win, name) {
+    if (!win || win.isDestroyed()) return;
+    try {
+      win.setMenu(null);
+      win.setMenuBarVisibility(false);
+    } catch (err) {
+      log.warn('hide window menu failed (ignored):', name, err);
+    }
   }
 
   // get-settings: returns the current settings object (normalized)
@@ -577,7 +618,12 @@ function registerIpc(
       const windows = resolveWindows();
 
       // Rebuild the app menu using the new language (best-effort).
-      if (typeof buildAppMenu === 'function') {
+      if (typeof buildAppMenu !== 'function') {
+        log.warn(
+          'buildAppMenu unavailable; menu rebuild skipped.',
+          { type: typeof buildAppMenu }
+        );
+      } else {
         try {
           buildAppMenu(menuLang);
         } catch (err) {
@@ -586,36 +632,12 @@ function registerIpc(
       }
 
       // Hide the toolbar/menu in secondary windows (best-effort).
-      try {
-        const { editorWin, editorFindWin, presetWin, langWin, taskEditorWin } = windows;
-
-        if (editorWin && !editorWin.isDestroyed()) {
-          editorWin.setMenu(null);
-          editorWin.setMenuBarVisibility(false);
-        }
-
-        if (editorFindWin && !editorFindWin.isDestroyed()) {
-          editorFindWin.setMenu(null);
-          editorFindWin.setMenuBarVisibility(false);
-        }
-
-        if (presetWin && !presetWin.isDestroyed()) {
-          presetWin.setMenu(null);
-          presetWin.setMenuBarVisibility(false);
-        }
-
-        if (langWin && !langWin.isDestroyed()) {
-          langWin.setMenu(null);
-          langWin.setMenuBarVisibility(false);
-        }
-
-        if (taskEditorWin && !taskEditorWin.isDestroyed()) {
-          taskEditorWin.setMenu(null);
-          taskEditorWin.setMenuBarVisibility(false);
-        }
-      } catch (err) {
-        log.warn('hide menu in secondary windows failed (ignored):', err);
-      }
+      const { editorWin, editorFindWin, presetWin, langWin, taskEditorWin } = windows;
+      hideWindowMenu(editorWin, 'editorWin');
+      hideWindowMenu(editorFindWin, 'editorFindWin');
+      hideWindowMenu(presetWin, 'presetWin');
+      hideWindowMenu(langWin, 'langWin');
+      hideWindowMenu(taskEditorWin, 'taskEditorWin');
 
       publishSettingsUpdated(settings, windows);
 
