@@ -66,11 +66,15 @@ if (typeof window.editorAPI.onForceClear !== 'function') {
 // =============================================================================
 (async () => {
   try {
-    const cfg = await window.editorAPI.getAppConfig();
-    if (AppConstants && typeof AppConstants.applyConfig === 'function') {
-      maxTextChars = AppConstants.applyConfig(cfg);
-    } else if (cfg && cfg.maxTextChars) {
-      maxTextChars = Number(cfg.maxTextChars) || maxTextChars;
+    if (typeof window.editorAPI.getAppConfig !== 'function') {
+      log.warn('BOOTSTRAP: editorAPI.getAppConfig missing; using defaults.');
+    } else {
+      const cfg = await window.editorAPI.getAppConfig();
+      if (AppConstants && typeof AppConstants.applyConfig === 'function') {
+        maxTextChars = AppConstants.applyConfig(cfg);
+      } else if (cfg && cfg.maxTextChars) {
+        maxTextChars = Number(cfg.maxTextChars) || maxTextChars;
+      }
     }
   } catch (err) {
     log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
@@ -571,7 +575,7 @@ function handleTruncationResponse(resPromise) {
           notifyTextTruncated();
         }
       }).catch((err) => {
-        log.error('Error handling truncated response:', err);
+        log.error('setCurrentText response handling failed:', err);
       });
     }
   } catch (err) {
@@ -953,7 +957,11 @@ editor.addEventListener('input', () => {
     if (calcWhileTyping && calcWhileTyping.checked) {
       debounceTimer = setTimeout(() => {
         sendCurrentTextToMain('typing', {
-          onFallbackError: (err) => log.error('Error sending set-current-text typing:', err)
+          onFallbackError: (err) => log.errorOnce(
+            'editor.setCurrentText.typing.fallback',
+            'Error sending set-current-text typing:',
+            err
+          )
         });
       }, DEBOUNCE_MS);
     }
