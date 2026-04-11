@@ -1227,9 +1227,6 @@ async function runStartupOrchestrator() {
   }
 }
 
-armIpcSubscriptions();
-setupToggleModoPreciso();
-
 // =============================================================================
 // Info modal
 // =============================================================================
@@ -1251,21 +1248,23 @@ function closeInfoModal() {
   }
 }
 
-if (infoModalClose) infoModalClose.addEventListener('click', closeInfoModal);
-if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', closeInfoModal);
-
 function focusInfoModalContent() {
   if (infoModalContent && typeof infoModalContent.focus === 'function') {
     infoModalContent.focus();
   }
 }
 
-window.addEventListener('keydown', (ev) => {
-  if (!infoModal) return;
-  if (ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') {
-    closeInfoModal();
-  }
-});
+function bindInfoModalUi() {
+  if (infoModalClose) infoModalClose.addEventListener('click', closeInfoModal);
+  if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', closeInfoModal);
+
+  window.addEventListener('keydown', (ev) => {
+    if (!infoModal) return;
+    if (ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') {
+      closeInfoModal();
+    }
+  });
+}
 
 async function fetchText(path) {
   try {
@@ -1599,137 +1598,141 @@ async function showInfoModal(key) {
 // Top bar menu actions
 // =============================================================================
 // menu_actions.js must be loaded before renderer.js
-if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
-  const registerMenuActionGuarded = (actionId, handler) => {
-    window.menuActions.registerMenuAction(actionId, () => {
-      if (!guardUserAction(`menu.${actionId}`)) return;
-      handler();
-    });
-  };
-
-  registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });
-
-  registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
-  registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
-  registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
-  registerMenuActionGuarded('diseno_skins', () => {
-    window.Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
-  });
-  registerMenuActionGuarded('diseno_crono_flotante', () => {
-    window.Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // WIP
-  });
-  registerMenuActionGuarded('diseno_fuentes', () => {
-    window.Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // WIP
-  });
-  registerMenuActionGuarded('diseno_colores', () => {
-    window.Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // WIP
-  });
-  registerMenuActionGuarded('shortcuts', () => {
-    window.Notify.notifyMain('renderer.alerts.wip_shortcuts'); // WIP
-  });
-  registerMenuActionGuarded('presets_por_defecto', async () => {
-    try {
-      if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== 'function') {
-        log.warnOnce(
-          'renderer.ipc.openDefaultPresetsFolder.unavailable',
-          'openDefaultPresetsFolder unavailable at electronAPI; action skipped.'
-        );
-        window.Notify.notifyMain('renderer.alerts.open_presets_unsupported');
-        return;
-      }
-
-      const res = await window.electronAPI.openDefaultPresetsFolder();
-      if (res && res.ok) {
-        // Folder opened successfully; do not show intrusive notifications
-        log.debug('config/presets_defaults folder opened in explorer.');
-        return;
-      }
-
-      // In case of failure, inform the user
-      const errMsg = res && res.error ? String(res.error) : 'Unknown';
-      log.error('default presets folder failed to open:', errMsg);
-      window.Notify.notifyMain('renderer.alerts.open_presets_fail');
-    } catch (err) {
-      log.error('default presets folder failed to open', err);
-      window.Notify.notifyMain('renderer.alerts.open_presets_error');
-    }
-  });
-  registerMenuActionGuarded('disconnect_google_ocr', async () => {
-    if (!importExtractOcrDisconnect
-      || typeof importExtractOcrDisconnect.startFromPreferencesMenu !== 'function') {
-      log.warnOnce(
-        'renderer.importExtract.ocrDisconnect.entrypoint.unavailable',
-        'ImportExtractOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.'
-      );
-      window.Notify.notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
-      return;
-    }
-
-    await importExtractOcrDisconnect.startFromPreferencesMenu();
-  });
-
-  registerMenuActionGuarded('links_interes', () => { showInfoModal('links_interes') });
-
-  registerMenuActionGuarded('actualizar_version', async () => {
-    try {
-      const checkForUpdates = getOptionalElectronMethod('checkForUpdates', {
-        dedupeKey: 'renderer.ipc.checkForUpdates.unavailable',
-        unavailableMessage: 'checkForUpdates unavailable; update check action skipped.'
+function registerMenuActions() {
+  if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
+    const registerMenuActionGuarded = (actionId, handler) => {
+      window.menuActions.registerMenuAction(actionId, () => {
+        if (!guardUserAction(`menu.${actionId}`)) return;
+        handler();
       });
-      if (!checkForUpdates) return;
-      await checkForUpdates(true);
-    } catch (err) {
-      log.error('Error requesting checkForUpdates:', err);
-    }
-  });
+    };
 
-  registerMenuActionGuarded('acerca_de', () => { showInfoModal('acerca_de') });
+    registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });
 
-} else {
+    registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
+    registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
+    registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
+    registerMenuActionGuarded('diseno_skins', () => {
+      window.Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
+    });
+    registerMenuActionGuarded('diseno_crono_flotante', () => {
+      window.Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // WIP
+    });
+    registerMenuActionGuarded('diseno_fuentes', () => {
+      window.Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // WIP
+    });
+    registerMenuActionGuarded('diseno_colores', () => {
+      window.Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // WIP
+    });
+    registerMenuActionGuarded('shortcuts', () => {
+      window.Notify.notifyMain('renderer.alerts.wip_shortcuts'); // WIP
+    });
+    registerMenuActionGuarded('presets_por_defecto', async () => {
+      try {
+        if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== 'function') {
+          log.warnOnce(
+            'renderer.ipc.openDefaultPresetsFolder.unavailable',
+            'openDefaultPresetsFolder unavailable at electronAPI; action skipped.'
+          );
+          window.Notify.notifyMain('renderer.alerts.open_presets_unsupported');
+          return;
+        }
+
+        const res = await window.electronAPI.openDefaultPresetsFolder();
+        if (res && res.ok) {
+          // Folder opened successfully; do not show intrusive notifications
+          log.debug('config/presets_defaults folder opened in explorer.');
+          return;
+        }
+
+        // In case of failure, inform the user
+        const errMsg = res && res.error ? String(res.error) : 'Unknown';
+        log.error('default presets folder failed to open:', errMsg);
+        window.Notify.notifyMain('renderer.alerts.open_presets_fail');
+      } catch (err) {
+        log.error('default presets folder failed to open', err);
+        window.Notify.notifyMain('renderer.alerts.open_presets_error');
+      }
+    });
+    registerMenuActionGuarded('disconnect_google_ocr', async () => {
+      if (!importExtractOcrDisconnect
+        || typeof importExtractOcrDisconnect.startFromPreferencesMenu !== 'function') {
+        log.warnOnce(
+          'renderer.importExtract.ocrDisconnect.entrypoint.unavailable',
+          'ImportExtractOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.'
+        );
+        window.Notify.notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
+        return;
+      }
+
+      await importExtractOcrDisconnect.startFromPreferencesMenu();
+    });
+
+    registerMenuActionGuarded('links_interes', () => { showInfoModal('links_interes') });
+
+    registerMenuActionGuarded('actualizar_version', async () => {
+      try {
+        const checkForUpdates = getOptionalElectronMethod('checkForUpdates', {
+          dedupeKey: 'renderer.ipc.checkForUpdates.unavailable',
+          unavailableMessage: 'checkForUpdates unavailable; update check action skipped.'
+        });
+        if (!checkForUpdates) return;
+        await checkForUpdates(true);
+      } catch (err) {
+        log.error('Error requesting checkForUpdates:', err);
+      }
+    });
+
+    registerMenuActionGuarded('acerca_de', () => { showInfoModal('acerca_de') });
+    return;
+  }
+
   log.warn('menuActions unavailable - the top bar will not be handled by the renderer.');
 }
 // =============================================================================
 // Preset selection (cache-only)
 // =============================================================================
-presetsSelect.addEventListener('change', async () => {
-  if (!guardUserAction('preset-change')) return;
-  if (!hasRendererPresetsBridge) {
-    log.warnOnce(
-      'renderer.bridge.RendererPresets.change.unavailable',
-      'Preset change ignored because RendererPresets bridge is unavailable.'
-    );
-    return;
-  }
-  const name = presetsSelect.value;
-  if (!name) return;
-
-  const preset = allPresetsCache.find(p => p.name === name);
-  if (preset) {
-    const settingsOverride = Object.assign({}, settingsCache || {}, {
-      selected_preset_by_language: {}
-    });
-    try {
-      const selected = await resolvePresetSelection({
-        list: allPresetsCache,
-        settings: settingsOverride,
-        language: idiomaActual,
-        currentPresetName: preset.name,
-        selectEl: presetsSelect,
-        wpmInput,
-        wpmSlider,
-        presetDescription,
-        electronAPI: window.electronAPI
-      });
-      if (selected) {
-        currentPresetName = selected.name;
-        wpm = syncWpmControls(selected.wpm);
-        updateTimeOnlyFromStats();
-      }
-    } catch (err) {
-      log.error('Error resolving preset selection:', err);
+function bindPresetSelection() {
+  presetsSelect.addEventListener('change', async () => {
+    if (!guardUserAction('preset-change')) return;
+    if (!hasRendererPresetsBridge) {
+      log.warnOnce(
+        'renderer.bridge.RendererPresets.change.unavailable',
+        'Preset change ignored because RendererPresets bridge is unavailable.'
+      );
+      return;
     }
-  }
-});
+    const name = presetsSelect.value;
+    if (!name) return;
+
+    const preset = allPresetsCache.find(p => p.name === name);
+    if (preset) {
+      const settingsOverride = Object.assign({}, settingsCache || {}, {
+        selected_preset_by_language: {}
+      });
+      try {
+        const selected = await resolvePresetSelection({
+          list: allPresetsCache,
+          settings: settingsOverride,
+          language: idiomaActual,
+          currentPresetName: preset.name,
+          selectEl: presetsSelect,
+          wpmInput,
+          wpmSlider,
+          presetDescription,
+          electronAPI: window.electronAPI
+        });
+        if (selected) {
+          currentPresetName = selected.name;
+          wpm = syncWpmControls(selected.wpm);
+          updateTimeOnlyFromStats();
+        }
+      } catch (err) {
+        log.error('Error resolving preset selection:', err);
+      }
+    }
+  });
+}
 
 // =============================================================================
 // Manual WPM edits
@@ -1747,36 +1750,38 @@ function applyReadingTestWpm(rawWpm) {
   updateTimeOnlyFromStats();
 }
 
-readingSpeedTestUi.configure({
-  onLockChange: syncMainInteractionLockUi,
-  applyWpm: applyReadingTestWpm,
-});
+function bindSpeedControls() {
+  readingSpeedTestUi.configure({
+    onLockChange: syncMainInteractionLockUi,
+    applyWpm: applyReadingTestWpm,
+  });
 
-// Keep slider/input in sync and invalidate preset selection
-wpmSlider.addEventListener('input', () => {
-  if (!guardUserAction('wpm-slider')) return;
-  wpm = wpmFromSliderControl(wpmSlider.value);
-  wpmInput.value = String(wpm);
-  resetPresetSelection();
-  updateTimeOnlyFromStats();
-});
+  // Keep slider/input in sync and invalidate preset selection
+  wpmSlider.addEventListener('input', () => {
+    if (!guardUserAction('wpm-slider')) return;
+    wpm = wpmFromSliderControl(wpmSlider.value);
+    wpmInput.value = String(wpm);
+    resetPresetSelection();
+    updateTimeOnlyFromStats();
+  });
 
-wpmInput.addEventListener('blur', () => {
-  if (!guardUserAction('wpm-input-blur')) return;
-  let requestedWpm = Number(wpmInput.value);
-  if (isNaN(requestedWpm)) requestedWpm = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
-  wpm = syncWpmControls(requestedWpm);
-  resetPresetSelection();
-  updateTimeOnlyFromStats();
-});
+  wpmInput.addEventListener('blur', () => {
+    if (!guardUserAction('wpm-input-blur')) return;
+    let requestedWpm = Number(wpmInput.value);
+    if (isNaN(requestedWpm)) requestedWpm = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
+    wpm = syncWpmControls(requestedWpm);
+    resetPresetSelection();
+    updateTimeOnlyFromStats();
+  });
 
-wpmInput.addEventListener('keydown', (e) => {
-  if (!guardUserAction('wpm-input-keydown')) return;
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    wpmInput.blur();
-  }
-});
+  wpmInput.addEventListener('keydown', (e) => {
+    if (!guardUserAction('wpm-input-keydown')) return;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      wpmInput.blur();
+    }
+  });
+}
 
 // =============================================================================
 // Clipboard and text-apply helpers
@@ -1963,147 +1968,155 @@ function configureImportExtractModules() {
   }
 }
 
-configureImportExtractModules();
+function initializeDelegatedIntegrations() {
+  configureImportExtractModules();
 
-if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
-  mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });
-} else {
+  if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
+    mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });
+    return;
+  }
+
   log.warnOnce(
     'renderer.mainLogoLinks.bindBrandLinks.unavailable',
     'MainLogoLinks.bindBrandLinks unavailable; brand logo links disabled.'
   );
 }
 
+function bindImportExtractEntryPoints() {
+  if (btnImportExtract) {
+    btnImportExtract.addEventListener('click', async () => {
+      await importExtractEntry.startFromPicker();
+    });
+  }
+
+  if (btnImportExtractAbort) {
+    btnImportExtractAbort.addEventListener('click', async () => {
+      if (!guardUserAction('import-extract-abort', { allowDuringProcessing: true })) return;
+      try {
+        const requestImportExtractAbort = getOptionalElectronMethod('requestImportExtractAbort', {
+          dedupeKey: 'renderer.ipc.requestImportExtractAbort.unavailable',
+          unavailableMessage: 'requestImportExtractAbort unavailable; abort action skipped.'
+        });
+        if (!requestImportExtractAbort) {
+          window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+          return;
+        }
+
+        const result = await requestImportExtractAbort({
+          source: 'main_window',
+          reason: 'user_abort_button',
+        });
+        if (!result || result.ok !== true) {
+          if (result && result.code === 'NOT_ACTIVE' && result.state) {
+            importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_not_active' });
+            return;
+          }
+          log.error('import/extract abort failed:', result);
+          window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+          return;
+        }
+
+        if (result.state) {
+          importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
+        }
+        window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
+      } catch (err) {
+        log.error('Error handling import/extract abort:', err);
+        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+      }
+    });
+  }
+}
+
 // =============================================================================
 // Import/extract entrypoint wiring
 // =============================================================================
-if (btnImportExtract) {
-  btnImportExtract.addEventListener('click', async () => {
-    await importExtractEntry.startFromPicker();
-  });
-}
-
-if (btnImportExtractAbort) {
-  btnImportExtractAbort.addEventListener('click', async () => {
-    if (!guardUserAction('import-extract-abort', { allowDuringProcessing: true })) return;
-    try {
-      const requestImportExtractAbort = getOptionalElectronMethod('requestImportExtractAbort', {
-        dedupeKey: 'renderer.ipc.requestImportExtractAbort.unavailable',
-        unavailableMessage: 'requestImportExtractAbort unavailable; abort action skipped.'
-      });
-      if (!requestImportExtractAbort) {
-        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
-        return;
-      }
-
-      const result = await requestImportExtractAbort({
-        source: 'main_window',
-        reason: 'user_abort_button',
-      });
-      if (!result || result.ok !== true) {
-        if (result && result.code === 'NOT_ACTIVE' && result.state) {
-          importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_not_active' });
-          return;
-        }
-        log.error('import/extract abort failed:', result);
-        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
-        return;
-      }
-
-      if (result.state) {
-        importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
-      }
-      window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
-    } catch (err) {
-      log.error('Error handling import/extract abort:', err);
-      window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
-    }
-  });
-}
 
 // =============================================================================
 // Overwrite current text with clipboard content
 // =============================================================================
-btnOverwriteClipboard.addEventListener('click', async () => {
-  if (!guardUserAction('clipboard-overwrite')) return;
-  try {
-    const read = await readClipboardText({
-      tooLargeKey: 'renderer.alerts.clipboard_too_large',
-      unavailableKey: 'renderer.alerts.clipboard_error'
-    });
-    if (!read.ok) return;
-    const clip = read.text;
-    const repeatCount = getClipboardRepeatCount();
-    const applyResult = await applyTextViaCanonicalPath({
-      mode: 'overwrite',
-      textToApply: clip,
-      repeatCount,
-    });
-    if (!applyResult || applyResult.ok !== true) {
-      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
-      } else {
-        window.Notify.notifyMain('renderer.alerts.clipboard_error');
+function bindClipboardActions() {
+  btnOverwriteClipboard.addEventListener('click', async () => {
+    if (!guardUserAction('clipboard-overwrite')) return;
+    try {
+      const read = await readClipboardText({
+        tooLargeKey: 'renderer.alerts.clipboard_too_large',
+        unavailableKey: 'renderer.alerts.clipboard_error'
+      });
+      if (!read.ok) return;
+      const clip = read.text;
+      const repeatCount = getClipboardRepeatCount();
+      const applyResult = await applyTextViaCanonicalPath({
+        mode: 'overwrite',
+        textToApply: clip,
+        repeatCount,
+      });
+      if (!applyResult || applyResult.ok !== true) {
+        if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+          window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
+        } else {
+          window.Notify.notifyMain('renderer.alerts.clipboard_error');
+        }
+        return;
       }
-      return;
-    }
 
-    // UI/state sync is authoritative via "current-text-updated" subscription.
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
+      // UI/state sync is authoritative via "current-text-updated" subscription.
+      if (!hasCurrentTextSubscription) {
+        throw new Error('current-text-updated subscription unavailable');
+      }
+      if (applyResult.truncated) {
+        window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
+      }
+    } catch (err) {
+      log.error('clipboard error:', err);
+      window.Notify.notifyMain('renderer.alerts.clipboard_error');
     }
-    if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
-    }
-  } catch (err) {
-    log.error('clipboard error:', err);
-    window.Notify.notifyMain('renderer.alerts.clipboard_error');
-  }
-});
+  });
 
 // =============================================================================
 // Append clipboard content to current text
 // =============================================================================
-btnAppendClipboard.addEventListener('click', async () => {
-  if (!guardUserAction('clipboard-append')) return;
-  try {
-    const read = await readClipboardText({
-      tooLargeKey: 'renderer.alerts.append_too_large',
-      unavailableKey: 'renderer.alerts.append_error'
-    });
-    if (!read.ok) return;
-    const clip = read.text;
-    const repeatCount = getClipboardRepeatCount();
-    const applyResult = await applyTextViaCanonicalPath({
-      mode: 'append',
-      textToApply: clip,
-      repeatCount,
-    });
-    if (!applyResult || applyResult.ok !== true) {
-      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.append_too_large');
-      } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-        window.Notify.notifyMain('renderer.alerts.text_limit');
-      } else {
-        window.Notify.notifyMain('renderer.alerts.append_error');
+  btnAppendClipboard.addEventListener('click', async () => {
+    if (!guardUserAction('clipboard-append')) return;
+    try {
+      const read = await readClipboardText({
+        tooLargeKey: 'renderer.alerts.append_too_large',
+        unavailableKey: 'renderer.alerts.append_error'
+      });
+      if (!read.ok) return;
+      const clip = read.text;
+      const repeatCount = getClipboardRepeatCount();
+      const applyResult = await applyTextViaCanonicalPath({
+        mode: 'append',
+        textToApply: clip,
+        repeatCount,
+      });
+      if (!applyResult || applyResult.ok !== true) {
+        if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+          window.Notify.notifyMain('renderer.alerts.append_too_large');
+        } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
+          window.Notify.notifyMain('renderer.alerts.text_limit');
+        } else {
+          window.Notify.notifyMain('renderer.alerts.append_error');
+        }
+        return;
       }
-      return;
-    }
 
-    // UI/state sync is authoritative via "current-text-updated" subscription.
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
-    }
+      // UI/state sync is authoritative via "current-text-updated" subscription.
+      if (!hasCurrentTextSubscription) {
+        throw new Error('current-text-updated subscription unavailable');
+      }
 
-    // Notify truncation only if main confirms it
-    if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.append_overflow');
+      // Notify truncation only if main confirms it
+      if (applyResult.truncated) {
+        window.Notify.notifyMain('renderer.alerts.append_overflow');
+      }
+    } catch (err) {
+      log.error('An error occurred while pasting the clipboard:', err);
+      window.Notify.notifyMain('renderer.alerts.append_error');
     }
-  } catch (err) {
-    log.error('An error occurred while pasting the clipboard:', err);
-    window.Notify.notifyMain('renderer.alerts.append_error');
-  }
-});
+  });
+}
 
 function showEditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
@@ -2115,87 +2128,93 @@ function hideEditorLoader() {
   if (btnEdit) btnEdit.disabled = false;
 }
 
-btnEdit.addEventListener('click', async () => {
-  if (!guardUserAction('open-editor')) return;
-  showEditorLoader();
-  try {
-    const openEditor = getOptionalElectronMethod('openEditor', {
-      dedupeKey: 'renderer.ipc.openEditor.unavailable',
-      unavailableMessage: 'openEditor unavailable; editor launch skipped.'
-    });
-    if (!openEditor) {
+function bindEditorAction() {
+  btnEdit.addEventListener('click', async () => {
+    if (!guardUserAction('open-editor')) return;
+    showEditorLoader();
+    try {
+      const openEditor = getOptionalElectronMethod('openEditor', {
+        dedupeKey: 'renderer.ipc.openEditor.unavailable',
+        unavailableMessage: 'openEditor unavailable; editor launch skipped.'
+      });
+      if (!openEditor) {
+        hideEditorLoader();
+        return;
+      }
+      await openEditor();
+    } catch (err) {
+      log.error('Error opening editor:', err);
       hideEditorLoader();
-      return;
     }
-    await openEditor();
-  } catch (err) {
-    log.error('Error opening editor:', err);
-    hideEditorLoader();
-  }
-});
+  });
+}
 
 // =============================================================================
 // Clear current text
 // =============================================================================
-btnEmptyMain.addEventListener('click', async () => {
-  if (!guardUserAction('clear-text')) return;
-  try {
-    const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-      dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
-      unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
-    });
-    if (!setCurrentText) {
+function bindClearTextAction() {
+  btnEmptyMain.addEventListener('click', async () => {
+    if (!guardUserAction('clear-text')) return;
+    try {
+      const setCurrentText = getOptionalElectronMethod('setCurrentText', {
+        dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
+        unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
+      });
+      if (!setCurrentText) {
+        window.Notify.notifyMain('renderer.alerts.clear_error');
+        return;
+      }
+      const resp = await setCurrentText({
+        text: '',
+        meta: { source: 'main-window', action: 'overwrite' }
+      });
+      if (resp && resp.ok === false) {
+        throw new Error(resp.error || 'set-current-text failed');
+      }
+      // UI/state sync is authoritative via "current-text-updated" subscription.
+      if (!hasCurrentTextSubscription) {
+        throw new Error('current-text-updated subscription unavailable');
+      }
+    } catch (err) {
+      log.error('Error clearing text from main window:', err);
       window.Notify.notifyMain('renderer.alerts.clear_error');
+    }
+  });
+}
+
+function bindSnapshotActions() {
+  btnLoadSnapshot.addEventListener('click', async () => {
+    if (!guardUserAction('snapshot-load')) return;
+    if (typeof loadSnapshot !== 'function') {
+      log.warnOnce(
+        'renderer.snapshot.load.unavailable',
+        'loadSnapshot unavailable; snapshot-load action skipped.'
+      );
       return;
     }
-    const resp = await setCurrentText({
-      text: '',
-      meta: { source: 'main-window', action: 'overwrite' }
-    });
-    if (resp && resp.ok === false) {
-      throw new Error(resp.error || 'set-current-text failed');
+    try {
+      await loadSnapshot();
+    } catch (err) {
+      log.error('Error loading snapshot:', err);
     }
-    // UI/state sync is authoritative via "current-text-updated" subscription.
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
+  });
+
+  btnSaveSnapshot.addEventListener('click', async () => {
+    if (!guardUserAction('snapshot-save')) return;
+    if (typeof saveSnapshot !== 'function') {
+      log.warnOnce(
+        'renderer.snapshot.save.unavailable',
+        'saveSnapshot unavailable; snapshot-save action skipped.'
+      );
+      return;
     }
-  } catch (err) {
-    log.error('Error clearing text from main window:', err);
-    window.Notify.notifyMain('renderer.alerts.clear_error');
-  }
-});
-
-btnLoadSnapshot.addEventListener('click', async () => {
-  if (!guardUserAction('snapshot-load')) return;
-  if (typeof loadSnapshot !== 'function') {
-    log.warnOnce(
-      'renderer.snapshot.load.unavailable',
-      'loadSnapshot unavailable; snapshot-load action skipped.'
-    );
-    return;
-  }
-  try {
-    await loadSnapshot();
-  } catch (err) {
-    log.error('Error loading snapshot:', err);
-  }
-});
-
-btnSaveSnapshot.addEventListener('click', async () => {
-  if (!guardUserAction('snapshot-save')) return;
-  if (typeof saveSnapshot !== 'function') {
-    log.warnOnce(
-      'renderer.snapshot.save.unavailable',
-      'saveSnapshot unavailable; snapshot-save action skipped.'
-    );
-    return;
-  }
-  try {
-    await saveSnapshot();
-  } catch (err) {
-    log.error('Error saving snapshot:', err);
-  }
-});
+    try {
+      await saveSnapshot();
+    } catch (err) {
+      log.error('Error saving snapshot:', err);
+    }
+  });
+}
 
 // =============================================================================
 // Task selector (open task editor)
@@ -2219,245 +2238,253 @@ function handleTaskOpenResult(res, { mode } = {}) {
   }
 }
 
-if (btnNewTask) {
-  btnNewTask.addEventListener('click', async () => {
-    if (!guardUserAction('task-new')) return;
-    try {
-      if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-        log.warnOnce(
-          'renderer.ipc.openTaskEditor.unavailable',
-          'openTaskEditor unavailable; new-task action skipped.'
-        );
-        window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-        return;
+function bindTaskActions() {
+  if (btnNewTask) {
+    btnNewTask.addEventListener('click', async () => {
+      if (!guardUserAction('task-new')) return;
+      try {
+        if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
+          log.warnOnce(
+            'renderer.ipc.openTaskEditor.unavailable',
+            'openTaskEditor unavailable; new-task action skipped.'
+          );
+          window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+          return;
+        }
+        const res = await window.electronAPI.openTaskEditor('new');
+        handleTaskOpenResult(res, { mode: 'new' });
+      } catch (err) {
+        log.error('Error opening task editor (new):', err);
+        window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
       }
-      const res = await window.electronAPI.openTaskEditor('new');
-      handleTaskOpenResult(res, { mode: 'new' });
-    } catch (err) {
-      log.error('Error opening task editor (new):', err);
-      window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
-    }
-  });
-}
+    });
+  }
 
-if (btnLoadTask) {
-  btnLoadTask.addEventListener('click', async () => {
-    if (!guardUserAction('task-load')) return;
-    try {
-      if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-        log.warnOnce(
-          'renderer.ipc.openTaskEditor.unavailable',
-          'openTaskEditor unavailable; load-task action skipped.'
-        );
-        window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-        return;
+  if (btnLoadTask) {
+    btnLoadTask.addEventListener('click', async () => {
+      if (!guardUserAction('task-load')) return;
+      try {
+        if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
+          log.warnOnce(
+            'renderer.ipc.openTaskEditor.unavailable',
+            'openTaskEditor unavailable; load-task action skipped.'
+          );
+          window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+          return;
+        }
+        const res = await window.electronAPI.openTaskEditor('load');
+        handleTaskOpenResult(res, { mode: 'load' });
+      } catch (err) {
+        log.error('Error opening task editor (load):', err);
+        window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
       }
-      const res = await window.electronAPI.openTaskEditor('load');
-      handleTaskOpenResult(res, { mode: 'load' });
-    } catch (err) {
-      log.error('Error opening task editor (load):', err);
-      window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
-    }
-  });
+    });
+  }
 }
 
 // Help button: show a random tip key via Notify
-if (btnHelp) {
-  btnHelp.addEventListener('click', () => {
-    if (!guardUserAction('help-tip')) return;
-    const helpTipKeys = getHelpTipKeyList();
-    const tipCount = helpTipKeys.length;
-    if (!tipCount) {
-      log.error('Help tip list is empty.');
-      window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
-      return;
-    }
-
-    let idx = Math.floor(Math.random() * tipCount);
-    if (tipCount > 1 && idx === lastHelpTipIdx) {
-      idx = Math.floor(Math.random() * (tipCount - 1));
-      if (idx >= lastHelpTipIdx) idx += 1;
-    }
-    lastHelpTipIdx = idx;
-
-    const tipKey = helpTipKeys[idx];
-
-    try {
-      try {
-        window.Notify.toastMain(tipKey);
-      } catch (err) {
-        log.error('Error showing help tip toast:', err);
-        window.Notify.notifyMain(tipKey);
+function bindHelpAction() {
+  if (btnHelp) {
+    btnHelp.addEventListener('click', () => {
+      if (!guardUserAction('help-tip')) return;
+      const helpTipKeys = getHelpTipKeyList();
+      const tipCount = helpTipKeys.length;
+      if (!tipCount) {
+        log.error('Help tip list is empty.');
+        window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
+        return;
       }
-    } catch (err) {
-      log.error('Help tip fallback failed:', err);
-    }
-  });
+
+      let idx = Math.floor(Math.random() * tipCount);
+      if (tipCount > 1 && idx === lastHelpTipIdx) {
+        idx = Math.floor(Math.random() * (tipCount - 1));
+        if (idx >= lastHelpTipIdx) idx += 1;
+      }
+      lastHelpTipIdx = idx;
+
+      const tipKey = helpTipKeys[idx];
+
+      try {
+        try {
+          window.Notify.toastMain(tipKey);
+        } catch (err) {
+          log.error('Error showing help tip toast:', err);
+          window.Notify.notifyMain(tipKey);
+        }
+      } catch (err) {
+        log.error('Help tip fallback failed:', err);
+      }
+    });
+  }
 }
 
 // =============================================================================
 // Reading tools
 // =============================================================================
-if (btnReadingSpeedTest) {
-  btnReadingSpeedTest.addEventListener('click', async () => {
-    if (!guardUserAction('reading-speed-test')) return;
-    try {
-      await readingSpeedTestUi.openEntryFlow();
-    } catch (err) {
-      log.error('Error opening reading speed test flow:', err);
-      window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
-    }
-  });
+function bindReadingToolActions() {
+  if (btnReadingSpeedTest) {
+    btnReadingSpeedTest.addEventListener('click', async () => {
+      if (!guardUserAction('reading-speed-test')) return;
+      try {
+        await readingSpeedTestUi.openEntryFlow();
+      } catch (err) {
+        log.error('Error opening reading speed test flow:', err);
+        window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
+      }
+    });
+  }
 }
 
 // Create preset: main owns the modal; renderer provides current WPM
-btnNewPreset.addEventListener('click', () => {
-  if (!guardUserAction('preset-new')) return;
-  try {
-    if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-      window.electronAPI.openPresetModal(wpm);
-    } else {
-      log.warnOnce(
-        'renderer.ipc.openPresetModal.unavailable',
-        'openPresetModal unavailable in electronAPI; preset-new action skipped.'
-      );
-      window.Notify.notifyMain('renderer.alerts.modal_unavailable');
+function bindPresetActions() {
+  btnNewPreset.addEventListener('click', () => {
+    if (!guardUserAction('preset-new')) return;
+    try {
+      if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
+        window.electronAPI.openPresetModal(wpm);
+      } else {
+        log.warnOnce(
+          'renderer.ipc.openPresetModal.unavailable',
+          'openPresetModal unavailable in electronAPI; preset-new action skipped.'
+        );
+        window.Notify.notifyMain('renderer.alerts.modal_unavailable');
+      }
+    } catch (err) {
+      log.error('Error opening new preset modal:', err);
     }
-  } catch (err) {
-    log.error('Error opening new preset modal:', err);
-  }
-});
+  });
 
 // =============================================================================
 // Edit preset
 // =============================================================================
-btnEditPreset.addEventListener('click', async () => {
-  if (!guardUserAction('preset-edit')) return;
-  try {
-    const selectedName = presetsSelect.value;
-    if (!selectedName) {
-      // Ask main to show the native info dialog when no preset is selected.
-      if (window.electronAPI && typeof window.electronAPI.notifyNoSelectionEdit === 'function') {
-        await window.electronAPI.notifyNoSelectionEdit();
-        return;
-      } else {
-        log.warnOnce(
-          'renderer.ipc.notifyNoSelectionEdit.unavailable',
-          'notifyNoSelectionEdit unavailable; using renderer fallback notification.'
-        );
-        window.Notify.notifyMain('renderer.alerts.edit_none');
+  btnEditPreset.addEventListener('click', async () => {
+    if (!guardUserAction('preset-edit')) return;
+    try {
+      const selectedName = presetsSelect.value;
+      if (!selectedName) {
+        // Ask main to show the native info dialog when no preset is selected.
+        if (window.electronAPI && typeof window.electronAPI.notifyNoSelectionEdit === 'function') {
+          await window.electronAPI.notifyNoSelectionEdit();
+          return;
+        } else {
+          log.warnOnce(
+            'renderer.ipc.notifyNoSelectionEdit.unavailable',
+            'notifyNoSelectionEdit unavailable; using renderer fallback notification.'
+          );
+          window.Notify.notifyMain('renderer.alerts.edit_none');
+          return;
+        }
+      }
+
+      // Find preset data from cache
+      const preset = allPresetsCache.find(p => p.name === selectedName);
+      if (!preset) {
+        window.Notify.notifyMain('renderer.alerts.preset_not_found');
         return;
       }
-    }
 
-    // Find preset data from cache
-    const preset = allPresetsCache.find(p => p.name === selectedName);
-    if (!preset) {
-      window.Notify.notifyMain('renderer.alerts.preset_not_found');
-      return;
-    }
-
-    // Open modal in edit mode and pass preset data.
-    const payload = { wpm: wpm, mode: 'edit', preset: preset };
-    try {
-      log.debug('[renderer] openPresetModal payload:', payload);
+      // Open modal in edit mode and pass preset data.
+      const payload = { wpm: wpm, mode: 'edit', preset: preset };
+      try {
+        log.debug('[renderer] openPresetModal payload:', payload);
+      } catch (err) {
+        log.warnOnce('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+      }
+      if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
+        window.electronAPI.openPresetModal(payload);
+      } else {
+        log.warnOnce(
+          'renderer.ipc.openPresetModal.unavailable',
+          'openPresetModal unavailable in electronAPI; preset-edit action skipped.'
+        );
+        window.Notify.notifyMain('renderer.alerts.edit_unavailable');
+      }
     } catch (err) {
-      log.warnOnce('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+      log.error('Error opening edit preset modal:', err);
+      window.Notify.notifyMain('renderer.alerts.edit_error');
     }
-    if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-      window.electronAPI.openPresetModal(payload);
-    } else {
-      log.warnOnce(
-        'renderer.ipc.openPresetModal.unavailable',
-        'openPresetModal unavailable in electronAPI; preset-edit action skipped.'
-      );
-      window.Notify.notifyMain('renderer.alerts.edit_unavailable');
-    }
-  } catch (err) {
-    log.error('Error opening edit preset modal:', err);
-    window.Notify.notifyMain('renderer.alerts.edit_error');
-  }
-});
+  });
 
 // =============================================================================
 // Delete preset
 // =============================================================================
-btnDeletePreset.addEventListener('click', async () => {
-  if (!guardUserAction('preset-delete')) return;
-  try {
-    const name = presetsSelect.value || null;
-    const requestDeletePreset = getOptionalElectronMethod('requestDeletePreset', {
-      dedupeKey: 'renderer.ipc.requestDeletePreset.unavailable',
-      unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'
-    });
-    if (!requestDeletePreset) {
-      window.Notify.notifyMain('renderer.alerts.delete_error');
-      return;
-    }
-    // Call main to request deletion; main shows native dialogs as needed
-    const res = await requestDeletePreset(name);
+  btnDeletePreset.addEventListener('click', async () => {
+    if (!guardUserAction('preset-delete')) return;
+    try {
+      const name = presetsSelect.value || null;
+      const requestDeletePreset = getOptionalElectronMethod('requestDeletePreset', {
+        dedupeKey: 'renderer.ipc.requestDeletePreset.unavailable',
+        unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'
+      });
+      if (!requestDeletePreset) {
+        window.Notify.notifyMain('renderer.alerts.delete_error');
+        return;
+      }
+      // Call main to request deletion; main shows native dialogs as needed
+      const res = await requestDeletePreset(name);
 
-    if (res && res.ok) {
-      // On success, reload presets and apply fallback selection if needed.
-      await loadPresets({ settingsSnapshot: settingsCache || {} });
-      startPreviewAndResultsUpdate(currentText, 'preset delete');
-      // No further UI dialog required; main already showed confirmation.
-      return;
-    } else {
-      // res.ok === false -> handle known codes
-      if (res && res.code === 'NO_SELECTION') {
-        // Main already showed a native info dialog; nothing else to do.
+      if (res && res.ok) {
+        // On success, reload presets and apply fallback selection if needed.
+        await loadPresets({ settingsSnapshot: settingsCache || {} });
+        startPreviewAndResultsUpdate(currentText, 'preset delete');
+        // No further UI dialog required; main already showed confirmation.
         return;
+      } else {
+        // res.ok === false -> handle known codes
+        if (res && res.code === 'NO_SELECTION') {
+          // Main already showed a native info dialog; nothing else to do.
+          return;
+        }
+        if (res && res.code === 'CANCELLED') {
+          // User cancelled; nothing to do
+          return;
+        }
+        // Unexpected error: log and show a simple alert
+        log.error('Error deleting preset:', res && res.error ? res.error : res);
+        window.Notify.notifyMain('renderer.alerts.delete_error');
       }
-      if (res && res.code === 'CANCELLED') {
-        // User cancelled; nothing to do
-        return;
-      }
-      // Unexpected error: log and show a simple alert
-      log.error('Error deleting preset:', res && res.error ? res.error : res);
+    } catch (err) {
+      log.error('Error in deletion request:', err);
       window.Notify.notifyMain('renderer.alerts.delete_error');
     }
-  } catch (err) {
-    log.error('Error in deletion request:', err);
-    window.Notify.notifyMain('renderer.alerts.delete_error');
-  }
-});
+  });
 
 // =============================================================================
 // Restore default presets
 // =============================================================================
-btnResetDefaultPresets.addEventListener('click', async () => {
-  if (!guardUserAction('preset-reset-defaults')) return;
-  try {
-    const requestRestoreDefaults = getOptionalElectronMethod('requestRestoreDefaults', {
-      dedupeKey: 'renderer.ipc.requestRestoreDefaults.unavailable',
-      unavailableMessage: 'requestRestoreDefaults unavailable; presets restore action skipped.'
-    });
-    if (!requestRestoreDefaults) {
-      window.Notify.notifyMain('renderer.alerts.restore_error');
-      return;
-    }
-    // Call main to request restore. Main will show a native confirmation dialog.
-    const res = await requestRestoreDefaults();
-
-    if (res && res.ok) {
-      // Reload presets to reflect restored defaults
-      await loadPresets({ settingsSnapshot: settingsCache || {} });
-      startPreviewAndResultsUpdate(currentText, 'preset restore');
-      return;
-    } else {
-      if (res && res.code === 'CANCELLED') {
-        // User cancelled in native dialog; nothing to do
+  btnResetDefaultPresets.addEventListener('click', async () => {
+    if (!guardUserAction('preset-reset-defaults')) return;
+    try {
+      const requestRestoreDefaults = getOptionalElectronMethod('requestRestoreDefaults', {
+        dedupeKey: 'renderer.ipc.requestRestoreDefaults.unavailable',
+        unavailableMessage: 'requestRestoreDefaults unavailable; presets restore action skipped.'
+      });
+      if (!requestRestoreDefaults) {
+        window.Notify.notifyMain('renderer.alerts.restore_error');
         return;
       }
-      log.error('Error restoring presets:', res && res.error ? res.error : res);
+      // Call main to request restore. Main will show a native confirmation dialog.
+      const res = await requestRestoreDefaults();
+
+      if (res && res.ok) {
+        // Reload presets to reflect restored defaults
+        await loadPresets({ settingsSnapshot: settingsCache || {} });
+        startPreviewAndResultsUpdate(currentText, 'preset restore');
+        return;
+      } else {
+        if (res && res.code === 'CANCELLED') {
+          // User cancelled in native dialog; nothing to do
+          return;
+        }
+        log.error('Error restoring presets:', res && res.error ? res.error : res);
+        window.Notify.notifyMain('renderer.alerts.restore_error');
+      }
+    } catch (err) {
+      log.error('Error in restoring request:', err);
       window.Notify.notifyMain('renderer.alerts.restore_error');
     }
-  } catch (err) {
-    log.error('Error in restoring request:', err);
-    window.Notify.notifyMain('renderer.alerts.restore_error');
-  }
-});
+  });
+}
 
 // =============================================================================
 // Stopwatch
@@ -2494,11 +2521,30 @@ const initCronoController = () => {
   }
 };
 
-initCronoController();
+function startRendererBootstrap() {
+  armIpcSubscriptions();
+  setupToggleModoPreciso();
+  bindInfoModalUi();
+  registerMenuActions();
+  bindPresetSelection();
+  bindSpeedControls();
+  initializeDelegatedIntegrations();
+  bindImportExtractEntryPoints();
+  bindClipboardActions();
+  bindEditorAction();
+  bindClearTextAction();
+  bindSnapshotActions();
+  bindTaskActions();
+  bindHelpAction();
+  bindReadingToolActions();
+  bindPresetActions();
+  initCronoController();
+  uiListenersArmed = true;
+  syncMainInteractionLockUi();
+  runStartupOrchestrator();
+}
 
-uiListenersArmed = true;
-syncMainInteractionLockUi();
-runStartupOrchestrator();
+startRendererBootstrap();
 
 // =============================================================================
 // End of public/renderer.js
