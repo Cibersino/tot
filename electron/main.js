@@ -6,11 +6,12 @@
 // =============================================================================
 // Main process entry point (Electron).
 // Responsibilities:
-// - Initialize persistent storage paths and JSON-backed state.
-// - Create and manage application windows (main, editor, preset modal, language picker, flotante stopwatch).
-// - Register main-owned IPC handlers and delegate feature IPC registration.
-// - Own the stopwatch ("crono") state and broadcast updates to any open UI windows.
-// - Orchestrate app lifecycle (ready, activate, quit).
+// - Initialize storage-backed state used by startup, settings, and current text.
+// - Create and manage application windows (main, editor, preset modal, language picker, flotante).
+// - Own startup gating between language resolution, renderer readiness, and menu enablement.
+// - Own main-process-only coordination such as "crono" state and processing-mode window behavior.
+// - Register main-owned IPC handlers and wire delegated feature IPC modules to shared main-process services.
+// - Orchestrate app lifecycle paths including first run, activate, quit, and smoke-test startup.
 
 // =============================================================================
 // Imports (external + internal modules)
@@ -837,7 +838,7 @@ function createLanguageWindow() {
     try {
       langWin.focus();
     } catch (err) {
-      log.warnOnce('langWin.focus', 'langWin.focus failed (ignored):', err);
+      log.warn('langWin.focus failed (ignored):', err);
     }
     return;
   }
@@ -891,6 +892,14 @@ function createLanguageWindow() {
   });
 }
 
+// =============================================================================
+// Startup gating + language resolution
+// =============================================================================
+// These helpers keep the startup handshake aligned across:
+// - first-run language selection / fallback,
+// - renderer readiness signals,
+// - main-window creation and menu installation.
+
 function maybeMarkMainInvariantsReady() {
   if (mainInvariantsReady) return;
   if (!languageResolved || !menuInstalled || !mainWindowCreated) return;
@@ -919,7 +928,7 @@ function maybeAuthorizeStartupReady() {
 
 function handleSplashRemoved() {
   if (splashRemoved) {
-    log.warnOnce('startup.splashRemoved.duplicate', 'startup:splash-removed already handled (ignored).');
+    log.warn('startup:splash-removed already handled (ignored).');
     return;
   }
   splashRemoved = true;
@@ -951,13 +960,13 @@ function handleSplashRemoved() {
 
 function resolveLanguage(reason) {
   if (languageResolved) {
-    log.warnOnce(`startup.languageResolved.${reason}`, 'Language already resolved (ignored):', reason);
+    log.warn('Language already resolved (ignored):', reason);
     return;
   }
   languageResolved = true;
 
   if (reason === 'fallback') {
-    log.warn('Startup language resolved via fallback.');
+    log.warn('BOOTSTRAP: startup language resolved via fallback.');
   } else if (reason === 'selected') {
     log.info('Startup language resolved via user selection.');
   } else if (reason === 'present') {
@@ -1558,7 +1567,7 @@ ipcMain.on('task-editor-confirm-close', (event) => {
   try {
     const senderWin = BrowserWindow.fromWebContents(event.sender);
     if (!taskEditorWin || senderWin !== taskEditorWin) {
-      log.warnOnce('task-editor-confirm-close.unauthorized', 'task-editor-confirm-close unauthorized (ignored).');
+      log.warn('task-editor-confirm-close unauthorized (ignored).');
       return;
     }
     taskEditorForceClose = true;
@@ -1575,13 +1584,13 @@ ipcMain.handle('open-preset-modal', (event, payload) => {
   }
   try {
     if (!mainWin) {
-      log.warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
+      log.warn('open-preset-modal failed (ignored): main window not ready.');
       return { ok: false, error: 'main window not ready' };
     }
 
     const senderWin = BrowserWindow.fromWebContents(event.sender);
     if (!senderWin || senderWin !== mainWin) {
-      log.warnOnce('open-preset-modal.unauthorized', 'open-preset-modal unauthorized (ignored).');
+      log.warn('open-preset-modal unauthorized (ignored).');
       return { ok: false, error: 'unauthorized' };
     }
 
@@ -1669,6 +1678,12 @@ ipcMain.on('startup:renderer-core-ready', () => {
   rendererCoreReady = true;
   maybeAuthorizeStartupReady();
 });
+
+// =============================================================================
+// Bootstrap bridge wiring
+// =============================================================================
+// Keep these top-level registrations in place before app.whenReady() work starts,
+// so early renderer signals and shell-opening requests have a stable main-process entrypoint.
 
 registerLinkIpc({ ipcMain, app, shell });
 
@@ -1867,7 +1882,7 @@ app.whenReady().then(() => {
         try {
           if (isAliveWindow(langWin)) langWin.close();
         } catch (err) {
-          log.warnOnce('langWin.close.after.language-selected', 'langWin.close failed after language-selected (ignored):', err);
+          log.warn('langWin.close failed after language-selected (ignored):', err);
         }
       }
     };
