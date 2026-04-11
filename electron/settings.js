@@ -76,6 +76,10 @@ function normalizeEditorFontSizePx(value) {
   );
 }
 
+function isPlainObjectRecord(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
 // =============================================================================
 // Injected dependencies + cache
 // =============================================================================
@@ -180,8 +184,7 @@ function ensureNumberFormattingForBase(settings, base) {
  * - Ensure language-dependent buckets exist for the current language base.
  */
 function normalizeSettings(s) {
-  const isObject = !!s && typeof s === 'object' && !Array.isArray(s);
-  if (!isObject) {
+  if (!isPlainObjectRecord(s)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidRoot',
       'Settings root is invalid; using empty object:',
@@ -205,11 +208,7 @@ function normalizeSettings(s) {
   // - present but invalid -> warnOnce + default
   if (typeof s.presets_by_language === 'undefined') {
     s.presets_by_language = {};
-  } else if (
-    typeof s.presets_by_language !== 'object' ||
-    Array.isArray(s.presets_by_language) ||
-    s.presets_by_language === null
-  ) {
+  } else if (!isPlainObjectRecord(s.presets_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidPresetsByLanguage',
       'Invalid presets_by_language; resetting to empty object:',
@@ -223,11 +222,7 @@ function normalizeSettings(s) {
   // - present but invalid -> warnOnce + default
   if (typeof s.selected_preset_by_language === 'undefined') {
     s.selected_preset_by_language = {};
-  } else if (
-    typeof s.selected_preset_by_language !== 'object' ||
-    Array.isArray(s.selected_preset_by_language) ||
-    s.selected_preset_by_language === null
-  ) {
+  } else if (!isPlainObjectRecord(s.selected_preset_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidSelectedPresetByLanguage',
       'Invalid selected_preset_by_language; resetting to empty object:',
@@ -239,11 +234,7 @@ function normalizeSettings(s) {
   // numberFormatting must be a plain object (may be missing/null/array/invalid types).
   if (typeof s.numberFormatting === 'undefined') {
     s.numberFormatting = {};
-  } else if (
-    typeof s.numberFormatting !== 'object' ||
-    Array.isArray(s.numberFormatting) ||
-    s.numberFormatting === null
-  ) {
+  } else if (!isPlainObjectRecord(s.numberFormatting)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidNumberFormatting',
       'Invalid numberFormatting; resetting to empty object:',
@@ -255,11 +246,7 @@ function normalizeSettings(s) {
   // disabled_default_presets must be a plain object (may be missing/null/array/invalid types).
   if (typeof s.disabled_default_presets === 'undefined') {
     s.disabled_default_presets = {};
-  } else if (
-    typeof s.disabled_default_presets !== 'object' ||
-    Array.isArray(s.disabled_default_presets) ||
-    s.disabled_default_presets === null
-  ) {
+  } else if (!isPlainObjectRecord(s.disabled_default_presets)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidDisabledDefaultPresets',
       'Invalid disabled_default_presets; resetting to empty object:',
@@ -549,6 +536,10 @@ function registerIpc(
     broadcastSettingsUpdated(settings, windows);
   }
 
+  function resolveWindows() {
+    return typeof getWindows === 'function' ? getWindows() : {};
+  }
+
   // get-settings: returns the current settings object (normalized)
   ipcMain.handle('get-settings', async () => {
     try {
@@ -583,7 +574,7 @@ function registerIpc(
 
       const menuLang = settings.language || DEFAULT_LANG;
 
-      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      const windows = resolveWindows();
 
       // Rebuild the app menu using the new language (best-effort).
       if (typeof buildAppMenu === 'function') {
@@ -642,7 +633,7 @@ function registerIpc(
       settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
       settings = saveSettings(settings);
 
-      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      const windows = resolveWindows();
       publishSettingsUpdated(settings, windows);
 
       return { ok: true, mode: settings.modeConteo };
@@ -705,7 +696,7 @@ function registerIpc(
       settings.spellcheckEnabled = enabled;
       settings = saveSettings(settings);
 
-      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      const windows = resolveWindows();
       publishSettingsUpdated(settings, windows);
 
       return { ok: true, enabled: settings.spellcheckEnabled };
@@ -736,7 +727,7 @@ function registerIpc(
       settings.editorFontSizePx = nextEditorFontSizePx;
       settings = saveSettings(settings);
 
-      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      const windows = resolveWindows();
       publishSettingsUpdated(settings, windows);
 
       return { ok: true, editorFontSizePx: settings.editorFontSizePx };
