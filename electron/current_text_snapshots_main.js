@@ -336,7 +336,18 @@ function resolveMainWin(getWindows) {
     return null;
   }
 
-  const wins = getWindows();
+  let wins = null;
+  try {
+    wins = getWindows();
+  } catch (err) {
+    log.warnOnce(
+      'current_text_snapshots.owner_window.get_windows_failed',
+      'Dialog owner fallback: getWindows failed; using unowned dialog.',
+      err
+    );
+    return null;
+  }
+
   if (!wins || typeof wins !== 'object') {
     log.warnOnce(
       'current_text_snapshots.owner_window.windows_invalid',
