@@ -273,6 +273,24 @@ function getSettingsBroadcastWindows() {
   };
 }
 
+function getSecondaryWindowOpenStates() {
+  return [
+    { id: 'editor', label: 'editor', isOpen: isAliveWindow(editorWin) },
+    { id: 'editor_find', label: 'editor_find', isOpen: isAliveWindow(editorFindMain.getFindWindow()) },
+    { id: 'preset_modal', label: 'preset_modal', isOpen: isAliveWindow(presetWin) },
+    { id: 'language_window', label: 'language_window', isOpen: isAliveWindow(langWin) },
+    { id: 'floating_stopwatch', label: 'floating_stopwatch', isOpen: isAliveWindow(flotanteWin) },
+    { id: 'task_editor', label: 'task_editor', isOpen: isAliveWindow(taskEditorWin) },
+  ];
+}
+
+function getPreconditionContext() {
+  return {
+    openSecondaryWindows: getSecondaryWindowOpenStates(),
+    stopwatchRunning: !!(crono && crono.running),
+  };
+}
+
 function ensureEditorWindowOpen(options = {}) {
   const deferShow = !!(options && options.deferShow);
 
@@ -1744,25 +1762,7 @@ app.whenReady().then(() => {
     getWindows: () => ({
       mainWin,
     }),
-    getPreconditionContext: () => {
-      const secondaryWindows = [
-        { id: 'editor', label: 'editor', ref: editorWin },
-        { id: 'editor_find', label: 'editor_find', ref: editorFindMain.getFindWindow() },
-        { id: 'preset_modal', label: 'preset_modal', ref: presetWin },
-        { id: 'language_window', label: 'language_window', ref: langWin },
-        { id: 'floating_stopwatch', label: 'floating_stopwatch', ref: flotanteWin },
-        { id: 'task_editor', label: 'task_editor', ref: taskEditorWin },
-      ];
-
-      return {
-        openSecondaryWindows: secondaryWindows.map((item) => ({
-          id: item.id,
-          label: item.label,
-          isOpen: isAliveWindow(item.ref),
-        })),
-        stopwatchRunning: !!(crono && crono.running),
-      };
-    },
+    getPreconditionContext,
   });
 
   importExtractOcrActivationIpc.registerIpc(ipcMain, {
@@ -1796,21 +1796,7 @@ app.whenReady().then(() => {
 
   readingTestSessionController = readingTestSession.createController({
     resolveMainWindow: () => resolveMainWindow(),
-    getPreconditionContext: () => {
-      const secondaryWindows = [
-        { id: 'editor', label: 'editor', isOpen: isAliveWindow(editorWin) },
-        { id: 'editor_find', label: 'editor_find', isOpen: isAliveWindow(editorFindMain.getFindWindow()) },
-        { id: 'preset_modal', label: 'preset_modal', isOpen: isAliveWindow(presetWin) },
-        { id: 'language_window', label: 'language_window', isOpen: isAliveWindow(langWin) },
-        { id: 'floating_stopwatch', label: 'floating_stopwatch', isOpen: isAliveWindow(flotanteWin) },
-        { id: 'task_editor', label: 'task_editor', isOpen: isAliveWindow(taskEditorWin) },
-      ];
-
-      return {
-        openSecondaryWindows: secondaryWindows,
-        stopwatchRunning: !!(crono && crono.running),
-      };
-    },
+    getPreconditionContext,
     isProcessingModeActive: () => importExtractProcessingModeController.isActive(),
     ensureEditorWindow: (options) => ensureEditorWindowOpen(options),
     showEditorWindow: (options) => showEditorWindow(options),
