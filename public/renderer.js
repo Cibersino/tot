@@ -4,6 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
+// Main renderer entry point for the primary window UI.
 // Responsibilities:
 // - Bootstraps the renderer UI and pulls config/settings from main.
 // - Applies i18n labels and number formatting.
@@ -1105,7 +1106,7 @@ function setupToggleModoPreciso() {
       log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
     }
   } catch (err) {
-    log.error('Error initialazing toggleModoPreciso:', err);
+    log.error('Error initializing toggleModoPreciso:', err);
   }
 }
 
@@ -1222,7 +1223,7 @@ async function runStartupOrchestrator() {
     // Final update after presets load in case WPM changed
     startPreviewAndResultsUpdate(currentText, 'startup kickoff');
   } catch (err) {
-    log.error('Error initialazing renderer:', err);
+    log.error('Error initializing renderer:', err);
   }
 }
 
@@ -1246,7 +1247,7 @@ function closeInfoModal() {
     const loadingText = tRenderer('renderer.info.loading');
     infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
   } catch (err) {
-    log.error('Error closing modal info:', err);
+    log.error('Error closing info modal:', err);
   }
 }
 
@@ -1272,7 +1273,7 @@ async function fetchText(path) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.text();
   } catch (err) {
-    log.warnOnce('renderer:fetchText:failed', 'fetchText failed; info modal will fallback:', path, err);
+    log.warn('fetchText failed; info modal will fallback:', path, err);
     return null;
   }
 }
@@ -1640,7 +1641,7 @@ if (window.menuActions && typeof window.menuActions.registerMenuAction === 'func
       const res = await window.electronAPI.openDefaultPresetsFolder();
       if (res && res.ok) {
         // Folder opened successfully; do not show intrusive notifications
-        log.debug('config/presets_defaults floder opened in explorer.');
+        log.debug('config/presets_defaults folder opened in explorer.');
         return;
       }
 
