@@ -1,358 +1,128 @@
-# Baseline legal para distribución (por release)
-
-Fecha: `<YYYY-MM-DD>`
-Tag objetivo (GitHub): `v<MAJOR.MINOR.PATCH>`
-Commit freeze (Git): `<SHA_COMMIT>`
-Artefacto inspeccionado: `<ZIP/INSTALLER>`
-SHA256(artefacto): `<SHA256>`
-
-Pregunta única que responde este documento: **¿El artefacto es legalmente redistribuible en este release?**
-
-Este baseline está diseñado como **checklist operativo** y como gate legal de publicación.  
-La app solo se considera “legalmente redistribuible” si:
-
-1) **Todo el Ship Gate (repo/inventario/cobertura documental) está en PASS**, y  
-2) **Todo el Post-packaging Gate (artefacto empaquetado real) está en PASS**.
-
-Leyenda:
-* **[PASS]** Cumple.
-* **[BLOCKER]** Incumplimiento objetivo: bloquea distribución.
-* **[PENDING]** No verificado aún: bloquea hasta completar.
-* **[N/A]** No aplica. Evitar usarlo; si aparece, justificar explícitamente.
-
-Regla operativa:
-* Este baseline aplica **solo** al artefacto inspeccionado. Si se re-empaqueta, se re-ejecuta el Post-packaging Gate.
-* Este archivo es la **línea base reutilizable** para releases futuros; los baselines versionados completan estados/evidencias sobre esta estructura, pero esta plantilla debe mantenerse alineada con el comportamiento **actual** del producto.
-* Si se usa otro release/baseline como referencia, registrar la referencia exacta (doc/ruta/tag/commit) y el delta observado; no asumir que una versión previa quedó “cerrada” si después hubo correcciones documentales o de packaging.
-* La evidencia detallada (árboles, salidas de comandos, capturas) puede guardarse fuera del repo; aquí debe quedar el resumen + referencia.
-
----
-
-## 1) Veredicto del release
-
-**Veredicto actual:** `<PASS | BLOCKER | PENDING>`  
-**Decisión:** `<OK publicar | NO publicar>`
-
-Estado por gate:
-* **Ship Gate (inventario + cobertura legal):** `<PASS | BLOCKER | PENDING>`
-  * Servicios externos + terceros redistribuidos (secciones 2–5): `<PASS | BLOCKER | PENDING>`
-  * Higiene legal del release (sección 6): `<PASS | BLOCKER | PENDING>`
-* **Post-packaging Gate (artefacto empaquetado):** `<PASS | BLOCKER | PENDING>`
-
-Notas:
-* Si el veredicto es PASS, registrar el identificador exacto del artefacto validado (nombre + hash).
-* Si el veredicto es BLOCKER/PENDING, registrar ítems bloqueantes y plan de resolución.
-* Registrar siempre el **delta legal del release** (servicios nuevos, terceros nuevos, cambios de licencias/notices, cambios en docs legales de usuario) contra una referencia identificada explícitamente.
-* En esta plantilla, el delta legal debe registrar explícitamente:
-  * cualquier cambio en la postura legal/documental de **import/extract + OCR conectado con Google**,
-  * cualquier cambio en el material OAuth desktop empaquetado del owner/propietario para OCR,
-  * y cualquier cambio en licencias/notices/docs específicos de import/extract.
-
----
-
-## 2) Modelo legal mínimo — Ship Gate
-
-**Objetivo práctico:** que todo lo consumido externamente y todo lo redistribuido tenga inventario y cobertura legal antes de empaquetar.
-
-Checklist:
-* [PENDING] Existe inventario legal efectivo del release (servicios externos + material de terceros + docs entregables).
-* [PENDING] Cada ítem del inventario tiene: origen, licencia/términos, decisión de redistribución y evidencia.
-* [PENDING] La referencia documental usada para el delta legal queda identificada explícitamente (baseline/release/tag/commit base).
-* [PENDING] Hay comparación explícita contra la referencia elegida (`agregados | eliminados | cambiados`), sin asumir que una versión previa quedó inmutable.
-* [PENDING] Si hay incertidumbre legal, el ítem queda en PENDING hasta resolver.
-
-Criterio de bloqueo:
-* Publicar con un tercero redistribuido sin licencia/notice identificable y redistribuible.
-
-Evidencia mínima sugerida:
-* Tabla inventario (`ítem | origen | licencia/términos | obligación | ubicación notice/doc | estado`).
-* Resumen del delta legal respecto a la referencia elegida.
-
----
-
-## 3) Inventario de servicios externos — Ship Gate
-
-Servicios externos efectivos esperados según el estado actual del producto (verificar/completar por release):
-* Updater check:
-  * `https://api.github.com/repos/Cibersino/tot/releases/latest`
-* Download en navegador externo:
-  * `https://github.com/Cibersino/tot/releases/latest`
-* Sitio/documentación pública del producto:
-  * `https://totapp.org/`
-  * páginas públicas del producto usadas para portada, privacidad de la app y privacidad/cookies del sitio
-* OCR conectado con Google:
-  * OAuth desktop vía navegador del sistema (Google Identity)
-  * Google Drive API / conversión Google Docs para OCR de archivos elegidos por el usuario
-  * scope esperado del producto: `drive.file`
-* Allowlist actual de apertura externa a reconciliar por release:
-  * `github.com`
-  * `www.github.com`
-  * `api.github.com`
-  * `raw.githubusercontent.com`
-  * `doi.org`
-  * `totapp.org`
-  * `www.totapp.org`
-  * `www.patreon.com`
-  * `drive.google.com`
-* Allowlist actual de `mailto:` a reconciliar por release:
-  * `cibersino@gmail.com`
-
-Checklist:
-* [PENDING] Lista efectiva de endpoints/servicios usada por la app en este release (incluye cualquier host nuevo).
-* [PENDING] La allowlist efectiva de apertura externa queda registrada y consistente con la implementación actual (hosts `https` allowlistados + direcciones `mailto:` allowlistadas).
-* [PENDING] La conectividad de red efectiva y la política de apertura externa (`openExternal` + `mailto:`) quedan inventariadas por separado; no mezclar ambas superficies.
-* [PENDING] Inventariar explícitamente el uso de Google OAuth + Google Drive OCR y dejar cerrada su cobertura documental mínima (scope, disclosures, privacidad, mecanismo de desconexión y páginas públicas relevantes).
-* [PENDING] Confirmar ausencia de credenciales embebidas no documentadas (`token`, `key`, `user:pass`, `.env`, etc.).
-* [PENDING] Registrar la presencia del cliente OAuth empaquetado del owner/propietario para OCR como **excepción controlada e intencional**; no tratarla como “secret accidental”, pero sí exigir trazabilidad exacta de ruta, propósito y exclusiones de git.
-* [PENDING] Si aparece servicio nuevo: inventariar obligación legal asociada (ToS, aviso, privacidad, atribución, etc.).
-
-Criterio de bloqueo:
-* Secret/credencial embebida en repo.
-* Secret/credencial no documentada o no intencional embebida en artefacto.
-* La app usa Google para OCR pero no tiene inventario/cobertura mínima cerrada para su postura Google/OAuth/privacidad.
-* Servicio externo nuevo en producción sin inventario/cobertura legal mínima.
-
-Evidencia mínima sugerida:
-* Referencia a archivos/canales donde se usa cada endpoint o destino externo relevante.
-* Búsqueda de URLs/secrets (ejemplos):
-  * `rg -n "https?://|openExternal|check-for-updates" electron public`
-  * `rg -n "googleapis|authenticate\\(|drive\\.files\\.|drive\\.file|Disconnect Google OCR|import_extract_ocr" electron public i18n docs website`
-  * `rg -n "(AKIA|BEGIN PRIVATE KEY|ghp_|xox[baprs]-|token|secret|password|\\.env)" .`
-
----
-
-## 4) Inventario de material redistribuido de terceros — Ship Gate
-
-**Objetivo práctico:** identificar todo lo de terceros que viaja dentro del artefacto y su obligación asociada.
-
-Checklist:
-* [PENDING] Fonts redistribuidas inventariadas con licencia/notice:
-  * `Baskervville` — `public/third_party_licenses/LICENSE_Baskervville_OFL.txt`
-  * Otras (si existen): `<FontName> — <ruta licencia/notice>`
-* [PENDING] Assets redistribuidos de terceros inventariados (si todo es propio, declararlo explícitamente).
-* [PENDING] Runtime notices obligatorios inventariados:
-  * `LICENSE.electron.txt`
-  * `LICENSES.chromium.html`
-* [PENDING] Material legal redistribuido específico de import/extract inventariado:
-  * `public/third_party_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt`
-  * `public/third_party_licenses/LICENSE_googleapis_171.4.0.txt`
-  * `public/third_party_licenses/LICENSE_mammoth_1.11.0.txt`
-  * `public/third_party_licenses/LICENSE_pdf-parse_1.1.1.txt`
-  * `public/third_party_licenses/LICENSE_sharp_0.34.4.txt`
-  * `public/third_party_licenses/LICENSE_adm-zip_0.5.16.txt`
-  * licencia/notices del runtime nativo empaquetado real de `sharp` para la plataforma/arquitectura inspeccionada (ejemplos posibles según release):
-    * `public/third_party_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
-    * `public/third_party_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
-    * `public/third_party_licenses/LICENSE_@img_sharp-darwin-x64_0.34.4.txt`
-    * `public/third_party_licenses/NOTICE_@img_sharp-darwin-x64_0.34.4.txt`
-    * `public/third_party_licenses/LICENSE_@img_sharp-darwin-arm64_0.34.4.txt`
-    * `public/third_party_licenses/NOTICE_@img_sharp-darwin-arm64_0.34.4.txt`
-    * `public/third_party_licenses/LICENSE_@img_sharp-linux-x64_0.34.4.txt`
-    * `public/third_party_licenses/NOTICE_@img_sharp-linux-x64_0.34.4.txt`
-* [PENDING] El material OAuth desktop empaquetado del owner/propietario queda inventariado como **configuración distribuida controlada**, no como “notice de tercero”, con ruta y tratamiento separados de las licencias.
-* [PENDING] Cada tercero tiene trazabilidad completa:
-  * `componente | origen | licencia | obligación | archivo notice/doc`
-
-Criterio de bloqueo:
-* Cualquier font/asset/componente de terceros redistribuido sin licencia/notice identificable y entregable.
-
-Evidencia mínima sugerida:
-* Inventario consolidado por componente.
-* Referencias de ubicación en repo de cada notice/licencia.
-
----
-
-## 5) Dependencias runtime y cobertura de licencias — Ship Gate
-
-Este punto no asume ausencia de dependencias runtime; debe verificarse en cada release.
-
-Checklist:
-* [PENDING] Modelo esperado para este release (marcar uno):
-  * [ ] No hay `node_modules` runtime redistribuidos (solo runtime Electron + app bundle).
-  * [ ] Sí hay `node_modules` runtime redistribuidos (listar top-level). Estado actual esperado del producto: **sí**.
-* [PENDING] Si hay dependencias runtime: listar `nombre@versión`, licencia y cobertura documental.
-  * Estado actual esperado para import/extract:
-    * `@google-cloud/local-auth@3.0.1` — `Apache-2.0`
-    * `googleapis@171.4.0` — `Apache-2.0`
-    * `mammoth@1.11.0` — `BSD-2-Clause`
-    * `pdf-parse@1.1.1` — `MIT`
-    * `sharp@0.34.4` — `Apache-2.0`
-    * `adm-zip@0.5.16` — `MIT`
-    * runtime nativo de `sharp` para la plataforma empaquetada (por ejemplo `@img/sharp-win32-x64@0.34.4`, `@img/sharp-darwin-x64@0.34.4`, `@img/sharp-darwin-arm64@0.34.4` o `@img/sharp-linux-x64@0.34.4`) — verificar licencia/notice entregados para la plataforma real
-* [PENDING] Si no hay dependencias runtime redistribuidas: registrar la expectativa explícitamente para validarla contra el artefacto en Post-packaging.
-* [PENDING] Cualquier dependencia efectiva encontrada en el artefacto queda inventariada y cubierta por esta sección y por los documentos de §6.
-
-Criterio de bloqueo:
-* Dependencia runtime efectiva sin cobertura de licencia/notice aplicable.
-
-Evidencia mínima sugerida:
-* Inventario de dependencias runtime esperadas (si aplica).
-* Comando de apoyo (si aplica): `npm ls --omit=dev --depth=0`
-
----
-
-## 6) Documentos legales entregables + higiene legal del release — Ship Gate
-
-**Objetivo práctico:** dejar cerrado qué documentos recibe el usuario y asegurar que build/repo no arrastren material impropio.
-
-Checklist:
-* [PENDING] Lista efectiva de documentos legales que deben incluirse en artefacto:
-  * `LICENSE`
-  * `PRIVACY.md`
-  * `LICENSE.electron.txt`
-  * `LICENSES.chromium.html`
-  * Licencias/notices de fonts redistribuidas (ej. `public/third_party_licenses/LICENSE_Baskervville_OFL.txt`)
-  * Notices adicionales si aplica (ej. `THIRD_PARTY_NOTICES.md`)
-  * `public/third_party_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt`
-  * `public/third_party_licenses/LICENSE_googleapis_171.4.0.txt`
-  * `public/third_party_licenses/LICENSE_mammoth_1.11.0.txt`
-  * `public/third_party_licenses/LICENSE_pdf-parse_1.1.1.txt`
-  * `public/third_party_licenses/LICENSE_sharp_0.34.4.txt`
-  * `public/third_party_licenses/LICENSE_adm-zip_0.5.16.txt`
-  * licencia/notices del runtime nativo de `sharp` para la plataforma empaquetada real del release (ej. Windows x64, macOS x64/arm64, Linux x64):
-    * registrar el archivo exacto correspondiente a la plataforma inspeccionada;
-    * no asumir Windows por defecto cuando el artefacto sea macOS o Linux.
-* [PENDING] `public/info/acerca_de.html` (u otra UI equivalente) es consistente con el inventario legal efectivo del release.
-* [PENDING] `public/info/acerca_de.html` y `electron/link_openers.js` siguen alineados: cada doc legal enlazado desde la UI tiene archivo efectivo y cada archivo redistribuido relevante tiene trazabilidad en la UI o justificación explícita.
-* [PENDING] `PRIVACY.md`, `public/info/acerca_de.html` y `public/info/instrucciones.*.html` describen coherentemente:
-  * que OCR usa Google solo cuando el usuario elige esa ruta,
-  * que la autorización ocurre en navegador externo,
-  * que solo los archivos elegidos por el usuario para OCR se envían a Google,
-  * que existe disconnect dentro de la app,
-  * y que la app intenta limpieza remota del artefacto temporal de Google después de exportar.
-* [PENDING] No hay drift entre documentación user-facing (`PRIVACY.md`, `public/info/acerca_de.html`, `public/info/instrucciones.*.html`, `website/public/**`) y documentación interna relevante (`docs/releases/legal_baseline.md`, `docs/releases/release_checklist.md`, `docs/tree_folders_files.md` si cambió la superficie distribuida, y `CHANGELOG.md` / `docs/changelog_detailed.md` cuando exista delta legal).
-* [PENDING] Sitio web público (`website/public`) alineado legal/comercialmente con el release:
-  * Rutas públicas esperadas vigentes: `/`, `/es/`, `/en/`, `/app-privacy/`, `/es/app-privacy/`, `/en/app-privacy/`, `/es/app-privacy/google-ocr/`, `/en/app-privacy/google-ocr/`, `/es/privacy-cookies/`, `/en/privacy-cookies/`.
-  * No asumir rutas root que el repo no publique; validar siempre contra `website/public` real del release.
-  * La postura pública de app/privacy y Google OCR en esas rutas coincide con la implementación real y con los disclosures in-app.
-  * `Privacidad / Cookies` / `Privacy / Cookies` visible en `/`, `/es/` y `/en/` (sin depender de metadatos).
-  * Contenido mínimo de privacidad/cookies alineado con implementación actual (sin claims no verificadas sobre analytics/cookies/servicios).
-  * La portada y las páginas públicas de privacidad están alineadas con la postura real de Google OCR usada en la app.
-  * Operador y canales de contacto consistentes entre sitio web y artefacto/app (`Cibersino`, GitHub Issues, `cibersino@gmail.com`).
-* [PENDING] Branding y marcas de terceros en sitio web inventariados cuando aplique:
-  * Uso intencional de logos/marks de plataformas externas (Patreon, Instagram, X, YouTube, Twitch u otras) revisado a nivel de cumplimiento básico de términos de marca.
-  * Si no hay cambios en logos/marks respecto a la referencia elegida, registrar “no delta”.
-* [PENDING] La configuración de empaquetado (`build.files` allowlist y/o excludes explícitos) es coherente y no arrastra material no distribuible.
-* [PENDING] Confirmar ausencia de `tools_local/`, backups, dumps, `.env` y secretos no intencionales en lo que se planea distribuir.
-* [PENDING] Verificar tratamiento correcto de credenciales/token OCR:
-  * `electron/assets/ocr_google_drive/credentials.json` forma parte del baseline distribuido como material app-owned intencional del owner/propietario.
-  * ese archivo no debe estar committed en git.
-  * `config/ocr_google_drive/token.json` no forma parte del artefacto distribuido; es estado mutable local post-activación.
-
-Criterio de bloqueo:
-* Documento legal obligatorio faltante en la lista efectiva de entrega.
-* Configuración de build incluye material sensible/no distribuible fuera de lo explícitamente decidido, inventariado y justificado para el release.
-* La app tiene política de credenciales/token OCR inconsistente con el modelo documentado del release.
-
-Evidencia mínima sugerida:
-* Matriz `documento | obligación | ruta en repo | ruta esperada en artefacto`.
-* Matriz anti-drift `claim/superficie | fuente user-facing | fuente interna | estado`.
-* Referencia a configuración de empaquetado (`build.files`/excludes) y verificación de secretos.
-
----
-
-# POST-PACKAGING GATE (obligatorio antes de publicar)
-
-Este gate valida el **artefacto real** que se publica (zip/installer), no solo el repo.
-
-## 7) Inspección del contenido del artefacto
-
-Checklist:
-* [PENDING] Confirmar que el artefacto contiene solo runtime + app + docs legales esperados.
-* [PENDING] Confirmar ausencia de material no distribuible/sensible:
-  * `tools_local/`, backups, evidence folders, dumps
-  * `.env`, llaves, logs de desarrollo
-* [PENDING] Verificar explícitamente el tratamiento del material OCR empaquetado:
-  * presencia esperada de `electron/assets/ocr_google_drive/credentials.json` según el modelo actual documentado del producto,
-  * ausencia de cualquier `token.json` de usuario dentro del artefacto,
-  * presencia de `public/third_party_licenses/*` esperados para la plataforma empaquetada.
-* [PENDING] Registrar evidencia mínima (árbol/archivo listado de raíz + `resources/`).
-
-Criterio de bloqueo:
-* Presencia de material sensible o no distribuible en artefacto final fuera de lo explícitamente decidido, inventariado y justificado para el release.
-* Presencia de token OAuth de usuario en artefacto final.
-* Presencia/ausencia incorrecta del `credentials.json` OCR empaquetado respecto al baseline documentado del producto.
-
-Evidencia mínima sugerida:
-* Snapshot de árbol de archivos del artefacto y `resources/`.
-
----
-
-## 8) Dependencias runtime efectivas (en artefacto)
-
-Checklist:
-* [PENDING] Verificar si existen:
-  * `resources/app.asar/node_modules/**`
-  * `resources/app.asar.unpacked/**`
-  * `resources/app/node_modules/**`
-* [PENDING] Si existen dependencias runtime: listar el top-level real y cruzarlo contra §5.
-* [PENDING] Cualquier dependencia inesperada se clasifica y cubre legalmente antes de publicar.
-
-Criterio de bloqueo:
-* Dependencia runtime efectiva inesperada sin cobertura legal/documental.
-
-Evidencia mínima sugerida:
-* Listado top-level real de dependencias dentro del artefacto + resultado del cruce con §5.
-
----
-
-## 9) Verificación de documentos legales en artefacto (contra §6)
-
-Checklist:
-* [PENDING] Cada documento listado en §6 está presente en el artefacto final.
-* [PENDING] Verificar accesibilidad práctica: el usuario puede abrir esos documentos (por UI o por ubicación clara en zip/installer).
-* [PENDING] Verificar accesibilidad práctica de los docs de import/extract/OCR:
-  * `PRIVACY.md` desde el disclosure OCR y/o `Acerca de`
-  * licencias/notices de import/extract desde `Acerca de`
-* [PENDING] Confirmar que nombres/rutas finales no rompen la trazabilidad definida en §6.
-
-Criterio de bloqueo:
-* Falta cualquier documento legal obligatorio en el artefacto final.
-
-Evidencia mínima sugerida:
-* Tabla de presencia/ausencia + evidencia de apertura.
-
----
-
-## 10) Servicios externos sanity en artefacto
-
-Checklist:
-* [PENDING] Confirmar que los endpoints de red efectivos y los destinos permitidos de apertura externa/mailto del build empaquetado coinciden con §3.
-* [PENDING] Confirmar que la postura efectiva del binario empaquetado para OCR sigue siendo:
-  * OAuth en navegador del sistema,
-  * scope `drive.file`,
-  * Google Drive OCR para archivos elegidos por el usuario,
-  * sin backend del desarrollador para OCR.
-* [PENDING] Si aparece conectividad nueva, volver a §3 y §2 (estado pasa a PENDING hasta cerrar inventario/cobertura).
-
-Criterio de bloqueo:
-* Endpoint o destino externo efectivo no inventariado con obligación legal mínima cerrada.
-
-Evidencia mínima sugerida:
-* Referencia de verificación sobre binario/asar/config y resultado de comparación contra §3.
-
----
-
-## 11) Resultado final (criterio del veredicto)
-
-La app queda marcada como **“legalmente redistribuible en este release”** únicamente cuando:
-* Ship Gate: todo PASS (inventario legal + cobertura documental + higiene legal), y
-* Post-packaging Gate: todo PASS (artefacto real validado).
-
-**BLOCKER** (no publicar) si ocurre cualquiera:
-* Tercero redistribuido sin licencia/notice identificable y redistribuible.
-* Documento legal obligatorio ausente en artefacto final.
-* Secret/credencial embebida en repo.
-* Secret/credencial no documentada o no intencional embebida en artefacto.
-* `config/ocr_google_drive/token.json` u otro token mutable de usuario incluido en artefacto.
-* La app no tiene decisión/evidencia cerrada sobre el material OAuth empaquetado del owner/propietario para OCR.
-* Material sensible/no distribuible no documentado o no intencional incluido por build.
-
-**PENDING** (no publicar aún) si ocurre cualquiera:
-* Hay ítems nuevos (servicios/terceros/dependencias/documentos) sin inventario/cobertura cerrada.
-* No se ejecutó por completo el Post-packaging Gate sobre el artefacto final.
-
-Veredicto final: `<PASS | BLOCKER | PENDING>`  
-Artefacto validado: `<nombre exacto>`
-
----
+# Baseline operativo legal de release
+
+Este documento responde una sola pregunta: `¿el artefacto evaluado es legalmente redistribuible?`
+
+La plantilla reusable debe contener solo controles estables.  
+Todo inventario exacto del release debe vivir en su documento versionado:
+`docs/releases/<release-id>/legal_baseline_<release_file_id>.md`
+Aquí, `<release_file_id>` significa el identificador del release normalizado para nombre de archivo.
+
+## Reglas de mantenimiento
+
+- No fijar aquí versiones exactas de dependencias, rutas cambiantes, licencias concretas por release, hosts, hashes ni evidencia puntual.
+- Todo valor exacto debe quedar en el baseline versionado del release.
+- Si una excepción aplica solo a un release, documentarla solo en el baseline versionado.
+- Actualizar esta plantilla solo cuando cambie la postura legal base del producto o su modelo de redistribución.
+- El veredicto vale solo para el artefacto inspeccionado. Si se reempaqueta, se repite el gate del artefacto.
+
+## Campos mínimos del release versionado
+
+- Fecha de ejecución: `<YYYY-MM-DD>`
+- Release ID: `<release-id>`
+- Tag público: `<tag>`
+- Commit freeze: `<sha>`
+- Artefactos inspeccionados: `<artifacto-1>, <artifacto-2>`
+- Hashes de artefacto: `<sha256>`
+- Referencia base para comparar delta: `<tag|release-id|commit>`
+- Veredicto final: `<PASS | BLOCKER | PENDING>`
+
+## 1. Hechos estables del producto que este baseline asume
+
+- El producto se distribuye como app de escritorio empaquetada.
+- El artefacto puede redistribuir runtime, dependencias de producción, recursos visuales, documentación in-app y otros materiales entregados al usuario final.
+- La app mantiene superficies legales y de privacidad en más de un lugar: artefacto distribuido, documentación del repo, superficies informativas in-app y sitio web público.
+- Algunas features pueden abrir servicios externos o enviar datos a terceros solo bajo flujos definidos por la app; esos flujos deben tener cobertura legal y documental alineada.
+- El veredicto legal es por artefacto final, no solo por estado del repo.
+
+## 2. Inventarios obligatorios del release
+
+- [ ] Inventario de componentes redistribuidos de terceros cerrado.
+Registro requerido en el baseline versionado: cada componente redistribuido por el artefacto, su versión exacta, origen, licencia o términos aplicables, obligación de notice/atribución y archivo o superficie donde esa obligación queda cubierta.
+
+- [ ] Inventario de assets, fonts y marcas de terceros cerrado.
+Registro requerido en el baseline versionado: procedencia, permiso de uso, obligación documental y ubicación efectiva en repo y artefacto para todo asset no propio que viaje con la app o con el sitio público relevante para el release.
+
+- [ ] Inventario de servicios externos y disclosures cerrado.
+Registro requerido en el baseline versionado: terceros con los que interactúa la app, propósito, datos que salen del dispositivo, condición que dispara el flujo, cuenta o permisos requeridos, y documentación user-facing que cubre ese comportamiento.
+
+- [ ] Inventario de material controlado por la app cerrado.
+Registro requerido en el baseline versionado: cualquier credencial, configuración u otro material distribuido intencionalmente por el owner de la app, la razón por la que viaja en el artefacto, su tratamiento separado de notices de terceros y su política de inclusión/exclusión en git y packaging.
+
+- [ ] Inventario de documentos legales cerrado.
+Registro requerido en el baseline versionado: documentos que deben entregarse al usuario en este release, incluyendo al menos `LICENSE`, `PRIVACY.md` y cualquier superficie legal o informativa que el artefacto actual exponga in-app o vía sitio público.
+
+- [ ] Delta legal del release cerrado.
+Registro requerido en el baseline versionado: altas, bajas o cambios en terceros redistribuidos, servicios externos, disclosures, documentos legales, material controlado y postura pública del release respecto de la referencia base.
+
+- [ ] Inventario legal del artefacto final cerrado.
+Registro requerido en el baseline versionado: lista efectiva de documentos, notices, componentes runtime y material sensible o controlado observado en el build final.
+
+## 3. Gate previo al packaging
+
+### 3.1 Redistribución de terceros
+
+- [ ] Todo componente redistribuido queda clasificado con nombre, versión, origen, licencia o términos aplicables y decisión de redistribución.
+- [ ] Toda obligación de notice, atribución, copia de licencia o texto de terceros tiene una cobertura explícita en el release.
+- [ ] Ningún componente de terceros queda en estado ambiguo o sin clasificación legal.
+- [ ] Fonts, imágenes, iconos, logos y otros assets de terceros tienen procedencia y permiso de uso identificados.
+
+### 3.2 Servicios externos, privacidad y disclosures
+
+- [ ] Todo servicio externo o flujo conectado tiene una descripción user-facing coherente con la implementación real.
+- [ ] La documentación user-facing aclara qué dato sale del dispositivo, bajo qué acción o condición y hacia qué tercero.
+- [ ] Cuentas, permisos, scopes, consentimientos o pasos de autenticación requeridos por una feature conectada quedan documentados cuando apliquen.
+- [ ] La app no promete comportamiento `offline`, `local-only`, `sin terceros` o equivalente si el release real tiene excepciones no descritas.
+- [ ] Identidad del operador, canales de soporte, correo de contacto, tracker público y rutas oficiales de descarga son coherentes entre sí.
+
+### 3.3 Material controlado por la app
+
+- [ ] Todo material sensible o controlado distribuido intencionalmente por la app queda documentado por separado de los notices de terceros.
+- [ ] La razón por la que ese material viaja en el artefacto queda explícita y revisada.
+- [ ] La política de git, packaging y rotación de ese material queda documentada de forma coherente con el modelo del producto.
+- [ ] Ningún token mutable del usuario final, estado personal o secreto accidental forma parte del artefacto distribuible.
+
+### 3.4 Documentos legales y alineación documental
+
+- [ ] Existe una lista explícita de documentos que el release debe entregar al usuario.
+- [ ] `LICENSE` y `PRIVACY.md` quedan cubiertos por el release.
+- [ ] Las superficies in-app, `README.md`, changelogs y sitio web público que describen la app son coherentes con la postura legal y de privacidad real del release.
+- [ ] Si el release cambia la postura legal o de privacidad, el cambio queda reflejado en la documentación pública e interna pertinente.
+- [ ] Las rutas de ayuda, privacidad, soporte y documentación enlazadas desde la app o el sitio siguen siendo válidas para este release.
+
+### 3.5 Higiene de packaging
+
+- [ ] La configuración de build incluye los documentos legales y notices que el release debe distribuir.
+- [ ] El build no arrastra borradores, backups, secretos, evidencia interna ni otros materiales no distribuibles.
+- [ ] El inventario de terceros, documentos y material controlado puede reconciliarse con lo que el packaging realmente pretende incluir.
+
+## 4. Gate del artefacto final
+
+- [ ] El artefacto inspeccionado queda identificado por nombre exacto y hash.
+- [ ] El contenido empaquetado real se inspecciona contra el inventario legal del release.
+- [ ] Los documentos legales y notices requeridos están presentes en el build final y son accesibles de forma razonable para el usuario.
+- [ ] Las dependencias runtime, módulos nativos, fonts, assets y demás componentes redistribuidos observados en el artefacto coinciden con el inventario clasificado.
+- [ ] El build final no contiene terceros no inventariados, tokens de usuario, secretos accidentales ni material sensible no declarado.
+- [ ] Las superficies in-app que abren documentos legales o páginas públicas siguen apuntando a destinos válidos para este release.
+- [ ] Si el artefacto cambia después de esta revisión, el gate del artefacto se repite completo.
+
+## 5. Criterio de veredicto
+
+`BLOCKER` si ocurre cualquiera:
+
+- Hay un componente redistribuido sin licencia o términos identificados.
+- Falta un notice, atribución o documento legal obligatorio para el artefacto final.
+- Existe un servicio externo o flujo de datos a terceros sin disclosure coherente.
+- El build incluye un token mutable de usuario, un secreto accidental o material sensible no declarado.
+- La documentación pública o in-app contradice la postura legal o de privacidad real del release.
+
+`PENDING` si ocurre cualquiera:
+
+- Falta cualquier inventario obligatorio del release.
+- Falta ejecutar el gate del artefacto final sobre el build exacto que se quiere publicar.
+- Existe un componente, servicio o material controlado cuya clasificación legal aún no está cerrada.
+
+`PASS` solo cuando:
+
+- El gate previo al packaging y el gate del artefacto final están cerrados para el mismo artefacto.
+- El delta legal del release quedó documentado de forma explícita.
+- No queda ningún blocker abierto para publicación.
