@@ -1232,449 +1232,449 @@ setupToggleModoPreciso();
 // =============================================================================
 // Info modal
 // =============================================================================
-  const infoModal = document.getElementById('infoModal');
-  const infoModalBackdrop = document.getElementById('infoModalBackdrop');
-  const infoModalClose = document.getElementById('infoModalClose');
-  const infoModalTitle = document.getElementById('infoModalTitle');
-  const infoModalContent = document.getElementById('infoModalContent');
-  const { bindInfoModalLinks } = window.InfoModalLinks || {};
+const infoModal = document.getElementById('infoModal');
+const infoModalBackdrop = document.getElementById('infoModalBackdrop');
+const infoModalClose = document.getElementById('infoModalClose');
+const infoModalTitle = document.getElementById('infoModalTitle');
+const infoModalContent = document.getElementById('infoModalContent');
+const { bindInfoModalLinks } = window.InfoModalLinks || {};
 
-  function closeInfoModal() {
-    try {
-      if (!infoModal || !infoModalContent) return;
-      infoModal.setAttribute('aria-hidden', 'true');
-      const loadingText = tRenderer('renderer.info.loading');
-      infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
-    } catch (err) {
-      log.error('Error closing modal info:', err);
-    }
+function closeInfoModal() {
+  try {
+    if (!infoModal || !infoModalContent) return;
+    infoModal.setAttribute('aria-hidden', 'true');
+    const loadingText = tRenderer('renderer.info.loading');
+    infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
+  } catch (err) {
+    log.error('Error closing modal info:', err);
+  }
+}
+
+if (infoModalClose) infoModalClose.addEventListener('click', closeInfoModal);
+if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', closeInfoModal);
+
+window.addEventListener('keydown', (ev) => {
+  if (!infoModal) return;
+  if (ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') {
+    closeInfoModal();
+  }
+});
+
+async function fetchText(path) {
+  try {
+    const res = await fetch(path, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.text();
+  } catch (err) {
+    log.warnOnce('renderer:fetchText:failed', 'fetchText failed; info modal will fallback:', path, err);
+    return null;
+  }
+}
+
+async function fetchTextWithFallback(paths) {
+  for (const path of paths) {
+    const html = await fetchText(path);
+    if (html !== null) return { html, path };
+  }
+  return { html: null, path: null };
+}
+
+// Translate HTML fragments using data-i18n and renderer.info.<key>.*
+function translateInfoHtml(htmlString, key) {
+  // If no translation function is available, return the HTML unchanged.
+  if (!tRenderer) return htmlString;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    doc.querySelectorAll('[data-i18n]').forEach((el) => {
+      const dataKey = el.getAttribute('data-i18n');
+      if (!dataKey) return;
+      const tKey = `renderer.info.${key}.${dataKey}`;
+      const translated = tRenderer(tKey);
+      if (translated) el.textContent = translated;
+    });
+    return doc.body.innerHTML;
+  } catch (err) {
+    log.warn('translateInfoHtml failed:', err);
+    return htmlString;
+  }
+}
+
+function extractInfoBodyHtml(htmlString) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    return doc.body.innerHTML;
+  } catch (err) {
+    log.warn('extractInfoBodyHtml failed:', err);
+    return htmlString;
+  }
+}
+
+async function hydrateAboutVersion(container) {
+  const versionEl = container ? container.querySelector('#appVersion') : null;
+  if (!versionEl) return;
+  const unavailableText = tRenderer('renderer.info.acerca_de.version.unavailable');
+
+  if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
+    log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
+    versionEl.textContent = unavailableText;
+    return;
   }
 
-  if (infoModalClose) infoModalClose.addEventListener('click', closeInfoModal);
-  if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', closeInfoModal);
-
-  window.addEventListener('keydown', (ev) => {
-    if (!infoModal) return;
-    if (ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') {
-      closeInfoModal();
-    }
-  });
-
-  async function fetchText(path) {
-    try {
-      const res = await fetch(path, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.text();
-    } catch (err) {
-      log.warnOnce('renderer:fetchText:failed', 'fetchText failed; info modal will fallback:', path, err);
-      return null;
-    }
-  }
-
-  async function fetchTextWithFallback(paths) {
-    for (const path of paths) {
-      const html = await fetchText(path);
-      if (html !== null) return { html, path };
-    }
-    return { html: null, path: null };
-  }
-
-  // Translate HTML fragments using data-i18n and renderer.info.<key>.*
-  function translateInfoHtml(htmlString, key) {
-    // If no translation function is available, return the HTML unchanged.
-    if (!tRenderer) return htmlString;
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlString, 'text/html');
-      doc.querySelectorAll('[data-i18n]').forEach((el) => {
-        const dataKey = el.getAttribute('data-i18n');
-        if (!dataKey) return;
-        const tKey = `renderer.info.${key}.${dataKey}`;
-        const translated = tRenderer(tKey);
-        if (translated) el.textContent = translated;
-      });
-      return doc.body.innerHTML;
-    } catch (err) {
-      log.warn('translateInfoHtml failed:', err);
-      return htmlString;
-    }
-  }
-
-  function extractInfoBodyHtml(htmlString) {
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlString, 'text/html');
-      return doc.body.innerHTML;
-    } catch (err) {
-      log.warn('extractInfoBodyHtml failed:', err);
-      return htmlString;
-    }
-  }
-
-  async function hydrateAboutVersion(container) {
-    const versionEl = container ? container.querySelector('#appVersion') : null;
-    if (!versionEl) return;
-    const unavailableText = tRenderer('renderer.info.acerca_de.version.unavailable');
-
-    if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
-      log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
+  try {
+    const version = await window.electronAPI.getAppVersion();
+    const cleaned = typeof version === 'string' ? version.trim() : '';
+    if (!cleaned) {
+      log.warnOnce(
+        'renderer.info.acerca_de.version.empty',
+        'getAppVersion returned empty; About modal shows N/A.'
+      );
       versionEl.textContent = unavailableText;
       return;
     }
+    versionEl.textContent = cleaned;
+  } catch (err) {
+    log.warn('getAppVersion failed; About modal shows N/A:', err);
+    versionEl.textContent = unavailableText;
+  }
+}
 
-    try {
-      const version = await window.electronAPI.getAppVersion();
-      const cleaned = typeof version === 'string' ? version.trim() : '';
-      if (!cleaned) {
-        log.warnOnce(
-          'renderer.info.acerca_de.version.empty',
-          'getAppVersion returned empty; About modal shows N/A.'
-        );
-        versionEl.textContent = unavailableText;
-        return;
-      }
-      versionEl.textContent = cleaned;
-    } catch (err) {
-      log.warn('getAppVersion failed; About modal shows N/A:', err);
-      versionEl.textContent = unavailableText;
-    }
+async function hydrateAboutEnvironment(container) {
+  const envEl = container ? container.querySelector('#appEnv') : null;
+  const runtimeEl = container ? container.querySelector('#appRuntimeVersions') : null;
+  const sharpRuntimeLicenseRow = container ? container.querySelector('#sharpRuntimeLicenseRow') : null;
+  const sharpRuntimeNoticeRow = container ? container.querySelector('#sharpRuntimeNoticeRow') : null;
+  const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
+  const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
+  if (!envEl) return;
+  const unavailableText = tRenderer('renderer.info.acerca_de.env.unavailable');
+
+  if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
+    log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
+    envEl.textContent = unavailableText;
+    if (runtimeEl) runtimeEl.textContent = unavailableText;
+    if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+    if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+    return;
   }
 
-  async function hydrateAboutEnvironment(container) {
-    const envEl = container ? container.querySelector('#appEnv') : null;
-    const runtimeEl = container ? container.querySelector('#appRuntimeVersions') : null;
-    const sharpRuntimeLicenseRow = container ? container.querySelector('#sharpRuntimeLicenseRow') : null;
-    const sharpRuntimeNoticeRow = container ? container.querySelector('#sharpRuntimeNoticeRow') : null;
-    const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
-    const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
-    if (!envEl) return;
-    const unavailableText = tRenderer('renderer.info.acerca_de.env.unavailable');
+  try {
+    const info = await window.electronAPI.getAppRuntimeInfo();
+    const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
+    const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
+    const electronVersion = info && typeof info.electronVersion === 'string'
+      ? info.electronVersion.trim()
+      : '';
+    const chromeVersion = info && typeof info.chromeVersion === 'string'
+      ? info.chromeVersion.trim()
+      : '';
+    const nodeVersion = info && typeof info.nodeVersion === 'string'
+      ? info.nodeVersion.trim()
+      : '';
+    const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
+    const osLabel = platformMap[platform] || platform;
+    const sharpRuntimePackageMap = {
+      'win32:x64': '@img/sharp-win32-x64@0.34.4',
+      'darwin:x64': '@img/sharp-darwin-x64@0.34.4',
+      'darwin:arm64': '@img/sharp-darwin-arm64@0.34.4',
+      'linux:x64': '@img/sharp-linux-x64@0.34.4',
+    };
+    const sharpRuntimePackage = sharpRuntimePackageMap[`${platform}:${arch}`]
+      || '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
 
-    if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
-      log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
-      envEl.textContent = unavailableText;
-      if (runtimeEl) runtimeEl.textContent = unavailableText;
-      if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-      if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-      return;
-    }
-
-    try {
-      const info = await window.electronAPI.getAppRuntimeInfo();
-      const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
-      const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
-      const electronVersion = info && typeof info.electronVersion === 'string'
-        ? info.electronVersion.trim()
-        : '';
-      const chromeVersion = info && typeof info.chromeVersion === 'string'
-        ? info.chromeVersion.trim()
-        : '';
-      const nodeVersion = info && typeof info.nodeVersion === 'string'
-        ? info.nodeVersion.trim()
-        : '';
-      const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
-      const osLabel = platformMap[platform] || platform;
-      const sharpRuntimePackageMap = {
-        'win32:x64': '@img/sharp-win32-x64@0.34.4',
-        'darwin:x64': '@img/sharp-darwin-x64@0.34.4',
-        'darwin:arm64': '@img/sharp-darwin-arm64@0.34.4',
-        'linux:x64': '@img/sharp-linux-x64@0.34.4',
-      };
-      const sharpRuntimePackage = sharpRuntimePackageMap[`${platform}:${arch}`]
-        || '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-
-      if (!osLabel || !arch) {
-        log.warnOnce(
-          'renderer.info.acerca_de.env.missing_fields',
-          'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
-        );
-        envEl.textContent = unavailableText;
-        if (runtimeEl) runtimeEl.textContent = unavailableText;
-        if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-        if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-        return;
-      }
-
-      envEl.textContent = `${osLabel} (${arch})`;
-      if (sharpRuntimeEl) sharpRuntimeEl.textContent = sharpRuntimePackage;
-      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = sharpRuntimePackage;
-      if (runtimeEl) {
-        const runtimeParts = [];
-        runtimeParts.push(electronVersion ? `Electron ${electronVersion}` : `Electron ${unavailableText}`);
-        runtimeParts.push(chromeVersion ? `Chromium ${chromeVersion}` : `Chromium ${unavailableText}`);
-        runtimeParts.push(nodeVersion ? `Node.js ${nodeVersion}` : `Node.js ${unavailableText}`);
-        runtimeEl.textContent = runtimeParts.join(' | ');
-      }
-
-      if (
-        window.electronAPI
-        && typeof window.electronAPI.getAppDocAvailability === 'function'
-      ) {
-        const [licenseAvailability, noticeAvailability] = await Promise.all([
-          window.electronAPI.getAppDocAvailability('license-import-extract-image-processing-runtime'),
-          window.electronAPI.getAppDocAvailability('notice-import-extract-image-processing-runtime'),
-        ]);
-        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !(licenseAvailability && licenseAvailability.available);
-        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !(noticeAvailability && noticeAvailability.available);
-      } else {
-        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-      }
-    } catch (err) {
-      log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
+    if (!osLabel || !arch) {
+      log.warnOnce(
+        'renderer.info.acerca_de.env.missing_fields',
+        'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
+      );
       envEl.textContent = unavailableText;
       if (runtimeEl) runtimeEl.textContent = unavailableText;
       if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
       if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
       if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
       if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-    }
-  }
-
-  const normalizeLangTagSafe = (lang) => {
-    if (window.RendererI18n && typeof window.RendererI18n.normalizeLangTag === 'function') {
-      return window.RendererI18n.normalizeLangTag(lang);
-    }
-    log.warnOnce(
-      'renderer.info.normalizeLangTag.fallback',
-      'RendererI18n.normalizeLangTag unavailable; using local fallback normalization.'
-    );
-    return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
-  };
-
-  const getLangBaseSafe = (lang) => {
-    if (window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function') {
-      return window.RendererI18n.getLangBase(lang);
-    }
-    log.warnOnce(
-      'renderer.info.getLangBase.fallback',
-      'RendererI18n.getLangBase unavailable; using local fallback language base.'
-    );
-    const normalized = normalizeLangTagSafe(lang);
-    if (!normalized) return '';
-    const idx = normalized.indexOf('-');
-    return idx > 0 ? normalized.slice(0, idx) : normalized;
-  };
-
-  function getManualFileCandidates(langTag) {
-    const candidates = [];
-    const normalized = normalizeLangTagSafe(langTag);
-    const base = getLangBaseSafe(normalized);
-    if (normalized) candidates.push(normalized);
-    if (base && base !== normalized) candidates.push(base);
-    const defaultLang = normalizeLangTagSafe(DEFAULT_LANG);
-    if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
-    return candidates.map(tag => `./info/instrucciones.${tag}.html`);
-  }
-
-  async function showInfoModal(key) {
-    // key: 'instrucciones' | 'guia_basica' | 'faq' | 'links_interes' | 'acerca_de'
-    if (!infoModal || !infoModalTitle || !infoModalContent) return;
-
-    // Decide which file to load based on the key.
-    // Basic guide, instructions, and FAQ are served from localized manual HTML.
-    let fileToLoad = null;
-    let sectionId = null;
-    const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
-
-    if (key === 'acerca_de') {
-      fileToLoad = './info/acerca_de.html';
-    } else if (key === 'links_interes') {
-      fileToLoad = './info/links_interes.html';
-    } else if (isManual) {
-      const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
-      fileToLoad = getManualFileCandidates(langTag);
-      // Map key to block ID within instructions.html
-      const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
-      sectionId = mapping[key] || 'instrucciones';
-    } else {
-      log.warnOnce(
-        'renderer.info.unsupportedKey',
-        'showInfoModal received unsupported key:',
-        key
-      );
       return;
     }
 
-    const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
-    const infoDialogLabel = tRenderer(`renderer.info.${translationKey}.title`);
-    infoModalTitle.textContent = infoDialogLabel;
-
-    // Open modal early so loading state is visible during fetch
-    const loadingText = tRenderer('renderer.info.loading');
-    infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
-    infoModal.setAttribute('aria-hidden', 'false');
-
-    // Fetch HTML (manual pages use a language fallback list)
-    const tryHtml = Array.isArray(fileToLoad)
-      ? (await fetchTextWithFallback(fileToLoad)).html
-      : await fetchText(fileToLoad);
-    if (tryHtml === null) {
-      // Fallback: show a simple missing-content message
-      const missingContentText = msgRenderer
-        ? msgRenderer(
-          'renderer.info.missing_content',
-          { name: infoDialogLabel }
-        )
-        : `No hay contenido disponible para '${infoDialogLabel}'.`;
-      infoModalContent.innerHTML = `<p>${missingContentText}</p>`;
-      if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-      return;
+    envEl.textContent = `${osLabel} (${arch})`;
+    if (sharpRuntimeEl) sharpRuntimeEl.textContent = sharpRuntimePackage;
+    if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = sharpRuntimePackage;
+    if (runtimeEl) {
+      const runtimeParts = [];
+      runtimeParts.push(electronVersion ? `Electron ${electronVersion}` : `Electron ${unavailableText}`);
+      runtimeParts.push(chromeVersion ? `Chromium ${chromeVersion}` : `Chromium ${unavailableText}`);
+      runtimeParts.push(nodeVersion ? `Node.js ${nodeVersion}` : `Node.js ${unavailableText}`);
+      runtimeEl.textContent = runtimeParts.join(' | ');
     }
 
-    // Translate non-manual pages; manual HTML is loaded as-is.
-    const renderedHtml = isManual
-      ? extractInfoBodyHtml(tryHtml)
-      : translateInfoHtml(tryHtml, translationKey);
-    infoModalContent.innerHTML = renderedHtml;
-    if (typeof bindInfoModalLinks === 'function') {
-      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
+    if (
+      window.electronAPI
+      && typeof window.electronAPI.getAppDocAvailability === 'function'
+    ) {
+      const [licenseAvailability, noticeAvailability] = await Promise.all([
+        window.electronAPI.getAppDocAvailability('license-import-extract-image-processing-runtime'),
+        window.electronAPI.getAppDocAvailability('notice-import-extract-image-processing-runtime'),
+      ]);
+      if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !(licenseAvailability && licenseAvailability.available);
+      if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !(noticeAvailability && noticeAvailability.available);
     } else {
-      log.warnOnce(
-        'renderer.info.bindInfoModalLinks.unavailable',
-        'InfoModalLinks.bindInfoModalLinks unavailable; modal links will use default behavior.'
-      );
+      if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+      if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
     }
-    if (key === 'acerca_de') {
-      await hydrateAboutVersion(infoModalContent);
-      await hydrateAboutEnvironment(infoModalContent);
-    }
+  } catch (err) {
+    log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
+    envEl.textContent = unavailableText;
+    if (runtimeEl) runtimeEl.textContent = unavailableText;
+    if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+    if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+    if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+    if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+  }
+}
 
-    // Ensure the panel starts at the top before scrolling
-    const panel = document.querySelector('.info-modal-panel');
-    if (panel) panel.scrollTop = 0;
+const normalizeLangTagSafe = (lang) => {
+  if (window.RendererI18n && typeof window.RendererI18n.normalizeLangTag === 'function') {
+    return window.RendererI18n.normalizeLangTag(lang);
+  }
+  log.warnOnce(
+    'renderer.info.normalizeLangTag.fallback',
+    'RendererI18n.normalizeLangTag unavailable; using local fallback normalization.'
+  );
+  return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
+};
 
-    // If a specific section was requested, scroll so it appears above the panel
-    if (sectionId) {
-      // Wait for the next frame so the parsed DOM is laid out
-      requestAnimationFrame(() => {
-        try {
-          const target = infoModalContent.querySelector(`#${sectionId}`);
-          if (!target) {
-            // If the ID does not exist, do nothing else
-            if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-            return;
-          }
+const getLangBaseSafe = (lang) => {
+  if (window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function') {
+    return window.RendererI18n.getLangBase(lang);
+  }
+  log.warnOnce(
+    'renderer.info.getLangBase.fallback',
+    'RendererI18n.getLangBase unavailable; using local fallback language base.'
+  );
+  const normalized = normalizeLangTagSafe(lang);
+  if (!normalized) return '';
+  const idx = normalized.indexOf('-');
+  return idx > 0 ? normalized.slice(0, idx) : normalized;
+};
 
-          try {
-            target.scrollIntoView({ behavior: 'auto', block: 'start' });
-          } catch {
-            // Defensive fallback: calculate relative top without compensating for header
-            const panelRect = panel.getBoundingClientRect();
-            const targetRect = target.getBoundingClientRect();
-            const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
-            const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
-            panel.scrollTo({ top: finalTop, behavior: 'auto' });
-          }
+function getManualFileCandidates(langTag) {
+  const candidates = [];
+  const normalized = normalizeLangTagSafe(langTag);
+  const base = getLangBaseSafe(normalized);
+  if (normalized) candidates.push(normalized);
+  if (base && base !== normalized) candidates.push(base);
+  const defaultLang = normalizeLangTagSafe(DEFAULT_LANG);
+  if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
+  return candidates.map(tag => `./info/instrucciones.${tag}.html`);
+}
 
-          // Focus on the content so the reader can use the keyboard
-          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-        } catch (err) {
-          log.error('Error moving modal to section:', err);
-          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-        }
-      });
-    } else {
-      // No section: focus the content for the whole document
-      if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-    }
+async function showInfoModal(key) {
+  // key: 'instrucciones' | 'guia_basica' | 'faq' | 'links_interes' | 'acerca_de'
+  if (!infoModal || !infoModalTitle || !infoModalContent) return;
+
+  // Decide which file to load based on the key.
+  // Basic guide, instructions, and FAQ are served from localized manual HTML.
+  let fileToLoad = null;
+  let sectionId = null;
+  const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
+
+  if (key === 'acerca_de') {
+    fileToLoad = './info/acerca_de.html';
+  } else if (key === 'links_interes') {
+    fileToLoad = './info/links_interes.html';
+  } else if (isManual) {
+    const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
+    fileToLoad = getManualFileCandidates(langTag);
+    // Map key to block ID within instructions.html
+    const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
+    sectionId = mapping[key] || 'instrucciones';
+  } else {
+    log.warnOnce(
+      'renderer.info.unsupportedKey',
+      'showInfoModal received unsupported key:',
+      key
+    );
+    return;
   }
 
-  // =============================================================================
-  // Top bar menu actions
-  // =============================================================================
-  // menu_actions.js must be loaded before renderer.js
-  if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
-    const registerMenuActionGuarded = (actionId, handler) => {
-      window.menuActions.registerMenuAction(actionId, () => {
-        if (!guardUserAction(`menu.${actionId}`)) return;
-        handler();
-      });
-    };
+  const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
+  const infoDialogLabel = tRenderer(`renderer.info.${translationKey}.title`);
+  infoModalTitle.textContent = infoDialogLabel;
 
-    registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });
+  // Open modal early so loading state is visible during fetch
+  const loadingText = tRenderer('renderer.info.loading');
+  infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
+  infoModal.setAttribute('aria-hidden', 'false');
 
-    registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
-    registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
-    registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
-    registerMenuActionGuarded('diseno_skins', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
-    });
-    registerMenuActionGuarded('diseno_crono_flotante', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // WIP
-    });
-    registerMenuActionGuarded('diseno_fuentes', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // WIP
-    });
-    registerMenuActionGuarded('diseno_colores', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // WIP
-    });
-    registerMenuActionGuarded('shortcuts', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_shortcuts'); // WIP
-    });
-    registerMenuActionGuarded('presets_por_defecto', async () => {
+  // Fetch HTML (manual pages use a language fallback list)
+  const tryHtml = Array.isArray(fileToLoad)
+    ? (await fetchTextWithFallback(fileToLoad)).html
+    : await fetchText(fileToLoad);
+  if (tryHtml === null) {
+    // Fallback: show a simple missing-content message
+    const missingContentText = msgRenderer
+      ? msgRenderer(
+        'renderer.info.missing_content',
+        { name: infoDialogLabel }
+      )
+      : `No hay contenido disponible para '${infoDialogLabel}'.`;
+    infoModalContent.innerHTML = `<p>${missingContentText}</p>`;
+    if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
+    return;
+  }
+
+  // Translate non-manual pages; manual HTML is loaded as-is.
+  const renderedHtml = isManual
+    ? extractInfoBodyHtml(tryHtml)
+    : translateInfoHtml(tryHtml, translationKey);
+  infoModalContent.innerHTML = renderedHtml;
+  if (typeof bindInfoModalLinks === 'function') {
+    bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
+  } else {
+    log.warnOnce(
+      'renderer.info.bindInfoModalLinks.unavailable',
+      'InfoModalLinks.bindInfoModalLinks unavailable; modal links will use default behavior.'
+    );
+  }
+  if (key === 'acerca_de') {
+    await hydrateAboutVersion(infoModalContent);
+    await hydrateAboutEnvironment(infoModalContent);
+  }
+
+  // Ensure the panel starts at the top before scrolling
+  const panel = document.querySelector('.info-modal-panel');
+  if (panel) panel.scrollTop = 0;
+
+  // If a specific section was requested, scroll so it appears above the panel
+  if (sectionId) {
+    // Wait for the next frame so the parsed DOM is laid out
+    requestAnimationFrame(() => {
       try {
-        if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== 'function') {
-          log.warnOnce(
-            'renderer.ipc.openDefaultPresetsFolder.unavailable',
-            'openDefaultPresetsFolder unavailable at electronAPI; action skipped.'
-          );
-          window.Notify.notifyMain('renderer.alerts.open_presets_unsupported');
+        const target = infoModalContent.querySelector(`#${sectionId}`);
+        if (!target) {
+          // If the ID does not exist, do nothing else
+          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
           return;
         }
 
-        const res = await window.electronAPI.openDefaultPresetsFolder();
-        if (res && res.ok) {
-          // Folder opened successfully; do not show intrusive notifications
-          log.debug('config/presets_defaults floder opened in explorer.');
-          return;
+        try {
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+        } catch {
+          // Defensive fallback: calculate relative top without compensating for header
+          const panelRect = panel.getBoundingClientRect();
+          const targetRect = target.getBoundingClientRect();
+          const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
+          const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
+          panel.scrollTo({ top: finalTop, behavior: 'auto' });
         }
 
-        // In case of failure, inform the user
-        const errMsg = res && res.error ? String(res.error) : 'Unknown';
-        log.error('default presets folder failed to open:', errMsg);
-        window.Notify.notifyMain('renderer.alerts.open_presets_fail');
+        // Focus on the content so the reader can use the keyboard
+        if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
       } catch (err) {
-        log.error('default presets folder failed to open', err);
-        window.Notify.notifyMain('renderer.alerts.open_presets_error');
+        log.error('Error moving modal to section:', err);
+        if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
       }
     });
-    registerMenuActionGuarded('disconnect_google_ocr', async () => {
-      if (!importExtractOcrDisconnect
-        || typeof importExtractOcrDisconnect.startFromPreferencesMenu !== 'function') {
+  } else {
+    // No section: focus the content for the whole document
+    if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
+  }
+}
+
+// =============================================================================
+// Top bar menu actions
+// =============================================================================
+// menu_actions.js must be loaded before renderer.js
+if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
+  const registerMenuActionGuarded = (actionId, handler) => {
+    window.menuActions.registerMenuAction(actionId, () => {
+      if (!guardUserAction(`menu.${actionId}`)) return;
+      handler();
+    });
+  };
+
+  registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });
+
+  registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
+  registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
+  registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
+  registerMenuActionGuarded('diseno_skins', () => {
+    window.Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
+  });
+  registerMenuActionGuarded('diseno_crono_flotante', () => {
+    window.Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // WIP
+  });
+  registerMenuActionGuarded('diseno_fuentes', () => {
+    window.Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // WIP
+  });
+  registerMenuActionGuarded('diseno_colores', () => {
+    window.Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // WIP
+  });
+  registerMenuActionGuarded('shortcuts', () => {
+    window.Notify.notifyMain('renderer.alerts.wip_shortcuts'); // WIP
+  });
+  registerMenuActionGuarded('presets_por_defecto', async () => {
+    try {
+      if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== 'function') {
         log.warnOnce(
-          'renderer.importExtract.ocrDisconnect.entrypoint.unavailable',
-          'ImportExtractOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.'
+          'renderer.ipc.openDefaultPresetsFolder.unavailable',
+          'openDefaultPresetsFolder unavailable at electronAPI; action skipped.'
         );
-        window.Notify.notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
+        window.Notify.notifyMain('renderer.alerts.open_presets_unsupported');
         return;
       }
 
-      await importExtractOcrDisconnect.startFromPreferencesMenu();
-    });
-
-    registerMenuActionGuarded('links_interes', () => { showInfoModal('links_interes') });
-
-    registerMenuActionGuarded('actualizar_version', async () => {
-      try {
-        const checkForUpdates = getOptionalElectronMethod('checkForUpdates', {
-          dedupeKey: 'renderer.ipc.checkForUpdates.unavailable',
-          unavailableMessage: 'checkForUpdates unavailable; update check action skipped.'
-        });
-        if (!checkForUpdates) return;
-        await checkForUpdates(true);
-      } catch (err) {
-        log.error('Error requesting checkForUpdates:', err);
+      const res = await window.electronAPI.openDefaultPresetsFolder();
+      if (res && res.ok) {
+        // Folder opened successfully; do not show intrusive notifications
+        log.debug('config/presets_defaults floder opened in explorer.');
+        return;
       }
-    });
 
-    registerMenuActionGuarded('acerca_de', () => { showInfoModal('acerca_de') });
+      // In case of failure, inform the user
+      const errMsg = res && res.error ? String(res.error) : 'Unknown';
+      log.error('default presets folder failed to open:', errMsg);
+      window.Notify.notifyMain('renderer.alerts.open_presets_fail');
+    } catch (err) {
+      log.error('default presets folder failed to open', err);
+      window.Notify.notifyMain('renderer.alerts.open_presets_error');
+    }
+  });
+  registerMenuActionGuarded('disconnect_google_ocr', async () => {
+    if (!importExtractOcrDisconnect
+      || typeof importExtractOcrDisconnect.startFromPreferencesMenu !== 'function') {
+      log.warnOnce(
+        'renderer.importExtract.ocrDisconnect.entrypoint.unavailable',
+        'ImportExtractOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.'
+      );
+      window.Notify.notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
+      return;
+    }
 
-  } else {
-    log.warn('menuActions unavailable - the top bar will not be handled by the renderer.');
-  }
+    await importExtractOcrDisconnect.startFromPreferencesMenu();
+  });
+
+  registerMenuActionGuarded('links_interes', () => { showInfoModal('links_interes') });
+
+  registerMenuActionGuarded('actualizar_version', async () => {
+    try {
+      const checkForUpdates = getOptionalElectronMethod('checkForUpdates', {
+        dedupeKey: 'renderer.ipc.checkForUpdates.unavailable',
+        unavailableMessage: 'checkForUpdates unavailable; update check action skipped.'
+      });
+      if (!checkForUpdates) return;
+      await checkForUpdates(true);
+    } catch (err) {
+      log.error('Error requesting checkForUpdates:', err);
+    }
+  });
+
+  registerMenuActionGuarded('acerca_de', () => { showInfoModal('acerca_de') });
+
+} else {
+  log.warn('menuActions unavailable - the top bar will not be handled by the renderer.');
+}
 // =============================================================================
 // Preset selection (cache-only)
 // =============================================================================
