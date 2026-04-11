@@ -2,12 +2,11 @@
 
 ## Elección de archivo: 
 
-- En proceso: `electron\current_text_snapshots_main.js`
+- En proceso: `electron\main.js`
 
-- Archivos ya ordenados y limpiados: `electron\reading_test_pool.js`, `electron\reading_test_pool_import.js`, `electron\reading_test_questions_preload.js`, `electron\reading_test_session.js`, `electron\reading_test_session_windows.js`, `electron\reading_test_session_flow.js`, `electron\spellcheck.js`, `electron\editor_text_size.js`, `public\reading_test_questions.js`, `public\js\reading_speed_test.js`, `public\js\lib\reading_test_filters_core.js`, `public\js\lib\reading_test_questions_core.js`, `public\js\lib\snapshot_tag_catalog.js`.
+- Archivos ya ordenados y limpiados: `electron\reading_test_pool.js`, `electron\reading_test_pool_import.js`, `electron\reading_test_questions_preload.js`, `electron\reading_test_session.js`, `electron\reading_test_session_windows.js`, `electron\reading_test_session_flow.js`, `electron\spellcheck.js`, `electron\editor_text_size.js`, `public\reading_test_questions.js`, `public\js\reading_speed_test.js`, `public\js\lib\reading_test_filters_core.js`, `public\js\lib\reading_test_questions_core.js`, `public\js\lib\snapshot_tag_catalog.js`, `electron\current_text_snapshots_main.js`.
 
 - Faltan: 
-    `electron\main.js`
     `electron\settings.js`
     `electron\preload.js`
     `public\renderer.js`
