@@ -137,8 +137,8 @@ async function applyFlotanteTranslations(lang) {
     }
   }
 
-  playLabel = tRenderer('renderer.main.crono.play_symbol', playLabel);
-  pauseLabel = tRenderer('renderer.main.crono.pause_symbol', pauseLabel);
+  playLabel = tRenderer('renderer.main.crono.play_symbol');
+  pauseLabel = tRenderer('renderer.main.crono.pause_symbol');
   if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
 }
 

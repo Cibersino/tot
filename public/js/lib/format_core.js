@@ -27,12 +27,19 @@
   }
 
   function createFormatUtils({
-    DEFAULT_LANG = 'es',
+    DEFAULT_LANG,
     normalizeLangTag = (lang) => String(lang || '').trim().toLowerCase(),
-    getLangBase = (lang) => String(lang || '').trim().toLowerCase().split(/[-_]/)[0] || DEFAULT_LANG,
+    getLangBase = null,
     log = null,
   } = {}) {
     const safeLog = log && typeof log === 'object' ? log : createNoopLog();
+    const defaultLang = typeof DEFAULT_LANG === 'string' ? DEFAULT_LANG.trim().toLowerCase() : '';
+    if (!defaultLang) {
+      throw new Error('[format_core] DEFAULT_LANG is required');
+    }
+    const resolveLangBase = typeof getLangBase === 'function'
+      ? getLangBase
+      : (lang) => String(lang || '').trim().toLowerCase().split(/[-_]/)[0] || defaultLang;
 
     function getExactTotalSeconds(words, wpm) {
       const numericWords = Number(words);
@@ -65,12 +72,12 @@
         return { separadorMiles: '.', separadorDecimal: ',' };
       }
 
-      const tag = normalizeLangTag(idioma) || DEFAULT_LANG;
-      const langKey = getLangBase(tag) || DEFAULT_LANG;
+      const tag = normalizeLangTag(idioma) || defaultLang;
+      const langKey = resolveLangBase(tag) || defaultLang;
       const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
       if (nf && nf[langKey]) return nf[langKey];
 
-      const defaultKey = getLangBase(DEFAULT_LANG) || DEFAULT_LANG;
+      const defaultKey = resolveLangBase(defaultLang) || defaultLang;
       if (nf && nf[defaultKey]) {
         if (typeof safeLog.warnOnce === 'function') {
           safeLog.warnOnce(

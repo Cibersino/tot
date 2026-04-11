@@ -1,3 +1,4 @@
+// public/js/lib/reading_test_questions_core.js
 'use strict';
 
 // =============================================================================
@@ -10,6 +11,9 @@
 // - Compute aggregate scores and random-guess baseline metrics.
 // - Support both browser-script and CommonJS consumers.
 
+// =============================================================================
+// Module bootstrap / dual export wrapper
+// =============================================================================
 (function initReadingTestQuestionsCore(root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) {
@@ -19,6 +23,9 @@
     root.ReadingTestQuestionsCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function isPlainObject(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
@@ -115,6 +122,9 @@
     };
   }
 
+  // =============================================================================
+  // Scoring / statistics
+  // =============================================================================
   function computeRandomGuessPercentage(questions) {
     const safeQuestions = Array.isArray(questions) ? questions : [];
     if (!safeQuestions.length) return 0;
@@ -222,6 +232,9 @@
     };
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   return {
     isPlainObject,
     validateQuestionsPayload,

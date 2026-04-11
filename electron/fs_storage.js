@@ -243,14 +243,6 @@ const LOAD_JSON_FILE_METADATA = Object.freeze({
   },
 });
 
-const LOAD_JSON_KNOWN_FILES = new Set(Object.keys(LOAD_JSON_FILE_METADATA));
-
-function getLoadJsonOnceKey(kind, filePath) {
-  const baseName = path.basename(String(filePath));
-  const variant = LOAD_JSON_KNOWN_FILES.has(baseName) ? baseName : 'other';
-  return `fs_storage.loadJson.${kind}.${variant}`;
-}
-
 function getLoadJsonMissingNote(filePath) {
   const baseName = path.basename(String(filePath));
   const metadata = LOAD_JSON_FILE_METADATA[baseName];
@@ -261,8 +253,7 @@ function loadJson(filePath, fallback = {}) {
   try {
     // Missing file is recoverable: callers decide what the fallback should be.
     if (!fs.existsSync(filePath)) {
-      log.warnOnce(
-        getLoadJsonOnceKey('missing', filePath),
+      log.warn(
         `loadJson missing (using fallback):${getLoadJsonMissingNote(filePath)}`,
         filePath
       );
@@ -276,8 +267,7 @@ function loadJson(filePath, fallback = {}) {
 
     // Empty/whitespace-only file is treated as invalid JSON (recoverable).
     if (raw.trim() === '') {
-      log.warnOnce(
-        getLoadJsonOnceKey('empty', filePath),
+      log.warn(
         'loadJson empty file (using fallback):',
         filePath
       );
@@ -287,8 +277,7 @@ function loadJson(filePath, fallback = {}) {
     return JSON.parse(raw);
   } catch (err) {
     // Invalid JSON is recoverable: return fallback and continue running.
-    log.warnOnce(
-      getLoadJsonOnceKey('failed', filePath),
+    log.warn(
       'loadJson failed (using fallback):',
       filePath,
       err

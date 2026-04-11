@@ -60,6 +60,10 @@ const api = {
     cb,
     'reading-test-prestart-countdown callback error:',
     'removeListener error (reading-test-prestart-countdown):'
+  ),
+  notifyReadingTestCountdownReady: (payload) => ipcRenderer.send(
+    'reading-test-countdown-ready',
+    payload
   )
 };
 

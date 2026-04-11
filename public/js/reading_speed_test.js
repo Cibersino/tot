@@ -1,3 +1,4 @@
+// public/js/reading_speed_test.js
 'use strict';
 
 // =============================================================================
@@ -28,7 +29,9 @@
   const { tRenderer, msgRenderer } = window.RendererI18n;
 
   const filtersCore = window.ReadingTestFiltersCore || null;
-  if (!filtersCore || typeof filtersCore.computeFilterState !== 'function') {
+  if (!filtersCore
+    || typeof filtersCore.computeFilterState !== 'function'
+    || typeof filtersCore.normalizeSelection !== 'function') {
     throw new Error('[reading-speed-test] ReadingTestFiltersCore unavailable; cannot continue');
   }
 
@@ -127,23 +130,16 @@
       : null;
   }
 
-  function notifyUnavailable() {
-    window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
+  function isPayloadObject(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
-  function notifyGuidance(guidanceKey, params = {}, { type = 'error' } = {}) {
-    if (!guidanceKey) return;
-    if (type === 'info' && typeof window.Notify.toastMain === 'function') {
-      window.Notify.toastMain(guidanceKey, { type: 'info', params });
-      return;
-    }
-    window.Notify.notifyMain(guidanceKey, params);
-  }
-
-  function handleReadingTestNotice(notice) {
-    if (!notice || typeof notice !== 'object' || !notice.key) return;
-    const type = typeof notice.type === 'string' ? notice.type : 'info';
-    notifyGuidance(notice.key, notice.params || {}, { type });
+  function normalizeSessionState(rawState) {
+    return {
+      active: !!(rawState && rawState.active),
+      stage: rawState && typeof rawState.stage === 'string' ? rawState.stage : 'idle',
+      blocked: !!(rawState && rawState.blocked),
+    };
   }
 
   function isModalOpen() {
@@ -166,12 +162,11 @@
     }
   }
 
-  function normalizeSessionState(rawState) {
-    return {
-      active: !!(rawState && rawState.active),
-      stage: rawState && typeof rawState.stage === 'string' ? rawState.stage : 'idle',
-      blocked: !!(rawState && rawState.blocked),
-    };
+  function rememberPreviousFocus() {
+    const activeElement = document.activeElement;
+    previousFocus = activeElement && typeof activeElement.focus === 'function'
+      ? activeElement
+      : null;
   }
 
   function restorePreviousFocus() {
@@ -181,13 +176,6 @@
     } catch (err) {
       log.warn('Reading-test focus restore failed (ignored):', err);
     }
-  }
-
-  function rememberPreviousFocus() {
-    const activeElement = document.activeElement;
-    previousFocus = activeElement && typeof activeElement.focus === 'function'
-      ? activeElement
-      : null;
   }
 
   function setModalVisible(visible) {
@@ -211,18 +199,13 @@
 
   function getCategoryDisplayLabel(category) {
     const key = `renderer.snapshot_save_tags.labels.${category}`;
-    const fallbackByCategory = {
-      language: 'Language',
-      type: 'Type',
-      difficulty: 'Difficulty',
-    };
-    return tRenderer(key, fallbackByCategory[category] || category);
+    return tRenderer(key);
   }
 
   function getOptionLabel(category, value) {
     const option = optionValueLookupByCategory[category].get(value);
     if (option) {
-      return tRenderer(option.labelKey, option.fallback);
+      return tRenderer(option.labelKey);
     }
     return value;
   }
@@ -250,16 +233,19 @@
     filterState = filtersCore.computeFilterState(poolEntries, selection);
   }
 
-  async function stabilizeSelection(nextSelection) {
-    stabilizing = true;
-    selection = filtersCore.normalizeSelection(nextSelection);
+  function setStabilizing(nextValue) {
+    stabilizing = nextValue;
     render();
+  }
+
+  async function stabilizeSelection(nextSelection) {
+    setStabilizing(true);
+    selection = filtersCore.normalizeSelection(nextSelection);
 
     await Promise.resolve();
 
     rebuildFilterState();
-    stabilizing = false;
-    render();
+    setStabilizing(false);
   }
 
   function collectNextSelection(category, value, checked) {
@@ -318,18 +304,14 @@
   function renderEligibleCount() {
     eligibleCount.textContent = msgRenderer(
       'renderer.reading_test.entry.eligible_count',
-      { count: filterState.eligibleCount },
-      `Eligible files: ${filterState.eligibleCount}`
+      { count: filterState.eligibleCount }
     );
   }
 
   function renderWarningBox() {
     if (poolExhausted) {
       warningBox.hidden = false;
-      warningBox.textContent = tRenderer(
-        'renderer.reading_test.entry.pool_exhausted_message',
-        'There are no remaining unused test files. Reset the pool or add more files.'
-      );
+      warningBox.textContent = tRenderer('renderer.reading_test.entry.pool_exhausted_message');
       return;
     }
 
@@ -343,45 +325,23 @@
     introToggle.textContent = tRenderer(
       introExpanded
         ? 'renderer.reading_test.entry.buttons.hide_instructions'
-        : 'renderer.reading_test.entry.buttons.show_instructions',
-      introExpanded ? 'Hide instructions' : 'Show instructions'
+        : 'renderer.reading_test.entry.buttons.show_instructions'
     );
   }
 
   function render() {
-    title.textContent = tRenderer(
-      'renderer.reading_test.entry.title',
-      'Reading speed test'
-    );
-    intro.textContent = tRenderer(
-      'renderer.reading_test.entry.intro',
-      'This test is meant to estimate your real reading speed through a guided session. The app will open the text, start the timer, and ask you to read normally; when you finish, press Pause (⏸) in the Floating Window. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.'
-    );
+    title.textContent = tRenderer('renderer.reading_test.entry.title');
+    intro.textContent = tRenderer('renderer.reading_test.entry.intro');
     renderIntroVisibility();
     btnClose.setAttribute(
       'aria-label',
-      tRenderer('renderer.reading_test.entry.close_aria', 'Close reading speed test dialog')
+      tRenderer('renderer.reading_test.entry.close_aria')
     );
-    getMoreFilesLink.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.get_more_files',
-      'Get more files'
-    );
-    importButton.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.import_files',
-      'Import files...'
-    );
-    resetButton.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.reset_pool',
-      'Reset pool'
-    );
-    btnStart.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.start_random_text',
-      'Start with random text'
-    );
-    btnStartCurrentText.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.start_current_text',
-      'Start with current text'
-    );
+    getMoreFilesLink.textContent = tRenderer('renderer.reading_test.entry.buttons.get_more_files');
+    importButton.textContent = tRenderer('renderer.reading_test.entry.buttons.import_files');
+    resetButton.textContent = tRenderer('renderer.reading_test.entry.buttons.reset_pool');
+    btnStart.textContent = tRenderer('renderer.reading_test.entry.buttons.start_random_text');
+    btnStartCurrentText.textContent = tRenderer('renderer.reading_test.entry.buttons.start_current_text');
 
     renderEligibleCount();
     renderWarningBox();
@@ -399,19 +359,44 @@
     modal.dataset.stabilizing = stabilizing ? 'true' : 'false';
   }
 
-  async function refreshPoolEntriesFromResult(result) {
-    if (!result || result.ok !== true) {
-      notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_pool_error');
+  function refreshPoolEntriesFromResult(result) {
+    if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
+      log.error('Reading-test entry-flow result invalid:', result);
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
+      return false;
+    }
+    if (result.ok !== true) {
+      window.Notify.notifyMain(
+        typeof result.guidanceKey === 'string'
+          ? result.guidanceKey
+          : 'renderer.alerts.reading_test_pool_error'
+      );
+      return false;
+    }
+    if (typeof result.canOpen !== 'boolean') {
+      log.error('Reading-test entry-flow result missing canOpen flag:', result);
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
       return false;
     }
     if (!result.canOpen) {
-      notifyGuidance(result.guidanceKey || 'renderer.alerts.reading_test_precondition_blocked');
+      window.Notify.notifyMain(
+        typeof result.guidanceKey === 'string'
+          ? result.guidanceKey
+          : 'renderer.alerts.reading_test_precondition_blocked'
+      );
+      return false;
+    }
+    if (!Array.isArray(result.entries)
+      || typeof result.poolExhausted !== 'boolean'
+      || typeof result.currentTextAvailable !== 'boolean') {
+      log.error('Reading-test entry-flow success payload invalid:', result);
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
       return false;
     }
 
-    poolExhausted = !!result.poolExhausted;
-    currentTextAvailable = !!result.currentTextAvailable;
-    poolEntries = Array.isArray(result.entries) ? result.entries : [];
+    poolExhausted = result.poolExhausted;
+    currentTextAvailable = result.currentTextAvailable;
+    poolEntries = result.entries;
     rebuildFilterState();
     return true;
   }
@@ -423,7 +408,7 @@
         'reading-speed-test.getEntryData.missing',
         'getReadingTestEntryData unavailable; reading speed test entry flow skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return null;
     }
 
@@ -431,7 +416,7 @@
       return await getEntryData();
     } catch (err) {
       log.error('Reading-test entry data request failed:', err);
-      notifyGuidance('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
       return null;
     }
   }
@@ -440,18 +425,36 @@
     const getState = readElectronMethod('getReadingTestState');
     if (!getState) {
       log.warnOnce(
-        'reading-speed-test.getState.missing',
+        'BOOTSTRAP:reading-speed-test.getState.missing',
         'getReadingTestState unavailable; reading-test session sync disabled.'
       );
       return;
     }
 
     try {
-      sessionState = normalizeSessionState(await getState());
+      const nextState = await getState();
+      if (!isPayloadObject(nextState)) {
+        log.warnOnce(
+          'BOOTSTRAP:reading-speed-test.getState.invalid',
+          'Reading-test initial session-state payload invalid; using defaults.',
+          nextState
+        );
+      }
+      sessionState = normalizeSessionState(nextState);
       syncLockState();
     } catch (err) {
-      log.warn('Reading-test initial session-state fetch failed (ignored):', err);
+      log.warn('BOOTSTRAP: reading-test initial session-state fetch failed (ignored):', err);
     }
+  }
+
+  async function refreshEntryDataAfterPoolMutation() {
+    const result = await requestEntryData();
+    if (!result) return false;
+    if (!await refreshPoolEntriesFromResult(result)) {
+      return false;
+    }
+    render();
+    return true;
   }
 
   async function openEntryFlow() {
@@ -485,29 +488,25 @@
         'reading-speed-test.resetPool.missing',
         'resetReadingTestPool unavailable; pool reset skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return;
     }
 
-    stabilizing = true;
-    render();
+    setStabilizing(true);
 
     try {
       const result = await resetPool();
       if (!await refreshPoolEntriesFromResult(result)) {
-        stabilizing = false;
-        render();
+        setStabilizing(false);
         closeModal();
         return;
       }
     } catch (err) {
       log.error('Reading-test pool reset failed:', err);
-      notifyGuidance('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
     }
 
-    stabilizing = false;
-    rebuildFilterState();
-    render();
+    setStabilizing(false);
   }
 
   function notifyImportSummary(result) {
@@ -520,72 +519,34 @@
       ? 'info'
       : (totalFailed > 0 || (Number(result.skippedDuplicates) || 0) > 0 ? 'warn' : 'info');
 
-    if (typeof window.Notify.toastMain === 'function') {
-      window.Notify.toastMain('renderer.reading_test.entry.import_summary', {
-        type: toastType,
-        params: {
-          imported: Number(result.imported) || 0,
-          skippedDuplicates: Number(result.skippedDuplicates) || 0,
-          failedValidation: Number(result.failedValidation) || 0,
-          failedArchiveEntries: Number(result.failedArchiveEntries) || 0,
-          failedWrites: Number(result.failedWrites) || 0,
-        },
-      });
-      return;
-    }
-
-    notifyGuidance('renderer.reading_test.entry.import_summary', {
-      imported: Number(result.imported) || 0,
-      skippedDuplicates: Number(result.skippedDuplicates) || 0,
-      failedValidation: Number(result.failedValidation) || 0,
-      failedArchiveEntries: Number(result.failedArchiveEntries) || 0,
-      failedWrites: Number(result.failedWrites) || 0,
+    window.Notify.toastMain('renderer.reading_test.entry.import_summary', {
+      type: toastType,
+      params: {
+        imported: Number(result.imported) || 0,
+        skippedDuplicates: Number(result.skippedDuplicates) || 0,
+        failedValidation: Number(result.failedValidation) || 0,
+        failedArchiveEntries: Number(result.failedArchiveEntries) || 0,
+        failedWrites: Number(result.failedWrites) || 0,
+      },
     });
   }
 
   function buildImportDialogPayload() {
     return {
       conflictDialog: {
-        conflictTitle: tRenderer(
-          'renderer.reading_test.entry.import_conflict.title',
-          'Import files'
-        ),
-        conflictMessage: tRenderer(
-          'renderer.reading_test.entry.import_conflict.message',
-          'Some imported files already exist in the pool. How should duplicates be handled?'
-        ),
+        conflictTitle: tRenderer('renderer.reading_test.entry.import_conflict.title'),
+        conflictMessage: tRenderer('renderer.reading_test.entry.import_conflict.message'),
         conflictDetail: msgRenderer(
           'renderer.reading_test.entry.import_conflict.detail',
-          { count: '{count}' },
-          '{count} destination filename(s) already exist in the pool.'
+          { count: '{count}' }
         ),
         buttons: {
-          skip: tRenderer(
-            'renderer.reading_test.entry.import_conflict.buttons.skip',
-            'Skip duplicates'
-          ),
-          replace: tRenderer(
-            'renderer.reading_test.entry.import_conflict.buttons.replace',
-            'Replace duplicates'
-          ),
-          cancel: tRenderer(
-            'renderer.reading_test.entry.import_conflict.buttons.cancel',
-            'Cancel import'
-          ),
+          skip: tRenderer('renderer.reading_test.entry.import_conflict.buttons.skip'),
+          replace: tRenderer('renderer.reading_test.entry.import_conflict.buttons.replace'),
+          cancel: tRenderer('renderer.reading_test.entry.import_conflict.buttons.cancel'),
         },
       },
     };
-  }
-
-  async function refreshEntryDataAfterPoolMutation() {
-    const result = await requestEntryData();
-    if (!result) return false;
-    if (!await refreshPoolEntriesFromResult(result)) {
-      return false;
-    }
-    rebuildFilterState();
-    render();
-    return true;
   }
 
   async function handleImportFiles() {
@@ -597,37 +558,49 @@
         'reading-speed-test.import.missing',
         'importReadingTestPoolFiles unavailable; reading-test pool import skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return;
     }
 
-    stabilizing = true;
-    render();
+    setStabilizing(true);
 
     try {
       const result = await importReadingTestPoolFiles(buildImportDialogPayload());
-      if (!result || result.ok !== true) {
-        stabilizing = false;
-        render();
-        notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_pool_import_failed');
+      if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
+        setStabilizing(false);
+        log.error('Reading-test pool import result invalid:', result);
+        window.Notify.notifyMain('renderer.alerts.reading_test_pool_import_failed');
+        return;
+      }
+
+      if (result.ok !== true) {
+        setStabilizing(false);
+        window.Notify.notifyMain(
+          typeof result.guidanceKey === 'string'
+            ? result.guidanceKey
+            : 'renderer.alerts.reading_test_pool_import_failed'
+        );
         return;
       }
 
       if (result.canceled) {
-        stabilizing = false;
-        render();
+        setStabilizing(false);
         return;
       }
 
-      stabilizing = false;
+      setStabilizing(false);
       await refreshEntryDataAfterPoolMutation();
       notifyImportSummary(result);
     } catch (err) {
-      stabilizing = false;
-      render();
+      setStabilizing(false);
       log.error('Reading-test pool import failed unexpectedly:', err);
-      notifyGuidance('renderer.alerts.reading_test_pool_import_failed');
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_import_failed');
     }
+  }
+
+  function mapExternalFailureReasonToKey(reason) {
+    if (reason === 'blocked') return 'renderer.info.external.blocked';
+    return 'renderer.info.external.error';
   }
 
   function handleOpenDriveFolder(event) {
@@ -640,31 +613,71 @@
     if (!openExternalUrl) {
       log.warnOnce(
         'reading-speed-test.external-link.missing',
-        'openExternalUrl unavailable; reading-test external link disabled.'
+        'openExternalUrl unavailable; reading-test external link open failed (ignored).'
       );
       window.Notify.notifyMain('renderer.info.external.blocked');
       return;
     }
 
-    openExternalUrl(DRIVE_FOLDER_URL)
-      .then((result) => {
-        if (!result || result.ok !== true) {
-          window.Notify.notifyMain(
-            result && result.reason === 'blocked'
-              ? 'renderer.info.external.blocked'
-              : 'renderer.info.external.error'
-          );
-          log.warn('Reading-test pool external link blocked or failed:', DRIVE_FOLDER_URL, result);
-        }
-      })
-      .catch((err) => {
-        log.error('Reading-test pool external link request failed:', err);
-        window.Notify.notifyMain('renderer.info.external.error');
-      });
+    try {
+      Promise.resolve(openExternalUrl(DRIVE_FOLDER_URL))
+        .then((result) => {
+          if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
+            log.error('Reading-test pool external link result invalid:', result);
+            window.Notify.notifyMain('renderer.info.external.error');
+            return;
+          }
+          if (result.ok !== true) {
+            window.Notify.notifyMain(mapExternalFailureReasonToKey(result.reason));
+            log.warn('Reading-test pool external link blocked or failed:', DRIVE_FOLDER_URL, result);
+          }
+        })
+        .catch((err) => {
+          log.error('Reading-test pool external link request failed:', err);
+          window.Notify.notifyMain('renderer.info.external.error');
+        });
+    } catch (err) {
+      log.error('Reading-test pool external link request failed:', err);
+      window.Notify.notifyMain('renderer.info.external.error');
+    }
+  }
+
+  async function runStartReadingTest(startReadingTest, payload) {
+    setStabilizing(true);
+
+    try {
+      const result = await startReadingTest(payload);
+      setStabilizing(false);
+
+      if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
+        log.error('Reading-test start result invalid:', result);
+        window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
+        return;
+      }
+      if (result.ok !== true) {
+        window.Notify.notifyMain(
+          typeof result.guidanceKey === 'string'
+            ? result.guidanceKey
+            : 'renderer.alerts.reading_test_start_failed'
+        );
+        return;
+      }
+
+      closeModal();
+    } catch (err) {
+      setStabilizing(false);
+      log.error('Reading-test start failed unexpectedly:', err);
+      window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
+    }
   }
 
   async function handleStart() {
     if (stabilizing || isSessionActive() || filterState.eligibleCount < 1) return;
+
+    const confirmed = window.Notify.confirmMain(
+      'renderer.reading_test.entry.start_random_confirm'
+    );
+    if (!confirmed) return;
 
     const startReadingTest = readElectronMethod('startReadingTest');
     if (!startReadingTest) {
@@ -672,30 +685,11 @@
         'reading-speed-test.start.missing',
         'startReadingTest unavailable; reading speed test start skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return;
     }
 
-    stabilizing = true;
-    render();
-
-    try {
-      const result = await startReadingTest({ sourceMode: 'pool', selection });
-      stabilizing = false;
-      render();
-
-      if (!result || result.ok !== true) {
-        notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_start_failed');
-        return;
-      }
-
-      closeModal();
-    } catch (err) {
-      stabilizing = false;
-      render();
-      log.error('Reading-test start failed unexpectedly:', err);
-      notifyGuidance('renderer.alerts.reading_test_start_failed');
-    }
+    await runStartReadingTest(startReadingTest, { sourceMode: 'pool', selection });
   }
 
   async function handleStartCurrentText() {
@@ -707,30 +701,11 @@
         'reading-speed-test.start-current-text.missing',
         'startReadingTest unavailable; current-text reading speed test start skipped.'
       );
-      notifyUnavailable();
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
       return;
     }
 
-    stabilizing = true;
-    render();
-
-    try {
-      const result = await startReadingTest({ sourceMode: 'current_text' });
-      stabilizing = false;
-      render();
-
-      if (!result || result.ok !== true) {
-        notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_start_failed');
-        return;
-      }
-
-      closeModal();
-    } catch (err) {
-      stabilizing = false;
-      render();
-      log.error('Reading-test start failed unexpectedly:', err);
-      notifyGuidance('renderer.alerts.reading_test_start_failed');
-    }
+    await runStartReadingTest(startReadingTest, { sourceMode: 'current_text' });
   }
 
   function bindStaticListeners() {
@@ -762,64 +737,110 @@
     });
   }
 
+  function handleReadingTestNotice(notice) {
+    if (!isPayloadObject(notice) || typeof notice.key !== 'string' || notice.key.length < 1) {
+      log.warnOnce(
+        'reading-speed-test.notice.invalid',
+        'Reading-test notice payload invalid (ignored):',
+        notice
+      );
+      return;
+    }
+    const type = typeof notice.type === 'string' ? notice.type : 'info';
+    const params = isPayloadObject(notice.params) ? notice.params : {};
+    if (type === 'info') {
+      window.Notify.toastMain(notice.key, { type: 'info', params });
+      return;
+    }
+    window.Notify.notifyMain(notice.key, params);
+  }
+
   function installIpcSubscriptions() {
     const onStateChanged = readElectronMethod('onReadingTestStateChanged');
     if (onStateChanged) {
-      onStateChanged((nextState) => {
-        sessionState = normalizeSessionState(nextState);
-        if (sessionState.active && isModalOpen()) {
-          closeModal();
-        } else {
-          render();
-          syncLockState();
-        }
-      });
+      try {
+        onStateChanged((nextState) => {
+          if (!isPayloadObject(nextState)) {
+            log.warnOnce(
+              'reading-speed-test.onStateChanged.invalid',
+              'Reading-test state-changed payload invalid; using defaults.',
+              nextState
+            );
+          }
+          sessionState = normalizeSessionState(nextState);
+          if (sessionState.active && isModalOpen()) {
+            closeModal();
+          } else {
+            render();
+            syncLockState();
+          }
+        });
+      } catch (err) {
+        log.warn(
+          'BOOTSTRAP: onReadingTestStateChanged registration failed; renderer lock state will not live-sync.',
+          err
+        );
+      }
     } else {
       log.warnOnce(
-        'reading-speed-test.onStateChanged.missing',
+        'BOOTSTRAP:reading-speed-test.onStateChanged.missing',
         'onReadingTestStateChanged unavailable; renderer lock state will not live-sync.'
       );
     }
 
     const onNotice = readElectronMethod('onReadingTestNotice');
     if (onNotice) {
-      onNotice((notice) => {
-        try {
-          handleReadingTestNotice(notice);
-        } catch (err) {
-          log.error('Reading-test notice handler failed:', err);
-        }
-      });
+      try {
+        onNotice((notice) => {
+          try {
+            handleReadingTestNotice(notice);
+          } catch (err) {
+            log.error('Reading-test notice handler failed:', err);
+          }
+        });
+      } catch (err) {
+        log.warn(
+          'BOOTSTRAP: onReadingTestNotice registration failed; reading-test notices will not surface in renderer.',
+          err
+        );
+      }
     } else {
       log.warnOnce(
-        'reading-speed-test.onNotice.missing',
+        'BOOTSTRAP:reading-speed-test.onNotice.missing',
         'onReadingTestNotice unavailable; reading-test notices will not surface in renderer.'
       );
     }
 
     const onApplyWpmEvent = readElectronMethod('onReadingTestApplyWpm');
     if (onApplyWpmEvent) {
-      onApplyWpmEvent((payload) => {
-        const nextWpm = payload && typeof payload.wpm === 'number'
-          ? payload.wpm
-          : NaN;
-        if (!Number.isFinite(nextWpm)) {
-          log.warnOnce(
-            'reading-speed-test.applyWpm.invalid',
-            'Reading-test apply-WPM payload invalid (ignored):',
-            payload
-          );
-          return;
-        }
-        try {
-          onApplyWpm(nextWpm);
-        } catch (err) {
-          log.error('Reading-test WPM apply callback failed:', err);
-        }
-      });
+      try {
+        onApplyWpmEvent((payload) => {
+          const nextWpm = payload && typeof payload.wpm === 'number'
+            ? payload.wpm
+            : NaN;
+          if (!Number.isFinite(nextWpm)) {
+            log.warnOnce(
+              'reading-speed-test.applyWpm.invalid',
+              'Reading-test apply-WPM payload invalid (ignored):',
+              payload
+            );
+            return;
+          }
+          try {
+            onApplyWpm(nextWpm);
+          } catch (err) {
+            log.error('Reading-test WPM apply callback failed:', err);
+          }
+        });
+      } catch (err) {
+        log.warn(
+          'BOOTSTRAP: onReadingTestApplyWpm registration failed; computed WPM will not sync into main renderer.',
+          err
+        );
+      }
     } else {
       log.warnOnce(
-        'reading-speed-test.onApplyWpm.missing',
+        'BOOTSTRAP:reading-speed-test.onApplyWpm.missing',
         'onReadingTestApplyWpm unavailable; computed WPM will not sync into main renderer.'
       );
     }

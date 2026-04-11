@@ -34,7 +34,7 @@
       );
       return key;
     }
-    const txt = RendererI18n.msgRenderer(key, params, key);
+    const txt = RendererI18n.msgRenderer(key, params);
     return txt || key;
   }
 

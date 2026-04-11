@@ -87,15 +87,15 @@
     options.forEach((option) => {
       const el = document.createElement('option');
       el.value = option.value;
-      el.textContent = tRenderer(option.labelKey, option.fallback);
+      el.textContent = tRenderer(option.labelKey);
       selectEl.appendChild(el);
     });
   }
 
   function getSortedOptionsByLabel(options) {
     return [...options].sort((left, right) => {
-      const leftLabel = tRenderer(left.labelKey, left.fallback);
-      const rightLabel = tRenderer(right.labelKey, right.fallback);
+      const leftLabel = tRenderer(left.labelKey);
+      const rightLabel = tRenderer(right.labelKey);
       return leftLabel.localeCompare(rightLabel, undefined, { sensitivity: 'base' });
     });
   }
@@ -114,56 +114,32 @@
   }
 
   function populateCopy() {
-    title.textContent = tRenderer(
-      'renderer.snapshot_save_tags.title',
-      'Save text snapshot'
-    );
-    message.textContent = tRenderer(
-      'renderer.snapshot_save_tags.message',
-      'Optionally tag this text snapshot before choosing where to save it.'
-    );
-    languageLabel.textContent = tRenderer(
-      'renderer.snapshot_save_tags.labels.language',
-      'Language'
-    );
-    typeLabel.textContent = tRenderer(
-      'renderer.snapshot_save_tags.labels.type',
-      'Type'
-    );
-    difficultyLabel.textContent = tRenderer(
-      'renderer.snapshot_save_tags.labels.difficulty',
-      'Difficulty'
-    );
-    btnConfirm.textContent = tRenderer(
-      'renderer.snapshot_save_tags.buttons.confirm',
-      'Save Text Snapshot'
-    );
-    btnCancel.textContent = tRenderer(
-      'renderer.snapshot_save_tags.buttons.cancel',
-      'Cancel'
-    );
+    title.textContent = tRenderer('renderer.snapshot_save_tags.title');
+    message.textContent = tRenderer('renderer.snapshot_save_tags.message');
+    languageLabel.textContent = tRenderer('renderer.snapshot_save_tags.labels.language');
+    typeLabel.textContent = tRenderer('renderer.snapshot_save_tags.labels.type');
+    difficultyLabel.textContent = tRenderer('renderer.snapshot_save_tags.labels.difficulty');
+    btnConfirm.textContent = tRenderer('renderer.snapshot_save_tags.buttons.confirm');
+    btnCancel.textContent = tRenderer('renderer.snapshot_save_tags.buttons.cancel');
     btnClose.setAttribute(
       'aria-label',
-      tRenderer(
-        'renderer.snapshot_save_tags.close_aria',
-        'Close save text snapshot dialog'
-      )
+      tRenderer('renderer.snapshot_save_tags.close_aria')
     );
 
     setSelectOptions(
       languageSelect,
       getSortedOptionsByLabel(LANGUAGE_OPTIONS),
-      tRenderer('renderer.snapshot_save_tags.empty.language', 'No language tag')
+      tRenderer('renderer.snapshot_save_tags.empty.language')
     );
     setSelectOptions(
       typeSelect,
       TYPE_OPTIONS,
-      tRenderer('renderer.snapshot_save_tags.empty.type', 'No type tag')
+      tRenderer('renderer.snapshot_save_tags.empty.type')
     );
     setSelectOptions(
       difficultySelect,
       DIFFICULTY_OPTIONS,
-      tRenderer('renderer.snapshot_save_tags.empty.difficulty', 'No difficulty tag')
+      tRenderer('renderer.snapshot_save_tags.empty.difficulty')
     );
 
     languageSelect.value = '';

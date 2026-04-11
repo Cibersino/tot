@@ -93,8 +93,8 @@
       "title": "toT — Vollständiger Text",
       "placeholder": "Hier eingeben oder einfügen...",
       "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Automatisches Speichern und Neuberechnen während der Eingabe",
-      "spellcheck": "Rechtschreibprüfung",
+      "calc_while_typing": "Auto-Berechnung",
+      "spellcheck": "Rechtschreibung",
       "text_size_label": "Größe",
       "decrease_text_size": "Textgröße verkleinern",
       "increase_text_size": "Textgröße vergrößern",
@@ -257,6 +257,7 @@
         "eligible_count": "Geeignete Dateien: {count}",
         "pool_exhausted_message": "Es sind keine unbenutzten Testdateien mehr vorhanden. Setzen Sie den Pool zurück oder fügen Sie weitere Dateien hinzu.",
         "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",
+        "start_random_confirm": "Dadurch wird der aktuelle Text durch einen zufälligen geeigneten Text aus dem Pool ersetzt. Möchten Sie fortfahren?",
         "reset_confirm": "Dadurch wird der gesamte Test-Pool zurückgesetzt und alle Dateien werden wieder als unbenutzt markiert. Möchten Sie fortfahren?",
         "import_summary": "Import abgeschlossen. Importiert: {imported}. Doppelte übersprungen: {skippedDuplicates}. Fehlgeschlagene Validierungen: {failedValidation}. Fehlgeschlagene Archiv-Einträge: {failedArchiveEntries}. Fehlgeschlagene Schreibvorgänge: {failedWrites}.",
         "import_conflict": {

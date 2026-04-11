@@ -1,3 +1,4 @@
+// electron/reading_test_pool_import.js
 'use strict';
 
 // =============================================================================
@@ -10,6 +11,10 @@
 // - Flatten valid zip entries into pool-file candidates.
 // - Handle destination-filename duplicates explicitly before writing.
 // - Install validated files into the local reading-test pool directory.
+// =============================================================================
+
+// =============================================================================
+// Imports / logger
 // =============================================================================
 
 const fs = require('fs');
@@ -27,6 +32,10 @@ const { getImportExtractPlatformAdapter } = require('./import_extract_platform/i
 const log = Log.get('reading-test-pool-import');
 log.debug('Reading test pool import starting...');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const IMPORT_CONFLICT_STRATEGY = Object.freeze({
   SKIP: 'skip',
   REPLACE: 'replace',
@@ -35,6 +44,10 @@ const IMPORT_CONFLICT_STRATEGY = Object.freeze({
 const PICKER_STATE_FALLBACK = Object.freeze({
   lastDirectory: '',
 });
+
+// =============================================================================
+// Helpers: import candidates and pool writes
+// =============================================================================
 
 function readJsonTextWithBomStrip(filePath) {
   try {
@@ -45,52 +58,6 @@ function readJsonTextWithBomStrip(filePath) {
   } catch (err) {
     return { ok: false, code: 'READ_FAILED', error: err };
   }
-}
-
-function normalizePickerState(rawState) {
-  const state = rawState && typeof rawState === 'object' ? rawState : {};
-  const lastDirectory = typeof state.lastDirectory === 'string'
-    ? state.lastDirectory.trim()
-    : '';
-  return {
-    lastDirectory,
-  };
-}
-
-function readPickerState() {
-  try {
-    const statePath = getReadingTestPoolImportStateFile();
-    const raw = loadJson(statePath, PICKER_STATE_FALLBACK);
-    return {
-      statePath,
-      state: normalizePickerState(raw),
-    };
-  } catch (err) {
-    log.warn('Failed to read reading-test pool import picker state (using defaults):', err);
-    return {
-      statePath: null,
-      state: { ...PICKER_STATE_FALLBACK },
-    };
-  }
-}
-
-function persistPickerState(statePath, nextState) {
-  if (!statePath) return;
-  try {
-    saveJson(statePath, nextState);
-  } catch (err) {
-    log.warn('Failed to persist reading-test pool import picker state (ignored):', err);
-  }
-}
-
-function resolvePickerDefaultPath(platformAdapter, app, pickerState) {
-  const persisted = platformAdapter.normalizePersistedDirectory(pickerState.lastDirectory);
-  if (persisted) return persisted;
-  return platformAdapter.resolveDefaultPickerPath({
-    app,
-    cwd: process.cwd(),
-    log,
-  });
 }
 
 function parseJsonText(jsonText) {
@@ -335,6 +302,10 @@ async function importSelectedFiles({
   };
 }
 
+// =============================================================================
+// Helpers: dialog copy and picker state
+// =============================================================================
+
 function normalizeDialogCopy(rawDialogCopy) {
   const copy = rawDialogCopy && typeof rawDialogCopy === 'object' ? rawDialogCopy : {};
   const normalize = (value, fallback) => {
@@ -343,23 +314,76 @@ function normalizeDialogCopy(rawDialogCopy) {
   };
 
   return {
-    conflictTitle: normalize(copy.conflictTitle, 'Import files'),
-    conflictMessage: normalize(copy.conflictMessage, 'Some imported files already exist in the pool. How should duplicates be handled?'),
-    conflictDetail: normalize(copy.conflictDetail, ''),
+    conflictTitle: normalize(copy.conflictTitle, 'renderer.reading_test.entry.import_conflict.title'),
+    conflictMessage: normalize(copy.conflictMessage, 'renderer.reading_test.entry.import_conflict.message'),
+    conflictDetail: normalize(copy.conflictDetail, 'renderer.reading_test.entry.import_conflict.detail'),
     buttons: {
-      skip: normalize(copy.buttons && copy.buttons.skip, 'Skip duplicates'),
-      replace: normalize(copy.buttons && copy.buttons.replace, 'Replace duplicates'),
-      cancel: normalize(copy.buttons && copy.buttons.cancel, 'Cancel import'),
+      skip: normalize(copy.buttons && copy.buttons.skip, 'renderer.reading_test.entry.import_conflict.buttons.skip'),
+      replace: normalize(copy.buttons && copy.buttons.replace, 'renderer.reading_test.entry.import_conflict.buttons.replace'),
+      cancel: normalize(copy.buttons && copy.buttons.cancel, 'renderer.reading_test.entry.import_conflict.buttons.cancel'),
     },
   };
 }
 
-function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () => false } = {}) {
+function normalizePickerState(rawState) {
+  const state = rawState && typeof rawState === 'object' ? rawState : {};
+  const lastDirectory = typeof state.lastDirectory === 'string'
+    ? state.lastDirectory.trim()
+    : '';
+  return {
+    lastDirectory,
+  };
+}
+
+function readPickerState() {
+  try {
+    const statePath = getReadingTestPoolImportStateFile();
+    const raw = loadJson(statePath, PICKER_STATE_FALLBACK);
+    return {
+      statePath,
+      state: normalizePickerState(raw),
+    };
+  } catch (err) {
+    log.warn('Failed to read reading-test pool import picker state (using defaults):', err);
+    return {
+      statePath: null,
+      state: { ...PICKER_STATE_FALLBACK },
+    };
+  }
+}
+
+function persistPickerState(statePath, nextState) {
+  if (!statePath) return;
+  try {
+    saveJson(statePath, nextState);
+  } catch (err) {
+    log.warn('Failed to persist reading-test pool import picker state (ignored):', err);
+  }
+}
+
+function resolvePickerDefaultPath(platformAdapter, app, pickerState) {
+  const persisted = platformAdapter.normalizePersistedDirectory(pickerState.lastDirectory);
+  if (persisted) return persisted;
+  return platformAdapter.resolveDefaultPickerPath({
+    app,
+    cwd: process.cwd(),
+    log,
+  });
+}
+
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
+
+function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[reading_test_pool_import] registerIpc requires ipcMain');
   }
   if (typeof getWindows !== 'function') {
     throw new Error('[reading_test_pool_import] registerIpc requires getWindows');
+  }
+  if (typeof isReadingTestInteractionLocked !== 'function') {
+    throw new Error('[reading_test_pool_import] registerIpc requires isReadingTestInteractionLocked');
   }
 
   const { dialog, BrowserWindow, app } = require('electron');
@@ -375,7 +399,14 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
       const senderWin = event && event.sender
         ? BrowserWindow.fromWebContents(event.sender)
         : null;
-      return !!(mainWin && senderWin === mainWin);
+      if (!mainWin || senderWin !== mainWin) {
+        log.warnOnce(
+          'reading_test_pool_import.unauthorized',
+          'reading-test-import-pool-files unauthorized or mainWin unavailable (ignored).'
+        );
+        return false;
+      }
+      return true;
     } catch (err) {
       log.warn('Reading-test import sender validation failed:', err);
       return false;
@@ -409,7 +440,30 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
         properties: ['openFile', 'multiSelections'],
       });
 
-      if (!dialogResult || dialogResult.canceled || !Array.isArray(dialogResult.filePaths) || !dialogResult.filePaths.length) {
+      if (!dialogResult) {
+        log.error('reading-test-import-pool-files failed: showOpenDialog returned no result.');
+        return {
+          ok: false,
+          code: 'IMPORT_FAILED',
+          guidanceKey: 'renderer.alerts.reading_test_pool_import_failed',
+        };
+      }
+      if (dialogResult.canceled) {
+        return { ok: true, canceled: true };
+      }
+      if (!Array.isArray(dialogResult.filePaths)) {
+        log.error('reading-test-import-pool-files failed: showOpenDialog returned invalid filePaths.');
+        return {
+          ok: false,
+          code: 'IMPORT_FAILED',
+          guidanceKey: 'renderer.alerts.reading_test_pool_import_failed',
+        };
+      }
+      if (!dialogResult.filePaths.length) {
+        log.warnOnce(
+          'reading_test_pool_import.empty_selection',
+          'reading-test-import-pool-files returned empty selection (treated as cancelled).'
+        );
         return { ok: true, canceled: true };
       }
 
@@ -417,6 +471,10 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
         .map((filePath) => platformAdapter.normalizeSelectedFilePath(filePath))
         .filter(Boolean);
       if (!normalizedSelectedPaths.length) {
+        log.warnOnce(
+          'reading_test_pool_import.empty_normalized_selection',
+          'reading-test-import-pool-files returned empty normalized selection (treated as cancelled).'
+        );
         return { ok: true, canceled: true };
       }
 
@@ -446,11 +504,17 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
             noLink: true,
           });
 
-          if (!conflictResult || conflictResult.response === 2) {
+          if (!conflictResult || typeof conflictResult.response !== 'number') {
+            throw new Error('reading-test-import-pool-files conflict dialog returned invalid result');
+          }
+          if (conflictResult.response === 2) {
             return IMPORT_CONFLICT_STRATEGY.CANCEL;
           }
           if (conflictResult.response === 1) {
             return IMPORT_CONFLICT_STRATEGY.REPLACE;
+          }
+          if (conflictResult.response !== 0) {
+            throw new Error('reading-test-import-pool-files conflict dialog returned unsupported response');
           }
           return IMPORT_CONFLICT_STRATEGY.SKIP;
         },
@@ -477,6 +541,10 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
     }
   });
 }
+
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 
 module.exports = {
   IMPORT_CONFLICT_STRATEGY,
