@@ -1,6 +1,11 @@
 # Ignorar carpetas de desarrollo y temporales
 tools_local/
 
+# Docs de apoyo
+docs/cleanup/
+docs/issues/
+docs/_evidence
+
 # Index
 jsconfig.json
 
