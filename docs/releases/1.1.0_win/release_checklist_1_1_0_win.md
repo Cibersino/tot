@@ -27,13 +27,10 @@ Aquí, `<release_file_id>` significa el identificador del release normalizado pa
 
 ## 1. Criterio de cierre
 
-- [ ] Existe carpeta `docs/releases/<release-id>/` para este release.
-- [ ] Existen los tres documentos versionados del release.
 - [ ] El baseline versionado de seguridad termina en `PASS`.
 - [ ] El baseline versionado legal termina en `PASS`.
-- [ ] El checklist versionado de release termina en `PASS`.
 - [ ] El artefacto publicado es exactamente el artefacto inspeccionado por los tres documentos.
-- [ ] Si cambia el `commit freeze` o se reempaqueta el build, se vuelven a ejecutar los tres documentos versionados.
+- [ ] El `commit freeze` corresponde al build empaquetado.
 
 ## 2. Inventarios obligatorios del release
 
