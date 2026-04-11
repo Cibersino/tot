@@ -2,13 +2,12 @@
 
 ## Elección de archivo: 
 
-- En proceso: `public\renderer.js`
+- En proceso: `public\editor.js`
 
-- Archivos ya ordenados y limpiados: `electron\reading_test_pool.js`, `electron\reading_test_pool_import.js`, `electron\reading_test_questions_preload.js`, `electron\reading_test_session.js`, `electron\reading_test_session_windows.js`, `electron\reading_test_session_flow.js`, `electron\spellcheck.js`, `electron\editor_text_size.js`, `public\reading_test_questions.js`, `public\js\reading_speed_test.js`, `public\js\lib\reading_test_filters_core.js`, `public\js\lib\reading_test_questions_core.js`, `public\js\lib\snapshot_tag_catalog.js`, `electron\current_text_snapshots_main.js`, `electron\main.js`, `electron\settings.js`, `electron\fs_storage.js`.
+- Archivos ya ordenados y limpiados: `electron\reading_test_pool.js`, `electron\reading_test_pool_import.js`, `electron\reading_test_questions_preload.js`, `electron\reading_test_session.js`, `electron\reading_test_session_windows.js`, `electron\reading_test_session_flow.js`, `electron\spellcheck.js`, `electron\editor_text_size.js`, `public\reading_test_questions.js`, `public\js\reading_speed_test.js`, `public\js\lib\reading_test_filters_core.js`, `public\js\lib\reading_test_questions_core.js`, `public\js\lib\snapshot_tag_catalog.js`, `electron\current_text_snapshots_main.js`, `electron\main.js`, `electron\settings.js`, `electron\fs_storage.js`, `public\renderer.js`.
 
 - Faltan: 
     `electron\preload.js`
-    `public\editor.js`
 
 ## Principios base de comportamiento (normativo)
 
