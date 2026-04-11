@@ -1253,6 +1253,12 @@ function closeInfoModal() {
 if (infoModalClose) infoModalClose.addEventListener('click', closeInfoModal);
 if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', closeInfoModal);
 
+function focusInfoModalContent() {
+  if (infoModalContent && typeof infoModalContent.focus === 'function') {
+    infoModalContent.focus();
+  }
+}
+
 window.addEventListener('keydown', (ev) => {
   if (!infoModal) return;
   if (ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') {
@@ -1349,13 +1355,22 @@ async function hydrateAboutEnvironment(container) {
   const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
   if (!envEl) return;
   const unavailableText = tRenderer('renderer.info.acerca_de.env.unavailable');
+  const defaultSharpRuntimePackage = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+
+  const applyUnavailableEnvironmentState = ({ includeSharpRuntimeNames = false } = {}) => {
+    envEl.textContent = unavailableText;
+    if (runtimeEl) runtimeEl.textContent = unavailableText;
+    if (includeSharpRuntimeNames) {
+      if (sharpRuntimeEl) sharpRuntimeEl.textContent = defaultSharpRuntimePackage;
+      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = defaultSharpRuntimePackage;
+    }
+    if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+    if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+  };
 
   if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
     log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
-    envEl.textContent = unavailableText;
-    if (runtimeEl) runtimeEl.textContent = unavailableText;
-    if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-    if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+    applyUnavailableEnvironmentState();
     return;
   }
 
@@ -1388,12 +1403,7 @@ async function hydrateAboutEnvironment(container) {
         'renderer.info.acerca_de.env.missing_fields',
         'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
       );
-      envEl.textContent = unavailableText;
-      if (runtimeEl) runtimeEl.textContent = unavailableText;
-      if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-      if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-      if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+      applyUnavailableEnvironmentState({ includeSharpRuntimeNames: true });
       return;
     }
 
@@ -1424,12 +1434,7 @@ async function hydrateAboutEnvironment(container) {
     }
   } catch (err) {
     log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
-    envEl.textContent = unavailableText;
-    if (runtimeEl) runtimeEl.textContent = unavailableText;
-    if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-    if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-    if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-    if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+    applyUnavailableEnvironmentState({ includeSharpRuntimeNames: true });
   }
 }
 
@@ -1520,7 +1525,7 @@ async function showInfoModal(key) {
       )
       : `No hay contenido disponible para '${infoDialogLabel}'.`;
     infoModalContent.innerHTML = `<p>${missingContentText}</p>`;
-    if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
+    focusInfoModalContent();
     return;
   }
 
@@ -1554,7 +1559,7 @@ async function showInfoModal(key) {
         const target = infoModalContent.querySelector(`#${sectionId}`);
         if (!target) {
           // If the ID does not exist, do nothing else
-          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
+          focusInfoModalContent();
           return;
         }
 
@@ -1570,15 +1575,15 @@ async function showInfoModal(key) {
         }
 
         // Focus on the content so the reader can use the keyboard
-        if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
+        focusInfoModalContent();
       } catch (err) {
         log.error('Error moving modal to section:', err);
-        if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
+        focusInfoModalContent();
       }
     });
   } else {
     // No section: focus the content for the whole document
-    if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
+    focusInfoModalContent();
   }
 }
 
