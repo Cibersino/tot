@@ -64,10 +64,7 @@
   function syncOverlayText() {
     ensureOverlay();
     if (overlayTitle) {
-      overlayTitle.textContent = tRenderer(
-        'renderer.main.processing.import_extract_drop_here',
-        'Drop file to import/extract text'
-      );
+      overlayTitle.textContent = tRenderer('renderer.main.processing.import_extract_drop_here');
     }
   }
 

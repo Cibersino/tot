@@ -4,6 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
+// Main renderer entry point for the primary window UI.
 // Responsibilities:
 // - Bootstraps the renderer UI and pulls config/settings from main.
 // - Applies i18n labels and number formatting.
@@ -482,16 +483,15 @@ function getHelpTipKeyList() {
 }
 
 const getCronoLabels = () => ({
-  playLabel: tRenderer ? tRenderer('renderer.main.crono.play_symbol', '>') : '>',
-  pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
+  playLabel: tRenderer('renderer.main.crono.play_symbol'),
+  pauseLabel: tRenderer('renderer.main.crono.pause_symbol')
 });
 
 function applyTranslations() {
   if (!tRenderer) return;
-  const applyAriaLabel = (el, key, fallback = '') => {
+  const applyAriaLabel = (el, key) => {
     if (!el) return;
-    const defaultValue = fallback || el.getAttribute('aria-label') || '';
-    const aria = tRenderer(key, defaultValue);
+    const aria = tRenderer(key);
     if (aria) el.setAttribute('aria-label', aria);
   };
   importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
@@ -507,52 +507,52 @@ function applyTranslations() {
   }
   const infoModalLoading = document.getElementById('infoModalLoading');
   if (infoModalLoading) {
-    infoModalLoading.textContent = tRenderer('renderer.info.loading', infoModalLoading.textContent || 'Cargando...');
+    infoModalLoading.textContent = tRenderer('renderer.info.loading');
   }
   // Text selector buttons
-  if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
-  if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
-  if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
-  if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
-  if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear', btnEmptyMain.textContent || '');
-  if (btnLoadSnapshot) btnLoadSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_load', btnLoadSnapshot.textContent || '');
-  if (btnSaveSnapshot) btnSaveSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_save', btnSaveSnapshot.textContent || '');
-  if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new', btnNewTask.textContent || '');
-  if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load', btnLoadTask.textContent || '');
+  if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract');
+  if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard');
+  if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard');
+  if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit');
+  if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear');
+  if (btnLoadSnapshot) btnLoadSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_load');
+  if (btnSaveSnapshot) btnSaveSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_save');
+  if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new');
+  if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load');
   // Text selector tooltips
-  if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract', btnImportExtract.title || '');
-  if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
-  if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
+  if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract');
+  if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard');
+  if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard');
   applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract');
   if (clipboardRepeatInput) {
-    clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count', clipboardRepeatInput.title || '');
+    clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count');
     applyAriaLabel(clipboardRepeatInput, 'renderer.main.aria.clipboard_repeat_count');
   }
-  if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
-  if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
-  if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load', btnLoadSnapshot.title || '');
-  if (btnSaveSnapshot) btnSaveSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_save', btnSaveSnapshot.title || '');
-  if (btnNewTask) btnNewTask.title = tRenderer('renderer.main.tooltips.task_new', btnNewTask.title || '');
-  if (btnLoadTask) btnLoadTask.title = tRenderer('renderer.main.tooltips.task_load', btnLoadTask.title || '');
+  if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit');
+  if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear');
+  if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load');
+  if (btnSaveSnapshot) btnSaveSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_save');
+  if (btnNewTask) btnNewTask.title = tRenderer('renderer.main.tooltips.task_new');
+  if (btnLoadTask) btnLoadTask.title = tRenderer('renderer.main.tooltips.task_load');
   // Presets
-  if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new', btnNewPreset.textContent || '');
-  if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit', btnEditPreset.textContent || '');
-  if (btnDeletePreset) btnDeletePreset.textContent = tRenderer('renderer.main.speed.delete', btnDeletePreset.textContent || '');
-  if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer('renderer.main.speed.reset_defaults', btnResetDefaultPresets.textContent || '');
-  if (btnNewPreset) btnNewPreset.title = tRenderer('renderer.main.tooltips.new_preset', btnNewPreset.title || '');
-  if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset', btnEditPreset.title || '');
-  if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset', btnDeletePreset.title || '');
-  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets', btnResetDefaultPresets.title || '');
+  if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new');
+  if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit');
+  if (btnDeletePreset) btnDeletePreset.textContent = tRenderer('renderer.main.speed.delete');
+  if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer('renderer.main.speed.reset_defaults');
+  if (btnNewPreset) btnNewPreset.title = tRenderer('renderer.main.tooltips.new_preset');
+  if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset');
+  if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset');
+  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets');
   // Floating window toggle
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
-  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window', vfSwitchLabel.title || '');
+  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window');
   // Section titles
-  if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title', selectorTitle.textContent || '');
-  if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
-  if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title', resultsTitle.textContent || '');
-  if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title', cronTitle.textContent || '');
+  if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title');
+  if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title');
+  if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title');
+  if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title');
   if (btnReadingSpeedTest) {
-    const label = tRenderer('renderer.main.reading_tools.reading_speed_test', btnReadingSpeedTest.textContent || '');
+    const label = tRenderer('renderer.main.reading_tools.reading_speed_test');
     btnReadingSpeedTest.textContent = label;
     if (label) {
       btnReadingSpeedTest.title = label;
@@ -561,32 +561,29 @@ function applyTranslations() {
   }
   // Speed selector labels
   const wpmLabel = document.querySelector('.wpm-row span');
-  if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label', wpmLabel.textContent || '');
+  if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label');
   applyAriaLabel(wpmInput, 'renderer.main.aria.wpm_input');
   applyAriaLabel(wpmSlider, 'renderer.main.aria.wpm_slider');
   applyAriaLabel(presetsSelect, 'renderer.main.aria.speed_presets');
   // Results: precise mode label
   const togglePrecisoLabel = document.querySelector('.toggle-wrapper .toggle-label');
   if (togglePrecisoLabel) {
-    togglePrecisoLabel.textContent = tRenderer('renderer.main.results.precise_mode', togglePrecisoLabel.textContent || '');
-    togglePrecisoLabel.title = tRenderer('renderer.main.results.precise_tooltip', togglePrecisoLabel.title || '');
+    togglePrecisoLabel.textContent = tRenderer('renderer.main.results.precise_mode');
+    togglePrecisoLabel.title = tRenderer('renderer.main.results.precise_tooltip');
     const toggleWrapper = togglePrecisoLabel.closest('.toggle-wrapper');
     if (toggleWrapper) {
-      toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip', toggleWrapper.title || togglePrecisoLabel.title || '');
+      toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip');
     }
   }
-  applyAriaLabel(toggleModoPreciso, 'renderer.main.aria.precise_mode_toggle', togglePrecisoLabel ? togglePrecisoLabel.textContent : '');
+  applyAriaLabel(toggleModoPreciso, 'renderer.main.aria.precise_mode_toggle');
   // Stopwatch: speed label and controls aria-label
   const realWpmLabel = document.querySelector('.realwpm');
   if (realWpmLabel && realWpmLabel.firstChild) {
-    realWpmLabel.firstChild.textContent = tRenderer('renderer.main.crono.speed', realWpmLabel.firstChild.textContent || '');
+    realWpmLabel.firstChild.textContent = tRenderer('renderer.main.crono.speed');
   }
   const cronoControls = document.querySelector('.crono-controls');
   if (cronoControls) {
-    const ariaLabel = tRenderer(
-      'renderer.main.aria.crono_controls',
-      tRenderer('renderer.main.crono.controls_label', cronoControls.getAttribute('aria-label') || '')
-    );
+    const ariaLabel = tRenderer('renderer.main.aria.crono_controls');
     if (ariaLabel) cronoControls.setAttribute('aria-label', ariaLabel);
   }
   const cronoDisplayEl = document.getElementById('cronoDisplay');
@@ -605,12 +602,12 @@ function applyTranslations() {
   // Abbreviated label for the floating window
   const vfLabel = document.querySelector('.vf-label');
   if (vfLabel) {
-    vfLabel.textContent = tRenderer('renderer.main.crono.flotante_short', vfLabel.textContent || vfLabel.textContent);
+    vfLabel.textContent = tRenderer('renderer.main.crono.flotante_short');
   }
 
   // Help button title
   if (btnHelp) {
-    const helpTitle = tRenderer('renderer.main.tooltips.help_button', btnHelp.getAttribute('title') || '');
+    const helpTitle = tRenderer('renderer.main.tooltips.help_button');
     if (helpTitle) btnHelp.setAttribute('title', helpTitle);
   }
 }
@@ -697,12 +694,12 @@ function renderEstimatedTime(totalSeconds) {
 async function updatePreviewAndResults(text) {
   const normalizedText = normalizeText(text);
   const displayText = normalizedText.replace(/\r?\n/g, '   ');
-  const n = displayText.length;
+  const displayLength = displayText.length;
 
-  if (n === 0) {
-    const emptyMsg = tRenderer('renderer.main.selector_empty', '(empty)');
+  if (displayLength === 0) {
+    const emptyMsg = tRenderer('renderer.main.selector_empty');
     textPreview.textContent = emptyMsg;
-  } else if (n <= PREVIEW_INLINE_THRESHOLD) {
+  } else if (displayLength <= PREVIEW_INLINE_THRESHOLD) {
     textPreview.textContent = displayText;
   } else {
     const start = displayText.slice(0, PREVIEW_START_CHARS);
@@ -720,9 +717,9 @@ async function updatePreviewAndResults(text) {
   const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
 
-  resChars.textContent = msgRenderer('renderer.main.results.chars', { n: caracteresFormateado }, `Characters: ${caracteresFormateado}`);
-  resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado }, `Characters (no spaces): ${caracteresSinEspaciosFormateado}`);
-  resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado }, `Words: ${palabrasFormateado}`);
+  resChars.textContent = msgRenderer('renderer.main.results.chars', { n: caracteresFormateado });
+  resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado });
+  resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado });
 
   const totalSeconds = getExactTotalSeconds(stats.palabras, wpm);
   renderEstimatedTime(totalSeconds);
@@ -1030,7 +1027,7 @@ function armIpcSubscriptions() {
           );
           return;
         }
-        hideeditorLoader();
+        hideEditorLoader();
       });
     } else {
       log.warnOnce(
@@ -1109,14 +1106,14 @@ function setupToggleModoPreciso() {
       log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
     }
   } catch (err) {
-    log.error('Error initialazing toggleModoPreciso:', err);
+    log.error('Error initializing toggleModoPreciso:', err);
   }
 }
 
 async function runStartupOrchestrator() {
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
-      dedupeKey: 'renderer.ipc.getAppConfig.unavailable',
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getAppConfig.unavailable',
       unavailableMessage: 'getAppConfig unavailable; bootstrap will use default limits.'
     });
     if (getAppConfig) {
@@ -1140,7 +1137,7 @@ async function runStartupOrchestrator() {
     let settingsSnapshot = {};
     // Load user settings once at renderer startup
     const getSettings = getOptionalElectronMethod('getSettings', {
-      dedupeKey: 'renderer.ipc.getSettings.unavailable',
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getSettings.unavailable',
       unavailableMessage: 'getSettings unavailable; bootstrap will use default settings.'
     });
     if (getSettings) {
@@ -1174,13 +1171,13 @@ async function runStartupOrchestrator() {
 
     // Get current initial text (state-only)
     const getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getCurrentText.unavailable',
       unavailableMessage: 'getCurrentText unavailable; bootstrap will use empty text.'
     });
     if (getCurrentText) {
       try {
-        const t = await getCurrentText();
-        installCurrentTextState(t || '');
+        const initialText = await getCurrentText();
+        installCurrentTextState(initialText || '');
       } catch (err) {
         log.error('Error loading initial current text:', err);
         installCurrentTextState('');
@@ -1190,7 +1187,7 @@ async function runStartupOrchestrator() {
     }
 
     const getImportExtractProcessingMode = getOptionalElectronMethod('getImportExtractProcessingMode', {
-      dedupeKey: 'renderer.ipc.getImportExtractProcessingMode.unavailable',
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getImportExtractProcessingMode.unavailable',
       unavailableMessage: 'getImportExtractProcessingMode unavailable; processing mode defaults to inactive.'
     });
     if (getImportExtractProcessingMode) {
@@ -1226,34 +1223,38 @@ async function runStartupOrchestrator() {
     // Final update after presets load in case WPM changed
     startPreviewAndResultsUpdate(currentText, 'startup kickoff');
   } catch (err) {
-    log.error('Error initialazing renderer:', err);
+    log.error('Error initializing renderer:', err);
   }
 }
-
-armIpcSubscriptions();
-setupToggleModoPreciso();
 
 // =============================================================================
 // Info modal
 // =============================================================================
-  const infoModal = document.getElementById('infoModal');
-  const infoModalBackdrop = document.getElementById('infoModalBackdrop');
-  const infoModalClose = document.getElementById('infoModalClose');
-  const infoModalTitle = document.getElementById('infoModalTitle');
-  const infoModalContent = document.getElementById('infoModalContent');
-  const { bindInfoModalLinks } = window.InfoModalLinks || {};
+const infoModal = document.getElementById('infoModal');
+const infoModalBackdrop = document.getElementById('infoModalBackdrop');
+const infoModalClose = document.getElementById('infoModalClose');
+const infoModalTitle = document.getElementById('infoModalTitle');
+const infoModalContent = document.getElementById('infoModalContent');
+const { bindInfoModalLinks } = window.InfoModalLinks || {};
 
-  function closeInfoModal() {
-    try {
-      if (!infoModal || !infoModalContent) return;
-      infoModal.setAttribute('aria-hidden', 'true');
-      const loadingText = tRenderer('renderer.info.loading', 'Cargando...');
-      infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
-    } catch (err) {
-      log.error('Error closing modal info:', err);
-    }
+function closeInfoModal() {
+  try {
+    if (!infoModal || !infoModalContent) return;
+    infoModal.setAttribute('aria-hidden', 'true');
+    const loadingText = tRenderer('renderer.info.loading');
+    infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
+  } catch (err) {
+    log.error('Error closing info modal:', err);
   }
+}
 
+function focusInfoModalContent() {
+  if (infoModalContent && typeof infoModalContent.focus === 'function') {
+    infoModalContent.focus();
+  }
+}
+
+function bindInfoModalUi() {
   if (infoModalClose) infoModalClose.addEventListener('click', closeInfoModal);
   if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', closeInfoModal);
 
@@ -1263,346 +1264,341 @@ setupToggleModoPreciso();
       closeInfoModal();
     }
   });
+}
 
-  async function fetchText(path) {
-    try {
-      const res = await fetch(path, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.text();
-    } catch (err) {
-      log.warnOnce('renderer:fetchText:failed', 'fetchText failed; info modal will fallback:', path, err);
-      return null;
-    }
+async function fetchText(path) {
+  try {
+    const res = await fetch(path, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.text();
+  } catch (err) {
+    log.warn('fetchText failed; info modal will fallback:', path, err);
+    return null;
+  }
+}
+
+async function fetchTextWithFallback(paths) {
+  for (const path of paths) {
+    const html = await fetchText(path);
+    if (html !== null) return { html, path };
+  }
+  return { html: null, path: null };
+}
+
+// Translate HTML fragments using data-i18n and renderer.info.<key>.*
+function translateInfoHtml(htmlString, key) {
+  // If no translation function is available, return the HTML unchanged.
+  if (!tRenderer) return htmlString;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    doc.querySelectorAll('[data-i18n]').forEach((el) => {
+      const dataKey = el.getAttribute('data-i18n');
+      if (!dataKey) return;
+      const tKey = `renderer.info.${key}.${dataKey}`;
+      const translated = tRenderer(tKey);
+      if (translated) el.textContent = translated;
+    });
+    return doc.body.innerHTML;
+  } catch (err) {
+    log.warn('translateInfoHtml failed:', err);
+    return htmlString;
+  }
+}
+
+function extractInfoBodyHtml(htmlString) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    return doc.body.innerHTML;
+  } catch (err) {
+    log.warn('extractInfoBodyHtml failed:', err);
+    return htmlString;
+  }
+}
+
+async function hydrateAboutVersion(container) {
+  const versionEl = container ? container.querySelector('#appVersion') : null;
+  if (!versionEl) return;
+  const unavailableText = tRenderer('renderer.info.acerca_de.version.unavailable');
+
+  if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
+    log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
+    versionEl.textContent = unavailableText;
+    return;
   }
 
-  async function fetchTextWithFallback(paths) {
-    for (const path of paths) {
-      const html = await fetchText(path);
-      if (html !== null) return { html, path };
-    }
-    return { html: null, path: null };
-  }
-
-  // Translate HTML fragments using data-i18n and renderer.info.<key>.*
-  function translateInfoHtml(htmlString, key) {
-    // If no translation function is available, return the HTML unchanged.
-    if (!tRenderer) return htmlString;
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlString, 'text/html');
-      doc.querySelectorAll('[data-i18n]').forEach((el) => {
-        const dataKey = el.getAttribute('data-i18n');
-        if (!dataKey) return;
-        const tKey = `renderer.info.${key}.${dataKey}`;
-        const translated = tRenderer(tKey, el.textContent || '');
-        if (translated) el.textContent = translated;
-      });
-      return doc.body.innerHTML;
-    } catch (err) {
-      log.warn('translateInfoHtml failed:', err);
-      return htmlString;
-    }
-  }
-
-  function extractInfoBodyHtml(htmlString) {
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlString, 'text/html');
-      return doc.body.innerHTML;
-    } catch (err) {
-      log.warn('extractInfoBodyHtml failed:', err);
-      return htmlString;
-    }
-  }
-
-  async function hydrateAboutVersion(container) {
-    const versionEl = container ? container.querySelector('#appVersion') : null;
-    if (!versionEl) return;
-    const unavailableText = tRenderer
-      ? tRenderer('renderer.info.acerca_de.version.unavailable', 'Unavailable')
-      : 'Unavailable';
-
-    if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
-      log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
+  try {
+    const version = await window.electronAPI.getAppVersion();
+    const cleaned = typeof version === 'string' ? version.trim() : '';
+    if (!cleaned) {
+      log.warnOnce(
+        'renderer.info.acerca_de.version.empty',
+        'getAppVersion returned empty; About modal shows N/A.'
+      );
       versionEl.textContent = unavailableText;
       return;
     }
+    versionEl.textContent = cleaned;
+  } catch (err) {
+    log.warn('getAppVersion failed; About modal shows N/A:', err);
+    versionEl.textContent = unavailableText;
+  }
+}
 
-    try {
-      const version = await window.electronAPI.getAppVersion();
-      const cleaned = typeof version === 'string' ? version.trim() : '';
-      if (!cleaned) {
-        log.warnOnce(
-          'renderer.info.acerca_de.version.empty',
-          'getAppVersion returned empty; About modal shows N/A.'
-        );
-        versionEl.textContent = unavailableText;
-        return;
-      }
-      versionEl.textContent = cleaned;
-    } catch (err) {
-      log.warn('getAppVersion failed; About modal shows N/A:', err);
-      versionEl.textContent = unavailableText;
+async function hydrateAboutEnvironment(container) {
+  const envEl = container ? container.querySelector('#appEnv') : null;
+  const runtimeEl = container ? container.querySelector('#appRuntimeVersions') : null;
+  const sharpRuntimeLicenseRow = container ? container.querySelector('#sharpRuntimeLicenseRow') : null;
+  const sharpRuntimeNoticeRow = container ? container.querySelector('#sharpRuntimeNoticeRow') : null;
+  const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
+  const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
+  if (!envEl) return;
+  const unavailableText = tRenderer('renderer.info.acerca_de.env.unavailable');
+  const defaultSharpRuntimePackage = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+
+  const applyUnavailableEnvironmentState = ({ includeSharpRuntimeNames = false } = {}) => {
+    envEl.textContent = unavailableText;
+    if (runtimeEl) runtimeEl.textContent = unavailableText;
+    if (includeSharpRuntimeNames) {
+      if (sharpRuntimeEl) sharpRuntimeEl.textContent = defaultSharpRuntimePackage;
+      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = defaultSharpRuntimePackage;
     }
+    if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+    if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+  };
+
+  if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
+    log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
+    applyUnavailableEnvironmentState();
+    return;
   }
 
-  async function hydrateAboutEnvironment(container) {
-    const envEl = container ? container.querySelector('#appEnv') : null;
-    const runtimeEl = container ? container.querySelector('#appRuntimeVersions') : null;
-    const sharpRuntimeLicenseRow = container ? container.querySelector('#sharpRuntimeLicenseRow') : null;
-    const sharpRuntimeNoticeRow = container ? container.querySelector('#sharpRuntimeNoticeRow') : null;
-    const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
-    const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
-    if (!envEl) return;
-    const unavailableText = tRenderer
-      ? tRenderer('renderer.info.acerca_de.env.unavailable', 'Unavailable')
-      : 'Unavailable';
+  try {
+    const info = await window.electronAPI.getAppRuntimeInfo();
+    const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
+    const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
+    const electronVersion = info && typeof info.electronVersion === 'string'
+      ? info.electronVersion.trim()
+      : '';
+    const chromeVersion = info && typeof info.chromeVersion === 'string'
+      ? info.chromeVersion.trim()
+      : '';
+    const nodeVersion = info && typeof info.nodeVersion === 'string'
+      ? info.nodeVersion.trim()
+      : '';
+    const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
+    const osLabel = platformMap[platform] || platform;
+    const sharpRuntimePackageMap = {
+      'win32:x64': '@img/sharp-win32-x64@0.34.4',
+      'darwin:x64': '@img/sharp-darwin-x64@0.34.4',
+      'darwin:arm64': '@img/sharp-darwin-arm64@0.34.4',
+      'linux:x64': '@img/sharp-linux-x64@0.34.4',
+    };
+    const sharpRuntimePackage = sharpRuntimePackageMap[`${platform}:${arch}`]
+      || '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
 
-    if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
-      log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
-      envEl.textContent = unavailableText;
-      if (runtimeEl) runtimeEl.textContent = unavailableText;
-      if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-      if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+    if (!osLabel || !arch) {
+      log.warnOnce(
+        'renderer.info.acerca_de.env.missing_fields',
+        'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
+      );
+      applyUnavailableEnvironmentState({ includeSharpRuntimeNames: true });
       return;
     }
 
-    try {
-      const info = await window.electronAPI.getAppRuntimeInfo();
-      const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
-      const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
-      const electronVersion = info && typeof info.electronVersion === 'string'
-        ? info.electronVersion.trim()
-        : '';
-      const chromeVersion = info && typeof info.chromeVersion === 'string'
-        ? info.chromeVersion.trim()
-        : '';
-      const nodeVersion = info && typeof info.nodeVersion === 'string'
-        ? info.nodeVersion.trim()
-        : '';
-      const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
-      const osLabel = platformMap[platform] || platform;
-      const sharpRuntimePackageMap = {
-        'win32:x64': '@img/sharp-win32-x64@0.34.4',
-        'darwin:x64': '@img/sharp-darwin-x64@0.34.4',
-        'darwin:arm64': '@img/sharp-darwin-arm64@0.34.4',
-        'linux:x64': '@img/sharp-linux-x64@0.34.4',
-      };
-      const sharpRuntimePackage = sharpRuntimePackageMap[`${platform}:${arch}`]
-        || '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+    envEl.textContent = `${osLabel} (${arch})`;
+    if (sharpRuntimeEl) sharpRuntimeEl.textContent = sharpRuntimePackage;
+    if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = sharpRuntimePackage;
+    if (runtimeEl) {
+      const runtimeParts = [];
+      runtimeParts.push(electronVersion ? `Electron ${electronVersion}` : `Electron ${unavailableText}`);
+      runtimeParts.push(chromeVersion ? `Chromium ${chromeVersion}` : `Chromium ${unavailableText}`);
+      runtimeParts.push(nodeVersion ? `Node.js ${nodeVersion}` : `Node.js ${unavailableText}`);
+      runtimeEl.textContent = runtimeParts.join(' | ');
+    }
 
-      if (!osLabel || !arch) {
-        log.warnOnce(
-          'renderer.info.acerca_de.env.missing_fields',
-          'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
-        );
-        envEl.textContent = unavailableText;
-        if (runtimeEl) runtimeEl.textContent = unavailableText;
-        if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-        if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-        return;
-      }
-
-      envEl.textContent = `${osLabel} (${arch})`;
-      if (sharpRuntimeEl) sharpRuntimeEl.textContent = sharpRuntimePackage;
-      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = sharpRuntimePackage;
-      if (runtimeEl) {
-        const runtimeParts = [];
-        runtimeParts.push(electronVersion ? `Electron ${electronVersion}` : `Electron ${unavailableText}`);
-        runtimeParts.push(chromeVersion ? `Chromium ${chromeVersion}` : `Chromium ${unavailableText}`);
-        runtimeParts.push(nodeVersion ? `Node.js ${nodeVersion}` : `Node.js ${unavailableText}`);
-        runtimeEl.textContent = runtimeParts.join(' | ');
-      }
-
-      if (
-        window.electronAPI
-        && typeof window.electronAPI.getAppDocAvailability === 'function'
-      ) {
+    if (
+      window.electronAPI
+      && typeof window.electronAPI.getAppDocAvailability === 'function'
+    ) {
+      try {
         const [licenseAvailability, noticeAvailability] = await Promise.all([
           window.electronAPI.getAppDocAvailability('license-import-extract-image-processing-runtime'),
           window.electronAPI.getAppDocAvailability('notice-import-extract-image-processing-runtime'),
         ]);
         if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !(licenseAvailability && licenseAvailability.available);
         if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !(noticeAvailability && noticeAvailability.available);
-      } else {
+      } catch (err) {
+        log.warn('getAppDocAvailability failed; About modal document availability defaults to hidden:', err);
         if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
         if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
       }
-    } catch (err) {
-      log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
-      envEl.textContent = unavailableText;
-      if (runtimeEl) runtimeEl.textContent = unavailableText;
-      if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+    } else {
+      log.warn('getAppDocAvailability unavailable; About modal document availability defaults to hidden.');
       if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
       if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
     }
+  } catch (err) {
+    log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
+    applyUnavailableEnvironmentState({ includeSharpRuntimeNames: true });
+  }
+}
+
+const normalizeLangTagSafe = (lang) => {
+  if (window.RendererI18n && typeof window.RendererI18n.normalizeLangTag === 'function') {
+    return window.RendererI18n.normalizeLangTag(lang);
+  }
+  log.warnOnce(
+    'renderer.info.normalizeLangTag.fallback',
+    'RendererI18n.normalizeLangTag unavailable; using local fallback normalization.'
+  );
+  return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
+};
+
+const getLangBaseSafe = (lang) => {
+  if (window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function') {
+    return window.RendererI18n.getLangBase(lang);
+  }
+  log.warnOnce(
+    'renderer.info.getLangBase.fallback',
+    'RendererI18n.getLangBase unavailable; using local fallback language base.'
+  );
+  const normalized = normalizeLangTagSafe(lang);
+  if (!normalized) return '';
+  const idx = normalized.indexOf('-');
+  return idx > 0 ? normalized.slice(0, idx) : normalized;
+};
+
+function getManualFileCandidates(langTag) {
+  const candidates = [];
+  const normalized = normalizeLangTagSafe(langTag);
+  const base = getLangBaseSafe(normalized);
+  if (normalized) candidates.push(normalized);
+  if (base && base !== normalized) candidates.push(base);
+  const defaultLang = normalizeLangTagSafe(DEFAULT_LANG);
+  if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
+  return candidates.map(tag => `./info/instrucciones.${tag}.html`);
+}
+
+async function showInfoModal(key) {
+  // key: 'instrucciones' | 'guia_basica' | 'faq' | 'links_interes' | 'acerca_de'
+  if (!infoModal || !infoModalTitle || !infoModalContent) return;
+
+  // Decide which file to load based on the key.
+  // Basic guide, instructions, and FAQ are served from localized manual HTML.
+  let fileToLoad = null;
+  let sectionId = null;
+  const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
+
+  if (key === 'acerca_de') {
+    fileToLoad = './info/acerca_de.html';
+  } else if (key === 'links_interes') {
+    fileToLoad = './info/links_interes.html';
+  } else if (isManual) {
+    const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
+    fileToLoad = getManualFileCandidates(langTag);
+    // Map key to block ID within instructions.html
+    const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
+    sectionId = mapping[key] || 'instrucciones';
+  } else {
+    log.warnOnce(
+      'renderer.info.unsupportedKey',
+      'showInfoModal received unsupported key:',
+      key
+    );
+    return;
   }
 
-  const normalizeLangTagSafe = (lang) => {
-    if (window.RendererI18n && typeof window.RendererI18n.normalizeLangTag === 'function') {
-      return window.RendererI18n.normalizeLangTag(lang);
-    }
-    log.warnOnce(
-      'renderer.info.normalizeLangTag.fallback',
-      'RendererI18n.normalizeLangTag unavailable; using local fallback normalization.'
-    );
-    return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
-  };
+  const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
+  const infoDialogLabel = tRenderer(`renderer.info.${translationKey}.title`);
+  infoModalTitle.textContent = infoDialogLabel;
 
-  const getLangBaseSafe = (lang) => {
-    if (window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function') {
-      return window.RendererI18n.getLangBase(lang);
-    }
-    log.warnOnce(
-      'renderer.info.getLangBase.fallback',
-      'RendererI18n.getLangBase unavailable; using local fallback language base.'
-    );
-    const normalized = normalizeLangTagSafe(lang);
-    if (!normalized) return '';
-    const idx = normalized.indexOf('-');
-    return idx > 0 ? normalized.slice(0, idx) : normalized;
-  };
+  // Open modal early so loading state is visible during fetch
+  const loadingText = tRenderer('renderer.info.loading');
+  infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
+  infoModal.setAttribute('aria-hidden', 'false');
 
-  function getManualFileCandidates(langTag) {
-    const candidates = [];
-    const normalized = normalizeLangTagSafe(langTag);
-    const base = getLangBaseSafe(normalized);
-    if (normalized) candidates.push(normalized);
-    if (base && base !== normalized) candidates.push(base);
-    const defaultLang = normalizeLangTagSafe(DEFAULT_LANG);
-    if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
-    return candidates.map(tag => `./info/instrucciones.${tag}.html`);
+  // Fetch HTML (manual pages use a language fallback list)
+  const tryHtml = Array.isArray(fileToLoad)
+    ? (await fetchTextWithFallback(fileToLoad)).html
+    : await fetchText(fileToLoad);
+  if (tryHtml === null) {
+    // Fallback: show a simple missing-content message
+    const missingContentText = msgRenderer
+      ? msgRenderer(
+        'renderer.info.missing_content',
+        { name: infoDialogLabel }
+      )
+      : `No hay contenido disponible para '${infoDialogLabel}'.`;
+    infoModalContent.innerHTML = `<p>${missingContentText}</p>`;
+    focusInfoModalContent();
+    return;
   }
 
-  async function showInfoModal(key) {
-    // key: 'instrucciones' | 'guia_basica' | 'faq' | 'links_interes' | 'acerca_de'
-    if (!infoModal || !infoModalTitle || !infoModalContent) return;
+  // Translate non-manual pages; manual HTML is loaded as-is.
+  const renderedHtml = isManual
+    ? extractInfoBodyHtml(tryHtml)
+    : translateInfoHtml(tryHtml, translationKey);
+  infoModalContent.innerHTML = renderedHtml;
+  if (typeof bindInfoModalLinks === 'function') {
+    bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
+  } else {
+    log.warnOnce(
+      'renderer.info.bindInfoModalLinks.unavailable',
+      'InfoModalLinks.bindInfoModalLinks unavailable; modal links will use default behavior.'
+    );
+  }
+  if (key === 'acerca_de') {
+    await hydrateAboutVersion(infoModalContent);
+    await hydrateAboutEnvironment(infoModalContent);
+  }
 
-    // Decide which file to load based on the key.
-    // Basic guide, instructions, and FAQ are served from localized manual HTML.
-    let fileToLoad = null;
-    let sectionId = null;
-    const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
+  // Ensure the panel starts at the top before scrolling
+  const panel = document.querySelector('.info-modal-panel');
+  if (panel) panel.scrollTop = 0;
 
-    if (key === 'acerca_de') {
-      fileToLoad = './info/acerca_de.html';
-    } else if (key === 'links_interes') {
-      fileToLoad = './info/links_interes.html';
-    } else if (isManual) {
-      const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
-      fileToLoad = getManualFileCandidates(langTag);
-      // Map key to block ID within instructions.html
-      const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
-      sectionId = mapping[key] || 'instrucciones';
-    } else {
-      log.warnOnce(
-        'renderer.info.unsupportedKey',
-        'showInfoModal received unsupported key:',
-        key
-      );
-      return;
-    }
-
-    const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
-    let defaultTitle = 'Links de interés';
-    if (translationKey === 'instrucciones') {
-      defaultTitle = 'Manual de uso';
-    } else if (translationKey === 'acerca_de') {
-      defaultTitle = 'Acerca de';
-    }
-    const infoDialogLabel = tRenderer
-      ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle)
-      : defaultTitle;
-    infoModalTitle.textContent = infoDialogLabel;
-
-    // Open modal early so loading state is visible during fetch
-    const loadingText = tRenderer('renderer.info.loading', 'Cargando...');
-    infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
-    infoModal.setAttribute('aria-hidden', 'false');
-
-    // Fetch HTML (manual pages use a language fallback list)
-    const tryHtml = Array.isArray(fileToLoad)
-      ? (await fetchTextWithFallback(fileToLoad)).html
-      : await fetchText(fileToLoad);
-    if (tryHtml === null) {
-      // Fallback: show a simple missing-content message
-      const missingContentText = msgRenderer
-        ? msgRenderer(
-          'renderer.info.missing_content',
-          { name: infoDialogLabel },
-          `No hay contenido disponible para '${infoDialogLabel}'.`
-        )
-        : `No hay contenido disponible para '${infoDialogLabel}'.`;
-      infoModalContent.innerHTML = `<p>${missingContentText}</p>`;
-      if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-      return;
-    }
-
-    // Translate non-manual pages; manual HTML is loaded as-is.
-    const renderedHtml = isManual
-      ? extractInfoBodyHtml(tryHtml)
-      : translateInfoHtml(tryHtml, translationKey);
-    infoModalContent.innerHTML = renderedHtml;
-    if (typeof bindInfoModalLinks === 'function') {
-      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
-    } else {
-      log.warnOnce(
-        'renderer.info.bindInfoModalLinks.unavailable',
-        'InfoModalLinks.bindInfoModalLinks unavailable; modal links will use default behavior.'
-      );
-    }
-    if (key === 'acerca_de') {
-      await hydrateAboutVersion(infoModalContent);
-      await hydrateAboutEnvironment(infoModalContent);
-    }
-
-    // Ensure the panel starts at the top before scrolling
-    const panel = document.querySelector('.info-modal-panel');
-    if (panel) panel.scrollTop = 0;
-
-    // If a specific section was requested, scroll so it appears above the panel
-    if (sectionId) {
-      // Wait for the next frame so the parsed DOM is laid out
-      requestAnimationFrame(() => {
-        try {
-          const target = infoModalContent.querySelector(`#${sectionId}`);
-          if (!target) {
-            // If the ID does not exist, do nothing else
-            if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-            return;
-          }
-
-          try {
-            target.scrollIntoView({ behavior: 'auto', block: 'start' });
-          } catch {
-            // Defensive fallback: calculate relative top without compensating for header
-            const panelRect = panel.getBoundingClientRect();
-            const targetRect = target.getBoundingClientRect();
-            const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
-            const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
-            panel.scrollTo({ top: finalTop, behavior: 'auto' });
-          }
-
-          // Focus on the content so the reader can use the keyboard
-          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-        } catch (err) {
-          log.error('Error moving modal to section:', err);
-          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
+  // If a specific section was requested, scroll so it appears above the panel
+  if (sectionId) {
+    // Wait for the next frame so the parsed DOM is laid out
+    requestAnimationFrame(() => {
+      try {
+        const target = infoModalContent.querySelector(`#${sectionId}`);
+        if (!target) {
+          // If the ID does not exist, do nothing else
+          focusInfoModalContent();
+          return;
         }
-      });
-    } else {
-      // No section: focus the content for the whole document
-      if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-    }
-  }
 
-  // =============================================================================
-  // Top bar menu actions
-  // =============================================================================
-  // menu_actions.js must be loaded before renderer.js
+        try {
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+        } catch {
+          // Defensive fallback: calculate relative top without compensating for header
+          const panelRect = panel.getBoundingClientRect();
+          const targetRect = target.getBoundingClientRect();
+          const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
+          const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
+          panel.scrollTo({ top: finalTop, behavior: 'auto' });
+        }
+
+        // Focus on the content so the reader can use the keyboard
+        focusInfoModalContent();
+      } catch (err) {
+        log.error('Error moving modal to section:', err);
+        focusInfoModalContent();
+      }
+    });
+  } else {
+    // No section: focus the content for the whole document
+    focusInfoModalContent();
+  }
+}
+
+// =============================================================================
+// Top bar menu actions
+// =============================================================================
+// menu_actions.js must be loaded before renderer.js
+function registerMenuActions() {
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
     const registerMenuActionGuarded = (actionId, handler) => {
       window.menuActions.registerMenuAction(actionId, () => {
@@ -1645,7 +1641,7 @@ setupToggleModoPreciso();
         const res = await window.electronAPI.openDefaultPresetsFolder();
         if (res && res.ok) {
           // Folder opened successfully; do not show intrusive notifications
-          log.debug('config/presets_defaults floder opened in explorer.');
+          log.debug('config/presets_defaults folder opened in explorer.');
           return;
         }
 
@@ -1688,52 +1684,55 @@ setupToggleModoPreciso();
     });
 
     registerMenuActionGuarded('acerca_de', () => { showInfoModal('acerca_de') });
-
-  } else {
-    log.warn('menuActions unavailable - the top bar will not be handled by the renderer.');
+    return;
   }
+
+  log.warn('menuActions unavailable - the top bar will not be handled by the renderer.');
+}
 // =============================================================================
 // Preset selection (cache-only)
 // =============================================================================
-presetsSelect.addEventListener('change', async () => {
-  if (!guardUserAction('preset-change')) return;
-  if (!hasRendererPresetsBridge) {
-    log.warnOnce(
-      'renderer.bridge.RendererPresets.change.unavailable',
-      'Preset change ignored because RendererPresets bridge is unavailable.'
-    );
-    return;
-  }
-  const name = presetsSelect.value;
-  if (!name) return;
-
-  const preset = allPresetsCache.find(p => p.name === name);
-  if (preset) {
-    const settingsOverride = Object.assign({}, settingsCache || {}, {
-      selected_preset_by_language: {}
-    });
-    try {
-      const selected = await resolvePresetSelection({
-        list: allPresetsCache,
-        settings: settingsOverride,
-        language: idiomaActual,
-        currentPresetName: preset.name,
-        selectEl: presetsSelect,
-        wpmInput,
-        wpmSlider,
-        presetDescription,
-        electronAPI: window.electronAPI
-      });
-      if (selected) {
-        currentPresetName = selected.name;
-        wpm = syncWpmControls(selected.wpm);
-        updateTimeOnlyFromStats();
-      }
-    } catch (err) {
-      log.error('Error resolving preset selection:', err);
+function bindPresetSelection() {
+  presetsSelect.addEventListener('change', async () => {
+    if (!guardUserAction('preset-change')) return;
+    if (!hasRendererPresetsBridge) {
+      log.warnOnce(
+        'renderer.bridge.RendererPresets.change.unavailable',
+        'Preset change ignored because RendererPresets bridge is unavailable.'
+      );
+      return;
     }
-  }
-});
+    const name = presetsSelect.value;
+    if (!name) return;
+
+    const preset = allPresetsCache.find(p => p.name === name);
+    if (preset) {
+      const settingsOverride = Object.assign({}, settingsCache || {}, {
+        selected_preset_by_language: {}
+      });
+      try {
+        const selected = await resolvePresetSelection({
+          list: allPresetsCache,
+          settings: settingsOverride,
+          language: idiomaActual,
+          currentPresetName: preset.name,
+          selectEl: presetsSelect,
+          wpmInput,
+          wpmSlider,
+          presetDescription,
+          electronAPI: window.electronAPI
+        });
+        if (selected) {
+          currentPresetName = selected.name;
+          wpm = syncWpmControls(selected.wpm);
+          updateTimeOnlyFromStats();
+        }
+      } catch (err) {
+        log.error('Error resolving preset selection:', err);
+      }
+    }
+  });
+}
 
 // =============================================================================
 // Manual WPM edits
@@ -1751,36 +1750,38 @@ function applyReadingTestWpm(rawWpm) {
   updateTimeOnlyFromStats();
 }
 
-readingSpeedTestUi.configure({
-  onLockChange: syncMainInteractionLockUi,
-  applyWpm: applyReadingTestWpm,
-});
+function bindSpeedControls() {
+  readingSpeedTestUi.configure({
+    onLockChange: syncMainInteractionLockUi,
+    applyWpm: applyReadingTestWpm,
+  });
 
-// Keep slider/input in sync and invalidate preset selection
-wpmSlider.addEventListener('input', () => {
-  if (!guardUserAction('wpm-slider')) return;
-  wpm = wpmFromSliderControl(wpmSlider.value);
-  wpmInput.value = String(wpm);
-  resetPresetSelection();
-  updateTimeOnlyFromStats();
-});
+  // Keep slider/input in sync and invalidate preset selection
+  wpmSlider.addEventListener('input', () => {
+    if (!guardUserAction('wpm-slider')) return;
+    wpm = wpmFromSliderControl(wpmSlider.value);
+    wpmInput.value = String(wpm);
+    resetPresetSelection();
+    updateTimeOnlyFromStats();
+  });
 
-wpmInput.addEventListener('blur', () => {
-  if (!guardUserAction('wpm-input-blur')) return;
-  let val = Number(wpmInput.value);
-  if (isNaN(val)) val = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
-  wpm = syncWpmControls(val);
-  resetPresetSelection();
-  updateTimeOnlyFromStats();
-});
+  wpmInput.addEventListener('blur', () => {
+    if (!guardUserAction('wpm-input-blur')) return;
+    let requestedWpm = Number(wpmInput.value);
+    if (isNaN(requestedWpm)) requestedWpm = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
+    wpm = syncWpmControls(requestedWpm);
+    resetPresetSelection();
+    updateTimeOnlyFromStats();
+  });
 
-wpmInput.addEventListener('keydown', (e) => {
-  if (!guardUserAction('wpm-input-keydown')) return;
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    wpmInput.blur();
-  }
-});
+  wpmInput.addEventListener('keydown', (e) => {
+    if (!guardUserAction('wpm-input-keydown')) return;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      wpmInput.blur();
+    }
+  });
+}
 
 // =============================================================================
 // Clipboard and text-apply helpers
@@ -1916,6 +1917,7 @@ async function resolveDroppedFilePath(file) {
       if (typeof resolvedPath === 'string' && resolvedPath.trim()) {
         return resolvedPath.trim();
       }
+      log.warn('getPathForFile returned empty/invalid; falling back to File.path.');
     } catch (err) {
       log.error('Failed to resolve dropped file path via electronAPI.getPathForFile:', err);
     }
@@ -1924,6 +1926,9 @@ async function resolveDroppedFilePath(file) {
   const fallbackPath = file && typeof file.path === 'string'
     ? file.path.trim()
     : '';
+  if (!fallbackPath) {
+    log.warn('Dropped file path unresolved; returning empty path.');
+  }
   return fallbackPath;
 }
 
@@ -1963,239 +1968,253 @@ function configureImportExtractModules() {
   }
 }
 
-configureImportExtractModules();
+function initializeDelegatedIntegrations() {
+  configureImportExtractModules();
 
-if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
-  mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });
-} else {
+  if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
+    mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });
+    return;
+  }
+
   log.warnOnce(
     'renderer.mainLogoLinks.bindBrandLinks.unavailable',
     'MainLogoLinks.bindBrandLinks unavailable; brand logo links disabled.'
   );
 }
 
+function bindImportExtractEntryPoints() {
+  if (btnImportExtract) {
+    btnImportExtract.addEventListener('click', async () => {
+      await importExtractEntry.startFromPicker();
+    });
+  }
+
+  if (btnImportExtractAbort) {
+    btnImportExtractAbort.addEventListener('click', async () => {
+      if (!guardUserAction('import-extract-abort', { allowDuringProcessing: true })) return;
+      try {
+        const requestImportExtractAbort = getOptionalElectronMethod('requestImportExtractAbort', {
+          dedupeKey: 'renderer.ipc.requestImportExtractAbort.unavailable',
+          unavailableMessage: 'requestImportExtractAbort unavailable; abort action skipped.'
+        });
+        if (!requestImportExtractAbort) {
+          window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+          return;
+        }
+
+        const result = await requestImportExtractAbort({
+          source: 'main_window',
+          reason: 'user_abort_button',
+        });
+        if (!result || result.ok !== true) {
+          if (result && result.code === 'NOT_ACTIVE' && result.state) {
+            importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_not_active' });
+            return;
+          }
+          log.error('import/extract abort failed:', result);
+          window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+          return;
+        }
+
+        if (result.state) {
+          importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
+        }
+        window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
+      } catch (err) {
+        log.error('Error handling import/extract abort:', err);
+        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+      }
+    });
+  }
+}
+
 // =============================================================================
 // Import/extract entrypoint wiring
 // =============================================================================
-if (btnImportExtract) {
-  btnImportExtract.addEventListener('click', async () => {
-    await importExtractEntry.startFromPicker();
-  });
-}
-
-if (btnImportExtractAbort) {
-  btnImportExtractAbort.addEventListener('click', async () => {
-    if (!guardUserAction('import-extract-abort', { allowDuringProcessing: true })) return;
-    try {
-      const requestImportExtractAbort = getOptionalElectronMethod('requestImportExtractAbort', {
-        dedupeKey: 'renderer.ipc.requestImportExtractAbort.unavailable',
-        unavailableMessage: 'requestImportExtractAbort unavailable; abort action skipped.'
-      });
-      if (!requestImportExtractAbort) {
-        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
-        return;
-      }
-
-      const result = await requestImportExtractAbort({
-        source: 'main_window',
-        reason: 'user_abort_button',
-      });
-      if (!result || result.ok !== true) {
-        if (result && result.code === 'NOT_ACTIVE' && result.state) {
-          importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_not_active' });
-          return;
-        }
-        log.error('import/extract abort failed:', result);
-        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
-        return;
-      }
-
-      if (result.state) {
-        importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
-      }
-      window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
-    } catch (err) {
-      log.error('Error handling import/extract abort:', err);
-      window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
-    }
-  });
-}
 
 // =============================================================================
 // Overwrite current text with clipboard content
 // =============================================================================
-btnOverwriteClipboard.addEventListener('click', async () => {
-  if (!guardUserAction('clipboard-overwrite')) return;
-  try {
-    const read = await readClipboardText({
-      tooLargeKey: 'renderer.alerts.clipboard_too_large',
-      unavailableKey: 'renderer.alerts.clipboard_error'
-    });
-    if (!read.ok) return;
-    const clip = read.text;
-    const repeatCount = getClipboardRepeatCount();
-    const applyResult = await applyTextViaCanonicalPath({
-      mode: 'overwrite',
-      textToApply: clip,
-      repeatCount,
-    });
-    if (!applyResult || applyResult.ok !== true) {
-      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
-      } else {
-        window.Notify.notifyMain('renderer.alerts.clipboard_error');
+function bindClipboardActions() {
+  btnOverwriteClipboard.addEventListener('click', async () => {
+    if (!guardUserAction('clipboard-overwrite')) return;
+    try {
+      const read = await readClipboardText({
+        tooLargeKey: 'renderer.alerts.clipboard_too_large',
+        unavailableKey: 'renderer.alerts.clipboard_error'
+      });
+      if (!read.ok) return;
+      const clip = read.text;
+      const repeatCount = getClipboardRepeatCount();
+      const applyResult = await applyTextViaCanonicalPath({
+        mode: 'overwrite',
+        textToApply: clip,
+        repeatCount,
+      });
+      if (!applyResult || applyResult.ok !== true) {
+        if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+          window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
+        } else {
+          window.Notify.notifyMain('renderer.alerts.clipboard_error');
+        }
+        return;
       }
-      return;
-    }
 
-    // UI/state sync is authoritative via "current-text-updated" subscription.
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
+      // UI/state sync is authoritative via "current-text-updated" subscription.
+      if (!hasCurrentTextSubscription) {
+        throw new Error('current-text-updated subscription unavailable');
+      }
+      if (applyResult.truncated) {
+        window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
+      }
+    } catch (err) {
+      log.error('clipboard error:', err);
+      window.Notify.notifyMain('renderer.alerts.clipboard_error');
     }
-    if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
-    }
-  } catch (err) {
-    log.error('clipboard error:', err);
-    window.Notify.notifyMain('renderer.alerts.clipboard_error');
-  }
-});
+  });
 
 // =============================================================================
 // Append clipboard content to current text
 // =============================================================================
-btnAppendClipboard.addEventListener('click', async () => {
-  if (!guardUserAction('clipboard-append')) return;
-  try {
-    const read = await readClipboardText({
-      tooLargeKey: 'renderer.alerts.append_too_large',
-      unavailableKey: 'renderer.alerts.append_error'
-    });
-    if (!read.ok) return;
-    const clip = read.text;
-    const repeatCount = getClipboardRepeatCount();
-    const applyResult = await applyTextViaCanonicalPath({
-      mode: 'append',
-      textToApply: clip,
-      repeatCount,
-    });
-    if (!applyResult || applyResult.ok !== true) {
-      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.append_too_large');
-      } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-        window.Notify.notifyMain('renderer.alerts.text_limit');
-      } else {
-        window.Notify.notifyMain('renderer.alerts.append_error');
+  btnAppendClipboard.addEventListener('click', async () => {
+    if (!guardUserAction('clipboard-append')) return;
+    try {
+      const read = await readClipboardText({
+        tooLargeKey: 'renderer.alerts.append_too_large',
+        unavailableKey: 'renderer.alerts.append_error'
+      });
+      if (!read.ok) return;
+      const clip = read.text;
+      const repeatCount = getClipboardRepeatCount();
+      const applyResult = await applyTextViaCanonicalPath({
+        mode: 'append',
+        textToApply: clip,
+        repeatCount,
+      });
+      if (!applyResult || applyResult.ok !== true) {
+        if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+          window.Notify.notifyMain('renderer.alerts.append_too_large');
+        } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
+          window.Notify.notifyMain('renderer.alerts.text_limit');
+        } else {
+          window.Notify.notifyMain('renderer.alerts.append_error');
+        }
+        return;
       }
-      return;
-    }
 
-    // UI/state sync is authoritative via "current-text-updated" subscription.
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
-    }
+      // UI/state sync is authoritative via "current-text-updated" subscription.
+      if (!hasCurrentTextSubscription) {
+        throw new Error('current-text-updated subscription unavailable');
+      }
 
-    // Notify truncation only if main confirms it
-    if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.append_overflow');
+      // Notify truncation only if main confirms it
+      if (applyResult.truncated) {
+        window.Notify.notifyMain('renderer.alerts.append_overflow');
+      }
+    } catch (err) {
+      log.error('An error occurred while pasting the clipboard:', err);
+      window.Notify.notifyMain('renderer.alerts.append_error');
     }
-  } catch (err) {
-    log.error('An error occurred while pasting the clipboard:', err);
-    window.Notify.notifyMain('renderer.alerts.append_error');
-  }
-});
+  });
+}
 
-function showeditorLoader() {
+function showEditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
   if (btnEdit) btnEdit.disabled = true;
 }
 
-function hideeditorLoader() {
+function hideEditorLoader() {
   if (editorLoader) editorLoader.classList.remove('visible');
   if (btnEdit) btnEdit.disabled = false;
 }
 
-btnEdit.addEventListener('click', async () => {
-  if (!guardUserAction('open-editor')) return;
-  showeditorLoader();
-  try {
-    const openEditor = getOptionalElectronMethod('openEditor', {
-      dedupeKey: 'renderer.ipc.openEditor.unavailable',
-      unavailableMessage: 'openEditor unavailable; editor launch skipped.'
-    });
-    if (!openEditor) {
-      hideeditorLoader();
-      return;
+function bindEditorAction() {
+  btnEdit.addEventListener('click', async () => {
+    if (!guardUserAction('open-editor')) return;
+    showEditorLoader();
+    try {
+      const openEditor = getOptionalElectronMethod('openEditor', {
+        dedupeKey: 'renderer.ipc.openEditor.unavailable',
+        unavailableMessage: 'openEditor unavailable; editor launch skipped.'
+      });
+      if (!openEditor) {
+        hideEditorLoader();
+        return;
+      }
+      await openEditor();
+    } catch (err) {
+      log.error('Error opening editor:', err);
+      hideEditorLoader();
     }
-    await openEditor();
-  } catch (err) {
-    log.error('Error opening editor:', err);
-    hideeditorLoader();
-  }
-});
+  });
+}
 
 // =============================================================================
 // Clear current text
 // =============================================================================
-btnEmptyMain.addEventListener('click', async () => {
-  if (!guardUserAction('clear-text')) return;
-  try {
-    const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-      dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
-      unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
-    });
-    if (!setCurrentText) {
+function bindClearTextAction() {
+  btnEmptyMain.addEventListener('click', async () => {
+    if (!guardUserAction('clear-text')) return;
+    try {
+      const setCurrentText = getOptionalElectronMethod('setCurrentText', {
+        dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
+        unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
+      });
+      if (!setCurrentText) {
+        window.Notify.notifyMain('renderer.alerts.clear_error');
+        return;
+      }
+      const resp = await setCurrentText({
+        text: '',
+        meta: { source: 'main-window', action: 'overwrite' }
+      });
+      if (resp && resp.ok === false) {
+        throw new Error(resp.error || 'set-current-text failed');
+      }
+      // UI/state sync is authoritative via "current-text-updated" subscription.
+      if (!hasCurrentTextSubscription) {
+        throw new Error('current-text-updated subscription unavailable');
+      }
+    } catch (err) {
+      log.error('Error clearing text from main window:', err);
       window.Notify.notifyMain('renderer.alerts.clear_error');
+    }
+  });
+}
+
+function bindSnapshotActions() {
+  btnLoadSnapshot.addEventListener('click', async () => {
+    if (!guardUserAction('snapshot-load')) return;
+    if (typeof loadSnapshot !== 'function') {
+      log.warnOnce(
+        'renderer.snapshot.load.unavailable',
+        'loadSnapshot unavailable; snapshot-load action skipped.'
+      );
       return;
     }
-    const resp = await setCurrentText({
-      text: '',
-      meta: { source: 'main-window', action: 'overwrite' }
-    });
-    if (resp && resp.ok === false) {
-      throw new Error(resp.error || 'set-current-text failed');
+    try {
+      await loadSnapshot();
+    } catch (err) {
+      log.error('Error loading snapshot:', err);
     }
-    // UI/state sync is authoritative via "current-text-updated" subscription.
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
+  });
+
+  btnSaveSnapshot.addEventListener('click', async () => {
+    if (!guardUserAction('snapshot-save')) return;
+    if (typeof saveSnapshot !== 'function') {
+      log.warnOnce(
+        'renderer.snapshot.save.unavailable',
+        'saveSnapshot unavailable; snapshot-save action skipped.'
+      );
+      return;
     }
-  } catch (err) {
-    log.error('Error clearing text from main window:', err);
-    window.Notify.notifyMain('renderer.alerts.clear_error');
-  }
-});
-
-btnLoadSnapshot.addEventListener('click', async () => {
-  if (!guardUserAction('snapshot-load')) return;
-  if (typeof loadSnapshot !== 'function') {
-    log.warnOnce(
-      'renderer.snapshot.load.unavailable',
-      'loadSnapshot unavailable; snapshot-load action skipped.'
-    );
-    return;
-  }
-  try {
-    await loadSnapshot();
-  } catch (err) {
-    log.error('Error loading snapshot:', err);
-  }
-});
-
-btnSaveSnapshot.addEventListener('click', async () => {
-  if (!guardUserAction('snapshot-save')) return;
-  if (typeof saveSnapshot !== 'function') {
-    log.warnOnce(
-      'renderer.snapshot.save.unavailable',
-      'saveSnapshot unavailable; snapshot-save action skipped.'
-    );
-    return;
-  }
-  try {
-    await saveSnapshot();
-  } catch (err) {
-    log.error('Error saving snapshot:', err);
-  }
-});
+    try {
+      await saveSnapshot();
+    } catch (err) {
+      log.error('Error saving snapshot:', err);
+    }
+  });
+}
 
 // =============================================================================
 // Task selector (open task editor)
@@ -2219,245 +2238,253 @@ function handleTaskOpenResult(res, { mode } = {}) {
   }
 }
 
-if (btnNewTask) {
-  btnNewTask.addEventListener('click', async () => {
-    if (!guardUserAction('task-new')) return;
-    try {
-      if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-        log.warnOnce(
-          'renderer.ipc.openTaskEditor.unavailable',
-          'openTaskEditor unavailable; new-task action skipped.'
-        );
-        window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-        return;
+function bindTaskActions() {
+  if (btnNewTask) {
+    btnNewTask.addEventListener('click', async () => {
+      if (!guardUserAction('task-new')) return;
+      try {
+        if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
+          log.warnOnce(
+            'renderer.ipc.openTaskEditor.unavailable',
+            'openTaskEditor unavailable; new-task action skipped.'
+          );
+          window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+          return;
+        }
+        const res = await window.electronAPI.openTaskEditor('new');
+        handleTaskOpenResult(res, { mode: 'new' });
+      } catch (err) {
+        log.error('Error opening task editor (new):', err);
+        window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
       }
-      const res = await window.electronAPI.openTaskEditor('new');
-      handleTaskOpenResult(res, { mode: 'new' });
-    } catch (err) {
-      log.error('Error opening task editor (new):', err);
-      window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
-    }
-  });
-}
+    });
+  }
 
-if (btnLoadTask) {
-  btnLoadTask.addEventListener('click', async () => {
-    if (!guardUserAction('task-load')) return;
-    try {
-      if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-        log.warnOnce(
-          'renderer.ipc.openTaskEditor.unavailable',
-          'openTaskEditor unavailable; load-task action skipped.'
-        );
-        window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-        return;
+  if (btnLoadTask) {
+    btnLoadTask.addEventListener('click', async () => {
+      if (!guardUserAction('task-load')) return;
+      try {
+        if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
+          log.warnOnce(
+            'renderer.ipc.openTaskEditor.unavailable',
+            'openTaskEditor unavailable; load-task action skipped.'
+          );
+          window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+          return;
+        }
+        const res = await window.electronAPI.openTaskEditor('load');
+        handleTaskOpenResult(res, { mode: 'load' });
+      } catch (err) {
+        log.error('Error opening task editor (load):', err);
+        window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
       }
-      const res = await window.electronAPI.openTaskEditor('load');
-      handleTaskOpenResult(res, { mode: 'load' });
-    } catch (err) {
-      log.error('Error opening task editor (load):', err);
-      window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
-    }
-  });
+    });
+  }
 }
 
 // Help button: show a random tip key via Notify
-if (btnHelp) {
-  btnHelp.addEventListener('click', () => {
-    if (!guardUserAction('help-tip')) return;
-    const helpTipKeys = getHelpTipKeyList();
-    const tipCount = helpTipKeys.length;
-    if (!tipCount) {
-      log.error('Help tip list is empty.');
-      window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
-      return;
-    }
-
-    let idx = Math.floor(Math.random() * tipCount);
-    if (tipCount > 1 && idx === lastHelpTipIdx) {
-      idx = Math.floor(Math.random() * (tipCount - 1));
-      if (idx >= lastHelpTipIdx) idx += 1;
-    }
-    lastHelpTipIdx = idx;
-
-    const tipKey = helpTipKeys[idx];
-
-    try {
-      try {
-        window.Notify.toastMain(tipKey);
-      } catch (err) {
-        log.error('Error showing help tip toast:', err);
-        window.Notify.notifyMain(tipKey);
+function bindHelpAction() {
+  if (btnHelp) {
+    btnHelp.addEventListener('click', () => {
+      if (!guardUserAction('help-tip')) return;
+      const helpTipKeys = getHelpTipKeyList();
+      const tipCount = helpTipKeys.length;
+      if (!tipCount) {
+        log.error('Help tip list is empty.');
+        window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
+        return;
       }
-    } catch (err) {
-      log.error('Help tip fallback failed:', err);
-    }
-  });
+
+      let idx = Math.floor(Math.random() * tipCount);
+      if (tipCount > 1 && idx === lastHelpTipIdx) {
+        idx = Math.floor(Math.random() * (tipCount - 1));
+        if (idx >= lastHelpTipIdx) idx += 1;
+      }
+      lastHelpTipIdx = idx;
+
+      const tipKey = helpTipKeys[idx];
+
+      try {
+        try {
+          window.Notify.toastMain(tipKey);
+        } catch (err) {
+          log.error('Error showing help tip toast:', err);
+          window.Notify.notifyMain(tipKey);
+        }
+      } catch (err) {
+        log.error('Help tip fallback failed:', err);
+      }
+    });
+  }
 }
 
 // =============================================================================
 // Reading tools
 // =============================================================================
-if (btnReadingSpeedTest) {
-  btnReadingSpeedTest.addEventListener('click', async () => {
-    if (!guardUserAction('reading-speed-test')) return;
-    try {
-      await readingSpeedTestUi.openEntryFlow();
-    } catch (err) {
-      log.error('Error opening reading speed test flow:', err);
-      window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
-    }
-  });
+function bindReadingToolActions() {
+  if (btnReadingSpeedTest) {
+    btnReadingSpeedTest.addEventListener('click', async () => {
+      if (!guardUserAction('reading-speed-test')) return;
+      try {
+        await readingSpeedTestUi.openEntryFlow();
+      } catch (err) {
+        log.error('Error opening reading speed test flow:', err);
+        window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
+      }
+    });
+  }
 }
 
 // Create preset: main owns the modal; renderer provides current WPM
-btnNewPreset.addEventListener('click', () => {
-  if (!guardUserAction('preset-new')) return;
-  try {
-    if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-      window.electronAPI.openPresetModal(wpm);
-    } else {
-      log.warnOnce(
-        'renderer.ipc.openPresetModal.unavailable',
-        'openPresetModal unavailable in electronAPI; preset-new action skipped.'
-      );
-      window.Notify.notifyMain('renderer.alerts.modal_unavailable');
+function bindPresetActions() {
+  btnNewPreset.addEventListener('click', () => {
+    if (!guardUserAction('preset-new')) return;
+    try {
+      if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
+        window.electronAPI.openPresetModal(wpm);
+      } else {
+        log.warnOnce(
+          'renderer.ipc.openPresetModal.unavailable',
+          'openPresetModal unavailable in electronAPI; preset-new action skipped.'
+        );
+        window.Notify.notifyMain('renderer.alerts.modal_unavailable');
+      }
+    } catch (err) {
+      log.error('Error opening new preset modal:', err);
     }
-  } catch (err) {
-    log.error('Error opening new preset modal:', err);
-  }
-});
+  });
 
 // =============================================================================
 // Edit preset
 // =============================================================================
-btnEditPreset.addEventListener('click', async () => {
-  if (!guardUserAction('preset-edit')) return;
-  try {
-    const selectedName = presetsSelect.value;
-    if (!selectedName) {
-      // Ask main to show the native info dialog when no preset is selected.
-      if (window.electronAPI && typeof window.electronAPI.notifyNoSelectionEdit === 'function') {
-        await window.electronAPI.notifyNoSelectionEdit();
-        return;
-      } else {
-        log.warnOnce(
-          'renderer.ipc.notifyNoSelectionEdit.unavailable',
-          'notifyNoSelectionEdit unavailable; using renderer fallback notification.'
-        );
-        window.Notify.notifyMain('renderer.alerts.edit_none');
+  btnEditPreset.addEventListener('click', async () => {
+    if (!guardUserAction('preset-edit')) return;
+    try {
+      const selectedName = presetsSelect.value;
+      if (!selectedName) {
+        // Ask main to show the native info dialog when no preset is selected.
+        if (window.electronAPI && typeof window.electronAPI.notifyNoSelectionEdit === 'function') {
+          await window.electronAPI.notifyNoSelectionEdit();
+          return;
+        } else {
+          log.warnOnce(
+            'renderer.ipc.notifyNoSelectionEdit.unavailable',
+            'notifyNoSelectionEdit unavailable; using renderer fallback notification.'
+          );
+          window.Notify.notifyMain('renderer.alerts.edit_none');
+          return;
+        }
+      }
+
+      // Find preset data from cache
+      const preset = allPresetsCache.find(p => p.name === selectedName);
+      if (!preset) {
+        window.Notify.notifyMain('renderer.alerts.preset_not_found');
         return;
       }
-    }
 
-    // Find preset data from cache
-    const preset = allPresetsCache.find(p => p.name === selectedName);
-    if (!preset) {
-      window.Notify.notifyMain('renderer.alerts.preset_not_found');
-      return;
-    }
-
-    // Open modal in edit mode and pass preset data.
-    const payload = { wpm: wpm, mode: 'edit', preset: preset };
-    try {
-      log.debug('[renderer] openPresetModal payload:', payload);
+      // Open modal in edit mode and pass preset data.
+      const payload = { wpm: wpm, mode: 'edit', preset: preset };
+      try {
+        log.debug('[renderer] openPresetModal payload:', payload);
+      } catch (err) {
+        log.warnOnce('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+      }
+      if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
+        window.electronAPI.openPresetModal(payload);
+      } else {
+        log.warnOnce(
+          'renderer.ipc.openPresetModal.unavailable',
+          'openPresetModal unavailable in electronAPI; preset-edit action skipped.'
+        );
+        window.Notify.notifyMain('renderer.alerts.edit_unavailable');
+      }
     } catch (err) {
-      log.warnOnce('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+      log.error('Error opening edit preset modal:', err);
+      window.Notify.notifyMain('renderer.alerts.edit_error');
     }
-    if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-      window.electronAPI.openPresetModal(payload);
-    } else {
-      log.warnOnce(
-        'renderer.ipc.openPresetModal.unavailable',
-        'openPresetModal unavailable in electronAPI; preset-edit action skipped.'
-      );
-      window.Notify.notifyMain('renderer.alerts.edit_unavailable');
-    }
-  } catch (err) {
-    log.error('Error opening edit preset modal:', err);
-    window.Notify.notifyMain('renderer.alerts.edit_error');
-  }
-});
+  });
 
 // =============================================================================
 // Delete preset
 // =============================================================================
-btnDeletePreset.addEventListener('click', async () => {
-  if (!guardUserAction('preset-delete')) return;
-  try {
-    const name = presetsSelect.value || null;
-    const requestDeletePreset = getOptionalElectronMethod('requestDeletePreset', {
-      dedupeKey: 'renderer.ipc.requestDeletePreset.unavailable',
-      unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'
-    });
-    if (!requestDeletePreset) {
-      window.Notify.notifyMain('renderer.alerts.delete_error');
-      return;
-    }
-    // Call main to request deletion; main shows native dialogs as needed
-    const res = await requestDeletePreset(name);
+  btnDeletePreset.addEventListener('click', async () => {
+    if (!guardUserAction('preset-delete')) return;
+    try {
+      const name = presetsSelect.value || null;
+      const requestDeletePreset = getOptionalElectronMethod('requestDeletePreset', {
+        dedupeKey: 'renderer.ipc.requestDeletePreset.unavailable',
+        unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'
+      });
+      if (!requestDeletePreset) {
+        window.Notify.notifyMain('renderer.alerts.delete_error');
+        return;
+      }
+      // Call main to request deletion; main shows native dialogs as needed
+      const res = await requestDeletePreset(name);
 
-    if (res && res.ok) {
-      // On success, reload presets and apply fallback selection if needed.
-      await loadPresets({ settingsSnapshot: settingsCache || {} });
-      startPreviewAndResultsUpdate(currentText, 'preset delete');
-      // No further UI dialog required; main already showed confirmation.
-      return;
-    } else {
-      // res.ok === false -> handle known codes
-      if (res && res.code === 'NO_SELECTION') {
-        // Main already showed a native info dialog; nothing else to do.
+      if (res && res.ok) {
+        // On success, reload presets and apply fallback selection if needed.
+        await loadPresets({ settingsSnapshot: settingsCache || {} });
+        startPreviewAndResultsUpdate(currentText, 'preset delete');
+        // No further UI dialog required; main already showed confirmation.
         return;
+      } else {
+        // res.ok === false -> handle known codes
+        if (res && res.code === 'NO_SELECTION') {
+          // Main already showed a native info dialog; nothing else to do.
+          return;
+        }
+        if (res && res.code === 'CANCELLED') {
+          // User cancelled; nothing to do
+          return;
+        }
+        // Unexpected error: log and show a simple alert
+        log.error('Error deleting preset:', res && res.error ? res.error : res);
+        window.Notify.notifyMain('renderer.alerts.delete_error');
       }
-      if (res && res.code === 'CANCELLED') {
-        // User cancelled; nothing to do
-        return;
-      }
-      // Unexpected error: log and show a simple alert
-      log.error('Error deleting preset:', res && res.error ? res.error : res);
+    } catch (err) {
+      log.error('Error in deletion request:', err);
       window.Notify.notifyMain('renderer.alerts.delete_error');
     }
-  } catch (err) {
-    log.error('Error in deletion request:', err);
-    window.Notify.notifyMain('renderer.alerts.delete_error');
-  }
-});
+  });
 
 // =============================================================================
 // Restore default presets
 // =============================================================================
-btnResetDefaultPresets.addEventListener('click', async () => {
-  if (!guardUserAction('preset-reset-defaults')) return;
-  try {
-    const requestRestoreDefaults = getOptionalElectronMethod('requestRestoreDefaults', {
-      dedupeKey: 'renderer.ipc.requestRestoreDefaults.unavailable',
-      unavailableMessage: 'requestRestoreDefaults unavailable; presets restore action skipped.'
-    });
-    if (!requestRestoreDefaults) {
-      window.Notify.notifyMain('renderer.alerts.restore_error');
-      return;
-    }
-    // Call main to request restore. Main will show a native confirmation dialog.
-    const res = await requestRestoreDefaults();
-
-    if (res && res.ok) {
-      // Reload presets to reflect restored defaults
-      await loadPresets({ settingsSnapshot: settingsCache || {} });
-      startPreviewAndResultsUpdate(currentText, 'preset restore');
-      return;
-    } else {
-      if (res && res.code === 'CANCELLED') {
-        // User cancelled in native dialog; nothing to do
+  btnResetDefaultPresets.addEventListener('click', async () => {
+    if (!guardUserAction('preset-reset-defaults')) return;
+    try {
+      const requestRestoreDefaults = getOptionalElectronMethod('requestRestoreDefaults', {
+        dedupeKey: 'renderer.ipc.requestRestoreDefaults.unavailable',
+        unavailableMessage: 'requestRestoreDefaults unavailable; presets restore action skipped.'
+      });
+      if (!requestRestoreDefaults) {
+        window.Notify.notifyMain('renderer.alerts.restore_error');
         return;
       }
-      log.error('Error restoring presets:', res && res.error ? res.error : res);
+      // Call main to request restore. Main will show a native confirmation dialog.
+      const res = await requestRestoreDefaults();
+
+      if (res && res.ok) {
+        // Reload presets to reflect restored defaults
+        await loadPresets({ settingsSnapshot: settingsCache || {} });
+        startPreviewAndResultsUpdate(currentText, 'preset restore');
+        return;
+      } else {
+        if (res && res.code === 'CANCELLED') {
+          // User cancelled in native dialog; nothing to do
+          return;
+        }
+        log.error('Error restoring presets:', res && res.error ? res.error : res);
+        window.Notify.notifyMain('renderer.alerts.restore_error');
+      }
+    } catch (err) {
+      log.error('Error in restoring request:', err);
       window.Notify.notifyMain('renderer.alerts.restore_error');
     }
-  } catch (err) {
-    log.error('Error in restoring request:', err);
-    window.Notify.notifyMain('renderer.alerts.restore_error');
-  }
-});
+  });
+}
 
 // =============================================================================
 // Stopwatch
@@ -2494,11 +2521,30 @@ const initCronoController = () => {
   }
 };
 
-initCronoController();
+function startRendererBootstrap() {
+  armIpcSubscriptions();
+  setupToggleModoPreciso();
+  bindInfoModalUi();
+  registerMenuActions();
+  bindPresetSelection();
+  bindSpeedControls();
+  initializeDelegatedIntegrations();
+  bindImportExtractEntryPoints();
+  bindClipboardActions();
+  bindEditorAction();
+  bindClearTextAction();
+  bindSnapshotActions();
+  bindTaskActions();
+  bindHelpAction();
+  bindReadingToolActions();
+  bindPresetActions();
+  initCronoController();
+  uiListenersArmed = true;
+  syncMainInteractionLockUi();
+  runStartupOrchestrator();
+}
 
-uiListenersArmed = true;
-syncMainInteractionLockUi();
-runStartupOrchestrator();
+startRendererBootstrap();
 
 // =============================================================================
 // End of public/renderer.js

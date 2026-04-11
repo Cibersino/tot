@@ -1,3 +1,4 @@
+// public/js/lib/reading_test_filters_core.js
 'use strict';
 
 // =============================================================================
@@ -10,6 +11,9 @@
 // - Compute enabled/disabled checkbox state from real remaining combinations.
 // - Support both browser-script and CommonJS consumers.
 
+// =============================================================================
+// Module bootstrap / dual export wrapper
+// =============================================================================
 (function initReadingTestFiltersCore(root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) {
@@ -19,8 +23,14 @@
     root.ReadingTestFiltersCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+  // =============================================================================
+  // Constants / config
+  // =============================================================================
   const CATEGORY_KEYS = Object.freeze(['language', 'type', 'difficulty']);
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function normalizeValue(value) {
     return typeof value === 'string' ? value.trim() : '';
   }
@@ -55,16 +65,19 @@
       && entry.used === false);
   }
 
-  function entryMatchesSelection(entry, selection) {
+  function getEntryTags(entry) {
+    return entry && entry.tags ? entry.tags : {};
+  }
+
+  function entryMatchesNormalizedSelection(entry, normalizedSelection) {
     if (!isUnusedEntry(entry)) return false;
 
-    const normalized = normalizeSelection(selection);
-    const tags = entry && entry.tags ? entry.tags : {};
+    const tags = getEntryTags(entry);
 
     for (const key of CATEGORY_KEYS) {
-      if (!normalized[key].length) continue;
+      if (!normalizedSelection[key].length) continue;
       const entryValue = normalizeValue(tags[key]);
-      if (!entryValue || !normalized[key].includes(entryValue)) {
+      if (!entryValue || !normalizedSelection[key].includes(entryValue)) {
         return false;
       }
     }
@@ -72,9 +85,14 @@
     return true;
   }
 
+  function entryMatchesSelection(entry, selection) {
+    return entryMatchesNormalizedSelection(entry, normalizeSelection(selection));
+  }
+
   function getEligibleEntries(entries, selection) {
     const list = Array.isArray(entries) ? entries : [];
-    return list.filter((entry) => entryMatchesSelection(entry, selection));
+    const normalized = normalizeSelection(selection);
+    return list.filter((entry) => entryMatchesNormalizedSelection(entry, normalized));
   }
 
   function collectOptionValues(entries) {
@@ -87,7 +105,7 @@
 
     for (const entry of list) {
       if (!isUnusedEntry(entry)) continue;
-      const tags = entry && entry.tags ? entry.tags : {};
+      const tags = getEntryTags(entry);
       for (const key of CATEGORY_KEYS) {
         const value = normalizeValue(tags[key]);
         if (value) valuesByCategory[key].add(value);
@@ -148,6 +166,9 @@
     };
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   return {
     CATEGORY_KEYS,
     normalizeSelection,

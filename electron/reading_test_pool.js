@@ -1,3 +1,4 @@
+// electron/reading_test_pool.js
 'use strict';
 
 // =============================================================================
@@ -9,6 +10,10 @@
 // - Track pool usage + bundled starter hashes in an external state file.
 // - Synchronize bundled starter files at startup using bundled content hashes.
 // - Scan pool files and return validated metadata for filtering and selection.
+// =============================================================================
+
+// =============================================================================
+// Imports / logger
 // =============================================================================
 
 const crypto = require('crypto');
@@ -28,10 +33,18 @@ const readingTestQuestionsCore = require('../public/js/lib/reading_test_question
 const log = Log.get('reading-test-pool');
 log.debug('Reading test pool starting...');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const POOL_DIR_NAME = 'reading_speed_test_pool';
 const BUNDLED_POOL_SOURCE_DIR = path.join(__dirname, 'reading_test_pool');
 const POOL_STATE_FALLBACK = Object.freeze({ entries: {} });
 const DESCRIPTIVE_TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
+
+// =============================================================================
+// Helpers: paths, files, and hashing
+// =============================================================================
 
 function safeRealpath(targetPath) {
   try {
@@ -43,19 +56,6 @@ function safeRealpath(targetPath) {
 
 function getCanonicalPath(targetPath) {
   return safeRealpath(targetPath) || path.resolve(targetPath);
-}
-
-function ensurePoolDir() {
-  ensureCurrentTextSnapshotsDir();
-  const poolDir = path.join(getCurrentTextSnapshotsDir(), POOL_DIR_NAME);
-  try {
-    if (!fs.existsSync(poolDir)) {
-      fs.mkdirSync(poolDir, { recursive: true });
-    }
-  } catch (err) {
-    log.error('ensurePoolDir failed:', poolDir, err);
-  }
-  return poolDir;
 }
 
 function normalizeSnapshotRelPath(raw) {
@@ -192,6 +192,10 @@ function computeJsonContentHash(data) {
   return `sha256:${digest}`;
 }
 
+// =============================================================================
+// Helpers: pool state persistence
+// =============================================================================
+
 function normalizePoolStateEntry(rawEntry) {
   const source = rawEntry && typeof rawEntry === 'object' && !Array.isArray(rawEntry)
     ? rawEntry
@@ -292,6 +296,30 @@ function clearImportedPoolEntriesState(snapshotRelPaths, options = {}) {
   return { ok: true, updated };
 }
 
+function resetPoolUsageState(options = {}) {
+  const state = loadPoolState(options);
+  let updated = 0;
+  for (const snapshotRelPath of Object.keys(state.entries)) {
+    if (state.entries[snapshotRelPath].used === true) {
+      updated += 1;
+    }
+    state.entries[snapshotRelPath] = {
+      ...state.entries[snapshotRelPath],
+      used: false,
+    };
+  }
+  savePoolState(state, options);
+  return {
+    ok: true,
+    updated,
+    failed: 0,
+  };
+}
+
+// =============================================================================
+// Helpers: pool entry validation and shaping
+// =============================================================================
+
 function sanitizePoolTags(rawTags) {
   if (rawTags == null) {
     return { ok: true, tags: {} };
@@ -389,6 +417,23 @@ function parsePoolFile(filePath, rootPath, stateEntry) {
       rawData: dataInfo.data,
     },
   };
+}
+
+// =============================================================================
+// Pool context and startup synchronization
+// =============================================================================
+
+function ensurePoolDir() {
+  ensureCurrentTextSnapshotsDir();
+  const poolDir = path.join(getCurrentTextSnapshotsDir(), POOL_DIR_NAME);
+  try {
+    if (!fs.existsSync(poolDir)) {
+      fs.mkdirSync(poolDir, { recursive: true });
+    }
+  } catch (err) {
+    log.error('ensurePoolDir failed:', poolDir, err);
+  }
+  return poolDir;
 }
 
 function resolvePoolContext(options = {}) {
@@ -603,6 +648,10 @@ function listPoolEntries(options = {}) {
   return { ok: true, entries };
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 function serializePoolEntryMeta(entry) {
   return {
     snapshotRelPath: entry.snapshotRelPath,
@@ -616,26 +665,6 @@ function serializePoolEntryMeta(entry) {
 function findEntryBySnapshotRelPath(entries, snapshotRelPath) {
   const normalizedPath = normalizeSnapshotRelPath(snapshotRelPath);
   return (Array.isArray(entries) ? entries : []).find((entry) => entry.snapshotRelPath === normalizedPath) || null;
-}
-
-function resetPoolUsageState(options = {}) {
-  const state = loadPoolState(options);
-  let updated = 0;
-  for (const snapshotRelPath of Object.keys(state.entries)) {
-    if (state.entries[snapshotRelPath].used === true) {
-      updated += 1;
-    }
-    state.entries[snapshotRelPath] = {
-      ...state.entries[snapshotRelPath],
-      used: false,
-    };
-  }
-  savePoolState(state, options);
-  return {
-    ok: true,
-    updated,
-    failed: 0,
-  };
 }
 
 module.exports = {

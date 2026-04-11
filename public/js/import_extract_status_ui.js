@@ -133,57 +133,32 @@
     const formattedElapsed = formatElapsedTime(rawElapsedMs);
     return msgRenderer(
       'renderer.main.processing.import_extract_elapsed',
-      { time: formattedElapsed },
-      `Elapsed: ${formattedElapsed}`
+      { time: formattedElapsed }
     );
   }
 
   function getBusyLabelText() {
     if (isPrepareActive()) {
-      return tRenderer(
-        'renderer.main.processing.import_extract_preparing',
-        'Preparing import/extract route...'
-      );
+      return tRenderer('renderer.main.processing.import_extract_preparing');
     }
     if (pendingExecutionRoute === 'native') {
-      return tRenderer(
-        'renderer.main.processing.import_extract_waiting_native',
-        'Extracting text from file...'
-      );
+      return tRenderer('renderer.main.processing.import_extract_waiting_native');
     }
     if (pendingExecutionRoute === 'ocr') {
       const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
       if (elapsedMs !== null && elapsedMs >= OCR_WAITING_COPY_DELAY_MS) {
-        return tRenderer(
-          'renderer.main.processing.import_extract_waiting_ocr_delayed',
-          'Running OCR. Some files take longer.'
-        );
+        return tRenderer('renderer.main.processing.import_extract_waiting_ocr_delayed');
       }
-      return tRenderer(
-        'renderer.main.processing.import_extract_waiting_ocr',
-        'Running OCR extraction...'
-      );
+      return tRenderer('renderer.main.processing.import_extract_waiting_ocr');
     }
-    return tRenderer(
-      'renderer.main.processing.import_extract_placeholder',
-      importExtractProcessingLabel ? importExtractProcessingLabel.textContent || 'Extracting text...' : 'Extracting text...'
-    );
+    return tRenderer('renderer.main.processing.import_extract_placeholder');
   }
 
   function syncAbortButtonUi() {
     if (!btnImportExtractAbort) return;
-    btnImportExtractAbort.textContent = tRenderer(
-      'renderer.main.buttons.import_extract_abort',
-      btnImportExtractAbort.textContent || ''
-    );
-    btnImportExtractAbort.title = tRenderer(
-      'renderer.main.tooltips.import_extract_abort',
-      btnImportExtractAbort.title || ''
-    );
-    const abortAria = tRenderer(
-      'renderer.main.aria.import_extract_abort',
-      btnImportExtractAbort.getAttribute('aria-label') || ''
-    );
+    btnImportExtractAbort.textContent = tRenderer('renderer.main.buttons.import_extract_abort');
+    btnImportExtractAbort.title = tRenderer('renderer.main.tooltips.import_extract_abort');
+    const abortAria = tRenderer('renderer.main.aria.import_extract_abort');
     if (abortAria) {
       btnImportExtractAbort.setAttribute('aria-label', abortAria);
     }
@@ -313,8 +288,7 @@
     const formattedElapsed = formatElapsedTime(elapsedMs);
     return msgRenderer(
       'renderer.alerts.import_extract_apply_modal_elapsed',
-      { time: formattedElapsed },
-      `Execution time: ${formattedElapsed}`
+      { time: formattedElapsed }
     );
   }
 

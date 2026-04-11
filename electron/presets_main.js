@@ -345,10 +345,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return { lang, dialogLang, dialogTexts };
   }
 
-  function getYesNoLabels(dialogTexts) {
+  function getConfirmButtonLabels(dialogTexts) {
     return {
-      yesLabel: resolveDialogText(dialogTexts, 'yes', 'Yes, continue'),
-      noLabel: resolveDialogText(dialogTexts, 'no', 'No, cancel'),
+      continueLabel: resolveDialogText(dialogTexts, 'continue_button'),
+      cancelLabel: resolveDialogText(dialogTexts, 'cancel_button'),
     };
   }
 
@@ -585,7 +585,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       // Load settings and dialog texts before any message
       let settings = settingsState.getSettings();
       const { lang, dialogTexts } = getDialogContext(settings);
-      const { yesLabel, noLabel } = getYesNoLabels(dialogTexts);
+      const { continueLabel, cancelLabel } = getConfirmButtonLabels(dialogTexts);
 
       // If no name provided, show information dialog and exit
       if (!name) {
@@ -593,14 +593,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           const { mainWin } = resolveWindows();
           await dialog.showMessageBox(mainWin || null, {
             type: 'none',
-            buttons: [resolveDialogText(dialogTexts, 'ok', 'OK')],
+            buttons: [resolveDialogText(dialogTexts, 'ok')],
             defaultId: 0,
-            message:
-              resolveDialogText(
-                dialogTexts,
-                'delete_preset_none',
-                'No preset selected to delete'
-              ),
+            message: resolveDialogText(dialogTexts, 'delete_preset_none'),
           });
         } catch (err) {
           log.error(
@@ -614,16 +609,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       // Ask confirmation (native dialog)
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
-        buttons: [yesLabel, noLabel],
+        buttons: [continueLabel, cancelLabel],
         defaultId: 1,
         cancelId: 1,
         message:
           interpolateDialogText(dialogTexts.delete_preset_confirm, { name }) ||
-          resolveDialogText(
-            dialogTexts,
-            'delete_preset_confirm',
-            'Are you sure you want to delete this preset?'
-          ),
+          resolveDialogText(dialogTexts, 'delete_preset_confirm'),
       });
       if (conf.response === 1) {
         return { ok: false, code: 'CANCELLED' };
@@ -694,20 +685,16 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       let settings = settingsState.getSettings();
       const { lang, dialogLang, dialogTexts } = getDialogContext(settings);
-      const { yesLabel, noLabel } = getYesNoLabels(dialogTexts);
+      const { continueLabel, cancelLabel } = getConfirmButtonLabels(dialogTexts);
 
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
-        buttons: [yesLabel, noLabel],
+        buttons: [continueLabel, cancelLabel],
         defaultId: 1,
         cancelId: 1,
         message:
           interpolateDialogText(dialogTexts.restore_defaults_confirm, { lang: dialogLang }) ||
-          resolveDialogText(
-            dialogTexts,
-            'restore_defaults_confirm',
-            'Restore default presets to original?'
-          ),
+          resolveDialogText(dialogTexts, 'restore_defaults_confirm'),
       });
       if (conf.response === 1) {
         return { ok: false, code: 'CANCELLED' };
@@ -788,14 +775,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       await dialog.showMessageBox(mainWin || null, {
         type: 'none',
-        buttons: [resolveDialogText(dialogTexts, 'ok', 'OK')],
+        buttons: [resolveDialogText(dialogTexts, 'ok')],
         defaultId: 0,
-        message:
-          resolveDialogText(
-            dialogTexts,
-            'edit_preset_none',
-            'No preset selected to edit'
-          ),
+        message: resolveDialogText(dialogTexts, 'edit_preset_none'),
       });
       return { ok: true };
     } catch (err) {
@@ -843,19 +825,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       let settings = settingsState.getSettings();
       const { lang, dialogTexts } = getDialogContext(settings);
 
-      const { yesLabel, noLabel } = getYesNoLabels(dialogTexts);
+      const { continueLabel, cancelLabel } = getConfirmButtonLabels(dialogTexts);
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
-        buttons: [yesLabel, noLabel],
+        buttons: [continueLabel, cancelLabel],
         defaultId: 1,
         cancelId: 1,
         message:
           interpolateDialogText(dialogTexts.edit_preset_confirm, { name: originalName }) ||
-          resolveDialogText(
-            dialogTexts,
-            'edit_preset_confirm',
-            'Are you sure you want to edit the preset?'
-          ),
+          resolveDialogText(dialogTexts, 'edit_preset_confirm'),
       });
       if (conf.response === 1) {
         return { ok: false, code: 'CANCELLED' };

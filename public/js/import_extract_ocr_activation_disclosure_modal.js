@@ -83,48 +83,18 @@
   }
 
   function applyModalCopy() {
-    title.textContent = tRenderer(
-      'renderer.alerts.import_extract_ocr_activation_disclosure_title',
-      'Review Google OCR activation'
-    );
-    intro.textContent = tRenderer(
-      'renderer.alerts.import_extract_ocr_activation_disclosure_intro',
-      'toT uses Google services for OCR. Continuing will open your browser so you can authorize this app.'
-    );
-    itemSelectedFiles.textContent = tRenderer(
-      'renderer.alerts.import_extract_ocr_activation_disclosure_selected_files',
-      'Only files you choose for OCR are sent to Google.'
-    );
-    itemLocalStorage.textContent = tRenderer(
-      'renderer.alerts.import_extract_ocr_activation_disclosure_local_storage',
-      'This app stores app-managed Google OAuth credentials for OCR and local Google token state in this app instance.'
-    );
-    itemRemoteCleanup.textContent = tRenderer(
-      'renderer.alerts.import_extract_ocr_activation_disclosure_remote_cleanup',
-      'After export, the app attempts to remove the temporary Google document from your Google Drive.'
-    );
-    itemDisconnect.textContent = tRenderer(
-      'renderer.alerts.import_extract_ocr_activation_disclosure_disconnect',
-      'You can later disconnect via Preferences > Disconnect Google OCR.'
-    );
-    privacyLink.textContent = tRenderer(
-      'renderer.alerts.import_extract_ocr_activation_disclosure_privacy_link',
-      'Open privacy policy'
-    );
-    btnProceed.textContent = tRenderer(
-      'renderer.alerts.import_extract_ocr_activation_disclosure_proceed_button',
-      'Continue to Google'
-    );
-    btnCancel.textContent = tRenderer(
-      'renderer.alerts.import_extract_ocr_activation_disclosure_cancel_button',
-      'Cancel'
-    );
+    title.textContent = tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_title');
+    intro.textContent = tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_intro');
+    itemSelectedFiles.textContent = tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_selected_files');
+    itemLocalStorage.textContent = tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_local_storage');
+    itemRemoteCleanup.textContent = tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_remote_cleanup');
+    itemDisconnect.textContent = tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_disconnect');
+    privacyLink.textContent = tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_privacy_link');
+    btnProceed.textContent = tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_proceed_button');
+    btnCancel.textContent = tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_cancel_button');
     btnClose.setAttribute(
       'aria-label',
-      tRenderer(
-        'renderer.alerts.import_extract_ocr_activation_disclosure_close_aria',
-        'Close OCR activation disclosure dialog'
-      )
+      tRenderer('renderer.alerts.import_extract_ocr_activation_disclosure_close_aria')
     );
   }
 

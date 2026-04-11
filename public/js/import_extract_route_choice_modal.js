@@ -73,30 +73,12 @@
       return '';
     }
 
-    const titleText = tRenderer(
-      'renderer.alerts.import_extract_route_choice_title',
-      'Choose extraction route'
-    );
-    const messageText = tRenderer(
-      'renderer.alerts.import_extract_route_choice_message',
-      'Both extraction routes are available for this PDF. Choose one to continue.'
-    );
-    const nativeText = tRenderer(
-      'renderer.alerts.import_extract_route_choice_native_button',
-      'Use native'
-    );
-    const ocrText = tRenderer(
-      'renderer.alerts.import_extract_route_choice_ocr_button',
-      'Use OCR'
-    );
-    const cancelText = tRenderer(
-      'renderer.alerts.import_extract_route_choice_cancel_button',
-      'Cancel'
-    );
-    const closeAriaText = tRenderer(
-      'renderer.alerts.import_extract_route_choice_close_aria',
-      'Close extraction route dialog'
-    );
+    const titleText = tRenderer('renderer.alerts.import_extract_route_choice_title');
+    const messageText = tRenderer('renderer.alerts.import_extract_route_choice_message');
+    const nativeText = tRenderer('renderer.alerts.import_extract_route_choice_native_button');
+    const ocrText = tRenderer('renderer.alerts.import_extract_route_choice_ocr_button');
+    const cancelText = tRenderer('renderer.alerts.import_extract_route_choice_cancel_button');
+    const closeAriaText = tRenderer('renderer.alerts.import_extract_route_choice_close_aria');
 
     title.textContent = titleText;
     message.textContent = messageText;

@@ -190,7 +190,7 @@
   // =============================================================================
   // Translation helpers
   // =============================================================================
-  function tRenderer(path, fallback) {
+  function tRenderer(path, fallback = path) {
     if (!rendererTranslations) return fallback;
     const value = getPath(rendererTranslations, path);
     if (typeof value === 'string') return value;
@@ -201,7 +201,7 @@
     return fallback;
   }
 
-  function msgRenderer(path, params = {}, fallback = '') {
+  function msgRenderer(path, params = {}, fallback = path) {
     let str = tRenderer(path, fallback);
     if (!str) return fallback;
     Object.keys(params || {}).forEach(k => {

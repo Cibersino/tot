@@ -21,9 +21,6 @@
   }
   const log = window.getLogger('import-extract-ocr-activation-recovery');
   log.debug('Import/extract OCR activation recovery helpers starting...');
-  if (!window.Notify || typeof window.Notify.notifyMain !== 'function') {
-    throw new Error('[import-extract-ocr-activation-recovery] Notify.notifyMain unavailable; cannot continue');
-  }
 
   // =============================================================================
   // Helpers

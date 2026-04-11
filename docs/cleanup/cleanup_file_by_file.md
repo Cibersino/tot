@@ -2,30 +2,11 @@
 
 ## Elección de archivo: 
 
-- En proceso:
+- En proceso: 
 
-- Archivos ya ordenados y limpiados:
+- Archivos ya ordenados y limpiados: `electron\reading_test_pool.js`, `electron\reading_test_pool_import.js`, `electron\reading_test_questions_preload.js`, `electron\reading_test_session.js`, `electron\reading_test_session_windows.js`, `electron\reading_test_session_flow.js`, `electron\spellcheck.js`, `electron\editor_text_size.js`, `public\reading_test_questions.js`, `public\js\reading_speed_test.js`, `public\js\lib\reading_test_filters_core.js`, `public\js\lib\reading_test_questions_core.js`, `public\js\lib\snapshot_tag_catalog.js`, `electron\current_text_snapshots_main.js`, `electron\main.js`, `electron\settings.js`, `electron\fs_storage.js`, `public\renderer.js`, `public\editor.js`, `electron\preload.js`.
 
 - Faltan: 
-  - new:
-    `electron\reading_test_pool.js`
-    `electron\reading_test_pool_import.js`
-    `electron\reading_test_questions_preload.js`
-    `electron\reading_test_session.js`
-    `electron\spellcheck.js`
-    `electron\editor_text_size.js`
-    `public\js\lib\reading_test_filters_core.js`
-    `public\js\lib\reading_test_questions_core.js`
-    `public\js\reading_speed_test.js`
-    `public\reading_test_questions.js`
-  - older:
-    `electron\current_text_snapshots_main.js`
-    `electron\main.js`
-    `electron\settings.js`
-    `electron\preload.js`
-    `public\renderer.js`
-    `public\editor.js`
-    `public\js\lib\snapshot_tag_catalog.js`
 
 ## Principios base de comportamiento (normativo)
 
@@ -53,6 +34,9 @@ Si una propuesta contradice estos principios, se debe justificar con evidencia d
 - No reordenar sin evidencia fuerte.
 
 ### P2) Frontera de modularizacion main vs renderer
+
+Documento relacionado:
+- `docs/cleanup/main_renderer_entrypoint_policy.md`
 
 1. `electron/main.js` es orquestador.
 - Debe concentrar ciclo de vida, ventanas, handshake de startup y wiring de modulos.
@@ -148,6 +132,61 @@ Si una propuesta contradice estos principios, se debe justificar con evidencia d
 2. Esta regla no aplica a texto user-facing.
 - Mensajes para usuario final siguen i18n/keys del producto.
 
+## Politicas complementarias por tipo de archivo (normativo)
+
+Estas politicas NO reemplazan los Niveles 0-9. Se aplican como overlay obligatorio cuando el archivo o el cambio entra en su scope.
+
+### C1) Overlay de i18n y texto user-facing
+
+Documento relacionado:
+- `docs/cleanup/i18n_language_policy.md`
+
+Aplicar obligatoriamente cuando el archivo:
+- toca texto user-facing,
+- llama helpers i18n (`tRenderer`, `msgRenderer`, `resolveDialogText`, `RendererI18n`, `menu_builder`),
+- modifica bundles bajo `i18n/**`,
+- o cambia owners de texto entre main/native dialog y renderer UI.
+
+Reglas de integracion:
+1. Tratar `DEFAULT_LANG` como unico fallback final hardcoded.
+2. El modulo de feature consume texto por key; no reintroduce fallback chains, strings hardcoded, fallback a DOM actual ni fallback vacio para texto user-facing.
+3. Main/native dialog usa keys de `main.json`; renderer UI usa keys de `renderer.json`.
+4. Si se agrega/renombra/elimina una key, revisar en el mismo cambio el bundle canonico default, los root bundles enviados y cualquier overlay regional afectado.
+5. Si el drift no se puede corregir localmente sin tocar schema/owners cross-file, escalar a Nivel 4 con Evidence/Risk/Validation.
+
+### C2) Overlay de renderer dialog API
+
+Documento relacionado:
+- `docs/cleanup/renderer_dialog_notify_policy.md`
+
+Aplicar obligatoriamente cuando el archivo renderer:
+- dispara alerts/confirms/prompts/modals,
+- expone o consume dialogos renderer,
+- o introduce feedback user-facing por dialog API.
+
+Reglas de integracion:
+1. `public/js/notify.js` es el owner de dialogos renderer y `window.Notify` es la superficie publica mantenida.
+2. Los feature modules deben llamar `window.Notify.*` directamente para dialog behavior estandar.
+3. No introducir wrappers pass-through (`safeNotify`, `notifyMain`, proxies equivalentes) ni guards repetidos sobre `window.Notify`.
+4. No caer a `alert(...)` / `confirm(...)` directo en feature code.
+5. Si un fallback de dialogo realmente pertenece a infraestructura, moverlo al owner (`notify.js`) o escalar a Nivel 4 si requiere cambio de contrato/superficie.
+
+### C3) Overlay de entrypoints main/renderer
+
+Documento relacionado:
+- `docs/cleanup/main_renderer_entrypoint_policy.md`
+
+Aplicar obligatoriamente cuando:
+- el target es `electron/main.js` o `public/renderer.js`,
+- o un cambio agrega logica de feature a esos entrypoints.
+
+Reglas de integracion:
+1. `electron/main.js` y `public/renderer.js` se mantienen como orquestadores.
+2. Si un bloque nuevo introduce vocabulario, workflow, validacion, estado o IPC de dominio, por defecto ese bloque no pertenece al entrypoint.
+3. Preferir extraccion a modulos con contratos explicitos (`registerIpc(...)`, `init(...)`, helpers con owner claro) antes que seguir creciendo el entrypoint.
+4. Mantener inline solo startup glue, wiring, coordinacion transversal real o adaptadores pequenos entre contratos ya existentes.
+5. Si corregir el drift requiere mover ownership o cambiar contratos entre modulos, tratarlo como candidato de Nivel 4.
+
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
 **0.1 Mapa de lectura**
@@ -159,6 +198,15 @@ Si una propuesta contradice estos principios, se debe justificar con evidencia d
 
 * ¿Qué expone? (exports / entrypoints / side effects).
 * ¿Qué invariantes sugiere? (inputs esperados, errores tolerables, fallbacks).
+
+**0.3 Mapa de politicas aplicables**
+
+* ¿Aplica alguno de estos overlays?:
+  * `i18n_language_policy.md`
+  * `renderer_dialog_notify_policy.md`
+  * `main_renderer_entrypoint_policy.md`
+* Si aplica, ¿cual es el owner canonico que este archivo deberia consumir o preservar?
+* ¿Hay drift visible contra esa politica dentro del archivo o solo evidencia a revisar en niveles posteriores?
 
 **Regla:** aquí no se proponen soluciones todavía; solo se identifica qué estorba.
 
@@ -181,6 +229,11 @@ Hard constraints:
 ## 0.2 Contract map
 - What does the module expose? (exports / public entrypoints / side effects)
 - What invariants does it suggest? (expected inputs, tolerated errors, fallbacks)
+- If one of these policy overlays applies, identify it descriptively only (no fixes yet):
+  - `docs/cleanup/i18n_language_policy.md`
+  - `docs/cleanup/renderer_dialog_notify_policy.md`
+  - `docs/cleanup/main_renderer_entrypoint_policy.md`
+- If a policy applies, name the canonical owner/surface this file should preserve or consume.
 - If present, describe the IPC contract (only what exists in this file):
   A) Exhaustive IPC enumeration (mechanical; list ALL occurrences you can find in the file):
     - List every ipcMain.handle(<channel>), ipcMain.on(<channel>), ipcMain.once(<channel>)
@@ -233,6 +286,7 @@ Default rule:
 Constraints:
 - Preserve behavior and the observable contract as-is (public API, IPC surface, payload/return shapes, side effects).
 - Preserve truncation + persistence behavior and timing.
+- If one of the policy overlays applies (`i18n_language_policy`, `renderer_dialog_notify_policy`, `main_renderer_entrypoint_policy`), keep the file aligned with that owner model without forcing cross-file rewrites at Level 1.
 
 Anti “refactor that makes it worse” rule:
 If a change:
@@ -343,6 +397,7 @@ Output requirement:
 * Objetivo: **inventariar y clasificar exhaustivamente** (1:1) todas las dependencias bridge/API usadas por el archivo en: **required startup dependency** vs **optional capability** vs **best-effort side action**, y **enforzar** el handling correcto según la convención.
 * Base obligatoria: `docs/cleanup/bridge_failure_mode_convention.md` (matriz + checklist).
 * Evitar drift entre módulos: no mezclar fail-fast, degrade y drop sin **clasificación explícita por call-site**.
+* Si para ese caso ya existe una política más específica sobre cómo debe consumir el feature module una API pública concreta, seguir esa política en el call-site. La clasificación de Nivel 3 no justifica agregar guards o enforcement local que contradigan ese patrón.
 * Política de logging obligatoria en este nivel: mantener el mecanismo de logger del contexto (`Log.get`/`window.getLogger` en main/renderer, `console` en preload) y estilo de call-site directo (`log.warn|warnOnce|error|errorOnce`, sin wrappers/aliases locales).
 * **PASS (requisito mínimo de auditoría por archivo):**
   - Existe un **Bridge Dependency Ledger** (tabla) que enumera **todas** las dependencias/paths bridge del archivo (sin “for example”, sin “other calls exist”).
@@ -379,6 +434,7 @@ Hard constraints:
 * Keep the logger mechanism defined by runtime context (`electron/log.js` and `public/js/log.js` headers): main/renderer keep repo logger usage; preload stays console-based.
 * Call-site style is mandatory: use `log.warn|warnOnce|error|errorOnce` directly; do not add local wrappers/aliases for these methods.
 * Scope edits to `<TARGET_FILE>` only.
+* If a more specific applicable policy already defines how the feature module should consume a public API at the call site, preserve that pattern; do not introduce local guards or enforcement that contradict it (for example, `window.Notify` must be consumed directly in feature files, so do not add feature-level `typeof window.Notify...` checks).
 * You MAY change failure-path behavior (miswire/missing/invalid bridge) to comply with the convention.
   Do NOT claim “changes failure timing/behavior” as Level 4 evidence unless HEALTHY-PATH changes too.
 
@@ -410,14 +466,19 @@ What to do (NO SKIPPING):
    * unclassified coexistence,
    * silent fallbacks where a real fallback exists,
    * missing dedupe where repetition adds no diagnostic value,
-   * mis-leveled logging (noise on hot paths vs missing diagnostics).
+   * mis-leveled logging (noise on hot paths vs missing diagnostics),
+   * local enforcement added at the feature call site when a more specific policy already defines the intended consumption pattern.
 
 4. Enforcement (required):
    Apply minimal local changes so that EVERY inventory entry’s handling matches the decision matrix:
 
    * Required -> fail fast (do not continue invalid init path; clear diagnostic)
-   * Optional -> guard + continue + deduplicated diagnostic (stable bounded key; no user input in key)
-   * Best-effort -> drop without breaking flow + deduplicated “failed (ignored)” diagnostic when a real intended action is dropped
+   * Optional -> guard + continue + diagnostic per logging policy
+     - Deduplicate ONLY if the miss/failure is high-frequency, repeatable, and additional occurrences add no diagnostic value.
+     - If deduped, use a stable bounded key (no user input or unbounded dynamic data in the key).
+   * Best-effort -> drop without breaking flow + “failed (ignored)” diagnostic when a real intended action is dropped
+     - Deduplicate ONLY if the failure is high-frequency, repeatable, and additional occurrences add no diagnostic value.
+     - If deduped, use a stable bounded key (no user input or unbounded dynamic data in the key).
      “Minimal” means minimal per-site change; coverage must be complete (no cherry-picking).
 
 5. Level 4 evidence (strict boundary):
@@ -467,7 +528,9 @@ Ejemplos típicos:
 * separar responsabilidades en otro archivo,
 * cambiar sync↔async,
 * cambiar API pública o semántica de retorno,
-* cambios con impacto en múltiples consumidores.
+* cambios con impacto en múltiples consumidores,
+* mover ownership real entre `main.js` / `renderer.js` y un modulo dedicado,
+* cambios de superficie/owner para `window.Notify`, i18n helpers o bundles canonicos.
 
 **Requisito para Nivel 4:**
 
@@ -484,6 +547,11 @@ Level 4 — Architecture / contract changes (exceptional; evidence-driven).
 
 Objective:
 Only if there is strong evidence of real pain that cannot be addressed in Levels 1–3, propose and (if justified) implement a minimal architecture/contract change that measurably improves the situation.
+
+Typical Level 4 triggers also include policy conflicts that cannot be solved locally, for example:
+- entrypoint logic in `electron/main.js` / `public/renderer.js` that should move to a dedicated owner module,
+- i18n schema/owner drift that requires cross-file bundle or call-site updates,
+- renderer dialog API drift that requires changing the intended public surface (`window.Notify` / `public/js/notify.js`).
 
 Entry criteria (must be satisfied to change code):
 
@@ -556,7 +624,7 @@ Objective:
 Align logging in `<TARGET_FILE>` with the project logging policy and established style, so that:
 - Levels match recoverability (error vs warn vs info vs debug),
 - Fallbacks are never silent (per policy),
-- High-frequency repeatable events where additional occurrences add no new diagnostic value are deduplicated (use warnOnce/errorOnce),
+- High-frequency repeatable events where additional occurrences add no new diagnostic value may be deduplicated (use warnOnce/errorOnce only when the code path is clearly high-frequency),
 - Developer diagnostics in `.js` warning/error logs are English-only (non-UI diagnostics),
 - Messages are short, actionable, and consistent with the repo (see `electron/main.js` patterns).
 
@@ -616,8 +684,9 @@ Definition (to avoid ambiguity):
    - Do NOT embed dynamic payloads or error objects in an explicit dedupe key; keep dynamic details in the log args/message.
 
 5) Best-effort window sends (races):
-   - If a send is part of an intended action that is being dropped, log warnOnce using “failed (ignored):” style.
-   - Use a stable key, optionally with a CONTROLLED variant suffix for the target/window (per-window buckets are allowed).
+   - If a send is part of an intended action that is being dropped, log warn using “failed (ignored):” style.
+   - Upgrade to warnOnce only when the code path is clearly high-frequency and additional occurrences add no new diagnostic value.
+   - If warnOnce is justified, use a stable key, optionally with a CONTROLLED variant suffix for the target/window (per-window buckets are allowed).
    - If a send is truly optional and contractually “do nothing if missing”, it may remain silent; do not add noise.
 
 Anti “refactor that makes it worse” rule:
@@ -723,7 +792,9 @@ Do a careful final pass to ensure `<TARGET_FILE>` is coherent end-to-end after L
 - remove leftovers / dead code / stale patterns introduced by earlier refactors;
 - ensure internal consistency (naming, control flow, invariants, helper usage);
 - ensure logging API usage matches the repo policy (no signature drift);
-- ensure comments and code agree (no drift); while preserving the module’s observable behavior/contract and timing.
+- ensure comments and code agree (no drift);
+- ensure any applicable overlay policy (`i18n_language_policy`, `renderer_dialog_notify_policy`, `main_renderer_entrypoint_policy`) is still respected;
+while preserving the module’s observable behavior/contract and timing.
 
 Constraints:
 - Preserve observable behavior/contract as-is (public API, IPC surface, payload/return shapes, side effects, timing/ordering).
@@ -751,6 +822,10 @@ What to do:
    - If you detect signature drift (e.g., passing a dedupe key to a non-once method), correct it in the smallest way that preserves intended logging behavior and avoids spam.
 4) Comment/code alignment:
    - Ensure comments describe real behavior and constraints; remove or adjust any drift introduced during prior edits.
+5) Overlay policy alignment:
+   - If the file is i18n-sensitive, verify it still consumes canonical i18n owners and does not reintroduce local fallback text/policies.
+   - If the file is a renderer dialog consumer, verify it uses `window.Notify` directly rather than local wrappers or browser globals.
+   - If the file is `electron/main.js`, `public/renderer.js`, or adds feature logic there, verify the entrypoint still reads primarily as orchestration.
 
 Mandatory gate output (for each non-trivial change you apply):
 - Change: one sentence describing what you changed.

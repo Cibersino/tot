@@ -11,7 +11,8 @@
 // - Keep language tags consistent (normalize language tag + base language).
 // - Ensure numberFormatting[langBase] exists (from i18n/<lang>/numberFormat.json or safe defaults).
 // - Provide a small state API (init/getSettings/saveSettings) backed by an in-memory cache.
-// - Register IPC handlers (get-settings, set-language, set-mode-conteo, set-selected-preset) and broadcast settings-updated.
+// - Register IPC handlers (get-settings, set-language, set-mode-conteo, set-selected-preset,
+//   set-spellcheck-enabled, set-editor-font-size-px) and broadcast settings-updated.
 // - Apply a logged fallback language when the language modal closes without a selection.
 // =============================================================================
 
@@ -73,6 +74,10 @@ function normalizeEditorFontSizePx(value) {
     EDITOR_FONT_SIZE_MAX_PX,
     Math.max(EDITOR_FONT_SIZE_MIN_PX, rounded)
   );
+}
+
+function isPlainObjectRecord(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
 // =============================================================================
@@ -179,8 +184,7 @@ function ensureNumberFormattingForBase(settings, base) {
  * - Ensure language-dependent buckets exist for the current language base.
  */
 function normalizeSettings(s) {
-  const isObject = !!s && typeof s === 'object' && !Array.isArray(s);
-  if (!isObject) {
+  if (!isPlainObjectRecord(s)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidRoot',
       'Settings root is invalid; using empty object:',
@@ -204,11 +208,7 @@ function normalizeSettings(s) {
   // - present but invalid -> warnOnce + default
   if (typeof s.presets_by_language === 'undefined') {
     s.presets_by_language = {};
-  } else if (
-    typeof s.presets_by_language !== 'object' ||
-    Array.isArray(s.presets_by_language) ||
-    s.presets_by_language === null
-  ) {
+  } else if (!isPlainObjectRecord(s.presets_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidPresetsByLanguage',
       'Invalid presets_by_language; resetting to empty object:',
@@ -222,11 +222,7 @@ function normalizeSettings(s) {
   // - present but invalid -> warnOnce + default
   if (typeof s.selected_preset_by_language === 'undefined') {
     s.selected_preset_by_language = {};
-  } else if (
-    typeof s.selected_preset_by_language !== 'object' ||
-    Array.isArray(s.selected_preset_by_language) ||
-    s.selected_preset_by_language === null
-  ) {
+  } else if (!isPlainObjectRecord(s.selected_preset_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidSelectedPresetByLanguage',
       'Invalid selected_preset_by_language; resetting to empty object:',
@@ -238,11 +234,7 @@ function normalizeSettings(s) {
   // numberFormatting must be a plain object (may be missing/null/array/invalid types).
   if (typeof s.numberFormatting === 'undefined') {
     s.numberFormatting = {};
-  } else if (
-    typeof s.numberFormatting !== 'object' ||
-    Array.isArray(s.numberFormatting) ||
-    s.numberFormatting === null
-  ) {
+  } else if (!isPlainObjectRecord(s.numberFormatting)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidNumberFormatting',
       'Invalid numberFormatting; resetting to empty object:',
@@ -254,11 +246,7 @@ function normalizeSettings(s) {
   // disabled_default_presets must be a plain object (may be missing/null/array/invalid types).
   if (typeof s.disabled_default_presets === 'undefined') {
     s.disabled_default_presets = {};
-  } else if (
-    typeof s.disabled_default_presets !== 'object' ||
-    Array.isArray(s.disabled_default_presets) ||
-    s.disabled_default_presets === null
-  ) {
+  } else if (!isPlainObjectRecord(s.disabled_default_presets)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidDisabledDefaultPresets',
       'Invalid disabled_default_presets; resetting to empty object:',
@@ -433,14 +421,15 @@ function getSettings() {
  */
 function saveSettings(nextSettings) {
   if (!nextSettings) return getSettings();
+  if (!_saveJson || !_settingsFile) {
+    throw new Error('[settings] saveSettings called before init');
+  }
 
   const normalized = normalizeSettings(nextSettings);
   _currentSettings = normalized;
 
   try {
-    if (_saveJson && _settingsFile) {
-      _saveJson(_settingsFile, normalized);
-    }
+    _saveJson(_settingsFile, normalized);
   } catch (err) {
     log.errorOnce(
       'settings.saveSettings.persist',
@@ -522,6 +511,8 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - set-language
  * - set-mode-conteo
  * - set-selected-preset
+ * - set-spellcheck-enabled
+ * - set-editor-font-size-px
  */
 function registerIpc(
   ipcMain,
@@ -533,6 +524,61 @@ function registerIpc(
 ) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
+  }
+
+  function publishSettingsUpdated(settings, windows) {
+    if (typeof onSettingsUpdated !== 'function') {
+      log.warnOnce(
+        'settings.onSettingsUpdated.unavailable',
+        'onSettingsUpdated callback unavailable; settings callback publish skipped.'
+      );
+    } else {
+      try {
+        onSettingsUpdated(settings);
+      } catch (err) {
+        log.warn('onSettingsUpdated callback failed (ignored):', err);
+      }
+    }
+    broadcastSettingsUpdated(settings, windows);
+  }
+
+  function resolveWindows() {
+    if (typeof getWindows !== 'function') {
+      log.warnOnce(
+        'settings.getWindows.unavailable',
+        'getWindows unavailable; window-targeted updates skipped.'
+      );
+      return {};
+    }
+
+    try {
+      const windows = getWindows();
+      if (!windows || typeof windows !== 'object') {
+        log.warnOnce(
+          'settings.getWindows.invalid',
+          'getWindows returned no windows object; window-targeted updates skipped.'
+        );
+        return {};
+      }
+      return windows;
+    } catch (err) {
+      log.warnOnce(
+        'settings.getWindows.failed',
+        'getWindows failed (window-targeted updates skipped):',
+        err
+      );
+      return {};
+    }
+  }
+
+  function hideWindowMenu(win, name) {
+    if (!win || win.isDestroyed()) return;
+    try {
+      win.setMenu(null);
+      win.setMenuBarVisibility(false);
+    } catch (err) {
+      log.warn('hide window menu failed (ignored):', name, err);
+    }
   }
 
   // get-settings: returns the current settings object (normalized)
@@ -548,17 +594,6 @@ function registerIpc(
       return normalizeSettings(createDefaultSettings(DEFAULT_LANG));
     }
   });
-
-  function publishSettingsUpdated(settings, windows) {
-    try {
-      if (typeof onSettingsUpdated === 'function') {
-        onSettingsUpdated(settings);
-      }
-    } catch (err) {
-      log.warn('onSettingsUpdated callback failed (ignored):', err);
-    }
-    broadcastSettingsUpdated(settings, windows);
-  }
 
   // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
@@ -580,10 +615,15 @@ function registerIpc(
 
       const menuLang = settings.language || DEFAULT_LANG;
 
-      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      const windows = resolveWindows();
 
       // Rebuild the app menu using the new language (best-effort).
-      if (typeof buildAppMenu === 'function') {
+      if (typeof buildAppMenu !== 'function') {
+        log.warn(
+          'buildAppMenu unavailable; menu rebuild skipped.',
+          { type: typeof buildAppMenu }
+        );
+      } else {
         try {
           buildAppMenu(menuLang);
         } catch (err) {
@@ -592,36 +632,12 @@ function registerIpc(
       }
 
       // Hide the toolbar/menu in secondary windows (best-effort).
-      try {
-        const { editorWin, editorFindWin, presetWin, langWin, taskEditorWin } = windows;
-
-        if (editorWin && !editorWin.isDestroyed()) {
-          editorWin.setMenu(null);
-          editorWin.setMenuBarVisibility(false);
-        }
-
-        if (editorFindWin && !editorFindWin.isDestroyed()) {
-          editorFindWin.setMenu(null);
-          editorFindWin.setMenuBarVisibility(false);
-        }
-
-        if (presetWin && !presetWin.isDestroyed()) {
-          presetWin.setMenu(null);
-          presetWin.setMenuBarVisibility(false);
-        }
-
-        if (langWin && !langWin.isDestroyed()) {
-          langWin.setMenu(null);
-          langWin.setMenuBarVisibility(false);
-        }
-
-        if (taskEditorWin && !taskEditorWin.isDestroyed()) {
-          taskEditorWin.setMenu(null);
-          taskEditorWin.setMenuBarVisibility(false);
-        }
-      } catch (err) {
-        log.warn('hide menu in secondary windows failed (ignored):', err);
-      }
+      const { editorWin, editorFindWin, presetWin, langWin, taskEditorWin } = windows;
+      hideWindowMenu(editorWin, 'editorWin');
+      hideWindowMenu(editorFindWin, 'editorFindWin');
+      hideWindowMenu(presetWin, 'presetWin');
+      hideWindowMenu(langWin, 'langWin');
+      hideWindowMenu(taskEditorWin, 'taskEditorWin');
 
       publishSettingsUpdated(settings, windows);
 
@@ -639,7 +655,7 @@ function registerIpc(
       settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
       settings = saveSettings(settings);
 
-      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      const windows = resolveWindows();
       publishSettingsUpdated(settings, windows);
 
       return { ok: true, mode: settings.modeConteo };
@@ -702,7 +718,7 @@ function registerIpc(
       settings.spellcheckEnabled = enabled;
       settings = saveSettings(settings);
 
-      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      const windows = resolveWindows();
       publishSettingsUpdated(settings, windows);
 
       return { ok: true, enabled: settings.spellcheckEnabled };
@@ -733,7 +749,7 @@ function registerIpc(
       settings.editorFontSizePx = nextEditorFontSizePx;
       settings = saveSettings(settings);
 
-      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      const windows = resolveWindows();
       publishSettingsUpdated(settings, windows);
 
       return { ok: true, editorFontSizePx: settings.editorFontSizePx };

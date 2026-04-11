@@ -28,6 +28,9 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[editor] AppConstants unavailable; verify constants.js load order');
 }
+if (typeof AppConstants.DEFAULT_LANG !== 'string' || AppConstants.DEFAULT_LANG.trim() === '') {
+  throw new Error('[editor] AppConstants.DEFAULT_LANG unavailable; cannot continue');
+}
 const {
   DEFAULT_LANG,
   PASTE_ALLOW_LIMIT,
@@ -63,11 +66,15 @@ if (typeof window.editorAPI.onForceClear !== 'function') {
 // =============================================================================
 (async () => {
   try {
-    const cfg = await window.editorAPI.getAppConfig();
-    if (AppConstants && typeof AppConstants.applyConfig === 'function') {
-      maxTextChars = AppConstants.applyConfig(cfg);
-    } else if (cfg && cfg.maxTextChars) {
-      maxTextChars = Number(cfg.maxTextChars) || maxTextChars;
+    if (typeof window.editorAPI.getAppConfig !== 'function') {
+      log.warn('BOOTSTRAP: editorAPI.getAppConfig missing; using defaults.');
+    } else {
+      const cfg = await window.editorAPI.getAppConfig();
+      if (AppConstants && typeof AppConstants.applyConfig === 'function') {
+        maxTextChars = AppConstants.applyConfig(cfg);
+      } else if (cfg && cfg.maxTextChars) {
+        maxTextChars = Number(cfg.maxTextChars) || maxTextChars;
+      }
     }
   } catch (err) {
     log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
@@ -135,11 +142,11 @@ if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
   throw new Error('[editor] RendererI18n unavailable; cannot continue');
 }
 
-const tr = (path, fallback) => tRenderer(path, fallback);
-const trMsg = (path, params, fallback) => msgRenderer(path, params, fallback);
+const tr = (path) => tRenderer(path);
+const trMsg = (path, params) => msgRenderer(path, params);
 
 function applyDocumentLanguage() {
-  const langTag = (idiomaActual || DEFAULT_LANG || 'es').toLowerCase();
+  const langTag = (idiomaActual || DEFAULT_LANG).toLowerCase();
   if (document && document.documentElement) {
     document.documentElement.lang = langTag;
   }
@@ -171,8 +178,7 @@ function updateEditorTextSizeUi() {
   if (textSizeValue) {
     const valueText = trMsg(
       'renderer.editor.text_size_value',
-      { value: editorFontSizePx },
-      `${editorFontSizePx} px`
+      { value: editorFontSizePx }
     );
     textSizeValue.textContent = valueText;
     textSizeValue.setAttribute('aria-label', valueText);
@@ -200,51 +206,51 @@ async function ensureEditorTranslations(lang) {
 async function applyEditorTranslations() {
   await ensureEditorTranslations(idiomaActual);
   applyDocumentLanguage();
-  document.title = tr('renderer.editor.title', document.title);
-  if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder', editor.getAttribute('placeholder') || ''));
+  document.title = tr('renderer.editor.title');
+  if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder'));
   if (btnCalc) {
-    const calcText = tr('renderer.editor.calc_button', btnCalc.getAttribute('data-label') || '');
+    const calcText = tr('renderer.editor.calc_button');
     btnCalc.setAttribute('data-label', calcText);
     btnCalc.setAttribute('aria-label', calcText);
   }
   if (calcLabel) {
-    const calcWhileTypingText = tr('renderer.editor.calc_while_typing', calcLabel.getAttribute('data-label') || '');
+    const calcWhileTypingText = tr('renderer.editor.calc_while_typing');
     calcLabel.setAttribute('data-label', calcWhileTypingText);
     if (calcWhileTyping) calcWhileTyping.setAttribute('aria-label', calcWhileTypingText);
   }
   if (spellcheckLabel) {
-    const spellcheckText = tr('renderer.editor.spellcheck', spellcheckLabel.getAttribute('data-label') || '');
+    const spellcheckText = tr('renderer.editor.spellcheck');
     spellcheckLabel.setAttribute('data-label', spellcheckText);
     if (spellcheckToggle) spellcheckToggle.setAttribute('aria-label', spellcheckText);
   }
   if (textSizeControls) {
-    const textSizeGroupText = tr('renderer.editor.text_size_label', textSizeControls.getAttribute('aria-label') || '');
+    const textSizeGroupText = tr('renderer.editor.text_size_label');
     textSizeControls.setAttribute('aria-label', textSizeGroupText);
     if (textSizeLabel) textSizeLabel.textContent = textSizeGroupText;
   }
   if (btnTextSizeDecrease) {
-    const decreaseText = tr('renderer.editor.decrease_text_size', btnTextSizeDecrease.title || '');
+    const decreaseText = tr('renderer.editor.decrease_text_size');
     btnTextSizeDecrease.setAttribute('aria-label', decreaseText);
     btnTextSizeDecrease.title = decreaseText;
   }
   if (btnTextSizeIncrease) {
-    const increaseText = tr('renderer.editor.increase_text_size', btnTextSizeIncrease.title || '');
+    const increaseText = tr('renderer.editor.increase_text_size');
     btnTextSizeIncrease.setAttribute('aria-label', increaseText);
     btnTextSizeIncrease.title = increaseText;
   }
   if (btnTextSizeReset) {
-    const resetText = tr('renderer.editor.reset_text_size', btnTextSizeReset.title || '');
+    const resetText = tr('renderer.editor.reset_text_size');
     btnTextSizeReset.setAttribute('aria-label', resetText);
     btnTextSizeReset.title = resetText;
   }
   if (btnTrash) {
-    const clearText = tr('renderer.editor.clear', btnTrash.getAttribute('data-label') || '');
+    const clearText = tr('renderer.editor.clear');
     btnTrash.setAttribute('data-label', clearText);
     btnTrash.setAttribute('aria-label', clearText);
-    btnTrash.title = tr('renderer.editor.clear_title', btnTrash.title || clearText || '');
+    btnTrash.title = tr('renderer.editor.clear_title');
   }
   if (bottomBar) {
-    bottomBar.setAttribute('aria-label', tr('renderer.editor.title', bottomBar.getAttribute('aria-label') || ''));
+    bottomBar.setAttribute('aria-label', tr('renderer.editor.title'));
   }
   updateEditorTextSizeUi();
 }
@@ -319,6 +325,27 @@ function clearReadingTestCountdownTimeouts() {
   readingTestCountdownTimeouts = [];
 }
 
+function notifyReadingTestCountdownReady(token) {
+  if (!token) return;
+  if (!window.editorAPI || typeof window.editorAPI.notifyReadingTestCountdownReady !== 'function') {
+    log.warnOnce(
+      'editor.readingTestCountdown.readyAckMissing',
+      'editorAPI.notifyReadingTestCountdownReady missing; reading-test countdown ready ack skipped.'
+    );
+    return;
+  }
+
+  try {
+    window.editorAPI.notifyReadingTestCountdownReady({ token });
+  } catch (err) {
+    log.warnOnce(
+      'editor.readingTestCountdown.readyAckFailed',
+      'Reading-test countdown ready ack failed (ignored):',
+      err
+    );
+  }
+}
+
 function positionEditorAtTop() {
   if (!editor) return;
 
@@ -376,12 +403,16 @@ function startReadingTestCountdown(payload = {}) {
   const stepMs = Number.isFinite(stepMsRaw) && stepMsRaw >= 250
     ? Math.floor(stepMsRaw)
     : 1000;
+  const token = payload && typeof payload.token === 'string'
+    ? payload.token
+    : '';
 
   const runId = ++readingTestCountdownRunId;
   clearReadingTestCountdownTimeouts();
 
   readingTestCountdownValue.textContent = String(seconds);
   setReadingTestCountdownVisible(true);
+  notifyReadingTestCountdownReady(token);
 
   for (let index = 1; index < seconds; index += 1) {
     const nextValue = seconds - index;
@@ -544,7 +575,7 @@ function handleTruncationResponse(resPromise) {
           notifyTextTruncated();
         }
       }).catch((err) => {
-        log.error('Error handling truncated response:', err);
+        log.error('setCurrentText response handling failed:', err);
       });
     }
   } catch (err) {
@@ -609,6 +640,27 @@ function dispatchNativeInputEvent() {
     editor.dispatchEvent(ev);
   } catch (err) {
     log.error('dispatchNativeInputEvent error:', err);
+  }
+}
+
+function restorePreviousActiveElement(prevActive, warnKey) {
+  try {
+    if (prevActive && prevActive !== editor) prevActive.focus();
+  } catch (err) {
+    log.warnOnce(warnKey, 'prevActive.focus() failed (ignored):', err);
+  }
+}
+
+function replaceEditorValueHidden(nextValue) {
+  try {
+    editor.style.visibility = 'hidden';
+    editor.value = nextValue;
+    dispatchNativeInputEvent();
+  } catch {
+    editor.value = nextValue;
+    dispatchNativeInputEvent();
+  } finally {
+    editor.style.visibility = '';
   }
 }
 
@@ -718,23 +770,12 @@ async function applyExternalUpdate(payload) {
               editor.value = editor.value + toInsert;
               dispatchNativeInputEvent();
             } finally {
-              try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-              catch (err) { log.warnOnce('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
+              restorePreviousActiveElement(prevActive, 'focus.prevActive.append_newline.native');
             }
             return;
           } else {
-            try {
-              editor.style.visibility = 'hidden';
-              editor.value = newText;
-              dispatchNativeInputEvent();
-            } catch {
-              editor.value = newText;
-              dispatchNativeInputEvent();
-            } finally {
-              editor.style.visibility = '';
-              try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-              catch (err) { log.warnOnce('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
-            }
+            replaceEditorValueHidden(newText);
+            restorePreviousActiveElement(prevActive, 'focus.prevActive.append_newline.full');
             if (truncated) {
               notifyTextTruncated()
             }
@@ -763,26 +804,15 @@ async function applyExternalUpdate(payload) {
             editor.value = newText;
             dispatchNativeInputEvent();
           } finally {
-            try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { log.warnOnce('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
+            restorePreviousActiveElement(prevActive, 'focus.prevActive.main.native');
           }
           if (truncated) {
             notifyTextTruncated()
           }
           return;
         } else {
-          try {
-            editor.style.visibility = 'hidden';
-            editor.value = newText;
-            dispatchNativeInputEvent();
-          } catch {
-            editor.value = newText;
-            dispatchNativeInputEvent();
-          } finally {
-            editor.style.visibility = '';
-            try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { log.warnOnce('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
-          }
+          replaceEditorValueHidden(newText);
+          restorePreviousActiveElement(prevActive, 'focus.prevActive.main.full');
           if (truncated) {
             notifyTextTruncated()
           }
@@ -791,16 +821,7 @@ async function applyExternalUpdate(payload) {
       }
 
       // fallback
-      try {
-        editor.style.visibility = 'hidden';
-        editor.value = newText;
-        dispatchNativeInputEvent();
-      } catch {
-        editor.value = newText;
-        dispatchNativeInputEvent();
-      } finally {
-        editor.style.visibility = '';
-      }
+      replaceEditorValueHidden(newText);
       if (truncated) {
         notifyTextTruncated()
       }
@@ -936,7 +957,11 @@ editor.addEventListener('input', () => {
     if (calcWhileTyping && calcWhileTyping.checked) {
       debounceTimer = setTimeout(() => {
         sendCurrentTextToMain('typing', {
-          onFallbackError: (err) => log.error('Error sending set-current-text typing:', err)
+          onFallbackError: (err) => log.errorOnce(
+            'editor.setCurrentText.typing.fallback',
+            'Error sending set-current-text typing:',
+            err
+          )
         });
       }, DEBOUNCE_MS);
     }

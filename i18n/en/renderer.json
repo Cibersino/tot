@@ -104,7 +104,7 @@
       "title": "toT — Full text",
       "placeholder": "Type or paste here...",
       "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-save and auto-recalculate as you type",
+      "calc_while_typing": "Auto-calc",
       "spellcheck": "Spellcheck",
       "text_size_label": "Size",
       "decrease_text_size": "Decrease text size",
@@ -268,6 +268,7 @@
         "eligible_count": "Eligible files: {count}",
         "pool_exhausted_message": "There are no remaining unused test files. Reset the pool or add more files.",
         "close_aria": "Close reading speed test dialog",
+        "start_random_confirm": "This will overwrite the current text with a random eligible text from the pool. Do you want to continue?",
         "reset_confirm": "This will reset the whole test pool and mark all of its files as unused again. Do you want to continue?",
         "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}.",
         "import_conflict": {

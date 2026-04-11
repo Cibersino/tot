@@ -6,11 +6,12 @@
 // =============================================================================
 // Main process entry point (Electron).
 // Responsibilities:
-// - Initialize persistent storage paths and JSON-backed state.
-// - Create and manage application windows (main, editor, preset modal, language picker, flotante stopwatch).
-// - Register main-owned IPC handlers and delegate feature IPC registration.
-// - Own the stopwatch ("crono") state and broadcast updates to any open UI windows.
-// - Orchestrate app lifecycle (ready, activate, quit).
+// - Initialize storage-backed state used by startup, settings, and current text.
+// - Create and manage application windows (main, editor, preset modal, language picker, flotante).
+// - Own startup gating between language resolution, renderer readiness, and menu enablement.
+// - Own main-process-only coordination such as "crono" state and processing-mode window behavior.
+// - Register main-owned IPC handlers and wire delegated feature IPC modules to shared main-process services.
+// - Orchestrate app lifecycle paths including first run, activate, quit, and smoke-test startup.
 
 // =============================================================================
 // Imports (external + internal modules)
@@ -103,8 +104,10 @@ const importExtractProcessingModeController = importExtractProcessingModeIpc.cre
   onStateChanged: (state) => {
     try {
       const targetWin = resolveMainWindow();
-      if (targetWin) {
+      if (hasLiveWebContents(targetWin)) {
         targetWin.webContents.send('import-extract-processing-mode-changed', state);
+      } else {
+        log.warn('import-extract-processing-mode-changed broadcast skipped (ignored): main window unavailable.');
       }
       if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
         pendingMainWindowCloseAfterProcessingAbort = false;
@@ -152,6 +155,10 @@ function isPlainObject(x) {
 
 function isAliveWindow(win) {
   return !!(win && !win.isDestroyed());
+}
+
+function hasLiveWebContents(win) {
+  return !!(isAliveWindow(win) && win.webContents && !win.webContents.isDestroyed());
 }
 
 function isMainInteractive() {
@@ -216,6 +223,55 @@ function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
 }
 
+function sendEditorInitText(logContext) {
+  if (!hasLiveWebContents(editorWin)) {
+    log.warn('editor-init-text skipped (ignored): editor window unavailable.', logContext);
+    return;
+  }
+
+  try {
+    const initialText = textState.getCurrentText();
+    editorWin.webContents.send('editor-init-text', {
+      text: initialText || '',
+      meta: { source: 'main', action: 'init' },
+    });
+  } catch (err) {
+    log.error(`Error sending editor-init-text from ${logContext}:`, err);
+  }
+}
+
+function notifyMainEditorReady(logContext) {
+  if (!hasLiveWebContents(mainWin)) {
+    log.warn('editor-ready notification skipped (ignored): main window unavailable.', logContext);
+    return;
+  }
+
+  try {
+    mainWin.webContents.send('editor-ready');
+  } catch (err) {
+    log.warn(`Unable to notify editor-ready from ${logContext}:`, err);
+  }
+}
+
+function showEditorWindow(options = {}) {
+  if (!isAliveWindow(editorWin)) return null;
+
+  const shouldMaximize = !!(
+    options.maximize === true
+    || (options.useSavedMaximized !== false && editorWin.__totSavedMaximized === true)
+  );
+
+  if (shouldMaximize && typeof editorWin.maximize === 'function' && !editorWin.isMaximized()) {
+    editorWin.maximize();
+  }
+
+  if (typeof editorWin.show === 'function' && !editorWin.isVisible()) {
+    editorWin.show();
+  }
+
+  return editorWin;
+}
+
 function getSettingsBroadcastWindows() {
   return {
     mainWin,
@@ -228,29 +284,35 @@ function getSettingsBroadcastWindows() {
   };
 }
 
-function ensureEditorWindowOpen() {
+function getSecondaryWindowOpenStates() {
+  return [
+    { id: 'editor', label: 'editor', isOpen: isAliveWindow(editorWin) },
+    { id: 'editor_find', label: 'editor_find', isOpen: isAliveWindow(editorFindMain.getFindWindow()) },
+    { id: 'preset_modal', label: 'preset_modal', isOpen: isAliveWindow(presetWin) },
+    { id: 'language_window', label: 'language_window', isOpen: isAliveWindow(langWin) },
+    { id: 'floating_stopwatch', label: 'floating_stopwatch', isOpen: isAliveWindow(flotanteWin) },
+    { id: 'task_editor', label: 'task_editor', isOpen: isAliveWindow(taskEditorWin) },
+  ];
+}
+
+function getPreconditionContext() {
+  return {
+    openSecondaryWindows: getSecondaryWindowOpenStates(),
+    stopwatchRunning: !!(crono && crono.running),
+  };
+}
+
+function ensureEditorWindowOpen(options = {}) {
+  const deferShow = !!(options && options.deferShow);
+
   if (!isAliveWindow(editorWin)) {
-    createEditorWindow();
+    createEditorWindow({ deferShow });
   } else {
-    editorWin.show();
-
-    try {
-      const initialText = textState.getCurrentText();
-      editorWin.webContents.send('editor-init-text', {
-        text: initialText || '',
-        meta: { source: 'main', action: 'init' },
-      });
-    } catch (err) {
-      log.error('Error sending editor-init-text from ensureEditorWindowOpen:', err);
+    if (!deferShow) {
+      showEditorWindow();
     }
-
-    try {
-      if (isAliveWindow(mainWin)) {
-        mainWin.webContents.send('editor-ready');
-      }
-    } catch (err) {
-      log.warn('Unable to notify editor-ready (editor already open):', err);
-    }
+    sendEditorInitText('ensureEditorWindowOpen');
+    notifyMainEditorReady('ensureEditorWindowOpen');
   }
 
   return editorWin;
@@ -471,13 +533,20 @@ function createMainWindow() {
 
   mainWin.webContents.on('did-finish-load', () => {
     try {
-      if (!isAliveWindow(mainWin)) return;
+      if (!hasLiveWebContents(mainWin)) {
+        log.warn('Main did-finish-load state seed skipped (ignored): main window unavailable.');
+        return;
+      }
       mainWin.webContents.send(
         'import-extract-processing-mode-changed',
         importExtractProcessingModeController.getState()
       );
       if (readingTestSessionController) {
         mainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
+      } else {
+        log.warn(
+          'reading-test-state-changed seed skipped (ignored): readingTestSessionController unavailable.'
+        );
       }
     } catch (err) {
       log.warn('Failed to seed processing-mode state on renderer load (ignored):', err);
@@ -571,8 +640,9 @@ function createMainWindow() {
  * Create the editor window (public/editor.html).
  * The editor uses editor_state.js to remember size/position/maximized state.
  */
-function createEditorWindow() {
+function createEditorWindow(options = {}) {
   spellcheckController.apply();
+  const deferShow = !!(options && options.deferShow);
 
   // Load last saved window state (size/position/maximized) from editor_state.js.
   const state = editorState.loadInitialState(loadJson);
@@ -607,6 +677,7 @@ function createEditorWindow() {
   // The editor window uses custom in-page controls; hide the native menu bar.
   editorWin.setMenu(null);
   editorWin.setMenuBarVisibility(false);
+  editorWin.__totSavedMaximized = !!(state && state.maximized === true);
 
   editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
 
@@ -619,32 +690,11 @@ function createEditorWindow() {
   // When ready, apply maximized state (if needed), show it, and send initial data.
   editorWin.once('ready-to-show', () => {
     try {
-      // If it was last closed maximized, reopen maximized.
-      if (state && state.maximized === true) {
-        editorWin.maximize();
+      if (!deferShow) {
+        showEditorWindow();
       }
-
-      editorWin.show();
-
-      // Send current text so the editor can render and allow editing.
-      try {
-        const initialText = textState.getCurrentText();
-        editorWin.webContents.send('editor-init-text', {
-          text: initialText || '',
-          meta: { source: 'main', action: 'init' },
-        });
-      } catch (err) {
-        log.error('Error sending editor-init-text to editor:', err);
-      }
-
-      // Notify the main window that the editor is ready (UI may enable/refresh controls).
-      try {
-        if (isAliveWindow(mainWin)) {
-          mainWin.webContents.send('editor-ready');
-        }
-      } catch (err) {
-        log.error('Error notifying editor-ready to main window:', err);
-      }
+      sendEditorInitText('createEditorWindow');
+      notifyMainEditorReady('createEditorWindow');
     } catch (err) {
       log.error('Error showing editor:', err);
     }
@@ -788,7 +838,7 @@ function createLanguageWindow() {
     try {
       langWin.focus();
     } catch (err) {
-      log.warnOnce('langWin.focus', 'langWin.focus failed (ignored):', err);
+      log.warn('langWin.focus failed (ignored):', err);
     }
     return;
   }
@@ -842,6 +892,14 @@ function createLanguageWindow() {
   });
 }
 
+// =============================================================================
+// Startup gating + language resolution
+// =============================================================================
+// These helpers keep the startup handshake aligned across:
+// - first-run language selection / fallback,
+// - renderer readiness signals,
+// - main-window creation and menu installation.
+
 function maybeMarkMainInvariantsReady() {
   if (mainInvariantsReady) return;
   if (!languageResolved || !menuInstalled || !mainWindowCreated) return;
@@ -870,7 +928,7 @@ function maybeAuthorizeStartupReady() {
 
 function handleSplashRemoved() {
   if (splashRemoved) {
-    log.warnOnce('startup.splashRemoved.duplicate', 'startup:splash-removed already handled (ignored).');
+    log.warn('startup:splash-removed already handled (ignored).');
     return;
   }
   splashRemoved = true;
@@ -902,13 +960,13 @@ function handleSplashRemoved() {
 
 function resolveLanguage(reason) {
   if (languageResolved) {
-    log.warnOnce(`startup.languageResolved.${reason}`, 'Language already resolved (ignored):', reason);
+    log.warn('Language already resolved (ignored):', reason);
     return;
   }
   languageResolved = true;
 
   if (reason === 'fallback') {
-    log.warn('Startup language resolved via fallback.');
+    log.warn('BOOTSTRAP: startup language resolved via fallback.');
   } else if (reason === 'selected') {
     log.info('Startup language resolved via user selection.');
   } else if (reason === 'present') {
@@ -1163,8 +1221,10 @@ async function createFlotanteWindow(options = {}) {
 
     // Best-effort notification: main renderer may update UI state.
     try {
-      if (isAliveWindow(mainWin) && mainWin.webContents && !mainWin.webContents.isDestroyed()) {
+      if (hasLiveWebContents(mainWin)) {
         mainWin.webContents.send('flotante-closed');
+      } else {
+        log.warn('flotante-closed notification skipped (ignored): main window unavailable.');
       }
     } catch (err) {
       log.warnOnce('mainWin.send.flotante-closed', "mainWin send('flotante-closed') failed (ignored):", err);
@@ -1233,7 +1293,14 @@ function broadcastCronoState() {
   const state = getCronoState();
 
   try {
-    if (isAliveWindow(mainWin)) mainWin.webContents.send('crono-state', state);
+    if (hasLiveWebContents(mainWin)) {
+      mainWin.webContents.send('crono-state', state);
+    } else {
+      log.warnOnce(
+        'crono-state.mainWindowUnavailable',
+        'crono-state broadcast skipped (ignored): main window unavailable.'
+      );
+    }
   } catch (err) {
     log.warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', err);
   }
@@ -1499,7 +1566,10 @@ ipcMain.handle('open-editor', () => {
 ipcMain.on('task-editor-confirm-close', (event) => {
   try {
     const senderWin = BrowserWindow.fromWebContents(event.sender);
-    if (!taskEditorWin || senderWin !== taskEditorWin) return;
+    if (!taskEditorWin || senderWin !== taskEditorWin) {
+      log.warn('task-editor-confirm-close unauthorized (ignored).');
+      return;
+    }
     taskEditorForceClose = true;
     taskEditorWin.close();
   } catch (err) {
@@ -1514,13 +1584,13 @@ ipcMain.handle('open-preset-modal', (event, payload) => {
   }
   try {
     if (!mainWin) {
-      log.warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
+      log.warn('open-preset-modal failed (ignored): main window not ready.');
       return { ok: false, error: 'main window not ready' };
     }
 
     const senderWin = BrowserWindow.fromWebContents(event.sender);
     if (!senderWin || senderWin !== mainWin) {
-      log.warnOnce('open-preset-modal.unauthorized', 'open-preset-modal unauthorized (ignored).');
+      log.warn('open-preset-modal unauthorized (ignored).');
       return { ok: false, error: 'unauthorized' };
     }
 
@@ -1608,6 +1678,12 @@ ipcMain.on('startup:renderer-core-ready', () => {
   rendererCoreReady = true;
   maybeAuthorizeStartupReady();
 });
+
+// =============================================================================
+// Bootstrap bridge wiring
+// =============================================================================
+// Keep these top-level registrations in place before app.whenReady() work starts,
+// so early renderer signals and shell-opening requests have a stable main-process entrypoint.
 
 registerLinkIpc({ ipcMain, app, shell });
 
@@ -1730,25 +1806,7 @@ app.whenReady().then(() => {
     getWindows: () => ({
       mainWin,
     }),
-    getPreconditionContext: () => {
-      const secondaryWindows = [
-        { id: 'editor', label: 'editor', ref: editorWin },
-        { id: 'editor_find', label: 'editor_find', ref: editorFindMain.getFindWindow() },
-        { id: 'preset_modal', label: 'preset_modal', ref: presetWin },
-        { id: 'language_window', label: 'language_window', ref: langWin },
-        { id: 'floating_stopwatch', label: 'floating_stopwatch', ref: flotanteWin },
-        { id: 'task_editor', label: 'task_editor', ref: taskEditorWin },
-      ];
-
-      return {
-        openSecondaryWindows: secondaryWindows.map((item) => ({
-          id: item.id,
-          label: item.label,
-          isOpen: isAliveWindow(item.ref),
-        })),
-        stopwatchRunning: !!(crono && crono.running),
-      };
-    },
+    getPreconditionContext,
   });
 
   importExtractOcrActivationIpc.registerIpc(ipcMain, {
@@ -1782,23 +1840,10 @@ app.whenReady().then(() => {
 
   readingTestSessionController = readingTestSession.createController({
     resolveMainWindow: () => resolveMainWindow(),
-    getPreconditionContext: () => {
-      const secondaryWindows = [
-        { id: 'editor', label: 'editor', isOpen: isAliveWindow(editorWin) },
-        { id: 'editor_find', label: 'editor_find', isOpen: isAliveWindow(editorFindMain.getFindWindow()) },
-        { id: 'preset_modal', label: 'preset_modal', isOpen: isAliveWindow(presetWin) },
-        { id: 'language_window', label: 'language_window', isOpen: isAliveWindow(langWin) },
-        { id: 'floating_stopwatch', label: 'floating_stopwatch', isOpen: isAliveWindow(flotanteWin) },
-        { id: 'task_editor', label: 'task_editor', isOpen: isAliveWindow(taskEditorWin) },
-      ];
-
-      return {
-        openSecondaryWindows: secondaryWindows,
-        stopwatchRunning: !!(crono && crono.running),
-      };
-    },
+    getPreconditionContext,
     isProcessingModeActive: () => importExtractProcessingModeController.isActive(),
-    ensureEditorWindow: () => ensureEditorWindowOpen(),
+    ensureEditorWindow: (options) => ensureEditorWindowOpen(options),
+    showEditorWindow: (options) => showEditorWindow(options),
     ensureFlotanteWindow: () => ensureFlotanteWindowOpen(),
     closeEditorWindow: () => requestCloseEditorWindow(),
     closeFlotanteWindow: () => requestCloseFlotanteWindow(),
@@ -1837,7 +1882,7 @@ app.whenReady().then(() => {
         try {
           if (isAliveWindow(langWin)) langWin.close();
         } catch (err) {
-          log.warnOnce('langWin.close.after.language-selected', 'langWin.close failed after language-selected (ignored):', err);
+          log.warn('langWin.close failed after language-selected (ignored):', err);
         }
       }
     };

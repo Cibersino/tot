@@ -1,3 +1,4 @@
+// electron/editor_text_size.js
 'use strict';
 
 // =============================================================================
@@ -39,7 +40,11 @@ function createController({ settingsState, getWindows } = {}) {
     try {
       settingsState.broadcastSettingsUpdated(settings, getWindows());
     } catch (err) {
-      log.error('Error broadcasting editor text-size update:', err);
+      log.warnOnce(
+        'editor_text_size.broadcast',
+        'Editor text-size broadcast failed (ignored):',
+        err
+      );
     }
   }
 
