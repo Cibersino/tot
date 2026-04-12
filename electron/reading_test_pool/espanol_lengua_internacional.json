@@ -4,5 +4,171 @@
     "language": "es",
     "type": "non_fiction",
     "difficulty": "hard"
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "¿Qué función cumple el arranque del ensayo, cuando muestra a Isabel I escribiendo al continente en latín o italiano, al inglés como idioma “recóndito” y a los españoles en Londres sin aprenderlo?",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "Anticipa ya, en el comportamiento de los españoles en Londres, la comodidad idiomática de quienes después se acostumbran a que otros aprendan su lengua."
+          },
+          {
+            "id": "b",
+            "text": "Muestra que, en la comunicación diplomática europea de ese momento, seguían pesando más ciertas lenguas de uso establecido que la lengua propia de cada monarquía."
+          },
+          {
+            "id": "c",
+            "text": "Sitúa el orden lingüístico previo al privilegio internacional del español, de modo que su ascenso posterior se lea como un cambio histórico de ese mapa."
+          },
+          {
+            "id": "d",
+            "text": "Indica que el inglés tenía entonces tan poca importancia que ni siquiera dentro de Inglaterra desempeñaba un papel político de relieve."
+          },
+          {
+            "id": "e",
+            "text": "Sugiere que la escasa circulación continental del inglés obliga a distinguir entre la posición política de una corona y el rango internacional efectivo de su idioma."
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "¿Cuál de estas preguntas está mejor formulada para interpretar por qué Lodares se detiene en que la petición de Zumel aparezca “de pasada” en un memorial lleno de asuntos “de mayor enjundia”?",
+        "correctOptionId": "d",
+        "options": [
+          {
+            "id": "a",
+            "text": "¿Cómo transforma Lodares una observación menor del memorial en prueba de que la castellanización del centro político de la monarquía estaba ya conscientemente decidida?"
+          },
+          {
+            "id": "b",
+            "text": "¿Hasta qué punto la mención “de pasada” sirve para rebajar el alcance interpretativo del episodio y evitar que se le dé demasiado peso dentro del ensayo?"
+          },
+          {
+            "id": "c",
+            "text": "¿Por qué el caso de Zumel permite fijar con precisión el momento exacto en que el español se vuelve la lengua propia del poder imperial?"
+          },
+          {
+            "id": "d",
+            "text": "¿En qué sentido obliga a distinguir entre la importancia inmediata que tuvo en 1518 y la relevancia retrospectiva que el ensayo le atribuye?"
+          },
+          {
+            "id": "e",
+            "text": "¿Por qué la ubicación secundaria de esa petición dentro del memorial demuestra que la cuestión del idioma era ya, aunque disimuladamente, la demanda política central dirigida a Carlos?"
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "¿Qué se juega en la observación de Lodares según la cual James Lea “se hizo el despistado entre paréntesis”?",
+        "correctOptionId": "b",
+        "options": [
+          {
+            "id": "a",
+            "text": "Convierte a Lea en un testigo especialmente objetivo, pues al ser inglés no tendría interés alguno en exagerar la fuerza del español."
+          },
+          {
+            "id": "b",
+            "text": "Transforma el elogio del poeta en un signo de reserva nacional: Lea registra el ascenso del español, pero evita reconocer abiertamente su causa histórica."
+          },
+          {
+            "id": "c",
+            "text": "Sugiere que el español entró tarde en el grupo de las grandes lenguas, aunque lo hizo por méritos internos que Lea prefiere no detallar."
+          },
+          {
+            "id": "d",
+            "text": "Marca el paso desde un español útil por razones políticas a un español valorado ya en términos puramente literarios."
+          },
+          {
+            "id": "e",
+            "text": "Corrige una sorpresa sincera del poeta inglés, que percibe la irrupción del español sin alcanzar todavía a explicársela."
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "¿Qué muestra la yuxtaposición entre el vocabulario de Leyden de 1585, donde el español desaparece, y los panfletos catalanes redactados en español?",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "Ambos ejemplos deben separarse estrictamente: el primero habla de simpatías políticas y el segundo de propaganda interna, de modo que no modifican la cuestión lingüística central del ensayo."
+          },
+          {
+            "id": "b",
+            "text": "El caso catalán neutraliza el holandés, porque demuestra que el alcance del español permanecía intacto incluso entre sus adversarios."
+          },
+          {
+            "id": "c",
+            "text": "La utilidad internacional de una lengua no coincide siempre con la adhesión política hacia quienes la encarnan: puede perder crédito en un frente y seguir siendo el mejor vehículo de alcance en otro."
+          },
+          {
+            "id": "d",
+            "text": "La sustitución del español por el inglés en Leyden anticipa ya un relevo definitivo del centro lingüístico europeo."
+          },
+          {
+            "id": "e",
+            "text": "El español funcionaba mejor como lengua de conflicto y controversia que como lengua de prestigio o legitimación."
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "¿Cuál de estas lecturas del caso de Pedro de Lucena —que escribe en un idioma que no se sabe si es “latín hispanizado o español hecho latín”— es la menos defendible?",
+        "correctOptionId": "d",
+        "options": [
+          {
+            "id": "a",
+            "text": "La mención de Pedro de Lucena importa porque convierte en gesto textual una aspiración que en otros pasajes aparece formulada como argumento apologético."
+          },
+          {
+            "id": "b",
+            "text": "El pasaje sirve para que la polémica deje de parecer puro discurso doctrinal y pase también al terreno de ciertos usos concretos del lenguaje."
+          },
+          {
+            "id": "c",
+            "text": "El caso ayuda a ver que la cercanía con el latín podía buscarse no solo por genealogía o nobleza, sino también por manipulación deliberada del registro escrito."
+          },
+          {
+            "id": "d",
+            "text": "La rareza del ejemplo permite inferir que, para Lodares, el español había resuelto ya en la práctica su emancipación frente al latín y solo quedaba reconocerlo teóricamente."
+          },
+          {
+            "id": "e",
+            "text": "El ejemplo muestra que la competencia con el latín no se jugaba solo en elogios abstractos, sino también en prácticas de escritura que volvían borrosa la frontera entre ambos códigos."
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "En la formulación de Garibay, ¿qué implica llamar al vasco “la única lengua española de pura cepa”?",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "Ya no mide la legitimidad de una lengua por su cercanía al latín, sino por una anterioridad peninsular supuestamente originaria."
+          },
+          {
+            "id": "b",
+            "text": "Abandona la cuestión de qué lengua puede reclamar mayor antigüedad y se concentra únicamente en presentar al latín como lengua extranjera."
+          },
+          {
+            "id": "c",
+            "text": "Usa “española” en un sentido puramente geográfico y casi neutro, sin introducir con ello una tesis fuerte sobre origen o legitimidad."
+          },
+          {
+            "id": "d",
+            "text": "Afirma que el vasco seguía siendo, en tiempos de Garibay, la lengua efectivamente común de toda la península."
+          },
+          {
+            "id": "e",
+            "text": "Conserva al latín como patrón principal de nobleza lingüística, pero sostiene que el vasco tiene mejor derecho que el castellano a reclamar ese parentesco."
+          }
+        ]
+      }
+    ]
   }
 }
