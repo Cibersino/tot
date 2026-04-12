@@ -46,16 +46,25 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [1.1.0] toT - Testing
+
+### Fecha release y último commit
+
+- Fecha: `2026-04-11`
+- Último commit: `2522c12040d71c3c68e8d835436e9f223c5eb27d`
+
 ### Resumen
 
+- Reading speed test (Issue #52): el botón `Test de velocidad de lectura` deja de ser un aviso WIP y pasa a abrir un flujo guiado real con modal de entrada/configuración, selección por combinaciones reales del pool y una segunda acción explícita `Start with current text`; según la ruta elegida, la sesión usa texto aleatorio del pool o reutiliza directamente el current text ya cargado, manteniendo cálculo autoritativo de WPM en main, paso opcional de preguntas de comprensión y handoff final al modal de presets con payload prellenado.
+- Pool del reading speed test (Issue #209): se agrega un subárbol runtime `config/saved_current_texts/reading_speed_test_pool/`, sincronizado al arranque desde archivos versionados en `electron/reading_test_pool/` mediante hashes de contenido bundled; los archivos del pool siguen siendo snapshots JSON ordinarios con payload opcional `readingTest`, mientras que el estado mutable (`used` y `managedBundledHash`) pasa a `config/reading_test_pool_state.json`, permitiendo refresco y prune de starter files gestionados sin mezclar estado inline.
+- Adquisición/import del pool (Issue #208): el modal del pool agrega un link oficial a Google Drive y una acción nativa `Import files...` para instalar `.json` y `.zip`; el importador recuerda la última carpeta usada, resuelve duplicados por nombre de destino dentro del pool runtime y refresca el estado del modal abierto tras cada operación. Esto introduce `adm-zip@0.5.16` como nueva dependencia runtime redistribuida para inspección local de archivos comprimidos y, por tanto, amplía el inventario de terceros redistribuidos del release.
 - Snapshots del texto vigente (Issue #201): el botón `💾` de la ventana principal deja de abrir inmediatamente el diálogo nativo y pasa a mostrar primero un modal renderer con tags opcionales `language`, `type` y `difficulty`; al confirmar, recién entonces se abre el save dialog nativo.
 - Persistencia de snapshots: el formato deja de ser únicamente `{ "text": "<string>" }` y pasa a aceptar también snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`; además, la carga normal tolera payload opcional `readingTest` cuando existe.
 - Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro.
 - Corrector ortográfico del editor (Issue #211): la ventana editor agrega un checkbox persistente, habilitado por defecto, y el spellcheck de Electron deja de depender implícitamente del locale del sistema; ahora sigue el idioma activo de la app cuando existe diccionario soportado y se deshabilita explícitamente en tags UI sin diccionario válido (p.ej. `arn`, `es-cl`).
 - Tamaño de texto del editor (Issue #212): la ventana editor agrega controles locales `A-` / indicador / `A+` / reset para escalar solo el `textarea`, persiste `editorFontSizePx`, soporta `Ctrl/Cmd +`, `Ctrl/Cmd -` y `Ctrl/Cmd 0`, y mueve su orquestación main-owned a `electron/editor_text_size.js` para no seguir inflando `electron/main.js`.
-- Reading speed test (Issue #52): el botón `Test de velocidad de lectura` deja de ser un aviso WIP y pasa a abrir un flujo guiado real con modal de entrada/configuración, selección por combinaciones reales del pool y una segunda acción explícita `Start with current text`; según la ruta elegida, la sesión usa texto aleatorio del pool o reutiliza directamente el current text ya cargado, manteniendo cálculo autoritativo de WPM en main, paso opcional de preguntas de comprensión y handoff final al modal de presets con payload prellenado.
-- Pool del reading speed test (Issue #209): se agrega un subárbol runtime `config/saved_current_texts/reading_speed_test_pool/`, sincronizado al arranque desde archivos versionados en `electron/reading_test_pool/` mediante hashes de contenido bundled; los archivos del pool siguen siendo snapshots JSON ordinarios con payload opcional `readingTest`, mientras que el estado mutable (`used` y `managedBundledHash`) pasa a `config/reading_test_pool_state.json`, permitiendo refresco y prune de starter files gestionados sin mezclar estado inline.
-- Adquisición/import del pool (Issue #208): el modal del pool agrega un link oficial a Google Drive y una acción nativa `Import files...` para instalar `.json` y `.zip`; el importador recuerda la última carpeta usada, resuelve duplicados por nombre de destino dentro del pool runtime y refresca el estado del modal abierto tras cada operación. Esto introduce `adm-zip@0.5.16` como nueva dependencia runtime redistribuida para inspección local de archivos comprimidos y, por tanto, amplía el inventario de terceros redistribuidos del release.
 
 ### Agregado
 
@@ -274,6 +283,11 @@ Reglas:
 ---
 
 ## [1.0.0] toT - Sofías fármakon
+
+### Fecha release y último commit
+
+- Fecha: `2026-04-03`
+- Último commit: `aff7cf9c87a6081804f72ac84b2f7d86da0bbef9`
 
 ### Resumen
 

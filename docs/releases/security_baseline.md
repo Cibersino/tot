@@ -19,11 +19,10 @@ Aquí, `<release_file_id>` significa el identificador del release normalizado pa
 
 - Fecha de ejecución: `<YYYY-MM-DD>`
 - Release ID: `<release-id>`
-- Tag público: `<tag>`
 - Commit freeze: `<sha>`
 - Artefactos inspeccionados: `<artifacto-1>, <artifacto-2>`
 - Hashes de artefacto: `<sha256>`
-- Referencia base para comparar delta: `<tag|release-id|commit>`
+- Referencia base para comparar delta: `<release-id|commit>`
 - Veredicto final: `<PASS | BLOCKER | PENDING>`
 
 ## 1. Hechos estables del producto que este baseline asume
