@@ -25,42 +25,24 @@
 
 <body>
   <main class="wrap">
-    <nav class="lang-switch" aria-label="Language selector">
-      <a href="/es/" lang="es">ES</a>
-      <a href="/en/" lang="en" aria-current="page">EN</a>
-    </nav>
+    <div class="topbar">
+      <header class="brand-header">
+        <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="toT Logo">
+        <div class="brand-copy">
+          <h1>toT</h1>
+          <p><strong>from Text to Time</strong></p>
+        </div>
+      </header>
 
-    <header class="brand-header">
-      <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="toT logo">
-      <div class="brand-copy">
-        <h1>toT</h1>
-        <p><strong>from Text to Time</strong></p>
-      </div>
-    </header>
+      <nav class="lang-switch" aria-label="Language selector">
+        <a href="/es/" lang="es">ES</a>
+        <a href="/en/" lang="en" aria-current="page">EN</a>
+      </nav>
+    </div>
 
-    <div class="box">
-      <p>
-        <strong>toT</strong> is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads.
-      </p>
-      <p>
-        It combines text import/extraction from text files, images, and PDFs, configurable WPM presets, precise counting, text snapshots, a task editor, a stopwatch, and a reading speed test so you can measure, organize, and complete readings with less guesswork.
-      </p>
-      <div class="download-panel">
-        <p id="os-message">Detecting your operating system...</p>
-        <p>
-          <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
-            View Latest Releases on GitHub
-          </a>
-        </p>
-        <p class="manual-fallback">
-          <a href="https://github.com/Cibersino/tot/releases/latest">See all releases</a>
-        </p>
-        <p class="manual-fallback">
-          <a href="/en/app-privacy/">App Privacy Policy</a>
-        </p>
-      </div>
-      <section class="social-panel" aria-label="Support and follow Cibersino">
-        <p class="social-title">Support and follow Cibersino</p>
+    <div class="box home-layout">
+      <aside class="social-panel" aria-label="Support and follow Cibersino">
+        <p class="social-title">Follow us</p>
         <nav class="social-links" aria-label="Cibersino social links">
           <a class="social-link" href="https://www.patreon.com/Cibersino" target="_blank" rel="noopener noreferrer">
             <img src="/assets/social/patreon.png" alt="" aria-hidden="true">
@@ -83,10 +65,38 @@
             <span>Twitch</span>
           </a>
         </nav>
+      </aside>
+
+      <section class="main-panel" aria-label="Main toT information">
+        <p>
+          <strong>toT</strong> is a desktop app that turns text into estimated reading time and helps you plan realistic
+          reading workloads.
+        </p>
+        <p>
+          It combines text import/extraction from text files, images, and PDFs, configurable WPM presets, precise
+          counting, text snapshots, a task editor, a stopwatch, and a reading speed test so you can measure, organize,
+          and complete readings with less guesswork.
+        </p>
+
+        <div class="download-panel">
+          <p id="os-message">Detecting your operating system...</p>
+          <p>
+            <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
+              View Latest Releases on GitHub
+            </a>
+          </p>
+          <p class="manual-fallback">
+            <a href="https://github.com/Cibersino/tot/releases/latest">See all releases</a>
+          </p>
+          <p class="manual-fallback">
+            <a href="/en/app-privacy/">App Privacy Policy</a>
+          </p>
+        </div>
+
+        <p class="muted construction-note">
+          This website is under construction.
+        </p>
       </section>
-      <p class="muted">
-        This website is under construction.
-      </p>
     </div>
 
     <footer class="site-footer" aria-label="Operator and contact">
@@ -95,8 +105,8 @@
         <span>toT is developed and operated by Cibersino, an independent developer.</span>
       </p>
       <p class="muted">
-        Contact: use <a href="https://github.com/Cibersino/tot/issues">GitHub Issues</a> for bugs and feature requests, or
-        email <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a> for private inquiries.
+        Contact: use <a href="https://github.com/Cibersino/tot/issues">GitHub Issues</a> for bugs and feature requests,
+        or email <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a> for private inquiries.
       </p>
       <p class="muted">
         <a href="/en/privacy-cookies/">Website Privacy / Cookies</a>
@@ -124,19 +134,19 @@
       },
       messages: {
         direct: {
-          windows: "Windows detected. Download the latest stable Windows build directly.",
-          macos: "macOS detected. Download the latest stable macOS build directly.",
-          linux: "Linux detected. Download the latest stable Linux build directly."
+          windows: "Download the latest stable Windows build directly.",
+          macos: "Download the latest stable macOS build directly.",
+          linux: "Download the latest stable Linux build directly."
         },
         fallback: {
-          windows: "Windows detected, but the latest stable release does not publish a direct Windows download. Check the latest releases on GitHub.",
-          macos: "macOS detected, but the latest stable release does not publish a direct macOS download. Check the latest releases on GitHub.",
-          linux: "Linux detected, but the latest stable release does not publish a direct Linux download. Check the latest releases on GitHub."
+          windows: "The latest stable release does not publish a direct Windows download. Check the latest releases on GitHub.",
+          macos: "The latest stable release does not publish a direct macOS download. Check the latest releases on GitHub.",
+          linux: "The latest stable release does not publish a direct Linux download. Check the latest releases on GitHub."
         },
         loading: {
-          windows: "Windows detected. Looking up the latest stable Windows download...",
-          macos: "macOS detected. Looking up the latest stable macOS download...",
-          linux: "Linux detected. Looking up the latest stable Linux download..."
+          windows: "Looking up the latest stable Windows download...",
+          macos: "Looking up the latest stable macOS download...",
+          linux: "Looking up the latest stable Linux download..."
         },
         error: {
           windows: "Windows detected, but we could not verify the latest stable download automatically. Check the latest releases on GitHub.",
