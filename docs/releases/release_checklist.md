@@ -55,17 +55,16 @@ Registro requerido en el documento versionado: GitHub Release, notas públicas, 
 
 - [ ] El scope del release está cerrado contra milestone, roadmap y issues relevantes.
 - [ ] `CHANGELOG.md` y `docs/changelog_detailed.md` describen el delta real del release.
-- [ ] La documentación user-facing e interna tocada por el release está actualizada o el release deja constancia explícita de `sin delta`.
+- [ ] La documentación user-facing e interna tocada por el release está actualizada.
 - [ ] `package.json` refleja la versión que se pretende publicar.
 - [ ] `package-lock.json` está alineado con `package.json` cuando el release cambia versión o dependencias.
-- [ ] Cualquier cambio relevante en `README.md`, `PRIVACY.md`, `public/info/**`, `website/public/**` o `docs/tree_folders_files.md` ya quedó resuelto antes del freeze o está clasificado como blocker.
+- [ ] Cualquier cambio relevante en `README.md`, `PRIVACY.md`, `public/info/**`, `website/public/**` o `docs/tree_folders_files.md` ya quedó resuelto antes del freeze.
 - [ ] El working tree y el estado de la rama quedan registrados de forma consistente con el release que se quiere empaquetar.
 
 ## 4. Freeze y build
 
 - [ ] Existe un `commit freeze` explícito y registrado.
 - [ ] El build se genera desde el `commit freeze`, no desde un árbol local ambiguo.
-- [ ] Los comandos reales de build quedan registrados en el documento versionado.
 - [ ] Cada artefacto generado queda identificado por nombre exacto y hash.
 - [ ] El release registra si hubo un solo artefacto o más de uno y cuál de ellos fue inspeccionado.
 - [ ] Si el build depende de material controlado o archivos no versionados, ese hecho queda inventariado en los baselines legal y de seguridad del release.
