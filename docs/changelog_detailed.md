@@ -48,11 +48,11 @@ Reglas:
 
 ---
 
-## [1.1.0] toT - Testing
+## [1.1.1] toT - Testing
 
 ### Fecha release y último commit
 
-- Fecha: `2026-04-11`
+- Fecha: `2026-04-12`
 - Último commit: `dc23cf11e31a3248fc3a76a6fceb856ab59d12f7`
 
 ### Resumen
