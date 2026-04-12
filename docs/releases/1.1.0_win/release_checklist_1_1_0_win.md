@@ -17,9 +17,9 @@ Aquí, `<release_file_id>` significa el identificador del release normalizado pa
 ## Campos mínimos del release versionado
 
 - Fecha de ejecución: `2026-04-11`
-- Release ID: `v1.1.0`
+- Release ID: `v1.1.1`
 - Commit freeze: `dc23cf11e31a3248fc3a76a6fceb856ab59d12f7`
-- Artefactos inspeccionados: `toT-1.1.0-win-x64.zip`
+- Artefactos inspeccionados: `toT-1.1.1-win-x64.zip`
 - Hashes de artefacto: `892D09EB42B156FBD9EDC7CE1961355479BB411F96B9AD48865F5B90D0B82141`
 - Referencia base para comparar delta: `v1.0.0|aff7cf9c87a6081804f72ac84b2f7d86da0bbef9`
 - Veredicto final: `<PASS | BLOCKER | PENDING>`
