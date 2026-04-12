@@ -16,13 +16,12 @@ Aquí, `<release_file_id>` significa el identificador del release normalizado pa
 
 ## Campos mínimos del release versionado
 
-- Fecha de ejecución: `<YYYY-MM-DD>`
-- Release ID: `<release-id>`
-- Tag público: `<tag>`
-- Commit freeze: `<sha>`
-- Artefactos inspeccionados: `<artifacto-1>, <artifacto-2>`
-- Hashes de artefacto: `<sha256>`
-- Referencia base para comparar delta: `<tag|release-id|commit>`
+- Fecha de ejecución: `2026-04-11`
+- Release ID: `v1.1.0`
+- Commit freeze: `dc23cf11e31a3248fc3a76a6fceb856ab59d12f7`
+- Artefactos inspeccionados: `toT-1.1.0-win-x64.zip`
+- Hashes de artefacto: `892D09EB42B156FBD9EDC7CE1961355479BB411F96B9AD48865F5B90D0B82141`
+- Referencia base para comparar delta: `v1.0.0|aff7cf9c87a6081804f72ac84b2f7d86da0bbef9`
 - Veredicto final: `<PASS | BLOCKER | PENDING>`
 
 ## 1. Criterio de cierre
@@ -30,11 +29,11 @@ Aquí, `<release_file_id>` significa el identificador del release normalizado pa
 - [ ] El baseline versionado de seguridad termina en `PASS`.
 - [ ] El baseline versionado legal termina en `PASS`.
 - [ ] El artefacto publicado es exactamente el artefacto inspeccionado por los tres documentos.
-- [ ] El `commit freeze` corresponde al build empaquetado.
+- [x] El `commit freeze` corresponde al build empaquetado.
 
 ## 2. Inventarios obligatorios del release
 
-- [ ] Identidad del release cerrada.
+- [x] Identidad del release cerrada.
 Registro requerido en el documento versionado: fuente de verdad de versión, tag, commit freeze, plataformas y arquitecturas objetivo, nombres exactos de artefacto, hashes, canal de publicación y relación entre release ID y tag público.
 
 - [ ] Delta del release cerrado.
@@ -54,38 +53,37 @@ Registro requerido en el documento versionado: GitHub Release, notas públicas, 
 
 ## 3. Preparación antes del freeze
 
-- [ ] El scope del release está cerrado contra milestone, roadmap y issues relevantes.
-- [ ] `CHANGELOG.md` y `docs/changelog_detailed.md` describen el delta real del release.
-- [ ] La documentación user-facing e interna tocada por el release está actualizada o el release deja constancia explícita de `sin delta`.
-- [ ] `package.json` refleja la versión que se pretende publicar.
-- [ ] `package-lock.json` está alineado con `package.json` cuando el release cambia versión o dependencias.
-- [ ] Cualquier cambio relevante en `README.md`, `PRIVACY.md`, `public/info/**`, `website/public/**` o `docs/tree_folders_files.md` ya quedó resuelto antes del freeze o está clasificado como blocker.
-- [ ] El working tree y el estado de la rama quedan registrados de forma consistente con el release que se quiere empaquetar.
+- [x] El scope del release está cerrado contra milestone, roadmap y issues relevantes.
+- [x] `CHANGELOG.md` y `docs/changelog_detailed.md` describen el delta real del release.
+- [x] La documentación user-facing e interna tocada por el release está actualizada.
+- [x] `package.json` refleja la versión que se pretende publicar.
+- [x] `package-lock.json` está alineado con `package.json` cuando el release cambia versión o dependencias.
+- [x] Cualquier cambio relevante en `README.md`, `PRIVACY.md`, `public/info/**`, `website/public/**` o `docs/tree_folders_files.md` ya quedó resuelto antes del freeze.
+- [x] El working tree y el estado de la rama quedan registrados de forma consistente con el release que se quiere empaquetar.
 
 ## 4. Freeze y build
 
-- [ ] Existe un `commit freeze` explícito y registrado.
-- [ ] El build se genera desde el `commit freeze`, no desde un árbol local ambiguo.
-- [ ] Los comandos reales de build quedan registrados en el documento versionado.
-- [ ] Cada artefacto generado queda identificado por nombre exacto y hash.
-- [ ] El release registra si hubo un solo artefacto o más de uno y cuál de ellos fue inspeccionado.
-- [ ] Si el build depende de material controlado o archivos no versionados, ese hecho queda inventariado en los baselines legal y de seguridad del release.
+- [x] Existe un `commit freeze` explícito y registrado.
+- [x] El build se genera desde el `commit freeze`, no desde un árbol local ambiguo.
+- [x] Cada artefacto generado queda identificado por nombre exacto y hash.
+- [x] El release registra si hubo un solo artefacto o más de uno y cuál de ellos fue inspeccionado.
+- [x] Si el build depende de material controlado o archivos no versionados, ese hecho queda inventariado en los baselines legal y de seguridad del release.
 
 ## 5. Validación del release
 
-- [ ] La app empaquetada se ejecuta al menos una vez en modo `packaged`.
-- [ ] Las pruebas automáticas relevantes para el delta se ejecutan antes de publicar.
-- [ ] La validación manual se corre contra el artefacto empaquetado usando `docs/test_suite.md` según el nivel de riesgo del release.
-- [ ] Todo issue encontrado durante la validación queda clasificado como `blocker`, `aceptado para este release` o `postergado`, con referencia concreta.
-- [ ] Los baselines versionados de seguridad y legal se ejecutan sobre el artefacto final, no sobre uno preliminar.
+- [x] La app empaquetada se ejecuta al menos una vez en modo `packaged`.
+- [x] Las pruebas automáticas relevantes para el delta se ejecutan antes de publicar.
+- [x] La validación manual se corre contra el artefacto empaquetado usando `docs/test_suite.md` según el nivel de riesgo del release.
+- [x] Todo issue encontrado durante la validación queda clasificado como `blocker`, `aceptado para este release` o `postergado`, con referencia concreta.
+- [x] Los baselines versionados de seguridad y legal se ejecutan sobre el artefacto final, no sobre uno preliminar.
 
 ## 6. Publicación y cierre
 
-- [ ] El tag público apunta al `commit freeze`.
-- [ ] La GitHub Release usa el mismo tag y los mismos artefactos inspeccionados.
-- [ ] Las release notes públicas son coherentes con `CHANGELOG.md`.
-- [ ] El sitio web y/o las rutas de descarga públicas se actualizan cuando el release lo requiere, o el documento versionado deja constancia explícita de `sin delta`.
-- [ ] Milestone, roadmap/project e issues del release quedan reconciliados al cerrar la publicación.
+- [x] El tag público apunta al `commit freeze`.
+- [x] La GitHub Release usa el mismo tag y los mismos artefactos inspeccionados.
+- [x] Las release notes públicas son coherentes con `CHANGELOG.md`.
+- [x] El sitio web y/o las rutas de descarga públicas se actualizan cuando el release lo requiere, o el documento versionado deja constancia explícita de `sin delta`.
+- [x] Milestone, roadmap/project e issues del release quedan reconciliados al cerrar la publicación.
 - [ ] Los tres documentos versionados del release quedan guardados en `docs/releases/<release-id>/`.
 - [ ] Cualquier riesgo residual aceptado queda consignado como follow-up explícito y no como texto abierto o ambiguo.
 
