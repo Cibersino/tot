@@ -53,7 +53,7 @@ Reglas:
 ### Fecha release y último commit
 
 - Fecha: `2026-04-11`
-- Último commit: `2522c12040d71c3c68e8d835436e9f223c5eb27d`
+- Último commit: `dc23cf11e31a3248fc3a76a6fceb856ab59d12f7`
 
 ### Resumen
 
