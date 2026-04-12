@@ -26,42 +26,24 @@
 
 <body>
   <main class="wrap">
-    <nav class="lang-switch" aria-label="Selector de idioma">
-      <a href="/es/" lang="es" aria-current="page">ES</a>
-      <a href="/en/" lang="en">EN</a>
-    </nav>
+    <div class="topbar">
+      <header class="brand-header">
+        <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="Logo de toT">
+        <div class="brand-copy">
+          <h1>toT</h1>
+          <p><strong>de Texto a Tiempo</strong></p>
+        </div>
+      </header>
 
-    <header class="brand-header">
-      <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="Logo de toT">
-      <div class="brand-copy">
-        <h1>toT</h1>
-        <p><strong>de Texto a Tiempo</strong></p>
-      </div>
-    </header>
+      <nav class="lang-switch" aria-label="Selector de idioma">
+        <a href="/es/" lang="es" aria-current="page">ES</a>
+        <a href="/en/" lang="en">EN</a>
+      </nav>
+    </div>
 
-    <div class="box">
-      <p>
-        <strong>toT</strong> es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas.
-      </p>
-      <p>
-        Combina importación y extracción de texto desde archivos de texto, imágenes y PDFs, presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas, cronómetro y test de velocidad de lectura para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
-      </p>
-      <div class="download-panel">
-        <p id="os-message">Detectando sistema operativo...</p>
-        <p>
-          <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
-            Ver últimas versiones en GitHub
-          </a>
-        </p>
-        <p class="manual-fallback">
-          <a href="https://github.com/Cibersino/tot/releases/latest">Ver todas las versiones</a>
-        </p>
-        <p class="manual-fallback">
-          <a href="/es/app-privacy/">Política de privacidad de la app</a>
-        </p>
-      </div>
-      <section class="social-panel" aria-label="Apoya y sigue a Cibersino">
-        <p class="social-title">Apoya y sigue a Cibersino</p>
+    <div class="box home-layout">
+      <aside class="social-panel" aria-label="Apoya y sigue a Cibersino">
+        <p class="social-title">Síguenos</p>
         <nav class="social-links" aria-label="Redes sociales de Cibersino">
           <a class="social-link" href="https://www.patreon.com/Cibersino" target="_blank" rel="noopener noreferrer">
             <img src="/assets/social/patreon.png" alt="" aria-hidden="true">
@@ -84,10 +66,38 @@
             <span>Twitch</span>
           </a>
         </nav>
+      </aside>
+
+      <section class="main-panel" aria-label="Información principal de toT">
+        <p>
+          <strong>toT</strong> es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a
+          planificar cargas de lectura realistas.
+        </p>
+        <p>
+          Combina importación y extracción de texto desde archivos de texto, imágenes y PDFs, presets de WPM
+          configurables, conteo preciso, snapshots del texto actual, editor de tareas, cronómetro y test de velocidad de
+          lectura para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
+        </p>
+
+        <div class="download-panel">
+          <p id="os-message">Detectando sistema operativo...</p>
+          <p>
+            <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
+              Ver últimas versiones en GitHub
+            </a>
+          </p>
+          <p class="manual-fallback">
+            <a href="https://github.com/Cibersino/tot/releases/latest">Ver todas las versiones</a>
+          </p>
+          <p class="manual-fallback">
+            <a href="/es/app-privacy/">Política de privacidad de la app</a>
+          </p>
+        </div>
+
+        <p class="muted construction-note">
+          Esta página web está en construcción.
+        </p>
       </section>
-      <p class="muted">
-        Esta página web está en construcción.
-      </p>
     </div>
 
     <footer class="site-footer" aria-label="Información del operador y contacto">
@@ -125,19 +135,19 @@
       },
       messages: {
         direct: {
-          windows: "Detectamos Windows. Descarga directa de la versión estable más reciente para Windows.",
-          macos: "Detectamos macOS. Descarga directa de la versión estable más reciente para macOS.",
-          linux: "Detectamos Linux. Descarga directa de la versión estable más reciente para Linux."
+          windows: "Descarga directa de la versión estable más reciente para Windows.",
+          macos: "Descarga directa de la versión estable más reciente para macOS.",
+          linux: "Descarga directa de la versión estable más reciente para Linux."
         },
         fallback: {
-          windows: "Detectamos Windows, pero la versión estable más reciente no publica una descarga directa para Windows. Revisa las últimas versiones en GitHub.",
-          macos: "Detectamos macOS, pero la versión estable más reciente no publica una descarga directa para macOS. Revisa las últimas versiones en GitHub.",
-          linux: "Detectamos Linux, pero la versión estable más reciente no publica una descarga directa para Linux. Revisa las últimas versiones en GitHub."
+          windows: "La versión estable más reciente no publica una descarga directa para Windows. Revisa las últimas versiones en GitHub.",
+          macos: "La versión estable más reciente no publica una descarga directa para macOS. Revisa las últimas versiones en GitHub.",
+          linux: "La versión estable más reciente no publica una descarga directa para Linux. Revisa las últimas versiones en GitHub."
         },
         loading: {
-          windows: "Detectamos Windows. Buscando la descarga estable más reciente para Windows...",
-          macos: "Detectamos macOS. Buscando la descarga estable más reciente para macOS...",
-          linux: "Detectamos Linux. Buscando la descarga estable más reciente para Linux..."
+          windows: "Buscando la descarga estable más reciente para Windows...",
+          macos: "Buscando la descarga estable más reciente para macOS...",
+          linux: "Buscando la descarga estable más reciente para Linux..."
         },
         error: {
           windows: "Detectamos Windows, pero no pudimos verificar automáticamente la descarga estable más reciente. Revisa las últimas versiones en GitHub.",

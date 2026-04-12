@@ -23,18 +23,20 @@
 
 <body>
   <main class="wrap">
-    <nav class="lang-switch" aria-label="Language selector">
-      <a href="/es/app-privacy/" lang="es">ES</a>
-      <a href="/en/app-privacy/" lang="en" aria-current="page">EN</a>
-    </nav>
+    <div class="topbar">
+      <header class="brand-header">
+        <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="toT Logo">
+        <div class="brand-copy">
+          <h1>toT</h1>
+          <p><strong>App Privacy Policy</strong></p>
+        </div>
+      </header>
 
-    <header class="brand-header">
-      <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="toT logo">
-      <div class="brand-copy">
-        <h1>toT</h1>
-        <p><strong>App Privacy Policy</strong></p>
-      </div>
-    </header>
+      <nav class="lang-switch" aria-label="Language selector">
+        <a href="/es/" lang="es">ES</a>
+        <a href="/en/" lang="en" aria-current="page">EN</a>
+      </nav>
+    </div>
 
     <div class="box">
       <p><strong>toT</strong> is designed to be local-first for writing, editing, counting, and most day-to-day use.
@@ -42,11 +44,13 @@
       <p><strong>Data the app stores or processes locally</strong></p>
       <ul>
         <li>current text, saved text snapshots, settings, window state, and task-related data on your device</li>
-        <li>local reading speed test state, including the local test-text pool and optional question payloads stored in pool files</li>
+        <li>local reading speed test state, including the local test-text pool and optional question payloads stored in
+          pool files</li>
         <li>local OCR connection/token state when you choose to use Google OCR</li>
       </ul>
       <p><strong>How the app uses this data</strong>: the app uses locally stored data to provide its writing, counting,
-        planning, snapshot, task, reading speed test, and window-state features. The app may connect to external services only for specific
+        planning, snapshot, task, reading speed test, and window-state features. The app may connect to external
+        services only for specific
         user-triggered actions, such as opening user-requested links, checking release/update information, or running
         optional OCR flows.</p>
       <p><strong>Third-party sharing</strong>: your local text, snapshots, settings, task data, and window state are
