@@ -23,18 +23,20 @@
 
 <body>
   <main class="wrap">
-    <nav class="lang-switch" aria-label="Selector de idioma">
-      <a href="/es/app-privacy/" lang="es" aria-current="page">ES</a>
-      <a href="/en/app-privacy/" lang="en">EN</a>
-    </nav>
+    <div class="topbar">
+      <header class="brand-header">
+        <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="Logo de toT">
+        <div class="brand-copy">
+          <h1>toT</h1>
+          <p><strong>Política de privacidad de la app</strong></p>
+        </div>
+      </header>
 
-    <header class="brand-header">
-      <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="Logo de toT">
-      <div class="brand-copy">
-        <h1>toT</h1>
-        <p><strong>Política de privacidad de la app</strong></p>
-      </div>
-    </header>
+      <nav class="lang-switch" aria-label="Selector de idioma">
+        <a href="/es/" lang="es" aria-current="page">ES</a>
+        <a href="/en/" lang="en">EN</a>
+      </nav>
+    </div>
 
     <div class="box">
       <p><strong>toT</strong> está pensada para funcionar principalmente de forma local al escribir, editar, contar y
@@ -44,11 +46,13 @@
       <ul>
         <li>texto actual, snapshots guardados, configuración, estado de ventanas y datos relacionados con tareas en tu
           dispositivo</li>
-        <li>estado local del test de velocidad de lectura, incluyendo pool local de textos del test y payloads opcionales de preguntas en archivos del pool</li>
+        <li>estado local del test de velocidad de lectura, incluyendo pool local de textos del test y payloads
+          opcionales de preguntas en archivos del pool</li>
         <li>estado local de conexión/token OCR cuando eliges usar Google OCR</li>
       </ul>
       <p><strong>Cómo usa la app estos datos</strong>: la app usa los datos guardados localmente para ofrecer sus
-        funciones de escritura, conteo, planificación, snapshots, tareas, test de velocidad de lectura y estado de ventanas. La app puede conectarse a
+        funciones de escritura, conteo, planificación, snapshots, tareas, test de velocidad de lectura y estado de
+        ventanas. La app puede conectarse a
         servicios externos solo para acciones concretas iniciadas por el usuario, como abrir enlaces solicitados por el
         usuario, consultar información de versiones/actualizaciones o ejecutar flujos OCR opcionales.</p>
       <p><strong>Compartición con terceros</strong>: la app no envía al desarrollador tu texto local, snapshots,
