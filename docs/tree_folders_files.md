@@ -17,6 +17,7 @@ tot/
 │ └── tasks.json
 ├── build-output/                  # {vacío} {carpeta ignorada por git}
 ├── build-resources/               # recursos solo de packaging (electron-builder)
+│ ├── after-all-artifact-build.js
 │ ├── logo-cibersino.ico
 │ ├── logo-cibersino.png
 │ └── README.md
@@ -454,7 +455,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.0) Tooling raíz
 
-- `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`.
+- `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`, y registra el hook `afterAllArtifactBuild` que reenvuelve los `.zip` distribuidos bajo una carpeta raíz `toT-<version>/`.
 - `package-lock.json` — Lockfile npm usado también por el workflow CI (`npm ci`).
 
 ### 6.1) Sitio web estático (website/public)
@@ -485,6 +486,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.3) Recursos de packaging (build-resources)
 
+- `build-resources/after-all-artifact-build.js` — Hook post-packaging de `electron-builder`: reempaqueta los artefactos `.zip` ya generados para que el contenido final quede bajo una carpeta raíz única `toT-<version>/`, mejorando la extracción manual del release portable sin alterar el layout interno de `win-unpacked`.
 - `build-resources/logo-cibersino.ico` — Icono de packaging para Windows.
 - `build-resources/logo-cibersino.png` — Fuente raster canónica de branding para packaging; también usable como input para Linux y para generar `logo-cibersino.icns` en macOS.
 

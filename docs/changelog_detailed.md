@@ -52,11 +52,13 @@ Reglas:
 - Follow-up de robustez sobre ese mismo flujo: el listener loopback queda acotado por timeout y el bind del host IPv6 bracketed (`[::1]`) se normaliza explícitamente antes de `server.listen(...)`, evitando dependencia implícita del tratamiento de hostnames bracketed por el runtime.
 - Limpieza del flujo legado: `@google-cloud/local-auth` sale del grafo runtime redistribuido, desaparece de `Acerca de` y de los docKeys/licencias públicas actuales del producto; el contrato histórico queda preservado solo en documentos versionados de releases anteriores.
 - Packaging runtime OCR: el artefacto empaquetado deja de depender de un `asarUnpack` amplio para `sharp`/`@img` y pasa a desempaquetar solo los runtimes nativos de `sharp` por plataforma, manteniendo operativa la normalización OCR de `.webp` / `.tif` / `.tiff` en build distribuido sin arrastrar módulos JS ajenos fuera de `app.asar`.
+- Packaging UX del release portable: el `.zip` distribuido deja de extraerse con archivos sueltos en la raíz y pasa a quedar reenvuelto bajo una carpeta superior única `toT-<version>/`, alineando el nombre visible del contenedor extraído con la versión publicada.
 
 ### Agregado
 
 - `electron/import_extract_platform/ocr_google_drive_secure_oauth.js` (nuevo): helper propio de activación OAuth desktop segura para Google OCR; reutiliza el cliente OAuth desktop ya empaquetado, abre el navegador del sistema, levanta callback loopback efímero, genera `state` por transacción y aplica PKCE (`code_verifier` + `code_challenge` S256) antes del intercambio del código.
 - `test/unit/electron/ocr_google_drive_secure_oauth.test.js` (nuevo): cobertura dirigida del helper nuevo, incluyendo ruta exitosa con `state` + PKCE, rechazo por `state` inválido, normalización del host loopback IPv6 y timeout cuando no llega callback.
+- `build-resources/after-all-artifact-build.js` (nuevo): hook post-build de `electron-builder` que reempaqueta los artefactos `.zip` ya construidos bajo una carpeta raíz `toT-<version>/`.
 
 ### Cambiado
 
@@ -71,8 +73,9 @@ Reglas:
 - Packaging/runtime:
   - `package.json`: `electron-builder` deja de usar `asarUnpack` amplio sobre `node_modules/sharp/**/*` y `node_modules/@img/**/*`; el release pasa a declarar solo los runtimes nativos de `sharp` por plataforma (`@img/sharp-win32-x64`, `@img/sharp-darwin-x64`, `@img/sharp-darwin-arm64`, `@img/sharp-linux-x64`) como contenido fuera de `app.asar`.
   - `package.json`: `asar.smartUnpack` se fija en `false` para evitar que la heurística automática marque módulos completos como unpacked por archivos binarios/metadata incidentales no ejecutables.
+  - `package.json`: el packaging registra `afterAllArtifactBuild` para postprocesar los `.zip` distribuidos y envolver su contenido final bajo una carpeta raíz versionada `toT-<version>/`, sin cambiar el layout interno producido en `win-unpacked`.
 - Documentación viva:
-  - `docs/tree_folders_files.md`: se actualiza para reflejar que la activación OCR ya no usa `local-auth` y para registrar el nuevo helper propio `ocr_google_drive_secure_oauth.js`.
+  - `docs/tree_folders_files.md`: se actualiza para reflejar que la activación OCR ya no usa `local-auth`, para registrar el nuevo helper propio `ocr_google_drive_secure_oauth.js` y para documentar el hook de packaging que reenvuelve los `.zip` distribuidos bajo `toT-<version>/`.
   - `tools_local/issues/issue_229.md`: el issue deja de ser solo diagnóstico y pasa a incluir la propuesta final adoptada, la nota post-implementación y las decisiones nuevas tomadas durante la ejecución real del cambio.
 
 ### Arreglado
@@ -85,6 +88,7 @@ Reglas:
 - Packaging del artefacto distribuido:
   - `resources/app.asar.unpacked` deja de inflarse por globs amplios o por heurísticas de smart-unpack sobre módulos JS sin código nativo; el ZIP final conserva fuera de `app.asar` únicamente el runtime nativo requerido por `sharp` para OCR empaquetado.
   - se evita un falso positivo de `electron-builder` sobre `jszip`, cuyo módulo podía quedar completo fuera de `app.asar` por un archivo de metadata binario/extensionless (`.jekyll-metadata`) ajeno a la ejecución real del producto.
+  - el `.zip` portable deja de extraer archivos directamente en la carpeta elegida por el usuario; ahora el artefacto publicado se reempaqueta con una carpeta raíz única `toT-<version>/`, mejorando la ergonomía de extracción sin cambiar el payload distribuido.
 
 ### Contratos tocados
 
@@ -103,6 +107,7 @@ Reglas:
 - `electron/import_extract_platform/ocr_google_drive_oauth_client.js`
 - `electron/import_extract_platform/ocr_google_drive_secure_oauth.js`
 - `test/unit/electron/ocr_google_drive_secure_oauth.test.js`
+- `build-resources/after-all-artifact-build.js`
 - `package.json`
 - `package-lock.json`
 - `public/info/acerca_de.html`
