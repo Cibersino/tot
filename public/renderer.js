@@ -33,27 +33,12 @@ const {
   WPM_MIN,
   WPM_MAX,
   MAX_CLIPBOARD_REPEAT,
-  PREVIEW_INLINE_THRESHOLD,
-  PREVIEW_START_CHARS,
-  PREVIEW_END_CHARS
 } = AppConstants;
 
 // =============================================================================
 // DOM references
 // =============================================================================
-const textPreview = document.getElementById('textPreview');
-const btnImportExtract = document.getElementById('btnImportExtract');
-const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
-const btnAppendClipboard = document.getElementById('btnAppendClipboard');
-const clipboardRepeatInput = document.getElementById('clipboardRepeatInput');
-const btnEdit = document.getElementById('btnEdit');
-const btnEmptyMain = document.getElementById('btnEmptyMain');
-const btnLoadSnapshot = document.getElementById('btnLoadSnapshot');
-const btnSaveSnapshot = document.getElementById('btnSaveSnapshot');
-const btnNewTask = document.getElementById('btnNewTask');
-const btnLoadTask = document.getElementById('btnLoadTask');
 const btnHelp = document.getElementById('btnHelp');
-const btnReadingSpeedTest = document.getElementById('btnReadingSpeedTest');
 
 const importExtractEntry = window.ImportExtractEntry;
 if (!importExtractEntry
@@ -83,9 +68,18 @@ if (!importExtractStatusUi
   || typeof importExtractStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] ImportExtractStatusUi unavailable; cannot continue');
 }
-const btnImportExtractAbort = importExtractStatusUi.getAbortButton();
 const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
 const mainLogoLinks = window.MainLogoLinks || null;
+const currentTextSelectorSection = window.CurrentTextSelectorSection || null;
+if (!currentTextSelectorSection
+  || typeof currentTextSelectorSection.applyTranslations !== 'function'
+  || typeof currentTextSelectorSection.bindActions !== 'function'
+  || typeof currentTextSelectorSection.getClipboardRepeatCount !== 'function'
+  || typeof currentTextSelectorSection.renderPreview !== 'function'
+  || typeof currentTextSelectorSection.setEditorLaunchPending !== 'function'
+  || typeof currentTextSelectorSection.setInteractionLocked !== 'function') {
+  throw new Error('[renderer] CurrentTextSelectorSection unavailable; cannot continue');
+}
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
   || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function') {
@@ -169,27 +163,8 @@ if (wpmInput) {
   wpmInput.min = String(WPM_MIN);
   wpmInput.max = String(WPM_MAX);
 }
-if (clipboardRepeatInput) {
-  clipboardRepeatInput.min = '1';
-  clipboardRepeatInput.max = String(MAX_CLIPBOARD_REPEAT);
-}
-
-function updateClipboardRepeatVisualState(rawValue = '') {
-  if (!clipboardRepeatInput) return;
-  const numericValue = Number(rawValue);
-  const isRepeatActive = Number.isFinite(numericValue) && numericValue > 1;
-  clipboardRepeatInput.classList.toggle('is-repeat-active', isRepeatActive);
-}
-
-if (clipboardRepeatInput) {
-  updateClipboardRepeatVisualState(clipboardRepeatInput.value);
-  clipboardRepeatInput.addEventListener('input', () => {
-    updateClipboardRepeatVisualState(clipboardRepeatInput.value);
-  });
-}
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
-const selectorTitle = document.getElementById('selector-title');
 const velTitle = document.getElementById('vel-title');
 const resultsTitle = document.getElementById('results-title');
 const cronTitle = document.getElementById('cron-title');
@@ -241,16 +216,7 @@ function syncMainInteractionLockUi() {
     || isProcessingModeActive()
     || isReadingTestInteractionLocked();
 
-  setControlInteractionLocked(btnImportExtract, locked);
-  setControlInteractionLocked(btnOverwriteClipboard, locked);
-  setControlInteractionLocked(btnAppendClipboard, locked);
-  setControlInteractionLocked(clipboardRepeatInput, locked);
-  setControlInteractionLocked(btnEdit, locked);
-  setControlInteractionLocked(btnEmptyMain, locked);
-  setControlInteractionLocked(btnLoadSnapshot, locked);
-  setControlInteractionLocked(btnSaveSnapshot, locked);
-  setControlInteractionLocked(btnNewTask, locked);
-  setControlInteractionLocked(btnLoadTask, locked);
+  currentTextSelectorSection.setInteractionLocked(locked);
   setControlInteractionLocked(btnHelp, locked);
   setControlInteractionLocked(wpmInput, locked);
   setControlInteractionLocked(wpmSlider, locked);
@@ -259,7 +225,6 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(btnEditPreset, locked);
   setControlInteractionLocked(btnDeletePreset, locked);
   setControlInteractionLocked(btnResetDefaultPresets, locked);
-  setControlInteractionLocked(btnReadingSpeedTest, locked);
   setControlInteractionLocked(resultsTimeMultiplierInput, locked);
   setControlInteractionLocked(toggleModoPreciso, locked);
   setControlInteractionLocked(toggleVF, locked);
@@ -497,6 +462,7 @@ function applyTranslations() {
   importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
   importExtractDragDrop.applyTranslations({ tRenderer });
   readingSpeedTestUi.applyTranslations();
+  currentTextSelectorSection.applyTranslations({ tRenderer });
   if (mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
     mainLogoLinks.applyTranslations({ tRenderer });
   } else {
@@ -509,31 +475,6 @@ function applyTranslations() {
   if (infoModalLoading) {
     infoModalLoading.textContent = tRenderer('renderer.info.loading');
   }
-  // Text selector buttons
-  if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract');
-  if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard');
-  if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard');
-  if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit');
-  if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear');
-  if (btnLoadSnapshot) btnLoadSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_load');
-  if (btnSaveSnapshot) btnSaveSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_save');
-  if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new');
-  if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load');
-  // Text selector tooltips
-  if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract');
-  if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard');
-  if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard');
-  applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract');
-  if (clipboardRepeatInput) {
-    clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count');
-    applyAriaLabel(clipboardRepeatInput, 'renderer.main.aria.clipboard_repeat_count');
-  }
-  if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit');
-  if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear');
-  if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load');
-  if (btnSaveSnapshot) btnSaveSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_save');
-  if (btnNewTask) btnNewTask.title = tRenderer('renderer.main.tooltips.task_new');
-  if (btnLoadTask) btnLoadTask.title = tRenderer('renderer.main.tooltips.task_load');
   // Presets
   if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new');
   if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit');
@@ -547,18 +488,9 @@ function applyTranslations() {
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
   if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window');
   // Section titles
-  if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title');
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title');
   if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title');
   if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title');
-  if (btnReadingSpeedTest) {
-    const label = tRenderer('renderer.main.reading_tools.reading_speed_test');
-    btnReadingSpeedTest.textContent = label;
-    if (label) {
-      btnReadingSpeedTest.title = label;
-      btnReadingSpeedTest.setAttribute('aria-label', label);
-    }
-  }
   // Speed selector labels
   const wpmLabel = document.querySelector('.wpm-row span');
   if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label');
@@ -693,19 +625,9 @@ function renderEstimatedTime(totalSeconds) {
 
 async function updatePreviewAndResults(text) {
   const normalizedText = normalizeText(text);
-  const displayText = normalizedText.replace(/\r?\n/g, '   ');
-  const displayLength = displayText.length;
-
-  if (displayLength === 0) {
-    const emptyMsg = tRenderer('renderer.main.selector_empty');
-    textPreview.textContent = emptyMsg;
-  } else if (displayLength <= PREVIEW_INLINE_THRESHOLD) {
-    textPreview.textContent = displayText;
-  } else {
-    const start = displayText.slice(0, PREVIEW_START_CHARS);
-    const end = displayText.slice(-PREVIEW_END_CHARS);
-    textPreview.textContent = `${start}... | ...${end}`;
-  }
+  currentTextSelectorSection.renderPreview(normalizedText, {
+    emptyText: tRenderer('renderer.main.selector_empty'),
+  });
 
   const stats = contarTexto(normalizedText);
   currentTextStats = stats;
@@ -1808,24 +1730,6 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
   return { ok: true, text };
 }
 
-function normalizeClipboardRepeat(rawValue) {
-  const textApplyApi = window.TextApplyCanonical;
-  if (textApplyApi && typeof textApplyApi.normalizeRepeat === 'function') {
-    return textApplyApi.normalizeRepeat(rawValue, { maxRepeat: MAX_CLIPBOARD_REPEAT });
-  }
-  const numericValue = Number(rawValue);
-  if (!Number.isInteger(numericValue) || numericValue < 1) return 1;
-  return Math.min(numericValue, MAX_CLIPBOARD_REPEAT);
-}
-
-function getClipboardRepeatCount() {
-  if (!clipboardRepeatInput) return 1;
-  const normalized = normalizeClipboardRepeat(clipboardRepeatInput.value);
-  clipboardRepeatInput.value = String(normalized);
-  updateClipboardRepeatVisualState(normalized);
-  return normalized;
-}
-
 function getTextApplyCanonicalApi() {
   const api = window.TextApplyCanonical;
   if (!api || typeof api.applyTextWithMode !== 'function') {
@@ -1937,7 +1841,7 @@ async function resolveDroppedFilePath(file) {
 function configureImportExtractModules() {
   importExtractEntry.configure({
     applyTextViaCanonicalPath,
-    getClipboardRepeatCount,
+    getClipboardRepeatCount: () => currentTextSelectorSection.getClipboardRepeatCount(),
     getOcrLanguage: () => idiomaActual || '',
     getOptionalElectronMethod,
     guardUserAction,
@@ -1982,238 +1886,206 @@ function initializeDelegatedIntegrations() {
   );
 }
 
-function bindImportExtractEntryPoints() {
-  if (btnImportExtract) {
-    btnImportExtract.addEventListener('click', async () => {
-      await importExtractEntry.startFromPicker();
-    });
-  }
-
-  if (btnImportExtractAbort) {
-    btnImportExtractAbort.addEventListener('click', async () => {
-      if (!guardUserAction('import-extract-abort', { allowDuringProcessing: true })) return;
-      try {
-        const requestImportExtractAbort = getOptionalElectronMethod('requestImportExtractAbort', {
-          dedupeKey: 'renderer.ipc.requestImportExtractAbort.unavailable',
-          unavailableMessage: 'requestImportExtractAbort unavailable; abort action skipped.'
-        });
-        if (!requestImportExtractAbort) {
-          window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
-          return;
-        }
-
-        const result = await requestImportExtractAbort({
-          source: 'main_window',
-          reason: 'user_abort_button',
-        });
-        if (!result || result.ok !== true) {
-          if (result && result.code === 'NOT_ACTIVE' && result.state) {
-            importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_not_active' });
-            return;
-          }
-          log.error('import/extract abort failed:', result);
-          window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
-          return;
-        }
-
-        if (result.state) {
-          importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
-        }
-        window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
-      } catch (err) {
-        log.error('Error handling import/extract abort:', err);
-        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
-      }
-    });
-  }
-}
-
-// =============================================================================
-// Import/extract entrypoint wiring
-// =============================================================================
-
-// =============================================================================
-// Overwrite current text with clipboard content
-// =============================================================================
-function bindClipboardActions() {
-  btnOverwriteClipboard.addEventListener('click', async () => {
-    if (!guardUserAction('clipboard-overwrite')) return;
-    try {
-      const read = await readClipboardText({
-        tooLargeKey: 'renderer.alerts.clipboard_too_large',
-        unavailableKey: 'renderer.alerts.clipboard_error'
-      });
-      if (!read.ok) return;
-      const clip = read.text;
-      const repeatCount = getClipboardRepeatCount();
-      const applyResult = await applyTextViaCanonicalPath({
-        mode: 'overwrite',
-        textToApply: clip,
-        repeatCount,
-      });
-      if (!applyResult || applyResult.ok !== true) {
-        if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-          window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
-        } else {
-          window.Notify.notifyMain('renderer.alerts.clipboard_error');
-        }
-        return;
-      }
-
-      // UI/state sync is authoritative via "current-text-updated" subscription.
-      if (!hasCurrentTextSubscription) {
-        throw new Error('current-text-updated subscription unavailable');
-      }
-      if (applyResult.truncated) {
-        window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
-      }
-    } catch (err) {
-      log.error('clipboard error:', err);
-      window.Notify.notifyMain('renderer.alerts.clipboard_error');
-    }
-  });
-
-// =============================================================================
-// Append clipboard content to current text
-// =============================================================================
-  btnAppendClipboard.addEventListener('click', async () => {
-    if (!guardUserAction('clipboard-append')) return;
-    try {
-      const read = await readClipboardText({
-        tooLargeKey: 'renderer.alerts.append_too_large',
-        unavailableKey: 'renderer.alerts.append_error'
-      });
-      if (!read.ok) return;
-      const clip = read.text;
-      const repeatCount = getClipboardRepeatCount();
-      const applyResult = await applyTextViaCanonicalPath({
-        mode: 'append',
-        textToApply: clip,
-        repeatCount,
-      });
-      if (!applyResult || applyResult.ok !== true) {
-        if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-          window.Notify.notifyMain('renderer.alerts.append_too_large');
-        } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-          window.Notify.notifyMain('renderer.alerts.text_limit');
-        } else {
-          window.Notify.notifyMain('renderer.alerts.append_error');
-        }
-        return;
-      }
-
-      // UI/state sync is authoritative via "current-text-updated" subscription.
-      if (!hasCurrentTextSubscription) {
-        throw new Error('current-text-updated subscription unavailable');
-      }
-
-      // Notify truncation only if main confirms it
-      if (applyResult.truncated) {
-        window.Notify.notifyMain('renderer.alerts.append_overflow');
-      }
-    } catch (err) {
-      log.error('An error occurred while pasting the clipboard:', err);
-      window.Notify.notifyMain('renderer.alerts.append_error');
-    }
-  });
-}
-
 function showEditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
-  if (btnEdit) btnEdit.disabled = true;
+  currentTextSelectorSection.setEditorLaunchPending(true);
 }
 
 function hideEditorLoader() {
   if (editorLoader) editorLoader.classList.remove('visible');
-  if (btnEdit) btnEdit.disabled = false;
+  currentTextSelectorSection.setEditorLaunchPending(false);
 }
 
-function bindEditorAction() {
-  btnEdit.addEventListener('click', async () => {
-    if (!guardUserAction('open-editor')) return;
-    showEditorLoader();
-    try {
-      const openEditor = getOptionalElectronMethod('openEditor', {
-        dedupeKey: 'renderer.ipc.openEditor.unavailable',
-        unavailableMessage: 'openEditor unavailable; editor launch skipped.'
-      });
-      if (!openEditor) {
-        hideEditorLoader();
+async function handleImportExtractPicker() {
+  await importExtractEntry.startFromPicker();
+}
+
+async function handleImportExtractAbort() {
+  if (!guardUserAction('import-extract-abort', { allowDuringProcessing: true })) return;
+  try {
+    const requestImportExtractAbort = getOptionalElectronMethod('requestImportExtractAbort', {
+      dedupeKey: 'renderer.ipc.requestImportExtractAbort.unavailable',
+      unavailableMessage: 'requestImportExtractAbort unavailable; abort action skipped.'
+    });
+    if (!requestImportExtractAbort) {
+      window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+      return;
+    }
+
+    const result = await requestImportExtractAbort({
+      source: 'main_window',
+      reason: 'user_abort_button',
+    });
+    if (!result || result.ok !== true) {
+      if (result && result.code === 'NOT_ACTIVE' && result.state) {
+        importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_not_active' });
         return;
       }
-      await openEditor();
-    } catch (err) {
-      log.error('Error opening editor:', err);
+      log.error('import/extract abort failed:', result);
+      window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+      return;
+    }
+
+    if (result.state) {
+      importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
+    }
+    window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
+  } catch (err) {
+    log.error('Error handling import/extract abort:', err);
+    window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+  }
+}
+
+async function handleClipboardOverwrite() {
+  if (!guardUserAction('clipboard-overwrite')) return;
+  try {
+    const read = await readClipboardText({
+      tooLargeKey: 'renderer.alerts.clipboard_too_large',
+      unavailableKey: 'renderer.alerts.clipboard_error'
+    });
+    if (!read.ok) return;
+    const clip = read.text;
+    const repeatCount = currentTextSelectorSection.getClipboardRepeatCount();
+    const applyResult = await applyTextViaCanonicalPath({
+      mode: 'overwrite',
+      textToApply: clip,
+      repeatCount,
+    });
+    if (!applyResult || applyResult.ok !== true) {
+      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+        window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
+      } else {
+        window.Notify.notifyMain('renderer.alerts.clipboard_error');
+      }
+      return;
+    }
+
+    if (!hasCurrentTextSubscription) {
+      throw new Error('current-text-updated subscription unavailable');
+    }
+    if (applyResult.truncated) {
+      window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
+    }
+  } catch (err) {
+    log.error('clipboard error:', err);
+    window.Notify.notifyMain('renderer.alerts.clipboard_error');
+  }
+}
+
+async function handleClipboardAppend() {
+  if (!guardUserAction('clipboard-append')) return;
+  try {
+    const read = await readClipboardText({
+      tooLargeKey: 'renderer.alerts.append_too_large',
+      unavailableKey: 'renderer.alerts.append_error'
+    });
+    if (!read.ok) return;
+    const clip = read.text;
+    const repeatCount = currentTextSelectorSection.getClipboardRepeatCount();
+    const applyResult = await applyTextViaCanonicalPath({
+      mode: 'append',
+      textToApply: clip,
+      repeatCount,
+    });
+    if (!applyResult || applyResult.ok !== true) {
+      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+        window.Notify.notifyMain('renderer.alerts.append_too_large');
+      } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
+        window.Notify.notifyMain('renderer.alerts.text_limit');
+      } else {
+        window.Notify.notifyMain('renderer.alerts.append_error');
+      }
+      return;
+    }
+
+    if (!hasCurrentTextSubscription) {
+      throw new Error('current-text-updated subscription unavailable');
+    }
+    if (applyResult.truncated) {
+      window.Notify.notifyMain('renderer.alerts.append_overflow');
+    }
+  } catch (err) {
+    log.error('An error occurred while pasting the clipboard:', err);
+    window.Notify.notifyMain('renderer.alerts.append_error');
+  }
+}
+
+async function handleOpenEditor() {
+  if (!guardUserAction('open-editor')) return;
+  showEditorLoader();
+  try {
+    const openEditor = getOptionalElectronMethod('openEditor', {
+      dedupeKey: 'renderer.ipc.openEditor.unavailable',
+      unavailableMessage: 'openEditor unavailable; editor launch skipped.'
+    });
+    if (!openEditor) {
       hideEditorLoader();
+      return;
     }
-  });
+    await openEditor();
+  } catch (err) {
+    log.error('Error opening editor:', err);
+    hideEditorLoader();
+  }
 }
 
-// =============================================================================
-// Clear current text
-// =============================================================================
-function bindClearTextAction() {
-  btnEmptyMain.addEventListener('click', async () => {
-    if (!guardUserAction('clear-text')) return;
-    try {
-      const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-        dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
-        unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
-      });
-      if (!setCurrentText) {
-        window.Notify.notifyMain('renderer.alerts.clear_error');
-        return;
-      }
-      const resp = await setCurrentText({
-        text: '',
-        meta: { source: 'main-window', action: 'overwrite' }
-      });
-      if (resp && resp.ok === false) {
-        throw new Error(resp.error || 'set-current-text failed');
-      }
-      // UI/state sync is authoritative via "current-text-updated" subscription.
-      if (!hasCurrentTextSubscription) {
-        throw new Error('current-text-updated subscription unavailable');
-      }
-    } catch (err) {
-      log.error('Error clearing text from main window:', err);
+async function handleClearText() {
+  if (!guardUserAction('clear-text')) return;
+  try {
+    const setCurrentText = getOptionalElectronMethod('setCurrentText', {
+      dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
+      unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
+    });
+    if (!setCurrentText) {
       window.Notify.notifyMain('renderer.alerts.clear_error');
+      return;
     }
-  });
+    const resp = await setCurrentText({
+      text: '',
+      meta: { source: 'main-window', action: 'overwrite' }
+    });
+    if (resp && resp.ok === false) {
+      throw new Error(resp.error || 'set-current-text failed');
+    }
+    if (!hasCurrentTextSubscription) {
+      throw new Error('current-text-updated subscription unavailable');
+    }
+  } catch (err) {
+    log.error('Error clearing text from main window:', err);
+    window.Notify.notifyMain('renderer.alerts.clear_error');
+  }
 }
 
-function bindSnapshotActions() {
-  btnLoadSnapshot.addEventListener('click', async () => {
-    if (!guardUserAction('snapshot-load')) return;
-    if (typeof loadSnapshot !== 'function') {
-      log.warnOnce(
-        'renderer.snapshot.load.unavailable',
-        'loadSnapshot unavailable; snapshot-load action skipped.'
-      );
-      return;
-    }
-    try {
-      await loadSnapshot();
-    } catch (err) {
-      log.error('Error loading snapshot:', err);
-    }
-  });
+async function handleLoadSnapshot() {
+  if (!guardUserAction('snapshot-load')) return;
+  if (typeof loadSnapshot !== 'function') {
+    log.warnOnce(
+      'renderer.snapshot.load.unavailable',
+      'loadSnapshot unavailable; snapshot-load action skipped.'
+    );
+    return;
+  }
+  try {
+    await loadSnapshot();
+  } catch (err) {
+    log.error('Error loading snapshot:', err);
+  }
+}
 
-  btnSaveSnapshot.addEventListener('click', async () => {
-    if (!guardUserAction('snapshot-save')) return;
-    if (typeof saveSnapshot !== 'function') {
-      log.warnOnce(
-        'renderer.snapshot.save.unavailable',
-        'saveSnapshot unavailable; snapshot-save action skipped.'
-      );
-      return;
-    }
-    try {
-      await saveSnapshot();
-    } catch (err) {
-      log.error('Error saving snapshot:', err);
-    }
-  });
+async function handleSaveSnapshot() {
+  if (!guardUserAction('snapshot-save')) return;
+  if (typeof saveSnapshot !== 'function') {
+    log.warnOnce(
+      'renderer.snapshot.save.unavailable',
+      'saveSnapshot unavailable; snapshot-save action skipped.'
+    );
+    return;
+  }
+  try {
+    await saveSnapshot();
+  } catch (err) {
+    log.error('Error saving snapshot:', err);
+  }
 }
 
 // =============================================================================
@@ -2238,47 +2110,41 @@ function handleTaskOpenResult(res, { mode } = {}) {
   }
 }
 
-function bindTaskActions() {
-  if (btnNewTask) {
-    btnNewTask.addEventListener('click', async () => {
-      if (!guardUserAction('task-new')) return;
-      try {
-        if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-          log.warnOnce(
-            'renderer.ipc.openTaskEditor.unavailable',
-            'openTaskEditor unavailable; new-task action skipped.'
-          );
-          window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-          return;
-        }
-        const res = await window.electronAPI.openTaskEditor('new');
-        handleTaskOpenResult(res, { mode: 'new' });
-      } catch (err) {
-        log.error('Error opening task editor (new):', err);
-        window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
-      }
-    });
+async function handleNewTask() {
+  if (!guardUserAction('task-new')) return;
+  try {
+    if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
+      log.warnOnce(
+        'renderer.ipc.openTaskEditor.unavailable',
+        'openTaskEditor unavailable; new-task action skipped.'
+      );
+      window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+      return;
+    }
+    const res = await window.electronAPI.openTaskEditor('new');
+    handleTaskOpenResult(res, { mode: 'new' });
+  } catch (err) {
+    log.error('Error opening task editor (new):', err);
+    window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
   }
+}
 
-  if (btnLoadTask) {
-    btnLoadTask.addEventListener('click', async () => {
-      if (!guardUserAction('task-load')) return;
-      try {
-        if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-          log.warnOnce(
-            'renderer.ipc.openTaskEditor.unavailable',
-            'openTaskEditor unavailable; load-task action skipped.'
-          );
-          window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-          return;
-        }
-        const res = await window.electronAPI.openTaskEditor('load');
-        handleTaskOpenResult(res, { mode: 'load' });
-      } catch (err) {
-        log.error('Error opening task editor (load):', err);
-        window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
-      }
-    });
+async function handleLoadTask() {
+  if (!guardUserAction('task-load')) return;
+  try {
+    if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
+      log.warnOnce(
+        'renderer.ipc.openTaskEditor.unavailable',
+        'openTaskEditor unavailable; load-task action skipped.'
+      );
+      window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+      return;
+    }
+    const res = await window.electronAPI.openTaskEditor('load');
+    handleTaskOpenResult(res, { mode: 'load' });
+  } catch (err) {
+    log.error('Error opening task editor (load):', err);
+    window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
   }
 }
 
@@ -2318,20 +2184,13 @@ function bindHelpAction() {
   }
 }
 
-// =============================================================================
-// Reading tools
-// =============================================================================
-function bindReadingToolActions() {
-  if (btnReadingSpeedTest) {
-    btnReadingSpeedTest.addEventListener('click', async () => {
-      if (!guardUserAction('reading-speed-test')) return;
-      try {
-        await readingSpeedTestUi.openEntryFlow();
-      } catch (err) {
-        log.error('Error opening reading speed test flow:', err);
-        window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
-      }
-    });
+async function handleOpenReadingSpeedTest() {
+  if (!guardUserAction('reading-speed-test')) return;
+  try {
+    await readingSpeedTestUi.openEntryFlow();
+  } catch (err) {
+    log.error('Error opening reading speed test flow:', err);
+    window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
   }
 }
 
@@ -2524,19 +2383,25 @@ const initCronoController = () => {
 function startRendererBootstrap() {
   armIpcSubscriptions();
   setupToggleModoPreciso();
+  currentTextSelectorSection.bindActions({
+    onImportExtract: handleImportExtractPicker,
+    onImportExtractAbort: handleImportExtractAbort,
+    onOverwriteClipboard: handleClipboardOverwrite,
+    onAppendClipboard: handleClipboardAppend,
+    onOpenEditor: handleOpenEditor,
+    onClearText: handleClearText,
+    onLoadSnapshot: handleLoadSnapshot,
+    onSaveSnapshot: handleSaveSnapshot,
+    onNewTask: handleNewTask,
+    onLoadTask: handleLoadTask,
+    onReadingSpeedTest: handleOpenReadingSpeedTest,
+  });
   bindInfoModalUi();
   registerMenuActions();
   bindPresetSelection();
   bindSpeedControls();
   initializeDelegatedIntegrations();
-  bindImportExtractEntryPoints();
-  bindClipboardActions();
-  bindEditorAction();
-  bindClearTextAction();
-  bindSnapshotActions();
-  bindTaskActions();
   bindHelpAction();
-  bindReadingToolActions();
   bindPresetActions();
   initCronoController();
   uiListenersArmed = true;
