@@ -29,6 +29,7 @@
   "build": {
     "appId": "com.cibersino.tot",
     "productName": "toT",
+    "afterAllArtifactBuild": "./build-resources/after-all-artifact-build.js",
     "asar": {
       "smartUnpack": false
     },
