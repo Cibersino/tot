@@ -88,7 +88,8 @@
         "pause_symbol": "⏸"
       },
       "reading_tools": {
-        "reading_speed_test": "Reading speed test"
+        "reading_speed_test": "Reading speed test",
+        "preview_spoiler": "Spoiler"
       },
       "processing": {
         "import_extract_placeholder": "Extracting text...",

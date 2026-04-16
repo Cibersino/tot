@@ -77,7 +77,8 @@
         "pause_symbol": "⏸"
       },
       "reading_tools": {
-        "reading_speed_test": "Test di velocità di lettura"
+        "reading_speed_test": "Test di velocità di lettura",
+        "preview_spoiler": "Spoiler"
       },
       "processing": {
         "import_extract_placeholder": "Estrazione del testo...",

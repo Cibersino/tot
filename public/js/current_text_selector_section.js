@@ -46,6 +46,9 @@
   const btnNewTask = document.getElementById('btnNewTask');
   const btnLoadTask = document.getElementById('btnLoadTask');
   const btnReadingSpeedTest = document.getElementById('btnReadingSpeedTest');
+  const previewSpoilerToggle = document.getElementById('previewSpoilerToggle');
+  const previewSpoilerToggleLabel = document.getElementById('previewSpoilerToggleLabel');
+  const previewSpoilerText = document.getElementById('previewSpoilerText');
   const btnImportExtractAbort = document.getElementById('btnImportExtractAbort');
 
   const selectorControls = [
@@ -60,6 +63,7 @@
     btnNewTask,
     btnLoadTask,
     btnReadingSpeedTest,
+    previewSpoilerToggle,
   ].filter(Boolean);
 
   // =============================================================================
@@ -68,6 +72,8 @@
   let actionsBound = false;
   let selectorInteractionLocked = false;
   let editorLaunchPending = false;
+  let lastPreviewText = '';
+  let lastPreviewEmptyText = '';
 
   // =============================================================================
   // Helpers
@@ -109,6 +115,44 @@
     element.addEventListener('click', handler);
   }
 
+  function normalizePreviewValue(value) {
+    if (typeof value === 'string') return value;
+    if (value === null || typeof value === 'undefined') return '';
+    return String(value);
+  }
+
+  function isPreviewSpoilerEnabled() {
+    return !previewSpoilerToggle || previewSpoilerToggle.checked;
+  }
+
+  function buildPreviewText(text, { emptyText = '', showPreviewEnd = true } = {}) {
+    const displayText = normalizePreviewValue(text).replace(/\r?\n/g, '   ');
+    const displayLength = displayText.length;
+
+    if (displayLength === 0) return emptyText;
+
+    if (displayLength <= PREVIEW_INLINE_THRESHOLD) {
+      return displayText;
+    }
+
+    const visibleStartChars = showPreviewEnd
+      ? PREVIEW_START_CHARS
+      : PREVIEW_START_CHARS + PREVIEW_END_CHARS;
+    const start = displayText.slice(0, visibleStartChars);
+    if (!showPreviewEnd) return `${start}...`;
+
+    const end = displayText.slice(-PREVIEW_END_CHARS);
+    return `${start}... | ...${end}`;
+  }
+
+  function renderPreviewFromState() {
+    if (!textPreview) return;
+    textPreview.textContent = buildPreviewText(lastPreviewText, {
+      emptyText: lastPreviewEmptyText,
+      showPreviewEnd: isPreviewSpoilerEnabled(),
+    });
+  }
+
   function initializeClipboardRepeatInput() {
     if (!clipboardRepeatInput) return;
     clipboardRepeatInput.min = '1';
@@ -116,6 +160,14 @@
     updateClipboardRepeatVisualState(clipboardRepeatInput.value);
     clipboardRepeatInput.addEventListener('input', () => {
       updateClipboardRepeatVisualState(clipboardRepeatInput.value);
+    });
+  }
+
+  function initializePreviewSpoilerToggle() {
+    if (!previewSpoilerToggle) return;
+    previewSpoilerToggle.checked = true;
+    previewSpoilerToggle.addEventListener('change', () => {
+      renderPreviewFromState();
     });
   }
 
@@ -167,6 +219,15 @@
         btnReadingSpeedTest.setAttribute('aria-label', label);
       }
     }
+    if (previewSpoilerText) {
+      const label = tRenderer('renderer.main.reading_tools.preview_spoiler');
+      previewSpoilerText.textContent = label;
+      if (previewSpoilerToggleLabel) previewSpoilerToggleLabel.title = label;
+      if (previewSpoilerToggle) {
+        previewSpoilerToggle.title = label;
+        previewSpoilerToggle.setAttribute('aria-label', label);
+      }
+    }
   }
 
   function bindActions({
@@ -214,28 +275,9 @@
   }
 
   function renderPreview(text, { emptyText = '' } = {}) {
-    if (!textPreview) return;
-    const normalizedText = (typeof text === 'string')
-      ? text
-      : (text === null || typeof text === 'undefined')
-        ? ''
-        : String(text);
-    const displayText = normalizedText.replace(/\r?\n/g, '   ');
-    const displayLength = displayText.length;
-
-    if (displayLength === 0) {
-      textPreview.textContent = emptyText;
-      return;
-    }
-
-    if (displayLength <= PREVIEW_INLINE_THRESHOLD) {
-      textPreview.textContent = displayText;
-      return;
-    }
-
-    const start = displayText.slice(0, PREVIEW_START_CHARS);
-    const end = displayText.slice(-PREVIEW_END_CHARS);
-    textPreview.textContent = `${start}... | ...${end}`;
+    lastPreviewText = normalizePreviewValue(text);
+    lastPreviewEmptyText = normalizePreviewValue(emptyText);
+    renderPreviewFromState();
   }
 
   function getClipboardRepeatCount() {
@@ -247,6 +289,7 @@
   }
 
   initializeClipboardRepeatInput();
+  initializePreviewSpoilerToggle();
 
   window.CurrentTextSelectorSection = {
     applyTranslations,
