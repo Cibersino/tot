@@ -18,12 +18,15 @@
 const crypto = require('crypto');
 const http = require('http');
 const { URL } = require('url');
+const Log = require('../log');
 
 const {
   buildGoogleOAuthClientFromCredentials,
   extractGoogleOAuthCredentialsRoot,
   resolveCanonicalRedirectUri,
 } = require('./ocr_google_drive_oauth_client');
+
+const log = Log.get('import-extract-ocr-google-oauth');
 
 // =============================================================================
 // Constants / config
@@ -109,20 +112,49 @@ function createCsrfState(randomBytesFn = crypto.randomBytes) {
 }
 
 function writeResponse(res, statusCode, message) {
-  if (!res || typeof res.writeHead !== 'function' || typeof res.end !== 'function') return;
-  res.writeHead(statusCode, {
-    'Content-Type': 'text/plain; charset=utf-8',
-    'Cache-Control': 'no-store',
-  });
-  res.end(message);
+  if (!res) {
+    log.warn('OAuth callback response write failed (ignored): missing response object.', {
+      statusCode,
+    });
+    return;
+  }
+  if (typeof res.writeHead !== 'function' || typeof res.end !== 'function') {
+    log.warn('OAuth callback response write failed (ignored): invalid response object.', {
+      statusCode,
+      hasWriteHead: typeof res.writeHead === 'function',
+      hasEnd: typeof res.end === 'function',
+    });
+    return;
+  }
+
+  try {
+    res.writeHead(statusCode, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-store',
+    });
+    res.end(message);
+  } catch (err) {
+    log.warn('OAuth callback response write failed (ignored):', {
+      statusCode,
+      errorName: String(err && err.name ? err.name : 'Error'),
+      errorMessage: String(err && err.message ? err.message : err || ''),
+    });
+  }
 }
 
 function closeServer(server) {
-  if (!server || typeof server.close !== 'function') return;
+  if (!server) return;
+  if (typeof server.close !== 'function') {
+    log.warn('OAuth callback server cleanup failed (ignored): invalid server handle.');
+    return;
+  }
   try {
     server.close();
-  } catch {
-    // Best-effort cleanup; server lifecycle errors should not mask the primary outcome.
+  } catch (err) {
+    log.warn('OAuth callback server cleanup failed (ignored):', {
+      errorName: String(err && err.name ? err.name : 'Error'),
+      errorMessage: String(err && err.message ? err.message : err || ''),
+    });
   }
 }
 
