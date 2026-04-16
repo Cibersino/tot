@@ -390,6 +390,9 @@ function registerIpc(
   if (typeof resolvePaths !== 'function') {
     throw new Error('[import_extract_ocr_activation] registerIpc requires resolvePaths()');
   }
+  if (typeof launchSecureGoogleOAuth !== 'function') {
+    throw new Error('[import_extract_ocr_activation] registerIpc requires launchSecureGoogleOAuth()');
+  }
 
   const resolveMainWin = () => {
     const windows = getWindows() || {};
@@ -530,6 +533,19 @@ function registerIpc(
       }
 
       let authClient = null;
+      if (!shell || typeof shell.openExternal !== 'function') {
+        log.warn('import/extract OCR activation launch blocked: browser opener unavailable.', {
+          stage: 'oauth_authenticate',
+        });
+        return buildFailure({
+          state: 'failure',
+          code: 'platform_runtime_failed',
+          detailsSafeForLogs: {
+            stage: 'oauth_authenticate',
+            reason: 'browser_launcher_unavailable',
+          },
+        });
+      }
       try {
         authClient = await launchSecureGoogleOAuth({
           credentialsJson: credentialsValidation.parsed,
