@@ -46,6 +46,64 @@ Reglas:
 
 ## Unreleased
 
+### Resumen
+
+- Google OCR / OAuth segura (Issue #229): la activación OCR deja de depender de `@google-cloud/local-auth` y pasa a usar un helper propio loopback + navegador del sistema + `state` + PKCE, manteniendo el modelo de dos fases IPC ya existente (`prepare` sin navegador, `launch` con OAuth) y sin introducir churn en la superficie renderer/main ni en i18n.
+- Follow-up de robustez sobre ese mismo flujo: el listener loopback queda acotado por timeout y el bind del host IPv6 bracketed (`[::1]`) se normaliza explícitamente antes de `server.listen(...)`, evitando dependencia implícita del tratamiento de hostnames bracketed por el runtime.
+- Limpieza del flujo legado: `@google-cloud/local-auth` sale del grafo runtime redistribuido, desaparece de `Acerca de` y de los docKeys/licencias públicas actuales del producto; el contrato histórico queda preservado solo en documentos versionados de releases anteriores.
+
+### Agregado
+
+- `electron/import_extract_platform/ocr_google_drive_secure_oauth.js` (nuevo): helper propio de activación OAuth desktop segura para Google OCR; reutiliza el cliente OAuth desktop ya empaquetado, abre el navegador del sistema, levanta callback loopback efímero, genera `state` por transacción y aplica PKCE (`code_verifier` + `code_challenge` S256) antes del intercambio del código.
+- `test/unit/electron/ocr_google_drive_secure_oauth.test.js` (nuevo): cobertura dirigida del helper nuevo, incluyendo ruta exitosa con `state` + PKCE, rechazo por `state` inválido, normalización del host loopback IPv6 y timeout cuando no llega callback.
+
+### Cambiado
+
+- `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`:
+  - `import-extract-launch-ocr-activation` deja de invocar `authenticate(...)` de `@google-cloud/local-auth` y pasa a delegar en el helper propio `authenticateGoogleLoopback(...)`.
+  - el flujo mantiene la persistencia cifrada del token y la validación posterior ya existentes, pero ahora el navegador del sistema recibe una URL OAuth generada por el repo con `access_type=offline`, `prompt=consent`, `state` y PKCE.
+- `electron/import_extract_platform/ocr_google_drive_oauth_client.js`:
+  - los helpers compartidos OAuth dejan de servir solo a runtime/disconnect y pasan también a centralizar la extracción de la raíz válida de `credentials.json`, la resolución del redirect canónico y la construcción del cliente OAuth2 a partir de credenciales ya validadas.
+- Runtime/legal:
+  - `package.json` y `package-lock.json`: se elimina `@google-cloud/local-auth` como dependencia runtime directa/transitiva del producto actual.
+  - `public/info/acerca_de.html`, `electron/link_openers.js` y `public/third_party_licenses/`: `Acerca de` deja de enumerar `@google-cloud/local-auth` como componente redistribuido, desaparece el docKey `license-import-extract-google-auth` y se elimina la licencia pública repo-managed asociada al helper retirado.
+- Documentación viva:
+  - `docs/tree_folders_files.md`: se actualiza para reflejar que la activación OCR ya no usa `local-auth` y para registrar el nuevo helper propio `ocr_google_drive_secure_oauth.js`.
+  - `tools_local/issues/issue_229.md`: el issue deja de ser solo diagnóstico y pasa a incluir la propuesta final adoptada, la nota post-implementación y las decisiones nuevas tomadas durante la ejecución real del cambio.
+
+### Arreglado
+
+- Google OCR / seguridad del flujo:
+  - la activación OCR deja de depender de un helper upstream archivado/deprecated que no exponía `state` ni PKCE en el flujo visible revisado; la generación y verificación de ambas protecciones queda ahora bajo control explícito del repo.
+- Google OCR / robustez del listener:
+  - el listener loopback deja de poder quedar esperando indefinidamente si el navegador se abre pero no llega callback; ahora existe timeout explícito con error interno tipado `oauth_timeout`.
+  - redirects OAuth con loopback IPv6 bracketed (`http://[::1]:...`) dejan de depender de que `server.listen(...)` acepte ese hostname tal cual; el helper conserva la forma bracketed en la URL, pero normaliza `"[::1]" -> "::1"` solo para el bind del host del listener.
+
+### Contratos tocados
+
+- IPC OCR renderer ↔ main:
+  - **sin cambio contractual externo**: se mantienen `import-extract-prepare-ocr-activation`, `import-extract-launch-ocr-activation` e `import-extract-disconnect-ocr`, junto con sus shapes generales de request/respuesta y el mismo modelo de éxito/fallo consumido por renderer.
+- Surface de errores del flujo OAuth:
+  - **sin churn contractual hacia renderer**: los errores internos nuevos `oauth_state_invalid` y `oauth_timeout` no se exponen como codes nuevos del IPC.
+  - mapeo actual:
+    - `oauth_state_invalid` → code público existente `auth_failed`
+    - `oauth_timeout` → code público existente `platform_runtime_failed`
+  - ambos preservan `reason` específico en `detailsSafeForLogs` para diagnóstico sin introducir nuevas keys i18n ni nuevas ramas contractuales en renderer.
+
+### Archivos
+
+- `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+- `electron/import_extract_platform/ocr_google_drive_oauth_client.js`
+- `electron/import_extract_platform/ocr_google_drive_secure_oauth.js`
+- `test/unit/electron/ocr_google_drive_secure_oauth.test.js`
+- `package.json`
+- `package-lock.json`
+- `public/info/acerca_de.html`
+- `electron/link_openers.js`
+- `public/third_party_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt` (removido)
+- `docs/tree_folders_files.md`
+- `tools_local/issues/issue_229.md`
+
 ---
 
 ## [1.1.0] toT - Testing
