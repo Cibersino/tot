@@ -29,10 +29,14 @@
   "build": {
     "appId": "com.cibersino.tot",
     "productName": "toT",
-    "asar": true,
+    "asar": {
+      "smartUnpack": false
+    },
     "asarUnpack": [
-      "**/node_modules/sharp/**/*",
-      "**/node_modules/@img/**/*"
+      "**/node_modules/@img/sharp-win32-x64/**/*",
+      "**/node_modules/@img/sharp-darwin-x64/**/*",
+      "**/node_modules/@img/sharp-darwin-arm64/**/*",
+      "**/node_modules/@img/sharp-linux-x64/**/*"
     ],
     "directories": {
       "output": "build-output",
