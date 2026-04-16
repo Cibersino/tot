@@ -93,7 +93,7 @@
       "title": "toT — Texto completo",
       "placeholder": "Cole ou digite seu texto aqui...",
       "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-cálculo",
+      "calc_while_typing": "Auto",
       "spellcheck": "Ortografia",
       "text_size_label": "Tamanho",
       "decrease_text_size": "Reduzir tamanho do texto",
