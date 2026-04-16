@@ -18,12 +18,12 @@
 
 const fs = require('fs');
 const path = require('path');
-const { BrowserWindow } = require('electron');
-const { authenticate } = require('@google-cloud/local-auth');
+const { BrowserWindow, shell } = require('electron');
 const Log = require('../log');
 const { PROVIDER_API_DISABLED_CODE } = require('./ocr_google_drive_provider_failure');
 const { readGoogleOAuthCredentialsFile } = require('./ocr_google_drive_credentials_file');
 const { describePersistedGoogleToken } = require('./ocr_google_drive_oauth_client');
+const { authenticateGoogleLoopback } = require('./ocr_google_drive_secure_oauth');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
 const { writeEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 
@@ -165,6 +165,19 @@ function mapAuthenticateError(err) {
   const name = safeErrorName(err);
   const message = safeErrorMessage(err);
   const lowered = `${name} ${message}`.toLowerCase();
+
+  if (String(err && err.code ? err.code : '') === 'oauth_state_invalid') {
+    return buildFailure({
+      state: 'failure',
+      code: 'auth_failed',
+      detailsSafeForLogs: {
+        stage: 'oauth_authenticate',
+        reason: 'oauth_state_invalid',
+        errorName: name,
+        errorMessage: message,
+      },
+    });
+  }
 
   if (lowered.includes('access_denied')
     || lowered.includes('cancel')
@@ -347,7 +360,14 @@ function resolveRuntimePaths(resolvePaths) {
 // IPC registration / handler
 // =============================================================================
 
-function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
+function registerIpc(
+  ipcMain,
+  {
+    getWindows,
+    resolvePaths,
+    launchSecureGoogleOAuth = authenticateGoogleLoopback,
+  } = {}
+) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_ocr_activation] registerIpc requires ipcMain');
   }
@@ -498,9 +518,10 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
 
       let authClient = null;
       try {
-        authClient = await authenticate({
+        authClient = await launchSecureGoogleOAuth({
+          credentialsJson: credentialsValidation.parsed,
           scopes: OCR_SCOPES,
-          keyfilePath: credentialsPath,
+          openExternal: (url) => shell.openExternal(url),
         });
       } catch (authErr) {
         const authFailure = mapAuthenticateError(authErr);

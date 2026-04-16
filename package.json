@@ -80,7 +80,6 @@
     }
   },
   "dependencies": {
-    "@google-cloud/local-auth": "^3.0.1",
     "adm-zip": "^0.5.16",
     "googleapis": "^171.4.0",
     "mammoth": "^1.11.0",

@@ -24,6 +24,21 @@ function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
+function extractGoogleOAuthCredentialsRoot(credentialsJson) {
+  const root = credentialsJson && typeof credentialsJson === 'object'
+    ? (credentialsJson.installed || credentialsJson.web || null)
+    : null;
+
+  if (!root || typeof root !== 'object') {
+    throw new Error('Invalid Google credentials shape.');
+  }
+  if (!hasNonEmptyString(root.client_id) || !hasNonEmptyString(root.client_secret)) {
+    throw new Error('Google credentials missing client_id/client_secret.');
+  }
+
+  return root;
+}
+
 function resolveCanonicalRedirectUri(redirectUris) {
   if (!Array.isArray(redirectUris)) return '';
 
@@ -47,27 +62,29 @@ function describePersistedGoogleToken(tokenPayload) {
   };
 }
 
-function buildGoogleOAuthClient(credentialsJson, tokenJson) {
-  const root = credentialsJson && typeof credentialsJson === 'object'
-    ? (credentialsJson.installed || credentialsJson.web || null)
-    : null;
-
-  if (!root || typeof root !== 'object') {
-    throw new Error('Invalid Google credentials shape.');
-  }
-  if (!hasNonEmptyString(root.client_id) || !hasNonEmptyString(root.client_secret)) {
-    throw new Error('Google credentials missing client_id/client_secret.');
-  }
-
-  const redirectUri = resolveCanonicalRedirectUri(root.redirect_uris);
+function buildGoogleOAuthClientFromCredentials(
+  credentialsJson,
+  {
+    tokenJson = null,
+    redirectUri = '',
+  } = {}
+) {
+  const root = extractGoogleOAuthCredentialsRoot(credentialsJson);
+  const effectiveRedirectUri = hasNonEmptyString(redirectUri)
+    ? String(redirectUri).trim()
+    : resolveCanonicalRedirectUri(root.redirect_uris);
 
   const oauthClient = new google.auth.OAuth2(
     String(root.client_id),
     String(root.client_secret),
-    redirectUri
+    effectiveRedirectUri
   );
   oauthClient.setCredentials(tokenJson && typeof tokenJson === 'object' ? tokenJson : {});
   return oauthClient;
+}
+
+function buildGoogleOAuthClient(credentialsJson, tokenJson) {
+  return buildGoogleOAuthClientFromCredentials(credentialsJson, { tokenJson });
 }
 
 function buildGoogleTokenRevocationClient(tokenJson) {
@@ -106,9 +123,12 @@ function selectPreferredRevocationToken(tokenPayload) {
 // =============================================================================
 
 module.exports = {
+  buildGoogleOAuthClientFromCredentials,
   describePersistedGoogleToken,
   buildGoogleOAuthClient,
   buildGoogleTokenRevocationClient,
+  extractGoogleOAuthCredentialsRoot,
+  resolveCanonicalRedirectUri,
   selectPreferredRevocationToken,
 };
 
