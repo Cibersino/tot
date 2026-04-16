@@ -53,6 +53,7 @@ Reglas:
 - Limpieza del flujo legado: `@google-cloud/local-auth` sale del grafo runtime redistribuido, desaparece de `Acerca de` y de los docKeys/licencias públicas actuales del producto; el contrato histórico queda preservado solo en documentos versionados de releases anteriores.
 - Packaging runtime OCR: el artefacto empaquetado deja de depender de un `asarUnpack` amplio para `sharp`/`@img` y pasa a desempaquetar solo los runtimes nativos de `sharp` por plataforma, manteniendo operativa la normalización OCR de `.webp` / `.tif` / `.tiff` en build distribuido sin arrastrar módulos JS ajenos fuera de `app.asar`.
 - Packaging UX del release portable: el `.zip` distribuido deja de extraerse con archivos sueltos en la raíz y pasa a quedar reenvuelto bajo una carpeta superior única `toT-<version>/`, alineando el nombre visible del contenedor extraído con la versión publicada.
+- Main window / selector section: la zona del texto vigente deja de repartir ownership entre `public/renderer.js` y wiring local disperso; ahora el renderer usa un owner dedicado `public/js/current_text_selector_section.js`, y esa misma sección agrega un checkbox `Spoiler` junto a `Reading speed test` para ocultar el segmento final del preview sin mostrar el separador `... | ...`.
 
 ### Agregado
 
@@ -74,8 +75,15 @@ Reglas:
   - `package.json`: `electron-builder` deja de usar `asarUnpack` amplio sobre `node_modules/sharp/**/*` y `node_modules/@img/**/*`; el release pasa a declarar solo los runtimes nativos de `sharp` por plataforma (`@img/sharp-win32-x64`, `@img/sharp-darwin-x64`, `@img/sharp-darwin-arm64`, `@img/sharp-linux-x64`) como contenido fuera de `app.asar`.
   - `package.json`: `asar.smartUnpack` se fija en `false` para evitar que la heurística automática marque módulos completos como unpacked por archivos binarios/metadata incidentales no ejecutables.
   - `package.json`: el packaging registra `afterAllArtifactBuild` para postprocesar los `.zip` distribuidos y envolver su contenido final bajo una carpeta raíz versionada `toT-<version>/`, sin cambiar el layout interno producido en `win-unpacked`.
+- Ventana principal / selector del texto vigente:
+  - `public/renderer.js`: deja de seguir absorbiendo detalles locales del selector del texto vigente y conserva solo el rol de orquestador; el título, el preview, el toolbar local y su lock state pasan a quedar compuestos por un owner específico del renderer.
+  - `public/js/current_text_selector_section.js` (nuevo): asume el ownership UI completo de la sección del texto vigente en la ventana principal.
+  - `public/index.html` y `public/style.css`: el toolbar del selector agrega un checkbox `Spoiler`, marcado por defecto, a la derecha de `Reading speed test`.
+  - `public/js/current_text_selector_section.js`: el preview largo conserva el contrato actual basado en `AppConstants` cuando `Spoiler` está marcado y, cuando se desmarca, oculta el tramo final, elimina `... | ...` y reasigna `PREVIEW_END_CHARS` al tramo inicial visible, devolviendo ahora un truncado explícito `start...`.
+  - i18n renderer (`arn`, `de`, `en`, `es`, `fr`, `it`, `pt`): nueva key `renderer.main.reading_tools.preview_spoiler`.
 - Documentación viva:
   - `docs/tree_folders_files.md`: se actualiza para reflejar que la activación OCR ya no usa `local-auth`, para registrar el nuevo helper propio `ocr_google_drive_secure_oauth.js` y para documentar el hook de packaging que reenvuelve los `.zip` distribuidos bajo `toT-<version>/`.
+  - `docs/tree_folders_files.md`: se amplía también para registrar `public/js/current_text_selector_section.js` como owner UI del selector del texto vigente y del nuevo toggle `Spoiler`.
   - `tools_local/issues/issue_229.md`: el issue deja de ser solo diagnóstico y pasa a incluir la propuesta final adoptada, la nota post-implementación y las decisiones nuevas tomadas durante la ejecución real del cambio.
 
 ### Arreglado
@@ -108,6 +116,16 @@ Reglas:
 - `electron/import_extract_platform/ocr_google_drive_secure_oauth.js`
 - `test/unit/electron/ocr_google_drive_secure_oauth.test.js`
 - `build-resources/after-all-artifact-build.js`
+- `public/js/current_text_selector_section.js`
+- `public/index.html`
+- `public/style.css`
+- `i18n/arn/renderer.json`
+- `i18n/de/renderer.json`
+- `i18n/en/renderer.json`
+- `i18n/es/renderer.json`
+- `i18n/fr/renderer.json`
+- `i18n/it/renderer.json`
+- `i18n/pt/renderer.json`
 - `package.json`
 - `package-lock.json`
 - `public/info/acerca_de.html`

@@ -179,6 +179,7 @@ tot/
 │ │ ├── import_extract_ocr_disconnect.js
 │ │ ├── import_extract_entry.js
 │ │ ├── import_extract_drag_drop.js
+│ │ ├── current_text_selector_section.js
 │ │ └── log.js
 │ ├── renderer.js
 │ ├── language_window.js
@@ -383,6 +384,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/import_extract_ocr_disconnect.js` — Handler del renderer para `Disconnect Google OCR`: solicita la desconexión al main y muestra feedback de éxito/fallo/not-connected.
 - `public/js/import_extract_entry.js` — Orquestador compartido del flujo import/extract desde picker o drag/drop.
 - `public/js/import_extract_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de archivos al entry flow compartido.
+- `public/js/current_text_selector_section.js` — Owner UI de la sección “texto vigente” en la ventana principal: concentra el título, el preview del texto actual, el toolbar local de esa sección, el lock state específico de sus controles y el toggle `Spoiler`, que permite ocultar el tramo final del preview sin devolver esa lógica a `public/renderer.js`.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 
