@@ -35,6 +35,7 @@ const INVALID_STATE_RESPONSE = 'Authentication state is invalid. You can close t
 const MISSING_CODE_RESPONSE = 'No authentication code was provided. You can close this window.';
 const FAILURE_RESPONSE = 'Authentication failed. You can close this window and try again.';
 const INVALID_CALLBACK_RESPONSE = 'Invalid callback URL.';
+const DEFAULT_CALLBACK_TIMEOUT_MS = 5 * 60 * 1000;
 
 // =============================================================================
 // Helpers
@@ -64,6 +65,22 @@ function isLoopbackHostname(hostname) {
     || normalized === '127.0.0.1'
     || normalized === '::1'
     || normalized === '[::1]';
+}
+
+function normalizeLoopbackListenHost(hostname) {
+  const normalized = String(hostname || '').trim().toLowerCase();
+  if (normalized === '[::1]') {
+    return '::1';
+  }
+  return normalized;
+}
+
+function normalizeCallbackTimeoutMs(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEFAULT_CALLBACK_TIMEOUT_MS;
+  }
+  return Math.trunc(parsed);
 }
 
 function resolveLoopbackRedirectTemplate(credentialsJson) {
@@ -136,6 +153,7 @@ async function authenticateGoogleLoopback({
   openExternal,
   httpModule = http,
   randomBytes = crypto.randomBytes,
+  callbackTimeoutMs = DEFAULT_CALLBACK_TIMEOUT_MS,
   createOAuthClient = (redirectUri) => buildGoogleOAuthClientFromCredentials(credentialsJson, {
     redirectUri,
   }),
@@ -156,18 +174,25 @@ async function authenticateGoogleLoopback({
   }
 
   const redirectUrl = resolveLoopbackRedirectTemplate(credentialsJson);
+  const listenHost = normalizeLoopbackListenHost(redirectUrl.hostname);
   const listenPort = hasNonEmptyString(redirectUrl.port) ? Number(redirectUrl.port) : 0;
+  const effectiveCallbackTimeoutMs = normalizeCallbackTimeoutMs(callbackTimeoutMs);
 
   let settled = false;
   let oauthClient = null;
   let expectedState = '';
   let codeVerifier = '';
   let server = null;
+  let timeoutHandle = null;
 
   return new Promise((resolve, reject) => {
     const settle = (err, client) => {
       if (settled) return;
       settled = true;
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
       closeServer(server);
       if (err) {
         reject(err);
@@ -233,7 +258,16 @@ async function authenticateGoogleLoopback({
       settle(err);
     });
 
-    server.listen(listenPort, redirectUrl.hostname, async () => {
+    timeoutHandle = setTimeout(() => {
+      const err = new Error('OAuth callback timed out.');
+      err.code = 'oauth_timeout';
+      settle(err);
+    }, effectiveCallbackTimeoutMs);
+    if (typeof timeoutHandle.unref === 'function') {
+      timeoutHandle.unref();
+    }
+
+    server.listen(listenPort, listenHost, async () => {
       try {
         const address = server.address();
         if (!address || typeof address !== 'object' || !Number.isFinite(address.port)) {
@@ -283,6 +317,7 @@ module.exports = {
   authenticateGoogleLoopback,
   createCsrfState,
   isLoopbackHostname,
+  normalizeLoopbackListenHost,
   resolveLoopbackRedirectTemplate,
 };
 

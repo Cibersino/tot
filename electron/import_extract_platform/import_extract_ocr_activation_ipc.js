@@ -179,6 +179,19 @@ function mapAuthenticateError(err) {
     });
   }
 
+  if (String(err && err.code ? err.code : '') === 'oauth_timeout') {
+    return buildFailure({
+      state: 'failure',
+      code: 'platform_runtime_failed',
+      detailsSafeForLogs: {
+        stage: 'oauth_authenticate',
+        reason: 'oauth_timeout',
+        errorName: name,
+        errorMessage: message,
+      },
+    });
+  }
+
   if (lowered.includes('access_denied')
     || lowered.includes('cancel')
     || lowered.includes('canceled')

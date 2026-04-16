@@ -10,6 +10,7 @@ const { URL } = require('url');
 const {
   authenticateGoogleLoopback,
   isLoopbackHostname,
+  normalizeLoopbackListenHost,
   resolveLoopbackRedirectTemplate,
 } = require('../../../electron/import_extract_platform/ocr_google_drive_secure_oauth');
 
@@ -46,6 +47,13 @@ test('isLoopbackHostname accepts supported loopback hosts', () => {
   assert.equal(isLoopbackHostname('127.0.0.1'), true);
   assert.equal(isLoopbackHostname('[::1]'), true);
   assert.equal(isLoopbackHostname('example.com'), false);
+});
+
+test('normalizeLoopbackListenHost strips IPv6 URL brackets for server.listen host binding', () => {
+  assert.equal(normalizeLoopbackListenHost('localhost'), 'localhost');
+  assert.equal(normalizeLoopbackListenHost('127.0.0.1'), '127.0.0.1');
+  assert.equal(normalizeLoopbackListenHost('::1'), '::1');
+  assert.equal(normalizeLoopbackListenHost('[::1]'), '::1');
 });
 
 test('resolveLoopbackRedirectTemplate reuses the bundled loopback redirect owner', () => {
@@ -173,3 +181,34 @@ test('authenticateGoogleLoopback rejects invalid callback state', async () => {
   });
 });
 
+test('authenticateGoogleLoopback times out cleanly when no callback arrives', async () => {
+  const resultPromise = authenticateGoogleLoopback({
+    credentialsJson: buildCredentials(['http://localhost/oauth2callback']),
+    scopes: ['scope.one'],
+    callbackTimeoutMs: 75,
+    createOAuthClient: () => ({
+      async generateCodeVerifierAsync() {
+        return {
+          codeVerifier: 'verifier-timeout',
+          codeChallenge: 'challenge-timeout',
+        };
+      },
+      generateAuthUrl(opts = {}) {
+        return `https://accounts.google.com/o/oauth2/v2/auth?${
+          new URLSearchParams(opts).toString()
+        }`;
+      },
+      async getToken() {
+        throw new Error('getToken should not be called when the callback times out');
+      },
+      credentials: {},
+    }),
+    openExternal: async () => {},
+  });
+
+  await assert.rejects(resultPromise, (err) => {
+    assert.equal(err && err.code, 'oauth_timeout');
+    assert.match(String(err && err.message), /timed out/i);
+    return true;
+  });
+});
