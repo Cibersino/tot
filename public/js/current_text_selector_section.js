@@ -179,10 +179,7 @@
   // =============================================================================
   function applyTranslations({ tRenderer } = {}) {
     if (typeof tRenderer !== 'function') {
-      log.warnOnce(
-        'current_text_selector_section.tRenderer.invalid',
-        'tRenderer unavailable; selector translations skipped.'
-      );
+      log.warn('tRenderer unavailable; selector translations skipped.');
       return;
     }
 
