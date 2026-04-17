@@ -66,6 +66,9 @@ if (typeof window.editorAPI.onReplaceRequest !== 'function') {
 if (typeof window.editorAPI.sendReplaceResponse !== 'function') {
   throw new Error('[editor] editorAPI.sendReplaceResponse unavailable; cannot continue');
 }
+if (typeof window.editorAPI.sendReplaceStatus !== 'function') {
+  throw new Error('[editor] editorAPI.sendReplaceStatus unavailable; cannot continue');
+}
 
 // =============================================================================
 // Bootstrap: config and translations (async, best-effort)
@@ -575,13 +578,105 @@ function tryNativeReplaceCurrentSelectionWithoutSync(replacementText) {
   }
 }
 
-function buildReplaceResponse(requestId, fields = {}) {
+function computeLiteralReplaceAll(value, query, replacement, matchCase = false) {
+  const sourceText = String(value || '');
+  const needle = String(query || '');
+  const replacementText = String(replacement || '');
+
+  if (!needle) {
+    return {
+      replacements: 0,
+      nextValue: sourceText,
+    };
+  }
+
+  const haystack = matchCase ? sourceText : sourceText.toLocaleLowerCase();
+  const normalizedNeedle = matchCase ? needle : needle.toLocaleLowerCase();
+  const needleLength = needle.length;
+  let fromIndex = 0;
+  let replacements = 0;
+  const parts = [];
+
+  while (fromIndex <= sourceText.length) {
+    const matchIndex = haystack.indexOf(normalizedNeedle, fromIndex);
+    if (matchIndex === -1) {
+      parts.push(sourceText.slice(fromIndex));
+      break;
+    }
+
+    parts.push(sourceText.slice(fromIndex, matchIndex));
+    parts.push(replacementText);
+    fromIndex = matchIndex + needleLength;
+    replacements += 1;
+  }
+
+  return {
+    replacements,
+    nextValue: replacements > 0 ? parts.join('') : sourceText,
+  };
+}
+
+function tryNativeReplaceWholeValueWithoutSync(nextValue) {
+  const previousActiveElement = document.activeElement;
+
+  try {
+    editor.focus();
+    selectAllEditor();
+    let execOk = false;
+
+    try {
+      execOk = !!(document.execCommand && document.execCommand('insertText', false, nextValue));
+    } catch {
+      execOk = false;
+    }
+
+    if (execOk) {
+      return true;
+    }
+
+    if (typeof editor.setRangeText === 'function') {
+      editor.setRangeText(nextValue, 0, editor.value.length, 'end');
+      dispatchNativeInputEvent();
+      return true;
+    }
+
+    editor.value = nextValue;
+    dispatchNativeInputEvent();
+    return true;
+  } catch (err) {
+    log.error('tryNativeReplaceWholeValueWithoutSync error:', err);
+    return false;
+  } finally {
+    restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.replaceAll.native');
+  }
+}
+
+function getReplaceAllAllowedByLength() {
+  return editor.value.length <= SMALL_UPDATE_THRESHOLD;
+}
+
+function publishReplaceStatus() {
+  try {
+    window.editorAPI.sendReplaceStatus({
+      replaceAllAllowedByLength: getReplaceAllAllowedByLength(),
+    });
+  } catch (err) {
+    log.errorOnce(
+      'editor.replaceStatus.send',
+      'Error sending editor replace status:',
+      err
+    );
+  }
+}
+
+function buildReplaceResponse(operation, requestId, fields = {}) {
   return {
     requestId,
-    operation: 'replace-current',
+    operation: operation === 'replace-all' ? 'replace-all' : 'replace-current',
     ok: fields.ok !== false,
     status: fields.status || 'noop',
     replacements: Number.isFinite(fields.replacements) ? fields.replacements : 0,
+    finalTextLength: Number.isFinite(fields.finalTextLength) ? fields.finalTextLength : editor.value.length,
     error: fields.error || '',
   };
 }
@@ -593,14 +688,14 @@ function handleReplaceCurrentRequest(payload) {
   const matchCase = !!(payload && payload.matchCase);
 
   if (!query) {
-    return buildReplaceResponse(requestId, {
+    return buildReplaceResponse('replace-current', requestId, {
       status: 'noop-empty-query',
       replacements: 0,
     });
   }
 
   if (!selectionMatchesLiteralQuery(query, matchCase)) {
-    return buildReplaceResponse(requestId, {
+    return buildReplaceResponse('replace-current', requestId, {
       status: 'selection-mismatch',
       replacements: 0,
     });
@@ -608,7 +703,7 @@ function handleReplaceCurrentRequest(payload) {
 
   const replaced = tryNativeReplaceCurrentSelectionWithoutSync(replacement);
   if (!replaced) {
-    return buildReplaceResponse(requestId, {
+    return buildReplaceResponse('replace-current', requestId, {
       ok: false,
       status: 'internal-error',
       error: 'replace-current failed',
@@ -616,10 +711,90 @@ function handleReplaceCurrentRequest(payload) {
     });
   }
 
-  return buildReplaceResponse(requestId, {
+  return buildReplaceResponse('replace-current', requestId, {
     status: 'replaced',
     replacements: 1,
   });
+}
+
+function handleReplaceAllRequest(payload) {
+  const requestId = Number(payload && payload.requestId);
+  const query = typeof payload?.query === 'string' ? payload.query : '';
+  const replacement = typeof payload?.replacement === 'string' ? payload.replacement : '';
+  const matchCase = !!(payload && payload.matchCase);
+  const currentValue = editor.value;
+
+  if (!query) {
+    return buildReplaceResponse('replace-all', requestId, {
+      status: 'noop-empty-query',
+      replacements: 0,
+      finalTextLength: currentValue.length,
+    });
+  }
+
+  if (currentValue.length > SMALL_UPDATE_THRESHOLD) {
+    return buildReplaceResponse('replace-all', requestId, {
+      status: 'noop-length-disallowed',
+      replacements: 0,
+      finalTextLength: currentValue.length,
+    });
+  }
+
+  const computed = computeLiteralReplaceAll(currentValue, query, replacement, matchCase);
+  if (!computed.replacements || computed.nextValue === currentValue) {
+    return buildReplaceResponse('replace-all', requestId, {
+      status: 'noop-unchanged',
+      replacements: 0,
+      finalTextLength: currentValue.length,
+    });
+  }
+
+  if (computed.nextValue.length > SMALL_UPDATE_THRESHOLD) {
+    return buildReplaceResponse('replace-all', requestId, {
+      status: 'noop-length-disallowed',
+      replacements: 0,
+      finalTextLength: currentValue.length,
+    });
+  }
+
+  if (computed.nextValue.length > maxTextChars) {
+    return buildReplaceResponse('replace-all', requestId, {
+      ok: false,
+      status: 'max-text-exceeded',
+      replacements: 0,
+      finalTextLength: currentValue.length,
+      error: 'replace-all projected text exceeds max text chars',
+    });
+  }
+
+  const replaced = tryNativeReplaceWholeValueWithoutSync(computed.nextValue);
+  if (!replaced) {
+    return buildReplaceResponse('replace-all', requestId, {
+      ok: false,
+      status: 'internal-error',
+      error: 'replace-all failed',
+      replacements: 0,
+      finalTextLength: currentValue.length,
+    });
+  }
+
+  return buildReplaceResponse('replace-all', requestId, {
+    status: 'replaced',
+    replacements: computed.replacements,
+    finalTextLength: computed.nextValue.length,
+  });
+}
+
+function handleReplaceRequest(payload) {
+  const operation = payload && payload.operation === 'replace-all'
+    ? 'replace-all'
+    : 'replace-current';
+
+  if (operation === 'replace-all') {
+    return handleReplaceAllRequest(payload);
+  }
+
+  return handleReplaceCurrentRequest(payload);
 }
 
 // =============================================================================
@@ -946,6 +1121,7 @@ async function applyExternalUpdate(payload) {
     await applyExternalUpdate({ text: t || '', meta: { source: 'main', action: 'init' } });
     // initial state of CALCULATE button
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
+    publishReplaceStatus();
   } catch (err) {
     log.error('Error initializing editor:', err);
   }
@@ -966,6 +1142,7 @@ window.editorAPI.onForceClear(() => {
   } catch (err) {
     log.error('Error in onForceClear:', err);
   } finally {
+    publishReplaceStatus();
     suppressLocalUpdate = false;
     restoreFocusToEditor();
   }
@@ -975,15 +1152,19 @@ window.editorAPI.onReplaceRequest((payload) => {
   const requestId = Number(payload && payload.requestId);
 
   Promise.resolve()
-    .then(() => handleReplaceCurrentRequest(payload || {}))
+    .then(() => handleReplaceRequest(payload || {}))
     .catch((err) => {
-      log.error('handleReplaceCurrentRequest error:', err);
-      return buildReplaceResponse(requestId, {
+      log.error('handleReplaceRequest error:', err);
+      return buildReplaceResponse(
+        payload && payload.operation === 'replace-all' ? 'replace-all' : 'replace-current',
+        requestId,
+        {
         ok: false,
         status: 'internal-error',
         error: String(err),
         replacements: 0,
-      });
+        }
+      );
     })
     .then((response) => {
       try {
@@ -1077,6 +1258,8 @@ if (editor) {
 }
 
 editor.addEventListener('input', () => {
+  publishReplaceStatus();
+
   if (suppressLocalUpdate || editor.readOnly) return;
 
   if (!suppressLocalUpdate) {
@@ -1145,6 +1328,7 @@ function resetEditorFontSize() {
 // Trash button empties textarea and updates main
 btnTrash.addEventListener('click', () => {
   editor.value = '';
+  publishReplaceStatus();
   // immediately update main
   sendCurrentTextToMain('clear', {
     text: '',

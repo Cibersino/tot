@@ -37,6 +37,7 @@ const api = {
     'removeListener error (editor-replace-request):'
   ),
   sendReplaceResponse: (payload) => ipcRenderer.send('editor-replace-response', payload),
+  sendReplaceStatus: (payload) => ipcRenderer.send('editor-replace-status', payload),
   onInitText: (cb) => subscribeWithUnsub(
     'editor-init-text',
     cb,

@@ -45,6 +45,7 @@ if (
   typeof findApi.next !== 'function' ||
   typeof findApi.prev !== 'function' ||
   typeof findApi.replaceCurrent !== 'function' ||
+  typeof findApi.replaceAll !== 'function' ||
   typeof findApi.toggleExpanded !== 'function' ||
   typeof findApi.close !== 'function' ||
   typeof findApi.onInit !== 'function' ||
@@ -98,6 +99,7 @@ const findState = {
   finalUpdate: true,
   expanded: false,
   busy: false,
+  replaceAllAllowedByLength: false,
 };
 
 // =============================================================================
@@ -121,6 +123,7 @@ function normalizeState(payload) {
   findState.finalUpdate = !!payload.finalUpdate;
   findState.expanded = !!payload.expanded;
   findState.busy = !!payload.busy;
+  findState.replaceAllAllowedByLength = !!payload.replaceAllAllowedByLength;
 }
 
 async function ensureTranslations(lang) {
@@ -151,12 +154,16 @@ function applyUiState() {
 
   const hasQuery = findState.query.length > 0;
   const hasMatches = findState.matches > 0;
+  const canReplaceAll = hasQuery &&
+    hasMatches &&
+    findState.finalUpdate &&
+    findState.replaceAllAllowedByLength;
   inputEl.disabled = findState.busy;
   replaceInputEl.disabled = findState.busy;
   prevEl.disabled = findState.busy || !hasQuery;
   nextEl.disabled = findState.busy || !hasQuery;
   replaceOneEl.disabled = findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
-  replaceAllEl.disabled = true;
+  replaceAllEl.disabled = findState.busy || !canReplaceAll;
   toggleEl.disabled = findState.busy;
   closeEl.disabled = findState.busy;
   statusEl.textContent = resolveStatusText();
@@ -257,6 +264,18 @@ async function runReplaceCurrent() {
   }
 }
 
+async function runReplaceAll() {
+  try {
+    await findApi.replaceAll(replaceInputEl.value || '');
+  } catch (err) {
+    log.errorOnce(
+      'editor-find.replaceAll.failed',
+      'Error sending replace-all request to main process:',
+      err
+    );
+  }
+}
+
 // =============================================================================
 // Language bootstrap helper
 // =============================================================================
@@ -317,6 +336,10 @@ nextEl.addEventListener('click', () => {
 
 replaceOneEl.addEventListener('click', () => {
   runReplaceCurrent();
+});
+
+replaceAllEl.addEventListener('click', () => {
+  runReplaceAll();
 });
 
 closeEl.addEventListener('click', () => {

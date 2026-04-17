@@ -53,6 +53,7 @@ let closingFindWindow = false;
 let editorClosing = false;
 let editorShortcutActions = null;
 let replaceResponseListenerRegistered = false;
+let replaceStatusListenerRegistered = false;
 
 const state = {
   query: '',
@@ -62,6 +63,7 @@ const state = {
   finalUpdate: true,
   expanded: false,
   busy: false,
+  replaceAllAllowedByLength: false,
 };
 
 // =============================================================================
@@ -103,6 +105,7 @@ function buildPublicState() {
     finalUpdate: state.finalUpdate,
     expanded: state.expanded,
     busy: state.busy,
+    replaceAllAllowedByLength: state.replaceAllAllowedByLength,
   };
 }
 
@@ -492,7 +495,7 @@ function waitForSearchCompletion(requestId, timeoutMs = REPLACE_PIPELINE_TIMEOUT
 function clearPendingEditorReplace(status = 'aborted') {
   if (!pendingEditorReplace) return;
 
-  const { timeoutId, resolve } = pendingEditorReplace;
+  const { timeoutId, resolve, operation } = pendingEditorReplace;
   pendingEditorReplace = null;
 
   try {
@@ -505,7 +508,7 @@ function clearPendingEditorReplace(status = 'aborted') {
     resolve({
       ok: false,
       status,
-      operation: 'replace-current',
+      operation: operation || 'replace-current',
       replacements: 0,
       error: '',
     });
@@ -514,7 +517,7 @@ function clearPendingEditorReplace(status = 'aborted') {
   }
 }
 
-function requestEditorReplaceCurrent(payload) {
+function requestEditorReplace(operation, payload) {
   clearPendingEditorReplace('superseded');
 
   const editorWin = resolveEditorWindow();
@@ -522,7 +525,7 @@ function requestEditorReplaceCurrent(payload) {
     return Promise.resolve({
       ok: false,
       status: 'editor-window-unavailable',
-      operation: 'replace-current',
+      operation,
       replacements: 0,
       error: 'editor window unavailable',
     });
@@ -536,18 +539,23 @@ function requestEditorReplaceCurrent(payload) {
       resolve({
         ok: false,
         status: 'timeout',
-        operation: 'replace-current',
+        operation,
         replacements: 0,
         error: 'editor replace request timed out',
       });
     }, REPLACE_PIPELINE_TIMEOUT_MS);
 
-    pendingEditorReplace = { requestId, resolve, timeoutId };
+    pendingEditorReplace = {
+      requestId,
+      operation,
+      resolve,
+      timeoutId,
+    };
 
     try {
       editorWin.webContents.send('editor-replace-request', {
         requestId,
-        operation: 'replace-current',
+        operation,
         query: String(payload && payload.query ? payload.query : ''),
         replacement: String(payload && payload.replacement ? payload.replacement : ''),
         matchCase: !!(payload && payload.matchCase),
@@ -558,7 +566,7 @@ function requestEditorReplaceCurrent(payload) {
       resolve({
         ok: false,
         status: 'send-failed',
-        operation: 'replace-current',
+        operation,
         replacements: 0,
         error: String(err),
       });
@@ -591,6 +599,22 @@ function rerunCurrentQueryOnCurrentText() {
 
   pendingResyncRequestId = res.requestId;
   return { ok: true, requestId: res.requestId };
+}
+
+async function refreshFindAfterReplaceAction(warnKey, warnLabel) {
+  if (!hasQuery()) return;
+
+  const refresh = rerunCurrentQueryOnCurrentText();
+  if (refresh.ok && refresh.requestId) {
+    const refreshResult = await waitForSearchCompletion(refresh.requestId);
+    if (!refreshResult.ok) {
+      log.warnOnce(
+        warnKey,
+        `${warnLabel} refresh search did not complete cleanly (ignored):`,
+        refreshResult.status
+      );
+    }
+  }
 }
 
 async function replaceCurrent(rawReplacement) {
@@ -672,7 +696,7 @@ async function replaceCurrent(rawReplacement) {
       };
     }
 
-    const replaceResult = await requestEditorReplaceCurrent({
+    const replaceResult = await requestEditorReplace('replace-current', {
       query: state.query,
       replacement,
       matchCase: false,
@@ -680,18 +704,110 @@ async function replaceCurrent(rawReplacement) {
 
     return replaceResult;
   } finally {
-    if (stoppedFindSelection && hasQuery()) {
-      const refresh = rerunCurrentQueryOnCurrentText();
-      if (refresh.ok && refresh.requestId) {
-        const refreshResult = await waitForSearchCompletion(refresh.requestId);
-        if (!refreshResult.ok) {
-          log.warnOnce(
-            'editorFind.replaceCurrent.refresh',
-            'replace-current refresh search did not complete cleanly (ignored):',
-            refreshResult.status
-          );
-        }
-      }
+    if (stoppedFindSelection) {
+      await refreshFindAfterReplaceAction(
+        'editorFind.replaceCurrent.refresh',
+        'replace-current'
+      );
+    }
+
+    setBusy(false);
+  }
+}
+
+async function replaceAll(rawReplacement) {
+  if (state.busy) {
+    return {
+      ok: true,
+      status: 'busy',
+      operation: 'replace-all',
+      replacements: 0,
+    };
+  }
+
+  if (!hasQuery()) {
+    return {
+      ok: true,
+      status: 'noop-empty-query',
+      operation: 'replace-all',
+      replacements: 0,
+    };
+  }
+
+  if (!state.replaceAllAllowedByLength) {
+    return {
+      ok: true,
+      status: 'noop-length-disallowed',
+      operation: 'replace-all',
+      replacements: 0,
+    };
+  }
+
+  const replacement = clampFindInputText(rawReplacement);
+  if (!resolveEditorWindow()) {
+    return {
+      ok: false,
+      status: 'editor-window-unavailable',
+      operation: 'replace-all',
+      replacements: 0,
+      error: 'editor window unavailable',
+    };
+  }
+
+  let shouldRefresh = false;
+  setBusy(true);
+
+  try {
+    const resync = rerunCurrentQueryOnCurrentText();
+    if (!resync.ok || !resync.requestId) {
+      return {
+        ok: false,
+        status: 'resync-start-failed',
+        operation: 'replace-all',
+        replacements: 0,
+        error: resync.error || 'replace-all re-sync start failed',
+      };
+    }
+
+    const resyncResult = await waitForSearchCompletion(resync.requestId);
+    if (!resyncResult.ok) {
+      return {
+        ok: false,
+        status: resyncResult.status || 'resync-failed',
+        operation: 'replace-all',
+        replacements: 0,
+        error: '',
+      };
+    }
+
+    if (!Number.isFinite(resyncResult.matches) || resyncResult.matches <= 0) {
+      return {
+        ok: true,
+        status: 'noop-no-matches',
+        operation: 'replace-all',
+        replacements: 0,
+      };
+    }
+
+    const replaceResult = await requestEditorReplace('replace-all', {
+      query: state.query,
+      replacement,
+      matchCase: false,
+    });
+
+    shouldRefresh = !!(
+      replaceResult &&
+      replaceResult.ok !== false &&
+      Number(replaceResult.replacements) > 0
+    );
+
+    return replaceResult;
+  } finally {
+    if (shouldRefresh) {
+      await refreshFindAfterReplaceAction(
+        'editorFind.replaceAll.refresh',
+        'replace-all'
+      );
     }
 
     setBusy(false);
@@ -1088,6 +1204,7 @@ function onEditorWindowClosed() {
   closingFindWindow = false;
   editorShortcutActions = null;
   clearStateOnly();
+  state.replaceAllAllowedByLength = false;
   detachEditorWindow();
   editorWinRef = null;
 }
@@ -1172,6 +1289,7 @@ function attachEditorWindow(editorWin, options = {}) {
   editorWinRef = null;
   editorClosing = false;
   editorShortcutActions = options && typeof options === 'object' ? options : null;
+  state.replaceAllAllowedByLength = false;
 
   if (!isAliveWindow(editorWin)) return;
   editorWinRef = editorWin;
@@ -1273,7 +1391,7 @@ function handleEditorReplaceResponse(event, payload) {
     return;
   }
 
-  const { timeoutId, resolve } = pendingEditorReplace;
+  const { timeoutId, resolve, operation } = pendingEditorReplace;
   pendingEditorReplace = null;
   clearTimeout(timeoutId);
   resolve(payload && typeof payload === 'object'
@@ -1281,10 +1399,34 @@ function handleEditorReplaceResponse(event, payload) {
     : {
       ok: false,
       status: 'invalid-response',
-      operation: 'replace-current',
+      operation: operation || 'replace-current',
       replacements: 0,
       error: 'invalid editor replace response',
     });
+}
+
+function handleEditorReplaceStatus(event, payload) {
+  const editorWin = resolveEditorWindow();
+  if (!editorWin || !event || !event.sender || event.sender !== editorWin.webContents) {
+    log.warnOnce(
+      'editorFind.editorReplaceStatus.unauthorized',
+      'editor-replace-status unauthorized (ignored).'
+    );
+    return;
+  }
+
+  const nextAllowed = !!(
+    payload &&
+    typeof payload === 'object' &&
+    payload.replaceAllAllowedByLength
+  );
+
+  if (state.replaceAllAllowedByLength === nextAllowed) {
+    return;
+  }
+
+  state.replaceAllAllowedByLength = nextAllowed;
+  publishState();
 }
 
 function registerIpc(ipcMain) {
@@ -1295,6 +1437,10 @@ function registerIpc(ipcMain) {
   if (!replaceResponseListenerRegistered && typeof ipcMain.on === 'function') {
     ipcMain.on('editor-replace-response', handleEditorReplaceResponse);
     replaceResponseListenerRegistered = true;
+  }
+  if (!replaceStatusListenerRegistered && typeof ipcMain.on === 'function') {
+    ipcMain.on('editor-replace-status', handleEditorReplaceStatus);
+    replaceStatusListenerRegistered = true;
   }
 
   registerAuthorizedFindIpc(
@@ -1330,6 +1476,14 @@ function registerIpc(ipcMain) {
     'editorFind.ipc.replaceCurrent.unauthorized',
     'editor-find-replace-current unauthorized (ignored).',
     (replacement) => replaceCurrent(replacement)
+  );
+
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-replace-all',
+    'editorFind.ipc.replaceAll.unauthorized',
+    'editor-find-replace-all unauthorized (ignored).',
+    (replacement) => replaceAll(replacement)
   );
 
   registerAuthorizedFindIpc(
