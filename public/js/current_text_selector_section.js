@@ -102,6 +102,9 @@
     if (textApplyApi && typeof textApplyApi.normalizeRepeat === 'function') {
       return textApplyApi.normalizeRepeat(rawValue, { maxRepeat: MAX_CLIPBOARD_REPEAT });
     }
+    log.warn(
+      'TextApplyCanonical.normalizeRepeat unavailable; using local repeat normalization fallback.'
+    );
     const numericValue = Number(rawValue);
     if (!Number.isInteger(numericValue) || numericValue < 1) return 1;
     return Math.min(numericValue, MAX_CLIPBOARD_REPEAT);
