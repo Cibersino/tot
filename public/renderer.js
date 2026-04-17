@@ -1878,9 +1878,7 @@ function initializeDelegatedIntegrations() {
   );
 }
 
-// =============================================================================
-// Current text actions
-// =============================================================================
+// Editor launch state mirrors the pending UI while the editor window opens.
 function showEditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
   currentTextSelectorSection.setEditorLaunchPending(true);
@@ -1891,6 +1889,9 @@ function hideEditorLoader() {
   currentTextSelectorSection.setEditorLaunchPending(false);
 }
 
+// =============================================================================
+// Import/extract actions
+// =============================================================================
 async function handleImportExtractPicker() {
   await importExtractEntry.startFromPicker();
 }
@@ -1931,6 +1932,9 @@ async function handleImportExtractAbort() {
   }
 }
 
+// =============================================================================
+// Current text actions
+// =============================================================================
 // Clipboard overwrite/append use the canonical apply path so truncation,
 // persistence, and shared notifications stay consistent across entry points.
 async function handleClipboardOverwrite() {
@@ -2053,6 +2057,9 @@ async function handleClearText() {
   }
 }
 
+// =============================================================================
+// Snapshot actions
+// =============================================================================
 async function handleLoadSnapshot() {
   if (!guardUserAction('snapshot-load')) return;
   if (typeof loadSnapshot !== 'function') {
