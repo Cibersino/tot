@@ -1878,6 +1878,9 @@ function initializeDelegatedIntegrations() {
   );
 }
 
+// =============================================================================
+// Main window action handlers
+// =============================================================================
 function showEditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
   currentTextSelectorSection.setEditorLaunchPending(true);
@@ -1928,6 +1931,8 @@ async function handleImportExtractAbort() {
   }
 }
 
+// Clipboard overwrite/append use the canonical apply path so truncation,
+// persistence, and shared notifications stay consistent across entry points.
 async function handleClipboardOverwrite() {
   if (!guardUserAction('clipboard-overwrite')) return;
   try {
@@ -2140,6 +2145,9 @@ async function handleLoadTask() {
   }
 }
 
+// =============================================================================
+// Reading and preset actions
+// =============================================================================
 // Help button: show a random tip key via Notify
 function bindHelpAction() {
   if (btnHelp) {
@@ -2186,7 +2194,8 @@ async function handleOpenReadingSpeedTest() {
   }
 }
 
-// Create preset: main owns the modal; renderer provides current WPM
+// Preset buttons are wired here; preset modals and native confirmation
+// dialogs are handled by main.
 function bindPresetActions() {
   btnNewPreset.addEventListener('click', () => {
     if (!guardUserAction('preset-new')) return;
