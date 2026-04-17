@@ -32,8 +32,8 @@ log.debug('Editor find main starting...');
 const EDITOR_FIND_WINDOW_HTML = path.join(__dirname, '../public/editor_find.html');
 const EDITOR_FIND_PRELOAD = path.join(__dirname, 'editor_find_preload.js');
 const FIND_WIN_WIDTH = 560;
-const FIND_WIN_HEIGHT_COLLAPSED = 56;
-const FIND_WIN_HEIGHT_EXPANDED = 96;
+const FIND_WIN_HEIGHT_COLLAPSED = 48;
+const FIND_WIN_HEIGHT_EXPANDED = 84;
 const REPLACE_PIPELINE_TIMEOUT_MS = 4000;
 
 // =============================================================================
