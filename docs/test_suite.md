@@ -811,8 +811,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Editor clear sends state update to main; both stay consistent.
 
-#### REG-EDITOR-05 Find (Ctrl+F) — modal mode + navigation + highlight
-**Goal:** Find works on textarea content, does not edit text, scrolls to matches, and shows highlight while focus stays in find input.
+#### REG-EDITOR-05 Find (Ctrl+F) — dedicated find window + navigation + highlight
+**Goal:** Find works on textarea content through the dedicated find window, scrolls to matches, and keeps the match highlight visible while focus stays in the find input.
 1. Ensure editor has a text with repeated terms across multiple lines (use Small text, then add a repeated word like `prueba` in several lines).
 2. Press **Ctrl+F** (or Cmd+F on macOS).
 3. Type a query that has multiple matches.
@@ -821,20 +821,21 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - **Shift+Enter** = previous
    - **F3** / **Shift+F3** = next/previous
 5. While Find is open:
-   - Try typing in the textarea, pressing Enter/Backspace, pasting (Ctrl+V), and dropping text.
+   - Keep focus in the find window and verify **Enter** / **Shift+Enter** stay bound to next/previous navigation.
+   - Then click back into the textarea and verify normal editor input/paste/drop behavior still follows the regular editor handlers.
 6. Confirm visibility:
    - Match highlight must be visible even when focus is in the find input.
    - Use Next/Prev to jump to matches that are off-screen; verify internal textarea scroll moves to the match.
 7. Scroll the textarea manually (mouse wheel / scrollbar) while Find remains open.
 
 **Expected:**
-- Find opens and focuses the find input.
+- Find opens as a dedicated secondary window and focuses the find input.
 - Navigation selects the match and scrolls the textarea so the match is in view.
-- Text is not modifiable while Find is open (readOnly/modal behavior + blocked paste/drop/input).
+- While the find input has focus, **Enter** / **Shift+Enter** and **F3** / **Shift+F3** navigate matches instead of editing text.
+- The editor is not forced into `readOnly`; if focus returns to the textarea, normal editing/paste/drop behavior remains available.
 - The find input itself remains a plain search control; it must not show spellcheck underlines.
-- Highlight remains visible while focus stays in the find input (overlay-based highlight).
-- Highlight stays aligned while scrolling the textarea.
-- **Esc** closes Find and restores normal editing.
+- Match highlight remains visible while focus stays in the find input.
+- **Esc** closes Find and restores focus to the editor.
 
 #### REG-EDITOR-06 Undo/Redo semantics (including Find not polluting edits)
 **Goal:** Undo/Redo behaves predictably for edits and is not affected by Find navigation.
