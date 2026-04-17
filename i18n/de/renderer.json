@@ -105,7 +105,6 @@
       "clear_title": "Löschen"
     },
     "editor_find": {
-      "label": "Suchen",
       "input_placeholder": "Suchen...",
       "input_aria": "Im Text suchen",
       "prev": "🡩",

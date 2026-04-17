@@ -105,7 +105,6 @@
       "clear_title": "Limpar"
     },
     "editor_find": {
-      "label": "Buscar",
       "input_placeholder": "Buscar...",
       "input_aria": "Buscar no texto",
       "prev": "🡩",

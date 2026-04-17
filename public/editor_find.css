@@ -22,16 +22,10 @@ body {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: auto minmax(140px, 1fr) auto auto auto auto;
+  grid-template-columns: minmax(140px, 1fr) auto auto auto auto;
   gap: 6px;
   align-items: center;
   padding: 8px;
-}
-
-.find-label {
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
 }
 
 .find-input {

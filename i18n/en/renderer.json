@@ -116,7 +116,6 @@
       "clear_title": "Clear"
     },
     "editor_find": {
-      "label": "Find",
       "input_placeholder": "Find...",
       "input_aria": "Find in text",
       "prev": "🡩",

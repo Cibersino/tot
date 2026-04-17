@@ -54,14 +54,14 @@ if (
 // =============================================================================
 // DOM references and shared state
 // =============================================================================
-const labelEl = document.getElementById('findLabel');
+const wrapEl = document.getElementById('findWrap');
 const inputEl = document.getElementById('findQuery');
 const prevEl = document.getElementById('findPrev');
 const nextEl = document.getElementById('findNext');
 const closeEl = document.getElementById('findClose');
 const statusEl = document.getElementById('findStatus');
 
-if (!labelEl || !inputEl || !prevEl || !nextEl || !closeEl || !statusEl) {
+if (!wrapEl || !inputEl || !prevEl || !nextEl || !closeEl || !statusEl) {
   throw new Error('[editor-find] Missing required DOM elements');
 }
 
@@ -132,9 +132,9 @@ function applyUiState() {
 async function applyTranslations() {
   await ensureTranslations(idiomaActual);
 
-  const title = tr('renderer.editor_find.label');
+  const title = tr('renderer.editor_find.input_aria');
   document.title = title;
-  labelEl.textContent = title;
+  wrapEl.setAttribute('aria-label', title);
 
   inputEl.placeholder = tr('renderer.editor_find.input_placeholder');
   inputEl.setAttribute('aria-label', tr('renderer.editor_find.input_aria'));

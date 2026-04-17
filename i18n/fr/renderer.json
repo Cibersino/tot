@@ -105,7 +105,6 @@
       "clear_title": "Vider"
     },
     "editor_find": {
-      "label": "Rechercher",
       "input_placeholder": "Rechercher...",
       "input_aria": "Rechercher dans le texte",
       "prev": "🡩",
