@@ -19,6 +19,9 @@
 const { BrowserWindow, screen } = require('electron');
 const path = require('path');
 const Log = require('./log');
+const {
+  EDITOR_FIND_INPUT_MAX_CHARS,
+} = require('./constants_main');
 
 const log = Log.get('editor-find-main');
 log.debug('Editor find main starting...');
@@ -71,6 +74,14 @@ function resolveFindWindow() {
 
 function hasQuery() {
   return state.query.length > 0;
+}
+
+function clampFindInputText(value) {
+  const text = String(value || '');
+  if (text.length <= EDITOR_FIND_INPUT_MAX_CHARS) {
+    return text;
+  }
+  return text.slice(0, EDITOR_FIND_INPUT_MAX_CHARS);
 }
 
 function buildPublicState() {
@@ -176,7 +187,7 @@ function runFind(options) {
 }
 
 function setQuery(rawQuery) {
-  const nextQuery = String(rawQuery || '');
+  const nextQuery = clampFindInputText(rawQuery);
   state.query = nextQuery;
 
   if (!hasQuery()) {

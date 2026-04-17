@@ -21,6 +21,7 @@ const EDITOR_FONT_SIZE_MIN_PX = 12; // Minimum font size for the manual editor t
 const EDITOR_FONT_SIZE_MAX_PX = 36; // Maximum font size for the manual editor textarea.
 const EDITOR_FONT_SIZE_DEFAULT_PX = 20; // Default font size for the manual editor textarea.
 const EDITOR_FONT_SIZE_STEP_PX = 2; // Step used by editor text-size controls and shortcuts.
+const EDITOR_FIND_INPUT_MAX_CHARS = 512; // Max chars for the editor find input. Must match public/js/constants.js.
 
 module.exports = {
   DEFAULT_LANG,
@@ -42,4 +43,5 @@ module.exports = {
   EDITOR_FONT_SIZE_MAX_PX,
   EDITOR_FONT_SIZE_DEFAULT_PX,
   EDITOR_FONT_SIZE_STEP_PX,
+  EDITOR_FIND_INPUT_MAX_CHARS,
 };

@@ -23,6 +23,7 @@
     EDITOR_FONT_SIZE_MAX_PX: 36, // Maximum font size for the manual editor textarea.
     EDITOR_FONT_SIZE_DEFAULT_PX: 20, // Default font size for the manual editor textarea.
     EDITOR_FONT_SIZE_STEP_PX: 2, // Step used by editor text-size controls and shortcuts.
+    EDITOR_FIND_INPUT_MAX_CHARS: 512, // Max chars for the editor find input. Must match electron/constants_main.js.
     PREVIEW_INLINE_THRESHOLD: 1200, // If text is shorter than this, show it all in the preview.
     PREVIEW_START_CHARS: 275, // Number of chars to show at the start of the preview.
     PREVIEW_END_CHARS: 275, // Number of chars to show at the end of the preview.

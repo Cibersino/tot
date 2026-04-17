@@ -25,7 +25,10 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[editor-find] AppConstants unavailable; verify constants.js is loaded.');
 }
-const { DEFAULT_LANG } = AppConstants;
+const {
+  DEFAULT_LANG,
+  EDITOR_FIND_INPUT_MAX_CHARS,
+} = AppConstants;
 
 const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer) {
@@ -64,6 +67,10 @@ if (!labelEl || !inputEl || !prevEl || !nextEl || !closeEl || !statusEl) {
 
 let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
+
+const findInputMaxChars = Number.isFinite(Number(EDITOR_FIND_INPUT_MAX_CHARS))
+  ? Math.max(1, Math.floor(Number(EDITOR_FIND_INPUT_MAX_CHARS)))
+  : 512;
 
 const findState = {
   query: '',
@@ -202,6 +209,8 @@ async function initLanguage() {
 // =============================================================================
 // UI event wiring
 // =============================================================================
+inputEl.maxLength = findInputMaxChars;
+
 inputEl.addEventListener('input', () => {
   pushQuery();
 });
