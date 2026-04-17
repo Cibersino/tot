@@ -90,27 +90,28 @@ const api = {
   setQuery: (query) => ipcRenderer.invoke('editor-find-set-query', query),
   next: () => ipcRenderer.invoke('editor-find-next'),
   prev: () => ipcRenderer.invoke('editor-find-prev'),
+  toggleExpanded: () => ipcRenderer.invoke('editor-find-toggle-expanded'),
   close: () => ipcRenderer.invoke('editor-find-close'),
   onInit,
   onState,
-  onFocusQuery: (cb) => {
+  onFocusTarget: (cb) => {
     if (typeof cb !== 'function') {
-      console.error('editorFindAPI.onFocusQuery called with non-function callback:', cb);
+      console.error('editorFindAPI.onFocusTarget called with non-function callback:', cb);
       return () => {};
     }
     const listener = (_event, payload) => {
       try {
         cb(payload || {});
       } catch (err) {
-        console.error('editor-find-focus-query callback error:', err);
+        console.error('editor-find-focus-target callback error:', err);
       }
     };
-    ipcRenderer.on('editor-find-focus-query', listener);
+    ipcRenderer.on('editor-find-focus-target', listener);
     return () => {
       try {
-        ipcRenderer.removeListener('editor-find-focus-query', listener);
+        ipcRenderer.removeListener('editor-find-focus-target', listener);
       } catch (err) {
-        console.error('editor-find-focus-query unsubscribe error:', err);
+        console.error('editor-find-focus-target unsubscribe error:', err);
       }
     };
   },
@@ -139,4 +140,3 @@ const api = {
 };
 
 contextBridge.exposeInMainWorld('editorFindAPI', api);
-

@@ -8,21 +8,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="editor_find.css" />
 </head>
-<body>
+<body data-expanded="false">
   <div id="findWrap" class="find-wrap" role="search" aria-label="Buscar en el texto">
-    <input
-      id="findQuery"
-      class="find-input"
-      type="text"
-      autocomplete="off"
-      spellcheck="false"
-      placeholder="Buscar..."
-      aria-label="Buscar en el texto"
-    />
-    <button id="findPrev" class="find-btn" type="button" title="Coincidencia anterior">Anterior</button>
-    <button id="findNext" class="find-btn" type="button" title="Coincidencia siguiente">Siguiente</button>
-    <span id="findStatus" class="find-status" role="status" aria-live="polite">Escribe para buscar</span>
-    <button id="findClose" class="find-btn find-close" type="button" title="Cerrar barra de busqueda">🗙</button>
+    <div class="find-row">
+      <button id="findToggle" class="find-btn find-toggle" type="button" title="Mostrar reemplazo" aria-label="Mostrar reemplazo">˃</button>
+      <input
+        id="findQuery"
+        class="find-input"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Buscar..."
+        aria-label="Buscar en el texto"
+      />
+      <button id="findPrev" class="find-btn" type="button" title="Coincidencia anterior">Anterior</button>
+      <button id="findNext" class="find-btn" type="button" title="Coincidencia siguiente">Siguiente</button>
+      <span id="findStatus" class="find-status" role="status" aria-live="polite">Escribe para buscar</span>
+      <button id="findClose" class="find-btn find-close" type="button" title="Cerrar barra de busqueda">🗙</button>
+    </div>
+    <div id="replaceRow" class="replace-row" hidden>
+      <input
+        id="findReplace"
+        class="find-input"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Reemplazar..."
+        aria-label="Texto de reemplazo"
+      />
+      <button id="findReplaceOne" class="find-btn" type="button" title="Reemplazar coincidencia actual" disabled>Reemplazar</button>
+      <button id="findReplaceAll" class="find-btn" type="button" title="Reemplazar todas las coincidencias" disabled>Reemplazar todo</button>
+    </div>
   </div>
 
   <script src="js/log.js"></script>

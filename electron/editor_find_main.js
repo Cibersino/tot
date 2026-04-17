@@ -32,7 +32,8 @@ log.debug('Editor find main starting...');
 const EDITOR_FIND_WINDOW_HTML = path.join(__dirname, '../public/editor_find.html');
 const EDITOR_FIND_PRELOAD = path.join(__dirname, 'editor_find_preload.js');
 const FIND_WIN_WIDTH = 560;
-const FIND_WIN_HEIGHT = 56;
+const FIND_WIN_HEIGHT_COLLAPSED = 56;
+const FIND_WIN_HEIGHT_EXPANDED = 96;
 
 // =============================================================================
 // Shared state (window refs + find session state)
@@ -43,7 +44,7 @@ let findWin = null;
 let editorListeners = null;
 let findListeners = null;
 
-let pendingFocusQuery = false;
+let pendingFocusTarget = null;
 let pendingResyncRequestId = null;
 let closingFindWindow = false;
 let editorClosing = false;
@@ -55,6 +56,7 @@ const state = {
   matches: 0,
   activeMatchOrdinal: 0,
   finalUpdate: true,
+  expanded: false,
 };
 
 // =============================================================================
@@ -76,6 +78,10 @@ function hasQuery() {
   return state.query.length > 0;
 }
 
+function getFindWindowHeight() {
+  return state.expanded ? FIND_WIN_HEIGHT_EXPANDED : FIND_WIN_HEIGHT_COLLAPSED;
+}
+
 function clampFindInputText(value) {
   const text = String(value || '');
   if (text.length <= EDITOR_FIND_INPUT_MAX_CHARS) {
@@ -90,6 +96,7 @@ function buildPublicState() {
     matches: state.matches,
     activeMatchOrdinal: state.activeMatchOrdinal,
     finalUpdate: state.finalUpdate,
+    expanded: state.expanded,
   };
 }
 
@@ -120,6 +127,20 @@ function publishInit() {
 
 function publishState() {
   safeSendToFindWindow('editor-find-state', buildPublicState());
+}
+
+function sendToFindWindowAfterLoad(wc, channel, payload) {
+  if (!wc) return;
+
+  try {
+    wc.send(channel, payload);
+  } catch (err) {
+    log.warnOnce(
+      `editorFind.sendAfterLoad.${channel}`,
+      `editor find post-load send('${channel}') failed (ignored):`,
+      err
+    );
+  }
 }
 
 function focusEditorWindow() {
@@ -255,6 +276,21 @@ function handleFoundInPage(result) {
 // =============================================================================
 // Input helpers (keyboard shortcuts)
 // =============================================================================
+function matchesLetterShortcut(input, letter) {
+  if (!input) return false;
+
+  const normalizedLetter = String(letter || '').toLowerCase();
+  if (!normalizedLetter) return false;
+
+  const key = String(input.key || '').toLowerCase();
+  if (key === normalizedLetter) {
+    return true;
+  }
+
+  const code = String(input.code || '');
+  return code === `Key${normalizedLetter.toUpperCase()}`;
+}
+
 function isCmdOrCtrl(input) {
   return !!(input && (input.control || input.meta));
 }
@@ -269,8 +305,27 @@ function isEscape(input) {
 
 function isOpenFindShortcut(input) {
   if (!input || input.alt) return false;
-  const k = String(input.key || '');
-  return (k === 'f' || k === 'F') && isCmdOrCtrl(input);
+  return isCmdOrCtrl(input) && matchesLetterShortcut(input, 'f');
+}
+
+function isOpenReplaceShortcut(input) {
+  if (!input) return false;
+
+  if (process.platform === 'darwin') {
+    return !!(
+      input.meta &&
+      input.alt &&
+      !input.control &&
+      matchesLetterShortcut(input, 'f')
+    );
+  }
+
+  return !!(
+    input.control &&
+    !input.meta &&
+    !input.alt &&
+    matchesLetterShortcut(input, 'h')
+  );
 }
 
 function isIncreaseTextSizeShortcut(input) {
@@ -312,12 +367,22 @@ function runEditorShortcutAction(actionName) {
   }
 }
 
-function sendFocusQuery() {
-  safeSendToFindWindow('editor-find-focus-query', { selectAll: true });
+function sendFocusTarget(target, selectAll = false) {
+  safeSendToFindWindow('editor-find-focus-target', {
+    target: target === 'replace' ? 'replace' : 'query',
+    selectAll: !!selectAll,
+  });
+}
+
+function queueFocusTarget(target, selectAll = false) {
+  pendingFocusTarget = {
+    target: target === 'replace' ? 'replace' : 'query',
+    selectAll: !!selectAll,
+  };
 }
 
 function tryDispatchPendingFocus() {
-  if (!pendingFocusQuery) return;
+  if (!pendingFocusTarget) return;
   const win = resolveFindWindow();
   if (!win) return;
 
@@ -327,8 +392,23 @@ function tryDispatchPendingFocus() {
     : wc.isLoading();
   if (isLoading) return;
 
-  sendFocusQuery();
-  pendingFocusQuery = false;
+  sendFocusTarget(pendingFocusTarget.target, pendingFocusTarget.selectAll);
+  pendingFocusTarget = null;
+}
+
+function setExpanded(expanded, { publish = true } = {}) {
+  const nextExpanded = !!expanded;
+  const changed = state.expanded !== nextExpanded;
+  state.expanded = nextExpanded;
+
+  if (changed) {
+    positionFindWindow();
+    if (publish) {
+      publishState();
+    }
+  }
+
+  return changed;
 }
 
 function rerunCurrentQueryOnCurrentText() {
@@ -367,6 +447,7 @@ function positionFindWindow() {
   if (!hostWin || !win) return;
 
   try {
+    const height = getFindWindowHeight();
     const hostBounds = hostWin.getContentBounds();
     const margin = 12;
 
@@ -377,7 +458,7 @@ function positionFindWindow() {
     const workArea = display && display.workArea ? display.workArea : null;
     if (workArea) {
       const maxX = workArea.x + workArea.width - FIND_WIN_WIDTH;
-      const maxY = workArea.y + workArea.height - FIND_WIN_HEIGHT;
+      const maxY = workArea.y + workArea.height - height;
       targetX = Math.min(Math.max(targetX, workArea.x), maxX);
       targetY = Math.min(Math.max(targetY, workArea.y), maxY);
     }
@@ -386,7 +467,7 @@ function positionFindWindow() {
       x: targetX,
       y: targetY,
       width: FIND_WIN_WIDTH,
-      height: FIND_WIN_HEIGHT,
+      height,
     }, false);
   } catch (err) {
     log.warnOnce(
@@ -436,7 +517,7 @@ function detachFindWindow() {
 
 function handleFindWindowClosed() {
   detachFindWindow();
-  pendingFocusQuery = false;
+  pendingFocusTarget = null;
   pendingResyncRequestId = null;
 
   if (!closingFindWindow) {
@@ -462,8 +543,8 @@ function attachFindWindow(win) {
   };
 
   const onDidFinishLoad = () => {
-    publishInit();
-    publishState();
+    sendToFindWindowAfterLoad(wc, 'editor-find-init', buildPublicState());
+    sendToFindWindowAfterLoad(wc, 'editor-find-state', buildPublicState());
     tryDispatchPendingFocus();
   };
   const onFocus = () => {
@@ -496,7 +577,7 @@ function createFindWindow() {
 
   findWin = new BrowserWindow({
     width: FIND_WIN_WIDTH,
-    height: FIND_WIN_HEIGHT,
+    height: getFindWindowHeight(),
     show: false,
     frame: false,
     hasShadow: false,
@@ -554,15 +635,23 @@ function closeFindWindow() {
   }
 }
 
-function openFindUi(origin = 'unknown') {
+function openFindUi({
+  expanded = false,
+  preserveExpandedWhenOpen = false,
+  focusTarget = 'query',
+} = {}) {
   const editorWin = resolveEditorWindow();
   if (!editorWin) {
     log.warnOnce(
       'editorFind.open.noEditor',
-      'openFindUi ignored: editor window unavailable.',
-      origin
+      'openFindUi ignored: editor window unavailable.'
     );
     return { ok: false, error: 'editor window unavailable' };
+  }
+
+  const existing = resolveFindWindow();
+  if (!existing) {
+    state.expanded = !!expanded;
   }
 
   const win = ensureFindWindow();
@@ -572,6 +661,10 @@ function openFindUi(origin = 'unknown') {
       'openFindUi failed: find window was not created.'
     );
     return { ok: false, error: 'find window unavailable' };
+  }
+
+  if (existing && !preserveExpandedWhenOpen) {
+    setExpanded(expanded, { publish: false });
   }
 
   positionFindWindow();
@@ -585,7 +678,7 @@ function openFindUi(origin = 'unknown') {
 
   publishInit();
   publishState();
-  pendingFocusQuery = true;
+  queueFocusTarget(focusTarget, true);
   tryDispatchPendingFocus();
 
   return { ok: true };
@@ -593,7 +686,7 @@ function openFindUi(origin = 'unknown') {
 
 function closeFindUi({ restoreFocus = true } = {}) {
   clearSearch({ clearSelection: true });
-  pendingFocusQuery = false;
+  pendingFocusTarget = null;
   closeFindWindow();
 
   if (restoreFocus) {
@@ -611,7 +704,21 @@ function handleEditorBeforeInput(event, input) {
 
   if (isOpenFindShortcut(input)) {
     event.preventDefault();
-    openFindUi('shortcut');
+    openFindUi({
+      expanded: false,
+      preserveExpandedWhenOpen: true,
+      focusTarget: 'query',
+    });
+    return;
+  }
+
+  if (isOpenReplaceShortcut(input)) {
+    event.preventDefault();
+    openFindUi({
+      expanded: true,
+      preserveExpandedWhenOpen: false,
+      focusTarget: hasQuery() ? 'replace' : 'query',
+    });
     return;
   }
 
@@ -654,7 +761,17 @@ function handleFindBeforeInput(event, input) {
 
   if (isOpenFindShortcut(input)) {
     event.preventDefault();
-    pendingFocusQuery = true;
+    queueFocusTarget('query', true);
+    tryDispatchPendingFocus();
+    return;
+  }
+
+  if (isOpenReplaceShortcut(input)) {
+    event.preventDefault();
+    if (!state.expanded) {
+      setExpanded(true);
+    }
+    queueFocusTarget(hasQuery() ? 'replace' : 'query', true);
     tryDispatchPendingFocus();
     return;
   }
@@ -700,7 +817,7 @@ function onEditorWindowWillClose() {
 
 function onEditorWindowClosed() {
   editorClosing = false;
-  pendingFocusQuery = false;
+  pendingFocusTarget = null;
   pendingResyncRequestId = null;
   closingFindWindow = false;
   editorShortcutActions = null;
@@ -893,6 +1010,17 @@ function registerIpc(ipcMain) {
     'editorFind.ipc.prev.unauthorized',
     'editor-find-prev unauthorized (ignored).',
     () => navigate(false)
+  );
+
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-toggle-expanded',
+    'editorFind.ipc.toggleExpanded.unauthorized',
+    'editor-find-toggle-expanded unauthorized (ignored).',
+    () => {
+      setExpanded(!state.expanded);
+      return { ok: true, expanded: state.expanded };
+    }
   );
 
   registerAuthorizedFindIpc(

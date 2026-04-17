@@ -44,6 +44,7 @@ if (
   typeof findApi.setQuery !== 'function' ||
   typeof findApi.next !== 'function' ||
   typeof findApi.prev !== 'function' ||
+  typeof findApi.toggleExpanded !== 'function' ||
   typeof findApi.close !== 'function' ||
   typeof findApi.onInit !== 'function' ||
   typeof findApi.onState !== 'function'
@@ -55,13 +56,30 @@ if (
 // DOM references and shared state
 // =============================================================================
 const wrapEl = document.getElementById('findWrap');
+const toggleEl = document.getElementById('findToggle');
 const inputEl = document.getElementById('findQuery');
 const prevEl = document.getElementById('findPrev');
 const nextEl = document.getElementById('findNext');
 const closeEl = document.getElementById('findClose');
 const statusEl = document.getElementById('findStatus');
+const replaceRowEl = document.getElementById('replaceRow');
+const replaceInputEl = document.getElementById('findReplace');
+const replaceOneEl = document.getElementById('findReplaceOne');
+const replaceAllEl = document.getElementById('findReplaceAll');
 
-if (!wrapEl || !inputEl || !prevEl || !nextEl || !closeEl || !statusEl) {
+if (
+  !wrapEl ||
+  !toggleEl ||
+  !inputEl ||
+  !prevEl ||
+  !nextEl ||
+  !closeEl ||
+  !statusEl ||
+  !replaceRowEl ||
+  !replaceInputEl ||
+  !replaceOneEl ||
+  !replaceAllEl
+) {
   throw new Error('[editor-find] Missing required DOM elements');
 }
 
@@ -77,6 +95,7 @@ const findState = {
   matches: 0,
   activeMatchOrdinal: 0,
   finalUpdate: true,
+  expanded: false,
 };
 
 // =============================================================================
@@ -98,6 +117,7 @@ function normalizeState(payload) {
   findState.matches = Number.isFinite(matches) && matches > 0 ? Math.floor(matches) : 0;
   findState.activeMatchOrdinal = Number.isFinite(active) && active > 0 ? Math.floor(active) : 0;
   findState.finalUpdate = !!payload.finalUpdate;
+  findState.expanded = !!payload.expanded;
 }
 
 async function ensureTranslations(lang) {
@@ -119,6 +139,9 @@ function resolveStatusText() {
 }
 
 function applyUiState() {
+  document.body.setAttribute('data-expanded', findState.expanded ? 'true' : 'false');
+  replaceRowEl.hidden = !findState.expanded;
+
   if (inputEl.value !== findState.query) {
     inputEl.value = findState.query;
   }
@@ -126,7 +149,17 @@ function applyUiState() {
   const hasQuery = findState.query.length > 0;
   prevEl.disabled = !hasQuery;
   nextEl.disabled = !hasQuery;
+  replaceOneEl.disabled = true;
+  replaceAllEl.disabled = true;
   statusEl.textContent = resolveStatusText();
+  toggleEl.textContent = findState.expanded ? '˅' : '˃';
+
+  const toggleTitleKey = findState.expanded
+    ? 'renderer.editor_find.collapse_title'
+    : 'renderer.editor_find.expand_title';
+  const toggleTitle = tr(toggleTitleKey);
+  toggleEl.title = toggleTitle;
+  toggleEl.setAttribute('aria-label', toggleTitle);
 }
 
 async function applyTranslations() {
@@ -138,14 +171,20 @@ async function applyTranslations() {
 
   inputEl.placeholder = tr('renderer.editor_find.input_placeholder');
   inputEl.setAttribute('aria-label', tr('renderer.editor_find.input_aria'));
+  replaceInputEl.placeholder = tr('renderer.editor_find.replace_placeholder');
+  replaceInputEl.setAttribute('aria-label', tr('renderer.editor_find.replace_aria'));
 
   prevEl.textContent = tr('renderer.editor_find.prev');
   nextEl.textContent = tr('renderer.editor_find.next');
   closeEl.textContent = tr('renderer.editor_find.close');
+  replaceOneEl.textContent = tr('renderer.editor_find.replace');
+  replaceAllEl.textContent = tr('renderer.editor_find.replace_all');
 
   prevEl.title = tr('renderer.editor_find.prev_title');
   nextEl.title = tr('renderer.editor_find.next_title');
   closeEl.title = tr('renderer.editor_find.close_title');
+  replaceOneEl.title = tr('renderer.editor_find.replace_title');
+  replaceAllEl.title = tr('renderer.editor_find.replace_all_title');
 
   applyUiState();
 }
@@ -163,6 +202,24 @@ function focusQuery(selectAll = false) {
     log.warnOnce(
       'editor-find.focusQuery.failed',
       'Unable to focus/select find query input (ignored):',
+      err
+    );
+  }
+}
+
+function focusRequestedTarget(target, selectAll = false) {
+  const targetEl = target === 'replace' ? replaceInputEl : inputEl;
+  if (!targetEl) return;
+
+  try {
+    targetEl.focus();
+    if (selectAll && typeof targetEl.select === 'function') {
+      targetEl.select();
+    }
+  } catch (err) {
+    log.warnOnce(
+      'editor-find.focusTarget.failed',
+      'Unable to focus requested editor-find target (ignored):',
       err
     );
   }
@@ -210,6 +267,7 @@ async function initLanguage() {
 // UI event wiring
 // =============================================================================
 inputEl.maxLength = findInputMaxChars;
+replaceInputEl.maxLength = findInputMaxChars;
 
 inputEl.addEventListener('input', () => {
   pushQuery();
@@ -223,6 +281,10 @@ inputEl.addEventListener('keydown', (event) => {
   } else {
     findApi.next().catch((err) => log.error('Error on Enter next:', err));
   }
+});
+
+toggleEl.addEventListener('click', () => {
+  findApi.toggleExpanded().catch((err) => log.error('Error toggling find window mode:', err));
 });
 
 prevEl.addEventListener('click', () => {
@@ -246,15 +308,16 @@ findApi.onInit((payload) => {
 
 findApi.onState(applyIncomingState);
 
-if (typeof findApi.onFocusQuery === 'function') {
-  findApi.onFocusQuery((payload) => {
+if (typeof findApi.onFocusTarget === 'function') {
+  findApi.onFocusTarget((payload) => {
+    const target = payload && payload.target === 'replace' ? 'replace' : 'query';
     const selectAll = !!(payload && payload.selectAll);
-    focusQuery(selectAll);
+    focusRequestedTarget(target, selectAll);
   });
 } else {
   log.warnOnce(
-    'BOOTSTRAP:editor-find.onFocusQuery.missing',
-    'BOOTSTRAP: [editor-find] editorFindAPI.onFocusQuery missing; focus-sync capability disabled.'
+    'BOOTSTRAP:editor-find.onFocusTarget.missing',
+    'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget missing; focus-sync capability disabled.'
   );
 }
 
