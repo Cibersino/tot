@@ -1498,7 +1498,7 @@ async function showInfoModal(key) {
         // Focus on the content so the reader can use the keyboard
         focusInfoModalContent();
       } catch (err) {
-        log.error('Error moving modal to section:', err);
+        log.warn('Info modal section scroll failed (ignored):', err);
         focusInfoModalContent();
       }
     });
@@ -2148,7 +2148,7 @@ function bindHelpAction() {
       const helpTipKeys = getHelpTipKeyList();
       const tipCount = helpTipKeys.length;
       if (!tipCount) {
-        log.error('Help tip list is empty.');
+        log.warn('Help tip list is empty; falling back to tip1.');
         window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
         return;
       }
@@ -2166,7 +2166,7 @@ function bindHelpAction() {
         try {
           window.Notify.toastMain(tipKey);
         } catch (err) {
-          log.error('Error showing help tip toast:', err);
+          log.warn('Help tip toast failed; falling back to notifyMain:', err);
           window.Notify.notifyMain(tipKey);
         }
       } catch (err) {
