@@ -214,6 +214,10 @@ body.reading-test-countdown-active .bottom-bar {
   user-select: none;
 }
 
+.editor-text-size-value::before {
+  content: attr(data-label);
+}
+
 /* Trash button (right aligned) */
 #btnTrash {
   display: inline-flex;

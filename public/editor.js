@@ -180,7 +180,7 @@ function updateEditorTextSizeUi() {
       'renderer.editor.text_size_value',
       { value: editorFontSizePx }
     );
-    textSizeValue.textContent = valueText;
+    textSizeValue.setAttribute('data-label', valueText);
     textSizeValue.setAttribute('aria-label', valueText);
   }
   if (btnTextSizeDecrease) btnTextSizeDecrease.disabled = editorFontSizePx <= EDITOR_FONT_SIZE_MIN_PX;
