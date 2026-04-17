@@ -1879,7 +1879,7 @@ function initializeDelegatedIntegrations() {
 }
 
 // =============================================================================
-// Main window action handlers
+// Current text actions
 // =============================================================================
 function showEditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
@@ -2146,9 +2146,9 @@ async function handleLoadTask() {
 }
 
 // =============================================================================
-// Reading and preset actions
+// Reading tools
 // =============================================================================
-// Help button: show a random tip key via Notify
+// Show a random help tip via Notify.
 function bindHelpAction() {
   if (btnHelp) {
     btnHelp.addEventListener('click', () => {
@@ -2194,6 +2194,9 @@ async function handleOpenReadingSpeedTest() {
   }
 }
 
+// =============================================================================
+// Preset actions
+// =============================================================================
 // Preset buttons are wired here; preset modals and native confirmation
 // dialogs are handled by main.
 function bindPresetActions() {
@@ -2214,9 +2217,7 @@ function bindPresetActions() {
     }
   });
 
-// =============================================================================
-// Edit preset
-// =============================================================================
+  // Edit preset
   btnEditPreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-edit')) return;
     try {
@@ -2265,9 +2266,7 @@ function bindPresetActions() {
     }
   });
 
-// =============================================================================
-// Delete preset
-// =============================================================================
+  // Delete preset
   btnDeletePreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-delete')) return;
     try {
@@ -2309,9 +2308,7 @@ function bindPresetActions() {
     }
   });
 
-// =============================================================================
-// Restore default presets
-// =============================================================================
+  // Restore default presets
   btnResetDefaultPresets.addEventListener('click', async () => {
     if (!guardUserAction('preset-reset-defaults')) return;
     try {
