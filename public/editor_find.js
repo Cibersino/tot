@@ -44,6 +44,7 @@ if (
   typeof findApi.setQuery !== 'function' ||
   typeof findApi.next !== 'function' ||
   typeof findApi.prev !== 'function' ||
+  typeof findApi.replaceCurrent !== 'function' ||
   typeof findApi.toggleExpanded !== 'function' ||
   typeof findApi.close !== 'function' ||
   typeof findApi.onInit !== 'function' ||
@@ -96,6 +97,7 @@ const findState = {
   activeMatchOrdinal: 0,
   finalUpdate: true,
   expanded: false,
+  busy: false,
 };
 
 // =============================================================================
@@ -118,6 +120,7 @@ function normalizeState(payload) {
   findState.activeMatchOrdinal = Number.isFinite(active) && active > 0 ? Math.floor(active) : 0;
   findState.finalUpdate = !!payload.finalUpdate;
   findState.expanded = !!payload.expanded;
+  findState.busy = !!payload.busy;
 }
 
 async function ensureTranslations(lang) {
@@ -147,10 +150,15 @@ function applyUiState() {
   }
 
   const hasQuery = findState.query.length > 0;
-  prevEl.disabled = !hasQuery;
-  nextEl.disabled = !hasQuery;
-  replaceOneEl.disabled = true;
+  const hasMatches = findState.matches > 0;
+  inputEl.disabled = findState.busy;
+  replaceInputEl.disabled = findState.busy;
+  prevEl.disabled = findState.busy || !hasQuery;
+  nextEl.disabled = findState.busy || !hasQuery;
+  replaceOneEl.disabled = findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
   replaceAllEl.disabled = true;
+  toggleEl.disabled = findState.busy;
+  closeEl.disabled = findState.busy;
   statusEl.textContent = resolveStatusText();
   toggleEl.textContent = findState.expanded ? '˅' : '˃';
 
@@ -237,6 +245,18 @@ async function pushQuery() {
   }
 }
 
+async function runReplaceCurrent() {
+  try {
+    await findApi.replaceCurrent(replaceInputEl.value || '');
+  } catch (err) {
+    log.errorOnce(
+      'editor-find.replaceCurrent.failed',
+      'Error sending replace-current request to main process:',
+      err
+    );
+  }
+}
+
 // =============================================================================
 // Language bootstrap helper
 // =============================================================================
@@ -293,6 +313,10 @@ prevEl.addEventListener('click', () => {
 
 nextEl.addEventListener('click', () => {
   findApi.next().catch((err) => log.error('Error navigating to next match:', err));
+});
+
+replaceOneEl.addEventListener('click', () => {
+  runReplaceCurrent();
 });
 
 closeEl.addEventListener('click', () => {

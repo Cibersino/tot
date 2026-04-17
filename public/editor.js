@@ -60,6 +60,12 @@ if (typeof window.editorAPI.onExternalUpdate !== 'function') {
 if (typeof window.editorAPI.onForceClear !== 'function') {
   throw new Error('[editor] editorAPI.onForceClear unavailable; cannot continue');
 }
+if (typeof window.editorAPI.onReplaceRequest !== 'function') {
+  throw new Error('[editor] editorAPI.onReplaceRequest unavailable; cannot continue');
+}
+if (typeof window.editorAPI.sendReplaceResponse !== 'function') {
+  throw new Error('[editor] editorAPI.sendReplaceResponse unavailable; cannot continue');
+}
 
 // =============================================================================
 // Bootstrap: config and translations (async, best-effort)
@@ -518,6 +524,104 @@ function tryNativeInsertAtSelection(text) {
   }
 }
 
+function selectionMatchesLiteralQuery(query, matchCase = false) {
+  const needle = String(query || '');
+  if (!needle) return false;
+
+  const { start, end } = getSelectionRange();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+    return false;
+  }
+
+  const selectedText = editor.value.slice(start, end);
+  if (selectedText.length !== needle.length) {
+    return false;
+  }
+
+  if (matchCase) {
+    return selectedText === needle;
+  }
+
+  return selectedText.toLocaleLowerCase() === needle.toLocaleLowerCase();
+}
+
+function tryNativeReplaceCurrentSelectionWithoutSync(replacementText) {
+  try {
+    const { start, end } = getSelectionRange();
+
+    try {
+      const ok = document.execCommand && document.execCommand('insertText', false, replacementText);
+      if (ok) return true;
+    } catch {
+      // follow fallback
+    }
+
+    if (typeof editor.setRangeText === 'function') {
+      editor.setRangeText(replacementText, start, end, 'end');
+      dispatchNativeInputEvent();
+      return true;
+    }
+
+    const before = editor.value.slice(0, start);
+    const after = editor.value.slice(end);
+    editor.value = before + replacementText + after;
+    const newCaret = before.length + replacementText.length;
+    setCaretSafe(newCaret);
+    dispatchNativeInputEvent();
+    return true;
+  } catch (err) {
+    log.error('tryNativeReplaceCurrentSelectionWithoutSync error:', err);
+    return false;
+  }
+}
+
+function buildReplaceResponse(requestId, fields = {}) {
+  return {
+    requestId,
+    operation: 'replace-current',
+    ok: fields.ok !== false,
+    status: fields.status || 'noop',
+    replacements: Number.isFinite(fields.replacements) ? fields.replacements : 0,
+    error: fields.error || '',
+  };
+}
+
+function handleReplaceCurrentRequest(payload) {
+  const requestId = Number(payload && payload.requestId);
+  const query = typeof payload?.query === 'string' ? payload.query : '';
+  const replacement = typeof payload?.replacement === 'string' ? payload.replacement : '';
+  const matchCase = !!(payload && payload.matchCase);
+
+  if (!query) {
+    return buildReplaceResponse(requestId, {
+      status: 'noop-empty-query',
+      replacements: 0,
+    });
+  }
+
+  if (!selectionMatchesLiteralQuery(query, matchCase)) {
+    return buildReplaceResponse(requestId, {
+      status: 'selection-mismatch',
+      replacements: 0,
+    });
+  }
+
+  const replaced = tryNativeReplaceCurrentSelectionWithoutSync(replacement);
+  if (!replaced) {
+    return buildReplaceResponse(requestId, {
+      ok: false,
+      status: 'internal-error',
+      error: 'replace-current failed',
+      replacements: 0,
+    });
+  }
+
+  return buildReplaceResponse(requestId, {
+    status: 'replaced',
+    replacements: 1,
+  });
+}
+
 // =============================================================================
 // Main-process sync helpers
 // =============================================================================
@@ -865,6 +969,29 @@ window.editorAPI.onForceClear(() => {
     suppressLocalUpdate = false;
     restoreFocusToEditor();
   }
+});
+
+window.editorAPI.onReplaceRequest((payload) => {
+  const requestId = Number(payload && payload.requestId);
+
+  Promise.resolve()
+    .then(() => handleReplaceCurrentRequest(payload || {}))
+    .catch((err) => {
+      log.error('handleReplaceCurrentRequest error:', err);
+      return buildReplaceResponse(requestId, {
+        ok: false,
+        status: 'internal-error',
+        error: String(err),
+        replacements: 0,
+      });
+    })
+    .then((response) => {
+      try {
+        window.editorAPI.sendReplaceResponse(response);
+      } catch (err) {
+        log.error('sendReplaceResponse error:', err);
+      }
+    });
 });
 
 if (typeof window.editorAPI.onReadingTestCountdown === 'function') {

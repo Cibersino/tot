@@ -30,6 +30,13 @@ const api = {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   setSpellcheckEnabled: (enabled) => ipcRenderer.invoke('set-spellcheck-enabled', enabled),
   setEditorFontSizePx: (fontSizePx) => ipcRenderer.invoke('set-editor-font-size-px', fontSizePx),
+  onReplaceRequest: (cb) => subscribeWithUnsub(
+    'editor-replace-request',
+    cb,
+    'editor-replace-request callback error:',
+    'removeListener error (editor-replace-request):'
+  ),
+  sendReplaceResponse: (payload) => ipcRenderer.send('editor-replace-response', payload),
   onInitText: (cb) => subscribeWithUnsub(
     'editor-init-text',
     cb,

@@ -34,6 +34,7 @@ const EDITOR_FIND_PRELOAD = path.join(__dirname, 'editor_find_preload.js');
 const FIND_WIN_WIDTH = 560;
 const FIND_WIN_HEIGHT_COLLAPSED = 56;
 const FIND_WIN_HEIGHT_EXPANDED = 96;
+const REPLACE_PIPELINE_TIMEOUT_MS = 4000;
 
 // =============================================================================
 // Shared state (window refs + find session state)
@@ -46,9 +47,12 @@ let findListeners = null;
 
 let pendingFocusTarget = null;
 let pendingResyncRequestId = null;
+let pendingSearchWait = null;
+let pendingEditorReplace = null;
 let closingFindWindow = false;
 let editorClosing = false;
 let editorShortcutActions = null;
+let replaceResponseListenerRegistered = false;
 
 const state = {
   query: '',
@@ -57,6 +61,7 @@ const state = {
   activeMatchOrdinal: 0,
   finalUpdate: true,
   expanded: false,
+  busy: false,
 };
 
 // =============================================================================
@@ -97,6 +102,7 @@ function buildPublicState() {
     activeMatchOrdinal: state.activeMatchOrdinal,
     finalUpdate: state.finalUpdate,
     expanded: state.expanded,
+    busy: state.busy,
   };
 }
 
@@ -166,6 +172,7 @@ function clearStateOnly() {
   state.matches = 0;
   state.activeMatchOrdinal = 0;
   state.finalUpdate = true;
+  state.busy = false;
   pendingResyncRequestId = null;
 }
 
@@ -208,6 +215,10 @@ function runFind(options) {
 }
 
 function setQuery(rawQuery) {
+  if (state.busy) {
+    return { ok: true, skipped: 'busy' };
+  }
+
   const nextQuery = clampFindInputText(rawQuery);
   state.query = nextQuery;
 
@@ -231,6 +242,10 @@ function setQuery(rawQuery) {
 }
 
 function navigate(forward) {
+  if (state.busy) {
+    return { ok: true, skipped: 'busy' };
+  }
+
   if (!hasQuery()) {
     return { ok: true, skipped: 'empty query' };
   }
@@ -268,6 +283,24 @@ function handleFoundInPage(result) {
     result.finalUpdate === true
   ) {
     pendingResyncRequestId = null;
+  }
+
+  if (
+    pendingSearchWait &&
+    Number.isFinite(requestId) &&
+    requestId === pendingSearchWait.requestId &&
+    result.finalUpdate === true
+  ) {
+    const { timeoutId, resolve } = pendingSearchWait;
+    pendingSearchWait = null;
+    clearTimeout(timeoutId);
+    resolve({
+      ok: true,
+      status: 'completed',
+      requestId,
+      matches: state.matches,
+      activeMatchOrdinal: state.activeMatchOrdinal,
+    });
   }
 
   publishState();
@@ -411,6 +444,128 @@ function setExpanded(expanded, { publish = true } = {}) {
   return changed;
 }
 
+function setBusy(busy, { publish = true } = {}) {
+  const nextBusy = !!busy;
+  const changed = state.busy !== nextBusy;
+  state.busy = nextBusy;
+
+  if (changed && publish) {
+    publishState();
+  }
+
+  return changed;
+}
+
+function clearPendingSearchWait(status = 'aborted') {
+  if (!pendingSearchWait) return;
+
+  const { timeoutId, resolve } = pendingSearchWait;
+  pendingSearchWait = null;
+
+  try {
+    clearTimeout(timeoutId);
+  } catch {
+    // ignore timeout cleanup failure
+  }
+
+  try {
+    resolve({ ok: false, status });
+  } catch {
+    // ignore resolve failure
+  }
+}
+
+function waitForSearchCompletion(requestId, timeoutMs = REPLACE_PIPELINE_TIMEOUT_MS) {
+  clearPendingSearchWait('superseded');
+
+  return new Promise((resolve) => {
+    const timeoutId = setTimeout(() => {
+      if (!pendingSearchWait || pendingSearchWait.requestId !== requestId) return;
+      pendingSearchWait = null;
+      resolve({ ok: false, status: 'timeout' });
+    }, timeoutMs);
+
+    pendingSearchWait = { requestId, resolve, timeoutId };
+  });
+}
+
+function clearPendingEditorReplace(status = 'aborted') {
+  if (!pendingEditorReplace) return;
+
+  const { timeoutId, resolve } = pendingEditorReplace;
+  pendingEditorReplace = null;
+
+  try {
+    clearTimeout(timeoutId);
+  } catch {
+    // ignore timeout cleanup failure
+  }
+
+  try {
+    resolve({
+      ok: false,
+      status,
+      operation: 'replace-current',
+      replacements: 0,
+      error: '',
+    });
+  } catch {
+    // ignore resolve failure
+  }
+}
+
+function requestEditorReplaceCurrent(payload) {
+  clearPendingEditorReplace('superseded');
+
+  const editorWin = resolveEditorWindow();
+  if (!editorWin) {
+    return Promise.resolve({
+      ok: false,
+      status: 'editor-window-unavailable',
+      operation: 'replace-current',
+      replacements: 0,
+      error: 'editor window unavailable',
+    });
+  }
+
+  return new Promise((resolve) => {
+    const requestId = Date.now() + Math.floor(Math.random() * 1000);
+    const timeoutId = setTimeout(() => {
+      if (!pendingEditorReplace || pendingEditorReplace.requestId !== requestId) return;
+      pendingEditorReplace = null;
+      resolve({
+        ok: false,
+        status: 'timeout',
+        operation: 'replace-current',
+        replacements: 0,
+        error: 'editor replace request timed out',
+      });
+    }, REPLACE_PIPELINE_TIMEOUT_MS);
+
+    pendingEditorReplace = { requestId, resolve, timeoutId };
+
+    try {
+      editorWin.webContents.send('editor-replace-request', {
+        requestId,
+        operation: 'replace-current',
+        query: String(payload && payload.query ? payload.query : ''),
+        replacement: String(payload && payload.replacement ? payload.replacement : ''),
+        matchCase: !!(payload && payload.matchCase),
+      });
+    } catch (err) {
+      pendingEditorReplace = null;
+      clearTimeout(timeoutId);
+      resolve({
+        ok: false,
+        status: 'send-failed',
+        operation: 'replace-current',
+        replacements: 0,
+        error: String(err),
+      });
+    }
+  });
+}
+
 function rerunCurrentQueryOnCurrentText() {
   if (!hasQuery()) {
     pendingResyncRequestId = null;
@@ -436,6 +591,111 @@ function rerunCurrentQueryOnCurrentText() {
 
   pendingResyncRequestId = res.requestId;
   return { ok: true, requestId: res.requestId };
+}
+
+async function replaceCurrent(rawReplacement) {
+  if (state.busy) {
+    return {
+      ok: true,
+      status: 'busy',
+      operation: 'replace-current',
+      replacements: 0,
+    };
+  }
+
+  if (!hasQuery()) {
+    return {
+      ok: true,
+      status: 'noop-empty-query',
+      operation: 'replace-current',
+      replacements: 0,
+    };
+  }
+
+  const replacement = clampFindInputText(rawReplacement);
+  const editorWin = resolveEditorWindow();
+  if (!editorWin) {
+    return {
+      ok: false,
+      status: 'editor-window-unavailable',
+      operation: 'replace-current',
+      replacements: 0,
+      error: 'editor window unavailable',
+    };
+  }
+
+  let stoppedFindSelection = false;
+  setBusy(true);
+
+  try {
+    const resync = rerunCurrentQueryOnCurrentText();
+    if (!resync.ok || !resync.requestId) {
+      return {
+        ok: false,
+        status: 'resync-start-failed',
+        operation: 'replace-current',
+        replacements: 0,
+        error: resync.error || 'replace re-sync start failed',
+      };
+    }
+
+    const resyncResult = await waitForSearchCompletion(resync.requestId);
+    if (!resyncResult.ok) {
+      return {
+        ok: false,
+        status: resyncResult.status || 'resync-failed',
+        operation: 'replace-current',
+        replacements: 0,
+        error: '',
+      };
+    }
+
+    if (!Number.isFinite(resyncResult.matches) || resyncResult.matches <= 0) {
+      return {
+        ok: true,
+        status: 'noop-no-matches',
+        operation: 'replace-current',
+        replacements: 0,
+      };
+    }
+
+    try {
+      editorWin.webContents.stopFindInPage('keepSelection');
+      stoppedFindSelection = true;
+    } catch (err) {
+      return {
+        ok: false,
+        status: 'keep-selection-failed',
+        operation: 'replace-current',
+        replacements: 0,
+        error: String(err),
+      };
+    }
+
+    const replaceResult = await requestEditorReplaceCurrent({
+      query: state.query,
+      replacement,
+      matchCase: false,
+    });
+
+    return replaceResult;
+  } finally {
+    if (stoppedFindSelection && hasQuery()) {
+      const refresh = rerunCurrentQueryOnCurrentText();
+      if (refresh.ok && refresh.requestId) {
+        const refreshResult = await waitForSearchCompletion(refresh.requestId);
+        if (!refreshResult.ok) {
+          log.warnOnce(
+            'editorFind.replaceCurrent.refresh',
+            'replace-current refresh search did not complete cleanly (ignored):',
+            refreshResult.status
+          );
+        }
+      }
+    }
+
+    setBusy(false);
+  }
 }
 
 // =============================================================================
@@ -519,6 +779,8 @@ function handleFindWindowClosed() {
   detachFindWindow();
   pendingFocusTarget = null;
   pendingResyncRequestId = null;
+  clearPendingSearchWait('find-window-closed');
+  clearPendingEditorReplace('find-window-closed');
 
   if (!closingFindWindow) {
     clearSearch({ clearSelection: true });
@@ -813,12 +1075,16 @@ function handleFindBeforeInput(event, input) {
 function onEditorWindowWillClose() {
   editorClosing = true;
   pendingResyncRequestId = null;
+  clearPendingSearchWait('editor-window-closed');
+  clearPendingEditorReplace('editor-window-closed');
 }
 
 function onEditorWindowClosed() {
   editorClosing = false;
   pendingFocusTarget = null;
   pendingResyncRequestId = null;
+  clearPendingSearchWait('editor-window-closed');
+  clearPendingEditorReplace('editor-window-closed');
   closingFindWindow = false;
   editorShortcutActions = null;
   clearStateOnly();
@@ -980,9 +1246,55 @@ function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handl
   });
 }
 
+function handleEditorReplaceResponse(event, payload) {
+  const editorWin = resolveEditorWindow();
+  if (!editorWin || !event || !event.sender || event.sender !== editorWin.webContents) {
+    log.warnOnce(
+      'editorFind.editorReplaceResponse.unauthorized',
+      'editor-replace-response unauthorized (ignored).'
+    );
+    return;
+  }
+
+  if (!pendingEditorReplace) {
+    log.warnOnce(
+      'editorFind.editorReplaceResponse.unexpected',
+      'editor-replace-response without a pending request (ignored).'
+    );
+    return;
+  }
+
+  const responseRequestId = Number(payload && payload.requestId);
+  if (!Number.isFinite(responseRequestId) || responseRequestId !== pendingEditorReplace.requestId) {
+    log.warnOnce(
+      'editorFind.editorReplaceResponse.mismatch',
+      'editor-replace-response requestId mismatch (ignored).'
+    );
+    return;
+  }
+
+  const { timeoutId, resolve } = pendingEditorReplace;
+  pendingEditorReplace = null;
+  clearTimeout(timeoutId);
+  resolve(payload && typeof payload === 'object'
+    ? payload
+    : {
+      ok: false,
+      status: 'invalid-response',
+      operation: 'replace-current',
+      replacements: 0,
+      error: 'invalid editor replace response',
+    });
+}
+
 function registerIpc(ipcMain) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[editor-find-main] registerIpc requires ipcMain');
+  }
+
+  if (!replaceResponseListenerRegistered && typeof ipcMain.on === 'function') {
+    ipcMain.on('editor-replace-response', handleEditorReplaceResponse);
+    replaceResponseListenerRegistered = true;
   }
 
   registerAuthorizedFindIpc(
@@ -1010,6 +1322,14 @@ function registerIpc(ipcMain) {
     'editorFind.ipc.prev.unauthorized',
     'editor-find-prev unauthorized (ignored).',
     () => navigate(false)
+  );
+
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-replace-current',
+    'editorFind.ipc.replaceCurrent.unauthorized',
+    'editor-find-replace-current unauthorized (ignored).',
+    (replacement) => replaceCurrent(replacement)
   );
 
   registerAuthorizedFindIpc(

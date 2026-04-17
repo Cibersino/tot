@@ -90,6 +90,7 @@ const api = {
   setQuery: (query) => ipcRenderer.invoke('editor-find-set-query', query),
   next: () => ipcRenderer.invoke('editor-find-next'),
   prev: () => ipcRenderer.invoke('editor-find-prev'),
+  replaceCurrent: (replacement) => ipcRenderer.invoke('editor-find-replace-current', replacement),
   toggleExpanded: () => ipcRenderer.invoke('editor-find-toggle-expanded'),
   close: () => ipcRenderer.invoke('editor-find-close'),
   onInit,
