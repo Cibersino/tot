@@ -41,6 +41,7 @@ let editorListeners = null;
 let findListeners = null;
 
 let pendingFocusQuery = false;
+let pendingResyncRequestId = null;
 let closingFindWindow = false;
 let editorClosing = false;
 let editorShortcutActions = null;
@@ -133,6 +134,7 @@ function clearStateOnly() {
   state.matches = 0;
   state.activeMatchOrdinal = 0;
   state.finalUpdate = true;
+  pendingResyncRequestId = null;
 }
 
 function clearSearch({ clearSelection = true } = {}) {
@@ -201,6 +203,7 @@ function navigate(forward) {
     return { ok: true, skipped: 'empty query' };
   }
 
+  pendingResyncRequestId = null;
   state.finalUpdate = false;
   publishState();
 
@@ -226,6 +229,14 @@ function handleFoundInPage(result) {
   state.matches = Number.isFinite(matches) && matches > 0 ? Math.floor(matches) : 0;
   state.activeMatchOrdinal = Number.isFinite(active) && active > 0 ? Math.floor(active) : 0;
   state.finalUpdate = !!result.finalUpdate;
+  if (
+    pendingResyncRequestId !== null &&
+    Number.isFinite(requestId) &&
+    requestId === pendingResyncRequestId &&
+    result.finalUpdate === true
+  ) {
+    pendingResyncRequestId = null;
+  }
 
   publishState();
 }
@@ -309,6 +320,33 @@ function tryDispatchPendingFocus() {
   pendingFocusQuery = false;
 }
 
+function rerunCurrentQueryOnCurrentText() {
+  if (!hasQuery()) {
+    pendingResyncRequestId = null;
+    return { ok: true, skipped: 'empty query' };
+  }
+
+  state.matches = 0;
+  state.activeMatchOrdinal = 0;
+  state.finalUpdate = false;
+  publishState();
+
+  const res = runFind({
+    forward: true,
+    findNext: true,
+    matchCase: false,
+  });
+  if (!res.ok) {
+    state.finalUpdate = true;
+    publishState();
+    pendingResyncRequestId = null;
+    return res;
+  }
+
+  pendingResyncRequestId = res.requestId;
+  return { ok: true, requestId: res.requestId };
+}
+
 // =============================================================================
 // Find window lifecycle / wiring
 // =============================================================================
@@ -358,7 +396,7 @@ function removeListenerWithWarn(target, eventName, listener, warnKey, warnMessag
 
 function detachFindWindow() {
   if (!findListeners) return;
-  const { wc, onBeforeInput, onDidFinishLoad } = findListeners;
+  const { wc, win, onBeforeInput, onDidFinishLoad, onFocus } = findListeners;
 
   removeListenerWithWarn(
     wc,
@@ -374,6 +412,13 @@ function detachFindWindow() {
     'editorFind.detachFind.didFinishLoad',
     'Unable to detach find did-finish-load listener (ignored):'
   );
+  removeListenerWithWarn(
+    win,
+    'focus',
+    onFocus,
+    'editorFind.detachFind.focus',
+    'Unable to detach find focus listener (ignored):'
+  );
 
   findListeners = null;
 }
@@ -381,6 +426,7 @@ function detachFindWindow() {
 function handleFindWindowClosed() {
   detachFindWindow();
   pendingFocusQuery = false;
+  pendingResyncRequestId = null;
 
   if (!closingFindWindow) {
     clearSearch({ clearSelection: true });
@@ -409,10 +455,19 @@ function attachFindWindow(win) {
     publishState();
     tryDispatchPendingFocus();
   };
+  const onFocus = () => {
+    try {
+      tryDispatchPendingFocus();
+      rerunCurrentQueryOnCurrentText();
+    } catch (err) {
+      log.error('Error in find focus handler:', err);
+    }
+  };
 
   wc.on('before-input-event', onBeforeInput);
   wc.on('did-finish-load', onDidFinishLoad);
-  findListeners = { wc, onBeforeInput, onDidFinishLoad };
+  win.on('focus', onFocus);
+  findListeners = { wc, win, onBeforeInput, onDidFinishLoad, onFocus };
 }
 
 function createFindWindow() {
@@ -629,11 +684,13 @@ function handleFindBeforeInput(event, input) {
 
 function onEditorWindowWillClose() {
   editorClosing = true;
+  pendingResyncRequestId = null;
 }
 
 function onEditorWindowClosed() {
   editorClosing = false;
   pendingFocusQuery = false;
+  pendingResyncRequestId = null;
   closingFindWindow = false;
   editorShortcutActions = null;
   clearStateOnly();
@@ -805,7 +862,10 @@ function registerIpc(ipcMain) {
     'editor-find-set-query',
     'editorFind.ipc.setQuery.unauthorized',
     'editor-find-set-query unauthorized (ignored).',
-    (rawQuery) => setQuery(rawQuery)
+    (rawQuery) => {
+      pendingResyncRequestId = null;
+      return setQuery(rawQuery);
+    }
   );
 
   registerAuthorizedFindIpc(
