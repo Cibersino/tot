@@ -226,7 +226,7 @@ async function applyEditorTranslations() {
   if (textSizeControls) {
     const textSizeGroupText = tr('renderer.editor.text_size_label');
     textSizeControls.setAttribute('aria-label', textSizeGroupText);
-    if (textSizeLabel) textSizeLabel.textContent = textSizeGroupText;
+    if (textSizeLabel) textSizeLabel.setAttribute('data-label', textSizeGroupText);
   }
   if (btnTextSizeDecrease) {
     const decreaseText = tr('renderer.editor.decrease_text_size');

@@ -168,6 +168,10 @@ body.reading-test-countdown-active .bottom-bar {
   user-select: none;
 }
 
+.editor-text-size-label::before {
+  content: attr(data-label);
+}
+
 .btn-text-size {
   display: inline-flex;
   align-items: center;
@@ -182,6 +186,10 @@ body.reading-test-countdown-active .bottom-bar {
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
+}
+
+.btn-text-size::before {
+  content: attr(data-label);
 }
 
 .btn-text-size[disabled] {
