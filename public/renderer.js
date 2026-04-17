@@ -324,36 +324,28 @@ function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
 
 function sendRendererCoreReady() {
   if (rendererCoreReadySent) return;
-  rendererCoreReadySent = true;
-  if (window.electronAPI && typeof window.electronAPI.sendStartupRendererCoreReady === 'function') {
-    try {
-      window.electronAPI.sendStartupRendererCoreReady();
-    } catch (err) {
-      log.error('Error sending startup:renderer-core-ready:', err);
-    }
-  } else {
-    log.warnOnce(
-      'BOOTSTRAP:renderer.startup.coreReady.unavailable',
-      'startup:renderer-core-ready unavailable; renderer/core ready signal not sent.'
-    );
+  if (!window.electronAPI || typeof window.electronAPI.sendStartupRendererCoreReady !== 'function') {
+    throw new Error('[renderer] electronAPI.sendStartupRendererCoreReady unavailable; cannot complete renderer READY handshake');
   }
+  try {
+    window.electronAPI.sendStartupRendererCoreReady();
+  } catch (err) {
+    throw new Error(`[renderer] sendStartupRendererCoreReady failed; cannot complete renderer READY handshake: ${err}`);
+  }
+  rendererCoreReadySent = true;
 }
 
 function sendSplashRemoved() {
   if (splashRemovedSent) return;
-  splashRemovedSent = true;
-  if (window.electronAPI && typeof window.electronAPI.sendStartupSplashRemoved === 'function') {
-    try {
-      window.electronAPI.sendStartupSplashRemoved();
-    } catch (err) {
-      log.error('Error sending startup:splash-removed:', err);
-    }
-  } else {
-    log.warnOnce(
-      'BOOTSTRAP:renderer.startup.splashRemoved.unavailable',
-      'startup:splash-removed unavailable; post-READY confirmation not sent.'
-    );
+  if (!window.electronAPI || typeof window.electronAPI.sendStartupSplashRemoved !== 'function') {
+    throw new Error('[renderer] electronAPI.sendStartupSplashRemoved unavailable; cannot complete renderer READY handshake');
   }
+  try {
+    window.electronAPI.sendStartupSplashRemoved();
+  } catch (err) {
+    throw new Error(`[renderer] sendStartupSplashRemoved failed; cannot complete renderer READY handshake: ${err}`);
+  }
+  splashRemovedSent = true;
 }
 
 function maybeUnblockReady() {
