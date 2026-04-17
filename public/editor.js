@@ -42,6 +42,16 @@ const {
 } = AppConstants;
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute editor limit. Local writes must stay within this bound to prevent lags and OOM.
 
+const editorFindReplaceCore = window.EditorFindReplaceCore;
+if (
+  !editorFindReplaceCore ||
+  typeof editorFindReplaceCore.selectionMatchesLiteralQuery !== 'function' ||
+  typeof editorFindReplaceCore.computeLiteralReplaceAll !== 'function' ||
+  typeof editorFindReplaceCore.isReplaceAllAllowedByLength !== 'function'
+) {
+  throw new Error('[editor] EditorFindReplaceCore unavailable; cannot continue');
+}
+
 if (!window.editorAPI) {
   throw new Error('[editor] editorAPI unavailable; cannot continue');
 }
@@ -527,25 +537,15 @@ function tryNativeInsertAtSelection(text) {
   }
 }
 
-function selectionMatchesLiteralQuery(query, matchCase = false) {
-  const needle = String(query || '');
-  if (!needle) return false;
-
+function selectionMatchesCurrentEditorSelection(query, matchCase = false) {
   const { start, end } = getSelectionRange();
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
-    return false;
-  }
-
-  const selectedText = editor.value.slice(start, end);
-  if (selectedText.length !== needle.length) {
-    return false;
-  }
-
-  if (matchCase) {
-    return selectedText === needle;
-  }
-
-  return selectedText.toLocaleLowerCase() === needle.toLocaleLowerCase();
+  return editorFindReplaceCore.selectionMatchesLiteralQuery({
+    value: editor.value,
+    selectionStart: start,
+    selectionEnd: end,
+    query,
+    matchCase,
+  });
 }
 
 function tryNativeReplaceCurrentSelectionWithoutSync(replacementText) {
@@ -576,44 +576,6 @@ function tryNativeReplaceCurrentSelectionWithoutSync(replacementText) {
     log.error('tryNativeReplaceCurrentSelectionWithoutSync error:', err);
     return false;
   }
-}
-
-function computeLiteralReplaceAll(value, query, replacement, matchCase = false) {
-  const sourceText = String(value || '');
-  const needle = String(query || '');
-  const replacementText = String(replacement || '');
-
-  if (!needle) {
-    return {
-      replacements: 0,
-      nextValue: sourceText,
-    };
-  }
-
-  const haystack = matchCase ? sourceText : sourceText.toLocaleLowerCase();
-  const normalizedNeedle = matchCase ? needle : needle.toLocaleLowerCase();
-  const needleLength = needle.length;
-  let fromIndex = 0;
-  let replacements = 0;
-  const parts = [];
-
-  while (fromIndex <= sourceText.length) {
-    const matchIndex = haystack.indexOf(normalizedNeedle, fromIndex);
-    if (matchIndex === -1) {
-      parts.push(sourceText.slice(fromIndex));
-      break;
-    }
-
-    parts.push(sourceText.slice(fromIndex, matchIndex));
-    parts.push(replacementText);
-    fromIndex = matchIndex + needleLength;
-    replacements += 1;
-  }
-
-  return {
-    replacements,
-    nextValue: replacements > 0 ? parts.join('') : sourceText,
-  };
 }
 
 function tryNativeReplaceWholeValueWithoutSync(nextValue) {
@@ -651,14 +613,13 @@ function tryNativeReplaceWholeValueWithoutSync(nextValue) {
   }
 }
 
-function getReplaceAllAllowedByLength() {
-  return editor.value.length <= SMALL_UPDATE_THRESHOLD;
-}
-
 function publishReplaceStatus() {
   try {
     window.editorAPI.sendReplaceStatus({
-      replaceAllAllowedByLength: getReplaceAllAllowedByLength(),
+      replaceAllAllowedByLength: editorFindReplaceCore.isReplaceAllAllowedByLength({
+        value: editor.value,
+        smallUpdateThreshold: SMALL_UPDATE_THRESHOLD,
+      }),
     });
   } catch (err) {
     log.errorOnce(
@@ -694,7 +655,7 @@ function handleReplaceCurrentRequest(payload) {
     });
   }
 
-  if (!selectionMatchesLiteralQuery(query, matchCase)) {
+  if (!selectionMatchesCurrentEditorSelection(query, matchCase)) {
     return buildReplaceResponse('replace-current', requestId, {
       status: 'selection-mismatch',
       replacements: 0,
@@ -740,7 +701,12 @@ function handleReplaceAllRequest(payload) {
     });
   }
 
-  const computed = computeLiteralReplaceAll(currentValue, query, replacement, matchCase);
+  const computed = editorFindReplaceCore.computeLiteralReplaceAll({
+    value: currentValue,
+    query,
+    replacement,
+    matchCase,
+  });
   if (!computed.replacements || computed.nextValue === currentValue) {
     return buildReplaceResponse('replace-all', requestId, {
       status: 'noop-unchanged',
