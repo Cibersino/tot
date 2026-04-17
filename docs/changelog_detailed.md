@@ -153,6 +153,7 @@ Reglas:
 - Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro.
 - Corrector ortográfico del editor (Issue #211): la ventana editor agrega un checkbox persistente, habilitado por defecto, y el spellcheck de Electron deja de depender implícitamente del locale del sistema; ahora sigue el idioma activo de la app cuando existe diccionario soportado y se deshabilita explícitamente en tags UI sin diccionario válido (p.ej. `arn`, `es-cl`).
 - Tamaño de texto del editor (Issue #212): la ventana editor agrega controles locales `A-` / indicador / `A+` / reset para escalar solo el `textarea`, persiste `editorFontSizePx`, soporta `Ctrl/Cmd +`, `Ctrl/Cmd -` y `Ctrl/Cmd 0`, y mueve su orquestación main-owned a `electron/editor_text_size.js` para no seguir inflando `electron/main.js`.
+- Find/Replace del editor (Issue #231): la ventana dedicada Find deja de ser search-only y pasa a soportar un modo expandido de dos filas con `Replace` y `Replace All`, manteniendo el modelo de ventana secundaria controlada desde main, el comportamiento existente de búsqueda/navegación y la semántica actual de apply/current-text del editor. El flujo agrega `Ctrl+H` en Windows/Linux y `Cmd+Option+F` en macOS para abrir expandido, re-sync del query al refocar Find, límite compartido de `512` caracteres entre search y replace, y una ruta renderer-owned para las mutaciones de texto con undo de un solo paso para `Replace` y para el `Replace All` soportado.
 
 ### Agregado
 
@@ -167,6 +168,10 @@ Reglas:
   - `electron/editor_text_size.js` (nuevo): controller main-owned del tamaño de texto del editor; encapsula `set/increase/decrease/reset`, persiste `editorFontSizePx` vía settings y expone acciones reutilizables para los atajos del editor y del Find.
   - `public/editor.html`: el editor agrega controles locales `A-`, indicador, `A+` y reset en la barra inferior para escalar solo el `textarea`.
   - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): nuevas keys `renderer.editor.text_size_label`, `renderer.editor.decrease_text_size`, `renderer.editor.increase_text_size`, `renderer.editor.reset_text_size` y `renderer.editor.text_size_value`.
+- Editor / find-replace:
+  - `public/js/lib/editor_find_replace_core.js` (nuevo): núcleo puro/importable del replace del editor; centraliza matching literal case-insensitive, cómputo determinista de `Replace All` y chequeo puro de elegibilidad por longitud, sin mover fuera del renderer la mutación real del `textarea`.
+  - `test/unit/shared/editor_find_replace_core.test.js` (nuevo): cobertura del núcleo puro de replace (`selectionMatchesLiteralQuery`, `computeLiteralReplaceAll`, `isReplaceAllAllowedByLength`).
+  - `test/unit/electron/editor_find_main.test.js` (nuevo): cobertura dirigida del coordinador main-owned del Find/Replace del editor, incluyendo autorización IPC, re-sync request-scoped al refocar la ventana Find, replace request/response y relay de `replaceAllAllowedByLength`.
 - Shared catalog:
   - `public/js/lib/snapshot_tag_catalog.js` (nuevo): módulo dual browser/CommonJS que define el catálogo canónico de tags de snapshot, incluyendo el set ampliado de idiomas (`es`, `en`, `pt`, `fr`, `de`, `it`, `arn`, `ja`, `ko`, `ru`, `tr`, `id`, `hi`, `bn`, `ur`, `ar`, `zh-Hans`, `zh-Hant`) y los normalizadores reutilizados por renderer y main.
 - Reading speed test:
@@ -206,6 +211,13 @@ Reglas:
   - la publicación de settings actualizados sigue saliendo por `settings-updated`, pero ahora también dispara la reaplicación main-owned del spellcheck y del tamaño de texto del editor según corresponda.
 - `electron/editor_find_main.js`, `electron/editor_text_size.js` y `electron/main.js`:
   - el coordinador del Find deja de ocuparse solo de navegación y pasa a reenviar `Ctrl/Cmd +`, `Ctrl/Cmd -` y `Ctrl/Cmd 0` hacia un controller main-owned separado; `main.js` conserva solo el wiring de ese controller sin absorber la lógica específica del feature.
+- `electron/editor_find_main.js`, `electron/editor_find_preload.js`, `electron/editor_preload.js`, `public/editor_find.js`, `public/editor_find.html`, `public/editor_find.css` y `public/editor.js`:
+  - la ventana dedicada Find deja de quedarse en un flujo search-only de una sola fila y pasa a soportar un estado expandido/collapsed main-owned, con toggle explícito, campo `replace`, botones `Replace` / `Replace All` y foco dirigido a query o replace según el atajo de apertura.
+  - `Ctrl/Cmd+F` conserva la apertura collapsed y, si la ventana ya existe, preserva su estado expandido/colapsado; `Ctrl+H` (Windows/Linux) y `Cmd+Option+F` (macOS) abren expandido o expanden la misma ventana ya abierta.
+  - el coordinador del Find deja de tratar el refocus de la ventana como un mero detalle de UI y pasa a rerunear el query actual como una nueva búsqueda request-scoped contra el texto actual del editor.
+  - el pipeline de replace queda dividido explícitamente: main conserva búsqueda, shortcuts, autorización, serialization y espera request-scoped de `found-in-page`; el renderer del editor conserva la mutación real del `textarea`, la validación de selección para `Replace` y el cómputo completo de `Replace All`.
+  - `Replace All` queda soportado solo en el small-document path actual: se habilita cuando el editor reporta `replaceAllAllowedByLength === true`, computa el resultado final en memoria y aplica una sola mutación whole-document cuando el texto actual y el texto proyectado siguen dentro de `SMALL_UPDATE_THRESHOLD`.
+  - el renderer del Find deja de mostrar la etiqueta visible estática `Find/Search`; el campo de búsqueda queda como control inicial de la fila, y el límite explícito `EDITOR_FIND_INPUT_MAX_CHARS = 512` pasa a aplicarse tanto al input de búsqueda como al de reemplazo.
 - `electron/current_text_snapshots_main.js`:
   - el handler `current-text-snapshot-save` valida payloads opcionales de tags, persiste `tags` cuando existen y mantiene la misma política de diálogos nativos / contención bajo `config/saved_current_texts/`.
   - el parser/validador de snapshots deja de aceptar solo `{ text }` y pasa a tolerar también `{ text, tags }`, rechazando shapes inválidas de `tags` de forma explícita.
@@ -242,6 +254,11 @@ Reglas:
   - el editor deja de depender implícitamente del idioma del sistema operativo para elegir diccionario; en plataformas con `setSpellCheckerLanguages(...)`, el spellcheck sigue el idioma activo de la app cuando existe un match soportado.
   - tags UI sin diccionario válido (`arn`, `es-cl`) dejan de producir subrayados engañosos por fallback al locale del SO; ahora el spellcheck se deshabilita explícitamente en esos casos.
   - el campo Find del editor permanece fuera del alcance del spellcheck; la superficie afectada queda acotada al `textarea` principal del editor.
+- Editor / find-replace:
+  - el Find del editor deja de quedar desfasado respecto del texto actual cuando el usuario vuelve a enfocar la ventana Find tras editar el `textarea`; ahora el refocus dispara una nueva búsqueda request-scoped sobre el texto vigente.
+  - `Ctrl+H` / `Cmd+Option+F` deja de comportarse como una simple apertura más grande del Find collapsed; ahora abre o expande el mismo Find directamente en modo replace, con la segunda fila visible y foco dirigido al campo correcto.
+  - `Replace` y `Replace All` dejan de depender de un path de mutación implícito y pasan a usar un request/response explícito entre main y editor, manteniendo un undo step por reemplazo simple y un undo step por `Replace All` soportado.
+  - `Replace All` deja de quedar disponible fuera del rango soportado del small-document path; cuando el largo actual del `textarea` o el largo proyectado salen de `SMALL_UPDATE_THRESHOLD`, el flujo no muta texto y no introduce ruido de UX ni pasos extra de undo.
 - Editor / layout:
   - la barra inferior del editor deja de colapsar el botón de limpiar en una fila huérfana cuando la ventana se angosta; ahora el bloque derecho permanece anclado en la esquina y el wrapping de controles no deja un hueco visual grande debajo de los controles de tamaño de texto.
 - Reading speed test / persistencia:
@@ -304,8 +321,31 @@ Reglas:
   - request: `boolean`.
   - OK: `{ ok:true, enabled:boolean }`.
   - invalid/failure: `{ ok:false, error:'invalid' | string }`.
+- IPC Find/Replace del editor:
+  - nuevos invokes autorizados desde la ventana Find:
+    - `editor-find-replace-current` → request: `string` (`replacement`).
+    - `editor-find-replace-all` → request: `string` (`replacement`).
+    - `editor-find-toggle-expanded` → request: sin payload.
+  - surface de estado publicada a la ventana Find ampliada con:
+    - `expanded:boolean`
+    - `busy:boolean`
+    - `replaceAllAllowedByLength:boolean`
+  - nuevo evento main → find window:
+    - `editor-find-focus-target` → `{ target:'query'|'replace', selectAll:boolean }`.
+- IPC main ↔ editor para replace:
+  - nuevo evento main → editor:
+    - `editor-replace-request` → `{ requestId:number, operation:'replace-current'|'replace-all', query:string, replacement:string, matchCase:boolean }`.
+  - nuevos eventos editor → main:
+    - `editor-replace-response` → `{ requestId:number, operation:'replace-current'|'replace-all', ok:boolean, status:string, replacements:number, finalTextLength:number, error:string }`.
+    - `editor-replace-status` → `{ replaceAllAllowedByLength:boolean }`.
+  - semántica explícita:
+    - `Replace` valida la selección actual convertida desde `findInPage` y reemplaza solo esa selección.
+    - `Replace All` opera únicamente sobre `editorArea.value`, usa matching literal case-insensitive y solo está soportado cuando el texto actual y el texto proyectado permanecen dentro de `SMALL_UPDATE_THRESHOLD`.
 - Preload/editor bridge:
   - nueva superficie `window.editorAPI.setSpellcheckEnabled(enabled)`.
+- Preload/find + editor bridge:
+  - `window.editorFindAPI` agrega `replaceCurrent(replacement)`, `replaceAll(replacement)`, `toggleExpanded()` y `onFocusTarget(cb)`.
+  - `window.editorAPI` agrega `onReplaceRequest(cb)`, `sendReplaceResponse(payload)` y `sendReplaceStatus(payload)`.
 - Renderer/UI:
   - nuevos IDs `snapshotSaveTagsModal`, `snapshotSaveTagsModalBackdrop`, `snapshotSaveTagsModalTitle`, `snapshotSaveTagsModalMessage`, `snapshotSaveTagsLanguage`, `snapshotSaveTagsType`, `snapshotSaveTagsDifficulty`, `snapshotSaveTagsModalConfirm`, `snapshotSaveTagsModalCancel` y `snapshotSaveTagsModalClose`.
   - nueva superficie pública renderer `window.Notify.promptSnapshotSaveTags(...)`.
@@ -314,12 +354,16 @@ Reglas:
   - nueva superficie preload/renderer para el cuestionario: `window.readingTestQuestionsAPI`.
   - nuevas superficies shared `window.ReadingTestFiltersCore` / `reading_test_filters_core.js` y `window.ReadingTestQuestionsCore` / `reading_test_questions_core.js`.
   - nuevo ID renderer `spellcheckToggle` en `public/editor.html`.
+  - nuevos IDs/entrypoints del Find/Replace del editor: `findToggle`, `replaceRow`, `findReplace`, `findReplaceOne` y `findReplaceAll` en `public/editor_find.html`.
 - Semántica explícita:
   - cargar un snapshot etiquetado **no** transfiere `tags` al estado activo de current-text; solo aplica `text`.
   - durante una sesión activa del reading speed test, la ventana principal queda bloqueada y la Ventana flotante deja de operar como cronómetro genérico: `pause` finaliza la sesión y `reset` la cancela.
   - si el reading speed test se inicia con `sourceMode:'current_text'`, el flujo reutiliza el current text ya cargado, no consume entradas del pool y la cancelación deja intacto el texto vigente.
   - si una entrada del pool tiene `readingTest.questions` válido, la etapa de preguntas se inserta antes del modal de presets; si no lo tiene, el flujo continúa directo a preset creation.
   - el spellcheck del editor sigue el idioma activo de la app cuando existe diccionario soportado; si no existe match soportado para el tag UI activo, se deshabilita en lugar de caer al locale del SO.
+  - `Ctrl/Cmd+F` abre Find collapsed cuando la ventana está cerrada y preserva el estado expanded/collapsed actual cuando ya está abierta.
+  - `Ctrl+H` (Windows/Linux) y `Cmd+Option+F` (macOS) abren Find expanded cuando la ventana está cerrada y expanden la misma ventana si estaba collapsed.
+  - refocar la ventana Find con query no vacío relanza ese query contra el texto actual del editor como una nueva búsqueda; las acciones de replace operan sobre esa búsqueda resincronizada y no fuerzan persistencia eager de current-text fuera de la semántica ya existente del editor.
 
 ### Archivos
 
@@ -338,7 +382,19 @@ Reglas:
 - `public/editor.html`
 - `public/editor.css`
 - `public/editor.js`
+- `public/editor_find.html`
+- `public/editor_find.css`
+- `public/editor_find.js`
+- `public/js/lib/editor_find_replace_core.js`
 - `electron/preload.js`
+- `electron/editor_preload.js`
+- `electron/editor_find_preload.js`
+- `electron/editor_find_main.js`
+- `test/unit/shared/editor_find_replace_core.test.js`
+- `test/unit/electron/editor_find_main.test.js`
+- `docs/test_suite.md`
+- `docs/tree_folders_files.md`
+- `tools_local/issues/issue_231.md`
 - `electron/editor_preload.js`
 - `electron/current_text_snapshots_main.js`
 - `electron/main.js`
