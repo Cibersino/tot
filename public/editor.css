@@ -109,7 +109,7 @@ body.reading-test-countdown-active .bottom-bar {
   flex-wrap: wrap;
   align-content: flex-start;
   justify-content: flex-start;
-  gap: 10px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -145,7 +145,7 @@ body.reading-test-countdown-active .bottom-bar {
 .editor-toggle-label {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   font-size: 14px;
   color: #333;
   user-select: none;
@@ -162,6 +162,10 @@ body.reading-test-countdown-active .bottom-bar {
   min-width: 0;
 }
 
+.spellcheck-label + .editor-text-size-controls {
+  margin-left: 12px;
+}
+
 .editor-text-size-label {
   font-size: 14px;
   color: #333;
@@ -176,7 +180,7 @@ body.reading-test-countdown-active .bottom-bar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
+  width: 20px;
   height: 32px;
   padding: 0 8px;
   border-radius: 6px;
@@ -201,6 +205,7 @@ body.reading-test-countdown-active .bottom-bar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  margin: 0 -10px;
   min-width: 52px;
   height: 32px;
   padding: 0 8px;
