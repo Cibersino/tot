@@ -3,17 +3,7 @@
 
 // Shared literal matching and replace-all core for editor find/replace.
 
-(function initEditorFindReplaceCore(factory) {
-  const api = factory();
-
-  if (typeof module === 'object' && module.exports) {
-    module.exports = api;
-  }
-
-  if (typeof window !== 'undefined') {
-    window.EditorFindReplaceCore = api;
-  }
-})(function createEditorFindReplaceCore() {
+function createEditorFindReplaceCore() {
   function normalizeForMatch(text, matchCase) {
     const value = String(text || '');
     return matchCase ? value : value.toLocaleLowerCase();
@@ -104,5 +94,16 @@
     computeLiteralReplaceAll,
     isReplaceAllAllowedByLength,
   };
-});
+}
 
+(function initEditorFindReplaceCore(factory) {
+  const api = factory();
+
+  if (typeof module === 'object' && module.exports) {
+    module.exports = api;
+  }
+
+  if (typeof window !== 'undefined') {
+    window.EditorFindReplaceCore = api;
+  }
+})(createEditorFindReplaceCore);
