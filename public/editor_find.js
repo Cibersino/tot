@@ -256,11 +256,7 @@ async function runReplaceCurrent() {
   try {
     await findApi.replaceCurrent(replaceInputEl.value || '');
   } catch (err) {
-    log.errorOnce(
-      'editor-find.replaceCurrent.failed',
-      'Error sending replace-current request to main process:',
-      err
-    );
+    log.error('Error sending replace-current request to main process:', err);
   }
 }
 
@@ -268,11 +264,7 @@ async function runReplaceAll() {
   try {
     await findApi.replaceAll(replaceInputEl.value || '');
   } catch (err) {
-    log.errorOnce(
-      'editor-find.replaceAll.failed',
-      'Error sending replace-all request to main process:',
-      err
-    );
+    log.error('Error sending replace-all request to main process:', err);
   }
 }
 
@@ -282,8 +274,7 @@ async function runReplaceAll() {
 async function initLanguage() {
   try {
     if (typeof findApi.getSettings !== 'function') {
-      log.warnOnce(
-        'BOOTSTRAP:editor-find.getSettings.missing',
+      log.warn(
         'BOOTSTRAP: [editor-find] editorFindAPI.getSettings missing; using default language.'
       );
       return;
@@ -294,8 +285,7 @@ async function initLanguage() {
       idiomaActual = settings.language || idiomaActual;
     }
   } catch (err) {
-    log.warnOnce(
-      'BOOTSTRAP:editor-find.getSettings.failed',
+    log.warn(
       'BOOTSTRAP: [editor-find] editorFindAPI.getSettings failed; using default language.',
       err
     );
@@ -362,8 +352,7 @@ if (typeof findApi.onFocusTarget === 'function') {
     focusRequestedTarget(target, selectAll);
   });
 } else {
-  log.warnOnce(
-    'BOOTSTRAP:editor-find.onFocusTarget.missing',
+  log.warn(
     'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget missing; focus-sync capability disabled.'
   );
 }
@@ -380,8 +369,7 @@ if (typeof findApi.onSettingsChanged === 'function') {
     }
   });
 } else {
-  log.warnOnce(
-    'BOOTSTRAP:editor-find.onSettingsChanged.missing',
+  log.warn(
     'BOOTSTRAP: [editor-find] editorFindAPI.onSettingsChanged missing; live language updates disabled.'
   );
 }
