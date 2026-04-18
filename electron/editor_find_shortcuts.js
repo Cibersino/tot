@@ -4,10 +4,15 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Pure keyboard helpers for editor native find/search shortcuts.
+// Main-process shortcut predicate helpers for editor native find/search.
+// Responsibilities:
+// - Normalize letter-based shortcut matching across input.key and input.code.
+// - Classify open-find and open-replace shortcut combinations.
+// - Classify F3 and Escape shortcut checks used by editor/find handlers.
+// - Classify shared text-size shortcut combinations.
 
 // =============================================================================
-// Shortcut predicates
+// Helpers (shortcut predicates)
 // =============================================================================
 function matchesLetterShortcut(input, letter) {
   if (!input) return false;
