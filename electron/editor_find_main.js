@@ -87,10 +87,6 @@ function resolveFindWindow() {
   return isAliveWindow(findWin) ? findWin : null;
 }
 
-function hasQuery() {
-  return session.hasQuery();
-}
-
 function getFindWindowHeight() {
   return state.expanded ? FIND_WIN_HEIGHT_EXPANDED : FIND_WIN_HEIGHT_COLLAPSED;
 }
@@ -115,15 +111,19 @@ function buildPublicState() {
   };
 }
 
+function isLoadingWindowContents(wc) {
+  if (!wc) return true;
+  return typeof wc.isLoadingMainFrame === 'function'
+    ? wc.isLoadingMainFrame()
+    : wc.isLoading();
+}
+
 function safeSendToFindWindow(channel, payload) {
   const win = resolveFindWindow();
   if (!win) return;
 
   const wc = win.webContents;
-  const isLoading = typeof wc.isLoadingMainFrame === 'function'
-    ? wc.isLoadingMainFrame()
-    : wc.isLoading();
-  if (isLoading) return;
+  if (isLoadingWindowContents(wc)) return;
 
   try {
     wc.send(channel, payload);
@@ -158,6 +158,13 @@ function sendToFindWindowAfterLoad(wc, channel, payload) {
   }
 }
 
+function buildFocusTargetPayload(target, selectAll = false) {
+  return {
+    target: target === 'replace' ? 'replace' : 'query',
+    selectAll: !!selectAll,
+  };
+}
+
 function focusEditorWindow() {
   if (editorClosing) return;
   const editorWin = resolveEditorWindow();
@@ -189,6 +196,10 @@ function clearStateOnly() {
 
 function clearSearch(options) {
   return session.clearSearch(options);
+}
+
+function hasQuery() {
+  return session.hasQuery();
 }
 
 function setQuery(rawQuery) {
@@ -242,17 +253,14 @@ function runEditorShortcutAction(actionName) {
 }
 
 function sendFocusTarget(target, selectAll = false) {
-  safeSendToFindWindow('editor-find-focus-target', {
-    target: target === 'replace' ? 'replace' : 'query',
-    selectAll: !!selectAll,
-  });
+  safeSendToFindWindow(
+    'editor-find-focus-target',
+    buildFocusTargetPayload(target, selectAll)
+  );
 }
 
 function queueFocusTarget(target, selectAll = false) {
-  pendingFocusTarget = {
-    target: target === 'replace' ? 'replace' : 'query',
-    selectAll: !!selectAll,
-  };
+  pendingFocusTarget = buildFocusTargetPayload(target, selectAll);
 }
 
 function tryDispatchPendingFocus() {
@@ -261,10 +269,7 @@ function tryDispatchPendingFocus() {
   if (!win) return;
 
   const wc = win.webContents;
-  const isLoading = typeof wc.isLoadingMainFrame === 'function'
-    ? wc.isLoadingMainFrame()
-    : wc.isLoading();
-  if (isLoading) return;
+  if (isLoadingWindowContents(wc)) return;
 
   sendFocusTarget(pendingFocusTarget.target, pendingFocusTarget.selectAll);
   pendingFocusTarget = null;
