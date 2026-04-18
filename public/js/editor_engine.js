@@ -57,6 +57,36 @@
       setSelectionSafe(0, editor.value.length);
     }
 
+    function dispatchNativeInputEvent() {
+      try {
+        const ev = new Event('input', { bubbles: true });
+        editor.dispatchEvent(ev);
+      } catch (err) {
+        log.error('dispatchNativeInputEvent error:', err);
+      }
+    }
+
+    function restorePreviousActiveElement(prevActive, warnKey) {
+      try {
+        if (prevActive && prevActive !== editor) prevActive.focus();
+      } catch (err) {
+        log.warnOnce(warnKey, 'prevActive.focus() failed (ignored):', err);
+      }
+    }
+
+    function replaceEditorValueHidden(nextValue) {
+      try {
+        editor.style.visibility = 'hidden';
+        editor.value = nextValue;
+        dispatchNativeInputEvent();
+      } catch {
+        editor.value = nextValue;
+        dispatchNativeInputEvent();
+      } finally {
+        editor.style.visibility = '';
+      }
+    }
+
     function tryNativeInsertAtSelection(text) {
       try {
         const { start, end } = getSelectionRange();
@@ -415,36 +445,6 @@
       }
     }
 
-    function dispatchNativeInputEvent() {
-      try {
-        const ev = new Event('input', { bubbles: true });
-        editor.dispatchEvent(ev);
-      } catch (err) {
-        log.error('dispatchNativeInputEvent error:', err);
-      }
-    }
-
-    function restorePreviousActiveElement(prevActive, warnKey) {
-      try {
-        if (prevActive && prevActive !== editor) prevActive.focus();
-      } catch (err) {
-        log.warnOnce(warnKey, 'prevActive.focus() failed (ignored):', err);
-      }
-    }
-
-    function replaceEditorValueHidden(nextValue) {
-      try {
-        editor.style.visibility = 'hidden';
-        editor.value = nextValue;
-        dispatchNativeInputEvent();
-      } catch {
-        editor.value = nextValue;
-        dispatchNativeInputEvent();
-      } finally {
-        editor.style.visibility = '';
-      }
-    }
-
     function handleTextTransferInsert(ev, transferConfig) {
       const source = transferConfig && transferConfig.source ? transferConfig.source : 'transfer';
       const noTextAlertKey = transferConfig && transferConfig.noTextAlertKey
@@ -565,9 +565,9 @@
               try {
                 editor.focus();
                 selectAllEditor();
-                let execOK = false;
-                try { execOK = document.execCommand && document.execCommand('insertText', false, newText); } catch { execOK = false; }
-                if (!execOK) {
+                let execOk = false;
+                try { execOk = document.execCommand && document.execCommand('insertText', false, newText); } catch { execOk = false; }
+                if (!execOk) {
                   if (typeof editor.setRangeText === 'function') {
                     editor.setRangeText(newText, 0, editor.value.length, 'end');
                     dispatchNativeInputEvent();
