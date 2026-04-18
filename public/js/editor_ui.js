@@ -282,14 +282,14 @@
           ctx.engine.setSelectionSafe(0, 0);
         }
       } catch (err) {
-        log.warnOnce('editor.readingTestCountdown.selectionTop', 'Failed to set editor selection to top (ignored):', err);
+        log.warn('Failed to set editor selection to top (ignored):', err);
       }
 
       try {
         editor.scrollTop = 0;
         editor.scrollLeft = 0;
       } catch (err) {
-        log.warnOnce('editor.readingTestCountdown.scrollTop', 'Failed to scroll editor to top (ignored):', err);
+        log.warn('Failed to scroll editor to top (ignored):', err);
       }
 
       scheduleReadProgressUiUpdate();
@@ -305,9 +305,8 @@
         try {
           readingTestCountdownOverlay.focus();
         } catch (err) {
-          log.warnOnce(
-            'editor.readingTestCountdown.focus',
-            'reading-test countdown focus failed (ignored):',
+          log.warn(
+            'Reading-test countdown focus failed (ignored):',
             err
           );
         }
@@ -320,8 +319,7 @@
 
     function startReadingTestCountdown(payload = {}) {
       if (!readingTestCountdownOverlay || !readingTestCountdownValue) {
-        log.warnOnce(
-          'editor.readingTestCountdown.missingDom',
+        log.warn(
           'Reading-test countdown DOM missing; overlay countdown skipped.'
         );
         return;
@@ -376,7 +374,7 @@
           editor.style.wordBreak = 'break-word';
         }
       } catch (err) {
-        log.warnOnce('editor:wrapStyles:apply_failed', 'editor wrap styles failed (ignored):', err);
+        log.warn('Editor wrap styles failed (ignored):', err);
       }
     }
 
