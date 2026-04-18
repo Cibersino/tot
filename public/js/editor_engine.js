@@ -2,18 +2,28 @@
 'use strict';
 
 // =============================================================================
-// public/js/editor_engine.js
+// Overview
 // =============================================================================
+// Editor engine module for the renderer editor page.
 // Responsibilities:
-// - Handle editor selection, insertion, replacement, and synchronization.
-// - Publish replace status and respond to replace requests from main.
-// - Reconcile external updates and transfer inserts.
-// =============================================================================
+// - Read and update selection state used by typing, paste, drop, and replace flows.
+// - Apply native-first insert and replace operations with local fallbacks.
+// - Publish replace eligibility and build replace responses for main-driven requests.
+// - Synchronize editor text back to main and surface truncation feedback.
+// - Reconcile external text updates without echoing editor-originated changes back to main.
 
 (() => {
+  // =============================================================================
+  // Module Factory
+  // =============================================================================
+
   function createEditorEngine(ctx) {
     const { log, editorAPI, editorFindReplaceCore, dom, state } = ctx;
     const { editor } = dom;
+
+    // =============================================================================
+    // Selection And Native Edit Helpers
+    // =============================================================================
 
     function getSelectionRange() {
       const start = typeof editor.selectionStart === 'number' ? editor.selectionStart : editor.value.length;
@@ -253,6 +263,10 @@
       }
     }
 
+    // =============================================================================
+    // Replace Request Handling
+    // =============================================================================
+
     function buildReplaceResponse(operation, requestId, fields = {}) {
       return {
         requestId,
@@ -385,6 +399,10 @@
 
       return handleReplaceCurrentRequest(payload);
     }
+
+    // =============================================================================
+    // Main Text Sync And Transfer Handling
+    // =============================================================================
 
     function sendCurrentTextToMain(action, options = {}) {
       const hasText = Object.prototype.hasOwnProperty.call(options, 'text');
@@ -531,6 +549,10 @@
       }
     }
 
+    // =============================================================================
+    // External Update Reconciliation
+    // =============================================================================
+
     async function applyExternalUpdate(payload) {
       try {
         let incomingMeta = null;
@@ -561,6 +583,7 @@
         }
 
         const prevSuppressLocalUpdate = state.suppressLocalUpdate;
+        // Prevent main-driven updates from re-triggering local editor sync while applying them.
         state.suppressLocalUpdate = true;
         try {
           const useNative = newText.length <= ctx.SMALL_UPDATE_THRESHOLD;
@@ -668,6 +691,10 @@
       }
     }
 
+    // =============================================================================
+    // Module Surface
+    // =============================================================================
+
     return {
       getSelectionRange,
       getInsertionCapacity,
@@ -683,5 +710,13 @@
     };
   }
 
+  // =============================================================================
+  // Exports
+  // =============================================================================
+
   window.EditorEngine = { createEditorEngine };
 })();
+
+// =============================================================================
+// End of public/js/editor_engine.js
+// =============================================================================
