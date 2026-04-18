@@ -183,6 +183,8 @@ tot/
 │ │ ├── import_extract_entry.js
 │ │ ├── import_extract_drag_drop.js
 │ │ ├── current_text_selector_section.js
+│ │ ├── editor_ui.js
+│ │ ├── editor_engine.js
 │ │ └── log.js
 │ ├── renderer.js
 │ ├── language_window.js
@@ -300,7 +302,7 @@ tot/
 
 **Renderer (UI / ventanas):**
 - `public/renderer.js` — Lógica principal de UI (ventana principal).
-- `public/editor.js` — Lógica del editor manual (ventana editor): edición de texto, autosave/cálculo, toggle local de spellcheck, controles de tamaño de texto del `textarea` y reacción a `settings-updated`.
+- `public/editor.js` — Entry point/orquestador del editor manual: valida dependencias, arma el contexto compartido del editor y registra bootstrap, listeners DOM e IPC sobre los módulos auxiliares `public/js/editor_ui.js` y `public/js/editor_engine.js`.
 - `public/editor_find.js` — Lógica de la ventana dedicada de búsqueda del editor.
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
 - `public/task_editor.js` — Renderer del editor de tareas (UI + tabla + biblioteca + anchos de columnas).
@@ -393,6 +395,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/import_extract_entry.js` — Orquestador compartido del flujo import/extract desde picker o drag/drop.
 - `public/js/import_extract_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de archivos al entry flow compartido.
 - `public/js/current_text_selector_section.js` — Owner UI de la sección “texto vigente” en la ventana principal: concentra el título, el preview del texto actual, el toolbar local de esa sección, el lock state específico de sus controles y el toggle `Spoiler`, que permite ocultar el tramo final del preview sin devolver esa lógica a `public/renderer.js`.
+- `public/js/editor_ui.js` — Módulo UI del editor manual: i18n del editor, `spellcheck`, tamaño de texto, progreso de lectura, restauración de foco y countdown overlay del reading speed test.
+- `public/js/editor_engine.js` — Módulo de lógica/sync del editor manual: helpers de selección e inserción, `replace current/all`, sincronización con main, truncation handling, paste/drop y aplicación de updates externos.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 
