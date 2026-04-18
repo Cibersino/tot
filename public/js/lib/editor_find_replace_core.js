@@ -1,9 +1,25 @@
 // public/js/lib/editor_find_replace_core.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
 // Shared literal matching and replace-all core for editor find/replace.
+// Responsibilities:
+// - Normalize literal matching for case-sensitive and case-insensitive comparisons.
+// - Check whether the current selection still matches a literal query.
+// - Compute replace-all output without mutating editor state directly.
+// - Enforce the small-update threshold contract used by editor replace flows.
+
+// =============================================================================
+// Module Factory
+// =============================================================================
 
 function createEditorFindReplaceCore() {
+  // =============================================================================
+  // Helpers
+  // =============================================================================
+
   function normalizeForMatch(text, matchCase) {
     const value = String(text || '');
     return matchCase ? value : value.toLocaleLowerCase();
@@ -89,12 +105,20 @@ function createEditorFindReplaceCore() {
     return String(value || '').length <= threshold;
   }
 
+  // =============================================================================
+  // Module Surface
+  // =============================================================================
+
   return {
     selectionMatchesLiteralQuery,
     computeLiteralReplaceAll,
     isReplaceAllAllowedByLength,
   };
 }
+
+// =============================================================================
+// Exports
+// =============================================================================
 
 (function initEditorFindReplaceCore(factory) {
   const api = factory();
@@ -107,3 +131,7 @@ function createEditorFindReplaceCore() {
     window.EditorFindReplaceCore = api;
   }
 })(createEditorFindReplaceCore);
+
+// =============================================================================
+// End of public/js/lib/editor_find_replace_core.js
+// =============================================================================
