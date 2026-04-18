@@ -210,9 +210,9 @@
           }),
         });
       } catch (err) {
-        log.errorOnce(
-          'editor.replaceStatus.send',
-          'Error sending editor replace status:',
+        log.warnOnce(
+          'editor.replaceStatus.send_failed',
+          'editorAPI.sendReplaceStatus failed (ignored):',
           err
         );
       }
@@ -368,7 +368,7 @@
         } else {
           log.warnOnce(
             'editor.setCurrentText.payload_failed',
-            'setCurrentText payload failed (ignored); using fallback:',
+            'editorAPI.setCurrentText payload failed; using fallback:',
             err
           );
         }
@@ -380,7 +380,7 @@
           if (onFallbackError) {
             onFallbackError(fallbackErr);
           } else {
-            log.error('Error sending set-current-text (fallback):', fallbackErr);
+            log.warn('editorAPI.setCurrentText fallback failed (ignored):', fallbackErr);
           }
           return false;
         }
@@ -399,7 +399,7 @@
               notifyTextTruncated();
             }
           }).catch((err) => {
-            log.error('setCurrentText response handling failed:', err);
+            log.warn('editorAPI.setCurrentText response handling failed (ignored):', err);
           });
         }
       } catch (err) {
