@@ -767,7 +767,9 @@ function attachEditorWindow(editorWin, options = {}) {
   editorShortcutActions = options && typeof options === 'object' ? options : null;
   state.replaceAllAllowedByLength = false;
 
-  if (!isAliveWindow(editorWin)) return;
+  if (!isAliveWindow(editorWin)) {
+    throw new Error('attachEditorWindow requires a live editor window');
+  }
   editorWinRef = editorWin;
 
   const wc = editorWin.webContents;
@@ -871,15 +873,15 @@ function handleEditorReplaceStatus(event, payload) {
 }
 
 function registerIpc(ipcMain) {
-  if (!ipcMain || typeof ipcMain.handle !== 'function') {
-    throw new Error('[editor-find-main] registerIpc requires ipcMain');
+  if (!ipcMain || typeof ipcMain.handle !== 'function' || typeof ipcMain.on !== 'function') {
+    throw new Error('[editor-find-main] registerIpc requires ipcMain.handle and ipcMain.on');
   }
 
-  if (!replaceResponseListenerRegistered && typeof ipcMain.on === 'function') {
+  if (!replaceResponseListenerRegistered) {
     ipcMain.on('editor-replace-response', handleEditorReplaceResponse);
     replaceResponseListenerRegistered = true;
   }
-  if (!replaceStatusListenerRegistered && typeof ipcMain.on === 'function') {
+  if (!replaceStatusListenerRegistered) {
     ipcMain.on('editor-replace-status', handleEditorReplaceStatus);
     replaceStatusListenerRegistered = true;
   }
