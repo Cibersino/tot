@@ -222,6 +222,12 @@ function clearPendingEditorReplace(status) {
   return session.clearPendingEditorReplace(status);
 }
 
+function clearPendingSessionState(status) {
+  session.clearPendingResyncRequest();
+  clearPendingSearchWait(status);
+  clearPendingEditorReplace(status);
+}
+
 function rerunCurrentQueryOnCurrentText() {
   return session.rerunCurrentQueryOnCurrentText();
 }
@@ -370,9 +376,7 @@ function detachFindWindow() {
 function handleFindWindowClosed() {
   detachFindWindow();
   pendingFocusTarget = null;
-  session.clearPendingResyncRequest();
-  clearPendingSearchWait('find-window-closed');
-  clearPendingEditorReplace('find-window-closed');
+  clearPendingSessionState('find-window-closed');
 
   if (!closingFindWindow) {
     clearSearch({ clearSelection: true });
@@ -666,17 +670,13 @@ function handleFindBeforeInput(event, input) {
 
 function onEditorWindowWillClose() {
   editorClosing = true;
-  session.clearPendingResyncRequest();
-  clearPendingSearchWait('editor-window-closed');
-  clearPendingEditorReplace('editor-window-closed');
+  clearPendingSessionState('editor-window-closed');
 }
 
 function onEditorWindowClosed() {
   editorClosing = false;
   pendingFocusTarget = null;
-  session.clearPendingResyncRequest();
-  clearPendingSearchWait('editor-window-closed');
-  clearPendingEditorReplace('editor-window-closed');
+  clearPendingSessionState('editor-window-closed');
   closingFindWindow = false;
   editorShortcutActions = null;
   clearStateOnly();
@@ -830,6 +830,12 @@ function isAuthorizedFindSender(event) {
   return event.sender === win.webContents;
 }
 
+function isAuthorizedEditorSender(event) {
+  const editorWin = resolveEditorWindow();
+  if (!editorWin || !event || !event.sender) return false;
+  return event.sender === editorWin.webContents;
+}
+
 function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handler) {
   ipcMain.handle(channel, (event, ...args) => {
     if (!isAuthorizedFindSender(event)) {
@@ -841,8 +847,7 @@ function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handl
 }
 
 function handleEditorReplaceResponse(event, payload) {
-  const editorWin = resolveEditorWindow();
-  if (!editorWin || !event || !event.sender || event.sender !== editorWin.webContents) {
+  if (!isAuthorizedEditorSender(event)) {
     log.warnOnce(
       'editorFind.editorReplaceResponse.unauthorized',
       'editor-replace-response unauthorized (ignored).'
@@ -854,8 +859,7 @@ function handleEditorReplaceResponse(event, payload) {
 }
 
 function handleEditorReplaceStatus(event, payload) {
-  const editorWin = resolveEditorWindow();
-  if (!editorWin || !event || !event.sender || event.sender !== editorWin.webContents) {
+  if (!isAuthorizedEditorSender(event)) {
     log.warnOnce(
       'editorFind.editorReplaceStatus.unauthorized',
       'editor-replace-status unauthorized (ignored).'
