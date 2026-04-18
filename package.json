@@ -29,10 +29,15 @@
   "build": {
     "appId": "com.cibersino.tot",
     "productName": "toT",
-    "asar": true,
+    "afterAllArtifactBuild": "./build-resources/after-all-artifact-build.js",
+    "asar": {
+      "smartUnpack": false
+    },
     "asarUnpack": [
-      "**/node_modules/sharp/**/*",
-      "**/node_modules/@img/**/*"
+      "**/node_modules/@img/sharp-win32-x64/**/*",
+      "**/node_modules/@img/sharp-darwin-x64/**/*",
+      "**/node_modules/@img/sharp-darwin-arm64/**/*",
+      "**/node_modules/@img/sharp-linux-x64/**/*"
     ],
     "directories": {
       "output": "build-output",
@@ -80,7 +85,6 @@
     }
   },
   "dependencies": {
-    "@google-cloud/local-auth": "^3.0.1",
     "adm-zip": "^0.5.16",
     "googleapis": "^171.4.0",
     "mammoth": "^1.11.0",

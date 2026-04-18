@@ -46,14 +46,6 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     relativePath: path.join('public', 'third_party_licenses', 'LICENSE_Baskervville_OFL.txt'),
     tempName: 'tot_LICENSE_Baskervville_OFL.txt',
   },
-  'license-import-extract-google-auth': {
-    relativePath: path.join(
-      'public',
-      'third_party_licenses',
-      'LICENSE_@google-cloud_local-auth_3.0.1.txt'
-    ),
-    tempName: 'tot_LICENSE_@google-cloud_local-auth_3.0.1.txt',
-  },
   'license-import-extract-google-apis': {
     relativePath: path.join(
       'public',

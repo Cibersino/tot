@@ -19,6 +19,19 @@
 const { BrowserWindow, screen } = require('electron');
 const path = require('path');
 const Log = require('./log');
+const {
+  isDecreaseTextSizeShortcut,
+  isEscape,
+  isF3,
+  isIncreaseTextSizeShortcut,
+  isOpenFindShortcut,
+  isOpenReplaceShortcut,
+  isResetTextSizeShortcut,
+} = require('./editor_find_shortcuts');
+const { createSession } = require('./editor_find_session');
+const {
+  EDITOR_FIND_INPUT_MAX_CHARS,
+} = require('./constants_main');
 
 const log = Log.get('editor-find-main');
 log.debug('Editor find main starting...');
@@ -29,7 +42,8 @@ log.debug('Editor find main starting...');
 const EDITOR_FIND_WINDOW_HTML = path.join(__dirname, '../public/editor_find.html');
 const EDITOR_FIND_PRELOAD = path.join(__dirname, 'editor_find_preload.js');
 const FIND_WIN_WIDTH = 560;
-const FIND_WIN_HEIGHT = 56;
+const FIND_WIN_HEIGHT_COLLAPSED = 48;
+const FIND_WIN_HEIGHT_EXPANDED = 84;
 
 // =============================================================================
 // Shared state (window refs + find session state)
@@ -40,10 +54,12 @@ let findWin = null;
 let editorListeners = null;
 let findListeners = null;
 
-let pendingFocusQuery = false;
+let pendingFocusTarget = null;
 let closingFindWindow = false;
 let editorClosing = false;
 let editorShortcutActions = null;
+let replaceResponseListenerRegistered = false;
+let replaceStatusListenerRegistered = false;
 
 const state = {
   query: '',
@@ -51,6 +67,9 @@ const state = {
   matches: 0,
   activeMatchOrdinal: 0,
   finalUpdate: true,
+  expanded: false,
+  busy: false,
+  replaceAllAllowedByLength: false,
 };
 
 // =============================================================================
@@ -68,8 +87,16 @@ function resolveFindWindow() {
   return isAliveWindow(findWin) ? findWin : null;
 }
 
-function hasQuery() {
-  return state.query.length > 0;
+function getFindWindowHeight() {
+  return state.expanded ? FIND_WIN_HEIGHT_EXPANDED : FIND_WIN_HEIGHT_COLLAPSED;
+}
+
+function clampFindInputText(value) {
+  const text = String(value || '');
+  if (text.length <= EDITOR_FIND_INPUT_MAX_CHARS) {
+    return text;
+  }
+  return text.slice(0, EDITOR_FIND_INPUT_MAX_CHARS);
 }
 
 function buildPublicState() {
@@ -78,7 +105,17 @@ function buildPublicState() {
     matches: state.matches,
     activeMatchOrdinal: state.activeMatchOrdinal,
     finalUpdate: state.finalUpdate,
+    expanded: state.expanded,
+    busy: state.busy,
+    replaceAllAllowedByLength: state.replaceAllAllowedByLength,
   };
+}
+
+function isLoadingWindowContents(wc) {
+  if (!wc) return true;
+  return typeof wc.isLoadingMainFrame === 'function'
+    ? wc.isLoadingMainFrame()
+    : wc.isLoading();
 }
 
 function safeSendToFindWindow(channel, payload) {
@@ -86,10 +123,7 @@ function safeSendToFindWindow(channel, payload) {
   if (!win) return;
 
   const wc = win.webContents;
-  const isLoading = typeof wc.isLoadingMainFrame === 'function'
-    ? wc.isLoadingMainFrame()
-    : wc.isLoading();
-  if (isLoading) return;
+  if (isLoadingWindowContents(wc)) return;
 
   try {
     wc.send(channel, payload);
@@ -110,6 +144,27 @@ function publishState() {
   safeSendToFindWindow('editor-find-state', buildPublicState());
 }
 
+function sendToFindWindowAfterLoad(wc, channel, payload) {
+  if (!wc) return;
+
+  try {
+    wc.send(channel, payload);
+  } catch (err) {
+    log.warnOnce(
+      `editorFind.sendAfterLoad.${channel}`,
+      `editor find post-load send('${channel}') failed (ignored):`,
+      err
+    );
+  }
+}
+
+function buildFocusTargetPayload(target, selectAll = false) {
+  return {
+    target: target === 'replace' ? 'replace' : 'query',
+    selectAll: !!selectAll,
+  };
+}
+
 function focusEditorWindow() {
   if (editorClosing) return;
   const editorWin = resolveEditorWindow();
@@ -127,149 +182,62 @@ function focusEditorWindow() {
   }
 }
 
+const session = createSession({
+  log,
+  state,
+  clampFindInputText,
+  resolveEditorWindow,
+  publishState,
+});
+
 function clearStateOnly() {
-  state.query = '';
-  state.requestId = null;
-  state.matches = 0;
-  state.activeMatchOrdinal = 0;
-  state.finalUpdate = true;
+  return session.clearStateOnly();
 }
 
-function clearSearch({ clearSelection = true } = {}) {
-  const editorWin = resolveEditorWindow();
-  if (clearSelection && editorWin) {
-    try {
-      editorWin.webContents.stopFindInPage('clearSelection');
-    } catch (err) {
-      log.warnOnce(
-        'editorFind.stopFind.clearSelection',
-        "stopFindInPage('clearSelection') failed (ignored):",
-        err
-      );
-    }
-  }
-
-  clearStateOnly();
-  publishState();
+function clearSearch(options) {
+  return session.clearSearch(options);
 }
 
-function runFind(options) {
-  const editorWin = resolveEditorWindow();
-  if (!editorWin) {
-    log.warnOnce(
-      'editorFind.runFind.noEditor',
-      'runFind ignored: editor window unavailable.'
-    );
-    return { ok: false, error: 'editor window unavailable' };
-  }
-
-  try {
-    const requestId = editorWin.webContents.findInPage(state.query, options);
-    state.requestId = requestId;
-    return { ok: true, requestId };
-  } catch (err) {
-    log.error('Error calling webContents.findInPage:', err);
-    return { ok: false, error: String(err) };
-  }
+function hasQuery() {
+  return session.hasQuery();
 }
 
 function setQuery(rawQuery) {
-  const nextQuery = String(rawQuery || '');
-  state.query = nextQuery;
-
-  if (!hasQuery()) {
-    clearSearch({ clearSelection: true });
-    return { ok: true };
-  }
-
-  state.matches = 0;
-  state.activeMatchOrdinal = 0;
-  state.finalUpdate = false;
-  publishState();
-
-  const res = runFind({
-    forward: true,
-    findNext: true,
-    matchCase: false,
-  });
-  if (!res.ok) return res;
-  return { ok: true, requestId: res.requestId };
+  return session.setQuery(rawQuery);
 }
 
 function navigate(forward) {
-  if (!hasQuery()) {
-    return { ok: true, skipped: 'empty query' };
-  }
-
-  state.finalUpdate = false;
-  publishState();
-
-  const res = runFind({
-    forward: !!forward,
-    findNext: false,
-    matchCase: false,
-  });
-  if (!res.ok) return res;
-  return { ok: true, requestId: res.requestId };
+  return session.navigate(forward);
 }
 
 function handleFoundInPage(result) {
-  if (!result || typeof result !== 'object') return;
-
-  const requestId = Number(result.requestId);
-  if (state.requestId !== null && Number.isFinite(requestId) && requestId !== state.requestId) {
-    return;
-  }
-
-  const matches = Number(result.matches);
-  const active = Number(result.activeMatchOrdinal);
-  state.matches = Number.isFinite(matches) && matches > 0 ? Math.floor(matches) : 0;
-  state.activeMatchOrdinal = Number.isFinite(active) && active > 0 ? Math.floor(active) : 0;
-  state.finalUpdate = !!result.finalUpdate;
-
-  publishState();
+  return session.handleFoundInPage(result);
 }
 
-// =============================================================================
-// Input helpers (keyboard shortcuts)
-// =============================================================================
-function isCmdOrCtrl(input) {
-  return !!(input && (input.control || input.meta));
+function clearPendingSearchWait(status) {
+  return session.clearPendingSearchWait(status);
 }
 
-function isF3(input) {
-  return !!(input && input.key === 'F3');
+function clearPendingEditorReplace(status) {
+  return session.clearPendingEditorReplace(status);
 }
 
-function isEscape(input) {
-  return !!(input && input.key === 'Escape');
+function clearPendingSessionState(status) {
+  session.clearPendingResyncRequest();
+  clearPendingSearchWait(status);
+  clearPendingEditorReplace(status);
 }
 
-function isOpenFindShortcut(input) {
-  if (!input || input.alt) return false;
-  const k = String(input.key || '');
-  return (k === 'f' || k === 'F') && isCmdOrCtrl(input);
+function rerunCurrentQueryOnCurrentText() {
+  return session.rerunCurrentQueryOnCurrentText();
 }
 
-function isIncreaseTextSizeShortcut(input) {
-  if (!input || input.alt || !isCmdOrCtrl(input)) return false;
-  const key = String(input.key || '');
-  const code = String(input.code || '');
-  return key === '+' || key === '=' || key === 'Add' || code === 'NumpadAdd';
+function replaceCurrent(rawReplacement) {
+  return session.replaceCurrent(rawReplacement);
 }
 
-function isDecreaseTextSizeShortcut(input) {
-  if (!input || input.alt || !isCmdOrCtrl(input)) return false;
-  const key = String(input.key || '');
-  const code = String(input.code || '');
-  return key === '-' || key === 'Subtract' || code === 'NumpadSubtract';
-}
-
-function isResetTextSizeShortcut(input) {
-  if (!input || input.alt || !isCmdOrCtrl(input)) return false;
-  const key = String(input.key || '');
-  const code = String(input.code || '');
-  return key === '0' || code === 'Digit0' || code === 'Numpad0';
+function replaceAll(rawReplacement) {
+  return session.replaceAll(rawReplacement);
 }
 
 function runEditorShortcutAction(actionName) {
@@ -290,23 +258,42 @@ function runEditorShortcutAction(actionName) {
   }
 }
 
-function sendFocusQuery() {
-  safeSendToFindWindow('editor-find-focus-query', { selectAll: true });
+function sendFocusTarget(target, selectAll = false) {
+  safeSendToFindWindow(
+    'editor-find-focus-target',
+    buildFocusTargetPayload(target, selectAll)
+  );
+}
+
+function queueFocusTarget(target, selectAll = false) {
+  pendingFocusTarget = buildFocusTargetPayload(target, selectAll);
 }
 
 function tryDispatchPendingFocus() {
-  if (!pendingFocusQuery) return;
+  if (!pendingFocusTarget) return;
   const win = resolveFindWindow();
   if (!win) return;
 
   const wc = win.webContents;
-  const isLoading = typeof wc.isLoadingMainFrame === 'function'
-    ? wc.isLoadingMainFrame()
-    : wc.isLoading();
-  if (isLoading) return;
+  if (isLoadingWindowContents(wc)) return;
 
-  sendFocusQuery();
-  pendingFocusQuery = false;
+  sendFocusTarget(pendingFocusTarget.target, pendingFocusTarget.selectAll);
+  pendingFocusTarget = null;
+}
+
+function setExpanded(expanded, { publish = true } = {}) {
+  const nextExpanded = !!expanded;
+  const changed = state.expanded !== nextExpanded;
+  state.expanded = nextExpanded;
+
+  if (changed) {
+    positionFindWindow();
+    if (publish) {
+      publishState();
+    }
+  }
+
+  return changed;
 }
 
 // =============================================================================
@@ -318,6 +305,7 @@ function positionFindWindow() {
   if (!hostWin || !win) return;
 
   try {
+    const height = getFindWindowHeight();
     const hostBounds = hostWin.getContentBounds();
     const margin = 12;
 
@@ -328,7 +316,7 @@ function positionFindWindow() {
     const workArea = display && display.workArea ? display.workArea : null;
     if (workArea) {
       const maxX = workArea.x + workArea.width - FIND_WIN_WIDTH;
-      const maxY = workArea.y + workArea.height - FIND_WIN_HEIGHT;
+      const maxY = workArea.y + workArea.height - height;
       targetX = Math.min(Math.max(targetX, workArea.x), maxX);
       targetY = Math.min(Math.max(targetY, workArea.y), maxY);
     }
@@ -337,7 +325,7 @@ function positionFindWindow() {
       x: targetX,
       y: targetY,
       width: FIND_WIN_WIDTH,
-      height: FIND_WIN_HEIGHT,
+      height,
     }, false);
   } catch (err) {
     log.warnOnce(
@@ -358,7 +346,7 @@ function removeListenerWithWarn(target, eventName, listener, warnKey, warnMessag
 
 function detachFindWindow() {
   if (!findListeners) return;
-  const { wc, onBeforeInput, onDidFinishLoad } = findListeners;
+  const { wc, win, onBeforeInput, onDidFinishLoad, onFocus } = findListeners;
 
   removeListenerWithWarn(
     wc,
@@ -374,13 +362,21 @@ function detachFindWindow() {
     'editorFind.detachFind.didFinishLoad',
     'Unable to detach find did-finish-load listener (ignored):'
   );
+  removeListenerWithWarn(
+    win,
+    'focus',
+    onFocus,
+    'editorFind.detachFind.focus',
+    'Unable to detach find focus listener (ignored):'
+  );
 
   findListeners = null;
 }
 
 function handleFindWindowClosed() {
   detachFindWindow();
-  pendingFocusQuery = false;
+  pendingFocusTarget = null;
+  clearPendingSessionState('find-window-closed');
 
   if (!closingFindWindow) {
     clearSearch({ clearSelection: true });
@@ -405,14 +401,23 @@ function attachFindWindow(win) {
   };
 
   const onDidFinishLoad = () => {
-    publishInit();
-    publishState();
+    sendToFindWindowAfterLoad(wc, 'editor-find-init', buildPublicState());
+    sendToFindWindowAfterLoad(wc, 'editor-find-state', buildPublicState());
     tryDispatchPendingFocus();
+  };
+  const onFocus = () => {
+    try {
+      tryDispatchPendingFocus();
+      rerunCurrentQueryOnCurrentText();
+    } catch (err) {
+      log.error('Error in find focus handler:', err);
+    }
   };
 
   wc.on('before-input-event', onBeforeInput);
   wc.on('did-finish-load', onDidFinishLoad);
-  findListeners = { wc, onBeforeInput, onDidFinishLoad };
+  win.on('focus', onFocus);
+  findListeners = { wc, win, onBeforeInput, onDidFinishLoad, onFocus };
 }
 
 function createFindWindow() {
@@ -430,7 +435,7 @@ function createFindWindow() {
 
   findWin = new BrowserWindow({
     width: FIND_WIN_WIDTH,
-    height: FIND_WIN_HEIGHT,
+    height: getFindWindowHeight(),
     show: false,
     frame: false,
     hasShadow: false,
@@ -488,15 +493,23 @@ function closeFindWindow() {
   }
 }
 
-function openFindUi(origin = 'unknown') {
+function openFindUi({
+  expanded = false,
+  preserveExpandedWhenOpen = false,
+  focusTarget = 'query',
+} = {}) {
   const editorWin = resolveEditorWindow();
   if (!editorWin) {
     log.warnOnce(
       'editorFind.open.noEditor',
-      'openFindUi ignored: editor window unavailable.',
-      origin
+      'openFindUi ignored: editor window unavailable.'
     );
     return { ok: false, error: 'editor window unavailable' };
+  }
+
+  const existing = resolveFindWindow();
+  if (!existing) {
+    state.expanded = !!expanded;
   }
 
   const win = ensureFindWindow();
@@ -506,6 +519,10 @@ function openFindUi(origin = 'unknown') {
       'openFindUi failed: find window was not created.'
     );
     return { ok: false, error: 'find window unavailable' };
+  }
+
+  if (existing && !preserveExpandedWhenOpen) {
+    setExpanded(expanded, { publish: false });
   }
 
   positionFindWindow();
@@ -519,7 +536,7 @@ function openFindUi(origin = 'unknown') {
 
   publishInit();
   publishState();
-  pendingFocusQuery = true;
+  queueFocusTarget(focusTarget, true);
   tryDispatchPendingFocus();
 
   return { ok: true };
@@ -527,7 +544,7 @@ function openFindUi(origin = 'unknown') {
 
 function closeFindUi({ restoreFocus = true } = {}) {
   clearSearch({ clearSelection: true });
-  pendingFocusQuery = false;
+  pendingFocusTarget = null;
   closeFindWindow();
 
   if (restoreFocus) {
@@ -545,7 +562,21 @@ function handleEditorBeforeInput(event, input) {
 
   if (isOpenFindShortcut(input)) {
     event.preventDefault();
-    openFindUi('shortcut');
+    openFindUi({
+      expanded: false,
+      preserveExpandedWhenOpen: true,
+      focusTarget: 'query',
+    });
+    return;
+  }
+
+  if (isOpenReplaceShortcut(input)) {
+    event.preventDefault();
+    openFindUi({
+      expanded: true,
+      preserveExpandedWhenOpen: false,
+      focusTarget: hasQuery() ? 'replace' : 'query',
+    });
     return;
   }
 
@@ -588,7 +619,17 @@ function handleFindBeforeInput(event, input) {
 
   if (isOpenFindShortcut(input)) {
     event.preventDefault();
-    pendingFocusQuery = true;
+    queueFocusTarget('query', true);
+    tryDispatchPendingFocus();
+    return;
+  }
+
+  if (isOpenReplaceShortcut(input)) {
+    event.preventDefault();
+    if (!state.expanded) {
+      setExpanded(true);
+    }
+    queueFocusTarget(hasQuery() ? 'replace' : 'query', true);
     tryDispatchPendingFocus();
     return;
   }
@@ -629,14 +670,17 @@ function handleFindBeforeInput(event, input) {
 
 function onEditorWindowWillClose() {
   editorClosing = true;
+  clearPendingSessionState('editor-window-closed');
 }
 
 function onEditorWindowClosed() {
   editorClosing = false;
-  pendingFocusQuery = false;
+  pendingFocusTarget = null;
+  clearPendingSessionState('editor-window-closed');
   closingFindWindow = false;
   editorShortcutActions = null;
   clearStateOnly();
+  state.replaceAllAllowedByLength = false;
   detachEditorWindow();
   editorWinRef = null;
 }
@@ -721,8 +765,11 @@ function attachEditorWindow(editorWin, options = {}) {
   editorWinRef = null;
   editorClosing = false;
   editorShortcutActions = options && typeof options === 'object' ? options : null;
+  state.replaceAllAllowedByLength = false;
 
-  if (!isAliveWindow(editorWin)) return;
+  if (!isAliveWindow(editorWin)) {
+    throw new Error('attachEditorWindow requires a live editor window');
+  }
   editorWinRef = editorWin;
 
   const wc = editorWin.webContents;
@@ -785,6 +832,12 @@ function isAuthorizedFindSender(event) {
   return event.sender === win.webContents;
 }
 
+function isAuthorizedEditorSender(event) {
+  const editorWin = resolveEditorWindow();
+  if (!editorWin || !event || !event.sender) return false;
+  return event.sender === editorWin.webContents;
+}
+
 function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handler) {
   ipcMain.handle(channel, (event, ...args) => {
     if (!isAuthorizedFindSender(event)) {
@@ -795,9 +848,42 @@ function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handl
   });
 }
 
+function handleEditorReplaceResponse(event, payload) {
+  if (!isAuthorizedEditorSender(event)) {
+    log.warnOnce(
+      'editorFind.editorReplaceResponse.unauthorized',
+      'editor-replace-response unauthorized (ignored).'
+    );
+    return;
+  }
+
+  session.handleEditorReplaceResponse(payload);
+}
+
+function handleEditorReplaceStatus(event, payload) {
+  if (!isAuthorizedEditorSender(event)) {
+    log.warnOnce(
+      'editorFind.editorReplaceStatus.unauthorized',
+      'editor-replace-status unauthorized (ignored).'
+    );
+    return;
+  }
+
+  session.handleEditorReplaceStatus(payload);
+}
+
 function registerIpc(ipcMain) {
-  if (!ipcMain || typeof ipcMain.handle !== 'function') {
-    throw new Error('[editor-find-main] registerIpc requires ipcMain');
+  if (!ipcMain || typeof ipcMain.handle !== 'function' || typeof ipcMain.on !== 'function') {
+    throw new Error('[editor-find-main] registerIpc requires ipcMain.handle and ipcMain.on');
+  }
+
+  if (!replaceResponseListenerRegistered) {
+    ipcMain.on('editor-replace-response', handleEditorReplaceResponse);
+    replaceResponseListenerRegistered = true;
+  }
+  if (!replaceStatusListenerRegistered) {
+    ipcMain.on('editor-replace-status', handleEditorReplaceStatus);
+    replaceStatusListenerRegistered = true;
   }
 
   registerAuthorizedFindIpc(
@@ -805,7 +891,10 @@ function registerIpc(ipcMain) {
     'editor-find-set-query',
     'editorFind.ipc.setQuery.unauthorized',
     'editor-find-set-query unauthorized (ignored).',
-    (rawQuery) => setQuery(rawQuery)
+    (rawQuery) => {
+      session.clearPendingResyncRequest();
+      return setQuery(rawQuery);
+    }
   );
 
   registerAuthorizedFindIpc(
@@ -822,6 +911,33 @@ function registerIpc(ipcMain) {
     'editorFind.ipc.prev.unauthorized',
     'editor-find-prev unauthorized (ignored).',
     () => navigate(false)
+  );
+
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-replace-current',
+    'editorFind.ipc.replaceCurrent.unauthorized',
+    'editor-find-replace-current unauthorized (ignored).',
+    (replacement) => replaceCurrent(replacement)
+  );
+
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-replace-all',
+    'editorFind.ipc.replaceAll.unauthorized',
+    'editor-find-replace-all unauthorized (ignored).',
+    (replacement) => replaceAll(replacement)
+  );
+
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-toggle-expanded',
+    'editorFind.ipc.toggleExpanded.unauthorized',
+    'editor-find-toggle-expanded unauthorized (ignored).',
+    () => {
+      setExpanded(!state.expanded);
+      return { ok: true, expanded: state.expanded };
+    }
   );
 
   registerAuthorizedFindIpc(

@@ -77,7 +77,8 @@
         "pause_symbol": "⏸"
       },
       "reading_tools": {
-        "reading_speed_test": "Test de vitesse de lecture"
+        "reading_speed_test": "Test de vitesse de lecture",
+        "preview_spoiler": "Spoiler"
       },
       "processing": {
         "import_extract_placeholder": "Extraction du texte...",
@@ -93,26 +94,36 @@
       "title": "toT — Texte complet",
       "placeholder": "Tapez ou collez ici...",
       "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-calcul",
+      "calc_while_typing": "Auto",
       "spellcheck": "Orthographe",
       "text_size_label": "Taille",
       "decrease_text_size": "Réduire la taille du texte",
       "increase_text_size": "Augmenter la taille du texte",
       "reset_text_size": "Réinitialiser la taille du texte",
       "text_size_value": "{value} px",
+      "read_progress_label": "Lu",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Progression de lecture : {value}%",
       "clear": "🗑",
       "clear_title": "Vider"
     },
     "editor_find": {
-      "label": "Rechercher",
       "input_placeholder": "Rechercher...",
       "input_aria": "Rechercher dans le texte",
-      "prev": "Precedent",
-      "next": "Suivant",
+      "expand_title": "Afficher le remplacement",
+      "collapse_title": "Masquer le remplacement",
+      "replace_placeholder": "Remplacer...",
+      "replace_aria": "Texte de remplacement",
+      "prev": "🡩",
+      "next": "🡫",
       "close": "🗙",
+      "replace": "Remplacer",
+      "replace_all": "Tout remplacer",
       "prev_title": "Correspondance precedente",
       "next_title": "Correspondance suivante",
       "close_title": "Fermer la barre de recherche",
+      "replace_title": "Remplacer l'occurrence actuelle",
+      "replace_all_title": "Remplacer toutes les occurrences",
       "status_no_matches": "Aucune correspondance",
       "status_empty_query": "Saisir pour rechercher"
     },

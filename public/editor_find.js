@@ -25,7 +25,10 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[editor-find] AppConstants unavailable; verify constants.js is loaded.');
 }
-const { DEFAULT_LANG } = AppConstants;
+const {
+  DEFAULT_LANG,
+  EDITOR_FIND_INPUT_MAX_CHARS,
+} = AppConstants;
 
 const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer) {
@@ -41,6 +44,9 @@ if (
   typeof findApi.setQuery !== 'function' ||
   typeof findApi.next !== 'function' ||
   typeof findApi.prev !== 'function' ||
+  typeof findApi.replaceCurrent !== 'function' ||
+  typeof findApi.replaceAll !== 'function' ||
+  typeof findApi.toggleExpanded !== 'function' ||
   typeof findApi.close !== 'function' ||
   typeof findApi.onInit !== 'function' ||
   typeof findApi.onState !== 'function'
@@ -51,25 +57,49 @@ if (
 // =============================================================================
 // DOM references and shared state
 // =============================================================================
-const labelEl = document.getElementById('findLabel');
+const wrapEl = document.getElementById('findWrap');
+const toggleEl = document.getElementById('findToggle');
 const inputEl = document.getElementById('findQuery');
 const prevEl = document.getElementById('findPrev');
 const nextEl = document.getElementById('findNext');
 const closeEl = document.getElementById('findClose');
 const statusEl = document.getElementById('findStatus');
+const replaceRowEl = document.getElementById('replaceRow');
+const replaceInputEl = document.getElementById('findReplace');
+const replaceOneEl = document.getElementById('findReplaceOne');
+const replaceAllEl = document.getElementById('findReplaceAll');
 
-if (!labelEl || !inputEl || !prevEl || !nextEl || !closeEl || !statusEl) {
+if (
+  !wrapEl ||
+  !toggleEl ||
+  !inputEl ||
+  !prevEl ||
+  !nextEl ||
+  !closeEl ||
+  !statusEl ||
+  !replaceRowEl ||
+  !replaceInputEl ||
+  !replaceOneEl ||
+  !replaceAllEl
+) {
   throw new Error('[editor-find] Missing required DOM elements');
 }
 
 let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
 
+const findInputMaxChars = Number.isFinite(Number(EDITOR_FIND_INPUT_MAX_CHARS))
+  ? Math.max(1, Math.floor(Number(EDITOR_FIND_INPUT_MAX_CHARS)))
+  : 512;
+
 const findState = {
   query: '',
   matches: 0,
   activeMatchOrdinal: 0,
   finalUpdate: true,
+  expanded: false,
+  busy: false,
+  replaceAllAllowedByLength: false,
 };
 
 // =============================================================================
@@ -91,6 +121,9 @@ function normalizeState(payload) {
   findState.matches = Number.isFinite(matches) && matches > 0 ? Math.floor(matches) : 0;
   findState.activeMatchOrdinal = Number.isFinite(active) && active > 0 ? Math.floor(active) : 0;
   findState.finalUpdate = !!payload.finalUpdate;
+  findState.expanded = !!payload.expanded;
+  findState.busy = !!payload.busy;
+  findState.replaceAllAllowedByLength = !!payload.replaceAllAllowedByLength;
 }
 
 async function ensureTranslations(lang) {
@@ -112,33 +145,61 @@ function resolveStatusText() {
 }
 
 function applyUiState() {
+  document.body.setAttribute('data-expanded', findState.expanded ? 'true' : 'false');
+  replaceRowEl.hidden = !findState.expanded;
+
   if (inputEl.value !== findState.query) {
     inputEl.value = findState.query;
   }
 
   const hasQuery = findState.query.length > 0;
-  prevEl.disabled = !hasQuery;
-  nextEl.disabled = !hasQuery;
+  const hasMatches = findState.matches > 0;
+  const canReplaceAll = hasQuery &&
+    hasMatches &&
+    findState.finalUpdate &&
+    findState.replaceAllAllowedByLength;
+  inputEl.disabled = findState.busy;
+  replaceInputEl.disabled = findState.busy;
+  prevEl.disabled = findState.busy || !hasQuery;
+  nextEl.disabled = findState.busy || !hasQuery;
+  replaceOneEl.disabled = findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
+  replaceAllEl.disabled = findState.busy || !canReplaceAll;
+  toggleEl.disabled = findState.busy;
+  closeEl.disabled = findState.busy;
   statusEl.textContent = resolveStatusText();
+  toggleEl.textContent = findState.expanded ? '˅' : '˃';
+
+  const toggleTitleKey = findState.expanded
+    ? 'renderer.editor_find.collapse_title'
+    : 'renderer.editor_find.expand_title';
+  const toggleTitle = tr(toggleTitleKey);
+  toggleEl.title = toggleTitle;
+  toggleEl.setAttribute('aria-label', toggleTitle);
 }
 
 async function applyTranslations() {
   await ensureTranslations(idiomaActual);
 
-  const title = tr('renderer.editor_find.label');
+  const title = tr('renderer.editor_find.input_aria');
   document.title = title;
-  labelEl.textContent = title;
+  wrapEl.setAttribute('aria-label', title);
 
   inputEl.placeholder = tr('renderer.editor_find.input_placeholder');
   inputEl.setAttribute('aria-label', tr('renderer.editor_find.input_aria'));
+  replaceInputEl.placeholder = tr('renderer.editor_find.replace_placeholder');
+  replaceInputEl.setAttribute('aria-label', tr('renderer.editor_find.replace_aria'));
 
   prevEl.textContent = tr('renderer.editor_find.prev');
   nextEl.textContent = tr('renderer.editor_find.next');
   closeEl.textContent = tr('renderer.editor_find.close');
+  replaceOneEl.textContent = tr('renderer.editor_find.replace');
+  replaceAllEl.textContent = tr('renderer.editor_find.replace_all');
 
   prevEl.title = tr('renderer.editor_find.prev_title');
   nextEl.title = tr('renderer.editor_find.next_title');
   closeEl.title = tr('renderer.editor_find.close_title');
+  replaceOneEl.title = tr('renderer.editor_find.replace_title');
+  replaceAllEl.title = tr('renderer.editor_find.replace_all_title');
 
   applyUiState();
 }
@@ -161,6 +222,24 @@ function focusQuery(selectAll = false) {
   }
 }
 
+function focusRequestedTarget(target, selectAll = false) {
+  const targetEl = target === 'replace' ? replaceInputEl : inputEl;
+  if (!targetEl) return;
+
+  try {
+    targetEl.focus();
+    if (selectAll && typeof targetEl.select === 'function') {
+      targetEl.select();
+    }
+  } catch (err) {
+    log.warnOnce(
+      'editor-find.focusTarget.failed',
+      'Unable to focus requested editor-find target (ignored):',
+      err
+    );
+  }
+}
+
 async function pushQuery() {
   try {
     await findApi.setQuery(inputEl.value || '');
@@ -173,14 +252,29 @@ async function pushQuery() {
   }
 }
 
+async function runReplaceCurrent() {
+  try {
+    await findApi.replaceCurrent(replaceInputEl.value || '');
+  } catch (err) {
+    log.error('Error sending replace-current request to main process:', err);
+  }
+}
+
+async function runReplaceAll() {
+  try {
+    await findApi.replaceAll(replaceInputEl.value || '');
+  } catch (err) {
+    log.error('Error sending replace-all request to main process:', err);
+  }
+}
+
 // =============================================================================
 // Language bootstrap helper
 // =============================================================================
 async function initLanguage() {
   try {
     if (typeof findApi.getSettings !== 'function') {
-      log.warnOnce(
-        'BOOTSTRAP:editor-find.getSettings.missing',
+      log.warn(
         'BOOTSTRAP: [editor-find] editorFindAPI.getSettings missing; using default language.'
       );
       return;
@@ -191,8 +285,7 @@ async function initLanguage() {
       idiomaActual = settings.language || idiomaActual;
     }
   } catch (err) {
-    log.warnOnce(
-      'BOOTSTRAP:editor-find.getSettings.failed',
+    log.warn(
       'BOOTSTRAP: [editor-find] editorFindAPI.getSettings failed; using default language.',
       err
     );
@@ -202,6 +295,9 @@ async function initLanguage() {
 // =============================================================================
 // UI event wiring
 // =============================================================================
+inputEl.maxLength = findInputMaxChars;
+replaceInputEl.maxLength = findInputMaxChars;
+
 inputEl.addEventListener('input', () => {
   pushQuery();
 });
@@ -216,12 +312,24 @@ inputEl.addEventListener('keydown', (event) => {
   }
 });
 
+toggleEl.addEventListener('click', () => {
+  findApi.toggleExpanded().catch((err) => log.error('Error toggling find window mode:', err));
+});
+
 prevEl.addEventListener('click', () => {
   findApi.prev().catch((err) => log.error('Error navigating to previous match:', err));
 });
 
 nextEl.addEventListener('click', () => {
   findApi.next().catch((err) => log.error('Error navigating to next match:', err));
+});
+
+replaceOneEl.addEventListener('click', () => {
+  runReplaceCurrent();
+});
+
+replaceAllEl.addEventListener('click', () => {
+  runReplaceAll();
 });
 
 closeEl.addEventListener('click', () => {
@@ -237,15 +345,15 @@ findApi.onInit((payload) => {
 
 findApi.onState(applyIncomingState);
 
-if (typeof findApi.onFocusQuery === 'function') {
-  findApi.onFocusQuery((payload) => {
+if (typeof findApi.onFocusTarget === 'function') {
+  findApi.onFocusTarget((payload) => {
+    const target = payload && payload.target === 'replace' ? 'replace' : 'query';
     const selectAll = !!(payload && payload.selectAll);
-    focusQuery(selectAll);
+    focusRequestedTarget(target, selectAll);
   });
 } else {
-  log.warnOnce(
-    'BOOTSTRAP:editor-find.onFocusQuery.missing',
-    'BOOTSTRAP: [editor-find] editorFindAPI.onFocusQuery missing; focus-sync capability disabled.'
+  log.warn(
+    'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget missing; focus-sync capability disabled.'
   );
 }
 
@@ -261,8 +369,7 @@ if (typeof findApi.onSettingsChanged === 'function') {
     }
   });
 } else {
-  log.warnOnce(
-    'BOOTSTRAP:editor-find.onSettingsChanged.missing',
+  log.warn(
     'BOOTSTRAP: [editor-find] editorFindAPI.onSettingsChanged missing; live language updates disabled.'
   );
 }

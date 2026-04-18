@@ -34,11 +34,22 @@
         role="group"
         aria-label="Tamaño del texto"
       >
-        <span id="editorTextSizeLabel" class="editor-text-size-label">Tamaño</span>
-        <button id="btnTextSizeDecrease" class="btn-text-size" type="button" aria-label="Reducir tamaño del texto" title="Reducir tamaño del texto">A-</button>
-        <output id="editorTextSizeValue" class="editor-text-size-value" aria-live="polite">20 px</output>
-        <button id="btnTextSizeIncrease" class="btn-text-size" type="button" aria-label="Aumentar tamaño del texto" title="Aumentar tamaño del texto">A+</button>
-        <button id="btnTextSizeReset" class="btn-text-size btn-text-size-reset" type="button" aria-label="Restablecer tamaño del texto" title="Restablecer tamaño del texto">↺</button>
+        <span id="editorTextSizeLabel" class="editor-text-size-label" data-label="Tamaño"></span>
+        <button id="btnTextSizeDecrease" class="btn-text-size" type="button" data-label="-" aria-label="Reducir tamaño del texto" title="Reducir tamaño del texto"></button>
+        <output id="editorTextSizeValue" class="editor-text-size-value" data-label="20 px" aria-live="polite" aria-atomic="true" aria-label="20 px"></output>
+        <button id="btnTextSizeIncrease" class="btn-text-size" type="button" data-label="+" aria-label="Aumentar tamaño del texto" title="Aumentar tamaño del texto"></button>
+        <button id="btnTextSizeReset" class="btn-text-size btn-text-size-reset" type="button" data-label="↺" aria-label="Restablecer tamaño del texto" title="Restablecer tamaño del texto"></button>
+      </div>
+      <div
+        id="editorReadProgress"
+        class="editor-read-progress"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-label="Leído"
+      >
+        <span id="editorReadProgressLabel" class="editor-read-progress-label" data-label="Leído"></span>
+        <output id="editorReadProgressValue" class="editor-read-progress-value" data-label="0%" aria-label="Progreso de lectura: 0%"></output>
       </div>
     </div>
 
@@ -60,6 +71,9 @@
   <script src="js/notify.js"></script>
   <script src="js/constants.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/lib/editor_find_replace_core.js"></script>
+  <script src="js/editor_ui.js"></script>
+  <script src="js/editor_engine.js"></script>
   <script src="editor.js"></script>
 </body>
 

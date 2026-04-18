@@ -88,7 +88,8 @@
         "pause_symbol": "⏸"
       },
       "reading_tools": {
-        "reading_speed_test": "Reading speed test"
+        "reading_speed_test": "Reading speed test",
+        "preview_spoiler": "Spoiler"
       },
       "processing": {
         "import_extract_placeholder": "Extracting text...",
@@ -104,26 +105,36 @@
       "title": "toT — Full text",
       "placeholder": "Type or paste here...",
       "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-calc",
+      "calc_while_typing": "Auto",
       "spellcheck": "Spellcheck",
       "text_size_label": "Size",
       "decrease_text_size": "Decrease text size",
       "increase_text_size": "Increase text size",
       "reset_text_size": "Reset text size",
       "text_size_value": "{value} px",
+      "read_progress_label": "Read",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Read progress: {value}%",
       "clear": "🗑",
       "clear_title": "Clear"
     },
     "editor_find": {
-      "label": "Find",
       "input_placeholder": "Find...",
       "input_aria": "Find in text",
-      "prev": "Prev",
-      "next": "Next",
+      "expand_title": "Show replace controls",
+      "collapse_title": "Hide replace controls",
+      "replace_placeholder": "Replace...",
+      "replace_aria": "Replacement text",
+      "prev": "🡩",
+      "next": "🡫",
       "close": "🗙",
+      "replace": "Replace",
+      "replace_all": "Replace all",
       "prev_title": "Previous match",
       "next_title": "Next match",
       "close_title": "Close find bar",
+      "replace_title": "Replace current match",
+      "replace_all_title": "Replace all matches",
       "status_no_matches": "No matches",
       "status_empty_query": "Type to search"
     },

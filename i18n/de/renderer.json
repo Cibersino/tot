@@ -77,7 +77,8 @@
         "pause_symbol": "⏸"
       },
       "reading_tools": {
-        "reading_speed_test": "Lesegeschwindigkeitstest"
+        "reading_speed_test": "Lesegeschwindigkeitstest",
+        "preview_spoiler": "Spoiler"
       },
       "processing": {
         "import_extract_placeholder": "Text wird extrahiert...",
@@ -93,26 +94,36 @@
       "title": "toT — Vollständiger Text",
       "placeholder": "Hier eingeben oder einfügen...",
       "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-Berechnung",
+      "calc_while_typing": "Auto",
       "spellcheck": "Rechtschreibung",
       "text_size_label": "Größe",
       "decrease_text_size": "Textgröße verkleinern",
       "increase_text_size": "Textgröße vergrößern",
       "reset_text_size": "Textgröße zurücksetzen",
       "text_size_value": "{value} px",
+      "read_progress_label": "Gelesen",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Lesefortschritt: {value}%",
       "clear": "🗑",
       "clear_title": "Löschen"
     },
     "editor_find": {
-      "label": "Suchen",
       "input_placeholder": "Suchen...",
       "input_aria": "Im Text suchen",
-      "prev": "Zuruck",
-      "next": "Weiter",
+      "expand_title": "Ersetzen anzeigen",
+      "collapse_title": "Ersetzen ausblenden",
+      "replace_placeholder": "Ersetzen...",
+      "replace_aria": "Ersetzungstext",
+      "prev": "🡩",
+      "next": "🡫",
       "close": "🗙",
+      "replace": "Ersetzen",
+      "replace_all": "Alle ersetzen",
       "prev_title": "Vorheriger Treffer",
       "next_title": "Naechster Treffer",
       "close_title": "Suchleiste schliessen",
+      "replace_title": "Aktuelle Übereinstimmung ersetzen",
+      "replace_all_title": "Alle Übereinstimmungen ersetzen",
       "status_no_matches": "Keine Treffer",
       "status_empty_query": "Zum Suchen tippen"
     },

@@ -47,6 +47,15 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-EDITOR`
   * supports parts of `REG-I18N`
   * supports parts of `REG-PERSIST`
+* `test/unit/shared/editor_find_replace_core.test.js`
+  * supports parts of `REG-EDITOR-05C`
+  * supports parts of `REG-EDITOR-05D`
+  * supports parts of `REG-EDITOR-05E`
+* `test/unit/electron/editor_find_main.test.js`
+  * supports parts of `REG-EDITOR-05A`
+  * supports parts of `REG-EDITOR-05C`
+  * supports parts of `REG-EDITOR-05D`
+  * supports parts of `REG-EDITOR-05E`
 * `test/smoke/electron_launch_smoke.test.js`
   * supports a minimal startup slice of `SM-01`
   * supports parts of `REG-PERSIST` by asserting startup tolerates the current settings schema, including `editorFontSizePx`
@@ -71,7 +80,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
 Important limitations:
 
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
-* no renderer/UI automation exists yet, including the editor spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, and live cross-language spellcheck behavior;
+* no renderer/UI automation exists yet, including the editor spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
 * the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool core in `test/unit/electron/reading_test_pool.test.js` and the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
 * OCR network/provider behavior is still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
@@ -811,8 +820,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Editor clear sends state update to main; both stay consistent.
 
-#### REG-EDITOR-05 Find (Ctrl+F) — modal mode + navigation + highlight
-**Goal:** Find works on textarea content, does not edit text, scrolls to matches, and shows highlight while focus stays in find input.
+#### REG-EDITOR-05 Find (Ctrl+F) — dedicated find window + navigation + highlight
+**Goal:** Find works on textarea content through the dedicated find window, scrolls to matches, and keeps the match highlight visible while focus stays in the find input.
 1. Ensure editor has a text with repeated terms across multiple lines (use Small text, then add a repeated word like `prueba` in several lines).
 2. Press **Ctrl+F** (or Cmd+F on macOS).
 3. Type a query that has multiple matches.
@@ -821,20 +830,101 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - **Shift+Enter** = previous
    - **F3** / **Shift+F3** = next/previous
 5. While Find is open:
-   - Try typing in the textarea, pressing Enter/Backspace, pasting (Ctrl+V), and dropping text.
+   - Keep focus in the find window and verify **Enter** / **Shift+Enter** stay bound to next/previous navigation.
+   - Then click back into the textarea and verify normal editor input/paste/drop behavior still follows the regular editor handlers.
 6. Confirm visibility:
    - Match highlight must be visible even when focus is in the find input.
    - Use Next/Prev to jump to matches that are off-screen; verify internal textarea scroll moves to the match.
 7. Scroll the textarea manually (mouse wheel / scrollbar) while Find remains open.
 
 **Expected:**
-- Find opens and focuses the find input.
+- Find opens as a dedicated secondary window and focuses the find input.
 - Navigation selects the match and scrolls the textarea so the match is in view.
-- Text is not modifiable while Find is open (readOnly/modal behavior + blocked paste/drop/input).
+- While the find input has focus, **Enter** / **Shift+Enter** and **F3** / **Shift+F3** navigate matches instead of editing text.
+- The editor is not forced into `readOnly`; if focus returns to the textarea, normal editing/paste/drop behavior remains available.
 - The find input itself remains a plain search control; it must not show spellcheck underlines.
-- Highlight remains visible while focus stays in the find input (overlay-based highlight).
-- Highlight stays aligned while scrolling the textarea.
-- **Esc** closes Find and restores normal editing.
+- Match highlight remains visible while focus stays in the find input.
+- **Esc** closes Find and restores focus to the editor.
+
+#### REG-EDITOR-05A Find re-sync on find-window refocus
+**Goal:** the current query reruns against the current editor text when the dedicated find window regains focus.
+1. In the editor, enter a text with several repeated matches such as `prueba`.
+2. Open Find with **Ctrl+F** (or Cmd+F on macOS) and search for that repeated term.
+3. Leave the find window open and click back into the editor textarea.
+4. Change the text so the match count definitely changes:
+   - delete one existing match, or
+   - add one new match.
+5. Click the dedicated find window again so it regains focus.
+6. Observe the status/count and then navigate once with **Enter** or **F3**.
+
+**Expected:**
+- Refocusing the find window reruns the current query on the current editor text.
+- The visible count/status updates to the new match total.
+- Navigation after refocus uses the refreshed match set, not stale pre-edit results.
+- The re-sync itself does not modify editor text.
+
+#### REG-EDITOR-05B Find/Replace shell open, expand, and focus routing
+**Goal:** the dedicated find window opens in the correct mode and routes focus to the correct field.
+1. With the find window closed, press **Ctrl+H** (or Cmd+Option+F on macOS).
+2. Confirm the dedicated find window opens already expanded and the replace row is visible immediately.
+3. With no current query, confirm focus lands in the search field.
+4. Close the find window.
+5. Press **Ctrl+F** (or Cmd+F on macOS), type a non-empty query, and leave the window collapsed.
+6. Press **Ctrl+H** (or Cmd+Option+F on macOS) while that same find window is still open.
+7. Confirm the current window expands in place and focus moves to the replace field.
+8. Use the leftmost expand/collapse toggle once in each direction.
+
+**Expected:**
+- `Ctrl+H` / `Cmd+Option+F` opens the dedicated find window already expanded on first open.
+- `Ctrl+F` still opens the normal collapsed find window.
+- Expanding an already-open collapsed window reuses the same window instead of spawning another one.
+- With an empty query, expanded open focuses the search field.
+- With an existing query, expanded open focuses the replace field.
+- The leftmost toggle collapses and re-expands the same window cleanly.
+
+#### REG-EDITOR-05C Single Replace in expanded Find
+**Goal:** `Replace` changes only the current match, refreshes Find state, and remains individually undoable.
+1. In the editor, enter text with at least three repeated literal matches such as `prueba`.
+2. Open expanded Find with **Ctrl+H** (or Cmd+Option+F on macOS).
+3. Search for the repeated term and enter a distinct replacement such as `cambio`.
+4. Click **Replace** once.
+5. Confirm only the current match changes.
+6. Click **Replace** again and confirm the next current match changes.
+7. Press **Ctrl+Z** once.
+
+**Expected:**
+- Each `Replace` action changes only one current match.
+- After each replace, the find count/status refreshes against the current editor text.
+- One `Ctrl+Z` undoes one `Replace` action.
+- `Replace` does not mutate unrelated matches.
+
+#### REG-EDITOR-05D Replace All in expanded Find
+**Goal:** `Replace All` updates every supported match in one action and is undoable in one step.
+1. In the editor, enter a short text with several repeated literal matches such as `prueba`.
+2. Open expanded Find with **Ctrl+H** (or Cmd+Option+F on macOS).
+3. Search for that repeated term and enter a distinct replacement such as `cambio`.
+4. Click **Replace All** once.
+5. Confirm every supported match changes and the find count/status refreshes.
+6. Press **Ctrl+Z** once.
+
+**Expected:**
+- `Replace All` changes all supported matches for the current literal query in one action.
+- The find status/count refreshes after the bulk replacement.
+- One `Ctrl+Z` reverts the whole supported `Replace All`.
+- No extra partial undos are required for the same bulk action.
+
+#### REG-EDITOR-05E Replace All length guard
+**Goal:** `Replace All` stays unavailable when the current editor text exceeds the supported small-update threshold.
+1. In the editor, load or paste text that is clearly larger than the current small-update threshold while still containing repeated matches for a test query.
+2. Open expanded Find with **Ctrl+H** (or Cmd+Option+F on macOS).
+3. Enter a query that has matches in the current text.
+4. Observe the `Replace All` control.
+5. If the UI still allows interaction, attempt `Replace All` once.
+
+**Expected:**
+- `Replace All` is disabled or otherwise prevented when the current text length exceeds the supported threshold.
+- The editor text remains unchanged when the guard is active.
+- `Replace` for the current match can still remain available independently when a current match exists.
 
 #### REG-EDITOR-06 Undo/Redo semantics (including Find not polluting edits)
 **Goal:** Undo/Redo behaves predictably for edits and is not affected by Find navigation.

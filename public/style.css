@@ -303,6 +303,37 @@ body.import-extract-drop-active .app-container {
   pointer-events: none;
 }
 
+.selector-inline-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 2px;
+  color: #2f2a20;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+}
+
+.selector-inline-checkbox input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.selector-inline-checkbox input:disabled {
+  cursor: not-allowed;
+}
+
+.selector-inline-checkbox:has(input:disabled) {
+  cursor: not-allowed;
+}
+
+.selector-inline-checkbox input:disabled + span {
+  opacity: 0.55;
+}
+
 /* Logo (fixed) */
 .logo-container {
   position: fixed;

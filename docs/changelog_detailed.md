@@ -46,6 +46,94 @@ Reglas:
 
 ## Unreleased
 
+### Resumen
+
+- Google OCR / OAuth segura (Issue #229): la activación OCR deja de depender de `@google-cloud/local-auth` y pasa a usar un helper propio loopback + navegador del sistema + `state` + PKCE, manteniendo el modelo de dos fases IPC ya existente (`prepare` sin navegador, `launch` con OAuth) y sin introducir churn en la superficie renderer/main ni en i18n.
+- Follow-up de robustez sobre ese mismo flujo: el listener loopback queda acotado por timeout y el bind del host IPv6 bracketed (`[::1]`) se normaliza explícitamente antes de `server.listen(...)`, evitando dependencia implícita del tratamiento de hostnames bracketed por el runtime.
+- Limpieza del flujo legado: `@google-cloud/local-auth` sale del grafo runtime redistribuido, desaparece de `Acerca de` y de los docKeys/licencias públicas actuales del producto; el contrato histórico queda preservado solo en documentos versionados de releases anteriores.
+- Packaging runtime OCR: el artefacto empaquetado deja de depender de un `asarUnpack` amplio para `sharp`/`@img` y pasa a desempaquetar solo los runtimes nativos de `sharp` por plataforma, manteniendo operativa la normalización OCR de `.webp` / `.tif` / `.tiff` en build distribuido sin arrastrar módulos JS ajenos fuera de `app.asar`.
+- Packaging UX del release portable: el `.zip` distribuido deja de extraerse con archivos sueltos en la raíz y pasa a quedar reenvuelto bajo una carpeta superior única `toT-<version>/`, alineando el nombre visible del contenedor extraído con la versión publicada.
+- Main window / selector section: la zona del texto vigente deja de repartir ownership entre `public/renderer.js` y wiring local disperso; ahora el renderer usa un owner dedicado `public/js/current_text_selector_section.js`, y esa misma sección agrega un checkbox `Spoiler` junto a `Reading speed test` para ocultar el segmento final del preview sin mostrar el separador `... | ...`.
+
+### Agregado
+
+- `electron/import_extract_platform/ocr_google_drive_secure_oauth.js` (nuevo): helper propio de activación OAuth desktop segura para Google OCR; reutiliza el cliente OAuth desktop ya empaquetado, abre el navegador del sistema, levanta callback loopback efímero, genera `state` por transacción y aplica PKCE (`code_verifier` + `code_challenge` S256) antes del intercambio del código.
+- `test/unit/electron/ocr_google_drive_secure_oauth.test.js` (nuevo): cobertura dirigida del helper nuevo, incluyendo ruta exitosa con `state` + PKCE, rechazo por `state` inválido, normalización del host loopback IPv6 y timeout cuando no llega callback.
+- `build-resources/after-all-artifact-build.js` (nuevo): hook post-build de `electron-builder` que reempaqueta los artefactos `.zip` ya construidos bajo una carpeta raíz `toT-<version>/`.
+
+### Cambiado
+
+- `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`:
+  - `import-extract-launch-ocr-activation` deja de invocar `authenticate(...)` de `@google-cloud/local-auth` y pasa a delegar en el helper propio `authenticateGoogleLoopback(...)`.
+  - el flujo mantiene la persistencia cifrada del token y la validación posterior ya existentes, pero ahora el navegador del sistema recibe una URL OAuth generada por el repo con `access_type=offline`, `prompt=consent`, `state` y PKCE.
+- `electron/import_extract_platform/ocr_google_drive_oauth_client.js`:
+  - los helpers compartidos OAuth dejan de servir solo a runtime/disconnect y pasan también a centralizar la extracción de la raíz válida de `credentials.json`, la resolución del redirect canónico y la construcción del cliente OAuth2 a partir de credenciales ya validadas.
+- Runtime/legal:
+  - `package.json` y `package-lock.json`: se elimina `@google-cloud/local-auth` como dependencia runtime directa/transitiva del producto actual.
+  - `public/info/acerca_de.html`, `electron/link_openers.js` y `public/third_party_licenses/`: `Acerca de` deja de enumerar `@google-cloud/local-auth` como componente redistribuido, desaparece el docKey `license-import-extract-google-auth` y se elimina la licencia pública repo-managed asociada al helper retirado.
+- Packaging/runtime:
+  - `package.json`: `electron-builder` deja de usar `asarUnpack` amplio sobre `node_modules/sharp/**/*` y `node_modules/@img/**/*`; el release pasa a declarar solo los runtimes nativos de `sharp` por plataforma (`@img/sharp-win32-x64`, `@img/sharp-darwin-x64`, `@img/sharp-darwin-arm64`, `@img/sharp-linux-x64`) como contenido fuera de `app.asar`.
+  - `package.json`: `asar.smartUnpack` se fija en `false` para evitar que la heurística automática marque módulos completos como unpacked por archivos binarios/metadata incidentales no ejecutables.
+  - `package.json`: el packaging registra `afterAllArtifactBuild` para postprocesar los `.zip` distribuidos y envolver su contenido final bajo una carpeta raíz versionada `toT-<version>/`, sin cambiar el layout interno producido en `win-unpacked`.
+- Ventana principal / selector del texto vigente:
+  - `public/renderer.js`: deja de seguir absorbiendo detalles locales del selector del texto vigente y conserva solo el rol de orquestador; el título, el preview, el toolbar local y su lock state pasan a quedar compuestos por un owner específico del renderer.
+  - `public/js/current_text_selector_section.js` (nuevo): asume el ownership UI completo de la sección del texto vigente en la ventana principal.
+  - `public/index.html` y `public/style.css`: el toolbar del selector agrega un checkbox `Spoiler`, marcado por defecto, a la derecha de `Reading speed test`.
+  - `public/js/current_text_selector_section.js`: el preview largo conserva el contrato actual basado en `AppConstants` cuando `Spoiler` está marcado y, cuando se desmarca, oculta el tramo final, elimina `... | ...` y reasigna `PREVIEW_END_CHARS` al tramo inicial visible, devolviendo ahora un truncado explícito `start...`.
+  - i18n renderer (`arn`, `de`, `en`, `es`, `fr`, `it`, `pt`): nueva key `renderer.main.reading_tools.preview_spoiler`.
+- Documentación viva:
+  - `docs/tree_folders_files.md`: se actualiza para reflejar que la activación OCR ya no usa `local-auth`, para registrar el nuevo helper propio `ocr_google_drive_secure_oauth.js` y para documentar el hook de packaging que reenvuelve los `.zip` distribuidos bajo `toT-<version>/`.
+  - `docs/tree_folders_files.md`: se amplía también para registrar `public/js/current_text_selector_section.js` como owner UI del selector del texto vigente y del nuevo toggle `Spoiler`.
+  - `tools_local/issues/issue_229.md`: el issue deja de ser solo diagnóstico y pasa a incluir la propuesta final adoptada, la nota post-implementación y las decisiones nuevas tomadas durante la ejecución real del cambio.
+
+### Arreglado
+
+- Google OCR / seguridad del flujo:
+  - la activación OCR deja de depender de un helper upstream archivado/deprecated que no exponía `state` ni PKCE en el flujo visible revisado; la generación y verificación de ambas protecciones queda ahora bajo control explícito del repo.
+- Google OCR / robustez del listener:
+  - el listener loopback deja de poder quedar esperando indefinidamente si el navegador se abre pero no llega callback; ahora existe timeout explícito con error interno tipado `oauth_timeout`.
+  - redirects OAuth con loopback IPv6 bracketed (`http://[::1]:...`) dejan de depender de que `server.listen(...)` acepte ese hostname tal cual; el helper conserva la forma bracketed en la URL, pero normaliza `"[::1]" -> "::1"` solo para el bind del host del listener.
+- Packaging del artefacto distribuido:
+  - `resources/app.asar.unpacked` deja de inflarse por globs amplios o por heurísticas de smart-unpack sobre módulos JS sin código nativo; el ZIP final conserva fuera de `app.asar` únicamente el runtime nativo requerido por `sharp` para OCR empaquetado.
+  - se evita un falso positivo de `electron-builder` sobre `jszip`, cuyo módulo podía quedar completo fuera de `app.asar` por un archivo de metadata binario/extensionless (`.jekyll-metadata`) ajeno a la ejecución real del producto.
+  - el `.zip` portable deja de extraer archivos directamente en la carpeta elegida por el usuario; ahora el artefacto publicado se reempaqueta con una carpeta raíz única `toT-<version>/`, mejorando la ergonomía de extracción sin cambiar el payload distribuido.
+
+### Contratos tocados
+
+- IPC OCR renderer ↔ main:
+  - **sin cambio contractual externo**: se mantienen `import-extract-prepare-ocr-activation`, `import-extract-launch-ocr-activation` e `import-extract-disconnect-ocr`, junto con sus shapes generales de request/respuesta y el mismo modelo de éxito/fallo consumido por renderer.
+- Surface de errores del flujo OAuth:
+  - **sin churn contractual hacia renderer**: los errores internos nuevos `oauth_state_invalid` y `oauth_timeout` no se exponen como codes nuevos del IPC.
+  - mapeo actual:
+    - `oauth_state_invalid` → code público existente `auth_failed`
+    - `oauth_timeout` → code público existente `platform_runtime_failed`
+  - ambos preservan `reason` específico en `detailsSafeForLogs` para diagnóstico sin introducir nuevas keys i18n ni nuevas ramas contractuales en renderer.
+
+### Archivos
+
+- `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+- `electron/import_extract_platform/ocr_google_drive_oauth_client.js`
+- `electron/import_extract_platform/ocr_google_drive_secure_oauth.js`
+- `test/unit/electron/ocr_google_drive_secure_oauth.test.js`
+- `build-resources/after-all-artifact-build.js`
+- `public/js/current_text_selector_section.js`
+- `public/index.html`
+- `public/style.css`
+- `i18n/arn/renderer.json`
+- `i18n/de/renderer.json`
+- `i18n/en/renderer.json`
+- `i18n/es/renderer.json`
+- `i18n/fr/renderer.json`
+- `i18n/it/renderer.json`
+- `i18n/pt/renderer.json`
+- `package.json`
+- `package-lock.json`
+- `public/info/acerca_de.html`
+- `electron/link_openers.js`
+- `public/third_party_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt` (removido)
+- `docs/tree_folders_files.md`
+- `tools_local/issues/issue_229.md`
+
 ---
 
 ## [1.1.0] toT - Testing
@@ -65,6 +153,7 @@ Reglas:
 - Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro.
 - Corrector ortográfico del editor (Issue #211): la ventana editor agrega un checkbox persistente, habilitado por defecto, y el spellcheck de Electron deja de depender implícitamente del locale del sistema; ahora sigue el idioma activo de la app cuando existe diccionario soportado y se deshabilita explícitamente en tags UI sin diccionario válido (p.ej. `arn`, `es-cl`).
 - Tamaño de texto del editor (Issue #212): la ventana editor agrega controles locales `A-` / indicador / `A+` / reset para escalar solo el `textarea`, persiste `editorFontSizePx`, soporta `Ctrl/Cmd +`, `Ctrl/Cmd -` y `Ctrl/Cmd 0`, y mueve su orquestación main-owned a `electron/editor_text_size.js` para no seguir inflando `electron/main.js`.
+- Find/Replace del editor (Issue #231): la ventana dedicada Find deja de ser search-only y pasa a soportar un modo expandido de dos filas con `Replace` y `Replace All`, manteniendo el modelo de ventana secundaria controlada desde main, el comportamiento existente de búsqueda/navegación y la semántica actual de apply/current-text del editor. El flujo agrega `Ctrl+H` en Windows/Linux y `Cmd+Option+F` en macOS para abrir expandido, re-sync del query al refocar Find, límite compartido de `512` caracteres entre search y replace, y una ruta renderer-owned para las mutaciones de texto con undo de un solo paso para `Replace` y para el `Replace All` soportado.
 
 ### Agregado
 
@@ -79,6 +168,10 @@ Reglas:
   - `electron/editor_text_size.js` (nuevo): controller main-owned del tamaño de texto del editor; encapsula `set/increase/decrease/reset`, persiste `editorFontSizePx` vía settings y expone acciones reutilizables para los atajos del editor y del Find.
   - `public/editor.html`: el editor agrega controles locales `A-`, indicador, `A+` y reset en la barra inferior para escalar solo el `textarea`.
   - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): nuevas keys `renderer.editor.text_size_label`, `renderer.editor.decrease_text_size`, `renderer.editor.increase_text_size`, `renderer.editor.reset_text_size` y `renderer.editor.text_size_value`.
+- Editor / find-replace:
+  - `public/js/lib/editor_find_replace_core.js` (nuevo): núcleo puro/importable del replace del editor; centraliza matching literal case-insensitive, cómputo determinista de `Replace All` y chequeo puro de elegibilidad por longitud, sin mover fuera del renderer la mutación real del `textarea`.
+  - `test/unit/shared/editor_find_replace_core.test.js` (nuevo): cobertura del núcleo puro de replace (`selectionMatchesLiteralQuery`, `computeLiteralReplaceAll`, `isReplaceAllAllowedByLength`).
+  - `test/unit/electron/editor_find_main.test.js` (nuevo): cobertura dirigida del coordinador main-owned del Find/Replace del editor, incluyendo autorización IPC, re-sync request-scoped al refocar la ventana Find, replace request/response y relay de `replaceAllAllowedByLength`.
 - Shared catalog:
   - `public/js/lib/snapshot_tag_catalog.js` (nuevo): módulo dual browser/CommonJS que define el catálogo canónico de tags de snapshot, incluyendo el set ampliado de idiomas (`es`, `en`, `pt`, `fr`, `de`, `it`, `arn`, `ja`, `ko`, `ru`, `tr`, `id`, `hi`, `bn`, `ur`, `ar`, `zh-Hans`, `zh-Hant`) y los normalizadores reutilizados por renderer y main.
 - Reading speed test:
@@ -118,6 +211,13 @@ Reglas:
   - la publicación de settings actualizados sigue saliendo por `settings-updated`, pero ahora también dispara la reaplicación main-owned del spellcheck y del tamaño de texto del editor según corresponda.
 - `electron/editor_find_main.js`, `electron/editor_text_size.js` y `electron/main.js`:
   - el coordinador del Find deja de ocuparse solo de navegación y pasa a reenviar `Ctrl/Cmd +`, `Ctrl/Cmd -` y `Ctrl/Cmd 0` hacia un controller main-owned separado; `main.js` conserva solo el wiring de ese controller sin absorber la lógica específica del feature.
+- `electron/editor_find_main.js`, `electron/editor_find_preload.js`, `electron/editor_preload.js`, `public/editor_find.js`, `public/editor_find.html`, `public/editor_find.css` y `public/editor.js`:
+  - la ventana dedicada Find deja de quedarse en un flujo search-only de una sola fila y pasa a soportar un estado expandido/collapsed main-owned, con toggle explícito, campo `replace`, botones `Replace` / `Replace All` y foco dirigido a query o replace según el atajo de apertura.
+  - `Ctrl/Cmd+F` conserva la apertura collapsed y, si la ventana ya existe, preserva su estado expandido/colapsado; `Ctrl+H` (Windows/Linux) y `Cmd+Option+F` (macOS) abren expandido o expanden la misma ventana ya abierta.
+  - el coordinador del Find deja de tratar el refocus de la ventana como un mero detalle de UI y pasa a rerunear el query actual como una nueva búsqueda request-scoped contra el texto actual del editor.
+  - el pipeline de replace queda dividido explícitamente: main conserva búsqueda, shortcuts, autorización, serialization y espera request-scoped de `found-in-page`; el renderer del editor conserva la mutación real del `textarea`, la validación de selección para `Replace` y el cómputo completo de `Replace All`.
+  - `Replace All` queda soportado solo en el small-document path actual: se habilita cuando el editor reporta `replaceAllAllowedByLength === true`, computa el resultado final en memoria y aplica una sola mutación whole-document cuando el texto actual y el texto proyectado siguen dentro de `SMALL_UPDATE_THRESHOLD`.
+  - el renderer del Find deja de mostrar la etiqueta visible estática `Find/Search`; el campo de búsqueda queda como control inicial de la fila, y el límite explícito `EDITOR_FIND_INPUT_MAX_CHARS = 512` pasa a aplicarse tanto al input de búsqueda como al de reemplazo.
 - `electron/current_text_snapshots_main.js`:
   - el handler `current-text-snapshot-save` valida payloads opcionales de tags, persiste `tags` cuando existen y mantiene la misma política de diálogos nativos / contención bajo `config/saved_current_texts/`.
   - el parser/validador de snapshots deja de aceptar solo `{ text }` y pasa a tolerar también `{ text, tags }`, rechazando shapes inválidas de `tags` de forma explícita.
@@ -154,6 +254,11 @@ Reglas:
   - el editor deja de depender implícitamente del idioma del sistema operativo para elegir diccionario; en plataformas con `setSpellCheckerLanguages(...)`, el spellcheck sigue el idioma activo de la app cuando existe un match soportado.
   - tags UI sin diccionario válido (`arn`, `es-cl`) dejan de producir subrayados engañosos por fallback al locale del SO; ahora el spellcheck se deshabilita explícitamente en esos casos.
   - el campo Find del editor permanece fuera del alcance del spellcheck; la superficie afectada queda acotada al `textarea` principal del editor.
+- Editor / find-replace:
+  - el Find del editor deja de quedar desfasado respecto del texto actual cuando el usuario vuelve a enfocar la ventana Find tras editar el `textarea`; ahora el refocus dispara una nueva búsqueda request-scoped sobre el texto vigente.
+  - `Ctrl+H` / `Cmd+Option+F` deja de comportarse como una simple apertura más grande del Find collapsed; ahora abre o expande el mismo Find directamente en modo replace, con la segunda fila visible y foco dirigido al campo correcto.
+  - `Replace` y `Replace All` dejan de depender de un path de mutación implícito y pasan a usar un request/response explícito entre main y editor, manteniendo un undo step por reemplazo simple y un undo step por `Replace All` soportado.
+  - `Replace All` deja de quedar disponible fuera del rango soportado del small-document path; cuando el largo actual del `textarea` o el largo proyectado salen de `SMALL_UPDATE_THRESHOLD`, el flujo no muta texto y no introduce ruido de UX ni pasos extra de undo.
 - Editor / layout:
   - la barra inferior del editor deja de colapsar el botón de limpiar en una fila huérfana cuando la ventana se angosta; ahora el bloque derecho permanece anclado en la esquina y el wrapping de controles no deja un hueco visual grande debajo de los controles de tamaño de texto.
 - Reading speed test / persistencia:
@@ -216,8 +321,31 @@ Reglas:
   - request: `boolean`.
   - OK: `{ ok:true, enabled:boolean }`.
   - invalid/failure: `{ ok:false, error:'invalid' | string }`.
+- IPC Find/Replace del editor:
+  - nuevos invokes autorizados desde la ventana Find:
+    - `editor-find-replace-current` → request: `string` (`replacement`).
+    - `editor-find-replace-all` → request: `string` (`replacement`).
+    - `editor-find-toggle-expanded` → request: sin payload.
+  - surface de estado publicada a la ventana Find ampliada con:
+    - `expanded:boolean`
+    - `busy:boolean`
+    - `replaceAllAllowedByLength:boolean`
+  - nuevo evento main → find window:
+    - `editor-find-focus-target` → `{ target:'query'|'replace', selectAll:boolean }`.
+- IPC main ↔ editor para replace:
+  - nuevo evento main → editor:
+    - `editor-replace-request` → `{ requestId:number, operation:'replace-current'|'replace-all', query:string, replacement:string, matchCase:boolean }`.
+  - nuevos eventos editor → main:
+    - `editor-replace-response` → `{ requestId:number, operation:'replace-current'|'replace-all', ok:boolean, status:string, replacements:number, finalTextLength:number, error:string }`.
+    - `editor-replace-status` → `{ replaceAllAllowedByLength:boolean }`.
+  - semántica explícita:
+    - `Replace` valida la selección actual convertida desde `findInPage` y reemplaza solo esa selección.
+    - `Replace All` opera únicamente sobre `editorArea.value`, usa matching literal case-insensitive y solo está soportado cuando el texto actual y el texto proyectado permanecen dentro de `SMALL_UPDATE_THRESHOLD`.
 - Preload/editor bridge:
   - nueva superficie `window.editorAPI.setSpellcheckEnabled(enabled)`.
+- Preload/find + editor bridge:
+  - `window.editorFindAPI` agrega `replaceCurrent(replacement)`, `replaceAll(replacement)`, `toggleExpanded()` y `onFocusTarget(cb)`.
+  - `window.editorAPI` agrega `onReplaceRequest(cb)`, `sendReplaceResponse(payload)` y `sendReplaceStatus(payload)`.
 - Renderer/UI:
   - nuevos IDs `snapshotSaveTagsModal`, `snapshotSaveTagsModalBackdrop`, `snapshotSaveTagsModalTitle`, `snapshotSaveTagsModalMessage`, `snapshotSaveTagsLanguage`, `snapshotSaveTagsType`, `snapshotSaveTagsDifficulty`, `snapshotSaveTagsModalConfirm`, `snapshotSaveTagsModalCancel` y `snapshotSaveTagsModalClose`.
   - nueva superficie pública renderer `window.Notify.promptSnapshotSaveTags(...)`.
@@ -226,12 +354,16 @@ Reglas:
   - nueva superficie preload/renderer para el cuestionario: `window.readingTestQuestionsAPI`.
   - nuevas superficies shared `window.ReadingTestFiltersCore` / `reading_test_filters_core.js` y `window.ReadingTestQuestionsCore` / `reading_test_questions_core.js`.
   - nuevo ID renderer `spellcheckToggle` en `public/editor.html`.
+  - nuevos IDs/entrypoints del Find/Replace del editor: `findToggle`, `replaceRow`, `findReplace`, `findReplaceOne` y `findReplaceAll` en `public/editor_find.html`.
 - Semántica explícita:
   - cargar un snapshot etiquetado **no** transfiere `tags` al estado activo de current-text; solo aplica `text`.
   - durante una sesión activa del reading speed test, la ventana principal queda bloqueada y la Ventana flotante deja de operar como cronómetro genérico: `pause` finaliza la sesión y `reset` la cancela.
   - si el reading speed test se inicia con `sourceMode:'current_text'`, el flujo reutiliza el current text ya cargado, no consume entradas del pool y la cancelación deja intacto el texto vigente.
   - si una entrada del pool tiene `readingTest.questions` válido, la etapa de preguntas se inserta antes del modal de presets; si no lo tiene, el flujo continúa directo a preset creation.
   - el spellcheck del editor sigue el idioma activo de la app cuando existe diccionario soportado; si no existe match soportado para el tag UI activo, se deshabilita en lugar de caer al locale del SO.
+  - `Ctrl/Cmd+F` abre Find collapsed cuando la ventana está cerrada y preserva el estado expanded/collapsed actual cuando ya está abierta.
+  - `Ctrl+H` (Windows/Linux) y `Cmd+Option+F` (macOS) abren Find expanded cuando la ventana está cerrada y expanden la misma ventana si estaba collapsed.
+  - refocar la ventana Find con query no vacío relanza ese query contra el texto actual del editor como una nueva búsqueda; las acciones de replace operan sobre esa búsqueda resincronizada y no fuerzan persistencia eager de current-text fuera de la semántica ya existente del editor.
 
 ### Archivos
 
@@ -250,7 +382,19 @@ Reglas:
 - `public/editor.html`
 - `public/editor.css`
 - `public/editor.js`
+- `public/editor_find.html`
+- `public/editor_find.css`
+- `public/editor_find.js`
+- `public/js/lib/editor_find_replace_core.js`
 - `electron/preload.js`
+- `electron/editor_preload.js`
+- `electron/editor_find_preload.js`
+- `electron/editor_find_main.js`
+- `test/unit/shared/editor_find_replace_core.test.js`
+- `test/unit/electron/editor_find_main.test.js`
+- `docs/test_suite.md`
+- `docs/tree_folders_files.md`
+- `tools_local/issues/issue_231.md`
 - `electron/editor_preload.js`
 - `electron/current_text_snapshots_main.js`
 - `electron/main.js`

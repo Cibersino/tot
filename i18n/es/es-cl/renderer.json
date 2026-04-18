@@ -77,7 +77,8 @@
         "pause_symbol": "⏸"
       },
       "reading_tools": {
-        "reading_speed_test": "Prueba tu ritmo de lectura"
+        "reading_speed_test": "Prueba tu ritmo de lectura",
+        "preview_spoiler": "Spoiler"
       },
       "processing": {
         "import_extract_placeholder": "Sacando texto...",
@@ -93,26 +94,36 @@
       "title": "toT — El texto completito",
       "placeholder": "Escribe o pega la custión aquí...",
       "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-cálculo",
+      "calc_while_typing": "Auto",
       "spellcheck": "Ortografía",
       "text_size_label": "Tamaño",
       "decrease_text_size": "Achicar el texto",
       "increase_text_size": "Agrandar el texto",
       "reset_text_size": "Dejar el tamaño como estaba",
       "text_size_value": "{value} px",
+      "read_progress_label": "Leído",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Vas en: {value}%",
       "clear": "🗑",
       "clear_title": "Pitiarse too"
     },
     "editor_find": {
-      "label": "Pillar",
       "input_placeholder": "Pilla algo...",
       "input_aria": "Pillar palabras en la custión",
-      "prev": "Atrás",
-      "next": "Siguiente",
+      "expand_title": "Mostrar reemplazo",
+      "collapse_title": "Ocultar reemplazo",
+      "replace_placeholder": "Reemplazar...",
+      "replace_aria": "Texto de reemplazo",
+      "prev": "🡩",
+      "next": "🡫",
       "close": "🗙",
+      "replace": "Reemplazar",
+      "replace_all": "Reemplazar todo",
       "prev_title": "La de atrás",
       "next_title": "La que sigue",
       "close_title": "Pitiarse la barra de búsqueda",
+      "replace_title": "Reemplazar coincidencia actual",
+      "replace_all_title": "Reemplazar todas las coincidencias",
       "status_no_matches": "No pillamos niuna custión",
       "status_empty_query": "Escribe algo po"
     },

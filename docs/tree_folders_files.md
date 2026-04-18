@@ -17,6 +17,7 @@ tot/
 │ └── tasks.json
 ├── build-output/                  # {vacío} {carpeta ignorada por git}
 ├── build-resources/               # recursos solo de packaging (electron-builder)
+│ ├── after-all-artifact-build.js
 │ ├── logo-cibersino.ico
 │ ├── logo-cibersino.png
 │ └── README.md
@@ -85,6 +86,8 @@ tot/
 │ ├── task_editor_position.js
 │ ├── editor_state.js
 │ ├── editor_find_main.js
+│ ├── editor_find_session.js
+│ ├── editor_find_shortcuts.js
 │ ├── editor_text_size.js
 │ ├── reading_test_pool/          # {starter files versionados del reading speed test}
 │ ├── reading_test_pool.js
@@ -150,6 +153,7 @@ tot/
 │ ├── js/
 │ │ ├── lib/
 │ │ │ ├── count_core.js
+│ │ │ ├── editor_find_replace_core.js
 │ │ │ ├── format_core.js
 │ │ │ ├── reading_test_filters_core.js
 │ │ │ ├── reading_test_questions_core.js
@@ -178,6 +182,9 @@ tot/
 │ │ ├── import_extract_ocr_disconnect.js
 │ │ ├── import_extract_entry.js
 │ │ ├── import_extract_drag_drop.js
+│ │ ├── current_text_selector_section.js
+│ │ ├── editor_ui.js
+│ │ ├── editor_engine.js
 │ │ └── log.js
 │ ├── renderer.js
 │ ├── language_window.js
@@ -206,6 +213,7 @@ tot/
 │ │ └── electron_launch_smoke.test.js
 │ ├── unit/
 │ │ ├── electron/
+│ │ │ ├── editor_find_main.test.js
 │ │ │ ├── import_extract_prepare_execute_core.test.js
 │ │ │ ├── import_extract_prepared_store.test.js
 │ │ │ ├── import_extract_supported_formats.test.js
@@ -218,6 +226,7 @@ tot/
 │ │ │ └── settings.test.js
 │ │ └── shared/
 │ │   ├── count_core.test.js
+│ │   ├── editor_find_replace_core.test.js
 │ │   └── format_core.test.js
 │ └── README.md
 ├── website/                       # {sitio web}
@@ -293,7 +302,7 @@ tot/
 
 **Renderer (UI / ventanas):**
 - `public/renderer.js` — Lógica principal de UI (ventana principal).
-- `public/editor.js` — Lógica del editor manual (ventana editor): edición de texto, autosave/cálculo, toggle local de spellcheck, controles de tamaño de texto del `textarea` y reacción a `settings-updated`.
+- `public/editor.js` — Entry point/orquestador del editor manual: valida dependencias, arma el contexto compartido del editor y registra bootstrap, listeners DOM e IPC sobre los módulos auxiliares `public/js/editor_ui.js` y `public/js/editor_engine.js`.
 - `public/editor_find.js` — Lógica de la ventana dedicada de búsqueda del editor.
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
 - `public/task_editor.js` — Renderer del editor de tareas (UI + tabla + biblioteca + anchos de columnas).
@@ -309,7 +318,9 @@ tot/
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): valida payloads del flujo save, abre diálogos nativos, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots simples `{ "text": "<string>" }`, snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos compatibles con payload opcional `readingTest`, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
-- `electron/editor_find_main.js` — Coordinador del buscador nativo del editor: ciclo de vida de la ventana de búsqueda, atajos (`Ctrl/Cmd+F`, `F3`, `Shift+F3`, `Esc`, `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0`), IPC autorizado y sincronización de estado con `found-in-page`.
+- `electron/editor_find_main.js` — Coordinador main-owned del find/replace del editor: conserva el ciclo de vida de la ventana dedicada, el wiring Electron-specific de listeners/IPC autorizado, los atajos (`Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Shift+F3`, `Esc`, `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0`) y la orquestación de alto nivel entre ventana editor y ventana Find.
+- `electron/editor_find_session.js` — Sesión/state machine main-owned del find/replace del editor: encapsula el estado mutable del query, navegación `findInPage`, re-sync al refocar la ventana Find, waits/pending request scoped, y la tubería main↔editor de `Replace` / `Replace All` con sincronización de estado basada en `found-in-page`.
+- `electron/editor_find_shortcuts.js` — Helpers puros/importables de shortcuts del find del editor: detección de `Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Esc` y shortcuts de tamaño de texto; se mantiene sin estado para reducir ruido en `editor_find_main.js`.
 - `electron/editor_text_size.js` — Controlador main-owned del tamaño de texto del editor: encapsula `set/increase/decrease/reset`, persiste `editorFontSizePx` vía `settings`, difunde `settings-updated` y entrega acciones reutilizables para los atajos del editor/find sin seguir inflando `electron/main.js`.
 - `electron/reading_test_pool.js` — Helpers del pool del reading speed test: asegura el subárbol runtime bajo snapshots, sincroniza al arranque los starter files versionados mediante hashes de contenido bundled, poda estado obsoleto y starter files retirados, escanea/valida JSON del pool y mezcla contenido + estado externo (`config/reading_test_pool_state.json`) para serializar metadata usable por la UI (`used` top-level).
 - `electron/reading_test_pool_import.js` — Follow-up main-owned de adquisición/import del pool: abre el picker nativo para `.json`/`.zip`, recuerda la última carpeta usada, valida candidatos contra el contrato del pool, resuelve duplicados por nombre de destino y escribe solo snapshots válidos dentro de `config/saved_current_texts/reading_speed_test_pool/`.
@@ -322,7 +333,7 @@ tot/
 - `electron/import_extract_platform/import_extract_file_picker_ipc.js` — File picker nativo del flujo import/extract; resuelve carpeta por defecto/persistida, guarda la última carpeta usada y deriva la lista de extensiones soportadas desde el contrato compartido de formatos.
 - `electron/import_extract_platform/import_extract_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.
 - `electron/import_extract_platform/import_extract_processing_mode_ipc.js` — Controlador/IPC del processing mode de import/extract: lock state, broadcast al renderer y solicitud de abort.
-- `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` — Activación OCR Google vía navegador del sistema, separada en dos fases IPC: preparación de credenciales (`prepareImportExtractOcrActivation`, sin abrir navegador) y lanzamiento OAuth (`launchImportExtractOcrActivation`, persiste el token local y valida el setup).
+- `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` — Activación OCR Google vía navegador del sistema, separada en dos fases IPC: preparación de credenciales (`prepareImportExtractOcrActivation`, sin abrir navegador) y lanzamiento OAuth (`launchImportExtractOcrActivation`, usa el helper loopback seguro con `state` + PKCE, persiste el token local y valida el setup).
 - `electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js` — Desconexión OCR desde menú: confirmación nativa, revocación del token OAuth guardado y borrado del token local tras revocación exitosa.
 - `electron/import_extract_platform/import_extract_prepare_execute_core.js` — Núcleo compartido del prepare/execute: clasificación de archivo, gating de formatos soportados, triage PDF, selección de ruta y ejecución.
 - `electron/import_extract_platform/import_extract_prepare_ipc.js` — Etapa prepare del archivo seleccionado: calcula metadata/rutas disponibles y crea el registro preparado.
@@ -335,7 +346,8 @@ tot/
 - `electron/import_extract_platform/ocr_google_drive_activation_state.js` — Estado grueso de disponibilidad OCR a partir de presencia de `credentials.json`/`token.json`; distingue `credentials_missing`, `ocr_activation_required` y `ready` antes de validaciones más profundas.
 - `electron/import_extract_platform/ocr_google_drive_bundled_credentials.js` — Bootstrap del modelo OCR de producción: consume el lector compartido de `credentials.json`, valida las credenciales OAuth desktop empaquetadas y materializa/repara el espejo runtime bajo `config/ocr_google_drive/credentials.json` sin pedir importación manual al usuario.
 - `electron/import_extract_platform/ocr_google_drive_credentials_file.js` — Lector/validador low-level compartido para `credentials.json`: lectura BOM-safe, parse JSON, clasificación (`missing_file`/`empty_file`/`invalid_json`/`invalid_shape`/`read_failed`) y validación de la shape OAuth desktop/web.
-- `electron/import_extract_platform/ocr_google_drive_oauth_client.js` — Helpers compartidos OAuth para OCR: lectura de `credentials.json`, construcción del cliente OAuth2 y selección del token preferido para revocación.
+- `electron/import_extract_platform/ocr_google_drive_oauth_client.js` — Helpers compartidos OAuth para OCR: lectura/normalización de `credentials.json`, construcción del cliente OAuth2 y selección del token preferido para revocación.
+- `electron/import_extract_platform/ocr_google_drive_secure_oauth.js` — Helper propio de activación OAuth desktop segura para Google OCR: reutiliza el cliente OAuth instalado ya empaquetado, abre navegador externo del sistema, levanta callback loopback efímero y aplica `state` + PKCE antes de intercambiar el código.
 - `electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js` — Clasificación compartida post-parse de fallas provider/runtime de Google OCR: centraliza tablas de razones y la política común para `connectivity_failed`, `provider_api_disabled`, `quota_or_rate_limited`, `auth_failed` y `platform_runtime_failed`.
 - `electron/import_extract_platform/ocr_google_drive_provider_failure.js` — Parser compartido de fallas provider-side de Google para OCR: lee tanto `error.errors[].reason` como `google.rpc.ErrorInfo.reason`, normaliza señales documentadas de API deshabilitada y preserva diagnóstico de conflictos entre ambos formatos.
 - `electron/import_extract_platform/ocr_google_drive_setup_validation.js` — Validación técnica del setup OCR (credenciales, token y reachability de Google Drive); consume el parser compartido y la clasificación post-parse común, pero conserva subtipos y fallback propios del flujo de setup.
@@ -356,6 +368,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/constants.js` — Constantes compartidas del renderer, incluyendo límites/default/step del tamaño de fuente del editor manual.
 - `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
 - `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.
+- `public/js/lib/editor_find_replace_core.js` — Núcleo puro/importable del find/replace del editor: matching literal sobre selección, cómputo determinista de `Replace All` y chequeo puro de elegibilidad por longitud; reutilizado por `public/editor.js` y por la suite automatizada.
 - `public/js/lib/format_core.js` — Núcleo puro/importable de formateo (tiempo estimado, partes de tiempo y separadores numéricos) reutilizado por el wrapper renderer y por la suite automatizada.
 - `public/js/lib/reading_test_filters_core.js` — Núcleo puro/importable del selector del reading speed test: semántica de checkboxes (OR dentro de categoría, AND entre categorías activas), cálculo de elegibles y enabled/disabled state desde combinaciones reales.
 - `public/js/lib/reading_test_questions_core.js` — Núcleo puro/importable del reading speed test para validar payloads `readingTest.questions`, puntuar respuestas y calcular el baseline probabilístico de respuesta al azar.
@@ -381,6 +394,9 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/import_extract_ocr_disconnect.js` — Handler del renderer para `Disconnect Google OCR`: solicita la desconexión al main y muestra feedback de éxito/fallo/not-connected.
 - `public/js/import_extract_entry.js` — Orquestador compartido del flujo import/extract desde picker o drag/drop.
 - `public/js/import_extract_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de archivos al entry flow compartido.
+- `public/js/current_text_selector_section.js` — Owner UI de la sección “texto vigente” en la ventana principal: concentra el título, el preview del texto actual, el toolbar local de esa sección, el lock state específico de sus controles y el toggle `Spoiler`, que permite ocultar el tramo final del preview sin devolver esa lógica a `public/renderer.js`.
+- `public/js/editor_ui.js` — Módulo UI del editor manual: i18n del editor, `spellcheck`, tamaño de texto, progreso de lectura, restauración de foco y countdown overlay del reading speed test.
+- `public/js/editor_engine.js` — Módulo de lógica/sync del editor manual: helpers de selección e inserción, `replace current/all`, sincronización con main, truncation handling, paste/drop y aplicación de updates externos.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 
@@ -388,11 +404,11 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `.github/workflows/test.yml` — Workflow GitHub Actions del baseline automatizado actual; corre `npm ci` + `npm test` sobre `windows-latest`.
 - `test/README.md` — Convenciones del layout de tests y separación entre baseline unitario y smoke suite local.
-- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo import/extract (`settings`, incluyendo normalización/persistencia de `editorFontSizePx`, `spellcheck`, formatos soportados, prepared store, parsing/clasificación OCR, decision helpers).
+- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo import/extract (`settings`, incluyendo normalización/persistencia de `editorFontSizePx`, `spellcheck`, formatos soportados, prepared store, parsing/clasificación OCR, decision helpers, más `editor_find_main.test.js` para autorización IPC, re-sync al refocus y orquestación request-scoped de replace).
 - `test/unit/electron/reading_test_pool.test.js` — Cobertura del pool del reading speed test: sincronización startup del starter set, seguimiento de hashes, estado externo `used` y prune de filas/archivos gestionados obsoletos.
 - `test/unit/electron/reading_test_pool_import.test.js` — Cobertura del importador del pool del reading speed test: validación de `.json`/`.zip`, duplicados, persistencia de última carpeta y reporte de fallas de escritura.
 - `test/unit/electron/spellcheck.test.js` — Cobertura del spellcheck main-owned: resolución de idiomas soportados, aplicación sobre `Session` y controller `createController(...)`/fallbacks de sesión.
-- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`).
+- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`).
 - `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; además valida que el startup tolere el schema vigente mínimo de settings (incluyendo flags nuevos como `spellcheckEnabled` y `editorFontSizePx`); no forma parte de `npm test` ni del workflow CI base.
 
 ### 4) i18n (estructura y responsabilidades)
@@ -453,7 +469,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.0) Tooling raíz
 
-- `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`.
+- `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`, y registra el hook `afterAllArtifactBuild` que reenvuelve los `.zip` distribuidos bajo una carpeta raíz `toT-<version>/`.
 - `package-lock.json` — Lockfile npm usado también por el workflow CI (`npm ci`).
 
 ### 6.1) Sitio web estático (website/public)
@@ -484,6 +500,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.3) Recursos de packaging (build-resources)
 
+- `build-resources/after-all-artifact-build.js` — Hook post-packaging de `electron-builder`: reempaqueta los artefactos `.zip` ya generados para que el contenido final quede bajo una carpeta raíz única `toT-<version>/`, mejorando la extracción manual del release portable sin alterar el layout interno de `win-unpacked`.
 - `build-resources/logo-cibersino.ico` — Icono de packaging para Windows.
 - `build-resources/logo-cibersino.png` — Fuente raster canónica de branding para packaging; también usable como input para Linux y para generar `logo-cibersino.icns` en macOS.
 

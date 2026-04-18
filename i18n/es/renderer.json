@@ -88,7 +88,8 @@
         "pause_symbol": "⏸"
       },
       "reading_tools": {
-        "reading_speed_test": "Test de velocidad de lectura"
+        "reading_speed_test": "Test de velocidad de lectura",
+        "preview_spoiler": "Spoiler"
       },
       "processing": {
         "import_extract_placeholder": "Procesando extracción...",
@@ -104,26 +105,36 @@
       "title": "toT — Texto completo",
       "placeholder": "Escribe o pega aquí...",
       "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-cálculo",
+      "calc_while_typing": "Auto",
       "spellcheck": "Ortografía",
       "text_size_label": "Tamaño",
       "decrease_text_size": "Reducir tamaño del texto",
       "increase_text_size": "Aumentar tamaño del texto",
       "reset_text_size": "Restablecer tamaño del texto",
       "text_size_value": "{value} px",
+      "read_progress_label": "Leído",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Progreso de lectura: {value}%",
       "clear": "🗑",
       "clear_title": "Vaciar"
     },
     "editor_find": {
-      "label": "Buscar",
       "input_placeholder": "Buscar...",
       "input_aria": "Buscar en el texto",
-      "prev": "Anterior",
-      "next": "Siguiente",
+      "expand_title": "Mostrar reemplazo",
+      "collapse_title": "Ocultar reemplazo",
+      "replace_placeholder": "Reemplazar...",
+      "replace_aria": "Texto de reemplazo",
+      "prev": "🡩",
+      "next": "🡫",
       "close": "🗙",
+      "replace": "Reemplazar",
+      "replace_all": "Reemplazar todo",
       "prev_title": "Coincidencia anterior",
       "next_title": "Coincidencia siguiente",
       "close_title": "Cerrar barra de busqueda",
+      "replace_title": "Reemplazar coincidencia actual",
+      "replace_all_title": "Reemplazar todas las coincidencias",
       "status_no_matches": "Sin coincidencias",
       "status_empty_query": "Escribe para buscar"
     },
