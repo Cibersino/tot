@@ -86,6 +86,8 @@ tot/
 │ ├── task_editor_position.js
 │ ├── editor_state.js
 │ ├── editor_find_main.js
+│ ├── editor_find_session.js
+│ ├── editor_find_shortcuts.js
 │ ├── editor_text_size.js
 │ ├── reading_test_pool/          # {starter files versionados del reading speed test}
 │ ├── reading_test_pool.js
@@ -314,7 +316,9 @@ tot/
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): valida payloads del flujo save, abre diálogos nativos, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots simples `{ "text": "<string>" }`, snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos compatibles con payload opcional `readingTest`, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
-- `electron/editor_find_main.js` — Coordinador main-owned del find/replace del editor: ciclo de vida de la ventana dedicada, atajos (`Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Shift+F3`, `Esc`, `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0`), re-sync del query al refocar la ventana Find, IPC autorizado hacia la ventana Find y orquestación main↔editor de `Replace` / `Replace All` con sincronización de estado basada en `found-in-page`.
+- `electron/editor_find_main.js` — Coordinador main-owned del find/replace del editor: conserva el ciclo de vida de la ventana dedicada, el wiring Electron-specific de listeners/IPC autorizado, los atajos (`Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Shift+F3`, `Esc`, `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0`) y la orquestación de alto nivel entre ventana editor y ventana Find.
+- `electron/editor_find_session.js` — Sesión/state machine main-owned del find/replace del editor: encapsula el estado mutable del query, navegación `findInPage`, re-sync al refocar la ventana Find, waits/pending request scoped, y la tubería main↔editor de `Replace` / `Replace All` con sincronización de estado basada en `found-in-page`.
+- `electron/editor_find_shortcuts.js` — Helpers puros/importables de shortcuts del find del editor: detección de `Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Esc` y shortcuts de tamaño de texto; se mantiene sin estado para reducir ruido en `editor_find_main.js`.
 - `electron/editor_text_size.js` — Controlador main-owned del tamaño de texto del editor: encapsula `set/increase/decrease/reset`, persiste `editorFontSizePx` vía `settings`, difunde `settings-updated` y entrega acciones reutilizables para los atajos del editor/find sin seguir inflando `electron/main.js`.
 - `electron/reading_test_pool.js` — Helpers del pool del reading speed test: asegura el subárbol runtime bajo snapshots, sincroniza al arranque los starter files versionados mediante hashes de contenido bundled, poda estado obsoleto y starter files retirados, escanea/valida JSON del pool y mezcla contenido + estado externo (`config/reading_test_pool_state.json`) para serializar metadata usable por la UI (`used` top-level).
 - `electron/reading_test_pool_import.js` — Follow-up main-owned de adquisición/import del pool: abre el picker nativo para `.json`/`.zip`, recuerda la última carpeta usada, valida candidatos contra el contrato del pool, resuelve duplicados por nombre de destino y escribe solo snapshots válidos dentro de `config/saved_current_texts/reading_speed_test_pool/`.
