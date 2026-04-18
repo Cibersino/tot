@@ -87,6 +87,28 @@
       }
     }
 
+    function tryNativeReplaceWholeValueSelection(nextValue) {
+      let execOk = false;
+
+      try {
+        execOk = !!(document.execCommand && document.execCommand('insertText', false, nextValue));
+      } catch {
+        execOk = false;
+      }
+
+      if (execOk) {
+        return true;
+      }
+
+      if (typeof editor.setRangeText === 'function') {
+        editor.setRangeText(nextValue, 0, editor.value.length, 'end');
+        dispatchNativeInputEvent();
+        return true;
+      }
+
+      return false;
+    }
+
     function tryNativeInsertAtSelection(text) {
       try {
         const { start, end } = getSelectionRange();
@@ -164,21 +186,7 @@
       try {
         editor.focus();
         selectAllEditor();
-        let execOk = false;
-
-        try {
-          execOk = !!(document.execCommand && document.execCommand('insertText', false, nextValue));
-        } catch {
-          execOk = false;
-        }
-
-        if (execOk) {
-          return true;
-        }
-
-        if (typeof editor.setRangeText === 'function') {
-          editor.setRangeText(nextValue, 0, editor.value.length, 'end');
-          dispatchNativeInputEvent();
+        if (tryNativeReplaceWholeValueSelection(nextValue)) {
           return true;
         }
 
@@ -565,16 +573,9 @@
               try {
                 editor.focus();
                 selectAllEditor();
-                let execOk = false;
-                try { execOk = document.execCommand && document.execCommand('insertText', false, newText); } catch { execOk = false; }
-                if (!execOk) {
-                  if (typeof editor.setRangeText === 'function') {
-                    editor.setRangeText(newText, 0, editor.value.length, 'end');
-                    dispatchNativeInputEvent();
-                  } else {
-                    editor.value = newText;
-                    dispatchNativeInputEvent();
-                  }
+                if (!tryNativeReplaceWholeValueSelection(newText)) {
+                  editor.value = newText;
+                  dispatchNativeInputEvent();
                 }
               } catch {
                 editor.value = newText;
