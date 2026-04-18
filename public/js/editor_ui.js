@@ -254,23 +254,23 @@
     }
 
     function notifyReadingTestCountdownReady(token) {
-      if (!token) return;
+      if (!token) return true;
       if (!editorAPI || typeof editorAPI.notifyReadingTestCountdownReady !== 'function') {
-        log.warnOnce(
-          'editor.readingTestCountdown.readyAckMissing',
-          'editorAPI.notifyReadingTestCountdownReady missing; reading-test countdown ready ack skipped.'
+        log.warn(
+          'editorAPI.notifyReadingTestCountdownReady missing; reading-test countdown disabled.'
         );
-        return;
+        return false;
       }
 
       try {
         editorAPI.notifyReadingTestCountdownReady({ token });
+        return true;
       } catch (err) {
-        log.warnOnce(
-          'editor.readingTestCountdown.readyAckFailed',
-          'Reading-test countdown ready ack failed (ignored):',
+        log.warn(
+          'Reading-test countdown ready ack failed; reading-test countdown disabled:',
           err
         );
+        return false;
       }
     }
 
@@ -344,7 +344,10 @@
 
       readingTestCountdownValue.textContent = String(seconds);
       setReadingTestCountdownVisible(true);
-      notifyReadingTestCountdownReady(token);
+      if (!notifyReadingTestCountdownReady(token)) {
+        setReadingTestCountdownVisible(false);
+        return;
+      }
 
       for (let index = 1; index < seconds; index += 1) {
         const nextValue = seconds - index;
@@ -382,8 +385,7 @@
       const normalizedNextFontSizePx = clampEditorFontSizePx(nextFontSizePx);
 
       if (!editorAPI || typeof editorAPI.setEditorFontSizePx !== 'function') {
-        log.warnOnce(
-          'editor.fontSize.apiMissing',
+        log.warn(
           'editorAPI.setEditorFontSizePx missing; editor text-size update ignored.'
         );
         return false;
