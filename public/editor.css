@@ -166,6 +166,10 @@ body.reading-test-countdown-active .bottom-bar {
   margin-left: 12px;
 }
 
+.editor-text-size-controls + .editor-read-progress {
+  margin-left: 12px;
+}
+
 .editor-text-size-label {
   font-size: 14px;
   color: #333;
@@ -220,6 +224,44 @@ body.reading-test-countdown-active .bottom-bar {
 }
 
 .editor-text-size-value::before {
+  content: attr(data-label);
+}
+
+.editor-read-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 0px;
+  min-width: 0;
+}
+
+.editor-read-progress-label {
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
+
+.editor-read-progress-label::before {
+  content: attr(data-label);
+}
+
+.editor-read-progress-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 32px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.55);
+  color: #333;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.editor-read-progress-value::before {
   content: attr(data-label);
 }
 
@@ -301,7 +343,8 @@ body.reading-test-countdown-active .bottom-bar {
   }
 
   .editor-toggle-label,
-  .editor-text-size-label {
+  .editor-text-size-label,
+  .editor-read-progress-label {
     font-size: 13px;
   }
 
@@ -315,6 +358,11 @@ body.reading-test-countdown-active .bottom-bar {
 
   .editor-text-size-value {
     min-width: 48px;
+    padding: 0 6px;
+  }
+
+  .editor-read-progress-value {
+    min-width: 44px;
     padding: 0 6px;
   }
 }

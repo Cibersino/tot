@@ -40,6 +40,17 @@
         <button id="btnTextSizeIncrease" class="btn-text-size" type="button" data-label="+" aria-label="Aumentar tamaño del texto" title="Aumentar tamaño del texto"></button>
         <button id="btnTextSizeReset" class="btn-text-size btn-text-size-reset" type="button" data-label="↺" aria-label="Restablecer tamaño del texto" title="Restablecer tamaño del texto"></button>
       </div>
+      <div
+        id="editorReadProgress"
+        class="editor-read-progress"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-label="Leído"
+      >
+        <span id="editorReadProgressLabel" class="editor-read-progress-label" data-label="Leído"></span>
+        <output id="editorReadProgressValue" class="editor-read-progress-value" data-label="0%" aria-label="Progreso de lectura: 0%"></output>
+      </div>
     </div>
 
     <div class="right-controls">

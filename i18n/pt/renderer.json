@@ -101,6 +101,9 @@
       "increase_text_size": "Aumentar tamanho do texto",
       "reset_text_size": "Restaurar tamanho do texto",
       "text_size_value": "{value} px",
+      "read_progress_label": "Lido",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Progresso de leitura: {value}%",
       "clear": "🗑",
       "clear_title": "Limpar"
     },

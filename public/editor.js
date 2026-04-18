@@ -133,6 +133,9 @@ const btnTextSizeDecrease = document.getElementById('btnTextSizeDecrease');
 const btnTextSizeIncrease = document.getElementById('btnTextSizeIncrease');
 const btnTextSizeReset = document.getElementById('btnTextSizeReset');
 const textSizeValue = document.getElementById('editorTextSizeValue');
+const readProgress = document.getElementById('editorReadProgress');
+const readProgressLabel = document.getElementById('editorReadProgressLabel');
+const readProgressValue = document.getElementById('editorReadProgressValue');
 const bottomBar = document.getElementById('bottomBar');
 const readingTestCountdownOverlay = document.getElementById('readingTestCountdownOverlay');
 const readingTestCountdownValue = document.getElementById('readingTestCountdownValue');
@@ -147,6 +150,7 @@ let readingTestCountdownRunId = 0;
 let readingTestCountdownTimeouts = [];
 let spellcheckEnabled = true;
 let editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
+let readProgressFramePending = false;
 
 // warnOnce keys are editor-scoped; use log.warnOnce directly.
 
@@ -207,12 +211,69 @@ function updateEditorTextSizeUi() {
   if (btnTextSizeReset) btnTextSizeReset.disabled = editorFontSizePx === EDITOR_FONT_SIZE_DEFAULT_PX;
 }
 
+function clampPercentage(value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return 0;
+  return Math.max(0, Math.min(100, Math.round(numericValue)));
+}
+
+function computeReadProgressPercent() {
+  if (!editor) return 0;
+
+  const scrollHeight = Number(editor.scrollHeight);
+  const clientHeight = Number(editor.clientHeight);
+  if (!Number.isFinite(scrollHeight) || !Number.isFinite(clientHeight) || scrollHeight <= 0 || clientHeight <= 0) {
+    return 0;
+  }
+
+  if (scrollHeight <= (clientHeight + 1)) {
+    return 100;
+  }
+
+  const scrollTop = Math.max(0, Number.isFinite(Number(editor.scrollTop)) ? Number(editor.scrollTop) : 0);
+  const visibleBottom = Math.min(scrollHeight, scrollTop + clientHeight);
+  return clampPercentage((visibleBottom / scrollHeight) * 100);
+}
+
+function updateReadProgressUi() {
+  if (!readProgressValue) return;
+
+  const readProgressPercent = computeReadProgressPercent();
+  const valueText = trMsg(
+    'renderer.editor.read_progress_value',
+    { value: readProgressPercent }
+  );
+  const ariaText = trMsg(
+    'renderer.editor.read_progress_aria',
+    { value: readProgressPercent }
+  );
+
+  readProgressValue.setAttribute('data-label', valueText);
+  readProgressValue.setAttribute('aria-label', ariaText);
+}
+
+function scheduleReadProgressUiUpdate() {
+  if (readProgressFramePending) return;
+
+  if (typeof window.requestAnimationFrame !== 'function') {
+    updateReadProgressUi();
+    return;
+  }
+
+  readProgressFramePending = true;
+  window.requestAnimationFrame(() => {
+    readProgressFramePending = false;
+    updateReadProgressUi();
+  });
+}
+
 function setLocalEditorFontSizePx(value) {
   editorFontSizePx = clampEditorFontSizePx(value);
   if (document && document.documentElement) {
     document.documentElement.style.setProperty('--editor-font-size', `${editorFontSizePx}px`);
   }
   updateEditorTextSizeUi();
+  scheduleReadProgressUiUpdate();
 }
 
 async function ensureEditorTranslations(lang) {
@@ -247,6 +308,11 @@ async function applyEditorTranslations() {
     textSizeControls.setAttribute('aria-label', textSizeGroupText);
     if (textSizeLabel) textSizeLabel.setAttribute('data-label', textSizeGroupText);
   }
+  if (readProgress) {
+    const readProgressText = tr('renderer.editor.read_progress_label');
+    readProgress.setAttribute('aria-label', readProgressText);
+    if (readProgressLabel) readProgressLabel.setAttribute('data-label', readProgressText);
+  }
   if (btnTextSizeDecrease) {
     const decreaseText = tr('renderer.editor.decrease_text_size');
     btnTextSizeDecrease.setAttribute('aria-label', decreaseText);
@@ -272,6 +338,7 @@ async function applyEditorTranslations() {
     bottomBar.setAttribute('aria-label', tr('renderer.editor.title'));
   }
   updateEditorTextSizeUi();
+  updateReadProgressUi();
 }
 
 // =============================================================================
@@ -380,6 +447,8 @@ function positionEditorAtTop() {
   } catch (err) {
     log.warnOnce('editor.readingTestCountdown.scrollTop', 'Failed to scroll editor to top (ignored):', err);
   }
+
+  scheduleReadProgressUiUpdate();
 }
 
 function setReadingTestCountdownVisible(visible) {
@@ -503,6 +572,7 @@ try {
 applyDocumentLanguage();
 setLocalSpellcheckEnabled(spellcheckEnabled);
 setLocalEditorFontSizePx(editorFontSizePx);
+updateReadProgressUi();
 
 // =============================================================================
 // Local insertion (best preserving undo)
@@ -1103,6 +1173,7 @@ window.editorAPI.onForceClear(() => {
   try {
     suppressLocalUpdate = true;
     editor.value = '';
+    scheduleReadProgressUiUpdate();
     // Update main too (keep state consistent)
     sendCurrentTextToMain('clear', { text: '' });
   } catch (err) {
@@ -1225,6 +1296,7 @@ if (editor) {
 
 editor.addEventListener('input', () => {
   publishReplaceStatus();
+  scheduleReadProgressUiUpdate();
 
   if (suppressLocalUpdate || editor.readOnly) return;
 
@@ -1242,6 +1314,14 @@ editor.addEventListener('input', () => {
       }, DEBOUNCE_MS);
     }
   }
+});
+
+editor.addEventListener('scroll', () => {
+  scheduleReadProgressUiUpdate();
+});
+
+window.addEventListener('resize', () => {
+  scheduleReadProgressUiUpdate();
 });
 
 async function persistEditorFontSizePx(nextFontSizePx) {
@@ -1295,6 +1375,7 @@ function resetEditorFontSize() {
 btnTrash.addEventListener('click', () => {
   editor.value = '';
   publishReplaceStatus();
+  scheduleReadProgressUiUpdate();
   // immediately update main
   sendCurrentTextToMain('clear', {
     text: '',
