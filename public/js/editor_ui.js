@@ -2,15 +2,21 @@
 'use strict';
 
 // =============================================================================
-// public/js/editor_ui.js
+// Overview
 // =============================================================================
+// Editor UI module for the renderer editor page.
 // Responsibilities:
-// - Manage editor i18n and document language.
-// - Update spellcheck, font-size, and read-progress UI.
-// - Handle editor focus restoration and countdown overlay behavior.
-// =============================================================================
+// - Apply editor translations and keep document language attributes in sync.
+// - Update local spellcheck, font size, and read-progress UI state.
+// - Restore editor focus after UI actions that temporarily move it elsewhere.
+// - Run the reading-test countdown overlay and its related UI state.
+// - Persist editor text-size changes through the editor bridge when available.
 
 (() => {
+  // =============================================================================
+  // Module Factory
+  // =============================================================================
+
   function createEditorUI(ctx) {
     const { log, editorAPI, DEFAULT_LANG, dom, state } = ctx;
     const {
@@ -421,6 +427,10 @@
       return persistEditorFontSizePx(ctx.EDITOR_FONT_SIZE_DEFAULT_PX);
     }
 
+    // =============================================================================
+    // Module Surface
+    // =============================================================================
+
     return {
       applyDocumentLanguage,
       setLocalSpellcheckEnabled,
@@ -441,5 +451,13 @@
     };
   }
 
+  // =============================================================================
+  // Exports
+  // =============================================================================
+
   window.EditorUI = { createEditorUI };
 })();
+
+// =============================================================================
+// End of public/js/editor_ui.js
+// =============================================================================
