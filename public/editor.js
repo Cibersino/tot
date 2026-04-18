@@ -5,9 +5,11 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Kick off config and i18n bootstrap (async, best-effort).
-// - Wire editor UI and editor engine modules together.
-// - Register DOM and IPC event listeners for the editor renderer.
+// - Validate required renderer surfaces before editor bootstrap continues.
+// - Wire editor UI and editor engine modules together through shared context.
+// - Bootstrap config, settings, translations, and initial editor text state.
+// - Register editorAPI listeners and DOM event handlers for editor interactions.
+// - Coordinate local editor actions with main-process text synchronization.
 // =============================================================================
 
 // =============================================================================
@@ -254,7 +256,7 @@ if (readingTestCountdownOverlay) {
 }
 
 // =============================================================================
-// Initialization
+// Bootstrap: initial text seed
 // =============================================================================
 (async () => {
   try {
@@ -279,7 +281,7 @@ if (readingTestCountdownOverlay) {
 })();
 
 // =============================================================================
-// IPC bridge listeners
+// Bridge listeners
 // =============================================================================
 ctx.editorAPI.onInitText((p) => { ctx.engine.applyExternalUpdate(p); });
 ctx.editorAPI.onExternalUpdate((p) => { ctx.engine.applyExternalUpdate(p); });
@@ -529,3 +531,7 @@ if (btnTextSizeReset) {
     });
   });
 }
+
+// =============================================================================
+// End of public/editor.js
+// =============================================================================
