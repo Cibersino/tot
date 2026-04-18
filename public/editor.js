@@ -241,7 +241,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
     }
   });
 } else {
-  log.warn('editorAPI.onSettingsChanged missing; live language updates disabled.');
+  log.warn('BOOTSTRAP: editorAPI.onSettingsChanged missing; live settings updates disabled.');
 }
 
 if (readingTestCountdownOverlay) {
@@ -329,7 +329,7 @@ if (typeof ctx.editorAPI.onReadingTestCountdown === 'function') {
     ctx.ui.startReadingTestCountdown(payload);
   });
 } else {
-  log.warn('editorAPI.onReadingTestCountdown missing; reading-test countdown overlay disabled.');
+  log.warn('BOOTSTRAP: editorAPI.onReadingTestCountdown missing; reading-test countdown overlay disabled.');
 }
 
 // =============================================================================
@@ -416,9 +416,9 @@ editor.addEventListener('input', () => {
     if (calcWhileTyping && calcWhileTyping.checked) {
       ctx.state.debounceTimer = setTimeout(() => {
         ctx.engine.sendCurrentTextToMain('typing', {
-          onFallbackError: (err) => log.errorOnce(
+          onFallbackError: (err) => log.warnOnce(
             'editor.setCurrentText.typing.fallback',
-            'Error sending set-current-text typing:',
+            'setCurrentText typing sync failed (ignored):',
             err
           )
         });
