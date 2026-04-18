@@ -79,7 +79,12 @@
         editor.style.visibility = 'hidden';
         editor.value = nextValue;
         dispatchNativeInputEvent();
-      } catch {
+      } catch (err) {
+        log.warnOnce(
+          'editor.replaceHidden.visibility',
+          'replaceEditorValueHidden visibility update failed; using direct update fallback:',
+          err
+        );
         editor.value = nextValue;
         dispatchNativeInputEvent();
       } finally {
@@ -100,11 +105,21 @@
         return true;
       }
 
+      log.warnOnce(
+        'editor.execCommand.replaceWholeValue',
+        "document.execCommand('insertText') unavailable or failed; using whole-value replace fallback."
+      );
+
       if (typeof editor.setRangeText === 'function') {
         editor.setRangeText(nextValue, 0, editor.value.length, 'end');
         dispatchNativeInputEvent();
         return true;
       }
+
+      log.warnOnce(
+        'editor.setRangeText.replaceWholeValue',
+        'editor.setRangeText unavailable; using direct value replace fallback.'
+      );
 
       return false;
     }
@@ -120,12 +135,22 @@
           // follow fallback
         }
 
+        log.warnOnce(
+          'editor.execCommand.insert',
+          "document.execCommand('insertText') unavailable or failed; using editor insert fallback."
+        );
+
         if (typeof editor.setRangeText === 'function') {
           editor.setRangeText(text, start, end, 'end');
           const newCaret = start + text.length;
           setCaretSafe(newCaret);
           return true;
         }
+
+        log.warnOnce(
+          'editor.setRangeText.insert',
+          'editor.setRangeText unavailable; using value splice insert fallback.'
+        );
 
         const before = editor.value.slice(0, start);
         const after = editor.value.slice(end);
@@ -161,11 +186,21 @@
           // follow fallback
         }
 
+        log.warnOnce(
+          'editor.execCommand.replaceCurrent',
+          "document.execCommand('insertText') unavailable or failed; using replace-current fallback."
+        );
+
         if (typeof editor.setRangeText === 'function') {
           editor.setRangeText(replacementText, start, end, 'end');
           dispatchNativeInputEvent();
           return true;
         }
+
+        log.warnOnce(
+          'editor.setRangeText.replaceCurrent',
+          'editor.setRangeText unavailable; using manual replace-current fallback.'
+        );
 
         const before = editor.value.slice(0, start);
         const after = editor.value.slice(end);
@@ -545,13 +580,34 @@
                   setCaretSafe(tpos);
                   const ok = document.execCommand && document.execCommand('insertText', false, toInsert);
                   if (!ok && typeof editor.setRangeText === 'function') {
+                    log.warnOnce(
+                      'editor.execCommand.appendNewline',
+                      "document.execCommand('insertText') unavailable or failed; using append fallback."
+                    );
                     editor.setRangeText(toInsert, tpos, tpos, 'end');
                     dispatchNativeInputEvent();
                   } else if (!ok) {
+                    log.warnOnce(
+                      'editor.execCommand.appendNewline',
+                      "document.execCommand('insertText') unavailable or failed; using append fallback."
+                    );
+                    log.warnOnce(
+                      'editor.setRangeText.appendNewline',
+                      'editor.setRangeText unavailable; using direct append fallback.'
+                    );
                     editor.value = editor.value + toInsert;
                     dispatchNativeInputEvent();
                   }
-                } catch {
+                } catch (err) {
+                  log.warnOnce(
+                    'editor.execCommand.appendNewline',
+                    "document.execCommand('insertText') unavailable or failed; using append fallback:",
+                    err
+                  );
+                  log.warnOnce(
+                    'editor.setRangeText.appendNewline',
+                    'editor.setRangeText unavailable; using direct append fallback.'
+                  );
                   editor.value = editor.value + toInsert;
                   dispatchNativeInputEvent();
                 } finally {
@@ -577,7 +633,11 @@
                   editor.value = newText;
                   dispatchNativeInputEvent();
                 }
-              } catch {
+              } catch (err) {
+                log.warn(
+                  'Native whole-value replace failed; using direct update fallback:',
+                  err
+                );
                 editor.value = newText;
                 dispatchNativeInputEvent();
               } finally {
