@@ -227,6 +227,7 @@ function createSession({
       const timeoutId = setTimeout(() => {
         if (!pendingSearchWait || pendingSearchWait.requestId !== requestId) return;
         pendingSearchWait = null;
+        log.warn('findInPage completion timed out (ignored):', requestId);
         resolve({ ok: false, status: 'timeout' });
       }, timeoutMs);
 
@@ -264,6 +265,7 @@ function createSession({
 
     const editorWin = resolveEditorWindow();
     if (!editorWin) {
+      log.warn('editor-replace-request skipped (ignored): editor window unavailable.', operation);
       return Promise.resolve({
         ok: false,
         status: 'editor-window-unavailable',
@@ -278,6 +280,7 @@ function createSession({
       const timeoutId = setTimeout(() => {
         if (!pendingEditorReplace || pendingEditorReplace.requestId !== requestId) return;
         pendingEditorReplace = null;
+        log.warn('editor-replace-request timed out (ignored):', operation);
         resolve({
           ok: false,
           status: 'timeout',
@@ -305,6 +308,7 @@ function createSession({
       } catch (err) {
         pendingEditorReplace = null;
         clearTimeout(timeoutId);
+        log.warn('editor-replace-request send failed (ignored):', operation, err);
         resolve({
           ok: false,
           status: 'send-failed',
@@ -381,6 +385,7 @@ function createSession({
     const replacement = clampFindInputText(rawReplacement);
     const editorWin = resolveEditorWindow();
     if (!editorWin) {
+      log.warn('replace-current ignored: editor window unavailable.');
       return {
         ok: false,
         status: 'editor-window-unavailable',
@@ -429,6 +434,7 @@ function createSession({
         editorWin.webContents.stopFindInPage('keepSelection');
         stoppedFindSelection = true;
       } catch (err) {
+        log.warn("replace-current stopFindInPage('keepSelection') failed (ignored):", err);
         return {
           ok: false,
           status: 'keep-selection-failed',
@@ -485,6 +491,7 @@ function createSession({
 
     const replacement = clampFindInputText(rawReplacement);
     if (!resolveEditorWindow()) {
+      log.warn('replace-all ignored: editor window unavailable.');
       return {
         ok: false,
         status: 'editor-window-unavailable',
@@ -587,6 +594,14 @@ function createSession({
   }
 
   function handleEditorReplaceStatus(payload) {
+    if (!payload || typeof payload !== 'object' || typeof payload.replaceAllAllowedByLength !== 'boolean') {
+      log.warnOnce(
+        'editorFind.editorReplaceStatus.invalid',
+        'editor-replace-status invalid payload (ignored).'
+      );
+      return;
+    }
+
     const nextAllowed = !!(
       payload &&
       typeof payload === 'object' &&
