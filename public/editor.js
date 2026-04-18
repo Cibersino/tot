@@ -56,9 +56,6 @@ if (!window.editorAPI) {
 if (typeof window.editorAPI.setCurrentText !== 'function') {
   throw new Error('[editor] editorAPI.setCurrentText unavailable; cannot continue');
 }
-if (typeof window.editorAPI.getCurrentText !== 'function') {
-  throw new Error('[editor] editorAPI.getCurrentText unavailable; cannot continue');
-}
 if (typeof window.editorAPI.onInitText !== 'function') {
   throw new Error('[editor] editorAPI.onInitText unavailable; cannot continue');
 }
@@ -83,6 +80,9 @@ if (!window.EditorUI || typeof window.EditorUI.createEditorUI !== 'function') {
 }
 if (!window.EditorEngine || typeof window.EditorEngine.createEditorEngine !== 'function') {
   throw new Error('[editor] EditorEngine unavailable; cannot continue');
+}
+if (!window.Notify || typeof window.Notify.notifyEditor !== 'function') {
+  throw new Error('[editor] Notify.notifyEditor unavailable; cannot continue');
 }
 
 // =============================================================================
@@ -258,8 +258,19 @@ if (readingTestCountdownOverlay) {
 // =============================================================================
 (async () => {
   try {
-    const t = await ctx.editorAPI.getCurrentText();
-    await ctx.engine.applyExternalUpdate({ text: t || '', meta: { source: 'main', action: 'init' } });
+    let initialText = '';
+
+    if (typeof ctx.editorAPI.getCurrentText !== 'function') {
+      log.warn('BOOTSTRAP: editorAPI.getCurrentText missing; initialization will rely on onInitText.');
+    } else {
+      try {
+        initialText = await ctx.editorAPI.getCurrentText();
+      } catch (err) {
+        log.warn('BOOTSTRAP: getCurrentText failed; initialization will use empty text:', err);
+      }
+    }
+
+    await ctx.engine.applyExternalUpdate({ text: initialText || '', meta: { source: 'main', action: 'init' } });
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
     ctx.engine.publishReplaceStatus();
   } catch (err) {
