@@ -43,6 +43,10 @@
     const tr = (path) => tRenderer(path);
     const trMsg = (path, params) => msgRenderer(path, params);
 
+    // =============================================================================
+    // Translation And Document Helpers
+    // =============================================================================
+
     function applyDocumentLanguage() {
       const langTag = (state.idiomaActual || DEFAULT_LANG).toLowerCase();
       if (document && document.documentElement) {
@@ -52,6 +56,75 @@
         editor.setAttribute('lang', langTag);
       }
     }
+
+    async function ensureEditorTranslations(lang) {
+      const target = (lang || '').toLowerCase() || DEFAULT_LANG;
+      if (state.translationsLoadedFor === target) return;
+      await loadRendererTranslations(target);
+      state.translationsLoadedFor = target;
+    }
+
+    async function applyEditorTranslations() {
+      await ensureEditorTranslations(state.idiomaActual);
+      applyDocumentLanguage();
+      document.title = tr('renderer.editor.title');
+      if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder'));
+      if (btnCalc) {
+        const calcText = tr('renderer.editor.calc_button');
+        btnCalc.setAttribute('data-label', calcText);
+        btnCalc.setAttribute('aria-label', calcText);
+      }
+      if (calcLabel) {
+        const calcWhileTypingText = tr('renderer.editor.calc_while_typing');
+        calcLabel.setAttribute('data-label', calcWhileTypingText);
+        if (calcWhileTyping) calcWhileTyping.setAttribute('aria-label', calcWhileTypingText);
+      }
+      if (spellcheckLabel) {
+        const spellcheckText = tr('renderer.editor.spellcheck');
+        spellcheckLabel.setAttribute('data-label', spellcheckText);
+        if (spellcheckToggle) spellcheckToggle.setAttribute('aria-label', spellcheckText);
+      }
+      if (textSizeControls) {
+        const textSizeGroupText = tr('renderer.editor.text_size_label');
+        textSizeControls.setAttribute('aria-label', textSizeGroupText);
+        if (textSizeLabel) textSizeLabel.setAttribute('data-label', textSizeGroupText);
+      }
+      if (readProgress) {
+        const readProgressText = tr('renderer.editor.read_progress_label');
+        readProgress.setAttribute('aria-label', readProgressText);
+        if (readProgressLabel) readProgressLabel.setAttribute('data-label', readProgressText);
+      }
+      if (btnTextSizeDecrease) {
+        const decreaseText = tr('renderer.editor.decrease_text_size');
+        btnTextSizeDecrease.setAttribute('aria-label', decreaseText);
+        btnTextSizeDecrease.title = decreaseText;
+      }
+      if (btnTextSizeIncrease) {
+        const increaseText = tr('renderer.editor.increase_text_size');
+        btnTextSizeIncrease.setAttribute('aria-label', increaseText);
+        btnTextSizeIncrease.title = increaseText;
+      }
+      if (btnTextSizeReset) {
+        const resetText = tr('renderer.editor.reset_text_size');
+        btnTextSizeReset.setAttribute('aria-label', resetText);
+        btnTextSizeReset.title = resetText;
+      }
+      if (btnTrash) {
+        const clearText = tr('renderer.editor.clear');
+        btnTrash.setAttribute('data-label', clearText);
+        btnTrash.setAttribute('aria-label', clearText);
+        btnTrash.title = tr('renderer.editor.clear_title');
+      }
+      if (bottomBar) {
+        bottomBar.setAttribute('aria-label', tr('renderer.editor.title'));
+      }
+      updateEditorTextSizeUi();
+      updateReadProgressUi();
+    }
+
+    // =============================================================================
+    // Local UI State Helpers
+    // =============================================================================
 
     function setLocalSpellcheckEnabled(enabled) {
       state.spellcheckEnabled = enabled !== false;
@@ -70,6 +143,15 @@
         ctx.EDITOR_FONT_SIZE_MAX_PX,
         Math.max(ctx.EDITOR_FONT_SIZE_MIN_PX, rounded)
       );
+    }
+
+    function setLocalEditorFontSizePx(value) {
+      state.editorFontSizePx = clampEditorFontSizePx(value);
+      if (document && document.documentElement) {
+        document.documentElement.style.setProperty('--editor-font-size', `${state.editorFontSizePx}px`);
+      }
+      updateEditorTextSizeUi();
+      scheduleReadProgressUiUpdate();
     }
 
     function updateEditorTextSizeUi() {
@@ -142,79 +224,9 @@
       });
     }
 
-    function setLocalEditorFontSizePx(value) {
-      state.editorFontSizePx = clampEditorFontSizePx(value);
-      if (document && document.documentElement) {
-        document.documentElement.style.setProperty('--editor-font-size', `${state.editorFontSizePx}px`);
-      }
-      updateEditorTextSizeUi();
-      scheduleReadProgressUiUpdate();
-    }
-
-    async function ensureEditorTranslations(lang) {
-      const target = (lang || '').toLowerCase() || DEFAULT_LANG;
-      if (state.translationsLoadedFor === target) return;
-      await loadRendererTranslations(target);
-      state.translationsLoadedFor = target;
-    }
-
-    async function applyEditorTranslations() {
-      await ensureEditorTranslations(state.idiomaActual);
-      applyDocumentLanguage();
-      document.title = tr('renderer.editor.title');
-      if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder'));
-      if (btnCalc) {
-        const calcText = tr('renderer.editor.calc_button');
-        btnCalc.setAttribute('data-label', calcText);
-        btnCalc.setAttribute('aria-label', calcText);
-      }
-      if (calcLabel) {
-        const calcWhileTypingText = tr('renderer.editor.calc_while_typing');
-        calcLabel.setAttribute('data-label', calcWhileTypingText);
-        if (calcWhileTyping) calcWhileTyping.setAttribute('aria-label', calcWhileTypingText);
-      }
-      if (spellcheckLabel) {
-        const spellcheckText = tr('renderer.editor.spellcheck');
-        spellcheckLabel.setAttribute('data-label', spellcheckText);
-        if (spellcheckToggle) spellcheckToggle.setAttribute('aria-label', spellcheckText);
-      }
-      if (textSizeControls) {
-        const textSizeGroupText = tr('renderer.editor.text_size_label');
-        textSizeControls.setAttribute('aria-label', textSizeGroupText);
-        if (textSizeLabel) textSizeLabel.setAttribute('data-label', textSizeGroupText);
-      }
-      if (readProgress) {
-        const readProgressText = tr('renderer.editor.read_progress_label');
-        readProgress.setAttribute('aria-label', readProgressText);
-        if (readProgressLabel) readProgressLabel.setAttribute('data-label', readProgressText);
-      }
-      if (btnTextSizeDecrease) {
-        const decreaseText = tr('renderer.editor.decrease_text_size');
-        btnTextSizeDecrease.setAttribute('aria-label', decreaseText);
-        btnTextSizeDecrease.title = decreaseText;
-      }
-      if (btnTextSizeIncrease) {
-        const increaseText = tr('renderer.editor.increase_text_size');
-        btnTextSizeIncrease.setAttribute('aria-label', increaseText);
-        btnTextSizeIncrease.title = increaseText;
-      }
-      if (btnTextSizeReset) {
-        const resetText = tr('renderer.editor.reset_text_size');
-        btnTextSizeReset.setAttribute('aria-label', resetText);
-        btnTextSizeReset.title = resetText;
-      }
-      if (btnTrash) {
-        const clearText = tr('renderer.editor.clear');
-        btnTrash.setAttribute('data-label', clearText);
-        btnTrash.setAttribute('aria-label', clearText);
-        btnTrash.title = tr('renderer.editor.clear_title');
-      }
-      if (bottomBar) {
-        bottomBar.setAttribute('aria-label', tr('renderer.editor.title'));
-      }
-      updateEditorTextSizeUi();
-      updateReadProgressUi();
-    }
+    // =============================================================================
+    // Focus And Countdown Helpers
+    // =============================================================================
 
     function restoreFocusToEditor(pos = null) {
       try {
@@ -348,6 +360,10 @@
         setReadingTestCountdownVisible(false);
       }, seconds * stepMs));
     }
+
+    // =============================================================================
+    // Persistence Helpers
+    // =============================================================================
 
     function applyTextareaDefaults() {
       try {
