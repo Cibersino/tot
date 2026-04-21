@@ -6,7 +6,7 @@
     DEFAULT_LANG: 'es', // Default language for the app. It must match 'electron/constants_main.js'. This can be overridden by user settings.
     MAX_TEXT_CHARS: 50_000_000, // Renderer fallback. Real limit from main (constants_main.js via IPC).
     PASTE_ALLOW_LIMIT: 10_000, // Max chars allowed in paste. This is a soft limit to prevent performance issues.
-    SMALL_UPDATE_THRESHOLD: 200_000, // If text is smaller than this, update the preview immediately.
+    SMALL_UPDATE_THRESHOLD: 200_000, // Small-document threshold for native whole-text update paths and supported Replace All operations.
     WPM_MIN: 10, // Minimum WPM for reading speed.
     WPM_MAX: 700, // Maximum WPM for reading speed.
     WPM_SLIDER_STEP: 0.1, // Internal slider resolution; displayed WPM remains integer.
