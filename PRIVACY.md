@@ -1,84 +1,99 @@
 # Política de privacidad — toT
 
-Fecha de vigencia: `2026-04-04`  
-Versión app: `1.0.0`
+Fecha de vigencia: `2026-04-21`  
+Versión app: `1.2.0`
 
 ## 1. Resumen
 
+toT es una app principalmente local.
+
 - La app **no recopila telemetría** ni métricas de uso.
-- El **texto que ingresas/pegas** se procesa **localmente** y **no se envía a Internet** ni a servidores de los desarrolladores.
-- La app guarda **configuración y estado** en el equipo del usuario (almacenamiento local).
-- La única conectividad prevista no dependiente de acciones del usuario es la **verificación de actualizaciones en GitHub**. La app **no descarga ni instala** actualizaciones automáticamente.
-- El resto de las operaciones de conectividad solo ocurre por acciones explícitas del usuario (por ejemplo, al abrir enlaces externos desde la app al activar/usar OCR conectado con Google).
+- El **texto que ingresas, pegas, editas o procesas** se trabaja **localmente** y **no se envía a Internet** ni a servidores del desarrollador.
+- La app guarda **configuración y estado** en el equipo del usuario.
+- La **única conectividad prevista no dependiente de acciones del usuario** es la **verificación de actualizaciones en GitHub**. La app **no descarga ni instala actualizaciones automáticamente**.
+- Toda otra conectividad ocurre solo por **acciones explícitas del usuario**, por ejemplo al abrir enlaces externos o al activar/usar OCR conectado con Google.
 
 ## 2. Datos que la app procesa
 
 ### 2.1 Texto del usuario
-- La app procesa el texto que ingresas/pegas para realizar conteos y estimaciones.
-- Ese contenido **no se transmite** a servicios externos.
 
-### 2.2 Configuración y estado (almacenamiento local)
-La app puede guardar localmente, según su configuración y uso:
-- Preferencias (por ejemplo, idioma).
-- Estado de ventanas y/o sesión (según aplique).
-- El texto actual y/o último estado de trabajo (si la app ofrece persistencia del texto).
-- La selección y personalización de presets de WPM.
-- Snapshots de texto guardados por el usuario.
-- Estado local del test de velocidad de lectura (por ejemplo, pool local de textos del test, archivo local externo de estado de uso y payloads opcionales de preguntas en los archivos del pool).
-- Datos de tareas guardadas por el usuario (listas, biblioteca, rutas de archivos locales y hosts/URLs permitidos para abrir enlaces).
+La app procesa el texto que ingresas, pegas o importas para realizar conteos, estimaciones, edición, organización y otras funciones locales.
 
-Todos estos datos quedan solo **en tu equipo**.
+Ese contenido **no se transmite** a servicios externos, salvo que el propio usuario elija una ruta conectada específica, como Google OCR, para un archivo seleccionado por él mismo.
+
+### 2.2 Configuración y estado local
+
+La app puede guardar localmente, según su uso y configuración:
+
+- preferencias de usuario, por ejemplo idioma;
+- estado de ventanas y sesión;
+- texto actual y estado de trabajo;
+- presets de WPM y su personalización;
+- snapshots guardados por el usuario;
+- estado local del test de velocidad de lectura, incluido el pool local de textos, el archivo externo de estado de uso y payloads opcionales de preguntas;
+- datos del editor de tareas, incluidas listas, biblioteca, rutas locales y hosts/URLs permitidos;
+- estado local de la integración Google OCR.
+
+Todo eso permanece **en tu equipo**.
 
 ### 2.3 Test de velocidad de lectura
-- El test de velocidad de lectura procesa localmente el texto usado en la sesión para calcular WPM y, cuando corresponde, mostrar preguntas opcionales de comprensión.
-- Si el test se inicia desde el texto actual, ese texto se reutiliza localmente y no se envía a servicios externos.
-- Si el test se inicia desde el pool local de textos del test, la app puede marcar localmente ese texto como usado en su archivo externo de estado de uso para evitar repeticiones entre tests hasta que el usuario restablezca el pool.
-- Ni los resultados del test, ni las respuestas a preguntas de comprensión, ni el WPM medido se envían a Internet.
+
+El test de velocidad de lectura funciona localmente.
+
+- Si el test se inicia desde el texto actual, ese texto se reutiliza localmente.
+- Si se inicia desde el pool local, la app puede marcar localmente ese texto como usado para evitar repeticiones hasta que el usuario restablezca el pool.
+- Ni el texto del test, ni el WPM medido, ni las respuestas de comprensión se envían a Internet.
 
 ## 3. Conectividad y terceros
 
 ### 3.1 Verificación de actualizaciones (GitHub)
-La app puede consultar información pública de releases en GitHub para determinar si existe una versión más reciente, y puede abrir el navegador hacia la página oficial de releases.
+
+La app puede consultar información pública de releases en GitHub para determinar si existe una versión más reciente y, si el usuario lo decide, abrir en el navegador externo la página oficial de descarga.
 
 - La app **no envía tu texto** durante esta verificación.
-- Como en cualquier conexión HTTPS a un tercero, **GitHub puede ver tu IP** y metadatos estándar de la conexión (p. ej., fecha/hora y encabezados de red habituales).
+- GitHub puede ver la IP y metadatos estándar de la conexión HTTPS.
+- La app **no descarga** ni **instala** actualizaciones por sí sola.
 
 ### 3.2 Apertura de enlaces externos por acción del usuario
 
-La app puede abrir enlaces externos cuando el usuario lo solicita explícitamente (por ejemplo, desde enlaces informativos o desde el módulo de tareas).
+La app puede abrir enlaces externos solo cuando el usuario lo solicita explícitamente.
 
-- En el módulo de tareas, solo se permiten enlaces HTTPS y puede requerirse confirmación.
+- En el editor de tareas, los enlaces remotos se limitan a HTTPS y pueden requerir confirmación.
 - En todos los casos, la navegación ocurre en el navegador externo del sistema.
 
 ### 3.3 OCR conectado con Google
 
-Si el usuario decide activar o usar OCR para extraer texto de archivos, la app puede conectarse con servicios de Google para procesar estos archivos seleccionados por el propio usuario con fines de OCR.
+Si el usuario decide activar o usar OCR para extraer texto de archivos, la app puede conectarse con servicios de Google para procesar **solo** los archivos que el propio usuario selecciona para esa operación.
 
-- La activación abre el navegador externo del sistema para realizar autorización/sign-in de Google.
+- La autorización se realiza en el **navegador externo del sistema**, no dentro de un navegador embebido en la app.
+- La app usa un **Google Cloud project** y un **OAuth client** gestionados por el owner de la app y distribuidos con ella.
+- El alcance solicitado para esta función es **`drive.file`**.
 - Solo los archivos que el usuario elige explícitamente para OCR se envían a Google para esa operación.
-- Como parte de una operación OCR, ni los archivos, ni el texto extraído, ni la información específica de esa operación se envían a terceros distintos de Google. Los desarrolladores no reciben esos datos ni quedan notificados de esas operaciones.
-- Tras exportar el texto extraído, la app intenta borrar de inmediato el documento temporal creado en Google para esa conversión OCR. Si esa limpieza remota falla, la app lo trata como advertencia explícita.
-- Las credenciales OAuth de Google gestionadas por la app para OCR y los tokens locales de esa integración se almacenan localmente en la instancia de la app.
-- Si el usuario elige `Menú > Preferencias > Desconectar Google OCR`, la app intenta revocar el token guardado de Google y, si eso resulta exitoso, elimina el archivo de token local de OCR. Las credenciales OAuth de Google locales gestionadas por la app pueden mantenerse para que OCR pueda reconectarse más adelante.
-- Como control externo adicional, el usuario también puede revocar el acceso de la app desde los controles de seguridad/permisos de su Cuenta de Google.
+- Como parte de esa operación, Google puede recibir el archivo seleccionado, los datos de autorización necesarios, el documento temporal convertido durante el flujo OCR y el texto exportado de vuelta a la app.
+- Los desarrolladores **no reciben** esos archivos, ni el texto extraído, ni notificaciones de esas operaciones.
+- Tras exportar el texto extraído, la app intenta borrar de inmediato el documento temporal creado en Google para esa conversión OCR. Si la limpieza remota falla, la app lo trata como una advertencia explícita.
+- Las **credenciales OAuth** gestionadas por la app para OCR y los **tokens locales** de esa integración se almacenan localmente en la instancia de la app.
+- El estado local del token OCR se protege usando **Electron safeStorage** y los mecanismos de cifrado o protección disponibles en el sistema operativo de la plataforma.
+- Si el usuario elige `Menú > Preferencias > Desconectar Google OCR`, la app intenta revocar el token guardado de Google y, si eso tiene éxito, elimina el archivo de token local de OCR. Las credenciales OAuth locales gestionadas por la app pueden mantenerse para permitir una reconexión posterior.
+- Como control externo adicional, el usuario también puede revocar el acceso de la app desde los controles de permisos o seguridad de su Cuenta de Google.
 
 ### 3.4 Sin otros servicios externos
-
-La app no integra servicios de analítica, publicidad, seguimiento, ni SDKs de telemetría.
+La app no integra servicios de analítica, publicidad, seguimiento ni SDKs de telemetría.
 
 ## 4. Permisos
-La app no solicita permisos especiales del sistema para enviar datos de uso. El acceso a archivos del sistema, cuando exista, se limita al almacenamiento propio de la app y al funcionamiento normal de un entorno de escritorio.
+La app no solicita permisos especiales del sistema para enviar datos de uso. El acceso a archivos del sistema, cuando existe, se limita al funcionamiento normal de una app de escritorio y al almacenamiento propio de la app.
 
 ## 5. Retención y control por el usuario
 
 - Los datos persistidos por la app se almacenan localmente.
 - Si solo quieres desconectar Google OCR, usa `Menú > Preferencias > Desconectar Google OCR`.
-- Puedes eliminar esos datos borrando la configuración/estado local de la app (según el sistema operativo) o desinstalando la app y eliminando sus archivos de configuración.
+- Puedes eliminar los datos locales borrando la configuración o el estado de la app en tu sistema, o desinstalando la app y eliminando sus archivos de configuración.
+- Si contactas al desarrollador por correo o mediante GitHub Issues, el desarrollador recibe solo la información que decidas incluir.
+- Los mensajes de soporte y cualquier archivo o texto enviado voluntariamente al desarrollador pueden conservarse solo durante el tiempo razonablemente necesario para responder, investigar problemas o cumplir obligaciones legales.
+- Puedes solicitar la eliminación de datos de soporte controlados por el desarrollador escribiendo a `cibersino@gmail.com`.
 
 ## 6. Cambios a esta política
-
-Si en el futuro se agregan capacidades que impliquen nuevas formas de conectividad o recopilación de datos (por ejemplo, telemetría opcional o reportes de fallos), esta política se actualizará y el cambio se documentará en el changelog del proyecto.
+Si en el futuro la app incorpora nuevas formas de conectividad o tratamiento de datos, esta política se actualizará y el cambio se reflejará en la documentación del proyecto.
 
 ## 7. Contacto
-
-Para dudas, bugs o sugerencias, usar el tracker de Issues del repositorio oficial.
+Para dudas, bugs o sugerencias, usar GitHub Issues del repositorio oficial o escribir a `cibersino@gmail.com`.
