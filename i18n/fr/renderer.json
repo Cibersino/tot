@@ -124,6 +124,7 @@
       "close_title": "Fermer la barre de recherche",
       "replace_title": "Remplacer l'occurrence actuelle",
       "replace_all_title": "Remplacer toutes les occurrences",
+      "replace_timeout": "Le remplacement a expiré. Réessayez.",
       "status_no_matches": "Aucune correspondance",
       "status_empty_query": "Saisir pour rechercher"
     },

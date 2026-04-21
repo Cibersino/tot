@@ -124,6 +124,7 @@
       "close_title": "Pitiarse la barra de búsqueda",
       "replace_title": "Reemplazar coincidencia actual",
       "replace_all_title": "Reemplazar todas las coincidencias",
+      "replace_timeout": "La custión de reemplazo se demoró mucho. Inténtalo de nuevo.",
       "status_no_matches": "No pillamos niuna custión",
       "status_empty_query": "Escribe algo po"
     },

@@ -234,6 +234,32 @@ function focusRequestedTarget(target, selectAll = false) {
   }
 }
 
+function notifyReplaceTimeout() {
+  if (!window.Notify || typeof window.Notify.notifyEditor !== 'function') {
+    log.warnOnce(
+      'editor-find.notify.replaceTimeout.unavailable',
+      'Notify.notifyEditor unavailable; replace timeout toast skipped.'
+    );
+    return;
+  }
+
+  try {
+    window.Notify.notifyEditor('renderer.editor_find.replace_timeout', {
+      type: 'error',
+      duration: 5000,
+    });
+  } catch (err) {
+    log.warn('editor-find: failed to show replace-timeout toast:', err);
+  }
+}
+
+function handleReplaceResult(result) {
+  if (!result || typeof result !== 'object') return;
+  if (result.status === 'timeout') {
+    notifyReplaceTimeout();
+  }
+}
+
 async function pushQuery() {
   try {
     await findApi.setQuery(inputEl.value || '');
@@ -248,7 +274,8 @@ async function pushQuery() {
 
 async function runReplaceCurrent() {
   try {
-    await findApi.replaceCurrent(replaceInputEl.value || '');
+    const result = await findApi.replaceCurrent(replaceInputEl.value || '');
+    handleReplaceResult(result);
   } catch (err) {
     log.error('Error sending replace-current request to main process:', err);
   }
@@ -256,7 +283,8 @@ async function runReplaceCurrent() {
 
 async function runReplaceAll() {
   try {
-    await findApi.replaceAll(replaceInputEl.value || '');
+    const result = await findApi.replaceAll(replaceInputEl.value || '');
+    handleReplaceResult(result);
   } catch (err) {
     log.error('Error sending replace-all request to main process:', err);
   }

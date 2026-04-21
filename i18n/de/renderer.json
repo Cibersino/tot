@@ -124,6 +124,7 @@
       "close_title": "Suchleiste schliessen",
       "replace_title": "Aktuelle Übereinstimmung ersetzen",
       "replace_all_title": "Alle Übereinstimmungen ersetzen",
+      "replace_timeout": "Ersetzen hat zu lange gedauert. Bitte erneut versuchen.",
       "status_no_matches": "Keine Treffer",
       "status_empty_query": "Zum Suchen tippen"
     },

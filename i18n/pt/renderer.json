@@ -124,6 +124,7 @@
       "close_title": "Fechar a barra de busca",
       "replace_title": "Substituir correspondência atual",
       "replace_all_title": "Substituir todas as correspondências",
+      "replace_timeout": "A substituição demorou demais. Tente novamente.",
       "status_no_matches": "Sem correspondências",
       "status_empty_query": "Digite para buscar"
     },

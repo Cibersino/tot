@@ -135,6 +135,7 @@
       "close_title": "Cerrar barra de busqueda",
       "replace_title": "Reemplazar coincidencia actual",
       "replace_all_title": "Reemplazar todas las coincidencias",
+      "replace_timeout": "El reemplazo tardó demasiado. Inténtalo de nuevo.",
       "status_no_matches": "Sin coincidencias",
       "status_empty_query": "Escribe para buscar"
     },

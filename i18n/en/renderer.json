@@ -135,6 +135,7 @@
       "close_title": "Close find bar",
       "replace_title": "Replace current match",
       "replace_all_title": "Replace all matches",
+      "replace_timeout": "Replace timed out. Try again.",
       "status_no_matches": "No matches",
       "status_empty_query": "Type to search"
     },

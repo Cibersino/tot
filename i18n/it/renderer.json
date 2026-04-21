@@ -124,6 +124,7 @@
       "close_title": "Chiudi la barra di ricerca",
       "replace_title": "Sostituisci la corrispondenza corrente",
       "replace_all_title": "Sostituisci tutte le corrispondenze",
+      "replace_timeout": "La sostituzione ha richiesto troppo tempo. Riprova.",
       "status_no_matches": "Nessuna corrispondenza",
       "status_empty_query": "Digita per cercare"
     },
