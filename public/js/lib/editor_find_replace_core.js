@@ -6,7 +6,8 @@
 // =============================================================================
 // Shared literal matching and replace-all core for editor find/replace.
 // Responsibilities:
-// - Normalize literal matching for case-sensitive and case-insensitive comparisons.
+// - Normalize matching for case-sensitive and case-insensitive comparisons.
+// - Mirror native find behavior by folding common Latin diacritics when matchCase is off.
 // - Check whether the current selection still matches a literal query.
 // - Compute replace-all output without mutating editor state directly.
 
@@ -21,7 +22,14 @@ function createEditorFindReplaceCore() {
 
   function normalizeForMatch(text, matchCase) {
     const value = String(text || '');
-    return matchCase ? value : value.toLocaleLowerCase();
+    if (matchCase) {
+      return value;
+    }
+
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase();
   }
 
   function selectionMatchesLiteralQuery({
