@@ -20,6 +20,11 @@
   function createEditorUI(ctx) {
     const { log, editorAPI, DEFAULT_LANG, dom, state } = ctx;
     const {
+      editorWrap,
+      editorLayout,
+      editorLeftGutter,
+      editorTextColumn,
+      editorRightGutter,
       editor,
       btnTrash,
       calcWhileTyping,
@@ -162,6 +167,45 @@
       }
       updateEditorTextSizeUi();
       scheduleReadProgressUiUpdate();
+    }
+
+    function clampEditorMaximizedTextWidthPx(value) {
+      return ctx.editorMaximizedLayoutCore.clampPreferredTextWidthPx(value, {
+        defaultPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+        minPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
+        maxPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
+      });
+    }
+
+    function getEditorMaximizedLayoutStageWidthPx() {
+      if (!editorLayout) return 0;
+      const width = Math.round(Number(editorLayout.clientWidth));
+      return Number.isFinite(width) && width > 0 ? width : 0;
+    }
+
+    function syncEditorMaximizedLayout() {
+      const maximized = !!state.editorWindowMaximized;
+      document.body.classList.toggle('editor-maximized-layout', maximized);
+      if (document && document.documentElement) {
+        document.documentElement.style.setProperty(
+          '--editor-maximized-text-width',
+          `${state.maximizedTextWidthPx}px`
+        );
+      }
+      if (editorWrap) {
+        editorWrap.setAttribute('data-maximized-layout', maximized ? 'true' : 'false');
+      }
+      scheduleReadProgressUiUpdate();
+    }
+
+    function setLocalEditorWindowMaximized(maximized) {
+      state.editorWindowMaximized = !!maximized;
+      syncEditorMaximizedLayout();
+    }
+
+    function setLocalEditorMaximizedTextWidthPx(value) {
+      state.maximizedTextWidthPx = clampEditorMaximizedTextWidthPx(value);
+      syncEditorMaximizedLayout();
     }
 
     function updateEditorTextSizeUi() {
@@ -419,6 +463,44 @@
       }
     }
 
+    async function persistEditorMaximizedTextWidthPx(nextTextWidthPx, options = {}) {
+      const previousTextWidthPx = clampEditorMaximizedTextWidthPx(
+        Object.prototype.hasOwnProperty.call(options, 'previousTextWidthPx')
+          ? options.previousTextWidthPx
+          : state.maximizedTextWidthPx
+      );
+      const normalizedNextTextWidthPx = clampEditorMaximizedTextWidthPx(nextTextWidthPx);
+      const skipLocalApply = options && options.skipLocalApply === true;
+
+      if (!editorAPI || typeof editorAPI.setMaximizedTextWidthPx !== 'function') {
+        log.warn(
+          'editorAPI.setMaximizedTextWidthPx missing; maximized editor width update ignored.'
+        );
+        return false;
+      }
+
+      if (normalizedNextTextWidthPx === previousTextWidthPx) {
+        syncEditorMaximizedLayout();
+        return true;
+      }
+
+      if (!skipLocalApply) {
+        setLocalEditorMaximizedTextWidthPx(normalizedNextTextWidthPx);
+      }
+
+      try {
+        const result = await editorAPI.setMaximizedTextWidthPx(normalizedNextTextWidthPx);
+        if (!result || result.ok !== true) {
+          throw new Error(result && result.error ? String(result.error) : 'unknown');
+        }
+        return true;
+      } catch (err) {
+        log.error('Error updating editor maximized text width setting:', err);
+        setLocalEditorMaximizedTextWidthPx(previousTextWidthPx);
+        return false;
+      }
+    }
+
     function decreaseEditorFontSize() {
       return persistEditorFontSizePx(state.editorFontSizePx - ctx.EDITOR_FONT_SIZE_STEP_PX);
     }
@@ -431,6 +513,117 @@
       return persistEditorFontSizePx(ctx.EDITOR_FONT_SIZE_DEFAULT_PX);
     }
 
+    function endEditorMarginDrag({ persist = true } = {}) {
+      if (!state.editorMarginDrag) return;
+
+      const drag = state.editorMarginDrag;
+      state.editorMarginDrag = null;
+      document.body.classList.remove('editor-margin-dragging');
+
+      if (typeof drag.cleanup === 'function') {
+        drag.cleanup();
+      }
+
+      if (!persist) {
+        setLocalEditorMaximizedTextWidthPx(drag.initialPreferredTextWidthPx);
+        restoreFocusToEditor();
+        return;
+      }
+
+      const nextTextWidthPx = state.maximizedTextWidthPx;
+      void persistEditorMaximizedTextWidthPx(nextTextWidthPx, {
+        previousTextWidthPx: drag.initialPreferredTextWidthPx,
+        skipLocalApply: true,
+      }).finally(() => {
+        restoreFocusToEditor();
+      });
+    }
+
+    function handleEditorMarginPointerDown(event, side) {
+      if (!state.editorWindowMaximized || !editorTextColumn || !editorLayout) return;
+
+      const pointerId = Number(event && event.pointerId);
+      if (!Number.isFinite(pointerId)) return;
+
+      if (state.editorMarginDrag) {
+        endEditorMarginDrag({ persist: false });
+      }
+
+      event.preventDefault();
+
+      const target = side === 'right' ? editorRightGutter : editorLeftGutter;
+      const initialRenderedTextWidthPx =
+        Math.round(Number(editorTextColumn.clientWidth)) || state.maximizedTextWidthPx;
+      const initialPreferredTextWidthPx = state.maximizedTextWidthPx;
+      const stageWidthPx = getEditorMaximizedLayoutStageWidthPx();
+      const dragOptions = {
+        stageWidthPx,
+        minPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
+        maxPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
+        defaultPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+        gutterMinPx: ctx.EDITOR_MAXIMIZED_GUTTER_MIN_PX,
+      };
+
+      document.body.classList.add('editor-margin-dragging');
+
+      try {
+        if (target && typeof target.setPointerCapture === 'function') {
+          target.setPointerCapture(pointerId);
+        }
+      } catch (err) {
+        log.warn('Editor gutter pointer capture failed (ignored):', err);
+      }
+
+      const onPointerMove = (moveEvent) => {
+        if (!state.editorMarginDrag || moveEvent.pointerId !== pointerId) return;
+        const nextTextWidthPx = ctx.editorMaximizedLayoutCore.computeNextPreferredTextWidthPxFromDrag(
+          {
+            initialTextWidthPx: initialRenderedTextWidthPx,
+            pointerDeltaPx: moveEvent.clientX - state.editorMarginDrag.startClientX,
+            side,
+          },
+          dragOptions
+        );
+        setLocalEditorMaximizedTextWidthPx(nextTextWidthPx);
+      };
+
+      const onPointerEnd = (endEvent) => {
+        if (!state.editorMarginDrag || endEvent.pointerId !== pointerId) return;
+        endEditorMarginDrag({ persist: endEvent.type !== 'pointercancel' });
+      };
+
+      const cleanup = () => {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerEnd);
+        window.removeEventListener('pointercancel', onPointerEnd);
+        try {
+          if (
+            target
+            && typeof target.releasePointerCapture === 'function'
+            && typeof target.hasPointerCapture === 'function'
+            && target.hasPointerCapture(pointerId)
+          ) {
+            target.releasePointerCapture(pointerId);
+          }
+        } catch {}
+      };
+
+      state.editorMarginDrag = {
+        pointerId,
+        startClientX: Number(event.clientX) || 0,
+        initialPreferredTextWidthPx,
+        cleanup,
+      };
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerEnd);
+      window.addEventListener('pointercancel', onPointerEnd);
+    }
+
+    function resetEditorMaximizedTextWidth() {
+      return persistEditorMaximizedTextWidthPx(ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX);
+    }
+
     // =============================================================================
     // Module Surface
     // =============================================================================
@@ -439,10 +632,14 @@
       applyDocumentLanguage,
       setLocalSpellcheckEnabled,
       clampEditorFontSizePx,
+      clampEditorMaximizedTextWidthPx,
       updateEditorTextSizeUi,
       updateReadProgressUi,
       scheduleReadProgressUiUpdate,
       setLocalEditorFontSizePx,
+      syncEditorMaximizedLayout,
+      setLocalEditorWindowMaximized,
+      setLocalEditorMaximizedTextWidthPx,
       ensureEditorTranslations,
       applyEditorTranslations,
       restoreFocusToEditor,
@@ -452,6 +649,9 @@
       decreaseEditorFontSize,
       increaseEditorFontSize,
       resetEditorFontSize,
+      persistEditorMaximizedTextWidthPx,
+      handleEditorMarginPointerDown,
+      resetEditorMaximizedTextWidth,
     };
   }
 

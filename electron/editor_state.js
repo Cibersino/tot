@@ -9,6 +9,7 @@
 // - Normalizes persisted state and validates reduced bounds.
 // - Attaches window event handlers to persist changes.
 // - Restores reduced bounds or applies a fallback placement on unmaximize.
+// - Exposes editor-window state to the renderer via explicit IPC and notifications.
 // - Logs recoverable anomalies and fallbacks.
 
 // =============================================================================
@@ -17,6 +18,11 @@
 
 const { screen } = require('electron');
 const { getEditorStateFile, loadJson, saveJson } = require('./fs_storage');
+const {
+  EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
+  EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
+  EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+} = require('./constants_main');
 const Log = require('./log');
 
 const log = Log.get('editor-state');
@@ -28,12 +34,32 @@ log.debug('Editor state starting...');
 
 const DEFAULT_STATE = {
   maximized: true,
-  reduced: null
+  reduced: null,
+  maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
 };
 
 // =============================================================================
 // Helpers
 // =============================================================================
+
+function isLiveWindow(editorWin) {
+  return !!(
+    editorWin
+    && typeof editorWin.isDestroyed === 'function'
+    && editorWin.isDestroyed() === false
+  );
+}
+
+function hasLiveWebContents(editorWin) {
+  return !!(
+    isLiveWindow(editorWin)
+    && editorWin.webContents
+    && (
+      typeof editorWin.webContents.isDestroyed !== 'function'
+      || editorWin.webContents.isDestroyed() === false
+    )
+  );
+}
 
 function isValidReduced(reduced) {
   if (!reduced || typeof reduced !== 'object') return false;
@@ -47,6 +73,16 @@ function isValidReduced(reduced) {
     Number.isFinite(height) &&
     Number.isFinite(x) &&
     Number.isFinite(y)
+  );
+}
+
+function normalizeMaximizedTextWidthPx(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX;
+  const rounded = Math.round(parsed);
+  return Math.min(
+    EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
+    Math.max(EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX, rounded)
   );
 }
 
@@ -91,7 +127,61 @@ function normalizeState(raw) {
     st.reduced = null;
   }
 
+  if (typeof raw.maximizedTextWidthPx === 'undefined') {
+    st.maximizedTextWidthPx = EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX;
+  } else {
+    const nextMaximizedTextWidthPx = normalizeMaximizedTextWidthPx(raw.maximizedTextWidthPx);
+    if (!Number.isFinite(Number(raw.maximizedTextWidthPx))) {
+      log.warnOnce(
+        'editor-state.normalize.invalid-maximized-text-width',
+        'normalizeState: invalid maximizedTextWidthPx; using default (ignored).',
+        raw.maximizedTextWidthPx
+      );
+    } else if (nextMaximizedTextWidthPx !== Math.round(Number(raw.maximizedTextWidthPx))) {
+      log.warnOnce(
+        'editor-state.normalize.out-of-range-maximized-text-width',
+        'normalizeState: out-of-range maximizedTextWidthPx; clamping.',
+        {
+          value: raw.maximizedTextWidthPx,
+          min: EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
+          max: EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
+        }
+      );
+    }
+    st.maximizedTextWidthPx = nextMaximizedTextWidthPx;
+  }
+
   return st;
+}
+
+function getWindowState(editorWin) {
+  const persistedState = loadInitialState();
+  if (!isLiveWindow(editorWin) || typeof editorWin.isMaximized !== 'function') {
+    return {
+      maximized: false,
+      maximizedTextWidthPx: persistedState.maximizedTextWidthPx,
+    };
+  }
+
+  return {
+    maximized: !!editorWin.isMaximized(),
+    maximizedTextWidthPx: persistedState.maximizedTextWidthPx,
+  };
+}
+
+function notifyWindowState(editorWin, logContext = 'editorState.notifyWindowState') {
+  if (!hasLiveWebContents(editorWin)) {
+    log.warn('editor-window-state skipped (ignored): editor window unavailable.', logContext);
+    return false;
+  }
+
+  try {
+    editorWin.webContents.send('editor-window-state-changed', getWindowState(editorWin));
+    return true;
+  } catch (err) {
+    log.warn(`Unable to notify editor-window-state from ${logContext}:`, err);
+    return false;
+  }
 }
 
 // =============================================================================
@@ -161,6 +251,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       const state = normalizeState(current);
       state.maximized = true;
       saver(editorStateFile, state);
+      notifyWindowState(editorWin, 'editorWin.maximize');
     } catch (err) {
       log.error('[editor_state] Error updating state in maximize:', err);
     }
@@ -209,6 +300,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       }
 
       saver(editorStateFile, state);
+      notifyWindowState(editorWin, 'editorWin.unmaximize');
     } catch (err) {
       log.error('[editor_state] Error handling editor unmaximize:', err);
     }
@@ -227,13 +319,118 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   });
 }
 
+function registerIpc(ipcMain, { getEditorWindow } = {}) {
+  if (!ipcMain || typeof ipcMain.handle !== 'function') {
+    throw new Error('[editor_state] registerIpc requires ipcMain');
+  }
+
+  ipcMain.handle('get-editor-window-state', async (event) => {
+    try {
+      if (typeof getEditorWindow !== 'function') {
+        log.warnOnce(
+          'editor-state.getEditorWindow.unavailable',
+          'getEditorWindow unavailable; editor window-state IPC skipped.'
+        );
+        return {
+          ok: false,
+          error: 'unavailable',
+          maximized: false,
+          maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+        };
+      }
+
+      const editorWin = getEditorWindow();
+      if (!hasLiveWebContents(editorWin)) {
+        return {
+          ok: false,
+          error: 'editor-window-unavailable',
+          maximized: false,
+          maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+        };
+      }
+
+      if (!event || event.sender !== editorWin.webContents) {
+        log.warn('get-editor-window-state unauthorized (ignored).');
+        return {
+          ok: false,
+          error: 'unauthorized',
+          maximized: false,
+          maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+        };
+      }
+
+      return { ok: true, ...getWindowState(editorWin) };
+    } catch (err) {
+      log.error('Error processing get-editor-window-state:', err);
+      return {
+        ok: false,
+        error: String(err),
+        maximized: false,
+        maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+      };
+    }
+  });
+
+  ipcMain.handle('set-editor-maximized-text-width-px', async (event, textWidthPx) => {
+    try {
+      if (typeof getEditorWindow !== 'function') {
+        log.warnOnce(
+          'editor-state.set-maximized-text-width.getEditorWindow.unavailable',
+          'getEditorWindow unavailable; maximized text width IPC skipped.'
+        );
+        return { ok: false, error: 'unavailable' };
+      }
+
+      const editorWin = getEditorWindow();
+      if (!hasLiveWebContents(editorWin)) {
+        return { ok: false, error: 'editor-window-unavailable' };
+      }
+
+      if (!event || event.sender !== editorWin.webContents) {
+        log.warn('set-editor-maximized-text-width-px unauthorized (ignored).');
+        return { ok: false, error: 'unauthorized' };
+      }
+
+      const parsed = Number(textWidthPx);
+      if (!Number.isFinite(parsed)) {
+        log.warnOnce(
+          'editor-state.set-maximized-text-width.invalid',
+          'set-editor-maximized-text-width-px called with non-finite value (ignored).',
+          { value: textWidthPx }
+        );
+        return { ok: false, error: 'invalid' };
+      }
+
+      const editorStateFile = getEditorStateFile();
+      const state = normalizeState(loadJson(editorStateFile, DEFAULT_STATE));
+      const nextMaximizedTextWidthPx = normalizeMaximizedTextWidthPx(parsed);
+
+      if (state.maximizedTextWidthPx === nextMaximizedTextWidthPx) {
+        return { ok: true, maximizedTextWidthPx: nextMaximizedTextWidthPx };
+      }
+
+      state.maximizedTextWidthPx = nextMaximizedTextWidthPx;
+      saveJson(editorStateFile, state);
+      notifyWindowState(editorWin, 'editorState.setMaximizedTextWidthPx');
+
+      return { ok: true, maximizedTextWidthPx: state.maximizedTextWidthPx };
+    } catch (err) {
+      log.error('Error processing set-editor-maximized-text-width-px:', err);
+      return { ok: false, error: String(err) };
+    }
+  });
+}
+
 // =============================================================================
 // Exports / module surface
 // =============================================================================
 
 module.exports = {
   loadInitialState,
-  attachTo
+  attachTo,
+  getWindowState,
+  notifyWindowState,
+  registerIpc,
 };
 
 // =============================================================================

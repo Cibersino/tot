@@ -14,8 +14,14 @@
 
 <body>
   <!-- The textarea takes up all the available space -->
-  <div class="editor-wrap">
-    <textarea id="editorArea" placeholder="Escribe o pega aquí..."></textarea>
+  <div id="editorWrap" class="editor-wrap">
+    <div id="editorLayout" class="editor-layout">
+      <div id="editorLeftGutter" class="editor-gutter editor-gutter-left"></div>
+      <div id="editorTextColumn" class="editor-text-column">
+        <textarea id="editorArea" placeholder="Escribe o pega aquí..."></textarea>
+      </div>
+      <div id="editorRightGutter" class="editor-gutter editor-gutter-right"></div>
+    </div>
   </div>
 
   <!-- Bottom bar: CALC/SAVE | checkboxes | TRASH (right aligned) -->
@@ -74,6 +80,7 @@
   <script src="js/notify.js"></script>
   <script src="js/constants.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/lib/editor_maximized_layout_core.js"></script>
   <script src="js/lib/editor_find_replace_core.js"></script>
   <script src="js/editor_ui.js"></script>
   <script src="js/editor_engine.js"></script>
