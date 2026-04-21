@@ -46,8 +46,7 @@ const editorFindReplaceCore = window.EditorFindReplaceCore;
 if (
   !editorFindReplaceCore ||
   typeof editorFindReplaceCore.selectionMatchesLiteralQuery !== 'function' ||
-  typeof editorFindReplaceCore.computeLiteralReplaceAll !== 'function' ||
-  typeof editorFindReplaceCore.isReplaceAllAllowedByLength !== 'function'
+  typeof editorFindReplaceCore.computeLiteralReplaceAll !== 'function'
 ) {
   throw new Error('[editor] EditorFindReplaceCore unavailable; cannot continue');
 }
@@ -72,9 +71,6 @@ if (typeof window.editorAPI.onReplaceRequest !== 'function') {
 }
 if (typeof window.editorAPI.sendReplaceResponse !== 'function') {
   throw new Error('[editor] editorAPI.sendReplaceResponse unavailable; cannot continue');
-}
-if (typeof window.editorAPI.sendReplaceStatus !== 'function') {
-  throw new Error('[editor] editorAPI.sendReplaceStatus unavailable; cannot continue');
 }
 
 if (!window.EditorUI || typeof window.EditorUI.createEditorUI !== 'function') {
@@ -274,7 +270,6 @@ if (readingTestCountdownOverlay) {
 
     await ctx.engine.applyExternalUpdate({ text: initialText || '', meta: { source: 'main', action: 'init' } });
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
-    ctx.engine.publishReplaceStatus();
   } catch (err) {
     log.error('Error initializing editor:', err);
   }
@@ -294,7 +289,6 @@ ctx.editorAPI.onForceClear(() => {
   } catch (err) {
     log.error('Error in onForceClear:', err);
   } finally {
-    ctx.engine.publishReplaceStatus();
     ctx.state.suppressLocalUpdate = false;
     ctx.ui.restoreFocusToEditor();
   }
@@ -408,7 +402,6 @@ if (editor) {
 }
 
 editor.addEventListener('input', () => {
-  ctx.engine.publishReplaceStatus();
   ctx.ui.scheduleReadProgressUiUpdate();
 
   if (ctx.state.suppressLocalUpdate || editor.readOnly) return;
@@ -442,7 +435,6 @@ window.addEventListener('resize', () => {
 // =============================================================================
 btnTrash.addEventListener('click', () => {
   editor.value = '';
-  ctx.engine.publishReplaceStatus();
   ctx.ui.scheduleReadProgressUiUpdate();
   ctx.engine.sendCurrentTextToMain('clear', {
     text: '',

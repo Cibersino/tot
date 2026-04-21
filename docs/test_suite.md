@@ -50,12 +50,10 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/shared/editor_find_replace_core.test.js`
   * supports parts of `REG-EDITOR-05C`
   * supports parts of `REG-EDITOR-05D`
-  * supports parts of `REG-EDITOR-05E`
 * `test/unit/electron/editor_find_main.test.js`
   * supports parts of `REG-EDITOR-05A`
   * supports parts of `REG-EDITOR-05C`
   * supports parts of `REG-EDITOR-05D`
-  * supports parts of `REG-EDITOR-05E`
 * `test/smoke/electron_launch_smoke.test.js`
   * supports a minimal startup slice of `SM-01`
   * supports parts of `REG-PERSIST` by asserting startup tolerates the current settings schema, including `editorFontSizePx`
@@ -899,32 +897,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - `Replace` does not mutate unrelated matches.
 
 #### REG-EDITOR-05D Replace All in expanded Find
-**Goal:** `Replace All` updates every supported match in one action and is undoable in one step.
+**Goal:** `Replace All` updates every match in one action and is undoable in one step.
 1. In the editor, enter a short text with several repeated literal matches such as `prueba`.
 2. Open expanded Find with **Ctrl+H** (or Cmd+Option+F on macOS).
 3. Search for that repeated term and enter a distinct replacement such as `cambio`.
 4. Click **Replace All** once.
-5. Confirm every supported match changes and the find count/status refreshes.
+5. Confirm every match changes and the find count/status refreshes.
 6. Press **Ctrl+Z** once.
 
 **Expected:**
-- `Replace All` changes all supported matches for the current literal query in one action.
+- `Replace All` changes all matches for the current literal query in one action.
 - The find status/count refreshes after the bulk replacement.
-- One `Ctrl+Z` reverts the whole supported `Replace All`.
+- One `Ctrl+Z` reverts the whole `Replace All`.
 - No extra partial undos are required for the same bulk action.
-
-#### REG-EDITOR-05E Replace All length guard
-**Goal:** `Replace All` stays unavailable when the current editor text exceeds the supported small-update threshold.
-1. In the editor, load or paste text that is clearly larger than the current small-update threshold while still containing repeated matches for a test query.
-2. Open expanded Find with **Ctrl+H** (or Cmd+Option+F on macOS).
-3. Enter a query that has matches in the current text.
-4. Observe the `Replace All` control.
-5. If the UI still allows interaction, attempt `Replace All` once.
-
-**Expected:**
-- `Replace All` is disabled or otherwise prevented when the current text length exceeds the supported threshold.
-- The editor text remains unchanged when the guard is active.
-- `Replace` for the current match can still remain available independently when a current match exists.
 
 #### REG-EDITOR-06 Undo/Redo semantics (including Find not polluting edits)
 **Goal:** Undo/Redo behaves predictably for edits and is not affected by Find navigation.

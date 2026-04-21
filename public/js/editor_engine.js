@@ -246,23 +246,6 @@
       }
     }
 
-    function publishReplaceStatus() {
-      try {
-        editorAPI.sendReplaceStatus({
-          replaceAllAllowedByLength: editorFindReplaceCore.isReplaceAllAllowedByLength({
-            value: editor.value,
-            smallUpdateThreshold: ctx.SMALL_UPDATE_THRESHOLD,
-          }),
-        });
-      } catch (err) {
-        log.warnOnce(
-          'editor.replaceStatus.send_failed',
-          'editorAPI.sendReplaceStatus failed (ignored):',
-          err
-        );
-      }
-    }
-
     // =============================================================================
     // Replace Request Handling
     // =============================================================================
@@ -330,14 +313,6 @@
         });
       }
 
-      if (currentValue.length > ctx.SMALL_UPDATE_THRESHOLD) {
-        return buildReplaceResponse('replace-all', requestId, {
-          status: 'noop-length-disallowed',
-          replacements: 0,
-          finalTextLength: currentValue.length,
-        });
-      }
-
       const computed = editorFindReplaceCore.computeLiteralReplaceAll({
         value: currentValue,
         query,
@@ -347,14 +322,6 @@
       if (!computed.replacements || computed.nextValue === currentValue) {
         return buildReplaceResponse('replace-all', requestId, {
           status: 'noop-unchanged',
-          replacements: 0,
-          finalTextLength: currentValue.length,
-        });
-      }
-
-      if (computed.nextValue.length > ctx.SMALL_UPDATE_THRESHOLD) {
-        return buildReplaceResponse('replace-all', requestId, {
-          status: 'noop-length-disallowed',
           replacements: 0,
           finalTextLength: currentValue.length,
         });
@@ -701,7 +668,6 @@
       getBeforeInputIncomingLength,
       setSelectionSafe,
       setCaretSafe,
-      publishReplaceStatus,
       handleReplaceRequest,
       sendCurrentTextToMain,
       handleTruncationResponse,

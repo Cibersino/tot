@@ -9,7 +9,6 @@
 // - Normalize literal matching for case-sensitive and case-insensitive comparisons.
 // - Check whether the current selection still matches a literal query.
 // - Compute replace-all output without mutating editor state directly.
-// - Enforce the small-update threshold contract used by editor replace flows.
 
 // =============================================================================
 // Module Factory
@@ -93,18 +92,6 @@ function createEditorFindReplaceCore() {
     };
   }
 
-  function isReplaceAllAllowedByLength({
-    value = '',
-    smallUpdateThreshold,
-  } = {}) {
-    const threshold = Number(smallUpdateThreshold);
-    if (!Number.isFinite(threshold) || threshold < 0) {
-      throw new Error('[editor_find_replace_core] smallUpdateThreshold must be a non-negative number');
-    }
-
-    return String(value || '').length <= threshold;
-  }
-
   // =============================================================================
   // Module Surface
   // =============================================================================
@@ -112,7 +99,6 @@ function createEditorFindReplaceCore() {
   return {
     selectionMatchesLiteralQuery,
     computeLiteralReplaceAll,
-    isReplaceAllAllowedByLength,
   };
 }
 

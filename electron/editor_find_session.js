@@ -480,15 +480,6 @@ function createSession({
       };
     }
 
-    if (!state.replaceAllAllowedByLength) {
-      return {
-        ok: true,
-        status: 'noop-length-disallowed',
-        operation: 'replace-all',
-        replacements: 0,
-      };
-    }
-
     const replacement = clampFindInputText(rawReplacement);
     if (!resolveEditorWindow()) {
       log.warn('replace-all ignored: editor window unavailable.');
@@ -593,29 +584,6 @@ function createSession({
       });
   }
 
-  function handleEditorReplaceStatus(payload) {
-    if (!payload || typeof payload !== 'object' || typeof payload.replaceAllAllowedByLength !== 'boolean') {
-      log.warnOnce(
-        'editorFind.editorReplaceStatus.invalid',
-        'editor-replace-status invalid payload (ignored).'
-      );
-      return;
-    }
-
-    const nextAllowed = !!(
-      payload &&
-      typeof payload === 'object' &&
-      payload.replaceAllAllowedByLength
-    );
-
-    if (state.replaceAllAllowedByLength === nextAllowed) {
-      return;
-    }
-
-    state.replaceAllAllowedByLength = nextAllowed;
-    publishState();
-  }
-
   return {
     clearPendingEditorReplace,
     clearPendingResyncRequest,
@@ -623,7 +591,6 @@ function createSession({
     clearSearch,
     clearStateOnly,
     handleEditorReplaceResponse,
-    handleEditorReplaceStatus,
     handleFoundInPage,
     hasQuery,
     navigate,

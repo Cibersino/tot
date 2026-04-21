@@ -99,7 +99,6 @@ const findState = {
   finalUpdate: true,
   expanded: false,
   busy: false,
-  replaceAllAllowedByLength: false,
 };
 
 // =============================================================================
@@ -123,7 +122,6 @@ function normalizeState(payload) {
   findState.finalUpdate = !!payload.finalUpdate;
   findState.expanded = !!payload.expanded;
   findState.busy = !!payload.busy;
-  findState.replaceAllAllowedByLength = !!payload.replaceAllAllowedByLength;
 }
 
 async function ensureTranslations(lang) {
@@ -154,16 +152,12 @@ function applyUiState() {
 
   const hasQuery = findState.query.length > 0;
   const hasMatches = findState.matches > 0;
-  const canReplaceAll = hasQuery &&
-    hasMatches &&
-    findState.finalUpdate &&
-    findState.replaceAllAllowedByLength;
   inputEl.disabled = findState.busy;
   replaceInputEl.disabled = findState.busy;
   prevEl.disabled = findState.busy || !hasQuery;
   nextEl.disabled = findState.busy || !hasQuery;
   replaceOneEl.disabled = findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
-  replaceAllEl.disabled = findState.busy || !canReplaceAll;
+  replaceAllEl.disabled = findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
   toggleEl.disabled = findState.busy;
   closeEl.disabled = findState.busy;
   statusEl.textContent = resolveStatusText();

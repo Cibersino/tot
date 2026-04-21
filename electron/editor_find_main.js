@@ -59,7 +59,6 @@ let closingFindWindow = false;
 let editorClosing = false;
 let editorShortcutActions = null;
 let replaceResponseListenerRegistered = false;
-let replaceStatusListenerRegistered = false;
 
 const state = {
   query: '',
@@ -69,7 +68,6 @@ const state = {
   finalUpdate: true,
   expanded: false,
   busy: false,
-  replaceAllAllowedByLength: false,
 };
 
 // =============================================================================
@@ -107,7 +105,6 @@ function buildPublicState() {
     finalUpdate: state.finalUpdate,
     expanded: state.expanded,
     busy: state.busy,
-    replaceAllAllowedByLength: state.replaceAllAllowedByLength,
   };
 }
 
@@ -680,7 +677,6 @@ function onEditorWindowClosed() {
   closingFindWindow = false;
   editorShortcutActions = null;
   clearStateOnly();
-  state.replaceAllAllowedByLength = false;
   detachEditorWindow();
   editorWinRef = null;
 }
@@ -765,7 +761,6 @@ function attachEditorWindow(editorWin, options = {}) {
   editorWinRef = null;
   editorClosing = false;
   editorShortcutActions = options && typeof options === 'object' ? options : null;
-  state.replaceAllAllowedByLength = false;
 
   if (!isAliveWindow(editorWin)) {
     throw new Error('attachEditorWindow requires a live editor window');
@@ -860,18 +855,6 @@ function handleEditorReplaceResponse(event, payload) {
   session.handleEditorReplaceResponse(payload);
 }
 
-function handleEditorReplaceStatus(event, payload) {
-  if (!isAuthorizedEditorSender(event)) {
-    log.warnOnce(
-      'editorFind.editorReplaceStatus.unauthorized',
-      'editor-replace-status unauthorized (ignored).'
-    );
-    return;
-  }
-
-  session.handleEditorReplaceStatus(payload);
-}
-
 function registerIpc(ipcMain) {
   if (!ipcMain || typeof ipcMain.handle !== 'function' || typeof ipcMain.on !== 'function') {
     throw new Error('[editor-find-main] registerIpc requires ipcMain.handle and ipcMain.on');
@@ -880,10 +863,6 @@ function registerIpc(ipcMain) {
   if (!replaceResponseListenerRegistered) {
     ipcMain.on('editor-replace-response', handleEditorReplaceResponse);
     replaceResponseListenerRegistered = true;
-  }
-  if (!replaceStatusListenerRegistered) {
-    ipcMain.on('editor-replace-status', handleEditorReplaceStatus);
-    replaceStatusListenerRegistered = true;
   }
 
   registerAuthorizedFindIpc(

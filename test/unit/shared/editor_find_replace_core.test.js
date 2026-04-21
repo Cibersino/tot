@@ -6,7 +6,6 @@ const assert = require('node:assert/strict');
 const {
   selectionMatchesLiteralQuery,
   computeLiteralReplaceAll,
-  isReplaceAllAllowedByLength,
 } = require('../../../public/js/lib/editor_find_replace_core');
 
 test('selectionMatchesLiteralQuery uses literal case-insensitive matching by default', () => {
@@ -74,29 +73,3 @@ test('computeLiteralReplaceAll returns unchanged text when there are no matches 
     }
   );
 });
-
-test('isReplaceAllAllowedByLength enforces the configured threshold', () => {
-  assert.equal(
-    isReplaceAllAllowedByLength({
-      value: 'abcd',
-      smallUpdateThreshold: 4,
-    }),
-    true
-  );
-
-  assert.equal(
-    isReplaceAllAllowedByLength({
-      value: 'abcde',
-      smallUpdateThreshold: 4,
-    }),
-    false
-  );
-});
-
-test('isReplaceAllAllowedByLength rejects invalid thresholds', () => {
-  assert.throws(
-    () => isReplaceAllAllowedByLength({ value: 'abc', smallUpdateThreshold: -1 }),
-    /\[editor_find_replace_core\] smallUpdateThreshold must be a non-negative number/
-  );
-});
-
