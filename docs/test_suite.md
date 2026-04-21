@@ -50,6 +50,8 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/shared/editor_find_replace_core.test.js`
   * supports parts of `REG-EDITOR-05C`
   * supports parts of `REG-EDITOR-05D`
+* `test/unit/shared/editor_engine_commit_policy.test.js`
+  * supports parts of `REG-EDITOR-05D`
 * `test/unit/electron/editor_find_main.test.js`
   * supports parts of `REG-EDITOR-05A`
   * supports parts of `REG-EDITOR-05C`
