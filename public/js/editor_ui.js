@@ -38,6 +38,7 @@
       readProgressValue,
       bottomBar,
       readingTestCountdownOverlay,
+      readingTestCountdownReminder,
       readingTestCountdownValue,
     } = dom;
 
@@ -99,6 +100,9 @@
         const readProgressText = tr('renderer.editor.read_progress_label');
         readProgress.setAttribute('aria-label', readProgressText);
         if (readProgressLabel) readProgressLabel.setAttribute('data-label', readProgressText);
+      }
+      if (readingTestCountdownReminder) {
+        readingTestCountdownReminder.textContent = tr('renderer.reading_test.countdown.reminder');
       }
       if (btnTextSizeDecrease) {
         const decreaseText = tr('renderer.editor.decrease_text_size');
@@ -335,7 +339,7 @@
       const stepMsRaw = Number(payload.stepMs);
       const seconds = Number.isFinite(secondsRaw) && secondsRaw >= 1
         ? Math.floor(secondsRaw)
-        : 5;
+        : 10;
       const stepMs = Number.isFinite(stepMsRaw) && stepMsRaw >= 250
         ? Math.floor(stepMsRaw)
         : 1000;

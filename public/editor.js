@@ -104,6 +104,7 @@ const readProgressLabel = document.getElementById('editorReadProgressLabel');
 const readProgressValue = document.getElementById('editorReadProgressValue');
 const bottomBar = document.getElementById('bottomBar');
 const readingTestCountdownOverlay = document.getElementById('readingTestCountdownOverlay');
+const readingTestCountdownReminder = document.getElementById('readingTestCountdownReminder');
 const readingTestCountdownValue = document.getElementById('readingTestCountdownValue');
 
 // =============================================================================
@@ -142,6 +143,7 @@ const ctx = {
     readProgressValue,
     bottomBar,
     readingTestCountdownOverlay,
+    readingTestCountdownReminder,
     readingTestCountdownValue,
   },
   state: {

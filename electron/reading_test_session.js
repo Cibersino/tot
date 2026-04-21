@@ -37,7 +37,7 @@ log.debug('Reading test session starting...');
 const QUESTIONS_WINDOW_PRELOAD = path.join(__dirname, 'reading_test_questions_preload.js');
 const QUESTIONS_WINDOW_HTML = path.join(__dirname, '../public/reading_test_questions.html');
 const DEVELOPER_EMAIL = 'cibersino@gmail.com';
-const PRESTART_COUNTDOWN_SECONDS = 5;
+const PRESTART_COUNTDOWN_SECONDS = 20;
 const PRESTART_COUNTDOWN_STEP_MS = 1000;
 const WINDOW_VISIBLE_TIMEOUT_MS = 5000;
 const COUNTDOWN_READY_TIMEOUT_MS = 5000;
