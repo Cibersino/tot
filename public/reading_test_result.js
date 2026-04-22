@@ -1,7 +1,22 @@
 // public/reading_test_result.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Renderer script for the reading-test result window.
+// Responsibilities:
+// - Validate required renderer bridges before the window boots.
+// - Load renderer translations for the current language.
+// - Render the measured WPM and elapsed-time summary from init payload data.
+// - Serialize bootstrap settings and init-payload updates through one UI sync path.
+// - Keep the continue action local to the result window.
+// =============================================================================
+
 (() => {
+  // =============================================================================
+  // Renderer bridges / logger
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[reading-test-result] window.getLogger unavailable; cannot continue');
   }
@@ -28,6 +43,9 @@
     throw new Error('[reading-test-result] AppConstants.DEFAULT_LANG unavailable; cannot continue');
   }
 
+  // =============================================================================
+  // DOM bootstrap
+  // =============================================================================
   document.addEventListener('DOMContentLoaded', () => {
     const elements = {
       title: document.getElementById('readingTestResultTitle'),
@@ -42,6 +60,9 @@
       return;
     }
 
+    // =============================================================================
+    // Constants / shared state
+    // =============================================================================
     const DEFAULT_LANG = appConstants.DEFAULT_LANG.trim();
     const state = {
       currentLanguage: DEFAULT_LANG,
@@ -52,6 +73,9 @@
     };
     let uiSyncChain = Promise.resolve();
 
+    // =============================================================================
+    // Helpers
+    // =============================================================================
     function normalizeLanguage(language, fallback = DEFAULT_LANG) {
       const normalized = typeof language === 'string'
         ? language.trim().toLowerCase()
@@ -123,6 +147,9 @@
       return uiSyncChain;
     }
 
+    // =============================================================================
+    // UI wiring / bootstrap updates
+    // =============================================================================
     elements.btnContinue.addEventListener('click', () => {
       window.close();
     });
@@ -143,8 +170,12 @@
         log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
         state.currentLanguage = DEFAULT_LANG;
       }
-    }).catch((err) => {
-      log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
-    });
+      }).catch((err) => {
+        log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
+      });
   });
 })();
+
+// =============================================================================
+// End of public/reading_test_result.js
+// =============================================================================
