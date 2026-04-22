@@ -4,5 +4,171 @@
     "language": "es",
     "type": "non_fiction",
     "difficulty": "normal"
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "El primer párrafo del texto sugiere que muchas lecturas pendientes se vuelven pesadas no tanto por su cantidad como porque…",
+        "correctOptionId": "d",
+        "options": [
+          {
+            "id": "a",
+            "text": "una parte importante llega tarde a la agenda, cuando ya debería haber sido incorporada antes."
+          },
+          {
+            "id": "b",
+            "text": "varias de ellas compiten al mismo tiempo por urgencia, y eso vuelve inestable cualquier criterio de prioridad."
+          },
+          {
+            "id": "c",
+            "text": "producen una dispersión que seguiría casi intacta incluso aunque todas pudieran medirse bien."
+          },
+          {
+            "id": "d",
+            "text": "todavía no han entrado en una forma común de trabajo que permita medirlas, compararlas y ordenarlas."
+          },
+          {
+            "id": "e",
+            "text": "suelen venir desde soportes demasiado distintos, lo que vuelve engañosa toda comparación entre ellas."
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "Si se conservaran la medición, la biblioteca, los snapshots, el cronómetro, la importación y el OCR, pero desapareciera el editor de tareas, ¿qué se resentiría más según el ensayo?",
+        "correctOptionId": "e",
+        "options": [
+          {
+            "id": "a",
+            "text": "La posibilidad de fijar una versión concreta de un texto mediante snapshots asociados."
+          },
+          {
+            "id": "b",
+            "text": "La posibilidad de hacer entrar al flujo de trabajo materiales difíciles, como imágenes, escaneos o PDFs incómodos."
+          },
+          {
+            "id": "c",
+            "text": "La posibilidad de calibrar mejor las estimaciones de tiempo corrigiendo una velocidad de lectura arbitraria."
+          },
+          {
+            "id": "d",
+            "text": "La posibilidad de recuperar entradas antiguas y volver a cargarlas en otro contexto de trabajo."
+          },
+          {
+            "id": "e",
+            "text": "La posibilidad de que esas funciones converjan sobre una misma carga de trabajo y permitan tratar las lecturas como tareas comparables, seguibles y reordenables."
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "¿Cuál de estas lecturas del bloque sobre biblioteca, comentarios, enlaces y snapshots es incorrecta?",
+        "correctOptionId": "b",
+        "options": [
+          {
+            "id": "a",
+            "text": "El comentario fija un contexto de uso que el puro título de la lectura no siempre alcanza a conservar."
+          },
+          {
+            "id": "b",
+            "text": "El snapshot es, en el fondo, una versión más segura del enlace: ambos cumplen básicamente la misma función y se distinguen solo por el grado de acceso."
+          },
+          {
+            "id": "c",
+            "text": "La biblioteca conserva trabajo ya elaborado y permite que una entrada reaparezca en otro contexto sin recomponerse desde cero."
+          },
+          {
+            "id": "d",
+            "text": "En conjunto, estos recursos intentan que una tarea vuelva con más precisión que la que ofrece un nombre suelto."
+          },
+          {
+            "id": "e",
+            "text": "El enlace no interpreta la lectura, pero reduce la distancia entre la lista y el material que debe trabajarse."
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "El texto valora el cronómetro y el test de velocidad de lectura no tanto porque añadan “más datos”, sino porque…",
+        "correctOptionId": "d",
+        "options": [
+          {
+            "id": "a",
+            "text": "desplazan el centro de la planificación desde las tareas hacia el rendimiento efectivo del lector."
+          },
+          {
+            "id": "b",
+            "text": "vuelven medibles lecturas que antes no podían entrar de ningún modo en una planificación temporal."
+          },
+          {
+            "id": "c",
+            "text": "convierten una estimación aproximada en un cálculo prácticamente definitivo del trabajo futuro."
+          },
+          {
+            "id": "d",
+            "text": "permiten revisar una ficción previa de la planificación: que la carga ya estaba bien representada por una velocidad uniforme."
+          },
+          {
+            "id": "e",
+            "text": "permiten distinguir mejor entre lecturas convenientes y lecturas poco convenientes según la velocidad con que pueden resolverse."
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "¿Cuál de estas preguntas ayuda más a entender por qué el texto necesita tantas funciones distintas para hablar, al final, de una sola tarea de lectura?",
+        "correctOptionId": "e",
+        "options": [
+          {
+            "id": "a",
+            "text": "¿Qué necesita un material difícil para no quedar fuera del mismo trabajo que el resto?"
+          },
+          {
+            "id": "b",
+            "text": "¿Qué necesita una lista para que una tarea no quede solo anotada, sino también disponible para retomarla más tarde?"
+          },
+          {
+            "id": "c",
+            "text": "¿Qué necesita un orden para poder corregirse cuando cambien las prioridades sin deshacerse por completo?"
+          },
+          {
+            "id": "d",
+            "text": "¿Qué necesita una estimación para no deformar la carga apoyándose en una velocidad inventada?"
+          },
+          {
+            "id": "e",
+            "text": "¿Qué necesita una lectura para dejar de ser un conjunto disperso de materiales y pasar a funcionar como una tarea realmente trabajable?"
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "La referencia final a Carl Sagan amplía el alcance del ensayo sobre todo porque…",
+        "correctOptionId": "b",
+        "options": [
+          {
+            "id": "a",
+            "text": "relee las operaciones prácticas descritas antes como un intento de reconciliar dos tiempos heterogéneos: el tiempo largo de los libros y el tiempo limitado del lector actual."
+          },
+          {
+            "id": "b",
+            "text": "convierte el problema de planificar lecturas en una paradoja más amplia: aquello que permite a la escritura unir épocas distintas impone también una carga temporal concreta sobre quien lee, y la app aparece como una forma de volver esa carga visible y trabajable."
+          },
+          {
+            "id": "c",
+            "text": "sugiere que la app no solo organiza lecturas individuales, sino que transforma una dificultad privada en una forma de trabajo común entre personas de una misma época."
+          },
+          {
+            "id": "d",
+            "text": "eleva lo anterior a un plano más filosófico: medir, ordenar y repartir lecturas pasan a verse como modos concretos de administrar la resistencia que toda escritura opone al tiempo disponible."
+          },
+          {
+            "id": "e",
+            "text": "desplaza el eje del ensayo desde la organización de lecturas hacia una experiencia más general: la de compartir, entre contemporáneos, una misma lucha contra el tiempo."
+          }
+        ]
+      }
+    ]
   }
 }
