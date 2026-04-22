@@ -327,7 +327,7 @@
         "title": "Reading speed result",
         "measured_wpm": "Measured WPM",
         "elapsed_time": "Time",
-        "word_count": "Word count",
+        "word_count": "Words",
         "buttons": {
           "continue": "Continue"
         }

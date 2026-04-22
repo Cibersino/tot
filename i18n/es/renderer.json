@@ -327,7 +327,7 @@
         "title": "Resultado de velocidad de lectura",
         "measured_wpm": "WPM medidos",
         "elapsed_time": "Tiempo",
-        "word_count": "Conteo de palabras",
+        "word_count": "Palabras",
         "buttons": {
           "continue": "Continuar"
         }
