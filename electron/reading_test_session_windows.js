@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Wait for editor/flotante window readiness and visibility.
 // - Open the reading session windows.
-// - Start the editor countdown handshake.
+// - Update the editor prestart overlay state.
 // - Open the questions modal window.
 // =============================================================================
 
@@ -164,75 +164,13 @@ async function openReadingSessionWindows(options = {}) {
   return { editorWin, flotanteWin };
 }
 
-function startEditorCountdown(editorWin, options = {}) {
-  const {
-    buildCountdownToken,
-    pendingCountdownReadyAcks,
-    log,
-    countdownReadyTimeoutMs,
-    prestartCountdownSeconds,
-    prestartCountdownStepMs,
-  } = options;
+function setEditorPrestartVisible(editorWin, visible) {
+  if (!hasLiveWebContents(editorWin)) {
+    throw new Error('READING_TEST_EDITOR_PRESTART_WINDOW_UNAVAILABLE');
+  }
 
-  return new Promise((resolve, reject) => {
-    if (!hasLiveWebContents(editorWin)) {
-      reject(new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_UNAVAILABLE'));
-      return;
-    }
-
-    const { webContents } = editorWin;
-    const token = buildCountdownToken();
-    let settled = false;
-    let timeoutId = null;
-
-    const cleanup = () => {
-      pendingCountdownReadyAcks.delete(token);
-      try {
-        editorWin.removeListener('closed', handleClosed);
-        webContents.removeListener('destroyed', handleDestroyed);
-      } catch (err) {
-        log.warn('Reading-test countdown ack cleanup failed (ignored):', err);
-      }
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-    };
-
-    const settle = (err) => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve();
-    };
-
-    const handleClosed = () => settle(new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_CLOSED'));
-    const handleDestroyed = () => settle(new Error('READING_TEST_EDITOR_COUNTDOWN_WEB_CONTENTS_DESTROYED'));
-
-    pendingCountdownReadyAcks.set(token, {
-      sender: webContents,
-      settle,
-    });
-
-    editorWin.once('closed', handleClosed);
-    webContents.once('destroyed', handleDestroyed);
-    timeoutId = setTimeout(() => {
-      settle(new Error('READING_TEST_EDITOR_COUNTDOWN_READY_TIMEOUT'));
-    }, countdownReadyTimeoutMs);
-
-    try {
-      webContents.send('reading-test-prestart-countdown', {
-        seconds: prestartCountdownSeconds,
-        stepMs: prestartCountdownStepMs,
-        token,
-      });
-    } catch (err) {
-      settle(err);
-    }
+  editorWin.webContents.send('reading-test-prestart-state-changed', {
+    visible: visible === true,
   });
 }
 
@@ -335,7 +273,7 @@ module.exports = {
   waitForWindowVisible,
   waitForWindowRendererLoad,
   openReadingSessionWindows,
-  startEditorCountdown,
+  setEditorPrestartVisible,
   openQuestionsWindow,
 };
 

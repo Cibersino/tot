@@ -263,12 +263,12 @@
       }
     },
     "reading_test": {
-      "countdown": {
-        "reminder": "El cronómetro de abajo va a partir automáticamente en 20 segundos. No apretís Pausa (⏸) hasta que terminís de leer; al apretarla, el test se va a terminar. Aprieta Detener (⏹) solo si querís cancelar el test."
+      "prestart": {
+        "reminder": "Aprieta Play (▶) en la Ventana Flotante cuando estís listo pa' empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Aprieta Detener/Reiniciar (⏹) solo si querís cancelar el test."
       },
       "entry": {
         "title": "Test de ritmo de lectura",
-        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando terminís, apreta Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
+        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto y va a esperar a que apretís Play (▶) en la Ventana Flotante cuando estís listo para empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
         "eligible_count": "Archivos elegibles: {count}",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Podís restablecer el pool o meter más archivos.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",

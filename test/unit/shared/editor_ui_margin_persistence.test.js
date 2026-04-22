@@ -153,9 +153,8 @@ function createHarness() {
       readProgressLabel: createElementDouble(),
       readProgressValue,
       bottomBar,
-      readingTestCountdownOverlay: createElementDouble(),
-      readingTestCountdownReminder: createElementDouble(),
-      readingTestCountdownValue: createElementDouble(),
+      readingTestPrestartOverlay: createElementDouble(),
+      readingTestPrestartMessage: createElementDouble(),
     },
     state: {
       idiomaActual: 'es',
@@ -166,8 +165,6 @@ function createHarness() {
       maximizedTextWidthPx: 960,
       editorMarginDrag: null,
       readProgressFramePending: false,
-      readingTestCountdownRunId: 0,
-      readingTestCountdownTimeouts: [],
     },
     engine: {
       setCaretSafe() {},

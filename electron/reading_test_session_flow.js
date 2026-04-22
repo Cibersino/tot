@@ -55,15 +55,11 @@ async function continueArmingSession(selectedEntry, options = {}) {
   const {
     state,
     openReadingSessionWindows,
-    startEditorCountdown,
+    setActiveSessionWindows,
+    showEditorPrestart,
+    setArmingReady,
     showEditorWindow,
     waitForWindowVisible,
-    wait,
-    prestartCountdownSeconds,
-    prestartCountdownStepMs,
-    isAliveWindow,
-    startCrono,
-    setStage,
     failArmingSession,
     log,
   } = options;
@@ -74,23 +70,76 @@ async function continueArmingSession(selectedEntry, options = {}) {
     const { editorWin, flotanteWin } = await openReadingSessionWindows();
     if (!isArmingEntry(state, selectedEntry)) return;
 
-    await startEditorCountdown(editorWin);
-    if (!isArmingEntry(state, selectedEntry)) return;
-
+    setActiveSessionWindows({ editorWin, flotanteWin });
+    showEditorPrestart(editorWin, true);
     showEditorWindow({ maximize: true });
     await waitForWindowVisible(editorWin, 'EDITOR');
-
-    await wait(prestartCountdownSeconds * prestartCountdownStepMs);
-
     if (!isArmingEntry(state, selectedEntry)) return;
-    if (!isAliveWindow(editorWin) || !isAliveWindow(flotanteWin)) {
-      throw new Error('READING_TEST_PRESTART_WINDOW_LOST');
-    }
-
-    startCrono();
-    setStage('running', { selectedEntry });
+    setArmingReady(true);
   } catch (err) {
     log.error('Reading-test session arming failed:', err);
+    failArmingSession(selectedEntry, 'renderer.alerts.reading_test_start_failed');
+  }
+}
+
+function startArmedSession(options = {}) {
+  const {
+    state,
+    getActiveSessionWindows,
+    isAliveWindow,
+    readingTestPool,
+    showEditorPrestart,
+    startCrono,
+    setStage,
+    setArmingReady,
+    failArmingSession,
+    log,
+  } = options;
+
+  if (!state.active || state.stage !== 'arming' || !state.selectedEntry) return;
+  if (state.armingReady !== true) {
+    log.warnOnce(
+      'reading_test_session.flotante_toggle_arming_not_ready',
+      'Reading-test arming toggle ignored: session windows are not ready yet.'
+    );
+    return;
+  }
+
+  const selectedEntry = state.selectedEntry;
+  const { editorWin, flotanteWin } = getActiveSessionWindows();
+  if (!isAliveWindow(editorWin) || !isAliveWindow(flotanteWin)) {
+    log.error('Reading-test start-from-arming failed: session window unavailable.');
+    failArmingSession(selectedEntry, 'renderer.alerts.reading_test_start_failed');
+    return;
+  }
+
+  let poolUsageCommitted = false;
+
+  try {
+    if (selectedEntry.sourceMode === 'pool') {
+      const writeInfo = readingTestPool.markPoolEntryUsed(selectedEntry.snapshotRelPath, true);
+      if (!writeInfo.ok) {
+        throw new Error(writeInfo.code || 'POOL_WRITE_FAILED');
+      }
+      poolUsageCommitted = true;
+    }
+
+    showEditorPrestart(editorWin, false);
+    startCrono();
+    setArmingReady(false);
+    setStage('running', { selectedEntry });
+  } catch (err) {
+    if (poolUsageCommitted && selectedEntry.sourceMode === 'pool') {
+      try {
+        const rollbackInfo = readingTestPool.markPoolEntryUsed(selectedEntry.snapshotRelPath, false);
+        if (!rollbackInfo.ok) {
+          log.warn('Reading-test pool usage rollback failed (ignored):', rollbackInfo.code || 'POOL_WRITE_FAILED');
+        }
+      } catch (rollbackErr) {
+        log.warn('Reading-test pool usage rollback failed (ignored):', rollbackErr);
+      }
+    }
+    log.error('Reading-test start-from-arming failed:', err);
     failArmingSession(selectedEntry, 'renderer.alerts.reading_test_start_failed');
   }
 }
@@ -332,8 +381,6 @@ async function startPoolSession(selection, options = {}) {
     ensureEligibleSelection,
     chooseRandomEntry,
     applyCurrentText,
-    readingTestPool,
-    cleanupStartFailure,
     buildSessionEntry,
     setStage,
     continueArmingSession,
@@ -359,12 +406,6 @@ async function startPoolSession(selection, options = {}) {
     });
     if (!applyResult || applyResult.ok !== true) {
       return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: 'TEXT_APPLY_FAILED' };
-    }
-
-    const writeInfo = readingTestPool.markPoolEntryUsed(selectedEntry.snapshotRelPath, true);
-    if (!writeInfo.ok) {
-      cleanupStartFailure({ clearCurrentText: true });
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: writeInfo.code || 'POOL_WRITE_FAILED' };
     }
 
     const sessionEntry = buildSessionEntry('pool', selectedEntry);
@@ -410,6 +451,7 @@ async function startCurrentTextSession(options = {}) {
 function handleFlotanteCommand(cmd, options = {}) {
   const {
     state,
+    startArmedSession,
     cancelActiveSession,
     finishRunningSession,
     log,
@@ -419,8 +461,19 @@ function handleFlotanteCommand(cmd, options = {}) {
   if (!cmd || typeof cmd.cmd !== 'string') return true;
 
   if (state.stage === 'arming') {
+    if (cmd.cmd === 'toggle') {
+      startArmedSession();
+      return true;
+    }
     if (cmd.cmd === 'reset') {
       cancelActiveSession('renderer.alerts.reading_test_cancelled', { type: 'warn' });
+      return true;
+    }
+    if (cmd.cmd === 'set') {
+      log.warnOnce(
+        'reading_test_session.flotante_set_blocked',
+        'Reading-test floating set command ignored while session is active.'
+      );
     }
     return true;
   }
@@ -462,6 +515,7 @@ module.exports = {
   clearSessionTextIfNeeded,
   failArmingSession,
   continueArmingSession,
+  startArmedSession,
   computeCurrentWpm,
   buildPrefilledPresetPayload,
   beginPresetStep,

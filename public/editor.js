@@ -121,9 +121,8 @@ const readProgress = document.getElementById('editorReadProgress');
 const readProgressLabel = document.getElementById('editorReadProgressLabel');
 const readProgressValue = document.getElementById('editorReadProgressValue');
 const bottomBar = document.getElementById('bottomBar');
-const readingTestCountdownOverlay = document.getElementById('readingTestCountdownOverlay');
-const readingTestCountdownReminder = document.getElementById('readingTestCountdownReminder');
-const readingTestCountdownValue = document.getElementById('readingTestCountdownValue');
+const readingTestPrestartOverlay = document.getElementById('readingTestPrestartOverlay');
+const readingTestPrestartMessage = document.getElementById('readingTestPrestartMessage');
 
 // =============================================================================
 // Shared context
@@ -170,16 +169,13 @@ const ctx = {
     readProgressLabel,
     readProgressValue,
     bottomBar,
-    readingTestCountdownOverlay,
-    readingTestCountdownReminder,
-    readingTestCountdownValue,
+    readingTestPrestartOverlay,
+    readingTestPrestartMessage,
   },
   state: {
     maxTextChars: AppConstants.MAX_TEXT_CHARS,
     debounceTimer: null,
     suppressLocalUpdate: false,
-    readingTestCountdownRunId: 0,
-    readingTestCountdownTimeouts: [],
     spellcheckEnabled: true,
     editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
     editorWindowMaximized: false,
@@ -297,9 +293,9 @@ if (typeof ctx.editorAPI.onWindowStateChanged === 'function') {
   log.warn('BOOTSTRAP: editorAPI.onWindowStateChanged missing; live maximized layout updates disabled.');
 }
 
-if (readingTestCountdownOverlay) {
-  readingTestCountdownOverlay.addEventListener('keydown', (event) => {
-    if (readingTestCountdownOverlay.getAttribute('aria-hidden') === 'false') {
+if (readingTestPrestartOverlay) {
+  readingTestPrestartOverlay.addEventListener('keydown', (event) => {
+    if (readingTestPrestartOverlay.getAttribute('aria-hidden') === 'false') {
       event.preventDefault();
       event.stopPropagation();
     }
@@ -375,12 +371,14 @@ ctx.editorAPI.onReplaceRequest((payload) => {
     });
 });
 
-if (typeof ctx.editorAPI.onReadingTestCountdown === 'function') {
-  ctx.editorAPI.onReadingTestCountdown((payload) => {
-    ctx.ui.startReadingTestCountdown(payload);
+if (typeof ctx.editorAPI.onReadingTestPrestartStateChanged === 'function') {
+  ctx.editorAPI.onReadingTestPrestartStateChanged((payload) => {
+    ctx.ui.applyReadingTestPrestartState(payload);
   });
 } else {
-  log.warn('BOOTSTRAP: editorAPI.onReadingTestCountdown missing; reading-test countdown overlay disabled.');
+  log.warn(
+    'BOOTSTRAP: editorAPI.onReadingTestPrestartStateChanged missing; reading-test prestart overlay disabled.'
+  );
 }
 
 // =============================================================================

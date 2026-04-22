@@ -70,15 +70,11 @@ const api = {
     'editor-force-clear callback error:',
     'removeListener error (editor-force-clear):'
   ),
-  onReadingTestCountdown: (cb) => subscribeWithUnsub(
-    'reading-test-prestart-countdown',
+  onReadingTestPrestartStateChanged: (cb) => subscribeWithUnsub(
+    'reading-test-prestart-state-changed',
     cb,
-    'reading-test-prestart-countdown callback error:',
-    'removeListener error (reading-test-prestart-countdown):'
-  ),
-  notifyReadingTestCountdownReady: (payload) => ipcRenderer.send(
-    'reading-test-countdown-ready',
-    payload
+    'reading-test-prestart-state-changed callback error:',
+    'removeListener error (reading-test-prestart-state-changed):'
   )
 };
 

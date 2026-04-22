@@ -263,12 +263,12 @@
       }
     },
     "reading_test": {
-      "countdown": {
-        "reminder": "Le minuteur ci-dessous démarrera automatiquement dans 20 secondes. N'appuyez pas sur Pause (⏸) avant d'avoir terminé votre lecture ; cela mettra fin au test. Appuyez sur Arrêter (⏹) uniquement si vous voulez annuler le test."
+      "prestart": {
+        "reminder": "Appuyez sur Play (▶) dans la Fenêtre flottante lorsque vous êtes prêt à commencer. Une fois le test démarré, n'appuyez pas sur Pause (⏸) avant d'avoir terminé votre lecture : Pause met fin au test ; elle ne met pas le minuteur en pause. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test."
       },
       "entry": {
         "title": "Test de vitesse de lecture",
-        "intro": "Ce test sert à estimer votre vitesse réelle de lecture au moyen d'une session guidée. L'application ouvrira le texte, démarrera le chronométrage et vous demandera de lire normalement ; lorsque vous aurez terminé, appuyez sur Pause (⏸) dans la Fenêtre flottante. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test. Ensuite, vous pourrez consulter des questions de compréhension si le texte en contient et, à la fin, créer un preset à partir du résultat.\nCe pool utilise des textes courts ; interprétez donc le résultat avec prudence. Il ne devrait pas être extrapolé directement à des textes longs, où entrent habituellement en jeu des facteurs positifs, comme l'acquisition de fluidité et de contexte, et des facteurs négatifs, comme la récapitulation mentale et la fatigue.",
+        "intro": "Ce test sert à estimer votre vitesse réelle de lecture au moyen d'une session guidée. L'application ouvrira le texte et attendra que vous appuyiez sur Play (▶) dans la Fenêtre flottante lorsque vous serez prêt à commencer. Une fois le test démarré, n'appuyez pas sur Pause (⏸) avant d'avoir terminé votre lecture : Pause met fin au test ; elle ne met pas le minuteur en pause. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test. Ensuite, vous pourrez consulter des questions de compréhension si le texte en contient et, à la fin, créer un preset à partir du résultat.\nCe pool utilise des textes courts ; interprétez donc le résultat avec prudence. Il ne devrait pas être extrapolé directement à des textes longs, où entrent habituellement en jeu des facteurs positifs, comme l'acquisition de fluidité et de contexte, et des facteurs négatifs, comme la récapitulation mentale et la fatigue.",
         "eligible_count": "Fichiers éligibles : {count}",
         "pool_exhausted_message": "Il ne reste plus de fichiers de test inutilisés. Réinitialisez le pool ou ajoutez d'autres fichiers.",
         "close_aria": "Fermer la boîte de dialogue du test de vitesse de lecture",
