@@ -111,6 +111,23 @@
         <a href="/en/privacy-cookies/">Website Privacy / Cookies</a>
       </p>
     </footer>
+
+    <div id="downloadStartModal" class="download-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="downloadStartModalTitle" aria-describedby="downloadStartModalBody" aria-modal="true" hidden>
+      <div id="downloadStartModalBackdrop" class="download-modal__backdrop"></div>
+      <div class="download-modal__panel" role="document">
+        <button id="downloadStartModalClose" class="download-modal__close" type="button"
+          aria-label="Close download instructions">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2 id="downloadStartModalTitle" class="download-modal__title"></h2>
+        <p id="downloadStartModalBody" class="download-modal__body"></p>
+        <p id="downloadStartModalSupport" class="download-modal__support"></p>
+        <div class="download-modal__actions">
+          <button id="downloadStartModalDismiss" class="cta-button download-modal__dismiss" type="button">Close</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script src="/site-language.js"></script>
@@ -154,6 +171,23 @@
           unknown: "We could not verify the latest stable download automatically. Check the latest releases on GitHub."
         },
         unknown: "We could not detect your operating system. Check the latest releases on GitHub."
+      },
+      downloadModal: {
+        kofiUrl: "https://ko-fi.com/cibersino/",
+        title: "Your download has started",
+        messages: {
+          windows: "A ZIP file is being downloaded. Extract it wherever you want, open the extracted folder, and run toT.exe.",
+          macos: "A .dmg file is being downloaded. Open the downloaded .dmg file, move toT to Applications, and open it from there.",
+          linux: "An .AppImage file is being downloaded. Open the downloaded .AppImage file. If needed, mark it as executable first, then run it.",
+          unknown: "Your download is starting. Check the downloaded file and follow the installation steps for your platform."
+        },
+        labels: {
+          close: "Close",
+          closeAria: "Close download instructions"
+        },
+        supportTextBeforeLink: "If toT is useful to you, consider supporting its development on ",
+        supportLinkLabel: "Ko-fi",
+        supportTextAfterLink: "."
       }
     };
   </script>
