@@ -28,9 +28,9 @@
       url: 'https://totapp.org/',
       tooltipKey: 'renderer.main.tooltips.cibersino_website',
     }),
-    patreonLogoLink: Object.freeze({
-      url: 'https://www.patreon.com/Cibersino',
-      tooltipKey: 'renderer.main.tooltips.cibersino_patreon',
+    kofiLogoLink: Object.freeze({
+      url: 'https://ko-fi.com/cibersino/',
+      tooltipKey: 'renderer.main.tooltips.cibersino_kofi',
     }),
   });
 

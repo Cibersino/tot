@@ -8,7 +8,7 @@
   --sidebar-width: 420px;
   --logo-height: 90px;
   --logo-links-scale: 0.7;
-  --patreon-logo-scale: 0.7778;
+  --kofi-logo-scale: 0.82;
 
   /* Padding */
   --section-padding-vertical: 4px;
@@ -387,7 +387,7 @@ body.import-extract-drop-active .app-container {
   height: 100%;
 }
 
-.logo-link--patreon {
+.logo-link--kofi {
   height: 100%;
 }
 
@@ -398,9 +398,9 @@ body.import-extract-drop-active .app-container {
   display: block;
 }
 
-#patreonLogo {
+#kofiLogo {
   width: auto;
-  height: calc(100% * var(--patreon-logo-scale));
+  height: calc(100% * var(--kofi-logo-scale));
   object-fit: contain;
   display: block;
 }

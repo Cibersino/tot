@@ -139,7 +139,7 @@ tot/
 │ │ ├── logo-cibersino.svg
 │ │ ├── logo-tot.png
 │ │ ├── logo-tot.svg
-│ │ └── patreon.png
+│ │ └── kofi_symbol.png
 │ ├── fonts/
 │ │ ├── Baskervville-VariableFont_wght.ttf
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
@@ -242,7 +242,7 @@ tot/
 │   │ └── social/
 │   │   ├── instagram-black.svg
 │   │   ├── instagram-white.svg
-│   │   ├── patreon.png
+│   │   ├── kofi.png
 │   │   ├── SOURCES.md
 │   │   ├── twitch.svg
 │   │   ├── x-black.png
@@ -360,7 +360,7 @@ tot/
 - `electron/import_extract_platform/ocr_image_normalization.js` — Normalización local de imágenes para OCR antes del upload cuando el formato lo requiere.
 - `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
 - `electron/updater.js` — Lógica de actualización (comparación de versión, diálogos y apertura de URL de descarga).
-- `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts, incluyendo `totapp.org` y `www.patreon.com` para superficies fijas de la app) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
+- `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts, incluyendo `totapp.org` y `ko-fi.com` para superficies fijas de la app) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
 - `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique), incluyendo límites/default/step del tamaño de fuente y del ancho de texto maximizado del editor manual.
 - `electron/log.js` — Logger del proceso principal (política de logs/fallbacks).
 - `electron/main.js` — Además del arranque normal, contiene un hook de smoke test local controlado por env vars (`TOT_SMOKE_TEST`, `TOT_SMOKE_USER_DATA_DIR`) para validar el startup mínimo con perfil aislado; la lógica específica de tamaño de texto del editor queda delegada a `electron/editor_text_size.js`.
@@ -388,7 +388,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: muestra selects opcionales para `language` / `type` / `difficulty`, aplica i18n y devuelve tags normalizados o cancelación.
 - `public/js/reading_speed_test.js` — Módulo renderer del reading speed test: gestiona el modal de entrada/configuración, refleja combinaciones reales del pool, ejecuta reset/start IPC, muestra warnings inline y sincroniza el lock state / WPM aplicado.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
-- `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Patreon a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n (`es` / `en`) y mantiene este wiring fuera de `public/renderer.js`.
+- `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Ko-fi a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n y mantiene este wiring fuera de `public/renderer.js`.
 - `public/js/text_apply_canonical.js` — Helpers canónicos de aplicar texto (`overwrite` / `append` / repeticiones) reutilizados por clipboard e import/extract.
 - `public/js/results_time_multiplier.js` — Controla el multiplicador de tiempo bajo el resultado estimado: valida el input como numero natural, conserva el estado base recibido desde `public/renderer.js` y renderiza el tiempo multiplicado en la ventana principal.
 - `public/js/import_extract_status_ui.js` — Superficie visual del flujo import/extract en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido y botón abort.
@@ -492,7 +492,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `website/public/site-language.js` — Helper compartido del sitio estático para detectar/persistir idioma preferido y soportar la redirección desde `/`.
 - `website/public/styles.css` — Hoja de estilos compartida para las tres rutas.
 - `website/public/assets/brand/*.svg` — Logos locales del proyecto/desarrollador usados en el header y footer (`logo-tot.svg`, `logo-cibersino.svg`).
-- `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Patreon, X light/dark, YouTube, Twitch) y `SOURCES.md` como trazabilidad de origen de assets.
+- `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Ko-fi, X light/dark, YouTube, Twitch) y `SOURCES.md` como trazabilidad de origen de assets.
 - `website/public/_headers` — Políticas de headers para Cloudflare Pages (incluye noindex para dominios preview/versionados).
 - `website/public/robots.txt` — Reglas de robots para el dominio público.
 - `website/public/favicon.*` y `website/public/og-image.png` — Activos comunes de branding/preview social.
@@ -501,7 +501,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `public/assets/logo-tot.svg` / `public/assets/logo-tot.png` — Branding de la app usado en la ventana principal.
 - `public/assets/logo-cibersino.svg` — Branding del desarrollador usado en la ventana principal.
-- `public/assets/patreon.png` — Símbolo de Patreon usado en la ventana principal junto al logo de Cibersino; asset runtime copiado desde `tools_local` para mantener la procedencia local/original separada del sitio web.
+- `public/assets/kofi_symbol.png` — Símbolo de Ko-fi usado en la ventana principal junto al logo de Cibersino; asset runtime copiado desde `tools_local` para mantener la procedencia local/original separada del sitio web.
 
 ### 6.3) Recursos de packaging (build-resources)
 
