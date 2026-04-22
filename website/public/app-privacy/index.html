@@ -1,131 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="es" data-language-redirect-es="/es/app-privacy/" data-language-redirect-en="/en/app-privacy/">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>toT - App Privacy Policy</title>
-  <meta name="description" content="App privacy policy for toT, including Google OCR privacy details.">
+  <title>toT - Política de privacidad de la app</title>
+  <meta name="description" content="Ruta neutral hacia la política de privacidad de la app de escritorio toT.">
+  <meta name="robots" content="noindex, nofollow">
   <link rel="canonical" href="https://totapp.org/app-privacy/">
-  <meta property="og:url" content="https://totapp.org/app-privacy/">
-  <meta property="og:title" content="toT - App Privacy Policy">
-  <meta property="og:description" content="App privacy policy for toT, including Google OCR privacy details.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://totapp.org/og-image.png">
-  <meta property="og:image:alt" content="toT desktop app interface">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
-  <link rel="icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="alternate" hreflang="es" href="https://totapp.org/es/app-privacy/">
+  <link rel="alternate" hreflang="en" href="https://totapp.org/en/app-privacy/">
+  <link rel="alternate" hreflang="x-default" href="https://totapp.org/app-privacy/">
+  <meta http-equiv="refresh" content="0; url=/es/app-privacy/">
+  <script src="/site-language.js"></script>
 </head>
 
 <body>
-  <main class="page-shell">
-    <article class="panel panel--policy">
-      <p class="eyebrow">Privacy</p>
-      <h1>toT App Privacy Policy</h1>
-      <p class="lead">
-        This page covers both the general privacy policy for the toT desktop app and the specific privacy details for the optional Google OCR feature.
-      </p>
-      <section class="policy-section" aria-labelledby="app-privacy">
-        <h2 id="app-privacy">App Privacy</h2>
-        <p>
-          <strong>toT</strong> is designed to be local-first for writing, editing, counting, and most day-to-day use.
-          Most app content stays on your device unless you choose a feature that connects to a third-party service.
-        </p>
-        <h3>Data the app stores or processes locally</h3>
-        <ul>
-          <li>current text, saved text snapshots, settings, window state, and task-related data on your device</li>
-          <li>local reading speed test state, including the local test-text pool and optional question payloads stored in pool files</li>
-          <li>local OCR connection and token state when you choose to use Google OCR</li>
-        </ul>
-        <h3>How the app uses this data</h3>
-        <p>
-          The app uses locally stored data to provide its writing, counting, planning, snapshot, task, reading speed test, and window-state features.
-          The app may connect to external services only for specific user-triggered actions, such as opening user-requested links, checking release or update information, or running optional OCR flows.
-        </p>
-        <h3>Third-party sharing</h3>
-        <p>
-          Your local text, snapshots, settings, task data, and window state are not sent to the developer by the app.
-          If you enable Google OCR, Google receives the data needed for that OCR operation as described in the
-          <a href="#google-ocr-privacy">Google OCR Privacy</a> section below.
-          If you contact the developer through email or GitHub Issues, the developer receives only the information you choose to include in that support request.
-        </p>
-        <h3>Storage and protection</h3>
-        <p>
-          Local app data is stored in the app's local data directory on your device.
-          Protection of that local data depends on your device, operating system, and account security.
-          Google OCR token state is stored locally and protected using Electron safeStorage and the operating system encryption facilities available on your platform.
-        </p>
-        <h3>Retention and deletion</h3>
-        <p>
-          Local app data remains on your device until you edit it, delete it, remove the app's local data, or uninstall the app.
-          Google OCR token state remains until you disconnect Google OCR or remove local app data.
-          Support messages and any files or text you voluntarily send to the developer may be retained only as long as reasonably necessary to respond, troubleshoot, or comply with legal obligations.
-          You can request deletion of developer-controlled support data by contacting <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.
-        </p>
-        <h3>Google OCR-specific disclosures</h3>
-        <p>
-          If you choose to use Google OCR, only the files you explicitly select for OCR are sent to Google for that operation.
-          The app does not send those OCR files or the extracted OCR text to the developer.
-          For the Google OCR-specific data accessed, use, sharing, storage, retention, and deletion terms, see the
-          <a href="#google-ocr-privacy">Google OCR Privacy</a> section below.
-        </p>
-      </section>
-
-      <section class="policy-section" aria-labelledby="google-ocr-privacy">
-        <h2 id="google-ocr-privacy">Google OCR Privacy</h2>
-        <p>
-          <strong>Google OCR</strong> applies only when you choose that OCR route inside the app.
-          The OCR route uses the end user's Google account and requests the Google Drive scope <code>drive.file</code>.
-        </p>
-        <p>
-          <strong>toT</strong> uses an owner-provided Google Cloud project and OAuth client distributed with the app.
-          Ordinary users do not need to manually obtain or import OAuth client credentials.
-        </p>
-        <h3>1. Data accessed</h3>
-        <ul>
-          <li>basic Google authorization and token data needed to connect the app to your Google account for this OCR feature</li>
-          <li>the Google Drive file access granted by the <code>drive.file</code> scope</li>
-          <li>only the image or PDF files you explicitly choose for OCR</li>
-          <li>a temporary converted Google document created during the OCR workflow so text can be exported back to the app</li>
-          <li>the extracted text returned from Google to the app after export</li>
-        </ul>
-        <h3>2. How this data is used</h3>
-        <p>
-          The app uses this data to authenticate the Google OCR connection, upload and convert the selected file, export extracted text back to the app,
-          reuse the saved connection for future OCR runs, and attempt cleanup of the temporary Google document after export.
-        </p>
-        <h3>3. Sharing with third parties</h3>
-        <p>
-          Selected OCR files, the temporary converted document, and the related Google authorization data are shared with Google only to provide the Google OCR workflow.
-          The app does not send OCR files or extracted OCR text to the developer.
-          Other than Google services required for OCR and any information you separately choose to send to the developer for support,
-          this flow does not share Google user data with other third parties.
-        </p>
-        <h3>4. Storage and protection</h3>
-        <p>
-          The app stores Google OCR token state locally on your device so the connection can be reused.
-          That token state is protected using Electron safeStorage and the operating system encryption facilities available on your platform.
-          Local app data and OCR results stored by the app remain in the app's local data area on your device;
-          protection of that data also depends on your device, operating system, and account security.
-          The app attempts to delete the temporary converted Google document from Google after text export.
-        </p>
-        <h3>5. Retention and deletion</h3>
-        <p>
-          The local OCR token state remains until you disconnect Google OCR, remove local app data, or uninstall the app.
-          When the disconnect action completes successfully in the app, it revokes the saved token and deletes the local token file.
-          You can also revoke the app's Google access from your Google Account permissions/security controls.
-          The app attempts to delete the temporary converted Google document immediately after export.
-          The app does not send OCR files or extracted OCR text to the developer, and this OCR feature does not create a separate developer copy of that OCR content.
-          If you want to request deletion of support messages or any data you intentionally sent to the developer, contact
-          <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.
-        </p>
-      </section>
-
-      <p class="meta-note">Last updated: April 4, 2026.</p>
-      <p><a class="primary-link" href="/">Back to Home</a></p>
-    </article>
-  </main>
+  <p>Redirigiendo...</p>
 </body>
 
 </html>
