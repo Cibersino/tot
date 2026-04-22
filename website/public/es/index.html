@@ -112,6 +112,23 @@
         <a href="/es/privacy-cookies/">Privacidad / Cookies del sitio</a>
       </p>
     </footer>
+
+    <div id="downloadStartModal" class="download-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="downloadStartModalTitle" aria-describedby="downloadStartModalBody" aria-modal="true" hidden>
+      <div id="downloadStartModalBackdrop" class="download-modal__backdrop"></div>
+      <div class="download-modal__panel" role="document">
+        <button id="downloadStartModalClose" class="download-modal__close" type="button"
+          aria-label="Cerrar instrucciones de descarga">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2 id="downloadStartModalTitle" class="download-modal__title"></h2>
+        <p id="downloadStartModalBody" class="download-modal__body"></p>
+        <p id="downloadStartModalSupport" class="download-modal__support"></p>
+        <div class="download-modal__actions">
+          <button id="downloadStartModalDismiss" class="cta-button download-modal__dismiss" type="button">Cerrar</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script src="/site-language.js"></script>
@@ -155,6 +172,23 @@
           unknown: "No pudimos verificar automáticamente la descarga estable más reciente. Revisa las últimas versiones en GitHub."
         },
         unknown: "No pudimos detectar tu sistema operativo. Revisa las últimas versiones en GitHub."
+      },
+      downloadModal: {
+        kofiUrl: "https://ko-fi.com/cibersino/",
+        title: "Tu descarga ha comenzado",
+        messages: {
+          windows: "Se está descargando un archivo ZIP. Extráelo donde quieras, abre la carpeta extraída y ejecuta toT.exe.",
+          macos: "Se está descargando un archivo .dmg. Abre el archivo .dmg descargado, mueve toT a Aplicaciones y ábrelo desde allí.",
+          linux: "Se está descargando un archivo .AppImage. Abre el archivo .AppImage descargado. Si hace falta, márcalo primero como ejecutable y luego ejecútalo.",
+          unknown: "Tu descarga está comenzando. Revisa el archivo descargado y sigue los pasos de instalación correspondientes a tu plataforma."
+        },
+        labels: {
+          close: "Cerrar",
+          closeAria: "Cerrar instrucciones de descarga"
+        },
+        supportTextBeforeLink: "Si toT te resulta útil, puedes apoyar su desarrollo en ",
+        supportLinkLabel: "Ko-fi",
+        supportTextAfterLink: "."
       }
     };
   </script>
