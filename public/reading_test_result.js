@@ -170,9 +170,9 @@
         log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
         state.currentLanguage = DEFAULT_LANG;
       }
-      }).catch((err) => {
-        log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
-      });
+    }).catch((err) => {
+      log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
+    });
   });
 })();
 
