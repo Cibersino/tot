@@ -6,7 +6,7 @@
 // =============================================================================
 // Reading-test session flow helpers.
 // Responsibilities:
-// - Orchestrate arming/running/questions/preset stages.
+// - Orchestrate arming/running/result/questions/preset stages.
 // - Compute authoritative WPM and preset payloads.
 // - Start/cancel/finish sessions.
 // - Reinterpret floating-window commands and close events.
@@ -290,6 +290,7 @@ async function finishRunningSession(options = {}) {
     emitNotice,
     clearSession,
     setStage,
+    openResultWindow,
     openQuestionsWindow,
     beginPresetStep,
     log,
@@ -308,6 +309,16 @@ async function finishRunningSession(options = {}) {
       emitNotice(wpmInfo.guidanceKey, { type: 'error' });
       clearSession();
       return;
+    }
+
+    setStage('result');
+    const resultWindowInfo = await openResultWindow({
+      measuredWpm: wpmInfo.rawWpm,
+      elapsedMs: wpmInfo.elapsed,
+      wordCount: wpmInfo.wordCount,
+    });
+    if (!resultWindowInfo.ok) {
+      emitNotice('renderer.alerts.reading_test_result_unavailable', { type: 'warn' });
     }
 
     if (selectedEntry.hasValidQuestions) {

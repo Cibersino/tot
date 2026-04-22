@@ -77,6 +77,7 @@ tot/
 │ ├── preset_preload.js
 │ ├── flotante_preload.js
 │ ├── reading_test_questions_preload.js
+│ ├── reading_test_result_preload.js
 │ ├── fs_storage.js
 │ ├── settings.js
 │ ├── spellcheck.js
@@ -195,6 +196,7 @@ tot/
 │ ├── preset_modal.js
 │ ├── flotante.js
 │ ├── reading_test_questions.js
+│ ├── reading_test_result.js
 │ ├── index.html
 │ ├── language_window.html
 │ ├── editor.html
@@ -203,11 +205,13 @@ tot/
 │ ├── preset_modal.html
 │ ├── flotante.html
 │ ├── reading_test_questions.html
+│ ├── reading_test_result.html
 │ ├── editor.css
 │ ├── editor_find.css
 │ ├── task_editor.css
 │ ├── flotante.css
 │ ├── reading_test_questions.css
+│ ├── reading_test_result.css
 │ └── style.css
 ├── test/
 │ ├── smoke/
@@ -303,6 +307,7 @@ tot/
 - `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` (`setLanguage`, `getAvailableLanguages`) para persistir/seleccionar idioma; `setLanguage` invoca `set-language` y luego emite `language-selected` para destrabar el startup.
 - `electron/flotante_preload.js` — Preload de la ventana flotante del cronómetro.
 - `electron/reading_test_questions_preload.js` — Preload del modal de preguntas del reading speed test; expone `window.readingTestQuestionsAPI` y bufferiza/reproduce el payload init del cuestionario.
+- `electron/reading_test_result_preload.js` — Preload del modal de resultado del reading speed test; expone `window.readingTestResultAPI` y bufferiza/reproduce el payload init del resultado medido.
 
 **Renderer (UI / ventanas):**
 - `public/renderer.js` — Lógica principal de UI (ventana principal).
@@ -313,6 +318,7 @@ tot/
 - `public/flotante.js` — Lógica de la ventana flotante del cronómetro.
 - `public/language_window.js` — Lógica de la ventana de selección de idioma.
 - `public/reading_test_questions.js` — Lógica del modal de preguntas/comprensión del reading speed test.
+- `public/reading_test_result.js` — Lógica del modal compacto de resultado del reading speed test (WPM medidos + resumen breve antes de preguntas/preset).
 
 ### 2) Módulos del proceso principal (Electron)
 
@@ -329,8 +335,8 @@ tot/
 - `electron/reading_test_pool.js` — Helpers del pool del reading speed test: asegura el subárbol runtime bajo snapshots, sincroniza al arranque los starter files versionados mediante hashes de contenido bundled, poda estado obsoleto y starter files retirados, escanea/valida JSON del pool y mezcla contenido + estado externo (`config/reading_test_pool_state.json`) para serializar metadata usable por la UI (`used` top-level).
 - `electron/reading_test_pool_import.js` — Follow-up main-owned de adquisición/import del pool: abre el picker nativo para `.json`/`.zip`, recuerda la última carpeta usada, valida candidatos contra el contrato del pool, resuelve duplicados por nombre de destino y escribe solo snapshots válidos dentro de `config/saved_current_texts/reading_speed_test_pool/`.
 - `electron/reading_test_session.js` — Orquestador/controlador main-owned del reading speed test: valida precondiciones, mantiene el estado compartido de la sesión, expone el surface público consumido por `main.js`, registra el IPC (`reading-test-get-entry-data`, `reading-test-reset-pool`, `reading-test-start`, `reading-test-get-state`) y delega la plomería de ventanas y el flujo guiado a módulos auxiliares sin cambiar el contrato externo.
-- `electron/reading_test_session_windows.js` — Helpers de ventanas del reading speed test: espera visibilidad/carga del editor y la ventana flotante, abre la sesión guiada en modo diferido, sincroniza la visibilidad del overlay prestart del editor y crea el modal de preguntas.
-- `electron/reading_test_session_flow.js` — Helpers del flujo guiado del reading speed test: ownership de las etapas `arming/running/questions/preset`, cómputo autoritativo de WPM, payload prellenado del preset, cancel/finish semantics, ruta `pool` vs `current_text` y reinterpretación de comandos/cierres de la ventana flotante y el editor.
+- `electron/reading_test_session_windows.js` — Helpers de ventanas del reading speed test: espera visibilidad/carga del editor y la ventana flotante, abre la sesión guiada en modo diferido, sincroniza la visibilidad del overlay prestart del editor y crea los modales de resultado y de preguntas.
+- `electron/reading_test_session_flow.js` — Helpers del flujo guiado del reading speed test: ownership de las etapas `arming/running/result/questions/preset`, cómputo autoritativo de WPM, payload prellenado del preset, cancel/finish semantics, ruta `pool` vs `current_text` y reinterpretación de comandos/cierres de la ventana flotante y el editor.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
 - `electron/task_editor_position.js` — Persistencia de posición (x/y) de la ventana del editor de tareas.

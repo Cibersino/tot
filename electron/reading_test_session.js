@@ -36,6 +36,8 @@ log.debug('Reading test session starting...');
 
 const QUESTIONS_WINDOW_PRELOAD = path.join(__dirname, 'reading_test_questions_preload.js');
 const QUESTIONS_WINDOW_HTML = path.join(__dirname, '../public/reading_test_questions.html');
+const RESULT_WINDOW_PRELOAD = path.join(__dirname, 'reading_test_result_preload.js');
+const RESULT_WINDOW_HTML = path.join(__dirname, '../public/reading_test_result.html');
 const DEVELOPER_EMAIL = 'cibersino@gmail.com';
 const WINDOW_VISIBLE_TIMEOUT_MS = 5000;
 
@@ -363,6 +365,15 @@ function createController(options = {}) {
     });
   }
 
+  function openResultWindow(resultInfo) {
+    return readingTestSessionWindows.openResultWindow(resultInfo, {
+      resolveMainWindow,
+      log,
+      resultWindowPreload: RESULT_WINDOW_PRELOAD,
+      resultWindowHtml: RESULT_WINDOW_HTML,
+    });
+  }
+
   // Flow helpers
   function clearSessionTextIfNeeded(selectedEntry) {
     return readingTestSessionFlow.clearSessionTextIfNeeded(selectedEntry, tryClearCurrentText);
@@ -456,6 +467,7 @@ function createController(options = {}) {
       emitNotice,
       clearSession,
       setStage,
+      openResultWindow,
       openQuestionsWindow,
       beginPresetStep,
       resetAndCloseActiveSession,
