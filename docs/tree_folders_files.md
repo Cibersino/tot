@@ -242,7 +242,7 @@ tot/
 │   │ └── social/
 │   │   ├── instagram-black.svg
 │   │   ├── instagram-white.svg
-│   │   ├── kofi.png
+│   │   ├── kofi_symbol.png
 │   │   ├── SOURCES.md
 │   │   ├── twitch.svg
 │   │   ├── x-black.png

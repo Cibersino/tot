@@ -68,7 +68,8 @@ Reglas:
   - `public/index.html`, `public/style.css` y `public/js/main_logo_links.js`: el link fijo de sponsorship de la ventana principal deja Patreon y pasa a Ko-fi, preservando el layout compacto existente con IDs/classes/keys renombrados a la nueva plataforma.
   - `electron/link_openers.js`: la allowlist fija de `open-external-url` deja de contemplar Patreon y pasa a permitir `ko-fi.com` / `www.ko-fi.com` para esa superficie de branding.
   - `i18n/*/renderer.json`: la key tooltip `renderer.main.tooltips.cibersino_patreon` se reemplaza por `renderer.main.tooltips.cibersino_kofi` en los bundles root y en el overlay `es-cl`.
-  - `docs/tree_folders_files.md`: se actualiza la documentación viva para reflejar Ko-fi como plataforma vigente de sponsorship y el nuevo asset runtime `public/assets/kofi_symbol.png`.
+  - `website/public/es/index.html`, `website/public/en/index.html` y `website/public/assets/social/`: el bloque público “support/follow” del sitio también deja Patreon y pasa a Ko-fi, con CTA visible y asset social actualizado.
+  - `docs/tree_folders_files.md`: se actualiza la documentación viva para reflejar Ko-fi como plataforma vigente de sponsorship y los nuevos assets `public/assets/kofi_symbol.png` y `website/public/assets/social/kofi_symbol.png`.
 - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`:
   - `import-extract-launch-ocr-activation` deja de invocar `authenticate(...)` de `@google-cloud/local-auth` y pasa a delegar en el helper propio `authenticateGoogleLoopback(...)`.
   - el flujo mantiene la persistencia cifrada del token y la validación posterior ya existentes, pero ahora el navegador del sistema recibe una URL OAuth generada por el repo con `access_type=offline`, `prompt=consent`, `state` y PKCE.
