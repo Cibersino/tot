@@ -311,6 +311,15 @@
           "check": "Verifica risultato",
           "continue": "Continua"
         }
+      },
+      "result": {
+        "title": "Risultato della velocità di lettura",
+        "measured_wpm": "WPM misurati",
+        "elapsed_time": "Tempo",
+        "word_count": "Parole",
+        "buttons": {
+          "continue": "Continua"
+        }
       }
     },
     "modal_preset": {
@@ -426,6 +435,7 @@
       "reading_test_no_matching_files": "Non restano file di test non usati che corrispondano alla selezione corrente.",
       "reading_test_current_text_empty": "Il testo corrente è vuoto. Carica o scrivi prima un testo prima di avviare il test con il testo corrente.",
       "reading_test_result_invalid": "Il risultato del test non ha potuto essere convertito in un WPM valido. Il flusso è terminato senza aprire la finestra del preset.",
+      "reading_test_result_unavailable": "Non è stato possibile mostrare il risultato della velocità di lettura. Il flusso è continuato.",
       "reading_test_preset_unavailable": "La finestra del preset non ha potuto essere aperta dopo il test.",
       "reading_test_questions_unavailable": "La finestra delle domande di comprensione non ha potuto essere aperta. Il flusso è terminato prima della creazione del preset.",
       "reading_test_pool_import_failed": "Non è stato possibile importare i file del test di velocità di lettura.",

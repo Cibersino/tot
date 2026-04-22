@@ -311,6 +311,15 @@
           "check": "Ver resultado",
           "continue": "Continuar"
         }
+      },
+      "result": {
+        "title": "Resultado de velocidad de lectura",
+        "measured_wpm": "WPM medidos",
+        "elapsed_time": "Tiempo",
+        "word_count": "Palabras",
+        "buttons": {
+          "continue": "Continuar"
+        }
       }
     },
     "modal_preset": {

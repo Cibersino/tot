@@ -311,6 +311,15 @@
           "check": "Kintual chum tripachi",
           "continue": "Amuleal"
         }
+      },
+      "result": {
+        "title": "Chum tripachi pürüm chillkatun",
+        "measured_wpm": "WPM tripachi",
+        "elapsed_time": "Antü",
+        "word_count": "Dungu",
+        "buttons": {
+          "continue": "Amuleal"
+        }
       }
     },
     "modal_preset": {
@@ -426,6 +435,7 @@
       "reading_test_no_matching_files": "Ngelay pepiluwal we chillka feypingen mu.",
       "reading_test_current_text_empty": "Ngelay chillka fantepu. Yafmatunge kam wirintunge chillka petu yalltun.",
       "reading_test_result_invalid": "Chum tripachi pepiluwün gelay WPM. Amulelay kintual modal preset.",
+      "reading_test_result_unavailable": "Pepilay pengelün chum tripachi pürüm chillkatun. Feymew amutuy ti rüpü.",
       "reading_test_preset_unavailable": "Ngelay kintual modal preset pepiluwün mu.",
       "reading_test_questions_unavailable": "Ngelay kintual modal ramtun. Amulelay yalltul preset.",
       "reading_test_pool_import_failed": "Pepiluwün ñi pürüm chillkatun archivos koneltulay.",

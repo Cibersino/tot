@@ -9,7 +9,7 @@
 // - Wait for editor/flotante window readiness and visibility.
 // - Open the reading session windows.
 // - Update the editor prestart overlay state.
-// - Open the questions modal window.
+// - Open the result/questions modal windows.
 // =============================================================================
 
 // =============================================================================
@@ -265,6 +265,93 @@ function openQuestionsWindow(questions, options = {}) {
   });
 }
 
+function openResultWindow(resultInfo, options = {}) {
+  const {
+    resolveMainWindow,
+    log,
+    resultWindowPreload,
+    resultWindowHtml,
+  } = options;
+
+  return new Promise((resolve) => {
+    function tryCloseWindowIfAlive(winToClose) {
+      try {
+        if (!winToClose.isDestroyed()) winToClose.close();
+      } catch (closeErr) {
+        log.warn('Reading-test result window forced close failed (ignored):', closeErr);
+      }
+    }
+
+    const mainWin = resolveMainWindow();
+    if (!mainWin || mainWin.isDestroyed()) {
+      log.warn('Reading-test result window unavailable (ignored): main window unavailable.');
+      resolve({ ok: false, code: 'MAIN_WINDOW_UNAVAILABLE' });
+      return;
+    }
+
+    let settled = false;
+    let win = null;
+
+    const settle = (result) => {
+      if (settled) return false;
+      settled = true;
+      resolve(result);
+      return true;
+    };
+
+    try {
+      win = new BrowserWindow({
+        width: 420,
+        height: 320,
+        minWidth: 360,
+        minHeight: 280,
+        parent: mainWin,
+        modal: true,
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        show: false,
+        webPreferences: {
+          preload: resultWindowPreload,
+          contextIsolation: true,
+          nodeIntegration: false,
+          sandbox: true,
+        },
+      });
+    } catch (err) {
+      log.warn('Reading-test result window create failed (ignored):', err);
+      settle({ ok: false, code: 'RESULT_WINDOW_CREATE_FAILED' });
+      return;
+    }
+
+    win.setMenu(null);
+    win.once('ready-to-show', () => {
+      if (settled || win.isDestroyed()) return;
+      win.show();
+      try {
+        win.webContents.send('reading-test-result-init', resultInfo);
+      } catch (err) {
+        log.warn('Reading-test result init failed (ignored):', err);
+        if (settle({ ok: false, code: 'RESULT_WINDOW_INIT_FAILED' })) {
+          tryCloseWindowIfAlive(win);
+        }
+      }
+    });
+
+    win.on('closed', () => {
+      if (settled) return;
+      settle({ ok: true });
+    });
+
+    win.loadFile(resultWindowHtml).catch((err) => {
+      log.warn('Reading-test result window load failed (ignored):', err);
+      if (settle({ ok: false, code: 'RESULT_WINDOW_LOAD_FAILED' })) {
+        tryCloseWindowIfAlive(win);
+      }
+    });
+  });
+}
+
 // =============================================================================
 // Exports / module surface
 // =============================================================================
@@ -274,6 +361,7 @@ module.exports = {
   waitForWindowRendererLoad,
   openReadingSessionWindows,
   setEditorPrestartVisible,
+  openResultWindow,
   openQuestionsWindow,
 };
 

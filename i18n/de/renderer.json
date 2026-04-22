@@ -311,6 +311,15 @@
           "check": "Ergebnis prüfen",
           "continue": "Weiter"
         }
+      },
+      "result": {
+        "title": "Ergebnis der Lesegeschwindigkeit",
+        "measured_wpm": "Gemessene WPM",
+        "elapsed_time": "Zeit",
+        "word_count": "Wörter",
+        "buttons": {
+          "continue": "Weiter"
+        }
       }
     },
     "modal_preset": {
@@ -426,6 +435,7 @@
       "reading_test_no_matching_files": "Es sind keine unbenutzten Testdateien mehr vorhanden, die zur aktuellen Auswahl passen.",
       "reading_test_current_text_empty": "Der aktuelle Text ist leer. Laden oder schreiben Sie zuerst einen Text, bevor Sie den Test mit aktuellem Text starten.",
       "reading_test_result_invalid": "Das Testergebnis konnte nicht in einen gültigen WPM-Wert umgewandelt werden. Der Ablauf endete, ohne den Preset-Dialog zu öffnen.",
+      "reading_test_result_unavailable": "Das Ergebnis der Lesegeschwindigkeit konnte nicht angezeigt werden. Der Ablauf wurde fortgesetzt.",
       "reading_test_preset_unavailable": "Der Preset-Dialog konnte nach dem Test nicht geöffnet werden.",
       "reading_test_questions_unavailable": "Der Dialog mit den Verständnisfragen konnte nicht geöffnet werden. Der Ablauf endete vor der Erstellung des Presets.",
       "reading_test_pool_import_failed": "Die Dateien für den Lesegeschwindigkeitstest konnten nicht importiert werden.",
