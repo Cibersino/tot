@@ -60,14 +60,6 @@
       return normalized || fallback;
     }
 
-    function tr(path) {
-      return tRenderer(path);
-    }
-
-    function mr(path, params) {
-      return msgRenderer(path, params);
-    }
-
     async function ensureTranslationsLoaded() {
       const target = normalizeLanguage(state.currentLanguage);
       if (state.translationsLoadedFor === target) return;
@@ -91,16 +83,6 @@
       }
     }
 
-    function formatElapsedTime(ms) {
-      const totalSeconds = Number.isFinite(Number(ms)) && Number(ms) > 0
-        ? Math.floor(Number(ms) / 1000)
-        : 0;
-      const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-      const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-      const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-      return `${hours}:${minutes}:${seconds}`;
-    }
-
     function applyPayloadState(payload) {
       state.measuredWpm = Number.isFinite(payload && payload.measuredWpm)
         ? Math.round(payload.measuredWpm)
@@ -113,13 +95,23 @@
         : 0;
     }
 
+    function formatElapsedTime(ms) {
+      const totalSeconds = Number.isFinite(Number(ms)) && Number(ms) > 0
+        ? Math.floor(Number(ms) / 1000)
+        : 0;
+      const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+      const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+      const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    }
+
     function renderUi() {
-      document.title = tr('renderer.reading_test.result.title');
-      elements.title.textContent = tr('renderer.reading_test.result.title');
-      elements.wpmLabel.textContent = tr('renderer.reading_test.result.measured_wpm');
-      elements.btnContinue.textContent = tr('renderer.reading_test.result.buttons.continue');
+      document.title = tRenderer('renderer.reading_test.result.title');
+      elements.title.textContent = tRenderer('renderer.reading_test.result.title');
+      elements.wpmLabel.textContent = tRenderer('renderer.reading_test.result.measured_wpm');
+      elements.btnContinue.textContent = tRenderer('renderer.reading_test.result.buttons.continue');
       elements.wpmValue.textContent = formatInteger(state.measuredWpm);
-      elements.summary.textContent = `${tr('renderer.reading_test.result.elapsed_time')}: ${formatElapsedTime(state.elapsedMs)} · ${mr('renderer.main.results.words', { n: formatInteger(state.wordCount) })}`;
+      elements.summary.textContent = `${tRenderer('renderer.reading_test.result.elapsed_time')}: ${formatElapsedTime(state.elapsedMs)} · ${msgRenderer('renderer.main.results.words', { n: formatInteger(state.wordCount) })}`;
     }
 
     function enqueueUiSync(updateFn) {
