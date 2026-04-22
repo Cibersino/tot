@@ -383,11 +383,6 @@ test('replace-all waits for matching search completion and authorized matching r
       finalUpdate: true,
     });
 
-    ipcMain.emitChannel('editor-replace-status', { sender: editorWin.webContents }, {
-      replaceAllAllowedByLength: true,
-    });
-    await tick();
-
     const replacePromise = ipcMain.invoke('editor-find-replace-all', findEvent, 'cambio');
     const resyncRequestId = editorWin.webContents.findCalls.at(-1).requestId;
     assert.notEqual(resyncRequestId, initialRequestId);
@@ -453,38 +448,6 @@ test('replace-current aborts when the editor window closes during pending resync
     const result = await replacePromise;
     assert.equal(result.ok, false);
     assert.equal(result.status, 'editor-window-closed');
-  } finally {
-    restore();
-  }
-});
-
-test('authorized replace-all length status is relayed to the find window and unauthorized status is ignored', async () => {
-  const {
-    ipcMain,
-    editorWin,
-    findWin,
-    restore,
-  } = await setupFindHarness();
-
-  try {
-    ipcMain.emitChannel('editor-replace-status', { sender: {} }, {
-      replaceAllAllowedByLength: true,
-    });
-    await tick();
-
-    let lastStateMessage = getLastMessage(findWin.webContents.sentMessages, 'editor-find-state');
-    assert.equal(
-      !!(lastStateMessage && lastStateMessage.payload && lastStateMessage.payload.replaceAllAllowedByLength),
-      false
-    );
-
-    ipcMain.emitChannel('editor-replace-status', { sender: editorWin.webContents }, {
-      replaceAllAllowedByLength: true,
-    });
-    await tick();
-
-    lastStateMessage = getLastMessage(findWin.webContents.sentMessages, 'editor-find-state');
-    assert.equal(lastStateMessage.payload.replaceAllAllowedByLength, true);
   } finally {
     restore();
   }

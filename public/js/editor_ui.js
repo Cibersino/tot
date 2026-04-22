@@ -9,7 +9,7 @@
 // - Apply editor translations and keep document language attributes in sync.
 // - Update local spellcheck, font size, and read-progress UI state.
 // - Restore editor focus after UI actions that temporarily move it elsewhere.
-// - Run the reading-test countdown overlay and its related UI state.
+// - Control the reading-test prestart overlay and its related UI state.
 // - Persist editor text-size changes through the editor bridge when available.
 
 (() => {
@@ -20,6 +20,11 @@
   function createEditorUI(ctx) {
     const { log, editorAPI, DEFAULT_LANG, dom, state } = ctx;
     const {
+      editorWrap,
+      editorLayout,
+      editorLeftGutter,
+      editorTextColumn,
+      editorRightGutter,
       editor,
       btnTrash,
       calcWhileTyping,
@@ -37,8 +42,8 @@
       readProgressLabel,
       readProgressValue,
       bottomBar,
-      readingTestCountdownOverlay,
-      readingTestCountdownValue,
+      readingTestPrestartOverlay,
+      readingTestPrestartMessage,
     } = dom;
 
     const { loadRendererTranslations, tRenderer, msgRenderer } = ctx.rendererI18n || {};
@@ -100,6 +105,9 @@
         readProgress.setAttribute('aria-label', readProgressText);
         if (readProgressLabel) readProgressLabel.setAttribute('data-label', readProgressText);
       }
+      if (readingTestPrestartMessage) {
+        readingTestPrestartMessage.textContent = tr('renderer.reading_test.prestart.reminder');
+      }
       if (btnTextSizeDecrease) {
         const decreaseText = tr('renderer.editor.decrease_text_size');
         btnTextSizeDecrease.setAttribute('aria-label', decreaseText);
@@ -158,6 +166,45 @@
       }
       updateEditorTextSizeUi();
       scheduleReadProgressUiUpdate();
+    }
+
+    function clampEditorMaximizedTextWidthPx(value) {
+      return ctx.editorMaximizedLayoutCore.clampPreferredTextWidthPx(value, {
+        defaultPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+        minPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
+        maxPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
+      });
+    }
+
+    function getEditorMaximizedLayoutStageWidthPx() {
+      if (!editorLayout) return 0;
+      const width = Math.round(Number(editorLayout.clientWidth));
+      return Number.isFinite(width) && width > 0 ? width : 0;
+    }
+
+    function syncEditorMaximizedLayout() {
+      const maximized = !!state.editorWindowMaximized;
+      document.body.classList.toggle('editor-maximized-layout', maximized);
+      if (document && document.documentElement) {
+        document.documentElement.style.setProperty(
+          '--editor-maximized-text-width',
+          `${state.maximizedTextWidthPx}px`
+        );
+      }
+      if (editorWrap) {
+        editorWrap.setAttribute('data-maximized-layout', maximized ? 'true' : 'false');
+      }
+      scheduleReadProgressUiUpdate();
+    }
+
+    function setLocalEditorWindowMaximized(maximized) {
+      state.editorWindowMaximized = !!maximized;
+      syncEditorMaximizedLayout();
+    }
+
+    function setLocalEditorMaximizedTextWidthPx(value) {
+      state.maximizedTextWidthPx = clampEditorMaximizedTextWidthPx(value);
+      syncEditorMaximizedLayout();
     }
 
     function updateEditorTextSizeUi() {
@@ -231,7 +278,7 @@
     }
 
     // =============================================================================
-    // Focus And Countdown Helpers
+    // Focus And Prestart Helpers
     // =============================================================================
 
     function restoreFocusToEditor(pos = null) {
@@ -249,34 +296,6 @@
         }, 0);
       } catch (err) {
         log.warnOnce('editor:restoreFocus:outer_catch', 'restoreFocusToEditor wrapper failed (ignored):', err);
-      }
-    }
-
-    function clearReadingTestCountdownTimeouts() {
-      for (const timeoutId of state.readingTestCountdownTimeouts) {
-        clearTimeout(timeoutId);
-      }
-      state.readingTestCountdownTimeouts = [];
-    }
-
-    function notifyReadingTestCountdownReady(token) {
-      if (!token) return true;
-      if (!editorAPI || typeof editorAPI.notifyReadingTestCountdownReady !== 'function') {
-        log.warn(
-          'editorAPI.notifyReadingTestCountdownReady missing; reading-test countdown disabled.'
-        );
-        return false;
-      }
-
-      try {
-        editorAPI.notifyReadingTestCountdownReady({ token });
-        return true;
-      } catch (err) {
-        log.warn(
-          'Reading-test countdown ready ack failed; reading-test countdown disabled:',
-          err
-        );
-        return false;
       }
     }
 
@@ -301,18 +320,18 @@
       scheduleReadProgressUiUpdate();
     }
 
-    function setReadingTestCountdownVisible(visible) {
-      if (!readingTestCountdownOverlay) return;
-      document.body.classList.toggle('reading-test-countdown-active', !!visible);
-      readingTestCountdownOverlay.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    function setReadingTestPrestartVisible(visible) {
+      if (!readingTestPrestartOverlay) return;
+      document.body.classList.toggle('reading-test-prestart-active', !!visible);
+      readingTestPrestartOverlay.setAttribute('aria-hidden', visible ? 'false' : 'true');
 
       if (visible) {
         positionEditorAtTop();
         try {
-          readingTestCountdownOverlay.focus();
+          readingTestPrestartOverlay.focus();
         } catch (err) {
           log.warn(
-            'Reading-test countdown focus failed (ignored):',
+            'Reading-test prestart focus failed (ignored):',
             err
           );
         }
@@ -323,49 +342,15 @@
       }, 0);
     }
 
-    function startReadingTestCountdown(payload = {}) {
-      if (!readingTestCountdownOverlay || !readingTestCountdownValue) {
+    function applyReadingTestPrestartState(payload = {}) {
+      if (!readingTestPrestartOverlay) {
         log.warn(
-          'Reading-test countdown DOM missing; overlay countdown skipped.'
+          'Reading-test prestart DOM missing; overlay update skipped.'
         );
         return;
       }
 
-      const secondsRaw = Number(payload.seconds);
-      const stepMsRaw = Number(payload.stepMs);
-      const seconds = Number.isFinite(secondsRaw) && secondsRaw >= 1
-        ? Math.floor(secondsRaw)
-        : 5;
-      const stepMs = Number.isFinite(stepMsRaw) && stepMsRaw >= 250
-        ? Math.floor(stepMsRaw)
-        : 1000;
-      const token = payload && typeof payload.token === 'string'
-        ? payload.token
-        : '';
-
-      const runId = ++state.readingTestCountdownRunId;
-      clearReadingTestCountdownTimeouts();
-
-      readingTestCountdownValue.textContent = String(seconds);
-      setReadingTestCountdownVisible(true);
-      if (!notifyReadingTestCountdownReady(token)) {
-        setReadingTestCountdownVisible(false);
-        return;
-      }
-
-      for (let index = 1; index < seconds; index += 1) {
-        const nextValue = seconds - index;
-        state.readingTestCountdownTimeouts.push(setTimeout(() => {
-          if (runId !== state.readingTestCountdownRunId) return;
-          readingTestCountdownValue.textContent = String(nextValue);
-        }, index * stepMs));
-      }
-
-      state.readingTestCountdownTimeouts.push(setTimeout(() => {
-        if (runId !== state.readingTestCountdownRunId) return;
-        clearReadingTestCountdownTimeouts();
-        setReadingTestCountdownVisible(false);
-      }, seconds * stepMs));
+      setReadingTestPrestartVisible(payload && payload.visible === true);
     }
 
     // =============================================================================
@@ -415,6 +400,44 @@
       }
     }
 
+    async function persistEditorMaximizedTextWidthPx(nextTextWidthPx, options = {}) {
+      const previousTextWidthPx = clampEditorMaximizedTextWidthPx(
+        Object.prototype.hasOwnProperty.call(options, 'previousTextWidthPx')
+          ? options.previousTextWidthPx
+          : state.maximizedTextWidthPx
+      );
+      const normalizedNextTextWidthPx = clampEditorMaximizedTextWidthPx(nextTextWidthPx);
+      const skipLocalApply = options && options.skipLocalApply === true;
+
+      if (!editorAPI || typeof editorAPI.setMaximizedTextWidthPx !== 'function') {
+        log.warn(
+          'editorAPI.setMaximizedTextWidthPx missing; maximized editor width update ignored.'
+        );
+        return false;
+      }
+
+      if (normalizedNextTextWidthPx === previousTextWidthPx) {
+        syncEditorMaximizedLayout();
+        return true;
+      }
+
+      if (!skipLocalApply) {
+        setLocalEditorMaximizedTextWidthPx(normalizedNextTextWidthPx);
+      }
+
+      try {
+        const result = await editorAPI.setMaximizedTextWidthPx(normalizedNextTextWidthPx);
+        if (!result || result.ok !== true) {
+          throw new Error(result && result.error ? String(result.error) : 'unknown');
+        }
+        return true;
+      } catch (err) {
+        log.error('Error updating editor maximized text width setting:', err);
+        setLocalEditorMaximizedTextWidthPx(previousTextWidthPx);
+        return false;
+      }
+    }
+
     function decreaseEditorFontSize() {
       return persistEditorFontSizePx(state.editorFontSizePx - ctx.EDITOR_FONT_SIZE_STEP_PX);
     }
@@ -427,6 +450,117 @@
       return persistEditorFontSizePx(ctx.EDITOR_FONT_SIZE_DEFAULT_PX);
     }
 
+    function endEditorMarginDrag({ persist = true } = {}) {
+      if (!state.editorMarginDrag) return;
+
+      const drag = state.editorMarginDrag;
+      state.editorMarginDrag = null;
+      document.body.classList.remove('editor-margin-dragging');
+
+      if (typeof drag.cleanup === 'function') {
+        drag.cleanup();
+      }
+
+      if (!persist) {
+        setLocalEditorMaximizedTextWidthPx(drag.initialPreferredTextWidthPx);
+        restoreFocusToEditor();
+        return;
+      }
+
+      const nextTextWidthPx = state.maximizedTextWidthPx;
+      void persistEditorMaximizedTextWidthPx(nextTextWidthPx, {
+        previousTextWidthPx: drag.initialPreferredTextWidthPx,
+        skipLocalApply: true,
+      }).finally(() => {
+        restoreFocusToEditor();
+      });
+    }
+
+    function handleEditorMarginPointerDown(event, side) {
+      if (!state.editorWindowMaximized || !editorTextColumn || !editorLayout) return;
+
+      const pointerId = Number(event && event.pointerId);
+      if (!Number.isFinite(pointerId)) return;
+
+      if (state.editorMarginDrag) {
+        endEditorMarginDrag({ persist: false });
+      }
+
+      event.preventDefault();
+
+      const target = side === 'right' ? editorRightGutter : editorLeftGutter;
+      const initialRenderedTextWidthPx =
+        Math.round(Number(editorTextColumn.clientWidth)) || state.maximizedTextWidthPx;
+      const initialPreferredTextWidthPx = state.maximizedTextWidthPx;
+      const stageWidthPx = getEditorMaximizedLayoutStageWidthPx();
+      const dragOptions = {
+        stageWidthPx,
+        minPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
+        maxPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
+        defaultPx: ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+        gutterMinPx: ctx.EDITOR_MAXIMIZED_GUTTER_MIN_PX,
+      };
+
+      document.body.classList.add('editor-margin-dragging');
+
+      try {
+        if (target && typeof target.setPointerCapture === 'function') {
+          target.setPointerCapture(pointerId);
+        }
+      } catch (err) {
+        log.warn('Editor gutter pointer capture failed (ignored):', err);
+      }
+
+      const onPointerMove = (moveEvent) => {
+        if (!state.editorMarginDrag || moveEvent.pointerId !== pointerId) return;
+        const nextTextWidthPx = ctx.editorMaximizedLayoutCore.computeNextPreferredTextWidthPxFromDrag(
+          {
+            initialTextWidthPx: initialRenderedTextWidthPx,
+            pointerDeltaPx: moveEvent.clientX - state.editorMarginDrag.startClientX,
+            side,
+          },
+          dragOptions
+        );
+        setLocalEditorMaximizedTextWidthPx(nextTextWidthPx);
+      };
+
+      const onPointerEnd = (endEvent) => {
+        if (!state.editorMarginDrag || endEvent.pointerId !== pointerId) return;
+        endEditorMarginDrag({ persist: endEvent.type !== 'pointercancel' });
+      };
+
+      const cleanup = () => {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerEnd);
+        window.removeEventListener('pointercancel', onPointerEnd);
+        try {
+          if (
+            target
+            && typeof target.releasePointerCapture === 'function'
+            && typeof target.hasPointerCapture === 'function'
+            && target.hasPointerCapture(pointerId)
+          ) {
+            target.releasePointerCapture(pointerId);
+          }
+        } catch {}
+      };
+
+      state.editorMarginDrag = {
+        pointerId,
+        startClientX: Number(event.clientX) || 0,
+        initialPreferredTextWidthPx,
+        cleanup,
+      };
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerEnd);
+      window.addEventListener('pointercancel', onPointerEnd);
+    }
+
+    function resetEditorMaximizedTextWidth() {
+      return persistEditorMaximizedTextWidthPx(ctx.EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX);
+    }
+
     // =============================================================================
     // Module Surface
     // =============================================================================
@@ -435,19 +569,26 @@
       applyDocumentLanguage,
       setLocalSpellcheckEnabled,
       clampEditorFontSizePx,
+      clampEditorMaximizedTextWidthPx,
       updateEditorTextSizeUi,
       updateReadProgressUi,
       scheduleReadProgressUiUpdate,
       setLocalEditorFontSizePx,
+      syncEditorMaximizedLayout,
+      setLocalEditorWindowMaximized,
+      setLocalEditorMaximizedTextWidthPx,
       ensureEditorTranslations,
       applyEditorTranslations,
       restoreFocusToEditor,
-      startReadingTestCountdown,
+      applyReadingTestPrestartState,
       applyTextareaDefaults,
       persistEditorFontSizePx,
       decreaseEditorFontSize,
       increaseEditorFontSize,
       resetEditorFontSize,
+      persistEditorMaximizedTextWidthPx,
+      handleEditorMarginPointerDown,
+      resetEditorMaximizedTextWidth,
     };
   }
 

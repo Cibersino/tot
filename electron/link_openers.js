@@ -29,9 +29,10 @@ const ALLOWED_EXTERNAL_HOSTS = new Set([
   'api.github.com',
   'raw.githubusercontent.com',
   'doi.org',
+  'ko-fi.com',
+  'www.ko-fi.com',
   'totapp.org',
   'www.totapp.org',
-  'www.patreon.com',
   'drive.google.com',
 ]);
 const ALLOWED_MAILTO_ADDRESS = 'cibersino@gmail.com';

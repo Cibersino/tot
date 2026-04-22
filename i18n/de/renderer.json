@@ -28,7 +28,7 @@
         "task_new": "Neue Aufgabe",
         "task_load": "Aufgabe laden",
         "cibersino_website": "Cibersino-Website",
-        "cibersino_patreon": "Cibersino-Patreon",
+        "cibersino_kofi": "Unterstütze mich auf Ko-fi",
         "new_preset": "Erstellen Sie ein neues Preset",
         "edit_preset": "Bearbeiten Sie das ausgewählte Preset",
         "delete_preset": "Löschen Sie das ausgewählte Preset",
@@ -124,6 +124,7 @@
       "close_title": "Suchleiste schliessen",
       "replace_title": "Aktuelle Übereinstimmung ersetzen",
       "replace_all_title": "Alle Übereinstimmungen ersetzen",
+      "replace_timeout": "Ersetzen hat zu lange gedauert. Bitte erneut versuchen.",
       "status_no_matches": "Keine Treffer",
       "status_empty_query": "Zum Suchen tippen"
     },
@@ -262,9 +263,12 @@
       }
     },
     "reading_test": {
+      "prestart": {
+        "reminder": "Drücken Sie Play (▶) im schwebenden Fenster, wenn Sie bereit sind zu beginnen. Sobald der Test gestartet ist, drücken Sie Pause (⏸) erst, wenn Sie mit dem Lesen fertig sind: Pause beendet den Test; sie pausiert den Timer nicht. Verwenden Sie Stopp/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten."
+      },
       "entry": {
         "title": "Lesegeschwindigkeitstest",
-        "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text, startet die Zeitmessung und bittet Sie, normal zu lesen; wenn Sie fertig sind, drücken Sie Pause (⏸) im schwebenden Fenster. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.\nDieser Pool verwendet kurze Texte; behandeln Sie das Ergebnis daher mit Vorsicht. Es sollte nicht direkt auf lange Texte übertragen werden, bei denen in der Regel positive Faktoren wie Lesefluss und Kontextaufbau sowie negative Faktoren wie mentales Rekapitulieren und Ermüdung ins Spiel kommen.",
+        "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text und wartet darauf, dass Sie Play (▶) im schwebenden Fenster drücken, wenn Sie bereit sind zu beginnen. Sobald der Test gestartet ist, drücken Sie Pause (⏸) erst, wenn Sie mit dem Lesen fertig sind: Pause beendet den Test; sie pausiert den Timer nicht. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.\nDieser Pool verwendet kurze Texte; behandeln Sie das Ergebnis daher mit Vorsicht. Es sollte nicht direkt auf lange Texte übertragen werden, bei denen in der Regel positive Faktoren wie Lesefluss und Kontextaufbau sowie negative Faktoren wie mentales Rekapitulieren und Ermüdung ins Spiel kommen.",
         "eligible_count": "Geeignete Dateien: {count}",
         "pool_exhausted_message": "Es sind keine unbenutzten Testdateien mehr vorhanden. Setzen Sie den Pool zurück oder fügen Sie weitere Dateien hinzu.",
         "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",

@@ -37,10 +37,7 @@ log.debug('Reading test session starting...');
 const QUESTIONS_WINDOW_PRELOAD = path.join(__dirname, 'reading_test_questions_preload.js');
 const QUESTIONS_WINDOW_HTML = path.join(__dirname, '../public/reading_test_questions.html');
 const DEVELOPER_EMAIL = 'cibersino@gmail.com';
-const PRESTART_COUNTDOWN_SECONDS = 5;
-const PRESTART_COUNTDOWN_STEP_MS = 1000;
 const WINDOW_VISIBLE_TIMEOUT_MS = 5000;
-const COUNTDOWN_READY_TIMEOUT_MS = 5000;
 
 // =============================================================================
 // Controller factory
@@ -104,14 +101,17 @@ function createController(options = {}) {
     active: false,
     stage: 'idle',
     selectedEntry: null,
+    armingReady: false,
   };
 
   const runtimeFlags = {
     suppressUnexpectedEditorClose: false,
     suppressUnexpectedFlotanteClose: false,
   };
-  let nextCountdownToken = 0;
-  const pendingCountdownReadyAcks = new Map();
+  const activeSessionWindows = {
+    editorWin: null,
+    flotanteWin: null,
+  };
 
   // =============================================================================
   // Helpers
@@ -163,6 +163,7 @@ function createController(options = {}) {
     state.active = stage !== 'idle';
     state.stage = stage;
     state.selectedEntry = selectedEntry || null;
+    state.armingReady = false;
     broadcastState();
   }
 
@@ -170,6 +171,9 @@ function createController(options = {}) {
     state.active = false;
     state.stage = 'idle';
     state.selectedEntry = null;
+    state.armingReady = false;
+    activeSessionWindows.editorWin = null;
+    activeSessionWindows.flotanteWin = null;
     runtimeFlags.suppressUnexpectedEditorClose = false;
     runtimeFlags.suppressUnexpectedFlotanteClose = false;
     broadcastState();
@@ -180,15 +184,20 @@ function createController(options = {}) {
     return !!(win && !win.isDestroyed());
   }
 
-  function wait(ms) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
+  function setArmingReady(ready) {
+    state.armingReady = ready === true;
   }
 
-  function buildCountdownToken() {
-    nextCountdownToken += 1;
-    return `reading-test-countdown-${Date.now()}-${nextCountdownToken}`;
+  function setActiveSessionWindows({ editorWin = null, flotanteWin = null } = {}) {
+    activeSessionWindows.editorWin = editorWin;
+    activeSessionWindows.flotanteWin = flotanteWin;
+  }
+
+  function getActiveSessionWindows() {
+    return {
+      editorWin: activeSessionWindows.editorWin,
+      flotanteWin: activeSessionWindows.flotanteWin,
+    };
   }
 
   function tryResetCrono(warningMessage) {
@@ -326,6 +335,8 @@ function createController(options = {}) {
   function closeReadingWindows() {
     runtimeFlags.suppressUnexpectedEditorClose = true;
     runtimeFlags.suppressUnexpectedFlotanteClose = true;
+    setArmingReady(false);
+    setActiveSessionWindows();
     try {
       closeEditorWindow();
     } catch (err) {
@@ -338,30 +349,8 @@ function createController(options = {}) {
     }
   }
 
-  function cleanupStartFailure({ clearCurrentText = false } = {}) {
-    tryResetCrono('Reading-test start-failure crono reset failed (ignored):');
-
-    closeReadingWindows();
-
-    try {
-      if (clearCurrentText) {
-        tryClearCurrentText('Reading-test start-failure current-text clear failed (ignored):');
-      }
-    } finally {
-      runtimeFlags.suppressUnexpectedEditorClose = false;
-      runtimeFlags.suppressUnexpectedFlotanteClose = false;
-    }
-  }
-
-  function startEditorCountdown(editorWin) {
-    return readingTestSessionWindows.startEditorCountdown(editorWin, {
-      buildCountdownToken,
-      pendingCountdownReadyAcks,
-      log,
-      countdownReadyTimeoutMs: COUNTDOWN_READY_TIMEOUT_MS,
-      prestartCountdownSeconds: PRESTART_COUNTDOWN_SECONDS,
-      prestartCountdownStepMs: PRESTART_COUNTDOWN_STEP_MS,
-    });
+  function showEditorPrestart(editorWin, visible) {
+    return readingTestSessionWindows.setEditorPrestartVisible(editorWin, visible);
   }
 
   function openQuestionsWindow(questions) {
@@ -433,15 +422,26 @@ function createController(options = {}) {
     return readingTestSessionFlow.continueArmingSession(selectedEntry, {
       state,
       openReadingSessionWindows,
-      startEditorCountdown,
+      setActiveSessionWindows,
+      showEditorPrestart,
+      setArmingReady,
       showEditorWindow,
       waitForWindowVisible,
-      wait,
-      prestartCountdownSeconds: PRESTART_COUNTDOWN_SECONDS,
-      prestartCountdownStepMs: PRESTART_COUNTDOWN_STEP_MS,
+      failArmingSession,
+      log,
+    });
+  }
+
+  function startArmedSession() {
+    return readingTestSessionFlow.startArmedSession({
+      state,
+      getActiveSessionWindows,
       isAliveWindow,
+      readingTestPool,
+      showEditorPrestart,
       startCrono,
       setStage,
+      setArmingReady,
       failArmingSession,
       log,
     });
@@ -477,8 +477,6 @@ function createController(options = {}) {
       ensureEligibleSelection,
       chooseRandomEntry,
       applyCurrentText,
-      readingTestPool,
-      cleanupStartFailure,
       buildSessionEntry,
       setStage,
       continueArmingSession,
@@ -500,6 +498,7 @@ function createController(options = {}) {
   function handleFlotanteCommand(cmd) {
     return readingTestSessionFlow.handleFlotanteCommand(cmd, {
       state,
+      startArmedSession,
       cancelActiveSession,
       finishRunningSession,
       log,
@@ -527,8 +526,8 @@ function createController(options = {}) {
   // =============================================================================
 
   function registerIpc(ipcMain) {
-    if (!ipcMain || typeof ipcMain.handle !== 'function' || typeof ipcMain.on !== 'function') {
-      throw new Error('[reading-test-session] registerIpc requires ipcMain with handle/on');
+    if (!ipcMain || typeof ipcMain.handle !== 'function') {
+      throw new Error('[reading-test-session] registerIpc requires ipcMain.handle()');
     }
 
     function isAuthorizedMainSender(event) {
@@ -549,28 +548,6 @@ function createController(options = {}) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
       return checkEntryAvailability();
-    });
-
-    ipcMain.on('reading-test-countdown-ready', (event, payload) => {
-      const token = payload && typeof payload.token === 'string'
-        ? payload.token
-        : '';
-      if (!token) {
-        log.warn('Reading-test countdown ready ack ignored: missing token.');
-        return;
-      }
-
-      const pendingAck = pendingCountdownReadyAcks.get(token);
-      if (!pendingAck) {
-        log.warn('Reading-test countdown ready ack ignored: token not pending.', { token });
-        return;
-      }
-      if (pendingAck.sender !== event.sender) {
-        log.warn('Reading-test countdown ready ack ignored: sender mismatch.');
-        return;
-      }
-
-      pendingAck.settle();
     });
 
     ipcMain.handle('reading-test-reset-pool', async (event) => {

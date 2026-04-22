@@ -269,6 +269,8 @@ function showEditorWindow(options = {}) {
     editorWin.show();
   }
 
+  editorState.notifyWindowState(editorWin, 'showEditorWindow');
+
   return editorWin;
 }
 
@@ -1740,6 +1742,10 @@ app.whenReady().then(() => {
     mainWin,
     editorWin,
   }));
+
+  editorState.registerIpc(ipcMain, {
+    getEditorWindow: () => editorWin,
+  });
 
   editorFindMain.registerIpc(ipcMain);
 

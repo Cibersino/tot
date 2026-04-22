@@ -99,7 +99,6 @@ const findState = {
   finalUpdate: true,
   expanded: false,
   busy: false,
-  replaceAllAllowedByLength: false,
 };
 
 // =============================================================================
@@ -123,7 +122,6 @@ function normalizeState(payload) {
   findState.finalUpdate = !!payload.finalUpdate;
   findState.expanded = !!payload.expanded;
   findState.busy = !!payload.busy;
-  findState.replaceAllAllowedByLength = !!payload.replaceAllAllowedByLength;
 }
 
 async function ensureTranslations(lang) {
@@ -154,16 +152,12 @@ function applyUiState() {
 
   const hasQuery = findState.query.length > 0;
   const hasMatches = findState.matches > 0;
-  const canReplaceAll = hasQuery &&
-    hasMatches &&
-    findState.finalUpdate &&
-    findState.replaceAllAllowedByLength;
   inputEl.disabled = findState.busy;
   replaceInputEl.disabled = findState.busy;
   prevEl.disabled = findState.busy || !hasQuery;
   nextEl.disabled = findState.busy || !hasQuery;
   replaceOneEl.disabled = findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
-  replaceAllEl.disabled = findState.busy || !canReplaceAll;
+  replaceAllEl.disabled = findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
   toggleEl.disabled = findState.busy;
   closeEl.disabled = findState.busy;
   statusEl.textContent = resolveStatusText();
@@ -240,6 +234,32 @@ function focusRequestedTarget(target, selectAll = false) {
   }
 }
 
+function notifyReplaceTimeout() {
+  if (!window.Notify || typeof window.Notify.notifyEditor !== 'function') {
+    log.warnOnce(
+      'editor-find.notify.replaceTimeout.unavailable',
+      'Notify.notifyEditor unavailable; replace timeout toast skipped.'
+    );
+    return;
+  }
+
+  try {
+    window.Notify.notifyEditor('renderer.editor_find.replace_timeout', {
+      type: 'error',
+      duration: 5000,
+    });
+  } catch (err) {
+    log.warn('editor-find: failed to show replace-timeout toast:', err);
+  }
+}
+
+function handleReplaceResult(result) {
+  if (!result || typeof result !== 'object') return;
+  if (result.status === 'timeout') {
+    notifyReplaceTimeout();
+  }
+}
+
 async function pushQuery() {
   try {
     await findApi.setQuery(inputEl.value || '');
@@ -254,7 +274,8 @@ async function pushQuery() {
 
 async function runReplaceCurrent() {
   try {
-    await findApi.replaceCurrent(replaceInputEl.value || '');
+    const result = await findApi.replaceCurrent(replaceInputEl.value || '');
+    handleReplaceResult(result);
   } catch (err) {
     log.error('Error sending replace-current request to main process:', err);
   }
@@ -262,7 +283,8 @@ async function runReplaceCurrent() {
 
 async function runReplaceAll() {
   try {
-    await findApi.replaceAll(replaceInputEl.value || '');
+    const result = await findApi.replaceAll(replaceInputEl.value || '');
+    handleReplaceResult(result);
   } catch (err) {
     log.error('Error sending replace-all request to main process:', err);
   }

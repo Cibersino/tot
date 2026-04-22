@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Read and update selection state used by typing, paste, drop, and replace flows.
 // - Apply native-first insert and replace operations with local fallbacks.
-// - Publish replace eligibility and build replace responses for main-driven requests.
+// - Build replace responses for main-driven requests.
 // - Synchronize editor text back to main and surface truncation feedback.
 // - Reconcile external text updates without echoing editor-originated changes back to main.
 
@@ -225,41 +225,60 @@
       }
     }
 
-    function tryNativeReplaceWholeValueWithoutSync(nextValue) {
+    function commitWholeValueNativeFirstWithoutSync(nextValue, { focusWarnKey = 'focus.prevActive.wholeValue.native' } = {}) {
+      const safeNextValue = String(nextValue || '');
       const previousActiveElement = document.activeElement;
 
       try {
         editor.focus();
         selectAllEditor();
-        if (tryNativeReplaceWholeValueSelection(nextValue)) {
-          return true;
+        if (!tryNativeReplaceWholeValueSelection(safeNextValue)) {
+          editor.value = safeNextValue;
+          dispatchNativeInputEvent();
         }
-
-        editor.value = nextValue;
-        dispatchNativeInputEvent();
         return true;
       } catch (err) {
-        log.error('tryNativeReplaceWholeValueWithoutSync error:', err);
-        return false;
+        log.warn(
+          'Native whole-value replace failed; using direct update fallback:',
+          err
+        );
+        try {
+          editor.value = safeNextValue;
+          dispatchNativeInputEvent();
+          return true;
+        } catch (fallbackErr) {
+          log.error('commitWholeValueNativeFirstWithoutSync error:', fallbackErr);
+          return false;
+        }
       } finally {
-        restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.replaceAll.native');
+        restorePreviousActiveElement(previousActiveElement, focusWarnKey);
       }
     }
 
-    function publishReplaceStatus() {
-      try {
-        editorAPI.sendReplaceStatus({
-          replaceAllAllowedByLength: editorFindReplaceCore.isReplaceAllAllowedByLength({
-            value: editor.value,
-            smallUpdateThreshold: ctx.SMALL_UPDATE_THRESHOLD,
-          }),
+    function commitWholeValueWithThresholdPolicy(
+      nextValue,
+      {
+        nativeFocusWarnKey = 'focus.prevActive.wholeValue.native',
+        directFocusWarnKey = 'focus.prevActive.wholeValue.full',
+      } = {}
+    ) {
+      const safeNextValue = String(nextValue || '');
+
+      if (safeNextValue.length <= ctx.SMALL_UPDATE_THRESHOLD) {
+        return commitWholeValueNativeFirstWithoutSync(safeNextValue, {
+          focusWarnKey: nativeFocusWarnKey,
         });
+      }
+
+      const previousActiveElement = document.activeElement;
+      try {
+        replaceEditorValueHidden(safeNextValue);
+        return true;
       } catch (err) {
-        log.warnOnce(
-          'editor.replaceStatus.send_failed',
-          'editorAPI.sendReplaceStatus failed (ignored):',
-          err
-        );
+        log.error('commitWholeValueWithThresholdPolicy error:', err);
+        return false;
+      } finally {
+        restorePreviousActiveElement(previousActiveElement, directFocusWarnKey);
       }
     }
 
@@ -330,14 +349,6 @@
         });
       }
 
-      if (currentValue.length > ctx.SMALL_UPDATE_THRESHOLD) {
-        return buildReplaceResponse('replace-all', requestId, {
-          status: 'noop-length-disallowed',
-          replacements: 0,
-          finalTextLength: currentValue.length,
-        });
-      }
-
       const computed = editorFindReplaceCore.computeLiteralReplaceAll({
         value: currentValue,
         query,
@@ -347,14 +358,6 @@
       if (!computed.replacements || computed.nextValue === currentValue) {
         return buildReplaceResponse('replace-all', requestId, {
           status: 'noop-unchanged',
-          replacements: 0,
-          finalTextLength: currentValue.length,
-        });
-      }
-
-      if (computed.nextValue.length > ctx.SMALL_UPDATE_THRESHOLD) {
-        return buildReplaceResponse('replace-all', requestId, {
-          status: 'noop-length-disallowed',
           replacements: 0,
           finalTextLength: currentValue.length,
         });
@@ -370,7 +373,10 @@
         });
       }
 
-      const replaced = tryNativeReplaceWholeValueWithoutSync(computed.nextValue);
+      const replaced = commitWholeValueWithThresholdPolicy(computed.nextValue, {
+        nativeFocusWarnKey: 'focus.prevActive.replaceAll.native',
+        directFocusWarnKey: 'focus.prevActive.replaceAll.full',
+      });
       if (!replaced) {
         return buildReplaceResponse('replace-all', requestId, {
           ok: false,
@@ -586,9 +592,6 @@
         // Prevent main-driven updates from re-triggering local editor sync while applying them.
         state.suppressLocalUpdate = true;
         try {
-          const useNative = newText.length <= ctx.SMALL_UPDATE_THRESHOLD;
-          const prevActive = document.activeElement;
-
           const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;
           const metaAction = incomingMeta && incomingMeta.action ? incomingMeta.action : null;
 
@@ -597,6 +600,7 @@
               const toInsert = newText.slice(editor.value.length);
               if (!toInsert) return;
               if (toInsert.length <= ctx.SMALL_UPDATE_THRESHOLD) {
+                const prevActive = document.activeElement;
                 try {
                   editor.focus();
                   const tpos = editor.value.length;
@@ -638,8 +642,13 @@
                 }
                 return;
               }
-              replaceEditorValueHidden(newText);
-              restorePreviousActiveElement(prevActive, 'focus.prevActive.append_newline.full');
+              const committed = commitWholeValueWithThresholdPolicy(newText, {
+                nativeFocusWarnKey: 'focus.prevActive.append_newline.native',
+                directFocusWarnKey: 'focus.prevActive.append_newline.full',
+              });
+              if (!committed) {
+                log.error('append_newline full replace failed unexpectedly.');
+              }
               if (truncated) {
                 notifyTextTruncated();
               }
@@ -648,31 +657,13 @@
           }
 
           if (metaSource === 'main' || metaSource === 'main-window' || !metaSource) {
-            if (useNative) {
-              try {
-                editor.focus();
-                selectAllEditor();
-                if (!tryNativeReplaceWholeValueSelection(newText)) {
-                  editor.value = newText;
-                  dispatchNativeInputEvent();
-                }
-              } catch (err) {
-                log.warn(
-                  'Native whole-value replace failed; using direct update fallback:',
-                  err
-                );
-                editor.value = newText;
-                dispatchNativeInputEvent();
-              } finally {
-                restorePreviousActiveElement(prevActive, 'focus.prevActive.main.native');
-              }
-              if (truncated) {
-                notifyTextTruncated();
-              }
-              return;
+            const committed = commitWholeValueWithThresholdPolicy(newText, {
+              nativeFocusWarnKey: 'focus.prevActive.main.native',
+              directFocusWarnKey: 'focus.prevActive.main.full',
+            });
+            if (!committed) {
+              log.error('Whole-value external update failed unexpectedly.');
             }
-            replaceEditorValueHidden(newText);
-            restorePreviousActiveElement(prevActive, 'focus.prevActive.main.full');
             if (truncated) {
               notifyTextTruncated();
             }
@@ -701,7 +692,6 @@
       getBeforeInputIncomingLength,
       setSelectionSafe,
       setCaretSafe,
-      publishReplaceStatus,
       handleReplaceRequest,
       sendCurrentTextToMain,
       handleTruncationResponse,

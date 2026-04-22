@@ -6,10 +6,9 @@ const assert = require('node:assert/strict');
 const {
   selectionMatchesLiteralQuery,
   computeLiteralReplaceAll,
-  isReplaceAllAllowedByLength,
 } = require('../../../public/js/lib/editor_find_replace_core');
 
-test('selectionMatchesLiteralQuery uses literal case-insensitive matching by default', () => {
+test('selectionMatchesLiteralQuery uses case-insensitive matching by default', () => {
   assert.equal(
     selectionMatchesLiteralQuery({
       value: 'uno Prueba dos',
@@ -33,7 +32,42 @@ test('selectionMatchesLiteralQuery uses literal case-insensitive matching by def
   );
 });
 
-test('computeLiteralReplaceAll replaces left-to-right with non-overlapping literal matches', () => {
+test('selectionMatchesLiteralQuery folds accents when matchCase is off', () => {
+  assert.equal(
+    selectionMatchesLiteralQuery({
+      value: 'uno canción dos',
+      selectionStart: 4,
+      selectionEnd: 11,
+      query: 'cancion',
+      matchCase: false,
+    }),
+    true
+  );
+
+  assert.equal(
+    selectionMatchesLiteralQuery({
+      value: 'uno cancion dos',
+      selectionStart: 4,
+      selectionEnd: 11,
+      query: 'canción',
+      matchCase: false,
+    }),
+    true
+  );
+
+  assert.equal(
+    selectionMatchesLiteralQuery({
+      value: 'uno canción dos',
+      selectionStart: 4,
+      selectionEnd: 11,
+      query: 'cancion',
+      matchCase: true,
+    }),
+    false
+  );
+});
+
+test('computeLiteralReplaceAll replaces left-to-right with non-overlapping matches', () => {
   const result = computeLiteralReplaceAll({
     value: 'aaaa',
     query: 'aa',
@@ -44,6 +78,20 @@ test('computeLiteralReplaceAll replaces left-to-right with non-overlapping liter
   assert.deepEqual(result, {
     replacements: 2,
     nextValue: 'bb',
+  });
+});
+
+test('computeLiteralReplaceAll folds accents when matchCase is off', () => {
+  const result = computeLiteralReplaceAll({
+    value: 'canción y cancion',
+    query: 'cancion',
+    replacement: 'tema',
+    matchCase: false,
+  });
+
+  assert.deepEqual(result, {
+    replacements: 2,
+    nextValue: 'tema y tema',
   });
 });
 
@@ -74,29 +122,3 @@ test('computeLiteralReplaceAll returns unchanged text when there are no matches 
     }
   );
 });
-
-test('isReplaceAllAllowedByLength enforces the configured threshold', () => {
-  assert.equal(
-    isReplaceAllAllowedByLength({
-      value: 'abcd',
-      smallUpdateThreshold: 4,
-    }),
-    true
-  );
-
-  assert.equal(
-    isReplaceAllAllowedByLength({
-      value: 'abcde',
-      smallUpdateThreshold: 4,
-    }),
-    false
-  );
-});
-
-test('isReplaceAllAllowedByLength rejects invalid thresholds', () => {
-  assert.throws(
-    () => isReplaceAllAllowedByLength({ value: 'abc', smallUpdateThreshold: -1 }),
-    /\[editor_find_replace_core\] smallUpdateThreshold must be a non-negative number/
-  );
-});
-

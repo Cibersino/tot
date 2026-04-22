@@ -139,7 +139,7 @@ tot/
 │ │ ├── logo-cibersino.svg
 │ │ ├── logo-tot.png
 │ │ ├── logo-tot.svg
-│ │ └── patreon.png
+│ │ └── kofi_symbol.png
 │ ├── fonts/
 │ │ ├── Baskervville-VariableFont_wght.ttf
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
@@ -154,6 +154,7 @@ tot/
 │ │ ├── lib/
 │ │ │ ├── count_core.js
 │ │ │ ├── editor_find_replace_core.js
+│ │ │ ├── editor_maximized_layout_core.js
 │ │ │ ├── format_core.js
 │ │ │ ├── reading_test_filters_core.js
 │ │ │ ├── reading_test_questions_core.js
@@ -214,6 +215,7 @@ tot/
 │ ├── unit/
 │ │ ├── electron/
 │ │ │ ├── editor_find_main.test.js
+│ │ │ ├── editor_state.test.js
 │ │ │ ├── import_extract_prepare_execute_core.test.js
 │ │ │ ├── import_extract_prepared_store.test.js
 │ │ │ ├── import_extract_supported_formats.test.js
@@ -227,6 +229,8 @@ tot/
 │ │ └── shared/
 │ │   ├── count_core.test.js
 │ │   ├── editor_find_replace_core.test.js
+│ │   ├── editor_maximized_layout_core.test.js
+│ │   ├── editor_ui_margin_persistence.test.js
 │ │   └── format_core.test.js
 │ └── README.md
 ├── website/                       # {sitio web}
@@ -238,7 +242,7 @@ tot/
 │   │ └── social/
 │   │   ├── instagram-black.svg
 │   │   ├── instagram-white.svg
-│   │   ├── patreon.png
+│   │   ├── kofi_symbol.png
 │   │   ├── SOURCES.md
 │   │   ├── twitch.svg
 │   │   ├── x-black.png
@@ -292,7 +296,7 @@ tot/
 **Main process (Electron):**
 - `electron/main.js` — Punto de entrada del proceso principal: ciclo de vida de la app, creación de ventanas, wiring de IPC, orquestación general.
 - `electron/preload.js` — Preload de la ventana principal: expone la API IPC segura hacia `public/renderer.js`.
-- `electron/editor_preload.js` — Preload del editor manual: expone IPC específico del editor (texto vigente, settings, toggle de spellcheck y persistencia de tamaño de fuente del textarea) hacia `public/editor.js`.
+- `electron/editor_preload.js` — Preload del editor manual: expone IPC específico del editor (texto vigente, settings, estado de ventana del editor, toggle de spellcheck y persistencia de tamaño de fuente/ancho maximizado del textarea) hacia `public/editor.js`.
 - `electron/editor_find_preload.js` — Preload de la ventana de búsqueda del editor: expone `window.editorFindAPI` hacia `public/editor_find.js`.
 - `electron/preset_preload.js` — Preload del modal de presets: expone `window.presetAPI` y maneja `preset-init` (buffer/replay) y `settings-updated` hacia `public/preset_modal.js`.
 - `electron/task_editor_preload.js` — Preload del editor de tareas (expone `window.taskEditorAPI` y callbacks como `onInit` / `onRequestClose`).
@@ -302,7 +306,7 @@ tot/
 
 **Renderer (UI / ventanas):**
 - `public/renderer.js` — Lógica principal de UI (ventana principal).
-- `public/editor.js` — Entry point/orquestador del editor manual: valida dependencias, arma el contexto compartido del editor y registra bootstrap, listeners DOM e IPC sobre los módulos auxiliares `public/js/editor_ui.js` y `public/js/editor_engine.js`.
+- `public/editor.js` — Entry point/orquestador del editor manual: valida dependencias, arma el contexto compartido del editor y registra bootstrap, listeners DOM e IPC sobre los módulos auxiliares `public/js/editor_ui.js` y `public/js/editor_engine.js`, incluyendo el layout maximizado centrado con gutters simétricos.
 - `public/editor_find.js` — Lógica de la ventana dedicada de búsqueda del editor.
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
 - `public/task_editor.js` — Renderer del editor de tareas (UI + tabla + biblioteca + anchos de columnas).
@@ -317,15 +321,15 @@ tot/
 - `electron/spellcheck.js` — Política/controlador del spellcheck de Electron: resuelve el diccionario a usar según el idioma activo de la app, aplica la configuración sobre `session.defaultSession`, respeta `spellcheckEnabled` y deshabilita spellcheck cuando el tag activo no tiene diccionario soportado (p.ej. `arn`, `es-cl`) en vez de delegar silenciosamente al locale del SO.
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): valida payloads del flujo save, abre diálogos nativos, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots simples `{ "text": "<string>" }`, snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos compatibles con payload opcional `readingTest`, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
-- `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
+- `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado y `maximizedTextWidthPx`), su integración con el `BrowserWindow` y el bridge IPC/notificaciones del estado de ventana hacia el renderer del editor.
 - `electron/editor_find_main.js` — Coordinador main-owned del find/replace del editor: conserva el ciclo de vida de la ventana dedicada, el wiring Electron-specific de listeners/IPC autorizado, los atajos (`Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Shift+F3`, `Esc`, `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0`) y la orquestación de alto nivel entre ventana editor y ventana Find.
 - `electron/editor_find_session.js` — Sesión/state machine main-owned del find/replace del editor: encapsula el estado mutable del query, navegación `findInPage`, re-sync al refocar la ventana Find, waits/pending request scoped, y la tubería main↔editor de `Replace` / `Replace All` con sincronización de estado basada en `found-in-page`.
 - `electron/editor_find_shortcuts.js` — Helpers puros/importables de shortcuts del find del editor: detección de `Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Esc` y shortcuts de tamaño de texto; se mantiene sin estado para reducir ruido en `editor_find_main.js`.
 - `electron/editor_text_size.js` — Controlador main-owned del tamaño de texto del editor: encapsula `set/increase/decrease/reset`, persiste `editorFontSizePx` vía `settings`, difunde `settings-updated` y entrega acciones reutilizables para los atajos del editor/find sin seguir inflando `electron/main.js`.
 - `electron/reading_test_pool.js` — Helpers del pool del reading speed test: asegura el subárbol runtime bajo snapshots, sincroniza al arranque los starter files versionados mediante hashes de contenido bundled, poda estado obsoleto y starter files retirados, escanea/valida JSON del pool y mezcla contenido + estado externo (`config/reading_test_pool_state.json`) para serializar metadata usable por la UI (`used` top-level).
 - `electron/reading_test_pool_import.js` — Follow-up main-owned de adquisición/import del pool: abre el picker nativo para `.json`/`.zip`, recuerda la última carpeta usada, valida candidatos contra el contrato del pool, resuelve duplicados por nombre de destino y escribe solo snapshots válidos dentro de `config/saved_current_texts/reading_speed_test_pool/`.
-- `electron/reading_test_session.js` — Orquestador/controlador main-owned del reading speed test: valida precondiciones, mantiene el estado compartido de la sesión, expone el surface público consumido por `main.js`, registra el IPC (`reading-test-get-entry-data`, `reading-test-countdown-ready`, `reading-test-reset-pool`, `reading-test-start`, `reading-test-get-state`) y delega la plomería de ventanas y el flujo guiado a módulos auxiliares sin cambiar el contrato externo.
-- `electron/reading_test_session_windows.js` — Helpers de ventanas del reading speed test: espera visibilidad/carga del editor y la ventana flotante, abre la sesión guiada en modo diferido, coordina el countdown prestart con token/ack y crea el modal de preguntas.
+- `electron/reading_test_session.js` — Orquestador/controlador main-owned del reading speed test: valida precondiciones, mantiene el estado compartido de la sesión, expone el surface público consumido por `main.js`, registra el IPC (`reading-test-get-entry-data`, `reading-test-reset-pool`, `reading-test-start`, `reading-test-get-state`) y delega la plomería de ventanas y el flujo guiado a módulos auxiliares sin cambiar el contrato externo.
+- `electron/reading_test_session_windows.js` — Helpers de ventanas del reading speed test: espera visibilidad/carga del editor y la ventana flotante, abre la sesión guiada en modo diferido, sincroniza la visibilidad del overlay prestart del editor y crea el modal de preguntas.
 - `electron/reading_test_session_flow.js` — Helpers del flujo guiado del reading speed test: ownership de las etapas `arming/running/questions/preset`, cómputo autoritativo de WPM, payload prellenado del preset, cancel/finish semantics, ruta `pool` vs `current_text` y reinterpretación de comandos/cierres de la ventana flotante y el editor.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
@@ -356,8 +360,8 @@ tot/
 - `electron/import_extract_platform/ocr_image_normalization.js` — Normalización local de imágenes para OCR antes del upload cuando el formato lo requiere.
 - `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
 - `electron/updater.js` — Lógica de actualización (comparación de versión, diálogos y apertura de URL de descarga).
-- `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts, incluyendo `totapp.org` y `www.patreon.com` para superficies fijas de la app) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
-- `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique), incluyendo límites/default/step del tamaño de fuente del editor manual.
+- `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts, incluyendo `totapp.org` y `ko-fi.com` para superficies fijas de la app) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
+- `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique), incluyendo límites/default/step del tamaño de fuente y del ancho de texto maximizado del editor manual.
 - `electron/log.js` — Logger del proceso principal (política de logs/fallbacks).
 - `electron/main.js` — Además del arranque normal, contiene un hook de smoke test local controlado por env vars (`TOT_SMOKE_TEST`, `TOT_SMOKE_USER_DATA_DIR`) para validar el startup mínimo con perfil aislado; la lógica específica de tamaño de texto del editor queda delegada a `electron/editor_text_size.js`.
 
@@ -365,10 +369,11 @@ tot/
 
 Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` suele actuar como orquestador.
 
-- `public/js/constants.js` — Constantes compartidas del renderer, incluyendo límites/default/step del tamaño de fuente del editor manual.
+- `public/js/constants.js` — Constantes compartidas del renderer, incluyendo límites/default/step del tamaño de fuente, ancho de texto maximizado y gutter mínimo del editor manual.
 - `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
 - `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.
 - `public/js/lib/editor_find_replace_core.js` — Núcleo puro/importable del find/replace del editor: matching literal sobre selección, cómputo determinista de `Replace All` y chequeo puro de elegibilidad por longitud; reutilizado por `public/editor.js` y por la suite automatizada.
+- `public/js/lib/editor_maximized_layout_core.js` — Núcleo puro/importable del layout maximizado del editor manual: clamp del ancho preferido/renderizado de la columna centrada y cálculo del resize simétrico desde cualquiera de los gutters; reutilizado por `public/editor.js` y por la suite automatizada.
 - `public/js/lib/format_core.js` — Núcleo puro/importable de formateo (tiempo estimado, partes de tiempo y separadores numéricos) reutilizado por el wrapper renderer y por la suite automatizada.
 - `public/js/lib/reading_test_filters_core.js` — Núcleo puro/importable del selector del reading speed test: semántica de checkboxes (OR dentro de categoría, AND entre categorías activas), cálculo de elegibles y enabled/disabled state desde combinaciones reales.
 - `public/js/lib/reading_test_questions_core.js` — Núcleo puro/importable del reading speed test para validar payloads `readingTest.questions`, puntuar respuestas y calcular el baseline probabilístico de respuesta al azar.
@@ -383,7 +388,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: muestra selects opcionales para `language` / `type` / `difficulty`, aplica i18n y devuelve tags normalizados o cancelación.
 - `public/js/reading_speed_test.js` — Módulo renderer del reading speed test: gestiona el modal de entrada/configuración, refleja combinaciones reales del pool, ejecuta reset/start IPC, muestra warnings inline y sincroniza el lock state / WPM aplicado.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
-- `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Patreon a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n (`es` / `en`) y mantiene este wiring fuera de `public/renderer.js`.
+- `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Ko-fi a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n y mantiene este wiring fuera de `public/renderer.js`.
 - `public/js/text_apply_canonical.js` — Helpers canónicos de aplicar texto (`overwrite` / `append` / repeticiones) reutilizados por clipboard e import/extract.
 - `public/js/results_time_multiplier.js` — Controla el multiplicador de tiempo bajo el resultado estimado: valida el input como numero natural, conserva el estado base recibido desde `public/renderer.js` y renderiza el tiempo multiplicado en la ventana principal.
 - `public/js/import_extract_status_ui.js` — Superficie visual del flujo import/extract en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido y botón abort.
@@ -395,7 +400,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/import_extract_entry.js` — Orquestador compartido del flujo import/extract desde picker o drag/drop.
 - `public/js/import_extract_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de archivos al entry flow compartido.
 - `public/js/current_text_selector_section.js` — Owner UI de la sección “texto vigente” en la ventana principal: concentra el título, el preview del texto actual, el toolbar local de esa sección, el lock state específico de sus controles y el toggle `Spoiler`, que permite ocultar el tramo final del preview sin devolver esa lógica a `public/renderer.js`.
-- `public/js/editor_ui.js` — Módulo UI del editor manual: i18n del editor, `spellcheck`, tamaño de texto, progreso de lectura, restauración de foco y countdown overlay del reading speed test.
+- `public/js/editor_ui.js` — Módulo UI del editor manual: i18n del editor, `spellcheck`, tamaño de texto, layout maximizado con gutters simétricos y persistencia de `maximizedTextWidthPx`, progreso de lectura, restauración de foco y overlay prestart del reading speed test.
 - `public/js/editor_engine.js` — Módulo de lógica/sync del editor manual: helpers de selección e inserción, `replace current/all`, sincronización con main, truncation handling, paste/drop y aplicación de updates externos.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
@@ -404,11 +409,11 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `.github/workflows/test.yml` — Workflow GitHub Actions del baseline automatizado actual; corre `npm ci` + `npm test` sobre `windows-latest`.
 - `test/README.md` — Convenciones del layout de tests y separación entre baseline unitario y smoke suite local.
-- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo import/extract (`settings`, incluyendo normalización/persistencia de `editorFontSizePx`, `spellcheck`, formatos soportados, prepared store, parsing/clasificación OCR, decision helpers, más `editor_find_main.test.js` para autorización IPC, re-sync al refocus y orquestación request-scoped de replace).
+- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo import/extract (`settings`, incluyendo normalización/persistencia de `editorFontSizePx`, `editor_state` para `maximizedTextWidthPx`/window-state IPC, `spellcheck`, formatos soportados, prepared store, parsing/clasificación OCR, decision helpers, más `editor_find_main.test.js` para autorización IPC, re-sync al refocus y orquestación request-scoped de replace).
 - `test/unit/electron/reading_test_pool.test.js` — Cobertura del pool del reading speed test: sincronización startup del starter set, seguimiento de hashes, estado externo `used` y prune de filas/archivos gestionados obsoletos.
 - `test/unit/electron/reading_test_pool_import.test.js` — Cobertura del importador del pool del reading speed test: validación de `.json`/`.zip`, duplicados, persistencia de última carpeta y reporte de fallas de escritura.
 - `test/unit/electron/spellcheck.test.js` — Cobertura del spellcheck main-owned: resolución de idiomas soportados, aplicación sobre `Session` y controller `createController(...)`/fallbacks de sesión.
-- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`).
+- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`, `editor_maximized_layout_core`) y de la persistencia del margen maximizado del editor en `editor_ui`.
 - `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; además valida que el startup tolere el schema vigente mínimo de settings (incluyendo flags nuevos como `spellcheckEnabled` y `editorFontSizePx`); no forma parte de `npm test` ni del workflow CI base.
 
 ### 4) i18n (estructura y responsabilidades)
@@ -425,7 +430,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `config/user_settings.json` — Preferencias del usuario (idioma, modo de conteo, `spellcheckEnabled`, `editorFontSizePx`, presets personalizados, etc.).
 - `config/current_text.json` — Texto vigente persistido.
-- `config/editor_state.json` — Estado persistido del editor (geometría/maximizado, etc.).
+- `config/editor_state.json` — Estado persistido del editor (geometría/maximizado y `maximizedTextWidthPx`).
 - `config/import_extract_state.json` — Estado local del picker de import/extract (por ejemplo, última carpeta utilizada).
 - `config/reading_test_pool_state.json` — Estado externo del pool del reading speed test; guarda `used` por `snapshotRelPath` y, para starter files gestionados por la app, el `managedBundledHash` instalado.
 - `config/reading_test_pool_import_state.json` — Estado local del picker del importador del pool del reading speed test (última carpeta utilizada).
@@ -487,7 +492,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `website/public/site-language.js` — Helper compartido del sitio estático para detectar/persistir idioma preferido y soportar la redirección desde `/`.
 - `website/public/styles.css` — Hoja de estilos compartida para las tres rutas.
 - `website/public/assets/brand/*.svg` — Logos locales del proyecto/desarrollador usados en el header y footer (`logo-tot.svg`, `logo-cibersino.svg`).
-- `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Patreon, X light/dark, YouTube, Twitch) y `SOURCES.md` como trazabilidad de origen de assets.
+- `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Ko-fi, X light/dark, YouTube, Twitch) y `SOURCES.md` como trazabilidad de origen de assets.
 - `website/public/_headers` — Políticas de headers para Cloudflare Pages (incluye noindex para dominios preview/versionados).
 - `website/public/robots.txt` — Reglas de robots para el dominio público.
 - `website/public/favicon.*` y `website/public/og-image.png` — Activos comunes de branding/preview social.
@@ -496,7 +501,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `public/assets/logo-tot.svg` / `public/assets/logo-tot.png` — Branding de la app usado en la ventana principal.
 - `public/assets/logo-cibersino.svg` — Branding del desarrollador usado en la ventana principal.
-- `public/assets/patreon.png` — Símbolo de Patreon usado en la ventana principal junto al logo de Cibersino; asset runtime copiado desde `tools_local` para mantener la procedencia local/original separada del sitio web.
+- `public/assets/kofi_symbol.png` — Símbolo de Ko-fi usado en la ventana principal junto al logo de Cibersino; asset runtime copiado desde `tools_local` para mantener la procedencia local/original separada del sitio web.
 
 ### 6.3) Recursos de packaging (build-resources)
 

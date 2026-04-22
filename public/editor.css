@@ -5,6 +5,11 @@
   --gap: 8px;
   --bottom-min-height: 52px;
   --editor-font-size: 20px;
+  --editor-maximized-text-width: 960px;
+  --editor-maximized-gutter-min: 40px;
+  --editor-maximized-gutter-bg: #ebebeb;
+  --editor-maximized-gutter-handle: rgba(129, 129, 129, 0.38);
+  --editor-maximized-gutter-handle-active: rgba(129, 129, 129, 0.58);
 }
 
 /* Basic Normalize */
@@ -25,8 +30,8 @@ body {
   gap: 0;
 }
 
-body.reading-test-countdown-active .editor-wrap,
-body.reading-test-countdown-active .bottom-bar {
+body.reading-test-prestart-active .editor-wrap,
+body.reading-test-prestart-active .bottom-bar {
   filter: blur(8px);
 }
 
@@ -36,15 +41,89 @@ body.reading-test-countdown-active .bottom-bar {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
+  overflow: hidden;
+}
+
+.editor-layout {
+  display: grid;
+  flex: 1 1 auto;
+  /* grow and occupy space */
+  min-height: 0;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--bg);
+}
+
+.editor-text-column {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg);
+}
+
+.editor-gutter {
+  display: none;
+}
+
+body.editor-maximized-layout .editor-wrap,
+body.editor-maximized-layout .editor-layout {
+  background: var(--editor-maximized-gutter-bg);
+}
+
+body.editor-maximized-layout .editor-layout {
+  grid-template-columns:
+    minmax(var(--editor-maximized-gutter-min), 1fr)
+    minmax(0, min(var(--editor-maximized-text-width), calc(100% - (var(--editor-maximized-gutter-min) * 2))))
+    minmax(var(--editor-maximized-gutter-min), 1fr);
+}
+
+body.editor-maximized-layout .editor-text-column {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 12px 28px rgba(0, 0, 0, 0.06);
+}
+
+body.editor-maximized-layout .editor-gutter {
+  position: relative;
+  display: block;
+  min-width: 0;
+  background: var(--editor-maximized-gutter-bg);
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+body.editor-maximized-layout .editor-gutter::after {
+  content: '';
+  display: block;
+  width: 3px;
+  height: clamp(56px, 18vh, 160px);
+  margin-top: max(18px, 5vh);
+  border-radius: 999px;
+  background: var(--editor-maximized-gutter-handle);
+  transition: background 120ms ease-out;
+}
+
+body.editor-maximized-layout .editor-gutter-left::after {
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+body.editor-maximized-layout .editor-gutter-right::after {
+  margin-left: 12px;
+  margin-right: auto;
+}
+
+body.editor-maximized-layout .editor-gutter:hover::after,
+body.editor-margin-dragging .editor-gutter::after {
+  background: var(--editor-maximized-gutter-handle-active);
 }
 
 /* Text area: occupies all available space */
 #editorArea {
   width: 100%;
   flex: 1 1 auto;
-  /* grow and occupy space */
   min-height: 0;
-  /* important for the flex to work in some environments */
   position: relative;
   z-index: 1;
   box-sizing: border-box;
@@ -60,7 +139,7 @@ body.reading-test-countdown-active .bottom-bar {
   overflow: auto;
 }
 
-.reading-test-countdown-overlay {
+.reading-test-prestart-overlay {
   position: fixed;
   inset: 0;
   z-index: 999;
@@ -74,18 +153,30 @@ body.reading-test-countdown-active .bottom-bar {
   transition: opacity 120ms ease-out;
 }
 
-.reading-test-countdown-overlay[aria-hidden="false"] {
+.reading-test-prestart-overlay[aria-hidden="false"] {
   opacity: 1;
   pointer-events: auto;
 }
 
-.reading-test-countdown-value {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(96px, 24vw, 176px);
-  font-weight: 700;
-  line-height: 1;
+.reading-test-prestart-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: min(420px, calc(100vw - 32px));
+}
+
+.reading-test-prestart-message {
+  margin: 0;
+  padding: 0;
   color: #181818;
-  text-shadow: 0 3px 16px rgba(255, 255, 255, 0.6);
+  font-size: clamp(15px, 2vw, 19px);
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: right;
+  text-shadow:
+    0 2px 10px rgba(255, 255, 255, 0.9),
+    0 0 2px rgba(255, 255, 255, 0.95);
+  text-wrap: balance;
   user-select: none;
 }
 
@@ -364,5 +455,10 @@ body.reading-test-countdown-active .bottom-bar {
   .editor-read-progress-value {
     min-width: 44px;
     padding: 0 6px;
+  }
+
+  body.editor-maximized-layout .editor-gutter::after {
+    margin-top: 12px;
+    height: 72px;
   }
 }

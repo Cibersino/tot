@@ -12,7 +12,8 @@
 // - Ensure numberFormatting[langBase] exists (from i18n/<lang>/numberFormat.json or safe defaults).
 // - Provide a small state API (init/getSettings/saveSettings) backed by an in-memory cache.
 // - Register IPC handlers (get-settings, set-language, set-mode-conteo, set-selected-preset,
-//   set-spellcheck-enabled, set-editor-font-size-px) and broadcast settings-updated.
+//   set-spellcheck-enabled, set-editor-font-size-px)
+//   and broadcast settings-updated.
 // - Apply a logged fallback language when the language modal closes without a selection.
 // =============================================================================
 
@@ -758,6 +759,7 @@ function registerIpc(
       return { ok: false, error: String(err) };
     }
   });
+
 }
 
 // =============================================================================

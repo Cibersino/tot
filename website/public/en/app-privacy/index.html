@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>toT - App Privacy Policy</title>
+  <meta name="description" content="Privacy policy for the toT desktop app.">
+  <link rel="canonical" href="https://totapp.org/en/app-privacy/">
+  <link rel="alternate" hreflang="es" href="https://totapp.org/es/app-privacy/">
+  <link rel="alternate" hreflang="en" href="https://totapp.org/en/app-privacy/">
+  <link rel="alternate" hreflang="x-default" href="https://totapp.org/app-privacy/">
+  <meta property="og:url" content="https://totapp.org/en/app-privacy/">
+  <meta property="og:title" content="toT - App Privacy Policy">
+  <meta property="og:description" content="Privacy policy for the toT desktop app.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://totapp.org/og-image.png">
+  <meta property="og:image:alt" content="Screenshot of the toT app reading-time estimation interface">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+  <main class="wrap">
+    <div class="topbar">
+      <header class="brand-header">
+        <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="toT Logo">
+        <div class="brand-copy">
+          <h1>toT</h1>
+          <p><strong>App Privacy Policy</strong></p>
+        </div>
+      </header>
+
+      <nav class="lang-switch" aria-label="Language selector">
+        <a href="/es/" lang="es">ES</a>
+        <a href="/en/" lang="en" aria-current="page">EN</a>
+      </nav>
+    </div>
+
+    <div class="box">
+      <p><strong>toT</strong> is designed to be local-first for writing, editing, counting, and most day-to-day use.
+        Most app content stays on your device unless you choose a feature that connects to a third-party service.</p>
+
+      <p><strong>Data the app stores or processes locally</strong></p>
+      <ul>
+        <li>current text, saved text snapshots, settings, window state, and task-related data on your device</li>
+        <li>local reading speed test state, including the local test-text pool and optional question payloads stored in pool files</li>
+        <li>local Google OCR connection and token state when you choose to use Google OCR</li>
+      </ul>
+
+      <p><strong>How the app uses this data</strong>: the app uses locally stored data to provide its writing, counting,
+        planning, snapshot, task, reading speed test, and window-state features.</p>
+
+      <p><strong>Connectivity model</strong>: except for checking public release/update information on GitHub, the app
+        only connects to external services when you explicitly trigger a connected action, such as opening a
+        user-requested link or using optional Google OCR. The app does not download or install updates automatically.</p>
+
+      <p><strong>Third-party sharing</strong>: your local text, snapshots, settings, task data, and window state are
+        not sent to the developer by the app. If you enable Google OCR, Google receives the data needed for that OCR
+        operation as described on the dedicated <a href="/en/app-privacy/google-ocr/">Google OCR Privacy</a> page. If
+        you contact the developer through email or GitHub Issues, the developer receives only the information you choose
+        to include in that support request.</p>
+
+      <p><strong>Storage and protection</strong>: local app data is stored in the app's local data directory on your
+        device. Protection of that local data depends on your device, operating system, and account security. Google OCR
+        token state is stored locally and protected using <code>Electron safeStorage</code> and the operating-system
+        protection mechanisms available to the app on your platform.</p>
+
+      <p><strong>Retention and deletion</strong>: local app data remains on your device until you edit it, delete it,
+        remove the app's local data, or uninstall the app. Google OCR token state remains until you disconnect Google
+        OCR or remove local app data. Support messages and any files or text you voluntarily send to the developer may
+        be retained only as long as reasonably necessary to respond, troubleshoot, or comply with legal obligations. You
+        can request deletion of developer-controlled support data by contacting <a
+          href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.</p>
+
+      <p><strong>Google OCR-specific disclosures</strong>: if you choose to use Google OCR, only the files you
+        explicitly select for OCR are sent to Google for that operation. The app does not send those OCR files or the
+        extracted OCR text to the developer. For the Google OCR-specific data accessed, use, sharing, storage,
+        retention, and deletion terms, see the dedicated <a href="/en/app-privacy/google-ocr/">Google OCR Privacy</a>
+        page.</p>
+
+      <p>If you want website-only information about hosting, cookies, or Cloudflare-delivered technical cookies, see <a
+          href="/en/privacy-cookies/">Website Privacy / Cookies</a>.</p>
+
+      <p class="muted">Last updated: April 21, 2026.</p>
+    </div>
+
+    <footer class="site-footer" aria-label="Operator and contact">
+      <p class="muted">
+        Contact: <a href="https://github.com/Cibersino/tot/issues">GitHub Issues</a> or
+        <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.
+      </p>
+      <p class="muted">
+        <a href="/en/privacy-cookies/">Website Privacy / Cookies</a>
+        ·
+        <a href="/en/">Back</a>
+      </p>
+    </footer>
+  </main>
+  <script src="/site-language.js"></script>
+</body>
+
+</html>

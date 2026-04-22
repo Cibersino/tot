@@ -28,7 +28,7 @@
         "task_new": "New task",
         "task_load": "Load task",
         "cibersino_website": "Cibersino website",
-        "cibersino_patreon": "Cibersino Patreon",
+        "cibersino_kofi": "Support me on Ko-fi",
         "new_preset": "Create a new preset",
         "edit_preset": "Edit selected preset",
         "delete_preset": "Delete selected preset",
@@ -135,6 +135,7 @@
       "close_title": "Close find bar",
       "replace_title": "Replace current match",
       "replace_all_title": "Replace all matches",
+      "replace_timeout": "Replace timed out. Try again.",
       "status_no_matches": "No matches",
       "status_empty_query": "Type to search"
     },
@@ -273,9 +274,12 @@
       }
     },
     "reading_test": {
+      "prestart": {
+        "reminder": "Press Play (▶) in the Floating Window when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Press Stop/Reset (⏹) only if you want to cancel the test."
+      },
       "entry": {
         "title": "Reading speed test",
-        "intro": "This test is meant to estimate your real reading speed through a guided session. The app will open the text, start the timer, and ask you to read normally; when you finish, press Pause (⏸) in the Floating Window. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.",
+        "intro": "This test is meant to estimate your real reading speed through a guided session. The app will open the text and wait for you to press Play (▶) in the Floating Window when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.",
         "eligible_count": "Eligible files: {count}",
         "pool_exhausted_message": "There are no remaining unused test files. Reset the pool or add more files.",
         "close_aria": "Close reading speed test dialog",

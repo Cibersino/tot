@@ -40,14 +40,26 @@ const {
   EDITOR_FONT_SIZE_MAX_PX,
   EDITOR_FONT_SIZE_DEFAULT_PX,
   EDITOR_FONT_SIZE_STEP_PX,
+  EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
+  EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
+  EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+  EDITOR_MAXIMIZED_GUTTER_MIN_PX,
 } = AppConstants;
+
+const editorMaximizedLayoutCore = window.EditorMaximizedLayoutCore;
+if (
+  !editorMaximizedLayoutCore
+  || typeof editorMaximizedLayoutCore.clampPreferredTextWidthPx !== 'function'
+  || typeof editorMaximizedLayoutCore.computeNextPreferredTextWidthPxFromDrag !== 'function'
+) {
+  throw new Error('[editor] EditorMaximizedLayoutCore unavailable; cannot continue');
+}
 
 const editorFindReplaceCore = window.EditorFindReplaceCore;
 if (
   !editorFindReplaceCore ||
   typeof editorFindReplaceCore.selectionMatchesLiteralQuery !== 'function' ||
-  typeof editorFindReplaceCore.computeLiteralReplaceAll !== 'function' ||
-  typeof editorFindReplaceCore.isReplaceAllAllowedByLength !== 'function'
+  typeof editorFindReplaceCore.computeLiteralReplaceAll !== 'function'
 ) {
   throw new Error('[editor] EditorFindReplaceCore unavailable; cannot continue');
 }
@@ -73,9 +85,6 @@ if (typeof window.editorAPI.onReplaceRequest !== 'function') {
 if (typeof window.editorAPI.sendReplaceResponse !== 'function') {
   throw new Error('[editor] editorAPI.sendReplaceResponse unavailable; cannot continue');
 }
-if (typeof window.editorAPI.sendReplaceStatus !== 'function') {
-  throw new Error('[editor] editorAPI.sendReplaceStatus unavailable; cannot continue');
-}
 
 if (!window.EditorUI || typeof window.EditorUI.createEditorUI !== 'function') {
   throw new Error('[editor] EditorUI unavailable; cannot continue');
@@ -90,6 +99,11 @@ if (!window.Notify || typeof window.Notify.notifyEditor !== 'function') {
 // =============================================================================
 // DOM references
 // =============================================================================
+const editorWrap = document.getElementById('editorWrap');
+const editorLayout = document.getElementById('editorLayout');
+const editorLeftGutter = document.getElementById('editorLeftGutter');
+const editorTextColumn = document.getElementById('editorTextColumn');
+const editorRightGutter = document.getElementById('editorRightGutter');
 const editor = document.getElementById('editorArea');
 const btnTrash = document.getElementById('btnTrash');
 const calcWhileTyping = document.getElementById('calcWhileTyping');
@@ -107,8 +121,8 @@ const readProgress = document.getElementById('editorReadProgress');
 const readProgressLabel = document.getElementById('editorReadProgressLabel');
 const readProgressValue = document.getElementById('editorReadProgressValue');
 const bottomBar = document.getElementById('bottomBar');
-const readingTestCountdownOverlay = document.getElementById('readingTestCountdownOverlay');
-const readingTestCountdownValue = document.getElementById('readingTestCountdownValue');
+const readingTestPrestartOverlay = document.getElementById('readingTestPrestartOverlay');
+const readingTestPrestartMessage = document.getElementById('readingTestPrestartMessage');
 
 // =============================================================================
 // Shared context
@@ -123,11 +137,21 @@ const ctx = {
   EDITOR_FONT_SIZE_MAX_PX,
   EDITOR_FONT_SIZE_DEFAULT_PX,
   EDITOR_FONT_SIZE_STEP_PX,
+  EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
+  EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
+  EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+  EDITOR_MAXIMIZED_GUTTER_MIN_PX,
   DEBOUNCE_MS: 300,
   editorAPI: window.editorAPI,
+  editorMaximizedLayoutCore,
   editorFindReplaceCore,
   rendererI18n: window.RendererI18n || {},
   dom: {
+    editorWrap,
+    editorLayout,
+    editorLeftGutter,
+    editorTextColumn,
+    editorRightGutter,
     editor,
     btnTrash,
     calcWhileTyping,
@@ -145,17 +169,18 @@ const ctx = {
     readProgressLabel,
     readProgressValue,
     bottomBar,
-    readingTestCountdownOverlay,
-    readingTestCountdownValue,
+    readingTestPrestartOverlay,
+    readingTestPrestartMessage,
   },
   state: {
     maxTextChars: AppConstants.MAX_TEXT_CHARS,
     debounceTimer: null,
     suppressLocalUpdate: false,
-    readingTestCountdownRunId: 0,
-    readingTestCountdownTimeouts: [],
     spellcheckEnabled: true,
     editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
+    editorWindowMaximized: false,
+    maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
+    editorMarginDrag: null,
     readProgressFramePending: false,
     idiomaActual: DEFAULT_LANG,
     translationsLoadedFor: null,
@@ -196,8 +221,19 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
     } else {
       log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
     }
+    if (typeof ctx.editorAPI.getWindowState === 'function') {
+      const windowState = await ctx.editorAPI.getWindowState();
+      ctx.state.editorWindowMaximized = !!(windowState && windowState.maximized === true);
+      ctx.state.maximizedTextWidthPx = ctx.ui.clampEditorMaximizedTextWidthPx(
+        windowState && windowState.maximizedTextWidthPx
+      );
+    } else {
+      log.warn('BOOTSTRAP: editorAPI.getWindowState missing; maximized layout detection disabled.');
+    }
     ctx.ui.setLocalSpellcheckEnabled(ctx.state.spellcheckEnabled);
     ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
+    ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
+    ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
     await ctx.ui.applyEditorTranslations();
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
@@ -209,6 +245,8 @@ ctx.ui.applyTextareaDefaults();
 ctx.ui.applyDocumentLanguage();
 ctx.ui.setLocalSpellcheckEnabled(ctx.state.spellcheckEnabled);
 ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
+ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
+ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
 ctx.ui.updateReadProgressUi();
 
 // =============================================================================
@@ -246,9 +284,18 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
   log.warn('BOOTSTRAP: editorAPI.onSettingsChanged missing; live settings updates disabled.');
 }
 
-if (readingTestCountdownOverlay) {
-  readingTestCountdownOverlay.addEventListener('keydown', (event) => {
-    if (readingTestCountdownOverlay.getAttribute('aria-hidden') === 'false') {
+if (typeof ctx.editorAPI.onWindowStateChanged === 'function') {
+  ctx.editorAPI.onWindowStateChanged((windowState) => {
+    ctx.ui.setLocalEditorWindowMaximized(!!(windowState && windowState.maximized === true));
+    ctx.ui.setLocalEditorMaximizedTextWidthPx(windowState && windowState.maximizedTextWidthPx);
+  });
+} else {
+  log.warn('BOOTSTRAP: editorAPI.onWindowStateChanged missing; live maximized layout updates disabled.');
+}
+
+if (readingTestPrestartOverlay) {
+  readingTestPrestartOverlay.addEventListener('keydown', (event) => {
+    if (readingTestPrestartOverlay.getAttribute('aria-hidden') === 'false') {
       event.preventDefault();
       event.stopPropagation();
     }
@@ -274,7 +321,6 @@ if (readingTestCountdownOverlay) {
 
     await ctx.engine.applyExternalUpdate({ text: initialText || '', meta: { source: 'main', action: 'init' } });
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
-    ctx.engine.publishReplaceStatus();
   } catch (err) {
     log.error('Error initializing editor:', err);
   }
@@ -294,7 +340,6 @@ ctx.editorAPI.onForceClear(() => {
   } catch (err) {
     log.error('Error in onForceClear:', err);
   } finally {
-    ctx.engine.publishReplaceStatus();
     ctx.state.suppressLocalUpdate = false;
     ctx.ui.restoreFocusToEditor();
   }
@@ -326,12 +371,14 @@ ctx.editorAPI.onReplaceRequest((payload) => {
     });
 });
 
-if (typeof ctx.editorAPI.onReadingTestCountdown === 'function') {
-  ctx.editorAPI.onReadingTestCountdown((payload) => {
-    ctx.ui.startReadingTestCountdown(payload);
+if (typeof ctx.editorAPI.onReadingTestPrestartStateChanged === 'function') {
+  ctx.editorAPI.onReadingTestPrestartStateChanged((payload) => {
+    ctx.ui.applyReadingTestPrestartState(payload);
   });
 } else {
-  log.warn('BOOTSTRAP: editorAPI.onReadingTestCountdown missing; reading-test countdown overlay disabled.');
+  log.warn(
+    'BOOTSTRAP: editorAPI.onReadingTestPrestartStateChanged missing; reading-test prestart overlay disabled.'
+  );
 }
 
 // =============================================================================
@@ -408,7 +455,6 @@ if (editor) {
 }
 
 editor.addEventListener('input', () => {
-  ctx.engine.publishReplaceStatus();
   ctx.ui.scheduleReadProgressUiUpdate();
 
   if (ctx.state.suppressLocalUpdate || editor.readOnly) return;
@@ -434,6 +480,7 @@ editor.addEventListener('scroll', () => {
 });
 
 window.addEventListener('resize', () => {
+  ctx.ui.syncEditorMaximizedLayout();
   ctx.ui.scheduleReadProgressUiUpdate();
 });
 
@@ -442,7 +489,6 @@ window.addEventListener('resize', () => {
 // =============================================================================
 btnTrash.addEventListener('click', () => {
   editor.value = '';
-  ctx.engine.publishReplaceStatus();
   ctx.ui.scheduleReadProgressUiUpdate();
   ctx.engine.sendCurrentTextToMain('clear', {
     text: '',
@@ -528,6 +574,28 @@ if (btnTextSizeReset) {
   btnTextSizeReset.addEventListener('click', () => {
     ctx.ui.resetEditorFontSize().catch((err) => {
       log.error('Error resetting editor font size:', err);
+    });
+  });
+}
+
+if (editorLeftGutter) {
+  editorLeftGutter.addEventListener('pointerdown', (event) => {
+    ctx.ui.handleEditorMarginPointerDown(event, 'left');
+  });
+  editorLeftGutter.addEventListener('dblclick', () => {
+    ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
+      log.error('Error resetting editor maximized text width:', err);
+    });
+  });
+}
+
+if (editorRightGutter) {
+  editorRightGutter.addEventListener('pointerdown', (event) => {
+    ctx.ui.handleEditorMarginPointerDown(event, 'right');
+  });
+  editorRightGutter.addEventListener('dblclick', () => {
+    ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
+      log.error('Error resetting editor maximized text width:', err);
     });
   });
 }

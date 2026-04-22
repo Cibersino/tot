@@ -28,7 +28,7 @@
         "task_new": "Armar nueva misión",
         "task_load": "Cargar misión",
         "cibersino_website": "Sitio de Cibersino",
-        "cibersino_patreon": "Patreon de Cibersino",
+        "cibersino_kofi": "Apóyame en Ko-fi",
         "new_preset": "Armar nuevo preset",
         "edit_preset": "Arreglar el preset",
         "delete_preset": "Pitiarse el preset",
@@ -124,6 +124,7 @@
       "close_title": "Pitiarse la barra de búsqueda",
       "replace_title": "Reemplazar coincidencia actual",
       "replace_all_title": "Reemplazar todas las coincidencias",
+      "replace_timeout": "La custión de reemplazo se demoró mucho. Inténtalo de nuevo.",
       "status_no_matches": "No pillamos niuna custión",
       "status_empty_query": "Escribe algo po"
     },
@@ -262,9 +263,12 @@
       }
     },
     "reading_test": {
+      "prestart": {
+        "reminder": "Aprieta Play (▶) en la Ventana Flotante cuando estís listo pa' empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Aprieta Detener/Reiniciar (⏹) solo si querís cancelar el test."
+      },
       "entry": {
         "title": "Test de ritmo de lectura",
-        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando terminís, apreta Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
+        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto y va a esperar a que apretís Play (▶) en la Ventana Flotante cuando estís listo para empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
         "eligible_count": "Archivos elegibles: {count}",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Podís restablecer el pool o meter más archivos.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",
