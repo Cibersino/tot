@@ -10,7 +10,6 @@
 
   const resultApi = window.readingTestResultAPI || null;
   if (!resultApi
-    || typeof resultApi.getSettings !== 'function'
     || typeof resultApi.onInitData !== 'function') {
     throw new Error('[reading-test-result] readingTestResultAPI unavailable; cannot continue');
   }
