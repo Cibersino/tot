@@ -39,7 +39,7 @@ contextBridge.exposeInMainWorld('readingTestResultAPI', {
       try {
         initDataListeners.delete(cb);
       } catch (err) {
-        console.error('removeListener error (reading-test-result-init):', err);
+        console.error('reading-test-result-init unsubscribe failed (ignored):', err);
       }
     };
   },
