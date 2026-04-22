@@ -674,10 +674,12 @@
   async function handleStart() {
     if (stabilizing || isSessionActive() || filterState.eligibleCount < 1) return;
 
-    const confirmed = window.Notify.confirmMain(
-      'renderer.reading_test.entry.start_random_confirm'
-    );
-    if (!confirmed) return;
+    if (currentTextAvailable) {
+      const confirmed = window.Notify.confirmMain(
+        'renderer.reading_test.entry.start_random_confirm'
+      );
+      if (!confirmed) return;
+    }
 
     const startReadingTest = readElectronMethod('startReadingTest');
     if (!startReadingTest) {
