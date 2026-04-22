@@ -1,0 +1,174 @@
+{
+  "text": "toT as a reading planner\nOriginal text for the reading speed test pool\n\nPlanning readings often fails before the reading itself even begins. The problem appears when materials arrive all mixed together: a chapter for tomorrow, several recommended articles, a PDF that looked short but wasn’t, a bibliography for a class, a technical document, some scanned pages, saved links, fragments copied only halfway. All of that exists, but it is not always clear how much work it represents, what should be read first, what can wait, and what should have been in the schedule long ago.\n\ntoT helps pull those readings out of the pile-up and turn them into a more visible workload. The app can measure texts, estimate times, and help calibrate reading speeds, but as a planner it shows its value above all when those measurements enter into a structure. The center of that structure is the task editor.\n\nThe task editor turns a diffuse list of readings into a working table. Each row can represent a concrete task. Not a vague intention, but an entry with shape: text, estimated time, percentage of progress, remaining time, text type, link, comment, and associated snapshot. Instead of having loose materials scattered across different places, one begins to see a list where readings occupy a precise place and can be compared with one another.\n\nThat is where the scale of the problem changes. A bibliography stops being a uniform block. A short article no longer sits next to a long chapter as if both weighed the same. A reading already begun no longer gets confused with another that has not yet moved beyond mere intention. Some tasks are worth dispatching quickly. Others are long, but already half resolved. Others seem manageable until the time estimate gives them a less illusory size.\n\nThe list can also be moved around. Rows are reordered, edited, deleted. And that makes planning usable, because priorities change. One urgency displaces something else, a date forces the order to be redone, one text loses interest, another becomes central. The list is not fixed like a sentence; it can be corrected.\n\nThe editor’s library extends that work. It serves to save entries that have already been built and recover them later. A reading can return in another list, another class, another project, or another moment in the same work. If that entry already exists with its text, its type, its link, and its comment, there is no need to reconstruct it from scratch. The library makes it possible to preserve it and load it again when needed.\n\nAnd since that library can also be searched, saved entries do not remain buried in a useless archive. An old entry can reappear months later. A link associated with an old task can enter a new list. A reading that once seemed distant can return when the work context changes. The library does not replace the list of the moment, but it gives it continuity.\n\nThe comments inside each row help ensure that continuity does not depend on memory alone. Very often the title of a reading is not enough to remember why it was there, which part it made sense to look at first, or what problem it helped solve. A brief note is enough to fix that context and leave it available for later.\n\nLinks fulfill an equally simple function. If the row already carries access to the file, the web page, or the shared document, the reading comes closer to being carried out. A list in which each entry points to its corresponding material works differently from a list made up of names alone.\n\nThe snapshot associated with a row adds another layer of precision. Sometimes a task does not point to a full external file, but to a selection, a fragment, a concrete version of the current text, or an excerpt assembled by the user. The snapshot fixes that exact state and ties it to the entry. In that way, the task points not only to a text in the abstract, but to a specific form of that text.\n\nThe task editor does not work on its own. For a reading list to be more than an ordered table, it needs to rely on measurements, adjustments, and materials that have already entered into a workable form. That is where the rest of the app comes in.\n\nCounting and time estimation are the foundation. Without them, the list could order readings, but not give them weight. With them, each entry stops being just a pending title and comes to represent a more concrete amount of work. A bibliography is no longer viewed only by number of texts, but also by what each one demands.\n\nWPM presets allow that measure not to be fixed once and for all. Not all readings are done at the same pace, and a list built on a single invented speed tends to distort the workload. The stopwatch and the reading speed test are there precisely to correct that. They return a reference closer to the reader’s actual practice, and that reference can return to the list in the form of better estimates and less arbitrary distributions.\n\nThe import, extract, and OCR functions enter planning from another side. A useful list cannot depend only on clean materials that are easy to copy. Very often what one has are scans, images, awkward PDFs, or documents in unfriendly formats. If those materials cannot make it into the app, they remain outside planning. Being able to import, extract, or convert them into text allows them to become part of the same workload as the rest.\n\nThe same goes for pasting from the clipboard or writing and editing text manually. Not all reading tasks arrive already made. Sometimes one has to gather fragments, clean up material, copy passages, combine parts from several sources, or prepare a text to be read later as a unit. The app also serves for that prior elaboration. Then that text can be measured, saved, turned into a snapshot, and entered into the task editor as one more task.\n\nThat is why toT is valuable as a planner. It does not limit itself to storing readings or counting them separately. It turns them into entries that can be compared, reordered, recovered, and distributed better. It helps build a study list, prepare a more realistic bibliography, organize class materials, or stop managing pending readings only with memory and haste.\n\nThe task editor is at the center of all that because that is where text measurement, actual progress, entry reuse, access to materials, and the possibility of correcting priorities when conditions change all converge. The library extends that work through time. Snapshots fix concrete versions. Presets, the stopwatch, and the test correct the calculation. Import and OCR bring in materials that otherwise would remain outside.\n\nSeen in that light, the app does not serve only to know how long a text takes. It serves to give form to a reading task that would otherwise remain badly measured, badly distributed, or simply not begun. Sometimes that means ordering what is already there; other times, fixing a structure, clearing priorities, and making room to incorporate new materials without letting everything become mixed up again. If, as Carl Sagan said, writing connects people from distant eras and books break the chains of time, toT illuminates the bondage of time contained in writing itself, against which people have struggled blindly, and unites people of the same age in that struggle.",
+  "tags": {
+    "language": "en",
+    "type": "non_fiction",
+    "difficulty": "medium"
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "The first paragraph suggests that many pending readings become burdensome not so much because of their quantity as because…",
+        "correctOptionId": "d",
+        "options": [
+          {
+            "id": "a",
+            "text": "an important part of them arrives too late in the schedule, when it should already have been incorporated earlier."
+          },
+          {
+            "id": "b",
+            "text": "several of them compete at the same time in urgency, and that makes any priority criterion unstable."
+          },
+          {
+            "id": "c",
+            "text": "they produce a dispersion that would remain almost intact even if all of them could be measured well."
+          },
+          {
+            "id": "d",
+            "text": "they still have not entered into a common working form that would allow them to be measured, compared, and ordered."
+          },
+          {
+            "id": "e",
+            "text": "they tend to come from supports that are too different, which makes any comparison among them misleading."
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "If measurement, the library, snapshots, the stopwatch, import, and OCR were all preserved, but the task editor disappeared, what would be damaged the most according to the essay?",
+        "correctOptionId": "e",
+        "options": [
+          {
+            "id": "a",
+            "text": "The possibility of fixing a concrete version of a text through associated snapshots."
+          },
+          {
+            "id": "b",
+            "text": "The possibility of bringing difficult materials, such as images, scans, or awkward PDFs, into the workflow."
+          },
+          {
+            "id": "c",
+            "text": "The possibility of calibrating time estimates more accurately by correcting an arbitrary reading speed."
+          },
+          {
+            "id": "d",
+            "text": "The possibility of recovering old entries and loading them again in another work context."
+          },
+          {
+            "id": "e",
+            "text": "The possibility that those functions converge upon the same workload and allow readings to be treated as comparable, trackable, and reorderable tasks."
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "Which of these readings of the section on the library, comments, links, and snapshots is incorrect?",
+        "correctOptionId": "b",
+        "options": [
+          {
+            "id": "a",
+            "text": "A comment fixes a context of use that the bare title of the reading does not always manage to preserve."
+          },
+          {
+            "id": "b",
+            "text": "A snapshot is, basically, a safer version of the link: both fulfill essentially the same function and differ only in degree of access."
+          },
+          {
+            "id": "c",
+            "text": "The library preserves work that has already been prepared and allows an entry to reappear in another context without being rebuilt from scratch."
+          },
+          {
+            "id": "d",
+            "text": "Taken together, these resources try to make a task return with more precision than a loose name can offer."
+          },
+          {
+            "id": "e",
+            "text": "The link does not interpret the reading, but it reduces the distance between the list and the material that has to be worked on."
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "The essay values the stopwatch and the reading speed test not so much because they add “more data,” but because…",
+        "correctOptionId": "d",
+        "options": [
+          {
+            "id": "a",
+            "text": "they shift the center of planning from the tasks to the reader’s actual performance."
+          },
+          {
+            "id": "b",
+            "text": "they make measurable readings that previously could not enter temporal planning in any way."
+          },
+          {
+            "id": "c",
+            "text": "they turn an approximate estimate into an almost definitive calculation of future work."
+          },
+          {
+            "id": "d",
+            "text": "they make it possible to revise a prior fiction of planning: that the workload was already being adequately represented by a uniform speed."
+          },
+          {
+            "id": "e",
+            "text": "they make it possible to distinguish more clearly between convenient and inconvenient readings according to the speed with which they can be resolved."
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "Which of these questions best helps explain why the essay needs so many different functions in order to speak, in the end, of a single reading task?",
+        "correctOptionId": "e",
+        "options": [
+          {
+            "id": "a",
+            "text": "What does a difficult material need in order not to remain outside the same work as the rest?"
+          },
+          {
+            "id": "b",
+            "text": "What does a list need so that a task is not only written down, but also available to be resumed later?"
+          },
+          {
+            "id": "c",
+            "text": "What does an order need in order to be corrected when priorities change without falling apart completely?"
+          },
+          {
+            "id": "d",
+            "text": "What does an estimate need in order not to distort the workload by relying on an invented speed?"
+          },
+          {
+            "id": "e",
+            "text": "What does a reading need in order to stop being a dispersed set of materials and start functioning as a genuinely workable task?"
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "The final reference to Carl Sagan broadens the scope of the essay above all because…",
+        "correctOptionId": "b",
+        "options": [
+          {
+            "id": "a",
+            "text": "it rereads the practical operations described earlier as an attempt to reconcile two heterogeneous times: the long time of books and the limited time of the present-day reader."
+          },
+          {
+            "id": "b",
+            "text": "it turns the problem of planning readings into a broader paradox: that which allows writing to unite distant eras also imposes a concrete temporal burden on the one who reads, and the app appears as a way of making that burden visible and workable."
+          },
+          {
+            "id": "c",
+            "text": "it suggests that the app not only organizes individual readings, but transforms a private difficulty into a form of common work among people of the same age."
+          },
+          {
+            "id": "d",
+            "text": "it raises what came before to a more philosophical plane: measuring, ordering, and distributing readings come to be seen as concrete ways of managing the resistance that all writing offers to the time available."
+          },
+          {
+            "id": "e",
+            "text": "it shifts the axis of the essay from the organization of readings toward a more general experience: that of sharing, among contemporaries, the same struggle against time."
+          }
+        ]
+      }
+    ]
+  }
+}
