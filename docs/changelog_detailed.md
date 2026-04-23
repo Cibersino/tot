@@ -46,6 +46,15 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [1.2.0] toT - Coffee table
+
+### Fecha release y último commit
+
+- Fecha: `2026-04-22`
+- Último commit: `8e0f1cca0618c3a7fb76622c2e49267203543894`
+
 ### Resumen
 
 - Branding/support links: la superficie fija de sponsorship de la ventana principal deja Patreon y pasa a Ko-fi (`https://ko-fi.com/cibersino/`), manteniendo el bloque compacto de branding y actualizando el asset runtime, el wiring renderer/i18n y la allowlist acotada de enlaces externos.
@@ -55,12 +64,19 @@ Reglas:
 - Packaging runtime OCR: el artefacto empaquetado deja de depender de un `asarUnpack` amplio para `sharp`/`@img` y pasa a desempaquetar solo los runtimes nativos de `sharp` por plataforma, manteniendo operativa la normalización OCR de `.webp` / `.tif` / `.tiff` en build distribuido sin arrastrar módulos JS ajenos fuera de `app.asar`.
 - Packaging UX del release portable: el `.zip` distribuido deja de extraerse con archivos sueltos en la raíz y pasa a quedar reenvuelto bajo una carpeta superior única `toT-<version>/`, alineando el nombre visible del contenedor extraído con la versión publicada.
 - Main window / selector section: la zona del texto vigente deja de repartir ownership entre `public/renderer.js` y wiring local disperso; ahora el renderer usa un owner dedicado `public/js/current_text_selector_section.js`, y esa misma sección agrega un checkbox `Spoiler` junto a `Reading speed test` para ocultar el segmento final del preview sin mostrar el separador `... | ...`.
+- Reading speed test / start flow: la sesión guiada deja de autoarrancar tras una cuenta regresiva renderer-owned y pasa a abrir editor + ventana flotante en estado `arming`; la medición comienza solo cuando el usuario pulsa `Play`, el pool se consume recién en ese momento y el flujo muestra además una ventana dedicada de resultado antes de preguntas/preset.
+- Editor manual / layout y replace follow-up: el editor deja de concentrar UI, layout y mutación del `textarea` en un solo archivo; gana un layout maximizado centrado con gutters arrastrables y ancho persistido, agrega progreso de lectura vivo en la barra inferior y amplía `Replace All` desde el viejo gate del small-document path a todo el rango permitido por `MAX_TEXT_CHARS`, usando el threshold solo para elegir el mecanismo final de commit.
+- Web/docs/legal follow-up: `PRIVACY.md` y el sitio público se reescriben para describir con más precisión la postura local-first + Google OCR vigente, la web agrega páginas bilingües de `Terms of Service` y el CTA de descarga abre un modal post-click con instrucciones de instalación/extracción por plataforma y copy de soporte hacia Ko-fi.
 
 ### Agregado
 
 - `electron/import_extract_platform/ocr_google_drive_secure_oauth.js` (nuevo): helper propio de activación OAuth desktop segura para Google OCR; reutiliza el cliente OAuth desktop ya empaquetado, abre el navegador del sistema, levanta callback loopback efímero, genera `state` por transacción y aplica PKCE (`code_verifier` + `code_challenge` S256) antes del intercambio del código.
 - `test/unit/electron/ocr_google_drive_secure_oauth.test.js` (nuevo): cobertura dirigida del helper nuevo, incluyendo ruta exitosa con `state` + PKCE, rechazo por `state` inválido, normalización del host loopback IPv6 y timeout cuando no llega callback.
 - `build-resources/after-all-artifact-build.js` (nuevo): hook post-build de `electron-builder` que reempaqueta los artefactos `.zip` ya construidos bajo una carpeta raíz `toT-<version>/`.
+- `electron/reading_test_result_preload.js` y `public/reading_test_result.html` / `public/reading_test_result.css` / `public/reading_test_result.js` (nuevos): ventana dedicada de resultado del reading speed test; bufferiza el payload init desde main, muestra `WPM` medidos junto con tiempo transcurrido y conteo de palabras, y exige `Continue` explícito antes de reanudar el flujo.
+- `public/js/editor_ui.js`, `public/js/editor_engine.js` y `public/js/lib/editor_maximized_layout_core.js` (nuevos): separación explícita entre owner UI/layout del editor, owner de mutación/sync del `textarea` y core puro del layout maximizado con gutters arrastrables.
+- `test/unit/electron/reading_test_session_flow.test.js`, `test/unit/shared/editor_engine_commit_policy.test.js` y `test/unit/shared/editor_ui_margin_persistence.test.js` (nuevos): cobertura dirigida del arranque armado del reading test, del commit policy de `Replace All` y de la persistencia del ancho preferido del editor maximizado.
+- `website/public/terms/index.html`, `website/public/es/terms/index.html` y `website/public/en/terms/index.html` (nuevos): rutas públicas de Términos de servicio con redirección neutral `/terms/` y páginas dedicadas ES/EN.
 
 ### Cambiado
 
@@ -88,9 +104,24 @@ Reglas:
   - `public/index.html` y `public/style.css`: el toolbar del selector agrega un checkbox `Spoiler`, marcado por defecto, a la derecha de `Reading speed test`.
   - `public/js/current_text_selector_section.js`: el preview largo conserva el contrato actual basado en `AppConstants` cuando `Spoiler` está marcado y, cuando se desmarca, oculta el tramo final, elimina `... | ...` y reasigna `PREVIEW_END_CHARS` al tramo inicial visible, devolviendo ahora un truncado explícito `start...`.
   - i18n renderer (`arn`, `de`, `en`, `es`, `fr`, `it`, `pt`): nueva key `renderer.main.reading_tools.preview_spoiler`.
+- Reading speed test / flujo guiado:
+  - `electron/reading_test_session_flow.js`, `electron/reading_test_session_windows.js`, `electron/editor_preload.js`, `public/editor.html` y `public/editor.css`: desaparece la cuenta regresiva renderer-owned previa al inicio; la sesión pasa a un estado `arming` con overlay estático en el editor, `Play` de la ventana flotante inicia realmente la medición y `Stop/Reset` cancela.
+  - `electron/reading_test_session_flow.js`, `electron/reading_test_result_preload.js` y `public/reading_test_result.*`: al finalizar la lectura, el flujo inserta una ventana/modal de resultado con `WPM` medidos, tiempo transcurrido y conteo de palabras antes de las preguntas opcionales y del handoff al modal de presets.
+  - `electron/reading_test_session_flow.js`: el pool deja de marcar `used` al abrir la sesión y pasa a comprometer el consumo solo cuando el usuario pulsa `Play` desde `arming`; si el inicio falla después de ese punto, se hace rollback explícito.
+  - `public/js/reading_speed_test.js`: la confirmación de sobrescritura al arrancar desde el pool queda acotada a los casos en que ya existe current text; con current text vacío, el flujo evita esa confirmación redundante.
+- Editor manual:
+  - `public/editor.js`: reduce su rol a bootstrap/orquestación y delega UI + layout a `public/js/editor_ui.js` y sync/mutaciones a `public/js/editor_engine.js`.
+  - `public/editor.html`, `public/editor.css`, `electron/editor_state.js`, `electron/editor_preload.js` y `electron/main.js`: cuando el editor está maximizado, el `textarea` deja de ocupar todo el ancho de la ventana y pasa a un layout centrado con gutters simétricos arrastrables; el ancho preferido se persiste como `maximizedTextWidthPx` y se reaplica por IPC al abrir/maximizar/restaurar.
+  - `public/editor.html`, `public/js/editor_ui.js` e i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): la barra inferior agrega un indicador vivo de progreso de lectura (`0..100%`) calculado sobre el scroll real del `textarea`.
+  - `electron/editor_find_main.js`, `electron/editor_find_session.js`, `public/editor_find.js`, `public/js/editor_engine.js` y `test/unit/shared/editor_engine_commit_policy.test.js`: `Replace All` deja de ser una feature del small-document path y pasa a estar disponible en todo el rango admitido por `MAX_TEXT_CHARS`; el threshold pequeño solo decide el mecanismo de commit (`native whole-value` vs `hidden full replace`) una vez calculado el texto final.
+- Web/docs/legal:
+  - `PRIVACY.md`, `website/public/*/app-privacy/*.html` y `README.md`: la postura pública se reescribe para describir de forma más precisa el modelo local-first, la comprobación de updates, la integración opcional de Google OCR, la protección local del token y los canales de contacto/soporte.
+  - `website/public/es/index.html`, `website/public/en/index.html`, `website/public/download-resolver.js` y `website/public/styles.css`: el CTA de descarga mantiene la resolución automática del asset estable, pero ahora abre además un modal post-click con instrucciones de instalación/extracción específicas por plataforma y copy de soporte hacia Ko-fi.
+  - `website/public/es/index.html`, `website/public/en/index.html`, `website/public/es/terms/index.html`, `website/public/en/terms/index.html` y `website/public/terms/index.html`: el sitio agrega acceso visible a `Terms of Service` y rutas neutrales ES/EN alineadas con las páginas de privacidad ya existentes.
 - Documentación viva:
   - `docs/tree_folders_files.md`: se actualiza para reflejar que la activación OCR ya no usa `local-auth`, para registrar el nuevo helper propio `ocr_google_drive_secure_oauth.js` y para documentar el hook de packaging que reenvuelve los `.zip` distribuidos bajo `toT-<version>/`.
   - `docs/tree_folders_files.md`: se amplía también para registrar `public/js/current_text_selector_section.js` como owner UI del selector del texto vigente y del nuevo toggle `Spoiler`.
+  - `docs/tree_folders_files.md` y `docs/test_suite.md`: se amplían para documentar la nueva ventana de resultado del reading test, el estado `arming` con `Play` explícito, el layout maximizado persistido del editor y la regresión manual/automatizada asociada.
   - `tools_local/issues/issue_229.md`: el issue deja de ser solo diagnóstico y pasa a incluir la propuesta final adoptada, la nota post-implementación y las decisiones nuevas tomadas durante la ejecución real del cambio.
 
 ### Arreglado
@@ -104,6 +135,14 @@ Reglas:
   - `resources/app.asar.unpacked` deja de inflarse por globs amplios o por heurísticas de smart-unpack sobre módulos JS sin código nativo; el ZIP final conserva fuera de `app.asar` únicamente el runtime nativo requerido por `sharp` para OCR empaquetado.
   - se evita un falso positivo de `electron-builder` sobre `jszip`, cuyo módulo podía quedar completo fuera de `app.asar` por un archivo de metadata binario/extensionless (`.jekyll-metadata`) ajeno a la ejecución real del producto.
   - el `.zip` portable deja de extraer archivos directamente en la carpeta elegida por el usuario; ahora el artefacto publicado se reempaqueta con una carpeta raíz única `toT-<version>/`, mejorando la ergonomía de extracción sin cambiar el payload distribuido.
+- Reading speed test / arranque y consumo del pool:
+  - una sesión cancelada durante `arming` deja de consumir una entrada del pool antes de tiempo; el uso se compromete solo al inicio real de la lectura.
+  - el arranque deja de depender de una cuenta regresiva renderer-owned sensible a timing/race; la sesión espera explícitamente a que editor y ventana flotante estén listos antes de aceptar `Play`.
+- Editor / replace y layout:
+  - `Replace All` deja de quedar artificialmente bloqueado cuando el documento supera `SMALL_UPDATE_THRESHOLD`; el editor conserva un único cálculo whole-document y decide la escritura final con la misma política que los overwrites completos.
+  - la lectura en editor maximizado deja de quedar forzada a líneas excesivamente anchas; el ancho centrado persistido reduce esa deriva visual y se mantiene entre sesiones.
+- Web / download UX:
+  - la descarga web deja de soltar al usuario directamente en el archivo sin orientación posterior; ahora el sitio muestra pasos concretos de instalación/extracción según plataforma inmediatamente después del clic.
 
 ### Contratos tocados
 
@@ -115,6 +154,17 @@ Reglas:
     - `oauth_state_invalid` → code público existente `auth_failed`
     - `oauth_timeout` → code público existente `platform_runtime_failed`
   - ambos preservan `reason` específico en `detailsSafeForLogs` para diagnóstico sin introducir nuevas keys i18n ni nuevas ramas contractuales en renderer.
+- IPC editor ↔ main para estado de ventana:
+  - nuevo `get-editor-window-state` → responde `{ ok, maximized, maximizedTextWidthPx, error? }` y queda autorizado solo para la propia ventana editor.
+  - nuevo `set-editor-maximized-text-width-px` → acepta un ancho numérico, lo clamp-ea al rango permitido del editor y responde `{ ok, maximizedTextWidthPx, error? }`.
+  - nuevo push `editor-window-state-changed` → publica `{ maximized, maximizedTextWidthPx }` cuando cambia el estado visible del editor.
+- Storage `config/editor_state.json`:
+  - nuevo campo persistido `maximizedTextWidthPx` junto a `maximized` y `reduced`; el valor queda normalizado/clamp-eado por main antes de reemitirse al renderer.
+- Bridge interno Find ↔ editor:
+  - la mutación de texto deja de ser implícita para `Replace` / `Replace All` y pasa a un request/response explícito `editor-replace-request` ↔ `editor-replace-response`, con `requestId`, `operation`, `status`, `replacements` y `finalTextLength` como shape observable entre coordinador main y renderer editor.
+- Reading test / preload y ventana de resultado:
+  - `reading-test-prestart-countdown` y `reading-test-countdown-ready` salen del flujo healthy-path y se reemplazan por `reading-test-prestart-state-changed` con payload `{ visible: boolean }`.
+  - nueva ventana de resultado: main envía `reading-test-result-init` y el preload dedicado expone `window.readingTestResultAPI.onInitData(cb)` con replay/buffer del último payload init.
 
 ### Archivos
 
@@ -138,7 +188,37 @@ Reglas:
 - `public/info/acerca_de.html`
 - `electron/link_openers.js`
 - `public/third_party_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt` (removido)
+- `electron/reading_test_session.js`
+- `electron/reading_test_session_flow.js`
+- `electron/reading_test_session_windows.js`
+- `electron/reading_test_result_preload.js`
+- `public/reading_test_result.html`
+- `public/reading_test_result.css`
+- `public/reading_test_result.js`
+- `public/editor.html`
+- `public/editor.css`
+- `public/editor.js`
+- `public/editor_find.html`
+- `public/editor_find.js`
+- `public/js/editor_ui.js`
+- `public/js/editor_engine.js`
+- `public/js/lib/editor_maximized_layout_core.js`
+- `electron/editor_preload.js`
+- `electron/editor_state.js`
+- `electron/editor_find_main.js`
+- `electron/editor_find_session.js`
+- `public/js/reading_speed_test.js`
+- `test/unit/electron/reading_test_session_flow.test.js`
+- `test/unit/shared/editor_engine_commit_policy.test.js`
+- `test/unit/shared/editor_ui_margin_persistence.test.js`
+- `website/public/download-resolver.js`
+- `website/public/terms/index.html`
+- `website/public/es/terms/index.html`
+- `website/public/en/terms/index.html`
+- `PRIVACY.md`
+- `README.md`
 - `docs/tree_folders_files.md`
+- `docs/test_suite.md`
 - `tools_local/issues/issue_229.md`
 
 ---

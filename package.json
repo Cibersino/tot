@@ -1,6 +1,6 @@
 {
   "name": "@cibersino/tot",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Estimador de tiempo de lectura",
   "main": "electron/main.js",
   "scripts": {
