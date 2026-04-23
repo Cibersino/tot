@@ -317,6 +317,7 @@ p {
 
 .download-modal__support a {
   text-decoration: underline;
+  white-space: nowrap;
 }
 
 .download-modal__actions {
