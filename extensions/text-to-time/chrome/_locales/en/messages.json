@@ -17,11 +17,17 @@
   "wpmInputAriaLabel": {
     "message": "Words per minute"
   },
+  "popupSubtitle": {
+    "message": "Reading time"
+  },
   "popupToggleLabel": {
     "message": "Enabled on this tab"
   },
+  "popupHint": {
+    "message": "Select text on a page to see the estimated time."
+  },
   "popupDesktopLink": {
-    "message": "Download toT and organize your readings"
+    "message": "Download the toT desktop app and organize your reading"
   },
   "popupLoadingStatus": {
     "message": "Loading..."

@@ -17,11 +17,17 @@
   "wpmInputAriaLabel": {
     "message": "Palabras por minuto"
   },
+  "popupSubtitle": {
+    "message": "Tiempo de lectura"
+  },
   "popupToggleLabel": {
     "message": "Activado en esta pestaña"
   },
+  "popupHint": {
+    "message": "Selecciona texto en una página para ver el tiempo estimado."
+  },
   "popupDesktopLink": {
-    "message": "Descarga toT y organiza tus lecturas"
+    "message": "Descarga la app de escritorio toT y organiza tus lecturas"
   },
   "popupLoadingStatus": {
     "message": "Cargando..."

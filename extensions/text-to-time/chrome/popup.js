@@ -12,13 +12,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initPopup() {
   const toggle = document.getElementById('tab-toggle');
+  const subtitle = document.getElementById('subtitle');
   const toggleLabel = document.getElementById('toggle-label');
+  const hint = document.getElementById('hint');
   const desktopLink = document.getElementById('desktop-link');
+  const desktopLinkLabel = document.getElementById('desktop-link-label');
   const status = document.getElementById('status');
 
   document.documentElement.lang = chrome.i18n.getUILanguage().split('-')[0] || 'es';
+  subtitle.textContent = getMessage('popupSubtitle', 'Tiempo de lectura');
   toggleLabel.textContent = getMessage('popupToggleLabel', 'Activado en esta pestana');
-  desktopLink.textContent = getMessage('popupDesktopLink', 'App de escritorio completa');
+  hint.textContent = getMessage(
+    'popupHint',
+    'Selecciona texto en una pagina para ver el tiempo estimado.'
+  );
+  desktopLinkLabel.textContent = getMessage('popupDesktopLink', 'App de escritorio completa');
 
   setStatus(status, getMessage('popupLoadingStatus', 'Cargando...'));
   toggle.disabled = true;
