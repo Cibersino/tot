@@ -1,44 +1,55 @@
 /* global chrome */
 'use strict';
 
-const MESSAGE_GET_TAB_STATE = 'totTextToTime:getTabState';
-const MESSAGE_SET_TAB_ENABLED = 'totTextToTime:setTabEnabled';
-const MESSAGE_TOGGLE_TAB_ENABLED = 'totTextToTime:toggleTabEnabled';
-const MESSAGE_TAB_STATE_CHANGED = 'totTextToTime:tabStateChanged';
+const MESSAGE_GET_SITE_STATE = 'totTextToTime:getSiteState';
+const MESSAGE_SET_SITE_ENABLED = 'totTextToTime:setSiteEnabled';
+const MESSAGE_TOGGLE_SITE_ENABLED = 'totTextToTime:toggleSiteEnabled';
+const MESSAGE_SITE_STATE_CHANGED = 'totTextToTime:siteStateChanged';
+const MESSAGE_GET_PAGE_ORIGIN = 'totTextToTime:getPageOrigin';
 const COMMAND_TOGGLE_CURRENT_TAB = 'toggle-current-tab';
-const TAB_STATE_KEY_PREFIX = 'totTextToTime.tabEnabled.';
+const DISABLED_ORIGINS_STORAGE_KEY = 'totTextToTime.disabledOrigins';
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || typeof message.type !== 'string') {
     return false;
   }
 
-  if (message.type === MESSAGE_GET_TAB_STATE) {
+  if (message.type === MESSAGE_GET_SITE_STATE) {
     respondAsync(sendResponse, async () => {
       const tabId = await resolveTabId(message, sender);
-      return { ok: true, enabled: await getTabEnabled(tabId), tabId };
+      return getSiteState(tabId);
     });
     return true;
   }
 
-  if (message.type === MESSAGE_SET_TAB_ENABLED) {
+  if (message.type === MESSAGE_SET_SITE_ENABLED) {
     respondAsync(sendResponse, async () => {
       const tabId = await resolveTabId(message, sender);
+      const origin = await resolveTabOrigin(tabId);
+      if (!origin) {
+        return unavailableSiteState(tabId);
+      }
+
       const enabled = message.enabled !== false;
-      await setTabEnabled(tabId, enabled);
-      notifyTabState(tabId, enabled);
-      return { ok: true, enabled, tabId };
+      await setSiteEnabled(origin, enabled);
+      notifySiteState(tabId, enabled);
+      return { ok: true, available: true, enabled, origin, tabId };
     });
     return true;
   }
 
-  if (message.type === MESSAGE_TOGGLE_TAB_ENABLED) {
+  if (message.type === MESSAGE_TOGGLE_SITE_ENABLED) {
     respondAsync(sendResponse, async () => {
       const tabId = await resolveTabId(message, sender);
-      const enabled = !(await getTabEnabled(tabId));
-      await setTabEnabled(tabId, enabled);
-      notifyTabState(tabId, enabled);
-      return { ok: true, enabled, tabId };
+      const origin = await resolveTabOrigin(tabId);
+      if (!origin) {
+        return unavailableSiteState(tabId);
+      }
+
+      const enabled = !(await isSiteEnabled(origin));
+      await setSiteEnabled(origin, enabled);
+      notifySiteState(tabId, enabled);
+      return { ok: true, available: true, enabled, origin, tabId };
     });
     return true;
   }
@@ -56,21 +67,20 @@ chrome.commands.onCommand.addListener((command, tab) => {
   });
 });
 
-chrome.tabs.onRemoved.addListener((tabId) => {
-  removeTabState(tabId).catch((err) => {
-    console.error('Failed to remove toT tab state:', err);
-  });
-});
-
 async function toggleCommandTab(tab) {
   const tabId = tab && Number.isInteger(tab.id) ? tab.id : await getActiveTabId();
   if (!Number.isInteger(tabId)) {
     return;
   }
 
-  const enabled = !(await getTabEnabled(tabId));
-  await setTabEnabled(tabId, enabled);
-  notifyTabState(tabId, enabled);
+  const origin = await resolveTabOrigin(tabId);
+  if (!origin) {
+    return;
+  }
+
+  const enabled = !(await isSiteEnabled(origin));
+  await setSiteEnabled(origin, enabled);
+  notifySiteState(tabId, enabled);
 }
 
 async function resolveTabId(message, sender) {
@@ -91,48 +101,140 @@ async function getActiveTabId() {
   return activeTab && Number.isInteger(activeTab.id) ? activeTab.id : null;
 }
 
-async function getTabEnabled(tabId) {
+async function getSiteState(tabId) {
   if (!Number.isInteger(tabId)) {
-    return true;
+    return unavailableSiteState(tabId);
   }
 
-  const key = tabStateKey(tabId);
-  const result = await storageSessionGet({ [key]: true });
-  return result[key] !== false;
-}
-
-async function setTabEnabled(tabId, enabled) {
-  if (!Number.isInteger(tabId)) {
-    return;
+  const origin = await resolveTabOrigin(tabId);
+  if (!origin) {
+    return unavailableSiteState(tabId);
   }
 
-  await storageSessionSet({ [tabStateKey(tabId)]: enabled !== false });
+  return {
+    ok: true,
+    available: true,
+    enabled: await isSiteEnabled(origin),
+    origin,
+    tabId,
+  };
 }
 
-async function removeTabState(tabId) {
+function unavailableSiteState(tabId) {
+  return {
+    ok: true,
+    available: false,
+    enabled: true,
+    origin: null,
+    tabId: Number.isInteger(tabId) ? tabId : null,
+  };
+}
+
+async function resolveTabOrigin(tabId) {
   if (!Number.isInteger(tabId)) {
-    return;
+    return null;
   }
 
-  await storageSessionRemove(tabStateKey(tabId));
+  let origin = await requestTabOrigin(tabId);
+  if (origin) {
+    return origin;
+  }
+
+  // Top-frame content script startup can race the first request on navigation.
+  await delay(50);
+  origin = await requestTabOrigin(tabId);
+  return origin;
 }
 
-function notifyTabState(tabId, enabled) {
+async function requestTabOrigin(tabId) {
+  try {
+    const response = await tabsSendMessage(
+      tabId,
+      { type: MESSAGE_GET_PAGE_ORIGIN },
+      { frameId: 0 }
+    );
+    return normalizeOrigin(response && response.origin);
+  } catch (_err) {
+    return null;
+  }
+}
+
+function notifySiteState(tabId, enabled) {
   if (!Number.isInteger(tabId)) {
     return;
   }
 
   chrome.tabs.sendMessage(
     tabId,
-    { type: MESSAGE_TAB_STATE_CHANGED, enabled: enabled !== false },
+    { type: MESSAGE_SITE_STATE_CHANGED, enabled: enabled !== false },
     () => {
       void chrome.runtime.lastError;
     }
   );
 }
 
-function tabStateKey(tabId) {
-  return `${TAB_STATE_KEY_PREFIX}${tabId}`;
+async function isSiteEnabled(origin) {
+  if (!origin) {
+    return true;
+  }
+
+  const disabledOrigins = await getDisabledOrigins();
+  return disabledOrigins[origin] !== true;
+}
+
+async function setSiteEnabled(origin, enabled) {
+  if (!origin) {
+    return;
+  }
+
+  const disabledOrigins = await getDisabledOrigins();
+  if (enabled !== false) {
+    if (disabledOrigins[origin] !== true) {
+      return;
+    }
+
+    delete disabledOrigins[origin];
+  } else {
+    disabledOrigins[origin] = true;
+  }
+
+  await storageLocalSet({ [DISABLED_ORIGINS_STORAGE_KEY]: disabledOrigins });
+}
+
+async function getDisabledOrigins() {
+  const result = await storageLocalGet({ [DISABLED_ORIGINS_STORAGE_KEY]: {} });
+  const storedOrigins = result[DISABLED_ORIGINS_STORAGE_KEY];
+  if (!storedOrigins || typeof storedOrigins !== 'object' || Array.isArray(storedOrigins)) {
+    return {};
+  }
+
+  const disabledOrigins = {};
+  for (const [origin, value] of Object.entries(storedOrigins)) {
+    const normalizedOrigin = normalizeOrigin(origin);
+    if (normalizedOrigin && value === true) {
+      disabledOrigins[normalizedOrigin] = true;
+    }
+  }
+
+  return disabledOrigins;
+}
+
+function normalizeOrigin(origin) {
+  const text = String(origin || '').trim();
+  if (!text) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(text);
+    if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || parsed.origin !== text) {
+      return null;
+    }
+
+    return parsed.origin;
+  } catch (_err) {
+    return null;
+  }
 }
 
 function respondAsync(sendResponse, task) {
@@ -144,9 +246,9 @@ function respondAsync(sendResponse, task) {
     });
 }
 
-function storageSessionGet(defaults) {
+function storageLocalGet(defaults) {
   return new Promise((resolve, reject) => {
-    chrome.storage.session.get(defaults, (result) => {
+    chrome.storage.local.get(defaults, (result) => {
       const error = chrome.runtime.lastError;
       if (error) {
         reject(new Error(error.message));
@@ -158,9 +260,9 @@ function storageSessionGet(defaults) {
   });
 }
 
-function storageSessionSet(values) {
+function storageLocalSet(values) {
   return new Promise((resolve, reject) => {
-    chrome.storage.session.set(values, () => {
+    chrome.storage.local.set(values, () => {
       const error = chrome.runtime.lastError;
       if (error) {
         reject(new Error(error.message));
@@ -172,16 +274,16 @@ function storageSessionSet(values) {
   });
 }
 
-function storageSessionRemove(key) {
+function tabsSendMessage(tabId, message, options) {
   return new Promise((resolve, reject) => {
-    chrome.storage.session.remove(key, () => {
+    chrome.tabs.sendMessage(tabId, message, options || {}, (response) => {
       const error = chrome.runtime.lastError;
       if (error) {
         reject(new Error(error.message));
         return;
       }
 
-      resolve();
+      resolve(response || null);
     });
   });
 }
@@ -197,5 +299,11 @@ function tabsQuery(queryInfo) {
 
       resolve(tabs || []);
     });
+  });
+}
+
+function delay(timeoutMs) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeoutMs);
   });
 }

@@ -14,8 +14,9 @@
   } = Logic;
 
   const STORAGE_WPM_KEY = 'totTextToTime.wpm';
-  const MESSAGE_GET_TAB_STATE = 'totTextToTime:getTabState';
-  const MESSAGE_TAB_STATE_CHANGED = 'totTextToTime:tabStateChanged';
+  const MESSAGE_GET_SITE_STATE = 'totTextToTime:getSiteState';
+  const MESSAGE_SITE_STATE_CHANGED = 'totTextToTime:siteStateChanged';
+  const MESSAGE_GET_PAGE_ORIGIN = 'totTextToTime:getPageOrigin';
   const OVERLAY_ID = 'tot-text-to-time-overlay';
   const FADE_MS = 180;
   const TEXT = Object.freeze({
@@ -51,8 +52,8 @@
     confirmedWpm = await readStoredWpm();
     draftWpm = String(confirmedWpm);
 
-    const tabState = await sendRuntimeMessage({ type: MESSAGE_GET_TAB_STATE });
-    enabled = !tabState || tabState.enabled !== false;
+    const siteState = await sendRuntimeMessage({ type: MESSAGE_GET_SITE_STATE });
+    enabled = !siteState || siteState.enabled !== false;
     initialized = true;
 
     if (enabled) {
@@ -61,12 +62,25 @@
   }
 
   function onRuntimeMessage(message, _sender, sendResponse) {
-    if (!message || message.type !== MESSAGE_TAB_STATE_CHANGED) {
+    if (!message || typeof message.type !== 'string') {
       return false;
     }
 
-    setEnabled(message.enabled !== false);
-    sendResponse({ ok: true, enabled });
+    if (message.type === MESSAGE_SITE_STATE_CHANGED) {
+      setEnabled(message.enabled !== false);
+      sendResponse({ ok: true, enabled });
+      return false;
+    }
+
+    if (message.type === MESSAGE_GET_PAGE_ORIGIN) {
+      if (!isTopFrame()) {
+        return false;
+      }
+
+      sendResponse({ ok: true, origin: getPageOrigin() });
+      return false;
+    }
+
     return false;
   }
 
@@ -462,5 +476,13 @@
     }
 
     return chrome.i18n.getMessage(key) || fallback;
+  }
+
+  function isTopFrame() {
+    return window.self === window.top;
+  }
+
+  function getPageOrigin() {
+    return location.origin && location.origin !== 'null' ? location.origin : null;
   }
 })();

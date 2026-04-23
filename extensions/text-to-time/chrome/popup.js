@@ -1,10 +1,11 @@
 /* global chrome */
 'use strict';
 
-const MESSAGE_GET_TAB_STATE = 'totTextToTime:getTabState';
-const MESSAGE_SET_TAB_ENABLED = 'totTextToTime:setTabEnabled';
+const MESSAGE_GET_SITE_STATE = 'totTextToTime:getSiteState';
+const MESSAGE_SET_SITE_ENABLED = 'totTextToTime:setSiteEnabled';
 
 let activeTabId = null;
+let lastKnownEnabled = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   initPopup();
@@ -18,10 +19,14 @@ async function initPopup() {
   const desktopLink = document.getElementById('desktop-link');
   const desktopLinkLabel = document.getElementById('desktop-link-label');
   const status = document.getElementById('status');
+  const siteUnavailableStatus = getMessage(
+    'popupSiteUnavailableStatus',
+    'Este sitio no esta disponible.'
+  );
 
   document.documentElement.lang = chrome.i18n.getUILanguage().split('-')[0] || 'es';
   subtitle.textContent = getMessage('popupSubtitle', 'Tiempo de lectura');
-  toggleLabel.textContent = getMessage('popupToggleLabel', 'Activado en esta pestana');
+  toggleLabel.textContent = getMessage('popupToggleLabel', 'Activado en este sitio');
   hint.textContent = getMessage(
     'popupHint',
     'Selecciona texto en una pagina para ver el tiempo estimado.'
@@ -33,41 +38,66 @@ async function initPopup() {
 
   activeTabId = await getActiveTabId();
   if (!Number.isInteger(activeTabId)) {
-    setStatus(status, getMessage('popupNoActiveTabStatus', 'No hay pestana activa.'));
+    applyUnavailableState(
+      toggle,
+      status,
+      getMessage('popupNoActiveTabStatus', 'No hay sitio activo.')
+    );
     return;
   }
 
   const state = await sendRuntimeMessage({
-    type: MESSAGE_GET_TAB_STATE,
+    type: MESSAGE_GET_SITE_STATE,
     tabId: activeTabId,
   });
 
-  toggle.checked = !state || state.enabled !== false;
+  if (!state || state.ok !== true || state.available !== true) {
+    applyUnavailableState(toggle, status, siteUnavailableStatus);
+    return;
+  }
+
+  lastKnownEnabled = state.enabled !== false;
+  toggle.checked = lastKnownEnabled;
   toggle.disabled = false;
   setStatus(status, '');
 
   toggle.addEventListener('change', async () => {
+    const previousEnabled = lastKnownEnabled;
     toggle.disabled = true;
     setStatus(status, getMessage('popupUpdatingStatus', 'Actualizando...'));
 
     const response = await sendRuntimeMessage({
-      type: MESSAGE_SET_TAB_ENABLED,
+      type: MESSAGE_SET_SITE_ENABLED,
       tabId: activeTabId,
       enabled: toggle.checked,
     });
 
-    if (response && response.ok) {
-      toggle.checked = response.enabled !== false;
+    if (response && response.ok && response.available === true) {
+      lastKnownEnabled = response.enabled !== false;
+      toggle.checked = lastKnownEnabled;
       setStatus(status, '');
-    } else {
-      setStatus(
-        status,
-        getMessage('popupUpdateFailedStatus', 'No se pudo actualizar esta pestana.')
-      );
+      toggle.disabled = false;
+      return;
     }
 
+    toggle.checked = previousEnabled;
+    if (response && response.available === false) {
+      applyUnavailableState(toggle, status, siteUnavailableStatus, previousEnabled);
+      return;
+    }
+
+    setStatus(
+      status,
+      getMessage('popupUpdateFailedStatus', 'No se pudo actualizar este sitio.')
+    );
     toggle.disabled = false;
   });
+}
+
+function applyUnavailableState(toggle, status, message, checked) {
+  toggle.checked = checked === true;
+  toggle.disabled = true;
+  setStatus(status, message);
 }
 
 function setStatus(status, message) {
