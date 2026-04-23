@@ -68,7 +68,6 @@
 
     if (message.type === MESSAGE_SITE_STATE_CHANGED) {
       setEnabled(message.enabled !== false);
-      sendResponse({ ok: true, enabled });
       return false;
     }
 
@@ -77,7 +76,7 @@
         return false;
       }
 
-      sendResponse({ ok: true, origin: getPageOrigin() });
+      sendResponse({ origin: getPageOrigin() });
       return false;
     }
 

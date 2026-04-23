@@ -28,13 +28,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const tabId = await resolveTabId(message, sender);
       const origin = await resolveTabOrigin(tabId);
       if (!origin) {
-        return unavailableSiteState(tabId);
+        return unavailableSiteState();
       }
 
       const enabled = message.enabled !== false;
       await setSiteEnabled(origin, enabled);
       await notifyOriginState(origin, enabled);
-      return { ok: true, available: true, enabled, origin, tabId };
+      return { ok: true, available: true, enabled };
     });
     return true;
   }
@@ -88,30 +88,26 @@ async function getActiveTabId() {
 
 async function getSiteState(tabId) {
   if (!Number.isInteger(tabId)) {
-    return unavailableSiteState(tabId);
+    return unavailableSiteState();
   }
 
   const origin = await resolveTabOrigin(tabId);
   if (!origin) {
-    return unavailableSiteState(tabId);
+    return unavailableSiteState();
   }
 
   return {
     ok: true,
     available: true,
     enabled: await isSiteEnabled(origin),
-    origin,
-    tabId,
   };
 }
 
-function unavailableSiteState(tabId) {
+function unavailableSiteState() {
   return {
     ok: true,
     available: false,
     enabled: true,
-    origin: null,
-    tabId: Number.isInteger(tabId) ? tabId : null,
   };
 }
 
