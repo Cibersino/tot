@@ -18,6 +18,10 @@
   const MESSAGE_TAB_STATE_CHANGED = 'totTextToTime:tabStateChanged';
   const OVERLAY_ID = 'tot-text-to-time-overlay';
   const FADE_MS = 180;
+  const TEXT = Object.freeze({
+    wordCountLabel: getMessage('overlayWordCountLabel', 'palabras'),
+    wpmAriaLabel: getMessage('wpmInputAriaLabel', 'Palabras por minuto'),
+  });
 
   let initialized = false;
   let enabled = false;
@@ -156,7 +160,7 @@
     cancelHideTimers();
 
     timeElement.textContent = formatDuration(estimateSeconds(wordCount, confirmedWpm));
-    wordsElement.textContent = `${wordCount} palabras`;
+    wordsElement.textContent = `${wordCount} ${TEXT.wordCountLabel}`;
 
     if (!isWpmInputFocused()) {
       draftWpm = String(confirmedWpm);
@@ -252,7 +256,7 @@
     wpmInput.autocomplete = 'off';
     wpmInput.spellcheck = false;
     wpmInput.value = draftWpm;
-    wpmInput.setAttribute('aria-label', 'Words per minute');
+    wpmInput.setAttribute('aria-label', TEXT.wpmAriaLabel);
 
     const wpmLabel = document.createElement('span');
     wpmLabel.className = 'tot-wpm-label';
@@ -450,5 +454,13 @@
         resolve(response || null);
       });
     });
+  }
+
+  function getMessage(key, fallback) {
+    if (!chrome.i18n || typeof chrome.i18n.getMessage !== 'function') {
+      return fallback;
+    }
+
+    return chrome.i18n.getMessage(key) || fallback;
   }
 })();

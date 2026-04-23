@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,12 +10,10 @@
   <main class="popup">
     <label class="toggle">
       <input id="tab-toggle" type="checkbox">
-      <span>Activado en esta pestana</span>
+      <span id="toggle-label"></span>
     </label>
 
-    <a class="desktop-link" href="https://totapp.org" target="_blank" rel="noreferrer">
-      App de escritorio completa
-    </a>
+    <a id="desktop-link" class="desktop-link" href="https://totapp.org" target="_blank" rel="noreferrer"></a>
 
     <p id="status" class="status" aria-live="polite"></p>
   </main>

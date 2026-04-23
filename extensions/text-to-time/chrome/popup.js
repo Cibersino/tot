@@ -12,14 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initPopup() {
   const toggle = document.getElementById('tab-toggle');
+  const toggleLabel = document.getElementById('toggle-label');
+  const desktopLink = document.getElementById('desktop-link');
   const status = document.getElementById('status');
 
-  setStatus(status, 'Cargando...');
+  document.documentElement.lang = chrome.i18n.getUILanguage().split('-')[0] || 'es';
+  toggleLabel.textContent = getMessage('popupToggleLabel', 'Activado en esta pestana');
+  desktopLink.textContent = getMessage('popupDesktopLink', 'App de escritorio completa');
+
+  setStatus(status, getMessage('popupLoadingStatus', 'Cargando...'));
   toggle.disabled = true;
 
   activeTabId = await getActiveTabId();
   if (!Number.isInteger(activeTabId)) {
-    setStatus(status, 'No hay pestana activa.');
+    setStatus(status, getMessage('popupNoActiveTabStatus', 'No hay pestana activa.'));
     return;
   }
 
@@ -34,7 +40,7 @@ async function initPopup() {
 
   toggle.addEventListener('change', async () => {
     toggle.disabled = true;
-    setStatus(status, 'Actualizando...');
+    setStatus(status, getMessage('popupUpdatingStatus', 'Actualizando...'));
 
     const response = await sendRuntimeMessage({
       type: MESSAGE_SET_TAB_ENABLED,
@@ -46,7 +52,10 @@ async function initPopup() {
       toggle.checked = response.enabled !== false;
       setStatus(status, '');
     } else {
-      setStatus(status, 'No se pudo actualizar esta pestana.');
+      setStatus(
+        status,
+        getMessage('popupUpdateFailedStatus', 'No se pudo actualizar esta pestana.')
+      );
     }
 
     toggle.disabled = false;
@@ -82,4 +91,12 @@ function sendRuntimeMessage(message) {
       resolve(response || null);
     });
   });
+}
+
+function getMessage(key, fallback) {
+  if (!chrome.i18n || typeof chrome.i18n.getMessage !== 'function') {
+    return fallback;
+  }
+
+  return chrome.i18n.getMessage(key) || fallback;
 }

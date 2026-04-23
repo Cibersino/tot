@@ -1,0 +1,38 @@
+{
+  "extensionName": {
+    "message": "toT Text to Time"
+  },
+  "extensionDescription": {
+    "message": "Estimate reading time from selected webpage text."
+  },
+  "actionTitle": {
+    "message": "toT reading time"
+  },
+  "toggleCommandDescription": {
+    "message": "Toggle the toT reading-time estimator on the current tab"
+  },
+  "overlayWordCountLabel": {
+    "message": "words"
+  },
+  "wpmInputAriaLabel": {
+    "message": "Words per minute"
+  },
+  "popupToggleLabel": {
+    "message": "Enabled on this tab"
+  },
+  "popupDesktopLink": {
+    "message": "Full desktop app"
+  },
+  "popupLoadingStatus": {
+    "message": "Loading..."
+  },
+  "popupNoActiveTabStatus": {
+    "message": "No active tab."
+  },
+  "popupUpdatingStatus": {
+    "message": "Updating..."
+  },
+  "popupUpdateFailedStatus": {
+    "message": "Could not update this tab."
+  }
+}
