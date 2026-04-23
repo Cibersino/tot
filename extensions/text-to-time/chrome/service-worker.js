@@ -8,6 +8,8 @@ const MESSAGE_SITE_STATE_CHANGED = 'totTextToTime:siteStateChanged';
 const MESSAGE_GET_PAGE_ORIGIN = 'totTextToTime:getPageOrigin';
 const COMMAND_TOGGLE_CURRENT_TAB = 'toggle-current-tab';
 const DISABLED_ORIGINS_STORAGE_KEY = 'totTextToTime.disabledOrigins';
+const ORIGIN_RESOLVE_TIMEOUT_MS = 1000;
+const ORIGIN_RESOLVE_RETRY_DELAY_MS = 100;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || typeof message.type !== 'string') {
@@ -135,15 +137,21 @@ async function resolveTabOrigin(tabId) {
     return null;
   }
 
-  let origin = await requestTabOrigin(tabId);
-  if (origin) {
-    return origin;
-  }
+  const deadline = Date.now() + ORIGIN_RESOLVE_TIMEOUT_MS;
+  while (true) {
+    const origin = await requestTabOrigin(tabId);
+    if (origin) {
+      return origin;
+    }
 
-  // Top-frame content script startup can race the first request on navigation.
-  await delay(50);
-  origin = await requestTabOrigin(tabId);
-  return origin;
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) {
+      return null;
+    }
+
+    // Top-frame content script startup can race site-state requests during navigation.
+    await delay(Math.min(ORIGIN_RESOLVE_RETRY_DELAY_MS, remainingMs));
+  }
 }
 
 async function requestTabOrigin(tabId) {
