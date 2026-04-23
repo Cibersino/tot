@@ -3,7 +3,6 @@
 
 const MESSAGE_GET_SITE_STATE = 'totTextToTime:getSiteState';
 const MESSAGE_SET_SITE_ENABLED = 'totTextToTime:setSiteEnabled';
-const MESSAGE_TOGGLE_SITE_ENABLED = 'totTextToTime:toggleSiteEnabled';
 const MESSAGE_SITE_STATE_CHANGED = 'totTextToTime:siteStateChanged';
 const MESSAGE_GET_PAGE_ORIGIN = 'totTextToTime:getPageOrigin';
 const COMMAND_TOGGLE_CURRENT_TAB = 'toggle-current-tab';
@@ -34,23 +33,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       const enabled = message.enabled !== false;
       await setSiteEnabled(origin, enabled);
-      notifySiteState(tabId, enabled);
-      return { ok: true, available: true, enabled, origin, tabId };
-    });
-    return true;
-  }
-
-  if (message.type === MESSAGE_TOGGLE_SITE_ENABLED) {
-    respondAsync(sendResponse, async () => {
-      const tabId = await resolveTabId(message, sender);
-      const origin = await resolveTabOrigin(tabId);
-      if (!origin) {
-        return unavailableSiteState(tabId);
-      }
-
-      const enabled = !(await isSiteEnabled(origin));
-      await setSiteEnabled(origin, enabled);
-      notifySiteState(tabId, enabled);
+      await notifyOriginState(origin, enabled);
       return { ok: true, available: true, enabled, origin, tabId };
     });
     return true;
@@ -82,7 +65,7 @@ async function toggleCommandTab(tab) {
 
   const enabled = !(await isSiteEnabled(origin));
   await setSiteEnabled(origin, enabled);
-  notifySiteState(tabId, enabled);
+  await notifyOriginState(origin, enabled);
 }
 
 async function resolveTabId(message, sender) {
@@ -167,18 +150,42 @@ async function requestTabOrigin(tabId) {
   }
 }
 
-function notifySiteState(tabId, enabled) {
-  if (!Number.isInteger(tabId)) {
+async function notifyOriginState(origin, enabled) {
+  if (!origin) {
     return;
   }
 
-  chrome.tabs.sendMessage(
-    tabId,
-    { type: MESSAGE_SITE_STATE_CHANGED, enabled: enabled !== false },
-    () => {
-      void chrome.runtime.lastError;
-    }
+  const tabs = await tabsQuery({});
+  const candidateTabs = tabs.filter((tab) => Number.isInteger(tab && tab.id));
+  const resolvedTabs = await Promise.all(
+    candidateTabs.map(async (tab) => ({
+      tabId: tab.id,
+      origin: await resolveTabOrigin(tab.id),
+    }))
   );
+
+  await Promise.all(
+    resolvedTabs
+      .filter((tab) => tab.origin === origin)
+      .map((tab) => notifyTabSiteState(tab.tabId, enabled))
+  );
+}
+
+function notifyTabSiteState(tabId, enabled) {
+  if (!Number.isInteger(tabId)) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    chrome.tabs.sendMessage(
+      tabId,
+      { type: MESSAGE_SITE_STATE_CHANGED, enabled: enabled !== false },
+      () => {
+        void chrome.runtime.lastError;
+        resolve();
+      }
+    );
+  });
 }
 
 async function isSiteEnabled(origin) {
