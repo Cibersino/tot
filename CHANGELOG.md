@@ -12,6 +12,20 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
 - **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
 
+## [1.2.0] toT - Coffee table
+- Fecha: `2026-04-22`
+
+- Branding/support links: la superficie fija de sponsorship de la ventana principal deja Patreon y pasa a Ko-fi (`https://ko-fi.com/cibersino/`), manteniendo el bloque compacto de branding y actualizando el asset runtime, el wiring renderer/i18n y la allowlist acotada de enlaces externos.
+- Google OCR / OAuth segura (Issue #229): la activación OCR deja de depender de `@google-cloud/local-auth` y pasa a usar un helper propio loopback + navegador del sistema + `state` + PKCE, manteniendo el modelo de dos fases IPC ya existente (`prepare` sin navegador, `launch` con OAuth) y sin introducir churn en la superficie renderer/main ni en i18n.
+- Follow-up de robustez sobre ese mismo flujo: el listener loopback queda acotado por timeout y el bind del host IPv6 bracketed (`[::1]`) se normaliza explícitamente antes de `server.listen(...)`, evitando dependencia implícita del tratamiento de hostnames bracketed por el runtime.
+- Limpieza del flujo legado: `@google-cloud/local-auth` sale del grafo runtime redistribuido, desaparece de `Acerca de` y de los docKeys/licencias públicas actuales del producto; el contrato histórico queda preservado solo en documentos versionados de releases anteriores.
+- Packaging runtime OCR: el artefacto empaquetado deja de depender de un `asarUnpack` amplio para `sharp`/`@img` y pasa a desempaquetar solo los runtimes nativos de `sharp` por plataforma, manteniendo operativa la normalización OCR de `.webp` / `.tif` / `.tiff` en build distribuido sin arrastrar módulos JS ajenos fuera de `app.asar`.
+- Packaging UX del release portable: el `.zip` distribuido deja de extraerse con archivos sueltos en la raíz y pasa a quedar reenvuelto bajo una carpeta superior única `toT-<version>/`, alineando el nombre visible del contenedor extraído con la versión publicada.
+- Main window / selector section: la zona del texto vigente deja de repartir ownership entre `public/renderer.js` y wiring local disperso; ahora el renderer usa un owner dedicado `public/js/current_text_selector_section.js`, y esa misma sección agrega un checkbox `Spoiler` junto a `Reading speed test` para ocultar el segmento final del preview sin mostrar el separador `... | ...`.
+- Reading speed test / start flow: la sesión guiada deja de autoarrancar tras una cuenta regresiva renderer-owned y pasa a abrir editor + ventana flotante en estado `arming`; la medición comienza solo cuando el usuario pulsa `Play`, el pool se consume recién en ese momento y el flujo muestra además una ventana dedicada de resultado antes de preguntas/preset.
+- Editor manual / layout y replace follow-up: el editor deja de concentrar UI, layout y mutación del `textarea` en un solo archivo; gana un layout maximizado centrado con gutters arrastrables y ancho persistido, agrega progreso de lectura vivo en la barra inferior y amplía `Replace All` desde el viejo gate del small-document path a todo el rango permitido por `MAX_TEXT_CHARS`, usando el threshold solo para elegir el mecanismo final de commit.
+- Web/docs/legal follow-up: `PRIVACY.md` y el sitio público se reescriben para describir con más precisión la postura local-first + Google OCR vigente, la web agrega páginas bilingües de `Terms of Service` y el CTA de descarga abre un modal post-click con instrucciones de instalación/extracción por plataforma y copy de soporte hacia Ko-fi.
+
 ## [1.1.0] toT - Testing
 - Fecha: `2026-04-12`
 

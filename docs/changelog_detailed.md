@@ -46,6 +46,15 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [1.2.0] toT - Coffee table
+
+### Fecha release y último commit
+
+- Fecha: `2026-04-22`
+- Último commit: `8e0f1cca0618c3a7fb76622c2e49267203543894`
+
 ### Resumen
 
 - Branding/support links: la superficie fija de sponsorship de la ventana principal deja Patreon y pasa a Ko-fi (`https://ko-fi.com/cibersino/`), manteniendo el bloque compacto de branding y actualizando el asset runtime, el wiring renderer/i18n y la allowlist acotada de enlaces externos.
