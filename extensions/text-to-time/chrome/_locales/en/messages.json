@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "toT Text to Time"
+    "message": "toT - Reading time"
   },
   "extensionDescription": {
     "message": "Estimate reading time from selected webpage text."
@@ -9,7 +9,7 @@
     "message": "toT reading time"
   },
   "toggleCommandDescription": {
-    "message": "Toggle the toT reading-time estimator on the current tab"
+    "message": "Toggle the toT reading-time estimator on this site"
   },
   "overlayWordCountLabel": {
     "message": "words"
@@ -21,7 +21,7 @@
     "message": "Reading time"
   },
   "popupToggleLabel": {
-    "message": "Enabled on this tab"
+    "message": "Enabled on this site"
   },
   "popupHint": {
     "message": "Select text on a page to see the estimated time."
@@ -33,12 +33,12 @@
     "message": "Loading..."
   },
   "popupNoActiveTabStatus": {
-    "message": "No active tab."
+    "message": "No active site."
   },
   "popupUpdatingStatus": {
     "message": "Updating..."
   },
   "popupUpdateFailedStatus": {
-    "message": "Could not update this tab."
+    "message": "Could not update this site."
   }
 }

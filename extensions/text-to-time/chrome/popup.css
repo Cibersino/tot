@@ -174,5 +174,6 @@ h1 {
   margin: -2px 0 0;
   color: var(--tot-muted);
   font-size: 12px;
+  font-style: italic;
   line-height: 1.25;
 }

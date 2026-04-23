@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "toT Text to Time"
+    "message": "toT - Tiempo de lectura"
   },
   "extensionDescription": {
     "message": "Estima el tiempo de lectura del texto seleccionado en páginas web."
@@ -9,7 +9,7 @@
     "message": "Tiempo de lectura de toT"
   },
   "toggleCommandDescription": {
-    "message": "Activar o desactivar el estimador de lectura de toT en la pestaña actual"
+    "message": "Activar o desactivar el estimador de lectura de toT en este sitio"
   },
   "overlayWordCountLabel": {
     "message": "palabras"
@@ -21,7 +21,7 @@
     "message": "Tiempo de lectura"
   },
   "popupToggleLabel": {
-    "message": "Activado en esta pestaña"
+    "message": "Activado en este sitio"
   },
   "popupHint": {
     "message": "Selecciona texto en una página para ver el tiempo estimado."
@@ -33,12 +33,12 @@
     "message": "Cargando..."
   },
   "popupNoActiveTabStatus": {
-    "message": "No hay pestaña activa."
+    "message": "No hay sitio activo."
   },
   "popupUpdatingStatus": {
     "message": "Actualizando..."
   },
   "popupUpdateFailedStatus": {
-    "message": "No se pudo actualizar esta pestaña."
+    "message": "No se pudo actualizar este sitio."
   }
 }
