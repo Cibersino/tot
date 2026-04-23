@@ -77,7 +77,7 @@ async function resolveTabId(message, sender) {
     return message.tabId;
   }
 
-  return getActiveTabId();
+  return null;
 }
 
 async function getActiveTabId() {
