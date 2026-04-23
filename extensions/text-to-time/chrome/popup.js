@@ -14,12 +14,12 @@ async function initPopup() {
   const toggle = document.getElementById('tab-toggle');
   const status = document.getElementById('status');
 
-  setStatus(status, 'Loading...');
+  setStatus(status, 'Cargando...');
   toggle.disabled = true;
 
   activeTabId = await getActiveTabId();
   if (!Number.isInteger(activeTabId)) {
-    setStatus(status, 'No active tab.');
+    setStatus(status, 'No hay pestana activa.');
     return;
   }
 
@@ -34,7 +34,7 @@ async function initPopup() {
 
   toggle.addEventListener('change', async () => {
     toggle.disabled = true;
-    setStatus(status, 'Updating...');
+    setStatus(status, 'Actualizando...');
 
     const response = await sendRuntimeMessage({
       type: MESSAGE_SET_TAB_ENABLED,
@@ -46,7 +46,7 @@ async function initPopup() {
       toggle.checked = response.enabled !== false;
       setStatus(status, '');
     } else {
-      setStatus(status, 'Could not update this tab.');
+      setStatus(status, 'No se pudo actualizar esta pestana.');
     }
 
     toggle.disabled = false;

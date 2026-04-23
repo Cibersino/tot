@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "toT Text to Time",
   "version": "0.1.0",
-  "description": "Estimate reading time from selected webpage text.",
+  "description": "Estima el tiempo de lectura del texto seleccionado en paginas web.",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -27,7 +27,7 @@
   ],
   "commands": {
     "toggle-current-tab": {
-      "description": "Toggle toT reading-time overlay on the current tab"
+      "description": "Activar o desactivar el estimador de lectura de toT en la pestana actual"
     }
   },
   "content_scripts": [
