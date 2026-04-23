@@ -35,8 +35,8 @@
   "popupNoActiveTabStatus": {
     "message": "No active site."
   },
-  "popupSiteUnavailableStatus": {
-    "message": "This site is unavailable."
+  "popupSiteStateUnavailableStatus": {
+    "message": "Could not resolve this site's state."
   },
   "popupUpdatingStatus": {
     "message": "Updating..."

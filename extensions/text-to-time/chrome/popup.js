@@ -16,12 +16,11 @@ async function initPopup() {
   const subtitle = document.getElementById('subtitle');
   const toggleLabel = document.getElementById('toggle-label');
   const hint = document.getElementById('hint');
-  const desktopLink = document.getElementById('desktop-link');
   const desktopLinkLabel = document.getElementById('desktop-link-label');
   const status = document.getElementById('status');
-  const siteUnavailableStatus = getMessage(
-    'popupSiteUnavailableStatus',
-    'Este sitio no esta disponible.'
+  const siteStateUnavailableStatus = getMessage(
+    'popupSiteStateUnavailableStatus',
+    'No se pudo resolver el estado de este sitio.'
   );
 
   document.documentElement.lang = chrome.i18n.getUILanguage().split('-')[0] || 'es';
@@ -38,7 +37,7 @@ async function initPopup() {
 
   activeTabId = await getActiveTabId();
   if (!Number.isInteger(activeTabId)) {
-    applyUnavailableState(
+    applyUnresolvedState(
       toggle,
       status,
       getMessage('popupNoActiveTabStatus', 'No hay sitio activo.')
@@ -52,13 +51,12 @@ async function initPopup() {
   });
 
   if (!state || state.ok !== true || state.available !== true) {
-    applyUnavailableState(toggle, status, siteUnavailableStatus);
+    applyUnresolvedState(toggle, status, siteStateUnavailableStatus);
     return;
   }
 
   lastKnownEnabled = state.enabled !== false;
-  toggle.checked = lastKnownEnabled;
-  toggle.disabled = false;
+  applyResolvedState(toggle, lastKnownEnabled);
   setStatus(status, '');
 
   toggle.addEventListener('change', async () => {
@@ -74,28 +72,33 @@ async function initPopup() {
 
     if (response && response.ok && response.available === true) {
       lastKnownEnabled = response.enabled !== false;
-      toggle.checked = lastKnownEnabled;
+      applyResolvedState(toggle, lastKnownEnabled);
       setStatus(status, '');
-      toggle.disabled = false;
       return;
     }
 
-    toggle.checked = previousEnabled;
     if (response && response.available === false) {
-      applyUnavailableState(toggle, status, siteUnavailableStatus, previousEnabled);
+      applyUnresolvedState(toggle, status, siteStateUnavailableStatus);
       return;
     }
 
+    applyResolvedState(toggle, previousEnabled);
     setStatus(
       status,
       getMessage('popupUpdateFailedStatus', 'No se pudo actualizar este sitio.')
     );
-    toggle.disabled = false;
   });
 }
 
-function applyUnavailableState(toggle, status, message, checked) {
-  toggle.checked = checked === true;
+function applyResolvedState(toggle, enabled) {
+  toggle.indeterminate = false;
+  toggle.checked = enabled === true;
+  toggle.disabled = false;
+}
+
+function applyUnresolvedState(toggle, status, message) {
+  toggle.indeterminate = true;
+  toggle.checked = false;
   toggle.disabled = true;
   setStatus(status, message);
 }
