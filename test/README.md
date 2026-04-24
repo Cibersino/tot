@@ -17,6 +17,26 @@ This repo currently uses the Node built-in test runner for the stable automated 
 * `npm run test:unit` - runs the same unit baseline directly
 * `npm run test:smoke` - runs the local-only Electron launch smoke suite
 
+## Document role
+
+This document owns the automated test layout:
+
+* directory purpose under `test/**`
+* runner entrypoints and local commands
+* the current automated suite shape at a high level
+
+It is not the source of truth for manual regression steps or for policy rules about how production code may be changed to support tests.
+
+## When to update this doc
+
+Update this file in the same change when a testing change alters any of the following:
+
+* test directory structure or ownership
+* test entrypoints, commands, or runner usage
+* the high-level scope of the automated baseline described here
+
+Routine additions of new test cases inside an existing documented bucket do not require edits here unless they change the documented suite shape.
+
 ## Current scope
 
 The current automated baseline is intentionally focused on low-friction contract tests under `test/unit/**`.
@@ -33,3 +53,4 @@ See also:
 
 * `docs/test_suite.md` - manual release smoke + regression source of truth
   * The manual suite now includes a short "Automated coverage status" section showing which areas have partial automated backing today.
+* `tools_local/coding_rules/automated_test_policy.md` - policy for how automated tests should be added or updated without distorting production code
