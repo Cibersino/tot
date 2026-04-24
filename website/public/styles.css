@@ -189,6 +189,24 @@ p {
   text-decoration: underline;
 }
 
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 8px;
+  font-size: 0.88rem;
+  color: #72685a;
+}
+
+.legal-links a {
+  text-decoration: underline;
+}
+
+.legal-links a:hover,
+.legal-links a:focus-visible {
+  color: var(--text-color);
+}
+
 .social-panel {
   margin-top: 0;
   padding: 18px;
