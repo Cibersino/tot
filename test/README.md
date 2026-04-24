@@ -5,10 +5,11 @@ This repo currently uses the Node built-in test runner for the stable automated 
 ## Directories
 
 * `test/unit/electron/` - unit/integration tests for Node-accessible app modules under `electron/**`
-* `test/unit/shared/` - reserved for future pure shared helpers extracted from renderer code
+* `test/unit/shared/` - unit tests for shared pure logic extracted from renderer-facing code and shared UI contracts
+* `test/unit/extensions/` - reserved for future tests that need a separate extension-oriented ownership bucket
 * `test/fixtures/` - reserved for reusable fixture files when a test needs stable sample inputs
 * `test/helpers/` - reserved for reusable test utilities
-* `test/smoke/` - reserved for future Electron smoke tests
+* `test/smoke/` - local Electron smoke tests that launch the real app in an isolated profile
 
 ## Scripts
 
@@ -18,8 +19,13 @@ This repo currently uses the Node built-in test runner for the stable automated 
 
 ## Current scope
 
-The first automated slice is intentionally focused on low-friction contract tests for `electron/**`.
-Renderer-heavy flows and real Electron smoke automation can be added later without blocking this baseline.
+The current automated baseline is intentionally focused on low-friction contract tests under `test/unit/**`.
+Today that includes:
+
+* `test/unit/electron/` coverage for Node-accessible main-process modules
+* `test/unit/shared/` coverage for shared pure logic and renderer-adjacent contracts that can be exercised without full UI automation
+
+Renderer-heavy end-to-end flows are still mostly manual. The current smoke layer is intentionally minimal and does not try to replace the manual app-level suite.
 
 The smoke suite is intentionally separate from `npm test` and CI for now. It launches the real Electron app in an isolated temporary profile and is meant to prove a minimal startup path without turning the baseline gate flaky.
 

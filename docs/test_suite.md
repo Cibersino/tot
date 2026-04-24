@@ -35,7 +35,7 @@
 
 This document remains the **manual** app-level source of truth.
 
-The current automated baseline does **not** replace the release smoke or full regression flows in this document. It currently covers only a small contract-focused slice under `test/unit/electron/`.
+The current automated baseline does **not** replace the release smoke or full regression flows in this document. It currently covers a small contract-focused slice under `test/unit/**`, plus one local Electron launch smoke under `test/smoke/`.
 
 Current automated coverage maps back to this manual suite roughly as follows:
 
