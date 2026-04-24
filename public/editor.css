@@ -1,5 +1,8 @@
-/* Manual editor window styles, loaded by public/editor.html. */
+/* Manual editor window styles.
+   Loaded from public/editor.html.
+   Owner boundary: editor window layout, bottom bar, and Reading Test prestart UI only. */
 
+/* Design tokens */
 :root {
   --bg: #fff;
   --border: #e6e6e6;
