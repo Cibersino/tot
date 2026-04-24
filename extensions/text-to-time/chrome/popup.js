@@ -28,7 +28,7 @@ async function initPopup() {
   toggleLabel.textContent = getMessage('popupToggleLabel', 'Activado en este sitio');
   hint.textContent = getMessage(
     'popupHint',
-    'Selecciona texto en una pagina para ver el tiempo estimado.'
+    'Selecciona texto en una página para ver el tiempo estimado.'
   );
   desktopLinkLabel.textContent = getMessage('popupDesktopLink', 'App de escritorio completa');
 
