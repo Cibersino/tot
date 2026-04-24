@@ -98,18 +98,15 @@ h1 {
 
 .wpm-section {
   display: grid;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 84px;
+  align-items: center;
+  gap: 12px;
   padding: 10px 0 0;
   border-top: 1px solid var(--tot-border);
 }
 
-.wpm-controls {
-  display: flex;
-  justify-content: flex-start;
-}
-
 .wpm-input {
-  width: 84px;
+  width: 100%;
   margin: 0;
   padding: 7px 8px;
   border: 1px solid rgba(0, 0, 0, 0.16);
