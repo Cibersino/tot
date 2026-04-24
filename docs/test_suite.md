@@ -37,19 +37,19 @@ This document remains the **manual** app-level source of truth.
 
 The current automated baseline does **not** replace the release smoke or full regression flows in this document. It currently covers a small contract-focused slice under `test/unit/**`, plus one local Electron launch smoke under `test/smoke/`.
 
-Document role for test-related docs:
+Ownership for test-related docs:
 
-* `docs/test_suite.md` owns the manual release smoke and regression expectations, plus the high-level statement of what automated coverage does and does not cover.
-* `test/README.md` owns the automated test layout, directory purpose, and runner entrypoints.
-* `tools_local/coding_rules/automated_test_policy.md` owns the policy for how tests may shape production code and what testing seams are acceptable.
+* `docs/test_suite.md` owns manual release smoke/regression expectations and the high-level statement of automated coverage and gaps.
+* `test/README.md` owns automated test layout and runner entrypoints.
+* `tools_local/coding_rules/automated_test_policy.md` owns test design policy and rules for production-code changes made in support of testing.
 
-Update this document in the same change when a testing change alters:
+Update this document when a change affects:
 
-* the manual test workflow or expected release validation scope
-* the high-level automated coverage claims or limitations stated here
-* the relationship between manual coverage and automated coverage
+* manual release validation scope
+* documented automated coverage claims or limitations
+* the documented boundary between manual coverage and automated coverage
 
-Routine implementation-only test edits do not require changes here unless they change those maintained claims.
+Do not update this document for routine test implementation changes unless those documented claims change.
 
 Current automated coverage maps back to this manual suite roughly as follows:
 
