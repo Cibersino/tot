@@ -10,6 +10,10 @@
   --tot-focus: rgb(30 130 230 / 0.12);
   --tot-invalid: #a32121;
   --tot-input-bg: rgb(255 255 255 / 0.72);
+  --tot-rose-bg: #ead0d1;
+  --tot-rose-border: #d5aeb2;
+  --tot-rose-hover: #e4c4c8;
+  --tot-rose-text: #6f3f4a;
 }
 
 *,
@@ -198,10 +202,12 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  min-height: 28px;
-  padding-top: 10px;
-  border-top: 1px solid var(--tot-border);
-  color: var(--tot-link);
+  min-height: 36px;
+  padding: 9px 10px;
+  border: 1px solid var(--tot-rose-border);
+  border-radius: 8px;
+  background: var(--tot-rose-bg);
+  color: var(--tot-rose-text);
   font-size: 12.5px;
   font-weight: 600;
   line-height: 1.25;
@@ -210,7 +216,13 @@ h1 {
 
 .desktop-link:hover,
 .desktop-link:focus {
-  text-decoration: underline;
+  background: var(--tot-rose-hover);
+  text-decoration: none;
+}
+
+.desktop-link:focus-visible {
+  outline: 3px solid var(--tot-focus);
+  outline-offset: 2px;
 }
 
 .status {
