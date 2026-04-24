@@ -7,7 +7,7 @@
 
 # toT — de Texto a Tiempo
 
-**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina importación/extracción de texto desde archivos de texto e imagen, presets de WPM configurables, conteo preciso, snapshots de textos, organizador de tareas, cronómetro con ventana flotante y test de velocidad de lectura. Te permite medir, organizar y terminar lecturas con menos incertidumbre.
+**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina extracción de texto desde documentos e imágenes, presets de WPM configurables, conteo preciso, snapshots de textos, organizador de tareas, cronómetro con ventana flotante y tests de velocidad de lectura. Te permite medir, organizar y terminar lecturas con menos incertidumbre.
 
 ![Guía básica animada](public/assets/instrucciones/guia-basica.gif)
 
@@ -164,7 +164,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 # toT — from Text to Time
 
-**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines file text import/extraction from text and image files, configurable WPM presets, precise counting, text snapshots, a task organizer, a stopwatch, and a reading speed test. It allows you to measure, organize, and complete readings with less guesswork.
+**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines text extraction from documents and images, configurable WPM presets, precise counting, text snapshots, a task organizer, a stopwatch with floating window, and reading speed tests. It allows you to measure, organize, and complete readings with less guesswork.
 
 ![Animated basic guide](public/assets/instrucciones/guia-basica.gif)
 
