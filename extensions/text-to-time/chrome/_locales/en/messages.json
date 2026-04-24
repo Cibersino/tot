@@ -1,0 +1,50 @@
+{
+  "extensionName": {
+    "message": "toT — Reading time"
+  },
+  "extensionDescription": {
+    "message": "Estimate reading time from selected webpage text. Accurate and distraction-free."
+  },
+  "actionTitle": {
+    "message": "toT reading time"
+  },
+  "toggleCommandDescription": {
+    "message": "Toggle the toT reading-time estimator on this site"
+  },
+  "overlayWordCountLabel": {
+    "message": "words"
+  },
+  "overlayWordCountingUnavailable": {
+    "message": "Word counting is not available in this browser."
+  },
+  "wpmInputAriaLabel": {
+    "message": "Words per minute"
+  },
+  "popupSubtitle": {
+    "message": "Reading time"
+  },
+  "popupToggleLabel": {
+    "message": "Enabled on this site"
+  },
+  "popupHint": {
+    "message": "Select text on a page to see the estimated time."
+  },
+  "popupDesktopLink": {
+    "message": "Download the toT desktop app and organize your reading"
+  },
+  "popupLoadingStatus": {
+    "message": "Loading..."
+  },
+  "popupNoActiveTabStatus": {
+    "message": "No active site."
+  },
+  "popupSiteStateUnavailableStatus": {
+    "message": "Could not resolve this site's state."
+  },
+  "popupUpdatingStatus": {
+    "message": "Updating..."
+  },
+  "popupUpdateFailedStatus": {
+    "message": "Could not update this site."
+  }
+}

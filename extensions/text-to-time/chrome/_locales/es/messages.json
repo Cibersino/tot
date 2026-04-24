@@ -1,0 +1,50 @@
+{
+  "extensionName": {
+    "message": "toT — Tiempo de lectura"
+  },
+  "extensionDescription": {
+    "message": "Estima el tiempo de lectura del texto seleccionado en páginas web. Con precisión y sin distracciones."
+  },
+  "actionTitle": {
+    "message": "Tiempo de lectura de toT"
+  },
+  "toggleCommandDescription": {
+    "message": "Activar o desactivar el estimador de lectura de toT en este sitio"
+  },
+  "overlayWordCountLabel": {
+    "message": "palabras"
+  },
+  "overlayWordCountingUnavailable": {
+    "message": "El conteo de palabras no está disponible en este navegador."
+  },
+  "wpmInputAriaLabel": {
+    "message": "Palabras por minuto"
+  },
+  "popupSubtitle": {
+    "message": "Tiempo de lectura"
+  },
+  "popupToggleLabel": {
+    "message": "Activado en este sitio"
+  },
+  "popupHint": {
+    "message": "Selecciona texto en una página para ver el tiempo estimado."
+  },
+  "popupDesktopLink": {
+    "message": "Descarga la app de escritorio toT y organiza tus lecturas"
+  },
+  "popupLoadingStatus": {
+    "message": "Cargando..."
+  },
+  "popupNoActiveTabStatus": {
+    "message": "No hay sitio activo."
+  },
+  "popupSiteStateUnavailableStatus": {
+    "message": "No se pudo resolver el estado de este sitio."
+  },
+  "popupUpdatingStatus": {
+    "message": "Actualizando..."
+  },
+  "popupUpdateFailedStatus": {
+    "message": "No se pudo actualizar este sitio."
+  }
+}
