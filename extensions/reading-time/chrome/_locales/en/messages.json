@@ -30,7 +30,7 @@
     "message": "Words per minute"
   },
   "popupWpmHint": {
-    "message": "Change your reading speed for future estimates."
+    "message": "Change your reading speed."
   },
   "popupWpmInvalid": {
     "message": "WPM must be an integer between 10 and 700."

@@ -41,7 +41,7 @@ async function initPopup() {
   wpmLabel.textContent = getMessage('popupWpmLabel', 'WPM');
   wpmHint.textContent = getMessage(
     'popupWpmHint',
-    'Cambia tu velocidad de lectura para futuros cálculos.'
+    'Cambia tu velocidad de lectura.'
   );
   desktopLinkLabel.textContent = getMessage('popupDesktopLink', 'App de escritorio completa');
   wpmInput.value = String(await readStoredWpm());

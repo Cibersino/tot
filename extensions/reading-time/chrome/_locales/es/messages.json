@@ -30,7 +30,7 @@
     "message": "Palabras por minuto"
   },
   "popupWpmHint": {
-    "message": "Cambia tu velocidad de lectura para futuros cálculos."
+    "message": "Cambia tu velocidad de lectura."
   },
   "popupWpmInvalid": {
     "message": "WPM debe ser un entero entre 10 y 700."
