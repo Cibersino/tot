@@ -17,9 +17,6 @@
   "overlayWordCountingUnavailable": {
     "message": "Word counting is not available in this browser."
   },
-  "wpmInputAriaLabel": {
-    "message": "Words per minute"
-  },
   "popupSubtitle": {
     "message": "Reading time"
   },
@@ -28,6 +25,21 @@
   },
   "popupHint": {
     "message": "Select text on a page to see the estimated time."
+  },
+  "popupWpmLabel": {
+    "message": "Words per minute"
+  },
+  "popupWpmHint": {
+    "message": "Change your reading speed."
+  },
+  "popupWpmInvalid": {
+    "message": "WPM must be an integer between 10 and 700."
+  },
+  "popupWpmSaved": {
+    "message": "WPM saved."
+  },
+  "popupWpmSaveFailed": {
+    "message": "Could not save this WPM."
   },
   "popupDesktopLink": {
     "message": "Download the toT desktop app and organize your reading"

@@ -44,14 +44,6 @@ tot/
 │ │ └── reading_speed_test_pool/  # {pool local del reading speed test; sincronizado al arranque, contenido sin state inline}
 │ └── user_settings.json
 ├── docs/
-│ ├── cleanup/
-│ │ ├── _evidence/
-│ │ ├── bridge_failure_mode_convention.md
-│ │ ├── cleanup_file_by_file.md
-│ │ ├── naming_convention.md
-│ │ ├── no_silence.md
-│ │ └── preload_listener_api_standard.md
-│ ├── issues/                      # {issues/epics con contratos, planes y evidencia operativa}
 │ ├── releases/                    # {con subcarpetas por release con docs de chequeo}
 │ │ ├── release_checklist.md
 │ │ ├── security_baseline.md
@@ -132,6 +124,27 @@ tot/
 │ ├── link_openers.js
 │ ├── constants_main.js
 │ └── log.js
+├── extensions/                    # extensiones/superficies nuevas distribuidas fuera de Electron
+│ └── reading-time/
+│   └── chrome/                    # extensión Chrome MV3 para estimar tiempo de lectura sobre texto seleccionado
+│     ├── _locales/
+│     │ ├── en/
+│     │ │ └── messages.json
+│     │ └── es/
+│     │   └── messages.json
+│     ├── icons/
+│     │ ├── icon-128.png
+│     │ ├── icon-16.png
+│     │ ├── icon-32.png
+│     │ └── icon-48.png
+│     ├── content-script.js
+│     ├── content.css
+│     ├── logic.js
+│     ├── manifest.json
+│     ├── popup.css
+│     ├── popup.html
+│     ├── popup.js
+│     └── service-worker.js
 ├── i18n/                          # {subcarpetas por idioma y variantes regionales}
 │ └── languages.json
 ├── public/
@@ -239,25 +252,32 @@ tot/
 │ └── README.md
 ├── website/                       # {sitio web}
 │ └── public/
+│   ├── app-privacy/
+│   │ └── index.html
 │   ├── assets/
 │   │ ├── brand/
 │   │ │ ├── logo-cibersino.svg
 │   │ │ └── logo-tot.svg
+│   │ ├── demo/
+│   │ │ └── guia-basica.gif
 │   │ └── social/
 │   │   ├── instagram-black.svg
 │   │   ├── instagram-white.svg
 │   │   ├── kofi_symbol.png
 │   │   ├── SOURCES.md
-│   │   ├── twitch.svg
 │   │   ├── x-black.png
 │   │   ├── x-white.png
 │   │   └── youtube.png
+│   ├── chrome-extension-privacy/
+│   │ └── index.html
 │   ├── en/
 │   │ ├── app-privacy/
 │   │ │ ├── google-ocr/
 │   │ │ │ └── index.html
 │   │ │ └── index.html
 │   │ ├── privacy-cookies/
+│   │ │ └── index.html
+│   │ ├── terms/
 │   │ │ └── index.html
 │   │ └── index.html
 │   ├── es/
@@ -267,14 +287,19 @@ tot/
 │   │ │ └── index.html
 │   │ ├── privacy-cookies/
 │   │ │ └── index.html
+│   │ ├── terms/
+│   │ │ └── index.html
 │   │ └── index.html
+│   ├── terms/
+│   │ └── index.html
+│   ├── _headers
+│   ├── download-resolver.js
 │   ├── index.html
 │   ├── favicon.svg
 │   ├── favicon.ico
 │   ├── og-image.png
 │   ├── robots.txt
 │   ├── site-language.js
-│   ├── _headers
 │   └── styles.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
 ├── .editorconfig
@@ -411,7 +436,17 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 
-### 3.1) Testing automatizado
+### 3.1) Extensión Chrome (`extensions/reading-time/chrome`)
+
+- `extensions/reading-time/chrome/manifest.json` — Manifiesto MV3 de la extensión: action popup, `service_worker`, permiso `storage`, command `toggle-current-tab`, content scripts sobre `http(s)` y `web_accessible_resources` para `content.css`.
+- `extensions/reading-time/chrome/service-worker.js` — Orquestador background de la extensión: resuelve el sitio activo/tab actual, persiste el estado disabled por `origin` en `chrome.storage.local`, atiende mensajes `getSiteState` / `setSiteEnabled` y propaga cambios a tabs del mismo origen.
+- `extensions/reading-time/chrome/logic.js` — Núcleo compartido/importable de la extensión: normalización de texto, resolución de locale, conteo de palabras con `Intl.Segmenter`, parseo de WPM y formateo del tiempo estimado.
+- `extensions/reading-time/chrome/content-script.js` — Content script inyectado en páginas: observa selección de texto, monta el overlay shadow-DOM, calcula/actualiza el tiempo estimado, persiste WPM local y responde el `origin` de la top frame al background.
+- `extensions/reading-time/chrome/popup.html` + `popup.css` + `popup.js` — UI del popup de la acción del navegador: consulta el estado del sitio activo, permite activar/desactivar la extensión por sitio y muestra feedback de carga/error.
+- `extensions/reading-time/chrome/_locales/<lang>/messages.json` — Strings localizados de la extensión (`es`, `en`) consumidos por manifest, popup y overlay.
+- `extensions/reading-time/chrome/icons/*.png` — Íconos empaquetados de la extensión para action/manifest.
+
+### 3.2) Testing automatizado
 
 - `.github/workflows/test.yml` — Workflow GitHub Actions del baseline automatizado actual; corre `npm ci` + `npm test` sobre `windows-latest`.
 - `test/README.md` — Convenciones del layout de tests y separación entre baseline unitario y smoke suite local.
@@ -472,11 +507,9 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `docs/releases/release_checklist.md` — Checklist mecánico de release (fuentes de verdad, changelog, consistencia).
 - `docs/releases/<version>/` — Baselines y checklists versionados por release.
 - `docs/changelog_detailed.md` — Changelog detallado (técnico/narrativo; post-0.0.930 con formato mecánico).
-- `docs/issues/` — Issues relevantes y actuales que requieren seguimiento en Github.
 - `docs/test_suite.md` — Suite manual app-level; incluye una sección breve de “Automated coverage status” para mapear la cobertura automatizada vigente sin reemplazar el smoke/regression manual.
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
-- `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, `preload_listener_api_standard.md`, etc.).
 
 ### 6.0) Tooling raíz
 
@@ -485,20 +518,27 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.1) Sitio web estático (website/public)
 
-- `website/public/index.html` — Landing neutral del sitio público (`https://totapp.org/`), usada como entrada x-default y selector explícito de idioma.
-- `website/public/es/index.html` — Versión en español (`https://totapp.org/es/`), con switch de idioma, CTA de descarga y bloque "Apoya y sigue a Cibersino".
-- `website/public/en/index.html` — Versión en inglés (`https://totapp.org/en/`), con switch de idioma, CTA de descarga y bloque "Support and follow Cibersino".
+- `website/public/index.html` — Landing neutral del sitio público (`https://totapp.org/`), usada como entrada x-default, selector explícito de idioma y preview visual de la app mediante `assets/demo/guia-basica.gif`.
+- `website/public/es/index.html` — Versión en español (`https://totapp.org/es/`), con switch de idioma, CTA de descarga y bloque "Síguenos"; define `window.totDownloadConfig` para el resolvedor de descarga por plataforma.
+- `website/public/en/index.html` — Versión en inglés (`https://totapp.org/en/`), con switch de idioma, CTA de descarga y bloque "Follow us"; define `window.totDownloadConfig` para el resolvedor de descarga por plataforma.
+- `website/public/download-resolver.js` — Helper compartido del sitio para detectar plataforma/arquitectura del navegador, consultar el último release en GitHub, seleccionar el asset estable más adecuado y abrir el modal con instrucciones de instalación.
+- `website/public/app-privacy/index.html` — Ruta neutral `x-default` hacia la política pública de privacidad de la app; redirige según idioma preferido vía `site-language.js`.
 - `website/public/es/app-privacy/index.html` — Política de privacidad pública de la app en español.
 - `website/public/en/app-privacy/index.html` — Política de privacidad pública de la app en inglés.
 - `website/public/es/app-privacy/google-ocr/index.html` — Página pública específica de privacidad para Google OCR en español.
 - `website/public/en/app-privacy/google-ocr/index.html` — Página pública específica de privacidad para Google OCR en inglés.
+- `website/public/terms/index.html` — Ruta neutral `x-default` hacia los términos de servicio; redirige según idioma preferido vía `site-language.js`.
+- `website/public/es/terms/index.html` — Términos de servicio del sitio web y de la app en español.
+- `website/public/en/terms/index.html` — Términos de servicio del sitio web y de la app en inglés.
+- `website/public/chrome-extension-privacy/index.html` — Política pública de privacidad de la extensión Chrome `toT — Tiempo de lectura`; documenta datos locales, permisos y ausencia de transmisión/telemetría.
 - `website/public/es/privacy-cookies/index.html` — Política mínima de privacidad/cookies en español.
 - `website/public/en/privacy-cookies/index.html` — Política mínima de privacidad/cookies en inglés.
-- Footer de `index.html`, `es/index.html` y `en/index.html` — incluye enlaces visibles a la política pública de privacidad de la app y/o a la política del sitio, según corresponda.
-- `website/public/site-language.js` — Helper compartido del sitio estático para detectar/persistir idioma preferido y soportar la redirección desde `/`.
+- Footers y paneles de descarga de `index.html`, `es/index.html` y `en/index.html` — incluyen enlaces visibles a privacidad/cookies y, en las rutas por idioma, también a la política pública de privacidad de la app y a términos de servicio.
+- `website/public/site-language.js` — Helper compartido del sitio estático para detectar/persistir idioma preferido, resaltar la entrada recomendada en `/` y soportar redirecciones neutrales como `/app-privacy/` y `/terms/`.
 - `website/public/styles.css` — Hoja de estilos compartida para las tres rutas.
 - `website/public/assets/brand/*.svg` — Logos locales del proyecto/desarrollador usados en el header y footer (`logo-tot.svg`, `logo-cibersino.svg`).
-- `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Ko-fi, X light/dark, YouTube, Twitch) y `SOURCES.md` como trazabilidad de origen de assets.
+- `website/public/assets/demo/guia-basica.gif` — Demo visual embebida en la landing neutral del sitio.
+- `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Ko-fi, X light/dark y YouTube) y `SOURCES.md` como trazabilidad de origen de assets.
 - `website/public/_headers` — Políticas de headers para Cloudflare Pages (incluye noindex para dominios preview/versionados).
 - `website/public/robots.txt` — Reglas de robots para el dominio público.
 - `website/public/favicon.*` y `website/public/og-image.png` — Activos comunes de branding/preview social.
