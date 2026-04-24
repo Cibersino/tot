@@ -98,7 +98,7 @@ h1 {
 
 .wpm-section {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 84px;
+  grid-template-columns: minmax(0, 1fr) 56px;
   align-items: center;
   gap: 12px;
   padding: 10px 0 0;
