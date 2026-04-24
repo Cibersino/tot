@@ -14,6 +14,9 @@
   "overlayWordCountLabel": {
     "message": "palabras"
   },
+  "overlayWordCountingUnavailable": {
+    "message": "El conteo de palabras no está disponible en este navegador."
+  },
   "wpmInputAriaLabel": {
     "message": "Palabras por minuto"
   },

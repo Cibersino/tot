@@ -71,6 +71,18 @@
   white-space: nowrap;
 }
 
+.tot-status {
+  margin: 0;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.tot-panel[data-mode="unavailable"] {
+  min-width: 184px;
+}
+
 .tot-wpm-row {
   display: flex;
   align-items: center;

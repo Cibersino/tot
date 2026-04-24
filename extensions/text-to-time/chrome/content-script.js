@@ -6,8 +6,10 @@
   const {
     CONSTANTS,
     normalizeText,
+    hasIntlSegmenter,
     resolveLocale,
     countWords,
+    shouldShowUnavailableOverlay,
     parseWpm,
     estimateSeconds,
     formatDuration,
@@ -21,6 +23,10 @@
   const FADE_MS = 180;
   const TEXT = Object.freeze({
     wordCountLabel: getMessage('overlayWordCountLabel', 'palabras'),
+    wordCountingUnavailable: getMessage(
+      'overlayWordCountingUnavailable',
+      'El conteo de palabras no está disponible en este navegador.'
+    ),
     wpmAriaLabel: getMessage('wpmInputAriaLabel', 'Palabras por minuto'),
   });
 
@@ -39,8 +45,11 @@
   let fadeTimer = null;
   let overlayHost = null;
   let overlayShadow = null;
+  let panelElement = null;
   let timeElement = null;
   let wordsElement = null;
+  let statusElement = null;
+  let wpmRowElement = null;
   let wpmInput = null;
 
   init();
@@ -153,6 +162,17 @@
       return;
     }
 
+    if (!hasIntlSegmenter()) {
+      if (!shouldShowUnavailableOverlay(text)) {
+        scheduleHide();
+        return;
+      }
+
+      currentWordCount = 0;
+      renderUnavailableOverlay(TEXT.wordCountingUnavailable);
+      return;
+    }
+
     currentLocale = resolveLocale(
       document.documentElement && document.documentElement.lang,
       navigator.language
@@ -171,6 +191,7 @@
   function renderOverlay(wordCount) {
     ensureOverlay();
     cancelHideTimers();
+    setOverlayMode('default');
 
     timeElement.textContent = formatDuration(estimateSeconds(wordCount, confirmedWpm));
     wordsElement.textContent = `${wordCount} ${TEXT.wordCountLabel}`;
@@ -179,6 +200,22 @@
       draftWpm = String(confirmedWpm);
       wpmInput.value = draftWpm;
     }
+
+    const host = overlayHost;
+    host.hidden = false;
+    window.requestAnimationFrame(() => {
+      if (enabled && host && !host.hidden) {
+        host.setAttribute('data-visible', 'true');
+      }
+    });
+  }
+
+  function renderUnavailableOverlay(message) {
+    ensureOverlay();
+    cancelHideTimers();
+    setOverlayMode('unavailable');
+
+    statusElement.textContent = message;
 
     const host = overlayHost;
     host.hidden = false;
@@ -252,6 +289,7 @@
     const panel = document.createElement('div');
     panel.className = 'tot-panel';
     panel.setAttribute('part', 'panel');
+    panelElement = panel;
 
     timeElement = document.createElement('div');
     timeElement.className = 'tot-time';
@@ -259,8 +297,13 @@
     wordsElement = document.createElement('div');
     wordsElement.className = 'tot-words';
 
+    statusElement = document.createElement('div');
+    statusElement.className = 'tot-status';
+    statusElement.hidden = true;
+
     const wpmRow = document.createElement('label');
     wpmRow.className = 'tot-wpm-row';
+    wpmRowElement = wpmRow;
 
     wpmInput = document.createElement('input');
     wpmInput.className = 'tot-wpm-input';
@@ -276,11 +319,24 @@
     wpmLabel.textContent = 'WPM';
 
     wpmRow.append(wpmInput, wpmLabel);
-    panel.append(timeElement, wordsElement, wpmRow);
+    panel.append(timeElement, wordsElement, statusElement, wpmRow);
     overlayShadow.append(stylesheet, panel);
 
     wireOverlayEvents(panel);
     document.documentElement.appendChild(overlayHost);
+  }
+
+  function setOverlayMode(mode) {
+    if (!panelElement) {
+      return;
+    }
+
+    const isUnavailable = mode === 'unavailable';
+    panelElement.setAttribute('data-mode', isUnavailable ? 'unavailable' : 'default');
+    timeElement.hidden = isUnavailable;
+    wordsElement.hidden = isUnavailable;
+    statusElement.hidden = !isUnavailable;
+    wpmRowElement.hidden = isUnavailable;
   }
 
   function wireOverlayEvents(panel) {

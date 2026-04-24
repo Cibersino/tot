@@ -9,9 +9,37 @@
     MIN_WPM: 10,
     MAX_WPM: 700,
   });
+  const HYPHEN_JOINERS = new Set([
+    '-',
+    '\u2010',
+    '\u2011',
+    '\u2012',
+    '\u2013',
+    '\u2212',
+  ]);
+
+  let reAlnumOnly;
+  try {
+    reAlnumOnly = new RegExp('^[\\p{L}\\p{N}]+$', 'u');
+  } catch (_err) {
+    reAlnumOnly = /^[A-Za-z0-9]+$/;
+  }
 
   function normalizeText(text) {
     return String(text || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function hasIntlSegmenter(intlObject) {
+    const intlSource = intlObject || Intl;
+    return !!(intlSource && typeof intlSource.Segmenter === 'function');
+  }
+
+  function isHyphenJoinerSegment(segment) {
+    return typeof segment === 'string' && segment.length === 1 && HYPHEN_JOINERS.has(segment);
+  }
+
+  function isAlnumOnlySegment(segment) {
+    return typeof segment === 'string' && segment.length > 0 && reAlnumOnly.test(segment);
   }
 
   function normalizeLocaleTag(locale) {
@@ -27,7 +55,7 @@
 
   function isSegmenterLocaleSupported(locale, intlObject) {
     const normalized = normalizeLocaleTag(locale);
-    if (!normalized || !intlObject || typeof intlObject.Segmenter !== 'function') {
+    if (!normalized || !hasIntlSegmenter(intlObject)) {
       return false;
     }
 
@@ -58,20 +86,41 @@
     if (!normalized) return 0;
 
     const intlSource = intlObject || Intl;
-    if (!intlSource || typeof intlSource.Segmenter !== 'function') {
-      return 0;
+    if (!hasIntlSegmenter(intlSource)) {
+      return null;
     }
 
     const segmenter = new intlSource.Segmenter(locale || 'en', { granularity: 'word' });
     let count = 0;
+    let prevWasJoinableWord = false;
+    let pendingHyphenJoin = false;
 
     for (const segment of segmenter.segment(normalized)) {
       if (segment && segment.isWordLike) {
-        count += 1;
+        const joinable = isAlnumOnlySegment(segment.segment);
+
+        if (!(pendingHyphenJoin && joinable)) {
+          count += 1;
+        }
+
+        pendingHyphenJoin = false;
+        prevWasJoinableWord = joinable;
+      } else if (segment && isHyphenJoinerSegment(segment.segment) && prevWasJoinableWord) {
+        pendingHyphenJoin = true;
+        prevWasJoinableWord = false;
+      } else {
+        pendingHyphenJoin = false;
+        prevWasJoinableWord = false;
       }
     }
 
     return count;
+  }
+
+  function shouldShowUnavailableOverlay(text) {
+    const normalized = normalizeText(text);
+    if (!normalized) return false;
+    return normalized.split(/\s+/).length >= CONSTANTS.MIN_WORDS;
   }
 
   function parseWpm(value) {
@@ -110,8 +159,10 @@
   const api = Object.freeze({
     CONSTANTS,
     normalizeText,
+    hasIntlSegmenter,
     resolveLocale,
     countWords,
+    shouldShowUnavailableOverlay,
     parseWpm,
     estimateSeconds,
     formatDuration,
