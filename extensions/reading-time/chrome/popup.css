@@ -8,6 +8,8 @@
   --tot-switch-off: #ccc;
   --tot-switch-on: #4caf50;
   --tot-focus: rgb(30 130 230 / 0.12);
+  --tot-invalid: #a32121;
+  --tot-input-bg: rgb(255 255 255 / 0.72);
 }
 
 *,
@@ -23,7 +25,7 @@ body {
 }
 
 body {
-  width: 256px;
+  width: 272px;
   background: var(--tot-bg);
   color: var(--tot-text);
   font-family: Arial, sans-serif;
@@ -85,6 +87,49 @@ h1 {
   color: var(--tot-muted);
   font-size: 12px;
   line-height: 1.3;
+}
+
+.section-label {
+  color: var(--tot-text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.wpm-section {
+  display: grid;
+  gap: 8px;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--tot-border);
+}
+
+.wpm-controls {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.wpm-input {
+  width: 84px;
+  margin: 0;
+  padding: 7px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 6px;
+  background: var(--tot-input-bg);
+  color: var(--tot-text);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: right;
+}
+
+.wpm-input:focus-visible {
+  outline: 3px solid var(--tot-focus);
+  outline-offset: 2px;
+}
+
+.wpm-input.is-invalid {
+  border-color: rgb(163 33 33 / 0.65);
 }
 
 .switch {
@@ -176,4 +221,16 @@ h1 {
   font-size: 12px;
   font-style: italic;
   line-height: 1.25;
+}
+
+.wpm-status {
+  min-height: 15px;
+  margin: -6px 0 0;
+  color: var(--tot-muted);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.wpm-status.is-invalid {
+  color: var(--tot-invalid);
 }

@@ -27,13 +27,11 @@
       'overlayWordCountingUnavailable',
       'El conteo de palabras no está disponible en este navegador.'
     ),
-    wpmAriaLabel: getMessage('wpmInputAriaLabel', 'Palabras por minuto'),
   });
 
   let initialized = false;
   let enabled = false;
   let confirmedWpm = CONSTANTS.DEFAULT_WPM;
-  let draftWpm = String(CONSTANTS.DEFAULT_WPM);
   let currentWordCount = 0;
   let currentLocale = resolveLocale(
     document.documentElement && document.documentElement.lang,
@@ -50,16 +48,16 @@
   let wordsElement = null;
   let statusElement = null;
   let wpmRowElement = null;
-  let wpmInput = null;
+  let wpmValueElement = null;
 
   init();
 
   async function init() {
     document.addEventListener('selectionchange', onSelectionChange, true);
     chrome.runtime.onMessage.addListener(onRuntimeMessage);
+    chrome.storage.onChanged.addListener(onStorageChanged);
 
     confirmedWpm = await readStoredWpm();
-    draftWpm = String(confirmedWpm);
 
     const siteState = await sendRuntimeMessage({ type: MESSAGE_GET_SITE_STATE });
     enabled = !siteState || siteState.enabled !== false;
@@ -107,7 +105,7 @@
   }
 
   function onSelectionChange() {
-    if (!initialized || !enabled || isOverlayInteracting()) {
+    if (!initialized || !enabled) {
       return;
     }
 
@@ -132,7 +130,7 @@
   function readSettledSelection() {
     selectionTimer = null;
 
-    if (!enabled || isOverlayInteracting()) {
+    if (!enabled) {
       return;
     }
 
@@ -195,11 +193,7 @@
 
     timeElement.textContent = formatDuration(estimateSeconds(wordCount, confirmedWpm));
     wordsElement.textContent = `${wordCount} ${TEXT.wordCountLabel}`;
-
-    if (!isWpmInputFocused()) {
-      draftWpm = String(confirmedWpm);
-      wpmInput.value = draftWpm;
-    }
+    wpmValueElement.textContent = String(confirmedWpm);
 
     const host = overlayHost;
     host.hidden = false;
@@ -301,24 +295,19 @@
     statusElement.className = 'tot-status';
     statusElement.hidden = true;
 
-    const wpmRow = document.createElement('label');
+    const wpmRow = document.createElement('div');
     wpmRow.className = 'tot-wpm-row';
     wpmRowElement = wpmRow;
 
-    wpmInput = document.createElement('input');
-    wpmInput.className = 'tot-wpm-input';
-    wpmInput.type = 'text';
-    wpmInput.inputMode = 'numeric';
-    wpmInput.autocomplete = 'off';
-    wpmInput.spellcheck = false;
-    wpmInput.value = draftWpm;
-    wpmInput.setAttribute('aria-label', TEXT.wpmAriaLabel);
+    wpmValueElement = document.createElement('span');
+    wpmValueElement.className = 'tot-wpm-value';
+    wpmValueElement.textContent = String(confirmedWpm);
 
     const wpmLabel = document.createElement('span');
     wpmLabel.className = 'tot-wpm-label';
     wpmLabel.textContent = 'WPM';
 
-    wpmRow.append(wpmInput, wpmLabel);
+    wpmRow.append(wpmValueElement, wpmLabel);
     panel.append(timeElement, wordsElement, statusElement, wpmRow);
     overlayShadow.append(stylesheet, panel);
 
@@ -351,54 +340,9 @@
     panel.addEventListener('dblclick', stopOverlayEvent, true);
 
     panel.addEventListener('selectstart', (event) => {
-      if (event.target !== wpmInput) {
-        event.preventDefault();
-      }
+      event.preventDefault();
       event.stopPropagation();
     });
-
-    wpmInput.addEventListener('input', () => {
-      draftWpm = wpmInput.value;
-    });
-
-    wpmInput.addEventListener('keydown', (event) => {
-      event.stopPropagation();
-
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        confirmWpmDraft();
-        return;
-      }
-
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        restoreConfirmedWpm();
-      }
-    });
-
-    wpmInput.addEventListener('blur', () => {
-      confirmWpmDraft();
-    });
-  }
-
-  function confirmWpmDraft() {
-    const parsed = parseWpm(wpmInput.value);
-    if (!parsed.ok) {
-      restoreConfirmedWpm();
-      return;
-    }
-
-    confirmedWpm = parsed.value;
-    draftWpm = String(confirmedWpm);
-    wpmInput.value = draftWpm;
-    persistWpm(confirmedWpm);
-    updateEstimateForCurrentSelection();
-  }
-
-  function restoreConfirmedWpm() {
-    draftWpm = String(confirmedWpm);
-    wpmInput.value = draftWpm;
-    updateEstimateForCurrentSelection();
   }
 
   function updateEstimateForCurrentSelection() {
@@ -411,16 +355,19 @@
     );
   }
 
-  function isOverlayInteracting() {
-    return Boolean(
-      overlayShadow
-      && overlayShadow.activeElement
-      && overlayShadow.activeElement === wpmInput
-    );
-  }
+  function onStorageChanged(changes, areaName) {
+    if (areaName !== 'local' || !Object.prototype.hasOwnProperty.call(changes, STORAGE_WPM_KEY)) {
+      return;
+    }
 
-  function isWpmInputFocused() {
-    return isOverlayInteracting();
+    const parsed = parseWpm(changes[STORAGE_WPM_KEY].newValue);
+    confirmedWpm = parsed.ok ? parsed.value : CONSTANTS.DEFAULT_WPM;
+
+    if (wpmValueElement) {
+      wpmValueElement.textContent = String(confirmedWpm);
+    }
+
+    updateEstimateForCurrentSelection();
   }
 
   function isSelectionInsideOverlay(selection) {
@@ -493,10 +440,6 @@
     const result = await storageLocalGet({ [STORAGE_WPM_KEY]: CONSTANTS.DEFAULT_WPM });
     const parsed = parseWpm(result[STORAGE_WPM_KEY]);
     return parsed.ok ? parsed.value : CONSTANTS.DEFAULT_WPM;
-  }
-
-  function persistWpm(value) {
-    chrome.storage.local.set({ [STORAGE_WPM_KEY]: value });
   }
 
   function storageLocalGet(defaults) {

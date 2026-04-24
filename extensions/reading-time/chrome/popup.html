@@ -34,14 +34,35 @@
       </label>
     </section>
 
+    <section class="wpm-section" aria-labelledby="wpm-label">
+      <div>
+        <div id="wpm-label" class="section-label"></div>
+        <p id="wpm-hint" class="hint"></p>
+      </div>
+
+      <div class="wpm-controls">
+        <input
+          id="wpm-input"
+          class="wpm-input"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          spellcheck="false"
+          aria-labelledby="wpm-label"
+          aria-describedby="wpm-hint wpm-status">
+      </div>
+    </section>
+
     <a id="desktop-link" class="desktop-link" href="https://totapp.org" target="_blank" rel="noreferrer">
       <span id="desktop-link-label"></span>
       <span aria-hidden="true">↗</span>
     </a>
 
     <p id="status" class="status" aria-live="polite"></p>
+    <p id="wpm-status" class="wpm-status" aria-live="polite"></p>
   </main>
 
+  <script src="logic.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
