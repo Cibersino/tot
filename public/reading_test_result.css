@@ -1,3 +1,8 @@
+/* Reading test result window styles.
+   Loaded by public/reading_test_result.html.
+   Owner boundary: reading test result layout, hero summary, and actions only. */
+
+/* Window shell */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -5,23 +10,26 @@ body {
   color: #2f2a20;
 }
 
+/* Window layout */
 .reading-test-result {
-  padding: 18px;
   box-sizing: border-box;
+  padding: 18px;
 }
 
+/* Header */
 .reading-test-result__header h1 {
   margin: 0;
   font-size: 1.3rem;
 }
 
+/* Result hero */
 .reading-test-result__hero {
   margin-top: 16px;
   padding: 18px;
+  text-align: center;
+  border: 1px solid rgba(49, 122, 67, 0.2);
   border-radius: 10px;
   background: linear-gradient(180deg, rgba(230, 246, 234, 0.96), rgba(210, 237, 218, 0.96));
-  border: 1px solid rgba(49, 122, 67, 0.2);
-  text-align: center;
 }
 
 .reading-test-result__hero-label {
@@ -39,16 +47,17 @@ body {
   color: #1f5a2d;
 }
 
+/* Summary card */
 .reading-test-result__meta {
   margin-top: 14px;
 }
 
 .reading-test-result__summary-card {
+  box-sizing: border-box;
+  padding: 10px 14px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.66);
-  padding: 10px 14px;
-  box-sizing: border-box;
 }
 
 .reading-test-result__summary-line {
@@ -59,10 +68,11 @@ body {
   text-align: center;
 }
 
+/* Footer actions */
 .reading-test-result__actions {
-  margin-top: 14px;
   display: flex;
   justify-content: flex-end;
+  margin-top: 14px;
 }
 
 .reading-test-result__actions button {
@@ -70,6 +80,7 @@ body {
   padding: 7px 12px;
 }
 
+/* Responsive adjustments */
 @media (max-width: 560px) {
   .reading-test-result {
     padding: 14px;

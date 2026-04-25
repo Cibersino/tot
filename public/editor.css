@@ -1,8 +1,12 @@
+/* Manual editor window styles.
+   Loaded from public/editor.html.
+   Owner boundary: editor window layout, bottom bar, and Reading Test prestart UI only. */
+
+/* Design tokens */
 :root {
   --bg: #fff;
-  --toolbar-bg: #f6f6f6;
   --border: #e6e6e6;
-  --gap: 8px;
+  --toolbar-bg: #f6f6f6;
   --bottom-min-height: 52px;
   --editor-font-size: 20px;
   --editor-maximized-text-width: 960px;
@@ -12,7 +16,7 @@
   --editor-maximized-gutter-handle-active: rgba(129, 129, 129, 0.58);
 }
 
-/* Basic Normalize */
+/* Window shell */
 html,
 body {
   height: 100%;
@@ -22,7 +26,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Layout: vertical column, flexible textarea */
 body {
   display: flex;
   flex-direction: column;
@@ -30,12 +33,7 @@ body {
   gap: 0;
 }
 
-body.reading-test-prestart-active .editor-wrap,
-body.reading-test-prestart-active .bottom-bar {
-  filter: blur(8px);
-}
-
-/* Wrapper for textarea */
+/* Editor surface */
 .editor-wrap {
   position: relative;
   display: flex;
@@ -47,7 +45,6 @@ body.reading-test-prestart-active .bottom-bar {
 .editor-layout {
   display: grid;
   flex: 1 1 auto;
-  /* grow and occupy space */
   min-height: 0;
   width: 100%;
   grid-template-columns: minmax(0, 1fr);
@@ -65,6 +62,227 @@ body.reading-test-prestart-active .bottom-bar {
   display: none;
 }
 
+#editorArea {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 12px;
+  font-family: 'Baskervville', serif;
+  font-size: var(--editor-font-size);
+  line-height: 1.45;
+  resize: none;
+  border: none;
+  outline: none;
+  background: #fff;
+  color: #222;
+  overflow: auto;
+}
+
+/* Bottom bar */
+.bottom-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  min-height: var(--bottom-min-height);
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--toolbar-bg);
+}
+
+/* Bottom bar: left controls */
+.bottom-bar .left-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* Bottom bar: calculate action */
+#btnCalc,
+#btnTrash,
+.btn-text-size {
+  transition:
+    background 0.12s ease-out,
+    border-color 0.12s ease-out,
+    transform 0.05s linear;
+}
+
+#btnCalc {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f4f4f4;
+  cursor: pointer;
+  font-weight: 600;
+  height: 36px;
+}
+
+#btnCalc::before {
+  content: attr(data-label);
+}
+
+#btnCalc[disabled] {
+  opacity: 0.65;
+  cursor: default;
+}
+
+/* Bottom bar: toggle labels */
+.editor-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
+
+.editor-toggle-label::after {
+  content: attr(data-label);
+}
+
+/* Bottom bar: text size controls */
+.editor-text-size-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.spellcheck-label + .editor-text-size-controls {
+  margin-left: 12px;
+}
+
+.btn-text-size {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.btn-text-size::before {
+  content: attr(data-label);
+}
+
+.btn-text-size[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Bottom bar: read progress */
+.editor-text-size-controls + .editor-read-progress {
+  margin-left: 12px;
+}
+
+.editor-text-size-label,
+.editor-read-progress-label {
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
+
+.editor-text-size-label::before,
+.editor-read-progress-label::before {
+  content: attr(data-label);
+}
+
+.editor-text-size-value,
+.editor-read-progress-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.55);
+  color: #333;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.editor-text-size-value::before,
+.editor-read-progress-value::before {
+  content: attr(data-label);
+}
+
+.editor-text-size-value {
+  margin: 0 -10px;
+  min-width: 52px;
+}
+
+.editor-read-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+}
+
+.editor-read-progress-value {
+  min-width: 48px;
+}
+
+/* Bottom bar: right controls */
+.bottom-bar .right-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  align-self: end;
+  justify-self: end;
+}
+
+#btnTrash {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  height: 36px;
+  border-radius: 6px;
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#btnTrash::before {
+  content: attr(data-label);
+}
+
+/* Bottom bar: shared interactive states */
+#btnCalc:not([disabled]):hover,
+.btn-text-size:not([disabled]):hover,
+#btnTrash:hover {
+  background: #fff5f5;
+  border-color: #e6bebe;
+}
+
+#btnCalc:not([disabled]):active,
+.btn-text-size:not([disabled]):active,
+#btnTrash:active {
+  background: #ffe0e0;
+  border-color: #d99b9b;
+  transform: translateY(1px);
+}
+
+/* Maximized layout */
 body.editor-maximized-layout .editor-wrap,
 body.editor-maximized-layout .editor-layout {
   background: var(--editor-maximized-gutter-bg);
@@ -119,24 +337,55 @@ body.editor-margin-dragging .editor-gutter::after {
   background: var(--editor-maximized-gutter-handle-active);
 }
 
-/* Text area: occupies all available space */
-#editorArea {
-  width: 100%;
-  flex: 1 1 auto;
-  min-height: 0;
-  position: relative;
-  z-index: 1;
-  box-sizing: border-box;
-  padding: 12px;
-  font-family: 'Baskervville', serif;
-  font-size: var(--editor-font-size);
-  line-height: 1.45;
-  resize: none;
-  border: none;
-  outline: none;
-  background: #fff;
-  color: #222;
-  overflow: auto;
+/* Reduced-width layout */
+@media (max-width: 560px) {
+  #editorArea {
+    padding: 10px;
+  }
+
+  .editor-toggle-label,
+  .editor-text-size-label,
+  .editor-read-progress-label {
+    font-size: 13px;
+  }
+
+  .editor-text-size-controls {
+    gap: 4px;
+  }
+
+  .editor-text-size-value {
+    min-width: 48px;
+    padding: 0 6px;
+  }
+
+  body.editor-maximized-layout .editor-gutter::after {
+    margin-top: 12px;
+    height: 72px;
+  }
+
+  .bottom-bar {
+    padding: 6px;
+    gap: 8px;
+  }
+
+  #btnCalc,
+  #btnTrash,
+  .btn-text-size {
+    padding: 6px 8px;
+    height: 32px;
+  }
+
+  .editor-read-progress-value {
+    min-width: 44px;
+    padding: 0 6px;
+  }
+
+}
+
+/* Reading Test prestart */
+body.reading-test-prestart-active .editor-wrap,
+body.reading-test-prestart-active .bottom-bar {
+  filter: blur(8px);
 }
 
 .reading-test-prestart-overlay {
@@ -178,287 +427,4 @@ body.editor-margin-dragging .editor-gutter::after {
     0 0 2px rgba(255, 255, 255, 0.95);
   text-wrap: balance;
   user-select: none;
-}
-
-/* Fixed bottom bar on the foot of the modal */
-.bottom-bar {
-  min-height: var(--bottom-min-height);
-  box-sizing: border-box;
-  padding: 8px 12px;
-  border-top: 1px solid var(--border);
-  background: var(--toolbar-bg);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-  gap: 12px;
-}
-
-/* Left controls (CALCULATE + checkbox) */
-.bottom-bar .left-controls {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  justify-content: flex-start;
-  gap: 6px;
-  min-width: 0;
-}
-
-.bottom-bar .right-controls {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  align-self: end;
-  justify-self: end;
-}
-
-/* CALCULATE button */
-#btnCalc {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #f4f4f4;
-  cursor: pointer;
-  font-weight: 600;
-  height: 36px;
-}
-
-#btnCalc::before {
-  content: attr(data-label);
-}
-
-#btnCalc[disabled] {
-  opacity: 0.65;
-  cursor: default;
-}
-
-/* checkbox labels */
-.editor-toggle-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 14px;
-  color: #333;
-  user-select: none;
-}
-
-.editor-toggle-label::after {
-  content: attr(data-label);
-}
-
-.editor-text-size-controls {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.spellcheck-label + .editor-text-size-controls {
-  margin-left: 12px;
-}
-
-.editor-text-size-controls + .editor-read-progress {
-  margin-left: 12px;
-}
-
-.editor-text-size-label {
-  font-size: 14px;
-  color: #333;
-  user-select: none;
-}
-
-.editor-text-size-label::before {
-  content: attr(data-label);
-}
-
-.btn-text-size {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 32px;
-  padding: 0 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
-  color: #222;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-}
-
-.btn-text-size::before {
-  content: attr(data-label);
-}
-
-.btn-text-size[disabled] {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.editor-text-size-value {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 -10px;
-  min-width: 52px;
-  height: 32px;
-  padding: 0 8px;
-  box-sizing: border-box;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.55);
-  color: #333;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  user-select: none;
-}
-
-.editor-text-size-value::before {
-  content: attr(data-label);
-}
-
-.editor-read-progress {
-  display: inline-flex;
-  align-items: center;
-  gap: 0px;
-  min-width: 0;
-}
-
-.editor-read-progress-label {
-  font-size: 14px;
-  color: #333;
-  user-select: none;
-}
-
-.editor-read-progress-label::before {
-  content: attr(data-label);
-}
-
-.editor-read-progress-value {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 48px;
-  height: 32px;
-  padding: 0 8px;
-  box-sizing: border-box;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.55);
-  color: #333;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  user-select: none;
-}
-
-.editor-read-progress-value::before {
-  content: attr(data-label);
-}
-
-/* Trash button (right aligned) */
-#btnTrash {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  height: 36px;
-  border-radius: 6px;
-  background: none;
-  border: 1px solid transparent;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-#btnTrash::before {
-  content: attr(data-label);
-}
-
-#btnTrash:hover {
-  background: #fff5f5;
-  border-color: #e6bebe;
-}
-
-/* Simple animation for bottom bar buttons */
-#btnCalc,
-#btnTrash,
-.btn-text-size {
-  transition: background 0.12s ease-out,
-    border-color 0.12s ease-out,
-    transform 0.05s linear;
-}
-
-/* CALCULATE button (only when enabled) */
-#btnCalc:not([disabled]):hover {
-  background: #fff5f5;
-  /* same hover as the trash button */
-  border-color: #e6bebe;
-}
-
-#btnCalc:not([disabled]):active {
-  background: #ffe0e0;
-  border-color: #d99b9b;
-  transform: translateY(1px);
-}
-
-.btn-text-size:not([disabled]):hover {
-  background: #fff5f5;
-  border-color: #e6bebe;
-}
-
-.btn-text-size:not([disabled]):active {
-  background: #ffe0e0;
-  border-color: #d99b9b;
-  transform: translateY(1px);
-}
-
-/* Trash button - pressed state */
-#btnTrash:active {
-  background: #ffe0e0;
-  border-color: #d99b9b;
-  transform: translateY(1px);
-}
-
-/* Small adaptations for small windows */
-@media (max-width: 560px) {
-  .bottom-bar {
-    padding: 6px;
-    gap: 8px;
-  }
-
-  #btnCalc,
-  #btnTrash,
-  .btn-text-size {
-    padding: 6px 8px;
-    height: 32px;
-  }
-
-  .editor-toggle-label,
-  .editor-text-size-label,
-  .editor-read-progress-label {
-    font-size: 13px;
-  }
-
-  #editorArea {
-    padding: 10px;
-  }
-
-  .editor-text-size-controls {
-    gap: 4px;
-  }
-
-  .editor-text-size-value {
-    min-width: 48px;
-    padding: 0 6px;
-  }
-
-  .editor-read-progress-value {
-    min-width: 44px;
-    padding: 0 6px;
-  }
-
-  body.editor-maximized-layout .editor-gutter::after {
-    margin-top: 12px;
-    height: 72px;
-  }
 }
