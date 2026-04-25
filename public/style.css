@@ -84,7 +84,23 @@
   --link-secondary-hover: #183d56;
   --link-secondary-focus: rgb(36 86 122 / 0.35);
 
+  /* Typography */
+  --font-ui: Arial, sans-serif;
+  --font-reading: 'Baskervville', serif;
+  --font-size-modal-title: 1rem;
+  --font-size-ui-sm: 0.95rem;
+  --font-size-note: 0.92rem;
+
+  /* Spacing */
+  --control-padding: 4px 6px;
+  --modal-gap: 12px;
+  --modal-section-spacing: 12px;
+  --modal-panel-padding: 14px 16px 16px;
+  --modal-inline-gutter: 32px;
+
   /* Dimensions */
+  --control-height-md: 30px;
+  --modal-max-height: 85vh;
   --logo-height: 90px;
   --logo-links-scale: 0.7;
   --kofi-logo-scale: 0.82;
@@ -95,6 +111,8 @@
 
   /* Shared styles */
   --section-radius: 6px;
+  --panel-radius: 8px;
+  --control-radius-sm: 4px;
 }
 
 /* App shell */
@@ -103,7 +121,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-ui);
   overflow: hidden;
   box-sizing: border-box;
   background: var(--app-shell-bg);
@@ -146,7 +164,7 @@ body {
   justify-content: center;
   gap: 6px;
   padding: 6px 8px;
-  height: 30px;
+  height: var(--control-height-md);
   line-height: 1;
   font-size: 15px;
   border-radius: 5px;
@@ -225,7 +243,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 30px;
+  min-height: var(--control-height-md);
   padding: 0 2px;
   color: var(--text-color);
   font-size: 13px;
@@ -316,7 +334,7 @@ body {
   height: calc(var(--logo-height) * var(--logo-links-scale));
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--modal-gap);
 }
 
 #appLogo {
@@ -396,7 +414,7 @@ pre#textPreview {
   box-sizing: border-box;
   font-size: 14px;
   line-height: 1.15;
-  font-family: 'Baskervville', serif;
+  font-family: var(--font-reading);
   margin-top: 4px;
   margin-bottom: 4px;
 }
@@ -404,7 +422,7 @@ pre#textPreview {
 /* Text selector controls */
 .controls {
   position: relative;
-  min-height: 30px;
+  min-height: var(--control-height-md);
 }
 
 .controls-row {
@@ -430,9 +448,9 @@ pre#textPreview {
 
 .clipboard-repeat-input {
   width: 60px;
-  height: 30px;
-  padding: 4px 6px;
-  border-radius: 3px;
+  height: var(--control-height-md);
+  padding: var(--control-padding);
+  border-radius: var(--control-radius-sm);
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--input-text);
@@ -469,7 +487,7 @@ pre#textPreview {
   align-items: center;
   gap: 8px;
   width: 100%;
-  min-height: 30px;
+  min-height: var(--control-height-md);
   border: 1px solid var(--processing-bar-border);
   border-radius: 5px;
   padding: 0 8px;
@@ -617,9 +635,9 @@ body.import-extract-drop-active .app-container {
 
 /* Preset selector */
 select#presets {
-  height: 30px;
+  height: var(--control-height-md);
   width: 180px;
-  padding: 4px 6px;
+  padding: var(--control-padding);
   border-radius: 5px;
   border: 1px solid var(--control-border);
   font-size: 15px;
@@ -695,7 +713,7 @@ select#presets {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--modal-gap);
   margin-bottom: 6px;
   position: relative;
 }
@@ -832,21 +850,21 @@ select#presets {
 
 .info-modal-panel {
   --info-header-height: 48px;
-  --info-panel-max-height: 85vh;
+  --info-panel-max-height: var(--modal-max-height);
   --info-media-max-height: calc(var(--info-panel-max-height) - var(--info-header-height) - 120px);
 
   position: relative;
   max-width: 860px;
-  width: calc(100% - 32px);
+  width: calc(100% - var(--modal-inline-gutter));
   max-height: var(--info-panel-max-height);
   overflow: auto;
   background: var(--info-modal-panel-bg);
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   z-index: 1001;
   padding: 0 18px 18px;
   box-sizing: border-box;
-  font-family: 'Baskervville', serif;
+  font-family: var(--font-reading);
 }
 
 .info-modal-header {
@@ -962,8 +980,8 @@ select#presets {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: min(1400px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
+  width: min(1400px, calc(100vw - var(--modal-inline-gutter)));
+  max-height: calc(100vh - var(--modal-inline-gutter));
 }
 
 .info-media-lightbox-image {
@@ -990,13 +1008,13 @@ select#presets {
 .import-extract-route-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(520px, calc(100% - 32px));
+  width: min(520px, calc(100% - var(--modal-inline-gutter)));
   background: var(--modal-panel-bg);
   color: var(--text-color);
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
+  padding: var(--modal-panel-padding);
   box-sizing: border-box;
 }
 
@@ -1004,17 +1022,17 @@ select#presets {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--modal-gap);
 }
 
 .import-extract-route-modal-header h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--font-size-modal-title);
   font-weight: 600;
 }
 
 .import-extract-route-modal-body {
-  margin-top: 12px;
+  margin-top: var(--modal-section-spacing);
 }
 
 .import-extract-route-modal-body p {
@@ -1038,13 +1056,13 @@ select#presets {
 .import-extract-apply-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(560px, calc(100% - 32px));
+  width: min(560px, calc(100% - var(--modal-inline-gutter)));
   background: var(--modal-panel-bg);
   color: var(--text-color);
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
+  padding: var(--modal-panel-padding);
   box-sizing: border-box;
 }
 
@@ -1052,17 +1070,17 @@ select#presets {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--modal-gap);
 }
 
 .import-extract-apply-modal-header h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--font-size-modal-title);
   font-weight: 600;
 }
 
 .import-extract-apply-modal-body {
-  margin-top: 12px;
+  margin-top: var(--modal-section-spacing);
 }
 
 .import-extract-apply-modal-body p {
@@ -1073,26 +1091,26 @@ select#presets {
 .import-extract-apply-modal-elapsed {
   margin-top: 8px !important;
   color: var(--modal-elapsed-text);
-  font-size: 0.92rem;
+  font-size: var(--font-size-note);
   font-variant-numeric: tabular-nums;
 }
 
 .import-extract-apply-repeat-row {
-  margin-top: 12px;
+  margin-top: var(--modal-section-spacing);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .import-extract-apply-repeat-row label {
-  font-size: 0.95rem;
+  font-size: var(--font-size-ui-sm);
 }
 
 .import-extract-apply-repeat-row input {
   width: 96px;
-  padding: 4px 6px;
+  padding: var(--control-padding);
   border: 1px solid var(--input-border-strong-color);
-  border-radius: 4px;
+  border-radius: var(--control-radius-sm);
 }
 
 .import-extract-apply-modal-actions {
@@ -1111,13 +1129,13 @@ select#presets {
 .import-extract-ocr-activation-disclosure-panel {
   position: relative;
   z-index: 1001;
-  width: min(640px, calc(100% - 32px));
+  width: min(640px, calc(100% - var(--modal-inline-gutter)));
   background: var(--modal-panel-bg);
   color: var(--text-color);
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
+  padding: var(--modal-panel-padding);
   box-sizing: border-box;
 }
 
@@ -1125,31 +1143,31 @@ select#presets {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--modal-gap);
 }
 
 .import-extract-ocr-activation-disclosure-header h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--font-size-modal-title);
   font-weight: 600;
 }
 
 .import-extract-ocr-activation-disclosure-body {
-  margin-top: 12px;
+  margin-top: var(--modal-section-spacing);
 }
 
 .import-extract-ocr-activation-disclosure-body p {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: var(--font-size-note);
   line-height: 1.45;
 }
 
 .import-extract-ocr-activation-disclosure-list {
-  margin: 12px 0 0 18px;
+  margin: var(--modal-section-spacing) 0 0 18px;
   padding: 0;
   display: grid;
   gap: 8px;
-  font-size: 0.92rem;
+  font-size: var(--font-size-note);
   line-height: 1.4;
 }
 
@@ -1158,13 +1176,13 @@ select#presets {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--modal-gap);
   flex-wrap: wrap;
 }
 
 .import-extract-ocr-activation-disclosure-link {
   color: var(--link-primary);
-  font-size: 0.95rem;
+  font-size: var(--font-size-ui-sm);
   text-decoration: underline;
 }
 
@@ -1195,13 +1213,13 @@ select#presets {
 .snapshot-save-tags-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(560px, calc(100% - 32px));
+  width: min(560px, calc(100% - var(--modal-inline-gutter)));
   background: var(--modal-panel-bg);
   color: var(--text-color);
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
+  padding: var(--modal-panel-padding);
   box-sizing: border-box;
 }
 
@@ -1209,17 +1227,17 @@ select#presets {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--modal-gap);
 }
 
 .snapshot-save-tags-modal-header h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--font-size-modal-title);
   font-weight: 600;
 }
 
 .snapshot-save-tags-modal-body {
-  margin-top: 12px;
+  margin-top: var(--modal-section-spacing);
 }
 
 .snapshot-save-tags-modal-body p {
@@ -1228,7 +1246,7 @@ select#presets {
 }
 
 .snapshot-save-tags-form {
-  margin-top: 12px;
+  margin-top: var(--modal-section-spacing);
   display: grid;
   gap: 10px;
 }
@@ -1239,15 +1257,15 @@ select#presets {
 }
 
 .snapshot-save-tags-field label {
-  font-size: 0.95rem;
+  font-size: var(--font-size-ui-sm);
 }
 
 .snapshot-save-tags-field select {
   width: 100%;
-  min-height: 30px;
-  padding: 4px 6px;
+  min-height: var(--control-height-md);
+  padding: var(--control-padding);
   border: 1px solid var(--input-border-strong-color);
-  border-radius: 4px;
+  border-radius: var(--control-radius-sm);
   background: var(--control-surface-bg);
   color: var(--text-strong);
   box-sizing: border-box;
@@ -1271,15 +1289,15 @@ select#presets {
 .reading-test-entry-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(720px, calc(100% - 32px));
-  max-height: 85vh;
+  width: min(720px, calc(100% - var(--modal-inline-gutter)));
+  max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--modal-panel-bg);
   color: var(--text-color);
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
+  padding: var(--modal-panel-padding);
   box-sizing: border-box;
 }
 
@@ -1299,8 +1317,8 @@ select#presets {
 }
 
 .reading-test-entry-modal-body h2 {
-  margin: 0 0 12px;
-  font-size: 1rem;
+  margin: 0 0 var(--modal-section-spacing);
+  font-size: var(--font-size-modal-title);
   font-weight: 600;
 }
 
@@ -1320,7 +1338,7 @@ select#presets {
   background: transparent;
   color: var(--link-secondary);
   font: inherit;
-  font-size: 0.92rem;
+  font-size: var(--font-size-note);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -1332,7 +1350,7 @@ select#presets {
 .reading-test-entry-modal-toggle:focus {
   outline: 2px solid var(--link-secondary-focus);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--control-radius-sm);
 }
 
 #readingTestEntryModalIntro {
@@ -1346,10 +1364,10 @@ select#presets {
 }
 
 .reading-test-entry-modal-warning {
-  margin-top: 12px;
-  padding: 10px 12px;
+  margin-top: var(--modal-section-spacing);
+  padding: 10px var(--modal-gap);
   border: 1px solid var(--warning-border-color);
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   background: var(--warning-bg);
   color: var(--warning-text);
   line-height: 1.4;
@@ -1360,12 +1378,12 @@ select#presets {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--modal-gap);
   flex-wrap: wrap;
 }
 
 .reading-test-entry-modal-count {
-  font-size: 0.95rem;
+  font-size: var(--font-size-ui-sm);
   font-weight: 600;
   color: var(--warning-count-text);
 }
@@ -1381,7 +1399,7 @@ select#presets {
 .reading-test-entry-modal-link {
   color: var(--link-secondary);
   text-decoration: underline;
-  font-size: 0.92rem;
+  font-size: var(--font-size-note);
   cursor: pointer;
 }
 
@@ -1392,7 +1410,7 @@ select#presets {
 .reading-test-entry-modal-link:focus {
   outline: 2px solid var(--link-secondary-focus);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--control-radius-sm);
 }
 
 .reading-test-entry-modal-link[aria-disabled="true"] {
@@ -1404,21 +1422,21 @@ select#presets {
 .reading-test-entry-modal-groups {
   margin-top: 14px;
   display: grid;
-  gap: 12px;
+  gap: var(--modal-gap);
 }
 
 .reading-test-entry-modal-group-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--modal-gap);
 }
 
 .reading-test-entry-modal-group {
   display: grid;
   gap: 8px;
-  padding: 12px;
+  padding: var(--modal-gap);
   border: 1px solid var(--group-border-color);
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   background: var(--entry-group-bg);
 }
 
@@ -1439,7 +1457,7 @@ select#presets {
   align-items: center;
   gap: 7px;
   min-height: 28px;
-  font-size: 0.95rem;
+  font-size: var(--font-size-ui-sm);
 }
 
 .reading-test-entry-modal-option input[type="checkbox"] {
