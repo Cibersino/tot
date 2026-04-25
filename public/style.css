@@ -3,78 +3,86 @@
    Owner boundary: main-window shell, sections, and feature UI that still lives in this file. */
 
 /* Design tokens */
+
 :root {
+
   /* General */
   --gap: 4px;
   --control-height: 26px;
 
   /* Colors */
-  --bg-color: #f4ecd8;
-  --surface-white: #fff;
+
+  /* Backgrounds */
   --app-shell-bg: #fdf6e3;
+  --section-bg: #f4ecd8;
+  --preview-bg: #fafafa;
+  --result-highlight-bg: #ffb6c1;
+  --control-surface-bg: #fff;
+  --button-bg: #fff;
+  --button-hover-bg: #f4f4f4;
+  --abort-button-bg: #fff1f1;
+  --abort-button-hover-bg: #ffe4e4;
+  --switch-track-off: #ccc;
+  --switch-track-on: #4caf50;
+  --input-bg: #f8f5ee;
+  --input-error-bg: #fff2f2;
+  --processing-bar-bg: #f5efdf;
+  --processing-track-bg: #ded3bc;
+  --processing-fill-bg: #a9976a;
+  --drop-overlay-bg: rgba(79, 62, 28, 0.18);
+  --drop-zone-bg: rgba(253, 246, 227, 0.97);
+  --modal-panel-bg: #f4ecd8;
+  --info-section-bg: #f4ecd8;
+  --warning-bg: #fff2cf;
+  --entry-group-bg: rgba(255, 255, 255, 0.45);
+  --modal-backdrop: rgba(0, 0, 0, 0.45);
+  --lightbox-backdrop: rgba(0, 0, 0, 0.82);
+
+  /* Text */
   --text-color: #2f2a20;
   --text-strong: #222;
   --text-secondary: #333;
   --text-muted: #444;
   --text-subtle: #666;
   --text-soft: #6c6049;
+  --field-text: #2b2b2b;
+  --modal-elapsed-text: #5f5135;
+  --warning-text: #5b4510;
+  --warning-count-text: #4c4028;
+
+  /* Borders and shadows */
   --section-border: #e9e6de;
   --section-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+  --result-highlight-border: #e6c07a;
+  --control-border: #ccc;
   --button-border: #cfcfcf;
-  --button-bg: var(--surface-white);
-  --button-hover-bg: #f4f4f4;
   --focus-ring: rgb(30 130 230 / .12);
   --focus-ring-strong: rgb(30 130 230 / .22);
-  --switch-track-off: #ccc;
-  --switch-track-on: #4caf50;
   --switch-track-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
   --spinner-track: rgba(0, 0, 0, 0.15);
   --spinner-head: rgba(0, 0, 0, 0.7);
-  --preview-bg: #fafafa;
   --preview-border: #eee;
   --separator-color: #d9d2c2;
   --field-border: #b8ae9c;
-  --field-bg: #f8f5ee;
-  --field-text: #2b2b2b;
   --danger-border: #c53a3a;
-  --danger-soft-bg: #fff2f2;
   --danger-focus-ring: rgb(197 58 58 / .35);
-  --progress-bg: #f5efdf;
-  --progress-track-bg: #ded3bc;
-  --progress-fill-bg: #a9976a;
   --abort-border: #c45858;
-  --abort-bg: #fff1f1;
-  --abort-hover-bg: #ffe4e4;
-  --drop-overlay-bg: rgba(79, 62, 28, 0.18);
   --drop-zone-border: #8f7c56;
-  --drop-zone-bg: rgba(253, 246, 227, 0.97);
   --drop-zone-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
-  --control-border: #ccc;
-  --result-highlight-bg: #ffb6c1;
-  --result-highlight-border: #e6c07a;
   --error-strong: #c62828;
-  --modal-backdrop: rgba(0, 0, 0, 0.45);
   --modal-panel-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
   --modal-panel-border-color: rgba(0, 0, 0, 0.12);
-  --lightbox-backdrop: rgba(0, 0, 0, 0.82);
   --lightbox-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
-  --modal-elapsed-text: #5f5135;
   --input-border-strong-color: rgba(0, 0, 0, 0.2);
+  --warning-border-color: rgba(141, 107, 25, 0.25);
+  --group-border-color: rgba(0, 0, 0, 0.1);
+
+  /* Links and accents */
   --link-primary: #245b89;
   --link-primary-hover: #163b5a;
   --link-secondary: #24567a;
   --link-secondary-hover: #183d56;
   --link-secondary-focus: rgba(36, 86, 122, 0.35);
-  --warning-border-color: rgba(141, 107, 25, 0.25);
-  --warning-bg: #fff2cf;
-  --warning-text: #5b4510;
-  --warning-count-text: #4c4028;
-  --group-border-color: rgba(0, 0, 0, 0.1);
-  --group-bg: rgba(255, 255, 255, 0.45);
-  --selector-bg: var(--bg-color);
-  --velocity-bg: var(--bg-color);
-  --results-bg: var(--bg-color);
-  --cron-bg: var(--bg-color);
 
   /* Dimensions */
   --sidebar-width: 420px;
@@ -130,7 +138,7 @@ body {
   padding: var(--section-padding-vertical) var(--section-padding-horizontal);
   border-radius: var(--section-radius);
   box-shadow: var(--section-shadow);
-  background: var(--selector-bg);
+  background: var(--section-bg);
 }
 
 /* Shared controls */
@@ -202,7 +210,7 @@ body {
   width: 14px;
   left: 3px;
   bottom: 3px;
-  background-color: var(--surface-white);
+  background-color: var(--control-surface-bg);
   transition: .18s;
   border-radius: 50%;
 }
@@ -253,7 +261,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-color);
+  background: var(--section-bg);
   z-index: 50;
   pointer-events: all;
 }
@@ -371,7 +379,7 @@ body {
   left: 4px;
   height: 156px;
   width: 819px;
-  background: var(--selector-bg);
+  background: var(--section-bg);
   border: 1px solid var(--section-border);
   box-sizing: border-box;
 }
@@ -428,7 +436,7 @@ pre#textPreview {
   padding: 4px 6px;
   border-radius: 3px;
   border: 1px solid var(--field-border);
-  background: var(--field-bg);
+  background: var(--input-bg);
   color: var(--field-text);
   font-size: 14px;
   text-align: center;
@@ -437,7 +445,7 @@ pre#textPreview {
 
 .clipboard-repeat-input.is-repeat-active {
   border-color: var(--danger-border);
-  background: var(--danger-soft-bg);
+  background: var(--input-error-bg);
 }
 
 .clipboard-repeat-input:focus {
@@ -468,7 +476,7 @@ pre#textPreview {
   border-radius: 5px;
   padding: 0 8px;
   box-sizing: border-box;
-  background: var(--progress-bg);
+  background: var(--processing-bar-bg);
 }
 
 .import-extract-processing-copy {
@@ -497,7 +505,7 @@ pre#textPreview {
   min-width: 80px;
   height: 7px;
   border-radius: 999px;
-  background: var(--progress-track-bg);
+  background: var(--processing-track-bg);
   overflow: hidden;
 }
 
@@ -506,18 +514,18 @@ pre#textPreview {
   width: 34%;
   height: 100%;
   border-radius: 999px;
-  background: var(--progress-fill-bg);
+  background: var(--processing-fill-bg);
   animation: import-extract-processing-placeholder-slide 1.3s ease-in-out infinite;
 }
 
 .import-extract-processing-bar #btnImportExtractAbort {
   margin-left: auto;
   border-color: var(--abort-border);
-  background: var(--abort-bg);
+  background: var(--abort-button-bg);
 }
 
 .import-extract-processing-bar #btnImportExtractAbort:hover {
-  background: var(--abort-hover-bg);
+  background: var(--abort-button-hover-bg);
 }
 
 @keyframes import-extract-processing-placeholder-slide {
@@ -581,7 +589,7 @@ body.import-extract-drop-active .app-container {
   left: 4px;
   height: 155px;
   width: 398px;
-  background: var(--velocity-bg);
+  background: var(--section-bg);
   border: 1px solid var(--section-border);
   gap: 6px;
   padding: 4px;
@@ -635,7 +643,7 @@ select#presets {
   left: 407px;
   height: 155px;
   width: 416px;
-  background: var(--results-bg);
+  background: var(--section-bg);
   border: 1px solid var(--section-border);
   padding: 8px 10px;
   box-sizing: border-box;
@@ -740,7 +748,7 @@ select#presets {
   left: 4px;
   height: 98px;
   width: 232px;
-  background: var(--cron-bg);
+  background: var(--section-bg);
   border: 1px solid var(--section-border);
   padding: 4px;
   gap: 6px;
@@ -767,7 +775,7 @@ select#presets {
 .cronometro .crono-box:disabled {
   opacity: 1;
   color: inherit;
-  background-color: var(--surface-white);
+  background-color: var(--control-surface-bg);
   cursor: text;
 }
 
@@ -886,7 +894,7 @@ select#presets {
 }
 
 .info-section {
-  background-color: var(--bg-color);
+  background-color: var(--info-section-bg);
   text-align: left
 }
 
@@ -985,7 +993,7 @@ select#presets {
   position: relative;
   z-index: 1001;
   width: min(520px, calc(100% - 32px));
-  background: var(--bg-color);
+  background: var(--modal-panel-bg);
   color: var(--text-color);
   border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
@@ -1033,7 +1041,7 @@ select#presets {
   position: relative;
   z-index: 1001;
   width: min(560px, calc(100% - 32px));
-  background: var(--bg-color);
+  background: var(--modal-panel-bg);
   color: var(--text-color);
   border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
@@ -1106,7 +1114,7 @@ select#presets {
   position: relative;
   z-index: 1001;
   width: min(640px, calc(100% - 32px));
-  background: var(--bg-color);
+  background: var(--modal-panel-bg);
   color: var(--text-color);
   border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
@@ -1190,7 +1198,7 @@ select#presets {
   position: relative;
   z-index: 1001;
   width: min(560px, calc(100% - 32px));
-  background: var(--bg-color);
+  background: var(--modal-panel-bg);
   color: var(--text-color);
   border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
@@ -1242,7 +1250,7 @@ select#presets {
   padding: 4px 6px;
   border: 1px solid var(--input-border-strong-color);
   border-radius: 4px;
-  background: var(--surface-white);
+  background: var(--control-surface-bg);
   color: var(--text-strong);
   box-sizing: border-box;
 }
@@ -1268,7 +1276,7 @@ select#presets {
   width: min(720px, calc(100% - 32px));
   max-height: 85vh;
   overflow: auto;
-  background: var(--bg-color);
+  background: var(--modal-panel-bg);
   color: var(--text-color);
   border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
@@ -1413,7 +1421,7 @@ select#presets {
   padding: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: 8px;
-  background: var(--group-bg);
+  background: var(--entry-group-bg);
 }
 
 .reading-test-entry-modal-group h3 {
