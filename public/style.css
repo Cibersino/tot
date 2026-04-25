@@ -20,7 +20,8 @@
   --button-bg: #fff;
   --presets-selector-bg: #fff;
   --slider-thumb-bg: #fff;
-  --crono-box-disabled-bg: #fff;
+  --crono-input-bg: #fff;
+  --crono-input-disabled-bg: #fff;
   --snapshot-save-tags-selector-bg: #fff;
   --button-hover-bg: #f4f4f4;
   --abort-button-bg: #fff1f1;
@@ -794,6 +795,7 @@ select#presets {
   padding: 4px;
   font-size: 16px;
   text-align: center;
+  background-color: var(--crono-input-bg);
 }
 
 .cronometro .crono-box:disabled {
