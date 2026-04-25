@@ -18,6 +18,9 @@
   --startup-splash-bg: #f4ecd8;
   --preview-bg: #fafafa;
   --result-highlight-bg: #ffb6c1;
+  --modal-panel-bg: #f4ecd8;
+  --info-modal-panel-bg: #fdf6e3;
+  --info-section-bg: #f4ecd8;
   --control-surface-bg: #fff;
   --button-bg: #fff;
   --button-hover-bg: #f4f4f4;
@@ -30,9 +33,6 @@
   --processing-bar-bg: #f5efdf;
   --processing-track-bg: #ded3bc;
   --processing-fill-bg: #a9976a;
-  --modal-panel-bg: #f4ecd8;
-  --info-modal-panel-bg: #fdf6e3;
-  --info-section-bg: #f4ecd8;
   --warning-bg: #fff2cf;
   --drop-overlay-bg: rgb(79 62 28 / 0.18);
   --drop-zone-bg: rgb(253 246 227 / 0.97);
