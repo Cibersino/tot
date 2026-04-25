@@ -1,7 +1,3 @@
-/* Reading-time extension popup styles.
-   Loaded by extensions/reading-time/chrome/popup.html.
-   Owner boundary: popup layout, toggle row, WPM input row, status copy, and desktop link only. */
-
 /* Design tokens */
 :root {
   --tot-bg: #f4ecd8;
