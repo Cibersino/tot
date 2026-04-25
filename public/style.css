@@ -7,7 +7,6 @@
 :root {
 
   /* General */
-  --gap: 4px;
   --control-height: 26px;
 
   /* Colors */
@@ -89,7 +88,6 @@
   --link-secondary-focus: rgb(36 86 122 / 0.35);
 
   /* Dimensions */
-  --sidebar-width: 420px;
   --logo-height: 90px;
   --logo-links-scale: 0.7;
   --kofi-logo-scale: 0.82;
@@ -97,7 +95,6 @@
   /* Padding */
   --section-padding-vertical: 4px;
   --section-padding-horizontal: 6px;
-  --section-heading-gap: 4px;
 
   /* Shared styles */
   --section-radius: 6px;
