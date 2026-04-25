@@ -17,8 +17,11 @@
   --modal-panel-bg: #f4ecd8;
   --info-modal-panel-bg: #fdf6e3;
   --info-section-bg: #f4ecd8;
-  --control-surface-bg: #fff;
   --button-bg: #fff;
+  --presets-selector-bg: #fff;
+  --slider-thumb-bg: #fff;
+  --crono-box-disabled-bg: #fff;
+  --snapshot-save-tags-selector-bg: #fff;
   --button-hover-bg: #f4f4f4;
   --abort-button-bg: #fff1f1;
   --abort-button-hover-bg: #ffe4e4;
@@ -39,12 +42,14 @@
   /* Text */
   --text-color: #2f2a20;
   --text-strong: #222;
+  --presets-selector-text: #222;
   --text-secondary: #333;
   --text-muted: #444;
   --text-subtle: #666;
   --text-soft: #6c6049;
   --input-text: #2b2b2b;
   --modal-elapsed-text: #5f5135;
+  --snapshot-save-tags-selector-text: #222;
   --warning-text: #5b4510;
   --warning-count-text: #4c4028;
 
@@ -55,6 +60,7 @@
   --preview-border: #eee;
   --result-highlight-border: #e6c07a;
   --control-border: #ccc;
+  --presets-selector-border: #ccc;
   --button-border: #cfcfcf;
   --separator-color: #d9d2c2;
   --input-border: #b8ae9c;
@@ -226,7 +232,7 @@ body {
   width: 14px;
   left: 3px;
   bottom: 3px;
-  background-color: var(--control-surface-bg);
+  background-color: var(--slider-thumb-bg);
   transition: .18s;
   border-radius: 50%;
 }
@@ -639,7 +645,9 @@ select#presets {
   width: 180px;
   padding: var(--control-padding);
   border-radius: 5px;
-  border: 1px solid var(--control-border);
+  border: 1px solid var(--presets-selector-border);
+  background: var(--presets-selector-bg);
+  color: var(--presets-selector-text);
   font-size: 15px;
 }
 
@@ -791,7 +799,7 @@ select#presets {
 .cronometro .crono-box:disabled {
   opacity: 1;
   color: inherit;
-  background-color: var(--control-surface-bg);
+  background-color: var(--crono-input-disabled-bg);
   cursor: text;
 }
 
@@ -1266,8 +1274,8 @@ select#presets {
   padding: var(--control-padding);
   border: 1px solid var(--input-border-strong-color);
   border-radius: var(--control-radius-sm);
-  background: var(--control-surface-bg);
-  color: var(--text-strong);
+  background: var(--snapshot-save-tags-selector-bg);
+  color: var(--snapshot-save-tags-selector-text);
   box-sizing: border-box;
 }
 
