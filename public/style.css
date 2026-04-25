@@ -29,11 +29,11 @@
   --processing-bar-bg: #f5efdf;
   --processing-track-bg: #ded3bc;
   --processing-fill-bg: #a9976a;
-  --drop-overlay-bg: rgb(79 62 28 / 0.18);
-  --drop-zone-bg: rgb(253 246 227 / 0.97);
   --modal-panel-bg: #f4ecd8;
   --info-section-bg: #f4ecd8;
   --warning-bg: #fff2cf;
+  --drop-overlay-bg: rgb(79 62 28 / 0.18);
+  --drop-zone-bg: rgb(253 246 227 / 0.97);
   --entry-group-bg: rgb(255 255 255 / 0.45);
   --modal-backdrop: rgb(0 0 0 / 0.45);
   --lightbox-backdrop: rgb(0 0 0 / 0.82);
