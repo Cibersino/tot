@@ -6,9 +6,6 @@
 
 :root {
 
-  /* General */
-  --control-height: 26px;
-
   /* Colors */
 
   /* Backgrounds */
@@ -606,7 +603,7 @@ body.import-extract-drop-active .app-container {
 
 .velocity #wpmInput {
   width: 56px;
-  height: var(--control-height);
+  height: 26px;
   padding: 4px;
   font-size: 16px;
   box-sizing: border-box;
