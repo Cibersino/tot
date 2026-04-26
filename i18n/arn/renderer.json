@@ -269,7 +269,7 @@
       "entry": {
         "title": "Pepiluwün ñi pürüm chillkatun",
         "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka ka üyümlayaymi tami nüngüal Play (▶) feyti Ventana Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.\nWünen amutulaymi, rakiduamüngeymi tüfachi pepiluwün chillka engün müten müley 5 ka 15 minutos küme rakiduam mu, gelay interrupciones.\nTüfachi pool pichi chillka engün müten müley, feymew küme rakiduamngeymi tami chum tripachi. Kümelay rüf müten tripayal füta chillka mew, felew müten küme dungu, küme amuluwün ka contexto, ka weda dungu, mental recapitulación ka fatigue, mülekey ti chillkatun mu.",
-        "eligible_count": "Dullngechi chillka: {count}",
+        "eligible_count": "Dullngechi chillka:",
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
         "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",
         "start_random_confirm": "Tüfachi wiño püneay tami felechi chillka ka müley kiñe random chillka feychi trawün mew. ¿Amuleaymi?",

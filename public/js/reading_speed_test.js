@@ -53,6 +53,8 @@
   const intro = document.getElementById('readingTestEntryModalIntro');
   const warningBox = document.getElementById('readingTestEntryModalWarning');
   const eligibleCount = document.getElementById('readingTestEntryModalEligibleCount');
+  const eligibleCountLabel = document.getElementById('readingTestEntryModalEligibleCountLabel');
+  const eligibleCountNumber = document.getElementById('readingTestEntryModalEligibleCountNumber');
   const getMoreFilesLink = document.getElementById('readingTestEntryModalGetMoreFiles');
   const importButton = document.getElementById('readingTestEntryModalImport');
   const resetButton = document.getElementById('readingTestEntryModalReset');
@@ -77,6 +79,8 @@
       && intro
       && warningBox
       && eligibleCount
+      && eligibleCountLabel
+      && eligibleCountNumber
       && getMoreFilesLink
       && importButton
       && resetButton
@@ -107,8 +111,8 @@
     difficulty: new Map(snapshotTagCatalog.DIFFICULTY_OPTIONS.map((option) => [option.value, option])),
   };
 
-  let onInteractionStateChanged = () => {};
-  let onApplyWpm = () => {};
+  let onInteractionStateChanged = () => { };
+  let onApplyWpm = () => { };
   let previousFocus = null;
   let sessionState = { active: false, stage: 'idle', blocked: false };
   let poolEntries = [];
@@ -302,10 +306,8 @@
   }
 
   function renderEligibleCount() {
-    eligibleCount.textContent = msgRenderer(
-      'renderer.reading_test.entry.eligible_count',
-      { count: filterState.eligibleCount }
-    );
+    eligibleCountLabel.textContent = tRenderer('renderer.reading_test.entry.eligible_count');
+    eligibleCountNumber.textContent = String(filterState.eligibleCount);
   }
 
   function renderWarningBox() {
@@ -852,8 +854,8 @@
   // Public API
   // =============================================================================
   function configure({ onLockChange, applyWpm } = {}) {
-    onInteractionStateChanged = typeof onLockChange === 'function' ? onLockChange : () => {};
-    onApplyWpm = typeof applyWpm === 'function' ? applyWpm : () => {};
+    onInteractionStateChanged = typeof onLockChange === 'function' ? onLockChange : () => { };
+    onApplyWpm = typeof applyWpm === 'function' ? applyWpm : () => { };
 
     if (!initialized) {
       initialized = true;

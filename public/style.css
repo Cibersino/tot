@@ -1553,10 +1553,28 @@ select#presets:focus {
   flex-wrap: wrap;
 }
 
+.reading-test-entry-modal-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
 .reading-test-entry-modal-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
   font-size: var(--font-size-ui-sm);
   font-weight: 600;
   color: var(--warning-count-text);
+}
+
+.reading-test-entry-modal-count-number {
+  display: inline-block;
+  min-inline-size: 3ch;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
 }
 
 .reading-test-entry-modal-management {

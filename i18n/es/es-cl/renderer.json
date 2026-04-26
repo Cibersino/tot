@@ -269,7 +269,7 @@
       "entry": {
         "title": "Test de ritmo de lectura",
         "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto y va a esperar a que apretís Play (▶) en la Ventana Flotante cuando estís listo para empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nAntes de empezar, ten presente que estos textos de prueba suelen pedir entre 5 y 15 minutos de concentración de corrido, sin interrupciones.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
-        "eligible_count": "Archivos elegibles: {count}",
+        "eligible_count": "Archivos elegibles:",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Podís restablecer el pool o meter más archivos.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",
         "start_random_confirm": "Esto va a pitiarse el texto actual y lo va a cambiar por un texto random elegible del pool. ¿Querís seguir?",

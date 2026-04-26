@@ -96,9 +96,12 @@
         <select id="presets" aria-label="Presets de velocidad">
         </select>
         <button id="btnNewPreset" class="btn-standard btn-standard--square" title="Crear un nuevo preset">N</button>
-        <button id="btnEditPreset" class="btn-standard btn-standard--square" title="Editar preset seleccionado">E</button>
-        <button id="btnDeletePreset" class="btn-standard btn-standard--square" title="Eliminar preset seleccionado">🗑</button>
-        <button id="btnResetDefaultPresets" class="btn-standard btn-standard--square-half" title="Restaurar presets por defecto">R</button>
+        <button id="btnEditPreset" class="btn-standard btn-standard--square"
+          title="Editar preset seleccionado">E</button>
+        <button id="btnDeletePreset" class="btn-standard btn-standard--square"
+          title="Eliminar preset seleccionado">🗑</button>
+        <button id="btnResetDefaultPresets" class="btn-standard btn-standard--square-half"
+          title="Restaurar presets por defecto">R</button>
       </div>
       <div id="presetDescription" class="preset-description" aria-live="polite"></div>
     </aside>
@@ -291,21 +294,26 @@
                 <h3 id="readingTestEntryTypeHeading">Tipo</h3>
                 <div id="readingTestEntryTypeOptions" class="reading-test-entry-modal-options"></div>
               </section>
-              <section id="readingTestEntryDifficultySection" class="reading-test-entry-modal-group"
-                aria-hidden="true" hidden>
+              <section id="readingTestEntryDifficultySection" class="reading-test-entry-modal-group" aria-hidden="true"
+                hidden>
                 <h3 id="readingTestEntryDifficultyHeading">Dificultad</h3>
                 <div id="readingTestEntryDifficultyOptions" class="reading-test-entry-modal-options"></div>
               </section>
             </div>
           </div>
           <div class="reading-test-entry-modal-toolbar">
-            <div id="readingTestEntryModalEligibleCount" class="reading-test-entry-modal-count" aria-live="polite">
-              Archivos elegibles: 0</div>
+            <div class="reading-test-entry-modal-status">
+              <div id="readingTestEntryModalEligibleCount" class="reading-test-entry-modal-count" aria-live="polite">
+                <span id="readingTestEntryModalEligibleCountLabel">Archivos elegibles:</span>
+                <span id="readingTestEntryModalEligibleCountNumber"
+                  class="reading-test-entry-modal-count-number">0</span>
+              </div>
+              <button id="readingTestEntryModalReset" class="btn-standard btn-standard--half" type="button">R</button>
+            </div>
             <div class="reading-test-entry-modal-management">
               <a id="readingTestEntryModalGetMoreFiles" class="reading-test-entry-modal-link" href="#">Obtener más
                 archivos</a>
               <button id="readingTestEntryModalImport" class="btn-standard" type="button">Importar archivos...</button>
-              <button id="readingTestEntryModalReset" class="btn-standard btn-standard--half" type="button">R</button>
             </div>
           </div>
           <div class="reading-test-entry-modal-actions">

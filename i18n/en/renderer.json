@@ -269,7 +269,7 @@
       "entry": {
         "title": "Reading speed test",
         "intro": "This test is meant to estimate your real reading speed through a guided session. The app will open the text and wait for you to press Play (▶) in the Floating Window when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nBefore you begin, keep in mind that these test texts usually require between 5 and 15 minutes of uninterrupted concentration.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.",
-        "eligible_count": "Eligible files: {count}",
+        "eligible_count": "Eligible files:",
         "pool_exhausted_message": "There are no remaining unused test files. Reset the pool or add more files.",
         "close_aria": "Close reading speed test dialog",
         "start_random_confirm": "This will overwrite the current text with a random eligible text from the pool. Do you want to continue?",
