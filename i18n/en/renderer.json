@@ -68,17 +68,6 @@
         "precise_mode": "Precise mode",
         "precise_tooltip": "Based on Intl.Segmenter"
       },
-      "tips": {
-        "results_help": {
-          "tip1": "Precise mode uses Unicode segmentation to count characters (graphemes) and words using Intl.Segmenter.",
-          "tip2": "When manually entering a time into the stopwatch, the invisible fractions of a second are eliminated.",
-          "tip3": "To select all the text in an area, use Ctrl + A (Windows and Linux) or Command(⌘) + A (Mac).",
-          "tip4": "You can select text Sby first selecting the text at one end and then, while holding down the Shift key, clicking on the other end.",
-          "tip5": "A standard book usually contains between 250 and 300 words per page (this only applies to languages that use the Latin alphabet, or close derivatives, and have a similar grammatical structure).",
-          "tip6": "'What you have found, then, is not a drug of wisdom and memory, but a mere reminder.' (Plato)",
-          "tip7": "'Written speech requires a double abstraction: from the sound aspect of language and from the interlocutor.' (Vygotsky)"
-        }
-      },
       "crono": {
         "title": "STOPWATCH",
         "speed": "Speed:",
@@ -504,6 +493,15 @@
         "title": "Useful Links",
         "section_biblio_label": "Bibliographics References"
       }
+    },
+    "tips": {
+      "tip1": "Precise mode uses Unicode segmentation to count characters (graphemes) and words using Intl.Segmenter.",
+      "tip2": "When manually entering a time into the stopwatch, the invisible fractions of a second are eliminated.",
+      "tip3": "To select all the text in an area, use Ctrl + A (Windows and Linux) or Command(⌘) + A (Mac).",
+      "tip4": "You can select text Sby first selecting the text at one end and then, while holding down the Shift key, clicking on the other end.",
+      "tip5": "A standard book usually contains between 250 and 300 words per page (this only applies to languages that use the Latin alphabet, or close derivatives, and have a similar grammatical structure).",
+      "tip6": "'What you have found, then, is not a drug of wisdom and memory, but a mere reminder.' (Plato)",
+      "tip7": "'Written speech requires a double abstraction: from the sound aspect of language and from the interlocutor.' (Vygotsky)"
     }
   }
 }
