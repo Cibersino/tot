@@ -145,10 +145,24 @@ function sliderControlFromWpm(rawWpm) {
   return clampWpm(rawWpm);
 }
 
+function updateWpmSliderProgress() {
+  if (!wpmSlider) return;
+  const min = Number(wpmSlider.min);
+  const max = Number(wpmSlider.max);
+  const value = Number(wpmSlider.value);
+  if (!Number.isFinite(min) || !Number.isFinite(max) || max <= min || !Number.isFinite(value)) {
+    wpmSlider.style.setProperty('--wpm-slider-progress', '0%');
+    return;
+  }
+  const normalizedProgress = Math.min(1, Math.max(0, (value - min) / (max - min)));
+  wpmSlider.style.setProperty('--wpm-slider-progress', `${normalizedProgress * 100}%`);
+}
+
 function syncWpmControls(rawWpm) {
   const normalizedWpm = clampWpm(rawWpm);
   if (wpmInput) wpmInput.value = String(normalizedWpm);
   if (wpmSlider) wpmSlider.value = String(sliderControlFromWpm(normalizedWpm));
+  updateWpmSliderProgress();
   return normalizedWpm;
 }
 
@@ -158,6 +172,7 @@ if (wpmSlider) {
   if (wpmCurveMapper && Number.isFinite(wpmCurveMapper.controlStep) && wpmCurveMapper.controlStep > 0) {
     wpmSlider.step = String(wpmCurveMapper.controlStep);
   }
+  updateWpmSliderProgress();
 }
 if (wpmInput) {
   wpmInput.min = String(WPM_MIN);
@@ -1673,6 +1688,7 @@ function bindSpeedControls() {
   // Keep slider/input in sync and invalidate preset selection
   wpmSlider.addEventListener('input', () => {
     if (!guardUserAction('wpm-slider')) return;
+    updateWpmSliderProgress();
     wpm = wpmFromSliderControl(wpmSlider.value);
     wpmInput.value = String(wpm);
     resetPresetSelection();
