@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Merge default presets with user presets per language.
 // - Populate the presets select element.
-// - Apply a preset to WPM inputs and description.
+// - Apply a resolved preset selection to preset UI elements.
 // - Load defaults from main via electronAPI and build the final list.
 // - Resolve and persist the active preset selection.
 
@@ -80,10 +80,8 @@
 
   function applyPresetSelection(preset, domRefs = {}) {
     if (!preset) return;
-    const { selectEl, wpmInput, wpmSlider, presetDescription } = domRefs;
+    const { selectEl, presetDescription } = domRefs;
     if (selectEl) selectEl.value = preset.name;
-    if (wpmInput) wpmInput.value = preset.wpm;
-    if (wpmSlider) wpmSlider.value = preset.wpm;
     if (presetDescription) presetDescription.textContent = preset.description || '';
   }
 
@@ -124,8 +122,6 @@
     language = DEFAULT_LANG,
     currentPresetName = null,
     selectEl,
-    wpmInput,
-    wpmSlider,
     presetDescription,
     electronAPI
   }) {
@@ -164,7 +160,7 @@
     }
 
     if (selected) {
-      applyPresetSelection(selected, { selectEl, wpmInput, wpmSlider, presetDescription });
+      applyPresetSelection(selected, { selectEl, presetDescription });
       if (selected.name && selected.name !== persisted) {
         try {
           if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
