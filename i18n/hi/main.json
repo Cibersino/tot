@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "ऐप का उपयोग कैसे करें?",
+      "guia_basica": "मूल मार्गदर्शिका",
+      "instrucciones_completas": "पूर्ण निर्देश",
+      "faq": "अक्सर पूछे जाने वाले प्रश्न (FAQ)",
+      "preferencias": "प्राथमिकताएँ",
+      "idioma": "भाषा",
+      "diseno": "डिज़ाइन",
+      "skins": "स्किन्स",
+      "crono_flotante": "फ़्लोटिंग स्टॉपवॉच",
+      "fuentes": "फ़ॉन्ट",
+      "colores": "रंग",
+      "shortcuts": "कीबोर्ड शॉर्टकट",
+      "presets_por_defecto": "डिफ़ॉल्ट प्रीसेट",
+      "disconnect_google_ocr": "Google OCR डिस्कनेक्ट करें",
+      "links_interes": "उपयोगी लिंक",
+      "ayuda": "?",
+      "actualizar_version": "नवीनतम संस्करण में अपडेट करें",
+      "acerca_de": "परिचय",
+      "desarrollo": "डेवलपमेंट",
+      "recargar": "रीलोड",
+      "forcereload": "फ़ोर्स रीलोड",
+      "toggle_devtools": "DevTools टॉगल करें",
+      "language": {
+        "empty": "कोई भाषा उपलब्ध नहीं",
+        "invalid": "भाषा सूची अमान्य है"
+      }
+    },
+    "dialog": {
+      "ok": "ठीक है",
+      "continue_button": "हाँ, जारी रखें",
+      "cancel_button": "नहीं, रद्द करें",
+      "snapshot_overwrite_save": "क्या मौजूदा स्नैपशॉट फ़ाइल को ओवरराइट करना है?",
+      "snapshot_overwrite_load": "क्या चयनित स्नैपशॉट \"{name}\" से वर्तमान पाठ बदलना है?",
+      "task_delete_confirm": "क्या कार्य-सूची \"{name}\" हटानी है?",
+      "task_library_row_save_overwrite": "लाइब्रेरी में \"{name}\" नाम की प्रविष्टि पहले से मौजूद है। क्या ओवरराइट करना है?",
+      "task_library_row_delete": "क्या लाइब्रेरी से \"{name}\" हटाना है?",
+      "task_link_confirm": "क्या यह लिंक खोलना है?",
+      "task_link_trust_host": "आगे से इस होस्ट पर भरोसा करें",
+      "task_path_confirm": "क्या यह स्थानीय फ़ाइल खोलनी है?",
+      "disconnect_google_ocr_title": "Google OCR डिस्कनेक्ट करें",
+      "disconnect_google_ocr_confirm": "क्या Google OCR डिस्कनेक्ट करना है?",
+      "disconnect_google_ocr_detail": "यह सहेजे गए Google OCR साइन-इन टोकन को रद्द करता है और इस ऐप से स्थानीय टोकन फ़ाइल हटाता है। ऐप द्वारा प्रबंधित स्थानीय Google OAuth क्रेडेंशियल बने रह सकते हैं ताकि OCR बाद में फिर से कनेक्ट हो सके।",
+      "delete_preset_confirm": "क्या प्रीसेट \"{name}\" हटाना है?",
+      "delete_preset_none": "हटाने के लिए कोई प्रीसेट चयनित नहीं है।",
+      "restore_defaults_confirm": "क्या डिफ़ॉल्ट प्रीसेट (सामान्य और भाषा \"{lang}\" के लिए) मूल रूप में पुनर्स्थापित करने हैं? इससे सक्रिय भाषा के डिफ़ॉल्ट प्रीसेट पर किए गए हटाव और बदलाव वापस हो जाएँगे।",
+      "edit_preset_none": "संपादित करने के लिए कोई प्रीसेट चयनित नहीं है।",
+      "edit_preset_confirm": "क्या आप सचमुच \"{name}\" को वर्तमान प्रीसेट से बदलना चाहते हैं?",
+      "update_title": "अपडेट उपलब्ध है",
+      "update_message": "नया संस्करण {remote} उपलब्ध है। वर्तमान: {local}। क्या अभी डाउनलोड करना है?",
+      "update_download": "डाउनलोड",
+      "update_later": "बाद में",
+      "update_up_to_date_title": "आपके पास नवीनतम संस्करण है।",
+      "update_up_to_date_message": "आपके पास पहले से नवीनतम संस्करण ({local}) है।",
+      "update_failed_title": "अपडेट जाँच विफल रही।",
+      "update_failed_message": "अपना कनेक्शन जाँचें और फिर प्रयास करें।"
+    }
+  }
+}

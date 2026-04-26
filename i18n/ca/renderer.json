@@ -1,0 +1,505 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Primera i última part del text analitzat:",
+      "selector_empty": "(buit)",
+      "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
+        "edit": "⌨",
+        "clear": "🗑",
+        "snapshot_load": "📂",
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
+      },
+      "tooltips": {
+        "import_extract": "Importar/extreure text des d’un fitxer",
+        "import_extract_abort": "Avortar l’extracció",
+        "overwrite_clipboard": "Substituir el text actual pel porta-retalls",
+        "append_clipboard": "Afegir el porta-retalls al final del text actual (línia nova)",
+        "clipboard_repeat_count": "Repeticions d’enganxada",
+        "edit": "Obrir la finestra del text actual complet",
+        "clear": "Buidar el text actual",
+        "snapshot_load": "Carregar snapshot de text",
+        "snapshot_save": "Desar el text actual en un snapshot",
+        "task_new": "Nova tasca",
+        "task_load": "Carregar tasca",
+        "cibersino_website": "Web de Cibersino",
+        "cibersino_kofi": "Dona’m suport a Ko-fi",
+        "new_preset": "Crear un preset nou",
+        "edit_preset": "Editar el preset seleccionat",
+        "delete_preset": "Eliminar el preset seleccionat",
+        "reset_presets": "Restaurar els presets per defecte",
+        "help_button": "Mostrar un consell útil",
+        "flotante_window": "Finestra flotant"
+      },
+      "aria": {
+        "import_extract": "Importar o extreure text des d’un fitxer",
+        "import_extract_abort": "Avortar l’extracció",
+        "clipboard_repeat_count": "Repeticions d’enganxada",
+        "wpm_input": "Paraules per minut",
+        "wpm_slider": "Control lliscant de paraules per minut",
+        "speed_presets": "Presets de velocitat",
+        "precise_mode_toggle": "Mode precís",
+        "crono_controls": "Controls del cronòmetre",
+        "crono_display": "Pantalla del cronòmetre",
+        "crono_toggle": "Iniciar o pausar el cronòmetre",
+        "crono_reset": "Reiniciar el cronòmetre",
+        "floating_window_toggle": "Finestra flotant",
+        "floating_window_group": "Control de finestra flotant"
+      },
+      "speed": {
+        "title": "VELOCITAT DE LECTURA",
+        "wpm_label": "paraules per minut (WPM)",
+        "new": "N",
+        "edit": "E",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "RESULTATS DEL RECOMPTE",
+        "time": "⏱ Temps estimat de lectura: {h}h {m}m {s}s",
+        "words": "Paraules: {n}",
+        "chars_no_space": "Caràcters (sense espais): {n}",
+        "chars": "Caràcters: {n}",
+        "precise_mode": "Mode precís",
+        "precise_tooltip": "Basat en Intl.Segmenter"
+      },
+      "crono": {
+        "title": "CRONÒMETRE",
+        "speed": "Velocitat:",
+        "controls_label": "Controls del cronòmetre",
+        "flotante_short": "FF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Test de velocitat de lectura",
+        "preview_spoiler": "Spoiler"
+      },
+      "processing": {
+        "import_extract_placeholder": "Processant l’extracció...",
+        "import_extract_preparing": "Preparant la ruta d’importació/extracció...",
+        "import_extract_waiting_native": "Extraient text del fitxer...",
+        "import_extract_waiting_ocr": "Executant l’extracció OCR...",
+        "import_extract_waiting_ocr_delayed": "Executant OCR. Alguns fitxers triguen més.",
+        "import_extract_elapsed": "Transcorregut: {time}",
+        "import_extract_drop_here": "Deixa anar el fitxer per importar o extreure text"
+      }
+    },
+    "editor": {
+      "title": "toT — Text complet",
+      "placeholder": "Escriu o enganxa aquí...",
+      "calc_button": "CALC/DESA",
+      "calc_while_typing": "Auto",
+      "spellcheck": "Ortografia",
+      "text_size_label": "Mida",
+      "decrease_text_size": "Reduir la mida del text",
+      "increase_text_size": "Augmentar la mida del text",
+      "reset_text_size": "Restablir la mida del text",
+      "text_size_value": "{value} px",
+      "read_progress_label": "Llegit",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Progrés de lectura: {value}%",
+      "clear": "🗑",
+      "clear_title": "Buidar"
+    },
+    "editor_find": {
+      "input_placeholder": "Cercar...",
+      "input_aria": "Cercar al text",
+      "expand_title": "Mostrar substitució",
+      "collapse_title": "Amagar substitució",
+      "replace_placeholder": "Substituir...",
+      "replace_aria": "Text de substitució",
+      "prev": "🡩",
+      "next": "🡫",
+      "close": "🗙",
+      "replace": "Substituir",
+      "replace_all": "Substituir-ho tot",
+      "prev_title": "Coincidència anterior",
+      "next_title": "Coincidència següent",
+      "close_title": "Tancar la barra de cerca",
+      "replace_title": "Substituir la coincidència actual",
+      "replace_all_title": "Substituir totes les coincidències",
+      "replace_timeout": "La substitució ha trigat massa. Torna-ho a provar.",
+      "status_no_matches": "Sense coincidències",
+      "status_empty_query": "Escriu per cercar"
+    },
+    "tasks": {
+      "title": "toT — Tasques",
+      "labels": {
+        "name": "Nom",
+        "total": "TEMPS TOTAL",
+        "empty": "(buit)",
+        "search": "Cercar",
+        "search_placeholder": "Cercar a la biblioteca..."
+      },
+      "columns": {
+        "texto": "Text",
+        "tiempo": "Temps",
+        "percent": "%",
+        "falta": "F",
+        "tipo": "Tipus",
+        "enlace": "Enllaç",
+        "comentario": "",
+        "acciones": "Accions"
+      },
+      "buttons": {
+        "save": "Desar",
+        "delete": "Eliminar",
+        "add_row": "Afegir fila",
+        "open_library": "Obrir biblioteca",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "Seleccionar snapshot",
+        "clear_snapshot": "🗙",
+        "cancel": "Cancel·lar",
+        "yes": "Sí",
+        "no": "No"
+      },
+      "tooltips": {
+        "move_up": "Pujar fila",
+        "move_down": "Baixar fila",
+        "delete_row": "Eliminar fila",
+        "library_row_save": "Desar a la biblioteca",
+        "library_row_load": "Carregar fila",
+        "library_row_delete": "Eliminar de la biblioteca",
+        "snapshot_load": "Carregar snapshot de text per a aquesta fila",
+        "snapshot_select": "Seleccionar snapshot per a aquesta fila",
+        "snapshot_clear": "Treure el snapshot seleccionat d’aquesta fila",
+        "link_open": "Obrir enllaç",
+        "comment": "Afegir/editar comentari"
+      },
+      "modals": {
+        "comment_title": "Comentari",
+        "library_title": "Biblioteca",
+        "library_save_title": "Desar a la biblioteca",
+        "library_save_question": "Incloure comentari?"
+      },
+      "alerts": {
+        "task_unavailable": "La funcionalitat de tasques no està disponible.",
+        "task_open_error": "No s’ha pogut obrir l’editor de tasques.",
+        "task_load_error": "No s’ha pogut carregar la tasca.",
+        "task_save_error": "No s’ha pogut desar la tasca.",
+        "task_save_success": "Tasca desada.",
+        "task_delete_error": "No s’ha pogut eliminar la tasca.",
+        "task_delete_unavailable": "No hi ha cap tasca desada per eliminar.",
+        "task_invalid_file": "Fitxer de tasques invàlid.",
+        "task_invalid_rows": "Hi ha files invàlides a la tasca.",
+        "task_path_outside": "El fitxer ha d’estar dins de la carpeta de tasques.",
+        "name_required": "El nom de la tasca és obligatori.",
+        "row_text_required": "El text de la fila no pot estar buit.",
+        "library_load_error": "No s’ha pogut carregar la biblioteca.",
+        "library_save_error": "No s’ha pogut desar a la biblioteca.",
+        "library_save_success": "Fila desada a la biblioteca.",
+        "library_delete_error": "No s’ha pogut eliminar de la biblioteca.",
+        "link_blocked": "Enllaç bloquejat.",
+        "link_missing": "Fitxer no trobat.",
+        "link_error": "Error en obrir l’enllaç."
+      },
+      "confirm": {
+        "discard_changes": "Hi ha canvis sense desar. Vols descartar-los?",
+        "close_unsaved": "Hi ha canvis sense desar. Vols tancar sense desar?"
+      }
+    },
+    "snapshot_save_tags": {
+      "title": "Desar snapshot de text",
+      "message": "Etiqueta opcionalment aquest snapshot de text abans de triar on desar-lo.",
+      "labels": {
+        "language": "Idioma",
+        "type": "Tipus",
+        "difficulty": "Dificultat"
+      },
+      "empty": {
+        "language": "Sense etiqueta d’idioma",
+        "type": "Sense etiqueta de tipus",
+        "difficulty": "Sense etiqueta de dificultat"
+      },
+      "buttons": {
+        "confirm": "Desar snapshot de text",
+        "cancel": "Cancel·lar"
+      },
+      "close_aria": "Tancar el diàleg per desar snapshot de text",
+      "options": {
+        "language": {
+          "es": "Espanyol",
+          "en": "Anglès",
+          "pt": "Portuguès",
+          "fr": "Francès",
+          "de": "Alemany",
+          "it": "Italià",
+          "arn": "Mapudungun",
+          "ja": "Japonès",
+          "ko": "Coreà",
+          "ru": "Rus",
+          "tr": "Turc",
+          "id": "Indonesi",
+          "hi": "Hindi",
+          "bn": "Bengalí",
+          "ur": "Urdú",
+          "ar": "Àrab",
+          "zh_hans": "Xinès simplificat",
+          "zh_hant": "Xinès tradicional"
+        },
+        "type": {
+          "fiction": "Ficció",
+          "non_fiction": "No-ficció"
+        },
+        "difficulty": {
+          "easy": "Fàcil",
+          "normal": "Normal",
+          "hard": "Difícil"
+        }
+      }
+    },
+    "reading_test": {
+      "prestart": {
+        "reminder": "Prem Play (▶) a la Finestra Flotant quan estiguis a punt per començar. Un cop el test hagi començat, no premis Pausa (⏸) fins que acabis de llegir: Pausa acaba el test; no posa el cronòmetre en pausa. Prem Aturar/Reiniciar (⏹) només per cancel·lar el test."
+      },
+      "entry": {
+        "title": "Test de velocitat de lectura",
+        "intro": "Aquest test serveix per estimar la teva velocitat real de lectura amb una sessió guiada. L’app obrirà el text i esperarà que premis Play (▶) a la Finestra Flotant quan estiguis a punt per començar. Un cop el test hagi començat, no premis Pausa (⏸) fins que acabis de llegir: Pausa acaba el test; no posa el cronòmetre en pausa. Fes servir Aturar/Reiniciar (⏹) només si vols cancel·lar el test. Després podràs revisar preguntes de comprensió si el text les inclou i, al final, crear un preset amb el resultat.\nAbans de començar, tingues en compte que aquests textos de prova solen requerir entre 5 i 15 minuts de concentració contínua, sense interrupcions.\nAquest pool fa servir textos breus, així que interpreta el resultat amb cautela. No s’hauria d’extrapolar directament a textos llargs, on solen intervenir factors positius, com l’adquisició de fluïdesa i de context, i factors negatius, com la recapitulació mental i la fatiga.",
+        "eligible_count": "Fitxers elegibles:",
+        "pool_exhausted_message": "No queden fitxers de test sense usar. Restableix el pool o afegeix més fitxers.",
+        "close_aria": "Tancar el diàleg del test de velocitat de lectura",
+        "start_random_confirm": "Això sobreescriurà el text actual amb un text aleatori elegible del pool. Vols continuar?",
+        "reset_confirm": "Això restablirà tot el pool del test i tornarà a marcar tots els seus fitxers com a no usats. Vols continuar?",
+        "import_summary": "Importació finalitzada. Importats: {imported}. Duplicats omesos: {skippedDuplicates}. Validacions fallides: {failedValidation}. Entrades de fitxer comprimit fallides: {failedArchiveEntries}. Escriptures fallides: {failedWrites}.",
+        "import_conflict": {
+          "title": "Importar fitxers",
+          "message": "Alguns fitxers importats ja existeixen al pool. Com vols gestionar els duplicats?",
+          "detail": "{count} nom(s) de fitxer de destinació ja existeixen al pool.",
+          "buttons": {
+            "skip": "Ometre duplicats",
+            "replace": "Substituir duplicats",
+            "cancel": "Cancel·lar la importació"
+          }
+        },
+        "buttons": {
+          "get_more_files": "Obtenir més fitxers",
+          "import_files": "Importar fitxers...",
+          "reset_pool": "R",
+          "show_instructions": "Mostrar instruccions",
+          "hide_instructions": "Amagar instruccions",
+          "start_random_text": "Iniciar amb text aleatori",
+          "start_current_text": "Iniciar amb el text actual"
+        },
+        "tooltips": {
+          "get_more_files": "Obtenir més fitxers de test des de la carpeta de Google Drive",
+          "import_files": "Importar fitxers de test des del teu dispositiu",
+          "reset_pool": "Restablir el pool del test",
+          "start_random_text": "Iniciar el test amb un text aleatori elegible del pool",
+          "start_current_text": "Iniciar el test amb el text actual"
+        }
+      },
+      "questions": {
+        "title": "Preguntes de comprensió lectora",
+        "intro": "Respondre aquestes preguntes de comprensió lectora és opcional i no afecta la puntuació final. Només serveixen per ajudar-te a avaluar la dificultat del text i si el teu ritme i estil de lectura t’han permès assolir un nivell bàsic de comprensió. Les teves respostes no es desen ni s’envien als desenvolupadors ni a cap altra persona.",
+        "random_title": "Probabilitat a l’atzar",
+        "random_value": "Puntuació esperada responent a l’atzar: {percentage}%",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "Per a reclamacions:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Has de respondre totes les preguntes abans d’avaluar.",
+        "result_summary": "{correct} de {total} correctes ({percentage}%)",
+        "chance_at_least_observed": "Probabilitat d’obtenir almenys aquesta puntuació responent a l’atzar: {percentage}%",
+        "fatal_invalid": "La càrrega de preguntes és invàlida.",
+        "buttons": {
+          "check": "Veure resultat",
+          "continue": "Continuar"
+        }
+      },
+      "result": {
+        "title": "Resultat de velocitat de lectura",
+        "measured_wpm": "WPM mesurats",
+        "elapsed_time": "Temps",
+        "word_count": "Paraules",
+        "buttons": {
+          "continue": "Continuar"
+        }
+      }
+    },
+    "modal_preset": {
+      "title_new": "Preset nou",
+      "title_edit": "Editar preset",
+      "heading_new": "Crear un preset nou",
+      "heading_edit": "Editar el preset seleccionat",
+      "name": "Nom:",
+      "wpm": "WPM:",
+      "description": "Descripció:",
+      "placeholder": "Descripció breu...",
+      "char_count": "{remaining} caràcters restants",
+      "hint": "Els presets personalitzats es desen a la configuració de l’usuari.",
+      "cancel": "Cancel·lar",
+      "save": "Desar"
+    },
+    "alerts": {
+      "clipboard_too_large": "El text del porta-retalls és massa gran per processar-lo. Redueix-lo i torna-ho a provar.",
+      "append_too_large": "El text resultant és massa gran per processar-lo. Redueix-lo i torna-ho a provar.",
+      "clipboard_overflow": "El text del porta-retalls supera la mida màxima permesa i s’ha truncat.",
+      "append_overflow": "El text afegit supera la mida màxima permesa i s’ha truncat.",
+      "text_limit": "No és possible afegir text: ja s’ha assolit la mida màxima permesa.",
+      "clipboard_error": "S’ha produït un error en enganxar des del porta-retalls. Revisa la consola.",
+      "append_error": "S’ha produït un error en afegir text. Revisa la consola.",
+      "clear_error": "S’ha produït un error en buidar el text. Revisa la consola.",
+      "snapshot_save_success": "Snapshot desat.",
+      "snapshot_save_error": "No s’ha pogut desar el snapshot.",
+      "snapshot_load_success": "Snapshot carregat.",
+      "snapshot_load_error": "No s’ha pogut carregar el snapshot.",
+      "snapshot_outside": "El snapshot ha d’estar dins de la carpeta de desament.",
+      "snapshot_truncated": "El snapshot supera la mida màxima i s’ha truncat.",
+      "snapshot_unavailable": "La funció de snapshots no està disponible.",
+      "modal_unavailable": "Funcionalitat de modal no disponible.",
+      "edit_none": "No hi ha cap preset seleccionat per editar.",
+      "preset_not_found": "El preset seleccionat no s’ha trobat a la memòria cau.",
+      "edit_unavailable": "Funcionalitat d’edició no disponible.",
+      "edit_error": "S’ha produït un error en intentar editar el preset. Revisa la consola.",
+      "delete_error": "S’ha produït un error en eliminar el preset. Revisa la consola.",
+      "restore_error": "S’ha produït un error en restaurar els presets. Revisa la consola.",
+      "open_presets_unsupported": "No és possible obrir la carpeta de presets en aquest entorn.",
+      "open_presets_error": "S’ha produït un error en intentar obrir la carpeta de presets. Revisa la consola.",
+      "open_presets_fail": "No s’ha pogut obrir la carpeta de presets per defecte. Revisa la consola per a més detalls.",
+      "import_extract_error": "S’ha produït un error en iniciar importar/extreure. Revisa la consola.",
+      "import_extract_precondition_blocked": "Per iniciar importar/extreure, tanca totes les finestres secundàries i atura el cronòmetre.",
+      "import_extract_precondition_error": "S’ha produït un error en revisar les precondicions d’importar/extreure. Revisa la consola.",
+      "import_extract_processing_locked": "Importar/extreure està processant. Les interaccions de la finestra principal estan bloquejades fins que acabi el processament o l’avortis.",
+      "import_extract_abort_error": "S’ha produït un error en sol·licitar l’avortament d’importar/extreure. Revisa la consola.",
+      "import_extract_cancelled": "Importar/extreure s’ha cancel·lat.",
+      "import_extract_drop_single_file_only": "Deixa anar exactament un fitxer per iniciar importar/extreure.",
+      "import_extract_drop_invalid_file": "L’element deixat anar no és un fitxer local vàlid.",
+      "import_extract_route_choice_required": "Cal triar una ruta per a aquest PDF abans de continuar l’extracció.",
+      "import_extract_route_choice_title": "Triar ruta d’extracció",
+      "import_extract_route_choice_message": "Aquest PDF té disponibles ambdues rutes d’extracció. Tria’n una per continuar.",
+      "import_extract_route_choice_native_button": "Usar nativa",
+      "import_extract_route_choice_ocr_button": "Usar OCR",
+      "import_extract_route_choice_cancel_button": "Cancel·lar",
+      "import_extract_route_choice_close_aria": "Tancar el diàleg de ruta d’extracció",
+      "import_extract_apply_modal_title": "Aplicar el text extret",
+      "import_extract_apply_modal_message": "Tria com aplicar el text extret.",
+      "import_extract_apply_modal_elapsed": "Temps d’execució: {time}",
+      "import_extract_apply_modal_repeat_label": "Repeticions",
+      "import_extract_apply_modal_overwrite_button": "Sobreescriure",
+      "import_extract_apply_modal_append_button": "Afegir",
+      "import_extract_apply_modal_cancel_button": "Cancel·lar",
+      "import_extract_apply_modal_close_aria": "Tancar el diàleg per aplicar el text extret",
+      "import_extract_apply_error": "S’ha produït un error en aplicar el text extret. Revisa la consola i torna-ho a provar.",
+      "import_extract_apply_too_large": "El text resultant és massa gran per processar-lo. Redueix les repeticions i torna-ho a provar.",
+      "import_extract_apply_text_limit": "No es pot afegir el text extret: ja s’ha assolit la mida màxima.",
+      "import_extract_apply_truncated": "El text extret aplicat superava el límit i s’ha truncat.",
+      "import_extract_prepare_invalid": "La sol·licitud preparada d’importar/extreure ja no és vàlida. Inicia el flux de nou.",
+      "import_extract_ocr_unavailable": "L’OCR no està disponible. Revisa la configuració/autenticació i torna-ho a provar.",
+      "import_extract_ocr_activation_required": "Cal activar l’OCR. Inicia sessió a Google OCR i torna-ho a provar.",
+      "import_extract_ocr_activation_disclosure_title": "Revisar l’activació de Google OCR",
+      "import_extract_ocr_activation_disclosure_intro": "toT fa servir serveis de Google per a l’OCR. Si continues, s’obrirà el navegador perquè autoritzis aquesta app.",
+      "import_extract_ocr_activation_disclosure_selected_files": "Només s’envien a Google els fitxers que tries per a OCR.",
+      "import_extract_ocr_activation_disclosure_local_storage": "Aquesta app desa credencials OAuth de Google per a OCR gestionades per l’app i l’estat local del testimoni de Google en aquesta instància.",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "Després d’exportar, l’app intenta eliminar el document temporal de Google del teu Google Drive.",
+      "import_extract_ocr_activation_disclosure_disconnect": "Més tard pots desconnectar aquesta connexió des de Preferències > Desconnectar Google OCR.",
+      "import_extract_ocr_activation_disclosure_proceed_button": "Continuar amb Google",
+      "import_extract_ocr_activation_disclosure_cancel_button": "Cancel·lar",
+      "import_extract_ocr_activation_disclosure_privacy_link": "Obrir la política de privadesa",
+      "import_extract_ocr_activation_disclosure_close_aria": "Tancar el diàleg d’activació de Google OCR",
+      "import_extract_ocr_activation_success": "Activació OCR completada. Reintentant l’extracció.",
+      "import_extract_ocr_activation_cancelled": "L’activació OCR s’ha cancel·lat. Importar/extreure no ha continuat.",
+      "import_extract_ocr_token_state_invalid": "L’estat desat d’inici de sessió de Google OCR és invàlid. Reconnecta Google OCR i torna-ho a provar.",
+      "import_extract_ocr_activation_failed": "L’activació OCR ha fallat. Revisa la configuració/autenticació i torna-ho a provar.",
+      "import_extract_ocr_disconnect_success": "Google OCR s’ha desconnectat. El testimoni de Google desat s’ha revocat i s’ha eliminat l’estat local d’inici de sessió.",
+      "import_extract_ocr_disconnect_not_connected": "Google OCR no està connectat actualment en aquesta instància de l’app.",
+      "import_extract_ocr_disconnect_failed": "La desconnexió de Google OCR ha fallat. L’estat desat d’inici de sessió no s’ha eliminat.",
+      "import_extract_ocr_connectivity_failed": "L’OCR requereix connexió a internet. Revisa la connexió i torna-ho a provar.",
+      "import_extract_ocr_setup_missing_credentials": "L’OCR no està disponible en aquest build de l’app perquè falten les credencials OAuth de Google incloses amb l’app.",
+      "import_extract_ocr_setup_invalid_credentials": "L’OCR no està disponible en aquest build de l’app perquè les credencials OAuth de Google incloses amb l’app són invàlides.",
+      "import_extract_ocr_restricted": "La ruta OCR està restringida per a aquest tipus de fitxer.",
+      "import_extract_ocr_quota_or_rate_limited": "L’OCR està bloquejat temporalment per quota/límit de taxa. Espera i torna-ho a provar.",
+      "import_extract_ocr_runtime_error": "S’ha produït un error d’execució OCR durant importar/extreure. Revisa la consola i torna-ho a provar.",
+      "import_extract_ocr_cancelled": "L’extracció OCR s’ha cancel·lat.",
+      "import_extract_ocr_cleanup_warning": "L’OCR ha acabat, però ha fallat la neteja temporal remota del fitxer. Revisa la teva carpeta de Google Drive.",
+      "import_extract_ocr_apply_pending": "L’extracció OCR ha acabat. El flux posterior d’aplicació del resultat encara està pendent d’implementació.",
+      "import_extract_native_runtime_error": "S’ha produït un error d’execució d’extracció nativa durant importar/extreure. Revisa la consola i torna-ho a provar.",
+      "import_extract_native_unreadable_or_corrupt": "El fitxer seleccionat és il·legible o està corrupte per a l’extracció nativa.",
+      "import_extract_native_encrypted_or_password_protected": "El PDF seleccionat està encriptat o protegit amb contrasenya i no es pot extreure per ruta nativa.",
+      "import_extract_native_cancelled": "L’extracció nativa s’ha cancel·lat.",
+      "import_extract_native_unsupported_format": "Aquest format de fitxer no està admès per la ruta d’extracció nativa.",
+      "import_extract_native_apply_pending": "L’extracció nativa ha acabat. El flux posterior d’aplicació del resultat encara està pendent d’implementació.",
+      "wip_diseno_skins": "WIP: Aquí s’obrirà el selector de skins en una versió futura.",
+      "wip_diseno_crono": "WIP: Aquí s’obrirà la configuració del cronòmetre flotant en una versió futura.",
+      "wip_diseno_fuentes": "WIP: Aquí s’obrirà el selector de tipus de lletra en una versió futura.",
+      "wip_diseno_colores": "WIP: Aquí s’obrirà el selector de colors en una versió futura.",
+      "wip_shortcuts": "WIP: Aquí s’obrirà el selector de dreceres de teclat en una versió futura.",
+      "reading_test_unavailable": "La funcionalitat del test de velocitat de lectura no està disponible.",
+      "reading_test_precondition_blocked": "El test de velocitat de lectura només es pot iniciar des d’un estat estable de l’app. Tanca les finestres secundàries i assegura’t que el cronòmetre estigui aturat.",
+      "reading_test_pool_error": "S’ha produït un error en revisar el pool del test de velocitat de lectura.",
+      "reading_test_no_matching_files": "No queden fitxers de test sense usar que coincideixin amb la selecció actual.",
+      "reading_test_current_text_empty": "El text actual està buit. Carrega o escriu un text abans d’iniciar el test amb el text actual.",
+      "reading_test_result_invalid": "El resultat del test no s’ha pogut convertir en un WPM vàlid. El flux ha acabat sense obrir el modal de preset.",
+      "reading_test_result_unavailable": "No s’ha pogut mostrar el resultat de velocitat de lectura. El flux ha continuat.",
+      "reading_test_preset_unavailable": "No s’ha pogut obrir el modal de preset després del test.",
+      "reading_test_questions_unavailable": "No s’ha pogut obrir el modal de preguntes de comprensió. El flux ha acabat abans de crear el preset.",
+      "reading_test_pool_import_failed": "No s’han pogut importar els fitxers del test de velocitat de lectura.",
+      "reading_test_start_failed": "No s’ha pogut iniciar el test de velocitat de lectura.",
+      "reading_test_cancelled": "El test de velocitat de lectura s’ha cancel·lat.",
+      "reading_test_cancelled_window_closed": "El test de velocitat de lectura s’ha cancel·lat perquè una de les finestres de sessió s’ha tancat."
+    },
+    "editor_alerts": {
+      "paste_too_big": "Text massa gran per enganxar-lo directament. Fes servir els botons de la finestra principal.",
+      "drop_too_big": "Text arrossegat massa gran. Fes servir els botons de la finestra principal.",
+      "paste_no_text": "El porta-retalls no conté text pla.",
+      "drop_no_text": "Arrossegar i deixar anar: no s’ha detectat text pla.",
+      "type_limit": "No és possible escriure més text: ja s’ha assolit la mida màxima permesa.",
+      "paste_limit": "No és possible enganxar més text: ja s’ha assolit la mida màxima permesa.",
+      "drop_limit": "No és possible deixar anar més text: ja s’ha assolit la mida màxima permesa.",
+      "paste_truncated": "El text enganxat s’ha truncat per no superar el màxim permès.",
+      "drop_truncated": "El text arrossegat superava l’espai disponible i s’ha truncat.",
+      "text_truncated": "El text s’ha truncat per ajustar-se al límit màxim de l’aplicació.",
+      "calc_error": "S’ha produït un error en calcular. Revisa la consola."
+    },
+    "preset_alerts": {
+      "name_empty": "El nom no pot estar buit.",
+      "wpm_invalid": "WPM ha de ser un nombre entre {min} i {max}.",
+      "create_error": "S’ha produït un error en crear el preset. Revisa la consola.",
+      "edit_error": "S’ha produït un error en editar el preset. Revisa la consola.",
+      "process_error": "S’ha produït un error en processar el preset. Revisa la consola."
+    },
+    "info": {
+      "loading": "Carregant...",
+      "missing_content": "No hi ha contingut disponible per a '{name}'.",
+      "external": {
+        "blocked": "Enllaç bloquejat",
+        "error": "Error en obrir l’enllaç"
+      },
+      "appdoc": {
+        "blocked": "Document bloquejat",
+        "missing": "Document no trobat",
+        "error": "Error en obrir el document"
+      },
+      "acerca_de": {
+        "app_name": "toT",
+        "title": "Quant a",
+        "version": {
+          "unavailable": "No disponible"
+        },
+        "env": {
+          "unavailable": "No disponible"
+        }
+      },
+      "instrucciones": {
+        "title": "Manual d’ús"
+      },
+      "links_interes": {
+        "app_name": "toT",
+        "title": "Enllaços d’interès",
+        "section_biblio_label": "Referències bibliogràfiques"
+      }
+    }
+  }
+}

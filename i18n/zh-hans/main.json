@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "如何使用本应用？",
+      "guia_basica": "基础指南",
+      "instrucciones_completas": "完整说明",
+      "faq": "常见问题（FAQ）",
+      "preferencias": "偏好设置",
+      "idioma": "语言",
+      "diseno": "设计",
+      "skins": "皮肤",
+      "crono_flotante": "悬浮秒表",
+      "fuentes": "字体",
+      "colores": "颜色",
+      "shortcuts": "键盘快捷键",
+      "presets_por_defecto": "默认预设",
+      "disconnect_google_ocr": "断开 Google OCR 连接",
+      "links_interes": "相关链接",
+      "ayuda": "?",
+      "actualizar_version": "更新到最新版本",
+      "acerca_de": "关于",
+      "desarrollo": "开发",
+      "recargar": "重新加载",
+      "forcereload": "强制重新加载",
+      "toggle_devtools": "切换 DevTools",
+      "language": {
+        "empty": "没有可用语言",
+        "invalid": "语言列表无效"
+      }
+    },
+    "dialog": {
+      "ok": "确定",
+      "continue_button": "是，继续",
+      "cancel_button": "否，取消",
+      "snapshot_overwrite_save": "覆盖现有快照文件？",
+      "snapshot_overwrite_load": "用所选快照“{name}”替换当前文本？",
+      "task_delete_confirm": "删除任务列表“{name}”？",
+      "task_library_row_save_overwrite": "库中已存在名为“{name}”的条目。要覆盖吗？",
+      "task_library_row_delete": "从库中删除“{name}”？",
+      "task_link_confirm": "打开此链接？",
+      "task_link_trust_host": "以后信任此主机",
+      "task_path_confirm": "打开此本地文件？",
+      "disconnect_google_ocr_title": "断开 Google OCR 连接",
+      "disconnect_google_ocr_confirm": "断开 Google OCR 连接？",
+      "disconnect_google_ocr_detail": "这会撤销已保存的 Google OCR 登录令牌，并从此应用中删除本地令牌文件。应用管理的本地 Google OAuth 凭据可能会保留，以便以后重新连接 OCR。",
+      "delete_preset_confirm": "删除预设“{name}”？",
+      "delete_preset_none": "没有选择要删除的预设。",
+      "restore_defaults_confirm": "将默认预设（通用预设和语言“{lang}”的预设）恢复为原始版本？这会撤销对当前语言默认预设所做的删除和更改。",
+      "edit_preset_none": "没有选择要编辑的预设。",
+      "edit_preset_confirm": "确定要用当前预设替换“{name}”吗？",
+      "update_title": "有可用更新",
+      "update_message": "有新版本 {remote} 可用。当前版本：{local}。现在下载吗？",
+      "update_download": "下载",
+      "update_later": "稍后",
+      "update_up_to_date_title": "已是最新版本。",
+      "update_up_to_date_message": "你已经拥有最新版本（{local}）。",
+      "update_failed_title": "更新检查失败。",
+      "update_failed_message": "请检查连接后重试。"
+    }
+  }
+}

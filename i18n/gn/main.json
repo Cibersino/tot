@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Mba’éichapa ojepuru app",
+      "guia_basica": "Ñepyrũrã rape",
+      "instrucciones_completas": "Ñe’ẽmondo henyhẽva",
+      "faq": "Porandu ojejapóva jepi (FAQ)",
+      "preferencias": "Poravopyre",
+      "idioma": "Ñe’ẽ",
+      "diseno": "Diseño",
+      "skins": "Skins",
+      "crono_flotante": "Cronómetro ovevýiva",
+      "fuentes": "Tai reko",
+      "colores": "Sa’ykuéra",
+      "shortcuts": "Teclado rape mbyky",
+      "presets_por_defecto": "Preset ñepyrũrã",
+      "disconnect_google_ocr": "Google OCR-gui ejehekýi",
+      "links_interes": "Link iporãva",
+      "ayuda": "?",
+      "actualizar_version": "Embohekopyahu versión ipyahuvévape",
+      "acerca_de": "Ko app rehegua",
+      "desarrollo": "Ñemoakãrapu’ã",
+      "recargar": "Emyanyhẽjey",
+      "forcereload": "Emyanyhẽjey mbaretépe",
+      "toggle_devtools": "Emyambue DevTools",
+      "language": {
+        "empty": "Ndaipóri ñe’ẽ ojepurukuaáva",
+        "invalid": "Ñe’ẽ lista ndoikói"
+      }
+    },
+    "dialog": {
+      "ok": "Moneĩ",
+      "continue_button": "Hẽe, esegi",
+      "cancel_button": "Nahániri, eheja",
+      "snapshot_overwrite_save": "¿Emyengoviátapa snapshot oĩmava?",
+      "snapshot_overwrite_load": "¿Emyengoviátapa jehai ko’ág̃agua snapshot ojeporavóva \"{name}\" rupive?",
+      "task_delete_confirm": "¿Emboguetepa tembiaporã lista \"{name}\"?",
+      "task_library_row_save_overwrite": "Oĩmava \"{name}\" biblioteca-pe. ¿Emyengoviátapa?",
+      "task_library_row_delete": "¿Emboguetepa \"{name}\" biblioteca-gui?",
+      "task_link_confirm": "¿Eipe’átapa ko link?",
+      "task_link_trust_host": "Ejerovia ko host rehe ko’ág̃a guive",
+      "task_path_confirm": "¿Eipe’átapa ko archivo local?",
+      "disconnect_google_ocr_title": "Google OCR-gui jehekýi",
+      "disconnect_google_ocr_confirm": "¿Ejehekýitapa Google OCR-gui?",
+      "disconnect_google_ocr_detail": "Kóva ombogue token oñeñongatúva Google OCR-pe jeike hag̃ua ha ombogue archivo token local ko app-gui. Credencial OAuth Google local app oisãmbyhýva ikatu opyta OCR oñembojoaju jey hag̃ua upe rire.",
+      "delete_preset_confirm": "¿Emboguetepa preset \"{name}\"?",
+      "delete_preset_none": "Ndaipóri preset ojeporavóva oñembogue hag̃ua.",
+      "restore_defaults_confirm": "¿Emoĩjeýpa preset ñepyrũrã (opavavépe g̃uarã ha ñe’ẽ \"{lang}\"-pe g̃uarã) heko ypykuépe? Kóva ombojere jeýta ñembogue ha ñemoambue ojejapóva preset ñepyrũrã ñe’ẽ aktívo rehe.",
+      "edit_preset_none": "Ndaipóri preset ojeporavóva oñemyatyrõ hag̃ua.",
+      "edit_preset_confirm": "¿Añetehápe emyengoviasépa \"{name}\" preset ko’ág̃aguávare?",
+      "update_title": "Oĩ ñembohekopyahu",
+      "update_message": "Oĩ versión pyahu {remote}. Ko’ág̃agua: {local}. ¿Emboguejýpa ko’ág̃a?",
+      "update_download": "Mboguejy",
+      "update_later": "Upe rire",
+      "update_up_to_date_title": "Reime al día.",
+      "update_up_to_date_message": "Reguerekóma versión ipyahuvéva ({local}).",
+      "update_failed_title": "Ñembohekopyahu jehecha ojavy.",
+      "update_failed_message": "Ehecha ne conexión ha eha’ã jey."
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Nola erabili aplikazioa?",
+      "guia_basica": "Oinarrizko gida",
+      "instrucciones_completas": "Argibide osoak",
+      "faq": "Maiz egindako galderak (FAQ)",
+      "preferencias": "Hobespenak",
+      "idioma": "Hizkuntza",
+      "diseno": "Diseinua",
+      "skins": "Azalak",
+      "crono_flotante": "Kronometro flotatzailea",
+      "fuentes": "Letra-tipoak",
+      "colores": "Koloreak",
+      "shortcuts": "Teklatu-lasterbideak",
+      "presets_por_defecto": "Aurrezarpen lehenetsiak",
+      "disconnect_google_ocr": "Deskonektatu Google OCR",
+      "links_interes": "Esteka interesgarriak",
+      "ayuda": "?",
+      "actualizar_version": "Eguneratu azken bertsiora",
+      "acerca_de": "Honi buruz",
+      "desarrollo": "Garapena",
+      "recargar": "Birkargatu",
+      "forcereload": "Behartu birkargatzea",
+      "toggle_devtools": "Aktibatu/desaktibatu DevTools",
+      "language": {
+        "empty": "Ez dago hizkuntzarik erabilgarri",
+        "invalid": "Hizkuntza-zerrenda baliogabea"
+      }
+    },
+    "dialog": {
+      "ok": "Ados",
+      "continue_button": "Bai, jarraitu",
+      "cancel_button": "Ez, utzi",
+      "snapshot_overwrite_save": "Gainidatzi lehendik dagoen snapshota?",
+      "snapshot_overwrite_load": "Ordeztu uneko testua hautatutako \"{name}\" snapshotarekin?",
+      "task_delete_confirm": "Ezabatu \"{name}\" ataza-zerrenda?",
+      "task_library_row_save_overwrite": "\"{name}\" izeneko sarrera badago jada liburutegian. Gainidatzi?",
+      "task_library_row_delete": "Ezabatu \"{name}\" liburutegitik?",
+      "task_link_confirm": "Ireki esteka hau?",
+      "task_link_trust_host": "Fidatu host honetaz hemendik aurrera",
+      "task_path_confirm": "Ireki fitxategi lokal hau?",
+      "disconnect_google_ocr_title": "Deskonektatu Google OCR",
+      "disconnect_google_ocr_confirm": "Deskonektatu Google OCR?",
+      "disconnect_google_ocr_detail": "Horrek gordetako Google OCR saio-hasierako tokena baliogabetzen du eta aplikazio honetako token-fitxategi lokala ezabatzen du. Aplikazioak kudeatutako Google OAuth kredentzial lokalak mantendu daitezke, OCR geroago berriz konektatu ahal izateko.",
+      "delete_preset_confirm": "Ezabatu \"{name}\" aurrezarpena?",
+      "delete_preset_none": "Ez dago ezabatzeko aurrezarpenik hautatuta.",
+      "restore_defaults_confirm": "Leheneratu aurrezarpen lehenetsiak (orokorrak eta \"{lang}\" hizkuntzakoak) jatorrizko bertsiora? Honek hizkuntza aktiboko aurrezarpen lehenetsietan egindako ezabaketak eta aldaketak desegingo ditu.",
+      "edit_preset_none": "Ez dago editatzeko aurrezarpenik hautatuta.",
+      "edit_preset_confirm": "Ziur zaude \"{name}\" uneko aurrezarpenarekin ordeztu nahi duzula?",
+      "update_title": "Eguneraketa erabilgarri",
+      "update_message": "{remote} bertsio berria erabilgarri dago. Unekoa: {local}. Deskargatu orain?",
+      "update_download": "Deskargatu",
+      "update_later": "Geroago",
+      "update_up_to_date_title": "Eguneratuta zaude.",
+      "update_up_to_date_message": "Dagoeneko azken bertsioa duzu ({local}).",
+      "update_failed_title": "Eguneraketen egiaztapenak huts egin du.",
+      "update_failed_message": "Egiaztatu konexioa eta saiatu berriro."
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "ایپ کیسے استعمال کریں",
+      "guia_basica": "بنیادی رہنما",
+      "instrucciones_completas": "مکمل ہدایات",
+      "faq": "اکثر پوچھے جانے والے سوالات (FAQ)",
+      "preferencias": "ترجیحات",
+      "idioma": "زبان",
+      "diseno": "ڈیزائن",
+      "skins": "اسکنز",
+      "crono_flotante": "تیرتی ہوئی اسٹاپ واچ",
+      "fuentes": "فونٹس",
+      "colores": "رنگ",
+      "shortcuts": "کی بورڈ شارٹ کٹس",
+      "presets_por_defecto": "ڈیفالٹ پری سیٹس",
+      "disconnect_google_ocr": "Google OCR منقطع کریں",
+      "links_interes": "مفید روابط",
+      "ayuda": "؟",
+      "actualizar_version": "تازہ ترین ورژن پر اپ ڈیٹ کریں",
+      "acerca_de": "متعلق",
+      "desarrollo": "ڈویلپمنٹ",
+      "recargar": "دوبارہ لوڈ کریں",
+      "forcereload": "زبردستی دوبارہ لوڈ کریں",
+      "toggle_devtools": "DevTools ٹوگل کریں",
+      "language": {
+        "empty": "کوئی زبان دستیاب نہیں",
+        "invalid": "زبانوں کی فہرست درست نہیں"
+      }
+    },
+    "dialog": {
+      "ok": "ٹھیک ہے",
+      "continue_button": "ہاں، جاری رکھیں",
+      "cancel_button": "نہیں، منسوخ کریں",
+      "snapshot_overwrite_save": "کیا موجودہ اسنیپ شاٹ فائل کو اوور رائٹ کرنا ہے؟",
+      "snapshot_overwrite_load": "کیا منتخب اسنیپ شاٹ \"{name}\" سے موجودہ متن بدلنا ہے؟",
+      "task_delete_confirm": "کیا ٹاسک فہرست \"{name}\" حذف کرنی ہے؟",
+      "task_library_row_save_overwrite": "لائبریری میں \"{name}\" نام کی ایک انٹری پہلے سے موجود ہے۔ اوور رائٹ کریں؟",
+      "task_library_row_delete": "کیا \"{name}\" کو لائبریری سے حذف کرنا ہے؟",
+      "task_link_confirm": "کیا یہ لنک کھولنا ہے؟",
+      "task_link_trust_host": "آئندہ اس ہوسٹ پر اعتماد کریں",
+      "task_path_confirm": "کیا یہ مقامی فائل کھولنی ہے؟",
+      "disconnect_google_ocr_title": "Google OCR منقطع کریں",
+      "disconnect_google_ocr_confirm": "کیا Google OCR منقطع کرنا ہے؟",
+      "disconnect_google_ocr_detail": "یہ محفوظ شدہ Google OCR سائن اِن ٹوکن کو منسوخ کرتا ہے اور اس ایپ سے مقامی ٹوکن فائل حذف کرتا ہے۔ ایپ کے زیرِ انتظام مقامی Google OAuth اسناد باقی رہ سکتی ہیں تاکہ OCR بعد میں دوبارہ منسلک ہو سکے۔",
+      "delete_preset_confirm": "کیا پری سیٹ \"{name}\" حذف کرنا ہے؟",
+      "delete_preset_none": "حذف کرنے کے لیے کوئی پری سیٹ منتخب نہیں۔",
+      "restore_defaults_confirm": "کیا ڈیفالٹ پری سیٹس (عمومی اور زبان \"{lang}\") کو اصل حالت میں بحال کرنا ہے؟ اس سے فعال زبان کے ڈیفالٹ پری سیٹس میں کی گئی حذفیاں اور تبدیلیاں واپس ہو جائیں گی۔",
+      "edit_preset_none": "ترمیم کے لیے کوئی پری سیٹ منتخب نہیں۔",
+      "edit_preset_confirm": "کیا آپ واقعی \"{name}\" کو موجودہ پری سیٹ سے بدلنا چاہتے ہیں؟",
+      "update_title": "اپ ڈیٹ دستیاب ہے",
+      "update_message": "نیا ورژن {remote} دستیاب ہے۔ موجودہ: {local}۔ ابھی ڈاؤن لوڈ کریں؟",
+      "update_download": "ڈاؤن لوڈ",
+      "update_later": "بعد میں",
+      "update_up_to_date_title": "آپ تازہ ترین ورژن پر ہیں۔",
+      "update_up_to_date_message": "آپ کے پاس پہلے ہی تازہ ترین ورژن ({local}) موجود ہے۔",
+      "update_failed_title": "اپ ڈیٹ چیک ناکام ہو گیا۔",
+      "update_failed_message": "اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔"
+    }
+  }
+}

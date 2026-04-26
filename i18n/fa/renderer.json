@@ -1,0 +1,506 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "بخش آغازین و پایانی متنِ تحلیل‌شده:",
+      "selector_empty": "(خالی)",
+      "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
+        "edit": "⌨",
+        "clear": "🗑",
+        "snapshot_load": "📂",
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
+      },
+      "tooltips": {
+        "import_extract": "وارد کردن/استخراج متن از فایل",
+        "import_extract_abort": "لغو استخراج",
+        "overwrite_clipboard": "جایگزینی متن فعلی با کلیپ‌بورد",
+        "append_clipboard": "افزودن متن کلیپ‌بورد به انتهای متن فعلی (خط جدید)",
+        "clipboard_repeat_count": "تکرارهای کلیپ‌بورد",
+        "edit": "باز کردن پنجره کامل متن فعلی",
+        "clear": "پاک کردن متن فعلی",
+        "snapshot_load": "بارگذاری اسنپ‌شات متن",
+        "snapshot_save": "ذخیره متن فعلی در یک اسنپ‌شات",
+        "task_new": "کار جدید",
+        "task_load": "بارگذاری کار",
+        "cibersino_website": "وب‌سایت Cibersino",
+        "cibersino_kofi": "حمایت در Ko-fi",
+        "new_preset": "ساخت پیش‌تنظیم جدید",
+        "edit_preset": "ویرایش پیش‌تنظیم انتخاب‌شده",
+        "delete_preset": "حذف پیش‌تنظیم انتخاب‌شده",
+        "reset_presets": "بازگرداندن پیش‌تنظیم‌های پیش‌فرض",
+        "help_button": "نمایش یک نکته مفید",
+        "flotante_window": "پنجره شناور"
+      },
+      "aria": {
+        "import_extract": "وارد کردن یا استخراج متن از فایل",
+        "import_extract_abort": "لغو استخراج",
+        "clipboard_repeat_count": "تکرارهای چسباندن",
+        "wpm_input": "واژه در دقیقه",
+        "wpm_slider": "لغزنده واژه در دقیقه",
+        "speed_presets": "پیش‌تنظیم‌های سرعت",
+        "precise_mode_toggle": "حالت دقیق",
+        "crono_controls": "کنترل‌های کرنومتر",
+        "crono_display": "نمایشگر کرنومتر",
+        "crono_toggle": "شروع یا مکث کرنومتر",
+        "crono_reset": "بازنشانی کرنومتر",
+        "floating_window_toggle": "پنجره شناور",
+        "floating_window_group": "کنترل‌های پنجره شناور"
+      },
+      "speed": {
+        "title": "سرعت خواندن",
+        "wpm_label": "واژه در دقیقه (WPM)",
+        "new": "ن",
+        "edit": "و",
+        "delete": "🗑",
+        "reset_defaults": "ب"
+      },
+      "results": {
+        "title": "نتایج شمارش",
+        "time": "⏱ زمان تخمینی خواندن: {h}h {m}m {s}s",
+        "words": "واژه‌ها: {n}",
+        "chars_no_space": "نویسه‌ها (بدون فاصله): {n}",
+        "chars": "نویسه‌ها: {n}",
+        "precise_mode": "حالت دقیق",
+        "precise_tooltip": "بر پایه Intl.Segmenter"
+      },
+      "crono": {
+        "title": "کرنومتر",
+        "speed": "سرعت:",
+        "controls_label": "کنترل‌های کرنومتر",
+        "flotante_short": "ش",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "آزمون سرعت خواندن",
+        "preview_spoiler": "اسپویلر"
+      },
+      "processing": {
+        "import_extract_placeholder": "در حال استخراج متن...",
+        "import_extract_preparing": "در حال آماده‌سازی مسیر وارد کردن/استخراج...",
+        "import_extract_waiting_native": "در حال استخراج متن از فایل...",
+        "import_extract_waiting_ocr": "در حال اجرای استخراج OCR...",
+        "import_extract_waiting_ocr_delayed": "OCR در حال اجراست. برخی فایل‌ها زمان بیشتری می‌برند.",
+        "import_extract_elapsed": "زمان سپری‌شده: {time}",
+        "import_extract_drop_here": "برای وارد کردن/استخراج متن، فایل را اینجا رها کنید"
+      }
+    },
+    "editor": {
+      "title": "toT — متن کامل",
+      "placeholder": "اینجا بنویسید یا بچسبانید...",
+      "calc_button": "محاسبه/ذخیره",
+      "calc_while_typing": "خودکار",
+      "spellcheck": "بررسی املا",
+      "text_size_label": "اندازه",
+      "decrease_text_size": "کاهش اندازه متن",
+      "increase_text_size": "افزایش اندازه متن",
+      "reset_text_size": "بازنشانی اندازه متن",
+      "text_size_value": "{value} px",
+      "read_progress_label": "خوانده‌شده",
+      "read_progress_value": "{value}٪",
+      "read_progress_aria": "پیشرفت خواندن: {value}٪",
+      "clear": "🗑",
+      "clear_title": "پاک کردن"
+    },
+    "editor_find": {
+      "input_placeholder": "جست‌وجو...",
+      "input_aria": "جست‌وجو در متن",
+      "expand_title": "نمایش کنترل‌های جایگزینی",
+      "collapse_title": "پنهان کردن کنترل‌های جایگزینی",
+      "replace_placeholder": "جایگزینی...",
+      "replace_aria": "متن جایگزین",
+      "prev": "🡩",
+      "next": "🡫",
+      "close": "🗙",
+      "replace": "جایگزین کن",
+      "replace_all": "جایگزینی همه",
+      "prev_title": "مورد قبلی",
+      "next_title": "مورد بعدی",
+      "close_title": "بستن نوار جست‌وجو",
+      "replace_title": "جایگزینی مورد فعلی",
+      "replace_all_title": "جایگزینی همه موارد",
+      "replace_timeout": "زمان جایگزینی تمام شد. دوباره تلاش کنید.",
+      "status_no_matches": "موردی یافت نشد",
+      "status_empty_query": "برای جست‌وجو تایپ کنید"
+    },
+    "tasks": {
+      "title": "toT — کارها",
+      "labels": {
+        "name": "نام",
+        "total": "زمان کل",
+        "empty": "(خالی)",
+        "search": "جست‌وجو",
+        "search_placeholder": "جست‌وجو در کتابخانه..."
+      },
+      "columns": {
+        "texto": "متن",
+        "tiempo": "زمان",
+        "percent": "٪",
+        "falta": "ب",
+        "tipo": "نوع",
+        "enlace": "پیوند",
+        "comentario": "",
+        "acciones": "کنش‌ها"
+      },
+      "buttons": {
+        "save": "ذخیره",
+        "delete": "حذف",
+        "add_row": "افزودن ردیف",
+        "open_library": "باز کردن کتابخانه",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "انتخاب اسنپ‌شات",
+        "clear_snapshot": "🗙",
+        "cancel": "لغو",
+        "yes": "بله",
+        "no": "نه"
+      },
+      "tooltips": {
+        "move_up": "انتقال به بالا",
+        "move_down": "انتقال به پایین",
+        "delete_row": "حذف ردیف",
+        "library_row_save": "ذخیره در کتابخانه",
+        "library_row_load": "بارگذاری ردیف",
+        "library_row_delete": "حذف از کتابخانه",
+        "snapshot_load": "بارگذاری اسنپ‌شات متن برای این ردیف",
+        "snapshot_select": "انتخاب اسنپ‌شات متن برای این ردیف",
+        "snapshot_clear": "حذف اسنپ‌شات انتخاب‌شده از این ردیف",
+        "link_open": "باز کردن پیوند",
+        "comment": "افزودن/ویرایش نظر"
+      },
+      "modals": {
+        "comment_title": "نظر",
+        "library_title": "کتابخانه",
+        "library_save_title": "ذخیره در کتابخانه",
+        "library_save_question": "نظر هم ذخیره شود؟"
+      },
+      "alerts": {
+        "task_unavailable": "قابلیت کارها در دسترس نیست.",
+        "task_open_error": "ویرایشگر کارها باز نشد.",
+        "task_load_error": "کار بارگذاری نشد.",
+        "task_save_error": "کار ذخیره نشد.",
+        "task_save_success": "کار ذخیره شد.",
+        "task_delete_error": "کار حذف نشد.",
+        "task_delete_unavailable": "هیچ کار ذخیره‌شده‌ای برای حذف وجود ندارد.",
+        "task_invalid_file": "فایل کار نامعتبر است.",
+        "task_invalid_rows": "در کار ردیف‌های نامعتبر وجود دارد.",
+        "task_path_outside": "فایل باید داخل پوشه کارها باشد.",
+        "name_required": "نام کار الزامی است.",
+        "row_text_required": "متن ردیف نمی‌تواند خالی باشد.",
+        "library_load_error": "کتابخانه بارگذاری نشد.",
+        "library_save_error": "ذخیره در کتابخانه انجام نشد.",
+        "library_save_success": "ردیف در کتابخانه ذخیره شد.",
+        "library_delete_error": "حذف از کتابخانه انجام نشد.",
+        "link_blocked": "پیوند مسدود شد.",
+        "link_missing": "فایل یافت نشد.",
+        "link_error": "خطا در باز کردن پیوند."
+      },
+      "confirm": {
+        "discard_changes": "تغییرات ذخیره‌نشده وجود دارد. نادیده گرفته شوند؟",
+        "close_unsaved": "تغییرات ذخیره‌نشده وجود دارد. بدون ذخیره بسته شود؟"
+      }
+    },
+    "snapshot_save_tags": {
+      "title": "ذخیره اسنپ‌شات متن",
+      "message": "می‌توانید پیش از انتخاب محل ذخیره، برای این اسنپ‌شات متن برچسب اختیاری انتخاب کنید.",
+      "labels": {
+        "language": "زبان",
+        "type": "نوع",
+        "difficulty": "دشواری"
+      },
+      "empty": {
+        "language": "بدون برچسب زبان",
+        "type": "بدون برچسب نوع",
+        "difficulty": "بدون برچسب دشواری"
+      },
+      "buttons": {
+        "confirm": "ذخیره اسنپ‌شات متن",
+        "cancel": "لغو"
+      },
+      "close_aria": "بستن پنجره ذخیره اسنپ‌شات متن",
+      "options": {
+        "language": {
+          "es": "اسپانیایی",
+          "en": "انگلیسی",
+          "pt": "پرتغالی",
+          "fr": "فرانسوی",
+          "de": "آلمانی",
+          "it": "ایتالیایی",
+          "arn": "ماپودونگون",
+          "ja": "ژاپنی",
+          "ko": "کره‌ای",
+          "ru": "روسی",
+          "tr": "ترکی",
+          "id": "اندونزیایی",
+          "hi": "هندی",
+          "bn": "بنگالی",
+          "ur": "اردو",
+          "ar": "عربی",
+          "fa": "فارسی",
+          "zh_hans": "چینی ساده‌شده",
+          "zh_hant": "چینی سنتی"
+        },
+        "type": {
+          "fiction": "داستانی",
+          "non_fiction": "غیرداستانی"
+        },
+        "difficulty": {
+          "easy": "آسان",
+          "normal": "معمولی",
+          "hard": "سخت"
+        }
+      }
+    },
+    "reading_test": {
+      "prestart": {
+        "reminder": "وقتی آماده شروع هستید، در پنجره شناور Play (▶) را فشار دهید. پس از شروع آزمون، تا زمانی که خواندن را تمام نکرده‌اید Pause (⏸) را فشار ندهید: Pause آزمون را پایان می‌دهد؛ زمان‌سنج را موقتاً متوقف نمی‌کند. فقط اگر می‌خواهید آزمون را لغو کنید Stop/Reset (⏹) را فشار دهید."
+      },
+      "entry": {
+        "title": "آزمون سرعت خواندن",
+        "intro": "این آزمون برای برآورد سرعت واقعی خواندن شما در یک جلسه هدایت‌شده طراحی شده است. برنامه متن را باز می‌کند و منتظر می‌ماند وقتی آماده شروع هستید، در پنجره شناور Play (▶) را فشار دهید. پس از شروع آزمون، تا زمانی که خواندن را تمام نکرده‌اید Pause (⏸) را فشار ندهید: Pause آزمون را پایان می‌دهد؛ زمان‌سنج را موقتاً متوقف نمی‌کند. فقط اگر می‌خواهید آزمون را لغو کنید از Stop/Reset (⏹) استفاده کنید. پس از آن، اگر متن پرسش‌های درک مطلب داشته باشد، می‌توانید آن‌ها را مرور کنید و در پایان از نتیجه یک پیش‌تنظیم بسازید.\nپیش از شروع، در نظر داشته باشید که این متن‌های آزمون معمولاً بین ۵ تا ۱۵ دقیقه تمرکز بی‌وقفه می‌خواهند.\nاین مجموعه از متن‌های کوتاه استفاده می‌کند، بنابراین نتیجه را با احتیاط تفسیر کنید. نباید آن را مستقیماً به متن‌های بلند تعمیم داد؛ در متن‌های بلند معمولاً عوامل مثبتی مانند جریان خواندن و شکل‌گیری زمینه، و عوامل منفی‌ای مانند مرور ذهنی و خستگی اثر می‌گذارند.",
+        "eligible_count": "فایل‌های واجد شرایط:",
+        "pool_exhausted_message": "هیچ فایل آزمون استفاده‌نشده‌ای باقی نمانده است. مجموعه را بازنشانی کنید یا فایل‌های بیشتری اضافه کنید.",
+        "close_aria": "بستن پنجره آزمون سرعت خواندن",
+        "start_random_confirm": "این کار متن فعلی را با یک متن واجد شرایط تصادفی از مجموعه جایگزین می‌کند. ادامه می‌دهید؟",
+        "reset_confirm": "این کار کل مجموعه آزمون را بازنشانی می‌کند و همه فایل‌های آن را دوباره استفاده‌نشده علامت می‌زند. ادامه می‌دهید؟",
+        "import_summary": "وارد کردن پایان یافت. واردشده: {imported}. موارد تکراری ردشده: {skippedDuplicates}. اعتبارسنجی ناموفق: {failedValidation}. ورودی‌های آرشیو ناموفق: {failedArchiveEntries}. نوشتن‌های ناموفق: {failedWrites}.",
+        "import_conflict": {
+          "title": "وارد کردن فایل‌ها",
+          "message": "برخی فایل‌های واردشده از قبل در مجموعه وجود دارند. با موارد تکراری چه شود؟",
+          "detail": "{count} نام فایل مقصد از قبل در مجموعه وجود دارد.",
+          "buttons": {
+            "skip": "رد کردن موارد تکراری",
+            "replace": "جایگزینی موارد تکراری",
+            "cancel": "لغو وارد کردن"
+          }
+        },
+        "buttons": {
+          "get_more_files": "دریافت فایل‌های بیشتر",
+          "import_files": "وارد کردن فایل‌ها...",
+          "reset_pool": "ب",
+          "show_instructions": "نمایش دستورالعمل‌ها",
+          "hide_instructions": "پنهان کردن دستورالعمل‌ها",
+          "start_random_text": "شروع با متن تصادفی",
+          "start_current_text": "شروع با متن فعلی"
+        },
+        "tooltips": {
+          "get_more_files": "دریافت فایل‌های آزمون بیشتر از پوشه Google Drive",
+          "import_files": "وارد کردن فایل‌های آزمون از دستگاه شما",
+          "reset_pool": "بازنشانی مجموعه آزمون",
+          "start_random_text": "شروع آزمون با یک متن واجد شرایط تصادفی از مجموعه",
+          "start_current_text": "شروع آزمون با متن فعلی"
+        }
+      },
+      "questions": {
+        "title": "پرسش‌های درک مطلب",
+        "intro": "پاسخ دادن به این پرسش‌های درک مطلب اختیاری است و روی امتیاز نهایی شما اثری ندارد. هدف آن‌ها فقط این است که به شما کمک کنند دشواری متن و اینکه آیا سرعت و سبک خواندن شما امکان رسیدن به سطحی پایه از درک را داده است یا نه، ارزیابی کنید. پاسخ‌های شما ذخیره نمی‌شود و برای توسعه‌دهندگان یا شخص دیگری ارسال نمی‌شود.",
+        "random_title": "خط پایه حدس تصادفی",
+        "random_value": "امتیاز مورد انتظار در حالت حدس تصادفی: {percentage}٪",
+        "feedback_title": "بازخورد",
+        "feedback_prefix": "برای شکایت‌ها:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "پیش از ارزیابی باید به همه پرسش‌ها پاسخ داده شود.",
+        "result_summary": "{correct} از {total} پاسخ درست ({percentage}٪)",
+        "chance_at_least_observed": "احتمال گرفتن دست‌کم این امتیاز با حدس تصادفی: {percentage}٪",
+        "fatal_invalid": "محتوای پرسش‌ها نامعتبر است.",
+        "buttons": {
+          "check": "بررسی نتیجه",
+          "continue": "ادامه"
+        }
+      },
+      "result": {
+        "title": "نتیجه سرعت خواندن",
+        "measured_wpm": "WPM اندازه‌گیری‌شده",
+        "elapsed_time": "زمان",
+        "word_count": "واژه‌ها",
+        "buttons": {
+          "continue": "ادامه"
+        }
+      }
+    },
+    "modal_preset": {
+      "title_new": "پیش‌تنظیم جدید",
+      "title_edit": "ویرایش پیش‌تنظیم",
+      "heading_new": "ساخت پیش‌تنظیم جدید",
+      "heading_edit": "ویرایش پیش‌تنظیم انتخاب‌شده",
+      "name": "نام:",
+      "wpm": "WPM:",
+      "description": "توضیح:",
+      "placeholder": "توضیح کوتاه...",
+      "char_count": "{remaining} نویسه باقی مانده",
+      "hint": "پیش‌تنظیم‌های سفارشی در تنظیمات کاربر ذخیره می‌شوند.",
+      "cancel": "لغو",
+      "save": "ذخیره"
+    },
+    "alerts": {
+      "clipboard_too_large": "متن کلیپ‌بورد برای پردازش بیش از حد بزرگ است. آن را کاهش دهید و دوباره تلاش کنید.",
+      "append_too_large": "متن حاصل برای پردازش بیش از حد بزرگ است. آن را کاهش دهید و دوباره تلاش کنید.",
+      "clipboard_overflow": "متن کلیپ‌بورد از حداکثر مجاز بیشتر بود و کوتاه شد.",
+      "append_overflow": "متن افزوده‌شده از حداکثر مجاز بیشتر بود و کوتاه شد.",
+      "text_limit": "امکان افزودن متن وجود ندارد: به حداکثر اندازه رسیده است.",
+      "clipboard_error": "هنگام چسباندن از کلیپ‌بورد خطایی رخ داد. کنسول را بررسی کنید.",
+      "append_error": "هنگام افزودن متن خطایی رخ داد. کنسول را بررسی کنید.",
+      "clear_error": "هنگام پاک کردن متن خطایی رخ داد. کنسول را بررسی کنید.",
+      "snapshot_save_success": "اسنپ‌شات ذخیره شد.",
+      "snapshot_save_error": "اسنپ‌شات ذخیره نشد.",
+      "snapshot_load_success": "اسنپ‌شات بارگذاری شد.",
+      "snapshot_load_error": "اسنپ‌شات بارگذاری نشد.",
+      "snapshot_outside": "اسنپ‌شات باید داخل پوشه اسنپ‌شات‌ها باشد.",
+      "snapshot_truncated": "اسنپ‌شات از حداکثر اندازه بیشتر است و کوتاه شد.",
+      "snapshot_unavailable": "قابلیت اسنپ‌شات در دسترس نیست.",
+      "modal_unavailable": "قابلیت مودال در دسترس نیست.",
+      "edit_none": "هیچ پیش‌تنظیمی برای ویرایش انتخاب نشده است.",
+      "preset_not_found": "پیش‌تنظیم انتخاب‌شده در کش پیدا نشد.",
+      "edit_unavailable": "قابلیت ویرایش در دسترس نیست.",
+      "edit_error": "هنگام ویرایش پیش‌تنظیم خطایی رخ داد. کنسول را بررسی کنید.",
+      "delete_error": "هنگام حذف پیش‌تنظیم خطایی رخ داد. کنسول را بررسی کنید.",
+      "restore_error": "هنگام بازگرداندن پیش‌تنظیم‌ها خطایی رخ داد. کنسول را بررسی کنید.",
+      "open_presets_unsupported": "در این محیط امکان باز کردن پوشه پیش‌تنظیم‌ها وجود ندارد.",
+      "open_presets_error": "هنگام تلاش برای باز کردن پوشه پیش‌تنظیم‌ها خطایی رخ داد. کنسول را بررسی کنید.",
+      "open_presets_fail": "پوشه پیش‌تنظیم‌های پیش‌فرض باز نشد. برای جزئیات کنسول را بررسی کنید.",
+      "import_extract_error": "هنگام شروع وارد کردن/استخراج خطایی رخ داد. کنسول را بررسی کنید.",
+      "import_extract_precondition_blocked": "برای شروع وارد کردن/استخراج، همه پنجره‌های فرعی را ببندید و کرنومتر را متوقف کنید.",
+      "import_extract_precondition_error": "هنگام بررسی پیش‌شرط‌های وارد کردن/استخراج خطایی رخ داد. کنسول را بررسی کنید.",
+      "import_extract_processing_locked": "وارد کردن/استخراج در حال پردازش است. تعاملات پنجره اصلی تا پایان پردازش یا لغو آن قفل می‌ماند.",
+      "import_extract_abort_error": "هنگام درخواست لغو وارد کردن/استخراج خطایی رخ داد. کنسول را بررسی کنید.",
+      "import_extract_cancelled": "وارد کردن/استخراج لغو شد.",
+      "import_extract_drop_single_file_only": "برای شروع وارد کردن/استخراج دقیقاً یک فایل رها کنید.",
+      "import_extract_drop_invalid_file": "مورد رهاشده یک فایل محلی معتبر نیست.",
+      "import_extract_route_choice_required": "برای ادامه استخراج از این PDF باید مسیر استخراج انتخاب شود.",
+      "import_extract_route_choice_title": "انتخاب مسیر استخراج",
+      "import_extract_route_choice_message": "هر دو مسیر استخراج برای این PDF در دسترس هستند. برای ادامه یکی را انتخاب کنید.",
+      "import_extract_route_choice_native_button": "استفاده از مسیر بومی",
+      "import_extract_route_choice_ocr_button": "استفاده از OCR",
+      "import_extract_route_choice_cancel_button": "لغو",
+      "import_extract_route_choice_close_aria": "بستن پنجره انتخاب مسیر استخراج",
+      "import_extract_apply_modal_title": "اعمال متن استخراج‌شده",
+      "import_extract_apply_modal_message": "انتخاب کنید متن استخراج‌شده چگونه اعمال شود.",
+      "import_extract_apply_modal_elapsed": "زمان اجرا: {time}",
+      "import_extract_apply_modal_repeat_label": "تکرارها",
+      "import_extract_apply_modal_overwrite_button": "جایگزینی",
+      "import_extract_apply_modal_append_button": "افزودن",
+      "import_extract_apply_modal_cancel_button": "لغو",
+      "import_extract_apply_modal_close_aria": "بستن پنجره اعمال متن استخراج‌شده",
+      "import_extract_apply_error": "هنگام اعمال متن استخراج‌شده خطایی رخ داد. کنسول را بررسی کنید و دوباره تلاش کنید.",
+      "import_extract_apply_too_large": "متن حاصل برای پردازش بیش از حد بزرگ است. تعداد تکرارها را کاهش دهید و دوباره تلاش کنید.",
+      "import_extract_apply_text_limit": "امکان افزودن متن استخراج‌شده وجود ندارد: به حداکثر اندازه رسیده است.",
+      "import_extract_apply_truncated": "متن استخراج‌شده اعمال‌شده از حد مجاز بیشتر بود و کوتاه شد.",
+      "import_extract_prepare_invalid": "درخواست آماده‌شده وارد کردن/استخراج دیگر معتبر نیست. جریان را دوباره شروع کنید.",
+      "import_extract_ocr_unavailable": "OCR در دسترس نیست. وضعیت راه‌اندازی/احراز هویت را بررسی کنید و دوباره تلاش کنید.",
+      "import_extract_ocr_activation_required": "فعال‌سازی OCR لازم است. به Google OCR وارد شوید و دوباره تلاش کنید.",
+      "import_extract_ocr_activation_disclosure_title": "مرور فعال‌سازی Google OCR",
+      "import_extract_ocr_activation_disclosure_intro": "toT برای OCR از خدمات Google استفاده می‌کند. ادامه دادن مرورگر شما را باز می‌کند تا بتوانید این برنامه را مجاز کنید.",
+      "import_extract_ocr_activation_disclosure_selected_files": "فقط فایل‌هایی که برای OCR انتخاب می‌کنید به Google ارسال می‌شوند.",
+      "import_extract_ocr_activation_disclosure_local_storage": "این برنامه اعتبارنامه‌های Google OAuth مدیریت‌شده توسط برنامه و وضعیت توکن محلی Google را برای OCR در همین نمونه برنامه ذخیره می‌کند.",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "پس از خروجی گرفتن، برنامه تلاش می‌کند سند موقت Google را از Google Drive شما حذف کند.",
+      "import_extract_ocr_activation_disclosure_disconnect": "بعداً می‌توانید از مسیر Preferences > Disconnect Google OCR اتصال را قطع کنید.",
+      "import_extract_ocr_activation_disclosure_proceed_button": "ادامه به Google",
+      "import_extract_ocr_activation_disclosure_cancel_button": "لغو",
+      "import_extract_ocr_activation_disclosure_privacy_link": "باز کردن سیاست حریم خصوصی",
+      "import_extract_ocr_activation_disclosure_close_aria": "بستن پنجره افشای فعال‌سازی OCR",
+      "import_extract_ocr_activation_success": "فعال‌سازی OCR کامل شد. استخراج دوباره تلاش می‌شود.",
+      "import_extract_ocr_activation_cancelled": "فعال‌سازی OCR لغو شد. وارد کردن/استخراج ادامه پیدا نکرد.",
+      "import_extract_ocr_token_state_invalid": "وضعیت ورود ذخیره‌شده Google OCR نامعتبر است. Google OCR را دوباره متصل کنید و دوباره تلاش کنید.",
+      "import_extract_ocr_activation_failed": "فعال‌سازی OCR ناموفق بود. وضعیت راه‌اندازی/احراز هویت را بررسی کنید و دوباره تلاش کنید.",
+      "import_extract_ocr_disconnect_success": "اتصال Google OCR قطع شد. توکن ذخیره‌شده Google لغو و وضعیت ورود محلی حذف شد.",
+      "import_extract_ocr_disconnect_not_connected": "Google OCR در حال حاضر در این نمونه برنامه متصل نیست.",
+      "import_extract_ocr_disconnect_failed": "قطع اتصال Google OCR ناموفق بود. وضعیت ورود ذخیره‌شده حذف نشد.",
+      "import_extract_ocr_connectivity_failed": "OCR به اتصال اینترنت نیاز دارد. اتصال خود را بررسی کنید و دوباره تلاش کنید.",
+      "import_extract_ocr_setup_missing_credentials": "OCR در این build برنامه در دسترس نیست، چون اعتبارنامه‌های Google OAuth همراه برنامه وجود ندارند.",
+      "import_extract_ocr_setup_invalid_credentials": "OCR در این build برنامه در دسترس نیست، چون اعتبارنامه‌های Google OAuth همراه برنامه نامعتبرند.",
+      "import_extract_ocr_restricted": "مسیر OCR برای این نوع فایل محدود شده است.",
+      "import_extract_ocr_quota_or_rate_limited": "OCR موقتاً به دلیل سهمیه/محدودیت نرخ مسدود شده است. صبر کنید و دوباره تلاش کنید.",
+      "import_extract_ocr_runtime_error": "هنگام وارد کردن/استخراج با OCR خطای زمان اجرا رخ داد. کنسول را بررسی کنید و دوباره تلاش کنید.",
+      "import_extract_ocr_cancelled": "وارد کردن/استخراج OCR لغو شد.",
+      "import_extract_ocr_cleanup_warning": "OCR پایان یافت، اما پاک‌سازی فایل موقت راه دور ناموفق بود. پوشه Google Drive خود را بررسی کنید.",
+      "import_extract_ocr_apply_pending": "استخراج OCR کامل شد. جریان اعمال پس از استخراج هنوز پیاده‌سازی نشده است.",
+      "import_extract_native_runtime_error": "هنگام وارد کردن/استخراج بومی خطای زمان اجرا رخ داد. کنسول را بررسی کنید و دوباره تلاش کنید.",
+      "import_extract_native_unreadable_or_corrupt": "فایل انتخاب‌شده برای استخراج بومی خواندنی نیست یا خراب است.",
+      "import_extract_native_encrypted_or_password_protected": "PDF انتخاب‌شده رمزگذاری‌شده یا دارای گذرواژه است و به‌صورت بومی قابل استخراج نیست.",
+      "import_extract_native_cancelled": "استخراج بومی لغو شد.",
+      "import_extract_native_unsupported_format": "این قالب فایل توسط مسیر استخراج بومی پشتیبانی نمی‌شود.",
+      "import_extract_native_apply_pending": "استخراج بومی کامل شد. جریان اعمال پس از استخراج هنوز پیاده‌سازی نشده است.",
+      "wip_diseno_skins": "در دست ساخت: انتخابگر پوسته‌ها در نسخه‌ای آینده اینجا باز خواهد شد.",
+      "wip_diseno_crono": "در دست ساخت: تنظیمات کرنومتر شناور در نسخه‌ای آینده اینجا باز خواهد شد.",
+      "wip_diseno_fuentes": "در دست ساخت: انتخابگر فونت‌ها در نسخه‌ای آینده اینجا باز خواهد شد.",
+      "wip_diseno_colores": "در دست ساخت: انتخابگر رنگ‌ها در نسخه‌ای آینده اینجا باز خواهد شد.",
+      "wip_shortcuts": "در دست ساخت: انتخابگر میان‌برهای صفحه‌کلید در نسخه‌ای آینده اینجا باز خواهد شد.",
+      "reading_test_unavailable": "قابلیت آزمون سرعت خواندن در دسترس نیست.",
+      "reading_test_precondition_blocked": "آزمون سرعت خواندن فقط از یک وضعیت پایدار برنامه می‌تواند شروع شود. پنجره‌های فرعی را ببندید و مطمئن شوید کرنومتر متوقف است.",
+      "reading_test_pool_error": "هنگام بررسی مجموعه آزمون سرعت خواندن خطایی رخ داد.",
+      "reading_test_no_matching_files": "هیچ فایل استفاده‌نشده‌ای که با انتخاب فعلی سازگار باشد باقی نمانده است.",
+      "reading_test_current_text_empty": "متن فعلی خالی است. پیش از شروع آزمون با متن فعلی، متنی بارگذاری یا تایپ کنید.",
+      "reading_test_result_invalid": "نتیجه آزمون به WPM معتبر تبدیل نشد. جریان بدون باز کردن مودال پیش‌تنظیم پایان یافت.",
+      "reading_test_result_unavailable": "نتیجه سرعت خواندن نمایش داده نشد. جریان ادامه یافت.",
+      "reading_test_preset_unavailable": "پس از آزمون، مودال پیش‌تنظیم باز نشد.",
+      "reading_test_questions_unavailable": "مودال پرسش‌های درک مطلب باز نشد. جریان پیش از ساخت پیش‌تنظیم پایان یافت.",
+      "reading_test_pool_import_failed": "فایل‌های آزمون سرعت خواندن وارد نشدند.",
+      "reading_test_start_failed": "آزمون سرعت خواندن شروع نشد.",
+      "reading_test_cancelled": "آزمون سرعت خواندن لغو شد.",
+      "reading_test_cancelled_window_closed": "آزمون سرعت خواندن لغو شد، چون یکی از پنجره‌های جلسه بسته شد."
+    },
+    "editor_alerts": {
+      "paste_too_big": "متن برای چسباندن مستقیم بیش از حد بزرگ است. از دکمه‌های پنجره اصلی استفاده کنید.",
+      "drop_too_big": "متن رهاشده بیش از حد بزرگ است. برای افزودن متن بزرگ از دکمه‌های پنجره اصلی استفاده کنید.",
+      "paste_no_text": "کلیپ‌بورد متن ساده ندارد.",
+      "drop_no_text": "کشیدن و رها کردن: متن ساده‌ای شناسایی نشد.",
+      "type_limit": "امکان تایپ متن بیشتر وجود ندارد: به حداکثر اندازه رسیده است.",
+      "paste_limit": "امکان چسباندن متن بیشتر وجود ندارد: به حداکثر اندازه رسیده است.",
+      "drop_limit": "امکان رها کردن متن بیشتر وجود ندارد: به حداکثر اندازه رسیده است.",
+      "paste_truncated": "متن چسبانده‌شده برای جلوگیری از عبور از حداکثر اندازه کوتاه شد.",
+      "drop_truncated": "متن کشیده‌شده از فضای موجود بیشتر بود و کوتاه شد.",
+      "text_truncated": "متن برای جا شدن در حد برنامه کوتاه شد.",
+      "calc_error": "هنگام محاسبه خطایی رخ داد. کنسول را بررسی کنید."
+    },
+    "preset_alerts": {
+      "name_empty": "نام نمی‌تواند خالی باشد.",
+      "wpm_invalid": "WPM باید عددی بین {min} و {max} باشد.",
+      "create_error": "هنگام ساخت پیش‌تنظیم خطایی رخ داد. کنسول را بررسی کنید.",
+      "edit_error": "هنگام ویرایش پیش‌تنظیم خطایی رخ داد. کنسول را بررسی کنید.",
+      "process_error": "هنگام پردازش پیش‌تنظیم خطایی رخ داد. کنسول را بررسی کنید."
+    },
+    "info": {
+      "loading": "در حال بارگذاری...",
+      "missing_content": "هیچ محتوایی برای «{name}» در دسترس نیست.",
+      "external": {
+        "blocked": "پیوند مسدود شد",
+        "error": "خطا در باز کردن پیوند"
+      },
+      "appdoc": {
+        "blocked": "سند مسدود شد",
+        "missing": "سند یافت نشد",
+        "error": "خطا در باز کردن سند"
+      },
+      "acerca_de": {
+        "app_name": "toT",
+        "title": "درباره",
+        "version": {
+          "unavailable": "در دسترس نیست"
+        },
+        "env": {
+          "unavailable": "در دسترس نیست"
+        }
+      },
+      "instrucciones": {
+        "title": "نحوه استفاده"
+      },
+      "links_interes": {
+        "app_name": "toT",
+        "title": "پیوندهای مفید",
+        "section_biblio_label": "منابع کتاب‌شناختی"
+      }
+    }
+  }
+}

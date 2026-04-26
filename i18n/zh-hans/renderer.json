@@ -1,0 +1,505 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "已分析文本的开头和结尾部分：",
+      "selector_empty": "（空）",
+      "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
+        "edit": "⌨",
+        "clear": "🗑",
+        "snapshot_load": "📂",
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
+      },
+      "tooltips": {
+        "import_extract": "从文件导入/提取文本",
+        "import_extract_abort": "中止提取",
+        "overwrite_clipboard": "用剪贴板内容替换当前文本",
+        "append_clipboard": "将剪贴板内容追加到当前文本末尾（新行）",
+        "clipboard_repeat_count": "粘贴重复次数",
+        "edit": "打开完整当前文本窗口",
+        "clear": "清空当前文本",
+        "snapshot_load": "加载文本快照",
+        "snapshot_save": "将当前文本保存为快照",
+        "task_new": "新建任务",
+        "task_load": "加载任务",
+        "cibersino_website": "Cibersino 网站",
+        "cibersino_kofi": "在 Ko-fi 支持我",
+        "new_preset": "创建新预设",
+        "edit_preset": "编辑所选预设",
+        "delete_preset": "删除所选预设",
+        "reset_presets": "恢复默认预设",
+        "help_button": "显示有用提示",
+        "flotante_window": "悬浮窗口"
+      },
+      "aria": {
+        "import_extract": "从文件导入或提取文本",
+        "import_extract_abort": "中止提取",
+        "clipboard_repeat_count": "粘贴重复次数",
+        "wpm_input": "每分钟词数",
+        "wpm_slider": "每分钟词数滑块",
+        "speed_presets": "速度预设",
+        "precise_mode_toggle": "精确模式",
+        "crono_controls": "秒表控件",
+        "crono_display": "秒表显示",
+        "crono_toggle": "启动或暂停秒表",
+        "crono_reset": "重置秒表",
+        "floating_window_toggle": "悬浮窗口",
+        "floating_window_group": "悬浮窗口控件"
+      },
+      "speed": {
+        "title": "阅读速度",
+        "wpm_label": "每分钟词数（WPM）",
+        "new": "N",
+        "edit": "E",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "计数结果",
+        "time": "⏱ 预计阅读时间：{h}h {m}m {s}s",
+        "words": "词数：{n}",
+        "chars_no_space": "字符数（不含空格）：{n}",
+        "chars": "字符数：{n}",
+        "precise_mode": "精确模式",
+        "precise_tooltip": "基于 Intl.Segmenter"
+      },
+      "crono": {
+        "title": "秒表",
+        "speed": "速度：",
+        "controls_label": "秒表控件",
+        "flotante_short": "悬",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "阅读速度测试",
+        "preview_spoiler": "剧透"
+      },
+      "processing": {
+        "import_extract_placeholder": "正在处理提取...",
+        "import_extract_preparing": "正在准备导入/提取路径...",
+        "import_extract_waiting_native": "正在从文件提取文本...",
+        "import_extract_waiting_ocr": "正在执行 OCR 提取...",
+        "import_extract_waiting_ocr_delayed": "正在执行 OCR。有些文件需要更长时间。",
+        "import_extract_elapsed": "已用时间：{time}",
+        "import_extract_drop_here": "拖放文件以导入或提取文本"
+      }
+    },
+    "editor": {
+      "title": "toT — 完整文本",
+      "placeholder": "在此输入或粘贴...",
+      "calc_button": "计算/保存",
+      "calc_while_typing": "自动",
+      "spellcheck": "拼写检查",
+      "text_size_label": "大小",
+      "decrease_text_size": "减小文本大小",
+      "increase_text_size": "增大文本大小",
+      "reset_text_size": "重置文本大小",
+      "text_size_value": "{value} px",
+      "read_progress_label": "已读",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "阅读进度：{value}%",
+      "clear": "🗑",
+      "clear_title": "清空"
+    },
+    "editor_find": {
+      "input_placeholder": "查找...",
+      "input_aria": "在文本中查找",
+      "expand_title": "显示替换控件",
+      "collapse_title": "隐藏替换控件",
+      "replace_placeholder": "替换...",
+      "replace_aria": "替换文本",
+      "prev": "🡩",
+      "next": "🡫",
+      "close": "🗙",
+      "replace": "替换",
+      "replace_all": "全部替换",
+      "prev_title": "上一个匹配项",
+      "next_title": "下一个匹配项",
+      "close_title": "关闭查找栏",
+      "replace_title": "替换当前匹配项",
+      "replace_all_title": "替换所有匹配项",
+      "replace_timeout": "替换超时。请重试。",
+      "status_no_matches": "没有匹配项",
+      "status_empty_query": "输入内容以搜索"
+    },
+    "tasks": {
+      "title": "toT — 任务",
+      "labels": {
+        "name": "名称",
+        "total": "总时间",
+        "empty": "（空）",
+        "search": "搜索",
+        "search_placeholder": "在库中搜索..."
+      },
+      "columns": {
+        "texto": "文本",
+        "tiempo": "时间",
+        "percent": "%",
+        "falta": "余",
+        "tipo": "类型",
+        "enlace": "链接",
+        "comentario": "",
+        "acciones": "操作"
+      },
+      "buttons": {
+        "save": "保存",
+        "delete": "删除",
+        "add_row": "添加行",
+        "open_library": "打开库",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "选择快照",
+        "clear_snapshot": "🗙",
+        "cancel": "取消",
+        "yes": "是",
+        "no": "否"
+      },
+      "tooltips": {
+        "move_up": "上移行",
+        "move_down": "下移行",
+        "delete_row": "删除行",
+        "library_row_save": "保存到库",
+        "library_row_load": "加载行",
+        "library_row_delete": "从库中删除",
+        "snapshot_load": "为此行加载文本快照",
+        "snapshot_select": "为此行选择文本快照",
+        "snapshot_clear": "移除此行所选快照",
+        "link_open": "打开链接",
+        "comment": "添加/编辑评论"
+      },
+      "modals": {
+        "comment_title": "评论",
+        "library_title": "库",
+        "library_save_title": "保存到库",
+        "library_save_question": "包含评论？"
+      },
+      "alerts": {
+        "task_unavailable": "任务功能不可用。",
+        "task_open_error": "无法打开任务编辑器。",
+        "task_load_error": "无法加载任务。",
+        "task_save_error": "无法保存任务。",
+        "task_save_success": "任务已保存。",
+        "task_delete_error": "无法删除任务。",
+        "task_delete_unavailable": "没有可删除的已保存任务。",
+        "task_invalid_file": "任务文件无效。",
+        "task_invalid_rows": "任务中存在无效行。",
+        "task_path_outside": "文件必须位于任务文件夹内。",
+        "name_required": "任务名称为必填项。",
+        "row_text_required": "行文本不能为空。",
+        "library_load_error": "无法加载库。",
+        "library_save_error": "无法保存到库。",
+        "library_save_success": "行已保存到库。",
+        "library_delete_error": "无法从库中删除。",
+        "link_blocked": "链接已被阻止。",
+        "link_missing": "未找到文件。",
+        "link_error": "打开链接时出错。"
+      },
+      "confirm": {
+        "discard_changes": "存在未保存的更改。要放弃它们吗？",
+        "close_unsaved": "存在未保存的更改。要不保存就关闭吗？"
+      }
+    },
+    "snapshot_save_tags": {
+      "title": "保存文本快照",
+      "message": "在选择保存位置前，可选择为此文本快照添加标签。",
+      "labels": {
+        "language": "语言",
+        "type": "类型",
+        "difficulty": "难度"
+      },
+      "empty": {
+        "language": "无语言标签",
+        "type": "无类型标签",
+        "difficulty": "无难度标签"
+      },
+      "buttons": {
+        "confirm": "保存文本快照",
+        "cancel": "取消"
+      },
+      "close_aria": "关闭保存文本快照对话框",
+      "options": {
+        "language": {
+          "es": "西班牙语",
+          "en": "英语",
+          "pt": "葡萄牙语",
+          "fr": "法语",
+          "de": "德语",
+          "it": "意大利语",
+          "arn": "马普切语",
+          "ja": "日语",
+          "ko": "韩语",
+          "ru": "俄语",
+          "tr": "土耳其语",
+          "id": "印度尼西亚语",
+          "hi": "印地语",
+          "bn": "孟加拉语",
+          "ur": "乌尔都语",
+          "ar": "阿拉伯语",
+          "zh_hans": "简体中文",
+          "zh_hant": "繁体中文"
+        },
+        "type": {
+          "fiction": "虚构",
+          "non_fiction": "非虚构"
+        },
+        "difficulty": {
+          "easy": "简单",
+          "normal": "普通",
+          "hard": "困难"
+        }
+      }
+    },
+    "reading_test": {
+      "prestart": {
+        "reminder": "准备开始时，请在悬浮窗口中按 Play（▶）。测试开始后，在读完之前不要按 Pause（⏸）：Pause 会结束测试，而不是暂停计时。只有在想取消测试时才按 Stop/Reset（⏹）。"
+      },
+      "entry": {
+        "title": "阅读速度测试",
+        "intro": "此测试用于通过引导式会话估计你的真实阅读速度。应用会打开文本，并等待你准备好后在悬浮窗口中按 Play（▶）。测试开始后，在读完之前不要按 Pause（⏸）：Pause 会结束测试，而不是暂停计时。只有在想取消测试时才使用 Stop/Reset（⏹）。之后，如果文本包含理解题，你可以查看这些题目；最后，可以根据结果创建一个预设。\n开始前请注意，这些测试文本通常需要 5 到 15 分钟的连续专注，期间不要中断。\n此文本池使用短文本，因此应谨慎解释结果。它不应直接外推到长文本，因为长文本通常会涉及正向因素，例如流畅度和语境积累，也会涉及负向因素，例如心理回顾和疲劳。",
+        "eligible_count": "符合条件的文件：",
+        "pool_exhausted_message": "没有剩余未使用的测试文件。请重置文本池或添加更多文件。",
+        "close_aria": "关闭阅读速度测试对话框",
+        "start_random_confirm": "这会用文本池中一个符合条件的随机文本覆盖当前文本。要继续吗？",
+        "reset_confirm": "这会重置整个测试文本池，并重新将其中所有文件标记为未使用。要继续吗？",
+        "import_summary": "导入完成。已导入：{imported}。跳过的重复项：{skippedDuplicates}。验证失败：{failedValidation}。压缩包条目失败：{failedArchiveEntries}。写入失败：{failedWrites}。",
+        "import_conflict": {
+          "title": "导入文件",
+          "message": "一些导入的文件已存在于文本池中。要如何处理重复项？",
+          "detail": "{count} 个目标文件名已存在于文本池中。",
+          "buttons": {
+            "skip": "跳过重复项",
+            "replace": "替换重复项",
+            "cancel": "取消导入"
+          }
+        },
+        "buttons": {
+          "get_more_files": "获取更多文件",
+          "import_files": "导入文件...",
+          "reset_pool": "R",
+          "show_instructions": "显示说明",
+          "hide_instructions": "隐藏说明",
+          "start_random_text": "使用随机文本开始",
+          "start_current_text": "使用当前文本开始"
+        },
+        "tooltips": {
+          "get_more_files": "从 Google Drive 文件夹获取更多测试文件",
+          "import_files": "从你的设备导入测试文件",
+          "reset_pool": "重置测试文本池",
+          "start_random_text": "用文本池中符合条件的随机文本开始测试",
+          "start_current_text": "用当前文本开始测试"
+        }
+      },
+      "questions": {
+        "title": "阅读理解题",
+        "intro": "回答这些阅读理解题是可选的，不会影响你的最终分数。它们只用于帮助你评估文本难度，以及你的阅读节奏和方式是否让你达到基本理解水平。你的回答不会被保存，也不会发送给开发者或任何其他人。",
+        "random_title": "随机作答基线",
+        "random_value": "随机作答的期望分数：{percentage}%",
+        "feedback_title": "反馈",
+        "feedback_prefix": "投诉联系：",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "评估前必须回答所有问题。",
+        "result_summary": "{total} 题中答对 {correct} 题（{percentage}%）",
+        "chance_at_least_observed": "随机作答至少获得此分数的概率：{percentage}%",
+        "fatal_invalid": "题目载荷无效。",
+        "buttons": {
+          "check": "查看结果",
+          "continue": "继续"
+        }
+      },
+      "result": {
+        "title": "阅读速度结果",
+        "measured_wpm": "测得 WPM",
+        "elapsed_time": "时间",
+        "word_count": "词数",
+        "buttons": {
+          "continue": "继续"
+        }
+      }
+    },
+    "modal_preset": {
+      "title_new": "新建预设",
+      "title_edit": "编辑预设",
+      "heading_new": "创建新预设",
+      "heading_edit": "编辑所选预设",
+      "name": "名称：",
+      "wpm": "WPM：",
+      "description": "描述：",
+      "placeholder": "简短描述...",
+      "char_count": "剩余 {remaining} 个字符",
+      "hint": "自定义预设会保存在用户设置中。",
+      "cancel": "取消",
+      "save": "保存"
+    },
+    "alerts": {
+      "clipboard_too_large": "剪贴板文本过大，无法处理。请减少内容后重试。",
+      "append_too_large": "生成的文本过大，无法处理。请减少内容后重试。",
+      "clipboard_overflow": "剪贴板文本超过允许的最大大小，已被截断。",
+      "append_overflow": "追加文本超过允许的最大大小，已被截断。",
+      "text_limit": "无法添加文本：已达到最大大小。",
+      "clipboard_error": "从剪贴板粘贴时发生错误。请检查控制台。",
+      "append_error": "追加文本时发生错误。请检查控制台。",
+      "clear_error": "清空文本时发生错误。请检查控制台。",
+      "snapshot_save_success": "快照已保存。",
+      "snapshot_save_error": "无法保存快照。",
+      "snapshot_load_success": "快照已加载。",
+      "snapshot_load_error": "无法加载快照。",
+      "snapshot_outside": "快照必须位于快照文件夹内。",
+      "snapshot_truncated": "快照超过最大大小，已被截断。",
+      "snapshot_unavailable": "快照功能不可用。",
+      "modal_unavailable": "模态窗口功能不可用。",
+      "edit_none": "没有选择要编辑的预设。",
+      "preset_not_found": "缓存中找不到所选预设。",
+      "edit_unavailable": "编辑功能不可用。",
+      "edit_error": "尝试编辑预设时发生错误。请检查控制台。",
+      "delete_error": "删除预设时发生错误。请检查控制台。",
+      "restore_error": "恢复预设时发生错误。请检查控制台。",
+      "open_presets_unsupported": "无法在此环境中打开预设文件夹。",
+      "open_presets_error": "尝试打开预设文件夹时发生错误。请检查控制台。",
+      "open_presets_fail": "无法打开默认预设文件夹。请查看控制台了解更多详情。",
+      "import_extract_error": "启动导入/提取时发生错误。请检查控制台。",
+      "import_extract_precondition_blocked": "要启动导入/提取，请关闭所有次级窗口并停止秒表。",
+      "import_extract_precondition_error": "检查导入/提取前置条件时发生错误。请检查控制台。",
+      "import_extract_processing_locked": "导入/提取正在处理。主窗口交互会被锁定，直到处理结束或你中止操作。",
+      "import_extract_abort_error": "请求中止导入/提取时发生错误。请检查控制台。",
+      "import_extract_cancelled": "导入/提取已取消。",
+      "import_extract_drop_single_file_only": "请只拖放一个文件来启动导入/提取。",
+      "import_extract_drop_invalid_file": "拖放的项目不是有效的本地文件。",
+      "import_extract_route_choice_required": "继续提取此 PDF 前，需要选择提取路径。",
+      "import_extract_route_choice_title": "选择提取路径",
+      "import_extract_route_choice_message": "此 PDF 可使用两种提取路径。请选择一种继续。",
+      "import_extract_route_choice_native_button": "使用原生提取",
+      "import_extract_route_choice_ocr_button": "使用 OCR",
+      "import_extract_route_choice_cancel_button": "取消",
+      "import_extract_route_choice_close_aria": "关闭提取路径对话框",
+      "import_extract_apply_modal_title": "应用提取的文本",
+      "import_extract_apply_modal_message": "选择如何应用提取的文本。",
+      "import_extract_apply_modal_elapsed": "执行时间：{time}",
+      "import_extract_apply_modal_repeat_label": "重复次数",
+      "import_extract_apply_modal_overwrite_button": "覆盖",
+      "import_extract_apply_modal_append_button": "追加",
+      "import_extract_apply_modal_cancel_button": "取消",
+      "import_extract_apply_modal_close_aria": "关闭应用提取文本对话框",
+      "import_extract_apply_error": "应用提取文本时发生错误。请检查控制台并重试。",
+      "import_extract_apply_too_large": "生成的文本过大，无法处理。请减少重复次数后重试。",
+      "import_extract_apply_text_limit": "无法追加提取的文本：已达到最大大小。",
+      "import_extract_apply_truncated": "应用的提取文本超过限制，已被截断。",
+      "import_extract_prepare_invalid": "已准备好的导入/提取请求不再有效。请重新启动流程。",
+      "import_extract_ocr_unavailable": "OCR 不可用。请检查设置/授权状态后重试。",
+      "import_extract_ocr_activation_required": "需要激活 OCR。请登录 Google OCR 后重试。",
+      "import_extract_ocr_activation_disclosure_title": "查看 Google OCR 激活说明",
+      "import_extract_ocr_activation_disclosure_intro": "toT 使用 Google 服务进行 OCR。如果继续，将打开浏览器以便你授权此应用。",
+      "import_extract_ocr_activation_disclosure_selected_files": "只有你选择用于 OCR 的文件会发送给 Google。",
+      "import_extract_ocr_activation_disclosure_local_storage": "此应用会在本应用实例中保存由应用管理的 Google OAuth OCR 凭据和本地 Google 令牌状态。",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "导出后，应用会尝试从你的 Google Drive 中移除临时 Google 文档。",
+      "import_extract_ocr_activation_disclosure_disconnect": "以后你可以通过“偏好设置 > 断开 Google OCR 连接”来断开此连接。",
+      "import_extract_ocr_activation_disclosure_proceed_button": "继续使用 Google",
+      "import_extract_ocr_activation_disclosure_cancel_button": "取消",
+      "import_extract_ocr_activation_disclosure_privacy_link": "打开隐私政策",
+      "import_extract_ocr_activation_disclosure_close_aria": "关闭 Google OCR 激活对话框",
+      "import_extract_ocr_activation_success": "OCR 激活完成。正在重试提取。",
+      "import_extract_ocr_activation_cancelled": "OCR 激活已取消。导入/提取未继续。",
+      "import_extract_ocr_token_state_invalid": "已保存的 Google OCR 登录状态无效。请重新连接 Google OCR 后重试。",
+      "import_extract_ocr_activation_failed": "OCR 激活失败。请检查设置/授权状态后重试。",
+      "import_extract_ocr_disconnect_success": "Google OCR 已断开连接。已撤销保存的 Google 令牌，并移除了本地登录状态。",
+      "import_extract_ocr_disconnect_not_connected": "Google OCR 当前未在此应用实例中连接。",
+      "import_extract_ocr_disconnect_failed": "断开 Google OCR 连接失败。已保存的登录状态未被移除。",
+      "import_extract_ocr_connectivity_failed": "OCR 需要互联网连接。请检查连接后重试。",
+      "import_extract_ocr_setup_missing_credentials": "此应用构建中的 OCR 不可用，因为缺少随应用打包的 Google OAuth 凭据。",
+      "import_extract_ocr_setup_invalid_credentials": "此应用构建中的 OCR 不可用，因为随应用打包的 Google OAuth 凭据无效。",
+      "import_extract_ocr_restricted": "此文件类型的 OCR 路径受限。",
+      "import_extract_ocr_quota_or_rate_limited": "OCR 因配额/速率限制而暂时受阻。请稍后重试。",
+      "import_extract_ocr_runtime_error": "导入/提取过程中发生 OCR 运行时错误。请检查控制台并重试。",
+      "import_extract_ocr_cancelled": "OCR 提取已取消。",
+      "import_extract_ocr_cleanup_warning": "OCR 已完成，但临时远程文件清理失败。请检查你的 Google Drive 文件夹。",
+      "import_extract_ocr_apply_pending": "OCR 提取已完成。后续应用结果流程仍待实现。",
+      "import_extract_native_runtime_error": "导入/提取过程中发生原生提取运行时错误。请检查控制台并重试。",
+      "import_extract_native_unreadable_or_corrupt": "所选文件无法由原生提取读取，或文件已损坏。",
+      "import_extract_native_encrypted_or_password_protected": "所选 PDF 已加密或受密码保护，无法通过原生路径提取。",
+      "import_extract_native_cancelled": "原生提取已取消。",
+      "import_extract_native_unsupported_format": "原生提取路径不支持此文件格式。",
+      "import_extract_native_apply_pending": "原生提取已完成。后续应用结果流程仍待实现。",
+      "wip_diseno_skins": "WIP：皮肤选择器将在未来版本中从这里打开。",
+      "wip_diseno_crono": "WIP：悬浮秒表设置将在未来版本中从这里打开。",
+      "wip_diseno_fuentes": "WIP：字体选择器将在未来版本中从这里打开。",
+      "wip_diseno_colores": "WIP：颜色选择器将在未来版本中从这里打开。",
+      "wip_shortcuts": "WIP：键盘快捷键选择器将在未来版本中从这里打开。",
+      "reading_test_unavailable": "阅读速度测试功能不可用。",
+      "reading_test_precondition_blocked": "阅读速度测试只能在应用处于稳定状态时启动。请关闭次级窗口，并确保秒表已停止。",
+      "reading_test_pool_error": "检查阅读速度测试文本池时发生错误。",
+      "reading_test_no_matching_files": "没有剩余未使用且符合当前选择的测试文件。",
+      "reading_test_current_text_empty": "当前文本为空。请先加载或输入文本，再使用当前文本开始测试。",
+      "reading_test_result_invalid": "测试结果无法转换为有效的 WPM。流程结束，未打开预设模态窗口。",
+      "reading_test_result_unavailable": "无法显示阅读速度结果。流程已继续。",
+      "reading_test_preset_unavailable": "测试后无法打开预设模态窗口。",
+      "reading_test_questions_unavailable": "无法打开理解题模态窗口。流程在创建预设前结束。",
+      "reading_test_pool_import_failed": "无法导入阅读速度测试文件。",
+      "reading_test_start_failed": "无法启动阅读速度测试。",
+      "reading_test_cancelled": "阅读速度测试已取消。",
+      "reading_test_cancelled_window_closed": "阅读速度测试已取消，因为其中一个会话窗口被关闭。"
+    },
+    "editor_alerts": {
+      "paste_too_big": "文本过大，无法直接粘贴。请使用主窗口按钮。",
+      "drop_too_big": "拖放的文本过大。请使用主窗口按钮。",
+      "paste_no_text": "剪贴板不包含纯文本。",
+      "drop_no_text": "拖放：未检测到纯文本。",
+      "type_limit": "无法继续输入文本：已达到最大大小。",
+      "paste_limit": "无法继续粘贴文本：已达到最大大小。",
+      "drop_limit": "无法继续拖放文本：已达到最大大小。",
+      "paste_truncated": "粘贴的文本已被截断，以避免超过最大值。",
+      "drop_truncated": "拖入的文本超过可用空间，已被截断。",
+      "text_truncated": "文本已被截断，以符合应用最大限制。",
+      "calc_error": "计算时发生错误。请检查控制台。"
+    },
+    "preset_alerts": {
+      "name_empty": "名称不能为空。",
+      "wpm_invalid": "WPM 必须是 {min} 到 {max} 之间的数字。",
+      "create_error": "创建预设时发生错误。请检查控制台。",
+      "edit_error": "编辑预设时发生错误。请检查控制台。",
+      "process_error": "处理预设时发生错误。请检查控制台。"
+    },
+    "info": {
+      "loading": "正在加载...",
+      "missing_content": "没有可用于“{name}”的内容。",
+      "external": {
+        "blocked": "链接已被阻止",
+        "error": "打开链接时出错"
+      },
+      "appdoc": {
+        "blocked": "文档已被阻止",
+        "missing": "未找到文档",
+        "error": "打开文档时出错"
+      },
+      "acerca_de": {
+        "app_name": "toT",
+        "title": "关于",
+        "version": {
+          "unavailable": "不可用"
+        },
+        "env": {
+          "unavailable": "不可用"
+        }
+      },
+      "instrucciones": {
+        "title": "使用手册"
+      },
+      "links_interes": {
+        "app_name": "toT",
+        "title": "相关链接",
+        "section_biblio_label": "参考文献"
+      }
+    }
+  }
+}

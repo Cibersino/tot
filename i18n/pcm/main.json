@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "How to use di app",
+      "guia_basica": "Basic guide",
+      "instrucciones_completas": "Full instructions",
+      "faq": "Frequently asked questions (FAQ)",
+      "preferencias": "Preferences",
+      "idioma": "Language",
+      "diseno": "Design",
+      "skins": "Skins",
+      "crono_flotante": "Floating stopwatch",
+      "fuentes": "Fonts",
+      "colores": "Colours",
+      "shortcuts": "Keyboard shortcuts",
+      "presets_por_defecto": "Default presets",
+      "disconnect_google_ocr": "Disconnect Google OCR",
+      "links_interes": "Useful links",
+      "ayuda": "?",
+      "actualizar_version": "Update to latest version",
+      "acerca_de": "About",
+      "desarrollo": "Development",
+      "recargar": "Reload",
+      "forcereload": "Force reload",
+      "toggle_devtools": "Toggle DevTools",
+      "language": {
+        "empty": "No language dey available",
+        "invalid": "Language list no valid"
+      }
+    },
+    "dialog": {
+      "ok": "OK",
+      "continue_button": "Yes, continue",
+      "cancel_button": "No, cancel",
+      "snapshot_overwrite_save": "Overwrite di snapshot file wey dey already?",
+      "snapshot_overwrite_load": "Replace current text with di selected snapshot \"{name}\"?",
+      "task_delete_confirm": "Delete di task list \"{name}\"?",
+      "task_library_row_save_overwrite": "Entry wey get di name \"{name}\" dey already for library. Overwrite am?",
+      "task_library_row_delete": "Delete \"{name}\" from library?",
+      "task_link_confirm": "Open dis link?",
+      "task_link_trust_host": "Trust dis host from now on",
+      "task_path_confirm": "Open dis local file?",
+      "disconnect_google_ocr_title": "Disconnect Google OCR",
+      "disconnect_google_ocr_confirm": "Disconnect Google OCR?",
+      "disconnect_google_ocr_detail": "Dis go revoke di saved Google OCR sign-in token and delete di local token file from dis app. Local Google OAuth credentials wey di app manage fit remain so OCR fit reconnect later.",
+      "delete_preset_confirm": "Delete preset \"{name}\"?",
+      "delete_preset_none": "No preset selected to delete.",
+      "restore_defaults_confirm": "Restore default presets (general and language \"{lang}\") to original? Dis go revert removals and changes to default presets for di active language.",
+      "edit_preset_none": "No preset selected to edit.",
+      "edit_preset_confirm": "You sure say you wan replace \"{name}\" with di current preset?",
+      "update_title": "Update dey available",
+      "update_message": "New version {remote} dey available. Current: {local}. Download now?",
+      "update_download": "Download",
+      "update_later": "Later",
+      "update_up_to_date_title": "You dey up to date.",
+      "update_up_to_date_message": "You already get di latest version ({local}).",
+      "update_failed_title": "Update check fail.",
+      "update_failed_message": "Check your connection and try again."
+    }
+  }
+}

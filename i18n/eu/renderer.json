@@ -1,0 +1,506 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Aztertutako testuaren lehen eta azken zatia:",
+      "selector_empty": "(hutsik)",
+      "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
+        "edit": "⌨",
+        "clear": "🗑",
+        "snapshot_load": "📂",
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
+      },
+      "tooltips": {
+        "import_extract": "Inportatu/erauzi testua fitxategitik",
+        "import_extract_abort": "Bertan behera utzi erauzketa",
+        "overwrite_clipboard": "Ordeztu uneko testua arbeleko edukiarekin",
+        "append_clipboard": "Gehitu arbeleko testua uneko testuaren amaieran (lerro berria)",
+        "clipboard_repeat_count": "Itsaste-errepikapenak",
+        "edit": "Ireki uneko testu osoaren leihoa",
+        "clear": "Hustu uneko testua",
+        "snapshot_load": "Kargatu testu-snapshota",
+        "snapshot_save": "Gorde uneko testua snapshot batean",
+        "task_new": "Ataza berria",
+        "task_load": "Kargatu ataza",
+        "cibersino_website": "Cibersino webgunea",
+        "cibersino_kofi": "Babestu Ko-fi-n",
+        "new_preset": "Sortu aurrezarpen berria",
+        "edit_preset": "Editatu hautatutako aurrezarpena",
+        "delete_preset": "Ezabatu hautatutako aurrezarpena",
+        "reset_presets": "Leheneratu aurrezarpen lehenetsiak",
+        "help_button": "Erakutsi aholku erabilgarria",
+        "flotante_window": "Leiho flotatzailea"
+      },
+      "aria": {
+        "import_extract": "Inportatu edo erauzi testua fitxategitik",
+        "import_extract_abort": "Bertan behera utzi erauzketa",
+        "clipboard_repeat_count": "Itsaste-errepikapenak",
+        "wpm_input": "Hitzak minutuko",
+        "wpm_slider": "Hitzak minutuko balioaren graduatzailea",
+        "speed_presets": "Abiadura-aurrezarpenak",
+        "precise_mode_toggle": "Modu zehatza",
+        "crono_controls": "Kronometroaren kontrolak",
+        "crono_display": "Kronometroaren pantaila",
+        "crono_toggle": "Hasi edo pausatu kronometroa",
+        "crono_reset": "Berrezarri kronometroa",
+        "floating_window_toggle": "Leiho flotatzailea",
+        "floating_window_group": "Leiho flotatzailearen kontrolak"
+      },
+      "speed": {
+        "title": "IRAKURKETA-ABIADURA",
+        "wpm_label": "hitz minutuko (WPM)",
+        "new": "N",
+        "edit": "E",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "ZENBAKETAREN EMAITZAK",
+        "time": "⏱ Irakurtzeko denbora estimatua: {h}h {m}m {s}s",
+        "words": "Hitzak: {n}",
+        "chars_no_space": "Karaktereak (zuriunerik gabe): {n}",
+        "chars": "Karaktereak: {n}",
+        "precise_mode": "Modu zehatza",
+        "precise_tooltip": "Intl.Segmenter-en oinarritua"
+      },
+      "crono": {
+        "title": "KRONOMETROA",
+        "speed": "Abiadura:",
+        "controls_label": "Kronometroaren kontrolak",
+        "flotante_short": "LF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Irakurketa-abiaduraren testa",
+        "preview_spoiler": "Spoiler"
+      },
+      "processing": {
+        "import_extract_placeholder": "Testua erauzten...",
+        "import_extract_preparing": "Inportatu/erauzi bidea prestatzen...",
+        "import_extract_waiting_native": "Fitxategitik testua erauzten...",
+        "import_extract_waiting_ocr": "OCR erauzketa exekutatzen...",
+        "import_extract_waiting_ocr_delayed": "OCR exekutatzen. Fitxategi batzuek denbora gehiago behar dute.",
+        "import_extract_elapsed": "Igarotako denbora: {time}",
+        "import_extract_drop_here": "Jaregin fitxategia testua inportatzeko edo erauzteko"
+      }
+    },
+    "editor": {
+      "title": "toT — Testu osoa",
+      "placeholder": "Idatzi edo itsatsi hemen...",
+      "calc_button": "KALK/GORDE",
+      "calc_while_typing": "Auto",
+      "spellcheck": "Ortografia",
+      "text_size_label": "Tamaina",
+      "decrease_text_size": "Txikitu testuaren tamaina",
+      "increase_text_size": "Handitu testuaren tamaina",
+      "reset_text_size": "Berrezarri testuaren tamaina",
+      "text_size_value": "{value} px",
+      "read_progress_label": "Irakurria",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Irakurketaren aurrerapena: {value}%",
+      "clear": "🗑",
+      "clear_title": "Hustu"
+    },
+    "editor_find": {
+      "input_placeholder": "Bilatu...",
+      "input_aria": "Bilatu testuan",
+      "expand_title": "Erakutsi ordezteko kontrolak",
+      "collapse_title": "Ezkutatu ordezteko kontrolak",
+      "replace_placeholder": "Ordeztu...",
+      "replace_aria": "Ordezko testua",
+      "prev": "🡩",
+      "next": "🡫",
+      "close": "🗙",
+      "replace": "Ordeztu",
+      "replace_all": "Ordeztu dena",
+      "prev_title": "Aurreko bat-etortzea",
+      "next_title": "Hurrengo bat-etortzea",
+      "close_title": "Itxi bilaketa-barra",
+      "replace_title": "Ordeztu uneko bat-etortzea",
+      "replace_all_title": "Ordeztu bat-etortze guztiak",
+      "replace_timeout": "Ordezteko eragiketak denbora gehiegi hartu du. Saiatu berriro.",
+      "status_no_matches": "Ez dago bat-etortzerik",
+      "status_empty_query": "Idatzi bilatzeko"
+    },
+    "tasks": {
+      "title": "toT — Atazak",
+      "labels": {
+        "name": "Izena",
+        "total": "DENBORA GUZTIRA",
+        "empty": "(hutsik)",
+        "search": "Bilatu",
+        "search_placeholder": "Bilatu liburutegian..."
+      },
+      "columns": {
+        "texto": "Testua",
+        "tiempo": "Denbora",
+        "percent": "%",
+        "falta": "G",
+        "tipo": "Mota",
+        "enlace": "Esteka",
+        "comentario": "",
+        "acciones": "Ekintzak"
+      },
+      "buttons": {
+        "save": "Gorde",
+        "delete": "Ezabatu",
+        "add_row": "Gehitu errenkada",
+        "open_library": "Ireki liburutegia",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "Hautatu snapshota",
+        "clear_snapshot": "🗙",
+        "cancel": "Utzi",
+        "yes": "Bai",
+        "no": "Ez"
+      },
+      "tooltips": {
+        "move_up": "Eraman gora",
+        "move_down": "Eraman behera",
+        "delete_row": "Ezabatu errenkada",
+        "library_row_save": "Gorde liburutegian",
+        "library_row_load": "Kargatu errenkada",
+        "library_row_delete": "Ezabatu liburutegitik",
+        "snapshot_load": "Kargatu testu-snapshot bat errenkada honetarako",
+        "snapshot_select": "Hautatu testu-snapshot bat errenkada honetarako",
+        "snapshot_clear": "Kendu hautatutako snapshota errenkada honetatik",
+        "link_open": "Ireki esteka",
+        "comment": "Gehitu/editatu iruzkina"
+      },
+      "modals": {
+        "comment_title": "Iruzkina",
+        "library_title": "Liburutegia",
+        "library_save_title": "Gorde liburutegian",
+        "library_save_question": "Iruzkina sartu?"
+      },
+      "alerts": {
+        "task_unavailable": "Atazen funtzionalitatea ez dago erabilgarri.",
+        "task_open_error": "Ezin izan da ataza-editorea ireki.",
+        "task_load_error": "Ezin izan da ataza kargatu.",
+        "task_save_error": "Ezin izan da ataza gorde.",
+        "task_save_success": "Ataza gordeta.",
+        "task_delete_error": "Ezin izan da ataza ezabatu.",
+        "task_delete_unavailable": "Ez dago ezabatzeko gordetako atazarik.",
+        "task_invalid_file": "Ataza-fitxategi baliogabea.",
+        "task_invalid_rows": "Errenkada baliogabeak daude atazan.",
+        "task_path_outside": "Fitxategiak atazen karpetaren barruan egon behar du.",
+        "name_required": "Atazaren izena nahitaezkoa da.",
+        "row_text_required": "Errenkadako testua ezin da hutsik egon.",
+        "library_load_error": "Ezin izan da liburutegia kargatu.",
+        "library_save_error": "Ezin izan da liburutegian gorde.",
+        "library_save_success": "Errenkada liburutegian gordeta.",
+        "library_delete_error": "Ezin izan da liburutegitik ezabatu.",
+        "link_blocked": "Esteka blokeatuta.",
+        "link_missing": "Fitxategia ez da aurkitu.",
+        "link_error": "Errorea esteka irekitzean."
+      },
+      "confirm": {
+        "discard_changes": "Gorde gabeko aldaketak daude. Baztertu nahi dituzu?",
+        "close_unsaved": "Gorde gabeko aldaketak daude. Itxi gorde gabe?"
+      }
+    },
+    "snapshot_save_tags": {
+      "title": "Gorde testu-snapshota",
+      "message": "Nahi baduzu, etiketa ezazu testu-snapshot hau non gorde aukeratu aurretik.",
+      "labels": {
+        "language": "Hizkuntza",
+        "type": "Mota",
+        "difficulty": "Zailtasuna"
+      },
+      "empty": {
+        "language": "Hizkuntza-etiketarik gabe",
+        "type": "Mota-etiketarik gabe",
+        "difficulty": "Zailtasun-etiketarik gabe"
+      },
+      "buttons": {
+        "confirm": "Gorde testu-snapshota",
+        "cancel": "Utzi"
+      },
+      "close_aria": "Itxi testu-snapshota gordetzeko elkarrizketa",
+      "options": {
+        "language": {
+          "es": "Gaztelania",
+          "en": "Ingelesa",
+          "eu": "Euskara",
+          "pt": "Portugesa",
+          "fr": "Frantsesa",
+          "de": "Alemana",
+          "it": "Italiera",
+          "arn": "Mapudungun",
+          "ja": "Japoniera",
+          "ko": "Koreera",
+          "ru": "Errusiera",
+          "tr": "Turkiera",
+          "id": "Indonesiera",
+          "hi": "Hindia",
+          "bn": "Bengalera",
+          "ur": "Urdua",
+          "ar": "Arabiera",
+          "zh_hans": "Txinera sinplifikatua",
+          "zh_hant": "Txinera tradizionala"
+        },
+        "type": {
+          "fiction": "Fikzioa",
+          "non_fiction": "Ez-fikzioa"
+        },
+        "difficulty": {
+          "easy": "Erraza",
+          "normal": "Normala",
+          "hard": "Zaila"
+        }
+      }
+    },
+    "reading_test": {
+      "prestart": {
+        "reminder": "Sakatu Play (▶) Leiho Flotatzailean hasteko prest zaudenean. Testa hasi ondoren, ez sakatu Pausa (⏸) irakurtzen amaitu arte: Pausak testa amaitzen du; ez du kronometroa pausatzen. Sakatu Gelditu/Berrezarri (⏹) testa bertan behera utzi nahi baduzu soilik."
+      },
+      "entry": {
+        "title": "Irakurketa-abiaduraren testa",
+        "intro": "Test honek zure benetako irakurketa-abiadura kalkulatzeko balio du saio gidatu baten bidez. Aplikazioak testua irekiko du eta hasteko prest zaudenean Leiho Flotatzailean Play (▶) sakatu arte itxarongo du. Testa hasi ondoren, ez sakatu Pausa (⏸) irakurtzen amaitu arte: Pausak testa amaitzen du; ez du kronometroa pausatzen. Erabili Gelditu/Berrezarri (⏹) testa bertan behera utzi nahi baduzu soilik. Ondoren, testuak ulermen-galderak baditu, berrikusi ahal izango dituzu eta, amaieran, emaitzarekin aurrezarpen bat sortu ahal izango duzu.\nHasi aurretik, kontuan izan probako testu hauek normalean 5 eta 15 minutu arteko kontzentrazio jarraitua eskatzen dutela, etenik gabe.\nPool honek testu laburrak erabiltzen ditu; beraz, interpretatu emaitza zuhurtziaz. Ez litzateke zuzenean testu luzeetara estrapolatu behar, haietan normalean faktore positiboak —jarioa eta testuingurua metatzea— eta faktore negatiboak —buruko laburbilketa eta nekea— agertzen baitira.",
+        "eligible_count": "Fitxategi hautagarriak:",
+        "pool_exhausted_message": "Ez da erabili gabeko test-fitxategirik geratzen. Berrezarri poola edo gehitu fitxategi gehiago.",
+        "close_aria": "Itxi irakurketa-abiaduraren testaren elkarrizketa",
+        "start_random_confirm": "Honek uneko testua pool-eko ausazko testu hautagarri batekin gainidatziko du. Jarraitu nahi duzu?",
+        "reset_confirm": "Honek testaren pool osoa berrezarriko du eta haren fitxategi guztiak berriz erabili gabe gisa markatuko ditu. Jarraitu nahi duzu?",
+        "import_summary": "Inportazioa amaituta. Inportatuak: {imported}. Bikoiztuak saltatuta: {skippedDuplicates}. Balidazio hutsak: {failedValidation}. Konprimitutako artxiboko sarrera hutsak: {failedArchiveEntries}. Idazketa hutsak: {failedWrites}.",
+        "import_conflict": {
+          "title": "Inportatu fitxategiak",
+          "message": "Inportatutako fitxategi batzuk dagoeneko badaude poolean. Nola kudeatu nahi dituzu bikoiztuak?",
+          "detail": "{count} helburuko fitxategi-izen badago/badaude dagoeneko poolean.",
+          "buttons": {
+            "skip": "Saltatu bikoiztuak",
+            "replace": "Ordeztu bikoiztuak",
+            "cancel": "Utzi inportazioa"
+          }
+        },
+        "buttons": {
+          "get_more_files": "Lortu fitxategi gehiago",
+          "import_files": "Inportatu fitxategiak...",
+          "reset_pool": "R",
+          "show_instructions": "Erakutsi argibideak",
+          "hide_instructions": "Ezkutatu argibideak",
+          "start_random_text": "Hasi ausazko testuarekin",
+          "start_current_text": "Hasi uneko testuarekin"
+        },
+        "tooltips": {
+          "get_more_files": "Lortu test-fitxategi gehiago Google Drive karpetatik",
+          "import_files": "Inportatu test-fitxategiak zure gailutik",
+          "reset_pool": "Berrezarri testaren poola",
+          "start_random_text": "Hasi testa pool-eko ausazko testu hautagarri batekin",
+          "start_current_text": "Hasi testa uneko testuarekin"
+        }
+      },
+      "questions": {
+        "title": "Irakurmen-galderak",
+        "intro": "Irakurmen-galdera hauei erantzutea aukerakoa da eta ez dio azken puntuazioari eragiten. Testuaren zailtasuna ebaluatzen laguntzeko eta zure irakurketa-erritmoak eta estiloak oinarrizko ulermen-maila lortzeko aukera eman dizuten ikusteko balio dute soilik. Zure erantzunak ez dira gordetzen eta ez zaizkie garatzaileei edo beste inori bidaltzen.",
+        "random_title": "Ausaz asmatzearen oinarria",
+        "random_value": "Ausaz erantzunda espero den puntuazioa: {percentage}%",
+        "feedback_title": "Feedbacka",
+        "feedback_prefix": "Kexetarako:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Galdera guztiei erantzun behar diezu ebaluatu aurretik.",
+        "result_summary": "{correct} zuzen {total}-tik ({percentage}%)",
+        "chance_at_least_observed": "Ausaz erantzunda gutxienez puntuazio hori lortzeko probabilitatea: {percentage}%",
+        "fatal_invalid": "Galderen payload-a baliogabea da.",
+        "buttons": {
+          "check": "Ikusi emaitza",
+          "continue": "Jarraitu"
+        }
+      },
+      "result": {
+        "title": "Irakurketa-abiaduraren emaitza",
+        "measured_wpm": "Neurtutako WPM",
+        "elapsed_time": "Denbora",
+        "word_count": "Hitzak",
+        "buttons": {
+          "continue": "Jarraitu"
+        }
+      }
+    },
+    "modal_preset": {
+      "title_new": "Aurrezarpen berria",
+      "title_edit": "Editatu aurrezarpena",
+      "heading_new": "Sortu aurrezarpen berria",
+      "heading_edit": "Editatu hautatutako aurrezarpena",
+      "name": "Izena:",
+      "wpm": "WPM:",
+      "description": "Deskribapena:",
+      "placeholder": "Deskribapen laburra...",
+      "char_count": "{remaining} karaktere falta dira",
+      "hint": "Aurrezarpen pertsonalizatuak erabiltzailearen ezarpenetan gordetzen dira.",
+      "cancel": "Utzi",
+      "save": "Gorde"
+    },
+    "alerts": {
+      "clipboard_too_large": "Arbeleko testua handiegia da prozesatzeko. Laburtu eta saiatu berriro.",
+      "append_too_large": "Emaitzako testua handiegia da prozesatzeko. Laburtu eta saiatu berriro.",
+      "clipboard_overflow": "Arbeleko testuak baimendutako gehieneko tamaina gainditzen du eta moztu egin da.",
+      "append_overflow": "Gehitutako testuak baimendutako gehieneko tamaina gainditzen du eta moztu egin da.",
+      "text_limit": "Ezin da testurik gehitu: gehieneko tamainara iritsi da.",
+      "clipboard_error": "Errorea gertatu da arbeletik itsastean. Begiratu kontsola.",
+      "append_error": "Errorea gertatu da testua gehitzean. Begiratu kontsola.",
+      "clear_error": "Errorea gertatu da testua hustean. Begiratu kontsola.",
+      "snapshot_save_success": "Snapshota gordeta.",
+      "snapshot_save_error": "Ezin izan da snapshota gorde.",
+      "snapshot_load_success": "Snapshota kargatuta.",
+      "snapshot_load_error": "Ezin izan da snapshota kargatu.",
+      "snapshot_outside": "Snapshotak snapshots karpetaren barruan egon behar du.",
+      "snapshot_truncated": "Snapshotak gehieneko tamaina gainditzen du eta moztu egin da.",
+      "snapshot_unavailable": "Snapshoten funtzioa ez dago erabilgarri.",
+      "modal_unavailable": "Modalaren funtzionalitatea ez dago erabilgarri.",
+      "edit_none": "Ez dago editatzeko aurrezarpenik hautatuta.",
+      "preset_not_found": "Hautatutako aurrezarpena ez da cachean aurkitu.",
+      "edit_unavailable": "Editatzeko funtzionalitatea ez dago erabilgarri.",
+      "edit_error": "Errorea gertatu da aurrezarpena editatzean. Begiratu kontsola.",
+      "delete_error": "Errorea gertatu da aurrezarpena ezabatzean. Begiratu kontsola.",
+      "restore_error": "Errorea gertatu da aurrezarpenak leheneratzean. Begiratu kontsola.",
+      "open_presets_unsupported": "Ezin da aurrezarpenen karpeta ireki ingurune honetan.",
+      "open_presets_error": "Errorea gertatu da aurrezarpenen karpeta irekitzean. Begiratu kontsola.",
+      "open_presets_fail": "Ezin izan da aurrezarpen lehenetsien karpeta ireki. Begiratu kontsola xehetasun gehiagorako.",
+      "import_extract_error": "Errorea gertatu da inportatu/erauzi prozesua hastean. Begiratu kontsola.",
+      "import_extract_precondition_blocked": "Inportatu/erauzi hasteko, itxi bigarren mailako leiho guztiak eta gelditu kronometroa.",
+      "import_extract_precondition_error": "Errorea gertatu da inportatu/erauzi aurrebaldintzak egiaztatzean. Begiratu kontsola.",
+      "import_extract_processing_locked": "Inportatu/erauzi prozesatzen ari da. Leiho nagusiko interakzioak blokeatuta daude prozesua amaitu arte edo bertan behera utzi arte.",
+      "import_extract_abort_error": "Errorea gertatu da inportatu/erauzi bertan behera uzteko eskaeran. Begiratu kontsola.",
+      "import_extract_cancelled": "Inportatu/erauzi bertan behera utzi da.",
+      "import_extract_drop_single_file_only": "Jaregin fitxategi bakar bat inportatu/erauzi hasteko.",
+      "import_extract_drop_invalid_file": "Jaregindako elementua ez da fitxategi lokal balioduna.",
+      "import_extract_route_choice_required": "PDF honetarako bidea aukeratu behar da erauzketarekin jarraitu aurretik.",
+      "import_extract_route_choice_title": "Aukeratu erauzketa-bidea",
+      "import_extract_route_choice_message": "PDF honetarako bi erauzketa-bideak daude erabilgarri. Aukeratu bat jarraitzeko.",
+      "import_extract_route_choice_native_button": "Erabili natiboa",
+      "import_extract_route_choice_ocr_button": "Erabili OCR",
+      "import_extract_route_choice_cancel_button": "Utzi",
+      "import_extract_route_choice_close_aria": "Itxi erauzketa-bidearen elkarrizketa",
+      "import_extract_apply_modal_title": "Aplikatu erauzitako testua",
+      "import_extract_apply_modal_message": "Aukeratu nola aplikatu erauzitako testua.",
+      "import_extract_apply_modal_elapsed": "Exekuzio-denbora: {time}",
+      "import_extract_apply_modal_repeat_label": "Errepikapenak",
+      "import_extract_apply_modal_overwrite_button": "Gainidatzi",
+      "import_extract_apply_modal_append_button": "Gehitu",
+      "import_extract_apply_modal_cancel_button": "Utzi",
+      "import_extract_apply_modal_close_aria": "Itxi erauzitako testua aplikatzeko elkarrizketa",
+      "import_extract_apply_error": "Errorea gertatu da erauzitako testua aplikatzean. Begiratu kontsola eta saiatu berriro.",
+      "import_extract_apply_too_large": "Emaitzako testua handiegia da prozesatzeko. Murriztu errepikapenak eta saiatu berriro.",
+      "import_extract_apply_text_limit": "Ezin da erauzitako testua gehitu: gehieneko tamainara iritsi da.",
+      "import_extract_apply_truncated": "Aplikatutako erauzitako testuak muga gainditzen zuen eta moztu egin da.",
+      "import_extract_prepare_invalid": "Prestatutako inportatu/erauzi eskaera ez da jada baliozkoa. Hasi fluxua berriro.",
+      "import_extract_ocr_unavailable": "OCR ez dago erabilgarri. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
+      "import_extract_ocr_activation_required": "OCR aktibatzea beharrezkoa da. Hasi saioa Google OCR-en eta saiatu berriro.",
+      "import_extract_ocr_activation_disclosure_title": "Berrikusi Google OCR aktibazioa",
+      "import_extract_ocr_activation_disclosure_intro": "toT-ek Google zerbitzuak erabiltzen ditu OCR-rako. Jarraituz gero, nabigatzailea irekiko da aplikazio hau baimentzeko.",
+      "import_extract_ocr_activation_disclosure_selected_files": "OCR-rako aukeratzen dituzun fitxategiak soilik bidaltzen dira Googlera.",
+      "import_extract_ocr_activation_disclosure_local_storage": "Aplikazio honek OCR-rako aplikazioak kudeatutako Google OAuth kredentzialak eta Google tokenaren egoera lokala gordetzen ditu aplikazio-instantzia honetan.",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "Esportatu ondoren, aplikazioa aldi baterako Google dokumentua zure Google Drivetik kentzen saiatzen da.",
+      "import_extract_ocr_activation_disclosure_disconnect": "Geroago deskonekta dezakezu Hobespenak > Deskonektatu Google OCR aukeratik.",
+      "import_extract_ocr_activation_disclosure_proceed_button": "Jarraitu Googlerekin",
+      "import_extract_ocr_activation_disclosure_cancel_button": "Utzi",
+      "import_extract_ocr_activation_disclosure_privacy_link": "Ireki pribatutasun-politika",
+      "import_extract_ocr_activation_disclosure_close_aria": "Itxi Google OCR aktibazioaren azalpen-elkarrizketa",
+      "import_extract_ocr_activation_success": "OCR aktibazioa osatu da. Erauzketa berriz saiatzen.",
+      "import_extract_ocr_activation_cancelled": "OCR aktibazioa bertan behera utzi da. Inportatu/erauzi prozesuak ez du jarraitu.",
+      "import_extract_ocr_token_state_invalid": "Gordetako Google OCR saio-hasieraren egoera baliogabea da. Berriz konektatu Google OCR eta saiatu berriro.",
+      "import_extract_ocr_activation_failed": "OCR aktibazioak huts egin du. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
+      "import_extract_ocr_disconnect_success": "Google OCR deskonektatu da. Gordetako Google tokena baliogabetu da eta saio-hasieraren egoera lokala kendu da.",
+      "import_extract_ocr_disconnect_not_connected": "Google OCR ez dago une honetan konektatuta aplikazio-instantzia honetan.",
+      "import_extract_ocr_disconnect_failed": "Google OCR deskonektatzeak huts egin du. Gordetako saio-hasieraren egoera ez da kendu.",
+      "import_extract_ocr_connectivity_failed": "OCR-k Interneteko konexioa behar du. Egiaztatu konexioa eta saiatu berriro.",
+      "import_extract_ocr_setup_missing_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak falta direlako.",
+      "import_extract_ocr_setup_invalid_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak baliogabeak direlako.",
+      "import_extract_ocr_restricted": "OCR bidea mugatuta dago fitxategi mota honetarako.",
+      "import_extract_ocr_quota_or_rate_limited": "OCR aldi baterako blokeatuta dago kuota/tasa-mugen ondorioz. Itxaron eta saiatu berriro.",
+      "import_extract_ocr_runtime_error": "OCR exekuzio-errorea gertatu da inportatu/erauzi bitartean. Begiratu kontsola eta saiatu berriro.",
+      "import_extract_ocr_cancelled": "OCR inportatu/erauzi prozesua bertan behera utzi da.",
+      "import_extract_ocr_cleanup_warning": "OCR amaitu da, baina urruneko aldi baterako fitxategiaren garbiketak huts egin du. Begiratu zure Google Drive karpeta.",
+      "import_extract_ocr_apply_pending": "OCR erauzketa amaitu da. Erauzi ondorengo aplikazio-fluxua oraindik inplementatzeke dago.",
+      "import_extract_native_runtime_error": "Erauzketa natiboaren exekuzio-errorea gertatu da inportatu/erauzi bitartean. Begiratu kontsola eta saiatu berriro.",
+      "import_extract_native_unreadable_or_corrupt": "Hautatutako fitxategia ezin da irakurri edo hondatuta dago erauzketa natiborako.",
+      "import_extract_native_encrypted_or_password_protected": "Hautatutako PDFa zifratuta edo pasahitzez babestuta dago eta ezin da bide natibotik erauzi.",
+      "import_extract_native_cancelled": "Erauzketa natiboa bertan behera utzi da.",
+      "import_extract_native_unsupported_format": "Fitxategi-formatu hau ez dago erauzketa natiboaren bidean onartuta.",
+      "import_extract_native_apply_pending": "Erauzketa natiboa amaitu da. Erauzi ondorengo aplikazio-fluxua oraindik inplementatzeke dago.",
+      "wip_diseno_skins": "WIP: azal hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
+      "wip_diseno_crono": "WIP: kronometro flotatzailearen konfigurazioa etorkizuneko bertsio batean irekiko da hemen.",
+      "wip_diseno_fuentes": "WIP: letra-tipoen hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
+      "wip_diseno_colores": "WIP: koloreen hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
+      "wip_shortcuts": "WIP: teklatu-lasterbideen hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
+      "reading_test_unavailable": "Irakurketa-abiaduraren testaren funtzionalitatea ez dago erabilgarri.",
+      "reading_test_precondition_blocked": "Irakurketa-abiaduraren testa aplikazioaren egoera egonkor batetik bakarrik has daiteke. Itxi bigarren mailako leihoak eta ziurtatu kronometroa geldituta dagoela.",
+      "reading_test_pool_error": "Errorea gertatu da irakurketa-abiaduraren testaren poola egiaztatzean.",
+      "reading_test_no_matching_files": "Ez dago uneko hautapenarekin bat datorren erabili gabeko test-fitxategirik.",
+      "reading_test_current_text_empty": "Uneko testua hutsik dago. Kargatu edo idatzi testu bat uneko testuarekin testa hasi aurretik.",
+      "reading_test_result_invalid": "Testaren emaitza ezin izan da WPM baliozko bihurtu. Fluxua aurrezarpen-modalik ireki gabe amaitu da.",
+      "reading_test_result_unavailable": "Ezin izan da irakurketa-abiaduraren emaitza erakutsi. Fluxuak jarraitu du.",
+      "reading_test_preset_unavailable": "Ezin izan da aurrezarpen-modala ireki testaren ondoren.",
+      "reading_test_questions_unavailable": "Ezin izan da ulermen-galderen modala ireki. Fluxua aurrezarpena sortu aurretik amaitu da.",
+      "reading_test_pool_import_failed": "Ezin izan dira irakurketa-abiaduraren testaren fitxategiak inportatu.",
+      "reading_test_start_failed": "Ezin izan da irakurketa-abiaduraren testa hasi.",
+      "reading_test_cancelled": "Irakurketa-abiaduraren testa bertan behera utzi da.",
+      "reading_test_cancelled_window_closed": "Irakurketa-abiaduraren testa bertan behera utzi da saioko leihoetako bat itxi delako."
+    },
+    "editor_alerts": {
+      "paste_too_big": "Testua handiegia da zuzenean itsasteko. Erabili leiho nagusiko botoiak.",
+      "drop_too_big": "Jaregindako testua handiegia da. Erabili leiho nagusiko botoiak testu handia gehitzeko.",
+      "paste_no_text": "Arbelean ez dago testu arruntik.",
+      "drop_no_text": "Arrastatu eta jaregin: ez da testu arruntik detektatu.",
+      "type_limit": "Ezin da testu gehiago idatzi: gehieneko tamainara iritsi da.",
+      "paste_limit": "Ezin da testu gehiago itsatsi: gehieneko tamainara iritsi da.",
+      "drop_limit": "Ezin da testu gehiago jaregin: gehieneko tamainara iritsi da.",
+      "paste_truncated": "Itsatsitako testua moztu da gehienekoa ez gainditzeko.",
+      "drop_truncated": "Arrastatutako testuak erabilgarri zegoen espazioa gainditzen zuen eta moztu egin da.",
+      "text_truncated": "Testua moztu da aplikazioaren mugara egokitzeko.",
+      "calc_error": "Errorea gertatu da kalkulatzean. Begiratu kontsola."
+    },
+    "preset_alerts": {
+      "name_empty": "Izena ezin da hutsik egon.",
+      "wpm_invalid": "WPM {min} eta {max} arteko zenbaki bat izan behar da.",
+      "create_error": "Errorea gertatu da aurrezarpena sortzean. Begiratu kontsola.",
+      "edit_error": "Errorea gertatu da aurrezarpena editatzean. Begiratu kontsola.",
+      "process_error": "Errorea gertatu da aurrezarpena prozesatzean. Begiratu kontsola."
+    },
+    "info": {
+      "loading": "Kargatzen...",
+      "missing_content": "Ez dago edukirik erabilgarri '{name}' elementuarentzat.",
+      "external": {
+        "blocked": "Esteka blokeatuta",
+        "error": "Errorea esteka irekitzean"
+      },
+      "appdoc": {
+        "blocked": "Dokumentua blokeatuta",
+        "missing": "Dokumentua ez da aurkitu",
+        "error": "Errorea dokumentua irekitzean"
+      },
+      "acerca_de": {
+        "app_name": "toT",
+        "title": "Honi buruz",
+        "version": {
+          "unavailable": "Ez dago erabilgarri"
+        },
+        "env": {
+          "unavailable": "Ez dago erabilgarri"
+        }
+      },
+      "instrucciones": {
+        "title": "Erabilera-eskuliburua"
+      },
+      "links_interes": {
+        "app_name": "toT",
+        "title": "Esteka interesgarriak",
+        "section_biblio_label": "Erreferentzia bibliografikoak"
+      }
+    }
+  }
+}

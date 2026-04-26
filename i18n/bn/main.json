@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "অ্যাপটি কীভাবে ব্যবহার করবেন",
+      "guia_basica": "প্রাথমিক নির্দেশিকা",
+      "instrucciones_completas": "সম্পূর্ণ নির্দেশাবলি",
+      "faq": "প্রায়শই জিজ্ঞাসিত প্রশ্ন (FAQ)",
+      "preferencias": "পছন্দসমূহ",
+      "idioma": "ভাষা",
+      "diseno": "নকশা",
+      "skins": "স্কিন",
+      "crono_flotante": "ভাসমান স্টপওয়াচ",
+      "fuentes": "ফন্ট",
+      "colores": "রং",
+      "shortcuts": "কীবোর্ড শর্টকাট",
+      "presets_por_defecto": "ডিফল্ট প্রিসেট",
+      "disconnect_google_ocr": "Google OCR বিচ্ছিন্ন করুন",
+      "links_interes": "উপযোগী লিংক",
+      "ayuda": "?",
+      "actualizar_version": "সর্বশেষ সংস্করণে আপডেট করুন",
+      "acerca_de": "পরিচিতি",
+      "desarrollo": "ডেভেলপমেন্ট",
+      "recargar": "রিলোড",
+      "forcereload": "ফোর্স রিলোড",
+      "toggle_devtools": "DevTools টগল করুন",
+      "language": {
+        "empty": "কোনও ভাষা উপলব্ধ নেই",
+        "invalid": "ভাষার তালিকা অকার্যকর"
+      }
+    },
+    "dialog": {
+      "ok": "ঠিক আছে",
+      "continue_button": "হ্যাঁ, চালিয়ে যান",
+      "cancel_button": "না, বাতিল করুন",
+      "snapshot_overwrite_save": "বিদ্যমান স্ন্যাপশট ফাইলটি ওভাররাইট করবেন?",
+      "snapshot_overwrite_load": "নির্বাচিত স্ন্যাপশট \"{name}\" দিয়ে বর্তমান লেখা প্রতিস্থাপন করবেন?",
+      "task_delete_confirm": "টাস্ক তালিকা \"{name}\" মুছে ফেলবেন?",
+      "task_library_row_save_overwrite": "লাইব্রেরিতে \"{name}\" নামে একটি এন্ট্রি আগে থেকেই আছে। ওভাররাইট করবেন?",
+      "task_library_row_delete": "লাইব্রেরি থেকে \"{name}\" মুছে ফেলবেন?",
+      "task_link_confirm": "এই লিংকটি খুলবেন?",
+      "task_link_trust_host": "এখন থেকে এই হোস্টকে বিশ্বাস করুন",
+      "task_path_confirm": "এই লোকাল ফাইলটি খুলবেন?",
+      "disconnect_google_ocr_title": "Google OCR বিচ্ছিন্ন করুন",
+      "disconnect_google_ocr_confirm": "Google OCR বিচ্ছিন্ন করবেন?",
+      "disconnect_google_ocr_detail": "এটি সংরক্ষিত Google OCR সাইন-ইন টোকেন বাতিল করে এবং এই অ্যাপ থেকে লোকাল টোকেন ফাইল মুছে দেয়। অ্যাপ-পরিচালিত লোকাল Google OAuth ক্রেডেনশিয়াল থেকে যেতে পারে, যাতে পরে OCR আবার সংযোগ করতে পারে।",
+      "delete_preset_confirm": "প্রিসেট \"{name}\" মুছে ফেলবেন?",
+      "delete_preset_none": "মুছে ফেলার জন্য কোনও প্রিসেট নির্বাচিত নেই।",
+      "restore_defaults_confirm": "ডিফল্ট প্রিসেটগুলো (সাধারণ এবং ভাষা \"{lang}\") মূল অবস্থায় ফিরিয়ে আনবেন? এতে সক্রিয় ভাষার ডিফল্ট প্রিসেটের অপসারণ ও পরিবর্তনগুলো ফিরে যাবে।",
+      "edit_preset_none": "সম্পাদনার জন্য কোনও প্রিসেট নির্বাচিত নেই।",
+      "edit_preset_confirm": "আপনি কি নিশ্চিত যে \"{name}\" বর্তমান প্রিসেট দিয়ে প্রতিস্থাপন করতে চান?",
+      "update_title": "আপডেট উপলব্ধ",
+      "update_message": "নতুন সংস্করণ {remote} উপলব্ধ। বর্তমান: {local}। এখন ডাউনলোড করবেন?",
+      "update_download": "ডাউনলোড",
+      "update_later": "পরে",
+      "update_up_to_date_title": "আপনার সংস্করণ সর্বশেষ।",
+      "update_up_to_date_message": "আপনার কাছে ইতিমধ্যেই সর্বশেষ সংস্করণ ({local}) আছে।",
+      "update_failed_title": "আপডেট পরীক্ষা ব্যর্থ হয়েছে।",
+      "update_failed_message": "আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।"
+    }
+  }
+}

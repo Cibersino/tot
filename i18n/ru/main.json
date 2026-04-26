@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Как пользоваться приложением?",
+      "guia_basica": "Базовое руководство",
+      "instrucciones_completas": "Полная инструкция",
+      "faq": "Часто задаваемые вопросы (FAQ)",
+      "preferencias": "Настройки",
+      "idioma": "Язык",
+      "diseno": "Оформление",
+      "skins": "Темы",
+      "crono_flotante": "Плавающий секундомер",
+      "fuentes": "Шрифты",
+      "colores": "Цвета",
+      "shortcuts": "Горячие клавиши",
+      "presets_por_defecto": "Пресеты по умолчанию",
+      "disconnect_google_ocr": "Отключить Google OCR",
+      "links_interes": "Полезные ссылки",
+      "ayuda": "?",
+      "actualizar_version": "Обновить до последней версии",
+      "acerca_de": "О программе",
+      "desarrollo": "Разработка",
+      "recargar": "Перезагрузить",
+      "forcereload": "Принудительная перезагрузка",
+      "toggle_devtools": "Переключить DevTools",
+      "language": {
+        "empty": "Нет доступных языков",
+        "invalid": "Недопустимый список языков"
+      }
+    },
+    "dialog": {
+      "ok": "OK",
+      "continue_button": "Да, продолжить",
+      "cancel_button": "Нет, отменить",
+      "snapshot_overwrite_save": "Перезаписать существующий снапшот?",
+      "snapshot_overwrite_load": "Заменить текущий текст выбранным снапшотом \"{name}\"?",
+      "task_delete_confirm": "Удалить список задач \"{name}\"?",
+      "task_library_row_save_overwrite": "Запись \"{name}\" уже есть в библиотеке. Перезаписать?",
+      "task_library_row_delete": "Удалить \"{name}\" из библиотеки?",
+      "task_link_confirm": "Открыть эту ссылку?",
+      "task_link_trust_host": "Доверять этому хосту в дальнейшем",
+      "task_path_confirm": "Открыть этот локальный файл?",
+      "disconnect_google_ocr_title": "Отключить Google OCR",
+      "disconnect_google_ocr_confirm": "Отключить Google OCR?",
+      "disconnect_google_ocr_detail": "Это отзовет сохраненный токен входа Google OCR и удалит локальный файл токена из этого приложения. Локальные OAuth-учетные данные Google, управляемые приложением, могут сохраниться, чтобы OCR можно было подключить позже.",
+      "delete_preset_confirm": "Удалить пресет \"{name}\"?",
+      "delete_preset_none": "Не выбран пресет для удаления.",
+      "restore_defaults_confirm": "Восстановить исходные пресеты по умолчанию (общие и для языка \"{lang}\")? Это отменит удаления и изменения пресетов по умолчанию для активного языка.",
+      "edit_preset_none": "Не выбран пресет для редактирования.",
+      "edit_preset_confirm": "Заменить \"{name}\" текущим пресетом?",
+      "update_title": "Доступно обновление",
+      "update_message": "Доступна новая версия {remote}. Текущая: {local}. Скачать сейчас?",
+      "update_download": "Скачать",
+      "update_later": "Позже",
+      "update_up_to_date_title": "У вас актуальная версия.",
+      "update_up_to_date_message": "У вас уже установлена последняя версия ({local}).",
+      "update_failed_title": "Не удалось проверить обновления.",
+      "update_failed_message": "Проверьте подключение и попробуйте снова."
+    }
+  }
+}

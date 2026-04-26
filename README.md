@@ -34,7 +34,7 @@
 * Snapshots de textos: guardar/cargar los textos actuales.
 * Test de velocidad de lectura: flujo guiado con texto aleatorio desde pool o con el texto actual, medición de WPM, preguntas opcionales de comprensión y creación asistida de presets.
 * Editor de tareas: organizador de listas de textos para planificar lecturas.
-* Interfaz multi-idioma: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
+* Interfaz multi-idioma con más de 25 idiomas activos.
 
 ---
 
@@ -191,7 +191,7 @@ MIT — ver [`LICENSE`](LICENSE).
 * Text snapshots: save/load current texts.
 * Reading speed test: guided flow with random pool text or the current text, WPM measurement, optional comprehension questions, and assisted preset creation.
 * Task editor: text list organizer to plan readings.
-* Multi-language UI: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
+* Multi-language UI with 25+ active languages.
 
 ---
 

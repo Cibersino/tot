@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Com fer servir l’app",
+      "guia_basica": "Guia bàsica",
+      "instrucciones_completas": "Instruccions completes",
+      "faq": "Preguntes freqüents (FAQ)",
+      "preferencias": "Preferències",
+      "idioma": "Idioma",
+      "diseno": "Disseny",
+      "skins": "Skins",
+      "crono_flotante": "Cronòmetre flotant",
+      "fuentes": "Tipus de lletra",
+      "colores": "Colors",
+      "shortcuts": "Dreceres de teclat",
+      "presets_por_defecto": "Presets per defecte",
+      "disconnect_google_ocr": "Desconnectar Google OCR",
+      "links_interes": "Enllaços d’interès",
+      "ayuda": "?",
+      "actualizar_version": "Actualitzar a l’última versió",
+      "acerca_de": "Quant a",
+      "desarrollo": "Desenvolupament",
+      "recargar": "Recarregar",
+      "forcereload": "Forçar la recàrrega",
+      "toggle_devtools": "Alternar DevTools",
+      "language": {
+        "empty": "No hi ha idiomes disponibles",
+        "invalid": "Llista d’idiomes invàlida"
+      }
+    },
+    "dialog": {
+      "ok": "D’acord",
+      "continue_button": "Sí, continua",
+      "cancel_button": "No, cancel·la",
+      "snapshot_overwrite_save": "Vols sobreescriure el snapshot existent?",
+      "snapshot_overwrite_load": "Vols substituir el text actual pel snapshot seleccionat \"{name}\"?",
+      "task_delete_confirm": "Vols eliminar la llista de tasques \"{name}\"?",
+      "task_library_row_save_overwrite": "Ja existeix \"{name}\" a la biblioteca. Vols sobreescriure’l?",
+      "task_library_row_delete": "Vols eliminar \"{name}\" de la biblioteca?",
+      "task_link_confirm": "Vols obrir aquest enllaç?",
+      "task_link_trust_host": "Confiar en aquest host a partir d’ara",
+      "task_path_confirm": "Vols obrir aquest fitxer local?",
+      "disconnect_google_ocr_title": "Desconnectar Google OCR",
+      "disconnect_google_ocr_confirm": "Vols desconnectar Google OCR?",
+      "disconnect_google_ocr_detail": "Això revoca el testimoni d’inici de sessió de Google OCR desat i elimina el fitxer de testimoni local d’aquesta app. Les credencials OAuth de Google locals gestionades per l’app poden conservar-se perquè l’OCR es pugui reconnectar més endavant.",
+      "delete_preset_confirm": "Vols eliminar el preset \"{name}\"?",
+      "delete_preset_none": "No hi ha cap preset seleccionat per eliminar.",
+      "restore_defaults_confirm": "Vols restaurar els presets per defecte (generals i per a l’idioma \"{lang}\") a la seva versió original? Això revertirà les eliminacions i els canvis fets als presets per defecte de l’idioma actiu.",
+      "edit_preset_none": "No hi ha cap preset seleccionat per editar.",
+      "edit_preset_confirm": "Segur que vols substituir \"{name}\" pel preset actual?",
+      "update_title": "Actualització disponible",
+      "update_message": "Hi ha una nova versió {remote}. Actual: {local}. Vols descarregar-la ara?",
+      "update_download": "Descarregar",
+      "update_later": "Més tard",
+      "update_up_to_date_title": "Estàs al dia.",
+      "update_up_to_date_message": "Ja tens l’última versió ({local}).",
+      "update_failed_title": "La comprovació d’actualitzacions ha fallat.",
+      "update_failed_message": "Revisa la connexió i torna-ho a provar."
+    }
+  }
+}

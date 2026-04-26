@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Nasıl kullanılır",
+      "guia_basica": "Temel kılavuz",
+      "instrucciones_completas": "Tam yönergeler",
+      "faq": "Sık sorulan sorular (SSS)",
+      "preferencias": "Tercihler",
+      "idioma": "Dil",
+      "diseno": "Tasarım",
+      "skins": "Temalar",
+      "crono_flotante": "Yüzen kronometre",
+      "fuentes": "Yazı tipleri",
+      "colores": "Renkler",
+      "shortcuts": "Klavye kısayolları",
+      "presets_por_defecto": "Varsayılan ön ayarlar",
+      "disconnect_google_ocr": "Google OCR bağlantısını kes",
+      "links_interes": "Yararlı bağlantılar",
+      "ayuda": "?",
+      "actualizar_version": "En son sürüme güncelle",
+      "acerca_de": "Hakkında",
+      "desarrollo": "Geliştirme",
+      "recargar": "Yeniden yükle",
+      "forcereload": "Zorla yeniden yükle",
+      "toggle_devtools": "DevTools'u aç/kapat",
+      "language": {
+        "empty": "Kullanılabilir dil yok",
+        "invalid": "Dil listesi geçersiz"
+      }
+    },
+    "dialog": {
+      "ok": "Tamam",
+      "continue_button": "Evet, devam et",
+      "cancel_button": "Hayır, iptal et",
+      "snapshot_overwrite_save": "Var olan snapshot dosyasının üzerine yazılsın mı?",
+      "snapshot_overwrite_load": "Geçerli metin seçili \"{name}\" snapshot'ı ile değiştirilsin mi?",
+      "task_delete_confirm": "\"{name}\" görev listesi silinsin mi?",
+      "task_library_row_save_overwrite": "Kütüphanede \"{name}\" adlı bir kayıt zaten var. Üzerine yazılsın mı?",
+      "task_library_row_delete": "\"{name}\" kütüphaneden silinsin mi?",
+      "task_link_confirm": "Bu bağlantı açılsın mı?",
+      "task_link_trust_host": "Bu hosta bundan sonra güven",
+      "task_path_confirm": "Bu yerel dosya açılsın mı?",
+      "disconnect_google_ocr_title": "Google OCR bağlantısını kes",
+      "disconnect_google_ocr_confirm": "Google OCR bağlantısı kesilsin mi?",
+      "disconnect_google_ocr_detail": "Bu işlem kayıtlı Google OCR oturum açma token'ını iptal eder ve yerel token dosyasını bu uygulamadan siler. Uygulama tarafından yönetilen yerel Google OAuth kimlik bilgileri, OCR'nin daha sonra yeniden bağlanabilmesi için kalabilir.",
+      "delete_preset_confirm": "\"{name}\" ön ayarı silinsin mi?",
+      "delete_preset_none": "Silmek için seçili ön ayar yok.",
+      "restore_defaults_confirm": "Varsayılan ön ayarlar (genel ve \"{lang}\" dili için) özgün hâline geri yüklensin mi? Bu, etkin dilin varsayılan ön ayarlarındaki silme ve değişiklikleri geri alır.",
+      "edit_preset_none": "Düzenlemek için seçili ön ayar yok.",
+      "edit_preset_confirm": "\"{name}\" öğesini geçerli ön ayarla değiştirmek istediğinizden emin misiniz?",
+      "update_title": "Güncelleme mevcut",
+      "update_message": "Yeni {remote} sürümü mevcut. Geçerli sürüm: {local}. Şimdi indirilsin mi?",
+      "update_download": "İndir",
+      "update_later": "Daha sonra",
+      "update_up_to_date_title": "Sürümünüz güncel.",
+      "update_up_to_date_message": "Zaten en son sürüme sahipsiniz ({local}).",
+      "update_failed_title": "Güncelleme denetimi başarısız oldu.",
+      "update_failed_message": "Bağlantınızı denetleyin ve yeniden deneyin."
+    }
+  }
+}

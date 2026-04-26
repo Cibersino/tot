@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Cách sử dụng",
+      "guia_basica": "Hướng dẫn cơ bản",
+      "instrucciones_completas": "Hướng dẫn đầy đủ",
+      "faq": "Câu hỏi thường gặp (FAQ)",
+      "preferencias": "Tùy chọn",
+      "idioma": "Ngôn ngữ",
+      "diseno": "Thiết kế",
+      "skins": "Giao diện",
+      "crono_flotante": "Đồng hồ bấm giờ nổi",
+      "fuentes": "Phông chữ",
+      "colores": "Màu sắc",
+      "shortcuts": "Phím tắt",
+      "presets_por_defecto": "Preset mặc định",
+      "disconnect_google_ocr": "Ngắt kết nối Google OCR",
+      "links_interes": "Liên kết hữu ích",
+      "ayuda": "?",
+      "actualizar_version": "Cập nhật lên phiên bản mới nhất",
+      "acerca_de": "Giới thiệu",
+      "desarrollo": "Phát triển",
+      "recargar": "Tải lại",
+      "forcereload": "Tải lại bắt buộc",
+      "toggle_devtools": "Bật/tắt DevTools",
+      "language": {
+        "empty": "Không có ngôn ngữ nào khả dụng",
+        "invalid": "Danh sách ngôn ngữ không hợp lệ"
+      }
+    },
+    "dialog": {
+      "ok": "OK",
+      "continue_button": "Có, tiếp tục",
+      "cancel_button": "Không, hủy",
+      "snapshot_overwrite_save": "Ghi đè tệp bản lưu hiện có?",
+      "snapshot_overwrite_load": "Thay thế văn bản hiện tại bằng bản lưu đã chọn \"{name}\"?",
+      "task_delete_confirm": "Xóa danh sách tác vụ \"{name}\"?",
+      "task_library_row_save_overwrite": "Đã có một mục tên \"{name}\" trong thư viện. Ghi đè?",
+      "task_library_row_delete": "Xóa \"{name}\" khỏi thư viện?",
+      "task_link_confirm": "Mở liên kết này?",
+      "task_link_trust_host": "Tin cậy host này từ bây giờ",
+      "task_path_confirm": "Mở tệp cục bộ này?",
+      "disconnect_google_ocr_title": "Ngắt kết nối Google OCR",
+      "disconnect_google_ocr_confirm": "Ngắt kết nối Google OCR?",
+      "disconnect_google_ocr_detail": "Thao tác này thu hồi token đăng nhập Google OCR đã lưu và xóa tệp token cục bộ khỏi ứng dụng này. Thông tin xác thực Google OAuth cục bộ do ứng dụng quản lý có thể vẫn được giữ lại để OCR có thể kết nối lại sau.",
+      "delete_preset_confirm": "Xóa preset \"{name}\"?",
+      "delete_preset_none": "Không có preset nào được chọn để xóa.",
+      "restore_defaults_confirm": "Khôi phục preset mặc định (chung và ngôn ngữ \"{lang}\") về trạng thái ban đầu? Thao tác này sẽ hoàn nguyên các preset mặc định đã bị xóa hoặc chỉnh sửa cho ngôn ngữ đang dùng.",
+      "edit_preset_none": "Không có preset nào được chọn để chỉnh sửa.",
+      "edit_preset_confirm": "Bạn có chắc muốn thay thế \"{name}\" bằng preset hiện tại?",
+      "update_title": "Có bản cập nhật",
+      "update_message": "Có phiên bản mới {remote}. Hiện tại: {local}. Tải xuống ngay?",
+      "update_download": "Tải xuống",
+      "update_later": "Để sau",
+      "update_up_to_date_title": "Bạn đang dùng phiên bản mới nhất.",
+      "update_up_to_date_message": "Bạn đã có phiên bản mới nhất ({local}).",
+      "update_failed_title": "Không kiểm tra được bản cập nhật.",
+      "update_failed_message": "Hãy kiểm tra kết nối và thử lại."
+    }
+  }
+}
