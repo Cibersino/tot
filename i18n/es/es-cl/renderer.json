@@ -288,7 +288,7 @@
         "buttons": {
           "get_more_files": "Traer más archivos",
           "import_files": "Importar archivos...",
-          "reset_pool": "Restablecer pool",
+          "reset_pool": "R",
           "show_instructions": "Mostrar instrucciones",
           "hide_instructions": "Ocultar instrucciones",
           "start_random_text": "Partir con texto random",
