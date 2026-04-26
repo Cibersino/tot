@@ -1484,11 +1484,11 @@ select#presets:focus {
 
 .reading-test-entry-modal-body {
   margin-top: 0;
-  padding-right: 44px;
 }
 
 .reading-test-entry-modal-body h2 {
   margin: 0 0 var(--modal-section-spacing);
+  padding-right: 44px;
   font-size: var(--font-size-modal-title);
   font-weight: 600;
 }
