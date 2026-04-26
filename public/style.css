@@ -955,7 +955,7 @@ select#presets:focus {
 .cronometro .crono-box:disabled {
   opacity: 1;
   color: inherit;
-  background-color: var(--input-disabled-bg);
+  background-color: var(--input-bg);
   cursor: text;
 }
 
