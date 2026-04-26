@@ -293,6 +293,13 @@
           "hide_instructions": "Ocultar instrucciones",
           "start_random_text": "Partir con texto random",
           "start_current_text": "Partir con texto actual"
+        },
+        "tooltips": {
+          "get_more_files": "Traer más archivos de prueba del directorio de Google Drive",
+          "import_files": "Importar archivos de prueba desde tu dispositivo",
+          "reset_pool": "Restablecer el pool de archivos de prueba",
+          "start_random_text": "Iniciar la prueba con un texto aleatorio elegible del pool",
+          "start_current_text": "Iniciar la prueba con el texto actual"
         }
       },
       "questions": {

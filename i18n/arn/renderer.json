@@ -293,6 +293,13 @@
           "hide_instructions": "Ellkañma instrucciones",
           "start_random_text": "Yalltun fantepu chillka random mew",
           "start_current_text": "Yalltun fantepu chillka mu"
+        },
+        "tooltips": {
+          "get_more_files": "Llowün doy pepiükantun wirintukun Google Drive mu",
+          "import_files": "Küpan pepiükantun wirintukun tami nütrampeyüm mu",
+          "reset_pool": "Wiño llowün pepiükantun trañmawun",
+          "start_random_text": "Yallün chi pepiükantun chem rume wirin mu chi trañmawun mu",
+          "start_current_text": "Yallün chi pepiükantun tüfachi wirin mu"
         }
       },
       "questions": {
