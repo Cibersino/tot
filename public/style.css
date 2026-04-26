@@ -195,6 +195,21 @@ body {
   user-select: none;
 }
 
+.btn-standard--square {
+  width: var(--control-height-md);
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.btn-standard--square-half {
+  width: calc(var(--control-height-md) / 2);
+  height: calc(var(--control-height-md) / 2);
+  padding: 0;
+  font-size: 7.5px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
 .btn-standard:hover {
   background: var(--button-hover-bg);
   box-shadow: var(--button-hover-shadow);
