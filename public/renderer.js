@@ -30,8 +30,6 @@ if (!AppConstants) {
 
 const {
   DEFAULT_LANG,
-  WPM_MIN,
-  WPM_MAX,
   MAX_CLIPBOARD_REPEAT,
 } = AppConstants;
 
@@ -111,58 +109,6 @@ const toggleModoPreciso = document.getElementById('toggleModoPreciso');
 
 const wpmSlider = document.getElementById('wpmSlider');
 const wpmInput = document.getElementById('wpmInput');
-const { WpmCurve } = window;
-const wpmCurveMapper = (
-  WpmCurve && typeof WpmCurve.createMapperFromConstants === 'function'
-)
-  ? WpmCurve.createMapperFromConstants(AppConstants)
-  : null;
-
-if (!wpmCurveMapper) {
-  log.warnOnce(
-    'renderer.wpmCurve.unavailable',
-    '[renderer] WpmCurve unavailable; using linear slider mapping.'
-  );
-}
-
-function clampWpm(rawValue) {
-  const numeric = Number(rawValue);
-  const safe = Number.isFinite(numeric) ? Math.round(numeric) : WPM_MIN;
-  return Math.min(Math.max(safe, WPM_MIN), WPM_MAX);
-}
-
-function wpmFromSliderControl(rawControl) {
-  if (wpmCurveMapper && typeof wpmCurveMapper.wpmFromControl === 'function') {
-    return clampWpm(wpmCurveMapper.wpmFromControl(rawControl));
-  }
-  return clampWpm(rawControl);
-}
-
-function sliderControlFromWpm(rawWpm) {
-  if (wpmCurveMapper && typeof wpmCurveMapper.controlFromWpm === 'function') {
-    return wpmCurveMapper.controlFromWpm(rawWpm);
-  }
-  return clampWpm(rawWpm);
-}
-
-function syncWpmControls(rawWpm) {
-  const normalizedWpm = clampWpm(rawWpm);
-  if (wpmInput) wpmInput.value = String(normalizedWpm);
-  if (wpmSlider) wpmSlider.value = String(sliderControlFromWpm(normalizedWpm));
-  return normalizedWpm;
-}
-
-if (wpmSlider) {
-  wpmSlider.min = String(WPM_MIN);
-  wpmSlider.max = String(WPM_MAX);
-  if (wpmCurveMapper && Number.isFinite(wpmCurveMapper.controlStep) && wpmCurveMapper.controlStep > 0) {
-    wpmSlider.step = String(wpmCurveMapper.controlStep);
-  }
-}
-if (wpmInput) {
-  wpmInput.min = String(WPM_MIN);
-  wpmInput.max = String(WPM_MAX);
-}
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
 const velTitle = document.getElementById('vel-title');
@@ -183,6 +129,16 @@ const btnEditPreset = document.getElementById('btnEditPreset');
 const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
 const presetDescription = document.getElementById('presetDescription');
+const { WpmControls } = window;
+if (!WpmControls || typeof WpmControls.createController !== 'function') {
+  throw new Error('[renderer] WpmControls unavailable; cannot continue');
+}
+const wpmControls = WpmControls.createController({
+  wpmInput,
+  wpmSlider,
+  presetsSelect,
+  presetDescription,
+});
 
 // =============================================================================
 // Startup gating + handshake
@@ -536,27 +492,6 @@ function applyTranslations() {
   }
 }
 
-let wpm = syncWpmControls(wpmInput ? wpmInput.value : WPM_MIN);
-let currentPresetName = null;
-
-// Local preset cache (full list loaded once)
-let allPresetsCache = [];
-
-// =============================================================================
-// Presets integration
-// =============================================================================
-const { loadPresetsIntoDom, resolvePresetSelection } = window.RendererPresets || {};
-const hasRendererPresetsBridge = (
-  typeof loadPresetsIntoDom === 'function' &&
-  typeof resolvePresetSelection === 'function'
-);
-if (!hasRendererPresetsBridge) {
-  log.warnOnce(
-    'renderer.bridge.RendererPresets.unavailable',
-    'RendererPresets bridge unavailable; preset integration disabled.'
-  );
-}
-
 // =============================================================================
 // Snapshot helpers
 // =============================================================================
@@ -635,7 +570,7 @@ async function updatePreviewAndResults(text) {
   resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado });
   resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado });
 
-  const totalSeconds = getExactTotalSeconds(stats.palabras, wpm);
+  const totalSeconds = getExactTotalSeconds(stats.palabras, wpmControls.getWpm());
   renderEstimatedTime(totalSeconds);
 }
 
@@ -653,7 +588,7 @@ function updateTimeOnlyFromStats() {
     );
     return;
   }
-  const totalSeconds = getExactTotalSeconds(currentTextStats.palabras, wpm);
+  const totalSeconds = getExactTotalSeconds(currentTextStats.palabras, wpmControls.getWpm());
   renderEstimatedTime(totalSeconds);
 }
 
@@ -702,71 +637,13 @@ function resolveSettingsSnapshot(settingsSnapshot) {
     : (settingsCache || {});
 }
 
-function resetPresetsState() {
-  if (presetsSelect) presetsSelect.innerHTML = '';
-  if (presetDescription) presetDescription.textContent = '';
-  allPresetsCache = [];
-  currentPresetName = null;
-  return allPresetsCache;
-}
-
-const reloadPresetsList = async ({ settingsSnapshot } = {}) => {
-  if (!hasRendererPresetsBridge) {
-    log.warnOnce(
-      'renderer.bridge.RendererPresets.reload.unavailable',
-      'Preset list reload skipped because RendererPresets bridge is unavailable.'
-    );
-    return resetPresetsState();
-  }
-  try {
-    const snapshot = resolveSettingsSnapshot(settingsSnapshot);
-    const res = await loadPresetsIntoDom({
-      electronAPI: window.electronAPI,
-      settings: snapshot,
-      language: idiomaActual,
-      selectEl: presetsSelect
-    });
-    allPresetsCache = res && res.list ? res.list.slice() : [];
-    return allPresetsCache;
-  } catch (err) {
-    log.error('Error loading presets:', err);
-    return resetPresetsState();
-  }
-};
-
 const loadPresets = async ({ settingsSnapshot } = {}) => {
-  if (!hasRendererPresetsBridge) {
-    log.warnOnce(
-      'renderer.bridge.RendererPresets.selection.unavailable',
-      'Preset selection skipped because RendererPresets bridge is unavailable.'
-    );
-    return resetPresetsState();
-  }
-  try {
-    const snapshot = resolveSettingsSnapshot(settingsSnapshot);
-    await reloadPresetsList({ settingsSnapshot: snapshot });
-    const selected = await resolvePresetSelection({
-      list: allPresetsCache,
-      settings: snapshot,
-      language: idiomaActual,
-      currentPresetName,
-      selectEl: presetsSelect,
-      wpmInput,
-      wpmSlider,
-      presetDescription,
-      electronAPI: window.electronAPI
-    });
-    if (selected) {
-      currentPresetName = selected.name;
-      wpm = syncWpmControls(selected.wpm);
-    } else {
-      currentPresetName = null;
-    }
-    return allPresetsCache;
-  } catch (err) {
-    log.error('Error loading presets:', err);
-    return resetPresetsState();
-  }
+  const snapshot = resolveSettingsSnapshot(settingsSnapshot);
+  return wpmControls.loadPresets({
+    settingsSnapshot: snapshot,
+    language: idiomaActual,
+    electronAPI: window.electronAPI,
+  });
 };
 
 // =============================================================================
@@ -853,32 +730,13 @@ function armIpcSubscriptions() {
         return;
       }
       try {
-        // Reload presets from settings (applies shadowing) and select the created one
-        const updated = await reloadPresetsList({ settingsSnapshot: settingsCache });
-        if (preset && preset.name) {
-          const found = updated.find(p => p.name === preset.name);
-          if (found) {
-            const neutralSettings = Object.assign({}, settingsCache || {}, {
-              selected_preset_by_language: {}
-            });
-            const selected = await resolvePresetSelection({
-              list: updated,
-              settings: neutralSettings,
-              language: idiomaActual,
-              currentPresetName: preset.name,
-              selectEl: presetsSelect,
-              wpmInput,
-              wpmSlider,
-              presetDescription,
-              electronAPI: window.electronAPI
-            });
-            if (selected) {
-              currentPresetName = selected.name;
-              wpm = syncWpmControls(selected.wpm);
-              startPreviewAndResultsUpdate(currentText, 'preset-created sync');
-            }
-          }
-        }
+        await wpmControls.handlePresetCreated({
+          preset,
+          settingsSnapshot: settingsCache,
+          language: idiomaActual,
+          electronAPI: window.electronAPI,
+          onWpmChanged: () => startPreviewAndResultsUpdate(currentText, 'preset-created sync'),
+        });
       } catch (err) {
         log.error('Error handling preset-created event:', err);
       }
@@ -1609,59 +1467,20 @@ function registerMenuActions() {
 function bindPresetSelection() {
   presetsSelect.addEventListener('change', async () => {
     if (!guardUserAction('preset-change')) return;
-    if (!hasRendererPresetsBridge) {
-      log.warnOnce(
-        'renderer.bridge.RendererPresets.change.unavailable',
-        'Preset change ignored because RendererPresets bridge is unavailable.'
-      );
-      return;
-    }
-    const name = presetsSelect.value;
-    if (!name) return;
-
-    const preset = allPresetsCache.find(p => p.name === name);
-    if (preset) {
-      const settingsOverride = Object.assign({}, settingsCache || {}, {
-        selected_preset_by_language: {}
-      });
-      try {
-        const selected = await resolvePresetSelection({
-          list: allPresetsCache,
-          settings: settingsOverride,
-          language: idiomaActual,
-          currentPresetName: preset.name,
-          selectEl: presetsSelect,
-          wpmInput,
-          wpmSlider,
-          presetDescription,
-          electronAPI: window.electronAPI
-        });
-        if (selected) {
-          currentPresetName = selected.name;
-          wpm = syncWpmControls(selected.wpm);
-          updateTimeOnlyFromStats();
-        }
-      } catch (err) {
-        log.error('Error resolving preset selection:', err);
-      }
-    }
+    await wpmControls.handlePresetSelectionChange({
+      settingsSnapshot: settingsCache,
+      language: idiomaActual,
+      electronAPI: window.electronAPI,
+      onWpmChanged: updateTimeOnlyFromStats,
+    });
   });
 }
 
 // =============================================================================
 // Manual WPM edits
 // =============================================================================
-function resetPresetSelection() {
-  currentPresetName = null;
-  // Leave the select without a visual selection
-  presetsSelect.selectedIndex = -1;
-  presetDescription.textContent = '';
-}
-
 function applyReadingTestWpm(rawWpm) {
-  wpm = syncWpmControls(rawWpm);
-  resetPresetSelection();
-  updateTimeOnlyFromStats();
+  wpmControls.applyExternalWpm(rawWpm, { onWpmChanged: updateTimeOnlyFromStats });
 }
 
 function bindSpeedControls() {
@@ -1669,31 +1488,9 @@ function bindSpeedControls() {
     onLockChange: syncMainInteractionLockUi,
     applyWpm: applyReadingTestWpm,
   });
-
-  // Keep slider/input in sync and invalidate preset selection
-  wpmSlider.addEventListener('input', () => {
-    if (!guardUserAction('wpm-slider')) return;
-    wpm = wpmFromSliderControl(wpmSlider.value);
-    wpmInput.value = String(wpm);
-    resetPresetSelection();
-    updateTimeOnlyFromStats();
-  });
-
-  wpmInput.addEventListener('blur', () => {
-    if (!guardUserAction('wpm-input-blur')) return;
-    let requestedWpm = Number(wpmInput.value);
-    if (isNaN(requestedWpm)) requestedWpm = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
-    wpm = syncWpmControls(requestedWpm);
-    resetPresetSelection();
-    updateTimeOnlyFromStats();
-  });
-
-  wpmInput.addEventListener('keydown', (e) => {
-    if (!guardUserAction('wpm-input-keydown')) return;
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      wpmInput.blur();
-    }
+  wpmControls.bind({
+    guardUserAction,
+    onWpmChanged: updateTimeOnlyFromStats,
   });
 }
 
@@ -2211,7 +2008,7 @@ function bindPresetActions() {
     if (!guardUserAction('preset-new')) return;
     try {
       if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-        window.electronAPI.openPresetModal(wpm);
+        window.electronAPI.openPresetModal(wpmControls.getWpm());
       } else {
         log.warnOnce(
           'renderer.ipc.openPresetModal.unavailable',
@@ -2245,14 +2042,14 @@ function bindPresetActions() {
       }
 
       // Find preset data from cache
-      const preset = allPresetsCache.find(p => p.name === selectedName);
+      const preset = wpmControls.getAllPresets().find(p => p.name === selectedName);
       if (!preset) {
         window.Notify.notifyMain('renderer.alerts.preset_not_found');
         return;
       }
 
       // Open modal in edit mode and pass preset data.
-      const payload = { wpm: wpm, mode: 'edit', preset: preset };
+      const payload = { wpm: wpmControls.getWpm(), mode: 'edit', preset: preset };
       try {
         log.debug('[renderer] openPresetModal payload:', payload);
       } catch (err) {
