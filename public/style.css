@@ -195,6 +195,14 @@ body {
   user-select: none;
 }
 
+.btn-standard--half {
+  height: calc(var(--control-height-md) / 2);
+  padding: 0 4px;
+  gap: 3px;
+  font-size: 7.5px;
+  line-height: 1;
+}
+
 .btn-standard--square {
   width: var(--control-height-md);
   padding: 0;
