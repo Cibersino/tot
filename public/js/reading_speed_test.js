@@ -53,6 +53,8 @@
   const intro = document.getElementById('readingTestEntryModalIntro');
   const warningBox = document.getElementById('readingTestEntryModalWarning');
   const eligibleCount = document.getElementById('readingTestEntryModalEligibleCount');
+  const eligibleCountLabel = document.getElementById('readingTestEntryModalEligibleCountLabel');
+  const eligibleCountNumber = document.getElementById('readingTestEntryModalEligibleCountNumber');
   const getMoreFilesLink = document.getElementById('readingTestEntryModalGetMoreFiles');
   const importButton = document.getElementById('readingTestEntryModalImport');
   const resetButton = document.getElementById('readingTestEntryModalReset');
@@ -77,6 +79,8 @@
       && intro
       && warningBox
       && eligibleCount
+      && eligibleCountLabel
+      && eligibleCountNumber
       && getMoreFilesLink
       && importButton
       && resetButton
@@ -107,8 +111,8 @@
     difficulty: new Map(snapshotTagCatalog.DIFFICULTY_OPTIONS.map((option) => [option.value, option])),
   };
 
-  let onInteractionStateChanged = () => {};
-  let onApplyWpm = () => {};
+  let onInteractionStateChanged = () => { };
+  let onApplyWpm = () => { };
   let previousFocus = null;
   let sessionState = { active: false, stage: 'idle', blocked: false };
   let poolEntries = [];
@@ -302,10 +306,8 @@
   }
 
   function renderEligibleCount() {
-    eligibleCount.textContent = msgRenderer(
-      'renderer.reading_test.entry.eligible_count',
-      { count: filterState.eligibleCount }
-    );
+    eligibleCountLabel.textContent = tRenderer('renderer.reading_test.entry.eligible_count');
+    eligibleCountNumber.textContent = String(filterState.eligibleCount);
   }
 
   function renderWarningBox() {
@@ -338,10 +340,15 @@
       tRenderer('renderer.reading_test.entry.close_aria')
     );
     getMoreFilesLink.textContent = tRenderer('renderer.reading_test.entry.buttons.get_more_files');
+    getMoreFilesLink.title = tRenderer('renderer.reading_test.entry.tooltips.get_more_files');
     importButton.textContent = tRenderer('renderer.reading_test.entry.buttons.import_files');
+    importButton.title = tRenderer('renderer.reading_test.entry.tooltips.import_files');
     resetButton.textContent = tRenderer('renderer.reading_test.entry.buttons.reset_pool');
+    resetButton.title = tRenderer('renderer.reading_test.entry.tooltips.reset_pool');
     btnStart.textContent = tRenderer('renderer.reading_test.entry.buttons.start_random_text');
+    btnStart.title = tRenderer('renderer.reading_test.entry.tooltips.start_random_text');
     btnStartCurrentText.textContent = tRenderer('renderer.reading_test.entry.buttons.start_current_text');
+    btnStartCurrentText.title = tRenderer('renderer.reading_test.entry.tooltips.start_current_text');
 
     renderEligibleCount();
     renderWarningBox();
@@ -852,8 +859,8 @@
   // Public API
   // =============================================================================
   function configure({ onLockChange, applyWpm } = {}) {
-    onInteractionStateChanged = typeof onLockChange === 'function' ? onLockChange : () => {};
-    onApplyWpm = typeof applyWpm === 'function' ? applyWpm : () => {};
+    onInteractionStateChanged = typeof onLockChange === 'function' ? onLockChange : () => { };
+    onApplyWpm = typeof applyWpm === 'function' ? applyWpm : () => { };
 
     if (!initialized) {
       initialized = true;

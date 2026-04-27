@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Imaynata appta llamk'achina",
+      "guia_basica": "Sasaq mana kaq pusana",
+      "instrucciones_completas": "Hunt'a kamachiykuna",
+      "faq": "Sapa kuti tapukuykuna (FAQ)",
+      "preferencias": "Akllaykuna",
+      "idioma": "Rimay",
+      "diseno": "Rikch'ay",
+      "skins": "Skins",
+      "crono_flotante": "Wayraqpi puriq pachayupaq",
+      "fuentes": "Qillqa rikch'aynin",
+      "colores": "Llimp'ikuna",
+      "shortcuts": "Teclado ñankuna",
+      "presets_por_defecto": "Kikinmanta presets",
+      "disconnect_google_ocr": "Google OCR nisqamanta t'aqakuy",
+      "links_interes": "Allin linkkuna",
+      "ayuda": "?",
+      "actualizar_version": "Qhipa ruwasqaman kunanchay",
+      "acerca_de": "Kaymanta",
+      "desarrollo": "Ruray/wiñachiy",
+      "recargar": "Wakmanta kargay",
+      "forcereload": "Sinchita wakmanta kargay",
+      "toggle_devtools": "DevTools tikray",
+      "language": {
+        "empty": "Mana rimaykuna kanchu",
+        "invalid": "Rimaykuna lista mana allinchu"
+      }
+    },
+    "dialog": {
+      "ok": "Allin",
+      "continue_button": "Arí, hinalla riy",
+      "cancel_button": "Mana, saqiy",
+      "snapshot_overwrite_save": "Kachkaq snapshotta qillqaychu?",
+      "snapshot_overwrite_load": "Kunan qillqata akllasqa snapshot \"{name}\" nisqawan tikraychu?",
+      "task_delete_confirm": "Llamk'ana lista \"{name}\" nisqata chinkachiychu?",
+      "task_library_row_save_overwrite": "Bibliotecapi \"{name}\" ña kachkan. Qillqaychu?",
+      "task_library_row_delete": "Bibliotecamanta \"{name}\" chinkachiychu?",
+      "task_link_confirm": "Kay linkta kichaychu?",
+      "task_link_trust_host": "Kay host nisqapi kunanmanta pacha hap'ipakuy",
+      "task_path_confirm": "Kay local archivota kichaychu?",
+      "disconnect_google_ocr_title": "Google OCR nisqamanta t'aqakuy",
+      "disconnect_google_ocr_confirm": "Google OCR nisqamanta t'aqakuychu?",
+      "disconnect_google_ocr_detail": "Kayqa waqaychasqa Google OCR yaykuna tokenta qhichun, hinaspa kay apppa local token archivonta pichan. Apppa kamachisqan local Google OAuth credencialkuna qhipaman OCR wakmanta t'inkikunanpaq qhipakunman.",
+      "delete_preset_confirm": "Preset \"{name}\" nisqata chinkachiychu?",
+      "delete_preset_none": "Chinkachinapaq mana preset akllasqachu.",
+      "restore_defaults_confirm": "Kikinmanta presets (llapanpaq chaymanta \"{lang}\" rimaypaq) qallariq ruwasqaman kutichiychu? Kayqa llamk'aq rimaypa kikinmanta presets nisqapi chinkachisqakunata chaymanta tikrasqakunata kutichinqa.",
+      "edit_preset_none": "Allichanapaq mana preset akllasqachu.",
+      "edit_preset_confirm": "\"{name}\" nisqata kunan presetwan tikrayta munankichu?",
+      "update_title": "Kunanchay kan",
+      "update_message": "Musuq versión {remote} kan. Kunan: {local}. Kunan uraykachiychu?",
+      "update_download": "Uraykachiy",
+      "update_later": "Qhipaman",
+      "update_up_to_date_title": "Kunan pachapim kachkanki.",
+      "update_up_to_date_message": "Ña qhipa versiónniyuq kachkanki ({local}).",
+      "update_failed_title": "Kunanchay maskayqa pantarun.",
+      "update_failed_message": "T'inkiykita qhaway hinaspa wakmanta ruwapay."
+    }
+  }
+}

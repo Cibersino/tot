@@ -269,7 +269,7 @@
       "entry": {
         "title": "Lesegeschwindigkeitstest",
         "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text und wartet darauf, dass Sie Play (▶) im schwebenden Fenster drücken, wenn Sie bereit sind zu beginnen. Sobald der Test gestartet ist, drücken Sie Pause (⏸) erst, wenn Sie mit dem Lesen fertig sind: Pause beendet den Test; sie pausiert den Timer nicht. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.\nBevor Sie beginnen, bedenken Sie, dass diese Testtexte in der Regel zwischen 5 und 15 Minuten ununterbrochene Konzentration erfordern.\nDieser Pool verwendet kurze Texte; behandeln Sie das Ergebnis daher mit Vorsicht. Es sollte nicht direkt auf lange Texte übertragen werden, bei denen in der Regel positive Faktoren wie Lesefluss und Kontextaufbau sowie negative Faktoren wie mentales Rekapitulieren und Ermüdung ins Spiel kommen.",
-        "eligible_count": "Geeignete Dateien: {count}",
+        "eligible_count": "Geeignete Dateien:",
         "pool_exhausted_message": "Es sind keine unbenutzten Testdateien mehr vorhanden. Setzen Sie den Pool zurück oder fügen Sie weitere Dateien hinzu.",
         "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",
         "start_random_confirm": "Dadurch wird der aktuelle Text durch einen zufälligen geeigneten Text aus dem Pool ersetzt. Möchten Sie fortfahren?",
@@ -288,11 +288,18 @@
         "buttons": {
           "get_more_files": "Weitere Dateien holen",
           "import_files": "Dateien importieren...",
-          "reset_pool": "Pool zurücksetzen",
+          "reset_pool": "R",
           "show_instructions": "Anleitung anzeigen",
           "hide_instructions": "Anleitung ausblenden",
           "start_random_text": "Mit zufälligem Text starten",
           "start_current_text": "Mit aktuellem Text starten"
+        },
+        "tooltips": {
+          "get_more_files": "Weitere Testdateien aus dem Google Drive-Ordner holen",
+          "import_files": "Testdateien von Ihrem Gerät importieren",
+          "reset_pool": "Test-Pool zurücksetzen",
+          "start_random_text": "Den Test mit einem zufälligen geeigneten Text aus dem Pool starten",
+          "start_current_text": "Den Test mit dem aktuellen Text starten"
         }
       },
       "questions": {

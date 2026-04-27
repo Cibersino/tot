@@ -1,0 +1,510 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Premye ak dènye pati tèks ki analize a:",
+      "selector_empty": "(vid)",
+      "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
+        "edit": "⌨",
+        "clear": "🗑",
+        "snapshot_load": "📂",
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
+      },
+      "tooltips": {
+        "import_extract": "Enpòte/ekstrè tèks nan fichye",
+        "import_extract_abort": "Anile ekstraksyon",
+        "overwrite_clipboard": "Ranplase tèks aktyèl la ak sa ki nan clipboard la",
+        "append_clipboard": "Ajoute sa ki nan clipboard la nan fen tèks aktyèl la (nouvo liy)",
+        "clipboard_repeat_count": "Repetisyon clipboard",
+        "edit": "Louvri fenèt tèks aktyèl konplè a",
+        "clear": "Vide tèks aktyèl la",
+        "snapshot_load": "Chaje snapshot tèks",
+        "snapshot_save": "Sove tèks aktyèl la nan yon snapshot",
+        "task_new": "Nouvo travay",
+        "task_load": "Chaje travay",
+        "cibersino_website": "Sit Cibersino",
+        "cibersino_kofi": "Sipòte m sou Ko-fi",
+        "new_preset": "Kreye yon nouvo preset",
+        "edit_preset": "Modifye preset chwazi a",
+        "delete_preset": "Efase preset chwazi a",
+        "reset_presets": "Retabli preset pa defo yo",
+        "help_button": "Montre yon konsèy itil",
+        "flotante_window": "Fenèt flòtan"
+      },
+      "aria": {
+        "import_extract": "Enpòte oswa ekstrè tèks nan fichye",
+        "import_extract_abort": "Anile ekstraksyon",
+        "clipboard_repeat_count": "Repetisyon kole",
+        "wpm_input": "Mo pa minit",
+        "wpm_slider": "Koulis mo pa minit",
+        "speed_presets": "Preset vitès",
+        "precise_mode_toggle": "Mòd presi",
+        "crono_controls": "Kontwòl kwonomèt",
+        "crono_display": "Afichej kwonomèt",
+        "crono_toggle": "Kòmanse oswa poze kwonomèt",
+        "crono_reset": "Reyajiste kwonomèt",
+        "floating_window_toggle": "Fenèt flòtan",
+        "floating_window_group": "Kontwòl fenèt flòtan"
+      },
+      "speed": {
+        "title": "VITÈS LEKTI",
+        "wpm_label": "mo pa minit (WPM)",
+        "new": "N",
+        "edit": "E",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "REZILTA KONTAJ",
+        "time": "⏱ Tan lekti estime: {h}h {m}m {s}s",
+        "words": "Mo: {n}",
+        "chars_no_space": "Karaktè (san espas): {n}",
+        "chars": "Karaktè: {n}",
+        "precise_mode": "Mòd presi",
+        "precise_tooltip": "Baze sou Intl.Segmenter"
+      },
+      "crono": {
+        "title": "KWONOMÈT",
+        "speed": "Vitès:",
+        "controls_label": "Kontwòl kwonomèt",
+        "flotante_short": "FF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Tès vitès lekti",
+        "preview_spoiler": "Spoiler"
+      },
+      "processing": {
+        "import_extract_placeholder": "Ap ekstrè tèks...",
+        "import_extract_preparing": "Ap prepare chemen enpòte/ekstrè a...",
+        "import_extract_waiting_native": "Ap ekstrè tèks nan fichye a...",
+        "import_extract_waiting_ocr": "Ap fè ekstraksyon OCR...",
+        "import_extract_waiting_ocr_delayed": "OCR ap fèt. Gen kèk fichye ki pran plis tan.",
+        "import_extract_elapsed": "Tan pase: {time}",
+        "import_extract_drop_here": "Lage fichye a pou enpòte/ekstrè tèks"
+      }
+    },
+    "editor": {
+      "title": "toT — Tèks konplè",
+      "placeholder": "Ekri oswa kole isit la...",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Oto",
+      "spellcheck": "Òtograf",
+      "text_size_label": "Gwosè",
+      "decrease_text_size": "Diminye gwosè tèks la",
+      "increase_text_size": "Ogmante gwosè tèks la",
+      "reset_text_size": "Reyajiste gwosè tèks la",
+      "text_size_value": "{value} px",
+      "read_progress_label": "Li",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Pwogrè lekti: {value}%",
+      "clear": "🗑",
+      "clear_title": "Vide"
+    },
+    "editor_find": {
+      "input_placeholder": "Chèche...",
+      "input_aria": "Chèche nan tèks la",
+      "expand_title": "Montre kontwòl ranplasman",
+      "collapse_title": "Kache kontwòl ranplasman",
+      "replace_placeholder": "Ranplase...",
+      "replace_aria": "Tèks ranplasman",
+      "prev": "🡩",
+      "next": "🡫",
+      "close": "🗙",
+      "replace": "Ranplase",
+      "replace_all": "Ranplase tout",
+      "prev_title": "Korespondans anvan",
+      "next_title": "Korespondans apre",
+      "close_title": "Fèmen ba rechèch la",
+      "replace_title": "Ranplase korespondans aktyèl la",
+      "replace_all_title": "Ranplase tout korespondans yo",
+      "replace_timeout": "Ranplasman an pran twòp tan. Eseye ankò.",
+      "status_no_matches": "Pa gen korespondans",
+      "status_empty_query": "Ekri pou chèche"
+    },
+    "tasks": {
+      "title": "toT — Travay",
+      "labels": {
+        "name": "Non",
+        "total": "TAN TOTAL",
+        "empty": "(vid)",
+        "search": "Chèche",
+        "search_placeholder": "Chèche nan bibliyotèk..."
+      },
+      "columns": {
+        "texto": "Tèks",
+        "tiempo": "Tan",
+        "percent": "%",
+        "falta": "R",
+        "tipo": "Tip",
+        "enlace": "Lyen",
+        "comentario": "",
+        "acciones": "Aksyon"
+      },
+      "buttons": {
+        "save": "Sove",
+        "delete": "Efase",
+        "add_row": "Ajoute ranje",
+        "open_library": "Louvri bibliyotèk",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "Chwazi snapshot",
+        "clear_snapshot": "🗙",
+        "cancel": "Anile",
+        "yes": "Wi",
+        "no": "Non"
+      },
+      "tooltips": {
+        "move_up": "Monte ranje a",
+        "move_down": "Desann ranje a",
+        "delete_row": "Efase ranje",
+        "library_row_save": "Sove nan bibliyotèk",
+        "library_row_load": "Chaje ranje",
+        "library_row_delete": "Efase nan bibliyotèk",
+        "snapshot_load": "Chaje yon snapshot tèks pou ranje sa a",
+        "snapshot_select": "Chwazi yon snapshot tèks pou ranje sa a",
+        "snapshot_clear": "Retire snapshot chwazi a nan ranje sa a",
+        "link_open": "Louvri lyen",
+        "comment": "Ajoute/modifye kòmantè"
+      },
+      "modals": {
+        "comment_title": "Kòmantè",
+        "library_title": "Bibliyotèk",
+        "library_save_title": "Sove nan bibliyotèk",
+        "library_save_question": "Mete kòmantè a ladan?"
+      },
+      "alerts": {
+        "task_unavailable": "Fonksyon travay la pa disponib.",
+        "task_open_error": "Pa t kapab louvri editè travay la.",
+        "task_load_error": "Pa t kapab chaje travay la.",
+        "task_save_error": "Pa t kapab sove travay la.",
+        "task_save_success": "Travay la sove.",
+        "task_delete_error": "Pa t kapab efase travay la.",
+        "task_delete_unavailable": "Pa gen travay sove pou efase.",
+        "task_invalid_file": "Fichye travay la pa valab.",
+        "task_invalid_rows": "Gen ranje ki pa valab nan travay la.",
+        "task_path_outside": "Fichye a dwe anndan katab travay yo.",
+        "name_required": "Non travay la obligatwa.",
+        "row_text_required": "Tèks ranje a pa ka vid.",
+        "library_load_error": "Pa t kapab chaje bibliyotèk la.",
+        "library_save_error": "Pa t kapab sove nan bibliyotèk la.",
+        "library_save_success": "Ranje a sove nan bibliyotèk la.",
+        "library_delete_error": "Pa t kapab efase nan bibliyotèk la.",
+        "link_blocked": "Lyen bloke.",
+        "link_missing": "Fichye pa jwenn.",
+        "link_error": "Erè pandan ouvèti lyen an."
+      },
+      "confirm": {
+        "discard_changes": "Gen chanjman ki pa sove. Jete yo?",
+        "close_unsaved": "Gen chanjman ki pa sove. Fèmen san sove?"
+      }
+    },
+    "snapshot_save_tags": {
+      "title": "Sove snapshot tèks",
+      "message": "Ou ka mete etikèt sou snapshot tèks sa a anvan ou chwazi kote pou sove li.",
+      "labels": {
+        "language": "Lang",
+        "type": "Tip",
+        "difficulty": "Difikilte"
+      },
+      "empty": {
+        "language": "Pa gen etikèt lang",
+        "type": "Pa gen etikèt tip",
+        "difficulty": "Pa gen etikèt difikilte"
+      },
+      "buttons": {
+        "confirm": "Sove snapshot tèks",
+        "cancel": "Anile"
+      },
+      "close_aria": "Fèmen dyalòg pou sove snapshot tèks",
+      "options": {
+        "language": {
+          "es": "Panyòl",
+          "en": "Angle",
+          "pt": "Pòtigè",
+          "fr": "Franse",
+          "de": "Alman",
+          "it": "Italyen",
+          "arn": "Mapudungun",
+          "ja": "Japonè",
+          "ko": "Koreyen",
+          "ru": "Ris",
+          "tr": "Tik",
+          "id": "Endonezyen",
+          "hi": "Hindi",
+          "bn": "Bengali",
+          "ur": "Oudou",
+          "ar": "Arab",
+          "fa": "Pès",
+          "sv": "Swedwa",
+          "vi": "Vyetnamyen",
+          "pcm": "Naijá",
+          "ht": "Kreyòl ayisyen",
+          "zh_hans": "Chinwa senplifye",
+          "zh_hant": "Chinwa tradisyonèl"
+        },
+        "type": {
+          "fiction": "Fiksyon",
+          "non_fiction": "Non-fiksyon"
+        },
+        "difficulty": {
+          "easy": "Fasil",
+          "normal": "Nòmal",
+          "hard": "Difisil"
+        }
+      }
+    },
+    "reading_test": {
+      "prestart": {
+        "reminder": "Peze Play (▶) nan Fenèt Flòtan an lè ou pare pou kòmanse. Lè tès la kòmanse, pa peze Pause (⏸) jiskaske ou fin li: Pause fini tès la; li pa mete kwonomèt la an poz. Peze Stop/Reset (⏹) sèlman si ou vle anile tès la."
+      },
+      "entry": {
+        "title": "Tès vitès lekti",
+        "intro": "Tès sa a fèt pou estime vitès lekti reyèl ou atravè yon sesyon gide. App la ap louvri tèks la epi li ap tann ou peze Play (▶) nan Fenèt Flòtan an lè ou pare pou kòmanse. Lè tès la kòmanse, pa peze Pause (⏸) jiskaske ou fin li: Pause fini tès la; li pa mete kwonomèt la an poz. Sèvi ak Stop/Reset (⏹) sèlman si ou vle anile tès la. Apre sa, ou ka revize kesyon konpreyansyon si tèks la gen ladan yo, epi nan fen an ou ka kreye yon preset apati rezilta a.\nAnvan ou kòmanse, sonje tèks tès sa yo anjeneral mande ant 5 ak 15 minit konsantrasyon san entèripsyon.\nPool sa a sèvi ak tèks kout, kidonk entèprete rezilta a avèk prekosyon. Li pa ta dwe ekstrapole dirèkteman sou tèks long, kote faktè pozitif tankou koule ak konstriksyon kontèks, ansanm ak faktè negatif tankou rekaptitilasyon mantal ak fatig, anjeneral antre an jwèt.",
+        "eligible_count": "Fichye elijib:",
+        "pool_exhausted_message": "Pa gen fichye tès ki rete san itilize. Reyajiste pool la oswa ajoute plis fichye.",
+        "close_aria": "Fèmen dyalòg tès vitès lekti a",
+        "start_random_confirm": "Sa ap ranplase tèks aktyèl la ak yon tèks elijib o aza nan pool la. Ou vle kontinye?",
+        "reset_confirm": "Sa ap reyajiste tout pool tès la epi make tout fichye li yo kòm san itilize ankò. Ou vle kontinye?",
+        "import_summary": "Enpòtasyon fini. Enpòte: {imported}. Duplicata sote: {skippedDuplicates}. Validasyon echwe: {failedValidation}. Antre achiv echwe: {failedArchiveEntries}. Ekriti echwe: {failedWrites}.",
+        "import_conflict": {
+          "title": "Enpòte fichye",
+          "message": "Kèk fichye enpòte deja egziste nan pool la. Kijan pou jere duplicata yo?",
+          "detail": "{count} non fichye destinasyon deja egziste nan pool la.",
+          "buttons": {
+            "skip": "Sote duplicata yo",
+            "replace": "Ranplase duplicata yo",
+            "cancel": "Anile enpòtasyon"
+          }
+        },
+        "buttons": {
+          "get_more_files": "Jwenn plis fichye",
+          "import_files": "Enpòte fichye...",
+          "reset_pool": "R",
+          "show_instructions": "Montre enstriksyon",
+          "hide_instructions": "Kache enstriksyon",
+          "start_random_text": "Kòmanse ak tèks o aza",
+          "start_current_text": "Kòmanse ak tèks aktyèl"
+        },
+        "tooltips": {
+          "get_more_files": "Jwenn plis fichye tès nan katab Google Drive la",
+          "import_files": "Enpòte fichye tès nan aparèy ou",
+          "reset_pool": "Reyajiste pool tès la",
+          "start_random_text": "Kòmanse tès la ak yon tèks elijib o aza nan pool la",
+          "start_current_text": "Kòmanse tès la ak tèks aktyèl la"
+        }
+      },
+      "questions": {
+        "title": "Kesyon konpreyansyon lekti",
+        "intro": "Reponn kesyon konpreyansyon lekti sa yo opsyonèl epi li pa afekte nòt final ou. Yo sèlman la pou ede ou evalye difikilte tèks la epi wè si ritm ak estil lekti ou te pèmèt ou rive nan yon nivo konpreyansyon debaz. Repons ou yo pa sove ni voye bay devlopè yo oswa okenn lòt moun.",
+        "random_title": "Baz devinèt o aza",
+        "random_value": "Nòt espere si ou reponn o aza: {percentage}%",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "Pou plent:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Ou dwe reponn tout kesyon yo anvan evalyasyon.",
+        "result_summary": "{correct} sou {total} kòrèk ({percentage}%)",
+        "chance_at_least_observed": "Chans pou jwenn omwen nòt sa a si ou reponn o aza: {percentage}%",
+        "fatal_invalid": "Payload kesyon yo pa valab.",
+        "buttons": {
+          "check": "Tcheke rezilta",
+          "continue": "Kontinye"
+        }
+      },
+      "result": {
+        "title": "Rezilta vitès lekti",
+        "measured_wpm": "WPM mezire",
+        "elapsed_time": "Tan",
+        "word_count": "Mo",
+        "buttons": {
+          "continue": "Kontinye"
+        }
+      }
+    },
+    "modal_preset": {
+      "title_new": "Nouvo preset",
+      "title_edit": "Modifye preset",
+      "heading_new": "Kreye nouvo preset",
+      "heading_edit": "Modifye preset chwazi a",
+      "name": "Non:",
+      "wpm": "WPM:",
+      "description": "Deskripsyon:",
+      "placeholder": "Deskripsyon kout...",
+      "char_count": "{remaining} karaktè rete",
+      "hint": "Preset pèsonalize yo sove nan paramèt itilizatè a.",
+      "cancel": "Anile",
+      "save": "Sove"
+    },
+    "alerts": {
+      "clipboard_too_large": "Tèks clipboard la twò gwo pou trete. Redui li epi eseye ankò.",
+      "append_too_large": "Tèks rezilta a twò gwo pou trete. Redui li epi eseye ankò.",
+      "clipboard_overflow": "Tèks clipboard la depase maksimòm ki pèmèt la epi li te tronke.",
+      "append_overflow": "Tèks ajoute a depase maksimòm ki pèmèt la epi li te tronke.",
+      "text_limit": "Pa ka ajoute tèks: gwosè maksimòm lan deja rive.",
+      "clipboard_error": "Gen yon erè ki fèt pandan kole soti nan clipboard la. Tcheke konsole a.",
+      "append_error": "Gen yon erè ki fèt pandan ajoute tèks. Tcheke konsole a.",
+      "clear_error": "Gen yon erè ki fèt pandan vide tèks la. Tcheke konsole a.",
+      "snapshot_save_success": "Snapshot sove.",
+      "snapshot_save_error": "Pa t kapab sove snapshot la.",
+      "snapshot_load_success": "Snapshot chaje.",
+      "snapshot_load_error": "Pa t kapab chaje snapshot la.",
+      "snapshot_outside": "Snapshot la dwe anndan katab snapshot yo.",
+      "snapshot_truncated": "Snapshot la depase gwosè maksimòm lan epi li te tronke.",
+      "snapshot_unavailable": "Fonksyon snapshot la pa disponib.",
+      "modal_unavailable": "Fonksyon modal la pa disponib.",
+      "edit_none": "Pa gen preset chwazi pou modifye.",
+      "preset_not_found": "Preset chwazi a pa jwenn nan kach la.",
+      "edit_unavailable": "Fonksyon modifye a pa disponib.",
+      "edit_error": "Gen yon erè ki fèt pandan modifye preset la. Tcheke konsole a.",
+      "delete_error": "Gen yon erè ki fèt pandan efase preset la. Tcheke konsole a.",
+      "restore_error": "Gen yon erè ki fèt pandan retabli preset yo. Tcheke konsole a.",
+      "open_presets_unsupported": "Pa ka louvri katab preset yo nan anviwònman sa a.",
+      "open_presets_error": "Gen yon erè ki fèt pandan ouvèti katab preset yo. Tcheke konsole a.",
+      "open_presets_fail": "Pa t kapab louvri katab preset pa defo yo. Tcheke konsole a pou detay.",
+      "import_extract_error": "Gen yon erè ki fèt pandan kòmanse enpòte/ekstrè. Tcheke konsole a.",
+      "import_extract_precondition_blocked": "Pou kòmanse enpòte/ekstrè, fèmen tout fenèt segondè yo epi kanpe kwonomèt la.",
+      "import_extract_precondition_error": "Gen yon erè ki fèt pandan tcheke kondisyon enpòte/ekstrè yo. Tcheke konsole a.",
+      "import_extract_processing_locked": "Enpòte/ekstrè ap trete. Entèraksyon fenèt prensipal la bloke jiskaske tretman an fini oswa ou anile li.",
+      "import_extract_abort_error": "Gen yon erè ki fèt pandan demann anilasyon enpòte/ekstrè a. Tcheke konsole a.",
+      "import_extract_cancelled": "Enpòte/ekstrè te anile.",
+      "import_extract_drop_single_file_only": "Lage egzakteman yon sèl fichye pou kòmanse enpòte/ekstrè.",
+      "import_extract_drop_invalid_file": "Eleman lage a pa yon fichye lokal valab.",
+      "import_extract_route_choice_required": "Ou dwe chwazi chemen pou PDF sa a anvan ekstraksyon ka kontinye.",
+      "import_extract_route_choice_title": "Chwazi chemen ekstraksyon",
+      "import_extract_route_choice_message": "Tou de chemen ekstraksyon disponib pou PDF sa a. Chwazi youn pou kontinye.",
+      "import_extract_route_choice_native_button": "Sèvi ak natif",
+      "import_extract_route_choice_ocr_button": "Sèvi ak OCR",
+      "import_extract_route_choice_cancel_button": "Anile",
+      "import_extract_route_choice_close_aria": "Fèmen dyalòg chemen ekstraksyon an",
+      "import_extract_apply_modal_title": "Aplike tèks ekstrè a",
+      "import_extract_apply_modal_message": "Chwazi kijan pou aplike tèks ekstrè a.",
+      "import_extract_apply_modal_elapsed": "Tan egzekisyon: {time}",
+      "import_extract_apply_modal_repeat_label": "Repetisyon",
+      "import_extract_apply_modal_overwrite_button": "Ranplase",
+      "import_extract_apply_modal_append_button": "Ajoute",
+      "import_extract_apply_modal_cancel_button": "Anile",
+      "import_extract_apply_modal_close_aria": "Fèmen dyalòg pou aplike tèks ekstrè a",
+      "import_extract_apply_error": "Gen yon erè ki fèt pandan aplike tèks ekstrè a. Tcheke konsole a epi eseye ankò.",
+      "import_extract_apply_too_large": "Tèks rezilta a twò gwo pou trete. Redui repetisyon yo epi eseye ankò.",
+      "import_extract_apply_text_limit": "Pa ka ajoute tèks ekstrè a: gwosè maksimòm lan deja rive.",
+      "import_extract_apply_truncated": "Tèks ekstrè ki aplike a te depase limit la epi li te tronke.",
+      "import_extract_prepare_invalid": "Demann enpòte/ekstrè ki te prepare a pa valab ankò. Kòmanse flux la ankò.",
+      "import_extract_ocr_unavailable": "OCR pa disponib. Tcheke konfigirasyon/otantifikasyon epi eseye ankò.",
+      "import_extract_ocr_activation_required": "Aktivasyon OCR obligatwa. Konekte ak Google OCR epi eseye ankò.",
+      "import_extract_ocr_activation_disclosure_title": "Revize aktivasyon Google OCR",
+      "import_extract_ocr_activation_disclosure_intro": "toT sèvi ak sèvis Google pou OCR. Si ou kontinye, navigatè ou ap louvri pou ou otorize app sa a.",
+      "import_extract_ocr_activation_disclosure_selected_files": "Se sèlman fichye ou chwazi pou OCR yo ki voye bay Google.",
+      "import_extract_ocr_activation_disclosure_local_storage": "App sa a sove kalifikasyon Google OAuth app la jere pou OCR ak eta token Google lokal nan enstans app sa a.",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "Apre ekspòtasyon, app la eseye retire dokiman tanporè Google la nan Google Drive ou.",
+      "import_extract_ocr_activation_disclosure_disconnect": "Ou ka dekonekte pita nan Preferans > Dekonekte Google OCR.",
+      "import_extract_ocr_activation_disclosure_proceed_button": "Kontinye ak Google",
+      "import_extract_ocr_activation_disclosure_cancel_button": "Anile",
+      "import_extract_ocr_activation_disclosure_privacy_link": "Louvri politik vi prive",
+      "import_extract_ocr_activation_disclosure_close_aria": "Fèmen dyalòg aktivasyon OCR la",
+      "import_extract_ocr_activation_success": "Aktivasyon OCR fini. Ap eseye ekstraksyon ankò.",
+      "import_extract_ocr_activation_cancelled": "Aktivasyon OCR te anile. Enpòte/ekstrè pa t kontinye.",
+      "import_extract_ocr_token_state_invalid": "Eta koneksyon Google OCR ki sove a pa valab. Rekonekte Google OCR epi eseye ankò.",
+      "import_extract_ocr_activation_failed": "Aktivasyon OCR echwe. Tcheke konfigirasyon/otantifikasyon epi eseye ankò.",
+      "import_extract_ocr_disconnect_success": "Google OCR dekonekte. Token Google ki sove a te revoke epi eta koneksyon lokal la te retire.",
+      "import_extract_ocr_disconnect_not_connected": "Google OCR pa konekte kounye a nan enstans app sa a.",
+      "import_extract_ocr_disconnect_failed": "Dekoneksyon Google OCR echwe. Eta koneksyon ki sove a pa t retire.",
+      "import_extract_ocr_connectivity_failed": "OCR mande koneksyon entènèt. Tcheke koneksyon ou epi eseye ankò.",
+      "import_extract_ocr_setup_missing_credentials": "OCR pa disponib nan build app sa a paske kalifikasyon Google OAuth ki enkli yo manke.",
+      "import_extract_ocr_setup_invalid_credentials": "OCR pa disponib nan build app sa a paske kalifikasyon Google OAuth ki enkli yo pa valab.",
+      "import_extract_ocr_restricted": "Chemen OCR la gen restriksyon pou kalite fichye sa a.",
+      "import_extract_ocr_quota_or_rate_limited": "OCR bloke tanporèman akòz kota/limit frekans. Tann epi eseye ankò.",
+      "import_extract_ocr_runtime_error": "Gen yon erè runtime OCR ki fèt pandan enpòte/ekstrè. Tcheke konsole a epi eseye ankò.",
+      "import_extract_ocr_cancelled": "Enpòte/ekstrè OCR te anile.",
+      "import_extract_ocr_cleanup_warning": "OCR fini, men netwayaj fichye tanporè aleka a echwe. Tcheke katab Google Drive ou.",
+      "import_extract_ocr_apply_pending": "Ekstraksyon OCR fini. Flux pou aplike apre ekstraksyon an poko aplike.",
+      "import_extract_native_runtime_error": "Gen yon erè runtime ekstraksyon natif ki fèt pandan enpòte/ekstrè. Tcheke konsole a epi eseye ankò.",
+      "import_extract_native_unreadable_or_corrupt": "Fichye chwazi a pa lizib oswa li koripsyon pou ekstraksyon natif.",
+      "import_extract_native_encrypted_or_password_protected": "PDF chwazi a ankode oswa pwoteje ak modpas epi li pa ka ekstrè pa chemen natif.",
+      "import_extract_native_cancelled": "Ekstraksyon natif te anile.",
+      "import_extract_native_unsupported_format": "Fòma fichye sa a pa sipòte pa chemen ekstraksyon natif la.",
+      "import_extract_native_apply_pending": "Ekstraksyon natif fini. Flux pou aplike apre ekstraksyon an poko aplike.",
+      "wip_diseno_skins": "WIP: selektè skins la ap louvri isit nan yon vèsyon pi devan.",
+      "wip_diseno_crono": "WIP: paramèt kwonomèt flòtan an ap louvri isit nan yon vèsyon pi devan.",
+      "wip_diseno_fuentes": "WIP: selektè polis yo ap louvri isit nan yon vèsyon pi devan.",
+      "wip_diseno_colores": "WIP: selektè koulè yo ap louvri isit nan yon vèsyon pi devan.",
+      "wip_shortcuts": "WIP: selektè rakousi klavye a ap louvri isit nan yon vèsyon pi devan.",
+      "reading_test_unavailable": "Fonksyon tès vitès lekti a pa disponib.",
+      "reading_test_precondition_blocked": "Tès vitès lekti a ka kòmanse sèlman depi yon eta app ki estab. Fèmen fenèt segondè yo epi asire kwonomèt la kanpe.",
+      "reading_test_pool_error": "Gen yon erè ki fèt pandan tcheke pool tès vitès lekti a.",
+      "reading_test_no_matching_files": "Pa gen fichye tès san itilize ki rete ki koresponn ak seleksyon aktyèl la.",
+      "reading_test_current_text_empty": "Tèks aktyèl la vid. Chaje oswa ekri yon tèks anvan ou kòmanse tès la ak tèks aktyèl la.",
+      "reading_test_result_invalid": "Rezilta tès la pa t kapab konvèti an yon WPM valab. Flux la fini san louvri modal preset la.",
+      "reading_test_result_unavailable": "Pa t kapab montre rezilta vitès lekti a. Flux la kontinye.",
+      "reading_test_preset_unavailable": "Pa t kapab louvri modal preset la apre tès la.",
+      "reading_test_questions_unavailable": "Pa t kapab louvri modal kesyon konpreyansyon an. Flux la fini anvan kreye preset la.",
+      "reading_test_pool_import_failed": "Fichye tès vitès lekti yo pa t kapab enpòte.",
+      "reading_test_start_failed": "Tès vitès lekti a pa t kapab kòmanse.",
+      "reading_test_cancelled": "Tès vitès lekti a te anile.",
+      "reading_test_cancelled_window_closed": "Tès vitès lekti a te anile paske youn nan fenèt sesyon li yo te fèmen."
+    },
+    "editor_alerts": {
+      "paste_too_big": "Tèks la twò gwo pou kole dirèkteman. Sèvi ak bouton fenèt prensipal yo.",
+      "drop_too_big": "Tèks lage a twò gwo. Sèvi ak bouton fenèt prensipal yo pou ajoute gwo tèks.",
+      "paste_no_text": "Clipboard la pa gen tèks plenn.",
+      "drop_no_text": "Trennen-depoze: pa gen tèks plenn detekte.",
+      "type_limit": "Pa ka ekri plis tèks: gwosè maksimòm lan deja rive.",
+      "paste_limit": "Pa ka kole plis tèks: gwosè maksimòm lan deja rive.",
+      "drop_limit": "Pa ka depoze plis tèks: gwosè maksimòm lan deja rive.",
+      "paste_truncated": "Tèks kole a te tronke pou evite depase maksimòm lan.",
+      "drop_truncated": "Tèks trennen an te depase espas disponib la epi li te tronke.",
+      "text_truncated": "Tèks la te tronke pou antre nan limit app la.",
+      "calc_error": "Gen yon erè ki fèt pandan kalkil. Tcheke konsole a."
+    },
+    "preset_alerts": {
+      "name_empty": "Non an pa ka vid.",
+      "wpm_invalid": "WPM dwe yon nimewo ant {min} ak {max}.",
+      "create_error": "Gen yon erè ki fèt pandan kreye preset la. Tcheke konsole a.",
+      "edit_error": "Gen yon erè ki fèt pandan modifye preset la. Tcheke konsole a.",
+      "process_error": "Gen yon erè ki fèt pandan trete preset la. Tcheke konsole a."
+    },
+    "info": {
+      "loading": "Ap chaje...",
+      "missing_content": "Pa gen kontni disponib pou '{name}'.",
+      "external": {
+        "blocked": "Lyen bloke",
+        "error": "Erè pandan ouvèti lyen"
+      },
+      "appdoc": {
+        "blocked": "Dokiman bloke",
+        "missing": "Dokiman pa jwenn",
+        "error": "Erè pandan ouvèti dokiman"
+      },
+      "acerca_de": {
+        "app_name": "toT",
+        "title": "Konsènan",
+        "version": {
+          "unavailable": "Pa disponib"
+        },
+        "env": {
+          "unavailable": "Pa disponib"
+        }
+      },
+      "instrucciones": {
+        "title": "Kijan pou itilize"
+      },
+      "links_interes": {
+        "app_name": "toT",
+        "title": "Lyen itil",
+        "section_biblio_label": "Referans bibliyografik"
+      }
+    }
+  }
+}

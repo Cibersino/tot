@@ -195,6 +195,14 @@ body {
   user-select: none;
 }
 
+.btn-standard--half {
+  height: calc(var(--control-height-md) / 2);
+  padding: 0 4px;
+  gap: 3px;
+  font-size: 7.5px;
+  line-height: 1;
+}
+
 .btn-standard--square {
   width: var(--control-height-md);
   padding: 0;
@@ -947,7 +955,7 @@ select#presets:focus {
 .cronometro .crono-box:disabled {
   opacity: 1;
   color: inherit;
-  background-color: var(--input-disabled-bg);
+  background-color: var(--input-bg);
   cursor: text;
 }
 
@@ -1476,11 +1484,11 @@ select#presets:focus {
 
 .reading-test-entry-modal-body {
   margin-top: 0;
-  padding-right: 44px;
 }
 
 .reading-test-entry-modal-body h2 {
   margin: 0 0 var(--modal-section-spacing);
+  padding-right: 44px;
   font-size: var(--font-size-modal-title);
   font-weight: 600;
 }
@@ -1545,10 +1553,28 @@ select#presets:focus {
   flex-wrap: wrap;
 }
 
+.reading-test-entry-modal-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
 .reading-test-entry-modal-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
   font-size: var(--font-size-ui-sm);
   font-weight: 600;
   color: var(--warning-count-text);
+}
+
+.reading-test-entry-modal-count-number {
+  display: inline-block;
+  min-inline-size: 3ch;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
 }
 
 .reading-test-entry-modal-management {

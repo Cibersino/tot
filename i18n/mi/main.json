@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Me pēhea te whakamahi",
+      "guia_basica": "Aratohu taketake",
+      "instrucciones_completas": "Ngā tohutohu katoa",
+      "faq": "Ngā pātai auau (FAQ)",
+      "preferencias": "Ngā manakohanga",
+      "idioma": "Reo",
+      "diseno": "Hoahoa",
+      "skins": "Skins",
+      "crono_flotante": "Matawā mānu",
+      "fuentes": "Ngā momotuhi",
+      "colores": "Ngā tae",
+      "shortcuts": "Ngā pokatata papapātuhi",
+      "presets_por_defecto": "Ngā preset taunoa",
+      "disconnect_google_ocr": "Momotu Google OCR",
+      "links_interes": "Ngā hononga whaihua",
+      "ayuda": "?",
+      "actualizar_version": "Whakahōu ki te putanga hou",
+      "acerca_de": "Mō tēnei",
+      "desarrollo": "Whanaketanga",
+      "recargar": "Uta anō",
+      "forcereload": "Whakahau kia uta anō",
+      "toggle_devtools": "Whakakā/whakaweto DevTools",
+      "language": {
+        "empty": "Kāore he reo e wātea ana",
+        "invalid": "He rārangi reo muhu"
+      }
+    },
+    "dialog": {
+      "ok": "Āe",
+      "continue_button": "Āe, haere tonu",
+      "cancel_button": "Kāo, whakakore",
+      "snapshot_overwrite_save": "Tuhia anō te kōnae hopunga kuputuhi e tīariari ana?",
+      "snapshot_overwrite_load": "Whakakapia te kuputuhi o nāianei ki te hopunga kua tīpakohia \"{name}\"?",
+      "task_delete_confirm": "Muku te rārangi tūmahi \"{name}\"?",
+      "task_library_row_save_overwrite": "Kua tīariari kē tētahi tāurunga ko \"{name}\" te ingoa i te pātaka. Tuhia anō?",
+      "task_library_row_delete": "Muku \"{name}\" i te pātaka?",
+      "task_link_confirm": "Whakatuwheratia tēnei hononga?",
+      "task_link_trust_host": "Whakawhirinaki ki tēnei hautū mai i tēnei wā",
+      "task_path_confirm": "Whakatuwheratia tēnei kōnae paetata?",
+      "disconnect_google_ocr_title": "Momotu Google OCR",
+      "disconnect_google_ocr_confirm": "Momotu Google OCR?",
+      "disconnect_google_ocr_detail": "Ka whakakore tēnei i te tōkena takiuru Google OCR kua tiakina, ā, ka muku hoki i te kōnae tōkena paetata o tēnei taupānga. Ka noho pea ngā raraunga OAuth Google paetata e whakahaerehia ana e te taupānga kia taea ai te tūhono anō i te OCR ā muri ake.",
+      "delete_preset_confirm": "Muku te preset \"{name}\"?",
+      "delete_preset_none": "Kāore he preset kua tīpakohia hei muku.",
+      "restore_defaults_confirm": "Whakahokia ngā preset taunoa (whānui me te reo \"{lang}\") ki te taketake? Ka whakahoki tēnei i ngā mukunga me ngā panoni ki ngā preset taunoa mō te reo hohe.",
+      "edit_preset_none": "Kāore he preset kua tīpakohia hei whakatika.",
+      "edit_preset_confirm": "E tino hiahia ana koe ki te whakakapi i \"{name}\" ki te preset o nāianei?",
+      "update_title": "He whakahōunga e wātea ana",
+      "update_message": "Kei te wātea tētahi putanga hou {remote}. O nāianei: {local}. Tikiake ināianei?",
+      "update_download": "Tikiake",
+      "update_later": "Ā muri ake",
+      "update_up_to_date_title": "Kua whakahōutia kē koe.",
+      "update_up_to_date_message": "Kei a koe kē te putanga hou rawa ({local}).",
+      "update_failed_title": "I rahua te taki whakahōunga.",
+      "update_failed_message": "Tirohia tō hononga ka ngana anō."
+    }
+  }
+}

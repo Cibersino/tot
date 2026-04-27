@@ -382,7 +382,7 @@ if (!loadRendererTranslations || !tRenderer || !msgRenderer || !getRendererValue
 }
 
 function getHelpTipKeyList() {
-  const tips = getRendererValue('renderer.main.tips.results_help');
+  const tips = getRendererValue('renderer.tips');
   if (!tips || typeof tips !== 'object' || Array.isArray(tips)) return [];
   return Object.keys(tips)
     .map((key) => {
@@ -392,7 +392,7 @@ function getHelpTipKeyList() {
     })
     .filter(Boolean)
     .sort((a, b) => a.order - b.order || a.key.localeCompare(b.key))
-    .map(({ key }) => `renderer.main.tips.results_help.${key}`);
+    .map(({ key }) => `renderer.tips.${key}`);
 }
 
 const getCronoLabels = () => ({
@@ -1961,7 +1961,7 @@ function bindHelpAction() {
       const tipCount = helpTipKeys.length;
       if (!tipCount) {
         log.warn('Help tip list is empty; falling back to tip1.');
-        window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
+        window.Notify.notifyMain('renderer.tips.tip1');
         return;
       }
 

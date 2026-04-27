@@ -68,17 +68,6 @@
         "precise_mode": "Modo preciso",
         "precise_tooltip": "Basado en Intl.Segmenter"
       },
-      "tips": {
-        "results_help": {
-          "tip1": "El modo preciso usa segmentación Unicode para contar caracteres (grafemas) y palabras mediante Intl.Segmenter.",
-          "tip2": "Al insertar manualmente un tiempo en el cronómetro, se eliminan las fracciones de segundo invisibles.",
-          "tip3": "Para seleccionar todo el texto de un área usa Ctrl + A (Windows y Linux) o Command(⌘) + A (Mac).",
-          "tip4": "Puedes seleccionar un texto seleccionando primero el texto de uno de los extremos y, con Shift apretado, hacer clic en el otro extremo.",
-          "tip5": "Un libro estándar suele contener entre 250 a 300 palabras por página (esto solo aplica a idiomas que utilizan alfabeto latino, o derivados cercanos, y con una estructura gramatical similar).",
-          "tip6": "'No es, pues, un fármaco de la memoria lo que has hallado, sino un simple recordatorio.' (Platón)",
-          "tip7": "'El habla escrita exige una doble abstracción: del aspecto sonoro del lenguaje y del interlocutor.' (Vigotski)"
-        }
-      },
       "crono": {
         "title": "CRONÓMETRO",
         "speed": "Velocidad:",
@@ -280,7 +269,7 @@
       "entry": {
         "title": "Test de velocidad de lectura",
         "intro": "Este test sirve para estimar tu velocidad real de lectura con una sesión guiada. La app abrirá el texto y esperará a que pulses Play (▶) en la Ventana Flotante cuando estés listo para empezar. Una vez que el test haya empezado, no pulses Pausa (⏸) hasta terminar de leer: Pausa termina el test; no pone el cronómetro en pausa. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nAntes de empezar, ten en cuenta que estos textos de prueba suelen requerir entre 5 y 15 minutos de concentración continua, sin interrupciones.\nEste pool usa textos breves, así que interpreta el resultado con cautela. No debería extrapolarse directamente a textos largos, donde suelen entrar en juego factores positivos, como la adquisición de fluidez y de contexto, y factores negativos, como la recapitulación mental y la fatiga.",
-        "eligible_count": "Archivos elegibles: {count}",
+        "eligible_count": "Archivos elegibles:",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Restablece el pool o agrega más archivos.",
         "close_aria": "Cerrar diálogo de test de velocidad de lectura",
         "start_random_confirm": "Esto sobrescribirá el texto actual con un texto aleatorio elegible del pool. ¿Deseas continuar?",
@@ -299,11 +288,18 @@
         "buttons": {
           "get_more_files": "Obtener más archivos",
           "import_files": "Importar archivos...",
-          "reset_pool": "Restablecer pool",
+          "reset_pool": "R",
           "show_instructions": "Mostrar instrucciones",
           "hide_instructions": "Ocultar instrucciones",
           "start_random_text": "Iniciar con texto aleatorio",
           "start_current_text": "Iniciar con texto actual"
+        },
+        "tooltips": {
+          "get_more_files": "Obtener más archivos de test desde la carpeta de Google Drive",
+          "import_files": "Importar archivos de test desde tu dispositivo",
+          "reset_pool": "Restablecer pool del test",
+          "start_random_text": "Iniciar el test con un texto aleatorio elegible del pool",
+          "start_current_text": "Iniciar el test con el texto actual"
         }
       },
       "questions": {
@@ -504,6 +500,60 @@
         "title": "Links de interés",
         "section_biblio_label": "Referencias bibliográficas"
       }
+    },
+    "tips": {
+      "tip1": "El modo preciso usa segmentación Unicode para contar caracteres (grafemas) y palabras mediante 'Intl.Segmenter'.",
+      "tip2": "Al insertar manualmente un tiempo en el cronómetro, se eliminan las fracciones de segundo invisibles.",
+      "tip3": "Para seleccionar todo el texto de un área usa Ctrl + A (Windows y Linux) o Command(⌘) + A (Mac).",
+      "tip4": "Puedes seleccionar un texto seleccionando primero el texto de uno de los extremos y, con Shift apretado, hacer clic en el otro extremo.",
+      "tip5": "Un libro estándar suele contener entre 250 a 300 palabras por página (esto solo aplica a idiomas que utilizan alfabeto latino, o derivados cercanos, y con una estructura gramatical similar).",
+      "tip6": "'No es, pues, un fármaco de la memoria lo que has hallado, sino un simple recordatorio.' (Platón)",
+      "tip7": "'El habla escrita exige una doble abstracción: del aspecto sonoro del lenguaje y del interlocutor.' (Vigotski)",
+      "tip8": "toT es una app principalmente local: no recopila telemetría ni métricas de uso, y el texto que escribes, pegas, editas o procesas no se envía a servidores del desarrollador.",
+      "tip9": "Los snapshots son archivos locales: sirven para guardar y recuperar textos de trabajo sin depender de una nube.",
+      "tip10": "El test de velocidad de lectura no envía tu WPM ni tus respuestas de comprensión a Internet; su resultado se usa localmente.",
+      "tip11": "Después de exportar el texto extraído por OCR, la app intenta borrar el documento temporal creado en Google para esa conversión.",
+      "tip12": "El texto vigente puede tener hasta 50.000.000 de caracteres: el límite existe para evitar bloqueos, payloads excesivos y consumo extremo de memoria.",
+      "tip13": "toT usa el navegador externo del sistema para autorizaciones y enlaces sensibles, evitando flujos embebidos dentro de la app.",
+      "tip14": "El resultado del test de velocidad de lectura puede crear un preset, pero no representa una velocidad universal: distintos tipos de texto exigen ritmos distintos.",
+      "tip15": "La extracción OCR puede tardar segundos o minutos, dependiendo del tamaño y la complejidad del archivo.",
+      "tip16": "Si un PDF tiene texto seleccionable, la extracción nativa suele ser más rápida que OCR, pero la calidad del resultado puede variar.",
+      "tip17": "Los presets por defecto son restaurables: puedes experimentar con velocidades personalizadas sin perder una base de referencia.",
+      "tip18": "El OCR suele funcionar mejor con texto horizontal, enfocado y sin sombras fuertes, manchas, fondos complejos o inclinación excesiva.",
+      "tip19": "En el test de velocidad de lectura, responder las preguntas de comprensión es opcional y no afecta tu puntaje final.",
+      "tip20": "La velocidad de lectura es un indicador de rendimiento, pero no refleja necesariamente la comprensión del texto.",
+      "tip21": "Puedes usar el test de velocidad de lectura para evaluar tu progreso con distintos tipos de texto y ajustar tus presets en consecuencia.",
+      "tip22": "Si encuentras un error o tienes una sugerencia, puedes reportarlo mediante GitHub Issues o escribir al correo de contacto del proyecto.",
+      "tip23": "La función de tareas permite organizar múltiples textos con tiempos estimados de lectura, enlaces y comentarios.",
+      "tip24": "En el editor de tareas, puedes guardar filas individuales en una biblioteca para reutilizarlas en distintas tareas.",
+      "tip25": "toT es un proyecto de código abierto. Si quieres contribuir, revisa el repositorio en GitHub y no dudes en abrir un issue o un pull request.",
+      "tip26": "toT distingue entre extracción nativa y OCR porque no todos los documentos contienen texto seleccionable, aunque visualmente parezcan texto.",
+      "tip27": "En el editor de tareas, las columnas pueden redimensionarse para adaptar la tabla al tipo de información que estás organizando.",
+      "tip28": "La Ventana Flotante permite seguir el cronómetro mientras lees en otra ventana o aplicación.",
+      "tip29": "Si quieres usar tu propio texto para el test de velocidad de lectura, cárgalo como texto actual y luego inicia el test con la opción correspondiente.",
+      "tip30": "El modo Spoiler oculta el segmento final del preview para que puedas estimar o preparar una lectura sin ver accidentalmente el cierre del texto.",
+      "tip31": "Cuando el editor de texto está maximizado, los gutters laterales ayudan a controlar el ancho real de lectura. Para restaurar el ancho por defecto, haz doble clic en el gutter.",
+      "tip32": "En el editor de texto, puedes buscar y reemplazar texto usando Ctrl + F y Ctrl + H (Windows y Linux) o usando ⌘ + F y ⌘ + ⌥ + F (Mac).",
+      "tip33": "En el editor de texto, el botón CALC/SAVE actualiza el texto actual y recalcula los resultados del conteo. Si Auto está activado, esta acción se realiza automáticamente.",
+      "tip34": "El editor puede usar corrector ortográfico según el idioma activo de la app, cuando el sistema dispone del diccionario correspondiente.",
+      "tip35": "En el editor, la búsqueda de texto no discrimina mayúsculas de minúsculas ni respeta acentos. Sin embargo, el reemplazo sí respeta acentos.",
+      "tip36": "Agregar desde el portapapeles conserva el texto actual; reemplazar desde el portapapeles lo sustituye por completo.",
+      "tip37": "Las etiquetas de los snapshots de texto son opcionales, pero pueden servir para clasificarlos. Por ejemplo, el test de velocidad de lectura las usa para filtrar textos.",
+      "tip38": "En el editor de tareas, los enlaces pueden ser URLs o rutas a archivos locales. Al hacer clic en el botón de enlace, la app intentará abrirlo.",
+      "tip39": "El cronómetro calcula WPM reales comparando el tiempo medido con la cantidad de palabras del texto actual.",
+      "tip40": "Si cambias el texto actual durante una sesión, conviene reiniciar el cronómetro antes de interpretar la velocidad resultante.",
+      "tip41": "La extracción OCR utiliza temporalmente Google Drive para convertir el archivo seleccionado y devolver el texto extraído a la app.",
+      "tip42": "Los textos breves del test sirven para calibrar, pero una velocidad obtenida en pocos minutos no siempre se extrapola bien a lecturas largas.",
+      "tip43": "Las tareas están pensadas para planificar cargas de lectura; los snapshots están pensados para conservar textos.",
+      "tip44": "El preview del texto actual reemplaza saltos de línea por espacios para mostrar una vista compacta en la ventana principal.",
+      "tip45": "Cuando el test de velocidad de lectura usa un texto del pool, ese archivo se marca como usado para evitar repeticiones futuras, hasta que restablezcas el pool.",
+      "tip46": "Si guardas un snapshot de texto en la carpeta 'reading_speed_test_pool', el test de velocidad de lectura podrá usarlo como texto de prueba.",
+      "tip47": "El importador del pool del test puede incorporar archivos de prueba sueltos o paquetes comprimidos, según el formato que uses.",
+      "tip48": "OCR significa Optical Character Recognition (Reconocimiento Óptico de Caracteres) y es una tecnología que convierte imágenes de texto en texto editable y seleccionable.",
+      "tip49": "Entre los antecedentes del OCR estuvo el optophone, una máquina de comienzos del siglo XX pensada para que personas ciegas pudieran convertir texto impreso en sonidos.",
+      "tip50": "El desarrollo del OCR moderno se aceleró entre los años 50 y 60, impulsado por la automatización postal y la lectura de documentos comerciales.",
+      "tip51": "La máquina de lectura de Kurzweil, presentada en los años 70, combinó escáner, OCR y síntesis de voz para leer texto impreso en voz alta.",
+      "tip52": "Un error típico de OCR es confundir caracteres visualmente parecidos, como O y 0, l e I, o rn y m."
     }
   }
 }

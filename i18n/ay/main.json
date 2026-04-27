@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "App kunjam apnaqaña",
+      "guia_basica": "Qallta irpiri",
+      "instrucciones_completas": "Phuqhata yatichawinaka",
+      "faq": "Sapa kuti jiskt’awinaka (FAQ)",
+      "preferencias": "Ajllitanaka",
+      "idioma": "Aru",
+      "diseno": "Diseño",
+      "skins": "Skins",
+      "crono_flotante": "Tuyuri pachayupiri",
+      "fuentes": "Qillqa kasta",
+      "colores": "Saminaka",
+      "shortcuts": "Teclado jank’a thakhinaka",
+      "presets_por_defecto": "Nayraqat wakichata presets",
+      "disconnect_google_ocr": "Google OCR ukat mistuña",
+      "links_interes": "Wakiskiri linkanaka",
+      "ayuda": "?",
+      "actualizar_version": "Qhipa versión ukar machaqachaña",
+      "acerca_de": "Aka tuqita",
+      "desarrollo": "Desarrollo",
+      "recargar": "Wasitat cargar",
+      "forcereload": "Ch’amampi wasitat cargar",
+      "toggle_devtools": "DevTools mayjt’ayaña",
+      "language": {
+        "empty": "Janiw arunakax utjkiti",
+        "invalid": "Arunaka lista janiw walikiti"
+      }
+    },
+    "dialog": {
+      "ok": "Waliki",
+      "continue_button": "Jïsa, sarantaskakiña",
+      "cancel_button": "Janiwa, suyt’ayaña",
+      "snapshot_overwrite_save": "Utjki uka snapshot ukar qillqaña?",
+      "snapshot_overwrite_load": "Jichha qillqataxa ajllita snapshot \"{name}\" ukamp lantintañati?",
+      "task_delete_confirm": "Tarea lista \"{name}\" chhaqtayañati?",
+      "task_library_row_save_overwrite": "Biblioteca ukan \"{name}\" sat sutix niy utji. Lantintañati?",
+      "task_library_row_delete": "Biblioteca ukat \"{name}\" chhaqtayañati?",
+      "task_link_confirm": "Aka link jist’arañati?",
+      "task_link_trust_host": "Aka host ukar jichhat uksar atinisiña",
+      "task_path_confirm": "Aka local archivo jist’arañati?",
+      "disconnect_google_ocr_title": "Google OCR ukat mistuña",
+      "disconnect_google_ocr_confirm": "Google OCR ukat mistuñati?",
+      "disconnect_google_ocr_detail": "Akax imata Google OCR mantaña token ukar revoca, ukat aka appan local token archivop chhaqtayi. Appamp apnaqata Google OAuth credencialanakax qhipan OCR wasitat mayachañatak qhiparaspawa.",
+      "delete_preset_confirm": "Preset \"{name}\" chhaqtayañati?",
+      "delete_preset_none": "Chhaqtayañatakix janiw mä preset ajllitatäkiti.",
+      "restore_defaults_confirm": "Nayraqat wakichata presets (taqinitaki ukat \"{lang}\" arutaki) qallta versión ukar kutt’ayañati? Akax activo arun nayraqat presets ukan chhaqtayatanaka ukat mayjt’ayatanaka kutt’ayani.",
+      "edit_preset_none": "Askichañatakix janiw mä preset ajllitatäkiti.",
+      "edit_preset_confirm": "\"{name}\" ukar jichha preset ukamp lantintañ munasmati?",
+      "update_title": "Machaqachawi utji",
+      "update_message": "Mä machaq versión {remote} utji. Jichha: {local}. Jichhax apaqañati?",
+      "update_download": "Apaqaña",
+      "update_later": "Qhiparu",
+      "update_up_to_date_title": "Jichhakama machaqätawa.",
+      "update_up_to_date_message": "Qhipa versión niyaw utjtam ({local}).",
+      "update_failed_title": "Machaqachawi uñakipañax pantjasi.",
+      "update_failed_message": "Internet mayachawim uñakipam ukat wasitat yant’am."
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "アプリの使い方",
+      "guia_basica": "基本ガイド",
+      "instrucciones_completas": "詳細な使い方",
+      "faq": "よくある質問（FAQ）",
+      "preferencias": "設定",
+      "idioma": "言語",
+      "diseno": "デザイン",
+      "skins": "スキン",
+      "crono_flotante": "フローティングストップウォッチ",
+      "fuentes": "フォント",
+      "colores": "色",
+      "shortcuts": "キーボードショートカット",
+      "presets_por_defecto": "デフォルトプリセット",
+      "disconnect_google_ocr": "Google OCR を切断",
+      "links_interes": "参考リンク",
+      "ayuda": "?",
+      "actualizar_version": "最新バージョンに更新",
+      "acerca_de": "このアプリについて",
+      "desarrollo": "開発",
+      "recargar": "再読み込み",
+      "forcereload": "強制再読み込み",
+      "toggle_devtools": "DevTools の切り替え",
+      "language": {
+        "empty": "利用可能な言語がありません",
+        "invalid": "言語リストが無効です"
+      }
+    },
+    "dialog": {
+      "ok": "OK",
+      "continue_button": "はい、続行",
+      "cancel_button": "いいえ、キャンセル",
+      "snapshot_overwrite_save": "既存のスナップショットファイルを上書きしますか？",
+      "snapshot_overwrite_load": "選択したスナップショット「{name}」で現在のテキストを置き換えますか？",
+      "task_delete_confirm": "タスクリスト「{name}」を削除しますか？",
+      "task_library_row_save_overwrite": "ライブラリに「{name}」がすでに存在します。上書きしますか？",
+      "task_library_row_delete": "ライブラリから「{name}」を削除しますか？",
+      "task_link_confirm": "このリンクを開きますか？",
+      "task_link_trust_host": "今後このホストを信頼する",
+      "task_path_confirm": "このローカルファイルを開きますか？",
+      "disconnect_google_ocr_title": "Google OCR を切断",
+      "disconnect_google_ocr_confirm": "Google OCR を切断しますか？",
+      "disconnect_google_ocr_detail": "保存された Google OCR のログイントークンを取り消し、このアプリのローカルトークンファイルを削除します。後で OCR に再接続できるように、アプリが管理するローカルの Google OAuth 認証情報は残る場合があります。",
+      "delete_preset_confirm": "プリセット「{name}」を削除しますか？",
+      "delete_preset_none": "削除するプリセットが選択されていません。",
+      "restore_defaults_confirm": "デフォルトプリセット（共通および言語「{lang}」用）を元の状態に復元しますか？アクティブな言語のデフォルトプリセットに対する削除や変更は元に戻ります。",
+      "edit_preset_none": "編集するプリセットが選択されていません。",
+      "edit_preset_confirm": "「{name}」を現在のプリセットで置き換えてもよろしいですか？",
+      "update_title": "更新があります",
+      "update_message": "新しいバージョン {remote} があります。現在: {local}。今すぐダウンロードしますか？",
+      "update_download": "ダウンロード",
+      "update_later": "後で",
+      "update_up_to_date_title": "最新です。",
+      "update_up_to_date_message": "すでに最新バージョン（{local}）を使用しています。",
+      "update_failed_title": "更新確認に失敗しました。",
+      "update_failed_message": "接続を確認して、もう一度お試しください。"
+    }
+  }
+}

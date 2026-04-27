@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Hur använder man appen?",
+      "guia_basica": "Grundguide",
+      "instrucciones_completas": "Fullständiga instruktioner",
+      "faq": "Vanliga frågor (FAQ)",
+      "preferencias": "Inställningar",
+      "idioma": "Språk",
+      "diseno": "Design",
+      "skins": "Skins",
+      "crono_flotante": "Flytande stoppur",
+      "fuentes": "Typsnitt",
+      "colores": "Färger",
+      "shortcuts": "Tangentbordsgenvägar",
+      "presets_por_defecto": "Standardförinställningar",
+      "disconnect_google_ocr": "Koppla från Google OCR",
+      "links_interes": "Användbara länkar",
+      "ayuda": "?",
+      "actualizar_version": "Uppdatera till senaste versionen",
+      "acerca_de": "Om",
+      "desarrollo": "Utveckling",
+      "recargar": "Ladda om",
+      "forcereload": "Tvinga omladdning",
+      "toggle_devtools": "Växla DevTools",
+      "language": {
+        "empty": "Inga språk tillgängliga",
+        "invalid": "Ogiltig språklista"
+      }
+    },
+    "dialog": {
+      "ok": "OK",
+      "continue_button": "Ja, fortsätt",
+      "cancel_button": "Nej, avbryt",
+      "snapshot_overwrite_save": "Skriva över befintlig snapshotfil?",
+      "snapshot_overwrite_load": "Ersätta aktuell text med vald snapshot \"{name}\"?",
+      "task_delete_confirm": "Ta bort uppgiftslistan \"{name}\"?",
+      "task_library_row_save_overwrite": "En post med namnet \"{name}\" finns redan i biblioteket. Skriva över?",
+      "task_library_row_delete": "Ta bort \"{name}\" från biblioteket?",
+      "task_link_confirm": "Öppna den här länken?",
+      "task_link_trust_host": "Lita på denna värd från och med nu",
+      "task_path_confirm": "Öppna den här lokala filen?",
+      "disconnect_google_ocr_title": "Koppla från Google OCR",
+      "disconnect_google_ocr_confirm": "Koppla från Google OCR?",
+      "disconnect_google_ocr_detail": "Detta återkallar den sparade inloggningstoken för Google OCR och tar bort den lokala tokenfilen från den här appen. Lokala Google OAuth-uppgifter som hanteras av appen kan finnas kvar så att OCR kan anslutas igen senare.",
+      "delete_preset_confirm": "Ta bort förinställningen \"{name}\"?",
+      "delete_preset_none": "Ingen förinställning har valts för borttagning.",
+      "restore_defaults_confirm": "Återställa standardförinställningar (allmänna och för språket \"{lang}\") till originalversionen? Detta återställer borttagningar och ändringar av standardförinställningar för det aktiva språket.",
+      "edit_preset_none": "Ingen förinställning har valts för redigering.",
+      "edit_preset_confirm": "Är du säker på att du vill ersätta \"{name}\" med aktuell förinställning?",
+      "update_title": "Uppdatering tillgänglig",
+      "update_message": "En ny version {remote} är tillgänglig. Aktuell: {local}. Ladda ner nu?",
+      "update_download": "Ladda ner",
+      "update_later": "Senare",
+      "update_up_to_date_title": "Du är uppdaterad.",
+      "update_up_to_date_message": "Du har redan den senaste versionen ({local}).",
+      "update_failed_title": "Uppdateringskontrollen misslyckades.",
+      "update_failed_message": "Kontrollera din anslutning och försök igen."
+    }
+  }
+}

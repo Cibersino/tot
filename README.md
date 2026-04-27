@@ -34,7 +34,7 @@
 * Snapshots de textos: guardar/cargar los textos actuales.
 * Test de velocidad de lectura: flujo guiado con texto aleatorio desde pool o con el texto actual, medición de WPM, preguntas opcionales de comprensión y creación asistida de presets.
 * Editor de tareas: organizador de listas de textos para planificar lecturas.
-* Interfaz multi-idioma: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
+* Interfaz multi-idioma con más de 25 idiomas activos.
 
 ---
 
@@ -63,6 +63,16 @@ Notas:
 
 ---
 
+## Extensión Chrome
+
+toT también tiene una extensión para Chrome:
+
+* [toT — Tiempo de lectura en Chrome Web Store](https://chromewebstore.google.com/detail/aaadjdlieimolidjdkbimjcdojologld)
+
+La extensión estima el tiempo de lectura del texto que seleccionas en páginas web. Es una herramienta ligera para el navegador: no reemplaza la app de escritorio, no extrae artículos completos y no sincroniza datos con la app.
+
+---
+
 ## Uso
 
 Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar la app?”).
@@ -80,6 +90,7 @@ Accesos rápidos visibles en la ventana principal:
 ## Sitio web y contacto
 
 * Sitio: [https://totapp.org/es/](https://totapp.org/es/)
+* Extensión Chrome: [toT — Tiempo de lectura en Chrome Web Store](https://chromewebstore.google.com/detail/aaadjdlieimolidjdkbimjcdojologld)
 * Contacto: [GitHub Issues](https://github.com/Cibersino/tot/issues) o [cibersino@gmail.com](mailto:cibersino@gmail.com)
 
 ---
@@ -191,7 +202,7 @@ MIT — ver [`LICENSE`](LICENSE).
 * Text snapshots: save/load current texts.
 * Reading speed test: guided flow with random pool text or the current text, WPM measurement, optional comprehension questions, and assisted preset creation.
 * Task editor: text list organizer to plan readings.
-* Multi-language UI: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
+* Multi-language UI with 25+ active languages.
 
 ---
 
@@ -223,6 +234,16 @@ Notes:
 
 ---
 
+## Chrome extension
+
+toT also has a Chrome extension:
+
+* [toT — Reading time on the Chrome Web Store](https://chromewebstore.google.com/detail/aaadjdlieimolidjdkbimjcdojologld)
+
+The extension estimates the reading time of text you select on web pages. It is a lightweight browser tool: it does not replace the desktop app, does not extract full articles, and does not sync data with the app.
+
+---
+
 ## Usage
 
 Usage instructions are included in the app menu (“How to use?”).
@@ -240,6 +261,7 @@ Quick actions in the main window:
 ## Website and contact
 
 * Website: [https://totapp.org/en/](https://totapp.org/en/)
+* Chrome extension: [toT — Reading time on the Chrome Web Store](https://chromewebstore.google.com/detail/aaadjdlieimolidjdkbimjcdojologld)
 * Contact: [GitHub Issues](https://github.com/Cibersino/tot/issues) or [cibersino@gmail.com](mailto:cibersino@gmail.com)
 
 ---

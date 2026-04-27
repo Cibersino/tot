@@ -1,0 +1,505 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "أول وآخر جزء من النص المُحلَّل:",
+      "selector_empty": "(فارغ)",
+      "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
+        "edit": "⌨",
+        "clear": "🗑",
+        "snapshot_load": "📂",
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
+      },
+      "tooltips": {
+        "import_extract": "استيراد/استخراج النص من ملف",
+        "import_extract_abort": "إيقاف الاستخراج",
+        "overwrite_clipboard": "استبدال النص الحالي بمحتوى الحافظة",
+        "append_clipboard": "إلحاق محتوى الحافظة بنهاية النص الحالي (سطر جديد)",
+        "clipboard_repeat_count": "عدد مرات لصق الحافظة",
+        "edit": "فتح نافذة النص الحالي الكامل",
+        "clear": "مسح النص الحالي",
+        "snapshot_load": "تحميل لقطة نصية",
+        "snapshot_save": "حفظ النص الحالي في لقطة نصية",
+        "task_new": "مهمة جديدة",
+        "task_load": "تحميل مهمة",
+        "cibersino_website": "موقع Cibersino",
+        "cibersino_kofi": "ادعمني على Ko-fi",
+        "new_preset": "إنشاء إعداد مسبق جديد",
+        "edit_preset": "تعديل الإعداد المسبق المحدد",
+        "delete_preset": "حذف الإعداد المسبق المحدد",
+        "reset_presets": "استعادة الإعدادات المسبقة الافتراضية",
+        "help_button": "عرض نصيحة مفيدة",
+        "flotante_window": "النافذة العائمة"
+      },
+      "aria": {
+        "import_extract": "استيراد أو استخراج نص من ملف",
+        "import_extract_abort": "إيقاف الاستخراج",
+        "clipboard_repeat_count": "عدد مرات اللصق",
+        "wpm_input": "كلمات في الدقيقة",
+        "wpm_slider": "شريط تمرير الكلمات في الدقيقة",
+        "speed_presets": "إعدادات السرعة المسبقة",
+        "precise_mode_toggle": "الوضع الدقيق",
+        "crono_controls": "عناصر التحكم في ساعة الإيقاف",
+        "crono_display": "عرض ساعة الإيقاف",
+        "crono_toggle": "بدء ساعة الإيقاف أو إيقافها مؤقتًا",
+        "crono_reset": "إعادة ضبط ساعة الإيقاف",
+        "floating_window_toggle": "النافذة العائمة",
+        "floating_window_group": "عناصر التحكم في النافذة العائمة"
+      },
+      "speed": {
+        "title": "سرعة القراءة",
+        "wpm_label": "كلمة في الدقيقة (WPM)",
+        "new": "ج",
+        "edit": "ت",
+        "delete": "🗑",
+        "reset_defaults": "ا"
+      },
+      "results": {
+        "title": "نتائج العد",
+        "time": "⏱ زمن القراءة المقدَّر: {h}س {m}د {s}ث",
+        "words": "الكلمات: {n}",
+        "chars_no_space": "الأحرف (من دون مسافات): {n}",
+        "chars": "الأحرف: {n}",
+        "precise_mode": "الوضع الدقيق",
+        "precise_tooltip": "استنادًا إلى Intl.Segmenter"
+      },
+      "crono": {
+        "title": "ساعة الإيقاف",
+        "speed": "السرعة:",
+        "controls_label": "عناصر التحكم في ساعة الإيقاف",
+        "flotante_short": "ع",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "اختبار سرعة القراءة",
+        "preview_spoiler": "إخفاء النهاية"
+      },
+      "processing": {
+        "import_extract_placeholder": "جارٍ استخراج النص...",
+        "import_extract_preparing": "جارٍ تحضير مسار الاستيراد/الاستخراج...",
+        "import_extract_waiting_native": "جارٍ استخراج النص من الملف...",
+        "import_extract_waiting_ocr": "جارٍ تنفيذ استخراج OCR...",
+        "import_extract_waiting_ocr_delayed": "جارٍ تنفيذ OCR. بعض الملفات يستغرق وقتًا أطول.",
+        "import_extract_elapsed": "الوقت المنقضي: {time}",
+        "import_extract_drop_here": "أفلت الملف لاستيراد/استخراج النص"
+      }
+    },
+    "editor": {
+      "title": "toT — النص الكامل",
+      "placeholder": "اكتب أو الصق هنا...",
+      "calc_button": "احسب/احفظ",
+      "calc_while_typing": "تلقائي",
+      "spellcheck": "التدقيق الإملائي",
+      "text_size_label": "الحجم",
+      "decrease_text_size": "تصغير حجم النص",
+      "increase_text_size": "تكبير حجم النص",
+      "reset_text_size": "إعادة ضبط حجم النص",
+      "text_size_value": "{value} px",
+      "read_progress_label": "المقروء",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "تقدّم القراءة: {value}%",
+      "clear": "🗑",
+      "clear_title": "مسح"
+    },
+    "editor_find": {
+      "input_placeholder": "بحث...",
+      "input_aria": "البحث في النص",
+      "expand_title": "إظهار عناصر الاستبدال",
+      "collapse_title": "إخفاء عناصر الاستبدال",
+      "replace_placeholder": "استبدال...",
+      "replace_aria": "نص الاستبدال",
+      "prev": "🡩",
+      "next": "🡫",
+      "close": "🗙",
+      "replace": "استبدال",
+      "replace_all": "استبدال الكل",
+      "prev_title": "المطابقة السابقة",
+      "next_title": "المطابقة التالية",
+      "close_title": "إغلاق شريط البحث",
+      "replace_title": "استبدال المطابقة الحالية",
+      "replace_all_title": "استبدال كل المطابقات",
+      "replace_timeout": "انتهت مهلة الاستبدال. حاول مرة أخرى.",
+      "status_no_matches": "لا توجد مطابقات",
+      "status_empty_query": "اكتب للبحث"
+    },
+    "tasks": {
+      "title": "toT — المهام",
+      "labels": {
+        "name": "الاسم",
+        "total": "الوقت الإجمالي",
+        "empty": "(فارغ)",
+        "search": "بحث",
+        "search_placeholder": "البحث في المكتبة..."
+      },
+      "columns": {
+        "texto": "النص",
+        "tiempo": "الوقت",
+        "percent": "%",
+        "falta": "م",
+        "tipo": "النوع",
+        "enlace": "الرابط",
+        "comentario": "",
+        "acciones": "الإجراءات"
+      },
+      "buttons": {
+        "save": "حفظ",
+        "delete": "حذف",
+        "add_row": "إضافة صف",
+        "open_library": "فتح المكتبة",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "اختيار لقطة نصية",
+        "clear_snapshot": "🗙",
+        "cancel": "إلغاء",
+        "yes": "نعم",
+        "no": "لا"
+      },
+      "tooltips": {
+        "move_up": "نقل إلى الأعلى",
+        "move_down": "نقل إلى الأسفل",
+        "delete_row": "حذف الصف",
+        "library_row_save": "حفظ في المكتبة",
+        "library_row_load": "تحميل الصف",
+        "library_row_delete": "حذف من المكتبة",
+        "snapshot_load": "تحميل لقطة نصية لهذا الصف",
+        "snapshot_select": "اختيار لقطة نصية لهذا الصف",
+        "snapshot_clear": "إزالة اللقطة النصية المحددة من هذا الصف",
+        "link_open": "فتح الرابط",
+        "comment": "إضافة/تعديل تعليق"
+      },
+      "modals": {
+        "comment_title": "تعليق",
+        "library_title": "المكتبة",
+        "library_save_title": "حفظ في المكتبة",
+        "library_save_question": "هل تريد تضمين التعليق؟"
+      },
+      "alerts": {
+        "task_unavailable": "وظيفة المهام غير متاحة.",
+        "task_open_error": "تعذّر فتح محرر المهام.",
+        "task_load_error": "تعذّر تحميل المهمة.",
+        "task_save_error": "تعذّر حفظ المهمة.",
+        "task_save_success": "تم حفظ المهمة.",
+        "task_delete_error": "تعذّر حذف المهمة.",
+        "task_delete_unavailable": "لا توجد مهمة محفوظة لحذفها.",
+        "task_invalid_file": "ملف المهمة غير صالح.",
+        "task_invalid_rows": "توجد صفوف غير صالحة في المهمة.",
+        "task_path_outside": "يجب أن يكون الملف داخل مجلد المهام.",
+        "name_required": "اسم المهمة مطلوب.",
+        "row_text_required": "لا يمكن أن يكون نص الصف فارغًا.",
+        "library_load_error": "تعذّر تحميل المكتبة.",
+        "library_save_error": "تعذّر الحفظ في المكتبة.",
+        "library_save_success": "تم حفظ الصف في المكتبة.",
+        "library_delete_error": "تعذّر الحذف من المكتبة.",
+        "link_blocked": "تم حظر الرابط.",
+        "link_missing": "الملف غير موجود.",
+        "link_error": "خطأ في فتح الرابط."
+      },
+      "confirm": {
+        "discard_changes": "توجد تغييرات غير محفوظة. هل تريد تجاهلها؟",
+        "close_unsaved": "توجد تغييرات غير محفوظة. هل تريد الإغلاق دون حفظ؟"
+      }
+    },
+    "snapshot_save_tags": {
+      "title": "حفظ لقطة نصية",
+      "message": "يمكنك اختيار وسوم لهذه اللقطة النصية قبل تحديد مكان حفظها.",
+      "labels": {
+        "language": "اللغة",
+        "type": "النوع",
+        "difficulty": "الصعوبة"
+      },
+      "empty": {
+        "language": "دون وسم لغة",
+        "type": "دون وسم نوع",
+        "difficulty": "دون وسم صعوبة"
+      },
+      "buttons": {
+        "confirm": "حفظ اللقطة النصية",
+        "cancel": "إلغاء"
+      },
+      "close_aria": "إغلاق مربع حوار حفظ اللقطة النصية",
+      "options": {
+        "language": {
+          "es": "الإسبانية",
+          "en": "الإنجليزية",
+          "pt": "البرتغالية",
+          "fr": "الفرنسية",
+          "de": "الألمانية",
+          "it": "الإيطالية",
+          "arn": "المابودونغون",
+          "ja": "اليابانية",
+          "ko": "الكورية",
+          "ru": "الروسية",
+          "tr": "التركية",
+          "id": "الإندونيسية",
+          "hi": "الهندية",
+          "bn": "البنغالية",
+          "ur": "الأردية",
+          "ar": "العربية",
+          "zh_hans": "الصينية المبسطة",
+          "zh_hant": "الصينية التقليدية"
+        },
+        "type": {
+          "fiction": "أدب تخييلي",
+          "non_fiction": "غير تخييلي"
+        },
+        "difficulty": {
+          "easy": "سهل",
+          "normal": "عادي",
+          "hard": "صعب"
+        }
+      }
+    },
+    "reading_test": {
+      "prestart": {
+        "reminder": "اضغط تشغيل (▶) في النافذة العائمة عندما تكون مستعدًا للبدء. بعد بدء الاختبار، لا تضغط إيقاف مؤقت (⏸) حتى تنتهي من القراءة: الإيقاف المؤقت ينهي الاختبار، ولا يوقف المؤقت مؤقتًا. اضغط إيقاف/إعادة ضبط (⏹) فقط إذا أردت إلغاء الاختبار."
+      },
+      "entry": {
+        "title": "اختبار سرعة القراءة",
+        "intro": "يهدف هذا الاختبار إلى تقدير سرعة قراءتك الفعلية من خلال جلسة موجهة. سيفتح التطبيق النص وينتظر أن تضغط تشغيل (▶) في النافذة العائمة عندما تكون مستعدًا للبدء. بعد بدء الاختبار، لا تضغط إيقاف مؤقت (⏸) حتى تنتهي من القراءة: الإيقاف المؤقت ينهي الاختبار، ولا يوقف المؤقت مؤقتًا. استخدم إيقاف/إعادة ضبط (⏹) فقط إذا أردت إلغاء الاختبار. بعد ذلك، يمكنك مراجعة أسئلة الفهم إذا كان النص يتضمنها، وفي النهاية إنشاء إعداد مسبق من النتيجة.\nقبل أن تبدأ، ضع في اعتبارك أن نصوص الاختبار هذه تتطلب عادةً بين 5 و15 دقيقة من التركيز المتواصل.\nيستخدم هذا المخزون نصوصًا قصيرة، لذلك تعامل مع النتيجة بحذر. لا ينبغي تعميمها مباشرة على النصوص الطويلة، حيث تظهر عادةً عوامل إيجابية مثل الانسياب وبناء السياق، وعوامل سلبية مثل الاسترجاع الذهني والتعب.",
+        "eligible_count": "الملفات المؤهلة:",
+        "pool_exhausted_message": "لا توجد ملفات اختبار غير مستخدمة متبقية. أعد ضبط المخزون أو أضف مزيدًا من الملفات.",
+        "close_aria": "إغلاق مربع حوار اختبار سرعة القراءة",
+        "start_random_confirm": "سيؤدي ذلك إلى استبدال النص الحالي بنص عشوائي مؤهل من المخزون. هل تريد المتابعة؟",
+        "reset_confirm": "سيؤدي ذلك إلى إعادة ضبط مخزون الاختبار بالكامل ووضع علامة على كل ملفاته على أنها غير مستخدمة مرة أخرى. هل تريد المتابعة؟",
+        "import_summary": "انتهى الاستيراد. المستوردة: {imported}. المكررات المتروكة: {skippedDuplicates}. فشل التحقق: {failedValidation}. إدخالات الأرشيف الفاشلة: {failedArchiveEntries}. عمليات الكتابة الفاشلة: {failedWrites}.",
+        "import_conflict": {
+          "title": "استيراد ملفات",
+          "message": "بعض الملفات المستوردة موجودة مسبقًا في المخزون. كيف يجب التعامل مع المكررات؟",
+          "detail": "{count} اسم/أسماء ملفات وجهة موجودة مسبقًا في المخزون.",
+          "buttons": {
+            "skip": "تجاوز المكررات",
+            "replace": "استبدال المكررات",
+            "cancel": "إلغاء الاستيراد"
+          }
+        },
+        "buttons": {
+          "get_more_files": "الحصول على مزيد من الملفات",
+          "import_files": "استيراد ملفات...",
+          "reset_pool": "إ",
+          "show_instructions": "إظهار التعليمات",
+          "hide_instructions": "إخفاء التعليمات",
+          "start_random_text": "البدء بنص عشوائي",
+          "start_current_text": "البدء بالنص الحالي"
+        },
+        "tooltips": {
+          "get_more_files": "الحصول على مزيد من ملفات الاختبار من مجلد Google Drive",
+          "import_files": "استيراد ملفات اختبار من جهازك",
+          "reset_pool": "إعادة ضبط مخزون الاختبار",
+          "start_random_text": "بدء الاختبار بنص عشوائي مؤهل من المخزون",
+          "start_current_text": "بدء الاختبار بالنص الحالي"
+        }
+      },
+      "questions": {
+        "title": "أسئلة فهم المقروء",
+        "intro": "الإجابة عن أسئلة فهم المقروء اختيارية ولا تؤثر في نتيجتك النهائية. الغرض منها فقط مساعدتك على تقييم صعوبة النص وما إذا كانت وتيرة قراءتك وأسلوبها قد سمحا لك بالوصول إلى مستوى أساسي من الفهم. لا تُحفظ إجاباتك ولا تُرسل إلى المطورين أو إلى أي شخص آخر.",
+        "random_title": "خط أساس التخمين العشوائي",
+        "random_value": "النتيجة المتوقعة عند التخمين العشوائي: {percentage}%",
+        "feedback_title": "ملاحظات",
+        "feedback_prefix": "للشكاوى:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "يجب الإجابة عن كل الأسئلة قبل التقييم.",
+        "result_summary": "{correct} من أصل {total} صحيحة ({percentage}%)",
+        "chance_at_least_observed": "احتمال الحصول على هذه النتيجة أو أعلى بالتخمين العشوائي: {percentage}%",
+        "fatal_invalid": "حمولة الأسئلة غير صالحة.",
+        "buttons": {
+          "check": "تحقق من النتيجة",
+          "continue": "متابعة"
+        }
+      },
+      "result": {
+        "title": "نتيجة سرعة القراءة",
+        "measured_wpm": "WPM المقاسة",
+        "elapsed_time": "الوقت",
+        "word_count": "الكلمات",
+        "buttons": {
+          "continue": "متابعة"
+        }
+      }
+    },
+    "modal_preset": {
+      "title_new": "إعداد مسبق جديد",
+      "title_edit": "تعديل الإعداد المسبق",
+      "heading_new": "إنشاء إعداد مسبق جديد",
+      "heading_edit": "تعديل الإعداد المسبق المحدد",
+      "name": "الاسم:",
+      "wpm": "WPM:",
+      "description": "الوصف:",
+      "placeholder": "وصف قصير...",
+      "char_count": "تبقى {remaining} حرفًا",
+      "hint": "تُحفظ الإعدادات المسبقة المخصصة في إعدادات المستخدم.",
+      "cancel": "إلغاء",
+      "save": "حفظ"
+    },
+    "alerts": {
+      "clipboard_too_large": "نص الحافظة كبير جدًا للمعالجة. قلّله وحاول مرة أخرى.",
+      "append_too_large": "النص الناتج كبير جدًا للمعالجة. قلّله وحاول مرة أخرى.",
+      "clipboard_overflow": "يتجاوز نص الحافظة الحد الأقصى المسموح به، وقد تم اقتطاعه.",
+      "append_overflow": "يتجاوز النص المُلحَق الحد الأقصى المسموح به، وقد تم اقتطاعه.",
+      "text_limit": "لا يمكن إضافة نص: تم بلوغ الحجم الأقصى.",
+      "clipboard_error": "حدث خطأ أثناء اللصق من الحافظة. راجع وحدة التحكم.",
+      "append_error": "حدث خطأ أثناء إلحاق النص. راجع وحدة التحكم.",
+      "clear_error": "حدث خطأ أثناء مسح النص. راجع وحدة التحكم.",
+      "snapshot_save_success": "تم حفظ اللقطة النصية.",
+      "snapshot_save_error": "تعذّر حفظ اللقطة النصية.",
+      "snapshot_load_success": "تم تحميل اللقطة النصية.",
+      "snapshot_load_error": "تعذّر تحميل اللقطة النصية.",
+      "snapshot_outside": "يجب أن تكون اللقطة النصية داخل مجلد اللقطات النصية.",
+      "snapshot_truncated": "تتجاوز اللقطة النصية الحجم الأقصى وقد تم اقتطاعها.",
+      "snapshot_unavailable": "وظيفة اللقطات النصية غير متاحة.",
+      "modal_unavailable": "وظيفة النوافذ الحوارية غير متاحة.",
+      "edit_none": "لا يوجد إعداد مسبق محدد للتعديل.",
+      "preset_not_found": "لم يتم العثور على الإعداد المسبق المحدد في الذاكرة المؤقتة.",
+      "edit_unavailable": "وظيفة التعديل غير متاحة.",
+      "edit_error": "حدث خطأ أثناء تعديل الإعداد المسبق. راجع وحدة التحكم.",
+      "delete_error": "حدث خطأ أثناء حذف الإعداد المسبق. راجع وحدة التحكم.",
+      "restore_error": "حدث خطأ أثناء استعادة الإعدادات المسبقة. راجع وحدة التحكم.",
+      "open_presets_unsupported": "لا يمكن فتح مجلد الإعدادات المسبقة في هذه البيئة.",
+      "open_presets_error": "حدث خطأ أثناء محاولة فتح مجلد الإعدادات المسبقة. راجع وحدة التحكم.",
+      "open_presets_fail": "تعذّر فتح مجلد الإعدادات المسبقة الافتراضية. راجع وحدة التحكم للتفاصيل.",
+      "import_extract_error": "حدث خطأ أثناء بدء الاستيراد/الاستخراج. راجع وحدة التحكم.",
+      "import_extract_precondition_blocked": "لبدء الاستيراد/الاستخراج، أغلق كل النوافذ الثانوية وأوقف ساعة الإيقاف.",
+      "import_extract_precondition_error": "حدث خطأ أثناء التحقق من شروط الاستيراد/الاستخراج المسبقة. راجع وحدة التحكم.",
+      "import_extract_processing_locked": "الاستيراد/الاستخراج قيد المعالجة. تظل تفاعلات النافذة الرئيسية مقفلة حتى تنتهي المعالجة أو توقفها.",
+      "import_extract_abort_error": "حدث خطأ أثناء طلب إيقاف الاستيراد/الاستخراج. راجع وحدة التحكم.",
+      "import_extract_cancelled": "تم إلغاء الاستيراد/الاستخراج.",
+      "import_extract_drop_single_file_only": "أفلت ملفًا واحدًا فقط لبدء الاستيراد/الاستخراج.",
+      "import_extract_drop_invalid_file": "العنصر المُفلَت ليس ملفًا محليًا صالحًا.",
+      "import_extract_route_choice_required": "يلزم اختيار مسار لهذا الـ PDF قبل متابعة الاستخراج.",
+      "import_extract_route_choice_title": "اختيار مسار الاستخراج",
+      "import_extract_route_choice_message": "كلا مساري الاستخراج متاحان لهذا الـ PDF. اختر واحدًا للمتابعة.",
+      "import_extract_route_choice_native_button": "استخدام المسار الأصلي",
+      "import_extract_route_choice_ocr_button": "استخدام OCR",
+      "import_extract_route_choice_cancel_button": "إلغاء",
+      "import_extract_route_choice_close_aria": "إغلاق مربع حوار مسار الاستخراج",
+      "import_extract_apply_modal_title": "تطبيق النص المستخرج",
+      "import_extract_apply_modal_message": "اختر كيفية تطبيق النص المستخرج.",
+      "import_extract_apply_modal_elapsed": "زمن التنفيذ: {time}",
+      "import_extract_apply_modal_repeat_label": "التكرارات",
+      "import_extract_apply_modal_overwrite_button": "استبدال",
+      "import_extract_apply_modal_append_button": "إلحاق",
+      "import_extract_apply_modal_cancel_button": "إلغاء",
+      "import_extract_apply_modal_close_aria": "إغلاق مربع حوار تطبيق النص المستخرج",
+      "import_extract_apply_error": "حدث خطأ أثناء تطبيق النص المستخرج. راجع وحدة التحكم وحاول مرة أخرى.",
+      "import_extract_apply_too_large": "النص الناتج كبير جدًا للمعالجة. قلّل التكرارات وحاول مرة أخرى.",
+      "import_extract_apply_text_limit": "لا يمكن إلحاق النص المستخرج: تم بلوغ الحجم الأقصى.",
+      "import_extract_apply_truncated": "تجاوز النص المستخرج المطبَّق الحد، وقد تم اقتطاعه.",
+      "import_extract_prepare_invalid": "طلب الاستيراد/الاستخراج المحضَّر لم يعد صالحًا. ابدأ التدفق من جديد.",
+      "import_extract_ocr_unavailable": "OCR غير متاح. تحقق من الإعداد/المصادقة وحاول مرة أخرى.",
+      "import_extract_ocr_activation_required": "يلزم تفعيل OCR. سجّل الدخول إلى Google OCR ثم حاول مرة أخرى.",
+      "import_extract_ocr_activation_disclosure_title": "مراجعة تفعيل Google OCR",
+      "import_extract_ocr_activation_disclosure_intro": "يستخدم toT خدمات Google من أجل OCR. ستؤدي المتابعة إلى فتح متصفحك حتى تمنح هذا التطبيق الإذن.",
+      "import_extract_ocr_activation_disclosure_selected_files": "تُرسل إلى Google فقط الملفات التي تختارها لـ OCR.",
+      "import_extract_ocr_activation_disclosure_local_storage": "يخزّن هذا التطبيق بيانات اعتماد Google OAuth الخاصة بـ OCR التي يديرها التطبيق وحالة رمز Google المحلية في هذه النسخة من التطبيق.",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "بعد التصدير، يحاول التطبيق إزالة مستند Google المؤقت من Google Drive الخاص بك.",
+      "import_extract_ocr_activation_disclosure_disconnect": "يمكنك لاحقًا قطع الاتصال من التفضيلات > فصل Google OCR.",
+      "import_extract_ocr_activation_disclosure_proceed_button": "المتابعة إلى Google",
+      "import_extract_ocr_activation_disclosure_cancel_button": "إلغاء",
+      "import_extract_ocr_activation_disclosure_privacy_link": "فتح سياسة الخصوصية",
+      "import_extract_ocr_activation_disclosure_close_aria": "إغلاق مربع حوار تفعيل Google OCR",
+      "import_extract_ocr_activation_success": "اكتمل تفعيل OCR. جارٍ إعادة محاولة الاستخراج.",
+      "import_extract_ocr_activation_cancelled": "تم إلغاء تفعيل OCR. لم يستمر الاستيراد/الاستخراج.",
+      "import_extract_ocr_token_state_invalid": "حالة تسجيل الدخول المحفوظة لـ Google OCR غير صالحة. أعد توصيل Google OCR وحاول مرة أخرى.",
+      "import_extract_ocr_activation_failed": "فشل تفعيل OCR. تحقق من الإعداد/المصادقة وحاول مرة أخرى.",
+      "import_extract_ocr_disconnect_success": "تم فصل Google OCR. تم إبطال رمز Google المحفوظ وإزالة حالة تسجيل الدخول المحلية.",
+      "import_extract_ocr_disconnect_not_connected": "Google OCR غير متصل حاليًا في هذه النسخة من التطبيق.",
+      "import_extract_ocr_disconnect_failed": "فشل فصل Google OCR. لم تُزَل حالة تسجيل الدخول المحفوظة.",
+      "import_extract_ocr_connectivity_failed": "يتطلب OCR اتصالًا بالإنترنت. تحقق من اتصالك وحاول مرة أخرى.",
+      "import_extract_ocr_setup_missing_credentials": "OCR غير متاح في هذا البناء من التطبيق لأن بيانات اعتماد Google OAuth المضمّنة مفقودة.",
+      "import_extract_ocr_setup_invalid_credentials": "OCR غير متاح في هذا البناء من التطبيق لأن بيانات اعتماد Google OAuth المضمّنة غير صالحة.",
+      "import_extract_ocr_restricted": "مسار OCR مقيّد لهذا النوع من الملفات.",
+      "import_extract_ocr_quota_or_rate_limited": "OCR محظور مؤقتًا بسبب الحصة/حدود المعدل. انتظر ثم أعد المحاولة.",
+      "import_extract_ocr_runtime_error": "حدث خطأ تشغيل OCR أثناء الاستيراد/الاستخراج. راجع وحدة التحكم وحاول مرة أخرى.",
+      "import_extract_ocr_cancelled": "تم إلغاء الاستيراد/الاستخراج عبر OCR.",
+      "import_extract_ocr_cleanup_warning": "انتهى OCR، لكن تنظيف الملف المؤقت البعيد فشل. تحقق من مجلد Google Drive الخاص بك.",
+      "import_extract_ocr_apply_pending": "اكتمل استخراج OCR. تدفق تطبيق ما بعد الاستخراج ما زال قيد التنفيذ.",
+      "import_extract_native_runtime_error": "حدث خطأ تشغيل في الاستخراج الأصلي أثناء الاستيراد/الاستخراج. راجع وحدة التحكم وحاول مرة أخرى.",
+      "import_extract_native_unreadable_or_corrupt": "الملف المحدد غير قابل للقراءة أو تالف بالنسبة إلى الاستخراج الأصلي.",
+      "import_extract_native_encrypted_or_password_protected": "ملف PDF المحدد مشفر أو محمي بكلمة مرور ولا يمكن استخراجه عبر المسار الأصلي.",
+      "import_extract_native_cancelled": "تم إلغاء الاستخراج الأصلي.",
+      "import_extract_native_unsupported_format": "تنسيق الملف هذا غير مدعوم في مسار الاستخراج الأصلي.",
+      "import_extract_native_apply_pending": "اكتمل الاستخراج الأصلي. تدفق تطبيق ما بعد الاستخراج ما زال قيد التنفيذ.",
+      "wip_diseno_skins": "قيد العمل: سيُفتح محدد السمات هنا في إصدار لاحق.",
+      "wip_diseno_crono": "قيد العمل: ستُفتح إعدادات ساعة الإيقاف العائمة هنا في إصدار لاحق.",
+      "wip_diseno_fuentes": "قيد العمل: سيُفتح محدد الخطوط هنا في إصدار لاحق.",
+      "wip_diseno_colores": "قيد العمل: سيُفتح محدد الألوان هنا في إصدار لاحق.",
+      "wip_shortcuts": "قيد العمل: سيُفتح محدد اختصارات لوحة المفاتيح هنا في إصدار لاحق.",
+      "reading_test_unavailable": "وظيفة اختبار سرعة القراءة غير متاحة.",
+      "reading_test_precondition_blocked": "لا يمكن بدء اختبار سرعة القراءة إلا من حالة مستقرة للتطبيق. أغلق النوافذ الثانوية وتأكد من أن ساعة الإيقاف متوقفة.",
+      "reading_test_pool_error": "حدث خطأ أثناء فحص مخزون اختبار سرعة القراءة.",
+      "reading_test_no_matching_files": "لا توجد ملفات اختبار غير مستخدمة متبقية تطابق التحديد الحالي.",
+      "reading_test_current_text_empty": "النص الحالي فارغ. حمّل أو اكتب نصًا قبل بدء الاختبار بالنص الحالي.",
+      "reading_test_result_invalid": "تعذّر تحويل نتيجة الاختبار إلى WPM صالح. انتهى التدفق دون فتح مربع حوار الإعداد المسبق.",
+      "reading_test_result_unavailable": "تعذّر عرض نتيجة سرعة القراءة. استمر التدفق.",
+      "reading_test_preset_unavailable": "تعذّر فتح مربع حوار الإعداد المسبق بعد الاختبار.",
+      "reading_test_questions_unavailable": "تعذّر فتح مربع حوار أسئلة الفهم. انتهى التدفق قبل إنشاء الإعداد المسبق.",
+      "reading_test_pool_import_failed": "تعذّر استيراد ملفات اختبار سرعة القراءة.",
+      "reading_test_start_failed": "تعذّر بدء اختبار سرعة القراءة.",
+      "reading_test_cancelled": "تم إلغاء اختبار سرعة القراءة.",
+      "reading_test_cancelled_window_closed": "تم إلغاء اختبار سرعة القراءة لأن إحدى نوافذ الجلسة أُغلقت."
+    },
+    "editor_alerts": {
+      "paste_too_big": "النص كبير جدًا للصقه مباشرة. استخدم أزرار النافذة الرئيسية.",
+      "drop_too_big": "النص المُفلَت كبير جدًا. استخدم أزرار النافذة الرئيسية لإضافة نص كبير.",
+      "paste_no_text": "الحافظة لا تحتوي على نص عادي.",
+      "drop_no_text": "السحب والإفلات: لم يتم اكتشاف نص عادي.",
+      "type_limit": "لا يمكن كتابة المزيد من النص: تم بلوغ الحجم الأقصى.",
+      "paste_limit": "لا يمكن لصق المزيد من النص: تم بلوغ الحجم الأقصى.",
+      "drop_limit": "لا يمكن إفلات المزيد من النص: تم بلوغ الحجم الأقصى.",
+      "paste_truncated": "تم اقتطاع النص الملصق لتجنب تجاوز الحد الأقصى.",
+      "drop_truncated": "تجاوز النص المسحوب المساحة المتاحة وقد تم اقتطاعه.",
+      "text_truncated": "تم اقتطاع النص ليتوافق مع حد التطبيق.",
+      "calc_error": "حدث خطأ أثناء الحساب. راجع وحدة التحكم."
+    },
+    "preset_alerts": {
+      "name_empty": "لا يمكن أن يكون الاسم فارغًا.",
+      "wpm_invalid": "يجب أن يكون WPM رقمًا بين {min} و{max}.",
+      "create_error": "حدث خطأ أثناء إنشاء الإعداد المسبق. راجع وحدة التحكم.",
+      "edit_error": "حدث خطأ أثناء تعديل الإعداد المسبق. راجع وحدة التحكم.",
+      "process_error": "حدث خطأ أثناء معالجة الإعداد المسبق. راجع وحدة التحكم."
+    },
+    "info": {
+      "loading": "جارٍ التحميل...",
+      "missing_content": "لا يوجد محتوى متاح لـ '{name}'.",
+      "external": {
+        "blocked": "تم حظر الرابط",
+        "error": "خطأ في فتح الرابط"
+      },
+      "appdoc": {
+        "blocked": "تم حظر المستند",
+        "missing": "المستند غير موجود",
+        "error": "خطأ في فتح المستند"
+      },
+      "acerca_de": {
+        "app_name": "toT",
+        "title": "حول",
+        "version": {
+          "unavailable": "غير متاح"
+        },
+        "env": {
+          "unavailable": "غير متاح"
+        }
+      },
+      "instrucciones": {
+        "title": "كيفية الاستخدام"
+      },
+      "links_interes": {
+        "app_name": "toT",
+        "title": "روابط مفيدة",
+        "section_biblio_label": "مراجع ببليوغرافية"
+      }
+    }
+  }
+}

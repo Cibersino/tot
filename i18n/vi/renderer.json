@@ -1,0 +1,505 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Phần đầu và phần cuối của văn bản được phân tích:",
+      "selector_empty": "(trống)",
+      "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
+        "edit": "⌨",
+        "clear": "🗑",
+        "snapshot_load": "📂",
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
+      },
+      "tooltips": {
+        "import_extract": "Nhập/trích xuất văn bản từ tệp",
+        "import_extract_abort": "Hủy trích xuất",
+        "overwrite_clipboard": "Thay thế văn bản hiện tại bằng clipboard",
+        "append_clipboard": "Thêm clipboard vào cuối văn bản hiện tại (dòng mới)",
+        "clipboard_repeat_count": "Số lần lặp clipboard",
+        "edit": "Mở cửa sổ toàn bộ văn bản hiện tại",
+        "clear": "Xóa văn bản hiện tại",
+        "snapshot_load": "Tải bản lưu văn bản",
+        "snapshot_save": "Lưu văn bản hiện tại thành bản lưu",
+        "task_new": "Tác vụ mới",
+        "task_load": "Tải tác vụ",
+        "cibersino_website": "Trang web Cibersino",
+        "cibersino_kofi": "Ủng hộ tôi trên Ko-fi",
+        "new_preset": "Tạo preset mới",
+        "edit_preset": "Chỉnh sửa preset đã chọn",
+        "delete_preset": "Xóa preset đã chọn",
+        "reset_presets": "Khôi phục preset mặc định",
+        "help_button": "Hiển thị một mẹo hữu ích",
+        "flotante_window": "Cửa sổ nổi"
+      },
+      "aria": {
+        "import_extract": "Nhập hoặc trích xuất văn bản từ tệp",
+        "import_extract_abort": "Hủy trích xuất",
+        "clipboard_repeat_count": "Số lần dán",
+        "wpm_input": "Số từ mỗi phút",
+        "wpm_slider": "Thanh trượt số từ mỗi phút",
+        "speed_presets": "Preset tốc độ",
+        "precise_mode_toggle": "Chế độ chính xác",
+        "crono_controls": "Điều khiển đồng hồ bấm giờ",
+        "crono_display": "Hiển thị đồng hồ bấm giờ",
+        "crono_toggle": "Bắt đầu hoặc tạm dừng đồng hồ bấm giờ",
+        "crono_reset": "Đặt lại đồng hồ bấm giờ",
+        "floating_window_toggle": "Cửa sổ nổi",
+        "floating_window_group": "Điều khiển cửa sổ nổi"
+      },
+      "speed": {
+        "title": "TỐC ĐỘ ĐỌC",
+        "wpm_label": "từ mỗi phút (WPM)",
+        "new": "N",
+        "edit": "E",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "KẾT QUẢ ĐẾM",
+        "time": "⏱ Thời gian đọc ước tính: {h} giờ {m} phút {s} giây",
+        "words": "Từ: {n}",
+        "chars_no_space": "Ký tự (không tính khoảng trắng): {n}",
+        "chars": "Ký tự: {n}",
+        "precise_mode": "Chế độ chính xác",
+        "precise_tooltip": "Dựa trên Intl.Segmenter"
+      },
+      "crono": {
+        "title": "ĐỒNG HỒ BẤM GIỜ",
+        "speed": "Tốc độ:",
+        "controls_label": "Điều khiển đồng hồ bấm giờ",
+        "flotante_short": "FW",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Bài kiểm tra tốc độ đọc",
+        "preview_spoiler": "Spoiler"
+      },
+      "processing": {
+        "import_extract_placeholder": "Đang trích xuất văn bản...",
+        "import_extract_preparing": "Đang chuẩn bị tuyến nhập/trích xuất...",
+        "import_extract_waiting_native": "Đang trích xuất văn bản từ tệp...",
+        "import_extract_waiting_ocr": "Đang chạy trích xuất OCR...",
+        "import_extract_waiting_ocr_delayed": "Đang chạy OCR. Một số tệp mất nhiều thời gian hơn.",
+        "import_extract_elapsed": "Đã trôi qua: {time}",
+        "import_extract_drop_here": "Thả tệp để nhập/trích xuất văn bản"
+      }
+    },
+    "editor": {
+      "title": "toT — Toàn bộ văn bản",
+      "placeholder": "Nhập hoặc dán vào đây...",
+      "calc_button": "TÍNH/LƯU",
+      "calc_while_typing": "Tự động",
+      "spellcheck": "Kiểm tra chính tả",
+      "text_size_label": "Cỡ",
+      "decrease_text_size": "Giảm cỡ chữ",
+      "increase_text_size": "Tăng cỡ chữ",
+      "reset_text_size": "Đặt lại cỡ chữ",
+      "text_size_value": "{value} px",
+      "read_progress_label": "Đã đọc",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Tiến độ đọc: {value}%",
+      "clear": "🗑",
+      "clear_title": "Xóa"
+    },
+    "editor_find": {
+      "input_placeholder": "Tìm...",
+      "input_aria": "Tìm trong văn bản",
+      "expand_title": "Hiển thị điều khiển thay thế",
+      "collapse_title": "Ẩn điều khiển thay thế",
+      "replace_placeholder": "Thay thế...",
+      "replace_aria": "Văn bản thay thế",
+      "prev": "🡩",
+      "next": "🡫",
+      "close": "🗙",
+      "replace": "Thay thế",
+      "replace_all": "Thay thế tất cả",
+      "prev_title": "Kết quả trước",
+      "next_title": "Kết quả tiếp theo",
+      "close_title": "Đóng thanh tìm kiếm",
+      "replace_title": "Thay thế kết quả hiện tại",
+      "replace_all_title": "Thay thế tất cả kết quả",
+      "replace_timeout": "Thay thế quá thời gian. Hãy thử lại.",
+      "status_no_matches": "Không có kết quả",
+      "status_empty_query": "Nhập để tìm kiếm"
+    },
+    "tasks": {
+      "title": "toT — Tác vụ",
+      "labels": {
+        "name": "Tên",
+        "total": "TỔNG THỜI GIAN",
+        "empty": "(trống)",
+        "search": "Tìm kiếm",
+        "search_placeholder": "Tìm trong thư viện..."
+      },
+      "columns": {
+        "texto": "Văn bản",
+        "tiempo": "Thời gian",
+        "percent": "%",
+        "falta": "Còn lại",
+        "tipo": "Loại",
+        "enlace": "Liên kết",
+        "comentario": "",
+        "acciones": "Hành động"
+      },
+      "buttons": {
+        "save": "Lưu",
+        "delete": "Xóa",
+        "add_row": "Thêm hàng",
+        "open_library": "Mở thư viện",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "Chọn bản lưu",
+        "clear_snapshot": "🗙",
+        "cancel": "Hủy",
+        "yes": "Có",
+        "no": "Không"
+      },
+      "tooltips": {
+        "move_up": "Di chuyển lên",
+        "move_down": "Di chuyển xuống",
+        "delete_row": "Xóa hàng",
+        "library_row_save": "Lưu vào thư viện",
+        "library_row_load": "Tải hàng",
+        "library_row_delete": "Xóa khỏi thư viện",
+        "snapshot_load": "Tải bản lưu văn bản cho hàng này",
+        "snapshot_select": "Chọn bản lưu văn bản cho hàng này",
+        "snapshot_clear": "Gỡ bản lưu đã chọn khỏi hàng này",
+        "link_open": "Mở liên kết",
+        "comment": "Thêm/chỉnh sửa bình luận"
+      },
+      "modals": {
+        "comment_title": "Bình luận",
+        "library_title": "Thư viện",
+        "library_save_title": "Lưu vào thư viện",
+        "library_save_question": "Bao gồm bình luận?"
+      },
+      "alerts": {
+        "task_unavailable": "Chức năng tác vụ không khả dụng.",
+        "task_open_error": "Không thể mở trình chỉnh sửa tác vụ.",
+        "task_load_error": "Không thể tải tác vụ.",
+        "task_save_error": "Không thể lưu tác vụ.",
+        "task_save_success": "Đã lưu tác vụ.",
+        "task_delete_error": "Không thể xóa tác vụ.",
+        "task_delete_unavailable": "Không có tác vụ đã lưu để xóa.",
+        "task_invalid_file": "Tệp tác vụ không hợp lệ.",
+        "task_invalid_rows": "Có hàng không hợp lệ trong tác vụ.",
+        "task_path_outside": "Tệp phải nằm trong thư mục tác vụ.",
+        "name_required": "Tên tác vụ là bắt buộc.",
+        "row_text_required": "Văn bản của hàng không được để trống.",
+        "library_load_error": "Không thể tải thư viện.",
+        "library_save_error": "Không thể lưu vào thư viện.",
+        "library_save_success": "Đã lưu hàng vào thư viện.",
+        "library_delete_error": "Không thể xóa khỏi thư viện.",
+        "link_blocked": "Liên kết bị chặn.",
+        "link_missing": "Không tìm thấy tệp.",
+        "link_error": "Lỗi khi mở liên kết."
+      },
+      "confirm": {
+        "discard_changes": "Có thay đổi chưa lưu. Bỏ các thay đổi đó?",
+        "close_unsaved": "Có thay đổi chưa lưu. Đóng mà không lưu?"
+      }
+    },
+    "snapshot_save_tags": {
+      "title": "Lưu bản lưu văn bản",
+      "message": "Bạn có thể gắn thẻ tùy chọn cho bản lưu văn bản này trước khi chọn nơi lưu.",
+      "labels": {
+        "language": "Ngôn ngữ",
+        "type": "Loại",
+        "difficulty": "Độ khó"
+      },
+      "empty": {
+        "language": "Không có thẻ ngôn ngữ",
+        "type": "Không có thẻ loại",
+        "difficulty": "Không có thẻ độ khó"
+      },
+      "buttons": {
+        "confirm": "Lưu bản lưu văn bản",
+        "cancel": "Hủy"
+      },
+      "close_aria": "Đóng hộp thoại lưu bản lưu văn bản",
+      "options": {
+        "language": {
+          "es": "Tiếng Tây Ban Nha",
+          "en": "Tiếng Anh",
+          "pt": "Tiếng Bồ Đào Nha",
+          "fr": "Tiếng Pháp",
+          "de": "Tiếng Đức",
+          "it": "Tiếng Ý",
+          "arn": "Mapudungun",
+          "ja": "Tiếng Nhật",
+          "ko": "Tiếng Hàn",
+          "ru": "Tiếng Nga",
+          "tr": "Tiếng Thổ Nhĩ Kỳ",
+          "id": "Tiếng Indonesia",
+          "hi": "Tiếng Hindi",
+          "bn": "Tiếng Bengal",
+          "ur": "Tiếng Urdu",
+          "ar": "Tiếng Ả Rập",
+          "zh_hans": "Tiếng Trung (giản thể)",
+          "zh_hant": "Tiếng Trung (phồn thể)"
+        },
+        "type": {
+          "fiction": "Hư cấu",
+          "non_fiction": "Phi hư cấu"
+        },
+        "difficulty": {
+          "easy": "Dễ",
+          "normal": "Bình thường",
+          "hard": "Khó"
+        }
+      }
+    },
+    "reading_test": {
+      "prestart": {
+        "reminder": "Nhấn Play (▶) trong Cửa sổ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng bộ đếm thời gian. Chỉ nhấn Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra."
+      },
+      "entry": {
+        "title": "Bài kiểm tra tốc độ đọc",
+        "intro": "Bài kiểm tra này nhằm ước tính tốc độ đọc thực tế của bạn qua một phiên được hướng dẫn. Ứng dụng sẽ mở văn bản và chờ bạn nhấn Play (▶) trong Cửa sổ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng bộ đếm thời gian. Chỉ dùng Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra. Sau đó, bạn có thể xem các câu hỏi đọc hiểu nếu văn bản có kèm theo, và cuối cùng tạo một preset từ kết quả.\nTrước khi bắt đầu, hãy nhớ rằng các văn bản kiểm tra này thường cần từ 5 đến 15 phút tập trung không bị gián đoạn.\nPool này dùng các văn bản ngắn, vì vậy hãy diễn giải kết quả một cách thận trọng. Không nên ngoại suy trực tiếp sang văn bản dài, nơi các yếu tố tích cực như nhịp đọc và sự tích lũy ngữ cảnh, cũng như các yếu tố tiêu cực như việc tự tóm lược trong đầu và mệt mỏi, thường phát huy tác động.",
+        "eligible_count": "Tệp đủ điều kiện:",
+        "pool_exhausted_message": "Không còn tệp kiểm tra chưa dùng nào. Hãy đặt lại pool hoặc thêm tệp mới.",
+        "close_aria": "Đóng hộp thoại bài kiểm tra tốc độ đọc",
+        "start_random_confirm": "Thao tác này sẽ ghi đè văn bản hiện tại bằng một văn bản đủ điều kiện ngẫu nhiên từ pool. Bạn có muốn tiếp tục?",
+        "reset_confirm": "Thao tác này sẽ đặt lại toàn bộ pool kiểm tra và đánh dấu tất cả tệp là chưa dùng lại. Bạn có muốn tiếp tục?",
+        "import_summary": "Nhập xong. Đã nhập: {imported}. Bỏ qua trùng lặp: {skippedDuplicates}. Không đạt xác thực: {failedValidation}. Mục trong gói nén lỗi: {failedArchiveEntries}. Ghi lỗi: {failedWrites}.",
+        "import_conflict": {
+          "title": "Nhập tệp",
+          "message": "Một số tệp được nhập đã tồn tại trong pool. Xử lý tệp trùng như thế nào?",
+          "detail": "{count} tên tệp đích đã tồn tại trong pool.",
+          "buttons": {
+            "skip": "Bỏ qua tệp trùng",
+            "replace": "Thay thế tệp trùng",
+            "cancel": "Hủy nhập"
+          }
+        },
+        "buttons": {
+          "get_more_files": "Lấy thêm tệp",
+          "import_files": "Nhập tệp...",
+          "reset_pool": "R",
+          "show_instructions": "Hiển thị hướng dẫn",
+          "hide_instructions": "Ẩn hướng dẫn",
+          "start_random_text": "Bắt đầu với văn bản ngẫu nhiên",
+          "start_current_text": "Bắt đầu với văn bản hiện tại"
+        },
+        "tooltips": {
+          "get_more_files": "Lấy thêm tệp kiểm tra từ thư mục Google Drive",
+          "import_files": "Nhập tệp kiểm tra từ thiết bị của bạn",
+          "reset_pool": "Đặt lại pool kiểm tra",
+          "start_random_text": "Bắt đầu bài kiểm tra với một văn bản đủ điều kiện ngẫu nhiên từ pool",
+          "start_current_text": "Bắt đầu bài kiểm tra với văn bản hiện tại"
+        }
+      },
+      "questions": {
+        "title": "Câu hỏi đọc hiểu",
+        "intro": "Trả lời các câu hỏi đọc hiểu này là tùy chọn và không ảnh hưởng đến điểm cuối cùng của bạn. Chúng chỉ nhằm giúp bạn đánh giá độ khó của văn bản và xem tốc độ cũng như cách đọc của bạn có cho phép đạt mức hiểu cơ bản hay không. Câu trả lời của bạn không được lưu hoặc gửi cho nhà phát triển hay bất kỳ ai khác.",
+        "random_title": "Mốc đoán ngẫu nhiên",
+        "random_value": "Điểm kỳ vọng khi đoán ngẫu nhiên: {percentage}%",
+        "feedback_title": "Phản hồi",
+        "feedback_prefix": "Khiếu nại:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Phải trả lời tất cả câu hỏi trước khi đánh giá.",
+        "result_summary": "Đúng {correct} trên {total} ({percentage}%)",
+        "chance_at_least_observed": "Xác suất đạt ít nhất điểm này khi đoán ngẫu nhiên: {percentage}%",
+        "fatal_invalid": "Payload câu hỏi không hợp lệ.",
+        "buttons": {
+          "check": "Kiểm tra kết quả",
+          "continue": "Tiếp tục"
+        }
+      },
+      "result": {
+        "title": "Kết quả tốc độ đọc",
+        "measured_wpm": "WPM đo được",
+        "elapsed_time": "Thời gian",
+        "word_count": "Từ",
+        "buttons": {
+          "continue": "Tiếp tục"
+        }
+      }
+    },
+    "modal_preset": {
+      "title_new": "Preset mới",
+      "title_edit": "Chỉnh sửa preset",
+      "heading_new": "Tạo preset mới",
+      "heading_edit": "Chỉnh sửa preset đã chọn",
+      "name": "Tên:",
+      "wpm": "WPM:",
+      "description": "Mô tả:",
+      "placeholder": "Mô tả ngắn...",
+      "char_count": "Còn {remaining} ký tự",
+      "hint": "Preset tùy chỉnh được lưu trong cài đặt người dùng.",
+      "cancel": "Hủy",
+      "save": "Lưu"
+    },
+    "alerts": {
+      "clipboard_too_large": "Văn bản trong clipboard quá lớn để xử lý. Hãy rút gọn và thử lại.",
+      "append_too_large": "Văn bản kết quả quá lớn để xử lý. Hãy rút gọn và thử lại.",
+      "clipboard_overflow": "Văn bản trong clipboard vượt quá mức cho phép tối đa và đã bị cắt bớt.",
+      "append_overflow": "Văn bản thêm vào vượt quá mức cho phép tối đa và đã bị cắt bớt.",
+      "text_limit": "Không thể thêm văn bản: đã đạt kích thước tối đa.",
+      "clipboard_error": "Đã xảy ra lỗi khi dán từ clipboard. Hãy kiểm tra console.",
+      "append_error": "Đã xảy ra lỗi khi thêm văn bản. Hãy kiểm tra console.",
+      "clear_error": "Đã xảy ra lỗi khi xóa văn bản. Hãy kiểm tra console.",
+      "snapshot_save_success": "Đã lưu bản lưu.",
+      "snapshot_save_error": "Không thể lưu bản lưu.",
+      "snapshot_load_success": "Đã tải bản lưu.",
+      "snapshot_load_error": "Không thể tải bản lưu.",
+      "snapshot_outside": "Bản lưu phải nằm trong thư mục bản lưu.",
+      "snapshot_truncated": "Bản lưu vượt quá kích thước tối đa và đã bị cắt bớt.",
+      "snapshot_unavailable": "Chức năng bản lưu không khả dụng.",
+      "modal_unavailable": "Chức năng modal không khả dụng.",
+      "edit_none": "Không có preset nào được chọn để chỉnh sửa.",
+      "preset_not_found": "Không tìm thấy preset đã chọn trong bộ nhớ đệm.",
+      "edit_unavailable": "Chức năng chỉnh sửa không khả dụng.",
+      "edit_error": "Đã xảy ra lỗi khi chỉnh sửa preset. Hãy kiểm tra console.",
+      "delete_error": "Đã xảy ra lỗi khi xóa preset. Hãy kiểm tra console.",
+      "restore_error": "Đã xảy ra lỗi khi khôi phục preset. Hãy kiểm tra console.",
+      "open_presets_unsupported": "Không thể mở thư mục preset trong môi trường này.",
+      "open_presets_error": "Đã xảy ra lỗi khi cố mở thư mục preset. Hãy kiểm tra console.",
+      "open_presets_fail": "Không thể mở thư mục preset mặc định. Xem console để biết chi tiết.",
+      "import_extract_error": "Đã xảy ra lỗi khi bắt đầu nhập/trích xuất. Hãy kiểm tra console.",
+      "import_extract_precondition_blocked": "Để bắt đầu nhập/trích xuất, hãy đóng tất cả cửa sổ phụ và dừng đồng hồ bấm giờ.",
+      "import_extract_precondition_error": "Đã xảy ra lỗi khi kiểm tra điều kiện nhập/trích xuất. Hãy kiểm tra console.",
+      "import_extract_processing_locked": "Nhập/trích xuất đang xử lý. Tương tác với cửa sổ chính bị khóa cho đến khi xử lý xong hoặc bạn hủy.",
+      "import_extract_abort_error": "Đã xảy ra lỗi khi yêu cầu hủy nhập/trích xuất. Hãy kiểm tra console.",
+      "import_extract_cancelled": "Nhập/trích xuất đã bị hủy.",
+      "import_extract_drop_single_file_only": "Hãy thả đúng một tệp để bắt đầu nhập/trích xuất.",
+      "import_extract_drop_invalid_file": "Mục được thả không phải là tệp cục bộ hợp lệ.",
+      "import_extract_route_choice_required": "Cần chọn tuyến cho PDF này trước khi có thể tiếp tục trích xuất.",
+      "import_extract_route_choice_title": "Chọn tuyến trích xuất",
+      "import_extract_route_choice_message": "Có thể dùng cả hai tuyến trích xuất cho PDF này. Hãy chọn một tuyến để tiếp tục.",
+      "import_extract_route_choice_native_button": "Dùng native",
+      "import_extract_route_choice_ocr_button": "Dùng OCR",
+      "import_extract_route_choice_cancel_button": "Hủy",
+      "import_extract_route_choice_close_aria": "Đóng hộp thoại tuyến trích xuất",
+      "import_extract_apply_modal_title": "Áp dụng văn bản đã trích xuất",
+      "import_extract_apply_modal_message": "Chọn cách áp dụng văn bản đã trích xuất.",
+      "import_extract_apply_modal_elapsed": "Thời gian thực thi: {time}",
+      "import_extract_apply_modal_repeat_label": "Số lần lặp",
+      "import_extract_apply_modal_overwrite_button": "Ghi đè",
+      "import_extract_apply_modal_append_button": "Thêm vào",
+      "import_extract_apply_modal_cancel_button": "Hủy",
+      "import_extract_apply_modal_close_aria": "Đóng hộp thoại áp dụng văn bản đã trích xuất",
+      "import_extract_apply_error": "Đã xảy ra lỗi khi áp dụng văn bản đã trích xuất. Hãy kiểm tra console và thử lại.",
+      "import_extract_apply_too_large": "Văn bản kết quả quá lớn để xử lý. Hãy giảm số lần lặp và thử lại.",
+      "import_extract_apply_text_limit": "Không thể thêm văn bản đã trích xuất: đã đạt kích thước tối đa.",
+      "import_extract_apply_truncated": "Văn bản đã trích xuất được áp dụng vượt quá giới hạn và đã bị cắt bớt.",
+      "import_extract_prepare_invalid": "Yêu cầu nhập/trích xuất đã chuẩn bị không còn hợp lệ. Hãy bắt đầu lại quy trình.",
+      "import_extract_ocr_unavailable": "OCR không khả dụng. Hãy kiểm tra trạng thái thiết lập/xác thực và thử lại.",
+      "import_extract_ocr_activation_required": "Cần kích hoạt OCR. Hãy đăng nhập Google OCR và thử lại.",
+      "import_extract_ocr_activation_disclosure_title": "Xem lại kích hoạt Google OCR",
+      "import_extract_ocr_activation_disclosure_intro": "toT dùng dịch vụ Google cho OCR. Tiếp tục sẽ mở trình duyệt để bạn cấp quyền cho ứng dụng này.",
+      "import_extract_ocr_activation_disclosure_selected_files": "Chỉ những tệp bạn chọn cho OCR mới được gửi đến Google.",
+      "import_extract_ocr_activation_disclosure_local_storage": "Ứng dụng này lưu thông tin xác thực Google OAuth do ứng dụng quản lý cho OCR và trạng thái token Google cục bộ trong phiên bản ứng dụng này.",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "Sau khi xuất, ứng dụng cố gắng xóa tài liệu Google tạm thời khỏi Google Drive của bạn.",
+      "import_extract_ocr_activation_disclosure_disconnect": "Sau này bạn có thể ngắt kết nối qua Tùy chọn > Ngắt kết nối Google OCR.",
+      "import_extract_ocr_activation_disclosure_proceed_button": "Tiếp tục đến Google",
+      "import_extract_ocr_activation_disclosure_cancel_button": "Hủy",
+      "import_extract_ocr_activation_disclosure_privacy_link": "Mở chính sách quyền riêng tư",
+      "import_extract_ocr_activation_disclosure_close_aria": "Đóng hộp thoại thông báo kích hoạt OCR",
+      "import_extract_ocr_activation_success": "Đã hoàn tất kích hoạt OCR. Đang thử lại trích xuất.",
+      "import_extract_ocr_activation_cancelled": "Kích hoạt OCR đã bị hủy. Nhập/trích xuất không tiếp tục.",
+      "import_extract_ocr_token_state_invalid": "Trạng thái đăng nhập Google OCR đã lưu không hợp lệ. Hãy kết nối lại Google OCR và thử lại.",
+      "import_extract_ocr_activation_failed": "Kích hoạt OCR thất bại. Hãy kiểm tra trạng thái thiết lập/xác thực và thử lại.",
+      "import_extract_ocr_disconnect_success": "Google OCR đã được ngắt kết nối. Token Google đã lưu đã bị thu hồi và trạng thái đăng nhập cục bộ đã bị xóa.",
+      "import_extract_ocr_disconnect_not_connected": "Google OCR hiện không được kết nối trong phiên bản ứng dụng này.",
+      "import_extract_ocr_disconnect_failed": "Ngắt kết nối Google OCR thất bại. Trạng thái đăng nhập đã lưu chưa bị xóa.",
+      "import_extract_ocr_connectivity_failed": "OCR cần kết nối Internet. Hãy kiểm tra kết nối và thử lại.",
+      "import_extract_ocr_setup_missing_credentials": "OCR không khả dụng trong bản dựng ứng dụng này vì thiếu thông tin xác thực Google OAuth được đóng gói.",
+      "import_extract_ocr_setup_invalid_credentials": "OCR không khả dụng trong bản dựng ứng dụng này vì thông tin xác thực Google OAuth được đóng gói không hợp lệ.",
+      "import_extract_ocr_restricted": "Tuyến OCR bị hạn chế đối với loại tệp này.",
+      "import_extract_ocr_quota_or_rate_limited": "OCR tạm thời bị chặn do hạn mức/giới hạn tốc độ. Hãy chờ rồi thử lại.",
+      "import_extract_ocr_runtime_error": "Đã xảy ra lỗi runtime OCR trong khi nhập/trích xuất. Hãy kiểm tra console và thử lại.",
+      "import_extract_ocr_cancelled": "Nhập/trích xuất OCR đã bị hủy.",
+      "import_extract_ocr_cleanup_warning": "OCR đã hoàn tất, nhưng không thể dọn tệp tạm thời từ xa. Hãy kiểm tra thư mục Google Drive của bạn.",
+      "import_extract_ocr_apply_pending": "Trích xuất OCR đã hoàn tất. Quy trình áp dụng sau trích xuất đang chờ triển khai.",
+      "import_extract_native_runtime_error": "Đã xảy ra lỗi runtime trích xuất native trong khi nhập/trích xuất. Hãy kiểm tra console và thử lại.",
+      "import_extract_native_unreadable_or_corrupt": "Tệp đã chọn không đọc được hoặc bị hỏng đối với trích xuất native.",
+      "import_extract_native_encrypted_or_password_protected": "PDF đã chọn được mã hóa hoặc bảo vệ bằng mật khẩu và không thể trích xuất native.",
+      "import_extract_native_cancelled": "Trích xuất native đã bị hủy.",
+      "import_extract_native_unsupported_format": "Định dạng tệp này không được tuyến trích xuất native hỗ trợ.",
+      "import_extract_native_apply_pending": "Trích xuất native đã hoàn tất. Quy trình áp dụng sau trích xuất đang chờ triển khai.",
+      "wip_diseno_skins": "WIP: Bộ chọn giao diện sẽ mở tại đây trong phiên bản tương lai.",
+      "wip_diseno_crono": "WIP: Cài đặt đồng hồ bấm giờ nổi sẽ mở tại đây trong phiên bản tương lai.",
+      "wip_diseno_fuentes": "WIP: Bộ chọn phông chữ sẽ mở tại đây trong phiên bản tương lai.",
+      "wip_diseno_colores": "WIP: Bộ chọn màu sẽ mở tại đây trong phiên bản tương lai.",
+      "wip_shortcuts": "WIP: Bộ chọn phím tắt sẽ mở tại đây trong phiên bản tương lai.",
+      "reading_test_unavailable": "Chức năng bài kiểm tra tốc độ đọc không khả dụng.",
+      "reading_test_precondition_blocked": "Bài kiểm tra tốc độ đọc chỉ có thể bắt đầu từ trạng thái ứng dụng ổn định. Hãy đóng các cửa sổ phụ và bảo đảm đồng hồ bấm giờ đã dừng.",
+      "reading_test_pool_error": "Đã xảy ra lỗi khi kiểm tra pool bài kiểm tra tốc độ đọc.",
+      "reading_test_no_matching_files": "Không còn tệp kiểm tra chưa dùng nào khớp với lựa chọn hiện tại.",
+      "reading_test_current_text_empty": "Văn bản hiện tại đang trống. Hãy tải hoặc nhập văn bản trước khi bắt đầu bài kiểm tra với văn bản hiện tại.",
+      "reading_test_result_invalid": "Không thể chuyển kết quả bài kiểm tra thành WPM hợp lệ. Quy trình đã kết thúc mà không mở modal preset.",
+      "reading_test_result_unavailable": "Không thể hiển thị kết quả tốc độ đọc. Quy trình vẫn tiếp tục.",
+      "reading_test_preset_unavailable": "Không thể mở modal preset sau bài kiểm tra.",
+      "reading_test_questions_unavailable": "Không thể mở modal câu hỏi đọc hiểu. Quy trình đã kết thúc trước khi tạo preset.",
+      "reading_test_pool_import_failed": "Không thể nhập các tệp bài kiểm tra tốc độ đọc.",
+      "reading_test_start_failed": "Không thể bắt đầu bài kiểm tra tốc độ đọc.",
+      "reading_test_cancelled": "Bài kiểm tra tốc độ đọc đã bị hủy.",
+      "reading_test_cancelled_window_closed": "Bài kiểm tra tốc độ đọc đã bị hủy vì một trong các cửa sổ phiên đã đóng."
+    },
+    "editor_alerts": {
+      "paste_too_big": "Văn bản quá lớn để dán trực tiếp. Hãy dùng các nút ở cửa sổ chính.",
+      "drop_too_big": "Văn bản được thả quá lớn. Hãy dùng các nút ở cửa sổ chính để thêm văn bản lớn.",
+      "paste_no_text": "Clipboard không chứa văn bản thuần.",
+      "drop_no_text": "Kéo và thả: không phát hiện văn bản thuần.",
+      "type_limit": "Không thể nhập thêm văn bản: đã đạt kích thước tối đa.",
+      "paste_limit": "Không thể dán thêm văn bản: đã đạt kích thước tối đa.",
+      "drop_limit": "Không thể thả thêm văn bản: đã đạt kích thước tối đa.",
+      "paste_truncated": "Văn bản được dán đã bị cắt bớt để tránh vượt quá mức tối đa.",
+      "drop_truncated": "Văn bản được kéo vượt quá không gian còn lại và đã bị cắt bớt.",
+      "text_truncated": "Văn bản đã bị cắt bớt để vừa với giới hạn của ứng dụng.",
+      "calc_error": "Đã xảy ra lỗi khi tính toán. Hãy kiểm tra console."
+    },
+    "preset_alerts": {
+      "name_empty": "Tên không được để trống.",
+      "wpm_invalid": "WPM phải là một số từ {min} đến {max}.",
+      "create_error": "Đã xảy ra lỗi khi tạo preset. Hãy kiểm tra console.",
+      "edit_error": "Đã xảy ra lỗi khi chỉnh sửa preset. Hãy kiểm tra console.",
+      "process_error": "Đã xảy ra lỗi khi xử lý preset. Hãy kiểm tra console."
+    },
+    "info": {
+      "loading": "Đang tải...",
+      "missing_content": "Không có nội dung cho '{name}'.",
+      "external": {
+        "blocked": "Liên kết bị chặn",
+        "error": "Lỗi khi mở liên kết"
+      },
+      "appdoc": {
+        "blocked": "Tài liệu bị chặn",
+        "missing": "Không tìm thấy tài liệu",
+        "error": "Lỗi khi mở tài liệu"
+      },
+      "acerca_de": {
+        "app_name": "toT",
+        "title": "Giới thiệu",
+        "version": {
+          "unavailable": "Không khả dụng"
+        },
+        "env": {
+          "unavailable": "Không khả dụng"
+        }
+      },
+      "instrucciones": {
+        "title": "Cách sử dụng"
+      },
+      "links_interes": {
+        "app_name": "toT",
+        "title": "Liên kết hữu ích",
+        "section_biblio_label": "Tài liệu tham khảo"
+      }
+    }
+  }
+}

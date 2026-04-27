@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "如何使用本應用程式？",
+      "guia_basica": "基礎指南",
+      "instrucciones_completas": "完整說明",
+      "faq": "常見問題（FAQ）",
+      "preferencias": "偏好設定",
+      "idioma": "語言",
+      "diseno": "設計",
+      "skins": "介面主題",
+      "crono_flotante": "浮動碼錶",
+      "fuentes": "字型",
+      "colores": "顏色",
+      "shortcuts": "鍵盤快捷鍵",
+      "presets_por_defecto": "預設值",
+      "disconnect_google_ocr": "中斷 Google OCR 連線",
+      "links_interes": "相關連結",
+      "ayuda": "?",
+      "actualizar_version": "更新至最新版本",
+      "acerca_de": "關於",
+      "desarrollo": "開發",
+      "recargar": "重新載入",
+      "forcereload": "強制重新載入",
+      "toggle_devtools": "切換 DevTools",
+      "language": {
+        "empty": "沒有可用語言",
+        "invalid": "語言清單無效"
+      }
+    },
+    "dialog": {
+      "ok": "確定",
+      "continue_button": "是，繼續",
+      "cancel_button": "否，取消",
+      "snapshot_overwrite_save": "覆蓋現有快照檔案？",
+      "snapshot_overwrite_load": "用所選快照“{name}”取代目前文字？",
+      "task_delete_confirm": "刪除任務清單“{name}”？",
+      "task_library_row_save_overwrite": "資料庫中已存在名為“{name}”的項目。要覆蓋嗎？",
+      "task_library_row_delete": "從資料庫刪除“{name}”？",
+      "task_link_confirm": "開啟此連結？",
+      "task_link_trust_host": "以後信任此主機",
+      "task_path_confirm": "開啟此本機檔案？",
+      "disconnect_google_ocr_title": "中斷 Google OCR 連線",
+      "disconnect_google_ocr_confirm": "中斷 Google OCR 連線？",
+      "disconnect_google_ocr_detail": "這會撤銷已儲存的 Google OCR 登入權杖，並從此應用程式中刪除本機權杖檔案。應用程式管理的本機 Google OAuth 憑證可能會保留，以便以後重新連線 OCR。",
+      "delete_preset_confirm": "刪除預設“{name}”？",
+      "delete_preset_none": "尚未選擇要刪除的預設。",
+      "restore_defaults_confirm": "將預設值（通用預設值和語言“{lang}”的預設）恢復為原始版本？這會撤銷對目前語言預設值所做的刪除和變更。",
+      "edit_preset_none": "尚未選擇要編輯的預設。",
+      "edit_preset_confirm": "確定要以目前預設值取代“{name}”嗎？",
+      "update_title": "有可用更新",
+      "update_message": "有新版本 {remote} 可用。目前版本：{local}。現在下載嗎？",
+      "update_download": "下載",
+      "update_later": "稍後",
+      "update_up_to_date_title": "已是最新版本。",
+      "update_up_to_date_message": "你已經擁有最新版本（{local}）。",
+      "update_failed_title": "更新檢查失敗。",
+      "update_failed_message": "請檢查連線後重試。"
+    }
+  }
+}

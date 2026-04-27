@@ -1,0 +1,61 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "نحوه استفاده از برنامه",
+      "guia_basica": "راهنمای پایه",
+      "instrucciones_completas": "دستورالعمل‌های کامل",
+      "faq": "پرسش‌های پرتکرار (FAQ)",
+      "preferencias": "ترجیحات",
+      "idioma": "زبان",
+      "diseno": "طراحی",
+      "skins": "پوسته‌ها",
+      "crono_flotante": "کرنومتر شناور",
+      "fuentes": "فونت‌ها",
+      "colores": "رنگ‌ها",
+      "shortcuts": "میان‌برهای صفحه‌کلید",
+      "presets_por_defecto": "پیش‌تنظیم‌های پیش‌فرض",
+      "disconnect_google_ocr": "قطع اتصال Google OCR",
+      "links_interes": "پیوندهای مفید",
+      "ayuda": "؟",
+      "actualizar_version": "به‌روزرسانی به آخرین نسخه",
+      "acerca_de": "درباره",
+      "desarrollo": "توسعه",
+      "recargar": "بارگذاری دوباره",
+      "forcereload": "بارگذاری دوباره اجباری",
+      "toggle_devtools": "تغییر وضعیت DevTools",
+      "language": {
+        "empty": "هیچ زبانی در دسترس نیست",
+        "invalid": "فهرست زبان‌ها نامعتبر است"
+      }
+    },
+    "dialog": {
+      "ok": "تأیید",
+      "continue_button": "بله، ادامه بده",
+      "cancel_button": "نه، لغو کن",
+      "snapshot_overwrite_save": "فایل اسنپ‌شات موجود بازنویسی شود؟",
+      "snapshot_overwrite_load": "متن فعلی با اسنپ‌شات انتخاب‌شده «{name}» جایگزین شود؟",
+      "task_delete_confirm": "فهرست کار «{name}» حذف شود؟",
+      "task_library_row_save_overwrite": "ورودی‌ای با نام «{name}» از قبل در کتابخانه وجود دارد. بازنویسی شود؟",
+      "task_library_row_delete": "«{name}» از کتابخانه حذف شود؟",
+      "task_link_confirm": "این پیوند باز شود؟",
+      "task_link_trust_host": "از این پس به این میزبان اعتماد شود",
+      "task_path_confirm": "این فایل محلی باز شود؟",
+      "disconnect_google_ocr_title": "قطع اتصال Google OCR",
+      "disconnect_google_ocr_confirm": "اتصال Google OCR قطع شود؟",
+      "disconnect_google_ocr_detail": "این کار توکن ورود ذخیره‌شده Google OCR را لغو می‌کند و فایل توکن محلی را از این برنامه حذف می‌کند. اعتبارنامه‌های محلی OAuth مدیریت‌شده توسط برنامه ممکن است باقی بمانند تا OCR بعداً دوباره متصل شود.",
+      "delete_preset_confirm": "پیش‌تنظیم «{name}» حذف شود؟",
+      "delete_preset_none": "هیچ پیش‌تنظیمی برای حذف انتخاب نشده است.",
+      "restore_defaults_confirm": "پیش‌تنظیم‌های پیش‌فرض (عمومی و زبان «{lang}») به حالت اصلی بازگردانده شوند؟ این کار حذف‌ها و تغییرات پیش‌تنظیم‌های پیش‌فرض زبان فعال را برمی‌گرداند.",
+      "edit_preset_none": "هیچ پیش‌تنظیمی برای ویرایش انتخاب نشده است.",
+      "edit_preset_confirm": "آیا مطمئن هستید که می‌خواهید «{name}» را با پیش‌تنظیم فعلی جایگزین کنید؟",
+      "update_title": "به‌روزرسانی در دسترس است",
+      "update_message": "نسخه جدید {remote} در دسترس است. نسخه فعلی: {local}. اکنون دانلود شود؟",
+      "update_download": "دانلود",
+      "update_later": "بعداً",
+      "update_up_to_date_title": "نسخه شما به‌روز است.",
+      "update_up_to_date_message": "شما از قبل آخرین نسخه ({local}) را دارید.",
+      "update_failed_title": "بررسی به‌روزرسانی ناموفق بود.",
+      "update_failed_message": "اتصال خود را بررسی کنید و دوباره تلاش کنید."
+    }
+  }
+}

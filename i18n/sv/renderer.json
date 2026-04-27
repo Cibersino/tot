@@ -1,0 +1,505 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Första och sista delen av den analyserade texten:",
+      "selector_empty": "(tom)",
+      "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
+        "edit": "⌨",
+        "clear": "🗑",
+        "snapshot_load": "📂",
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
+      },
+      "tooltips": {
+        "import_extract": "Importera/extrahera text från fil",
+        "import_extract_abort": "Avbryt extrahering",
+        "overwrite_clipboard": "Ersätt aktuell text med urklippet",
+        "append_clipboard": "Lägg till urklippet i slutet av aktuell text (ny rad)",
+        "clipboard_repeat_count": "Antal upprepningar från urklippet",
+        "edit": "Öppna fönstret med hela aktuella texten",
+        "clear": "Rensa aktuell text",
+        "snapshot_load": "Läs in textsnapshot",
+        "snapshot_save": "Spara aktuell text som snapshot",
+        "task_new": "Ny uppgift",
+        "task_load": "Läs in uppgift",
+        "cibersino_website": "Cibersinos webbplats",
+        "cibersino_kofi": "Stöd mig på Ko-fi",
+        "new_preset": "Skapa en ny förinställning",
+        "edit_preset": "Redigera vald förinställning",
+        "delete_preset": "Ta bort vald förinställning",
+        "reset_presets": "Återställ standardförinställningar",
+        "help_button": "Visa ett användbart tips",
+        "flotante_window": "Flytande fönster"
+      },
+      "aria": {
+        "import_extract": "Importera eller extrahera text från fil",
+        "import_extract_abort": "Avbryt extrahering",
+        "clipboard_repeat_count": "Antal inklistringar",
+        "wpm_input": "Ord per minut",
+        "wpm_slider": "Reglage för ord per minut",
+        "speed_presets": "Hastighetsförinställningar",
+        "precise_mode_toggle": "Precist läge",
+        "crono_controls": "Stoppurskontroller",
+        "crono_display": "Stoppursvisning",
+        "crono_toggle": "Starta eller pausa stoppuret",
+        "crono_reset": "Nollställ stoppuret",
+        "floating_window_toggle": "Flytande fönster",
+        "floating_window_group": "Kontroller för flytande fönster"
+      },
+      "speed": {
+        "title": "LÄSHASTIGHET",
+        "wpm_label": "ord per minut (WPM)",
+        "new": "N",
+        "edit": "E",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "RÄKNERESULTAT",
+        "time": "⏱ Uppskattad lästid: {h} h {m} min {s} s",
+        "words": "Ord: {n}",
+        "chars_no_space": "Tecken (utan blanksteg): {n}",
+        "chars": "Tecken: {n}",
+        "precise_mode": "Precist läge",
+        "precise_tooltip": "Baserat på Intl.Segmenter"
+      },
+      "crono": {
+        "title": "STOPPUR",
+        "speed": "Hastighet:",
+        "controls_label": "Stoppurskontroller",
+        "flotante_short": "FF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Test av läshastighet",
+        "preview_spoiler": "Spoiler"
+      },
+      "processing": {
+        "import_extract_placeholder": "Extraherar text...",
+        "import_extract_preparing": "Förbereder import-/extraheringsväg...",
+        "import_extract_waiting_native": "Extraherar text från fil...",
+        "import_extract_waiting_ocr": "Kör OCR-extrahering...",
+        "import_extract_waiting_ocr_delayed": "OCR körs. Vissa filer tar längre tid.",
+        "import_extract_elapsed": "Förfluten tid: {time}",
+        "import_extract_drop_here": "Släpp filen för att importera/extrahera text"
+      }
+    },
+    "editor": {
+      "title": "toT — Fullständig text",
+      "placeholder": "Skriv eller klistra in här...",
+      "calc_button": "BERÄKNA/SPARA",
+      "calc_while_typing": "Auto",
+      "spellcheck": "Stavningskontroll",
+      "text_size_label": "Storlek",
+      "decrease_text_size": "Minska textstorlek",
+      "increase_text_size": "Öka textstorlek",
+      "reset_text_size": "Återställ textstorlek",
+      "text_size_value": "{value} px",
+      "read_progress_label": "Läst",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Läsprogress: {value}%",
+      "clear": "🗑",
+      "clear_title": "Rensa"
+    },
+    "editor_find": {
+      "input_placeholder": "Sök...",
+      "input_aria": "Sök i text",
+      "expand_title": "Visa ersättningskontroller",
+      "collapse_title": "Dölj ersättningskontroller",
+      "replace_placeholder": "Ersätt...",
+      "replace_aria": "Ersättningstext",
+      "prev": "🡩",
+      "next": "🡫",
+      "close": "🗙",
+      "replace": "Ersätt",
+      "replace_all": "Ersätt alla",
+      "prev_title": "Föregående träff",
+      "next_title": "Nästa träff",
+      "close_title": "Stäng sökfältet",
+      "replace_title": "Ersätt aktuell träff",
+      "replace_all_title": "Ersätt alla träffar",
+      "replace_timeout": "Ersättningen tog för lång tid. Försök igen.",
+      "status_no_matches": "Inga träffar",
+      "status_empty_query": "Skriv för att söka"
+    },
+    "tasks": {
+      "title": "toT — Uppgifter",
+      "labels": {
+        "name": "Namn",
+        "total": "TOTAL TID",
+        "empty": "(tom)",
+        "search": "Sök",
+        "search_placeholder": "Sök i bibliotek..."
+      },
+      "columns": {
+        "texto": "Text",
+        "tiempo": "Tid",
+        "percent": "%",
+        "falta": "Återstår",
+        "tipo": "Typ",
+        "enlace": "Länk",
+        "comentario": "",
+        "acciones": "Åtgärder"
+      },
+      "buttons": {
+        "save": "Spara",
+        "delete": "Ta bort",
+        "add_row": "Lägg till rad",
+        "open_library": "Öppna bibliotek",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "Välj snapshot",
+        "clear_snapshot": "🗙",
+        "cancel": "Avbryt",
+        "yes": "Ja",
+        "no": "Nej"
+      },
+      "tooltips": {
+        "move_up": "Flytta upp",
+        "move_down": "Flytta ned",
+        "delete_row": "Ta bort rad",
+        "library_row_save": "Spara i bibliotek",
+        "library_row_load": "Läs in rad",
+        "library_row_delete": "Ta bort från bibliotek",
+        "snapshot_load": "Läs in en textsnapshot för denna rad",
+        "snapshot_select": "Välj en textsnapshot för denna rad",
+        "snapshot_clear": "Ta bort vald snapshot från denna rad",
+        "link_open": "Öppna länk",
+        "comment": "Lägg till/redigera kommentar"
+      },
+      "modals": {
+        "comment_title": "Kommentar",
+        "library_title": "Bibliotek",
+        "library_save_title": "Spara i bibliotek",
+        "library_save_question": "Inkludera kommentar?"
+      },
+      "alerts": {
+        "task_unavailable": "Uppgiftsfunktionen är inte tillgänglig.",
+        "task_open_error": "Kunde inte öppna uppgiftsredigeraren.",
+        "task_load_error": "Kunde inte läsa in uppgiften.",
+        "task_save_error": "Kunde inte spara uppgiften.",
+        "task_save_success": "Uppgiften sparades.",
+        "task_delete_error": "Kunde inte ta bort uppgiften.",
+        "task_delete_unavailable": "Ingen sparad uppgift att ta bort.",
+        "task_invalid_file": "Ogiltig uppgiftsfil.",
+        "task_invalid_rows": "Det finns ogiltiga rader i uppgiften.",
+        "task_path_outside": "Filen måste ligga i uppgiftsmappen.",
+        "name_required": "Uppgiftsnamn krävs.",
+        "row_text_required": "Radtexten får inte vara tom.",
+        "library_load_error": "Kunde inte läsa in biblioteket.",
+        "library_save_error": "Kunde inte spara i biblioteket.",
+        "library_save_success": "Raden sparades i biblioteket.",
+        "library_delete_error": "Kunde inte ta bort från biblioteket.",
+        "link_blocked": "Länk blockerad.",
+        "link_missing": "Filen hittades inte.",
+        "link_error": "Fel vid öppning av länk."
+      },
+      "confirm": {
+        "discard_changes": "Det finns osparade ändringar. Kasta dem?",
+        "close_unsaved": "Det finns osparade ändringar. Stäng utan att spara?"
+      }
+    },
+    "snapshot_save_tags": {
+      "title": "Spara textsnapshot",
+      "message": "Du kan lägga till valfria taggar för denna textsnapshot innan du väljer var den ska sparas.",
+      "labels": {
+        "language": "Språk",
+        "type": "Typ",
+        "difficulty": "Svårighetsgrad"
+      },
+      "empty": {
+        "language": "Ingen språktagg",
+        "type": "Ingen typtagg",
+        "difficulty": "Ingen svårighetsgradstagg"
+      },
+      "buttons": {
+        "confirm": "Spara textsnapshot",
+        "cancel": "Avbryt"
+      },
+      "close_aria": "Stäng dialogen för att spara textsnapshot",
+      "options": {
+        "language": {
+          "es": "Spanska",
+          "en": "Engelska",
+          "pt": "Portugisiska",
+          "fr": "Franska",
+          "de": "Tyska",
+          "it": "Italienska",
+          "arn": "Mapudungun",
+          "ja": "Japanska",
+          "ko": "Koreanska",
+          "ru": "Ryska",
+          "tr": "Turkiska",
+          "id": "Indonesiska",
+          "hi": "Hindi",
+          "bn": "Bengali",
+          "ur": "Urdu",
+          "ar": "Arabiska",
+          "zh_hans": "Kinesiska (förenklad)",
+          "zh_hant": "Kinesiska (traditionell)"
+        },
+        "type": {
+          "fiction": "Skönlitteratur",
+          "non_fiction": "Facklitteratur"
+        },
+        "difficulty": {
+          "easy": "Lätt",
+          "normal": "Normal",
+          "hard": "Svår"
+        }
+      }
+    },
+    "reading_test": {
+      "prestart": {
+        "reminder": "Tryck på Play (▶) i det flytande fönstret när du är redo att börja. När testet har startat ska du inte trycka på Pause (⏸) förrän du har läst färdigt: Pause avslutar testet; det pausar inte timern. Tryck på Stop/Reset (⏹) endast om du vill avbryta testet."
+      },
+      "entry": {
+        "title": "Test av läshastighet",
+        "intro": "Det här testet är avsett att uppskatta din faktiska läshastighet genom en guidad session. Appen öppnar texten och väntar på att du trycker på Play (▶) i det flytande fönstret när du är redo att börja. När testet har startat ska du inte trycka på Pause (⏸) förrän du har läst färdigt: Pause avslutar testet; det pausar inte timern. Använd Stop/Reset (⏹) endast om du vill avbryta testet. Därefter kan du gå igenom förståelsefrågor om texten innehåller sådana och till sist skapa en förinställning från resultatet.\nInnan du börjar bör du tänka på att dessa testtexter vanligtvis kräver mellan 5 och 15 minuters oavbruten koncentration.\nDen här poolen använder korta texter, så tolka resultatet med försiktighet. Det bör inte extrapoleras direkt till långa texter, där positiva faktorer som flyt och kontextuppbyggnad, och negativa faktorer som mental rekapitulation och trötthet, brukar spela in.",
+        "eligible_count": "Kvalificerade filer:",
+        "pool_exhausted_message": "Det finns inga återstående oanvända testfiler. Återställ poolen eller lägg till fler filer.",
+        "close_aria": "Stäng dialogen för test av läshastighet",
+        "start_random_confirm": "Detta skriver över aktuell text med en slumpmässig kvalificerad text från poolen. Vill du fortsätta?",
+        "reset_confirm": "Detta återställer hela testpoolen och markerar alla filer som oanvända igen. Vill du fortsätta?",
+        "import_summary": "Importen är klar. Importerade: {imported}. Överhoppade dubbletter: {skippedDuplicates}. Misslyckad validering: {failedValidation}. Misslyckade arkivposter: {failedArchiveEntries}. Misslyckade skrivningar: {failedWrites}.",
+        "import_conflict": {
+          "title": "Importera filer",
+          "message": "Vissa importerade filer finns redan i poolen. Hur ska dubbletter hanteras?",
+          "detail": "{count} målfilnamn finns redan i poolen.",
+          "buttons": {
+            "skip": "Hoppa över dubbletter",
+            "replace": "Ersätt dubbletter",
+            "cancel": "Avbryt import"
+          }
+        },
+        "buttons": {
+          "get_more_files": "Hämta fler filer",
+          "import_files": "Importera filer...",
+          "reset_pool": "R",
+          "show_instructions": "Visa instruktioner",
+          "hide_instructions": "Dölj instruktioner",
+          "start_random_text": "Starta med slumpmässig text",
+          "start_current_text": "Starta med aktuell text"
+        },
+        "tooltips": {
+          "get_more_files": "Hämta fler testfiler från Google Drive-mappen",
+          "import_files": "Importera testfiler från din enhet",
+          "reset_pool": "Återställ testpool",
+          "start_random_text": "Starta testet med en slumpmässig kvalificerad text från poolen",
+          "start_current_text": "Starta testet med aktuell text"
+        }
+      },
+      "questions": {
+        "title": "Läsförståelsefrågor",
+        "intro": "Det är frivilligt att svara på dessa läsförståelsefrågor och de påverkar inte ditt slutresultat. De är bara avsedda att hjälpa dig bedöma textens svårighetsgrad och om din lästakt och lässtrategi gjorde det möjligt att nå en grundläggande förståelsenivå. Dina svar sparas inte och skickas inte till utvecklarna eller till någon annan.",
+        "random_title": "Slumpgissningsnivå",
+        "random_value": "Förväntat resultat vid slumpgissning: {percentage}%",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "För klagomål:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Alla frågor måste besvaras innan utvärdering.",
+        "result_summary": "{correct} av {total} rätt ({percentage}%)",
+        "chance_at_least_observed": "Sannolikhet att få minst detta resultat genom slumpgissning: {percentage}%",
+        "fatal_invalid": "Frågepayloaden är ogiltig.",
+        "buttons": {
+          "check": "Kontrollera resultat",
+          "continue": "Fortsätt"
+        }
+      },
+      "result": {
+        "title": "Resultat för läshastighet",
+        "measured_wpm": "Uppmätt WPM",
+        "elapsed_time": "Tid",
+        "word_count": "Ord",
+        "buttons": {
+          "continue": "Fortsätt"
+        }
+      }
+    },
+    "modal_preset": {
+      "title_new": "Ny förinställning",
+      "title_edit": "Redigera förinställning",
+      "heading_new": "Skapa ny förinställning",
+      "heading_edit": "Redigera vald förinställning",
+      "name": "Namn:",
+      "wpm": "WPM:",
+      "description": "Beskrivning:",
+      "placeholder": "Kort beskrivning...",
+      "char_count": "{remaining} tecken kvar",
+      "hint": "Anpassade förinställningar sparas i användarinställningarna.",
+      "cancel": "Avbryt",
+      "save": "Spara"
+    },
+    "alerts": {
+      "clipboard_too_large": "Urklippstexten är för stor för att bearbeta. Minska den och försök igen.",
+      "append_too_large": "Den resulterande texten är för stor för att bearbeta. Minska den och försök igen.",
+      "clipboard_overflow": "Urklippstexten överskrider den högsta tillåtna storleken och har kortats.",
+      "append_overflow": "Texten som skulle läggas till överskrider den högsta tillåtna storleken och har kortats.",
+      "text_limit": "Kan inte lägga till text: maximal storlek har nåtts.",
+      "clipboard_error": "Ett fel uppstod vid inklistring från urklippet. Kontrollera konsolen.",
+      "append_error": "Ett fel uppstod när text skulle läggas till. Kontrollera konsolen.",
+      "clear_error": "Ett fel uppstod när texten skulle rensas. Kontrollera konsolen.",
+      "snapshot_save_success": "Snapshot sparad.",
+      "snapshot_save_error": "Kunde inte spara snapshoten.",
+      "snapshot_load_success": "Snapshot inläst.",
+      "snapshot_load_error": "Kunde inte läsa in snapshoten.",
+      "snapshot_outside": "Snapshoten måste ligga i snapshotmappen.",
+      "snapshot_truncated": "Snapshoten överskrider maximal storlek och har kortats.",
+      "snapshot_unavailable": "Snapshotfunktionen är inte tillgänglig.",
+      "modal_unavailable": "Modalfunktionen är inte tillgänglig.",
+      "edit_none": "Ingen förinställning har valts för redigering.",
+      "preset_not_found": "Vald förinställning hittades inte i cachen.",
+      "edit_unavailable": "Redigeringsfunktionen är inte tillgänglig.",
+      "edit_error": "Ett fel uppstod vid redigering av förinställningen. Kontrollera konsolen.",
+      "delete_error": "Ett fel uppstod vid borttagning av förinställningen. Kontrollera konsolen.",
+      "restore_error": "Ett fel uppstod vid återställning av förinställningar. Kontrollera konsolen.",
+      "open_presets_unsupported": "Kan inte öppna mappen med förinställningar i denna miljö.",
+      "open_presets_error": "Ett fel uppstod vid försök att öppna mappen med förinställningar. Kontrollera konsolen.",
+      "open_presets_fail": "Kunde inte öppna mappen med standardförinställningar. Kontrollera konsolen för detaljer.",
+      "import_extract_error": "Ett fel uppstod när import/extrahering skulle startas. Kontrollera konsolen.",
+      "import_extract_precondition_blocked": "För att starta import/extrahering, stäng alla sekundära fönster och stoppa stoppuret.",
+      "import_extract_precondition_error": "Ett fel uppstod vid kontroll av villkor för import/extrahering. Kontrollera konsolen.",
+      "import_extract_processing_locked": "Import/extrahering bearbetas. Interaktioner i huvudfönstret är låsta tills bearbetningen är klar eller du avbryter.",
+      "import_extract_abort_error": "Ett fel uppstod vid begäran om att avbryta import/extrahering. Kontrollera konsolen.",
+      "import_extract_cancelled": "Import/extrahering avbröts.",
+      "import_extract_drop_single_file_only": "Släpp exakt en fil för att starta import/extrahering.",
+      "import_extract_drop_invalid_file": "Det släppta objektet är inte en giltig lokal fil.",
+      "import_extract_route_choice_required": "Val av väg krävs för denna PDF innan extraheringen kan fortsätta.",
+      "import_extract_route_choice_title": "Välj extraheringsväg",
+      "import_extract_route_choice_message": "Båda extraheringsvägarna är tillgängliga för denna PDF. Välj en för att fortsätta.",
+      "import_extract_route_choice_native_button": "Använd inbyggd",
+      "import_extract_route_choice_ocr_button": "Använd OCR",
+      "import_extract_route_choice_cancel_button": "Avbryt",
+      "import_extract_route_choice_close_aria": "Stäng dialogen för extraheringsväg",
+      "import_extract_apply_modal_title": "Tillämpa extraherad text",
+      "import_extract_apply_modal_message": "Välj hur den extraherade texten ska tillämpas.",
+      "import_extract_apply_modal_elapsed": "Körtid: {time}",
+      "import_extract_apply_modal_repeat_label": "Upprepningar",
+      "import_extract_apply_modal_overwrite_button": "Skriv över",
+      "import_extract_apply_modal_append_button": "Lägg till",
+      "import_extract_apply_modal_cancel_button": "Avbryt",
+      "import_extract_apply_modal_close_aria": "Stäng dialogen för att tillämpa extraherad text",
+      "import_extract_apply_error": "Ett fel uppstod när extraherad text skulle tillämpas. Kontrollera konsolen och försök igen.",
+      "import_extract_apply_too_large": "Den resulterande texten är för stor för att bearbeta. Minska antalet upprepningar och försök igen.",
+      "import_extract_apply_text_limit": "Kan inte lägga till extraherad text: maximal storlek har nåtts.",
+      "import_extract_apply_truncated": "Den extraherade texten som tillämpades överskred gränsen och har kortats.",
+      "import_extract_prepare_invalid": "Den förberedda import-/extraheringsbegäran är inte längre giltig. Starta flödet igen.",
+      "import_extract_ocr_unavailable": "OCR är inte tillgängligt. Kontrollera konfiguration/autentiseringsstatus och försök igen.",
+      "import_extract_ocr_activation_required": "OCR-aktivering krävs. Logga in i Google OCR och försök igen.",
+      "import_extract_ocr_activation_disclosure_title": "Granska aktivering av Google OCR",
+      "import_extract_ocr_activation_disclosure_intro": "toT använder Googles tjänster för OCR. Om du fortsätter öppnas din webbläsare så att du kan auktorisera denna app.",
+      "import_extract_ocr_activation_disclosure_selected_files": "Endast filer du väljer för OCR skickas till Google.",
+      "import_extract_ocr_activation_disclosure_local_storage": "Den här appen lagrar apphanterade Google OAuth-uppgifter för OCR och lokal Google-tokenstatus i denna appinstans.",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "Efter export försöker appen ta bort det tillfälliga Google-dokumentet från din Google Drive.",
+      "import_extract_ocr_activation_disclosure_disconnect": "Du kan senare koppla från via Inställningar > Koppla från Google OCR.",
+      "import_extract_ocr_activation_disclosure_proceed_button": "Fortsätt till Google",
+      "import_extract_ocr_activation_disclosure_cancel_button": "Avbryt",
+      "import_extract_ocr_activation_disclosure_privacy_link": "Öppna integritetspolicyn",
+      "import_extract_ocr_activation_disclosure_close_aria": "Stäng informationsdialogen för OCR-aktivering",
+      "import_extract_ocr_activation_success": "OCR-aktivering slutförd. Försöker extrahera igen.",
+      "import_extract_ocr_activation_cancelled": "OCR-aktiveringen avbröts. Import/extrahering fortsatte inte.",
+      "import_extract_ocr_token_state_invalid": "Sparad inloggningsstatus för Google OCR är ogiltig. Anslut Google OCR igen och försök igen.",
+      "import_extract_ocr_activation_failed": "OCR-aktivering misslyckades. Kontrollera konfiguration/autentiseringsstatus och försök igen.",
+      "import_extract_ocr_disconnect_success": "Google OCR kopplades från. Den sparade Google-token återkallades och den lokala inloggningsstatusen togs bort.",
+      "import_extract_ocr_disconnect_not_connected": "Google OCR är för närvarande inte anslutet i denna appinstans.",
+      "import_extract_ocr_disconnect_failed": "Frånkoppling av Google OCR misslyckades. Den sparade inloggningsstatusen togs inte bort.",
+      "import_extract_ocr_connectivity_failed": "OCR kräver en internetanslutning. Kontrollera anslutningen och försök igen.",
+      "import_extract_ocr_setup_missing_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna saknas.",
+      "import_extract_ocr_setup_invalid_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna är ogiltiga.",
+      "import_extract_ocr_restricted": "OCR-vägen är begränsad för denna filtyp.",
+      "import_extract_ocr_quota_or_rate_limited": "OCR är tillfälligt blockerat av kvot-/hastighetsbegränsningar. Vänta och försök igen.",
+      "import_extract_ocr_runtime_error": "Ett OCR-runtimefel uppstod under import/extrahering. Kontrollera konsolen och försök igen.",
+      "import_extract_ocr_cancelled": "OCR-import/extrahering avbröts.",
+      "import_extract_ocr_cleanup_warning": "OCR slutfördes, men rensning av tillfällig fjärrfil misslyckades. Kontrollera din Google Drive-mapp.",
+      "import_extract_ocr_apply_pending": "OCR-extrahering slutförd. Flödet för tillämpning efter extrahering väntar på implementering.",
+      "import_extract_native_runtime_error": "Ett fel uppstod i den inbyggda extraheringen under import/extrahering. Kontrollera konsolen och försök igen.",
+      "import_extract_native_unreadable_or_corrupt": "Den valda filen är oläsbar eller skadad för inbyggd extrahering.",
+      "import_extract_native_encrypted_or_password_protected": "Den valda PDF-filen är krypterad eller lösenordsskyddad och kan inte extraheras med inbyggd extrahering.",
+      "import_extract_native_cancelled": "Inbyggd extrahering avbröts.",
+      "import_extract_native_unsupported_format": "Detta filformat stöds inte av den inbyggda extraheringsvägen.",
+      "import_extract_native_apply_pending": "Inbyggd extrahering slutförd. Flödet för tillämpning efter extrahering väntar på implementering.",
+      "wip_diseno_skins": "WIP: Skin-väljaren öppnas här i en framtida version.",
+      "wip_diseno_crono": "WIP: Inställningar för flytande stoppur öppnas här i en framtida version.",
+      "wip_diseno_fuentes": "WIP: Typsnittsväljaren öppnas här i en framtida version.",
+      "wip_diseno_colores": "WIP: Färgväljaren öppnas här i en framtida version.",
+      "wip_shortcuts": "WIP: Väljaren för tangentbordsgenvägar öppnas här i en framtida version.",
+      "reading_test_unavailable": "Funktionen för test av läshastighet är inte tillgänglig.",
+      "reading_test_precondition_blocked": "Testet av läshastighet kan endast starta från ett stabilt apptillstånd. Stäng sekundära fönster och se till att stoppuret är stoppat.",
+      "reading_test_pool_error": "Ett fel uppstod vid kontroll av poolen för test av läshastighet.",
+      "reading_test_no_matching_files": "Det finns inga återstående oanvända testfiler som matchar det aktuella valet.",
+      "reading_test_current_text_empty": "Aktuell text är tom. Läs in eller skriv en text innan du startar testet med aktuell text.",
+      "reading_test_result_invalid": "Testresultatet kunde inte omvandlas till ett giltigt WPM. Flödet avslutades utan att öppna modalen för förinställningar.",
+      "reading_test_result_unavailable": "Resultatet för läshastighet kunde inte visas. Flödet fortsatte.",
+      "reading_test_preset_unavailable": "Modalen för förinställningar kunde inte öppnas efter testet.",
+      "reading_test_questions_unavailable": "Modalen med förståelsefrågor kunde inte öppnas. Flödet avslutades före skapande av förinställning.",
+      "reading_test_pool_import_failed": "Filerna för test av läshastighet kunde inte importeras.",
+      "reading_test_start_failed": "Testet av läshastighet kunde inte startas.",
+      "reading_test_cancelled": "Testet av läshastighet avbröts.",
+      "reading_test_cancelled_window_closed": "Testet av läshastighet avbröts eftersom ett av sessionsfönstren stängdes."
+    },
+    "editor_alerts": {
+      "paste_too_big": "Texten är för stor för att klistras in direkt. Använd knapparna i huvudfönstret.",
+      "drop_too_big": "Den släppta texten är för stor. Använd knapparna i huvudfönstret för att lägga till stor text.",
+      "paste_no_text": "Urklippet innehåller ingen oformaterad text.",
+      "drop_no_text": "Dra och släpp: ingen oformaterad text upptäcktes.",
+      "type_limit": "Kan inte skriva mer text: maximal storlek har nåtts.",
+      "paste_limit": "Kan inte klistra in mer text: maximal storlek har nåtts.",
+      "drop_limit": "Kan inte släppa mer text: maximal storlek har nåtts.",
+      "paste_truncated": "Den inklistrade texten kortades för att undvika att maxgränsen överskrids.",
+      "drop_truncated": "Den dragna texten överskred tillgängligt utrymme och har kortats.",
+      "text_truncated": "Texten kortades för att rymmas inom appens gräns.",
+      "calc_error": "Ett fel uppstod vid beräkning. Kontrollera konsolen."
+    },
+    "preset_alerts": {
+      "name_empty": "Namn får inte vara tomt.",
+      "wpm_invalid": "WPM måste vara ett tal mellan {min} och {max}.",
+      "create_error": "Ett fel uppstod när förinställningen skulle skapas. Kontrollera konsolen.",
+      "edit_error": "Ett fel uppstod när förinställningen skulle redigeras. Kontrollera konsolen.",
+      "process_error": "Ett fel uppstod vid behandling av förinställningen. Kontrollera konsolen."
+    },
+    "info": {
+      "loading": "Läser in...",
+      "missing_content": "Inget innehåll finns tillgängligt för '{name}'.",
+      "external": {
+        "blocked": "Länk blockerad",
+        "error": "Fel vid öppning av länk"
+      },
+      "appdoc": {
+        "blocked": "Dokument blockerat",
+        "missing": "Dokument hittades inte",
+        "error": "Fel vid öppning av dokument"
+      },
+      "acerca_de": {
+        "app_name": "toT",
+        "title": "Om",
+        "version": {
+          "unavailable": "Inte tillgänglig"
+        },
+        "env": {
+          "unavailable": "Inte tillgänglig"
+        }
+      },
+      "instrucciones": {
+        "title": "Hur använder man appen?"
+      },
+      "links_interes": {
+        "app_name": "toT",
+        "title": "Användbara länkar",
+        "section_biblio_label": "Bibliografiska referenser"
+      }
+    }
+  }
+}

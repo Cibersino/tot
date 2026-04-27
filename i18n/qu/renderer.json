@@ -1,0 +1,505 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Qhawasqa qillqapa ñawpaq kaqnin hinallataq qhipa kaqnin:",
+      "selector_empty": "(ch'usaq)",
+      "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
+        "edit": "⌨",
+        "clear": "🗑",
+        "snapshot_load": "📂",
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
+      },
+      "tooltips": {
+        "import_extract": "Archivomanta qillqata apamuy/qichuy",
+        "import_extract_abort": "Qichuyta sayachiy",
+        "overwrite_clipboard": "Kunan qillqata portapapeleswan tikray",
+        "append_clipboard": "Portapapeles nisqata kunan qillqapa tukukuyninman yapay (musuq siqi)",
+        "clipboard_repeat_count": "K'askachiy kutiykuna",
+        "edit": "Kunan hunt'a qillqapa ventananta kichay",
+        "clear": "Kunan qillqata pichay",
+        "snapshot_load": "Qillqa snapshotta kargay",
+        "snapshot_save": "Kunan qillqata snapshotpi waqaychay",
+        "task_new": "Musuq llamk'ana",
+        "task_load": "Llamk'anata kargay",
+        "cibersino_website": "Cibersino web",
+        "cibersino_kofi": "Ko-fi nisqapi yanapaway",
+        "new_preset": "Musuq preset ruwakuy",
+        "edit_preset": "Akllasqa presetta allichay",
+        "delete_preset": "Akllasqa presetta chinkachiy",
+        "reset_presets": "Kikinmanta presets nisqata kutichiy",
+        "help_button": "Allin yuyaychayta rikuchiy",
+        "flotante_window": "Wayraqpi puriq ventana"
+      },
+      "aria": {
+        "import_extract": "Archivomanta qillqata apamuy utaq qichuy",
+        "import_extract_abort": "Qichuyta sayachiy",
+        "clipboard_repeat_count": "K'askachiy kutiykuna",
+        "wpm_input": "Sapa minutupi simikuna",
+        "wpm_slider": "Sapa minutupi simikuna llusk'achiq",
+        "speed_presets": "Utqaylla presets",
+        "precise_mode_toggle": "Chiqap modo",
+        "crono_controls": "Pachayupaq kamachiqkuna",
+        "crono_display": "Pachayupaq qhawachina",
+        "crono_toggle": "Pachayupaqta qallariy utaq samachiy",
+        "crono_reset": "Pachayupaqta wakmanta qallariy",
+        "floating_window_toggle": "Wayraqpi puriq ventana",
+        "floating_window_group": "Wayraqpi puriq ventanapa kamachiqnin"
+      },
+      "speed": {
+        "title": "ÑAWINCHAY UTQAYNIN",
+        "wpm_label": "sapa minutupi simikuna (WPM)",
+        "new": "M",
+        "edit": "A",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "YUPAYPA RUWASQAN",
+        "time": "⏱ Ñawinchaypaq yuyasqa pacha: {h}h {m}m {s}s",
+        "words": "Simikuna: {n}",
+        "chars_no_space": "Sanampakuna (ch'usaqkunawan mana): {n}",
+        "chars": "Sanampakuna: {n}",
+        "precise_mode": "Chiqap modo",
+        "precise_tooltip": "Intl.Segmenter nisqapi hap'ipakusqa"
+      },
+      "crono": {
+        "title": "PACHAYUPAQ",
+        "speed": "Utqaynin:",
+        "controls_label": "Pachayupaq kamachiqkuna",
+        "flotante_short": "WV",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Ñawinchay utqayninpa testnin",
+        "preview_spoiler": "Spoiler"
+      },
+      "processing": {
+        "import_extract_placeholder": "Qichuyta ruwachkan...",
+        "import_extract_preparing": "Apamuy/qichuy ñanta wakichichkan...",
+        "import_extract_waiting_native": "Archivomanta qillqata qichuchkan...",
+        "import_extract_waiting_ocr": "OCR qichuyta ruwachkan...",
+        "import_extract_waiting_ocr_delayed": "OCR ruwachkan. Wakin archivokuna aswan unayta munan.",
+        "import_extract_elapsed": "Puriq pacha: {time}",
+        "import_extract_drop_here": "Archivota kayman saqiy qillqata apamunapaq utaq qichunapaq"
+      }
+    },
+    "editor": {
+      "title": "toT — Hunt'a qillqa",
+      "placeholder": "Kaypi qillqay utaq k'askachiy...",
+      "calc_button": "YUPAY/WAQAYCHAY",
+      "calc_while_typing": "Auto",
+      "spellcheck": "Qillqa allichay",
+      "text_size_label": "Sayaynin",
+      "decrease_text_size": "Qillqapa sayayninta pisiyachiy",
+      "increase_text_size": "Qillqapa sayayninta hatunyachiy",
+      "reset_text_size": "Qillqapa sayayninta kutichiy",
+      "text_size_value": "{value} px",
+      "read_progress_label": "Ñawinchisqa",
+      "read_progress_value": "{value}%",
+      "read_progress_aria": "Ñawinchay ñawpariy: {value}%",
+      "clear": "🗑",
+      "clear_title": "Pichay"
+    },
+    "editor_find": {
+      "input_placeholder": "Maskay...",
+      "input_aria": "Qillqapi maskay",
+      "expand_title": "Tikrayta rikuchiy",
+      "collapse_title": "Tikrayta pakay",
+      "replace_placeholder": "Tikray...",
+      "replace_aria": "Tikranapaq qillqa",
+      "prev": "🡩",
+      "next": "🡫",
+      "close": "🗙",
+      "replace": "Tikray",
+      "replace_all": "Llapan tikray",
+      "prev_title": "Ñawpaq tinkuynin",
+      "next_title": "Qatiq tinkuynin",
+      "close_title": "Maskana barrata wichq'ay",
+      "replace_title": "Kunan tinkuyninta tikray",
+      "replace_all_title": "Llapan tinkuyninkunata tikray",
+      "replace_timeout": "Tikrayqa ancha unayta hap'irqan. Wakmanta ruwapay.",
+      "status_no_matches": "Mana tinkuyniyuq",
+      "status_empty_query": "Maskanapaq qillqay"
+    },
+    "tasks": {
+      "title": "toT — Llamk'anakuna",
+      "labels": {
+        "name": "Suti",
+        "total": "LLAPAN PACHA",
+        "empty": "(ch'usaq)",
+        "search": "Maskay",
+        "search_placeholder": "Bibliotecapi maskay..."
+      },
+      "columns": {
+        "texto": "Qillqa",
+        "tiempo": "Pacha",
+        "percent": "%",
+        "falta": "Puchuq",
+        "tipo": "Laya",
+        "enlace": "Link",
+        "comentario": "",
+        "acciones": "Ruwanakuna"
+      },
+      "buttons": {
+        "save": "Waqaychay",
+        "delete": "Chinkachiy",
+        "add_row": "Siqita yapay",
+        "open_library": "Bibliotecata kichay",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "Snapshot akllay",
+        "clear_snapshot": "🗙",
+        "cancel": "Saqiy",
+        "yes": "Arí",
+        "no": "Mana"
+      },
+      "tooltips": {
+        "move_up": "Siqita wichayman kuyuchiy",
+        "move_down": "Siqita urayman kuyuchiy",
+        "delete_row": "Siqita chinkachiy",
+        "library_row_save": "Bibliotecapi waqaychay",
+        "library_row_load": "Siqita kargay",
+        "library_row_delete": "Bibliotecamanta chinkachiy",
+        "snapshot_load": "Kay siqipaq qillqa snapshotta kargay",
+        "snapshot_select": "Kay siqipaq snapshotta akllay",
+        "snapshot_clear": "Kay siqimanta akllasqa snapshotta qhichuy",
+        "link_open": "Linkta kichay",
+        "comment": "Rimayta yapay/allichay"
+      },
+      "modals": {
+        "comment_title": "Rimay",
+        "library_title": "Biblioteca",
+        "library_save_title": "Bibliotecapi waqaychay",
+        "library_save_question": "Rimayta churaychu?"
+      },
+      "alerts": {
+        "task_unavailable": "Llamk'ana ruwana mana kanchu.",
+        "task_open_error": "Llamk'ana editor mana kichakunchu.",
+        "task_load_error": "Llamk'ana mana kargakunchu.",
+        "task_save_error": "Llamk'ana mana waqaychakunchu.",
+        "task_save_success": "Llamk'ana waqaychasqa.",
+        "task_delete_error": "Llamk'ana mana chinkachikunchu.",
+        "task_delete_unavailable": "Chinkachinapaq mana waqaychasqa llamk'anachu.",
+        "task_invalid_file": "Llamk'ana archivo mana allinchu.",
+        "task_invalid_rows": "Llamk'anapi mana allin siqikuna kan.",
+        "task_path_outside": "Archivoqa llamk'anakuna carpetapa ukunpi kanan.",
+        "name_required": "Llamk'anapa sutinqa kananpunim.",
+        "row_text_required": "Siqipa qillqanqa mana ch'usaq kananchu.",
+        "library_load_error": "Biblioteca mana kargakunchu.",
+        "library_save_error": "Bibliotecapi mana waqaychakunchu.",
+        "library_save_success": "Siqi bibliotecapi waqaychasqa.",
+        "library_delete_error": "Bibliotecamanta mana chinkachikunchu.",
+        "link_blocked": "Link hark'asqa.",
+        "link_missing": "Archivo mana tarisqachu.",
+        "link_error": "Link kichaypi pantay."
+      },
+      "confirm": {
+        "discard_changes": "Mana waqaychasqa tikraykuna kan. Saqiyta munankichu?",
+        "close_unsaved": "Mana waqaychasqa tikraykuna kan. Waqaychay mana ruwaspa wichq'aychu?"
+      }
+    },
+    "snapshot_save_tags": {
+      "title": "Qillqa snapshotta waqaychay",
+      "message": "Maypi waqaychanaykita akllanaykipaq ñawpaqta kay qillqa snapshotta munaspa etiquetay.",
+      "labels": {
+        "language": "Rimay",
+        "type": "Laya",
+        "difficulty": "Sasaynin"
+      },
+      "empty": {
+        "language": "Mana rimay etiqueta",
+        "type": "Mana laya etiqueta",
+        "difficulty": "Mana sasa etiqueta"
+      },
+      "buttons": {
+        "confirm": "Qillqa snapshotta waqaychay",
+        "cancel": "Saqiy"
+      },
+      "close_aria": "Qillqa snapshot waqaychay dialogota wichq'ay",
+      "options": {
+        "language": {
+          "es": "Español",
+          "en": "Inglés",
+          "pt": "Portugués",
+          "fr": "Francés",
+          "de": "Alemán",
+          "it": "Italiano",
+          "arn": "Mapudungun",
+          "ja": "Japonés",
+          "ko": "Coreano",
+          "ru": "Ruso",
+          "tr": "Turco",
+          "id": "Indonesio",
+          "hi": "Hindi",
+          "bn": "Bengalí",
+          "ur": "Urdu",
+          "ar": "Árabe",
+          "zh_hans": "Chino simplificado",
+          "zh_hant": "Chino tradicional"
+        },
+        "type": {
+          "fiction": "Willakuy",
+          "non_fiction": "Mana willakuychu"
+        },
+        "difficulty": {
+          "easy": "Mana sasa",
+          "normal": "Normal",
+          "hard": "Sasa"
+        }
+      }
+    },
+    "reading_test": {
+      "prestart": {
+        "reminder": "Qallarinaykipaq wakichisqa kachkaspa Wayraqpi Puriq Ventanapi Play (▶) ñit'iy. Test qallariqtin, ama Pausa (⏸) ñit'iychu ñawinchayta tukunkama: Pausa testta tukun; manan pachayupaqta samachinchu. Testta saqinaykipaqlla Detener/Reiniciar (⏹) ñit'iy."
+      },
+      "entry": {
+        "title": "Ñawinchay utqayninpa testnin",
+        "intro": "Kay testqa pusasqa sesiónwan chiqap ñawinchay utqaynikita yuyarinapaqmi. Appqa qillqata kichanqa hinaspa Wayraqpi Puriq Ventanapi Play (▶) ñit'inaykita suyanqa qallarinaykipaq wakichisqa kachkaspa. Test qallariqtin, ama Pausa (⏸) ñit'iychu ñawinchayta tukunkama: Pausa testta tukun; manan pachayupaqta samachinchu. Testta saqinaykipaqlla Detener/Reiniciar (⏹) llamk'achiy. Chaymantaqa, qillqaqa kanman chayqa, hamut'ay tapukuykunata qhawankiman; tukukuypiqa ruwasqawan preset ruwankiman.\\nQallarinaykipaq ñawpaqta yuyariy: kay prueba qillqakunaqa aswanqa 5manta 15 minutokama mana saqispa yuyayta munanku.\\nKay poolqa taksa qillqakunata llamk'achin; chayrayku ruwasqata ama sinchita hap'iychu. Mana chiqapta hatun qillqakunaman apakunachu, chaypim allin kaqkunapas, hina fluidez/contexto hap'iy, chaymanta mana allin kaqkunapas, hina yuyaypi kutichiy hinaspa sayk'uy, yaykun.",
+        "eligible_count": "Akllasqa kananpaq archivokuna:",
+        "pool_exhausted_message": "Mana llamk'achisqachu test archivokuna puchuqchu. Poolta kutichiy utaq aswan archivokuna yapay.",
+        "close_aria": "Ñawinchay utqaynin test dialogota wichq'ay",
+        "start_random_confirm": "Kayqa kunan qillqata poolmanta akllasqa mayqinpas qillqawan qillqanqa. Hinalla riyta munankichu?",
+        "reset_confirm": "Kayqa llapan test poolta kutichinqa hinaspa llapan archivonta mana llamk'achisqahina markanqa. Hinalla riyta munankichu?",
+        "import_summary": "Apamuy tukusqa. Apamusqa: {imported}. Iskay kuti kaqkuna saqisqa: {skippedDuplicates}. Validación pantasqa: {failedValidation}. Archivo comprimido yaykuna pantasqa: {failedArchiveEntries}. Qillqay pantasqa: {failedWrites}.",
+        "import_conflict": {
+          "title": "Archivokunata apamuy",
+          "message": "Wakin apamusqa archivokunaqa ña poolpi kachkan. Iskay kuti kaqkunata imaynata ruwanki?",
+          "detail": "{count} destino archivo sutikuna ña poolpi kachkan.",
+          "buttons": {
+            "skip": "Iskay kuti kaqkunata saqiy",
+            "replace": "Iskay kuti kaqkunata tikray",
+            "cancel": "Apamuyta saqiy"
+          }
+        },
+        "buttons": {
+          "get_more_files": "Aswan archivokunata tariy",
+          "import_files": "Archivokunata apamuy...",
+          "reset_pool": "R",
+          "show_instructions": "Kamachiykunata rikuchiy",
+          "hide_instructions": "Kamachiykunata pakay",
+          "start_random_text": "Mayqinpas qillqawan qallariy",
+          "start_current_text": "Kunan qillqawan qallariy"
+        },
+        "tooltips": {
+          "get_more_files": "Google Drive carpetamanta aswan test archivokuna tariy",
+          "import_files": "Dispositivoykimanta test archivokuna apamuy",
+          "reset_pool": "Test poolta kutichiy",
+          "start_random_text": "Poolmanta akllasqa mayqinpas qillqawan testta qallariy",
+          "start_current_text": "Kunan qillqawan testta qallariy"
+        }
+      },
+      "questions": {
+        "title": "Ñawinchay hamut'ay tapukuykuna",
+        "intro": "Kay ñawinchay hamut'ay tapukuykunata kutichiyqa munasqallam, manataqmi tukup puntajeykita tikranchu. Qillqapa sasayninta chaninchanaykipaq, hinallataq ñawinchay ritmuyki hinaspa estilo hamut'aypaq aswan allinchu kasqanta qhawanaykipaqllam yanapan. Kutichiykikunaqa manan waqaychakunchu, manataq desarrolladorkunaman nita huk runaman apachikunchu.",
+        "random_title": "Mayqinpas kutichiypa probabilidadnin",
+        "random_value": "Mayqinpas kutichispa suyakuq puntaje: {percentage}%",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "Reclamopaq:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Chaninchanaykipaq ñawpaqta llapan tapukuykunata kutichinayki.",
+        "result_summary": "{correct} / {total} allin ({percentage}%)",
+        "chance_at_least_observed": "Mayqinpas kutichispa kay puntajeta utaq aswanta chaskinapa probabilidad: {percentage}%",
+        "fatal_invalid": "Tapukuykuna karga mana allinchu.",
+        "buttons": {
+          "check": "Ruwasqata qhaway",
+          "continue": "Hinalla riy"
+        }
+      },
+      "result": {
+        "title": "Ñawinchay utqayninpa ruwasqan",
+        "measured_wpm": "Tupusqa WPM",
+        "elapsed_time": "Pacha",
+        "word_count": "Simikuna",
+        "buttons": {
+          "continue": "Hinalla riy"
+        }
+      }
+    },
+    "modal_preset": {
+      "title_new": "Musuq preset",
+      "title_edit": "Preset allichay",
+      "heading_new": "Musuq preset ruwakuy",
+      "heading_edit": "Akllasqa presetta allichay",
+      "name": "Suti:",
+      "wpm": "WPM:",
+      "description": "Nisqaynin:",
+      "placeholder": "Taksa nisqaynin...",
+      "char_count": "{remaining} sanampakuna puchun",
+      "hint": "Sapaq presetsqa llamk'aqpa configuraciónninpi waqaychakun.",
+      "cancel": "Saqiy",
+      "save": "Waqaychay"
+    },
+    "alerts": {
+      "clipboard_too_large": "Portapapeles qillqa ancha hatunmi ruwachinapaq. Pisiyachiy hinaspa wakmanta ruwapay.",
+      "append_too_large": "Tukup qillqa ancha hatunmi ruwachinapaq. Pisiyachiy hinaspa wakmanta ruwapay.",
+      "clipboard_overflow": "Portapapeles qillqa saqisqa hatun kayninmanta aswan karqan hinaspa kuchusqa.",
+      "append_overflow": "Yapasqa qillqa saqisqa hatun kayninmanta aswan karqan hinaspa kuchusqa.",
+      "text_limit": "Mana qillqata yapay atikunchu: ña saqisqa hatun kayman chayasqa.",
+      "clipboard_error": "Portapapeles k'askachiypi pantay karqan. Consolata qhaway.",
+      "append_error": "Qillqa yapaypi pantay karqan. Consolata qhaway.",
+      "clear_error": "Qillqa pichaypi pantay karqan. Consolata qhaway.",
+      "snapshot_save_success": "Snapshot waqaychasqa.",
+      "snapshot_save_error": "Snapshot mana waqaychakunchu.",
+      "snapshot_load_success": "Snapshot kargasqa.",
+      "snapshot_load_error": "Snapshot mana kargakunchu.",
+      "snapshot_outside": "Snapshotqa waqaychana carpetapa ukunpi kanan.",
+      "snapshot_truncated": "Snapshot hatun kayninmanta aswan karqan hinaspa kuchusqa.",
+      "snapshot_unavailable": "Snapshot ruwana mana kanchu.",
+      "modal_unavailable": "Modal ruwana mana kanchu.",
+      "edit_none": "Allichanapaq mana preset akllasqachu.",
+      "preset_not_found": "Akllasqa preset cachepi mana tarisqachu.",
+      "edit_unavailable": "Allichay ruwana mana kanchu.",
+      "edit_error": "Preset allichayta munaspa pantay karqan. Consolata qhaway.",
+      "delete_error": "Preset chinkachiypi pantay karqan. Consolata qhaway.",
+      "restore_error": "Presets kutichiypi pantay karqan. Consolata qhaway.",
+      "open_presets_unsupported": "Kay pachapi presets carpetata kichay mana atikunchu.",
+      "open_presets_error": "Presets carpetata kichayta munaspa pantay karqan. Consolata qhaway.",
+      "open_presets_fail": "Kikinmanta presets carpetata mana kichay atikunchu. Aswan willakuypaq consolata qhaway.",
+      "import_extract_error": "Apamuy/qichuy qallariypi pantay karqan. Consolata qhaway.",
+      "import_extract_precondition_blocked": "Apamuy/qichuy qallarinapaq, llapan iskay ñiqi ventanakunata wichq'ay hinaspa pachayupaqta sayachiy.",
+      "import_extract_precondition_error": "Apamuy/qichuypa ñawpaq condicionninkuna qhawaypi pantay karqan. Consolata qhaway.",
+      "import_extract_processing_locked": "Apamuy/qichuy ruwachkan. Hatun ventanapi ruraykuna hark'asqa kanqa ruwana tukukunankama utaq qan sayachinaykikama.",
+      "import_extract_abort_error": "Apamuy/qichuy sayachiy mañakuypi pantay karqan. Consolata qhaway.",
+      "import_extract_cancelled": "Apamuy/qichuy saqisqa.",
+      "import_extract_drop_single_file_only": "Apamuy/qichuy qallarinapaq huk archivollata saqiy.",
+      "import_extract_drop_invalid_file": "Saqisqa elementoqa mana allin local archivochu.",
+      "import_extract_route_choice_required": "Kay PDFpaq ñanta akllanayki qichuyta hinalla rinaykipaq.",
+      "import_extract_route_choice_title": "Qichuy ñanta akllay",
+      "import_extract_route_choice_message": "Kay PDFqa iskaynin qichuy ñankunata charin. Hinalla rinapaq hukta akllay.",
+      "import_extract_route_choice_native_button": "Nativa llamk'achiy",
+      "import_extract_route_choice_ocr_button": "OCR llamk'achiy",
+      "import_extract_route_choice_cancel_button": "Saqiy",
+      "import_extract_route_choice_close_aria": "Qichuy ñan dialogota wichq'ay",
+      "import_extract_apply_modal_title": "Qichusqa qillqata churay",
+      "import_extract_apply_modal_message": "Qichusqa qillqata imaynata churanaykita akllay.",
+      "import_extract_apply_modal_elapsed": "Ruwasqa pacha: {time}",
+      "import_extract_apply_modal_repeat_label": "Kutiykuna",
+      "import_extract_apply_modal_overwrite_button": "Qillqay/tikray",
+      "import_extract_apply_modal_append_button": "Yapay",
+      "import_extract_apply_modal_cancel_button": "Saqiy",
+      "import_extract_apply_modal_close_aria": "Qichusqa qillqata churana dialogota wichq'ay",
+      "import_extract_apply_error": "Qichusqa qillqata churaypi pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
+      "import_extract_apply_too_large": "Tukup qillqa ancha hatunmi ruwachinapaq. Kutiykunata pisiyachiy hinaspa wakmanta ruwapay.",
+      "import_extract_apply_text_limit": "Qichusqa qillqata mana yapay atikunchu: ña hatun kayman chayasqa.",
+      "import_extract_apply_truncated": "Churasqa qichusqa qillqa hatun kayninmanta aswan karqan hinaspa kuchusqa.",
+      "import_extract_prepare_invalid": "Wakichisqa apamuy/qichuy mañakuyqa ña mana allinchu. Flujo wakmanta qallariy.",
+      "import_extract_ocr_unavailable": "OCR mana kanchu. Setup/auth qhaway hinaspa wakmanta ruwapay.",
+      "import_extract_ocr_activation_required": "OCRta activay kanan. Google OCRpi yaykuy hinaspa wakmanta ruwapay.",
+      "import_extract_ocr_activation_disclosure_title": "Google OCR activayta qhaway",
+      "import_extract_ocr_activation_disclosure_intro": "toTqa OCRpaq Googlepa serviciokunata llamk'achin. Hinalla rinki chayqa, kay appta autorizanaykipaq navegador kichakunqa.",
+      "import_extract_ocr_activation_disclosure_selected_files": "Googlemanqa OCRpaq qan akllasqayki archivokunalla apachikun.",
+      "import_extract_ocr_activation_disclosure_local_storage": "Kay appqa apppa kamachisqan Google OAuth credencialkunata OCRpaq, hinallataq kay instanciapi Google token local estadonta waqaychan.",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "Exportar tukuspa, appqa Google Drive nisqaykimanta temporal Google documentota pichayta munan.",
+      "import_extract_ocr_activation_disclosure_disconnect": "Qhipaman kay t'inkiyta Preferencias > Desconectar Google OCR nisqamanta t'aqayta atinki.",
+      "import_extract_ocr_activation_disclosure_proceed_button": "Googlewan hinalla riy",
+      "import_extract_ocr_activation_disclosure_cancel_button": "Saqiy",
+      "import_extract_ocr_activation_disclosure_privacy_link": "Privacidad política kichay",
+      "import_extract_ocr_activation_disclosure_close_aria": "Google OCR activay dialogota wichq'ay",
+      "import_extract_ocr_activation_success": "OCR activay tukusqa. Qichuyta wakmanta ruwachkan.",
+      "import_extract_ocr_activation_cancelled": "OCR activay saqisqa. Apamuy/qichuy mana hinalla rirqanchu.",
+      "import_extract_ocr_token_state_invalid": "Google OCR yaykuna waqaychasqa estado mana allinchu. Google OCRta wakmanta t'inkiy hinaspa wakmanta ruwapay.",
+      "import_extract_ocr_activation_failed": "OCR activay pantarun. Setup/auth qhaway hinaspa wakmanta ruwapay.",
+      "import_extract_ocr_disconnect_success": "Google OCR t'aqasqa. Waqaychasqa Google token qhichusqa hinaspa local yaykuna estado pichasqa.",
+      "import_extract_ocr_disconnect_not_connected": "Google OCRqa kay app instanciapi kunan mana t'inkisqachu.",
+      "import_extract_ocr_disconnect_failed": "Google OCR t'aqay pantarun. Waqaychasqa yaykuna estado mana pichasqachu.",
+      "import_extract_ocr_connectivity_failed": "OCRqa internet t'inkiyta munan. T'inkiykita qhaway hinaspa wakmanta ruwapay.",
+      "import_extract_ocr_setup_missing_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna faltan.",
+      "import_extract_ocr_setup_invalid_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna mana allinchu.",
+      "import_extract_ocr_restricted": "OCR ñanqa kay archivo layapaq hark'asqa.",
+      "import_extract_ocr_quota_or_rate_limited": "OCRqa temporalmente quota/tasa límite rayku hark'asqa. Suyay hinaspa wakmanta ruwapay.",
+      "import_extract_ocr_runtime_error": "Apamuy/qichuy ukhupi OCR ejecución pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
+      "import_extract_ocr_cancelled": "OCR qichuy saqisqa.",
+      "import_extract_ocr_cleanup_warning": "OCR tukusqa, ichaqa temporal remoto archivo pichay pantarun. Google Drive carpetaykita qhaway.",
+      "import_extract_ocr_apply_pending": "OCR qichuy tukusqa. Qhipa ruwasqata churana flujoqa implementacionpaq suyasqaraq.",
+      "import_extract_native_runtime_error": "Apamuy/qichuy ukhupi nativa qichuy ejecución pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
+      "import_extract_native_unreadable_or_corrupt": "Akllasqa archivoqa nativa qichuypaq mana ñawinchasqa utaq waqllisqa.",
+      "import_extract_native_encrypted_or_password_protected": "Akllasqa PDFqa cifrado utaq contraseña nisqawan hark'asqa; nativa ñanwan mana qichuy atikunchu.",
+      "import_extract_native_cancelled": "Nativa qichuy saqisqa.",
+      "import_extract_native_unsupported_format": "Kay archivo formatoqa nativa qichuy ñanpi mana yanapasqachu.",
+      "import_extract_native_apply_pending": "Nativa qichuy tukusqa. Qhipa ruwasqata churana flujoqa implementacionpaq suyasqaraq.",
+      "wip_diseno_skins": "WIP: Kaypi hamuq versiónpi skins akllana kichakunqa.",
+      "wip_diseno_crono": "WIP: Kaypi hamuq versiónpi wayraqpi puriq pachayupaqpa configuraciónnin kichakunqa.",
+      "wip_diseno_fuentes": "WIP: Kaypi hamuq versiónpi qillqa rikch'ay akllana kichakunqa.",
+      "wip_diseno_colores": "WIP: Kaypi hamuq versiónpi llimp'i akllana kichakunqa.",
+      "wip_shortcuts": "WIP: Kaypi hamuq versiónpi teclado ñankuna akllana kichakunqa.",
+      "reading_test_unavailable": "Ñawinchay utqaynin test ruwana mana kanchu.",
+      "reading_test_precondition_blocked": "Ñawinchay utqaynin testqa apppa estable estadonmantalla qallariy atikun. Iskay ñiqi ventanakunata wichq'ay hinaspa pachayupaq sayasqa kasqanta qhaway.",
+      "reading_test_pool_error": "Ñawinchay utqaynin test pool qhawaypi pantay karqan.",
+      "reading_test_no_matching_files": "Kunan akllasqawan tinkuq mana llamk'achisqa test archivokuna puchuqchu.",
+      "reading_test_current_text_empty": "Kunan qillqa ch'usaqmi. Kunan qillqawan test qallarinaykipaq qillqata kargay utaq qillqay.",
+      "reading_test_result_invalid": "Test ruwasqata mana allin WPMman tikray atikurqanchu. Flujoqa preset modal mana kichaspa tukurqan.",
+      "reading_test_result_unavailable": "Ñawinchay utqaynin ruwasqata mana rikuchiy atikurqanchu. Flujoqa hinalla rirqan.",
+      "reading_test_preset_unavailable": "Testmanta qhipa preset modal mana kichakunchu.",
+      "reading_test_questions_unavailable": "Hamut'ay tapukuy modal mana kichakunchu. Flujoqa preset ruwana ñawpaqta tukurqan.",
+      "reading_test_pool_import_failed": "Ñawinchay utqaynin test archivokuna mana apamuy atikurqanchu.",
+      "reading_test_start_failed": "Ñawinchay utqaynin test mana qallariy atikurqanchu.",
+      "reading_test_cancelled": "Ñawinchay utqaynin test saqisqa.",
+      "reading_test_cancelled_window_closed": "Ñawinchay utqaynin test saqisqa, imaraykuchus sesión ventanakunamanta huk wichq'akusqa."
+    },
+    "editor_alerts": {
+      "paste_too_big": "Qillqa ancha hatunmi chiqapta k'askachinapaq. Hatun ventanapa botonkuna llamk'achiy.",
+      "drop_too_big": "Aysasqa qillqa ancha hatunmi. Hatun ventanapa botonkuna llamk'achiy.",
+      "paste_no_text": "Portapapeles mana llamp'u qillqayuqchu.",
+      "drop_no_text": "Aysay-saqiy: mana llamp'u qillqa tarisqachu.",
+      "type_limit": "Aswan qillqay mana atikunchu: ña saqisqa hatun kayman chayasqa.",
+      "paste_limit": "Aswan qillqata k'askachiy mana atikunchu: ña saqisqa hatun kayman chayasqa.",
+      "drop_limit": "Aswan qillqata saqiy mana atikunchu: ña saqisqa hatun kayman chayasqa.",
+      "paste_truncated": "K'askachisqa qillqa kuchusqa, ama saqisqa hatun kayta yallinchu.",
+      "drop_truncated": "Aysasqa qillqa kachkaq espaciomanta aswan karqan hinaspa kuchusqa.",
+      "text_truncated": "Qillqa apppa hatun kayninman tupananpaq kuchusqa.",
+      "calc_error": "Yupaypi pantay karqan. Consolata qhaway."
+    },
+    "preset_alerts": {
+      "name_empty": "Sutiqa mana ch'usaq kananchu.",
+      "wpm_invalid": "WPMqa {min} hinaspa {max} chawpipi yupay kanan.",
+      "create_error": "Preset ruwakuypi pantay karqan. Consolata qhaway.",
+      "edit_error": "Preset allichaypi pantay karqan. Consolata qhaway.",
+      "process_error": "Preset ruwachiypi pantay karqan. Consolata qhaway."
+    },
+    "info": {
+      "loading": "Kargachkan...",
+      "missing_content": "'{name}' nisqapaq mana contenido kanchu.",
+      "external": {
+        "blocked": "Link hark'asqa",
+        "error": "Link kichaypi pantay"
+      },
+      "appdoc": {
+        "blocked": "Documento hark'asqa",
+        "missing": "Documento mana tarisqachu",
+        "error": "Documento kichaypi pantay"
+      },
+      "acerca_de": {
+        "app_name": "toT",
+        "title": "Kaymanta",
+        "version": {
+          "unavailable": "Mana kanchu"
+        },
+        "env": {
+          "unavailable": "Mana kanchu"
+        }
+      },
+      "instrucciones": {
+        "title": "Llamk'achiy manual"
+      },
+      "links_interes": {
+        "app_name": "toT",
+        "title": "Allin linkkuna",
+        "section_biblio_label": "Bibliografía referencias"
+      }
+    }
+  }
+}

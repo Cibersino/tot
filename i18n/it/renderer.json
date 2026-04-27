@@ -269,7 +269,7 @@
       "entry": {
         "title": "Test di velocità di lettura",
         "intro": "Questo test serve a stimare la tua velocità reale di lettura tramite una sessione guidata. L'app aprirà il testo e aspetterà che tu prema Play (▶) nella Finestra flottante quando sei pronto per iniziare. Dopo l'avvio del test, non premere Pausa (⏸) finché non hai finito di leggere: Pausa termina il test; non mette in pausa il timer. Usa Stop/Reimposta (⏹) solo se vuoi annullare il test. In seguito potrai rivedere eventuali domande di comprensione, se il testo le include, e alla fine creare un preset dal risultato.\nPrima di iniziare, tieni presente che questi testi di prova richiedono di solito tra 5 e 15 minuti di concentrazione ininterrotta.\nQuesto pool usa testi brevi, quindi interpreta il risultato con cautela. Non dovrebbe essere estrapolato direttamente ai testi lunghi, dove di solito entrano in gioco fattori positivi, come l'acquisizione di fluidità e di contesto, e fattori negativi, come la ricapitolazione mentale e la fatica.",
-        "eligible_count": "File idonei: {count}",
+        "eligible_count": "File idonei:",
         "pool_exhausted_message": "Non ci sono più file di test non usati. Reimposta il pool o aggiungi altri file.",
         "close_aria": "Chiudi la finestra di dialogo del test di velocità di lettura",
         "start_random_confirm": "Questo sovrascriverà il testo attuale con un testo casuale idoneo dal pool. Vuoi continuare?",
@@ -288,11 +288,18 @@
         "buttons": {
           "get_more_files": "Ottieni altri file",
           "import_files": "Importa file...",
-          "reset_pool": "Reimposta pool",
+          "reset_pool": "R",
           "show_instructions": "Mostra istruzioni",
           "hide_instructions": "Nascondi istruzioni",
           "start_random_text": "Avvia con testo casuale",
           "start_current_text": "Avvia con il testo corrente"
+        },
+        "tooltips": {
+          "get_more_files": "Ottieni altri file di test dalla cartella di Google Drive",
+          "import_files": "Importa file di test dal tuo dispositivo",
+          "reset_pool": "Reimposta il pool del test",
+          "start_random_text": "Avvia il test con un testo casuale idoneo dal pool",
+          "start_current_text": "Avvia il test con il testo attuale"
         }
       },
       "questions": {
