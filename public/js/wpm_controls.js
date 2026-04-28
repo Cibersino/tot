@@ -125,6 +125,23 @@
       return allPresetsCache;
     }
 
+    function notifyWpmChanged(previousWpm, onWpmChanged, preset) {
+      if (typeof onWpmChanged !== 'function' || wpm === previousWpm) {
+        return;
+      }
+      if (typeof preset === 'undefined') {
+        onWpmChanged(wpm);
+        return;
+      }
+      onWpmChanged(wpm, preset);
+    }
+
+    function createPresetSelectionSettings(settingsSnapshot) {
+      return Object.assign({}, settingsSnapshot || {}, {
+        selected_preset_by_language: {}
+      });
+    }
+
     async function reloadPresetsList({ settingsSnapshot, language, electronAPI } = {}) {
       if (!hasRendererPresetsBridge()) {
         log.warnOnce(
@@ -177,9 +194,7 @@
         });
         if (selected) {
           applySelectedPreset(selected);
-          if (typeof onWpmChanged === 'function' && wpm !== previousWpm) {
-            onWpmChanged(wpm, selected);
-          }
+          notifyWpmChanged(previousWpm, onWpmChanged, selected);
         } else {
           currentPresetName = null;
           applyPresetUiSelection(null);
@@ -212,9 +227,7 @@
         const found = updated.find(item => item.name === preset.name);
         if (!found) return updated;
         const previousWpm = wpm;
-        const neutralSettings = Object.assign({}, settingsSnapshot || {}, {
-          selected_preset_by_language: {}
-        });
+        const neutralSettings = createPresetSelectionSettings(settingsSnapshot);
         const selected = await resolvePresetSelection({
           list: updated,
           settings: neutralSettings,
@@ -226,9 +239,7 @@
         });
         if (selected) {
           applySelectedPreset(selected);
-          if (typeof onWpmChanged === 'function' && wpm !== previousWpm) {
-            onWpmChanged(wpm, selected);
-          }
+          notifyWpmChanged(previousWpm, onWpmChanged, selected);
         }
         return updated;
       } catch (err) {
@@ -259,9 +270,7 @@
       try {
         const { resolvePresetSelection } = getRendererPresetsBridge();
         const previousWpm = wpm;
-        const settingsOverride = Object.assign({}, settingsSnapshot || {}, {
-          selected_preset_by_language: {}
-        });
+        const settingsOverride = createPresetSelectionSettings(settingsSnapshot);
         const selected = await resolvePresetSelection({
           list: allPresetsCache,
           settings: settingsOverride,
@@ -273,9 +282,7 @@
         });
         if (selected) {
           applySelectedPreset(selected);
-          if (typeof onWpmChanged === 'function' && wpm !== previousWpm) {
-            onWpmChanged(wpm, selected);
-          }
+          notifyWpmChanged(previousWpm, onWpmChanged, selected);
         }
         return selected;
       } catch (err) {
@@ -288,9 +295,7 @@
       const previousWpm = wpm;
       wpm = syncWpmControls(rawWpm);
       resetPresetSelection();
-      if (typeof onWpmChanged === 'function' && wpm !== previousWpm) {
-        onWpmChanged(wpm);
-      }
+      notifyWpmChanged(previousWpm, onWpmChanged);
       return wpm;
     }
 
@@ -308,7 +313,7 @@
           wpm = wpmFromSliderControl(wpmSlider.value);
           if (wpmInput) wpmInput.value = String(wpm);
           resetPresetSelection();
-          if (typeof onWpmChanged === 'function') onWpmChanged(wpm);
+          notifyWpmChanged(null, onWpmChanged);
         });
       }
 
@@ -316,10 +321,12 @@
         wpmInput.addEventListener('blur', () => {
           if (!canProceed('wpm-input-blur')) return;
           let requestedWpm = Number(wpmInput.value);
-          if (isNaN(requestedWpm)) requestedWpm = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
+          if (Number.isNaN(requestedWpm)) {
+            requestedWpm = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
+          }
           wpm = syncWpmControls(requestedWpm);
           resetPresetSelection();
-          if (typeof onWpmChanged === 'function') onWpmChanged(wpm);
+          notifyWpmChanged(null, onWpmChanged);
         });
 
         wpmInput.addEventListener('keydown', (event) => {
