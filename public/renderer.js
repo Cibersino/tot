@@ -138,6 +138,9 @@ const wpmControls = WpmControls.createController({
   wpmSlider,
   presetsSelect,
   presetDescription,
+  onPresetSelectionChanged: () => {
+    syncPresetActionButtons();
+  },
 });
 
 // =============================================================================
@@ -159,6 +162,19 @@ function setControlInteractionLocked(element, locked) {
   element.setAttribute('aria-disabled', locked ? 'true' : 'false');
 }
 
+function hasSelectedPreset() {
+  return !!(presetsSelect && typeof presetsSelect.value === 'string' && presetsSelect.value.trim());
+}
+
+function syncPresetActionButtons({ interactionLocked } = {}) {
+  const locked = typeof interactionLocked === 'boolean'
+    ? interactionLocked
+    : !isRendererReady() || isProcessingModeActive() || isReadingTestInteractionLocked();
+  const disabled = locked || !hasSelectedPreset();
+  setControlInteractionLocked(btnEditPreset, disabled);
+  setControlInteractionLocked(btnDeletePreset, disabled);
+}
+
 function isReadingTestInteractionLocked() {
   return !!(readingSpeedTestUi && readingSpeedTestUi.isInteractionLocked());
 }
@@ -178,8 +194,7 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(wpmSlider, locked);
   setControlInteractionLocked(presetsSelect, locked);
   setControlInteractionLocked(btnNewPreset, locked);
-  setControlInteractionLocked(btnEditPreset, locked);
-  setControlInteractionLocked(btnDeletePreset, locked);
+  syncPresetActionButtons({ interactionLocked: locked });
   setControlInteractionLocked(btnResetDefaultPresets, locked);
   setControlInteractionLocked(resultsTimeMultiplierInput, locked);
   setControlInteractionLocked(toggleModoPreciso, locked);
@@ -639,11 +654,13 @@ function resolveSettingsSnapshot(settingsSnapshot) {
 
 const loadPresets = async ({ settingsSnapshot } = {}) => {
   const snapshot = resolveSettingsSnapshot(settingsSnapshot);
-  return wpmControls.loadPresets({
+  const result = await wpmControls.loadPresets({
     settingsSnapshot: snapshot,
     language: idiomaActual,
     electronAPI: window.electronAPI,
   });
+  syncPresetActionButtons();
+  return result;
 };
 
 // =============================================================================
@@ -1467,12 +1484,16 @@ function registerMenuActions() {
 function bindPresetSelection() {
   presetsSelect.addEventListener('change', async () => {
     if (!guardUserAction('preset-change')) return;
-    await wpmControls.handlePresetSelectionChange({
-      settingsSnapshot: settingsCache,
-      language: idiomaActual,
-      electronAPI: window.electronAPI,
-      onWpmChanged: updateTimeOnlyFromStats,
-    });
+    try {
+      await wpmControls.handlePresetSelectionChange({
+        settingsSnapshot: settingsCache,
+        language: idiomaActual,
+        electronAPI: window.electronAPI,
+        onWpmChanged: updateTimeOnlyFromStats,
+      });
+    } finally {
+      syncPresetActionButtons();
+    }
   });
 }
 
@@ -1481,6 +1502,7 @@ function bindPresetSelection() {
 // =============================================================================
 function applyReadingTestWpm(rawWpm) {
   wpmControls.applyExternalWpm(rawWpm, { onWpmChanged: updateTimeOnlyFromStats });
+  syncPresetActionButtons();
 }
 
 function bindSpeedControls() {
@@ -2027,18 +2049,9 @@ function bindPresetActions() {
     try {
       const selectedName = presetsSelect.value;
       if (!selectedName) {
-        // Ask main to show the native info dialog when no preset is selected.
-        if (window.electronAPI && typeof window.electronAPI.notifyNoSelectionEdit === 'function') {
-          await window.electronAPI.notifyNoSelectionEdit();
-          return;
-        } else {
-          log.warnOnce(
-            'renderer.ipc.notifyNoSelectionEdit.unavailable',
-            'notifyNoSelectionEdit unavailable; using renderer fallback notification.'
-          );
-          window.Notify.notifyMain('renderer.alerts.edit_none');
-          return;
-        }
+        log.warn('Preset edit requested without a selected preset; action skipped.');
+        syncPresetActionButtons();
+        return;
       }
 
       // Find preset data from cache
@@ -2075,6 +2088,11 @@ function bindPresetActions() {
     if (!guardUserAction('preset-delete')) return;
     try {
       const name = presetsSelect.value || null;
+      if (!name) {
+        log.warn('Preset delete requested without a selected preset; action skipped.');
+        syncPresetActionButtons();
+        return;
+      }
       const requestDeletePreset = getOptionalElectronMethod('requestDeletePreset', {
         dedupeKey: 'renderer.ipc.requestDeletePreset.unavailable',
         unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'

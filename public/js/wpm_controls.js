@@ -51,6 +51,7 @@
     wpmSlider,
     presetsSelect,
     presetDescription,
+    onPresetSelectionChanged,
   } = {}) {
     // Optional curve support should never block the control surface. If the
     // mapper is missing or breaks, the controller falls back to linear mapping.
@@ -177,15 +178,23 @@
       }
     }
 
+    function notifyPresetSelectionChanged(preset) {
+      if (typeof onPresetSelectionChanged === 'function') {
+        onPresetSelectionChanged(preset || null);
+      }
+    }
+
     function applySelectedPreset(preset) {
       if (!preset) {
         currentPresetName = null;
         applyPresetUiSelection(null);
+        notifyPresetSelectionChanged(null);
         return null;
       }
       currentPresetName = preset.name;
       applyPresetUiSelection(preset);
       wpm = syncWpmControls(preset.wpm);
+      notifyPresetSelectionChanged(preset);
       return preset;
     }
 
@@ -193,6 +202,7 @@
       currentPresetName = null;
       if (presetsSelect) presetsSelect.selectedIndex = -1;
       if (presetDescription) presetDescription.textContent = '';
+      notifyPresetSelectionChanged(null);
     }
 
     function resetPresetsState() {
@@ -200,6 +210,7 @@
       if (presetDescription) presetDescription.textContent = '';
       allPresetsCache = [];
       currentPresetName = null;
+      notifyPresetSelectionChanged(null);
       return allPresetsCache;
     }
 
@@ -277,6 +288,7 @@
         } else {
           currentPresetName = null;
           applyPresetUiSelection(null);
+          notifyPresetSelectionChanged(null);
         }
         return allPresetsCache;
       } catch (err) {
