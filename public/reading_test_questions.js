@@ -42,6 +42,10 @@
   if (!appConstants || typeof appConstants.DEFAULT_LANG !== 'string' || !appConstants.DEFAULT_LANG.trim()) {
     throw new Error('[reading-test-questions] AppConstants.DEFAULT_LANG unavailable; cannot continue');
   }
+  if (!window.RendererDocumentLanguage || typeof window.RendererDocumentLanguage.applyDocumentLanguage !== 'function') {
+    throw new Error('[reading-test-questions] RendererDocumentLanguage.applyDocumentLanguage unavailable; cannot continue');
+  }
+  const { applyDocumentLanguage } = window.RendererDocumentLanguage;
 
   const questionsCore = window.ReadingTestQuestionsCore || null;
   if (!questionsCore
@@ -132,6 +136,10 @@
         ? language.trim().toLowerCase()
         : '';
       return normalized || fallback;
+    }
+
+    function applyQuestionsDocumentLanguage(language) {
+      applyDocumentLanguage(language, { defaultLang: DEFAULT_LANG });
     }
 
     function readSettingsLanguage(settings, fallback = DEFAULT_LANG) {
@@ -337,6 +345,7 @@
       const target = normalizeLanguage(state.currentLanguage);
       if (state.translationsLoadedFor === target) return;
       state.currentLanguage = target;
+      applyQuestionsDocumentLanguage(target);
       try {
         await loadRendererTranslations(target);
         state.translationsLoadedFor = target;
@@ -416,6 +425,7 @@
 
     enqueueUiSync(async () => {
       try {
+        applyQuestionsDocumentLanguage(state.currentLanguage);
         const settings = await questionsApi.getSettings();
         state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
       } catch (err) {

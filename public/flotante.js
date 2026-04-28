@@ -31,6 +31,10 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('AppConstants not available; check constants.js loading.');
 }
+if (!window.RendererDocumentLanguage || typeof window.RendererDocumentLanguage.applyDocumentLanguage !== 'function') {
+  throw new Error('[flotante] RendererDocumentLanguage.applyDocumentLanguage unavailable; cannot continue');
+}
+const { applyDocumentLanguage } = window.RendererDocumentLanguage;
 const { DEFAULT_LANG } = AppConstants;
 
 // =============================================================================
@@ -76,6 +80,10 @@ let lastState = { elapsed: 0, running: false, display: '00:00:00' };
 let playLabel = '>';
 let pauseLabel = '||';
 let translationsLoadedFor = null;
+
+function applyFlotanteDocumentLanguage(language) {
+  applyDocumentLanguage(language, { defaultLang: DEFAULT_LANG });
+}
 
 // =============================================================================
 // Helpers
@@ -124,6 +132,7 @@ async function applyFlotanteTranslations(lang) {
   }
 
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
+  applyFlotanteDocumentLanguage(target);
   if (translationsLoadedFor !== target) {
     try {
       await loadRendererTranslations(target);
@@ -150,6 +159,7 @@ async function applyFlotanteTranslations(lang) {
 (async () => {
   try {
     let lang = DEFAULT_LANG;
+    applyFlotanteDocumentLanguage(lang);
     if (typeof window.flotanteAPI.getSettings === 'function') {
       try {
         const settings = await window.flotanteAPI.getSettings();

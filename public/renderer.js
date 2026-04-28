@@ -27,6 +27,10 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[renderer] AppConstants unavailable; verify constants.js load order');
 }
+if (!window.RendererDocumentLanguage || typeof window.RendererDocumentLanguage.applyDocumentLanguage !== 'function') {
+  throw new Error('[renderer] RendererDocumentLanguage.applyDocumentLanguage unavailable; cannot continue');
+}
+const { applyDocumentLanguage } = window.RendererDocumentLanguage;
 
 const {
   DEFAULT_LANG,
@@ -396,6 +400,10 @@ if (!loadRendererTranslations || !tRenderer || !msgRenderer || !getRendererValue
   throw new Error('[renderer] RendererI18n unavailable; cannot continue');
 }
 
+function applyRendererDocumentLanguage(language) {
+  applyDocumentLanguage(language, { defaultLang: DEFAULT_LANG });
+}
+
 function getHelpTipKeyList() {
   const tips = getRendererValue('renderer.tips');
   if (!tips || typeof tips !== 'object' || Array.isArray(tips)) return [];
@@ -673,6 +681,7 @@ const settingsChangeHandler = async (newSettings) => {
     const idiomaCambio = (nuevoIdioma !== idiomaActual);
     if (idiomaCambio) {
       idiomaActual = nuevoIdioma;
+      applyRendererDocumentLanguage(idiomaActual);
       try {
         await loadRendererTranslations(idiomaActual);
       } catch (err) {
@@ -945,6 +954,7 @@ async function runStartupOrchestrator() {
       settingsCache = {};
       settingsSnapshot = settingsCache;
     }
+    applyRendererDocumentLanguage(idiomaActual);
 
     // Load and apply renderer translations
     try {

@@ -42,6 +42,10 @@
   if (!appConstants || typeof appConstants.DEFAULT_LANG !== 'string' || !appConstants.DEFAULT_LANG.trim()) {
     throw new Error('[reading-test-result] AppConstants.DEFAULT_LANG unavailable; cannot continue');
   }
+  if (!window.RendererDocumentLanguage || typeof window.RendererDocumentLanguage.applyDocumentLanguage !== 'function') {
+    throw new Error('[reading-test-result] RendererDocumentLanguage.applyDocumentLanguage unavailable; cannot continue');
+  }
+  const { applyDocumentLanguage } = window.RendererDocumentLanguage;
 
   // =============================================================================
   // DOM bootstrap
@@ -83,10 +87,15 @@
       return normalized || fallback;
     }
 
+    function applyResultDocumentLanguage(language) {
+      applyDocumentLanguage(language, { defaultLang: DEFAULT_LANG });
+    }
+
     async function ensureTranslationsLoaded() {
       const target = normalizeLanguage(state.currentLanguage);
       if (state.translationsLoadedFor === target) return;
       state.currentLanguage = target;
+      applyResultDocumentLanguage(target);
       try {
         await loadRendererTranslations(target);
         state.translationsLoadedFor = target;
@@ -164,6 +173,7 @@
 
     enqueueUiSync(async () => {
       try {
+        applyResultDocumentLanguage(state.currentLanguage);
         const settings = await resultApi.getSettings();
         state.currentLanguage = normalizeLanguage(settings && settings.language);
       } catch (err) {

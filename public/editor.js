@@ -95,6 +95,10 @@ if (!window.EditorEngine || typeof window.EditorEngine.createEditorEngine !== 'f
 if (!window.Notify || typeof window.Notify.notifyEditor !== 'function') {
   throw new Error('[editor] Notify.notifyEditor unavailable; cannot continue');
 }
+if (!window.RendererDocumentLanguage || typeof window.RendererDocumentLanguage.applyDocumentLanguage !== 'function') {
+  throw new Error('[editor] RendererDocumentLanguage.applyDocumentLanguage unavailable; cannot continue');
+}
+const { applyDocumentLanguage } = window.RendererDocumentLanguage;
 
 // =============================================================================
 // DOM references
@@ -192,6 +196,13 @@ const ctx = {
 ctx.ui = window.EditorUI.createEditorUI(ctx);
 ctx.engine = window.EditorEngine.createEditorEngine(ctx);
 
+function applyEditorDocumentLanguage(language) {
+  const { lang } = applyDocumentLanguage(language, { defaultLang: DEFAULT_LANG });
+  if (editor) {
+    editor.setAttribute('lang', lang);
+  }
+}
+
 // =============================================================================
 // Bootstrap: config and translations (async, best-effort)
 // =============================================================================
@@ -221,6 +232,7 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
     } else {
       log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
     }
+    applyEditorDocumentLanguage(ctx.state.idiomaActual);
     if (typeof ctx.editorAPI.getWindowState === 'function') {
       const windowState = await ctx.editorAPI.getWindowState();
       ctx.state.editorWindowMaximized = !!(windowState && windowState.maximized === true);
@@ -242,7 +254,7 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
 
 // warnOnce keys are editor-scoped; use log.warnOnce directly.
 ctx.ui.applyTextareaDefaults();
-ctx.ui.applyDocumentLanguage();
+applyEditorDocumentLanguage(ctx.state.idiomaActual);
 ctx.ui.setLocalSpellcheckEnabled(ctx.state.spellcheckEnabled);
 ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
 ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
@@ -266,6 +278,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
 
       if (languageChanged) {
         ctx.state.idiomaActual = nextLang;
+        applyEditorDocumentLanguage(ctx.state.idiomaActual);
         await ctx.ui.applyEditorTranslations();
       }
       if (spellcheckChanged) {

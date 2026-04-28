@@ -30,6 +30,10 @@ const {
   TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 } = AppConstants;
+if (!window.RendererDocumentLanguage || typeof window.RendererDocumentLanguage.applyDocumentLanguage !== 'function') {
+  throw new Error('[task-editor] RendererDocumentLanguage.applyDocumentLanguage unavailable; cannot continue');
+}
+const { applyDocumentLanguage } = window.RendererDocumentLanguage;
 
 // =============================================================================
 // i18n
@@ -49,6 +53,10 @@ async function ensureTaskEditorTranslations(lang) {
   if (translationsLoadedFor === target) return;
   await loadRendererTranslations(target);
   translationsLoadedFor = target;
+}
+
+function applyTaskEditorDocumentLanguage(lang) {
+  applyDocumentLanguage(lang, { defaultLang: DEFAULT_LANG });
 }
 
 // =============================================================================
@@ -1119,6 +1127,7 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'func
     } else {
       log.warnOnce('BOOTSTRAP:task_editor.getSettings.missing', 'taskEditorAPI.getSettings unavailable; using default language.');
     }
+    applyTaskEditorDocumentLanguage(idiomaActual);
     await applyTaskEditorTranslations();
     await loadColumnWidths();
     setupColumnResizers();
@@ -1133,6 +1142,7 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'f
       const nextLang = settings && settings.language ? settings.language : '';
       if (!nextLang || nextLang === idiomaActual) return;
       idiomaActual = nextLang;
+      applyTaskEditorDocumentLanguage(idiomaActual);
       await applyTaskEditorTranslations();
     } catch (err) {
       log.warn('task-editor: settings update failed (ignored):', err);
@@ -1141,6 +1151,8 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'f
 } else {
   log.warnOnce('BOOTSTRAP:task_editor.onSettingsChanged.missing', 'taskEditorAPI.onSettingsChanged unavailable; language updates disabled.');
 }
+
+applyTaskEditorDocumentLanguage(idiomaActual);
 
 // =============================================================================
 // End of public/task_editor.js

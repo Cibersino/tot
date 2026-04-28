@@ -29,6 +29,10 @@ const {
   DEFAULT_LANG,
   EDITOR_FIND_INPUT_MAX_CHARS,
 } = AppConstants;
+if (!window.RendererDocumentLanguage || typeof window.RendererDocumentLanguage.applyDocumentLanguage !== 'function') {
+  throw new Error('[editor-find] RendererDocumentLanguage.applyDocumentLanguage unavailable; cannot continue.');
+}
+const { applyDocumentLanguage } = window.RendererDocumentLanguage;
 
 const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer) {
@@ -88,6 +92,10 @@ if (
 let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
 
+function applyEditorFindDocumentLanguage(language) {
+  applyDocumentLanguage(language, { defaultLang: DEFAULT_LANG });
+}
+
 const findInputMaxChars = Number.isFinite(Number(EDITOR_FIND_INPUT_MAX_CHARS))
   ? Math.max(1, Math.floor(Number(EDITOR_FIND_INPUT_MAX_CHARS)))
   : 512;
@@ -126,6 +134,7 @@ function normalizeState(payload) {
 
 async function ensureTranslations(lang) {
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
+  applyEditorFindDocumentLanguage(target);
   if (translationsLoadedFor === target) return;
   await loadRendererTranslations(target);
   translationsLoadedFor = target;
@@ -400,6 +409,7 @@ if (typeof findApi.onSettingsChanged === 'function') {
 // Bootstrap sequence
 // =============================================================================
 (async () => {
+  applyEditorFindDocumentLanguage(idiomaActual);
   await initLanguage();
   await applyTranslations();
   applyUiState();
