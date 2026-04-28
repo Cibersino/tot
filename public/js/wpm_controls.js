@@ -2,8 +2,9 @@
 'use strict';
 
 // =============================================================================
-// WPM controls
+// Overview
 // =============================================================================
+// Main-window WPM controls module.
 // Responsibilities:
 // - Own main-renderer WPM controls state (current WPM + preset selection).
 // - Keep WPM input, slider, preset select, and description in sync.
@@ -11,6 +12,9 @@
 // - Delegate preset catalog/selection resolution to RendererPresets.
 
 (() => {
+  // =============================================================================
+  // Logger and constants
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[wpm-controls] window.getLogger unavailable; cannot continue');
   }
@@ -30,18 +34,26 @@
     throw new Error('[wpm-controls] AppConstants WPM_MIN/WPM_MAX invalid; cannot continue');
   }
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function clampWpm(rawValue) {
     const numeric = Number(rawValue);
     const safe = Number.isFinite(numeric) ? Math.round(numeric) : WPM_MIN;
     return Math.min(Math.max(safe, WPM_MIN), WPM_MAX);
   }
 
+  // =============================================================================
+  // Controller factory
+  // =============================================================================
   function createController({
     wpmInput,
     wpmSlider,
     presetsSelect,
     presetDescription,
   } = {}) {
+    // Optional curve support should never block the control surface. If the
+    // mapper is missing or breaks, the controller falls back to linear mapping.
     const { WpmCurve } = window;
     const hasWpmCurveFactory = !!(
       WpmCurve && typeof WpmCurve.createMapperFromConstants === 'function'
@@ -73,11 +85,16 @@
       }
     }
 
+    // Controller state is kept local so the main renderer owns only one source
+    // of truth for the active WPM and selected preset name.
     let wpm = WPM_MIN;
     let currentPresetName = null;
     let allPresetsCache = [];
     let listenersBound = false;
 
+    // =============================================================================
+    // Bridge helpers
+    // =============================================================================
     function hasRendererPresetsCatalogBridge() {
       const rendererPresets = window.RendererPresets || {};
       return typeof rendererPresets.loadPresetsIntoDom === 'function';
@@ -92,6 +109,9 @@
       return window.RendererPresets || {};
     }
 
+    // =============================================================================
+    // WPM sync helpers
+    // =============================================================================
     function wpmFromSliderControl(rawControl) {
       if (wpmCurveMapper) {
         if (typeof wpmCurveMapper.wpmFromControl !== 'function') {
@@ -136,6 +156,8 @@
       return clampWpm(rawWpm);
     }
 
+    // Keep the text input and slider synchronized through one normalization path
+    // so presets, manual edits, and external updates apply the same bounds.
     function syncWpmControls(rawWpm) {
       const normalizedWpm = clampWpm(rawWpm);
       if (wpmInput) wpmInput.value = String(normalizedWpm);
@@ -143,6 +165,9 @@
       return normalizedWpm;
     }
 
+    // =============================================================================
+    // Preset state helpers
+    // =============================================================================
     function applyPresetUiSelection(preset) {
       if (presetsSelect && preset && preset.name) {
         presetsSelect.value = preset.name;
@@ -195,6 +220,9 @@
       });
     }
 
+    // =============================================================================
+    // Preset async flows
+    // =============================================================================
     async function reloadPresetsList({ settingsSnapshot, language, electronAPI } = {}) {
       if (!hasRendererPresetsCatalogBridge()) {
         log.warn(
@@ -340,6 +368,9 @@
       }
     }
 
+    // =============================================================================
+    // External updates and UI wiring
+    // =============================================================================
     function applyExternalWpm(rawWpm, { onWpmChanged } = {}) {
       const previousWpm = wpm;
       wpm = syncWpmControls(rawWpm);
@@ -388,6 +419,8 @@
       }
     }
 
+    // Apply DOM limits before the initial sync so the controls start from a
+    // valid visible state even before any preset load runs.
     if (wpmSlider) {
       wpmSlider.min = String(WPM_MIN);
       wpmSlider.max = String(WPM_MAX);
@@ -415,6 +448,9 @@
     }
     wpm = syncWpmControls(wpmInput ? wpmInput.value : WPM_MIN);
 
+    // =============================================================================
+    // Exports / controller surface
+    // =============================================================================
     return {
       bind,
       loadPresets,
@@ -427,6 +463,9 @@
     };
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.WpmControls = {
     createController,
   };
