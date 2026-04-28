@@ -50,6 +50,10 @@
       throw new Error('[preset_modal] AppConstants unavailable; verify constants.js load order');
     }
     const { DEFAULT_LANG, PRESET_DESC_MAX, PRESET_NAME_MAX, WPM_MIN, WPM_MAX } = AppConstants;
+    if (!window.RendererDocumentLanguage || typeof window.RendererDocumentLanguage.applyDocumentLanguage !== 'function') {
+      throw new Error('[preset_modal] RendererDocumentLanguage.applyDocumentLanguage unavailable; cannot continue');
+    }
+    const { applyDocumentLanguage } = window.RendererDocumentLanguage;
 
     const descMaxLength = PRESET_DESC_MAX;
     const nameMaxLength = PRESET_NAME_MAX;
@@ -68,6 +72,10 @@
     let idiomaActual = DEFAULT_LANG;
     let translationsLoadedFor = null;
 
+    function applyPresetDocumentLanguage(language) {
+      applyDocumentLanguage(language, { defaultLang: DEFAULT_LANG });
+    }
+
     // =============================================================================
     // i18n helpers
     // =============================================================================
@@ -80,6 +88,7 @@
 
     async function ensurePresetTranslations(lang) {
       const target = (lang || '').toLowerCase() || DEFAULT_LANG;
+      applyPresetDocumentLanguage(target);
       if (translationsLoadedFor === target) return;
       await loadRendererTranslations(target);
       translationsLoadedFor = target;
@@ -133,6 +142,7 @@
               );
             }
 
+            applyPresetDocumentLanguage(idiomaActual);
             await ensurePresetTranslations(idiomaActual);
             const incomingMode = (payload.mode === 'edit') ? 'edit' : 'new';
             mode = incomingMode;
@@ -173,6 +183,7 @@
           const nextLang = settings && settings.language ? settings.language : '';
           if (!nextLang || nextLang === idiomaActual) return;
           idiomaActual = nextLang;
+          applyPresetDocumentLanguage(idiomaActual);
           await applyPresetTranslations(mode);
         } catch (err) {
           log.warn('preset_modal: failed to apply settings update:', err);
@@ -282,6 +293,7 @@
     // =============================================================================
     // Initial UI sync
     // =============================================================================
+    applyPresetDocumentLanguage(idiomaActual);
     (async function initCharCount() {
       const currLen = descEl.value ? descEl.value.length : 0;
       charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
