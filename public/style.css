@@ -29,6 +29,7 @@
   --abort-button-hover-bg: #ffe4e4;
   --switch-track-off: #ccc;
   --switch-track-on: #4caf50;
+  --control-accent: #0078D4;
   --input-error-bg: #fff2f2;
   --processing-bar-bg: #f5efdf;
   --processing-track-bg: #ded3bc;
@@ -86,8 +87,7 @@
   --warning-border-color: rgb(141 107 25 / 0.25);
   --group-border-color: rgb(0 0 0 / 0.1);
 
-  /* Links and accents */
-  --control-accent: #0078D4;
+  /* Links */
   --link-primary: #245b89;
   --link-primary-hover: #163b5a;
   --link-secondary: #24567a;
