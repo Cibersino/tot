@@ -67,7 +67,7 @@
       } catch (err) {
         wpmCurveFactoryFailed = true;
         log.warn(
-          'WpmCurve.createMapperFromConstants failed; using linear slider mapping.',
+          'BOOTSTRAP: WpmCurve.createMapperFromConstants failed; using linear slider mapping.',
           err
         );
       }
@@ -76,11 +76,11 @@
     if (!wpmCurveMapper) {
       if (!hasWpmCurveFactory) {
         log.warn(
-          'WpmCurve unavailable; using linear slider mapping.'
+          'BOOTSTRAP: WpmCurve unavailable; using linear slider mapping.'
         );
       } else if (!wpmCurveFactoryFailed) {
         log.warn(
-          'WpmCurve mapper invalid; using linear slider mapping.'
+          'BOOTSTRAP: WpmCurve mapper invalid; using linear slider mapping.'
         );
       }
     }
@@ -430,12 +430,12 @@
             wpmSlider.step = String(wpmCurveMapper.controlStep);
           } else {
             log.warn(
-              'WpmCurve.controlStep invalid; using default slider step.'
+              'BOOTSTRAP: WpmCurve.controlStep invalid; using default slider step.'
             );
           }
         } catch (err) {
           log.warn(
-            'WpmCurve.controlStep failed; using default slider step.',
+            'BOOTSTRAP: WpmCurve.controlStep failed; using default slider step.',
             err
           );
           wpmCurveMapper = null;
