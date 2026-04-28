@@ -87,6 +87,7 @@
   --group-border-color: rgb(0 0 0 / 0.1);
 
   /* Links and accents */
+  --control-accent: #0078D4;
   --link-primary: #245b89;
   --link-primary-hover: #163b5a;
   --link-secondary: #24567a;
@@ -287,6 +288,7 @@ body {
 
 .selector-inline-checkbox input {
   margin: 0;
+  accent-color: var(--control-accent);
   cursor: pointer;
 }
 
@@ -666,6 +668,7 @@ body.import-extract-drop-active .app-container {
 .wpm-slider {
   width: 100%;
   margin-top: 2px;
+  accent-color: var(--control-accent);
 }
 
 /* Preset selector */
