@@ -360,7 +360,6 @@
       "snapshot_truncated": "Der Snapshot überschreitet die maximale Größe und wurde gekürzt.",
       "snapshot_unavailable": "Snapshot-Funktionalität nicht verfügbar.",
       "modal_unavailable": "Die Modal-Funktionalität ist nicht verfügbar.",
-      "edit_none": "Kein Preset ausgewählt zum Bearbeiten.",
       "preset_not_found": "Preset im Cache nicht gefunden.",
       "edit_unavailable": "Bearbeitungsfunktion nicht verfügbar.",
       "edit_error": "Beim Bearbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",

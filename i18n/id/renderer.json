@@ -360,7 +360,6 @@
       "snapshot_truncated": "Snapshot melebihi ukuran maksimum dan dipotong.",
       "snapshot_unavailable": "Fungsi snapshot tidak tersedia.",
       "modal_unavailable": "Fungsi modal tidak tersedia.",
-      "edit_none": "Tidak ada preset yang dipilih untuk diedit.",
       "preset_not_found": "Preset yang dipilih tidak ditemukan dalam cache.",
       "edit_unavailable": "Fungsi edit tidak tersedia.",
       "edit_error": "Terjadi kesalahan saat mengedit preset. Periksa konsol.",

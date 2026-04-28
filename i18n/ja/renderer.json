@@ -360,7 +360,6 @@
       "snapshot_truncated": "スナップショットが最大サイズを超えたため、切り詰められました。",
       "snapshot_unavailable": "スナップショット機能は利用できません。",
       "modal_unavailable": "モーダル機能は利用できません。",
-      "edit_none": "編集するプリセットが選択されていません。",
       "preset_not_found": "選択したプリセットがキャッシュに見つかりません。",
       "edit_unavailable": "編集機能は利用できません。",
       "edit_error": "プリセットの編集中にエラーが発生しました。コンソールを確認してください。",

@@ -169,7 +169,7 @@ Evidencia mínima sugerida:
 * Tabla explícita de cambios IPC respecto al release anterior (canal nuevo/modificado/eliminado + riesgo + veredicto).
 * En este release, incluir explícitamente los canales nuevos/modificados de import/extract/OCR y el archivo de preload donde quedan expuestos.
 * Evidencia verificada: `clipboard-read-text` y `set-current-text` en `electron/text_state.js`; snapshots en `electron/current_text_snapshots_main.js`; apertura externa/docs en `electron/link_openers.js`; import/extract en `electron/import_extract_platform/*`.
-* Evidencia actual: `presets_main.js` aplica sender restriction por ventana según el flujo (`create-preset`/`edit-preset` desde `presetWin`; `request-delete-preset`/`request-restore-defaults`/`notify-no-selection-edit` desde `mainWin`).
+* Evidencia actual: `presets_main.js` aplica sender restriction por ventana según el flujo (`create-preset`/`edit-preset` desde `presetWin`; `request-delete-preset`/`request-restore-defaults` desde `mainWin`).
 * `import-extract-check-preconditions` devuelve estado estructurado y valida sender contra `mainWin`, alineado con el resto de la superficie `import/extract`.
 * Evidencia actual: `tasks_main.js` valida esquema y límites para listas/biblioteca (`texto`, `tipo`, `enlace`, `comentario` con tope de `1200`), tope agregado de `200` filas por task list y `12000` ítems para la task library, aplica sender guard en los handlers del Task Editor y restringe apertura de destinos a archivos locales existentes con confirmación o URLs `https:` con confirmación/allowlist.
 

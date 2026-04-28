@@ -360,7 +360,6 @@
       "snapshot_truncated": "El snapshot supera la mida màxima i s’ha truncat.",
       "snapshot_unavailable": "La funció de snapshots no està disponible.",
       "modal_unavailable": "Funcionalitat de modal no disponible.",
-      "edit_none": "No hi ha cap preset seleccionat per editar.",
       "preset_not_found": "El preset seleccionat no s’ha trobat a la memòria cau.",
       "edit_unavailable": "Funcionalitat d’edició no disponible.",
       "edit_error": "S’ha produït un error en intentar editar el preset. Revisa la consola.",

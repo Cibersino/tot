@@ -360,7 +360,6 @@
       "snapshot_truncated": "快照超过最大大小，已被截断。",
       "snapshot_unavailable": "快照功能不可用。",
       "modal_unavailable": "模态窗口功能不可用。",
-      "edit_none": "没有选择要编辑的预设。",
       "preset_not_found": "缓存中找不到所选预设。",
       "edit_unavailable": "编辑功能不可用。",
       "edit_error": "尝试编辑预设时发生错误。请检查控制台。",

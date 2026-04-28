@@ -360,7 +360,6 @@
       "snapshot_truncated": "Snapshoten överskrider maximal storlek och har kortats.",
       "snapshot_unavailable": "Snapshotfunktionen är inte tillgänglig.",
       "modal_unavailable": "Modalfunktionen är inte tillgänglig.",
-      "edit_none": "Ingen förinställning har valts för redigering.",
       "preset_not_found": "Vald förinställning hittades inte i cachen.",
       "edit_unavailable": "Redigeringsfunktionen är inte tillgänglig.",
       "edit_error": "Ett fel uppstod vid redigering av förinställningen. Kontrollera konsolen.",

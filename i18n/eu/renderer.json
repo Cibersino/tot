@@ -361,7 +361,6 @@
       "snapshot_truncated": "Snapshotak gehieneko tamaina gainditzen du eta moztu egin da.",
       "snapshot_unavailable": "Snapshoten funtzioa ez dago erabilgarri.",
       "modal_unavailable": "Modalaren funtzionalitatea ez dago erabilgarri.",
-      "edit_none": "Ez dago editatzeko aurrezarpenik hautatuta.",
       "preset_not_found": "Hautatutako aurrezarpena ez da cachean aurkitu.",
       "edit_unavailable": "Editatzeko funtzionalitatea ez dago erabilgarri.",
       "edit_error": "Errorea gertatu da aurrezarpena editatzean. Begiratu kontsola.",

@@ -360,7 +360,6 @@
       "snapshot_truncated": "스냅샷이 최대 크기를 초과하여 잘렸습니다.",
       "snapshot_unavailable": "스냅샷 기능을 사용할 수 없습니다.",
       "modal_unavailable": "모달 기능을 사용할 수 없습니다.",
-      "edit_none": "편집할 프리셋이 선택되지 않았습니다.",
       "preset_not_found": "선택한 프리셋을 캐시에서 찾을 수 없습니다.",
       "edit_unavailable": "편집 기능을 사용할 수 없습니다.",
       "edit_error": "프리셋을 편집하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",

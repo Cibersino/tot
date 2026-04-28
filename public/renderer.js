@@ -2122,10 +2122,6 @@ function bindPresetActions() {
         return;
       } else {
         // res.ok === false -> handle known codes
-        if (res && res.code === 'NO_SELECTION') {
-          // Main already showed a native info dialog; nothing else to do.
-          return;
-        }
         if (res && res.code === 'CANCELLED') {
           // User cancelled; nothing to do
           return;

@@ -360,7 +360,6 @@
       "snapshot_truncated": "Le snapshot dépasse la taille maximale et a été tronqué.",
       "snapshot_unavailable": "Fonctionnalité de snapshot indisponible.",
       "modal_unavailable": "Fonctionnalité modale indisponible.",
-      "edit_none": "Aucun preset sélectionné à modifier.",
       "preset_not_found": "Le preset sélectionné n'a pas été trouvé dans le cache.",
       "edit_unavailable": "Fonctionnalité d'édition indisponible.",
       "edit_error": "Une erreur s'est produite lors de l'édition du preset. Vérifiez la console.",

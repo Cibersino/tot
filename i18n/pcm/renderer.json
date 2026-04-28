@@ -364,7 +364,6 @@
       "snapshot_truncated": "Snapshot pass maximum size and dem truncate am.",
       "snapshot_unavailable": "Snapshot feature no dey available.",
       "modal_unavailable": "Modal feature no dey available.",
-      "edit_none": "No preset selected to edit.",
       "preset_not_found": "Selected preset no dey cache.",
       "edit_unavailable": "Edit feature no dey available.",
       "edit_error": "Error happen while editing preset. Check console.",

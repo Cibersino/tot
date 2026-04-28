@@ -360,7 +360,6 @@
       "snapshot_truncated": "快照超過最大大小，已被截斷。",
       "snapshot_unavailable": "快照功能無法使用。",
       "modal_unavailable": "對話框功能無法使用。",
-      "edit_none": "尚未選擇要編輯的預設。",
       "preset_not_found": "快取中找不到所選預設。",
       "edit_unavailable": "編輯功能無法使用。",
       "edit_error": "嘗試編輯預設值時發生錯誤。請檢查主控台。",

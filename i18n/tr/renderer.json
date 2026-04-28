@@ -360,7 +360,6 @@
       "snapshot_truncated": "Snapshot en büyük boyutu aşıyor ve kesildi.",
       "snapshot_unavailable": "Snapshot işlevi kullanılamıyor.",
       "modal_unavailable": "Modal işlevi kullanılamıyor.",
-      "edit_none": "Düzenlemek için seçili ön ayar yok.",
       "preset_not_found": "Seçili ön ayar önbellekte bulunamadı.",
       "edit_unavailable": "Düzenleme işlevi kullanılamıyor.",
       "edit_error": "Ön ayar düzenlenirken hata oluştu. Konsolu kontrol edin.",

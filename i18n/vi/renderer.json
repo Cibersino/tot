@@ -360,7 +360,6 @@
       "snapshot_truncated": "Bản lưu vượt quá kích thước tối đa và đã bị cắt bớt.",
       "snapshot_unavailable": "Chức năng bản lưu không khả dụng.",
       "modal_unavailable": "Chức năng modal không khả dụng.",
-      "edit_none": "Không có preset nào được chọn để chỉnh sửa.",
       "preset_not_found": "Không tìm thấy preset đã chọn trong bộ nhớ đệm.",
       "edit_unavailable": "Chức năng chỉnh sửa không khả dụng.",
       "edit_error": "Đã xảy ra lỗi khi chỉnh sửa preset. Hãy kiểm tra console.",
