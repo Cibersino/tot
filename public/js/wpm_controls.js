@@ -54,9 +54,8 @@
         wpmCurveMapper = WpmCurve.createMapperFromConstants(AppConstants);
       } catch (err) {
         wpmCurveFactoryFailed = true;
-        log.warnOnce(
-          'BOOTSTRAP:renderer.wpmCurve.createMapperFromConstants.failed',
-          '[renderer] WpmCurve.createMapperFromConstants failed; using linear slider mapping.',
+        log.warn(
+          'WpmCurve.createMapperFromConstants failed; using linear slider mapping.',
           err
         );
       }
@@ -64,14 +63,12 @@
 
     if (!wpmCurveMapper) {
       if (!hasWpmCurveFactory) {
-        log.warnOnce(
-          'BOOTSTRAP:renderer.wpmCurve.unavailable',
-          '[renderer] WpmCurve unavailable; using linear slider mapping.'
+        log.warn(
+          'WpmCurve unavailable; using linear slider mapping.'
         );
       } else if (!wpmCurveFactoryFailed) {
-        log.warnOnce(
-          'BOOTSTRAP:renderer.wpmCurve.mapper.invalid',
-          '[renderer] WpmCurve mapper invalid; using linear slider mapping.'
+        log.warn(
+          'WpmCurve mapper invalid; using linear slider mapping.'
         );
       }
     }
@@ -98,9 +95,8 @@
     function wpmFromSliderControl(rawControl) {
       if (wpmCurveMapper) {
         if (typeof wpmCurveMapper.wpmFromControl !== 'function') {
-          log.warnOnce(
-            'renderer.wpmCurve.wpmFromControl.unavailable',
-            '[renderer] WpmCurve.wpmFromControl unavailable; using linear slider mapping.'
+          log.warn(
+            'WpmCurve.wpmFromControl unavailable; using linear slider mapping.'
           );
           wpmCurveMapper = null;
           return clampWpm(rawControl);
@@ -108,9 +104,8 @@
         try {
           return clampWpm(wpmCurveMapper.wpmFromControl(rawControl));
         } catch (err) {
-          log.warnOnce(
-            'renderer.wpmCurve.wpmFromControl.failed',
-            '[renderer] WpmCurve.wpmFromControl failed; using linear slider mapping.',
+          log.warn(
+            'WpmCurve.wpmFromControl failed; using linear slider mapping.',
             err
           );
           wpmCurveMapper = null;
@@ -122,9 +117,8 @@
     function sliderControlFromWpm(rawWpm) {
       if (wpmCurveMapper) {
         if (typeof wpmCurveMapper.controlFromWpm !== 'function') {
-          log.warnOnce(
-            'renderer.wpmCurve.controlFromWpm.unavailable',
-            '[renderer] WpmCurve.controlFromWpm unavailable; using linear slider mapping.'
+          log.warn(
+            'WpmCurve.controlFromWpm unavailable; using linear slider mapping.'
           );
           wpmCurveMapper = null;
           return clampWpm(rawWpm);
@@ -132,9 +126,8 @@
         try {
           return wpmCurveMapper.controlFromWpm(rawWpm);
         } catch (err) {
-          log.warnOnce(
-            'renderer.wpmCurve.controlFromWpm.failed',
-            '[renderer] WpmCurve.controlFromWpm failed; using linear slider mapping.',
+          log.warn(
+            'WpmCurve.controlFromWpm failed; using linear slider mapping.',
             err
           );
           wpmCurveMapper = null;
@@ -204,8 +197,7 @@
 
     async function reloadPresetsList({ settingsSnapshot, language, electronAPI } = {}) {
       if (!hasRendererPresetsCatalogBridge()) {
-        log.warnOnce(
-          'renderer.bridge.RendererPresets.loadPresetsIntoDom.unavailable',
+        log.warn(
           'Preset list reload skipped because RendererPresets.loadPresetsIntoDom is unavailable.'
         );
         return resetPresetsState();
@@ -221,7 +213,7 @@
         allPresetsCache = res && res.list ? res.list.slice() : [];
         return allPresetsCache;
       } catch (err) {
-        log.error('Error loading presets list:', err);
+        log.error('RendererPresets.loadPresetsIntoDom failed:', err);
         return resetPresetsState();
       }
     }
@@ -233,8 +225,7 @@
       onWpmChanged,
     } = {}) {
       if (!hasRendererPresetsSelectionBridge()) {
-        log.warnOnce(
-          'renderer.bridge.RendererPresets.resolvePresetSelection.unavailable',
+        log.warn(
           'Preset selection skipped because RendererPresets.resolvePresetSelection is unavailable.'
         );
         return resetPresetsState();
@@ -261,7 +252,7 @@
         }
         return allPresetsCache;
       } catch (err) {
-        log.error('Error loading presets:', err);
+        log.error('RendererPresets.resolvePresetSelection failed during loadPresets:', err);
         return resetPresetsState();
       }
     }
@@ -276,8 +267,7 @@
       try {
         const updated = await reloadPresetsList({ settingsSnapshot, language, electronAPI });
         if (!hasRendererPresetsSelectionBridge()) {
-          log.warnOnce(
-            'renderer.bridge.RendererPresets.resolvePresetSelection.unavailable',
+          log.warn(
             'Preset-created selection sync skipped because RendererPresets.resolvePresetSelection is unavailable.'
           );
           return updated;
@@ -303,7 +293,7 @@
         }
         return updated;
       } catch (err) {
-        log.error('Error handling preset-created event:', err);
+        log.error('RendererPresets.resolvePresetSelection failed during handlePresetCreated:', err);
         return allPresetsCache;
       }
     }
@@ -315,8 +305,7 @@
       onWpmChanged,
     } = {}) {
       if (!hasRendererPresetsSelectionBridge()) {
-        log.warnOnce(
-          'renderer.bridge.RendererPresets.resolvePresetSelection.unavailable',
+        log.warn(
           'Preset change ignored because RendererPresets.resolvePresetSelection is unavailable.'
         );
         return null;
@@ -346,7 +335,7 @@
         }
         return selected;
       } catch (err) {
-        log.error('Error resolving preset selection:', err);
+        log.error('RendererPresets.resolvePresetSelection failed during handlePresetSelectionChange:', err);
         return null;
       }
     }
@@ -407,15 +396,13 @@
           if (Number.isFinite(wpmCurveMapper.controlStep) && wpmCurveMapper.controlStep > 0) {
             wpmSlider.step = String(wpmCurveMapper.controlStep);
           } else {
-            log.warnOnce(
-              'BOOTSTRAP:renderer.wpmCurve.controlStep.invalid',
-              '[renderer] WpmCurve.controlStep invalid; using default slider step.'
+            log.warn(
+              'WpmCurve.controlStep invalid; using default slider step.'
             );
           }
         } catch (err) {
-          log.warnOnce(
-            'BOOTSTRAP:renderer.wpmCurve.controlStep.failed',
-            '[renderer] WpmCurve.controlStep failed; using default slider step.',
+          log.warn(
+            'WpmCurve.controlStep failed; using default slider step.',
             err
           );
           wpmCurveMapper = null;

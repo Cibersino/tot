@@ -661,7 +661,7 @@ const settingsChangeHandler = async (newSettings) => {
       } catch (err) {
         log.warnOnce(
           'renderer.loadRendererTranslations',
-          `[renderer] loadRendererTranslations(${idiomaActual}) failed (ignored):`,
+          `loadRendererTranslations(${idiomaActual}) failed (ignored):`,
           err
         );
       }
@@ -875,7 +875,7 @@ function setupToggleModoPreciso() {
     try {
       syncToggleFromSettings(settingsCache || {});
     } catch (err) {
-      log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+      log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', 'syncToggleFromSettings failed (ignored):', err);
     }
   } catch (err) {
     log.error('Error initializing toggleModoPreciso:', err);
@@ -986,7 +986,7 @@ async function runStartupOrchestrator() {
       try {
         syncToggleFromSettings(settingsSnapshot || {});
       } catch (err) {
-        log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+        log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', 'syncToggleFromSettings failed (ignored):', err);
       }
     }
 
@@ -2051,9 +2051,9 @@ function bindPresetActions() {
       // Open modal in edit mode and pass preset data.
       const payload = { wpm: wpmControls.getWpm(), mode: 'edit', preset: preset };
       try {
-        log.debug('[renderer] openPresetModal payload:', payload);
+        log.debug('openPresetModal payload:', payload);
       } catch (err) {
-        log.warnOnce('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+        log.warnOnce('log.debug.openPresetModal', 'log.debug failed (ignored):', err);
       }
       if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
         window.electronAPI.openPresetModal(payload);
@@ -2158,7 +2158,7 @@ const cronoModule = (typeof window !== 'undefined') ? window.RendererCrono : nul
 
 const initCronoController = () => {
   if (!cronoModule || typeof cronoModule.createController !== 'function') {
-    log.warn('[renderer] RendererCrono.createController not available');
+    log.warn('RendererCrono.createController unavailable.');
     return;
   }
   const labels = getCronoLabels();
