@@ -26,6 +26,10 @@
     WPM_MAX,
   } = AppConstants;
 
+  if (!Number.isFinite(WPM_MIN) || !Number.isFinite(WPM_MAX) || WPM_MIN > WPM_MAX) {
+    throw new Error('[wpm-controls] AppConstants WPM_MIN/WPM_MAX invalid; cannot continue');
+  }
+
   function clampWpm(rawValue) {
     const numeric = Number(rawValue);
     const safe = Number.isFinite(numeric) ? Math.round(numeric) : WPM_MIN;
@@ -39,17 +43,37 @@
     presetDescription,
   } = {}) {
     const { WpmCurve } = window;
-    const wpmCurveMapper = (
+    const hasWpmCurveFactory = !!(
       WpmCurve && typeof WpmCurve.createMapperFromConstants === 'function'
-    )
-      ? WpmCurve.createMapperFromConstants(AppConstants)
-      : null;
+    );
+    let wpmCurveMapper = null;
+    let wpmCurveFactoryFailed = false;
+
+    if (hasWpmCurveFactory) {
+      try {
+        wpmCurveMapper = WpmCurve.createMapperFromConstants(AppConstants);
+      } catch (err) {
+        wpmCurveFactoryFailed = true;
+        log.warnOnce(
+          'BOOTSTRAP:renderer.wpmCurve.createMapperFromConstants.failed',
+          '[renderer] WpmCurve.createMapperFromConstants failed; using linear slider mapping.',
+          err
+        );
+      }
+    }
 
     if (!wpmCurveMapper) {
-      log.warnOnce(
-        'renderer.wpmCurve.unavailable',
-        '[renderer] WpmCurve unavailable; using linear slider mapping.'
-      );
+      if (!hasWpmCurveFactory) {
+        log.warnOnce(
+          'BOOTSTRAP:renderer.wpmCurve.unavailable',
+          '[renderer] WpmCurve unavailable; using linear slider mapping.'
+        );
+      } else if (!wpmCurveFactoryFailed) {
+        log.warnOnce(
+          'BOOTSTRAP:renderer.wpmCurve.mapper.invalid',
+          '[renderer] WpmCurve mapper invalid; using linear slider mapping.'
+        );
+      }
     }
 
     let wpm = WPM_MIN;
@@ -57,12 +81,14 @@
     let allPresetsCache = [];
     let listenersBound = false;
 
-    function hasRendererPresetsBridge() {
+    function hasRendererPresetsCatalogBridge() {
       const rendererPresets = window.RendererPresets || {};
-      return (
-        typeof rendererPresets.loadPresetsIntoDom === 'function' &&
-        typeof rendererPresets.resolvePresetSelection === 'function'
-      );
+      return typeof rendererPresets.loadPresetsIntoDom === 'function';
+    }
+
+    function hasRendererPresetsSelectionBridge() {
+      const rendererPresets = window.RendererPresets || {};
+      return typeof rendererPresets.resolvePresetSelection === 'function';
     }
 
     function getRendererPresetsBridge() {
@@ -70,15 +96,49 @@
     }
 
     function wpmFromSliderControl(rawControl) {
-      if (wpmCurveMapper && typeof wpmCurveMapper.wpmFromControl === 'function') {
-        return clampWpm(wpmCurveMapper.wpmFromControl(rawControl));
+      if (wpmCurveMapper) {
+        if (typeof wpmCurveMapper.wpmFromControl !== 'function') {
+          log.warnOnce(
+            'renderer.wpmCurve.wpmFromControl.unavailable',
+            '[renderer] WpmCurve.wpmFromControl unavailable; using linear slider mapping.'
+          );
+          wpmCurveMapper = null;
+          return clampWpm(rawControl);
+        }
+        try {
+          return clampWpm(wpmCurveMapper.wpmFromControl(rawControl));
+        } catch (err) {
+          log.warnOnce(
+            'renderer.wpmCurve.wpmFromControl.failed',
+            '[renderer] WpmCurve.wpmFromControl failed; using linear slider mapping.',
+            err
+          );
+          wpmCurveMapper = null;
+        }
       }
       return clampWpm(rawControl);
     }
 
     function sliderControlFromWpm(rawWpm) {
-      if (wpmCurveMapper && typeof wpmCurveMapper.controlFromWpm === 'function') {
-        return wpmCurveMapper.controlFromWpm(rawWpm);
+      if (wpmCurveMapper) {
+        if (typeof wpmCurveMapper.controlFromWpm !== 'function') {
+          log.warnOnce(
+            'renderer.wpmCurve.controlFromWpm.unavailable',
+            '[renderer] WpmCurve.controlFromWpm unavailable; using linear slider mapping.'
+          );
+          wpmCurveMapper = null;
+          return clampWpm(rawWpm);
+        }
+        try {
+          return wpmCurveMapper.controlFromWpm(rawWpm);
+        } catch (err) {
+          log.warnOnce(
+            'renderer.wpmCurve.controlFromWpm.failed',
+            '[renderer] WpmCurve.controlFromWpm failed; using linear slider mapping.',
+            err
+          );
+          wpmCurveMapper = null;
+        }
       }
       return clampWpm(rawWpm);
     }
@@ -143,10 +203,10 @@
     }
 
     async function reloadPresetsList({ settingsSnapshot, language, electronAPI } = {}) {
-      if (!hasRendererPresetsBridge()) {
+      if (!hasRendererPresetsCatalogBridge()) {
         log.warnOnce(
-          'renderer.bridge.RendererPresets.reload.unavailable',
-          'Preset list reload skipped because RendererPresets bridge is unavailable.'
+          'renderer.bridge.RendererPresets.loadPresetsIntoDom.unavailable',
+          'Preset list reload skipped because RendererPresets.loadPresetsIntoDom is unavailable.'
         );
         return resetPresetsState();
       }
@@ -172,10 +232,10 @@
       electronAPI,
       onWpmChanged,
     } = {}) {
-      if (!hasRendererPresetsBridge()) {
+      if (!hasRendererPresetsSelectionBridge()) {
         log.warnOnce(
-          'renderer.bridge.RendererPresets.selection.unavailable',
-          'Preset selection skipped because RendererPresets bridge is unavailable.'
+          'renderer.bridge.RendererPresets.resolvePresetSelection.unavailable',
+          'Preset selection skipped because RendererPresets.resolvePresetSelection is unavailable.'
         );
         return resetPresetsState();
       }
@@ -213,16 +273,16 @@
       electronAPI,
       onWpmChanged,
     } = {}) {
-      if (!hasRendererPresetsBridge()) {
-        log.warnOnce(
-          'renderer.bridge.RendererPresets.created.unavailable',
-          'Preset-created sync skipped because RendererPresets bridge is unavailable.'
-        );
-        return allPresetsCache;
-      }
       try {
-        const { resolvePresetSelection } = getRendererPresetsBridge();
         const updated = await reloadPresetsList({ settingsSnapshot, language, electronAPI });
+        if (!hasRendererPresetsSelectionBridge()) {
+          log.warnOnce(
+            'renderer.bridge.RendererPresets.resolvePresetSelection.unavailable',
+            'Preset-created selection sync skipped because RendererPresets.resolvePresetSelection is unavailable.'
+          );
+          return updated;
+        }
+        const { resolvePresetSelection } = getRendererPresetsBridge();
         if (!preset || !preset.name) return updated;
         const found = updated.find(item => item.name === preset.name);
         if (!found) return updated;
@@ -254,10 +314,10 @@
       electronAPI,
       onWpmChanged,
     } = {}) {
-      if (!hasRendererPresetsBridge()) {
+      if (!hasRendererPresetsSelectionBridge()) {
         log.warnOnce(
-          'renderer.bridge.RendererPresets.change.unavailable',
-          'Preset change ignored because RendererPresets bridge is unavailable.'
+          'renderer.bridge.RendererPresets.resolvePresetSelection.unavailable',
+          'Preset change ignored because RendererPresets.resolvePresetSelection is unavailable.'
         );
         return null;
       }
@@ -342,8 +402,24 @@
     if (wpmSlider) {
       wpmSlider.min = String(WPM_MIN);
       wpmSlider.max = String(WPM_MAX);
-      if (wpmCurveMapper && Number.isFinite(wpmCurveMapper.controlStep) && wpmCurveMapper.controlStep > 0) {
-        wpmSlider.step = String(wpmCurveMapper.controlStep);
+      if (wpmCurveMapper) {
+        try {
+          if (Number.isFinite(wpmCurveMapper.controlStep) && wpmCurveMapper.controlStep > 0) {
+            wpmSlider.step = String(wpmCurveMapper.controlStep);
+          } else {
+            log.warnOnce(
+              'BOOTSTRAP:renderer.wpmCurve.controlStep.invalid',
+              '[renderer] WpmCurve.controlStep invalid; using default slider step.'
+            );
+          }
+        } catch (err) {
+          log.warnOnce(
+            'BOOTSTRAP:renderer.wpmCurve.controlStep.failed',
+            '[renderer] WpmCurve.controlStep failed; using default slider step.',
+            err
+          );
+          wpmCurveMapper = null;
+        }
       }
     }
     if (wpmInput) {
