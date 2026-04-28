@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "JAKHUWIJA APSUTANAKA",
-        "time": "⏱ Uñt’ayata ullañ pacha: {h}h {m}m {s}s",
+        "time_label": "⏱ Uñt’ayata ullañ pacha: ",
         "words": "Arunaka: {n}",
         "chars_no_space": "Chimpunaka (jan ch’usa chiqanakampi): {n}",
         "chars": "Chimpunaka: {n}",

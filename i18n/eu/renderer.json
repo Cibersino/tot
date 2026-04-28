@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "ZENBAKETAREN EMAITZAK",
-        "time": "⏱ Irakurtzeko denbora estimatua: {h}h {m}m {s}s",
+        "time_label": "⏱ Irakurtzeko denbora estimatua: ",
         "words": "Hitzak: {n}",
         "chars_no_space": "Karaktereak (zuriunerik gabe): {n}",
         "chars": "Karaktereak: {n}",

@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "RESULTADOS DA CONTAGEM",
-        "time": "⏱ Tempo estimado de leitura: {h}h {m}m {s}s",
+        "time_label": "⏱ Tempo estimado de leitura: ",
         "words": "Palavras: {n}",
         "chars_no_space": "Caracteres (sem espaços): {n}",
         "chars": "Caracteres: {n}",

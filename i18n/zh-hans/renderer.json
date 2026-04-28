@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "计数结果",
-        "time": "⏱ 预计阅读时间：{h}h {m}m {s}s",
+        "time_label": "⏱ 预计阅读时间：",
         "words": "词数：{n}",
         "chars_no_space": "字符数（不含空格）：{n}",
         "chars": "字符数：{n}",

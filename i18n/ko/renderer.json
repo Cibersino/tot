@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "계수 결과",
-        "time": "⏱ 예상 읽기 시간: {h}시간 {m}분 {s}초",
+        "time_label": "⏱ 예상 읽기 시간: ",
         "words": "단어: {n}",
         "chars_no_space": "문자(공백 제외): {n}",
         "chars": "문자: {n}",

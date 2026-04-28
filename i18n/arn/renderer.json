@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "CHUMTEN MÜLEY",
-        "time": "⏱ Chillkatun antü: {h}h {m}m {s}s",
+        "time_label": "⏱ Chillkatun antü: ",
         "words": "Dungu: {n}",
         "chars_no_space": "Wirintun welli ngelulu: {n}",
         "chars": "Wirin: {n}",

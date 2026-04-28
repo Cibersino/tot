@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "SAYIM SONUÇLARI",
-        "time": "⏱ Tahmini okuma süresi: {h}h {m}m {s}s",
+        "time_label": "⏱ Tahmini okuma süresi: ",
         "words": "Kelimeler: {n}",
         "chars_no_space": "Karakterler (boşluksuz): {n}",
         "chars": "Karakterler: {n}",

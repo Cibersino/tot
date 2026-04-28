@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "IMIPHUMELA YOKUBALA",
-        "time": "⏱ Isikhathi sokufunda esilinganisiwe: {h}h {m}m {s}s",
+        "time_label": "⏱ Isikhathi sokufunda esilinganisiwe: ",
         "words": "Amagama: {n}",
         "chars_no_space": "Izinhlamvu (ngaphandle kwezikhala): {n}",
         "chars": "Izinhlamvu: {n}",

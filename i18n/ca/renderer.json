@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "RESULTATS DEL RECOMPTE",
-        "time": "⏱ Temps estimat de lectura: {h}h {m}m {s}s",
+        "time_label": "⏱ Temps estimat de lectura: ",
         "words": "Paraules: {n}",
         "chars_no_space": "Caràcters (sense espais): {n}",
         "chars": "Caràcters: {n}",

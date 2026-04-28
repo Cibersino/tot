@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "REZILTA KONTAJ",
-        "time": "⏱ Tan lekti estime: {h}h {m}m {s}s",
+        "time_label": "⏱ Tan lekti estime: ",
         "words": "Mo: {n}",
         "chars_no_space": "Karaktè (san espas): {n}",
         "chars": "Karaktè: {n}",

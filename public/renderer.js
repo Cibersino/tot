@@ -397,8 +397,14 @@ const {
   msgRenderer,
   getRendererValue,
   applyWindowLanguageAttributes,
+  renderLocalizedLabelWithInvariantValue,
 } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer || !msgRenderer || !getRendererValue || !applyWindowLanguageAttributes) {
+if (!loadRendererTranslations
+  || !tRenderer
+  || !msgRenderer
+  || !getRendererValue
+  || !applyWindowLanguageAttributes
+  || !renderLocalizedLabelWithInvariantValue) {
   throw new Error('[renderer] RendererI18n unavailable; cannot continue');
 }
 applyWindowLanguageAttributes(DEFAULT_LANG);
@@ -563,12 +569,17 @@ if (!getExactTotalSeconds || !getDisplayTimeParts || !obtenerSeparadoresDeNumero
 // =============================================================================
 let currentTextStats = null;
 
+function formatInvariantEstimatedDuration(hours, minutes, seconds) {
+  return `${hours}h ${minutes}m ${seconds}s`;
+}
+
 function renderEstimatedTime(totalSeconds) {
   const { hours, minutes, seconds } = getDisplayTimeParts(totalSeconds);
-  resTime.textContent = msgRenderer(
-    'renderer.main.results.time',
-    { h: hours, m: minutes, s: seconds }
-  );
+  renderLocalizedLabelWithInvariantValue(resTime, {
+    labelText: tRenderer('renderer.main.results.time_label'),
+    valueText: formatInvariantEstimatedDuration(hours, minutes, seconds),
+    valueDirection: 'ltr',
+  });
   resultsTimeMultiplier.setBaseTotalSeconds(totalSeconds);
 }
 

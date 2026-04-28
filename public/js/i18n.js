@@ -232,6 +232,28 @@
     return str;
   }
 
+  function renderLocalizedLabelWithInvariantValue(container, {
+    labelText = '',
+    valueText = '',
+    valueDirection = 'ltr',
+  } = {}) {
+    if (!container || typeof container.appendChild !== 'function') {
+      throw new Error('[i18n] renderLocalizedLabelWithInvariantValue requires a container element');
+    }
+
+    container.textContent = '';
+
+    if (labelText) {
+      container.appendChild(document.createTextNode(String(labelText)));
+    }
+
+    const valueNode = document.createElement('bdi');
+    valueNode.dir = valueDirection === 'rtl' ? 'rtl' : 'ltr';
+    valueNode.textContent = String(valueText ?? '');
+    container.appendChild(valueNode);
+    return valueNode;
+  }
+
   function getRendererValue(path) {
     if (!rendererTranslations) return undefined;
     return getPath(rendererTranslations, path);
@@ -249,6 +271,7 @@
     getLangBase,
     getLanguageDirection,
     applyWindowLanguageAttributes,
+    renderLocalizedLabelWithInvariantValue,
   };
 })();
 

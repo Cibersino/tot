@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "計數結果",
-        "time": "⏱ 預估閱讀時間：{h}h {m}m {s}s",
+        "time_label": "⏱ 預估閱讀時間：",
         "words": "詞數：{n}",
         "chars_no_space": "字元數（不含空格）：{n}",
         "chars": "字元數：{n}",

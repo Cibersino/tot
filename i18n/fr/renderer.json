@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "RÉSULTATS DU COMPTE",
-        "time": "⏱ Temps de lecture estimé : {h}h {m}m {s}s",
+        "time_label": "⏱ Temps de lecture estimé : ",
         "words": "Mots : {n}",
         "chars_no_space": "Caractères (sans espaces) : {n}",
         "chars": "Caractères : {n}",

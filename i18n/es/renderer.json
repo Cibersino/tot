@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "RESULTADOS DEL CONTEO",
-        "time": "⏱ Tiempo estimado de lectura: {h}h {m}m {s}s",
+        "time_label": "⏱ Tiempo estimado de lectura: ",
         "words": "Palabras: {n}",
         "chars_no_space": "Caracteres (sin espacios): {n}",
         "chars": "Caracteres: {n}",

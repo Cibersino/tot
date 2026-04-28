@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "NGĀ HUA TATAU",
-        "time": "⏱ Wā pānui kua whakatau tata: {h}h {m}m {s}s",
+        "time_label": "⏱ Wā pānui kua whakatau tata: ",
         "words": "Kupu: {n}",
         "chars_no_space": "Pūāhua (kāore he mokowā): {n}",
         "chars": "Pūāhua: {n}",

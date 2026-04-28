@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "COUNT RESULTS",
-        "time": "⏱ Estimated reading time: {h}h {m}m {s}s",
+        "time_label": "⏱ Estimated reading time: ",
         "words": "Words: {n}",
         "chars_no_space": "Characters (no spaces): {n}",
         "chars": "Characters: {n}",

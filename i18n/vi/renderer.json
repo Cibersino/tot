@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "KẾT QUẢ ĐẾM",
-        "time": "⏱ Thời gian đọc ước tính: {h} giờ {m} phút {s} giây",
+        "time_label": "⏱ Thời gian đọc ước tính: ",
         "words": "Từ: {n}",
         "chars_no_space": "Ký tự (không tính khoảng trắng): {n}",
         "chars": "Ký tự: {n}",

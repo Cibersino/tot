@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "RISULTATI DELLA CONTATORE",
-        "time": "⏱ Tempo stimato di lettura: {h}h {m}m {s}s",
+        "time_label": "⏱ Tempo stimato di lettura: ",
         "words": "Parole: {n}",
         "chars_no_space": "Caratteri (senza spazi): {n}",
         "chars": "Caratteri: {n}",

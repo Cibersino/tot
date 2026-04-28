@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "YUPAYPA RUWASQAN",
-        "time": "⏱ Ñawinchaypaq yuyasqa pacha: {h}h {m}m {s}s",
+        "time_label": "⏱ Ñawinchaypaq yuyasqa pacha: ",
         "words": "Simikuna: {n}",
         "chars_no_space": "Sanampakuna (ch'usaqkunawan mana): {n}",
         "chars": "Sanampakuna: {n}",

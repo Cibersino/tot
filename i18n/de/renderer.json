@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "ERGEBNISSE ZÄHLEN",
-        "time": "⏱ Geschätzte Lesezeit: {h}h {m}m {s}s",
+        "time_label": "⏱ Geschätzte Lesezeit: ",
         "words": "Wörter: {n}",
         "chars_no_space": "Zeichen (ohne Leerzeichen): {n}",
         "chars": "Zeichen: {n}",

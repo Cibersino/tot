@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "PAPA RESULTADO",
-        "time": "⏱ Moñe’ẽ aravo oñeha’ãrõva: {h}h {m}m {s}s",
+        "time_label": "⏱ Moñe’ẽ aravo oñeha’ãrõva: ",
         "words": "Ñe’ẽ: {n}",
         "chars_no_space": "Tai/karakter (pa’ũ’ỹre): {n}",
         "chars": "Tai/karakter: {n}",

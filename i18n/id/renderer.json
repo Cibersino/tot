@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "HASIL HITUNG",
-        "time": "⏱ Perkiraan waktu membaca: {h}j {m}m {s}d",
+        "time_label": "⏱ Perkiraan waktu membaca: ",
         "words": "Kata: {n}",
         "chars_no_space": "Karakter (tanpa spasi): {n}",
         "chars": "Karakter: {n}",

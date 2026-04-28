@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "カウント結果",
-        "time": "⏱ 推定読書時間: {h}時間 {m}分 {s}秒",
+        "time_label": "⏱ 推定読書時間: ",
         "words": "語数: {n}",
         "chars_no_space": "文字数（空白なし）: {n}",
         "chars": "文字数: {n}",

@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "EL CONTEO DE LA CUSTIÓN",
-        "time": "⏱ Si leís como decís: {h}h {m}m {s}s",
+        "time_label": "⏱ Si leís como decís: ",
         "words": "Palabras: {n}",
         "chars_no_space": "Letras (sin spaces): {n}",
         "chars": "Letras totales: {n}",

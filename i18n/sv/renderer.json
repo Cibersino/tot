@@ -61,7 +61,7 @@
       },
       "results": {
         "title": "RÄKNERESULTAT",
-        "time": "⏱ Uppskattad lästid: {h} h {m} min {s} s",
+        "time_label": "⏱ Uppskattad lästid: ",
         "words": "Ord: {n}",
         "chars_no_space": "Tecken (utan blanksteg): {n}",
         "chars": "Tecken: {n}",
