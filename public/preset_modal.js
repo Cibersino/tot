@@ -71,8 +71,8 @@
     // =============================================================================
     // i18n helpers
     // =============================================================================
-    const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
-    if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
+    const { loadRendererTranslations, tRenderer, msgRenderer, applyWindowLanguageAttributes } = window.RendererI18n || {};
+    if (!loadRendererTranslations || !tRenderer || !msgRenderer || !applyWindowLanguageAttributes) {
       throw new Error('[preset_modal] RendererI18n unavailable; cannot continue');
     }
     const tr = (path) => tRenderer(path);
@@ -81,6 +81,7 @@
     async function ensurePresetTranslations(lang) {
       const target = (lang || '').toLowerCase() || DEFAULT_LANG;
       if (translationsLoadedFor === target) return;
+      applyWindowLanguageAttributes(target);
       await loadRendererTranslations(target);
       translationsLoadedFor = target;
     }

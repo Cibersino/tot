@@ -391,10 +391,17 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
 // =============================================================================
 // i18n wiring
 // =============================================================================
-const { loadRendererTranslations, tRenderer, msgRenderer, getRendererValue } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer || !msgRenderer || !getRendererValue) {
+const {
+  loadRendererTranslations,
+  tRenderer,
+  msgRenderer,
+  getRendererValue,
+  applyWindowLanguageAttributes,
+} = window.RendererI18n || {};
+if (!loadRendererTranslations || !tRenderer || !msgRenderer || !getRendererValue || !applyWindowLanguageAttributes) {
   throw new Error('[renderer] RendererI18n unavailable; cannot continue');
 }
+applyWindowLanguageAttributes(DEFAULT_LANG);
 
 function getHelpTipKeyList() {
   const tips = getRendererValue('renderer.tips');
@@ -673,6 +680,7 @@ const settingsChangeHandler = async (newSettings) => {
     const idiomaCambio = (nuevoIdioma !== idiomaActual);
     if (idiomaCambio) {
       idiomaActual = nuevoIdioma;
+      applyWindowLanguageAttributes(idiomaActual);
       try {
         await loadRendererTranslations(idiomaActual);
       } catch (err) {
@@ -948,6 +956,7 @@ async function runStartupOrchestrator() {
 
     // Load and apply renderer translations
     try {
+      applyWindowLanguageAttributes(idiomaActual);
       await loadRendererTranslations(idiomaActual);
     } catch (err) {
       log.warn('BOOTSTRAP: initial translations failed; using defaults:', err);

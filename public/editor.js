@@ -95,6 +95,9 @@ if (!window.EditorEngine || typeof window.EditorEngine.createEditorEngine !== 'f
 if (!window.Notify || typeof window.Notify.notifyEditor !== 'function') {
   throw new Error('[editor] Notify.notifyEditor unavailable; cannot continue');
 }
+if (!window.RendererI18n || typeof window.RendererI18n.applyWindowLanguageAttributes !== 'function') {
+  throw new Error('[editor] RendererI18n.applyWindowLanguageAttributes unavailable; cannot continue');
+}
 
 // =============================================================================
 // DOM references
@@ -234,6 +237,7 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
     ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
     ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
     ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
+    window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
     await ctx.ui.applyEditorTranslations();
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
@@ -242,7 +246,8 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
 
 // warnOnce keys are editor-scoped; use log.warnOnce directly.
 ctx.ui.applyTextareaDefaults();
-ctx.ui.applyDocumentLanguage();
+window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
+ctx.ui.applyEditorLanguage();
 ctx.ui.setLocalSpellcheckEnabled(ctx.state.spellcheckEnabled);
 ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
 ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
@@ -266,6 +271,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
 
       if (languageChanged) {
         ctx.state.idiomaActual = nextLang;
+        window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
         await ctx.ui.applyEditorTranslations();
       }
       if (spellcheckChanged) {

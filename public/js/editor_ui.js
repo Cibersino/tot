@@ -6,7 +6,7 @@
 // =============================================================================
 // Editor UI module for the renderer editor page.
 // Responsibilities:
-// - Apply editor translations and keep document language attributes in sync.
+// - Apply editor translations and keep editor element language attributes in sync.
 // - Update local spellcheck, font size, and read-progress UI state.
 // - Restore editor focus after UI actions that temporarily move it elsewhere.
 // - Control the reading-test prestart overlay and its related UI state.
@@ -58,11 +58,8 @@
     // Translation And Document Helpers
     // =============================================================================
 
-    function applyDocumentLanguage() {
+    function applyEditorLanguage() {
       const langTag = (state.idiomaActual || DEFAULT_LANG).toLowerCase();
-      if (document && document.documentElement) {
-        document.documentElement.lang = langTag;
-      }
       if (editor) {
         editor.setAttribute('lang', langTag);
       }
@@ -77,7 +74,7 @@
 
     async function applyEditorTranslations() {
       await ensureEditorTranslations(state.idiomaActual);
-      applyDocumentLanguage();
+      applyEditorLanguage();
       document.title = tr('renderer.editor.title');
       if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder'));
       if (btnCalc) {
@@ -566,7 +563,7 @@
     // =============================================================================
 
     return {
-      applyDocumentLanguage,
+      applyEditorLanguage,
       setLocalSpellcheckEnabled,
       clampEditorFontSizePx,
       clampEditorMaximizedTextWidthPx,

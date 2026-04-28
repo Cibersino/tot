@@ -33,10 +33,11 @@
   if (!i18nApi
     || typeof i18nApi.loadRendererTranslations !== 'function'
     || typeof i18nApi.tRenderer !== 'function'
-    || typeof i18nApi.msgRenderer !== 'function') {
+    || typeof i18nApi.msgRenderer !== 'function'
+    || typeof i18nApi.applyWindowLanguageAttributes !== 'function') {
     throw new Error('[reading-test-result] RendererI18n unavailable; cannot continue');
   }
-  const { loadRendererTranslations, tRenderer, msgRenderer } = i18nApi;
+  const { loadRendererTranslations, tRenderer, msgRenderer, applyWindowLanguageAttributes } = i18nApi;
 
   const appConstants = window.AppConstants || null;
   if (!appConstants || typeof appConstants.DEFAULT_LANG !== 'string' || !appConstants.DEFAULT_LANG.trim()) {
@@ -87,6 +88,7 @@
       const target = normalizeLanguage(state.currentLanguage);
       if (state.translationsLoadedFor === target) return;
       state.currentLanguage = target;
+      applyWindowLanguageAttributes(target);
       try {
         await loadRendererTranslations(target);
         state.translationsLoadedFor = target;

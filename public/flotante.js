@@ -117,13 +117,14 @@ window.flotanteAPI.onState((state) => {
 });
 
 async function applyFlotanteTranslations(lang) {
-  const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
-  if (!loadRendererTranslations || !tRenderer) {
+  const { loadRendererTranslations, tRenderer, applyWindowLanguageAttributes } = window.RendererI18n || {};
+  if (!loadRendererTranslations || !tRenderer || !applyWindowLanguageAttributes) {
     log.warn('RendererI18n unavailable; skipping translations (ignored).');
     return;
   }
 
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
+  applyWindowLanguageAttributes(target);
   if (translationsLoadedFor !== target) {
     try {
       await loadRendererTranslations(target);

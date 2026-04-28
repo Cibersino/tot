@@ -37,8 +37,8 @@ const {
 let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
 
-const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer) {
+const { loadRendererTranslations, tRenderer, applyWindowLanguageAttributes } = window.RendererI18n || {};
+if (!loadRendererTranslations || !tRenderer || !applyWindowLanguageAttributes) {
   throw new Error('[task-editor] RendererI18n unavailable; cannot continue');
 }
 
@@ -47,6 +47,7 @@ const tr = (path) => tRenderer(path);
 async function ensureTaskEditorTranslations(lang) {
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
   if (translationsLoadedFor === target) return;
+  applyWindowLanguageAttributes(target);
   await loadRendererTranslations(target);
   translationsLoadedFor = target;
 }
