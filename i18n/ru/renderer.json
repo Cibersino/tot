@@ -102,8 +102,8 @@
       "reset_text_size": "Сбросить размер текста",
       "text_size_value": "{value} px",
       "read_progress_label": "Прочитано",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Прогресс чтения: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Прогресс чтения: {value}",
       "clear": "🗑",
       "clear_title": "Очистить"
     },

@@ -102,8 +102,8 @@
       "reset_text_size": "متن کا سائز ری سیٹ کریں",
       "text_size_value": "{value} px",
       "read_progress_label": "پڑھا گیا",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "پڑھنے کی پیش رفت: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "پڑھنے کی پیش رفت: {value}",
       "clear": "🗑",
       "clear_title": "صاف کریں"
     },

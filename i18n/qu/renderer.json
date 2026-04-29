@@ -102,8 +102,8 @@
       "reset_text_size": "Qillqapa sayayninta kutichiy",
       "text_size_value": "{value} px",
       "read_progress_label": "Ñawinchisqa",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Ñawinchay ñawpariy: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Ñawinchay ñawpariy: {value}",
       "clear": "🗑",
       "clear_title": "Pichay"
     },

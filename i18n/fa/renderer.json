@@ -102,8 +102,8 @@
       "reset_text_size": "بازنشانی اندازه متن",
       "text_size_value": "{value} px",
       "read_progress_label": "خوانده‌شده",
-      "read_progress_value": "{value}٪",
-      "read_progress_aria": "پیشرفت خواندن: {value}٪",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "پیشرفت خواندن: {value}",
       "clear": "🗑",
       "clear_title": "پاک کردن"
     },

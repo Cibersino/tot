@@ -102,8 +102,8 @@
       "reset_text_size": "Qillqa tamaño kutt’ayaña",
       "text_size_value": "{value} px",
       "read_progress_label": "Ullata",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Ullañ nayrar sartawi: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Ullañ nayrar sartawi: {value}",
       "clear": "🗑",
       "clear_title": "Pichhaña"
     },

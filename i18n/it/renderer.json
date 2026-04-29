@@ -102,8 +102,8 @@
       "reset_text_size": "Reimposta dimensione del testo",
       "text_size_value": "{value} px",
       "read_progress_label": "Letto",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Avanzamento lettura: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Avanzamento lettura: {value}",
       "clear": "🗑",
       "clear_title": "Svuota"
     },

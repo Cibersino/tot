@@ -102,8 +102,8 @@
       "reset_text_size": "Metin boyutunu sıfırla",
       "text_size_value": "{value} px",
       "read_progress_label": "Okundu",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Okuma ilerlemesi: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Okuma ilerlemesi: {value}",
       "clear": "🗑",
       "clear_title": "Temizle"
     },

@@ -102,8 +102,8 @@
       "reset_text_size": "Đặt lại cỡ chữ",
       "text_size_value": "{value} px",
       "read_progress_label": "Đã đọc",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Tiến độ đọc: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Tiến độ đọc: {value}",
       "clear": "🗑",
       "clear_title": "Xóa"
     },

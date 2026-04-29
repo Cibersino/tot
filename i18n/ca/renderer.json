@@ -102,8 +102,8 @@
       "reset_text_size": "Restablir la mida del text",
       "text_size_value": "{value} px",
       "read_progress_label": "Llegit",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Progrés de lectura: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Progrés de lectura: {value}",
       "clear": "🗑",
       "clear_title": "Buidar"
     },

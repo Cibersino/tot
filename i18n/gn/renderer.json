@@ -102,8 +102,8 @@
       "reset_text_size": "Emoĩjey jehai tuichakue",
       "text_size_value": "{value} px",
       "read_progress_label": "Oñemoñe’ẽma",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Moñe’ẽ tenondegua: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Moñe’ẽ tenondegua: {value}",
       "clear": "🗑",
       "clear_title": "Emopotĩ"
     },

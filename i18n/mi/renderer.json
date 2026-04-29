@@ -102,8 +102,8 @@
       "reset_text_size": "Whakahoki i te rahi kuputuhi",
       "text_size_value": "{value} px",
       "read_progress_label": "Kua pānuitia",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Kauneke pānui: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Kauneke pānui: {value}",
       "clear": "🗑",
       "clear_title": "Ūkui"
     },

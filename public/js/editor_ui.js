@@ -246,13 +246,14 @@
       if (!readProgressValue) return;
 
       const readProgressPercent = computeReadProgressPercent();
+      const percentValueText = `${readProgressPercent}%`;
       const valueText = trMsg(
         'renderer.editor.read_progress_value',
-        { value: readProgressPercent }
+        { value: percentValueText }
       );
       const ariaText = trMsg(
         'renderer.editor.read_progress_aria',
-        { value: readProgressPercent }
+        { value: percentValueText }
       );
 
       readProgressValue.setAttribute('data-label', valueText);

@@ -102,8 +102,8 @@
       "reset_text_size": "Reset ukuran teks",
       "text_size_value": "{value} px",
       "read_progress_label": "Dibaca",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Progres baca: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Progres baca: {value}",
       "clear": "🗑",
       "clear_title": "Kosongkan"
     },

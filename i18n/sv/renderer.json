@@ -102,8 +102,8 @@
       "reset_text_size": "Återställ textstorlek",
       "text_size_value": "{value} px",
       "read_progress_label": "Läst",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Läsprogress: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Läsprogress: {value}",
       "clear": "🗑",
       "clear_title": "Rensa"
     },

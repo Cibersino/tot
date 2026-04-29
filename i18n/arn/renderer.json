@@ -102,8 +102,8 @@
       "reset_text_size": "Wiño püneal wirin",
       "text_size_value": "{value} px",
       "read_progress_label": "Chillkatun",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Chillkatun amun: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Chillkatun amun: {value}",
       "clear": "🗑",
       "clear_title": "Lifün"
     },

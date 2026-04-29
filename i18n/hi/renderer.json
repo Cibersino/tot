@@ -102,8 +102,8 @@
       "reset_text_size": "पाठ आकार रीसेट करें",
       "text_size_value": "{value} px",
       "read_progress_label": "पढ़ा गया",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "पठन प्रगति: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "पठन प्रगति: {value}",
       "clear": "🗑",
       "clear_title": "खाली करें"
     },

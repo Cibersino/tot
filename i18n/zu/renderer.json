@@ -102,8 +102,8 @@
       "reset_text_size": "Buyisela usayizi wombhalo",
       "text_size_value": "{value} px",
       "read_progress_label": "Kufundiwe",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Inqubekela phambili yokufunda: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Inqubekela phambili yokufunda: {value}",
       "clear": "🗑",
       "clear_title": "Sula"
     },

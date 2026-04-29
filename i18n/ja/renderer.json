@@ -102,8 +102,8 @@
       "reset_text_size": "文字サイズをリセット",
       "text_size_value": "{value} px",
       "read_progress_label": "読了",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "読書進捗: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "読書進捗: {value}",
       "clear": "🗑",
       "clear_title": "空にする"
     },

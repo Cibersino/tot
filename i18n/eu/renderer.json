@@ -102,8 +102,8 @@
       "reset_text_size": "Berrezarri testuaren tamaina",
       "text_size_value": "{value} px",
       "read_progress_label": "Irakurria",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Irakurketaren aurrerapena: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Irakurketaren aurrerapena: {value}",
       "clear": "🗑",
       "clear_title": "Hustu"
     },

@@ -102,8 +102,8 @@
       "reset_text_size": "Réinitialiser la taille du texte",
       "text_size_value": "{value} px",
       "read_progress_label": "Lu",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Progression de lecture : {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Progression de lecture : {value}",
       "clear": "🗑",
       "clear_title": "Vider"
     },

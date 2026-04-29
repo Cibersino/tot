@@ -102,8 +102,8 @@
       "reset_text_size": "重置文本大小",
       "text_size_value": "{value} px",
       "read_progress_label": "已读",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "阅读进度：{value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "阅读进度：{value}",
       "clear": "🗑",
       "clear_title": "清空"
     },

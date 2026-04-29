@@ -102,8 +102,8 @@
       "reset_text_size": "텍스트 크기 재설정",
       "text_size_value": "{value} px",
       "read_progress_label": "읽음",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "읽기 진행률: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "읽기 진행률: {value}",
       "clear": "🗑",
       "clear_title": "비우기"
     },
