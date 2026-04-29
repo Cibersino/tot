@@ -453,6 +453,12 @@ pre#textPreview {
   margin-bottom: 4px;
 }
 
+pre#textPreview .preview-fragment,
+pre#textPreview .preview-cluster,
+pre#textPreview .preview-static {
+  unicode-bidi: isolate;
+}
+
 /* Text selector controls */
 .controls {
   position: relative;
