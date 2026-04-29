@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "جارٍ استخراج النص من الملف...",
         "import_extract_waiting_ocr": "جارٍ تنفيذ استخراج OCR...",
         "import_extract_waiting_ocr_delayed": "جارٍ تنفيذ OCR. بعض الملفات يستغرق وقتًا أطول.",
-        "import_extract_elapsed": "الوقت المنقضي: {time}",
+        "import_extract_elapsed": "الوقت المنقضي: ",
         "import_extract_drop_here": "أفلت الملف لاستيراد/استخراج النص"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "إغلاق مربع حوار مسار الاستخراج",
       "import_extract_apply_modal_title": "تطبيق النص المستخرج",
       "import_extract_apply_modal_message": "اختر كيفية تطبيق النص المستخرج.",
-      "import_extract_apply_modal_elapsed": "زمن التنفيذ: {time}",
+      "import_extract_apply_modal_elapsed": "زمن التنفيذ: ",
       "import_extract_apply_modal_repeat_label": "التكرارات",
       "import_extract_apply_modal_overwrite_button": "استبدال",
       "import_extract_apply_modal_append_button": "إلحاق",

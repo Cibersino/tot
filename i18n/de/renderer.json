@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Text wird aus Datei extrahiert...",
         "import_extract_waiting_ocr": "OCR-Extraktion wird ausgeführt...",
         "import_extract_waiting_ocr_delayed": "OCR läuft. Einige Dateien dauern länger.",
-        "import_extract_elapsed": "Verstrichen: {time}",
+        "import_extract_elapsed": "Verstrichen: ",
         "import_extract_drop_here": "Datei hier ablegen, um Text zu importieren/extrahieren"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Dialog zur Auswahl der Extraktionsroute schließen",
       "import_extract_apply_modal_title": "Extrahierten Text anwenden",
       "import_extract_apply_modal_message": "Wählen Sie aus, wie der extrahierte Text angewendet werden soll.",
-      "import_extract_apply_modal_elapsed": "Ausführungszeit: {time}",
+      "import_extract_apply_modal_elapsed": "Ausführungszeit: ",
       "import_extract_apply_modal_repeat_label": "Wiederholungen",
       "import_extract_apply_modal_overwrite_button": "Überschreiben",
       "import_extract_apply_modal_append_button": "Anhängen",

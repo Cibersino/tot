@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Archivo mew wirin nentungey...",
         "import_extract_waiting_ocr": "OCR extracción amuley...",
         "import_extract_waiting_ocr_delayed": "OCR amuley. Kiñeke archivo müten pichi alün.",
-        "import_extract_elapsed": "Amuln antü: {time}",
+        "import_extract_elapsed": "Amuln antü: ",
         "import_extract_drop_here": "Eltunge archivo faw, wirin importar kam extraer aal"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Nürüfün diálogo rüpü extracción",
       "import_extract_apply_modal_title": "Nentulelu wirin püneal",
       "import_extract_apply_modal_message": "Düllinge chumgechi püneay tachi wirin nentulelu.",
-      "import_extract_apply_modal_elapsed": "Küzawün antü: {time}",
+      "import_extract_apply_modal_elapsed": "Küzawün antü: ",
       "import_extract_apply_modal_repeat_label": "Repeticiones",
       "import_extract_apply_modal_overwrite_button": "Kangelu",
       "import_extract_apply_modal_append_button": "Yapeln",

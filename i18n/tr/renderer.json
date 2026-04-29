@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Dosyadan metin çıkarılıyor...",
         "import_extract_waiting_ocr": "OCR çıkarma çalışıyor...",
         "import_extract_waiting_ocr_delayed": "OCR çalışıyor. Bazı dosyalar daha uzun sürebilir.",
-        "import_extract_elapsed": "Geçen süre: {time}",
+        "import_extract_elapsed": "Geçen süre: ",
         "import_extract_drop_here": "Metni içe aktarmak/çıkarmak için dosyayı bırakın"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Çıkarma yolu iletişim kutusunu kapat",
       "import_extract_apply_modal_title": "Çıkarılan metni uygula",
       "import_extract_apply_modal_message": "Çıkarılan metnin nasıl uygulanacağını seçin.",
-      "import_extract_apply_modal_elapsed": "Çalışma süresi: {time}",
+      "import_extract_apply_modal_elapsed": "Çalışma süresi: ",
       "import_extract_apply_modal_repeat_label": "Yinelemeler",
       "import_extract_apply_modal_overwrite_button": "Üzerine yaz",
       "import_extract_apply_modal_append_button": "Ekle",

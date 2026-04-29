@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "正在从文件提取文本...",
         "import_extract_waiting_ocr": "正在执行 OCR 提取...",
         "import_extract_waiting_ocr_delayed": "正在执行 OCR。有些文件需要更长时间。",
-        "import_extract_elapsed": "已用时间：{time}",
+        "import_extract_elapsed": "已用时间：",
         "import_extract_drop_here": "拖放文件以导入或提取文本"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "关闭提取路径对话框",
       "import_extract_apply_modal_title": "应用提取的文本",
       "import_extract_apply_modal_message": "选择如何应用提取的文本。",
-      "import_extract_apply_modal_elapsed": "执行时间：{time}",
+      "import_extract_apply_modal_elapsed": "执行时间：",
       "import_extract_apply_modal_repeat_label": "重复次数",
       "import_extract_apply_modal_overwrite_button": "覆盖",
       "import_extract_apply_modal_append_button": "追加",

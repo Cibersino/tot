@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Ap ekstrè tèks nan fichye a...",
         "import_extract_waiting_ocr": "Ap fè ekstraksyon OCR...",
         "import_extract_waiting_ocr_delayed": "OCR ap fèt. Gen kèk fichye ki pran plis tan.",
-        "import_extract_elapsed": "Tan pase: {time}",
+        "import_extract_elapsed": "Tan pase: ",
         "import_extract_drop_here": "Lage fichye a pou enpòte/ekstrè tèks"
       }
     },
@@ -390,7 +390,7 @@
       "import_extract_route_choice_close_aria": "Fèmen dyalòg chemen ekstraksyon an",
       "import_extract_apply_modal_title": "Aplike tèks ekstrè a",
       "import_extract_apply_modal_message": "Chwazi kijan pou aplike tèks ekstrè a.",
-      "import_extract_apply_modal_elapsed": "Tan egzekisyon: {time}",
+      "import_extract_apply_modal_elapsed": "Tan egzekisyon: ",
       "import_extract_apply_modal_repeat_label": "Repetisyon",
       "import_extract_apply_modal_overwrite_button": "Ranplase",
       "import_extract_apply_modal_append_button": "Ajoute",

@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Kei te tango kuputuhi i te kōnae...",
         "import_extract_waiting_ocr": "Kei te whakahaere tangohanga OCR...",
         "import_extract_waiting_ocr_delayed": "Kei te whakahaere OCR. Ka roa ake ētahi kōnae.",
-        "import_extract_elapsed": "Kua hipa: {time}",
+        "import_extract_elapsed": "Kua hipa: ",
         "import_extract_drop_here": "Tukua te kōnae ki konei hei kawemai, hei tango kuputuhi rānei"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Katia te kōrero ara tangohanga",
       "import_extract_apply_modal_title": "Hoatu kuputuhi kua tangohia",
       "import_extract_apply_modal_message": "Kōwhiria me pēhea te hoatu i te kuputuhi kua tangohia.",
-      "import_extract_apply_modal_elapsed": "Wā whakahaere: {time}",
+      "import_extract_apply_modal_elapsed": "Wā whakahaere: ",
       "import_extract_apply_modal_repeat_label": "Ngā tāruaruatanga",
       "import_extract_apply_modal_overwrite_button": "Tuhia anō",
       "import_extract_apply_modal_append_button": "Tāpiri",

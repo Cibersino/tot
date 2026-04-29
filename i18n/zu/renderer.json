@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Kukhishwa umbhalo efayeleni...",
         "import_extract_waiting_ocr": "Kwenziwa ukukhishwa nge-OCR...",
         "import_extract_waiting_ocr_delayed": "Kwenziwa i-OCR. Amanye amafayela athatha isikhathi eside.",
-        "import_extract_elapsed": "Isikhathi esidlulile: {time}",
+        "import_extract_elapsed": "Isikhathi esidlulile: ",
         "import_extract_drop_here": "Dedela ifayela ukuze ungenise noma ukhiphe umbhalo"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Vala ibhokisi lendlela yokukhipha",
       "import_extract_apply_modal_title": "Sebenzisa umbhalo okhishiwe",
       "import_extract_apply_modal_message": "Khetha ukuthi uzowusebenzisa kanjani umbhalo okhishiwe.",
-      "import_extract_apply_modal_elapsed": "Isikhathi sokusebenza: {time}",
+      "import_extract_apply_modal_elapsed": "Isikhathi sokusebenza: ",
       "import_extract_apply_modal_repeat_label": "Ukuphindaphinda",
       "import_extract_apply_modal_overwrite_button": "Bhala phezu",
       "import_extract_apply_modal_append_button": "Engeza",

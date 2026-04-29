@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Extraction du texte à partir du fichier...",
         "import_extract_waiting_ocr": "Exécution de l'extraction OCR...",
         "import_extract_waiting_ocr_delayed": "L'OCR est en cours. Certains fichiers prennent plus de temps.",
-        "import_extract_elapsed": "Temps écoulé : {time}",
+        "import_extract_elapsed": "Temps écoulé : ",
         "import_extract_drop_here": "Déposez un fichier pour importer/extraire le texte"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Fermer la boîte de dialogue du choix de route d'extraction",
       "import_extract_apply_modal_title": "Appliquer le texte extrait",
       "import_extract_apply_modal_message": "Choisissez comment appliquer le texte extrait.",
-      "import_extract_apply_modal_elapsed": "Temps d'exécution : {time}",
+      "import_extract_apply_modal_elapsed": "Temps d'exécution : ",
       "import_extract_apply_modal_repeat_label": "Répétitions",
       "import_extract_apply_modal_overwrite_button": "Remplacer",
       "import_extract_apply_modal_append_button": "Ajouter",

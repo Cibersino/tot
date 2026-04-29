@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Archivut qillqata apsuskakiwa...",
         "import_extract_waiting_ocr": "OCR apsuña luraskakiwa...",
         "import_extract_waiting_ocr_delayed": "OCR luraskakiwa. Yaqhip archivunakax juk’amp pachaw munapxi.",
-        "import_extract_elapsed": "Sarat pacha: {time}",
+        "import_extract_elapsed": "Sarat pacha: ",
         "import_extract_drop_here": "Qillqata apaniñatak jan ukax apsuñatak archivo aka chiqar jaquntam"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Apsuña thakhi diálogo jist’antaña",
       "import_extract_apply_modal_title": "Apsuta qillqata apnaqaña",
       "import_extract_apply_modal_message": "Apsuta qillqata kunjam apnaqañsa ajllim.",
-      "import_extract_apply_modal_elapsed": "Lurawi pacha: {time}",
+      "import_extract_apply_modal_elapsed": "Lurawi pacha: ",
       "import_extract_apply_modal_repeat_label": "Kutinaka",
       "import_extract_apply_modal_overwrite_button": "Lantintaña",
       "import_extract_apply_modal_append_button": "Yapxataña",

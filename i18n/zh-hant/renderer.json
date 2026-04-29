@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "正在從檔案擷取文字...",
         "import_extract_waiting_ocr": "正在執行 OCR 擷取...",
         "import_extract_waiting_ocr_delayed": "正在執行 OCR。有些檔案需要更長時間。",
-        "import_extract_elapsed": "經過時間：{time}",
+        "import_extract_elapsed": "經過時間：",
         "import_extract_drop_here": "拖放檔案以匯入或擷取文字"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "關閉擷取路徑對話框",
       "import_extract_apply_modal_title": "套用擷取的文字",
       "import_extract_apply_modal_message": "選擇如何套用擷取的文字。",
-      "import_extract_apply_modal_elapsed": "執行時間：{time}",
+      "import_extract_apply_modal_elapsed": "執行時間：",
       "import_extract_apply_modal_repeat_label": "重複次數",
       "import_extract_apply_modal_overwrite_button": "覆蓋",
       "import_extract_apply_modal_append_button": "附加",

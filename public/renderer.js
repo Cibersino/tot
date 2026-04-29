@@ -61,7 +61,7 @@ if (!importExtractStatusUi
   || typeof importExtractStatusUi.clearPendingExecutionContext !== 'function'
   || typeof importExtractStatusUi.endPrepare !== 'function'
   || typeof importExtractStatusUi.getAbortButton !== 'function'
-  || typeof importExtractStatusUi.getFinalElapsedText !== 'function'
+  || typeof importExtractStatusUi.getFinalElapsedValueText !== 'function'
   || typeof importExtractStatusUi.isProcessingModeActive !== 'function'
   || typeof importExtractStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] ImportExtractStatusUi unavailable; cannot continue');

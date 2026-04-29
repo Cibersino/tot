@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Mengekstrak teks dari file...",
         "import_extract_waiting_ocr": "Menjalankan ekstraksi OCR...",
         "import_extract_waiting_ocr_delayed": "Menjalankan OCR. Beberapa file membutuhkan waktu lebih lama.",
-        "import_extract_elapsed": "Waktu berjalan: {time}",
+        "import_extract_elapsed": "Waktu berjalan: ",
         "import_extract_drop_here": "Jatuhkan file untuk mengimpor/mengekstrak teks"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Tutup dialog rute ekstraksi",
       "import_extract_apply_modal_title": "Terapkan teks hasil ekstraksi",
       "import_extract_apply_modal_message": "Pilih cara menerapkan teks hasil ekstraksi.",
-      "import_extract_apply_modal_elapsed": "Waktu eksekusi: {time}",
+      "import_extract_apply_modal_elapsed": "Waktu eksekusi: ",
       "import_extract_apply_modal_repeat_label": "Pengulangan",
       "import_extract_apply_modal_overwrite_button": "Timpa",
       "import_extract_apply_modal_append_button": "Tambahkan",

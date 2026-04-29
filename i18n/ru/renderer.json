@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Извлечение текста из файла...",
         "import_extract_waiting_ocr": "Выполняется OCR-извлечение...",
         "import_extract_waiting_ocr_delayed": "Выполняется OCR. Некоторые файлы требуют больше времени.",
-        "import_extract_elapsed": "Прошло: {time}",
+        "import_extract_elapsed": "Прошло: ",
         "import_extract_drop_here": "Перетащите файл, чтобы импортировать или извлечь текст"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Закрыть диалог выбора маршрута извлечения",
       "import_extract_apply_modal_title": "Применить извлеченный текст",
       "import_extract_apply_modal_message": "Выберите, как применить извлеченный текст.",
-      "import_extract_apply_modal_elapsed": "Время выполнения: {time}",
+      "import_extract_apply_modal_elapsed": "Время выполнения: ",
       "import_extract_apply_modal_repeat_label": "Повторения",
       "import_extract_apply_modal_overwrite_button": "Перезаписать",
       "import_extract_apply_modal_append_button": "Добавить",

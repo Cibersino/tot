@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Đang trích xuất văn bản từ tệp...",
         "import_extract_waiting_ocr": "Đang chạy trích xuất OCR...",
         "import_extract_waiting_ocr_delayed": "Đang chạy OCR. Một số tệp mất nhiều thời gian hơn.",
-        "import_extract_elapsed": "Đã trôi qua: {time}",
+        "import_extract_elapsed": "Đã trôi qua: ",
         "import_extract_drop_here": "Thả tệp để nhập/trích xuất văn bản"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Đóng hộp thoại tuyến trích xuất",
       "import_extract_apply_modal_title": "Áp dụng văn bản đã trích xuất",
       "import_extract_apply_modal_message": "Chọn cách áp dụng văn bản đã trích xuất.",
-      "import_extract_apply_modal_elapsed": "Thời gian thực thi: {time}",
+      "import_extract_apply_modal_elapsed": "Thời gian thực thi: ",
       "import_extract_apply_modal_repeat_label": "Số lần lặp",
       "import_extract_apply_modal_overwrite_button": "Ghi đè",
       "import_extract_apply_modal_append_button": "Thêm vào",

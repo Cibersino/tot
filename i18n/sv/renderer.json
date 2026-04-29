@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Extraherar text från fil...",
         "import_extract_waiting_ocr": "Kör OCR-extrahering...",
         "import_extract_waiting_ocr_delayed": "OCR körs. Vissa filer tar längre tid.",
-        "import_extract_elapsed": "Förfluten tid: {time}",
+        "import_extract_elapsed": "Förfluten tid: ",
         "import_extract_drop_here": "Släpp filen för att importera/extrahera text"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Stäng dialogen för extraheringsväg",
       "import_extract_apply_modal_title": "Tillämpa extraherad text",
       "import_extract_apply_modal_message": "Välj hur den extraherade texten ska tillämpas.",
-      "import_extract_apply_modal_elapsed": "Körtid: {time}",
+      "import_extract_apply_modal_elapsed": "Körtid: ",
       "import_extract_apply_modal_repeat_label": "Upprepningar",
       "import_extract_apply_modal_overwrite_button": "Skriv över",
       "import_extract_apply_modal_append_button": "Lägg till",

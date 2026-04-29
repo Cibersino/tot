@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "در حال استخراج متن از فایل...",
         "import_extract_waiting_ocr": "در حال اجرای استخراج OCR...",
         "import_extract_waiting_ocr_delayed": "OCR در حال اجراست. برخی فایل‌ها زمان بیشتری می‌برند.",
-        "import_extract_elapsed": "زمان سپری‌شده: {time}",
+        "import_extract_elapsed": "زمان سپری‌شده: ",
         "import_extract_drop_here": "برای وارد کردن/استخراج متن، فایل را اینجا رها کنید"
       }
     },
@@ -386,7 +386,7 @@
       "import_extract_route_choice_close_aria": "بستن پنجره انتخاب مسیر استخراج",
       "import_extract_apply_modal_title": "اعمال متن استخراج‌شده",
       "import_extract_apply_modal_message": "انتخاب کنید متن استخراج‌شده چگونه اعمال شود.",
-      "import_extract_apply_modal_elapsed": "زمان اجرا: {time}",
+      "import_extract_apply_modal_elapsed": "زمان اجرا: ",
       "import_extract_apply_modal_repeat_label": "تکرارها",
       "import_extract_apply_modal_overwrite_button": "جایگزینی",
       "import_extract_apply_modal_append_button": "افزودن",

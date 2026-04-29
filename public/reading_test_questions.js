@@ -43,6 +43,13 @@
   if (!appConstants || typeof appConstants.DEFAULT_LANG !== 'string' || !appConstants.DEFAULT_LANG.trim()) {
     throw new Error('[reading-test-questions] AppConstants.DEFAULT_LANG unavailable; cannot continue');
   }
+  const formatUtils = window.FormatUtils || null;
+  if (!formatUtils
+    || typeof formatUtils.obtenerSeparadoresDeNumeros !== 'function'
+    || typeof formatUtils.formatearNumero !== 'function') {
+    throw new Error('[reading-test-questions] FormatUtils unavailable; cannot continue');
+  }
+  const { obtenerSeparadoresDeNumeros, formatearNumero } = formatUtils;
 
   const questionsCore = window.ReadingTestQuestionsCore || null;
   if (!questionsCore
@@ -108,6 +115,7 @@
     const state = {
       currentLanguage: DEFAULT_LANG,
       translationsLoadedFor: '',
+      settingsCache: {},
       developerEmail: DEFAULT_DEVELOPER_EMAIL,
       questions: [],
       answersByQuestionId: {},
@@ -141,18 +149,14 @@
         : fallback;
     }
 
-    function formatPercentage(value) {
+    async function formatPercentage(value) {
       const numeric = Number(value);
       const safe = Number.isFinite(numeric) ? numeric : 0;
-      try {
-        return new Intl.NumberFormat(state.currentLanguage || DEFAULT_LANG, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(safe);
-      } catch (err) {
-        log.warn('Reading-test questions percent format failed (ignored):', err);
-        return safe.toFixed(2);
-      }
+      const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
+        state.currentLanguage || DEFAULT_LANG,
+        state.settingsCache
+      );
+      return formatearNumero(safe, separadorMiles, separadorDecimal, 2);
     }
 
     function setMessage(element, text, { tone = 'info', visible = false } = {}) {
@@ -205,15 +209,16 @@
       feedbackLink.href = `mailto:${state.developerEmail}`;
     }
 
-    function renderRandomSummary() {
+    async function renderRandomSummary() {
       const randomGuessPercentage = questionsCore.computeRandomGuessPercentage(state.questions);
+      const percentageText = await formatPercentage(randomGuessPercentage);
       randomValue.textContent = mr(
         'renderer.reading_test.questions.random_value',
-        { percentage: formatPercentage(randomGuessPercentage) }
+        { percentage: percentageText }
       );
     }
 
-    function renderStatusMessages() {
+    async function renderStatusMessages() {
       setMessage(
         incompleteMessage,
         tr('renderer.reading_test.questions.incomplete_warning'),
@@ -224,6 +229,8 @@
         setMessage(resultMessage, '', { tone: 'info', visible: false });
         setMessage(chanceMessage, '', { tone: 'note', visible: false });
       } else {
+        const scorePercentageText = await formatPercentage(state.lastScore.percentage);
+        const chancePercentageText = await formatPercentage(state.lastScore.probabilityAtLeastObserved * 100);
         setMessage(
           resultMessage,
           mr(
@@ -231,7 +238,7 @@
             {
               correct: state.lastScore.correct,
               total: state.lastScore.total,
-              percentage: formatPercentage(state.lastScore.percentage),
+              percentage: scorePercentageText,
             }
           ),
           { tone: 'info', visible: true }
@@ -242,7 +249,7 @@
           mr(
             'renderer.reading_test.questions.chance_at_least_observed',
             {
-              percentage: formatPercentage(state.lastScore.probabilityAtLeastObserved * 100),
+              percentage: chancePercentageText,
             }
           ),
           { tone: 'note', visible: true }
@@ -258,14 +265,17 @@
 
     function withAnchoredActionsScroll(updateFn) {
       const beforeTop = actions.getBoundingClientRect().top;
-      updateFn();
-      requestAnimationFrame(() => {
-        const afterTop = actions.getBoundingClientRect().top;
-        const delta = afterTop - beforeTop;
-        if (delta !== 0) {
-          window.scrollBy(0, delta);
-        }
-      });
+      Promise.resolve()
+        .then(() => updateFn())
+        .finally(() => {
+          requestAnimationFrame(() => {
+            const afterTop = actions.getBoundingClientRect().top;
+            const delta = afterTop - beforeTop;
+            if (delta !== 0) {
+              window.scrollBy(0, delta);
+            }
+          });
+        });
     }
 
     function renderQuestions() {
@@ -322,12 +332,12 @@
       btnCheck.disabled = !!state.fatalKey;
     }
 
-    function renderUi() {
+    async function renderUi() {
       renderStaticText();
       renderFeedbackLink();
-      renderRandomSummary();
+      await renderRandomSummary();
       renderQuestions();
-      renderStatusMessages();
+      await renderStatusMessages();
       renderControls();
     }
 
@@ -351,7 +361,7 @@
       const runUpdate = async () => {
         await updateFn();
         await ensureTranslationsLoaded();
-        renderUi();
+        await renderUi();
       };
       uiSyncChain = uiSyncChain.then(runUpdate, runUpdate);
       return uiSyncChain;
@@ -380,7 +390,9 @@
     function handleInitFailure(err) {
       log.error('Reading-test questions init failed:', err);
       setInvalidPayloadState();
-      renderUi();
+      renderUi().catch((renderErr) => {
+        log.error('Reading-test questions recovery render failed:', renderErr);
+      });
     }
 
     // =============================================================================
@@ -395,12 +407,11 @@
         if (!allQuestionsAnswered()) {
           state.lastScore = null;
           state.showIncompleteWarning = true;
-          renderStatusMessages();
-          return;
+          return renderStatusMessages();
         }
 
         state.lastScore = questionsCore.scoreQuestions(state.questions, state.answersByQuestionId);
-        renderStatusMessages();
+        return renderStatusMessages();
       });
     });
 
@@ -419,9 +430,11 @@
     enqueueUiSync(async () => {
       try {
         const settings = await questionsApi.getSettings();
+        state.settingsCache = settings || {};
         state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
       } catch (err) {
         log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
+        state.settingsCache = {};
         state.currentLanguage = DEFAULT_LANG;
       }
     }).catch((err) => {

@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Extraient text del fitxer...",
         "import_extract_waiting_ocr": "Executant l’extracció OCR...",
         "import_extract_waiting_ocr_delayed": "Executant OCR. Alguns fitxers triguen més.",
-        "import_extract_elapsed": "Transcorregut: {time}",
+        "import_extract_elapsed": "Transcorregut: ",
         "import_extract_drop_here": "Deixa anar el fitxer per importar o extreure text"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Tancar el diàleg de ruta d’extracció",
       "import_extract_apply_modal_title": "Aplicar el text extret",
       "import_extract_apply_modal_message": "Tria com aplicar el text extret.",
-      "import_extract_apply_modal_elapsed": "Temps d’execució: {time}",
+      "import_extract_apply_modal_elapsed": "Temps d’execució: ",
       "import_extract_apply_modal_repeat_label": "Repeticions",
       "import_extract_apply_modal_overwrite_button": "Sobreescriure",
       "import_extract_apply_modal_append_button": "Afegir",

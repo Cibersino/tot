@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "ফাইল থেকে লেখা নিষ্কাশন করা হচ্ছে...",
         "import_extract_waiting_ocr": "OCR নিষ্কাশন চলছে...",
         "import_extract_waiting_ocr_delayed": "OCR চলছে। কিছু ফাইলে বেশি সময় লাগে।",
-        "import_extract_elapsed": "অতিবাহিত: {time}",
+        "import_extract_elapsed": "অতিবাহিত: ",
         "import_extract_drop_here": "লেখা আমদানি/নিষ্কাশনের জন্য ফাইল ছেড়ে দিন"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "নিষ্কাশন রুট ডায়ালগ বন্ধ করুন",
       "import_extract_apply_modal_title": "নিষ্কাশিত লেখা প্রয়োগ করুন",
       "import_extract_apply_modal_message": "নিষ্কাশিত লেখা কীভাবে প্রয়োগ করবেন তা বেছে নিন।",
-      "import_extract_apply_modal_elapsed": "চলমান সময়: {time}",
+      "import_extract_apply_modal_elapsed": "চলমান সময়: ",
       "import_extract_apply_modal_repeat_label": "পুনরাবৃত্তি",
       "import_extract_apply_modal_overwrite_button": "ওভাররাইট",
       "import_extract_apply_modal_append_button": "যোগ করুন",

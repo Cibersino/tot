@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "فائل سے متن نکالا جا رہا ہے...",
         "import_extract_waiting_ocr": "OCR کے ذریعے متن نکالا جا رہا ہے...",
         "import_extract_waiting_ocr_delayed": "OCR جاری ہے۔ کچھ فائلوں میں زیادہ وقت لگتا ہے۔",
-        "import_extract_elapsed": "گزرا ہوا وقت: {time}",
+        "import_extract_elapsed": "گزرا ہوا وقت: ",
         "import_extract_drop_here": "متن درآمد/نکالنے کے لیے فائل یہاں چھوڑیں"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "نکالنے کے راستے کا ڈائیلاگ بند کریں",
       "import_extract_apply_modal_title": "نکالا گیا متن لاگو کریں",
       "import_extract_apply_modal_message": "نکالا گیا متن کیسے لاگو کرنا ہے، منتخب کریں۔",
-      "import_extract_apply_modal_elapsed": "عملی وقت: {time}",
+      "import_extract_apply_modal_elapsed": "عملی وقت: ",
       "import_extract_apply_modal_repeat_label": "تکراریں",
       "import_extract_apply_modal_overwrite_button": "اوور رائٹ",
       "import_extract_apply_modal_append_button": "شامل کریں",

@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Fitxategitik testua erauzten...",
         "import_extract_waiting_ocr": "OCR erauzketa exekutatzen...",
         "import_extract_waiting_ocr_delayed": "OCR exekutatzen. Fitxategi batzuek denbora gehiago behar dute.",
-        "import_extract_elapsed": "Igarotako denbora: {time}",
+        "import_extract_elapsed": "Igarotako denbora: ",
         "import_extract_drop_here": "Jaregin fitxategia testua inportatzeko edo erauzteko"
       }
     },
@@ -386,7 +386,7 @@
       "import_extract_route_choice_close_aria": "Itxi erauzketa-bidearen elkarrizketa",
       "import_extract_apply_modal_title": "Aplikatu erauzitako testua",
       "import_extract_apply_modal_message": "Aukeratu nola aplikatu erauzitako testua.",
-      "import_extract_apply_modal_elapsed": "Exekuzio-denbora: {time}",
+      "import_extract_apply_modal_elapsed": "Exekuzio-denbora: ",
       "import_extract_apply_modal_repeat_label": "Errepikapenak",
       "import_extract_apply_modal_overwrite_button": "Gainidatzi",
       "import_extract_apply_modal_append_button": "Gehitu",

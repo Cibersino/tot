@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "फ़ाइल से पाठ निकाला जा रहा है...",
         "import_extract_waiting_ocr": "OCR निकासी चल रही है...",
         "import_extract_waiting_ocr_delayed": "OCR चल रहा है। कुछ फ़ाइलों में अधिक समय लगता है।",
-        "import_extract_elapsed": "बीता समय: {time}",
+        "import_extract_elapsed": "बीता समय: ",
         "import_extract_drop_here": "पाठ आयात/निकालने के लिए फ़ाइल छोड़ें"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "निकासी मार्ग संवाद बंद करें",
       "import_extract_apply_modal_title": "निकाला गया पाठ लागू करें",
       "import_extract_apply_modal_message": "निकाले गए पाठ को लागू करने का तरीका चुनें।",
-      "import_extract_apply_modal_elapsed": "चलने का समय: {time}",
+      "import_extract_apply_modal_elapsed": "चलने का समय: ",
       "import_extract_apply_modal_repeat_label": "पुनरावृत्तियाँ",
       "import_extract_apply_modal_overwrite_button": "ओवरराइट",
       "import_extract_apply_modal_append_button": "जोड़ें",

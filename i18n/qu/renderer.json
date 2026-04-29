@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Archivomanta qillqata qichuchkan...",
         "import_extract_waiting_ocr": "OCR qichuyta ruwachkan...",
         "import_extract_waiting_ocr_delayed": "OCR ruwachkan. Wakin archivokuna aswan unayta munan.",
-        "import_extract_elapsed": "Puriq pacha: {time}",
+        "import_extract_elapsed": "Puriq pacha: ",
         "import_extract_drop_here": "Archivota kayman saqiy qillqata apamunapaq utaq qichunapaq"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Qichuy ñan dialogota wichq'ay",
       "import_extract_apply_modal_title": "Qichusqa qillqata churay",
       "import_extract_apply_modal_message": "Qichusqa qillqata imaynata churanaykita akllay.",
-      "import_extract_apply_modal_elapsed": "Ruwasqa pacha: {time}",
+      "import_extract_apply_modal_elapsed": "Ruwasqa pacha: ",
       "import_extract_apply_modal_repeat_label": "Kutiykuna",
       "import_extract_apply_modal_overwrite_button": "Qillqay/tikray",
       "import_extract_apply_modal_append_button": "Yapay",

@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "Oñeguenohẽ jehai archivo-gui...",
         "import_extract_waiting_ocr": "Ojejapo OCR extracción...",
         "import_extract_waiting_ocr_delayed": "OCR omba’apo. Oĩ archivo ipukuvéva.",
-        "import_extract_elapsed": "Aravo ohasáva: {time}",
+        "import_extract_elapsed": "Aravo ohasáva: ",
         "import_extract_drop_here": "Epoi archivo ko’ápe egueru/eipe’a hag̃ua jehai"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "Emboty diálogo extracción rape rehegua",
       "import_extract_apply_modal_title": "Eipuru jehai ojeipe’áva",
       "import_extract_apply_modal_message": "Eiporavo mba’éichapa reipurúta jehai ojeipe’áva.",
-      "import_extract_apply_modal_elapsed": "Aravo ejecución: {time}",
+      "import_extract_apply_modal_elapsed": "Aravo ejecución: ",
       "import_extract_apply_modal_repeat_label": "Jey jey",
       "import_extract_apply_modal_overwrite_button": "Myengovia",
       "import_extract_apply_modal_append_button": "Mbojoapy",

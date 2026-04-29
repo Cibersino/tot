@@ -86,7 +86,7 @@
         "import_extract_waiting_native": "ファイルからテキストを抽出中...",
         "import_extract_waiting_ocr": "OCR 抽出を実行中...",
         "import_extract_waiting_ocr_delayed": "OCR を実行中です。ファイルによっては時間がかかります。",
-        "import_extract_elapsed": "経過時間: {time}",
+        "import_extract_elapsed": "経過時間: ",
         "import_extract_drop_here": "テキストをインポート/抽出するファイルをドロップ"
       }
     },
@@ -385,7 +385,7 @@
       "import_extract_route_choice_close_aria": "抽出ルートダイアログを閉じる",
       "import_extract_apply_modal_title": "抽出テキストを適用",
       "import_extract_apply_modal_message": "抽出したテキストの適用方法を選択してください。",
-      "import_extract_apply_modal_elapsed": "実行時間: {time}",
+      "import_extract_apply_modal_elapsed": "実行時間: ",
       "import_extract_apply_modal_repeat_label": "繰り返し",
       "import_extract_apply_modal_overwrite_button": "上書き",
       "import_extract_apply_modal_append_button": "追加",
