@@ -357,6 +357,8 @@
     function applyTextareaDefaults() {
       try {
         if (editor) {
+          // Keep text entry content-driven while the window layout remains fixed LTR.
+          editor.setAttribute('dir', 'auto');
           editor.wrap = 'soft';
           editor.style.whiteSpace = 'pre-wrap';
           editor.style.wordBreak = 'break-word';
