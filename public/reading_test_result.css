@@ -86,6 +86,7 @@ body {
 
 .reading-test-result__summary-metric bdi {
   unicode-bidi: isolate;
+  margin-inline-start: 0.3em;
 }
 
 .reading-test-result__summary-separator {
