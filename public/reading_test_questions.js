@@ -159,10 +159,79 @@
       return formatearNumero(safe, separadorMiles, separadorDecimal, 2);
     }
 
+    function createInvariantValueNode(valueText) {
+      const valueNode = document.createElement('bdi');
+      valueNode.className = 'reading-test-questions__invariant-value';
+      valueNode.dir = 'ltr';
+      valueNode.textContent = String(valueText ?? '');
+      return valueNode;
+    }
+
+    function renderStructuredInlineText(element, {
+      beforeText = '',
+      valueText = '',
+      afterText = '',
+    } = {}) {
+      element.textContent = '';
+      if (beforeText) {
+        element.appendChild(document.createTextNode(beforeText));
+      }
+      element.appendChild(createInvariantValueNode(valueText));
+      if (afterText) {
+        element.appendChild(document.createTextNode(afterText));
+      }
+    }
+
+    function buildStructuredPercentageMessage(template, percentageValueText, { wrapped = false } = {}) {
+      const marker = '{percentage}';
+      const templateText = typeof template === 'string' ? template : '';
+      const markerIndex = templateText.indexOf(marker);
+      if (markerIndex === -1) {
+        log.warn('reading-test questions template missing {percentage} placeholder:', templateText);
+        return null;
+      }
+
+      let beforeText = templateText.slice(0, markerIndex);
+      let afterText = templateText.slice(markerIndex + marker.length);
+      afterText = afterText.replace(/^[%٪]/u, '');
+
+      let openWrapper = '';
+      let closeWrapper = '';
+      if (wrapped) {
+        const openMatch = beforeText.match(/[（(]\s*$/u);
+        if (openMatch) {
+          openWrapper = openMatch[0].replace(/\s+/gu, '');
+          beforeText = beforeText.slice(0, beforeText.length - openMatch[0].length) + openMatch[0].replace(/[（(]/u, '');
+        }
+
+        const closeMatch = afterText.match(/^\s*[）)]/u);
+        if (closeMatch) {
+          closeWrapper = closeMatch[0].replace(/\s+/gu, '');
+          afterText = afterText.slice(closeMatch[0].length);
+        }
+      }
+
+      return {
+        beforeText,
+        valueText: `${openWrapper}${percentageValueText}${closeWrapper}`,
+        afterText,
+      };
+    }
+
     function setMessage(element, text, { tone = 'info', visible = false } = {}) {
       element.dataset.tone = tone;
       element.dataset.visible = visible ? 'true' : 'false';
       element.textContent = visible ? text : '';
+    }
+
+    function setStructuredMessage(element, structuredContent, { tone = 'info', visible = false } = {}) {
+      element.dataset.tone = tone;
+      element.dataset.visible = visible ? 'true' : 'false';
+      if (!visible || !structuredContent) {
+        element.textContent = '';
+        return;
+      }
+      renderStructuredInlineText(element, structuredContent);
     }
 
     function resetEvaluationState() {
@@ -212,10 +281,16 @@
     async function renderRandomSummary() {
       const randomGuessPercentage = questionsCore.computeRandomGuessPercentage(state.questions);
       const percentageText = await formatPercentage(randomGuessPercentage);
-      randomValue.textContent = mr(
+      const summaryTemplate = mr(
         'renderer.reading_test.questions.random_value',
-        { percentage: percentageText }
+        { percentage: '{percentage}' }
       );
+      const structuredSummary = buildStructuredPercentageMessage(summaryTemplate, `${percentageText}%`);
+      if (!structuredSummary) {
+        randomValue.textContent = summaryTemplate.replace('{percentage}', `${percentageText}%`);
+        return;
+      }
+      renderStructuredInlineText(randomValue, structuredSummary);
     }
 
     async function renderStatusMessages() {
@@ -231,27 +306,38 @@
       } else {
         const scorePercentageText = await formatPercentage(state.lastScore.percentage);
         const chancePercentageText = await formatPercentage(state.lastScore.probabilityAtLeastObserved * 100);
-        setMessage(
+        const resultTemplate = mr(
+          'renderer.reading_test.questions.result_summary',
+          {
+            correct: state.lastScore.correct,
+            total: state.lastScore.total,
+            percentage: '{percentage}',
+          }
+        );
+        const structuredResult = buildStructuredPercentageMessage(
+          resultTemplate,
+          `${scorePercentageText}%`,
+          { wrapped: true }
+        );
+        setStructuredMessage(
           resultMessage,
-          mr(
-            'renderer.reading_test.questions.result_summary',
-            {
-              correct: state.lastScore.correct,
-              total: state.lastScore.total,
-              percentage: scorePercentageText,
-            }
-          ),
+          structuredResult,
           { tone: 'info', visible: true }
         );
 
-        setMessage(
+        const chanceTemplate = mr(
+          'renderer.reading_test.questions.chance_at_least_observed',
+          {
+            percentage: '{percentage}',
+          }
+        );
+        const structuredChance = buildStructuredPercentageMessage(
+          chanceTemplate,
+          `${chancePercentageText}%`
+        );
+        setStructuredMessage(
           chanceMessage,
-          mr(
-            'renderer.reading_test.questions.chance_at_least_observed',
-            {
-              percentage: chancePercentageText,
-            }
-          ),
+          structuredChance,
           { tone: 'note', visible: true }
         );
       }

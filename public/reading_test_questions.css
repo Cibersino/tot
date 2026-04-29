@@ -108,6 +108,11 @@ body {
   word-break: break-word;
 }
 
+.reading-test-questions__invariant-value {
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Status messages */
 .reading-test-questions__status {
   display: grid;
