@@ -87,6 +87,7 @@
       wordCount: 0,
     };
     let uiSyncChain = Promise.resolve();
+    let currentWindowLanguageDirection = null;
 
     // =============================================================================
     // Helpers
@@ -100,9 +101,10 @@
 
     async function ensureTranslationsLoaded() {
       const target = normalizeLanguage(state.currentLanguage);
-      if (state.translationsLoadedFor === target) return;
       state.currentLanguage = target;
-      applyWindowLanguageAttributes(target);
+      const windowLanguage = applyWindowLanguageAttributes(target);
+      currentWindowLanguageDirection = windowLanguage && windowLanguage.languageDirection;
+      if (state.translationsLoadedFor === target) return;
       try {
         await loadRendererTranslations(target);
         state.translationsLoadedFor = target;
@@ -143,14 +145,24 @@
       return `${hours}:${minutes}:${seconds}`;
     }
 
-    function buildSummaryMetricNode(labelKey, valueText) {
+    function buildSummaryMetricNode(labelKey, valueText, languageDirection) {
       const metricNode = document.createElement('span');
+      metricNode.className = 'reading-test-result__summary-metric';
+      metricNode.dir = languageDirection === 'rtl' ? 'rtl' : 'ltr';
       renderLocalizedLabelWithInvariantValue(metricNode, {
         labelText: `${tRenderer(labelKey)}: `,
         valueText,
         valueDirection: 'ltr',
       });
       return metricNode;
+    }
+
+    function buildSummarySeparatorNode() {
+      const separatorNode = document.createElement('span');
+      separatorNode.className = 'reading-test-result__summary-separator';
+      separatorNode.setAttribute('aria-hidden', 'true');
+      separatorNode.textContent = '·';
+      return separatorNode;
     }
 
     async function renderUi() {
@@ -160,15 +172,28 @@
       elements.btnContinue.textContent = tRenderer('renderer.reading_test.result.buttons.continue');
       const measuredWpmText = await formatInteger(state.measuredWpm);
       const wordCountText = await formatInteger(state.wordCount);
+      const metricDirection = currentWindowLanguageDirection === 'rtl' ? 'rtl' : 'ltr';
       elements.wpmValue.textContent = measuredWpmText;
       elements.summary.textContent = '';
-      elements.summary.appendChild(
-        buildSummaryMetricNode('renderer.reading_test.result.elapsed_time', formatElapsedTime(state.elapsedMs))
+      const summaryRow = document.createElement('span');
+      summaryRow.className = 'reading-test-result__summary-row';
+      summaryRow.dir = 'ltr';
+      summaryRow.appendChild(
+        buildSummaryMetricNode(
+          'renderer.reading_test.result.elapsed_time',
+          formatElapsedTime(state.elapsedMs),
+          metricDirection
+        )
       );
-      elements.summary.appendChild(document.createTextNode(' · '));
-      elements.summary.appendChild(
-        buildSummaryMetricNode('renderer.reading_test.result.word_count', wordCountText)
+      summaryRow.appendChild(buildSummarySeparatorNode());
+      summaryRow.appendChild(
+        buildSummaryMetricNode(
+          'renderer.reading_test.result.word_count',
+          wordCountText,
+          metricDirection
+        )
       );
+      elements.summary.appendChild(summaryRow);
     }
 
     function enqueueUiSync(updateFn) {

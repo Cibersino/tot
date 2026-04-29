@@ -68,6 +68,33 @@ body {
   text-align: center;
 }
 
+.reading-test-result__summary-row {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.45ch;
+  flex-wrap: nowrap;
+  max-width: 100%;
+}
+
+.reading-test-result__summary-metric {
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
+  unicode-bidi: isolate;
+}
+
+.reading-test-result__summary-metric bdi {
+  unicode-bidi: isolate;
+}
+
+.reading-test-result__summary-separator {
+  display: inline-block;
+  white-space: nowrap;
+  unicode-bidi: isolate;
+  flex: 0 0 auto;
+}
+
 /* Footer actions */
 .reading-test-result__actions {
   display: flex;
