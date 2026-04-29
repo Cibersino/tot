@@ -140,7 +140,7 @@
       "columns": {
         "texto": "متن",
         "tiempo": "زمان",
-        "percent": "٪",
+        "percent": "%",
         "falta": "ب",
         "tipo": "نوع",
         "enlace": "پیوند",
