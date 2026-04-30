@@ -53,6 +53,7 @@ Reglas:
 - La ventana principal agrega una entrada fija para la extensión del navegador, con modal propio dentro de la app y apertura al Chrome Web Store mediante la allowlist actual de enlaces externos.
 - El editor de tareas deja de ser una ventana fija y pasa a admitir `resize` / maximizado con persistencia de geometría válida entre sesiones.
 - La superficie histórica `import/extract` queda consolidada como `text extraction` en UI, preload e IPC, manteniendo el flujo actual de extracción/OCR pero con nomenclatura única.
+- La ayuda contextual deja de quedar acotada a un bloque mínimo de tips y pasa a cubrir una superficie mucho más amplia de uso real de la app: privacidad local-first, OCR, snapshots, tareas, editor, reading speed test y extensiones.
 
 ### Agregado
 
@@ -60,6 +61,7 @@ Reglas:
 - Modal in-app `Browser extension` en la ventana principal, con CTA dedicado al Chrome Web Store y textos propios en i18n.
 - Persistencia dedicada del estado del editor de tareas en `config/tasks/task_editor_state.json`, con `reduced` + `maximized`.
 - Campo derivado `spellcheckAvailable` en la superficie de settings consumida por renderers para distinguir preferencia guardada de disponibilidad real del diccionario.
+- Catálogo de ayuda ampliado a `54` tips shipped en la ventana principal.
 
 ### Cambiado
 
@@ -67,6 +69,10 @@ Reglas:
 - La UI principal adopta `text extraction` como terminología única para botones, tooltips, mensajes de estado, drag/drop, OCR, apply modal y abort flow.
 - El editor de tareas restaura tamaño/posición solo cuando la geometría sigue siendo válida, permite maximizar, y recuerda el último estado de ventana al cerrar.
 - El editor deja de tratar el corrector ortográfico como un booleano ciego del usuario y pasa a reflejar también si el idioma activo tiene o no un diccionario compatible en el runtime actual.
+- Las etiquetas de snapshots dejan de quedar limitadas al catálogo corto anterior y pasan a cubrir todos los idiomas raíz shipped actuales, manteniendo su uso como metadato local reutilizable por el reading speed test.
+- La entrada del reading speed test gana copy/tooltips más explícitos en la gestión del pool y muestra el conteo elegible con separación clara entre label y valor.
+- Las ventanas `reading_test_questions` y `reading_test_result` dejan de formatear sus métricas con supuestos de locale implícitos y pasan a respetar idioma, dirección y separadores numéricos efectivos del usuario.
+- La ayuda contextual deja de concentrarse en unos pocos tips generales y pasa a documentar también OCR, límites de texto, snapshots, tareas, spellcheck, pool del reading speed test y extensión del navegador.
 
 ### Arreglado
 
@@ -74,6 +80,7 @@ Reglas:
 - Las ventanas auxiliares del reading speed test dejan de mezclar dirección de texto o formato numérico del locale por defecto del runtime y pasan a respetar el idioma/configuración efectiva del usuario.
 - La reapertura del editor de tareas evita geometrías inválidas o fuera de pantalla al validar bounds persistidos contra los displays disponibles.
 - Los timeouts de `Replace` / `Replace all` en la ventana de búsqueda del editor dejan de fallar sin feedback y muestran notificación explícita de error.
+- La ayuda aleatoria deja de depender del subárbol histórico `renderer.main.tips.results_help` y pasa a leer un catálogo unificado de tips shipped, evitando que la UI quede limitada a un conjunto parcial.
 
 ### Migración
 
