@@ -902,7 +902,6 @@ select#presets:focus {
   font-weight: 600;
   color: var(--text-color);
   user-select: none;
-  margin-left: 2px;
   line-height: 1;
 }
 
@@ -1696,5 +1695,4 @@ select#presets:focus {
     width: 100%;
   }
 }
-
 
