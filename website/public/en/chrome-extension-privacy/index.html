@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>toT — Chrome Extension Privacy Policy</title>
+  <meta name="description" content="Privacy policy for the toT Chrome extension.">
+  <link rel="canonical" href="https://totapp.org/en/chrome-extension-privacy/">
+  <link rel="alternate" hreflang="es" href="https://totapp.org/es/chrome-extension-privacy/">
+  <link rel="alternate" hreflang="en" href="https://totapp.org/en/chrome-extension-privacy/">
+  <link rel="alternate" hreflang="x-default" href="https://totapp.org/chrome-extension-privacy/">
+  <meta property="og:url" content="https://totapp.org/en/chrome-extension-privacy/">
+  <meta property="og:title" content="toT — Chrome Extension Privacy Policy">
+  <meta property="og:description" content="Privacy policy for the toT Chrome extension.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://totapp.org/og-image.png">
+  <meta property="og:image:alt" content="Screenshot of the toT app reading-time estimation interface">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+  <main class="wrap">
+    <div class="topbar">
+      <header class="brand-header">
+        <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="toT Logo">
+        <div class="brand-copy">
+          <h1>toT</h1>
+          <p><strong>Chrome Extension Privacy Policy</strong></p>
+        </div>
+      </header>
+
+      <nav class="lang-switch" aria-label="Language selector">
+        <a href="/es/chrome-extension-privacy/" lang="es">ES</a>
+        <a href="/en/chrome-extension-privacy/" lang="en" aria-current="page">EN</a>
+      </nav>
+    </div>
+
+    <div class="box">
+      <h1>Chrome Extension Privacy Policy</h1>
+
+      <p>Effective date: April 24, 2026</p>
+
+      <p>This policy applies only to the <code>toT — Reading Time</code> Chrome extension. It does not describe the
+        toT desktop app or its import, OCR, snapshot, task, or other features.</p>
+
+      <h2>1. Purpose of the extension</h2>
+
+      <p>The extension has one purpose only: to estimate reading time for text selected by the user on web pages.</p>
+
+      <p>To do that, the extension may read text selected by the user on <code>http</code> and <code>https</code>
+        pages, count its words locally, and show an estimated reading-time panel inside the page.</p>
+
+      <h2>2. Data it processes</h2>
+
+      <p>The extension processes locally:</p>
+
+      <ul>
+        <li>text selected by the user on a web page;</li>
+        <li>the WPM preference, meaning words per minute;</li>
+        <li>the enabled or disabled state per site.</li>
+      </ul>
+
+      <p>The selected text is used only to calculate word count and estimated reading time. The extension does not
+        keep a history of selections.</p>
+
+      <h2>3. Local storage</h2>
+
+      <p>The extension uses <code>chrome.storage.local</code> to store:</p>
+
+      <ul>
+        <li>the user's WPM preference;</li>
+        <li>the local list of sites where the extension was disabled by the user.</li>
+      </ul>
+
+      <p>That data remains in the user's browser. It is not sent to the developer or to external servers.</p>
+
+      <h2>4. Connectivity and data transfer</h2>
+
+      <p>The extension does not transmit selected text, page content, browsing history, or stored preferences to
+        external servers.</p>
+
+      <p>The extension does not use analytics, telemetry, advertising, tracking, profiling, or third-party SDKs.</p>
+
+      <p>The extension does not sell or transfer user data.</p>
+
+      <p>The extension does not use user data for purposes unrelated to estimating reading time for selected text.</p>
+
+      <p>The extension does not use user data to determine creditworthiness, make lending decisions, advertise, track,
+        or profile users.</p>
+
+      <h2>5. Permissions</h2>
+
+      <p>The extension requests the <code>storage</code> permission to save local preferences.</p>
+
+      <p>It also runs content scripts on <code>http</code> and <code>https</code> pages so it can detect user-selected
+        text and display the reading-time estimate panel. That access is used only for the purpose described in this
+        policy.</p>
+
+      <h2>6. Remote code</h2>
+
+      <p>The extension does not use remote code. The JavaScript required for its functionality is bundled inside the
+        extension package.</p>
+
+      <h2>7. User control</h2>
+
+      <p>The user can:</p>
+
+      <ul>
+        <li>change the WPM value from the extension panel;</li>
+        <li>enable or disable the extension per site from the popup;</li>
+        <li>delete the extension's local data from Chrome settings or by removing the extension.</li>
+      </ul>
+
+      <h2>8. Changes</h2>
+
+      <p>If the extension adds new forms of data handling, this policy will be updated before or together with the
+        release of that new version.</p>
+
+      <h2>9. Contact</h2>
+
+      <p>For questions, reports, or requests related to this policy, email
+        <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a> or use the
+        <a href="https://github.com/Cibersino/tot">official project repository</a>.
+      </p>
+    </div>
+
+    <footer class="site-footer" aria-label="Operator and contact">
+      <p class="muted">
+        Contact: <a href="https://github.com/Cibersino/tot/issues">GitHub Issues</a> or
+        <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.
+      </p>
+      <p class="muted">
+        <a href="/en/privacy-cookies/">Website Privacy / Cookies</a>
+        ·
+        <a href="/en/">Back</a>
+      </p>
+    </footer>
+  </main>
+  <script src="/site-language.js"></script>
+</body>
+
+</html>
