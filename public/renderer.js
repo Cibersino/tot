@@ -9,7 +9,7 @@
 // - Bootstraps the renderer UI and pulls config/settings from main.
 // - Applies i18n labels and number formatting.
 // - Maintains text preview, counts, and time estimates.
-// - Coordinates import/extract and OCR entry flows from the main window.
+// - Coordinates text extraction and OCR entry flows from the main window.
 // - Wires presets, clipboard actions, editor, tasks, and help tips.
 // - Hosts the info modal and top-bar menu actions.
 // - Integrates the stopwatch controller and floating window toggle.
@@ -38,35 +38,35 @@ const {
 // =============================================================================
 const btnHelp = document.getElementById('btnHelp');
 
-const importExtractEntry = window.ImportExtractEntry;
-if (!importExtractEntry
-  || typeof importExtractEntry.configure !== 'function'
-  || typeof importExtractEntry.startFromFilePath !== 'function'
-  || typeof importExtractEntry.startFromPicker !== 'function') {
-  throw new Error('[renderer] ImportExtractEntry unavailable; cannot continue');
+const textExtractionEntry = window.TextExtractionEntry;
+if (!textExtractionEntry
+  || typeof textExtractionEntry.configure !== 'function'
+  || typeof textExtractionEntry.startFromFilePath !== 'function'
+  || typeof textExtractionEntry.startFromPicker !== 'function') {
+  throw new Error('[renderer] TextExtractionEntry unavailable; cannot continue');
 }
 
-const importExtractDragDrop = window.ImportExtractDragDrop;
-if (!importExtractDragDrop
-  || typeof importExtractDragDrop.applyTranslations !== 'function'
-  || typeof importExtractDragDrop.configure !== 'function') {
-  throw new Error('[renderer] ImportExtractDragDrop unavailable; cannot continue');
+const textExtractionDragDrop = window.TextExtractionDragDrop;
+if (!textExtractionDragDrop
+  || typeof textExtractionDragDrop.applyTranslations !== 'function'
+  || typeof textExtractionDragDrop.configure !== 'function') {
+  throw new Error('[renderer] TextExtractionDragDrop unavailable; cannot continue');
 }
 
-const importExtractStatusUi = window.ImportExtractStatusUi;
-if (!importExtractStatusUi
-  || typeof importExtractStatusUi.applyProcessingModeState !== 'function'
-  || typeof importExtractStatusUi.applyTranslations !== 'function'
-  || typeof importExtractStatusUi.beginPrepare !== 'function'
-  || typeof importExtractStatusUi.clearPendingExecutionContext !== 'function'
-  || typeof importExtractStatusUi.endPrepare !== 'function'
-  || typeof importExtractStatusUi.getAbortButton !== 'function'
-  || typeof importExtractStatusUi.getFinalElapsedValueText !== 'function'
-  || typeof importExtractStatusUi.isProcessingModeActive !== 'function'
-  || typeof importExtractStatusUi.setPendingExecutionContext !== 'function') {
-  throw new Error('[renderer] ImportExtractStatusUi unavailable; cannot continue');
+const textExtractionStatusUi = window.TextExtractionStatusUi;
+if (!textExtractionStatusUi
+  || typeof textExtractionStatusUi.applyProcessingModeState !== 'function'
+  || typeof textExtractionStatusUi.applyTranslations !== 'function'
+  || typeof textExtractionStatusUi.beginPrepare !== 'function'
+  || typeof textExtractionStatusUi.clearPendingExecutionContext !== 'function'
+  || typeof textExtractionStatusUi.endPrepare !== 'function'
+  || typeof textExtractionStatusUi.getAbortButton !== 'function'
+  || typeof textExtractionStatusUi.getFinalElapsedValueText !== 'function'
+  || typeof textExtractionStatusUi.isProcessingModeActive !== 'function'
+  || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
+  throw new Error('[renderer] TextExtractionStatusUi unavailable; cannot continue');
 }
-const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
+const textExtractionOcrDisconnect = window.TextExtractionOcrDisconnect || null;
 const browserExtensionModal = window.BrowserExtensionModal || null;
 const mainLogoLinks = window.MainLogoLinks || null;
 const currentTextSelectorSection = window.CurrentTextSelectorSection || null;
@@ -154,7 +154,7 @@ function isRendererReady() {
 }
 
 function isProcessingModeActive() {
-  return importExtractStatusUi.isProcessingModeActive();
+  return textExtractionStatusUi.isProcessingModeActive();
 }
 
 function setControlInteractionLocked(element, locked) {
@@ -213,13 +213,13 @@ function syncMainInteractionLockUi() {
   }
 }
 
-function startImportExtractPrepareAttempt() {
-  importExtractPrepareAttemptId += 1;
-  return importExtractPrepareAttemptId;
+function startTextExtractionPrepareAttempt() {
+  textExtractionPrepareAttemptId += 1;
+  return textExtractionPrepareAttemptId;
 }
 
-function isLatestImportExtractPrepareAttempt(attemptId) {
-  return attemptId === importExtractPrepareAttemptId;
+function isLatestTextExtractionPrepareAttempt(attemptId) {
+  return attemptId === textExtractionPrepareAttemptId;
 }
 
 function isAriaHiddenElementVisible(elementId) {
@@ -232,14 +232,14 @@ function hasBlockingMainWindowModalOpen() {
     || !!(browserExtensionModal
       && typeof browserExtensionModal.hasBlockingModalOpen === 'function'
       && browserExtensionModal.hasBlockingModalOpen())
-    || isAriaHiddenElementVisible('importExtractRouteModal')
-    || isAriaHiddenElementVisible('importExtractApplyModal')
+    || isAriaHiddenElementVisible('textExtractionRouteModal')
+    || isAriaHiddenElementVisible('textExtractionApplyModal')
     || isAriaHiddenElementVisible('snapshotSaveTagsModal')
     || isAriaHiddenElementVisible('readingTestEntryModal')
-    || isAriaHiddenElementVisible('importExtractOcrActivationDisclosureModal');
+    || isAriaHiddenElementVisible('textExtractionOcrActivationDisclosureModal');
 }
 
-function canAcceptImportExtractDrop() {
+function canAcceptTextExtractionDrop() {
   return isRendererReady()
     && !isProcessingModeActive()
     && !isReadingTestSessionActive()
@@ -247,20 +247,20 @@ function canAcceptImportExtractDrop() {
 }
 
 async function requestPreparedImport({
-  prepareImportExtractSelectedFile,
+  prepareTextExtractionSelectedFile,
   preparationRequest,
 }) {
-  const attemptId = startImportExtractPrepareAttempt();
-  importExtractStatusUi.beginPrepare();
+  const attemptId = startTextExtractionPrepareAttempt();
+  textExtractionStatusUi.beginPrepare();
   try {
-    const preparation = await prepareImportExtractSelectedFile(preparationRequest);
+    const preparation = await prepareTextExtractionSelectedFile(preparationRequest);
     return {
       attemptId,
       preparation,
-      stale: !isLatestImportExtractPrepareAttempt(attemptId),
+      stale: !isLatestTextExtractionPrepareAttempt(attemptId),
     };
   } finally {
-    importExtractStatusUi.endPrepare();
+    textExtractionStatusUi.endPrepare();
   }
 }
 
@@ -268,7 +268,7 @@ function maybeNotifyProcessingLock(actionId) {
   const now = Date.now();
   if ((now - lastProcessingLockNoticeAt) < PROCESSING_LOCK_NOTICE_THROTTLE_MS) return;
   lastProcessingLockNoticeAt = now;
-  window.Notify.notifyMain('renderer.alerts.import_extract_processing_locked');
+  window.Notify.notifyMain('renderer.alerts.text_extraction_processing_locked');
   log.warnOnce(
     `renderer.processing_lock.${actionId}`,
     'Renderer action ignored (processing-mode lock active):',
@@ -287,7 +287,7 @@ function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
     return false;
   }
 
-  const isAbortAction = normalizedActionId === 'import-extract-abort';
+  const isAbortAction = normalizedActionId === 'text-extraction-abort';
   if (!allowDuringProcessing && !isAbortAction && isProcessingModeActive()) {
     maybeNotifyProcessingLock(normalizedActionId);
     return false;
@@ -385,7 +385,7 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
-let importExtractPrepareAttemptId = 0;
+let textExtractionPrepareAttemptId = 0;
 let lastProcessingLockNoticeAt = 0;
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
@@ -447,8 +447,8 @@ function applyTranslations() {
     const aria = tRenderer(key);
     if (aria) el.setAttribute('aria-label', aria);
   };
-  importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
-  importExtractDragDrop.applyTranslations({ tRenderer });
+  textExtractionStatusUi.applyTranslations({ tRenderer, msgRenderer });
+  textExtractionDragDrop.applyTranslations({ tRenderer });
   readingSpeedTestUi.applyTranslations();
   currentTextSelectorSection.applyTranslations({ tRenderer });
   if (mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
@@ -830,19 +830,19 @@ function armIpcSubscriptions() {
       );
     }
 
-    if (typeof window.electronAPI.onImportExtractProcessingModeChanged === 'function') {
-      window.electronAPI.onImportExtractProcessingModeChanged((state) => {
+    if (typeof window.electronAPI.onTextExtractionProcessingModeChanged === 'function') {
+      window.electronAPI.onTextExtractionProcessingModeChanged((state) => {
         try {
-          importExtractStatusUi.applyProcessingModeState(state, { source: 'ipc_event' });
+          textExtractionStatusUi.applyProcessingModeState(state, { source: 'ipc_event' });
           syncMainInteractionLockUi();
         } catch (err) {
-          log.error('Error handling import-extract-processing-mode-changed:', err);
+          log.error('Error handling text-extraction-processing-mode-changed:', err);
         }
       });
     } else {
       log.warnOnce(
-        'renderer.ipc.onImportExtractProcessingModeChanged.unavailable',
-        'onImportExtractProcessingModeChanged unavailable; processing lock updates will not sync.'
+        'renderer.ipc.onTextExtractionProcessingModeChanged.unavailable',
+        'onTextExtractionProcessingModeChanged unavailable; processing lock updates will not sync.'
       );
     }
 
@@ -1015,23 +1015,23 @@ async function runStartupOrchestrator() {
       installCurrentTextState('');
     }
 
-    const getImportExtractProcessingMode = getOptionalElectronMethod('getImportExtractProcessingMode', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getImportExtractProcessingMode.unavailable',
-      unavailableMessage: 'getImportExtractProcessingMode unavailable; processing mode defaults to inactive.'
+    const getTextExtractionProcessingMode = getOptionalElectronMethod('getTextExtractionProcessingMode', {
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getTextExtractionProcessingMode.unavailable',
+      unavailableMessage: 'getTextExtractionProcessingMode unavailable; processing mode defaults to inactive.'
     });
-    if (getImportExtractProcessingMode) {
+    if (getTextExtractionProcessingMode) {
       try {
-        const processingMode = await getImportExtractProcessingMode();
+        const processingMode = await getTextExtractionProcessingMode();
         if (processingMode && processingMode.ok === true) {
-          importExtractStatusUi.applyProcessingModeState(processingMode.state, { source: 'startup_query' });
+          textExtractionStatusUi.applyProcessingModeState(processingMode.state, { source: 'startup_query' });
         } else {
           log.warn(
-            'BOOTSTRAP: getImportExtractProcessingMode returned non-ok result; keeping processing mode inactive:',
+            'BOOTSTRAP: getTextExtractionProcessingMode returned non-ok result; keeping processing mode inactive:',
             processingMode
           );
         }
       } catch (err) {
-        log.warn('BOOTSTRAP: getImportExtractProcessingMode failed; keeping processing mode inactive:', err);
+        log.warn('BOOTSTRAP: getTextExtractionProcessingMode failed; keeping processing mode inactive:', err);
       }
     }
     syncMainInteractionLockUi();
@@ -1253,8 +1253,8 @@ async function hydrateAboutEnvironment(container) {
     ) {
       try {
         const [licenseAvailability, noticeAvailability] = await Promise.all([
-          window.electronAPI.getAppDocAvailability('license-import-extract-image-processing-runtime'),
-          window.electronAPI.getAppDocAvailability('notice-import-extract-image-processing-runtime'),
+          window.electronAPI.getAppDocAvailability('license-text-extraction-image-processing-runtime'),
+          window.electronAPI.getAppDocAvailability('notice-text-extraction-image-processing-runtime'),
         ]);
         if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !(licenseAvailability && licenseAvailability.available);
         if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !(noticeAvailability && noticeAvailability.available);
@@ -1484,17 +1484,17 @@ function registerMenuActions() {
       }
     });
     registerMenuActionGuarded('disconnect_google_ocr', async () => {
-      if (!importExtractOcrDisconnect
-        || typeof importExtractOcrDisconnect.startFromPreferencesMenu !== 'function') {
+      if (!textExtractionOcrDisconnect
+        || typeof textExtractionOcrDisconnect.startFromPreferencesMenu !== 'function') {
         log.warnOnce(
-          'renderer.importExtract.ocrDisconnect.entrypoint.unavailable',
-          'ImportExtractOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.'
+          'renderer.textExtraction.ocrDisconnect.entrypoint.unavailable',
+          'TextExtractionOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.'
         );
-        window.Notify.notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
+        window.Notify.notifyMain('renderer.alerts.text_extraction_ocr_disconnect_failed');
         return;
       }
 
-      await importExtractOcrDisconnect.startFromPreferencesMenu();
+      await textExtractionOcrDisconnect.startFromPreferencesMenu();
     });
 
     registerMenuActionGuarded('links_interes', () => { showInfoModal('links_interes') });
@@ -1626,19 +1626,19 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
 }
 
 // =============================================================================
-// Import/extract integration helpers
+// Text extraction integration helpers
 // =============================================================================
-async function maybeRecoverImportExtractOcrSetupAndRetry({
+async function maybeRecoverTextExtractionOcrSetupAndRetry({
   preparation,
   preparationRequest,
-  prepareImportExtractSelectedFile,
+  prepareTextExtractionSelectedFile,
   routePreference = '',
 }) {
-  const recoveryApi = window.ImportExtractOcrActivationRecovery;
+  const recoveryApi = window.TextExtractionOcrActivationRecovery;
   if (!recoveryApi || typeof recoveryApi.recoverAfterSetupFailure !== 'function') {
     log.warnOnce(
-      'renderer.importExtract.ocrActivationRecovery.unavailable',
-      'ImportExtractOcrActivationRecovery.recoverAfterSetupFailure unavailable; OCR setup auto-recovery disabled.'
+      'renderer.textExtraction.ocrActivationRecovery.unavailable',
+      'TextExtractionOcrActivationRecovery.recoverAfterSetupFailure unavailable; OCR setup auto-recovery disabled.'
     );
     return { preparation, handled: false };
   }
@@ -1648,7 +1648,7 @@ async function maybeRecoverImportExtractOcrSetupAndRetry({
       preparation,
       retryPrepare: async () => {
         return await requestPreparedImport({
-          prepareImportExtractSelectedFile,
+          prepareTextExtractionSelectedFile,
           preparationRequest,
         });
       },
@@ -1656,7 +1656,7 @@ async function maybeRecoverImportExtractOcrSetupAndRetry({
       routePreference,
     });
   } catch (err) {
-    log.error('import/extract OCR setup recovery module failed unexpectedly:', err);
+    log.error('text extraction OCR setup recovery module failed unexpectedly:', err);
     return { preparation, handled: false };
   }
 }
@@ -1688,9 +1688,9 @@ async function resolveDroppedFilePath(file) {
 }
 
 // renderer.js owns only app-level feature wiring here.
-// The shared import/extract flow stays in the delegated window modules.
-function configureImportExtractModules() {
-  importExtractEntry.configure({
+// The shared text extraction flow stays in the delegated window modules.
+function configureTextExtractionModules() {
+  textExtractionEntry.configure({
     applyTextViaCanonicalPath,
     getClipboardRepeatCount: () => currentTextSelectorSection.getClipboardRepeatCount(),
     getOcrLanguage: () => idiomaActual || '',
@@ -1698,33 +1698,33 @@ function configureImportExtractModules() {
     guardUserAction,
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,
-    importExtractStatusUi,
-    isLatestImportExtractPrepareAttempt,
-    maybeRecoverImportExtractOcrSetupAndRetry,
+    textExtractionStatusUi,
+    isLatestTextExtractionPrepareAttempt,
+    maybeRecoverTextExtractionOcrSetupAndRetry,
     requestPreparedImport,
   });
 
-  importExtractDragDrop.configure({
-    canAcceptDrop: canAcceptImportExtractDrop,
+  textExtractionDragDrop.configure({
+    canAcceptDrop: canAcceptTextExtractionDrop,
     resolveDroppedFilePath,
-    startFromFilePath: importExtractEntry.startFromFilePath,
+    startFromFilePath: textExtractionEntry.startFromFilePath,
   });
 
-  if (importExtractOcrDisconnect
-    && typeof importExtractOcrDisconnect.configure === 'function') {
-    importExtractOcrDisconnect.configure({
+  if (textExtractionOcrDisconnect
+    && typeof textExtractionOcrDisconnect.configure === 'function') {
+    textExtractionOcrDisconnect.configure({
       getOptionalElectronMethod,
     });
   } else {
     log.warnOnce(
-      'renderer.importExtract.ocrDisconnect.unavailable',
-      'ImportExtractOcrDisconnect.configure unavailable; Preferences > Disconnect Google OCR will be disabled.'
+      'renderer.textExtraction.ocrDisconnect.unavailable',
+      'TextExtractionOcrDisconnect.configure unavailable; Preferences > Disconnect Google OCR will be disabled.'
     );
   }
 }
 
 function initializeDelegatedIntegrations() {
-  configureImportExtractModules();
+  configureTextExtractionModules();
 
   if (browserExtensionModal && typeof browserExtensionModal.configure === 'function') {
     browserExtensionModal.configure({
@@ -1761,45 +1761,45 @@ function hideEditorLoader() {
 }
 
 // =============================================================================
-// Import/extract actions
+// Text extraction actions
 // =============================================================================
-async function handleImportExtractPicker() {
-  await importExtractEntry.startFromPicker();
+async function handleTextExtractionPicker() {
+  await textExtractionEntry.startFromPicker();
 }
 
-async function handleImportExtractAbort() {
-  if (!guardUserAction('import-extract-abort', { allowDuringProcessing: true })) return;
+async function handleTextExtractionAbort() {
+  if (!guardUserAction('text-extraction-abort', { allowDuringProcessing: true })) return;
   try {
-    const requestImportExtractAbort = getOptionalElectronMethod('requestImportExtractAbort', {
-      dedupeKey: 'renderer.ipc.requestImportExtractAbort.unavailable',
-      unavailableMessage: 'requestImportExtractAbort unavailable; abort action skipped.'
+    const requestTextExtractionAbort = getOptionalElectronMethod('requestTextExtractionAbort', {
+      dedupeKey: 'renderer.ipc.requestTextExtractionAbort.unavailable',
+      unavailableMessage: 'requestTextExtractionAbort unavailable; abort action skipped.'
     });
-    if (!requestImportExtractAbort) {
-      window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+    if (!requestTextExtractionAbort) {
+      window.Notify.notifyMain('renderer.alerts.text_extraction_abort_error');
       return;
     }
 
-    const result = await requestImportExtractAbort({
+    const result = await requestTextExtractionAbort({
       source: 'main_window',
       reason: 'user_abort_button',
     });
     if (!result || result.ok !== true) {
       if (result && result.code === 'NOT_ACTIVE' && result.state) {
-        importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_not_active' });
+        textExtractionStatusUi.applyProcessingModeState(result.state, { source: 'abort_not_active' });
         return;
       }
-      log.error('import/extract abort failed:', result);
-      window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+      log.error('text extraction abort failed:', result);
+      window.Notify.notifyMain('renderer.alerts.text_extraction_abort_error');
       return;
     }
 
     if (result.state) {
-      importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
+      textExtractionStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
     }
-    window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
+    window.Notify.notifyMain('renderer.alerts.text_extraction_cancelled');
   } catch (err) {
-    log.error('Error handling import/extract abort:', err);
-    window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+    log.error('Error handling text extraction abort:', err);
+    window.Notify.notifyMain('renderer.alerts.text_extraction_abort_error');
   }
 }
 
@@ -2252,8 +2252,8 @@ function startRendererBootstrap() {
   armIpcSubscriptions();
   setupToggleModoPreciso();
   currentTextSelectorSection.bindActions({
-    onImportExtract: handleImportExtractPicker,
-    onImportExtractAbort: handleImportExtractAbort,
+    onTextExtraction: handleTextExtractionPicker,
+    onTextExtractionAbort: handleTextExtractionAbort,
     onOverwriteClipboard: handleClipboardOverwrite,
     onAppendClipboard: handleClipboardAppend,
     onOpenEditor: handleOpenEditor,
@@ -2282,3 +2282,5 @@ startRendererBootstrap();
 // =============================================================================
 // End of public/renderer.js
 // =============================================================================
+
+

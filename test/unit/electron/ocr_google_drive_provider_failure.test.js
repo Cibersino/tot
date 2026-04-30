@@ -8,7 +8,7 @@ const assert = require('node:assert/strict');
 const {
   PROVIDER_API_DISABLED_CODE,
   parseGoogleProviderFailure,
-} = require('../../../electron/import_extract_platform/ocr_google_drive_provider_failure');
+} = require('../../../electron/text_extraction_platform/ocr_google_drive_provider_failure');
 
 test('parses provider failure payloads from nested response objects', () => {
   const parsed = parseGoogleProviderFailure({
@@ -103,3 +103,4 @@ test('flags reason conflicts while keeping bounded diagnostics', () => {
   assert.equal(parsed.reasonConflict, true);
   assert.equal(parsed.normalizedCategory, PROVIDER_API_DISABLED_CODE);
 });
+

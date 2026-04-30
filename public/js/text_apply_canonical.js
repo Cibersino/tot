@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Keep canonical overwrite/append/repetitions text-apply helpers in one place.
-// - Avoid duplicated apply semantics across clipboard and import/extract flows.
+// - Avoid duplicated apply semantics across clipboard and text extraction flows.
 // - Return structured apply results instead of scattering write-path decisions across callers.
 // =============================================================================
 
@@ -178,3 +178,4 @@
 // =============================================================================
 // End of public/js/text_apply_canonical.js
 // =============================================================================
+

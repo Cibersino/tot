@@ -8,7 +8,7 @@ const path = require('path');
 
 const {
   resolveGoogleDriveOcrAvailability,
-} = require('../../../electron/import_extract_platform/ocr_google_drive_activation_state');
+} = require('../../../electron/text_extraction_platform/ocr_google_drive_activation_state');
 
 function makeTempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'tot-ocr-activation-state-'));
@@ -87,3 +87,4 @@ test('returns ready when both credentials and token files exist', (t) => {
     }
   );
 });
+

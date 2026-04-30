@@ -6,10 +6,10 @@
 
 **Scope coverage (app-level):**
 - Startup + first-run language selection
-- Import/extract from file picker + drag/drop
+- Text extraction from file picker + drag/drop
 - Native extraction routes (`txt`, `md`, `html`, `docx`, PDF text layer)
 - Google-backed extraction routes (`rtf`, `odt`, images, scanned PDFs), including OCR activation/disconnect
-- Import/extract route choice, apply modal, processing lock, and abort flow
+- Text extraction route choice, apply modal, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
@@ -73,22 +73,22 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/smoke/electron_launch_smoke.test.js`
   * supports a minimal startup slice of `SM-01`
   * supports parts of `REG-PERSIST` by asserting startup tolerates the current settings schema, including `editorFontSizePx`
-* `electron/import_extract_platform/import_extract_supported_formats.js`
+* `electron/text_extraction_platform/text_extraction_supported_formats.js`
   * supports parts of `SM-09`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT/EXTRACT`
-* `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+* `electron/text_extraction_platform/text_extraction_prepare_execute_core.js`
   * supports parts of `SM-09`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT/EXTRACT`
-* `electron/import_extract_platform/import_extract_prepared_store.js`
+* `electron/text_extraction_platform/text_extraction_prepared_store.js`
   * supports parts of `REG-IMPORT/EXTRACT`
-* `electron/import_extract_platform/ocr_google_drive_activation_state.js`
+* `electron/text_extraction_platform/ocr_google_drive_activation_state.js`
   * supports parts of `SM-10`
   * supports parts of `REG-OCR`
-* `electron/import_extract_platform/ocr_google_drive_provider_failure.js`
+* `electron/text_extraction_platform/ocr_google_drive_provider_failure.js`
   * supports parts of `REG-OCR`
-* `electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js`
+* `electron/text_extraction_platform/ocr_google_drive_provider_failure_classification.js`
   * supports parts of `REG-OCR`
 
 Important limitations:
@@ -112,7 +112,7 @@ Important limitations:
 ### 1.2 Required conditions
 
 - Clipboard access available (to test overwrite/append).
-- A local sample-file set available for import/extract:
+- A local sample-file set available for text extraction:
   - native samples: `txt`, `md`, `html`, `docx`, PDF with selectable text
   - Google-backed document samples: `rtf`, `odt`
   - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`) and one scanned PDF
@@ -138,7 +138,7 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - `user_settings.json` (`language`, `modeConteo`, preset selection buckets, `spellcheckEnabled`, `editorFontSizePx`, etc.)
 - `current_text.json`
 - `editor_state.json`
-- `import_extract_state.json` (last picker directory)
+- `text_extraction_state.json` (last picker directory)
 - `presets_defaults/*.json` (runtime defaults copies)
 - `saved_current_texts/*.json` (saved text snapshots)
   - `saved_current_texts/reading_speed_test_pool/*.json` (runtime reading-test pool content files; optional `readingTest`, no inline usage state)
@@ -184,7 +184,7 @@ Esto es una prueba: 1,234.56 — ¿funciona?
 
 Any text large enough to stress editor limits and truncation messaging (see Edge cases).
 
-### 3.3 Import/extract sample files
+### 3.3 Text extraction sample files
 
 Prepare a small local sample set whose expected text is known ahead of time:
 - Native text docs:
@@ -314,8 +314,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - If the current app language resolves to a supported Electron dictionary, disabling spellcheck removes underline markers from the textarea and re-enabling restores them.
 - No crash; no stuck “editor loader”.
 
-### SM-09 Import/extract: supported non-PDF quick check
-**Goal:** picker-based import/extract works for a supported non-PDF file and reaches the apply modal.
+### SM-09 Text extraction: supported non-PDF quick check
+**Goal:** picker-based text extraction works for a supported non-PDF file and reaches the apply modal.
 1. Click **📥**.
 2. Select a supported non-PDF file such as `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, `sample.rtf`, or `sample.odt`.
 3. If the apply modal appears, leave repetitions at `1` and choose **Sobrescribir**.
@@ -327,7 +327,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The apply modal appears after successful extraction.
 - After **Sobrescribir**, preview/results reflect the extracted text.
 
-### SM-10 Import/extract: OCR/route-choice quick check
+### SM-10 Text extraction: OCR/route-choice quick check
 **Goal:** OCR-capable files follow the correct route and can be applied.
 1. Click **📥** and select either:
    - an OCR-capable image, or
@@ -521,7 +521,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### REG-IMPORT/EXTRACT — Picker, drag/drop, routes, apply, and processing mode
 
 #### REG-IMPORT-01 Picker entry + supported format list
-**Goal:** the main import/extract entrypoint is available and the picker accepts the supported file set.
+**Goal:** the main text extraction entrypoint is available and the picker accepts the supported file set.
 1. Click **📥**.
 2. Inspect the native picker filter and confirm it allows supported native and OCR-capable formats.
 3. Cancel the picker.
@@ -552,22 +552,22 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Two-file drop is rejected with a user-facing “single file only” style notice.
-- Non-file drags do not start import/extract.
+- Non-file drags do not start text extraction.
 - Invalid local-path resolution fails safely with user feedback.
 
-#### REG-IMPORT-04 Preconditions block import/extract
-**Goal:** import/extract refuses to start when a secondary window is open or the stopwatch is running.
+#### REG-IMPORT-04 Preconditions block text extraction
+**Goal:** text extraction refuses to start when a secondary window is open or the stopwatch is running.
 1. Start the stopwatch and try **📥**.
 2. Stop the stopwatch.
 3. Open a secondary window (editor, task editor, or floating window if it counts in the current build) and try **📥** again.
 
 **Expected:**
 - The flow does not start while blocked.
-- User-facing guidance indicates that secondary windows must be closed and the stopwatch stopped before import/extract can start.
+- User-facing guidance indicates that secondary windows must be closed and the stopwatch stopped before text extraction can start.
 
 #### REG-IMPORT-05 Supported text/document extraction across declared formats
 **Goal:** each declared text/document format extracts text and reaches the apply modal.
-1. Run import/extract for:
+1. Run text extraction for:
    - `sample.txt`
    - `sample.md`
    - `sample.html`
@@ -586,7 +586,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-IMPORT-06 PDF route choice when both routes are available
 **Goal:** a dual-route PDF requires an explicit route choice and both choices are honored.
 1. Use a PDF with selectable text while OCR is available.
-2. Start import/extract and confirm the route-choice modal appears.
+2. Start text extraction and confirm the route-choice modal appears.
 3. Cancel once.
 4. Start again, choose **Usar nativa**, complete apply, note the result.
 5. Start again, choose **Usar OCR**, complete apply, note the result.
@@ -598,8 +598,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORT-07 OCR-only routing for images and scanned PDFs
 **Goal:** OCR-only inputs skip native route selection and use the OCR path.
-1. Run import/extract on one OCR-capable image, ideally including one of `sample.tif` or `sample.tiff`.
-2. Run import/extract on `sample_scanned.pdf`.
+1. Run text extraction on one OCR-capable image, ideally including one of `sample.tif` or `sample.tiff`.
+2. Run text extraction on `sample_scanned.pdf`.
 
 **Expected:**
 - No native-route option is offered for OCR-only inputs.
@@ -622,7 +622,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORT-09 Processing mode lock + abort
 **Goal:** processing mode blocks main-window interactions until completion or abort, and abort exits cleanly.
-1. Start an import/extract run that lasts long enough to observe the processing bar (OCR path is the easiest).
+1. Start a text extraction run that lasts long enough to observe the processing bar (OCR path is the easiest).
 2. While processing is active, try other main-window actions such as clipboard overwrite, editor open, snapshot load, or task open.
 3. Click **⛔** to abort.
 
@@ -647,7 +647,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-OCR-01 Activation disclosure + cancel path
 **Goal:** first OCR use can require activation, shows disclosure, and honors cancel safely.
 1. Ensure OCR is not yet connected in this app instance (or disconnect first).
-2. Start an OCR-required import/extract run.
+2. Start an OCR-required text extraction run.
 3. When the disclosure modal appears, review:
    - intro copy
    - selected-files disclosure
@@ -660,11 +660,11 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Disclosure modal appears before browser OAuth launch.
 - Privacy policy opens through the app-doc path.
-- Cancel leaves OCR disconnected and the import/extract flow does not continue.
+- Cancel leaves OCR disconnected and the text extraction flow does not continue.
 
 #### REG-OCR-02 Activation success + automatic retry
 **Goal:** successful OCR activation retries the blocked extraction automatically.
-1. Start an OCR-required import/extract run while disconnected.
+1. Start an OCR-required text extraction run while disconnected.
 2. Accept the disclosure and complete Google auth in the system browser.
 3. Return to the app and observe the original extraction flow.
 
@@ -676,7 +676,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-OCR-03 Token-invalid recovery path
 **Goal:** invalid saved OCR sign-in state produces recovery instead of a dead-end generic error.
 1. (Advanced) Corrupt or invalidate the saved OCR token state.
-2. Start an OCR-required import/extract run.
+2. Start an OCR-required text extraction run.
 
 **Expected:**
 - The app identifies invalid OCR sign-in state.
@@ -688,7 +688,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 2. Menu → Preferences → **Disconnect Google OCR**.
 3. Cancel once.
 4. Run the same menu action again and confirm disconnect.
-5. Attempt an OCR-required import/extract run after disconnect.
+5. Attempt an OCR-required text extraction run after disconnect.
 
 **Expected:**
 - Cancel leaves OCR connected.
@@ -1285,9 +1285,9 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-PERSIST-01 Files created as expected (clean run)
 **Goal:** app creates minimal state files.
 1. Clean run launch.
-2. Perform: set text, change mode, select a preset, open editor once, toggle editor spellcheck once, change editor text size once, and complete one valid picker-based import/extract selection.
+2. Perform: set text, change mode, select a preset, open editor once, toggle editor spellcheck once, change editor text size once, and complete one valid picker-based text extraction selection.
 3. Close app.
-4. Verify config files exist (`user_settings.json`, `current_text.json`, `editor_state.json`, `import_extract_state.json`).
+4. Verify config files exist (`user_settings.json`, `current_text.json`, `editor_state.json`, `text_extraction_state.json`).
 
 **Expected:**
 - Files exist; JSON is valid; no zero-byte corruption.
@@ -1343,13 +1343,13 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - All files above exist and are valid JSON.
 - Tasks state (position, column widths, library, allowed hosts) persists across restart.
 
-#### REG-PERSIST-05 Import/extract picker + OCR runtime state persistence
-**Goal:** import/extract persists its picker folder and OCR runtime state files correctly.
+#### REG-PERSIST-05 Text extraction picker + OCR runtime state persistence
+**Goal:** text extraction persists its picker folder and OCR runtime state files correctly.
 1. Use **📥** to open a file from a non-default folder and complete or cancel the run after selection.
 2. If OCR is part of the build, complete OCR activation once.
 3. Close the app.
 4. Inspect config:
-   - `import_extract_state.json` exists and records the last used directory
+   - `text_extraction_state.json` exists and records the last used directory
    - `ocr_google_drive/credentials.json` exists in OCR-enabled builds
    - `ocr_google_drive/token.json` exists after successful OCR activation
 5. Relaunch the app and open **📥** again.
@@ -1375,7 +1375,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The relaunch does not silently restore consumed entries to unused state.
 
 #### REG-PERSIST-07 Reading speed test pool import picker state
-**Goal:** the reading-test pool import picker remembers its last successful directory independently of import/extract.
+**Goal:** the reading-test pool import picker remembers its last successful directory independently of text extraction.
 1. Open the reading speed test entry modal.
 2. Use `Import files...` to select any valid import candidate from a non-default folder.
 3. Close the app.
@@ -1385,7 +1385,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - `reading_test_pool_import_state.json` persists the last successful import directory.
 - The next import picker opens in that same directory when it still exists.
-- This state is separate from `import_extract_state.json`.
+- This state is separate from `text_extraction_state.json`.
 
 ---
 
@@ -1478,9 +1478,9 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - If text limit is already reached, append is blocked with text-limit behavior.
 - Current text is not corrupted and app remains responsive.
 
-### EDGE-06 Import/extract unsupported format
+### EDGE-06 Text extraction unsupported format
 **Goal:** unsupported files fail with a specific user-visible message and no broken UI state.
-1. Try import/extract with an unsupported file extension.
+1. Try text extraction with an unsupported file extension.
 2. Repeat via picker and, if possible, via drag/drop.
 
 **Expected:**
@@ -1488,7 +1488,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Processing mode does not get stuck.
 - Current text remains unchanged.
 
-### EDGE-07 Import/extract prepared state invalidation
+### EDGE-07 Text extraction prepared state invalidation
 **Goal:** stale prepared runs do not execute against changed/expired source state.
 1. Start a flow that reaches route choice or other post-prepare UI.
 2. Before continuing, modify, replace, move, or delete the source file if feasible.
@@ -1500,7 +1500,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### EDGE-08 OCR offline/setup failure paths
 **Goal:** OCR-specific setup/runtime failures stay specific and recoverable.
-1. Disable network and start an OCR-required import/extract run.
+1. Disable network and start an OCR-required text extraction run.
 2. Re-enable network and try again.
 3. If you have a build without bundled OCR credentials, attempt the same run there.
 
@@ -1549,3 +1549,5 @@ For each failure:
 
 * `test/README.md` - automated test layout, runner commands, and suite ownership under `test/**`
 * `tools_local/coding_rules/automated_test_policy.md` - policy for automated test design and for production-code changes made in support of testing
+
+

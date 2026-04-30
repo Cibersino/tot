@@ -16,25 +16,25 @@ const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {
 };
 
 const api = {
-    // Import/extract
-    openImportExtractPicker: () => ipcRenderer.invoke('import-extract-open-picker'),
+    // Text extraction
+    openTextExtractionPicker: () => ipcRenderer.invoke('text-extraction-open-picker'),
     getPathForFile: (file) => webUtils.getPathForFile(file),
-    checkImportExtractPreconditions: () => ipcRenderer.invoke('import-extract-check-preconditions'),
-    prepareImportExtractOcrActivation: () => ipcRenderer.invoke('import-extract-prepare-ocr-activation'),
-    launchImportExtractOcrActivation: () => ipcRenderer.invoke('import-extract-launch-ocr-activation'),
-    disconnectImportExtractOcr: (payload) => ipcRenderer.invoke('import-extract-disconnect-ocr', payload),
-    prepareImportExtractSelectedFile: (payload) => ipcRenderer.invoke('import-extract-prepare-selected-file', payload),
-    executePreparedImportExtract: (payload) => ipcRenderer.invoke('import-extract-execute-prepared', payload),
-    getImportExtractProcessingMode: () => ipcRenderer.invoke('import-extract-get-processing-mode'),
-    requestImportExtractAbort: (payload) => ipcRenderer.invoke('import-extract-request-abort', payload),
-    onImportExtractProcessingModeChanged: (cb) => {
+    checkTextExtractionPreconditions: () => ipcRenderer.invoke('text-extraction-check-preconditions'),
+    prepareTextExtractionOcrActivation: () => ipcRenderer.invoke('text-extraction-prepare-ocr-activation'),
+    launchTextExtractionOcrActivation: () => ipcRenderer.invoke('text-extraction-launch-ocr-activation'),
+    disconnectTextExtractionOcr: (payload) => ipcRenderer.invoke('text-extraction-disconnect-ocr', payload),
+    prepareTextExtractionSelectedFile: (payload) => ipcRenderer.invoke('text-extraction-prepare-selected-file', payload),
+    executePreparedTextExtraction: (payload) => ipcRenderer.invoke('text-extraction-execute-prepared', payload),
+    getTextExtractionProcessingMode: () => ipcRenderer.invoke('text-extraction-get-processing-mode'),
+    requestTextExtractionAbort: (payload) => ipcRenderer.invoke('text-extraction-request-abort', payload),
+    onTextExtractionProcessingModeChanged: (cb) => {
         const listener = (_e, state) => {
-            try { cb(state); } catch (err) { console.error('import-extract processing-mode callback error:', err); }
+            try { cb(state); } catch (err) { console.error('text-extraction processing-mode callback error:', err); }
         };
         return subscribeWithUnsub(
-            'import-extract-processing-mode-changed',
+            'text-extraction-processing-mode-changed',
             listener,
-            'removeListener error (import-extract-processing-mode-changed):'
+            'removeListener error (text-extraction-processing-mode-changed):'
         );
     },
 
@@ -175,3 +175,5 @@ const api = {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);
+
+
