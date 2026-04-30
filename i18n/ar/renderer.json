@@ -27,6 +27,7 @@
         "snapshot_save": "حفظ النص الحالي في لقطة نصية",
         "task_new": "مهمة جديدة",
         "task_load": "تحميل مهمة",
+        "browser_extension": "إضافة المتصفح",
         "cibersino_website": "موقع Cibersino",
         "cibersino_kofi": "ادعمني على Ko-fi",
         "new_preset": "إنشاء إعداد مسبق جديد",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "استيراد أو استخراج نص من ملف",
         "import_extract_abort": "إيقاف الاستخراج",
+        "browser_extension": "فتح مربع حوار إضافة المتصفح",
         "clipboard_repeat_count": "عدد مرات اللصق",
         "wpm_input": "كلمات في الدقيقة",
         "wpm_slider": "شريط تمرير الكلمات في الدقيقة",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "الوقت المنقضي: ",
         "import_extract_drop_here": "أفلت الملف لاستيراد/استخراج النص"
       }
+    },
+    "browser_extension": {
+      "title": "إضافة المتصفح",
+      "subtitle": "وقت القراءة",
+      "availability": "متاحة الآن على Chrome. ستتوفر لمتصفحات أخرى قريبًا.",
+      "chrome_store_aria": "فتح صفحة الإضافة في Chrome Web Store",
+      "close_aria": "إغلاق مربع حوار إضافة المتصفح"
     },
     "editor": {
       "title": "toT — النص الكامل",

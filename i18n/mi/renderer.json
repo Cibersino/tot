@@ -27,6 +27,7 @@
         "snapshot_save": "Tiaki i te kuputuhi o nāianei hei hopunga",
         "task_new": "Tūmahi hou",
         "task_load": "Uta tūmahi",
+        "browser_extension": "Toronga pūtirotiro",
         "cibersino_website": "Paetukutuku Cibersino",
         "cibersino_kofi": "Tautoko mai i Ko-fi",
         "new_preset": "Waihanga preset hou",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Kawemai, tango rānei i te kuputuhi i te kōnae",
         "import_extract_abort": "Whakakore i te tangohanga",
+        "browser_extension": "Whakatuwhera i te kōrero toronga pūtirotiro",
         "clipboard_repeat_count": "Ngā tāruaruatanga whakapiri",
         "wpm_input": "Kupu ia meneti",
         "wpm_slider": "Rēreti kupu-ia-meneti",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Kua hipa: ",
         "import_extract_drop_here": "Tukua te kōnae ki konei hei kawemai, hei tango kuputuhi rānei"
       }
+    },
+    "browser_extension": {
+      "title": "Toronga pūtirotiro",
+      "subtitle": "Wā pānui",
+      "availability": "Kei te wātea i Chrome ināianei. Ka tae mai ētahi atu pūtirotiro ākuanei.",
+      "chrome_store_aria": "Whakatuwhera i te whārangi Chrome Web Store o te toronga",
+      "close_aria": "Katia te kōrero toronga pūtirotiro"
     },
     "editor": {
       "title": "toT — Kuputuhi katoa",

@@ -27,6 +27,7 @@
         "snapshot_save": "Eñongatu jehai ko’ág̃agua snapshot-pe",
         "task_new": "Tembiaporã pyahu",
         "task_load": "Emyanyhẽ tembiaporã",
+        "browser_extension": "Jepysokue kundahárape g̃uarã",
         "cibersino_website": "Cibersino web",
         "cibersino_kofi": "Chepytyvõ Ko-fi-pe",
         "new_preset": "Ejapo preset pyahu",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Eru térã eipe’a jehai archivo-gui",
         "import_extract_abort": "Eheja extracción",
+        "browser_extension": "Eipe'a jepysokue kundahárape g̃uarã ñe'ẽryru",
         "clipboard_repeat_count": "Mboja jey jey",
         "wpm_input": "Ñe’ẽ peteĩ minuto-pe",
         "wpm_slider": "Ñe’ẽ peteĩ minuto-pe slider",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Aravo ohasáva: ",
         "import_extract_drop_here": "Epoi archivo ko’ápe egueru/eipe’a hag̃ua jehai"
       }
+    },
+    "browser_extension": {
+      "title": "Jepysokue kundahárape g̃uarã",
+      "subtitle": "Aravo jehecharã",
+      "availability": "Ojeguereko ko'ág̃a Chrome-pe. Oútama kundahára hetave ko'ẽrõitéma.",
+      "chrome_store_aria": "Eipe'a jepysokue Chrome Web Store rogue",
+      "close_aria": "Emboty jepysokue kundahárape g̃uarã ñe'ẽryru"
     },
     "editor": {
       "title": "toT — Jehai henyhẽva",

@@ -27,6 +27,7 @@
         "snapshot_save": "Lưu văn bản hiện tại thành bản lưu",
         "task_new": "Tác vụ mới",
         "task_load": "Tải tác vụ",
+        "browser_extension": "Tiện ích mở rộng trình duyệt",
         "cibersino_website": "Trang web Cibersino",
         "cibersino_kofi": "Ủng hộ tôi trên Ko-fi",
         "new_preset": "Tạo preset mới",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Nhập hoặc trích xuất văn bản từ tệp",
         "import_extract_abort": "Hủy trích xuất",
+        "browser_extension": "Mở hộp thoại tiện ích mở rộng trình duyệt",
         "clipboard_repeat_count": "Số lần dán",
         "wpm_input": "Số từ mỗi phút",
         "wpm_slider": "Thanh trượt số từ mỗi phút",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Đã trôi qua: ",
         "import_extract_drop_here": "Thả tệp để nhập/trích xuất văn bản"
       }
+    },
+    "browser_extension": {
+      "title": "Tiện ích mở rộng trình duyệt",
+      "subtitle": "Thời gian đọc",
+      "availability": "Hiện đã có trên Chrome. Nhiều trình duyệt khác sẽ sớm được hỗ trợ.",
+      "chrome_store_aria": "Mở trang Chrome Web Store của tiện ích",
+      "close_aria": "Đóng hộp thoại tiện ích mở rộng trình duyệt"
     },
     "editor": {
       "title": "toT — Toàn bộ văn bản",

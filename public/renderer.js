@@ -67,6 +67,7 @@ if (!importExtractStatusUi
   throw new Error('[renderer] ImportExtractStatusUi unavailable; cannot continue');
 }
 const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
+const browserExtensionModal = window.BrowserExtensionModal || null;
 const mainLogoLinks = window.MainLogoLinks || null;
 const currentTextSelectorSection = window.CurrentTextSelectorSection || null;
 if (!currentTextSelectorSection
@@ -202,6 +203,14 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(cronoDisplayInput, locked);
   setControlInteractionLocked(cronoToggleBtnMain, locked);
   setControlInteractionLocked(cronoResetBtnMain, locked);
+  if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
+    browserExtensionModal.setInteractionLocked(locked);
+  } else {
+    log.warnOnce(
+      'renderer.browserExtensionModal.setInteractionLocked.unavailable',
+      'BrowserExtensionModal.setInteractionLocked unavailable; browser extension entry lock state will not sync.'
+    );
+  }
 }
 
 function startImportExtractPrepareAttempt() {
@@ -220,6 +229,9 @@ function isAriaHiddenElementVisible(elementId) {
 
 function hasBlockingMainWindowModalOpen() {
   return isAriaHiddenElementVisible('infoModal')
+    || !!(browserExtensionModal
+      && typeof browserExtensionModal.hasBlockingModalOpen === 'function'
+      && browserExtensionModal.hasBlockingModalOpen())
     || isAriaHiddenElementVisible('importExtractRouteModal')
     || isAriaHiddenElementVisible('importExtractApplyModal')
     || isAriaHiddenElementVisible('snapshotSaveTagsModal')
@@ -445,6 +457,14 @@ function applyTranslations() {
     log.warnOnce(
       'renderer.mainLogoLinks.applyTranslations.unavailable',
       'MainLogoLinks.applyTranslations unavailable; brand logo labels will use defaults.'
+    );
+  }
+  if (browserExtensionModal && typeof browserExtensionModal.applyTranslations === 'function') {
+    browserExtensionModal.applyTranslations();
+  } else {
+    log.warnOnce(
+      'renderer.browserExtensionModal.applyTranslations.unavailable',
+      'BrowserExtensionModal.applyTranslations unavailable; browser extension labels will use defaults.'
     );
   }
   const infoModalLoading = document.getElementById('infoModalLoading');
@@ -1705,6 +1725,18 @@ function configureImportExtractModules() {
 
 function initializeDelegatedIntegrations() {
   configureImportExtractModules();
+
+  if (browserExtensionModal && typeof browserExtensionModal.configure === 'function') {
+    browserExtensionModal.configure({
+      electronAPI: window.electronAPI,
+      hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
+    });
+  } else {
+    log.warnOnce(
+      'renderer.browserExtensionModal.configure.unavailable',
+      'BrowserExtensionModal.configure unavailable; browser extension entry disabled.'
+    );
+  }
 
   if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
     mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });

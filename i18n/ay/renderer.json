@@ -27,6 +27,7 @@
         "snapshot_save": "Jichha qillqata snapshot ukar imaña",
         "task_new": "Machaq tarea",
         "task_load": "Tarea cargar",
+        "browser_extension": "Navegador extención",
         "cibersino_website": "Cibersino web",
         "cibersino_kofi": "Ko-fi ukan yanapt’ita",
         "new_preset": "Machaq preset luraña",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Archivut qillqata apaniña jan ukax apsuña",
         "import_extract_abort": "Apsuña suyt’ayaña",
+        "browser_extension": "Navegador extención diálogo jist'araña",
         "clipboard_repeat_count": "K’askachaña kutinaka",
         "wpm_input": "Sapa minutun arunaka",
         "wpm_slider": "Sapa minutun arunaka llusk’achiri",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Sarat pacha: ",
         "import_extract_drop_here": "Qillqata apaniñatak jan ukax apsuñatak archivo aka chiqar jaquntam"
       }
+    },
+    "browser_extension": {
+      "title": "Navegador extención",
+      "subtitle": "Ullaña pacha",
+      "availability": "Jichhax Chrome ukan utji. Juk'amp navegaduranakax niya jutaniwa.",
+      "chrome_store_aria": "Chrome Web Store ukan extención panka jist'araña",
+      "close_aria": "Navegador extención diálogo jist'antaña"
     },
     "editor": {
       "title": "toT — Phuqhata qillqata",

@@ -31,6 +31,7 @@ const ALLOWED_EXTERNAL_HOSTS = new Set([
   'doi.org',
   'ko-fi.com',
   'www.ko-fi.com',
+  'chromewebstore.google.com',
   'totapp.org',
   'www.totapp.org',
   'drive.google.com',

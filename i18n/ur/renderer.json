@@ -27,6 +27,7 @@
         "snapshot_save": "موجودہ متن کو اسنیپ شاٹ میں محفوظ کریں",
         "task_new": "نیا ٹاسک",
         "task_load": "ٹاسک لوڈ کریں",
+        "browser_extension": "براؤزر ایکسٹینشن",
         "cibersino_website": "Cibersino ویب سائٹ",
         "cibersino_kofi": "Ko-fi پر تعاون کریں",
         "new_preset": "نیا پری سیٹ بنائیں",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "فائل سے متن درآمد یا نکالیں",
         "import_extract_abort": "نکالنے کا عمل روکیں",
+        "browser_extension": "براؤزر ایکسٹینشن کا ڈائیلاگ کھولیں",
         "clipboard_repeat_count": "پیسٹ کی تکراریں",
         "wpm_input": "الفاظ فی منٹ",
         "wpm_slider": "الفاظ فی منٹ کا سلائیڈر",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "گزرا ہوا وقت: ",
         "import_extract_drop_here": "متن درآمد/نکالنے کے لیے فائل یہاں چھوڑیں"
       }
+    },
+    "browser_extension": {
+      "title": "براؤزر ایکسٹینشن",
+      "subtitle": "مطالعے کا وقت",
+      "availability": "ابھی Chrome پر دستیاب ہے۔ مزید براؤزرز جلد آ رہے ہیں۔",
+      "chrome_store_aria": "ایکسٹینشن کا Chrome Web Store صفحہ کھولیں",
+      "close_aria": "براؤزر ایکسٹینشن کا ڈائیلاگ بند کریں"
     },
     "editor": {
       "title": "toT — مکمل متن",

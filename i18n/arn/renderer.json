@@ -27,6 +27,7 @@
         "snapshot_save": "Elkünun wirin snapshot weyel tati",
         "task_new": "Dewman we tarea",
         "task_load": "Kintun tarea",
+        "browser_extension": "Extensión navegador mew",
         "cibersino_website": "Cibersino web",
         "cibersino_kofi": "Kelluen Ko-fi mew",
         "new_preset": "Dewman we preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Archivo mew wirin importar kam extraer",
         "import_extract_abort": "Abortar extracción",
+        "browser_extension": "Nülan diálogo extensión navegador mew",
         "clipboard_repeat_count": "Pültrün repeticiones",
         "wpm_input": "Dungu kiñe minuto mu",
         "wpm_slider": "WPM slider",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Amuln antü: ",
         "import_extract_drop_here": "Eltunge archivo faw, wirin importar kam extraer aal"
       }
+    },
+    "browser_extension": {
+      "title": "Extensión navegador mew",
+      "subtitle": "Chillkatun antü",
+      "availability": "Chrome mew müley feichi. Püñeñ mew kake navegadores müleay.",
+      "chrome_store_aria": "Nülan página extensión Chrome Web Store mew",
+      "close_aria": "Nürüfün diálogo extensión navegador mew"
     },
     "editor": {
       "title": "toT — Kom wirin",

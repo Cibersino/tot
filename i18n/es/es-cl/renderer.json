@@ -27,6 +27,7 @@
         "snapshot_save": "Salvar el texto vigente en un coso",
         "task_new": "Armar nueva misión",
         "task_load": "Cargar misión",
+        "browser_extension": "Extensión pal navegador",
         "cibersino_website": "Sitio de Cibersino",
         "cibersino_kofi": "Apóyame en Ko-fi",
         "new_preset": "Armar nuevo preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Importar o extraer texto desde archivo",
         "import_extract_abort": "Abortar extracción",
+        "browser_extension": "Abrir diálogo de extensión pal navegador",
         "clipboard_repeat_count": "Repeticiones del portapapeles",
         "wpm_input": "Palabras por minuto",
         "wpm_slider": "Deslizador de palabras por minuto",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Tiempo corrido: ",
         "import_extract_drop_here": "Suelta el archivo pa importar o sacarle texto"
       }
+    },
+    "browser_extension": {
+      "title": "Extensión pal navegador",
+      "subtitle": "Tiempo pa' leer",
+      "availability": "Disponible al tiro en Chrome. Más navegadores pronto.",
+      "chrome_store_aria": "Abrir la página de la extensión en Chrome Web Store",
+      "close_aria": "Cerrar diálogo de extensión pal navegador"
     },
     "editor": {
       "title": "toT — El texto completito",

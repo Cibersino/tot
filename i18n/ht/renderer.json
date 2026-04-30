@@ -27,6 +27,7 @@
         "snapshot_save": "Sove tèks aktyèl la nan yon snapshot",
         "task_new": "Nouvo travay",
         "task_load": "Chaje travay",
+        "browser_extension": "Ekstansyon navigatè",
         "cibersino_website": "Sit Cibersino",
         "cibersino_kofi": "Sipòte m sou Ko-fi",
         "new_preset": "Kreye yon nouvo preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Enpòte oswa ekstrè tèks nan fichye",
         "import_extract_abort": "Anile ekstraksyon",
+        "browser_extension": "Louvri dyalòg ekstansyon navigatè a",
         "clipboard_repeat_count": "Repetisyon kole",
         "wpm_input": "Mo pa minit",
         "wpm_slider": "Koulis mo pa minit",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Tan pase: ",
         "import_extract_drop_here": "Lage fichye a pou enpòte/ekstrè tèks"
       }
+    },
+    "browser_extension": {
+      "title": "Ekstansyon navigatè",
+      "subtitle": "Tan lekti",
+      "availability": "Disponib kounye a sou Chrome. Lòt navigatè ap vini byento.",
+      "chrome_store_aria": "Louvri paj Chrome Web Store ekstansyon an",
+      "close_aria": "Fèmen dyalòg ekstansyon navigatè a"
     },
     "editor": {
       "title": "toT — Tèks konplè",

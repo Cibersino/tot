@@ -27,6 +27,7 @@
         "snapshot_save": "Gcina umbhalo wamanje njenge-snapshot",
         "task_new": "Umsebenzi omusha",
         "task_load": "Layisha umsebenzi",
+        "browser_extension": "Isandiso sesiphequluli",
         "cibersino_website": "Iwebhusayithi ye-Cibersino",
         "cibersino_kofi": "Sekela ku-Ko-fi",
         "new_preset": "Dala iphrezethi entsha",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Ngenisa noma khipha umbhalo efayeleni",
         "import_extract_abort": "Misa ukukhishwa",
+        "browser_extension": "Vula ibhokisi lesandiso sesiphequluli",
         "clipboard_repeat_count": "Ukuphindaphinda kokunamathisela",
         "wpm_input": "Amagama ngomzuzu",
         "wpm_slider": "Isilayida samagama ngomzuzu",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Isikhathi esidlulile: ",
         "import_extract_drop_here": "Dedela ifayela ukuze ungenise noma ukhiphe umbhalo"
       }
+    },
+    "browser_extension": {
+      "title": "Isandiso sesiphequluli",
+      "subtitle": "Isikhathi sokufunda",
+      "availability": "Siyatholakala ku-Chrome manje. Ezinye iziphequluli ziyeza maduze.",
+      "chrome_store_aria": "Vula ikhasi le-Chrome Web Store lesandiso",
+      "close_aria": "Vala ibhokisi lesandiso sesiphequluli"
     },
     "editor": {
       "title": "toT — Umbhalo ophelele",

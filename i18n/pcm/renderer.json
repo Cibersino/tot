@@ -27,6 +27,7 @@
         "snapshot_save": "Save current text as snapshot",
         "task_new": "New task",
         "task_load": "Load task",
+        "browser_extension": "Browser extension",
         "cibersino_website": "Cibersino website",
         "cibersino_kofi": "Support me on Ko-fi",
         "new_preset": "Create new preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Import or extract text from file",
         "import_extract_abort": "Abort extraction",
+        "browser_extension": "Open browser extension dialog",
         "clipboard_repeat_count": "Paste repetitions",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words-per-minute slider",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Time wey don pass: ",
         "import_extract_drop_here": "Drop file to import/extract text"
       }
+    },
+    "browser_extension": {
+      "title": "Browser extension",
+      "subtitle": "Reading time",
+      "availability": "E don dey available for Chrome now. More browsers go come soon.",
+      "chrome_store_aria": "Open di extension Chrome Web Store page",
+      "close_aria": "Close browser extension dialog"
     },
     "editor": {
       "title": "toT — Full text",

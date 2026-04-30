@@ -27,6 +27,7 @@
         "snapshot_save": "現在のテキストをスナップショットに保存",
         "task_new": "新しいタスク",
         "task_load": "タスクを読み込む",
+        "browser_extension": "ブラウザー拡張機能",
         "cibersino_website": "Cibersino のサイト",
         "cibersino_kofi": "Ko-fi で支援する",
         "new_preset": "新しいプリセットを作成",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "ファイルからテキストをインポートまたは抽出",
         "import_extract_abort": "抽出を中止",
+        "browser_extension": "ブラウザー拡張機能のダイアログを開く",
         "clipboard_repeat_count": "貼り付け回数",
         "wpm_input": "1分あたりの語数",
         "wpm_slider": "1分あたりの語数スライダー",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "経過時間: ",
         "import_extract_drop_here": "テキストをインポート/抽出するファイルをドロップ"
       }
+    },
+    "browser_extension": {
+      "title": "ブラウザー拡張機能",
+      "subtitle": "読書時間",
+      "availability": "現在 Chrome で利用できます。ほかのブラウザーにも近日対応予定です。",
+      "chrome_store_aria": "拡張機能の Chrome Web Store ページを開く",
+      "close_aria": "ブラウザー拡張機能のダイアログを閉じる"
     },
     "editor": {
       "title": "toT — 全文テキスト",

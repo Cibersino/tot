@@ -27,6 +27,7 @@
         "snapshot_save": "Gorde uneko testua snapshot batean",
         "task_new": "Ataza berria",
         "task_load": "Kargatu ataza",
+        "browser_extension": "Nabigatzailearen hedapena",
         "cibersino_website": "Cibersino webgunea",
         "cibersino_kofi": "Babestu Ko-fi-n",
         "new_preset": "Sortu aurrezarpen berria",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Inportatu edo erauzi testua fitxategitik",
         "import_extract_abort": "Bertan behera utzi erauzketa",
+        "browser_extension": "Ireki nabigatzailearen hedapenaren elkarrizketa-koadroa",
         "clipboard_repeat_count": "Itsaste-errepikapenak",
         "wpm_input": "Hitzak minutuko",
         "wpm_slider": "Hitzak minutuko balioaren graduatzailea",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Igarotako denbora: ",
         "import_extract_drop_here": "Jaregin fitxategia testua inportatzeko edo erauzteko"
       }
+    },
+    "browser_extension": {
+      "title": "Nabigatzailearen hedapena",
+      "subtitle": "Irakurketa-denbora",
+      "availability": "Orain Chrome-n erabilgarri. Laster nabigatzaile gehiagotan ere bai.",
+      "chrome_store_aria": "Ireki hedapenaren Chrome Web Store orria",
+      "close_aria": "Itxi nabigatzailearen hedapenaren elkarrizketa-koadroa"
     },
     "editor": {
       "title": "toT — Testu osoa",

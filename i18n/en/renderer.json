@@ -27,6 +27,7 @@
         "snapshot_save": "Save current text to a snapshot",
         "task_new": "New task",
         "task_load": "Load task",
+        "browser_extension": "Browser extension",
         "cibersino_website": "Cibersino website",
         "cibersino_kofi": "Support me on Ko-fi",
         "new_preset": "Create a new preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Import or extract text from file",
         "import_extract_abort": "Abort extraction",
+        "browser_extension": "Open browser extension dialog",
         "clipboard_repeat_count": "Paste repetitions",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words-per-minute slider",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Elapsed: ",
         "import_extract_drop_here": "Drop file to import/extract text"
       }
+    },
+    "browser_extension": {
+      "title": "Browser extension",
+      "subtitle": "Reading time",
+      "availability": "Available on Chrome now. More browsers coming soon.",
+      "chrome_store_aria": "Open the extension Chrome Web Store page",
+      "close_aria": "Close browser extension dialog"
     },
     "editor": {
       "title": "toT — Full text",
@@ -564,7 +573,9 @@
       "tip49": "One of OCR's predecessors was the optophone, an early 20th-century machine designed so blind people could convert printed text into sounds.",
       "tip50": "The development of modern OCR accelerated between the 1950s and 1960s, driven by postal automation and the reading of business documents.",
       "tip51": "Kurzweil's reading machine, introduced in the 1970s, combined a scanner, OCR, and speech synthesis to read printed text aloud.",
-      "tip52": "A typical OCR error is confusing visually similar characters, such as O and 0, l and I, or rn and m."
+      "tip52": "A typical OCR error is confusing visually similar characters, such as O and 0, l and I, or rn and m.",
+      "tip53": "OCR has evolved with machine learning techniques and neural networks, improving its accuracy and ability to handle different types of text and images.",
+      "tip54": "Have you tried toT's browser extensions?"
     }
   }
 }

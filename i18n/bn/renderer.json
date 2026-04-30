@@ -27,6 +27,7 @@
         "snapshot_save": "বর্তমান লেখা স্ন্যাপশটে সংরক্ষণ করুন",
         "task_new": "নতুন টাস্ক",
         "task_load": "টাস্ক লোড করুন",
+        "browser_extension": "ব্রাউজার এক্সটেনশন",
         "cibersino_website": "Cibersino ওয়েবসাইট",
         "cibersino_kofi": "Ko-fi-তে সমর্থন করুন",
         "new_preset": "নতুন প্রিসেট তৈরি করুন",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "ফাইল থেকে লেখা আমদানি বা নিষ্কাশন করুন",
         "import_extract_abort": "নিষ্কাশন বন্ধ করুন",
+        "browser_extension": "ব্রাউজার এক্সটেনশন ডায়ালগ খুলুন",
         "clipboard_repeat_count": "পেস্টের পুনরাবৃত্তি",
         "wpm_input": "প্রতি মিনিটে শব্দ",
         "wpm_slider": "প্রতি মিনিটে শব্দের স্লাইডার",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "অতিবাহিত: ",
         "import_extract_drop_here": "লেখা আমদানি/নিষ্কাশনের জন্য ফাইল ছেড়ে দিন"
       }
+    },
+    "browser_extension": {
+      "title": "ব্রাউজার এক্সটেনশন",
+      "subtitle": "পড়ার সময়",
+      "availability": "এখন Chrome-এ উপলব্ধ। শিগগিরই আরও ব্রাউজারে আসছে।",
+      "chrome_store_aria": "এক্সটেনশনের Chrome Web Store পৃষ্ঠা খুলুন",
+      "close_aria": "ব্রাউজার এক্সটেনশন ডায়ালগ বন্ধ করুন"
     },
     "editor": {
       "title": "toT — সম্পূর্ণ লেখা",

@@ -27,6 +27,7 @@
         "snapshot_save": "Simpan teks saat ini ke snapshot",
         "task_new": "Tugas baru",
         "task_load": "Muat tugas",
+        "browser_extension": "Ekstensi browser",
         "cibersino_website": "Situs web Cibersino",
         "cibersino_kofi": "Dukung saya di Ko-fi",
         "new_preset": "Buat preset baru",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Impor atau ekstrak teks dari file",
         "import_extract_abort": "Batalkan ekstraksi",
+        "browser_extension": "Buka dialog ekstensi browser",
         "clipboard_repeat_count": "Pengulangan tempel",
         "wpm_input": "Kata per menit",
         "wpm_slider": "Slider kata per menit",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Waktu berjalan: ",
         "import_extract_drop_here": "Jatuhkan file untuk mengimpor/mengekstrak teks"
       }
+    },
+    "browser_extension": {
+      "title": "Ekstensi browser",
+      "subtitle": "Waktu membaca",
+      "availability": "Tersedia di Chrome sekarang. Browser lain akan segera menyusul.",
+      "chrome_store_aria": "Buka halaman Chrome Web Store ekstensi",
+      "close_aria": "Tutup dialog ekstensi browser"
     },
     "editor": {
       "title": "toT — Teks lengkap",

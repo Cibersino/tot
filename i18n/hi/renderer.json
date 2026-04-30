@@ -27,6 +27,7 @@
         "snapshot_save": "वर्तमान पाठ को स्नैपशॉट में सहेजें",
         "task_new": "नया कार्य",
         "task_load": "कार्य लोड करें",
+        "browser_extension": "ब्राउज़र एक्सटेंशन",
         "cibersino_website": "Cibersino वेबसाइट",
         "cibersino_kofi": "Ko-fi पर समर्थन करें",
         "new_preset": "नया प्रीसेट बनाएँ",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "फ़ाइल से पाठ आयात या निकालें",
         "import_extract_abort": "निकासी रोकें",
+        "browser_extension": "ब्राउज़र एक्सटेंशन संवाद खोलें",
         "clipboard_repeat_count": "चिपकाने की पुनरावृत्तियाँ",
         "wpm_input": "प्रति मिनट शब्द",
         "wpm_slider": "प्रति मिनट शब्दों का स्लाइडर",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "बीता समय: ",
         "import_extract_drop_here": "पाठ आयात/निकालने के लिए फ़ाइल छोड़ें"
       }
+    },
+    "browser_extension": {
+      "title": "ब्राउज़र एक्सटेंशन",
+      "subtitle": "पढ़ने का समय",
+      "availability": "अभी Chrome पर उपलब्ध है। जल्द ही और ब्राउज़रों पर आएगा।",
+      "chrome_store_aria": "एक्सटेंशन का Chrome Web Store पेज खोलें",
+      "close_aria": "ब्राउज़र एक्सटेंशन संवाद बंद करें"
     },
     "editor": {
       "title": "toT — पूरा पाठ",

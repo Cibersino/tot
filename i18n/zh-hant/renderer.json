@@ -27,6 +27,7 @@
         "snapshot_save": "將目前文字儲存為快照",
         "task_new": "新增任務",
         "task_load": "載入任務",
+        "browser_extension": "瀏覽器擴充功能",
         "cibersino_website": "Cibersino 網站",
         "cibersino_kofi": "在 Ko-fi 支持我",
         "new_preset": "建立新預設值",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "從檔案匯入或擷取文字",
         "import_extract_abort": "中止擷取",
+        "browser_extension": "開啟瀏覽器擴充功能對話框",
         "clipboard_repeat_count": "貼上重複次數",
         "wpm_input": "每分鐘詞數",
         "wpm_slider": "每分鐘詞數滑桿",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "經過時間：",
         "import_extract_drop_here": "拖放檔案以匯入或擷取文字"
       }
+    },
+    "browser_extension": {
+      "title": "瀏覽器擴充功能",
+      "subtitle": "閱讀時間",
+      "availability": "現已於 Chrome 提供。更多瀏覽器即將支援。",
+      "chrome_store_aria": "開啟擴充功能的 Chrome Web Store 頁面",
+      "close_aria": "關閉瀏覽器擴充功能對話框"
     },
     "editor": {
       "title": "toT — 完整文字",

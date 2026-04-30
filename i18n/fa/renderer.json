@@ -27,6 +27,7 @@
         "snapshot_save": "ذخیره متن فعلی در یک اسنپ‌شات",
         "task_new": "کار جدید",
         "task_load": "بارگذاری کار",
+        "browser_extension": "افزونه مرورگر",
         "cibersino_website": "وب‌سایت Cibersino",
         "cibersino_kofi": "حمایت در Ko-fi",
         "new_preset": "ساخت پیش‌تنظیم جدید",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "وارد کردن یا استخراج متن از فایل",
         "import_extract_abort": "لغو استخراج",
+        "browser_extension": "باز کردن پنجره افزونه مرورگر",
         "clipboard_repeat_count": "تکرارهای چسباندن",
         "wpm_input": "واژه در دقیقه",
         "wpm_slider": "لغزنده واژه در دقیقه",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "زمان سپری‌شده: ",
         "import_extract_drop_here": "برای وارد کردن/استخراج متن، فایل را اینجا رها کنید"
       }
+    },
+    "browser_extension": {
+      "title": "افزونه مرورگر",
+      "subtitle": "زمان مطالعه",
+      "availability": "اکنون در Chrome در دسترس است. به‌زودی مرورگرهای بیشتری اضافه می‌شوند.",
+      "chrome_store_aria": "باز کردن صفحه افزونه در Chrome Web Store",
+      "close_aria": "بستن پنجره افزونه مرورگر"
     },
     "editor": {
       "title": "toT — متن کامل",

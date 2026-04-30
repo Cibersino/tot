@@ -27,6 +27,7 @@
         "snapshot_save": "将当前文本保存为快照",
         "task_new": "新建任务",
         "task_load": "加载任务",
+        "browser_extension": "浏览器扩展",
         "cibersino_website": "Cibersino 网站",
         "cibersino_kofi": "在 Ko-fi 支持我",
         "new_preset": "创建新预设",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "从文件导入或提取文本",
         "import_extract_abort": "中止提取",
+        "browser_extension": "打开浏览器扩展对话框",
         "clipboard_repeat_count": "粘贴重复次数",
         "wpm_input": "每分钟词数",
         "wpm_slider": "每分钟词数滑块",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "已用时间：",
         "import_extract_drop_here": "拖放文件以导入或提取文本"
       }
+    },
+    "browser_extension": {
+      "title": "浏览器扩展",
+      "subtitle": "阅读时间",
+      "availability": "现已在 Chrome 上提供。更多浏览器即将支持。",
+      "chrome_store_aria": "打开扩展的 Chrome Web Store 页面",
+      "close_aria": "关闭浏览器扩展对话框"
     },
     "editor": {
       "title": "toT — 完整文本",

@@ -27,6 +27,7 @@
         "snapshot_save": "Desar el text actual en un snapshot",
         "task_new": "Nova tasca",
         "task_load": "Carregar tasca",
+        "browser_extension": "Extensió del navegador",
         "cibersino_website": "Web de Cibersino",
         "cibersino_kofi": "Dona’m suport a Ko-fi",
         "new_preset": "Crear un preset nou",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Importar o extreure text des d’un fitxer",
         "import_extract_abort": "Avortar l’extracció",
+        "browser_extension": "Obre el diàleg de l'extensió del navegador",
         "clipboard_repeat_count": "Repeticions d’enganxada",
         "wpm_input": "Paraules per minut",
         "wpm_slider": "Control lliscant de paraules per minut",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Transcorregut: ",
         "import_extract_drop_here": "Deixa anar el fitxer per importar o extreure text"
       }
+    },
+    "browser_extension": {
+      "title": "Extensió del navegador",
+      "subtitle": "Temps de lectura",
+      "availability": "Disponible ara a Chrome. Aviat arribarà a més navegadors.",
+      "chrome_store_aria": "Obre la pàgina de l'extensió a Chrome Web Store",
+      "close_aria": "Tanca el diàleg de l'extensió del navegador"
     },
     "editor": {
       "title": "toT — Text complet",

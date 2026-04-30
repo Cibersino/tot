@@ -27,6 +27,7 @@
         "snapshot_save": "Сохранить текущий текст в снапшот",
         "task_new": "Новая задача",
         "task_load": "Загрузить задачу",
+        "browser_extension": "Расширение браузера",
         "cibersino_website": "Сайт Cibersino",
         "cibersino_kofi": "Поддержать меня на Ko-fi",
         "new_preset": "Создать новый пресет",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Импортировать или извлечь текст из файла",
         "import_extract_abort": "Прервать извлечение",
+        "browser_extension": "Открыть диалог расширения браузера",
         "clipboard_repeat_count": "Повторения вставки",
         "wpm_input": "Слов в минуту",
         "wpm_slider": "Ползунок слов в минуту",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Прошло: ",
         "import_extract_drop_here": "Перетащите файл, чтобы импортировать или извлечь текст"
       }
+    },
+    "browser_extension": {
+      "title": "Расширение браузера",
+      "subtitle": "Время чтения",
+      "availability": "Уже доступно в Chrome. Скоро появится и в других браузерах.",
+      "chrome_store_aria": "Открыть страницу расширения в Chrome Web Store",
+      "close_aria": "Закрыть диалог расширения браузера"
     },
     "editor": {
       "title": "toT — Полный текст",

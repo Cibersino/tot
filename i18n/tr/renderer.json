@@ -27,6 +27,7 @@
         "snapshot_save": "Geçerli metni snapshot olarak kaydet",
         "task_new": "Yeni görev",
         "task_load": "Görev yükle",
+        "browser_extension": "Tarayıcı uzantısı",
         "cibersino_website": "Cibersino web sitesi",
         "cibersino_kofi": "Ko-fi'de destekle",
         "new_preset": "Yeni ön ayar oluştur",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Dosyadan metin içe aktar veya çıkar",
         "import_extract_abort": "Çıkarmayı durdur",
+        "browser_extension": "Tarayıcı uzantısı iletişim kutusunu aç",
         "clipboard_repeat_count": "Yapıştırma yinelemeleri",
         "wpm_input": "Dakikadaki kelime",
         "wpm_slider": "Dakikadaki kelime kaydırıcısı",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Geçen süre: ",
         "import_extract_drop_here": "Metni içe aktarmak/çıkarmak için dosyayı bırakın"
       }
+    },
+    "browser_extension": {
+      "title": "Tarayıcı uzantısı",
+      "subtitle": "Okuma süresi",
+      "availability": "Şu anda Chrome'da kullanılabilir. Yakında daha fazla tarayıcıya gelecek.",
+      "chrome_store_aria": "Uzantının Chrome Web Store sayfasını aç",
+      "close_aria": "Tarayıcı uzantısı iletişim kutusunu kapat"
     },
     "editor": {
       "title": "toT — Tam metin",

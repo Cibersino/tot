@@ -27,6 +27,7 @@
         "snapshot_save": "Kunan qillqata snapshotpi waqaychay",
         "task_new": "Musuq llamk'ana",
         "task_load": "Llamk'anata kargay",
+        "browser_extension": "Navegadorpa extensiónnin",
         "cibersino_website": "Cibersino web",
         "cibersino_kofi": "Ko-fi nisqapi yanapaway",
         "new_preset": "Musuq preset ruwakuy",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Archivomanta qillqata apamuy utaq qichuy",
         "import_extract_abort": "Qichuyta sayachiy",
+        "browser_extension": "Navegadorpa extensiónnin dialogota kichay",
         "clipboard_repeat_count": "K'askachiy kutiykuna",
         "wpm_input": "Sapa minutupi simikuna",
         "wpm_slider": "Sapa minutupi simikuna llusk'achiq",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Puriq pacha: ",
         "import_extract_drop_here": "Archivota kayman saqiy qillqata apamunapaq utaq qichunapaq"
       }
+    },
+    "browser_extension": {
+      "title": "Navegadorpa extensiónnin",
+      "subtitle": "Ñawinchay pacha",
+      "availability": "Kunanqa Chrome-pi kachkanña. Aswan achka navegadorkunamanqa utqayllam chayanqa.",
+      "chrome_store_aria": "Extensiónpa Chrome Web Store p'ankanta kichay",
+      "close_aria": "Navegadorpa extensiónnin dialogota wichq'ay"
     },
     "editor": {
       "title": "toT — Hunt'a qillqa",

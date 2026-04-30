@@ -409,6 +409,10 @@ body {
   height: 100%;
 }
 
+.logo-link--extension {
+  height: 100%;
+}
+
 #devLogo {
   width: auto;
   height: 100%;
@@ -419,6 +423,13 @@ body {
 #kofiLogo {
   width: auto;
   height: calc(100% * var(--kofi-logo-scale));
+  object-fit: contain;
+  display: block;
+}
+
+#browserExtensionLogo {
+  width: auto;
+  height: calc(100% * 0.72);
   object-fit: contain;
   display: block;
 }
@@ -977,6 +988,103 @@ select#presets:focus {
 .info-modal-content pre {
   white-space: pre-wrap;
   word-break: break-word
+}
+
+.browser-extension-modal-panel {
+  position: relative;
+  width: min(540px, calc(100% - var(--modal-inline-gutter)));
+  background: var(--info-modal-panel-bg);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--modal-panel-shadow);
+  z-index: 1001;
+  font-family: var(--font-reading);
+}
+
+.browser-extension-modal-header {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 1;
+}
+
+.browser-extension-modal-body {
+  display: grid;
+  gap: 18px;
+  padding: 20px 20px 22px;
+}
+
+.browser-extension-modal-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.browser-extension-modal-copy h2 {
+  margin: 0;
+  padding-right: 44px;
+  color: var(--text-strong);
+  font-size: 28px;
+}
+
+.browser-extension-modal-subtitle {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 18px;
+  font-style: italic;
+}
+
+.browser-extension-modal-store {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.55);
+}
+
+.browser-extension-modal-store-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.browser-extension-modal-store-link:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.browser-extension-modal-store-link:focus {
+  outline: 3px solid var(--focus-ring-strong);
+  outline-offset: 4px;
+}
+
+.browser-extension-modal-store-link img {
+  width: min(206px, 100%);
+  height: auto;
+  display: block;
+}
+
+.browser-extension-modal-availability {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+@media (max-width: 600px) {
+  .browser-extension-modal-store {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .browser-extension-modal-store-link img {
+    width: min(206px, 100%);
+  }
 }
 
 .info-section {

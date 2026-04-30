@@ -27,6 +27,7 @@
         "snapshot_save": "Guardar el texto actual en un snapshot",
         "task_new": "Nueva tarea",
         "task_load": "Cargar tarea",
+        "browser_extension": "Extensión del navegador",
         "cibersino_website": "Sitio de Cibersino",
         "cibersino_kofi": "Apóyame en Ko-fi",
         "new_preset": "Crear un nuevo preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Importar o extraer texto desde archivo",
         "import_extract_abort": "Abortar extracción",
+        "browser_extension": "Abrir diálogo de extensión del navegador",
         "clipboard_repeat_count": "Repeticiones de pegado",
         "wpm_input": "Palabras por minuto",
         "wpm_slider": "Deslizador de palabras por minuto",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Transcurrido: ",
         "import_extract_drop_here": "Suelta el archivo para importar o extraer texto"
       }
+    },
+    "browser_extension": {
+      "title": "Extensión del navegador",
+      "subtitle": "Tiempo de lectura",
+      "availability": "Disponible ahora en Chrome. Más navegadores pronto.",
+      "chrome_store_aria": "Abrir página de Chrome Web Store de la extensión",
+      "close_aria": "Cerrar diálogo de extensión del navegador"
     },
     "editor": {
       "title": "toT — Texto completo",
@@ -564,7 +573,9 @@
       "tip49": "Entre los antecedentes del OCR estuvo el optophone, una máquina de comienzos del siglo XX pensada para que personas ciegas pudieran convertir texto impreso en sonidos.",
       "tip50": "El desarrollo del OCR moderno se aceleró entre los años 50 y 60, impulsado por la automatización postal y la lectura de documentos comerciales.",
       "tip51": "La máquina de lectura de Kurzweil, presentada en los años 70, combinó escáner, OCR y síntesis de voz para leer texto impreso en voz alta.",
-      "tip52": "Un error típico de OCR es confundir caracteres visualmente parecidos, como O y 0, l e I, o rn y m."
+      "tip52": "Un error típico de OCR es confundir caracteres visualmente parecidos, como O y 0, l e I, o rn y m.",
+      "tip53": "El OCR ha evolucionado con técnicas de aprendizaje automático y redes neuronales, mejorando su precisión y capacidad para manejar distintos tipos de texto e imágenes.",
+      "tip54": "¿Probaste las extensiones de navegador de toT?"
     }
   }
 }

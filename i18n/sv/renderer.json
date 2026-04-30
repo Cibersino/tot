@@ -27,6 +27,7 @@
         "snapshot_save": "Spara aktuell text som snapshot",
         "task_new": "Ny uppgift",
         "task_load": "Läs in uppgift",
+        "browser_extension": "Webbläsartillägg",
         "cibersino_website": "Cibersinos webbplats",
         "cibersino_kofi": "Stöd mig på Ko-fi",
         "new_preset": "Skapa en ny förinställning",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Importera eller extrahera text från fil",
         "import_extract_abort": "Avbryt extrahering",
+        "browser_extension": "Öppna dialogrutan för webbläsartillägget",
         "clipboard_repeat_count": "Antal inklistringar",
         "wpm_input": "Ord per minut",
         "wpm_slider": "Reglage för ord per minut",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Förfluten tid: ",
         "import_extract_drop_here": "Släpp filen för att importera/extrahera text"
       }
+    },
+    "browser_extension": {
+      "title": "Webbläsartillägg",
+      "subtitle": "Lästid",
+      "availability": "Finns i Chrome nu. Fler webbläsare kommer snart.",
+      "chrome_store_aria": "Öppna tilläggets sida i Chrome Web Store",
+      "close_aria": "Stäng dialogrutan för webbläsartillägget"
     },
     "editor": {
       "title": "toT — Fullständig text",

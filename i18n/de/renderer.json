@@ -27,6 +27,7 @@
         "snapshot_save": "Speichern Sie den aktuellen Text in einem Snapshot",
         "task_new": "Neue Aufgabe",
         "task_load": "Aufgabe laden",
+        "browser_extension": "Browser-Erweiterung",
         "cibersino_website": "Cibersino-Website",
         "cibersino_kofi": "Unterstütze mich auf Ko-fi",
         "new_preset": "Erstellen Sie ein neues Preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Text aus Datei importieren oder extrahieren",
         "import_extract_abort": "Extraktion abbrechen",
+        "browser_extension": "Dialog der Browser-Erweiterung öffnen",
         "clipboard_repeat_count": "Einfügewiederholungen",
         "wpm_input": "Wörter pro Minute",
         "wpm_slider": "Regler für Wörter pro Minute",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Verstrichen: ",
         "import_extract_drop_here": "Datei hier ablegen, um Text zu importieren/extrahieren"
       }
+    },
+    "browser_extension": {
+      "title": "Browser-Erweiterung",
+      "subtitle": "Lesezeit",
+      "availability": "Jetzt in Chrome verfügbar. Weitere Browser folgen bald.",
+      "chrome_store_aria": "Die Chrome Web Store-Seite der Erweiterung öffnen",
+      "close_aria": "Dialog der Browser-Erweiterung schließen"
     },
     "editor": {
       "title": "toT — Vollständiger Text",

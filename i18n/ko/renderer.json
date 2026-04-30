@@ -27,6 +27,7 @@
         "snapshot_save": "현재 텍스트를 스냅샷으로 저장",
         "task_new": "새 작업",
         "task_load": "작업 불러오기",
+        "browser_extension": "브라우저 확장 프로그램",
         "cibersino_website": "Cibersino 웹사이트",
         "cibersino_kofi": "Ko-fi에서 후원하기",
         "new_preset": "새 프리셋 만들기",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "파일에서 텍스트 가져오기 또는 추출",
         "import_extract_abort": "추출 중단",
+        "browser_extension": "브라우저 확장 프로그램 대화상자 열기",
         "clipboard_repeat_count": "붙여넣기 반복 횟수",
         "wpm_input": "분당 단어 수",
         "wpm_slider": "분당 단어 수 슬라이더",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "경과 시간: ",
         "import_extract_drop_here": "텍스트를 가져오거나 추출할 파일을 놓으세요"
       }
+    },
+    "browser_extension": {
+      "title": "브라우저 확장 프로그램",
+      "subtitle": "읽기 시간",
+      "availability": "지금 Chrome에서 사용할 수 있습니다. 더 많은 브라우저가 곧 지원됩니다.",
+      "chrome_store_aria": "확장 프로그램의 Chrome Web Store 페이지 열기",
+      "close_aria": "브라우저 확장 프로그램 대화상자 닫기"
     },
     "editor": {
       "title": "toT — 전체 텍스트",

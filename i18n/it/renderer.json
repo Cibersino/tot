@@ -27,6 +27,7 @@
         "snapshot_save": "Salva il testo corrente in uno snapshot",
         "task_new": "Crea una nuova attività",
         "task_load": "Carica un'attività",
+        "browser_extension": "Estensione del browser",
         "cibersino_website": "Il sito di Cibersino",
         "cibersino_kofi": "Sostienimi su Ko-fi",
         "new_preset": "Crea un nuovo preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Importa o estrai testo da file",
         "import_extract_abort": "Interrompi estrazione",
+        "browser_extension": "Apri la finestra di dialogo dell'estensione del browser",
         "clipboard_repeat_count": "Ripetizioni dell'incolla",
         "wpm_input": "Parole al minuto",
         "wpm_slider": "Cursore parole al minuto",
@@ -89,6 +91,13 @@
         "import_extract_elapsed": "Tempo trascorso: ",
         "import_extract_drop_here": "Rilascia un file per importare/estrarre testo"
       }
+    },
+    "browser_extension": {
+      "title": "Estensione del browser",
+      "subtitle": "Tempo di lettura",
+      "availability": "Disponibile ora su Chrome. Altri browser in arrivo a breve.",
+      "chrome_store_aria": "Apri la pagina Chrome Web Store dell'estensione",
+      "close_aria": "Chiudi la finestra di dialogo dell'estensione del browser"
     },
     "editor": {
       "title": "toT — Testo completo",
