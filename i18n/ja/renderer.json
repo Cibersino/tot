@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "解析されたテキストの冒頭と末尾:",
       "selector_empty": "（空）",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "ファイルからテキストを抽出",
         "text_extraction_abort": "抽出を中止",
@@ -58,7 +46,6 @@
         "wpm_label": "1分あたりの語数（WPM）",
         "new": "新",
         "edit": "編",
-        "delete": "🗑",
         "reset_defaults": "戻"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "ストップウォッチ",
         "speed": "速度:",
         "controls_label": "ストップウォッチ操作",
-        "flotante_short": "FW",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "FW"
       },
       "reading_tools": {
         "reading_speed_test": "読書速度テスト",
@@ -111,9 +96,7 @@
       "reset_text_size": "文字サイズをリセット",
       "text_size_value": "{value} px",
       "read_progress_label": "読了",
-      "read_progress_value": "{value}",
       "read_progress_aria": "読書進捗: {value}",
-      "clear": "🗑",
       "clear_title": "空にする"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "置換を非表示",
       "replace_placeholder": "置換...",
       "replace_aria": "置換テキスト",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "置換",
       "replace_all": "すべて置換",
       "prev_title": "前の一致",
@@ -161,17 +141,7 @@
         "delete": "削除",
         "add_row": "行を追加",
         "open_library": "ライブラリを開く",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "スナップショットを選択",
-        "clear_snapshot": "🗙",
         "cancel": "キャンセル",
         "yes": "はい",
         "no": "いいえ"
@@ -503,7 +473,6 @@
         "error": "ドキュメントを開く際にエラーが発生しました"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "このアプリについて",
         "version": {
           "unavailable": "利用不可"
@@ -516,13 +485,9 @@
         "title": "使い方"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "参考リンク",
         "section_biblio_label": "参考文献"
       }
     }
   }
 }
-
-
-

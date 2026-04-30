@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Premye ak dènye pati tèks ki analize a:",
       "selector_empty": "(vid)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Ekstrè tèks nan fichye",
         "text_extraction_abort": "Anile ekstraksyon",
@@ -58,7 +46,6 @@
         "wpm_label": "mo pa minit (WPM)",
         "new": "N",
         "edit": "E",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "KWONOMÈT",
         "speed": "Vitès:",
         "controls_label": "Kontwòl kwonomèt",
-        "flotante_short": "FF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "FF"
       },
       "reading_tools": {
         "reading_speed_test": "Tès vitès lekti",
@@ -111,9 +96,7 @@
       "reset_text_size": "Reyajiste gwosè tèks la",
       "text_size_value": "{value} px",
       "read_progress_label": "Li",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Pwogrè lekti: {value}",
-      "clear": "🗑",
       "clear_title": "Vide"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "Kache kontwòl ranplasman",
       "replace_placeholder": "Ranplase...",
       "replace_aria": "Tèks ranplasman",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Ranplase",
       "replace_all": "Ranplase tout",
       "prev_title": "Korespondans anvan",
@@ -161,17 +141,7 @@
         "delete": "Efase",
         "add_row": "Ajoute ranje",
         "open_library": "Louvri bibliyotèk",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Chwazi snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Anile",
         "yes": "Wi",
         "no": "Non"
@@ -503,7 +473,6 @@
         "error": "Erè pandan ouvèti dokiman"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Konsènan",
         "version": {
           "unavailable": "Pa disponib"
@@ -516,13 +485,9 @@
         "title": "Kijan pou itilize"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Lyen itil",
         "section_biblio_label": "Referans bibliyografik"
       }
     }
   }
 }
-
-
-

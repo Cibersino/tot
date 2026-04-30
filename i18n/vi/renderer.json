@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Phần đầu và phần cuối của văn bản được phân tích:",
       "selector_empty": "(trống)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Trích xuất văn bản từ tệp",
         "text_extraction_abort": "Hủy trích xuất",
@@ -58,7 +46,6 @@
         "wpm_label": "từ mỗi phút (WPM)",
         "new": "N",
         "edit": "E",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "ĐỒNG HỒ BẤM GIỜ",
         "speed": "Tốc độ:",
         "controls_label": "Điều khiển đồng hồ bấm giờ",
-        "flotante_short": "FW",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "FW"
       },
       "reading_tools": {
         "reading_speed_test": "Bài kiểm tra tốc độ đọc",
@@ -111,9 +96,7 @@
       "reset_text_size": "Đặt lại cỡ chữ",
       "text_size_value": "{value} px",
       "read_progress_label": "Đã đọc",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Tiến độ đọc: {value}",
-      "clear": "🗑",
       "clear_title": "Xóa"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "Ẩn điều khiển thay thế",
       "replace_placeholder": "Thay thế...",
       "replace_aria": "Văn bản thay thế",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Thay thế",
       "replace_all": "Thay thế tất cả",
       "prev_title": "Kết quả trước",
@@ -161,17 +141,7 @@
         "delete": "Xóa",
         "add_row": "Thêm hàng",
         "open_library": "Mở thư viện",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Chọn bản lưu",
-        "clear_snapshot": "🗙",
         "cancel": "Hủy",
         "yes": "Có",
         "no": "Không"
@@ -503,7 +473,6 @@
         "error": "Lỗi khi mở tài liệu"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Giới thiệu",
         "version": {
           "unavailable": "Không khả dụng"
@@ -516,13 +485,9 @@
         "title": "Cách sử dụng"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Liên kết hữu ích",
         "section_biblio_label": "Tài liệu tham khảo"
       }
     }
   }
 }
-
-
-

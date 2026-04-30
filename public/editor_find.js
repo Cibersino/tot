@@ -184,15 +184,15 @@ async function applyTranslations() {
   replaceInputEl.placeholder = tr('renderer.editor_find.replace_placeholder');
   replaceInputEl.setAttribute('aria-label', tr('renderer.editor_find.replace_aria'));
 
-  prevEl.textContent = tr('renderer.editor_find.prev');
-  nextEl.textContent = tr('renderer.editor_find.next');
-  closeEl.textContent = tr('renderer.editor_find.close');
   replaceOneEl.textContent = tr('renderer.editor_find.replace');
   replaceAllEl.textContent = tr('renderer.editor_find.replace_all');
 
   prevEl.title = tr('renderer.editor_find.prev_title');
   nextEl.title = tr('renderer.editor_find.next_title');
   closeEl.title = tr('renderer.editor_find.close_title');
+  prevEl.setAttribute('aria-label', prevEl.title);
+  nextEl.setAttribute('aria-label', nextEl.title);
+  closeEl.setAttribute('aria-label', closeEl.title);
   replaceOneEl.title = tr('renderer.editor_find.replace_title');
   replaceAllEl.title = tr('renderer.editor_find.replace_all_title');
 

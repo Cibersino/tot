@@ -73,8 +73,8 @@ if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
 // =============================================================================
 
 let lastState = { elapsed: 0, running: false, display: '00:00:00' };
-let playLabel = '>';
-let pauseLabel = '||';
+let playLabel = '▶';
+let pauseLabel = '⏸';
 let translationsLoadedFor = null;
 
 // =============================================================================
@@ -138,8 +138,8 @@ async function applyFlotanteTranslations(lang) {
     }
   }
 
-  playLabel = tRenderer('renderer.main.crono.play_symbol');
-  pauseLabel = tRenderer('renderer.main.crono.pause_symbol');
+  playLabel = '▶';
+  pauseLabel = '⏸';
   if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
 }
 

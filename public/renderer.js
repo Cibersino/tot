@@ -436,8 +436,8 @@ function getHelpTipKeyList() {
 }
 
 const getCronoLabels = () => ({
-  playLabel: tRenderer('renderer.main.crono.play_symbol'),
-  pauseLabel: tRenderer('renderer.main.crono.pause_symbol')
+  playLabel: '▶',
+  pauseLabel: '⏸'
 });
 
 function applyTranslations() {
@@ -474,12 +474,12 @@ function applyTranslations() {
   // Presets
   if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new');
   if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit');
-  if (btnDeletePreset) btnDeletePreset.textContent = tRenderer('renderer.main.speed.delete');
   if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer('renderer.main.speed.reset_defaults');
   if (btnNewPreset) btnNewPreset.title = tRenderer('renderer.main.tooltips.new_preset');
   if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset');
   if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset');
   if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets');
+  applyAriaLabel(btnDeletePreset, 'renderer.main.tooltips.delete_preset');
   // Floating window toggle
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
   if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window');
@@ -2282,5 +2282,4 @@ startRendererBootstrap();
 // =============================================================================
 // End of public/renderer.js
 // =============================================================================
-
 

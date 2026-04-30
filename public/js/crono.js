@@ -81,7 +81,7 @@
   // =============================================================================
   // UI helpers and Electron bridge (flotante)
   // =============================================================================
-  function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel = '>' }) {
+  function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel = '▶' }) {
     if (cronoDisplay) cronoDisplay.value = '00:00:00';
     if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
     if (tToggle) tToggle.textContent = playLabel;
@@ -94,8 +94,8 @@
     cronoEditing,
     tToggle,
     setElapsedRunning,
-    playLabel = '>',
-    pauseLabel = '||'
+    playLabel = '▶',
+    pauseLabel = '⏸'
   }) {
     if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function') {
       log.warn('openFlotanteWindow unavailable in electronAPI');
@@ -347,8 +347,8 @@
       getSettingsCache: typeof options.getSettingsCache === 'function' ? options.getSettingsCache : () => null,
     };
 
-    let playLabel = (typeof options.playLabel === 'string') ? options.playLabel : '>';
-    let pauseLabel = (typeof options.pauseLabel === 'string') ? options.pauseLabel : '||';
+    let playLabel = (typeof options.playLabel === 'string') ? options.playLabel : '▶';
+    let pauseLabel = (typeof options.pauseLabel === 'string') ? options.pauseLabel : '⏸';
 
     let elapsed = 0;
     let running = false;

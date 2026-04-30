@@ -161,7 +161,6 @@
 
   function syncAbortButtonUi() {
     if (!btnTextExtractionAbort) return;
-    btnTextExtractionAbort.textContent = tRenderer('renderer.main.buttons.text_extraction_abort');
     btnTextExtractionAbort.title = tRenderer('renderer.main.tooltips.text_extraction_abort');
     const abortAria = tRenderer('renderer.main.aria.text_extraction_abort');
     if (abortAria) {
@@ -325,5 +324,4 @@
 // =============================================================================
 // End of public/js/text_extraction_status_ui.js
 // =============================================================================
-
 

@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "El principio y el final del coso:",
       "selector_empty": "(pelao)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Sacarle texto a un archivo",
         "text_extraction_abort": "Parar la sacadera",
@@ -58,7 +46,6 @@
         "wpm_label": "palabras por minuto (WPM)",
         "new": "N",
         "edit": "E",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "CRONÓMETRO DE LUJO",
         "speed": "Ritmo:",
         "controls_label": "Botones del reloj",
-        "flotante_short": "VF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "VF"
       },
       "reading_tools": {
         "reading_speed_test": "Prueba tu ritmo de lectura",
@@ -111,9 +96,7 @@
       "reset_text_size": "Dejar el tamaño como estaba",
       "text_size_value": "{value} px",
       "read_progress_label": "Leído",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Vas en: {value}",
-      "clear": "🗑",
       "clear_title": "Pitiarse too"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "Ocultar reemplazo",
       "replace_placeholder": "Reemplazar...",
       "replace_aria": "Texto de reemplazo",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Reemplazar",
       "replace_all": "Reemplazar todo",
       "prev_title": "La de atrás",
@@ -161,17 +141,7 @@
         "delete": "Pitiarse",
         "add_row": "Añadir fila",
         "open_library": "Abrir biblio",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Seleccionar coso",
-        "clear_snapshot": "🗙",
         "cancel": "Cancelar",
         "yes": "Sí",
         "no": "No"
@@ -502,7 +472,6 @@
         "error": "Error al abrir el documento"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "La ficha",
         "version": {
           "unavailable": "No pillado"
@@ -515,14 +484,9 @@
         "title": "Manual de uso"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Links bacanes",
         "section_biblio_label": "Puros connotados"
       }
     }
   }
 }
-
-
-
-

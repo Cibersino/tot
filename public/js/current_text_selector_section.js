@@ -316,16 +316,6 @@
     }
 
     if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title');
-    if (btnTextExtraction) btnTextExtraction.textContent = tRenderer('renderer.main.buttons.text_extraction');
-    if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard');
-    if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard');
-    if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit');
-    if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear');
-    if (btnLoadSnapshot) btnLoadSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_load');
-    if (btnSaveSnapshot) btnSaveSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_save');
-    if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new');
-    if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load');
-
     if (btnTextExtraction) btnTextExtraction.title = tRenderer('renderer.main.tooltips.text_extraction');
     if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard');
     if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard');
@@ -338,6 +328,30 @@
 
     if (btnTextExtraction) {
       btnTextExtraction.setAttribute('aria-label', tRenderer('renderer.main.aria.text_extraction'));
+    }
+    if (btnOverwriteClipboard) {
+      btnOverwriteClipboard.setAttribute('aria-label', tRenderer('renderer.main.tooltips.overwrite_clipboard'));
+    }
+    if (btnAppendClipboard) {
+      btnAppendClipboard.setAttribute('aria-label', tRenderer('renderer.main.tooltips.append_clipboard'));
+    }
+    if (btnEdit) {
+      btnEdit.setAttribute('aria-label', tRenderer('renderer.main.tooltips.edit'));
+    }
+    if (btnEmptyMain) {
+      btnEmptyMain.setAttribute('aria-label', tRenderer('renderer.main.tooltips.clear'));
+    }
+    if (btnLoadSnapshot) {
+      btnLoadSnapshot.setAttribute('aria-label', tRenderer('renderer.main.tooltips.snapshot_load'));
+    }
+    if (btnSaveSnapshot) {
+      btnSaveSnapshot.setAttribute('aria-label', tRenderer('renderer.main.tooltips.snapshot_save'));
+    }
+    if (btnNewTask) {
+      btnNewTask.setAttribute('aria-label', tRenderer('renderer.main.tooltips.task_new'));
+    }
+    if (btnLoadTask) {
+      btnLoadTask.setAttribute('aria-label', tRenderer('renderer.main.tooltips.task_load'));
     }
     if (clipboardRepeatInput) {
       clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count');
@@ -436,5 +450,4 @@
 // =============================================================================
 // End of public/js/current_text_selector_section.js
 // =============================================================================
-
 

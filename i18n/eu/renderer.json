@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Aztertutako testuaren lehen eta azken zatia:",
       "selector_empty": "(hutsik)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Erauzi testua fitxategitik",
         "text_extraction_abort": "Bertan behera utzi erauzketa",
@@ -58,7 +46,6 @@
         "wpm_label": "hitz minutuko (WPM)",
         "new": "N",
         "edit": "E",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "KRONOMETROA",
         "speed": "Abiadura:",
         "controls_label": "Kronometroaren kontrolak",
-        "flotante_short": "LF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "LF"
       },
       "reading_tools": {
         "reading_speed_test": "Irakurketa-abiaduraren testa",
@@ -111,9 +96,7 @@
       "reset_text_size": "Berrezarri testuaren tamaina",
       "text_size_value": "{value} px",
       "read_progress_label": "Irakurria",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Irakurketaren aurrerapena: {value}",
-      "clear": "🗑",
       "clear_title": "Hustu"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "Ezkutatu ordezteko kontrolak",
       "replace_placeholder": "Ordeztu...",
       "replace_aria": "Ordezko testua",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Ordeztu",
       "replace_all": "Ordeztu dena",
       "prev_title": "Aurreko bat-etortzea",
@@ -161,17 +141,7 @@
         "delete": "Ezabatu",
         "add_row": "Gehitu errenkada",
         "open_library": "Ireki liburutegia",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Hautatu snapshota",
-        "clear_snapshot": "🗙",
         "cancel": "Utzi",
         "yes": "Bai",
         "no": "Ez"
@@ -503,7 +473,6 @@
         "error": "Errorea dokumentua irekitzean"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Honi buruz",
         "version": {
           "unavailable": "Ez dago erabilgarri"
@@ -516,14 +485,9 @@
         "title": "Erabilera-eskuliburua"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Esteka interesgarriak",
         "section_biblio_label": "Erreferentzia bibliografikoak"
       }
     }
   }
 }
-
-
-
-

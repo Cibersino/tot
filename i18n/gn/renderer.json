@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Jehaipy oñehesa’ỹijóva pehẽngue ñepyrũ ha paha:",
       "selector_empty": "(nandi)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Eru/eipe’a jehai archivo-gui",
         "text_extraction_abort": "Eheja extracción",
@@ -58,7 +46,6 @@
         "wpm_label": "ñe’ẽ peteĩ minuto-pe (WPM)",
         "new": "P",
         "edit": "M",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "CRONÓMETRO",
         "speed": "Pya’ekue:",
         "controls_label": "Cronómetro controles",
-        "flotante_short": "VO",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "VO"
       },
       "reading_tools": {
         "reading_speed_test": "Moñe’ẽ pya’ekue test",
@@ -111,9 +96,7 @@
       "reset_text_size": "Emoĩjey jehai tuichakue",
       "text_size_value": "{value} px",
       "read_progress_label": "Oñemoñe’ẽma",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Moñe’ẽ tenondegua: {value}",
-      "clear": "🗑",
       "clear_title": "Emopotĩ"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "Eñomi ñemyengovia",
       "replace_placeholder": "Myengovia...",
       "replace_aria": "Jehaipyre ñemyengoviarã",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Myengovia",
       "replace_all": "Myengovia opaite",
       "prev_title": "Juhu mboyvegua",
@@ -161,17 +141,7 @@
         "delete": "Mbogue",
         "add_row": "Embojoapy fila",
         "open_library": "Eipe’a biblioteca",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Eiporavo snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Eheja",
         "yes": "Hẽe",
         "no": "Nahániri"
@@ -503,7 +473,6 @@
         "error": "Documento jeipe’ápe oiko jejavy"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Ko app rehegua",
         "version": {
           "unavailable": "Ndojepurukuaái"
@@ -516,12 +485,9 @@
         "title": "Mba’éichapa ojepuru"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Link iporãva",
         "section_biblio_label": "Referencia bibliográfica"
       }
     }
   }
 }
-
-

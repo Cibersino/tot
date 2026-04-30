@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "بخش آغازین و پایانی متنِ تحلیل‌شده:",
       "selector_empty": "(خالی)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "استخراج متن از فایل",
         "text_extraction_abort": "لغو استخراج",
@@ -58,7 +46,6 @@
         "wpm_label": "واژه در دقیقه (WPM)",
         "new": "ن",
         "edit": "و",
-        "delete": "🗑",
         "reset_defaults": "ب"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "کرنومتر",
         "speed": "سرعت:",
         "controls_label": "کنترل‌های کرنومتر",
-        "flotante_short": "ش",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "ش"
       },
       "reading_tools": {
         "reading_speed_test": "آزمون سرعت خواندن",
@@ -111,9 +96,7 @@
       "reset_text_size": "بازنشانی اندازه متن",
       "text_size_value": "{value} px",
       "read_progress_label": "خوانده‌شده",
-      "read_progress_value": "{value}",
       "read_progress_aria": "پیشرفت خواندن: {value}",
-      "clear": "🗑",
       "clear_title": "پاک کردن"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "پنهان کردن کنترل‌های جایگزینی",
       "replace_placeholder": "جایگزینی...",
       "replace_aria": "متن جایگزین",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "جایگزین کن",
       "replace_all": "جایگزینی همه",
       "prev_title": "مورد قبلی",
@@ -161,17 +141,7 @@
         "delete": "حذف",
         "add_row": "افزودن ردیف",
         "open_library": "باز کردن کتابخانه",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "انتخاب اسنپ‌شات",
-        "clear_snapshot": "🗙",
         "cancel": "لغو",
         "yes": "بله",
         "no": "نه"
@@ -503,7 +473,6 @@
         "error": "خطا در باز کردن سند"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "درباره",
         "version": {
           "unavailable": "در دسترس نیست"
@@ -516,13 +485,9 @@
         "title": "نحوه استفاده"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "پیوندهای مفید",
         "section_biblio_label": "منابع کتاب‌شناختی"
       }
     }
   }
 }
-
-
-

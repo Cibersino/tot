@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Första och sista delen av den analyserade texten:",
       "selector_empty": "(tom)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Extrahera text från fil",
         "text_extraction_abort": "Avbryt extrahering",
@@ -58,7 +46,6 @@
         "wpm_label": "ord per minut (WPM)",
         "new": "N",
         "edit": "E",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "STOPPUR",
         "speed": "Hastighet:",
         "controls_label": "Stoppurskontroller",
-        "flotante_short": "FF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "FF"
       },
       "reading_tools": {
         "reading_speed_test": "Test av läshastighet",
@@ -111,9 +96,7 @@
       "reset_text_size": "Återställ textstorlek",
       "text_size_value": "{value} px",
       "read_progress_label": "Läst",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Läsprogress: {value}",
-      "clear": "🗑",
       "clear_title": "Rensa"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "Dölj ersättningskontroller",
       "replace_placeholder": "Ersätt...",
       "replace_aria": "Ersättningstext",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Ersätt",
       "replace_all": "Ersätt alla",
       "prev_title": "Föregående träff",
@@ -161,17 +141,7 @@
         "delete": "Ta bort",
         "add_row": "Lägg till rad",
         "open_library": "Öppna bibliotek",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Välj snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Avbryt",
         "yes": "Ja",
         "no": "Nej"
@@ -503,7 +473,6 @@
         "error": "Fel vid öppning av dokument"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Om",
         "version": {
           "unavailable": "Inte tillgänglig"
@@ -516,14 +485,9 @@
         "title": "Hur använder man appen?"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Användbara länkar",
         "section_biblio_label": "Bibliografiska referenser"
       }
     }
   }
 }
-
-
-
-

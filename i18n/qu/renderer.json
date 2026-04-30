@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Qhawasqa qillqapa ñawpaq kaqnin hinallataq qhipa kaqnin:",
       "selector_empty": "(ch'usaq)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Archivomanta qillqata qichuy",
         "text_extraction_abort": "Qichuyta sayachiy",
@@ -58,7 +46,6 @@
         "wpm_label": "sapa minutupi simikuna (WPM)",
         "new": "M",
         "edit": "A",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "PACHAYUPAQ",
         "speed": "Utqaynin:",
         "controls_label": "Pachayupaq kamachiqkuna",
-        "flotante_short": "WV",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "WV"
       },
       "reading_tools": {
         "reading_speed_test": "Ñawinchay utqayninpa testnin",
@@ -111,9 +96,7 @@
       "reset_text_size": "Qillqapa sayayninta kutichiy",
       "text_size_value": "{value} px",
       "read_progress_label": "Ñawinchisqa",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Ñawinchay ñawpariy: {value}",
-      "clear": "🗑",
       "clear_title": "Pichay"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "Tikrayta pakay",
       "replace_placeholder": "Tikray...",
       "replace_aria": "Tikranapaq qillqa",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Tikray",
       "replace_all": "Llapan tikray",
       "prev_title": "Ñawpaq tinkuynin",
@@ -161,17 +141,7 @@
         "delete": "Chinkachiy",
         "add_row": "Siqita yapay",
         "open_library": "Bibliotecata kichay",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Snapshot akllay",
-        "clear_snapshot": "🗙",
         "cancel": "Saqiy",
         "yes": "Arí",
         "no": "Mana"
@@ -503,7 +473,6 @@
         "error": "Documento kichaypi pantay"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Kaymanta",
         "version": {
           "unavailable": "Mana kanchu"
@@ -516,13 +485,9 @@
         "title": "Llamk'achiy manual"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Allin linkkuna",
         "section_biblio_label": "Bibliografía referencias"
       }
     }
   }
 }
-
-
-

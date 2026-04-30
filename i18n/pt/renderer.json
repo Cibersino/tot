@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Primeira e última parte do texto analisado:",
       "selector_empty": "(vazio)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Extrair texto de arquivo",
         "text_extraction_abort": "Abortar extração",
@@ -58,7 +46,6 @@
         "wpm_label": "palavras por minuto (WPM)",
         "new": "N",
         "edit": "E",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "CRONÔMETRO",
         "speed": "Velocidade:",
         "controls_label": "Controles do cronômetro",
-        "flotante_short": "JF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "JF"
       },
       "reading_tools": {
         "reading_speed_test": "Teste de velocidade de leitura",
@@ -111,9 +96,7 @@
       "reset_text_size": "Restaurar tamanho do texto",
       "text_size_value": "{value} px",
       "read_progress_label": "Lido",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Progresso de leitura: {value}",
-      "clear": "🗑",
       "clear_title": "Limpar"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "Ocultar substituição",
       "replace_placeholder": "Substituir...",
       "replace_aria": "Texto de substituição",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Substituir",
       "replace_all": "Substituir tudo",
       "prev_title": "Correspondência anterior",
@@ -161,17 +141,7 @@
         "delete": "Excluir",
         "add_row": "Adicionar linha",
         "open_library": "Abrir biblioteca",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Selecionar snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Cancelar",
         "yes": "Sim",
         "no": "Não"
@@ -503,7 +473,6 @@
         "error": "Erro ao abrir o documento"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Sobre",
         "version": {
           "unavailable": "Indisponível"
@@ -516,14 +485,9 @@
         "title": "Manual de uso"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Links de interesse",
         "section_biblio_label": "Referências bibliográficas"
       }
     }
   }
 }
-
-
-
-

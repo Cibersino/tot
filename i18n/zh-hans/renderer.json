@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "已分析文本的开头和结尾部分：",
       "selector_empty": "（空）",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "从文件提取文本",
         "text_extraction_abort": "中止提取",
@@ -58,7 +46,6 @@
         "wpm_label": "每分钟词数（WPM）",
         "new": "N",
         "edit": "E",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "秒表",
         "speed": "速度：",
         "controls_label": "秒表控件",
-        "flotante_short": "悬",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "悬"
       },
       "reading_tools": {
         "reading_speed_test": "阅读速度测试",
@@ -111,9 +96,7 @@
       "reset_text_size": "重置文本大小",
       "text_size_value": "{value} px",
       "read_progress_label": "已读",
-      "read_progress_value": "{value}",
       "read_progress_aria": "阅读进度：{value}",
-      "clear": "🗑",
       "clear_title": "清空"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "隐藏替换控件",
       "replace_placeholder": "替换...",
       "replace_aria": "替换文本",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "替换",
       "replace_all": "全部替换",
       "prev_title": "上一个匹配项",
@@ -161,17 +141,7 @@
         "delete": "删除",
         "add_row": "添加行",
         "open_library": "打开库",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "选择快照",
-        "clear_snapshot": "🗙",
         "cancel": "取消",
         "yes": "是",
         "no": "否"
@@ -503,7 +473,6 @@
         "error": "打开文档时出错"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "关于",
         "version": {
           "unavailable": "不可用"
@@ -516,14 +485,9 @@
         "title": "使用手册"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "相关链接",
         "section_biblio_label": "参考文献"
       }
     }
   }
 }
-
-
-
-

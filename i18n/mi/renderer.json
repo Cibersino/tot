@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Te wāhanga tuatahi me te wāhanga whakamutunga o te kuputuhi kua tātaritia:",
       "selector_empty": "(kāore he mea)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Tango kuputuhi i te kōnae",
         "text_extraction_abort": "Whakakore i te tangohanga",
@@ -58,7 +46,6 @@
         "wpm_label": "kupu ia meneti (WPM)",
         "new": "N",
         "edit": "E",
-        "delete": "🗑",
         "reset_defaults": "R"
       },
       "results": {
@@ -74,9 +61,7 @@
         "title": "MATAWĀ",
         "speed": "Tere:",
         "controls_label": "Ngā mana matawā",
-        "flotante_short": "MM",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "flotante_short": "MM"
       },
       "reading_tools": {
         "reading_speed_test": "Whakamātautau tere pānui",
@@ -111,9 +96,7 @@
       "reset_text_size": "Whakahoki i te rahi kuputuhi",
       "text_size_value": "{value} px",
       "read_progress_label": "Kua pānuitia",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Kauneke pānui: {value}",
-      "clear": "🗑",
       "clear_title": "Ūkui"
     },
     "editor_find": {
@@ -123,9 +106,6 @@
       "collapse_title": "Huna i ngā mana whakakapi",
       "replace_placeholder": "Whakakapi...",
       "replace_aria": "Kuputuhi whakakapi",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Whakakapi",
       "replace_all": "Whakakapi katoa",
       "prev_title": "Ōritenga o mua",
@@ -161,17 +141,7 @@
         "delete": "Muku",
         "add_row": "Tāpiri rārangi",
         "open_library": "Whakatuwhera pātaka",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Tīpako hopunga",
-        "clear_snapshot": "🗙",
         "cancel": "Whakakore",
         "yes": "Āe",
         "no": "Kāo"
@@ -503,7 +473,6 @@
         "error": "Hapa i te whakatuwhera tuhinga"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Mō tēnei",
         "version": {
           "unavailable": "Kāore e wātea"
@@ -516,14 +485,9 @@
         "title": "Me pēhea te whakamahi"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Ngā hononga whaihua",
         "section_biblio_label": "Ngā tohutoro pukapuka"
       }
     }
   }
 }
-
-
-
-
