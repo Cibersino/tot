@@ -31,7 +31,7 @@ tot/
 │ │ ├── library.json
 │ │ ├── allowed_hosts.json
 │ │ ├── column_widths.json
-│ │ └── task_editor_position.json
+│ │ └── task_editor_state.json
 │ ├── current_text.json
 │ ├── editor_state.json
 │ ├── text_extraction_state.json
@@ -76,7 +76,7 @@ tot/
 │ ├── text_state.js
 │ ├── current_text_snapshots_main.js
 │ ├── tasks_main.js
-│ ├── task_editor_position.js
+│ ├── task_editor_state.js
 │ ├── editor_state.js
 │ ├── editor_find_main.js
 │ ├── editor_find_session.js
@@ -112,6 +112,7 @@ tot/
 │ │ ├── ocr_google_drive_bundled_credentials.js
 │ │ ├── ocr_google_drive_credentials_file.js
 │ │ ├── ocr_google_drive_oauth_client.js
+│ │ ├── ocr_google_drive_secure_oauth.js
 │ │ ├── ocr_google_drive_provider_failure_classification.js
 │ │ ├── ocr_google_drive_provider_failure.js
 │ │ ├── ocr_google_drive_setup_validation.js
@@ -149,9 +150,13 @@ tot/
 │ └── languages.json
 ├── public/
 │ ├── assets/
+│ │ ├── extension/
+│ │ │ ├── chrome-web-store-badge.png
+│ │ │ └── tot-symbols.64.png
 │ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
 │ │ ├── SOURCES.md
 │ │ ├── logo-cibersino.svg
+│ │ ├── logo-tot.120x120.png
 │ │ ├── logo-tot.png
 │ │ ├── logo-tot.svg
 │ │ └── kofi_symbol.png
@@ -190,6 +195,7 @@ tot/
 │ │ ├── notify.js
 │ │ ├── info_modal_links.js
 │ │ ├── main_logo_links.js
+│ │ ├── browser_extension_modal.js
 │ │ ├── text_apply_canonical.js
 │ │ ├── text_extraction_status_ui.js
 │ │ ├── text_extraction_route_choice_modal.js
@@ -241,16 +247,22 @@ tot/
 │ │ │ ├── ocr_google_drive_activation_state.test.js
 │ │ │ ├── ocr_google_drive_provider_failure_classification.test.js
 │ │ │ ├── ocr_google_drive_provider_failure.test.js
+│ │ │ ├── ocr_google_drive_secure_oauth.test.js
 │ │ │ ├── reading_test_pool.test.js
 │ │ │ ├── reading_test_pool_import.test.js
+│ │ │ ├── reading_test_session_flow.test.js
 │ │ │ ├── spellcheck.test.js
-│ │ │ └── settings.test.js
+│ │ │ ├── settings.test.js
+│ │ │ └── task_editor_state.test.js
 │ │ └── shared/
 │ │   ├── count_core.test.js
+│ │   ├── editor_engine_commit_policy.test.js
+│ │   ├── editor_find_renderer.test.js
 │ │   ├── editor_find_replace_core.test.js
 │ │   ├── editor_maximized_layout_core.test.js
 │ │   ├── editor_ui_margin_persistence.test.js
-│ │   └── format_core.test.js
+│ │   ├── format_core.test.js
+│ │   └── reading_test_questions_core.test.js
 │ └── README.md
 ├── website/                       # {sitio web}
 │ └── public/
@@ -262,6 +274,8 @@ tot/
 │   │ │ └── logo-tot.svg
 │   │ ├── demo/
 │   │ │ └── guia-basica.gif
+│   │ ├── extension/
+│   │ │ └── tot-symbols.32.png
 │   │ └── social/
 │   │   ├── instagram-black.svg
 │   │   ├── instagram-white.svg
@@ -277,6 +291,8 @@ tot/
 │   │ │ ├── google-ocr/
 │   │ │ │ └── index.html
 │   │ │ └── index.html
+│   │ ├── chrome-extension-privacy/
+│   │ │ └── index.html
 │   │ ├── privacy-cookies/
 │   │ │ └── index.html
 │   │ ├── terms/
@@ -287,6 +303,8 @@ tot/
 │   │ │ ├── google-ocr/
 │   │ │ │ └── index.html
 │   │ │ └── index.html
+│   │ ├── chrome-extension-privacy/
+│   │ │ └── index.html
 │   │ ├── privacy-cookies/
 │   │ │ └── index.html
 │   │ ├── terms/
@@ -296,6 +314,7 @@ tot/
 │   │ └── index.html
 │   ├── _headers
 │   ├── download-resolver.js
+│   ├── extension-resolver.js
 │   ├── index.html
 │   ├── favicon.svg
 │   ├── favicon.ico
@@ -366,7 +385,7 @@ tot/
 - `electron/reading_test_session_flow.js` — Helpers del flujo guiado del reading speed test: ownership de las etapas `arming/running/result/questions/preset`, cómputo autoritativo de WPM, payload prellenado del preset, cancel/finish semantics, ruta `pool` vs `current_text` y reinterpretación de comandos/cierres de la ventana flotante y el editor.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
-- `electron/task_editor_position.js` — Persistencia de posición (x/y) de la ventana del editor de tareas.
+- `electron/task_editor_state.js` — Persistencia/estado de la ventana del editor de tareas (tamaño, posición y maximizado).
 - `electron/text_extraction_platform/text_extraction_file_picker_ipc.js` — File picker nativo del flujo text extraction; resuelve carpeta por defecto/persistida, guarda la última carpeta usada y deriva la lista de extensiones soportadas desde el contrato compartido de formatos.
 - `electron/text_extraction_platform/text_extraction_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.
 - `electron/text_extraction_platform/text_extraction_processing_mode_ipc.js` — Controlador/IPC del processing mode de text extraction: lock state, broadcast al renderer y solicitud de abort.
@@ -423,6 +442,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/reading_speed_test.js` — Módulo renderer del reading speed test: gestiona el modal de entrada/configuración, refleja combinaciones reales del pool, ejecuta reset/start IPC, muestra warnings inline y sincroniza el lock state / WPM aplicado.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Ko-fi a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n y mantiene este wiring fuera de `public/renderer.js`.
+- `public/js/browser_extension_modal.js` — Owner renderer del acceso a la extensión del navegador desde la ventana principal: gestiona el modal informativo, el foco/restauración, el lock state y el puente seguro hacia Chrome Web Store.
 - `public/js/text_apply_canonical.js` — Helpers canónicos de aplicar texto (`overwrite` / `append` / repeticiones) reutilizados por clipboard y por el flujo de extracción.
 - `public/js/results_time_multiplier.js` — Controla el multiplicador de tiempo bajo el resultado estimado: valida el input como numero natural, conserva el estado base recibido desde `public/renderer.js` y renderiza el tiempo multiplicado en la ventana principal.
 - `public/js/text_extraction_status_ui.js` — Superficie visual del flujo text extraction en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido y botón abort.
@@ -453,11 +473,11 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `.github/workflows/test.yml` — Workflow GitHub Actions del baseline automatizado actual; corre `npm ci` + `npm test` sobre `windows-latest`.
 - `test/README.md` — Convenciones del layout de tests y separación entre baseline unitario y smoke suite local.
-- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo text extraction (`settings`, incluyendo normalización/persistencia de `editorFontSizePx`, `editor_state` para `maximizedTextWidthPx`/window-state IPC, `spellcheck`, formatos soportados, prepared store, parsing/clasificación OCR, decision helpers, más `editor_find_main.test.js` para autorización IPC, re-sync al refocus y orquestación request-scoped de replace).
+- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo text extraction (`settings`, `task_editor_state`, `editor_state` para `maximizedTextWidthPx`/window-state IPC, `spellcheck`, formatos soportados, prepared store, parsing/clasificación OCR, OAuth desktop seguro de Google OCR y helpers del flujo `reading_test_session_flow`, más `editor_find_main.test.js` para autorización IPC, re-sync al refocus y orquestación request-scoped de replace).
 - `test/unit/electron/reading_test_pool.test.js` — Cobertura del pool del reading speed test: sincronización startup del starter set, seguimiento de hashes, estado externo `used` y prune de filas/archivos gestionados obsoletos.
 - `test/unit/electron/reading_test_pool_import.test.js` — Cobertura del importador del pool del reading speed test: validación de `.json`/`.zip`, duplicados, persistencia de última carpeta y reporte de fallas de escritura.
 - `test/unit/electron/spellcheck.test.js` — Cobertura del spellcheck main-owned: resolución de idiomas soportados, aplicación sobre `Session` y controller `createController(...)`/fallbacks de sesión.
-- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`, `editor_maximized_layout_core`) y de la persistencia del margen maximizado del editor en `editor_ui`.
+- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`, `editor_maximized_layout_core`, `reading_test_questions_core`) y de contratos UI puntuales como la persistencia del margen maximizado del editor en `editor_ui`, el commit policy de `editor_engine` y el wiring de `editor_find`.
 - `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; además valida que el startup tolere el schema vigente mínimo de settings (incluyendo flags nuevos como `spellcheckEnabled` y `editorFontSizePx`); no forma parte de `npm test` ni del workflow CI base.
 
 ### 4) i18n (estructura y responsabilidades)
@@ -486,7 +506,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).
 - `config/tasks/allowed_hosts.json` — Allowlist de hosts confiables para enlaces remotos.
 - `config/tasks/column_widths.json` — Persistencia de anchos de columnas del editor de tareas.
-- `config/tasks/task_editor_position.json` — Última posición (x/y) de la ventana del editor de tareas.
+- `config/tasks/task_editor_state.json` — Estado persistido de la ventana del editor de tareas (geometría/maximizado).
 
 ### 5.1) Material OCR empaquetado
 
@@ -525,6 +545,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `website/public/es/index.html` — Versión en español (`https://totapp.org/es/`), con switch de idioma, CTA de descarga y bloque "Síguenos"; define `window.totDownloadConfig` para el resolvedor de descarga por plataforma.
 - `website/public/en/index.html` — Versión en inglés (`https://totapp.org/en/`), con switch de idioma, CTA de descarga y bloque "Follow us"; define `window.totDownloadConfig` para el resolvedor de descarga por plataforma.
 - `website/public/download-resolver.js` — Helper compartido del sitio para detectar plataforma/arquitectura del navegador, consultar el último release en GitHub, seleccionar el asset estable más adecuado y abrir el modal con instrucciones de instalación.
+- `website/public/extension-resolver.js` — Helper compartido del sitio para adaptar el CTA de la extensión según el navegador detectado y enlazar la Chrome Web Store desde las landings por idioma.
 - `website/public/app-privacy/index.html` — Ruta neutral `x-default` hacia la política pública de privacidad de la app; redirige según idioma preferido vía `site-language.js`.
 - `website/public/es/app-privacy/index.html` — Política de privacidad pública de la app en español.
 - `website/public/en/app-privacy/index.html` — Política de privacidad pública de la app en inglés.
@@ -534,6 +555,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `website/public/es/terms/index.html` — Términos de servicio del sitio web y de la app en español.
 - `website/public/en/terms/index.html` — Términos de servicio del sitio web y de la app en inglés.
 - `website/public/chrome-extension-privacy/index.html` — Política pública de privacidad de la extensión Chrome `toT — Tiempo de lectura`; documenta datos locales, permisos y ausencia de transmisión/telemetría.
+- `website/public/es/chrome-extension-privacy/index.html` — Política pública de privacidad de la extensión Chrome en español.
+- `website/public/en/chrome-extension-privacy/index.html` — Política pública de privacidad de la extensión Chrome en inglés.
 - `website/public/es/privacy-cookies/index.html` — Política mínima de privacidad/cookies en español.
 - `website/public/en/privacy-cookies/index.html` — Política mínima de privacidad/cookies en inglés.
 - Footers y paneles de descarga de `index.html`, `es/index.html` y `en/index.html` — incluyen enlaces visibles a privacidad/cookies y, en las rutas por idioma, también a la política pública de privacidad de la app y a términos de servicio.
@@ -541,6 +564,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `website/public/styles.css` — Hoja de estilos compartida para las tres rutas.
 - `website/public/assets/brand/*.svg` — Logos locales del proyecto/desarrollador usados en el header y footer (`logo-tot.svg`, `logo-cibersino.svg`).
 - `website/public/assets/demo/guia-basica.gif` — Demo visual embebida en la landing neutral del sitio.
+- `website/public/assets/extension/tot-symbols.32.png` — Isotipo local usado en el bloque/CTA de la extensión dentro de las landings públicas.
 - `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Ko-fi, X light/dark y YouTube) y `SOURCES.md` como trazabilidad de origen de assets.
 - `website/public/_headers` — Políticas de headers para Cloudflare Pages (incluye noindex para dominios preview/versionados).
 - `website/public/robots.txt` — Reglas de robots para el dominio público.
@@ -549,9 +573,10 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 ### 6.2) Branding local en la app (public/assets)
 
 - `public/assets/SOURCES.md` — Trazabilidad local de procedencia para assets runtime de `public/assets/`, especialmente los de terceros o sujetos a términos de marca.
-- `public/assets/logo-tot.svg` / `public/assets/logo-tot.png` — Branding de la app usado en la ventana principal.
+- `public/assets/logo-tot.svg` / `public/assets/logo-tot.png` / `public/assets/logo-tot.120x120.png` — Branding de la app usado en la ventana principal y variantes raster cuadradas auxiliares del proyecto.
 - `public/assets/logo-cibersino.svg` — Branding del desarrollador usado en la ventana principal.
 - `public/assets/kofi_symbol.png` — Símbolo de Ko-fi usado en la ventana principal junto al logo de Cibersino; asset runtime copiado desde `tools_local` para mantener la procedencia local/original separada del sitio web.
+- `public/assets/extension/` — Assets runtime del acceso a la extensión del navegador en la app (`tot-symbols.64.png`, `chrome-web-store-badge.png`).
 
 ### 6.3) Recursos de packaging (build-resources)
 
@@ -600,5 +625,3 @@ El bloque “Árbol” de este archivo es **curado**. Al actualizarlo:
 * Evita listar carpetas voluminosas en detalle (`node_modules/`, outputs, etc.); basta con dejarlas a nivel superior con una nota.
 
 Regla: el árbol completo (`tree /F /A`) es la referencia; el bloque “Árbol” es el resumen explicativo.
-
-

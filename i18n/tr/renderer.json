@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Analiz edilen metnin ilk ve son bölümü:",
       "selector_empty": "(boş)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Dosyadan metin çıkar",
         "text_extraction_abort": "Çıkarmayı durdur",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "OKUMA HIZI",
-        "wpm_label": "dakikadaki kelime (WPM)",
-        "new": "Y",
-        "edit": "D",
-        "delete": "🗑",
-        "reset_defaults": "S"
+        "wpm_label": "dakikadaki kelime (WPM)"
       },
       "results": {
         "title": "SAYIM SONUÇLARI",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "KRONOMETRE",
         "speed": "Hız:",
-        "controls_label": "Kronometre kontrolleri",
-        "flotante_short": "YP",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "Kronometre kontrolleri"
       },
       "reading_tools": {
         "reading_speed_test": "Okuma hızı testi",
@@ -111,9 +92,7 @@
       "reset_text_size": "Metin boyutunu sıfırla",
       "text_size_value": "{value} px",
       "read_progress_label": "Okundu",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Okuma ilerlemesi: {value}",
-      "clear": "🗑",
       "clear_title": "Temizle"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "Değiştirme kontrollerini gizle",
       "replace_placeholder": "Değiştir...",
       "replace_aria": "Değiştirme metni",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Değiştir",
       "replace_all": "Tümünü değiştir",
       "prev_title": "Önceki eşleşme",
@@ -161,17 +137,7 @@
         "delete": "Sil",
         "add_row": "Satır ekle",
         "open_library": "Kütüphaneyi aç",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Snapshot seç",
-        "clear_snapshot": "🗙",
         "cancel": "İptal",
         "yes": "Evet",
         "no": "Hayır"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "Daha fazla dosya al",
           "import_files": "Dosyaları içe aktar...",
-          "reset_pool": "S",
           "show_instructions": "Yönergeleri göster",
           "hide_instructions": "Yönergeleri gizle",
           "start_random_text": "Rastgele metinle başlat",
@@ -503,7 +468,6 @@
         "error": "Belge açılırken hata oluştu"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Hakkında",
         "version": {
           "unavailable": "Kullanılamıyor"
@@ -516,14 +480,9 @@
         "title": "Nasıl kullanılır"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Yararlı Bağlantılar",
         "section_biblio_label": "Bibliyografik Kaynaklar"
       }
     }
   }
 }
-
-
-
-

@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Première et dernière partie du texte analysé :",
       "selector_empty": "(vide)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Extraire le texte d'un fichier",
         "text_extraction_abort": "Annuler l'extraction",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "VITESSE DE LECTURE",
-        "wpm_label": "mots par minute (WPM)",
-        "new": "N",
-        "edit": "M",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "mots par minute (WPM)"
       },
       "results": {
         "title": "RÉSULTATS DU COMPTE",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "CHRONOMÈTRE",
         "speed": "Vitesse :",
-        "controls_label": "Contrôles du chronomètre",
-        "flotante_short": "FF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "Contrôles du chronomètre"
       },
       "reading_tools": {
         "reading_speed_test": "Test de vitesse de lecture",
@@ -111,9 +92,7 @@
       "reset_text_size": "Réinitialiser la taille du texte",
       "text_size_value": "{value} px",
       "read_progress_label": "Lu",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Progression de lecture : {value}",
-      "clear": "🗑",
       "clear_title": "Vider"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "Masquer le remplacement",
       "replace_placeholder": "Remplacer...",
       "replace_aria": "Texte de remplacement",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Remplacer",
       "replace_all": "Tout remplacer",
       "prev_title": "Correspondance precedente",
@@ -161,17 +137,7 @@
         "delete": "Supprimer",
         "add_row": "Ajouter une ligne",
         "open_library": "Ouvrir la bibliothèque",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Sélectionner un snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Annuler",
         "yes": "Oui",
         "no": "Non"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "Obtenir plus de fichiers",
           "import_files": "Importer des fichiers...",
-          "reset_pool": "R",
           "show_instructions": "Afficher les instructions",
           "hide_instructions": "Masquer les instructions",
           "start_random_text": "Démarrer avec texte aléatoire",
@@ -503,7 +468,6 @@
         "error": "Erreur lors de l'ouverture du document"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "À propos",
         "version": {
           "unavailable": "Indisponible"
@@ -516,14 +480,9 @@
         "title": "Mode d'emploi"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Liens d'intérêt",
         "section_biblio_label": "Références bibliographiques"
       }
     }
   }
 }
-
-
-
-

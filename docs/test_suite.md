@@ -17,7 +17,7 @@
 - Text snapshot feature (save, load, persistence)
 - Reading speed test (pool filters, guided session, optional questions modal, preset handoff, pool reset/persistence)
 - Reading speed test pool acquisition/import (Google Drive link, `.json`/`.zip` import, duplicate handling, picker-state persistence)
-- Task editor window (task lists, library, links, column widths, window position).
+- Task editor window (task lists, library, links, column widths, window geometry).
 - Stopwatch (velocity) + floating window behavior (unfocused app)
 - Menu actions: Guide/Instructions/FAQ/About (+ link routing)
 - Persistence sanity (settings/current_text/editor_state)
@@ -152,7 +152,7 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
   - `tasks/library.json` (task row library)
   - `tasks/allowed_hosts.json` (allowlist for https link opening)
   - `tasks/column_widths.json` (task editor column widths)
-  - `tasks/task_editor_position.json` (task editor last position; x/y only)
+  - `tasks/task_editor_state.json` (task editor window geometry/maximized state)
 
 **Windows example (typical):**
 `%APPDATA%\@cibersino\tot\config\...`
@@ -1077,14 +1077,14 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - (c) is blocked with user-visible notice.
 - Local path opens only if the file exists and the user confirms.
 
-#### REG-TASKS-07 Task editor window position persistence
-**Goal:** Task editor position keep the same position after close.
-1. Open the task editor and move it to a noticeable position.
+#### REG-TASKS-07 Task editor window geometry persistence
+**Goal:** Task editor geometry keeps the same size/position after close.
+1. Open the task editor, move it to a noticeable position, and resize it to a distinctive size.
 2. Close and reopen the task editor.
-3. Verify the position is restored (size may remain fixed).
+3. Verify the position and size are restored.
 
 **Expected:**
-- Position (x/y) is restored.
+- Position and reduced size are restored.
 
 ---
 
@@ -1331,17 +1331,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - `library.json` exists
    - `allowed_hosts.json` exists
    - `column_widths.json` exists
-   - `task_editor_position.json` exists
+   - `task_editor_state.json` exists
 9. Relaunch the app.
 10. Open Tasks editor and verify:
-    - Window position restored (x/y) and fully visible.
+    - Window size/position restored and fully visible.
     - Column widths restored.
     - Library entry still present.
     - Opening a link to the trusted host does not prompt again.
 
 **Expected:**
 - All files above exist and are valid JSON.
-- Tasks state (position, column widths, library, allowed hosts) persists across restart.
+- Tasks state (window geometry, column widths, library, allowed hosts) persists across restart.
 
 #### REG-PERSIST-05 Text extraction picker + OCR runtime state persistence
 **Goal:** text extraction persists its picker folder and OCR runtime state files correctly.
@@ -1549,5 +1549,4 @@ For each failure:
 
 * `test/README.md` - automated test layout, runner commands, and suite ownership under `test/**`
 * `tools_local/coding_rules/automated_test_policy.md` - policy for automated test design and for production-code changes made in support of testing
-
 

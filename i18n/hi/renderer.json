@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "विश्लेषित पाठ का पहला और अंतिम भाग:",
       "selector_empty": "(खाली)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "फ़ाइल से पाठ निकालें",
         "text_extraction_abort": "निकासी रोकें",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "पठन गति",
-        "wpm_label": "प्रति मिनट शब्द (WPM)",
-        "new": "N",
-        "edit": "E",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "प्रति मिनट शब्द (WPM)"
       },
       "results": {
         "title": "गणना परिणाम",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "स्टॉपवॉच",
         "speed": "गति:",
-        "controls_label": "स्टॉपवॉच नियंत्रण",
-        "flotante_short": "FV",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "स्टॉपवॉच नियंत्रण"
       },
       "reading_tools": {
         "reading_speed_test": "पठन गति परीक्षण",
@@ -111,9 +92,7 @@
       "reset_text_size": "पाठ आकार रीसेट करें",
       "text_size_value": "{value} px",
       "read_progress_label": "पढ़ा गया",
-      "read_progress_value": "{value}",
       "read_progress_aria": "पठन प्रगति: {value}",
-      "clear": "🗑",
       "clear_title": "खाली करें"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "बदलाव नियंत्रण छिपाएँ",
       "replace_placeholder": "बदलें...",
       "replace_aria": "बदलने वाला पाठ",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "बदलें",
       "replace_all": "सब बदलें",
       "prev_title": "पिछला मिलान",
@@ -161,17 +137,7 @@
         "delete": "हटाएँ",
         "add_row": "पंक्ति जोड़ें",
         "open_library": "लाइब्रेरी खोलें",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "स्नैपशॉट चुनें",
-        "clear_snapshot": "🗙",
         "cancel": "रद्द करें",
         "yes": "हाँ",
         "no": "नहीं"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "और फ़ाइलें प्राप्त करें",
           "import_files": "फ़ाइलें आयात करें...",
-          "reset_pool": "R",
           "show_instructions": "निर्देश दिखाएँ",
           "hide_instructions": "निर्देश छिपाएँ",
           "start_random_text": "यादृच्छिक पाठ से शुरू करें",
@@ -503,7 +468,6 @@
         "error": "दस्तावेज़ खोलने में त्रुटि"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "परिचय",
         "version": {
           "unavailable": "उपलब्ध नहीं"
@@ -516,13 +480,9 @@
         "title": "उपयोग कैसे करें"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "उपयोगी लिंक",
         "section_biblio_label": "ग्रंथ-सूची संदर्भ"
       }
     }
   }
 }
-
-
-

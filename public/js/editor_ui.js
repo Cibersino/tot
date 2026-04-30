@@ -121,10 +121,9 @@
         btnTextSizeReset.title = resetText;
       }
       if (btnTrash) {
-        const clearText = tr('renderer.editor.clear');
-        btnTrash.setAttribute('data-label', clearText);
-        btnTrash.setAttribute('aria-label', clearText);
-        btnTrash.title = tr('renderer.editor.clear_title');
+        const clearTitle = tr('renderer.editor.clear_title');
+        btnTrash.setAttribute('aria-label', clearTitle);
+        btnTrash.title = clearTitle;
       }
       if (bottomBar) {
         bottomBar.setAttribute('aria-label', tr('renderer.editor.title'));
@@ -255,16 +254,12 @@
 
       const readProgressPercent = computeReadProgressPercent();
       const percentValueText = `${readProgressPercent}%`;
-      const valueText = trMsg(
-        'renderer.editor.read_progress_value',
-        { value: percentValueText }
-      );
       const ariaText = trMsg(
         'renderer.editor.read_progress_aria',
         { value: percentValueText }
       );
 
-      readProgressValue.setAttribute('data-label', valueText);
+      readProgressValue.setAttribute('data-label', percentValueText);
       readProgressValue.setAttribute('aria-label', ariaText);
     }
 

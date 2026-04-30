@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Primera y última parte del texto analizado:",
       "selector_empty": "(vacío)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Extraer texto desde archivo",
         "text_extraction_abort": "Abortar extracción",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "VELOCIDAD DE LECTURA",
-        "wpm_label": "palabras por minuto (WPM)",
-        "new": "N",
-        "edit": "E",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "palabras por minuto (WPM)"
       },
       "results": {
         "title": "RESULTADOS DEL CONTEO",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "CRONÓMETRO",
         "speed": "Velocidad:",
-        "controls_label": "Controles del cronómetro",
-        "flotante_short": "VF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "Controles del cronómetro"
       },
       "reading_tools": {
         "reading_speed_test": "Test de velocidad de lectura",
@@ -111,9 +92,7 @@
       "reset_text_size": "Restablecer tamaño del texto",
       "text_size_value": "{value} px",
       "read_progress_label": "Leído",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Progreso de lectura: {value}",
-      "clear": "🗑",
       "clear_title": "Vaciar"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "Ocultar reemplazo",
       "replace_placeholder": "Reemplazar...",
       "replace_aria": "Texto de reemplazo",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Reemplazar",
       "replace_all": "Reemplazar todo",
       "prev_title": "Coincidencia anterior",
@@ -161,17 +137,7 @@
         "delete": "Eliminar",
         "add_row": "Agregar fila",
         "open_library": "Abrir biblioteca",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Seleccionar snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Cancelar",
         "yes": "Sí",
         "no": "No"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "Obtener más archivos",
           "import_files": "Importar archivos...",
-          "reset_pool": "R",
           "show_instructions": "Mostrar instrucciones",
           "hide_instructions": "Ocultar instrucciones",
           "start_random_text": "Iniciar con texto aleatorio",
@@ -503,7 +468,6 @@
         "error": "Error al abrir documento"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Acerca de",
         "version": {
           "unavailable": "No disponible"
@@ -516,7 +480,6 @@
         "title": "Manual de uso"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Links de interés",
         "section_biblio_label": "Referencias bibliográficas"
       }
@@ -579,7 +542,3 @@
     }
   }
 }
-
-
-
-

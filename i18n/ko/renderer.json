@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "분석된 텍스트의 처음과 마지막 부분:",
       "selector_empty": "(비어 있음)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "파일에서 텍스트 추출",
         "text_extraction_abort": "추출 중단",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "읽기 속도",
-        "wpm_label": "분당 단어 수(WPM)",
-        "new": "N",
-        "edit": "E",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "분당 단어 수(WPM)"
       },
       "results": {
         "title": "계수 결과",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "스톱워치",
         "speed": "속도:",
-        "controls_label": "스톱워치 컨트롤",
-        "flotante_short": "FW",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "스톱워치 컨트롤"
       },
       "reading_tools": {
         "reading_speed_test": "읽기 속도 테스트",
@@ -111,9 +92,7 @@
       "reset_text_size": "텍스트 크기 재설정",
       "text_size_value": "{value} px",
       "read_progress_label": "읽음",
-      "read_progress_value": "{value}",
       "read_progress_aria": "읽기 진행률: {value}",
-      "clear": "🗑",
       "clear_title": "비우기"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "바꾸기 컨트롤 숨기기",
       "replace_placeholder": "바꾸기...",
       "replace_aria": "바꿀 텍스트",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "바꾸기",
       "replace_all": "모두 바꾸기",
       "prev_title": "이전 일치 항목",
@@ -161,17 +137,7 @@
         "delete": "삭제",
         "add_row": "행 추가",
         "open_library": "라이브러리 열기",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "스냅샷 선택",
-        "clear_snapshot": "🗙",
         "cancel": "취소",
         "yes": "예",
         "no": "아니요"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "파일 더 받기",
           "import_files": "파일 가져오기...",
-          "reset_pool": "R",
           "show_instructions": "설명 표시",
           "hide_instructions": "설명 숨기기",
           "start_random_text": "무작위 텍스트로 시작",
@@ -503,7 +468,6 @@
         "error": "문서 열기 오류"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "정보",
         "version": {
           "unavailable": "사용할 수 없음"
@@ -516,13 +480,9 @@
         "title": "사용 방법"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "유용한 링크",
         "section_biblio_label": "참고 문헌"
       }
     }
   }
 }
-
-
-

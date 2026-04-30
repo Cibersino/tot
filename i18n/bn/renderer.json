@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "বিশ্লেষিত লেখার প্রথম ও শেষ অংশ:",
       "selector_empty": "(খালি)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "ফাইল থেকে লেখা নিষ্কাশন করুন",
         "text_extraction_abort": "নিষ্কাশন বন্ধ করুন",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "পড়ার গতি",
-        "wpm_label": "প্রতি মিনিটে শব্দ (WPM)",
-        "new": "N",
-        "edit": "E",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "প্রতি মিনিটে শব্দ (WPM)"
       },
       "results": {
         "title": "গণনার ফলাফল",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "স্টপওয়াচ",
         "speed": "গতি:",
-        "controls_label": "স্টপওয়াচ নিয়ন্ত্রণ",
-        "flotante_short": "VW",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "স্টপওয়াচ নিয়ন্ত্রণ"
       },
       "reading_tools": {
         "reading_speed_test": "পড়ার গতি পরীক্ষা",
@@ -111,9 +92,7 @@
       "reset_text_size": "লেখার আকার রিসেট করুন",
       "text_size_value": "{value} px",
       "read_progress_label": "পড়া হয়েছে",
-      "read_progress_value": "{value}",
       "read_progress_aria": "পড়ার অগ্রগতি: {value}",
-      "clear": "🗑",
       "clear_title": "খালি করুন"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "প্রতিস্থাপন নিয়ন্ত্রণ লুকান",
       "replace_placeholder": "প্রতিস্থাপন...",
       "replace_aria": "প্রতিস্থাপনের লেখা",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "প্রতিস্থাপন",
       "replace_all": "সব প্রতিস্থাপন",
       "prev_title": "আগের মিল",
@@ -161,17 +137,7 @@
         "delete": "মুছে ফেলুন",
         "add_row": "সারি যোগ করুন",
         "open_library": "লাইব্রেরি খুলুন",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "স্ন্যাপশট নির্বাচন করুন",
-        "clear_snapshot": "🗙",
         "cancel": "বাতিল",
         "yes": "হ্যাঁ",
         "no": "না"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "আরও ফাইল নিন",
           "import_files": "ফাইল আমদানি করুন...",
-          "reset_pool": "R",
           "show_instructions": "নির্দেশাবলি দেখান",
           "hide_instructions": "নির্দেশাবলি লুকান",
           "start_random_text": "এলোমেলো লেখা দিয়ে শুরু করুন",
@@ -503,7 +468,6 @@
         "error": "ডকুমেন্ট খুলতে ত্রুটি"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "পরিচিতি",
         "version": {
           "unavailable": "উপলব্ধ নয়"
@@ -516,13 +480,9 @@
         "title": "ব্যবহার পদ্ধতি"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "উপযোগী লিংক",
         "section_biblio_label": "গ্রন্থতালিকাগত সূত্র"
       }
     }
   }
 }
-
-
-

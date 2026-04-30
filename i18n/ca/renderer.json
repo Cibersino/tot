@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Primera i última part del text analitzat:",
       "selector_empty": "(buit)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Extreure text des d’un fitxer",
         "text_extraction_abort": "Avortar l’extracció",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "VELOCITAT DE LECTURA",
-        "wpm_label": "paraules per minut (WPM)",
-        "new": "N",
-        "edit": "E",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "paraules per minut (WPM)"
       },
       "results": {
         "title": "RESULTATS DEL RECOMPTE",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "CRONÒMETRE",
         "speed": "Velocitat:",
-        "controls_label": "Controls del cronòmetre",
-        "flotante_short": "FF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "Controls del cronòmetre"
       },
       "reading_tools": {
         "reading_speed_test": "Test de velocitat de lectura",
@@ -111,9 +92,7 @@
       "reset_text_size": "Restablir la mida del text",
       "text_size_value": "{value} px",
       "read_progress_label": "Llegit",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Progrés de lectura: {value}",
-      "clear": "🗑",
       "clear_title": "Buidar"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "Amagar substitució",
       "replace_placeholder": "Substituir...",
       "replace_aria": "Text de substitució",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Substituir",
       "replace_all": "Substituir-ho tot",
       "prev_title": "Coincidència anterior",
@@ -161,17 +137,7 @@
         "delete": "Eliminar",
         "add_row": "Afegir fila",
         "open_library": "Obrir biblioteca",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Seleccionar snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Cancel·lar",
         "yes": "Sí",
         "no": "No"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "Obtenir més fitxers",
           "import_files": "Importar fitxers...",
-          "reset_pool": "R",
           "show_instructions": "Mostrar instruccions",
           "hide_instructions": "Amagar instruccions",
           "start_random_text": "Iniciar amb text aleatori",
@@ -503,7 +468,6 @@
         "error": "Error en obrir el document"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Quant a",
         "version": {
           "unavailable": "No disponible"
@@ -516,14 +480,9 @@
         "title": "Manual d’ús"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Enllaços d’interès",
         "section_biblio_label": "Referències bibliogràfiques"
       }
     }
   }
 }
-
-
-
-

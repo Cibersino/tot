@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "First and last part of the analyzed text:",
       "selector_empty": "(empty)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Extract text from file",
         "text_extraction_abort": "Abort extraction",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "READING SPEED",
-        "wpm_label": "words per minute (WPM)",
-        "new": "N",
-        "edit": "E",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "words per minute (WPM)"
       },
       "results": {
         "title": "COUNT RESULTS",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "STOPWATCH",
         "speed": "Speed:",
-        "controls_label": "Stopwatch controls",
-        "flotante_short": "FW",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "Stopwatch controls"
       },
       "reading_tools": {
         "reading_speed_test": "Reading speed test",
@@ -111,9 +92,7 @@
       "reset_text_size": "Reset text size",
       "text_size_value": "{value} px",
       "read_progress_label": "Read",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Read progress: {value}",
-      "clear": "🗑",
       "clear_title": "Clear"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "Hide replace controls",
       "replace_placeholder": "Replace...",
       "replace_aria": "Replacement text",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Replace",
       "replace_all": "Replace all",
       "prev_title": "Previous match",
@@ -161,17 +137,7 @@
         "delete": "Delete",
         "add_row": "Add row",
         "open_library": "Open library",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Select snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Cancel",
         "yes": "Yes",
         "no": "No"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "Get more files",
           "import_files": "Import files...",
-          "reset_pool": "R",
           "show_instructions": "Show instructions",
           "hide_instructions": "Hide instructions",
           "start_random_text": "Start with random text",
@@ -503,7 +468,6 @@
         "error": "Error opening document"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "About",
         "version": {
           "unavailable": "Unavailable"
@@ -516,7 +480,6 @@
         "title": "How to use"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Useful Links",
         "section_biblio_label": "Bibliographics References"
       }
@@ -579,6 +542,3 @@
     }
   }
 }
-
-
-

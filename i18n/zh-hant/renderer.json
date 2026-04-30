@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "已分析文字的開頭與結尾部分：",
       "selector_empty": "（空）",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "從檔案擷取文字",
         "text_extraction_abort": "中止擷取",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "閱讀速度",
-        "wpm_label": "每分鐘詞數（WPM）",
-        "new": "N",
-        "edit": "E",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "每分鐘詞數（WPM）"
       },
       "results": {
         "title": "計數結果",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "碼錶",
         "speed": "速度：",
-        "controls_label": "碼錶控制項",
-        "flotante_short": "懸",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "碼錶控制項"
       },
       "reading_tools": {
         "reading_speed_test": "閱讀速度測試",
@@ -111,9 +92,7 @@
       "reset_text_size": "重設文字大小",
       "text_size_value": "{value} px",
       "read_progress_label": "已讀",
-      "read_progress_value": "{value}",
       "read_progress_aria": "閱讀進度：{value}",
-      "clear": "🗑",
       "clear_title": "清除"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "隱藏取代控制項",
       "replace_placeholder": "取代...",
       "replace_aria": "取代文字",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "取代",
       "replace_all": "全部取代",
       "prev_title": "上一個相符項",
@@ -161,17 +137,7 @@
         "delete": "刪除",
         "add_row": "新增列",
         "open_library": "開啟資料庫",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "選擇快照",
-        "clear_snapshot": "🗙",
         "cancel": "取消",
         "yes": "是",
         "no": "否"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "取得更多檔案",
           "import_files": "匯入檔案...",
-          "reset_pool": "R",
           "show_instructions": "顯示說明",
           "hide_instructions": "隱藏說明",
           "start_random_text": "以隨機文字開始",
@@ -503,7 +468,6 @@
         "error": "開啟文件時發生錯誤"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "關於",
         "version": {
           "unavailable": "無法使用"
@@ -516,14 +480,9 @@
         "title": "使用手冊"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "相關連結",
         "section_biblio_label": "參考文獻"
       }
     }
   }
 }
-
-
-
-

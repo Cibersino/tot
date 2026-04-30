@@ -49,7 +49,7 @@ const snapshotsMain = require('./current_text_snapshots_main');
 const updater = require('./updater');
 const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
-const taskEditorPosition = require('./task_editor_position');
+const taskEditorState = require('./task_editor_state');
 const editorFindMain = require('./editor_find_main');
 const editorTextSize = require('./editor_text_size');
 const spellcheck = require('./spellcheck');
@@ -716,19 +716,28 @@ function createEditorWindow(options = {}) {
 
 /**
  * Create the task editor window (public/task_editor.html).
- * Fixed size; persists only last position (x, y).
+ * Restores persisted reduced geometry and maximized state.
  */
 function createTaskEditorWindow() {
   taskEditorForceClose = false;
-  const pos = taskEditorPosition.loadInitialPosition(loadJson);
+  const state = taskEditorState.loadInitialState(loadJson);
+  const hasReduced =
+    state &&
+    state.reduced &&
+    typeof state.reduced.width === 'number' &&
+    typeof state.reduced.height === 'number' &&
+    typeof state.reduced.x === 'number' &&
+    typeof state.reduced.y === 'number';
   taskEditorWin = new BrowserWindow({
-    width: 1200,
-    height: 720,
-    x: pos ? pos.x : undefined,
-    y: pos ? pos.y : undefined,
-    resizable: false,
+    width: hasReduced ? state.reduced.width : taskEditorState.DEFAULT_REDUCED_WIDTH,
+    height: hasReduced ? state.reduced.height : taskEditorState.DEFAULT_REDUCED_HEIGHT,
+    x: hasReduced ? state.reduced.x : undefined,
+    y: hasReduced ? state.reduced.y : undefined,
+    minWidth: taskEditorState.MIN_REDUCED_WIDTH,
+    minHeight: taskEditorState.MIN_REDUCED_HEIGHT,
+    resizable: true,
     minimizable: true,
-    maximizable: false,
+    maximizable: true,
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'task_editor_preload.js'),
@@ -744,14 +753,17 @@ function createTaskEditorWindow() {
 
   taskEditorWin.once('ready-to-show', () => {
     try {
+      if (state && state.maximized === true) {
+        taskEditorWin.maximize();
+      }
       taskEditorWin.show();
     } catch (err) {
       log.error('Error showing task editor window:', err);
     }
   });
 
-  // Persist position only.
-  taskEditorPosition.attachTo(taskEditorWin, loadJson, saveJson);
+  // Persist geometry and maximized state.
+  taskEditorState.attachTo(taskEditorWin, loadJson, saveJson);
 
   // Close guard: delegate to renderer for unsaved-changes confirmation.
   taskEditorWin.on('close', (event) => {
@@ -1928,5 +1940,4 @@ app.on('will-quit', () => {
 // =============================================================================
 // End of electron/main.js
 // =============================================================================
-
 

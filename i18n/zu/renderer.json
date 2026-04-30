@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Ingxenye yokuqala neyokugcina yombhalo ohlaziyiweyo:",
       "selector_empty": "(akunalutho)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Khipha umbhalo efayeleni",
         "text_extraction_abort": "Misa ukukhishwa",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "IJUBANE LOKUFUNDA",
-        "wpm_label": "amagama ngomzuzu (WPM)",
-        "new": "N",
-        "edit": "E",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "amagama ngomzuzu (WPM)"
       },
       "results": {
         "title": "IMIPHUMELA YOKUBALA",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "ISIBALI-SIKHATHI",
         "speed": "Ijubane:",
-        "controls_label": "Izilawuli zesibali-sikhathi",
-        "flotante_short": "IF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "Izilawuli zesibali-sikhathi"
       },
       "reading_tools": {
         "reading_speed_test": "Ukuhlolwa kwejubane lokufunda",
@@ -111,9 +92,7 @@
       "reset_text_size": "Buyisela usayizi wombhalo",
       "text_size_value": "{value} px",
       "read_progress_label": "Kufundiwe",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Inqubekela phambili yokufunda: {value}",
-      "clear": "🗑",
       "clear_title": "Sula"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "Fihla izilawuli zokubuyisela",
       "replace_placeholder": "Buyisela...",
       "replace_aria": "Umbhalo ozobuyisela",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Buyisela",
       "replace_all": "Buyisela konke",
       "prev_title": "Okufanayo kwangaphambilini",
@@ -161,17 +137,7 @@
         "delete": "Susa",
         "add_row": "Engeza umugqa",
         "open_library": "Vula ilabhulali",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Khetha i-snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Khansela",
         "yes": "Yebo",
         "no": "Cha"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "Thola amafayela amaningi",
           "import_files": "Ngenisa amafayela...",
-          "reset_pool": "R",
           "show_instructions": "Bonisa imiyalelo",
           "hide_instructions": "Fihla imiyalelo",
           "start_random_text": "Qala ngombhalo ongahleliwe",
@@ -503,7 +468,6 @@
         "error": "Iphutha ekuvuleni idokhumenti"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Mayelana",
         "version": {
           "unavailable": "Ayitholakali"
@@ -516,14 +480,9 @@
         "title": "Indlela yokusebenzisa"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Izixhumanisi eziwusizo",
         "section_biblio_label": "Izinkomba zezincwadi"
       }
     }
   }
 }
-
-
-
-

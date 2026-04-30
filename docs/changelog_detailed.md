@@ -46,6 +46,70 @@ Reglas:
 
 ## Unreleased
 
+### Resumen de cambios
+
+- La app amplía su superficie multiidioma de `7` idiomas raíz a `30`, incorporando nuevos bundles `main`/`renderer`, catálogo expandido para etiquetas de snapshots y soporte coherente en selector inicial, ventana principal y ventanas auxiliares.
+- El corrector ortográfico deja de apoyarse en una tabla corta de equivalencias y pasa a resolverse contra los diccionarios que Electron reporta realmente disponibles, exponiendo además su disponibilidad efectiva hacia el editor.
+- La ventana principal agrega una entrada fija para la extensión del navegador, con modal propio dentro de la app y apertura al Chrome Web Store mediante la allowlist actual de enlaces externos.
+- El editor de tareas deja de ser una ventana fija y pasa a admitir `resize` / maximizado con persistencia de geometría válida entre sesiones.
+- La superficie histórica `import/extract` queda consolidada como `text extraction` en UI, preload e IPC, manteniendo el flujo actual de extracción/OCR pero con nomenclatura única.
+- La ayuda contextual deja de quedar acotada a un bloque mínimo de tips y pasa a cubrir una superficie mucho más amplia de uso real de la app: privacidad local-first, OCR, snapshots, tareas, editor, reading speed test y extensiones.
+
+### Agregado
+
+- Soporte shipped para `ar`, `ay`, `bn`, `ca`, `eu`, `fa`, `gn`, `hi`, `ht`, `id`, `ja`, `ko`, `mi`, `pcm`, `qu`, `ru`, `sv`, `tr`, `ur`, `vi`, `zh-Hans`, `zh-Hant` y `zu`, elevando el catálogo raíz total a `30` idiomas.
+- Modal in-app `Browser extension` en la ventana principal, con CTA dedicado al Chrome Web Store y textos propios en i18n.
+- Persistencia dedicada del estado del editor de tareas en `config/tasks/task_editor_state.json`, con `reduced` + `maximized`.
+- Campo derivado `spellcheckAvailable` en la superficie de settings consumida por renderers para distinguir preferencia guardada de disponibilidad real del diccionario.
+- Catálogo de ayuda ampliado a `54` tips shipped en la ventana principal.
+
+### Cambiado
+
+- Selector inicial de idioma, ventanas de preguntas/resultado del reading speed test, editor de tareas y etiquetas de snapshots quedan alineados con el catálogo multiidioma expandido, incluyendo dirección RTL y formateo numérico localizado en esas superficies.
+- La UI principal adopta `text extraction` como terminología única para botones, tooltips, mensajes de estado, drag/drop, OCR, apply modal y abort flow.
+- El editor de tareas restaura tamaño/posición solo cuando la geometría sigue siendo válida, permite maximizar, y recuerda el último estado de ventana al cerrar.
+- El editor deja de tratar el corrector ortográfico como un booleano ciego del usuario y pasa a reflejar también si el idioma activo tiene o no un diccionario compatible en el runtime actual.
+- Las etiquetas de snapshots dejan de quedar limitadas al catálogo corto anterior y pasan a cubrir todos los idiomas raíz shipped actuales, manteniendo su uso como metadato local reutilizable por el reading speed test.
+- La entrada del reading speed test gana copy/tooltips más explícitos en la gestión del pool y muestra el conteo elegible con separación clara entre label y valor.
+- Las ventanas `reading_test_questions` y `reading_test_result` dejan de formatear sus métricas con supuestos de locale implícitos y pasan a respetar idioma, dirección y separadores numéricos efectivos del usuario.
+- La ayuda contextual deja de concentrarse en unos pocos tips generales y pasa a documentar también OCR, límites de texto, snapshots, tareas, spellcheck, pool del reading speed test y extensión del navegador.
+
+### Arreglado
+
+- La resolución de spellcheck para tags regionales y familias chinas deja de depender de fallback ambiguo: `es-cl` se resuelve por preferencia regional explícita, `zh-Hans` / `zh-Hant` se resuelven por familia/script, y los idiomas sin diccionario compatible quedan marcados como no disponibles en vez de caer silenciosamente en otro idioma.
+- Las ventanas auxiliares del reading speed test dejan de mezclar dirección de texto o formato numérico del locale por defecto del runtime y pasan a respetar el idioma/configuración efectiva del usuario.
+- La reapertura del editor de tareas evita geometrías inválidas o fuera de pantalla al validar bounds persistidos contra los displays disponibles.
+- Los timeouts de `Replace` / `Replace all` en la ventana de búsqueda del editor dejan de fallar sin feedback y muestran notificación explícita de error.
+- La ayuda aleatoria deja de depender del subárbol histórico `renderer.main.tips.results_help` y pasa a leer un catálogo unificado de tips shipped, evitando que la UI quede limitada a un conjunto parcial.
+
+### Migración
+
+- Sin acción manual obligatoria.
+- Persistencia de ventana del editor de tareas: `config/tasks/task_editor_position.json` deja de ser la fuente de verdad. La app pasa a escribir/leer `config/tasks/task_editor_state.json` con shape `{ maximized, reduced }`; tras actualizar, el editor de tareas puede abrir una vez con geometría por defecto antes de regrabar su estado nuevo.
+
+### Contratos tocados
+
+- Preload `window.electronAPI`:
+  - `openImportExtractPicker()` → `openTextExtractionPicker()`
+  - `checkImportExtractPreconditions()` → `checkTextExtractionPreconditions()`
+  - `prepareImportExtractOcrActivation()` → `prepareTextExtractionOcrActivation()`
+  - `launchImportExtractOcrActivation()` → `launchTextExtractionOcrActivation()`
+  - `disconnectImportExtractOcr(payload)` → `disconnectTextExtractionOcr(payload)`
+  - `prepareImportExtractSelectedFile(payload)` → `prepareTextExtractionSelectedFile(payload)`
+  - `executePreparedImportExtract(payload)` → `executePreparedTextExtraction(payload)`
+  - `getImportExtractProcessingMode()` → `getTextExtractionProcessingMode()`
+  - `requestImportExtractAbort(payload)` → `requestTextExtractionAbort(payload)`
+  - `onImportExtractProcessingModeChanged(cb)` → `onTextExtractionProcessingModeChanged(cb)`
+  - `notifyNoSelectionEdit()` sale de la superficie preload actual.
+- IPC renderer ↔ main:
+  - la familia de canales `import-extract-*` se renombra a `text-extraction-*`, incluyendo apertura de picker, chequeo de precondiciones, activación/desconexión OCR, preparación, ejecución, estado de processing mode y request de aborto.
+- Storage:
+  - `config/tasks/task_editor_position.json` deja de ser el archivo observado por la app actual.
+  - nuevo archivo observado: `config/tasks/task_editor_state.json`.
+- Settings payload hacia renderer:
+  - `get-settings` y `settings-updated` pueden incluir el booleano derivado `spellcheckAvailable`.
+  - `spellcheckAvailable` no se persiste en `user_settings.json`; se calcula por runtime a partir de idioma activo + diccionarios disponibles.
+
 ---
 
 ## [1.2.0] toT - Coffee table

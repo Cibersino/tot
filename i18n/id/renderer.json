@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "Bagian awal dan akhir teks yang dianalisis:",
       "selector_empty": "(kosong)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "Ekstrak teks dari file",
         "text_extraction_abort": "Batalkan ekstraksi",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "KECEPATAN MEMBACA",
-        "wpm_label": "kata per menit (WPM)",
-        "new": "N",
-        "edit": "E",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "wpm_label": "kata per menit (WPM)"
       },
       "results": {
         "title": "HASIL HITUNG",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "STOPWATCH",
         "speed": "Kecepatan:",
-        "controls_label": "Kontrol stopwatch",
-        "flotante_short": "JM",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "Kontrol stopwatch"
       },
       "reading_tools": {
         "reading_speed_test": "Tes kecepatan membaca",
@@ -111,9 +92,7 @@
       "reset_text_size": "Reset ukuran teks",
       "text_size_value": "{value} px",
       "read_progress_label": "Dibaca",
-      "read_progress_value": "{value}",
       "read_progress_aria": "Progres baca: {value}",
-      "clear": "🗑",
       "clear_title": "Kosongkan"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "Sembunyikan kontrol ganti",
       "replace_placeholder": "Ganti...",
       "replace_aria": "Teks pengganti",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "Ganti",
       "replace_all": "Ganti semua",
       "prev_title": "Kecocokan sebelumnya",
@@ -161,17 +137,7 @@
         "delete": "Hapus",
         "add_row": "Tambah baris",
         "open_library": "Buka pustaka",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "Pilih snapshot",
-        "clear_snapshot": "🗙",
         "cancel": "Batal",
         "yes": "Ya",
         "no": "Tidak"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "Ambil file lain",
           "import_files": "Impor file...",
-          "reset_pool": "R",
           "show_instructions": "Tampilkan instruksi",
           "hide_instructions": "Sembunyikan instruksi",
           "start_random_text": "Mulai dengan teks acak",
@@ -503,7 +468,6 @@
         "error": "Kesalahan saat membuka dokumen"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "Tentang",
         "version": {
           "unavailable": "Tidak tersedia"
@@ -516,14 +480,9 @@
         "title": "Cara menggunakan"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "Tautan Berguna",
         "section_biblio_label": "Referensi Bibliografis"
       }
     }
   }
 }
-
-
-
-

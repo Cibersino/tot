@@ -3,18 +3,6 @@
     "main": {
       "selector_title": "تجزیہ شدہ متن کا پہلا اور آخری حصہ:",
       "selector_empty": "(خالی)",
-      "buttons": {
-        "text_extraction": "📥",
-        "text_extraction_abort": "⛔",
-        "overwrite_clipboard": "📋↺",
-        "append_clipboard": "📋+",
-        "edit": "⌨",
-        "clear": "🗑",
-        "snapshot_load": "📂",
-        "snapshot_save": "💾",
-        "task_new": "📝",
-        "task_load": "🗃️"
-      },
       "tooltips": {
         "text_extraction": "فائل سے متن نکالیں",
         "text_extraction_abort": "نکالنے کا عمل روکیں",
@@ -55,11 +43,7 @@
       },
       "speed": {
         "title": "پڑھنے کی رفتار",
-        "wpm_label": "الفاظ فی منٹ (WPM)",
-        "new": "ن",
-        "edit": "ت",
-        "delete": "🗑",
-        "reset_defaults": "ب"
+        "wpm_label": "الفاظ فی منٹ (WPM)"
       },
       "results": {
         "title": "گنتی کے نتائج",
@@ -73,10 +57,7 @@
       "crono": {
         "title": "اسٹاپ واچ",
         "speed": "رفتار:",
-        "controls_label": "اسٹاپ واچ کنٹرولز",
-        "flotante_short": "ف",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
+        "controls_label": "اسٹاپ واچ کنٹرولز"
       },
       "reading_tools": {
         "reading_speed_test": "پڑھنے کی رفتار کا ٹیسٹ",
@@ -111,9 +92,7 @@
       "reset_text_size": "متن کا سائز ری سیٹ کریں",
       "text_size_value": "{value} px",
       "read_progress_label": "پڑھا گیا",
-      "read_progress_value": "{value}",
       "read_progress_aria": "پڑھنے کی پیش رفت: {value}",
-      "clear": "🗑",
       "clear_title": "صاف کریں"
     },
     "editor_find": {
@@ -123,9 +102,6 @@
       "collapse_title": "تبدیلی کے کنٹرولز چھپائیں",
       "replace_placeholder": "بدلیں...",
       "replace_aria": "بدلنے والا متن",
-      "prev": "🡩",
-      "next": "🡫",
-      "close": "🗙",
       "replace": "بدلیں",
       "replace_all": "سب بدلیں",
       "prev_title": "پچھلا مماثل نتیجہ",
@@ -161,17 +137,7 @@
         "delete": "حذف کریں",
         "add_row": "قطار شامل کریں",
         "open_library": "لائبریری کھولیں",
-        "comment": "💬",
-        "link_open": "↗️",
-        "move_up": "↑",
-        "move_down": "↓",
-        "delete_row": "🗑",
-        "library_row_save": "💾",
-        "library_row_load": "📥",
-        "library_row_delete": "🗑",
-        "snapshot": "📥",
         "select_snapshot": "اسنیپ شاٹ منتخب کریں",
-        "clear_snapshot": "🗙",
         "cancel": "منسوخ",
         "yes": "ہاں",
         "no": "نہیں"
@@ -309,7 +275,6 @@
         "buttons": {
           "get_more_files": "مزید فائلیں حاصل کریں",
           "import_files": "فائلیں درآمد کریں...",
-          "reset_pool": "ب",
           "show_instructions": "ہدایات دکھائیں",
           "hide_instructions": "ہدایات چھپائیں",
           "start_random_text": "بے ترتیب متن سے شروع کریں",
@@ -503,7 +468,6 @@
         "error": "دستاویز کھولنے میں خرابی"
       },
       "acerca_de": {
-        "app_name": "toT",
         "title": "متعلق",
         "version": {
           "unavailable": "دستیاب نہیں"
@@ -516,13 +480,9 @@
         "title": "استعمال کا طریقہ"
       },
       "links_interes": {
-        "app_name": "toT",
         "title": "مفید روابط",
         "section_biblio_label": "کتابیاتی حوالہ جات"
       }
     }
   }
 }
-
-
-
