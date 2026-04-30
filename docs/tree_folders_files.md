@@ -150,6 +150,7 @@ tot/
 ├── public/
 │ ├── assets/
 │ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
+│ │ ├── SOURCES.md
 │ │ ├── logo-cibersino.svg
 │ │ ├── logo-tot.png
 │ │ ├── logo-tot.svg
@@ -547,6 +548,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.2) Branding local en la app (public/assets)
 
+- `public/assets/SOURCES.md` — Trazabilidad local de procedencia para assets runtime de `public/assets/`, especialmente los de terceros o sujetos a términos de marca.
 - `public/assets/logo-tot.svg` / `public/assets/logo-tot.png` — Branding de la app usado en la ventana principal.
 - `public/assets/logo-cibersino.svg` — Branding del desarrollador usado en la ventana principal.
 - `public/assets/kofi_symbol.png` — Símbolo de Ko-fi usado en la ventana principal junto al logo de Cibersino; asset runtime copiado desde `tools_local` para mantener la procedencia local/original separada del sitio web.
