@@ -74,6 +74,8 @@
   let editorLaunchPending = false;
   let lastPreviewText = '';
   let lastPreviewEmptyText = '';
+  let previewDirectionProbeHost = null;
+  let previewDirectionProbe = null;
 
   // =============================================================================
   // Helpers
@@ -128,32 +130,162 @@
     return !previewSpoilerToggle || previewSpoilerToggle.checked;
   }
 
-  function buildPreviewText(text, { emptyText = '', showPreviewEnd = true } = {}) {
-    const displayText = normalizePreviewValue(text).replace(/\r?\n/g, '   ');
+  function normalizePreviewDisplayText(text) {
+    return normalizePreviewValue(text).replace(/\r?\n/g, '   ');
+  }
+
+  function getUiLanguageDirection() {
+    const languageDirection = document && document.documentElement
+      ? document.documentElement.dataset.languageDirection
+      : '';
+    return languageDirection === 'rtl' ? 'rtl' : 'ltr';
+  }
+
+  function ensurePreviewDirectionProbe() {
+    if (previewDirectionProbeHost || !document || !document.body) return;
+    previewDirectionProbeHost = document.createElement('div');
+    previewDirectionProbeHost.setAttribute('aria-hidden', 'true');
+    previewDirectionProbeHost.hidden = true;
+    previewDirectionProbeHost.style.position = 'absolute';
+    previewDirectionProbeHost.style.width = '0';
+    previewDirectionProbeHost.style.height = '0';
+    previewDirectionProbeHost.style.overflow = 'hidden';
+    previewDirectionProbeHost.style.visibility = 'hidden';
+    previewDirectionProbeHost.style.pointerEvents = 'none';
+
+    previewDirectionProbe = document.createElement('span');
+    previewDirectionProbe.setAttribute('dir', 'auto');
+    previewDirectionProbeHost.appendChild(previewDirectionProbe);
+    document.body.appendChild(previewDirectionProbeHost);
+  }
+
+  function derivePreviewDirection(visiblePreviewText) {
+    const uiDirection = getUiLanguageDirection();
+    const normalizedVisibleText = normalizePreviewValue(visiblePreviewText);
+    if (!normalizedVisibleText) return uiDirection;
+
+    ensurePreviewDirectionProbe();
+    if (!previewDirectionProbeHost
+      || !previewDirectionProbe
+      || typeof window.getComputedStyle !== 'function') {
+      return uiDirection;
+    }
+
+    previewDirectionProbeHost.setAttribute('dir', uiDirection);
+    previewDirectionProbe.textContent = normalizedVisibleText;
+    const computedDirection = window.getComputedStyle(previewDirectionProbe).direction;
+    previewDirectionProbe.textContent = '';
+    return computedDirection === 'rtl' ? 'rtl' : 'ltr';
+  }
+
+  function buildPreviewRenderModel(text, { emptyText = '', showPreviewEnd = true } = {}) {
+    const displayText = normalizePreviewDisplayText(text);
     const displayLength = displayText.length;
 
-    if (displayLength === 0) return emptyText;
+    if (displayLength === 0) {
+      return {
+        direction: derivePreviewDirection(emptyText),
+        kind: 'plain',
+        text: emptyText,
+      };
+    }
 
     if (displayLength <= PREVIEW_INLINE_THRESHOLD) {
-      return displayText;
+      return {
+        direction: derivePreviewDirection(displayText),
+        kind: 'plain',
+        text: displayText,
+      };
     }
 
     const visibleStartChars = showPreviewEnd
       ? PREVIEW_START_CHARS
       : PREVIEW_START_CHARS + PREVIEW_END_CHARS;
     const start = displayText.slice(0, visibleStartChars);
-    if (!showPreviewEnd) return `${start}...`;
+    if (!showPreviewEnd) {
+      return {
+        direction: derivePreviewDirection(`${start}...`),
+        kind: 'leading-fragment',
+        start,
+        marker: '...',
+      };
+    }
 
     const end = displayText.slice(-PREVIEW_END_CHARS);
-    return `${start}... | ...${end}`;
+    return {
+      direction: derivePreviewDirection(`${start}... | ...${end}`),
+      kind: 'truncated-pair',
+      start,
+      separator: '... | ...',
+      end,
+    };
+  }
+
+  function createPreviewTextFragment(text) {
+    const fragment = document.createElement('bdi');
+    fragment.className = 'preview-fragment';
+    fragment.setAttribute('dir', 'auto');
+    fragment.textContent = text;
+    return fragment;
+  }
+
+  function createPreviewStaticPart(text, partType) {
+    const part = document.createElement('span');
+    part.className = `preview-static preview-static--${partType}`;
+    part.setAttribute('dir', 'ltr');
+    part.textContent = text;
+    return part;
+  }
+
+  function createPreviewJoiner() {
+    return document.createTextNode('\u2060');
+  }
+
+  function createPreviewLeadingCluster(fragmentText, trailingText, trailingType, direction) {
+    const cluster = document.createElement('span');
+    cluster.className = 'preview-cluster';
+    cluster.setAttribute('dir', direction);
+    cluster.appendChild(createPreviewTextFragment(fragmentText));
+    cluster.appendChild(createPreviewJoiner());
+    cluster.appendChild(createPreviewStaticPart(trailingText, trailingType));
+    return cluster;
   }
 
   function renderPreviewFromState() {
     if (!textPreview) return;
-    textPreview.textContent = buildPreviewText(lastPreviewText, {
+    const previewModel = buildPreviewRenderModel(lastPreviewText, {
       emptyText: lastPreviewEmptyText,
       showPreviewEnd: isPreviewSpoilerEnabled(),
     });
+    textPreview.setAttribute('dir', previewModel.direction);
+    textPreview.textContent = '';
+
+    if (previewModel.kind === 'plain') {
+      textPreview.appendChild(createPreviewTextFragment(previewModel.text));
+      return;
+    }
+
+    if (previewModel.kind === 'leading-fragment') {
+      textPreview.appendChild(
+        createPreviewLeadingCluster(
+          previewModel.start,
+          previewModel.marker,
+          'marker',
+          previewModel.direction
+        )
+      );
+      return;
+    }
+
+    textPreview.appendChild(
+      createPreviewLeadingCluster(
+        previewModel.start,
+        previewModel.separator,
+        'separator',
+        previewModel.direction
+      )
+    );
+    textPreview.appendChild(createPreviewTextFragment(previewModel.end));
   }
 
   function initializeClipboardRepeatInput() {

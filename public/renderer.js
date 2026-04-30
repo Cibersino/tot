@@ -61,12 +61,13 @@ if (!importExtractStatusUi
   || typeof importExtractStatusUi.clearPendingExecutionContext !== 'function'
   || typeof importExtractStatusUi.endPrepare !== 'function'
   || typeof importExtractStatusUi.getAbortButton !== 'function'
-  || typeof importExtractStatusUi.getFinalElapsedText !== 'function'
+  || typeof importExtractStatusUi.getFinalElapsedValueText !== 'function'
   || typeof importExtractStatusUi.isProcessingModeActive !== 'function'
   || typeof importExtractStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] ImportExtractStatusUi unavailable; cannot continue');
 }
 const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
+const browserExtensionModal = window.BrowserExtensionModal || null;
 const mainLogoLinks = window.MainLogoLinks || null;
 const currentTextSelectorSection = window.CurrentTextSelectorSection || null;
 if (!currentTextSelectorSection
@@ -138,6 +139,9 @@ const wpmControls = WpmControls.createController({
   wpmSlider,
   presetsSelect,
   presetDescription,
+  onPresetSelectionChanged: () => {
+    syncPresetActionButtons();
+  },
 });
 
 // =============================================================================
@@ -159,6 +163,19 @@ function setControlInteractionLocked(element, locked) {
   element.setAttribute('aria-disabled', locked ? 'true' : 'false');
 }
 
+function hasSelectedPreset() {
+  return !!(presetsSelect && typeof presetsSelect.value === 'string' && presetsSelect.value.trim());
+}
+
+function syncPresetActionButtons({ interactionLocked } = {}) {
+  const locked = typeof interactionLocked === 'boolean'
+    ? interactionLocked
+    : !isRendererReady() || isProcessingModeActive() || isReadingTestInteractionLocked();
+  const disabled = locked || !hasSelectedPreset();
+  setControlInteractionLocked(btnEditPreset, disabled);
+  setControlInteractionLocked(btnDeletePreset, disabled);
+}
+
 function isReadingTestInteractionLocked() {
   return !!(readingSpeedTestUi && readingSpeedTestUi.isInteractionLocked());
 }
@@ -178,8 +195,7 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(wpmSlider, locked);
   setControlInteractionLocked(presetsSelect, locked);
   setControlInteractionLocked(btnNewPreset, locked);
-  setControlInteractionLocked(btnEditPreset, locked);
-  setControlInteractionLocked(btnDeletePreset, locked);
+  syncPresetActionButtons({ interactionLocked: locked });
   setControlInteractionLocked(btnResetDefaultPresets, locked);
   setControlInteractionLocked(resultsTimeMultiplierInput, locked);
   setControlInteractionLocked(toggleModoPreciso, locked);
@@ -187,6 +203,14 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(cronoDisplayInput, locked);
   setControlInteractionLocked(cronoToggleBtnMain, locked);
   setControlInteractionLocked(cronoResetBtnMain, locked);
+  if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
+    browserExtensionModal.setInteractionLocked(locked);
+  } else {
+    log.warnOnce(
+      'renderer.browserExtensionModal.setInteractionLocked.unavailable',
+      'BrowserExtensionModal.setInteractionLocked unavailable; browser extension entry lock state will not sync.'
+    );
+  }
 }
 
 function startImportExtractPrepareAttempt() {
@@ -205,6 +229,9 @@ function isAriaHiddenElementVisible(elementId) {
 
 function hasBlockingMainWindowModalOpen() {
   return isAriaHiddenElementVisible('infoModal')
+    || !!(browserExtensionModal
+      && typeof browserExtensionModal.hasBlockingModalOpen === 'function'
+      && browserExtensionModal.hasBlockingModalOpen())
     || isAriaHiddenElementVisible('importExtractRouteModal')
     || isAriaHiddenElementVisible('importExtractApplyModal')
     || isAriaHiddenElementVisible('snapshotSaveTagsModal')
@@ -376,10 +403,23 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
 // =============================================================================
 // i18n wiring
 // =============================================================================
-const { loadRendererTranslations, tRenderer, msgRenderer, getRendererValue } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer || !msgRenderer || !getRendererValue) {
+const {
+  loadRendererTranslations,
+  tRenderer,
+  msgRenderer,
+  getRendererValue,
+  applyWindowLanguageAttributes,
+  renderLocalizedLabelWithInvariantValue,
+} = window.RendererI18n || {};
+if (!loadRendererTranslations
+  || !tRenderer
+  || !msgRenderer
+  || !getRendererValue
+  || !applyWindowLanguageAttributes
+  || !renderLocalizedLabelWithInvariantValue) {
   throw new Error('[renderer] RendererI18n unavailable; cannot continue');
 }
+applyWindowLanguageAttributes(DEFAULT_LANG);
 
 function getHelpTipKeyList() {
   const tips = getRendererValue('renderer.tips');
@@ -417,6 +457,14 @@ function applyTranslations() {
     log.warnOnce(
       'renderer.mainLogoLinks.applyTranslations.unavailable',
       'MainLogoLinks.applyTranslations unavailable; brand logo labels will use defaults.'
+    );
+  }
+  if (browserExtensionModal && typeof browserExtensionModal.applyTranslations === 'function') {
+    browserExtensionModal.applyTranslations();
+  } else {
+    log.warnOnce(
+      'renderer.browserExtensionModal.applyTranslations.unavailable',
+      'BrowserExtensionModal.applyTranslations unavailable; browser extension labels will use defaults.'
     );
   }
   const infoModalLoading = document.getElementById('infoModalLoading');
@@ -541,12 +589,17 @@ if (!getExactTotalSeconds || !getDisplayTimeParts || !obtenerSeparadoresDeNumero
 // =============================================================================
 let currentTextStats = null;
 
+function formatInvariantEstimatedDuration(hours, minutes, seconds) {
+  return `${hours}h ${minutes}m ${seconds}s`;
+}
+
 function renderEstimatedTime(totalSeconds) {
   const { hours, minutes, seconds } = getDisplayTimeParts(totalSeconds);
-  resTime.textContent = msgRenderer(
-    'renderer.main.results.time',
-    { h: hours, m: minutes, s: seconds }
-  );
+  renderLocalizedLabelWithInvariantValue(resTime, {
+    labelText: tRenderer('renderer.main.results.time_label'),
+    valueText: formatInvariantEstimatedDuration(hours, minutes, seconds),
+    valueDirection: 'ltr',
+  });
   resultsTimeMultiplier.setBaseTotalSeconds(totalSeconds);
 }
 
@@ -639,11 +692,13 @@ function resolveSettingsSnapshot(settingsSnapshot) {
 
 const loadPresets = async ({ settingsSnapshot } = {}) => {
   const snapshot = resolveSettingsSnapshot(settingsSnapshot);
-  return wpmControls.loadPresets({
+  const result = await wpmControls.loadPresets({
     settingsSnapshot: snapshot,
     language: idiomaActual,
     electronAPI: window.electronAPI,
   });
+  syncPresetActionButtons();
+  return result;
 };
 
 // =============================================================================
@@ -656,12 +711,13 @@ const settingsChangeHandler = async (newSettings) => {
     const idiomaCambio = (nuevoIdioma !== idiomaActual);
     if (idiomaCambio) {
       idiomaActual = nuevoIdioma;
+      applyWindowLanguageAttributes(idiomaActual);
       try {
         await loadRendererTranslations(idiomaActual);
       } catch (err) {
         log.warnOnce(
           'renderer.loadRendererTranslations',
-          `[renderer] loadRendererTranslations(${idiomaActual}) failed (ignored):`,
+          `loadRendererTranslations(${idiomaActual}) failed (ignored):`,
           err
         );
       }
@@ -875,7 +931,7 @@ function setupToggleModoPreciso() {
     try {
       syncToggleFromSettings(settingsCache || {});
     } catch (err) {
-      log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+      log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', 'syncToggleFromSettings failed (ignored):', err);
     }
   } catch (err) {
     log.error('Error initializing toggleModoPreciso:', err);
@@ -931,6 +987,7 @@ async function runStartupOrchestrator() {
 
     // Load and apply renderer translations
     try {
+      applyWindowLanguageAttributes(idiomaActual);
       await loadRendererTranslations(idiomaActual);
     } catch (err) {
       log.warn('BOOTSTRAP: initial translations failed; using defaults:', err);
@@ -986,7 +1043,7 @@ async function runStartupOrchestrator() {
       try {
         syncToggleFromSettings(settingsSnapshot || {});
       } catch (err) {
-        log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+        log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', 'syncToggleFromSettings failed (ignored):', err);
       }
     }
 
@@ -1467,12 +1524,16 @@ function registerMenuActions() {
 function bindPresetSelection() {
   presetsSelect.addEventListener('change', async () => {
     if (!guardUserAction('preset-change')) return;
-    await wpmControls.handlePresetSelectionChange({
-      settingsSnapshot: settingsCache,
-      language: idiomaActual,
-      electronAPI: window.electronAPI,
-      onWpmChanged: updateTimeOnlyFromStats,
-    });
+    try {
+      await wpmControls.handlePresetSelectionChange({
+        settingsSnapshot: settingsCache,
+        language: idiomaActual,
+        electronAPI: window.electronAPI,
+        onWpmChanged: updateTimeOnlyFromStats,
+      });
+    } finally {
+      syncPresetActionButtons();
+    }
   });
 }
 
@@ -1481,6 +1542,7 @@ function bindPresetSelection() {
 // =============================================================================
 function applyReadingTestWpm(rawWpm) {
   wpmControls.applyExternalWpm(rawWpm, { onWpmChanged: updateTimeOnlyFromStats });
+  syncPresetActionButtons();
 }
 
 function bindSpeedControls() {
@@ -1663,6 +1725,18 @@ function configureImportExtractModules() {
 
 function initializeDelegatedIntegrations() {
   configureImportExtractModules();
+
+  if (browserExtensionModal && typeof browserExtensionModal.configure === 'function') {
+    browserExtensionModal.configure({
+      electronAPI: window.electronAPI,
+      hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
+    });
+  } else {
+    log.warnOnce(
+      'renderer.browserExtensionModal.configure.unavailable',
+      'BrowserExtensionModal.configure unavailable; browser extension entry disabled.'
+    );
+  }
 
   if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
     mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });
@@ -2027,18 +2101,9 @@ function bindPresetActions() {
     try {
       const selectedName = presetsSelect.value;
       if (!selectedName) {
-        // Ask main to show the native info dialog when no preset is selected.
-        if (window.electronAPI && typeof window.electronAPI.notifyNoSelectionEdit === 'function') {
-          await window.electronAPI.notifyNoSelectionEdit();
-          return;
-        } else {
-          log.warnOnce(
-            'renderer.ipc.notifyNoSelectionEdit.unavailable',
-            'notifyNoSelectionEdit unavailable; using renderer fallback notification.'
-          );
-          window.Notify.notifyMain('renderer.alerts.edit_none');
-          return;
-        }
+        log.warn('Preset edit requested without a selected preset; action skipped.');
+        syncPresetActionButtons();
+        return;
       }
 
       // Find preset data from cache
@@ -2051,9 +2116,9 @@ function bindPresetActions() {
       // Open modal in edit mode and pass preset data.
       const payload = { wpm: wpmControls.getWpm(), mode: 'edit', preset: preset };
       try {
-        log.debug('[renderer] openPresetModal payload:', payload);
+        log.debug('openPresetModal payload:', payload);
       } catch (err) {
-        log.warnOnce('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+        log.warnOnce('log.debug.openPresetModal', 'log.debug failed (ignored):', err);
       }
       if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
         window.electronAPI.openPresetModal(payload);
@@ -2075,6 +2140,11 @@ function bindPresetActions() {
     if (!guardUserAction('preset-delete')) return;
     try {
       const name = presetsSelect.value || null;
+      if (!name) {
+        log.warn('Preset delete requested without a selected preset; action skipped.');
+        syncPresetActionButtons();
+        return;
+      }
       const requestDeletePreset = getOptionalElectronMethod('requestDeletePreset', {
         dedupeKey: 'renderer.ipc.requestDeletePreset.unavailable',
         unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'
@@ -2094,10 +2164,6 @@ function bindPresetActions() {
         return;
       } else {
         // res.ok === false -> handle known codes
-        if (res && res.code === 'NO_SELECTION') {
-          // Main already showed a native info dialog; nothing else to do.
-          return;
-        }
         if (res && res.code === 'CANCELLED') {
           // User cancelled; nothing to do
           return;
@@ -2158,7 +2224,7 @@ const cronoModule = (typeof window !== 'undefined') ? window.RendererCrono : nul
 
 const initCronoController = () => {
   if (!cronoModule || typeof cronoModule.createController !== 'function') {
-    log.warn('[renderer] RendererCrono.createController not available');
+    log.warn('RendererCrono.createController unavailable.');
     return;
   }
   const labels = getCronoLabels();

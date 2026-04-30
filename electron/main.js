@@ -1755,6 +1755,7 @@ app.whenReady().then(() => {
     onSettingsUpdated: (nextSettings) => {
       spellcheckController.apply(nextSettings);
     },
+    decorateSettings: (nextSettings) => spellcheckController.decorateSettings(nextSettings),
   });
 
   presetsMain.registerIpc(ipcMain, {

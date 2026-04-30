@@ -27,6 +27,7 @@
         "snapshot_save": "Guardar el texto actual en un snapshot",
         "task_new": "Nueva tarea",
         "task_load": "Cargar tarea",
+        "browser_extension": "Extensión del navegador",
         "cibersino_website": "Sitio de Cibersino",
         "cibersino_kofi": "Apóyame en Ko-fi",
         "new_preset": "Crear un nuevo preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Importar o extraer texto desde archivo",
         "import_extract_abort": "Abortar extracción",
+        "browser_extension": "Abrir diálogo de extensión del navegador",
         "clipboard_repeat_count": "Repeticiones de pegado",
         "wpm_input": "Palabras por minuto",
         "wpm_slider": "Deslizador de palabras por minuto",
@@ -61,7 +63,7 @@
       },
       "results": {
         "title": "RESULTADOS DEL CONTEO",
-        "time": "⏱ Tiempo estimado de lectura: {h}h {m}m {s}s",
+        "time_label": "⏱ Tiempo estimado de lectura: ",
         "words": "Palabras: {n}",
         "chars_no_space": "Caracteres (sin espacios): {n}",
         "chars": "Caracteres: {n}",
@@ -86,9 +88,16 @@
         "import_extract_waiting_native": "Extrayendo texto del archivo...",
         "import_extract_waiting_ocr": "Ejecutando extracción OCR...",
         "import_extract_waiting_ocr_delayed": "Ejecutando OCR. Algunos archivos tardan más.",
-        "import_extract_elapsed": "Transcurrido: {time}",
+        "import_extract_elapsed": "Transcurrido: ",
         "import_extract_drop_here": "Suelta el archivo para importar o extraer texto"
       }
+    },
+    "browser_extension": {
+      "title": "Extensión del navegador",
+      "subtitle": "Tiempo de lectura",
+      "availability": "Disponible ahora en Chrome. Más navegadores pronto.",
+      "chrome_store_aria": "Abrir página de Chrome Web Store de la extensión",
+      "close_aria": "Cerrar diálogo de extensión del navegador"
     },
     "editor": {
       "title": "toT — Texto completo",
@@ -102,8 +111,8 @@
       "reset_text_size": "Restablecer tamaño del texto",
       "text_size_value": "{value} px",
       "read_progress_label": "Leído",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Progreso de lectura: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Progreso de lectura: {value}",
       "clear": "🗑",
       "clear_title": "Vaciar"
     },
@@ -232,24 +241,36 @@
       "close_aria": "Cerrar diálogo para guardar snapshot de texto",
       "options": {
         "language": {
-          "es": "Español",
-          "en": "Inglés",
-          "pt": "Portugués",
-          "fr": "Francés",
-          "de": "Alemán",
-          "it": "Italiano",
+          "ar": "Árabe",
           "arn": "Mapudungun",
+          "ay": "Aimara",
+          "bn": "Bengalí",
+          "ca": "Catalán",
+          "de": "Alemán",
+          "en": "Inglés",
+          "es": "Español",
+          "eu": "Euskera",
+          "fa": "Persa",
+          "fr": "Francés",
+          "gn": "Guaraní",
+          "hi": "Hindi",
+          "ht": "Criollo haitiano",
+          "id": "Indonesio",
+          "it": "Italiano",
           "ja": "Japonés",
           "ko": "Coreano",
+          "mi": "Maorí",
+          "pcm": "Pidgin de Nigeria",
+          "pt": "Portugués",
+          "qu": "Quechua",
           "ru": "Ruso",
+          "sv": "Sueco",
           "tr": "Turco",
-          "id": "Indonesio",
-          "hi": "Hindi",
-          "bn": "Bengalí",
           "ur": "Urdu",
-          "ar": "Árabe",
+          "vi": "Vietnamita",
           "zh_hans": "Chino simplificado",
-          "zh_hant": "Chino tradicional"
+          "zh_hant": "Chino tradicional",
+          "zu": "Zulú"
         },
         "type": {
           "fiction": "Ficción",
@@ -306,13 +327,13 @@
         "title": "Preguntas de comprensión lectora",
         "intro": "Responder estas preguntas de comprensión lectora es opcional y no afecta tu puntaje final. Solo sirven para ayudarte a evaluar la dificultad del texto y si tu ritmo y estilo de lectura te permitieron alcanzar un nivel básico de comprensión. Tus respuestas no se guardan ni se envían a los desarrolladores ni a ninguna otra persona.",
         "random_title": "Probabilidad al azar",
-        "random_value": "Puntaje esperado al responder al azar: {percentage}%",
+        "random_value": "Puntaje esperado al responder al azar: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Para reclamos:",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Debes responder todas las preguntas antes de evaluar.",
-        "result_summary": "{correct} de {total} correctas ({percentage}%)",
-        "chance_at_least_observed": "Probabilidad de obtener al menos este puntaje al responder al azar: {percentage}%",
+        "result_summary": "{correct} de {total} correctas ({percentage})",
+        "chance_at_least_observed": "Probabilidad de obtener al menos este puntaje al responder al azar: {percentage}",
         "fatal_invalid": "La carga de preguntas es inválida.",
         "buttons": {
           "check": "Ver resultado",
@@ -360,7 +381,6 @@
       "snapshot_truncated": "El snapshot excede el tamaño máximo y fue truncado.",
       "snapshot_unavailable": "La función de snapshots no está disponible.",
       "modal_unavailable": "Funcionalidad de modal no disponible.",
-      "edit_none": "No hay ningún preset seleccionado para editar.",
       "preset_not_found": "Preset seleccionado no encontrado en caché.",
       "edit_unavailable": "Funcionalidad de edición no disponible.",
       "edit_error": "Ocurrió un error al intentar editar el preset. Revisa la consola.",
@@ -386,7 +406,7 @@
       "import_extract_route_choice_close_aria": "Cerrar diálogo de ruta de extracción",
       "import_extract_apply_modal_title": "Aplicar texto extraído",
       "import_extract_apply_modal_message": "Elige cómo aplicar el texto extraído.",
-      "import_extract_apply_modal_elapsed": "Tiempo de ejecución: {time}",
+      "import_extract_apply_modal_elapsed": "Tiempo de ejecución: ",
       "import_extract_apply_modal_repeat_label": "Repeticiones",
       "import_extract_apply_modal_overwrite_button": "Sobrescribir",
       "import_extract_apply_modal_append_button": "Agregar",
@@ -553,7 +573,9 @@
       "tip49": "Entre los antecedentes del OCR estuvo el optophone, una máquina de comienzos del siglo XX pensada para que personas ciegas pudieran convertir texto impreso en sonidos.",
       "tip50": "El desarrollo del OCR moderno se aceleró entre los años 50 y 60, impulsado por la automatización postal y la lectura de documentos comerciales.",
       "tip51": "La máquina de lectura de Kurzweil, presentada en los años 70, combinó escáner, OCR y síntesis de voz para leer texto impreso en voz alta.",
-      "tip52": "Un error típico de OCR es confundir caracteres visualmente parecidos, como O y 0, l e I, o rn y m."
+      "tip52": "Un error típico de OCR es confundir caracteres visualmente parecidos, como O y 0, l e I, o rn y m.",
+      "tip53": "El OCR ha evolucionado con técnicas de aprendizaje automático y redes neuronales, mejorando su precisión y capacidad para manejar distintos tipos de texto e imágenes.",
+      "tip54": "¿Probaste las extensiones de navegador de toT?"
     }
   }
 }

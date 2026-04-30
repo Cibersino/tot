@@ -84,7 +84,6 @@ const api = {
     setSelectedPreset: (name) => ipcRenderer.invoke('set-selected-preset', name),
     requestDeletePreset: (name) => ipcRenderer.invoke('request-delete-preset', name),
     requestRestoreDefaults: () => ipcRenderer.invoke('request-restore-defaults'),
-    notifyNoSelectionEdit: () => ipcRenderer.invoke('notify-no-selection-edit'),
     onPresetCreated: (cb) => {
         const listener = (_e, preset) => {
             try { cb(preset); } catch (err) { console.error('preset-created callback error:', err); }

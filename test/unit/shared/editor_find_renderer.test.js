@@ -95,6 +95,9 @@ function createHarness({
         tRenderer(key) {
           return key;
         },
+        applyWindowLanguageAttributes(lang) {
+          return lang;
+        },
       },
       editorFindAPI: {
         setQuery: async () => {},

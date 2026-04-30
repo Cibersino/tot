@@ -27,6 +27,7 @@
         "snapshot_save": "Save current text to a snapshot",
         "task_new": "New task",
         "task_load": "Load task",
+        "browser_extension": "Browser extension",
         "cibersino_website": "Cibersino website",
         "cibersino_kofi": "Support me on Ko-fi",
         "new_preset": "Create a new preset",
@@ -39,6 +40,7 @@
       "aria": {
         "import_extract": "Import or extract text from file",
         "import_extract_abort": "Abort extraction",
+        "browser_extension": "Open browser extension dialog",
         "clipboard_repeat_count": "Paste repetitions",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words-per-minute slider",
@@ -61,7 +63,7 @@
       },
       "results": {
         "title": "COUNT RESULTS",
-        "time": "⏱ Estimated reading time: {h}h {m}m {s}s",
+        "time_label": "⏱ Estimated reading time: ",
         "words": "Words: {n}",
         "chars_no_space": "Characters (no spaces): {n}",
         "chars": "Characters: {n}",
@@ -86,9 +88,16 @@
         "import_extract_waiting_native": "Extracting text from file...",
         "import_extract_waiting_ocr": "Running OCR extraction...",
         "import_extract_waiting_ocr_delayed": "Running OCR. Some files take longer.",
-        "import_extract_elapsed": "Elapsed: {time}",
+        "import_extract_elapsed": "Elapsed: ",
         "import_extract_drop_here": "Drop file to import/extract text"
       }
+    },
+    "browser_extension": {
+      "title": "Browser extension",
+      "subtitle": "Reading time",
+      "availability": "Available on Chrome now. More browsers coming soon.",
+      "chrome_store_aria": "Open the extension Chrome Web Store page",
+      "close_aria": "Close browser extension dialog"
     },
     "editor": {
       "title": "toT — Full text",
@@ -102,8 +111,8 @@
       "reset_text_size": "Reset text size",
       "text_size_value": "{value} px",
       "read_progress_label": "Read",
-      "read_progress_value": "{value}%",
-      "read_progress_aria": "Read progress: {value}%",
+      "read_progress_value": "{value}",
+      "read_progress_aria": "Read progress: {value}",
       "clear": "🗑",
       "clear_title": "Clear"
     },
@@ -232,24 +241,36 @@
       "close_aria": "Close save text snapshot dialog",
       "options": {
         "language": {
-          "es": "Spanish",
-          "en": "English",
-          "pt": "Portuguese",
-          "fr": "French",
-          "de": "German",
-          "it": "Italian",
+          "ar": "Arabic",
           "arn": "Mapudungun",
+          "ay": "Aymara",
+          "bn": "Bengali",
+          "ca": "Catalan",
+          "de": "German",
+          "en": "English",
+          "es": "Spanish",
+          "eu": "Basque",
+          "fa": "Persian",
+          "fr": "French",
+          "gn": "Guarani",
+          "hi": "Hindi",
+          "ht": "Haitian Creole",
+          "id": "Indonesian",
+          "it": "Italian",
           "ja": "Japanese",
           "ko": "Korean",
+          "mi": "Māori",
+          "pcm": "Nigerian Pidgin",
+          "pt": "Portuguese",
+          "qu": "Quechua",
           "ru": "Russian",
+          "sv": "Swedish",
           "tr": "Turkish",
-          "id": "Indonesian",
-          "hi": "Hindi",
-          "bn": "Bengali",
           "ur": "Urdu",
-          "ar": "Arabic",
+          "vi": "Vietnamese",
           "zh_hans": "Chinese (Simplified)",
-          "zh_hant": "Chinese (Traditional)"
+          "zh_hant": "Chinese (Traditional)",
+          "zu": "Zulu"
         },
         "type": {
           "fiction": "Fiction",
@@ -306,13 +327,13 @@
         "title": "Reading Comprehension Questions",
         "intro": "Answering these reading comprehension questions is optional and does not affect your final score. They are only meant to help you assess the text's difficulty and whether your reading pace and style allowed you to reach a basic level of comprehension. Your answers are not saved or sent to the developers or to anyone else.",
         "random_title": "Random guess baseline",
-        "random_value": "Expected score under random guessing: {percentage}%",
+        "random_value": "Expected score under random guessing: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "For complaints:",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "All questions must be answered before evaluating.",
-        "result_summary": "{correct} out of {total} correct ({percentage}%)",
-        "chance_at_least_observed": "Chance of getting at least this score by random guessing: {percentage}%",
+        "result_summary": "{correct} out of {total} correct ({percentage})",
+        "chance_at_least_observed": "Chance of getting at least this score by random guessing: {percentage}",
         "fatal_invalid": "The questions payload is invalid.",
         "buttons": {
           "check": "Check result",
@@ -360,7 +381,6 @@
       "snapshot_truncated": "Snapshot exceeds the maximum size and was truncated.",
       "snapshot_unavailable": "Snapshot functionality is unavailable.",
       "modal_unavailable": "Modal functionality not available.",
-      "edit_none": "No preset selected to edit.",
       "preset_not_found": "Selected preset not found in cache.",
       "edit_unavailable": "Edit functionality not available.",
       "edit_error": "An error occurred while editing the preset. Check console.",
@@ -386,7 +406,7 @@
       "import_extract_route_choice_close_aria": "Close extraction route dialog",
       "import_extract_apply_modal_title": "Apply extracted text",
       "import_extract_apply_modal_message": "Choose how to apply the extracted text.",
-      "import_extract_apply_modal_elapsed": "Execution time: {time}",
+      "import_extract_apply_modal_elapsed": "Execution time: ",
       "import_extract_apply_modal_repeat_label": "Repetitions",
       "import_extract_apply_modal_overwrite_button": "Overwrite",
       "import_extract_apply_modal_append_button": "Append",
@@ -553,7 +573,9 @@
       "tip49": "One of OCR's predecessors was the optophone, an early 20th-century machine designed so blind people could convert printed text into sounds.",
       "tip50": "The development of modern OCR accelerated between the 1950s and 1960s, driven by postal automation and the reading of business documents.",
       "tip51": "Kurzweil's reading machine, introduced in the 1970s, combined a scanner, OCR, and speech synthesis to read printed text aloud.",
-      "tip52": "A typical OCR error is confusing visually similar characters, such as O and 0, l and I, or rn and m."
+      "tip52": "A typical OCR error is confusing visually similar characters, such as O and 0, l and I, or rn and m.",
+      "tip53": "OCR has evolved with machine learning techniques and neural networks, improving its accuracy and ability to handle different types of text and images.",
+      "tip54": "Have you tried toT's browser extensions?"
     }
   }
 }

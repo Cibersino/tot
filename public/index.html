@@ -16,6 +16,10 @@
   <!-- Logos -->
   <div class="logo-container">
     <div class="logo-links-group">
+      <button id="browserExtensionLogoLink" class="logo-link logo-link--extension" type="button"
+        title="Extensión del navegador" aria-label="Abrir diálogo de extensión del navegador">
+        <img id="browserExtensionLogo" src="./assets/extension/tot-symbols.64.png" alt="" aria-hidden="true" />
+      </button>
       <button id="kofiLogoLink" class="logo-link logo-link--kofi" type="button" title="Apóyame en Ko-fi"
         aria-label="Apóyame en Ko-fi">
         <img id="kofiLogo" src="./assets/kofi_symbol.png" alt="" aria-hidden="true" />
@@ -97,9 +101,9 @@
         </select>
         <button id="btnNewPreset" class="btn-standard btn-standard--square" title="Crear un nuevo preset">N</button>
         <button id="btnEditPreset" class="btn-standard btn-standard--square"
-          title="Editar preset seleccionado">E</button>
+          title="Editar preset seleccionado" disabled aria-disabled="true">E</button>
         <button id="btnDeletePreset" class="btn-standard btn-standard--square"
-          title="Eliminar preset seleccionado">🗑</button>
+          title="Eliminar preset seleccionado" disabled aria-disabled="true">🗑</button>
         <button id="btnResetDefaultPresets" class="btn-standard btn-standard--square-half"
           title="Restaurar presets por defecto">R</button>
       </div>
@@ -110,7 +114,7 @@
     <aside class="results" aria-labelledby="results-title">
       <h4 id="results-title" class="section-title">RESULTADOS DEL CONTEO</h4>
       <div class="result-highlight">
-        <div class="big-time" id="resTime" role="status" aria-live="polite">⏱ Tiempo estimado de lectura: 0h 0m 0s</div>
+        <div class="big-time" id="resTime" role="status" aria-live="polite">⏱ Tiempo estimado de lectura: <bdi dir="ltr">0h 0m 0s</bdi></div>
         <div class="results-multiplier-row">
           <label id="resultsTimeMultiplierLabel" for="resultsTimeMultiplierInput">x</label>
           <input id="resultsTimeMultiplierInput" type="number" min="1" max="9999" step="1" value="1" />
@@ -170,6 +174,32 @@
           <!-- Dynamically loaded content -->
           <div id="infoModalLoading" class="info-loading">Cargando...</div>
         </main>
+      </div>
+    </div>
+
+    <div id="browserExtensionModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="browserExtensionModalTitle" aria-describedby="browserExtensionModalAvailability"
+      aria-modal="true">
+      <div id="browserExtensionModalBackdrop" class="info-modal-backdrop"></div>
+      <div class="browser-extension-modal-panel" role="document">
+        <header class="browser-extension-modal-header">
+          <button id="browserExtensionModalClose" class="btn-standard" type="button"
+            aria-label="Cerrar diálogo de extensión del navegador">🗙</button>
+        </header>
+        <div class="browser-extension-modal-body">
+          <div class="browser-extension-modal-copy">
+            <h2 id="browserExtensionModalTitle">Extensión del navegador</h2>
+            <p id="browserExtensionModalSubtitle" class="browser-extension-modal-subtitle">Tiempo de lectura</p>
+          </div>
+          <div class="browser-extension-modal-store">
+            <a id="browserExtensionChromeStoreLink" class="browser-extension-modal-store-link" href="">
+              <img src="./assets/extension/chrome-web-store-badge.png" alt="" aria-hidden="true" />
+            </a>
+            <p id="browserExtensionModalAvailability" class="browser-extension-modal-availability">
+              Disponible ahora en Chrome. Más navegadores pronto.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -373,6 +403,7 @@
   <script src="./js/i18n.js"></script>
   <script src="./js/lib/snapshot_tag_catalog.js"></script>
   <script src="./js/lib/reading_test_filters_core.js"></script>
+  <script src="./js/browser_extension_modal.js"></script>
   <script src="./js/snapshot_save_tags_modal.js"></script>
   <script src="./js/reading_speed_test.js"></script>
   <script src="./js/presets.js"></script>

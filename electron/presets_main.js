@@ -587,23 +587,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { lang, dialogTexts } = getDialogContext(settings);
       const { continueLabel, cancelLabel } = getConfirmButtonLabels(dialogTexts);
 
-      // If no name provided, show information dialog and exit
       if (!name) {
-        try {
-          const { mainWin } = resolveWindows();
-          await dialog.showMessageBox(mainWin || null, {
-            type: 'none',
-            buttons: [resolveDialogText(dialogTexts, 'ok')],
-            defaultId: 0,
-            message: resolveDialogText(dialogTexts, 'delete_preset_none'),
-          });
-        } catch (err) {
-          log.error(
-            '[presets_main] Error showing dialog delete none:',
-            err
-          );
-        }
-        return { ok: false, code: 'NO_SELECTION' };
+        log.warn('[presets_main] request-delete-preset called without a preset name (ignored).');
+        return { ok: false, error: 'invalid name', code: 'INVALID_NAME' };
       }
 
       // Ask confirmation (native dialog)
@@ -751,38 +737,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     } catch (err) {
       log.error(
         '[presets_main] Error restoring default presets:',
-        err
-      );
-      return { ok: false, error: String(err) };
-    }
-  });
-
-  // IPC: show info dialog when edit is requested with no selection.
-  ipcMain.handle('notify-no-selection-edit', async (event) => {
-    try {
-      const mainWin = resolveMainWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          mainWin,
-          'presets_main.notifyNoSelectionEdit.unauthorized',
-          'notify-no-selection-edit unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
-
-      const settings = settingsState.getSettings();
-      const { dialogTexts } = getDialogContext(settings);
-
-      await dialog.showMessageBox(mainWin || null, {
-        type: 'none',
-        buttons: [resolveDialogText(dialogTexts, 'ok')],
-        defaultId: 0,
-        message: resolveDialogText(dialogTexts, 'edit_preset_none'),
-      });
-      return { ok: true };
-    } catch (err) {
-      log.error(
-        '[presets_main] Error showing dialog no-selection-edit:',
         err
       );
       return { ok: false, error: String(err) };

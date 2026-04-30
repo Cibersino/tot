@@ -26,6 +26,8 @@
     throw new Error('[i18n] AppConstants.DEFAULT_LANG unavailable; cannot continue');
   }
   const { DEFAULT_LANG } = AppConstants;
+  const RTL_LANGUAGE_BASES = new Set(['ar', 'fa', 'he', 'ur']);
+  const FIXED_DOCUMENT_DIRECTION = 'ltr';
 
   // =============================================================================
   // Shared state
@@ -44,6 +46,25 @@
     const idx = tag.indexOf('-');
     return idx > 0 ? tag.slice(0, idx) : tag;
   };
+  const getLanguageDirection = (lang) => {
+    const base = getLangBase(lang) || normalizeLangTag(lang);
+    return RTL_LANGUAGE_BASES.has(base) ? 'rtl' : 'ltr';
+  };
+
+  function applyWindowLanguageAttributes(lang) {
+    const langTag = normalizeLangTag(lang) || DEFAULT_LANG;
+    const languageDirection = getLanguageDirection(langTag);
+    if (document && document.documentElement) {
+      document.documentElement.lang = langTag;
+      document.documentElement.dir = FIXED_DOCUMENT_DIRECTION;
+      document.documentElement.dataset.languageDirection = languageDirection;
+    }
+    return {
+      lang: langTag,
+      dir: FIXED_DOCUMENT_DIRECTION,
+      languageDirection,
+    };
+  }
 
   const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 
@@ -211,6 +232,28 @@
     return str;
   }
 
+  function renderLocalizedLabelWithInvariantValue(container, {
+    labelText = '',
+    valueText = '',
+    valueDirection = 'ltr',
+  } = {}) {
+    if (!container || typeof container.appendChild !== 'function') {
+      throw new Error('[i18n] renderLocalizedLabelWithInvariantValue requires a container element');
+    }
+
+    container.textContent = '';
+
+    if (labelText) {
+      container.appendChild(document.createTextNode(String(labelText)));
+    }
+
+    const valueNode = document.createElement('bdi');
+    valueNode.dir = valueDirection === 'rtl' ? 'rtl' : 'ltr';
+    valueNode.textContent = String(valueText ?? '');
+    container.appendChild(valueNode);
+    return valueNode;
+  }
+
   function getRendererValue(path) {
     if (!rendererTranslations) return undefined;
     return getPath(rendererTranslations, path);
@@ -225,7 +268,10 @@
     msgRenderer,
     getRendererValue,
     normalizeLangTag,
-    getLangBase
+    getLangBase,
+    getLanguageDirection,
+    applyWindowLanguageAttributes,
+    renderLocalizedLabelWithInvariantValue,
   };
 })();
 

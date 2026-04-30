@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Host import/extract post-extraction apply modal behavior.
-// - Populate modal copy, elapsed text, and repeat limits before prompting the user.
+// - Populate modal copy, elapsed value composition, and repeat limits before prompting the user.
 // - Normalize the final repeat count before returning apply intent (`overwrite`/`append`).
 // =============================================================================
 
@@ -20,10 +20,12 @@
   }
   const log = window.getLogger('import-extract-apply-modal');
   log.debug('Import/extract apply modal starting...');
-  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
-    throw new Error('[import-extract-apply-modal] RendererI18n.tRenderer unavailable; cannot continue');
+  if (!window.RendererI18n
+    || typeof window.RendererI18n.tRenderer !== 'function'
+    || typeof window.RendererI18n.renderLocalizedLabelWithInvariantValue !== 'function') {
+    throw new Error('[import-extract-apply-modal] RendererI18n dependencies unavailable; cannot continue');
   }
-  const { tRenderer } = window.RendererI18n;
+  const { tRenderer, renderLocalizedLabelWithInvariantValue } = window.RendererI18n;
 
   // =============================================================================
   // UI elements
@@ -73,7 +75,7 @@
   // =============================================================================
 
   async function promptApplyChoice({
-    elapsedText = '',
+    elapsedValueText = '',
     defaultRepeat = 1,
     maxRepeat = 1,
   } = {}) {
@@ -97,9 +99,18 @@
 
     title.textContent = titleText;
     message.textContent = messageText;
-    elapsed.textContent = typeof elapsedText === 'string' ? elapsedText.trim() : '';
-    elapsed.hidden = !elapsed.textContent;
+    const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
+    elapsed.hidden = !normalizedElapsedValueText;
     elapsed.setAttribute('aria-hidden', elapsed.hidden ? 'true' : 'false');
+    if (normalizedElapsedValueText) {
+      renderLocalizedLabelWithInvariantValue(elapsed, {
+        labelText: tRenderer('renderer.alerts.import_extract_apply_modal_elapsed'),
+        valueText: normalizedElapsedValueText,
+        valueDirection: 'ltr',
+      });
+    } else {
+      elapsed.textContent = '';
+    }
     repeatLabel.textContent = repeatLabelText;
     btnOverwrite.textContent = overwriteText;
     btnAppend.textContent = appendText;

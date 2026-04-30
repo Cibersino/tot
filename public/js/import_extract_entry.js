@@ -83,7 +83,7 @@
     if (!importExtractStatusUi
       || typeof importExtractStatusUi.applyProcessingModeState !== 'function'
       || typeof importExtractStatusUi.clearPendingExecutionContext !== 'function'
-      || typeof importExtractStatusUi.getFinalElapsedText !== 'function'
+      || typeof importExtractStatusUi.getFinalElapsedValueText !== 'function'
       || typeof importExtractStatusUi.setPendingExecutionContext !== 'function') {
       throw new Error('[import-extract-entry] importExtractStatusUi dependency incomplete');
     }
@@ -325,7 +325,7 @@
         try {
           applyChoice = await window.Notify.promptImportExtractApplyChoice({
             defaultRepeat,
-            elapsedText: importExtractStatusUi.getFinalElapsedText(),
+            elapsedValueText: importExtractStatusUi.getFinalElapsedValueText(),
             maxRepeat: MAX_CLIPBOARD_REPEAT,
           });
         } catch (err) {

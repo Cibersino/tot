@@ -98,8 +98,11 @@
       return { separadorMiles: '.', separadorDecimal: ',' };
     }
 
-    function formatearNumero(numero, separadorMiles, separadorDecimal) {
-      let [entero, decimal] = numero.toFixed(0).split('.');
+    function formatearNumero(numero, separadorMiles, separadorDecimal, fractionDigits = 0) {
+      const normalizedFractionDigits = Number.isInteger(Number(fractionDigits)) && Number(fractionDigits) >= 0
+        ? Number(fractionDigits)
+        : 0;
+      let [entero, decimal] = numero.toFixed(normalizedFractionDigits).split('.');
       entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, separadorMiles);
       return decimal ? `${entero}${separadorDecimal}${decimal}` : entero;
     }

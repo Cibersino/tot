@@ -73,20 +73,38 @@
           snapshots, a task organizer, a stopwatch with floating window, and reading speed tests.
         </p>
 
-        <div class="download-panel">
-          <p id="os-message">Detecting your operating system...</p>
-          <p>
-            <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
-              View Latest Releases on GitHub
-            </a>
-          </p>
-          <p class="manual-fallback">
-            <a href="https://github.com/Cibersino/tot/releases/latest">See all releases</a>
-          </p>
-          <nav class="legal-links" aria-label="Legal links">
-            <a href="/en/app-privacy/">App Privacy Policy</a>
-            <a href="/en/terms/">Terms of Service</a>
-          </nav>
+        <div class="download-panel action-area">
+          <section class="action-side action-side--desktop" aria-label="Desktop app">
+            <h2 class="action-side__title">Desktop app</h2>
+            <p id="os-message" class="action-side__status">Detecting your operating system...</p>
+            <p class="action-side__cta-wrap">
+              <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
+                View Latest Releases on GitHub
+              </a>
+            </p>
+            <p class="manual-fallback">
+              <a href="https://github.com/Cibersino/tot/releases/latest">See all releases</a>
+            </p>
+            <nav class="legal-links" aria-label="Desktop app legal links">
+              <a href="/en/app-privacy/">App Privacy Policy</a>
+              <a href="/en/terms/">Terms of Service</a>
+            </nav>
+          </section>
+
+          <section class="action-side action-side--extension" aria-label="Browser extension">
+            <div class="action-side__heading">
+              <img class="action-side__icon" src="/assets/extension/tot-symbols.32.png" alt="" aria-hidden="true">
+              <h2 class="action-side__title">Browser extension</h2>
+            </div>
+            <p class="action-side__cta-wrap">
+              <a id="extension-install" class="secondary-cta"
+                href="https://chromewebstore.google.com/detail/aaadjdlieimolidjdkbimjcdojologld"
+                target="_blank" rel="noopener noreferrer">View on Chrome Web Store</a>
+            </p>
+            <nav class="legal-links legal-links--extension" aria-label="Browser extension links">
+              <a href="/en/chrome-extension-privacy/">Extension privacy</a>
+            </nav>
+          </section>
         </div>
       </section>
     </div>
@@ -183,8 +201,17 @@
         supportTextAfterLink: "."
       }
     };
+
+    window.totExtensionConfig = {
+      chromeStoreUrl: "https://chromewebstore.google.com/detail/aaadjdlieimolidjdkbimjcdojologld",
+      labels: {
+        chrome: "Install for Chrome",
+        fallback: "View on Chrome Web Store"
+      }
+    };
   </script>
   <script src="/download-resolver.js"></script>
+  <script src="/extension-resolver.js"></script>
 </body>
 
 </html>

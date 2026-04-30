@@ -33,15 +33,23 @@
   if (!i18nApi
     || typeof i18nApi.loadRendererTranslations !== 'function'
     || typeof i18nApi.tRenderer !== 'function'
-    || typeof i18nApi.msgRenderer !== 'function') {
+    || typeof i18nApi.msgRenderer !== 'function'
+    || typeof i18nApi.applyWindowLanguageAttributes !== 'function') {
     throw new Error('[reading-test-questions] RendererI18n unavailable; cannot continue');
   }
-  const { loadRendererTranslations, tRenderer, msgRenderer } = i18nApi;
+  const { loadRendererTranslations, tRenderer, msgRenderer, applyWindowLanguageAttributes } = i18nApi;
 
   const appConstants = window.AppConstants || null;
   if (!appConstants || typeof appConstants.DEFAULT_LANG !== 'string' || !appConstants.DEFAULT_LANG.trim()) {
     throw new Error('[reading-test-questions] AppConstants.DEFAULT_LANG unavailable; cannot continue');
   }
+  const formatUtils = window.FormatUtils || null;
+  if (!formatUtils
+    || typeof formatUtils.obtenerSeparadoresDeNumeros !== 'function'
+    || typeof formatUtils.formatearNumero !== 'function') {
+    throw new Error('[reading-test-questions] FormatUtils unavailable; cannot continue');
+  }
+  const { obtenerSeparadoresDeNumeros, formatearNumero } = formatUtils;
 
   const questionsCore = window.ReadingTestQuestionsCore || null;
   if (!questionsCore
@@ -107,6 +115,7 @@
     const state = {
       currentLanguage: DEFAULT_LANG,
       translationsLoadedFor: '',
+      settingsCache: {},
       developerEmail: DEFAULT_DEVELOPER_EMAIL,
       questions: [],
       answersByQuestionId: {},
@@ -140,24 +149,89 @@
         : fallback;
     }
 
-    function formatPercentage(value) {
+    async function formatPercentage(value) {
       const numeric = Number(value);
       const safe = Number.isFinite(numeric) ? numeric : 0;
-      try {
-        return new Intl.NumberFormat(state.currentLanguage || DEFAULT_LANG, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(safe);
-      } catch (err) {
-        log.warn('Reading-test questions percent format failed (ignored):', err);
-        return safe.toFixed(2);
+      const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
+        state.currentLanguage || DEFAULT_LANG,
+        state.settingsCache
+      );
+      return formatearNumero(safe, separadorMiles, separadorDecimal, 2);
+    }
+
+    function createInvariantValueNode(valueText) {
+      const valueNode = document.createElement('bdi');
+      valueNode.className = 'reading-test-questions__invariant-value';
+      valueNode.dir = 'ltr';
+      valueNode.textContent = String(valueText ?? '');
+      return valueNode;
+    }
+
+    function renderStructuredInlineText(element, {
+      beforeText = '',
+      valueText = '',
+      afterText = '',
+    } = {}) {
+      element.textContent = '';
+      if (beforeText) {
+        element.appendChild(document.createTextNode(beforeText));
       }
+      element.appendChild(createInvariantValueNode(valueText));
+      if (afterText) {
+        element.appendChild(document.createTextNode(afterText));
+      }
+    }
+
+    function buildStructuredPercentageMessage(template, percentageValueText, { wrapped = false } = {}) {
+      const marker = '{percentage}';
+      const templateText = typeof template === 'string' ? template : '';
+      const markerIndex = templateText.indexOf(marker);
+      if (markerIndex === -1) {
+        log.warn('reading-test questions template missing {percentage} placeholder:', templateText);
+        return null;
+      }
+
+      let beforeText = templateText.slice(0, markerIndex);
+      let afterText = templateText.slice(markerIndex + marker.length);
+      afterText = afterText.replace(/^[%٪]/u, '');
+
+      let openWrapper = '';
+      let closeWrapper = '';
+      if (wrapped) {
+        const openMatch = beforeText.match(/[（(]\s*$/u);
+        if (openMatch) {
+          openWrapper = openMatch[0].replace(/\s+/gu, '');
+          beforeText = beforeText.slice(0, beforeText.length - openMatch[0].length) + openMatch[0].replace(/[（(]/u, '');
+        }
+
+        const closeMatch = afterText.match(/^\s*[）)]/u);
+        if (closeMatch) {
+          closeWrapper = closeMatch[0].replace(/\s+/gu, '');
+          afterText = afterText.slice(closeMatch[0].length);
+        }
+      }
+
+      return {
+        beforeText,
+        valueText: `${openWrapper}${percentageValueText}${closeWrapper}`,
+        afterText,
+      };
     }
 
     function setMessage(element, text, { tone = 'info', visible = false } = {}) {
       element.dataset.tone = tone;
       element.dataset.visible = visible ? 'true' : 'false';
       element.textContent = visible ? text : '';
+    }
+
+    function setStructuredMessage(element, structuredContent, { tone = 'info', visible = false } = {}) {
+      element.dataset.tone = tone;
+      element.dataset.visible = visible ? 'true' : 'false';
+      if (!visible || !structuredContent) {
+        element.textContent = '';
+        return;
+      }
+      renderStructuredInlineText(element, structuredContent);
     }
 
     function resetEvaluationState() {
@@ -204,15 +278,22 @@
       feedbackLink.href = `mailto:${state.developerEmail}`;
     }
 
-    function renderRandomSummary() {
+    async function renderRandomSummary() {
       const randomGuessPercentage = questionsCore.computeRandomGuessPercentage(state.questions);
-      randomValue.textContent = mr(
+      const percentageText = await formatPercentage(randomGuessPercentage);
+      const summaryTemplate = mr(
         'renderer.reading_test.questions.random_value',
-        { percentage: formatPercentage(randomGuessPercentage) }
+        { percentage: '{percentage}' }
       );
+      const structuredSummary = buildStructuredPercentageMessage(summaryTemplate, `${percentageText}%`);
+      if (!structuredSummary) {
+        randomValue.textContent = summaryTemplate.replace('{percentage}', `${percentageText}%`);
+        return;
+      }
+      renderStructuredInlineText(randomValue, structuredSummary);
     }
 
-    function renderStatusMessages() {
+    async function renderStatusMessages() {
       setMessage(
         incompleteMessage,
         tr('renderer.reading_test.questions.incomplete_warning'),
@@ -223,27 +304,40 @@
         setMessage(resultMessage, '', { tone: 'info', visible: false });
         setMessage(chanceMessage, '', { tone: 'note', visible: false });
       } else {
-        setMessage(
+        const scorePercentageText = await formatPercentage(state.lastScore.percentage);
+        const chancePercentageText = await formatPercentage(state.lastScore.probabilityAtLeastObserved * 100);
+        const resultTemplate = mr(
+          'renderer.reading_test.questions.result_summary',
+          {
+            correct: state.lastScore.correct,
+            total: state.lastScore.total,
+            percentage: '{percentage}',
+          }
+        );
+        const structuredResult = buildStructuredPercentageMessage(
+          resultTemplate,
+          `${scorePercentageText}%`,
+          { wrapped: true }
+        );
+        setStructuredMessage(
           resultMessage,
-          mr(
-            'renderer.reading_test.questions.result_summary',
-            {
-              correct: state.lastScore.correct,
-              total: state.lastScore.total,
-              percentage: formatPercentage(state.lastScore.percentage),
-            }
-          ),
+          structuredResult,
           { tone: 'info', visible: true }
         );
 
-        setMessage(
+        const chanceTemplate = mr(
+          'renderer.reading_test.questions.chance_at_least_observed',
+          {
+            percentage: '{percentage}',
+          }
+        );
+        const structuredChance = buildStructuredPercentageMessage(
+          chanceTemplate,
+          `${chancePercentageText}%`
+        );
+        setStructuredMessage(
           chanceMessage,
-          mr(
-            'renderer.reading_test.questions.chance_at_least_observed',
-            {
-              percentage: formatPercentage(state.lastScore.probabilityAtLeastObserved * 100),
-            }
-          ),
+          structuredChance,
           { tone: 'note', visible: true }
         );
       }
@@ -257,14 +351,17 @@
 
     function withAnchoredActionsScroll(updateFn) {
       const beforeTop = actions.getBoundingClientRect().top;
-      updateFn();
-      requestAnimationFrame(() => {
-        const afterTop = actions.getBoundingClientRect().top;
-        const delta = afterTop - beforeTop;
-        if (delta !== 0) {
-          window.scrollBy(0, delta);
-        }
-      });
+      Promise.resolve()
+        .then(() => updateFn())
+        .finally(() => {
+          requestAnimationFrame(() => {
+            const afterTop = actions.getBoundingClientRect().top;
+            const delta = afterTop - beforeTop;
+            if (delta !== 0) {
+              window.scrollBy(0, delta);
+            }
+          });
+        });
     }
 
     function renderQuestions() {
@@ -321,12 +418,12 @@
       btnCheck.disabled = !!state.fatalKey;
     }
 
-    function renderUi() {
+    async function renderUi() {
       renderStaticText();
       renderFeedbackLink();
-      renderRandomSummary();
+      await renderRandomSummary();
       renderQuestions();
-      renderStatusMessages();
+      await renderStatusMessages();
       renderControls();
     }
 
@@ -337,6 +434,7 @@
       const target = normalizeLanguage(state.currentLanguage);
       if (state.translationsLoadedFor === target) return;
       state.currentLanguage = target;
+      applyWindowLanguageAttributes(target);
       try {
         await loadRendererTranslations(target);
         state.translationsLoadedFor = target;
@@ -349,7 +447,7 @@
       const runUpdate = async () => {
         await updateFn();
         await ensureTranslationsLoaded();
-        renderUi();
+        await renderUi();
       };
       uiSyncChain = uiSyncChain.then(runUpdate, runUpdate);
       return uiSyncChain;
@@ -378,7 +476,9 @@
     function handleInitFailure(err) {
       log.error('Reading-test questions init failed:', err);
       setInvalidPayloadState();
-      renderUi();
+      renderUi().catch((renderErr) => {
+        log.error('Reading-test questions recovery render failed:', renderErr);
+      });
     }
 
     // =============================================================================
@@ -393,12 +493,11 @@
         if (!allQuestionsAnswered()) {
           state.lastScore = null;
           state.showIncompleteWarning = true;
-          renderStatusMessages();
-          return;
+          return renderStatusMessages();
         }
 
         state.lastScore = questionsCore.scoreQuestions(state.questions, state.answersByQuestionId);
-        renderStatusMessages();
+        return renderStatusMessages();
       });
     });
 
@@ -417,9 +516,11 @@
     enqueueUiSync(async () => {
       try {
         const settings = await questionsApi.getSettings();
+        state.settingsCache = settings || {};
         state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
       } catch (err) {
         log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
+        state.settingsCache = {};
         state.currentLanguage = DEFAULT_LANG;
       }
     }).catch((err) => {

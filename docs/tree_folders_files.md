@@ -150,6 +150,7 @@ tot/
 ├── public/
 │ ├── assets/
 │ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
+│ │ ├── SOURCES.md
 │ │ ├── logo-cibersino.svg
 │ │ ├── logo-tot.png
 │ │ ├── logo-tot.svg
@@ -185,6 +186,7 @@ tot/
 │ │ ├── i18n.js
 │ │ ├── constants.js
 │ │ ├── wpm_curve.js
+│ │ ├── wpm_controls.js
 │ │ ├── notify.js
 │ │ ├── info_modal_links.js
 │ │ ├── main_logo_links.js
@@ -335,7 +337,7 @@ tot/
 - `electron/reading_test_result_preload.js` — Preload del modal de resultado del reading speed test; expone `window.readingTestResultAPI` y bufferiza/reproduce el payload init del resultado medido.
 
 **Renderer (UI / ventanas):**
-- `public/renderer.js` — Lógica principal de UI (ventana principal).
+- `public/renderer.js` — Lógica principal/orquestador de UI de la ventana principal; delega ownership especializados a módulos auxiliares del renderer como `public/js/wpm_controls.js`, `public/js/presets.js`, `public/js/crono.js` y `public/js/reading_speed_test.js`.
 - `public/editor.js` — Entry point/orquestador del editor manual: valida dependencias, arma el contexto compartido del editor y registra bootstrap, listeners DOM e IPC sobre los módulos auxiliares `public/js/editor_ui.js` y `public/js/editor_engine.js`, incluyendo el layout maximizado centrado con gutters simétricos.
 - `public/editor_find.js` — Lógica de la ventana dedicada de búsqueda del editor.
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
@@ -402,6 +404,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `public/js/constants.js` — Constantes compartidas del renderer, incluyendo límites/default/step del tamaño de fuente, ancho de texto maximizado y gutter mínimo del editor manual.
 - `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
+- `public/js/wpm_controls.js` — Owner renderer de los controles de velocidad de lectura: centraliza estado WPM, binding slider/input, mapeo vía `wpm_curve`, carga/selección de presets en coordinación con `RendererPresets` y aplicación de cambios externos sin devolver esa lógica a `public/renderer.js`.
 - `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.
 - `public/js/lib/editor_find_replace_core.js` — Núcleo puro/importable del find/replace del editor: matching literal sobre selección, cómputo determinista de `Replace All` y chequeo puro de elegibilidad por longitud; reutilizado por `public/editor.js` y por la suite automatizada.
 - `public/js/lib/editor_maximized_layout_core.js` — Núcleo puro/importable del layout maximizado del editor manual: clamp del ancho preferido/renderizado de la columna centrada y cálculo del resize simétrico desde cualquiera de los gutters; reutilizado por `public/editor.js` y por la suite automatizada.
@@ -412,7 +415,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/count.js` — Wrapper renderer de conteo: valida dependencias del `window`, construye `window.CountUtils` desde `count_core.js` y conserva la superficie pública existente.
 - `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
-- `public/js/presets.js` — UX del selector y flujos de presets en UI (sin IPC directo; usa `electronAPI.getDefaultPresets` / `electronAPI.setSelectedPreset`).
+- `public/js/presets.js` — Bridge/owner renderer de presets: resuelve catálogo por idioma, rellena el selector en DOM, conserva la descripción visible y persiste la selección activa; deja el ownership de WPM widget sync a `public/js/wpm_controls.js`.
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca el modal previo de tags al guardar, normaliza metadata opcional de snapshot vía `snapshot_tag_catalog`, llama `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
@@ -545,6 +548,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.2) Branding local en la app (public/assets)
 
+- `public/assets/SOURCES.md` — Trazabilidad local de procedencia para assets runtime de `public/assets/`, especialmente los de terceros o sujetos a términos de marca.
 - `public/assets/logo-tot.svg` / `public/assets/logo-tot.png` — Branding de la app usado en la ventana principal.
 - `public/assets/logo-cibersino.svg` — Branding del desarrollador usado en la ventana principal.
 - `public/assets/kofi_symbol.png` — Símbolo de Ko-fi usado en la ventana principal junto al logo de Cibersino; asset runtime copiado desde `tools_local` para mantener la procedencia local/original separada del sitio web.

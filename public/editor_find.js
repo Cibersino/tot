@@ -30,8 +30,8 @@ const {
   EDITOR_FIND_INPUT_MAX_CHARS,
 } = AppConstants;
 
-const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer) {
+const { loadRendererTranslations, tRenderer, applyWindowLanguageAttributes } = window.RendererI18n || {};
+if (!loadRendererTranslations || !tRenderer || !applyWindowLanguageAttributes) {
   throw new Error('[editor-find] RendererI18n unavailable; cannot continue.');
 }
 
@@ -127,6 +127,7 @@ function normalizeState(payload) {
 async function ensureTranslations(lang) {
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
   if (translationsLoadedFor === target) return;
+  applyWindowLanguageAttributes(target);
   await loadRendererTranslations(target);
   translationsLoadedFor = target;
 }

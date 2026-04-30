@@ -23,10 +23,10 @@
   log.debug('Import/extract status UI starting...');
   if (!window.RendererI18n
     || typeof window.RendererI18n.tRenderer !== 'function'
-    || typeof window.RendererI18n.msgRenderer !== 'function') {
-    throw new Error('[import-extract-status-ui] RendererI18n.tRenderer/msgRenderer unavailable; cannot continue');
+    || typeof window.RendererI18n.renderLocalizedLabelWithInvariantValue !== 'function') {
+    throw new Error('[import-extract-status-ui] RendererI18n dependencies unavailable; cannot continue');
   }
-  const { tRenderer, msgRenderer } = window.RendererI18n;
+  const { tRenderer, renderLocalizedLabelWithInvariantValue } = window.RendererI18n;
 
   // =============================================================================
   // UI elements
@@ -128,13 +128,18 @@
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }
 
-  function buildProcessingElapsedText(rawElapsedMs) {
+  function getProcessingElapsedValueText(rawElapsedMs) {
     if (rawElapsedMs === null) return '';
-    const formattedElapsed = formatElapsedTime(rawElapsedMs);
-    return msgRenderer(
-      'renderer.main.processing.import_extract_elapsed',
-      { time: formattedElapsed }
-    );
+    return formatElapsedTime(rawElapsedMs);
+  }
+
+  function renderElapsedLabelWithValue(container, labelKey, valueText) {
+    if (!container) return;
+    renderLocalizedLabelWithInvariantValue(container, {
+      labelText: tRenderer(labelKey),
+      valueText,
+      valueDirection: 'ltr',
+    });
   }
 
   function getBusyLabelText() {
@@ -191,13 +196,21 @@
     }
     if (!importExtractProcessingElapsed) return;
 
-    const elapsedText = processingActive
-      ? buildProcessingElapsedText(getElapsedMsSince(processingModeState.sinceEpochMs))
+    const elapsedValueText = processingActive
+      ? getProcessingElapsedValueText(getElapsedMsSince(processingModeState.sinceEpochMs))
       : '';
-    const showElapsed = !!elapsedText;
+    const showElapsed = !!elapsedValueText;
     importExtractProcessingElapsed.hidden = !showElapsed;
     importExtractProcessingElapsed.setAttribute('aria-hidden', showElapsed ? 'false' : 'true');
-    importExtractProcessingElapsed.textContent = showElapsed ? elapsedText : '';
+    if (!showElapsed) {
+      importExtractProcessingElapsed.textContent = '';
+      return;
+    }
+    renderElapsedLabelWithValue(
+      importExtractProcessingElapsed,
+      'renderer.main.processing.import_extract_elapsed',
+      elapsedValueText
+    );
   }
 
   function stopElapsedTimer() {
@@ -282,14 +295,10 @@
     return getElapsedMsSince(processingModeState.sinceEpochMs);
   }
 
-  function getFinalElapsedText() {
+  function getFinalElapsedValueText() {
     const elapsedMs = getFinalElapsedMs();
     if (elapsedMs === null) return '';
-    const formattedElapsed = formatElapsedTime(elapsedMs);
-    return msgRenderer(
-      'renderer.alerts.import_extract_apply_modal_elapsed',
-      { time: formattedElapsed }
-    );
+    return formatElapsedTime(elapsedMs);
   }
 
   function getAbortButton() {
@@ -307,7 +316,7 @@
     clearPendingExecutionContext,
     endPrepare,
     getAbortButton,
-    getFinalElapsedText,
+    getFinalElapsedValueText,
     isProcessingModeActive,
     setPendingExecutionContext,
   };

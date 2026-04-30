@@ -83,12 +83,11 @@ function createHarness() {
   );
   vm.runInContext(uiSource, sandbox, { filename: 'public/js/editor_ui.js' });
 
-  const editor = {
-    setAttribute() {},
+  const editor = Object.assign(createElementDouble(), {
     clientHeight: 600,
     scrollHeight: 600,
     scrollTop: 0,
-  };
+  });
   const editorWrap = createElementDouble();
   const editorLayout = {
     clientWidth: 1600,
@@ -101,6 +100,18 @@ function createHarness() {
   const textSizeControls = createElementDouble();
   const readProgress = createElementDouble();
   const bottomBar = createElementDouble();
+  const spellcheckToggle = createElementDouble();
+  const state = {
+    idiomaActual: 'es',
+    translationsLoadedFor: null,
+    spellcheckEnabled: true,
+    spellcheckAvailable: true,
+    editorFontSizePx: 20,
+    editorWindowMaximized: true,
+    maximizedTextWidthPx: 960,
+    editorMarginDrag: null,
+    readProgressFramePending: false,
+  };
 
   const ui = sandbox.window.EditorUI.createEditorUI({
     log: {
@@ -139,7 +150,7 @@ function createHarness() {
       editor,
       btnTrash: createElementDouble(),
       calcWhileTyping: createElementDouble(),
-      spellcheckToggle: createElementDouble(),
+      spellcheckToggle,
       btnCalc: createElementDouble(),
       calcLabel: createElementDouble(),
       spellcheckLabel: createElementDouble(),
@@ -156,16 +167,7 @@ function createHarness() {
       readingTestPrestartOverlay: createElementDouble(),
       readingTestPrestartMessage: createElementDouble(),
     },
-    state: {
-      idiomaActual: 'es',
-      translationsLoadedFor: null,
-      spellcheckEnabled: true,
-      editorFontSizePx: 20,
-      editorWindowMaximized: true,
-      maximizedTextWidthPx: 960,
-      editorMarginDrag: null,
-      readProgressFramePending: false,
-    },
+    state,
     engine: {
       setCaretSafe() {},
       setSelectionSafe() {},
@@ -174,12 +176,30 @@ function createHarness() {
 
   return {
     ui,
-    state: ui ? undefined : undefined,
+    state,
     editorApiCalls,
     documentElement,
     editorWrap,
+    editor,
+    spellcheckToggle,
   };
 }
+
+test('setLocalSpellcheckState keeps the saved preference checked while disabling unavailable spellcheck', () => {
+  const harness = createHarness();
+
+  harness.ui.setLocalSpellcheckState({
+    preferenceEnabled: true,
+    available: false,
+  });
+
+  assert.equal(harness.state.spellcheckEnabled, true);
+  assert.equal(harness.state.spellcheckAvailable, false);
+  assert.equal(harness.spellcheckToggle.checked, true);
+  assert.equal(harness.spellcheckToggle.disabled, true);
+  assert.equal(harness.editor.spellcheck, false);
+  assert.equal(harness.editor.attributes.spellcheck, 'false');
+});
 
 test('persistEditorMaximizedTextWidthPx persists drag-updated width when local state was already updated optimistically', async () => {
   const harness = createHarness();

@@ -6,7 +6,7 @@
 // =============================================================================
 // Editor UI module for the renderer editor page.
 // Responsibilities:
-// - Apply editor translations and keep document language attributes in sync.
+// - Apply editor translations and keep editor element language attributes in sync.
 // - Update local spellcheck, font size, and read-progress UI state.
 // - Restore editor focus after UI actions that temporarily move it elsewhere.
 // - Control the reading-test prestart overlay and its related UI state.
@@ -58,11 +58,8 @@
     // Translation And Document Helpers
     // =============================================================================
 
-    function applyDocumentLanguage() {
+    function applyEditorLanguage() {
       const langTag = (state.idiomaActual || DEFAULT_LANG).toLowerCase();
-      if (document && document.documentElement) {
-        document.documentElement.lang = langTag;
-      }
       if (editor) {
         editor.setAttribute('lang', langTag);
       }
@@ -77,7 +74,7 @@
 
     async function applyEditorTranslations() {
       await ensureEditorTranslations(state.idiomaActual);
-      applyDocumentLanguage();
+      applyEditorLanguage();
       document.title = tr('renderer.editor.title');
       if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder'));
       if (btnCalc) {
@@ -140,12 +137,20 @@
     // Local UI State Helpers
     // =============================================================================
 
-    function setLocalSpellcheckEnabled(enabled) {
-      state.spellcheckEnabled = enabled !== false;
-      if (spellcheckToggle) spellcheckToggle.checked = state.spellcheckEnabled;
+    function setLocalSpellcheckState({
+      preferenceEnabled,
+      available,
+    } = {}) {
+      state.spellcheckEnabled = preferenceEnabled !== false;
+      state.spellcheckAvailable = available !== false;
+      if (spellcheckToggle) {
+        spellcheckToggle.checked = state.spellcheckEnabled;
+        spellcheckToggle.disabled = !state.spellcheckAvailable;
+      }
+      const effectiveSpellcheckEnabled = state.spellcheckEnabled && state.spellcheckAvailable;
       if (editor) {
-        editor.spellcheck = state.spellcheckEnabled;
-        editor.setAttribute('spellcheck', state.spellcheckEnabled ? 'true' : 'false');
+        editor.spellcheck = effectiveSpellcheckEnabled;
+        editor.setAttribute('spellcheck', effectiveSpellcheckEnabled ? 'true' : 'false');
       }
     }
 
@@ -249,13 +254,14 @@
       if (!readProgressValue) return;
 
       const readProgressPercent = computeReadProgressPercent();
+      const percentValueText = `${readProgressPercent}%`;
       const valueText = trMsg(
         'renderer.editor.read_progress_value',
-        { value: readProgressPercent }
+        { value: percentValueText }
       );
       const ariaText = trMsg(
         'renderer.editor.read_progress_aria',
-        { value: readProgressPercent }
+        { value: percentValueText }
       );
 
       readProgressValue.setAttribute('data-label', valueText);
@@ -360,6 +366,8 @@
     function applyTextareaDefaults() {
       try {
         if (editor) {
+          // Keep text entry content-driven while the window layout remains fixed LTR.
+          editor.setAttribute('dir', 'auto');
           editor.wrap = 'soft';
           editor.style.whiteSpace = 'pre-wrap';
           editor.style.wordBreak = 'break-word';
@@ -566,8 +574,8 @@
     // =============================================================================
 
     return {
-      applyDocumentLanguage,
-      setLocalSpellcheckEnabled,
+      applyEditorLanguage,
+      setLocalSpellcheckState,
       clampEditorFontSizePx,
       clampEditorMaximizedTextWidthPx,
       updateEditorTextSizeUi,
