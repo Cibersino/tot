@@ -6,10 +6,12 @@
 // =============================================================================
 // Main-process spellcheck policy/controller for the shared Electron session.
 // Responsibilities:
-// - Map the app language to a supported Electron spellchecker language.
-// - Keep explicit unsupported app-language tags out of misleading OS-locale fallback.
-// - Apply enable/disable state to the target session without changing healthy-path timing.
-// - Expose a small controller used by main.js at startup and on settings updates.
+// - Normalize and parse the app language tag without default-language fallback.
+// - Resolve the best compatible Electron spellchecker dictionary from the
+//   runtime-reported available dictionaries.
+// - Keep Chinese script-family resolution explicit and deterministic.
+// - Apply the resulting session configuration and expose a small controller for
+//   main.js startup and settings updates.
 
 // =============================================================================
 // Imports
@@ -17,138 +19,363 @@
 const settingsState = require('./settings');
 
 // =============================================================================
-// Spellcheck policy tables
+// Resolver constants
 // =============================================================================
-const PREFERRED_SPELLCHECK_LANGUAGES = Object.freeze({
-  de: Object.freeze(['de-DE', 'de-AT', 'de-CH', 'de']),
-  en: Object.freeze(['en-US', 'en-GB', 'en-AU', 'en-CA', 'en']),
-  es: Object.freeze(['es-ES', 'es-MX', 'es-US', 'es']),
-  fr: Object.freeze(['fr-FR', 'fr-CA', 'fr']),
-  it: Object.freeze(['it-IT', 'it']),
-  pt: Object.freeze(['pt-PT', 'pt-BR', 'pt']),
+const DICTIONARY_PREFERENCE_BY_BASE = Object.freeze({
+  de: Object.freeze(['de-de', 'de-at', 'de-ch', 'de']),
+  en: Object.freeze(['en-us', 'en-gb', 'en-au', 'en-ca', 'en']),
+  es: Object.freeze(['es-es', 'es-mx', 'es-us', 'es']),
+  fr: Object.freeze(['fr-fr', 'fr-ca', 'fr']),
+  it: Object.freeze(['it-it', 'it']),
+  pt: Object.freeze(['pt-pt', 'pt-br', 'pt']),
 });
 
-const UNSUPPORTED_APP_SPELLCHECK_TAGS = new Set([
-  'arn',
-  'es-cl',
-]);
+const ZH_HANS_FAMILY_ORDER = Object.freeze(['zh-hans', 'zh-cn', 'zh-sg']);
+const ZH_HANT_FAMILY_ORDER = Object.freeze(['zh-hant', 'zh-tw', 'zh-hk', 'zh-mo']);
+const ZH_HANS_REGION_SET = new Set(['cn', 'sg']);
+const ZH_HANT_REGION_SET = new Set(['tw', 'hk', 'mo']);
 
 // =============================================================================
-// Language resolution helpers
+// Helpers
 // =============================================================================
-function normalizeLanguageCode(value) {
+function normalizeLanguageTag(value) {
   return typeof value === 'string'
-    ? value.trim().toLowerCase()
+    ? settingsState.normalizeLangTag(value)
     : '';
 }
 
-function normalizeAvailableLanguages(availableLanguages) {
-  if (!Array.isArray(availableLanguages)) return [];
-  return availableLanguages
-    .filter((value) => typeof value === 'string' && value.trim())
-    .map((value) => value.trim());
-}
-
-function findExactAvailableMatch(candidates, availableLanguages) {
-  if (!Array.isArray(candidates) || !Array.isArray(availableLanguages)) return '';
-
-  const byNormalized = new Map();
-  for (const available of availableLanguages) {
-    byNormalized.set(normalizeLanguageCode(available), available);
-  }
-
-  for (const candidate of candidates) {
-    const match = byNormalized.get(normalizeLanguageCode(candidate));
-    if (match) return match;
-  }
-
-  return '';
-}
-
-function findBaseLanguageMatch(baseLanguage, availableLanguages) {
-  if (!baseLanguage || !Array.isArray(availableLanguages)) return '';
-  return availableLanguages.find((available) => (
-    settingsState.deriveLangKey(available) === baseLanguage
-  )) || '';
-}
-
-function resolveSpellCheckerLanguages(appLanguage, availableLanguages) {
-  const normalizedTag = settingsState.normalizeLangTag(appLanguage);
-  const appLanguageBase = settingsState.deriveLangKey(normalizedTag);
-
+function parseLanguageTag(normalizedTag) {
   if (!normalizedTag) {
     return {
-      supported: false,
-      reason: 'empty-app-language',
-      appLanguage: normalizedTag,
-      appLanguageBase,
-      languages: [],
+      isValid: false,
+      base: '',
+      script: null,
+      region: null,
     };
   }
 
-  if (UNSUPPORTED_APP_SPELLCHECK_TAGS.has(normalizedTag)) {
+  const parts = normalizedTag.split('-');
+  if (parts.length === 0 || parts.some((part) => !part)) {
     return {
-      supported: false,
-      reason: 'unsupported-app-language',
-      appLanguage: normalizedTag,
-      appLanguageBase,
-      languages: [],
+      isValid: false,
+      base: '',
+      script: null,
+      region: null,
     };
   }
 
-  const preferredCandidates = PREFERRED_SPELLCHECK_LANGUAGES[appLanguageBase];
-  if (!preferredCandidates || preferredCandidates.length === 0) {
+  const base = parts[0];
+  if (!/^[a-z0-9]{2,8}$/.test(base)) {
     return {
-      supported: false,
-      reason: 'unsupported-app-language',
-      appLanguage: normalizedTag,
-      appLanguageBase,
-      languages: [],
+      isValid: false,
+      base,
+      script: null,
+      region: null,
     };
   }
 
-  const available = normalizeAvailableLanguages(availableLanguages);
-  if (available.length === 0) {
-    return {
-      supported: false,
-      reason: 'no-available-languages',
-      appLanguage: normalizedTag,
-      appLanguageBase,
-      languages: [],
-    };
+  let script = null;
+  let region = null;
+  let index = 1;
+
+  if (parts[index] && /^[a-z]{4}$/.test(parts[index])) {
+    script = parts[index];
+    index += 1;
   }
 
-  const exactMatch = findExactAvailableMatch(preferredCandidates, available);
-  if (exactMatch) {
-    return {
-      supported: true,
-      reason: 'exact-match',
-      appLanguage: normalizedTag,
-      appLanguageBase,
-      selectedLanguage: exactMatch,
-      languages: [exactMatch],
-    };
+  if (parts[index] && /^([a-z]{2}|\d{3})$/.test(parts[index])) {
+    region = parts[index];
+    index += 1;
   }
 
-  const baseMatch = findBaseLanguageMatch(appLanguageBase, available);
-  if (baseMatch) {
-    return {
-      supported: true,
-      reason: 'base-match',
-      appLanguage: normalizedTag,
-      appLanguageBase,
-      selectedLanguage: baseMatch,
-      languages: [baseMatch],
-    };
+  for (; index < parts.length; index += 1) {
+    if (!/^[a-z0-9]{1,8}$/.test(parts[index])) {
+      return {
+        isValid: false,
+        base,
+        script,
+        region,
+      };
+    }
   }
 
   return {
-    supported: false,
-    reason: 'no-matching-language',
-    appLanguage: normalizedTag,
-    appLanguageBase,
-    languages: [],
+    isValid: true,
+    base,
+    script,
+    region,
   };
+}
+
+function getChineseFamily(parsedTag) {
+  if (!parsedTag || parsedTag.isValid !== true || parsedTag.base !== 'zh') {
+    return null;
+  }
+
+  if (parsedTag.script === 'hans') return 'zh-hans';
+  if (parsedTag.script === 'hant') return 'zh-hant';
+  if (parsedTag.script !== null) return null;
+  if (ZH_HANS_REGION_SET.has(parsedTag.region)) return 'zh-hans';
+  if (ZH_HANT_REGION_SET.has(parsedTag.region)) return 'zh-hant';
+  return null;
+}
+
+function getRequestedFamily(parsedTag) {
+  if (!parsedTag || parsedTag.isValid !== true) return null;
+  if (parsedTag.base !== 'zh') return 'default';
+  return getChineseFamily(parsedTag);
+}
+
+function createRequestContext(appLanguage) {
+  const requestedTag = typeof appLanguage === 'string'
+    ? appLanguage.trim()
+    : '';
+  const normalizedTag = normalizeLanguageTag(requestedTag);
+  const parsedTag = parseLanguageTag(normalizedTag);
+  const family = getRequestedFamily(parsedTag);
+
+  return {
+    requestedTag,
+    normalizedTag,
+    parsedTag,
+    family,
+  };
+}
+
+function buildResolveResultBase(requestContext) {
+  const parsedTag = requestContext.parsedTag || {};
+  return {
+    requestedTag: requestContext.requestedTag,
+    normalizedTag: requestContext.normalizedTag,
+    base: parsedTag.base || '',
+    script: parsedTag.script || null,
+    region: parsedTag.region || null,
+    family: requestContext.family,
+  };
+}
+
+function buildRejectedResolveResult(requestContext, reasonCode) {
+  return {
+    status: 'rejected',
+    reasonCode,
+    ...buildResolveResultBase(requestContext),
+    selectedLanguage: '',
+    selectedLanguageNormalized: '',
+    languages: [],
+    compatibleCandidates: [],
+  };
+}
+
+function buildAcceptedResolveResult(requestContext, selectedDictionary, compatibleCandidates, reasonCode) {
+  return {
+    status: 'accepted',
+    reasonCode,
+    ...buildResolveResultBase(requestContext),
+    selectedLanguage: selectedDictionary.raw,
+    selectedLanguageNormalized: selectedDictionary.normalized,
+    languages: [selectedDictionary.raw],
+    compatibleCandidates: compatibleCandidates.map((candidate) => candidate.raw),
+  };
+}
+
+function collectAvailableDictionaries(availableLanguages) {
+  if (!Array.isArray(availableLanguages)) return [];
+
+  const dictionaries = [];
+  const seenNormalized = new Set();
+
+  availableLanguages.forEach((value, index) => {
+    if (typeof value !== 'string' || !value.trim()) return;
+
+    const raw = value.trim();
+    const normalized = normalizeLanguageTag(raw);
+    if (!normalized || seenNormalized.has(normalized)) return;
+
+    seenNormalized.add(normalized);
+
+    const parsedTag = parseLanguageTag(normalized);
+    dictionaries.push({
+      raw,
+      normalized,
+      parsedTag,
+      family: getChineseFamily(parsedTag),
+      index,
+    });
+  });
+
+  return dictionaries;
+}
+
+function sortByNormalizedTagAscending(left, right) {
+  if (left.normalized < right.normalized) return -1;
+  if (left.normalized > right.normalized) return 1;
+  return left.index - right.index;
+}
+
+function buildNonChineseCandidateOrder(requestContext, dictionaries) {
+  const compatible = dictionaries.filter((dictionary) => (
+    dictionary.parsedTag.isValid === true
+    && dictionary.parsedTag.base === requestContext.parsedTag.base
+  ));
+
+  if (compatible.length === 0) return [];
+
+  const preferenceOrder = DICTIONARY_PREFERENCE_BY_BASE[requestContext.parsedTag.base] || [];
+  const ordered = [];
+  const used = new Set();
+
+  preferenceOrder.forEach((preferredTag) => {
+    const match = compatible.find((dictionary) => dictionary.normalized === preferredTag);
+    if (!match || used.has(match.normalized)) return;
+    ordered.push(match);
+    used.add(match.normalized);
+  });
+
+  const remaining = compatible
+    .filter((dictionary) => !used.has(dictionary.normalized))
+    .sort(sortByNormalizedTagAscending);
+
+  return ordered.concat(remaining);
+}
+
+function buildChineseCandidateOrder(requestContext, dictionaries) {
+  const familyOrder = requestContext.family === 'zh-hans'
+    ? ZH_HANS_FAMILY_ORDER
+    : ZH_HANT_FAMILY_ORDER;
+  const compatible = dictionaries.filter((dictionary) => dictionary.family === requestContext.family);
+  if (compatible.length === 0) return [];
+
+  const ordered = [];
+  const used = new Set();
+
+  familyOrder.forEach((familyTag) => {
+    compatible.forEach((dictionary) => {
+      if (dictionary.normalized !== familyTag || used.has(dictionary.normalized)) return;
+      ordered.push(dictionary);
+      used.add(dictionary.normalized);
+    });
+
+    compatible
+      .filter((dictionary) => (
+        dictionary.normalized.startsWith(`${familyTag}-`)
+        && !used.has(dictionary.normalized)
+      ))
+      .sort(sortByNormalizedTagAscending)
+      .forEach((dictionary) => {
+        ordered.push(dictionary);
+        used.add(dictionary.normalized);
+      });
+  });
+
+  return ordered;
+}
+
+function moveSelectedDictionaryToFront(selectedDictionary, candidates) {
+  return [
+    selectedDictionary,
+    ...candidates.filter((candidate) => candidate.normalized !== selectedDictionary.normalized),
+  ];
+}
+
+function resolveChineseRejectionReason(requestContext, dictionaries) {
+  const availableChinese = dictionaries.filter((dictionary) => (
+    dictionary.parsedTag.isValid === true
+    && dictionary.parsedTag.base === 'zh'
+  ));
+
+  if (availableChinese.length === 0) {
+    return 'rejected.no-compatible-dictionary';
+  }
+
+  const hasUnscriptedChinese = availableChinese.some((dictionary) => dictionary.family === null);
+  const hasCrossScriptChinese = availableChinese.some((dictionary) => (
+    dictionary.family !== null
+    && dictionary.family !== requestContext.family
+  ));
+
+  if (hasUnscriptedChinese && !hasCrossScriptChinese) {
+    return 'rejected.chinese-unscripted-only';
+  }
+
+  if (hasCrossScriptChinese && !hasUnscriptedChinese) {
+    return 'rejected.chinese-cross-script-only';
+  }
+
+  return 'rejected.no-compatible-dictionary';
+}
+
+// =============================================================================
+// Resolver
+// =============================================================================
+function resolveSpellCheckerLanguages(appLanguage, availableLanguages) {
+  const requestContext = createRequestContext(appLanguage);
+  if (!requestContext.normalizedTag) {
+    return buildRejectedResolveResult(requestContext, 'rejected.empty-requested-tag');
+  }
+
+  if (requestContext.parsedTag.isValid !== true) {
+    return buildRejectedResolveResult(requestContext, 'rejected.invalid-requested-tag');
+  }
+
+  if (requestContext.parsedTag.base === 'zh' && requestContext.family === null) {
+    return buildRejectedResolveResult(requestContext, 'rejected.invalid-requested-tag');
+  }
+
+  const dictionaries = collectAvailableDictionaries(availableLanguages);
+  if (dictionaries.length === 0) {
+    return buildRejectedResolveResult(requestContext, 'rejected.no-available-dictionaries');
+  }
+
+  const exactDictionary = dictionaries.find((dictionary) => (
+    dictionary.normalized === requestContext.normalizedTag
+  ));
+
+  if (exactDictionary) {
+    const orderedCompatibleCandidates = requestContext.family === 'default'
+      ? buildNonChineseCandidateOrder(requestContext, dictionaries)
+      : buildChineseCandidateOrder(requestContext, dictionaries);
+    return buildAcceptedResolveResult(
+      requestContext,
+      exactDictionary,
+      moveSelectedDictionaryToFront(exactDictionary, orderedCompatibleCandidates),
+      'accepted.exact'
+    );
+  }
+
+  if (requestContext.family === 'zh-hans' || requestContext.family === 'zh-hant') {
+    const orderedChineseCandidates = buildChineseCandidateOrder(requestContext, dictionaries);
+    if (orderedChineseCandidates.length > 0) {
+      return buildAcceptedResolveResult(
+        requestContext,
+        orderedChineseCandidates[0],
+        orderedChineseCandidates,
+        'accepted.chinese-family-fallback'
+      );
+    }
+
+    return buildRejectedResolveResult(
+      requestContext,
+      resolveChineseRejectionReason(requestContext, dictionaries)
+    );
+  }
+
+  const orderedCandidates = buildNonChineseCandidateOrder(requestContext, dictionaries);
+  if (orderedCandidates.length === 0) {
+    return buildRejectedResolveResult(requestContext, 'rejected.no-compatible-dictionary');
+  }
+
+  const selectedDictionary = orderedCandidates[0];
+  const preferenceOrder = DICTIONARY_PREFERENCE_BY_BASE[requestContext.parsedTag.base] || [];
+  const acceptedReasonCode = preferenceOrder.includes(selectedDictionary.normalized)
+    ? 'accepted.preferred-order'
+    : 'accepted.same-base-fallback';
+
+  return buildAcceptedResolveResult(
+    requestContext,
+    selectedDictionary,
+    orderedCandidates,
+    acceptedReasonCode
+  );
 }
 
 // =============================================================================
@@ -160,12 +387,17 @@ function applySpellCheckerSessionConfig({
   spellcheckEnabled,
   platform = process.platform,
 } = {}) {
+  const preferenceEnabled = spellcheckEnabled !== false;
+
   if (!targetSession) {
     return {
       ok: false,
       reason: 'session-unavailable',
+      preferenceEnabled,
       effectiveEnabled: false,
+      selectedLanguage: '',
       languages: [],
+      resolution: null,
     };
   }
 
@@ -173,20 +405,24 @@ function applySpellCheckerSessionConfig({
     return {
       ok: false,
       reason: 'set-spellchecker-enabled-unavailable',
+      preferenceEnabled,
       effectiveEnabled: false,
+      selectedLanguage: '',
       languages: [],
+      resolution: null,
     };
   }
 
-  const preferenceEnabled = spellcheckEnabled !== false;
   if (!preferenceEnabled) {
     targetSession.setSpellCheckerEnabled(false);
     return {
       ok: true,
-      supported: true,
       reason: 'disabled-by-user',
+      preferenceEnabled: false,
       effectiveEnabled: false,
+      selectedLanguage: '',
       languages: [],
+      resolution: null,
     };
   }
 
@@ -194,28 +430,30 @@ function applySpellCheckerSessionConfig({
     targetSession.setSpellCheckerEnabled(true);
     return {
       ok: true,
-      supported: true,
-      reason: 'darwin-managed',
+      reason: 'platform-managed',
+      preferenceEnabled: true,
       effectiveEnabled: true,
+      selectedLanguage: '',
       languages: [],
+      resolution: null,
     };
   }
 
-  const resolved = resolveSpellCheckerLanguages(
+  const resolution = resolveSpellCheckerLanguages(
     appLanguage,
     targetSession.availableSpellCheckerLanguages
   );
 
-  if (!resolved.supported || !Array.isArray(resolved.languages) || resolved.languages.length === 0) {
+  if (resolution.status !== 'accepted') {
     targetSession.setSpellCheckerEnabled(false);
     return {
       ok: true,
-      supported: false,
-      reason: resolved.reason,
-      appLanguage: resolved.appLanguage,
-      appLanguageBase: resolved.appLanguageBase,
+      reason: 'resolver-rejected',
+      preferenceEnabled: true,
       effectiveEnabled: false,
+      selectedLanguage: '',
       languages: [],
+      resolution,
     };
   }
 
@@ -223,27 +461,26 @@ function applySpellCheckerSessionConfig({
     targetSession.setSpellCheckerEnabled(false);
     return {
       ok: true,
-      supported: false,
       reason: 'set-spellchecker-languages-unavailable',
-      appLanguage: resolved.appLanguage,
-      appLanguageBase: resolved.appLanguageBase,
+      preferenceEnabled: true,
       effectiveEnabled: false,
+      selectedLanguage: '',
       languages: [],
+      resolution,
     };
   }
 
   targetSession.setSpellCheckerEnabled(true);
-  targetSession.setSpellCheckerLanguages(resolved.languages);
+  targetSession.setSpellCheckerLanguages(resolution.languages);
 
   return {
     ok: true,
-    supported: true,
-    reason: resolved.reason,
-    appLanguage: resolved.appLanguage,
-    appLanguageBase: resolved.appLanguageBase,
-    selectedLanguage: resolved.selectedLanguage,
+    reason: 'applied',
+    preferenceEnabled: true,
     effectiveEnabled: true,
-    languages: resolved.languages.slice(),
+    selectedLanguage: resolution.selectedLanguage,
+    languages: resolution.languages.slice(),
+    resolution,
   };
 }
 
@@ -298,7 +535,10 @@ function createController({
           'main.spellcheck.session.unavailable',
           'Spellcheck configuration skipped: default session unavailable.'
         );
-        return { ok: false, reason: 'session-unavailable' };
+        return {
+          ok: false,
+          reason: 'session-unavailable',
+        };
       }
 
       const result = applySpellCheckerSessionConfig({
@@ -310,7 +550,7 @@ function createController({
         platform,
       });
 
-      if (result && result.ok === false) {
+      if (result.ok === false) {
         log.warnOnce(
           `main.spellcheck.session-api.${result.reason || 'unknown'}`,
           'Spellcheck configuration skipped: required Electron spellchecker session API unavailable.',
@@ -319,34 +559,30 @@ function createController({
         return result;
       }
 
-      if (result && result.ok === true && result.supported === false && effectiveSettings.spellcheckEnabled !== false) {
-        const langTag = (
-          effectiveSettings
-          && typeof effectiveSettings.language === 'string'
-          && effectiveSettings.language.trim()
-        )
-          ? effectiveSettings.language.trim().toLowerCase()
-          : 'unset';
-        const baseKey = (
-          result
-          && typeof result.appLanguageBase === 'string'
-          && PREFERRED_SPELLCHECK_LANGUAGES[result.appLanguageBase]
-        )
-          ? result.appLanguageBase
-          : 'unmapped';
-        const unsupportedKey = (
-          result.reason === 'unsupported-app-language'
-          && UNSUPPORTED_APP_SPELLCHECK_TAGS.has(langTag)
-        )
-          ? langTag
-          : baseKey;
-        const warningMessage = result.reason === 'set-spellchecker-languages-unavailable'
-          ? 'Spellcheck disabled for current app language: session.setSpellCheckerLanguages unavailable.'
-          : 'Spellcheck disabled for current app language: no supported Electron spellchecker language resolved.';
+      if (result.reason === 'set-spellchecker-languages-unavailable') {
+        const normalizedLanguage = normalizeLanguageTag(
+          effectiveSettings && typeof effectiveSettings.language === 'string'
+            ? effectiveSettings.language
+            : ''
+        ) || 'unset';
         log.warnOnce(
-          `main.spellcheck.unsupported.${unsupportedKey}.${result.reason || 'unknown'}`,
-          warningMessage,
-          { language: langTag, reason: result.reason || 'unknown' }
+          `main.spellcheck.session-api.${normalizedLanguage}.set-spellchecker-languages-unavailable`,
+          'Spellcheck disabled for current app language: session.setSpellCheckerLanguages unavailable.',
+          { language: normalizedLanguage }
+        );
+      } else if (
+        result.reason === 'resolver-rejected'
+        && result.preferenceEnabled === true
+        && result.resolution
+      ) {
+        const normalizedLanguage = result.resolution.normalizedTag || 'unset';
+        log.warnOnce(
+          `main.spellcheck.rejected.${normalizedLanguage}.${result.resolution.reasonCode}`,
+          'Spellcheck disabled for current app language: no compatible Electron spellchecker dictionary resolved.',
+          {
+            language: normalizedLanguage,
+            reasonCode: result.resolution.reasonCode,
+          }
         );
       }
 
@@ -366,8 +602,6 @@ function createController({
 // Exports
 // =============================================================================
 module.exports = {
-  PREFERRED_SPELLCHECK_LANGUAGES,
-  UNSUPPORTED_APP_SPELLCHECK_TAGS,
   resolveSpellCheckerLanguages,
   applySpellCheckerSessionConfig,
   createController,
