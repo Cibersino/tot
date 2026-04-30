@@ -78,7 +78,7 @@ La extensión estima el tiempo de lectura del texto que seleccionas en páginas 
 Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar la app?”).
 
 Accesos rápidos visibles en la ventana principal:
-* `📥`: importar o extraer texto desde archivo (incluye flujo OCR cuando aplica).
+* `📥`: extraer texto desde archivo (incluye flujo OCR cuando aplica).
 * `📋↺` / `📋+`: reemplazar o agregar texto desde portapapeles.
 * `⌨`: abrir editor de texto completo.
 * `💾` / `📂`: guardar/cargar snapshot del texto actual.
@@ -249,7 +249,7 @@ The extension estimates the reading time of text you select on web pages. It is 
 Usage instructions are included in the app menu (“How to use?”).
 
 Quick actions in the main window:
-* `📥`: import or extract text from file (includes OCR flow when needed).
+* `📥`: extract text from file (includes OCR flow when needed).
 * `📋↺` / `📋+`: replace or append clipboard text.
 * `⌨`: open full-text editor.
 * `💾` / `📂`: save/load current-text snapshot.
@@ -339,3 +339,4 @@ MIT — see [`LICENSE`](LICENSE).
 ## Author
 
 [Cibersino](https://github.com/Cibersino)
+

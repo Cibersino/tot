@@ -56,16 +56,16 @@ const spellcheck = require('./spellcheck');
 const readingTestSession = require('./reading_test_session');
 const readingTestPoolImport = require('./reading_test_pool_import');
 const readingTestPool = require('./reading_test_pool');
-const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
-const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
-const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
-const importExtractOcrActivationIpc = require('./import_extract_platform/import_extract_ocr_activation_ipc');
-const importExtractOcrDisconnectIpc = require('./import_extract_platform/import_extract_ocr_disconnect_ipc');
-const importExtractPrepareIpc = require('./import_extract_platform/import_extract_prepare_ipc');
-const importExtractExecutePreparedIpc = require('./import_extract_platform/import_extract_execute_prepared_ipc');
+const textExtractionFilePickerIpc = require('./text_extraction_platform/text_extraction_file_picker_ipc');
+const textExtractionPreconditionsIpc = require('./text_extraction_platform/text_extraction_preconditions_ipc');
+const textExtractionProcessingModeIpc = require('./text_extraction_platform/text_extraction_processing_mode_ipc');
+const textExtractionOcrActivationIpc = require('./text_extraction_platform/text_extraction_ocr_activation_ipc');
+const textExtractionOcrDisconnectIpc = require('./text_extraction_platform/text_extraction_ocr_disconnect_ipc');
+const textExtractionPrepareIpc = require('./text_extraction_platform/text_extraction_prepare_ipc');
+const textExtractionExecutePreparedIpc = require('./text_extraction_platform/text_extraction_execute_prepared_ipc');
 const {
   materializeBundledCredentials,
-} = require('./import_extract_platform/ocr_google_drive_bundled_credentials');
+} = require('./text_extraction_platform/ocr_google_drive_bundled_credentials');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -93,21 +93,21 @@ if (IS_SMOKE_TEST && SMOKE_USER_DATA_DIR) {
 }
 
 // =============================================================================
-// Import/extract orchestration (shared controller)
+// Text extraction orchestration (shared controller)
 // =============================================================================
 // main.js owns only the cross-window coordination for processing mode:
 // - broadcast state changes to the main renderer,
 // - block main-window interaction while processing is active,
 // - complete a deferred main-window close after an abort finishes.
-// Domain IPC and feature logic stay in the delegated import_extract_platform modules.
-const importExtractProcessingModeController = importExtractProcessingModeIpc.createController({
+// Domain IPC and feature logic stay in the delegated text_extraction_platform modules.
+const textExtractionProcessingModeController = textExtractionProcessingModeIpc.createController({
   onStateChanged: (state) => {
     try {
       const targetWin = resolveMainWindow();
       if (hasLiveWebContents(targetWin)) {
-        targetWin.webContents.send('import-extract-processing-mode-changed', state);
+        targetWin.webContents.send('text-extraction-processing-mode-changed', state);
       } else {
-        log.warn('import-extract-processing-mode-changed broadcast skipped (ignored): main window unavailable.');
+        log.warn('text-extraction-processing-mode-changed broadcast skipped (ignored): main window unavailable.');
       }
       if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
         pendingMainWindowCloseAfterProcessingAbort = false;
@@ -167,13 +167,13 @@ function isMainInteractive() {
 
 function isMainMenuInteractive() {
   return isMainInteractive()
-    && !importExtractProcessingModeController.isActive()
+    && !textExtractionProcessingModeController.isActive()
     && !(readingTestSessionController && readingTestSessionController.isInteractionLocked());
 }
 
 function getMainInteractionBlockReason() {
   if (!isMainInteractive()) return 'pre_ready';
-  if (importExtractProcessingModeController.isActive()) return 'processing_mode';
+  if (textExtractionProcessingModeController.isActive()) return 'processing_mode';
   if (readingTestSessionController && readingTestSessionController.isInteractionLocked()) {
     return readingTestSessionController.getInteractionBlockReason() || 'reading_test_session';
   }
@@ -196,7 +196,7 @@ function guardMainUserAction(actionId, message, { allowDuringProcessing = false,
     return false;
   }
 
-  if (!allowDuringProcessing && importExtractProcessingModeController.isActive()) {
+  if (!allowDuringProcessing && textExtractionProcessingModeController.isActive()) {
     log.warnOnce(
       `main.processingLock.${actionId}`,
       'Main action ignored (processing-mode lock active):',
@@ -540,8 +540,8 @@ function createMainWindow() {
         return;
       }
       mainWin.webContents.send(
-        'import-extract-processing-mode-changed',
-        importExtractProcessingModeController.getState()
+        'text-extraction-processing-mode-changed',
+        textExtractionProcessingModeController.getState()
       );
       if (readingTestSessionController) {
         mainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
@@ -572,12 +572,12 @@ function createMainWindow() {
   // Best-effort shutdown: when the main window closes, try to close auxiliary windows too.
   mainWin.on('close', (event) => {
     try {
-      if (importExtractProcessingModeController.isActive()) {
+      if (textExtractionProcessingModeController.isActive()) {
         if (event && typeof event.preventDefault === 'function') {
           event.preventDefault();
         }
         pendingMainWindowCloseAfterProcessingAbort = true;
-        const abortResult = importExtractProcessingModeController.requestAbort({
+        const abortResult = textExtractionProcessingModeController.requestAbort({
           source: 'main_window',
           reason: 'close_during_processing',
         });
@@ -1795,60 +1795,60 @@ app.whenReady().then(() => {
     currentLanguageRef: () => getSelectedLanguage(),
   });
 
-  // Import/extract + OCR integration points.
-  importExtractProcessingModeIpc.registerIpc(ipcMain, {
+  // Text extraction + OCR integration points.
+  textExtractionProcessingModeIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    controller: importExtractProcessingModeController,
+    controller: textExtractionProcessingModeController,
   });
 
-  importExtractFilePickerIpc.registerIpc(ipcMain, {
+  textExtractionFilePickerIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
   });
 
-  importExtractPreconditionsIpc.registerIpc(ipcMain, {
+  textExtractionPreconditionsIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
     getPreconditionContext,
   });
 
-  importExtractOcrActivationIpc.registerIpc(ipcMain, {
+  textExtractionOcrActivationIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
     resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
   });
 
-  importExtractOcrDisconnectIpc.registerIpc(ipcMain, {
+  textExtractionOcrDisconnectIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
     resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
   });
 
-  importExtractPrepareIpc.registerIpc(ipcMain, {
+  textExtractionPrepareIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
     resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
   });
 
-  importExtractExecutePreparedIpc.registerIpc(ipcMain, {
+  textExtractionExecutePreparedIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
     resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
-    controller: importExtractProcessingModeController,
+    controller: textExtractionProcessingModeController,
   });
 
   readingTestSessionController = readingTestSession.createController({
     resolveMainWindow: () => resolveMainWindow(),
     getPreconditionContext,
-    isProcessingModeActive: () => importExtractProcessingModeController.isActive(),
+    isProcessingModeActive: () => textExtractionProcessingModeController.isActive(),
     ensureEditorWindow: (options) => ensureEditorWindowOpen(options),
     showEditorWindow: (options) => showEditorWindow(options),
     ensureFlotanteWindow: () => ensureFlotanteWindowOpen(),
@@ -1928,3 +1928,5 @@ app.on('will-quit', () => {
 // =============================================================================
 // End of electron/main.js
 // =============================================================================
+
+

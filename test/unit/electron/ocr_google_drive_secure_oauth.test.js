@@ -12,7 +12,7 @@ const {
   isLoopbackHostname,
   normalizeLoopbackListenHost,
   resolveLoopbackRedirectTemplate,
-} = require('../../../electron/import_extract_platform/ocr_google_drive_secure_oauth');
+} = require('../../../electron/text_extraction_platform/ocr_google_drive_secure_oauth');
 
 function buildCredentials(redirectUris = ['http://localhost']) {
   return {
@@ -212,3 +212,4 @@ test('authenticateGoogleLoopback times out cleanly when no callback arrives', as
     return true;
   });
 });
+

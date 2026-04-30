@@ -27,7 +27,7 @@ const {
   loadJson,
   saveJson,
 } = require('./fs_storage');
-const { getImportExtractPlatformAdapter } = require('./import_extract_platform/import_extract_platform_adapter');
+const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform/text_extraction_platform_adapter');
 
 const log = Log.get('reading-test-pool-import');
 log.debug('Reading test pool import starting...');
@@ -387,7 +387,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
   }
 
   const { dialog, BrowserWindow, app } = require('electron');
-  const platformAdapter = getImportExtractPlatformAdapter(process.platform);
+  const platformAdapter = getTextExtractionPlatformAdapter(process.platform);
 
   function resolveMainWin() {
     const windows = getWindows() || {};
@@ -558,3 +558,4 @@ module.exports = {
 // =============================================================================
 // End of electron/reading_test_pool_import.js
 // =============================================================================
+

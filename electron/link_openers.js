@@ -48,7 +48,7 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     relativePath: path.join('public', 'third_party_licenses', 'LICENSE_Baskervville_OFL.txt'),
     tempName: 'tot_LICENSE_Baskervville_OFL.txt',
   },
-  'license-import-extract-google-apis': {
+  'license-text-extraction-google-apis': {
     relativePath: path.join(
       'public',
       'third_party_licenses',
@@ -56,7 +56,7 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     ),
     tempName: 'tot_LICENSE_googleapis_171.4.0.txt',
   },
-  'license-import-extract-docx': {
+  'license-text-extraction-docx': {
     relativePath: path.join(
       'public',
       'third_party_licenses',
@@ -64,7 +64,7 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     ),
     tempName: 'tot_LICENSE_mammoth_1.11.0.txt',
   },
-  'license-import-extract-pdf': {
+  'license-text-extraction-pdf': {
     relativePath: path.join(
       'public',
       'third_party_licenses',
@@ -72,7 +72,7 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     ),
     tempName: 'tot_LICENSE_pdf-parse_1.1.1.txt',
   },
-  'license-import-extract-image-processing': {
+  'license-text-extraction-image-processing': {
     relativePath: path.join(
       'public',
       'third_party_licenses',
@@ -90,11 +90,11 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
   },
 });
 const IMAGE_PROCESSING_RUNTIME_DOC_KEYS = new Set([
-  'license-import-extract-image-processing-runtime',
-  'license-import-extract-image-processing-win32',
+  'license-text-extraction-image-processing-runtime',
+  'license-text-extraction-image-processing-win32',
 ]);
 const IMAGE_PROCESSING_RUNTIME_NOTICE_DOC_KEYS = new Set([
-  'notice-import-extract-image-processing-runtime',
+  'notice-text-extraction-image-processing-runtime',
 ]);
 const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
   'win32:x64': {
@@ -448,3 +448,4 @@ module.exports = { registerLinkIpc };
 // =============================================================================
 // End of electron/link_openers.js
 // =============================================================================
+

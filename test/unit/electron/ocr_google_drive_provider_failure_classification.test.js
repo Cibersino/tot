@@ -7,11 +7,11 @@ const assert = require('node:assert/strict');
 
 const {
   PROVIDER_API_DISABLED_CODE,
-} = require('../../../electron/import_extract_platform/ocr_google_drive_provider_failure');
+} = require('../../../electron/text_extraction_platform/ocr_google_drive_provider_failure');
 const {
   classifyCommonGoogleProviderFailure,
   isRetryableGoogleProviderRateLimit,
-} = require('../../../electron/import_extract_platform/ocr_google_drive_provider_failure_classification');
+} = require('../../../electron/text_extraction_platform/ocr_google_drive_provider_failure_classification');
 
 test('classifies HTTP 429 as quota or rate limited', () => {
   assert.deepEqual(
@@ -109,3 +109,4 @@ test('retryability helper mirrors quota classification only', () => {
     false
   );
 });
+

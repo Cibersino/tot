@@ -1,0 +1,25 @@
+// electron/text_extraction_platform/text_extraction_platform_adapter.js
+'use strict';
+
+const windowsAdapter = require('./platform_adapters/windows');
+const darwinAdapter = require('./platform_adapters/darwin');
+const linuxAdapter = require('./platform_adapters/linux');
+const fallbackAdapter = require('./platform_adapters/fallback');
+
+function getTextExtractionPlatformAdapter(platform = process.platform) {
+  switch (platform) {
+    case 'win32':
+      return windowsAdapter;
+    case 'darwin':
+      return darwinAdapter;
+    case 'linux':
+      return linuxAdapter;
+    default:
+      return fallbackAdapter;
+  }
+}
+
+module.exports = {
+  getTextExtractionPlatformAdapter,
+};
+

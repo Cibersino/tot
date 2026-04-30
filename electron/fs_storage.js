@@ -7,7 +7,7 @@
 // Main-process file system storage helpers.
 // Responsibilities:
 // - Initialize the config root under app.getPath('userData') once Electron is ready.
-// - Resolve stable paths for settings, current text, editor state, presets, current-text snapshots, task files, and import/extract + OCR storage.
+// - Resolve stable paths for settings, current text, editor state, presets, current-text snapshots, task files, and text extraction + OCR storage.
 // - Ensure required storage directories exist before reads and writes.
 // - Read and write small JSON files with recoverable fallback handling.
 // - Stay synchronous because it is used only from the Electron main process.
@@ -131,11 +131,11 @@ function getTaskEditorPositionFile() {
 }
 
 // =============================================================================
-// Path helpers: import/extract + OCR
+// Path helpers: text extraction + OCR
 // =============================================================================
 
-function getImportExtractStateFile() {
-  return path.join(getConfigDir(), 'import_extract_state.json');
+function getTextExtractionStateFile() {
+  return path.join(getConfigDir(), 'text_extraction_state.json');
 }
 
 function getReadingTestPoolImportStateFile() {
@@ -320,7 +320,7 @@ module.exports = {
   getTasksColumnWidthsFile,
   getTaskEditorPositionFile,
 
-  getImportExtractStateFile,
+  getTextExtractionStateFile,
   getReadingTestPoolImportStateFile,
   getReadingTestPoolStateFile,
   getOcrGoogleDriveDir,
@@ -341,3 +341,5 @@ module.exports = {
 // =============================================================================
 // End of electron/fs_storage.js
 // =============================================================================
+
+

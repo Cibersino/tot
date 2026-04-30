@@ -35,7 +35,7 @@
 
   const selectorTitle = document.getElementById('selector-title');
   const textPreview = document.getElementById('textPreview');
-  const btnImportExtract = document.getElementById('btnImportExtract');
+  const btnTextExtraction = document.getElementById('btnTextExtraction');
   const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
   const btnAppendClipboard = document.getElementById('btnAppendClipboard');
   const clipboardRepeatInput = document.getElementById('clipboardRepeatInput');
@@ -49,10 +49,10 @@
   const previewSpoilerToggle = document.getElementById('previewSpoilerToggle');
   const previewSpoilerToggleLabel = document.getElementById('previewSpoilerToggleLabel');
   const previewSpoilerText = document.getElementById('previewSpoilerText');
-  const btnImportExtractAbort = document.getElementById('btnImportExtractAbort');
+  const btnTextExtractionAbort = document.getElementById('btnTextExtractionAbort');
 
   const selectorControls = [
-    btnImportExtract,
+    btnTextExtraction,
     btnOverwriteClipboard,
     btnAppendClipboard,
     clipboardRepeatInput,
@@ -316,7 +316,7 @@
     }
 
     if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title');
-    if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract');
+    if (btnTextExtraction) btnTextExtraction.textContent = tRenderer('renderer.main.buttons.text_extraction');
     if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard');
     if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard');
     if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit');
@@ -326,7 +326,7 @@
     if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new');
     if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load');
 
-    if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract');
+    if (btnTextExtraction) btnTextExtraction.title = tRenderer('renderer.main.tooltips.text_extraction');
     if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard');
     if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard');
     if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit');
@@ -336,8 +336,8 @@
     if (btnNewTask) btnNewTask.title = tRenderer('renderer.main.tooltips.task_new');
     if (btnLoadTask) btnLoadTask.title = tRenderer('renderer.main.tooltips.task_load');
 
-    if (btnImportExtract) {
-      btnImportExtract.setAttribute('aria-label', tRenderer('renderer.main.aria.import_extract'));
+    if (btnTextExtraction) {
+      btnTextExtraction.setAttribute('aria-label', tRenderer('renderer.main.aria.text_extraction'));
     }
     if (clipboardRepeatInput) {
       clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count');
@@ -363,8 +363,8 @@
   }
 
   function bindActions({
-    onImportExtract,
-    onImportExtractAbort,
+    onTextExtraction,
+    onTextExtractionAbort,
     onOverwriteClipboard,
     onAppendClipboard,
     onOpenEditor,
@@ -377,8 +377,8 @@
   } = {}) {
     if (actionsBound) return;
 
-    bindRequiredAction(btnImportExtract, 'import-extract', onImportExtract);
-    bindRequiredAction(btnImportExtractAbort, 'import-extract-abort', onImportExtractAbort);
+    bindRequiredAction(btnTextExtraction, 'text-extraction', onTextExtraction);
+    bindRequiredAction(btnTextExtractionAbort, 'text-extraction-abort', onTextExtractionAbort);
     bindRequiredAction(btnOverwriteClipboard, 'clipboard-overwrite', onOverwriteClipboard);
     bindRequiredAction(btnAppendClipboard, 'clipboard-append', onAppendClipboard);
     bindRequiredAction(btnEdit, 'open-editor', onOpenEditor);
@@ -436,3 +436,5 @@
 // =============================================================================
 // End of public/js/current_text_selector_section.js
 // =============================================================================
+
+

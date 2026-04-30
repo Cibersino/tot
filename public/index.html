@@ -47,7 +47,7 @@
       <pre id="textPreview">(vacío)</pre>
       <div class="controls">
         <div id="selectorControlsNormal" class="controls-row">
-          <button id="btnImportExtract" class="btn-standard" title="Importar/extraer texto desde archivo">📥</button>
+          <button id="btnTextExtraction" class="btn-standard" title="Extraer texto desde archivo">📥</button>
           <span class="controls-sep" aria-hidden="true"></span>
           <button id="btnOverwriteClipboard" class="btn-standard"
             title="Reemplazar texto actual con el portapapeles">📋↺</button>
@@ -72,16 +72,16 @@
           </label>
         </div>
         <div id="selectorControlsProcessing" class="controls-processing" hidden aria-hidden="true">
-          <div class="import-extract-processing-bar" role="status" aria-live="polite">
-            <div class="import-extract-processing-copy">
-              <span id="importExtractProcessingLabel">Procesando extracción...</span>
-              <span id="importExtractProcessingElapsed" class="import-extract-processing-elapsed" hidden
+          <div class="text-extraction-processing-bar" role="status" aria-live="polite">
+            <div class="text-extraction-processing-copy">
+              <span id="textExtractionProcessingLabel">Procesando extracción...</span>
+              <span id="textExtractionProcessingElapsed" class="text-extraction-processing-elapsed" hidden
                 aria-hidden="true"></span>
             </div>
-            <span class="import-extract-processing-placeholder-track" aria-hidden="true">
-              <span class="import-extract-processing-placeholder-fill"></span>
+            <span class="text-extraction-processing-placeholder-track" aria-hidden="true">
+              <span class="text-extraction-processing-placeholder-fill"></span>
             </span>
-            <button id="btnImportExtractAbort" class="btn-standard" hidden disabled
+            <button id="btnTextExtractionAbort" class="btn-standard" hidden disabled
               title="Abortar extracción">⛔</button>
           </div>
         </div>
@@ -203,48 +203,48 @@
       </div>
     </div>
 
-    <div id="importExtractRouteModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="importExtractRouteModalTitle" aria-modal="true">
-      <div id="importExtractRouteModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="import-extract-route-modal-panel" role="document" aria-describedby="importExtractRouteModalMessage">
-        <header class="import-extract-route-modal-header">
-          <h2 id="importExtractRouteModalTitle">Elegir ruta de extracción</h2>
-          <button id="importExtractRouteModalClose" class="btn-standard"
+    <div id="textExtractionRouteModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="textExtractionRouteModalTitle" aria-modal="true">
+      <div id="textExtractionRouteModalBackdrop" class="info-modal-backdrop"></div>
+      <div class="text-extraction-route-modal-panel" role="document" aria-describedby="textExtractionRouteModalMessage">
+        <header class="text-extraction-route-modal-header">
+          <h2 id="textExtractionRouteModalTitle">Elegir ruta de extracción</h2>
+          <button id="textExtractionRouteModalClose" class="btn-standard"
             aria-label="Cerrar diálogo de ruta de extracción">🗙</button>
         </header>
-        <div class="import-extract-route-modal-body">
-          <p id="importExtractRouteModalMessage">Este PDF tiene disponibles ambas rutas de extracción. Elige una para
+        <div class="text-extraction-route-modal-body">
+          <p id="textExtractionRouteModalMessage">Este PDF tiene disponibles ambas rutas de extracción. Elige una para
             continuar.</p>
-          <div class="import-extract-route-modal-actions">
-            <button id="importExtractRouteModalNative" class="btn-standard">Usar nativa</button>
-            <button id="importExtractRouteModalOcr" class="btn-standard">Usar OCR</button>
-            <button id="importExtractRouteModalCancel" class="btn-standard">Cancelar</button>
+          <div class="text-extraction-route-modal-actions">
+            <button id="textExtractionRouteModalNative" class="btn-standard">Usar nativa</button>
+            <button id="textExtractionRouteModalOcr" class="btn-standard">Usar OCR</button>
+            <button id="textExtractionRouteModalCancel" class="btn-standard">Cancelar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="importExtractApplyModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="importExtractApplyModalTitle" aria-modal="true">
-      <div id="importExtractApplyModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="import-extract-apply-modal-panel" role="document" aria-describedby="importExtractApplyModalMessage">
-        <header class="import-extract-apply-modal-header">
-          <h2 id="importExtractApplyModalTitle">Aplicar texto extraído</h2>
-          <button id="importExtractApplyModalClose" class="btn-standard"
+    <div id="textExtractionApplyModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="textExtractionApplyModalTitle" aria-modal="true">
+      <div id="textExtractionApplyModalBackdrop" class="info-modal-backdrop"></div>
+      <div class="text-extraction-apply-modal-panel" role="document" aria-describedby="textExtractionApplyModalMessage">
+        <header class="text-extraction-apply-modal-header">
+          <h2 id="textExtractionApplyModalTitle">Aplicar texto extraído</h2>
+          <button id="textExtractionApplyModalClose" class="btn-standard"
             aria-label="Cerrar diálogo para aplicar texto extraído">🗙</button>
         </header>
-        <div class="import-extract-apply-modal-body">
-          <p id="importExtractApplyModalMessage">Elige cómo aplicar el texto extraído.</p>
-          <p id="importExtractApplyModalElapsed" class="import-extract-apply-modal-elapsed" hidden aria-hidden="true">
+        <div class="text-extraction-apply-modal-body">
+          <p id="textExtractionApplyModalMessage">Elige cómo aplicar el texto extraído.</p>
+          <p id="textExtractionApplyModalElapsed" class="text-extraction-apply-modal-elapsed" hidden aria-hidden="true">
           </p>
-          <div class="import-extract-apply-repeat-row">
-            <label id="importExtractApplyModalRepeatLabel" for="importExtractApplyModalRepeatInput">Repeticiones</label>
-            <input id="importExtractApplyModalRepeatInput" type="number" min="1" step="1" value="1" />
+          <div class="text-extraction-apply-repeat-row">
+            <label id="textExtractionApplyModalRepeatLabel" for="textExtractionApplyModalRepeatInput">Repeticiones</label>
+            <input id="textExtractionApplyModalRepeatInput" type="number" min="1" step="1" value="1" />
           </div>
-          <div class="import-extract-apply-modal-actions">
-            <button id="importExtractApplyModalOverwrite" class="btn-standard">Sobrescribir</button>
-            <button id="importExtractApplyModalAppend" class="btn-standard">Agregar</button>
-            <button id="importExtractApplyModalCancel" class="btn-standard">Cancelar</button>
+          <div class="text-extraction-apply-modal-actions">
+            <button id="textExtractionApplyModalOverwrite" class="btn-standard">Sobrescribir</button>
+            <button id="textExtractionApplyModalAppend" class="btn-standard">Agregar</button>
+            <button id="textExtractionApplyModalCancel" class="btn-standard">Cancelar</button>
           </div>
         </div>
       </div>
@@ -356,36 +356,36 @@
       </div>
     </div>
 
-    <div id="importExtractOcrActivationDisclosureModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="importExtractOcrActivationDisclosureTitle"
-      aria-describedby="importExtractOcrActivationDisclosureBody" aria-modal="true">
-      <div id="importExtractOcrActivationDisclosureBackdrop" class="info-modal-backdrop"></div>
-      <div class="import-extract-ocr-activation-disclosure-panel" role="document">
-        <header class="import-extract-ocr-activation-disclosure-header">
-          <h2 id="importExtractOcrActivationDisclosureTitle">Revisar activación de Google OCR</h2>
-          <button id="importExtractOcrActivationDisclosureClose" class="btn-standard" type="button"
+    <div id="textExtractionOcrActivationDisclosureModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="textExtractionOcrActivationDisclosureTitle"
+      aria-describedby="textExtractionOcrActivationDisclosureBody" aria-modal="true">
+      <div id="textExtractionOcrActivationDisclosureBackdrop" class="info-modal-backdrop"></div>
+      <div class="text-extraction-ocr-activation-disclosure-panel" role="document">
+        <header class="text-extraction-ocr-activation-disclosure-header">
+          <h2 id="textExtractionOcrActivationDisclosureTitle">Revisar activación de Google OCR</h2>
+          <button id="textExtractionOcrActivationDisclosureClose" class="btn-standard" type="button"
             aria-label="Cerrar diálogo de activación de Google OCR">🗙</button>
         </header>
-        <div id="importExtractOcrActivationDisclosureBody" class="import-extract-ocr-activation-disclosure-body">
-          <p id="importExtractOcrActivationDisclosureIntro">toT usa servicios de Google para OCR. Si continúas, se
+        <div id="textExtractionOcrActivationDisclosureBody" class="text-extraction-ocr-activation-disclosure-body">
+          <p id="textExtractionOcrActivationDisclosureIntro">toT usa servicios de Google para OCR. Si continúas, se
             abrirá el navegador para que autorices esta app.</p>
-          <ul class="import-extract-ocr-activation-disclosure-list">
-            <li id="importExtractOcrActivationDisclosureSelectedFiles">Solo se envían a Google los archivos que eliges
+          <ul class="text-extraction-ocr-activation-disclosure-list">
+            <li id="textExtractionOcrActivationDisclosureSelectedFiles">Solo se envían a Google los archivos que eliges
               para OCR.</li>
-            <li id="importExtractOcrActivationDisclosureLocalStorage">Esta app guarda un archivo local credentials.json
+            <li id="textExtractionOcrActivationDisclosureLocalStorage">Esta app guarda un archivo local credentials.json
               y el estado local del token de Google en esta instancia.</li>
-            <li id="importExtractOcrActivationDisclosureRemoteCleanup">Después de exportar, la app intenta eliminar el
+            <li id="textExtractionOcrActivationDisclosureRemoteCleanup">Después de exportar, la app intenta eliminar el
               documento temporal de Google de tu Google Drive.</li>
-            <li id="importExtractOcrActivationDisclosureDisconnect">Más tarde puedes desconectar esta conexión desde
+            <li id="textExtractionOcrActivationDisclosureDisconnect">Más tarde puedes desconectar esta conexión desde
               Preferencias &gt; Desconectar Google OCR.</li>
           </ul>
-          <div class="import-extract-ocr-activation-disclosure-actions">
-            <a id="importExtractOcrActivationDisclosurePrivacy" class="import-extract-ocr-activation-disclosure-link"
+          <div class="text-extraction-ocr-activation-disclosure-actions">
+            <a id="textExtractionOcrActivationDisclosurePrivacy" class="text-extraction-ocr-activation-disclosure-link"
               href="#">Abrir política de privacidad</a>
-            <div class="import-extract-ocr-activation-disclosure-buttons">
-              <button id="importExtractOcrActivationDisclosureProceed" class="btn-standard" type="button">Continuar con
+            <div class="text-extraction-ocr-activation-disclosure-buttons">
+              <button id="textExtractionOcrActivationDisclosureProceed" class="btn-standard" type="button">Continuar con
                 Google</button>
-              <button id="importExtractOcrActivationDisclosureCancel" class="btn-standard"
+              <button id="textExtractionOcrActivationDisclosureCancel" class="btn-standard"
                 type="button">Cancelar</button>
             </div>
           </div>
@@ -418,16 +418,18 @@
   <script src="./js/main_logo_links.js"></script>
   <script src="./js/current_text_snapshots.js"></script>
   <script src="./js/text_apply_canonical.js"></script>
-  <script src="./js/import_extract_status_ui.js"></script>
-  <script src="./js/import_extract_route_choice_modal.js"></script>
-  <script src="./js/import_extract_apply_modal.js"></script>
-  <script src="./js/import_extract_ocr_activation_disclosure_modal.js"></script>
-  <script src="./js/import_extract_ocr_activation_recovery.js"></script>
-  <script src="./js/import_extract_ocr_disconnect.js"></script>
-  <script src="./js/import_extract_entry.js"></script>
-  <script src="./js/import_extract_drag_drop.js"></script>
+  <script src="./js/text_extraction_status_ui.js"></script>
+  <script src="./js/text_extraction_route_choice_modal.js"></script>
+  <script src="./js/text_extraction_apply_modal.js"></script>
+  <script src="./js/text_extraction_ocr_activation_disclosure_modal.js"></script>
+  <script src="./js/text_extraction_ocr_activation_recovery.js"></script>
+  <script src="./js/text_extraction_ocr_disconnect.js"></script>
+  <script src="./js/text_extraction_entry.js"></script>
+  <script src="./js/text_extraction_drag_drop.js"></script>
   <script src="./js/current_text_selector_section.js"></script>
   <script src="renderer.js"></script>
 </body>
 
 </html>
+
+
