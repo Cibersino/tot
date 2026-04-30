@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "읽기 속도",
-        "wpm_label": "분당 단어 수(WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "분당 단어 수(WPM)"
       },
       "results": {
         "title": "계수 결과",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "스톱워치",
         "speed": "속도:",
-        "controls_label": "스톱워치 컨트롤",
-        "flotante_short": "FW"
+        "controls_label": "스톱워치 컨트롤"
       },
       "reading_tools": {
         "reading_speed_test": "읽기 속도 테스트",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "파일 더 받기",
           "import_files": "파일 가져오기...",
-          "reset_pool": "R",
           "show_instructions": "설명 표시",
           "hide_instructions": "설명 숨기기",
           "start_random_text": "무작위 텍스트로 시작",

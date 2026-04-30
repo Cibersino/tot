@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "閱讀速度",
-        "wpm_label": "每分鐘詞數（WPM）",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "每分鐘詞數（WPM）"
       },
       "results": {
         "title": "計數結果",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "碼錶",
         "speed": "速度：",
-        "controls_label": "碼錶控制項",
-        "flotante_short": "懸"
+        "controls_label": "碼錶控制項"
       },
       "reading_tools": {
         "reading_speed_test": "閱讀速度測試",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "取得更多檔案",
           "import_files": "匯入檔案...",
-          "reset_pool": "R",
           "show_instructions": "顯示說明",
           "hide_instructions": "隱藏說明",
           "start_random_text": "以隨機文字開始",

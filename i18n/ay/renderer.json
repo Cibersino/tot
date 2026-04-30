@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "ULLAÑ JANK’AKÏWI",
-        "wpm_label": "sapa minutun arunaka (WPM)",
-        "new": "M",
-        "edit": "A",
-        "reset_defaults": "R"
+        "wpm_label": "sapa minutun arunaka (WPM)"
       },
       "results": {
         "title": "JAKHUWIJA APSUTANAKA",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "PACHAYUPIRI",
         "speed": "Jank’akïwi:",
-        "controls_label": "Pachayupiri apnaqañanaka",
-        "flotante_short": "TV"
+        "controls_label": "Pachayupiri apnaqañanaka"
       },
       "reading_tools": {
         "reading_speed_test": "Ullañ jank’akïwi test",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Juk’amp archivunaka katuña",
           "import_files": "Archivunaka apaniña...",
-          "reset_pool": "R",
           "show_instructions": "Yatichawinaka uñachayaña",
           "hide_instructions": "Yatichawinaka imantaña",
           "start_random_text": "Kawkïr qillqatamp qalltaña",

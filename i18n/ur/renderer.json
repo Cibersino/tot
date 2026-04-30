@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "پڑھنے کی رفتار",
-        "wpm_label": "الفاظ فی منٹ (WPM)",
-        "new": "ن",
-        "edit": "ت",
-        "reset_defaults": "ب"
+        "wpm_label": "الفاظ فی منٹ (WPM)"
       },
       "results": {
         "title": "گنتی کے نتائج",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "اسٹاپ واچ",
         "speed": "رفتار:",
-        "controls_label": "اسٹاپ واچ کنٹرولز",
-        "flotante_short": "ف"
+        "controls_label": "اسٹاپ واچ کنٹرولز"
       },
       "reading_tools": {
         "reading_speed_test": "پڑھنے کی رفتار کا ٹیسٹ",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "مزید فائلیں حاصل کریں",
           "import_files": "فائلیں درآمد کریں...",
-          "reset_pool": "ب",
           "show_instructions": "ہدایات دکھائیں",
           "hide_instructions": "ہدایات چھپائیں",
           "start_random_text": "بے ترتیب متن سے شروع کریں",

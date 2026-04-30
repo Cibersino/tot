@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "VELOCIDADE DE LEITURA",
-        "wpm_label": "palavras por minuto (WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "palavras por minuto (WPM)"
       },
       "results": {
         "title": "RESULTADOS DA CONTAGEM",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "CRONÔMETRO",
         "speed": "Velocidade:",
-        "controls_label": "Controles do cronômetro",
-        "flotante_short": "JF"
+        "controls_label": "Controles do cronômetro"
       },
       "reading_tools": {
         "reading_speed_test": "Teste de velocidade de leitura",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Obter mais arquivos",
           "import_files": "Importar arquivos...",
-          "reset_pool": "R",
           "show_instructions": "Mostrar instruções",
           "hide_instructions": "Ocultar instruções",
           "start_random_text": "Iniciar com texto aleatório",

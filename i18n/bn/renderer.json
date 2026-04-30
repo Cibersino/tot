@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "পড়ার গতি",
-        "wpm_label": "প্রতি মিনিটে শব্দ (WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "প্রতি মিনিটে শব্দ (WPM)"
       },
       "results": {
         "title": "গণনার ফলাফল",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "স্টপওয়াচ",
         "speed": "গতি:",
-        "controls_label": "স্টপওয়াচ নিয়ন্ত্রণ",
-        "flotante_short": "VW"
+        "controls_label": "স্টপওয়াচ নিয়ন্ত্রণ"
       },
       "reading_tools": {
         "reading_speed_test": "পড়ার গতি পরীক্ষা",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "আরও ফাইল নিন",
           "import_files": "ফাইল আমদানি করুন...",
-          "reset_pool": "R",
           "show_instructions": "নির্দেশাবলি দেখান",
           "hide_instructions": "নির্দেশাবলি লুকান",
           "start_random_text": "এলোমেলো লেখা দিয়ে শুরু করুন",

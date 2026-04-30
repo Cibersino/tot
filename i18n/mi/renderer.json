@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "TERE PĀNUI",
-        "wpm_label": "kupu ia meneti (WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "kupu ia meneti (WPM)"
       },
       "results": {
         "title": "NGĀ HUA TATAU",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "MATAWĀ",
         "speed": "Tere:",
-        "controls_label": "Ngā mana matawā",
-        "flotante_short": "MM"
+        "controls_label": "Ngā mana matawā"
       },
       "reading_tools": {
         "reading_speed_test": "Whakamātautau tere pānui",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Tiki kōnae anō",
           "import_files": "Kawemai kōnae...",
-          "reset_pool": "R",
           "show_instructions": "Whakaatu tohutohu",
           "hide_instructions": "Huna tohutohu",
           "start_random_text": "Tīmata ki te kuputuhi matapōkere",

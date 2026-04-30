@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "KECEPATAN MEMBACA",
-        "wpm_label": "kata per menit (WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "kata per menit (WPM)"
       },
       "results": {
         "title": "HASIL HITUNG",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "STOPWATCH",
         "speed": "Kecepatan:",
-        "controls_label": "Kontrol stopwatch",
-        "flotante_short": "JM"
+        "controls_label": "Kontrol stopwatch"
       },
       "reading_tools": {
         "reading_speed_test": "Tes kecepatan membaca",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Ambil file lain",
           "import_files": "Impor file...",
-          "reset_pool": "R",
           "show_instructions": "Tampilkan instruksi",
           "hide_instructions": "Sembunyikan instruksi",
           "start_random_text": "Mulai dengan teks acak",

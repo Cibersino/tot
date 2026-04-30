@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "LESEGESCHWINDIGKEIT",
-        "wpm_label": "Wörter pro Minute (WPM)",
-        "new": "N",
-        "edit": "B",
-        "reset_defaults": "R"
+        "wpm_label": "Wörter pro Minute (WPM)"
       },
       "results": {
         "title": "ERGEBNISSE ZÄHLEN",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "STOPPUHR",
         "speed": "Geschwindigkeit:",
-        "controls_label": "Stoppuhr-Steuerung",
-        "flotante_short": "SF"
+        "controls_label": "Stoppuhr-Steuerung"
       },
       "reading_tools": {
         "reading_speed_test": "Lesegeschwindigkeitstest",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Weitere Dateien holen",
           "import_files": "Dateien importieren...",
-          "reset_pool": "R",
           "show_instructions": "Anleitung anzeigen",
           "hide_instructions": "Anleitung ausblenden",
           "start_random_text": "Mit zufälligem Text starten",

@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "سرعت خواندن",
-        "wpm_label": "واژه در دقیقه (WPM)",
-        "new": "ن",
-        "edit": "و",
-        "reset_defaults": "ب"
+        "wpm_label": "واژه در دقیقه (WPM)"
       },
       "results": {
         "title": "نتایج شمارش",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "کرنومتر",
         "speed": "سرعت:",
-        "controls_label": "کنترل‌های کرنومتر",
-        "flotante_short": "ش"
+        "controls_label": "کنترل‌های کرنومتر"
       },
       "reading_tools": {
         "reading_speed_test": "آزمون سرعت خواندن",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "دریافت فایل‌های بیشتر",
           "import_files": "وارد کردن فایل‌ها...",
-          "reset_pool": "ب",
           "show_instructions": "نمایش دستورالعمل‌ها",
           "hide_instructions": "پنهان کردن دستورالعمل‌ها",
           "start_random_text": "شروع با متن تصادفی",

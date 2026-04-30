@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "पठन गति",
-        "wpm_label": "प्रति मिनट शब्द (WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "प्रति मिनट शब्द (WPM)"
       },
       "results": {
         "title": "गणना परिणाम",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "स्टॉपवॉच",
         "speed": "गति:",
-        "controls_label": "स्टॉपवॉच नियंत्रण",
-        "flotante_short": "FV"
+        "controls_label": "स्टॉपवॉच नियंत्रण"
       },
       "reading_tools": {
         "reading_speed_test": "पठन गति परीक्षण",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "और फ़ाइलें प्राप्त करें",
           "import_files": "फ़ाइलें आयात करें...",
-          "reset_pool": "R",
           "show_instructions": "निर्देश दिखाएँ",
           "hide_instructions": "निर्देश छिपाएँ",
           "start_random_text": "यादृच्छिक पाठ से शुरू करें",

@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "TỐC ĐỘ ĐỌC",
-        "wpm_label": "từ mỗi phút (WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "từ mỗi phút (WPM)"
       },
       "results": {
         "title": "KẾT QUẢ ĐẾM",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "ĐỒNG HỒ BẤM GIỜ",
         "speed": "Tốc độ:",
-        "controls_label": "Điều khiển đồng hồ bấm giờ",
-        "flotante_short": "FW"
+        "controls_label": "Điều khiển đồng hồ bấm giờ"
       },
       "reading_tools": {
         "reading_speed_test": "Bài kiểm tra tốc độ đọc",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Lấy thêm tệp",
           "import_files": "Nhập tệp...",
-          "reset_pool": "R",
           "show_instructions": "Hiển thị hướng dẫn",
           "hide_instructions": "Ẩn hướng dẫn",
           "start_random_text": "Bắt đầu với văn bản ngẫu nhiên",

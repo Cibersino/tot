@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "阅读速度",
-        "wpm_label": "每分钟词数（WPM）",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "每分钟词数（WPM）"
       },
       "results": {
         "title": "计数结果",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "秒表",
         "speed": "速度：",
-        "controls_label": "秒表控件",
-        "flotante_short": "悬"
+        "controls_label": "秒表控件"
       },
       "reading_tools": {
         "reading_speed_test": "阅读速度测试",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "获取更多文件",
           "import_files": "导入文件...",
-          "reset_pool": "R",
           "show_instructions": "显示说明",
           "hide_instructions": "隐藏说明",
           "start_random_text": "使用随机文本开始",

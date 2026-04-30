@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "読書速度",
-        "wpm_label": "1分あたりの語数（WPM）",
-        "new": "新",
-        "edit": "編",
-        "reset_defaults": "戻"
+        "wpm_label": "1分あたりの語数（WPM）"
       },
       "results": {
         "title": "カウント結果",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "ストップウォッチ",
         "speed": "速度:",
-        "controls_label": "ストップウォッチ操作",
-        "flotante_short": "FW"
+        "controls_label": "ストップウォッチ操作"
       },
       "reading_tools": {
         "reading_speed_test": "読書速度テスト",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "ファイルを追加取得",
           "import_files": "ファイルをインポート...",
-          "reset_pool": "R",
           "show_instructions": "説明を表示",
           "hide_instructions": "説明を非表示",
           "start_random_text": "ランダムテキストで開始",

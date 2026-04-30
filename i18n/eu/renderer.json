@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "IRAKURKETA-ABIADURA",
-        "wpm_label": "hitz minutuko (WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "hitz minutuko (WPM)"
       },
       "results": {
         "title": "ZENBAKETAREN EMAITZAK",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "KRONOMETROA",
         "speed": "Abiadura:",
-        "controls_label": "Kronometroaren kontrolak",
-        "flotante_short": "LF"
+        "controls_label": "Kronometroaren kontrolak"
       },
       "reading_tools": {
         "reading_speed_test": "Irakurketa-abiaduraren testa",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Lortu fitxategi gehiago",
           "import_files": "Inportatu fitxategiak...",
-          "reset_pool": "R",
           "show_instructions": "Erakutsi argibideak",
           "hide_instructions": "Ezkutatu argibideak",
           "start_random_text": "Hasi ausazko testuarekin",

@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "СКОРОСТЬ ЧТЕНИЯ",
-        "wpm_label": "слов в минуту (WPM)",
-        "new": "Н",
-        "edit": "Р",
-        "reset_defaults": "С"
+        "wpm_label": "слов в минуту (WPM)"
       },
       "results": {
         "title": "РЕЗУЛЬТАТЫ ПОДСЧЕТА",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "СЕКУНДОМЕР",
         "speed": "Скорость:",
-        "controls_label": "Управление секундомером",
-        "flotante_short": "ПО"
+        "controls_label": "Управление секундомером"
       },
       "reading_tools": {
         "reading_speed_test": "Тест скорости чтения",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Получить больше файлов",
           "import_files": "Импортировать файлы...",
-          "reset_pool": "С",
           "show_instructions": "Показать инструкции",
           "hide_instructions": "Скрыть инструкции",
           "start_random_text": "Начать со случайным текстом",

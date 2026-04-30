@@ -343,8 +343,8 @@
     getMoreFilesLink.title = tRenderer('renderer.reading_test.entry.tooltips.get_more_files');
     importButton.textContent = tRenderer('renderer.reading_test.entry.buttons.import_files');
     importButton.title = tRenderer('renderer.reading_test.entry.tooltips.import_files');
-    resetButton.textContent = tRenderer('renderer.reading_test.entry.buttons.reset_pool');
     resetButton.title = tRenderer('renderer.reading_test.entry.tooltips.reset_pool');
+    resetButton.setAttribute('aria-label', resetButton.title);
     btnStart.textContent = tRenderer('renderer.reading_test.entry.buttons.start_random_text');
     btnStart.title = tRenderer('renderer.reading_test.entry.tooltips.start_random_text');
     btnStartCurrentText.textContent = tRenderer('renderer.reading_test.entry.buttons.start_current_text');

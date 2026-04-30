@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "LÄSHASTIGHET",
-        "wpm_label": "ord per minut (WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "ord per minut (WPM)"
       },
       "results": {
         "title": "RÄKNERESULTAT",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "STOPPUR",
         "speed": "Hastighet:",
-        "controls_label": "Stoppurskontroller",
-        "flotante_short": "FF"
+        "controls_label": "Stoppurskontroller"
       },
       "reading_tools": {
         "reading_speed_test": "Test av läshastighet",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Hämta fler filer",
           "import_files": "Importera filer...",
-          "reset_pool": "R",
           "show_instructions": "Visa instruktioner",
           "hide_instructions": "Dölj instruktioner",
           "start_random_text": "Starta med slumpmässig text",

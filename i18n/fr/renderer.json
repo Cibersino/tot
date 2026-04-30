@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "VITESSE DE LECTURE",
-        "wpm_label": "mots par minute (WPM)",
-        "new": "N",
-        "edit": "M",
-        "reset_defaults": "R"
+        "wpm_label": "mots par minute (WPM)"
       },
       "results": {
         "title": "RÉSULTATS DU COMPTE",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "CHRONOMÈTRE",
         "speed": "Vitesse :",
-        "controls_label": "Contrôles du chronomètre",
-        "flotante_short": "FF"
+        "controls_label": "Contrôles du chronomètre"
       },
       "reading_tools": {
         "reading_speed_test": "Test de vitesse de lecture",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Obtenir plus de fichiers",
           "import_files": "Importer des fichiers...",
-          "reset_pool": "R",
           "show_instructions": "Afficher les instructions",
           "hide_instructions": "Masquer les instructions",
           "start_random_text": "Démarrer avec texte aléatoire",

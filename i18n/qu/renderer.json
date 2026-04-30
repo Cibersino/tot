@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "ÑAWINCHAY UTQAYNIN",
-        "wpm_label": "sapa minutupi simikuna (WPM)",
-        "new": "M",
-        "edit": "A",
-        "reset_defaults": "R"
+        "wpm_label": "sapa minutupi simikuna (WPM)"
       },
       "results": {
         "title": "YUPAYPA RUWASQAN",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "PACHAYUPAQ",
         "speed": "Utqaynin:",
-        "controls_label": "Pachayupaq kamachiqkuna",
-        "flotante_short": "WV"
+        "controls_label": "Pachayupaq kamachiqkuna"
       },
       "reading_tools": {
         "reading_speed_test": "Ñawinchay utqayninpa testnin",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Aswan archivokunata tariy",
           "import_files": "Archivokunata apamuy...",
-          "reset_pool": "R",
           "show_instructions": "Kamachiykunata rikuchiy",
           "hide_instructions": "Kamachiykunata pakay",
           "start_random_text": "Mayqinpas qillqawan qallariy",

@@ -43,10 +43,7 @@
       },
       "speed": {
         "title": "READING SPEED",
-        "wpm_label": "words per minute (WPM)",
-        "new": "N",
-        "edit": "E",
-        "reset_defaults": "R"
+        "wpm_label": "words per minute (WPM)"
       },
       "results": {
         "title": "COUNT RESULTS",
@@ -60,8 +57,7 @@
       "crono": {
         "title": "STOPWATCH",
         "speed": "Speed:",
-        "controls_label": "Stopwatch controls",
-        "flotante_short": "FW"
+        "controls_label": "Stopwatch controls"
       },
       "reading_tools": {
         "reading_speed_test": "Reading speed test",
@@ -279,7 +275,6 @@
         "buttons": {
           "get_more_files": "Get more files",
           "import_files": "Import files...",
-          "reset_pool": "R",
           "show_instructions": "Show instructions",
           "hide_instructions": "Hide instructions",
           "start_random_text": "Start with random text",

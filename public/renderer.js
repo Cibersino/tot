@@ -472,14 +472,14 @@ function applyTranslations() {
     infoModalLoading.textContent = tRenderer('renderer.info.loading');
   }
   // Presets
-  if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new');
-  if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit');
-  if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer('renderer.main.speed.reset_defaults');
   if (btnNewPreset) btnNewPreset.title = tRenderer('renderer.main.tooltips.new_preset');
   if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset');
   if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset');
   if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets');
+  applyAriaLabel(btnNewPreset, 'renderer.main.tooltips.new_preset');
+  applyAriaLabel(btnEditPreset, 'renderer.main.tooltips.edit_preset');
   applyAriaLabel(btnDeletePreset, 'renderer.main.tooltips.delete_preset');
+  applyAriaLabel(btnResetDefaultPresets, 'renderer.main.tooltips.reset_presets');
   // Floating window toggle
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
   if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window');
@@ -527,12 +527,6 @@ function applyTranslations() {
   if (cronoController && typeof cronoController.updateLabels === 'function') {
     cronoController.updateLabels(labelsCrono);
   }
-  // Abbreviated label for the floating window
-  const vfLabel = document.querySelector('.vf-label');
-  if (vfLabel) {
-    vfLabel.textContent = tRenderer('renderer.main.crono.flotante_short');
-  }
-
   // Help button title
   if (btnHelp) {
     const helpTitle = tRenderer('renderer.main.tooltips.help_button');
@@ -2282,4 +2276,3 @@ startRendererBootstrap();
 // =============================================================================
 // End of public/renderer.js
 // =============================================================================
-
