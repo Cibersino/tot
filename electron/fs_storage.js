@@ -126,8 +126,8 @@ function getTasksColumnWidthsFile() {
   return path.join(getTasksDir(), 'column_widths.json');
 }
 
-function getTaskEditorPositionFile() {
-  return path.join(getTasksDir(), 'task_editor_position.json');
+function getTaskEditorStateFile() {
+  return path.join(getTasksDir(), 'task_editor_state.json');
 }
 
 // =============================================================================
@@ -238,8 +238,8 @@ const LOAD_JSON_FILE_METADATA = Object.freeze({
   'editor_state.json': {
     missingNote: ' (note: may be normal on first run; file is created when editor window is opened for the first time)',
   },
-  'task_editor_position.json': {
-    missingNote: ' (note: may be normal on first run; file is created after the task editor window is opened and position is saved)',
+  'task_editor_state.json': {
+    missingNote: ' (note: may be normal on first run; file is created after the task editor window is opened and window state is saved)',
   },
 });
 
@@ -318,7 +318,7 @@ module.exports = {
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
   getTasksColumnWidthsFile,
-  getTaskEditorPositionFile,
+  getTaskEditorStateFile,
 
   getTextExtractionStateFile,
   getReadingTestPoolImportStateFile,
@@ -341,5 +341,4 @@ module.exports = {
 // =============================================================================
 // End of electron/fs_storage.js
 // =============================================================================
-
 

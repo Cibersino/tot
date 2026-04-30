@@ -31,7 +31,7 @@ tot/
 │ │ ├── library.json
 │ │ ├── allowed_hosts.json
 │ │ ├── column_widths.json
-│ │ └── task_editor_position.json
+│ │ └── task_editor_state.json
 │ ├── current_text.json
 │ ├── editor_state.json
 │ ├── text_extraction_state.json
@@ -76,7 +76,7 @@ tot/
 │ ├── text_state.js
 │ ├── current_text_snapshots_main.js
 │ ├── tasks_main.js
-│ ├── task_editor_position.js
+│ ├── task_editor_state.js
 │ ├── editor_state.js
 │ ├── editor_find_main.js
 │ ├── editor_find_session.js
@@ -366,7 +366,7 @@ tot/
 - `electron/reading_test_session_flow.js` — Helpers del flujo guiado del reading speed test: ownership de las etapas `arming/running/result/questions/preset`, cómputo autoritativo de WPM, payload prellenado del preset, cancel/finish semantics, ruta `pool` vs `current_text` y reinterpretación de comandos/cierres de la ventana flotante y el editor.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
-- `electron/task_editor_position.js` — Persistencia de posición (x/y) de la ventana del editor de tareas.
+- `electron/task_editor_state.js` — Persistencia/estado de la ventana del editor de tareas (tamaño, posición y maximizado).
 - `electron/text_extraction_platform/text_extraction_file_picker_ipc.js` — File picker nativo del flujo text extraction; resuelve carpeta por defecto/persistida, guarda la última carpeta usada y deriva la lista de extensiones soportadas desde el contrato compartido de formatos.
 - `electron/text_extraction_platform/text_extraction_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.
 - `electron/text_extraction_platform/text_extraction_processing_mode_ipc.js` — Controlador/IPC del processing mode de text extraction: lock state, broadcast al renderer y solicitud de abort.
@@ -486,7 +486,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).
 - `config/tasks/allowed_hosts.json` — Allowlist de hosts confiables para enlaces remotos.
 - `config/tasks/column_widths.json` — Persistencia de anchos de columnas del editor de tareas.
-- `config/tasks/task_editor_position.json` — Última posición (x/y) de la ventana del editor de tareas.
+- `config/tasks/task_editor_state.json` — Estado persistido de la ventana del editor de tareas (geometría/maximizado).
 
 ### 5.1) Material OCR empaquetado
 
@@ -600,5 +600,4 @@ El bloque “Árbol” de este archivo es **curado**. Al actualizarlo:
 * Evita listar carpetas voluminosas en detalle (`node_modules/`, outputs, etc.); basta con dejarlas a nivel superior con una nota.
 
 Regla: el árbol completo (`tree /F /A`) es la referencia; el bloque “Árbol” es el resumen explicativo.
-
 
