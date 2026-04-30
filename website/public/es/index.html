@@ -75,20 +75,38 @@
           snapshots de textos, organizador de tareas, cronómetro con ventana flotante y tests de velocidad de lectura.
         </p>
 
-        <div class="download-panel">
-          <p id="os-message">Detectando sistema operativo...</p>
-          <p>
-            <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
-              Ver últimas versiones en GitHub
-            </a>
-          </p>
-          <p class="manual-fallback">
-            <a href="https://github.com/Cibersino/tot/releases/latest">Ver todas las versiones</a>
-          </p>
-          <nav class="legal-links" aria-label="Enlaces legales">
-            <a href="/es/app-privacy/">Política de privacidad de la app</a>
-            <a href="/es/terms/">Términos de servicio</a>
-          </nav>
+        <div class="download-panel action-area">
+          <section class="action-side action-side--desktop" aria-label="App de escritorio">
+            <h2 class="action-side__title">App de escritorio</h2>
+            <p id="os-message" class="action-side__status">Detectando sistema operativo...</p>
+            <p class="action-side__cta-wrap">
+              <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
+                Ver últimas versiones en GitHub
+              </a>
+            </p>
+            <p class="manual-fallback">
+              <a href="https://github.com/Cibersino/tot/releases/latest">Ver todas las versiones</a>
+            </p>
+            <nav class="legal-links" aria-label="Enlaces legales de la app">
+              <a href="/es/app-privacy/">Política de privacidad de la app</a>
+              <a href="/es/terms/">Términos de servicio</a>
+            </nav>
+          </section>
+
+          <section class="action-side action-side--extension" aria-label="Extensión de navegador">
+            <div class="action-side__heading">
+              <img class="action-side__icon" src="/assets/extension/tot-symbols.32.png" alt="" aria-hidden="true">
+              <h2 class="action-side__title">Extensión de navegador</h2>
+            </div>
+            <p class="action-side__cta-wrap">
+              <a id="extension-install" class="secondary-cta"
+                href="https://chromewebstore.google.com/detail/aaadjdlieimolidjdkbimjcdojologld"
+                target="_blank" rel="noopener noreferrer">Ver en Chrome Web Store</a>
+            </p>
+            <nav class="legal-links legal-links--extension" aria-label="Enlaces de la extensión">
+              <a href="/es/chrome-extension-privacy/">Privacidad de la extensión</a>
+            </nav>
+          </section>
         </div>
       </section>
     </div>
@@ -146,9 +164,9 @@
       },
       messages: {
         direct: {
-          windows: "Descarga directa de la versión estable más reciente para Windows.",
-          macos: "Descarga directa de la versión estable más reciente para macOS.",
-          linux: "Descarga directa de la versión estable más reciente para Linux."
+          windows: "Descarga la versión estable más reciente para Windows.",
+          macos: "Descarga la versión estable más reciente para macOS.",
+          linux: "Descarga la versión estable más reciente para Linux."
         },
         fallback: {
           windows: "La versión estable más reciente no publica una descarga directa para Windows. Revisa las últimas versiones en GitHub.",
@@ -186,8 +204,17 @@
         supportTextAfterLink: "."
       }
     };
+
+    window.totExtensionConfig = {
+      chromeStoreUrl: "https://chromewebstore.google.com/detail/aaadjdlieimolidjdkbimjcdojologld",
+      labels: {
+        chrome: "Instalar para Chrome",
+        fallback: "Ver en Chrome Web Store"
+      }
+    };
   </script>
   <script src="/download-resolver.js"></script>
+  <script src="/extension-resolver.js"></script>
 </body>
 
 </html>
