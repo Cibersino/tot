@@ -447,3 +447,49 @@ test('createController logs a resolver rejection with the new reason code surfac
     'main.spellcheck.rejected.arn.rejected.no-compatible-dictionary'
   );
 });
+
+test('createController decorates settings with spellcheck availability when a compatible dictionary resolves', () => {
+  const spellcheck = loadFreshSpellcheckModule();
+
+  const controller = spellcheck.createController({
+    settingsState: {
+      getSettings() {
+        return { language: 'es-cl', spellcheckEnabled: true };
+      },
+    },
+    log: createLogDouble(),
+    sessionState: createControllerSessionState(['es-ES', 'en-US']),
+    platform: 'win32',
+  });
+
+  const result = controller.decorateSettings();
+
+  assert.deepEqual(result, {
+    language: 'es-cl',
+    spellcheckEnabled: true,
+    spellcheckAvailable: true,
+  });
+});
+
+test('createController decorates settings with spellcheck availability false when the current language has no compatible dictionary', () => {
+  const spellcheck = loadFreshSpellcheckModule();
+
+  const controller = spellcheck.createController({
+    settingsState: {
+      getSettings() {
+        return { language: 'ar', spellcheckEnabled: true };
+      },
+    },
+    log: createLogDouble(),
+    sessionState: createControllerSessionState(['es-ES', 'en-US']),
+    platform: 'win32',
+  });
+
+  const result = controller.decorateSettings();
+
+  assert.deepEqual(result, {
+    language: 'ar',
+    spellcheckEnabled: true,
+    spellcheckAvailable: false,
+  });
+});

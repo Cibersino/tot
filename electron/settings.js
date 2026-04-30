@@ -521,6 +521,7 @@ function registerIpc(
     getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin })
     buildAppMenu, // function(lang)
     onSettingsUpdated, // function(settings)
+    decorateSettings, // function(settings) => settings payload
   } = {}
 ) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -540,7 +541,34 @@ function registerIpc(
         log.warn('onSettingsUpdated callback failed (ignored):', err);
       }
     }
-    broadcastSettingsUpdated(settings, windows);
+    broadcastSettingsUpdated(decorateSettingsPayload(settings), windows);
+  }
+
+  function decorateSettingsPayload(settings) {
+    if (typeof decorateSettings !== 'function') return settings;
+
+    try {
+      const decoratedSettings = decorateSettings(settings);
+      if (
+        !decoratedSettings
+        || typeof decoratedSettings !== 'object'
+        || Array.isArray(decoratedSettings)
+      ) {
+        log.warnOnce(
+          'settings.decorateSettings.invalid',
+          'decorateSettings returned an invalid payload; using raw settings payload.'
+        );
+        return settings;
+      }
+      return decoratedSettings;
+    } catch (err) {
+      log.warnOnce(
+        'settings.decorateSettings.failed',
+        'decorateSettings failed; using raw settings payload:',
+        err
+      );
+      return settings;
+    }
   }
 
   function resolveWindows() {
@@ -585,14 +613,16 @@ function registerIpc(
   // get-settings: returns the current settings object (normalized)
   ipcMain.handle('get-settings', async () => {
     try {
-      return getSettings();
+      return decorateSettingsPayload(getSettings());
     } catch (err) {
       log.errorOnce(
         'settings.ipc.get-settings',
         'IPC get-settings failed (using safe fallback):',
         err
       );
-      return normalizeSettings(createDefaultSettings(DEFAULT_LANG));
+      return decorateSettingsPayload(
+        normalizeSettings(createDefaultSettings(DEFAULT_LANG))
+      );
     }
   });
 

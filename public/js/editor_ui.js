@@ -137,12 +137,20 @@
     // Local UI State Helpers
     // =============================================================================
 
-    function setLocalSpellcheckEnabled(enabled) {
-      state.spellcheckEnabled = enabled !== false;
-      if (spellcheckToggle) spellcheckToggle.checked = state.spellcheckEnabled;
+    function setLocalSpellcheckState({
+      preferenceEnabled,
+      available,
+    } = {}) {
+      state.spellcheckEnabled = preferenceEnabled !== false;
+      state.spellcheckAvailable = available !== false;
+      if (spellcheckToggle) {
+        spellcheckToggle.checked = state.spellcheckEnabled;
+        spellcheckToggle.disabled = !state.spellcheckAvailable;
+      }
+      const effectiveSpellcheckEnabled = state.spellcheckEnabled && state.spellcheckAvailable;
       if (editor) {
-        editor.spellcheck = state.spellcheckEnabled;
-        editor.setAttribute('spellcheck', state.spellcheckEnabled ? 'true' : 'false');
+        editor.spellcheck = effectiveSpellcheckEnabled;
+        editor.setAttribute('spellcheck', effectiveSpellcheckEnabled ? 'true' : 'false');
       }
     }
 
@@ -567,7 +575,7 @@
 
     return {
       applyEditorLanguage,
-      setLocalSpellcheckEnabled,
+      setLocalSpellcheckState,
       clampEditorFontSizePx,
       clampEditorMaximizedTextWidthPx,
       updateEditorTextSizeUi,

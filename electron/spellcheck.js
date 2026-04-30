@@ -304,6 +304,75 @@ function resolveChineseRejectionReason(requestContext, dictionaries) {
   return 'rejected.no-compatible-dictionary';
 }
 
+function getSpellcheckAvailability({
+  targetSession,
+  appLanguage,
+  platform = process.platform,
+} = {}) {
+  if (!targetSession) {
+    return {
+      available: false,
+      reason: 'session-unavailable',
+      selectedLanguage: '',
+      languages: [],
+      resolution: null,
+    };
+  }
+
+  if (typeof targetSession.setSpellCheckerEnabled !== 'function') {
+    return {
+      available: false,
+      reason: 'set-spellchecker-enabled-unavailable',
+      selectedLanguage: '',
+      languages: [],
+      resolution: null,
+    };
+  }
+
+  if (platform === 'darwin') {
+    return {
+      available: true,
+      reason: 'platform-managed',
+      selectedLanguage: '',
+      languages: [],
+      resolution: null,
+    };
+  }
+
+  const resolution = resolveSpellCheckerLanguages(
+    appLanguage,
+    targetSession.availableSpellCheckerLanguages
+  );
+
+  if (resolution.status !== 'accepted') {
+    return {
+      available: false,
+      reason: 'resolver-rejected',
+      selectedLanguage: '',
+      languages: [],
+      resolution,
+    };
+  }
+
+  if (typeof targetSession.setSpellCheckerLanguages !== 'function') {
+    return {
+      available: false,
+      reason: 'set-spellchecker-languages-unavailable',
+      selectedLanguage: '',
+      languages: [],
+      resolution,
+    };
+  }
+
+  return {
+    available: true,
+    reason: 'resolved',
+    selectedLanguage: resolution.selectedLanguage,
+    languages: resolution.languages.slice(),
+    resolution,
+  };
+}
+
 // =============================================================================
 // Resolver
 // =============================================================================
@@ -388,8 +457,13 @@ function applySpellCheckerSessionConfig({
   platform = process.platform,
 } = {}) {
   const preferenceEnabled = spellcheckEnabled !== false;
+  const availability = getSpellcheckAvailability({
+    targetSession,
+    appLanguage,
+    platform,
+  });
 
-  if (!targetSession) {
+  if (availability.reason === 'session-unavailable') {
     return {
       ok: false,
       reason: 'session-unavailable',
@@ -401,7 +475,7 @@ function applySpellCheckerSessionConfig({
     };
   }
 
-  if (typeof targetSession.setSpellCheckerEnabled !== 'function') {
+  if (availability.reason === 'set-spellchecker-enabled-unavailable') {
     return {
       ok: false,
       reason: 'set-spellchecker-enabled-unavailable',
@@ -426,7 +500,7 @@ function applySpellCheckerSessionConfig({
     };
   }
 
-  if (platform === 'darwin') {
+  if (availability.reason === 'platform-managed') {
     targetSession.setSpellCheckerEnabled(true);
     return {
       ok: true,
@@ -439,48 +513,30 @@ function applySpellCheckerSessionConfig({
     };
   }
 
-  const resolution = resolveSpellCheckerLanguages(
-    appLanguage,
-    targetSession.availableSpellCheckerLanguages
-  );
-
-  if (resolution.status !== 'accepted') {
+  if (availability.available !== true) {
     targetSession.setSpellCheckerEnabled(false);
     return {
       ok: true,
-      reason: 'resolver-rejected',
+      reason: availability.reason,
       preferenceEnabled: true,
       effectiveEnabled: false,
       selectedLanguage: '',
       languages: [],
-      resolution,
-    };
-  }
-
-  if (typeof targetSession.setSpellCheckerLanguages !== 'function') {
-    targetSession.setSpellCheckerEnabled(false);
-    return {
-      ok: true,
-      reason: 'set-spellchecker-languages-unavailable',
-      preferenceEnabled: true,
-      effectiveEnabled: false,
-      selectedLanguage: '',
-      languages: [],
-      resolution,
+      resolution: availability.resolution,
     };
   }
 
   targetSession.setSpellCheckerEnabled(true);
-  targetSession.setSpellCheckerLanguages(resolution.languages);
+  targetSession.setSpellCheckerLanguages(availability.languages);
 
   return {
     ok: true,
     reason: 'applied',
     preferenceEnabled: true,
     effectiveEnabled: true,
-    selectedLanguage: resolution.selectedLanguage,
-    languages: resolution.languages.slice(),
-    resolution,
+    selectedLanguage: availability.selectedLanguage,
+    languages: availability.languages.slice(),
+    resolution: availability.resolution,
   };
 }
 
@@ -593,8 +649,26 @@ function createController({
     }
   }
 
+  function decorateSettings(settingsOverride = null) {
+    const effectiveSettings = resolveSettings(settingsOverride);
+    const targetSession = getDefaultSession();
+    const availability = getSpellcheckAvailability({
+      targetSession,
+      appLanguage: effectiveSettings && typeof effectiveSettings.language === 'string'
+        ? effectiveSettings.language
+        : '',
+      platform,
+    });
+
+    return {
+      ...effectiveSettings,
+      spellcheckAvailable: availability.available,
+    };
+  }
+
   return {
     apply,
+    decorateSettings,
   };
 }
 

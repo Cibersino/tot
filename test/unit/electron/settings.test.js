@@ -36,6 +36,22 @@ function createSettingsHarness(initialStoredValue) {
   };
 }
 
+function createIpcMainDouble() {
+  const handlers = new Map();
+  return {
+    handle(channel, handler) {
+      handlers.set(channel, handler);
+    },
+    async invoke(channel, ...args) {
+      const handler = handlers.get(channel);
+      if (typeof handler !== 'function') {
+        throw new Error(`Missing IPC handler: ${channel}`);
+      }
+      return handler({}, ...args);
+    },
+  };
+}
+
 test('language helpers normalize tags and derive safe bases', () => {
   const settings = loadFreshSettingsModule();
 
@@ -163,4 +179,66 @@ test('applyFallbackLanguageIfUnset persists a normalized fallback language', () 
     separadorMiles: ',',
     separadorDecimal: '.',
   });
+});
+
+test('registerIpc decorates get-settings and settings-updated payloads without mutating persisted settings', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'ar',
+    presets_by_language: {},
+    selected_preset_by_language: {},
+    disabled_default_presets: {},
+    numberFormatting: {},
+    spellcheckEnabled: true,
+  });
+  const ipcMain = createIpcMainDouble();
+  const sentPayloads = [];
+  const onSettingsUpdatedCalls = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+
+  settings.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+    }),
+    onSettingsUpdated(nextSettings) {
+      onSettingsUpdatedCalls.push(nextSettings);
+    },
+    decorateSettings(nextSettings) {
+      return {
+        ...nextSettings,
+        spellcheckAvailable: false,
+      };
+    },
+  });
+
+  const initialSettings = await ipcMain.invoke('get-settings');
+  assert.equal(initialSettings.language, 'ar');
+  assert.equal(initialSettings.spellcheckEnabled, true);
+  assert.equal(initialSettings.spellcheckAvailable, false);
+
+  const result = await ipcMain.invoke('set-spellcheck-enabled', false);
+  assert.deepEqual(result, { ok: true, enabled: false });
+  assert.equal(onSettingsUpdatedCalls.length, 1);
+  assert.equal(onSettingsUpdatedCalls[0].spellcheckEnabled, false);
+  assert.equal(Object.hasOwn(onSettingsUpdatedCalls[0], 'spellcheckAvailable'), false);
+  assert.equal(sentPayloads.length, 1);
+  assert.equal(sentPayloads[0].channel, 'settings-updated');
+  assert.equal(sentPayloads[0].payload.spellcheckEnabled, false);
+  assert.equal(sentPayloads[0].payload.spellcheckAvailable, false);
+  assert.equal(settings.getSettings().spellcheckEnabled, false);
+  assert.equal(Object.hasOwn(settings.getSettings(), 'spellcheckAvailable'), false);
 });

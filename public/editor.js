@@ -180,6 +180,7 @@ const ctx = {
     debounceTimer: null,
     suppressLocalUpdate: false,
     spellcheckEnabled: true,
+    spellcheckAvailable: true,
     editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
     editorWindowMaximized: false,
     maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
@@ -220,6 +221,7 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
         ctx.state.idiomaActual = settings.language || DEFAULT_LANG;
       }
       ctx.state.spellcheckEnabled = !settings || settings.spellcheckEnabled !== false;
+      ctx.state.spellcheckAvailable = !settings || settings.spellcheckAvailable !== false;
       ctx.state.editorFontSizePx = ctx.ui.clampEditorFontSizePx(settings && settings.editorFontSizePx);
     } else {
       log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
@@ -233,7 +235,10 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
     } else {
       log.warn('BOOTSTRAP: editorAPI.getWindowState missing; maximized layout detection disabled.');
     }
-    ctx.ui.setLocalSpellcheckEnabled(ctx.state.spellcheckEnabled);
+    ctx.ui.setLocalSpellcheckState({
+      preferenceEnabled: ctx.state.spellcheckEnabled,
+      available: ctx.state.spellcheckAvailable,
+    });
     ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
     ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
     ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
@@ -248,7 +253,10 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
 ctx.ui.applyTextareaDefaults();
 window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
 ctx.ui.applyEditorLanguage();
-ctx.ui.setLocalSpellcheckEnabled(ctx.state.spellcheckEnabled);
+ctx.ui.setLocalSpellcheckState({
+  preferenceEnabled: ctx.state.spellcheckEnabled,
+  available: ctx.state.spellcheckAvailable,
+});
 ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
 ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
 ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
@@ -262,9 +270,13 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
     try {
       const nextLang = settings && settings.language ? settings.language : '';
       const nextSpellcheckEnabled = !settings || settings.spellcheckEnabled !== false;
+      const nextSpellcheckAvailable = !settings || settings.spellcheckAvailable !== false;
       const nextEditorFontSizePx = ctx.ui.clampEditorFontSizePx(settings && settings.editorFontSizePx);
       const languageChanged = !!(nextLang && nextLang !== ctx.state.idiomaActual);
-      const spellcheckChanged = nextSpellcheckEnabled !== ctx.state.spellcheckEnabled;
+      const spellcheckChanged = (
+        nextSpellcheckEnabled !== ctx.state.spellcheckEnabled
+        || nextSpellcheckAvailable !== ctx.state.spellcheckAvailable
+      );
       const fontSizeChanged = nextEditorFontSizePx !== ctx.state.editorFontSizePx;
 
       if (!languageChanged && !spellcheckChanged && !fontSizeChanged) return;
@@ -275,7 +287,10 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
         await ctx.ui.applyEditorTranslations();
       }
       if (spellcheckChanged) {
-        ctx.ui.setLocalSpellcheckEnabled(nextSpellcheckEnabled);
+        ctx.ui.setLocalSpellcheckState({
+          preferenceEnabled: nextSpellcheckEnabled,
+          available: nextSpellcheckAvailable,
+        });
       }
       if (fontSizeChanged) {
         ctx.ui.setLocalEditorFontSizePx(nextEditorFontSizePx);
@@ -535,18 +550,33 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
 if (spellcheckToggle) {
   spellcheckToggle.addEventListener('change', async () => {
     const previousEnabled = ctx.state.spellcheckEnabled;
+    const previousAvailable = ctx.state.spellcheckAvailable;
     const nextEnabled = !!spellcheckToggle.checked;
+
+    if (!previousAvailable) {
+      ctx.ui.setLocalSpellcheckState({
+        preferenceEnabled: previousEnabled,
+        available: previousAvailable,
+      });
+      return;
+    }
 
     if (!ctx.editorAPI || typeof ctx.editorAPI.setSpellcheckEnabled !== 'function') {
       log.warnOnce(
         'editor.spellcheck.apiMissing',
         'editorAPI.setSpellcheckEnabled missing; spellcheck toggle ignored.'
       );
-      ctx.ui.setLocalSpellcheckEnabled(previousEnabled);
+      ctx.ui.setLocalSpellcheckState({
+        preferenceEnabled: previousEnabled,
+        available: previousAvailable,
+      });
       return;
     }
 
-    ctx.ui.setLocalSpellcheckEnabled(nextEnabled);
+    ctx.ui.setLocalSpellcheckState({
+      preferenceEnabled: nextEnabled,
+      available: previousAvailable,
+    });
 
     try {
       const result = await ctx.editorAPI.setSpellcheckEnabled(nextEnabled);
@@ -555,7 +585,10 @@ if (spellcheckToggle) {
       }
     } catch (err) {
       log.error('Error updating spellcheck setting:', err);
-      ctx.ui.setLocalSpellcheckEnabled(previousEnabled);
+      ctx.ui.setLocalSpellcheckState({
+        preferenceEnabled: previousEnabled,
+        available: previousAvailable,
+      });
     }
   });
 }
