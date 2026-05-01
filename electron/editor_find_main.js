@@ -435,6 +435,8 @@ function createFindWindow() {
     height: getFindWindowHeight(),
     show: false,
     frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
     hasShadow: false,
     thickFrame: false,
     resizable: false,
