@@ -18,8 +18,10 @@ body {
 body {
   font-family: Arial, sans-serif;
   color: #1d1d1d;
-  background: #f1f1f1;
-  border: 1px solid #c9c9c9;
+  background: rgba(241, 241, 241, 0.70);
+  border: 1px solid rgba(201, 201, 201, 0.70);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* Window layout */
@@ -60,21 +62,21 @@ body[data-expanded="false"] .replace-row {
   min-width: 0;
   height: 30px;
   padding: 0 8px;
-  border: 1px solid #b8b8b8;
+  border: 1px solid rgba(184, 184, 184, 0.62);
   border-radius: 5px;
   font-size: 13px;
   color: #1d1d1d;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.48);
 }
 
 .find-btn {
   height: 30px;
   padding: 0 10px;
-  border: 1px solid #b8b8b8;
+  border: 1px solid rgba(184, 184, 184, 0.58);
   border-radius: 5px;
   font-size: 12px;
   color: #1d1d1d;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.36);
   cursor: pointer;
   white-space: nowrap;
 }
