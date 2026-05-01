@@ -747,6 +747,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   ipcMain.handle('edit-preset', async (event, payload) => {
     try {
       const presetWin = resolvePresetWin();
+      const mainWin = resolveMainWin();
       if (
         !isAuthorizedSender(
           event,
