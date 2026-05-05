@@ -362,6 +362,9 @@
       const beforeTop = actions.getBoundingClientRect().top;
       Promise.resolve()
         .then(() => updateFn())
+        .catch((err) => {
+          log.error('Reading-test questions check update failed:', err);
+        })
         .finally(() => {
           requestAnimationFrame(() => {
             const afterTop = actions.getBoundingClientRect().top;
