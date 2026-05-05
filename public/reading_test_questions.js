@@ -7,8 +7,9 @@
 // Renderer script for the reading-test questions modal.
 // Responsibilities:
 // - Validate required renderer bridges before the modal boots.
-// - Serialize initial settings and init-payload updates through one UI sync path.
-// - Render single-choice comprehension questions and local scoring feedback.
+// - Resolve bootstrap settings and init-payload updates through one render path.
+// - Render single-choice comprehension questions plus local scoring feedback.
+// - Keep validation and scoring delegated to ReadingTestQuestionsCore.
 // - Keep this step informative only; Continue always resumes the main flow.
 // =============================================================================
 
@@ -60,32 +61,42 @@
   }
 
   // =============================================================================
-  // DOM bootstrap
+  // App lifecycle / bootstrapping
   // =============================================================================
-  document.addEventListener('DOMContentLoaded', () => {
-    // Collect required nodes first so the modal aborts before partial wiring.
-    const elements = {
-      title: document.getElementById('readingTestQuestionsTitle'),
-      intro: document.getElementById('readingTestQuestionsIntro'),
-      randomTitle: document.getElementById('readingTestQuestionsRandomTitle'),
-      randomValue: document.getElementById('readingTestQuestionsRandomValue'),
-      feedbackTitle: document.getElementById('readingTestQuestionsFeedbackTitle'),
-      feedbackPrefix: document.getElementById('readingTestQuestionsFeedbackPrefix'),
-      feedbackLink: document.getElementById('readingTestQuestionsFeedbackLink'),
-      incompleteMessage: document.getElementById('readingTestQuestionsIncomplete'),
-      resultMessage: document.getElementById('readingTestQuestionsResult'),
-      chanceMessage: document.getElementById('readingTestQuestionsChance'),
-      fatalMessage: document.getElementById('readingTestQuestionsFatal'),
-      form: document.getElementById('readingTestQuestionsForm'),
-      btnCheck: document.getElementById('readingTestQuestionsCheck'),
-      btnContinue: document.getElementById('readingTestQuestionsContinue'),
-      actions: document.querySelector('.reading-test-questions__actions'),
-    };
+  document.addEventListener('DOMContentLoaded', initReadingTestQuestionsWindow);
 
-    if (Object.values(elements).some((element) => !element)) {
-      log.error('Reading-test questions window missing required DOM; script aborted.');
-      return;
+  function initReadingTestQuestionsWindow() {
+    function getRequiredElements() {
+      // Keep the required DOM contract explicit so the modal aborts before
+      // partial wiring if the HTML shell drifts from this renderer script.
+      const requiredElements = {
+        title: document.getElementById('readingTestQuestionsTitle'),
+        intro: document.getElementById('readingTestQuestionsIntro'),
+        randomTitle: document.getElementById('readingTestQuestionsRandomTitle'),
+        randomValue: document.getElementById('readingTestQuestionsRandomValue'),
+        feedbackTitle: document.getElementById('readingTestQuestionsFeedbackTitle'),
+        feedbackPrefix: document.getElementById('readingTestQuestionsFeedbackPrefix'),
+        feedbackLink: document.getElementById('readingTestQuestionsFeedbackLink'),
+        incompleteMessage: document.getElementById('readingTestQuestionsIncomplete'),
+        resultMessage: document.getElementById('readingTestQuestionsResult'),
+        chanceMessage: document.getElementById('readingTestQuestionsChance'),
+        fatalMessage: document.getElementById('readingTestQuestionsFatal'),
+        form: document.getElementById('readingTestQuestionsForm'),
+        btnCheck: document.getElementById('readingTestQuestionsCheck'),
+        btnContinue: document.getElementById('readingTestQuestionsContinue'),
+        actions: document.querySelector('.reading-test-questions__actions'),
+      };
+
+      if (Object.values(requiredElements).some((element) => !element)) {
+        log.error('Reading-test questions window missing required DOM; script aborted.');
+        return null;
+      }
+
+      return requiredElements;
     }
+
+    const elements = getRequiredElements();
+    if (!elements) return;
 
     const {
       title,
@@ -123,6 +134,7 @@
       fatalKey: '',
       showIncompleteWarning: false,
     };
+    // Queue UI updates so preload replay and bootstrap settings stay serialized.
     let uiSyncChain = Promise.resolve();
 
     // =============================================================================
@@ -350,9 +362,14 @@
     }
 
     function withAnchoredActionsScroll(updateFn) {
+      // Keep the action row visually anchored when status messages expand or
+      // collapse after interactive scoring updates.
       const beforeTop = actions.getBoundingClientRect().top;
       Promise.resolve()
         .then(() => updateFn())
+        .catch((err) => {
+          log.error('Reading-test questions check update failed:', err);
+        })
         .finally(() => {
           requestAnimationFrame(() => {
             const afterTop = actions.getBoundingClientRect().top;
@@ -444,6 +461,8 @@
     }
 
     function enqueueUiSync(updateFn) {
+      // Funnel bootstrap and init-data updates through one queue so translation
+      // readiness and DOM rendering observe the same ordering.
       const runUpdate = async () => {
         await updateFn();
         await ensureTranslationsLoaded();
@@ -454,6 +473,8 @@
     }
 
     function applyPayloadState(payload) {
+      // The shared core owns payload validation and question sanitation; this
+      // renderer only stores the accepted structure and local view state.
       state.developerEmail = (payload && typeof payload.developerEmail === 'string' && payload.developerEmail.trim())
         ? payload.developerEmail.trim()
         : state.developerEmail;
@@ -481,6 +502,32 @@
       });
     }
 
+    function handleInitData(payload) {
+      enqueueUiSync(async () => {
+        applyPayloadState(payload);
+      }).catch((err) => {
+        handleInitFailure(err);
+      });
+    }
+
+    function loadInitialSettings() {
+      // Bootstrap may start before persisted settings are available; this path
+      // applies the stored language when possible and otherwise keeps DEFAULT_LANG.
+      enqueueUiSync(async () => {
+        try {
+          const settings = await questionsApi.getSettings();
+          state.settingsCache = settings || {};
+          state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
+        } catch (err) {
+          log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
+          state.settingsCache = {};
+          state.currentLanguage = DEFAULT_LANG;
+        }
+      }).catch((err) => {
+        log.error('BOOTSTRAP: Reading-test questions initial render failed:', err);
+      });
+    }
+
     // =============================================================================
     // Event wiring / startup
     // =============================================================================
@@ -505,28 +552,9 @@
       window.close();
     });
 
-    questionsApi.onInitData((payload) => {
-      enqueueUiSync(async () => {
-        applyPayloadState(payload);
-      }).catch((err) => {
-        handleInitFailure(err);
-      });
-    });
-
-    enqueueUiSync(async () => {
-      try {
-        const settings = await questionsApi.getSettings();
-        state.settingsCache = settings || {};
-        state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
-      } catch (err) {
-        log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
-        state.settingsCache = {};
-        state.currentLanguage = DEFAULT_LANG;
-      }
-    }).catch((err) => {
-      log.error('BOOTSTRAP: Reading-test questions initial render failed:', err);
-    });
-  });
+    questionsApi.onInitData(handleInitData);
+    loadInitialSettings();
+  }
 })();
 
 // =============================================================================

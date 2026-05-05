@@ -92,9 +92,6 @@ if (!window.EditorUI || typeof window.EditorUI.createEditorUI !== 'function') {
 if (!window.EditorEngine || typeof window.EditorEngine.createEditorEngine !== 'function') {
   throw new Error('[editor] EditorEngine unavailable; cannot continue');
 }
-if (!window.Notify || typeof window.Notify.notifyEditor !== 'function') {
-  throw new Error('[editor] Notify.notifyEditor unavailable; cannot continue');
-}
 if (!window.RendererI18n || typeof window.RendererI18n.applyWindowLanguageAttributes !== 'function') {
   throw new Error('[editor] RendererI18n.applyWindowLanguageAttributes unavailable; cannot continue');
 }

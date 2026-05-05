@@ -236,14 +236,6 @@ function focusRequestedTarget(target, selectAll = false) {
 }
 
 function notifyReplaceTimeout() {
-  if (!window.Notify || typeof window.Notify.notifyEditor !== 'function') {
-    log.warnOnce(
-      'editor-find.notify.replaceTimeout.unavailable',
-      'Notify.notifyEditor unavailable; replace timeout toast skipped.'
-    );
-    return;
-  }
-
   try {
     window.Notify.notifyEditor('renderer.editor_find.replace_timeout', {
       type: 'error',

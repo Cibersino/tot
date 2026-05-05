@@ -84,6 +84,9 @@ Accesos rápidos visibles en la ventana principal:
 * `💾` / `📂`: guardar/cargar snapshot del texto actual.
 * `📝` / `🗃️`: nueva tarea o cargar tarea.
 * `Test de velocidad de lectura`: iniciar un test guiado desde un texto del pool o desde el texto actual.
+* `＋` / `✎` / `🗑` / `⟲`: crear, editar, eliminar o restaurar presets de WPM.
+* `▣`: activar o desactivar la ventana flotante del cronómetro.
+* `Modo preciso`: activar o desactivar el modo preciso de conteo de palabras y caracteres.
 
 ---
 
@@ -255,6 +258,9 @@ Quick actions in the main window:
 * `💾` / `📂`: save/load current-text snapshot.
 * `📝` / `🗃️`: new task or load task.
 * `Reading speed test`: start a guided test from pool text or from the current text.
+* `＋` / `✎` / `🗑` / `⟲`: create, edit, delete, or restore WPM presets.
+* `▣`: enable or disable the stopwatch floating window.
+* `Precise mode`: enable or disable the precise mode for counting words and characters.
 
 ---
 
@@ -339,4 +345,3 @@ MIT — see [`LICENSE`](LICENSE).
 ## Author
 
 [Cibersino](https://github.com/Cibersino)
-

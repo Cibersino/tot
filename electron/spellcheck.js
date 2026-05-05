@@ -304,75 +304,6 @@ function resolveChineseRejectionReason(requestContext, dictionaries) {
   return 'rejected.no-compatible-dictionary';
 }
 
-function getSpellcheckAvailability({
-  targetSession,
-  appLanguage,
-  platform = process.platform,
-} = {}) {
-  if (!targetSession) {
-    return {
-      available: false,
-      reason: 'session-unavailable',
-      selectedLanguage: '',
-      languages: [],
-      resolution: null,
-    };
-  }
-
-  if (typeof targetSession.setSpellCheckerEnabled !== 'function') {
-    return {
-      available: false,
-      reason: 'set-spellchecker-enabled-unavailable',
-      selectedLanguage: '',
-      languages: [],
-      resolution: null,
-    };
-  }
-
-  if (platform === 'darwin') {
-    return {
-      available: true,
-      reason: 'platform-managed',
-      selectedLanguage: '',
-      languages: [],
-      resolution: null,
-    };
-  }
-
-  const resolution = resolveSpellCheckerLanguages(
-    appLanguage,
-    targetSession.availableSpellCheckerLanguages
-  );
-
-  if (resolution.status !== 'accepted') {
-    return {
-      available: false,
-      reason: 'resolver-rejected',
-      selectedLanguage: '',
-      languages: [],
-      resolution,
-    };
-  }
-
-  if (typeof targetSession.setSpellCheckerLanguages !== 'function') {
-    return {
-      available: false,
-      reason: 'set-spellchecker-languages-unavailable',
-      selectedLanguage: '',
-      languages: [],
-      resolution,
-    };
-  }
-
-  return {
-    available: true,
-    reason: 'resolved',
-    selectedLanguage: resolution.selectedLanguage,
-    languages: resolution.languages.slice(),
-    resolution,
-  };
-}
-
 // =============================================================================
 // Resolver
 // =============================================================================
@@ -445,6 +376,78 @@ function resolveSpellCheckerLanguages(appLanguage, availableLanguages) {
     orderedCandidates,
     acceptedReasonCode
   );
+}
+
+// =============================================================================
+// Session availability
+// =============================================================================
+function getSpellcheckAvailability({
+  targetSession,
+  appLanguage,
+  platform = process.platform,
+} = {}) {
+  if (!targetSession) {
+    return {
+      available: false,
+      reason: 'session-unavailable',
+      selectedLanguage: '',
+      languages: [],
+      resolution: null,
+    };
+  }
+
+  if (typeof targetSession.setSpellCheckerEnabled !== 'function') {
+    return {
+      available: false,
+      reason: 'set-spellchecker-enabled-unavailable',
+      selectedLanguage: '',
+      languages: [],
+      resolution: null,
+    };
+  }
+
+  if (platform === 'darwin') {
+    return {
+      available: true,
+      reason: 'platform-managed',
+      selectedLanguage: '',
+      languages: [],
+      resolution: null,
+    };
+  }
+
+  const resolution = resolveSpellCheckerLanguages(
+    appLanguage,
+    targetSession.availableSpellCheckerLanguages
+  );
+
+  if (resolution.status !== 'accepted') {
+    return {
+      available: false,
+      reason: 'resolver-rejected',
+      selectedLanguage: '',
+      languages: [],
+      resolution,
+    };
+  }
+
+  if (typeof targetSession.setSpellCheckerLanguages !== 'function') {
+    return {
+      available: false,
+      reason: 'set-spellchecker-languages-unavailable',
+      selectedLanguage: '',
+      languages: [],
+      resolution,
+    };
+  }
+
+  return {
+    available: true,
+    reason: 'resolved',
+    selectedLanguage: resolution.selectedLanguage,
+    languages: resolution.languages.slice(),
+    resolution,
+  };
 }
 
 // =============================================================================
@@ -622,7 +625,7 @@ function createController({
             : ''
         ) || 'unset';
         log.warnOnce(
-          `main.spellcheck.session-api.${normalizedLanguage}.set-spellchecker-languages-unavailable`,
+          'main.spellcheck.session-api.set-spellchecker-languages-unavailable',
           'Spellcheck disabled for current app language: session.setSpellCheckerLanguages unavailable.',
           { language: normalizedLanguage }
         );
@@ -633,7 +636,7 @@ function createController({
       ) {
         const normalizedLanguage = result.resolution.normalizedTag || 'unset';
         log.warnOnce(
-          `main.spellcheck.rejected.${normalizedLanguage}.${result.resolution.reasonCode}`,
+          `main.spellcheck.rejected.${result.resolution.reasonCode}`,
           'Spellcheck disabled for current app language: no compatible Electron spellchecker dictionary resolved.',
           {
             language: normalizedLanguage,
