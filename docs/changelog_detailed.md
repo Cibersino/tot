@@ -53,6 +53,7 @@ Reglas:
 - La ventana principal suma una entrada fija para la extensión del navegador, reordena parte de sus controles compactos y cambia la forma de renderizar el preview del texto actual para manejar mejor bidi/RTL.
 - La superficie histórica `import/extract` queda consolidada como `text extraction` en UI, preload, IPC y storage relacionado.
 - El editor de tareas deja de ser una ventana fija y pasa a admitir `resize` / maximizado con persistencia de estado válida entre sesiones.
+- El editor de tareas elimina el campo/columna `Tipo` de su UI, estado runtime, persistencia de filas y traducciones propias.
 - La entrada del reading speed test deja de tratar los starter files integrados como siempre visibles: ahora expone una preferencia persistida para mostrarlos/ocultarlos, recalcula elegibilidad sobre el subconjunto visible y distingue explícitamente el caso “pool visible vacío por integrados ocultos” del agotamiento real del pool.
 - La ayuda contextual deja de quedar acotada a `7` tips y pasa a un catálogo unificado de `54`.
 
@@ -79,6 +80,7 @@ Reglas:
 - El reading speed test deja de colapsar todos los vacíos del pool en el mismo warning: si quedan starter files bundled sin usar pero ocultos por preferencia, la UI muestra un mensaje específico y el start renderer/main devuelve guidance diferenciada en lugar de reutilizar el caso genérico de `pool exhausted`.
 - La ventana del editor aplica `dir="auto"` al `textarea`, sincroniza atributos de idioma de ventana y deja de tratar spellcheck como simple preferencia booleana: ahora refleja también si el idioma activo tiene diccionario compatible en el runtime actual.
 - El editor de tareas deja de abrir como ventana fija: ahora permite `resize`, `maximize`, restaura estado reducido/maximizado y solo reaplica bounds persistidos cuando siguen siendo válidos.
+- El editor de tareas elimina la columna/campo `Tipo`: la tabla, el estado renderer, la normalización main-owned, la persistencia de listas/biblioteca y las traducciones del propio editor dejan de transportar ese dato, sin agregar migraciones ni ramas especiales de compatibilidad.
 - El editor de tareas deja de usar labels textuales largos en sus acciones de fila/biblioteca y pasa a iconografía compacta (`↗️`, `📥`, `💬`, `↑`, `↓`, `🗑`, `💾`) con `title` / `aria-label`.
 - La ventana `Find/Replace` del editor pasa a ser transparente y deja de depender de texto visible en sus controles `prev/next/close`, apoyándose en tooltips/aria para esa micro-UI.
 - Las ventanas `reading_test_questions` y `reading_test_result` pasan a renderizar porcentajes, enteros y resúmenes con separadores del locale efectivo, manteniendo los valores invariantes aislados para evitar mezclas bidi.
@@ -91,6 +93,10 @@ Reglas:
 - La reapertura del editor de tareas evita geometrías inválidas o fuera de pantalla al validar bounds persistidos contra los displays disponibles.
 - El preview del texto actual deja de exponer separadores `... | ...` y fragmentos truncados con dirección implícita que podían romper la lectura visual en textos RTL o mixtos.
 - El checkbox `Show built-in test files` del reading speed test deja de revertirse visualmente al intentar desmarcarlo: la UI conserva el valor elegido mientras persiste la preferencia y solo hace rollback si la actualización main-owned falla.
+
+### Removido
+
+- Editor de tareas: desaparece el concepto `Tipo` / `Type` en runtime. La tabla ya no muestra esa columna, las filas de tareas/biblioteca ya no persisten ese campo y `renderer.tasks.columns.tipo` sale de los bundles activos del renderer.
 
 ### Migración
 
@@ -119,6 +125,8 @@ Reglas:
 - Storage:
   - `config/tasks/task_editor_position.json` deja de ser el archivo observado por la app actual.
   - nuevo archivo observado: `config/tasks/task_editor_state.json`.
+  - `config/tasks/lists/**/*.json`: las filas del editor de tareas pasan de `{ texto, tiempoSeconds, percentComplete, tipo, enlace, comentario, snapshotRelPath? }` a `{ texto, tiempoSeconds, percentComplete, enlace, comentario, snapshotRelPath? }`.
+  - `config/tasks/library.json`: las filas persistidas pasan de `{ texto, tiempoSeconds, tipo, enlace, comentario?, snapshotRelPath? }` a `{ texto, tiempoSeconds, enlace, comentario?, snapshotRelPath? }`.
   - `config/import_extract_state.json` deja de ser el archivo observado por la app actual.
   - nuevo archivo observado: `config/text_extraction_state.json`.
   - `config/reading_test_pool_state.json` amplía su shape con el booleano top-level `showBundledEntries`, preservado junto con `entries[*].used` y `entries[*].managedBundledHash`.
