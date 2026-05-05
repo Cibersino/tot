@@ -274,7 +274,7 @@
         },
         "buttons": {
           "get_more_files": "Traer más archivos",
-          "import_files": "Importar archivos...",
+          "import_files": "Importar archivos",
           "show_instructions": "Mostrar instrucciones",
           "hide_instructions": "Ocultar instrucciones",
           "start_random_text": "Partir con texto random",

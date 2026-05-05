@@ -258,6 +258,7 @@
         "intro": "Bài kiểm tra này nhằm ước tính tốc độ đọc thực tế của bạn qua một phiên được hướng dẫn. Ứng dụng sẽ mở văn bản và chờ bạn nhấn Play (▶) trong Cửa sổ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng bộ đếm thời gian. Chỉ dùng Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra. Sau đó, bạn có thể xem các câu hỏi đọc hiểu nếu văn bản có kèm theo, và cuối cùng tạo một preset từ kết quả.\nTrước khi bắt đầu, hãy nhớ rằng các văn bản kiểm tra này thường cần từ 5 đến 15 phút tập trung không bị gián đoạn.\nPool này dùng các văn bản ngắn, vì vậy hãy diễn giải kết quả một cách thận trọng. Không nên ngoại suy trực tiếp sang văn bản dài, nơi các yếu tố tích cực như nhịp đọc và sự tích lũy ngữ cảnh, cũng như các yếu tố tiêu cực như việc tự tóm lược trong đầu và mệt mỏi, thường phát huy tác động.",
         "eligible_count": "Tệp đủ điều kiện:",
         "pool_exhausted_message": "Không còn tệp kiểm tra chưa dùng nào. Hãy đặt lại pool hoặc thêm tệp mới.",
+        "visible_empty_bundled_hidden_message": "Các tệp kiểm tra tích hợp hiện đang bị ẩn và không còn tệp kiểm tra hiển thị nào chưa được dùng. Hãy hiển thị lại các tệp tích hợp hoặc nhập thêm tệp để tiếp tục.",
         "close_aria": "Đóng hộp thoại bài kiểm tra tốc độ đọc",
         "start_random_confirm": "Thao tác này sẽ ghi đè văn bản hiện tại bằng một văn bản đủ điều kiện ngẫu nhiên từ pool. Bạn có muốn tiếp tục?",
         "reset_confirm": "Thao tác này sẽ đặt lại toàn bộ pool kiểm tra và đánh dấu tất cả tệp là chưa dùng lại. Bạn có muốn tiếp tục?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Lấy thêm tệp",
-          "import_files": "Nhập tệp...",
+          "import_files": "Nhập tệp",
           "show_instructions": "Hiển thị hướng dẫn",
           "hide_instructions": "Ẩn hướng dẫn",
           "start_random_text": "Bắt đầu với văn bản ngẫu nhiên",
-          "start_current_text": "Bắt đầu với văn bản hiện tại"
+          "start_current_text": "Bắt đầu với văn bản hiện tại",
+          "show_bundled_entries": "Test cơ bản"
         },
         "tooltips": {
+          "show_bundled_entries": "Bao gồm các tệp kiểm tra khởi đầu được tích hợp sẵn trong ứng dụng vào pool",
           "get_more_files": "Lấy thêm tệp kiểm tra từ thư mục Google Drive",
           "import_files": "Nhập tệp kiểm tra từ thiết bị của bạn",
           "reset_pool": "Đặt lại pool kiểm tra",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Bài kiểm tra tốc độ đọc chỉ có thể bắt đầu từ trạng thái ứng dụng ổn định. Hãy đóng các cửa sổ phụ và bảo đảm đồng hồ bấm giờ đã dừng.",
       "reading_test_pool_error": "Đã xảy ra lỗi khi kiểm tra pool bài kiểm tra tốc độ đọc.",
       "reading_test_no_matching_files": "Không còn tệp kiểm tra chưa dùng nào khớp với lựa chọn hiện tại.",
+      "reading_test_visible_empty_bundled_hidden": "Các tệp kiểm tra tích hợp đang bị ẩn và hiện không có tệp kiểm tra hiển thị nào chưa được dùng. Hãy hiển thị lại các tệp tích hợp hoặc nhập thêm tệp để tiếp tục.",
       "reading_test_current_text_empty": "Văn bản hiện tại đang trống. Hãy tải hoặc nhập văn bản trước khi bắt đầu bài kiểm tra với văn bản hiện tại.",
       "reading_test_result_invalid": "Không thể chuyển kết quả bài kiểm tra thành WPM hợp lệ. Quy trình đã kết thúc mà không mở modal preset.",
       "reading_test_result_unavailable": "Không thể hiển thị kết quả tốc độ đọc. Quy trình vẫn tiếp tục.",

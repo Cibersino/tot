@@ -258,6 +258,7 @@
         "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka ka üyümlayaymi tami nüngüal Play (▶) feyti Ventana Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.\nWünen amutulaymi, rakiduamüngeymi tüfachi pepiluwün chillka engün müten müley 5 ka 15 minutos küme rakiduam mu, gelay interrupciones.\nTüfachi pool pichi chillka engün müten müley, feymew küme rakiduamngeymi tami chum tripachi. Kümelay rüf müten tripayal füta chillka mew, felew müten küme dungu, küme amuluwün ka contexto, ka weda dungu, mental recapitulación ka fatigue, mülekey ti chillkatun mu.",
         "eligible_count": "Dullngechi chillka:",
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
+        "visible_empty_bundled_hidden_message": "Ti app mew mülelu test archivos ellkañmangeygün ka ngelay visible test archivos petu nülay. Wiño pepefinge feyengün kam importafinge doy archivos tami amutual.",
         "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",
         "start_random_confirm": "Tüfachi wiño püneay tami felechi chillka ka müley kiñe random chillka feychi trawün mew. ¿Amuleaymi?",
         "reset_confirm": "Fey mu wiñotripayay kom trawün (pool) pepiluwal ka kom chillka 'ngelay chillkatun' pingeay. ¿Amuleaymi?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Pepefinge más archivos",
-          "import_files": "Importar archivos...",
+          "import_files": "Importar archivos",
           "show_instructions": "Pepefinge instrucciones",
           "hide_instructions": "Ellkañma instrucciones",
           "start_random_text": "Yalltun fantepu chillka random mew",
-          "start_current_text": "Yalltun fantepu chillka mu"
+          "start_current_text": "Yalltun fantepu chillka mu",
+          "show_bundled_entries": "Test msingi"
         },
         "tooltips": {
+          "show_bundled_entries": "Pool mew mütrümnge ti app mew mülelu ñepüle test archivos",
           "get_more_files": "Llowün doy pepiükantun wirintukun Google Drive mu",
           "import_files": "Küpan pepiükantun wirintukun tami nütrampeyüm mu",
           "reset_pool": "Wiño llowün pepiükantun trañmawun",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Pepiluwün ñi pürüm chillkatun yalltuay müten app llowkülelu mu. Ñafün kachu ventanakuna ka kintunge feyti relüf ñafküley.",
       "reading_test_pool_error": "Wedalküley kintun trawün (pool) pepiluwal.",
       "reading_test_no_matching_files": "Ngelay pepiluwal we chillka feypingen mu.",
+      "reading_test_visible_empty_bundled_hidden": "Ti app mew mülelu test archivos ellkañmangeygün ka fantepu ngelay visible test archivos petu nülay. Wiño pepefinge feyengün kam importafinge doy archivos tami amutual.",
       "reading_test_current_text_empty": "Ngelay chillka fantepu. Yafmatunge kam wirintunge chillka petu yalltun.",
       "reading_test_result_invalid": "Chum tripachi pepiluwün gelay WPM. Amulelay kintual modal preset.",
       "reading_test_result_unavailable": "Pepilay pengelün chum tripachi pürüm chillkatun. Feymew amutuy ti rüpü.",

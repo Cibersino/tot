@@ -258,6 +258,7 @@
         "intro": "Aka test ukax irpata sesión tuqiw chiqa ullañ jank’akïwim uñt’ayañatak lurata. Appax qillqata jist’arani ukat qalltañatak wakicht’atäkasax Tuyuri Ventana ukan Play (▶) limt’añam suyäni. Test qalltkipanxa, ullañ tukuykamax Pausa (⏸) jan limt’amti: Pausa ukax test tukuyi; janiw pachayupir samart’aykiti. Test chhaqtayañatakikix Stop/Reset (⏹) apnaqam. Ukxarux, qillqatax jiskt’awinakanïchi ukhax comprensión jiskt’awinak uñakipasma, ukat tukuyarux resultado ukamp preset lurasma.\nQalltañ nayraqat amuyam: aka prueba qillqatanakax jilpachax 5 ukat 15 minutunakkam jan ch’axwañamp yäqañ munapxi.\nAka pool ukax jisk’a qillqatanak apnaqi; ukhamax resultado ukax amuyump uñjam. Janiw jach’a qillqatanakar chiqak apañäkiti, kunalaykutix ukan fluidez ukat contexto katuqañjama aski factores ukhamarak mental recapitulation ukat qarjawi factors mantapxi.",
         "eligible_count": "Wakiskiri archivunaka:",
         "pool_exhausted_message": "Janiw jan apnaqata test archivunakax qhiparkiti. Pool wasitat qalltayam jan ukax juk’amp archivunaka yapxatam.",
+        "visible_empty_bundled_hidden_message": "App ukan utjki uka test archivunakax imantatäpxiwa ukat janiw kuna uñjkañ jan apnaqata test archivunakas utjkiti. Wasitamp uñachayam jan ukax juk’amp archivunaka apanim sarantañataki.",
         "close_aria": "Ullañ jank’akïwi test diálogo jist’antaña",
         "start_random_confirm": "Akax jichha qillqata pool ukan mä wakiskiri qillqatampi lantintani. Sarantañ munasmati?",
         "reset_confirm": "Akax taqpach test pool wasitat qalltayani ukat taqi archivunakap jan apnaqatajam markachani. Sarantañ munasmati?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Juk’amp archivunaka katuña",
-          "import_files": "Archivunaka apaniña...",
+          "import_files": "Archivunaka apaniña",
           "show_instructions": "Yatichawinaka uñachayaña",
           "hide_instructions": "Yatichawinaka imantaña",
           "start_random_text": "Kawkïr qillqatamp qalltaña",
-          "start_current_text": "Jichha qillqatamp qalltaña"
+          "start_current_text": "Jichha qillqatamp qalltaña",
+          "show_bundled_entries": "Test básicos"
         },
         "tooltips": {
+          "show_bundled_entries": "Pool ukar app ukan utjki uka qallta test archivunaka yapxataña",
           "get_more_files": "Google Drive carpeta ukat juk’amp test archivunaka katuña",
           "import_files": "Dispositivumat test archivunaka apaniña",
           "reset_pool": "Test pool wasitat qalltaña",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Ullañ jank’akïwi test ukax appan estable estado ukatakiw qalltasispa. Secundario ventananak jist’antam ukat pachayupiri suyt’atätap uñjam.",
       "reading_test_pool_error": "Ullañ jank’akïwi test pool uñakipañan pantjasiw utji.",
       "reading_test_no_matching_files": "Jichha ajllitamp jakthapir jan apnaqata test archivunakax janiw qhiparkiti.",
+      "reading_test_visible_empty_bundled_hidden": "App ukan utjki uka test archivunakax imantatäpxiwa ukat janiw kuna uñjkañ jan apnaqata test archivunakas utjkiti. Wasitamp uñachayam jan ukax juk’amp archivunaka apanim sarantañataki.",
       "reading_test_current_text_empty": "Jichha qillqatax ch’usawa. Jichha qillqatamp test qalltañatakix qillqata cargar jan ukax qillqt’am.",
       "reading_test_result_invalid": "Test resultado ukax válido WPM ukar janiw tukuyaskänti. Flujo preset modal jan jist’arasaw tukuyi.",
       "reading_test_result_unavailable": "Ullañ jank’akïwi resultado janiw uñachayaskiti. Flujo sarantaskakiwa.",

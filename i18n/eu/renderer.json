@@ -258,6 +258,7 @@
         "intro": "Test honek zure benetako irakurketa-abiadura kalkulatzeko balio du saio gidatu baten bidez. Aplikazioak testua irekiko du eta hasteko prest zaudenean Leiho Flotatzailean Play (▶) sakatu arte itxarongo du. Testa hasi ondoren, ez sakatu Pausa (⏸) irakurtzen amaitu arte: Pausak testa amaitzen du; ez du kronometroa pausatzen. Erabili Gelditu/Berrezarri (⏹) testa bertan behera utzi nahi baduzu soilik. Ondoren, testuak ulermen-galderak baditu, berrikusi ahal izango dituzu eta, amaieran, emaitzarekin aurrezarpen bat sortu ahal izango duzu.\nHasi aurretik, kontuan izan probako testu hauek normalean 5 eta 15 minutu arteko kontzentrazio jarraitua eskatzen dutela, etenik gabe.\nPool honek testu laburrak erabiltzen ditu; beraz, interpretatu emaitza zuhurtziaz. Ez litzateke zuzenean testu luzeetara estrapolatu behar, haietan normalean faktore positiboak —jarioa eta testuingurua metatzea— eta faktore negatiboak —buruko laburbilketa eta nekea— agertzen baitira.",
         "eligible_count": "Fitxategi hautagarriak:",
         "pool_exhausted_message": "Ez da erabili gabeko test-fitxategirik geratzen. Berrezarri poola edo gehitu fitxategi gehiago.",
+        "visible_empty_bundled_hidden_message": "Barneko test-fitxategiak ezkutatuta daude une honetan, eta ez da erabiltzeke dagoen fitxategi ikusgarririk geratzen. Erakutsi berriro barneko fitxategiak edo inportatu fitxategi gehiago jarraitzeko.",
         "close_aria": "Itxi irakurketa-abiaduraren testaren elkarrizketa",
         "start_random_confirm": "Honek uneko testua pool-eko ausazko testu hautagarri batekin gainidatziko du. Jarraitu nahi duzu?",
         "reset_confirm": "Honek testaren pool osoa berrezarriko du eta haren fitxategi guztiak berriz erabili gabe gisa markatuko ditu. Jarraitu nahi duzu?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Lortu fitxategi gehiago",
-          "import_files": "Inportatu fitxategiak...",
+          "import_files": "Inportatu fitxategiak",
           "show_instructions": "Erakutsi argibideak",
           "hide_instructions": "Ezkutatu argibideak",
           "start_random_text": "Hasi ausazko testuarekin",
-          "start_current_text": "Hasi uneko testuarekin"
+          "start_current_text": "Hasi uneko testuarekin",
+          "show_bundled_entries": "Oinarrizko testak"
         },
         "tooltips": {
+          "show_bundled_entries": "Sartu poolean aplikazioarekin datozen hasierako test-fitxategiak",
           "get_more_files": "Lortu test-fitxategi gehiago Google Drive karpetatik",
           "import_files": "Inportatu test-fitxategiak zure gailutik",
           "reset_pool": "Berrezarri testaren poola",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Irakurketa-abiaduraren testa aplikazioaren egoera egonkor batetik bakarrik has daiteke. Itxi bigarren mailako leihoak eta ziurtatu kronometroa geldituta dagoela.",
       "reading_test_pool_error": "Errorea gertatu da irakurketa-abiaduraren testaren poola egiaztatzean.",
       "reading_test_no_matching_files": "Ez dago uneko hautapenarekin bat datorren erabili gabeko test-fitxategirik.",
+      "reading_test_visible_empty_bundled_hidden": "Barneko test-fitxategiak ezkutatuta daude, eta une honetan ez dago erabiltzeke dagoen fitxategi ikusgarririk erabilgarri. Erakutsi berriro barneko fitxategiak edo inportatu fitxategi gehiago jarraitzeko.",
       "reading_test_current_text_empty": "Uneko testua hutsik dago. Kargatu edo idatzi testu bat uneko testuarekin testa hasi aurretik.",
       "reading_test_result_invalid": "Testaren emaitza ezin izan da WPM baliozko bihurtu. Fluxua aurrezarpen-modalik ireki gabe amaitu da.",
       "reading_test_result_unavailable": "Ezin izan da irakurketa-abiaduraren emaitza erakutsi. Fluxuak jarraitu du.",

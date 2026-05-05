@@ -258,6 +258,7 @@
         "intro": "Ko tēnei whakamātautau hei whakatau tata i tō tere pānui tūturu mā tētahi wāhanga ārahi. Ka whakatuwhera te taupānga i te kuputuhi, ā, ka tatari kia pēhia e koe te Play (▶) i te Matapihi Mānu ina rite koe ki te tīmata. Kia tīmata te whakamātautau, kaua e pēhi Pause (⏸) kia mutu rā anō tō pānui: ka whakamutu te Pause i te whakamātautau; kāore e whakatā i te matawā. Whakamahia Stop/Reset (⏹) anake mēnā e hiahia ana koe ki te whakakore i te whakamātautau. Muri iho, ka taea e koe te arotake i ngā pātai mārama mēnā kei roto i te kuputuhi, ā, i te mutunga, te waihanga preset i te hua.\nI mua i te tīmatanga, kia mōhio ko ēnei kuputuhi whakamātautau e tono ana i te 5 ki te 15 meneti o te aro pūmau, kāore he whakararuraru.\nKa whakamahi tēnei pool i ngā kuputuhi poto, nō reira me tūpato ki te whakamāori i te hua. Kaua e whakawhānui tika ki ngā kuputuhi roa, i reira ka uru mai ngā āhuatanga pai pērā i te rere me te horopaki, me ngā āhuatanga kino pērā i te whakahoki ā-hinengaro me te ngenge.",
         "eligible_count": "Ngā kōnae e tika ana:",
         "pool_exhausted_message": "Kāore he kōnae whakamātautau kāore anō kia whakamahia. Tautuhi anō i te pool, tāpiri rānei i ētahi atu kōnae.",
+        "visible_empty_bundled_hidden_message": "Kei te hunaia ngā kōnae whakamātautau kua hangaia ki roto i tēnei wā, ā, kāore he kōnae whakamātautau kitea kāore anō kia whakamahia e toe ana. Whakaaturia anō ngā kōnae hanga-roto, kawemai rānei i ētahi atu kōnae kia haere tonu ai.",
         "close_aria": "Katia te kōrero whakamātautau tere pānui",
         "start_random_confirm": "Ka tuhi tēnei ki runga i te kuputuhi o nāianei mā tētahi kuputuhi matapōkere e tika ana nō te pool. Me haere tonu?",
         "reset_confirm": "Ka tautuhi anō tēnei i te pool whakamātautau katoa, ā, ka tohu anō i ōna kōnae katoa hei kāore anō kia whakamahia. Me haere tonu?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Tiki kōnae anō",
-          "import_files": "Kawemai kōnae...",
+          "import_files": "Kawemai kōnae",
           "show_instructions": "Whakaatu tohutohu",
           "hide_instructions": "Huna tohutohu",
           "start_random_text": "Tīmata ki te kuputuhi matapōkere",
-          "start_current_text": "Tīmata ki te kuputuhi o nāianei"
+          "start_current_text": "Tīmata ki te kuputuhi o nāianei",
+          "show_bundled_entries": "Test matua"
         },
         "tooltips": {
+          "show_bundled_entries": "Whakaurua ngā kōnae whakamātautau tīmatanga kua oti te whakauru ki te taupānga ki te puna",
           "get_more_files": "Tiki kōnae whakamātautau anō i te kōpaki Google Drive",
           "import_files": "Kawemai kōnae whakamātautau i tō pūrere",
           "reset_pool": "Tautuhi anō i te pool whakamātautau",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Ka taea anake te tīmata i te whakamātautau tere pānui i tētahi āhua tau o te taupānga. Katia ngā matapihi tuarua, ā, kia mutu te matawā.",
       "reading_test_pool_error": "I puta he hapa i te taki i te pool whakamātautau tere pānui.",
       "reading_test_no_matching_files": "Kāore he kōnae whakamātautau kāore anō kia whakamahia e ōrite ana ki te tīpakonga o nāianei.",
+      "reading_test_visible_empty_bundled_hidden": "Kei te hunaia ngā kōnae whakamātautau kua hangaia ki roto, ā, kāore he kōnae whakamātautau kitea kāore anō kia whakamahia e wātea ana i tēnei wā. Whakaaturia anō ngā kōnae hanga-roto, kawemai rānei i ētahi atu kōnae kia haere tonu ai.",
       "reading_test_current_text_empty": "Kāore he kuputuhi o nāianei. Uta, patohia rānei he kuputuhi i mua i te tīmata i te whakamātautau ki te kuputuhi o nāianei.",
       "reading_test_result_invalid": "Kāore i taea te huri i te hua whakamātautau hei WPM tika. I mutu te rere me te kore whakatuwhera i te modal preset.",
       "reading_test_result_unavailable": "Kāore i taea te whakaatu i te hua tere pānui. I haere tonu te rere.",

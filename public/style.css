@@ -1591,6 +1591,23 @@ select#presets:focus {
   flex-wrap: wrap;
 }
 
+.reading-test-entry-modal-visibility-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-note);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.reading-test-entry-modal-visibility-toggle input[type="checkbox"] {
+  margin: 0;
+}
+
+.reading-test-entry-modal-visibility-toggle input[type="checkbox"]:disabled + span {
+  opacity: 0.6;
+}
+
 .reading-test-entry-modal-link {
   color: var(--link-secondary);
   text-decoration: underline;
@@ -1695,4 +1712,3 @@ select#presets:focus {
     width: 100%;
   }
 }
-

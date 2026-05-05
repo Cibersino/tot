@@ -142,7 +142,7 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - `presets_defaults/*.json` (runtime defaults copies)
 - `saved_current_texts/*.json` (saved text snapshots)
   - `saved_current_texts/reading_speed_test_pool/*.json` (runtime reading-test pool content files; optional `readingTest`, no inline usage state)
-- `reading_test_pool_state.json` (external reading-test pool state: `used` rows + managed bundled starter hashes)
+- `reading_test_pool_state.json` (external reading-test pool state: `showBundledEntries`, `used` rows, and managed bundled starter hashes)
 - `reading_test_pool_import_state.json` (last picker directory for reading-test pool import)
 - `ocr_google_drive/`
   - `ocr_google_drive/credentials.json` (runtime mirrored OAuth client; app-managed)
@@ -1360,17 +1360,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Relaunch preserves OCR-connected state until disconnect is requested.
 
 #### REG-PERSIST-06 Reading speed test pool persistence
-**Goal:** the guided reading-test flow persists its pool state and seeded runtime folder correctly across restart.
+**Goal:** the guided reading-test flow persists its pool state, bundled-visibility preference, and seeded runtime folder correctly across restart.
 1. Start from a config where `config/saved_current_texts/reading_speed_test_pool/` and `config/reading_test_pool_state.json` do not exist yet, then launch the app.
 2. Before opening the reading speed test entry modal, inspect config on disk.
 3. Confirm the runtime pool folder now exists under `config/saved_current_texts/` and that `config/reading_test_pool_state.json` was also created.
 4. Complete one reading-test run or cancel one after text reveal.
-5. Close the app and relaunch.
-6. Re-open the reading test entry modal and inspect `config/reading_test_pool_state.json`.
+5. Uncheck `Show built-in test files`.
+6. Close the app and relaunch.
+7. Re-open the reading test entry modal and inspect `config/reading_test_pool_state.json`.
 
 **Expected:**
 - The runtime reading-test pool folder is created/seeded automatically at startup, before the entry modal is opened.
 - `reading_test_pool_state.json` is also created at startup and stores `used` separately from the pool JSON content.
+- The same file persists `showBundledEntries`, which defaults to `true` on first run and remains `false` after restart if the user disabled built-in test files.
 - Used entries persist across app restart until a pool reset is requested.
 - The relaunch does not silently restore consumed entries to unused state.
 
@@ -1549,4 +1551,3 @@ For each failure:
 
 * `test/README.md` - automated test layout, runner commands, and suite ownership under `test/**`
 * `tools_local/coding_rules/automated_test_policy.md` - policy for automated test design and for production-code changes made in support of testing
-

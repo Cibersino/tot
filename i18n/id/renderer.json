@@ -258,6 +258,7 @@
         "intro": "Tes ini dimaksudkan untuk memperkirakan kecepatan membaca nyata Anda melalui sesi terpandu. Aplikasi akan membuka teks dan menunggu Anda menekan Play (▶) di Jendela Mengambang saat siap mulai. Setelah tes dimulai, jangan tekan Pause (⏸) sebelum selesai membaca: Pause mengakhiri tes; bukan menjeda timer. Gunakan Stop/Reset (⏹) hanya jika ingin membatalkan tes. Setelah itu, Anda dapat meninjau pertanyaan pemahaman jika teks menyertakannya dan, pada akhir proses, membuat preset dari hasilnya.\nSebelum mulai, ingat bahwa teks tes ini biasanya memerlukan 5 hingga 15 menit konsentrasi tanpa gangguan.\nPool ini menggunakan teks pendek, jadi perlakukan hasilnya dengan hati-hati. Hasil tersebut tidak boleh langsung diekstrapolasi ke teks panjang, yang biasanya melibatkan faktor positif seperti alur dan pembentukan konteks, serta faktor negatif seperti rekapitulasi mental dan kelelahan.",
         "eligible_count": "File memenuhi syarat:",
         "pool_exhausted_message": "Tidak ada lagi file tes yang belum digunakan. Reset pool atau tambahkan file lain.",
+        "visible_empty_bundled_hidden_message": "File tes bawaan saat ini disembunyikan, dan tidak ada lagi file tes terlihat yang belum digunakan. Tampilkan kembali file bawaan atau impor lebih banyak file untuk melanjutkan.",
         "close_aria": "Tutup dialog tes kecepatan membaca",
         "start_random_confirm": "Ini akan menimpa teks saat ini dengan teks acak yang memenuhi syarat dari pool. Anda ingin melanjutkan?",
         "reset_confirm": "Ini akan mereset seluruh pool tes dan menandai semua filenya sebagai belum digunakan lagi. Anda ingin melanjutkan?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Ambil file lain",
-          "import_files": "Impor file...",
+          "import_files": "Impor file",
           "show_instructions": "Tampilkan instruksi",
           "hide_instructions": "Sembunyikan instruksi",
           "start_random_text": "Mulai dengan teks acak",
-          "start_current_text": "Mulai dengan teks saat ini"
+          "start_current_text": "Mulai dengan teks saat ini",
+          "show_bundled_entries": "Tes dasar"
         },
         "tooltips": {
+          "show_bundled_entries": "Sertakan file tes awal bawaan aplikasi dalam pool",
           "get_more_files": "Ambil file tes lain dari folder Google Drive",
           "import_files": "Impor file tes dari perangkat Anda",
           "reset_pool": "Reset pool tes",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Tes kecepatan membaca hanya dapat dimulai dari keadaan aplikasi yang stabil. Tutup jendela sekunder dan pastikan stopwatch berhenti.",
       "reading_test_pool_error": "Terjadi kesalahan saat memeriksa pool tes kecepatan membaca.",
       "reading_test_no_matching_files": "Tidak ada file tes yang belum digunakan dan cocok dengan pilihan saat ini.",
+      "reading_test_visible_empty_bundled_hidden": "File tes bawaan disembunyikan, dan saat ini tidak ada file tes terlihat yang belum digunakan. Tampilkan kembali file bawaan atau impor lebih banyak file untuk melanjutkan.",
       "reading_test_current_text_empty": "Teks saat ini kosong. Muat atau ketik teks sebelum memulai tes dengan teks saat ini.",
       "reading_test_result_invalid": "Hasil tes tidak dapat dikonversi menjadi WPM yang valid. Alur berakhir tanpa membuka modal preset.",
       "reading_test_result_unavailable": "Hasil kecepatan membaca tidak dapat ditampilkan. Alur dilanjutkan.",

@@ -258,6 +258,7 @@
         "intro": "Bu test, yönlendirmeli bir oturum aracılığıyla gerçek okuma hızınızı tahmin etmek için tasarlanmıştır. Uygulama metni açacak ve başlamaya hazır olduğunuzda Yüzen Pencere'de Play (▶) düğmesine basmanızı bekleyecektir. Test başladıktan sonra okumayı bitirene kadar Pause (⏸) düğmesine basmayın: Pause testi bitirir; zamanlayıcıyı duraklatmaz. Testi iptal etmek istiyorsanız yalnızca Stop/Reset (⏹) kullanın. Sonrasında, metin içeriyorsa anlama sorularını inceleyebilir ve en sonunda sonuçtan bir ön ayar oluşturabilirsiniz.\nBaşlamadan önce, bu test metinlerinin genellikle 5 ila 15 dakika kesintisiz dikkat gerektirdiğini unutmayın.\nBu havuz kısa metinler kullanır; bu yüzden sonucu dikkatle değerlendirin. Akış ve bağlamsal birikim gibi olumlu etkenlerin, zihinsel tekrar ve yorgunluk gibi olumsuz etkenlerin genellikle devreye girdiği uzun metinlere doğrudan genellenmemelidir.",
         "eligible_count": "Uygun dosyalar:",
         "pool_exhausted_message": "Kullanılmamış test dosyası kalmadı. Havuzu sıfırlayın veya daha fazla dosya ekleyin.",
+        "visible_empty_bundled_hidden_message": "Yerleşik test dosyaları şu anda gizli ve görünür durumda kullanılmamış test dosyası kalmadı. Devam etmek için yerleşik dosyaları yeniden gösterin veya daha fazla dosya içe aktarın.",
         "close_aria": "Okuma hızı testi iletişim kutusunu kapat",
         "start_random_confirm": "Bu işlem geçerli metni havuzdan rastgele seçilen uygun bir metinle değiştirecek. Devam etmek istiyor musunuz?",
         "reset_confirm": "Bu işlem tüm test havuzunu sıfırlayacak ve bütün dosyalarını yeniden kullanılmamış olarak işaretleyecek. Devam etmek istiyor musunuz?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Daha fazla dosya al",
-          "import_files": "Dosyaları içe aktar...",
+          "import_files": "Dosyaları içe aktar",
           "show_instructions": "Yönergeleri göster",
           "hide_instructions": "Yönergeleri gizle",
           "start_random_text": "Rastgele metinle başlat",
-          "start_current_text": "Geçerli metinle başlat"
+          "start_current_text": "Geçerli metinle başlat",
+          "show_bundled_entries": "Temel testler"
         },
         "tooltips": {
+          "show_bundled_entries": "Uygulamayla birlikte gelen başlangıç test dosyalarını havuza dahil et",
           "get_more_files": "Google Drive klasöründen daha fazla test dosyası al",
           "import_files": "Cihazınızdan test dosyaları içe aktar",
           "reset_pool": "Test havuzunu sıfırla",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Okuma hızı testi yalnızca uygulama kararlı durumdayken başlatılabilir. İkincil pencereleri kapatın ve kronometrenin durduğundan emin olun.",
       "reading_test_pool_error": "Okuma hızı testi havuzu denetlenirken hata oluştu.",
       "reading_test_no_matching_files": "Geçerli seçimle eşleşen kullanılmamış test dosyası kalmadı.",
+      "reading_test_visible_empty_bundled_hidden": "Yerleşik test dosyaları gizli ve şu anda görünür kullanılmamış test dosyası yok. Devam etmek için yerleşik dosyaları yeniden gösterin veya daha fazla dosya içe aktarın.",
       "reading_test_current_text_empty": "Geçerli metin boş. Testi geçerli metinle başlatmadan önce bir metin yükleyin veya yazın.",
       "reading_test_result_invalid": "Test sonucu geçerli bir WPM değerine dönüştürülemedi. Akış, ön ayar modalını açmadan sona erdi.",
       "reading_test_result_unavailable": "Okuma hızı sonucu gösterilemedi. Akış devam etti.",

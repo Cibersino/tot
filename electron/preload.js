@@ -132,6 +132,7 @@ const api = {
     getReadingTestEntryData: () => ipcRenderer.invoke('reading-test-get-entry-data'),
     importReadingTestPoolFiles: (payload) => ipcRenderer.invoke('reading-test-import-pool-files', payload),
     resetReadingTestPool: () => ipcRenderer.invoke('reading-test-reset-pool'),
+    setReadingTestShowBundledEntries: (value) => ipcRenderer.invoke('reading-test-set-show-bundled-entries', value),
     startReadingTest: (payload) => ipcRenderer.invoke('reading-test-start', payload),
     getReadingTestState: () => ipcRenderer.invoke('reading-test-get-state'),
     onReadingTestStateChanged: (cb) => {
@@ -175,5 +176,4 @@ const api = {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);
-
 

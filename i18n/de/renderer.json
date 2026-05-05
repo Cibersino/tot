@@ -258,6 +258,7 @@
         "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text und wartet darauf, dass Sie Play (▶) im schwebenden Fenster drücken, wenn Sie bereit sind zu beginnen. Sobald der Test gestartet ist, drücken Sie Pause (⏸) erst, wenn Sie mit dem Lesen fertig sind: Pause beendet den Test; sie pausiert den Timer nicht. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.\nBevor Sie beginnen, bedenken Sie, dass diese Testtexte in der Regel zwischen 5 und 15 Minuten ununterbrochene Konzentration erfordern.\nDieser Pool verwendet kurze Texte; behandeln Sie das Ergebnis daher mit Vorsicht. Es sollte nicht direkt auf lange Texte übertragen werden, bei denen in der Regel positive Faktoren wie Lesefluss und Kontextaufbau sowie negative Faktoren wie mentales Rekapitulieren und Ermüdung ins Spiel kommen.",
         "eligible_count": "Geeignete Dateien:",
         "pool_exhausted_message": "Es sind keine unbenutzten Testdateien mehr vorhanden. Setzen Sie den Pool zurück oder fügen Sie weitere Dateien hinzu.",
+        "visible_empty_bundled_hidden_message": "Die integrierten Testdateien sind derzeit ausgeblendet, und es sind keine sichtbaren unbenutzten Testdateien mehr vorhanden. Blende die integrierten Dateien wieder ein oder importiere weitere Dateien, um fortzufahren.",
         "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",
         "start_random_confirm": "Dadurch wird der aktuelle Text durch einen zufälligen geeigneten Text aus dem Pool ersetzt. Möchten Sie fortfahren?",
         "reset_confirm": "Dadurch wird der gesamte Test-Pool zurückgesetzt und alle Dateien werden wieder als unbenutzt markiert. Möchten Sie fortfahren?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Weitere Dateien holen",
-          "import_files": "Dateien importieren...",
+          "import_files": "Dateien importieren",
           "show_instructions": "Anleitung anzeigen",
           "hide_instructions": "Anleitung ausblenden",
           "start_random_text": "Mit zufälligem Text starten",
-          "start_current_text": "Mit aktuellem Text starten"
+          "start_current_text": "Mit aktuellem Text starten",
+          "show_bundled_entries": "Basistests"
         },
         "tooltips": {
+          "show_bundled_entries": "Die mit der App gebündelten Start-Testdateien in den Pool aufnehmen",
           "get_more_files": "Weitere Testdateien aus dem Google Drive-Ordner holen",
           "import_files": "Testdateien von Ihrem Gerät importieren",
           "reset_pool": "Test-Pool zurücksetzen",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Der Lesegeschwindigkeitstest kann nur aus einem stabilen App-Zustand gestartet werden. Schließen Sie Nebenfenster und stellen Sie sicher, dass die Stoppuhr angehalten ist.",
       "reading_test_pool_error": "Beim Prüfen des Pools für den Lesegeschwindigkeitstest ist ein Fehler aufgetreten.",
       "reading_test_no_matching_files": "Es sind keine unbenutzten Testdateien mehr vorhanden, die zur aktuellen Auswahl passen.",
+      "reading_test_visible_empty_bundled_hidden": "Die integrierten Testdateien sind ausgeblendet, und derzeit sind keine sichtbaren unbenutzten Testdateien verfügbar. Blende die integrierten Dateien wieder ein oder importiere weitere Dateien, um fortzufahren.",
       "reading_test_current_text_empty": "Der aktuelle Text ist leer. Laden oder schreiben Sie zuerst einen Text, bevor Sie den Test mit aktuellem Text starten.",
       "reading_test_result_invalid": "Das Testergebnis konnte nicht in einen gültigen WPM-Wert umgewandelt werden. Der Ablauf endete, ohne den Preset-Dialog zu öffnen.",
       "reading_test_result_unavailable": "Das Ergebnis der Lesegeschwindigkeit konnte nicht angezeigt werden. Der Ablauf wurde fortgesetzt.",
