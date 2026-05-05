@@ -122,7 +122,7 @@
   function openModal() {
     if (interactionLocked || isModalOpen()) return;
     if (hasBlockingModalOpen()) {
-      log.info('Browser extension modal open blocked because another main-window modal is open.');
+      log.warn('Browser extension modal open blocked because another main-window modal is open.');
       window.Notify.notifyMain('renderer.alerts.modal_unavailable');
       return;
     }
