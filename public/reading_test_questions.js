@@ -7,8 +7,9 @@
 // Renderer script for the reading-test questions modal.
 // Responsibilities:
 // - Validate required renderer bridges before the modal boots.
-// - Serialize initial settings and init-payload updates through one UI sync path.
-// - Render single-choice comprehension questions and local scoring feedback.
+// - Resolve bootstrap settings and init-payload updates through one render path.
+// - Render single-choice comprehension questions plus local scoring feedback.
+// - Keep validation and scoring delegated to ReadingTestQuestionsCore.
 // - Keep this step informative only; Continue always resumes the main flow.
 // =============================================================================
 
@@ -60,13 +61,14 @@
   }
 
   // =============================================================================
-  // DOM bootstrap
+  // App lifecycle / bootstrapping
   // =============================================================================
   document.addEventListener('DOMContentLoaded', initReadingTestQuestionsWindow);
 
   function initReadingTestQuestionsWindow() {
     function getRequiredElements() {
-      // Collect required nodes first so the modal aborts before partial wiring.
+      // Keep the required DOM contract explicit so the modal aborts before
+      // partial wiring if the HTML shell drifts from this renderer script.
       const requiredElements = {
         title: document.getElementById('readingTestQuestionsTitle'),
         intro: document.getElementById('readingTestQuestionsIntro'),
@@ -132,6 +134,7 @@
       fatalKey: '',
       showIncompleteWarning: false,
     };
+    // Queue UI updates so preload replay and bootstrap settings stay serialized.
     let uiSyncChain = Promise.resolve();
 
     // =============================================================================
@@ -359,6 +362,8 @@
     }
 
     function withAnchoredActionsScroll(updateFn) {
+      // Keep the action row visually anchored when status messages expand or
+      // collapse after interactive scoring updates.
       const beforeTop = actions.getBoundingClientRect().top;
       Promise.resolve()
         .then(() => updateFn())
@@ -456,6 +461,8 @@
     }
 
     function enqueueUiSync(updateFn) {
+      // Funnel bootstrap and init-data updates through one queue so translation
+      // readiness and DOM rendering observe the same ordering.
       const runUpdate = async () => {
         await updateFn();
         await ensureTranslationsLoaded();
@@ -466,6 +473,8 @@
     }
 
     function applyPayloadState(payload) {
+      // The shared core owns payload validation and question sanitation; this
+      // renderer only stores the accepted structure and local view state.
       state.developerEmail = (payload && typeof payload.developerEmail === 'string' && payload.developerEmail.trim())
         ? payload.developerEmail.trim()
         : state.developerEmail;
@@ -502,6 +511,8 @@
     }
 
     function loadInitialSettings() {
+      // Bootstrap may start before persisted settings are available; this path
+      // applies the stored language when possible and otherwise keeps DEFAULT_LANG.
       enqueueUiSync(async () => {
         try {
           const settings = await questionsApi.getSettings();
