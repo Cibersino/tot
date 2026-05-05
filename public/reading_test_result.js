@@ -156,21 +156,22 @@
       return formatearNumero(safe, separadorMiles, separadorDecimal);
     }
 
+    function getRoundedFiniteValue(value, { minimum = null } = {}) {
+      if (!Number.isFinite(value)) return 0;
+      const rounded = Math.round(value);
+      return minimum === null ? rounded : Math.max(minimum, rounded);
+    }
+
     function applyPayloadState(payload) {
-      state.measuredWpm = Number.isFinite(payload && payload.measuredWpm)
-        ? Math.round(payload.measuredWpm)
-        : 0;
-      state.elapsedMs = Number.isFinite(payload && payload.elapsedMs)
-        ? Math.max(0, Math.round(payload.elapsedMs))
-        : 0;
-      state.wordCount = Number.isFinite(payload && payload.wordCount)
-        ? Math.max(0, Math.round(payload.wordCount))
-        : 0;
+      state.measuredWpm = getRoundedFiniteValue(payload && payload.measuredWpm);
+      state.elapsedMs = getRoundedFiniteValue(payload && payload.elapsedMs, { minimum: 0 });
+      state.wordCount = getRoundedFiniteValue(payload && payload.wordCount, { minimum: 0 });
     }
 
     function formatElapsedTime(ms) {
-      const totalSeconds = Number.isFinite(Number(ms)) && Number(ms) > 0
-        ? Math.floor(Number(ms) / 1000)
+      const numericMs = Number(ms);
+      const totalSeconds = Number.isFinite(numericMs) && numericMs > 0
+        ? Math.floor(numericMs / 1000)
         : 0;
       const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
       const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
