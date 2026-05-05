@@ -29,7 +29,6 @@ const {
   TASK_LIBRARY_MAX_ITEMS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_COMMENT_MAX_CHARS,
-  TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 } = require('./constants_main');
 const {
@@ -170,8 +169,6 @@ function normalizeRow(raw) {
   if (!Number.isFinite(percentComplete) || percentComplete < 0 || percentComplete > 100) {
     return { ok: false, code: 'INVALID_PERCENT' };
   }
-  const tipo = typeof raw.tipo === 'string' ? raw.tipo : String(raw.tipo || '');
-  if (tipo.length > TASK_ROW_TYPE_MAX_CHARS) return { ok: false, code: 'TIPO_TOO_LONG' };
   const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
   if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   const comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
@@ -179,7 +176,7 @@ function normalizeRow(raw) {
   const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
   return {
     ok: true,
-    row: { texto, tiempoSeconds, percentComplete, tipo, enlace, comentario, snapshotRelPath },
+    row: { texto, tiempoSeconds, percentComplete, enlace, comentario, snapshotRelPath },
   };
 }
 
@@ -192,15 +189,13 @@ function normalizeLibraryEntry(raw, includeComment) {
   if (!Number.isFinite(tiempoSeconds) || tiempoSeconds < 0) {
     return { ok: false, code: 'INVALID_TIEMPO' };
   }
-  const tipo = typeof raw.tipo === 'string' ? raw.tipo : String(raw.tipo || '');
-  if (tipo.length > TASK_ROW_TYPE_MAX_CHARS) return { ok: false, code: 'TIPO_TOO_LONG' };
   const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
   if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   let comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
   if (!includeComment) comentario = '';
   if (comentario.length > TASK_ROW_COMMENT_MAX_CHARS) return { ok: false, code: 'COMENTARIO_TOO_LONG' };
   const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
-  const entry = { texto, tiempoSeconds, tipo, enlace };
+  const entry = { texto, tiempoSeconds, enlace };
   if (comentario) entry.comentario = comentario;
   if (snapshotRelPath) entry.snapshotRelPath = snapshotRelPath;
   return { ok: true, entry };
@@ -600,7 +595,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         .map((entry) => ({
           texto: String(entry.texto || '').trim(),
           tiempoSeconds: Number(entry.tiempoSeconds) || 0,
-          tipo: typeof entry.tipo === 'string' ? entry.tipo : String(entry.tipo || ''),
           enlace: typeof entry.enlace === 'string' ? entry.enlace : String(entry.enlace || ''),
           comentario: typeof entry.comentario === 'string' ? entry.comentario : '',
           snapshotRelPath: normalizeSnapshotRelPath(entry.snapshotRelPath || ''),

@@ -27,7 +27,6 @@ const {
   DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
-  TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 } = AppConstants;
 
@@ -70,7 +69,6 @@ const thTexto = document.getElementById('thTexto');
 const thTiempo = document.getElementById('thTiempo');
 const thPercent = document.getElementById('thPercent');
 const thFalta = document.getElementById('thFalta');
-const thTipo = document.getElementById('thTipo');
 const thEnlace = document.getElementById('thEnlace');
 const thComentario = document.getElementById('thComentario');
 const thAcciones = document.getElementById('thAcciones');
@@ -128,7 +126,6 @@ const COLUMN_KEYS = [
   { key: 'tiempo', th: thTiempo },
   { key: 'percent', th: thPercent },
   { key: 'falta', th: thFalta },
-  { key: 'tipo', th: thTipo },
   { key: 'enlace', th: thEnlace },
   { key: 'comentario', th: thComentario },
   { key: 'acciones', th: thAcciones },
@@ -346,7 +343,6 @@ function createRow(data = {}) {
     texto: String(data.texto || ''),
     tiempoSeconds: Number.isFinite(data.tiempoSeconds) ? data.tiempoSeconds : 0,
     percentComplete: Number.isFinite(data.percentComplete) ? data.percentComplete : 0,
-    tipo: String(data.tipo || ''),
     enlace: String(data.enlace || ''),
     comentario: String(data.comentario || ''),
     snapshotRelPath: normalizeSnapshotRelPath(data.snapshotRelPath || ''),
@@ -441,21 +437,6 @@ function renderRow(row) {
   const tdFalta = document.createElement('td');
   tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
   tdFalta.appendChild(tdFaltaValue);
-
-  // Type
-  const tdTipo = document.createElement('td');
-  const tipoInput = document.createElement('input');
-  tipoInput.type = 'text';
-  tipoInput.maxLength = TASK_ROW_TYPE_MAX_CHARS;
-  tipoInput.value = row.tipo;
-  tipoInput.addEventListener('input', () => {
-    const next = tipoInput.value;
-    if (next !== row.tipo) {
-      row.tipo = next;
-      markDirty();
-    }
-  });
-  tdTipo.appendChild(tipoInput);
 
   // Link
   const tdEnlace = document.createElement('td');
@@ -560,7 +541,6 @@ function renderRow(row) {
   trEl.appendChild(tdTiempo);
   trEl.appendChild(tdPercent);
   trEl.appendChild(tdFalta);
-  trEl.appendChild(tdTipo);
   trEl.appendChild(tdEnlace);
   trEl.appendChild(tdComentario);
   trEl.appendChild(tdActions);
@@ -608,6 +588,20 @@ function applyColumnWidths(widths) {
   }
 }
 
+function filterKnownColumnWidths(widths) {
+  if (!widths || typeof widths !== 'object') return {};
+  const knownKeys = new Set(COLUMN_KEYS.map(({ key }) => key));
+  const filtered = {};
+  Object.keys(widths).forEach((key) => {
+    if (!knownKeys.has(key)) return;
+    const width = widths[key];
+    if (Number.isFinite(width) && width > 0) {
+      filtered[key] = width;
+    }
+  });
+  return filtered;
+}
+
 async function saveColumnWidths() {
   if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveColumnWidths !== 'function') {
     log.warnOnce('task_editor.columnWidths.save.missingApi', 'task column widths save unavailable (ignored).');
@@ -637,7 +631,7 @@ async function loadColumnWidths() {
     await saveColumnWidths();
     return;
   }
-  columnWidths = { ...defaults, ...res.widths };
+  columnWidths = { ...defaults, ...filterKnownColumnWidths(res.widths) };
   applyColumnWidths(columnWidths);
 }
 
@@ -769,7 +763,6 @@ async function saveTask() {
       texto: r.texto,
       tiempoSeconds: r.tiempoSeconds,
       percentComplete: r.percentComplete,
-      tipo: r.tipo,
       enlace: r.enlace,
       comentario: r.comentario,
       snapshotRelPath: normalizeSnapshotRelPath(r.snapshotRelPath || ''),
@@ -864,7 +857,6 @@ function renderLibraryItems(items) {
         texto: entry.texto,
         tiempoSeconds: Number(entry.tiempoSeconds) || 0,
         percentComplete: 0,
-        tipo: entry.tipo || '',
         enlace: entry.enlace || '',
         comentario: entry.comentario || '',
         snapshotRelPath: entry.snapshotRelPath || '',
@@ -902,8 +894,7 @@ function filterLibraryItems() {
   }
   const filtered = libraryItemsCache.filter((entry) => {
     const texto = String(entry.texto || '').toLowerCase();
-    const tipo = String(entry.tipo || '').toLowerCase();
-    return texto.includes(term) || tipo.includes(term);
+    return texto.includes(term);
   });
   renderLibraryItems(filtered);
 }
@@ -962,7 +953,6 @@ async function applyTaskEditorTranslations() {
   if (thTiempo) thTiempo.textContent = tr('renderer.tasks.columns.tiempo');
   if (thPercent) thPercent.textContent = tr('renderer.tasks.columns.percent');
   if (thFalta) thFalta.textContent = tr('renderer.tasks.columns.falta');
-  if (thTipo) thTipo.textContent = tr('renderer.tasks.columns.tipo');
   if (thEnlace) thEnlace.textContent = tr('renderer.tasks.columns.enlace');
   if (thComentario) thComentario.textContent = tr('renderer.tasks.columns.comentario');
   if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones');
