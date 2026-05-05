@@ -140,8 +140,7 @@
 
     const openExternalUrl = readOpenExternalUrl();
     if (!openExternalUrl) {
-      log.warnOnce(
-        'browser-extension-modal.external-link.missing',
+      log.warn(
         'openExternalUrl unavailable; browser extension external link open failed (ignored).'
       );
       window.Notify.notifyMain('renderer.info.external.blocked');
