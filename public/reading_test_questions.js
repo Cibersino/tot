@@ -62,30 +62,39 @@
   // =============================================================================
   // DOM bootstrap
   // =============================================================================
-  document.addEventListener('DOMContentLoaded', () => {
-    // Collect required nodes first so the modal aborts before partial wiring.
-    const elements = {
-      title: document.getElementById('readingTestQuestionsTitle'),
-      intro: document.getElementById('readingTestQuestionsIntro'),
-      randomTitle: document.getElementById('readingTestQuestionsRandomTitle'),
-      randomValue: document.getElementById('readingTestQuestionsRandomValue'),
-      feedbackTitle: document.getElementById('readingTestQuestionsFeedbackTitle'),
-      feedbackPrefix: document.getElementById('readingTestQuestionsFeedbackPrefix'),
-      feedbackLink: document.getElementById('readingTestQuestionsFeedbackLink'),
-      incompleteMessage: document.getElementById('readingTestQuestionsIncomplete'),
-      resultMessage: document.getElementById('readingTestQuestionsResult'),
-      chanceMessage: document.getElementById('readingTestQuestionsChance'),
-      fatalMessage: document.getElementById('readingTestQuestionsFatal'),
-      form: document.getElementById('readingTestQuestionsForm'),
-      btnCheck: document.getElementById('readingTestQuestionsCheck'),
-      btnContinue: document.getElementById('readingTestQuestionsContinue'),
-      actions: document.querySelector('.reading-test-questions__actions'),
-    };
+  document.addEventListener('DOMContentLoaded', initReadingTestQuestionsWindow);
 
-    if (Object.values(elements).some((element) => !element)) {
-      log.error('Reading-test questions window missing required DOM; script aborted.');
-      return;
+  function initReadingTestQuestionsWindow() {
+    function getRequiredElements() {
+      // Collect required nodes first so the modal aborts before partial wiring.
+      const requiredElements = {
+        title: document.getElementById('readingTestQuestionsTitle'),
+        intro: document.getElementById('readingTestQuestionsIntro'),
+        randomTitle: document.getElementById('readingTestQuestionsRandomTitle'),
+        randomValue: document.getElementById('readingTestQuestionsRandomValue'),
+        feedbackTitle: document.getElementById('readingTestQuestionsFeedbackTitle'),
+        feedbackPrefix: document.getElementById('readingTestQuestionsFeedbackPrefix'),
+        feedbackLink: document.getElementById('readingTestQuestionsFeedbackLink'),
+        incompleteMessage: document.getElementById('readingTestQuestionsIncomplete'),
+        resultMessage: document.getElementById('readingTestQuestionsResult'),
+        chanceMessage: document.getElementById('readingTestQuestionsChance'),
+        fatalMessage: document.getElementById('readingTestQuestionsFatal'),
+        form: document.getElementById('readingTestQuestionsForm'),
+        btnCheck: document.getElementById('readingTestQuestionsCheck'),
+        btnContinue: document.getElementById('readingTestQuestionsContinue'),
+        actions: document.querySelector('.reading-test-questions__actions'),
+      };
+
+      if (Object.values(requiredElements).some((element) => !element)) {
+        log.error('Reading-test questions window missing required DOM; script aborted.');
+        return null;
+      }
+
+      return requiredElements;
     }
+
+    const elements = getRequiredElements();
+    if (!elements) return;
 
     const {
       title,
@@ -481,6 +490,30 @@
       });
     }
 
+    function handleInitData(payload) {
+      enqueueUiSync(async () => {
+        applyPayloadState(payload);
+      }).catch((err) => {
+        handleInitFailure(err);
+      });
+    }
+
+    function loadInitialSettings() {
+      enqueueUiSync(async () => {
+        try {
+          const settings = await questionsApi.getSettings();
+          state.settingsCache = settings || {};
+          state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
+        } catch (err) {
+          log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
+          state.settingsCache = {};
+          state.currentLanguage = DEFAULT_LANG;
+        }
+      }).catch((err) => {
+        log.error('BOOTSTRAP: Reading-test questions initial render failed:', err);
+      });
+    }
+
     // =============================================================================
     // Event wiring / startup
     // =============================================================================
@@ -505,28 +538,9 @@
       window.close();
     });
 
-    questionsApi.onInitData((payload) => {
-      enqueueUiSync(async () => {
-        applyPayloadState(payload);
-      }).catch((err) => {
-        handleInitFailure(err);
-      });
-    });
-
-    enqueueUiSync(async () => {
-      try {
-        const settings = await questionsApi.getSettings();
-        state.settingsCache = settings || {};
-        state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
-      } catch (err) {
-        log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
-        state.settingsCache = {};
-        state.currentLanguage = DEFAULT_LANG;
-      }
-    }).catch((err) => {
-      log.error('BOOTSTRAP: Reading-test questions initial render failed:', err);
-    });
-  });
+    questionsApi.onInitData(handleInitData);
+    loadInitialSettings();
+  }
 })();
 
 // =============================================================================
