@@ -60,18 +60,51 @@
   // =============================================================================
   // DOM bootstrap
   // =============================================================================
-  document.addEventListener('DOMContentLoaded', () => {
-    const elements = {
-      title: document.getElementById('readingTestResultTitle'),
-      wpmLabel: document.getElementById('readingTestResultWpmLabel'),
-      wpmValue: document.getElementById('readingTestResultWpmValue'),
-      summary: document.getElementById('readingTestResultSummary'),
-      btnContinue: document.getElementById('readingTestResultContinue'),
-    };
+  document.addEventListener('DOMContentLoaded', initReadingTestResultWindow);
 
-    if (Object.values(elements).some((element) => !element)) {
-      log.error('Reading-test result window missing required DOM; script aborted.');
-      return;
+  function initReadingTestResultWindow() {
+    function getRequiredElements() {
+      const requiredElements = {
+        title: document.getElementById('readingTestResultTitle'),
+        wpmLabel: document.getElementById('readingTestResultWpmLabel'),
+        wpmValue: document.getElementById('readingTestResultWpmValue'),
+        summary: document.getElementById('readingTestResultSummary'),
+        btnContinue: document.getElementById('readingTestResultContinue'),
+      };
+
+      if (Object.values(requiredElements).some((element) => !element)) {
+        log.error('Reading-test result window missing required DOM; script aborted.');
+        return null;
+      }
+
+      return requiredElements;
+    }
+
+    const elements = getRequiredElements();
+    if (!elements) return;
+
+    function handleInitData(payload) {
+      enqueueUiSync(async () => {
+        applyPayloadState(payload);
+      }).catch((err) => {
+        log.error('Reading-test result init failed:', err);
+      });
+    }
+
+    function loadInitialSettings() {
+      enqueueUiSync(async () => {
+        try {
+          const settings = await resultApi.getSettings();
+          state.settingsCache = settings || {};
+          state.currentLanguage = normalizeLanguage(settings && settings.language);
+        } catch (err) {
+          log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
+          state.settingsCache = {};
+          state.currentLanguage = DEFAULT_LANG;
+        }
+      }).catch((err) => {
+        log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
+      });
     }
 
     // =============================================================================
@@ -213,28 +246,9 @@
       window.close();
     });
 
-    resultApi.onInitData((payload) => {
-      enqueueUiSync(async () => {
-        applyPayloadState(payload);
-      }).catch((err) => {
-        log.error('Reading-test result init failed:', err);
-      });
-    });
-
-    enqueueUiSync(async () => {
-      try {
-        const settings = await resultApi.getSettings();
-        state.settingsCache = settings || {};
-        state.currentLanguage = normalizeLanguage(settings && settings.language);
-      } catch (err) {
-        log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
-        state.settingsCache = {};
-        state.currentLanguage = DEFAULT_LANG;
-      }
-    }).catch((err) => {
-      log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
-    });
-  });
+    resultApi.onInitData(handleInitData);
+    loadInitialSettings();
+  }
 })();
 
 // =============================================================================
