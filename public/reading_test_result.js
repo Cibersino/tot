@@ -7,10 +7,10 @@
 // Renderer script for the reading-test result window.
 // Responsibilities:
 // - Validate required renderer bridges before the window boots.
-// - Load renderer translations for the current language.
-// - Render the measured WPM and elapsed-time summary from init payload data.
-// - Serialize bootstrap settings and init-payload updates through one UI sync path.
-// - Keep the continue action local to the result window.
+// - Resolve bootstrap settings and late init payloads through one render path.
+// - Load renderer translations for the active window language.
+// - Render the measured WPM summary and invariant numeric values.
+// - Keep the window self-contained after the preload hands off init data.
 // =============================================================================
 
 (() => {
@@ -58,11 +58,13 @@
   const { obtenerSeparadoresDeNumeros, formatearNumero } = formatUtils;
 
   // =============================================================================
-  // DOM bootstrap
+  // App lifecycle / bootstrapping
   // =============================================================================
   document.addEventListener('DOMContentLoaded', initReadingTestResultWindow);
 
   function initReadingTestResultWindow() {
+    // Keep the required DOM contract explicit so the window aborts early if
+    // the HTML shell drifts away from the renderer script expectations.
     function getRequiredElements() {
       const requiredElements = {
         title: document.getElementById('readingTestResultTitle'),
@@ -83,6 +85,8 @@
     const elements = getRequiredElements();
     if (!elements) return;
 
+    // Keep event-driven updates and bootstrap settings on the same queued render
+    // path so translation loading and DOM writes stay serialized.
     function handleInitData(payload) {
       enqueueUiSync(async () => {
         applyPayloadState(payload);
@@ -91,6 +95,8 @@
       });
     }
 
+    // Bootstrap may start before settings are available; this path applies the
+    // persisted language if possible and otherwise keeps the window on DEFAULT_LANG.
     function loadInitialSettings() {
       enqueueUiSync(async () => {
         try {
@@ -119,7 +125,10 @@
       elapsedMs: 0,
       wordCount: 0,
     };
+    // Chain UI updates so late preload replay and bootstrap settings do not race
+    // each other during first paint.
     let uiSyncChain = Promise.resolve();
+    // Summary metrics keep invariant values LTR even when the window language is RTL.
     let currentWindowLanguageDirection = null;
 
     // =============================================================================
@@ -199,6 +208,7 @@
       return separatorNode;
     }
 
+    // RendererI18n owns the copy; this function only maps current state into DOM.
     async function renderUi() {
       document.title = tRenderer('renderer.reading_test.result.title');
       elements.title.textContent = tRenderer('renderer.reading_test.result.title');
@@ -230,6 +240,8 @@
       elements.summary.appendChild(summaryRow);
     }
 
+    // Every state-changing entrypoint funnels through this queue so translation
+    // readiness and DOM rendering observe the same ordering.
     function enqueueUiSync(updateFn) {
       const runUpdate = async () => {
         await updateFn();
