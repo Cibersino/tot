@@ -444,8 +444,12 @@ test('createController logs a resolver rejection with the new reason code surfac
   assert.equal(log.warnOnceCalls.length, 1);
   assert.equal(
     log.warnOnceCalls[0].key,
-    'main.spellcheck.rejected.arn.rejected.no-compatible-dictionary'
+    'main.spellcheck.rejected.rejected.no-compatible-dictionary'
   );
+  assert.deepEqual(log.warnOnceCalls[0].args[1], {
+    language: 'arn',
+    reasonCode: 'rejected.no-compatible-dictionary',
+  });
 });
 
 test('createController decorates settings with spellcheck availability when a compatible dictionary resolves', () => {

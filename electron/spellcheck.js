@@ -625,7 +625,7 @@ function createController({
             : ''
         ) || 'unset';
         log.warnOnce(
-          `main.spellcheck.session-api.${normalizedLanguage}.set-spellchecker-languages-unavailable`,
+          'main.spellcheck.session-api.set-spellchecker-languages-unavailable',
           'Spellcheck disabled for current app language: session.setSpellCheckerLanguages unavailable.',
           { language: normalizedLanguage }
         );
@@ -636,7 +636,7 @@ function createController({
       ) {
         const normalizedLanguage = result.resolution.normalizedTag || 'unset';
         log.warnOnce(
-          `main.spellcheck.rejected.${normalizedLanguage}.${result.resolution.reasonCode}`,
+          `main.spellcheck.rejected.${result.resolution.reasonCode}`,
           'Spellcheck disabled for current app language: no compatible Electron spellchecker dictionary resolved.',
           {
             language: normalizedLanguage,
