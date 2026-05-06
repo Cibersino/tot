@@ -59,7 +59,7 @@ Registro requerido en el documento versionado: GitHub Release, notas públicas, 
 - [x] `package.json` refleja la versión que se pretende publicar.
 - [x] `package-lock.json` está alineado con `package.json` cuando el release cambia versión o dependencias.
 - [x] Cualquier cambio relevante en `README.md`, `PRIVACY.md`, `public/info/**`, `website/public/**` o `docs/tree_folders_files.md` ya quedó resuelto antes del freeze.
-- [ ] El working tree y el estado de la rama quedan registrados de forma consistente con el release que se quiere empaquetar.
+- [x] El working tree y el estado de la rama quedan registrados de forma consistente con el release que se quiere empaquetar.
 
 ## 4. Freeze y build
 
