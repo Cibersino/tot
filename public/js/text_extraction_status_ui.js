@@ -212,10 +212,6 @@
     }
   }
 
-  function syncPrepareStatusUi() {
-    syncProcessingUi();
-  }
-
   function syncProcessingShellUi() {
     const processingActive = isProcessingModeActive();
     const active = processingActive || isPrepareActive();
@@ -324,7 +320,6 @@
 
   function applyTranslations() {
     syncAbortButtonUi();
-    syncPrepareStatusUi();
     syncProcessingUi();
   }
 
@@ -365,12 +360,12 @@
       pendingSourceFileName = sourceFileName;
     }
     prepareActiveCount += 1;
-    syncPrepareStatusUi();
+    syncProcessingUi();
   }
 
   function endPrepare() {
     prepareActiveCount = Math.max(0, prepareActiveCount - 1);
-    syncPrepareStatusUi();
+    syncProcessingUi();
   }
 
   function setPendingExecutionContext(context = {}) {
