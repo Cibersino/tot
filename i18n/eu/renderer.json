@@ -117,7 +117,8 @@
       "title": "toT — Atazak",
       "labels": {
         "name": "Izena",
-        "total": "DENBORA GUZTIRA",
+        "summary_total": "Guztira",
+        "summary_left": "Falta",
         "empty": "(hutsik)",
         "search": "Bilatu",
         "search_placeholder": "Bilatu liburutegian..."

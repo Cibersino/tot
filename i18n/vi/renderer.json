@@ -117,7 +117,8 @@
       "title": "toT — Tác vụ",
       "labels": {
         "name": "Tên",
-        "total": "TỔNG THỜI GIAN",
+        "summary_total": "Tổng",
+        "summary_left": "Còn lại",
         "empty": "(trống)",
         "search": "Tìm kiếm",
         "search_placeholder": "Tìm trong thư viện..."

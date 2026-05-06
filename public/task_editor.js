@@ -58,8 +58,10 @@ const taskNameLabel = document.getElementById('taskNameLabel');
 const taskNameInput = document.getElementById('taskNameInput');
 const btnTaskSave = document.getElementById('btnTaskSave');
 const btnTaskDelete = document.getElementById('btnTaskDelete');
-const taskTotalLabel = document.getElementById('taskTotalLabel');
-const taskTotalValue = document.getElementById('taskTotalValue');
+const taskSummaryTotalLabel = document.getElementById('taskSummaryTotalLabel');
+const taskSummaryTotalValue = document.getElementById('taskSummaryTotalValue');
+const taskSummaryLeftLabel = document.getElementById('taskSummaryLeftLabel');
+const taskSummaryLeftValue = document.getElementById('taskSummaryLeftValue');
 const btnTaskAddRow = document.getElementById('btnTaskAddRow');
 const btnTaskLoadLibrary = document.getElementById('btnTaskLoadLibrary');
 const tableBody = document.getElementById('taskTableBody');
@@ -229,9 +231,19 @@ function getFaltaSeconds(row) {
   return tiempo * (1 - pct / 100);
 }
 
-function updateTotal() {
-  const total = rows.reduce((acc, r) => acc + getFaltaSeconds(r), 0);
-  taskTotalValue.textContent = formatDuration(total);
+function updateSummary() {
+  const summary = rows.reduce((acc, row) => {
+    acc.totalSeconds += Number(row.tiempoSeconds) || 0;
+    acc.leftSeconds += getFaltaSeconds(row);
+    return acc;
+  }, { totalSeconds: 0, leftSeconds: 0 });
+
+  if (taskSummaryTotalValue) {
+    taskSummaryTotalValue.textContent = formatDuration(summary.totalSeconds);
+  }
+  if (taskSummaryLeftValue) {
+    taskSummaryLeftValue.textContent = formatDuration(summary.leftSeconds);
+  }
 }
 
 function openModal(modalEl) {
@@ -397,7 +409,7 @@ function renderRow(row) {
     if (parsed !== row.tiempoSeconds) {
       row.tiempoSeconds = parsed;
       tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
-      updateTotal();
+      updateSummary();
       markDirty();
     }
     tiempoInput.value = formatDuration(row.tiempoSeconds);
@@ -422,7 +434,7 @@ function renderRow(row) {
     if (parsed !== row.percentComplete) {
       row.percentComplete = parsed;
       tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
-      updateTotal();
+      updateSummary();
       markDirty();
     }
     percentInput.value = `${row.percentComplete}%`;
@@ -554,7 +566,7 @@ function renderTable() {
   rows.forEach((row) => {
     tableBody.appendChild(renderRow(row));
   });
-  updateTotal();
+  updateSummary();
 }
 
 function collectDefaultColumnWidths() {
@@ -943,7 +955,8 @@ async function applyTaskEditorTranslations() {
   await ensureTaskEditorTranslations(idiomaActual);
   document.title = tr('renderer.tasks.title');
   if (taskNameLabel) taskNameLabel.textContent = tr('renderer.tasks.labels.name');
-  if (taskTotalLabel) taskTotalLabel.textContent = tr('renderer.tasks.labels.total');
+  if (taskSummaryTotalLabel) taskSummaryTotalLabel.textContent = tr('renderer.tasks.labels.summary_total');
+  if (taskSummaryLeftLabel) taskSummaryLeftLabel.textContent = tr('renderer.tasks.labels.summary_left');
   if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.buttons.save');
   if (btnTaskDelete) btnTaskDelete.textContent = tr('renderer.tasks.buttons.delete');
   if (btnTaskAddRow) btnTaskAddRow.textContent = tr('renderer.tasks.buttons.add_row');

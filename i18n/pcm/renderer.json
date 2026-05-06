@@ -117,7 +117,8 @@
       "title": "toT — Tasks",
       "labels": {
         "name": "Name",
-        "total": "TOTAL TIME",
+        "summary_total": "Total",
+        "summary_left": "Remain",
         "empty": "(empty)",
         "search": "Search",
         "search_placeholder": "Search library..."

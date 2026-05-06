@@ -117,7 +117,8 @@
       "title": "toT — کارها",
       "labels": {
         "name": "نام",
-        "total": "زمان کل",
+        "summary_total": "کل",
+        "summary_left": "باقی",
         "empty": "(خالی)",
         "search": "جست‌وجو",
         "search_placeholder": "جست‌وجو در کتابخانه..."

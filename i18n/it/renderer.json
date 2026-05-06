@@ -117,7 +117,8 @@
       "title": "toT — Attività",
       "labels": {
         "name": "Nome",
-        "total": "TEMPO TOTALE",
+        "summary_total": "Totale",
+        "summary_left": "Resta",
         "empty": "(vuoto)",
         "search": "Cerca",
         "search_placeholder": "Cerca nella biblioteca..."

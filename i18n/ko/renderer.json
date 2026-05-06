@@ -117,7 +117,8 @@
       "title": "toT — 작업",
       "labels": {
         "name": "이름",
-        "total": "총 시간",
+        "summary_total": "합계",
+        "summary_left": "남음",
         "empty": "(비어 있음)",
         "search": "검색",
         "search_placeholder": "라이브러리 검색..."

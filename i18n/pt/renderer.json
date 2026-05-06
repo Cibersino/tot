@@ -117,7 +117,8 @@
       "title": "toT — Tarefas",
       "labels": {
         "name": "Nome",
-        "total": "TEMPO TOTAL",
+        "summary_total": "Total",
+        "summary_left": "Falta",
         "empty": "(vazio)",
         "search": "Buscar",
         "search_placeholder": "Buscar na biblioteca..."

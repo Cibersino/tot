@@ -117,7 +117,8 @@
       "title": "toT — ٹاسکس",
       "labels": {
         "name": "نام",
-        "total": "کل وقت",
+        "summary_total": "کل",
+        "summary_left": "باقی",
         "empty": "(خالی)",
         "search": "تلاش",
         "search_placeholder": "لائبریری میں تلاش کریں..."

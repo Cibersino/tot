@@ -117,7 +117,8 @@
       "title": "toT — المهام",
       "labels": {
         "name": "الاسم",
-        "total": "الوقت الإجمالي",
+        "summary_total": "المجموع",
+        "summary_left": "المتبقي",
         "empty": "(فارغ)",
         "search": "بحث",
         "search_placeholder": "البحث في المكتبة..."

@@ -117,7 +117,8 @@
       "title": "toT — 任務",
       "labels": {
         "name": "名稱",
-        "total": "總時間",
+        "summary_total": "總計",
+        "summary_left": "剩餘",
         "empty": "（空）",
         "search": "搜尋",
         "search_placeholder": "在資料庫中搜尋..."

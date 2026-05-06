@@ -117,7 +117,8 @@
       "title": "toT — 任务",
       "labels": {
         "name": "名称",
-        "total": "总时间",
+        "summary_total": "总计",
+        "summary_left": "剩余",
         "empty": "（空）",
         "search": "搜索",
         "search_placeholder": "在库中搜索..."

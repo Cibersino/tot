@@ -117,7 +117,8 @@
       "title": "toT — Tareas",
       "labels": {
         "name": "Üi",
-        "total": "KELLU ANTÜ",
+        "summary_total": "Kom",
+        "summary_left": "Petu",
         "empty": "(welli)",
         "search": "Kintun",
         "search_placeholder": "Biblioteca mew kintun..."

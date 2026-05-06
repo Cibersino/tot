@@ -117,7 +117,8 @@
       "title": "toT — Ngā tūmahi",
       "labels": {
         "name": "Ingoa",
-        "total": "WĀ KATOA",
+        "summary_total": "Tapeke",
+        "summary_left": "Toe",
         "empty": "(kāore he mea)",
         "search": "Kimi",
         "search_placeholder": "Kimi i te pātaka..."

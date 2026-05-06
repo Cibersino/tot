@@ -117,7 +117,8 @@
       "title": "toT — Aufgaben",
       "labels": {
         "name": "Name",
-        "total": "GESAMTZEIT",
+        "summary_total": "Gesamt",
+        "summary_left": "Rest",
         "empty": "(leer)",
         "search": "Suchen",
         "search_placeholder": "In der Bibliothek suchen..."

@@ -117,7 +117,8 @@
       "title": "toT — Görevler",
       "labels": {
         "name": "Ad",
-        "total": "TOPLAM SÜRE",
+        "summary_total": "Toplam",
+        "summary_left": "Kalan",
         "empty": "(boş)",
         "search": "Ara",
         "search_placeholder": "Kütüphanede ara..."

@@ -117,7 +117,8 @@
       "title": "toT — Tugas",
       "labels": {
         "name": "Nama",
-        "total": "TOTAL WAKTU",
+        "summary_total": "Total",
+        "summary_left": "Sisa",
         "empty": "(kosong)",
         "search": "Cari",
         "search_placeholder": "Cari pustaka..."

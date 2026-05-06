@@ -117,7 +117,8 @@
       "title": "toT — Задачи",
       "labels": {
         "name": "Название",
-        "total": "ОБЩЕЕ ВРЕМЯ",
+        "summary_total": "Итого",
+        "summary_left": "Осталось",
         "empty": "(пусто)",
         "search": "Поиск",
         "search_placeholder": "Поиск в библиотеке..."

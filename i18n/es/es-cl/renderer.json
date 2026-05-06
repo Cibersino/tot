@@ -117,7 +117,8 @@
       "title": "toT — Misiones",
       "labels": {
         "name": "Mote",
-        "total": "VIDA ÚTIL",
+        "summary_total": "Total",
+        "summary_left": "Falta",
         "empty": "(pelao)",
         "search": "Rastrear",
         "search_placeholder": "Rastrear en la biblio..."

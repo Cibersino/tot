@@ -117,7 +117,8 @@
       "title": "toT — Tâches",
       "labels": {
         "name": "Nom",
-        "total": "TEMPS TOTAL",
+        "summary_total": "Total",
+        "summary_left": "Reste",
         "empty": "(vide)",
         "search": "Rechercher",
         "search_placeholder": "Rechercher dans la bibliothèque..."

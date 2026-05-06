@@ -117,7 +117,8 @@
       "title": "toT — कार्य",
       "labels": {
         "name": "नाम",
-        "total": "कुल समय",
+        "summary_total": "कुल",
+        "summary_left": "शेष",
         "empty": "(खाली)",
         "search": "खोजें",
         "search_placeholder": "लाइब्रेरी में खोजें..."

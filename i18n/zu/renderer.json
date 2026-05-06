@@ -117,7 +117,8 @@
       "title": "toT — Imisebenzi",
       "labels": {
         "name": "Igama",
-        "total": "ISIKHATHI SISONKE",
+        "summary_total": "Isamba",
+        "summary_left": "Okusele",
         "empty": "(akunalutho)",
         "search": "Sesha",
         "search_placeholder": "Sesha kulabhulali..."

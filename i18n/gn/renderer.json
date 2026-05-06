@@ -117,7 +117,8 @@
       "title": "toT — Tembiaporã",
       "labels": {
         "name": "Téra",
-        "total": "ARAVO OPAVAVE",
+        "summary_total": "Opaite",
+        "summary_left": "Hemby",
         "empty": "(nandi)",
         "search": "Heka",
         "search_placeholder": "Heka biblioteca-pe..."

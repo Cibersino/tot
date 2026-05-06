@@ -117,7 +117,8 @@
       "title": "toT — টাস্ক",
       "labels": {
         "name": "নাম",
-        "total": "মোট সময়",
+        "summary_total": "মোট",
+        "summary_left": "বাকি",
         "empty": "(খালি)",
         "search": "খুঁজুন",
         "search_placeholder": "লাইব্রেরিতে খুঁজুন..."

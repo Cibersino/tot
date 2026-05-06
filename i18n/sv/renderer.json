@@ -117,7 +117,8 @@
       "title": "toT — Uppgifter",
       "labels": {
         "name": "Namn",
-        "total": "TOTAL TID",
+        "summary_total": "Totalt",
+        "summary_left": "Kvar",
         "empty": "(tom)",
         "search": "Sök",
         "search_placeholder": "Sök i bibliotek..."

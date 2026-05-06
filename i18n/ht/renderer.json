@@ -117,7 +117,8 @@
       "title": "toT — Travay",
       "labels": {
         "name": "Non",
-        "total": "TAN TOTAL",
+        "summary_total": "Total",
+        "summary_left": "Rete",
         "empty": "(vid)",
         "search": "Chèche",
         "search_placeholder": "Chèche nan bibliyotèk..."

@@ -117,7 +117,8 @@
       "title": "toT — タスク",
       "labels": {
         "name": "名前",
-        "total": "合計時間",
+        "summary_total": "合計",
+        "summary_left": "残り",
         "empty": "（空）",
         "search": "検索",
         "search_placeholder": "ライブラリを検索..."

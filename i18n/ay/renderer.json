@@ -117,7 +117,8 @@
       "title": "toT — Tareanaka",
       "labels": {
         "name": "Suti",
-        "total": "TAQPACH PACHA",
+        "summary_total": "Taqpacha",
+        "summary_left": "Jilt'a",
         "empty": "(ch’usa)",
         "search": "Thaqaña",
         "search_placeholder": "Biblioteca ukan thaqaña..."

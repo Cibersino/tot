@@ -117,7 +117,8 @@
       "title": "toT — Llamk'anakuna",
       "labels": {
         "name": "Suti",
-        "total": "LLAPAN PACHA",
+        "summary_total": "Llapan",
+        "summary_left": "Puchuq",
         "empty": "(ch'usaq)",
         "search": "Maskay",
         "search_placeholder": "Bibliotecapi maskay..."
