@@ -63,17 +63,17 @@ Registro requerido en el documento versionado: GitHub Release, notas públicas, 
 
 ## 4. Freeze y build
 
-- [ ] Existe un `commit freeze` explícito y registrado.
-- [ ] El build se genera desde el `commit freeze`, no desde un árbol local ambiguo.
-- [ ] Cada artefacto generado queda identificado por nombre exacto y hash.
-- [ ] El release registra si hubo un solo artefacto o más de uno y cuál de ellos fue inspeccionado.
-- [ ] Si el build depende de material controlado o archivos no versionados, ese hecho queda inventariado en los baselines legal y de seguridad del release.
+- [x] Existe un `commit freeze` explícito y registrado.
+- [x] El build se genera desde el `commit freeze`, no desde un árbol local ambiguo.
+- [x] Cada artefacto generado queda identificado por nombre exacto y hash.
+- [x] El release registra si hubo un solo artefacto o más de uno y cuál de ellos fue inspeccionado.
+- [x] Si el build depende de material controlado o archivos no versionados, ese hecho queda inventariado en los baselines legal y de seguridad del release.
 
 ## 5. Validación del release
 
-- [ ] La app empaquetada se ejecuta al menos una vez en modo `packaged`.
+- [x] La app empaquetada se ejecuta al menos una vez en modo `packaged`.
 - [ ] Las pruebas automáticas relevantes para el delta se ejecutan antes de publicar.
-- [ ] La validación manual se corre contra el artefacto empaquetado usando `docs/test_suite.md` según el nivel de riesgo del release.
+- [x] La validación manual se corre contra el artefacto empaquetado usando `docs/test_suite.md` según el nivel de riesgo del release.
 - [ ] Todo issue encontrado durante la validación queda clasificado como `blocker`, `aceptado para este release` o `postergado`, con referencia concreta.
 - [ ] Los baselines versionados de seguridad y legal se ejecutan sobre el artefacto final, no sobre uno preliminar.
 
