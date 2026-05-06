@@ -40,6 +40,48 @@
   const textExtractionProcessingElapsed = document.getElementById('textExtractionProcessingElapsed');
   const btnTextExtractionAbort = document.getElementById('btnTextExtractionAbort');
 
+  [
+    {
+      element: selectorControlsNormal,
+      id: 'selectorControlsNormal',
+      impact: 'normal selector controls visibility will not sync',
+    },
+    {
+      element: selectorControlsProcessing,
+      id: 'selectorControlsProcessing',
+      impact: 'processing selector controls visibility will not sync',
+    },
+    {
+      element: textExtractionProcessingLabel,
+      id: 'textExtractionProcessingLabel',
+      impact: 'processing status label will not sync',
+    },
+    {
+      element: textExtractionProcessingFilenameSeparator,
+      id: 'textExtractionProcessingFilenameSeparator',
+      impact: 'processing filename separator will not sync',
+    },
+    {
+      element: textExtractionProcessingFilename,
+      id: 'textExtractionProcessingFilename',
+      impact: 'processing filename display will not sync',
+    },
+    {
+      element: textExtractionProcessingElapsed,
+      id: 'textExtractionProcessingElapsed',
+      impact: 'processing elapsed display will not sync',
+    },
+    {
+      element: btnTextExtractionAbort,
+      id: 'btnTextExtractionAbort',
+      impact: 'abort button UI will not sync',
+    },
+  ].forEach(({ element, id, impact }) => {
+    if (!element) {
+      log.warn('Status UI element missing; related UI behavior degraded:', { id, impact });
+    }
+  });
+
   // =============================================================================
   // Constants / config
   // =============================================================================
