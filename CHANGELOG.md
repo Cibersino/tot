@@ -12,6 +12,18 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
 - **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
 
+## [1.3.0] toT - Internacional
+- Fecha: `2026-05-06`
+
+- La app amplía su superficie multiidioma de `7` idiomas raíz a `30`, y ese catálogo pasa a reflejarse también en etiquetas de snapshots, dirección RTL y formateo numérico de ventanas auxiliares.
+- El corrector ortográfico deja de depender de una tabla corta de equivalencias y pasa a resolverse contra los diccionarios que Electron reporta realmente disponibles, exponiendo además su disponibilidad efectiva hacia el editor.
+- La ventana principal suma una entrada fija para la extensión del navegador, reordena parte de sus controles compactos y cambia la forma de renderizar el preview del texto actual para manejar mejor bidi/RTL.
+- La superficie histórica `import/extract` queda consolidada como `text extraction` en UI, preload, IPC y storage relacionado.
+- El editor de tareas deja de ser una ventana fija y pasa a admitir `resize` / maximizado con persistencia de estado válida entre sesiones.
+- El editor de tareas elimina el campo/columna `Tipo` de su UI, estado runtime, persistencia de filas y traducciones propias.
+- La entrada del reading speed test deja de tratar los starter files integrados como siempre visibles: ahora expone una preferencia persistida para mostrarlos/ocultarlos, recalcula elegibilidad sobre el subconjunto visible y distingue explícitamente el caso “pool visible vacío por integrados ocultos” del agotamiento real del pool.
+- La ayuda contextual deja de quedar acotada a `7` tips y pasa a un catálogo unificado de `54`.
+
 ## [1.2.0] toT - Coffee table
 - Fecha: `2026-04-22`
 
