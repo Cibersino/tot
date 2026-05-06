@@ -595,8 +595,9 @@ function applyColumnWidths(widths) {
       sum += w;
     }
   });
-  if (taskTable && sum > 0) {
-    taskTable.style.width = `${sum}px`;
+  if (taskTable) {
+    taskTable.style.width = '';
+    taskTable.style.minWidth = sum > 0 ? `${sum}px` : '';
   }
 }
 
