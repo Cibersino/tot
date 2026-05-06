@@ -16,12 +16,12 @@ Aquí, `<release_file_id>` significa el identificador del release normalizado pa
 
 ## Campos mínimos del release versionado
 
-- Fecha de ejecución: `<YYYY-MM-DD>`
-- Release ID: `<release-id>`
+- Fecha de ejecución: `2026-06-05`
+- Release ID: `v1.3.0`
 - Commit freeze: `<sha>`
 - Artefactos inspeccionados: `<artifacto-1>, <artifacto-2>`
 - Hashes de artefacto: `<sha256>`
-- Referencia base para comparar delta: `<release-id|commit>`
+- Referencia base para comparar delta: `v1.2.0|ef976e9dbf554113b164b1d7a3352d2d9815b5c7`
 - Veredicto final: `<PASS | BLOCKER | PENDING>`
 
 ## 1. Criterio de cierre
@@ -53,12 +53,12 @@ Registro requerido en el documento versionado: GitHub Release, notas públicas, 
 
 ## 3. Preparación antes del freeze
 
-- [ ] El scope del release está cerrado contra milestone, roadmap y issues relevantes.
-- [ ] `CHANGELOG.md` y `docs/changelog_detailed.md` describen el delta real del release.
-- [ ] La documentación user-facing e interna tocada por el release está actualizada.
-- [ ] `package.json` refleja la versión que se pretende publicar.
-- [ ] `package-lock.json` está alineado con `package.json` cuando el release cambia versión o dependencias.
-- [ ] Cualquier cambio relevante en `README.md`, `PRIVACY.md`, `public/info/**`, `website/public/**` o `docs/tree_folders_files.md` ya quedó resuelto antes del freeze.
+- [x] El scope del release está cerrado contra milestone, roadmap y issues relevantes.
+- [x] `CHANGELOG.md` y `docs/changelog_detailed.md` describen el delta real del release.
+- [x] La documentación user-facing e interna tocada por el release está actualizada.
+- [x] `package.json` refleja la versión que se pretende publicar.
+- [x] `package-lock.json` está alineado con `package.json` cuando el release cambia versión o dependencias.
+- [x] Cualquier cambio relevante en `README.md`, `PRIVACY.md`, `public/info/**`, `website/public/**` o `docs/tree_folders_files.md` ya quedó resuelto antes del freeze.
 - [ ] El working tree y el estado de la rama quedan registrados de forma consistente con el release que se quiere empaquetar.
 
 ## 4. Freeze y build
