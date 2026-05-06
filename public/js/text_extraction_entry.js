@@ -199,6 +199,16 @@
       window.Notify.notifyMain('renderer.alerts.text_extraction_error');
       return;
     }
+    if (typeof requestPreparedImport !== 'function') {
+      log.error('requestPreparedImport dependency missing; text extraction action blocked:', actionId);
+      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      return;
+    }
+    if (typeof maybeRecoverTextExtractionOcrSetupAndRetry !== 'function') {
+      log.error('maybeRecoverTextExtractionOcrSetupAndRetry dependency missing; text extraction action blocked:', actionId);
+      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      return;
+    }
 
     try {
       const checkTextExtractionPreconditions = getOptionalElectronMethod('checkTextExtractionPreconditions', {
@@ -405,6 +415,19 @@
           return;
         }
 
+        if (typeof applyTextViaCanonicalPath !== 'function') {
+          textExtractionStatusUi.clearPendingExecutionContext();
+          log.error('applyTextViaCanonicalPath dependency unavailable; apply flow blocked.');
+          window.Notify.notifyMain('renderer.alerts.text_extraction_apply_error');
+          return;
+        }
+        if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
+          textExtractionStatusUi.clearPendingExecutionContext();
+          log.error('current-text-updated subscription unavailable; apply flow blocked.');
+          window.Notify.notifyMain('renderer.alerts.text_extraction_apply_error');
+          return;
+        }
+
         const applyResult = await applyTextViaCanonicalPath({
           mode: applyChoice.mode,
           textToApply: execution.result.text || '',
@@ -419,9 +442,6 @@
             window.Notify.notifyMain('renderer.alerts.text_extraction_apply_error');
           }
           return;
-        }
-        if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
-          throw new Error('current-text-updated subscription unavailable');
         }
 
         if (applyResult.truncated) {
