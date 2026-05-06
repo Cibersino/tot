@@ -48,12 +48,12 @@ Reglas:
 
 ---
 
-## [1.3.0] toT - Internacional
+## [1.3.0] toT — Internacional
 
 ### Fecha release y último commit
 
 - Fecha: `2026-05-06`
-- Último commit: `<TBD>`
+- Último commit: `eaacf3227c40202091b1d7b030143b39e597814b`
 
 ### Resumen de cambios
 
