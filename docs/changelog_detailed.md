@@ -48,7 +48,7 @@ Reglas:
 
 ---
 
-## [1.3.0] toT - Internacional
+## [1.3.0] toT — Internacional
 
 ### Fecha release y último commit
 
