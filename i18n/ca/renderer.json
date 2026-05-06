@@ -117,7 +117,8 @@
       "title": "toT — Tasques",
       "labels": {
         "name": "Nom",
-        "total": "TEMPS TOTAL",
+        "summary_total": "Total",
+        "summary_left": "Resta",
         "empty": "(buit)",
         "search": "Cercar",
         "search_placeholder": "Cercar a la biblioteca..."
@@ -127,7 +128,6 @@
         "tiempo": "Temps",
         "percent": "%",
         "falta": "Queda",
-        "tipo": "Tipus",
         "enlace": "Enllaç",
         "comentario": "",
         "acciones": "Accions"
@@ -258,6 +258,7 @@
         "intro": "Aquest test serveix per estimar la teva velocitat real de lectura amb una sessió guiada. L’app obrirà el text i esperarà que premis Play (▶) a la Finestra Flotant quan estiguis a punt per començar. Un cop el test hagi començat, no premis Pausa (⏸) fins que acabis de llegir: Pausa acaba el test; no posa el cronòmetre en pausa. Fes servir Aturar/Reiniciar (⏹) només si vols cancel·lar el test. Després podràs revisar preguntes de comprensió si el text les inclou i, al final, crear un preset amb el resultat.\nAbans de començar, tingues en compte que aquests textos de prova solen requerir entre 5 i 15 minuts de concentració contínua, sense interrupcions.\nAquest pool fa servir textos breus, així que interpreta el resultat amb cautela. No s’hauria d’extrapolar directament a textos llargs, on solen intervenir factors positius, com l’adquisició de fluïdesa i de context, i factors negatius, com la recapitulació mental i la fatiga.",
         "eligible_count": "Fitxers elegibles:",
         "pool_exhausted_message": "No queden fitxers de test sense usar. Restableix el pool o afegeix més fitxers.",
+        "visible_empty_bundled_hidden_message": "Els fitxers de prova integrats estan ocults actualment i no queden fitxers de prova visibles sense usar. Torna a mostrar els fitxers integrats o importa'n més per continuar.",
         "close_aria": "Tancar el diàleg del test de velocitat de lectura",
         "start_random_confirm": "Això sobreescriurà el text actual amb un text aleatori elegible del pool. Vols continuar?",
         "reset_confirm": "Això restablirà tot el pool del test i tornarà a marcar tots els seus fitxers com a no usats. Vols continuar?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Obtenir més fitxers",
-          "import_files": "Importar fitxers...",
+          "import_files": "Importar fitxers",
           "show_instructions": "Mostrar instruccions",
           "hide_instructions": "Amagar instruccions",
           "start_random_text": "Iniciar amb text aleatori",
-          "start_current_text": "Iniciar amb el text actual"
+          "start_current_text": "Iniciar amb el text actual",
+          "show_bundled_entries": "Tests base"
         },
         "tooltips": {
+          "show_bundled_entries": "Inclou al pool els fitxers de prova inicials integrats a l'app",
           "get_more_files": "Obtenir més fitxers de test des de la carpeta de Google Drive",
           "import_files": "Importar fitxers de test des del teu dispositiu",
           "reset_pool": "Restablir el pool del test",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "El test de velocitat de lectura només es pot iniciar des d’un estat estable de l’app. Tanca les finestres secundàries i assegura’t que el cronòmetre estigui aturat.",
       "reading_test_pool_error": "S’ha produït un error en revisar el pool del test de velocitat de lectura.",
       "reading_test_no_matching_files": "No queden fitxers de test sense usar que coincideixin amb la selecció actual.",
+      "reading_test_visible_empty_bundled_hidden": "Els fitxers de prova integrats estan ocults i ara no hi ha fitxers de prova visibles sense usar disponibles. Torna a mostrar els fitxers integrats o importa'n més per continuar.",
       "reading_test_current_text_empty": "El text actual està buit. Carrega o escriu un text abans d’iniciar el test amb el text actual.",
       "reading_test_result_invalid": "El resultat del test no s’ha pogut convertir en un WPM vàlid. El flux ha acabat sense obrir el modal de preset.",
       "reading_test_result_unavailable": "No s’ha pogut mostrar el resultat de velocitat de lectura. El flux ha continuat.",

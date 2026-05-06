@@ -117,7 +117,8 @@
       "title": "toT — 任务",
       "labels": {
         "name": "名称",
-        "total": "总时间",
+        "summary_total": "总计",
+        "summary_left": "剩余",
         "empty": "（空）",
         "search": "搜索",
         "search_placeholder": "在库中搜索..."
@@ -127,7 +128,6 @@
         "tiempo": "时间",
         "percent": "%",
         "falta": "剩余",
-        "tipo": "类型",
         "enlace": "链接",
         "comentario": "",
         "acciones": "操作"
@@ -258,6 +258,7 @@
         "intro": "此测试用于通过引导式会话估计你的真实阅读速度。应用会打开文本，并等待你准备好后在悬浮窗口中按 Play（▶）。测试开始后，在读完之前不要按 Pause（⏸）：Pause 会结束测试，而不是暂停计时。只有在想取消测试时才使用 Stop/Reset（⏹）。之后，如果文本包含理解题，你可以查看这些题目；最后，可以根据结果创建一个预设。\n开始前请注意，这些测试文本通常需要 5 到 15 分钟的连续专注，期间不要中断。\n此文本池使用短文本，因此应谨慎解释结果。它不应直接外推到长文本，因为长文本通常会涉及正向因素，例如流畅度和语境积累，也会涉及负向因素，例如心理回顾和疲劳。",
         "eligible_count": "符合条件的文件：",
         "pool_exhausted_message": "没有剩余未使用的测试文件。请重置文本池或添加更多文件。",
+        "visible_empty_bundled_hidden_message": "内置测试文件当前处于隐藏状态，且已没有可见的未使用测试文件。请重新显示内置文件，或导入更多文件后继续。",
         "close_aria": "关闭阅读速度测试对话框",
         "start_random_confirm": "这会用文本池中一个符合条件的随机文本覆盖当前文本。要继续吗？",
         "reset_confirm": "这会重置整个测试文本池，并重新将其中所有文件标记为未使用。要继续吗？",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "获取更多文件",
-          "import_files": "导入文件...",
+          "import_files": "导入文件",
           "show_instructions": "显示说明",
           "hide_instructions": "隐藏说明",
           "start_random_text": "使用随机文本开始",
-          "start_current_text": "使用当前文本开始"
+          "start_current_text": "使用当前文本开始",
+          "show_bundled_entries": "基础测试"
         },
         "tooltips": {
+          "show_bundled_entries": "将应用内置的初始测试文件包含到池中",
           "get_more_files": "从 Google Drive 文件夹获取更多测试文件",
           "import_files": "从你的设备导入测试文件",
           "reset_pool": "重置测试文本池",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "阅读速度测试只能在应用处于稳定状态时启动。请关闭次级窗口，并确保秒表已停止。",
       "reading_test_pool_error": "检查阅读速度测试文本池时发生错误。",
       "reading_test_no_matching_files": "没有剩余未使用且符合当前选择的测试文件。",
+      "reading_test_visible_empty_bundled_hidden": "内置测试文件已隐藏，当前没有可见的未使用测试文件可用。请重新显示内置文件，或导入更多文件后继续。",
       "reading_test_current_text_empty": "当前文本为空。请先加载或输入文本，再使用当前文本开始测试。",
       "reading_test_result_invalid": "测试结果无法转换为有效的 WPM。流程结束，未打开预设模态窗口。",
       "reading_test_result_unavailable": "无法显示阅读速度结果。流程已继续。",

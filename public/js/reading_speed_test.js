@@ -55,6 +55,9 @@
   const eligibleCount = document.getElementById('readingTestEntryModalEligibleCount');
   const eligibleCountLabel = document.getElementById('readingTestEntryModalEligibleCountLabel');
   const eligibleCountNumber = document.getElementById('readingTestEntryModalEligibleCountNumber');
+  const showBundledLabel = document.getElementById('readingTestEntryModalShowBundledLabel');
+  const showBundledCheckbox = document.getElementById('readingTestEntryModalShowBundled');
+  const showBundledText = document.getElementById('readingTestEntryModalShowBundledText');
   const getMoreFilesLink = document.getElementById('readingTestEntryModalGetMoreFiles');
   const importButton = document.getElementById('readingTestEntryModalImport');
   const resetButton = document.getElementById('readingTestEntryModalReset');
@@ -81,6 +84,9 @@
       && eligibleCount
       && eligibleCountLabel
       && eligibleCountNumber
+      && showBundledLabel
+      && showBundledCheckbox
+      && showBundledText
       && getMoreFilesLink
       && importButton
       && resetButton
@@ -119,7 +125,9 @@
   let selection = filtersCore.normalizeSelection({});
   let filterState = filtersCore.computeFilterState(poolEntries, selection);
   let poolExhausted = false;
+  let entryEmptyState = 'none';
   let currentTextAvailable = false;
+  let showBundledEntries = true;
   let stabilizing = false;
   let introExpanded = false;
   let initialized = false;
@@ -311,9 +319,15 @@
   }
 
   function renderWarningBox() {
-    if (poolExhausted) {
+    if (entryEmptyState === 'pool_exhausted' && poolExhausted) {
       warningBox.hidden = false;
       warningBox.textContent = tRenderer('renderer.reading_test.entry.pool_exhausted_message');
+      return;
+    }
+
+    if (entryEmptyState === 'visible_empty_bundled_hidden') {
+      warningBox.hidden = false;
+      warningBox.textContent = tRenderer('renderer.reading_test.entry.visible_empty_bundled_hidden_message');
       return;
     }
 
@@ -339,6 +353,10 @@
       'aria-label',
       tRenderer('renderer.reading_test.entry.close_aria')
     );
+    showBundledText.textContent = tRenderer('renderer.reading_test.entry.buttons.show_bundled_entries');
+    showBundledLabel.title = tRenderer('renderer.reading_test.entry.tooltips.show_bundled_entries');
+    showBundledCheckbox.checked = showBundledEntries;
+    showBundledCheckbox.setAttribute('aria-label', showBundledText.textContent);
     getMoreFilesLink.textContent = tRenderer('renderer.reading_test.entry.buttons.get_more_files');
     getMoreFilesLink.title = tRenderer('renderer.reading_test.entry.tooltips.get_more_files');
     importButton.textContent = tRenderer('renderer.reading_test.entry.buttons.import_files');
@@ -357,6 +375,7 @@
     renderCategorySection('difficulty', difficultySection, difficultyHeading, difficultyOptions);
 
     const managementDisabled = stabilizing || isSessionActive();
+    showBundledCheckbox.disabled = managementDisabled;
     getMoreFilesLink.setAttribute('aria-disabled', managementDisabled ? 'true' : 'false');
     importButton.disabled = managementDisabled;
     resetButton.disabled = stabilizing || isSessionActive();
@@ -395,14 +414,18 @@
     }
     if (!Array.isArray(result.entries)
       || typeof result.poolExhausted !== 'boolean'
-      || typeof result.currentTextAvailable !== 'boolean') {
+      || typeof result.currentTextAvailable !== 'boolean'
+      || typeof result.showBundledEntries !== 'boolean'
+      || typeof result.entryEmptyState !== 'string') {
       log.error('Reading-test entry-flow success payload invalid:', result);
       window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
       return false;
     }
 
     poolExhausted = result.poolExhausted;
+    entryEmptyState = result.entryEmptyState;
     currentTextAvailable = result.currentTextAvailable;
+    showBundledEntries = result.showBundledEntries;
     poolEntries = result.entries;
     rebuildFilterState();
     return true;
@@ -605,6 +628,42 @@
     }
   }
 
+  async function handleShowBundledEntriesChanged() {
+    if (stabilizing || isSessionActive()) return;
+
+    const setShowBundledEntries = readElectronMethod('setReadingTestShowBundledEntries');
+    if (!setShowBundledEntries) {
+      log.warnOnce(
+        'reading-speed-test.setShowBundledEntries.missing',
+        'setReadingTestShowBundledEntries unavailable; reading-test bundled visibility toggle skipped.'
+      );
+      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
+      render();
+      return;
+    }
+
+    const previousShowBundledEntries = showBundledEntries;
+    const nextShowBundledEntries = showBundledCheckbox.checked;
+    showBundledEntries = nextShowBundledEntries;
+    setStabilizing(true);
+
+    try {
+      const result = await setShowBundledEntries(nextShowBundledEntries);
+      if (!await refreshPoolEntriesFromResult(result)) {
+        showBundledEntries = previousShowBundledEntries;
+        setStabilizing(false);
+        render();
+        return;
+      }
+    } catch (err) {
+      showBundledEntries = previousShowBundledEntries;
+      log.error('Reading-test bundled visibility update failed:', err);
+      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
+    }
+
+    setStabilizing(false);
+  }
+
   function mapExternalFailureReasonToKey(reason) {
     if (reason === 'blocked') return 'renderer.info.external.blocked';
     return 'renderer.info.external.error';
@@ -727,6 +786,9 @@
     getMoreFilesLink.addEventListener('click', handleOpenDriveFolder);
     importButton.addEventListener('click', () => {
       void handleImportFiles();
+    });
+    showBundledCheckbox.addEventListener('change', () => {
+      void handleShowBundledEntriesChanged();
     });
     resetButton.addEventListener('click', () => {
       void handleResetPool();

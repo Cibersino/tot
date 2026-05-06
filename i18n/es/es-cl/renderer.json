@@ -117,7 +117,8 @@
       "title": "toT — Misiones",
       "labels": {
         "name": "Mote",
-        "total": "VIDA ÚTIL",
+        "summary_total": "Total",
+        "summary_left": "Falta",
         "empty": "(pelao)",
         "search": "Rastrear",
         "search_placeholder": "Rastrear en la biblio..."
@@ -127,7 +128,6 @@
         "tiempo": "Tiempo",
         "percent": "%",
         "falta": "Falta",
-        "tipo": "Clase",
         "enlace": "Ruta",
         "comentario": "",
         "acciones": "Acciones"
@@ -274,7 +274,7 @@
         },
         "buttons": {
           "get_more_files": "Traer más archivos",
-          "import_files": "Importar archivos...",
+          "import_files": "Importar archivos",
           "show_instructions": "Mostrar instrucciones",
           "hide_instructions": "Ocultar instrucciones",
           "start_random_text": "Partir con texto random",

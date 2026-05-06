@@ -117,7 +117,8 @@
       "title": "toT — Travay",
       "labels": {
         "name": "Non",
-        "total": "TAN TOTAL",
+        "summary_total": "Total",
+        "summary_left": "Rete",
         "empty": "(vid)",
         "search": "Chèche",
         "search_placeholder": "Chèche nan bibliyotèk..."
@@ -127,7 +128,6 @@
         "tiempo": "Tan",
         "percent": "%",
         "falta": "Tan rete",
-        "tipo": "Tip",
         "enlace": "Lyen",
         "comentario": "",
         "acciones": "Aksyon"
@@ -258,6 +258,7 @@
         "intro": "Tès sa a fèt pou estime vitès lekti reyèl ou atravè yon sesyon gide. App la ap louvri tèks la epi li ap tann ou peze Play (▶) nan Fenèt Flòtan an lè ou pare pou kòmanse. Lè tès la kòmanse, pa peze Pause (⏸) jiskaske ou fin li: Pause fini tès la; li pa mete kwonomèt la an poz. Sèvi ak Stop/Reset (⏹) sèlman si ou vle anile tès la. Apre sa, ou ka revize kesyon konpreyansyon si tèks la gen ladan yo, epi nan fen an ou ka kreye yon preset apati rezilta a.\nAnvan ou kòmanse, sonje tèks tès sa yo anjeneral mande ant 5 ak 15 minit konsantrasyon san entèripsyon.\nPool sa a sèvi ak tèks kout, kidonk entèprete rezilta a avèk prekosyon. Li pa ta dwe ekstrapole dirèkteman sou tèks long, kote faktè pozitif tankou koule ak konstriksyon kontèks, ansanm ak faktè negatif tankou rekaptitilasyon mantal ak fatig, anjeneral antre an jwèt.",
         "eligible_count": "Fichye elijib:",
         "pool_exhausted_message": "Pa gen fichye tès ki rete san itilize. Reyajiste pool la oswa ajoute plis fichye.",
+        "visible_empty_bundled_hidden_message": "Fichye tès entegre yo kache kounye a, epi pa gen okenn fichye tès vizib ki poko itilize ankò. Montre fichye entegre yo ankò oswa enpòte plis fichye pou kontinye.",
         "close_aria": "Fèmen dyalòg tès vitès lekti a",
         "start_random_confirm": "Sa ap ranplase tèks aktyèl la ak yon tèks elijib o aza nan pool la. Ou vle kontinye?",
         "reset_confirm": "Sa ap reyajiste tout pool tès la epi make tout fichye li yo kòm san itilize ankò. Ou vle kontinye?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Jwenn plis fichye",
-          "import_files": "Enpòte fichye...",
+          "import_files": "Enpòte fichye",
           "show_instructions": "Montre enstriksyon",
           "hide_instructions": "Kache enstriksyon",
           "start_random_text": "Kòmanse ak tèks o aza",
-          "start_current_text": "Kòmanse ak tèks aktyèl"
+          "start_current_text": "Kòmanse ak tèks aktyèl",
+          "show_bundled_entries": "Tès debaz"
         },
         "tooltips": {
+          "show_bundled_entries": "Mete fichye tès inisyal ki vini ak aplikasyon an nan pool la",
           "get_more_files": "Jwenn plis fichye tès nan katab Google Drive la",
           "import_files": "Enpòte fichye tès nan aparèy ou",
           "reset_pool": "Reyajiste pool tès la",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Tès vitès lekti a ka kòmanse sèlman depi yon eta app ki estab. Fèmen fenèt segondè yo epi asire kwonomèt la kanpe.",
       "reading_test_pool_error": "Gen yon erè ki fèt pandan tcheke pool tès vitès lekti a.",
       "reading_test_no_matching_files": "Pa gen fichye tès san itilize ki rete ki koresponn ak seleksyon aktyèl la.",
+      "reading_test_visible_empty_bundled_hidden": "Fichye tès entegre yo kache, epi kounye a pa gen okenn fichye tès vizib ki poko itilize ki disponib. Montre fichye entegre yo ankò oswa enpòte plis fichye pou kontinye.",
       "reading_test_current_text_empty": "Tèks aktyèl la vid. Chaje oswa ekri yon tèks anvan ou kòmanse tès la ak tèks aktyèl la.",
       "reading_test_result_invalid": "Rezilta tès la pa t kapab konvèti an yon WPM valab. Flux la fini san louvri modal preset la.",
       "reading_test_result_unavailable": "Pa t kapab montre rezilta vitès lekti a. Flux la kontinye.",

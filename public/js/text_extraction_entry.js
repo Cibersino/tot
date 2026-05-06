@@ -96,6 +96,71 @@
       : 'renderer.alerts.text_extraction_error';
   }
 
+  function hasOwn(resultLike, key) {
+    return !!resultLike && Object.prototype.hasOwnProperty.call(resultLike, key);
+  }
+
+  function consumeRecoveryPreparationState({
+    recovery,
+    preparationRun,
+    textExtractionStatusUi,
+    staleMessage,
+  }) {
+    if (recovery && recovery.handled) {
+      if (!recovery.preparationRun) {
+        textExtractionStatusUi.clearPendingExecutionContext();
+      }
+      return {
+        handled: true,
+        preparationRun,
+        preparation: preparationRun ? preparationRun.preparation : null,
+      };
+    }
+
+    if (hasOwn(recovery, 'preparationRun')) {
+      const nextPreparationRun = recovery.preparationRun;
+      if (nextPreparationRun && nextPreparationRun.stale === true) {
+        log.info(staleMessage);
+        return {
+          handled: false,
+          stale: true,
+          preparationRun: nextPreparationRun,
+          preparation: null,
+        };
+      }
+      return {
+        handled: false,
+        stale: false,
+        preparationRun: nextPreparationRun,
+        preparation: nextPreparationRun ? nextPreparationRun.preparation : null,
+      };
+    }
+
+    if (hasOwn(recovery, 'preparation')) {
+      return {
+        handled: false,
+        stale: false,
+        preparationRun,
+        preparation: recovery.preparation,
+      };
+    }
+
+    return {
+      handled: false,
+      stale: false,
+      preparationRun,
+      preparation: preparationRun ? preparationRun.preparation : null,
+    };
+  }
+
+  function failPreparation(textExtractionStatusUi, preparation, logMessage) {
+    textExtractionStatusUi.clearPendingExecutionContext();
+    if (logMessage) {
+      log.error(logMessage, preparation);
+    }
+    window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
+  }
+
   // =============================================================================
   // Shared text extraction flow
   // =============================================================================
@@ -131,6 +196,16 @@
     }
     if (!normalizedFilePath) {
       log.warn('text extraction entry received an empty file path:', { source });
+      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      return;
+    }
+    if (typeof requestPreparedImport !== 'function') {
+      log.error('requestPreparedImport dependency missing; text extraction action blocked:', actionId);
+      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      return;
+    }
+    if (typeof maybeRecoverTextExtractionOcrSetupAndRetry !== 'function') {
+      log.error('maybeRecoverTextExtractionOcrSetupAndRetry dependency missing; text extraction action blocked:', actionId);
       window.Notify.notifyMain('renderer.alerts.text_extraction_error');
       return;
     }
@@ -191,28 +266,28 @@
         preparationRequest,
         prepareTextExtractionSelectedFile,
       });
-      if (recovery && recovery.handled) {
+      const recoveryResult = consumeRecoveryPreparationState({
+        recovery,
+        preparationRun,
+        textExtractionStatusUi,
+        staleMessage: 'text extraction prepare retry ignored because a newer prepare attempt exists.',
+      });
+      if (recoveryResult.handled) {
         return;
       }
-      if (recovery && Object.prototype.hasOwnProperty.call(recovery, 'preparationRun')) {
-        preparationRun = recovery.preparationRun;
-        if (preparationRun && preparationRun.stale === true) {
-          log.info('text extraction prepare retry ignored because a newer prepare attempt exists.');
-          return;
-        }
-        preparation = preparationRun ? preparationRun.preparation : null;
-      } else if (recovery && Object.prototype.hasOwnProperty.call(recovery, 'preparation')) {
-        preparation = recovery.preparation;
+      if (recoveryResult.stale === true) {
+        return;
       }
+      preparationRun = recoveryResult.preparationRun;
+      preparation = recoveryResult.preparation;
 
       if (!preparation || preparation.ok !== true) {
-        log.error('text extraction prepare IPC failed:', preparation);
-        window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
+        failPreparation(textExtractionStatusUi, preparation, 'text extraction prepare IPC failed:');
         return;
       }
 
       if (preparation.prepareFailed === true) {
-        window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
+        failPreparation(textExtractionStatusUi, preparation);
         return;
       }
 
@@ -231,6 +306,7 @@
         try {
           routePreference = await window.Notify.promptTextExtractionRouteChoice({ preparation });
         } catch (err) {
+          textExtractionStatusUi.clearPendingExecutionContext();
           log.error('text extraction route-choice modal failed:', err);
           window.Notify.notifyMain('renderer.alerts.text_extraction_route_choice_required');
           return;
@@ -240,6 +316,7 @@
           return;
         }
         if (routePreference !== 'native' && routePreference !== 'ocr') {
+          textExtractionStatusUi.clearPendingExecutionContext();
           log.info('text extraction route-choice cancelled by user.');
           return;
         }
@@ -252,28 +329,28 @@
           prepareTextExtractionSelectedFile,
           routePreference,
         });
-        if (ocrRouteRecovery && ocrRouteRecovery.handled) {
+        const ocrRouteRecoveryResult = consumeRecoveryPreparationState({
+          recovery: ocrRouteRecovery,
+          preparationRun,
+          textExtractionStatusUi,
+          staleMessage: 'text extraction OCR route prepare retry ignored because a newer prepare attempt exists.',
+        });
+        if (ocrRouteRecoveryResult.handled) {
           return;
         }
-        if (ocrRouteRecovery && Object.prototype.hasOwnProperty.call(ocrRouteRecovery, 'preparationRun')) {
-          preparationRun = ocrRouteRecovery.preparationRun;
-          if (preparationRun && preparationRun.stale === true) {
-            log.info('text extraction OCR route prepare retry ignored because a newer prepare attempt exists.');
-            return;
-          }
-          preparation = preparationRun ? preparationRun.preparation : null;
-        } else if (ocrRouteRecovery && Object.prototype.hasOwnProperty.call(ocrRouteRecovery, 'preparation')) {
-          preparation = ocrRouteRecovery.preparation;
+        if (ocrRouteRecoveryResult.stale === true) {
+          return;
         }
+        preparationRun = ocrRouteRecoveryResult.preparationRun;
+        preparation = ocrRouteRecoveryResult.preparation;
 
         if (!preparation || preparation.ok !== true) {
-          log.error('text extraction OCR route recovery prepare IPC failed:', preparation);
-          window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
+          failPreparation(textExtractionStatusUi, preparation, 'text extraction OCR route recovery prepare IPC failed:');
           return;
         }
 
         if (preparation.prepareFailed === true) {
-          window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
+          failPreparation(textExtractionStatusUi, preparation);
           return;
         }
 
@@ -338,6 +415,19 @@
           return;
         }
 
+        if (typeof applyTextViaCanonicalPath !== 'function') {
+          textExtractionStatusUi.clearPendingExecutionContext();
+          log.error('applyTextViaCanonicalPath dependency unavailable; apply flow blocked.');
+          window.Notify.notifyMain('renderer.alerts.text_extraction_apply_error');
+          return;
+        }
+        if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
+          textExtractionStatusUi.clearPendingExecutionContext();
+          log.error('current-text-updated subscription unavailable; apply flow blocked.');
+          window.Notify.notifyMain('renderer.alerts.text_extraction_apply_error');
+          return;
+        }
+
         const applyResult = await applyTextViaCanonicalPath({
           mode: applyChoice.mode,
           textToApply: execution.result.text || '',
@@ -352,9 +442,6 @@
             window.Notify.notifyMain('renderer.alerts.text_extraction_apply_error');
           }
           return;
-        }
-        if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
-          throw new Error('current-text-updated subscription unavailable');
         }
 
         if (applyResult.truncated) {
@@ -442,5 +529,3 @@
 // =============================================================================
 // End of public/js/text_extraction_entry.js
 // =============================================================================
-
-

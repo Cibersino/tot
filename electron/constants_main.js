@@ -15,7 +15,6 @@ const TASK_LIST_MAX_ROWS = 200; // Max rows allowed in a persisted task list pay
 const TASK_LIBRARY_MAX_ITEMS = 12000; // Max items allowed in the persisted task library.
 const TASK_ROW_TEXT_MAX_CHARS = 200; // Max chars for task row "text" (texto).
 const TASK_ROW_COMMENT_MAX_CHARS = 1200; // Max chars for task row "comment" (comentario).
-const TASK_ROW_TYPE_MAX_CHARS = 50; // Max chars for task row "type" (tipo).
 const TASK_ROW_LINK_MAX_CHARS = 1000; // Max chars for task row "link" (enlace).
 const EDITOR_FONT_SIZE_MIN_PX = 12; // Minimum font size for the manual editor textarea.
 const EDITOR_FONT_SIZE_MAX_PX = 36; // Maximum font size for the manual editor textarea.
@@ -40,7 +39,6 @@ module.exports = {
   TASK_LIBRARY_MAX_ITEMS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_COMMENT_MAX_CHARS,
-  TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
   EDITOR_FONT_SIZE_MIN_PX,
   EDITOR_FONT_SIZE_MAX_PX,

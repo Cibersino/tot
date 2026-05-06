@@ -22,7 +22,7 @@ log.debug('Task editor state starting...');
 // =============================================================================
 // Constants / defaults
 // =============================================================================
-const DEFAULT_REDUCED_WIDTH = 1200;
+const DEFAULT_REDUCED_WIDTH = 1130;
 const DEFAULT_REDUCED_HEIGHT = 720;
 const MIN_REDUCED_WIDTH = 900;
 const MIN_REDUCED_HEIGHT = 560;

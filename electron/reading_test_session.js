@@ -256,6 +256,22 @@ function createController(options = {}) {
     return list[index] || null;
   }
 
+  function classifyEntryEmptyState(fullEntries, visibleEntries, showBundledEntries) {
+    const allUnusedExhausted = !fullEntries.some((entry) => entry.used === false);
+    if (allUnusedExhausted) {
+      return 'pool_exhausted';
+    }
+
+    const visibleHasUnusedEntries = visibleEntries.some((entry) => entry.used === false);
+    if (visibleHasUnusedEntries) {
+      return 'none';
+    }
+
+    return readingTestPool.hasHiddenBundledUnusedEntries(fullEntries, showBundledEntries)
+      ? 'visible_empty_bundled_hidden'
+      : 'none';
+  }
+
   // Availability / selection helpers
   function checkEntryAvailability() {
     try {
@@ -286,14 +302,18 @@ function createController(options = {}) {
       }
 
       const entries = poolInfo.entries;
+      const showBundledEntries = readingTestPool.getShowBundledEntries();
+      const visibleEntries = readingTestPool.getVisiblePoolEntries(entries, showBundledEntries);
       const hasUnusedEntries = entries.some((entry) => entry.used === false);
 
       return {
         ok: true,
         canOpen: true,
         currentTextAvailable: hasCurrentText(),
+        showBundledEntries,
         poolExhausted: !hasUnusedEntries,
-        entries: entries.map(readingTestPool.serializePoolEntryMeta),
+        entryEmptyState: classifyEntryEmptyState(entries, visibleEntries, showBundledEntries),
+        entries: visibleEntries.map(readingTestPool.serializePoolEntryMeta),
         poolDirName: readingTestPool.POOL_DIR_NAME,
       };
     } catch (err) {
@@ -308,8 +328,20 @@ function createController(options = {}) {
       return { ok: false, guidanceKey: 'renderer.alerts.reading_test_pool_error', code: poolInfo.code };
     }
 
+    const showBundledEntries = readingTestPool.getShowBundledEntries();
+    const visibleEntries = readingTestPool.getVisiblePoolEntries(poolInfo.entries, showBundledEntries);
+    const visibleHasUnusedEntries = visibleEntries.some((entry) => entry.used === false);
+    if (!visibleHasUnusedEntries
+      && readingTestPool.hasHiddenBundledUnusedEntries(poolInfo.entries, showBundledEntries)) {
+      return {
+        ok: false,
+        guidanceKey: 'renderer.alerts.reading_test_visible_empty_bundled_hidden',
+        code: 'VISIBLE_EMPTY_BUNDLED_HIDDEN',
+      };
+    }
+
     const eligibleEntries = readingTestFiltersCore.getEligibleEntries(
-      poolInfo.entries,
+      visibleEntries,
       readingTestFiltersCore.normalizeSelection(selection)
     );
     if (!eligibleEntries.length) {
@@ -573,6 +605,26 @@ function createController(options = {}) {
       const resetInfo = readingTestPool.resetPoolUsageState();
       if (!resetInfo.ok) {
         return { ok: false, code: resetInfo.code || 'POOL_RESET_FAILED', guidanceKey: 'renderer.alerts.reading_test_pool_error' };
+      }
+
+      return checkEntryAvailability();
+    });
+
+    ipcMain.handle('reading-test-set-show-bundled-entries', async (event, nextValue) => {
+      if (!isAuthorizedMainSender(event)) {
+        return { ok: false, code: 'UNAUTHORIZED' };
+      }
+      if (state.active) {
+        return { ok: false, code: 'SESSION_ACTIVE', guidanceKey: 'renderer.alerts.reading_test_precondition_blocked' };
+      }
+
+      const setInfo = readingTestPool.setShowBundledEntries(nextValue);
+      if (!setInfo.ok) {
+        return {
+          ok: false,
+          code: setInfo.code || 'READING_TEST_SET_SHOW_BUNDLED_ENTRIES_FAILED',
+          guidanceKey: 'renderer.alerts.reading_test_pool_error',
+        };
       }
 
       return checkEntryAvailability();

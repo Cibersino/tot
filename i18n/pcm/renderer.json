@@ -117,7 +117,8 @@
       "title": "toT — Tasks",
       "labels": {
         "name": "Name",
-        "total": "TOTAL TIME",
+        "summary_total": "Total",
+        "summary_left": "Remain",
         "empty": "(empty)",
         "search": "Search",
         "search_placeholder": "Search library..."
@@ -127,7 +128,6 @@
         "tiempo": "Time",
         "percent": "%",
         "falta": "Remain",
-        "tipo": "Type",
         "enlace": "Link",
         "comentario": "",
         "acciones": "Actions"
@@ -258,6 +258,7 @@
         "intro": "Dis test go help estimate your real reading speed through guided session. Di app go open di text and wait make you press Play (▶) for di Floating Window when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Use Stop/Reset (⏹) only if you wan cancel di test. After, you fit check comprehension questions if di text get dem and, for di end, create preset from di result.\nBefore you start, remember say these test texts usually need between 5 and 15 minutes of steady concentration, without interruption.\nDis pool dey use short texts, so take di result with care. No use am directly judge long texts, where good factors like flow and context build-up, and bad factors like mental recap and tiredness, usually dey matter.",
         "eligible_count": "Eligible files:",
         "pool_exhausted_message": "No unused test files remain. Reset di pool or add more files.",
+        "visible_empty_bundled_hidden_message": "Built-in test files dey hidden now, and no visible unused test files remain. Show di built-in files again or import more files to continue.",
         "close_aria": "Close reading speed test dialog",
         "start_random_confirm": "Dis go overwrite di current text with random eligible text from di pool. You wan continue?",
         "reset_confirm": "Dis go reset di whole test pool and mark all files as unused again. You wan continue?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Get more files",
-          "import_files": "Import files...",
+          "import_files": "Import files",
           "show_instructions": "Show instructions",
           "hide_instructions": "Hide instructions",
           "start_random_text": "Start with random text",
-          "start_current_text": "Start with current text"
+          "start_current_text": "Start with current text",
+          "show_bundled_entries": "Base tests"
         },
         "tooltips": {
+          "show_bundled_entries": "Include di starter test files wey come with di app for di pool",
           "get_more_files": "Get more test files from di Google Drive folder",
           "import_files": "Import test files from your device",
           "reset_pool": "Reset test pool",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Reading speed test fit start only when di app dey steady. Close secondary windows and make sure stopwatch don stop.",
       "reading_test_pool_error": "Error happen while checking reading speed test pool.",
       "reading_test_no_matching_files": "No unused test files remain wey match di current selection.",
+      "reading_test_visible_empty_bundled_hidden": "Built-in test files dey hidden, and no visible unused test files dey available now. Show di built-in files again or import more files to continue.",
       "reading_test_current_text_empty": "Current text empty. Load or type text before you start di test with current text.",
       "reading_test_result_invalid": "Di test result no fit convert to valid WPM. Di flow end without opening preset modal.",
       "reading_test_result_unavailable": "Could not show reading speed result. Di flow continue.",

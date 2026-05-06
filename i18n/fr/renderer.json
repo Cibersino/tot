@@ -117,7 +117,8 @@
       "title": "toT — Tâches",
       "labels": {
         "name": "Nom",
-        "total": "TEMPS TOTAL",
+        "summary_total": "Total",
+        "summary_left": "Reste",
         "empty": "(vide)",
         "search": "Rechercher",
         "search_placeholder": "Rechercher dans la bibliothèque..."
@@ -127,7 +128,6 @@
         "tiempo": "Temps",
         "percent": "%",
         "falta": "Reste",
-        "tipo": "Type",
         "enlace": "Lien",
         "comentario": "",
         "acciones": "Actions"
@@ -258,6 +258,7 @@
         "intro": "Ce test sert à estimer votre vitesse réelle de lecture au moyen d'une session guidée. L'application ouvrira le texte et attendra que vous appuyiez sur Play (▶) dans la Fenêtre flottante lorsque vous serez prêt à commencer. Une fois le test démarré, n'appuyez pas sur Pause (⏸) avant d'avoir terminé votre lecture : Pause met fin au test ; elle ne met pas le minuteur en pause. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test. Ensuite, vous pourrez consulter des questions de compréhension si le texte en contient et, à la fin, créer un preset à partir du résultat.\nAvant de commencer, gardez à l'esprit que ces textes de test demandent généralement entre 5 et 15 minutes de concentration ininterrompue.\nCe pool utilise des textes courts ; interprétez donc le résultat avec prudence. Il ne devrait pas être extrapolé directement à des textes longs, où entrent habituellement en jeu des facteurs positifs, comme l'acquisition de fluidité et de contexte, et des facteurs négatifs, comme la récapitulation mentale et la fatigue.",
         "eligible_count": "Fichiers éligibles :",
         "pool_exhausted_message": "Il ne reste plus de fichiers de test inutilisés. Réinitialisez le pool ou ajoutez d'autres fichiers.",
+        "visible_empty_bundled_hidden_message": "Les fichiers de test intégrés sont actuellement masqués et il ne reste plus de fichiers de test visibles non utilisés. Affichez de nouveau les fichiers intégrés ou importez d'autres fichiers pour continuer.",
         "close_aria": "Fermer la boîte de dialogue du test de vitesse de lecture",
         "start_random_confirm": "Cela remplacera le texte actuel par un texte aléatoire éligible du pool. Voulez-vous continuer ?",
         "reset_confirm": "Cela réinitialisera tout le pool du test et re-marquerra tous ses fichiers comme non utilisés. Voulez-vous continuer ?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Obtenir plus de fichiers",
-          "import_files": "Importer des fichiers...",
+          "import_files": "Importer des fichiers",
           "show_instructions": "Afficher les instructions",
           "hide_instructions": "Masquer les instructions",
           "start_random_text": "Démarrer avec texte aléatoire",
-          "start_current_text": "Démarrer avec le texte actuel"
+          "start_current_text": "Démarrer avec le texte actuel",
+          "show_bundled_entries": "Tests de base"
         },
         "tooltips": {
+          "show_bundled_entries": "Inclure dans le pool les fichiers de test initiaux fournis avec l'application",
           "get_more_files": "Obtenir plus de fichiers de test depuis le dossier Google Drive",
           "import_files": "Importer des fichiers de test depuis votre appareil",
           "reset_pool": "Réinitialiser le pool de test",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Le test de vitesse de lecture ne peut démarrer que depuis un état stable de l'application. Fermez les fenêtres secondaires et assurez-vous que le chronomètre est arrêté.",
       "reading_test_pool_error": "Une erreur s'est produite lors de la vérification du pool du test de vitesse de lecture.",
       "reading_test_no_matching_files": "Il ne reste plus de fichiers de test inutilisés qui correspondent à la sélection actuelle.",
+      "reading_test_visible_empty_bundled_hidden": "Les fichiers de test intégrés sont masqués et aucun fichier de test visible non utilisé n'est actuellement disponible. Affichez de nouveau les fichiers intégrés ou importez d'autres fichiers pour continuer.",
       "reading_test_current_text_empty": "Le texte actuel est vide. Chargez ou saisissez d'abord un texte avant de démarrer le test avec le texte actuel.",
       "reading_test_result_invalid": "Le résultat du test n'a pas pu être converti en WPM valide. Le flux s'est terminé sans ouvrir la boîte de dialogue du preset.",
       "reading_test_result_unavailable": "Le résultat de vitesse de lecture n'a pas pu être affiché. Le flux a continué.",

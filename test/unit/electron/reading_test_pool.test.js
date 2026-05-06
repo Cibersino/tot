@@ -80,6 +80,9 @@ test('bundled sync seeds runtime files and pool state is tracked externally', ()
   const resetInfo = readingTestPool.resetPoolUsageState({ stateFilePath });
   assert.equal(resetInfo.ok, true);
 
+  const resetState = readingTestPool.loadPoolState({ stateFilePath });
+  assert.equal(resetState.showBundledEntries, true);
+
   const resetListInfo = readingTestPool.listPoolEntries({
     snapshotsRootDir,
     bundledSourceDir,
@@ -134,8 +137,50 @@ test('bundled sync refreshes managed starter content when bundled content hash c
   assert.equal(runtimeJson.text, 'Version two.');
 
   const state = readingTestPool.loadPoolState({ stateFilePath });
+  assert.equal(state.showBundledEntries, true);
   assert.equal(state.entries[snapshotRelPath].used, false);
   assert.match(state.entries[snapshotRelPath].managedBundledHash, /^sha256:/);
+});
+
+test('pool state defaults showBundledEntries to true and persists false across writes', () => {
+  const tempDir = makeTempDir();
+  const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
+
+  const initialState = readingTestPool.loadPoolState({ stateFilePath });
+  assert.equal(initialState.showBundledEntries, true);
+  assert.deepEqual(initialState.entries, {});
+
+  const setInfo = readingTestPool.setShowBundledEntries(false, { stateFilePath });
+  assert.equal(setInfo.ok, true);
+
+  const reloadedState = readingTestPool.loadPoolState({ stateFilePath });
+  assert.equal(reloadedState.showBundledEntries, false);
+  assert.deepEqual(reloadedState.entries, {});
+});
+
+test('entry state updates and reset preserve showBundledEntries', () => {
+  const tempDir = makeTempDir();
+  const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
+  const snapshotRelPath = readingTestPool.buildPoolSnapshotRelPath('starter.json');
+
+  writeJson(stateFilePath, {
+    showBundledEntries: false,
+    entries: {
+      [snapshotRelPath]: {
+        used: true,
+      },
+    },
+  });
+
+  const markInfo = readingTestPool.markPoolEntryUsed(snapshotRelPath, false, { stateFilePath });
+  assert.equal(markInfo.ok, true);
+
+  const resetInfo = readingTestPool.resetPoolUsageState({ stateFilePath });
+  assert.equal(resetInfo.ok, true);
+
+  const finalState = readingTestPool.loadPoolState({ stateFilePath });
+  assert.equal(finalState.showBundledEntries, false);
+  assert.equal(finalState.entries[snapshotRelPath].used, false);
 });
 
 test('startup prune removes stale state entries but leaves existing unmanaged files intact', () => {
@@ -218,4 +263,27 @@ test('startup prune removes retired managed starter files and their state entrie
   assert.equal(secondSync.prunedStateEntries, 1);
   assert.equal(fs.existsSync(runtimeFilePath), false);
   assert.equal(Object.prototype.hasOwnProperty.call(state.entries, snapshotRelPath), false);
+});
+
+test('visible pool filtering excludes bundled entries only when showBundledEntries is false', () => {
+  const entries = [
+    {
+      snapshotRelPath: '/reading_speed_test_pool/bundled.json',
+      used: false,
+      isBundled: true,
+    },
+    {
+      snapshotRelPath: '/reading_speed_test_pool/imported.json',
+      used: true,
+      isBundled: false,
+    },
+  ];
+
+  const visibleWithBundled = readingTestPool.getVisiblePoolEntries(entries, true);
+  assert.equal(visibleWithBundled.length, 2);
+
+  const visibleWithoutBundled = readingTestPool.getVisiblePoolEntries(entries, false);
+  assert.deepEqual(visibleWithoutBundled, [entries[1]]);
+  assert.equal(readingTestPool.hasHiddenBundledUnusedEntries(entries, false), true);
+  assert.equal(readingTestPool.hasHiddenBundledUnusedEntries(entries, true), false);
 });

@@ -85,25 +85,40 @@ body {
 
 .task-summary {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
   padding: 8px 12px;
   border: 1px solid var(--border);
   background: var(--panel);
   border-radius: 8px;
-  width: 180px;
-  flex: 0 0 180px;
+  width: 100px;
+  flex: 0 0 100px;
   margin: 0;
 }
 
+.task-summary__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
 .task-summary__label {
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 1.1;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .task-summary__value {
-  font-size: 16px;
+  font-size: 13px;
+  line-height: 1.1;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
 }
 
 .task-header {
@@ -257,7 +272,7 @@ body {
 .col-resizer {
   position: absolute;
   top: 0;
-  right: -2px;
+  right: 0;
   width: 6px;
   height: 100%;
   cursor: col-resize;

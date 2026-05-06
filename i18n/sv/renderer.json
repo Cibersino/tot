@@ -117,7 +117,8 @@
       "title": "toT — Uppgifter",
       "labels": {
         "name": "Namn",
-        "total": "TOTAL TID",
+        "summary_total": "Totalt",
+        "summary_left": "Kvar",
         "empty": "(tom)",
         "search": "Sök",
         "search_placeholder": "Sök i bibliotek..."
@@ -127,7 +128,6 @@
         "tiempo": "Tid",
         "percent": "%",
         "falta": "Kvar",
-        "tipo": "Typ",
         "enlace": "Länk",
         "comentario": "",
         "acciones": "Åtgärder"
@@ -258,6 +258,7 @@
         "intro": "Det här testet är avsett att uppskatta din faktiska läshastighet genom en guidad session. Appen öppnar texten och väntar på att du trycker på Play (▶) i det flytande fönstret när du är redo att börja. När testet har startat ska du inte trycka på Pause (⏸) förrän du har läst färdigt: Pause avslutar testet; det pausar inte timern. Använd Stop/Reset (⏹) endast om du vill avbryta testet. Därefter kan du gå igenom förståelsefrågor om texten innehåller sådana och till sist skapa en förinställning från resultatet.\nInnan du börjar bör du tänka på att dessa testtexter vanligtvis kräver mellan 5 och 15 minuters oavbruten koncentration.\nDen här poolen använder korta texter, så tolka resultatet med försiktighet. Det bör inte extrapoleras direkt till långa texter, där positiva faktorer som flyt och kontextuppbyggnad, och negativa faktorer som mental rekapitulation och trötthet, brukar spela in.",
         "eligible_count": "Kvalificerade filer:",
         "pool_exhausted_message": "Det finns inga återstående oanvända testfiler. Återställ poolen eller lägg till fler filer.",
+        "visible_empty_bundled_hidden_message": "De inbyggda testfilerna är för närvarande dolda och det finns inga synliga oanvända testfiler kvar. Visa de inbyggda filerna igen eller importera fler filer för att fortsätta.",
         "close_aria": "Stäng dialogen för test av läshastighet",
         "start_random_confirm": "Detta skriver över aktuell text med en slumpmässig kvalificerad text från poolen. Vill du fortsätta?",
         "reset_confirm": "Detta återställer hela testpoolen och markerar alla filer som oanvända igen. Vill du fortsätta?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Hämta fler filer",
-          "import_files": "Importera filer...",
+          "import_files": "Importera filer",
           "show_instructions": "Visa instruktioner",
           "hide_instructions": "Dölj instruktioner",
           "start_random_text": "Starta med slumpmässig text",
-          "start_current_text": "Starta med aktuell text"
+          "start_current_text": "Starta med aktuell text",
+          "show_bundled_entries": "Bastest"
         },
         "tooltips": {
+          "show_bundled_entries": "Inkludera appens inbyggda starttestfiler i poolen",
           "get_more_files": "Hämta fler testfiler från Google Drive-mappen",
           "import_files": "Importera testfiler från din enhet",
           "reset_pool": "Återställ testpool",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Testet av läshastighet kan endast starta från ett stabilt apptillstånd. Stäng sekundära fönster och se till att stoppuret är stoppat.",
       "reading_test_pool_error": "Ett fel uppstod vid kontroll av poolen för test av läshastighet.",
       "reading_test_no_matching_files": "Det finns inga återstående oanvända testfiler som matchar det aktuella valet.",
+      "reading_test_visible_empty_bundled_hidden": "De inbyggda testfilerna är dolda och det finns för närvarande inga synliga oanvända testfiler tillgängliga. Visa de inbyggda filerna igen eller importera fler filer för att fortsätta.",
       "reading_test_current_text_empty": "Aktuell text är tom. Läs in eller skriv en text innan du startar testet med aktuell text.",
       "reading_test_result_invalid": "Testresultatet kunde inte omvandlas till ett giltigt WPM. Flödet avslutades utan att öppna modalen för förinställningar.",
       "reading_test_result_unavailable": "Resultatet för läshastighet kunde inte visas. Flödet fortsatte.",

@@ -29,14 +29,60 @@
   const { tRenderer, renderLocalizedLabelWithInvariantValue } = window.RendererI18n;
 
   // =============================================================================
-  // UI elements
+  // DOM references
   // =============================================================================
 
   const selectorControlsNormal = document.getElementById('selectorControlsNormal');
   const selectorControlsProcessing = document.getElementById('selectorControlsProcessing');
   const textExtractionProcessingLabel = document.getElementById('textExtractionProcessingLabel');
+  const textExtractionProcessingFilenameSeparator = document.getElementById('textExtractionProcessingFilenameSeparator');
+  const textExtractionProcessingFilename = document.getElementById('textExtractionProcessingFilename');
   const textExtractionProcessingElapsed = document.getElementById('textExtractionProcessingElapsed');
   const btnTextExtractionAbort = document.getElementById('btnTextExtractionAbort');
+
+  // Missing elements degrade only the status UI surface, so keep the module alive
+  // but make the drift visible during bootstrap instead of failing silently later.
+  [
+    {
+      element: selectorControlsNormal,
+      id: 'selectorControlsNormal',
+      impact: 'normal selector controls visibility will not sync',
+    },
+    {
+      element: selectorControlsProcessing,
+      id: 'selectorControlsProcessing',
+      impact: 'processing selector controls visibility will not sync',
+    },
+    {
+      element: textExtractionProcessingLabel,
+      id: 'textExtractionProcessingLabel',
+      impact: 'processing status label will not sync',
+    },
+    {
+      element: textExtractionProcessingFilenameSeparator,
+      id: 'textExtractionProcessingFilenameSeparator',
+      impact: 'processing filename separator will not sync',
+    },
+    {
+      element: textExtractionProcessingFilename,
+      id: 'textExtractionProcessingFilename',
+      impact: 'processing filename display will not sync',
+    },
+    {
+      element: textExtractionProcessingElapsed,
+      id: 'textExtractionProcessingElapsed',
+      impact: 'processing elapsed display will not sync',
+    },
+    {
+      element: btnTextExtractionAbort,
+      id: 'btnTextExtractionAbort',
+      impact: 'abort button UI will not sync',
+    },
+  ].forEach(({ element, id, impact }) => {
+    if (!element) {
+      log.warn('Status UI element missing; related UI behavior degraded:', { id, impact });
+    }
+  });
 
   // =============================================================================
   // Constants / config
@@ -58,6 +104,7 @@
   };
   let prepareActiveCount = 0;
   let pendingExecutionRoute = '';
+  let pendingSourceFileName = '';
   let lastExecutionElapsedMs = null;
   let elapsedTimerId = null;
 
@@ -68,6 +115,45 @@
   function normalizeRouteKind(rawRoute) {
     const routeKind = typeof rawRoute === 'string' ? rawRoute.trim() : '';
     return routeKind === 'native' || routeKind === 'ocr' ? routeKind : '';
+  }
+
+  function normalizeNonEmptyString(rawValue) {
+    return typeof rawValue === 'string' ? rawValue.trim() : '';
+  }
+
+  function constrainDisplayFileName(rawValue) {
+    const normalizedValue = normalizeNonEmptyString(rawValue);
+    if (!normalizedValue) return '';
+
+    const pathSegments = normalizedValue.split(/[\\/]+/).filter(Boolean);
+    if (pathSegments.length > 0) {
+      const basename = pathSegments[pathSegments.length - 1];
+      const safeBasename = basename.replace(/[\u0000-\u001F\u007F]+/g, ' ').trim();
+      if (safeBasename && safeBasename !== '.' && safeBasename !== '..') {
+        return safeBasename;
+      }
+    }
+    return '';
+  }
+
+  function resolveSourceFileNameFromPath(rawFilePath) {
+    return constrainDisplayFileName(rawFilePath);
+  }
+
+  function resolveSourceFileNameFromContext({ preparation, fileName, filePath } = {}) {
+    const explicitFileName = constrainDisplayFileName(fileName);
+    if (explicitFileName) return explicitFileName;
+
+    const preparedFileNameRaw = preparation
+      && preparation.preparedPayload
+      && preparation.preparedPayload.fileInfo
+      && typeof preparation.preparedPayload.fileInfo.fileName === 'string'
+      ? preparation.preparedPayload.fileInfo.fileName
+      : '';
+    const preparedFileName = constrainDisplayFileName(preparedFileNameRaw);
+    if (preparedFileName) return preparedFileName;
+
+    return resolveSourceFileNameFromPath(filePath);
   }
 
   function resolvePendingRouteFromContext({ preparation, routePreference } = {}) {
@@ -133,6 +219,18 @@
     return formatElapsedTime(rawElapsedMs);
   }
 
+  function updatePendingSourceFileNameFromContext(context = {}) {
+    const sourceFileName = resolveSourceFileNameFromContext(context);
+    if (sourceFileName) {
+      pendingSourceFileName = sourceFileName;
+    }
+  }
+
+  function resetPendingExecutionContextState() {
+    pendingExecutionRoute = '';
+    pendingSourceFileName = '';
+  }
+
   function renderElapsedLabelWithValue(container, labelKey, valueText) {
     if (!container) return;
     renderLocalizedLabelWithInvariantValue(container, {
@@ -142,7 +240,7 @@
     });
   }
 
-  function getBusyLabelText() {
+  function getBusyLabelText({ elapsedMsOverride = null } = {}) {
     if (isPrepareActive()) {
       return tRenderer('renderer.main.processing.text_extraction_preparing');
     }
@@ -150,7 +248,9 @@
       return tRenderer('renderer.main.processing.text_extraction_waiting_native');
     }
     if (pendingExecutionRoute === 'ocr') {
-      const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
+      const elapsedMs = elapsedMsOverride === null
+        ? getElapsedMsSince(processingModeState.sinceEpochMs)
+        : elapsedMsOverride;
       if (elapsedMs !== null && elapsedMs >= OCR_WAITING_COPY_DELAY_MS) {
         return tRenderer('renderer.main.processing.text_extraction_waiting_ocr_delayed');
       }
@@ -168,11 +268,7 @@
     }
   }
 
-  function syncPrepareStatusUi() {
-    syncProcessingUi();
-  }
-
-  function syncProcessingUi() {
+  function syncProcessingShellUi() {
     const processingActive = isProcessingModeActive();
     const active = processingActive || isPrepareActive();
 
@@ -190,13 +286,41 @@
       btnTextExtractionAbort.setAttribute('aria-hidden', processingActive ? 'false' : 'true');
       btnTextExtractionAbort.tabIndex = processingActive ? 0 : -1;
     }
-    if (textExtractionProcessingLabel) {
-      textExtractionProcessingLabel.textContent = getBusyLabelText();
+  }
+
+  function syncPrimaryRowUi({ elapsedMsOverride = null } = {}) {
+    const busyLabelText = getBusyLabelText({ elapsedMsOverride });
+    if (textExtractionProcessingLabel && textExtractionProcessingLabel.textContent !== busyLabelText) {
+      textExtractionProcessingLabel.textContent = busyLabelText;
     }
+
+    const hasFileName = !!pendingSourceFileName;
+    if (textExtractionProcessingFilenameSeparator
+      && textExtractionProcessingFilenameSeparator.hidden !== !hasFileName) {
+      textExtractionProcessingFilenameSeparator.hidden = !hasFileName;
+    }
+    if (!textExtractionProcessingFilename) return;
+
+    textExtractionProcessingFilename.hidden = !hasFileName;
+    textExtractionProcessingFilename.setAttribute('aria-hidden', hasFileName ? 'false' : 'true');
+    const nextFileNameText = hasFileName ? pendingSourceFileName : '';
+    if (textExtractionProcessingFilename.textContent !== nextFileNameText) {
+      textExtractionProcessingFilename.textContent = nextFileNameText;
+    }
+    if (textExtractionProcessingFilename.title !== nextFileNameText) {
+      textExtractionProcessingFilename.title = nextFileNameText;
+    }
+  }
+
+  function syncElapsedUi({ elapsedMsOverride = null } = {}) {
     if (!textExtractionProcessingElapsed) return;
 
+    const processingActive = isProcessingModeActive();
+    const elapsedMs = elapsedMsOverride === null
+      ? getElapsedMsSince(processingModeState.sinceEpochMs)
+      : elapsedMsOverride;
     const elapsedValueText = processingActive
-      ? getProcessingElapsedValueText(getElapsedMsSince(processingModeState.sinceEpochMs))
+      ? getProcessingElapsedValueText(elapsedMs)
       : '';
     const showElapsed = !!elapsedValueText;
     textExtractionProcessingElapsed.hidden = !showElapsed;
@@ -212,12 +336,29 @@
     );
   }
 
+  function syncDelayedBusyCopyUi(elapsedMs) {
+    if (pendingExecutionRoute !== 'ocr' || isPrepareActive()) return;
+    const nextBusyLabelText = getBusyLabelText({ elapsedMsOverride: elapsedMs });
+    if (textExtractionProcessingLabel && textExtractionProcessingLabel.textContent === nextBusyLabelText) {
+      return;
+    }
+    syncPrimaryRowUi({ elapsedMsOverride: elapsedMs });
+  }
+
+  function syncProcessingUi() {
+    syncProcessingShellUi();
+    syncPrimaryRowUi();
+    syncElapsedUi();
+  }
+
   function stopElapsedTimer() {
     if (elapsedTimerId === null) return;
     window.clearInterval(elapsedTimerId);
     elapsedTimerId = null;
   }
 
+  // The timer exists only while processing is active so elapsed updates do not
+  // keep running after the processing-mode lock has been released.
   function ensureElapsedTimer() {
     if (elapsedTimerId !== null) return;
     elapsedTimerId = window.setInterval(() => {
@@ -225,7 +366,9 @@
         stopElapsedTimer();
         return;
       }
-      syncProcessingUi();
+      const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
+      syncDelayedBusyCopyUi(elapsedMs);
+      syncElapsedUi({ elapsedMsOverride: elapsedMs });
     }, ELAPSED_TICK_MS);
   }
 
@@ -235,7 +378,6 @@
 
   function applyTranslations() {
     syncAbortButtonUi();
-    syncPrepareStatusUi();
     syncProcessingUi();
   }
 
@@ -249,7 +391,7 @@
       lastExecutionElapsedMs = null;
     } else if (prevActive && !nextState.active) {
       lastExecutionElapsedMs = getElapsedMsSince(prevState.sinceEpochMs);
-      pendingExecutionRoute = '';
+      resetPendingExecutionContextState();
     }
 
     syncProcessingUi();
@@ -269,23 +411,25 @@
     }
   }
 
-  function beginPrepare() {
+  function beginPrepare(context = {}) {
+    updatePendingSourceFileNameFromContext(context);
     prepareActiveCount += 1;
-    syncPrepareStatusUi();
+    syncProcessingUi();
   }
 
   function endPrepare() {
     prepareActiveCount = Math.max(0, prepareActiveCount - 1);
-    syncPrepareStatusUi();
+    syncProcessingUi();
   }
 
   function setPendingExecutionContext(context = {}) {
     pendingExecutionRoute = resolvePendingRouteFromContext(context);
+    updatePendingSourceFileNameFromContext(context);
     syncProcessingUi();
   }
 
   function clearPendingExecutionContext() {
-    pendingExecutionRoute = '';
+    resetPendingExecutionContextState();
     syncProcessingUi();
   }
 
@@ -324,4 +468,3 @@
 // =============================================================================
 // End of public/js/text_extraction_status_ui.js
 // =============================================================================
-

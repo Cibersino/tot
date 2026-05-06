@@ -117,7 +117,8 @@
       "title": "toT — Attività",
       "labels": {
         "name": "Nome",
-        "total": "TEMPO TOTALE",
+        "summary_total": "Totale",
+        "summary_left": "Resta",
         "empty": "(vuoto)",
         "search": "Cerca",
         "search_placeholder": "Cerca nella biblioteca..."
@@ -127,7 +128,6 @@
         "tiempo": "Tempo",
         "percent": "%",
         "falta": "Manca",
-        "tipo": "Tipo",
         "enlace": "Link",
         "comentario": "",
         "acciones": "Azioni"
@@ -258,6 +258,7 @@
         "intro": "Questo test serve a stimare la tua velocità reale di lettura tramite una sessione guidata. L'app aprirà il testo e aspetterà che tu prema Play (▶) nella Finestra flottante quando sei pronto per iniziare. Dopo l'avvio del test, non premere Pausa (⏸) finché non hai finito di leggere: Pausa termina il test; non mette in pausa il timer. Usa Stop/Reimposta (⏹) solo se vuoi annullare il test. In seguito potrai rivedere eventuali domande di comprensione, se il testo le include, e alla fine creare un preset dal risultato.\nPrima di iniziare, tieni presente che questi testi di prova richiedono di solito tra 5 e 15 minuti di concentrazione ininterrotta.\nQuesto pool usa testi brevi, quindi interpreta il risultato con cautela. Non dovrebbe essere estrapolato direttamente ai testi lunghi, dove di solito entrano in gioco fattori positivi, come l'acquisizione di fluidità e di contesto, e fattori negativi, come la ricapitolazione mentale e la fatica.",
         "eligible_count": "File idonei:",
         "pool_exhausted_message": "Non ci sono più file di test non usati. Reimposta il pool o aggiungi altri file.",
+        "visible_empty_bundled_hidden_message": "I file di test integrati sono attualmente nascosti e non rimangono file di test visibili non utilizzati. Mostra di nuovo i file integrati oppure importa altri file per continuare.",
         "close_aria": "Chiudi la finestra di dialogo del test di velocità di lettura",
         "start_random_confirm": "Questo sovrascriverà il testo attuale con un testo casuale idoneo dal pool. Vuoi continuare?",
         "reset_confirm": "Questo reimposterà l'intero pool del test e contrassegnerà di nuovo tutti i suoi file come non usati. Vuoi continuare?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Ottieni altri file",
-          "import_files": "Importa file...",
+          "import_files": "Importa file",
           "show_instructions": "Mostra istruzioni",
           "hide_instructions": "Nascondi istruzioni",
           "start_random_text": "Avvia con testo casuale",
-          "start_current_text": "Avvia con il testo corrente"
+          "start_current_text": "Avvia con il testo corrente",
+          "show_bundled_entries": "Test base"
         },
         "tooltips": {
+          "show_bundled_entries": "Includi nel pool i file di test iniziali forniti con l'app",
           "get_more_files": "Ottieni altri file di test dalla cartella di Google Drive",
           "import_files": "Importa file di test dal tuo dispositivo",
           "reset_pool": "Reimposta il pool del test",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Il test di velocità di lettura può iniziare solo da uno stato stabile dell'app. Chiudi le finestre secondarie e assicurati che il cronometro sia fermo.",
       "reading_test_pool_error": "Si è verificato un errore durante il controllo del pool del test di velocità di lettura.",
       "reading_test_no_matching_files": "Non restano file di test non usati che corrispondano alla selezione corrente.",
+      "reading_test_visible_empty_bundled_hidden": "I file di test integrati sono nascosti e al momento non sono disponibili file di test visibili non utilizzati. Mostra di nuovo i file integrati oppure importa altri file per continuare.",
       "reading_test_current_text_empty": "Il testo corrente è vuoto. Carica o scrivi prima un testo prima di avviare il test con il testo corrente.",
       "reading_test_result_invalid": "Il risultato del test non ha potuto essere convertito in un WPM valido. Il flusso è terminato senza aprire la finestra del preset.",
       "reading_test_result_unavailable": "Non è stato possibile mostrare il risultato della velocità di lettura. Il flusso è continuato.",

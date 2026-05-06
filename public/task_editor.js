@@ -27,7 +27,6 @@ const {
   DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
-  TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 } = AppConstants;
 
@@ -59,8 +58,10 @@ const taskNameLabel = document.getElementById('taskNameLabel');
 const taskNameInput = document.getElementById('taskNameInput');
 const btnTaskSave = document.getElementById('btnTaskSave');
 const btnTaskDelete = document.getElementById('btnTaskDelete');
-const taskTotalLabel = document.getElementById('taskTotalLabel');
-const taskTotalValue = document.getElementById('taskTotalValue');
+const taskSummaryTotalLabel = document.getElementById('taskSummaryTotalLabel');
+const taskSummaryTotalValue = document.getElementById('taskSummaryTotalValue');
+const taskSummaryLeftLabel = document.getElementById('taskSummaryLeftLabel');
+const taskSummaryLeftValue = document.getElementById('taskSummaryLeftValue');
 const btnTaskAddRow = document.getElementById('btnTaskAddRow');
 const btnTaskLoadLibrary = document.getElementById('btnTaskLoadLibrary');
 const tableBody = document.getElementById('taskTableBody');
@@ -70,7 +71,6 @@ const thTexto = document.getElementById('thTexto');
 const thTiempo = document.getElementById('thTiempo');
 const thPercent = document.getElementById('thPercent');
 const thFalta = document.getElementById('thFalta');
-const thTipo = document.getElementById('thTipo');
 const thEnlace = document.getElementById('thEnlace');
 const thComentario = document.getElementById('thComentario');
 const thAcciones = document.getElementById('thAcciones');
@@ -128,7 +128,6 @@ const COLUMN_KEYS = [
   { key: 'tiempo', th: thTiempo },
   { key: 'percent', th: thPercent },
   { key: 'falta', th: thFalta },
-  { key: 'tipo', th: thTipo },
   { key: 'enlace', th: thEnlace },
   { key: 'comentario', th: thComentario },
   { key: 'acciones', th: thAcciones },
@@ -232,9 +231,19 @@ function getFaltaSeconds(row) {
   return tiempo * (1 - pct / 100);
 }
 
-function updateTotal() {
-  const total = rows.reduce((acc, r) => acc + getFaltaSeconds(r), 0);
-  taskTotalValue.textContent = formatDuration(total);
+function updateSummary() {
+  const summary = rows.reduce((acc, row) => {
+    acc.totalSeconds += Number(row.tiempoSeconds) || 0;
+    acc.leftSeconds += getFaltaSeconds(row);
+    return acc;
+  }, { totalSeconds: 0, leftSeconds: 0 });
+
+  if (taskSummaryTotalValue) {
+    taskSummaryTotalValue.textContent = formatDuration(summary.totalSeconds);
+  }
+  if (taskSummaryLeftValue) {
+    taskSummaryLeftValue.textContent = formatDuration(summary.leftSeconds);
+  }
 }
 
 function openModal(modalEl) {
@@ -346,7 +355,6 @@ function createRow(data = {}) {
     texto: String(data.texto || ''),
     tiempoSeconds: Number.isFinite(data.tiempoSeconds) ? data.tiempoSeconds : 0,
     percentComplete: Number.isFinite(data.percentComplete) ? data.percentComplete : 0,
-    tipo: String(data.tipo || ''),
     enlace: String(data.enlace || ''),
     comentario: String(data.comentario || ''),
     snapshotRelPath: normalizeSnapshotRelPath(data.snapshotRelPath || ''),
@@ -401,7 +409,7 @@ function renderRow(row) {
     if (parsed !== row.tiempoSeconds) {
       row.tiempoSeconds = parsed;
       tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
-      updateTotal();
+      updateSummary();
       markDirty();
     }
     tiempoInput.value = formatDuration(row.tiempoSeconds);
@@ -426,7 +434,7 @@ function renderRow(row) {
     if (parsed !== row.percentComplete) {
       row.percentComplete = parsed;
       tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
-      updateTotal();
+      updateSummary();
       markDirty();
     }
     percentInput.value = `${row.percentComplete}%`;
@@ -441,21 +449,6 @@ function renderRow(row) {
   const tdFalta = document.createElement('td');
   tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
   tdFalta.appendChild(tdFaltaValue);
-
-  // Type
-  const tdTipo = document.createElement('td');
-  const tipoInput = document.createElement('input');
-  tipoInput.type = 'text';
-  tipoInput.maxLength = TASK_ROW_TYPE_MAX_CHARS;
-  tipoInput.value = row.tipo;
-  tipoInput.addEventListener('input', () => {
-    const next = tipoInput.value;
-    if (next !== row.tipo) {
-      row.tipo = next;
-      markDirty();
-    }
-  });
-  tdTipo.appendChild(tipoInput);
 
   // Link
   const tdEnlace = document.createElement('td');
@@ -560,7 +553,6 @@ function renderRow(row) {
   trEl.appendChild(tdTiempo);
   trEl.appendChild(tdPercent);
   trEl.appendChild(tdFalta);
-  trEl.appendChild(tdTipo);
   trEl.appendChild(tdEnlace);
   trEl.appendChild(tdComentario);
   trEl.appendChild(tdActions);
@@ -574,7 +566,7 @@ function renderTable() {
   rows.forEach((row) => {
     tableBody.appendChild(renderRow(row));
   });
-  updateTotal();
+  updateSummary();
 }
 
 function collectDefaultColumnWidths() {
@@ -603,9 +595,24 @@ function applyColumnWidths(widths) {
       sum += w;
     }
   });
-  if (taskTable && sum > 0) {
-    taskTable.style.width = `${sum}px`;
+  if (taskTable) {
+    taskTable.style.width = '';
+    taskTable.style.minWidth = sum > 0 ? `${sum}px` : '';
   }
+}
+
+function filterKnownColumnWidths(widths) {
+  if (!widths || typeof widths !== 'object') return {};
+  const knownKeys = new Set(COLUMN_KEYS.map(({ key }) => key));
+  const filtered = {};
+  Object.keys(widths).forEach((key) => {
+    if (!knownKeys.has(key)) return;
+    const width = widths[key];
+    if (Number.isFinite(width) && width > 0) {
+      filtered[key] = width;
+    }
+  });
+  return filtered;
 }
 
 async function saveColumnWidths() {
@@ -637,7 +644,7 @@ async function loadColumnWidths() {
     await saveColumnWidths();
     return;
   }
-  columnWidths = { ...defaults, ...res.widths };
+  columnWidths = { ...defaults, ...filterKnownColumnWidths(res.widths) };
   applyColumnWidths(columnWidths);
 }
 
@@ -769,7 +776,6 @@ async function saveTask() {
       texto: r.texto,
       tiempoSeconds: r.tiempoSeconds,
       percentComplete: r.percentComplete,
-      tipo: r.tipo,
       enlace: r.enlace,
       comentario: r.comentario,
       snapshotRelPath: normalizeSnapshotRelPath(r.snapshotRelPath || ''),
@@ -864,7 +870,6 @@ function renderLibraryItems(items) {
         texto: entry.texto,
         tiempoSeconds: Number(entry.tiempoSeconds) || 0,
         percentComplete: 0,
-        tipo: entry.tipo || '',
         enlace: entry.enlace || '',
         comentario: entry.comentario || '',
         snapshotRelPath: entry.snapshotRelPath || '',
@@ -902,8 +907,7 @@ function filterLibraryItems() {
   }
   const filtered = libraryItemsCache.filter((entry) => {
     const texto = String(entry.texto || '').toLowerCase();
-    const tipo = String(entry.tipo || '').toLowerCase();
-    return texto.includes(term) || tipo.includes(term);
+    return texto.includes(term);
   });
   renderLibraryItems(filtered);
 }
@@ -952,7 +956,8 @@ async function applyTaskEditorTranslations() {
   await ensureTaskEditorTranslations(idiomaActual);
   document.title = tr('renderer.tasks.title');
   if (taskNameLabel) taskNameLabel.textContent = tr('renderer.tasks.labels.name');
-  if (taskTotalLabel) taskTotalLabel.textContent = tr('renderer.tasks.labels.total');
+  if (taskSummaryTotalLabel) taskSummaryTotalLabel.textContent = tr('renderer.tasks.labels.summary_total');
+  if (taskSummaryLeftLabel) taskSummaryLeftLabel.textContent = tr('renderer.tasks.labels.summary_left');
   if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.buttons.save');
   if (btnTaskDelete) btnTaskDelete.textContent = tr('renderer.tasks.buttons.delete');
   if (btnTaskAddRow) btnTaskAddRow.textContent = tr('renderer.tasks.buttons.add_row');
@@ -962,7 +967,6 @@ async function applyTaskEditorTranslations() {
   if (thTiempo) thTiempo.textContent = tr('renderer.tasks.columns.tiempo');
   if (thPercent) thPercent.textContent = tr('renderer.tasks.columns.percent');
   if (thFalta) thFalta.textContent = tr('renderer.tasks.columns.falta');
-  if (thTipo) thTipo.textContent = tr('renderer.tasks.columns.tipo');
   if (thEnlace) thEnlace.textContent = tr('renderer.tasks.columns.enlace');
   if (thComentario) thComentario.textContent = tr('renderer.tasks.columns.comentario');
   if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones');

@@ -117,7 +117,8 @@
       "title": "toT — 任務",
       "labels": {
         "name": "名稱",
-        "total": "總時間",
+        "summary_total": "總計",
+        "summary_left": "剩餘",
         "empty": "（空）",
         "search": "搜尋",
         "search_placeholder": "在資料庫中搜尋..."
@@ -127,7 +128,6 @@
         "tiempo": "時間",
         "percent": "%",
         "falta": "剩餘",
-        "tipo": "類型",
         "enlace": "連結",
         "comentario": "",
         "acciones": "動作"
@@ -258,6 +258,7 @@
         "intro": "此測試用於透過引導式工作階段估計你的實際閱讀速度。應用程式會開啟文字，並等待你準備好後在浮動視窗中按 Play（▶）。測試開始後，在讀完之前不要按 Pause（⏸）：Pause 會結束測試，而不是暫停計時。只有在想取消測試時才使用 Stop/Reset（⏹）。之後，如果文字包含理解問題，你可以查看這些問題；最後，可以根據結果建立一個預設值。\n開始前請注意，這些測試文字通常需要 5 到 15 分鐘的連續專注，期間不要中斷。\n此文字池使用短文字，因此請審慎解讀結果。它不應直接外推至長文字，因為長文字通常會涉及正向因素，例如流暢度和脈絡累積，也會涉及負向因素，例如心理回顧和疲勞。",
         "eligible_count": "符合條件的檔案：",
         "pool_exhausted_message": "沒有剩餘未使用的測試檔案。請重設文字池或新增更多檔案。",
+        "visible_empty_bundled_hidden_message": "內建測試檔案目前已隱藏，而且已沒有可見的未使用測試檔案。請重新顯示內建檔案，或匯入更多檔案後再繼續。",
         "close_aria": "關閉閱讀速度測試對話框",
         "start_random_confirm": "這會用文字池中一個符合條件的隨機文字覆蓋目前文字。要繼續嗎？",
         "reset_confirm": "這會重設整個測試文字池，並將其中所有檔案重新標記為未使用。要繼續嗎？",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "取得更多檔案",
-          "import_files": "匯入檔案...",
+          "import_files": "匯入檔案",
           "show_instructions": "顯示說明",
           "hide_instructions": "隱藏說明",
           "start_random_text": "以隨機文字開始",
-          "start_current_text": "以目前文字開始"
+          "start_current_text": "以目前文字開始",
+          "show_bundled_entries": "基礎測試"
         },
         "tooltips": {
+          "show_bundled_entries": "將應用程式內建的初始測試檔案包含到池中",
           "get_more_files": "從 Google Drive 資料夾取得更多測試檔案",
           "import_files": "從你的裝置匯入測試檔案",
           "reset_pool": "重設測試文字池",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "閱讀速度測試只能在應用程式處於穩定狀態時啟動。請關閉次要視窗，並確保碼錶已停止。",
       "reading_test_pool_error": "檢查閱讀速度測試文字池時發生錯誤。",
       "reading_test_no_matching_files": "沒有剩餘未使用且符合目前選擇的測試檔案。",
+      "reading_test_visible_empty_bundled_hidden": "內建測試檔案已隱藏，目前沒有可見的未使用測試檔案可用。請重新顯示內建檔案，或匯入更多檔案後再繼續。",
       "reading_test_current_text_empty": "目前文字為空。請先載入或輸入文字，再以目前文字開始測試。",
       "reading_test_result_invalid": "測試結果無法轉換為有效的 WPM。流程結束，未開啟預設值對話框。",
       "reading_test_result_unavailable": "無法顯示閱讀速度結果。流程已繼續。",

@@ -117,7 +117,8 @@
       "title": "toT — Tasks",
       "labels": {
         "name": "Name",
-        "total": "TOTAL TIME",
+        "summary_total": "Total",
+        "summary_left": "Left",
         "empty": "(empty)",
         "search": "Search",
         "search_placeholder": "Search library..."
@@ -127,7 +128,6 @@
         "tiempo": "Time",
         "percent": "%",
         "falta": "Left",
-        "tipo": "Type",
         "enlace": "Link",
         "comentario": "",
         "acciones": "Actions"
@@ -258,6 +258,7 @@
         "intro": "This test is meant to estimate your real reading speed through a guided session. The app will open the text and wait for you to press Play (▶) in the Floating Window when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nBefore you begin, keep in mind that these test texts usually require between 5 and 15 minutes of uninterrupted concentration.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.",
         "eligible_count": "Eligible files:",
         "pool_exhausted_message": "There are no remaining unused test files. Reset the pool or add more files.",
+        "visible_empty_bundled_hidden_message": "Built-in test files are currently hidden, and no visible unused test files remain. Show the built-in files again or import more files to continue.",
         "close_aria": "Close reading speed test dialog",
         "start_random_confirm": "This will overwrite the current text with a random eligible text from the pool. Do you want to continue?",
         "reset_confirm": "This will reset the whole test pool and mark all of its files as unused again. Do you want to continue?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Get more files",
-          "import_files": "Import files...",
+          "import_files": "Import files",
           "show_instructions": "Show instructions",
           "hide_instructions": "Hide instructions",
           "start_random_text": "Start with random text",
-          "start_current_text": "Start with current text"
+          "start_current_text": "Start with current text",
+          "show_bundled_entries": "Base tests"
         },
         "tooltips": {
+          "show_bundled_entries": "Include the app's bundled starter test files in the pool",
           "get_more_files": "Get more test files from the Google Drive folder",
           "import_files": "Import test files from your device",
           "reset_pool": "Reset test pool",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "The reading speed test can only start from a steady app state. Close secondary windows and make sure the stopwatch is stopped.",
       "reading_test_pool_error": "An error occurred while checking the reading speed test pool.",
       "reading_test_no_matching_files": "There are no remaining unused test files that match the current selection.",
+      "reading_test_visible_empty_bundled_hidden": "Built-in test files are hidden, and no visible unused test files are currently available. Show the built-in files again or import more files to continue.",
       "reading_test_current_text_empty": "The current text is empty. Load or type a text before starting the test with current text.",
       "reading_test_result_invalid": "The test result could not be converted into a valid WPM. The flow ended without opening the preset modal.",
       "reading_test_result_unavailable": "The reading speed result could not be shown. The flow continued.",

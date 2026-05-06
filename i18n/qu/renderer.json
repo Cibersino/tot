@@ -117,7 +117,8 @@
       "title": "toT — Llamk'anakuna",
       "labels": {
         "name": "Suti",
-        "total": "LLAPAN PACHA",
+        "summary_total": "Llapan",
+        "summary_left": "Puchuq",
         "empty": "(ch'usaq)",
         "search": "Maskay",
         "search_placeholder": "Bibliotecapi maskay..."
@@ -127,7 +128,6 @@
         "tiempo": "Pacha",
         "percent": "%",
         "falta": "Qhipa",
-        "tipo": "Laya",
         "enlace": "Link",
         "comentario": "",
         "acciones": "Ruwanakuna"
@@ -258,6 +258,7 @@
         "intro": "Kay testqa pusasqa sesiónwan chiqap ñawinchay utqaynikita yuyarinapaqmi. Appqa qillqata kichanqa hinaspa Wayraqpi Puriq Ventanapi Play (▶) ñit'inaykita suyanqa qallarinaykipaq wakichisqa kachkaspa. Test qallariqtin, ama Pausa (⏸) ñit'iychu ñawinchayta tukunkama: Pausa testta tukun; manan pachayupaqta samachinchu. Testta saqinaykipaqlla Detener/Reiniciar (⏹) llamk'achiy. Chaymantaqa, qillqaqa kanman chayqa, hamut'ay tapukuykunata qhawankiman; tukukuypiqa ruwasqawan preset ruwankiman.\\nQallarinaykipaq ñawpaqta yuyariy: kay prueba qillqakunaqa aswanqa 5manta 15 minutokama mana saqispa yuyayta munanku.\\nKay poolqa taksa qillqakunata llamk'achin; chayrayku ruwasqata ama sinchita hap'iychu. Mana chiqapta hatun qillqakunaman apakunachu, chaypim allin kaqkunapas, hina fluidez/contexto hap'iy, chaymanta mana allin kaqkunapas, hina yuyaypi kutichiy hinaspa sayk'uy, yaykun.",
         "eligible_count": "Akllasqa kananpaq archivokuna:",
         "pool_exhausted_message": "Mana llamk'achisqachu test archivokuna puchuqchu. Poolta kutichiy utaq aswan archivokuna yapay.",
+        "visible_empty_bundled_hidden_message": "Apppi kaq test archivokuna pakasqa kachkan hinaspa mana rikukuq mana llamk'achisqa test archivokuna manañam kachkanchu. Wakmanta rikuchiy utaq aswan archivokunata apamuy qatiqaypaq.",
         "close_aria": "Ñawinchay utqaynin test dialogota wichq'ay",
         "start_random_confirm": "Kayqa kunan qillqata poolmanta akllasqa mayqinpas qillqawan qillqanqa. Hinalla riyta munankichu?",
         "reset_confirm": "Kayqa llapan test poolta kutichinqa hinaspa llapan archivonta mana llamk'achisqahina markanqa. Hinalla riyta munankichu?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Aswan archivokunata tariy",
-          "import_files": "Archivokunata apamuy...",
+          "import_files": "Archivokunata apamuy",
           "show_instructions": "Kamachiykunata rikuchiy",
           "hide_instructions": "Kamachiykunata pakay",
           "start_random_text": "Mayqinpas qillqawan qallariy",
-          "start_current_text": "Kunan qillqawan qallariy"
+          "start_current_text": "Kunan qillqawan qallariy",
+          "show_bundled_entries": "Test base"
         },
         "tooltips": {
+          "show_bundled_entries": "Poolman yapay apppi kaq qallariy test archivokunata",
           "get_more_files": "Google Drive carpetamanta aswan test archivokuna tariy",
           "import_files": "Dispositivoykimanta test archivokuna apamuy",
           "reset_pool": "Test poolta kutichiy",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Ñawinchay utqaynin testqa apppa estable estadonmantalla qallariy atikun. Iskay ñiqi ventanakunata wichq'ay hinaspa pachayupaq sayasqa kasqanta qhaway.",
       "reading_test_pool_error": "Ñawinchay utqaynin test pool qhawaypi pantay karqan.",
       "reading_test_no_matching_files": "Kunan akllasqawan tinkuq mana llamk'achisqa test archivokuna puchuqchu.",
+      "reading_test_visible_empty_bundled_hidden": "Apppi kaq test archivokuna pakasqa kachkan hinaspa kunanqa mana rikukuq mana llamk'achisqa test archivokuna manam kanchu. Wakmanta rikuchiy utaq aswan archivokunata apamuy qatiqaypaq.",
       "reading_test_current_text_empty": "Kunan qillqa ch'usaqmi. Kunan qillqawan test qallarinaykipaq qillqata kargay utaq qillqay.",
       "reading_test_result_invalid": "Test ruwasqata mana allin WPMman tikray atikurqanchu. Flujoqa preset modal mana kichaspa tukurqan.",
       "reading_test_result_unavailable": "Ñawinchay utqaynin ruwasqata mana rikuchiy atikurqanchu. Flujoqa hinalla rirqan.",

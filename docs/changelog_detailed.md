@@ -53,6 +53,8 @@ Reglas:
 - La ventana principal suma una entrada fija para la extensión del navegador, reordena parte de sus controles compactos y cambia la forma de renderizar el preview del texto actual para manejar mejor bidi/RTL.
 - La superficie histórica `import/extract` queda consolidada como `text extraction` en UI, preload, IPC y storage relacionado.
 - El editor de tareas deja de ser una ventana fija y pasa a admitir `resize` / maximizado con persistencia de estado válida entre sesiones.
+- El editor de tareas elimina el campo/columna `Tipo` de su UI, estado runtime, persistencia de filas y traducciones propias.
+- La entrada del reading speed test deja de tratar los starter files integrados como siempre visibles: ahora expone una preferencia persistida para mostrarlos/ocultarlos, recalcula elegibilidad sobre el subconjunto visible y distingue explícitamente el caso “pool visible vacío por integrados ocultos” del agotamiento real del pool.
 - La ayuda contextual deja de quedar acotada a `7` tips y pasa a un catálogo unificado de `54`.
 
 ### Agregado
@@ -62,6 +64,7 @@ Reglas:
 - Persistencia dedicada del estado del editor de tareas en `config/tasks/task_editor_state.json`, con `reduced` + `maximized`.
 - Campo derivado `spellcheckAvailable` en la superficie de settings consumida por renderers para distinguir preferencia guardada de disponibilidad real del diccionario.
 - Catálogo de ayuda ampliado a `54` tips shipped en la ventana principal.
+- Preferencia persistida `showBundledEntries` en `config/reading_test_pool_state.json`, junto con un toggle `Show built-in test files` en la entrada del reading speed test y el estado vacío explícito `visible_empty_bundled_hidden` para esa superficie.
 
 ### Cambiado
 
@@ -73,8 +76,11 @@ Reglas:
 - La barra de estado de extracción en la ventana principal pasa a mostrar copy dependiente de la ruta (`native` / `ocr`) y tiempo transcurrido vivo mientras el procesamiento está activo.
 - La botonera compacta de la ventana principal cambia de forma visible: presets `nuevo/editar/eliminar/restaurar`, ayuda y toggle VF adoptan glyphs compactos; además `editar` / `eliminar preset` pasan a deshabilitarse cuando no hay selección vigente.
 - La entrada del reading speed test reorganiza su toolbar: el conteo elegible se separa en label/valor, `Restablecer pool` pasa a botón compacto y se agregan tooltips específicos a `obtener más archivos`, importar y acciones de inicio.
+- La entrada del reading speed test agrega el checkbox persistido `Show built-in test files`, mantiene `poolExhausted` con semántica de agotamiento real del pool completo y recalcula conteos, warnings y random-start solo contra las entradas visibles después de aplicar esa preferencia.
+- El reading speed test deja de colapsar todos los vacíos del pool en el mismo warning: si quedan starter files bundled sin usar pero ocultos por preferencia, la UI muestra un mensaje específico y el start renderer/main devuelve guidance diferenciada en lugar de reutilizar el caso genérico de `pool exhausted`.
 - La ventana del editor aplica `dir="auto"` al `textarea`, sincroniza atributos de idioma de ventana y deja de tratar spellcheck como simple preferencia booleana: ahora refleja también si el idioma activo tiene diccionario compatible en el runtime actual.
 - El editor de tareas deja de abrir como ventana fija: ahora permite `resize`, `maximize`, restaura estado reducido/maximizado y solo reaplica bounds persistidos cuando siguen siendo válidos.
+- El editor de tareas elimina la columna/campo `Tipo`: la tabla, el estado renderer, la normalización main-owned, la persistencia de listas/biblioteca y las traducciones del propio editor dejan de transportar ese dato, sin agregar migraciones ni ramas especiales de compatibilidad.
 - El editor de tareas deja de usar labels textuales largos en sus acciones de fila/biblioteca y pasa a iconografía compacta (`↗️`, `📥`, `💬`, `↑`, `↓`, `🗑`, `💾`) con `title` / `aria-label`.
 - La ventana `Find/Replace` del editor pasa a ser transparente y deja de depender de texto visible en sus controles `prev/next/close`, apoyándose en tooltips/aria para esa micro-UI.
 - Las ventanas `reading_test_questions` y `reading_test_result` pasan a renderizar porcentajes, enteros y resúmenes con separadores del locale efectivo, manteniendo los valores invariantes aislados para evitar mezclas bidi.
@@ -86,6 +92,11 @@ Reglas:
 - Las ventanas auxiliares del reading speed test dejan de mezclar dirección de texto o formato numérico del locale por defecto del runtime y pasan a respetar el idioma/configuración efectiva del usuario.
 - La reapertura del editor de tareas evita geometrías inválidas o fuera de pantalla al validar bounds persistidos contra los displays disponibles.
 - El preview del texto actual deja de exponer separadores `... | ...` y fragmentos truncados con dirección implícita que podían romper la lectura visual en textos RTL o mixtos.
+- El checkbox `Show built-in test files` del reading speed test deja de revertirse visualmente al intentar desmarcarlo: la UI conserva el valor elegido mientras persiste la preferencia y solo hace rollback si la actualización main-owned falla.
+
+### Removido
+
+- Editor de tareas: desaparece el concepto `Tipo` / `Type` en runtime. La tabla ya no muestra esa columna, las filas de tareas/biblioteca ya no persisten ese campo y `renderer.tasks.columns.tipo` sale de los bundles activos del renderer.
 
 ### Migración
 
@@ -114,11 +125,18 @@ Reglas:
 - Storage:
   - `config/tasks/task_editor_position.json` deja de ser el archivo observado por la app actual.
   - nuevo archivo observado: `config/tasks/task_editor_state.json`.
+  - `config/tasks/lists/**/*.json`: las filas del editor de tareas pasan de `{ texto, tiempoSeconds, percentComplete, tipo, enlace, comentario, snapshotRelPath? }` a `{ texto, tiempoSeconds, percentComplete, enlace, comentario, snapshotRelPath? }`.
+  - `config/tasks/library.json`: las filas persistidas pasan de `{ texto, tiempoSeconds, tipo, enlace, comentario?, snapshotRelPath? }` a `{ texto, tiempoSeconds, enlace, comentario?, snapshotRelPath? }`.
   - `config/import_extract_state.json` deja de ser el archivo observado por la app actual.
   - nuevo archivo observado: `config/text_extraction_state.json`.
+  - `config/reading_test_pool_state.json` amplía su shape con el booleano top-level `showBundledEntries`, preservado junto con `entries[*].used` y `entries[*].managedBundledHash`.
 - Settings payload hacia renderer:
   - `get-settings` y `settings-updated` pueden incluir el booleano derivado `spellcheckAvailable`.
   - `spellcheckAvailable` no se persiste en `user_settings.json`; se calcula por runtime a partir de idioma activo + diccionarios disponibles.
+- Reading speed test entry flow:
+  - `reading-test-get-entry-data` amplía su payload con `showBundledEntries:boolean` y `entryEmptyState:'none'|'pool_exhausted'|'visible_empty_bundled_hidden'`; `entries` pasa a representar solo las entradas visibles tras aplicar la preferencia bundled actual, mientras `poolExhausted` conserva semántica informativa sobre el pool completo.
+  - nuevo IPC `reading-test-set-show-bundled-entries(boolean)` para persistir la preferencia y devolver la misma shape recomputada del entry flow.
+  - preload `window.electronAPI` agrega `setReadingTestShowBundledEntries(value)` como wrapper de ese IPC compatible hacia renderer.
 
 ---
 

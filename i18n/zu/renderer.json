@@ -117,7 +117,8 @@
       "title": "toT — Imisebenzi",
       "labels": {
         "name": "Igama",
-        "total": "ISIKHATHI SISONKE",
+        "summary_total": "Isamba",
+        "summary_left": "Okusele",
         "empty": "(akunalutho)",
         "search": "Sesha",
         "search_placeholder": "Sesha kulabhulali..."
@@ -127,7 +128,6 @@
         "tiempo": "Isikhathi",
         "percent": "%",
         "falta": "Esele",
-        "tipo": "Uhlobo",
         "enlace": "Isixhumanisi",
         "comentario": "",
         "acciones": "Izenzo"
@@ -258,6 +258,7 @@
         "intro": "Lokhu kuhlolwa kusiza ukulinganisa ijubane lakho langempela lokufunda ngeseshini eqondisiwe. I-app izovula umbhalo bese ilinda ukuthi ucindezele u-Play (▶) eWindini Elintantayo lapho usukulungele ukuqala. Uma ukuhlolwa sekuqalile, ungacindezeli u-Pause (⏸) uze uqede ukufunda: u-Pause uqeda ukuhlolwa; awumisi isibali-sikhathi. Sebenzisa u-Stop/Reset (⏹) kuphela uma ufuna ukukhansela ukuhlolwa. Ngemva kwalokho ungabuyekeza imibuzo yokuqonda uma umbhalo uyifaka, futhi ekugcineni udale iphrezethi ngomphumela.\nNgaphambi kokuba uqale, khumbula ukuthi le mibhalo yokuhlola ivamise ukudinga imizuzu emi-5 kuya kweyi-15 yokugxila okuqhubekayo, ngaphandle kweziphazamiso.\nLe pool isebenzisa imibhalo emifushane, ngakho humusha umphumela ngokuqapha. Akufanele welulwe ngqo emibhalweni emide, lapho kuvame ukungena khona izinto ezisizayo, njengokuthola ukugeleza nomongo, nezinto eziphazamisayo, njengokuphindaphinda engqondweni nokukhathala.",
         "eligible_count": "Amafayela afanelekile:",
         "pool_exhausted_message": "Asekho amafayela okuhlola angasetshenzisiwe. Setha kabusha i-pool noma engeza amafayela amaningi.",
+        "visible_empty_bundled_hidden_message": "Amafayela okuhlola akhelwe ngaphakathi afihliwe okwamanje, futhi awekho amafayela okuhlola abonakalayo angakasetshenziswa asele. Wabonise futhi amafayela akhelwe ngaphakathi noma ngenisa amanye amafayela ukuze uqhubeke.",
         "close_aria": "Vala ibhokisi lokuhlolwa kwejubane lokufunda",
         "start_random_confirm": "Lokhu kuzobhala phezu kombhalo wamanje ngombhalo okhethwe ngokungahleliwe ofanelekile ovela ku-pool. Uyafuna ukuqhubeka?",
         "reset_confirm": "Lokhu kuzosetha kabusha yonke i-pool yokuhlola futhi kumake wonke amafayela ayo njengangasetshenzisiwe futhi. Uyafuna ukuqhubeka?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Thola amafayela amaningi",
-          "import_files": "Ngenisa amafayela...",
+          "import_files": "Ngenisa amafayela",
           "show_instructions": "Bonisa imiyalelo",
           "hide_instructions": "Fihla imiyalelo",
           "start_random_text": "Qala ngombhalo ongahleliwe",
-          "start_current_text": "Qala ngombhalo wamanje"
+          "start_current_text": "Qala ngombhalo wamanje",
+          "show_bundled_entries": "Test base"
         },
         "tooltips": {
+          "show_bundled_entries": "Faka amafayela okuhlola okuqala afakwe kuhlelo lokusebenza ephulini",
           "get_more_files": "Thola amafayela okuhlola amaningi kufolda ye-Google Drive",
           "import_files": "Ngenisa amafayela okuhlola kudivayisi yakho",
           "reset_pool": "Setha kabusha i-pool yokuhlola",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Ukuhlolwa kwejubane lokufunda kungaqalwa kuphela lapho i-app isesimweni esizinzile. Vala amawindi esibili futhi uqinisekise ukuthi isibali-sikhathi simisiwe.",
       "reading_test_pool_error": "Kuvele iphutha ngesikhathi kuhlolwa i-pool yokuhlolwa kwejubane lokufunda.",
       "reading_test_no_matching_files": "Awekho amafayela okuhlola angasetshenzisiwe asele afana nokukhetha kwamanje.",
+      "reading_test_visible_empty_bundled_hidden": "Amafayela okuhlola akhelwe ngaphakathi afihliwe, futhi okwamanje awekho amafayela okuhlola abonakalayo angakasetshenziswa atholakalayo. Wabonise futhi amafayela akhelwe ngaphakathi noma ngenisa amanye amafayela ukuze uqhubeke.",
       "reading_test_current_text_empty": "Umbhalo wamanje awunalutho. Layisha noma bhala umbhalo ngaphambi kokuqala ukuhlolwa ngombhalo wamanje.",
       "reading_test_result_invalid": "Umphumela wokuhlolwa awukwazanga ukuguqulelwa ku-WPM evumelekile. Inqubo iphele ngaphandle kokuvula i-modal yephrezethi.",
       "reading_test_result_unavailable": "Ayikwazanga ukubonisa umphumela wejubane lokufunda. Inqubo iqhubekile.",

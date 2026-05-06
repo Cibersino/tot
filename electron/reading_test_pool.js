@@ -39,7 +39,11 @@ log.debug('Reading test pool starting...');
 
 const POOL_DIR_NAME = 'reading_speed_test_pool';
 const BUNDLED_POOL_SOURCE_DIR = path.join(__dirname, 'reading_test_pool');
-const POOL_STATE_FALLBACK = Object.freeze({ entries: {} });
+const SHOW_BUNDLED_ENTRIES_DEFAULT = true;
+const POOL_STATE_FALLBACK = Object.freeze({
+  showBundledEntries: SHOW_BUNDLED_ENTRIES_DEFAULT,
+  entries: {},
+});
 const DESCRIPTIVE_TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
 
 // =============================================================================
@@ -212,10 +216,15 @@ function normalizePoolStateEntry(rawEntry) {
   return entry;
 }
 
+function normalizeShowBundledEntries(rawValue) {
+  return rawValue !== false;
+}
+
 function normalizePoolState(rawState) {
   const source = rawState && typeof rawState === 'object' && !Array.isArray(rawState)
     ? rawState
     : {};
+  const showBundledEntries = normalizeShowBundledEntries(source.showBundledEntries);
   const rawEntries = source.entries && typeof source.entries === 'object' && !Array.isArray(source.entries)
     ? source.entries
     : {};
@@ -227,7 +236,10 @@ function normalizePoolState(rawState) {
     entries[normalizedPath] = normalizePoolStateEntry(rawEntry);
   }
 
-  return { entries };
+  return {
+    showBundledEntries,
+    entries,
+  };
 }
 
 function loadPoolState({ stateFilePath } = {}) {
@@ -243,6 +255,25 @@ function savePoolState(state, { stateFilePath } = {}) {
     ? path.resolve(stateFilePath)
     : path.resolve(getReadingTestPoolStateFile());
   saveJson(targetStateFile, normalizePoolState(state));
+}
+
+function getShowBundledEntries(options = {}) {
+  return loadPoolState(options).showBundledEntries;
+}
+
+function setShowBundledEntries(nextValue, options = {}) {
+  if (typeof nextValue !== 'boolean') {
+    return { ok: false, code: 'INVALID_SHOW_BUNDLED_ENTRIES' };
+  }
+
+  const state = loadPoolState(options);
+  state.showBundledEntries = nextValue;
+  savePoolState(state, options);
+  return {
+    ok: true,
+    showBundledEntries: state.showBundledEntries,
+    state,
+  };
 }
 
 function updatePoolStateEntry(snapshotRelPath, updater, options = {}) {
@@ -412,6 +443,7 @@ function parsePoolFile(filePath, rootPath, stateEntry) {
       text: dataInfo.data.text,
       tags: dataInfo.data.tags ? { ...dataInfo.data.tags } : {},
       used: !!(stateEntry && stateEntry.used === true),
+      isBundled: !!(stateEntry && typeof stateEntry.managedBundledHash === 'string' && stateEntry.managedBundledHash),
       hasValidQuestions: dataInfo.hasValidQuestions,
       questions: dataInfo.questions,
       rawData: dataInfo.data,
@@ -662,6 +694,24 @@ function serializePoolEntryMeta(entry) {
   };
 }
 
+function isBundledPoolEntry(entry) {
+  return !!(entry && entry.isBundled === true);
+}
+
+function getVisiblePoolEntries(entries, showBundledEntries) {
+  const list = Array.isArray(entries) ? entries : [];
+  if (showBundledEntries !== false) {
+    return list.slice();
+  }
+  return list.filter((entry) => !isBundledPoolEntry(entry));
+}
+
+function hasHiddenBundledUnusedEntries(entries, showBundledEntries) {
+  if (showBundledEntries !== false) return false;
+  const list = Array.isArray(entries) ? entries : [];
+  return list.some((entry) => isBundledPoolEntry(entry) && entry.used === false);
+}
+
 function findEntryBySnapshotRelPath(entries, snapshotRelPath) {
   const normalizedPath = normalizeSnapshotRelPath(snapshotRelPath);
   return (Array.isArray(entries) ? entries : []).find((entry) => entry.snapshotRelPath === normalizedPath) || null;
@@ -675,9 +725,14 @@ module.exports = {
   buildPoolSnapshotRelPath,
   loadPoolState,
   savePoolState,
+  getShowBundledEntries,
+  setShowBundledEntries,
   synchronizeBundledPoolContent,
   listPoolEntries,
   serializePoolEntryMeta,
+  isBundledPoolEntry,
+  getVisiblePoolEntries,
+  hasHiddenBundledUnusedEntries,
   sanitizePoolData,
   findEntryBySnapshotRelPath,
   markPoolEntryUsed,

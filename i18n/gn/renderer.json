@@ -117,7 +117,8 @@
       "title": "toT — Tembiaporã",
       "labels": {
         "name": "Téra",
-        "total": "ARAVO OPAVAVE",
+        "summary_total": "Opaite",
+        "summary_left": "Hemby",
         "empty": "(nandi)",
         "search": "Heka",
         "search_placeholder": "Heka biblioteca-pe..."
@@ -127,7 +128,6 @@
         "tiempo": "Aravo",
         "percent": "%",
         "falta": "Hembýva",
-        "tipo": "Tipo",
         "enlace": "Link",
         "comentario": "",
         "acciones": "Tembiapo"
@@ -258,6 +258,7 @@
         "intro": "Ko test oipytyvõ ojekuaa hag̃ua ne moñe’ẽ pya’ekue añetegua peteĩ sesión guiada rupive. App oipe’áta jehai ha oha’arõta reity Play (▶) Ventana ovevýivape reime vove listo reñepyrũ hag̃ua. Test oñepyrũ rire, ani eity Pausa (⏸) remohu’ã meve moñe’ẽ: Pausa omohu’ã test; nomombytu’úi cronómetro. Eipuru Detener/Reiniciar (⏹) rehejaséramo test añoite. Upe rire ikatu rehecha porandu comprensión rehegua jehai oguerekóramo, ha pahápe ejapo preset resultado reheve.\nReñepyrũ mboyve, ehechakuaa ko’ã jehai prueba rehegua oikotevẽ jepi 5 ha 15 minuto pa’ũme concentración oñekytĩ’ỹva.\nKo pool oipuru jehai mbyky, upévare einterpreta resultado ñeñangarekópe. Ndojeguerahaiva’erã directamente jehai puku rehe, upépe oikegui mba’e iporãva, fluidez ha contexto ñemopu’ãicha, ha mba’e ikatúva omboguejy, recapitulación mental ha kane’õicha.",
         "eligible_count": "Archivo ikatúva ojepuru:",
         "pool_exhausted_message": "Ndaipóri archivo test ojepuru’ỹva. Emoñepyrũjey pool térã embojoapy archivo hetave.",
+        "visible_empty_bundled_hidden_message": "Umi archivo test integradokuéra oñeñomi ha ndaipóri archivo test jehecháva ojepuru’ỹva. Ehechauka jey térã egueru archivo hetave ikatu hag̃uáicha resegi.",
         "close_aria": "Emboty diálogo moñe’ẽ pya’ekue test rehegua",
         "start_random_confirm": "Kóva omyengoviáta jehai ko’ág̃agua peteĩ jehai aleatorio ikatúva ojepuru pool-gui. ¿Resegisépa?",
         "reset_confirm": "Kóva omoñepyrũjeýta test pool tuichakue ha omoĩjeýta opaite archivo ojepuru’ỹvaramo. ¿Resegisépa?",
@@ -274,13 +275,15 @@
         },
         "buttons": {
           "get_more_files": "Ehupyty archivo hetave",
-          "import_files": "Eru archivo...",
+          "import_files": "Eru archivo",
           "show_instructions": "Ehechauka instrucciones",
           "hide_instructions": "Eñomi instrucciones",
           "start_random_text": "Eñepyrũ jehai aleatorio reheve",
-          "start_current_text": "Eñepyrũ jehai ko’ág̃agua reheve"
+          "start_current_text": "Eñepyrũ jehai ko’ág̃agua reheve",
+          "show_bundled_entries": "Test ypykuéva"
         },
         "tooltips": {
+          "show_bundled_entries": "Emoinge pool-pe umi archivo test ñepyrũrã integradokuéra app-pe",
           "get_more_files": "Ehupyty archivo test hetave Google Drive carpeta-gui",
           "import_files": "Eru archivo test ne dispositivo-gui",
           "reset_pool": "Emoñepyrũjey test pool",
@@ -425,6 +428,7 @@
       "reading_test_precondition_blocked": "Moñe’ẽ pya’ekue test ikatu oñepyrũ app estado estable guive añoite. Emboty ventana secundaria ha eñangareko cronómetro opyta hague.",
       "reading_test_pool_error": "Oiko jejavy ojehecha aja moñe’ẽ pya’ekue test pool.",
       "reading_test_no_matching_files": "Ndaipóri archivo test ojepuru’ỹva ojoajúva selección ko’ág̃agua ndive.",
+      "reading_test_visible_empty_bundled_hidden": "Umi archivo test integradokuéra oñeñomi ha ndaipóri archivo test jehecháva ojepuru’ỹva ko'ág̃a. Ehechauka jey térã egueru archivo hetave ikatu hag̃uáicha resegi.",
       "reading_test_current_text_empty": "Jehai ko’ág̃agua nandi. Emyanyhẽ térã ehai peteĩ jehai reñepyrũ mboyve test jehai ko’ág̃agua reheve.",
       "reading_test_result_invalid": "Test resultado ndaikatúi oñembohasa WPM válido-pe. Flujo opa oipe’a’ỹre modal preset.",
       "reading_test_result_unavailable": "Ndaikatúi ojehechauka moñe’ẽ pya’ekue resultado. Flujo osegi.",
