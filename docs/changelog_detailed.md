@@ -46,6 +46,15 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [1.3.0] toT - Internacional
+
+### Fecha release y último commit
+
+- Fecha: `2026-05-06`
+- Último commit: `<TBD>`
+
 ### Resumen de cambios
 
 - La app amplía su superficie multiidioma de `7` idiomas raíz a `30`, y ese catálogo pasa a reflejarse también en etiquetas de snapshots, dirección RTL y formateo numérico de ventanas auxiliares.
