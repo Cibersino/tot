@@ -175,6 +175,18 @@
     return formatElapsedTime(rawElapsedMs);
   }
 
+  function updatePendingSourceFileNameFromContext(context = {}) {
+    const sourceFileName = resolveSourceFileNameFromContext(context);
+    if (sourceFileName) {
+      pendingSourceFileName = sourceFileName;
+    }
+  }
+
+  function resetPendingExecutionContextState() {
+    pendingExecutionRoute = '';
+    pendingSourceFileName = '';
+  }
+
   function renderElapsedLabelWithValue(container, labelKey, valueText) {
     if (!container) return;
     renderLocalizedLabelWithInvariantValue(container, {
@@ -333,8 +345,7 @@
       lastExecutionElapsedMs = null;
     } else if (prevActive && !nextState.active) {
       lastExecutionElapsedMs = getElapsedMsSince(prevState.sinceEpochMs);
-      pendingExecutionRoute = '';
-      pendingSourceFileName = '';
+      resetPendingExecutionContextState();
     }
 
     syncProcessingUi();
@@ -355,10 +366,7 @@
   }
 
   function beginPrepare(context = {}) {
-    const sourceFileName = resolveSourceFileNameFromContext(context);
-    if (sourceFileName) {
-      pendingSourceFileName = sourceFileName;
-    }
+    updatePendingSourceFileNameFromContext(context);
     prepareActiveCount += 1;
     syncProcessingUi();
   }
@@ -370,16 +378,12 @@
 
   function setPendingExecutionContext(context = {}) {
     pendingExecutionRoute = resolvePendingRouteFromContext(context);
-    const sourceFileName = resolveSourceFileNameFromContext(context);
-    if (sourceFileName) {
-      pendingSourceFileName = sourceFileName;
-    }
+    updatePendingSourceFileNameFromContext(context);
     syncProcessingUi();
   }
 
   function clearPendingExecutionContext() {
-    pendingExecutionRoute = '';
-    pendingSourceFileName = '';
+    resetPendingExecutionContextState();
     syncProcessingUi();
   }
 
