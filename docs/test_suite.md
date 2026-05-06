@@ -628,6 +628,9 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Main controls are replaced by the processing UI while active.
+- The processing bar keeps the abort button visible and stable at the far right.
+- The first copy row shows the current processing status plus the source file basename only, never a full path.
+- Short basenames remain fully visible when they fit; longer basenames truncate without destabilizing the bar.
 - Main-window actions are blocked with user-facing feedback until processing ends or abort is requested.
 - Abort stops the run, exits processing mode, restores normal controls, and leaves current text unchanged by the cancelled run.
 
@@ -637,8 +640,9 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 2. Observe the processing label and elapsed text while the run is active.
 
 **Expected:**
-- Elapsed time remains visible and updates during processing.
-- OCR waiting copy shifts to the delayed wording after the long-running threshold.
+- The first copy row keeps showing `status · basename.ext` while the OCR status wording changes at the long-running threshold.
+- The second copy row remains elapsed-time only, stays visible during processing, and keeps updating.
+- OCR waiting copy shifts to the delayed wording after the long-running threshold without moving the abort button.
 
 ---
 

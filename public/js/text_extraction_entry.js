@@ -192,6 +192,9 @@
         prepareTextExtractionSelectedFile,
       });
       if (recovery && recovery.handled) {
+        if (!recovery.preparationRun) {
+          textExtractionStatusUi.clearPendingExecutionContext();
+        }
         return;
       }
       if (recovery && Object.prototype.hasOwnProperty.call(recovery, 'preparationRun')) {
@@ -206,12 +209,14 @@
       }
 
       if (!preparation || preparation.ok !== true) {
+        textExtractionStatusUi.clearPendingExecutionContext();
         log.error('text extraction prepare IPC failed:', preparation);
         window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
         return;
       }
 
       if (preparation.prepareFailed === true) {
+        textExtractionStatusUi.clearPendingExecutionContext();
         window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
         return;
       }
@@ -231,6 +236,7 @@
         try {
           routePreference = await window.Notify.promptTextExtractionRouteChoice({ preparation });
         } catch (err) {
+          textExtractionStatusUi.clearPendingExecutionContext();
           log.error('text extraction route-choice modal failed:', err);
           window.Notify.notifyMain('renderer.alerts.text_extraction_route_choice_required');
           return;
@@ -240,6 +246,7 @@
           return;
         }
         if (routePreference !== 'native' && routePreference !== 'ocr') {
+          textExtractionStatusUi.clearPendingExecutionContext();
           log.info('text extraction route-choice cancelled by user.');
           return;
         }
@@ -253,6 +260,9 @@
           routePreference,
         });
         if (ocrRouteRecovery && ocrRouteRecovery.handled) {
+          if (!ocrRouteRecovery.preparationRun) {
+            textExtractionStatusUi.clearPendingExecutionContext();
+          }
           return;
         }
         if (ocrRouteRecovery && Object.prototype.hasOwnProperty.call(ocrRouteRecovery, 'preparationRun')) {
@@ -267,12 +277,14 @@
         }
 
         if (!preparation || preparation.ok !== true) {
+          textExtractionStatusUi.clearPendingExecutionContext();
           log.error('text extraction OCR route recovery prepare IPC failed:', preparation);
           window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
           return;
         }
 
         if (preparation.prepareFailed === true) {
+          textExtractionStatusUi.clearPendingExecutionContext();
           window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
           return;
         }
@@ -442,5 +454,4 @@
 // =============================================================================
 // End of public/js/text_extraction_entry.js
 // =============================================================================
-
 

@@ -548,23 +548,42 @@ pre#textPreview .preview-static {
 
 .text-extraction-processing-copy {
   display: flex;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   flex-direction: column;
   gap: 2px;
   min-width: 150px;
 }
 
+.text-extraction-processing-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
 #textExtractionProcessingLabel {
+  flex: 0 0 auto;
   font-size: 13px;
   color: var(--text-color);
   line-height: 1.2;
   white-space: nowrap;
 }
 
+.text-extraction-processing-filename {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
 .text-extraction-processing-elapsed {
   font-size: 12px;
   color: var(--text-soft);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .text-extraction-processing-placeholder-track {

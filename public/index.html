@@ -74,9 +74,16 @@
         <div id="selectorControlsProcessing" class="controls-processing" hidden aria-hidden="true">
           <div class="text-extraction-processing-bar" role="status" aria-live="polite">
             <div class="text-extraction-processing-copy">
-              <span id="textExtractionProcessingLabel">Procesando extracción...</span>
-              <span id="textExtractionProcessingElapsed" class="text-extraction-processing-elapsed" hidden
-                aria-hidden="true"></span>
+              <div class="text-extraction-processing-row">
+                <span id="textExtractionProcessingLabel">Procesando extracción...</span>
+                <span id="textExtractionProcessingFilenameSeparator" aria-hidden="true" hidden>·</span>
+                <bdi id="textExtractionProcessingFilename" class="text-extraction-processing-filename" hidden
+                  aria-hidden="true"></bdi>
+              </div>
+              <div class="text-extraction-processing-row">
+                <span id="textExtractionProcessingElapsed" class="text-extraction-processing-elapsed" hidden
+                  aria-hidden="true"></span>
+              </div>
             </div>
             <span class="text-extraction-processing-placeholder-track" aria-hidden="true">
               <span class="text-extraction-processing-placeholder-fill"></span>

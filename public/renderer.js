@@ -251,7 +251,9 @@ async function requestPreparedImport({
   preparationRequest,
 }) {
   const attemptId = startTextExtractionPrepareAttempt();
-  textExtractionStatusUi.beginPrepare();
+  textExtractionStatusUi.beginPrepare({
+    filePath: preparationRequest && preparationRequest.filePath,
+  });
   try {
     const preparation = await prepareTextExtractionSelectedFile(preparationRequest);
     return {
