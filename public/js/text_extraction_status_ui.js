@@ -29,7 +29,7 @@
   const { tRenderer, renderLocalizedLabelWithInvariantValue } = window.RendererI18n;
 
   // =============================================================================
-  // UI elements
+  // DOM references
   // =============================================================================
 
   const selectorControlsNormal = document.getElementById('selectorControlsNormal');
@@ -40,6 +40,8 @@
   const textExtractionProcessingElapsed = document.getElementById('textExtractionProcessingElapsed');
   const btnTextExtractionAbort = document.getElementById('btnTextExtractionAbort');
 
+  // Missing elements degrade only the status UI surface, so keep the module alive
+  // but make the drift visible during bootstrap instead of failing silently later.
   [
     {
       element: selectorControlsNormal,
@@ -355,6 +357,8 @@
     elapsedTimerId = null;
   }
 
+  // The timer exists only while processing is active so elapsed updates do not
+  // keep running after the processing-mode lock has been released.
   function ensureElapsedTimer() {
     if (elapsedTimerId !== null) return;
     elapsedTimerId = window.setInterval(() => {
