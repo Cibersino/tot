@@ -16,7 +16,7 @@ Aquí, `<release_file_id>` significa el identificador del release normalizado pa
 
 ## Campos mínimos del release versionado
 
-- Fecha de ejecución: `2026-06-05`
+- Fecha de ejecución: `2026-05-06`
 - Release ID: `v1.3.0`
 - Commit freeze: `eaacf3227c40202091b1d7b030143b39e597814b`
 - Artefactos inspeccionados: `toT-1.3.0-win-x64.zip`
