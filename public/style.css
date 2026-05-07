@@ -1290,6 +1290,10 @@ select#presets:focus {
   gap: 10px;
 }
 
+.text-extraction-pdf-options-modal-range-fields[hidden] {
+  display: none;
+}
+
 .text-extraction-pdf-options-modal-range-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1316,11 +1320,19 @@ select#presets:focus {
   font-size: var(--font-size-note);
 }
 
+.text-extraction-pdf-options-modal-selected-count[hidden] {
+  display: none;
+}
+
 .text-extraction-pdf-options-modal-keep-option {
   display: inline-flex;
   align-items: flex-start;
   gap: 8px;
   font-size: var(--font-size-note);
+}
+
+.text-extraction-pdf-options-modal-keep-option[hidden] {
+  display: none;
 }
 
 .text-extraction-pdf-options-modal-keep-option input[type="checkbox"] {
@@ -1330,6 +1342,10 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-validation {
   color: var(--error-strong);
   font-size: var(--font-size-note);
+}
+
+.text-extraction-pdf-options-modal-validation[hidden] {
+  display: none;
 }
 
 .text-extraction-pdf-options-modal-actions {
