@@ -20,10 +20,13 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { PDFDocument } = require('pdf-lib');
+const Log = require('../log');
 const {
   isPdfPasswordProtectedError,
   isUnreadableOrCorruptPdfError,
 } = require('./text_extraction_pdf_error_detection');
+
+const log = Log.get('text-extraction-pdf-page-selection');
 
 // =============================================================================
 // Constants / config
@@ -112,11 +115,20 @@ function sanitizePdfBaseName(rawFileName) {
 
 function cleanupMaterializationFailure(runDir) {
   const safeRunDir = typeof runDir === 'string' ? runDir.trim() : '';
-  if (!safeRunDir || !fs.existsSync(safeRunDir)) return;
+  if (!safeRunDir || !fs.existsSync(safeRunDir)) return null;
   try {
     fs.rmSync(safeRunDir, { recursive: true, force: true });
-  } catch (_err) {
-    // Keep the original materialization failure primary; cleanup is best-effort here.
+    return null;
+  } catch (err) {
+    const cleanupFailure = {
+      stage: 'cleanup_materialization_failure',
+      runDir: safeRunDir,
+      errorName: String(err && err.name ? err.name : 'Error'),
+      errorCode: String(err && err.code ? err.code : ''),
+      errorMessage: String(err && err.message ? err.message : err || ''),
+    };
+    log.warn('Generated PDF materialization cleanup failed (ignored):', cleanupFailure);
+    return cleanupFailure;
   }
 }
 
@@ -425,7 +437,7 @@ async function materializePdfPageSelectionInput({
     if (!Number.isInteger(sourceTotalPages)
       || sourceTotalPages < 1
       || safeSelection.toPage > sourceTotalPages) {
-      cleanupMaterializationFailure(runDir);
+      const cleanupFailure = cleanupMaterializationFailure(runDir);
       return {
         ok: false,
         error: buildError(
@@ -437,6 +449,7 @@ async function materializePdfPageSelectionInput({
             fromPage: safeSelection.fromPage,
             toPage: safeSelection.toPage,
             totalPages: sourceTotalPages,
+            ...(cleanupFailure ? { cleanupFailure } : {}),
           }
         ),
       };
@@ -493,7 +506,7 @@ async function materializePdfPageSelectionInput({
       },
     };
   } catch (err) {
-    cleanupMaterializationFailure(runDir);
+    const cleanupFailure = cleanupMaterializationFailure(runDir);
     const classifiedError = classifyPdfLoadError(err, 'materialize_subset');
     return {
       ok: false,
@@ -505,6 +518,7 @@ async function materializePdfPageSelectionInput({
           fromPage: safeSelection.fromPage,
           toPage: safeSelection.toPage,
           processingInputFileName: subsetFileName,
+          ...(cleanupFailure ? { cleanupFailure } : {}),
         },
       },
     };

@@ -21,6 +21,72 @@ const {
 
 const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
 
+function loadPdfPageSelectionModuleWithMocks({ fsOverrides = {}, logDouble = null } = {}) {
+  const modulePath = path.resolve(
+    __dirname,
+    '../../../electron/text_extraction_platform/text_extraction_pdf_page_selection.js'
+  );
+  const fsModulePath = require.resolve('fs');
+  const logModulePath = path.resolve(__dirname, '../../../electron/log.js');
+  const originalTargetModule = require.cache[modulePath];
+  const originalFsModule = require.cache[fsModulePath];
+  const originalLogModule = require.cache[logModulePath];
+  const realFs = require('fs');
+  const mockFs = { ...realFs, ...fsOverrides };
+  const fakeLog = logDouble || {
+    warn() {},
+    warnOnce() {},
+    error() {},
+    errorOnce() {},
+    debug() {},
+    info() {},
+  };
+
+  require.cache[fsModulePath] = {
+    id: fsModulePath,
+    filename: fsModulePath,
+    loaded: true,
+    exports: mockFs,
+  };
+  require.cache[logModulePath] = {
+    id: logModulePath,
+    filename: logModulePath,
+    loaded: true,
+    exports: {
+      get() {
+        return fakeLog;
+      },
+    },
+  };
+
+  delete require.cache[modulePath];
+  const loadedModule = require(modulePath);
+
+  function restore() {
+    delete require.cache[modulePath];
+    if (originalTargetModule) {
+      require.cache[modulePath] = originalTargetModule;
+    } else {
+      delete require.cache[modulePath];
+    }
+    if (originalFsModule) {
+      require.cache[fsModulePath] = originalFsModule;
+    } else {
+      delete require.cache[fsModulePath];
+    }
+    if (originalLogModule) {
+      require.cache[logModulePath] = originalLogModule;
+    } else {
+      delete require.cache[logModulePath];
+    }
+  }
+
+  return {
+    loadedModule,
+    restore,
+  };
+}
+
 test('canonicalizePdfPageSelection normalizes all-pages and contiguous ranges', () => {
   assert.deepEqual(
     canonicalizePdfPageSelection(null, { totalPages: 12 }),
@@ -154,4 +220,58 @@ test('materializePdfPageSelectionInput retains subset PDFs under the caller-owne
   assert.equal(materialized.retainedArtifactPath.endsWith(path.join('', 'selectable_text_fixture_12_pages_pages_4_4.pdf')), true);
   assert.equal(fs.existsSync(materialized.retainedArtifactPath), true);
   assert.equal(materialized.cleanupGeneratedArtifact(), null);
+});
+
+test('materializePdfPageSelectionInput keeps page-selection failure primary and logs cleanup failure details', async (t) => {
+  const warnCalls = [];
+  const logDouble = {
+    warn(...args) {
+      warnCalls.push(args);
+    },
+    warnOnce() {},
+    error() {},
+    errorOnce() {},
+    debug() {},
+    info() {},
+  };
+  const realFs = require('fs');
+  const { loadedModule, restore } = loadPdfPageSelectionModuleWithMocks({
+    fsOverrides: {
+      rmSync(targetPath, options) {
+        if (typeof targetPath === 'string'
+          && targetPath.includes(`${path.sep}run-`)
+          && options
+          && options.recursive === true
+          && options.force === true) {
+          const err = new Error('cleanup denied');
+          err.code = 'EPERM';
+          throw err;
+        }
+        return realFs.rmSync(targetPath, options);
+      },
+    },
+    logDouble,
+  });
+  t.after(restore);
+
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+  const result = await loadedModule.materializePdfPageSelectionInput({
+    fileInfo,
+    pdfPageSelection: {
+      mode: 'range',
+      fromPage: 1,
+      toPage: 20,
+      selectedPageCount: 20,
+      totalPages: 20,
+    },
+    generatedPdfArtifactPolicy: { mode: 'delete' },
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'pdf_page_selection_invalid');
+  assert.equal(result.error.detailsSafeForLogs.reason, 'bounds_out_of_range');
+  assert.equal(result.error.detailsSafeForLogs.cleanupFailure.stage, 'cleanup_materialization_failure');
+  assert.equal(result.error.detailsSafeForLogs.cleanupFailure.errorCode, 'EPERM');
+  assert.equal(warnCalls.length, 1);
+  assert.equal(warnCalls[0][0], 'Generated PDF materialization cleanup failed (ignored):');
 });
