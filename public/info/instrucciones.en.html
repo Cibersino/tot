@@ -222,14 +222,19 @@
           <li><strong>Images:</strong> <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>,
             <code>.bmp</code>, <code>.tif</code>, <code>.tiff</code> (OCR).
           </li>
-          <li><strong>PDF with selectable text:</strong> choose Native or OCR extraction.
+          <li><strong>PDF with selectable text:</strong> first choose <strong>All pages</strong> or
+            <strong>Page range</strong>; then you can use Native or OCR extraction.
           </li>
-          <li><strong>Scanned PDF without selectable text:</strong> OCR extraction.</li>
+          <li><strong>Scanned PDF without selectable text:</strong> first choose <strong>All pages</strong> or
+            <strong>Page range</strong>; then OCR is used.</li>
         </ul>
 
         <ol>
           <li>Click <strong>📥</strong> and choose the file, or drag/drop the file onto the main window (while dragging
             files, a visual drop highlight is shown).</li>
+          <li>If the file is a PDF, first choose <strong>All pages</strong> or a continuous
+            <strong>Page range</strong>. If you choose a range, you can also decide whether to keep the locally
+            generated PDF with those pages after processing.</li>
           <li>If a selectable-text PDF is detected, choose <strong>Use native</strong> or
             <strong>Use OCR</strong> (recommendation: try native first, it's faster).
           </li>
@@ -755,6 +760,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Configuration</strong> (e.g. language, current WPM, counting mode).</li>
           <li><strong>Google OCR setup state</strong>: app-managed local Google OAuth credentials and, when OCR is
             connected, the local Google OCR token state.</li>
+          <li><strong>Locally generated page-range PDFs</strong>: if you extract a PDF page range, the app may create a
+            local PDF with those pages; by default it is deleted after processing and it is kept locally only if you
+            explicitly choose to keep it.</li>
           <li><strong>Presets</strong> (custom and default preset status).</li>
           <li><strong>Reading speed test</strong>: local test-text pool and its external local usage state file.</li>
           <li><strong>Status of windows</strong> (e.g. size/position of the editor).</li>
@@ -905,6 +913,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>Reading speed test</strong>: local test-text pool and its external local usage state file.</li>
               <li><strong>Google extraction setup state</strong>: app-managed local Google OAuth credentials and, when
                 the Google-backed extraction path is connected, the local Google token state.</li>
+              <li><strong>Locally generated page-range PDFs</strong>: if you extract a PDF page range, the app may
+                create a local PDF with those pages; by default it is deleted after processing and it is kept locally
+                only if you explicitly choose to keep it.</li>
               <li><strong>Saved tasks</strong> (task lists, task library and link allowlist).</li>
             </ul>
           </li>

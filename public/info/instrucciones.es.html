@@ -219,13 +219,18 @@
           <li><strong>Imágenes:</strong> <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>,
             <code>.bmp</code>, <code>.tif</code>, <code>.tiff</code> (OCR).
           </li>
-          <li><strong>PDF con texto seleccionable:</strong> elige extracción nativa o OCR.</li>
-          <li><strong>PDF escaneado sin texto seleccionable:</strong> extracción OCR.</li>
+          <li><strong>PDF con texto seleccionable:</strong> primero elige <strong>Todas las páginas</strong> o
+            <strong>Rango de páginas</strong>; luego podrás usar extracción nativa u OCR.</li>
+          <li><strong>PDF escaneado sin texto seleccionable:</strong> primero elige <strong>Todas las páginas</strong>
+            o <strong>Rango de páginas</strong>; luego se usa OCR.</li>
         </ul>
 
         <ol>
           <li>Haz clic en <strong>📥</strong> y elige el archivo, o arrastra/suelta el archivo sobre la ventana
             principal (mientras arrastras archivos, se muestra un resaltado visual de drop).</li>
+          <li>Si el archivo es un PDF, primero elige <strong>Todas las páginas</strong> o un
+            <strong>Rango de páginas</strong> continuo. Si eliges rango, también puedes decidir si conservar el PDF
+            local generado con esas páginas al terminar.</li>
           <li>Si se detecta un PDF con texto seleccionable, elige <strong>Usar nativo</strong> o <strong>Usar
               OCR</strong>
             (recomendación: prueba primero el nativo, es más rápido).</li>
@@ -763,6 +768,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Estado de extracción con Google</strong>: credenciales OAuth de Google locales gestionadas por la
             app y, cuando la ruta de extracción asistida por Google está conectada, el estado local del token de
             Google.</li>
+          <li><strong>PDFs locales generados por rango</strong>: si extraes un rango de páginas de un PDF, la app puede
+            crear un PDF local con esas páginas; por defecto se elimina al terminar y solo se conserva localmente si
+            eliges guardarlo.</li>
           <li><strong>Presets</strong> (personalizados y estado de presets por defecto).</li>
           <li><strong>Test de velocidad de lectura</strong>: pool local de textos del test y su archivo local externo
             de estado de uso.
@@ -915,6 +923,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               </li>
               <li><strong>Estado de OCR con Google</strong>: credenciales OAuth de Google locales gestionadas por la app
                 y, cuando OCR está conectado, el estado local del token de Google OCR.</li>
+              <li><strong>PDFs locales generados por rango</strong>: si extraes un rango de páginas de un PDF, la app
+                puede crear un PDF local con esas páginas; por defecto se elimina al terminar y solo se conserva
+                localmente si eliges guardarlo.</li>
               <li><strong>Tareas guardadas</strong> (listas de tareas, biblioteca de tareas y lista de enlaces
                 permitidos).</li>
             </ul>
