@@ -465,6 +465,9 @@ async function materializePdfPageSelectionInput({
         fileName: subsetFileName,
         policyMode: safePolicy.mode,
         retained: safePolicy.mode === 'keep',
+        ...(safePolicy.mode === 'keep'
+          ? { retainedArtifactPath: subsetFilePath }
+          : {}),
       },
       retainedArtifactPath: safePolicy.mode === 'keep' ? subsetFilePath : '',
       cleanupGeneratedArtifact: () => {

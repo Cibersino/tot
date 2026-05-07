@@ -1434,6 +1434,33 @@ select#presets:focus {
   font-variant-numeric: tabular-nums;
 }
 
+.text-extraction-apply-modal-saved-pdf {
+  margin-top: var(--modal-section-spacing);
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: var(--panel-radius);
+  background: var(--entry-group-bg);
+}
+
+.text-extraction-apply-modal-saved-pdf[hidden] {
+  display: none;
+}
+
+.text-extraction-apply-modal-saved-pdf-file {
+  color: var(--text-soft);
+  font-size: var(--font-size-note);
+  word-break: break-word;
+}
+
+.text-extraction-apply-modal-saved-pdf-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .text-extraction-apply-repeat-row {
   margin-top: var(--modal-section-spacing);
   display: flex;

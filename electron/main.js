@@ -64,6 +64,7 @@ const textExtractionOcrDisconnectIpc = require('./text_extraction_platform/text_
 const textExtractionPdfInspectIpc = require('./text_extraction_platform/text_extraction_pdf_inspect_ipc');
 const textExtractionPrepareIpc = require('./text_extraction_platform/text_extraction_prepare_ipc');
 const textExtractionExecutePreparedIpc = require('./text_extraction_platform/text_extraction_execute_prepared_ipc');
+const textExtractionGeneratedPdfRevealIpc = require('./text_extraction_platform/text_extraction_generated_pdf_reveal_ipc');
 const {
   materializeBundledCredentials,
 } = require('./text_extraction_platform/ocr_google_drive_bundled_credentials');
@@ -1863,6 +1864,14 @@ app.whenReady().then(() => {
     }),
     resolvePaths: () => resolveTextExtractionRuntimePaths(),
     controller: textExtractionProcessingModeController,
+  });
+
+  textExtractionGeneratedPdfRevealIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    resolvePaths: () => resolveTextExtractionRuntimePaths(),
+    shellApi: shell,
   });
 
   readingTestSessionController = readingTestSession.createController({

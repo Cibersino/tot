@@ -26,6 +26,7 @@ const api = {
     disconnectTextExtractionOcr: (payload) => ipcRenderer.invoke('text-extraction-disconnect-ocr', payload),
     prepareTextExtractionSelectedFile: (payload) => ipcRenderer.invoke('text-extraction-prepare-selected-file', payload),
     executePreparedTextExtraction: (payload) => ipcRenderer.invoke('text-extraction-execute-prepared', payload),
+    revealTextExtractionGeneratedPdf: (payload) => ipcRenderer.invoke('text-extraction-reveal-generated-pdf', payload),
     getTextExtractionProcessingMode: () => ipcRenderer.invoke('text-extraction-get-processing-mode'),
     requestTextExtractionAbort: (payload) => ipcRenderer.invoke('text-extraction-request-abort', payload),
     onTextExtractionProcessingModeChanged: (cb) => {

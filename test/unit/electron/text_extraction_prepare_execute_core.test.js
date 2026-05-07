@@ -522,3 +522,57 @@ test('executePreparedImport materializes the selected PDF range for native succe
     },
   ]);
 });
+
+test('executePreparedImport exposes retained generated PDF metadata for keep-mode success', async (t) => {
+  const controller = createExecutingController();
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+  const retainedArtifactsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-generated-pdfs-keep-result-'));
+  t.after(() => fs.rmSync(retainedArtifactsDir, { recursive: true, force: true }));
+
+  const result = await executePreparedImport({
+    preparedRecord: {
+      fileInfo,
+      ocrLanguage: 'es',
+      pdfPageSelection: {
+        mode: 'range',
+        fromPage: 4,
+        toPage: 4,
+        selectedPageCount: 1,
+        totalPages: 12,
+      },
+      generatedPdfArtifactPolicy: {
+        mode: 'keep',
+      },
+      processingInputFileName: 'prueba_pdf_original_12_paginas_pages_4_4.pdf',
+      routeMetadata: {
+        fileKind: 'pdf',
+        availableRoutes: ['native'],
+        chosenRoute: 'native',
+        executedRoute: null,
+        executionKind: 'native',
+        pdfTriage: 'native_only',
+        triageReason: 'native_text_detected',
+        ocrSetupState: 'not_checked',
+      },
+      requiresRouteChoice: false,
+      routeChoiceOptions: [],
+    },
+    routePreference: '',
+    resolvePaths: () => ({
+      generatedPdfArtifactsDir: retainedArtifactsDir,
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.result.state, 'success');
+  assert.equal(result.result.generatedPdfArtifact.retained, true);
+  assert.equal(result.result.generatedPdfArtifact.fileName, 'prueba_pdf_original_12_paginas_pages_4_4.pdf');
+  assert.equal(
+    result.result.generatedPdfArtifact.retainedArtifactPath.endsWith(path.join('', 'prueba_pdf_original_12_paginas_pages_4_4.pdf')),
+    true
+  );
+  assert.equal(fs.existsSync(result.result.generatedPdfArtifact.retainedArtifactPath), true);
+  assert.equal(result.result.provenance.metadataSafeForLogs.generatedPdfArtifactRetained, true);
+});

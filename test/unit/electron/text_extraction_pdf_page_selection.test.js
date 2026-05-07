@@ -150,6 +150,7 @@ test('materializePdfPageSelectionInput retains subset PDFs under the caller-owne
   assert.equal(materialized.materialized, true);
   assert.equal(materialized.generatedPdfArtifact.retained, true);
   assert.equal(materialized.generatedPdfArtifact.policyMode, 'keep');
+  assert.equal(materialized.generatedPdfArtifact.retainedArtifactPath, materialized.retainedArtifactPath);
   assert.equal(materialized.retainedArtifactPath.endsWith(path.join('', 'prueba_pdf_original_12_paginas_pages_4_4.pdf')), true);
   assert.equal(fs.existsSync(materialized.retainedArtifactPath), true);
   assert.equal(materialized.cleanupGeneratedArtifact(), null);
