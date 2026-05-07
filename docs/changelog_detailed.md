@@ -46,6 +46,64 @@ Reglas:
 
 ## Unreleased
 
+### Resumen de cambios
+
+- La extracción de texto desde PDFs agrega un paso previo de opciones que permite elegir entre `Todas las páginas` y un `Rango de páginas` contiguo antes de continuar con la extracción.
+- Cuando se elige un rango, tanto la ruta nativa como la ruta OCR trabajan sobre ese subconjunto real de páginas, no sobre el PDF completo.
+- Si la extracción por rango genera un PDF local y el usuario decide conservarlo, el modal final de aplicación permite revelarlo directamente desde la UI.
+
+### Agregado
+
+- Modal `PDF extraction options` previo a `prepare`, con:
+  - selección `All pages` / `Page range`
+  - validación inline del rango
+  - opción para conservar el PDF local generado cuando se procesa un rango
+- Paso main-owned de inspección PDF antes de `prepare`, usado para detectar que el archivo es PDF, obtener `totalPages` y bloquear de forma temprana PDFs ilegibles, corruptos o protegidos.
+- Acción `Reveal saved PDF` en el modal final de aplicación cuando la extracción conserva un PDF generado por rango.
+- Carpeta app-owned para PDFs retenidos explícitamente por el usuario: `app.getPath('userData')/tot-generated-pdfs/`.
+- Dependencia runtime directa `pdf-lib@^1.17.1` para materializar localmente los subsets PDF usados por el modo `Page range`.
+
+### Cambiado
+
+- El flujo de `text extraction` para PDFs deja de pasar directamente de la selección del archivo a la elección de ruta; primero resuelve opciones de páginas y luego, si corresponde, la elección `native` / `ocr`.
+- La preparación de extracción para PDFs ahora conserva de forma canónica la selección de páginas y la política del artefacto generado, y esa misma intención se reutiliza después en ejecución.
+- La disponibilidad de la ruta nativa para PDFs deja de evaluarse solo contra el documento completo y pasa a considerar también el rango efectivamente seleccionado.
+- En modo rango, el estado de procesamiento y el contexto posterior muestran el nombre efectivo del input procesado (`*_pages_<from>_<to>.pdf`) en lugar de presentar solo el basename del PDF original.
+- Los controles exclusivos del modo `Page range` en el modal PDF quedan ocultos cuando está activa la opción `All pages`.
+- Las strings del modal PDF dejan de convivir con los alerts globales y pasan a su namespace dedicado `renderer.text_extraction_pdf_options`.
+- El manual/instrucciones públicas de la app incorporan el nuevo paso de opciones PDF y la posibilidad de conservar localmente el PDF generado por rango.
+
+### Arreglado
+
+- Un rango elegido en el modal PDF deja de degradar silenciosamente a procesamiento del PDF completo por pérdida del estado en el puente `prepare`.
+- Una extracción abortada durante la fase local previa a la ruta deja de poder continuar bajo el lock de procesamiento de una extracción posterior.
+- Si falla la limpieza del directorio temporal después de un fallo de materialización del subset PDF, ese fallo secundario deja diagnóstico técnico en vez de quedar completamente silencioso.
+- El modal final de aplicación deja de mostrar un bloque vacío para PDFs guardados cuando no existe ningún artefacto retenido.
+
+### Migración
+
+- Sin acción manual obligatoria.
+- Si el usuario elige conservar un PDF generado por rango, ese archivo pasa a quedar guardado bajo `app.getPath('userData')/tot-generated-pdfs/`.
+
+### Contratos tocados
+
+- Preload `window.electronAPI`:
+  - agrega `inspectTextExtractionSelectedFile(payload)` → `ipcRenderer.invoke('text-extraction-inspect-selected-file', payload)`
+  - agrega `revealTextExtractionGeneratedPdf(payload)` → `ipcRenderer.invoke('text-extraction-reveal-generated-pdf', payload)`
+- IPC renderer ↔ main:
+  - nuevo canal `text-extraction-inspect-selected-file`
+  - nuevo canal `text-extraction-reveal-generated-pdf`
+- `text-extraction-prepare-selected-file`:
+  - el payload acepta `pdfPageSelection` y `generatedPdfArtifactPolicy`
+  - la respuesta preparada puede incluir `pdfPageSelection`, `generatedPdfArtifactPolicy` y `processingInputFileName` canonizados
+- `text-extraction-execute-prepared`:
+  - el resultado puede incluir `generatedPdfArtifact` cuando la ejecución usa un PDF materializado por rango
+- I18n renderer:
+  - nuevo namespace `renderer.text_extraction_pdf_options.*` para título, copy, labels, botones, `close_aria` y validación inline del modal PDF
+- Storage / filesystem:
+  - los subsets temporales en política `delete` se materializan bajo `os.tmpdir()/tot-generated-pdfs/`
+  - los subsets retenidos en política `keep` se guardan bajo `app.getPath('userData')/tot-generated-pdfs/`
+
 ---
 
 ## [1.3.0] toT — Internacional
