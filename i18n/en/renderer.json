@@ -73,6 +73,23 @@
         "text_extraction_drop_here": "Drop file to extract text"
       }
     },
+    "text_extraction_pdf_options": {
+      "title": "PDF extraction options",
+      "message": "Choose whether to process the whole PDF or one contiguous page range before extraction.",
+      "file_label": "File:",
+      "total_pages_label": "Total pages: ",
+      "selection_legend": "Page selection",
+      "all_pages_label": "All pages",
+      "range_label": "Page range",
+      "from_page_label": "From page",
+      "to_page_label": "To page",
+      "selected_page_count_label": "Selected pages: ",
+      "keep_generated_pdf_label": "Keep the generated selected-page PDF after processing",
+      "continue_button": "Continue",
+      "cancel_button": "Cancel",
+      "close_aria": "Close PDF extraction options dialog",
+      "invalid_range": "Enter a contiguous page range between 1 and {totalPages}."
+    },
     "browser_extension": {
       "title": "Browser extension",
       "subtitle": "Reading time",
@@ -331,23 +348,6 @@
       "hint": "Custom presets are stored in user settings.",
       "cancel": "Cancel",
       "save": "Save"
-    },
-    "text_extraction_pdf_options": {
-      "title": "PDF extraction options",
-      "message": "Choose whether to process the whole PDF or one contiguous page range before extraction.",
-      "file_label": "File:",
-      "total_pages_label": "Total pages: ",
-      "selection_legend": "Page selection",
-      "all_pages_label": "All pages",
-      "range_label": "Page range",
-      "from_page_label": "From page",
-      "to_page_label": "To page",
-      "selected_page_count_label": "Selected pages: ",
-      "keep_generated_pdf_label": "Keep the generated selected-page PDF after processing",
-      "continue_button": "Continue",
-      "cancel_button": "Cancel",
-      "close_aria": "Close PDF extraction options dialog",
-      "invalid_range": "Enter a contiguous page range between 1 and {totalPages}."
     },
     "alerts": {
       "clipboard_too_large": "Clipboard text is too large to process. Reduce it and try again.",

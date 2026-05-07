@@ -73,6 +73,23 @@
         "text_extraction_drop_here": "Suelta el archivo para extraer texto"
       }
     },
+    "text_extraction_pdf_options": {
+      "title": "Opciones de extracción PDF",
+      "message": "Elige si quieres procesar todo el PDF o un rango contiguo de páginas antes de la extracción.",
+      "file_label": "Archivo:",
+      "total_pages_label": "Páginas totales: ",
+      "selection_legend": "Selección de páginas",
+      "all_pages_label": "Todas las páginas",
+      "range_label": "Rango de páginas",
+      "from_page_label": "Desde la página",
+      "to_page_label": "Hasta la página",
+      "selected_page_count_label": "Páginas seleccionadas: ",
+      "keep_generated_pdf_label": "Conservar el PDF generado de páginas seleccionadas después del procesamiento",
+      "continue_button": "Continuar",
+      "cancel_button": "Cancelar",
+      "close_aria": "Cerrar diálogo de opciones de extracción PDF",
+      "invalid_range": "Ingresa un rango contiguo de páginas entre 1 y {totalPages}."
+    },
     "browser_extension": {
       "title": "Extensión del navegador",
       "subtitle": "Tiempo de lectura",
@@ -331,23 +348,6 @@
       "hint": "Los presets personalizados se guardan en la configuración del usuario.",
       "cancel": "Cancelar",
       "save": "Guardar"
-    },
-    "text_extraction_pdf_options": {
-      "title": "Opciones de extracción PDF",
-      "message": "Elige si quieres procesar todo el PDF o un rango contiguo de páginas antes de la extracción.",
-      "file_label": "Archivo:",
-      "total_pages_label": "Páginas totales: ",
-      "selection_legend": "Selección de páginas",
-      "all_pages_label": "Todas las páginas",
-      "range_label": "Rango de páginas",
-      "from_page_label": "Desde la página",
-      "to_page_label": "Hasta la página",
-      "selected_page_count_label": "Páginas seleccionadas: ",
-      "keep_generated_pdf_label": "Conservar el PDF generado de páginas seleccionadas después del procesamiento",
-      "continue_button": "Continuar",
-      "cancel_button": "Cancelar",
-      "close_aria": "Cerrar diálogo de opciones de extracción PDF",
-      "invalid_range": "Ingresa un rango contiguo de páginas entre 1 y {totalPages}."
     },
     "alerts": {
       "clipboard_too_large": "El texto del portapapeles es demasiado grande para procesarlo. Redúcelo e inténtalo de nuevo.",
