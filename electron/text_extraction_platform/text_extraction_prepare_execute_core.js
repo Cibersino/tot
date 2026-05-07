@@ -37,7 +37,7 @@ const {
 } = require('./text_extraction_supported_formats');
 
 // =============================================================================
-// Boundary normalization + shared metadata helpers
+// IPC wrapper boundary helpers
 // =============================================================================
 
 function resolveInspectPayload(payload) {
@@ -77,6 +77,29 @@ function resolveExecutePayload(payload) {
   };
 }
 
+function isAuthorizedSender(event, mainWin, log, channelName) {
+  try {
+    const senderWin = event && event.sender
+      ? BrowserWindow.fromWebContents(event.sender)
+      : null;
+    if (!mainWin || senderWin !== mainWin) {
+      log.warnOnce(
+        `${channelName}.unauthorized`,
+        `${channelName} unauthorized (ignored).`
+      );
+      return false;
+    }
+    return true;
+  } catch (err) {
+    log.warn(`${channelName} sender validation failed:`, err);
+    return false;
+  }
+}
+
+// =============================================================================
+// Shared file/setup metadata helpers
+// =============================================================================
+
 function getFileInfo(filePath) {
   const normalizedPath = typeof filePath === 'string' ? filePath.trim() : '';
   const resolvedPath = path.resolve(normalizedPath || '');
@@ -103,25 +126,6 @@ function getRendererSafeFileInfo(fileInfo) {
     sourceFileExt: fileInfo && typeof fileInfo.sourceFileExt === 'string' ? fileInfo.sourceFileExt : '',
     sourceFileKind: fileInfo && typeof fileInfo.sourceFileKind === 'string' ? fileInfo.sourceFileKind : '',
   };
-}
-
-function isAuthorizedSender(event, mainWin, log, channelName) {
-  try {
-    const senderWin = event && event.sender
-      ? BrowserWindow.fromWebContents(event.sender)
-      : null;
-    if (!mainWin || senderWin !== mainWin) {
-      log.warnOnce(
-        `${channelName}.unauthorized`,
-        `${channelName} unauthorized (ignored).`
-      );
-      return false;
-    }
-    return true;
-  } catch (err) {
-    log.warn(`${channelName} sender validation failed:`, err);
-    return false;
-  }
 }
 
 function resolveSetupState(validationResult) {
