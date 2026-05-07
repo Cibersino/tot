@@ -44,7 +44,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
   ipcMain.handle('text-extraction-inspect-selected-file', async (event, payload = {}) => {
     const request = resolveInspectPayload(payload);
-    const fileInfo = getFileInfo(request.filePath);
 
     try {
       const mainWin = resolveMainWin();
@@ -61,6 +60,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'INSPECT_SHAPE_INVALID' };
       }
 
+      const fileInfo = getFileInfo(request.filePath);
       if (inspection.isPdf && inspection.error) {
         log.warn('text extraction PDF inspect failed:', {
           sourceFileExt: fileInfo.sourceFileExt,
