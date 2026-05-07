@@ -46,9 +46,33 @@ function getNativeProbeLogFields(routeMetadata) {
     nativeProbeErrorCode: routeMetadata ? routeMetadata.nativeProbeErrorCode : '',
     nativeProbeSelectableText: routeMetadata ? routeMetadata.nativeProbeSelectableText : '',
     pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
-    totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
+    nativeProbeTotalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
     foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
+    probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
+    probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
+    selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
     elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
+  };
+}
+
+function getPdfSelectionLogFields(preparedRecord) {
+  const pdfPageSelection = preparedRecord
+    && preparedRecord.pdfPageSelection
+    && typeof preparedRecord.pdfPageSelection === 'object'
+      ? preparedRecord.pdfPageSelection
+      : null;
+  return {
+    pdfPageSelectionMode: pdfPageSelection ? pdfPageSelection.mode : '',
+    selectedRangeFromPage: pdfPageSelection ? pdfPageSelection.fromPage : null,
+    selectedRangeToPage: pdfPageSelection ? pdfPageSelection.toPage : null,
+    selectedPageCount: pdfPageSelection ? pdfPageSelection.selectedPageCount : null,
+    pdfTotalPages: pdfPageSelection ? pdfPageSelection.totalPages : null,
+    generatedPdfArtifactPolicyMode:
+      preparedRecord
+      && preparedRecord.generatedPdfArtifactPolicy
+      && typeof preparedRecord.generatedPdfArtifactPolicy.mode === 'string'
+        ? preparedRecord.generatedPdfArtifactPolicy.mode
+        : '',
   };
 }
 
@@ -182,6 +206,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         availableRoutes: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.availableRoutes : [],
         chosenRoute: routeResolution.productRoute,
         ocrSetupState: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.ocrSetupState : 'not_checked',
+        ...getPdfSelectionLogFields(preparedRecord),
         ...getNativeProbeLogFields(preparedRecord.routeMetadata),
       });
 
@@ -213,6 +238,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
           sourceFileKind: execution.result && execution.result.provenance
             ? execution.result.provenance.sourceFileKind
             : '',
+          ...getPdfSelectionLogFields(preparedRecord),
           ...getNativeProbeLogFields(execution.routeMetadata),
         });
       }
@@ -240,5 +266,4 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_execute_prepared_ipc.js
 // =============================================================================
-
 

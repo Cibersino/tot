@@ -210,6 +210,69 @@
       </div>
     </div>
 
+    <div id="textExtractionPdfOptionsModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="textExtractionPdfOptionsModalTitle" aria-describedby="textExtractionPdfOptionsModalMessage"
+      aria-modal="true">
+      <div id="textExtractionPdfOptionsModalBackdrop" class="info-modal-backdrop"></div>
+      <div class="text-extraction-pdf-options-modal-panel" role="document">
+        <header class="text-extraction-pdf-options-modal-header">
+          <h2 id="textExtractionPdfOptionsModalTitle">PDF extraction options</h2>
+          <button id="textExtractionPdfOptionsModalClose" class="btn-standard" type="button"
+            aria-label="Close PDF extraction options dialog">🗙</button>
+        </header>
+        <div class="text-extraction-pdf-options-modal-body">
+          <p id="textExtractionPdfOptionsModalMessage">Choose how many PDF pages to process before extraction.</p>
+          <div class="text-extraction-pdf-options-modal-summary">
+            <div class="text-extraction-pdf-options-modal-summary-row">
+              <span id="textExtractionPdfOptionsModalFileLabel">File:</span>
+              <bdi id="textExtractionPdfOptionsModalFileName" class="text-extraction-pdf-options-modal-file-name"></bdi>
+            </div>
+            <div id="textExtractionPdfOptionsModalTotalPages"
+              class="text-extraction-pdf-options-modal-summary-row"></div>
+          </div>
+          <fieldset class="text-extraction-pdf-options-modal-selection">
+            <legend id="textExtractionPdfOptionsModalSelectionLegend"
+              class="text-extraction-pdf-options-modal-selection-legend">Page selection</legend>
+            <label class="text-extraction-pdf-options-modal-option">
+              <input id="textExtractionPdfOptionsModalAllPages" type="radio" name="textExtractionPdfPageSelection"
+                checked />
+              <span id="textExtractionPdfOptionsModalAllPagesLabel">All pages</span>
+            </label>
+            <label class="text-extraction-pdf-options-modal-option">
+              <input id="textExtractionPdfOptionsModalRange" type="radio" name="textExtractionPdfPageSelection" />
+              <span id="textExtractionPdfOptionsModalRangeLabel">Page range</span>
+            </label>
+          </fieldset>
+          <div id="textExtractionPdfOptionsModalRangeFields" class="text-extraction-pdf-options-modal-range-fields"
+            hidden aria-hidden="true">
+            <div class="text-extraction-pdf-options-modal-range-grid">
+              <label class="text-extraction-pdf-options-modal-range-field" for="textExtractionPdfOptionsModalFromInput">
+                <span id="textExtractionPdfOptionsModalFromLabel">From page</span>
+                <input id="textExtractionPdfOptionsModalFromInput" type="number" min="1" step="1" value="1" />
+              </label>
+              <label class="text-extraction-pdf-options-modal-range-field" for="textExtractionPdfOptionsModalToInput">
+                <span id="textExtractionPdfOptionsModalToLabel">To page</span>
+                <input id="textExtractionPdfOptionsModalToInput" type="number" min="1" step="1" value="1" />
+              </label>
+            </div>
+            <p id="textExtractionPdfOptionsModalSelectedCount" class="text-extraction-pdf-options-modal-selected-count"
+              hidden aria-hidden="true"></p>
+            <label id="textExtractionPdfOptionsModalKeepWrap" class="text-extraction-pdf-options-modal-keep-option"
+              hidden aria-hidden="true">
+              <input id="textExtractionPdfOptionsModalKeepGeneratedPdf" type="checkbox" />
+              <span id="textExtractionPdfOptionsModalKeepLabel">Keep generated PDF after processing</span>
+            </label>
+            <p id="textExtractionPdfOptionsModalValidation" class="text-extraction-pdf-options-modal-validation" hidden
+              aria-hidden="true"></p>
+          </div>
+          <div class="text-extraction-pdf-options-modal-actions">
+            <button id="textExtractionPdfOptionsModalContinue" class="btn-standard" type="button">Continue</button>
+            <button id="textExtractionPdfOptionsModalCancel" class="btn-standard" type="button">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="textExtractionRouteModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="textExtractionRouteModalTitle" aria-modal="true">
       <div id="textExtractionRouteModalBackdrop" class="info-modal-backdrop"></div>
@@ -430,6 +493,7 @@
   <script src="./js/current_text_snapshots.js"></script>
   <script src="./js/text_apply_canonical.js"></script>
   <script src="./js/text_extraction_status_ui.js"></script>
+  <script src="./js/text_extraction_pdf_options_modal.js"></script>
   <script src="./js/text_extraction_route_choice_modal.js"></script>
   <script src="./js/text_extraction_apply_modal.js"></script>
   <script src="./js/text_extraction_ocr_activation_disclosure_modal.js"></script>

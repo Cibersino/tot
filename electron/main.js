@@ -61,6 +61,7 @@ const textExtractionPreconditionsIpc = require('./text_extraction_platform/text_
 const textExtractionProcessingModeIpc = require('./text_extraction_platform/text_extraction_processing_mode_ipc');
 const textExtractionOcrActivationIpc = require('./text_extraction_platform/text_extraction_ocr_activation_ipc');
 const textExtractionOcrDisconnectIpc = require('./text_extraction_platform/text_extraction_ocr_disconnect_ipc');
+const textExtractionPdfInspectIpc = require('./text_extraction_platform/text_extraction_pdf_inspect_ipc');
 const textExtractionPrepareIpc = require('./text_extraction_platform/text_extraction_prepare_ipc');
 const textExtractionExecutePreparedIpc = require('./text_extraction_platform/text_extraction_execute_prepared_ipc');
 const {
@@ -349,7 +350,7 @@ function requestCloseFlotanteWindow() {
   }
 }
 
-function resolveGoogleDriveOcrRuntimePaths() {
+function resolveTextExtractionRuntimePaths() {
   const credentialsPath = getOcrGoogleDriveCredentialsFile();
   const tokenPath = getOcrGoogleDriveTokenFile();
   const bundledCredentialsPath = getBundledOcrGoogleDriveCredentialsFile();
@@ -375,6 +376,7 @@ function resolveGoogleDriveOcrRuntimePaths() {
       && typeof bundledCredentialsBootstrap.detailsSafeForLogs === 'object'
         ? bundledCredentialsBootstrap.detailsSafeForLogs
         : {},
+    generatedPdfArtifactsDir: path.join(app.getPath('userData'), 'tot-generated-pdfs'),
   };
 }
 
@@ -1832,28 +1834,34 @@ app.whenReady().then(() => {
     getWindows: () => ({
       mainWin,
     }),
-    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
+    resolvePaths: () => resolveTextExtractionRuntimePaths(),
   });
 
   textExtractionOcrDisconnectIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
+    resolvePaths: () => resolveTextExtractionRuntimePaths(),
+  });
+
+  textExtractionPdfInspectIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
   });
 
   textExtractionPrepareIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
+    resolvePaths: () => resolveTextExtractionRuntimePaths(),
   });
 
   textExtractionExecutePreparedIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
+    resolvePaths: () => resolveTextExtractionRuntimePaths(),
     controller: textExtractionProcessingModeController,
   });
 
@@ -1940,4 +1948,3 @@ app.on('will-quit', () => {
 // =============================================================================
 // End of electron/main.js
 // =============================================================================
-

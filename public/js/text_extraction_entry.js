@@ -235,11 +235,15 @@
         dedupeKey: 'renderer.ipc.prepareTextExtractionSelectedFile.unavailable',
         unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; text extraction prepare cannot continue.'
       });
+      const inspectTextExtractionSelectedFile = getOptionalElectronMethod('inspectTextExtractionSelectedFile', {
+        dedupeKey: 'renderer.ipc.inspectTextExtractionSelectedFile.unavailable',
+        unavailableMessage: 'inspectTextExtractionSelectedFile unavailable; PDF options cannot be resolved.'
+      });
       const executePreparedTextExtraction = getOptionalElectronMethod('executePreparedTextExtraction', {
         dedupeKey: 'renderer.ipc.executePreparedTextExtraction.unavailable',
         unavailableMessage: 'executePreparedTextExtraction unavailable; text extraction execution cannot continue.'
       });
-      if (!prepareTextExtractionSelectedFile || !executePreparedTextExtraction) {
+      if (!prepareTextExtractionSelectedFile || !inspectTextExtractionSelectedFile || !executePreparedTextExtraction) {
         window.Notify.notifyMain('renderer.alerts.text_extraction_error');
         return;
       }
@@ -247,9 +251,43 @@
       if (typeof getOcrLanguage !== 'function') {
         log.warn('getOcrLanguage dependency unavailable; using empty OCR language fallback.');
       }
+      const inspection = await inspectTextExtractionSelectedFile({
+        filePath: normalizedFilePath,
+      });
+      if (!inspection || inspection.ok !== true) {
+        log.error('text extraction inspect IPC failed:', inspection);
+        window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+        return;
+      }
+      if (inspection.isPdf === true && inspection.error) {
+        log.warn('text extraction PDF inspect failed:', inspection.error);
+        window.Notify.notifyMain(inspection.primaryAlertKey || 'renderer.alerts.text_extraction_error');
+        return;
+      }
+
+      let pdfOptions = null;
+      if (inspection.isPdf === true) {
+        try {
+          pdfOptions = await window.Notify.promptTextExtractionPdfOptions({ inspection });
+        } catch (err) {
+          log.error('text extraction PDF options modal failed:', err);
+          window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+          return;
+        }
+        if (!pdfOptions) {
+          log.info('text extraction PDF options cancelled by user.');
+          return;
+        }
+      }
+
       const preparationRequest = {
         filePath: normalizedFilePath,
         ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
+        pdfPageSelection: pdfOptions && pdfOptions.pdfPageSelection ? pdfOptions.pdfPageSelection : null,
+        generatedPdfArtifactPolicy:
+          pdfOptions && pdfOptions.generatedPdfArtifactPolicy
+            ? pdfOptions.generatedPdfArtifactPolicy
+            : null,
       };
       let preparationRun = await requestPreparedImport({
         prepareTextExtractionSelectedFile,

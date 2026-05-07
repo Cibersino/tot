@@ -20,6 +20,7 @@ const api = {
     openTextExtractionPicker: () => ipcRenderer.invoke('text-extraction-open-picker'),
     getPathForFile: (file) => webUtils.getPathForFile(file),
     checkTextExtractionPreconditions: () => ipcRenderer.invoke('text-extraction-check-preconditions'),
+    inspectTextExtractionSelectedFile: (payload) => ipcRenderer.invoke('text-extraction-inspect-selected-file', payload),
     prepareTextExtractionOcrActivation: () => ipcRenderer.invoke('text-extraction-prepare-ocr-activation'),
     launchTextExtractionOcrActivation: () => ipcRenderer.invoke('text-extraction-launch-ocr-activation'),
     disconnectTextExtractionOcr: (payload) => ipcRenderer.invoke('text-extraction-disconnect-ocr', payload),
@@ -176,4 +177,3 @@ const api = {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);
-

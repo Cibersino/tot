@@ -25,6 +25,13 @@ const { runGoogleDriveOcrRoute } = require('./ocr_google_drive_route');
 const { runNativeExtractionRoute } = require('./native_extraction_route');
 const { probeNativePdfSelectableText } = require('./native_pdf_selectable_text_probe');
 const {
+  canonicalizeGeneratedPdfArtifactPolicy,
+  canonicalizePdfPageSelection,
+  inspectPdfFile,
+  materializePdfPageSelectionInput,
+  resolveProcessingInputFileName,
+} = require('./text_extraction_pdf_page_selection');
+const {
   getNativeParserForExt,
   getOcrSourceMimeTypeForExt,
 } = require('./text_extraction_supported_formats');
@@ -33,11 +40,27 @@ const {
 // Boundary normalization + shared metadata helpers
 // =============================================================================
 
+function resolveInspectPayload(payload) {
+  const raw = payload && typeof payload === 'object' ? payload : {};
+  return {
+    filePath: typeof raw.filePath === 'string' ? raw.filePath.trim() : '',
+  };
+}
+
 function resolvePreparePayload(payload) {
   const raw = payload && typeof payload === 'object' ? payload : {};
   return {
     filePath: typeof raw.filePath === 'string' ? raw.filePath.trim() : '',
     ocrLanguage: typeof raw.ocrLanguage === 'string' ? raw.ocrLanguage.trim() : '',
+    pdfPageSelection: raw.pdfPageSelection && typeof raw.pdfPageSelection === 'object' && !Array.isArray(raw.pdfPageSelection)
+      ? raw.pdfPageSelection
+      : null,
+    generatedPdfArtifactPolicy:
+      raw.generatedPdfArtifactPolicy
+      && typeof raw.generatedPdfArtifactPolicy === 'object'
+      && !Array.isArray(raw.generatedPdfArtifactPolicy)
+        ? raw.generatedPdfArtifactPolicy
+        : null,
   };
 }
 
@@ -71,6 +94,14 @@ function getFileInfo(filePath) {
     fileName,
     sourceFileExt,
     sourceFileKind,
+  };
+}
+
+function getRendererSafeFileInfo(fileInfo) {
+  return {
+    fileName: fileInfo && typeof fileInfo.fileName === 'string' ? fileInfo.fileName : '',
+    sourceFileExt: fileInfo && typeof fileInfo.sourceFileExt === 'string' ? fileInfo.sourceFileExt : '',
+    sourceFileKind: fileInfo && typeof fileInfo.sourceFileKind === 'string' ? fileInfo.sourceFileKind : '',
   };
 }
 
@@ -110,6 +141,25 @@ function resolveSetupCode(validationResult) {
     : '';
 }
 
+function resolvePdfAlertKey(code) {
+  if (code === 'native_encrypted_or_password_protected') {
+    return 'renderer.alerts.text_extraction_pdf_encrypted_or_password_protected';
+  }
+  if (code === 'unreadable_or_corrupt') {
+    return 'renderer.alerts.text_extraction_pdf_unreadable_or_corrupt';
+  }
+  if (code === 'pdf_page_count_unavailable') {
+    return 'renderer.alerts.text_extraction_pdf_page_count_unavailable';
+  }
+  if (code === 'pdf_page_selection_invalid') {
+    return 'renderer.alerts.text_extraction_pdf_page_selection_invalid';
+  }
+  if (code === 'pdf_subset_creation_failed') {
+    return 'renderer.alerts.text_extraction_pdf_subset_creation_failed';
+  }
+  return 'renderer.alerts.text_extraction_error';
+}
+
 // =============================================================================
 // Prepare/build helpers
 // =============================================================================
@@ -136,6 +186,9 @@ function getProbeFailureDetails(probeResult) {
       pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
       totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
       foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
+      probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
+      probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
+      selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
       elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
     },
   };
@@ -152,6 +205,9 @@ function getProbeSuccessDetails(probeResult) {
       pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
       totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
       foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
+      probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
+      probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
+      selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
       elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
     },
   };
@@ -167,6 +223,8 @@ function buildRouteMetadata({
   triageReason = '',
   ocrSetupState = 'not_checked',
   ocrSetupCode = '',
+  pdfPageSelection = null,
+  generatedPdfArtifactPolicyMode = '',
   nativeProbeCode = '',
   nativeProbeErrorName = '',
   nativeProbeErrorCode = '',
@@ -183,6 +241,12 @@ function buildRouteMetadata({
     triageReason,
     ocrSetupState,
     ocrSetupCode,
+    pdfPageSelection: pdfPageSelection && typeof pdfPageSelection === 'object'
+      ? { ...pdfPageSelection }
+      : null,
+    generatedPdfArtifactPolicyMode: typeof generatedPdfArtifactPolicyMode === 'string'
+      ? generatedPdfArtifactPolicyMode
+      : '',
     nativeProbeCode,
     nativeProbeErrorName,
     nativeProbeErrorCode,
@@ -199,6 +263,9 @@ function buildPrepareFailure({
   primaryAlertKey,
   warningAlertKeys = [],
   error = null,
+  pdfPageSelection = null,
+  generatedPdfArtifactPolicy = null,
+  processingInputFileName = '',
 }) {
   return {
     ok: true,
@@ -208,6 +275,13 @@ function buildPrepareFailure({
     primaryAlertKey,
     warningAlertKeys,
     error,
+    pdfPageSelection: pdfPageSelection && typeof pdfPageSelection === 'object'
+      ? { ...pdfPageSelection }
+      : null,
+    generatedPdfArtifactPolicy: generatedPdfArtifactPolicy && typeof generatedPdfArtifactPolicy === 'object'
+      ? { ...generatedPdfArtifactPolicy }
+      : null,
+    processingInputFileName: typeof processingInputFileName === 'string' ? processingInputFileName : '',
   };
 }
 
@@ -216,6 +290,9 @@ function buildOcrPrepareFailure({
   validationResult,
   pdfTriage,
   triageReason,
+  pdfPageSelection = null,
+  generatedPdfArtifactPolicy = null,
+  processingInputFileName = '',
   availableRoutes = ['ocr'],
   chosenRoute = 'ocr',
 }) {
@@ -248,10 +325,15 @@ function buildOcrPrepareFailure({
       triageReason,
       ocrSetupState: state,
       ocrSetupCode: code,
+      pdfPageSelection,
+      generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy ? generatedPdfArtifactPolicy.mode : '',
     }),
     primaryAlertKey,
     warningAlertKeys: [],
     error: validationResult && validationResult.error ? validationResult.error : null,
+    pdfPageSelection,
+    generatedPdfArtifactPolicy,
+    processingInputFileName,
   });
 }
 
@@ -259,15 +341,15 @@ function buildNativePrepareFailure({
   fileInfo,
   probeResult,
   triageReason,
+  pdfPageSelection = null,
+  generatedPdfArtifactPolicy = null,
+  processingInputFileName = '',
 }) {
   const failure = getProbeFailureDetails(probeResult);
   const code = failure ? failure.code : '';
-  let primaryAlertKey = 'renderer.alerts.text_extraction_native_runtime_error';
-  if (code === 'native_encrypted_or_password_protected') {
-    primaryAlertKey = 'renderer.alerts.text_extraction_native_encrypted_or_password_protected';
-  } else if (code === 'unreadable_or_corrupt') {
-    primaryAlertKey = 'renderer.alerts.text_extraction_native_unreadable_or_corrupt';
-  }
+  const primaryAlertKey = resolvePdfAlertKey(code) === 'renderer.alerts.text_extraction_error'
+    ? 'renderer.alerts.text_extraction_native_runtime_error'
+    : resolvePdfAlertKey(code);
 
   return buildPrepareFailure({
     executionKind: 'native',
@@ -279,6 +361,8 @@ function buildNativePrepareFailure({
       pdfTriage: 'native_only',
       triageReason,
       ocrSetupState: 'not_checked',
+      pdfPageSelection,
+      generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy ? generatedPdfArtifactPolicy.mode : '',
       nativeProbeCode: failure ? failure.code : '',
       nativeProbeErrorName: failure ? failure.errorName : '',
       nativeProbeErrorCode: failure ? failure.errorCode : '',
@@ -288,6 +372,9 @@ function buildNativePrepareFailure({
     primaryAlertKey,
     warningAlertKeys: [],
     error: probeResult && probeResult.error ? probeResult.error : null,
+    pdfPageSelection,
+    generatedPdfArtifactPolicy,
+    processingInputFileName,
   });
 }
 
@@ -315,6 +402,38 @@ function buildUnsupportedFormatPrepareFailure(fileInfo) {
         sourceFileKind: fileInfo.sourceFileKind,
       },
     },
+    processingInputFileName: fileInfo.fileName,
+  });
+}
+
+function buildPdfPrepareFailure({
+  fileInfo,
+  error,
+  triageReason,
+  pdfPageSelection = null,
+  generatedPdfArtifactPolicy = null,
+  processingInputFileName = '',
+}) {
+  const code = error && typeof error.code === 'string' ? error.code : '';
+  return buildPrepareFailure({
+    executionKind: null,
+    routeMetadata: buildRouteMetadata({
+      fileInfo,
+      availableRoutes: [],
+      chosenRoute: null,
+      executionKind: null,
+      pdfTriage: 'prepare_failed',
+      triageReason,
+      ocrSetupState: 'not_checked',
+      pdfPageSelection,
+      generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy ? generatedPdfArtifactPolicy.mode : '',
+    }),
+    primaryAlertKey: resolvePdfAlertKey(code),
+    warningAlertKeys: [],
+    error,
+    pdfPageSelection,
+    generatedPdfArtifactPolicy,
+    processingInputFileName,
   });
 }
 
@@ -356,6 +475,9 @@ async function validateOcrSetup(resolvePaths, log) {
 function buildPrepareReadyResult({
   fileInfo,
   ocrLanguage,
+  pdfPageSelection = null,
+  generatedPdfArtifactPolicy = null,
+  processingInputFileName = '',
   executionKind = null,
   routeMetadata,
   requiresRouteChoice = false,
@@ -368,10 +490,16 @@ function buildPrepareReadyResult({
     preparedPayload: {
       fileInfo,
       ocrLanguage,
+      pdfPageSelection,
+      generatedPdfArtifactPolicy,
+      processingInputFileName,
       routeMetadata,
       requiresRouteChoice,
       routeChoiceOptions,
     },
+    pdfPageSelection,
+    generatedPdfArtifactPolicy,
+    processingInputFileName,
     routeMetadata,
     requiresRouteChoice,
     routeChoiceOptions,
@@ -379,6 +507,7 @@ function buildPrepareReadyResult({
 }
 
 function resolveNonPdfNativePreparation(fileInfo, ocrLanguage) {
+  const processingInputFileName = fileInfo.fileName;
   const routeMetadata = buildRouteMetadata({
     fileInfo,
     availableRoutes: ['native'],
@@ -392,6 +521,9 @@ function resolveNonPdfNativePreparation(fileInfo, ocrLanguage) {
   return buildPrepareReadyResult({
     fileInfo,
     ocrLanguage,
+    pdfPageSelection: null,
+    generatedPdfArtifactPolicy: null,
+    processingInputFileName,
     executionKind: 'native',
     routeMetadata,
   });
@@ -403,6 +535,7 @@ async function resolveNonPdfOcrPreparation({
   resolvePaths,
   log,
 }) {
+  const processingInputFileName = fileInfo.fileName;
   const validation = await validateOcrSetup(resolvePaths, log);
   if (!validation || validation.ok !== true) {
     return buildOcrPrepareFailure({
@@ -410,6 +543,7 @@ async function resolveNonPdfOcrPreparation({
       validationResult: validation,
       pdfTriage: 'not_pdf',
       triageReason: 'non_pdf_ocr_unavailable',
+      processingInputFileName,
     });
   }
 
@@ -426,6 +560,9 @@ async function resolveNonPdfOcrPreparation({
   return buildPrepareReadyResult({
     fileInfo,
     ocrLanguage,
+    pdfPageSelection: null,
+    generatedPdfArtifactPolicy: null,
+    processingInputFileName,
     executionKind: 'google_drive',
     routeMetadata,
   });
@@ -434,11 +571,60 @@ async function resolveNonPdfOcrPreparation({
 async function resolvePdfPreparation({
   fileInfo,
   ocrLanguage,
+  requestedPdfPageSelection,
+  requestedGeneratedPdfArtifactPolicy,
   resolvePaths,
   log,
 }) {
+  const pdfInspection = await inspectPdfFile({ fileInfo });
+  if (!pdfInspection || pdfInspection.ok !== true || pdfInspection.isPdf !== true) {
+    return buildPdfPrepareFailure({
+      fileInfo,
+      triageReason: 'pdf_page_count_unavailable',
+      error: {
+        code: 'pdf_page_count_unavailable',
+        message: 'PDF page count could not be inspected.',
+        detailsSafeForLogs: {
+          stage: 'prepare',
+          reason: 'inspect_shape_invalid',
+        },
+      },
+      processingInputFileName: fileInfo.fileName,
+    });
+  }
+  if (pdfInspection.error) {
+    return buildPdfPrepareFailure({
+      fileInfo,
+      triageReason: pdfInspection.error.code || 'pdf_page_count_unavailable',
+      error: pdfInspection.error,
+      processingInputFileName: fileInfo.fileName,
+    });
+  }
+
+  const canonicalPdfPageSelection = canonicalizePdfPageSelection(requestedPdfPageSelection, {
+    totalPages: pdfInspection.totalPages,
+  });
+  if (!canonicalPdfPageSelection.ok) {
+    return buildPdfPrepareFailure({
+      fileInfo,
+      triageReason: 'pdf_page_selection_invalid',
+      error: canonicalPdfPageSelection.error,
+      processingInputFileName: fileInfo.fileName,
+    });
+  }
+
+  const pdfPageSelection = canonicalPdfPageSelection.pdfPageSelection;
+  const generatedPdfArtifactPolicy = canonicalizeGeneratedPdfArtifactPolicy(requestedGeneratedPdfArtifactPolicy);
+  const processingInputFileName = resolveProcessingInputFileName({
+    fileInfo,
+    pdfPageSelection,
+  });
   const nativeProbeResult = await probeNativePdfSelectableText({
     filePath: fileInfo.filePath,
+    pageRange: {
+      fromPage: pdfPageSelection.fromPage,
+      toPage: pdfPageSelection.toPage,
+    },
     isAborted: () => false,
     log,
   });
@@ -455,6 +641,9 @@ async function resolvePdfPreparation({
       fileInfo,
       probeResult: nativeProbeResult,
       triageReason,
+      pdfPageSelection,
+      generatedPdfArtifactPolicy,
+      processingInputFileName,
     });
   }
 
@@ -493,6 +682,9 @@ async function resolvePdfPreparation({
       validationResult: ocrValidation,
       pdfTriage: 'ocr_only',
       triageReason: 'no_native_text_layer_and_ocr_unavailable',
+      pdfPageSelection,
+      generatedPdfArtifactPolicy,
+      processingInputFileName,
     });
   }
 
@@ -507,6 +699,8 @@ async function resolvePdfPreparation({
     triageReason,
     ocrSetupState,
     ocrSetupCode,
+    pdfPageSelection,
+    generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy.mode,
     nativeProbeSelectableText: nativeProbeSuccess ? nativeProbeSuccess.selectableText : '',
     nativeProbeMetadata: nativeProbeSuccess ? nativeProbeSuccess.metadataSafeForLogs : null,
   });
@@ -514,6 +708,9 @@ async function resolvePdfPreparation({
   return buildPrepareReadyResult({
     fileInfo,
     ocrLanguage,
+    pdfPageSelection,
+    generatedPdfArtifactPolicy,
+    processingInputFileName,
     executionKind: routeMetadata.executionKind,
     routeMetadata,
     requiresRouteChoice,
@@ -521,9 +718,37 @@ async function resolvePdfPreparation({
   });
 }
 
+async function inspectSelectedFile({ filePath } = {}) {
+  const fileInfo = getFileInfo(filePath);
+  const rendererSafeFileInfo = getRendererSafeFileInfo(fileInfo);
+
+  if (fileInfo.sourceFileKind !== 'pdf') {
+    return {
+      ok: true,
+      isPdf: false,
+      fileInfo: rendererSafeFileInfo,
+      totalPages: null,
+      primaryAlertKey: '',
+      error: null,
+    };
+  }
+
+  const inspection = await inspectPdfFile({ fileInfo });
+  return {
+    ok: inspection && inspection.ok === true,
+    isPdf: inspection && inspection.isPdf === true,
+    fileInfo: rendererSafeFileInfo,
+    totalPages: Number.isFinite(inspection && inspection.totalPages) ? inspection.totalPages : null,
+    primaryAlertKey: inspection && inspection.error ? resolvePdfAlertKey(inspection.error.code) : '',
+    error: inspection && inspection.error ? inspection.error : null,
+  };
+}
+
 async function prepareSelectedFile({
   filePath,
   ocrLanguage,
+  pdfPageSelection,
+  generatedPdfArtifactPolicy,
   resolvePaths,
   log,
 }) {
@@ -535,6 +760,8 @@ async function prepareSelectedFile({
     return resolvePdfPreparation({
       fileInfo,
       ocrLanguage,
+      requestedPdfPageSelection: pdfPageSelection,
+      requestedGeneratedPdfArtifactPolicy: generatedPdfArtifactPolicy,
       resolvePaths,
       log,
     });
@@ -575,6 +802,16 @@ function resolvePrimaryAlertKey(routeKind, result) {
     ? result.error.code
     : '';
 
+  if (code === 'pdf_page_count_unavailable') {
+    return 'renderer.alerts.text_extraction_pdf_page_count_unavailable';
+  }
+  if (code === 'pdf_page_selection_invalid') {
+    return 'renderer.alerts.text_extraction_pdf_page_selection_invalid';
+  }
+  if (code === 'pdf_subset_creation_failed') {
+    return 'renderer.alerts.text_extraction_pdf_subset_creation_failed';
+  }
+
   if (routeKind === 'native') {
     if (state === 'success') return 'renderer.alerts.text_extraction_native_apply_pending';
     if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_native_cancelled';
@@ -605,11 +842,22 @@ function resolvePrimaryAlertKey(routeKind, result) {
 
 function resolveWarningAlertKeys(routeKind, result) {
   const warnings = Array.isArray(result && result.warnings) ? result.warnings : [];
-  if (routeKind === 'ocr'
-    && warnings.some((warning) => typeof warning === 'string' && warning.startsWith('cleanup:'))) {
-    return ['renderer.alerts.text_extraction_ocr_cleanup_warning'];
+  const alertKeys = [];
+
+  if (warnings.some((warning) => warning === 'cleanup:pdf_subset_cleanup_failed')) {
+    alertKeys.push('renderer.alerts.text_extraction_generated_pdf_cleanup_warning');
   }
-  return [];
+
+  if (routeKind === 'ocr'
+    && warnings.some((warning) => (
+      typeof warning === 'string'
+      && warning.startsWith('cleanup:')
+      && warning !== 'cleanup:pdf_subset_cleanup_failed'
+    ))) {
+    alertKeys.push('renderer.alerts.text_extraction_ocr_cleanup_warning');
+  }
+
+  return alertKeys;
 }
 
 function resolveExitReason(routeKind, result) {
@@ -695,39 +943,166 @@ function resolvePreparedRoute(preparedRecord, routePreference) {
   return { ok: false, reason: 'route_resolution_failed' };
 }
 
-function buildUnexpectedRuntimeResult(fileInfo, productRoute, executionKind, routeMetadata, err) {
+function decorateExecutionResultForPreparedInput({
+  preparedRecord,
+  routeKind,
+  result,
+  processingInputContext,
+}) {
+  const safeResult = result && typeof result === 'object' ? { ...result } : result;
+  if (!safeResult) return result;
+
+  const originalFileInfo = preparedRecord && preparedRecord.fileInfo && typeof preparedRecord.fileInfo === 'object'
+    ? preparedRecord.fileInfo
+    : {};
+  const existingProvenance = safeResult.provenance && typeof safeResult.provenance === 'object'
+    ? safeResult.provenance
+    : {};
+  const existingMetadata = existingProvenance.metadataSafeForLogs
+    && typeof existingProvenance.metadataSafeForLogs === 'object'
+    ? existingProvenance.metadataSafeForLogs
+    : {};
+  const pdfPageSelection = preparedRecord && preparedRecord.pdfPageSelection && typeof preparedRecord.pdfPageSelection === 'object'
+    ? preparedRecord.pdfPageSelection
+    : null;
+  const generatedPdfArtifactPolicy = preparedRecord
+    && preparedRecord.generatedPdfArtifactPolicy
+    && typeof preparedRecord.generatedPdfArtifactPolicy === 'object'
+      ? preparedRecord.generatedPdfArtifactPolicy
+      : null;
+  const processingInputFileName =
+    processingInputContext
+    && typeof processingInputContext.processingInputFileName === 'string'
+    && processingInputContext.processingInputFileName.trim()
+      ? processingInputContext.processingInputFileName.trim()
+      : (typeof preparedRecord.processingInputFileName === 'string'
+        ? preparedRecord.processingInputFileName
+        : (typeof originalFileInfo.fileName === 'string' ? originalFileInfo.fileName : ''));
+
   return {
-    executionKind,
-    result: {
-      state: 'failure',
-      executedRoute: productRoute,
-      text: '',
-      warnings: [],
-      summary: 'Text extraction route failed due to an unexpected runtime error.',
-      provenance: {
-        sourceFileName: fileInfo.fileName,
-        sourceFileExt: fileInfo.sourceFileExt,
-        sourceFileKind: fileInfo.sourceFileKind,
-        ocrProvider: executionKind === 'google_drive'
-          ? 'google_drive_docs_conversion'
-          : null,
-        metadataSafeForLogs: {},
+    ...safeResult,
+    processingInputFileName,
+    pdfPageSelection: pdfPageSelection ? { ...pdfPageSelection } : null,
+    generatedPdfArtifactPolicy: generatedPdfArtifactPolicy ? { ...generatedPdfArtifactPolicy } : null,
+    generatedPdfArtifact:
+      processingInputContext
+      && processingInputContext.generatedPdfArtifact
+      && typeof processingInputContext.generatedPdfArtifact === 'object'
+        ? { ...processingInputContext.generatedPdfArtifact }
+        : null,
+    provenance: {
+      sourceFileName: typeof originalFileInfo.fileName === 'string'
+        ? originalFileInfo.fileName
+        : (typeof existingProvenance.sourceFileName === 'string' ? existingProvenance.sourceFileName : ''),
+      sourceFileExt: typeof originalFileInfo.sourceFileExt === 'string'
+        ? originalFileInfo.sourceFileExt
+        : (typeof existingProvenance.sourceFileExt === 'string' ? existingProvenance.sourceFileExt : ''),
+      sourceFileKind: typeof originalFileInfo.sourceFileKind === 'string'
+        ? originalFileInfo.sourceFileKind
+        : (typeof existingProvenance.sourceFileKind === 'string' ? existingProvenance.sourceFileKind : ''),
+      ocrProvider: existingProvenance.ocrProvider || (routeKind === 'ocr' ? 'google_drive_docs_conversion' : null),
+      metadataSafeForLogs: {
+        ...existingMetadata,
+        processingInputFileName,
+        processingInputSource:
+          processingInputContext
+          && typeof processingInputContext.processingInputSource === 'string'
+            ? processingInputContext.processingInputSource
+            : 'original_selected_file',
+        pdfPageSelectionMode: pdfPageSelection ? pdfPageSelection.mode : '',
+        selectedRangeFromPage: pdfPageSelection ? pdfPageSelection.fromPage : null,
+        selectedRangeToPage: pdfPageSelection ? pdfPageSelection.toPage : null,
+        selectedPageCount: pdfPageSelection ? pdfPageSelection.selectedPageCount : null,
+        pdfTotalPages: pdfPageSelection ? pdfPageSelection.totalPages : null,
+        generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy ? generatedPdfArtifactPolicy.mode : '',
+        generatedPdfArtifactRetained: !!(
+          processingInputContext
+          && processingInputContext.generatedPdfArtifact
+          && processingInputContext.generatedPdfArtifact.retained
+        ),
       },
-      error: {
-        code: 'platform_runtime_failed',
-        message: 'Text extraction route failed due to a platform/runtime error.',
-        detailsSafeForLogs: {
-          errorMessage: String(err && err.message ? err.message : err || ''),
-        },
-      },
-    },
-    routeMetadata: {
-      ...routeMetadata,
-      chosenRoute: productRoute,
-      executedRoute: productRoute,
-      executionKind,
     },
   };
+}
+
+function buildPreparedExecutionFailureResult({
+  preparedRecord,
+  productRoute,
+  executionKind,
+  routeMetadata,
+  summary,
+  error,
+  processingInputContext,
+}) {
+  return {
+    executionKind,
+    result: decorateExecutionResultForPreparedInput({
+      preparedRecord,
+      routeKind: productRoute,
+      processingInputContext,
+      result: {
+        state: 'failure',
+        executedRoute: productRoute,
+        text: '',
+        warnings: [],
+        summary,
+        provenance: {
+          sourceFileName: preparedRecord.fileInfo.fileName,
+          sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
+          sourceFileKind: preparedRecord.fileInfo.sourceFileKind,
+          ocrProvider: executionKind === 'google_drive'
+            ? 'google_drive_docs_conversion'
+            : null,
+          metadataSafeForLogs: {},
+        },
+        error,
+      },
+    }),
+    routeMetadata: {
+      ...(routeMetadata && typeof routeMetadata === 'object' ? routeMetadata : {}),
+      executionKind,
+      chosenRoute: productRoute,
+      executedRoute: productRoute,
+    },
+  };
+}
+
+function buildUnexpectedRuntimeResult(
+  preparedRecord,
+  productRoute,
+  executionKind,
+  routeMetadata,
+  err,
+  processingInputContext
+) {
+  return buildPreparedExecutionFailureResult({
+    preparedRecord,
+    productRoute,
+    executionKind,
+    routeMetadata,
+    processingInputContext,
+    summary: 'Text extraction route failed due to an unexpected runtime error.',
+    error: {
+      code: 'platform_runtime_failed',
+      message: 'Text extraction route failed due to a platform/runtime error.',
+      detailsSafeForLogs: {
+        errorMessage: String(err && err.message ? err.message : err || ''),
+      },
+    },
+  });
+}
+
+function resolvePreRouteFailureSummary(errorCode) {
+  if (errorCode === 'pdf_page_selection_invalid') {
+    return 'Text extraction blocked before route execution: selected PDF page range is invalid.';
+  }
+  if (errorCode === 'unreadable_or_corrupt') {
+    return 'Text extraction failed before route execution: selected PDF is unreadable or corrupt.';
+  }
+  if (errorCode === 'native_encrypted_or_password_protected') {
+    return 'Text extraction failed before route execution: selected PDF is encrypted or password-protected.';
+  }
+  return 'Text extraction failed before route execution: selected-page PDF subset could not be created.';
 }
 
 // =============================================================================
@@ -768,72 +1143,154 @@ async function executePreparedImport({
   }
 
   let executionResult = null;
+  let processingInputContext = {
+    processingInputFileName: typeof preparedRecord.processingInputFileName === 'string'
+      ? preparedRecord.processingInputFileName
+      : fileInfo.fileName,
+    processingInputSource: 'original_selected_file',
+    generatedPdfArtifact: null,
+  };
+  let cleanupGeneratedArtifact = null;
 
   try {
-    if (productRoute === 'native') {
-      const nativeResult = await runNativeExtractionRoute({
-        filePath: fileInfo.filePath,
-        isAborted: () => !controller.isActive(),
-        log,
+    const paths = resolvePaths();
+    const materializedInput = await materializePdfPageSelectionInput({
+      fileInfo,
+      pdfPageSelection: preparedRecord.pdfPageSelection,
+      generatedPdfArtifactPolicy: preparedRecord.generatedPdfArtifactPolicy,
+      retainedArtifactsDir: paths.generatedPdfArtifactsDir,
+    });
+
+    if (!materializedInput || materializedInput.ok !== true) {
+      const error = materializedInput && materializedInput.error
+        ? materializedInput.error
+        : {
+          code: 'pdf_subset_creation_failed',
+          message: 'Selected-page PDF subset could not be created.',
+          detailsSafeForLogs: {
+            stage: 'materialize_subset',
+            reason: 'invalid_result_shape',
+          },
+        };
+      executionResult = buildPreparedExecutionFailureResult({
+        preparedRecord,
+        productRoute,
+        executionKind: productRoute === 'native' ? 'native' : 'google_drive',
+        routeMetadata: preparedRecord.routeMetadata,
+        processingInputContext,
+        summary: resolvePreRouteFailureSummary(error.code),
+        error,
       });
-      const safeNativeResult = enforceFailureAbortInvariants({
-        routeKind: 'native',
-        fileInfo,
-        controller,
-        result: nativeResult,
-        log,
-      });
-      executionResult = {
-        executionKind: 'native',
-        result: safeNativeResult,
-        routeMetadata: {
-          ...preparedRecord.routeMetadata,
-          chosenRoute: productRoute,
-          executedRoute: productRoute,
-          executionKind: 'native',
-        },
-      };
     } else {
-      const paths = resolvePaths();
-      const ocrResult = await runGoogleDriveOcrRoute({
-        filePath: fileInfo.filePath,
-        credentialsPath: paths.credentialsPath,
-        tokenPath: paths.tokenPath,
-        bundledCredentialsFailureCode: paths.bundledCredentialsFailureCode,
-        bundledCredentialsFailureReason: paths.bundledCredentialsFailureReason,
-        bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
-        ocrLanguage: preparedRecord.ocrLanguage,
-        log,
-        isAborted: () => !controller.isActive(),
-      });
-      const safeOcrResult = enforceFailureAbortInvariants({
-        routeKind: 'ocr',
-        fileInfo,
-        controller,
-        result: ocrResult,
-        log,
-      });
-      executionResult = {
-        executionKind: 'google_drive',
-        result: safeOcrResult,
-        routeMetadata: {
-          ...preparedRecord.routeMetadata,
-          chosenRoute: productRoute,
-          executedRoute: productRoute,
-          executionKind: 'google_drive',
-        },
+      processingInputContext = {
+        processingInputFileName: materializedInput.processingInputFileName,
+        processingInputSource: materializedInput.processingInputSource,
+        generatedPdfArtifact: materializedInput.generatedPdfArtifact,
       };
+      cleanupGeneratedArtifact = typeof materializedInput.cleanupGeneratedArtifact === 'function'
+        ? materializedInput.cleanupGeneratedArtifact
+        : null;
+
+      if (materializedInput.retainedArtifactPath) {
+        log.info('text extraction retained generated PDF artifact:', {
+          retainedArtifactPath: materializedInput.retainedArtifactPath,
+          processingInputFileName: materializedInput.processingInputFileName,
+          generatedPdfArtifactPolicyMode:
+            materializedInput.generatedPdfArtifact
+            && materializedInput.generatedPdfArtifact.policyMode
+              ? materializedInput.generatedPdfArtifact.policyMode
+              : '',
+        });
+      }
+
+      if (productRoute === 'native') {
+        const nativeResult = await runNativeExtractionRoute({
+          filePath: materializedInput.effectiveFilePath,
+          isAborted: () => !controller.isActive(),
+          log,
+        });
+        const safeNativeResult = enforceFailureAbortInvariants({
+          routeKind: 'native',
+          fileInfo,
+          controller,
+          result: nativeResult,
+          log,
+        });
+        executionResult = {
+          executionKind: 'native',
+          result: decorateExecutionResultForPreparedInput({
+            preparedRecord,
+            routeKind: 'native',
+            result: safeNativeResult,
+            processingInputContext,
+          }),
+          routeMetadata: {
+            ...preparedRecord.routeMetadata,
+            chosenRoute: productRoute,
+            executedRoute: productRoute,
+            executionKind: 'native',
+          },
+        };
+      } else {
+        const ocrResult = await runGoogleDriveOcrRoute({
+          filePath: materializedInput.effectiveFilePath,
+          credentialsPath: paths.credentialsPath,
+          tokenPath: paths.tokenPath,
+          bundledCredentialsFailureCode: paths.bundledCredentialsFailureCode,
+          bundledCredentialsFailureReason: paths.bundledCredentialsFailureReason,
+          bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
+          ocrLanguage: preparedRecord.ocrLanguage,
+          log,
+          isAborted: () => !controller.isActive(),
+        });
+        const safeOcrResult = enforceFailureAbortInvariants({
+          routeKind: 'ocr',
+          fileInfo,
+          controller,
+          result: ocrResult,
+          log,
+        });
+        executionResult = {
+          executionKind: 'google_drive',
+          result: decorateExecutionResultForPreparedInput({
+            preparedRecord,
+            routeKind: 'ocr',
+            result: safeOcrResult,
+            processingInputContext,
+          }),
+          routeMetadata: {
+            ...preparedRecord.routeMetadata,
+            chosenRoute: productRoute,
+            executedRoute: productRoute,
+            executionKind: 'google_drive',
+          },
+        };
+      }
     }
   } catch (err) {
     log.error('text extraction execution failed unexpectedly:', err);
     executionResult = buildUnexpectedRuntimeResult(
-      fileInfo,
+      preparedRecord,
       productRoute,
       productRoute === 'native' ? 'native' : 'google_drive',
       preparedRecord.routeMetadata,
-      err
+      err,
+      processingInputContext
     );
   } finally {
+    if (cleanupGeneratedArtifact) {
+      const cleanupWarning = cleanupGeneratedArtifact();
+      if (cleanupWarning && typeof cleanupWarning.warningCode === 'string') {
+        log.warn('Generated PDF subset cleanup failed (ignored):', cleanupWarning.detailsSafeForLogs || {});
+        if (executionResult && executionResult.result) {
+          executionResult.result.warnings = Array.isArray(executionResult.result.warnings)
+            ? executionResult.result.warnings
+            : [];
+          executionResult.result.warnings.push(cleanupWarning.warningCode);
+        }
+      }
+    }
+
     if (controller.isActive()) {
       controller.exit({
         source: 'text_extraction_execution',
@@ -873,8 +1330,10 @@ async function executePreparedImport({
 module.exports = {
   executePreparedImport,
   getFileInfo,
+  inspectSelectedFile,
   isAuthorizedSender,
   prepareSelectedFile,
+  resolveInspectPayload,
   resolvePreparedRoute,
   resolveExecutePayload,
   resolvePreparePayload,
@@ -883,5 +1342,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_prepare_execute_core.js
 // =============================================================================
-
-

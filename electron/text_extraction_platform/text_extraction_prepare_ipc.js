@@ -45,13 +45,19 @@ function getNativeProbeLogFields(routeMetadata) {
     nativeProbeErrorCode: routeMetadata ? routeMetadata.nativeProbeErrorCode : '',
     nativeProbeSelectableText: routeMetadata ? routeMetadata.nativeProbeSelectableText : '',
     pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
-    totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
+    nativeProbeTotalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
     foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
+    probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
+    probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
+    selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
     elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
   };
 }
 
 function buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFallback = 'not_checked' } = {}) {
+  const pdfPageSelection = routeMetadata && routeMetadata.pdfPageSelection && typeof routeMetadata.pdfPageSelection === 'object'
+    ? routeMetadata.pdfPageSelection
+    : null;
   return {
     sourceFileExt: fileInfo.sourceFileExt,
     sourceFileKind: fileInfo.sourceFileKind,
@@ -61,6 +67,15 @@ function buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFall
     availableRoutes: routeMetadata ? routeMetadata.availableRoutes : [],
     chosenRoute: routeMetadata ? routeMetadata.chosenRoute : null,
     ocrSetupState: routeMetadata ? routeMetadata.ocrSetupState : ocrSetupStateFallback,
+    pdfPageSelectionMode: pdfPageSelection ? pdfPageSelection.mode : '',
+    selectedRangeFromPage: pdfPageSelection ? pdfPageSelection.fromPage : null,
+    selectedRangeToPage: pdfPageSelection ? pdfPageSelection.toPage : null,
+    selectedPageCount: pdfPageSelection ? pdfPageSelection.selectedPageCount : null,
+    pdfTotalPages: pdfPageSelection ? pdfPageSelection.totalPages : null,
+    generatedPdfArtifactPolicyMode:
+      routeMetadata && typeof routeMetadata.generatedPdfArtifactPolicyMode === 'string'
+        ? routeMetadata.generatedPdfArtifactPolicyMode
+        : '',
     ...getNativeProbeLogFields(routeMetadata),
   };
 }
@@ -106,6 +121,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       const preparation = await prepareSelectedFile({
         filePath: request.filePath,
         ocrLanguage: request.ocrLanguage,
+        pdfPageSelection: request.pdfPageSelection,
+        generatedPdfArtifactPolicy: request.generatedPdfArtifactPolicy,
         resolvePaths,
         log,
       });
@@ -174,6 +191,18 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         prepareId: preparedRecord.prepareId,
         expiresAtEpochMs: preparedRecord.expiresAtEpochMs,
         executionKind: preparation.executionKind || null,
+        pdfPageSelection: preparation.pdfPageSelection && typeof preparation.pdfPageSelection === 'object'
+          ? { ...preparation.pdfPageSelection }
+          : null,
+        generatedPdfArtifactPolicy:
+          preparation.generatedPdfArtifactPolicy
+          && typeof preparation.generatedPdfArtifactPolicy === 'object'
+            ? { ...preparation.generatedPdfArtifactPolicy }
+            : null,
+        processingInputFileName:
+          typeof preparation.processingInputFileName === 'string'
+            ? preparation.processingInputFileName
+            : '',
         routeMetadata,
         requiresRouteChoice: preparation.requiresRouteChoice === true,
         routeChoiceOptions: Array.isArray(preparation.routeChoiceOptions)
@@ -202,5 +231,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_prepare_ipc.js
 // =============================================================================
-
-

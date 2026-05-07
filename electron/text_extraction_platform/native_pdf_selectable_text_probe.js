@@ -18,6 +18,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  isPdfPasswordProtectedError,
+  isUnreadableOrCorruptPdfError,
+} = require('./text_extraction_pdf_error_detection');
 
 // =============================================================================
 // Module-level parser state
@@ -63,41 +67,6 @@ function getSourceInfo(filePath) {
   };
 }
 
-function isCorruptOrUnreadableParserError(err) {
-  if (!err) return false;
-  const code = typeof err.code === 'string' ? err.code.trim() : '';
-  const message = String(err && err.message ? err.message : '').toLowerCase();
-
-  if (code === 'ENOENT' || code === 'EISDIR' || code === 'EACCES' || code === 'EPERM') {
-    return true;
-  }
-
-  if (message.includes('invalid pdf')
-    || message.includes('bad xref')
-    || message.includes('unexpected response')
-    || message.includes('formaterror')
-    || message.includes('missing pdf')) {
-    return true;
-  }
-
-  return false;
-}
-
-function isPdfPasswordProtectedParserError(err) {
-  if (!err) return false;
-  const name = String(err && err.name ? err.name : '').toLowerCase();
-  const message = String(err && err.message ? err.message : '').toLowerCase();
-  const code = String(err && err.code ? err.code : '').trim();
-
-  return (
-    name.includes('passwordexception')
-    || (name.includes('password') && name.includes('exception'))
-    || message.includes('password')
-    || message.includes('encrypted')
-    || code === '1'
-  );
-}
-
 // =============================================================================
 // Probe flow helpers
 // =============================================================================
@@ -139,6 +108,7 @@ function buildFailure(selectableText, metadataSafeForLogs, error) {
 
 async function probeNativePdfSelectableText({
   filePath,
+  pageRange,
   isAborted,
   log,
 } = {}) {
@@ -212,10 +182,44 @@ async function probeNativePdfSelectableText({
     documentHandle = await pdfjs.getDocument(pdfBuffer);
 
     const totalPages = Number.isFinite(documentHandle.numPages) ? documentHandle.numPages : 0;
+    const requestedFromPage = pageRange && Number.isInteger(pageRange.fromPage)
+      ? pageRange.fromPage
+      : 1;
+    const requestedToPage = pageRange && Number.isInteger(pageRange.toPage)
+      ? pageRange.toPage
+      : totalPages;
+    if (requestedFromPage < 1
+      || requestedToPage < requestedFromPage
+      || requestedToPage > totalPages) {
+      return buildFailure(
+        'unknown',
+        {
+          ...baseMetadata,
+          totalPages,
+          probedFromPage: requestedFromPage,
+          probedToPage: requestedToPage,
+          selectedPageCount: null,
+          elapsedMs: Date.now() - startedAt,
+        },
+        buildError(
+          'pdf_page_selection_invalid',
+          'Selected PDF page range is invalid for native probe.',
+          {
+            stage: 'parse',
+            reason: 'bounds_out_of_range',
+            fromPage: requestedFromPage,
+            toPage: requestedToPage,
+            totalPages,
+          }
+        )
+      );
+    }
+
+    const selectedPageCount = (requestedToPage - requestedFromPage) + 1;
     let pagesScanned = 0;
     let foundAtPage = null;
 
-    for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+    for (let pageNumber = requestedFromPage; pageNumber <= requestedToPage; pageNumber += 1) {
       ensureNotAborted(isAborted);
 
       const page = await documentHandle.getPage(pageNumber);
@@ -235,6 +239,9 @@ async function probeNativePdfSelectableText({
             pagesScanned,
             totalPages,
             foundAtPage,
+            probedFromPage: requestedFromPage,
+            probedToPage: requestedToPage,
+            selectedPageCount,
             elapsedMs: Date.now() - startedAt,
           }
         );
@@ -244,9 +251,12 @@ async function probeNativePdfSelectableText({
     return buildSuccess(
       'absent',
       {
-        pagesScanned: totalPages,
+        pagesScanned,
         totalPages,
         foundAtPage,
+        probedFromPage: requestedFromPage,
+        probedToPage: requestedToPage,
+        selectedPageCount,
         elapsedMs: Date.now() - startedAt,
       }
     );
@@ -276,11 +286,11 @@ async function probeNativePdfSelectableText({
     let errorMessage = 'Native PDF probe failed due to parser/runtime error.';
     let failureType = 'parser_runtime_error';
 
-    if (isPdfPasswordProtectedParserError(err)) {
+    if (isPdfPasswordProtectedError(err)) {
       errorCode = 'native_encrypted_or_password_protected';
       errorMessage = 'Selected PDF is encrypted or password-protected for native extraction.';
       failureType = 'pdf_password_protected';
-    } else if (isCorruptOrUnreadableParserError(err)) {
+    } else if (isUnreadableOrCorruptPdfError(err)) {
       errorCode = 'unreadable_or_corrupt';
       errorMessage = 'Selected PDF is unreadable or corrupt for native extraction.';
       failureType = 'corrupt_or_unreadable';
@@ -330,5 +340,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/native_pdf_selectable_text_probe.js
 // =============================================================================
-
-
