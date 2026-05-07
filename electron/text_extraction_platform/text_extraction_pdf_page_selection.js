@@ -113,25 +113,6 @@ function sanitizePdfBaseName(rawFileName) {
   return sanitized || 'document';
 }
 
-function cleanupMaterializationFailure(runDir) {
-  const safeRunDir = typeof runDir === 'string' ? runDir.trim() : '';
-  if (!safeRunDir || !fs.existsSync(safeRunDir)) return null;
-  try {
-    fs.rmSync(safeRunDir, { recursive: true, force: true });
-    return null;
-  } catch (err) {
-    const cleanupFailure = {
-      stage: 'cleanup_materialization_failure',
-      runDir: safeRunDir,
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorCode: String(err && err.code ? err.code : ''),
-      errorMessage: String(err && err.message ? err.message : err || ''),
-    };
-    log.warn('Generated PDF materialization cleanup failed (ignored):', cleanupFailure);
-    return cleanupFailure;
-  }
-}
-
 // =============================================================================
 // Inspect / canonical state helpers
 // =============================================================================
@@ -373,6 +354,25 @@ function resolveProcessingInputFileName({ fileInfo, pdfPageSelection } = {}) {
 // =============================================================================
 // Execute-time subset materialization
 // =============================================================================
+
+function cleanupMaterializationFailure(runDir) {
+  const safeRunDir = typeof runDir === 'string' ? runDir.trim() : '';
+  if (!safeRunDir || !fs.existsSync(safeRunDir)) return null;
+  try {
+    fs.rmSync(safeRunDir, { recursive: true, force: true });
+    return null;
+  } catch (err) {
+    const cleanupFailure = {
+      stage: 'cleanup_materialization_failure',
+      runDir: safeRunDir,
+      errorName: String(err && err.name ? err.name : 'Error'),
+      errorCode: String(err && err.code ? err.code : ''),
+      errorMessage: String(err && err.message ? err.message : err || ''),
+    };
+    log.warn('Generated PDF materialization cleanup failed (ignored):', cleanupFailure);
+    return cleanupFailure;
+  }
+}
 
 async function materializePdfPageSelectionInput({
   fileInfo,
