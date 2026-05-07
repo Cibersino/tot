@@ -72,6 +72,14 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     ),
     tempName: 'tot_LICENSE_pdf-parse_1.1.1.txt',
   },
+  'license-text-extraction-pdf-materialization': {
+    relativePath: path.join(
+      'public',
+      'third_party_licenses',
+      'LICENSE_pdf-lib_1.17.1.txt'
+    ),
+    tempName: 'tot_LICENSE_pdf-lib_1.17.1.txt',
+  },
   'license-text-extraction-image-processing': {
     relativePath: path.join(
       'public',
@@ -448,4 +456,3 @@ module.exports = { registerLinkIpc };
 // =============================================================================
 // End of electron/link_openers.js
 // =============================================================================
-
