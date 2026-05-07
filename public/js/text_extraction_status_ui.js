@@ -140,9 +140,19 @@
     return constrainDisplayFileName(rawFilePath);
   }
 
-  function resolveSourceFileNameFromContext({ preparation, fileName, filePath } = {}) {
+  function resolveSourceFileNameFromContext({ preparation, fileName, filePath, processingInputFileName } = {}) {
     const explicitFileName = constrainDisplayFileName(fileName);
     if (explicitFileName) return explicitFileName;
+
+    const explicitProcessingInputFileName = constrainDisplayFileName(processingInputFileName);
+    if (explicitProcessingInputFileName) return explicitProcessingInputFileName;
+
+    const preparationProcessingInputFileName = preparation
+      && typeof preparation.processingInputFileName === 'string'
+      ? preparation.processingInputFileName
+      : '';
+    const preparationProcessingInputDisplayName = constrainDisplayFileName(preparationProcessingInputFileName);
+    if (preparationProcessingInputDisplayName) return preparationProcessingInputDisplayName;
 
     const preparedFileNameRaw = preparation
       && preparation.preparedPayload

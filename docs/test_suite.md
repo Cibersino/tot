@@ -7,9 +7,10 @@
 **Scope coverage (app-level):**
 - Startup + first-run language selection
 - Text extraction from file picker + drag/drop
+- PDF inspect/options flow (`All pages` vs contiguous `Page range`)
 - Native extraction routes (`txt`, `md`, `html`, `docx`, PDF text layer)
 - Google-backed extraction routes (`rtf`, `odt`, images, scanned PDFs), including OCR activation/disconnect
-- Text extraction route choice, apply modal, processing lock, and abort flow
+- Text extraction route choice, apply modal, generated-PDF retain/reveal path, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
@@ -77,10 +78,23 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `SM-09`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT/EXTRACT`
+* `electron/text_extraction_platform/text_extraction_pdf_page_selection.js`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT-05`
+  * supports parts of `REG-IMPORT-06A`
+  * supports parts of `REG-IMPORT-08A`
+  * supports parts of `REG-IMPORT-09`
 * `electron/text_extraction_platform/text_extraction_prepare_execute_core.js`
   * supports parts of `SM-09`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT/EXTRACT`
+* `test/unit/electron/text_extraction_prepare_ipc.test.js`
+  * supports parts of `REG-IMPORT-06A`
+* `test/unit/electron/native_pdf_selectable_text_probe.test.js`
+  * supports parts of `REG-IMPORT-06`
+  * supports parts of `REG-IMPORT-07`
+* `test/unit/electron/text_extraction_generated_pdf_reveal_ipc.test.js`
+  * supports parts of `REG-IMPORT-08A`
 * `electron/text_extraction_platform/text_extraction_prepared_store.js`
   * supports parts of `REG-IMPORT/EXTRACT`
 * `electron/text_extraction_platform/ocr_google_drive_activation_state.js`
@@ -97,6 +111,7 @@ Important limitations:
 * no renderer/UI automation exists yet, including the editor spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
 * the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool core in `test/unit/electron/reading_test_pool.test.js` and the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
 * OCR network/provider behavior is still primarily validated through the manual suite;
+* the page-range renderer UX (PDF options modal, route-choice modal, apply modal reveal button, and status-bar presentation) is still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
 ---
@@ -196,8 +211,9 @@ Prepare a small local sample set whose expected text is known ahead of time:
   - `sample.rtf`
   - `sample.odt`
 - PDFs:
-  - `sample_selectable.pdf` (contains selectable/native text)
-  - `sample_scanned.pdf` (image/scanned PDF; no usable text layer)
+  - `sample_selectable.pdf` (contains selectable/native text and enough pages to test `All pages` vs contiguous `Page range`)
+  - `sample_scanned.pdf` (image/scanned PDF; no usable text layer and enough pages to test OCR on a selected range)
+  - optional: `sample_mixed.pdf` (small PDF where one page is scanned-only and another has selectable text, to verify range-aware triage instead of whole-document triage)
 - OCR images:
   - at least one of `sample.jpg`, `sample.png`, `sample.webp`, `sample.bmp`, `sample.tif`, or `sample.tiff`
 
@@ -327,16 +343,22 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The apply modal appears after successful extraction.
 - After **Sobrescribir**, preview/results reflect the extracted text.
 
-### SM-10 Text extraction: OCR/route-choice quick check
-**Goal:** OCR-capable files follow the correct route and can be applied.
+### SM-10 Text extraction: PDF page-range + OCR/route-choice quick check
+**Goal:** OCR-capable files and dual-route PDFs respect the PDF options step and can be applied.
 1. Click **📥** and select either:
    - an OCR-capable image, or
    - a PDF known to have both selectable text and OCR available.
-2. If route choice appears, choose either **Usar nativa** or **Usar OCR** as appropriate for the file being tested.
-3. If OCR activation disclosure appears, confirm it is understandable and either complete activation or cancel deliberately.
-4. On success, apply the extracted text with **Sobrescribir** or **Agregar**.
+2. If the file is a PDF, confirm the PDF options modal appears before route choice.
+3. For the PDF path, select either:
+   - `All pages`, or
+   - `Page range` with a valid contiguous range.
+4. If route choice appears, choose either **Usar nativa** or **Usar OCR** as appropriate for the file being tested.
+5. If OCR activation disclosure appears, confirm it is understandable and either complete activation or cancel deliberately.
+6. On success, apply the extracted text with **Sobrescribir** or **Agregar**.
 
 **Expected:**
+- PDF inputs show the PDF options step before prepare/route execution.
+- `All pages` hides range-only controls; `Page range` reveals them.
 - OCR-only files do not offer the native route.
 - Dual-route PDFs show the route-choice modal.
 - OCR activation/disclosure appears only when required.
@@ -586,25 +608,49 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-IMPORT-06 PDF route choice when both routes are available
 **Goal:** a dual-route PDF requires an explicit route choice and both choices are honored.
 1. Use a PDF with selectable text while OCR is available.
-2. Start text extraction and confirm the route-choice modal appears.
-3. Cancel once.
-4. Start again, choose **Usar nativa**, complete apply, note the result.
-5. Start again, choose **Usar OCR**, complete apply, note the result.
+2. Start text extraction and confirm the PDF options modal appears before route choice.
+3. Leave the default `All pages` path once and continue until the route-choice modal appears.
+4. Cancel once.
+5. Start again, choose a valid `Page range`, then choose **Usar nativa**, complete apply, note the result.
+6. Start again, choose a valid `Page range`, then choose **Usar OCR**, complete apply, note the result.
 
 **Expected:**
+- PDF options appear before the route-choice modal for PDFs.
 - Route-choice modal appears only for PDFs with both native and OCR routes available.
 - Cancel is a no-op.
 - Native and OCR choices both execute the selected route and reach the apply modal.
+
+#### REG-IMPORT-06A PDF options modal semantics
+**Goal:** the pre-prepare PDF options modal cleanly separates `All pages` from `Page range`.
+1. Start text extraction on a PDF.
+2. Confirm the PDF options modal appears and shows total pages plus the file basename.
+3. Leave `All pages` selected.
+4. Confirm range-only controls are hidden.
+5. Switch to `Page range`.
+6. Confirm the range inputs appear, selected-page feedback can appear, and the keep-generated-PDF option is visible only in range mode.
+7. Enter invalid ranges such as `5-2`, `0-1`, and `1-(totalPages+1)`.
+8. Enter a valid contiguous range and continue.
+
+**Expected:**
+- `All pages` and `Page range` are mutually exclusive and visually unambiguous.
+- `All pages` hides range-only controls.
+- `Page range` reveals the range inputs and range-only controls.
+- Invalid ranges are blocked in-modal and do not continue to prepare/execute.
+- A valid range continues to the next step.
 
 #### REG-IMPORT-07 OCR-only routing for images and scanned PDFs
 **Goal:** OCR-only inputs skip native route selection and use the OCR path.
 1. Run text extraction on one OCR-capable image, ideally including one of `sample.tif` or `sample.tiff`.
 2. Run text extraction on `sample_scanned.pdf`.
+3. If the scanned PDF has multiple pages, repeat with a selected page range.
+4. If `sample_mixed.pdf` is available, select the scanned-only page range once and the selectable-text page range once.
 
 **Expected:**
 - No native-route option is offered for OCR-only inputs.
 - If OCR is ready, extraction proceeds to the apply modal.
 - If OCR is not ready, the app surfaces the correct OCR setup/activation failure instead of a generic error.
+- If a scanned PDF range is chosen, OCR operates on the selected range instead of the whole document.
+- If `sample_mixed.pdf` is used, route availability follows the selected range, not whole-document heuristics.
 
 #### REG-IMPORT-08 Apply modal semantics
 **Goal:** apply modal supports overwrite/append/cancel and repeat normalization.
@@ -620,6 +666,21 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Repeat input normalizes/clamps like the canonical text-apply path.
 - On successful apply, preview/results update through the normal current-text subscription flow.
 
+#### REG-IMPORT-08A Generated subset retention + reveal path
+**Goal:** range-based PDF runs can retain generated subset PDFs intentionally and expose a precise reveal action.
+1. Start text extraction on a multi-page PDF.
+2. Choose `Page range` and a valid contiguous range.
+3. Enable the keep-generated-PDF option.
+4. Complete a successful run and wait for the apply modal.
+5. Confirm the apply modal shows the retained generated-PDF section with the subset filename.
+6. Trigger the reveal action once.
+7. Repeat the same flow with `All pages`.
+
+**Expected:**
+- The retained generated-PDF section appears only when a range-based run actually retained a generated subset.
+- The reveal action points to the exact retained file, not just a generic folder and not the original selected PDF.
+- `All pages` does not imply a generated subset exists and does not show the retained generated-PDF section.
+
 #### REG-IMPORT-09 Processing mode lock + abort
 **Goal:** processing mode blocks main-window interactions until completion or abort, and abort exits cleanly.
 1. Start a text extraction run that lasts long enough to observe the processing bar (OCR path is the easiest).
@@ -629,10 +690,11 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Main controls are replaced by the processing UI while active.
 - The processing bar keeps the abort button visible and stable at the far right.
-- The first copy row shows the current processing status plus the source file basename only, never a full path.
+- The first copy row shows the current processing status plus the `processingInputFile` basename only, never a full path.
 - Short basenames remain fully visible when they fit; longer basenames truncate without destabilizing the bar.
 - Main-window actions are blocked with user-facing feedback until processing ends or abort is requested.
 - Abort stops the run, exits processing mode, restores normal controls, and leaves current text unchanged by the cancelled run.
+- If a cancelled run is followed immediately by a second run, the first run must not later surface stale success/failure/apply UI and must not clear the second run’s processing bar.
 
 #### REG-IMPORT-10 Delayed OCR waiting copy
 **Goal:** long OCR runs update the waiting copy without breaking elapsed-time reporting.
@@ -1350,17 +1412,20 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-PERSIST-05 Text extraction picker + OCR runtime state persistence
 **Goal:** text extraction persists its picker folder and OCR runtime state files correctly.
 1. Use **📥** to open a file from a non-default folder and complete or cancel the run after selection.
-2. If OCR is part of the build, complete OCR activation once.
-3. Close the app.
-4. Inspect config:
+2. If possible, complete one successful range-based PDF run with the keep-generated-PDF option enabled.
+3. If OCR is part of the build, complete OCR activation once.
+4. Close the app.
+5. Inspect config:
    - `text_extraction_state.json` exists and records the last used directory
    - `ocr_google_drive/credentials.json` exists in OCR-enabled builds
    - `ocr_google_drive/token.json` exists after successful OCR activation
-5. Relaunch the app and open **📥** again.
+   - if keep-mode PDF retention was used, the generated subset PDF exists under the app-owned generated-PDF folder rooted at `app.getPath('userData')/tot-generated-pdfs/`
+6. Relaunch the app and open **📥** again.
 
 **Expected:**
 - Picker state persists and reopens in the last-used directory when that directory still exists.
 - OCR runtime files exist only when the relevant state has actually been created.
+- Keep-mode retained subset PDFs are stored under the app-owned generated-PDF root, not beside the original source PDF.
 - Relaunch preserves OCR-connected state until disconnect is requested.
 
 #### REG-PERSIST-06 Reading speed test pool persistence

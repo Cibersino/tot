@@ -20,11 +20,13 @@ const api = {
     openTextExtractionPicker: () => ipcRenderer.invoke('text-extraction-open-picker'),
     getPathForFile: (file) => webUtils.getPathForFile(file),
     checkTextExtractionPreconditions: () => ipcRenderer.invoke('text-extraction-check-preconditions'),
+    inspectTextExtractionSelectedFile: (payload) => ipcRenderer.invoke('text-extraction-inspect-selected-file', payload),
     prepareTextExtractionOcrActivation: () => ipcRenderer.invoke('text-extraction-prepare-ocr-activation'),
     launchTextExtractionOcrActivation: () => ipcRenderer.invoke('text-extraction-launch-ocr-activation'),
     disconnectTextExtractionOcr: (payload) => ipcRenderer.invoke('text-extraction-disconnect-ocr', payload),
     prepareTextExtractionSelectedFile: (payload) => ipcRenderer.invoke('text-extraction-prepare-selected-file', payload),
     executePreparedTextExtraction: (payload) => ipcRenderer.invoke('text-extraction-execute-prepared', payload),
+    revealTextExtractionGeneratedPdf: (payload) => ipcRenderer.invoke('text-extraction-reveal-generated-pdf', payload),
     getTextExtractionProcessingMode: () => ipcRenderer.invoke('text-extraction-get-processing-mode'),
     requestTextExtractionAbort: (payload) => ipcRenderer.invoke('text-extraction-request-abort', payload),
     onTextExtractionProcessingModeChanged: (cb) => {
@@ -176,4 +178,3 @@ const api = {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);
-

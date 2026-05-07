@@ -100,6 +100,33 @@
     return !!resultLike && Object.prototype.hasOwnProperty.call(resultLike, key);
   }
 
+  function resolveRetainedGeneratedPdf(resultLike) {
+    const generatedPdfArtifact = resultLike
+      && resultLike.generatedPdfArtifact
+      && typeof resultLike.generatedPdfArtifact === 'object'
+      && !Array.isArray(resultLike.generatedPdfArtifact)
+        ? resultLike.generatedPdfArtifact
+        : null;
+    if (!generatedPdfArtifact || generatedPdfArtifact.retained !== true) {
+      return null;
+    }
+
+    const fileName = typeof generatedPdfArtifact.fileName === 'string'
+      ? generatedPdfArtifact.fileName.trim()
+      : '';
+    const artifactPath = typeof generatedPdfArtifact.retainedArtifactPath === 'string'
+      ? generatedPdfArtifact.retainedArtifactPath.trim()
+      : '';
+    if (!fileName || !artifactPath) {
+      return null;
+    }
+
+    return {
+      fileName,
+      artifactPath,
+    };
+  }
+
   function consumeRecoveryPreparationState({
     recovery,
     preparationRun,
@@ -235,11 +262,15 @@
         dedupeKey: 'renderer.ipc.prepareTextExtractionSelectedFile.unavailable',
         unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; text extraction prepare cannot continue.'
       });
+      const inspectTextExtractionSelectedFile = getOptionalElectronMethod('inspectTextExtractionSelectedFile', {
+        dedupeKey: 'renderer.ipc.inspectTextExtractionSelectedFile.unavailable',
+        unavailableMessage: 'inspectTextExtractionSelectedFile unavailable; PDF options cannot be resolved.'
+      });
       const executePreparedTextExtraction = getOptionalElectronMethod('executePreparedTextExtraction', {
         dedupeKey: 'renderer.ipc.executePreparedTextExtraction.unavailable',
         unavailableMessage: 'executePreparedTextExtraction unavailable; text extraction execution cannot continue.'
       });
-      if (!prepareTextExtractionSelectedFile || !executePreparedTextExtraction) {
+      if (!prepareTextExtractionSelectedFile || !inspectTextExtractionSelectedFile || !executePreparedTextExtraction) {
         window.Notify.notifyMain('renderer.alerts.text_extraction_error');
         return;
       }
@@ -247,9 +278,43 @@
       if (typeof getOcrLanguage !== 'function') {
         log.warn('getOcrLanguage dependency unavailable; using empty OCR language fallback.');
       }
+      const inspection = await inspectTextExtractionSelectedFile({
+        filePath: normalizedFilePath,
+      });
+      if (!inspection || inspection.ok !== true) {
+        log.error('text extraction inspect IPC failed:', inspection);
+        window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+        return;
+      }
+      if (inspection.isPdf === true && inspection.error) {
+        log.warn('text extraction PDF inspect failed:', inspection.error);
+        window.Notify.notifyMain(inspection.primaryAlertKey || 'renderer.alerts.text_extraction_error');
+        return;
+      }
+
+      let pdfOptions = null;
+      if (inspection.isPdf === true) {
+        try {
+          pdfOptions = await window.Notify.promptTextExtractionPdfOptions({ inspection });
+        } catch (err) {
+          log.error('text extraction PDF options modal failed:', err);
+          window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+          return;
+        }
+        if (!pdfOptions) {
+          log.info('text extraction PDF options cancelled by user.');
+          return;
+        }
+      }
+
       const preparationRequest = {
         filePath: normalizedFilePath,
         ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
+        pdfPageSelection: pdfOptions && pdfOptions.pdfPageSelection ? pdfOptions.pdfPageSelection : null,
+        generatedPdfArtifactPolicy:
+          pdfOptions && pdfOptions.generatedPdfArtifactPolicy
+            ? pdfOptions.generatedPdfArtifactPolicy
+            : null,
       };
       let preparationRun = await requestPreparedImport({
         prepareTextExtractionSelectedFile,
@@ -398,12 +463,34 @@
         const defaultRepeat = typeof getClipboardRepeatCount === 'function'
           ? getClipboardRepeatCount()
           : 1;
+        const retainedGeneratedPdf = resolveRetainedGeneratedPdf(execution.result);
+        const revealTextExtractionGeneratedPdf = retainedGeneratedPdf
+          ? getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
+            dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
+            unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action disabled.'
+          })
+          : null;
         let applyChoice = null;
         try {
           applyChoice = await window.Notify.promptTextExtractionApplyChoice({
             defaultRepeat,
             elapsedValueText: textExtractionStatusUi.getFinalElapsedValueText(),
             maxRepeat: MAX_CLIPBOARD_REPEAT,
+            retainedGeneratedPdf: retainedGeneratedPdf
+              ? { fileName: retainedGeneratedPdf.fileName }
+              : null,
+            onRevealGeneratedPdf: revealTextExtractionGeneratedPdf
+              ? async () => {
+                const revealResult = await revealTextExtractionGeneratedPdf({
+                  artifactPath: retainedGeneratedPdf.artifactPath,
+                });
+                if (!revealResult || revealResult.ok !== true) {
+                  const error = new Error('text extraction generated PDF reveal failed');
+                  error.revealResult = revealResult;
+                  throw error;
+                }
+              }
+              : null,
           });
         } catch (err) {
           log.error('text extraction apply modal failed:', err);

@@ -36,6 +36,10 @@
   const title = document.getElementById('textExtractionApplyModalTitle');
   const message = document.getElementById('textExtractionApplyModalMessage');
   const elapsed = document.getElementById('textExtractionApplyModalElapsed');
+  const savedPdf = document.getElementById('textExtractionApplyModalSavedPdf');
+  const savedPdfMessage = document.getElementById('textExtractionApplyModalSavedPdfMessage');
+  const savedPdfFile = document.getElementById('textExtractionApplyModalSavedPdfFile');
+  const btnRevealSavedPdf = document.getElementById('textExtractionApplyModalRevealSavedPdf');
   const repeatLabel = document.getElementById('textExtractionApplyModalRepeatLabel');
   const repeatInput = document.getElementById('textExtractionApplyModalRepeatInput');
   const btnOverwrite = document.getElementById('textExtractionApplyModalOverwrite');
@@ -53,6 +57,10 @@
       && title
       && message
       && elapsed
+      && savedPdf
+      && savedPdfMessage
+      && savedPdfFile
+      && btnRevealSavedPdf
       && repeatLabel
       && repeatInput
       && btnOverwrite
@@ -70,6 +78,15 @@
     return Math.min(numeric, maxRepeat);
   }
 
+  function normalizeRetainedGeneratedPdf(rawValue) {
+    if (!rawValue || typeof rawValue !== 'object' || Array.isArray(rawValue)) {
+      return null;
+    }
+    const fileName = typeof rawValue.fileName === 'string' ? rawValue.fileName.trim() : '';
+    if (!fileName) return null;
+    return { fileName };
+  }
+
   // =============================================================================
   // Public entrypoints
   // =============================================================================
@@ -78,6 +95,8 @@
     elapsedValueText = '',
     defaultRepeat = 1,
     maxRepeat = 1,
+    retainedGeneratedPdf = null,
+    onRevealGeneratedPdf = null,
   } = {}) {
     if (!hasRequiredElements()) {
       log.error('Apply modal DOM elements missing.');
@@ -96,6 +115,11 @@
     const appendText = tRenderer('renderer.alerts.text_extraction_apply_modal_append_button');
     const cancelText = tRenderer('renderer.alerts.text_extraction_apply_modal_cancel_button');
     const closeAriaText = tRenderer('renderer.alerts.text_extraction_apply_modal_close_aria');
+    const safeRetainedGeneratedPdf = normalizeRetainedGeneratedPdf(retainedGeneratedPdf);
+    const canRevealGeneratedPdf = !!(
+      safeRetainedGeneratedPdf
+      && typeof onRevealGeneratedPdf === 'function'
+    );
 
     title.textContent = titleText;
     message.textContent = messageText;
@@ -116,6 +140,23 @@
     btnAppend.textContent = appendText;
     btnCancel.textContent = cancelText;
     btnClose.setAttribute('aria-label', closeAriaText);
+    savedPdf.hidden = !canRevealGeneratedPdf;
+    savedPdf.setAttribute('aria-hidden', savedPdf.hidden ? 'true' : 'false');
+    if (canRevealGeneratedPdf) {
+      savedPdfMessage.textContent = tRenderer('renderer.alerts.text_extraction_apply_modal_saved_pdf_message');
+      renderLocalizedLabelWithInvariantValue(savedPdfFile, {
+        labelText: tRenderer('renderer.alerts.text_extraction_apply_modal_saved_pdf_label'),
+        valueText: safeRetainedGeneratedPdf.fileName,
+        valueDirection: 'ltr',
+      });
+      btnRevealSavedPdf.textContent = tRenderer('renderer.alerts.text_extraction_apply_modal_reveal_saved_pdf_button');
+      btnRevealSavedPdf.disabled = false;
+    } else {
+      savedPdfMessage.textContent = '';
+      savedPdfFile.textContent = '';
+      btnRevealSavedPdf.textContent = '';
+      btnRevealSavedPdf.disabled = true;
+    }
 
     repeatInput.min = '1';
     repeatInput.max = String(safeMaxRepeat);
@@ -124,12 +165,14 @@
 
     return await new Promise((resolve) => {
       let settled = false;
+      let revealPending = false;
 
       const cleanup = () => {
         btnOverwrite.removeEventListener('click', onOverwrite);
         btnAppend.removeEventListener('click', onAppend);
         btnCancel.removeEventListener('click', onCancel);
         btnClose.removeEventListener('click', onCancel);
+        btnRevealSavedPdf.removeEventListener('click', onRevealSavedPdf);
         backdrop.removeEventListener('click', onCancel);
         repeatInput.removeEventListener('blur', onRepeatBlur);
         window.removeEventListener('keydown', onWindowKeyDown);
@@ -155,6 +198,20 @@
       const onRepeatBlur = () => {
         repeatInput.value = String(normalizeRepeatForModal(repeatInput.value, safeMaxRepeat));
       };
+      const onRevealSavedPdf = async () => {
+        if (!canRevealGeneratedPdf || revealPending) return;
+        revealPending = true;
+        btnRevealSavedPdf.disabled = true;
+        try {
+          await onRevealGeneratedPdf();
+        } catch (err) {
+          log.error('Reveal saved generated PDF failed:', err);
+          window.Notify.notifyMain('renderer.alerts.text_extraction_generated_pdf_reveal_failed');
+        } finally {
+          revealPending = false;
+          btnRevealSavedPdf.disabled = false;
+        }
+      };
       const onWindowKeyDown = (ev) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
         if (ev.key === 'Escape') {
@@ -167,6 +224,7 @@
       btnAppend.addEventListener('click', onAppend);
       btnCancel.addEventListener('click', onCancel);
       btnClose.addEventListener('click', onCancel);
+      btnRevealSavedPdf.addEventListener('click', onRevealSavedPdf);
       backdrop.addEventListener('click', onCancel);
       repeatInput.addEventListener('blur', onRepeatBlur);
       window.addEventListener('keydown', onWindowKeyDown);
@@ -187,5 +245,4 @@
 // =============================================================================
 // End of public/js/text_extraction_apply_modal.js
 // =============================================================================
-
 

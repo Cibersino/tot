@@ -210,6 +210,69 @@
       </div>
     </div>
 
+    <div id="textExtractionPdfOptionsModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="textExtractionPdfOptionsModalTitle" aria-describedby="textExtractionPdfOptionsModalMessage"
+      aria-modal="true">
+      <div id="textExtractionPdfOptionsModalBackdrop" class="info-modal-backdrop"></div>
+      <div class="text-extraction-pdf-options-modal-panel" role="document">
+        <header class="text-extraction-pdf-options-modal-header">
+          <h2 id="textExtractionPdfOptionsModalTitle">Opciones de extracción PDF</h2>
+          <button id="textExtractionPdfOptionsModalClose" class="btn-standard" type="button"
+            aria-label="Cerrar diálogo de opciones de extracción PDF">🗙</button>
+        </header>
+        <div class="text-extraction-pdf-options-modal-body">
+          <p id="textExtractionPdfOptionsModalMessage">Elige cuántas páginas del PDF procesar antes de la extracción.</p>
+          <div class="text-extraction-pdf-options-modal-summary">
+            <div class="text-extraction-pdf-options-modal-summary-row">
+              <span id="textExtractionPdfOptionsModalFileLabel">Archivo:</span>
+              <bdi id="textExtractionPdfOptionsModalFileName" class="text-extraction-pdf-options-modal-file-name"></bdi>
+            </div>
+            <div id="textExtractionPdfOptionsModalTotalPages"
+              class="text-extraction-pdf-options-modal-summary-row"></div>
+          </div>
+          <fieldset class="text-extraction-pdf-options-modal-selection">
+            <legend id="textExtractionPdfOptionsModalSelectionLegend"
+              class="text-extraction-pdf-options-modal-selection-legend">Selección de páginas</legend>
+            <label class="text-extraction-pdf-options-modal-option">
+              <input id="textExtractionPdfOptionsModalAllPages" type="radio" name="textExtractionPdfPageSelection"
+                checked />
+              <span id="textExtractionPdfOptionsModalAllPagesLabel">Todas las páginas</span>
+            </label>
+            <label class="text-extraction-pdf-options-modal-option">
+              <input id="textExtractionPdfOptionsModalRange" type="radio" name="textExtractionPdfPageSelection" />
+              <span id="textExtractionPdfOptionsModalRangeLabel">Rango de páginas</span>
+            </label>
+          </fieldset>
+          <div id="textExtractionPdfOptionsModalRangeFields" class="text-extraction-pdf-options-modal-range-fields"
+            hidden aria-hidden="true">
+            <div class="text-extraction-pdf-options-modal-range-grid">
+              <label class="text-extraction-pdf-options-modal-range-field" for="textExtractionPdfOptionsModalFromInput">
+                <span id="textExtractionPdfOptionsModalFromLabel">Desde la página</span>
+                <input id="textExtractionPdfOptionsModalFromInput" type="number" min="1" step="1" value="1" />
+              </label>
+              <label class="text-extraction-pdf-options-modal-range-field" for="textExtractionPdfOptionsModalToInput">
+                <span id="textExtractionPdfOptionsModalToLabel">Hasta la página</span>
+                <input id="textExtractionPdfOptionsModalToInput" type="number" min="1" step="1" value="1" />
+              </label>
+            </div>
+            <p id="textExtractionPdfOptionsModalSelectedCount" class="text-extraction-pdf-options-modal-selected-count"
+              hidden aria-hidden="true"></p>
+            <label id="textExtractionPdfOptionsModalKeepWrap" class="text-extraction-pdf-options-modal-keep-option"
+              hidden aria-hidden="true">
+              <input id="textExtractionPdfOptionsModalKeepGeneratedPdf" type="checkbox" />
+              <span id="textExtractionPdfOptionsModalKeepLabel">Conservar el PDF generado después del procesamiento</span>
+            </label>
+            <p id="textExtractionPdfOptionsModalValidation" class="text-extraction-pdf-options-modal-validation" hidden
+              aria-hidden="true"></p>
+          </div>
+          <div class="text-extraction-pdf-options-modal-actions">
+            <button id="textExtractionPdfOptionsModalContinue" class="btn-standard" type="button">Continuar</button>
+            <button id="textExtractionPdfOptionsModalCancel" class="btn-standard" type="button">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="textExtractionRouteModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="textExtractionRouteModalTitle" aria-modal="true">
       <div id="textExtractionRouteModalBackdrop" class="info-modal-backdrop"></div>
@@ -244,6 +307,15 @@
           <p id="textExtractionApplyModalMessage">Elige cómo aplicar el texto extraído.</p>
           <p id="textExtractionApplyModalElapsed" class="text-extraction-apply-modal-elapsed" hidden aria-hidden="true">
           </p>
+          <div id="textExtractionApplyModalSavedPdf" class="text-extraction-apply-modal-saved-pdf" hidden
+            aria-hidden="true">
+            <p id="textExtractionApplyModalSavedPdfMessage"></p>
+            <div id="textExtractionApplyModalSavedPdfFile" class="text-extraction-apply-modal-saved-pdf-file"></div>
+            <div class="text-extraction-apply-modal-saved-pdf-actions">
+              <button id="textExtractionApplyModalRevealSavedPdf" class="btn-standard" type="button">Mostrar PDF
+                guardado</button>
+            </div>
+          </div>
           <div class="text-extraction-apply-repeat-row">
             <label id="textExtractionApplyModalRepeatLabel" for="textExtractionApplyModalRepeatInput">Repeticiones</label>
             <input id="textExtractionApplyModalRepeatInput" type="number" min="1" step="1" value="1" />
@@ -430,6 +502,7 @@
   <script src="./js/current_text_snapshots.js"></script>
   <script src="./js/text_apply_canonical.js"></script>
   <script src="./js/text_extraction_status_ui.js"></script>
+  <script src="./js/text_extraction_pdf_options_modal.js"></script>
   <script src="./js/text_extraction_route_choice_modal.js"></script>
   <script src="./js/text_extraction_apply_modal.js"></script>
   <script src="./js/text_extraction_ocr_activation_disclosure_modal.js"></script>

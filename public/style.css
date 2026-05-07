@@ -1200,6 +1200,165 @@ select#presets:focus {
 
 /* Text extraction modals */
 
+/* Text extraction PDF options modal */
+.text-extraction-pdf-options-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(620px, calc(100% - var(--modal-inline-gutter)));
+  background: var(--modal-panel-bg);
+  color: var(--text-color);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--modal-panel-shadow);
+  border: 1px solid var(--modal-panel-border-color);
+  padding: var(--modal-panel-padding);
+  box-sizing: border-box;
+}
+
+.text-extraction-pdf-options-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--modal-gap);
+}
+
+.text-extraction-pdf-options-modal-header h2 {
+  margin: 0;
+  font-size: var(--font-size-modal-title);
+  font-weight: 600;
+}
+
+.text-extraction-pdf-options-modal-body {
+  margin-top: var(--modal-section-spacing);
+  display: grid;
+  gap: 12px;
+}
+
+.text-extraction-pdf-options-modal-body p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.text-extraction-pdf-options-modal-summary {
+  display: grid;
+  gap: 6px;
+  font-size: var(--font-size-ui-sm);
+}
+
+.text-extraction-pdf-options-modal-summary-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.text-extraction-pdf-options-modal-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-soft);
+}
+
+.text-extraction-pdf-options-modal-selection {
+  margin: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: var(--panel-radius);
+  display: grid;
+  gap: 10px;
+}
+
+.text-extraction-pdf-options-modal-selection-legend {
+  padding: 0 4px;
+  font-size: var(--font-size-ui-sm);
+  font-weight: 600;
+}
+
+.text-extraction-pdf-options-modal-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-ui-sm);
+}
+
+.text-extraction-pdf-options-modal-option input[type="radio"] {
+  margin: 0;
+}
+
+.text-extraction-pdf-options-modal-range-fields {
+  display: grid;
+  gap: 10px;
+}
+
+.text-extraction-pdf-options-modal-range-fields[hidden] {
+  display: none;
+}
+
+.text-extraction-pdf-options-modal-range-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.text-extraction-pdf-options-modal-range-field {
+  display: grid;
+  gap: 4px;
+  font-size: var(--font-size-ui-sm);
+}
+
+.text-extraction-pdf-options-modal-range-field input {
+  width: 100%;
+  min-height: var(--control-height-md);
+  padding: var(--control-padding);
+  border: 1px solid var(--input-border-strong-color);
+  border-radius: var(--control-radius-sm);
+  box-sizing: border-box;
+}
+
+.text-extraction-pdf-options-modal-selected-count {
+  color: var(--text-soft);
+  font-size: var(--font-size-note);
+}
+
+.text-extraction-pdf-options-modal-selected-count[hidden] {
+  display: none;
+}
+
+.text-extraction-pdf-options-modal-keep-option {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--font-size-note);
+}
+
+.text-extraction-pdf-options-modal-keep-option[hidden] {
+  display: none;
+}
+
+.text-extraction-pdf-options-modal-keep-option input[type="checkbox"] {
+  margin: 2px 0 0;
+}
+
+.text-extraction-pdf-options-modal-validation {
+  color: var(--error-strong);
+  font-size: var(--font-size-note);
+}
+
+.text-extraction-pdf-options-modal-validation[hidden] {
+  display: none;
+}
+
+.text-extraction-pdf-options-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-pdf-options-modal-actions .btn-standard {
+  min-width: 110px;
+}
+
 /* Text extraction route modal */
 .text-extraction-route-modal-panel {
   position: relative;
@@ -1289,6 +1448,33 @@ select#presets:focus {
   color: var(--modal-elapsed-text);
   font-size: var(--font-size-note);
   font-variant-numeric: tabular-nums;
+}
+
+.text-extraction-apply-modal-saved-pdf {
+  margin-top: var(--modal-section-spacing);
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: var(--panel-radius);
+  background: var(--entry-group-bg);
+}
+
+.text-extraction-apply-modal-saved-pdf[hidden] {
+  display: none;
+}
+
+.text-extraction-apply-modal-saved-pdf-file {
+  color: var(--text-soft);
+  font-size: var(--font-size-note);
+  word-break: break-word;
+}
+
+.text-extraction-apply-modal-saved-pdf-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .text-extraction-apply-repeat-row {
@@ -1713,6 +1899,10 @@ select#presets:focus {
 
 /* Responsive layout */
 @media (max-width: 640px) {
+  .text-extraction-pdf-options-modal-range-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .reading-test-entry-modal-group-row {
     grid-template-columns: minmax(0, 1fr);
   }

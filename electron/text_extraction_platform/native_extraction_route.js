@@ -20,6 +20,10 @@ const fs = require('fs');
 const path = require('path');
 const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
+const {
+  isPdfPasswordProtectedError,
+  isUnreadableOrCorruptPdfError,
+} = require('./text_extraction_pdf_error_detection');
 const { getNativeParserForExt } = require('./text_extraction_supported_formats');
 
 // =============================================================================
@@ -117,11 +121,7 @@ function isCorruptOrUnreadableParserError(parserType, err) {
   }
 
   if (parserType === 'pdf_text_layer') {
-    if (message.includes('invalid pdf')
-      || message.includes('bad xref')
-      || message.includes('unexpected response')
-      || message.includes('formaterror')
-      || message.includes('missing pdf')) {
+    if (isUnreadableOrCorruptPdfError(err)) {
       return true;
     }
   }
@@ -130,18 +130,7 @@ function isCorruptOrUnreadableParserError(parserType, err) {
 }
 
 function isPdfPasswordProtectedParserError(err) {
-  if (!err) return false;
-  const name = String(err && err.name ? err.name : '').toLowerCase();
-  const message = String(err && err.message ? err.message : '').toLowerCase();
-  const code = String(err && err.code ? err.code : '').trim();
-
-  return (
-    name.includes('passwordexception')
-    || (name.includes('password') && name.includes('exception'))
-    || message.includes('password')
-    || message.includes('encrypted')
-    || code === '1'
-  );
+  return isPdfPasswordProtectedError(err);
 }
 
 // =============================================================================
@@ -435,5 +424,4 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/native_extraction_route.js
 // =============================================================================
-
 

@@ -232,6 +232,7 @@ function hasBlockingMainWindowModalOpen() {
     || !!(browserExtensionModal
       && typeof browserExtensionModal.hasBlockingModalOpen === 'function'
       && browserExtensionModal.hasBlockingModalOpen())
+    || isAriaHiddenElementVisible('textExtractionPdfOptionsModal')
     || isAriaHiddenElementVisible('textExtractionRouteModal')
     || isAriaHiddenElementVisible('textExtractionApplyModal')
     || isAriaHiddenElementVisible('snapshotSaveTagsModal')
