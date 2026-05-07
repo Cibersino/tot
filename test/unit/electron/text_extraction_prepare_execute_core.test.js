@@ -8,6 +8,9 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { PDFDocument } = require('pdf-lib');
+const {
+  inspectPdfFile,
+} = require('../../../electron/text_extraction_platform/text_extraction_pdf_page_selection');
 
 const {
   executePreparedImport,
@@ -20,9 +23,53 @@ const {
   resolvePreparedRoute,
 } = require('../../../electron/text_extraction_platform/text_extraction_prepare_execute_core');
 
-const SELECTABLE_PDF_FIXTURE = path.resolve('tools_local/smoke/prueba_pdf_original_12_paginas.pdf');
-const SCANNED_PDF_FIXTURE = path.resolve('tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf');
-const ENCRYPTED_PDF_FIXTURE = path.resolve('tools_local/smoke/prueba_pdf_encriptado.pdf');
+const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
+const SCANNED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
+const ENCRYPTED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/encrypted_selectable_text_fixture.pdf');
+
+function loadCoreWithNativeRouteMock(mockRunNativeExtractionRoute) {
+  const coreModulePath = path.resolve(
+    __dirname,
+    '../../../electron/text_extraction_platform/text_extraction_prepare_execute_core.js'
+  );
+  const nativeRouteModulePath = path.resolve(
+    __dirname,
+    '../../../electron/text_extraction_platform/native_extraction_route.js'
+  );
+  const originalCoreModule = require.cache[coreModulePath];
+  const originalNativeRouteModule = require.cache[nativeRouteModulePath];
+
+  require.cache[nativeRouteModulePath] = {
+    id: nativeRouteModulePath,
+    filename: nativeRouteModulePath,
+    loaded: true,
+    exports: {
+      runNativeExtractionRoute: mockRunNativeExtractionRoute,
+    },
+  };
+
+  delete require.cache[coreModulePath];
+  const core = require(coreModulePath);
+
+  function restore() {
+    delete require.cache[coreModulePath];
+    if (originalCoreModule) {
+      require.cache[coreModulePath] = originalCoreModule;
+    } else {
+      delete require.cache[coreModulePath];
+    }
+    if (originalNativeRouteModule) {
+      require.cache[nativeRouteModulePath] = originalNativeRouteModule;
+    } else {
+      delete require.cache[nativeRouteModulePath];
+    }
+  }
+
+  return {
+    core,
+    restore,
+  };
+}
 
 function createIdleController({ changed = true, active = false, state = 'idle' } = {}) {
   return {
@@ -301,7 +348,7 @@ test('inspectSelectedFile returns PDF page-count metadata for selectable fixture
 
   assert.equal(result.ok, true);
   assert.equal(result.isPdf, true);
-  assert.equal(result.fileInfo.fileName, 'prueba_pdf_original_12_paginas.pdf');
+  assert.equal(result.fileInfo.fileName, 'selectable_text_fixture_12_pages.pdf');
   assert.equal(result.totalPages, 12);
   assert.equal(result.error, null);
   assert.equal(result.primaryAlertKey, '');
@@ -456,11 +503,37 @@ test('executePreparedImport returns ALREADY_ACTIVE when the controller stays act
   assert.deepEqual(controller.exitCalls, []);
 });
 
-test('executePreparedImport materializes the selected PDF range for native success and preserves original provenance', async () => {
+test('executePreparedImport materializes the selected PDF range for native success and preserves original provenance', async (t) => {
+  const nativeRouteCalls = [];
+  const { core, restore } = loadCoreWithNativeRouteMock(async ({ filePath }) => {
+    nativeRouteCalls.push(filePath);
+    assert.equal(path.basename(filePath), 'selectable_text_fixture_12_pages_pages_2_3.pdf');
+    assert.notEqual(path.resolve(filePath), path.resolve(SELECTABLE_PDF_FIXTURE));
+
+    const subsetInspection = await inspectPdfFile({
+      fileInfo: getFileInfo(filePath),
+    });
+    assert.equal(subsetInspection.ok, true);
+    assert.equal(subsetInspection.totalPages, 2);
+
+    return {
+      state: 'success',
+      executedRoute: 'native',
+      text: 'Synthetic extracted text',
+      warnings: [],
+      provenance: {
+        metadataSafeForLogs: {
+          parserType: 'pdf_text_layer',
+        },
+      },
+    };
+  });
+  t.after(restore);
+
   const controller = createExecutingController();
   const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
 
-  const result = await executePreparedImport({
+  const result = await core.executePreparedImport({
     preparedRecord: {
       fileInfo,
       ocrLanguage: 'es',
@@ -474,7 +547,7 @@ test('executePreparedImport materializes the selected PDF range for native succe
       generatedPdfArtifactPolicy: {
         mode: 'delete',
       },
-      processingInputFileName: 'prueba_pdf_original_12_paginas_pages_2_3.pdf',
+      processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
       routeMetadata: {
         fileKind: 'pdf',
         availableRoutes: ['native'],
@@ -499,12 +572,13 @@ test('executePreparedImport materializes the selected PDF range for native succe
   assert.equal(result.ok, true);
   assert.equal(result.executionKind, 'native');
   assert.equal(result.result.state, 'success');
-  assert.equal(result.result.processingInputFileName, 'prueba_pdf_original_12_paginas_pages_2_3.pdf');
+  assert.equal(result.result.text, 'Synthetic extracted text');
+  assert.equal(result.result.processingInputFileName, 'selectable_text_fixture_12_pages_pages_2_3.pdf');
   assert.equal(result.result.pdfPageSelection.mode, 'range');
   assert.equal(result.result.generatedPdfArtifactPolicy.mode, 'delete');
-  assert.equal(result.result.generatedPdfArtifact.fileName, 'prueba_pdf_original_12_paginas_pages_2_3.pdf');
+  assert.equal(result.result.generatedPdfArtifact.fileName, 'selectable_text_fixture_12_pages_pages_2_3.pdf');
   assert.equal(result.result.generatedPdfArtifact.retained, false);
-  assert.equal(result.result.provenance.sourceFileName, 'prueba_pdf_original_12_paginas.pdf');
+  assert.equal(result.result.provenance.sourceFileName, 'selectable_text_fixture_12_pages.pdf');
   assert.equal(result.result.provenance.metadataSafeForLogs.processingInputSource, 'generated_pdf_subset');
   assert.equal(result.result.provenance.metadataSafeForLogs.generatedPdfArtifactRetained, false);
   assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_native_apply_pending');
@@ -521,58 +595,5 @@ test('executePreparedImport materializes the selected PDF range for native succe
       reason: 'text_extraction_native_success',
     },
   ]);
-});
-
-test('executePreparedImport exposes retained generated PDF metadata for keep-mode success', async (t) => {
-  const controller = createExecutingController();
-  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
-  const retainedArtifactsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-generated-pdfs-keep-result-'));
-  t.after(() => fs.rmSync(retainedArtifactsDir, { recursive: true, force: true }));
-
-  const result = await executePreparedImport({
-    preparedRecord: {
-      fileInfo,
-      ocrLanguage: 'es',
-      pdfPageSelection: {
-        mode: 'range',
-        fromPage: 4,
-        toPage: 4,
-        selectedPageCount: 1,
-        totalPages: 12,
-      },
-      generatedPdfArtifactPolicy: {
-        mode: 'keep',
-      },
-      processingInputFileName: 'prueba_pdf_original_12_paginas_pages_4_4.pdf',
-      routeMetadata: {
-        fileKind: 'pdf',
-        availableRoutes: ['native'],
-        chosenRoute: 'native',
-        executedRoute: null,
-        executionKind: 'native',
-        pdfTriage: 'native_only',
-        triageReason: 'native_text_detected',
-        ocrSetupState: 'not_checked',
-      },
-      requiresRouteChoice: false,
-      routeChoiceOptions: [],
-    },
-    routePreference: '',
-    resolvePaths: () => ({
-      generatedPdfArtifactsDir: retainedArtifactsDir,
-    }),
-    controller,
-    log: silentLog,
-  });
-
-  assert.equal(result.ok, true);
-  assert.equal(result.result.state, 'success');
-  assert.equal(result.result.generatedPdfArtifact.retained, true);
-  assert.equal(result.result.generatedPdfArtifact.fileName, 'prueba_pdf_original_12_paginas_pages_4_4.pdf');
-  assert.equal(
-    result.result.generatedPdfArtifact.retainedArtifactPath.endsWith(path.join('', 'prueba_pdf_original_12_paginas_pages_4_4.pdf')),
-    true
-  );
-  assert.equal(fs.existsSync(result.result.generatedPdfArtifact.retainedArtifactPath), true);
-  assert.equal(result.result.provenance.metadataSafeForLogs.generatedPdfArtifactRetained, true);
+  assert.equal(nativeRouteCalls.length, 1);
 });

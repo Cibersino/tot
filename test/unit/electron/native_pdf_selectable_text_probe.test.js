@@ -13,8 +13,8 @@ const {
   probeNativePdfSelectableText,
 } = require('../../../electron/text_extraction_platform/native_pdf_selectable_text_probe');
 
-const SELECTABLE_PDF_FIXTURE = path.resolve('tools_local/smoke/prueba_pdf_original_12_paginas.pdf');
-const SCANNED_PDF_FIXTURE = path.resolve('tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf');
+const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
+const SCANNED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
 
 const silentLog = {
   warn() {},

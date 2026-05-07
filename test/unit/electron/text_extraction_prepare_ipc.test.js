@@ -99,7 +99,7 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
     'text-extraction-prepare-selected-file',
     { sender: senderWin.webContents },
     {
-      filePath: path.resolve(__dirname, '../../../tools_local/smoke/prueba_pdf_original_12_paginas.pdf'),
+      filePath: path.resolve(__dirname, '../../../test/fixtures/pdf/selectable_text_fixture_12_pages.pdf'),
       ocrLanguage: 'es',
       pdfPageSelection: {
         mode: 'range',
@@ -124,5 +124,5 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
   assert.deepEqual(result.generatedPdfArtifactPolicy, {
     mode: 'keep',
   });
-  assert.equal(result.processingInputFileName, 'prueba_pdf_original_12_paginas_pages_2_3.pdf');
+  assert.equal(result.processingInputFileName, 'selectable_text_fixture_12_pages_pages_2_3.pdf');
 });

@@ -19,7 +19,7 @@ const {
   getFileInfo,
 } = require('../../../electron/text_extraction_platform/text_extraction_prepare_execute_core');
 
-const SELECTABLE_PDF_FIXTURE = path.resolve('tools_local/smoke/prueba_pdf_original_12_paginas.pdf');
+const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
 
 test('canonicalizePdfPageSelection normalizes all-pages and contiguous ranges', () => {
   assert.deepEqual(
@@ -104,7 +104,7 @@ test('materializePdfPageSelectionInput creates and cleans up a temporary subset 
   assert.equal(materialized.ok, true);
   assert.equal(materialized.materialized, true);
   assert.equal(materialized.processingInputSource, 'generated_pdf_subset');
-  assert.equal(materialized.processingInputFileName, 'prueba_pdf_original_12_paginas_pages_2_3.pdf');
+  assert.equal(materialized.processingInputFileName, 'selectable_text_fixture_12_pages_pages_2_3.pdf');
   assert.equal(fs.existsSync(materialized.effectiveFilePath), true);
 
   const subsetInspection = await inspectPdfFile({
@@ -151,7 +151,7 @@ test('materializePdfPageSelectionInput retains subset PDFs under the caller-owne
   assert.equal(materialized.generatedPdfArtifact.retained, true);
   assert.equal(materialized.generatedPdfArtifact.policyMode, 'keep');
   assert.equal(materialized.generatedPdfArtifact.retainedArtifactPath, materialized.retainedArtifactPath);
-  assert.equal(materialized.retainedArtifactPath.endsWith(path.join('', 'prueba_pdf_original_12_paginas_pages_4_4.pdf')), true);
+  assert.equal(materialized.retainedArtifactPath.endsWith(path.join('', 'selectable_text_fixture_12_pages_pages_4_4.pdf')), true);
   assert.equal(fs.existsSync(materialized.retainedArtifactPath), true);
   assert.equal(materialized.cleanupGeneratedArtifact(), null);
 });
