@@ -110,10 +110,17 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, shellApi } = {}) {
       let artifactStats = null;
       try {
         artifactStats = fs.statSync(resolvedArtifactPath);
-      } catch (_err) {
+      } catch (err) {
+        log.warn('Generated PDF reveal rejected because artifact is missing:', {
+          artifactPath: resolvedArtifactPath,
+          errorCode: err && err.code ? err.code : '',
+        });
         return { ok: false, code: 'ARTIFACT_MISSING' };
       }
       if (!artifactStats.isFile()) {
+        log.warn('Generated PDF reveal rejected because artifact is not a file:', {
+          artifactPath: resolvedArtifactPath,
+        });
         return { ok: false, code: 'ARTIFACT_MISSING' };
       }
 
