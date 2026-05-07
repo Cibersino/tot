@@ -1,3 +1,4 @@
+// public/js/text_extraction_pdf_options_modal.js
 'use strict';
 
 // =============================================================================

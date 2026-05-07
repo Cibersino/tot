@@ -1,3 +1,4 @@
+// electron/text_extraction_platform/text_extraction_generated_pdf_reveal_ipc.js
 'use strict';
 
 // =============================================================================

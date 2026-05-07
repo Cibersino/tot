@@ -1,3 +1,4 @@
+// electron/text_extraction_platform/text_extraction_pdf_inspect_ipc.js
 'use strict';
 
 // =============================================================================
