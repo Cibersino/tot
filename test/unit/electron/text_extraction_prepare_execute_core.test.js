@@ -27,7 +27,10 @@ const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_f
 const SCANNED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
 const ENCRYPTED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/encrypted_selectable_text_fixture.pdf');
 
-function loadCoreWithNativeRouteMock(mockRunNativeExtractionRoute) {
+function loadCoreWithMocks({
+  mockRunNativeExtractionRoute = null,
+  pdfPageSelectionOverrides = null,
+} = {}) {
   const coreModulePath = path.resolve(
     __dirname,
     '../../../electron/text_extraction_platform/text_extraction_prepare_execute_core.js'
@@ -36,17 +39,37 @@ function loadCoreWithNativeRouteMock(mockRunNativeExtractionRoute) {
     __dirname,
     '../../../electron/text_extraction_platform/native_extraction_route.js'
   );
+  const pdfPageSelectionModulePath = path.resolve(
+    __dirname,
+    '../../../electron/text_extraction_platform/text_extraction_pdf_page_selection.js'
+  );
   const originalCoreModule = require.cache[coreModulePath];
   const originalNativeRouteModule = require.cache[nativeRouteModulePath];
+  const originalPdfPageSelectionModule = require.cache[pdfPageSelectionModulePath];
 
-  require.cache[nativeRouteModulePath] = {
-    id: nativeRouteModulePath,
-    filename: nativeRouteModulePath,
-    loaded: true,
-    exports: {
-      runNativeExtractionRoute: mockRunNativeExtractionRoute,
-    },
-  };
+  if (typeof mockRunNativeExtractionRoute === 'function') {
+    require.cache[nativeRouteModulePath] = {
+      id: nativeRouteModulePath,
+      filename: nativeRouteModulePath,
+      loaded: true,
+      exports: {
+        runNativeExtractionRoute: mockRunNativeExtractionRoute,
+      },
+    };
+  }
+
+  if (pdfPageSelectionOverrides && typeof pdfPageSelectionOverrides === 'object') {
+    const actualPdfPageSelectionModule = require(pdfPageSelectionModulePath);
+    require.cache[pdfPageSelectionModulePath] = {
+      id: pdfPageSelectionModulePath,
+      filename: pdfPageSelectionModulePath,
+      loaded: true,
+      exports: {
+        ...actualPdfPageSelectionModule,
+        ...pdfPageSelectionOverrides,
+      },
+    };
+  }
 
   delete require.cache[coreModulePath];
   const core = require(coreModulePath);
@@ -58,10 +81,15 @@ function loadCoreWithNativeRouteMock(mockRunNativeExtractionRoute) {
     } else {
       delete require.cache[coreModulePath];
     }
-    if (originalNativeRouteModule) {
+    if (typeof mockRunNativeExtractionRoute === 'function' && originalNativeRouteModule) {
       require.cache[nativeRouteModulePath] = originalNativeRouteModule;
-    } else {
+    } else if (typeof mockRunNativeExtractionRoute === 'function') {
       delete require.cache[nativeRouteModulePath];
+    }
+    if (pdfPageSelectionOverrides && typeof pdfPageSelectionOverrides === 'object' && originalPdfPageSelectionModule) {
+      require.cache[pdfPageSelectionModulePath] = originalPdfPageSelectionModule;
+    } else if (pdfPageSelectionOverrides && typeof pdfPageSelectionOverrides === 'object') {
+      delete require.cache[pdfPageSelectionModulePath];
     }
   }
 
@@ -71,28 +99,44 @@ function loadCoreWithNativeRouteMock(mockRunNativeExtractionRoute) {
   };
 }
 
-function createIdleController({ changed = true, active = false, state = 'idle' } = {}) {
+function loadCoreWithNativeRouteMock(mockRunNativeExtractionRoute) {
+  return loadCoreWithMocks({ mockRunNativeExtractionRoute });
+}
+
+function createIdleController({ changed = true, active = false, lockId = active ? 1 : 0, state = null } = {}) {
+  const currentState = state && typeof state === 'object'
+    ? { ...state }
+    : {
+      active,
+      lockId,
+      sinceEpochMs: active ? 1000 : null,
+      source: active ? 'test_execution' : '',
+      reason: active ? 'processing' : '',
+    };
   return {
     enterCalls: [],
     exitCalls: [],
     enter(payload) {
       this.enterCalls.push(payload);
-      return { changed };
+      return { changed, state: { ...currentState } };
     },
     exit(payload) {
       this.exitCalls.push(payload);
+      currentState.active = false;
+      currentState.sinceEpochMs = null;
     },
     isActive() {
-      return active;
+      return currentState.active === true;
     },
     getState() {
-      return state;
+      return { ...currentState };
     },
   };
 }
 
 function createExecutingController() {
   let active = false;
+  let lockId = 0;
 
   return {
     enterCalls: [],
@@ -100,7 +144,8 @@ function createExecutingController() {
     enter(payload) {
       this.enterCalls.push(payload);
       active = true;
-      return { changed: true };
+      lockId += 1;
+      return { changed: true, state: this.getState() };
     },
     exit(payload) {
       this.exitCalls.push(payload);
@@ -110,7 +155,20 @@ function createExecutingController() {
       return active;
     },
     getState() {
-      return active ? 'processing' : 'idle';
+      return {
+        active,
+        lockId,
+        sinceEpochMs: active ? 1000 : null,
+        source: active ? 'text_extraction_execution' : '',
+        reason: active ? 'run_pdf_route' : '',
+      };
+    },
+    cancelCurrent() {
+      active = false;
+    },
+    activateReplacement(nextLockId) {
+      active = true;
+      lockId = nextLockId;
     },
   };
 }
@@ -473,7 +531,7 @@ test('executePreparedImport rejects unresolved route choice before starting work
 });
 
 test('executePreparedImport returns ALREADY_ACTIVE when the controller stays active', async () => {
-  const controller = createIdleController({ changed: false, active: true, state: 'processing' });
+  const controller = createIdleController({ changed: false, active: true, lockId: 3 });
 
   const result = await executePreparedImport({
     preparedRecord: {
@@ -492,7 +550,13 @@ test('executePreparedImport returns ALREADY_ACTIVE when the controller stays act
   assert.deepEqual(result, {
     ok: false,
     code: 'ALREADY_ACTIVE',
-    state: 'processing',
+    state: {
+      active: true,
+      lockId: 3,
+      sinceEpochMs: 1000,
+      source: 'test_execution',
+      reason: 'processing',
+    },
   });
   assert.deepEqual(controller.enterCalls, [
     {
@@ -596,4 +660,168 @@ test('executePreparedImport materializes the selected PDF range for native succe
     },
   ]);
   assert.equal(nativeRouteCalls.length, 1);
+});
+
+test('executePreparedImport skips route dispatch after cancellation during subset materialization', async (t) => {
+  let cleanupCalls = 0;
+  let nativeRouteCalls = 0;
+  const controller = createExecutingController();
+  const { core, restore } = loadCoreWithMocks({
+    mockRunNativeExtractionRoute: async () => {
+      nativeRouteCalls += 1;
+      throw new Error('native route should not run after ownership loss');
+    },
+    pdfPageSelectionOverrides: {
+      materializePdfPageSelectionInput: async () => {
+        controller.cancelCurrent();
+        return {
+          ok: true,
+          materialized: true,
+          effectiveFilePath: path.join(os.tmpdir(), 'aborted_subset.pdf'),
+          processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+          processingInputSource: 'generated_pdf_subset',
+          generatedPdfArtifact: {
+            fileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+            policyMode: 'delete',
+            retained: false,
+          },
+          retainedArtifactPath: '',
+          cleanupGeneratedArtifact: () => {
+            cleanupCalls += 1;
+            return null;
+          },
+        };
+      },
+    },
+  });
+  t.after(restore);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo: getFileInfo(SELECTABLE_PDF_FIXTURE),
+      ocrLanguage: 'es',
+      pdfPageSelection: {
+        mode: 'range',
+        fromPage: 2,
+        toPage: 3,
+        selectedPageCount: 2,
+        totalPages: 12,
+      },
+      generatedPdfArtifactPolicy: {
+        mode: 'delete',
+      },
+      processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+      routeMetadata: {
+        fileKind: 'pdf',
+        availableRoutes: ['native'],
+        chosenRoute: 'native',
+        executedRoute: null,
+        executionKind: 'native',
+        pdfTriage: 'native_only',
+        triageReason: 'native_text_detected',
+        ocrSetupState: 'not_checked',
+      },
+      requiresRouteChoice: false,
+      routeChoiceOptions: [],
+    },
+    routePreference: '',
+    resolvePaths: () => ({
+      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.executionKind, 'native');
+  assert.equal(result.result.state, 'cancelled');
+  assert.equal(result.result.error.code, 'aborted_by_user');
+  assert.equal(result.result.error.detailsSafeForLogs.stage, 'pre_route_dispatch');
+  assert.equal(result.result.error.detailsSafeForLogs.reason, 'execution_ownership_lost');
+  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_native_cancelled');
+  assert.equal(nativeRouteCalls, 0);
+  assert.equal(cleanupCalls, 1);
+  assert.deepEqual(controller.exitCalls, []);
+});
+
+test('executePreparedImport does not release a replacement processing lock after cancellation during subset materialization', async (t) => {
+  let cleanupCalls = 0;
+  let nativeRouteCalls = 0;
+  const controller = createExecutingController();
+  const { core, restore } = loadCoreWithMocks({
+    mockRunNativeExtractionRoute: async () => {
+      nativeRouteCalls += 1;
+      throw new Error('native route should not run after replacement lock takes ownership');
+    },
+    pdfPageSelectionOverrides: {
+      materializePdfPageSelectionInput: async () => {
+        controller.cancelCurrent();
+        controller.activateReplacement(99);
+        return {
+          ok: true,
+          materialized: true,
+          effectiveFilePath: path.join(os.tmpdir(), 'replacement_subset.pdf'),
+          processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+          processingInputSource: 'generated_pdf_subset',
+          generatedPdfArtifact: {
+            fileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+            policyMode: 'delete',
+            retained: false,
+          },
+          retainedArtifactPath: '',
+          cleanupGeneratedArtifact: () => {
+            cleanupCalls += 1;
+            return null;
+          },
+        };
+      },
+    },
+  });
+  t.after(restore);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo: getFileInfo(SELECTABLE_PDF_FIXTURE),
+      ocrLanguage: 'es',
+      pdfPageSelection: {
+        mode: 'range',
+        fromPage: 2,
+        toPage: 3,
+        selectedPageCount: 2,
+        totalPages: 12,
+      },
+      generatedPdfArtifactPolicy: {
+        mode: 'delete',
+      },
+      processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+      routeMetadata: {
+        fileKind: 'pdf',
+        availableRoutes: ['native'],
+        chosenRoute: 'native',
+        executedRoute: null,
+        executionKind: 'native',
+        pdfTriage: 'native_only',
+        triageReason: 'native_text_detected',
+        ocrSetupState: 'not_checked',
+      },
+      requiresRouteChoice: false,
+      routeChoiceOptions: [],
+    },
+    routePreference: '',
+    resolvePaths: () => ({
+      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.result.state, 'cancelled');
+  assert.equal(result.result.error.detailsSafeForLogs.executionLockId, 1);
+  assert.equal(result.result.error.detailsSafeForLogs.currentLockId, 99);
+  assert.equal(nativeRouteCalls, 0);
+  assert.equal(cleanupCalls, 1);
+  assert.deepEqual(controller.exitCalls, []);
+  assert.equal(controller.isActive(), true);
+  assert.equal(controller.getState().lockId, 99);
 });

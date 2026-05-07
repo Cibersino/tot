@@ -869,10 +869,32 @@ function resolveExitReason(routeKind, result) {
   return `text_extraction_${routeKind}_failed`;
 }
 
+function getControllerStateSnapshot(controller) {
+  if (!controller || typeof controller.getState !== 'function') return null;
+  const state = controller.getState();
+  return state && typeof state === 'object' ? state : null;
+}
+
+function getControllerLockId(state) {
+  const lockId = Number(state && state.lockId);
+  return Number.isInteger(lockId) && lockId > 0 ? lockId : null;
+}
+
+function isExecutionStillOwned(controller, executionLockId) {
+  if (!controller || typeof controller.isActive !== 'function' || !controller.isActive()) {
+    return false;
+  }
+  if (!Number.isInteger(executionLockId) || executionLockId < 1) {
+    return false;
+  }
+  const currentLockId = getControllerLockId(getControllerStateSnapshot(controller));
+  return currentLockId === executionLockId;
+}
+
 function enforceFailureAbortInvariants({
   routeKind,
   fileInfo,
-  controller,
+  isExecutionOwned,
   result,
   log,
 }) {
@@ -880,9 +902,8 @@ function enforceFailureAbortInvariants({
   if (!safeResult) return result;
 
   if (safeResult.state === 'success'
-    && controller
-    && typeof controller.isActive === 'function'
-    && !controller.isActive()) {
+    && typeof isExecutionOwned === 'function'
+    && !isExecutionOwned()) {
     log.warn('text extraction success discarded after cancellation request:', {
       routeKind,
       sourceFileExt: fileInfo.sourceFileExt,
@@ -896,7 +917,7 @@ function enforceFailureAbortInvariants({
       message: `Text extraction ${routeKind} route was cancelled by user.`,
       detailsSafeForLogs: {
         stage: 'post_route_result',
-        reason: 'processing_mode_inactive',
+        reason: 'execution_ownership_lost',
       },
     };
     return safeResult;
@@ -913,6 +934,53 @@ function enforceFailureAbortInvariants({
   }
 
   return safeResult;
+}
+
+function buildPreparedCancelledResult({
+  preparedRecord,
+  productRoute,
+  executionKind,
+  routeMetadata,
+  processingInputContext,
+  detailsSafeForLogs,
+  summary,
+  message,
+}) {
+  return {
+    executionKind,
+    result: decorateExecutionResultForPreparedInput({
+      preparedRecord,
+      routeKind: productRoute,
+      processingInputContext,
+      result: {
+        state: 'cancelled',
+        executedRoute: productRoute,
+        text: '',
+        warnings: [],
+        summary,
+        provenance: {
+          sourceFileName: preparedRecord.fileInfo.fileName,
+          sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
+          sourceFileKind: preparedRecord.fileInfo.sourceFileKind,
+          ocrProvider: executionKind === 'google_drive'
+            ? 'google_drive_docs_conversion'
+            : null,
+          metadataSafeForLogs: {},
+        },
+        error: {
+          code: 'aborted_by_user',
+          message,
+          detailsSafeForLogs,
+        },
+      },
+    }),
+    routeMetadata: {
+      ...(routeMetadata && typeof routeMetadata === 'object' ? routeMetadata : {}),
+      executionKind,
+      chosenRoute: productRoute,
+      executedRoute: productRoute,
+    },
+  };
 }
 
 function resolvePreparedRoute(preparedRecord, routePreference) {
@@ -1128,6 +1196,7 @@ async function executePreparedImport({
   }
 
   const productRoute = resolvedRoute.productRoute;
+  const executionKind = productRoute === 'native' ? 'native' : 'google_drive';
   const fileInfo = preparedRecord.fileInfo;
   const enterTransition = controller.enter({
     source: 'text_extraction_execution',
@@ -1142,6 +1211,11 @@ async function executePreparedImport({
     };
   }
 
+  const executionState = enterTransition && enterTransition.state && typeof enterTransition.state === 'object'
+    ? enterTransition.state
+    : getControllerStateSnapshot(controller);
+  const executionLockId = getControllerLockId(executionState);
+  const executionOwnsController = () => isExecutionStillOwned(controller, executionLockId);
   let executionResult = null;
   let processingInputContext = {
     processingInputFileName: typeof preparedRecord.processingInputFileName === 'string'
@@ -1175,7 +1249,7 @@ async function executePreparedImport({
       executionResult = buildPreparedExecutionFailureResult({
         preparedRecord,
         productRoute,
-        executionKind: productRoute === 'native' ? 'native' : 'google_drive',
+        executionKind,
         routeMetadata: preparedRecord.routeMetadata,
         processingInputContext,
         summary: resolvePreRouteFailureSummary(error.code),
@@ -1203,21 +1277,45 @@ async function executePreparedImport({
         });
       }
 
-      if (productRoute === 'native') {
+      if (!executionOwnsController()) {
+        const ownershipState = getControllerStateSnapshot(controller);
+        log.info('text extraction route dispatch skipped because execution ownership was lost:', {
+          chosenRoute: productRoute,
+          executionLockId,
+          currentLockId: getControllerLockId(ownershipState),
+          processingActive: !!(ownershipState && ownershipState.active === true),
+          processingInputFileName: materializedInput.processingInputFileName,
+        });
+        executionResult = buildPreparedCancelledResult({
+          preparedRecord,
+          productRoute,
+          executionKind,
+          routeMetadata: preparedRecord.routeMetadata,
+          processingInputContext,
+          summary: `Text extraction ${productRoute} route cancelled before route execution.`,
+          message: `Text extraction ${productRoute} route was cancelled before route execution.`,
+          detailsSafeForLogs: {
+            stage: 'pre_route_dispatch',
+            reason: 'execution_ownership_lost',
+            executionLockId,
+            currentLockId: getControllerLockId(ownershipState),
+          },
+        });
+      } else if (productRoute === 'native') {
         const nativeResult = await runNativeExtractionRoute({
           filePath: materializedInput.effectiveFilePath,
-          isAborted: () => !controller.isActive(),
+          isAborted: () => !executionOwnsController(),
           log,
         });
         const safeNativeResult = enforceFailureAbortInvariants({
           routeKind: 'native',
           fileInfo,
-          controller,
+          isExecutionOwned: executionOwnsController,
           result: nativeResult,
           log,
         });
         executionResult = {
-          executionKind: 'native',
+          executionKind,
           result: decorateExecutionResultForPreparedInput({
             preparedRecord,
             routeKind: 'native',
@@ -1241,17 +1339,17 @@ async function executePreparedImport({
           bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
           ocrLanguage: preparedRecord.ocrLanguage,
           log,
-          isAborted: () => !controller.isActive(),
+          isAborted: () => !executionOwnsController(),
         });
         const safeOcrResult = enforceFailureAbortInvariants({
           routeKind: 'ocr',
           fileInfo,
-          controller,
+          isExecutionOwned: executionOwnsController,
           result: ocrResult,
           log,
         });
         executionResult = {
-          executionKind: 'google_drive',
+          executionKind,
           result: decorateExecutionResultForPreparedInput({
             preparedRecord,
             routeKind: 'ocr',
@@ -1272,7 +1370,7 @@ async function executePreparedImport({
     executionResult = buildUnexpectedRuntimeResult(
       preparedRecord,
       productRoute,
-      productRoute === 'native' ? 'native' : 'google_drive',
+      executionKind,
       preparedRecord.routeMetadata,
       err,
       processingInputContext
@@ -1291,7 +1389,7 @@ async function executePreparedImport({
       }
     }
 
-    if (controller.isActive()) {
+    if (executionOwnsController()) {
       controller.exit({
         source: 'text_extraction_execution',
         reason: resolveExitReason(
