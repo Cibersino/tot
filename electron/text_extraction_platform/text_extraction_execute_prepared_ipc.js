@@ -100,8 +100,141 @@ function buildInvalidPreparedIdLogFields(prepareId, reason, extraFields = {}) {
   };
 }
 
+function logInvalidPreparedId(log, prepareId, reason, extraFields = {}) {
+  log.warn('text extraction prepared id invalid/expired/reused:', {
+    ...buildInvalidPreparedIdLogFields(prepareId, reason, extraFields),
+  });
+}
+
 // =============================================================================
-// IPC registration / handler
+// IPC handler
+// =============================================================================
+
+async function handleExecutePrepared(event, payload = {}, {
+  resolveMainWin,
+  resolvePaths,
+  controller,
+} = {}) {
+  const request = resolveExecutePayload(payload);
+
+  try {
+    const mainWin = resolveMainWin();
+    if (!isAuthorizedSender(event, mainWin, log, 'text-extraction-execute-prepared')) {
+      return { ok: false, code: 'UNAUTHORIZED' };
+    }
+    if (!request.prepareId) {
+      return buildInvalidPreparedIdResponse('invalid');
+    }
+
+    const preparedLookup = peekPreparedRecord(request.prepareId);
+    if (!preparedLookup.ok || !preparedLookup.record) {
+      const invalidReason = preparedLookup.reason || 'invalid_or_expired';
+      logInvalidPreparedId(log, request.prepareId, invalidReason);
+      return buildInvalidPreparedIdResponse(invalidReason);
+    }
+
+    const preparedRecord = preparedLookup.record;
+    const routeResolution = resolvePreparedRoute(preparedRecord, request.routePreference);
+    if (!routeResolution.ok) {
+      return {
+        ok: false,
+        code: routeResolution.reason === 'route_choice_required'
+          ? 'ROUTE_CHOICE_REQUIRED'
+          : 'ROUTE_RESOLUTION_FAILED',
+        primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_required',
+      };
+    }
+
+    let currentFingerprint = null;
+    try {
+      currentFingerprint = readSourceFileFingerprint(preparedRecord.fileInfo.filePath);
+    } catch (err) {
+      logInvalidPreparedId(log, request.prepareId, 'fingerprint_read_failed', {
+        errorMessage: String(err && err.message ? err.message : err || ''),
+      });
+      return buildInvalidPreparedIdResponse('fingerprint_read_failed');
+    }
+
+    if (!fingerprintsMatch(preparedRecord.sourceFileFingerprint, currentFingerprint)) {
+      logInvalidPreparedId(log, request.prepareId, 'fingerprint_mismatch');
+      return buildInvalidPreparedIdResponse('fingerprint_mismatch');
+    }
+
+    if (controller.isActive()) {
+      return {
+        ok: false,
+        code: 'ALREADY_ACTIVE',
+        state: controller.getState(),
+      };
+    }
+
+    const consumeResult = consumePreparedRecord(request.prepareId);
+    if (!consumeResult.ok || !consumeResult.record) {
+      const invalidReason = consumeResult.reason || 'invalid_or_expired';
+      logInvalidPreparedId(log, request.prepareId, invalidReason);
+      return buildInvalidPreparedIdResponse(invalidReason);
+    }
+
+    log.info('text extraction execute started:', {
+      prepareId: shortPrepareId(request.prepareId),
+      sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
+      sourceFileKind: preparedRecord.fileInfo.sourceFileKind,
+      executionKind: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.executionKind : null,
+      pdfTriage: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.pdfTriage : 'not_pdf',
+      triageReason: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.triageReason : '',
+      availableRoutes: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.availableRoutes : [],
+      chosenRoute: routeResolution.productRoute,
+      ocrSetupState: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.ocrSetupState : 'not_checked',
+      ...getPdfSelectionLogFields(preparedRecord),
+      ...getNativeProbeLogFields(preparedRecord.routeMetadata),
+    });
+
+    const execution = await executePreparedImport({
+      preparedRecord,
+      routePreference: request.routePreference,
+      resolvePaths,
+      controller,
+      log,
+    });
+
+    if (execution && execution.ok === true) {
+      log.info('text extraction execute completed:', {
+        prepareId: shortPrepareId(request.prepareId),
+        executionKind: execution.executionKind,
+        state: execution.result && execution.result.state ? execution.result.state : '',
+        code: execution.result && execution.result.error ? execution.result.error.code : '',
+        warnings: Array.isArray(execution.result && execution.result.warnings)
+          ? execution.result.warnings
+          : [],
+        pdfTriage: execution.routeMetadata ? execution.routeMetadata.pdfTriage : 'not_pdf',
+        triageReason: execution.routeMetadata ? execution.routeMetadata.triageReason : '',
+        availableRoutes: execution.routeMetadata ? execution.routeMetadata.availableRoutes : [],
+        chosenRoute: execution.routeMetadata ? execution.routeMetadata.chosenRoute : null,
+        executedRoute: execution.routeMetadata ? execution.routeMetadata.executedRoute : null,
+        sourceFileExt: execution.result && execution.result.provenance
+          ? execution.result.provenance.sourceFileExt
+          : '',
+        sourceFileKind: execution.result && execution.result.provenance
+          ? execution.result.provenance.sourceFileKind
+          : '',
+        ...getPdfSelectionLogFields(preparedRecord),
+        ...getNativeProbeLogFields(execution.routeMetadata),
+      });
+    }
+
+    return execution;
+  } catch (err) {
+    log.error('text-extraction-execute-prepared failed unexpectedly:', err);
+    return {
+      ok: false,
+      code: 'EXECUTE_PREPARED_IPC_FAILED',
+      error: String(err),
+    };
+  }
+}
+
+// =============================================================================
+// IPC registration
 // =============================================================================
 
 function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
@@ -127,132 +260,15 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
     return windows.mainWin || null;
   };
 
-  ipcMain.handle('text-extraction-execute-prepared', async (event, payload = {}) => {
-    const request = resolveExecutePayload(payload);
-
-    try {
-      const mainWin = resolveMainWin();
-      if (!isAuthorizedSender(event, mainWin, log, 'text-extraction-execute-prepared')) {
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
-      if (!request.prepareId) {
-        return buildInvalidPreparedIdResponse('invalid');
-      }
-
-      const preparedLookup = peekPreparedRecord(request.prepareId);
-      if (!preparedLookup.ok || !preparedLookup.record) {
-        const invalidReason = preparedLookup.reason || 'invalid_or_expired';
-        log.warn('text extraction prepared id invalid/expired/reused:', {
-          ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
-        });
-        return buildInvalidPreparedIdResponse(invalidReason);
-      }
-
-      const preparedRecord = preparedLookup.record;
-      const routeResolution = resolvePreparedRoute(preparedRecord, request.routePreference);
-      if (!routeResolution.ok) {
-        return {
-          ok: false,
-          code: routeResolution.reason === 'route_choice_required'
-            ? 'ROUTE_CHOICE_REQUIRED'
-            : 'ROUTE_RESOLUTION_FAILED',
-          primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_required',
-        };
-      }
-
-      let currentFingerprint = null;
-      try {
-        currentFingerprint = readSourceFileFingerprint(preparedRecord.fileInfo.filePath);
-      } catch (err) {
-        log.warn('text extraction prepared id invalid/expired/reused:', {
-          ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_read_failed', {
-            errorMessage: String(err && err.message ? err.message : err || ''),
-          }),
-        });
-        return buildInvalidPreparedIdResponse('fingerprint_read_failed');
-      }
-
-      if (!fingerprintsMatch(preparedRecord.sourceFileFingerprint, currentFingerprint)) {
-        log.warn('text extraction prepared id invalid/expired/reused:', {
-          ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_mismatch'),
-        });
-        return buildInvalidPreparedIdResponse('fingerprint_mismatch');
-      }
-
-      if (controller.isActive()) {
-        return {
-          ok: false,
-          code: 'ALREADY_ACTIVE',
-          state: controller.getState(),
-        };
-      }
-
-      const consumeResult = consumePreparedRecord(request.prepareId);
-      if (!consumeResult.ok || !consumeResult.record) {
-        const invalidReason = consumeResult.reason || 'invalid_or_expired';
-        log.warn('text extraction prepared id invalid/expired/reused:', {
-          ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
-        });
-        return buildInvalidPreparedIdResponse(invalidReason);
-      }
-
-      log.info('text extraction execute started:', {
-        prepareId: shortPrepareId(request.prepareId),
-        sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
-        sourceFileKind: preparedRecord.fileInfo.sourceFileKind,
-        executionKind: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.executionKind : null,
-        pdfTriage: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.pdfTriage : 'not_pdf',
-        triageReason: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.triageReason : '',
-        availableRoutes: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.availableRoutes : [],
-        chosenRoute: routeResolution.productRoute,
-        ocrSetupState: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.ocrSetupState : 'not_checked',
-        ...getPdfSelectionLogFields(preparedRecord),
-        ...getNativeProbeLogFields(preparedRecord.routeMetadata),
-      });
-
-      const execution = await executePreparedImport({
-        preparedRecord,
-        routePreference: request.routePreference,
-        resolvePaths,
-        controller,
-        log,
-      });
-
-      if (execution && execution.ok === true) {
-        log.info('text extraction execute completed:', {
-          prepareId: shortPrepareId(request.prepareId),
-          executionKind: execution.executionKind,
-          state: execution.result && execution.result.state ? execution.result.state : '',
-          code: execution.result && execution.result.error ? execution.result.error.code : '',
-          warnings: Array.isArray(execution.result && execution.result.warnings)
-            ? execution.result.warnings
-            : [],
-          pdfTriage: execution.routeMetadata ? execution.routeMetadata.pdfTriage : 'not_pdf',
-          triageReason: execution.routeMetadata ? execution.routeMetadata.triageReason : '',
-          availableRoutes: execution.routeMetadata ? execution.routeMetadata.availableRoutes : [],
-          chosenRoute: execution.routeMetadata ? execution.routeMetadata.chosenRoute : null,
-          executedRoute: execution.routeMetadata ? execution.routeMetadata.executedRoute : null,
-          sourceFileExt: execution.result && execution.result.provenance
-            ? execution.result.provenance.sourceFileExt
-            : '',
-          sourceFileKind: execution.result && execution.result.provenance
-            ? execution.result.provenance.sourceFileKind
-            : '',
-          ...getPdfSelectionLogFields(preparedRecord),
-          ...getNativeProbeLogFields(execution.routeMetadata),
-        });
-      }
-
-      return execution;
-    } catch (err) {
-      log.error('text-extraction-execute-prepared failed unexpectedly:', err);
-      return {
-        ok: false,
-        code: 'EXECUTE_PREPARED_IPC_FAILED',
-        error: String(err),
-      };
+  ipcMain.handle('text-extraction-execute-prepared', (event, payload = {}) => handleExecutePrepared(
+    event,
+    payload,
+    {
+      resolveMainWin,
+      resolvePaths,
+      controller,
     }
-  });
+  ));
 }
 
 // =============================================================================
@@ -266,4 +282,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_execute_prepared_ipc.js
 // =============================================================================
-
