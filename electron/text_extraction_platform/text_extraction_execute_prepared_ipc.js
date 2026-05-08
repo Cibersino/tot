@@ -117,6 +117,7 @@ async function handleExecutePrepared(event, payload = {}, {
       return { ok: false, code: 'UNAUTHORIZED' };
     }
     if (!request.prepareId) {
+      log.warn('text-extraction-execute-prepared invalid payload (ignored): missing prepareId.');
       return buildInvalidPreparedIdResponse('invalid');
     }
 
@@ -132,6 +133,21 @@ async function handleExecutePrepared(event, payload = {}, {
     const preparedRecord = preparedLookup.record;
     const routeResolution = resolvePreparedRoute(preparedRecord, request.routePreference);
     if (!routeResolution.ok) {
+      if (routeResolution.reason !== 'route_choice_required') {
+        log.warn('text-extraction-execute-prepared route resolution failed:', {
+          prepareId: shortPrepareId(request.prepareId),
+          reason: routeResolution.reason || 'route_resolution_failed',
+          routePreference: request.routePreference || null,
+          chosenRoute:
+            preparedRecord.routeMetadata && typeof preparedRecord.routeMetadata.chosenRoute === 'string'
+              ? preparedRecord.routeMetadata.chosenRoute
+              : null,
+          availableRoutes:
+            preparedRecord.routeMetadata && Array.isArray(preparedRecord.routeMetadata.availableRoutes)
+              ? preparedRecord.routeMetadata.availableRoutes
+              : [],
+        });
+      }
       return {
         ok: false,
         code: routeResolution.reason === 'route_choice_required'
