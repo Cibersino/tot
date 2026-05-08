@@ -68,6 +68,111 @@ function getSourceInfo(filePath) {
 }
 
 // =============================================================================
+// Probe preflight helpers
+// =============================================================================
+
+function validateProbeSourceFile(source, startedAt, baseMetadata) {
+  if (!source.absPath || !fs.existsSync(source.absPath)) {
+    return buildFailure(
+      'unknown',
+      {
+        ...baseMetadata,
+        elapsedMs: Date.now() - startedAt,
+      },
+      buildError(
+        'unreadable_or_corrupt',
+        'Selected file is missing or unreadable.',
+        { stage: 'preflight', reason: 'missing_source_file' }
+      )
+    );
+  }
+
+  try {
+    const stats = fs.statSync(source.absPath);
+    if (!stats.isFile()) {
+      return buildFailure(
+        'unknown',
+        {
+          ...baseMetadata,
+          elapsedMs: Date.now() - startedAt,
+        },
+        buildError(
+          'unreadable_or_corrupt',
+          'Selected path is not a readable file.',
+          { stage: 'preflight', reason: 'not_a_file', sourceFileExt: source.fileExt }
+        )
+      );
+    }
+  } catch (err) {
+    return buildFailure(
+      'unknown',
+      {
+        ...baseMetadata,
+        elapsedMs: Date.now() - startedAt,
+      },
+      buildError(
+        'unreadable_or_corrupt',
+        'Selected file is missing or unreadable.',
+        {
+          stage: 'preflight',
+          reason: 'stat_failed',
+          errorName: String(err && err.name ? err.name : 'Error'),
+          errorCode: String(err && err.code ? err.code : ''),
+        }
+      )
+    );
+  }
+
+  return null;
+}
+
+function resolveProbePageRange(pageRange, totalPages, startedAt, baseMetadata) {
+  const requestedFromPage = pageRange && Number.isInteger(pageRange.fromPage)
+    ? pageRange.fromPage
+    : 1;
+  const requestedToPage = pageRange && Number.isInteger(pageRange.toPage)
+    ? pageRange.toPage
+    : totalPages;
+
+  if (requestedFromPage < 1
+    || requestedToPage < requestedFromPage
+    || requestedToPage > totalPages) {
+    return {
+      ok: false,
+      failure: buildFailure(
+        'unknown',
+        {
+          ...baseMetadata,
+          totalPages,
+          probedFromPage: requestedFromPage,
+          probedToPage: requestedToPage,
+          selectedPageCount: null,
+          elapsedMs: Date.now() - startedAt,
+        },
+        buildError(
+          'pdf_page_selection_invalid',
+          'Selected PDF page range is invalid for native probe.',
+          {
+            stage: 'parse',
+            reason: 'bounds_out_of_range',
+            fromPage: requestedFromPage,
+            toPage: requestedToPage,
+            totalPages,
+          }
+        )
+      ),
+    };
+  }
+
+  return {
+    ok: true,
+    requestedFromPage,
+    requestedToPage,
+    selectedPageCount: (requestedToPage - requestedFromPage) + 1,
+  };
+}
+
+// =============================================================================
 // Probe flow helpers
 // =============================================================================
 
@@ -121,55 +226,9 @@ async function probeNativePdfSelectableText({
     elapsedMs: 0,
   };
 
-  if (!source.absPath || !fs.existsSync(source.absPath)) {
-    return buildFailure(
-      'unknown',
-      {
-        ...baseMetadata,
-        elapsedMs: Date.now() - startedAt,
-      },
-      buildError(
-        'unreadable_or_corrupt',
-        'Selected file is missing or unreadable.',
-        { stage: 'preflight', reason: 'missing_source_file' }
-      )
-    );
-  }
-
-  try {
-    const stats = fs.statSync(source.absPath);
-    if (!stats.isFile()) {
-      return buildFailure(
-        'unknown',
-        {
-          ...baseMetadata,
-          elapsedMs: Date.now() - startedAt,
-        },
-        buildError(
-          'unreadable_or_corrupt',
-          'Selected path is not a readable file.',
-          { stage: 'preflight', reason: 'not_a_file', sourceFileExt: source.fileExt }
-        )
-      );
-    }
-  } catch (err) {
-    return buildFailure(
-      'unknown',
-      {
-        ...baseMetadata,
-        elapsedMs: Date.now() - startedAt,
-      },
-      buildError(
-        'unreadable_or_corrupt',
-        'Selected file is missing or unreadable.',
-        {
-          stage: 'preflight',
-          reason: 'stat_failed',
-          errorName: String(err && err.name ? err.name : 'Error'),
-          errorCode: String(err && err.code ? err.code : ''),
-        }
-      )
-    );
+  const sourceValidationFailure = validateProbeSourceFile(source, startedAt, baseMetadata);
+  if (sourceValidationFailure) {
+    return sourceValidationFailure;
   }
 
   let documentHandle = null;
@@ -182,40 +241,16 @@ async function probeNativePdfSelectableText({
     documentHandle = await pdfjs.getDocument(pdfBuffer);
 
     const totalPages = Number.isFinite(documentHandle.numPages) ? documentHandle.numPages : 0;
-    const requestedFromPage = pageRange && Number.isInteger(pageRange.fromPage)
-      ? pageRange.fromPage
-      : 1;
-    const requestedToPage = pageRange && Number.isInteger(pageRange.toPage)
-      ? pageRange.toPage
-      : totalPages;
-    if (requestedFromPage < 1
-      || requestedToPage < requestedFromPage
-      || requestedToPage > totalPages) {
-      return buildFailure(
-        'unknown',
-        {
-          ...baseMetadata,
-          totalPages,
-          probedFromPage: requestedFromPage,
-          probedToPage: requestedToPage,
-          selectedPageCount: null,
-          elapsedMs: Date.now() - startedAt,
-        },
-        buildError(
-          'pdf_page_selection_invalid',
-          'Selected PDF page range is invalid for native probe.',
-          {
-            stage: 'parse',
-            reason: 'bounds_out_of_range',
-            fromPage: requestedFromPage,
-            toPage: requestedToPage,
-            totalPages,
-          }
-        )
-      );
+    const resolvedPageRange = resolveProbePageRange(pageRange, totalPages, startedAt, baseMetadata);
+    if (!resolvedPageRange.ok) {
+      return resolvedPageRange.failure;
     }
 
-    const selectedPageCount = (requestedToPage - requestedFromPage) + 1;
+    const {
+      requestedFromPage,
+      requestedToPage,
+      selectedPageCount,
+    } = resolvedPageRange;
     let pagesScanned = 0;
     let foundAtPage = null;
 
