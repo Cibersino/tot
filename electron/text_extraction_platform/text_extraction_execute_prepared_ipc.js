@@ -100,12 +100,6 @@ function buildInvalidPreparedIdLogFields(prepareId, reason, extraFields = {}) {
   };
 }
 
-function logInvalidPreparedId(log, prepareId, reason, extraFields = {}) {
-  log.warn('text extraction prepared id invalid/expired/reused:', {
-    ...buildInvalidPreparedIdLogFields(prepareId, reason, extraFields),
-  });
-}
-
 // =============================================================================
 // IPC handler
 // =============================================================================
@@ -129,7 +123,9 @@ async function handleExecutePrepared(event, payload = {}, {
     const preparedLookup = peekPreparedRecord(request.prepareId);
     if (!preparedLookup.ok || !preparedLookup.record) {
       const invalidReason = preparedLookup.reason || 'invalid_or_expired';
-      logInvalidPreparedId(log, request.prepareId, invalidReason);
+      log.warn('text extraction prepared id invalid/expired/reused:', {
+        ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
+      });
       return buildInvalidPreparedIdResponse(invalidReason);
     }
 
@@ -149,14 +145,17 @@ async function handleExecutePrepared(event, payload = {}, {
     try {
       currentFingerprint = readSourceFileFingerprint(preparedRecord.fileInfo.filePath);
     } catch (err) {
-      logInvalidPreparedId(log, request.prepareId, 'fingerprint_read_failed', {
+      log.warn('text extraction prepared id invalid/expired/reused:', {
         errorMessage: String(err && err.message ? err.message : err || ''),
+        ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_read_failed'),
       });
       return buildInvalidPreparedIdResponse('fingerprint_read_failed');
     }
 
     if (!fingerprintsMatch(preparedRecord.sourceFileFingerprint, currentFingerprint)) {
-      logInvalidPreparedId(log, request.prepareId, 'fingerprint_mismatch');
+      log.warn('text extraction prepared id invalid/expired/reused:', {
+        ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_mismatch'),
+      });
       return buildInvalidPreparedIdResponse('fingerprint_mismatch');
     }
 
@@ -171,7 +170,9 @@ async function handleExecutePrepared(event, payload = {}, {
     const consumeResult = consumePreparedRecord(request.prepareId);
     if (!consumeResult.ok || !consumeResult.record) {
       const invalidReason = consumeResult.reason || 'invalid_or_expired';
-      logInvalidPreparedId(log, request.prepareId, invalidReason);
+      log.warn('text extraction prepared id invalid/expired/reused:', {
+        ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
+      });
       return buildInvalidPreparedIdResponse(invalidReason);
     }
 
@@ -239,12 +240,15 @@ async function handleExecutePrepared(event, payload = {}, {
 
 function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
+    log.error('[text_extraction_execute_prepared_ipc] registerIpc requires ipcMain');
     throw new Error('[text_extraction_execute_prepared_ipc] registerIpc requires ipcMain');
   }
   if (typeof getWindows !== 'function') {
+    log.error('[text_extraction_execute_prepared_ipc] registerIpc requires getWindows()');
     throw new Error('[text_extraction_execute_prepared_ipc] registerIpc requires getWindows()');
   }
   if (typeof resolvePaths !== 'function') {
+    log.error('[text_extraction_execute_prepared_ipc] registerIpc requires resolvePaths()');
     throw new Error('[text_extraction_execute_prepared_ipc] registerIpc requires resolvePaths()');
   }
   if (!controller
@@ -252,6 +256,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
     || typeof controller.exit !== 'function'
     || typeof controller.getState !== 'function'
     || typeof controller.isActive !== 'function') {
+    log.error('[text_extraction_execute_prepared_ipc] registerIpc requires processing-mode controller');
     throw new Error('[text_extraction_execute_prepared_ipc] registerIpc requires processing-mode controller');
   }
 
@@ -260,15 +265,20 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
     return windows.mainWin || null;
   };
 
-  ipcMain.handle('text-extraction-execute-prepared', (event, payload = {}) => handleExecutePrepared(
-    event,
-    payload,
-    {
-      resolveMainWin,
-      resolvePaths,
-      controller,
-    }
-  ));
+  try {
+    ipcMain.handle('text-extraction-execute-prepared', (event, payload = {}) => handleExecutePrepared(
+      event,
+      payload,
+      {
+        resolveMainWin,
+        resolvePaths,
+        controller,
+      }
+    ));
+  } catch (err) {
+    log.error('text-extraction-execute-prepared IPC registration failed:', err);
+    throw err;
+  }
 }
 
 // =============================================================================
