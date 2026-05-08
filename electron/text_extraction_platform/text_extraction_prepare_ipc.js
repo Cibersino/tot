@@ -80,6 +80,11 @@ function buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFall
   };
 }
 
+function resolveMainWindow(getWindows) {
+  const windows = getWindows() || {};
+  return windows.mainWin || null;
+}
+
 // =============================================================================
 // IPC registration / handler
 // =============================================================================
@@ -95,17 +100,12 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
     throw new Error('[text_extraction_prepare_ipc] registerIpc requires resolvePaths()');
   }
 
-  const resolveMainWin = () => {
-    const windows = getWindows() || {};
-    return windows.mainWin || null;
-  };
-
   ipcMain.handle('text-extraction-prepare-selected-file', async (event, payload = {}) => {
     const request = resolvePreparePayload(payload);
     const fileInfo = getFileInfo(request.filePath);
 
     try {
-      const mainWin = resolveMainWin();
+      const mainWin = resolveMainWindow(getWindows);
       if (!isAuthorizedSender(event, mainWin, log, 'text-extraction-prepare-selected-file')) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
