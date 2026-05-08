@@ -80,6 +80,11 @@ function buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFall
   };
 }
 
+function resolveMainWindow(getWindows) {
+  const windows = getWindows() || {};
+  return windows.mainWin || null;
+}
+
 // =============================================================================
 // IPC registration / handler
 // =============================================================================
@@ -95,17 +100,12 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
     throw new Error('[text_extraction_prepare_ipc] registerIpc requires resolvePaths()');
   }
 
-  const resolveMainWin = () => {
-    const windows = getWindows() || {};
-    return windows.mainWin || null;
-  };
-
   ipcMain.handle('text-extraction-prepare-selected-file', async (event, payload = {}) => {
     const request = resolvePreparePayload(payload);
     const fileInfo = getFileInfo(request.filePath);
 
     try {
-      const mainWin = resolveMainWin();
+      const mainWin = resolveMainWindow(getWindows);
       if (!isAuthorizedSender(event, mainWin, log, 'text-extraction-prepare-selected-file')) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
@@ -126,9 +126,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         resolvePaths,
         log,
       });
+      const routeMetadata = preparation ? (preparation.routeMetadata || null) : null;
 
       if (preparation && preparation.ok === true && preparation.prepareFailed === true) {
-        const routeMetadata = preparation.routeMetadata || null;
         log.warn('text extraction prepare failed:', {
           ...buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFallback: 'failure' }),
           code: preparation.error && preparation.error.code ? preparation.error.code : '',
@@ -155,7 +155,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           ok: true,
           prepareFailed: true,
           executionKind: null,
-          routeMetadata: preparation.routeMetadata || null,
+          routeMetadata,
           primaryAlertKey: 'renderer.alerts.text_extraction_error',
           warningAlertKeys: [],
           error: {
@@ -174,7 +174,6 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         sourceFileFingerprint,
       });
 
-      const routeMetadata = preparation.routeMetadata || null;
       const logPayload = {
         prepareId: shortPrepareId(preparedRecord.prepareId),
         ...buildPrepareRouteLogFields(fileInfo, routeMetadata),

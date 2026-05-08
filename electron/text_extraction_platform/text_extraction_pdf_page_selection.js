@@ -46,6 +46,30 @@ function buildError(code, message, detailsSafeForLogs = {}) {
   };
 }
 
+function buildPdfPageCountUnavailableError(stage, reason, detailsSafeForLogs = {}) {
+  return buildError(
+    'pdf_page_count_unavailable',
+    'PDF page count could not be inspected.',
+    {
+      stage,
+      reason,
+      ...detailsSafeForLogs,
+    }
+  );
+}
+
+function buildPdfPageSelectionInvalidError(stage, reason, detailsSafeForLogs = {}) {
+  return buildError(
+    'pdf_page_selection_invalid',
+    'Selected PDF page range is invalid.',
+    {
+      stage,
+      reason,
+      ...detailsSafeForLogs,
+    }
+  );
+}
+
 function toSafeFilePath(fileInfo) {
   return fileInfo && typeof fileInfo.filePath === 'string'
     ? fileInfo.filePath
@@ -113,25 +137,6 @@ function sanitizePdfBaseName(rawFileName) {
   return sanitized || 'document';
 }
 
-function cleanupMaterializationFailure(runDir) {
-  const safeRunDir = typeof runDir === 'string' ? runDir.trim() : '';
-  if (!safeRunDir || !fs.existsSync(safeRunDir)) return null;
-  try {
-    fs.rmSync(safeRunDir, { recursive: true, force: true });
-    return null;
-  } catch (err) {
-    const cleanupFailure = {
-      stage: 'cleanup_materialization_failure',
-      runDir: safeRunDir,
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorCode: String(err && err.code ? err.code : ''),
-      errorMessage: String(err && err.message ? err.message : err || ''),
-    };
-    log.warn('Generated PDF materialization cleanup failed (ignored):', cleanupFailure);
-    return cleanupFailure;
-  }
-}
-
 // =============================================================================
 // Inspect / canonical state helpers
 // =============================================================================
@@ -194,14 +199,7 @@ async function inspectPdfFile({ fileInfo } = {}) {
         ok: true,
         isPdf: true,
         totalPages: null,
-        error: buildError(
-          'pdf_page_count_unavailable',
-          'PDF page count could not be inspected.',
-          {
-            stage: 'inspect',
-            reason: 'invalid_page_count',
-          }
-        ),
+        error: buildPdfPageCountUnavailableError('inspect', 'invalid_page_count'),
       };
     }
 
@@ -226,14 +224,7 @@ function canonicalizePdfPageSelection(requestedSelection, { totalPages } = {}) {
   if (!safeTotalPages) {
     return {
       ok: false,
-      error: buildError(
-        'pdf_page_count_unavailable',
-        'PDF page count could not be inspected.',
-        {
-          stage: 'prepare',
-          reason: 'missing_total_pages',
-        }
-      ),
+      error: buildPdfPageCountUnavailableError('prepare', 'missing_total_pages'),
     };
   }
 
@@ -260,15 +251,9 @@ function canonicalizePdfPageSelection(requestedSelection, { totalPages } = {}) {
   if (requestedMode !== 'range') {
     return {
       ok: false,
-      error: buildError(
-        'pdf_page_selection_invalid',
-        'Selected PDF page range is invalid.',
-        {
-          stage: 'prepare',
-          reason: 'invalid_mode',
-          requestedMode,
-        }
-      ),
+      error: buildPdfPageSelectionInvalidError('prepare', 'invalid_mode', {
+        requestedMode,
+      }),
     };
   }
 
@@ -277,50 +262,32 @@ function canonicalizePdfPageSelection(requestedSelection, { totalPages } = {}) {
   if (!fromPage || !toPage) {
     return {
       ok: false,
-      error: buildError(
-        'pdf_page_selection_invalid',
-        'Selected PDF page range is invalid.',
-        {
-          stage: 'prepare',
-          reason: 'non_integer_bounds',
-          fromPage: rawSelection.fromPage,
-          toPage: rawSelection.toPage,
-        }
-      ),
+      error: buildPdfPageSelectionInvalidError('prepare', 'non_integer_bounds', {
+        fromPage: rawSelection.fromPage,
+        toPage: rawSelection.toPage,
+      }),
     };
   }
 
   if (fromPage > toPage) {
     return {
       ok: false,
-      error: buildError(
-        'pdf_page_selection_invalid',
-        'Selected PDF page range is invalid.',
-        {
-          stage: 'prepare',
-          reason: 'from_page_after_to_page',
-          fromPage,
-          toPage,
-          totalPages: safeTotalPages,
-        }
-      ),
+      error: buildPdfPageSelectionInvalidError('prepare', 'from_page_after_to_page', {
+        fromPage,
+        toPage,
+        totalPages: safeTotalPages,
+      }),
     };
   }
 
   if (fromPage < 1 || toPage > safeTotalPages) {
     return {
       ok: false,
-      error: buildError(
-        'pdf_page_selection_invalid',
-        'Selected PDF page range is invalid.',
-        {
-          stage: 'prepare',
-          reason: 'bounds_out_of_range',
-          fromPage,
-          toPage,
-          totalPages: safeTotalPages,
-        }
-      ),
+      error: buildPdfPageSelectionInvalidError('prepare', 'bounds_out_of_range', {
+        fromPage,
+        toPage,
+        totalPages: safeTotalPages,
+      }),
     };
   }
 
@@ -373,6 +340,25 @@ function resolveProcessingInputFileName({ fileInfo, pdfPageSelection } = {}) {
 // =============================================================================
 // Execute-time subset materialization
 // =============================================================================
+
+function cleanupMaterializationFailure(runDir) {
+  const safeRunDir = typeof runDir === 'string' ? runDir.trim() : '';
+  if (!safeRunDir || !fs.existsSync(safeRunDir)) return null;
+  try {
+    fs.rmSync(safeRunDir, { recursive: true, force: true });
+    return null;
+  } catch (err) {
+    const cleanupFailure = {
+      stage: 'cleanup_materialization_failure',
+      runDir: safeRunDir,
+      errorName: String(err && err.name ? err.name : 'Error'),
+      errorCode: String(err && err.code ? err.code : ''),
+      errorMessage: String(err && err.message ? err.message : err || ''),
+    };
+    log.warn('Generated PDF materialization cleanup failed (ignored):', cleanupFailure);
+    return cleanupFailure;
+  }
+}
 
 async function materializePdfPageSelectionInput({
   fileInfo,
@@ -440,18 +426,12 @@ async function materializePdfPageSelectionInput({
       const cleanupFailure = cleanupMaterializationFailure(runDir);
       return {
         ok: false,
-        error: buildError(
-          'pdf_page_selection_invalid',
-          'Selected PDF page range is invalid.',
-          {
-            stage: 'materialize_subset',
-            reason: 'bounds_out_of_range',
-            fromPage: safeSelection.fromPage,
-            toPage: safeSelection.toPage,
-            totalPages: sourceTotalPages,
-            ...(cleanupFailure ? { cleanupFailure } : {}),
-          }
-        ),
+        error: buildPdfPageSelectionInvalidError('materialize_subset', 'bounds_out_of_range', {
+          fromPage: safeSelection.fromPage,
+          toPage: safeSelection.toPage,
+          totalPages: sourceTotalPages,
+          ...(cleanupFailure ? { cleanupFailure } : {}),
+        }),
       };
     }
 

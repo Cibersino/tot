@@ -234,6 +234,79 @@ function ensureNotAborted(isAborted) {
   }
 }
 
+function buildPreflightFailureResult({
+  summary,
+  provenance,
+  code,
+  message,
+  detailsSafeForLogs,
+}) {
+  return buildResult({
+    state: 'failure',
+    summary,
+    provenance,
+    error: buildError(code, message, detailsSafeForLogs),
+  });
+}
+
+function validateSourceForNativeRoute(source, provenance) {
+  if (!source.absPath || !fs.existsSync(source.absPath)) {
+    return buildPreflightFailureResult({
+      summary: 'Native route failed before parse: source file is missing.',
+      provenance,
+      code: 'unreadable_or_corrupt',
+      message: 'Selected file is missing or unreadable.',
+      detailsSafeForLogs: { stage: 'preflight', reason: 'missing_source_file' },
+    });
+  }
+
+  try {
+    const stats = fs.statSync(source.absPath);
+    if (!stats.isFile()) {
+      return buildPreflightFailureResult({
+        summary: 'Native route failed before parse: selected path is not a file.',
+        provenance,
+        code: 'unreadable_or_corrupt',
+        message: 'Selected path is not a readable file.',
+        detailsSafeForLogs: {
+          stage: 'preflight',
+          reason: 'not_a_file',
+          sourceFileExt: source.fileExt,
+        },
+      });
+    }
+  } catch (err) {
+    return buildPreflightFailureResult({
+      summary: 'Native route failed before parse: file metadata check failed.',
+      provenance,
+      code: 'unreadable_or_corrupt',
+      message: 'Selected file is missing or unreadable.',
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: 'stat_failed',
+        errorName: String(err && err.name ? err.name : 'Error'),
+        errorCode: String(err && err.code ? err.code : ''),
+      },
+    });
+  }
+
+  if (!source.parserType) {
+    return buildPreflightFailureResult({
+      summary: 'Native route blocked: unsupported format.',
+      provenance,
+      code: 'unsupported_format',
+      message: 'Selected file format is not supported by native extraction route.',
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: 'unsupported_extension',
+        sourceFileExt: source.fileExt,
+      },
+    });
+  }
+
+  return null;
+}
+
 function buildFailureResultForError({
   source,
   parserType,
@@ -296,66 +369,9 @@ async function runNativeExtractionRoute({
     },
   };
 
-  if (!source.absPath || !fs.existsSync(source.absPath)) {
-    return buildResult({
-      state: 'failure',
-      summary: 'Native route failed before parse: source file is missing.',
-      provenance,
-      error: buildError(
-        'unreadable_or_corrupt',
-        'Selected file is missing or unreadable.',
-        { stage: 'preflight', reason: 'missing_source_file' }
-      ),
-    });
-  }
-
-  try {
-    const stats = fs.statSync(source.absPath);
-    if (!stats.isFile()) {
-      return buildResult({
-        state: 'failure',
-        summary: 'Native route failed before parse: selected path is not a file.',
-        provenance,
-        error: buildError(
-          'unreadable_or_corrupt',
-          'Selected path is not a readable file.',
-          { stage: 'preflight', reason: 'not_a_file', sourceFileExt: source.fileExt }
-        ),
-      });
-    }
-  } catch (err) {
-    return buildResult({
-      state: 'failure',
-      summary: 'Native route failed before parse: file metadata check failed.',
-      provenance,
-      error: buildError(
-        'unreadable_or_corrupt',
-        'Selected file is missing or unreadable.',
-        {
-          stage: 'preflight',
-          reason: 'stat_failed',
-          errorName: String(err && err.name ? err.name : 'Error'),
-          errorCode: String(err && err.code ? err.code : ''),
-        }
-      ),
-    });
-  }
-
-  if (!source.parserType) {
-    return buildResult({
-      state: 'failure',
-      summary: 'Native route blocked: unsupported format.',
-      provenance,
-      error: buildError(
-        'unsupported_format',
-        'Selected file format is not supported by native extraction route.',
-        {
-          stage: 'preflight',
-          reason: 'unsupported_extension',
-          sourceFileExt: source.fileExt,
-        }
-      ),
-    });
+  const preflightFailure = validateSourceForNativeRoute(source, provenance);
+  if (preflightFailure) {
+    return preflightFailure;
   }
 
   try {
@@ -424,4 +440,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/native_extraction_route.js
 // =============================================================================
-

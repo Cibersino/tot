@@ -37,7 +37,7 @@ const {
 } = require('./text_extraction_supported_formats');
 
 // =============================================================================
-// Boundary normalization + shared metadata helpers
+// IPC wrapper boundary helpers
 // =============================================================================
 
 function resolveInspectPayload(payload) {
@@ -77,6 +77,29 @@ function resolveExecutePayload(payload) {
   };
 }
 
+function isAuthorizedSender(event, mainWin, log, channelName) {
+  try {
+    const senderWin = event && event.sender
+      ? BrowserWindow.fromWebContents(event.sender)
+      : null;
+    if (!mainWin || senderWin !== mainWin) {
+      log.warnOnce(
+        `${channelName}.unauthorized`,
+        `${channelName} unauthorized (ignored).`
+      );
+      return false;
+    }
+    return true;
+  } catch (err) {
+    log.warn(`${channelName} sender validation failed:`, err);
+    return false;
+  }
+}
+
+// =============================================================================
+// Shared file/setup metadata helpers
+// =============================================================================
+
 function getFileInfo(filePath) {
   const normalizedPath = typeof filePath === 'string' ? filePath.trim() : '';
   const resolvedPath = path.resolve(normalizedPath || '');
@@ -103,25 +126,6 @@ function getRendererSafeFileInfo(fileInfo) {
     sourceFileExt: fileInfo && typeof fileInfo.sourceFileExt === 'string' ? fileInfo.sourceFileExt : '',
     sourceFileKind: fileInfo && typeof fileInfo.sourceFileKind === 'string' ? fileInfo.sourceFileKind : '',
   };
-}
-
-function isAuthorizedSender(event, mainWin, log, channelName) {
-  try {
-    const senderWin = event && event.sender
-      ? BrowserWindow.fromWebContents(event.sender)
-      : null;
-    if (!mainWin || senderWin !== mainWin) {
-      log.warnOnce(
-        `${channelName}.unauthorized`,
-        `${channelName} unauthorized (ignored).`
-      );
-      return false;
-    }
-    return true;
-  } catch (err) {
-    log.warn(`${channelName} sender validation failed:`, err);
-    return false;
-  }
 }
 
 function resolveSetupState(validationResult) {
@@ -158,6 +162,12 @@ function resolvePdfAlertKey(code) {
     return 'renderer.alerts.text_extraction_pdf_subset_creation_failed';
   }
   return 'renderer.alerts.text_extraction_error';
+}
+
+function getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy) {
+  return generatedPdfArtifactPolicy && typeof generatedPdfArtifactPolicy.mode === 'string'
+    ? generatedPdfArtifactPolicy.mode
+    : '';
 }
 
 // =============================================================================
@@ -326,7 +336,7 @@ function buildOcrPrepareFailure({
       ocrSetupState: state,
       ocrSetupCode: code,
       pdfPageSelection,
-      generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy ? generatedPdfArtifactPolicy.mode : '',
+      generatedPdfArtifactPolicyMode: getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy),
     }),
     primaryAlertKey,
     warningAlertKeys: [],
@@ -347,9 +357,10 @@ function buildNativePrepareFailure({
 }) {
   const failure = getProbeFailureDetails(probeResult);
   const code = failure ? failure.code : '';
-  const primaryAlertKey = resolvePdfAlertKey(code) === 'renderer.alerts.text_extraction_error'
+  const pdfAlertKey = resolvePdfAlertKey(code);
+  const primaryAlertKey = pdfAlertKey === 'renderer.alerts.text_extraction_error'
     ? 'renderer.alerts.text_extraction_native_runtime_error'
-    : resolvePdfAlertKey(code);
+    : pdfAlertKey;
 
   return buildPrepareFailure({
     executionKind: 'native',
@@ -362,7 +373,7 @@ function buildNativePrepareFailure({
       triageReason,
       ocrSetupState: 'not_checked',
       pdfPageSelection,
-      generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy ? generatedPdfArtifactPolicy.mode : '',
+      generatedPdfArtifactPolicyMode: getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy),
       nativeProbeCode: failure ? failure.code : '',
       nativeProbeErrorName: failure ? failure.errorName : '',
       nativeProbeErrorCode: failure ? failure.errorCode : '',
@@ -426,7 +437,7 @@ function buildPdfPrepareFailure({
       triageReason,
       ocrSetupState: 'not_checked',
       pdfPageSelection,
-      generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy ? generatedPdfArtifactPolicy.mode : '',
+      generatedPdfArtifactPolicyMode: getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy),
     }),
     primaryAlertKey: resolvePdfAlertKey(code),
     warningAlertKeys: [],
@@ -700,7 +711,7 @@ async function resolvePdfPreparation({
     ocrSetupState,
     ocrSetupCode,
     pdfPageSelection,
-    generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy.mode,
+    generatedPdfArtifactPolicyMode: getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy),
     nativeProbeSelectableText: nativeProbeSuccess ? nativeProbeSuccess.selectableText : '',
     nativeProbeMetadata: nativeProbeSuccess ? nativeProbeSuccess.metadataSafeForLogs : null,
   });
@@ -767,16 +778,7 @@ async function prepareSelectedFile({
     });
   }
 
-  if (fileInfo.sourceFileKind === 'image') {
-    return resolveNonPdfOcrPreparation({
-      fileInfo,
-      ocrLanguage,
-      resolvePaths,
-      log,
-    });
-  }
-
-  if (!nativeParser && driveSourceMimeType) {
+  if (fileInfo.sourceFileKind === 'image' || (!nativeParser && driveSourceMimeType)) {
     return resolveNonPdfOcrPreparation({
       fileInfo,
       ocrLanguage,
@@ -1082,7 +1084,7 @@ function decorateExecutionResultForPreparedInput({
         selectedRangeToPage: pdfPageSelection ? pdfPageSelection.toPage : null,
         selectedPageCount: pdfPageSelection ? pdfPageSelection.selectedPageCount : null,
         pdfTotalPages: pdfPageSelection ? pdfPageSelection.totalPages : null,
-        generatedPdfArtifactPolicyMode: generatedPdfArtifactPolicy ? generatedPdfArtifactPolicy.mode : '',
+        generatedPdfArtifactPolicyMode: getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy),
         generatedPdfArtifactRetained: !!(
           processingInputContext
           && processingInputContext.generatedPdfArtifact
