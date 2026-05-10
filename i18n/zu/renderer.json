@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Ingxenye yokuqala neyokugcina yombhalo ohlaziyiweyo:",
       "selector_empty": "(akunalutho)",
+      "reading_tools": {
+        "reading_speed_test": "Ukuhlolwa kwejubane lokufunda",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Khipha umbhalo efayeleni",
         "text_extraction_abort": "Misa ukukhishwa",
@@ -59,10 +63,6 @@
         "speed": "Ijubane:",
         "controls_label": "Izilawuli zesibali-sikhathi"
       },
-      "reading_tools": {
-        "reading_speed_test": "Ukuhlolwa kwejubane lokufunda",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Kucutshungulwa ukukhishwa...",
         "text_extraction_preparing": "Kulungiswa indlela yokukhishwa...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Dedela ifayela ukuze ungenise noma ukhiphe umbhalo"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "Izinketho zokukhipha umbhalo ku-PDF",
-      "message": "Khetha ukuthi ufuna ukucubungula yonke i-PDF noma ibanga lamakhasi alandelanayo ngaphambi kokukhishwa.",
-      "file_label": "Ifayela:",
-      "total_pages_label": "Amakhasi esewonke: ",
-      "selection_legend": "Ukukhetha amakhasi",
-      "all_pages_label": "Wonke amakhasi",
-      "range_label": "Ibanga lamakhasi",
-      "from_page_label": "Kusuka ekhasini",
-      "to_page_label": "Kuye ekhasini",
-      "selected_page_count_label": "Amakhasi akhethiwe: ",
-      "keep_generated_pdf_label": "Gcina i-PDF edaliwe yamakhasi akhethiwe ngemva kokucubungula",
-      "continue_button": "Qhubeka",
-      "cancel_button": "Khansela",
-      "close_aria": "Vala ingxoxo yezinketho zokukhipha umbhalo ku-PDF",
-      "invalid_range": "Faka ibanga lamakhasi alandelanayo phakathi kuka-1 no-{totalPages}."
-    },
-    "browser_extension": {
-      "title": "Isandiso sesiphequluli",
-      "subtitle": "Isikhathi sokufunda",
-      "availability": "Siyatholakala ku-Chrome manje. Ezinye iziphequluli ziyeza maduze.",
-      "chrome_store_aria": "Vula ikhasi le-Chrome Web Store lesandiso",
-      "close_aria": "Vala ibhokisi lesandiso sesiphequluli"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "Izinketho zokukhipha umbhalo ku-PDF",
+        "message": "Khetha ukuthi ufuna ukucubungula yonke i-PDF noma ibanga lamakhasi alandelanayo ngaphambi kokukhishwa.",
+        "file_label": "Ifayela:",
+        "total_pages_label": "Amakhasi esewonke: ",
+        "selection_legend": "Ukukhetha amakhasi",
+        "all_pages_label": "Wonke amakhasi",
+        "range_label": "Ibanga lamakhasi",
+        "from_page_label": "Kusuka ekhasini",
+        "to_page_label": "Kuye ekhasini",
+        "selected_page_count_label": "Amakhasi akhethiwe: ",
+        "keep_generated_pdf_label": "Gcina i-PDF edaliwe yamakhasi akhethiwe ngemva kokucubungula",
+        "continue_button": "Qhubeka",
+        "cancel_button": "Khansela",
+        "close_aria": "Vala ingxoxo yezinketho zokukhipha umbhalo ku-PDF",
+        "invalid_range": "Faka ibanga lamakhasi alandelanayo phakathi kuka-1 no-{totalPages}."
+      },
+      "route_choice": {
+        "title": "Khetha indlela yokukhipha",
+        "message": "Zombili izindlela zokukhipha ziyatholakala kule PDF. Khetha eyodwa ukuze uqhubeke.",
+        "native_button": "Sebenzisa i-native",
+        "ocr_button": "Sebenzisa i-OCR",
+        "cancel_button": "Khansela",
+        "close_aria": "Vala ibhokisi lendlela yokukhipha"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Buyekeza ukuvulwa kwe-Google OCR",
+        "intro": "toT isebenzisa izinsiza ze-Google ze-OCR. Uma uqhubeka, isiphequluli sakho sizovuleka ukuze ugunyaze le app.",
+        "selected_files": "Kuthunyelwa ku-Google kuphela amafayela owakhethayo e-OCR.",
+        "local_storage": "Le app igcina imininingwane ye-Google OAuth ye-OCR ephethwe yi-app kanye nesimo sethokheni ye-Google sendawo kulesi senzakalo se-app.",
+        "remote_cleanup": "Ngemva kokuthekelisa, i-app izama ukususa idokhumenti yesikhashana ye-Google ku-Google Drive yakho.",
+        "disconnect": "Kamuva ungakwazi ukunqamula lokhu kuxhumana kokuthi Izintandokazi > Nqamula i-Google OCR.",
+        "proceed_button": "Qhubeka ku-Google",
+        "cancel_button": "Khansela",
+        "privacy_link": "Vula inqubomgomo yobumfihlo",
+        "close_aria": "Vala ibhokisi lokuvula i-Google OCR"
+      },
+      "apply_modal": {
+        "title": "Sebenzisa umbhalo okhishiwe",
+        "message": "Khetha ukuthi uzowusebenzisa kanjani umbhalo okhishiwe.",
+        "elapsed": "Isikhathi sokusebenza: ",
+        "repeat_label": "Ukuphindaphinda",
+        "overwrite_button": "Bhala phezu",
+        "append_button": "Engeza",
+        "cancel_button": "Khansela",
+        "close_aria": "Vala ibhokisi lokusebenzisa umbhalo okhishiwe",
+        "saved_pdf_message": "I-PDF edaliwe igcinwe ngemva kokukhishwa.",
+        "saved_pdf_label": "I-PDF egciniwe: ",
+        "reveal_saved_pdf_button": "Bonisa i-PDF egciniwe"
+      }
     },
     "editor": {
       "title": "toT — Umbhalo ophelele",
@@ -129,6 +157,68 @@
       "replace_timeout": "Ukubuyisela kuthathe isikhathi eside. Zama futhi.",
       "status_no_matches": "Akukho okufanayo",
       "status_empty_query": "Bhala ukuze useshe"
+    },
+    "snapshot_save_tags": {
+      "title": "Gcina i-snapshot yombhalo",
+      "message": "Uma uthanda, faka amathegi kule snapshot yombhalo ngaphambi kokukhetha ukuthi igcinwa kuphi.",
+      "labels": {
+        "language": "Ulimi",
+        "type": "Uhlobo",
+        "difficulty": "Ubunzima"
+      },
+      "empty": {
+        "language": "Alikho ithegi lolimi",
+        "type": "Alikho ithegi lohlobo",
+        "difficulty": "Alikho ithegi lobunzima"
+      },
+      "buttons": {
+        "confirm": "Gcina i-snapshot yombhalo",
+        "cancel": "Khansela"
+      },
+      "close_aria": "Vala ibhokisi lokugcina i-snapshot yombhalo",
+      "options": {
+        "language": {
+          "ar": "Isi-Arabic",
+          "arn": "Mapudungun",
+          "ay": "Isi-Aymara",
+          "bn": "Isi-Bengali",
+          "ca": "Isi-Catalan",
+          "de": "Isi-German",
+          "en": "IsiNgisi",
+          "es": "Isi-Spanish",
+          "eu": "Isi-Basque",
+          "fa": "Isi-Persian",
+          "fr": "Isi-French",
+          "gn": "Isi-Guarani",
+          "hi": "Isi-Hindi",
+          "ht": "Isi-Haitian",
+          "id": "Isi-Indonesian",
+          "it": "Isi-Italian",
+          "ja": "Isi-Japanese",
+          "ko": "Isi-Korean",
+          "mi": "Isi-Maori",
+          "pcm": "Isi-Nigerian Pidgin",
+          "pt": "Isi-Portuguese",
+          "qu": "Isi-Quechua",
+          "ru": "Isi-Russian",
+          "sv": "Isi-Swedish",
+          "tr": "Isi-Turkish",
+          "ur": "Isi-Urdu",
+          "vi": "Isi-Vietnamese",
+          "zh_hans": "Isi-Chinese esenziwe lula",
+          "zh_hant": "Isi-Chinese sendabuko",
+          "zu": "IsiZulu"
+        },
+        "type": {
+          "fiction": "Inganekwane",
+          "non_fiction": "Okungezona izinganekwane"
+        },
+        "difficulty": {
+          "easy": "Kulula",
+          "normal": "Okuvamile",
+          "hard": "Kunzima"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Imisebenzi",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Kunezinguquko ezingakagcinwa. Uzilahle?",
         "close_unsaved": "Kunezinguquko ezingakagcinwa. Uvale ngaphandle kokugcina?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Gcina i-snapshot yombhalo",
-      "message": "Uma uthanda, faka amathegi kule snapshot yombhalo ngaphambi kokukhetha ukuthi igcinwa kuphi.",
-      "labels": {
-        "language": "Ulimi",
-        "type": "Uhlobo",
-        "difficulty": "Ubunzima"
-      },
-      "empty": {
-        "language": "Alikho ithegi lolimi",
-        "type": "Alikho ithegi lohlobo",
-        "difficulty": "Alikho ithegi lobunzima"
-      },
-      "buttons": {
-        "confirm": "Gcina i-snapshot yombhalo",
-        "cancel": "Khansela"
-      },
-      "close_aria": "Vala ibhokisi lokugcina i-snapshot yombhalo",
-      "options": {
-        "language": {
-          "ar": "Isi-Arabic",
-          "arn": "Mapudungun",
-          "ay": "Isi-Aymara",
-          "bn": "Isi-Bengali",
-          "ca": "Isi-Catalan",
-          "de": "Isi-German",
-          "en": "IsiNgisi",
-          "es": "Isi-Spanish",
-          "eu": "Isi-Basque",
-          "fa": "Isi-Persian",
-          "fr": "Isi-French",
-          "gn": "Isi-Guarani",
-          "hi": "Isi-Hindi",
-          "ht": "Isi-Haitian",
-          "id": "Isi-Indonesian",
-          "it": "Isi-Italian",
-          "ja": "Isi-Japanese",
-          "ko": "Isi-Korean",
-          "mi": "Isi-Maori",
-          "pcm": "Isi-Nigerian Pidgin",
-          "pt": "Isi-Portuguese",
-          "qu": "Isi-Quechua",
-          "ru": "Isi-Russian",
-          "sv": "Isi-Swedish",
-          "tr": "Isi-Turkish",
-          "ur": "Isi-Urdu",
-          "vi": "Isi-Vietnamese",
-          "zh_hans": "Isi-Chinese esenziwe lula",
-          "zh_hant": "Isi-Chinese sendabuko",
-          "zu": "IsiZulu"
-        },
-        "type": {
-          "fiction": "Inganekwane",
-          "non_fiction": "Okungezona izinganekwane"
-        },
-        "difficulty": {
-          "easy": "Kulula",
-          "normal": "Okuvamile",
-          "hard": "Kunzima"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Khansela",
       "save": "Gcina"
     },
+    "browser_extension": {
+      "title": "Isandiso sesiphequluli",
+      "subtitle": "Isikhathi sokufunda",
+      "availability": "Siyatholakala ku-Chrome manje. Ezinye iziphequluli ziyeza maduze.",
+      "chrome_store_aria": "Vula ikhasi le-Chrome Web Store lesandiso",
+      "close_aria": "Vala ibhokisi lesandiso sesiphequluli"
+    },
     "alerts": {
       "clipboard_too_large": "Umbhalo osebhodini lokunamathisela mkhulu kakhulu ukuthi ucutshungulwe. Wunciphise bese uzama futhi.",
       "append_too_large": "Umbhalo ophumayo mkhulu kakhulu ukuthi ucutshungulwe. Wunciphise bese uzama futhi.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Akukwazekanga ukudala i-PDF yamakhasi akhethiwe ukuze kukhishwe umbhalo. Hlola ifayela bese uzama futhi.",
       "text_extraction_generated_pdf_cleanup_warning": "Ukukhishwa kuqediwe, kodwa i-PDF yasendaweni edaliwe ayikwazanga ukusulwa ngokuzenzakalelayo.",
       "text_extraction_route_choice_required": "Kudingeka ukukhetha indlela yale PDF ngaphambi kokuthi ukukhishwa kuqhubeke.",
-      "text_extraction_route_choice_title": "Khetha indlela yokukhipha",
-      "text_extraction_route_choice_message": "Zombili izindlela zokukhipha ziyatholakala kule PDF. Khetha eyodwa ukuze uqhubeke.",
-      "text_extraction_route_choice_native_button": "Sebenzisa i-native",
-      "text_extraction_route_choice_ocr_button": "Sebenzisa i-OCR",
-      "text_extraction_route_choice_cancel_button": "Khansela",
-      "text_extraction_route_choice_close_aria": "Vala ibhokisi lendlela yokukhipha",
-      "text_extraction_apply_modal_title": "Sebenzisa umbhalo okhishiwe",
-      "text_extraction_apply_modal_message": "Khetha ukuthi uzowusebenzisa kanjani umbhalo okhishiwe.",
-      "text_extraction_apply_modal_elapsed": "Isikhathi sokusebenza: ",
-      "text_extraction_apply_modal_repeat_label": "Ukuphindaphinda",
-      "text_extraction_apply_modal_overwrite_button": "Bhala phezu",
-      "text_extraction_apply_modal_append_button": "Engeza",
-      "text_extraction_apply_modal_cancel_button": "Khansela",
-      "text_extraction_apply_modal_close_aria": "Vala ibhokisi lokusebenzisa umbhalo okhishiwe",
-      "text_extraction_apply_modal_saved_pdf_message": "I-PDF edaliwe igcinwe ngemva kokukhishwa.",
-      "text_extraction_apply_modal_saved_pdf_label": "I-PDF egciniwe: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Bonisa i-PDF egciniwe",
       "text_extraction_generated_pdf_reveal_failed": "Akukwazekanga ukubonisa i-PDF egciniwe. Hlola ukuthi ifayela lisekhona yini.",
       "text_extraction_apply_error": "Kuvele iphutha ngesikhathi kusetshenziswa umbhalo okhishiwe. Hlola ikhonsoli bese uzama futhi.",
       "text_extraction_apply_too_large": "Umbhalo ophumayo mkhulu kakhulu ukuthi ucutshungulwe. Nciphisa ukuphindaphinda bese uzama futhi.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Isicelo sokukhishwa esilungisiwe asisavumelekile. Qala kabusha inqubo.",
       "text_extraction_ocr_unavailable": "I-OCR ayitholakali. Hlola ukusethwa/ukugunyazwa bese uzama futhi.",
       "text_extraction_ocr_activation_required": "Kudingeka ukuvula i-OCR. Ngena ngemvume ku-Google OCR bese uzama futhi.",
-      "text_extraction_ocr_activation_disclosure_title": "Buyekeza ukuvulwa kwe-Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "toT isebenzisa izinsiza ze-Google ze-OCR. Uma uqhubeka, isiphequluli sakho sizovuleka ukuze ugunyaze le app.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Kuthunyelwa ku-Google kuphela amafayela owakhethayo e-OCR.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Le app igcina imininingwane ye-Google OAuth ye-OCR ephethwe yi-app kanye nesimo sethokheni ye-Google sendawo kulesi senzakalo se-app.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Ngemva kokuthekelisa, i-app izama ukususa idokhumenti yesikhashana ye-Google ku-Google Drive yakho.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Kamuva ungakwazi ukunqamula lokhu kuxhumana kokuthi Izintandokazi > Nqamula i-Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Qhubeka ku-Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Khansela",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Vula inqubomgomo yobumfihlo",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Vala ibhokisi lokuvula i-Google OCR",
       "text_extraction_ocr_activation_success": "Ukuvulwa kwe-OCR kuqediwe. Kuzanywa futhi ukukhishwa.",
       "text_extraction_ocr_activation_cancelled": "Ukuvulwa kwe-OCR kukhanseliwe. Ukukhishwa akuqhubekanga.",
       "text_extraction_ocr_token_state_invalid": "Isimo sokungena se-Google OCR esigciniwe asivumelekile. Xhuma kabusha i-Google OCR bese uzama futhi.",

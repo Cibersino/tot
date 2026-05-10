@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Bagian awal dan akhir teks yang dianalisis:",
       "selector_empty": "(kosong)",
+      "reading_tools": {
+        "reading_speed_test": "Tes kecepatan membaca",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Ekstrak teks dari file",
         "text_extraction_abort": "Batalkan ekstraksi",
@@ -59,10 +63,6 @@
         "speed": "Kecepatan:",
         "controls_label": "Kontrol stopwatch"
       },
-      "reading_tools": {
-        "reading_speed_test": "Tes kecepatan membaca",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Mengekstrak teks...",
         "text_extraction_preparing": "Menyiapkan rute ekstraksi...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Jatuhkan file untuk mengekstrak teks"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "Opsi ekstraksi PDF",
-      "message": "Pilih apakah ingin memproses seluruh PDF atau satu rentang halaman berurutan sebelum ekstraksi.",
-      "file_label": "File:",
-      "total_pages_label": "Total halaman: ",
-      "selection_legend": "Pemilihan halaman",
-      "all_pages_label": "Semua halaman",
-      "range_label": "Rentang halaman",
-      "from_page_label": "Dari halaman",
-      "to_page_label": "Sampai halaman",
-      "selected_page_count_label": "Halaman dipilih: ",
-      "keep_generated_pdf_label": "Simpan PDF halaman terpilih yang dibuat setelah pemrosesan",
-      "continue_button": "Lanjutkan",
-      "cancel_button": "Batal",
-      "close_aria": "Tutup dialog opsi ekstraksi PDF",
-      "invalid_range": "Masukkan rentang halaman berurutan antara 1 dan {totalPages}."
-    },
-    "browser_extension": {
-      "title": "Ekstensi browser",
-      "subtitle": "Waktu membaca",
-      "availability": "Tersedia di Chrome sekarang. Browser lain akan segera menyusul.",
-      "chrome_store_aria": "Buka halaman Chrome Web Store ekstensi",
-      "close_aria": "Tutup dialog ekstensi browser"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "Opsi ekstraksi PDF",
+        "message": "Pilih apakah ingin memproses seluruh PDF atau satu rentang halaman berurutan sebelum ekstraksi.",
+        "file_label": "File:",
+        "total_pages_label": "Total halaman: ",
+        "selection_legend": "Pemilihan halaman",
+        "all_pages_label": "Semua halaman",
+        "range_label": "Rentang halaman",
+        "from_page_label": "Dari halaman",
+        "to_page_label": "Sampai halaman",
+        "selected_page_count_label": "Halaman dipilih: ",
+        "keep_generated_pdf_label": "Simpan PDF halaman terpilih yang dibuat setelah pemrosesan",
+        "continue_button": "Lanjutkan",
+        "cancel_button": "Batal",
+        "close_aria": "Tutup dialog opsi ekstraksi PDF",
+        "invalid_range": "Masukkan rentang halaman berurutan antara 1 dan {totalPages}."
+      },
+      "route_choice": {
+        "title": "Pilih rute ekstraksi",
+        "message": "Kedua rute ekstraksi tersedia untuk PDF ini. Pilih salah satu untuk melanjutkan.",
+        "native_button": "Gunakan native",
+        "ocr_button": "Gunakan OCR",
+        "cancel_button": "Batal",
+        "close_aria": "Tutup dialog rute ekstraksi"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Tinjau aktivasi Google OCR",
+        "intro": "toT menggunakan layanan Google untuk OCR. Jika dilanjutkan, browser Anda akan terbuka agar Anda dapat mengotorisasi aplikasi ini.",
+        "selected_files": "Hanya file yang Anda pilih untuk OCR yang dikirim ke Google.",
+        "local_storage": "Aplikasi ini menyimpan kredensial Google OAuth untuk OCR yang dikelola aplikasi dan status token Google lokal dalam instance aplikasi ini.",
+        "remote_cleanup": "Setelah ekspor, aplikasi mencoba menghapus dokumen Google sementara dari Google Drive Anda.",
+        "disconnect": "Anda dapat memutuskan nanti melalui Preferences > Disconnect Google OCR.",
+        "proceed_button": "Lanjutkan ke Google",
+        "cancel_button": "Batal",
+        "privacy_link": "Buka kebijakan privasi",
+        "close_aria": "Tutup dialog penjelasan aktivasi OCR"
+      },
+      "apply_modal": {
+        "title": "Terapkan teks hasil ekstraksi",
+        "message": "Pilih cara menerapkan teks hasil ekstraksi.",
+        "elapsed": "Waktu eksekusi: ",
+        "repeat_label": "Pengulangan",
+        "overwrite_button": "Timpa",
+        "append_button": "Tambahkan",
+        "cancel_button": "Batal",
+        "close_aria": "Tutup dialog penerapan teks hasil ekstraksi",
+        "saved_pdf_message": "PDF yang dibuat disimpan setelah ekstraksi.",
+        "saved_pdf_label": "PDF tersimpan: ",
+        "reveal_saved_pdf_button": "Tampilkan PDF tersimpan"
+      }
     },
     "editor": {
       "title": "toT — Teks lengkap",
@@ -129,6 +157,68 @@
       "replace_timeout": "Penggantian kehabisan waktu. Coba lagi.",
       "status_no_matches": "Tidak ada kecocokan",
       "status_empty_query": "Ketik untuk mencari"
+    },
+    "snapshot_save_tags": {
+      "title": "Simpan snapshot teks",
+      "message": "Secara opsional, beri tag pada snapshot teks ini sebelum memilih lokasi penyimpanan.",
+      "labels": {
+        "language": "Bahasa",
+        "type": "Jenis",
+        "difficulty": "Kesulitan"
+      },
+      "empty": {
+        "language": "Tanpa tag bahasa",
+        "type": "Tanpa tag jenis",
+        "difficulty": "Tanpa tag kesulitan"
+      },
+      "buttons": {
+        "confirm": "Simpan Snapshot Teks",
+        "cancel": "Batal"
+      },
+      "close_aria": "Tutup dialog simpan snapshot teks",
+      "options": {
+        "language": {
+          "ar": "Arab",
+          "arn": "Mapudungun",
+          "ay": "Aymara",
+          "bn": "Bengali",
+          "ca": "Katalan",
+          "de": "Jerman",
+          "en": "Inggris",
+          "es": "Spanyol",
+          "eu": "Basque",
+          "fa": "Persia",
+          "fr": "Prancis",
+          "gn": "Guarani",
+          "hi": "Hindi",
+          "ht": "Kreol Haiti",
+          "id": "Indonesia",
+          "it": "Italia",
+          "ja": "Jepang",
+          "ko": "Korea",
+          "mi": "Maori",
+          "pcm": "Pidgin Nigeria",
+          "pt": "Portugis",
+          "qu": "Quechua",
+          "ru": "Rusia",
+          "sv": "Swedia",
+          "tr": "Turki",
+          "ur": "Urdu",
+          "vi": "Vietnam",
+          "zh_hans": "Tionghoa (Sederhana)",
+          "zh_hant": "Tionghoa (Tradisional)",
+          "zu": "Zulu"
+        },
+        "type": {
+          "fiction": "Fiksi",
+          "non_fiction": "Nonfiksi"
+        },
+        "difficulty": {
+          "easy": "Mudah",
+          "normal": "Normal",
+          "hard": "Sulit"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Tugas",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Ada perubahan yang belum disimpan. Buang perubahan?",
         "close_unsaved": "Ada perubahan yang belum disimpan. Tutup tanpa menyimpan?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Simpan snapshot teks",
-      "message": "Secara opsional, beri tag pada snapshot teks ini sebelum memilih lokasi penyimpanan.",
-      "labels": {
-        "language": "Bahasa",
-        "type": "Jenis",
-        "difficulty": "Kesulitan"
-      },
-      "empty": {
-        "language": "Tanpa tag bahasa",
-        "type": "Tanpa tag jenis",
-        "difficulty": "Tanpa tag kesulitan"
-      },
-      "buttons": {
-        "confirm": "Simpan Snapshot Teks",
-        "cancel": "Batal"
-      },
-      "close_aria": "Tutup dialog simpan snapshot teks",
-      "options": {
-        "language": {
-          "ar": "Arab",
-          "arn": "Mapudungun",
-          "ay": "Aymara",
-          "bn": "Bengali",
-          "ca": "Katalan",
-          "de": "Jerman",
-          "en": "Inggris",
-          "es": "Spanyol",
-          "eu": "Basque",
-          "fa": "Persia",
-          "fr": "Prancis",
-          "gn": "Guarani",
-          "hi": "Hindi",
-          "ht": "Kreol Haiti",
-          "id": "Indonesia",
-          "it": "Italia",
-          "ja": "Jepang",
-          "ko": "Korea",
-          "mi": "Maori",
-          "pcm": "Pidgin Nigeria",
-          "pt": "Portugis",
-          "qu": "Quechua",
-          "ru": "Rusia",
-          "sv": "Swedia",
-          "tr": "Turki",
-          "ur": "Urdu",
-          "vi": "Vietnam",
-          "zh_hans": "Tionghoa (Sederhana)",
-          "zh_hant": "Tionghoa (Tradisional)",
-          "zu": "Zulu"
-        },
-        "type": {
-          "fiction": "Fiksi",
-          "non_fiction": "Nonfiksi"
-        },
-        "difficulty": {
-          "easy": "Mudah",
-          "normal": "Normal",
-          "hard": "Sulit"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Batal",
       "save": "Simpan"
     },
+    "browser_extension": {
+      "title": "Ekstensi browser",
+      "subtitle": "Waktu membaca",
+      "availability": "Tersedia di Chrome sekarang. Browser lain akan segera menyusul.",
+      "chrome_store_aria": "Buka halaman Chrome Web Store ekstensi",
+      "close_aria": "Tutup dialog ekstensi browser"
+    },
     "alerts": {
       "clipboard_too_large": "Teks clipboard terlalu besar untuk diproses. Kurangi dan coba lagi.",
       "append_too_large": "Teks hasil terlalu besar untuk diproses. Kurangi dan coba lagi.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "PDF berisi halaman yang dipilih tidak dapat dibuat untuk ekstraksi. Periksa file dan coba lagi.",
       "text_extraction_generated_pdf_cleanup_warning": "Ekstraksi selesai, tetapi PDF lokal yang dibuat tidak dapat dibersihkan secara otomatis.",
       "text_extraction_route_choice_required": "Pilihan rute diperlukan untuk PDF ini sebelum ekstraksi dapat dilanjutkan.",
-      "text_extraction_route_choice_title": "Pilih rute ekstraksi",
-      "text_extraction_route_choice_message": "Kedua rute ekstraksi tersedia untuk PDF ini. Pilih salah satu untuk melanjutkan.",
-      "text_extraction_route_choice_native_button": "Gunakan native",
-      "text_extraction_route_choice_ocr_button": "Gunakan OCR",
-      "text_extraction_route_choice_cancel_button": "Batal",
-      "text_extraction_route_choice_close_aria": "Tutup dialog rute ekstraksi",
-      "text_extraction_apply_modal_title": "Terapkan teks hasil ekstraksi",
-      "text_extraction_apply_modal_message": "Pilih cara menerapkan teks hasil ekstraksi.",
-      "text_extraction_apply_modal_elapsed": "Waktu eksekusi: ",
-      "text_extraction_apply_modal_repeat_label": "Pengulangan",
-      "text_extraction_apply_modal_overwrite_button": "Timpa",
-      "text_extraction_apply_modal_append_button": "Tambahkan",
-      "text_extraction_apply_modal_cancel_button": "Batal",
-      "text_extraction_apply_modal_close_aria": "Tutup dialog penerapan teks hasil ekstraksi",
-      "text_extraction_apply_modal_saved_pdf_message": "PDF yang dibuat disimpan setelah ekstraksi.",
-      "text_extraction_apply_modal_saved_pdf_label": "PDF tersimpan: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Tampilkan PDF tersimpan",
       "text_extraction_generated_pdf_reveal_failed": "PDF tersimpan tidak dapat ditampilkan. Periksa apakah file masih ada.",
       "text_extraction_apply_error": "Terjadi kesalahan saat menerapkan teks hasil ekstraksi. Periksa konsol dan coba lagi.",
       "text_extraction_apply_too_large": "Teks hasil terlalu besar untuk diproses. Kurangi pengulangan dan coba lagi.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Permintaan ekstraksi yang disiapkan tidak lagi valid. Mulai ulang alur.",
       "text_extraction_ocr_unavailable": "OCR tidak tersedia. Periksa status setup/auth dan coba lagi.",
       "text_extraction_ocr_activation_required": "Aktivasi OCR diperlukan. Masuk ke Google OCR dan coba lagi.",
-      "text_extraction_ocr_activation_disclosure_title": "Tinjau aktivasi Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "toT menggunakan layanan Google untuk OCR. Jika dilanjutkan, browser Anda akan terbuka agar Anda dapat mengotorisasi aplikasi ini.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Hanya file yang Anda pilih untuk OCR yang dikirim ke Google.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Aplikasi ini menyimpan kredensial Google OAuth untuk OCR yang dikelola aplikasi dan status token Google lokal dalam instance aplikasi ini.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Setelah ekspor, aplikasi mencoba menghapus dokumen Google sementara dari Google Drive Anda.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Anda dapat memutuskan nanti melalui Preferences > Disconnect Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Lanjutkan ke Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Batal",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Buka kebijakan privasi",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Tutup dialog penjelasan aktivasi OCR",
       "text_extraction_ocr_activation_success": "Aktivasi OCR selesai. Mencoba ulang ekstraksi.",
       "text_extraction_ocr_activation_cancelled": "Aktivasi OCR dibatalkan. Ekstraksi tidak dilanjutkan.",
       "text_extraction_ocr_token_state_invalid": "Status masuk Google OCR yang tersimpan tidak valid. Sambungkan ulang Google OCR dan coba lagi.",

@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "تجزیہ شدہ متن کا پہلا اور آخری حصہ:",
       "selector_empty": "(خالی)",
+      "reading_tools": {
+        "reading_speed_test": "پڑھنے کی رفتار کا ٹیسٹ",
+        "preview_spoiler": "اسپوائلر"
+      },
       "tooltips": {
         "text_extraction": "فائل سے متن نکالیں",
         "text_extraction_abort": "نکالنے کا عمل روکیں",
@@ -59,10 +63,6 @@
         "speed": "رفتار:",
         "controls_label": "اسٹاپ واچ کنٹرولز"
       },
-      "reading_tools": {
-        "reading_speed_test": "پڑھنے کی رفتار کا ٹیسٹ",
-        "preview_spoiler": "اسپوائلر"
-      },
       "processing": {
         "text_extraction_placeholder": "متن نکالا جا رہا ہے...",
         "text_extraction_preparing": "نکالنے کا راستہ تیار کیا جا رہا ہے...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "متن نکالنے کے لیے فائل یہاں چھوڑیں"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF اخذ کرنے کے اختیارات",
-      "message": "اخذ کرنے سے پہلے منتخب کریں کہ پوری PDF پر کارروائی کرنی ہے یا صفحات کی ایک مسلسل رینج پر۔",
-      "file_label": "فائل:",
-      "total_pages_label": "کل صفحات: ",
-      "selection_legend": "صفحات کا انتخاب",
-      "all_pages_label": "تمام صفحات",
-      "range_label": "صفحہ رینج",
-      "from_page_label": "صفحہ سے",
-      "to_page_label": "صفحہ تک",
-      "selected_page_count_label": "منتخب صفحات: ",
-      "keep_generated_pdf_label": "کارروائی کے بعد منتخب صفحات کی بنائی گئی PDF محفوظ رکھیں",
-      "continue_button": "جاری رکھیں",
-      "cancel_button": "منسوخ کریں",
-      "close_aria": "PDF اخذ کرنے کے اختیارات کا ڈائیلاگ بند کریں",
-      "invalid_range": "1 اور {totalPages} کے درمیان صفحات کی ایک مسلسل رینج درج کریں۔"
-    },
-    "browser_extension": {
-      "title": "براؤزر ایکسٹینشن",
-      "subtitle": "مطالعے کا وقت",
-      "availability": "ابھی Chrome پر دستیاب ہے۔ مزید براؤزرز جلد آ رہے ہیں۔",
-      "chrome_store_aria": "ایکسٹینشن کا Chrome Web Store صفحہ کھولیں",
-      "close_aria": "براؤزر ایکسٹینشن کا ڈائیلاگ بند کریں"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF اخذ کرنے کے اختیارات",
+        "message": "اخذ کرنے سے پہلے منتخب کریں کہ پوری PDF پر کارروائی کرنی ہے یا صفحات کی ایک مسلسل رینج پر۔",
+        "file_label": "فائل:",
+        "total_pages_label": "کل صفحات: ",
+        "selection_legend": "صفحات کا انتخاب",
+        "all_pages_label": "تمام صفحات",
+        "range_label": "صفحہ رینج",
+        "from_page_label": "صفحہ سے",
+        "to_page_label": "صفحہ تک",
+        "selected_page_count_label": "منتخب صفحات: ",
+        "keep_generated_pdf_label": "کارروائی کے بعد منتخب صفحات کی بنائی گئی PDF محفوظ رکھیں",
+        "continue_button": "جاری رکھیں",
+        "cancel_button": "منسوخ کریں",
+        "close_aria": "PDF اخذ کرنے کے اختیارات کا ڈائیلاگ بند کریں",
+        "invalid_range": "1 اور {totalPages} کے درمیان صفحات کی ایک مسلسل رینج درج کریں۔"
+      },
+      "route_choice": {
+        "title": "نکالنے کا راستہ منتخب کریں",
+        "message": "اس PDF کے لیے دونوں نکالنے کے راستے دستیاب ہیں۔ جاری رکھنے کے لیے ایک منتخب کریں۔",
+        "native_button": "Native استعمال کریں",
+        "ocr_button": "OCR استعمال کریں",
+        "cancel_button": "منسوخ",
+        "close_aria": "نکالنے کے راستے کا ڈائیلاگ بند کریں"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR فعال کرنے کا جائزہ لیں",
+        "intro": "toT OCR کے لیے Google سروسز استعمال کرتا ہے۔ جاری رکھنے سے آپ کا براؤزر کھلے گا تاکہ آپ اس ایپ کو اجازت دے سکیں۔",
+        "selected_files": "صرف وہ فائلیں Google کو بھیجی جاتی ہیں جنہیں آپ OCR کے لیے منتخب کرتے ہیں۔",
+        "local_storage": "یہ ایپ OCR کے لیے ایپ کے زیرِ انتظام Google OAuth اسناد اور اس ایپ انسٹینس میں مقامی Google ٹوکن حالت محفوظ کرتی ہے۔",
+        "remote_cleanup": "ایکسپورٹ کے بعد، ایپ آپ کے Google Drive سے عارضی Google دستاویز ہٹانے کی کوشش کرتی ہے۔",
+        "disconnect": "بعد میں Preferences > Disconnect Google OCR سے منقطع کر سکتے ہیں۔",
+        "proceed_button": "Google پر جاری رکھیں",
+        "cancel_button": "منسوخ",
+        "privacy_link": "رازداری پالیسی کھولیں",
+        "close_aria": "OCR فعال کرنے کا ڈائیلاگ بند کریں"
+      },
+      "apply_modal": {
+        "title": "نکالا گیا متن لاگو کریں",
+        "message": "نکالا گیا متن کیسے لاگو کرنا ہے، منتخب کریں۔",
+        "elapsed": "عملی وقت: ",
+        "repeat_label": "تکراریں",
+        "overwrite_button": "اوور رائٹ",
+        "append_button": "شامل کریں",
+        "cancel_button": "منسوخ",
+        "close_aria": "نکالا گیا متن لاگو کرنے کا ڈائیلاگ بند کریں",
+        "saved_pdf_message": "بنائی گئی PDF اخذ کرنے کے بعد محفوظ رکھی گئی۔",
+        "saved_pdf_label": "محفوظ شدہ PDF: ",
+        "reveal_saved_pdf_button": "محفوظ شدہ PDF دکھائیں"
+      }
     },
     "editor": {
       "title": "toT — مکمل متن",
@@ -129,6 +157,68 @@
       "replace_timeout": "تبدیلی کا وقت ختم ہو گیا۔ دوبارہ کوشش کریں۔",
       "status_no_matches": "کوئی مماثلت نہیں",
       "status_empty_query": "تلاش کے لیے لکھیں"
+    },
+    "snapshot_save_tags": {
+      "title": "متن کا اسنیپ شاٹ محفوظ کریں",
+      "message": "محفوظ کرنے کی جگہ منتخب کرنے سے پہلے چاہیں تو اس متن کے اسنیپ شاٹ کو ٹیگ کریں۔",
+      "labels": {
+        "language": "زبان",
+        "type": "قسم",
+        "difficulty": "مشکل"
+      },
+      "empty": {
+        "language": "زبان کا کوئی ٹیگ نہیں",
+        "type": "قسم کا کوئی ٹیگ نہیں",
+        "difficulty": "مشکل کا کوئی ٹیگ نہیں"
+      },
+      "buttons": {
+        "confirm": "متن کا اسنیپ شاٹ محفوظ کریں",
+        "cancel": "منسوخ"
+      },
+      "close_aria": "متن کا اسنیپ شاٹ محفوظ کرنے کا ڈائیلاگ بند کریں",
+      "options": {
+        "language": {
+          "ar": "عربی",
+          "arn": "ماپودونگون",
+          "ay": "ایمارا",
+          "bn": "بنگالی",
+          "ca": "کیٹالان",
+          "de": "جرمن",
+          "en": "انگریزی",
+          "es": "ہسپانوی",
+          "eu": "باسکی",
+          "fa": "فارسی",
+          "fr": "فرانسیسی",
+          "gn": "گُارانی",
+          "hi": "ہندی",
+          "ht": "ہیتی",
+          "id": "انڈونیشیائی",
+          "it": "اطالوی",
+          "ja": "جاپانی",
+          "ko": "کوریائی",
+          "mi": "ماؤری",
+          "pcm": "نائجیریائی پڈگن",
+          "pt": "پرتگالی",
+          "qu": "کویچوآ",
+          "ru": "روسی",
+          "sv": "سویڈش",
+          "tr": "ترکی",
+          "ur": "اردو",
+          "vi": "ویتنامی",
+          "zh_hans": "چینی (آسان)",
+          "zh_hant": "چینی (روایتی)",
+          "zu": "زولو"
+        },
+        "type": {
+          "fiction": "افسانوی ادب",
+          "non_fiction": "غیر افسانوی"
+        },
+        "difficulty": {
+          "easy": "آسان",
+          "normal": "معمولی",
+          "hard": "مشکل"
+        }
+      }
     },
     "tasks": {
       "title": "toT — ٹاسکس",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "غیر محفوظ شدہ تبدیلیاں موجود ہیں۔ کیا انہیں رد کرنا ہے؟",
         "close_unsaved": "غیر محفوظ شدہ تبدیلیاں موجود ہیں۔ محفوظ کیے بغیر بند کریں؟"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "متن کا اسنیپ شاٹ محفوظ کریں",
-      "message": "محفوظ کرنے کی جگہ منتخب کرنے سے پہلے چاہیں تو اس متن کے اسنیپ شاٹ کو ٹیگ کریں۔",
-      "labels": {
-        "language": "زبان",
-        "type": "قسم",
-        "difficulty": "مشکل"
-      },
-      "empty": {
-        "language": "زبان کا کوئی ٹیگ نہیں",
-        "type": "قسم کا کوئی ٹیگ نہیں",
-        "difficulty": "مشکل کا کوئی ٹیگ نہیں"
-      },
-      "buttons": {
-        "confirm": "متن کا اسنیپ شاٹ محفوظ کریں",
-        "cancel": "منسوخ"
-      },
-      "close_aria": "متن کا اسنیپ شاٹ محفوظ کرنے کا ڈائیلاگ بند کریں",
-      "options": {
-        "language": {
-          "ar": "عربی",
-          "arn": "ماپودونگون",
-          "ay": "ایمارا",
-          "bn": "بنگالی",
-          "ca": "کیٹالان",
-          "de": "جرمن",
-          "en": "انگریزی",
-          "es": "ہسپانوی",
-          "eu": "باسکی",
-          "fa": "فارسی",
-          "fr": "فرانسیسی",
-          "gn": "گُارانی",
-          "hi": "ہندی",
-          "ht": "ہیتی",
-          "id": "انڈونیشیائی",
-          "it": "اطالوی",
-          "ja": "جاپانی",
-          "ko": "کوریائی",
-          "mi": "ماؤری",
-          "pcm": "نائجیریائی پڈگن",
-          "pt": "پرتگالی",
-          "qu": "کویچوآ",
-          "ru": "روسی",
-          "sv": "سویڈش",
-          "tr": "ترکی",
-          "ur": "اردو",
-          "vi": "ویتنامی",
-          "zh_hans": "چینی (آسان)",
-          "zh_hant": "چینی (روایتی)",
-          "zu": "زولو"
-        },
-        "type": {
-          "fiction": "افسانوی ادب",
-          "non_fiction": "غیر افسانوی"
-        },
-        "difficulty": {
-          "easy": "آسان",
-          "normal": "معمولی",
-          "hard": "مشکل"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "منسوخ",
       "save": "محفوظ کریں"
     },
+    "browser_extension": {
+      "title": "براؤزر ایکسٹینشن",
+      "subtitle": "مطالعے کا وقت",
+      "availability": "ابھی Chrome پر دستیاب ہے۔ مزید براؤزرز جلد آ رہے ہیں۔",
+      "chrome_store_aria": "ایکسٹینشن کا Chrome Web Store صفحہ کھولیں",
+      "close_aria": "براؤزر ایکسٹینشن کا ڈائیلاگ بند کریں"
+    },
     "alerts": {
       "clipboard_too_large": "کلپ بورڈ کا متن کارروائی کے لیے بہت بڑا ہے۔ اسے کم کریں اور دوبارہ کوشش کریں۔",
       "append_too_large": "نتیجے کا متن کارروائی کے لیے بہت بڑا ہے۔ اسے کم کریں اور دوبارہ کوشش کریں۔",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "اخذ کرنے کے لیے منتخب صفحات کی PDF نہیں بنائی جا سکی۔ فائل چیک کریں اور دوبارہ کوشش کریں۔",
       "text_extraction_generated_pdf_cleanup_warning": "اخذ مکمل ہو گیا، لیکن بنائی گئی مقامی PDF خودکار طور پر صاف نہیں کی جا سکی۔",
       "text_extraction_route_choice_required": "اس PDF کے لیے نکالنے کا عمل جاری رکھنے سے پہلے راستے کا انتخاب ضروری ہے۔",
-      "text_extraction_route_choice_title": "نکالنے کا راستہ منتخب کریں",
-      "text_extraction_route_choice_message": "اس PDF کے لیے دونوں نکالنے کے راستے دستیاب ہیں۔ جاری رکھنے کے لیے ایک منتخب کریں۔",
-      "text_extraction_route_choice_native_button": "Native استعمال کریں",
-      "text_extraction_route_choice_ocr_button": "OCR استعمال کریں",
-      "text_extraction_route_choice_cancel_button": "منسوخ",
-      "text_extraction_route_choice_close_aria": "نکالنے کے راستے کا ڈائیلاگ بند کریں",
-      "text_extraction_apply_modal_title": "نکالا گیا متن لاگو کریں",
-      "text_extraction_apply_modal_message": "نکالا گیا متن کیسے لاگو کرنا ہے، منتخب کریں۔",
-      "text_extraction_apply_modal_elapsed": "عملی وقت: ",
-      "text_extraction_apply_modal_repeat_label": "تکراریں",
-      "text_extraction_apply_modal_overwrite_button": "اوور رائٹ",
-      "text_extraction_apply_modal_append_button": "شامل کریں",
-      "text_extraction_apply_modal_cancel_button": "منسوخ",
-      "text_extraction_apply_modal_close_aria": "نکالا گیا متن لاگو کرنے کا ڈائیلاگ بند کریں",
-      "text_extraction_apply_modal_saved_pdf_message": "بنائی گئی PDF اخذ کرنے کے بعد محفوظ رکھی گئی۔",
-      "text_extraction_apply_modal_saved_pdf_label": "محفوظ شدہ PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "محفوظ شدہ PDF دکھائیں",
       "text_extraction_generated_pdf_reveal_failed": "محفوظ شدہ PDF دکھائی نہیں جا سکی۔ چیک کریں کہ فائل اب بھی موجود ہے یا نہیں۔",
       "text_extraction_apply_error": "نکالا گیا متن لاگو کرتے وقت خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
       "text_extraction_apply_too_large": "نتیجے کا متن کارروائی کے لیے بہت بڑا ہے۔ تکراریں کم کریں اور دوبارہ کوشش کریں۔",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "تیار شدہ نکالنے کی درخواست اب درست نہیں۔ فلو دوبارہ شروع کریں۔",
       "text_extraction_ocr_unavailable": "OCR دستیاب نہیں۔ setup/auth حالت چیک کریں اور دوبارہ کوشش کریں۔",
       "text_extraction_ocr_activation_required": "OCR فعال کرنا ضروری ہے۔ Google OCR میں سائن اِن کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR فعال کرنے کا جائزہ لیں",
-      "text_extraction_ocr_activation_disclosure_intro": "toT OCR کے لیے Google سروسز استعمال کرتا ہے۔ جاری رکھنے سے آپ کا براؤزر کھلے گا تاکہ آپ اس ایپ کو اجازت دے سکیں۔",
-      "text_extraction_ocr_activation_disclosure_selected_files": "صرف وہ فائلیں Google کو بھیجی جاتی ہیں جنہیں آپ OCR کے لیے منتخب کرتے ہیں۔",
-      "text_extraction_ocr_activation_disclosure_local_storage": "یہ ایپ OCR کے لیے ایپ کے زیرِ انتظام Google OAuth اسناد اور اس ایپ انسٹینس میں مقامی Google ٹوکن حالت محفوظ کرتی ہے۔",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "ایکسپورٹ کے بعد، ایپ آپ کے Google Drive سے عارضی Google دستاویز ہٹانے کی کوشش کرتی ہے۔",
-      "text_extraction_ocr_activation_disclosure_disconnect": "بعد میں Preferences > Disconnect Google OCR سے منقطع کر سکتے ہیں۔",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Google پر جاری رکھیں",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "منسوخ",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "رازداری پالیسی کھولیں",
-      "text_extraction_ocr_activation_disclosure_close_aria": "OCR فعال کرنے کا ڈائیلاگ بند کریں",
       "text_extraction_ocr_activation_success": "OCR فعال ہو گیا۔ نکالنے کا عمل دوبارہ آزمایا جا رہا ہے۔",
       "text_extraction_ocr_activation_cancelled": "OCR فعال کرنے کا عمل منسوخ ہو گیا۔ نکالنے کا عمل جاری نہیں رہا۔",
       "text_extraction_ocr_token_state_invalid": "محفوظ شدہ Google OCR سائن اِن حالت درست نہیں۔ Google OCR دوبارہ منسلک کریں اور کوشش کریں۔",

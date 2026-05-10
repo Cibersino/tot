@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Premye ak dènye pati tèks ki analize a:",
       "selector_empty": "(vid)",
+      "reading_tools": {
+        "reading_speed_test": "Tès vitès lekti",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Ekstrè tèks nan fichye",
         "text_extraction_abort": "Anile ekstraksyon",
@@ -59,10 +63,6 @@
         "speed": "Vitès:",
         "controls_label": "Kontwòl kwonomèt"
       },
-      "reading_tools": {
-        "reading_speed_test": "Tès vitès lekti",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Ap ekstrè tèks...",
         "text_extraction_preparing": "Ap prepare chemen ekstrè a...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Lage fichye a pou ekstrè tèks"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "Opsyon ekstraksyon PDF",
-      "message": "Chwazi si ou vle trete tout PDF la oswa yon sèl ranje paj youn apre lòt anvan ekstraksyon an.",
-      "file_label": "Fichye:",
-      "total_pages_label": "Total paj: ",
-      "selection_legend": "Seleksyon paj",
-      "all_pages_label": "Tout paj",
-      "range_label": "Ranje paj",
-      "from_page_label": "Depi paj",
-      "to_page_label": "Jiska paj",
-      "selected_page_count_label": "Paj chwazi: ",
-      "keep_generated_pdf_label": "Kenbe PDF paj chwazi yo apre tretman an",
-      "continue_button": "Kontinye",
-      "cancel_button": "Anile",
-      "close_aria": "Fèmen dyalòg opsyon ekstraksyon PDF la",
-      "invalid_range": "Antre yon ranje paj youn apre lòt ant 1 ak {totalPages}."
-    },
-    "browser_extension": {
-      "title": "Ekstansyon navigatè",
-      "subtitle": "Tan lekti",
-      "availability": "Disponib kounye a sou Chrome. Lòt navigatè ap vini byento.",
-      "chrome_store_aria": "Louvri paj Chrome Web Store ekstansyon an",
-      "close_aria": "Fèmen dyalòg ekstansyon navigatè a"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "Opsyon ekstraksyon PDF",
+        "message": "Chwazi si ou vle trete tout PDF la oswa yon sèl ranje paj youn apre lòt anvan ekstraksyon an.",
+        "file_label": "Fichye:",
+        "total_pages_label": "Total paj: ",
+        "selection_legend": "Seleksyon paj",
+        "all_pages_label": "Tout paj",
+        "range_label": "Ranje paj",
+        "from_page_label": "Depi paj",
+        "to_page_label": "Jiska paj",
+        "selected_page_count_label": "Paj chwazi: ",
+        "keep_generated_pdf_label": "Kenbe PDF paj chwazi yo apre tretman an",
+        "continue_button": "Kontinye",
+        "cancel_button": "Anile",
+        "close_aria": "Fèmen dyalòg opsyon ekstraksyon PDF la",
+        "invalid_range": "Antre yon ranje paj youn apre lòt ant 1 ak {totalPages}."
+      },
+      "route_choice": {
+        "title": "Chwazi chemen ekstraksyon",
+        "message": "Tou de chemen ekstraksyon disponib pou PDF sa a. Chwazi youn pou kontinye.",
+        "native_button": "Sèvi ak natif",
+        "ocr_button": "Sèvi ak OCR",
+        "cancel_button": "Anile",
+        "close_aria": "Fèmen dyalòg chemen ekstraksyon an"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Revize aktivasyon Google OCR",
+        "intro": "toT sèvi ak sèvis Google pou OCR. Si ou kontinye, navigatè ou ap louvri pou ou otorize app sa a.",
+        "selected_files": "Se sèlman fichye ou chwazi pou OCR yo ki voye bay Google.",
+        "local_storage": "App sa a sove kalifikasyon Google OAuth app la jere pou OCR ak eta token Google lokal nan enstans app sa a.",
+        "remote_cleanup": "Apre ekspòtasyon, app la eseye retire dokiman tanporè Google la nan Google Drive ou.",
+        "disconnect": "Ou ka dekonekte pita nan Preferans > Dekonekte Google OCR.",
+        "proceed_button": "Kontinye ak Google",
+        "cancel_button": "Anile",
+        "privacy_link": "Louvri politik vi prive",
+        "close_aria": "Fèmen dyalòg aktivasyon OCR la"
+      },
+      "apply_modal": {
+        "title": "Aplike tèks ekstrè a",
+        "message": "Chwazi kijan pou aplike tèks ekstrè a.",
+        "elapsed": "Tan egzekisyon: ",
+        "repeat_label": "Repetisyon",
+        "overwrite_button": "Ranplase",
+        "append_button": "Ajoute",
+        "cancel_button": "Anile",
+        "close_aria": "Fèmen dyalòg pou aplike tèks ekstrè a",
+        "saved_pdf_message": "PDF ki te kreye a te konsève apre ekstraksyon an.",
+        "saved_pdf_label": "PDF ki sove: ",
+        "reveal_saved_pdf_button": "Montre PDF ki sove a"
+      }
     },
     "editor": {
       "title": "toT — Tèks konplè",
@@ -129,6 +157,68 @@
       "replace_timeout": "Ranplasman an pran twòp tan. Eseye ankò.",
       "status_no_matches": "Pa gen korespondans",
       "status_empty_query": "Ekri pou chèche"
+    },
+    "snapshot_save_tags": {
+      "title": "Sove snapshot tèks",
+      "message": "Ou ka mete etikèt sou snapshot tèks sa a anvan ou chwazi kote pou sove li.",
+      "labels": {
+        "language": "Lang",
+        "type": "Tip",
+        "difficulty": "Difikilte"
+      },
+      "empty": {
+        "language": "Pa gen etikèt lang",
+        "type": "Pa gen etikèt tip",
+        "difficulty": "Pa gen etikèt difikilte"
+      },
+      "buttons": {
+        "confirm": "Sove snapshot tèks",
+        "cancel": "Anile"
+      },
+      "close_aria": "Fèmen dyalòg pou sove snapshot tèks",
+      "options": {
+        "language": {
+          "ar": "Arab",
+          "arn": "Mapudungun",
+          "ay": "Aimara",
+          "bn": "Bengali",
+          "ca": "Katalan",
+          "de": "Alman",
+          "en": "Angle",
+          "es": "Panyòl",
+          "eu": "Bask",
+          "fa": "Pès",
+          "fr": "Franse",
+          "gn": "Gwarani",
+          "hi": "Hindi",
+          "ht": "Kreyòl ayisyen",
+          "id": "Endonezyen",
+          "it": "Italyen",
+          "ja": "Japonè",
+          "ko": "Koreyen",
+          "mi": "Maori",
+          "pcm": "Pidgin Nijeryan",
+          "pt": "Pòtigè",
+          "qu": "Kechwa",
+          "ru": "Ris",
+          "sv": "Swedwa",
+          "tr": "Tik",
+          "ur": "Oudou",
+          "vi": "Vyetnamyen",
+          "zh_hans": "Chinwa senplifye",
+          "zh_hant": "Chinwa tradisyonèl",
+          "zu": "Zulu"
+        },
+        "type": {
+          "fiction": "Fiksyon",
+          "non_fiction": "Non-fiksyon"
+        },
+        "difficulty": {
+          "easy": "Fasil",
+          "normal": "Nòmal",
+          "hard": "Difisil"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Travay",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Gen chanjman ki pa sove. Jete yo?",
         "close_unsaved": "Gen chanjman ki pa sove. Fèmen san sove?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Sove snapshot tèks",
-      "message": "Ou ka mete etikèt sou snapshot tèks sa a anvan ou chwazi kote pou sove li.",
-      "labels": {
-        "language": "Lang",
-        "type": "Tip",
-        "difficulty": "Difikilte"
-      },
-      "empty": {
-        "language": "Pa gen etikèt lang",
-        "type": "Pa gen etikèt tip",
-        "difficulty": "Pa gen etikèt difikilte"
-      },
-      "buttons": {
-        "confirm": "Sove snapshot tèks",
-        "cancel": "Anile"
-      },
-      "close_aria": "Fèmen dyalòg pou sove snapshot tèks",
-      "options": {
-        "language": {
-          "ar": "Arab",
-          "arn": "Mapudungun",
-          "ay": "Aimara",
-          "bn": "Bengali",
-          "ca": "Katalan",
-          "de": "Alman",
-          "en": "Angle",
-          "es": "Panyòl",
-          "eu": "Bask",
-          "fa": "Pès",
-          "fr": "Franse",
-          "gn": "Gwarani",
-          "hi": "Hindi",
-          "ht": "Kreyòl ayisyen",
-          "id": "Endonezyen",
-          "it": "Italyen",
-          "ja": "Japonè",
-          "ko": "Koreyen",
-          "mi": "Maori",
-          "pcm": "Pidgin Nijeryan",
-          "pt": "Pòtigè",
-          "qu": "Kechwa",
-          "ru": "Ris",
-          "sv": "Swedwa",
-          "tr": "Tik",
-          "ur": "Oudou",
-          "vi": "Vyetnamyen",
-          "zh_hans": "Chinwa senplifye",
-          "zh_hant": "Chinwa tradisyonèl",
-          "zu": "Zulu"
-        },
-        "type": {
-          "fiction": "Fiksyon",
-          "non_fiction": "Non-fiksyon"
-        },
-        "difficulty": {
-          "easy": "Fasil",
-          "normal": "Nòmal",
-          "hard": "Difisil"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Anile",
       "save": "Sove"
     },
+    "browser_extension": {
+      "title": "Ekstansyon navigatè",
+      "subtitle": "Tan lekti",
+      "availability": "Disponib kounye a sou Chrome. Lòt navigatè ap vini byento.",
+      "chrome_store_aria": "Louvri paj Chrome Web Store ekstansyon an",
+      "close_aria": "Fèmen dyalòg ekstansyon navigatè a"
+    },
     "alerts": {
       "clipboard_too_large": "Tèks clipboard la twò gwo pou trete. Redui li epi eseye ankò.",
       "append_too_large": "Tèks rezilta a twò gwo pou trete. Redui li epi eseye ankò.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Li pa t posib kreye PDF paj ou chwazi yo pou ekstraksyon an. Tcheke fichye a epi eseye ankò.",
       "text_extraction_generated_pdf_cleanup_warning": "Ekstraksyon an fini, men li pa t posib netwaye otomatikman yon PDF lokal ki te kreye.",
       "text_extraction_route_choice_required": "Ou dwe chwazi chemen pou PDF sa a anvan ekstraksyon ka kontinye.",
-      "text_extraction_route_choice_title": "Chwazi chemen ekstraksyon",
-      "text_extraction_route_choice_message": "Tou de chemen ekstraksyon disponib pou PDF sa a. Chwazi youn pou kontinye.",
-      "text_extraction_route_choice_native_button": "Sèvi ak natif",
-      "text_extraction_route_choice_ocr_button": "Sèvi ak OCR",
-      "text_extraction_route_choice_cancel_button": "Anile",
-      "text_extraction_route_choice_close_aria": "Fèmen dyalòg chemen ekstraksyon an",
-      "text_extraction_apply_modal_title": "Aplike tèks ekstrè a",
-      "text_extraction_apply_modal_message": "Chwazi kijan pou aplike tèks ekstrè a.",
-      "text_extraction_apply_modal_elapsed": "Tan egzekisyon: ",
-      "text_extraction_apply_modal_repeat_label": "Repetisyon",
-      "text_extraction_apply_modal_overwrite_button": "Ranplase",
-      "text_extraction_apply_modal_append_button": "Ajoute",
-      "text_extraction_apply_modal_cancel_button": "Anile",
-      "text_extraction_apply_modal_close_aria": "Fèmen dyalòg pou aplike tèks ekstrè a",
-      "text_extraction_apply_modal_saved_pdf_message": "PDF ki te kreye a te konsève apre ekstraksyon an.",
-      "text_extraction_apply_modal_saved_pdf_label": "PDF ki sove: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Montre PDF ki sove a",
       "text_extraction_generated_pdf_reveal_failed": "Li pa t posib montre PDF ki sove a. Tcheke si fichye a toujou egziste.",
       "text_extraction_apply_error": "Gen yon erè ki fèt pandan aplike tèks ekstrè a. Tcheke konsole a epi eseye ankò.",
       "text_extraction_apply_too_large": "Tèks rezilta a twò gwo pou trete. Redui repetisyon yo epi eseye ankò.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Demann ekstrè ki te prepare a pa valab ankò. Kòmanse flux la ankò.",
       "text_extraction_ocr_unavailable": "OCR pa disponib. Tcheke konfigirasyon/otantifikasyon epi eseye ankò.",
       "text_extraction_ocr_activation_required": "Aktivasyon OCR obligatwa. Konekte ak Google OCR epi eseye ankò.",
-      "text_extraction_ocr_activation_disclosure_title": "Revize aktivasyon Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "toT sèvi ak sèvis Google pou OCR. Si ou kontinye, navigatè ou ap louvri pou ou otorize app sa a.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Se sèlman fichye ou chwazi pou OCR yo ki voye bay Google.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "App sa a sove kalifikasyon Google OAuth app la jere pou OCR ak eta token Google lokal nan enstans app sa a.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Apre ekspòtasyon, app la eseye retire dokiman tanporè Google la nan Google Drive ou.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Ou ka dekonekte pita nan Preferans > Dekonekte Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Kontinye ak Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Anile",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Louvri politik vi prive",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Fèmen dyalòg aktivasyon OCR la",
       "text_extraction_ocr_activation_success": "Aktivasyon OCR fini. Ap eseye ekstraksyon ankò.",
       "text_extraction_ocr_activation_cancelled": "Aktivasyon OCR te anile. Ekstrè pa t kontinye.",
       "text_extraction_ocr_token_state_invalid": "Eta koneksyon Google OCR ki sove a pa valab. Rekonekte Google OCR epi eseye ankò.",

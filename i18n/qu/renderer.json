@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Qhawasqa qillqapa ñawpaq kaqnin hinallataq qhipa kaqnin:",
       "selector_empty": "(ch'usaq)",
+      "reading_tools": {
+        "reading_speed_test": "Ñawinchay utqayninpa testnin",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Archivomanta qillqata qichuy",
         "text_extraction_abort": "Qichuyta sayachiy",
@@ -59,10 +63,6 @@
         "speed": "Utqaynin:",
         "controls_label": "Pachayupaq kamachiqkuna"
       },
-      "reading_tools": {
-        "reading_speed_test": "Ñawinchay utqayninpa testnin",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Qichuyta ruwachkan...",
         "text_extraction_preparing": "Qichuy ñanta wakichichkan...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Archivota kayman saqiy qillqata apamunapaq utaq qichunapaq"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF extracción akllanakuna",
-      "message": "Akllay llapan PDF-ta procesanaykipaq icha huk qatiqlla pʼanqa rango-ta extracción ñawpaqta.",
-      "file_label": "Archivo:",
-      "total_pages_label": "Llapan pʼanqakuna: ",
-      "selection_legend": "Pʼanqa akllay",
-      "all_pages_label": "Llapan pʼanqakuna",
-      "range_label": "Pʼanqa rango",
-      "from_page_label": "Pʼanqamanta",
-      "to_page_label": "Pʼanqakama",
-      "selected_page_count_label": "Ajllasqa pʼanqakuna: ",
-      "keep_generated_pdf_label": "Procesamiento qhipaman ajllasqa pʼanqakunamanta ruwasqa PDF-ta waqaychay",
-      "continue_button": "Qatiy",
-      "cancel_button": "Saqiy",
-      "close_aria": "PDF extracción akllanakuna rimanakuyta wichqʼay",
-      "invalid_range": "1wan {totalPages}wan chawpinpi huk qatiqlla pʼanqa rango-ta qillqay."
-    },
-    "browser_extension": {
-      "title": "Navegadorpa extensiónnin",
-      "subtitle": "Ñawinchay pacha",
-      "availability": "Kunanqa Chrome-pi kachkanña. Aswan achka navegadorkunamanqa utqayllam chayanqa.",
-      "chrome_store_aria": "Extensiónpa Chrome Web Store p'ankanta kichay",
-      "close_aria": "Navegadorpa extensiónnin dialogota wichq'ay"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF extracción akllanakuna",
+        "message": "Akllay llapan PDF-ta procesanaykipaq icha huk qatiqlla pʼanqa rango-ta extracción ñawpaqta.",
+        "file_label": "Archivo:",
+        "total_pages_label": "Llapan pʼanqakuna: ",
+        "selection_legend": "Pʼanqa akllay",
+        "all_pages_label": "Llapan pʼanqakuna",
+        "range_label": "Pʼanqa rango",
+        "from_page_label": "Pʼanqamanta",
+        "to_page_label": "Pʼanqakama",
+        "selected_page_count_label": "Ajllasqa pʼanqakuna: ",
+        "keep_generated_pdf_label": "Procesamiento qhipaman ajllasqa pʼanqakunamanta ruwasqa PDF-ta waqaychay",
+        "continue_button": "Qatiy",
+        "cancel_button": "Saqiy",
+        "close_aria": "PDF extracción akllanakuna rimanakuyta wichqʼay",
+        "invalid_range": "1wan {totalPages}wan chawpinpi huk qatiqlla pʼanqa rango-ta qillqay."
+      },
+      "route_choice": {
+        "title": "Qichuy ñanta akllay",
+        "message": "Kay PDFqa iskaynin qichuy ñankunata charin. Hinalla rinapaq hukta akllay.",
+        "native_button": "Nativa llamk'achiy",
+        "ocr_button": "OCR llamk'achiy",
+        "cancel_button": "Saqiy",
+        "close_aria": "Qichuy ñan dialogota wichq'ay"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR activayta qhaway",
+        "intro": "toTqa OCRpaq Googlepa serviciokunata llamk'achin. Hinalla rinki chayqa, kay appta autorizanaykipaq navegador kichakunqa.",
+        "selected_files": "Googlemanqa OCRpaq qan akllasqayki archivokunalla apachikun.",
+        "local_storage": "Kay appqa apppa kamachisqan Google OAuth credencialkunata OCRpaq, hinallataq kay instanciapi Google token local estadonta waqaychan.",
+        "remote_cleanup": "Exportar tukuspa, appqa Google Drive nisqaykimanta temporal Google documentota pichayta munan.",
+        "disconnect": "Qhipaman kay t'inkiyta Preferencias > Desconectar Google OCR nisqamanta t'aqayta atinki.",
+        "proceed_button": "Googlewan hinalla riy",
+        "cancel_button": "Saqiy",
+        "privacy_link": "Privacidad política kichay",
+        "close_aria": "Google OCR activay dialogota wichq'ay"
+      },
+      "apply_modal": {
+        "title": "Qichusqa qillqata churay",
+        "message": "Qichusqa qillqata imaynata churanaykita akllay.",
+        "elapsed": "Ruwasqa pacha: ",
+        "repeat_label": "Kutiykuna",
+        "overwrite_button": "Qillqay/tikray",
+        "append_button": "Yapay",
+        "cancel_button": "Saqiy",
+        "close_aria": "Qichusqa qillqata churana dialogota wichq'ay",
+        "saved_pdf_message": "Ruwasqa PDF extracción qhipaman waqaychasqa karqan.",
+        "saved_pdf_label": "Waqaychasqa PDF: ",
+        "reveal_saved_pdf_button": "Waqaychasqa PDF-ta rikuchiy"
+      }
     },
     "editor": {
       "title": "toT — Hunt'a qillqa",
@@ -129,6 +157,68 @@
       "replace_timeout": "Tikrayqa ancha unayta hap'irqan. Wakmanta ruwapay.",
       "status_no_matches": "Mana tinkuyniyuq",
       "status_empty_query": "Maskanapaq qillqay"
+    },
+    "snapshot_save_tags": {
+      "title": "Qillqa snapshotta waqaychay",
+      "message": "Maypi waqaychanaykita akllanaykipaq ñawpaqta kay qillqa snapshotta munaspa etiquetay.",
+      "labels": {
+        "language": "Rimay",
+        "type": "Laya",
+        "difficulty": "Sasaynin"
+      },
+      "empty": {
+        "language": "Mana rimay etiqueta",
+        "type": "Mana laya etiqueta",
+        "difficulty": "Mana sasa etiqueta"
+      },
+      "buttons": {
+        "confirm": "Qillqa snapshotta waqaychay",
+        "cancel": "Saqiy"
+      },
+      "close_aria": "Qillqa snapshot waqaychay dialogota wichq'ay",
+      "options": {
+        "language": {
+          "ar": "Árabe",
+          "arn": "Mapudungun",
+          "ay": "Aymara Simi",
+          "bn": "Bengalí",
+          "ca": "Catalan Simi",
+          "de": "Alemán",
+          "en": "Inglés",
+          "es": "Español",
+          "eu": "Euskera Simi",
+          "fa": "Persa Simi",
+          "fr": "Francés",
+          "gn": "Guaraní Simi",
+          "hi": "Hindi",
+          "ht": "Haitiano Criollo Simi",
+          "id": "Indonesio",
+          "it": "Italiano",
+          "ja": "Japonés",
+          "ko": "Coreano",
+          "mi": "Maori Simi",
+          "pcm": "Pidgin Nigeriano Simi",
+          "pt": "Portugués",
+          "qu": "Runasimi",
+          "ru": "Ruso",
+          "sv": "Sueco Simi",
+          "tr": "Turco",
+          "ur": "Urdu",
+          "vi": "Vietnamita Simi",
+          "zh_hans": "Chino simplificado",
+          "zh_hant": "Chino tradicional",
+          "zu": "Isizulu Simi"
+        },
+        "type": {
+          "fiction": "Willakuy",
+          "non_fiction": "Mana willakuychu"
+        },
+        "difficulty": {
+          "easy": "Mana sasa",
+          "normal": "Normal",
+          "hard": "Sasa"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Llamk'anakuna",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Mana waqaychasqa tikraykuna kan. Saqiyta munankichu?",
         "close_unsaved": "Mana waqaychasqa tikraykuna kan. Waqaychay mana ruwaspa wichq'aychu?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Qillqa snapshotta waqaychay",
-      "message": "Maypi waqaychanaykita akllanaykipaq ñawpaqta kay qillqa snapshotta munaspa etiquetay.",
-      "labels": {
-        "language": "Rimay",
-        "type": "Laya",
-        "difficulty": "Sasaynin"
-      },
-      "empty": {
-        "language": "Mana rimay etiqueta",
-        "type": "Mana laya etiqueta",
-        "difficulty": "Mana sasa etiqueta"
-      },
-      "buttons": {
-        "confirm": "Qillqa snapshotta waqaychay",
-        "cancel": "Saqiy"
-      },
-      "close_aria": "Qillqa snapshot waqaychay dialogota wichq'ay",
-      "options": {
-        "language": {
-          "ar": "Árabe",
-          "arn": "Mapudungun",
-          "ay": "Aymara Simi",
-          "bn": "Bengalí",
-          "ca": "Catalan Simi",
-          "de": "Alemán",
-          "en": "Inglés",
-          "es": "Español",
-          "eu": "Euskera Simi",
-          "fa": "Persa Simi",
-          "fr": "Francés",
-          "gn": "Guaraní Simi",
-          "hi": "Hindi",
-          "ht": "Haitiano Criollo Simi",
-          "id": "Indonesio",
-          "it": "Italiano",
-          "ja": "Japonés",
-          "ko": "Coreano",
-          "mi": "Maori Simi",
-          "pcm": "Pidgin Nigeriano Simi",
-          "pt": "Portugués",
-          "qu": "Runasimi",
-          "ru": "Ruso",
-          "sv": "Sueco Simi",
-          "tr": "Turco",
-          "ur": "Urdu",
-          "vi": "Vietnamita Simi",
-          "zh_hans": "Chino simplificado",
-          "zh_hant": "Chino tradicional",
-          "zu": "Isizulu Simi"
-        },
-        "type": {
-          "fiction": "Willakuy",
-          "non_fiction": "Mana willakuychu"
-        },
-        "difficulty": {
-          "easy": "Mana sasa",
-          "normal": "Normal",
-          "hard": "Sasa"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Saqiy",
       "save": "Waqaychay"
     },
+    "browser_extension": {
+      "title": "Navegadorpa extensiónnin",
+      "subtitle": "Ñawinchay pacha",
+      "availability": "Kunanqa Chrome-pi kachkanña. Aswan achka navegadorkunamanqa utqayllam chayanqa.",
+      "chrome_store_aria": "Extensiónpa Chrome Web Store p'ankanta kichay",
+      "close_aria": "Navegadorpa extensiónnin dialogota wichq'ay"
+    },
     "alerts": {
       "clipboard_too_large": "Portapapeles qillqa ancha hatunmi ruwachinapaq. Pisiyachiy hinaspa wakmanta ruwapay.",
       "append_too_large": "Tukup qillqa ancha hatunmi ruwachinapaq. Pisiyachiy hinaspa wakmanta ruwapay.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Mana atikurqanchu extracciónpaq ajllasqa pʼanqakunamanta PDF-ta ruray. Archivo-ta qhawariy hinaspa yapamanta ruray.",
       "text_extraction_generated_pdf_cleanup_warning": "Extracción tukukurqan, ichaqa mana atikurqanchu ruwasqa local PDF-ta kikinmanta pichay.",
       "text_extraction_route_choice_required": "Kay PDFpaq ñanta akllanayki qichuyta hinalla rinaykipaq.",
-      "text_extraction_route_choice_title": "Qichuy ñanta akllay",
-      "text_extraction_route_choice_message": "Kay PDFqa iskaynin qichuy ñankunata charin. Hinalla rinapaq hukta akllay.",
-      "text_extraction_route_choice_native_button": "Nativa llamk'achiy",
-      "text_extraction_route_choice_ocr_button": "OCR llamk'achiy",
-      "text_extraction_route_choice_cancel_button": "Saqiy",
-      "text_extraction_route_choice_close_aria": "Qichuy ñan dialogota wichq'ay",
-      "text_extraction_apply_modal_title": "Qichusqa qillqata churay",
-      "text_extraction_apply_modal_message": "Qichusqa qillqata imaynata churanaykita akllay.",
-      "text_extraction_apply_modal_elapsed": "Ruwasqa pacha: ",
-      "text_extraction_apply_modal_repeat_label": "Kutiykuna",
-      "text_extraction_apply_modal_overwrite_button": "Qillqay/tikray",
-      "text_extraction_apply_modal_append_button": "Yapay",
-      "text_extraction_apply_modal_cancel_button": "Saqiy",
-      "text_extraction_apply_modal_close_aria": "Qichusqa qillqata churana dialogota wichq'ay",
-      "text_extraction_apply_modal_saved_pdf_message": "Ruwasqa PDF extracción qhipaman waqaychasqa karqan.",
-      "text_extraction_apply_modal_saved_pdf_label": "Waqaychasqa PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Waqaychasqa PDF-ta rikuchiy",
       "text_extraction_generated_pdf_reveal_failed": "Mana atikurqanchu waqaychasqa PDF-ta rikuchiy. Archivo kachkanraqchu qhawariy.",
       "text_extraction_apply_error": "Qichusqa qillqata churaypi pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
       "text_extraction_apply_too_large": "Tukup qillqa ancha hatunmi ruwachinapaq. Kutiykunata pisiyachiy hinaspa wakmanta ruwapay.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Wakichisqa qichuy mañakuyqa ña mana allinchu. Flujo wakmanta qallariy.",
       "text_extraction_ocr_unavailable": "OCR mana kanchu. Setup/auth qhaway hinaspa wakmanta ruwapay.",
       "text_extraction_ocr_activation_required": "OCRta activay kanan. Google OCRpi yaykuy hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR activayta qhaway",
-      "text_extraction_ocr_activation_disclosure_intro": "toTqa OCRpaq Googlepa serviciokunata llamk'achin. Hinalla rinki chayqa, kay appta autorizanaykipaq navegador kichakunqa.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Googlemanqa OCRpaq qan akllasqayki archivokunalla apachikun.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Kay appqa apppa kamachisqan Google OAuth credencialkunata OCRpaq, hinallataq kay instanciapi Google token local estadonta waqaychan.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Exportar tukuspa, appqa Google Drive nisqaykimanta temporal Google documentota pichayta munan.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Qhipaman kay t'inkiyta Preferencias > Desconectar Google OCR nisqamanta t'aqayta atinki.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Googlewan hinalla riy",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Saqiy",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Privacidad política kichay",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Google OCR activay dialogota wichq'ay",
       "text_extraction_ocr_activation_success": "OCR activay tukusqa. Qichuyta wakmanta ruwachkan.",
       "text_extraction_ocr_activation_cancelled": "OCR activay saqisqa. Qichuy mana hinalla rirqanchu.",
       "text_extraction_ocr_token_state_invalid": "Google OCR yaykuna waqaychasqa estado mana allinchu. Google OCRta wakmanta t'inkiy hinaspa wakmanta ruwapay.",

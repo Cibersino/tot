@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "已分析文字的開頭與結尾部分：",
       "selector_empty": "（空）",
+      "reading_tools": {
+        "reading_speed_test": "閱讀速度測試",
+        "preview_spoiler": "劇透"
+      },
       "tooltips": {
         "text_extraction": "從檔案擷取文字",
         "text_extraction_abort": "中止擷取",
@@ -59,10 +63,6 @@
         "speed": "速度：",
         "controls_label": "碼錶控制項"
       },
-      "reading_tools": {
-        "reading_speed_test": "閱讀速度測試",
-        "preview_spoiler": "劇透"
-      },
       "processing": {
         "text_extraction_placeholder": "正在處理擷取...",
         "text_extraction_preparing": "正在準備擷取路徑...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "拖放檔案以擷取文字"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF 擷取選項",
-      "message": "請選擇在擷取前處理整份 PDF，或處理一個連續的頁面範圍。",
-      "file_label": "檔案：",
-      "total_pages_label": "總頁數：",
-      "selection_legend": "頁面選擇",
-      "all_pages_label": "所有頁面",
-      "range_label": "頁面範圍",
-      "from_page_label": "起始頁",
-      "to_page_label": "結束頁",
-      "selected_page_count_label": "已選頁面：",
-      "keep_generated_pdf_label": "處理後保留產生的所選頁面 PDF",
-      "continue_button": "繼續",
-      "cancel_button": "取消",
-      "close_aria": "關閉 PDF 擷取選項對話框",
-      "invalid_range": "請輸入 1 到 {totalPages} 之間的連續頁面範圍。"
-    },
-    "browser_extension": {
-      "title": "瀏覽器擴充功能",
-      "subtitle": "閱讀時間",
-      "availability": "現已於 Chrome 提供。更多瀏覽器即將支援。",
-      "chrome_store_aria": "開啟擴充功能的 Chrome Web Store 頁面",
-      "close_aria": "關閉瀏覽器擴充功能對話框"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF 擷取選項",
+        "message": "請選擇在擷取前處理整份 PDF，或處理一個連續的頁面範圍。",
+        "file_label": "檔案：",
+        "total_pages_label": "總頁數：",
+        "selection_legend": "頁面選擇",
+        "all_pages_label": "所有頁面",
+        "range_label": "頁面範圍",
+        "from_page_label": "起始頁",
+        "to_page_label": "結束頁",
+        "selected_page_count_label": "已選頁面：",
+        "keep_generated_pdf_label": "處理後保留產生的所選頁面 PDF",
+        "continue_button": "繼續",
+        "cancel_button": "取消",
+        "close_aria": "關閉 PDF 擷取選項對話框",
+        "invalid_range": "請輸入 1 到 {totalPages} 之間的連續頁面範圍。"
+      },
+      "route_choice": {
+        "title": "選擇擷取路徑",
+        "message": "此 PDF 可使用兩種擷取路徑。請選擇一種繼續。",
+        "native_button": "使用原生擷取",
+        "ocr_button": "使用 OCR",
+        "cancel_button": "取消",
+        "close_aria": "關閉擷取路徑對話框"
+      },
+      "ocr_activation_disclosure": {
+        "title": "檢視 Google OCR 啟用說明",
+        "intro": "toT 使用 Google 服務進行 OCR。如果繼續，將開啟瀏覽器以便你授權此應用程式。",
+        "selected_files": "只有你選擇用於 OCR 的檔案會傳送給 Google。",
+        "local_storage": "此應用程式會在此應用程式執行個體中儲存由應用程式管理的 Google OAuth OCR 憑證和本機 Google 權杖狀態。",
+        "remote_cleanup": "匯出後，應用程式會嘗試從你的 Google Drive 中移除暫時 Google 文件。",
+        "disconnect": "之後你可以透過「偏好設定 > 中斷 Google OCR 連線」中斷此連線。",
+        "proceed_button": "繼續使用 Google",
+        "cancel_button": "取消",
+        "privacy_link": "開啟隱私權政策",
+        "close_aria": "關閉 Google OCR 啟用對話框"
+      },
+      "apply_modal": {
+        "title": "套用擷取的文字",
+        "message": "選擇如何套用擷取的文字。",
+        "elapsed": "執行時間：",
+        "repeat_label": "重複次數",
+        "overwrite_button": "覆蓋",
+        "append_button": "附加",
+        "cancel_button": "取消",
+        "close_aria": "關閉套用擷取文字對話框",
+        "saved_pdf_message": "產生的 PDF 已在擷取後保留。",
+        "saved_pdf_label": "已儲存 PDF：",
+        "reveal_saved_pdf_button": "顯示已儲存 PDF"
+      }
     },
     "editor": {
       "title": "toT — 完整文字",
@@ -129,6 +157,68 @@
       "replace_timeout": "取代超時。請重試。",
       "status_no_matches": "沒有相符項",
       "status_empty_query": "輸入內容以搜尋"
+    },
+    "snapshot_save_tags": {
+      "title": "儲存文字快照",
+      "message": "在選擇儲存位置前，可選擇為此文字快照新增標籤。",
+      "labels": {
+        "language": "語言",
+        "type": "類型",
+        "difficulty": "難度"
+      },
+      "empty": {
+        "language": "無語言標籤",
+        "type": "無類型標籤",
+        "difficulty": "無難度標籤"
+      },
+      "buttons": {
+        "confirm": "儲存文字快照",
+        "cancel": "取消"
+      },
+      "close_aria": "關閉儲存文字快照對話框",
+      "options": {
+        "language": {
+          "ar": "阿拉伯文",
+          "arn": "馬普切文",
+          "ay": "艾馬拉文",
+          "bn": "孟加拉文",
+          "ca": "加泰蘭文",
+          "de": "德文",
+          "en": "英文",
+          "es": "西班牙文",
+          "eu": "巴斯克文",
+          "fa": "波斯文",
+          "fr": "法文",
+          "gn": "瓜拉尼文",
+          "hi": "印地文",
+          "ht": "海地文",
+          "id": "印尼文",
+          "it": "義大利文",
+          "ja": "日文",
+          "ko": "韓文",
+          "mi": "毛利文",
+          "pcm": "奈及利亞皮欽文",
+          "pt": "葡萄牙文",
+          "qu": "蓋楚瓦文",
+          "ru": "俄文",
+          "sv": "瑞典文",
+          "tr": "土耳其文",
+          "ur": "烏爾都文",
+          "vi": "越南文",
+          "zh_hans": "簡體中文",
+          "zh_hant": "繁體中文",
+          "zu": "祖魯文"
+        },
+        "type": {
+          "fiction": "虛構",
+          "non_fiction": "非虛構"
+        },
+        "difficulty": {
+          "easy": "簡單",
+          "normal": "一般",
+          "hard": "困難"
+        }
+      }
     },
     "tasks": {
       "title": "toT — 任務",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "有未儲存的變更。要放棄這些變更嗎？",
         "close_unsaved": "有未儲存的變更。要不儲存就關閉嗎？"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "儲存文字快照",
-      "message": "在選擇儲存位置前，可選擇為此文字快照新增標籤。",
-      "labels": {
-        "language": "語言",
-        "type": "類型",
-        "difficulty": "難度"
-      },
-      "empty": {
-        "language": "無語言標籤",
-        "type": "無類型標籤",
-        "difficulty": "無難度標籤"
-      },
-      "buttons": {
-        "confirm": "儲存文字快照",
-        "cancel": "取消"
-      },
-      "close_aria": "關閉儲存文字快照對話框",
-      "options": {
-        "language": {
-          "ar": "阿拉伯文",
-          "arn": "馬普切文",
-          "ay": "艾馬拉文",
-          "bn": "孟加拉文",
-          "ca": "加泰蘭文",
-          "de": "德文",
-          "en": "英文",
-          "es": "西班牙文",
-          "eu": "巴斯克文",
-          "fa": "波斯文",
-          "fr": "法文",
-          "gn": "瓜拉尼文",
-          "hi": "印地文",
-          "ht": "海地文",
-          "id": "印尼文",
-          "it": "義大利文",
-          "ja": "日文",
-          "ko": "韓文",
-          "mi": "毛利文",
-          "pcm": "奈及利亞皮欽文",
-          "pt": "葡萄牙文",
-          "qu": "蓋楚瓦文",
-          "ru": "俄文",
-          "sv": "瑞典文",
-          "tr": "土耳其文",
-          "ur": "烏爾都文",
-          "vi": "越南文",
-          "zh_hans": "簡體中文",
-          "zh_hant": "繁體中文",
-          "zu": "祖魯文"
-        },
-        "type": {
-          "fiction": "虛構",
-          "non_fiction": "非虛構"
-        },
-        "difficulty": {
-          "easy": "簡單",
-          "normal": "一般",
-          "hard": "困難"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "取消",
       "save": "儲存"
     },
+    "browser_extension": {
+      "title": "瀏覽器擴充功能",
+      "subtitle": "閱讀時間",
+      "availability": "現已於 Chrome 提供。更多瀏覽器即將支援。",
+      "chrome_store_aria": "開啟擴充功能的 Chrome Web Store 頁面",
+      "close_aria": "關閉瀏覽器擴充功能對話框"
+    },
     "alerts": {
       "clipboard_too_large": "剪貼簿文字過大，無法處理。請減少內容後重試。",
       "append_too_large": "產生的文字過大，無法處理。請減少內容後重試。",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "無法為擷取建立所選頁面的 PDF。請檢查檔案並再試一次。",
       "text_extraction_generated_pdf_cleanup_warning": "擷取已完成，但無法自動清理產生的本機 PDF。",
       "text_extraction_route_choice_required": "繼續擷取此 PDF 前，需要選擇擷取路徑。",
-      "text_extraction_route_choice_title": "選擇擷取路徑",
-      "text_extraction_route_choice_message": "此 PDF 可使用兩種擷取路徑。請選擇一種繼續。",
-      "text_extraction_route_choice_native_button": "使用原生擷取",
-      "text_extraction_route_choice_ocr_button": "使用 OCR",
-      "text_extraction_route_choice_cancel_button": "取消",
-      "text_extraction_route_choice_close_aria": "關閉擷取路徑對話框",
-      "text_extraction_apply_modal_title": "套用擷取的文字",
-      "text_extraction_apply_modal_message": "選擇如何套用擷取的文字。",
-      "text_extraction_apply_modal_elapsed": "執行時間：",
-      "text_extraction_apply_modal_repeat_label": "重複次數",
-      "text_extraction_apply_modal_overwrite_button": "覆蓋",
-      "text_extraction_apply_modal_append_button": "附加",
-      "text_extraction_apply_modal_cancel_button": "取消",
-      "text_extraction_apply_modal_close_aria": "關閉套用擷取文字對話框",
-      "text_extraction_apply_modal_saved_pdf_message": "產生的 PDF 已在擷取後保留。",
-      "text_extraction_apply_modal_saved_pdf_label": "已儲存 PDF：",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "顯示已儲存 PDF",
       "text_extraction_generated_pdf_reveal_failed": "無法顯示已儲存的 PDF。請檢查檔案是否仍然存在。",
       "text_extraction_apply_error": "套用擷取文字時發生錯誤。請檢查主控台並重試。",
       "text_extraction_apply_too_large": "產生的文字過大，無法處理。請減少重複次數後重試。",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "已準備的擷取請求不再有效。請重新啟動流程。",
       "text_extraction_ocr_unavailable": "OCR 無法使用。請檢查設定／授權狀態後重試。",
       "text_extraction_ocr_activation_required": "需要啟用 OCR。請登入 Google OCR 後重試。",
-      "text_extraction_ocr_activation_disclosure_title": "檢視 Google OCR 啟用說明",
-      "text_extraction_ocr_activation_disclosure_intro": "toT 使用 Google 服務進行 OCR。如果繼續，將開啟瀏覽器以便你授權此應用程式。",
-      "text_extraction_ocr_activation_disclosure_selected_files": "只有你選擇用於 OCR 的檔案會傳送給 Google。",
-      "text_extraction_ocr_activation_disclosure_local_storage": "此應用程式會在此應用程式執行個體中儲存由應用程式管理的 Google OAuth OCR 憑證和本機 Google 權杖狀態。",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "匯出後，應用程式會嘗試從你的 Google Drive 中移除暫時 Google 文件。",
-      "text_extraction_ocr_activation_disclosure_disconnect": "之後你可以透過「偏好設定 > 中斷 Google OCR 連線」中斷此連線。",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "繼續使用 Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "取消",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "開啟隱私權政策",
-      "text_extraction_ocr_activation_disclosure_close_aria": "關閉 Google OCR 啟用對話框",
       "text_extraction_ocr_activation_success": "OCR 啟用完成。正在重試擷取。",
       "text_extraction_ocr_activation_cancelled": "OCR 啟用已取消。擷取未繼續。",
       "text_extraction_ocr_token_state_invalid": "已儲存的 Google OCR 登入狀態無效。請重新連線 Google OCR 後重試。",

@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Första och sista delen av den analyserade texten:",
       "selector_empty": "(tom)",
+      "reading_tools": {
+        "reading_speed_test": "Test av läshastighet",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Extrahera text från fil",
         "text_extraction_abort": "Avbryt extrahering",
@@ -59,10 +63,6 @@
         "speed": "Hastighet:",
         "controls_label": "Stoppurskontroller"
       },
-      "reading_tools": {
-        "reading_speed_test": "Test av läshastighet",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Extraherar text...",
         "text_extraction_preparing": "Förbereder extraheringsväg...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Släpp filen för att extrahera text"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF-extraheringsalternativ",
-      "message": "Välj om hela PDF-filen eller ett sammanhängande sidintervall ska bearbetas före extraheringen.",
-      "file_label": "Fil:",
-      "total_pages_label": "Totalt antal sidor: ",
-      "selection_legend": "Sidval",
-      "all_pages_label": "Alla sidor",
-      "range_label": "Sidintervall",
-      "from_page_label": "Från sida",
-      "to_page_label": "Till sida",
-      "selected_page_count_label": "Valda sidor: ",
-      "keep_generated_pdf_label": "Behåll den genererade PDF-filen med valda sidor efter bearbetning",
-      "continue_button": "Fortsätt",
-      "cancel_button": "Avbryt",
-      "close_aria": "Stäng dialogrutan för PDF-extraheringsalternativ",
-      "invalid_range": "Ange ett sammanhängande sidintervall mellan 1 och {totalPages}."
-    },
-    "browser_extension": {
-      "title": "Webbläsartillägg",
-      "subtitle": "Lästid",
-      "availability": "Finns i Chrome nu. Fler webbläsare kommer snart.",
-      "chrome_store_aria": "Öppna tilläggets sida i Chrome Web Store",
-      "close_aria": "Stäng dialogrutan för webbläsartillägget"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF-extraheringsalternativ",
+        "message": "Välj om hela PDF-filen eller ett sammanhängande sidintervall ska bearbetas före extraheringen.",
+        "file_label": "Fil:",
+        "total_pages_label": "Totalt antal sidor: ",
+        "selection_legend": "Sidval",
+        "all_pages_label": "Alla sidor",
+        "range_label": "Sidintervall",
+        "from_page_label": "Från sida",
+        "to_page_label": "Till sida",
+        "selected_page_count_label": "Valda sidor: ",
+        "keep_generated_pdf_label": "Behåll den genererade PDF-filen med valda sidor efter bearbetning",
+        "continue_button": "Fortsätt",
+        "cancel_button": "Avbryt",
+        "close_aria": "Stäng dialogrutan för PDF-extraheringsalternativ",
+        "invalid_range": "Ange ett sammanhängande sidintervall mellan 1 och {totalPages}."
+      },
+      "route_choice": {
+        "title": "Välj extraheringsväg",
+        "message": "Båda extraheringsvägarna är tillgängliga för denna PDF. Välj en för att fortsätta.",
+        "native_button": "Använd inbyggd",
+        "ocr_button": "Använd OCR",
+        "cancel_button": "Avbryt",
+        "close_aria": "Stäng dialogen för extraheringsväg"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Granska aktivering av Google OCR",
+        "intro": "toT använder Googles tjänster för OCR. Om du fortsätter öppnas din webbläsare så att du kan auktorisera denna app.",
+        "selected_files": "Endast filer du väljer för OCR skickas till Google.",
+        "local_storage": "Den här appen lagrar apphanterade Google OAuth-uppgifter för OCR och lokal Google-tokenstatus i denna appinstans.",
+        "remote_cleanup": "Efter export försöker appen ta bort det tillfälliga Google-dokumentet från din Google Drive.",
+        "disconnect": "Du kan senare koppla från via Inställningar > Koppla från Google OCR.",
+        "proceed_button": "Fortsätt till Google",
+        "cancel_button": "Avbryt",
+        "privacy_link": "Öppna integritetspolicyn",
+        "close_aria": "Stäng informationsdialogen för OCR-aktivering"
+      },
+      "apply_modal": {
+        "title": "Tillämpa extraherad text",
+        "message": "Välj hur den extraherade texten ska tillämpas.",
+        "elapsed": "Körtid: ",
+        "repeat_label": "Upprepningar",
+        "overwrite_button": "Skriv över",
+        "append_button": "Lägg till",
+        "cancel_button": "Avbryt",
+        "close_aria": "Stäng dialogen för att tillämpa extraherad text",
+        "saved_pdf_message": "Den genererade PDF-filen behölls efter extraheringen.",
+        "saved_pdf_label": "Sparad PDF: ",
+        "reveal_saved_pdf_button": "Visa sparad PDF"
+      }
     },
     "editor": {
       "title": "toT — Fullständig text",
@@ -129,6 +157,68 @@
       "replace_timeout": "Ersättningen tog för lång tid. Försök igen.",
       "status_no_matches": "Inga träffar",
       "status_empty_query": "Skriv för att söka"
+    },
+    "snapshot_save_tags": {
+      "title": "Spara textsnapshot",
+      "message": "Du kan lägga till valfria taggar för denna textsnapshot innan du väljer var den ska sparas.",
+      "labels": {
+        "language": "Språk",
+        "type": "Typ",
+        "difficulty": "Svårighetsgrad"
+      },
+      "empty": {
+        "language": "Ingen språktagg",
+        "type": "Ingen typtagg",
+        "difficulty": "Ingen svårighetsgradstagg"
+      },
+      "buttons": {
+        "confirm": "Spara textsnapshot",
+        "cancel": "Avbryt"
+      },
+      "close_aria": "Stäng dialogen för att spara textsnapshot",
+      "options": {
+        "language": {
+          "ar": "Arabiska",
+          "arn": "Mapudungun",
+          "ay": "Aymara",
+          "bn": "Bengali",
+          "ca": "Katalanska",
+          "de": "Tyska",
+          "en": "Engelska",
+          "es": "Spanska",
+          "eu": "Baskiska",
+          "fa": "Persiska",
+          "fr": "Franska",
+          "gn": "Guaraní",
+          "hi": "Hindi",
+          "ht": "Haitiska",
+          "id": "Indonesiska",
+          "it": "Italienska",
+          "ja": "Japanska",
+          "ko": "Koreanska",
+          "mi": "Maori",
+          "pcm": "Nigeriansk pidgin",
+          "pt": "Portugisiska",
+          "qu": "Quechua",
+          "ru": "Ryska",
+          "sv": "Svenska",
+          "tr": "Turkiska",
+          "ur": "Urdu",
+          "vi": "Vietnamesiska",
+          "zh_hans": "Kinesiska (förenklad)",
+          "zh_hant": "Kinesiska (traditionell)",
+          "zu": "Zulu"
+        },
+        "type": {
+          "fiction": "Skönlitteratur",
+          "non_fiction": "Facklitteratur"
+        },
+        "difficulty": {
+          "easy": "Lätt",
+          "normal": "Normal",
+          "hard": "Svår"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Uppgifter",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Det finns osparade ändringar. Kasta dem?",
         "close_unsaved": "Det finns osparade ändringar. Stäng utan att spara?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Spara textsnapshot",
-      "message": "Du kan lägga till valfria taggar för denna textsnapshot innan du väljer var den ska sparas.",
-      "labels": {
-        "language": "Språk",
-        "type": "Typ",
-        "difficulty": "Svårighetsgrad"
-      },
-      "empty": {
-        "language": "Ingen språktagg",
-        "type": "Ingen typtagg",
-        "difficulty": "Ingen svårighetsgradstagg"
-      },
-      "buttons": {
-        "confirm": "Spara textsnapshot",
-        "cancel": "Avbryt"
-      },
-      "close_aria": "Stäng dialogen för att spara textsnapshot",
-      "options": {
-        "language": {
-          "ar": "Arabiska",
-          "arn": "Mapudungun",
-          "ay": "Aymara",
-          "bn": "Bengali",
-          "ca": "Katalanska",
-          "de": "Tyska",
-          "en": "Engelska",
-          "es": "Spanska",
-          "eu": "Baskiska",
-          "fa": "Persiska",
-          "fr": "Franska",
-          "gn": "Guaraní",
-          "hi": "Hindi",
-          "ht": "Haitiska",
-          "id": "Indonesiska",
-          "it": "Italienska",
-          "ja": "Japanska",
-          "ko": "Koreanska",
-          "mi": "Maori",
-          "pcm": "Nigeriansk pidgin",
-          "pt": "Portugisiska",
-          "qu": "Quechua",
-          "ru": "Ryska",
-          "sv": "Svenska",
-          "tr": "Turkiska",
-          "ur": "Urdu",
-          "vi": "Vietnamesiska",
-          "zh_hans": "Kinesiska (förenklad)",
-          "zh_hant": "Kinesiska (traditionell)",
-          "zu": "Zulu"
-        },
-        "type": {
-          "fiction": "Skönlitteratur",
-          "non_fiction": "Facklitteratur"
-        },
-        "difficulty": {
-          "easy": "Lätt",
-          "normal": "Normal",
-          "hard": "Svår"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Avbryt",
       "save": "Spara"
     },
+    "browser_extension": {
+      "title": "Webbläsartillägg",
+      "subtitle": "Lästid",
+      "availability": "Finns i Chrome nu. Fler webbläsare kommer snart.",
+      "chrome_store_aria": "Öppna tilläggets sida i Chrome Web Store",
+      "close_aria": "Stäng dialogrutan för webbläsartillägget"
+    },
     "alerts": {
       "clipboard_too_large": "Urklippstexten är för stor för att bearbeta. Minska den och försök igen.",
       "append_too_large": "Den resulterande texten är för stor för att bearbeta. Minska den och försök igen.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "PDF-filen med de valda sidorna kunde inte skapas för extrahering. Kontrollera filen och försök igen.",
       "text_extraction_generated_pdf_cleanup_warning": "Extraheringen slutfördes, men en genererad lokal PDF-fil kunde inte rensas automatiskt.",
       "text_extraction_route_choice_required": "Val av väg krävs för denna PDF innan extraheringen kan fortsätta.",
-      "text_extraction_route_choice_title": "Välj extraheringsväg",
-      "text_extraction_route_choice_message": "Båda extraheringsvägarna är tillgängliga för denna PDF. Välj en för att fortsätta.",
-      "text_extraction_route_choice_native_button": "Använd inbyggd",
-      "text_extraction_route_choice_ocr_button": "Använd OCR",
-      "text_extraction_route_choice_cancel_button": "Avbryt",
-      "text_extraction_route_choice_close_aria": "Stäng dialogen för extraheringsväg",
-      "text_extraction_apply_modal_title": "Tillämpa extraherad text",
-      "text_extraction_apply_modal_message": "Välj hur den extraherade texten ska tillämpas.",
-      "text_extraction_apply_modal_elapsed": "Körtid: ",
-      "text_extraction_apply_modal_repeat_label": "Upprepningar",
-      "text_extraction_apply_modal_overwrite_button": "Skriv över",
-      "text_extraction_apply_modal_append_button": "Lägg till",
-      "text_extraction_apply_modal_cancel_button": "Avbryt",
-      "text_extraction_apply_modal_close_aria": "Stäng dialogen för att tillämpa extraherad text",
-      "text_extraction_apply_modal_saved_pdf_message": "Den genererade PDF-filen behölls efter extraheringen.",
-      "text_extraction_apply_modal_saved_pdf_label": "Sparad PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Visa sparad PDF",
       "text_extraction_generated_pdf_reveal_failed": "Den sparade PDF-filen kunde inte visas. Kontrollera om filen fortfarande finns.",
       "text_extraction_apply_error": "Ett fel uppstod när extraherad text skulle tillämpas. Kontrollera konsolen och försök igen.",
       "text_extraction_apply_too_large": "Den resulterande texten är för stor för att bearbeta. Minska antalet upprepningar och försök igen.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Den förberedda extraheringsbegäran är inte längre giltig. Starta flödet igen.",
       "text_extraction_ocr_unavailable": "OCR är inte tillgängligt. Kontrollera konfiguration/autentiseringsstatus och försök igen.",
       "text_extraction_ocr_activation_required": "OCR-aktivering krävs. Logga in i Google OCR och försök igen.",
-      "text_extraction_ocr_activation_disclosure_title": "Granska aktivering av Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "toT använder Googles tjänster för OCR. Om du fortsätter öppnas din webbläsare så att du kan auktorisera denna app.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Endast filer du väljer för OCR skickas till Google.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Den här appen lagrar apphanterade Google OAuth-uppgifter för OCR och lokal Google-tokenstatus i denna appinstans.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Efter export försöker appen ta bort det tillfälliga Google-dokumentet från din Google Drive.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Du kan senare koppla från via Inställningar > Koppla från Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Fortsätt till Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Avbryt",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Öppna integritetspolicyn",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Stäng informationsdialogen för OCR-aktivering",
       "text_extraction_ocr_activation_success": "OCR-aktivering slutförd. Försöker extrahera igen.",
       "text_extraction_ocr_activation_cancelled": "OCR-aktiveringen avbröts. Extrahering fortsatte inte.",
       "text_extraction_ocr_token_state_invalid": "Sparad inloggningsstatus för Google OCR är ogiltig. Anslut Google OCR igen och försök igen.",

@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "El principio y el final del coso:",
       "selector_empty": "(pelao)",
+      "reading_tools": {
+        "reading_speed_test": "Prueba tu ritmo de lectura",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Sacarle texto a un archivo",
         "text_extraction_abort": "Parar la sacadera",
@@ -59,10 +63,6 @@
         "speed": "Ritmo:",
         "controls_label": "Botones del reloj"
       },
-      "reading_tools": {
-        "reading_speed_test": "Prueba tu ritmo de lectura",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Sacando texto...",
         "text_extraction_preparing": "Preparando la extracción...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Suelta el archivo pa sacarle texto"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "Opciones de extracción PDF",
-      "message": "Elige si querís procesar too el PDF o un rango contiguo de páginas antes de la extracción.",
-      "file_label": "Archivo:",
-      "total_pages_label": "Páginas totales: ",
-      "selection_legend": "Selección de páginas",
-      "all_pages_label": "Todas las páginas",
-      "range_label": "Rango de páginas",
-      "from_page_label": "Desde la página",
-      "to_page_label": "Hasta la página",
-      "selected_page_count_label": "Páginas seleccionadas: ",
-      "keep_generated_pdf_label": "Conservar el PDF generado de páginas seleccionadas después del procesamiento",
-      "continue_button": "Continuar",
-      "cancel_button": "Cancelar",
-      "close_aria": "Cerrar diálogo de opciones de extracción PDF",
-      "invalid_range": "Ingresa un rango contiguo de páginas entre 1 y {totalPages}."
-    },
-    "browser_extension": {
-      "title": "Extensión pal navegador",
-      "subtitle": "Tiempo pa' leer",
-      "availability": "Disponible al tiro en Chrome. Más navegadores pronto.",
-      "chrome_store_aria": "Abrir la página de la extensión en Chrome Web Store",
-      "close_aria": "Cerrar diálogo de extensión pal navegador"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "Opciones de extracción PDF",
+        "message": "Elige si querís procesar too el PDF o un rango contiguo de páginas antes de la extracción.",
+        "file_label": "Archivo:",
+        "total_pages_label": "Páginas totales: ",
+        "selection_legend": "Selección de páginas",
+        "all_pages_label": "Todas las páginas",
+        "range_label": "Rango de páginas",
+        "from_page_label": "Desde la página",
+        "to_page_label": "Hasta la página",
+        "selected_page_count_label": "Páginas seleccionadas: ",
+        "keep_generated_pdf_label": "Conservar el PDF generado de páginas seleccionadas después del procesamiento",
+        "continue_button": "Continuar",
+        "cancel_button": "Cancelar",
+        "close_aria": "Cerrar diálogo de opciones de extracción PDF",
+        "invalid_range": "Ingresa un rango contiguo de páginas entre 1 y {totalPages}."
+      },
+      "route_choice": {
+        "title": "Elegir la ruta de extracción",
+        "message": "Este PDF trae las dos rutas de extracción. Elige una y seguimos.",
+        "native_button": "Irse por la nativa",
+        "ocr_button": "Irse por OCR",
+        "cancel_button": "Cancelar",
+        "close_aria": "Cerrar diálogo de ruta de extracción"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Revisar activación de Google OCR",
+        "intro": "toT usa servicios de Google pa' OCR. Si seguís, se va a abrir el navegador pa' que autoricís esta app.",
+        "selected_files": "A Google solo se mandan los archivos que tú elijai pa' OCR.",
+        "local_storage": "Esta app guarda un archivo local credentials.json y el estado local del token de Google en esta instancia.",
+        "remote_cleanup": "Después de exportar, la app intenta borrar el documento temporal de Google de tu Google Drive.",
+        "disconnect": "Después podís cortar esta conexión desde Preferencias > Desconectar Google OCR.",
+        "proceed_button": "Seguir con Google",
+        "cancel_button": "Cancelar",
+        "privacy_link": "Abrir política de privacidad",
+        "close_aria": "Cerrar diálogo de activación de Google OCR"
+      },
+      "apply_modal": {
+        "title": "Aplicar el texto que salió",
+        "message": "Elige cómo querís meter el texto extraído.",
+        "elapsed": "Tiempo corrido: ",
+        "repeat_label": "Cuántas veces",
+        "overwrite_button": "Pitiarse lo de ahora",
+        "append_button": "Sumarlo al final",
+        "cancel_button": "Cancelar",
+        "close_aria": "Cerrar diálogo pa' aplicar texto extraído",
+        "saved_pdf_message": "El PDF generado se conservó después de la extracción.",
+        "saved_pdf_label": "PDF guardado: ",
+        "reveal_saved_pdf_button": "Mostrar PDF guardado"
+      }
     },
     "editor": {
       "title": "toT — El texto completito",
@@ -129,6 +157,68 @@
       "replace_timeout": "La custión de reemplazo se demoró mucho. Inténtalo de nuevo.",
       "status_no_matches": "No pillamos niuna custión",
       "status_empty_query": "Escribe algo po"
+    },
+    "snapshot_save_tags": {
+      "title": "Salvar coso de texto",
+      "message": "Etiqueta opcionalmente este coso de texto antes de elegir dónde salvarlo.",
+      "labels": {
+        "language": "Idioma",
+        "type": "Tipo",
+        "difficulty": "Dificultad"
+      },
+      "empty": {
+        "language": "Sin etiqueta de idioma",
+        "type": "Sin etiqueta de tipo",
+        "difficulty": "Sin etiqueta de dificultad"
+      },
+      "buttons": {
+        "confirm": "Salvar coso de texto",
+        "cancel": "Cancelar"
+      },
+      "close_aria": "Cerrar diálogo para salvar coso de texto",
+      "options": {
+        "language": {
+          "ar": "Árabe",
+          "arn": "Mapudungun",
+          "ay": "Aimara",
+          "bn": "Bengalí",
+          "ca": "Catalán",
+          "de": "Alemán",
+          "en": "Inglés",
+          "es": "Español",
+          "eu": "Euskera",
+          "fa": "Persa",
+          "fr": "Francés",
+          "gn": "Guaraní",
+          "hi": "Hindi",
+          "ht": "Haitiano",
+          "id": "Indonesio",
+          "it": "Italiano",
+          "ja": "Japonés",
+          "ko": "Coreano",
+          "mi": "Maorí",
+          "pcm": "Pidgin de Nigeria",
+          "pt": "Portugués",
+          "qu": "Quechua",
+          "ru": "Ruso",
+          "sv": "Sueco",
+          "tr": "Turco",
+          "ur": "Urdu",
+          "vi": "Vietnamita",
+          "zh_hans": "Chino simplificado",
+          "zh_hant": "Chino tradicional",
+          "zu": "Zulú"
+        },
+        "type": {
+          "fiction": "Ficción",
+          "non_fiction": "No ficción"
+        },
+        "difficulty": {
+          "easy": "Fácil",
+          "normal": "Normal",
+          "hard": "Difícil"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Misiones",
@@ -204,68 +294,6 @@
         "close_unsaved": "Hay modificaciones sin salvar. ¿Querís cerrar igual?"
       }
     },
-    "snapshot_save_tags": {
-      "title": "Salvar coso de texto",
-      "message": "Etiqueta opcionalmente este coso de texto antes de elegir dónde salvarlo.",
-      "labels": {
-        "language": "Idioma",
-        "type": "Tipo",
-        "difficulty": "Dificultad"
-      },
-      "empty": {
-        "language": "Sin etiqueta de idioma",
-        "type": "Sin etiqueta de tipo",
-        "difficulty": "Sin etiqueta de dificultad"
-      },
-      "buttons": {
-        "confirm": "Salvar coso de texto",
-        "cancel": "Cancelar"
-      },
-      "close_aria": "Cerrar diálogo para salvar coso de texto",
-      "options": {
-        "language": {
-          "ar": "Árabe",
-          "arn": "Mapudungun",
-          "ay": "Aimara",
-          "bn": "Bengalí",
-          "ca": "Catalán",
-          "de": "Alemán",
-          "en": "Inglés",
-          "es": "Español",
-          "eu": "Euskera",
-          "fa": "Persa",
-          "fr": "Francés",
-          "gn": "Guaraní",
-          "hi": "Hindi",
-          "ht": "Haitiano",
-          "id": "Indonesio",
-          "it": "Italiano",
-          "ja": "Japonés",
-          "ko": "Coreano",
-          "mi": "Maorí",
-          "pcm": "Pidgin de Nigeria",
-          "pt": "Portugués",
-          "qu": "Quechua",
-          "ru": "Ruso",
-          "sv": "Sueco",
-          "tr": "Turco",
-          "ur": "Urdu",
-          "vi": "Vietnamita",
-          "zh_hans": "Chino simplificado",
-          "zh_hant": "Chino tradicional",
-          "zu": "Zulú"
-        },
-        "type": {
-          "fiction": "Ficción",
-          "non_fiction": "No ficción"
-        },
-        "difficulty": {
-          "easy": "Fácil",
-          "normal": "Normal",
-          "hard": "Difícil"
-        }
-      }
-    },
     "reading_test": {
       "prestart": {
         "reminder": "Aprieta Play (▶) en la Ventana Flotante cuando estís listo pa' empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Aprieta Detener/Reiniciar (⏹) solo si querís cancelar el test."
@@ -275,6 +303,7 @@
         "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto y va a esperar a que apretís Play (▶) en la Ventana Flotante cuando estís listo para empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nAntes de empezar, ten presente que estos textos de prueba suelen pedir entre 5 y 15 minutos de concentración de corrido, sin interrupciones.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
         "eligible_count": "Archivos elegibles:",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Podís restablecer el pool o meter más archivos.",
+        "visible_empty_bundled_hidden_message": "Los archivos de test integrados están ocultos y no quedan archivos visibles sin usar. Muéstralos de nuevo o importa más archivos pa' seguir.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",
         "start_random_confirm": "Esto va a pitiarse el texto actual y lo va a cambiar por un texto random elegible del pool. ¿Querís seguir?",
         "reset_confirm": "¿Querís restablecer el pool de archivos elegibles? Esto va a recargar los archivos disponibles pa' iniciar el test, incluyendo los que ya usaste.",
@@ -295,9 +324,11 @@
           "show_instructions": "Mostrar instrucciones",
           "hide_instructions": "Ocultar instrucciones",
           "start_random_text": "Partir con texto random",
-          "start_current_text": "Partir con texto actual"
+          "start_current_text": "Partir con texto actual",
+          "show_bundled_entries": "Tests base"
         },
         "tooltips": {
+          "show_bundled_entries": "Meter al pool los archivos de test base que vienen con la app",
           "get_more_files": "Traer más archivos de prueba del directorio de Google Drive",
           "import_files": "Importar archivos de prueba desde tu dispositivo",
           "reset_pool": "Restablecer el pool de archivos de prueba",
@@ -346,6 +377,13 @@
       "cancel": "Ni cagando",
       "save": "Guardar"
     },
+    "browser_extension": {
+      "title": "Extensión pal navegador",
+      "subtitle": "Tiempo pa' leer",
+      "availability": "Disponible al tiro en Chrome. Más navegadores pronto.",
+      "chrome_store_aria": "Abrir la página de la extensión en Chrome Web Store",
+      "close_aria": "Cerrar diálogo de extensión pal navegador"
+    },
     "alerts": {
       "clipboard_too_large": "Chaaa, el texto del portapapeles es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
       "append_too_large": "El texto resultante es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
@@ -379,48 +417,21 @@
       "text_extraction_cancelled": "La extracción quedó cancelada.",
       "text_extraction_drop_single_file_only": "Tira exactamente un archivo pa' partir extracción.",
       "text_extraction_drop_invalid_file": "La custión que soltaste no es un archivo local válido.",
-      "text_extraction_route_choice_required": "Hay que elegir una ruta pa' este PDF antes de seguir con la extracción.",
-      "text_extraction_route_choice_title": "Elegir la ruta de extracción",
-      "text_extraction_route_choice_message": "Este PDF trae las dos rutas de extracción. Elige una y seguimos.",
       "text_extraction_pdf_unreadable_or_corrupt": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
       "text_extraction_pdf_encrypted_or_password_protected": "Este PDF está encriptado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
       "text_extraction_pdf_page_count_unavailable": "No fue posible inspeccionar el conteo de páginas de este PDF. Revisa el archivo y vuelve a intentarlo.",
       "text_extraction_pdf_page_selection_invalid": "El rango de páginas seleccionado para el PDF es inválido. Ajusta el rango y vuelve a intentarlo.",
       "text_extraction_pdf_subset_creation_failed": "No fue posible crear el PDF de páginas seleccionadas para la extracción. Revisa el archivo y vuelve a intentarlo.",
       "text_extraction_generated_pdf_cleanup_warning": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
-      "text_extraction_route_choice_native_button": "Irse por la nativa",
-      "text_extraction_route_choice_ocr_button": "Irse por OCR",
-      "text_extraction_route_choice_cancel_button": "Cancelar",
-      "text_extraction_route_choice_close_aria": "Cerrar diálogo de ruta de extracción",
-      "text_extraction_apply_modal_title": "Aplicar el texto que salió",
-      "text_extraction_apply_modal_message": "Elige cómo querís meter el texto extraído.",
-      "text_extraction_apply_modal_elapsed": "Tiempo corrido: ",
-      "text_extraction_apply_modal_repeat_label": "Cuántas veces",
-      "text_extraction_apply_modal_overwrite_button": "Pitiarse lo de ahora",
-      "text_extraction_apply_modal_append_button": "Sumarlo al final",
-      "text_extraction_apply_modal_cancel_button": "Cancelar",
-      "text_extraction_apply_modal_close_aria": "Cerrar diálogo pa' aplicar texto extraído",
+      "text_extraction_route_choice_required": "Hay que elegir una ruta pa' este PDF antes de seguir con la extracción.",
+      "text_extraction_generated_pdf_reveal_failed": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
       "text_extraction_apply_error": "Cagó la custión al aplicar el texto extraído. Lorea la consola y prueba otra vez.",
       "text_extraction_apply_too_large": "El texto que queda armado es demasiado grande pa' procesarlo. Bájale las repeticiones y prueba otra vez.",
       "text_extraction_apply_text_limit": "No se puede agregar el texto extraído: ya se llenó la custión.",
-      "text_extraction_apply_modal_saved_pdf_message": "El PDF generado se conservó después de la extracción.",
-      "text_extraction_apply_modal_saved_pdf_label": "PDF guardado: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Mostrar PDF guardado",
-      "text_extraction_generated_pdf_reveal_failed": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
       "text_extraction_apply_truncated": "El texto extraído se pasó de largo y lo mochamos pa' que cupiera.",
       "text_extraction_prepare_invalid": "La solicitud preparada de extracción ya no sirve. Parte la movida de nuevo.",
       "text_extraction_ocr_unavailable": "OCR no está disponible. Revisa setup/auth y prueba otra vez.",
       "text_extraction_ocr_activation_required": "Hay que activar OCR. Inicia sesión en Google OCR y prueba de nuevo.",
-      "text_extraction_ocr_activation_disclosure_title": "Revisar activación de Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "toT usa servicios de Google pa' OCR. Si seguís, se va a abrir el navegador pa' que autoricís esta app.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "A Google solo se mandan los archivos que tú elijai pa' OCR.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Esta app guarda un archivo local credentials.json y el estado local del token de Google en esta instancia.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Después de exportar, la app intenta borrar el documento temporal de Google de tu Google Drive.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Después podís cortar esta conexión desde Preferencias > Desconectar Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Seguir con Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Cancelar",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Abrir política de privacidad",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Cerrar diálogo de activación de Google OCR",
       "text_extraction_ocr_activation_success": "La activación OCR quedó lista. Reintentando la extracción.",
       "text_extraction_ocr_activation_cancelled": "La activación OCR quedó cancelada. La extracción no siguió.",
       "text_extraction_ocr_token_state_invalid": "El estado guardado de inicio de sesión de Google OCR no sirve. Activa la lesera de nuevo.",
@@ -452,8 +463,10 @@
       "reading_test_precondition_blocked": "Pa' partir el test de ritmo de lectura, cierra toas las ventanas chicas y para el cronómetro.",
       "reading_test_pool_error": "Cagó la carga del pool de archivos pal' test de ritmo de lectura.",
       "reading_test_no_matching_files": "No quedan archivos de test sin usar que calcen con la selección actual.",
+      "reading_test_visible_empty_bundled_hidden": "Los archivos de test integrados están ocultos y no hay archivos visibles sin usar. Muéstralos de nuevo o importa más archivos pa' seguir.",
       "reading_test_current_text_empty": "El texto actual está pelao. Llenalo con algo y prueba de nuevo, o elige iniciar el test con un archivo del pool.",
       "reading_test_result_invalid": "El resultado del test no pudo pasar a un WPM válido. La vuelta terminó sin abrir el modal del preset.",
+      "reading_test_result_unavailable": "No se pudo mostrar el resultado de ritmo de lectura. La vuelta siguió igual.",
       "reading_test_preset_unavailable": "No se pudo abrir el modal del preset después del test.",
       "reading_test_questions_unavailable": "No se pudo abrir el modal de preguntas de comprensión lectora. La vuelta terminó antes de crear el preset.",
       "reading_test_pool_import_failed": "No se pudieron importar los archivos del test de ritmo de lectura.",

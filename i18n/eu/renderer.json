@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Aztertutako testuaren lehen eta azken zatia:",
       "selector_empty": "(hutsik)",
+      "reading_tools": {
+        "reading_speed_test": "Irakurketa-abiaduraren testa",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Erauzi testua fitxategitik",
         "text_extraction_abort": "Bertan behera utzi erauzketa",
@@ -59,10 +63,6 @@
         "speed": "Abiadura:",
         "controls_label": "Kronometroaren kontrolak"
       },
-      "reading_tools": {
-        "reading_speed_test": "Irakurketa-abiaduraren testa",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Testua erauzten...",
         "text_extraction_preparing": "Erauzketa bidea prestatzen...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Jaregin fitxategia testua erauzteko"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF erauzketa-aukerak",
-      "message": "Aukeratu erauzketa baino lehen PDF osoa edo orri-tarte jarraitu bat prozesatu nahi duzun.",
-      "file_label": "Fitxategia:",
-      "total_pages_label": "Orriak guztira: ",
-      "selection_legend": "Orri-hautapena",
-      "all_pages_label": "Orri guztiak",
-      "range_label": "Orri-tartea",
-      "from_page_label": "Orritik",
-      "to_page_label": "Orrira",
-      "selected_page_count_label": "Hautatutako orriak: ",
-      "keep_generated_pdf_label": "Mantendu hautatutako orrien sortutako PDFa prozesatu ondoren",
-      "continue_button": "Jarraitu",
-      "cancel_button": "Utzi",
-      "close_aria": "Itxi PDF erauzketa-aukeren elkarrizketa-koadroa",
-      "invalid_range": "Sartu 1 eta {totalPages} arteko orri-tarte jarraitu bat."
-    },
-    "browser_extension": {
-      "title": "Nabigatzailearen hedapena",
-      "subtitle": "Irakurketa-denbora",
-      "availability": "Orain Chrome-n erabilgarri. Laster nabigatzaile gehiagotan ere bai.",
-      "chrome_store_aria": "Ireki hedapenaren Chrome Web Store orria",
-      "close_aria": "Itxi nabigatzailearen hedapenaren elkarrizketa-koadroa"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF erauzketa-aukerak",
+        "message": "Aukeratu erauzketa baino lehen PDF osoa edo orri-tarte jarraitu bat prozesatu nahi duzun.",
+        "file_label": "Fitxategia:",
+        "total_pages_label": "Orriak guztira: ",
+        "selection_legend": "Orri-hautapena",
+        "all_pages_label": "Orri guztiak",
+        "range_label": "Orri-tartea",
+        "from_page_label": "Orritik",
+        "to_page_label": "Orrira",
+        "selected_page_count_label": "Hautatutako orriak: ",
+        "keep_generated_pdf_label": "Mantendu hautatutako orrien sortutako PDFa prozesatu ondoren",
+        "continue_button": "Jarraitu",
+        "cancel_button": "Utzi",
+        "close_aria": "Itxi PDF erauzketa-aukeren elkarrizketa-koadroa",
+        "invalid_range": "Sartu 1 eta {totalPages} arteko orri-tarte jarraitu bat."
+      },
+      "route_choice": {
+        "title": "Aukeratu erauzketa-bidea",
+        "message": "PDF honetarako bi erauzketa-bideak daude erabilgarri. Aukeratu bat jarraitzeko.",
+        "native_button": "Erabili natiboa",
+        "ocr_button": "Erabili OCR",
+        "cancel_button": "Utzi",
+        "close_aria": "Itxi erauzketa-bidearen elkarrizketa"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Berrikusi Google OCR aktibazioa",
+        "intro": "toT-ek Google zerbitzuak erabiltzen ditu OCR-rako. Jarraituz gero, nabigatzailea irekiko da aplikazio hau baimentzeko.",
+        "selected_files": "OCR-rako aukeratzen dituzun fitxategiak soilik bidaltzen dira Googlera.",
+        "local_storage": "Aplikazio honek OCR-rako aplikazioak kudeatutako Google OAuth kredentzialak eta Google tokenaren egoera lokala gordetzen ditu aplikazio-instantzia honetan.",
+        "remote_cleanup": "Esportatu ondoren, aplikazioa aldi baterako Google dokumentua zure Google Drivetik kentzen saiatzen da.",
+        "disconnect": "Geroago deskonekta dezakezu Hobespenak > Deskonektatu Google OCR aukeratik.",
+        "proceed_button": "Jarraitu Googlerekin",
+        "cancel_button": "Utzi",
+        "privacy_link": "Ireki pribatutasun-politika",
+        "close_aria": "Itxi Google OCR aktibazioaren azalpen-elkarrizketa"
+      },
+      "apply_modal": {
+        "title": "Aplikatu erauzitako testua",
+        "message": "Aukeratu nola aplikatu erauzitako testua.",
+        "elapsed": "Exekuzio-denbora: ",
+        "repeat_label": "Errepikapenak",
+        "overwrite_button": "Gainidatzi",
+        "append_button": "Gehitu",
+        "cancel_button": "Utzi",
+        "close_aria": "Itxi erauzitako testua aplikatzeko elkarrizketa",
+        "saved_pdf_message": "Sortutako PDFa erauzketaren ondoren mantendu da.",
+        "saved_pdf_label": "Gordetako PDFa: ",
+        "reveal_saved_pdf_button": "Erakutsi gordetako PDFa"
+      }
     },
     "editor": {
       "title": "toT — Testu osoa",
@@ -129,6 +157,68 @@
       "replace_timeout": "Ordezteko eragiketak denbora gehiegi hartu du. Saiatu berriro.",
       "status_no_matches": "Ez dago bat-etortzerik",
       "status_empty_query": "Idatzi bilatzeko"
+    },
+    "snapshot_save_tags": {
+      "title": "Gorde testu-snapshota",
+      "message": "Nahi baduzu, etiketa ezazu testu-snapshot hau non gorde aukeratu aurretik.",
+      "labels": {
+        "language": "Hizkuntza",
+        "type": "Mota",
+        "difficulty": "Zailtasuna"
+      },
+      "empty": {
+        "language": "Hizkuntza-etiketarik gabe",
+        "type": "Mota-etiketarik gabe",
+        "difficulty": "Zailtasun-etiketarik gabe"
+      },
+      "buttons": {
+        "confirm": "Gorde testu-snapshota",
+        "cancel": "Utzi"
+      },
+      "close_aria": "Itxi testu-snapshota gordetzeko elkarrizketa",
+      "options": {
+        "language": {
+          "ar": "Arabiera",
+          "arn": "Mapudungun",
+          "ay": "Aimara",
+          "bn": "Bengalera",
+          "ca": "Katalana",
+          "de": "Alemana",
+          "en": "Ingelesa",
+          "es": "Gaztelania",
+          "eu": "Euskara",
+          "fa": "Persiera",
+          "fr": "Frantsesa",
+          "gn": "Guaraniera",
+          "hi": "Hindia",
+          "ht": "Haitiko kreolera",
+          "id": "Indonesiera",
+          "it": "Italiera",
+          "ja": "Japoniera",
+          "ko": "Koreera",
+          "mi": "Maoriera",
+          "pcm": "Nigeriako pidgina",
+          "pt": "Portugesa",
+          "qu": "Kitxua",
+          "ru": "Errusiera",
+          "sv": "Suediera",
+          "tr": "Turkiera",
+          "ur": "Urdua",
+          "vi": "Vietnamera",
+          "zh_hans": "Txinera sinplifikatua",
+          "zh_hant": "Txinera tradizionala",
+          "zu": "Zuluera"
+        },
+        "type": {
+          "fiction": "Fikzioa",
+          "non_fiction": "Ez-fikzioa"
+        },
+        "difficulty": {
+          "easy": "Erraza",
+          "normal": "Normala",
+          "hard": "Zaila"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Atazak",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Gorde gabeko aldaketak daude. Baztertu nahi dituzu?",
         "close_unsaved": "Gorde gabeko aldaketak daude. Itxi gorde gabe?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Gorde testu-snapshota",
-      "message": "Nahi baduzu, etiketa ezazu testu-snapshot hau non gorde aukeratu aurretik.",
-      "labels": {
-        "language": "Hizkuntza",
-        "type": "Mota",
-        "difficulty": "Zailtasuna"
-      },
-      "empty": {
-        "language": "Hizkuntza-etiketarik gabe",
-        "type": "Mota-etiketarik gabe",
-        "difficulty": "Zailtasun-etiketarik gabe"
-      },
-      "buttons": {
-        "confirm": "Gorde testu-snapshota",
-        "cancel": "Utzi"
-      },
-      "close_aria": "Itxi testu-snapshota gordetzeko elkarrizketa",
-      "options": {
-        "language": {
-          "ar": "Arabiera",
-          "arn": "Mapudungun",
-          "ay": "Aimara",
-          "bn": "Bengalera",
-          "ca": "Katalana",
-          "de": "Alemana",
-          "en": "Ingelesa",
-          "es": "Gaztelania",
-          "eu": "Euskara",
-          "fa": "Persiera",
-          "fr": "Frantsesa",
-          "gn": "Guaraniera",
-          "hi": "Hindia",
-          "ht": "Haitiko kreolera",
-          "id": "Indonesiera",
-          "it": "Italiera",
-          "ja": "Japoniera",
-          "ko": "Koreera",
-          "mi": "Maoriera",
-          "pcm": "Nigeriako pidgina",
-          "pt": "Portugesa",
-          "qu": "Kitxua",
-          "ru": "Errusiera",
-          "sv": "Suediera",
-          "tr": "Turkiera",
-          "ur": "Urdua",
-          "vi": "Vietnamera",
-          "zh_hans": "Txinera sinplifikatua",
-          "zh_hant": "Txinera tradizionala",
-          "zu": "Zuluera"
-        },
-        "type": {
-          "fiction": "Fikzioa",
-          "non_fiction": "Ez-fikzioa"
-        },
-        "difficulty": {
-          "easy": "Erraza",
-          "normal": "Normala",
-          "hard": "Zaila"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Utzi",
       "save": "Gorde"
     },
+    "browser_extension": {
+      "title": "Nabigatzailearen hedapena",
+      "subtitle": "Irakurketa-denbora",
+      "availability": "Orain Chrome-n erabilgarri. Laster nabigatzaile gehiagotan ere bai.",
+      "chrome_store_aria": "Ireki hedapenaren Chrome Web Store orria",
+      "close_aria": "Itxi nabigatzailearen hedapenaren elkarrizketa-koadroa"
+    },
     "alerts": {
       "clipboard_too_large": "Arbeleko testua handiegia da prozesatzeko. Laburtu eta saiatu berriro.",
       "append_too_large": "Emaitzako testua handiegia da prozesatzeko. Laburtu eta saiatu berriro.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Ezin izan da hautatutako orrien PDFa sortu erauzketarako. Egiaztatu fitxategia eta saiatu berriro.",
       "text_extraction_generated_pdf_cleanup_warning": "Erauzketa amaitu da, baina sortutako tokiko PDF bat ezin izan da automatikoki garbitu.",
       "text_extraction_route_choice_required": "PDF honetarako bidea aukeratu behar da erauzketarekin jarraitu aurretik.",
-      "text_extraction_route_choice_title": "Aukeratu erauzketa-bidea",
-      "text_extraction_route_choice_message": "PDF honetarako bi erauzketa-bideak daude erabilgarri. Aukeratu bat jarraitzeko.",
-      "text_extraction_route_choice_native_button": "Erabili natiboa",
-      "text_extraction_route_choice_ocr_button": "Erabili OCR",
-      "text_extraction_route_choice_cancel_button": "Utzi",
-      "text_extraction_route_choice_close_aria": "Itxi erauzketa-bidearen elkarrizketa",
-      "text_extraction_apply_modal_title": "Aplikatu erauzitako testua",
-      "text_extraction_apply_modal_message": "Aukeratu nola aplikatu erauzitako testua.",
-      "text_extraction_apply_modal_elapsed": "Exekuzio-denbora: ",
-      "text_extraction_apply_modal_repeat_label": "Errepikapenak",
-      "text_extraction_apply_modal_overwrite_button": "Gainidatzi",
-      "text_extraction_apply_modal_append_button": "Gehitu",
-      "text_extraction_apply_modal_cancel_button": "Utzi",
-      "text_extraction_apply_modal_close_aria": "Itxi erauzitako testua aplikatzeko elkarrizketa",
-      "text_extraction_apply_modal_saved_pdf_message": "Sortutako PDFa erauzketaren ondoren mantendu da.",
-      "text_extraction_apply_modal_saved_pdf_label": "Gordetako PDFa: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Erakutsi gordetako PDFa",
       "text_extraction_generated_pdf_reveal_failed": "Ezin izan da gordetako PDFa erakutsi. Egiaztatu fitxategia oraindik badagoen.",
       "text_extraction_apply_error": "Errorea gertatu da erauzitako testua aplikatzean. Begiratu kontsola eta saiatu berriro.",
       "text_extraction_apply_too_large": "Emaitzako testua handiegia da prozesatzeko. Murriztu errepikapenak eta saiatu berriro.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Prestatutako erauzketa eskaera ez da jada baliozkoa. Hasi fluxua berriro.",
       "text_extraction_ocr_unavailable": "OCR ez dago erabilgarri. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
       "text_extraction_ocr_activation_required": "OCR aktibatzea beharrezkoa da. Hasi saioa Google OCR-en eta saiatu berriro.",
-      "text_extraction_ocr_activation_disclosure_title": "Berrikusi Google OCR aktibazioa",
-      "text_extraction_ocr_activation_disclosure_intro": "toT-ek Google zerbitzuak erabiltzen ditu OCR-rako. Jarraituz gero, nabigatzailea irekiko da aplikazio hau baimentzeko.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "OCR-rako aukeratzen dituzun fitxategiak soilik bidaltzen dira Googlera.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Aplikazio honek OCR-rako aplikazioak kudeatutako Google OAuth kredentzialak eta Google tokenaren egoera lokala gordetzen ditu aplikazio-instantzia honetan.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Esportatu ondoren, aplikazioa aldi baterako Google dokumentua zure Google Drivetik kentzen saiatzen da.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Geroago deskonekta dezakezu Hobespenak > Deskonektatu Google OCR aukeratik.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Jarraitu Googlerekin",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Utzi",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Ireki pribatutasun-politika",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Itxi Google OCR aktibazioaren azalpen-elkarrizketa",
       "text_extraction_ocr_activation_success": "OCR aktibazioa osatu da. Erauzketa berriz saiatzen.",
       "text_extraction_ocr_activation_cancelled": "OCR aktibazioa bertan behera utzi da. Erauzketa prozesuak ez du jarraitu.",
       "text_extraction_ocr_token_state_invalid": "Gordetako Google OCR saio-hasieraren egoera baliogabea da. Berriz konektatu Google OCR eta saiatu berriro.",

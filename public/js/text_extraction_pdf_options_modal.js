@@ -132,7 +132,7 @@
   }
 
   function getInvalidRangeMessage(totalPages) {
-    return msgRenderer('renderer.text_extraction_pdf_options.invalid_range', {
+    return msgRenderer('renderer.text_extraction.pdf_options.invalid_range', {
       totalPages: String(totalPages),
     });
   }
@@ -172,7 +172,7 @@
 
     renderSummaryValue(
       selectedCountSummary,
-      'renderer.text_extraction_pdf_options.selected_page_count_label',
+      'renderer.text_extraction.pdf_options.selected_page_count_label',
       String(rangeState.selectedPageCount)
     );
   }
@@ -235,27 +235,27 @@
       ? inspection.fileInfo.fileName
       : '';
 
-    title.textContent = tRenderer('renderer.text_extraction_pdf_options.title');
-    message.textContent = tRenderer('renderer.text_extraction_pdf_options.message');
-    fileLabel.textContent = tRenderer('renderer.text_extraction_pdf_options.file_label');
+    title.textContent = tRenderer('renderer.text_extraction.pdf_options.title');
+    message.textContent = tRenderer('renderer.text_extraction.pdf_options.message');
+    fileLabel.textContent = tRenderer('renderer.text_extraction.pdf_options.file_label');
     fileName.textContent = inspectedFileName;
     fileName.title = inspectedFileName;
     renderSummaryValue(
       totalPagesSummary,
-      'renderer.text_extraction_pdf_options.total_pages_label',
+      'renderer.text_extraction.pdf_options.total_pages_label',
       String(totalPages)
     );
-    selectionLegend.textContent = tRenderer('renderer.text_extraction_pdf_options.selection_legend');
-    allPagesLabel.textContent = tRenderer('renderer.text_extraction_pdf_options.all_pages_label');
-    rangeLabel.textContent = tRenderer('renderer.text_extraction_pdf_options.range_label');
-    fromLabel.textContent = tRenderer('renderer.text_extraction_pdf_options.from_page_label');
-    toLabel.textContent = tRenderer('renderer.text_extraction_pdf_options.to_page_label');
-    keepLabel.textContent = tRenderer('renderer.text_extraction_pdf_options.keep_generated_pdf_label');
-    btnContinue.textContent = tRenderer('renderer.text_extraction_pdf_options.continue_button');
-    btnCancel.textContent = tRenderer('renderer.text_extraction_pdf_options.cancel_button');
+    selectionLegend.textContent = tRenderer('renderer.text_extraction.pdf_options.selection_legend');
+    allPagesLabel.textContent = tRenderer('renderer.text_extraction.pdf_options.all_pages_label');
+    rangeLabel.textContent = tRenderer('renderer.text_extraction.pdf_options.range_label');
+    fromLabel.textContent = tRenderer('renderer.text_extraction.pdf_options.from_page_label');
+    toLabel.textContent = tRenderer('renderer.text_extraction.pdf_options.to_page_label');
+    keepLabel.textContent = tRenderer('renderer.text_extraction.pdf_options.keep_generated_pdf_label');
+    btnContinue.textContent = tRenderer('renderer.text_extraction.pdf_options.continue_button');
+    btnCancel.textContent = tRenderer('renderer.text_extraction.pdf_options.cancel_button');
     btnClose.setAttribute(
       'aria-label',
-      tRenderer('renderer.text_extraction_pdf_options.close_aria')
+      tRenderer('renderer.text_extraction.pdf_options.close_aria')
     );
 
     allPagesRadio.checked = true;

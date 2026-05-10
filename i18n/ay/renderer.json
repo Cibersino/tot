@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Uñakipata qillqatan qallta ukat tukuy chiqanaka:",
       "selector_empty": "(ch’usa)",
+      "reading_tools": {
+        "reading_speed_test": "Ullañ jank’akïwi test",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Archivut qillqata apsuña",
         "text_extraction_abort": "Apsuña suyt’ayaña",
@@ -59,10 +63,6 @@
         "speed": "Jank’akïwi:",
         "controls_label": "Pachayupiri apnaqañanaka"
       },
-      "reading_tools": {
-        "reading_speed_test": "Ullañ jank’akïwi test",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Qillqata apsuskakiwa...",
         "text_extraction_preparing": "Apsuña thakhi wakichaskakiwa...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Qillqata apsuñatak archivo aka chiqar jaquntam"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF extracción ajlliñanaka",
-      "message": "Extracción janïr qalltkasax taqpach PDF procesañcha jan ukax mä qhipa-qhipa laphi rango procesañcha uk ajllim.",
-      "file_label": "Archivo:",
-      "total_pages_label": "Taqpach laphinaka: ",
-      "selection_legend": "Laphinaka ajlliña",
-      "all_pages_label": "Taqpach laphinaka",
-      "range_label": "Laphi rango",
-      "from_page_label": "Laphi ukat",
-      "to_page_label": "Laphi ukakama",
-      "selected_page_count_label": "Ajllit laphinaka: ",
-      "keep_generated_pdf_label": "Procesamiento tukuyatat ajllit laphinakat lurat PDF imaña",
-      "continue_button": "Sarantaskakiña",
-      "cancel_button": "Jan saña",
-      "close_aria": "PDF extracción ajlliñanak diálogo jistʼantaña",
-      "invalid_range": "1 ukat {totalPages} taypin mä qhipa-qhipa laphi rango qillqtʼam."
-    },
-    "browser_extension": {
-      "title": "Navegador extención",
-      "subtitle": "Ullaña pacha",
-      "availability": "Jichhax Chrome ukan utji. Juk'amp navegaduranakax niya jutaniwa.",
-      "chrome_store_aria": "Chrome Web Store ukan extención panka jist'araña",
-      "close_aria": "Navegador extención diálogo jist'antaña"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF extracción ajlliñanaka",
+        "message": "Extracción janïr qalltkasax taqpach PDF procesañcha jan ukax mä qhipa-qhipa laphi rango procesañcha uk ajllim.",
+        "file_label": "Archivo:",
+        "total_pages_label": "Taqpach laphinaka: ",
+        "selection_legend": "Laphinaka ajlliña",
+        "all_pages_label": "Taqpach laphinaka",
+        "range_label": "Laphi rango",
+        "from_page_label": "Laphi ukat",
+        "to_page_label": "Laphi ukakama",
+        "selected_page_count_label": "Ajllit laphinaka: ",
+        "keep_generated_pdf_label": "Procesamiento tukuyatat ajllit laphinakat lurat PDF imaña",
+        "continue_button": "Sarantaskakiña",
+        "cancel_button": "Jan saña",
+        "close_aria": "PDF extracción ajlliñanak diálogo jistʼantaña",
+        "invalid_range": "1 ukat {totalPages} taypin mä qhipa-qhipa laphi rango qillqtʼam."
+      },
+      "route_choice": {
+        "title": "Apsuña thakhi ajlliña",
+        "message": "Aka PDF ukatakix pä apsuña thakhiw utji. Sarantañatak may ajllim.",
+        "native_button": "Nativa apnaqaña",
+        "ocr_button": "OCR apnaqaña",
+        "cancel_button": "Suyt’ayaña",
+        "close_aria": "Apsuña thakhi diálogo jist’antaña"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR activación uñakipaña",
+        "intro": "toT ukax OCR ukatak Google servicios apnaqi. Sarantaskakïta ukhax aka app autorizañatak navegador jist’aratani.",
+        "selected_files": "Google ukarux OCR ukatakix jumax ajllkta uka archivunakakiw apayatäni.",
+        "local_storage": "Aka appax appamp apnaqata Google OAuth credencialanaka OCR ukatak ukat local Google token estado aka instancia ukan imaraki.",
+        "remote_cleanup": "Exportar tukuyasinxa, appax Google Drive ukamat temporal Google documento chhaqtayañ yanti.",
+        "disconnect": "Qhipanxa Preferencias > Desconectar Google OCR tuqiw aka mayachawi apsusma.",
+        "proceed_button": "Google ukamp sarantaña",
+        "cancel_button": "Suyt’ayaña",
+        "privacy_link": "Privacidad política jist’araña",
+        "close_aria": "Google OCR activación diálogo jist’antaña"
+      },
+      "apply_modal": {
+        "title": "Apsuta qillqata apnaqaña",
+        "message": "Apsuta qillqata kunjam apnaqañsa ajllim.",
+        "elapsed": "Lurawi pacha: ",
+        "repeat_label": "Kutinaka",
+        "overwrite_button": "Lantintaña",
+        "append_button": "Yapxataña",
+        "cancel_button": "Suyt’ayaña",
+        "close_aria": "Apsuta qillqata apnaqañ diálogo jist’antaña",
+        "saved_pdf_message": "Lurat PDF extracción tukuyatat imasiwayi.",
+        "saved_pdf_label": "Imat PDF: ",
+        "reveal_saved_pdf_button": "Imat PDF uñachayaña"
+      }
     },
     "editor": {
       "title": "toT — Phuqhata qillqata",
@@ -129,6 +157,68 @@
       "replace_timeout": "Lantintañax sinti jayaw tukuwayi. Wasitat yant’am.",
       "status_no_matches": "Janiw jakthapiwix utjkiti",
       "status_empty_query": "Thaqañatak qillqt’am"
+    },
+    "snapshot_save_tags": {
+      "title": "Qillqata snapshot imaña",
+      "message": "Kawkhansa imañ munta uk ajlliñ nayraqat, aka qillqata snapshot ukar munañaparjam etiqueta ucham.",
+      "labels": {
+        "language": "Aru",
+        "type": "Kasta",
+        "difficulty": "Ch’amäwi"
+      },
+      "empty": {
+        "language": "Jan aru etiqueta",
+        "type": "Jan kasta etiqueta",
+        "difficulty": "Jan ch’amäwi etiqueta"
+      },
+      "buttons": {
+        "confirm": "Qillqata snapshot imaña",
+        "cancel": "Suyt’ayaña"
+      },
+      "close_aria": "Qillqata snapshot imañ diálogo jist’antaña",
+      "options": {
+        "language": {
+          "ar": "Árabe",
+          "arn": "Mapudungun",
+          "ay": "Aimara",
+          "bn": "Bengalí",
+          "ca": "Catalán",
+          "de": "Alemán",
+          "en": "Inglés",
+          "es": "Español",
+          "eu": "Euskera",
+          "fa": "Persa",
+          "fr": "Francés",
+          "gn": "Guaraní",
+          "hi": "Hindi",
+          "ht": "Criollo haitiano",
+          "id": "Indonesio",
+          "it": "Italiano",
+          "ja": "Japonés",
+          "ko": "Coreano",
+          "mi": "Maorí",
+          "pcm": "Pidgin nigeriano",
+          "pt": "Portugués",
+          "qu": "Quechua",
+          "ru": "Ruso",
+          "sv": "Sueco",
+          "tr": "Turco",
+          "ur": "Urdu",
+          "vi": "Vietnamita",
+          "zh_hans": "Chino simplificado",
+          "zh_hant": "Chino tradicional",
+          "zu": "Zulú"
+        },
+        "type": {
+          "fiction": "Ficción",
+          "non_fiction": "Jan ficción"
+        },
+        "difficulty": {
+          "easy": "Jasaki",
+          "normal": "Normal",
+          "hard": "Ch’ama"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Tareanaka",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Jan imata mayjt’awinakaw utji. Jaytañ munasmati?",
         "close_unsaved": "Jan imata mayjt’awinakaw utji. Jan imasax jist’antañati?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Qillqata snapshot imaña",
-      "message": "Kawkhansa imañ munta uk ajlliñ nayraqat, aka qillqata snapshot ukar munañaparjam etiqueta ucham.",
-      "labels": {
-        "language": "Aru",
-        "type": "Kasta",
-        "difficulty": "Ch’amäwi"
-      },
-      "empty": {
-        "language": "Jan aru etiqueta",
-        "type": "Jan kasta etiqueta",
-        "difficulty": "Jan ch’amäwi etiqueta"
-      },
-      "buttons": {
-        "confirm": "Qillqata snapshot imaña",
-        "cancel": "Suyt’ayaña"
-      },
-      "close_aria": "Qillqata snapshot imañ diálogo jist’antaña",
-      "options": {
-        "language": {
-          "ar": "Árabe",
-          "arn": "Mapudungun",
-          "ay": "Aimara",
-          "bn": "Bengalí",
-          "ca": "Catalán",
-          "de": "Alemán",
-          "en": "Inglés",
-          "es": "Español",
-          "eu": "Euskera",
-          "fa": "Persa",
-          "fr": "Francés",
-          "gn": "Guaraní",
-          "hi": "Hindi",
-          "ht": "Criollo haitiano",
-          "id": "Indonesio",
-          "it": "Italiano",
-          "ja": "Japonés",
-          "ko": "Coreano",
-          "mi": "Maorí",
-          "pcm": "Pidgin nigeriano",
-          "pt": "Portugués",
-          "qu": "Quechua",
-          "ru": "Ruso",
-          "sv": "Sueco",
-          "tr": "Turco",
-          "ur": "Urdu",
-          "vi": "Vietnamita",
-          "zh_hans": "Chino simplificado",
-          "zh_hant": "Chino tradicional",
-          "zu": "Zulú"
-        },
-        "type": {
-          "fiction": "Ficción",
-          "non_fiction": "Jan ficción"
-        },
-        "difficulty": {
-          "easy": "Jasaki",
-          "normal": "Normal",
-          "hard": "Ch’ama"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Suyt’ayaña",
       "save": "Imaña"
     },
+    "browser_extension": {
+      "title": "Navegador extención",
+      "subtitle": "Ullaña pacha",
+      "availability": "Jichhax Chrome ukan utji. Juk'amp navegaduranakax niya jutaniwa.",
+      "chrome_store_aria": "Chrome Web Store ukan extención panka jist'araña",
+      "close_aria": "Navegador extención diálogo jist'antaña"
+    },
     "alerts": {
       "clipboard_too_large": "Portapapeles qillqatax sinti jach’awa procesañatak. Jisk’acham ukat wasitat yant’am.",
       "append_too_large": "Jikxatata qillqatax sinti jach’awa procesañatak. Jisk’acham ukat wasitat yant’am.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Ajllit laphinakat PDF lurañax janiw wakiskänti extracción ukatakixa. Archivo uñakipam ukat mayamp yantʼam.",
       "text_extraction_generated_pdf_cleanup_warning": "Extracción tukuyxiwa, ukampis lurat local PDF janiw automáticamente pichsusiñjamäkänti.",
       "text_extraction_route_choice_required": "Aka PDF ukatakix apsuñ nayraqat thakhi ajlliñaw wakisi.",
-      "text_extraction_route_choice_title": "Apsuña thakhi ajlliña",
-      "text_extraction_route_choice_message": "Aka PDF ukatakix pä apsuña thakhiw utji. Sarantañatak may ajllim.",
-      "text_extraction_route_choice_native_button": "Nativa apnaqaña",
-      "text_extraction_route_choice_ocr_button": "OCR apnaqaña",
-      "text_extraction_route_choice_cancel_button": "Suyt’ayaña",
-      "text_extraction_route_choice_close_aria": "Apsuña thakhi diálogo jist’antaña",
-      "text_extraction_apply_modal_title": "Apsuta qillqata apnaqaña",
-      "text_extraction_apply_modal_message": "Apsuta qillqata kunjam apnaqañsa ajllim.",
-      "text_extraction_apply_modal_elapsed": "Lurawi pacha: ",
-      "text_extraction_apply_modal_repeat_label": "Kutinaka",
-      "text_extraction_apply_modal_overwrite_button": "Lantintaña",
-      "text_extraction_apply_modal_append_button": "Yapxataña",
-      "text_extraction_apply_modal_cancel_button": "Suyt’ayaña",
-      "text_extraction_apply_modal_close_aria": "Apsuta qillqata apnaqañ diálogo jist’antaña",
-      "text_extraction_apply_modal_saved_pdf_message": "Lurat PDF extracción tukuyatat imasiwayi.",
-      "text_extraction_apply_modal_saved_pdf_label": "Imat PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Imat PDF uñachayaña",
       "text_extraction_generated_pdf_reveal_failed": "Imat PDF janiw uñachayañjamäkiti. Archivo ukax wali utjaskiti uñakipam.",
       "text_extraction_apply_error": "Apsuta qillqata apnaqañan pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
       "text_extraction_apply_too_large": "Jikxatata qillqatax sinti jach’awa procesañatak. Kutinaka jisk’acham ukat wasitat yant’am.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Wakicht’ata apsuña mayiwix janiw válido ukäxiti. Flujo wasitat qalltam.",
       "text_extraction_ocr_unavailable": "OCR janiw utjkiti. Setup/auth uñakipam ukat wasitat yant’am.",
       "text_extraction_ocr_activation_required": "OCR activación wakisiwa. Google OCR ukar mantam ukat wasitat yant’am.",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR activación uñakipaña",
-      "text_extraction_ocr_activation_disclosure_intro": "toT ukax OCR ukatak Google servicios apnaqi. Sarantaskakïta ukhax aka app autorizañatak navegador jist’aratani.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Google ukarux OCR ukatakix jumax ajllkta uka archivunakakiw apayatäni.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Aka appax appamp apnaqata Google OAuth credencialanaka OCR ukatak ukat local Google token estado aka instancia ukan imaraki.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Exportar tukuyasinxa, appax Google Drive ukamat temporal Google documento chhaqtayañ yanti.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Qhipanxa Preferencias > Desconectar Google OCR tuqiw aka mayachawi apsusma.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Google ukamp sarantaña",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Suyt’ayaña",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Privacidad política jist’araña",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Google OCR activación diálogo jist’antaña",
       "text_extraction_ocr_activation_success": "OCR activación tukuyata. Apsuña wasitat yant’askiwa.",
       "text_extraction_ocr_activation_cancelled": "OCR activación suyt’ayata. Apsuña janiw sarantkiti.",
       "text_extraction_ocr_token_state_invalid": "Imata Google OCR mantaña estado janiw walikiti. Google OCR wasitat mayacham ukat wasitat yant’am.",

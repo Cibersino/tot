@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Jehaipy oñehesa’ỹijóva pehẽngue ñepyrũ ha paha:",
       "selector_empty": "(nandi)",
+      "reading_tools": {
+        "reading_speed_test": "Moñe’ẽ pya’ekue test",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Eru/eipe’a jehai archivo-gui",
         "text_extraction_abort": "Eheja extracción",
@@ -59,10 +63,6 @@
         "speed": "Pya’ekue:",
         "controls_label": "Cronómetro controles"
       },
-      "reading_tools": {
-        "reading_speed_test": "Moñe’ẽ pya’ekue test",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Oñeguenohẽ jehai...",
         "text_extraction_preparing": "Oñembosako’i text extraction rape...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Epoi archivo ko’ápe egueru/eipe’a hag̃ua jehai"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF extracción jeporavorã",
-      "message": "Eiporavo eprocesátapa PDF tuichakue térã peteĩ rango de páginas ojoajúva extracción mboyve.",
-      "file_label": "Archivo:",
-      "total_pages_label": "Página opavave: ",
-      "selection_legend": "Página jeporavo",
-      "all_pages_label": "Página opavave",
-      "range_label": "Rango de páginas",
-      "from_page_label": "Página guive",
-      "to_page_label": "Página peve",
-      "selected_page_count_label": "Página ojeporavóva: ",
-      "keep_generated_pdf_label": "Eñongatu pe PDF umi página ojeporavóvagui ojejapóva procesamiento rire",
-      "continue_button": "Eho tenonde",
-      "cancel_button": "Eheja",
-      "close_aria": "Emboty PDF extracción jeporavorã ñeʼẽhaipyre",
-      "invalid_range": "Ehai peteĩ rango de páginas ojoajúva 1 ha {totalPages} paʼũme."
-    },
-    "browser_extension": {
-      "title": "Jepysokue kundahárape g̃uarã",
-      "subtitle": "Aravo jehecharã",
-      "availability": "Ojeguereko ko'ág̃a Chrome-pe. Oútama kundahára hetave ko'ẽrõitéma.",
-      "chrome_store_aria": "Eipe'a jepysokue Chrome Web Store rogue",
-      "close_aria": "Emboty jepysokue kundahárape g̃uarã ñe'ẽryru"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF extracción jeporavorã",
+        "message": "Eiporavo eprocesátapa PDF tuichakue térã peteĩ rango de páginas ojoajúva extracción mboyve.",
+        "file_label": "Archivo:",
+        "total_pages_label": "Página opavave: ",
+        "selection_legend": "Página jeporavo",
+        "all_pages_label": "Página opavave",
+        "range_label": "Rango de páginas",
+        "from_page_label": "Página guive",
+        "to_page_label": "Página peve",
+        "selected_page_count_label": "Página ojeporavóva: ",
+        "keep_generated_pdf_label": "Eñongatu pe PDF umi página ojeporavóvagui ojejapóva procesamiento rire",
+        "continue_button": "Eho tenonde",
+        "cancel_button": "Eheja",
+        "close_aria": "Emboty PDF extracción jeporavorã ñeʼẽhaipyre",
+        "invalid_range": "Ehai peteĩ rango de páginas ojoajúva 1 ha {totalPages} paʼũme."
+      },
+      "route_choice": {
+        "title": "Eiporavo extracción rape",
+        "message": "Ko PDF oguereko mokõi extracción rape. Eiporavo peteĩ resegí hag̃ua.",
+        "native_button": "Eipuru nativa",
+        "ocr_button": "Eipuru OCR",
+        "cancel_button": "Eheja",
+        "close_aria": "Emboty diálogo extracción rape rehegua"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Ehechajey Google OCR activación",
+        "intro": "toT oipuru Google servicios OCR-pe g̃uarã. Resegíramo, ojepe’áta navegador reautoriza hag̃ua ko app.",
+        "selected_files": "Google-pe oñemondo umi archivo reiporavóva OCR-pe g̃uarãnte.",
+        "local_storage": "Ko app oñongatu credencial OAuth Google app oisãmbyhýva OCR-pe g̃uarã ha estado local token Google rehegua ko instancia-pe.",
+        "remote_cleanup": "Exportar rire, app oha’ã ombogue documento temporal Google-gui nde Google Drive-pe.",
+        "disconnect": "Upe rire ikatu ejehekýi Preferencias > Desconectar Google OCR rupive.",
+        "proceed_button": "Esegí Google ndive",
+        "cancel_button": "Eheja",
+        "privacy_link": "Eipe’a política de privacidad",
+        "close_aria": "Emboty diálogo Google OCR activación rehegua"
+      },
+      "apply_modal": {
+        "title": "Eipuru jehai ojeipe’áva",
+        "message": "Eiporavo mba’éichapa reipurúta jehai ojeipe’áva.",
+        "elapsed": "Aravo ejecución: ",
+        "repeat_label": "Jey jey",
+        "overwrite_button": "Myengovia",
+        "append_button": "Mbojoapy",
+        "cancel_button": "Eheja",
+        "close_aria": "Emboty diálogo jehai ojeipe’áva jepururã",
+        "saved_pdf_message": "Pe PDF ojejapóva oñeñongatu extracción rire.",
+        "saved_pdf_label": "PDF oñeñongatúva: ",
+        "reveal_saved_pdf_button": "Ehechauka PDF oñeñongatúva"
+      }
     },
     "editor": {
       "title": "toT — Jehai henyhẽva",
@@ -129,6 +157,68 @@
       "replace_timeout": "Ñemyengovia ipukueterei. Eha’ã jey.",
       "status_no_matches": "Ndaipóri ojojáva",
       "status_empty_query": "Ehai eheka hag̃ua"
+    },
+    "snapshot_save_tags": {
+      "title": "Eñongatu jehai snapshot",
+      "message": "Eñongatu hag̃ua renda reiporavo mboyve, ikatu emoĩ etiqueta ko jehai snapshot-pe.",
+      "labels": {
+        "language": "Ñe’ẽ",
+        "type": "Tipo",
+        "difficulty": "Hasýkue"
+      },
+      "empty": {
+        "language": "Ñe’ẽ etiqueta’ỹre",
+        "type": "Tipo etiqueta’ỹre",
+        "difficulty": "Hasýkue etiqueta’ỹre"
+      },
+      "buttons": {
+        "confirm": "Eñongatu jehai snapshot",
+        "cancel": "Eheja"
+      },
+      "close_aria": "Emboty diálogo jehai snapshot ñongaturã",
+      "options": {
+        "language": {
+          "ar": "Árabe",
+          "arn": "Mapudungun",
+          "ay": "Aimara",
+          "bn": "Bengalí",
+          "ca": "Catalán",
+          "de": "Alemán",
+          "en": "Inglés",
+          "es": "Español",
+          "eu": "Euskera",
+          "fa": "Persa",
+          "fr": "Francés",
+          "gn": "Guaraní",
+          "hi": "Hindi",
+          "ht": "Criollo haitiano",
+          "id": "Indonesio",
+          "it": "Italiano",
+          "ja": "Japonés",
+          "ko": "Coreano",
+          "mi": "Maorí",
+          "pcm": "Pidgin nigeriano",
+          "pt": "Portugués",
+          "qu": "Quechua",
+          "ru": "Ruso",
+          "sv": "Sueco",
+          "tr": "Turco",
+          "ur": "Urdu",
+          "vi": "Vietnamita",
+          "zh_hans": "Chino simplificado",
+          "zh_hant": "Chino tradicional",
+          "zu": "Zulú"
+        },
+        "type": {
+          "fiction": "Ficción",
+          "non_fiction": "No ficción"
+        },
+        "difficulty": {
+          "easy": "Ndahasýi",
+          "normal": "Normal",
+          "hard": "Hasy"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Tembiaporã",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Oĩ ñemoambue oñeñongatu’ỹva. ¿Rehejátapa?",
         "close_unsaved": "Oĩ ñemoambue oñeñongatu’ỹva. ¿Embotýtapa eñongatu’ỹre?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Eñongatu jehai snapshot",
-      "message": "Eñongatu hag̃ua renda reiporavo mboyve, ikatu emoĩ etiqueta ko jehai snapshot-pe.",
-      "labels": {
-        "language": "Ñe’ẽ",
-        "type": "Tipo",
-        "difficulty": "Hasýkue"
-      },
-      "empty": {
-        "language": "Ñe’ẽ etiqueta’ỹre",
-        "type": "Tipo etiqueta’ỹre",
-        "difficulty": "Hasýkue etiqueta’ỹre"
-      },
-      "buttons": {
-        "confirm": "Eñongatu jehai snapshot",
-        "cancel": "Eheja"
-      },
-      "close_aria": "Emboty diálogo jehai snapshot ñongaturã",
-      "options": {
-        "language": {
-          "ar": "Árabe",
-          "arn": "Mapudungun",
-          "ay": "Aimara",
-          "bn": "Bengalí",
-          "ca": "Catalán",
-          "de": "Alemán",
-          "en": "Inglés",
-          "es": "Español",
-          "eu": "Euskera",
-          "fa": "Persa",
-          "fr": "Francés",
-          "gn": "Guaraní",
-          "hi": "Hindi",
-          "ht": "Criollo haitiano",
-          "id": "Indonesio",
-          "it": "Italiano",
-          "ja": "Japonés",
-          "ko": "Coreano",
-          "mi": "Maorí",
-          "pcm": "Pidgin nigeriano",
-          "pt": "Portugués",
-          "qu": "Quechua",
-          "ru": "Ruso",
-          "sv": "Sueco",
-          "tr": "Turco",
-          "ur": "Urdu",
-          "vi": "Vietnamita",
-          "zh_hans": "Chino simplificado",
-          "zh_hant": "Chino tradicional",
-          "zu": "Zulú"
-        },
-        "type": {
-          "fiction": "Ficción",
-          "non_fiction": "No ficción"
-        },
-        "difficulty": {
-          "easy": "Ndahasýi",
-          "normal": "Normal",
-          "hard": "Hasy"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Eheja",
       "save": "Ñongatu"
     },
+    "browser_extension": {
+      "title": "Jepysokue kundahárape g̃uarã",
+      "subtitle": "Aravo jehecharã",
+      "availability": "Ojeguereko ko'ág̃a Chrome-pe. Oútama kundahára hetave ko'ẽrõitéma.",
+      "chrome_store_aria": "Eipe'a jepysokue Chrome Web Store rogue",
+      "close_aria": "Emboty jepysokue kundahárape g̃uarã ñe'ẽryru"
+    },
     "alerts": {
       "clipboard_too_large": "Portapapeles jehai tuichaiterei oñeprocesa hag̃ua. Emomichĩ ha eha’ã jey.",
       "append_too_large": "Jehai resultado tuichaiterei oñeprocesa hag̃ua. Emomichĩ ha eha’ã jey.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Ndaikatúi ojejapo PDF umi página ojeporavóvagui extracción-pe g̃uarã. Ehecha pe archivo ha ehaʼã jey.",
       "text_extraction_generated_pdf_cleanup_warning": "Pe extracción opa, ha katu ndaikatúi oñemopotĩ ijehegui peteĩ PDF local ojejapóva.",
       "text_extraction_route_choice_required": "Tekotevẽ eiporavo rape ko PDF-pe g̃uarã osegi mboyve extracción.",
-      "text_extraction_route_choice_title": "Eiporavo extracción rape",
-      "text_extraction_route_choice_message": "Ko PDF oguereko mokõi extracción rape. Eiporavo peteĩ resegí hag̃ua.",
-      "text_extraction_route_choice_native_button": "Eipuru nativa",
-      "text_extraction_route_choice_ocr_button": "Eipuru OCR",
-      "text_extraction_route_choice_cancel_button": "Eheja",
-      "text_extraction_route_choice_close_aria": "Emboty diálogo extracción rape rehegua",
-      "text_extraction_apply_modal_title": "Eipuru jehai ojeipe’áva",
-      "text_extraction_apply_modal_message": "Eiporavo mba’éichapa reipurúta jehai ojeipe’áva.",
-      "text_extraction_apply_modal_elapsed": "Aravo ejecución: ",
-      "text_extraction_apply_modal_repeat_label": "Jey jey",
-      "text_extraction_apply_modal_overwrite_button": "Myengovia",
-      "text_extraction_apply_modal_append_button": "Mbojoapy",
-      "text_extraction_apply_modal_cancel_button": "Eheja",
-      "text_extraction_apply_modal_close_aria": "Emboty diálogo jehai ojeipe’áva jepururã",
-      "text_extraction_apply_modal_saved_pdf_message": "Pe PDF ojejapóva oñeñongatu extracción rire.",
-      "text_extraction_apply_modal_saved_pdf_label": "PDF oñeñongatúva: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Ehechauka PDF oñeñongatúva",
       "text_extraction_generated_pdf_reveal_failed": "Ndaikatúi ojehechauka pe PDF oñeñongatúva. Ehecha pe archivo oĩ gueteripa.",
       "text_extraction_apply_error": "Oiko jejavy ojepuru aja jehai ojeipe’áva. Ehecha consola ha eha’ã jey.",
       "text_extraction_apply_too_large": "Jehai resultado tuichaiterei oñeprocesa hag̃ua. Emomichĩ jey jey ha eha’ã jey.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Text extraction pedido oñembosako’iva’ekue ndoikovéima. Emoñepyrũjey flujo.",
       "text_extraction_ocr_unavailable": "OCR ndojepurukuaái. Ehecha setup/auth ha eha’ã jey.",
       "text_extraction_ocr_activation_required": "Tekotevẽ OCR activación. Eike Google OCR-pe ha eha’ã jey.",
-      "text_extraction_ocr_activation_disclosure_title": "Ehechajey Google OCR activación",
-      "text_extraction_ocr_activation_disclosure_intro": "toT oipuru Google servicios OCR-pe g̃uarã. Resegíramo, ojepe’áta navegador reautoriza hag̃ua ko app.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Google-pe oñemondo umi archivo reiporavóva OCR-pe g̃uarãnte.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Ko app oñongatu credencial OAuth Google app oisãmbyhýva OCR-pe g̃uarã ha estado local token Google rehegua ko instancia-pe.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Exportar rire, app oha’ã ombogue documento temporal Google-gui nde Google Drive-pe.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Upe rire ikatu ejehekýi Preferencias > Desconectar Google OCR rupive.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Esegí Google ndive",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Eheja",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Eipe’a política de privacidad",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Emboty diálogo Google OCR activación rehegua",
       "text_extraction_ocr_activation_success": "OCR activación opa. Oñeha’ã jey extracción.",
       "text_extraction_ocr_activation_cancelled": "OCR activación ojeheja. Text extraction ndosegíri.",
       "text_extraction_ocr_token_state_invalid": "Estado oñeñongatúva Google OCR jeike rehegua ndoikói. Embojoaju jey Google OCR ha eha’ã jey.",
