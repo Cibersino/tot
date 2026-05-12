@@ -73,7 +73,6 @@
     if (window.TextApplyCanonical && typeof window.TextApplyCanonical.normalizeRepeat === 'function') {
       return window.TextApplyCanonical.normalizeRepeat(rawValue, { maxRepeat });
     }
-    log.warn('TextApplyCanonical.normalizeRepeat unavailable; using local repeat normalization fallback.');
     const numeric = Number(rawValue);
     if (!Number.isInteger(numeric) || numeric < 1) return 1;
     return Math.min(numeric, maxRepeat);
@@ -107,6 +106,9 @@
     const safeMaxRepeat = Number.isInteger(Number(maxRepeat)) && Number(maxRepeat) > 0
       ? Number(maxRepeat)
       : 1;
+    if (!window.TextApplyCanonical || typeof window.TextApplyCanonical.normalizeRepeat !== 'function') {
+      log.warn('TextApplyCanonical.normalizeRepeat unavailable; using local repeat normalization fallback.');
+    }
     const initialRepeat = normalizeRepeatForModal(defaultRepeat, safeMaxRepeat);
 
     const titleText = tRenderer('renderer.text_extraction.apply_modal.title');
