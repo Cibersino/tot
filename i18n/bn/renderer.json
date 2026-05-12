@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "বিশ্লেষিত লেখার প্রথম ও শেষ অংশ:",
       "selector_empty": "(খালি)",
+      "reading_tools": {
+        "reading_speed_test": "পড়ার গতি পরীক্ষা",
+        "preview_spoiler": "স্পয়লার"
+      },
       "tooltips": {
         "text_extraction": "ফাইল থেকে লেখা নিষ্কাশন করুন",
         "text_extraction_abort": "নিষ্কাশন বন্ধ করুন",
@@ -59,10 +63,6 @@
         "speed": "গতি:",
         "controls_label": "স্টপওয়াচ নিয়ন্ত্রণ"
       },
-      "reading_tools": {
-        "reading_speed_test": "পড়ার গতি পরীক্ষা",
-        "preview_spoiler": "স্পয়লার"
-      },
       "processing": {
         "text_extraction_placeholder": "লেখা নিষ্কাশন করা হচ্ছে...",
         "text_extraction_preparing": "নিষ্কাশন রুট প্রস্তুত করা হচ্ছে...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "লেখা নিষ্কাশনের জন্য ফাইল ছেড়ে দিন"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF এক্সট্র্যাকশন বিকল্প",
-      "message": "এক্সট্র্যাকশনের আগে পুরো PDF প্রক্রিয়া করবেন, নাকি ধারাবাহিক একটি পৃষ্ঠা-পরিসর প্রক্রিয়া করবেন, তা বেছে নিন।",
-      "file_label": "ফাইল:",
-      "total_pages_label": "মোট পৃষ্ঠা: ",
-      "selection_legend": "পৃষ্ঠা নির্বাচন",
-      "all_pages_label": "সব পৃষ্ঠা",
-      "range_label": "পৃষ্ঠা-পরিসর",
-      "from_page_label": "পৃষ্ঠা থেকে",
-      "to_page_label": "পৃষ্ঠা পর্যন্ত",
-      "selected_page_count_label": "নির্বাচিত পৃষ্ঠা: ",
-      "keep_generated_pdf_label": "প্রক্রিয়াকরণের পর নির্বাচিত পৃষ্ঠাগুলোর তৈরি PDF রেখে দিন",
-      "continue_button": "চালিয়ে যান",
-      "cancel_button": "বাতিল",
-      "close_aria": "PDF এক্সট্র্যাকশন বিকল্পের ডায়ালগ বন্ধ করুন",
-      "invalid_range": "১ থেকে {totalPages}-এর মধ্যে ধারাবাহিক একটি পৃষ্ঠা-পরিসর লিখুন।"
-    },
-    "browser_extension": {
-      "title": "ব্রাউজার এক্সটেনশন",
-      "subtitle": "পড়ার সময়",
-      "availability": "এখন Chrome-এ উপলব্ধ। শিগগিরই আরও ব্রাউজারে আসছে।",
-      "chrome_store_aria": "এক্সটেনশনের Chrome Web Store পৃষ্ঠা খুলুন",
-      "close_aria": "ব্রাউজার এক্সটেনশন ডায়ালগ বন্ধ করুন"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF এক্সট্র্যাকশন বিকল্প",
+        "message": "এক্সট্র্যাকশনের আগে পুরো PDF প্রক্রিয়া করবেন, নাকি ধারাবাহিক একটি পৃষ্ঠা-পরিসর প্রক্রিয়া করবেন, তা বেছে নিন।",
+        "file_label": "ফাইল:",
+        "total_pages_label": "মোট পৃষ্ঠা: ",
+        "selection_legend": "পৃষ্ঠা নির্বাচন",
+        "all_pages_label": "সব পৃষ্ঠা",
+        "range_label": "পৃষ্ঠা-পরিসর",
+        "from_page_label": "পৃষ্ঠা থেকে",
+        "to_page_label": "পৃষ্ঠা পর্যন্ত",
+        "selected_page_count_label": "নির্বাচিত পৃষ্ঠা: ",
+        "keep_generated_pdf_label": "প্রক্রিয়াকরণের পর নির্বাচিত পৃষ্ঠাগুলোর তৈরি PDF রেখে দিন",
+        "continue_button": "চালিয়ে যান",
+        "cancel_button": "বাতিল",
+        "close_aria": "PDF এক্সট্র্যাকশন বিকল্পের ডায়ালগ বন্ধ করুন",
+        "invalid_range": "১ থেকে {totalPages}-এর মধ্যে ধারাবাহিক একটি পৃষ্ঠা-পরিসর লিখুন।"
+      },
+      "route_choice": {
+        "title": "নিষ্কাশন রুট নির্বাচন করুন",
+        "message": "এই PDF-এর জন্য দুইটি নিষ্কাশন রুটই উপলব্ধ। চালিয়ে যেতে একটি বেছে নিন।",
+        "native_button": "নেটিভ ব্যবহার করুন",
+        "ocr_button": "OCR ব্যবহার করুন",
+        "cancel_button": "বাতিল",
+        "close_aria": "নিষ্কাশন রুট ডায়ালগ বন্ধ করুন"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR সক্রিয়করণ পর্যালোচনা করুন",
+        "intro": "toT OCR-এর জন্য Google পরিষেবা ব্যবহার করে। চালিয়ে গেলে আপনার ব্রাউজার খুলবে যাতে আপনি এই অ্যাপ অনুমোদন করতে পারেন।",
+        "selected_files": "আপনি OCR-এর জন্য যে ফাইলগুলো নির্বাচন করেন, শুধু সেগুলো Google-এ পাঠানো হয়।",
+        "local_storage": "এই অ্যাপ OCR-এর জন্য অ্যাপ-পরিচালিত Google OAuth ক্রেডেনশিয়াল এবং এই অ্যাপ ইনস্ট্যান্সে লোকাল Google টোকেন অবস্থা সংরক্ষণ করে।",
+        "remote_cleanup": "রপ্তানির পর, অ্যাপ আপনার Google Drive থেকে অস্থায়ী Google ডকুমেন্ট সরানোর চেষ্টা করে।",
+        "disconnect": "পরে Preferences > Disconnect Google OCR থেকে সংযোগ বিচ্ছিন্ন করতে পারবেন।",
+        "proceed_button": "Google-এ চালিয়ে যান",
+        "cancel_button": "বাতিল",
+        "privacy_link": "গোপনীয়তা নীতি খুলুন",
+        "close_aria": "OCR সক্রিয়করণ প্রকাশ ডায়ালগ বন্ধ করুন"
+      },
+      "apply_modal": {
+        "title": "নিষ্কাশিত লেখা প্রয়োগ করুন",
+        "message": "নিষ্কাশিত লেখা কীভাবে প্রয়োগ করবেন তা বেছে নিন।",
+        "elapsed": "চলমান সময়: ",
+        "repeat_label": "পুনরাবৃত্তি",
+        "overwrite_button": "ওভাররাইট",
+        "append_button": "যোগ করুন",
+        "cancel_button": "বাতিল",
+        "close_aria": "নিষ্কাশিত লেখা প্রয়োগের ডায়ালগ বন্ধ করুন",
+        "saved_pdf_message": "এক্সট্র্যাকশনের পর তৈরি PDF রাখা হয়েছে।",
+        "saved_pdf_label": "সংরক্ষিত PDF: ",
+        "reveal_saved_pdf_button": "সংরক্ষিত PDF দেখান"
+      }
     },
     "editor": {
       "title": "toT — সম্পূর্ণ লেখা",
@@ -129,6 +157,68 @@
       "replace_timeout": "প্রতিস্থাপনে সময় শেষ। আবার চেষ্টা করুন।",
       "status_no_matches": "কোনও মিল নেই",
       "status_empty_query": "খুঁজতে লিখুন"
+    },
+    "snapshot_save_tags": {
+      "title": "লেখার স্ন্যাপশট সংরক্ষণ",
+      "message": "কোথায় সংরক্ষণ করবেন তা বেছে নেওয়ার আগে চাইলে এই লেখার স্ন্যাপশটে ট্যাগ যোগ করুন।",
+      "labels": {
+        "language": "ভাষা",
+        "type": "ধরন",
+        "difficulty": "কঠিনতা"
+      },
+      "empty": {
+        "language": "কোনও ভাষা ট্যাগ নেই",
+        "type": "কোনও ধরন ট্যাগ নেই",
+        "difficulty": "কোনও কঠিনতা ট্যাগ নেই"
+      },
+      "buttons": {
+        "confirm": "লেখার স্ন্যাপশট সংরক্ষণ",
+        "cancel": "বাতিল"
+      },
+      "close_aria": "লেখার স্ন্যাপশট সংরক্ষণের ডায়ালগ বন্ধ করুন",
+      "options": {
+        "language": {
+          "ar": "আরবি",
+          "arn": "মাপুদুঙ্গুন",
+          "ay": "আয়মারা",
+          "bn": "বাংলা",
+          "ca": "কাতালান",
+          "de": "জার্মান",
+          "en": "ইংরেজি",
+          "es": "স্প্যানিশ",
+          "eu": "বাস্ক",
+          "fa": "ফার্সি",
+          "fr": "ফরাসি",
+          "gn": "গুয়ারানি",
+          "hi": "হিন্দি",
+          "ht": "হাইতিয়ান ক্রেওল",
+          "id": "ইন্দোনেশীয়",
+          "it": "ইতালীয়",
+          "ja": "জাপানি",
+          "ko": "কোরিয়ান",
+          "mi": "মাওরি",
+          "pcm": "নাইজেরিয় পিজিন",
+          "pt": "পর্তুগিজ",
+          "qu": "কেচুয়া",
+          "ru": "রুশ",
+          "sv": "সুইডিশ",
+          "tr": "তুর্কি",
+          "ur": "উর্দু",
+          "vi": "ভিয়েতনামী",
+          "zh_hans": "চীনা (সরলীকৃত)",
+          "zh_hant": "চীনা (প্রচলিত)",
+          "zu": "জুলু"
+        },
+        "type": {
+          "fiction": "কথাসাহিত্য",
+          "non_fiction": "অ-কথাসাহিত্য"
+        },
+        "difficulty": {
+          "easy": "সহজ",
+          "normal": "সাধারণ",
+          "hard": "কঠিন"
+        }
+      }
     },
     "tasks": {
       "title": "toT — টাস্ক",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "সংরক্ষণ না করা পরিবর্তন আছে। সেগুলো বাতিল করবেন?",
         "close_unsaved": "সংরক্ষণ না করা পরিবর্তন আছে। সংরক্ষণ না করে বন্ধ করবেন?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "লেখার স্ন্যাপশট সংরক্ষণ",
-      "message": "কোথায় সংরক্ষণ করবেন তা বেছে নেওয়ার আগে চাইলে এই লেখার স্ন্যাপশটে ট্যাগ যোগ করুন।",
-      "labels": {
-        "language": "ভাষা",
-        "type": "ধরন",
-        "difficulty": "কঠিনতা"
-      },
-      "empty": {
-        "language": "কোনও ভাষা ট্যাগ নেই",
-        "type": "কোনও ধরন ট্যাগ নেই",
-        "difficulty": "কোনও কঠিনতা ট্যাগ নেই"
-      },
-      "buttons": {
-        "confirm": "লেখার স্ন্যাপশট সংরক্ষণ",
-        "cancel": "বাতিল"
-      },
-      "close_aria": "লেখার স্ন্যাপশট সংরক্ষণের ডায়ালগ বন্ধ করুন",
-      "options": {
-        "language": {
-          "ar": "আরবি",
-          "arn": "মাপুদুঙ্গুন",
-          "ay": "আয়মারা",
-          "bn": "বাংলা",
-          "ca": "কাতালান",
-          "de": "জার্মান",
-          "en": "ইংরেজি",
-          "es": "স্প্যানিশ",
-          "eu": "বাস্ক",
-          "fa": "ফার্সি",
-          "fr": "ফরাসি",
-          "gn": "গুয়ারানি",
-          "hi": "হিন্দি",
-          "ht": "হাইতিয়ান ক্রেওল",
-          "id": "ইন্দোনেশীয়",
-          "it": "ইতালীয়",
-          "ja": "জাপানি",
-          "ko": "কোরিয়ান",
-          "mi": "মাওরি",
-          "pcm": "নাইজেরিয় পিজিন",
-          "pt": "পর্তুগিজ",
-          "qu": "কেচুয়া",
-          "ru": "রুশ",
-          "sv": "সুইডিশ",
-          "tr": "তুর্কি",
-          "ur": "উর্দু",
-          "vi": "ভিয়েতনামী",
-          "zh_hans": "চীনা (সরলীকৃত)",
-          "zh_hant": "চীনা (প্রচলিত)",
-          "zu": "জুলু"
-        },
-        "type": {
-          "fiction": "কথাসাহিত্য",
-          "non_fiction": "অ-কথাসাহিত্য"
-        },
-        "difficulty": {
-          "easy": "সহজ",
-          "normal": "সাধারণ",
-          "hard": "কঠিন"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "বাতিল",
       "save": "সংরক্ষণ"
     },
+    "browser_extension": {
+      "title": "ব্রাউজার এক্সটেনশন",
+      "subtitle": "পড়ার সময়",
+      "availability": "এখন Chrome-এ উপলব্ধ। শিগগিরই আরও ব্রাউজারে আসছে।",
+      "chrome_store_aria": "এক্সটেনশনের Chrome Web Store পৃষ্ঠা খুলুন",
+      "close_aria": "ব্রাউজার এক্সটেনশন ডায়ালগ বন্ধ করুন"
+    },
     "alerts": {
       "clipboard_too_large": "ক্লিপবোর্ডের লেখা প্রক্রিয়াকরণের জন্য খুব বড়। ছোট করে আবার চেষ্টা করুন।",
       "append_too_large": "ফলাফলের লেখা প্রক্রিয়াকরণের জন্য খুব বড়। ছোট করে আবার চেষ্টা করুন।",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "এক্সট্র্যাকশনের জন্য নির্বাচিত পৃষ্ঠাগুলোর PDF তৈরি করা যায়নি। ফাইলটি পরীক্ষা করে আবার চেষ্টা করুন।",
       "text_extraction_generated_pdf_cleanup_warning": "এক্সট্র্যাকশন শেষ হয়েছে, কিন্তু তৈরি হওয়া স্থানীয় PDF স্বয়ংক্রিয়ভাবে পরিষ্কার করা যায়নি।",
       "text_extraction_route_choice_required": "এই PDF-এর জন্য নিষ্কাশন চালিয়ে যাওয়ার আগে রুট নির্বাচন প্রয়োজন।",
-      "text_extraction_route_choice_title": "নিষ্কাশন রুট নির্বাচন করুন",
-      "text_extraction_route_choice_message": "এই PDF-এর জন্য দুইটি নিষ্কাশন রুটই উপলব্ধ। চালিয়ে যেতে একটি বেছে নিন।",
-      "text_extraction_route_choice_native_button": "নেটিভ ব্যবহার করুন",
-      "text_extraction_route_choice_ocr_button": "OCR ব্যবহার করুন",
-      "text_extraction_route_choice_cancel_button": "বাতিল",
-      "text_extraction_route_choice_close_aria": "নিষ্কাশন রুট ডায়ালগ বন্ধ করুন",
-      "text_extraction_apply_modal_title": "নিষ্কাশিত লেখা প্রয়োগ করুন",
-      "text_extraction_apply_modal_message": "নিষ্কাশিত লেখা কীভাবে প্রয়োগ করবেন তা বেছে নিন।",
-      "text_extraction_apply_modal_elapsed": "চলমান সময়: ",
-      "text_extraction_apply_modal_repeat_label": "পুনরাবৃত্তি",
-      "text_extraction_apply_modal_overwrite_button": "ওভাররাইট",
-      "text_extraction_apply_modal_append_button": "যোগ করুন",
-      "text_extraction_apply_modal_cancel_button": "বাতিল",
-      "text_extraction_apply_modal_close_aria": "নিষ্কাশিত লেখা প্রয়োগের ডায়ালগ বন্ধ করুন",
-      "text_extraction_apply_modal_saved_pdf_message": "এক্সট্র্যাকশনের পর তৈরি PDF রাখা হয়েছে।",
-      "text_extraction_apply_modal_saved_pdf_label": "সংরক্ষিত PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "সংরক্ষিত PDF দেখান",
       "text_extraction_generated_pdf_reveal_failed": "সংরক্ষিত PDF দেখানো যায়নি। ফাইলটি এখনও আছে কি না পরীক্ষা করুন।",
       "text_extraction_apply_error": "নিষ্কাশিত লেখা প্রয়োগ করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
       "text_extraction_apply_too_large": "ফলাফলের লেখা প্রক্রিয়াকরণের জন্য খুব বড়। পুনরাবৃত্তি কমিয়ে আবার চেষ্টা করুন।",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "প্রস্তুত করা নিষ্কাশন অনুরোধ আর বৈধ নয়। প্রবাহটি আবার শুরু করুন।",
       "text_extraction_ocr_unavailable": "OCR উপলব্ধ নেই। setup/auth অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।",
       "text_extraction_ocr_activation_required": "OCR সক্রিয়করণ প্রয়োজন। Google OCR-এ সাইন ইন করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR সক্রিয়করণ পর্যালোচনা করুন",
-      "text_extraction_ocr_activation_disclosure_intro": "toT OCR-এর জন্য Google পরিষেবা ব্যবহার করে। চালিয়ে গেলে আপনার ব্রাউজার খুলবে যাতে আপনি এই অ্যাপ অনুমোদন করতে পারেন।",
-      "text_extraction_ocr_activation_disclosure_selected_files": "আপনি OCR-এর জন্য যে ফাইলগুলো নির্বাচন করেন, শুধু সেগুলো Google-এ পাঠানো হয়।",
-      "text_extraction_ocr_activation_disclosure_local_storage": "এই অ্যাপ OCR-এর জন্য অ্যাপ-পরিচালিত Google OAuth ক্রেডেনশিয়াল এবং এই অ্যাপ ইনস্ট্যান্সে লোকাল Google টোকেন অবস্থা সংরক্ষণ করে।",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "রপ্তানির পর, অ্যাপ আপনার Google Drive থেকে অস্থায়ী Google ডকুমেন্ট সরানোর চেষ্টা করে।",
-      "text_extraction_ocr_activation_disclosure_disconnect": "পরে Preferences > Disconnect Google OCR থেকে সংযোগ বিচ্ছিন্ন করতে পারবেন।",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Google-এ চালিয়ে যান",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "বাতিল",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "গোপনীয়তা নীতি খুলুন",
-      "text_extraction_ocr_activation_disclosure_close_aria": "OCR সক্রিয়করণ প্রকাশ ডায়ালগ বন্ধ করুন",
       "text_extraction_ocr_activation_success": "OCR সক্রিয়করণ সম্পন্ন হয়েছে। নিষ্কাশন আবার চেষ্টা করা হচ্ছে।",
       "text_extraction_ocr_activation_cancelled": "OCR সক্রিয়করণ বাতিল করা হয়েছে। নিষ্কাশন চালিয়ে যায়নি।",
       "text_extraction_ocr_token_state_invalid": "সংরক্ষিত Google OCR সাইন-ইন অবস্থা অকার্যকর। Google OCR পুনরায় সংযোগ করে আবার চেষ্টা করুন।",

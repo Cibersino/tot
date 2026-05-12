@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Te wāhanga tuatahi me te wāhanga whakamutunga o te kuputuhi kua tātaritia:",
       "selector_empty": "(kāore he mea)",
+      "reading_tools": {
+        "reading_speed_test": "Whakamātautau tere pānui",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Tango kuputuhi i te kōnae",
         "text_extraction_abort": "Whakakore i te tangohanga",
@@ -59,10 +63,6 @@
         "speed": "Tere:",
         "controls_label": "Ngā mana matawā"
       },
-      "reading_tools": {
-        "reading_speed_test": "Whakamātautau tere pānui",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Kei te tukatuka tangohanga...",
         "text_extraction_preparing": "Kei te whakarite i te ara tango...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Tukua te kōnae ki konei hei tango kuputuhi"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "Kōwhiringa tangohanga PDF",
-      "message": "Kōwhiria mēnā ka tukatukahia te PDF katoa, tētahi awhe whārangi pātata rānei, i mua i te tangohanga.",
-      "file_label": "Kōnae:",
-      "total_pages_label": "Whārangi katoa: ",
-      "selection_legend": "Tīpakonga whārangi",
-      "all_pages_label": "Ngā whārangi katoa",
-      "range_label": "Awhe whārangi",
-      "from_page_label": "Mai i te whārangi",
-      "to_page_label": "Ki te whārangi",
-      "selected_page_count_label": "Whārangi kua tīpakohia: ",
-      "keep_generated_pdf_label": "Puritia te PDF i hangaia mō ngā whārangi kua tīpakohia i muri i te tukatuka",
-      "continue_button": "Haere tonu",
-      "cancel_button": "Whakakore",
-      "close_aria": "Katia te kōrero kōwhiringa tangohanga PDF",
-      "invalid_range": "Tāurua tētahi awhe whārangi pātata i waenga i te 1 me te {totalPages}."
-    },
-    "browser_extension": {
-      "title": "Toronga pūtirotiro",
-      "subtitle": "Wā pānui",
-      "availability": "Kei te wātea i Chrome ināianei. Ka tae mai ētahi atu pūtirotiro ākuanei.",
-      "chrome_store_aria": "Whakatuwhera i te whārangi Chrome Web Store o te toronga",
-      "close_aria": "Katia te kōrero toronga pūtirotiro"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "Kōwhiringa tangohanga PDF",
+        "message": "Kōwhiria mēnā ka tukatukahia te PDF katoa, tētahi awhe whārangi pātata rānei, i mua i te tangohanga.",
+        "file_label": "Kōnae:",
+        "total_pages_label": "Whārangi katoa: ",
+        "selection_legend": "Tīpakonga whārangi",
+        "all_pages_label": "Ngā whārangi katoa",
+        "range_label": "Awhe whārangi",
+        "from_page_label": "Mai i te whārangi",
+        "to_page_label": "Ki te whārangi",
+        "selected_page_count_label": "Whārangi kua tīpakohia: ",
+        "keep_generated_pdf_label": "Puritia te PDF i hangaia mō ngā whārangi kua tīpakohia i muri i te tukatuka",
+        "continue_button": "Haere tonu",
+        "cancel_button": "Whakakore",
+        "close_aria": "Katia te kōrero kōwhiringa tangohanga PDF",
+        "invalid_range": "Tāurua tētahi awhe whārangi pātata i waenga i te 1 me te {totalPages}."
+      },
+      "route_choice": {
+        "title": "Kōwhiri ara tangohanga",
+        "message": "E wātea ana ngā ara tangohanga e rua mō tēnei PDF. Kōwhiria tētahi kia haere tonu.",
+        "native_button": "Whakamahi native",
+        "ocr_button": "Whakamahi OCR",
+        "cancel_button": "Whakakore",
+        "close_aria": "Katia te kōrero ara tangohanga"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Arotake whakahohe Google OCR",
+        "intro": "Ka whakamahi a toT i ngā ratonga Google mō te OCR. Mā te haere tonu ka whakatuwhera tō pūtirotiro kia whakamana ai koe i tēnei taupānga.",
+        "selected_files": "Ko ngā kōnae anake ka kōwhiria e koe mō te OCR ka tukuna ki Google.",
+        "local_storage": "Ka tiaki tēnei taupānga i ngā raraunga Google OAuth e whakahaerehia ana e te taupānga mō te OCR me te āhua tōkena Google paetata i tēnei tāutanga.",
+        "remote_cleanup": "Whai muri i te kaweake, ka ngana te taupānga ki te tango i te tuhinga Google rangitahi i tō Google Drive.",
+        "disconnect": "Ā muri ake ka taea te momotu mā Manakohanga > Momotu Google OCR.",
+        "proceed_button": "Haere tonu ki Google",
+        "cancel_button": "Whakakore",
+        "privacy_link": "Whakatuwhera kaupapahere tūmataiti",
+        "close_aria": "Katia te kōrero whakahohe Google OCR"
+      },
+      "apply_modal": {
+        "title": "Hoatu kuputuhi kua tangohia",
+        "message": "Kōwhiria me pēhea te hoatu i te kuputuhi kua tangohia.",
+        "elapsed": "Wā whakahaere: ",
+        "repeat_label": "Ngā tāruaruatanga",
+        "overwrite_button": "Tuhia anō",
+        "append_button": "Tāpiri",
+        "cancel_button": "Whakakore",
+        "close_aria": "Katia te kōrero hoatu kuputuhi kua tangohia",
+        "saved_pdf_message": "I puritia te PDF i hangaia i muri i te tangohanga.",
+        "saved_pdf_label": "PDF kua tiakina: ",
+        "reveal_saved_pdf_button": "Whakaatu PDF kua tiakina"
+      }
     },
     "editor": {
       "title": "toT — Kuputuhi katoa",
@@ -129,6 +157,68 @@
       "replace_timeout": "Kua pau te wā mō te whakakapi. Ngana anō.",
       "status_no_matches": "Kāore he ōritenga",
       "status_empty_query": "Patohia hei kimi"
+    },
+    "snapshot_save_tags": {
+      "title": "Tiaki hopunga kuputuhi",
+      "message": "Ki te hiahia koe, tāpirihia he tūtohu ki tēnei hopunga kuputuhi i mua i te kōwhiri i te wāhi tiaki.",
+      "labels": {
+        "language": "Reo",
+        "type": "Momo",
+        "difficulty": "Uaua"
+      },
+      "empty": {
+        "language": "Kāore he tūtohu reo",
+        "type": "Kāore he tūtohu momo",
+        "difficulty": "Kāore he tūtohu uaua"
+      },
+      "buttons": {
+        "confirm": "Tiaki hopunga kuputuhi",
+        "cancel": "Whakakore"
+      },
+      "close_aria": "Katia te kōrero tiaki hopunga kuputuhi",
+      "options": {
+        "language": {
+          "ar": "Arapi",
+          "arn": "Mapudungun",
+          "ay": "Aimāra",
+          "bn": "Pāngara",
+          "ca": "Katarana",
+          "de": "Tiamana",
+          "en": "Ingarihi",
+          "es": "Pāniora",
+          "eu": "Pākihi",
+          "fa": "Pāhiana",
+          "fr": "Wīwī",
+          "gn": "Kuaranī",
+          "hi": "Hindi",
+          "ht": "Kereō Haiti",
+          "id": "Initōnīhia",
+          "it": "Itāriana",
+          "ja": "Hapanihi",
+          "ko": "Kōreana",
+          "mi": "Māori",
+          "pcm": "Ngāitiriana Kōrapurapu",
+          "pt": "Pōtikī",
+          "qu": "Kētua",
+          "ru": "Rūhia",
+          "sv": "Huitene",
+          "tr": "Tākei",
+          "ur": "Urdu",
+          "vi": "Whitināmu",
+          "zh_hans": "Hainamana (ngāwari)",
+          "zh_hant": "Hainamana (tuku iho)",
+          "zu": "Tūru"
+        },
+        "type": {
+          "fiction": "Pakiwaitara",
+          "non_fiction": "Kōrero pono"
+        },
+        "difficulty": {
+          "easy": "Māmā",
+          "normal": "Noa",
+          "hard": "Uaua"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Ngā tūmahi",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "He panoni kāore anō kia tiakina. Makaia?",
         "close_unsaved": "He panoni kāore anō kia tiakina. Katia me te kore tiaki?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Tiaki hopunga kuputuhi",
-      "message": "Ki te hiahia koe, tāpirihia he tūtohu ki tēnei hopunga kuputuhi i mua i te kōwhiri i te wāhi tiaki.",
-      "labels": {
-        "language": "Reo",
-        "type": "Momo",
-        "difficulty": "Uaua"
-      },
-      "empty": {
-        "language": "Kāore he tūtohu reo",
-        "type": "Kāore he tūtohu momo",
-        "difficulty": "Kāore he tūtohu uaua"
-      },
-      "buttons": {
-        "confirm": "Tiaki hopunga kuputuhi",
-        "cancel": "Whakakore"
-      },
-      "close_aria": "Katia te kōrero tiaki hopunga kuputuhi",
-      "options": {
-        "language": {
-          "ar": "Arapi",
-          "arn": "Mapudungun",
-          "ay": "Aimāra",
-          "bn": "Pāngara",
-          "ca": "Katarana",
-          "de": "Tiamana",
-          "en": "Ingarihi",
-          "es": "Pāniora",
-          "eu": "Pākihi",
-          "fa": "Pāhiana",
-          "fr": "Wīwī",
-          "gn": "Kuaranī",
-          "hi": "Hindi",
-          "ht": "Kereō Haiti",
-          "id": "Initōnīhia",
-          "it": "Itāriana",
-          "ja": "Hapanihi",
-          "ko": "Kōreana",
-          "mi": "Māori",
-          "pcm": "Ngāitiriana Kōrapurapu",
-          "pt": "Pōtikī",
-          "qu": "Kētua",
-          "ru": "Rūhia",
-          "sv": "Huitene",
-          "tr": "Tākei",
-          "ur": "Urdu",
-          "vi": "Whitināmu",
-          "zh_hans": "Hainamana (ngāwari)",
-          "zh_hant": "Hainamana (tuku iho)",
-          "zu": "Tūru"
-        },
-        "type": {
-          "fiction": "Pakiwaitara",
-          "non_fiction": "Kōrero pono"
-        },
-        "difficulty": {
-          "easy": "Māmā",
-          "normal": "Noa",
-          "hard": "Uaua"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Whakakore",
       "save": "Tiaki"
     },
+    "browser_extension": {
+      "title": "Toronga pūtirotiro",
+      "subtitle": "Wā pānui",
+      "availability": "Kei te wātea i Chrome ināianei. Ka tae mai ētahi atu pūtirotiro ākuanei.",
+      "chrome_store_aria": "Whakatuwhera i te whārangi Chrome Web Store o te toronga",
+      "close_aria": "Katia te kōrero toronga pūtirotiro"
+    },
     "alerts": {
       "clipboard_too_large": "He nui rawa te kuputuhi o te papatopenga hei tukatuka. Whakaitia ka ngana anō.",
       "append_too_large": "He nui rawa te kuputuhi ka hua ake hei tukatuka. Whakaitia ka ngana anō.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Kāore i taea te waihanga i te PDF o ngā whārangi kua tīpakohia mō te tangohanga. Tirohia te kōnae ka ngana anō.",
       "text_extraction_generated_pdf_cleanup_warning": "Kua oti te tangohanga, engari kāore i taea te whakapai aunoa i tētahi PDF ā-rohe i hangaia.",
       "text_extraction_route_choice_required": "Me kōwhiri ara mō tēnei PDF i mua i te haere tonu o te tangohanga.",
-      "text_extraction_route_choice_title": "Kōwhiri ara tangohanga",
-      "text_extraction_route_choice_message": "E wātea ana ngā ara tangohanga e rua mō tēnei PDF. Kōwhiria tētahi kia haere tonu.",
-      "text_extraction_route_choice_native_button": "Whakamahi native",
-      "text_extraction_route_choice_ocr_button": "Whakamahi OCR",
-      "text_extraction_route_choice_cancel_button": "Whakakore",
-      "text_extraction_route_choice_close_aria": "Katia te kōrero ara tangohanga",
-      "text_extraction_apply_modal_title": "Hoatu kuputuhi kua tangohia",
-      "text_extraction_apply_modal_message": "Kōwhiria me pēhea te hoatu i te kuputuhi kua tangohia.",
-      "text_extraction_apply_modal_elapsed": "Wā whakahaere: ",
-      "text_extraction_apply_modal_repeat_label": "Ngā tāruaruatanga",
-      "text_extraction_apply_modal_overwrite_button": "Tuhia anō",
-      "text_extraction_apply_modal_append_button": "Tāpiri",
-      "text_extraction_apply_modal_cancel_button": "Whakakore",
-      "text_extraction_apply_modal_close_aria": "Katia te kōrero hoatu kuputuhi kua tangohia",
-      "text_extraction_apply_modal_saved_pdf_message": "I puritia te PDF i hangaia i muri i te tangohanga.",
-      "text_extraction_apply_modal_saved_pdf_label": "PDF kua tiakina: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Whakaatu PDF kua tiakina",
       "text_extraction_generated_pdf_reveal_failed": "Kāore i taea te whakaatu i te PDF kua tiakina. Tirohia mēnā kei reira tonu te kōnae.",
       "text_extraction_apply_error": "I puta he hapa i te hoatu i te kuputuhi kua tangohia. Tirohia te papatohu ka ngana anō.",
       "text_extraction_apply_too_large": "He nui rawa te kuputuhi ka hua ake hei tukatuka. Whakaitia ngā tāruaruatanga ka ngana anō.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Kua kore e tika te tono tango kua whakaritea. Tīmata anō te rere.",
       "text_extraction_ocr_unavailable": "Kāore te OCR e wātea ana. Tirohia te whakarite/mana takiuru ka ngana anō.",
       "text_extraction_ocr_activation_required": "Me whakahohe te OCR. Takiuru ki Google OCR ka ngana anō.",
-      "text_extraction_ocr_activation_disclosure_title": "Arotake whakahohe Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "Ka whakamahi a toT i ngā ratonga Google mō te OCR. Mā te haere tonu ka whakatuwhera tō pūtirotiro kia whakamana ai koe i tēnei taupānga.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Ko ngā kōnae anake ka kōwhiria e koe mō te OCR ka tukuna ki Google.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Ka tiaki tēnei taupānga i ngā raraunga Google OAuth e whakahaerehia ana e te taupānga mō te OCR me te āhua tōkena Google paetata i tēnei tāutanga.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Whai muri i te kaweake, ka ngana te taupānga ki te tango i te tuhinga Google rangitahi i tō Google Drive.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Ā muri ake ka taea te momotu mā Manakohanga > Momotu Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Haere tonu ki Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Whakakore",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Whakatuwhera kaupapahere tūmataiti",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Katia te kōrero whakahohe Google OCR",
       "text_extraction_ocr_activation_success": "Kua oti te whakahohe OCR. Kei te whakamātau anō i te tangohanga.",
       "text_extraction_ocr_activation_cancelled": "Kua whakakorea te whakahohe OCR. Kāore te tango i haere tonu.",
       "text_extraction_ocr_token_state_invalid": "He muhu te āhua takiuru Google OCR kua tiakina. Tūhono anō ki Google OCR ka ngana anō.",

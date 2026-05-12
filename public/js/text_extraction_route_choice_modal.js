@@ -73,12 +73,12 @@
       return '';
     }
 
-    const titleText = tRenderer('renderer.alerts.text_extraction_route_choice_title');
-    const messageText = tRenderer('renderer.alerts.text_extraction_route_choice_message');
-    const nativeText = tRenderer('renderer.alerts.text_extraction_route_choice_native_button');
-    const ocrText = tRenderer('renderer.alerts.text_extraction_route_choice_ocr_button');
-    const cancelText = tRenderer('renderer.alerts.text_extraction_route_choice_cancel_button');
-    const closeAriaText = tRenderer('renderer.alerts.text_extraction_route_choice_close_aria');
+    const titleText = tRenderer('renderer.text_extraction.route_choice.title');
+    const messageText = tRenderer('renderer.text_extraction.route_choice.message');
+    const nativeText = tRenderer('renderer.text_extraction.route_choice.native_button');
+    const ocrText = tRenderer('renderer.text_extraction.route_choice.ocr_button');
+    const cancelText = tRenderer('renderer.text_extraction.route_choice.cancel_button');
+    const closeAriaText = tRenderer('renderer.text_extraction.route_choice.close_aria');
 
     title.textContent = titleText;
     message.textContent = messageText;

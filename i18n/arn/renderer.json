@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Wünne ka afkechi trokiñ wirin:",
       "selector_empty": "(welli)",
+      "reading_tools": {
+        "reading_speed_test": "Chillkatun ñi matun pepilun",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Archivo mew wirin extraer",
         "text_extraction_abort": "Abortar extracción",
@@ -59,10 +63,6 @@
         "speed": "Lef:",
         "controls_label": "Üngümwe küzawtuwe"
       },
-      "reading_tools": {
-        "reading_speed_test": "Chillkatun ñi matun pepilun",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Extracción amuley...",
         "text_extraction_preparing": "Elkünoel extraer rüpü...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Eltunge archivo faw, wirin extraer aal"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF extracción ñi zullin",
-      "message": "Zullinge ñi küdawtungeal kom PDF kam kiñe inarumen zoy nütramkülechi püle rango extracción petu no mülele.",
-      "file_label": "Archivo:",
-      "total_pages_label": "Kom püle: ",
-      "selection_legend": "Püle zullin",
-      "all_pages_label": "Kom püle",
-      "range_label": "Püle rango",
-      "from_page_label": "Püle mew",
-      "to_page_label": "Püle püle",
-      "selected_page_count_label": "Zullin püle: ",
-      "keep_generated_pdf_label": "Eltunge PDF dewmal zullin püle mew küdaw aflu",
-      "continue_button": "Amulnge",
-      "cancel_button": "Nütramkange",
-      "close_aria": "Nürüfinge PDF extracción zullin ñi diálogo",
-      "invalid_range": "Elunge kiñe nütramkülechi püle rango 1 ka {totalPages} rangiñ mew."
-    },
-    "browser_extension": {
-      "title": "Extensión navegador mew",
-      "subtitle": "Chillkatun antü",
-      "availability": "Chrome mew müley feichi. Püñeñ mew kake navegadores müleay.",
-      "chrome_store_aria": "Nülan página extensión Chrome Web Store mew",
-      "close_aria": "Nürüfün diálogo extensión navegador mew"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF extracción ñi zullin",
+        "message": "Zullinge ñi küdawtungeal kom PDF kam kiñe inarumen zoy nütramkülechi püle rango extracción petu no mülele.",
+        "file_label": "Archivo:",
+        "total_pages_label": "Kom püle: ",
+        "selection_legend": "Püle zullin",
+        "all_pages_label": "Kom püle",
+        "range_label": "Püle rango",
+        "from_page_label": "Püle mew",
+        "to_page_label": "Püle püle",
+        "selected_page_count_label": "Zullin püle: ",
+        "keep_generated_pdf_label": "Eltunge PDF dewmal zullin püle mew küdaw aflu",
+        "continue_button": "Amulnge",
+        "cancel_button": "Nütramkange",
+        "close_aria": "Nürüfinge PDF extracción zullin ñi diálogo",
+        "invalid_range": "Elunge kiñe nütramkülechi püle rango 1 ka {totalPages} rangiñ mew."
+      },
+      "route_choice": {
+        "title": "Düllin rüpü extracción",
+        "message": "Tüfachi PDF mew epü rüpü extracción müley. Kiñe düllinge amuleael.",
+        "native_button": "Püne nativa",
+        "ocr_button": "Püne OCR",
+        "cancel_button": "Katrüntun",
+        "close_aria": "Nürüfün diálogo rüpü extracción"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR activación kintun",
+        "intro": "toT mütrümuy Google servicios OCR mew. Amulngechi, navegador nülageay tüfachi app autorizaael.",
+        "selected_files": "Müten tüfachi archivos tami düllingelu OCR mew, Google mew amuy.",
+        "local_storage": "Tüfachi app elkünuy local credentials.json archivo ka Google token estado faw tüfachi instancia mew.",
+        "remote_cleanup": "Exportar mülechiw, app kintuy Google Drive mu tami temporal Google documento ñamümael.",
+        "disconnect": "Müpeltu, Preferencias > Desconectar Google OCR mu pepi nürüfimi tüfachi conexión.",
+        "proceed_button": "Amulnge Google mew",
+        "cancel_button": "Katrüntun",
+        "privacy_link": "Política de privacidad nülal",
+        "close_aria": "Nürüfün diálogo activación Google OCR"
+      },
+      "apply_modal": {
+        "title": "Nentulelu wirin püneal",
+        "message": "Düllinge chumgechi püneay tachi wirin nentulelu.",
+        "elapsed": "Küzawün antü: ",
+        "repeat_label": "Repeticiones",
+        "overwrite_button": "Kangelu",
+        "append_button": "Yapeln",
+        "cancel_button": "Katrüntun",
+        "close_aria": "Nürüfün diálogo nentulelu wirin püneal",
+        "saved_pdf_message": "PDF dewmal elkunugey extracción aflu.",
+        "saved_pdf_label": "Elkun PDF: ",
+        "reveal_saved_pdf_button": "Penge elkun PDF"
+      }
     },
     "editor": {
       "title": "toT — Kom wirin",
@@ -129,6 +157,68 @@
       "replace_timeout": "Alüñmay ti llowtugen. Wiño pepi deumange.",
       "status_no_matches": "Chem no rume kintulay",
       "status_empty_query": "Wiringe kintuael"
+    },
+    "snapshot_save_tags": {
+      "title": "Elkünun textu snapshot",
+      "message": "Münafülchi tañi textu snapshot müley ta küme ngünekan mew ka chumgechi elkünuael.",
+      "labels": {
+        "language": "Dungun",
+        "type": "Az",
+        "difficulty": "Rume newen"
+      },
+      "empty": {
+        "language": "Dungun tag mülenolu",
+        "type": "Az tag mülenolu",
+        "difficulty": "Rume newen tag mülenolu"
+      },
+      "buttons": {
+        "confirm": "Elkünun textu snapshot",
+        "cancel": "Ngelay"
+      },
+      "close_aria": "Ngeykülen textu snapshot elkünun nütram",
+      "options": {
+        "language": {
+          "ar": "Árabe",
+          "arn": "Mapudungun",
+          "ay": "Aimara",
+          "bn": "Bengalí",
+          "ca": "Catalán",
+          "de": "Alemán",
+          "en": "Inglés",
+          "es": "Wingkañol",
+          "eu": "Euskera",
+          "fa": "Persa",
+          "fr": "Francés",
+          "gn": "Guaraní",
+          "hi": "Hindi",
+          "ht": "Criollo haitiano",
+          "id": "Indonesio",
+          "it": "Italiano",
+          "ja": "Japonés",
+          "ko": "Coreano",
+          "mi": "Maorí",
+          "pcm": "Pidgin nigeriano",
+          "pt": "Portugués",
+          "qu": "Quechua",
+          "ru": "Ruso",
+          "sv": "Sueco",
+          "tr": "Turco",
+          "ur": "Urdu",
+          "vi": "Vietnamita",
+          "zh_hans": "Chino simplificado",
+          "zh_hant": "Chino tradicional",
+          "zu": "Zulú"
+        },
+        "type": {
+          "fiction": "Ficción",
+          "non_fiction": "No ficción"
+        },
+        "difficulty": {
+          "easy": "Pichi",
+          "normal": "Normalküle",
+          "hard": "Fentren"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Tareas",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Wirintukun petu elkünungelay. ¿Ñamümafimi?",
         "close_unsaved": "Wirintukun petu elkünungelay. ¿Nürüfimi elkünunon?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Elkünun textu snapshot",
-      "message": "Münafülchi tañi textu snapshot müley ta küme ngünekan mew ka chumgechi elkünuael.",
-      "labels": {
-        "language": "Dungun",
-        "type": "Az",
-        "difficulty": "Rume newen"
-      },
-      "empty": {
-        "language": "Dungun tag mülenolu",
-        "type": "Az tag mülenolu",
-        "difficulty": "Rume newen tag mülenolu"
-      },
-      "buttons": {
-        "confirm": "Elkünun textu snapshot",
-        "cancel": "Ngelay"
-      },
-      "close_aria": "Ngeykülen textu snapshot elkünun nütram",
-      "options": {
-        "language": {
-          "ar": "Árabe",
-          "arn": "Mapudungun",
-          "ay": "Aimara",
-          "bn": "Bengalí",
-          "ca": "Catalán",
-          "de": "Alemán",
-          "en": "Inglés",
-          "es": "Wingkañol",
-          "eu": "Euskera",
-          "fa": "Persa",
-          "fr": "Francés",
-          "gn": "Guaraní",
-          "hi": "Hindi",
-          "ht": "Criollo haitiano",
-          "id": "Indonesio",
-          "it": "Italiano",
-          "ja": "Japonés",
-          "ko": "Coreano",
-          "mi": "Maorí",
-          "pcm": "Pidgin nigeriano",
-          "pt": "Portugués",
-          "qu": "Quechua",
-          "ru": "Ruso",
-          "sv": "Sueco",
-          "tr": "Turco",
-          "ur": "Urdu",
-          "vi": "Vietnamita",
-          "zh_hans": "Chino simplificado",
-          "zh_hant": "Chino tradicional",
-          "zu": "Zulú"
-        },
-        "type": {
-          "fiction": "Ficción",
-          "non_fiction": "No ficción"
-        },
-        "difficulty": {
-          "easy": "Pichi",
-          "normal": "Normalküle",
-          "hard": "Fentren"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Katrüntun",
       "save": "Elkünun"
     },
+    "browser_extension": {
+      "title": "Extensión navegador mew",
+      "subtitle": "Chillkatun antü",
+      "availability": "Chrome mew müley feichi. Püñeñ mew kake navegadores müleay.",
+      "chrome_store_aria": "Nülan página extensión Chrome Web Store mew",
+      "close_aria": "Nürüfün diálogo extensión navegador mew"
+    },
     "alerts": {
       "clipboard_too_large": "Portapapeles wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
       "append_too_large": "Wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Pepilay ñi dewmalngeal PDF zullin püle mew extracción ñi küdaw mew. Azkintunge archivo ka wiñol küdawtunge.",
       "text_extraction_generated_pdf_cleanup_warning": "Extracción afiy, welu pepilay ñi müleweyümew liftungeal kiñe local PDF dewmal.",
       "text_extraction_route_choice_required": "Tüfachi PDF mew extracción amuleael, kiñe rüpü dülliafuy.",
-      "text_extraction_route_choice_title": "Düllin rüpü extracción",
-      "text_extraction_route_choice_message": "Tüfachi PDF mew epü rüpü extracción müley. Kiñe düllinge amuleael.",
-      "text_extraction_route_choice_native_button": "Püne nativa",
-      "text_extraction_route_choice_ocr_button": "Püne OCR",
-      "text_extraction_route_choice_cancel_button": "Katrüntun",
-      "text_extraction_route_choice_close_aria": "Nürüfün diálogo rüpü extracción",
-      "text_extraction_apply_modal_title": "Nentulelu wirin püneal",
-      "text_extraction_apply_modal_message": "Düllinge chumgechi püneay tachi wirin nentulelu.",
-      "text_extraction_apply_modal_elapsed": "Küzawün antü: ",
-      "text_extraction_apply_modal_repeat_label": "Repeticiones",
-      "text_extraction_apply_modal_overwrite_button": "Kangelu",
-      "text_extraction_apply_modal_append_button": "Yapeln",
-      "text_extraction_apply_modal_cancel_button": "Katrüntun",
-      "text_extraction_apply_modal_close_aria": "Nürüfün diálogo nentulelu wirin püneal",
-      "text_extraction_apply_modal_saved_pdf_message": "PDF dewmal elkunugey extracción aflu.",
-      "text_extraction_apply_modal_saved_pdf_label": "Elkun PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Penge elkun PDF",
       "text_extraction_generated_pdf_reveal_failed": "Pepilay ñi pengeal elkun PDF. Azkintunge petu mülelechi archivo.",
       "text_extraction_apply_error": "Nentulelu wirin püneal mu welulkuy. Kintunge consola ka wiño küdaw.",
       "text_extraction_apply_too_large": "Nentulelu wirin rume fütra. Pichikünunge repeticiones ka wiño küdaw.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Extracción mu elkünütuyechi solicitud no küme müley. Wiño amulnge kom rüpü.",
       "text_extraction_ocr_unavailable": "OCR mülelay. Kintunge setup/auth ka wiño küdaw.",
       "text_extraction_ocr_activation_required": "OCR activación müleyafuy. Google OCR mew loginünge ka wiño küdaw.",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR activación kintun",
-      "text_extraction_ocr_activation_disclosure_intro": "toT mütrümuy Google servicios OCR mew. Amulngechi, navegador nülageay tüfachi app autorizaael.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Müten tüfachi archivos tami düllingelu OCR mew, Google mew amuy.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Tüfachi app elkünuy local credentials.json archivo ka Google token estado faw tüfachi instancia mew.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Exportar mülechiw, app kintuy Google Drive mu tami temporal Google documento ñamümael.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Müpeltu, Preferencias > Desconectar Google OCR mu pepi nürüfimi tüfachi conexión.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Amulnge Google mew",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Katrüntun",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Política de privacidad nülal",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Nürüfün diálogo activación Google OCR",
       "text_extraction_ocr_activation_success": "OCR activación afmatuy. Extracción wiño küdawüley.",
       "text_extraction_ocr_activation_cancelled": "OCR activación katrüntuy. Extracción amulalelay.",
       "text_extraction_ocr_token_state_invalid": "Google OCR ñi konün elkünuel kümelay. Ka nütufinge Google OCR ka wiño fementunge.",

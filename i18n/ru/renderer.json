@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Первая и последняя часть анализируемого текста:",
       "selector_empty": "(пусто)",
+      "reading_tools": {
+        "reading_speed_test": "Тест скорости чтения",
+        "preview_spoiler": "Спойлер"
+      },
       "tooltips": {
         "text_extraction": "Извлечь текст из файла",
         "text_extraction_abort": "Прервать извлечение",
@@ -59,10 +63,6 @@
         "speed": "Скорость:",
         "controls_label": "Управление секундомером"
       },
-      "reading_tools": {
-        "reading_speed_test": "Тест скорости чтения",
-        "preview_spoiler": "Спойлер"
-      },
       "processing": {
         "text_extraction_placeholder": "Идет извлечение текста...",
         "text_extraction_preparing": "Подготовка маршрута извлечения...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Перетащите файл, чтобы извлечь текст"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "Параметры извлечения PDF",
-      "message": "Выберите, обрабатывать весь PDF или один непрерывный диапазон страниц перед извлечением.",
-      "file_label": "Файл:",
-      "total_pages_label": "Всего страниц: ",
-      "selection_legend": "Выбор страниц",
-      "all_pages_label": "Все страницы",
-      "range_label": "Диапазон страниц",
-      "from_page_label": "Со страницы",
-      "to_page_label": "По страницу",
-      "selected_page_count_label": "Выбранные страницы: ",
-      "keep_generated_pdf_label": "Сохранить созданный PDF с выбранными страницами после обработки",
-      "continue_button": "Продолжить",
-      "cancel_button": "Отмена",
-      "close_aria": "Закрыть диалог параметров извлечения PDF",
-      "invalid_range": "Введите непрерывный диапазон страниц от 1 до {totalPages}."
-    },
-    "browser_extension": {
-      "title": "Расширение браузера",
-      "subtitle": "Время чтения",
-      "availability": "Уже доступно в Chrome. Скоро появится и в других браузерах.",
-      "chrome_store_aria": "Открыть страницу расширения в Chrome Web Store",
-      "close_aria": "Закрыть диалог расширения браузера"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "Параметры извлечения PDF",
+        "message": "Выберите, обрабатывать весь PDF или один непрерывный диапазон страниц перед извлечением.",
+        "file_label": "Файл:",
+        "total_pages_label": "Всего страниц: ",
+        "selection_legend": "Выбор страниц",
+        "all_pages_label": "Все страницы",
+        "range_label": "Диапазон страниц",
+        "from_page_label": "Со страницы",
+        "to_page_label": "По страницу",
+        "selected_page_count_label": "Выбранные страницы: ",
+        "keep_generated_pdf_label": "Сохранить созданный PDF с выбранными страницами после обработки",
+        "continue_button": "Продолжить",
+        "cancel_button": "Отмена",
+        "close_aria": "Закрыть диалог параметров извлечения PDF",
+        "invalid_range": "Введите непрерывный диапазон страниц от 1 до {totalPages}."
+      },
+      "route_choice": {
+        "title": "Выбор маршрута извлечения",
+        "message": "Для этого PDF доступны оба маршрута извлечения. Выберите один, чтобы продолжить.",
+        "native_button": "Нативный",
+        "ocr_button": "OCR",
+        "cancel_button": "Отмена",
+        "close_aria": "Закрыть диалог выбора маршрута извлечения"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Проверка активации Google OCR",
+        "intro": "toT использует сервисы Google для OCR. Если продолжить, откроется браузер, чтобы вы авторизовали это приложение.",
+        "selected_files": "В Google отправляются только файлы, которые вы выбираете для OCR.",
+        "local_storage": "Это приложение хранит управляемые приложением OAuth-учетные данные Google для OCR и локальное состояние токена Google в этой установке приложения.",
+        "remote_cleanup": "После экспорта приложение пытается удалить временный документ Google из вашего Google Drive.",
+        "disconnect": "Позже вы можете отключить это соединение через Настройки > Отключить Google OCR.",
+        "proceed_button": "Продолжить с Google",
+        "cancel_button": "Отмена",
+        "privacy_link": "Открыть политику конфиденциальности",
+        "close_aria": "Закрыть диалог активации Google OCR"
+      },
+      "apply_modal": {
+        "title": "Применить извлеченный текст",
+        "message": "Выберите, как применить извлеченный текст.",
+        "elapsed": "Время выполнения: ",
+        "repeat_label": "Повторения",
+        "overwrite_button": "Перезаписать",
+        "append_button": "Добавить",
+        "cancel_button": "Отмена",
+        "close_aria": "Закрыть диалог применения извлеченного текста",
+        "saved_pdf_message": "Созданный PDF был сохранён после извлечения.",
+        "saved_pdf_label": "Сохранённый PDF: ",
+        "reveal_saved_pdf_button": "Показать сохранённый PDF"
+      }
     },
     "editor": {
       "title": "toT — Полный текст",
@@ -129,6 +157,68 @@
       "replace_timeout": "Замена заняла слишком много времени. Попробуйте еще раз.",
       "status_no_matches": "Совпадений нет",
       "status_empty_query": "Введите запрос для поиска"
+    },
+    "snapshot_save_tags": {
+      "title": "Сохранить снапшот текста",
+      "message": "При желании добавьте теги к этому снапшоту текста перед выбором места сохранения.",
+      "labels": {
+        "language": "Язык",
+        "type": "Тип",
+        "difficulty": "Сложность"
+      },
+      "empty": {
+        "language": "Без языкового тега",
+        "type": "Без тега типа",
+        "difficulty": "Без тега сложности"
+      },
+      "buttons": {
+        "confirm": "Сохранить снапшот текста",
+        "cancel": "Отмена"
+      },
+      "close_aria": "Закрыть диалог сохранения снапшота текста",
+      "options": {
+        "language": {
+          "ar": "Арабский",
+          "arn": "Мапудунгун",
+          "ay": "Аймара",
+          "bn": "Бенгальский",
+          "ca": "Каталанский",
+          "de": "Немецкий",
+          "en": "Английский",
+          "es": "Испанский",
+          "eu": "Баскский",
+          "fa": "Персидский",
+          "fr": "Французский",
+          "gn": "Гуарани",
+          "hi": "Хинди",
+          "ht": "Гаитянский",
+          "id": "Индонезийский",
+          "it": "Итальянский",
+          "ja": "Японский",
+          "ko": "Корейский",
+          "mi": "Маори",
+          "pcm": "Нигерийско-креольский",
+          "pt": "Португальский",
+          "qu": "Кечуа",
+          "ru": "Русский",
+          "sv": "Шведский",
+          "tr": "Турецкий",
+          "ur": "Урду",
+          "vi": "Вьетнамский",
+          "zh_hans": "Китайский упрощенный",
+          "zh_hant": "Китайский традиционный",
+          "zu": "Зулу"
+        },
+        "type": {
+          "fiction": "Художественная литература",
+          "non_fiction": "Нехудожественная литература"
+        },
+        "difficulty": {
+          "easy": "Легко",
+          "normal": "Обычно",
+          "hard": "Сложно"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Задачи",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Есть несохраненные изменения. Отменить их?",
         "close_unsaved": "Есть несохраненные изменения. Закрыть без сохранения?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Сохранить снапшот текста",
-      "message": "При желании добавьте теги к этому снапшоту текста перед выбором места сохранения.",
-      "labels": {
-        "language": "Язык",
-        "type": "Тип",
-        "difficulty": "Сложность"
-      },
-      "empty": {
-        "language": "Без языкового тега",
-        "type": "Без тега типа",
-        "difficulty": "Без тега сложности"
-      },
-      "buttons": {
-        "confirm": "Сохранить снапшот текста",
-        "cancel": "Отмена"
-      },
-      "close_aria": "Закрыть диалог сохранения снапшота текста",
-      "options": {
-        "language": {
-          "ar": "Арабский",
-          "arn": "Мапудунгун",
-          "ay": "Аймара",
-          "bn": "Бенгальский",
-          "ca": "Каталанский",
-          "de": "Немецкий",
-          "en": "Английский",
-          "es": "Испанский",
-          "eu": "Баскский",
-          "fa": "Персидский",
-          "fr": "Французский",
-          "gn": "Гуарани",
-          "hi": "Хинди",
-          "ht": "Гаитянский",
-          "id": "Индонезийский",
-          "it": "Итальянский",
-          "ja": "Японский",
-          "ko": "Корейский",
-          "mi": "Маори",
-          "pcm": "Нигерийско-креольский",
-          "pt": "Португальский",
-          "qu": "Кечуа",
-          "ru": "Русский",
-          "sv": "Шведский",
-          "tr": "Турецкий",
-          "ur": "Урду",
-          "vi": "Вьетнамский",
-          "zh_hans": "Китайский упрощенный",
-          "zh_hant": "Китайский традиционный",
-          "zu": "Зулу"
-        },
-        "type": {
-          "fiction": "Художественная литература",
-          "non_fiction": "Нехудожественная литература"
-        },
-        "difficulty": {
-          "easy": "Легко",
-          "normal": "Обычно",
-          "hard": "Сложно"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Отмена",
       "save": "Сохранить"
     },
+    "browser_extension": {
+      "title": "Расширение браузера",
+      "subtitle": "Время чтения",
+      "availability": "Уже доступно в Chrome. Скоро появится и в других браузерах.",
+      "chrome_store_aria": "Открыть страницу расширения в Chrome Web Store",
+      "close_aria": "Закрыть диалог расширения браузера"
+    },
     "alerts": {
       "clipboard_too_large": "Текст в буфере обмена слишком большой для обработки. Сократите его и попробуйте снова.",
       "append_too_large": "Итоговый текст слишком большой для обработки. Сократите его и попробуйте снова.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Не удалось создать PDF с выбранными страницами для извлечения. Проверьте файл и повторите попытку.",
       "text_extraction_generated_pdf_cleanup_warning": "Извлечение завершено, но не удалось автоматически очистить созданный локальный PDF.",
       "text_extraction_route_choice_required": "Для этого PDF перед продолжением извлечения нужно выбрать маршрут.",
-      "text_extraction_route_choice_title": "Выбор маршрута извлечения",
-      "text_extraction_route_choice_message": "Для этого PDF доступны оба маршрута извлечения. Выберите один, чтобы продолжить.",
-      "text_extraction_route_choice_native_button": "Нативный",
-      "text_extraction_route_choice_ocr_button": "OCR",
-      "text_extraction_route_choice_cancel_button": "Отмена",
-      "text_extraction_route_choice_close_aria": "Закрыть диалог выбора маршрута извлечения",
-      "text_extraction_apply_modal_title": "Применить извлеченный текст",
-      "text_extraction_apply_modal_message": "Выберите, как применить извлеченный текст.",
-      "text_extraction_apply_modal_elapsed": "Время выполнения: ",
-      "text_extraction_apply_modal_repeat_label": "Повторения",
-      "text_extraction_apply_modal_overwrite_button": "Перезаписать",
-      "text_extraction_apply_modal_append_button": "Добавить",
-      "text_extraction_apply_modal_cancel_button": "Отмена",
-      "text_extraction_apply_modal_close_aria": "Закрыть диалог применения извлеченного текста",
-      "text_extraction_apply_modal_saved_pdf_message": "Созданный PDF был сохранён после извлечения.",
-      "text_extraction_apply_modal_saved_pdf_label": "Сохранённый PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Показать сохранённый PDF",
       "text_extraction_generated_pdf_reveal_failed": "Не удалось показать сохранённый PDF. Проверьте, существует ли файл.",
       "text_extraction_apply_error": "Произошла ошибка при применении извлеченного текста. Проверьте консоль и повторите попытку.",
       "text_extraction_apply_too_large": "Итоговый текст слишком большой для обработки. Уменьшите число повторений и попробуйте снова.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Подготовленный запрос извлечения больше недействителен. Запустите процесс заново.",
       "text_extraction_ocr_unavailable": "OCR недоступен. Проверьте настройку/авторизацию и попробуйте снова.",
       "text_extraction_ocr_activation_required": "Требуется активация OCR. Войдите в Google OCR и попробуйте снова.",
-      "text_extraction_ocr_activation_disclosure_title": "Проверка активации Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "toT использует сервисы Google для OCR. Если продолжить, откроется браузер, чтобы вы авторизовали это приложение.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "В Google отправляются только файлы, которые вы выбираете для OCR.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Это приложение хранит управляемые приложением OAuth-учетные данные Google для OCR и локальное состояние токена Google в этой установке приложения.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "После экспорта приложение пытается удалить временный документ Google из вашего Google Drive.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Позже вы можете отключить это соединение через Настройки > Отключить Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Продолжить с Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Отмена",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Открыть политику конфиденциальности",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Закрыть диалог активации Google OCR",
       "text_extraction_ocr_activation_success": "Активация OCR завершена. Повторяем извлечение.",
       "text_extraction_ocr_activation_cancelled": "Активация OCR была отменена. Извлечение не было продолжено.",
       "text_extraction_ocr_token_state_invalid": "Сохраненное состояние входа Google OCR недействительно. Переподключите Google OCR и попробуйте снова.",

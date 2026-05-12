@@ -571,7 +571,7 @@ test('executePreparedImport materializes the selected PDF range for native succe
   const nativeRouteCalls = [];
   const { core, restore } = loadCoreWithNativeRouteMock(async ({ filePath }) => {
     nativeRouteCalls.push(filePath);
-    assert.equal(path.basename(filePath), 'selectable_text_fixture_12_pages_pages_2_3.pdf');
+    assert.equal(path.basename(filePath), 'selectable_text_fixture_12_pages_pages_02_03.pdf');
     assert.notEqual(path.resolve(filePath), path.resolve(SELECTABLE_PDF_FIXTURE));
 
     const subsetInspection = await inspectPdfFile({
@@ -611,7 +611,7 @@ test('executePreparedImport materializes the selected PDF range for native succe
       generatedPdfArtifactPolicy: {
         mode: 'delete',
       },
-      processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+      processingInputFileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
       routeMetadata: {
         fileKind: 'pdf',
         availableRoutes: ['native'],
@@ -637,10 +637,10 @@ test('executePreparedImport materializes the selected PDF range for native succe
   assert.equal(result.executionKind, 'native');
   assert.equal(result.result.state, 'success');
   assert.equal(result.result.text, 'Synthetic extracted text');
-  assert.equal(result.result.processingInputFileName, 'selectable_text_fixture_12_pages_pages_2_3.pdf');
+  assert.equal(result.result.processingInputFileName, 'selectable_text_fixture_12_pages_pages_02_03.pdf');
   assert.equal(result.result.pdfPageSelection.mode, 'range');
   assert.equal(result.result.generatedPdfArtifactPolicy.mode, 'delete');
-  assert.equal(result.result.generatedPdfArtifact.fileName, 'selectable_text_fixture_12_pages_pages_2_3.pdf');
+  assert.equal(result.result.generatedPdfArtifact.fileName, 'selectable_text_fixture_12_pages_pages_02_03.pdf');
   assert.equal(result.result.generatedPdfArtifact.retained, false);
   assert.equal(result.result.provenance.sourceFileName, 'selectable_text_fixture_12_pages.pdf');
   assert.equal(result.result.provenance.metadataSafeForLogs.processingInputSource, 'generated_pdf_subset');
@@ -678,10 +678,10 @@ test('executePreparedImport skips route dispatch after cancellation during subse
           ok: true,
           materialized: true,
           effectiveFilePath: path.join(os.tmpdir(), 'aborted_subset.pdf'),
-          processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+          processingInputFileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
           processingInputSource: 'generated_pdf_subset',
           generatedPdfArtifact: {
-            fileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+            fileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
             policyMode: 'delete',
             retained: false,
           },
@@ -710,7 +710,7 @@ test('executePreparedImport skips route dispatch after cancellation during subse
       generatedPdfArtifactPolicy: {
         mode: 'delete',
       },
-      processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+      processingInputFileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
       routeMetadata: {
         fileKind: 'pdf',
         availableRoutes: ['native'],
@@ -761,10 +761,10 @@ test('executePreparedImport does not release a replacement processing lock after
           ok: true,
           materialized: true,
           effectiveFilePath: path.join(os.tmpdir(), 'replacement_subset.pdf'),
-          processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+          processingInputFileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
           processingInputSource: 'generated_pdf_subset',
           generatedPdfArtifact: {
-            fileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+            fileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
             policyMode: 'delete',
             retained: false,
           },
@@ -793,7 +793,7 @@ test('executePreparedImport does not release a replacement processing lock after
       generatedPdfArtifactPolicy: {
         mode: 'delete',
       },
-      processingInputFileName: 'selectable_text_fixture_12_pages_pages_2_3.pdf',
+      processingInputFileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
       routeMetadata: {
         fileKind: 'pdf',
         availableRoutes: ['native'],

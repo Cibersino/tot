@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Primera i última part del text analitzat:",
       "selector_empty": "(buit)",
+      "reading_tools": {
+        "reading_speed_test": "Test de velocitat de lectura",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Extreure text des d’un fitxer",
         "text_extraction_abort": "Avortar l’extracció",
@@ -59,10 +63,6 @@
         "speed": "Velocitat:",
         "controls_label": "Controls del cronòmetre"
       },
-      "reading_tools": {
-        "reading_speed_test": "Test de velocitat de lectura",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Processant l’extracció...",
         "text_extraction_preparing": "Preparant la ruta d’extracció...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Deixa anar el fitxer per extreure text"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "Opcions d’extracció PDF",
-      "message": "Tria si vols processar tot el PDF o un interval contigu de pàgines abans de l’extracció.",
-      "file_label": "Fitxer:",
-      "total_pages_label": "Pàgines totals: ",
-      "selection_legend": "Selecció de pàgines",
-      "all_pages_label": "Totes les pàgines",
-      "range_label": "Interval de pàgines",
-      "from_page_label": "Des de la pàgina",
-      "to_page_label": "Fins a la pàgina",
-      "selected_page_count_label": "Pàgines seleccionades: ",
-      "keep_generated_pdf_label": "Conserva el PDF generat de les pàgines seleccionades després del processament",
-      "continue_button": "Continua",
-      "cancel_button": "Cancel·la",
-      "close_aria": "Tanca el diàleg d’opcions d’extracció PDF",
-      "invalid_range": "Introdueix un interval contigu de pàgines entre 1 i {totalPages}."
-    },
-    "browser_extension": {
-      "title": "Extensió del navegador",
-      "subtitle": "Temps de lectura",
-      "availability": "Disponible ara a Chrome. Aviat arribarà a més navegadors.",
-      "chrome_store_aria": "Obre la pàgina de l'extensió a Chrome Web Store",
-      "close_aria": "Tanca el diàleg de l'extensió del navegador"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "Opcions d’extracció PDF",
+        "message": "Tria si vols processar tot el PDF o un interval contigu de pàgines abans de l’extracció.",
+        "file_label": "Fitxer:",
+        "total_pages_label": "Pàgines totals: ",
+        "selection_legend": "Selecció de pàgines",
+        "all_pages_label": "Totes les pàgines",
+        "range_label": "Interval de pàgines",
+        "from_page_label": "Des de la pàgina",
+        "to_page_label": "Fins a la pàgina",
+        "selected_page_count_label": "Pàgines seleccionades: ",
+        "keep_generated_pdf_label": "Conserva el PDF generat de les pàgines seleccionades després del processament",
+        "continue_button": "Continua",
+        "cancel_button": "Cancel·la",
+        "close_aria": "Tanca el diàleg d’opcions d’extracció PDF",
+        "invalid_range": "Introdueix un interval contigu de pàgines entre 1 i {totalPages}."
+      },
+      "route_choice": {
+        "title": "Triar ruta d’extracció",
+        "message": "Aquest PDF té disponibles ambdues rutes d’extracció. Tria’n una per continuar.",
+        "native_button": "Usar nativa",
+        "ocr_button": "Usar OCR",
+        "cancel_button": "Cancel·lar",
+        "close_aria": "Tancar el diàleg de ruta d’extracció"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Revisar l’activació de Google OCR",
+        "intro": "toT fa servir serveis de Google per a l’OCR. Si continues, s’obrirà el navegador perquè autoritzis aquesta app.",
+        "selected_files": "Només s’envien a Google els fitxers que tries per a OCR.",
+        "local_storage": "Aquesta app desa credencials OAuth de Google per a OCR gestionades per l’app i l’estat local del testimoni de Google en aquesta instància.",
+        "remote_cleanup": "Després d’exportar, l’app intenta eliminar el document temporal de Google del teu Google Drive.",
+        "disconnect": "Més tard pots desconnectar aquesta connexió des de Preferències > Desconnectar Google OCR.",
+        "proceed_button": "Continuar amb Google",
+        "cancel_button": "Cancel·lar",
+        "privacy_link": "Obrir la política de privadesa",
+        "close_aria": "Tancar el diàleg d’activació de Google OCR"
+      },
+      "apply_modal": {
+        "title": "Aplicar el text extret",
+        "message": "Tria com aplicar el text extret.",
+        "elapsed": "Temps d’execució: ",
+        "repeat_label": "Repeticions",
+        "overwrite_button": "Sobreescriure",
+        "append_button": "Afegir",
+        "cancel_button": "Cancel·lar",
+        "close_aria": "Tancar el diàleg per aplicar el text extret",
+        "saved_pdf_message": "El PDF generat s’ha conservat després de l’extracció.",
+        "saved_pdf_label": "PDF desat: ",
+        "reveal_saved_pdf_button": "Mostra el PDF desat"
+      }
     },
     "editor": {
       "title": "toT — Text complet",
@@ -129,6 +157,68 @@
       "replace_timeout": "La substitució ha trigat massa. Torna-ho a provar.",
       "status_no_matches": "Sense coincidències",
       "status_empty_query": "Escriu per cercar"
+    },
+    "snapshot_save_tags": {
+      "title": "Desar snapshot de text",
+      "message": "Etiqueta opcionalment aquest snapshot de text abans de triar on desar-lo.",
+      "labels": {
+        "language": "Idioma",
+        "type": "Tipus",
+        "difficulty": "Dificultat"
+      },
+      "empty": {
+        "language": "Sense etiqueta d’idioma",
+        "type": "Sense etiqueta de tipus",
+        "difficulty": "Sense etiqueta de dificultat"
+      },
+      "buttons": {
+        "confirm": "Desar snapshot de text",
+        "cancel": "Cancel·lar"
+      },
+      "close_aria": "Tancar el diàleg per desar snapshot de text",
+      "options": {
+        "language": {
+          "ar": "Àrab",
+          "arn": "Mapudungun",
+          "ay": "Aimara",
+          "bn": "Bengalí",
+          "ca": "Català",
+          "de": "Alemany",
+          "en": "Anglès",
+          "es": "Espanyol",
+          "eu": "Basc",
+          "fa": "Persa",
+          "fr": "Francès",
+          "gn": "Guaraní",
+          "hi": "Hindi",
+          "ht": "Crioll d’Haití",
+          "id": "Indonesi",
+          "it": "Italià",
+          "ja": "Japonès",
+          "ko": "Coreà",
+          "mi": "Maori",
+          "pcm": "Pidgin de Nigèria",
+          "pt": "Portuguès",
+          "qu": "Quítxua",
+          "ru": "Rus",
+          "sv": "Suec",
+          "tr": "Turc",
+          "ur": "Urdú",
+          "vi": "Vietnamita",
+          "zh_hans": "Xinès simplificat",
+          "zh_hant": "Xinès tradicional",
+          "zu": "Zulu"
+        },
+        "type": {
+          "fiction": "Ficció",
+          "non_fiction": "No-ficció"
+        },
+        "difficulty": {
+          "easy": "Fàcil",
+          "normal": "Normal",
+          "hard": "Difícil"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Tasques",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Hi ha canvis sense desar. Vols descartar-los?",
         "close_unsaved": "Hi ha canvis sense desar. Vols tancar sense desar?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Desar snapshot de text",
-      "message": "Etiqueta opcionalment aquest snapshot de text abans de triar on desar-lo.",
-      "labels": {
-        "language": "Idioma",
-        "type": "Tipus",
-        "difficulty": "Dificultat"
-      },
-      "empty": {
-        "language": "Sense etiqueta d’idioma",
-        "type": "Sense etiqueta de tipus",
-        "difficulty": "Sense etiqueta de dificultat"
-      },
-      "buttons": {
-        "confirm": "Desar snapshot de text",
-        "cancel": "Cancel·lar"
-      },
-      "close_aria": "Tancar el diàleg per desar snapshot de text",
-      "options": {
-        "language": {
-          "ar": "Àrab",
-          "arn": "Mapudungun",
-          "ay": "Aimara",
-          "bn": "Bengalí",
-          "ca": "Català",
-          "de": "Alemany",
-          "en": "Anglès",
-          "es": "Espanyol",
-          "eu": "Basc",
-          "fa": "Persa",
-          "fr": "Francès",
-          "gn": "Guaraní",
-          "hi": "Hindi",
-          "ht": "Crioll d’Haití",
-          "id": "Indonesi",
-          "it": "Italià",
-          "ja": "Japonès",
-          "ko": "Coreà",
-          "mi": "Maori",
-          "pcm": "Pidgin de Nigèria",
-          "pt": "Portuguès",
-          "qu": "Quítxua",
-          "ru": "Rus",
-          "sv": "Suec",
-          "tr": "Turc",
-          "ur": "Urdú",
-          "vi": "Vietnamita",
-          "zh_hans": "Xinès simplificat",
-          "zh_hant": "Xinès tradicional",
-          "zu": "Zulu"
-        },
-        "type": {
-          "fiction": "Ficció",
-          "non_fiction": "No-ficció"
-        },
-        "difficulty": {
-          "easy": "Fàcil",
-          "normal": "Normal",
-          "hard": "Difícil"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Cancel·lar",
       "save": "Desar"
     },
+    "browser_extension": {
+      "title": "Extensió del navegador",
+      "subtitle": "Temps de lectura",
+      "availability": "Disponible ara a Chrome. Aviat arribarà a més navegadors.",
+      "chrome_store_aria": "Obre la pàgina de l'extensió a Chrome Web Store",
+      "close_aria": "Tanca el diàleg de l'extensió del navegador"
+    },
     "alerts": {
       "clipboard_too_large": "El text del porta-retalls és massa gran per processar-lo. Redueix-lo i torna-ho a provar.",
       "append_too_large": "El text resultant és massa gran per processar-lo. Redueix-lo i torna-ho a provar.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "No s’ha pogut crear el PDF de les pàgines seleccionades per a l’extracció. Revisa el fitxer i torna-ho a provar.",
       "text_extraction_generated_pdf_cleanup_warning": "L’extracció ha acabat, però no s’ha pogut netejar automàticament un PDF local generat.",
       "text_extraction_route_choice_required": "Cal triar una ruta per a aquest PDF abans de continuar l’extracció.",
-      "text_extraction_route_choice_title": "Triar ruta d’extracció",
-      "text_extraction_route_choice_message": "Aquest PDF té disponibles ambdues rutes d’extracció. Tria’n una per continuar.",
-      "text_extraction_route_choice_native_button": "Usar nativa",
-      "text_extraction_route_choice_ocr_button": "Usar OCR",
-      "text_extraction_route_choice_cancel_button": "Cancel·lar",
-      "text_extraction_route_choice_close_aria": "Tancar el diàleg de ruta d’extracció",
-      "text_extraction_apply_modal_title": "Aplicar el text extret",
-      "text_extraction_apply_modal_message": "Tria com aplicar el text extret.",
-      "text_extraction_apply_modal_elapsed": "Temps d’execució: ",
-      "text_extraction_apply_modal_repeat_label": "Repeticions",
-      "text_extraction_apply_modal_overwrite_button": "Sobreescriure",
-      "text_extraction_apply_modal_append_button": "Afegir",
-      "text_extraction_apply_modal_cancel_button": "Cancel·lar",
-      "text_extraction_apply_modal_close_aria": "Tancar el diàleg per aplicar el text extret",
-      "text_extraction_apply_modal_saved_pdf_message": "El PDF generat s’ha conservat després de l’extracció.",
-      "text_extraction_apply_modal_saved_pdf_label": "PDF desat: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Mostra el PDF desat",
       "text_extraction_generated_pdf_reveal_failed": "No s’ha pogut mostrar el PDF desat. Comprova si el fitxer encara existeix.",
       "text_extraction_apply_error": "S’ha produït un error en aplicar el text extret. Revisa la consola i torna-ho a provar.",
       "text_extraction_apply_too_large": "El text resultant és massa gran per processar-lo. Redueix les repeticions i torna-ho a provar.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "La sol·licitud preparada d’extracció ja no és vàlida. Inicia el flux de nou.",
       "text_extraction_ocr_unavailable": "L’OCR no està disponible. Revisa la configuració/autenticació i torna-ho a provar.",
       "text_extraction_ocr_activation_required": "Cal activar l’OCR. Inicia sessió a Google OCR i torna-ho a provar.",
-      "text_extraction_ocr_activation_disclosure_title": "Revisar l’activació de Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "toT fa servir serveis de Google per a l’OCR. Si continues, s’obrirà el navegador perquè autoritzis aquesta app.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Només s’envien a Google els fitxers que tries per a OCR.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Aquesta app desa credencials OAuth de Google per a OCR gestionades per l’app i l’estat local del testimoni de Google en aquesta instància.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Després d’exportar, l’app intenta eliminar el document temporal de Google del teu Google Drive.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Més tard pots desconnectar aquesta connexió des de Preferències > Desconnectar Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Continuar amb Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Cancel·lar",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Obrir la política de privadesa",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Tancar el diàleg d’activació de Google OCR",
       "text_extraction_ocr_activation_success": "Activació OCR completada. Reintentant l’extracció.",
       "text_extraction_ocr_activation_cancelled": "L’activació OCR s’ha cancel·lat. Extracció no ha continuat.",
       "text_extraction_ocr_token_state_invalid": "L’estat desat d’inici de sessió de Google OCR és invàlid. Reconnecta Google OCR i torna-ho a provar.",

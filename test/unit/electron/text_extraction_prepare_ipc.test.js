@@ -124,5 +124,5 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
   assert.deepEqual(result.generatedPdfArtifactPolicy, {
     mode: 'keep',
   });
-  assert.equal(result.processingInputFileName, 'selectable_text_fixture_12_pages_pages_2_3.pdf');
+  assert.equal(result.processingInputFileName, 'selectable_text_fixture_12_pages_pages_02_03.pdf');
 });

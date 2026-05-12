@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Erster und letzter Teil des analysierten Textes:",
       "selector_empty": "(leer)",
+      "reading_tools": {
+        "reading_speed_test": "Lesegeschwindigkeitstest",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Text aus Datei extrahieren",
         "text_extraction_abort": "Extraktion abbrechen",
@@ -59,10 +63,6 @@
         "speed": "Geschwindigkeit:",
         "controls_label": "Stoppuhr-Steuerung"
       },
-      "reading_tools": {
-        "reading_speed_test": "Lesegeschwindigkeitstest",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Text wird extrahiert...",
         "text_extraction_preparing": "Extraktionsroute wird vorbereitet...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Datei hier ablegen, um Text zu extrahieren"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF-Extraktionsoptionen",
-      "message": "Wähle, ob vor der Extraktion die gesamte PDF-Datei oder ein zusammenhängender Seitenbereich verarbeitet werden soll.",
-      "file_label": "Datei:",
-      "total_pages_label": "Seiten insgesamt: ",
-      "selection_legend": "Seitenauswahl",
-      "all_pages_label": "Alle Seiten",
-      "range_label": "Seitenbereich",
-      "from_page_label": "Von Seite",
-      "to_page_label": "Bis Seite",
-      "selected_page_count_label": "Ausgewählte Seiten: ",
-      "keep_generated_pdf_label": "Erzeugte PDF-Datei mit den ausgewählten Seiten nach der Verarbeitung behalten",
-      "continue_button": "Fortfahren",
-      "cancel_button": "Abbrechen",
-      "close_aria": "Dialog für PDF-Extraktionsoptionen schließen",
-      "invalid_range": "Gib einen zusammenhängenden Seitenbereich zwischen 1 und {totalPages} ein."
-    },
-    "browser_extension": {
-      "title": "Browser-Erweiterung",
-      "subtitle": "Lesezeit",
-      "availability": "Jetzt in Chrome verfügbar. Weitere Browser folgen bald.",
-      "chrome_store_aria": "Die Chrome Web Store-Seite der Erweiterung öffnen",
-      "close_aria": "Dialog der Browser-Erweiterung schließen"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF-Extraktionsoptionen",
+        "message": "Wähle, ob vor der Extraktion die gesamte PDF-Datei oder ein zusammenhängender Seitenbereich verarbeitet werden soll.",
+        "file_label": "Datei:",
+        "total_pages_label": "Seiten insgesamt: ",
+        "selection_legend": "Seitenauswahl",
+        "all_pages_label": "Alle Seiten",
+        "range_label": "Seitenbereich",
+        "from_page_label": "Von Seite",
+        "to_page_label": "Bis Seite",
+        "selected_page_count_label": "Ausgewählte Seiten: ",
+        "keep_generated_pdf_label": "Erzeugte PDF-Datei mit den ausgewählten Seiten nach der Verarbeitung behalten",
+        "continue_button": "Fortfahren",
+        "cancel_button": "Abbrechen",
+        "close_aria": "Dialog für PDF-Extraktionsoptionen schließen",
+        "invalid_range": "Gib einen zusammenhängenden Seitenbereich zwischen 1 und {totalPages} ein."
+      },
+      "route_choice": {
+        "title": "Extraktionsroute wählen",
+        "message": "Für diese PDF sind beide Extraktionsrouten verfügbar. Wählen Sie eine aus, um fortzufahren.",
+        "native_button": "Nativ verwenden",
+        "ocr_button": "OCR verwenden",
+        "cancel_button": "Abbrechen",
+        "close_aria": "Dialog zur Auswahl der Extraktionsroute schließen"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR-Aktivierung prüfen",
+        "intro": "toT verwendet Google-Dienste für OCR. Wenn Sie fortfahren, wird Ihr Browser geöffnet, damit Sie diese App autorisieren können.",
+        "selected_files": "Nur Dateien, die Sie für OCR auswählen, werden an Google gesendet.",
+        "local_storage": "Diese App speichert eine lokale credentials.json-Datei und den lokalen Google-Tokenstatus in dieser App-Instanz.",
+        "remote_cleanup": "Nach dem Export versucht die App, das temporäre Google-Dokument aus Ihrem Google Drive zu entfernen.",
+        "disconnect": "Sie können die Verbindung später über Einstellungen > Google OCR trennen.",
+        "proceed_button": "Mit Google fortfahren",
+        "cancel_button": "Abbrechen",
+        "privacy_link": "Datenschutzrichtlinie öffnen",
+        "close_aria": "Dialog zur Google-OCR-Aktivierung schließen"
+      },
+      "apply_modal": {
+        "title": "Extrahierten Text anwenden",
+        "message": "Wählen Sie aus, wie der extrahierte Text angewendet werden soll.",
+        "elapsed": "Ausführungszeit: ",
+        "repeat_label": "Wiederholungen",
+        "overwrite_button": "Überschreiben",
+        "append_button": "Anhängen",
+        "cancel_button": "Abbrechen",
+        "close_aria": "Dialog zum Anwenden des extrahierten Textes schließen",
+        "saved_pdf_message": "Die erzeugte PDF-Datei wurde nach der Extraktion behalten.",
+        "saved_pdf_label": "Gespeicherte PDF-Datei: ",
+        "reveal_saved_pdf_button": "Gespeicherte PDF-Datei anzeigen"
+      }
     },
     "editor": {
       "title": "toT — Vollständiger Text",
@@ -129,6 +157,68 @@
       "replace_timeout": "Ersetzen hat zu lange gedauert. Bitte erneut versuchen.",
       "status_no_matches": "Keine Treffer",
       "status_empty_query": "Zum Suchen tippen"
+    },
+    "snapshot_save_tags": {
+      "title": "Text-Snapshot speichern",
+      "message": "Markieren Sie diesen Text-Snapshot optional, bevor Sie auswählen, wo er gespeichert werden soll.",
+      "labels": {
+        "language": "Sprache",
+        "type": "Typ",
+        "difficulty": "Schwierigkeit"
+      },
+      "empty": {
+        "language": "Kein Sprach-Tag",
+        "type": "Kein Typ-Tag",
+        "difficulty": "Kein Schwierigkeits-Tag"
+      },
+      "buttons": {
+        "confirm": "Text-Snapshot speichern",
+        "cancel": "Abbrechen"
+      },
+      "close_aria": "Dialog zum Speichern des Text-Snapshots schließen",
+      "options": {
+        "language": {
+          "ar": "Arabisch",
+          "arn": "Mapudungun",
+          "ay": "Aymara",
+          "bn": "Bengalisch",
+          "ca": "Katalanisch",
+          "de": "Deutsch",
+          "en": "Englisch",
+          "es": "Spanisch",
+          "eu": "Baskisch",
+          "fa": "Persisch",
+          "fr": "Französisch",
+          "gn": "Guaraní",
+          "hi": "Hindi",
+          "ht": "Haiti-Kreolisch",
+          "id": "Indonesisch",
+          "it": "Italienisch",
+          "ja": "Japanisch",
+          "ko": "Koreanisch",
+          "mi": "Māori",
+          "pcm": "Nigerianisches Pidgin",
+          "pt": "Portugiesisch",
+          "qu": "Quechua",
+          "ru": "Russisch",
+          "sv": "Schwedisch",
+          "tr": "Türkisch",
+          "ur": "Urdu",
+          "vi": "Vietnamesisch",
+          "zh_hans": "Chinesisch (vereinfacht)",
+          "zh_hant": "Chinesisch (traditionell)",
+          "zu": "Zulu"
+        },
+        "type": {
+          "fiction": "Fiktion",
+          "non_fiction": "Sachbuch"
+        },
+        "difficulty": {
+          "easy": "Leicht",
+          "normal": "Normal",
+          "hard": "Schwer"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Aufgaben",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Es gibt ungespeicherte Änderungen. Diese verwerfen?",
         "close_unsaved": "Es gibt ungespeicherte Änderungen. Ohne Speichern schließen?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Text-Snapshot speichern",
-      "message": "Markieren Sie diesen Text-Snapshot optional, bevor Sie auswählen, wo er gespeichert werden soll.",
-      "labels": {
-        "language": "Sprache",
-        "type": "Typ",
-        "difficulty": "Schwierigkeit"
-      },
-      "empty": {
-        "language": "Kein Sprach-Tag",
-        "type": "Kein Typ-Tag",
-        "difficulty": "Kein Schwierigkeits-Tag"
-      },
-      "buttons": {
-        "confirm": "Text-Snapshot speichern",
-        "cancel": "Abbrechen"
-      },
-      "close_aria": "Dialog zum Speichern des Text-Snapshots schließen",
-      "options": {
-        "language": {
-          "ar": "Arabisch",
-          "arn": "Mapudungun",
-          "ay": "Aymara",
-          "bn": "Bengalisch",
-          "ca": "Katalanisch",
-          "de": "Deutsch",
-          "en": "Englisch",
-          "es": "Spanisch",
-          "eu": "Baskisch",
-          "fa": "Persisch",
-          "fr": "Französisch",
-          "gn": "Guaraní",
-          "hi": "Hindi",
-          "ht": "Haiti-Kreolisch",
-          "id": "Indonesisch",
-          "it": "Italienisch",
-          "ja": "Japanisch",
-          "ko": "Koreanisch",
-          "mi": "Māori",
-          "pcm": "Nigerianisches Pidgin",
-          "pt": "Portugiesisch",
-          "qu": "Quechua",
-          "ru": "Russisch",
-          "sv": "Schwedisch",
-          "tr": "Türkisch",
-          "ur": "Urdu",
-          "vi": "Vietnamesisch",
-          "zh_hans": "Chinesisch (vereinfacht)",
-          "zh_hant": "Chinesisch (traditionell)",
-          "zu": "Zulu"
-        },
-        "type": {
-          "fiction": "Fiktion",
-          "non_fiction": "Sachbuch"
-        },
-        "difficulty": {
-          "easy": "Leicht",
-          "normal": "Normal",
-          "hard": "Schwer"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Abbrechen",
       "save": "Speichern"
     },
+    "browser_extension": {
+      "title": "Browser-Erweiterung",
+      "subtitle": "Lesezeit",
+      "availability": "Jetzt in Chrome verfügbar. Weitere Browser folgen bald.",
+      "chrome_store_aria": "Die Chrome Web Store-Seite der Erweiterung öffnen",
+      "close_aria": "Dialog der Browser-Erweiterung schließen"
+    },
     "alerts": {
       "clipboard_too_large": "Der Text in der Zwischenablage ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
       "append_too_large": "Der resultierende Text ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Die PDF-Datei mit den ausgewählten Seiten konnte für die Extraktion nicht erstellt werden. Prüfe die Datei und versuche es erneut.",
       "text_extraction_generated_pdf_cleanup_warning": "Die Extraktion wurde abgeschlossen, aber eine erzeugte lokale PDF-Datei konnte nicht automatisch bereinigt werden.",
       "text_extraction_route_choice_required": "Für diese PDF ist eine Routenauswahl erforderlich, bevor die Extraktion fortgesetzt werden kann.",
-      "text_extraction_route_choice_title": "Extraktionsroute wählen",
-      "text_extraction_route_choice_message": "Für diese PDF sind beide Extraktionsrouten verfügbar. Wählen Sie eine aus, um fortzufahren.",
-      "text_extraction_route_choice_native_button": "Nativ verwenden",
-      "text_extraction_route_choice_ocr_button": "OCR verwenden",
-      "text_extraction_route_choice_cancel_button": "Abbrechen",
-      "text_extraction_route_choice_close_aria": "Dialog zur Auswahl der Extraktionsroute schließen",
-      "text_extraction_apply_modal_title": "Extrahierten Text anwenden",
-      "text_extraction_apply_modal_message": "Wählen Sie aus, wie der extrahierte Text angewendet werden soll.",
-      "text_extraction_apply_modal_elapsed": "Ausführungszeit: ",
-      "text_extraction_apply_modal_repeat_label": "Wiederholungen",
-      "text_extraction_apply_modal_overwrite_button": "Überschreiben",
-      "text_extraction_apply_modal_append_button": "Anhängen",
-      "text_extraction_apply_modal_cancel_button": "Abbrechen",
-      "text_extraction_apply_modal_close_aria": "Dialog zum Anwenden des extrahierten Textes schließen",
-      "text_extraction_apply_modal_saved_pdf_message": "Die erzeugte PDF-Datei wurde nach der Extraktion behalten.",
-      "text_extraction_apply_modal_saved_pdf_label": "Gespeicherte PDF-Datei: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Gespeicherte PDF-Datei anzeigen",
       "text_extraction_generated_pdf_reveal_failed": "Die gespeicherte PDF-Datei konnte nicht angezeigt werden. Prüfe, ob die Datei noch existiert.",
       "text_extraction_apply_error": "Beim Anwenden des extrahierten Textes ist ein Fehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
       "text_extraction_apply_too_large": "Der resultierende Text ist zu groß für die Verarbeitung. Reduzieren Sie die Wiederholungen und versuchen Sie es erneut.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Die vorbereitete Extraktionsanfrage ist nicht mehr gültig. Starten Sie den Ablauf erneut.",
       "text_extraction_ocr_unavailable": "OCR ist nicht verfügbar. Prüfen Sie den Einrichtungs-/Authentifizierungsstatus und versuchen Sie es erneut.",
       "text_extraction_ocr_activation_required": "OCR-Aktivierung ist erforderlich. Melden Sie sich bei Google OCR an und versuchen Sie es erneut.",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR-Aktivierung prüfen",
-      "text_extraction_ocr_activation_disclosure_intro": "toT verwendet Google-Dienste für OCR. Wenn Sie fortfahren, wird Ihr Browser geöffnet, damit Sie diese App autorisieren können.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Nur Dateien, die Sie für OCR auswählen, werden an Google gesendet.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Diese App speichert eine lokale credentials.json-Datei und den lokalen Google-Tokenstatus in dieser App-Instanz.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Nach dem Export versucht die App, das temporäre Google-Dokument aus Ihrem Google Drive zu entfernen.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Sie können die Verbindung später über Einstellungen > Google OCR trennen.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Mit Google fortfahren",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Abbrechen",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Datenschutzrichtlinie öffnen",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Dialog zur Google-OCR-Aktivierung schließen",
       "text_extraction_ocr_activation_success": "OCR-Aktivierung abgeschlossen. Extraktion wird erneut versucht.",
       "text_extraction_ocr_activation_cancelled": "OCR-Aktivierung wurde abgebrochen. Extraktion wurde nicht fortgesetzt.",
       "text_extraction_ocr_token_state_invalid": "Der gespeicherte Google-OCR-Anmeldestatus ist ungültig. Verbinden Sie Google OCR erneut und versuchen Sie es noch einmal.",

@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "분석된 텍스트의 처음과 마지막 부분:",
       "selector_empty": "(비어 있음)",
+      "reading_tools": {
+        "reading_speed_test": "읽기 속도 테스트",
+        "preview_spoiler": "스포일러"
+      },
       "tooltips": {
         "text_extraction": "파일에서 텍스트 추출",
         "text_extraction_abort": "추출 중단",
@@ -59,10 +63,6 @@
         "speed": "속도:",
         "controls_label": "스톱워치 컨트롤"
       },
-      "reading_tools": {
-        "reading_speed_test": "읽기 속도 테스트",
-        "preview_spoiler": "스포일러"
-      },
       "processing": {
         "text_extraction_placeholder": "텍스트 추출 중...",
         "text_extraction_preparing": "추출 경로 준비 중...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "텍스트를 가져오거나 추출할 파일을 놓으세요"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF 추출 옵션",
-      "message": "추출 전에 전체 PDF를 처리할지, 연속된 페이지 범위 하나를 처리할지 선택하세요.",
-      "file_label": "파일:",
-      "total_pages_label": "전체 페이지: ",
-      "selection_legend": "페이지 선택",
-      "all_pages_label": "모든 페이지",
-      "range_label": "페이지 범위",
-      "from_page_label": "시작 페이지",
-      "to_page_label": "끝 페이지",
-      "selected_page_count_label": "선택한 페이지: ",
-      "keep_generated_pdf_label": "처리 후 생성된 선택 페이지 PDF 유지",
-      "continue_button": "계속",
-      "cancel_button": "취소",
-      "close_aria": "PDF 추출 옵션 대화상자 닫기",
-      "invalid_range": "1에서 {totalPages} 사이의 연속된 페이지 범위를 입력하세요."
-    },
-    "browser_extension": {
-      "title": "브라우저 확장 프로그램",
-      "subtitle": "읽기 시간",
-      "availability": "지금 Chrome에서 사용할 수 있습니다. 더 많은 브라우저가 곧 지원됩니다.",
-      "chrome_store_aria": "확장 프로그램의 Chrome Web Store 페이지 열기",
-      "close_aria": "브라우저 확장 프로그램 대화상자 닫기"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF 추출 옵션",
+        "message": "추출 전에 전체 PDF를 처리할지, 연속된 페이지 범위 하나를 처리할지 선택하세요.",
+        "file_label": "파일:",
+        "total_pages_label": "전체 페이지: ",
+        "selection_legend": "페이지 선택",
+        "all_pages_label": "모든 페이지",
+        "range_label": "페이지 범위",
+        "from_page_label": "시작 페이지",
+        "to_page_label": "끝 페이지",
+        "selected_page_count_label": "선택한 페이지: ",
+        "keep_generated_pdf_label": "처리 후 생성된 선택 페이지 PDF 유지",
+        "continue_button": "계속",
+        "cancel_button": "취소",
+        "close_aria": "PDF 추출 옵션 대화상자 닫기",
+        "invalid_range": "1에서 {totalPages} 사이의 연속된 페이지 범위를 입력하세요."
+      },
+      "route_choice": {
+        "title": "추출 경로 선택",
+        "message": "이 PDF에는 두 추출 경로를 모두 사용할 수 있습니다. 계속하려면 하나를 선택하세요.",
+        "native_button": "네이티브 사용",
+        "ocr_button": "OCR 사용",
+        "cancel_button": "취소",
+        "close_aria": "추출 경로 대화상자 닫기"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR 활성화 검토",
+        "intro": "toT는 OCR에 Google 서비스를 사용합니다. 계속하면 이 앱을 승인할 수 있도록 브라우저가 열립니다.",
+        "selected_files": "OCR을 위해 사용자가 선택한 파일만 Google로 전송됩니다.",
+        "local_storage": "이 앱은 OCR용 앱 관리 Google OAuth 자격 증명과 로컬 Google 토큰 상태를 이 앱 인스턴스에 저장합니다.",
+        "remote_cleanup": "내보내기 후 앱은 Google Drive에서 임시 Google 문서를 제거하려고 시도합니다.",
+        "disconnect": "나중에 환경설정 > Google OCR 연결 해제에서 이 연결을 해제할 수 있습니다.",
+        "proceed_button": "Google로 계속",
+        "cancel_button": "취소",
+        "privacy_link": "개인정보 처리방침 열기",
+        "close_aria": "OCR 활성화 안내 대화상자 닫기"
+      },
+      "apply_modal": {
+        "title": "추출된 텍스트 적용",
+        "message": "추출된 텍스트를 적용할 방법을 선택하세요.",
+        "elapsed": "실행 시간: ",
+        "repeat_label": "반복 횟수",
+        "overwrite_button": "덮어쓰기",
+        "append_button": "추가",
+        "cancel_button": "취소",
+        "close_aria": "추출된 텍스트 적용 대화상자 닫기",
+        "saved_pdf_message": "생성된 PDF가 추출 후 유지되었습니다.",
+        "saved_pdf_label": "저장된 PDF: ",
+        "reveal_saved_pdf_button": "저장된 PDF 표시"
+      }
     },
     "editor": {
       "title": "toT — 전체 텍스트",
@@ -129,6 +157,68 @@
       "replace_timeout": "바꾸기 시간이 초과되었습니다. 다시 시도하세요.",
       "status_no_matches": "일치 항목 없음",
       "status_empty_query": "검색어를 입력하세요"
+    },
+    "snapshot_save_tags": {
+      "title": "텍스트 스냅샷 저장",
+      "message": "저장 위치를 선택하기 전에 이 텍스트 스냅샷에 선택적으로 태그를 지정하세요.",
+      "labels": {
+        "language": "언어",
+        "type": "유형",
+        "difficulty": "난이도"
+      },
+      "empty": {
+        "language": "언어 태그 없음",
+        "type": "유형 태그 없음",
+        "difficulty": "난이도 태그 없음"
+      },
+      "buttons": {
+        "confirm": "텍스트 스냅샷 저장",
+        "cancel": "취소"
+      },
+      "close_aria": "텍스트 스냅샷 저장 대화상자 닫기",
+      "options": {
+        "language": {
+          "ar": "아랍어",
+          "arn": "마푸둥군",
+          "ay": "아이마라어",
+          "bn": "벵골어",
+          "ca": "카탈로니아어",
+          "de": "독일어",
+          "en": "영어",
+          "es": "스페인어",
+          "eu": "바스크어",
+          "fa": "페르시아어",
+          "fr": "프랑스어",
+          "gn": "과라니어",
+          "hi": "힌디어",
+          "ht": "아이티어",
+          "id": "인도네시아어",
+          "it": "이탈리아어",
+          "ja": "일본어",
+          "ko": "한국어",
+          "mi": "마오리어",
+          "pcm": "나이지리아 피진어",
+          "pt": "포르투갈어",
+          "qu": "케추아어",
+          "ru": "러시아어",
+          "sv": "스웨덴어",
+          "tr": "튀르키예어",
+          "ur": "우르두어",
+          "vi": "베트남어",
+          "zh_hans": "중국어(간체)",
+          "zh_hant": "중국어(번체)",
+          "zu": "줄루어"
+        },
+        "type": {
+          "fiction": "소설",
+          "non_fiction": "논픽션"
+        },
+        "difficulty": {
+          "easy": "쉬움",
+          "normal": "보통",
+          "hard": "어려움"
+        }
+      }
     },
     "tasks": {
       "title": "toT — 작업",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "저장되지 않은 변경 사항이 있습니다. 버릴까요?",
         "close_unsaved": "저장되지 않은 변경 사항이 있습니다. 저장하지 않고 닫을까요?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "텍스트 스냅샷 저장",
-      "message": "저장 위치를 선택하기 전에 이 텍스트 스냅샷에 선택적으로 태그를 지정하세요.",
-      "labels": {
-        "language": "언어",
-        "type": "유형",
-        "difficulty": "난이도"
-      },
-      "empty": {
-        "language": "언어 태그 없음",
-        "type": "유형 태그 없음",
-        "difficulty": "난이도 태그 없음"
-      },
-      "buttons": {
-        "confirm": "텍스트 스냅샷 저장",
-        "cancel": "취소"
-      },
-      "close_aria": "텍스트 스냅샷 저장 대화상자 닫기",
-      "options": {
-        "language": {
-          "ar": "아랍어",
-          "arn": "마푸둥군",
-          "ay": "아이마라어",
-          "bn": "벵골어",
-          "ca": "카탈로니아어",
-          "de": "독일어",
-          "en": "영어",
-          "es": "스페인어",
-          "eu": "바스크어",
-          "fa": "페르시아어",
-          "fr": "프랑스어",
-          "gn": "과라니어",
-          "hi": "힌디어",
-          "ht": "아이티어",
-          "id": "인도네시아어",
-          "it": "이탈리아어",
-          "ja": "일본어",
-          "ko": "한국어",
-          "mi": "마오리어",
-          "pcm": "나이지리아 피진어",
-          "pt": "포르투갈어",
-          "qu": "케추아어",
-          "ru": "러시아어",
-          "sv": "스웨덴어",
-          "tr": "튀르키예어",
-          "ur": "우르두어",
-          "vi": "베트남어",
-          "zh_hans": "중국어(간체)",
-          "zh_hant": "중국어(번체)",
-          "zu": "줄루어"
-        },
-        "type": {
-          "fiction": "소설",
-          "non_fiction": "논픽션"
-        },
-        "difficulty": {
-          "easy": "쉬움",
-          "normal": "보통",
-          "hard": "어려움"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "취소",
       "save": "저장"
     },
+    "browser_extension": {
+      "title": "브라우저 확장 프로그램",
+      "subtitle": "읽기 시간",
+      "availability": "지금 Chrome에서 사용할 수 있습니다. 더 많은 브라우저가 곧 지원됩니다.",
+      "chrome_store_aria": "확장 프로그램의 Chrome Web Store 페이지 열기",
+      "close_aria": "브라우저 확장 프로그램 대화상자 닫기"
+    },
     "alerts": {
       "clipboard_too_large": "클립보드 텍스트가 너무 커서 처리할 수 없습니다. 줄인 뒤 다시 시도하세요.",
       "append_too_large": "결과 텍스트가 너무 커서 처리할 수 없습니다. 줄인 뒤 다시 시도하세요.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "추출을 위한 선택 페이지 PDF를 만들 수 없습니다. 파일을 확인한 뒤 다시 시도하세요.",
       "text_extraction_generated_pdf_cleanup_warning": "추출이 완료되었지만 생성된 로컬 PDF를 자동으로 정리할 수 없습니다.",
       "text_extraction_route_choice_required": "추출을 계속하기 전에 이 PDF의 경로를 선택해야 합니다.",
-      "text_extraction_route_choice_title": "추출 경로 선택",
-      "text_extraction_route_choice_message": "이 PDF에는 두 추출 경로를 모두 사용할 수 있습니다. 계속하려면 하나를 선택하세요.",
-      "text_extraction_route_choice_native_button": "네이티브 사용",
-      "text_extraction_route_choice_ocr_button": "OCR 사용",
-      "text_extraction_route_choice_cancel_button": "취소",
-      "text_extraction_route_choice_close_aria": "추출 경로 대화상자 닫기",
-      "text_extraction_apply_modal_title": "추출된 텍스트 적용",
-      "text_extraction_apply_modal_message": "추출된 텍스트를 적용할 방법을 선택하세요.",
-      "text_extraction_apply_modal_elapsed": "실행 시간: ",
-      "text_extraction_apply_modal_repeat_label": "반복 횟수",
-      "text_extraction_apply_modal_overwrite_button": "덮어쓰기",
-      "text_extraction_apply_modal_append_button": "추가",
-      "text_extraction_apply_modal_cancel_button": "취소",
-      "text_extraction_apply_modal_close_aria": "추출된 텍스트 적용 대화상자 닫기",
-      "text_extraction_apply_modal_saved_pdf_message": "생성된 PDF가 추출 후 유지되었습니다.",
-      "text_extraction_apply_modal_saved_pdf_label": "저장된 PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "저장된 PDF 표시",
       "text_extraction_generated_pdf_reveal_failed": "저장된 PDF를 표시할 수 없습니다. 파일이 아직 존재하는지 확인하세요.",
       "text_extraction_apply_error": "추출된 텍스트를 적용하는 중 오류가 발생했습니다. 콘솔을 확인하고 다시 시도하세요.",
       "text_extraction_apply_too_large": "결과 텍스트가 너무 커서 처리할 수 없습니다. 반복 횟수를 줄이고 다시 시도하세요.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "준비된 추출 요청이 더 이상 유효하지 않습니다. 흐름을 다시 시작하세요.",
       "text_extraction_ocr_unavailable": "OCR을 사용할 수 없습니다. 설정/인증 상태를 확인하고 다시 시도하세요.",
       "text_extraction_ocr_activation_required": "OCR 활성화가 필요합니다. Google OCR에 로그인한 뒤 다시 시도하세요.",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR 활성화 검토",
-      "text_extraction_ocr_activation_disclosure_intro": "toT는 OCR에 Google 서비스를 사용합니다. 계속하면 이 앱을 승인할 수 있도록 브라우저가 열립니다.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "OCR을 위해 사용자가 선택한 파일만 Google로 전송됩니다.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "이 앱은 OCR용 앱 관리 Google OAuth 자격 증명과 로컬 Google 토큰 상태를 이 앱 인스턴스에 저장합니다.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "내보내기 후 앱은 Google Drive에서 임시 Google 문서를 제거하려고 시도합니다.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "나중에 환경설정 > Google OCR 연결 해제에서 이 연결을 해제할 수 있습니다.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Google로 계속",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "취소",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "개인정보 처리방침 열기",
-      "text_extraction_ocr_activation_disclosure_close_aria": "OCR 활성화 안내 대화상자 닫기",
       "text_extraction_ocr_activation_success": "OCR 활성화가 완료되었습니다. 추출을 다시 시도합니다.",
       "text_extraction_ocr_activation_cancelled": "OCR 활성화가 취소되었습니다. 추출이 계속되지 않았습니다.",
       "text_extraction_ocr_token_state_invalid": "저장된 Google OCR 로그인 상태가 올바르지 않습니다. Google OCR을 다시 연결한 뒤 다시 시도하세요.",

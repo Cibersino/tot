@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Phần đầu và phần cuối của văn bản được phân tích:",
       "selector_empty": "(trống)",
+      "reading_tools": {
+        "reading_speed_test": "Bài kiểm tra tốc độ đọc",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Trích xuất văn bản từ tệp",
         "text_extraction_abort": "Hủy trích xuất",
@@ -59,10 +63,6 @@
         "speed": "Tốc độ:",
         "controls_label": "Điều khiển đồng hồ bấm giờ"
       },
-      "reading_tools": {
-        "reading_speed_test": "Bài kiểm tra tốc độ đọc",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Đang trích xuất văn bản...",
         "text_extraction_preparing": "Đang chuẩn bị tuyến trích xuất...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Thả tệp để trích xuất văn bản"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "Tùy chọn trích xuất PDF",
-      "message": "Chọn xử lý toàn bộ PDF hoặc một phạm vi trang liền nhau trước khi trích xuất.",
-      "file_label": "Tệp:",
-      "total_pages_label": "Tổng số trang: ",
-      "selection_legend": "Chọn trang",
-      "all_pages_label": "Tất cả trang",
-      "range_label": "Phạm vi trang",
-      "from_page_label": "Từ trang",
-      "to_page_label": "Đến trang",
-      "selected_page_count_label": "Trang đã chọn: ",
-      "keep_generated_pdf_label": "Giữ PDF các trang đã chọn được tạo sau khi xử lý",
-      "continue_button": "Tiếp tục",
-      "cancel_button": "Hủy",
-      "close_aria": "Đóng hộp thoại tùy chọn trích xuất PDF",
-      "invalid_range": "Nhập một phạm vi trang liền nhau từ 1 đến {totalPages}."
-    },
-    "browser_extension": {
-      "title": "Tiện ích mở rộng trình duyệt",
-      "subtitle": "Thời gian đọc",
-      "availability": "Hiện đã có trên Chrome. Nhiều trình duyệt khác sẽ sớm được hỗ trợ.",
-      "chrome_store_aria": "Mở trang Chrome Web Store của tiện ích",
-      "close_aria": "Đóng hộp thoại tiện ích mở rộng trình duyệt"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "Tùy chọn trích xuất PDF",
+        "message": "Chọn xử lý toàn bộ PDF hoặc một phạm vi trang liền nhau trước khi trích xuất.",
+        "file_label": "Tệp:",
+        "total_pages_label": "Tổng số trang: ",
+        "selection_legend": "Chọn trang",
+        "all_pages_label": "Tất cả trang",
+        "range_label": "Phạm vi trang",
+        "from_page_label": "Từ trang",
+        "to_page_label": "Đến trang",
+        "selected_page_count_label": "Trang đã chọn: ",
+        "keep_generated_pdf_label": "Giữ PDF các trang đã chọn được tạo sau khi xử lý",
+        "continue_button": "Tiếp tục",
+        "cancel_button": "Hủy",
+        "close_aria": "Đóng hộp thoại tùy chọn trích xuất PDF",
+        "invalid_range": "Nhập một phạm vi trang liền nhau từ 1 đến {totalPages}."
+      },
+      "route_choice": {
+        "title": "Chọn tuyến trích xuất",
+        "message": "Có thể dùng cả hai tuyến trích xuất cho PDF này. Hãy chọn một tuyến để tiếp tục.",
+        "native_button": "Dùng native",
+        "ocr_button": "Dùng OCR",
+        "cancel_button": "Hủy",
+        "close_aria": "Đóng hộp thoại tuyến trích xuất"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Xem lại kích hoạt Google OCR",
+        "intro": "toT dùng dịch vụ Google cho OCR. Tiếp tục sẽ mở trình duyệt để bạn cấp quyền cho ứng dụng này.",
+        "selected_files": "Chỉ những tệp bạn chọn cho OCR mới được gửi đến Google.",
+        "local_storage": "Ứng dụng này lưu thông tin xác thực Google OAuth do ứng dụng quản lý cho OCR và trạng thái token Google cục bộ trong phiên bản ứng dụng này.",
+        "remote_cleanup": "Sau khi xuất, ứng dụng cố gắng xóa tài liệu Google tạm thời khỏi Google Drive của bạn.",
+        "disconnect": "Sau này bạn có thể ngắt kết nối qua Tùy chọn > Ngắt kết nối Google OCR.",
+        "proceed_button": "Tiếp tục đến Google",
+        "cancel_button": "Hủy",
+        "privacy_link": "Mở chính sách quyền riêng tư",
+        "close_aria": "Đóng hộp thoại thông báo kích hoạt OCR"
+      },
+      "apply_modal": {
+        "title": "Áp dụng văn bản đã trích xuất",
+        "message": "Chọn cách áp dụng văn bản đã trích xuất.",
+        "elapsed": "Thời gian thực thi: ",
+        "repeat_label": "Số lần lặp",
+        "overwrite_button": "Ghi đè",
+        "append_button": "Thêm vào",
+        "cancel_button": "Hủy",
+        "close_aria": "Đóng hộp thoại áp dụng văn bản đã trích xuất",
+        "saved_pdf_message": "PDF đã tạo được giữ lại sau khi trích xuất.",
+        "saved_pdf_label": "PDF đã lưu: ",
+        "reveal_saved_pdf_button": "Hiển thị PDF đã lưu"
+      }
     },
     "editor": {
       "title": "toT — Toàn bộ văn bản",
@@ -129,6 +157,68 @@
       "replace_timeout": "Thay thế quá thời gian. Hãy thử lại.",
       "status_no_matches": "Không có kết quả",
       "status_empty_query": "Nhập để tìm kiếm"
+    },
+    "snapshot_save_tags": {
+      "title": "Lưu bản lưu văn bản",
+      "message": "Bạn có thể gắn thẻ tùy chọn cho bản lưu văn bản này trước khi chọn nơi lưu.",
+      "labels": {
+        "language": "Ngôn ngữ",
+        "type": "Loại",
+        "difficulty": "Độ khó"
+      },
+      "empty": {
+        "language": "Không có thẻ ngôn ngữ",
+        "type": "Không có thẻ loại",
+        "difficulty": "Không có thẻ độ khó"
+      },
+      "buttons": {
+        "confirm": "Lưu bản lưu văn bản",
+        "cancel": "Hủy"
+      },
+      "close_aria": "Đóng hộp thoại lưu bản lưu văn bản",
+      "options": {
+        "language": {
+          "ar": "Tiếng Ả Rập",
+          "arn": "Mapudungun",
+          "ay": "Tiếng Aymara",
+          "bn": "Tiếng Bengal",
+          "ca": "Tiếng Catalan",
+          "de": "Tiếng Đức",
+          "en": "Tiếng Anh",
+          "es": "Tiếng Tây Ban Nha",
+          "eu": "Tiếng Basque",
+          "fa": "Tiếng Ba Tư",
+          "fr": "Tiếng Pháp",
+          "gn": "Tiếng Guarani",
+          "hi": "Tiếng Hindi",
+          "ht": "Tiếng Haiti",
+          "id": "Tiếng Indonesia",
+          "it": "Tiếng Ý",
+          "ja": "Tiếng Nhật",
+          "ko": "Tiếng Hàn",
+          "mi": "Tiếng Māori",
+          "pcm": "Pidgin Nigeria",
+          "pt": "Tiếng Bồ Đào Nha",
+          "qu": "Tiếng Quechua",
+          "ru": "Tiếng Nga",
+          "sv": "Tiếng Thụy Điển",
+          "tr": "Tiếng Thổ Nhĩ Kỳ",
+          "ur": "Tiếng Urdu",
+          "vi": "Tiếng Việt",
+          "zh_hans": "Tiếng Trung (giản thể)",
+          "zh_hant": "Tiếng Trung (phồn thể)",
+          "zu": "Tiếng Zulu"
+        },
+        "type": {
+          "fiction": "Hư cấu",
+          "non_fiction": "Phi hư cấu"
+        },
+        "difficulty": {
+          "easy": "Dễ",
+          "normal": "Bình thường",
+          "hard": "Khó"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Tác vụ",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Có thay đổi chưa lưu. Bỏ các thay đổi đó?",
         "close_unsaved": "Có thay đổi chưa lưu. Đóng mà không lưu?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Lưu bản lưu văn bản",
-      "message": "Bạn có thể gắn thẻ tùy chọn cho bản lưu văn bản này trước khi chọn nơi lưu.",
-      "labels": {
-        "language": "Ngôn ngữ",
-        "type": "Loại",
-        "difficulty": "Độ khó"
-      },
-      "empty": {
-        "language": "Không có thẻ ngôn ngữ",
-        "type": "Không có thẻ loại",
-        "difficulty": "Không có thẻ độ khó"
-      },
-      "buttons": {
-        "confirm": "Lưu bản lưu văn bản",
-        "cancel": "Hủy"
-      },
-      "close_aria": "Đóng hộp thoại lưu bản lưu văn bản",
-      "options": {
-        "language": {
-          "ar": "Tiếng Ả Rập",
-          "arn": "Mapudungun",
-          "ay": "Tiếng Aymara",
-          "bn": "Tiếng Bengal",
-          "ca": "Tiếng Catalan",
-          "de": "Tiếng Đức",
-          "en": "Tiếng Anh",
-          "es": "Tiếng Tây Ban Nha",
-          "eu": "Tiếng Basque",
-          "fa": "Tiếng Ba Tư",
-          "fr": "Tiếng Pháp",
-          "gn": "Tiếng Guarani",
-          "hi": "Tiếng Hindi",
-          "ht": "Tiếng Haiti",
-          "id": "Tiếng Indonesia",
-          "it": "Tiếng Ý",
-          "ja": "Tiếng Nhật",
-          "ko": "Tiếng Hàn",
-          "mi": "Tiếng Māori",
-          "pcm": "Pidgin Nigeria",
-          "pt": "Tiếng Bồ Đào Nha",
-          "qu": "Tiếng Quechua",
-          "ru": "Tiếng Nga",
-          "sv": "Tiếng Thụy Điển",
-          "tr": "Tiếng Thổ Nhĩ Kỳ",
-          "ur": "Tiếng Urdu",
-          "vi": "Tiếng Việt",
-          "zh_hans": "Tiếng Trung (giản thể)",
-          "zh_hant": "Tiếng Trung (phồn thể)",
-          "zu": "Tiếng Zulu"
-        },
-        "type": {
-          "fiction": "Hư cấu",
-          "non_fiction": "Phi hư cấu"
-        },
-        "difficulty": {
-          "easy": "Dễ",
-          "normal": "Bình thường",
-          "hard": "Khó"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Hủy",
       "save": "Lưu"
     },
+    "browser_extension": {
+      "title": "Tiện ích mở rộng trình duyệt",
+      "subtitle": "Thời gian đọc",
+      "availability": "Hiện đã có trên Chrome. Nhiều trình duyệt khác sẽ sớm được hỗ trợ.",
+      "chrome_store_aria": "Mở trang Chrome Web Store của tiện ích",
+      "close_aria": "Đóng hộp thoại tiện ích mở rộng trình duyệt"
+    },
     "alerts": {
       "clipboard_too_large": "Văn bản trong clipboard quá lớn để xử lý. Hãy rút gọn và thử lại.",
       "append_too_large": "Văn bản kết quả quá lớn để xử lý. Hãy rút gọn và thử lại.",
@@ -389,24 +424,7 @@
       "text_extraction_pdf_subset_creation_failed": "Không thể tạo PDF gồm các trang đã chọn để trích xuất. Hãy kiểm tra tệp rồi thử lại.",
       "text_extraction_generated_pdf_cleanup_warning": "Quá trình trích xuất đã hoàn tất, nhưng không thể tự động dọn dẹp một PDF cục bộ đã tạo.",
       "text_extraction_route_choice_required": "Cần chọn tuyến cho PDF này trước khi có thể tiếp tục trích xuất.",
-      "text_extraction_route_choice_title": "Chọn tuyến trích xuất",
-      "text_extraction_route_choice_message": "Có thể dùng cả hai tuyến trích xuất cho PDF này. Hãy chọn một tuyến để tiếp tục.",
-      "text_extraction_route_choice_native_button": "Dùng native",
-      "text_extraction_route_choice_ocr_button": "Dùng OCR",
-      "text_extraction_route_choice_cancel_button": "Hủy",
-      "text_extraction_route_choice_close_aria": "Đóng hộp thoại tuyến trích xuất",
-      "text_extraction_apply_modal_title": "Áp dụng văn bản đã trích xuất",
-      "text_extraction_apply_modal_message": "Chọn cách áp dụng văn bản đã trích xuất.",
-      "text_extraction_apply_modal_elapsed": "Thời gian thực thi: ",
-      "text_extraction_apply_modal_repeat_label": "Số lần lặp",
-      "text_extraction_apply_modal_overwrite_button": "Ghi đè",
-      "text_extraction_apply_modal_append_button": "Thêm vào",
-      "text_extraction_apply_modal_cancel_button": "Hủy",
-      "text_extraction_apply_modal_saved_pdf_message": "PDF đã tạo được giữ lại sau khi trích xuất.",
-      "text_extraction_apply_modal_saved_pdf_label": "PDF đã lưu: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Hiển thị PDF đã lưu",
       "text_extraction_generated_pdf_reveal_failed": "Không thể hiển thị PDF đã lưu. Hãy kiểm tra xem tệp còn tồn tại không.",
-      "text_extraction_apply_modal_close_aria": "Đóng hộp thoại áp dụng văn bản đã trích xuất",
       "text_extraction_apply_error": "Đã xảy ra lỗi khi áp dụng văn bản đã trích xuất. Hãy kiểm tra console và thử lại.",
       "text_extraction_apply_too_large": "Văn bản kết quả quá lớn để xử lý. Hãy giảm số lần lặp và thử lại.",
       "text_extraction_apply_text_limit": "Không thể thêm văn bản đã trích xuất: đã đạt kích thước tối đa.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Yêu cầu trích xuất đã chuẩn bị không còn hợp lệ. Hãy bắt đầu lại quy trình.",
       "text_extraction_ocr_unavailable": "OCR không khả dụng. Hãy kiểm tra trạng thái thiết lập/xác thực và thử lại.",
       "text_extraction_ocr_activation_required": "Cần kích hoạt OCR. Hãy đăng nhập Google OCR và thử lại.",
-      "text_extraction_ocr_activation_disclosure_title": "Xem lại kích hoạt Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "toT dùng dịch vụ Google cho OCR. Tiếp tục sẽ mở trình duyệt để bạn cấp quyền cho ứng dụng này.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Chỉ những tệp bạn chọn cho OCR mới được gửi đến Google.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Ứng dụng này lưu thông tin xác thực Google OAuth do ứng dụng quản lý cho OCR và trạng thái token Google cục bộ trong phiên bản ứng dụng này.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Sau khi xuất, ứng dụng cố gắng xóa tài liệu Google tạm thời khỏi Google Drive của bạn.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Sau này bạn có thể ngắt kết nối qua Tùy chọn > Ngắt kết nối Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Tiếp tục đến Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Hủy",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Mở chính sách quyền riêng tư",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Đóng hộp thoại thông báo kích hoạt OCR",
       "text_extraction_ocr_activation_success": "Đã hoàn tất kích hoạt OCR. Đang thử lại trích xuất.",
       "text_extraction_ocr_activation_cancelled": "Kích hoạt OCR đã bị hủy. Trích xuất không tiếp tục.",
       "text_extraction_ocr_token_state_invalid": "Trạng thái đăng nhập Google OCR đã lưu không hợp lệ. Hãy kết nối lại Google OCR và thử lại.",

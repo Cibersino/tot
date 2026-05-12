@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "أول وآخر جزء من النص المُحلَّل:",
       "selector_empty": "(فارغ)",
+      "reading_tools": {
+        "reading_speed_test": "اختبار سرعة القراءة",
+        "preview_spoiler": "إخفاء النهاية"
+      },
       "tooltips": {
         "text_extraction": "استخراج النص من ملف",
         "text_extraction_abort": "إيقاف الاستخراج",
@@ -59,10 +63,6 @@
         "speed": "السرعة:",
         "controls_label": "عناصر التحكم في ساعة الإيقاف"
       },
-      "reading_tools": {
-        "reading_speed_test": "اختبار سرعة القراءة",
-        "preview_spoiler": "إخفاء النهاية"
-      },
       "processing": {
         "text_extraction_placeholder": "جارٍ استخراج النص...",
         "text_extraction_preparing": "جارٍ تحضير مسار الاستخراج...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "أفلت الملف لاستخراج النص"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "خيارات استخراج PDF",
-      "message": "اختر ما إذا كنت تريد معالجة ملف PDF كاملًا أو نطاقًا متصلًا من الصفحات قبل الاستخراج.",
-      "file_label": "الملف:",
-      "total_pages_label": "إجمالي الصفحات: ",
-      "selection_legend": "تحديد الصفحات",
-      "all_pages_label": "كل الصفحات",
-      "range_label": "نطاق الصفحات",
-      "from_page_label": "من الصفحة",
-      "to_page_label": "إلى الصفحة",
-      "selected_page_count_label": "الصفحات المحددة: ",
-      "keep_generated_pdf_label": "الاحتفاظ بملف PDF المُنشأ من الصفحات المحددة بعد المعالجة",
-      "continue_button": "متابعة",
-      "cancel_button": "إلغاء",
-      "close_aria": "إغلاق مربع حوار خيارات استخراج PDF",
-      "invalid_range": "أدخل نطاقًا متصلًا من الصفحات بين 1 و {totalPages}."
-    },
-    "browser_extension": {
-      "title": "إضافة المتصفح",
-      "subtitle": "وقت القراءة",
-      "availability": "متاحة الآن على Chrome. ستتوفر لمتصفحات أخرى قريبًا.",
-      "chrome_store_aria": "فتح صفحة الإضافة في Chrome Web Store",
-      "close_aria": "إغلاق مربع حوار إضافة المتصفح"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "خيارات استخراج PDF",
+        "message": "اختر ما إذا كنت تريد معالجة ملف PDF كاملًا أو نطاقًا متصلًا من الصفحات قبل الاستخراج.",
+        "file_label": "الملف:",
+        "total_pages_label": "إجمالي الصفحات: ",
+        "selection_legend": "تحديد الصفحات",
+        "all_pages_label": "كل الصفحات",
+        "range_label": "نطاق الصفحات",
+        "from_page_label": "من الصفحة",
+        "to_page_label": "إلى الصفحة",
+        "selected_page_count_label": "الصفحات المحددة: ",
+        "keep_generated_pdf_label": "الاحتفاظ بملف PDF المُنشأ من الصفحات المحددة بعد المعالجة",
+        "continue_button": "متابعة",
+        "cancel_button": "إلغاء",
+        "close_aria": "إغلاق مربع حوار خيارات استخراج PDF",
+        "invalid_range": "أدخل نطاقًا متصلًا من الصفحات بين 1 و {totalPages}."
+      },
+      "route_choice": {
+        "title": "اختيار مسار الاستخراج",
+        "message": "كلا مساري الاستخراج متاحان لهذا الـ PDF. اختر واحدًا للمتابعة.",
+        "native_button": "استخدام المسار الأصلي",
+        "ocr_button": "استخدام OCR",
+        "cancel_button": "إلغاء",
+        "close_aria": "إغلاق مربع حوار مسار الاستخراج"
+      },
+      "ocr_activation_disclosure": {
+        "title": "مراجعة تفعيل Google OCR",
+        "intro": "يستخدم toT خدمات Google من أجل OCR. ستؤدي المتابعة إلى فتح متصفحك حتى تمنح هذا التطبيق الإذن.",
+        "selected_files": "تُرسل إلى Google فقط الملفات التي تختارها لـ OCR.",
+        "local_storage": "يخزّن هذا التطبيق بيانات اعتماد Google OAuth الخاصة بـ OCR التي يديرها التطبيق وحالة رمز Google المحلية في هذه النسخة من التطبيق.",
+        "remote_cleanup": "بعد التصدير، يحاول التطبيق إزالة مستند Google المؤقت من Google Drive الخاص بك.",
+        "disconnect": "يمكنك لاحقًا قطع الاتصال من التفضيلات > فصل Google OCR.",
+        "proceed_button": "المتابعة إلى Google",
+        "cancel_button": "إلغاء",
+        "privacy_link": "فتح سياسة الخصوصية",
+        "close_aria": "إغلاق مربع حوار تفعيل Google OCR"
+      },
+      "apply_modal": {
+        "title": "تطبيق النص المستخرج",
+        "message": "اختر كيفية تطبيق النص المستخرج.",
+        "elapsed": "زمن التنفيذ: ",
+        "repeat_label": "التكرارات",
+        "overwrite_button": "استبدال",
+        "append_button": "إلحاق",
+        "cancel_button": "إلغاء",
+        "close_aria": "إغلاق مربع حوار تطبيق النص المستخرج",
+        "saved_pdf_message": "تم الاحتفاظ بملف PDF المُنشأ بعد الاستخراج.",
+        "saved_pdf_label": "ملف PDF المحفوظ: ",
+        "reveal_saved_pdf_button": "إظهار ملف PDF المحفوظ"
+      }
     },
     "editor": {
       "title": "toT — النص الكامل",
@@ -129,6 +157,68 @@
       "replace_timeout": "انتهت مهلة الاستبدال. حاول مرة أخرى.",
       "status_no_matches": "لا توجد مطابقات",
       "status_empty_query": "اكتب للبحث"
+    },
+    "snapshot_save_tags": {
+      "title": "حفظ لقطة نصية",
+      "message": "يمكنك اختيار وسوم لهذه اللقطة النصية قبل تحديد مكان حفظها.",
+      "labels": {
+        "language": "اللغة",
+        "type": "النوع",
+        "difficulty": "الصعوبة"
+      },
+      "empty": {
+        "language": "دون وسم لغة",
+        "type": "دون وسم نوع",
+        "difficulty": "دون وسم صعوبة"
+      },
+      "buttons": {
+        "confirm": "حفظ اللقطة النصية",
+        "cancel": "إلغاء"
+      },
+      "close_aria": "إغلاق مربع حوار حفظ اللقطة النصية",
+      "options": {
+        "language": {
+          "ar": "العربية",
+          "arn": "المابودونغون",
+          "ay": "الأيمارا",
+          "bn": "البنغالية",
+          "ca": "الكتالانية",
+          "de": "الألمانية",
+          "en": "الإنجليزية",
+          "es": "الإسبانية",
+          "eu": "الباسكية",
+          "fa": "الفارسية",
+          "fr": "الفرنسية",
+          "gn": "الغوارانية",
+          "hi": "الهندية",
+          "ht": "الكريولية الهايتية",
+          "id": "الإندونيسية",
+          "it": "الإيطالية",
+          "ja": "اليابانية",
+          "ko": "الكورية",
+          "mi": "الماورية",
+          "pcm": "البدجنية النيجيرية",
+          "pt": "البرتغالية",
+          "qu": "كيشوا",
+          "ru": "الروسية",
+          "sv": "السويدية",
+          "tr": "التركية",
+          "ur": "الأردية",
+          "vi": "الفيتنامية",
+          "zh_hans": "الصينية المبسطة",
+          "zh_hant": "الصينية التقليدية",
+          "zu": "الزولو"
+        },
+        "type": {
+          "fiction": "أدب تخييلي",
+          "non_fiction": "غير تخييلي"
+        },
+        "difficulty": {
+          "easy": "سهل",
+          "normal": "عادي",
+          "hard": "صعب"
+        }
+      }
     },
     "tasks": {
       "title": "toT — المهام",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "توجد تغييرات غير محفوظة. هل تريد تجاهلها؟",
         "close_unsaved": "توجد تغييرات غير محفوظة. هل تريد الإغلاق دون حفظ؟"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "حفظ لقطة نصية",
-      "message": "يمكنك اختيار وسوم لهذه اللقطة النصية قبل تحديد مكان حفظها.",
-      "labels": {
-        "language": "اللغة",
-        "type": "النوع",
-        "difficulty": "الصعوبة"
-      },
-      "empty": {
-        "language": "دون وسم لغة",
-        "type": "دون وسم نوع",
-        "difficulty": "دون وسم صعوبة"
-      },
-      "buttons": {
-        "confirm": "حفظ اللقطة النصية",
-        "cancel": "إلغاء"
-      },
-      "close_aria": "إغلاق مربع حوار حفظ اللقطة النصية",
-      "options": {
-        "language": {
-          "ar": "العربية",
-          "arn": "المابودونغون",
-          "ay": "الأيمارا",
-          "bn": "البنغالية",
-          "ca": "الكتالانية",
-          "de": "الألمانية",
-          "en": "الإنجليزية",
-          "es": "الإسبانية",
-          "eu": "الباسكية",
-          "fa": "الفارسية",
-          "fr": "الفرنسية",
-          "gn": "الغوارانية",
-          "hi": "الهندية",
-          "ht": "الكريولية الهايتية",
-          "id": "الإندونيسية",
-          "it": "الإيطالية",
-          "ja": "اليابانية",
-          "ko": "الكورية",
-          "mi": "الماورية",
-          "pcm": "البدجنية النيجيرية",
-          "pt": "البرتغالية",
-          "qu": "كيشوا",
-          "ru": "الروسية",
-          "sv": "السويدية",
-          "tr": "التركية",
-          "ur": "الأردية",
-          "vi": "الفيتنامية",
-          "zh_hans": "الصينية المبسطة",
-          "zh_hant": "الصينية التقليدية",
-          "zu": "الزولو"
-        },
-        "type": {
-          "fiction": "أدب تخييلي",
-          "non_fiction": "غير تخييلي"
-        },
-        "difficulty": {
-          "easy": "سهل",
-          "normal": "عادي",
-          "hard": "صعب"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "إلغاء",
       "save": "حفظ"
     },
+    "browser_extension": {
+      "title": "إضافة المتصفح",
+      "subtitle": "وقت القراءة",
+      "availability": "متاحة الآن على Chrome. ستتوفر لمتصفحات أخرى قريبًا.",
+      "chrome_store_aria": "فتح صفحة الإضافة في Chrome Web Store",
+      "close_aria": "إغلاق مربع حوار إضافة المتصفح"
+    },
     "alerts": {
       "clipboard_too_large": "نص الحافظة كبير جدًا للمعالجة. قلّله وحاول مرة أخرى.",
       "append_too_large": "النص الناتج كبير جدًا للمعالجة. قلّله وحاول مرة أخرى.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "تعذّر إنشاء ملف PDF بالصفحات المحددة لاستخدامه في الاستخراج. تحقّق من الملف وحاول مرة أخرى.",
       "text_extraction_generated_pdf_cleanup_warning": "اكتمل الاستخراج، لكن تعذّر حذف ملف PDF محلي مُنشأ تلقائيًا.",
       "text_extraction_route_choice_required": "يلزم اختيار مسار لهذا الـ PDF قبل متابعة الاستخراج.",
-      "text_extraction_route_choice_title": "اختيار مسار الاستخراج",
-      "text_extraction_route_choice_message": "كلا مساري الاستخراج متاحان لهذا الـ PDF. اختر واحدًا للمتابعة.",
-      "text_extraction_route_choice_native_button": "استخدام المسار الأصلي",
-      "text_extraction_route_choice_ocr_button": "استخدام OCR",
-      "text_extraction_route_choice_cancel_button": "إلغاء",
-      "text_extraction_route_choice_close_aria": "إغلاق مربع حوار مسار الاستخراج",
-      "text_extraction_apply_modal_title": "تطبيق النص المستخرج",
-      "text_extraction_apply_modal_message": "اختر كيفية تطبيق النص المستخرج.",
-      "text_extraction_apply_modal_elapsed": "زمن التنفيذ: ",
-      "text_extraction_apply_modal_repeat_label": "التكرارات",
-      "text_extraction_apply_modal_overwrite_button": "استبدال",
-      "text_extraction_apply_modal_append_button": "إلحاق",
-      "text_extraction_apply_modal_cancel_button": "إلغاء",
-      "text_extraction_apply_modal_close_aria": "إغلاق مربع حوار تطبيق النص المستخرج",
-      "text_extraction_apply_modal_saved_pdf_message": "تم الاحتفاظ بملف PDF المُنشأ بعد الاستخراج.",
-      "text_extraction_apply_modal_saved_pdf_label": "ملف PDF المحفوظ: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "إظهار ملف PDF المحفوظ",
       "text_extraction_generated_pdf_reveal_failed": "تعذّر إظهار ملف PDF المحفوظ. تحقّق مما إذا كان الملف ما زال موجودًا.",
       "text_extraction_apply_error": "حدث خطأ أثناء تطبيق النص المستخرج. راجع وحدة التحكم وحاول مرة أخرى.",
       "text_extraction_apply_too_large": "النص الناتج كبير جدًا للمعالجة. قلّل التكرارات وحاول مرة أخرى.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "طلب الاستخراج المحضَّر لم يعد صالحًا. ابدأ التدفق من جديد.",
       "text_extraction_ocr_unavailable": "OCR غير متاح. تحقق من الإعداد/المصادقة وحاول مرة أخرى.",
       "text_extraction_ocr_activation_required": "يلزم تفعيل OCR. سجّل الدخول إلى Google OCR ثم حاول مرة أخرى.",
-      "text_extraction_ocr_activation_disclosure_title": "مراجعة تفعيل Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "يستخدم toT خدمات Google من أجل OCR. ستؤدي المتابعة إلى فتح متصفحك حتى تمنح هذا التطبيق الإذن.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "تُرسل إلى Google فقط الملفات التي تختارها لـ OCR.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "يخزّن هذا التطبيق بيانات اعتماد Google OAuth الخاصة بـ OCR التي يديرها التطبيق وحالة رمز Google المحلية في هذه النسخة من التطبيق.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "بعد التصدير، يحاول التطبيق إزالة مستند Google المؤقت من Google Drive الخاص بك.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "يمكنك لاحقًا قطع الاتصال من التفضيلات > فصل Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "المتابعة إلى Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "إلغاء",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "فتح سياسة الخصوصية",
-      "text_extraction_ocr_activation_disclosure_close_aria": "إغلاق مربع حوار تفعيل Google OCR",
       "text_extraction_ocr_activation_success": "اكتمل تفعيل OCR. جارٍ إعادة محاولة الاستخراج.",
       "text_extraction_ocr_activation_cancelled": "تم إلغاء تفعيل OCR. لم يستمر الاستخراج.",
       "text_extraction_ocr_token_state_invalid": "حالة تسجيل الدخول المحفوظة لـ Google OCR غير صالحة. أعد توصيل Google OCR وحاول مرة أخرى.",

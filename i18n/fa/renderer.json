@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "بخش آغازین و پایانی متنِ تحلیل‌شده:",
       "selector_empty": "(خالی)",
+      "reading_tools": {
+        "reading_speed_test": "آزمون سرعت خواندن",
+        "preview_spoiler": "اسپویلر"
+      },
       "tooltips": {
         "text_extraction": "استخراج متن از فایل",
         "text_extraction_abort": "لغو استخراج",
@@ -59,10 +63,6 @@
         "speed": "سرعت:",
         "controls_label": "کنترل‌های کرنومتر"
       },
-      "reading_tools": {
-        "reading_speed_test": "آزمون سرعت خواندن",
-        "preview_spoiler": "اسپویلر"
-      },
       "processing": {
         "text_extraction_placeholder": "در حال استخراج متن...",
         "text_extraction_preparing": "در حال آماده‌سازی مسیر استخراج...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "برای استخراج متن، فایل را اینجا رها کنید"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "گزینه‌های استخراج PDF",
-      "message": "انتخاب کنید که پیش از استخراج، کل PDF پردازش شود یا یک بازهٔ پیوسته از صفحه‌ها.",
-      "file_label": "فایل:",
-      "total_pages_label": "کل صفحه‌ها: ",
-      "selection_legend": "انتخاب صفحه‌ها",
-      "all_pages_label": "همهٔ صفحه‌ها",
-      "range_label": "بازهٔ صفحه‌ها",
-      "from_page_label": "از صفحه",
-      "to_page_label": "تا صفحه",
-      "selected_page_count_label": "صفحه‌های انتخاب‌شده: ",
-      "keep_generated_pdf_label": "نگه داشتن PDF تولیدشده از صفحه‌های انتخاب‌شده پس از پردازش",
-      "continue_button": "ادامه",
-      "cancel_button": "لغو",
-      "close_aria": "بستن پنجرهٔ گزینه‌های استخراج PDF",
-      "invalid_range": "یک بازهٔ پیوسته از صفحه‌ها بین ۱ و {totalPages} وارد کنید."
-    },
-    "browser_extension": {
-      "title": "افزونه مرورگر",
-      "subtitle": "زمان مطالعه",
-      "availability": "اکنون در Chrome در دسترس است. به‌زودی مرورگرهای بیشتری اضافه می‌شوند.",
-      "chrome_store_aria": "باز کردن صفحه افزونه در Chrome Web Store",
-      "close_aria": "بستن پنجره افزونه مرورگر"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "گزینه‌های استخراج PDF",
+        "message": "انتخاب کنید که پیش از استخراج، کل PDF پردازش شود یا یک بازهٔ پیوسته از صفحه‌ها.",
+        "file_label": "فایل:",
+        "total_pages_label": "کل صفحه‌ها: ",
+        "selection_legend": "انتخاب صفحه‌ها",
+        "all_pages_label": "همهٔ صفحه‌ها",
+        "range_label": "بازهٔ صفحه‌ها",
+        "from_page_label": "از صفحه",
+        "to_page_label": "تا صفحه",
+        "selected_page_count_label": "صفحه‌های انتخاب‌شده: ",
+        "keep_generated_pdf_label": "نگه داشتن PDF تولیدشده از صفحه‌های انتخاب‌شده پس از پردازش",
+        "continue_button": "ادامه",
+        "cancel_button": "لغو",
+        "close_aria": "بستن پنجرهٔ گزینه‌های استخراج PDF",
+        "invalid_range": "یک بازهٔ پیوسته از صفحه‌ها بین ۱ و {totalPages} وارد کنید."
+      },
+      "route_choice": {
+        "title": "انتخاب مسیر استخراج",
+        "message": "هر دو مسیر استخراج برای این PDF در دسترس هستند. برای ادامه یکی را انتخاب کنید.",
+        "native_button": "استفاده از مسیر بومی",
+        "ocr_button": "استفاده از OCR",
+        "cancel_button": "لغو",
+        "close_aria": "بستن پنجره انتخاب مسیر استخراج"
+      },
+      "ocr_activation_disclosure": {
+        "title": "مرور فعال‌سازی Google OCR",
+        "intro": "toT برای OCR از خدمات Google استفاده می‌کند. ادامه دادن مرورگر شما را باز می‌کند تا بتوانید این برنامه را مجاز کنید.",
+        "selected_files": "فقط فایل‌هایی که برای OCR انتخاب می‌کنید به Google ارسال می‌شوند.",
+        "local_storage": "این برنامه اعتبارنامه‌های Google OAuth مدیریت‌شده توسط برنامه و وضعیت توکن محلی Google را برای OCR در همین نمونه برنامه ذخیره می‌کند.",
+        "remote_cleanup": "پس از خروجی گرفتن، برنامه تلاش می‌کند سند موقت Google را از Google Drive شما حذف کند.",
+        "disconnect": "بعداً می‌توانید از مسیر Preferences > Disconnect Google OCR اتصال را قطع کنید.",
+        "proceed_button": "ادامه به Google",
+        "cancel_button": "لغو",
+        "privacy_link": "باز کردن سیاست حریم خصوصی",
+        "close_aria": "بستن پنجره افشای فعال‌سازی OCR"
+      },
+      "apply_modal": {
+        "title": "اعمال متن استخراج‌شده",
+        "message": "انتخاب کنید متن استخراج‌شده چگونه اعمال شود.",
+        "elapsed": "زمان اجرا: ",
+        "repeat_label": "تکرارها",
+        "overwrite_button": "جایگزینی",
+        "append_button": "افزودن",
+        "cancel_button": "لغو",
+        "close_aria": "بستن پنجره اعمال متن استخراج‌شده",
+        "saved_pdf_message": "PDF تولیدشده پس از استخراج نگه داشته شد.",
+        "saved_pdf_label": "PDF ذخیره‌شده: ",
+        "reveal_saved_pdf_button": "نمایش PDF ذخیره‌شده"
+      }
     },
     "editor": {
       "title": "toT — متن کامل",
@@ -129,6 +157,68 @@
       "replace_timeout": "زمان جایگزینی تمام شد. دوباره تلاش کنید.",
       "status_no_matches": "موردی یافت نشد",
       "status_empty_query": "برای جست‌وجو تایپ کنید"
+    },
+    "snapshot_save_tags": {
+      "title": "ذخیره اسنپ‌شات متن",
+      "message": "می‌توانید پیش از انتخاب محل ذخیره، برای این اسنپ‌شات متن برچسب اختیاری انتخاب کنید.",
+      "labels": {
+        "language": "زبان",
+        "type": "نوع",
+        "difficulty": "دشواری"
+      },
+      "empty": {
+        "language": "بدون برچسب زبان",
+        "type": "بدون برچسب نوع",
+        "difficulty": "بدون برچسب دشواری"
+      },
+      "buttons": {
+        "confirm": "ذخیره اسنپ‌شات متن",
+        "cancel": "لغو"
+      },
+      "close_aria": "بستن پنجره ذخیره اسنپ‌شات متن",
+      "options": {
+        "language": {
+          "ar": "عربی",
+          "arn": "ماپودونگون",
+          "ay": "آیمارایی",
+          "bn": "بنگالی",
+          "ca": "کاتالان",
+          "de": "آلمانی",
+          "en": "انگلیسی",
+          "es": "اسپانیایی",
+          "eu": "باسکی",
+          "fa": "فارسی",
+          "fr": "فرانسوی",
+          "gn": "گوارانی",
+          "hi": "هندی",
+          "ht": "هائیتیایی",
+          "id": "اندونزیایی",
+          "it": "ایتالیایی",
+          "ja": "ژاپنی",
+          "ko": "کره‌ای",
+          "mi": "مائوری",
+          "pcm": "نیم‌زبان نیجریه‌ای",
+          "pt": "پرتغالی",
+          "qu": "کچوایی",
+          "ru": "روسی",
+          "sv": "سوئدی",
+          "tr": "ترکی",
+          "ur": "اردو",
+          "vi": "ویتنامی",
+          "zh_hans": "چینی ساده‌شده",
+          "zh_hant": "چینی سنتی",
+          "zu": "زولویی"
+        },
+        "type": {
+          "fiction": "داستانی",
+          "non_fiction": "غیرداستانی"
+        },
+        "difficulty": {
+          "easy": "آسان",
+          "normal": "معمولی",
+          "hard": "سخت"
+        }
+      }
     },
     "tasks": {
       "title": "toT — کارها",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "تغییرات ذخیره‌نشده وجود دارد. نادیده گرفته شوند؟",
         "close_unsaved": "تغییرات ذخیره‌نشده وجود دارد. بدون ذخیره بسته شود؟"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "ذخیره اسنپ‌شات متن",
-      "message": "می‌توانید پیش از انتخاب محل ذخیره، برای این اسنپ‌شات متن برچسب اختیاری انتخاب کنید.",
-      "labels": {
-        "language": "زبان",
-        "type": "نوع",
-        "difficulty": "دشواری"
-      },
-      "empty": {
-        "language": "بدون برچسب زبان",
-        "type": "بدون برچسب نوع",
-        "difficulty": "بدون برچسب دشواری"
-      },
-      "buttons": {
-        "confirm": "ذخیره اسنپ‌شات متن",
-        "cancel": "لغو"
-      },
-      "close_aria": "بستن پنجره ذخیره اسنپ‌شات متن",
-      "options": {
-        "language": {
-          "ar": "عربی",
-          "arn": "ماپودونگون",
-          "ay": "آیمارایی",
-          "bn": "بنگالی",
-          "ca": "کاتالان",
-          "de": "آلمانی",
-          "en": "انگلیسی",
-          "es": "اسپانیایی",
-          "eu": "باسکی",
-          "fa": "فارسی",
-          "fr": "فرانسوی",
-          "gn": "گوارانی",
-          "hi": "هندی",
-          "ht": "هائیتیایی",
-          "id": "اندونزیایی",
-          "it": "ایتالیایی",
-          "ja": "ژاپنی",
-          "ko": "کره‌ای",
-          "mi": "مائوری",
-          "pcm": "نیم‌زبان نیجریه‌ای",
-          "pt": "پرتغالی",
-          "qu": "کچوایی",
-          "ru": "روسی",
-          "sv": "سوئدی",
-          "tr": "ترکی",
-          "ur": "اردو",
-          "vi": "ویتنامی",
-          "zh_hans": "چینی ساده‌شده",
-          "zh_hant": "چینی سنتی",
-          "zu": "زولویی"
-        },
-        "type": {
-          "fiction": "داستانی",
-          "non_fiction": "غیرداستانی"
-        },
-        "difficulty": {
-          "easy": "آسان",
-          "normal": "معمولی",
-          "hard": "سخت"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "لغو",
       "save": "ذخیره"
     },
+    "browser_extension": {
+      "title": "افزونه مرورگر",
+      "subtitle": "زمان مطالعه",
+      "availability": "اکنون در Chrome در دسترس است. به‌زودی مرورگرهای بیشتری اضافه می‌شوند.",
+      "chrome_store_aria": "باز کردن صفحه افزونه در Chrome Web Store",
+      "close_aria": "بستن پنجره افزونه مرورگر"
+    },
     "alerts": {
       "clipboard_too_large": "متن کلیپ‌بورد برای پردازش بیش از حد بزرگ است. آن را کاهش دهید و دوباره تلاش کنید.",
       "append_too_large": "متن حاصل برای پردازش بیش از حد بزرگ است. آن را کاهش دهید و دوباره تلاش کنید.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "امکان ساخت PDF صفحه‌های انتخاب‌شده برای استخراج وجود نداشت. فایل را بررسی کنید و دوباره تلاش کنید.",
       "text_extraction_generated_pdf_cleanup_warning": "استخراج تمام شد، اما پاک‌سازی خودکار یک PDF محلیِ تولیدشده ممکن نبود.",
       "text_extraction_route_choice_required": "برای ادامه استخراج از این PDF باید مسیر استخراج انتخاب شود.",
-      "text_extraction_route_choice_title": "انتخاب مسیر استخراج",
-      "text_extraction_route_choice_message": "هر دو مسیر استخراج برای این PDF در دسترس هستند. برای ادامه یکی را انتخاب کنید.",
-      "text_extraction_route_choice_native_button": "استفاده از مسیر بومی",
-      "text_extraction_route_choice_ocr_button": "استفاده از OCR",
-      "text_extraction_route_choice_cancel_button": "لغو",
-      "text_extraction_route_choice_close_aria": "بستن پنجره انتخاب مسیر استخراج",
-      "text_extraction_apply_modal_title": "اعمال متن استخراج‌شده",
-      "text_extraction_apply_modal_message": "انتخاب کنید متن استخراج‌شده چگونه اعمال شود.",
-      "text_extraction_apply_modal_elapsed": "زمان اجرا: ",
-      "text_extraction_apply_modal_repeat_label": "تکرارها",
-      "text_extraction_apply_modal_overwrite_button": "جایگزینی",
-      "text_extraction_apply_modal_append_button": "افزودن",
-      "text_extraction_apply_modal_cancel_button": "لغو",
-      "text_extraction_apply_modal_close_aria": "بستن پنجره اعمال متن استخراج‌شده",
-      "text_extraction_apply_modal_saved_pdf_message": "PDF تولیدشده پس از استخراج نگه داشته شد.",
-      "text_extraction_apply_modal_saved_pdf_label": "PDF ذخیره‌شده: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "نمایش PDF ذخیره‌شده",
       "text_extraction_generated_pdf_reveal_failed": "امکان نمایش PDF ذخیره‌شده وجود نداشت. بررسی کنید که فایل هنوز وجود داشته باشد.",
       "text_extraction_apply_error": "هنگام اعمال متن استخراج‌شده خطایی رخ داد. کنسول را بررسی کنید و دوباره تلاش کنید.",
       "text_extraction_apply_too_large": "متن حاصل برای پردازش بیش از حد بزرگ است. تعداد تکرارها را کاهش دهید و دوباره تلاش کنید.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "درخواست آماده‌شده استخراج دیگر معتبر نیست. جریان را دوباره شروع کنید.",
       "text_extraction_ocr_unavailable": "OCR در دسترس نیست. وضعیت راه‌اندازی/احراز هویت را بررسی کنید و دوباره تلاش کنید.",
       "text_extraction_ocr_activation_required": "فعال‌سازی OCR لازم است. به Google OCR وارد شوید و دوباره تلاش کنید.",
-      "text_extraction_ocr_activation_disclosure_title": "مرور فعال‌سازی Google OCR",
-      "text_extraction_ocr_activation_disclosure_intro": "toT برای OCR از خدمات Google استفاده می‌کند. ادامه دادن مرورگر شما را باز می‌کند تا بتوانید این برنامه را مجاز کنید.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "فقط فایل‌هایی که برای OCR انتخاب می‌کنید به Google ارسال می‌شوند.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "این برنامه اعتبارنامه‌های Google OAuth مدیریت‌شده توسط برنامه و وضعیت توکن محلی Google را برای OCR در همین نمونه برنامه ذخیره می‌کند.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "پس از خروجی گرفتن، برنامه تلاش می‌کند سند موقت Google را از Google Drive شما حذف کند.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "بعداً می‌توانید از مسیر Preferences > Disconnect Google OCR اتصال را قطع کنید.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "ادامه به Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "لغو",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "باز کردن سیاست حریم خصوصی",
-      "text_extraction_ocr_activation_disclosure_close_aria": "بستن پنجره افشای فعال‌سازی OCR",
       "text_extraction_ocr_activation_success": "فعال‌سازی OCR کامل شد. استخراج دوباره تلاش می‌شود.",
       "text_extraction_ocr_activation_cancelled": "فعال‌سازی OCR لغو شد. استخراج ادامه پیدا نکرد.",
       "text_extraction_ocr_token_state_invalid": "وضعیت ورود ذخیره‌شده Google OCR نامعتبر است. Google OCR را دوباره متصل کنید و دوباره تلاش کنید.",

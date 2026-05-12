@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "Analiz edilen metnin ilk ve son bölümü:",
       "selector_empty": "(boş)",
+      "reading_tools": {
+        "reading_speed_test": "Okuma hızı testi",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Dosyadan metin çıkar",
         "text_extraction_abort": "Çıkarmayı durdur",
@@ -59,10 +63,6 @@
         "speed": "Hız:",
         "controls_label": "Kronometre kontrolleri"
       },
-      "reading_tools": {
-        "reading_speed_test": "Okuma hızı testi",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Metin çıkarılıyor...",
         "text_extraction_preparing": "Çıkarma yolu hazırlanıyor...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Metni çıkarmak için dosyayı bırakın"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF çıkarma seçenekleri",
-      "message": "Çıkarma işleminden önce tüm PDF’nin mi yoksa bitişik bir sayfa aralığının mı işleneceğini seçin.",
-      "file_label": "Dosya:",
-      "total_pages_label": "Toplam sayfa: ",
-      "selection_legend": "Sayfa seçimi",
-      "all_pages_label": "Tüm sayfalar",
-      "range_label": "Sayfa aralığı",
-      "from_page_label": "Başlangıç sayfası",
-      "to_page_label": "Bitiş sayfası",
-      "selected_page_count_label": "Seçili sayfalar: ",
-      "keep_generated_pdf_label": "İşlemden sonra oluşturulan seçili sayfa PDF’sini sakla",
-      "continue_button": "Devam",
-      "cancel_button": "İptal",
-      "close_aria": "PDF çıkarma seçenekleri iletişim kutusunu kapat",
-      "invalid_range": "1 ile {totalPages} arasında bitişik bir sayfa aralığı girin."
-    },
-    "browser_extension": {
-      "title": "Tarayıcı uzantısı",
-      "subtitle": "Okuma süresi",
-      "availability": "Şu anda Chrome'da kullanılabilir. Yakında daha fazla tarayıcıya gelecek.",
-      "chrome_store_aria": "Uzantının Chrome Web Store sayfasını aç",
-      "close_aria": "Tarayıcı uzantısı iletişim kutusunu kapat"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF çıkarma seçenekleri",
+        "message": "Çıkarma işleminden önce tüm PDF’nin mi yoksa bitişik bir sayfa aralığının mı işleneceğini seçin.",
+        "file_label": "Dosya:",
+        "total_pages_label": "Toplam sayfa: ",
+        "selection_legend": "Sayfa seçimi",
+        "all_pages_label": "Tüm sayfalar",
+        "range_label": "Sayfa aralığı",
+        "from_page_label": "Başlangıç sayfası",
+        "to_page_label": "Bitiş sayfası",
+        "selected_page_count_label": "Seçili sayfalar: ",
+        "keep_generated_pdf_label": "İşlemden sonra oluşturulan seçili sayfa PDF’sini sakla",
+        "continue_button": "Devam",
+        "cancel_button": "İptal",
+        "close_aria": "PDF çıkarma seçenekleri iletişim kutusunu kapat",
+        "invalid_range": "1 ile {totalPages} arasında bitişik bir sayfa aralığı girin."
+      },
+      "route_choice": {
+        "title": "Çıkarma yolunu seç",
+        "message": "Bu PDF için iki çıkarma yolu da kullanılabilir. Devam etmek için birini seçin.",
+        "native_button": "Yerel kullan",
+        "ocr_button": "OCR kullan",
+        "cancel_button": "İptal",
+        "close_aria": "Çıkarma yolu iletişim kutusunu kapat"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR aktivasyonunu gözden geçir",
+        "intro": "toT, OCR için Google hizmetlerini kullanır. Devam etmek, bu uygulamayı yetkilendirebilmeniz için tarayıcınızı açacaktır.",
+        "selected_files": "Yalnızca OCR için seçtiğiniz dosyalar Google'a gönderilir.",
+        "local_storage": "Bu uygulama, OCR için uygulama tarafından yönetilen Google OAuth kimlik bilgilerini ve yerel Google token durumunu bu uygulama örneğinde saklar.",
+        "remote_cleanup": "Dışa aktarmadan sonra uygulama, geçici Google belgesini Google Drive'ınızdan kaldırmaya çalışır.",
+        "disconnect": "Daha sonra Tercihler > Google OCR bağlantısını kes yoluyla bağlantıyı kesebilirsiniz.",
+        "proceed_button": "Google'a devam et",
+        "cancel_button": "İptal",
+        "privacy_link": "Gizlilik politikasını aç",
+        "close_aria": "OCR aktivasyon açıklaması iletişim kutusunu kapat"
+      },
+      "apply_modal": {
+        "title": "Çıkarılan metni uygula",
+        "message": "Çıkarılan metnin nasıl uygulanacağını seçin.",
+        "elapsed": "Çalışma süresi: ",
+        "repeat_label": "Yinelemeler",
+        "overwrite_button": "Üzerine yaz",
+        "append_button": "Ekle",
+        "cancel_button": "İptal",
+        "close_aria": "Çıkarılan metni uygulama iletişim kutusunu kapat",
+        "saved_pdf_message": "Oluşturulan PDF çıkarma işleminden sonra saklandı.",
+        "saved_pdf_label": "Kaydedilen PDF: ",
+        "reveal_saved_pdf_button": "Kaydedilen PDF’yi göster"
+      }
     },
     "editor": {
       "title": "toT — Tam metin",
@@ -129,6 +157,68 @@
       "replace_timeout": "Değiştirme zaman aşımına uğradı. Yeniden deneyin.",
       "status_no_matches": "Eşleşme yok",
       "status_empty_query": "Aramak için yazın"
+    },
+    "snapshot_save_tags": {
+      "title": "Metin snapshot'ını kaydet",
+      "message": "Kaydedilecek konumu seçmeden önce bu metin snapshot'ını isteğe bağlı olarak etiketleyin.",
+      "labels": {
+        "language": "Dil",
+        "type": "Tür",
+        "difficulty": "Zorluk"
+      },
+      "empty": {
+        "language": "Dil etiketi yok",
+        "type": "Tür etiketi yok",
+        "difficulty": "Zorluk etiketi yok"
+      },
+      "buttons": {
+        "confirm": "Metin Snapshot'ını Kaydet",
+        "cancel": "İptal"
+      },
+      "close_aria": "Metin snapshot'ı kaydetme iletişim kutusunu kapat",
+      "options": {
+        "language": {
+          "ar": "Arapça",
+          "arn": "Mapudungun",
+          "ay": "Aymara",
+          "bn": "Bengalce",
+          "ca": "Katalanca",
+          "de": "Almanca",
+          "en": "İngilizce",
+          "es": "İspanyolca",
+          "eu": "Baskça",
+          "fa": "Farsça",
+          "fr": "Fransızca",
+          "gn": "Guarani dili",
+          "hi": "Hintçe",
+          "ht": "Haiti Kreyolu",
+          "id": "Endonezce",
+          "it": "İtalyanca",
+          "ja": "Japonca",
+          "ko": "Korece",
+          "mi": "Maori dili",
+          "pcm": "Nijerya Pidgin dili",
+          "pt": "Portekizce",
+          "qu": "Keçuva dili",
+          "ru": "Rusça",
+          "sv": "İsveççe",
+          "tr": "Türkçe",
+          "ur": "Urduca",
+          "vi": "Vietnamca",
+          "zh_hans": "Çince (Basitleştirilmiş)",
+          "zh_hant": "Çince (Geleneksel)",
+          "zu": "Zuluca"
+        },
+        "type": {
+          "fiction": "Kurgu",
+          "non_fiction": "Kurgu dışı"
+        },
+        "difficulty": {
+          "easy": "Kolay",
+          "normal": "Normal",
+          "hard": "Zor"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Görevler",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Kaydedilmemiş değişiklikler var. Vazgeçilsin mi?",
         "close_unsaved": "Kaydedilmemiş değişiklikler var. Kaydetmeden kapatılsın mı?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Metin snapshot'ını kaydet",
-      "message": "Kaydedilecek konumu seçmeden önce bu metin snapshot'ını isteğe bağlı olarak etiketleyin.",
-      "labels": {
-        "language": "Dil",
-        "type": "Tür",
-        "difficulty": "Zorluk"
-      },
-      "empty": {
-        "language": "Dil etiketi yok",
-        "type": "Tür etiketi yok",
-        "difficulty": "Zorluk etiketi yok"
-      },
-      "buttons": {
-        "confirm": "Metin Snapshot'ını Kaydet",
-        "cancel": "İptal"
-      },
-      "close_aria": "Metin snapshot'ı kaydetme iletişim kutusunu kapat",
-      "options": {
-        "language": {
-          "ar": "Arapça",
-          "arn": "Mapudungun",
-          "ay": "Aymara",
-          "bn": "Bengalce",
-          "ca": "Katalanca",
-          "de": "Almanca",
-          "en": "İngilizce",
-          "es": "İspanyolca",
-          "eu": "Baskça",
-          "fa": "Farsça",
-          "fr": "Fransızca",
-          "gn": "Guarani dili",
-          "hi": "Hintçe",
-          "ht": "Haiti Kreyolu",
-          "id": "Endonezce",
-          "it": "İtalyanca",
-          "ja": "Japonca",
-          "ko": "Korece",
-          "mi": "Maori dili",
-          "pcm": "Nijerya Pidgin dili",
-          "pt": "Portekizce",
-          "qu": "Keçuva dili",
-          "ru": "Rusça",
-          "sv": "İsveççe",
-          "tr": "Türkçe",
-          "ur": "Urduca",
-          "vi": "Vietnamca",
-          "zh_hans": "Çince (Basitleştirilmiş)",
-          "zh_hant": "Çince (Geleneksel)",
-          "zu": "Zuluca"
-        },
-        "type": {
-          "fiction": "Kurgu",
-          "non_fiction": "Kurgu dışı"
-        },
-        "difficulty": {
-          "easy": "Kolay",
-          "normal": "Normal",
-          "hard": "Zor"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "İptal",
       "save": "Kaydet"
     },
+    "browser_extension": {
+      "title": "Tarayıcı uzantısı",
+      "subtitle": "Okuma süresi",
+      "availability": "Şu anda Chrome'da kullanılabilir. Yakında daha fazla tarayıcıya gelecek.",
+      "chrome_store_aria": "Uzantının Chrome Web Store sayfasını aç",
+      "close_aria": "Tarayıcı uzantısı iletişim kutusunu kapat"
+    },
     "alerts": {
       "clipboard_too_large": "Pano metni işlenemeyecek kadar büyük. Kısaltın ve yeniden deneyin.",
       "append_too_large": "Ortaya çıkan metin işlenemeyecek kadar büyük. Kısaltın ve yeniden deneyin.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Çıkarma için seçili sayfalardan PDF oluşturulamadı. Dosyayı kontrol edip tekrar deneyin.",
       "text_extraction_generated_pdf_cleanup_warning": "Çıkarma tamamlandı, ancak oluşturulan yerel PDF otomatik olarak temizlenemedi.",
       "text_extraction_route_choice_required": "Çıkarmanın devam edebilmesi için bu PDF için çıkarma yolu seçimi gereklidir.",
-      "text_extraction_route_choice_title": "Çıkarma yolunu seç",
-      "text_extraction_route_choice_message": "Bu PDF için iki çıkarma yolu da kullanılabilir. Devam etmek için birini seçin.",
-      "text_extraction_route_choice_native_button": "Yerel kullan",
-      "text_extraction_route_choice_ocr_button": "OCR kullan",
-      "text_extraction_route_choice_cancel_button": "İptal",
-      "text_extraction_route_choice_close_aria": "Çıkarma yolu iletişim kutusunu kapat",
-      "text_extraction_apply_modal_title": "Çıkarılan metni uygula",
-      "text_extraction_apply_modal_message": "Çıkarılan metnin nasıl uygulanacağını seçin.",
-      "text_extraction_apply_modal_elapsed": "Çalışma süresi: ",
-      "text_extraction_apply_modal_repeat_label": "Yinelemeler",
-      "text_extraction_apply_modal_overwrite_button": "Üzerine yaz",
-      "text_extraction_apply_modal_append_button": "Ekle",
-      "text_extraction_apply_modal_cancel_button": "İptal",
-      "text_extraction_apply_modal_close_aria": "Çıkarılan metni uygulama iletişim kutusunu kapat",
-      "text_extraction_apply_modal_saved_pdf_message": "Oluşturulan PDF çıkarma işleminden sonra saklandı.",
-      "text_extraction_apply_modal_saved_pdf_label": "Kaydedilen PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Kaydedilen PDF’yi göster",
       "text_extraction_generated_pdf_reveal_failed": "Kaydedilen PDF gösterilemedi. Dosyanın hâlâ var olup olmadığını kontrol edin.",
       "text_extraction_apply_error": "Çıkarılan metin uygulanırken hata oluştu. Konsolu kontrol edin ve yeniden deneyin.",
       "text_extraction_apply_too_large": "Ortaya çıkan metin işlenemeyecek kadar büyük. Yinelemeleri azaltın ve yeniden deneyin.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Hazırlanan çıkarma isteği artık geçerli değil. Akışı yeniden başlatın.",
       "text_extraction_ocr_unavailable": "OCR kullanılamıyor. Kurulum/yetkilendirme durumunu kontrol edin ve yeniden deneyin.",
       "text_extraction_ocr_activation_required": "OCR aktivasyonu gerekli. Google OCR'de oturum açın ve yeniden deneyin.",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR aktivasyonunu gözden geçir",
-      "text_extraction_ocr_activation_disclosure_intro": "toT, OCR için Google hizmetlerini kullanır. Devam etmek, bu uygulamayı yetkilendirebilmeniz için tarayıcınızı açacaktır.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Yalnızca OCR için seçtiğiniz dosyalar Google'a gönderilir.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Bu uygulama, OCR için uygulama tarafından yönetilen Google OAuth kimlik bilgilerini ve yerel Google token durumunu bu uygulama örneğinde saklar.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "Dışa aktarmadan sonra uygulama, geçici Google belgesini Google Drive'ınızdan kaldırmaya çalışır.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "Daha sonra Tercihler > Google OCR bağlantısını kes yoluyla bağlantıyı kesebilirsiniz.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Google'a devam et",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "İptal",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Gizlilik politikasını aç",
-      "text_extraction_ocr_activation_disclosure_close_aria": "OCR aktivasyon açıklaması iletişim kutusunu kapat",
       "text_extraction_ocr_activation_success": "OCR aktivasyonu tamamlandı. Çıkarma yeniden deneniyor.",
       "text_extraction_ocr_activation_cancelled": "OCR aktivasyonu iptal edildi. Çıkarma devam etmedi.",
       "text_extraction_ocr_token_state_invalid": "Kayıtlı Google OCR oturum açma durumu geçersiz. Google OCR'yi yeniden bağlayın ve yeniden deneyin.",

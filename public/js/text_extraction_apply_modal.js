@@ -106,15 +106,18 @@
     const safeMaxRepeat = Number.isInteger(Number(maxRepeat)) && Number(maxRepeat) > 0
       ? Number(maxRepeat)
       : 1;
+    if (!window.TextApplyCanonical || typeof window.TextApplyCanonical.normalizeRepeat !== 'function') {
+      log.warn('TextApplyCanonical.normalizeRepeat unavailable; using local repeat normalization fallback.');
+    }
     const initialRepeat = normalizeRepeatForModal(defaultRepeat, safeMaxRepeat);
 
-    const titleText = tRenderer('renderer.alerts.text_extraction_apply_modal_title');
-    const messageText = tRenderer('renderer.alerts.text_extraction_apply_modal_message');
-    const repeatLabelText = tRenderer('renderer.alerts.text_extraction_apply_modal_repeat_label');
-    const overwriteText = tRenderer('renderer.alerts.text_extraction_apply_modal_overwrite_button');
-    const appendText = tRenderer('renderer.alerts.text_extraction_apply_modal_append_button');
-    const cancelText = tRenderer('renderer.alerts.text_extraction_apply_modal_cancel_button');
-    const closeAriaText = tRenderer('renderer.alerts.text_extraction_apply_modal_close_aria');
+    const titleText = tRenderer('renderer.text_extraction.apply_modal.title');
+    const messageText = tRenderer('renderer.text_extraction.apply_modal.message');
+    const repeatLabelText = tRenderer('renderer.text_extraction.apply_modal.repeat_label');
+    const overwriteText = tRenderer('renderer.text_extraction.apply_modal.overwrite_button');
+    const appendText = tRenderer('renderer.text_extraction.apply_modal.append_button');
+    const cancelText = tRenderer('renderer.text_extraction.apply_modal.cancel_button');
+    const closeAriaText = tRenderer('renderer.text_extraction.apply_modal.close_aria');
     const safeRetainedGeneratedPdf = normalizeRetainedGeneratedPdf(retainedGeneratedPdf);
     const canRevealGeneratedPdf = !!(
       safeRetainedGeneratedPdf
@@ -128,7 +131,7 @@
     elapsed.setAttribute('aria-hidden', elapsed.hidden ? 'true' : 'false');
     if (normalizedElapsedValueText) {
       renderLocalizedLabelWithInvariantValue(elapsed, {
-        labelText: tRenderer('renderer.alerts.text_extraction_apply_modal_elapsed'),
+        labelText: tRenderer('renderer.text_extraction.apply_modal.elapsed'),
         valueText: normalizedElapsedValueText,
         valueDirection: 'ltr',
       });
@@ -143,13 +146,13 @@
     savedPdf.hidden = !canRevealGeneratedPdf;
     savedPdf.setAttribute('aria-hidden', savedPdf.hidden ? 'true' : 'false');
     if (canRevealGeneratedPdf) {
-      savedPdfMessage.textContent = tRenderer('renderer.alerts.text_extraction_apply_modal_saved_pdf_message');
+      savedPdfMessage.textContent = tRenderer('renderer.text_extraction.apply_modal.saved_pdf_message');
       renderLocalizedLabelWithInvariantValue(savedPdfFile, {
-        labelText: tRenderer('renderer.alerts.text_extraction_apply_modal_saved_pdf_label'),
+        labelText: tRenderer('renderer.text_extraction.apply_modal.saved_pdf_label'),
         valueText: safeRetainedGeneratedPdf.fileName,
         valueDirection: 'ltr',
       });
-      btnRevealSavedPdf.textContent = tRenderer('renderer.alerts.text_extraction_apply_modal_reveal_saved_pdf_button');
+      btnRevealSavedPdf.textContent = tRenderer('renderer.text_extraction.apply_modal.reveal_saved_pdf_button');
       btnRevealSavedPdf.disabled = false;
     } else {
       savedPdfMessage.textContent = '';
@@ -245,4 +248,3 @@
 // =============================================================================
 // End of public/js/text_extraction_apply_modal.js
 // =============================================================================
-

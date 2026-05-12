@@ -83,18 +83,18 @@
   }
 
   function applyModalCopy() {
-    title.textContent = tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_title');
-    intro.textContent = tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_intro');
-    itemSelectedFiles.textContent = tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_selected_files');
-    itemLocalStorage.textContent = tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_local_storage');
-    itemRemoteCleanup.textContent = tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_remote_cleanup');
-    itemDisconnect.textContent = tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_disconnect');
-    privacyLink.textContent = tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_privacy_link');
-    btnProceed.textContent = tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_proceed_button');
-    btnCancel.textContent = tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_cancel_button');
+    title.textContent = tRenderer('renderer.text_extraction.ocr_activation_disclosure.title');
+    intro.textContent = tRenderer('renderer.text_extraction.ocr_activation_disclosure.intro');
+    itemSelectedFiles.textContent = tRenderer('renderer.text_extraction.ocr_activation_disclosure.selected_files');
+    itemLocalStorage.textContent = tRenderer('renderer.text_extraction.ocr_activation_disclosure.local_storage');
+    itemRemoteCleanup.textContent = tRenderer('renderer.text_extraction.ocr_activation_disclosure.remote_cleanup');
+    itemDisconnect.textContent = tRenderer('renderer.text_extraction.ocr_activation_disclosure.disconnect');
+    privacyLink.textContent = tRenderer('renderer.text_extraction.ocr_activation_disclosure.privacy_link');
+    btnProceed.textContent = tRenderer('renderer.text_extraction.ocr_activation_disclosure.proceed_button');
+    btnCancel.textContent = tRenderer('renderer.text_extraction.ocr_activation_disclosure.cancel_button');
     btnClose.setAttribute(
       'aria-label',
-      tRenderer('renderer.alerts.text_extraction_ocr_activation_disclosure_close_aria')
+      tRenderer('renderer.text_extraction.ocr_activation_disclosure.close_aria')
     );
   }
 

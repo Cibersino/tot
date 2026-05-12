@@ -170,7 +170,7 @@ test('materializePdfPageSelectionInput creates and cleans up a temporary subset 
   assert.equal(materialized.ok, true);
   assert.equal(materialized.materialized, true);
   assert.equal(materialized.processingInputSource, 'generated_pdf_subset');
-  assert.equal(materialized.processingInputFileName, 'selectable_text_fixture_12_pages_pages_2_3.pdf');
+  assert.equal(materialized.processingInputFileName, 'selectable_text_fixture_12_pages_pages_02_03.pdf');
   assert.equal(fs.existsSync(materialized.effectiveFilePath), true);
 
   const subsetInspection = await inspectPdfFile({
@@ -217,9 +217,41 @@ test('materializePdfPageSelectionInput retains subset PDFs under the caller-owne
   assert.equal(materialized.generatedPdfArtifact.retained, true);
   assert.equal(materialized.generatedPdfArtifact.policyMode, 'keep');
   assert.equal(materialized.generatedPdfArtifact.retainedArtifactPath, materialized.retainedArtifactPath);
-  assert.equal(materialized.retainedArtifactPath.endsWith(path.join('', 'selectable_text_fixture_12_pages_pages_4_4.pdf')), true);
+  assert.equal(materialized.retainedArtifactPath.endsWith(path.join('', 'selectable_text_fixture_12_pages_pages_04_04.pdf')), true);
   assert.equal(fs.existsSync(materialized.retainedArtifactPath), true);
   assert.equal(materialized.cleanupGeneratedArtifact(), null);
+});
+
+test('resolveProcessingInputFileName pads range bounds to the source PDF page-count width', () => {
+  assert.equal(
+    resolveProcessingInputFileName({
+      fileInfo: {
+        fileName: 'libro_pesado.pdf',
+      },
+      pdfPageSelection: {
+        mode: 'range',
+        fromPage: 1,
+        toPage: 42,
+        totalPages: 516,
+      },
+    }),
+    'libro_pesado_pages_001_042.pdf'
+  );
+
+  assert.equal(
+    resolveProcessingInputFileName({
+      fileInfo: {
+        fileName: 'libro_pesado.pdf',
+      },
+      pdfPageSelection: {
+        mode: 'range',
+        fromPage: 43,
+        toPage: 84,
+        totalPages: 2400,
+      },
+    }),
+    'libro_pesado_pages_0043_0084.pdf'
+  );
 });
 
 test('materializePdfPageSelectionInput keeps page-selection failure primary and logs cleanup failure details', async (t) => {

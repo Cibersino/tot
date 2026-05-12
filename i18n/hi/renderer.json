@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "विश्लेषित पाठ का पहला और अंतिम भाग:",
       "selector_empty": "(खाली)",
+      "reading_tools": {
+        "reading_speed_test": "पठन गति परीक्षण",
+        "preview_spoiler": "स्पॉइलर"
+      },
       "tooltips": {
         "text_extraction": "फ़ाइल से पाठ निकालें",
         "text_extraction_abort": "निकासी रोकें",
@@ -59,10 +63,6 @@
         "speed": "गति:",
         "controls_label": "स्टॉपवॉच नियंत्रण"
       },
-      "reading_tools": {
-        "reading_speed_test": "पठन गति परीक्षण",
-        "preview_spoiler": "स्पॉइलर"
-      },
       "processing": {
         "text_extraction_placeholder": "पाठ निकाला जा रहा है...",
         "text_extraction_preparing": "निकासी मार्ग तैयार किया जा रहा है...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "पाठ आयात/निकालने के लिए फ़ाइल छोड़ें"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF एक्सट्रैक्शन विकल्प",
-      "message": "एक्सट्रैक्शन से पहले पूरी PDF प्रोसेस करनी है या पृष्ठों की एक लगातार सीमा, यह चुनें।",
-      "file_label": "फ़ाइल:",
-      "total_pages_label": "कुल पृष्ठ: ",
-      "selection_legend": "पृष्ठ चयन",
-      "all_pages_label": "सभी पृष्ठ",
-      "range_label": "पृष्ठ-सीमा",
-      "from_page_label": "पृष्ठ से",
-      "to_page_label": "पृष्ठ तक",
-      "selected_page_count_label": "चयनित पृष्ठ: ",
-      "keep_generated_pdf_label": "प्रोसेसिंग के बाद चयनित पृष्ठों वाली बनाई गई PDF रखें",
-      "continue_button": "जारी रखें",
-      "cancel_button": "रद्द करें",
-      "close_aria": "PDF एक्सट्रैक्शन विकल्प संवाद बंद करें",
-      "invalid_range": "1 और {totalPages} के बीच पृष्ठों की एक लगातार सीमा दर्ज करें।"
-    },
-    "browser_extension": {
-      "title": "ब्राउज़र एक्सटेंशन",
-      "subtitle": "पढ़ने का समय",
-      "availability": "अभी Chrome पर उपलब्ध है। जल्द ही और ब्राउज़रों पर आएगा।",
-      "chrome_store_aria": "एक्सटेंशन का Chrome Web Store पेज खोलें",
-      "close_aria": "ब्राउज़र एक्सटेंशन संवाद बंद करें"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF एक्सट्रैक्शन विकल्प",
+        "message": "एक्सट्रैक्शन से पहले पूरी PDF प्रोसेस करनी है या पृष्ठों की एक लगातार सीमा, यह चुनें।",
+        "file_label": "फ़ाइल:",
+        "total_pages_label": "कुल पृष्ठ: ",
+        "selection_legend": "पृष्ठ चयन",
+        "all_pages_label": "सभी पृष्ठ",
+        "range_label": "पृष्ठ-सीमा",
+        "from_page_label": "पृष्ठ से",
+        "to_page_label": "पृष्ठ तक",
+        "selected_page_count_label": "चयनित पृष्ठ: ",
+        "keep_generated_pdf_label": "प्रोसेसिंग के बाद चयनित पृष्ठों वाली बनाई गई PDF रखें",
+        "continue_button": "जारी रखें",
+        "cancel_button": "रद्द करें",
+        "close_aria": "PDF एक्सट्रैक्शन विकल्प संवाद बंद करें",
+        "invalid_range": "1 और {totalPages} के बीच पृष्ठों की एक लगातार सीमा दर्ज करें।"
+      },
+      "route_choice": {
+        "title": "निकासी मार्ग चुनें",
+        "message": "इस PDF के लिए दोनों निकासी मार्ग उपलब्ध हैं। जारी रखने के लिए एक चुनें।",
+        "native_button": "नेटिव उपयोग करें",
+        "ocr_button": "OCR उपयोग करें",
+        "cancel_button": "रद्द करें",
+        "close_aria": "निकासी मार्ग संवाद बंद करें"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR सक्रियण की समीक्षा करें",
+        "intro": "toT OCR के लिए Google सेवाओं का उपयोग करता है। जारी रखने पर आपका ब्राउज़र खुलेगा ताकि आप इस ऐप को अधिकृत कर सकें।",
+        "selected_files": "Google को केवल वे फ़ाइलें भेजी जाती हैं जिन्हें आप OCR के लिए चुनते हैं।",
+        "local_storage": "यह ऐप OCR के लिए ऐप-प्रबंधित Google OAuth क्रेडेंशियल और इस ऐप इंस्टेंस में स्थानीय Google टोकन स्थिति संग्रहीत करता है।",
+        "remote_cleanup": "निर्यात के बाद, ऐप आपके Google Drive से अस्थायी Google दस्तावेज़ हटाने का प्रयास करता है।",
+        "disconnect": "बाद में आप Preferences > Disconnect Google OCR से यह कनेक्शन डिस्कनेक्ट कर सकते हैं।",
+        "proceed_button": "Google के साथ जारी रखें",
+        "cancel_button": "रद्द करें",
+        "privacy_link": "गोपनीयता नीति खोलें",
+        "close_aria": "OCR सक्रियण प्रकटीकरण संवाद बंद करें"
+      },
+      "apply_modal": {
+        "title": "निकाला गया पाठ लागू करें",
+        "message": "निकाले गए पाठ को लागू करने का तरीका चुनें।",
+        "elapsed": "चलने का समय: ",
+        "repeat_label": "पुनरावृत्तियाँ",
+        "overwrite_button": "ओवरराइट",
+        "append_button": "जोड़ें",
+        "cancel_button": "रद्द करें",
+        "close_aria": "निकाला गया पाठ लागू करने का संवाद बंद करें",
+        "saved_pdf_message": "एक्सट्रैक्शन के बाद बनाई गई PDF रखी गई।",
+        "saved_pdf_label": "सहेजी गई PDF: ",
+        "reveal_saved_pdf_button": "सहेजी गई PDF दिखाएँ"
+      }
     },
     "editor": {
       "title": "toT — पूरा पाठ",
@@ -129,6 +157,68 @@
       "replace_timeout": "बदलाव में बहुत समय लगा। फिर प्रयास करें।",
       "status_no_matches": "कोई मिलान नहीं",
       "status_empty_query": "खोजने के लिए लिखें"
+    },
+    "snapshot_save_tags": {
+      "title": "पाठ स्नैपशॉट सहेजें",
+      "message": "कहाँ सहेजना है यह चुनने से पहले इस पाठ स्नैपशॉट को वैकल्पिक रूप से टैग करें।",
+      "labels": {
+        "language": "भाषा",
+        "type": "प्रकार",
+        "difficulty": "कठिनाई"
+      },
+      "empty": {
+        "language": "कोई भाषा टैग नहीं",
+        "type": "कोई प्रकार टैग नहीं",
+        "difficulty": "कोई कठिनाई टैग नहीं"
+      },
+      "buttons": {
+        "confirm": "पाठ स्नैपशॉट सहेजें",
+        "cancel": "रद्द करें"
+      },
+      "close_aria": "पाठ स्नैपशॉट सहेजने का संवाद बंद करें",
+      "options": {
+        "language": {
+          "ar": "अरबी",
+          "arn": "मापुदुंगुन",
+          "ay": "आयमारा",
+          "bn": "बंगाली",
+          "ca": "कातालान",
+          "de": "जर्मन",
+          "en": "अंग्रेज़ी",
+          "es": "स्पेनी",
+          "eu": "बास्क",
+          "fa": "फ़ारसी",
+          "fr": "फ़्रांसीसी",
+          "gn": "गुआरानी",
+          "hi": "हिंदी",
+          "ht": "हैतियाई",
+          "id": "इंडोनेशियाई",
+          "it": "इतालवी",
+          "ja": "जापानी",
+          "ko": "कोरियाई",
+          "mi": "माओरी",
+          "pcm": "नाइजीरियाई पिडगिन",
+          "pt": "पुर्तगाली",
+          "qu": "क्वेचुआ",
+          "ru": "रूसी",
+          "sv": "स्वीडिश",
+          "tr": "तुर्की",
+          "ur": "उर्दू",
+          "vi": "वियतनामी",
+          "zh_hans": "चीनी (सरलीकृत)",
+          "zh_hant": "चीनी (पारंपरिक)",
+          "zu": "ज़ुलू"
+        },
+        "type": {
+          "fiction": "कथा-साहित्य",
+          "non_fiction": "गैर-कथा"
+        },
+        "difficulty": {
+          "easy": "आसान",
+          "normal": "सामान्य",
+          "hard": "कठिन"
+        }
+      }
     },
     "tasks": {
       "title": "toT — कार्य",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "बिना सहेजे बदलाव हैं। क्या उन्हें छोड़ना है?",
         "close_unsaved": "बिना सहेजे बदलाव हैं। क्या बिना सहेजे बंद करना है?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "पाठ स्नैपशॉट सहेजें",
-      "message": "कहाँ सहेजना है यह चुनने से पहले इस पाठ स्नैपशॉट को वैकल्पिक रूप से टैग करें।",
-      "labels": {
-        "language": "भाषा",
-        "type": "प्रकार",
-        "difficulty": "कठिनाई"
-      },
-      "empty": {
-        "language": "कोई भाषा टैग नहीं",
-        "type": "कोई प्रकार टैग नहीं",
-        "difficulty": "कोई कठिनाई टैग नहीं"
-      },
-      "buttons": {
-        "confirm": "पाठ स्नैपशॉट सहेजें",
-        "cancel": "रद्द करें"
-      },
-      "close_aria": "पाठ स्नैपशॉट सहेजने का संवाद बंद करें",
-      "options": {
-        "language": {
-          "ar": "अरबी",
-          "arn": "मापुदुंगुन",
-          "ay": "आयमारा",
-          "bn": "बंगाली",
-          "ca": "कातालान",
-          "de": "जर्मन",
-          "en": "अंग्रेज़ी",
-          "es": "स्पेनी",
-          "eu": "बास्क",
-          "fa": "फ़ारसी",
-          "fr": "फ़्रांसीसी",
-          "gn": "गुआरानी",
-          "hi": "हिंदी",
-          "ht": "हैतियाई",
-          "id": "इंडोनेशियाई",
-          "it": "इतालवी",
-          "ja": "जापानी",
-          "ko": "कोरियाई",
-          "mi": "माओरी",
-          "pcm": "नाइजीरियाई पिडगिन",
-          "pt": "पुर्तगाली",
-          "qu": "क्वेचुआ",
-          "ru": "रूसी",
-          "sv": "स्वीडिश",
-          "tr": "तुर्की",
-          "ur": "उर्दू",
-          "vi": "वियतनामी",
-          "zh_hans": "चीनी (सरलीकृत)",
-          "zh_hant": "चीनी (पारंपरिक)",
-          "zu": "ज़ुलू"
-        },
-        "type": {
-          "fiction": "कथा-साहित्य",
-          "non_fiction": "गैर-कथा"
-        },
-        "difficulty": {
-          "easy": "आसान",
-          "normal": "सामान्य",
-          "hard": "कठिन"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "रद्द करें",
       "save": "सहेजें"
     },
+    "browser_extension": {
+      "title": "ब्राउज़र एक्सटेंशन",
+      "subtitle": "पढ़ने का समय",
+      "availability": "अभी Chrome पर उपलब्ध है। जल्द ही और ब्राउज़रों पर आएगा।",
+      "chrome_store_aria": "एक्सटेंशन का Chrome Web Store पेज खोलें",
+      "close_aria": "ब्राउज़र एक्सटेंशन संवाद बंद करें"
+    },
     "alerts": {
       "clipboard_too_large": "क्लिपबोर्ड पाठ संसाधित करने के लिए बहुत बड़ा है। इसे कम करें और फिर प्रयास करें।",
       "append_too_large": "परिणामी पाठ संसाधित करने के लिए बहुत बड़ा है। इसे कम करें और फिर प्रयास करें।",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "एक्सट्रैक्शन के लिए चयनित पृष्ठों वाली PDF बनाई नहीं जा सकी। फ़ाइल जाँचें और फिर से कोशिश करें।",
       "text_extraction_generated_pdf_cleanup_warning": "एक्सट्रैक्शन पूरा हो गया, लेकिन बनाई गई स्थानीय PDF को अपने-आप साफ़ नहीं किया जा सका।",
       "text_extraction_route_choice_required": "इस PDF के लिए निकासी जारी रखने से पहले मार्ग चुनना आवश्यक है।",
-      "text_extraction_route_choice_title": "निकासी मार्ग चुनें",
-      "text_extraction_route_choice_message": "इस PDF के लिए दोनों निकासी मार्ग उपलब्ध हैं। जारी रखने के लिए एक चुनें।",
-      "text_extraction_route_choice_native_button": "नेटिव उपयोग करें",
-      "text_extraction_route_choice_ocr_button": "OCR उपयोग करें",
-      "text_extraction_route_choice_cancel_button": "रद्द करें",
-      "text_extraction_route_choice_close_aria": "निकासी मार्ग संवाद बंद करें",
-      "text_extraction_apply_modal_title": "निकाला गया पाठ लागू करें",
-      "text_extraction_apply_modal_message": "निकाले गए पाठ को लागू करने का तरीका चुनें।",
-      "text_extraction_apply_modal_elapsed": "चलने का समय: ",
-      "text_extraction_apply_modal_repeat_label": "पुनरावृत्तियाँ",
-      "text_extraction_apply_modal_overwrite_button": "ओवरराइट",
-      "text_extraction_apply_modal_append_button": "जोड़ें",
-      "text_extraction_apply_modal_cancel_button": "रद्द करें",
-      "text_extraction_apply_modal_close_aria": "निकाला गया पाठ लागू करने का संवाद बंद करें",
-      "text_extraction_apply_modal_saved_pdf_message": "एक्सट्रैक्शन के बाद बनाई गई PDF रखी गई।",
-      "text_extraction_apply_modal_saved_pdf_label": "सहेजी गई PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "सहेजी गई PDF दिखाएँ",
       "text_extraction_generated_pdf_reveal_failed": "सहेजी गई PDF दिखाई नहीं जा सकी। जाँचें कि फ़ाइल अभी भी मौजूद है या नहीं।",
       "text_extraction_apply_error": "निकाला गया पाठ लागू करते समय त्रुटि हुई। कंसोल देखें और फिर प्रयास करें।",
       "text_extraction_apply_too_large": "परिणामी पाठ संसाधित करने के लिए बहुत बड़ा है। पुनरावृत्तियाँ कम करें और फिर प्रयास करें।",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "तैयार निकासी अनुरोध अब मान्य नहीं है। प्रवाह फिर से शुरू करें।",
       "text_extraction_ocr_unavailable": "OCR उपलब्ध नहीं है। setup/auth स्थिति जाँचें और फिर प्रयास करें।",
       "text_extraction_ocr_activation_required": "OCR सक्रियण आवश्यक है। Google OCR में साइन इन करें और फिर प्रयास करें।",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR सक्रियण की समीक्षा करें",
-      "text_extraction_ocr_activation_disclosure_intro": "toT OCR के लिए Google सेवाओं का उपयोग करता है। जारी रखने पर आपका ब्राउज़र खुलेगा ताकि आप इस ऐप को अधिकृत कर सकें।",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Google को केवल वे फ़ाइलें भेजी जाती हैं जिन्हें आप OCR के लिए चुनते हैं।",
-      "text_extraction_ocr_activation_disclosure_local_storage": "यह ऐप OCR के लिए ऐप-प्रबंधित Google OAuth क्रेडेंशियल और इस ऐप इंस्टेंस में स्थानीय Google टोकन स्थिति संग्रहीत करता है।",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "निर्यात के बाद, ऐप आपके Google Drive से अस्थायी Google दस्तावेज़ हटाने का प्रयास करता है।",
-      "text_extraction_ocr_activation_disclosure_disconnect": "बाद में आप Preferences > Disconnect Google OCR से यह कनेक्शन डिस्कनेक्ट कर सकते हैं।",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Google के साथ जारी रखें",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "रद्द करें",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "गोपनीयता नीति खोलें",
-      "text_extraction_ocr_activation_disclosure_close_aria": "OCR सक्रियण प्रकटीकरण संवाद बंद करें",
       "text_extraction_ocr_activation_success": "OCR सक्रियण पूरा हुआ। निकासी फिर से प्रयास की जा रही है।",
       "text_extraction_ocr_activation_cancelled": "OCR सक्रियण रद्द किया गया। निकासी जारी नहीं रही।",
       "text_extraction_ocr_token_state_invalid": "सहेजी गई Google OCR साइन-इन स्थिति अमान्य है। Google OCR फिर से कनेक्ट करें और फिर प्रयास करें।",

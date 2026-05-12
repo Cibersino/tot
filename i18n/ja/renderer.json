@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "解析されたテキストの冒頭と末尾:",
       "selector_empty": "（空）",
+      "reading_tools": {
+        "reading_speed_test": "読書速度テスト",
+        "preview_spoiler": "ネタバレ防止"
+      },
       "tooltips": {
         "text_extraction": "ファイルからテキストを抽出",
         "text_extraction_abort": "抽出を中止",
@@ -59,10 +63,6 @@
         "speed": "速度:",
         "controls_label": "ストップウォッチ操作"
       },
-      "reading_tools": {
-        "reading_speed_test": "読書速度テスト",
-        "preview_spoiler": "ネタバレ防止"
-      },
       "processing": {
         "text_extraction_placeholder": "テキストを抽出中...",
         "text_extraction_preparing": "抽出ルートを準備中...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "テキストを抽出するファイルをドロップ"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF 抽出オプション",
-      "message": "抽出前に PDF 全体を処理するか、連続したページ範囲を処理するかを選択してください。",
-      "file_label": "ファイル:",
-      "total_pages_label": "総ページ数: ",
-      "selection_legend": "ページ選択",
-      "all_pages_label": "すべてのページ",
-      "range_label": "ページ範囲",
-      "from_page_label": "開始ページ",
-      "to_page_label": "終了ページ",
-      "selected_page_count_label": "選択ページ数: ",
-      "keep_generated_pdf_label": "処理後も生成された選択ページ PDF を保持する",
-      "continue_button": "続行",
-      "cancel_button": "キャンセル",
-      "close_aria": "PDF 抽出オプションダイアログを閉じる",
-      "invalid_range": "1 から {totalPages} までの連続したページ範囲を入力してください。"
-    },
-    "browser_extension": {
-      "title": "ブラウザー拡張機能",
-      "subtitle": "読書時間",
-      "availability": "現在 Chrome で利用できます。ほかのブラウザーにも近日対応予定です。",
-      "chrome_store_aria": "拡張機能の Chrome Web Store ページを開く",
-      "close_aria": "ブラウザー拡張機能のダイアログを閉じる"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF 抽出オプション",
+        "message": "抽出前に PDF 全体を処理するか、連続したページ範囲を処理するかを選択してください。",
+        "file_label": "ファイル:",
+        "total_pages_label": "総ページ数: ",
+        "selection_legend": "ページ選択",
+        "all_pages_label": "すべてのページ",
+        "range_label": "ページ範囲",
+        "from_page_label": "開始ページ",
+        "to_page_label": "終了ページ",
+        "selected_page_count_label": "選択ページ数: ",
+        "keep_generated_pdf_label": "処理後も生成された選択ページ PDF を保持する",
+        "continue_button": "続行",
+        "cancel_button": "キャンセル",
+        "close_aria": "PDF 抽出オプションダイアログを閉じる",
+        "invalid_range": "1 から {totalPages} までの連続したページ範囲を入力してください。"
+      },
+      "route_choice": {
+        "title": "抽出ルートを選択",
+        "message": "この PDF では両方の抽出ルートが利用できます。続行するルートを選択してください。",
+        "native_button": "ネイティブを使用",
+        "ocr_button": "OCR を使用",
+        "cancel_button": "キャンセル",
+        "close_aria": "抽出ルートダイアログを閉じる"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Google OCR の有効化を確認",
+        "intro": "toT は OCR に Google サービスを使用します。続行すると、このアプリを認可するためにブラウザが開きます。",
+        "selected_files": "OCR のために選択したファイルのみが Google に送信されます。",
+        "local_storage": "このアプリは、OCR 用にアプリが管理する Google OAuth 認証情報と、Google トークンのローカル状態をこのアプリインスタンスに保存します。",
+        "remote_cleanup": "エクスポート後、アプリは Google Drive から一時 Google ドキュメントを削除しようとします。",
+        "disconnect": "後で 設定 > Google OCR を切断 からこの接続を切断できます。",
+        "proceed_button": "Google で続行",
+        "cancel_button": "キャンセル",
+        "privacy_link": "プライバシーポリシーを開く",
+        "close_aria": "Google OCR 有効化ダイアログを閉じる"
+      },
+      "apply_modal": {
+        "title": "抽出テキストを適用",
+        "message": "抽出したテキストの適用方法を選択してください。",
+        "elapsed": "実行時間: ",
+        "repeat_label": "繰り返し",
+        "overwrite_button": "上書き",
+        "append_button": "追加",
+        "cancel_button": "キャンセル",
+        "close_aria": "抽出テキスト適用ダイアログを閉じる",
+        "saved_pdf_message": "生成された PDF は抽出後も保持されました。",
+        "saved_pdf_label": "保存済み PDF: ",
+        "reveal_saved_pdf_button": "保存済み PDF を表示"
+      }
     },
     "editor": {
       "title": "toT — 全文テキスト",
@@ -129,6 +157,68 @@
       "replace_timeout": "置換に時間がかかりすぎました。もう一度お試しください。",
       "status_no_matches": "一致なし",
       "status_empty_query": "検索語を入力してください"
+    },
+    "snapshot_save_tags": {
+      "title": "テキストスナップショットを保存",
+      "message": "保存場所を選ぶ前に、このテキストスナップショットへ任意でタグを付けられます。",
+      "labels": {
+        "language": "言語",
+        "type": "種類",
+        "difficulty": "難易度"
+      },
+      "empty": {
+        "language": "言語タグなし",
+        "type": "種類タグなし",
+        "difficulty": "難易度タグなし"
+      },
+      "buttons": {
+        "confirm": "テキストスナップショットを保存",
+        "cancel": "キャンセル"
+      },
+      "close_aria": "テキストスナップショット保存ダイアログを閉じる",
+      "options": {
+        "language": {
+          "ar": "アラビア語",
+          "arn": "マプドゥングン語",
+          "ay": "アイマラ語",
+          "bn": "ベンガル語",
+          "ca": "カタロニア語",
+          "de": "ドイツ語",
+          "en": "英語",
+          "es": "スペイン語",
+          "eu": "バスク語",
+          "fa": "ペルシア語",
+          "fr": "フランス語",
+          "gn": "グアラニー語",
+          "hi": "ヒンディー語",
+          "ht": "ハイチ・クレオール語",
+          "id": "インドネシア語",
+          "it": "イタリア語",
+          "ja": "日本語",
+          "ko": "韓国語",
+          "mi": "マオリ語",
+          "pcm": "ナイジェリア・ピジン語",
+          "pt": "ポルトガル語",
+          "qu": "ケチュア語",
+          "ru": "ロシア語",
+          "sv": "スウェーデン語",
+          "tr": "トルコ語",
+          "ur": "ウルドゥー語",
+          "vi": "ベトナム語",
+          "zh_hans": "中国語（簡体字）",
+          "zh_hant": "中国語（繁体字）",
+          "zu": "ズールー語"
+        },
+        "type": {
+          "fiction": "フィクション",
+          "non_fiction": "ノンフィクション"
+        },
+        "difficulty": {
+          "easy": "易しい",
+          "normal": "普通",
+          "hard": "難しい"
+        }
+      }
     },
     "tasks": {
       "title": "toT — タスク",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "未保存の変更があります。破棄しますか？",
         "close_unsaved": "未保存の変更があります。保存せずに閉じますか？"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "テキストスナップショットを保存",
-      "message": "保存場所を選ぶ前に、このテキストスナップショットへ任意でタグを付けられます。",
-      "labels": {
-        "language": "言語",
-        "type": "種類",
-        "difficulty": "難易度"
-      },
-      "empty": {
-        "language": "言語タグなし",
-        "type": "種類タグなし",
-        "difficulty": "難易度タグなし"
-      },
-      "buttons": {
-        "confirm": "テキストスナップショットを保存",
-        "cancel": "キャンセル"
-      },
-      "close_aria": "テキストスナップショット保存ダイアログを閉じる",
-      "options": {
-        "language": {
-          "ar": "アラビア語",
-          "arn": "マプドゥングン語",
-          "ay": "アイマラ語",
-          "bn": "ベンガル語",
-          "ca": "カタロニア語",
-          "de": "ドイツ語",
-          "en": "英語",
-          "es": "スペイン語",
-          "eu": "バスク語",
-          "fa": "ペルシア語",
-          "fr": "フランス語",
-          "gn": "グアラニー語",
-          "hi": "ヒンディー語",
-          "ht": "ハイチ・クレオール語",
-          "id": "インドネシア語",
-          "it": "イタリア語",
-          "ja": "日本語",
-          "ko": "韓国語",
-          "mi": "マオリ語",
-          "pcm": "ナイジェリア・ピジン語",
-          "pt": "ポルトガル語",
-          "qu": "ケチュア語",
-          "ru": "ロシア語",
-          "sv": "スウェーデン語",
-          "tr": "トルコ語",
-          "ur": "ウルドゥー語",
-          "vi": "ベトナム語",
-          "zh_hans": "中国語（簡体字）",
-          "zh_hant": "中国語（繁体字）",
-          "zu": "ズールー語"
-        },
-        "type": {
-          "fiction": "フィクション",
-          "non_fiction": "ノンフィクション"
-        },
-        "difficulty": {
-          "easy": "易しい",
-          "normal": "普通",
-          "hard": "難しい"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "キャンセル",
       "save": "保存"
     },
+    "browser_extension": {
+      "title": "ブラウザー拡張機能",
+      "subtitle": "読書時間",
+      "availability": "現在 Chrome で利用できます。ほかのブラウザーにも近日対応予定です。",
+      "chrome_store_aria": "拡張機能の Chrome Web Store ページを開く",
+      "close_aria": "ブラウザー拡張機能のダイアログを閉じる"
+    },
     "alerts": {
       "clipboard_too_large": "クリップボードのテキストが大きすぎて処理できません。短くしてから再試行してください。",
       "append_too_large": "結果のテキストが大きすぎて処理できません。短くしてから再試行してください。",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "抽出用の選択ページ PDF を作成できませんでした。ファイルを確認して、もう一度お試しください。",
       "text_extraction_generated_pdf_cleanup_warning": "抽出は完了しましたが、生成されたローカル PDF を自動的に削除できませんでした。",
       "text_extraction_route_choice_required": "この PDF の抽出を続行するには、ルートを選択する必要があります。",
-      "text_extraction_route_choice_title": "抽出ルートを選択",
-      "text_extraction_route_choice_message": "この PDF では両方の抽出ルートが利用できます。続行するルートを選択してください。",
-      "text_extraction_route_choice_native_button": "ネイティブを使用",
-      "text_extraction_route_choice_ocr_button": "OCR を使用",
-      "text_extraction_route_choice_cancel_button": "キャンセル",
-      "text_extraction_route_choice_close_aria": "抽出ルートダイアログを閉じる",
-      "text_extraction_apply_modal_title": "抽出テキストを適用",
-      "text_extraction_apply_modal_message": "抽出したテキストの適用方法を選択してください。",
-      "text_extraction_apply_modal_elapsed": "実行時間: ",
-      "text_extraction_apply_modal_repeat_label": "繰り返し",
-      "text_extraction_apply_modal_overwrite_button": "上書き",
-      "text_extraction_apply_modal_append_button": "追加",
-      "text_extraction_apply_modal_cancel_button": "キャンセル",
-      "text_extraction_apply_modal_close_aria": "抽出テキスト適用ダイアログを閉じる",
-      "text_extraction_apply_modal_saved_pdf_message": "生成された PDF は抽出後も保持されました。",
-      "text_extraction_apply_modal_saved_pdf_label": "保存済み PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "保存済み PDF を表示",
       "text_extraction_generated_pdf_reveal_failed": "保存済み PDF を表示できませんでした。ファイルがまだ存在するか確認してください。",
       "text_extraction_apply_error": "抽出テキストの適用中にエラーが発生しました。コンソールを確認して再試行してください。",
       "text_extraction_apply_too_large": "結果のテキストが大きすぎて処理できません。繰り返し回数を減らして再試行してください。",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "準備済みの抽出リクエストは無効になっています。フローを最初から開始してください。",
       "text_extraction_ocr_unavailable": "OCR は利用できません。セットアップ/認証状態を確認して再試行してください。",
       "text_extraction_ocr_activation_required": "OCR の有効化が必要です。Google OCR にログインして再試行してください。",
-      "text_extraction_ocr_activation_disclosure_title": "Google OCR の有効化を確認",
-      "text_extraction_ocr_activation_disclosure_intro": "toT は OCR に Google サービスを使用します。続行すると、このアプリを認可するためにブラウザが開きます。",
-      "text_extraction_ocr_activation_disclosure_selected_files": "OCR のために選択したファイルのみが Google に送信されます。",
-      "text_extraction_ocr_activation_disclosure_local_storage": "このアプリは、OCR 用にアプリが管理する Google OAuth 認証情報と、Google トークンのローカル状態をこのアプリインスタンスに保存します。",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "エクスポート後、アプリは Google Drive から一時 Google ドキュメントを削除しようとします。",
-      "text_extraction_ocr_activation_disclosure_disconnect": "後で 設定 > Google OCR を切断 からこの接続を切断できます。",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Google で続行",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "キャンセル",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "プライバシーポリシーを開く",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Google OCR 有効化ダイアログを閉じる",
       "text_extraction_ocr_activation_success": "OCR の有効化が完了しました。抽出を再試行しています。",
       "text_extraction_ocr_activation_cancelled": "OCR の有効化はキャンセルされました。抽出は続行されませんでした。",
       "text_extraction_ocr_token_state_invalid": "保存された Google OCR ログイン状態が無効です。Google OCR に再接続してから再試行してください。",

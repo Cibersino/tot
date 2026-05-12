@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "First and last part of di text wey app analyze:",
       "selector_empty": "(empty)",
+      "reading_tools": {
+        "reading_speed_test": "Reading speed test",
+        "preview_spoiler": "Spoiler"
+      },
       "tooltips": {
         "text_extraction": "Text extraction text from file",
         "text_extraction_abort": "Abort extraction",
@@ -59,10 +63,6 @@
         "speed": "Speed:",
         "controls_label": "Stopwatch controls"
       },
-      "reading_tools": {
-        "reading_speed_test": "Reading speed test",
-        "preview_spoiler": "Spoiler"
-      },
       "processing": {
         "text_extraction_placeholder": "Extracting text...",
         "text_extraction_preparing": "Preparing text extraction route...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "Drop file to extract text"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF extraction options",
-      "message": "Choose whether to process di whole PDF or one continuous page range before extraction.",
-      "file_label": "File:",
-      "total_pages_label": "Total pages: ",
-      "selection_legend": "Page selection",
-      "all_pages_label": "All pages",
-      "range_label": "Page range",
-      "from_page_label": "From page",
-      "to_page_label": "To page",
-      "selected_page_count_label": "Selected pages: ",
-      "keep_generated_pdf_label": "Keep di generated selected-page PDF after processing",
-      "continue_button": "Continue",
-      "cancel_button": "Cancel",
-      "close_aria": "Close PDF extraction options dialog",
-      "invalid_range": "Enter one continuous page range between 1 and {totalPages}."
-    },
-    "browser_extension": {
-      "title": "Browser extension",
-      "subtitle": "Reading time",
-      "availability": "E don dey available for Chrome now. More browsers go come soon.",
-      "chrome_store_aria": "Open di extension Chrome Web Store page",
-      "close_aria": "Close browser extension dialog"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF extraction options",
+        "message": "Choose whether to process di whole PDF or one continuous page range before extraction.",
+        "file_label": "File:",
+        "total_pages_label": "Total pages: ",
+        "selection_legend": "Page selection",
+        "all_pages_label": "All pages",
+        "range_label": "Page range",
+        "from_page_label": "From page",
+        "to_page_label": "To page",
+        "selected_page_count_label": "Selected pages: ",
+        "keep_generated_pdf_label": "Keep di generated selected-page PDF after processing",
+        "continue_button": "Continue",
+        "cancel_button": "Cancel",
+        "close_aria": "Close PDF extraction options dialog",
+        "invalid_range": "Enter one continuous page range between 1 and {totalPages}."
+      },
+      "route_choice": {
+        "title": "Choose extraction route",
+        "message": "Both extraction routes dey available for dis PDF. Choose one to continue.",
+        "native_button": "Use native",
+        "ocr_button": "Use OCR",
+        "cancel_button": "Cancel",
+        "close_aria": "Close extraction route dialog"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Review Google OCR activation",
+        "intro": "toT dey use Google services for OCR. If you continue, your browser go open make you authorize dis app.",
+        "selected_files": "Only files wey you choose for OCR go dey sent to Google.",
+        "local_storage": "Dis app stores app-managed Google OAuth credentials for OCR and local Google token state for dis app instance.",
+        "remote_cleanup": "After export, di app go try remove di temporary Google document from your Google Drive.",
+        "disconnect": "You fit disconnect later through Preferences > Disconnect Google OCR.",
+        "proceed_button": "Continue to Google",
+        "cancel_button": "Cancel",
+        "privacy_link": "Open privacy policy",
+        "close_aria": "Close OCR activation disclosure dialog"
+      },
+      "apply_modal": {
+        "title": "Apply extracted text",
+        "message": "Choose how to apply di extracted text.",
+        "elapsed": "Execution time: ",
+        "repeat_label": "Repetitions",
+        "overwrite_button": "Overwrite",
+        "append_button": "Append",
+        "cancel_button": "Cancel",
+        "close_aria": "Close apply extracted text dialog",
+        "saved_pdf_message": "Di generated PDF remain saved after extraction.",
+        "saved_pdf_label": "Saved PDF: ",
+        "reveal_saved_pdf_button": "Show saved PDF"
+      }
     },
     "editor": {
       "title": "toT — Full text",
@@ -129,6 +157,68 @@
       "replace_timeout": "Replace take too long. Try again.",
       "status_no_matches": "No matches",
       "status_empty_query": "Type to search"
+    },
+    "snapshot_save_tags": {
+      "title": "Save text snapshot",
+      "message": "You fit tag dis text snapshot before you choose where to save am.",
+      "labels": {
+        "language": "Language",
+        "type": "Type",
+        "difficulty": "Difficulty"
+      },
+      "empty": {
+        "language": "No language tag",
+        "type": "No type tag",
+        "difficulty": "No difficulty tag"
+      },
+      "buttons": {
+        "confirm": "Save Text Snapshot",
+        "cancel": "Cancel"
+      },
+      "close_aria": "Close save text snapshot dialog",
+      "options": {
+        "language": {
+          "ar": "Arabic",
+          "arn": "Mapudungun",
+          "ay": "Aymára",
+          "bn": "Bengali",
+          "ca": "Kátála Lángwej",
+          "de": "German",
+          "en": "English",
+          "es": "Spanish",
+          "eu": "Básk Lángwej",
+          "fa": "Pẹ́shiá Lángwej",
+          "fr": "French",
+          "gn": "Guáráni Lángwej",
+          "hi": "Hindi",
+          "ht": "Haítí Kriol",
+          "id": "Indonesian",
+          "it": "Italian",
+          "ja": "Japanese",
+          "ko": "Korean",
+          "mi": "Maórí Lángwej",
+          "pcm": "Naijíriá Píjin",
+          "pt": "Portuguese",
+          "qu": "Kẹchuá",
+          "ru": "Russian",
+          "sv": "Suwídẹ́n Lángwej",
+          "tr": "Turkish",
+          "ur": "Urdu",
+          "vi": "Viẹ́tnám Lángwej",
+          "zh_hans": "Chinese (Simplified)",
+          "zh_hant": "Chinese (Traditional)",
+          "zu": "Zúlu"
+        },
+        "type": {
+          "fiction": "Fiction",
+          "non_fiction": "Non-fiction"
+        },
+        "difficulty": {
+          "easy": "Easy",
+          "normal": "Normal",
+          "hard": "Hard"
+        }
+      }
     },
     "tasks": {
       "title": "toT — Tasks",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "Unsaved changes dey. Discard dem?",
         "close_unsaved": "Unsaved changes dey. Close without saving?"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "Save text snapshot",
-      "message": "You fit tag dis text snapshot before you choose where to save am.",
-      "labels": {
-        "language": "Language",
-        "type": "Type",
-        "difficulty": "Difficulty"
-      },
-      "empty": {
-        "language": "No language tag",
-        "type": "No type tag",
-        "difficulty": "No difficulty tag"
-      },
-      "buttons": {
-        "confirm": "Save Text Snapshot",
-        "cancel": "Cancel"
-      },
-      "close_aria": "Close save text snapshot dialog",
-      "options": {
-        "language": {
-          "ar": "Arabic",
-          "arn": "Mapudungun",
-          "ay": "Aymára",
-          "bn": "Bengali",
-          "ca": "Kátála Lángwej",
-          "de": "German",
-          "en": "English",
-          "es": "Spanish",
-          "eu": "Básk Lángwej",
-          "fa": "Pẹ́shiá Lángwej",
-          "fr": "French",
-          "gn": "Guáráni Lángwej",
-          "hi": "Hindi",
-          "ht": "Haítí Kriol",
-          "id": "Indonesian",
-          "it": "Italian",
-          "ja": "Japanese",
-          "ko": "Korean",
-          "mi": "Maórí Lángwej",
-          "pcm": "Naijíriá Píjin",
-          "pt": "Portuguese",
-          "qu": "Kẹchuá",
-          "ru": "Russian",
-          "sv": "Suwídẹ́n Lángwej",
-          "tr": "Turkish",
-          "ur": "Urdu",
-          "vi": "Viẹ́tnám Lángwej",
-          "zh_hans": "Chinese (Simplified)",
-          "zh_hant": "Chinese (Traditional)",
-          "zu": "Zúlu"
-        },
-        "type": {
-          "fiction": "Fiction",
-          "non_fiction": "Non-fiction"
-        },
-        "difficulty": {
-          "easy": "Easy",
-          "normal": "Normal",
-          "hard": "Hard"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "Cancel",
       "save": "Save"
     },
+    "browser_extension": {
+      "title": "Browser extension",
+      "subtitle": "Reading time",
+      "availability": "E don dey available for Chrome now. More browsers go come soon.",
+      "chrome_store_aria": "Open di extension Chrome Web Store page",
+      "close_aria": "Close browser extension dialog"
+    },
     "alerts": {
       "clipboard_too_large": "Clipboard text too large to process. Reduce am and try again.",
       "append_too_large": "Resulting text too large to process. Reduce am and try again.",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "Di app no fit create di selected-page PDF for extraction. Check di file and try again.",
       "text_extraction_generated_pdf_cleanup_warning": "Extraction don finish, but one generated local PDF no fit clean up automatically.",
       "text_extraction_route_choice_required": "Route choice dey required for dis PDF before extraction fit continue.",
-      "text_extraction_route_choice_title": "Choose extraction route",
-      "text_extraction_route_choice_message": "Both extraction routes dey available for dis PDF. Choose one to continue.",
-      "text_extraction_route_choice_native_button": "Use native",
-      "text_extraction_route_choice_ocr_button": "Use OCR",
-      "text_extraction_route_choice_cancel_button": "Cancel",
-      "text_extraction_route_choice_close_aria": "Close extraction route dialog",
-      "text_extraction_apply_modal_title": "Apply extracted text",
-      "text_extraction_apply_modal_message": "Choose how to apply di extracted text.",
-      "text_extraction_apply_modal_elapsed": "Execution time: ",
-      "text_extraction_apply_modal_repeat_label": "Repetitions",
-      "text_extraction_apply_modal_overwrite_button": "Overwrite",
-      "text_extraction_apply_modal_append_button": "Append",
-      "text_extraction_apply_modal_cancel_button": "Cancel",
-      "text_extraction_apply_modal_close_aria": "Close apply extracted text dialog",
-      "text_extraction_apply_modal_saved_pdf_message": "Di generated PDF remain saved after extraction.",
-      "text_extraction_apply_modal_saved_pdf_label": "Saved PDF: ",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "Show saved PDF",
       "text_extraction_generated_pdf_reveal_failed": "Di saved PDF no fit show. Check whether di file still dey.",
       "text_extraction_apply_error": "Error happen while applying extracted text. Check console and retry.",
       "text_extraction_apply_too_large": "Di resulting text too large to process. Reduce repetitions and try again.",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "Di prepared text extraction request no valid again. Start di flow again.",
       "text_extraction_ocr_unavailable": "OCR no dey available. Check setup/auth status and try again.",
       "text_extraction_ocr_activation_required": "OCR activation dey required. Sign in to Google OCR and try again.",
-      "text_extraction_ocr_activation_disclosure_title": "Review Google OCR activation",
-      "text_extraction_ocr_activation_disclosure_intro": "toT dey use Google services for OCR. If you continue, your browser go open make you authorize dis app.",
-      "text_extraction_ocr_activation_disclosure_selected_files": "Only files wey you choose for OCR go dey sent to Google.",
-      "text_extraction_ocr_activation_disclosure_local_storage": "Dis app stores app-managed Google OAuth credentials for OCR and local Google token state for dis app instance.",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "After export, di app go try remove di temporary Google document from your Google Drive.",
-      "text_extraction_ocr_activation_disclosure_disconnect": "You fit disconnect later through Preferences > Disconnect Google OCR.",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "Continue to Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "Cancel",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "Open privacy policy",
-      "text_extraction_ocr_activation_disclosure_close_aria": "Close OCR activation disclosure dialog",
       "text_extraction_ocr_activation_success": "OCR activation completed. Retrying extraction.",
       "text_extraction_ocr_activation_cancelled": "OCR activation was cancelled. Text extraction no continue.",
       "text_extraction_ocr_token_state_invalid": "Saved Google OCR sign-in state no valid. Reconnect Google OCR and try again.",

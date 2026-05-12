@@ -3,6 +3,10 @@
     "main": {
       "selector_title": "已分析文本的开头和结尾部分：",
       "selector_empty": "（空）",
+      "reading_tools": {
+        "reading_speed_test": "阅读速度测试",
+        "preview_spoiler": "剧透"
+      },
       "tooltips": {
         "text_extraction": "从文件提取文本",
         "text_extraction_abort": "中止提取",
@@ -59,10 +63,6 @@
         "speed": "速度：",
         "controls_label": "秒表控件"
       },
-      "reading_tools": {
-        "reading_speed_test": "阅读速度测试",
-        "preview_spoiler": "剧透"
-      },
       "processing": {
         "text_extraction_placeholder": "正在处理提取...",
         "text_extraction_preparing": "正在准备提取路径...",
@@ -73,29 +73,57 @@
         "text_extraction_drop_here": "拖放文件以提取文本"
       }
     },
-    "text_extraction_pdf_options": {
-      "title": "PDF 提取选项",
-      "message": "请选择在提取前处理整个 PDF，还是处理一个连续的页面范围。",
-      "file_label": "文件：",
-      "total_pages_label": "总页数：",
-      "selection_legend": "页面选择",
-      "all_pages_label": "所有页面",
-      "range_label": "页面范围",
-      "from_page_label": "起始页",
-      "to_page_label": "结束页",
-      "selected_page_count_label": "已选页面：",
-      "keep_generated_pdf_label": "处理后保留生成的所选页面 PDF",
-      "continue_button": "继续",
-      "cancel_button": "取消",
-      "close_aria": "关闭 PDF 提取选项对话框",
-      "invalid_range": "请输入 1 到 {totalPages} 之间的连续页面范围。"
-    },
-    "browser_extension": {
-      "title": "浏览器扩展",
-      "subtitle": "阅读时间",
-      "availability": "现已在 Chrome 上提供。更多浏览器即将支持。",
-      "chrome_store_aria": "打开扩展的 Chrome Web Store 页面",
-      "close_aria": "关闭浏览器扩展对话框"
+    "text_extraction": {
+      "pdf_options": {
+        "title": "PDF 提取选项",
+        "message": "请选择在提取前处理整个 PDF，还是处理一个连续的页面范围。",
+        "file_label": "文件：",
+        "total_pages_label": "总页数：",
+        "selection_legend": "页面选择",
+        "all_pages_label": "所有页面",
+        "range_label": "页面范围",
+        "from_page_label": "起始页",
+        "to_page_label": "结束页",
+        "selected_page_count_label": "已选页面：",
+        "keep_generated_pdf_label": "处理后保留生成的所选页面 PDF",
+        "continue_button": "继续",
+        "cancel_button": "取消",
+        "close_aria": "关闭 PDF 提取选项对话框",
+        "invalid_range": "请输入 1 到 {totalPages} 之间的连续页面范围。"
+      },
+      "route_choice": {
+        "title": "选择提取路径",
+        "message": "此 PDF 可使用两种提取路径。请选择一种继续。",
+        "native_button": "使用原生提取",
+        "ocr_button": "使用 OCR",
+        "cancel_button": "取消",
+        "close_aria": "关闭提取路径对话框"
+      },
+      "ocr_activation_disclosure": {
+        "title": "查看 Google OCR 激活说明",
+        "intro": "toT 使用 Google 服务进行 OCR。如果继续，将打开浏览器以便你授权此应用。",
+        "selected_files": "只有你选择用于 OCR 的文件会发送给 Google。",
+        "local_storage": "此应用会在本应用实例中保存由应用管理的 Google OAuth OCR 凭据和本地 Google 令牌状态。",
+        "remote_cleanup": "导出后，应用会尝试从你的 Google Drive 中移除临时 Google 文档。",
+        "disconnect": "以后你可以通过“偏好设置 > 断开 Google OCR 连接”来断开此连接。",
+        "proceed_button": "继续使用 Google",
+        "cancel_button": "取消",
+        "privacy_link": "打开隐私政策",
+        "close_aria": "关闭 Google OCR 激活对话框"
+      },
+      "apply_modal": {
+        "title": "应用提取的文本",
+        "message": "选择如何应用提取的文本。",
+        "elapsed": "执行时间：",
+        "repeat_label": "重复次数",
+        "overwrite_button": "覆盖",
+        "append_button": "追加",
+        "cancel_button": "取消",
+        "close_aria": "关闭应用提取文本对话框",
+        "saved_pdf_message": "生成的 PDF 已在提取后保留。",
+        "saved_pdf_label": "已保存 PDF：",
+        "reveal_saved_pdf_button": "显示已保存 PDF"
+      }
     },
     "editor": {
       "title": "toT — 完整文本",
@@ -129,6 +157,68 @@
       "replace_timeout": "替换超时。请重试。",
       "status_no_matches": "没有匹配项",
       "status_empty_query": "输入内容以搜索"
+    },
+    "snapshot_save_tags": {
+      "title": "保存文本快照",
+      "message": "在选择保存位置前，可选择为此文本快照添加标签。",
+      "labels": {
+        "language": "语言",
+        "type": "类型",
+        "difficulty": "难度"
+      },
+      "empty": {
+        "language": "无语言标签",
+        "type": "无类型标签",
+        "difficulty": "无难度标签"
+      },
+      "buttons": {
+        "confirm": "保存文本快照",
+        "cancel": "取消"
+      },
+      "close_aria": "关闭保存文本快照对话框",
+      "options": {
+        "language": {
+          "ar": "阿拉伯语",
+          "arn": "马普切语",
+          "ay": "艾马拉语",
+          "bn": "孟加拉语",
+          "ca": "加泰罗尼亚语",
+          "de": "德语",
+          "en": "英语",
+          "es": "西班牙语",
+          "eu": "巴斯克语",
+          "fa": "波斯语",
+          "fr": "法语",
+          "gn": "瓜拉尼语",
+          "hi": "印地语",
+          "ht": "海地克里奥尔语",
+          "id": "印度尼西亚语",
+          "it": "意大利语",
+          "ja": "日语",
+          "ko": "韩语",
+          "mi": "毛利语",
+          "pcm": "尼日利亚皮钦语",
+          "pt": "葡萄牙语",
+          "qu": "克丘亚语",
+          "ru": "俄语",
+          "sv": "瑞典语",
+          "tr": "土耳其语",
+          "ur": "乌尔都语",
+          "vi": "越南语",
+          "zh_hans": "简体中文",
+          "zh_hant": "繁体中文",
+          "zu": "祖鲁语"
+        },
+        "type": {
+          "fiction": "虚构",
+          "non_fiction": "非虚构"
+        },
+        "difficulty": {
+          "easy": "简单",
+          "normal": "普通",
+          "hard": "困难"
+        }
+      }
     },
     "tasks": {
       "title": "toT — 任务",
@@ -202,68 +292,6 @@
       "confirm": {
         "discard_changes": "存在未保存的更改。要放弃它们吗？",
         "close_unsaved": "存在未保存的更改。要不保存就关闭吗？"
-      }
-    },
-    "snapshot_save_tags": {
-      "title": "保存文本快照",
-      "message": "在选择保存位置前，可选择为此文本快照添加标签。",
-      "labels": {
-        "language": "语言",
-        "type": "类型",
-        "difficulty": "难度"
-      },
-      "empty": {
-        "language": "无语言标签",
-        "type": "无类型标签",
-        "difficulty": "无难度标签"
-      },
-      "buttons": {
-        "confirm": "保存文本快照",
-        "cancel": "取消"
-      },
-      "close_aria": "关闭保存文本快照对话框",
-      "options": {
-        "language": {
-          "ar": "阿拉伯语",
-          "arn": "马普切语",
-          "ay": "艾马拉语",
-          "bn": "孟加拉语",
-          "ca": "加泰罗尼亚语",
-          "de": "德语",
-          "en": "英语",
-          "es": "西班牙语",
-          "eu": "巴斯克语",
-          "fa": "波斯语",
-          "fr": "法语",
-          "gn": "瓜拉尼语",
-          "hi": "印地语",
-          "ht": "海地克里奥尔语",
-          "id": "印度尼西亚语",
-          "it": "意大利语",
-          "ja": "日语",
-          "ko": "韩语",
-          "mi": "毛利语",
-          "pcm": "尼日利亚皮钦语",
-          "pt": "葡萄牙语",
-          "qu": "克丘亚语",
-          "ru": "俄语",
-          "sv": "瑞典语",
-          "tr": "土耳其语",
-          "ur": "乌尔都语",
-          "vi": "越南语",
-          "zh_hans": "简体中文",
-          "zh_hant": "繁体中文",
-          "zu": "祖鲁语"
-        },
-        "type": {
-          "fiction": "虚构",
-          "non_fiction": "非虚构"
-        },
-        "difficulty": {
-          "easy": "简单",
-          "normal": "普通",
-          "hard": "困难"
-        }
       }
     },
     "reading_test": {
@@ -349,6 +377,13 @@
       "cancel": "取消",
       "save": "保存"
     },
+    "browser_extension": {
+      "title": "浏览器扩展",
+      "subtitle": "阅读时间",
+      "availability": "现已在 Chrome 上提供。更多浏览器即将支持。",
+      "chrome_store_aria": "打开扩展的 Chrome Web Store 页面",
+      "close_aria": "关闭浏览器扩展对话框"
+    },
     "alerts": {
       "clipboard_too_large": "剪贴板文本过大，无法处理。请减少内容后重试。",
       "append_too_large": "生成的文本过大，无法处理。请减少内容后重试。",
@@ -389,23 +424,6 @@
       "text_extraction_pdf_subset_creation_failed": "无法为提取创建所选页面的 PDF。请检查文件并重试。",
       "text_extraction_generated_pdf_cleanup_warning": "提取已完成，但无法自动清理生成的本地 PDF。",
       "text_extraction_route_choice_required": "继续提取此 PDF 前，需要选择提取路径。",
-      "text_extraction_route_choice_title": "选择提取路径",
-      "text_extraction_route_choice_message": "此 PDF 可使用两种提取路径。请选择一种继续。",
-      "text_extraction_route_choice_native_button": "使用原生提取",
-      "text_extraction_route_choice_ocr_button": "使用 OCR",
-      "text_extraction_route_choice_cancel_button": "取消",
-      "text_extraction_route_choice_close_aria": "关闭提取路径对话框",
-      "text_extraction_apply_modal_title": "应用提取的文本",
-      "text_extraction_apply_modal_message": "选择如何应用提取的文本。",
-      "text_extraction_apply_modal_elapsed": "执行时间：",
-      "text_extraction_apply_modal_repeat_label": "重复次数",
-      "text_extraction_apply_modal_overwrite_button": "覆盖",
-      "text_extraction_apply_modal_append_button": "追加",
-      "text_extraction_apply_modal_cancel_button": "取消",
-      "text_extraction_apply_modal_close_aria": "关闭应用提取文本对话框",
-      "text_extraction_apply_modal_saved_pdf_message": "生成的 PDF 已在提取后保留。",
-      "text_extraction_apply_modal_saved_pdf_label": "已保存 PDF：",
-      "text_extraction_apply_modal_reveal_saved_pdf_button": "显示已保存 PDF",
       "text_extraction_generated_pdf_reveal_failed": "无法显示已保存的 PDF。请检查文件是否仍然存在。",
       "text_extraction_apply_error": "应用提取文本时发生错误。请检查控制台并重试。",
       "text_extraction_apply_too_large": "生成的文本过大，无法处理。请减少重复次数后重试。",
@@ -414,16 +432,6 @@
       "text_extraction_prepare_invalid": "已准备好的提取请求不再有效。请重新启动流程。",
       "text_extraction_ocr_unavailable": "OCR 不可用。请检查设置/授权状态后重试。",
       "text_extraction_ocr_activation_required": "需要激活 OCR。请登录 Google OCR 后重试。",
-      "text_extraction_ocr_activation_disclosure_title": "查看 Google OCR 激活说明",
-      "text_extraction_ocr_activation_disclosure_intro": "toT 使用 Google 服务进行 OCR。如果继续，将打开浏览器以便你授权此应用。",
-      "text_extraction_ocr_activation_disclosure_selected_files": "只有你选择用于 OCR 的文件会发送给 Google。",
-      "text_extraction_ocr_activation_disclosure_local_storage": "此应用会在本应用实例中保存由应用管理的 Google OAuth OCR 凭据和本地 Google 令牌状态。",
-      "text_extraction_ocr_activation_disclosure_remote_cleanup": "导出后，应用会尝试从你的 Google Drive 中移除临时 Google 文档。",
-      "text_extraction_ocr_activation_disclosure_disconnect": "以后你可以通过“偏好设置 > 断开 Google OCR 连接”来断开此连接。",
-      "text_extraction_ocr_activation_disclosure_proceed_button": "继续使用 Google",
-      "text_extraction_ocr_activation_disclosure_cancel_button": "取消",
-      "text_extraction_ocr_activation_disclosure_privacy_link": "打开隐私政策",
-      "text_extraction_ocr_activation_disclosure_close_aria": "关闭 Google OCR 激活对话框",
       "text_extraction_ocr_activation_success": "OCR 激活完成。正在重试提取。",
       "text_extraction_ocr_activation_cancelled": "OCR 激活已取消。提取未继续。",
       "text_extraction_ocr_token_state_invalid": "已保存的 Google OCR 登录状态无效。请重新连接 Google OCR 后重试。",
