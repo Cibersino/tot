@@ -73,6 +73,7 @@
     if (window.TextApplyCanonical && typeof window.TextApplyCanonical.normalizeRepeat === 'function') {
       return window.TextApplyCanonical.normalizeRepeat(rawValue, { maxRepeat });
     }
+    log.warn('TextApplyCanonical.normalizeRepeat unavailable; using local repeat normalization fallback.');
     const numeric = Number(rawValue);
     if (!Number.isInteger(numeric) || numeric < 1) return 1;
     return Math.min(numeric, maxRepeat);
@@ -245,4 +246,3 @@
 // =============================================================================
 // End of public/js/text_extraction_apply_modal.js
 // =============================================================================
-
