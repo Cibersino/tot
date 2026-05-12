@@ -325,9 +325,24 @@ function isRangePdfPageSelection(pdfPageSelection) {
     && pdfPageSelection.toPage >= pdfPageSelection.fromPage);
 }
 
+function formatGeneratedSubsetPageBound(pageNumber, totalPages) {
+  const safeTotalPages = toPositiveIntegerOrNull(totalPages);
+  if (!safeTotalPages) return String(pageNumber);
+  const width = String(safeTotalPages).length;
+  return String(pageNumber).padStart(width, '0');
+}
+
 function buildGeneratedSubsetFileName(fileInfo, pdfPageSelection) {
   const safeBaseName = sanitizePdfBaseName(toSafeFileName(fileInfo));
-  return `${safeBaseName}_pages_${pdfPageSelection.fromPage}_${pdfPageSelection.toPage}.pdf`;
+  const fromPage = formatGeneratedSubsetPageBound(
+    pdfPageSelection.fromPage,
+    pdfPageSelection.totalPages
+  );
+  const toPage = formatGeneratedSubsetPageBound(
+    pdfPageSelection.toPage,
+    pdfPageSelection.totalPages
+  );
+  return `${safeBaseName}_pages_${fromPage}_${toPage}.pdf`;
 }
 
 function resolveProcessingInputFileName({ fileInfo, pdfPageSelection } = {}) {
