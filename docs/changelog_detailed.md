@@ -50,7 +50,10 @@ Reglas:
 
 - La extracción de texto desde PDFs agrega un paso previo de opciones que permite elegir entre `Todas las páginas` y un `Rango de páginas` contiguo antes de continuar con la extracción.
 - Cuando se elige un rango, tanto la ruta nativa como la ruta OCR trabajan sobre ese subconjunto real de páginas, no sobre el PDF completo.
-- Si la extracción por rango genera un PDF local y el usuario decide conservarlo, el modal final de aplicación permite revelarlo directamente desde la UI.
+- Si la extracción por rango genera un PDF local y el usuario decide conservarlo, la UI permite revelarlo directamente tanto desde el modal final de aplicación como desde el reporte final batch cuando corresponde.
+- La selección múltiple desde picker y drag/drop deja de tratarse como un caso inválido de “single file” y pasa a abrir un planificador de extracción por lotes con unidades, rutas, rangos y política de fallos.
+- Los PDFs que exceden el límite de entrada del proveedor OCR dejan de caer en un fallo genérico: ahora la app ofrece volver a páginas, usar ruta nativa si existe o derivar al split automático del PDF completo.
+- La ejecución batch añade progreso contextual (`unidad/archivo/ruta`), snapshots JSON automáticos por unidad cuando aplica y un reporte final con copy/export de resultados.
 
 ### Agregado
 
@@ -60,6 +63,20 @@ Reglas:
   - opción para conservar el PDF local generado cuando se procesa un rango
 - Paso main-owned de inspección PDF antes de `prepare`, usado para detectar que el archivo es PDF, obtener `totalPages` y bloquear de forma temprana PDFs ilegibles, corruptos o protegidos.
 - Acción `Reveal saved PDF` en el modal final de aplicación cuando la extracción conserva un PDF generado por rango.
+- Planificador shared `Plan batch extraction` / `Plan automatic PDF split`, con:
+  - entrada por multi-selección desde picker
+  - entrada por multi-file drag/drop
+  - agrupación en unidades, renombre y tags por unidad
+  - edición inline de ruta, rango y política `keep/delete` para inputs PDF ordinarios
+  - preview de generated inputs cuando el plan corresponde a split automático de PDF pesado
+- Reporte final batch / single-file-split con:
+  - estados por unidad e input (`success` / `failed` / `omitted`)
+  - reveal de artefactos PDF retenidos
+  - acción `Copy report`
+  - acción `Open snapshots folder`
+- Modal dedicado `single-file heavy PDF` para los casos OCR “full source too large” y “generated range too large”.
+- Helper main-owned `text_extraction_heavy_pdf_split_core.js` para detectar PDFs pesados por tamaño de origen y construir el plan de split usando `OCR_PROVIDER_LIMIT_MB = 50` y `HEAVY_SPLIT_SAFETY_FACTOR = 0.75`.
+- Snapshots automáticos no interactivos por unidad desde la ejecución batch multi-unidad, con naming determinista y colisión segura bajo `config/saved_current_texts/`.
 - Carpeta app-owned para PDFs retenidos explícitamente por el usuario: `app.getPath('userData')/tot-generated-pdfs/`.
 - Dependencia runtime directa `pdf-lib@^1.17.1` para materializar localmente los subsets PDF usados por el modo `Page range`.
 
@@ -71,6 +88,14 @@ Reglas:
 - En modo rango, el estado de procesamiento y el contexto posterior muestran el nombre efectivo del input procesado (`*_pages_<from>_<to>.pdf`) en lugar de presentar solo el basename del PDF original.
 - Los controles exclusivos del modo `Page range` en el modal PDF quedan ocultos cuando está activa la opción `All pages`.
 - Las strings del modal PDF dejan de convivir con los alerts globales y pasan a su namespace dedicado `renderer.text_extraction_pdf_options`.
+- El picker de `text extraction` pasa a abrir con `multiSelections` y, cuando vuelve más de un path válido, deriva al planner batch en vez de forzar el flujo single-file.
+- El drag/drop de `text extraction` deja de bloquear el caso multi-file y reutiliza el mismo planner batch que la multi-selección desde picker.
+- El `processing mode` de extracción amplía su estado visible: además del lock global, ahora puede transportar progreso de `unitIndex/unitCount`, `inputIndex/inputCount`, `selectedRoute` y `processingInputFileName`.
+- La barra de procesamiento deja de mostrar solo “waiting + basename” en todos los casos y pasa a exponer `unidad/archivo/ruta` durante ejecución batch, manteniendo el basename efectivo como filename visible.
+- La preparación batch para PDFs deja de hacer triage solo contra el rango actualmente elegido y puede forzar explícitamente el análisis/split del PDF fuente completo cuando el input se convierte en unidad heavy-split.
+- La elección `keep/delete` de PDFs generados sigue siendo intención por corrida/planner abierto; lo que persiste entre sesiones es el artefacto retenido, no una preferencia global de usuario.
+- El guardado de snapshots del texto actual amplía su misma superficie IPC para soportar saves no interactivos con `autoFileBaseName`, reutilizados ahora por la ejecución batch en vez de abrir un segundo flujo de persistencia paralelo.
+- La UI principal incorpora los scripts/modales shared del planner batch, del reporte final batch y del recovery modal para PDF pesado.
 - El manual/instrucciones públicas de la app incorporan el nuevo paso de opciones PDF y la posibilidad de conservar localmente el PDF generado por rango.
 
 ### Arreglado
@@ -79,30 +104,49 @@ Reglas:
 - Una extracción abortada durante la fase local previa a la ruta deja de poder continuar bajo el lock de procesamiento de una extracción posterior.
 - Si falla la limpieza del directorio temporal después de un fallo de materialización del subset PDF, ese fallo secundario deja diagnóstico técnico en vez de quedar completamente silencioso.
 - El modal final de aplicación deja de mostrar un bloque vacío para PDFs guardados cuando no existe ningún artefacto retenido.
+- Un OCR sobre PDF cuyo source completo supera el límite del proveedor deja de caer directamente en error runtime y pasa por una recuperación explícita hacia `volver a páginas` / `usar nativa` / `split automático`.
+- Un OCR cuyo subset PDF por rango queda demasiado grande deja de intentar continuar con upload inválido y pasa a una recuperación explícita que también puede revelar el artefacto retenido si existe.
+- La ejecución batch deja de depender de diálogos nativos manuales para guardar snapshots por unidad y evita colisiones sobre nombres repetidos mediante sufijos deterministas (`_2`, `_3`, ...).
 
 ### Migración
 
 - Sin acción manual obligatoria.
 - Si el usuario elige conservar un PDF generado por rango, ese archivo pasa a quedar guardado bajo `app.getPath('userData')/tot-generated-pdfs/`.
+- Si una ejecución batch multi-unidad produce snapshots automáticos, esos JSON también quedan bajo `config/saved_current_texts/`; no reemplazan snapshots previos con el mismo basename.
 
 ### Contratos tocados
 
 - Preload `window.electronAPI`:
   - agrega `inspectTextExtractionSelectedFile(payload)` → `ipcRenderer.invoke('text-extraction-inspect-selected-file', payload)`
   - agrega `revealTextExtractionGeneratedPdf(payload)` → `ipcRenderer.invoke('text-extraction-reveal-generated-pdf', payload)`
+  - agrega `enterTextExtractionProcessingSession(payload)` → `ipcRenderer.invoke('text-extraction-enter-processing-session', payload)`
+  - agrega `updateTextExtractionProcessingSession(payload)` → `ipcRenderer.invoke('text-extraction-update-processing-session', payload)`
+  - agrega `exitTextExtractionProcessingSession(payload)` → `ipcRenderer.invoke('text-extraction-exit-processing-session', payload)`
+  - agrega `openCurrentTextSnapshotsFolder()` → `ipcRenderer.invoke('current-text-snapshot-open-folder')`
 - IPC renderer ↔ main:
   - nuevo canal `text-extraction-inspect-selected-file`
   - nuevo canal `text-extraction-reveal-generated-pdf`
+  - nuevos canales `text-extraction-enter-processing-session`, `text-extraction-update-processing-session` y `text-extraction-exit-processing-session`
+  - nuevo canal `current-text-snapshot-open-folder`
+  - `text-extraction-open-picker` puede devolver `filePaths[]` además de `filePath` cuando el picker vuelve múltiples archivos válidos
 - `text-extraction-prepare-selected-file`:
-  - el payload acepta `pdfPageSelection` y `generatedPdfArtifactPolicy`
-  - la respuesta preparada puede incluir `pdfPageSelection`, `generatedPdfArtifactPolicy` y `processingInputFileName` canonizados
+  - el payload acepta `pdfPageSelection`, `generatedPdfArtifactPolicy`, `planningMode` y `forceHeavySplitFullSource`
+  - la respuesta preparada puede incluir `planningMode`, `forceHeavySplitFullSource`, `pdfPageSelection`, `generatedPdfArtifactPolicy` y `processingInputFileName` canonizados
+  - `routeMetadata` puede ampliar su shape con `sourceFileSizeBytes`, `sourceFileSizeMB`, `pdfTotalPages`, `ocrProviderLimitBytes`, `heavySplitEligible` y `heavySplitPreview`
 - `text-extraction-execute-prepared`:
+  - el payload acepta `processingContext`, `reuseActiveProcessingLock` y `heavySplitFailurePolicy`
   - el resultado puede incluir `generatedPdfArtifact` cuando la ejecución usa un PDF materializado por rango
+  - el resultado puede incluir `heavySplitExecution.generatedInputs[]` cuando la ejecución resuelve un heavy split OCR como secuencia de child PDFs
+- `current-text-snapshot-save`:
+  - el payload acepta `nonInteractive:boolean` y `autoFileBaseName:string`
 - I18n renderer:
   - nuevo namespace `renderer.text_extraction_pdf_options.*` para título, copy, labels, botones, `close_aria` y validación inline del modal PDF
+  - nuevos namespaces `renderer.text_extraction.batch_plan.*`, `renderer.text_extraction.batch_report.*` y `renderer.text_extraction.single_file_heavy.*`
+  - nuevas strings `renderer.main.processing.text_extraction_unit_progress`, `text_extraction_input_progress`, `text_extraction_route_native` y `text_extraction_route_ocr`
 - Storage / filesystem:
   - los subsets temporales en política `delete` se materializan bajo `os.tmpdir()/tot-generated-pdfs/`
   - los subsets retenidos en política `keep` se guardan bajo `app.getPath('userData')/tot-generated-pdfs/`
+  - los snapshots batch auto-creados reutilizan `config/saved_current_texts/` con nombres normalizados y colisión segura
 
 ---
 
