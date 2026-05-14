@@ -23,7 +23,7 @@
 
 ## Funcionalidades
 
-* Importar texto directamente desde `txt`, `md`, `html`, `htm`, `docx` y `pdf` con texto seleccionable; extraer texto mediante la ruta respaldada por Google desde `rtf` y `odt`; y aplicar OCR a imágenes (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) y PDF escaneados o aplanados.
+* Importar texto directamente desde `txt`, `md`, `html`, `htm`, `docx` y `pdf` con texto seleccionable; extraer texto mediante la ruta respaldada por Google desde `rtf` y `odt`; aplicar OCR a imágenes (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) y PDF escaneados o aplanados; además de planificar extracción por lotes para múltiples archivos en cola y división automática del PDF completo cuando OCR requiere partir un PDF pesado.
 * El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.
 * Editor de texto completo con búsqueda.
 * Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.
@@ -78,7 +78,7 @@ La extensión estima el tiempo de lectura del texto que seleccionas en páginas 
 Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar la app?”).
 
 Accesos rápidos visibles en la ventana principal:
-* `📥`: extraer texto desde archivo (incluye flujo OCR cuando aplica).
+* `📥`: extraer texto desde archivo (incluye flujo OCR cuando aplica, planificación por lotes para varios archivos y división automática de PDFs pesados para OCR).
 * `📋↺` / `📋+`: reemplazar o agregar texto desde portapapeles.
 * `⌨`: abrir editor de texto completo.
 * `💾` / `📂`: guardar/cargar snapshot del texto actual.
@@ -194,7 +194,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 ## Features
 
-* Import text directly from `txt`, `md`, `html`, `htm`, `docx`, and `pdf` with selectable text; extract text through the Google-backed path from `rtf` and `odt`; and run OCR on images (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) and scanned or flattened PDFs.
+* Import text directly from `txt`, `md`, `html`, `htm`, `docx`, and `pdf` with selectable text; extract text through the Google-backed path from `rtf` and `odt`; run OCR on images (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) and scanned or flattened PDFs; and plan batch extraction for multiple queued files plus automatic full-PDF split when OCR needs a heavy PDF to be divided first.
 * Text can be entered by pasting it from the clipboard and/or manually.
 * Full-text editor with find.
 * Reading-time estimation with configurable WPM (words per minute).
@@ -252,7 +252,7 @@ The extension estimates the reading time of text you select on web pages. It is 
 Usage instructions are included in the app menu (“How to use?”).
 
 Quick actions in the main window:
-* `📥`: extract text from file (includes OCR flow when needed).
+* `📥`: extract text from file (includes OCR when needed, batch planning for multiple files, and automatic heavy-PDF split for OCR).
 * `📋↺` / `📋+`: replace or append clipboard text.
 * `⌨`: open full-text editor.
 * `💾` / `📂`: save/load current-text snapshot.
