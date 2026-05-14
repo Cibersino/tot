@@ -59,7 +59,6 @@
       guardUserAction: null,
       hasBlockingModalOpen: null,
       hasCurrentTextSubscription: null,
-      maybeRecoverTextExtractionOcrSetupAndRetry: null,
       requestPreparedImport: null,
       textExtractionStatusUi: null,
       ...nextDeps,
@@ -407,6 +406,14 @@
     return state.inputs.filter((input) => !isInputRemoved(input) && !isHeavySplitActive(input));
   }
 
+  function getPlannedOcrInputs(state) {
+    return state.inputs.filter((input) => (
+      !isInputRemoved(input)
+      && isInputExecutable(input)
+      && normalizeRoute(input.activeRoute) === ROUTE_OCR
+    ));
+  }
+
   function getVisibleUnits(state) {
     return state.unitOrder
       .map((unitKey, unitIndex) => {
@@ -660,6 +667,10 @@
         syncUnitMetadata(state);
         return deepClone(state);
       },
+      async validateStart() {
+        syncUnitMetadata(state);
+        return validateBatchStart(state);
+      },
       applyAction(action = {}) {
         const type = normalizeNonEmptyString(action.type);
         if (type === 'apply_preset_all') {
@@ -757,32 +768,54 @@
     return false;
   }
 
-  async function recoverExecutionPreparation({
-    preparation,
-    routePreference,
-    preparationRequest,
-    prepareTextExtractionSelectedFile,
-  }) {
-    const { maybeRecoverTextExtractionOcrSetupAndRetry } = requireDeps();
-    if (typeof maybeRecoverTextExtractionOcrSetupAndRetry !== 'function') {
-      return preparation;
+  function mapBatchOcrBlockedAlertKey(availabilityResult) {
+    const code = availabilityResult && typeof availabilityResult.code === 'string'
+      ? availabilityResult.code
+      : '';
+    if (code === 'ocr_activation_required') {
+      return 'renderer.alerts.text_extraction_batch_ocr_activation_required';
     }
-    const recovery = await maybeRecoverTextExtractionOcrSetupAndRetry({
-      preparation,
-      preparationRequest,
-      prepareTextExtractionSelectedFile,
-      routePreference,
+    if (code === 'ocr_token_state_invalid') {
+      return 'renderer.alerts.text_extraction_batch_ocr_token_state_invalid';
+    }
+    return 'renderer.alerts.text_extraction_batch_ocr_unavailable';
+  }
+
+  async function validateBatchStart(state) {
+    const plannedOcrInputs = getPlannedOcrInputs(state);
+    if (!plannedOcrInputs.length) {
+      return true;
+    }
+
+    const checkTextExtractionOcrAvailability = getOptionalElectronMethod('checkTextExtractionOcrAvailability', {
+      dedupeKey: 'renderer.ipc.checkTextExtractionOcrAvailability.unavailable',
+      unavailableMessage: 'checkTextExtractionOcrAvailability unavailable; batch OCR start check cannot continue.',
     });
-    if (recovery && recovery.handled) {
-      return null;
+    if (!checkTextExtractionOcrAvailability) {
+      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      return false;
     }
-    if (recovery && recovery.preparationRun && recovery.preparationRun.preparation) {
-      return recovery.preparationRun.preparation;
+
+    let availabilityResult = null;
+    try {
+      availabilityResult = await checkTextExtractionOcrAvailability();
+    } catch (err) {
+      log.error('Batch OCR availability check failed unexpectedly:', err);
+      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      return false;
     }
-    if (recovery && recovery.preparation) {
-      return recovery.preparation;
+
+    if (availabilityResult && availabilityResult.ok === true && availabilityResult.available === true) {
+      return true;
     }
-    return preparation;
+
+    log.warn('Batch OCR start blocked because OCR is unavailable for the final plan:', {
+      ocrInputCount: plannedOcrInputs.length,
+      code: availabilityResult && availabilityResult.code ? availabilityResult.code : '',
+      state: availabilityResult && availabilityResult.state ? availabilityResult.state : '',
+    });
+    window.Notify.notifyMain(mapBatchOcrBlockedAlertKey(availabilityResult));
+    return false;
   }
 
   function mapPreparedIdInvalidReason(execution) {
@@ -1079,13 +1112,7 @@
             break;
           }
 
-          let executionPreparation = preparationRun ? preparationRun.preparation : null;
-          executionPreparation = await recoverExecutionPreparation({
-            preparation: executionPreparation,
-            routePreference: input.activeRoute,
-            preparationRequest,
-            prepareTextExtractionSelectedFile,
-          });
+          const executionPreparation = preparationRun ? preparationRun.preparation : null;
           if (!executionPreparation || executionPreparation.ok !== true || executionPreparation.prepareReady !== true) {
             const failureCode = executionPreparation && executionPreparation.prepareFailed === true
               ? (executionPreparation.error && executionPreparation.error.code ? executionPreparation.error.code : 'prepare_failed')

@@ -6,11 +6,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-function createHarness({ preparationsByPath }) {
+function createHarness({
+  preparationsByPath,
+  ocrAvailabilityResult = { ok: true, available: true, state: 'ready', code: '' },
+}) {
   let capturedViewModel = null;
   let capturedController = null;
   const notifications = [];
   let snapshotTagsPromptOptions = null;
+  let ocrAvailabilityCallCount = 0;
 
   const sandbox = {
     window: {
@@ -79,6 +83,12 @@ function createHarness({ preparationsByPath }) {
       if (methodName === 'prepareTextExtractionSelectedFile') {
         return async () => ({ ok: true });
       }
+      if (methodName === 'checkTextExtractionOcrAvailability') {
+        return async () => {
+          ocrAvailabilityCallCount += 1;
+          return ocrAvailabilityResult;
+        };
+      }
       return null;
     },
     requestPreparedImport: async ({ preparationRequest }) => ({
@@ -99,6 +109,9 @@ function createHarness({ preparationsByPath }) {
     },
     getSnapshotTagsPromptOptions() {
       return snapshotTagsPromptOptions;
+    },
+    getOcrAvailabilityCallCount() {
+      return ocrAvailabilityCallCount;
     },
     notifications,
   };
@@ -299,4 +312,87 @@ test('batch flow keeps page summary for heavy PDFs and omits it for non-PDF inpu
   assert.equal(byFileName['heavy.pdf'].pagesSummary, 'All pages');
   assert.equal(byFileName['notes.txt'].canEditPages, false);
   assert.equal(byFileName['notes.txt'].pagesSummary, '');
+});
+
+test('batch start validation skips OCR availability checks when the final planned routes contain no OCR inputs', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\mixed.pdf': createPreparation({
+      fileName: 'mixed.pdf',
+      chosenRoute: null,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+  };
+
+  const harness = createHarness({ preparationsByPath });
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-native-only-start-validation',
+  });
+
+  const controller = harness.getCapturedController();
+  assert.ok(controller);
+
+  const viewModel = controller.getViewModel();
+  const mixedInput = viewModel.units[0].inputs[0];
+  controller.applyAction({
+    type: 'set_input_route',
+    inputId: mixedInput.inputId,
+    route: 'native',
+  });
+
+  const canStart = await controller.validateStart();
+  assert.equal(canStart, true);
+  assert.equal(harness.getOcrAvailabilityCallCount(), 0);
+  assert.deepEqual(harness.notifications, []);
+});
+
+test('batch start validation blocks OCR routes before execution when Google OCR is unavailable', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\mixed.pdf': createPreparation({
+      fileName: 'mixed.pdf',
+      chosenRoute: null,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    ocrAvailabilityResult: {
+      ok: true,
+      available: false,
+      state: 'failure',
+      code: 'ocr_activation_required',
+    },
+  });
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-ocr-start-validation',
+  });
+
+  const controller = harness.getCapturedController();
+  assert.ok(controller);
+
+  const canStart = await controller.validateStart();
+  assert.equal(canStart, false);
+  assert.equal(harness.getOcrAvailabilityCallCount(), 1);
+  assert.deepEqual(
+    harness.notifications,
+    ['renderer.alerts.text_extraction_batch_ocr_activation_required']
+  );
 });

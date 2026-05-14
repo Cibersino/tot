@@ -1756,7 +1756,6 @@ function configureTextExtractionModules() {
     guardUserAction,
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,
-    maybeRecoverTextExtractionOcrSetupAndRetry,
     requestPreparedImport,
     textExtractionStatusUi,
   });

@@ -787,6 +787,7 @@
       const previousActiveElement = document.activeElement || null;
       let currentModel = controller.getViewModel();
       let rootListenerBound = false;
+      let startValidationInFlight = false;
       const pageSelectionDrafts = new Map();
       const pageSelectionRoots = new Map();
       const keepControlRoots = new Map();
@@ -888,7 +889,9 @@
       };
 
       const syncStartButtonState = () => {
-        btnStart.disabled = currentModel.startDisabled === true || hasInvalidPageSelectionDrafts();
+        btnStart.disabled = startValidationInFlight === true
+          || currentModel.startDisabled === true
+          || hasInvalidPageSelectionDrafts();
       };
 
       const captureRerenderUiState = () => ({
@@ -982,7 +985,7 @@
         currentModel = controller.getViewModel();
         syncStartButtonState();
       };
-      const onStart = () => {
+      const onStart = async () => {
         if (hasInvalidPageSelectionDrafts()) {
           syncStartButtonState();
           const invalidTarget = getFirstInvalidPageSelectionTarget();
@@ -991,6 +994,29 @@
           }
           return;
         }
+
+        if (typeof controller.validateStart === 'function') {
+          startValidationInFlight = true;
+          syncStartButtonState();
+          let canStart = false;
+          try {
+            canStart = await controller.validateStart();
+          } catch (err) {
+            log.error('Batch planning start validation failed unexpectedly:', err);
+            window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+            canStart = false;
+          } finally {
+            startValidationInFlight = false;
+            if (!settled) {
+              currentModel = controller.getViewModel();
+              syncStartButtonState();
+            }
+          }
+          if (canStart !== true) {
+            return;
+          }
+        }
+
         finish({ action: 'start' });
       };
       const onCancel = () => finish(null);

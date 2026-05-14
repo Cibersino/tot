@@ -36,6 +36,7 @@ const log = Log.get('text-extraction-ocr-activation');
 const OCR_SCOPES = Object.freeze(['https://www.googleapis.com/auth/drive.file']);
 const PREPARE_CHANNEL = 'text-extraction-prepare-ocr-activation';
 const LAUNCH_CHANNEL = 'text-extraction-launch-ocr-activation';
+const CHECK_AVAILABILITY_CHANNEL = 'text-extraction-check-ocr-availability';
 
 // =============================================================================
 // Helpers
@@ -150,6 +151,24 @@ function buildPrepareSuccess() {
   };
 }
 
+function buildAvailabilityResult({
+  available = false,
+  state = 'failure',
+  code = '',
+  detailsSafeForLogs = {},
+} = {}) {
+  return {
+    ok: true,
+    available: available === true,
+    state: typeof state === 'string' ? state : 'failure',
+    code: typeof code === 'string' ? code : '',
+    detailsSafeForLogs:
+      detailsSafeForLogs && typeof detailsSafeForLogs === 'object'
+        ? detailsSafeForLogs
+        : {},
+  };
+}
+
 function toPrepareFailure(failure) {
   if (!failure || failure.ok === true) {
     return buildPrepareFailure();
@@ -158,6 +177,33 @@ function toPrepareFailure(failure) {
     code: failure.code || 'platform_runtime_failed',
     alertKey: failure.alertKey || '',
     detailsSafeForLogs: failure.detailsSafeForLogs || {},
+  });
+}
+
+function mapValidationToAvailabilityResult(validationResult) {
+  if (validationResult && validationResult.ok === true) {
+    return buildAvailabilityResult({
+      available: true,
+      state: 'ready',
+      code: '',
+      detailsSafeForLogs: {},
+    });
+  }
+
+  const code = validationResult
+    && validationResult.error
+    && typeof validationResult.error.code === 'string'
+    ? validationResult.error.code
+    : 'platform_runtime_failed';
+  const state = validationResult && typeof validationResult.state === 'string'
+    ? validationResult.state
+    : 'failure';
+
+  return buildAvailabilityResult({
+    available: false,
+    state,
+    code,
+    detailsSafeForLogs: {},
   });
 }
 
@@ -475,6 +521,92 @@ function registerIpc(
     }
   });
 
+  ipcMain.handle(CHECK_AVAILABILITY_CHANNEL, async (event) => {
+    const mainWin = resolveMainWin();
+    try {
+      if (!isAuthorizedSender(event, mainWin, {
+        warnKey: 'text_extraction_ocr_activation.check_availability.unauthorized',
+        unauthorizedMessage: `${CHECK_AVAILABILITY_CHANNEL} unauthorized (ignored).`,
+        senderValidationMessage: `${CHECK_AVAILABILITY_CHANNEL} sender validation failed:`,
+      })) {
+        return {
+          ok: false,
+          available: false,
+          state: 'failure',
+          code: 'platform_runtime_failed',
+          detailsSafeForLogs: {
+            stage: 'authorization',
+            reason: 'unauthorized_sender',
+          },
+        };
+      }
+
+      const {
+        credentialsPath,
+        tokenPath,
+        bundledCredentialsFailureCode,
+        bundledCredentialsFailureReason,
+        bundledCredentialsFailureDetailsSafeForLogs,
+      } = resolveRuntimePaths(resolvePaths);
+      if (!credentialsPath || !tokenPath) {
+        log.error('text extraction OCR availability check runtime paths unavailable:', {
+          stage: 'resolve_paths',
+          credentialsPathPresent: !!credentialsPath,
+          tokenPathPresent: !!tokenPath,
+        });
+        return {
+          ok: false,
+          available: false,
+          state: 'failure',
+          code: 'platform_runtime_failed',
+          detailsSafeForLogs: {
+            stage: 'resolve_paths',
+            reason: 'missing_runtime_paths',
+          },
+        };
+      }
+
+      const validation = await validateGoogleDriveOcrSetup({
+        credentialsPath,
+        tokenPath,
+        bundledCredentialsFailureCode,
+        bundledCredentialsFailureReason,
+        bundledCredentialsFailureDetailsSafeForLogs,
+        probeApiPath: true,
+      });
+      const result = mapValidationToAvailabilityResult(validation);
+      const telemetry = {
+        available: result.available,
+        state: result.state,
+        code: result.code,
+      };
+
+      if (result.available) {
+        log.info('text extraction OCR availability check completed:', telemetry);
+      } else {
+        log.warn('text extraction OCR availability check blocked batch OCR start:', telemetry);
+      }
+
+      return result;
+    } catch (err) {
+      log.error(`${CHECK_AVAILABILITY_CHANNEL} failed unexpectedly:`, {
+        errorName: safeErrorName(err),
+        errorMessage: safeErrorMessage(err),
+      });
+      return {
+        ok: false,
+        available: false,
+        state: 'failure',
+        code: 'platform_runtime_failed',
+        detailsSafeForLogs: {
+          stage: 'ipc_check_availability_handler_failure',
+          errorName: safeErrorName(err),
+          errorMessage: safeErrorMessage(err),
+        },
+      };
+    }
+  });
+
   ipcMain.handle(LAUNCH_CHANNEL, async (event) => {
     const mainWin = resolveMainWin();
     try {
@@ -638,5 +770,4 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_ocr_activation_ipc.js
 // =============================================================================
-
 
