@@ -19,6 +19,10 @@
   }
   const log = window.getLogger('text-extraction-entry');
   log.debug('Text extraction shared entry starting...');
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
+    throw new Error('[text-extraction-entry] RendererI18n.tRenderer unavailable; cannot continue');
+  }
+  const { tRenderer } = window.RendererI18n;
   const { AppConstants } = window;
   if (!AppConstants) {
     throw new Error('[text-extraction-entry] AppConstants unavailable; cannot continue');
@@ -40,6 +44,7 @@
       hasBlockingModalOpen: null,
       hasCurrentTextSubscription: null,
       textExtractionStatusUi: null,
+      textExtractionBatchFlow: null,
       isLatestTextExtractionPrepareAttempt: null,
       maybeRecoverTextExtractionOcrSetupAndRetry: null,
       requestPreparedImport: null,
@@ -88,6 +93,16 @@
       throw new Error('[text-extraction-entry] textExtractionStatusUi dependency incomplete');
     }
     return textExtractionStatusUi;
+  }
+
+  function getBatchFlow() {
+    const { textExtractionBatchFlow } = requireConfiguredDeps();
+    if (!textExtractionBatchFlow
+      || typeof textExtractionBatchFlow.startFromSelectedFiles !== 'function'
+      || typeof textExtractionBatchFlow.startSyntheticSingleFileHeavySplit !== 'function') {
+      throw new Error('[text-extraction-entry] textExtractionBatchFlow dependency incomplete');
+    }
+    return textExtractionBatchFlow;
   }
 
   function resolvePrimaryAlertKey(resultLike) {
@@ -180,6 +195,42 @@
     };
   }
 
+  function getPreparationRouteOptions(preparation) {
+    const routeChoiceOptions = Array.isArray(preparation && preparation.routeChoiceOptions)
+      ? preparation.routeChoiceOptions
+      : [];
+    if (routeChoiceOptions.length) return routeChoiceOptions;
+    return Array.isArray(preparation && preparation.routeMetadata && preparation.routeMetadata.availableRoutes)
+      ? preparation.routeMetadata.availableRoutes
+      : [];
+  }
+
+  function getResolvedOrPreferredRoute(preparation, routePreference) {
+    const preferredRoute = typeof routePreference === 'string' ? routePreference.trim() : '';
+    if (preferredRoute === 'native' || preferredRoute === 'ocr') return preferredRoute;
+    const chosenRoute = preparation
+      && preparation.routeMetadata
+      && typeof preparation.routeMetadata.chosenRoute === 'string'
+      ? preparation.routeMetadata.chosenRoute.trim()
+      : '';
+    if (chosenRoute === 'native' || chosenRoute === 'ocr') return chosenRoute;
+    const availableRoutes = getPreparationRouteOptions(preparation);
+    if (availableRoutes.includes('native') && availableRoutes.includes('ocr')) {
+      return 'ocr';
+    }
+    if (availableRoutes.length === 1) return availableRoutes[0];
+    return '';
+  }
+
+  function buildSingleFileRangeLabel(pdfPageSelection) {
+    if (!pdfPageSelection || pdfPageSelection.mode !== 'range') {
+      return '';
+    }
+    return tRenderer('renderer.text_extraction.single_file_heavy.selected_range_value')
+      .replace('{fromPage}', String(pdfPageSelection.fromPage || ''))
+      .replace('{toPage}', String(pdfPageSelection.toPage || ''));
+  }
+
   function failPreparation(textExtractionStatusUi, preparation, logMessage) {
     textExtractionStatusUi.clearPendingExecutionContext();
     if (logMessage) {
@@ -196,6 +247,8 @@
     source = 'unknown',
     actionId = 'text-extraction-entrypoint',
     skipGuard = false,
+    forcedPdfOptions = null,
+    forcedRoutePreference = '',
   } = {}) {
     const {
       applyTextViaCanonicalPath,
@@ -294,16 +347,20 @@
 
       let pdfOptions = null;
       if (inspection.isPdf === true) {
-        try {
-          pdfOptions = await window.Notify.promptTextExtractionPdfOptions({ inspection });
-        } catch (err) {
-          log.error('text extraction PDF options modal failed:', err);
-          window.Notify.notifyMain('renderer.alerts.text_extraction_error');
-          return;
-        }
-        if (!pdfOptions) {
-          log.info('text extraction PDF options cancelled by user.');
-          return;
+        if (forcedPdfOptions) {
+          pdfOptions = forcedPdfOptions;
+        } else {
+          try {
+            pdfOptions = await window.Notify.promptTextExtractionPdfOptions({ inspection });
+          } catch (err) {
+            log.error('text extraction PDF options modal failed:', err);
+            window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+            return;
+          }
+          if (!pdfOptions) {
+            log.info('text extraction PDF options cancelled by user.');
+            return;
+          }
         }
       }
 
@@ -368,22 +425,26 @@
 
       let routePreference = '';
       if (preparation.requiresRouteChoice === true) {
-        try {
-          routePreference = await window.Notify.promptTextExtractionRouteChoice({ preparation });
-        } catch (err) {
-          textExtractionStatusUi.clearPendingExecutionContext();
-          log.error('text extraction route-choice modal failed:', err);
-          window.Notify.notifyMain('renderer.alerts.text_extraction_route_choice_required');
-          return;
-        }
-        if (hasAttemptFreshnessGuard && !isLatestTextExtractionPrepareAttempt(latestAttemptId)) {
-          log.info('text extraction route-choice result ignored because a newer prepare attempt exists.');
-          return;
-        }
-        if (routePreference !== 'native' && routePreference !== 'ocr') {
-          textExtractionStatusUi.clearPendingExecutionContext();
-          log.info('text extraction route-choice cancelled by user.');
-          return;
+        if (forcedRoutePreference === 'native' || forcedRoutePreference === 'ocr') {
+          routePreference = forcedRoutePreference;
+        } else {
+          try {
+            routePreference = await window.Notify.promptTextExtractionRouteChoice({ preparation });
+          } catch (err) {
+            textExtractionStatusUi.clearPendingExecutionContext();
+            log.error('text extraction route-choice modal failed:', err);
+            window.Notify.notifyMain('renderer.alerts.text_extraction_route_choice_required');
+            return;
+          }
+          if (hasAttemptFreshnessGuard && !isLatestTextExtractionPrepareAttempt(latestAttemptId)) {
+            log.info('text extraction route-choice result ignored because a newer prepare attempt exists.');
+            return;
+          }
+          if (routePreference !== 'native' && routePreference !== 'ocr') {
+            textExtractionStatusUi.clearPendingExecutionContext();
+            log.info('text extraction route-choice cancelled by user.');
+            return;
+          }
         }
       }
 
@@ -426,6 +487,49 @@
         }
       }
 
+      const resolvedRoute = getResolvedOrPreferredRoute(preparation, routePreference);
+      if (inspection.isPdf === true
+        && resolvedRoute === 'ocr'
+        && pdfOptions
+        && pdfOptions.pdfPageSelection
+        && pdfOptions.pdfPageSelection.mode === 'all'
+        && preparation.routeMetadata
+        && preparation.routeMetadata.heavySplitEligible === true) {
+        const singleFileHeavyAction = await window.Notify.promptTextExtractionSingleFileHeavyPdf({
+          caseKind: 'case_a',
+          sourceFileName: preparation.fileInfo && preparation.fileInfo.fileName
+            ? preparation.fileInfo.fileName
+            : inspection.fileInfo.fileName,
+          sourceFileSizeBytes: preparation.fileInfo && preparation.fileInfo.sourceFileSizeBytes
+            ? preparation.fileInfo.sourceFileSizeBytes
+            : 0,
+          totalPages: preparation.routeMetadata.pdfTotalPages || inspection.totalPages || 0,
+          canUseNative: getPreparationRouteOptions(preparation).includes('native'),
+        });
+        if (singleFileHeavyAction === 'return_to_pages') {
+          await runSharedFlow({
+            filePath: normalizedFilePath,
+            source,
+            actionId,
+            skipGuard: true,
+          });
+          return;
+        }
+        if (singleFileHeavyAction === 'split') {
+          const batchFlow = getBatchFlow();
+          await batchFlow.startSyntheticSingleFileHeavySplit({
+            filePath: normalizedFilePath,
+            source: 'single_file_case_a',
+          });
+          return;
+        }
+        if (singleFileHeavyAction === 'use_native') {
+          routePreference = 'native';
+        } else if (singleFileHeavyAction !== 'split') {
+          return;
+        }
+      }
+
       textExtractionStatusUi.setPendingExecutionContext({
         preparation,
         routePreference,
@@ -456,6 +560,81 @@
       const resultState = execution.result && typeof execution.result.state === 'string'
         ? execution.result.state
         : 'failure';
+      if (execution.result
+        && execution.result.error
+        && execution.result.error.code === 'ocr_input_too_large') {
+        const retainedGeneratedPdf = resolveRetainedGeneratedPdf(execution.result);
+        const singleFileHeavyAction = await window.Notify.promptTextExtractionSingleFileHeavyPdf({
+          caseKind: 'case_b',
+          sourceFileName: preparation.fileInfo && preparation.fileInfo.fileName
+            ? preparation.fileInfo.fileName
+            : inspection.fileInfo.fileName,
+          sourceFileSizeBytes: preparation.fileInfo && preparation.fileInfo.sourceFileSizeBytes
+            ? preparation.fileInfo.sourceFileSizeBytes
+            : 0,
+          selectedRangeText: buildSingleFileRangeLabel(execution.result.pdfPageSelection),
+          generatedPdfFileName: execution.result.processingInputFileName || '',
+          generatedPdfSizeBytes:
+            execution.result.error
+            && execution.result.error.detailsSafeForLogs
+            && execution.result.error.detailsSafeForLogs.effectiveInputSizeBytes
+              ? execution.result.error.detailsSafeForLogs.effectiveInputSizeBytes
+              : 0,
+          providerLimitBytes:
+            execution.result.error
+            && execution.result.error.detailsSafeForLogs
+            && execution.result.error.detailsSafeForLogs.providerLimitBytes
+              ? execution.result.error.detailsSafeForLogs.providerLimitBytes
+              : 0,
+          canUseNative: getPreparationRouteOptions(preparation).includes('native'),
+          retainedGeneratedPdf,
+          onRevealGeneratedPdf: retainedGeneratedPdf
+            ? async () => {
+              const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
+                dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
+                unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action disabled.',
+              });
+              if (!revealTextExtractionGeneratedPdf) {
+                throw new Error('revealTextExtractionGeneratedPdf unavailable');
+              }
+              const revealResult = await revealTextExtractionGeneratedPdf({
+                artifactPath: retainedGeneratedPdf.artifactPath,
+              });
+              if (!revealResult || revealResult.ok !== true) {
+                throw new Error('reveal generated PDF failed');
+              }
+            }
+            : null,
+        });
+        if (singleFileHeavyAction === 'return_to_pages') {
+          await runSharedFlow({
+            filePath: normalizedFilePath,
+            source,
+            actionId,
+            skipGuard: true,
+          });
+          return;
+        }
+        if (singleFileHeavyAction === 'split') {
+          const batchFlow = getBatchFlow();
+          await batchFlow.startSyntheticSingleFileHeavySplit({
+            filePath: normalizedFilePath,
+            source: 'single_file_case_b',
+          });
+          return;
+        }
+        if (singleFileHeavyAction === 'use_native') {
+          await runSharedFlow({
+            filePath: normalizedFilePath,
+            source,
+            actionId,
+            skipGuard: true,
+            forcedPdfOptions: pdfOptions,
+            forcedRoutePreference: 'native',
+          });
+        }
+        return;
+      }
       if (resultState === 'success') {
         if (typeof getClipboardRepeatCount !== 'function') {
           log.warn('getClipboardRepeatCount dependency unavailable; using default repeat count fallback.');
@@ -583,9 +762,22 @@
         return;
       }
       if (picker.canceled) return;
+      const selectedFilePaths = Array.isArray(picker.filePaths) && picker.filePaths.length
+        ? picker.filePaths
+        : [picker.filePath || ''].filter(Boolean);
+      if (selectedFilePaths.length > 1) {
+        const batchFlow = getBatchFlow();
+        await batchFlow.startFromSelectedFiles({
+          filePaths: selectedFilePaths,
+          source: 'picker',
+          actionId: 'text-extraction-entrypoint',
+          skipGuard: true,
+        });
+        return;
+      }
 
       await runSharedFlow({
-        filePath: picker.filePath || '',
+        filePath: selectedFilePaths[0] || '',
         source: 'picker',
         skipGuard: true,
       });
@@ -603,12 +795,32 @@
     });
   }
 
+  async function startFromFilePaths({ filePaths, source = 'drop' } = {}) {
+    const normalizedFilePaths = Array.isArray(filePaths)
+      ? filePaths.map((value) => normalizeFilePath(value)).filter(Boolean)
+      : [];
+    if (normalizedFilePaths.length > 1) {
+      const batchFlow = getBatchFlow();
+      await batchFlow.startFromSelectedFiles({
+        filePaths: normalizedFilePaths,
+        source,
+        actionId: `text-extraction-${source}`,
+      });
+      return;
+    }
+    await startFromFilePath({
+      filePath: normalizedFilePaths[0] || '',
+      source,
+    });
+  }
+
   // =============================================================================
   // Module surface
   // =============================================================================
   window.TextExtractionEntry = {
     configure,
     startFromFilePath,
+    startFromFilePaths,
     startFromPicker,
   };
 })();

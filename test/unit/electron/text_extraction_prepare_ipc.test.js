@@ -22,7 +22,7 @@ function createIpcMainDouble() {
   };
 }
 
-function loadPrepareIpcWithElectronMock(senderWin) {
+function loadPrepareIpcWithElectronMock(senderWin, coreOverrides = null) {
   const electronModulePath = require.resolve('electron');
   const coreModulePath = path.resolve(
     __dirname,
@@ -49,6 +49,18 @@ function loadPrepareIpcWithElectronMock(senderWin) {
   };
 
   delete require.cache[coreModulePath];
+  const actualCoreModule = require(coreModulePath);
+  require.cache[coreModulePath] = {
+    id: coreModulePath,
+    filename: coreModulePath,
+    loaded: true,
+    exports: coreOverrides
+      ? {
+        ...actualCoreModule,
+        ...coreOverrides,
+      }
+      : actualCoreModule,
+  };
   delete require.cache[prepareIpcModulePath];
   const prepareIpc = require(prepareIpcModulePath);
 
@@ -101,6 +113,7 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
     {
       filePath: path.resolve(__dirname, '../../../test/fixtures/pdf/selectable_text_fixture_12_pages.pdf'),
       ocrLanguage: 'es',
+      planningMode: 'batch',
       pdfPageSelection: {
         mode: 'range',
         fromPage: 2,
@@ -113,7 +126,12 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
   );
 
   assert.equal(result.ok, true);
+  assert.equal(result.prepareReady, true);
+  assert.equal(result.prepareFailed, false);
   assert.match(result.prepareId, /^[0-9a-f-]{36}$/i);
+  assert.equal(result.planningMode, 'batch');
+  assert.equal(result.fileInfo.fileName, 'selectable_text_fixture_12_pages.pdf');
+  assert.equal(result.fileInfo.sourceFileKind, 'pdf');
   assert.deepEqual(result.pdfPageSelection, {
     mode: 'range',
     fromPage: 2,
@@ -125,4 +143,188 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
     mode: 'keep',
   });
   assert.equal(result.processingInputFileName, 'selectable_text_fixture_12_pages_pages_02_03.pdf');
+});
+
+test('prepare IPC forwards forceHeavySplitFullSource into prepareSelectedFile and preserves it in the prepare result', async (t) => {
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  let capturedPrepareArgs = null;
+  const { prepareIpc, restore } = loadPrepareIpcWithElectronMock(senderWin, {
+    async prepareSelectedFile(args) {
+      capturedPrepareArgs = args;
+      return {
+        ok: true,
+        prepareReady: true,
+        fileInfo: {
+          filePath: args.filePath,
+          fileName: 'heavy.pdf',
+          sourceFileExt: 'pdf',
+          sourceFileKind: 'pdf',
+          sourceFileSizeBytes: 458 * 1024 * 1024,
+        },
+        planningMode: 'batch',
+        forceHeavySplitFullSource: true,
+        executionKind: 'google_drive',
+        pdfPageSelection: {
+          mode: 'all',
+          fromPage: 1,
+          toPage: 516,
+          selectedPageCount: 516,
+          totalPages: 516,
+        },
+        generatedPdfArtifactPolicy: {
+          mode: 'keep',
+        },
+        processingInputFileName: 'heavy.pdf',
+        routeMetadata: {
+          fileKind: 'pdf',
+          availableRoutes: ['native', 'ocr'],
+          chosenRoute: null,
+          executionKind: null,
+          pdfTriage: 'both',
+          triageReason: 'native_text_detected_and_ocr_ready_choice_required',
+          ocrSetupState: 'ready',
+          pdfPageSelection: {
+            mode: 'all',
+            fromPage: 1,
+            toPage: 516,
+            selectedPageCount: 516,
+            totalPages: 516,
+          },
+          generatedPdfArtifactPolicyMode: 'keep',
+          heavySplitEligible: true,
+          heavySplitPreview: {
+            ok: true,
+            generatedInputs: [
+              {
+                inputIndex: 1,
+                fromPage: 1,
+                toPage: 42,
+                pdfPageSelection: {
+                  mode: 'range',
+                  fromPage: 1,
+                  toPage: 42,
+                  selectedPageCount: 42,
+                  totalPages: 516,
+                },
+                processingInputFileName: 'heavy_pages_001_042.pdf',
+              },
+            ],
+          },
+        },
+        requiresRouteChoice: true,
+        routeChoiceOptions: ['native', 'ocr'],
+        preparedPayload: {
+          fileInfo: {
+            filePath: args.filePath,
+            fileName: 'heavy.pdf',
+            sourceFileExt: 'pdf',
+            sourceFileKind: 'pdf',
+            sourceFileSizeBytes: 458 * 1024 * 1024,
+          },
+          ocrLanguage: args.ocrLanguage,
+          planningMode: 'batch',
+          forceHeavySplitFullSource: true,
+          pdfPageSelection: {
+            mode: 'all',
+            fromPage: 1,
+            toPage: 516,
+            selectedPageCount: 516,
+            totalPages: 516,
+          },
+          generatedPdfArtifactPolicy: {
+            mode: 'keep',
+          },
+          processingInputFileName: 'heavy.pdf',
+          routeMetadata: {
+            fileKind: 'pdf',
+            availableRoutes: ['native', 'ocr'],
+            chosenRoute: null,
+            executionKind: null,
+            pdfTriage: 'both',
+            triageReason: 'native_text_detected_and_ocr_ready_choice_required',
+            ocrSetupState: 'ready',
+            pdfPageSelection: {
+              mode: 'all',
+              fromPage: 1,
+              toPage: 516,
+              selectedPageCount: 516,
+              totalPages: 516,
+            },
+            generatedPdfArtifactPolicyMode: 'keep',
+            heavySplitEligible: true,
+            heavySplitPreview: {
+              ok: true,
+              generatedInputs: [
+                {
+                  inputIndex: 1,
+                  fromPage: 1,
+                  toPage: 42,
+                  pdfPageSelection: {
+                    mode: 'range',
+                    fromPage: 1,
+                    toPage: 42,
+                    selectedPageCount: 42,
+                    totalPages: 516,
+                  },
+                  processingInputFileName: 'heavy_pages_001_042.pdf',
+                },
+              ],
+            },
+          },
+          requiresRouteChoice: true,
+          routeChoiceOptions: ['native', 'ocr'],
+        },
+      };
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  prepareIpc.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+    resolvePaths: () => ({
+      credentialsPath: path.resolve(__dirname, '../../fixtures/missing-ocr-credentials.json'),
+      tokenPath: path.resolve(__dirname, '../../fixtures/missing-ocr-token.json'),
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      generatedPdfArtifactsDir: path.resolve(__dirname, '../../../tmp-generated-pdfs-test'),
+    }),
+  });
+
+  const result = await ipcMain.invoke(
+    'text-extraction-prepare-selected-file',
+    { sender: senderWin.webContents },
+    {
+      filePath: path.resolve(__dirname, '../../../test/fixtures/pdf/selectable_text_fixture_12_pages.pdf'),
+      ocrLanguage: 'es',
+      planningMode: 'batch',
+      forceHeavySplitFullSource: true,
+      pdfPageSelection: {
+        mode: 'range',
+        fromPage: 100,
+        toPage: 220,
+      },
+      generatedPdfArtifactPolicy: {
+        mode: 'keep',
+      },
+    }
+  );
+
+  assert.equal(capturedPrepareArgs.forceHeavySplitFullSource, true);
+  assert.equal(result.ok, true);
+  assert.equal(result.prepareReady, true);
+  assert.equal(result.forceHeavySplitFullSource, true);
+  assert.deepEqual(result.pdfPageSelection, {
+    mode: 'all',
+    fromPage: 1,
+    toPage: 516,
+    selectedPageCount: 516,
+    totalPages: 516,
+  });
 });

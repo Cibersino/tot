@@ -329,6 +329,97 @@
       </div>
     </div>
 
+    <div id="textExtractionBatchPlanModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="textExtractionBatchPlanModalTitle" aria-modal="true">
+      <div id="textExtractionBatchPlanModalBackdrop" class="info-modal-backdrop"></div>
+      <div id="textExtractionBatchPlanModalPanel" class="text-extraction-batch-plan-modal-panel" role="document">
+        <header class="text-extraction-batch-plan-modal-header">
+          <h2 id="textExtractionBatchPlanModalTitle">Extracción por lotes</h2>
+          <button id="textExtractionBatchPlanClose" class="btn-standard" type="button"
+            aria-label="Cerrar planificación de extracción por lotes">🗙</button>
+        </header>
+        <div class="text-extraction-batch-plan-modal-body">
+          <div class="text-extraction-batch-plan-modal-toolbar">
+            <button id="textExtractionBatchPlanPresetAll" class="btn-standard" type="button">Todo junto</button>
+            <button id="textExtractionBatchPlanPresetSeparate" class="btn-standard" type="button">Cada archivo por
+              separado</button>
+          </div>
+          <div id="textExtractionBatchPlanUnits" class="text-extraction-batch-plan-units"></div>
+          <fieldset class="text-extraction-batch-plan-failure-policy">
+            <legend id="textExtractionBatchPlanFailureLegend">Comportamiento ante fallos</legend>
+            <label class="text-extraction-batch-plan-failure-option">
+              <input id="textExtractionBatchPlanFailureDefault" type="radio" name="textExtractionBatchPlanFailurePolicy"
+                value="finish_unit_after_last_success" checked />
+              <span id="textExtractionBatchPlanFailureDefaultLabel">Finalizar la unidad con el último éxito y seguir
+                con la siguiente</span>
+            </label>
+            <label class="text-extraction-batch-plan-failure-option">
+              <input id="textExtractionBatchPlanFailureContinue" type="radio" name="textExtractionBatchPlanFailurePolicy"
+                value="omit_failed_and_continue" />
+              <span id="textExtractionBatchPlanFailureContinueLabel">Omitir el fallo y seguir dentro de la misma
+                unidad</span>
+            </label>
+          </fieldset>
+          <div class="text-extraction-batch-plan-modal-actions">
+            <button id="textExtractionBatchPlanStart" class="btn-standard" type="button">Iniciar extracción</button>
+            <button id="textExtractionBatchPlanCancel" class="btn-standard" type="button">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="textExtractionBatchFinalModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="textExtractionBatchFinalModalTitle" aria-modal="true">
+      <div id="textExtractionBatchFinalModalBackdrop" class="info-modal-backdrop"></div>
+      <div id="textExtractionBatchFinalModalPanel" class="text-extraction-batch-final-modal-panel" role="document">
+        <header class="text-extraction-batch-final-modal-header">
+          <h2 id="textExtractionBatchFinalModalTitle">Extracción por lotes completada</h2>
+          <button id="textExtractionBatchFinalModalClose" class="btn-standard" type="button"
+            aria-label="Cerrar informe final de extracción por lotes">🗙</button>
+        </header>
+        <div class="text-extraction-batch-final-modal-body">
+          <p id="textExtractionBatchFinalModalSummary"></p>
+          <p id="textExtractionBatchFinalModalElapsed" class="text-extraction-batch-final-modal-elapsed" hidden
+            aria-hidden="true"></p>
+          <div id="textExtractionBatchFinalModalBody" class="text-extraction-batch-final-modal-report"></div>
+          <div class="text-extraction-batch-final-modal-actions">
+            <button id="textExtractionBatchFinalModalCopy" class="btn-standard" type="button">Copiar informe</button>
+            <button id="textExtractionBatchFinalModalOpenSnapshots" class="btn-standard" type="button">Abrir carpeta de
+              snapshots</button>
+            <button id="textExtractionBatchFinalModalOk" class="btn-standard" type="button">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="textExtractionSingleFileHeavyPdfModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="textExtractionSingleFileHeavyPdfModalTitle" aria-modal="true">
+      <div id="textExtractionSingleFileHeavyPdfModalBackdrop" class="info-modal-backdrop"></div>
+      <div class="text-extraction-single-file-heavy-modal-panel" role="document">
+        <header class="text-extraction-single-file-heavy-modal-header">
+          <h2 id="textExtractionSingleFileHeavyPdfModalTitle">PDF pesado para OCR</h2>
+          <button id="textExtractionSingleFileHeavyPdfModalClose" class="btn-standard" type="button"
+            aria-label="Cerrar diálogo de PDF pesado para OCR">🗙</button>
+        </header>
+        <div class="text-extraction-single-file-heavy-modal-body">
+          <p id="textExtractionSingleFileHeavyPdfModalMessage"></p>
+          <div id="textExtractionSingleFileHeavyPdfModalDetails" class="text-extraction-single-file-heavy-modal-details">
+          </div>
+          <div class="text-extraction-single-file-heavy-modal-actions">
+            <button id="textExtractionSingleFileHeavyPdfModalSplit" class="btn-standard" type="button">Dividir y
+              procesar el PDF completo</button>
+            <button id="textExtractionSingleFileHeavyPdfModalReturnToPages" class="btn-standard" type="button">Volver a
+              páginas</button>
+            <button id="textExtractionSingleFileHeavyPdfModalUseNative" class="btn-standard" type="button">Usar
+              nativa</button>
+            <button id="textExtractionSingleFileHeavyPdfModalReveal" class="btn-standard" type="button">Mostrar PDF
+              generado</button>
+            <button id="textExtractionSingleFileHeavyPdfModalCancel" class="btn-standard" type="button">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="snapshotSaveTagsModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="snapshotSaveTagsModalTitle" aria-modal="true">
       <div id="snapshotSaveTagsModalBackdrop" class="info-modal-backdrop"></div>
@@ -501,10 +592,14 @@
   <script src="./js/main_logo_links.js"></script>
   <script src="./js/current_text_snapshots.js"></script>
   <script src="./js/text_apply_canonical.js"></script>
+  <script src="./js/text_extraction_batch_flow.js"></script>
   <script src="./js/text_extraction_status_ui.js"></script>
   <script src="./js/text_extraction_pdf_options_modal.js"></script>
   <script src="./js/text_extraction_route_choice_modal.js"></script>
   <script src="./js/text_extraction_apply_modal.js"></script>
+  <script src="./js/text_extraction_batch_planning_modal.js"></script>
+  <script src="./js/text_extraction_batch_final_modal.js"></script>
+  <script src="./js/text_extraction_single_file_heavy_pdf_modal.js"></script>
   <script src="./js/text_extraction_ocr_activation_disclosure_modal.js"></script>
   <script src="./js/text_extraction_ocr_activation_recovery.js"></script>
   <script src="./js/text_extraction_ocr_disconnect.js"></script>

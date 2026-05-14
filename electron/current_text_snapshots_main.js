@@ -20,7 +20,7 @@
 // =============================================================================
 const fs = require('fs');
 const path = require('path');
-const { dialog, BrowserWindow } = require('electron');
+const { dialog, BrowserWindow, shell } = require('electron');
 const Log = require('./log');
 const { DEFAULT_LANG } = require('./constants_main');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
@@ -136,6 +136,24 @@ function normalizeSavePath(filePath) {
   return path.join(dir, `${safeBase}${SNAPSHOT_EXT}`);
 }
 
+function resolveDeterministicAutoSnapshotPath(rootDir, rawBaseName) {
+  const safeBaseName = sanitizeSnapshotBaseName(rawBaseName);
+  let candidateName = `${safeBaseName}${SNAPSHOT_EXT}`;
+  let candidatePath = path.join(rootDir, candidateName);
+  let collisionIndex = 2;
+
+  while (fs.existsSync(candidatePath)) {
+    candidateName = `${safeBaseName}_${collisionIndex}${SNAPSHOT_EXT}`;
+    candidatePath = path.join(rootDir, candidateName);
+    collisionIndex += 1;
+  }
+
+  return {
+    candidateName,
+    candidatePath,
+  };
+}
+
 function getSnapshotsRoot(mode = 'read') {
   const code = mode === 'write' ? 'WRITE_FAILED' : 'READ_FAILED';
   const root = ensureSnapshotsRoot();
@@ -246,15 +264,19 @@ function sanitizeSnapshotSavePayload(payload) {
   if (!snapshotTagCatalog.isPlainObject(payload)) {
     return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot save payload must be an object' };
   }
+  const autoFileBaseName = typeof payload.autoFileBaseName === 'string'
+    ? payload.autoFileBaseName.trim()
+    : '';
+  const nonInteractive = payload.nonInteractive === true;
   if (!Object.prototype.hasOwnProperty.call(payload, 'tags')) {
-    return { ok: true, tags: null };
+    return { ok: true, tags: null, autoFileBaseName, nonInteractive };
   }
   const tagsInfo = sanitizeSnapshotTags(payload.tags, { allowMissing: true });
   if (!tagsInfo.ok) return tagsInfo;
   const tags = snapshotTagCatalog.isPlainObject(tagsInfo.tags)
     ? { ...tagsInfo.tags }
     : null;
-  return { ok: true, tags };
+  return { ok: true, tags, autoFileBaseName, nonInteractive };
 }
 
 function parseSnapshotFile(selectedReal) {
@@ -412,20 +434,28 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const rootInfo = getSnapshotsRoot('write');
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;
+      let normalizedPath = '';
+      if (payloadInfo.nonInteractive) {
+        const autoPath = resolveDeterministicAutoSnapshotPath(
+          root,
+          payloadInfo.autoFileBaseName || getDefaultSnapshotName(root)
+        );
+        normalizedPath = normalizeSavePath(autoPath.candidatePath);
+      } else {
+        const defaultName = getDefaultSnapshotName(root);
+        const defaultPath = path.join(root, defaultName);
 
-      const defaultName = getDefaultSnapshotName(root);
-      const defaultPath = path.join(root, defaultName);
+        const dialogRes = await dialog.showSaveDialog(resolveOwnerWin(event, getWindows), {
+          defaultPath,
+          filters: [{ name: 'JSON', extensions: ['json'] }],
+        });
 
-      const dialogRes = await dialog.showSaveDialog(resolveOwnerWin(event, getWindows), {
-        defaultPath,
-        filters: [{ name: 'JSON', extensions: ['json'] }],
-      });
+        if (!dialogRes || dialogRes.canceled || !dialogRes.filePath) {
+          return { ok: false, code: 'CANCELLED' };
+        }
 
-      if (!dialogRes || dialogRes.canceled || !dialogRes.filePath) {
-        return { ok: false, code: 'CANCELLED' };
+        normalizedPath = normalizeSavePath(dialogRes.filePath);
       }
-
-      const normalizedPath = normalizeSavePath(dialogRes.filePath);
       const candidateResolved = path.resolve(normalizedPath);
       const parentDir = path.dirname(candidateResolved);
       const parentReal = fs.existsSync(parentDir) ? safeRealpath(parentDir) : null;
@@ -470,6 +500,23 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     } catch (err) {
       log.error('snapshot save failed:', err);
       return { ok: false, code: 'WRITE_FAILED', message: String(err) };
+    }
+  });
+
+  ipcMain.handle('current-text-snapshot-open-folder', async () => {
+    try {
+      const rootInfo = getSnapshotsRoot('read');
+      if (!rootInfo.ok) return rootInfo;
+      const { root } = rootInfo;
+      const openResult = await shell.openPath(root);
+      if (typeof openResult === 'string' && openResult.trim()) {
+        log.warn('snapshot open folder failed:', { openResult });
+        return { ok: false, code: 'READ_FAILED', message: openResult };
+      }
+      return { ok: true, path: root };
+    } catch (err) {
+      log.error('snapshot open folder failed:', err);
+      return { ok: false, code: 'READ_FAILED', message: String(err) };
     }
   });
 

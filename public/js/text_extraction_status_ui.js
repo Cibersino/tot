@@ -101,6 +101,13 @@
     sinceEpochMs: null,
     source: '',
     reason: '',
+    unitIndex: null,
+    unitCount: null,
+    inputIndex: null,
+    inputCount: null,
+    selectedRoute: '',
+    processingInputFileName: '',
+    processingInputSource: '',
   };
   let prepareActiveCount = 0;
   let pendingExecutionRoute = '';
@@ -119,6 +126,12 @@
 
   function normalizeNonEmptyString(rawValue) {
     return typeof rawValue === 'string' ? rawValue.trim() : '';
+  }
+
+  function normalizePositiveIntegerOrNull(rawValue) {
+    const value = Number(rawValue);
+    if (!Number.isFinite(value) || value < 1) return null;
+    return Math.floor(value);
   }
 
   function constrainDisplayFileName(rawValue) {
@@ -188,6 +201,13 @@
       sinceEpochMs: Number.isFinite(sinceEpochMs) && sinceEpochMs > 0 ? Math.floor(sinceEpochMs) : null,
       source: typeof state.source === 'string' ? state.source.trim() : '',
       reason: typeof state.reason === 'string' ? state.reason.trim() : '',
+      unitIndex: normalizePositiveIntegerOrNull(state.unitIndex),
+      unitCount: normalizePositiveIntegerOrNull(state.unitCount),
+      inputIndex: normalizePositiveIntegerOrNull(state.inputIndex),
+      inputCount: normalizePositiveIntegerOrNull(state.inputCount),
+      selectedRoute: normalizeRouteKind(state.selectedRoute),
+      processingInputFileName: constrainDisplayFileName(state.processingInputFileName),
+      processingInputSource: normalizeNonEmptyString(state.processingInputSource),
     };
   }
 
@@ -251,6 +271,10 @@
   }
 
   function getBusyLabelText({ elapsedMsOverride = null } = {}) {
+    const progressLabelText = getProgressLabelText();
+    if (progressLabelText) {
+      return progressLabelText;
+    }
     if (isPrepareActive()) {
       return tRenderer('renderer.main.processing.text_extraction_preparing');
     }
@@ -267,6 +291,56 @@
       return tRenderer('renderer.main.processing.text_extraction_waiting_ocr');
     }
     return tRenderer('renderer.main.processing.text_extraction_placeholder');
+  }
+
+  function formatProgressText(key, index, count) {
+    return tRenderer(key)
+      .replace('{index}', String(index))
+      .replace('{count}', String(count));
+  }
+
+  function getRouteLabel(routeKind) {
+    if (routeKind === 'native') {
+      return tRenderer('renderer.main.processing.text_extraction_route_native');
+    }
+    if (routeKind === 'ocr') {
+      return tRenderer('renderer.main.processing.text_extraction_route_ocr');
+    }
+    return '';
+  }
+
+  function getProgressLabelText() {
+    if (!isProcessingModeActive()) return '';
+
+    const parts = [];
+    if (processingModeState.unitIndex && processingModeState.unitCount) {
+      parts.push(formatProgressText(
+        'renderer.main.processing.text_extraction_unit_progress',
+        processingModeState.unitIndex,
+        processingModeState.unitCount
+      ));
+    }
+    if (processingModeState.inputIndex && processingModeState.inputCount) {
+      parts.push(formatProgressText(
+        'renderer.main.processing.text_extraction_input_progress',
+        processingModeState.inputIndex,
+        processingModeState.inputCount
+      ));
+    }
+
+    const routeLabel = getRouteLabel(processingModeState.selectedRoute);
+    if (routeLabel) {
+      parts.push(routeLabel);
+    }
+
+    return parts.join(' · ');
+  }
+
+  function getDisplayedSourceFileName() {
+    if (isProcessingModeActive() && processingModeState.processingInputFileName) {
+      return processingModeState.processingInputFileName;
+    }
+    return pendingSourceFileName;
   }
 
   function syncAbortButtonUi() {
@@ -304,7 +378,8 @@
       textExtractionProcessingLabel.textContent = busyLabelText;
     }
 
-    const hasFileName = !!pendingSourceFileName;
+    const displayedFileName = getDisplayedSourceFileName();
+    const hasFileName = !!displayedFileName;
     if (textExtractionProcessingFilenameSeparator
       && textExtractionProcessingFilenameSeparator.hidden !== !hasFileName) {
       textExtractionProcessingFilenameSeparator.hidden = !hasFileName;
@@ -313,7 +388,7 @@
 
     textExtractionProcessingFilename.hidden = !hasFileName;
     textExtractionProcessingFilename.setAttribute('aria-hidden', hasFileName ? 'false' : 'true');
-    const nextFileNameText = hasFileName ? pendingSourceFileName : '';
+    const nextFileNameText = hasFileName ? displayedFileName : '';
     if (textExtractionProcessingFilename.textContent !== nextFileNameText) {
       textExtractionProcessingFilename.textContent = nextFileNameText;
     }
@@ -399,6 +474,9 @@
 
     if (!prevActive && nextState.active) {
       lastExecutionElapsedMs = null;
+      if (nextState.processingInputFileName) {
+        pendingSourceFileName = nextState.processingInputFileName;
+      }
     } else if (prevActive && !nextState.active) {
       lastExecutionElapsedMs = getElapsedMsSince(prevState.sinceEpochMs);
       resetPendingExecutionContextState();

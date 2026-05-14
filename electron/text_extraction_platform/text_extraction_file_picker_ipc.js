@@ -153,21 +153,24 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           },
           { name: 'All files', extensions: ['*'] },
         ],
-        properties: ['openFile'],
+        properties: ['openFile', 'multiSelections'],
       });
 
       if (!dialogResult || dialogResult.canceled || !Array.isArray(dialogResult.filePaths) || !dialogResult.filePaths.length) {
         return { ok: true, canceled: true };
       }
 
-      const selectedPath = platformAdapter.normalizeSelectedFilePath(dialogResult.filePaths[0]);
-      if (!selectedPath) {
+      const selectedPaths = dialogResult.filePaths
+        .map((filePath) => platformAdapter.normalizeSelectedFilePath(filePath))
+        .filter(Boolean);
+      if (!selectedPaths.length) {
         log.warnOnce(
           'text_extraction_picker.empty_selection',
           'text-extraction-open-picker returned empty selection (treated as cancelled).'
         );
         return { ok: true, canceled: true };
       }
+      const selectedPath = selectedPaths[0];
 
       const selectedDirectory = platformAdapter.normalizeSelectedDirectory(selectedPath);
       if (selectedDirectory) {
@@ -178,6 +181,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         ok: true,
         canceled: false,
         filePath: selectedPath,
+        filePaths: selectedPaths,
         selectedDirectory,
       };
     } catch (err) {
@@ -198,5 +202,4 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_file_picker_ipc.js
 // =============================================================================
-
 

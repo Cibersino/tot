@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Own main-window drag/drop affordance for text extraction.
 // - Show a visible full-window drop target while a valid file drag is active.
-// - Forward accepted single-file drops into the shared text extraction entry flow.
+// - Forward accepted one-or-many file drops into the shared text extraction entry flow.
 // - Keep drag/drop availability aligned with renderer-level interaction guards.
 // =============================================================================
 
@@ -197,18 +197,31 @@
       log.info('text extraction drop ignored because the entrypoint is currently blocked.');
       return;
     }
-    if (files.length !== 1) {
-      window.Notify.notifyMain('renderer.alerts.text_extraction_drop_single_file_only');
-      return;
+    const filePaths = [];
+    for (const file of files) {
+      const filePath = await resolveDroppedFilePath(file);
+      if (filePath) {
+        filePaths.push(filePath);
+      }
     }
-
-    const filePath = await resolveDroppedFilePath(files[0]);
-    if (!filePath) {
+    if (!filePaths.length) {
       window.Notify.notifyMain('renderer.alerts.text_extraction_drop_invalid_file');
       return;
     }
 
-    const { startFromFilePath } = requireConfiguredDeps();
+    const { startFromFilePath, startFromFilePaths } = requireConfiguredDeps();
+    if (filePaths.length > 1 && typeof startFromFilePaths === 'function') {
+      try {
+        await startFromFilePaths({
+          filePaths,
+          source: 'drop',
+        });
+      } catch (err) {
+        log.error('Dropped batch text extraction flow failed unexpectedly:', err);
+        window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      }
+      return;
+    }
     if (typeof startFromFilePath !== 'function') {
       log.error('startFromFilePath dependency missing; cannot continue dropped text extraction flow.');
       window.Notify.notifyMain('renderer.alerts.text_extraction_error');
@@ -217,7 +230,7 @@
 
     try {
       await startFromFilePath({
-        filePath,
+        filePath: filePaths[0],
         source: 'drop',
       });
     } catch (err) {
@@ -234,6 +247,7 @@
       canAcceptDrop: null,
       resolveDroppedFilePath: null,
       startFromFilePath: null,
+      startFromFilePaths: null,
       ...nextDeps,
     };
     ensureOverlay();
@@ -256,5 +270,4 @@
 // =============================================================================
 // End of public/js/text_extraction_drag_drop.js
 // =============================================================================
-
 

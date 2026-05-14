@@ -16,6 +16,7 @@
 // Imports
 // =============================================================================
 
+const fs = require('fs');
 const path = require('path');
 const { BrowserWindow } = require('electron');
 
@@ -31,6 +32,12 @@ const {
   materializePdfPageSelectionInput,
   resolveProcessingInputFileName,
 } = require('./text_extraction_pdf_page_selection');
+const {
+  OCR_PROVIDER_LIMIT_BYTES,
+  buildHeavyPdfSplitPlan,
+  bytesToMegabytes,
+  isHeavyPdfBySourceSize,
+} = require('./text_extraction_heavy_pdf_split_core');
 const {
   getNativeParserForExt,
   getOcrSourceMimeTypeForExt,
@@ -49,9 +56,14 @@ function resolveInspectPayload(payload) {
 
 function resolvePreparePayload(payload) {
   const raw = payload && typeof payload === 'object' ? payload : {};
+  const planningMode = typeof raw.planningMode === 'string'
+    ? raw.planningMode.trim().toLowerCase()
+    : '';
   return {
     filePath: typeof raw.filePath === 'string' ? raw.filePath.trim() : '',
     ocrLanguage: typeof raw.ocrLanguage === 'string' ? raw.ocrLanguage.trim() : '',
+    planningMode: planningMode === 'batch' ? 'batch' : 'single',
+    forceHeavySplitFullSource: raw.forceHeavySplitFullSource === true,
     pdfPageSelection: raw.pdfPageSelection && typeof raw.pdfPageSelection === 'object' && !Array.isArray(raw.pdfPageSelection)
       ? raw.pdfPageSelection
       : null,
@@ -69,11 +81,22 @@ function resolveExecutePayload(payload) {
   const routePreference = typeof raw.routePreference === 'string'
     ? raw.routePreference.trim().toLowerCase()
     : '';
+  const heavySplitFailurePolicy = typeof raw.heavySplitFailurePolicy === 'string'
+    ? raw.heavySplitFailurePolicy.trim()
+    : '';
   return {
     prepareId: typeof raw.prepareId === 'string' ? raw.prepareId.trim() : '',
     routePreference: routePreference === 'native' || routePreference === 'ocr'
       ? routePreference
       : '',
+    processingContext:
+      raw.processingContext && typeof raw.processingContext === 'object' && !Array.isArray(raw.processingContext)
+        ? raw.processingContext
+        : null,
+    reuseActiveProcessingLock: raw.reuseActiveProcessingLock === true,
+    heavySplitFailurePolicy: heavySplitFailurePolicy === 'omit_failed_and_continue'
+      ? 'omit_failed_and_continue'
+      : 'finish_unit_after_last_success',
   };
 }
 
@@ -110,6 +133,13 @@ function getFileInfo(filePath) {
   const sourceFileKind = sourceFileExt === 'pdf'
     ? 'pdf'
     : (sourceMimeType.startsWith('image/') ? 'image' : 'text_document');
+  let sourceFileSizeBytes = 0;
+  try {
+    const stats = fs.statSync(resolvedPath);
+    sourceFileSizeBytes = Number.isFinite(stats.size) ? Math.floor(stats.size) : 0;
+  } catch (_err) {
+    sourceFileSizeBytes = 0;
+  }
 
   return {
     filePath: normalizedPath,
@@ -117,6 +147,7 @@ function getFileInfo(filePath) {
     fileName,
     sourceFileExt,
     sourceFileKind,
+    sourceFileSizeBytes,
   };
 }
 
@@ -125,6 +156,9 @@ function getRendererSafeFileInfo(fileInfo) {
     fileName: fileInfo && typeof fileInfo.fileName === 'string' ? fileInfo.fileName : '',
     sourceFileExt: fileInfo && typeof fileInfo.sourceFileExt === 'string' ? fileInfo.sourceFileExt : '',
     sourceFileKind: fileInfo && typeof fileInfo.sourceFileKind === 'string' ? fileInfo.sourceFileKind : '',
+    sourceFileSizeBytes: Number.isFinite(fileInfo && fileInfo.sourceFileSizeBytes)
+      ? Math.floor(fileInfo.sourceFileSizeBytes)
+      : 0,
   };
 }
 
@@ -240,9 +274,18 @@ function buildRouteMetadata({
   nativeProbeErrorCode = '',
   nativeProbeSelectableText = '',
   nativeProbeMetadata = null,
+  sourceFileSizeBytes = 0,
+  sourceFileSizeMB = 0,
+  pdfTotalPages = null,
+  ocrProviderLimitBytes = OCR_PROVIDER_LIMIT_BYTES,
+  heavySplitEligible = false,
+  heavySplitPreview = null,
 }) {
   return {
     fileKind: fileInfo.sourceFileKind,
+    sourceFileSizeBytes: Number.isFinite(sourceFileSizeBytes) ? Math.floor(sourceFileSizeBytes) : 0,
+    sourceFileSizeMB: Number.isFinite(sourceFileSizeMB) ? sourceFileSizeMB : 0,
+    pdfTotalPages: Number.isFinite(pdfTotalPages) ? Math.floor(pdfTotalPages) : null,
     availableRoutes: Array.isArray(availableRoutes) ? availableRoutes : [],
     chosenRoute,
     executedRoute,
@@ -264,10 +307,24 @@ function buildRouteMetadata({
     nativeProbeMetadata: nativeProbeMetadata && typeof nativeProbeMetadata === 'object'
       ? nativeProbeMetadata
       : null,
+    ocrProviderLimitBytes: Number.isFinite(ocrProviderLimitBytes)
+      ? Math.floor(ocrProviderLimitBytes)
+      : OCR_PROVIDER_LIMIT_BYTES,
+    heavySplitEligible: heavySplitEligible === true,
+    heavySplitPreview:
+      heavySplitPreview && typeof heavySplitPreview === 'object'
+        ? {
+          ...heavySplitPreview,
+          generatedInputs: Array.isArray(heavySplitPreview.generatedInputs)
+            ? heavySplitPreview.generatedInputs.map((generatedInput) => ({ ...generatedInput }))
+            : [],
+        }
+        : null,
   };
 }
 
 function buildPrepareFailure({
+  fileInfo = null,
   executionKind,
   routeMetadata,
   primaryAlertKey,
@@ -280,6 +337,7 @@ function buildPrepareFailure({
   return {
     ok: true,
     prepareFailed: true,
+    fileInfo: fileInfo && typeof fileInfo === 'object' ? { ...fileInfo } : null,
     executionKind,
     routeMetadata,
     primaryAlertKey,
@@ -325,6 +383,7 @@ function buildOcrPrepareFailure({
   }
 
   return buildPrepareFailure({
+    fileInfo,
     executionKind: 'google_drive',
     routeMetadata: buildRouteMetadata({
       fileInfo,
@@ -363,6 +422,7 @@ function buildNativePrepareFailure({
     : pdfAlertKey;
 
   return buildPrepareFailure({
+    fileInfo,
     executionKind: 'native',
     routeMetadata: buildRouteMetadata({
       fileInfo,
@@ -391,6 +451,7 @@ function buildNativePrepareFailure({
 
 function buildUnsupportedFormatPrepareFailure(fileInfo) {
   return buildPrepareFailure({
+    fileInfo,
     executionKind: null,
     routeMetadata: buildRouteMetadata({
       fileInfo,
@@ -427,6 +488,7 @@ function buildPdfPrepareFailure({
 }) {
   const code = error && typeof error.code === 'string' ? error.code : '';
   return buildPrepareFailure({
+    fileInfo,
     executionKind: null,
     routeMetadata: buildRouteMetadata({
       fileInfo,
@@ -486,6 +548,8 @@ async function validateOcrSetup(resolvePaths, log) {
 function buildPrepareReadyResult({
   fileInfo,
   ocrLanguage,
+  planningMode = 'single',
+  forceHeavySplitFullSource = false,
   pdfPageSelection = null,
   generatedPdfArtifactPolicy = null,
   processingInputFileName = '',
@@ -501,6 +565,8 @@ function buildPrepareReadyResult({
     preparedPayload: {
       fileInfo,
       ocrLanguage,
+      planningMode,
+      forceHeavySplitFullSource,
       pdfPageSelection,
       generatedPdfArtifactPolicy,
       processingInputFileName,
@@ -512,6 +578,9 @@ function buildPrepareReadyResult({
     generatedPdfArtifactPolicy,
     processingInputFileName,
     routeMetadata,
+    fileInfo,
+    planningMode,
+    forceHeavySplitFullSource,
     requiresRouteChoice,
     routeChoiceOptions,
   };
@@ -582,6 +651,8 @@ async function resolveNonPdfOcrPreparation({
 async function resolvePdfPreparation({
   fileInfo,
   ocrLanguage,
+  planningMode = 'single',
+  forceHeavySplitFullSource = false,
   requestedPdfPageSelection,
   requestedGeneratedPdfArtifactPolicy,
   resolvePaths,
@@ -612,7 +683,10 @@ async function resolvePdfPreparation({
     });
   }
 
-  const canonicalPdfPageSelection = canonicalizePdfPageSelection(requestedPdfPageSelection, {
+  const requestedExecutionScope = forceHeavySplitFullSource === true
+    ? { mode: 'all' }
+    : requestedPdfPageSelection;
+  const canonicalPdfPageSelection = canonicalizePdfPageSelection(requestedExecutionScope, {
     totalPages: pdfInspection.totalPages,
   });
   if (!canonicalPdfPageSelection.ok) {
@@ -630,12 +704,26 @@ async function resolvePdfPreparation({
     fileInfo,
     pdfPageSelection,
   });
-  const nativeProbeResult = await probeNativePdfSelectableText({
-    filePath: fileInfo.filePath,
-    pageRange: {
+  const probePageRange = planningMode === 'batch'
+    ? {
+      fromPage: 1,
+      toPage: pdfInspection.totalPages,
+    }
+    : {
       fromPage: pdfPageSelection.fromPage,
       toPage: pdfPageSelection.toPage,
-    },
+    };
+  const heavySplitPreview = isHeavyPdfBySourceSize(fileInfo.sourceFileSizeBytes, OCR_PROVIDER_LIMIT_BYTES)
+    ? buildHeavyPdfSplitPlan({
+      fileInfo,
+      sourceTotalPages: pdfInspection.totalPages,
+      sourceFileSizeBytes: fileInfo.sourceFileSizeBytes,
+      providerLimitBytes: OCR_PROVIDER_LIMIT_BYTES,
+    })
+    : null;
+  const nativeProbeResult = await probeNativePdfSelectableText({
+    filePath: fileInfo.filePath,
+    pageRange: probePageRange,
     isAborted: () => false,
     log,
   });
@@ -712,13 +800,44 @@ async function resolvePdfPreparation({
     ocrSetupCode,
     pdfPageSelection,
     generatedPdfArtifactPolicyMode: getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy),
+    sourceFileSizeBytes: fileInfo.sourceFileSizeBytes,
+    sourceFileSizeMB: bytesToMegabytes(fileInfo.sourceFileSizeBytes),
+    pdfTotalPages: pdfInspection.totalPages,
+    ocrProviderLimitBytes: OCR_PROVIDER_LIMIT_BYTES,
+    heavySplitEligible: !!(heavySplitPreview && heavySplitPreview.ok === true),
+    heavySplitPreview: heavySplitPreview && heavySplitPreview.ok === true ? heavySplitPreview : null,
     nativeProbeSelectableText: nativeProbeSuccess ? nativeProbeSuccess.selectableText : '',
     nativeProbeMetadata: nativeProbeSuccess ? nativeProbeSuccess.metadataSafeForLogs : null,
   });
 
+  if (forceHeavySplitFullSource === true && !(heavySplitPreview && heavySplitPreview.ok === true)) {
+    return buildPrepareFailure({
+      fileInfo,
+      executionKind: routeMetadata.executionKind,
+      routeMetadata,
+      primaryAlertKey: 'renderer.alerts.text_extraction_error',
+      warningAlertKeys: [],
+      error: {
+        code: 'heavy_split_plan_invalid',
+        message: 'Heavy PDF full-source split is no longer valid for this source PDF.',
+        detailsSafeForLogs: {
+          stage: 'prepare',
+          reason: 'force_full_source_split_not_required',
+          sourceFileSizeBytes: fileInfo.sourceFileSizeBytes,
+          providerLimitBytes: OCR_PROVIDER_LIMIT_BYTES,
+        },
+      },
+      pdfPageSelection,
+      generatedPdfArtifactPolicy,
+      processingInputFileName,
+    });
+  }
+
   return buildPrepareReadyResult({
     fileInfo,
     ocrLanguage,
+    planningMode,
+    forceHeavySplitFullSource,
     pdfPageSelection,
     generatedPdfArtifactPolicy,
     processingInputFileName,
@@ -758,6 +877,8 @@ async function inspectSelectedFile({ filePath } = {}) {
 async function prepareSelectedFile({
   filePath,
   ocrLanguage,
+  planningMode = 'single',
+  forceHeavySplitFullSource = false,
   pdfPageSelection,
   generatedPdfArtifactPolicy,
   resolvePaths,
@@ -771,6 +892,8 @@ async function prepareSelectedFile({
     return resolvePdfPreparation({
       fileInfo,
       ocrLanguage,
+      planningMode,
+      forceHeavySplitFullSource,
       requestedPdfPageSelection: pdfPageSelection,
       requestedGeneratedPdfArtifactPolicy: generatedPdfArtifactPolicy,
       resolvePaths,
@@ -827,6 +950,7 @@ function resolvePrimaryAlertKey(routeKind, result) {
 
   if (state === 'success') return 'renderer.alerts.text_extraction_ocr_apply_pending';
   if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_ocr_cancelled';
+  if (code === 'ocr_input_too_large') return 'renderer.alerts.text_extraction_ocr_input_too_large';
   if (code === 'ocr_activation_required') return 'renderer.alerts.text_extraction_ocr_activation_required';
   if (code === 'credentials_missing') return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
   if (code === 'credentials_invalid') return 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
@@ -1162,6 +1286,478 @@ function buildUnexpectedRuntimeResult(
   });
 }
 
+function normalizePositiveInteger(rawValue) {
+  const value = Number(rawValue);
+  if (!Number.isInteger(value) || value < 1) return null;
+  return value;
+}
+
+function normalizeProcessingContext(rawContext = {}, defaults = {}) {
+  const context = rawContext && typeof rawContext === 'object' ? rawContext : {};
+  const fallback = defaults && typeof defaults === 'object' ? defaults : {};
+  const processingInputFileName = typeof context.processingInputFileName === 'string'
+    ? context.processingInputFileName.trim()
+    : '';
+  const processingInputSource = typeof context.processingInputSource === 'string'
+    ? context.processingInputSource.trim()
+    : '';
+  const selectedRoute = typeof context.selectedRoute === 'string'
+    ? context.selectedRoute.trim().toLowerCase()
+    : '';
+
+  return {
+    unitIndex: normalizePositiveInteger(context.unitIndex) || normalizePositiveInteger(fallback.unitIndex),
+    unitCount: normalizePositiveInteger(context.unitCount) || normalizePositiveInteger(fallback.unitCount),
+    inputIndex: normalizePositiveInteger(context.inputIndex) || normalizePositiveInteger(fallback.inputIndex),
+    inputCount: normalizePositiveInteger(context.inputCount) || normalizePositiveInteger(fallback.inputCount),
+    selectedRoute: selectedRoute === 'native' || selectedRoute === 'ocr'
+      ? selectedRoute
+      : (typeof fallback.selectedRoute === 'string' ? fallback.selectedRoute : ''),
+    processingInputFileName: processingInputFileName || (typeof fallback.processingInputFileName === 'string'
+      ? fallback.processingInputFileName
+      : ''),
+    processingInputSource: processingInputSource || (typeof fallback.processingInputSource === 'string'
+      ? fallback.processingInputSource
+      : ''),
+  };
+}
+
+function buildControllerExecutionContext({
+  fileInfo,
+  productRoute,
+  processingContext,
+}) {
+  const normalized = normalizeProcessingContext(processingContext, {
+    selectedRoute: productRoute,
+    processingInputFileName: fileInfo && typeof fileInfo.fileName === 'string' ? fileInfo.fileName : '',
+    processingInputSource: 'original_selected_file',
+  });
+  return {
+    source: 'text_extraction_execution',
+    reason: fileInfo && fileInfo.sourceFileKind === 'pdf' ? 'run_pdf_route' : 'run_route',
+    unitIndex: normalized.unitIndex,
+    unitCount: normalized.unitCount,
+    inputIndex: normalized.inputIndex,
+    inputCount: normalized.inputCount,
+    selectedRoute: normalized.selectedRoute,
+    processingInputFileName: normalized.processingInputFileName,
+    processingInputSource: normalized.processingInputSource,
+  };
+}
+
+function updateControllerProcessingContext(controller, nextContext, log) {
+  if (!controller || typeof controller.update !== 'function') return;
+  try {
+    controller.update(nextContext);
+  } catch (err) {
+    if (log && typeof log.warn === 'function') {
+      log.warn('Processing-mode metadata update failed (ignored):', err);
+    }
+  }
+}
+
+function appendUnitText(baseText, nextText) {
+  const base = String(baseText || '');
+  const incoming = String(nextText || '');
+  if (!base) return incoming;
+  if (!incoming) return base;
+  const baseEndsWithNewline = base.endsWith('\n') || base.endsWith('\r');
+  return `${base}${baseEndsWithNewline ? '\n' : '\n\n'}${incoming}`;
+}
+
+function buildHeavySplitChildStatus({
+  generatedInput,
+  state,
+  errorCode = '',
+  uploadStatus = '',
+  generatedPdfArtifact = null,
+}) {
+  return {
+    inputIndex: generatedInput.inputIndex,
+    fromPage: generatedInput.fromPage,
+    toPage: generatedInput.toPage,
+    fileName: generatedInput.processingInputFileName,
+    state,
+    errorCode,
+    uploadStatus,
+    generatedPdfArtifact:
+      generatedPdfArtifact && typeof generatedPdfArtifact === 'object'
+        ? { ...generatedPdfArtifact }
+        : null,
+  };
+}
+
+async function executePreparedHeavySplitUnit({
+  preparedRecord,
+  routeMetadata,
+  productRoute,
+  resolvePaths,
+  controller,
+  log,
+  executionOwnsController,
+  heavySplitFailurePolicy,
+  processingContext,
+}) {
+  const heavySplitPreview = routeMetadata && routeMetadata.heavySplitPreview && routeMetadata.heavySplitPreview.ok === true
+    ? routeMetadata.heavySplitPreview
+    : null;
+  const generatedInputs = heavySplitPreview && Array.isArray(heavySplitPreview.generatedInputs)
+    ? heavySplitPreview.generatedInputs.map((generatedInput) => ({ ...generatedInput }))
+    : [];
+  if (generatedInputs.length < 1) {
+    return buildPreparedExecutionFailureResult({
+      preparedRecord,
+      productRoute,
+      executionKind: 'google_drive',
+      routeMetadata,
+      processingInputContext: {
+        processingInputFileName: preparedRecord.processingInputFileName || preparedRecord.fileInfo.fileName,
+        processingInputSource: 'original_selected_file',
+        generatedPdfArtifact: null,
+      },
+      summary: 'Heavy PDF OCR split could not start because generated input planning metadata is missing.',
+      error: {
+        code: 'heavy_split_plan_invalid',
+        message: 'Heavy PDF OCR split planning metadata is missing or invalid.',
+        detailsSafeForLogs: {
+          stage: 'heavy_split_plan',
+          reason: 'missing_generated_inputs',
+        },
+      },
+    });
+  }
+
+  const normalizedProcessingContext = normalizeProcessingContext(processingContext, {
+    selectedRoute: 'ocr',
+    unitIndex: 1,
+    unitCount: 1,
+  });
+  const unitProcessingInputContext = {
+    processingInputFileName: preparedRecord.processingInputFileName || preparedRecord.fileInfo.fileName,
+    processingInputSource: 'original_selected_file',
+    generatedPdfArtifact: null,
+  };
+  const childStatuses = [];
+  const cleanupWarnings = [];
+  let aggregatedText = '';
+  let producedText = false;
+  let lastFailureError = null;
+
+  for (let index = 0; index < generatedInputs.length; index += 1) {
+    const generatedInput = generatedInputs[index];
+    const childProcessingContext = {
+      ...normalizedProcessingContext,
+      inputIndex: generatedInput.inputIndex,
+      inputCount: generatedInputs.length,
+      selectedRoute: 'ocr',
+      processingInputFileName: generatedInput.processingInputFileName,
+      processingInputSource: 'generated_pdf_split_input',
+    };
+    updateControllerProcessingContext(controller, childProcessingContext, log);
+
+    const paths = resolvePaths();
+    const materializedInput = await materializePdfPageSelectionInput({
+      fileInfo: preparedRecord.fileInfo,
+      pdfPageSelection: generatedInput.pdfPageSelection,
+      generatedPdfArtifactPolicy: preparedRecord.generatedPdfArtifactPolicy,
+      retainedArtifactsDir: paths.generatedPdfArtifactsDir,
+    });
+
+    if (!materializedInput || materializedInput.ok !== true) {
+      const error = materializedInput && materializedInput.error
+        ? materializedInput.error
+        : {
+          code: 'pdf_subset_creation_failed',
+          message: 'Generated split PDF could not be created.',
+          detailsSafeForLogs: {
+            stage: 'heavy_split_materialize',
+            reason: 'invalid_result_shape',
+          },
+        };
+      lastFailureError = error;
+      childStatuses.push(buildHeavySplitChildStatus({
+        generatedInput,
+        state: 'failed',
+        errorCode: error.code || 'pdf_subset_creation_failed',
+      }));
+      if (heavySplitFailurePolicy !== 'omit_failed_and_continue') {
+        for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
+          childStatuses.push(buildHeavySplitChildStatus({
+            generatedInput: generatedInputs[omittedIndex],
+            state: 'omitted',
+          }));
+        }
+        break;
+      }
+      continue;
+    }
+
+    let cleanupGeneratedArtifact = materializedInput.cleanupGeneratedArtifact;
+    const generatedPdfArtifact = materializedInput.generatedPdfArtifact
+      && typeof materializedInput.generatedPdfArtifact === 'object'
+      ? { ...materializedInput.generatedPdfArtifact }
+      : null;
+    updateControllerProcessingContext(controller, {
+      ...childProcessingContext,
+      processingInputFileName: materializedInput.processingInputFileName,
+      processingInputSource: 'generated_pdf_split_input',
+    }, log);
+
+    if (!executionOwnsController()) {
+      const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
+        ? cleanupGeneratedArtifact()
+        : null;
+      if (cleanupWarning) cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+      childStatuses.push(buildHeavySplitChildStatus({
+        generatedInput,
+        state: 'cancelled_before_route_dispatch',
+        generatedPdfArtifact,
+      }));
+      for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
+        childStatuses.push(buildHeavySplitChildStatus({
+          generatedInput: generatedInputs[omittedIndex],
+          state: 'omitted',
+        }));
+      }
+      const cancelledExecution = buildPreparedCancelledResult({
+        preparedRecord,
+        productRoute,
+        executionKind: 'google_drive',
+        routeMetadata,
+        processingInputContext: unitProcessingInputContext,
+        summary: 'Heavy PDF OCR split cancelled by user before OCR upload.',
+        message: 'Heavy PDF OCR split was cancelled by user before OCR upload.',
+        detailsSafeForLogs: {
+          stage: 'pre_route_dispatch',
+          reason: 'execution_ownership_lost',
+          generatedInputFileName: materializedInput.processingInputFileName,
+          heavySplitExecution: {
+            generatedInputs: childStatuses,
+          },
+        },
+      });
+      return {
+        ok: true,
+        executionKind: 'google_drive',
+        result: cancelledExecution.result,
+        routeMetadata: cancelledExecution.routeMetadata,
+        primaryAlertKey: resolvePrimaryAlertKey('ocr', cancelledExecution.result),
+        warningAlertKeys: resolveWarningAlertKeys('ocr', cancelledExecution.result),
+      };
+    }
+
+    let childResult = null;
+    try {
+      childResult = await runGoogleDriveOcrRoute({
+        filePath: materializedInput.effectiveFilePath,
+        credentialsPath: paths.credentialsPath,
+        tokenPath: paths.tokenPath,
+        bundledCredentialsFailureCode: paths.bundledCredentialsFailureCode,
+        bundledCredentialsFailureReason: paths.bundledCredentialsFailureReason,
+        bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
+        ocrLanguage: preparedRecord.ocrLanguage,
+        log,
+        isAborted: () => !executionOwnsController(),
+      });
+      childResult = enforceFailureAbortInvariants({
+        routeKind: 'ocr',
+        fileInfo: preparedRecord.fileInfo,
+        isExecutionOwned: executionOwnsController,
+        result: childResult,
+        log,
+      });
+    } finally {
+      const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
+        ? cleanupGeneratedArtifact()
+        : null;
+      if (cleanupWarning) cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+    }
+
+    if (childResult && childResult.state === 'success') {
+      childStatuses.push(buildHeavySplitChildStatus({
+        generatedInput,
+        state: 'success',
+        generatedPdfArtifact,
+      }));
+      if (typeof childResult.text === 'string' && childResult.text.length > 0) {
+        aggregatedText = appendUnitText(aggregatedText, childResult.text);
+        producedText = true;
+      }
+      continue;
+    }
+
+    if (childResult && childResult.state === 'cancelled') {
+      childStatuses.push(buildHeavySplitChildStatus({
+        generatedInput,
+        state: 'cancelled_before_route_dispatch',
+        errorCode: childResult.error && childResult.error.code ? childResult.error.code : 'aborted_by_user',
+        uploadStatus:
+          childResult.error
+          && childResult.error.detailsSafeForLogs
+          && typeof childResult.error.detailsSafeForLogs.uploadStatus === 'string'
+            ? childResult.error.detailsSafeForLogs.uploadStatus
+            : '',
+        generatedPdfArtifact,
+      }));
+      for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
+        childStatuses.push(buildHeavySplitChildStatus({
+          generatedInput: generatedInputs[omittedIndex],
+          state: 'omitted',
+        }));
+      }
+      const cancelledExecution = buildPreparedCancelledResult({
+        preparedRecord,
+        productRoute,
+        executionKind: 'google_drive',
+        routeMetadata,
+        processingInputContext: unitProcessingInputContext,
+        summary: 'Heavy PDF OCR split cancelled by user.',
+        message: 'Heavy PDF OCR split was cancelled by user.',
+        detailsSafeForLogs: {
+          stage: 'runtime',
+          reason: 'user_abort',
+          heavySplitExecution: {
+            generatedInputs: childStatuses,
+          },
+        },
+      });
+      return {
+        ok: true,
+        executionKind: 'google_drive',
+        result: cancelledExecution.result,
+        routeMetadata: cancelledExecution.routeMetadata,
+        primaryAlertKey: resolvePrimaryAlertKey('ocr', cancelledExecution.result),
+        warningAlertKeys: resolveWarningAlertKeys('ocr', cancelledExecution.result),
+      };
+    }
+
+    const failureCode = childResult && childResult.error && typeof childResult.error.code === 'string'
+      ? childResult.error.code
+      : 'ocr_conversion_failed';
+    const uploadStatus = childResult
+      && childResult.error
+      && childResult.error.detailsSafeForLogs
+      && typeof childResult.error.detailsSafeForLogs.uploadStatus === 'string'
+      ? childResult.error.detailsSafeForLogs.uploadStatus
+      : '';
+    lastFailureError = childResult && childResult.error ? childResult.error : {
+      code: failureCode,
+      message: 'Generated OCR split input failed.',
+      detailsSafeForLogs: {
+        stage: 'heavy_split_runtime',
+      },
+    };
+    childStatuses.push(buildHeavySplitChildStatus({
+      generatedInput,
+      state: 'failed',
+      errorCode: failureCode,
+      uploadStatus,
+      generatedPdfArtifact,
+    }));
+    if (heavySplitFailurePolicy !== 'omit_failed_and_continue') {
+      for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
+        childStatuses.push(buildHeavySplitChildStatus({
+          generatedInput: generatedInputs[omittedIndex],
+          state: 'omitted',
+        }));
+      }
+      break;
+    }
+  }
+
+  const topLevelWarnings = [];
+  cleanupWarnings.forEach((warning) => {
+    if (typeof warning === 'string' && warning.trim()) {
+      topLevelWarnings.push(warning);
+    }
+  });
+
+  if (producedText) {
+    const result = decorateExecutionResultForPreparedInput({
+      preparedRecord,
+      routeKind: 'ocr',
+      processingInputContext: unitProcessingInputContext,
+      result: {
+        state: 'success',
+        executedRoute: 'ocr',
+        text: aggregatedText,
+        warnings: topLevelWarnings,
+        summary: topLevelWarnings.length > 0
+          ? 'Heavy PDF OCR split succeeded with cleanup warning.'
+          : 'Heavy PDF OCR split succeeded.',
+        heavySplitExecution: {
+          generatedInputs: childStatuses,
+        },
+        provenance: {
+          sourceFileName: preparedRecord.fileInfo.fileName,
+          sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
+          sourceFileKind: preparedRecord.fileInfo.sourceFileKind,
+          ocrProvider: 'google_drive_docs_conversion',
+          metadataSafeForLogs: {},
+        },
+        error: null,
+      },
+    });
+    return {
+      ok: true,
+      executionKind: 'google_drive',
+      result,
+      routeMetadata: {
+        ...(routeMetadata && typeof routeMetadata === 'object' ? routeMetadata : {}),
+        executionKind: 'google_drive',
+        chosenRoute: 'ocr',
+        executedRoute: 'ocr',
+      },
+      primaryAlertKey: resolvePrimaryAlertKey('ocr', result),
+      warningAlertKeys: resolveWarningAlertKeys('ocr', result),
+    };
+  }
+
+  const failureResult = decorateExecutionResultForPreparedInput({
+    preparedRecord,
+    routeKind: 'ocr',
+    processingInputContext: unitProcessingInputContext,
+    result: {
+      state: 'failure',
+      executedRoute: 'ocr',
+      text: '',
+      warnings: topLevelWarnings,
+      summary: 'Heavy PDF OCR split did not produce extracted text.',
+      heavySplitExecution: {
+        generatedInputs: childStatuses,
+      },
+      provenance: {
+        sourceFileName: preparedRecord.fileInfo.fileName,
+        sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
+        sourceFileKind: preparedRecord.fileInfo.sourceFileKind,
+        ocrProvider: 'google_drive_docs_conversion',
+        metadataSafeForLogs: {},
+      },
+      error: lastFailureError || {
+        code: 'ocr_conversion_failed',
+        message: 'Heavy PDF OCR split did not produce extracted text.',
+        detailsSafeForLogs: {
+          stage: 'heavy_split_runtime',
+          reason: 'no_generated_input_succeeded',
+        },
+      },
+    },
+  });
+  return {
+    ok: true,
+    executionKind: 'google_drive',
+    result: failureResult,
+    routeMetadata: {
+      ...(routeMetadata && typeof routeMetadata === 'object' ? routeMetadata : {}),
+      executionKind: 'google_drive',
+      chosenRoute: 'ocr',
+      executedRoute: 'ocr',
+    },
+    primaryAlertKey: resolvePrimaryAlertKey('ocr', failureResult),
+    warningAlertKeys: resolveWarningAlertKeys('ocr', failureResult),
+  };
+}
+
 function resolvePreRouteFailureSummary(errorCode) {
   if (errorCode === 'pdf_page_selection_invalid') {
     return 'Text extraction blocked before route execution: selected PDF page range is invalid.';
@@ -1182,6 +1778,9 @@ function resolvePreRouteFailureSummary(errorCode) {
 async function executePreparedImport({
   preparedRecord,
   routePreference,
+  processingContext = null,
+  reuseActiveProcessingLock = false,
+  heavySplitFailurePolicy = 'finish_unit_after_last_success',
   resolvePaths,
   controller,
   log,
@@ -1200,22 +1799,39 @@ async function executePreparedImport({
   const productRoute = resolvedRoute.productRoute;
   const executionKind = productRoute === 'native' ? 'native' : 'google_drive';
   const fileInfo = preparedRecord.fileInfo;
-  const enterTransition = controller.enter({
-    source: 'text_extraction_execution',
-    reason: fileInfo.sourceFileKind === 'pdf' ? 'run_pdf_route' : 'run_route',
+  const controllerExecutionContext = buildControllerExecutionContext({
+    fileInfo,
+    productRoute,
+    processingContext,
   });
+  let ownsControllerTransition = false;
+  let executionState = null;
 
-  if (!enterTransition.changed && controller.isActive()) {
-    return {
-      ok: false,
-      code: 'ALREADY_ACTIVE',
-      state: controller.getState(),
-    };
+  if (reuseActiveProcessingLock) {
+    if (!controller.isActive()) {
+      return {
+        ok: false,
+        code: 'ACTIVE_SESSION_REQUIRED',
+        state: controller.getState(),
+      };
+    }
+    updateControllerProcessingContext(controller, controllerExecutionContext, log);
+    executionState = getControllerStateSnapshot(controller);
+  } else {
+    const enterTransition = controller.enter(controllerExecutionContext);
+    if (!enterTransition.changed && controller.isActive()) {
+      return {
+        ok: false,
+        code: 'ALREADY_ACTIVE',
+        state: controller.getState(),
+      };
+    }
+    ownsControllerTransition = enterTransition.changed === true;
+    executionState = enterTransition && enterTransition.state && typeof enterTransition.state === 'object'
+      ? enterTransition.state
+      : getControllerStateSnapshot(controller);
   }
 
-  const executionState = enterTransition && enterTransition.state && typeof enterTransition.state === 'object'
-    ? enterTransition.state
-    : getControllerStateSnapshot(controller);
   const executionLockId = getControllerLockId(executionState);
   const executionOwnsController = () => isExecutionStillOwned(controller, executionLockId);
   let executionResult = null;
@@ -1227,8 +1843,28 @@ async function executePreparedImport({
     generatedPdfArtifact: null,
   };
   let cleanupGeneratedArtifact = null;
+  const heavySplitActive = productRoute === 'ocr'
+    && preparedRecord
+    && preparedRecord.routeMetadata
+    && preparedRecord.routeMetadata.heavySplitEligible === true
+    && preparedRecord.forceHeavySplitFullSource === true;
 
   try {
+    if (heavySplitActive) {
+      executionResult = await executePreparedHeavySplitUnit({
+        preparedRecord,
+        routeMetadata: preparedRecord.routeMetadata,
+        productRoute,
+        resolvePaths,
+        controller,
+        log,
+        executionOwnsController,
+        heavySplitFailurePolicy,
+        processingContext,
+      });
+      return executionResult;
+    }
+
     const paths = resolvePaths();
     const materializedInput = await materializePdfPageSelectionInput({
       fileInfo,
@@ -1263,6 +1899,11 @@ async function executePreparedImport({
         processingInputSource: materializedInput.processingInputSource,
         generatedPdfArtifact: materializedInput.generatedPdfArtifact,
       };
+      updateControllerProcessingContext(controller, {
+        ...controllerExecutionContext,
+        processingInputFileName: materializedInput.processingInputFileName,
+        processingInputSource: materializedInput.processingInputSource,
+      }, log);
       cleanupGeneratedArtifact = typeof materializedInput.cleanupGeneratedArtifact === 'function'
         ? materializedInput.cleanupGeneratedArtifact
         : null;
@@ -1391,7 +2032,7 @@ async function executePreparedImport({
       }
     }
 
-    if (executionOwnsController()) {
+    if (ownsControllerTransition && executionOwnsController()) {
       controller.exit({
         source: 'text_extraction_execution',
         reason: resolveExitReason(

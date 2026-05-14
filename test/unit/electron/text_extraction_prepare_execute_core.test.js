@@ -29,6 +29,10 @@ const ENCRYPTED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/encrypted_selectab
 
 function loadCoreWithMocks({
   mockRunNativeExtractionRoute = null,
+  mockRunGoogleDriveOcrRoute = null,
+  mockValidateGoogleDriveOcrSetup = null,
+  mockProbeNativePdfSelectableText = null,
+  heavyPdfSplitCoreOverrides = null,
   pdfPageSelectionOverrides = null,
 } = {}) {
   const coreModulePath = path.resolve(
@@ -39,12 +43,32 @@ function loadCoreWithMocks({
     __dirname,
     '../../../electron/text_extraction_platform/native_extraction_route.js'
   );
+  const ocrRouteModulePath = path.resolve(
+    __dirname,
+    '../../../electron/text_extraction_platform/ocr_google_drive_route.js'
+  );
+  const ocrSetupValidationModulePath = path.resolve(
+    __dirname,
+    '../../../electron/text_extraction_platform/ocr_google_drive_setup_validation.js'
+  );
+  const nativePdfProbeModulePath = path.resolve(
+    __dirname,
+    '../../../electron/text_extraction_platform/native_pdf_selectable_text_probe.js'
+  );
+  const heavyPdfSplitCoreModulePath = path.resolve(
+    __dirname,
+    '../../../electron/text_extraction_platform/text_extraction_heavy_pdf_split_core.js'
+  );
   const pdfPageSelectionModulePath = path.resolve(
     __dirname,
     '../../../electron/text_extraction_platform/text_extraction_pdf_page_selection.js'
   );
   const originalCoreModule = require.cache[coreModulePath];
   const originalNativeRouteModule = require.cache[nativeRouteModulePath];
+  const originalOcrRouteModule = require.cache[ocrRouteModulePath];
+  const originalOcrSetupValidationModule = require.cache[ocrSetupValidationModulePath];
+  const originalNativePdfProbeModule = require.cache[nativePdfProbeModulePath];
+  const originalHeavyPdfSplitCoreModule = require.cache[heavyPdfSplitCoreModulePath];
   const originalPdfPageSelectionModule = require.cache[pdfPageSelectionModulePath];
 
   if (typeof mockRunNativeExtractionRoute === 'function') {
@@ -54,6 +78,52 @@ function loadCoreWithMocks({
       loaded: true,
       exports: {
         runNativeExtractionRoute: mockRunNativeExtractionRoute,
+      },
+    };
+  }
+
+  if (typeof mockRunGoogleDriveOcrRoute === 'function') {
+    require.cache[ocrRouteModulePath] = {
+      id: ocrRouteModulePath,
+      filename: ocrRouteModulePath,
+      loaded: true,
+      exports: {
+        runGoogleDriveOcrRoute: mockRunGoogleDriveOcrRoute,
+      },
+    };
+  }
+
+  if (typeof mockValidateGoogleDriveOcrSetup === 'function') {
+    require.cache[ocrSetupValidationModulePath] = {
+      id: ocrSetupValidationModulePath,
+      filename: ocrSetupValidationModulePath,
+      loaded: true,
+      exports: {
+        validateGoogleDriveOcrSetup: mockValidateGoogleDriveOcrSetup,
+      },
+    };
+  }
+
+  if (typeof mockProbeNativePdfSelectableText === 'function') {
+    require.cache[nativePdfProbeModulePath] = {
+      id: nativePdfProbeModulePath,
+      filename: nativePdfProbeModulePath,
+      loaded: true,
+      exports: {
+        probeNativePdfSelectableText: mockProbeNativePdfSelectableText,
+      },
+    };
+  }
+
+  if (heavyPdfSplitCoreOverrides && typeof heavyPdfSplitCoreOverrides === 'object') {
+    const actualHeavyPdfSplitCoreModule = require(heavyPdfSplitCoreModulePath);
+    require.cache[heavyPdfSplitCoreModulePath] = {
+      id: heavyPdfSplitCoreModulePath,
+      filename: heavyPdfSplitCoreModulePath,
+      loaded: true,
+      exports: {
+        ...actualHeavyPdfSplitCoreModule,
+        ...heavyPdfSplitCoreOverrides,
       },
     };
   }
@@ -85,6 +155,26 @@ function loadCoreWithMocks({
       require.cache[nativeRouteModulePath] = originalNativeRouteModule;
     } else if (typeof mockRunNativeExtractionRoute === 'function') {
       delete require.cache[nativeRouteModulePath];
+    }
+    if (typeof mockRunGoogleDriveOcrRoute === 'function' && originalOcrRouteModule) {
+      require.cache[ocrRouteModulePath] = originalOcrRouteModule;
+    } else if (typeof mockRunGoogleDriveOcrRoute === 'function') {
+      delete require.cache[ocrRouteModulePath];
+    }
+    if (typeof mockValidateGoogleDriveOcrSetup === 'function' && originalOcrSetupValidationModule) {
+      require.cache[ocrSetupValidationModulePath] = originalOcrSetupValidationModule;
+    } else if (typeof mockValidateGoogleDriveOcrSetup === 'function') {
+      delete require.cache[ocrSetupValidationModulePath];
+    }
+    if (typeof mockProbeNativePdfSelectableText === 'function' && originalNativePdfProbeModule) {
+      require.cache[nativePdfProbeModulePath] = originalNativePdfProbeModule;
+    } else if (typeof mockProbeNativePdfSelectableText === 'function') {
+      delete require.cache[nativePdfProbeModulePath];
+    }
+    if (heavyPdfSplitCoreOverrides && typeof heavyPdfSplitCoreOverrides === 'object' && originalHeavyPdfSplitCoreModule) {
+      require.cache[heavyPdfSplitCoreModulePath] = originalHeavyPdfSplitCoreModule;
+    } else if (heavyPdfSplitCoreOverrides && typeof heavyPdfSplitCoreOverrides === 'object') {
+      delete require.cache[heavyPdfSplitCoreModulePath];
     }
     if (pdfPageSelectionOverrides && typeof pdfPageSelectionOverrides === 'object' && originalPdfPageSelectionModule) {
       require.cache[pdfPageSelectionModulePath] = originalPdfPageSelectionModule;
@@ -204,6 +294,8 @@ test('resolvePreparePayload trims supported fields and drops invalid values', ()
     resolvePreparePayload({
       filePath: '  C:\\temp\\sample.pdf  ',
       ocrLanguage: '  es  ',
+      planningMode: '  BATCH  ',
+      forceHeavySplitFullSource: true,
       pdfPageSelection: {
         mode: 'range',
         fromPage: 3,
@@ -217,6 +309,8 @@ test('resolvePreparePayload trims supported fields and drops invalid values', ()
     {
       filePath: 'C:\\temp\\sample.pdf',
       ocrLanguage: 'es',
+      planningMode: 'batch',
+      forceHeavySplitFullSource: true,
       pdfPageSelection: {
         mode: 'range',
         fromPage: 3,
@@ -233,6 +327,8 @@ test('resolvePreparePayload trims supported fields and drops invalid values', ()
     {
       filePath: '',
       ocrLanguage: '',
+      planningMode: 'single',
+      forceHeavySplitFullSource: false,
       pdfPageSelection: null,
       generatedPdfArtifactPolicy: null,
     }
@@ -263,10 +359,22 @@ test('resolveExecutePayload trims ids and only accepts native or ocr route prefe
     resolveExecutePayload({
       prepareId: '  abc-123  ',
       routePreference: ' Native ',
+      processingContext: {
+        unitIndex: 1,
+        unitCount: 2,
+      },
+      reuseActiveProcessingLock: true,
+      heavySplitFailurePolicy: 'omit_failed_and_continue',
     }),
     {
       prepareId: 'abc-123',
       routePreference: 'native',
+      processingContext: {
+        unitIndex: 1,
+        unitCount: 2,
+      },
+      reuseActiveProcessingLock: true,
+      heavySplitFailurePolicy: 'omit_failed_and_continue',
     }
   );
 
@@ -278,6 +386,9 @@ test('resolveExecutePayload trims ids and only accepts native or ocr route prefe
     {
       prepareId: '',
       routePreference: '',
+      processingContext: null,
+      reuseActiveProcessingLock: false,
+      heavySplitFailurePolicy: 'finish_unit_after_last_success',
     }
   );
 });
@@ -485,6 +596,204 @@ test('prepareSelectedFile triages the selected PDF range instead of the whole do
   assert.equal(selectableRangePreparation.processingInputFileName, 'mixed_scan_then_selectable_pages_2_2.pdf');
 });
 
+test('prepareSelectedFile uses source-PDF triage in batch planning mode even when the selected range is image-only', async (t) => {
+  const mixedPdfPath = await createMixedPdfFixture(t);
+  const resolvePaths = () => ({
+    credentialsPath: path.join('missing', 'credentials.json'),
+    tokenPath: path.join('missing', 'token.json'),
+    bundledCredentialsFailureCode: 'credentials_missing',
+    bundledCredentialsFailureReason: 'bundled_credentials_missing',
+    bundledCredentialsFailureDetailsSafeForLogs: {},
+    generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+  });
+
+  const batchPlanningPreparation = await prepareSelectedFile({
+    filePath: mixedPdfPath,
+    ocrLanguage: 'es',
+    planningMode: 'batch',
+    pdfPageSelection: {
+      mode: 'range',
+      fromPage: 1,
+      toPage: 1,
+    },
+    generatedPdfArtifactPolicy: {
+      mode: 'delete',
+    },
+    resolvePaths,
+    log: silentLog,
+  });
+
+  assert.equal(batchPlanningPreparation.ok, true);
+  assert.equal(batchPlanningPreparation.prepareReady, true);
+  assert.equal(batchPlanningPreparation.planningMode, 'batch');
+  assert.equal(batchPlanningPreparation.requiresRouteChoice, true);
+  assert.deepEqual(batchPlanningPreparation.routeChoiceOptions, ['native', 'ocr']);
+  assert.equal(batchPlanningPreparation.routeMetadata.pdfPageSelection.fromPage, 1);
+  assert.equal(batchPlanningPreparation.routeMetadata.pdfPageSelection.toPage, 1);
+  assert.equal(batchPlanningPreparation.processingInputFileName, 'mixed_scan_then_selectable_pages_1_1.pdf');
+});
+
+test('prepareSelectedFile preserves forced full-source heavy split as main-owned all-pages execution state', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockValidateGoogleDriveOcrSetup: () => ({ ok: true }),
+    mockProbeNativePdfSelectableText: async () => ({
+      state: 'success',
+      selectableText: 'present',
+      metadataSafeForLogs: {
+        pagesScanned: 12,
+        totalPages: 12,
+        foundAtPage: 1,
+        probedFromPage: 1,
+        probedToPage: 12,
+        selectedPageCount: 12,
+        elapsedMs: 1,
+      },
+    }),
+    heavyPdfSplitCoreOverrides: {
+      isHeavyPdfBySourceSize: () => true,
+      buildHeavyPdfSplitPlan: () => ({
+        ok: true,
+        sourceTotalPages: 12,
+        sourceFileSizeBytes: 458 * 1024 * 1024,
+        generatedInputs: [
+          {
+            inputIndex: 1,
+            fromPage: 1,
+            toPage: 6,
+            pdfPageSelection: {
+              mode: 'range',
+              fromPage: 1,
+              toPage: 6,
+              selectedPageCount: 6,
+              totalPages: 12,
+            },
+            processingInputFileName: 'selectable_text_fixture_12_pages_pages_01_06.pdf',
+          },
+          {
+            inputIndex: 2,
+            fromPage: 7,
+            toPage: 12,
+            pdfPageSelection: {
+              mode: 'range',
+              fromPage: 7,
+              toPage: 12,
+              selectedPageCount: 6,
+              totalPages: 12,
+            },
+            processingInputFileName: 'selectable_text_fixture_12_pages_pages_07_12.pdf',
+          },
+        ],
+      }),
+    },
+  });
+  t.after(restore);
+
+  const result = await core.prepareSelectedFile({
+    filePath: SELECTABLE_PDF_FIXTURE,
+    ocrLanguage: 'es',
+    planningMode: 'batch',
+    forceHeavySplitFullSource: true,
+    pdfPageSelection: {
+      mode: 'range',
+      fromPage: 2,
+      toPage: 3,
+    },
+    generatedPdfArtifactPolicy: {
+      mode: 'delete',
+    },
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+    }),
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.prepareReady, true);
+  assert.equal(result.forceHeavySplitFullSource, true);
+  assert.equal(result.preparedPayload.forceHeavySplitFullSource, true);
+  assert.deepEqual(result.pdfPageSelection, {
+    mode: 'all',
+    fromPage: 1,
+    toPage: 12,
+    selectedPageCount: 12,
+    totalPages: 12,
+  });
+  assert.deepEqual(result.preparedPayload.pdfPageSelection, {
+    mode: 'all',
+    fromPage: 1,
+    toPage: 12,
+    selectedPageCount: 12,
+    totalPages: 12,
+  });
+  assert.equal(result.processingInputFileName, 'selectable_text_fixture_12_pages.pdf');
+  assert.equal(result.routeMetadata.heavySplitEligible, true);
+  assert.equal(result.routeMetadata.heavySplitPreview.generatedInputs.length, 2);
+});
+
+test('prepareSelectedFile fails instead of silently demoting a forced full-source heavy split when the source no longer requires it', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockValidateGoogleDriveOcrSetup: () => ({ ok: true }),
+    mockProbeNativePdfSelectableText: async () => ({
+      state: 'success',
+      selectableText: 'present',
+      metadataSafeForLogs: {
+        pagesScanned: 12,
+        totalPages: 12,
+        foundAtPage: 1,
+        probedFromPage: 1,
+        probedToPage: 12,
+        selectedPageCount: 12,
+        elapsedMs: 1,
+      },
+    }),
+    heavyPdfSplitCoreOverrides: {
+      isHeavyPdfBySourceSize: () => false,
+    },
+  });
+  t.after(restore);
+
+  const result = await core.prepareSelectedFile({
+    filePath: SELECTABLE_PDF_FIXTURE,
+    ocrLanguage: 'es',
+    planningMode: 'batch',
+    forceHeavySplitFullSource: true,
+    pdfPageSelection: {
+      mode: 'range',
+      fromPage: 2,
+      toPage: 3,
+    },
+    generatedPdfArtifactPolicy: {
+      mode: 'delete',
+    },
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+    }),
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.prepareFailed, true);
+  assert.equal(result.error.code, 'heavy_split_plan_invalid');
+  assert.equal(result.routeMetadata.heavySplitEligible, false);
+  assert.deepEqual(result.pdfPageSelection, {
+    mode: 'all',
+    fromPage: 1,
+    toPage: 12,
+    selectedPageCount: 12,
+    totalPages: 12,
+  });
+});
+
 test('prepareSelectedFile returns neutral PDF alert keys for encrypted PDFs', async () => {
   const result = await prepareSelectedFile({
     filePath: ENCRYPTED_PDF_FIXTURE,
@@ -562,6 +871,13 @@ test('executePreparedImport returns ALREADY_ACTIVE when the controller stays act
     {
       source: 'text_extraction_execution',
       reason: 'run_route',
+      unitIndex: null,
+      unitCount: null,
+      inputIndex: null,
+      inputCount: null,
+      selectedRoute: 'native',
+      processingInputFileName: '',
+      processingInputSource: 'original_selected_file',
     },
   ]);
   assert.deepEqual(controller.exitCalls, []);
@@ -651,6 +967,13 @@ test('executePreparedImport materializes the selected PDF range for native succe
     {
       source: 'text_extraction_execution',
       reason: 'run_pdf_route',
+      unitIndex: null,
+      unitCount: null,
+      inputIndex: null,
+      inputCount: null,
+      selectedRoute: 'native',
+      processingInputFileName: 'selectable_text_fixture_12_pages.pdf',
+      processingInputSource: 'original_selected_file',
     },
   ]);
   assert.deepEqual(controller.exitCalls, [
@@ -824,4 +1147,235 @@ test('executePreparedImport does not release a replacement processing lock after
   assert.deepEqual(controller.exitCalls, []);
   assert.equal(controller.isActive(), true);
   assert.equal(controller.getState().lockId, 99);
+});
+
+test('executePreparedImport processes heavy split through generated child PDFs instead of uploading the full source PDF', async (t) => {
+  const ocrRouteCalls = [];
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async ({ filePath }) => {
+      ocrRouteCalls.push(path.basename(filePath));
+      return {
+        state: 'success',
+        executedRoute: 'ocr',
+        text: `Extracted from ${path.basename(filePath)}`,
+        warnings: [],
+        provenance: {
+          metadataSafeForLogs: {},
+        },
+        error: null,
+      };
+    },
+  });
+  t.after(restore);
+
+  const controller = createExecutingController();
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo,
+      ocrLanguage: 'es',
+      planningMode: 'batch',
+      forceHeavySplitFullSource: true,
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+      generatedPdfArtifactPolicy: {
+        mode: 'delete',
+      },
+      processingInputFileName: 'selectable_text_fixture_12_pages.pdf',
+      routeMetadata: {
+        fileKind: 'pdf',
+        availableRoutes: ['native', 'ocr'],
+        chosenRoute: null,
+        executedRoute: null,
+        executionKind: null,
+        pdfTriage: 'both',
+        triageReason: 'native_text_detected_and_ocr_ready_choice_required',
+        ocrSetupState: 'ready',
+        heavySplitEligible: true,
+        heavySplitPreview: {
+          ok: true,
+          generatedInputs: [
+            {
+              inputIndex: 1,
+              fromPage: 1,
+              toPage: 2,
+              pdfPageSelection: {
+                mode: 'range',
+                fromPage: 1,
+                toPage: 2,
+                selectedPageCount: 2,
+                totalPages: 12,
+              },
+              processingInputFileName: 'selectable_text_fixture_12_pages_pages_01_02.pdf',
+            },
+            {
+              inputIndex: 2,
+              fromPage: 3,
+              toPage: 4,
+              pdfPageSelection: {
+                mode: 'range',
+                fromPage: 3,
+                toPage: 4,
+                selectedPageCount: 2,
+                totalPages: 12,
+              },
+              processingInputFileName: 'selectable_text_fixture_12_pages_pages_03_04.pdf',
+            },
+          ],
+        },
+      },
+      requiresRouteChoice: true,
+      routeChoiceOptions: ['native', 'ocr'],
+    },
+    routePreference: 'ocr',
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.executionKind, 'google_drive');
+  assert.equal(result.result.state, 'success');
+  assert.match(result.result.text, /pages_01_02\.pdf/);
+  assert.match(result.result.text, /pages_03_04\.pdf/);
+  assert.deepEqual(ocrRouteCalls, [
+    'selectable_text_fixture_12_pages_pages_01_02.pdf',
+    'selectable_text_fixture_12_pages_pages_03_04.pdf',
+  ]);
+  assert.equal(ocrRouteCalls.includes('selectable_text_fixture_12_pages.pdf'), false);
+  assert.equal(result.result.processingInputFileName, 'selectable_text_fixture_12_pages.pdf');
+  assert.equal(result.result.generatedPdfArtifact, null);
+  assert.equal(result.result.provenance.sourceFileName, 'selectable_text_fixture_12_pages.pdf');
+  assert.equal(result.result.provenance.metadataSafeForLogs.processingInputSource, 'original_selected_file');
+  assert.equal(result.result.provenance.metadataSafeForLogs.generatedPdfArtifactRetained, false);
+  assert.deepEqual(
+    result.result.heavySplitExecution.generatedInputs.map((generatedInput) => ({
+      fileName: generatedInput.fileName,
+      state: generatedInput.state,
+    })),
+    [
+      {
+        fileName: 'selectable_text_fixture_12_pages_pages_01_02.pdf',
+        state: 'success',
+      },
+      {
+        fileName: 'selectable_text_fixture_12_pages_pages_03_04.pdf',
+        state: 'success',
+      },
+    ]
+  );
+});
+
+test('executePreparedImport keeps retained generated PDFs only on heavy split child statuses', async (t) => {
+  const retainedArtifactsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-heavy-split-retained-'));
+  t.after(() => fs.rmSync(retainedArtifactsDir, { recursive: true, force: true }));
+
+  const ocrRouteCalls = [];
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async ({ filePath }) => {
+      ocrRouteCalls.push(path.basename(filePath));
+      return {
+        state: 'success',
+        executedRoute: 'ocr',
+        text: `Extracted from ${path.basename(filePath)}`,
+        warnings: [],
+        provenance: {
+          metadataSafeForLogs: {},
+        },
+        error: null,
+      };
+    },
+  });
+  t.after(restore);
+
+  const controller = createExecutingController();
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo,
+      ocrLanguage: 'es',
+      planningMode: 'batch',
+      forceHeavySplitFullSource: true,
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+      generatedPdfArtifactPolicy: {
+        mode: 'keep',
+      },
+      processingInputFileName: 'selectable_text_fixture_12_pages.pdf',
+      routeMetadata: {
+        fileKind: 'pdf',
+        availableRoutes: ['native', 'ocr'],
+        chosenRoute: null,
+        executedRoute: null,
+        executionKind: null,
+        pdfTriage: 'both',
+        triageReason: 'native_text_detected_and_ocr_ready_choice_required',
+        ocrSetupState: 'ready',
+        heavySplitEligible: true,
+        heavySplitPreview: {
+          ok: true,
+          generatedInputs: [
+            {
+              inputIndex: 1,
+              fromPage: 1,
+              toPage: 2,
+              pdfPageSelection: {
+                mode: 'range',
+                fromPage: 1,
+                toPage: 2,
+                selectedPageCount: 2,
+                totalPages: 12,
+              },
+              processingInputFileName: 'selectable_text_fixture_12_pages_pages_01_02.pdf',
+            },
+          ],
+        },
+      },
+      requiresRouteChoice: true,
+      routeChoiceOptions: ['native', 'ocr'],
+    },
+    routePreference: 'ocr',
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      generatedPdfArtifactsDir: retainedArtifactsDir,
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.executionKind, 'google_drive');
+  assert.deepEqual(ocrRouteCalls, [
+    'selectable_text_fixture_12_pages_pages_01_02.pdf',
+  ]);
+  assert.equal(result.result.generatedPdfArtifact, null);
+  assert.equal(result.result.processingInputFileName, 'selectable_text_fixture_12_pages.pdf');
+  assert.equal(result.result.provenance.metadataSafeForLogs.processingInputSource, 'original_selected_file');
+  assert.equal(result.result.provenance.metadataSafeForLogs.generatedPdfArtifactRetained, false);
+  assert.equal(result.result.heavySplitExecution.generatedInputs.length, 1);
+  assert.equal(result.result.heavySplitExecution.generatedInputs[0].generatedPdfArtifact.retained, true);
+  assert.ok(result.result.heavySplitExecution.generatedInputs[0].generatedPdfArtifact.retainedArtifactPath);
 });

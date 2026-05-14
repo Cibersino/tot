@@ -52,6 +52,13 @@ if (!textExtractionDragDrop
   || typeof textExtractionDragDrop.configure !== 'function') {
   throw new Error('[renderer] TextExtractionDragDrop unavailable; cannot continue');
 }
+const textExtractionBatchFlow = window.TextExtractionBatchFlow || null;
+if (!textExtractionBatchFlow
+  || typeof textExtractionBatchFlow.configure !== 'function'
+  || typeof textExtractionBatchFlow.startFromSelectedFiles !== 'function'
+  || typeof textExtractionBatchFlow.startSyntheticSingleFileHeavySplit !== 'function') {
+  throw new Error('[renderer] TextExtractionBatchFlow unavailable; cannot continue');
+}
 
 const textExtractionStatusUi = window.TextExtractionStatusUi;
 if (!textExtractionStatusUi
@@ -235,6 +242,9 @@ function hasBlockingMainWindowModalOpen() {
     || isAriaHiddenElementVisible('textExtractionPdfOptionsModal')
     || isAriaHiddenElementVisible('textExtractionRouteModal')
     || isAriaHiddenElementVisible('textExtractionApplyModal')
+    || isAriaHiddenElementVisible('textExtractionBatchPlanModal')
+    || isAriaHiddenElementVisible('textExtractionBatchFinalModal')
+    || isAriaHiddenElementVisible('textExtractionSingleFileHeavyPdfModal')
     || isAriaHiddenElementVisible('snapshotSaveTagsModal')
     || isAriaHiddenElementVisible('readingTestEntryModal')
     || isAriaHiddenElementVisible('textExtractionOcrActivationDisclosureModal');
@@ -1687,6 +1697,18 @@ async function resolveDroppedFilePath(file) {
 // renderer.js owns only app-level feature wiring here.
 // The shared text extraction flow stays in the delegated window modules.
 function configureTextExtractionModules() {
+  textExtractionBatchFlow.configure({
+    applyTextViaCanonicalPath,
+    getOptionalElectronMethod,
+    getOcrLanguage: () => idiomaActual || '',
+    guardUserAction,
+    hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
+    hasCurrentTextSubscription: () => hasCurrentTextSubscription,
+    maybeRecoverTextExtractionOcrSetupAndRetry,
+    requestPreparedImport,
+    textExtractionStatusUi,
+  });
+
   textExtractionEntry.configure({
     applyTextViaCanonicalPath,
     getClipboardRepeatCount: () => currentTextSelectorSection.getClipboardRepeatCount(),
@@ -1695,6 +1717,7 @@ function configureTextExtractionModules() {
     guardUserAction,
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,
+    textExtractionBatchFlow,
     textExtractionStatusUi,
     isLatestTextExtractionPrepareAttempt,
     maybeRecoverTextExtractionOcrSetupAndRetry,
@@ -1705,6 +1728,7 @@ function configureTextExtractionModules() {
     canAcceptDrop: canAcceptTextExtractionDrop,
     resolveDroppedFilePath,
     startFromFilePath: textExtractionEntry.startFromFilePath,
+    startFromFilePaths: textExtractionEntry.startFromFilePaths,
   });
 
   if (textExtractionOcrDisconnect

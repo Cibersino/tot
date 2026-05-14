@@ -28,6 +28,9 @@ const api = {
     executePreparedTextExtraction: (payload) => ipcRenderer.invoke('text-extraction-execute-prepared', payload),
     revealTextExtractionGeneratedPdf: (payload) => ipcRenderer.invoke('text-extraction-reveal-generated-pdf', payload),
     getTextExtractionProcessingMode: () => ipcRenderer.invoke('text-extraction-get-processing-mode'),
+    enterTextExtractionProcessingSession: (payload) => ipcRenderer.invoke('text-extraction-enter-processing-session', payload),
+    updateTextExtractionProcessingSession: (payload) => ipcRenderer.invoke('text-extraction-update-processing-session', payload),
+    exitTextExtractionProcessingSession: (payload) => ipcRenderer.invoke('text-extraction-exit-processing-session', payload),
     requestTextExtractionAbort: (payload) => ipcRenderer.invoke('text-extraction-request-abort', payload),
     onTextExtractionProcessingModeChanged: (cb) => {
         const listener = (_e, state) => {
@@ -47,6 +50,7 @@ const api = {
     getCurrentText: () => ipcRenderer.invoke('get-current-text'),
     setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
     saveCurrentTextSnapshot: (payload) => ipcRenderer.invoke('current-text-snapshot-save', payload),
+    openCurrentTextSnapshotsFolder: () => ipcRenderer.invoke('current-text-snapshot-open-folder'),
     loadCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-load'),
     onCurrentTextUpdated: (cb) => {
         const listener = (_e, text) => {
