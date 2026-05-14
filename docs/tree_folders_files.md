@@ -102,6 +102,7 @@ tot/
 │ │ ├── text_extraction_ocr_activation_ipc.js
 │ │ ├── text_extraction_ocr_disconnect_ipc.js
 │ │ ├── text_extraction_generated_pdf_reveal_ipc.js
+│ │ ├── text_extraction_heavy_pdf_split_core.js
 │ │ ├── text_extraction_prepare_execute_core.js
 │ │ ├── text_extraction_prepare_ipc.js
 │ │ ├── text_extraction_execute_prepared_ipc.js
@@ -202,6 +203,8 @@ tot/
 │ │ ├── browser_extension_modal.js
 │ │ ├── text_apply_canonical.js
 │ │ ├── text_extraction_status_ui.js
+│ │ ├── text_extraction_batch_planning_modal.js
+│ │ ├── text_extraction_batch_final_modal.js
 │ │ ├── text_extraction_pdf_options_modal.js
 │ │ ├── text_extraction_route_choice_modal.js
 │ │ ├── text_extraction_apply_modal.js
@@ -209,7 +212,9 @@ tot/
 │ │ ├── text_extraction_ocr_activation_recovery.js
 │ │ ├── text_extraction_ocr_disconnect.js
 │ │ ├── text_extraction_entry.js
+│ │ ├── text_extraction_batch_flow.js
 │ │ ├── text_extraction_drag_drop.js
+│ │ ├── text_extraction_single_file_heavy_pdf_modal.js
 │ │ ├── current_text_selector_section.js
 │ │ ├── editor_ui.js
 │ │ ├── editor_engine.js
@@ -246,9 +251,11 @@ tot/
 │ │ └── electron_launch_smoke.test.js
 │ ├── unit/
 │ │ ├── electron/
+│ │ │ ├── current_text_snapshots_main.test.js
 │ │ │ ├── editor_find_main.test.js
 │ │ │ ├── editor_state.test.js
 │ │ │ ├── native_pdf_selectable_text_probe.test.js
+│ │ │ ├── text_extraction_heavy_pdf_split_core.test.js
 │ │ │ ├── text_extraction_generated_pdf_reveal_ipc.test.js
 │ │ │ ├── text_extraction_pdf_page_selection.test.js
 │ │ │ ├── text_extraction_prepare_execute_core.test.js
@@ -273,7 +280,14 @@ tot/
 │ │   ├── editor_maximized_layout_core.test.js
 │ │   ├── editor_ui_margin_persistence.test.js
 │ │   ├── format_core.test.js
-│ │   └── reading_test_questions_core.test.js
+│ │   ├── reading_test_questions_core.test.js
+│ │   ├── snapshot_save_tags_modal.test.js
+│ │   ├── text_extraction_batch_final_modal.test.js
+│ │   ├── text_extraction_batch_flow.test.js
+│ │   ├── text_extraction_batch_planning_modal.test.js
+│ │   ├── text_extraction_entry.test.js
+│ │   ├── text_extraction_single_file_heavy_pdf_modal.test.js
+│ │   └── text_extraction_status_ui.test.js
 │ └── README.md
 ├── website/                       # {sitio web}
 │ └── public/
@@ -367,7 +381,7 @@ tot/
 - `electron/reading_test_result_preload.js` — Preload del modal de resultado del reading speed test; expone `window.readingTestResultAPI` y bufferiza/reproduce el payload init del resultado medido.
 
 **Renderer (UI / ventanas):**
-- `public/renderer.js` — Lógica principal/orquestador de UI de la ventana principal; delega ownership especializados a módulos auxiliares del renderer como `public/js/wpm_controls.js`, `public/js/presets.js`, `public/js/crono.js` y `public/js/reading_speed_test.js`.
+- `public/renderer.js` — Lógica principal/orquestador de UI de la ventana principal; delega ownership especializados a módulos auxiliares del renderer como `public/js/wpm_controls.js`, `public/js/presets.js`, `public/js/crono.js`, `public/js/reading_speed_test.js` y el stack batch/heavy del flujo text extraction.
 - `public/editor.js` — Entry point/orquestador del editor manual: valida dependencias, arma el contexto compartido del editor y registra bootstrap, listeners DOM e IPC sobre los módulos auxiliares `public/js/editor_ui.js` y `public/js/editor_engine.js`, incluyendo el layout maximizado centrado con gutters simétricos.
 - `public/editor_find.js` — Lógica de la ventana dedicada de búsqueda del editor.
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
@@ -383,7 +397,7 @@ tot/
 - `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`, `set-spellcheck-enabled`, `set-editor-font-size-px` y difunde cambios vía `settings-updated` más callback `onSettingsUpdated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`) y persiste `spellcheckEnabled` y `editorFontSizePx`.
 - `electron/spellcheck.js` — Política/controlador del spellcheck de Electron: resuelve el diccionario a usar según el idioma activo de la app, aplica la configuración sobre `session.defaultSession`, respeta `spellcheckEnabled` y deshabilita spellcheck cuando el tag activo no tiene diccionario soportado (p.ej. `arn`, `es-cl`) en vez de delegar silenciosamente al locale del SO.
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
-- `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): valida payloads del flujo save, abre diálogos nativos, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots simples `{ "text": "<string>" }`, snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos compatibles con payload opcional `readingTest`, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
+- `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): valida payloads del flujo save, abre diálogos nativos o resuelve paths determinísticos no interactivos para callers gestionados, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots simples `{ "text": "<string>" }`, snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos compatibles con payload opcional `readingTest`, expone además la apertura de la carpeta de snapshots, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado y `maximizedTextWidthPx`), su integración con el `BrowserWindow` y el bridge IPC/notificaciones del estado de ventana hacia el renderer del editor.
 - `electron/editor_find_main.js` — Coordinador main-owned del find/replace del editor: conserva el ciclo de vida de la ventana dedicada, el wiring Electron-specific de listeners/IPC autorizado, los atajos (`Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Shift+F3`, `Esc`, `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0`) y la orquestación de alto nivel entre ventana editor y ventana Find.
 - `electron/editor_find_session.js` — Sesión/state machine main-owned del find/replace del editor: encapsula el estado mutable del query, navegación `findInPage`, re-sync al refocar la ventana Find, waits/pending request scoped, y la tubería main↔editor de `Replace` / `Replace All` con sincronización de estado basada en `found-in-page`.
@@ -397,16 +411,17 @@ tot/
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
 - `electron/task_editor_state.js` — Persistencia/estado de la ventana del editor de tareas (tamaño, posición y maximizado).
-- `electron/text_extraction_platform/text_extraction_file_picker_ipc.js` — File picker nativo del flujo text extraction; resuelve carpeta por defecto/persistida, guarda la última carpeta usada y deriva la lista de extensiones soportadas desde el contrato compartido de formatos.
+- `electron/text_extraction_platform/text_extraction_file_picker_ipc.js` — File picker nativo del flujo text extraction; resuelve carpeta por defecto/persistida, permite selección múltiple, guarda la última carpeta usada cuando la selección es válida y deriva la lista de extensiones soportadas desde el contrato compartido de formatos.
 - `electron/text_extraction_platform/text_extraction_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.
-- `electron/text_extraction_platform/text_extraction_processing_mode_ipc.js` — Controlador/IPC del processing mode de text extraction: lock state con `lockId`, broadcast al renderer y solicitud de abort.
+- `electron/text_extraction_platform/text_extraction_processing_mode_ipc.js` — Controlador/IPC del processing mode de text extraction: lock state con `lockId`, broadcast al renderer, solicitud de abort y metadata saneada de progreso por unidad/archivo + ruta/input efectivo para batch execution y heavy split.
 - `electron/text_extraction_platform/text_extraction_pdf_inspect_ipc.js` — IPC main-owned del paso inspect previo a prepare para PDFs: expone metadata segura del archivo y `totalPages` antes de mostrar el modal de opciones PDF en el renderer.
 - `electron/text_extraction_platform/text_extraction_ocr_activation_ipc.js` — Activación OCR Google vía navegador del sistema, separada en dos fases IPC: preparación de credenciales (`prepareTextExtractionOcrActivation`, sin abrir navegador) y lanzamiento OAuth (`launchTextExtractionOcrActivation`, usa el helper loopback seguro con `state` + PKCE, persiste el token local y valida el setup).
 - `electron/text_extraction_platform/text_extraction_ocr_disconnect_ipc.js` — Desconexión OCR desde menú: confirmación nativa, revocación del token OAuth guardado y borrado del token local tras revocación exitosa.
 - `electron/text_extraction_platform/text_extraction_generated_pdf_reveal_ipc.js` — IPC main-owned para revelar en el explorador un PDF generado y retenido por la política `keep`, limitado al root permitido de artefactos generados.
-- `electron/text_extraction_platform/text_extraction_prepare_execute_core.js` — Núcleo compartido del inspect/prepare/execute: clasificación de archivo, triage PDF por rango seleccionado, canonicalización de `pdfPageSelection` y `generatedPdfArtifactPolicy`, materialización local del subset PDF para paridad native/OCR y ownership-aware cancellation para evitar que una ejecución abortada continúe bajo el lock de otra posterior.
-- `electron/text_extraction_platform/text_extraction_prepare_ipc.js` — Etapa prepare del archivo seleccionado: calcula metadata/rutas disponibles, persiste el estado canónico de `pdfPageSelection`/`generatedPdfArtifactPolicy` y crea el registro preparado.
-- `electron/text_extraction_platform/text_extraction_execute_prepared_ipc.js` — Etapa execute del flujo preparado: valida integridad del registro/fingerprint, corre la ruta elegida en processing mode y devuelve alert keys/warnings ya resueltos para el renderer.
+- `electron/text_extraction_platform/text_extraction_heavy_pdf_split_core.js` — Helper main/shared del heavy-PDF planning para OCR: centraliza el límite `50 MB`, decide si el PDF fuente supera el umbral del provider y construye previews deterministas de inputs generados por páginas sin materializar todavía los child PDFs.
+- `electron/text_extraction_platform/text_extraction_prepare_execute_core.js` — Núcleo compartido del inspect/prepare/execute: clasificación de archivo, triage PDF por rango seleccionado, detección/planning de heavy PDFs para OCR, canonicalización de `pdfPageSelection` y `generatedPdfArtifactPolicy`, materialización local del subset PDF para paridad native/OCR y ownership-aware cancellation para evitar que una ejecución abortada continúe bajo el lock de otra posterior.
+- `electron/text_extraction_platform/text_extraction_prepare_ipc.js` — Etapa prepare del archivo seleccionado: calcula metadata/rutas disponibles, persiste el estado canónico de `pdfPageSelection`/`generatedPdfArtifactPolicy`, acepta `planningMode`/`forceHeavySplitFullSource` y crea el registro preparado.
+- `electron/text_extraction_platform/text_extraction_execute_prepared_ipc.js` — Etapa execute del flujo preparado: valida integridad del registro/fingerprint, corre la ruta elegida en processing mode y devuelve alert keys/warnings ya resueltos para el renderer, incluyendo la superficie usada por heavy split y batch execution.
 - `electron/text_extraction_platform/text_extraction_prepared_store.js` — Store efímero de requests preparadas con TTL y fingerprint del archivo fuente.
 - `electron/text_extraction_platform/text_extraction_platform_adapter.js` + `electron/text_extraction_platform/platform_adapters/*.js` — Abstracción por plataforma para carpeta inicial del picker y normalización de paths (Windows-first, pero portable a macOS/Linux).
 - `electron/text_extraction_platform/text_extraction_supported_formats.js` — Contrato compartido de formatos soportados por text extraction: centraliza extensiones nativas, extensiones Google-backed y extensiones OCR/imagen, además de los helpers reutilizados por picker, prepare y rutas de ejecución.
@@ -423,7 +438,7 @@ tot/
 - `electron/text_extraction_platform/ocr_google_drive_provider_failure.js` — Parser compartido de fallas provider-side de Google para OCR: lee tanto `error.errors[].reason` como `google.rpc.ErrorInfo.reason`, normaliza señales documentadas de API deshabilitada y preserva diagnóstico de conflictos entre ambos formatos.
 - `electron/text_extraction_platform/ocr_google_drive_setup_validation.js` — Validación técnica del setup OCR (credenciales, token y reachability de Google Drive); consume el parser compartido y la clasificación post-parse común, pero conserva subtipos y fallback propios del flujo de setup.
 - `electron/text_extraction_platform/ocr_google_drive_token_storage.js` — Lectura/escritura/borrado protegido del token OCR usando `safeStorage` de Electron.
-- `electron/text_extraction_platform/ocr_google_drive_route.js` — Ruta Google Drive/Docs para extracción respaldada por Google: cubre `rtf`/`odt` por conversión de documento y también imágenes/PDFs para OCR, usa la clasificación post-parse común para fallas provider/runtime y conserva sus fallbacks propios de etapa (`ocr_conversion_failed` / `ocr_export_failed`).
+- `electron/text_extraction_platform/ocr_google_drive_route.js` — Ruta Google Drive/Docs para extracción respaldada por Google: cubre `rtf`/`odt` por conversión de documento y también imágenes/PDFs para OCR, valida el límite de tamaño antes del upload OCR, usa la clasificación post-parse común para fallas provider/runtime y conserva sus fallbacks propios de etapa (`ocr_conversion_failed` / `ocr_export_failed`).
 - `electron/text_extraction_platform/ocr_image_normalization.js` — Normalización local de imágenes para OCR antes del upload cuando el formato lo requiere.
 - `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
 - `electron/updater.js` — Lógica de actualización (comparación de versión, diálogos y apertura de URL de descarga).
@@ -453,22 +468,26 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca el modal previo de tags al guardar, normaliza metadata opcional de snapshot vía `snapshot_tag_catalog`, llama `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
-- `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: muestra selects opcionales para `language` / `type` / `difficulty`, aplica i18n y devuelve tags normalizados o cancelación.
+- `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: muestra selects opcionales para `language` / `type` / `difficulty`, admite copy overrides compartidos con batch planning, aplica i18n y devuelve tags normalizados o cancelación.
 - `public/js/reading_speed_test.js` — Módulo renderer del reading speed test: gestiona el modal de entrada/configuración, refleja combinaciones reales del pool, ejecuta reset/start IPC, muestra warnings inline y sincroniza el lock state / WPM aplicado.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Ko-fi a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n y mantiene este wiring fuera de `public/renderer.js`.
 - `public/js/browser_extension_modal.js` — Owner renderer del acceso a la extensión del navegador desde la ventana principal: gestiona el modal informativo, el foco/restauración, el lock state y el puente seguro hacia Chrome Web Store.
 - `public/js/text_apply_canonical.js` — Helpers canónicos de aplicar texto (`overwrite` / `append` / repeticiones) reutilizados por clipboard y por el flujo de extracción.
 - `public/js/results_time_multiplier.js` — Controla el multiplicador de tiempo bajo el resultado estimado: valida el input como numero natural, conserva el estado base recibido desde `public/renderer.js` y renderiza el tiempo multiplicado en la ventana principal.
-- `public/js/text_extraction_status_ui.js` — Superficie visual del flujo text extraction en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido, botón abort y nombre seguro del `processingInputFile` (original o subset materializado) sin exponer paths completos.
+- `public/js/text_extraction_status_ui.js` — Superficie visual del flujo text extraction en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido, botón abort, progreso por unidad/archivo y nombre seguro del `processingInputFile` (original, subset materializado o child generado por heavy split) sin exponer paths completos.
+- `public/js/text_extraction_batch_planning_modal.js` — Modal/shared planner del batch extraction: renderiza unidades/inputs reordenables, page scope por input, failure policy común, toggle de conservación de generated PDFs y edición de tags sin mover la lógica de negocio a `renderer.js`.
+- `public/js/text_extraction_batch_final_modal.js` — Modal final compartido de batch/heavy execution: resume resultados por unidad, acciones de copy report / abrir carpeta de snapshots y reveal de artefactos generados retenidos sin crear una segunda superficie de reporte.
 - `public/js/text_extraction_pdf_options_modal.js` — Modal renderer previo a prepare para PDFs: muestra `totalPages`, recoge `All pages` vs `Page range`, controla la policy `keep/delete` cuando aplica y oculta los controles range-only fuera del modo rango.
 - `public/js/text_extraction_route_choice_modal.js` — Modal de elección de ruta (`native` / `ocr`) cuando un PDF soporta ambas.
 - `public/js/text_extraction_apply_modal.js` — Modal post-extracción para decidir overwrite/append y repeticiones antes de aplicar el texto extraído; cuando existe un PDF generado retenido, también ofrece la acción `Reveal saved PDF`.
 - `public/js/text_extraction_ocr_activation_disclosure_modal.js` — Modal renderer de preconsentimiento para OCR Google: muestra la divulgación inmediatamente antes del OAuth, enlaza a `privacy-policy` mediante `openAppDoc(...)` y exige acción afirmativa del usuario.
 - `public/js/text_extraction_ocr_activation_recovery.js` — Helpers de recuperación para OCR: completan preparación de credenciales, muestran el modal de divulgación y lanzan OAuth solo tras aceptación, antes de reintentar el prepare.
 - `public/js/text_extraction_ocr_disconnect.js` — Handler del renderer para `Disconnect Google OCR`: solicita la desconexión al main y muestra feedback de éxito/fallo/not-connected.
-- `public/js/text_extraction_entry.js` — Orquestador compartido del flujo text extraction desde picker o drag/drop: encadena inspect PDF, modal de opciones PDF, prepare, route choice, execute y apply, además de exponer la acción de reveal del PDF retenido cuando existe.
-- `public/js/text_extraction_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de archivos al entry flow compartido.
+- `public/js/text_extraction_entry.js` — Orquestador compartido del flujo text extraction desde picker o drag/drop: encadena inspect PDF, modal de opciones PDF, prepare, route choice, execute y apply, deriva a batch planning cuando hay múltiples archivos y activa el handoff al heavy-PDF modal / synthetic full-source split cuando OCR no conviene como una sola unidad.
+- `public/js/text_extraction_batch_flow.js` — Owner renderer del batch extraction: reutiliza contratos prepare/execute/apply/snapshot para múltiples archivos, coordina la planificación por unidades, la ejecución secuencial con failure policy compartida y el handoff sintético del single-file heavy split.
+- `public/js/text_extraction_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de uno o varios archivos al entry flow compartido, con branch explícito hacia batch planning cuando corresponde.
+- `public/js/text_extraction_single_file_heavy_pdf_modal.js` — Modal blocking del caso heavy PDF en single-file OCR: explica los casos A/B del límite `50 MB`, mantiene explícito el handoff a full-source automatic split y expone reveal del generated PDF retenido cuando existe.
 - `public/js/current_text_selector_section.js` — Owner UI de la sección “texto vigente” en la ventana principal: concentra el título, el preview del texto actual, el toolbar local de esa sección, el lock state específico de sus controles y el toggle `Spoiler`, que permite ocultar el tramo final del preview sin devolver esa lógica a `public/renderer.js`.
 - `public/js/editor_ui.js` — Módulo UI del editor manual: i18n del editor, `spellcheck`, tamaño de texto, layout maximizado con gutters simétricos y persistencia de `maximizedTextWidthPx`, progreso de lectura, restauración de foco y overlay prestart del reading speed test.
 - `public/js/editor_engine.js` — Módulo de lógica/sync del editor manual: helpers de selección e inserción, `replace current/all`, sincronización con main, truncation handling, paste/drop y aplicación de updates externos.
@@ -490,11 +509,11 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `.github/workflows/test.yml` — Workflow GitHub Actions del baseline automatizado actual; corre `npm ci` + `npm test` sobre `windows-latest`.
 - `test/README.md` — Convenciones del layout de tests y separación entre baseline unitario y smoke suite local.
 - `test/fixtures/pdf/` — Fixtures PDF sintéticos, versionados y no personales para el baseline unitario del flujo page-range (`selectable text`, `image only`, `encrypted`), sin depender de archivos locales ignorados bajo `tools_local/`.
-- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo text extraction (`settings`, `task_editor_state`, `editor_state` para `maximizedTextWidthPx`/window-state IPC, `spellcheck`, formatos soportados, prepared store, inspect/prepare/execute de page-range, materialización/cleanup de subset PDFs, reveal de PDFs retenidos, parsing/clasificación OCR, OAuth desktop seguro de Google OCR y helpers del flujo `reading_test_session_flow`, más `editor_find_main.test.js` para autorización IPC, re-sync al refocus y orquestación request-scoped de replace).
+- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo text extraction (`settings`, `task_editor_state`, `editor_state` para `maximizedTextWidthPx`/window-state IPC, `spellcheck`, formatos soportados, prepared store, inspect/prepare/execute de page-range, heavy split planning, materialización/cleanup de subset PDFs, reveal de PDFs retenidos, snapshots gestionados no interactivos, parsing/clasificación OCR, OAuth desktop seguro de Google OCR y helpers del flujo `reading_test_session_flow`, más `editor_find_main.test.js` para autorización IPC, re-sync al refocus y orquestación request-scoped de replace).
 - `test/unit/electron/reading_test_pool.test.js` — Cobertura del pool del reading speed test: sincronización startup del starter set, seguimiento de hashes, estado externo `used` y prune de filas/archivos gestionados obsoletos.
 - `test/unit/electron/reading_test_pool_import.test.js` — Cobertura del importador del pool del reading speed test: validación de `.json`/`.zip`, duplicados, persistencia de última carpeta y reporte de fallas de escritura.
 - `test/unit/electron/spellcheck.test.js` — Cobertura del spellcheck main-owned: resolución de idiomas soportados, aplicación sobre `Session` y controller `createController(...)`/fallbacks de sesión.
-- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`, `editor_maximized_layout_core`, `reading_test_questions_core`) y de contratos UI puntuales como la persistencia del margen maximizado del editor en `editor_ui`, el commit policy de `editor_engine` y el wiring de `editor_find`.
+- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`, `editor_maximized_layout_core`, `reading_test_questions_core`) y de contratos UI puntuales como la persistencia del margen maximizado del editor en `editor_ui`, el commit policy de `editor_engine`, el wiring de `editor_find`, la planificación/reporte batch, el handoff de single-file heavy PDF, el modal compartido de snapshot tags y la superficie de status de text extraction.
 - `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; además valida que el startup tolere el schema vigente mínimo de settings (incluyendo flags nuevos como `spellcheckEnabled` y `editorFontSizePx`); no forma parte de `npm test` ni del workflow CI base.
 
 ### 4) i18n (estructura y responsabilidades)
