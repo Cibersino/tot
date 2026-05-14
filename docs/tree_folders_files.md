@@ -209,6 +209,8 @@ tot/
 │ │ ├── text_extraction_route_choice_modal.js
 │ │ ├── text_extraction_apply_modal.js
 │ │ ├── text_extraction_ocr_activation_disclosure_modal.js
+│ │ ├── text_extraction_ocr_activation_flow.js
+│ │ ├── text_extraction_ocr_activation.js
 │ │ ├── text_extraction_ocr_activation_recovery.js
 │ │ ├── text_extraction_ocr_disconnect.js
 │ │ ├── text_extraction_entry.js
@@ -282,6 +284,9 @@ tot/
 │ │   ├── format_core.test.js
 │ │   ├── reading_test_questions_core.test.js
 │ │   ├── snapshot_save_tags_modal.test.js
+│ │   ├── text_extraction_ocr_activation.test.js
+│ │   ├── text_extraction_ocr_activation_flow.test.js
+│ │   ├── text_extraction_ocr_activation_recovery.test.js
 │ │   ├── text_extraction_batch_final_modal.test.js
 │ │   ├── text_extraction_batch_flow.test.js
 │ │   ├── text_extraction_batch_planning_modal.test.js
@@ -482,7 +487,9 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/text_extraction_route_choice_modal.js` — Modal de elección de ruta (`native` / `ocr`) cuando un PDF soporta ambas.
 - `public/js/text_extraction_apply_modal.js` — Modal post-extracción para decidir overwrite/append y repeticiones antes de aplicar el texto extraído; cuando existe un PDF generado retenido, también ofrece la acción `Reveal saved PDF`.
 - `public/js/text_extraction_ocr_activation_disclosure_modal.js` — Modal renderer de preconsentimiento para OCR Google: muestra la divulgación inmediatamente antes del OAuth, enlaza a `privacy-policy` mediante `openAppDoc(...)` y exige acción afirmativa del usuario.
-- `public/js/text_extraction_ocr_activation_recovery.js` — Helpers de recuperación para OCR: completan preparación de credenciales, muestran el modal de divulgación y lanzan OAuth solo tras aceptación, antes de reintentar el prepare.
+- `public/js/text_extraction_ocr_activation_flow.js` — Flujo shared de activación OCR en la ventana principal: resuelve los bridges `prepareTextExtractionOcrActivation` / `launchTextExtractionOcrActivation`, ejecuta disclosure + OAuth y devuelve resultados estructurados sin acoplarse a alerts de un caller concreto.
+- `public/js/text_extraction_ocr_activation.js` — Entry point renderer para `Menú > Preferencias > Enable/Activar Google OCR`: reutiliza el flujo shared y traduce sus outcomes a alerts específicas del contexto de activación manual.
+- `public/js/text_extraction_ocr_activation_recovery.js` — Helpers de recuperación para OCR durante text extraction: detectan fallos recuperables de setup/auth, delegan la activación al flujo shared y reintentan `prepare` tras una activación exitosa.
 - `public/js/text_extraction_ocr_disconnect.js` — Handler del renderer para `Disconnect Google OCR`: solicita la desconexión al main y muestra feedback de éxito/fallo/not-connected.
 - `public/js/text_extraction_entry.js` — Orquestador compartido del flujo text extraction desde picker o drag/drop: encadena inspect PDF, modal de opciones PDF, prepare, route choice, execute y apply, deriva a batch planning cuando hay múltiples archivos y activa el handoff al heavy-PDF modal / synthetic full-source split cuando OCR no conviene como una sola unidad.
 - `public/js/text_extraction_batch_flow.js` — Owner renderer del batch extraction: reutiliza contratos prepare/execute/apply/snapshot para múltiples archivos, coordina la planificación por unidades, la ejecución secuencial con failure policy compartida y el handoff sintético del single-file heavy split.
@@ -513,7 +520,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `test/unit/electron/reading_test_pool.test.js` — Cobertura del pool del reading speed test: sincronización startup del starter set, seguimiento de hashes, estado externo `used` y prune de filas/archivos gestionados obsoletos.
 - `test/unit/electron/reading_test_pool_import.test.js` — Cobertura del importador del pool del reading speed test: validación de `.json`/`.zip`, duplicados, persistencia de última carpeta y reporte de fallas de escritura.
 - `test/unit/electron/spellcheck.test.js` — Cobertura del spellcheck main-owned: resolución de idiomas soportados, aplicación sobre `Session` y controller `createController(...)`/fallbacks de sesión.
-- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`, `editor_maximized_layout_core`, `reading_test_questions_core`) y de contratos UI puntuales como la persistencia del margen maximizado del editor en `editor_ui`, el commit policy de `editor_engine`, el wiring de `editor_find`, la planificación/reporte batch, el handoff de single-file heavy PDF, el modal compartido de snapshot tags y la superficie de status de text extraction.
+- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`, `editor_maximized_layout_core`, `reading_test_questions_core`) y de contratos UI puntuales como la persistencia del margen maximizado del editor en `editor_ui`, el commit policy de `editor_engine`, el wiring de `editor_find`, la activación OCR shared/manual/recovery, la planificación/reporte batch, el handoff de single-file heavy PDF, el modal compartido de snapshot tags y la superficie de status de text extraction.
 - `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; además valida que el startup tolere el schema vigente mínimo de settings (incluyendo flags nuevos como `spellcheckEnabled` y `editorFontSizePx`); no forma parte de `npm test` ni del workflow CI base.
 
 ### 4) i18n (estructura y responsabilidades)
