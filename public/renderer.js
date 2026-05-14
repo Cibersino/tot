@@ -73,6 +73,9 @@ if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] TextExtractionStatusUi unavailable; cannot continue');
 }
+const textExtractionOcrActivationFlow = window.TextExtractionOcrActivationFlow || null;
+const textExtractionOcrActivation = window.TextExtractionOcrActivation || null;
+const textExtractionOcrActivationRecovery = window.TextExtractionOcrActivationRecovery || null;
 const textExtractionOcrDisconnect = window.TextExtractionOcrDisconnect || null;
 const browserExtensionModal = window.BrowserExtensionModal || null;
 const mainLogoLinks = window.MainLogoLinks || null;
@@ -1490,6 +1493,19 @@ function registerMenuActions() {
         window.Notify.notifyMain('renderer.alerts.open_presets_error');
       }
     });
+    registerMenuActionGuarded('enable_google_ocr', async () => {
+      if (!textExtractionOcrActivation
+        || typeof textExtractionOcrActivation.startFromPreferencesMenu !== 'function') {
+        log.warnOnce(
+          'renderer.textExtraction.ocrActivation.entrypoint.unavailable',
+          'TextExtractionOcrActivation.startFromPreferencesMenu unavailable; menu action skipped.'
+        );
+        window.Notify.notifyMain('renderer.alerts.text_extraction_ocr_activation_failed');
+        return;
+      }
+
+      await textExtractionOcrActivation.startFromPreferencesMenu();
+    });
     registerMenuActionGuarded('disconnect_google_ocr', async () => {
       if (!textExtractionOcrDisconnect
         || typeof textExtractionOcrDisconnect.startFromPreferencesMenu !== 'function') {
@@ -1641,7 +1657,7 @@ async function maybeRecoverTextExtractionOcrSetupAndRetry({
   prepareTextExtractionSelectedFile,
   routePreference = '',
 }) {
-  const recoveryApi = window.TextExtractionOcrActivationRecovery;
+  const recoveryApi = textExtractionOcrActivationRecovery;
   if (!recoveryApi || typeof recoveryApi.recoverAfterSetupFailure !== 'function') {
     log.warnOnce(
       'renderer.textExtraction.ocrActivationRecovery.unavailable',
@@ -1697,6 +1713,42 @@ async function resolveDroppedFilePath(file) {
 // renderer.js owns only app-level feature wiring here.
 // The shared text extraction flow stays in the delegated window modules.
 function configureTextExtractionModules() {
+  if (textExtractionOcrActivationFlow
+    && typeof textExtractionOcrActivationFlow.configure === 'function') {
+    textExtractionOcrActivationFlow.configure({
+      getOptionalElectronMethod,
+    });
+  } else {
+    log.warnOnce(
+      'renderer.textExtraction.ocrActivationFlow.unavailable',
+      'TextExtractionOcrActivationFlow.configure unavailable; OCR activation flows will be disabled.'
+    );
+  }
+
+  if (textExtractionOcrActivation
+    && typeof textExtractionOcrActivation.configure === 'function') {
+    textExtractionOcrActivation.configure({
+      ocrActivationFlow: textExtractionOcrActivationFlow,
+    });
+  } else {
+    log.warnOnce(
+      'renderer.textExtraction.ocrActivation.unavailable',
+      'TextExtractionOcrActivation.configure unavailable; Preferences > Enable Google OCR will be disabled.'
+    );
+  }
+
+  if (textExtractionOcrActivationRecovery
+    && typeof textExtractionOcrActivationRecovery.configure === 'function') {
+    textExtractionOcrActivationRecovery.configure({
+      ocrActivationFlow: textExtractionOcrActivationFlow,
+    });
+  } else {
+    log.warnOnce(
+      'renderer.textExtraction.ocrActivationRecovery.configure.unavailable',
+      'TextExtractionOcrActivationRecovery.configure unavailable; OCR setup recovery will be disabled.'
+    );
+  }
+
   textExtractionBatchFlow.configure({
     applyTextViaCanonicalPath,
     getOptionalElectronMethod,
@@ -1704,7 +1756,6 @@ function configureTextExtractionModules() {
     guardUserAction,
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,
-    maybeRecoverTextExtractionOcrSetupAndRetry,
     requestPreparedImport,
     textExtractionStatusUi,
   });

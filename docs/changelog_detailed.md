@@ -54,6 +54,7 @@ Reglas:
 - La selección múltiple desde picker y drag/drop deja de tratarse como un caso inválido de “single file” y pasa a abrir un planificador de extracción por lotes con unidades, rutas, rangos y política de fallos.
 - Los PDFs que exceden el límite de entrada del proveedor OCR dejan de caer en un fallo genérico: ahora la app ofrece volver a páginas, usar ruta nativa si existe o derivar al split automático del PDF completo.
 - La ejecución batch añade progreso contextual (`unidad/archivo/ruta`), snapshots JSON automáticos por unidad cuando aplica y un reporte final con copy/export de resultados.
+- La activación de Google OCR deja de depender solo de un fallo durante la extracción y pasa a poder iniciarse explícitamente desde `Menú > Preferencias`, reutilizando el mismo disclosure y la misma secuencia OAuth que usa la recuperación automática.
 
 ### Agregado
 
@@ -79,6 +80,9 @@ Reglas:
 - Snapshots automáticos no interactivos por unidad desde la ejecución batch multi-unidad, con naming determinista y colisión segura bajo `config/saved_current_texts/`.
 - Carpeta app-owned para PDFs retenidos explícitamente por el usuario: `app.getPath('userData')/tot-generated-pdfs/`.
 - Dependencia runtime directa `pdf-lib@^1.17.1` para materializar localmente los subsets PDF usados por el modo `Page range`.
+- Entrada `Enable Google OCR` / `Activar Google OCR` / `Enchufar Google OCR` en `Menú > Preferencias` para iniciar la conexión OCR desde la ventana principal sin esperar a que una extracción la requiera.
+- Módulos renderer shared `text_extraction_ocr_activation_flow.js` y `text_extraction_ocr_activation.js` para centralizar la secuencia `prepare` → disclosure → `launch` y exponerla tanto al menú de preferencias como a la recuperación de extracción.
+- Cobertura unitaria dedicada para activación OCR desde menú, flujo compartido y recuperación (`text_extraction_ocr_activation*.test.js`).
 
 ### Cambiado
 
@@ -97,6 +101,9 @@ Reglas:
 - El guardado de snapshots del texto actual amplía su misma superficie IPC para soportar saves no interactivos con `autoFileBaseName`, reutilizados ahora por la ejecución batch en vez de abrir un segundo flujo de persistencia paralelo.
 - La UI principal incorpora los scripts/modales shared del planner batch, del reporte final batch y del recovery modal para PDF pesado.
 - El manual/instrucciones públicas de la app incorporan el nuevo paso de opciones PDF y la posibilidad de conservar localmente el PDF generado por rango.
+- La recuperación de setup OCR deja de reimplementar por su cuenta `prepare`, disclosure y `launch`, y pasa a delegar en un flujo compartido de activación que devuelve resultados estructurados y mantiene `renderer.js` como wiring de alto nivel.
+- `Menú > Preferencias` deja de ofrecer solo la desconexión OCR y pasa a exponer también la activación explícita desde la misma superficie.
+- Las alertas de activación OCR distinguen ahora el contexto `activar desde menú` del contexto `recuperar extracción`, con copy específico para éxito, cancelación y fallo cuando la acción nace en preferencias.
 
 ### Arreglado
 
@@ -107,6 +114,9 @@ Reglas:
 - Un OCR sobre PDF cuyo source completo supera el límite del proveedor deja de caer directamente en error runtime y pasa por una recuperación explícita hacia `volver a páginas` / `usar nativa` / `split automático`.
 - Un OCR cuyo subset PDF por rango queda demasiado grande deja de intentar continuar con upload inválido y pasa a una recuperación explícita que también puede revelar el artefacto retenido si existe.
 - La ejecución batch deja de depender de diálogos nativos manuales para guardar snapshots por unidad y evita colisiones sobre nombres repetidos mediante sufijos deterministas (`_2`, `_3`, ...).
+- Rechazar el disclosure de activación OCR desde `Menú > Preferencias` o desde la recuperación de extracción deja de disparar avisos de fallo genéricos y pasa a tratarse como cancelación explícita del usuario.
+- La activación OCR lanzada desde preferencias deja de colapsar fallos heterogéneos en un mensaje único y pasa a distinguir credenciales ausentes/inválidas, token inválido, falta de conectividad, cuota/rate limit y cancelación del OAuth.
+- Si la recuperación automática no dispone de los bridges IPC de activación OCR, deja de consumir el flujo como fallo manejado y vuelve al fallback no recuperado en vez de mostrar diagnóstico engañoso.
 
 ### Migración
 

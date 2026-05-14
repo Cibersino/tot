@@ -23,8 +23,37 @@
   log.debug('Text extraction OCR activation recovery helpers starting...');
 
   // =============================================================================
+  // Shared state
+  // =============================================================================
+
+  let deps = null;
+
+  function configure({
+    ocrActivationFlow = null,
+  } = {}) {
+    deps = {
+      ocrActivationFlow,
+    };
+  }
+
+  // =============================================================================
   // Helpers
   // =============================================================================
+
+  function requireConfiguredDeps() {
+    if (!deps) {
+      throw new Error('[text-extraction-ocr-activation-recovery] configure() must run before using the recovery flow');
+    }
+    return deps;
+  }
+
+  function getActivationFlow() {
+    const { ocrActivationFlow } = requireConfiguredDeps();
+    if (!ocrActivationFlow || typeof ocrActivationFlow.startActivationFlow !== 'function') {
+      throw new Error('[text-extraction-ocr-activation-recovery] ocrActivationFlow dependency incomplete');
+    }
+    return ocrActivationFlow;
+  }
 
   function resolveRecoveryCode({ preparation, routePreference } = {}) {
     if (!preparation || preparation.ok !== true) return '';
@@ -66,10 +95,34 @@
       || code === 'auth_failed';
   }
 
-  function resolveTextExtractionAlertKey(rawKey, fallbackKey) {
-    const normalized = typeof rawKey === 'string' ? rawKey.trim() : '';
-    if (normalized) return normalized;
-    return fallbackKey;
+  function mapRecoveryActivationAlertKey(activationResult) {
+    const safeResult = activationResult && typeof activationResult === 'object'
+      ? activationResult
+      : {};
+    const code = typeof safeResult.code === 'string' ? safeResult.code : '';
+
+    if (safeResult.ok === true) {
+      return 'renderer.alerts.text_extraction_ocr_activation_success';
+    }
+    if (code === 'credentials_missing') {
+      return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
+    }
+    if (code === 'credentials_invalid') {
+      return 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
+    }
+    if (code === 'ocr_token_state_invalid') {
+      return 'renderer.alerts.text_extraction_ocr_token_state_invalid';
+    }
+    if (code === 'connectivity_failed') {
+      return 'renderer.alerts.text_extraction_ocr_connectivity_failed';
+    }
+    if (code === 'quota_or_rate_limited') {
+      return 'renderer.alerts.text_extraction_ocr_quota_or_rate_limited';
+    }
+    if (code === 'ocr_activation_cancelled') {
+      return 'renderer.alerts.text_extraction_ocr_activation_cancelled';
+    }
+    return 'renderer.alerts.text_extraction_ocr_activation_failed';
   }
 
   // =============================================================================
@@ -97,89 +150,36 @@
       return { preparation, handled: false };
     }
 
-    const prepareTextExtractionOcrActivation = getOptionalElectronMethod('prepareTextExtractionOcrActivation', {
-      dedupeKey: 'renderer.ipc.prepareTextExtractionOcrActivation.unavailable',
-      unavailableMessage: 'prepareTextExtractionOcrActivation unavailable; OCR setup recovery cannot continue.'
-    });
-    const launchTextExtractionOcrActivation = getOptionalElectronMethod('launchTextExtractionOcrActivation', {
-      dedupeKey: 'renderer.ipc.launchTextExtractionOcrActivation.unavailable',
-      unavailableMessage: 'launchTextExtractionOcrActivation unavailable; OCR setup recovery cannot continue.'
-    });
-    if (!prepareTextExtractionOcrActivation || !launchTextExtractionOcrActivation) {
+    let activationFlow = null;
+    try {
+      activationFlow = getActivationFlow();
+    } catch (err) {
+      log.warn('text extraction OCR activation flow unavailable for setup recovery:', err);
       return { preparation, handled: false };
     }
 
-    let prepareResult = null;
-    try {
-      prepareResult = await prepareTextExtractionOcrActivation();
-    } catch (err) {
-      log.error('text extraction OCR activation prepare IPC failed:', err);
-      window.Notify.notifyMain('renderer.alerts.text_extraction_ocr_activation_failed');
-      return { preparation, handled: true };
-    }
-
-    if (!prepareResult || prepareResult.ok !== true || prepareResult.ready !== true) {
-      const failureAlertKey = resolveTextExtractionAlertKey(
-        prepareResult && prepareResult.alertKey,
-        'renderer.alerts.text_extraction_ocr_activation_failed'
-      );
-      window.Notify.notifyMain(failureAlertKey);
-      log.warn('text extraction OCR activation prepare step did not complete:', {
-        ok: prepareResult ? prepareResult.ok : false,
-        ready: prepareResult ? prepareResult.ready : false,
-        code: prepareResult ? prepareResult.code : '',
-      });
-      return { preparation, handled: true };
-    }
-
-    let disclosureAccepted = false;
-    try {
-      disclosureAccepted = await window.Notify.promptTextExtractionOcrActivationDisclosure();
-    } catch (err) {
-      log.error('text extraction OCR activation disclosure modal failed:', err);
-      window.Notify.notifyMain('renderer.alerts.text_extraction_ocr_activation_failed');
-      return { preparation, handled: true };
-    }
-
-    if (!disclosureAccepted) {
-      log.info('text extraction OCR activation disclosure declined by user:', {
-        code: 'ocr_activation_disclosure_declined',
-      });
-      return {
-        preparation,
-        handled: true,
-      };
-    }
-
-    let activationResult = null;
-    try {
-      activationResult = await launchTextExtractionOcrActivation();
-    } catch (err) {
-      log.error('text extraction OCR activation launch IPC failed:', err);
-      window.Notify.notifyMain('renderer.alerts.text_extraction_ocr_activation_failed');
-      return { preparation, handled: true };
-    }
-
+    const activationResult = await activationFlow.startActivationFlow({
+      source: 'text_extraction_recovery',
+    });
     if (!activationResult || activationResult.ok !== true) {
-      const failureAlertKey = resolveTextExtractionAlertKey(
-        activationResult && activationResult.alertKey,
-        'renderer.alerts.text_extraction_ocr_activation_failed'
-      );
-      window.Notify.notifyMain(failureAlertKey);
-      log.warn('text extraction OCR activation launch step did not complete:', {
-        ok: activationResult ? activationResult.ok : false,
-        state: activationResult ? activationResult.state : '',
-        code: activationResult ? activationResult.code : '',
-      });
+      if (activationResult
+        && activationResult.state === 'unavailable'
+        && activationResult.stage === 'bridge') {
+        return { preparation, handled: false };
+      }
+      if (activationResult
+        && activationResult.state === 'cancelled'
+        && activationResult.code === 'ocr_activation_disclosure_declined') {
+        return {
+          preparation,
+          handled: true,
+        };
+      }
+      window.Notify.notifyMain(mapRecoveryActivationAlertKey(activationResult));
       return { preparation, handled: true };
     }
 
-    window.Notify.notifyMain(
-      resolveTextExtractionAlertKey(
-        activationResult.alertKey,
-        'renderer.alerts.text_extraction_ocr_activation_success'
-      )
-    );
+    window.Notify.notifyMain(mapRecoveryActivationAlertKey(activationResult));
 
     const retriedPreparationRun = await retryPrepare();
     if (retriedPreparationRun && retriedPreparationRun.stale === true) {
@@ -195,6 +195,7 @@
   // =============================================================================
 
   window.TextExtractionOcrActivationRecovery = {
+    configure,
     recoverAfterSetupFailure,
   };
 })();
@@ -202,5 +203,3 @@
 // =============================================================================
 // End of public/js/text_extraction_ocr_activation_recovery.js
 // =============================================================================
-
-

@@ -23,6 +23,7 @@ const api = {
     inspectTextExtractionSelectedFile: (payload) => ipcRenderer.invoke('text-extraction-inspect-selected-file', payload),
     prepareTextExtractionOcrActivation: () => ipcRenderer.invoke('text-extraction-prepare-ocr-activation'),
     launchTextExtractionOcrActivation: () => ipcRenderer.invoke('text-extraction-launch-ocr-activation'),
+    checkTextExtractionOcrAvailability: () => ipcRenderer.invoke('text-extraction-check-ocr-availability'),
     disconnectTextExtractionOcr: (payload) => ipcRenderer.invoke('text-extraction-disconnect-ocr', payload),
     prepareTextExtractionSelectedFile: (payload) => ipcRenderer.invoke('text-extraction-prepare-selected-file', payload),
     executePreparedTextExtraction: (payload) => ipcRenderer.invoke('text-extraction-execute-prepared', payload),
