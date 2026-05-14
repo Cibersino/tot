@@ -187,6 +187,10 @@ body {
   user-select: none;
 }
 
+.btn-standard[hidden] {
+  display: none;
+}
+
 .btn-standard--half {
   height: calc(var(--control-height-md) / 2);
   padding: 0 4px;
@@ -1507,6 +1511,413 @@ select#presets:focus {
   min-width: 110px;
 }
 
+/* Text extraction batch planning modal */
+.text-extraction-batch-plan-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(920px, calc(100% - var(--modal-inline-gutter)));
+  max-height: var(--modal-max-height);
+  overflow: auto;
+  background: var(--modal-panel-bg);
+  color: var(--text-color);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--modal-panel-shadow);
+  border: 1px solid var(--modal-panel-border-color);
+  padding: var(--modal-panel-padding);
+  box-sizing: border-box;
+}
+
+.text-extraction-batch-plan-modal-header,
+.text-extraction-batch-final-modal-header,
+.text-extraction-single-file-heavy-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--modal-gap);
+}
+
+.text-extraction-batch-plan-modal-header h2,
+.text-extraction-batch-final-modal-header h2,
+.text-extraction-single-file-heavy-modal-header h2 {
+  margin: 0;
+  font-size: var(--font-size-modal-title);
+  font-weight: 600;
+}
+
+.text-extraction-batch-plan-modal-body,
+.text-extraction-batch-final-modal-body,
+.text-extraction-single-file-heavy-modal-body {
+  margin-top: var(--modal-section-spacing);
+  display: grid;
+  gap: 12px;
+}
+
+.text-extraction-batch-final-modal-body > p {
+  margin: 0;
+}
+
+.text-extraction-batch-plan-modal-toolbar,
+.text-extraction-batch-plan-modal-actions,
+.text-extraction-batch-final-modal-actions,
+.text-extraction-single-file-heavy-modal-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-batch-plan-modal-actions,
+.text-extraction-batch-final-modal-actions,
+.text-extraction-single-file-heavy-modal-actions {
+  justify-content: flex-end;
+}
+
+.text-extraction-batch-plan-units {
+  display: grid;
+  gap: 12px;
+}
+
+.text-extraction-batch-plan-failure-policy {
+  margin: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: var(--panel-radius);
+  display: grid;
+  gap: 10px;
+}
+
+.text-extraction-batch-plan-failure-option {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--font-size-ui-sm);
+  line-height: 1.35;
+}
+
+.text-extraction-batch-plan-unit {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: var(--panel-radius);
+  background: var(--entry-group-bg);
+}
+
+.text-extraction-batch-plan-unit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-batch-plan-unit-heading {
+  display: grid;
+  gap: 6px;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.text-extraction-batch-plan-unit-heading-label {
+  font-size: var(--font-size-note);
+  color: var(--text-soft);
+}
+
+.text-extraction-batch-plan-unit-name,
+.text-extraction-batch-plan-route-select,
+.text-extraction-batch-plan-unit-select {
+  min-height: var(--control-height-md);
+  padding: var(--control-padding);
+  border: 1px solid var(--input-border-strong-color);
+  border-radius: var(--control-radius-sm);
+  background: var(--input-bg);
+  color: var(--input-text);
+  box-sizing: border-box;
+}
+
+.text-extraction-batch-plan-unit-name {
+  width: 100%;
+}
+
+.text-extraction-batch-plan-unit-actions,
+.text-extraction-batch-plan-input-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-batch-plan-icon-button {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.text-extraction-batch-plan-unit-meta,
+.text-extraction-batch-plan-pages-summary,
+.text-extraction-batch-plan-route-fixed,
+.text-extraction-batch-plan-unit-tags,
+.text-extraction-batch-plan-heavy-preview-label,
+.text-extraction-batch-plan-input-code {
+  font-size: var(--font-size-note);
+  color: var(--text-soft);
+}
+
+.text-extraction-batch-plan-unit-inputs {
+  display: grid;
+  gap: 8px;
+}
+
+.text-extraction-batch-plan-input-row {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--group-border-color);
+  border-radius: var(--panel-radius);
+  background: rgb(255 255 255 / 0.5);
+}
+
+.text-extraction-batch-plan-input-row-middle {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 10px;
+  align-items: start;
+}
+
+.text-extraction-batch-plan-input-row-bottom {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-batch-plan-input-row-bottom-controls {
+  display: flex;
+  align-items: start;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.text-extraction-batch-plan-input-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.text-extraction-batch-plan-heavy-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.text-extraction-batch-plan-input-route,
+.text-extraction-batch-plan-input-pages,
+.text-extraction-batch-plan-input-keep,
+.text-extraction-batch-plan-input-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-batch-plan-input-route {
+  justify-self: start;
+}
+
+.text-extraction-batch-plan-input-pages {
+  justify-self: stretch;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.text-extraction-batch-plan-route-fixed {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height-md);
+}
+
+.text-extraction-batch-plan-keep-toggle {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--font-size-note);
+}
+
+.text-extraction-batch-plan-unit-tags {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-batch-plan-unit-tags--disabled {
+  justify-content: flex-start;
+}
+
+.text-extraction-batch-plan-heavy-preview-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: var(--font-size-note);
+}
+
+.text-extraction-batch-plan-page-scope {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  justify-items: end;
+}
+
+.text-extraction-batch-plan-page-scope-options {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-batch-plan-page-scope-option,
+.text-extraction-batch-plan-page-scope-field {
+  display: grid;
+  gap: 6px;
+}
+
+.text-extraction-batch-plan-page-scope-option {
+  grid-auto-flow: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.text-extraction-batch-plan-page-scope-field {
+  grid-template-columns: auto minmax(80px, 1fr);
+  align-items: center;
+}
+
+.text-extraction-batch-plan-page-scope-range-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.text-extraction-batch-plan-page-scope-input {
+  min-height: var(--control-height-md);
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--panel-radius);
+  background: var(--input-bg, #fff);
+  color: var(--text-color);
+  box-sizing: border-box;
+}
+
+.text-extraction-batch-plan-page-scope-count,
+.text-extraction-batch-plan-page-scope-validation {
+  font-size: var(--font-size-note);
+}
+
+.text-extraction-batch-plan-page-scope-validation {
+  color: var(--warning-text);
+}
+
+/* Text extraction batch final modal */
+.text-extraction-batch-final-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(860px, calc(100% - var(--modal-inline-gutter)));
+  max-height: var(--modal-max-height);
+  overflow: auto;
+  background: var(--modal-panel-bg);
+  color: var(--text-color);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--modal-panel-shadow);
+  border: 1px solid var(--modal-panel-border-color);
+  padding: var(--modal-panel-padding);
+  box-sizing: border-box;
+}
+
+.text-extraction-batch-final-modal-report {
+  display: grid;
+  gap: 12px;
+}
+
+.text-extraction-batch-final-unit {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: var(--panel-radius);
+  background: var(--entry-group-bg);
+}
+
+.text-extraction-batch-final-unit h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.text-extraction-batch-final-input,
+.text-extraction-batch-final-generated-list {
+  display: grid;
+  gap: 6px;
+}
+
+.text-extraction-batch-final-input-main,
+.text-extraction-batch-final-generated {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-batch-final-generated-list {
+  padding-left: 14px;
+}
+
+.text-extraction-batch-final-modal-elapsed {
+  color: var(--modal-elapsed-text);
+}
+
+.text-extraction-batch-final-json-line {
+  font-size: var(--font-size-note);
+  color: var(--text-soft);
+}
+
+/* Text extraction single-file heavy modal */
+.text-extraction-single-file-heavy-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(620px, calc(100% - var(--modal-inline-gutter)));
+  background: var(--modal-panel-bg);
+  color: var(--text-color);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--modal-panel-shadow);
+  border: 1px solid var(--modal-panel-border-color);
+  padding: var(--modal-panel-padding);
+  box-sizing: border-box;
+}
+
+.text-extraction-single-file-heavy-modal-details {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: var(--panel-radius);
+  background: var(--entry-group-bg);
+}
+
+.text-extraction-single-file-heavy-modal-details p {
+  margin: 0;
+  line-height: 1.4;
+}
+
 /* OCR activation disclosure modal */
 .text-extraction-ocr-activation-disclosure-panel {
   position: relative;
@@ -1901,6 +2312,25 @@ select#presets:focus {
 @media (max-width: 640px) {
   .text-extraction-pdf-options-modal-range-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .text-extraction-batch-plan-input-row-middle {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .text-extraction-batch-plan-page-scope-range-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .text-extraction-batch-plan-unit-tags,
+  .text-extraction-batch-final-input-main,
+  .text-extraction-batch-final-generated,
+  .text-extraction-batch-plan-modal-toolbar,
+  .text-extraction-batch-plan-modal-actions,
+  .text-extraction-batch-final-modal-actions,
+  .text-extraction-single-file-heavy-modal-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .reading-test-entry-modal-group-row {

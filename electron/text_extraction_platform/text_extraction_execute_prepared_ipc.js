@@ -175,7 +175,7 @@ async function handleExecutePrepared(event, payload = {}, {
       return buildInvalidPreparedIdResponse('fingerprint_mismatch');
     }
 
-    if (controller.isActive()) {
+    if (controller.isActive() && request.reuseActiveProcessingLock !== true) {
       return {
         ok: false,
         code: 'ALREADY_ACTIVE',
@@ -194,6 +194,7 @@ async function handleExecutePrepared(event, payload = {}, {
 
     log.info('text extraction execute started:', {
       prepareId: shortPrepareId(request.prepareId),
+      forceHeavySplitFullSource: preparedRecord.forceHeavySplitFullSource === true,
       sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
       sourceFileKind: preparedRecord.fileInfo.sourceFileKind,
       executionKind: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.executionKind : null,
@@ -209,6 +210,9 @@ async function handleExecutePrepared(event, payload = {}, {
     const execution = await executePreparedImport({
       preparedRecord,
       routePreference: request.routePreference,
+      processingContext: request.processingContext,
+      reuseActiveProcessingLock: request.reuseActiveProcessingLock,
+      heavySplitFailurePolicy: request.heavySplitFailurePolicy,
       resolvePaths,
       controller,
       log,
@@ -217,6 +221,7 @@ async function handleExecutePrepared(event, payload = {}, {
     if (execution && execution.ok === true) {
       log.info('text extraction execute completed:', {
         prepareId: shortPrepareId(request.prepareId),
+        forceHeavySplitFullSource: preparedRecord.forceHeavySplitFullSource === true,
         executionKind: execution.executionKind,
         state: execution.result && execution.result.state ? execution.result.state : '',
         code: execution.result && execution.result.error ? execution.result.error.code : '',

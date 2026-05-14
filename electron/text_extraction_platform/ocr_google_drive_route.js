@@ -34,6 +34,11 @@ const {
   buildGoogleOAuthClient,
   describePersistedGoogleToken,
 } = require('./ocr_google_drive_oauth_client');
+const {
+  OCR_PROVIDER_LIMIT_BYTES,
+  OCR_PROVIDER_LIMIT_MB,
+  bytesToMegabytes,
+} = require('./text_extraction_heavy_pdf_split_core');
 const { getOcrSourceMimeTypeForExt } = require('./text_extraction_supported_formats');
 
 // =============================================================================
@@ -185,6 +190,22 @@ function getErrorDetailsSafeForLogs(err) {
 
 function stripUtf8BomPrefix(text) {
   return String(text || '').replace(/^\uFEFF/, '');
+}
+
+function readUploadInputStats(uploadInput, fileInfo) {
+  const candidatePath = uploadInput && typeof uploadInput.uploadFilePath === 'string'
+    ? uploadInput.uploadFilePath
+    : fileInfo.absoluteFilePath;
+  const candidateName = uploadInput && typeof uploadInput.uploadFileName === 'string'
+    ? uploadInput.uploadFileName
+    : fileInfo.sourceFileName;
+  const resolvedPath = path.resolve(String(candidatePath || ''));
+  const stats = fs.statSync(resolvedPath);
+  return {
+    absoluteFilePath: resolvedPath,
+    fileName: String(candidateName || '').trim(),
+    sizeBytes: Number.isFinite(stats.size) ? Math.floor(stats.size) : 0,
+  };
 }
 
 function isLeadingSeparatorOnlyLine(lineText) {
@@ -469,6 +490,27 @@ async function runGoogleDriveOcrRoute({
       };
     }
 
+    const uploadInputStats = readUploadInputStats(uploadInput, fileInfo);
+    if (uploadInputStats.sizeBytes > OCR_PROVIDER_LIMIT_BYTES) {
+      result = buildResultWithError({
+        summary: 'OCR route blocked before upload: OCR input exceeds provider size limit.',
+        provenance,
+        code: 'ocr_input_too_large',
+        message: 'Effective OCR input exceeds the provider size limit and was not uploaded.',
+        detailsSafeForLogs: {
+          stage: 'preflight',
+          reason: 'ocr_input_too_large',
+          effectiveInputFileName: uploadInputStats.fileName,
+          effectiveInputSizeBytes: uploadInputStats.sizeBytes,
+          effectiveInputSizeMB: bytesToMegabytes(uploadInputStats.sizeBytes),
+          providerLimitBytes: OCR_PROVIDER_LIMIT_BYTES,
+          providerLimitMB: OCR_PROVIDER_LIMIT_MB,
+          uploadStatus: 'not_uploaded',
+        },
+      });
+      return result;
+    }
+
     const createRequest = {
       requestBody: {
         name: uploadInput && uploadInput.uploadFileName
@@ -669,5 +711,4 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/ocr_google_drive_route.js
 // =============================================================================
-
 

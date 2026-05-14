@@ -36,6 +36,30 @@ function sanitizeMeta(rawValue) {
   return rawValue.trim().slice(0, MAX_META_CHARS);
 }
 
+function sanitizePositiveInt(rawValue) {
+  const value = Number(rawValue);
+  if (!Number.isInteger(value) || value < 1) return null;
+  return value;
+}
+
+function sanitizeRoute(rawValue) {
+  const value = sanitizeMeta(rawValue).toLowerCase();
+  return value === 'native' || value === 'ocr' ? value : '';
+}
+
+function sanitizeProcessingContext(context = {}) {
+  const raw = context && typeof context === 'object' ? context : {};
+  return {
+    unitIndex: sanitizePositiveInt(raw.unitIndex),
+    unitCount: sanitizePositiveInt(raw.unitCount),
+    inputIndex: sanitizePositiveInt(raw.inputIndex),
+    inputCount: sanitizePositiveInt(raw.inputCount),
+    selectedRoute: sanitizeRoute(raw.selectedRoute),
+    processingInputFileName: sanitizeMeta(raw.processingInputFileName),
+    processingInputSource: sanitizeMeta(raw.processingInputSource),
+  };
+}
+
 // =============================================================================
 // Shared state controller
 // =============================================================================
@@ -46,6 +70,13 @@ function createController({ onStateChanged } = {}) {
   let sinceEpochMs = null;
   let source = '';
   let reason = '';
+  let unitIndex = null;
+  let unitCount = null;
+  let inputIndex = null;
+  let inputCount = null;
+  let selectedRoute = '';
+  let processingInputFileName = '';
+  let processingInputSource = '';
 
   const getState = () => ({
     active,
@@ -53,6 +84,13 @@ function createController({ onStateChanged } = {}) {
     sinceEpochMs,
     source,
     reason,
+    unitIndex,
+    unitCount,
+    inputIndex,
+    inputCount,
+    selectedRoute,
+    processingInputFileName,
+    processingInputSource,
   });
 
   const notifyStateChanged = () => {
@@ -78,6 +116,15 @@ function createController({ onStateChanged } = {}) {
     sinceEpochMs = Date.now();
     source = sanitizeMeta(context.source);
     reason = sanitizeMeta(context.reason);
+    ({
+      unitIndex,
+      unitCount,
+      inputIndex,
+      inputCount,
+      selectedRoute,
+      processingInputFileName,
+      processingInputSource,
+    } = sanitizeProcessingContext(context));
 
     log.info('Processing mode enabled:', { lockId, source, reason });
     notifyStateChanged();
@@ -91,8 +138,29 @@ function createController({ onStateChanged } = {}) {
     sinceEpochMs = null;
     source = sanitizeMeta(context.source);
     reason = sanitizeMeta(context.reason);
+    unitIndex = null;
+    unitCount = null;
+    inputIndex = null;
+    inputCount = null;
+    selectedRoute = '';
+    processingInputFileName = '';
+    processingInputSource = '';
 
     log.info('Processing mode disabled:', { lockId, source, reason });
+    notifyStateChanged();
+    return { changed: true, state: getState() };
+  };
+
+  const update = (context = {}) => {
+    if (!active) return { changed: false, state: getState() };
+    const next = sanitizeProcessingContext(context);
+    unitIndex = next.unitIndex;
+    unitCount = next.unitCount;
+    inputIndex = next.inputIndex;
+    inputCount = next.inputCount;
+    selectedRoute = next.selectedRoute;
+    processingInputFileName = next.processingInputFileName;
+    processingInputSource = next.processingInputSource;
     notifyStateChanged();
     return { changed: true, state: getState() };
   };
@@ -118,6 +186,7 @@ function createController({ onStateChanged } = {}) {
     isActive: () => active,
     enter,
     exit,
+    update,
     requestAbort,
   };
 }
@@ -174,6 +243,63 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
     }
   });
 
+  ipcMain.handle('text-extraction-enter-processing-session', async (event, payload) => {
+    try {
+      const mainWin = resolveMainWin();
+      if (!isAuthorizedSender(event, mainWin)) {
+        return { ok: false, code: 'UNAUTHORIZED' };
+      }
+
+      const context = payload && typeof payload === 'object' ? payload : {};
+      const transition = controller.enter(context);
+      if (!transition.changed && controller.isActive()) {
+        return { ok: false, code: 'ALREADY_ACTIVE', state: controller.getState() };
+      }
+      return { ok: true, state: transition.state };
+    } catch (err) {
+      log.error('text-extraction-enter-processing-session failed:', err);
+      return { ok: false, code: 'SESSION_ENTER_FAILED', error: String(err) };
+    }
+  });
+
+  ipcMain.handle('text-extraction-update-processing-session', async (event, payload) => {
+    try {
+      const mainWin = resolveMainWin();
+      if (!isAuthorizedSender(event, mainWin)) {
+        return { ok: false, code: 'UNAUTHORIZED' };
+      }
+      if (!controller.isActive()) {
+        return { ok: false, code: 'NOT_ACTIVE', state: controller.getState() };
+      }
+
+      const context = payload && typeof payload === 'object' ? payload : {};
+      const transition = controller.update(context);
+      return { ok: true, state: transition.state };
+    } catch (err) {
+      log.error('text-extraction-update-processing-session failed:', err);
+      return { ok: false, code: 'SESSION_UPDATE_FAILED', error: String(err) };
+    }
+  });
+
+  ipcMain.handle('text-extraction-exit-processing-session', async (event, payload) => {
+    try {
+      const mainWin = resolveMainWin();
+      if (!isAuthorizedSender(event, mainWin)) {
+        return { ok: false, code: 'UNAUTHORIZED' };
+      }
+      if (!controller.isActive()) {
+        return { ok: false, code: 'NOT_ACTIVE', state: controller.getState() };
+      }
+
+      const context = payload && typeof payload === 'object' ? payload : {};
+      const transition = controller.exit(context);
+      return { ok: true, state: transition.state };
+    } catch (err) {
+      log.error('text-extraction-exit-processing-session failed:', err);
+      return { ok: false, code: 'SESSION_EXIT_FAILED', error: String(err) };
+    }
+  });
+
   ipcMain.handle('text-extraction-request-abort', async (event, payload) => {
     try {
       const mainWin = resolveMainWin();
@@ -202,5 +328,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_processing_mode_ipc.js
 // =============================================================================
-
-

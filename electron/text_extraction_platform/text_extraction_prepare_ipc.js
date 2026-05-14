@@ -121,6 +121,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       const preparation = await prepareSelectedFile({
         filePath: request.filePath,
         ocrLanguage: request.ocrLanguage,
+        planningMode: request.planningMode,
+        forceHeavySplitFullSource: request.forceHeavySplitFullSource,
         pdfPageSelection: request.pdfPageSelection,
         generatedPdfArtifactPolicy: request.generatedPdfArtifactPolicy,
         resolvePaths,
@@ -176,6 +178,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
 
       const logPayload = {
         prepareId: shortPrepareId(preparedRecord.prepareId),
+        forceHeavySplitFullSource: preparation.forceHeavySplitFullSource === true,
         ...buildPrepareRouteLogFields(fileInfo, routeMetadata),
       };
 
@@ -187,8 +190,17 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
 
       return {
         ok: true,
+        prepareReady: true,
+        prepareFailed: false,
         prepareId: preparedRecord.prepareId,
         expiresAtEpochMs: preparedRecord.expiresAtEpochMs,
+        fileInfo: preparation.fileInfo && typeof preparation.fileInfo === 'object'
+          ? { ...preparation.fileInfo }
+          : null,
+        planningMode: typeof preparation.planningMode === 'string'
+          ? preparation.planningMode
+          : request.planningMode,
+        forceHeavySplitFullSource: preparation.forceHeavySplitFullSource === true,
         executionKind: preparation.executionKind || null,
         pdfPageSelection: preparation.pdfPageSelection && typeof preparation.pdfPageSelection === 'object'
           ? { ...preparation.pdfPageSelection }

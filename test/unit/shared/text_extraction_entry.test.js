@@ -1,0 +1,288 @@
+'use strict';
+
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+
+function createHarness({
+  pdfOptionsResponses = null,
+  singleFileHeavyResponses = null,
+  requestPreparedImportResult = null,
+  executePreparedTextExtractionResult = null,
+} = {}) {
+  let capturedSingleFileHeavyOptions = null;
+  const notifications = [];
+  let pdfOptionsPromptCount = 0;
+  let singleFileHeavyPromptCount = 0;
+  let executePreparedTextExtractionCallCount = 0;
+  const nextPdfOptionsResponses = Array.isArray(pdfOptionsResponses)
+    ? [...pdfOptionsResponses]
+    : null;
+  const nextSingleFileHeavyResponses = Array.isArray(singleFileHeavyResponses)
+    ? [...singleFileHeavyResponses]
+    : null;
+
+  const sandbox = {
+    window: {
+      AppConstants: {
+        MAX_CLIPBOARD_REPEAT: 100,
+      },
+      Notify: {
+        notifyMain(key) {
+          notifications.push(key);
+        },
+        async promptTextExtractionPdfOptions() {
+          pdfOptionsPromptCount += 1;
+          if (nextPdfOptionsResponses && nextPdfOptionsResponses.length) {
+            return nextPdfOptionsResponses.shift();
+          }
+          return {
+            pdfPageSelection: {
+              mode: 'range',
+              fromPage: 100,
+              toPage: 220,
+              selectedPageCount: 121,
+              totalPages: 516,
+            },
+            generatedPdfArtifactPolicy: {
+              mode: 'delete',
+            },
+          };
+        },
+        async promptTextExtractionSingleFileHeavyPdf(options) {
+          capturedSingleFileHeavyOptions = options;
+          singleFileHeavyPromptCount += 1;
+          if (nextSingleFileHeavyResponses && nextSingleFileHeavyResponses.length) {
+            return nextSingleFileHeavyResponses.shift();
+          }
+          return 'cancel';
+        },
+      },
+      getLogger() {
+        return {
+          debug() {},
+          info() {},
+          warn() {},
+          warnOnce() {},
+          error() {},
+        };
+      },
+      RendererI18n: {
+        tRenderer(key) {
+          if (key === 'renderer.text_extraction.single_file_heavy.selected_range_value') {
+            return 'Pages {fromPage}-{toPage}';
+          }
+          return key;
+        },
+      },
+    },
+    console,
+  };
+
+  vm.createContext(sandbox);
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/text_extraction_entry.js'),
+    'utf8'
+  );
+  vm.runInContext(source, sandbox, { filename: 'public/js/text_extraction_entry.js' });
+
+  const entry = sandbox.window.TextExtractionEntry;
+  entry.configure({
+    getClipboardRepeatCount() {
+      return 1;
+    },
+    getOcrLanguage() {
+      return 'en';
+    },
+    getOptionalElectronMethod(methodName) {
+      if (methodName === 'checkTextExtractionPreconditions') {
+        return async () => ({ ok: true, canStart: true });
+      }
+      if (methodName === 'inspectTextExtractionSelectedFile') {
+        return async () => ({
+          ok: true,
+          isPdf: true,
+          totalPages: 516,
+          fileInfo: {
+            fileName: 'book.pdf',
+          },
+        });
+      }
+      if (methodName === 'prepareTextExtractionSelectedFile') {
+        return async () => ({ ok: true });
+      }
+      if (methodName === 'executePreparedTextExtraction') {
+        return async () => {
+          executePreparedTextExtractionCallCount += 1;
+          return executePreparedTextExtractionResult || {
+            ok: true,
+            result: {
+              state: 'failure',
+              processingInputFileName: 'book_pages_100_220.pdf',
+              pdfPageSelection: {
+                mode: 'range',
+                fromPage: 100,
+                toPage: 220,
+              },
+              error: {
+                code: 'ocr_input_too_large',
+                detailsSafeForLogs: {
+                  effectiveInputSizeBytes: 72.4 * 1024 * 1024,
+                  providerLimitBytes: 50 * 1024 * 1024,
+                },
+              },
+            },
+          };
+        };
+      }
+      return null;
+    },
+    guardUserAction() {
+      return true;
+    },
+    hasBlockingModalOpen() {
+      return false;
+    },
+    hasCurrentTextSubscription() {
+      return true;
+    },
+    textExtractionStatusUi: {
+      applyProcessingModeState() {},
+      clearPendingExecutionContext() {},
+      getFinalElapsedValueText() {
+        return '0:01';
+      },
+      setPendingExecutionContext() {},
+    },
+    textExtractionBatchFlow: {
+      async startFromSelectedFiles() {},
+      async startSyntheticSingleFileHeavySplit() {},
+    },
+    isLatestTextExtractionPrepareAttempt() {
+      return true;
+    },
+    async maybeRecoverTextExtractionOcrSetupAndRetry({ preparation }) {
+      return { preparation };
+    },
+    async requestPreparedImport() {
+      return requestPreparedImportResult || {
+        attemptId: 1,
+        preparation: {
+          ok: true,
+          prepareReady: true,
+          prepareFailed: false,
+          prepareId: 'prepare-1',
+          fileInfo: {
+            fileName: 'book.pdf',
+            sourceFileSizeBytes: 458 * 1024 * 1024,
+          },
+          routeChoiceOptions: ['native', 'ocr'],
+          routeMetadata: {
+            chosenRoute: 'ocr',
+            availableRoutes: ['native', 'ocr'],
+            heavySplitEligible: false,
+          },
+        },
+      };
+    },
+  });
+
+  return {
+    entry,
+    notifications,
+    getCapturedSingleFileHeavyOptions() {
+      return capturedSingleFileHeavyOptions;
+    },
+    getPdfOptionsPromptCount() {
+      return pdfOptionsPromptCount;
+    },
+    getSingleFileHeavyPromptCount() {
+      return singleFileHeavyPromptCount;
+    },
+    getExecutePreparedTextExtractionCallCount() {
+      return executePreparedTextExtractionCallCount;
+    },
+  };
+}
+
+test('single-file entry passes source file size into the Case B heavy-PDF modal payload', async () => {
+  const harness = createHarness();
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  assert.deepEqual(harness.notifications, []);
+  const modalOptions = harness.getCapturedSingleFileHeavyOptions();
+  assert.ok(modalOptions);
+  assert.equal(modalOptions.caseKind, 'case_b');
+  assert.equal(modalOptions.sourceFileName, 'book.pdf');
+  assert.equal(modalOptions.sourceFileSizeBytes, 458 * 1024 * 1024);
+  assert.equal(modalOptions.selectedRangeText, 'Pages 100-220');
+  assert.equal(modalOptions.generatedPdfFileName, 'book_pages_100_220.pdf');
+  assert.equal(modalOptions.generatedPdfSizeBytes, 72.4 * 1024 * 1024);
+  assert.equal(modalOptions.providerLimitBytes, 50 * 1024 * 1024);
+  assert.equal(modalOptions.canUseNative, true);
+  assert.equal(modalOptions.retainedGeneratedPdf, null);
+  assert.equal(modalOptions.onRevealGeneratedPdf, null);
+});
+
+test('single-file entry returns to PDF options from the Case A heavy-PDF modal', async () => {
+  const harness = createHarness({
+    pdfOptionsResponses: [
+      {
+        pdfPageSelection: {
+          mode: 'all',
+          fromPage: 1,
+          toPage: 516,
+          selectedPageCount: 516,
+          totalPages: 516,
+        },
+        generatedPdfArtifactPolicy: {
+          mode: 'delete',
+        },
+      },
+      null,
+    ],
+    singleFileHeavyResponses: ['return_to_pages'],
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: {
+        ok: true,
+        prepareReady: true,
+        prepareFailed: false,
+        prepareId: 'prepare-1',
+        fileInfo: {
+          fileName: 'book.pdf',
+          sourceFileSizeBytes: 458 * 1024 * 1024,
+        },
+        routeChoiceOptions: ['native', 'ocr'],
+        routeMetadata: {
+          chosenRoute: 'ocr',
+          availableRoutes: ['native', 'ocr'],
+          pdfTotalPages: 516,
+          heavySplitEligible: true,
+        },
+      },
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.getPdfOptionsPromptCount(), 2);
+  assert.equal(harness.getSingleFileHeavyPromptCount(), 1);
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+  const modalOptions = harness.getCapturedSingleFileHeavyOptions();
+  assert.ok(modalOptions);
+  assert.equal(modalOptions.caseKind, 'case_a');
+  assert.equal(modalOptions.sourceFileName, 'book.pdf');
+  assert.equal(modalOptions.sourceFileSizeBytes, 458 * 1024 * 1024);
+  assert.equal(modalOptions.totalPages, 516);
+});

@@ -51,6 +51,10 @@ function createHarness() {
     'renderer.main.processing.text_extraction_waiting_native': 'Extracting text from file...',
     'renderer.main.processing.text_extraction_waiting_ocr': 'Running OCR extraction...',
     'renderer.main.processing.text_extraction_waiting_ocr_delayed': 'Running OCR. Some files take longer.',
+    'renderer.main.processing.text_extraction_unit_progress': 'Unit {index}/{count}',
+    'renderer.main.processing.text_extraction_input_progress': 'File {index}/{count}',
+    'renderer.main.processing.text_extraction_route_native': 'Native',
+    'renderer.main.processing.text_extraction_route_ocr': 'OCR',
     'renderer.main.processing.text_extraction_elapsed': 'Elapsed: ',
     'renderer.main.tooltips.text_extraction_abort': 'Abort extraction',
     'renderer.main.aria.text_extraction_abort': 'Abort text extraction',
@@ -219,6 +223,35 @@ test('execution state shows route-aware row 1 and elapsed-only row 2', () => {
   assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:00');
   assert.equal(harness.elements.btnTextExtractionAbort.hidden, false);
   assert.equal(harness.elements.btnTextExtractionAbort.disabled, false);
+});
+
+test('batch execution state shows unit and input progress plus processing filename from controller state', () => {
+  const harness = createHarness();
+
+  harness.setNowMs(1000);
+  harness.api.applyProcessingModeState({
+    active: true,
+    lockId: 11,
+    sinceEpochMs: 1000,
+    unitIndex: 1,
+    unitCount: 3,
+    inputIndex: 2,
+    inputCount: 4,
+    selectedRoute: 'ocr',
+    processingInputFileName: 'source_pages_01_03.pdf',
+    processingInputSource: 'generated_pdf_subset',
+  }, { source: 'test_batch' });
+
+  assert.equal(
+    harness.elements.textExtractionProcessingLabel.textContent,
+    'Unit 1/3 · File 2/4 · OCR'
+  );
+  assert.equal(harness.elements.textExtractionProcessingFilename.hidden, false);
+  assert.equal(
+    harness.elements.textExtractionProcessingFilename.textContent,
+    'source_pages_01_03.pdf'
+  );
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:00');
 });
 
 test('explicit fileName path-like input is constrained to basename before display', () => {

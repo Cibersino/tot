@@ -6,11 +6,11 @@
 
 **Scope coverage (app-level):**
 - Startup + first-run language selection
-- Text extraction from file picker + drag/drop
-- PDF inspect/options flow (`All pages` vs contiguous `Page range`)
+- Text extraction from file picker + multi-select + drag/drop
+- PDF inspect/options flow (`All pages` vs contiguous `Page range`) + single-file heavy-PDF OCR guardrails
 - Native extraction routes (`txt`, `md`, `html`, `docx`, PDF text layer)
 - Google-backed extraction routes (`rtf`, `odt`, images, scanned PDFs), including OCR activation/disconnect
-- Text extraction route choice, apply modal, generated-PDF retain/reveal path, processing lock, and abort flow
+- Text extraction route choice, batch planning/final report, per-unit auto snapshots, generated-PDF retain/reveal path, processing progress, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
@@ -88,8 +88,46 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `SM-09`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT/EXTRACT`
+* `test/unit/electron/text_extraction_prepare_execute_core.test.js`
+  * supports parts of `SM-10`
+  * supports parts of `SM-10B`
+  * supports parts of `REG-IMPORT/EXTRACT`
 * `test/unit/electron/text_extraction_prepare_ipc.test.js`
   * supports parts of `REG-IMPORT-06A`
+  * supports parts of `REG-IMPORT-08B`
+  * supports parts of `REG-IMPORT-08C`
+* `electron/text_extraction_platform/text_extraction_heavy_pdf_split_core.js`
+  * supports parts of `REG-IMPORT/EXTRACT`
+* `test/unit/electron/text_extraction_heavy_pdf_split_core.test.js`
+  * supports parts of `SM-10B`
+  * supports parts of `REG-IMPORT-08B`
+  * supports parts of `REG-IMPORT-08C`
+* `electron/current_text_snapshots_main.js`
+  * supports parts of `SM-13`
+  * supports parts of `REG-PERSIST-03`
+* `test/unit/electron/current_text_snapshots_main.test.js`
+  * supports parts of `REG-IMPORT-08D`
+  * supports parts of `REG-PERSIST-03A`
+* `test/unit/shared/text_extraction_status_ui.test.js`
+  * supports parts of `SM-09`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT/EXTRACT`
+* `test/unit/shared/text_extraction_entry.test.js`
+  * supports parts of `SM-10B`
+  * supports parts of `REG-IMPORT-08B`
+* `test/unit/shared/text_extraction_batch_flow.test.js`
+  * supports parts of `SM-10A`
+  * supports parts of `REG-IMPORT-01A`
+  * supports parts of `REG-IMPORT-02A`
+  * supports parts of `REG-IMPORT-08C`
+  * supports parts of `REG-IMPORT-08D`
+* `test/unit/shared/text_extraction_batch_planning_modal.test.js`
+  * supports parts of `REG-IMPORT-08C`
+* `test/unit/shared/text_extraction_batch_final_modal.test.js`
+  * supports parts of `REG-IMPORT-08D`
+* `test/unit/shared/text_extraction_single_file_heavy_pdf_modal.test.js`
+  * supports parts of `SM-10B`
+  * supports parts of `REG-IMPORT-08B`
 * `test/unit/electron/native_pdf_selectable_text_probe.test.js`
   * supports parts of `REG-IMPORT-06`
   * supports parts of `REG-IMPORT-07`
@@ -108,10 +146,10 @@ Current automated coverage maps back to this manual suite roughly as follows:
 Important limitations:
 
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
-* no renderer/UI automation exists yet, including the editor spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
+* the editor still has no renderer/UI automation for the spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
 * the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool core in `test/unit/electron/reading_test_pool.test.js` and the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
 * OCR network/provider behavior is still primarily validated through the manual suite;
-* the page-range renderer UX (PDF options modal, route-choice modal, apply modal reveal button, and status-bar presentation) is still primarily validated through the manual suite;
+* even with contract-style unit coverage for the batch planner/final report, single-file heavy-PDF modal, and status-bar progress text, the integrated picker/drag-drop entrypoints, PDF options modal, route-choice modal, apply modal reveal path, batch execution handoff, and real window/focus behavior are still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
 ---
@@ -214,8 +252,13 @@ Prepare a small local sample set whose expected text is known ahead of time:
   - `sample_selectable.pdf` (contains selectable/native text and enough pages to test `All pages` vs contiguous `Page range`)
   - `sample_scanned.pdf` (image/scanned PDF; no usable text layer and enough pages to test OCR on a selected range)
   - optional: `sample_mixed.pdf` (small PDF where one page is scanned-only and another has selectable text, to verify range-aware triage instead of whole-document triage)
+  - `sample_heavy_full.pdf` (PDF above the current OCR provider limit of `50 MB`, with enough pages to trigger the heavy-PDF split planner from the single-file OCR flow)
+  - optional: `sample_heavy_range.pdf` or a known large range inside `sample_heavy_full.pdf` whose generated subset also exceeds `50 MB`, to test the post-subset heavy-PDF recovery modal
 - OCR images:
   - at least one of `sample.jpg`, `sample.png`, `sample.webp`, `sample.bmp`, `sample.tif`, or `sample.tiff`
+- Batch sets:
+  - at least one folder containing two or more supported files that can be selected together from the picker
+  - preferably one mixed set such as `sample.txt` + `sample_selectable.pdf`, and one set that includes a heavy PDF when available
 
 Recommended content for the text-like samples:
 - reuse the “Small text” content from 3.1 so count/preview expectations are easy to compare
@@ -363,6 +406,34 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Dual-route PDFs show the route-choice modal.
 - OCR activation/disclosure appears only when required.
 - Successful extraction reaches the apply modal and updates current text after apply.
+
+### SM-10A Text extraction: multi-file batch quick check
+**Goal:** selecting multiple files enters the batch planner and completes through the batch final report.
+1. Click **📥** and select at least two supported files from the same folder.
+2. Confirm the batch planning modal appears instead of the single-file apply flow.
+3. Leave the default grouping or choose **One file per unit**, then click **Start extraction**.
+4. Wait for completion and review the final report.
+
+**Expected:**
+- Multi-select enters the shared batch planner.
+- Successful completion ends in the batch final report, not the single-file apply modal.
+- If more than one unit produced text, the final report includes snapshot guidance for the created JSON snapshots.
+- The final report exposes **Copy report** and **Open snapshots folder**.
+
+### SM-10B Text extraction: heavy-PDF OCR recovery quick check
+**Goal:** oversized OCR PDFs fail with the specific heavy-PDF recovery flow instead of a generic extraction error.
+1. If a heavy sample is available, start text extraction on `sample_heavy_full.pdf` or another PDF known to exceed the current `50 MB` OCR provider limit.
+2. Choose the OCR path that should trigger the limit (`All pages` for the full-source case, or a known large range for the generated-subset case).
+3. When the heavy-PDF modal appears, verify the file/range context and test one recovery branch:
+   - **Back to pages**, or
+   - **Split and plan the full PDF**, or
+   - **Use native** when native extraction is available.
+
+**Expected:**
+- The app shows the dedicated heavy-PDF modal with the provider-limit guidance instead of a generic OCR failure.
+- **Back to pages** returns to PDF options.
+- **Split and plan the full PDF** opens the shared planner with the single-file split title and planned generated-PDF preview.
+- **Use native** is offered only when native extraction is actually available.
 
 ### SM-11 Stopwatch + floating window quick check
 **Goal:** stopwatch runs and floating window reflects state.
@@ -554,6 +625,18 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Supported formats include native text docs, Google-backed document formats, and OCR-capable images/PDFs.
 - Cancelling the picker is a no-op.
 
+#### REG-IMPORT-01A Picker multi-selection enters the batch planner
+**Goal:** selecting multiple supported files from the picker starts the shared batch-planning flow.
+1. Click **📥**.
+2. Select two or more supported files in one picker action.
+3. Confirm the batch planning modal appears.
+4. Cancel the planner once.
+
+**Expected:**
+- The native picker allows multi-selection.
+- A multi-file selection opens the batch planner instead of the single-file PDF/apply flow.
+- Cancelling the planner is a no-op.
+
 #### REG-IMPORT-02 Drag/drop happy path
 **Goal:** dropping one supported local file starts the same shared flow as the picker.
 1. Drag one supported local file over the main window.
@@ -566,16 +649,28 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Drop starts prepare/execution/apply without opening the file picker.
 - Result matches the same file processed through the picker path.
 
-#### REG-IMPORT-03 Drag/drop invalid payload guardrails
-**Goal:** drag/drop rejects unsupported payload shapes safely.
-1. Drag two files at once over the main window and drop them.
-2. Drag a non-file payload (if available, e.g. selected text from another app) over the window.
-3. If feasible, drag an item that resolves to no valid local path.
+#### REG-IMPORT-02A Multi-file drag/drop enters the batch planner
+**Goal:** dropping multiple supported local files starts the same batch-planning flow as picker multi-selection.
+1. Drag two or more supported local files over the main window.
+2. Confirm the full-window drop affordance appears.
+3. Drop the files.
+4. Confirm the batch planning modal appears, then cancel once.
 
 **Expected:**
-- Two-file drop is rejected with a user-facing “single file only” style notice.
+- Multi-file drop is accepted.
+- Drop starts the shared batch-planning flow without opening the file picker.
+- Cancelling the planner leaves current text unchanged.
+
+#### REG-IMPORT-03 Drag/drop invalid payload guardrails
+**Goal:** drag/drop rejects unsupported payload shapes safely.
+1. Drag a non-file payload (if available, e.g. selected text from another app) over the window.
+2. If feasible, drag an item that resolves to no valid local path.
+3. If feasible, drag an unsupported file type or a directory-like payload.
+
+**Expected:**
 - Non-file drags do not start text extraction.
 - Invalid local-path resolution fails safely with user feedback.
+- Unsupported payloads do not leave the drop overlay or processing state stuck.
 
 #### REG-IMPORT-04 Preconditions block text extraction
 **Goal:** text extraction refuses to start when a secondary window is open or the stopwatch is running.
@@ -630,6 +725,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 6. Confirm the range inputs appear, selected-page feedback can appear, and the keep-generated-PDF option is visible only in range mode.
 7. Enter invalid ranges such as `5-2`, `0-1`, and `1-(totalPages+1)`.
 8. Enter a valid contiguous range and continue.
+9. Re-open the same PDF options flow and switch back to `Page range`.
 
 **Expected:**
 - `All pages` and `Page range` are mutually exclusive and visually unambiguous.
@@ -637,6 +733,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - `Page range` reveals the range inputs and range-only controls.
 - Invalid ranges are blocked in-modal and do not continue to prepare/execute.
 - A valid range continues to the next step.
+- On each fresh open, the keep-generated-PDF checkbox starts from the default unchecked/delete state; the choice is per-run and is not persisted as a user preference.
 
 #### REG-IMPORT-07 OCR-only routing for images and scanned PDFs
 **Goal:** OCR-only inputs skip native route selection and use the OCR path.
@@ -681,16 +778,90 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The reveal action points to the exact retained file, not just a generic folder and not the original selected PDF.
 - `All pages` does not imply a generated subset exists and does not show the retained generated-PDF section.
 
+#### REG-IMPORT-08B Single-file heavy-PDF OCR size recovery
+**Goal:** PDFs that exceed the OCR upload limit surface the dedicated recovery modal and honor each recovery branch.
+1. Use `sample_heavy_full.pdf` or another PDF known to exceed the current `50 MB` OCR provider limit.
+2. Case A: choose `All pages`, then choose the OCR route if route choice is offered.
+3. Confirm the heavy-PDF modal appears before OCR upload and shows the source file name, source size, total pages, and provider-limit guidance.
+4. Test **Back to pages** once.
+5. Repeat Case A and test **Split and plan the full PDF** once.
+6. If native extraction is available, repeat Case A and test **Use native** once.
+7. Case B: choose a known large `Page range` whose generated subset also exceeds the limit.
+8. If available, enable keep-generated-PDF before continuing.
+9. Confirm the heavy-PDF modal appears after subset generation and shows the selected range plus generated-PDF size.
+10. If the modal exposes **Reveal generated PDF**, trigger it once.
+
+**Expected:**
+- Heavy-PDF OCR limit failures are surfaced through the dedicated modal, not a generic extraction error.
+- **Back to pages** returns to the PDF options modal.
+- **Split and plan the full PDF** opens the shared planner for a synthetic single-file split flow.
+- **Use native** is offered only when native extraction is actually available and re-runs the same source through the native route.
+- The Case B reveal action appears only when a retained generated PDF actually exists.
+
+#### REG-IMPORT-08C Batch planning modal semantics
+**Goal:** multi-file batch planning and synthetic single-file heavy split both expose the intended planner controls and validation.
+1. Enter the planner either by picker multi-select, multi-file drag/drop, or the heavy-PDF split handoff.
+2. Confirm the title is:
+   - **Plan batch extraction** for ordinary multi-file entry
+   - **Plan automatic PDF split** for the synthetic single-file heavy split flow
+3. For an ordinary PDF input, switch between `All pages` and `Page range`.
+4. Confirm invalid visible page drafts block **Start extraction** until corrected.
+5. Confirm the keep-generated-PDF control appears only for ordinary range PDFs and heavy-split entries.
+6. Use **All together** and **One file per unit** once each.
+7. Rename one unit, move one input, and reassign one input to another unit or to a new unit.
+8. Open **Tags** for a multi-unit plan and apply tags.
+9. For a heavy-PDF unit, confirm pages are fixed to `All pages`, the unit stays isolated, and the planned generated-PDF preview is shown.
+10. Repeat the planner with a non-PDF input included.
+11. Close the planner, reopen the same batch entry flow, and re-check the keep-generated-PDF toggles.
+
+**Expected:**
+- Ordinary PDFs expose editable `All pages` / `Page range` controls directly inside the planner.
+- Start is blocked while a visible range draft is invalid.
+- Unit rename, move, and reassignment controls update immediately and stay coherent after rerenders.
+- Heavy-PDF units remain exclusive planner units, keep their generated-input preview, and do not expose editable page controls.
+- Non-PDF inputs do not show a fake pages summary.
+- Unit tags are available only where unit-level auto-snapshot tagging is meaningful.
+- Keep-generated-PDF toggles persist only inside the currently open planner state; reopening the planner starts from the default delete state again.
+
+#### REG-IMPORT-08D Batch execution, final report, and auto snapshots
+**Goal:** batch execution uses the shared processing session correctly, produces the final report, and writes per-unit snapshots when required.
+1. Build a plan with at least two units that can both succeed.
+2. Run batch extraction and watch the processing bar during execution.
+3. Confirm the first copy row can show unit progress, file progress, and route label while the displayed filename remains a basename only.
+4. After completion, review the final report:
+   - unit titles
+   - per-input success/failed/omitted states
+   - heavy generated-child rows when applicable
+   - elapsed time
+   - current-text changed/unchanged summary
+   - snapshot guidance when auto snapshots were created
+5. Use **Copy report** once.
+6. Use **Open snapshots folder** once.
+7. If retained generated PDFs are listed, trigger each reveal action once.
+8. Dismiss the report.
+9. Inspect `config/saved_current_texts/`.
+10. Load one created batch snapshot from the main window.
+
+**Expected:**
+- Batch execution stays inside one shared processing session and the bar shows accurate unit/file progress plus route context.
+- The final report summarizes per-unit/per-input outcomes and includes heavy split child statuses when present.
+- **Copy report** writes a readable text report that includes failure codes when applicable.
+- **Open snapshots folder** opens the snapshots root, not a random last-used folder.
+- Multi-unit runs that produced text create per-unit JSON snapshots automatically; single-unit runs do not.
+- Created batch snapshots are loadable through the normal **📂** flow.
+
 #### REG-IMPORT-09 Processing mode lock + abort
 **Goal:** processing mode blocks main-window interactions until completion or abort, and abort exits cleanly.
 1. Start a text extraction run that lasts long enough to observe the processing bar (OCR path is the easiest).
 2. While processing is active, try other main-window actions such as clipboard overwrite, editor open, snapshot load, or task open.
-3. Click **⛔** to abort.
+3. If a batch run is available, repeat with batch extraction and observe the progress labels.
+4. Click **⛔** to abort.
 
 **Expected:**
 - Main controls are replaced by the processing UI while active.
 - The processing bar keeps the abort button visible and stable at the far right.
 - The first copy row shows the current processing status plus the `processingInputFile` basename only, never a full path.
+- During batch execution, the first copy row can include `Unit x/y`, `File x/y`, and the selected route label before the basename.
 - Short basenames remain fully visible when they fit; longer basenames truncate without destabilizing the bar.
 - Main-window actions are blocked with user-facing feedback until processing ends or abort is requested.
 - Abort stops the run, exits processing mode, restores normal controls, and leaves current text unchanged by the cancelled run.
@@ -1383,6 +1554,21 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Snapshot remains on disk after relaunch.
 - Loading from a descendant subfolder works and overwrites current text.
 
+#### REG-PERSIST-03A Batch auto-snapshot naming and collision safety
+**Goal:** repeated batch auto-snapshot saves do not overwrite earlier files and remain usable after relaunch.
+1. Run a multi-unit batch that produces at least one automatic snapshot.
+2. Note the created snapshot filename(s) under `config/saved_current_texts/`.
+3. Run the same batch again without deleting the earlier snapshot files.
+4. Confirm the second run creates new files instead of overwriting the previous ones.
+5. Close the app and relaunch.
+6. Load one of the collision-suffixed batch snapshot files through **📂**.
+
+**Expected:**
+- Batch auto snapshots are created under `config/saved_current_texts/`.
+- Repeated runs with the same unit names create deterministic collision-safe filenames, for example by adding a suffix such as `_2`.
+- Existing snapshot files are not overwritten silently.
+- Collision-suffixed snapshots remain loadable after relaunch.
+
 #### REG-PERSIST-04 Tasks: config/tasks persistence (lists, library, allowlist, widths, window position)
 **Goal:** task feature state persists under config/tasks and reloads correctly after restart.
 1. Click **📝** to open Tasks editor.
@@ -1421,11 +1607,13 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - `ocr_google_drive/token.json` exists after successful OCR activation
    - if keep-mode PDF retention was used, the generated subset PDF exists under the app-owned generated-PDF folder rooted at `app.getPath('userData')/tot-generated-pdfs/`
 6. Relaunch the app and open **📥** again.
+7. Re-open a range-based PDF flow and inspect the keep-generated-PDF control state.
 
 **Expected:**
 - Picker state persists and reopens in the last-used directory when that directory still exists.
 - OCR runtime files exist only when the relevant state has actually been created.
 - Keep-mode retained subset PDFs are stored under the app-owned generated-PDF root, not beside the original source PDF.
+- The retained PDF artifact can persist on disk after the run, but the keep-generated-PDF choice itself is not persisted in config and should reopen at the default unchecked/delete state after restart.
 - Relaunch preserves OCR-connected state until disconnect is requested.
 
 #### REG-PERSIST-06 Reading speed test pool persistence

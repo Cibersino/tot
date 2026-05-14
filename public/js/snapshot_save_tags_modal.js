@@ -113,17 +113,45 @@
     return Object.keys(tags).length ? tags : null;
   }
 
-  function populateCopy() {
-    title.textContent = tRenderer('renderer.snapshot_save_tags.title');
-    message.textContent = tRenderer('renderer.snapshot_save_tags.message');
+  function resolveCopy(copy = {}) {
+    const snapshotCopy = {
+      titleKey: 'renderer.snapshot_save_tags.title',
+      messageKey: 'renderer.snapshot_save_tags.message',
+      confirmKey: 'renderer.snapshot_save_tags.buttons.confirm',
+      cancelKey: 'renderer.snapshot_save_tags.buttons.cancel',
+      closeAriaKey: 'renderer.snapshot_save_tags.close_aria',
+    };
+    return {
+      titleKey: typeof copy.titleKey === 'string' && copy.titleKey.trim()
+        ? copy.titleKey.trim()
+        : snapshotCopy.titleKey,
+      messageKey: typeof copy.messageKey === 'string' && copy.messageKey.trim()
+        ? copy.messageKey.trim()
+        : snapshotCopy.messageKey,
+      confirmKey: typeof copy.confirmKey === 'string' && copy.confirmKey.trim()
+        ? copy.confirmKey.trim()
+        : snapshotCopy.confirmKey,
+      cancelKey: typeof copy.cancelKey === 'string' && copy.cancelKey.trim()
+        ? copy.cancelKey.trim()
+        : snapshotCopy.cancelKey,
+      closeAriaKey: typeof copy.closeAriaKey === 'string' && copy.closeAriaKey.trim()
+        ? copy.closeAriaKey.trim()
+        : snapshotCopy.closeAriaKey,
+    };
+  }
+
+  function populateCopy(copy = {}) {
+    const resolvedCopy = resolveCopy(copy);
+    title.textContent = tRenderer(resolvedCopy.titleKey);
+    message.textContent = tRenderer(resolvedCopy.messageKey);
     languageLabel.textContent = tRenderer('renderer.snapshot_save_tags.labels.language');
     typeLabel.textContent = tRenderer('renderer.snapshot_save_tags.labels.type');
     difficultyLabel.textContent = tRenderer('renderer.snapshot_save_tags.labels.difficulty');
-    btnConfirm.textContent = tRenderer('renderer.snapshot_save_tags.buttons.confirm');
-    btnCancel.textContent = tRenderer('renderer.snapshot_save_tags.buttons.cancel');
+    btnConfirm.textContent = tRenderer(resolvedCopy.confirmKey);
+    btnCancel.textContent = tRenderer(resolvedCopy.cancelKey);
     btnClose.setAttribute(
       'aria-label',
-      tRenderer('renderer.snapshot_save_tags.close_aria')
+      tRenderer(resolvedCopy.closeAriaKey)
     );
 
     setSelectOptions(
@@ -147,6 +175,14 @@
     difficultySelect.value = '';
   }
 
+  function applyInitialTags(initialTags) {
+    const safeTags = initialTags && typeof initialTags === 'object' ? initialTags : null;
+    if (!safeTags) return;
+    languageSelect.value = typeof safeTags.language === 'string' ? safeTags.language : '';
+    typeSelect.value = typeof safeTags.type === 'string' ? safeTags.type : '';
+    difficultySelect.value = typeof safeTags.difficulty === 'string' ? safeTags.difficulty : '';
+  }
+
   function restorePreviousFocus(previousFocus) {
     if (!previousFocus || !document.contains(previousFocus)) return;
 
@@ -161,13 +197,14 @@
   // Public entrypoint
   // =============================================================================
 
-  async function promptSnapshotSaveTags() {
+  async function promptSnapshotSaveTags(options = {}) {
     if (!hasRequiredElements()) {
       log.error('Snapshot save tags modal DOM elements missing.');
       return null;
     }
 
-    populateCopy();
+    populateCopy(options.copy);
+    applyInitialTags(options.initialTags);
 
     return await new Promise((resolve) => {
       let settled = false;

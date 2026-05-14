@@ -1,0 +1,407 @@
+// public/js/text_extraction_batch_final_modal.js
+'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Host the shared Issue 266/267 unit-based final report modal.
+// - Render retained generated-artifact reveal actions through window.Notify.
+// - Expose a copy-report and open-snapshots-folder action without creating a
+//   second reporting surface.
+// =============================================================================
+
+(() => {
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[text-extraction-batch-final-modal] window.getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('text-extraction-batch-final-modal');
+  log.debug('Text extraction batch final modal starting...');
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
+    throw new Error('[text-extraction-batch-final-modal] RendererI18n.tRenderer unavailable; cannot continue');
+  }
+  const { tRenderer } = window.RendererI18n;
+
+  const modal = document.getElementById('textExtractionBatchFinalModal');
+  const backdrop = document.getElementById('textExtractionBatchFinalModalBackdrop');
+  const panel = document.getElementById('textExtractionBatchFinalModalPanel');
+  const title = document.getElementById('textExtractionBatchFinalModalTitle');
+  const summary = document.getElementById('textExtractionBatchFinalModalSummary');
+  const elapsed = document.getElementById('textExtractionBatchFinalModalElapsed');
+  const body = document.getElementById('textExtractionBatchFinalModalBody');
+  const btnCopy = document.getElementById('textExtractionBatchFinalModalCopy');
+  const btnOpenSnapshots = document.getElementById('textExtractionBatchFinalModalOpenSnapshots');
+  const btnOk = document.getElementById('textExtractionBatchFinalModalOk');
+  const btnClose = document.getElementById('textExtractionBatchFinalModalClose');
+
+  function hasRequiredElements() {
+    return !!(modal
+      && backdrop
+      && panel
+      && title
+      && summary
+      && elapsed
+      && body
+      && btnCopy
+      && btnOpenSnapshots
+      && btnOk
+      && btnClose);
+  }
+
+  function formatTranslation(key, replacements = {}) {
+    let text = tRenderer(key);
+    Object.keys(replacements).forEach((name) => {
+      text = text.replace(`{${name}}`, String(replacements[name]));
+    });
+    return text;
+  }
+
+  function createDomElement(tagName, options = {}) {
+    const element = document.createElement(tagName);
+    if (options.className) {
+      element.className = options.className;
+    }
+    if (Object.prototype.hasOwnProperty.call(options, 'textContent')) {
+      element.textContent = String(options.textContent);
+    }
+    if (options.type) {
+      element.type = options.type;
+    }
+    if (Object.prototype.hasOwnProperty.call(options, 'hidden')) {
+      element.hidden = options.hidden === true;
+    }
+    if (options.attributes && typeof options.attributes === 'object') {
+      Object.keys(options.attributes).forEach((name) => {
+        const value = options.attributes[name];
+        if (value === undefined || value === null) return;
+        element.setAttribute(name, String(value));
+      });
+    }
+    return element;
+  }
+
+  function appendChildren(parent, children) {
+    children.forEach((child) => {
+      if (!child) return;
+      parent.appendChild(child);
+    });
+    return parent;
+  }
+
+  function focusElementWithoutScroll(element) {
+    if (!element || typeof element.focus !== 'function') {
+      return;
+    }
+    try {
+      element.focus({ preventScroll: true });
+    } catch (_err) {
+      element.focus();
+    }
+  }
+
+  function setElementVisibility(element, isVisible) {
+    element.hidden = isVisible !== true;
+    element.setAttribute('aria-hidden', isVisible === true ? 'false' : 'true');
+  }
+
+  function hasSavedSnapshots(report) {
+    return !!(
+      report
+      && Array.isArray(report.units)
+      && report.units.some((unit) => unit
+        && unit.snapshotResult
+        && unit.snapshotResult.state === 'saved')
+    );
+  }
+
+  function buildSummaryText(report) {
+    const parts = [
+      report && report.hadOutput
+        ? tRenderer('renderer.text_extraction.batch_report.current_text_has_output')
+        : tRenderer('renderer.text_extraction.batch_report.current_text_unchanged'),
+    ];
+    if (hasSavedSnapshots(report)) {
+      parts.push(tRenderer('renderer.text_extraction.batch_report.snapshot_load_guidance'));
+    }
+    return parts.join(' ');
+  }
+
+  function createRevealGeneratedPdfButton(artifactPath) {
+    if (typeof artifactPath !== 'string' || !artifactPath.trim()) {
+      return null;
+    }
+    const label = tRenderer('renderer.text_extraction.batch_report.reveal_generated_pdf');
+    const button = createDomElement('button', {
+      className: 'btn-standard btn-standard--square-half',
+      textContent: '⭧',
+      type: 'button',
+    });
+    button.title = label;
+    button.setAttribute('aria-label', label);
+    button.setAttribute('data-action', 'reveal-generated-pdf');
+    button.setAttribute('data-artifact-path', artifactPath);
+    return button;
+  }
+
+  function renderGeneratedInputRow(generatedInput, index, unitKey) {
+    const label = generatedInput.state === 'failed'
+      ? `(${generatedInput.code || tRenderer('renderer.text_extraction.batch_report.failed_fallback')})`
+      : (generatedInput.state === 'omitted'
+        ? `(${tRenderer('renderer.text_extraction.batch_report.omitted')})`
+        : '');
+    const row = createDomElement('div', {
+      className: 'text-extraction-batch-final-generated',
+      attributes: {
+        'data-unit-key': unitKey,
+        'data-index': index,
+      },
+    });
+    const labelText = createDomElement('span', {
+      textContent: `${generatedInput.fileName} ${label}`.trim(),
+    });
+    const revealButton = createRevealGeneratedPdfButton(
+      generatedInput
+      && generatedInput.generatedPdfArtifact
+      && generatedInput.generatedPdfArtifact.retainedArtifactPath
+    );
+    appendChildren(row, [labelText, revealButton]);
+    return row;
+  }
+
+  function renderInputRow(input, index, unitKey) {
+    const label = input.state === 'failed'
+      ? `(${input.code || tRenderer('renderer.text_extraction.batch_report.failed_fallback')})`
+      : (input.state === 'omitted'
+        ? `(${tRenderer('renderer.text_extraction.batch_report.omitted')})`
+        : '');
+    const row = createDomElement('div', {
+      className: 'text-extraction-batch-final-input',
+      attributes: {
+        'data-index': index,
+      },
+    });
+    const main = createDomElement('div', {
+      className: 'text-extraction-batch-final-input-main',
+    });
+    const mainText = createDomElement('span', {
+      textContent: `${input.fileName} ${label}`.trim(),
+    });
+    const revealButton = createRevealGeneratedPdfButton(
+      input
+      && input.generatedPdfArtifact
+      && input.generatedPdfArtifact.retainedArtifactPath
+    );
+    appendChildren(main, [mainText, revealButton]);
+    row.appendChild(main);
+
+    if (Array.isArray(input.generatedInputs) && input.generatedInputs.length) {
+      const generatedList = createDomElement('div', {
+        className: 'text-extraction-batch-final-generated-list',
+      });
+      input.generatedInputs.forEach((generatedInput, generatedIndex) => {
+        generatedList.appendChild(renderGeneratedInputRow(generatedInput, generatedIndex, unitKey));
+      });
+      row.appendChild(generatedList);
+    }
+
+    return row;
+  }
+
+  function renderUnitReport(unit, unitIndex) {
+    const section = createDomElement('section', {
+      className: 'text-extraction-batch-final-unit',
+    });
+    section.appendChild(createDomElement('h3', {
+      textContent: unit.unitTitle,
+    }));
+    (Array.isArray(unit.inputs) ? unit.inputs : []).forEach((input, inputIndex) => {
+      section.appendChild(renderInputRow(input, inputIndex, `unit-${unitIndex}`));
+    });
+    section.appendChild(createDomElement('div', {
+      className: 'text-extraction-batch-final-json-line',
+      textContent: unit.snapshotResult
+        ? unit.snapshotResult.text
+        : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created'),
+    }));
+    return section;
+  }
+
+  function replaceReportBody(units) {
+    const unitNodes = (Array.isArray(units) ? units : []).map((unit, unitIndex) => renderUnitReport(unit, unitIndex));
+    if (typeof body.replaceChildren === 'function') {
+      body.replaceChildren(...unitNodes);
+      return;
+    }
+    while (body.firstChild) {
+      body.removeChild(body.firstChild);
+    }
+    unitNodes.forEach((node) => body.appendChild(node));
+  }
+
+  function buildReportText(report, elapsedValueText = '') {
+    const lines = [];
+    lines.push(report.flowKind === 'single_file_split'
+      ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
+      : tRenderer('renderer.text_extraction.batch_report.title'));
+    const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
+    if (normalizedElapsedValueText) {
+      lines.push(`${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`);
+    }
+    lines.push('');
+    report.units.forEach((unit) => {
+      lines.push(unit.unitTitle);
+      unit.inputs.forEach((input) => {
+        const label = input.state === 'failed'
+          ? ` (${formatTranslation('renderer.text_extraction.batch_report.failed_with_code', {
+            code: input.code || tRenderer('renderer.text_extraction.batch_report.failed_fallback'),
+          })})`
+          : (input.state === 'omitted'
+            ? ` (${tRenderer('renderer.text_extraction.batch_report.omitted')})`
+            : '');
+        lines.push(`- ${input.fileName}${label}`);
+        if (Array.isArray(input.generatedInputs)) {
+          input.generatedInputs.forEach((generatedInput) => {
+            const generatedLabel = generatedInput.state === 'failed'
+              ? ` (${formatTranslation('renderer.text_extraction.batch_report.failed_with_code', {
+                code: generatedInput.code || tRenderer('renderer.text_extraction.batch_report.failed_fallback'),
+              })})`
+              : (generatedInput.state === 'omitted'
+                ? ` (${tRenderer('renderer.text_extraction.batch_report.omitted')})`
+                : '');
+            lines.push(`  - ${generatedInput.fileName}${generatedLabel}`);
+          });
+        }
+      });
+      lines.push(
+        unit.snapshotResult
+          ? unit.snapshotResult.text
+          : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created')
+      );
+      lines.push('');
+    });
+    lines.push(report.hadOutput
+      ? tRenderer('renderer.text_extraction.batch_report.current_text_has_output')
+      : tRenderer('renderer.text_extraction.batch_report.current_text_unchanged'));
+    return lines.join('\n');
+  }
+
+  async function copyReportText(reportText) {
+    if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+      throw new Error('navigator.clipboard.writeText unavailable');
+    }
+    await navigator.clipboard.writeText(reportText);
+  }
+
+  async function promptBatchFinalReport({
+    report,
+    elapsedValueText = '',
+    onRevealGeneratedPdf,
+    onOpenSnapshotsFolder,
+  } = {}) {
+    if (!hasRequiredElements()) {
+      log.error('Batch final modal DOM elements missing.');
+      return;
+    }
+    const safeReport = report && typeof report === 'object'
+      ? report
+      : { flowKind: 'batch', units: [], hadOutput: false };
+    const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
+    const reportText = buildReportText(safeReport, normalizedElapsedValueText);
+
+    title.textContent = safeReport.flowKind === 'single_file_split'
+      ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
+      : tRenderer('renderer.text_extraction.batch_report.title');
+    summary.textContent = buildSummaryText(safeReport);
+    if (normalizedElapsedValueText) {
+      elapsed.textContent = `${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`;
+    } else {
+      elapsed.textContent = '';
+    }
+    setElementVisibility(elapsed, !!normalizedElapsedValueText);
+    replaceReportBody(safeReport.units);
+    btnCopy.textContent = tRenderer('renderer.text_extraction.batch_report.copy_report');
+    btnOpenSnapshots.textContent = tRenderer('renderer.text_extraction.batch_report.open_snapshots_folder');
+    btnOk.textContent = tRenderer('renderer.text_extraction.batch_report.ok_button');
+    btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.batch_report.close_aria'));
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const previousActiveElement = document.activeElement || null;
+
+      const cleanup = () => {
+        body.removeEventListener('click', onBodyClick);
+        btnCopy.removeEventListener('click', onCopy);
+        btnOpenSnapshots.removeEventListener('click', onOpenSnapshots);
+        btnOk.removeEventListener('click', onOk);
+        btnClose.removeEventListener('click', onOk);
+        backdrop.removeEventListener('click', onOk);
+        window.removeEventListener('keydown', onWindowKeyDown);
+        modal.setAttribute('aria-hidden', 'true');
+        if (previousActiveElement && previousActiveElement !== document.activeElement) {
+          focusElementWithoutScroll(previousActiveElement);
+        }
+      };
+
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve();
+      };
+
+      const onBodyClick = async (event) => {
+        const target = event.target && event.target.closest ? event.target.closest('[data-action="reveal-generated-pdf"]') : null;
+        if (!target || typeof onRevealGeneratedPdf !== 'function') return;
+        try {
+          await onRevealGeneratedPdf(target.getAttribute('data-artifact-path') || '');
+        } catch (err) {
+          log.error('Generated PDF reveal failed from final modal:', err);
+          window.Notify.notifyMain('renderer.alerts.text_extraction_generated_pdf_reveal_failed');
+        }
+      };
+      const onCopy = async () => {
+        try {
+          await copyReportText(reportText);
+        } catch (err) {
+          log.error('Batch report copy failed:', err);
+        }
+      };
+      const onOpenSnapshots = async () => {
+        if (typeof onOpenSnapshotsFolder !== 'function') return;
+        try {
+          await onOpenSnapshotsFolder();
+        } catch (err) {
+          log.error('Open snapshots folder failed:', err);
+        }
+      };
+      const onOk = () => finish();
+      const onWindowKeyDown = (event) => {
+        if (modal.getAttribute('aria-hidden') !== 'false') return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          finish();
+        }
+      };
+
+      body.addEventListener('click', onBodyClick);
+      btnCopy.addEventListener('click', onCopy);
+      btnOpenSnapshots.addEventListener('click', onOpenSnapshots);
+      btnOk.addEventListener('click', onOk);
+      btnClose.addEventListener('click', onOk);
+      backdrop.addEventListener('click', onOk);
+      window.addEventListener('keydown', onWindowKeyDown);
+
+      modal.setAttribute('aria-hidden', 'false');
+      focusElementWithoutScroll(btnClose || btnOk);
+      if (typeof panel.scrollTop === 'number') {
+        panel.scrollTop = 0;
+      }
+    });
+  }
+
+  window.Notify.promptTextExtractionBatchFinalReport = promptBatchFinalReport;
+})();
+
+// =============================================================================
+// End of public/js/text_extraction_batch_final_modal.js
+// =============================================================================
