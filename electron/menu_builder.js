@@ -394,6 +394,10 @@ function buildAppMenu(lang, opts = {}) {
                     click: () => sendMenuClick('presets_por_defecto'),
                 },
                 {
+                    label: resolveMenuLabel(m, 'enable_google_ocr'),
+                    click: () => sendMenuClick('enable_google_ocr'),
+                },
+                {
                     label: resolveMenuLabel(m, 'disconnect_google_ocr'),
                     click: () => sendMenuClick('disconnect_google_ocr'),
                 },
