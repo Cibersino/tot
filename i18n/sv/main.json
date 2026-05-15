@@ -14,6 +14,7 @@
       "colores": "Färger",
       "shortcuts": "Tangentbordsgenvägar",
       "presets_por_defecto": "Standardförinställningar",
+      "enable_google_ocr": "Aktivera Google OCR",
       "disconnect_google_ocr": "Koppla från Google OCR",
       "links_interes": "Användbara länkar",
       "ayuda": "?",
