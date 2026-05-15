@@ -208,6 +208,21 @@ function getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy) {
 // Prepare/build helpers
 // =============================================================================
 
+function getProbeMetadataSafeForLogs(probeResult) {
+  const metadata = probeResult && probeResult.metadataSafeForLogs && typeof probeResult.metadataSafeForLogs === 'object'
+    ? probeResult.metadataSafeForLogs
+    : {};
+  return {
+    pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
+    totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
+    foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
+    probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
+    probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
+    selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
+    elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
+  };
+}
+
 function getProbeFailureDetails(probeResult) {
   if (!probeResult || probeResult.state !== 'failure') return null;
   const error = probeResult.error && typeof probeResult.error === 'object'
@@ -217,43 +232,21 @@ function getProbeFailureDetails(probeResult) {
   const details = error.detailsSafeForLogs && typeof error.detailsSafeForLogs === 'object'
     ? error.detailsSafeForLogs
     : {};
-  const metadata = probeResult.metadataSafeForLogs && typeof probeResult.metadataSafeForLogs === 'object'
-    ? probeResult.metadataSafeForLogs
-    : {};
 
   return {
     code: typeof error.code === 'string' ? error.code : '',
     errorName: typeof details.errorName === 'string' ? details.errorName : '',
     errorCode: typeof details.errorCode === 'string' ? details.errorCode : '',
     selectableText: typeof probeResult.selectableText === 'string' ? probeResult.selectableText : 'unknown',
-    metadataSafeForLogs: {
-      pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
-      totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
-      foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
-      probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
-      probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
-      selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
-      elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
-    },
+    metadataSafeForLogs: getProbeMetadataSafeForLogs(probeResult),
   };
 }
 
 function getProbeSuccessDetails(probeResult) {
   if (!probeResult || probeResult.state !== 'success') return null;
-  const metadata = probeResult.metadataSafeForLogs && typeof probeResult.metadataSafeForLogs === 'object'
-    ? probeResult.metadataSafeForLogs
-    : {};
   return {
     selectableText: typeof probeResult.selectableText === 'string' ? probeResult.selectableText : 'unknown',
-    metadataSafeForLogs: {
-      pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
-      totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
-      foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
-      probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
-      probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
-      selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
-      elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
-    },
+    metadataSafeForLogs: getProbeMetadataSafeForLogs(probeResult),
   };
 }
 
