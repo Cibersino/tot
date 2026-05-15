@@ -1343,9 +1343,7 @@ function updateControllerProcessingContext(controller, nextContext, log) {
   try {
     controller.update(nextContext);
   } catch (err) {
-    if (log && typeof log.warn === 'function') {
-      log.warn('Processing-mode metadata update failed (ignored):', err);
-    }
+    log.warn('Processing-mode metadata update failed (ignored):', err);
   }
 }
 
