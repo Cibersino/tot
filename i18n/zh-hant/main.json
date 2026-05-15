@@ -14,6 +14,7 @@
       "colores": "顏色",
       "shortcuts": "鍵盤快捷鍵",
       "presets_por_defecto": "預設值",
+      "enable_google_ocr": "啟用 Google OCR",
       "disconnect_google_ocr": "中斷 Google OCR 連線",
       "links_interes": "相關連結",
       "ayuda": "?",

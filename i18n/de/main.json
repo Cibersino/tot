@@ -14,6 +14,7 @@
       "colores": "Farben",
       "shortcuts": "Tastenkombinationen",
       "presets_por_defecto": "Standard-Presets",
+      "enable_google_ocr": "Google OCR aktivieren",
       "disconnect_google_ocr": "Google OCR trennen",
       "links_interes": "Nützliche Links",
       "ayuda": "?",
