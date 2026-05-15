@@ -12,6 +12,41 @@ function loadFreshSpellcheckModule() {
   return require(modulePath);
 }
 
+function loadSpellcheckModuleWithMockLog(mockLog) {
+  const modulePath = path.resolve(__dirname, '../../../electron/spellcheck.js');
+  const logModulePath = path.resolve(__dirname, '../../../electron/log.js');
+  const originalSpellcheckModule = require.cache[modulePath];
+  const originalLogModule = require.cache[logModulePath];
+
+  require.cache[logModulePath] = {
+    id: logModulePath,
+    filename: logModulePath,
+    loaded: true,
+    exports: {
+      get() {
+        return mockLog;
+      },
+    },
+  };
+
+  delete require.cache[modulePath];
+  const spellcheck = require(modulePath);
+
+  function restore() {
+    delete require.cache[modulePath];
+    if (originalSpellcheckModule) {
+      require.cache[modulePath] = originalSpellcheckModule;
+    }
+    if (originalLogModule) {
+      require.cache[logModulePath] = originalLogModule;
+    } else {
+      delete require.cache[logModulePath];
+    }
+  }
+
+  return { spellcheck, restore };
+}
+
 function createSessionDouble(availableSpellCheckerLanguages = [], options = {}) {
   const sessionDouble = {
     availableSpellCheckerLanguages,
@@ -367,18 +402,18 @@ test('applySpellCheckerSessionConfig disables spellcheck when setSpellCheckerLan
   assert.deepEqual(sessionDouble.languageCalls, []);
 });
 
-test('createController applies override settings without consulting settingsState.getSettings', () => {
-  const spellcheck = loadFreshSpellcheckModule();
+test('createController applies override settings without consulting settingsState.getSettings', (t) => {
   const log = createLogDouble();
+  const { spellcheck, restore } = loadSpellcheckModuleWithMockLog(log);
   const sessionState = createControllerSessionState(['es-ES', 'en-US']);
 
+  t.after(restore);
   const controller = spellcheck.createController({
     settingsState: {
       getSettings() {
         throw new Error('getSettings should not be used when an override is provided');
       },
     },
-    log,
     sessionState,
     platform: 'win32',
   });
@@ -398,17 +433,17 @@ test('createController applies override settings without consulting settingsStat
   assert.equal(log.errorCalls.length, 0);
 });
 
-test('createController warns once when no default session is available', () => {
-  const spellcheck = loadFreshSpellcheckModule();
+test('createController warns once when no default session is available', (t) => {
   const log = createLogDouble();
+  const { spellcheck, restore } = loadSpellcheckModuleWithMockLog(log);
 
+  t.after(restore);
   const controller = spellcheck.createController({
     settingsState: {
       getSettings() {
         return { language: 'es', spellcheckEnabled: true };
       },
     },
-    log,
     sessionState: {},
     platform: 'win32',
   });
@@ -421,18 +456,18 @@ test('createController warns once when no default session is available', () => {
   assert.equal(log.warnOnceCalls[0].key, 'main.spellcheck.session.unavailable');
 });
 
-test('createController logs a resolver rejection with the new reason code surface', () => {
-  const spellcheck = loadFreshSpellcheckModule();
+test('createController logs a resolver rejection with the new reason code surface', (t) => {
   const log = createLogDouble();
+  const { spellcheck, restore } = loadSpellcheckModuleWithMockLog(log);
   const sessionState = createControllerSessionState(['en-US']);
 
+  t.after(restore);
   const controller = spellcheck.createController({
     settingsState: {
       getSettings() {
         return { language: 'arn', spellcheckEnabled: true };
       },
     },
-    log,
     sessionState,
     platform: 'win32',
   });
@@ -461,7 +496,6 @@ test('createController decorates settings with spellcheck availability when a co
         return { language: 'es-cl', spellcheckEnabled: true };
       },
     },
-    log: createLogDouble(),
     sessionState: createControllerSessionState(['es-ES', 'en-US']),
     platform: 'win32',
   });
@@ -484,7 +518,6 @@ test('createController decorates settings with spellcheck availability false whe
         return { language: 'ar', spellcheckEnabled: true };
       },
     },
-    log: createLogDouble(),
     sessionState: createControllerSessionState(['es-ES', 'en-US']),
     platform: 'win32',
   });

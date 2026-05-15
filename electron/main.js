@@ -74,7 +74,6 @@ log.debug('Main process starting...');
 
 const spellcheckController = spellcheck.createController({
   settingsState,
-  log,
 });
 const editorTextSizeController = editorTextSize.createController({
   settingsState,

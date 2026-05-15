@@ -60,7 +60,10 @@ function resolveMenuLabel(obj, key, fallback = key) {
 
 function resolveDialogText(dialogTexts, key, fallback = key, opts = {}) {
     if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
-    const logger = opts.log || log;
+    if (!opts.log || typeof opts.log.warnOnce !== 'function') {
+        throw new Error('[menu_builder] resolveDialogText requires opts.log.warnOnce');
+    }
+    const logger = opts.log;
     const prefix = opts.warnPrefix || 'menu_builder.dialog.missing';
     logger.warnOnce(
         `${prefix}:${key}`,

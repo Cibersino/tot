@@ -215,7 +215,6 @@ async function handleExecutePrepared(event, payload = {}, {
       heavySplitFailurePolicy: request.heavySplitFailurePolicy,
       resolvePaths,
       controller,
-      log,
     });
 
     if (execution && execution.ok === true) {

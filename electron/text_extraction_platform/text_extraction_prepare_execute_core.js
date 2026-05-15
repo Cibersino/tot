@@ -20,6 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const { BrowserWindow } = require('electron');
 
+const Log = require('../log');
 const { PROVIDER_API_DISABLED_CODE } = require('./ocr_google_drive_provider_failure');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
 const { runGoogleDriveOcrRoute } = require('./ocr_google_drive_route');
@@ -42,6 +43,8 @@ const {
   getNativeParserForExt,
   getOcrSourceMimeTypeForExt,
 } = require('./text_extraction_supported_formats');
+
+const log = Log.get('text-extraction-prepare-execute-core');
 
 // =============================================================================
 // IPC wrapper boundary helpers
@@ -521,7 +524,7 @@ function buildOcrSetupValidationRuntimeFailure(err) {
 // Keep unexpected resolvePaths()/validation exceptions on the same structured
 // OCR-unavailable prepare path instead of letting prepare IPC fall through to
 // a generic handler failure.
-async function validateOcrSetup(resolvePaths, log) {
+async function validateOcrSetup(resolvePaths) {
   try {
     const paths = resolvePaths();
     return validateGoogleDriveOcrSetup({
@@ -606,10 +609,9 @@ async function resolveNonPdfOcrPreparation({
   fileInfo,
   ocrLanguage,
   resolvePaths,
-  log,
 }) {
   const processingInputFileName = fileInfo.fileName;
-  const validation = await validateOcrSetup(resolvePaths, log);
+  const validation = await validateOcrSetup(resolvePaths);
   if (!validation || validation.ok !== true) {
     return buildOcrPrepareFailure({
       fileInfo,
@@ -649,7 +651,6 @@ async function resolvePdfPreparation({
   requestedPdfPageSelection,
   requestedGeneratedPdfArtifactPolicy,
   resolvePaths,
-  log,
 }) {
   const pdfInspection = await inspectPdfFile({ fileInfo });
   if (!pdfInspection || pdfInspection.ok !== true || pdfInspection.isPdf !== true) {
@@ -742,7 +743,7 @@ async function resolvePdfPreparation({
   const nativeProbeSuccess = getProbeSuccessDetails(nativeProbeResult);
   const nativeAvailable = !!(nativeProbeSuccess && nativeProbeSuccess.selectableText === 'present');
 
-  const ocrValidation = await validateOcrSetup(resolvePaths, log);
+  const ocrValidation = await validateOcrSetup(resolvePaths);
   const ocrReady = !!(ocrValidation && ocrValidation.ok === true);
   const ocrSetupState = resolveSetupState(ocrValidation);
   const ocrSetupCode = resolveSetupCode(ocrValidation);
@@ -875,7 +876,6 @@ async function prepareSelectedFile({
   pdfPageSelection,
   generatedPdfArtifactPolicy,
   resolvePaths,
-  log,
 }) {
   const fileInfo = getFileInfo(filePath);
   const nativeParser = getNativeParserForExt(fileInfo.sourceFileExt);
@@ -890,7 +890,6 @@ async function prepareSelectedFile({
       requestedPdfPageSelection: pdfPageSelection,
       requestedGeneratedPdfArtifactPolicy: generatedPdfArtifactPolicy,
       resolvePaths,
-      log,
     });
   }
 
@@ -899,7 +898,6 @@ async function prepareSelectedFile({
       fileInfo,
       ocrLanguage,
       resolvePaths,
-      log,
     });
   }
 
@@ -1015,7 +1013,6 @@ function enforceFailureAbortInvariants({
   fileInfo,
   isExecutionOwned,
   result,
-  log,
 }) {
   const safeResult = result && typeof result === 'object' ? { ...result } : null;
   if (!safeResult) return result;
@@ -1338,7 +1335,7 @@ function buildControllerExecutionContext({
   };
 }
 
-function updateControllerProcessingContext(controller, nextContext, log) {
+function updateControllerProcessingContext(controller, nextContext) {
   if (!controller || typeof controller.update !== 'function') return;
   try {
     controller.update(nextContext);
@@ -1393,7 +1390,6 @@ async function executePreparedHeavySplitUnit({
   productRoute,
   resolvePaths,
   controller,
-  log,
   executionOwnsController,
   heavySplitFailurePolicy,
   processingContext,
@@ -1453,7 +1449,7 @@ async function executePreparedHeavySplitUnit({
       processingInputFileName: generatedInput.processingInputFileName,
       processingInputSource: 'generated_pdf_split_input',
     };
-    updateControllerProcessingContext(controller, childProcessingContext, log);
+    updateControllerProcessingContext(controller, childProcessingContext);
 
     const paths = resolvePaths();
     const materializedInput = await materializePdfPageSelectionInput({
@@ -1496,7 +1492,7 @@ async function executePreparedHeavySplitUnit({
       ...childProcessingContext,
       processingInputFileName: materializedInput.processingInputFileName,
       processingInputSource: 'generated_pdf_split_input',
-    }, log);
+    });
 
     if (!executionOwnsController()) {
       const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
@@ -1546,7 +1542,6 @@ async function executePreparedHeavySplitUnit({
         bundledCredentialsFailureReason: paths.bundledCredentialsFailureReason,
         bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
         ocrLanguage: preparedRecord.ocrLanguage,
-        log,
         isAborted: () => !executionOwnsController(),
       });
       childResult = enforceFailureAbortInvariants({
@@ -1554,7 +1549,6 @@ async function executePreparedHeavySplitUnit({
         fileInfo: preparedRecord.fileInfo,
         isExecutionOwned: executionOwnsController,
         result: childResult,
-        log,
       });
     } finally {
       const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
@@ -1763,7 +1757,6 @@ async function executePreparedImport({
   heavySplitFailurePolicy = 'finish_unit_after_last_success',
   resolvePaths,
   controller,
-  log,
 }) {
   const resolvedRoute = resolvePreparedRoute(preparedRecord, routePreference);
   if (!resolvedRoute.ok) {
@@ -1795,7 +1788,7 @@ async function executePreparedImport({
         state: controller.getState(),
       };
     }
-    updateControllerProcessingContext(controller, controllerExecutionContext, log);
+    updateControllerProcessingContext(controller, controllerExecutionContext);
     executionState = getControllerStateSnapshot(controller);
   } else {
     const enterTransition = controller.enter(controllerExecutionContext);
@@ -1837,7 +1830,6 @@ async function executePreparedImport({
         productRoute,
         resolvePaths,
         controller,
-        log,
         executionOwnsController,
         heavySplitFailurePolicy,
         processingContext,
@@ -1883,7 +1875,7 @@ async function executePreparedImport({
         ...controllerExecutionContext,
         processingInputFileName: materializedInput.processingInputFileName,
         processingInputSource: materializedInput.processingInputSource,
-      }, log);
+      });
       cleanupGeneratedArtifact = typeof materializedInput.cleanupGeneratedArtifact === 'function'
         ? materializedInput.cleanupGeneratedArtifact
         : null;
@@ -1928,14 +1920,12 @@ async function executePreparedImport({
         const nativeResult = await runNativeExtractionRoute({
           filePath: materializedInput.effectiveFilePath,
           isAborted: () => !executionOwnsController(),
-          log,
         });
         const safeNativeResult = enforceFailureAbortInvariants({
           routeKind: 'native',
           fileInfo,
           isExecutionOwned: executionOwnsController,
           result: nativeResult,
-          log,
         });
         executionResult = {
           executionKind,
@@ -1961,7 +1951,6 @@ async function executePreparedImport({
           bundledCredentialsFailureReason: paths.bundledCredentialsFailureReason,
           bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
           ocrLanguage: preparedRecord.ocrLanguage,
-          log,
           isAborted: () => !executionOwnsController(),
         });
         const safeOcrResult = enforceFailureAbortInvariants({
@@ -1969,7 +1958,6 @@ async function executePreparedImport({
           fileInfo,
           isExecutionOwned: executionOwnsController,
           result: ocrResult,
-          log,
         });
         executionResult = {
           executionKind,

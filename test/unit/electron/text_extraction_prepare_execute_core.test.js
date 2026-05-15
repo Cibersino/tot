@@ -885,7 +885,9 @@ test('executePreparedImport returns ALREADY_ACTIVE when the controller stays act
 
 test('executePreparedImport materializes the selected PDF range for native success and preserves original provenance', async (t) => {
   const nativeRouteCalls = [];
-  const { core, restore } = loadCoreWithNativeRouteMock(async ({ filePath }) => {
+  const { core, restore } = loadCoreWithNativeRouteMock(async (args) => {
+    assert.equal(Object.hasOwn(args, 'log'), false);
+    const { filePath } = args;
     nativeRouteCalls.push(filePath);
     assert.equal(path.basename(filePath), 'selectable_text_fixture_12_pages_pages_02_03.pdf');
     assert.notEqual(path.resolve(filePath), path.resolve(SELECTABLE_PDF_FIXTURE));
@@ -1152,7 +1154,9 @@ test('executePreparedImport does not release a replacement processing lock after
 test('executePreparedImport processes heavy split through generated child PDFs instead of uploading the full source PDF', async (t) => {
   const ocrRouteCalls = [];
   const { core, restore } = loadCoreWithMocks({
-    mockRunGoogleDriveOcrRoute: async ({ filePath }) => {
+    mockRunGoogleDriveOcrRoute: async (args) => {
+      assert.equal(Object.hasOwn(args, 'log'), false);
+      const { filePath } = args;
       ocrRouteCalls.push(path.basename(filePath));
       return {
         state: 'success',
@@ -1285,7 +1289,9 @@ test('executePreparedImport keeps retained generated PDFs only on heavy split ch
 
   const ocrRouteCalls = [];
   const { core, restore } = loadCoreWithMocks({
-    mockRunGoogleDriveOcrRoute: async ({ filePath }) => {
+    mockRunGoogleDriveOcrRoute: async (args) => {
+      assert.equal(Object.hasOwn(args, 'log'), false);
+      const { filePath } = args;
       ocrRouteCalls.push(path.basename(filePath));
       return {
         state: 'success',

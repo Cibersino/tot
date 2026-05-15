@@ -18,6 +18,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const Log = require('../log');
 const { google } = require('googleapis');
 const {
   PROVIDER_API_DISABLED_CODE,
@@ -56,6 +57,8 @@ const INVALID_PERSISTED_TOKEN_CODES = new Set([
 const MAX_RATE_LIMIT_ATTEMPTS = 3;
 const BASE_RETRY_DELAY_MS = 300;
 const MAX_RETRY_DELAY_MS = 1500;
+
+const log = Log.get('text-extraction-ocr-google-drive-route');
 
 // =============================================================================
 // Helpers
@@ -246,7 +249,7 @@ function sanitizeLeadingOcrSeparatorArtifact(rawText) {
   };
 }
 
-async function runWithRateLimitRetry({ operationName, log, isAborted, fn }) {
+async function runWithRateLimitRetry({ operationName, isAborted, fn }) {
   let attempt = 0;
 
   while (attempt < MAX_RATE_LIMIT_ATTEMPTS) {
@@ -342,7 +345,6 @@ async function runGoogleDriveOcrRoute({
   bundledCredentialsFailureReason = '',
   bundledCredentialsFailureDetailsSafeForLogs = {},
   ocrLanguage = '',
-  log,
   isAborted,
 } = {}) {
   const fileInfo = getFileInfo(filePath);
@@ -536,7 +538,6 @@ async function runGoogleDriveOcrRoute({
 
     const createResponse = await runWithRateLimitRetry({
       operationName: 'upload_convert',
-      log,
       isAborted,
       fn: async () => drive.files.create(createRequest),
     });
@@ -552,7 +553,6 @@ async function runGoogleDriveOcrRoute({
 
     const exportResponse = await runWithRateLimitRetry({
       operationName: 'export_text',
-      log,
       isAborted,
       fn: async () => drive.files.export(
         {
@@ -644,7 +644,6 @@ async function runGoogleDriveOcrRoute({
       try {
         await runWithRateLimitRetry({
           operationName: 'cleanup_delete_temp_doc',
-          log,
           isAborted: () => false,
           fn: async () => drive.files.delete({ fileId: tempDocumentId }),
         });
@@ -711,4 +710,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/ocr_google_drive_route.js
 // =============================================================================
-

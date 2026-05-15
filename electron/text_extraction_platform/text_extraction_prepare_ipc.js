@@ -126,7 +126,6 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         pdfPageSelection: request.pdfPageSelection,
         generatedPdfArtifactPolicy: request.generatedPdfArtifactPolicy,
         resolvePaths,
-        log,
       });
       const routeMetadata = preparation ? (preparation.routeMetadata || null) : null;
 

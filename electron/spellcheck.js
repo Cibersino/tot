@@ -16,7 +16,10 @@
 // =============================================================================
 // Imports
 // =============================================================================
+const Log = require('./log');
 const settingsState = require('./settings');
+
+const log = Log.get('spellcheck');
 
 // =============================================================================
 // Resolver constants
@@ -561,7 +564,6 @@ function loadElectronSessionState() {
 // =============================================================================
 function createController({
   settingsState: settingsModule = settingsState,
-  log,
   sessionState = null,
   platform = process.platform,
 } = {}) {
