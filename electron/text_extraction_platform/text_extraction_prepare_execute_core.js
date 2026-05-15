@@ -1380,6 +1380,15 @@ function buildHeavySplitChildStatus({
   };
 }
 
+function appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, startIndex) {
+  for (let omittedIndex = startIndex; omittedIndex < generatedInputs.length; omittedIndex += 1) {
+    childStatuses.push(buildHeavySplitChildStatus({
+      generatedInput: generatedInputs[omittedIndex],
+      state: 'omitted',
+    }));
+  }
+}
+
 async function executePreparedHeavySplitUnit({
   preparedRecord,
   routeMetadata,
@@ -1474,12 +1483,7 @@ async function executePreparedHeavySplitUnit({
         errorCode: error.code || 'pdf_subset_creation_failed',
       }));
       if (heavySplitFailurePolicy !== 'omit_failed_and_continue') {
-        for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
-          childStatuses.push(buildHeavySplitChildStatus({
-            generatedInput: generatedInputs[omittedIndex],
-            state: 'omitted',
-          }));
-        }
+        appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, index + 1);
         break;
       }
       continue;
@@ -1506,12 +1510,7 @@ async function executePreparedHeavySplitUnit({
         state: 'cancelled_before_route_dispatch',
         generatedPdfArtifact,
       }));
-      for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
-        childStatuses.push(buildHeavySplitChildStatus({
-          generatedInput: generatedInputs[omittedIndex],
-          state: 'omitted',
-        }));
-      }
+      appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, index + 1);
       const cancelledExecution = buildPreparedCancelledResult({
         preparedRecord,
         productRoute,
@@ -1592,12 +1591,7 @@ async function executePreparedHeavySplitUnit({
             : '',
         generatedPdfArtifact,
       }));
-      for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
-        childStatuses.push(buildHeavySplitChildStatus({
-          generatedInput: generatedInputs[omittedIndex],
-          state: 'omitted',
-        }));
-      }
+      appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, index + 1);
       const cancelledExecution = buildPreparedCancelledResult({
         preparedRecord,
         productRoute,
@@ -1648,12 +1642,7 @@ async function executePreparedHeavySplitUnit({
       generatedPdfArtifact,
     }));
     if (heavySplitFailurePolicy !== 'omit_failed_and_continue') {
-      for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
-        childStatuses.push(buildHeavySplitChildStatus({
-          generatedInput: generatedInputs[omittedIndex],
-          state: 'omitted',
-        }));
-      }
+      appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, index + 1);
       break;
     }
   }
