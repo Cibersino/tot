@@ -498,6 +498,11 @@
             ? preparation.fileInfo.sourceFileSizeBytes
             : 0,
           totalPages: preparation.routeMetadata.pdfTotalPages || inspection.totalPages || 0,
+          providerLimitBytes:
+            preparation.routeMetadata
+            && preparation.routeMetadata.ocrProviderLimitBytes
+              ? preparation.routeMetadata.ocrProviderLimitBytes
+              : 0,
           canUseNative: getPreparationRouteOptions(preparation).includes('native'),
         });
         if (singleFileHeavyAction === 'return_to_pages') {

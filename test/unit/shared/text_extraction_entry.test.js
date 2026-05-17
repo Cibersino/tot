@@ -77,6 +77,11 @@ function createHarness({
           return key;
         },
       },
+      TextExtractionPdfPageSelection: {
+        formatRangeSelectionText(selection) {
+          return `Pages ${selection.fromPage}-${selection.toPage}`;
+        },
+      },
     },
     console,
   };
@@ -264,6 +269,7 @@ test('single-file entry returns to PDF options from the Case A heavy-PDF modal',
           chosenRoute: 'ocr',
           availableRoutes: ['native', 'ocr'],
           pdfTotalPages: 516,
+          ocrProviderLimitBytes: 50 * 1024 * 1024,
           heavySplitEligible: true,
         },
       },
@@ -285,4 +291,5 @@ test('single-file entry returns to PDF options from the Case A heavy-PDF modal',
   assert.equal(modalOptions.sourceFileName, 'book.pdf');
   assert.equal(modalOptions.sourceFileSizeBytes, 458 * 1024 * 1024);
   assert.equal(modalOptions.totalPages, 516);
+  assert.equal(modalOptions.providerLimitBytes, 50 * 1024 * 1024);
 });
