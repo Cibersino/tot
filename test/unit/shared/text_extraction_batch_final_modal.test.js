@@ -433,6 +433,52 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   assert.equal(harness.getActiveElement(), harness.elements.outsideLauncher);
 });
 
+test('batch final modal renders ordinary selected-page PDF rows with the range suffix in UI and copied text', async () => {
+  const harness = createHarness();
+
+  const report = {
+    flowKind: 'batch',
+    hadOutput: true,
+    units: [
+      {
+        unitTitle: 'unit_1',
+        snapshotResult: {
+          state: 'not_created',
+          text: 'Snapshot not created',
+        },
+        inputs: [
+          {
+            fileName: 'source.pdf',
+            displayName: 'source.pdf (\u206612-18\u2069)',
+            state: 'success',
+            generatedPdfArtifact: {
+              retainedArtifactPath: 'C:\\tmp\\source_pages_12_18.pdf',
+            },
+          },
+        ],
+      },
+    ],
+  };
+
+  const promptPromise = harness.prompt({
+    report,
+    elapsedValueText: '00:42',
+  });
+
+  assert.match(
+    harness.elements.textExtractionBatchFinalModalBody.textContent,
+    /source\.pdf \(\u206612-18\u2069\)/
+  );
+
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.equal(harness.clipboardWrites.length, 1);
+  assert.match(harness.clipboardWrites[0], /- source\.pdf \(\u206612-18\u2069\)/);
+
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
+});
+
 test('batch final modal renders heavy split success with custom unit title, source line, and child rows only', async () => {
   const harness = createHarness();
 

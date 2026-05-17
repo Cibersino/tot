@@ -235,7 +235,7 @@
       className: 'text-extraction-batch-final-input-main',
     });
     const mainText = createDomElement('span', {
-      textContent: `${input.fileName} ${label}`.trim(),
+      textContent: `${(input.displayName || input.fileName)} ${label}`.trim(),
     });
     const revealButton = createRevealGeneratedPdfButton(
       input
@@ -317,7 +317,7 @@
           : (input.state === 'omitted'
             ? ` (${tRenderer('renderer.text_extraction.batch_report.omitted')})`
             : '');
-        lines.push(`- ${input.fileName}${label}`);
+        lines.push(`- ${input.displayName || input.fileName}${label}`);
         if (Array.isArray(input.generatedInputs)) {
           input.generatedInputs.forEach((generatedInput) => {
             const generatedLabel = generatedInput.state === 'failed'

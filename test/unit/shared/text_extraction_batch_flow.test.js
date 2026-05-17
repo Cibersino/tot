@@ -581,8 +581,14 @@ test('batch execution final report keeps the canonical title and flattens heavy 
   assert.equal(report.units[0].overallCode, '');
   assert.equal(report.units[0].heavyGeneratedInputRows, true);
   assert.deepEqual(
-    report.units[0].inputs.map((input) => input.fileName),
-    ['book_pages_001_020.pdf', 'book_pages_021_040.pdf']
+    report.units[0].inputs.map((input) => ({
+      fileName: input.fileName,
+      displayName: input.displayName,
+    })),
+    [
+      { fileName: 'book_pages_001_020.pdf', displayName: 'book_pages_001_020.pdf' },
+      { fileName: 'book_pages_021_040.pdf', displayName: 'book_pages_021_040.pdf' },
+    ]
   );
   assert.equal(report.units[0].inputs.some((input) => input.fileName === 'book.pdf'), false);
   assert.equal(harness.getSavedSnapshotPayload(), null);
@@ -653,11 +659,12 @@ test('batch execution final report keeps heavy parent outcome metadata when chil
   assert.deepEqual(
     report.units[0].inputs.map((input) => ({
       fileName: input.fileName,
+      displayName: input.displayName,
       state: input.state,
     })),
     [
-      { fileName: 'book_pages_001_020.pdf', state: 'success' },
-      { fileName: 'book_pages_021_040.pdf', state: 'omitted' },
+      { fileName: 'book_pages_001_020.pdf', displayName: 'book_pages_001_020.pdf', state: 'success' },
+      { fileName: 'book_pages_021_040.pdf', displayName: 'book_pages_021_040.pdf', state: 'omitted' },
     ]
   );
 });
@@ -710,14 +717,75 @@ test('batch execution final report keeps the source row when heavy split produce
   assert.deepEqual(
     report.units[0].inputs.map((input) => ({
       fileName: input.fileName,
+      displayName: input.displayName,
       state: input.state,
       code: input.code,
     })),
     [
       {
         fileName: 'book.pdf',
+        displayName: 'book.pdf',
         state: 'failed',
         code: 'heavy_split_plan_invalid',
+      },
+    ]
+  );
+});
+
+test('batch execution final report annotates ordinary selected-page PDF rows with the chosen range', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\source.pdf': createPreparation({
+      fileName: 'source.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'range',
+        fromPage: 12,
+        toPage: 18,
+        selectedPageCount: 7,
+        totalPages: 48,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'source.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Extracted text',
+          error: null,
+          generatedPdfArtifact: {
+            retainedArtifactPath: 'C:\\tmp\\source_pages_12_18.pdf',
+          },
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: ['C:\\docs\\source.pdf'],
+    source: 'picker',
+    actionId: 'test-batch-flow-range-report',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units.length, 1);
+  assert.deepEqual(
+    report.units[0].inputs,
+    [
+      {
+        fileName: 'source.pdf',
+        displayName: 'source.pdf (\u206612-18\u2069)',
+        state: 'success',
+        code: '',
+        generatedInputs: [],
+        generatedPdfArtifact: {
+          retainedArtifactPath: 'C:\\tmp\\source_pages_12_18.pdf',
+        },
       },
     ]
   );

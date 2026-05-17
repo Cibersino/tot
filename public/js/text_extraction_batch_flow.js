@@ -868,8 +868,37 @@
     };
   }
 
+  const LTR_ISOLATE = '\u2066';
+  const POP_DIRECTIONAL_ISOLATE = '\u2069';
+
+  function formatIsolatedPageRangeToken(pdfPageSelection) {
+    const totalPages = pdfPageSelection && Number.isInteger(Number(pdfPageSelection.totalPages))
+      ? Number(pdfPageSelection.totalPages)
+      : 0;
+    const canonicalSelection = pdfPageSelectionHelper.canonicalizePageSelection(pdfPageSelection, {
+      totalPages: totalPages > 0 ? totalPages : 1,
+    });
+    if (!canonicalSelection || canonicalSelection.mode !== 'range') {
+      return '';
+    }
+    return `${LTR_ISOLATE}${canonicalSelection.fromPage}-${canonicalSelection.toPage}${POP_DIRECTIONAL_ISOLATE}`;
+  }
+
+  function formatReportInputDisplayName(fileName, pdfPageSelection) {
+    const baseFileName = normalizeNonEmptyString(fileName);
+    if (!baseFileName || !pdfPageSelection || pdfPageSelection.mode !== 'range') {
+      return baseFileName;
+    }
+    const isolatedRangeToken = formatIsolatedPageRangeToken(pdfPageSelection);
+    if (!isolatedRangeToken) {
+      return baseFileName;
+    }
+    return `${baseFileName} (${isolatedRangeToken})`;
+  }
+
   function buildInputReportRecord({
     fileName,
+    displayName = '',
     state,
     code = '',
     generatedInputs = [],
@@ -877,6 +906,7 @@
   }) {
     return {
       fileName,
+      displayName: normalizeNonEmptyString(displayName) || normalizeNonEmptyString(fileName),
       state,
       code,
       generatedInputs,
@@ -926,6 +956,7 @@
 
     unitReport.inputs.push(buildInputReportRecord({
       fileName: input.fileName,
+      displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
       state: executionResult.state === 'success' ? 'success' : 'failed',
       code: executionResult.error && executionResult.error.code ? executionResult.error.code : '',
       generatedInputs: heavyGeneratedInputs,
@@ -957,6 +988,7 @@
     for (let index = startIndex; index < unitInputs.length; index += 1) {
       unitReport.inputs.push(buildInputReportRecord({
         fileName: unitInputs[index].fileName,
+        displayName: formatReportInputDisplayName(unitInputs[index].fileName, unitInputs[index].pdfPageSelection),
         state: 'omitted',
         code: 'omitted',
       }));
@@ -975,6 +1007,7 @@
         heavyGeneratedInputRows: false,
         inputs: unit.inputs.map((input) => buildInputReportRecord({
           fileName: input.fileName,
+          displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
           state: 'omitted',
           code: 'omitted',
         })),
@@ -1090,6 +1123,7 @@
           if (closeUnitAfterFailure) {
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
+              displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
               state: 'omitted',
               code: 'omitted',
             }));
@@ -1109,6 +1143,7 @@
             batchCancelled = true;
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
+              displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
               state: 'failed',
               code: 'aborted_by_user',
             }));
@@ -1136,6 +1171,7 @@
             batchCancelled = true;
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
+              displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
               state: 'failed',
               code: 'aborted_by_user',
             }));
@@ -1150,6 +1186,7 @@
               : 'prepare_failed';
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
+              displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
               state: 'failed',
               code: failureCode,
             }));
@@ -1211,6 +1248,7 @@
             if (!applyResult || applyResult.ok !== true) {
               unitReport.inputs.push(buildInputReportRecord({
                 fileName: input.fileName,
+                displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
                 state: 'failed',
                 code: applyResult && applyResult.code ? applyResult.code : 'apply_failed',
               }));
