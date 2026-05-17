@@ -196,8 +196,7 @@
         "use_native_button": "Use native route",
         "reveal_generated_pdf_button": "Show generated PDF",
         "cancel_button": "Cancel",
-        "close_aria": "Close heavy PDF for OCR dialog",
-        "selected_range_value": "Pages {fromPage}-{toPage}"
+        "close_aria": "Close heavy PDF for OCR dialog"
       }
     },
     "editor": {

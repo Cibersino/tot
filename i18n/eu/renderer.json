@@ -196,8 +196,7 @@
         "use_native_button": "Erabili bide natiboa",
         "reveal_generated_pdf_button": "Erakutsi sortutako PDFa",
         "cancel_button": "Utzi",
-        "close_aria": "Itxi OCR-rako PDF handiaren elkarrizketa",
-        "selected_range_value": "{fromPage}-{toPage} orriak"
+        "close_aria": "Itxi OCR-rako PDF handiaren elkarrizketa"
       }
     },
     "editor": {

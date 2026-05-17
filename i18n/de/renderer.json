@@ -196,8 +196,7 @@
         "use_native_button": "Native Route verwenden",
         "reveal_generated_pdf_button": "Erzeugtes PDF anzeigen",
         "cancel_button": "Abbrechen",
-        "close_aria": "Dialog für großes PDF bei OCR schließen",
-        "selected_range_value": "Seiten {fromPage}-{toPage}"
+        "close_aria": "Dialog für großes PDF bei OCR schließen"
       }
     },
     "editor": {

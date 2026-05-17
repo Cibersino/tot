@@ -196,8 +196,7 @@
         "use_native_button": "Sèvi ak chemen natif",
         "reveal_generated_pdf_button": "Montre PDF ki kreye a",
         "cancel_button": "Anile",
-        "close_aria": "Fèmen dyalòg gwo PDF pou OCR la",
-        "selected_range_value": "Paj {fromPage}-{toPage}"
+        "close_aria": "Fèmen dyalòg gwo PDF pou OCR la"
       }
     },
     "editor": {

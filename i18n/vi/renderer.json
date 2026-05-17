@@ -196,8 +196,7 @@
         "use_native_button": "Dùng phương thức tích hợp",
         "reveal_generated_pdf_button": "Hiển thị PDF đã tạo",
         "cancel_button": "Hủy",
-        "close_aria": "Đóng hộp thoại PDF nặng cho OCR",
-        "selected_range_value": "Trang {fromPage}-{toPage}"
+        "close_aria": "Đóng hộp thoại PDF nặng cho OCR"
       }
     },
     "editor": {

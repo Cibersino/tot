@@ -196,8 +196,7 @@
         "use_native_button": "네이티브 사용",
         "reveal_generated_pdf_button": "생성된 PDF 표시",
         "cancel_button": "취소",
-        "close_aria": "OCR용 대용량 PDF 대화상자 닫기",
-        "selected_range_value": "{fromPage}-{toPage}페이지"
+        "close_aria": "OCR용 대용량 PDF 대화상자 닫기"
       }
     },
     "editor": {

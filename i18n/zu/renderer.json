@@ -196,8 +196,7 @@
         "use_native_button": "Sebenzisa indlela ye-native",
         "reveal_generated_pdf_button": "Bonisa i-PDF edaliwe",
         "cancel_button": "Khansela",
-        "close_aria": "Vala ibhokisi le-PDF enkulu ye-OCR",
-        "selected_range_value": "Amakhasi {fromPage}-{toPage}"
+        "close_aria": "Vala ibhokisi le-PDF enkulu ye-OCR"
       }
     },
     "editor": {

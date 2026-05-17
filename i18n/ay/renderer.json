@@ -196,8 +196,7 @@
         "use_native_button": "Nativa thakhi apnaqaña",
         "reveal_generated_pdf_button": "Lurat PDF uñachayaña",
         "cancel_button": "Suyt’ayaña",
-        "close_aria": "OCR ukatak jach’a PDF diálogo jist’antaña",
-        "selected_range_value": "Laphinaka {fromPage}-{toPage}"
+        "close_aria": "OCR ukatak jach’a PDF diálogo jist’antaña"
       }
     },
     "editor": {

@@ -216,7 +216,8 @@ test('single-file heavy PDF modal moves provider limit into Case B intro and rem
     caseKind: 'case_b',
     sourceFileName: 'book.pdf',
     sourceFileSizeBytes: 458 * 1024 * 1024,
-    selectedRangeText: 'Pages 100-220',
+    selectedRangeFromPage: 100,
+    selectedRangeToPage: 220,
     generatedPdfFileName: 'book_pages_100_220.pdf',
     generatedPdfSizeBytes: 72.4 * 1024 * 1024,
     providerLimitBytes: 50 * 1024 * 1024,
@@ -237,7 +238,7 @@ test('single-file heavy PDF modal moves provider limit into Case B intro and rem
   );
   assert.match(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
-    /<strong>Selected range:<\/strong> <bdi dir="auto">Pages 100-220<\/bdi>/
+    /<strong>Selected range:<\/strong> <bdi dir="ltr">100-220<\/bdi>/
   );
   assert.match(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
@@ -317,7 +318,8 @@ test('single-file heavy PDF modal shows generated PDF filename only when a retai
     caseKind: 'case_b',
     sourceFileName: 'book.pdf',
     sourceFileSizeBytes: 458 * 1024 * 1024,
-    selectedRangeText: 'Pages 100-220',
+    selectedRangeFromPage: 100,
+    selectedRangeToPage: 220,
     generatedPdfFileName: 'book_pages_100_220.pdf',
     generatedPdfSizeBytes: 72.4 * 1024 * 1024,
     providerLimitBytes: 50 * 1024 * 1024,

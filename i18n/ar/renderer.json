@@ -196,8 +196,7 @@
         "use_native_button": "استخدام المسار الأصلي",
         "reveal_generated_pdf_button": "إظهار ملف PDF المُنشأ",
         "cancel_button": "إلغاء",
-        "close_aria": "إغلاق مربع حوار PDF الكبير لـ OCR",
-        "selected_range_value": "الصفحات {fromPage}-{toPage}"
+        "close_aria": "إغلاق مربع حوار PDF الكبير لـ OCR"
       }
     },
     "editor": {

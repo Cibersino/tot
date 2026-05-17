@@ -64,6 +64,15 @@
     return valueNode;
   }
 
+  function formatPageRangeValue(fromPage, toPage) {
+    const safeFromPage = Number(fromPage);
+    const safeToPage = Number(toPage);
+    if (!Number.isFinite(safeFromPage) || safeFromPage < 1 || !Number.isFinite(safeToPage) || safeToPage < 1) {
+      return '';
+    }
+    return `${Math.floor(safeFromPage)}-${Math.floor(safeToPage)}`;
+  }
+
   function renderTranslationWithIsolatedValue(container, {
     key = '',
     placeholderName = '',
@@ -114,7 +123,8 @@
     sourceFileName = '',
     sourceFileSizeBytes = 0,
     totalPages = 0,
-    selectedRangeText = '',
+    selectedRangeFromPage = 0,
+    selectedRangeToPage = 0,
     revealableGeneratedPdfFileName = '',
     hasRevealableGeneratedPdf = false,
     generatedPdfSizeBytes = 0,
@@ -135,8 +145,8 @@
     if (isCaseB) {
       appendLabeledValueRow(details, {
         labelKey: 'renderer.text_extraction.single_file_heavy.selected_range_label',
-        valueText: selectedRangeText,
-        valueDirection: 'auto',
+        valueText: formatPageRangeValue(selectedRangeFromPage, selectedRangeToPage),
+        valueDirection: 'ltr',
       });
       if (hasRevealableGeneratedPdf) {
         appendLabeledValueRow(details, {
@@ -165,7 +175,8 @@
     sourceFileName = '',
     sourceFileSizeBytes = 0,
     totalPages = 0,
-    selectedRangeText = '',
+    selectedRangeFromPage = 0,
+    selectedRangeToPage = 0,
     generatedPdfFileName = '',
     generatedPdfSizeBytes = 0,
     providerLimitBytes = 0,
@@ -210,7 +221,8 @@
       sourceFileName,
       sourceFileSizeBytes,
       totalPages,
-      selectedRangeText,
+      selectedRangeFromPage,
+      selectedRangeToPage,
       revealableGeneratedPdfFileName,
       hasRevealableGeneratedPdf,
       generatedPdfSizeBytes,

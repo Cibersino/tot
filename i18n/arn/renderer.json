@@ -196,8 +196,7 @@
         "use_native_button": "Püne nativa rüpü",
         "reveal_generated_pdf_button": "Penge PDF dewmal",
         "cancel_button": "Katrüntun",
-        "close_aria": "Nürüfün diálogo fütra PDF OCR mew",
-        "selected_range_value": "Püle {fromPage}-{toPage}"
+        "close_aria": "Nürüfün diálogo fütra PDF OCR mew"
       }
     },
     "editor": {

@@ -196,8 +196,7 @@
         "use_native_button": "Eipuru ruta nativa",
         "reveal_generated_pdf_button": "Ehechauka PDF ojejapóva",
         "cancel_button": "Eheja",
-        "close_aria": "Emboty diálogo PDF pohýi OCR-pe g̃uarã",
-        "selected_range_value": "Página {fromPage}-{toPage}"
+        "close_aria": "Emboty diálogo PDF pohýi OCR-pe g̃uarã"
       }
     },
     "editor": {

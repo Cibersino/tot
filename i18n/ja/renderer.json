@@ -196,8 +196,7 @@
         "use_native_button": "ネイティブを使用",
         "reveal_generated_pdf_button": "生成 PDF を表示",
         "cancel_button": "キャンセル",
-        "close_aria": "OCR 用大型 PDF ダイアログを閉じる",
-        "selected_range_value": "{fromPage}-{toPage} ページ"
+        "close_aria": "OCR 用大型 PDF ダイアログを閉じる"
       }
     },
     "editor": {

@@ -196,8 +196,7 @@
         "use_native_button": "Nativa ñanta llamk'achiy",
         "reveal_generated_pdf_button": "Ruwasqa PDFta rikuchiy",
         "cancel_button": "Saqiy",
-        "close_aria": "OCRpaq hatun PDF dialogota wichq'ay",
-        "selected_range_value": "{fromPage}-{toPage} p'anqakuna"
+        "close_aria": "OCRpaq hatun PDF dialogota wichq'ay"
       }
     },
     "editor": {

@@ -71,15 +71,7 @@ function createHarness({
       },
       RendererI18n: {
         tRenderer(key) {
-          if (key === 'renderer.text_extraction.single_file_heavy.selected_range_value') {
-            return 'Pages {fromPage}-{toPage}';
-          }
           return key;
-        },
-      },
-      TextExtractionPdfPageSelection: {
-        formatRangeSelectionText(selection) {
-          return `Pages ${selection.fromPage}-${selection.toPage}`;
         },
       },
     },
@@ -226,7 +218,8 @@ test('single-file entry passes source file size into the Case B heavy-PDF modal 
   assert.equal(modalOptions.caseKind, 'case_b');
   assert.equal(modalOptions.sourceFileName, 'book.pdf');
   assert.equal(modalOptions.sourceFileSizeBytes, 458 * 1024 * 1024);
-  assert.equal(modalOptions.selectedRangeText, 'Pages 100-220');
+  assert.equal(modalOptions.selectedRangeFromPage, 100);
+  assert.equal(modalOptions.selectedRangeToPage, 220);
   assert.equal(modalOptions.generatedPdfFileName, 'book_pages_100_220.pdf');
   assert.equal(modalOptions.generatedPdfSizeBytes, 72.4 * 1024 * 1024);
   assert.equal(modalOptions.providerLimitBytes, 50 * 1024 * 1024);

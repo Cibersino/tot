@@ -196,8 +196,7 @@
         "use_native_button": "使用原生路径",
         "reveal_generated_pdf_button": "显示生成的 PDF",
         "cancel_button": "取消",
-        "close_aria": "关闭 OCR 大型 PDF 对话框",
-        "selected_range_value": "第 {fromPage}-{toPage} 页"
+        "close_aria": "关闭 OCR 大型 PDF 对话框"
       }
     },
     "editor": {

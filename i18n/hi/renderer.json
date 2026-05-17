@@ -196,8 +196,7 @@
         "use_native_button": "नेटिव मार्ग उपयोग करें",
         "reveal_generated_pdf_button": "बनाई गई PDF दिखाएँ",
         "cancel_button": "रद्द करें",
-        "close_aria": "OCR के लिए भारी PDF संवाद बंद करें",
-        "selected_range_value": "पृष्ठ {fromPage}-{toPage}"
+        "close_aria": "OCR के लिए भारी PDF संवाद बंद करें"
       }
     },
     "editor": {

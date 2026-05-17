@@ -196,8 +196,7 @@
         "use_native_button": "Yerleşik yöntemi kullan",
         "reveal_generated_pdf_button": "Oluşturulan PDF’yi göster",
         "cancel_button": "İptal",
-        "close_aria": "OCR için ağır PDF iletişim kutusunu kapat",
-        "selected_range_value": "Sayfalar {fromPage}-{toPage}"
+        "close_aria": "OCR için ağır PDF iletişim kutusunu kapat"
       }
     },
     "editor": {

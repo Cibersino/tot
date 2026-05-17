@@ -196,8 +196,7 @@
         "use_native_button": "مقامی طریقہ استعمال کریں",
         "reveal_generated_pdf_button": "بنائی گئی PDF دکھائیں",
         "cancel_button": "منسوخ",
-        "close_aria": "OCR کے لیے بھاری PDF کا ڈائیلاگ بند کریں",
-        "selected_range_value": "صفحات {fromPage}-{toPage}"
+        "close_aria": "OCR کے لیے بھاری PDF کا ڈائیلاگ بند کریں"
       }
     },
     "editor": {

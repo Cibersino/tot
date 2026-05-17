@@ -196,8 +196,7 @@
         "use_native_button": "নেটিভ রুট ব্যবহার করুন",
         "reveal_generated_pdf_button": "তৈরি PDF দেখান",
         "cancel_button": "বাতিল",
-        "close_aria": "OCR-এর জন্য ভারী PDF ডায়ালগ বন্ধ করুন",
-        "selected_range_value": "পৃষ্ঠা {fromPage}-{toPage}"
+        "close_aria": "OCR-এর জন্য ভারী PDF ডায়ালগ বন্ধ করুন"
       }
     },
     "editor": {

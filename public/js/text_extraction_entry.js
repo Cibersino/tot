@@ -22,10 +22,6 @@
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-entry] RendererI18n.tRenderer unavailable; cannot continue');
   }
-  const pdfPageSelectionHelper = window.TextExtractionPdfPageSelection || null;
-  if (!pdfPageSelectionHelper || typeof pdfPageSelectionHelper.formatRangeSelectionText !== 'function') {
-    throw new Error('[text-extraction-entry] TextExtractionPdfPageSelection dependencies unavailable; cannot continue');
-  }
   const { AppConstants } = window;
   if (!AppConstants) {
     throw new Error('[text-extraction-entry] AppConstants unavailable; cannot continue');
@@ -563,6 +559,11 @@
         && execution.result.error
         && execution.result.error.code === 'ocr_input_too_large') {
         const retainedGeneratedPdf = resolveRetainedGeneratedPdf(execution.result);
+        const pdfPageSelection = execution.result.pdfPageSelection
+          && typeof execution.result.pdfPageSelection === 'object'
+          && !Array.isArray(execution.result.pdfPageSelection)
+            ? execution.result.pdfPageSelection
+            : null;
         const singleFileHeavyAction = await window.Notify.promptTextExtractionSingleFileHeavyPdf({
           caseKind: 'case_b',
           sourceFileName: preparation.fileInfo && preparation.fileInfo.fileName
@@ -571,10 +572,12 @@
           sourceFileSizeBytes: preparation.fileInfo && preparation.fileInfo.sourceFileSizeBytes
             ? preparation.fileInfo.sourceFileSizeBytes
             : 0,
-          selectedRangeText: pdfPageSelectionHelper.formatRangeSelectionText(
-            execution.result.pdfPageSelection,
-            'renderer.text_extraction.single_file_heavy.selected_range_value'
-          ),
+          selectedRangeFromPage: pdfPageSelection && pdfPageSelection.mode === 'range'
+            ? pdfPageSelection.fromPage
+            : 0,
+          selectedRangeToPage: pdfPageSelection && pdfPageSelection.mode === 'range'
+            ? pdfPageSelection.toPage
+            : 0,
           generatedPdfFileName: execution.result.processingInputFileName || '',
           generatedPdfSizeBytes:
             execution.result.error

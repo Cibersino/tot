@@ -196,8 +196,7 @@
         "use_native_button": "Usa percorso nativo",
         "reveal_generated_pdf_button": "Mostra PDF generato",
         "cancel_button": "Annulla",
-        "close_aria": "Chiudi finestra PDF pesante per OCR",
-        "selected_range_value": "Pagine {fromPage}-{toPage}"
+        "close_aria": "Chiudi finestra PDF pesante per OCR"
       }
     },
     "editor": {

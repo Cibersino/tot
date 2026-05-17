@@ -196,8 +196,7 @@
         "use_native_button": "Usar la nativa",
         "reveal_generated_pdf_button": "Mostrar PDF generado",
         "cancel_button": "Cancelar",
-        "close_aria": "Cerrar diálogo de PDF pesao pa' OCR",
-        "selected_range_value": "Páginas {fromPage}-{toPage}"
+        "close_aria": "Cerrar diálogo de PDF pesao pa' OCR"
       }
     },
     "editor": {

@@ -196,8 +196,7 @@
         "use_native_button": "Whakamahi ara native",
         "reveal_generated_pdf_button": "Whakaatu PDF i hangaia",
         "cancel_button": "Whakakore",
-        "close_aria": "Katia te kōrero PDF nui mō te OCR",
-        "selected_range_value": "Whārangi {fromPage}-{toPage}"
+        "close_aria": "Katia te kōrero PDF nui mō te OCR"
       }
     },
     "editor": {

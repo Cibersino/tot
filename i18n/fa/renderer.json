@@ -196,8 +196,7 @@
         "use_native_button": "استفاده از مسیر بومی",
         "reveal_generated_pdf_button": "نمایش PDF تولیدشده",
         "cancel_button": "لغو",
-        "close_aria": "بستن پنجره PDF سنگین برای OCR",
-        "selected_range_value": "صفحه‌های {fromPage}-{toPage}"
+        "close_aria": "بستن پنجره PDF سنگین برای OCR"
       }
     },
     "editor": {

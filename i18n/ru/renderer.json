@@ -196,8 +196,7 @@
         "use_native_button": "Использовать нативный маршрут",
         "reveal_generated_pdf_button": "Показать созданный PDF",
         "cancel_button": "Отмена",
-        "close_aria": "Закрыть диалог большого PDF для OCR",
-        "selected_range_value": "Страницы {fromPage}-{toPage}"
+        "close_aria": "Закрыть диалог большого PDF для OCR"
       }
     },
     "editor": {

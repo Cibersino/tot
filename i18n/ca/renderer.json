@@ -196,8 +196,7 @@
         "use_native_button": "Usar ruta nativa",
         "reveal_generated_pdf_button": "Mostra el PDF generat",
         "cancel_button": "Cancel·lar",
-        "close_aria": "Tancar el diàleg de PDF gran per a OCR",
-        "selected_range_value": "Pàgines {fromPage}-{toPage}"
+        "close_aria": "Tancar el diàleg de PDF gran per a OCR"
       }
     },
     "editor": {

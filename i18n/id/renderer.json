@@ -196,8 +196,7 @@
         "use_native_button": "Gunakan jalur bawaan",
         "reveal_generated_pdf_button": "Tampilkan PDF yang dibuat",
         "cancel_button": "Batal",
-        "close_aria": "Tutup dialog PDF berat untuk OCR",
-        "selected_range_value": "Halaman {fromPage}-{toPage}"
+        "close_aria": "Tutup dialog PDF berat untuk OCR"
       }
     },
     "editor": {

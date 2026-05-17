@@ -196,8 +196,7 @@
         "use_native_button": "Utiliser la route native",
         "reveal_generated_pdf_button": "Afficher le PDF généré",
         "cancel_button": "Annuler",
-        "close_aria": "Fermer la boîte de dialogue de PDF lourd pour OCR",
-        "selected_range_value": "Pages {fromPage}-{toPage}"
+        "close_aria": "Fermer la boîte de dialogue de PDF lourd pour OCR"
       }
     },
     "editor": {

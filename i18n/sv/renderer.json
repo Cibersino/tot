@@ -196,8 +196,7 @@
         "use_native_button": "Använd inbyggd metod",
         "reveal_generated_pdf_button": "Visa genererad PDF",
         "cancel_button": "Avbryt",
-        "close_aria": "Stäng dialogen för tung PDF för OCR",
-        "selected_range_value": "Sidor {fromPage}-{toPage}"
+        "close_aria": "Stäng dialogen för tung PDF för OCR"
       }
     },
     "editor": {
