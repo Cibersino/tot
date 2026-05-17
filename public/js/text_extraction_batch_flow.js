@@ -884,6 +884,55 @@
     };
   }
 
+  function mapExecutionResultStateToReportState(executionResult) {
+    const state = executionResult && typeof executionResult.state === 'string'
+      ? executionResult.state
+      : '';
+    if (state === 'success') return 'success';
+    if (state === 'cancelled') return 'cancelled';
+    if (state === 'omitted') return 'omitted';
+    return 'failed';
+  }
+
+  function appendExecutionResultToUnitReport({
+    unitReport,
+    input,
+    executionResult,
+    heavyGeneratedInputs,
+  }) {
+    if (!unitReport || !input || !executionResult) {
+      return;
+    }
+
+    if (unitReport.exclusiveHeavy === true
+      && Array.isArray(heavyGeneratedInputs)
+      && heavyGeneratedInputs.length) {
+      unitReport.heavyGeneratedInputRows = true;
+      unitReport.sourceFileName = input.fileName;
+      unitReport.overallState = mapExecutionResultStateToReportState(executionResult);
+      unitReport.overallCode = executionResult.error && executionResult.error.code
+        ? executionResult.error.code
+        : '';
+      heavyGeneratedInputs.forEach((generatedInput) => {
+        unitReport.inputs.push(buildInputReportRecord({
+          fileName: generatedInput.fileName,
+          state: generatedInput.state,
+          code: generatedInput.code,
+          generatedPdfArtifact: generatedInput.generatedPdfArtifact,
+        }));
+      });
+      return;
+    }
+
+    unitReport.inputs.push(buildInputReportRecord({
+      fileName: input.fileName,
+      state: executionResult.state === 'success' ? 'success' : 'failed',
+      code: executionResult.error && executionResult.error.code ? executionResult.error.code : '',
+      generatedInputs: heavyGeneratedInputs,
+      generatedPdfArtifact: executionResult.generatedPdfArtifact || null,
+    }));
+  }
+
   function buildBatchProcessingContext({
     unitIndex,
     unitCount,
@@ -920,6 +969,10 @@
       finalReport.units.push({
         unitTitle: unit.title,
         exclusiveHeavy: unit.exclusiveHeavy,
+        sourceFileName: unit.exclusiveHeavy && unit.inputs[0] ? unit.inputs[0].fileName : '',
+        overallState: '',
+        overallCode: '',
+        heavyGeneratedInputRows: false,
         inputs: unit.inputs.map((input) => buildInputReportRecord({
           fileName: input.fileName,
           state: 'omitted',
@@ -1022,6 +1075,10 @@
         const unitReport = {
           unitTitle: unit.title,
           exclusiveHeavy: unit.exclusiveHeavy,
+          sourceFileName: unit.exclusiveHeavy && unit.inputs[0] ? unit.inputs[0].fileName : '',
+          overallState: '',
+          overallCode: '',
+          heavyGeneratedInputRows: false,
           inputs: [],
           snapshotResult: null,
         };
@@ -1180,13 +1237,12 @@
               }))
               : [];
 
-          unitReport.inputs.push(buildInputReportRecord({
-            fileName: input.fileName,
-            state: isSuccess ? 'success' : 'failed',
-            code: execution.result.error && execution.result.error.code ? execution.result.error.code : '',
-            generatedInputs: heavyGeneratedInputs,
-            generatedPdfArtifact: execution.result.generatedPdfArtifact || null,
-          }));
+          appendExecutionResultToUnitReport({
+            unitReport,
+            input,
+            executionResult: execution.result,
+            heavyGeneratedInputs,
+          });
 
           if (isCancelled) {
             batchCancelled = true;

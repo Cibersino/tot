@@ -1862,6 +1862,15 @@ select#presets:focus {
   font-size: 1rem;
 }
 
+.text-extraction-batch-final-unit-meta {
+  font-size: var(--font-size-note);
+  color: var(--text-soft);
+}
+
+.text-extraction-batch-final-unit-meta--status {
+  color: var(--text-color);
+}
+
 .text-extraction-batch-final-input,
 .text-extraction-batch-final-generated-list {
   display: grid;

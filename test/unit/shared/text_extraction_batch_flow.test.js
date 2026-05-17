@@ -9,12 +9,38 @@ const vm = require('node:vm');
 function createHarness({
   preparationsByPath,
   ocrAvailabilityResult = { ok: true, available: true, state: 'ready', code: '' },
+  promptBatchPlanResult = null,
+  onPromptBatchPlan = null,
+  executionResultsByProcessingInputFileName = {},
 }) {
   let capturedViewModel = null;
   let capturedController = null;
+  let capturedFinalReport = null;
   const notifications = [];
   let snapshotTagsPromptOptions = null;
   let ocrAvailabilityCallCount = 0;
+  let savedSnapshotPayload = null;
+
+  function buildAllPagesSelection(totalPages) {
+    const safeTotalPages = Number(totalPages) || 1;
+    return {
+      mode: 'all',
+      fromPage: 1,
+      toPage: safeTotalPages,
+      selectedPageCount: safeTotalPages,
+      totalPages: safeTotalPages,
+    };
+  }
+
+  const textExtractionStatusUi = {
+    beginPrepare() {},
+    endPrepare() {},
+    setPendingExecutionContext() {},
+    clearPendingExecutionContext() {},
+    getFinalElapsedValueText() {
+      return '00:42';
+    },
+  };
 
   const sandbox = {
     window: {
@@ -25,11 +51,17 @@ function createHarness({
         async promptTextExtractionBatchPlan({ controller }) {
           capturedViewModel = controller.getViewModel();
           capturedController = controller;
-          return null;
+          if (typeof onPromptBatchPlan === 'function') {
+            await onPromptBatchPlan(controller);
+          }
+          return promptBatchPlanResult;
         },
         async promptSnapshotSaveTags(options) {
           snapshotTagsPromptOptions = options;
           return { tags: { language: 'en' } };
+        },
+        async promptTextExtractionBatchFinalReport({ report }) {
+          capturedFinalReport = report;
         },
       },
       getLogger() {
@@ -52,10 +84,58 @@ function createHarness({
           return translations[key] || key;
         },
       },
+      TextExtractionPdfPageSelection: {
+        buildAllPagesSelection,
+        canonicalizePageSelection(selection, { totalPages } = {}) {
+          const safeTotalPages = Number(totalPages) || 1;
+          if (!selection || selection.mode !== 'range') {
+            return buildAllPagesSelection(safeTotalPages);
+          }
+          const fromPage = Number(selection.fromPage);
+          const toPage = Number(selection.toPage);
+          if (!Number.isInteger(fromPage)
+            || !Number.isInteger(toPage)
+            || fromPage < 1
+            || toPage < fromPage
+            || toPage > safeTotalPages) {
+            return null;
+          }
+          return {
+            mode: 'range',
+            fromPage,
+            toPage,
+            selectedPageCount: (toPage - fromPage) + 1,
+            totalPages: safeTotalPages,
+          };
+        },
+        formatPageSelectionSummary(selection, { allKey = '', rangeKey = '' } = {}) {
+          if (!selection || selection.mode !== 'range') {
+            const translations = {
+              'renderer.text_extraction.batch_plan.pages_all': 'All pages',
+            };
+            return translations[allKey] || allKey;
+          }
+          const translations = {
+            'renderer.text_extraction.batch_plan.pages_range': 'Pages {fromPage}-{toPage}',
+          };
+          return (translations[rangeKey] || rangeKey)
+            .replace('{fromPage}', String(selection.fromPage))
+            .replace('{toPage}', String(selection.toPage));
+        },
+      },
       SnapshotTagCatalog: {
         LANGUAGE_OPTIONS: [],
         TYPE_OPTIONS: [],
         DIFFICULTY_OPTIONS: [],
+      },
+      electronAPI: {
+        async saveCurrentTextSnapshot(payload) {
+          savedSnapshotPayload = payload;
+          return { ok: true, filename: 'snapshot.json' };
+        },
+        async openCurrentTextSnapshotsFolder() {
+          return { ok: true };
+        },
       },
     },
     console,
@@ -89,6 +169,26 @@ function createHarness({
           return ocrAvailabilityResult;
         };
       }
+      if (methodName === 'executePreparedTextExtraction') {
+        return async ({ processingContext }) => {
+          const processingInputFileName = processingContext && processingContext.processingInputFileName
+            ? processingContext.processingInputFileName
+            : '';
+          return executionResultsByProcessingInputFileName[processingInputFileName] || null;
+        };
+      }
+      if (methodName === 'getTextExtractionProcessingMode') {
+        return async () => ({ ok: true, state: { active: true } });
+      }
+      if (methodName === 'enterTextExtractionProcessingSession') {
+        return async () => ({ ok: true });
+      }
+      if (methodName === 'updateTextExtractionProcessingSession') {
+        return async () => ({ ok: true });
+      }
+      if (methodName === 'exitTextExtractionProcessingSession') {
+        return async () => ({ ok: true });
+      }
       return null;
     },
     requestPreparedImport: async ({ preparationRequest }) => ({
@@ -97,6 +197,11 @@ function createHarness({
     getOcrLanguage() {
       return 'en';
     },
+    applyTextViaCanonicalPath: async () => ({ ok: true }),
+    hasCurrentTextSubscription() {
+      return true;
+    },
+    textExtractionStatusUi,
   });
 
   return {
@@ -112,6 +217,12 @@ function createHarness({
     },
     getOcrAvailabilityCallCount() {
       return ocrAvailabilityCallCount;
+    },
+    getCapturedFinalReport() {
+      return capturedFinalReport;
+    },
+    getSavedSnapshotPayload() {
+      return savedSnapshotPayload;
     },
     notifications,
   };
@@ -394,5 +505,220 @@ test('batch start validation blocks OCR routes before execution when Google OCR 
   assert.deepEqual(
     harness.notifications,
     ['renderer.alerts.text_extraction_batch_ocr_activation_required']
+  );
+});
+
+test('batch execution final report keeps the canonical title and flattens heavy child rows on split success', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\book.pdf': createPreparation({
+      fileName: 'book.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 120,
+        selectedPageCount: 120,
+        totalPages: 120,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    async onPromptBatchPlan(controller) {
+      const viewModel = controller.getViewModel();
+      controller.applyAction({
+        type: 'rename_unit',
+        unitKey: viewModel.units[0].unitKey,
+        name: 'Chapter 3 OCR',
+      });
+    },
+    executionResultsByProcessingInputFileName: {
+      'book.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: '',
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [
+              {
+                fileName: 'book_pages_001_020.pdf',
+                state: 'success',
+                errorCode: '',
+                generatedPdfArtifact: {
+                  retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf',
+                },
+              },
+              {
+                fileName: 'book_pages_021_040.pdf',
+                state: 'success',
+                errorCode: '',
+                generatedPdfArtifact: {
+                  retainedArtifactPath: 'C:\\tmp\\book_pages_021_040.pdf',
+                },
+              },
+            ],
+          },
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startSyntheticSingleFileHeavySplit({
+    filePath: 'C:\\docs\\book.pdf',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units.length, 1);
+  assert.equal(report.units[0].unitTitle, 'Chapter 3 OCR');
+  assert.equal(report.units[0].sourceFileName, 'book.pdf');
+  assert.equal(report.units[0].overallState, 'success');
+  assert.equal(report.units[0].overallCode, '');
+  assert.equal(report.units[0].heavyGeneratedInputRows, true);
+  assert.deepEqual(
+    report.units[0].inputs.map((input) => input.fileName),
+    ['book_pages_001_020.pdf', 'book_pages_021_040.pdf']
+  );
+  assert.equal(report.units[0].inputs.some((input) => input.fileName === 'book.pdf'), false);
+  assert.equal(harness.getSavedSnapshotPayload(), null);
+});
+
+test('batch execution final report keeps heavy parent outcome metadata when child rows exist', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\book.pdf': createPreparation({
+      fileName: 'book.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 120,
+        selectedPageCount: 120,
+        totalPages: 120,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'book.pdf': {
+        ok: true,
+        result: {
+          state: 'cancelled',
+          text: '',
+          error: {
+            code: 'aborted_by_user',
+          },
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [
+              {
+                fileName: 'book_pages_001_020.pdf',
+                state: 'success',
+                errorCode: '',
+                generatedPdfArtifact: null,
+              },
+              {
+                fileName: 'book_pages_021_040.pdf',
+                state: 'omitted',
+                errorCode: '',
+                generatedPdfArtifact: null,
+              },
+            ],
+          },
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startSyntheticSingleFileHeavySplit({
+    filePath: 'C:\\docs\\book.pdf',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units[0].unitTitle, 'book.pdf');
+  assert.equal(report.units[0].sourceFileName, 'book.pdf');
+  assert.equal(report.units[0].overallState, 'cancelled');
+  assert.equal(report.units[0].overallCode, 'aborted_by_user');
+  assert.equal(report.units[0].heavyGeneratedInputRows, true);
+  assert.deepEqual(
+    report.units[0].inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+    })),
+    [
+      { fileName: 'book_pages_001_020.pdf', state: 'success' },
+      { fileName: 'book_pages_021_040.pdf', state: 'omitted' },
+    ]
+  );
+});
+
+test('batch execution final report keeps the source row when heavy split produces no child rows', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\book.pdf': createPreparation({
+      fileName: 'book.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 120,
+        selectedPageCount: 120,
+        totalPages: 120,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'book.pdf': {
+        ok: true,
+        result: {
+          state: 'failure',
+          text: '',
+          error: {
+            code: 'heavy_split_plan_invalid',
+          },
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [],
+          },
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startSyntheticSingleFileHeavySplit({
+    filePath: 'C:\\docs\\book.pdf',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units[0].heavyGeneratedInputRows, false);
+  assert.deepEqual(
+    report.units[0].inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+    })),
+    [
+      {
+        fileName: 'book.pdf',
+        state: 'failed',
+        code: 'heavy_split_plan_invalid',
+      },
+    ]
   );
 });

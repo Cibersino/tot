@@ -242,11 +242,13 @@ function createHarness() {
     'renderer.text_extraction.batch_report.open_snapshots_folder': 'Open snapshots folder',
     'renderer.text_extraction.batch_report.ok_button': 'OK',
     'renderer.text_extraction.batch_report.close_aria': 'Close final report',
+    'renderer.text_extraction.batch_report.split_result_label': 'Split result:',
     'renderer.text_extraction.batch_report.reveal_generated_pdf': 'Reveal generated PDF',
     'renderer.text_extraction.batch_report.failed_fallback': 'FAILED',
     'renderer.text_extraction.batch_report.omitted': 'Omitted',
     'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
     'renderer.text_extraction.batch_report.failed_with_code': 'failed: {code}',
+    'renderer.text_extraction.single_file_heavy.source_file_label': 'Source file:',
     'renderer.alerts.text_extraction_generated_pdf_reveal_failed': 'Reveal failed',
   };
 
@@ -429,4 +431,119 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;
   assert.equal(harness.getActiveElement(), harness.elements.outsideLauncher);
+});
+
+test('batch final modal renders heavy split success with custom unit title, source line, and child rows only', async () => {
+  const harness = createHarness();
+
+  const report = {
+    flowKind: 'single_file_split',
+    hadOutput: true,
+    units: [
+      {
+        unitTitle: 'Chapter 3 OCR',
+        exclusiveHeavy: true,
+        sourceFileName: 'book.pdf',
+        overallState: 'success',
+        overallCode: '',
+        heavyGeneratedInputRows: true,
+        snapshotResult: {
+          state: 'not_created',
+          text: 'Snapshot not created',
+        },
+        inputs: [
+          {
+            fileName: 'book_pages_001_020.pdf',
+            state: 'success',
+            generatedPdfArtifact: {
+              retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf',
+            },
+          },
+          {
+            fileName: 'book_pages_021_040.pdf',
+            state: 'success',
+            generatedPdfArtifact: {
+              retainedArtifactPath: 'C:\\tmp\\book_pages_021_040.pdf',
+            },
+          },
+        ],
+      },
+    ],
+  };
+
+  const promptPromise = harness.prompt({
+    report,
+    elapsedValueText: '00:42',
+  });
+
+  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
+  assert.match(renderedHtml, /Chapter 3 OCR/);
+  assert.match(renderedHtml, /Source file: book\.pdf/);
+  assert.doesNotMatch(renderedHtml, /Split result:/);
+  assert.match(renderedHtml, /book_pages_001_020\.pdf/);
+  assert.match(renderedHtml, /book_pages_021_040\.pdf/);
+
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.equal(harness.clipboardWrites.length, 1);
+  assert.match(harness.clipboardWrites[0], /Chapter 3 OCR/);
+  assert.match(harness.clipboardWrites[0], /Source file: book\.pdf/);
+  assert.doesNotMatch(harness.clipboardWrites[0], /- book\.pdf(?:\r?\n|$)/);
+
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
+});
+
+test('batch final modal renders heavy split overall status when child rows exist', async () => {
+  const harness = createHarness();
+
+  const report = {
+    flowKind: 'single_file_split',
+    hadOutput: false,
+    units: [
+      {
+        unitTitle: 'book.pdf',
+        exclusiveHeavy: true,
+        sourceFileName: 'book.pdf',
+        overallState: 'cancelled',
+        overallCode: 'aborted_by_user',
+        heavyGeneratedInputRows: true,
+        snapshotResult: {
+          state: 'not_created',
+          text: 'Snapshot not created',
+        },
+        inputs: [
+          {
+            fileName: 'book_pages_001_020.pdf',
+            state: 'success',
+          },
+          {
+            fileName: 'book_pages_021_040.pdf',
+            state: 'omitted',
+          },
+        ],
+      },
+    ],
+  };
+
+  const promptPromise = harness.prompt({
+    report,
+    elapsedValueText: '00:42',
+  });
+
+  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
+  assert.match(renderedHtml, /book\.pdf/);
+  assert.match(renderedHtml, /Split result: failed: aborted_by_user/);
+  assert.doesNotMatch(renderedHtml, /Source file: book\.pdf/);
+  assert.match(renderedHtml, /book_pages_001_020\.pdf/);
+  assert.match(renderedHtml, /book_pages_021_040\.pdf \(Omitted\)/);
+
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.equal(harness.clipboardWrites.length, 1);
+  assert.match(harness.clipboardWrites[0], /Split result: failed: aborted_by_user/);
+  assert.doesNotMatch(harness.clipboardWrites[0], /- book\.pdf(?:\r?\n|$)/);
+
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
 });

@@ -143,6 +143,57 @@
     return button;
   }
 
+  function isHeavySplitGeneratedRowsUnit(unit) {
+    return !!(
+      unit
+      && unit.exclusiveHeavy === true
+      && unit.heavyGeneratedInputRows === true
+      && Array.isArray(unit.inputs)
+      && unit.inputs.length
+    );
+  }
+
+  function getHeavySplitOverallStatusText(unit) {
+    if (!unit || !isHeavySplitGeneratedRowsUnit(unit)) {
+      return '';
+    }
+    if (unit.overallState === 'success' || !unit.overallState) {
+      return '';
+    }
+    if (unit.overallState === 'omitted') {
+      return tRenderer('renderer.text_extraction.batch_report.omitted');
+    }
+    if (unit.overallCode) {
+      return formatTranslation('renderer.text_extraction.batch_report.failed_with_code', {
+        code: unit.overallCode,
+      });
+    }
+    return tRenderer('renderer.text_extraction.batch_report.failed_fallback');
+  }
+
+  function renderHeavySplitUnitMetaRows(unit) {
+    if (!isHeavySplitGeneratedRowsUnit(unit)) {
+      return [];
+    }
+
+    const rows = [];
+    if (unit.sourceFileName && unit.unitTitle !== unit.sourceFileName) {
+      rows.push(createDomElement('div', {
+        className: 'text-extraction-batch-final-unit-meta',
+        textContent: `${tRenderer('renderer.text_extraction.single_file_heavy.source_file_label')} ${unit.sourceFileName}`,
+      }));
+    }
+
+    const overallStatusText = getHeavySplitOverallStatusText(unit);
+    if (overallStatusText) {
+      rows.push(createDomElement('div', {
+        className: 'text-extraction-batch-final-unit-meta text-extraction-batch-final-unit-meta--status',
+        textContent: `${tRenderer('renderer.text_extraction.batch_report.split_result_label')} ${overallStatusText}`,
+      }));
+    }
+    return rows;
+  }
+
   function renderGeneratedInputRow(generatedInput, index, unitKey) {
     const label = generatedInput.state === 'failed'
       ? `(${generatedInput.code || tRenderer('renderer.text_extraction.batch_report.failed_fallback')})`
@@ -214,6 +265,7 @@
     section.appendChild(createDomElement('h3', {
       textContent: unit.unitTitle,
     }));
+    renderHeavySplitUnitMetaRows(unit).forEach((row) => section.appendChild(row));
     (Array.isArray(unit.inputs) ? unit.inputs : []).forEach((input, inputIndex) => {
       section.appendChild(renderInputRow(input, inputIndex, `unit-${unitIndex}`));
     });
@@ -250,6 +302,13 @@
     lines.push('');
     report.units.forEach((unit) => {
       lines.push(unit.unitTitle);
+      if (isHeavySplitGeneratedRowsUnit(unit) && unit.sourceFileName && unit.unitTitle !== unit.sourceFileName) {
+        lines.push(`${tRenderer('renderer.text_extraction.single_file_heavy.source_file_label')} ${unit.sourceFileName}`);
+      }
+      const overallStatusText = getHeavySplitOverallStatusText(unit);
+      if (overallStatusText) {
+        lines.push(`${tRenderer('renderer.text_extraction.batch_report.split_result_label')} ${overallStatusText}`);
+      }
       unit.inputs.forEach((input) => {
         const label = input.state === 'failed'
           ? ` (${formatTranslation('renderer.text_extraction.batch_report.failed_with_code', {
