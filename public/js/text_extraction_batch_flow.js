@@ -285,6 +285,40 @@
     return `${displayLabel} - ${safeCustomName}`;
   }
 
+  function formatSyntheticUnitTitle(unitIndex) {
+    return `unit_${unitIndex + 1}`;
+  }
+
+  function removeFinalExtensionSegment(rawValue) {
+    const value = normalizeNonEmptyString(rawValue);
+    if (!value) return '';
+    const lastDotIndex = value.lastIndexOf('.');
+    if (lastDotIndex <= 0) {
+      return value;
+    }
+    return value.slice(0, lastDotIndex);
+  }
+
+  function deriveVisibleUnitTitle({ customName, exclusiveHeavy, sourceInput, unitIndex }) {
+    if (customName) {
+      return customName;
+    }
+    if (exclusiveHeavy && sourceInput) {
+      return sourceInput.fileName;
+    }
+    return formatSyntheticUnitTitle(unitIndex);
+  }
+
+  function deriveUnitSnapshotFileBaseSource({ customName, inputs, unitIndex }) {
+    if (customName) {
+      return customName;
+    }
+    if (Array.isArray(inputs) && inputs.length === 1 && inputs[0]) {
+      return removeFinalExtensionSegment(inputs[0].fileName);
+    }
+    return formatSyntheticUnitTitle(unitIndex);
+  }
+
   function buildInputModel({ filePath, preparation }) {
     const safePreparation = preparation && typeof preparation === 'object' ? preparation : null;
     const fileInfo = safePreparation && safePreparation.fileInfo && typeof safePreparation.fileInfo === 'object'
@@ -416,12 +450,21 @@
         const unitMeta = state.unitMetaByKey[unitKey] || {};
         const sourceInput = unitInputs[0];
         const customName = normalizeNonEmptyString(unitMeta.customName);
-        const title = customName
-          || (exclusiveHeavy ? sourceInput.fileName : `unit_${unitIndex + 1}`);
+        const title = deriveVisibleUnitTitle({
+          customName,
+          exclusiveHeavy,
+          sourceInput,
+          unitIndex,
+        });
         return {
           unitKey,
           title,
           customName,
+          snapshotFileBaseSource: deriveUnitSnapshotFileBaseSource({
+            customName,
+            inputs: unitInputs,
+            unitIndex,
+          }),
           displayLabel: exclusiveHeavy ? sourceInput.fileName : formatUnitDisplayLabel(unitIndex),
           optionLabel: exclusiveHeavy ? sourceInput.fileName : formatUnitOptionLabel(unitIndex, customName),
           tags: cloneTags(unitMeta.tags),
@@ -826,13 +869,13 @@
     });
   }
 
-  async function autoSaveUnitSnapshot(unitName, tags) {
+  async function autoSaveUnitSnapshot(fileBaseSource, tags) {
     if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
       return { ok: false, code: 'WRITE_FAILED' };
     }
     return window.electronAPI.saveCurrentTextSnapshot({
       nonInteractive: true,
-      autoFileBaseName: unitName,
+      autoFileBaseName: fileBaseSource,
       tags: tags || null,
     });
   }
@@ -1307,7 +1350,7 @@
 
         const snapshotRequired = units.length > 1 && unitProducedText;
         const snapshotResult = snapshotRequired
-          ? await autoSaveUnitSnapshot(unit.title, unit.tags)
+          ? await autoSaveUnitSnapshot(unit.snapshotFileBaseSource, unit.tags)
           : null;
         unitReport.snapshotResult = buildUnitResultLine({
           required: snapshotRequired,

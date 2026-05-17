@@ -21,6 +21,7 @@ function createHarness({
   let snapshotTagsPromptOptions = null;
   let ocrAvailabilityCallCount = 0;
   let savedSnapshotPayload = null;
+  const savedSnapshotPayloads = [];
   let finalReportPromptAbortFinalizationActive = null;
   let syncMainInteractionLockUiCallCount = 0;
 
@@ -91,6 +92,8 @@ function createHarness({
             'renderer.text_extraction.batch_plan.pages_all': 'All pages',
             'renderer.text_extraction.batch_plan.tags_none': 'No tags',
             'renderer.text_extraction.batch_plan.unit_label': 'Unit {index}',
+            'renderer.text_extraction.batch_report.snapshot_created': 'Snapshot created: {filename}',
+            'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
           };
           return translations[key] || key;
         },
@@ -128,6 +131,7 @@ function createHarness({
       electronAPI: {
         async saveCurrentTextSnapshot(payload) {
           savedSnapshotPayload = payload;
+          savedSnapshotPayloads.push(payload);
           return { ok: true, filename: 'snapshot.json' };
         },
         async openCurrentTextSnapshotsFolder() {
@@ -223,6 +227,9 @@ function createHarness({
     },
     getSavedSnapshotPayload() {
       return savedSnapshotPayload;
+    },
+    getSavedSnapshotPayloads() {
+      return savedSnapshotPayloads.map((payload) => JSON.parse(JSON.stringify(payload)));
     },
     getFinalReportPromptAbortFinalizationActive() {
       return finalReportPromptAbortFinalizationActive;
@@ -513,6 +520,271 @@ test('batch start validation blocks OCR routes before execution when Google OCR 
     harness.notifications,
     ['renderer.alerts.text_extraction_batch_ocr_activation_required']
   );
+});
+
+test('batch execution autosaves unnamed ordinary single-input units from source basenames and strips only the final extension', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\book.pdf': createPreparation({
+      fileName: 'book.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\notes.v2.txt': createPreparation({
+      fileName: 'notes.v2.txt',
+      chosenRoute: 'native',
+      fileKind: 'txt',
+      pdfPageSelection: null,
+    }),
+    'C:\\docs\\README': createPreparation({
+      fileName: 'README',
+      chosenRoute: 'native',
+      fileKind: 'txt',
+      pdfPageSelection: null,
+    }),
+    'C:\\docs\\.env': createPreparation({
+      fileName: '.env',
+      chosenRoute: 'native',
+      fileKind: 'txt',
+      pdfPageSelection: null,
+    }),
+  };
+
+  const executionResultsByProcessingInputFileName = {
+    'book.pdf': { ok: true, result: { state: 'success', text: 'Book text', generatedPdfArtifact: null } },
+    'notes.v2.txt': { ok: true, result: { state: 'success', text: 'Notes text', generatedPdfArtifact: null } },
+    README: { ok: true, result: { state: 'success', text: 'Readme text', generatedPdfArtifact: null } },
+    '.env': { ok: true, result: { state: 'success', text: 'Env text', generatedPdfArtifact: null } },
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName,
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-source-basename-autosave',
+  });
+
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
+    ['book', 'notes.v2', 'README', '.env']
+  );
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.deepEqual(
+    report.units.map((unit) => unit.unitTitle),
+    ['unit_1', 'unit_2', 'unit_3', 'unit_4']
+  );
+  assert.ok(report.units.every((unit) => unit.snapshotResult.state === 'saved'));
+  assert.ok(report.units.every((unit) => /snapshot\.json/.test(unit.snapshotResult.text)));
+});
+
+test('batch execution autosaves custom-named single-input units from the raw custom name while preserving the visible title', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\chapter.pdf': createPreparation({
+      fileName: 'chapter.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\appendix.pdf': createPreparation({
+      fileName: 'appendix.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    async onPromptBatchPlan(controller) {
+      const viewModel = controller.getViewModel();
+      controller.applyAction({
+        type: 'rename_unit',
+        unitKey: viewModel.units[0].unitKey,
+        name: 'Chapter 3.pdf',
+      });
+    },
+    executionResultsByProcessingInputFileName: {
+      'chapter.pdf': { ok: true, result: { state: 'success', text: 'Chapter text', generatedPdfArtifact: null } },
+      'appendix.pdf': { ok: true, result: { state: 'success', text: 'Appendix text', generatedPdfArtifact: null } },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-custom-single-autosave',
+  });
+
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
+    ['Chapter 3.pdf', 'appendix']
+  );
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units[0].unitTitle, 'Chapter 3.pdf');
+  assert.equal(report.units[1].unitTitle, 'unit_2');
+});
+
+test('batch execution autosaves unnamed heavy single-input units from the source basename while keeping the visible title', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\book.pdf': createPreparation({
+      fileName: 'book.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 120,
+        selectedPageCount: 120,
+        totalPages: 120,
+      },
+    }),
+    'C:\\docs\\notes.txt': createPreparation({
+      fileName: 'notes.txt',
+      chosenRoute: 'native',
+      fileKind: 'txt',
+      pdfPageSelection: null,
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'book.pdf': { ok: true, result: { state: 'success', text: 'Book OCR text', generatedPdfArtifact: null } },
+      'notes.txt': { ok: true, result: { state: 'success', text: 'Notes text', generatedPdfArtifact: null } },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-heavy-single-autosave',
+  });
+
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
+    ['book', 'notes']
+  );
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units[0].unitTitle, 'book.pdf');
+  assert.equal(report.units[1].unitTitle, 'unit_2');
+});
+
+test('batch execution autosaves unnamed multi-input units with the synthetic unit fallback', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\part-1.pdf': createPreparation({
+      fileName: 'part-1.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\part-2.pdf': createPreparation({
+      fileName: 'part-2.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\part-3.pdf': createPreparation({
+      fileName: 'part-3.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    async onPromptBatchPlan(controller) {
+      controller.applyAction({ type: 'apply_preset_all' });
+      const viewModel = controller.getViewModel();
+      controller.applyAction({
+        type: 'assign_input_group',
+        inputId: viewModel.units[0].inputs[2].inputId,
+        groupKey: '__new__',
+      });
+    },
+    executionResultsByProcessingInputFileName: {
+      'part-1.pdf': { ok: true, result: { state: 'success', text: 'Part 1', generatedPdfArtifact: null } },
+      'part-2.pdf': { ok: true, result: { state: 'success', text: 'Part 2', generatedPdfArtifact: null } },
+      'part-3.pdf': { ok: true, result: { state: 'success', text: 'Part 3', generatedPdfArtifact: null } },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-multi-input-fallback',
+  });
+
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
+    ['unit_1', 'part-3']
+  );
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units[0].unitTitle, 'unit_1');
+  assert.equal(report.units[1].unitTitle, 'unit_2');
+});
+
+test('batch execution autosaves custom-named multi-input units from the raw custom name', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\part-1.pdf': createPreparation({
+      fileName: 'part-1.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\part-2.pdf': createPreparation({
+      fileName: 'part-2.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\part-3.pdf': createPreparation({
+      fileName: 'part-3.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    async onPromptBatchPlan(controller) {
+      controller.applyAction({ type: 'apply_preset_all' });
+      const viewModel = controller.getViewModel();
+      controller.applyAction({
+        type: 'assign_input_group',
+        inputId: viewModel.units[0].inputs[2].inputId,
+        groupKey: '__new__',
+      });
+      const nextViewModel = controller.getViewModel();
+      controller.applyAction({
+        type: 'rename_unit',
+        unitKey: nextViewModel.units[0].unitKey,
+        name: 'Batch.v1',
+      });
+    },
+    executionResultsByProcessingInputFileName: {
+      'part-1.pdf': { ok: true, result: { state: 'success', text: 'Part 1', generatedPdfArtifact: null } },
+      'part-2.pdf': { ok: true, result: { state: 'success', text: 'Part 2', generatedPdfArtifact: null } },
+      'part-3.pdf': { ok: true, result: { state: 'success', text: 'Part 3', generatedPdfArtifact: null } },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-custom-multi-autosave',
+  });
+
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
+    ['Batch.v1', 'part-3']
+  );
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units[0].unitTitle, 'Batch.v1');
+  assert.equal(report.units[1].unitTitle, 'unit_2');
 });
 
 test('batch execution final report keeps the canonical title and flattens heavy child rows on split success', async () => {
