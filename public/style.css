@@ -1939,6 +1939,7 @@ select#presets:focus {
   border: 1px solid var(--modal-panel-border-color);
   padding: var(--modal-panel-padding);
   box-sizing: border-box;
+  text-align: start;
 }
 
 .text-extraction-ocr-activation-disclosure-header {
@@ -1956,6 +1957,7 @@ select#presets:focus {
 
 .text-extraction-ocr-activation-disclosure-body {
   margin-top: var(--modal-section-spacing);
+  text-align: start;
 }
 
 .text-extraction-ocr-activation-disclosure-body p {
@@ -1965,8 +1967,9 @@ select#presets:focus {
 }
 
 .text-extraction-ocr-activation-disclosure-list {
-  margin: var(--modal-section-spacing) 0 0 18px;
+  margin: var(--modal-section-spacing) 0 0;
   padding: 0;
+  padding-inline-start: 18px;
   display: grid;
   gap: 8px;
   font-size: var(--font-size-note);
@@ -2002,7 +2005,7 @@ select#presets:focus {
   justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .text-extraction-ocr-activation-disclosure-buttons .btn-standard {
