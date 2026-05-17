@@ -47,27 +47,117 @@
       && btnClose);
   }
 
-  function escapeHtml(rawValue) {
-    return String(rawValue || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function formatTranslation(key, replacements = {}) {
-    let text = tRenderer(key);
-    Object.keys(replacements).forEach((name) => {
-      text = text.replace(`{${name}}`, String(replacements[name]));
-    });
-    return text;
-  }
-
   function formatMegabytes(rawBytes) {
     const bytes = Number(rawBytes);
     if (!Number.isFinite(bytes) || bytes <= 0) return '0';
     return `${Math.round((bytes / (1024 * 1024)) * 10) / 10}`;
+  }
+
+  function createTextNode(text) {
+    return document.createTextNode(String(text ?? ''));
+  }
+
+  function createValueNode(text, direction = 'ltr') {
+    const valueNode = document.createElement('bdi');
+    valueNode.dir = direction === 'rtl' || direction === 'ltr' ? direction : 'auto';
+    valueNode.textContent = String(text ?? '');
+    return valueNode;
+  }
+
+  function renderTranslationWithIsolatedValue(container, {
+    key = '',
+    placeholderName = '',
+    tokenSuffix = '',
+    valueText = '',
+    valueDirection = 'ltr',
+  } = {}) {
+    const template = tRenderer(key);
+    const placeholderToken = `{${placeholderName}}`;
+    const fullToken = `${placeholderToken}${tokenSuffix}`;
+    const splitToken = template.includes(fullToken)
+      ? fullToken
+      : placeholderToken;
+    const parts = template.split(splitToken);
+
+    container.textContent = '';
+    if (parts.length < 2) {
+      container.textContent = template;
+      return;
+    }
+
+    parts.forEach((part, index) => {
+      if (part) {
+        container.appendChild(createTextNode(part));
+      }
+      if (index < parts.length - 1) {
+        container.appendChild(createValueNode(valueText, valueDirection));
+      }
+    });
+  }
+
+  function appendLabeledValueRow(container, {
+    labelKey = '',
+    valueText = '',
+    valueDirection = 'ltr',
+  } = {}) {
+    const row = document.createElement('p');
+    const label = document.createElement('strong');
+    label.textContent = tRenderer(labelKey);
+    row.appendChild(label);
+    row.appendChild(createTextNode(' '));
+    row.appendChild(createValueNode(valueText, valueDirection));
+    container.appendChild(row);
+  }
+
+  function renderDetails({
+    isCaseB = false,
+    sourceFileName = '',
+    sourceFileSizeBytes = 0,
+    totalPages = 0,
+    selectedRangeText = '',
+    revealableGeneratedPdfFileName = '',
+    hasRevealableGeneratedPdf = false,
+    generatedPdfSizeBytes = 0,
+  } = {}) {
+    details.textContent = '';
+
+    appendLabeledValueRow(details, {
+      labelKey: 'renderer.text_extraction.single_file_heavy.source_file_label',
+      valueText: sourceFileName,
+      valueDirection: 'ltr',
+    });
+    appendLabeledValueRow(details, {
+      labelKey: 'renderer.text_extraction.single_file_heavy.source_size_label',
+      valueText: `${formatMegabytes(sourceFileSizeBytes)} MB`,
+      valueDirection: 'ltr',
+    });
+
+    if (isCaseB) {
+      appendLabeledValueRow(details, {
+        labelKey: 'renderer.text_extraction.single_file_heavy.selected_range_label',
+        valueText: selectedRangeText,
+        valueDirection: 'auto',
+      });
+      if (hasRevealableGeneratedPdf) {
+        appendLabeledValueRow(details, {
+          labelKey: 'renderer.text_extraction.single_file_heavy.generated_pdf_label',
+          valueText: revealableGeneratedPdfFileName,
+          valueDirection: 'ltr',
+        });
+      }
+      appendLabeledValueRow(details, {
+        labelKey: 'renderer.text_extraction.single_file_heavy.generated_pdf_size_label',
+        valueText: `${formatMegabytes(generatedPdfSizeBytes)} MB`,
+        valueDirection: 'ltr',
+      });
+      return;
+    }
+
+    appendLabeledValueRow(details, {
+      labelKey: 'renderer.text_extraction.single_file_heavy.total_pages_label',
+      valueText: String(totalPages || ''),
+      valueDirection: 'ltr',
+    });
   }
 
   async function promptSingleFileHeavyPdf({
@@ -106,28 +196,25 @@
     title.textContent = isCaseB
       ? tRenderer('renderer.text_extraction.single_file_heavy.case_b_title')
       : tRenderer('renderer.text_extraction.single_file_heavy.case_a_title');
-    message.textContent = isCaseB
-      ? formatTranslation('renderer.text_extraction.single_file_heavy.case_b_message', {
-        providerLimitMb: formatMegabytes(providerLimitBytes),
-      })
-      : formatTranslation('renderer.text_extraction.single_file_heavy.case_a_message', {
-        providerLimitMb: formatMegabytes(providerLimitBytes),
-      });
-    details.innerHTML = isCaseB
-      ? [
-        `<p><strong>${escapeHtml(tRenderer('renderer.text_extraction.single_file_heavy.source_file_label'))}</strong> ${escapeHtml(sourceFileName)}</p>`,
-        `<p><strong>${escapeHtml(tRenderer('renderer.text_extraction.single_file_heavy.source_size_label'))}</strong> ${escapeHtml(formatMegabytes(sourceFileSizeBytes))} MB</p>`,
-        `<p><strong>${escapeHtml(tRenderer('renderer.text_extraction.single_file_heavy.selected_range_label'))}</strong> ${escapeHtml(selectedRangeText)}</p>`,
-        hasRevealableGeneratedPdf
-          ? `<p><strong>${escapeHtml(tRenderer('renderer.text_extraction.single_file_heavy.generated_pdf_label'))}</strong> ${escapeHtml(revealableGeneratedPdfFileName)}</p>`
-          : '',
-        `<p><strong>${escapeHtml(tRenderer('renderer.text_extraction.single_file_heavy.generated_pdf_size_label'))}</strong> ${escapeHtml(formatMegabytes(generatedPdfSizeBytes))} MB</p>`,
-      ].join('')
-      : [
-        `<p><strong>${escapeHtml(tRenderer('renderer.text_extraction.single_file_heavy.source_file_label'))}</strong> ${escapeHtml(sourceFileName)}</p>`,
-        `<p><strong>${escapeHtml(tRenderer('renderer.text_extraction.single_file_heavy.source_size_label'))}</strong> ${escapeHtml(formatMegabytes(sourceFileSizeBytes))} MB</p>`,
-        `<p><strong>${escapeHtml(tRenderer('renderer.text_extraction.single_file_heavy.total_pages_label'))}</strong> ${escapeHtml(String(totalPages || ''))}</p>`,
-      ].join('');
+    renderTranslationWithIsolatedValue(message, {
+      key: isCaseB
+        ? 'renderer.text_extraction.single_file_heavy.case_b_message'
+        : 'renderer.text_extraction.single_file_heavy.case_a_message',
+      placeholderName: 'providerLimitMb',
+      tokenSuffix: ' MB',
+      valueText: `${formatMegabytes(providerLimitBytes)} MB`,
+      valueDirection: 'ltr',
+    });
+    renderDetails({
+      isCaseB,
+      sourceFileName,
+      sourceFileSizeBytes,
+      totalPages,
+      selectedRangeText,
+      revealableGeneratedPdfFileName,
+      hasRevealableGeneratedPdf,
+      generatedPdfSizeBytes,
+    });
 
     btnSplit.textContent = tRenderer('renderer.text_extraction.single_file_heavy.split_button');
     btnReturnToPages.textContent = tRenderer('renderer.text_extraction.single_file_heavy.return_to_pages_button');
