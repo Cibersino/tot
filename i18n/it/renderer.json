@@ -132,7 +132,6 @@
         "title": "Pianifica estrazione per lotti",
         "single_file_title": "Pianifica divisione automatica del PDF",
         "pages_all": "Tutte le pagine",
-        "pages_range": "Pagine {fromPage}-{toPage}",
         "tags_none": "Nessun tag",
         "heavy_pdf_badge": "PDF pesante",
         "generated_inputs_preview": "PDF generati pianificati",

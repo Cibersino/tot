@@ -132,7 +132,6 @@
         "title": "Planificar extracció per lots",
         "single_file_title": "Planificar divisió automàtica del PDF",
         "pages_all": "Totes les pàgines",
-        "pages_range": "Pàgines {fromPage}-{toPage}",
         "tags_none": "Sense etiquetes",
         "heavy_pdf_badge": "PDF gran",
         "generated_inputs_preview": "PDF que es generaran",

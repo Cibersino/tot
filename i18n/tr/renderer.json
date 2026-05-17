@@ -132,7 +132,6 @@
         "title": "Toplu çıkarımı planla",
         "single_file_title": "Otomatik PDF bölmeyi planla",
         "pages_all": "Tüm sayfalar",
-        "pages_range": "Sayfalar {fromPage}-{toPage}",
         "tags_none": "Etiket yok",
         "heavy_pdf_badge": "Ağır PDF",
         "generated_inputs_preview": "Planlanan oluşturulmuş PDF’ler",

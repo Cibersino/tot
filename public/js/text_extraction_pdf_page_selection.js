@@ -195,30 +195,6 @@
     };
   }
 
-  function formatRangeSelectionText(selection, rangeKey) {
-    const safeSelection = selection && typeof selection === 'object' && !Array.isArray(selection)
-      ? selection
-      : null;
-    if (!safeSelection || safeSelection.mode !== 'range' || !rangeKey) {
-      return '';
-    }
-
-    return tRenderer(rangeKey)
-      .replace('{fromPage}', String(safeSelection.fromPage || ''))
-      .replace('{toPage}', String(safeSelection.toPage || ''));
-  }
-
-  function formatSelectionSummary(selection, { allKey = '', rangeKey = '' } = {}) {
-    const safeSelection = selection && typeof selection === 'object' && !Array.isArray(selection)
-      ? selection
-      : null;
-    if (!safeSelection || safeSelection.mode === 'all') {
-      return allKey ? tRenderer(allKey) : '';
-    }
-
-    return formatRangeSelectionText(safeSelection, rangeKey);
-  }
-
   // =============================================================================
   // Exports / module surface
   // =============================================================================
@@ -227,8 +203,6 @@
     buildAllPagesSelection,
     buildPageSelectionDraft,
     canonicalizePageSelection,
-    formatPageSelectionSummary: formatSelectionSummary,
-    formatRangeSelectionText,
     getPageSelectionUiState,
   };
 })();

@@ -132,7 +132,6 @@
         "title": "Planifier l’extraction par lots",
         "single_file_title": "Planifier la division automatique du PDF",
         "pages_all": "Toutes les pages",
-        "pages_range": "Pages {fromPage}-{toPage}",
         "tags_none": "Aucune étiquette",
         "heavy_pdf_badge": "PDF lourd",
         "generated_inputs_preview": "PDF générés prévus",

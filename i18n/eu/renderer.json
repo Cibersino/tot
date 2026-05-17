@@ -132,7 +132,6 @@
         "title": "Planifikatu multzokako erauzketa",
         "single_file_title": "Planifikatu PDFaren zatitze automatikoa",
         "pages_all": "Orri guztiak",
-        "pages_range": "{fromPage}-{toPage} orriak",
         "tags_none": "Etiketarik gabe",
         "heavy_pdf_badge": "PDF handia",
         "generated_inputs_preview": "Sortuko diren PDFak",

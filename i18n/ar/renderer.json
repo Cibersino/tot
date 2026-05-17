@@ -132,7 +132,6 @@
         "title": "تخطيط استخراج دفعي",
         "single_file_title": "تخطيط تقسيم PDF تلقائي",
         "pages_all": "كل الصفحات",
-        "pages_range": "الصفحات {fromPage}-{toPage}",
         "tags_none": "دون وسوم",
         "heavy_pdf_badge": "PDF كبير",
         "generated_inputs_preview": "ملفات PDF المُنشأة المخطط لها",

@@ -132,7 +132,6 @@
         "title": "Rencanakan ekstraksi berkelompok",
         "single_file_title": "Rencanakan pemisahan PDF otomatis",
         "pages_all": "Semua halaman",
-        "pages_range": "Halaman {fromPage}-{toPage}",
         "tags_none": "Tanpa tag",
         "heavy_pdf_badge": "PDF berat",
         "generated_inputs_preview": "PDF yang akan dibuat",

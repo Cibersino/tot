@@ -132,7 +132,6 @@
         "title": "Stapelextraktion planen",
         "single_file_title": "Automatische PDF-Aufteilung planen",
         "pages_all": "Alle Seiten",
-        "pages_range": "Seiten {fromPage}-{toPage}",
         "tags_none": "Keine Tags",
         "heavy_pdf_badge": "Großes PDF",
         "generated_inputs_preview": "Geplante erzeugte PDFs",

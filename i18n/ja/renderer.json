@@ -132,7 +132,6 @@
         "title": "一括抽出を計画",
         "single_file_title": "PDF の自動分割を計画",
         "pages_all": "すべてのページ",
-        "pages_range": "{fromPage}-{toPage} ページ",
         "tags_none": "タグなし",
         "heavy_pdf_badge": "大型 PDF",
         "generated_inputs_preview": "生成予定の PDF",

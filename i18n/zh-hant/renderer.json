@@ -132,7 +132,6 @@
         "title": "規劃批次擷取",
         "single_file_title": "規劃自動 PDF 分割",
         "pages_all": "所有頁面",
-        "pages_range": "第 {fromPage}-{toPage} 頁",
         "tags_none": "無標籤",
         "heavy_pdf_badge": "大型 PDF",
         "generated_inputs_preview": "預計產生的 PDF",

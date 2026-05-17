@@ -132,7 +132,6 @@
         "title": "Planera satsvis extrahering",
         "single_file_title": "Planera automatisk PDF-delning",
         "pages_all": "Alla sidor",
-        "pages_range": "Sidor {fromPage}-{toPage}",
         "tags_none": "Inga taggar",
         "heavy_pdf_badge": "Tung PDF",
         "generated_inputs_preview": "Planerade genererade PDF-filer",

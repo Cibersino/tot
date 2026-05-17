@@ -132,7 +132,6 @@
         "title": "Armar extracción por lotes",
         "single_file_title": "Armar división automática del PDF",
         "pages_all": "Toas las páginas",
-        "pages_range": "Páginas {fromPage}-{toPage}",
         "tags_none": "Sin etiquetas",
         "heavy_pdf_badge": "PDF pesao",
         "generated_inputs_preview": "PDFs que se van a armar",

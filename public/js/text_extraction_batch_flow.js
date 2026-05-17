@@ -28,8 +28,7 @@
   const pdfPageSelectionHelper = window.TextExtractionPdfPageSelection || null;
   if (!pdfPageSelectionHelper
     || typeof pdfPageSelectionHelper.buildAllPagesSelection !== 'function'
-    || typeof pdfPageSelectionHelper.canonicalizePageSelection !== 'function'
-    || typeof pdfPageSelectionHelper.formatPageSelectionSummary !== 'function') {
+    || typeof pdfPageSelectionHelper.canonicalizePageSelection !== 'function') {
     throw new Error('[text-extraction-batch-flow] TextExtractionPdfPageSelection dependencies unavailable; cannot continue');
   }
   const snapshotTagCatalog = window.SnapshotTagCatalog || null;
@@ -610,11 +609,8 @@
           alertCode: getInputAlertCode(input),
           activeRoute: normalizeRoute(input.activeRoute),
           routeOptions: [...input.routeOptions],
-          pagesSummary: input.pdfPageSelection
-            ? pdfPageSelectionHelper.formatPageSelectionSummary(input.pdfPageSelection, {
-              allKey: 'renderer.text_extraction.batch_plan.pages_all',
-              rangeKey: 'renderer.text_extraction.batch_plan.pages_range',
-            })
+          pagesSummary: !canEditPages(input) && isPdfInput(input)
+            ? tRenderer('renderer.text_extraction.batch_plan.pages_all')
             : '',
           canEditPages: canEditPages(input),
           pdfPageSelection: cloneSelection(input.pdfPageSelection),

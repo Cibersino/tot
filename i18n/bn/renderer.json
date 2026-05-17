@@ -132,7 +132,6 @@
         "title": "দলগত নিষ্কাশনের পরিকল্পনা",
         "single_file_title": "স্বয়ংক্রিয় PDF বিভাজনের পরিকল্পনা",
         "pages_all": "সব পৃষ্ঠা",
-        "pages_range": "পৃষ্ঠা {fromPage}-{toPage}",
         "tags_none": "কোনও ট্যাগ নেই",
         "heavy_pdf_badge": "ভারী PDF",
         "generated_inputs_preview": "যে PDF ফাইলগুলো তৈরি হবে",

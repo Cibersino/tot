@@ -77,7 +77,6 @@ function createHarness({
         tRenderer(key) {
           const translations = {
             'renderer.text_extraction.batch_plan.pages_all': 'All pages',
-            'renderer.text_extraction.batch_plan.pages_range': 'Pages {fromPage}-{toPage}',
             'renderer.text_extraction.batch_plan.tags_none': 'No tags',
             'renderer.text_extraction.batch_plan.unit_label': 'Unit {index}',
           };
@@ -107,20 +106,6 @@ function createHarness({
             selectedPageCount: (toPage - fromPage) + 1,
             totalPages: safeTotalPages,
           };
-        },
-        formatPageSelectionSummary(selection, { allKey = '', rangeKey = '' } = {}) {
-          if (!selection || selection.mode !== 'range') {
-            const translations = {
-              'renderer.text_extraction.batch_plan.pages_all': 'All pages',
-            };
-            return translations[allKey] || allKey;
-          }
-          const translations = {
-            'renderer.text_extraction.batch_plan.pages_range': 'Pages {fromPage}-{toPage}',
-          };
-          return (translations[rangeKey] || rangeKey)
-            .replace('{fromPage}', String(selection.fromPage))
-            .replace('{toPage}', String(selection.toPage));
         },
       },
       SnapshotTagCatalog: {

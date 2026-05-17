@@ -132,7 +132,6 @@
         "title": "规划批量提取",
         "single_file_title": "规划自动 PDF 拆分",
         "pages_all": "所有页面",
-        "pages_range": "第 {fromPage}-{toPage} 页",
         "tags_none": "无标签",
         "heavy_pdf_badge": "大型 PDF",
         "generated_inputs_preview": "计划生成的 PDF",

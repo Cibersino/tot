@@ -132,7 +132,6 @@
         "title": "Lập kế hoạch trích xuất theo lô",
         "single_file_title": "Lập kế hoạch chia PDF tự động",
         "pages_all": "Tất cả các trang",
-        "pages_range": "Trang {fromPage}-{toPage}",
         "tags_none": "Không có thẻ",
         "heavy_pdf_badge": "PDF nặng",
         "generated_inputs_preview": "Các PDF sẽ được tạo theo kế hoạch",

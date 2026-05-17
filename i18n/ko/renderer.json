@@ -132,7 +132,6 @@
         "title": "일괄 추출 계획",
         "single_file_title": "자동 PDF 분할 계획",
         "pages_all": "모든 페이지",
-        "pages_range": "{fromPage}-{toPage}페이지",
         "tags_none": "태그 없음",
         "heavy_pdf_badge": "대용량 PDF",
         "generated_inputs_preview": "생성 예정 PDF",

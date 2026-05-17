@@ -132,7 +132,6 @@
         "title": "Plan batch extraction",
         "single_file_title": "Plan automatic PDF split",
         "pages_all": "All pages",
-        "pages_range": "Pages {fromPage}-{toPage}",
         "tags_none": "No tags",
         "heavy_pdf_badge": "Heavy PDF",
         "generated_inputs_preview": "PDFs wey go be generated",

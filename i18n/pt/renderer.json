@@ -132,7 +132,6 @@
         "title": "Planejar extração em lote",
         "single_file_title": "Planejar divisão automática do PDF",
         "pages_all": "Todas as páginas",
-        "pages_range": "Páginas {fromPage}-{toPage}",
         "tags_none": "Sem etiquetas",
         "heavy_pdf_badge": "PDF pesado",
         "generated_inputs_preview": "PDFs gerados planejados",

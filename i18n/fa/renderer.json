@@ -132,7 +132,6 @@
         "title": "برنامه‌ریزی استخراج دسته‌ای",
         "single_file_title": "برنامه‌ریزی تقسیم خودکار PDF",
         "pages_all": "همهٔ صفحه‌ها",
-        "pages_range": "صفحه‌های {fromPage}-{toPage}",
         "tags_none": "بدون برچسب",
         "heavy_pdf_badge": "PDF سنگین",
         "generated_inputs_preview": "PDFهای تولیدی برنامه‌ریزی‌شده",

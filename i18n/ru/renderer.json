@@ -132,7 +132,6 @@
         "title": "Планирование пакетного извлечения",
         "single_file_title": "Планирование автоматического разделения PDF",
         "pages_all": "Все страницы",
-        "pages_range": "Страницы {fromPage}-{toPage}",
         "tags_none": "Без тегов",
         "heavy_pdf_badge": "Большой PDF",
         "generated_inputs_preview": "PDF, которые будут созданы",

@@ -132,7 +132,6 @@
         "title": "T'aqa qichuyta planifikay",
         "single_file_title": "PDF kikinmanta t'aqayta planifikay",
         "pages_all": "Llapan p'anqakuna",
-        "pages_range": "{fromPage}-{toPage} p'anqakuna",
         "tags_none": "Mana etiquetayuq",
         "heavy_pdf_badge": "Hatun PDF",
         "generated_inputs_preview": "Ruwakunqa PDFkuna",
