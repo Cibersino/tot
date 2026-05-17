@@ -915,7 +915,17 @@
       ? executionResult.state
       : '';
     if (state === 'success') return 'success';
-    if (state === 'cancelled') return 'cancelled';
+    if (state === 'cancelled' || state.indexOf('cancelled') === 0) return 'cancelled';
+    if (state === 'omitted') return 'omitted';
+    return 'failed';
+  }
+
+  function mapGeneratedInputStateToReportState(generatedInputState) {
+    const state = typeof generatedInputState === 'string'
+      ? generatedInputState
+      : '';
+    if (state === 'success') return 'success';
+    if (state === 'cancelled' || state.indexOf('cancelled') === 0) return 'cancelled';
     if (state === 'omitted') return 'omitted';
     return 'failed';
   }
@@ -953,7 +963,7 @@
     unitReport.inputs.push(buildInputReportRecord({
       fileName: input.fileName,
       displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
-      state: executionResult.state === 'success' ? 'success' : 'failed',
+      state: mapExecutionResultStateToReportState(executionResult),
       code: executionResult.error && executionResult.error.code ? executionResult.error.code : '',
       generatedInputs: heavyGeneratedInputs,
       generatedPdfArtifact: executionResult.generatedPdfArtifact || null,
@@ -1140,7 +1150,7 @@
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
               displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
-              state: 'failed',
+              state: 'cancelled',
               code: 'aborted_by_user',
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
@@ -1168,7 +1178,7 @@
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
               displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
-              state: 'failed',
+              state: 'cancelled',
               code: 'aborted_by_user',
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
@@ -1221,7 +1231,7 @@
               : (execution && execution.code ? String(execution.code).toLowerCase() : 'execution_failed');
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
-              state: 'failed',
+              state: failureCode === 'active_session_required' ? 'cancelled' : 'failed',
               code: failureCode,
             }));
             if (failureCode === 'active_session_required') {
@@ -1261,11 +1271,7 @@
             && Array.isArray(execution.result.heavySplitExecution.generatedInputs)
               ? execution.result.heavySplitExecution.generatedInputs.map((generatedInput) => ({
                 fileName: generatedInput.fileName,
-                state: generatedInput.state === 'success'
-                  ? 'success'
-                  : (generatedInput.state === 'omitted'
-                    ? 'omitted'
-                    : 'failed'),
+                state: mapGeneratedInputStateToReportState(generatedInput.state),
                 code: generatedInput.errorCode || '',
                 generatedPdfArtifact: generatedInput.generatedPdfArtifact || null,
               }))

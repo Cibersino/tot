@@ -176,6 +176,8 @@
         "split_result_label": "Split result:",
         "failed_fallback": "failed",
         "failed_with_code": "failed: {code}",
+        "cancelled_fallback": "cancelled",
+        "cancelled_with_code": "cancelled: {code}",
         "snapshot_not_created": "(no json created)",
         "snapshot_created": "{filename} created",
         "snapshot_creation_failed": "(json creation failed: {code})"

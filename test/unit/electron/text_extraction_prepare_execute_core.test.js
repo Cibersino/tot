@@ -1283,6 +1283,156 @@ test('executePreparedImport processes heavy split through generated child PDFs i
   );
 });
 
+test('executePreparedImport preserves heavy split child statuses on cancellation', async (t) => {
+  const ocrRouteCalls = [];
+  let callIndex = 0;
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async (args) => {
+      assert.equal(Object.hasOwn(args, 'log'), false);
+      const { filePath } = args;
+      const fileName = path.basename(filePath);
+      ocrRouteCalls.push(fileName);
+      callIndex += 1;
+      if (callIndex === 1) {
+        return {
+          state: 'success',
+          executedRoute: 'ocr',
+          text: `Extracted from ${fileName}`,
+          warnings: [],
+          provenance: {
+            metadataSafeForLogs: {},
+          },
+          error: null,
+        };
+      }
+      return {
+        state: 'cancelled',
+        executedRoute: 'ocr',
+        text: '',
+        warnings: [],
+        provenance: {
+          metadataSafeForLogs: {},
+        },
+        error: {
+          code: 'aborted_by_user',
+          message: 'Cancelled by user.',
+          detailsSafeForLogs: {
+            uploadStatus: 'in_progress',
+          },
+        },
+      };
+    },
+  });
+  t.after(restore);
+
+  const controller = createExecutingController();
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo,
+      ocrLanguage: 'es',
+      planningMode: 'batch',
+      forceHeavySplitFullSource: true,
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+      generatedPdfArtifactPolicy: {
+        mode: 'delete',
+      },
+      processingInputFileName: 'selectable_text_fixture_12_pages.pdf',
+      routeMetadata: {
+        fileKind: 'pdf',
+        availableRoutes: ['native', 'ocr'],
+        chosenRoute: null,
+        executedRoute: null,
+        executionKind: null,
+        pdfTriage: 'both',
+        triageReason: 'native_text_detected_and_ocr_ready_choice_required',
+        ocrSetupState: 'ready',
+        heavySplitEligible: true,
+        heavySplitPreview: {
+          ok: true,
+          generatedInputs: [
+            {
+              inputIndex: 1,
+              fromPage: 1,
+              toPage: 2,
+              pdfPageSelection: {
+                mode: 'range',
+                fromPage: 1,
+                toPage: 2,
+                selectedPageCount: 2,
+                totalPages: 12,
+              },
+              processingInputFileName: 'selectable_text_fixture_12_pages_pages_01_02.pdf',
+            },
+            {
+              inputIndex: 2,
+              fromPage: 3,
+              toPage: 4,
+              pdfPageSelection: {
+                mode: 'range',
+                fromPage: 3,
+                toPage: 4,
+                selectedPageCount: 2,
+                totalPages: 12,
+              },
+              processingInputFileName: 'selectable_text_fixture_12_pages_pages_03_04.pdf',
+            },
+          ],
+        },
+      },
+      requiresRouteChoice: true,
+      routeChoiceOptions: ['native', 'ocr'],
+    },
+    routePreference: 'ocr',
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.executionKind, 'google_drive');
+  assert.equal(result.result.state, 'cancelled');
+  assert.equal(result.result.error.code, 'aborted_by_user');
+  assert.deepEqual(ocrRouteCalls, [
+    'selectable_text_fixture_12_pages_pages_01_02.pdf',
+    'selectable_text_fixture_12_pages_pages_03_04.pdf',
+  ]);
+  assert.ok(result.result.heavySplitExecution);
+  assert.deepEqual(
+    result.result.heavySplitExecution.generatedInputs.map((generatedInput) => ({
+      fileName: generatedInput.fileName,
+      state: generatedInput.state,
+      errorCode: generatedInput.errorCode,
+    })),
+    [
+      {
+        fileName: 'selectable_text_fixture_12_pages_pages_01_02.pdf',
+        state: 'success',
+        errorCode: '',
+      },
+      {
+        fileName: 'selectable_text_fixture_12_pages_pages_03_04.pdf',
+        state: 'cancelled_before_route_dispatch',
+        errorCode: 'aborted_by_user',
+      },
+    ]
+  );
+});
+
 test('executePreparedImport keeps retained generated PDFs only on heavy split child statuses', async (t) => {
   const retainedArtifactsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-heavy-split-retained-'));
   t.after(() => fs.rmSync(retainedArtifactsDir, { recursive: true, force: true }));

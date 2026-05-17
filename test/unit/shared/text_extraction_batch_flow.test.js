@@ -654,6 +654,197 @@ test('batch execution final report keeps heavy parent outcome metadata when chil
   );
 });
 
+test('batch execution final report keeps ordinary cancelled rows distinct from omitted rows across units', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\part-1.pdf': createPreparation({
+      fileName: 'part-1.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+    'C:\\docs\\part-2.pdf': createPreparation({
+      fileName: 'part-2.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+    'C:\\docs\\part-3.pdf': createPreparation({
+      fileName: 'part-3.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+    'C:\\docs\\part-4.pdf': createPreparation({
+      fileName: 'part-4.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    async onPromptBatchPlan(controller) {
+      controller.applyAction({ type: 'apply_preset_all' });
+      const viewModel = controller.getViewModel();
+      controller.applyAction({
+        type: 'assign_input_group',
+        inputId: viewModel.units[0].inputs[3].inputId,
+        groupKey: '__new__',
+      });
+    },
+    executionResultsByProcessingInputFileName: {
+      'part-1.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Extracted text',
+          error: null,
+          generatedPdfArtifact: null,
+        },
+      },
+      'part-2.pdf': {
+        ok: true,
+        result: {
+          state: 'cancelled',
+          text: '',
+          error: {
+            code: 'aborted_by_user',
+          },
+          generatedPdfArtifact: null,
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-cancelled-report-taxonomy',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.hadOutput, true);
+  assert.equal(report.units.length, 2);
+  assert.deepEqual(
+    report.units[0].inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+    })),
+    [
+      { fileName: 'part-1.pdf', state: 'success', code: '' },
+      { fileName: 'part-2.pdf', state: 'cancelled', code: 'aborted_by_user' },
+      { fileName: 'part-3.pdf', state: 'omitted', code: 'omitted' },
+    ]
+  );
+  assert.deepEqual(
+    report.units[1].inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+    })),
+    [
+      { fileName: 'part-4.pdf', state: 'omitted', code: 'omitted' },
+    ]
+  );
+});
+
+test('batch execution final report preserves cancelled heavy child rows when split aborts', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\book.pdf': createPreparation({
+      fileName: 'book.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 120,
+        selectedPageCount: 120,
+        totalPages: 120,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'book.pdf': {
+        ok: true,
+        result: {
+          state: 'cancelled',
+          text: '',
+          error: {
+            code: 'aborted_by_user',
+          },
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [
+              {
+                fileName: 'book_pages_001_020.pdf',
+                state: 'cancelled_before_route_dispatch',
+                errorCode: 'aborted_by_user',
+                generatedPdfArtifact: null,
+              },
+              {
+                fileName: 'book_pages_021_040.pdf',
+                state: 'omitted',
+                errorCode: '',
+                generatedPdfArtifact: null,
+              },
+            ],
+          },
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startSyntheticSingleFileHeavySplit({
+    filePath: 'C:\\docs\\book.pdf',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units[0].overallState, 'cancelled');
+  assert.equal(report.units[0].overallCode, 'aborted_by_user');
+  assert.equal(report.units[0].heavyGeneratedInputRows, true);
+  assert.deepEqual(
+    report.units[0].inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+    })),
+    [
+      { fileName: 'book_pages_001_020.pdf', state: 'cancelled', code: 'aborted_by_user' },
+      { fileName: 'book_pages_021_040.pdf', state: 'omitted', code: '' },
+    ]
+  );
+});
+
 test('batch execution final report keeps the source row when heavy split produces no child rows', async () => {
   const preparationsByPath = {
     'C:\\docs\\book.pdf': createPreparation({

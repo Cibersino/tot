@@ -1059,6 +1059,7 @@ function buildPreparedCancelledResult({
   routeMetadata,
   processingInputContext,
   detailsSafeForLogs,
+  heavySplitExecution = null,
   summary,
   message,
 }) {
@@ -1074,6 +1075,10 @@ function buildPreparedCancelledResult({
         text: '',
         warnings: [],
         summary,
+        heavySplitExecution:
+          heavySplitExecution && typeof heavySplitExecution === 'object'
+            ? { ...heavySplitExecution }
+            : null,
         provenance: {
           sourceFileName: preparedRecord.fileInfo.fileName,
           sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
@@ -1517,6 +1522,9 @@ async function executePreparedHeavySplitUnit({
         executionKind: 'google_drive',
         routeMetadata,
         processingInputContext: unitProcessingInputContext,
+        heavySplitExecution: {
+          generatedInputs: childStatuses,
+        },
         summary: 'Heavy PDF OCR split cancelled by user before OCR upload.',
         message: 'Heavy PDF OCR split was cancelled by user before OCR upload.',
         detailsSafeForLogs: {
@@ -1602,6 +1610,9 @@ async function executePreparedHeavySplitUnit({
         executionKind: 'google_drive',
         routeMetadata,
         processingInputContext: unitProcessingInputContext,
+        heavySplitExecution: {
+          generatedInputs: childStatuses,
+        },
         summary: 'Heavy PDF OCR split cancelled by user.',
         message: 'Heavy PDF OCR split was cancelled by user.',
         detailsSafeForLogs: {
