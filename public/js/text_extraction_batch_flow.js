@@ -25,6 +25,13 @@
     throw new Error('[text-extraction-batch-flow] RendererI18n.tRenderer unavailable; cannot continue');
   }
   const { tRenderer } = window.RendererI18n;
+  const pdfPageSelectionHelper = window.TextExtractionPdfPageSelection || null;
+  if (!pdfPageSelectionHelper
+    || typeof pdfPageSelectionHelper.buildAllPagesSelection !== 'function'
+    || typeof pdfPageSelectionHelper.canonicalizePageSelection !== 'function'
+    || typeof pdfPageSelectionHelper.formatPageSelectionSummary !== 'function') {
+    throw new Error('[text-extraction-batch-flow] TextExtractionPdfPageSelection dependencies unavailable; cannot continue');
+  }
   const snapshotTagCatalog = window.SnapshotTagCatalog || null;
   if (!snapshotTagCatalog || !Array.isArray(snapshotTagCatalog.LANGUAGE_OPTIONS)) {
     throw new Error('[text-extraction-batch-flow] SnapshotTagCatalog unavailable; cannot continue');
@@ -146,29 +153,6 @@
     const groupKey = `batch-unit-${nextUnitId}`;
     nextUnitId += 1;
     return groupKey;
-  }
-
-  function buildAllPagesSelection(totalPages) {
-    const safeTotalPages = Number.isInteger(Number(totalPages)) && Number(totalPages) > 0
-      ? Number(totalPages)
-      : 1;
-    return {
-      mode: 'all',
-      fromPage: 1,
-      toPage: safeTotalPages,
-      selectedPageCount: safeTotalPages,
-      totalPages: safeTotalPages,
-    };
-  }
-
-  function formatPageSelectionSummary(selection) {
-    const safeSelection = selection && typeof selection === 'object' ? selection : null;
-    if (!safeSelection || safeSelection.mode === 'all') {
-      return tRenderer('renderer.text_extraction.batch_plan.pages_all');
-    }
-    return tRenderer('renderer.text_extraction.batch_plan.pages_range')
-      .replace('{fromPage}', String(safeSelection.fromPage || ''))
-      .replace('{toPage}', String(safeSelection.toPage || ''));
   }
 
   function getTagLabel(options, value) {
@@ -304,7 +288,7 @@
       || (isPdfInput({
         fileKind: routeMetadata.fileKind || fileInfo.sourceFileKind,
       })
-        ? buildAllPagesSelection(routeMetadata.pdfTotalPages || 1)
+        ? pdfPageSelectionHelper.buildAllPagesSelection(routeMetadata.pdfTotalPages || 1)
         : null);
     const generatedPdfArtifactPolicy = cloneArtifactPolicy(safePreparation && safePreparation.generatedPdfArtifactPolicy)
       || (isPdfInput({
@@ -488,7 +472,7 @@
     input.activeRoute = normalizedRoute;
     const isHeavy = isHeavySplitActive(input);
     if (wasHeavy !== isHeavy && isPdfInput(input)) {
-      input.pdfPageSelection = buildAllPagesSelection(
+      input.pdfPageSelection = pdfPageSelectionHelper.buildAllPagesSelection(
         input.pdfPageSelection && input.pdfPageSelection.totalPages
           ? input.pdfPageSelection.totalPages
           : (input.preparation
@@ -583,26 +567,13 @@
     const input = state.inputs.find((candidate) => candidate.inputId === inputId);
     if (!input || !canEditPages(input) || !nextPdfPageSelection) return;
     const totalPages = getPdfTotalPages(input);
-    if (nextPdfPageSelection.mode === 'all') {
-      input.pdfPageSelection = buildAllPagesSelection(totalPages);
-      return;
-    }
-    const fromPage = Number(nextPdfPageSelection.fromPage);
-    const toPage = Number(nextPdfPageSelection.toPage);
-    if (!Number.isInteger(fromPage)
-      || !Number.isInteger(toPage)
-      || fromPage < 1
-      || toPage < fromPage
-      || toPage > totalPages) {
-      return;
-    }
-    input.pdfPageSelection = {
-      mode: 'range',
-      fromPage,
-      toPage,
-      selectedPageCount: (toPage - fromPage) + 1,
+    const canonicalSelection = pdfPageSelectionHelper.canonicalizePageSelection(nextPdfPageSelection, {
       totalPages,
-    };
+    });
+    if (!canonicalSelection) {
+      return;
+    }
+    input.pdfPageSelection = canonicalSelection;
   }
 
   function buildPlannerViewModel(state) {
@@ -640,7 +611,10 @@
           activeRoute: normalizeRoute(input.activeRoute),
           routeOptions: [...input.routeOptions],
           pagesSummary: input.pdfPageSelection
-            ? formatPageSelectionSummary(input.pdfPageSelection)
+            ? pdfPageSelectionHelper.formatPageSelectionSummary(input.pdfPageSelection, {
+              allKey: 'renderer.text_extraction.batch_plan.pages_all',
+              rangeKey: 'renderer.text_extraction.batch_plan.pages_range',
+            })
             : '',
           canEditPages: canEditPages(input),
           pdfPageSelection: cloneSelection(input.pdfPageSelection),
@@ -1086,7 +1060,7 @@
           }
 
           const executionSelection = isHeavySplitActive(input)
-            ? buildAllPagesSelection(input.pdfPageSelection && input.pdfPageSelection.totalPages)
+            ? pdfPageSelectionHelper.buildAllPagesSelection(input.pdfPageSelection && input.pdfPageSelection.totalPages)
             : cloneSelection(input.pdfPageSelection);
           const preparationRequest = {
             filePath: input.filePath,

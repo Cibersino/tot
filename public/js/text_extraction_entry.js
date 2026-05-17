@@ -22,7 +22,10 @@
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-entry] RendererI18n.tRenderer unavailable; cannot continue');
   }
-  const { tRenderer } = window.RendererI18n;
+  const pdfPageSelectionHelper = window.TextExtractionPdfPageSelection || null;
+  if (!pdfPageSelectionHelper || typeof pdfPageSelectionHelper.formatRangeSelectionText !== 'function') {
+    throw new Error('[text-extraction-entry] TextExtractionPdfPageSelection dependencies unavailable; cannot continue');
+  }
   const { AppConstants } = window;
   if (!AppConstants) {
     throw new Error('[text-extraction-entry] AppConstants unavailable; cannot continue');
@@ -220,15 +223,6 @@
     }
     if (availableRoutes.length === 1) return availableRoutes[0];
     return '';
-  }
-
-  function buildSingleFileRangeLabel(pdfPageSelection) {
-    if (!pdfPageSelection || pdfPageSelection.mode !== 'range') {
-      return '';
-    }
-    return tRenderer('renderer.text_extraction.single_file_heavy.selected_range_value')
-      .replace('{fromPage}', String(pdfPageSelection.fromPage || ''))
-      .replace('{toPage}', String(pdfPageSelection.toPage || ''));
   }
 
   function failPreparation(textExtractionStatusUi, preparation, logMessage) {
@@ -572,7 +566,10 @@
           sourceFileSizeBytes: preparation.fileInfo && preparation.fileInfo.sourceFileSizeBytes
             ? preparation.fileInfo.sourceFileSizeBytes
             : 0,
-          selectedRangeText: buildSingleFileRangeLabel(execution.result.pdfPageSelection),
+          selectedRangeText: pdfPageSelectionHelper.formatRangeSelectionText(
+            execution.result.pdfPageSelection,
+            'renderer.text_extraction.single_file_heavy.selected_range_value'
+          ),
           generatedPdfFileName: execution.result.processingInputFileName || '',
           generatedPdfSizeBytes:
             execution.result.error
