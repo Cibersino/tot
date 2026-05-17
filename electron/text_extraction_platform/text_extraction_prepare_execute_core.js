@@ -1498,7 +1498,13 @@ async function executePreparedHeavySplitUnit({
       const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
         ? cleanupGeneratedArtifact()
         : null;
-      if (cleanupWarning) cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+      if (cleanupWarning) {
+        log.warn(
+          'Generated PDF subset cleanup failed (ignored):',
+          cleanupWarning.detailsSafeForLogs || cleanupWarning
+        );
+        cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+      }
       childStatuses.push(buildHeavySplitChildStatus({
         generatedInput,
         state: 'cancelled_before_route_dispatch',
@@ -1554,7 +1560,13 @@ async function executePreparedHeavySplitUnit({
       const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
         ? cleanupGeneratedArtifact()
         : null;
-      if (cleanupWarning) cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+      if (cleanupWarning) {
+        log.warn(
+          'Generated PDF subset cleanup failed (ignored):',
+          cleanupWarning.detailsSafeForLogs || cleanupWarning
+        );
+        cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+      }
     }
 
     if (childResult && childResult.state === 'success') {
