@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "पाठ निकाला जा रहा है...",
         "text_extraction_preparing": "निकासी मार्ग तैयार किया जा रहा है...",
+        "text_extraction_cancellation_pending": "रद्द करने का अनुरोध किया गया है। कृपया प्रतीक्षा करें...",
         "text_extraction_waiting_native": "फ़ाइल से पाठ निकाला जा रहा है...",
         "text_extraction_waiting_ocr": "OCR निकासी चल रही है...",
         "text_extraction_waiting_ocr_delayed": "OCR चल रहा है। कुछ फ़ाइलों में अधिक समय लगता है।",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "स्नैपशॉट फ़ोल्डर खोलें",
         "ok_button": "ठीक",
         "close_aria": "समूहगत निकासी की अंतिम रिपोर्ट बंद करें",
+        "split_result_label": "विभाजन परिणाम:",
         "failed_fallback": "विफल",
         "failed_with_code": "विफल: {code}",
+        "cancelled_fallback": "रद्द",
+        "cancelled_with_code": "रद्द: {code}",
         "snapshot_not_created": "(JSON नहीं बना)",
         "snapshot_created": "{filename} बनाया गया",
         "snapshot_creation_failed": "(JSON निर्माण विफल: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "निकासी की पूर्व-शर्तें जाँचते समय त्रुटि हुई। कंसोल देखें।",
       "text_extraction_processing_locked": "निकासी संसाधित हो रही है। प्रक्रिया समाप्त होने या आपके रोकने तक मुख्य विंडो की अंतःक्रियाएँ लॉक हैं।",
       "text_extraction_abort_error": "निकासी रोकने का अनुरोध करते समय त्रुटि हुई। कंसोल देखें।",
+      "text_extraction_cancellation_requested": "रद्द करने का अनुरोध किया गया है। कृपया वर्तमान निकासी पूरी होने तक प्रतीक्षा करें।",
+      "text_extraction_cancellation_complete": "रद्दीकरण पूरा हुआ।",
       "text_extraction_cancelled": "निकासी रद्द कर दी गई।",
       "text_extraction_drop_single_file_only": "निकासी शुरू करने के लिए ठीक एक फ़ाइल छोड़ें।",
       "text_extraction_drop_invalid_file": "छोड़ा गया आइटम मान्य स्थानीय फ़ाइल नहीं है।",

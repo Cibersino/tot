@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "جارٍ استخراج النص...",
         "text_extraction_preparing": "جارٍ تحضير مسار الاستخراج...",
+        "text_extraction_cancellation_pending": "تم طلب الإلغاء. يُرجى الانتظار...",
         "text_extraction_waiting_native": "جارٍ استخراج النص من الملف...",
         "text_extraction_waiting_ocr": "جارٍ تنفيذ استخراج OCR...",
         "text_extraction_waiting_ocr_delayed": "جارٍ تنفيذ OCR. بعض الملفات يستغرق وقتًا أطول.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "فتح مجلد اللقطات النصية",
         "ok_button": "موافق",
         "close_aria": "إغلاق التقرير النهائي للاستخراج الدفعي",
+        "split_result_label": "نتيجة التقسيم:",
         "failed_fallback": "فشل",
         "failed_with_code": "فشل: {code}",
+        "cancelled_fallback": "مُلغى",
+        "cancelled_with_code": "مُلغى: {code}",
         "snapshot_not_created": "(لم يُنشأ JSON)",
         "snapshot_created": "تم إنشاء {filename}",
         "snapshot_creation_failed": "(فشل إنشاء JSON: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "حدث خطأ أثناء التحقق من شروط الاستخراج المسبقة. راجع وحدة التحكم.",
       "text_extraction_processing_locked": "الاستخراج قيد المعالجة. تظل تفاعلات النافذة الرئيسية مقفلة حتى تنتهي المعالجة أو توقفها.",
       "text_extraction_abort_error": "حدث خطأ أثناء طلب إيقاف الاستخراج. راجع وحدة التحكم.",
+      "text_extraction_cancellation_requested": "تم طلب الإلغاء. يُرجى الانتظار حتى ينتهي الاستخراج الحالي.",
+      "text_extraction_cancellation_complete": "اكتمل الإلغاء.",
       "text_extraction_cancelled": "تم إلغاء الاستخراج.",
       "text_extraction_drop_single_file_only": "أفلت ملفًا واحدًا فقط لبدء الاستخراج.",
       "text_extraction_drop_invalid_file": "العنصر المُفلَت ليس ملفًا محليًا صالحًا.",

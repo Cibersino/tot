@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Metin çıkarılıyor...",
         "text_extraction_preparing": "Çıkarma yolu hazırlanıyor...",
+        "text_extraction_cancellation_pending": "İptal istendi. Lütfen bekleyin...",
         "text_extraction_waiting_native": "Dosyadan metin çıkarılıyor...",
         "text_extraction_waiting_ocr": "OCR çıkarma çalışıyor...",
         "text_extraction_waiting_ocr_delayed": "OCR çalışıyor. Bazı dosyalar daha uzun sürebilir.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Snapshot klasörünü aç",
         "ok_button": "Tamam",
         "close_aria": "Toplu çıkarım son raporunu kapat",
+        "split_result_label": "Bölme sonucu:",
         "failed_fallback": "başarısız",
         "failed_with_code": "başarısız: {code}",
+        "cancelled_fallback": "iptal edildi",
+        "cancelled_with_code": "iptal edildi: {code}",
         "snapshot_not_created": "(JSON oluşturulmadı)",
         "snapshot_created": "{filename} oluşturuldu",
         "snapshot_creation_failed": "(JSON oluşturma başarısız: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Çıkarma ön koşulları denetlenirken hata oluştu. Konsolu kontrol edin.",
       "text_extraction_processing_locked": "Çıkarma işleniyor. İşlem bitene veya siz durdurana kadar ana pencere etkileşimleri kilitli kalır.",
       "text_extraction_abort_error": "Çıkarma durdurma isteği gönderilirken hata oluştu. Konsolu kontrol edin.",
+      "text_extraction_cancellation_requested": "İptal istendi. Lütfen geçerli çıkarma bitene kadar bekleyin.",
+      "text_extraction_cancellation_complete": "İptal tamamlandı.",
       "text_extraction_cancelled": "Çıkarma iptal edildi.",
       "text_extraction_drop_single_file_only": "Çıkarma başlatmak için tam olarak bir dosya bırakın.",
       "text_extraction_drop_invalid_file": "Bırakılan öğe geçerli bir yerel dosya değil.",

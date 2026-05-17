@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Sacando texto...",
         "text_extraction_preparing": "Preparando la extracción...",
+        "text_extraction_cancellation_pending": "Cancelación pedida. Aguanta un poquito...",
         "text_extraction_waiting_native": "Sacando texto del archivo...",
         "text_extraction_waiting_ocr": "Corriendo OCR...",
         "text_extraction_waiting_ocr_delayed": "Corriendo OCR. Algunas custiones se demoran más.",
@@ -176,6 +177,8 @@
         "split_result_label": "Resultado de la división:",
         "failed_fallback": "cagó",
         "failed_with_code": "cagó: {code}",
+        "cancelled_fallback": "cancelado",
+        "cancelled_with_code": "cancelado: {code}",
         "snapshot_not_created": "(no se armó JSON)",
         "snapshot_created": "{filename} quedó armado",
         "snapshot_creation_failed": "(cagó la creación del JSON: {code})"
@@ -488,6 +491,8 @@
       "text_extraction_precondition_error": "Cagó la revisión de precondiciones de extracción. Lorea la consola.",
       "text_extraction_processing_locked": "La extracción está andando. La ventana principal queda bloqueada hasta que termine la cosa o la abortís.",
       "text_extraction_abort_error": "Cagó la custión al pedir el aborto de extracción. Lorea la consola.",
+      "text_extraction_cancellation_requested": "Cancelación pedida. Espera a que termine la extracción actual, no seas ansioso.",
+      "text_extraction_cancellation_complete": "Cancelación lista.",
       "text_extraction_cancelled": "La extracción quedó cancelada.",
       "text_extraction_drop_single_file_only": "Tira exactamente un archivo pa' partir extracción.",
       "text_extraction_drop_invalid_file": "La custión que soltaste no es un archivo local válido.",

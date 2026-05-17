@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Extraherar text...",
         "text_extraction_preparing": "Förbereder extraheringsväg...",
+        "text_extraction_cancellation_pending": "Avbrytning begärd. Vänta...",
         "text_extraction_waiting_native": "Extraherar text från fil...",
         "text_extraction_waiting_ocr": "Kör OCR-extrahering...",
         "text_extraction_waiting_ocr_delayed": "OCR körs. Vissa filer tar längre tid.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Öppna snapshots-mapp",
         "ok_button": "OK",
         "close_aria": "Stäng slutrapporten för satsvis extrahering",
+        "split_result_label": "Delningsresultat:",
         "failed_fallback": "misslyckades",
         "failed_with_code": "misslyckades: {code}",
+        "cancelled_fallback": "avbruten",
+        "cancelled_with_code": "avbruten: {code}",
         "snapshot_not_created": "(ingen JSON skapad)",
         "snapshot_created": "{filename} skapad",
         "snapshot_creation_failed": "(JSON-skapande misslyckades: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Ett fel uppstod vid kontroll av villkor för extrahering. Kontrollera konsolen.",
       "text_extraction_processing_locked": "Extrahering bearbetas. Interaktioner i huvudfönstret är låsta tills bearbetningen är klar eller du avbryter.",
       "text_extraction_abort_error": "Ett fel uppstod vid begäran om att avbryta extrahering. Kontrollera konsolen.",
+      "text_extraction_cancellation_requested": "Avbrytning begärd. Vänta tills den aktuella extraheringen är klar.",
+      "text_extraction_cancellation_complete": "Avbrytning slutförd.",
       "text_extraction_cancelled": "Extrahering avbröts.",
       "text_extraction_drop_single_file_only": "Släpp exakt en fil för att starta extrahering.",
       "text_extraction_drop_invalid_file": "Det släppta objektet är inte en giltig lokal fil.",

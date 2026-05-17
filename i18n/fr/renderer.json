@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Extraction du texte...",
         "text_extraction_preparing": "Préparation de la route d'extraction...",
+        "text_extraction_cancellation_pending": "Annulation demandée. Veuillez patienter...",
         "text_extraction_waiting_native": "Extraction du texte à partir du fichier...",
         "text_extraction_waiting_ocr": "Exécution de l'extraction OCR...",
         "text_extraction_waiting_ocr_delayed": "L'OCR est en cours. Certains fichiers prennent plus de temps.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Ouvrir le dossier des snapshots",
         "ok_button": "OK",
         "close_aria": "Fermer le rapport final de l’extraction par lots",
+        "split_result_label": "Résultat de la division :",
         "failed_fallback": "échec",
         "failed_with_code": "échec : {code}",
+        "cancelled_fallback": "annulé",
+        "cancelled_with_code": "annulé : {code}",
         "snapshot_not_created": "(aucun JSON créé)",
         "snapshot_created": "{filename} créé",
         "snapshot_creation_failed": "(échec de la création JSON : {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Une erreur s'est produite lors de la vérification des préconditions de l'extraction. Vérifiez la console.",
       "text_extraction_processing_locked": "L'extraction est en cours. Les interactions de la fenêtre principale sont verrouillées jusqu'à la fin du traitement ou jusqu'à ce que vous l'annuliez.",
       "text_extraction_abort_error": "Une erreur s'est produite lors de la demande d'annulation de l'extraction. Vérifiez la console.",
+      "text_extraction_cancellation_requested": "Annulation demandée. Veuillez attendre la fin de l’extraction en cours.",
+      "text_extraction_cancellation_complete": "Annulation terminée.",
       "text_extraction_cancelled": "L'extraction a été annulée.",
       "text_extraction_drop_single_file_only": "Déposez exactement un fichier pour démarrer l'extraction.",
       "text_extraction_drop_invalid_file": "L'élément déposé n'est pas un fichier local valide.",

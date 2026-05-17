@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Estrazione del testo...",
         "text_extraction_preparing": "Preparazione del percorso di estrazione...",
+        "text_extraction_cancellation_pending": "Annullamento richiesto. Attendi...",
         "text_extraction_waiting_native": "Estrazione del testo dal file...",
         "text_extraction_waiting_ocr": "Esecuzione dell'estrazione OCR...",
         "text_extraction_waiting_ocr_delayed": "OCR in esecuzione. Alcuni file richiedono più tempo.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Apri cartella degli snapshot",
         "ok_button": "OK",
         "close_aria": "Chiudi rapporto finale dell’estrazione per lotti",
+        "split_result_label": "Risultato della divisione:",
         "failed_fallback": "non riuscito",
         "failed_with_code": "non riuscito: {code}",
+        "cancelled_fallback": "annullato",
+        "cancelled_with_code": "annullato: {code}",
         "snapshot_not_created": "(nessun JSON creato)",
         "snapshot_created": "{filename} creato",
         "snapshot_creation_failed": "(creazione JSON non riuscita: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Si è verificato un errore durante il controllo delle precondizioni di estrazione. Controlla la console.",
       "text_extraction_processing_locked": "L'estrazione è in corso. Le interazioni nella finestra principale sono bloccate fino al termine dell'elaborazione o finché non interrompi.",
       "text_extraction_abort_error": "Si è verificato un errore durante la richiesta di interruzione di estrazione. Controlla la console.",
+      "text_extraction_cancellation_requested": "Annullamento richiesto. Attendi il completamento dell’estrazione corrente.",
+      "text_extraction_cancellation_complete": "Annullamento completato.",
       "text_extraction_cancelled": "L'estrazione è stata annullata.",
       "text_extraction_drop_single_file_only": "Rilascia esattamente un file per avviare estrazione.",
       "text_extraction_drop_invalid_file": "L'elemento rilasciato non è un file locale valido.",

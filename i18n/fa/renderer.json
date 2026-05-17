@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "در حال استخراج متن...",
         "text_extraction_preparing": "در حال آماده‌سازی مسیر استخراج...",
+        "text_extraction_cancellation_pending": "لغو درخواست شد. لطفاً صبر کنید...",
         "text_extraction_waiting_native": "در حال استخراج متن از فایل...",
         "text_extraction_waiting_ocr": "در حال اجرای استخراج OCR...",
         "text_extraction_waiting_ocr_delayed": "OCR در حال اجراست. برخی فایل‌ها زمان بیشتری می‌برند.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "باز کردن پوشه اسنپ‌شات‌ها",
         "ok_button": "تأیید",
         "close_aria": "بستن گزارش نهایی استخراج دسته‌ای",
+        "split_result_label": "نتیجهٔ تقسیم:",
         "failed_fallback": "ناموفق",
         "failed_with_code": "ناموفق: {code}",
+        "cancelled_fallback": "لغوشده",
+        "cancelled_with_code": "لغوشده: {code}",
         "snapshot_not_created": "(JSON ساخته نشد)",
         "snapshot_created": "{filename} ساخته شد",
         "snapshot_creation_failed": "(ساخت JSON ناموفق بود: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "هنگام بررسی پیش‌شرط‌های استخراج خطایی رخ داد. کنسول را بررسی کنید.",
       "text_extraction_processing_locked": "استخراج در حال پردازش است. تعاملات پنجره اصلی تا پایان پردازش یا لغو آن قفل می‌ماند.",
       "text_extraction_abort_error": "هنگام درخواست لغو استخراج خطایی رخ داد. کنسول را بررسی کنید.",
+      "text_extraction_cancellation_requested": "لغو درخواست شد. لطفاً تا پایان استخراج فعلی صبر کنید.",
+      "text_extraction_cancellation_complete": "لغو کامل شد.",
       "text_extraction_cancelled": "استخراج لغو شد.",
       "text_extraction_drop_single_file_only": "برای شروع استخراج دقیقاً یک فایل رها کنید.",
       "text_extraction_drop_invalid_file": "مورد رهاشده یک فایل محلی معتبر نیست.",

@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "正在處理擷取...",
         "text_extraction_preparing": "正在準備擷取路徑...",
+        "text_extraction_cancellation_pending": "已要求取消。請稍候...",
         "text_extraction_waiting_native": "正在從檔案擷取文字...",
         "text_extraction_waiting_ocr": "正在執行 OCR 擷取...",
         "text_extraction_waiting_ocr_delayed": "正在執行 OCR。有些檔案需要更長時間。",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "開啟快照資料夾",
         "ok_button": "確定",
         "close_aria": "關閉批次擷取最終報告",
+        "split_result_label": "分割結果：",
         "failed_fallback": "失敗",
         "failed_with_code": "失敗：{code}",
+        "cancelled_fallback": "已取消",
+        "cancelled_with_code": "已取消：{code}",
         "snapshot_not_created": "（未建立 JSON）",
         "snapshot_created": "已建立 {filename}",
         "snapshot_creation_failed": "（JSON 建立失敗：{code}）"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "檢查擷取前置條件時發生錯誤。請檢查主控台。",
       "text_extraction_processing_locked": "擷取正在處理。主視窗互動會被鎖定，直到處理結束或你中止動作。",
       "text_extraction_abort_error": "要求中止擷取時發生錯誤。請檢查主控台。",
+      "text_extraction_cancellation_requested": "已要求取消。請等待目前的擷取完成。",
+      "text_extraction_cancellation_complete": "取消已完成。",
       "text_extraction_cancelled": "擷取已取消。",
       "text_extraction_drop_single_file_only": "請拖放剛好一個檔案以啟動擷取。",
       "text_extraction_drop_invalid_file": "拖放的項目不是有效的本機檔案。",

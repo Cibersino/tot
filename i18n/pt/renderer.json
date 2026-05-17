@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Extraindo texto...",
         "text_extraction_preparing": "Preparando rota de extração...",
+        "text_extraction_cancellation_pending": "Cancelamento solicitado. Aguarde...",
         "text_extraction_waiting_native": "Extraindo texto do arquivo...",
         "text_extraction_waiting_ocr": "Executando extração OCR...",
         "text_extraction_waiting_ocr_delayed": "OCR em execução. Alguns arquivos demoram mais.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Abrir pasta de snapshots",
         "ok_button": "OK",
         "close_aria": "Fechar relatório final da extração em lote",
+        "split_result_label": "Resultado da divisão:",
         "failed_fallback": "falhou",
         "failed_with_code": "falhou: {code}",
+        "cancelled_fallback": "cancelado",
+        "cancelled_with_code": "cancelado: {code}",
         "snapshot_not_created": "(nenhum JSON criado)",
         "snapshot_created": "{filename} criado",
         "snapshot_creation_failed": "(falha ao criar JSON: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Ocorreu um erro ao verificar as precondições da extração. Verifique o console.",
       "text_extraction_processing_locked": "A extração está em processamento. As interações na janela principal ficam bloqueadas até o processamento terminar ou você cancelar.",
       "text_extraction_abort_error": "Ocorreu um erro ao solicitar o cancelamento da extração. Verifique o console.",
+      "text_extraction_cancellation_requested": "Cancelamento solicitado. Aguarde até que a extração atual termine.",
+      "text_extraction_cancellation_complete": "Cancelamento concluído.",
       "text_extraction_cancelled": "A extração foi cancelada.",
       "text_extraction_drop_single_file_only": "Solte exatamente um arquivo para iniciar a extração.",
       "text_extraction_drop_invalid_file": "O item solto não é um arquivo local válido.",

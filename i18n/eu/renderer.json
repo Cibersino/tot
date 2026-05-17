@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Testua erauzten...",
         "text_extraction_preparing": "Erauzketa bidea prestatzen...",
+        "text_extraction_cancellation_pending": "Ezeztapena eskatu da. Itxaron...",
         "text_extraction_waiting_native": "Fitxategitik testua erauzten...",
         "text_extraction_waiting_ocr": "OCR erauzketa exekutatzen...",
         "text_extraction_waiting_ocr_delayed": "OCR exekutatzen. Fitxategi batzuek denbora gehiago behar dute.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Ireki snapshoten karpeta",
         "ok_button": "Ados",
         "close_aria": "Itxi multzokako erauzketaren azken txostena",
+        "split_result_label": "Zatitzearen emaitza:",
         "failed_fallback": "Huts egin du",
         "failed_with_code": "Huts egin du: {code}",
+        "cancelled_fallback": "bertan behera utzita",
+        "cancelled_with_code": "bertan behera utzita: {code}",
         "snapshot_not_created": "(JSON ez da sortu)",
         "snapshot_created": "{filename} sortu da",
         "snapshot_creation_failed": "(JSON sortzeak huts egin du: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Errorea gertatu da erauzketa aurrebaldintzak egiaztatzean. Begiratu kontsola.",
       "text_extraction_processing_locked": "Erauzketa prozesatzen ari da. Leiho nagusiko interakzioak blokeatuta daude prozesua amaitu arte edo bertan behera utzi arte.",
       "text_extraction_abort_error": "Errorea gertatu da erauzketa bertan behera uzteko eskaeran. Begiratu kontsola.",
+      "text_extraction_cancellation_requested": "Ezeztapena eskatu da. Itxaron uneko erauzketa amaitu arte.",
+      "text_extraction_cancellation_complete": "Ezeztapena amaitu da.",
       "text_extraction_cancelled": "Erauzketa bertan behera utzi da.",
       "text_extraction_drop_single_file_only": "Jaregin fitxategi bakar bat erauzketa hasteko.",
       "text_extraction_drop_invalid_file": "Jaregindako elementua ez da fitxategi lokal balioduna.",

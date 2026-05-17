@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Kucutshungulwa ukukhishwa...",
         "text_extraction_preparing": "Kulungiswa indlela yokukhishwa...",
+        "text_extraction_cancellation_pending": "Ukukhansela kuceliwe. Sicela ulinde...",
         "text_extraction_waiting_native": "Kukhishwa umbhalo efayeleni...",
         "text_extraction_waiting_ocr": "Kwenziwa ukukhishwa nge-OCR...",
         "text_extraction_waiting_ocr_delayed": "Kwenziwa i-OCR. Amanye amafayela athatha isikhathi eside.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Vula ifolda yama-snapshot",
         "ok_button": "Kulungile",
         "close_aria": "Vala umbiko wokugcina wokukhishwa okuyiqoqo",
+        "split_result_label": "Umphumela wokuhlukanisa:",
         "failed_fallback": "Kwehlulekile",
         "failed_with_code": "Kwehlulekile: {code}",
+        "cancelled_fallback": "kukhanseliwe",
+        "cancelled_with_code": "kukhanseliwe: {code}",
         "snapshot_not_created": "(I-JSON ayidalwanga)",
         "snapshot_created": "Kudaliwe {filename}",
         "snapshot_creation_failed": "(Ukudala i-JSON kwehlulekile: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Kuvele iphutha ngesikhathi kuhlolwa izimfuneko zokukhishwa. Hlola ikhonsoli.",
       "text_extraction_processing_locked": "Ukukhishwa kuyacutshungulwa. Ukusebenzisana kwewindi elikhulu kuvinjiwe kuze kuphele ukucubungula noma ukukhiphe.",
       "text_extraction_abort_error": "Kuvele iphutha ngesikhathi kucelwa ukumisa ukukhishwa. Hlola ikhonsoli.",
+      "text_extraction_cancellation_requested": "Ukukhansela kuceliwe. Sicela ulinde kuze kuphele ukukhishwa kwamanje.",
+      "text_extraction_cancellation_complete": "Ukukhansela kuqediwe.",
       "text_extraction_cancelled": "Ukukhishwa kukhanseliwe.",
       "text_extraction_drop_single_file_only": "Dedela ifayela elilodwa kuphela ukuze uqale ukukhishwa.",
       "text_extraction_drop_invalid_file": "Into ededeliwe ayilona ifayela lendawo elivumelekile.",

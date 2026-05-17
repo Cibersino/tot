@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Extracting text...",
         "text_extraction_preparing": "Preparing text extraction route...",
+        "text_extraction_cancellation_pending": "Cancellation requested. Abeg wait...",
         "text_extraction_waiting_native": "Extracting text from file...",
         "text_extraction_waiting_ocr": "Running OCR extraction...",
         "text_extraction_waiting_ocr_delayed": "OCR dey run. Some files fit take longer.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Open snapshots folder",
         "ok_button": "OK",
         "close_aria": "Close batch extraction final report",
+        "split_result_label": "Split result:",
         "failed_fallback": "Failed",
         "failed_with_code": "Failed: {code}",
+        "cancelled_fallback": "cancelled",
+        "cancelled_with_code": "cancelled: {code}",
         "snapshot_not_created": "(JSON no created)",
         "snapshot_created": "{filename} created",
         "snapshot_creation_failed": "(JSON creation fail: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Error happen while checking text extraction preconditions. Check console.",
       "text_extraction_processing_locked": "Text extraction dey processing. Main-window interactions dey locked until processing end or you abort am.",
       "text_extraction_abort_error": "Error happen while requesting text extraction abort. Check console.",
+      "text_extraction_cancellation_requested": "Cancellation requested. Abeg wait until di current extraction finish.",
+      "text_extraction_cancellation_complete": "Cancellation done.",
       "text_extraction_cancelled": "Text extraction was cancelled.",
       "text_extraction_drop_single_file_only": "Drop exactly one file to start text extraction.",
       "text_extraction_drop_invalid_file": "Dropped item no be valid local file.",

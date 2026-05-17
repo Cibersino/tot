@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Qichuyta ruwachkan...",
         "text_extraction_preparing": "Qichuy ñanta wakichichkan...",
+        "text_extraction_cancellation_pending": "Saqiy mañakurun. Suyay...",
         "text_extraction_waiting_native": "Archivomanta qillqata qichuchkan...",
         "text_extraction_waiting_ocr": "OCR qichuyta ruwachkan...",
         "text_extraction_waiting_ocr_delayed": "OCR ruwachkan. Wakin archivokuna aswan unayta munan.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Snapshotkuna carpetata kichay",
         "ok_button": "Allin",
         "close_aria": "T'aqa qichuypa tukup informeta wichq'ay",
+        "split_result_label": "T’aqaypa ruwasqan:",
         "failed_fallback": "Pantarun",
         "failed_with_code": "Pantarun: {code}",
+        "cancelled_fallback": "saqisqa",
+        "cancelled_with_code": "saqisqa: {code}",
         "snapshot_not_created": "(JSON mana ruwasqachu)",
         "snapshot_created": "{filename} ruwasqa",
         "snapshot_creation_failed": "(JSON ruway pantarun: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Qichuypa ñawpaq condicionninkuna qhawaypi pantay karqan. Consolata qhaway.",
       "text_extraction_processing_locked": "Qichuy ruwachkan. Hatun ventanapi ruraykuna hark'asqa kanqa ruwana tukukunankama utaq qan sayachinaykikama.",
       "text_extraction_abort_error": "Qichuy sayachiy mañakuypi pantay karqan. Consolata qhaway.",
+      "text_extraction_cancellation_requested": "Saqiy mañakurun. Kunan qichuy tukukunankama suyay.",
+      "text_extraction_cancellation_complete": "Saqiy tukusqa.",
       "text_extraction_cancelled": "Qichuy saqisqa.",
       "text_extraction_drop_single_file_only": "Qichuy qallarinapaq huk archivollata saqiy.",
       "text_extraction_drop_invalid_file": "Saqisqa elementoqa mana allin local archivochu.",

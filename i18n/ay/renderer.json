@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Qillqata apsuskakiwa...",
         "text_extraction_preparing": "Apsuña thakhi wakichaskakiwa...",
+        "text_extraction_cancellation_pending": "Suyt’ayaña mayitawa. Suyt’am...",
         "text_extraction_waiting_native": "Archivut qillqata apsuskakiwa...",
         "text_extraction_waiting_ocr": "OCR apsuña luraskakiwa...",
         "text_extraction_waiting_ocr_delayed": "OCR luraskakiwa. Yaqhip archivunakax juk’amp pachaw munapxi.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Snapshots carpeta jist’araña",
         "ok_button": "Waliki",
         "close_aria": "Lote apsuña tukuya informe jist’antaña",
+        "split_result_label": "T’aqawi resultado:",
         "failed_fallback": "Pantjasi",
         "failed_with_code": "Pantjasi: {code}",
+        "cancelled_fallback": "suyt’ayata",
+        "cancelled_with_code": "suyt’ayata: {code}",
         "snapshot_not_created": "(JSON janiw luraskiti)",
         "snapshot_created": "{filename} lurata",
         "snapshot_creation_failed": "(JSON lurañax pantjasi: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Apsuña precondiciones uñakipañan pantjasiw utji. Consola uñakipam.",
       "text_extraction_processing_locked": "Apsuña procesaskiwa. Principal ventana interacciones ukax procesamiento tukuykam jan ukax abortañkam jist’antatawa.",
       "text_extraction_abort_error": "Apsuña abortaña mayiñan pantjasiw utji. Consola uñakipam.",
+      "text_extraction_cancellation_requested": "Suyt’ayaña mayitawa. Jichha apsuña tukusiñapkama suyt’am.",
+      "text_extraction_cancellation_complete": "Suyt’ayaña tukuyata.",
       "text_extraction_cancelled": "Apsuña suyt’ayata.",
       "text_extraction_drop_single_file_only": "Apsuña qalltañatakix mä archivo sapaki jaquntam.",
       "text_extraction_drop_invalid_file": "Jaquntata elementox janiw mä local archivo válido ukäkiti.",

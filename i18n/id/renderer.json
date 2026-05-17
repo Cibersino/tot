@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Mengekstrak teks...",
         "text_extraction_preparing": "Menyiapkan rute ekstraksi...",
+        "text_extraction_cancellation_pending": "Pembatalan diminta. Harap tunggu...",
         "text_extraction_waiting_native": "Mengekstrak teks dari file...",
         "text_extraction_waiting_ocr": "Menjalankan ekstraksi OCR...",
         "text_extraction_waiting_ocr_delayed": "Menjalankan OCR. Beberapa file membutuhkan waktu lebih lama.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Buka folder snapshot",
         "ok_button": "OK",
         "close_aria": "Tutup laporan akhir ekstraksi berkelompok",
+        "split_result_label": "Hasil pemisahan:",
         "failed_fallback": "gagal",
         "failed_with_code": "gagal: {code}",
+        "cancelled_fallback": "dibatalkan",
+        "cancelled_with_code": "dibatalkan: {code}",
         "snapshot_not_created": "(tidak ada JSON yang dibuat)",
         "snapshot_created": "{filename} dibuat",
         "snapshot_creation_failed": "(pembuatan JSON gagal: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Terjadi kesalahan saat memeriksa prasyarat ekstraksi. Periksa konsol.",
       "text_extraction_processing_locked": "Ekstraksi sedang diproses. Interaksi jendela utama dikunci sampai proses selesai atau Anda membatalkannya.",
       "text_extraction_abort_error": "Terjadi kesalahan saat meminta pembatalan ekstraksi. Periksa konsol.",
+      "text_extraction_cancellation_requested": "Pembatalan diminta. Harap tunggu sampai ekstraksi saat ini selesai.",
+      "text_extraction_cancellation_complete": "Pembatalan selesai.",
       "text_extraction_cancelled": "Ekstraksi dibatalkan.",
       "text_extraction_drop_single_file_only": "Jatuhkan tepat satu file untuk memulai ekstraksi.",
       "text_extraction_drop_invalid_file": "Item yang dijatuhkan bukan file lokal yang valid.",

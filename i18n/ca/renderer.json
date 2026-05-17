@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Processant l’extracció...",
         "text_extraction_preparing": "Preparant la ruta d’extracció...",
+        "text_extraction_cancellation_pending": "Cancel·lació sol·licitada. Espera...",
         "text_extraction_waiting_native": "Extraient text del fitxer...",
         "text_extraction_waiting_ocr": "Executant l’extracció OCR...",
         "text_extraction_waiting_ocr_delayed": "Executant OCR. Alguns fitxers triguen més.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Obrir carpeta de snapshots",
         "ok_button": "D’acord",
         "close_aria": "Tancar l’informe final de l’extracció per lots",
+        "split_result_label": "Resultat de la divisió:",
         "failed_fallback": "Fallada",
         "failed_with_code": "Fallada: {code}",
+        "cancelled_fallback": "cancel·lat",
+        "cancelled_with_code": "cancel·lat: {code}",
         "snapshot_not_created": "(JSON no creat)",
         "snapshot_created": "S’ha creat {filename}",
         "snapshot_creation_failed": "(Creació de JSON fallida: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "S’ha produït un error en revisar les precondicions d’extracció. Revisa la consola.",
       "text_extraction_processing_locked": "Extracció està processant. Les interaccions de la finestra principal estan bloquejades fins que acabi el processament o l’avortis.",
       "text_extraction_abort_error": "S’ha produït un error en sol·licitar l’avortament d’extracció. Revisa la consola.",
+      "text_extraction_cancellation_requested": "Cancel·lació sol·licitada. Espera que acabi l’extracció actual.",
+      "text_extraction_cancellation_complete": "Cancel·lació completada.",
       "text_extraction_cancelled": "Extracció s’ha cancel·lat.",
       "text_extraction_drop_single_file_only": "Deixa anar exactament un fitxer per iniciar extracció.",
       "text_extraction_drop_invalid_file": "L’element deixat anar no és un fitxer local vàlid.",

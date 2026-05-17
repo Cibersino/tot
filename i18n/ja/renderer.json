@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "テキストを抽出中...",
         "text_extraction_preparing": "抽出ルートを準備中...",
+        "text_extraction_cancellation_pending": "キャンセルを要求しました。お待ちください...",
         "text_extraction_waiting_native": "ファイルからテキストを抽出中...",
         "text_extraction_waiting_ocr": "OCR 抽出を実行中...",
         "text_extraction_waiting_ocr_delayed": "OCR を実行中です。ファイルによっては時間がかかります。",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "スナップショットフォルダーを開く",
         "ok_button": "OK",
         "close_aria": "一括抽出の最終レポートを閉じる",
+        "split_result_label": "分割結果:",
         "failed_fallback": "失敗",
         "failed_with_code": "失敗: {code}",
+        "cancelled_fallback": "キャンセル済み",
+        "cancelled_with_code": "キャンセル済み: {code}",
         "snapshot_not_created": "（JSON は作成されませんでした）",
         "snapshot_created": "{filename} を作成しました",
         "snapshot_creation_failed": "（JSON 作成失敗: {code}）"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "抽出の前提条件確認中にエラーが発生しました。コンソールを確認してください。",
       "text_extraction_processing_locked": "抽出を処理中です。処理が終了するか中止するまで、メインウィンドウの操作はロックされます。",
       "text_extraction_abort_error": "抽出の中止要求中にエラーが発生しました。コンソールを確認してください。",
+      "text_extraction_cancellation_requested": "キャンセルを要求しました。現在の抽出が完了するまでお待ちください。",
+      "text_extraction_cancellation_complete": "キャンセルが完了しました。",
       "text_extraction_cancelled": "抽出はキャンセルされました。",
       "text_extraction_drop_single_file_only": "抽出を開始するには、ファイルを1つだけドロップしてください。",
       "text_extraction_drop_invalid_file": "ドロップされた項目は有効なローカルファイルではありません。",

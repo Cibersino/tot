@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "正在处理提取...",
         "text_extraction_preparing": "正在准备提取路径...",
+        "text_extraction_cancellation_pending": "已请求取消。请稍候...",
         "text_extraction_waiting_native": "正在从文件提取文本...",
         "text_extraction_waiting_ocr": "正在执行 OCR 提取...",
         "text_extraction_waiting_ocr_delayed": "正在执行 OCR。有些文件需要更长时间。",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "打开快照文件夹",
         "ok_button": "确定",
         "close_aria": "关闭批量提取最终报告",
+        "split_result_label": "拆分结果：",
         "failed_fallback": "失败",
         "failed_with_code": "失败：{code}",
+        "cancelled_fallback": "已取消",
+        "cancelled_with_code": "已取消：{code}",
         "snapshot_not_created": "（未创建 JSON）",
         "snapshot_created": "已创建 {filename}",
         "snapshot_creation_failed": "（JSON 创建失败：{code}）"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "检查提取前置条件时发生错误。请检查控制台。",
       "text_extraction_processing_locked": "提取正在处理。主窗口交互会被锁定，直到处理结束或你中止操作。",
       "text_extraction_abort_error": "请求中止提取时发生错误。请检查控制台。",
+      "text_extraction_cancellation_requested": "已请求取消。请等待当前提取完成。",
+      "text_extraction_cancellation_complete": "取消已完成。",
       "text_extraction_cancelled": "提取已取消。",
       "text_extraction_drop_single_file_only": "请只拖放一个文件来启动提取。",
       "text_extraction_drop_invalid_file": "拖放的项目不是有效的本地文件。",

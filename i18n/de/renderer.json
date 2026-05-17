@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Text wird extrahiert...",
         "text_extraction_preparing": "Extraktionsroute wird vorbereitet...",
+        "text_extraction_cancellation_pending": "Abbruch angefordert. Bitte warten...",
         "text_extraction_waiting_native": "Text wird aus Datei extrahiert...",
         "text_extraction_waiting_ocr": "OCR-Extraktion wird ausgeführt...",
         "text_extraction_waiting_ocr_delayed": "OCR läuft. Einige Dateien dauern länger.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Snapshot-Ordner öffnen",
         "ok_button": "OK",
         "close_aria": "Abschlussbericht der Stapelextraktion schließen",
+        "split_result_label": "Split-Ergebnis:",
         "failed_fallback": "fehlgeschlagen",
         "failed_with_code": "fehlgeschlagen: {code}",
+        "cancelled_fallback": "abgebrochen",
+        "cancelled_with_code": "abgebrochen: {code}",
         "snapshot_not_created": "(kein JSON erstellt)",
         "snapshot_created": "{filename} erstellt",
         "snapshot_creation_failed": "(JSON-Erstellung fehlgeschlagen: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Beim Prüfen der Voraussetzungen für Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
       "text_extraction_processing_locked": "Extraktion wird verarbeitet. Interaktionen im Hauptfenster sind gesperrt, bis die Verarbeitung endet oder Sie abbrechen.",
       "text_extraction_abort_error": "Beim Anfordern des Abbruchs von Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
+      "text_extraction_cancellation_requested": "Abbruch angefordert. Bitte warten Sie, bis die aktuelle Extraktion abgeschlossen ist.",
+      "text_extraction_cancellation_complete": "Abbruch abgeschlossen.",
       "text_extraction_cancelled": "Extraktion wurde abgebrochen.",
       "text_extraction_drop_single_file_only": "Legen Sie genau eine Datei ab, um Extraktion zu starten.",
       "text_extraction_drop_invalid_file": "Das abgelegte Element ist keine gültige lokale Datei.",

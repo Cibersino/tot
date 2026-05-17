@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Oñeguenohẽ jehai...",
         "text_extraction_preparing": "Oñembosako’i text extraction rape...",
+        "text_extraction_cancellation_pending": "Ojejerure ojeheja hag̃ua. Eha’arõ...",
         "text_extraction_waiting_native": "Oñeguenohẽ jehai archivo-gui...",
         "text_extraction_waiting_ocr": "Ojejapo OCR extracción...",
         "text_extraction_waiting_ocr_delayed": "OCR omba’apo. Oĩ archivo ipukuvéva.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Eipe’a snapshots carpeta",
         "ok_button": "Moneĩ",
         "close_aria": "Emboty extracción lote-pe informe paha",
+        "split_result_label": "Ñemboja’o resultado:",
         "failed_fallback": "Ojavy",
         "failed_with_code": "Ojavy: {code}",
+        "cancelled_fallback": "ojeheja",
+        "cancelled_with_code": "ojeheja: {code}",
         "snapshot_not_created": "(JSON ndojejapói)",
         "snapshot_created": "{filename} ojejapo",
         "snapshot_creation_failed": "(JSON jejapo ojavy: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Oiko jejavy ojehecha aja text extraction precondiciones. Ehecha consola.",
       "text_extraction_processing_locked": "Text extraction oprocesa hína. Ventana principal interacciones ojejoko procesamiento opa peve térã reabortá peve.",
       "text_extraction_abort_error": "Oiko jejavy ejerure aja text extraction abort. Ehecha consola.",
+      "text_extraction_cancellation_requested": "Ojejerure ojeheja hag̃ua. Eha’arõ extracción ko’ág̃agua opa peve.",
+      "text_extraction_cancellation_complete": "Ojeheja oñemohu’ã.",
       "text_extraction_cancelled": "Text extraction ojeheja.",
       "text_extraction_drop_single_file_only": "Epoi peteĩ archivo añónte reñepyrũ hag̃ua text extraction.",
       "text_extraction_drop_invalid_file": "Elemento ojeityva’ekue ndaha’éi archivo local válido.",

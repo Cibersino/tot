@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Đang trích xuất văn bản...",
         "text_extraction_preparing": "Đang chuẩn bị tuyến trích xuất...",
+        "text_extraction_cancellation_pending": "Đã yêu cầu hủy. Vui lòng chờ...",
         "text_extraction_waiting_native": "Đang trích xuất văn bản từ tệp...",
         "text_extraction_waiting_ocr": "Đang chạy trích xuất OCR...",
         "text_extraction_waiting_ocr_delayed": "Đang chạy OCR. Một số tệp mất nhiều thời gian hơn.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "Mở thư mục snapshot",
         "ok_button": "OK",
         "close_aria": "Đóng báo cáo cuối cùng của trích xuất theo lô",
+        "split_result_label": "Kết quả tách:",
         "failed_fallback": "thất bại",
         "failed_with_code": "thất bại: {code}",
+        "cancelled_fallback": "đã hủy",
+        "cancelled_with_code": "đã hủy: {code}",
         "snapshot_not_created": "(không tạo JSON)",
         "snapshot_created": "đã tạo {filename}",
         "snapshot_creation_failed": "(tạo JSON thất bại: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "Đã xảy ra lỗi khi kiểm tra điều kiện trích xuất. Hãy kiểm tra console.",
       "text_extraction_processing_locked": "Trích xuất đang xử lý. Tương tác với cửa sổ chính bị khóa cho đến khi xử lý xong hoặc bạn hủy.",
       "text_extraction_abort_error": "Đã xảy ra lỗi khi yêu cầu hủy trích xuất. Hãy kiểm tra console.",
+      "text_extraction_cancellation_requested": "Đã yêu cầu hủy. Vui lòng chờ đến khi lần trích xuất hiện tại hoàn tất.",
+      "text_extraction_cancellation_complete": "Đã hủy xong.",
       "text_extraction_cancelled": "Trích xuất đã bị hủy.",
       "text_extraction_drop_single_file_only": "Hãy thả đúng một tệp để bắt đầu trích xuất.",
       "text_extraction_drop_invalid_file": "Mục được thả không phải là tệp cục bộ hợp lệ.",

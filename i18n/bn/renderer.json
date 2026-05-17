@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "লেখা নিষ্কাশন করা হচ্ছে...",
         "text_extraction_preparing": "নিষ্কাশন রুট প্রস্তুত করা হচ্ছে...",
+        "text_extraction_cancellation_pending": "বাতিল করার অনুরোধ করা হয়েছে। অপেক্ষা করুন...",
         "text_extraction_waiting_native": "ফাইল থেকে লেখা নিষ্কাশন করা হচ্ছে...",
         "text_extraction_waiting_ocr": "OCR নিষ্কাশন চলছে...",
         "text_extraction_waiting_ocr_delayed": "OCR চলছে। কিছু ফাইলে বেশি সময় লাগে।",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "স্ন্যাপশট ফোল্ডার খুলুন",
         "ok_button": "ঠিক আছে",
         "close_aria": "দলগত নিষ্কাশনের চূড়ান্ত রিপোর্ট বন্ধ করুন",
+        "split_result_label": "বিভাজনের ফলাফল:",
         "failed_fallback": "ব্যর্থ",
         "failed_with_code": "ব্যর্থ: {code}",
+        "cancelled_fallback": "বাতিল",
+        "cancelled_with_code": "বাতিল: {code}",
         "snapshot_not_created": "(JSON তৈরি হয়নি)",
         "snapshot_created": "{filename} তৈরি হয়েছে",
         "snapshot_creation_failed": "(JSON তৈরি ব্যর্থ: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "নিষ্কাশনের পূর্বশর্ত পরীক্ষা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
       "text_extraction_processing_locked": "নিষ্কাশন প্রক্রিয়াধীন। প্রক্রিয়া শেষ না হওয়া বা আপনি বন্ধ না করা পর্যন্ত প্রধান উইন্ডোর মিথস্ক্রিয়া লক থাকবে।",
       "text_extraction_abort_error": "নিষ্কাশন বন্ধ করার অনুরোধ করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
+      "text_extraction_cancellation_requested": "বাতিল করার অনুরোধ করা হয়েছে। বর্তমান এক্সট্রাকশন শেষ হওয়া পর্যন্ত অপেক্ষা করুন।",
+      "text_extraction_cancellation_complete": "বাতিল সম্পন্ন হয়েছে।",
       "text_extraction_cancelled": "নিষ্কাশন বাতিল করা হয়েছে।",
       "text_extraction_drop_single_file_only": "নিষ্কাশন শুরু করতে ঠিক একটি ফাইল ছেড়ে দিন।",
       "text_extraction_drop_invalid_file": "ছেড়ে দেওয়া আইটেমটি বৈধ লোকাল ফাইল নয়।",

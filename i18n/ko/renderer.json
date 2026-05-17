@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "텍스트 추출 중...",
         "text_extraction_preparing": "추출 경로 준비 중...",
+        "text_extraction_cancellation_pending": "취소가 요청되었습니다. 잠시 기다려 주세요...",
         "text_extraction_waiting_native": "파일에서 텍스트 추출 중...",
         "text_extraction_waiting_ocr": "OCR 추출 실행 중...",
         "text_extraction_waiting_ocr_delayed": "OCR 실행 중입니다. 일부 파일은 시간이 더 걸립니다.",
@@ -173,8 +174,11 @@
         "open_snapshots_folder": "스냅샷 폴더 열기",
         "ok_button": "확인",
         "close_aria": "일괄 추출 최종 보고서 닫기",
+        "split_result_label": "분할 결과:",
         "failed_fallback": "실패",
         "failed_with_code": "실패: {code}",
+        "cancelled_fallback": "취소됨",
+        "cancelled_with_code": "취소됨: {code}",
         "snapshot_not_created": "(JSON 생성 안 됨)",
         "snapshot_created": "{filename} 생성됨",
         "snapshot_creation_failed": "(JSON 생성 실패: {code})"
@@ -487,6 +491,8 @@
       "text_extraction_precondition_error": "추출 사전 조건을 확인하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
       "text_extraction_processing_locked": "추출이 처리 중입니다. 처리가 끝나거나 중단할 때까지 메인 창 상호작용이 잠깁니다.",
       "text_extraction_abort_error": "추출 중단을 요청하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
+      "text_extraction_cancellation_requested": "취소가 요청되었습니다. 현재 추출이 끝날 때까지 기다려 주세요.",
+      "text_extraction_cancellation_complete": "취소가 완료되었습니다.",
       "text_extraction_cancelled": "추출이 취소되었습니다.",
       "text_extraction_drop_single_file_only": "추출을 시작하려면 파일 하나만 놓으세요.",
       "text_extraction_drop_invalid_file": "놓은 항목이 유효한 로컬 파일이 아닙니다.",
