@@ -64,11 +64,14 @@ const textExtractionStatusUi = window.TextExtractionStatusUi;
 if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.applyProcessingModeState !== 'function'
   || typeof textExtractionStatusUi.applyTranslations !== 'function'
+  || typeof textExtractionStatusUi.beginAbortFinalization !== 'function'
   || typeof textExtractionStatusUi.beginPrepare !== 'function'
   || typeof textExtractionStatusUi.clearPendingExecutionContext !== 'function'
+  || typeof textExtractionStatusUi.endAbortFinalization !== 'function'
   || typeof textExtractionStatusUi.endPrepare !== 'function'
   || typeof textExtractionStatusUi.getAbortButton !== 'function'
   || typeof textExtractionStatusUi.getFinalElapsedValueText !== 'function'
+  || typeof textExtractionStatusUi.isAbortFinalizationActive !== 'function'
   || typeof textExtractionStatusUi.isProcessingModeActive !== 'function'
   || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] TextExtractionStatusUi unavailable; cannot continue');
@@ -167,6 +170,10 @@ function isProcessingModeActive() {
   return textExtractionStatusUi.isProcessingModeActive();
 }
 
+function isAbortFinalizationActive() {
+  return textExtractionStatusUi.isAbortFinalizationActive();
+}
+
 function setControlInteractionLocked(element, locked) {
   if (!element) return;
   element.disabled = locked;
@@ -180,7 +187,10 @@ function hasSelectedPreset() {
 function syncPresetActionButtons({ interactionLocked } = {}) {
   const locked = typeof interactionLocked === 'boolean'
     ? interactionLocked
-    : !isRendererReady() || isProcessingModeActive() || isReadingTestInteractionLocked();
+    : !isRendererReady()
+      || isProcessingModeActive()
+      || isAbortFinalizationActive()
+      || isReadingTestInteractionLocked();
   const disabled = locked || !hasSelectedPreset();
   setControlInteractionLocked(btnEditPreset, disabled);
   setControlInteractionLocked(btnDeletePreset, disabled);
@@ -197,6 +207,7 @@ function isReadingTestSessionActive() {
 function syncMainInteractionLockUi() {
   const locked = !isRendererReady()
     || isProcessingModeActive()
+    || isAbortFinalizationActive()
     || isReadingTestInteractionLocked();
 
   currentTextSelectorSection.setInteractionLocked(locked);
@@ -256,6 +267,7 @@ function hasBlockingMainWindowModalOpen() {
 function canAcceptTextExtractionDrop() {
   return isRendererReady()
     && !isProcessingModeActive()
+    && !isAbortFinalizationActive()
     && !isReadingTestSessionActive()
     && !hasBlockingMainWindowModalOpen();
 }
@@ -284,7 +296,11 @@ function maybeNotifyProcessingLock(actionId) {
   const now = Date.now();
   if ((now - lastProcessingLockNoticeAt) < PROCESSING_LOCK_NOTICE_THROTTLE_MS) return;
   lastProcessingLockNoticeAt = now;
-  window.Notify.notifyMain('renderer.alerts.text_extraction_processing_locked');
+  window.Notify.notifyMain(
+    isAbortFinalizationActive()
+      ? 'renderer.alerts.text_extraction_cancellation_requested'
+      : 'renderer.alerts.text_extraction_processing_locked'
+  );
   log.warnOnce(
     `renderer.processing_lock.${actionId}`,
     'Renderer action ignored (processing-mode lock active):',
@@ -304,7 +320,9 @@ function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
   }
 
   const isAbortAction = normalizedActionId === 'text-extraction-abort';
-  if (!allowDuringProcessing && !isAbortAction && isProcessingModeActive()) {
+  if (!allowDuringProcessing
+    && !isAbortAction
+    && (isProcessingModeActive() || isAbortFinalizationActive())) {
     maybeNotifyProcessingLock(normalizedActionId);
     return false;
   }
@@ -1757,6 +1775,7 @@ function configureTextExtractionModules() {
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,
     requestPreparedImport,
+    syncMainInteractionLockUi,
     textExtractionStatusUi,
   });
 
@@ -1768,6 +1787,7 @@ function configureTextExtractionModules() {
     guardUserAction,
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,
+    syncMainInteractionLockUi,
     textExtractionBatchFlow,
     textExtractionStatusUi,
     isLatestTextExtractionPrepareAttempt,
@@ -1865,10 +1885,12 @@ async function handleTextExtractionAbort() {
       return;
     }
 
+    textExtractionStatusUi.beginAbortFinalization();
     if (result.state) {
       textExtractionStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
     }
-    window.Notify.notifyMain('renderer.alerts.text_extraction_cancelled');
+    syncMainInteractionLockUi();
+    window.Notify.notifyMain('renderer.alerts.text_extraction_cancellation_requested');
   } catch (err) {
     log.error('Error handling text extraction abort:', err);
     window.Notify.notifyMain('renderer.alerts.text_extraction_abort_error');

@@ -66,6 +66,7 @@
       hasBlockingModalOpen: null,
       hasCurrentTextSubscription: null,
       requestPreparedImport: null,
+      syncMainInteractionLockUi: null,
       textExtractionStatusUi: null,
       ...nextDeps,
     };
@@ -89,13 +90,22 @@
   function getStatusUi() {
     const { textExtractionStatusUi } = requireDeps();
     if (!textExtractionStatusUi
+      || typeof textExtractionStatusUi.endAbortFinalization !== 'function'
       || typeof textExtractionStatusUi.beginPrepare !== 'function'
       || typeof textExtractionStatusUi.endPrepare !== 'function'
+      || typeof textExtractionStatusUi.isAbortFinalizationActive !== 'function'
       || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function'
       || typeof textExtractionStatusUi.clearPendingExecutionContext !== 'function') {
       throw new Error('[text-extraction-batch-flow] textExtractionStatusUi dependency incomplete');
     }
     return textExtractionStatusUi;
+  }
+
+  function syncMainInteractionLockUi() {
+    const { syncMainInteractionLockUi: syncUi } = requireDeps();
+    if (typeof syncUi === 'function') {
+      syncUi();
+    }
   }
 
   // =============================================================================
@@ -1332,24 +1342,34 @@
       }
     };
 
-    await window.Notify.promptTextExtractionBatchFinalReport({
-      report: finalReport,
-      elapsedValueText: textExtractionStatusUi.getFinalElapsedValueText(),
-      onRevealGeneratedPdf: async (artifactPath) => {
-        const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-          dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
-          unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; reveal action disabled.',
-        });
-        if (!revealTextExtractionGeneratedPdf) {
-          throw new Error('revealTextExtractionGeneratedPdf unavailable');
-        }
-        const revealResult = await revealTextExtractionGeneratedPdf({ artifactPath });
-        if (!revealResult || revealResult.ok !== true) {
-          throw new Error('revealTextExtractionGeneratedPdf failed');
-        }
-      },
-      onOpenSnapshotsFolder: openSnapshotsFolder,
-    });
+    try {
+      const finalReportPrompt = window.Notify.promptTextExtractionBatchFinalReport({
+        report: finalReport,
+        elapsedValueText: textExtractionStatusUi.getFinalElapsedValueText(),
+        onRevealGeneratedPdf: async (artifactPath) => {
+          const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
+            dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
+            unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; reveal action disabled.',
+          });
+          if (!revealTextExtractionGeneratedPdf) {
+            throw new Error('revealTextExtractionGeneratedPdf unavailable');
+          }
+          const revealResult = await revealTextExtractionGeneratedPdf({ artifactPath });
+          if (!revealResult || revealResult.ok !== true) {
+            throw new Error('revealTextExtractionGeneratedPdf failed');
+          }
+        },
+        onOpenSnapshotsFolder: openSnapshotsFolder,
+      });
+      textExtractionStatusUi.endAbortFinalization();
+      syncMainInteractionLockUi();
+      await finalReportPrompt;
+    } catch (err) {
+      textExtractionStatusUi.endAbortFinalization();
+      syncMainInteractionLockUi();
+      log.error('Batch final report prompt failed:', err);
+      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+    }
   }
 
   async function startFromSelectedFiles({

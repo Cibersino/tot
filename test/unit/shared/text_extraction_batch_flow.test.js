@@ -12,6 +12,7 @@ function createHarness({
   promptBatchPlanResult = null,
   onPromptBatchPlan = null,
   executionResultsByProcessingInputFileName = {},
+  promptBatchFinalReportImpl = null,
 }) {
   let capturedViewModel = null;
   let capturedController = null;
@@ -20,6 +21,8 @@ function createHarness({
   let snapshotTagsPromptOptions = null;
   let ocrAvailabilityCallCount = 0;
   let savedSnapshotPayload = null;
+  let finalReportPromptAbortFinalizationActive = null;
+  let syncMainInteractionLockUiCallCount = 0;
 
   function buildAllPagesSelection(totalPages) {
     const safeTotalPages = Number(totalPages) || 1;
@@ -34,11 +37,16 @@ function createHarness({
 
   const textExtractionStatusUi = {
     beginPrepare() {},
+    beginAbortFinalization() {},
     endPrepare() {},
+    endAbortFinalization() {},
     setPendingExecutionContext() {},
     clearPendingExecutionContext() {},
     getFinalElapsedValueText() {
       return '00:42';
+    },
+    isAbortFinalizationActive() {
+      return false;
     },
   };
 
@@ -60,7 +68,11 @@ function createHarness({
           snapshotTagsPromptOptions = options;
           return { tags: { language: 'en' } };
         },
-        async promptTextExtractionBatchFinalReport({ report }) {
+        promptTextExtractionBatchFinalReport({ report }) {
+          if (typeof promptBatchFinalReportImpl === 'function') {
+            return promptBatchFinalReportImpl({ report, textExtractionStatusUi });
+          }
+          finalReportPromptAbortFinalizationActive = textExtractionStatusUi.isAbortFinalizationActive();
           capturedFinalReport = report;
         },
       },
@@ -186,6 +198,9 @@ function createHarness({
     hasCurrentTextSubscription() {
       return true;
     },
+    syncMainInteractionLockUi() {
+      syncMainInteractionLockUiCallCount += 1;
+    },
     textExtractionStatusUi,
   });
 
@@ -209,6 +224,13 @@ function createHarness({
     getSavedSnapshotPayload() {
       return savedSnapshotPayload;
     },
+    getFinalReportPromptAbortFinalizationActive() {
+      return finalReportPromptAbortFinalizationActive;
+    },
+    getSyncMainInteractionLockUiCallCount() {
+      return syncMainInteractionLockUiCallCount;
+    },
+    textExtractionStatusUi,
     notifications,
   };
 }
@@ -769,6 +791,120 @@ test('batch execution final report keeps ordinary cancelled rows distinct from o
     [
       { fileName: 'part-4.pdf', state: 'omitted', code: 'omitted' },
     ]
+  );
+});
+
+test('batch abort finalization stays active until the final report prompt opens', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\part-1.pdf': createPreparation({
+      fileName: 'part-1.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'part-1.pdf': {
+        ok: true,
+        result: {
+          state: 'cancelled',
+          text: '',
+          error: {
+            code: 'aborted_by_user',
+          },
+          generatedPdfArtifact: null,
+        },
+      },
+    },
+  });
+
+  let abortFinalizationActive = false;
+  harness.textExtractionStatusUi.beginAbortFinalization = () => {
+    abortFinalizationActive = true;
+  };
+  harness.textExtractionStatusUi.endAbortFinalization = () => {
+    abortFinalizationActive = false;
+  };
+  harness.textExtractionStatusUi.isAbortFinalizationActive = () => abortFinalizationActive;
+
+  harness.textExtractionStatusUi.beginAbortFinalization();
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-abort-finalization',
+  });
+
+  assert.equal(harness.getFinalReportPromptAbortFinalizationActive(), true);
+  assert.equal(harness.textExtractionStatusUi.isAbortFinalizationActive(), false);
+  assert.equal(harness.getSyncMainInteractionLockUiCallCount(), 1);
+});
+
+test('batch final report prompt synchronous failure clears abort finalization and unlocks the UI', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\part-1.pdf': createPreparation({
+      fileName: 'part-1.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    promptBatchFinalReportImpl() {
+      throw new Error('sync modal setup failed');
+    },
+    executionResultsByProcessingInputFileName: {
+      'part-1.pdf': {
+        ok: true,
+        result: {
+          state: 'cancelled',
+          text: '',
+          error: {
+            code: 'aborted_by_user',
+          },
+          generatedPdfArtifact: null,
+        },
+      },
+    },
+  });
+
+  let abortFinalizationActive = false;
+  harness.textExtractionStatusUi.beginAbortFinalization = () => {
+    abortFinalizationActive = true;
+  };
+  harness.textExtractionStatusUi.endAbortFinalization = () => {
+    abortFinalizationActive = false;
+  };
+  harness.textExtractionStatusUi.isAbortFinalizationActive = () => abortFinalizationActive;
+
+  harness.textExtractionStatusUi.beginAbortFinalization();
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-abort-finalization-sync-throw',
+  });
+
+  assert.equal(harness.textExtractionStatusUi.isAbortFinalizationActive(), false);
+  assert.equal(harness.getSyncMainInteractionLockUiCallCount(), 1);
+  assert.deepEqual(
+    harness.notifications,
+    ['renderer.alerts.text_extraction_error']
   );
 });
 

@@ -48,6 +48,7 @@ function createHarness() {
   const translations = {
     'renderer.main.processing.text_extraction_placeholder': 'Extracting text...',
     'renderer.main.processing.text_extraction_preparing': 'Preparing extraction route...',
+    'renderer.main.processing.text_extraction_cancellation_pending': 'Cancellation requested. Please wait...',
     'renderer.main.processing.text_extraction_waiting_native': 'Extracting text from file...',
     'renderer.main.processing.text_extraction_waiting_ocr': 'Running OCR extraction...',
     'renderer.main.processing.text_extraction_waiting_ocr_delayed': 'Running OCR. Some files take longer.',
@@ -327,6 +328,51 @@ test('elapsed timer updates only row 2 until delayed OCR copy threshold is reach
     harness.elements.textExtractionProcessingFilename.textContentWriteCount,
     initialFilenameWrites
   );
+});
+
+test('abort finalization keeps the processing shell visible with frozen elapsed time', () => {
+  const harness = createHarness();
+
+  harness.api.beginPrepare({
+    filePath: 'C:\\docs\\cancel-me.pdf',
+  });
+  harness.api.endPrepare();
+  harness.api.setPendingExecutionContext({
+    routePreference: 'ocr',
+    fileName: 'cancel-me.pdf',
+  });
+  harness.setNowMs(5000);
+  harness.api.applyProcessingModeState({
+    active: true,
+    lockId: 2,
+    sinceEpochMs: 2000,
+    processingInputFileName: 'cancel-me.pdf',
+  }, { source: 'test' });
+  harness.api.beginAbortFinalization();
+  harness.api.applyProcessingModeState({
+    active: false,
+    lockId: 2,
+    sinceEpochMs: null,
+  }, { source: 'test_abort' });
+
+  assert.equal(harness.api.isAbortFinalizationActive(), true);
+  assert.equal(harness.elements.selectorControlsProcessing.hidden, false);
+  assert.equal(
+    harness.elements.textExtractionProcessingLabel.textContent,
+    'Cancellation requested. Please wait...'
+  );
+  assert.equal(harness.elements.textExtractionProcessingFilename.hidden, false);
+  assert.equal(harness.elements.textExtractionProcessingFilename.textContent, 'cancel-me.pdf');
+  assert.equal(harness.elements.textExtractionProcessingElapsed.hidden, false);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:03');
+  assert.equal(harness.elements.btnTextExtractionAbort.hidden, true);
+  assert.equal(harness.elements.btnTextExtractionAbort.disabled, true);
+
+  harness.api.endAbortFinalization();
+
+  assert.equal(harness.api.isAbortFinalizationActive(), false);
+  assert.equal(harness.elements.selectorControlsProcessing.hidden, true);
+  assert.equal(harness.elements.textExtractionProcessingFilename.hidden, true);
 });
 
 test('terminal states clear filename context and hide the bar', () => {

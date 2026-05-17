@@ -42,6 +42,7 @@
       guardUserAction: null,
       hasBlockingModalOpen: null,
       hasCurrentTextSubscription: null,
+      syncMainInteractionLockUi: null,
       textExtractionStatusUi: null,
       textExtractionBatchFlow: null,
       isLatestTextExtractionPrepareAttempt: null,
@@ -86,12 +87,21 @@
     const { textExtractionStatusUi } = requireConfiguredDeps();
     if (!textExtractionStatusUi
       || typeof textExtractionStatusUi.applyProcessingModeState !== 'function'
+      || typeof textExtractionStatusUi.endAbortFinalization !== 'function'
       || typeof textExtractionStatusUi.clearPendingExecutionContext !== 'function'
       || typeof textExtractionStatusUi.getFinalElapsedValueText !== 'function'
+      || typeof textExtractionStatusUi.isAbortFinalizationActive !== 'function'
       || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
       throw new Error('[text-extraction-entry] textExtractionStatusUi dependency incomplete');
     }
     return textExtractionStatusUi;
+  }
+
+  function syncMainInteractionLockUi() {
+    const { syncMainInteractionLockUi: syncUi } = requireConfiguredDeps();
+    if (typeof syncUi === 'function') {
+      syncUi();
+    }
   }
 
   function getBatchFlow() {
@@ -227,6 +237,21 @@
       log.error(logMessage, preparation);
     }
     window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
+  }
+
+  function completeAbortFinalization({
+    textExtractionStatusUi,
+    notifyCompletion = false,
+  }) {
+    if (!textExtractionStatusUi.isAbortFinalizationActive()) {
+      return false;
+    }
+    textExtractionStatusUi.endAbortFinalization();
+    syncMainInteractionLockUi();
+    if (notifyCompletion) {
+      window.Notify.notifyMain('renderer.alerts.text_extraction_cancellation_complete');
+    }
+    return true;
   }
 
   // =============================================================================
@@ -534,6 +559,7 @@
         routePreference,
       });
       if (!execution || execution.ok !== true || !execution.result) {
+        completeAbortFinalization({ textExtractionStatusUi });
         textExtractionStatusUi.clearPendingExecutionContext();
         if (execution && execution.code === 'ALREADY_ACTIVE' && execution.state) {
           textExtractionStatusUi.applyProcessingModeState(execution.state, { source: 'execute_already_active' });
@@ -555,6 +581,9 @@
       const resultState = execution.result && typeof execution.result.state === 'string'
         ? execution.result.state
         : 'failure';
+      if (resultState !== 'cancelled') {
+        completeAbortFinalization({ textExtractionStatusUi });
+      }
       if (execution.result
         && execution.result.error
         && execution.result.error.code === 'ocr_input_too_large') {
@@ -724,10 +753,15 @@
       const primaryAlertKey = resolvePrimaryAlertKey(execution);
       if (primaryAlertKey === 'renderer.alerts.text_extraction_native_cancelled'
         || primaryAlertKey === 'renderer.alerts.text_extraction_ocr_cancelled') {
+        completeAbortFinalization({
+          textExtractionStatusUi,
+          notifyCompletion: true,
+        });
         return;
       }
       window.Notify.notifyMain(primaryAlertKey);
     } catch (err) {
+      completeAbortFinalization({ textExtractionStatusUi });
       textExtractionStatusUi.clearPendingExecutionContext();
       log.error(`Error handling text extraction ${source} entrypoint:`, err);
       window.Notify.notifyMain('renderer.alerts.text_extraction_error');
