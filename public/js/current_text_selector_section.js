@@ -25,6 +25,14 @@
   if (!AppConstants) {
     throw new Error('[current-text-selector-section] AppConstants unavailable; cannot continue');
   }
+  if (
+    !window.RendererI18n
+    || typeof window.RendererI18n.getUiLanguageDirection !== 'function'
+    || typeof window.RendererI18n.resolveUserTextDirection !== 'function'
+  ) {
+    throw new Error('[current-text-selector-section] RendererI18n direction helpers unavailable; cannot continue');
+  }
+  const { getUiLanguageDirection, resolveUserTextDirection } = window.RendererI18n;
 
   const {
     MAX_CLIPBOARD_REPEAT,
@@ -74,8 +82,6 @@
   let editorLaunchPending = false;
   let lastPreviewText = '';
   let lastPreviewEmptyText = '';
-  let previewDirectionProbeHost = null;
-  let previewDirectionProbe = null;
 
   // =============================================================================
   // Helpers
@@ -134,65 +140,23 @@
     return normalizePreviewValue(text).replace(/\r?\n/g, '   ');
   }
 
-  function getUiLanguageDirection() {
-    const languageDirection = document && document.documentElement
-      ? document.documentElement.dataset.languageDirection
-      : '';
-    return languageDirection === 'rtl' ? 'rtl' : 'ltr';
-  }
-
-  function ensurePreviewDirectionProbe() {
-    if (previewDirectionProbeHost || !document || !document.body) return;
-    previewDirectionProbeHost = document.createElement('div');
-    previewDirectionProbeHost.setAttribute('aria-hidden', 'true');
-    previewDirectionProbeHost.hidden = true;
-    previewDirectionProbeHost.style.position = 'absolute';
-    previewDirectionProbeHost.style.width = '0';
-    previewDirectionProbeHost.style.height = '0';
-    previewDirectionProbeHost.style.overflow = 'hidden';
-    previewDirectionProbeHost.style.visibility = 'hidden';
-    previewDirectionProbeHost.style.pointerEvents = 'none';
-
-    previewDirectionProbe = document.createElement('span');
-    previewDirectionProbe.setAttribute('dir', 'auto');
-    previewDirectionProbeHost.appendChild(previewDirectionProbe);
-    document.body.appendChild(previewDirectionProbeHost);
-  }
-
-  function derivePreviewDirection(visiblePreviewText) {
-    const uiDirection = getUiLanguageDirection();
-    const normalizedVisibleText = normalizePreviewValue(visiblePreviewText);
-    if (!normalizedVisibleText) return uiDirection;
-
-    ensurePreviewDirectionProbe();
-    if (!previewDirectionProbeHost
-      || !previewDirectionProbe
-      || typeof window.getComputedStyle !== 'function') {
-      return uiDirection;
-    }
-
-    previewDirectionProbeHost.setAttribute('dir', uiDirection);
-    previewDirectionProbe.textContent = normalizedVisibleText;
-    const computedDirection = window.getComputedStyle(previewDirectionProbe).direction;
-    previewDirectionProbe.textContent = '';
-    return computedDirection === 'rtl' ? 'rtl' : 'ltr';
-  }
-
   function buildPreviewRenderModel(text, { emptyText = '', showPreviewEnd = true } = {}) {
     const displayText = normalizePreviewDisplayText(text);
     const displayLength = displayText.length;
 
     if (displayLength === 0) {
       return {
-        direction: derivePreviewDirection(emptyText),
+        direction: getUiLanguageDirection(),
         kind: 'plain',
         text: emptyText,
       };
     }
 
+    const direction = resolveUserTextDirection(displayText);
+
     if (displayLength <= PREVIEW_INLINE_THRESHOLD) {
       return {
-        direction: derivePreviewDirection(displayText),
+        direction,
         kind: 'plain',
         text: displayText,
       };
@@ -204,7 +168,7 @@
     const start = displayText.slice(0, visibleStartChars);
     if (!showPreviewEnd) {
       return {
-        direction: derivePreviewDirection(`${start}...`),
+        direction,
         kind: 'leading-fragment',
         start,
         marker: '...',
@@ -213,7 +177,7 @@
 
     const end = displayText.slice(-PREVIEW_END_CHARS);
     return {
-      direction: derivePreviewDirection(`${start}... | ...${end}`),
+      direction,
       kind: 'truncated-pair',
       start,
       separator: '... | ...',
@@ -450,4 +414,3 @@
 // =============================================================================
 // End of public/js/current_text_selector_section.js
 // =============================================================================
-

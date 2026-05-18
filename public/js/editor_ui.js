@@ -46,8 +46,13 @@
       readingTestPrestartMessage,
     } = dom;
 
-    const { loadRendererTranslations, tRenderer, msgRenderer } = ctx.rendererI18n || {};
-    if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
+    const {
+      loadRendererTranslations,
+      tRenderer,
+      msgRenderer,
+      resolveUserTextDirection,
+    } = ctx.rendererI18n || {};
+    if (!loadRendererTranslations || !tRenderer || !msgRenderer || !resolveUserTextDirection) {
       throw new Error('[editor] RendererI18n unavailable; cannot continue');
     }
 
@@ -63,6 +68,13 @@
       if (editor) {
         editor.setAttribute('lang', langTag);
       }
+    }
+
+    function updateEditorTextDirection() {
+      if (!editor) return 'ltr';
+      const direction = resolveUserTextDirection(editor.value || '');
+      editor.setAttribute('dir', direction);
+      return direction;
     }
 
     async function ensureEditorTranslations(lang) {
@@ -361,11 +373,11 @@
     function applyTextareaDefaults() {
       try {
         if (editor) {
-          // Keep text entry content-driven while the window layout remains fixed LTR.
-          editor.setAttribute('dir', 'auto');
+          // Keep text entry direction content-driven while the window layout remains fixed LTR.
           editor.wrap = 'soft';
           editor.style.whiteSpace = 'pre-wrap';
           editor.style.wordBreak = 'break-word';
+          updateEditorTextDirection();
         }
       } catch (err) {
         log.warn('Editor wrap styles failed (ignored):', err);
@@ -570,6 +582,7 @@
 
     return {
       applyEditorLanguage,
+      updateEditorTextDirection,
       setLocalSpellcheckState,
       clampEditorFontSizePx,
       clampEditorMaximizedTextWidthPx,

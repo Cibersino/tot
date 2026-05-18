@@ -241,6 +241,7 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
     ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
     window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
     await ctx.ui.applyEditorTranslations();
+    ctx.ui.updateEditorTextDirection();
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
   }
@@ -250,6 +251,7 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
 ctx.ui.applyTextareaDefaults();
 window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
 ctx.ui.applyEditorLanguage();
+ctx.ui.updateEditorTextDirection();
 ctx.ui.setLocalSpellcheckState({
   preferenceEnabled: ctx.state.spellcheckEnabled,
   available: ctx.state.spellcheckAvailable,
@@ -282,6 +284,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
         ctx.state.idiomaActual = nextLang;
         window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
         await ctx.ui.applyEditorTranslations();
+        ctx.ui.updateEditorTextDirection();
       }
       if (spellcheckChanged) {
         ctx.ui.setLocalSpellcheckState({
@@ -338,6 +341,7 @@ if (readingTestPrestartOverlay) {
     }
 
     await ctx.engine.applyExternalUpdate({ text: initialText || '', meta: { source: 'main', action: 'init' } });
+    ctx.ui.updateEditorTextDirection();
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
   } catch (err) {
     log.error('Error initializing editor:', err);
@@ -347,12 +351,19 @@ if (readingTestPrestartOverlay) {
 // =============================================================================
 // Bridge listeners
 // =============================================================================
-ctx.editorAPI.onInitText((p) => { ctx.engine.applyExternalUpdate(p); });
-ctx.editorAPI.onExternalUpdate((p) => { ctx.engine.applyExternalUpdate(p); });
+ctx.editorAPI.onInitText(async (p) => {
+  await ctx.engine.applyExternalUpdate(p);
+  ctx.ui.updateEditorTextDirection();
+});
+ctx.editorAPI.onExternalUpdate(async (p) => {
+  await ctx.engine.applyExternalUpdate(p);
+  ctx.ui.updateEditorTextDirection();
+});
 ctx.editorAPI.onForceClear(() => {
   try {
     ctx.state.suppressLocalUpdate = true;
     editor.value = '';
+    ctx.ui.updateEditorTextDirection();
     ctx.ui.scheduleReadProgressUiUpdate();
     ctx.engine.sendCurrentTextToMain('clear', { text: '' });
   } catch (err) {
@@ -473,6 +484,7 @@ if (editor) {
 }
 
 editor.addEventListener('input', () => {
+  ctx.ui.updateEditorTextDirection();
   ctx.ui.scheduleReadProgressUiUpdate();
 
   if (ctx.state.suppressLocalUpdate || editor.readOnly) return;
@@ -507,6 +519,7 @@ window.addEventListener('resize', () => {
 // =============================================================================
 btnTrash.addEventListener('click', () => {
   editor.value = '';
+  ctx.ui.updateEditorTextDirection();
   ctx.ui.scheduleReadProgressUiUpdate();
   ctx.engine.sendCurrentTextToMain('clear', {
     text: '',

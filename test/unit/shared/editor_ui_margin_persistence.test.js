@@ -140,6 +140,7 @@ function createHarness() {
       async loadRendererTranslations() {},
       tRenderer() { return ''; },
       msgRenderer(_path, params = {}) { return String(params.value ?? ''); },
+      resolveUserTextDirection() { return 'ltr'; },
     },
     dom: {
       editorWrap,

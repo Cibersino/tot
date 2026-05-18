@@ -35,6 +35,8 @@
   let rendererTranslations = null;
   let rendererTranslationsLang = null;
   let rendererDefaultTranslations = null;
+  let userTextDirectionProbeHost = null;
+  let userTextDirectionProbe = null;
 
   // =============================================================================
   // Helpers (pure utilities)
@@ -51,6 +53,13 @@
     return RTL_LANGUAGE_BASES.has(base) ? 'rtl' : 'ltr';
   };
 
+  function getUiLanguageDirection() {
+    const languageDirection = document && document.documentElement
+      ? document.documentElement.dataset.languageDirection
+      : '';
+    return languageDirection === 'rtl' ? 'rtl' : 'ltr';
+  }
+
   function applyWindowLanguageAttributes(lang) {
     const langTag = normalizeLangTag(lang) || DEFAULT_LANG;
     const languageDirection = getLanguageDirection(langTag);
@@ -64,6 +73,51 @@
       dir: FIXED_DOCUMENT_DIRECTION,
       languageDirection,
     };
+  }
+
+  function ensureUserTextDirectionProbe() {
+    if (userTextDirectionProbeHost || !document || !document.body) return;
+
+    userTextDirectionProbeHost = document.createElement('div');
+    userTextDirectionProbeHost.setAttribute('aria-hidden', 'true');
+    userTextDirectionProbeHost.hidden = true;
+    userTextDirectionProbeHost.style.position = 'absolute';
+    userTextDirectionProbeHost.style.width = '0';
+    userTextDirectionProbeHost.style.height = '0';
+    userTextDirectionProbeHost.style.overflow = 'hidden';
+    userTextDirectionProbeHost.style.visibility = 'hidden';
+    userTextDirectionProbeHost.style.pointerEvents = 'none';
+
+    userTextDirectionProbe = document.createElement('span');
+    userTextDirectionProbe.setAttribute('dir', 'auto');
+    userTextDirectionProbeHost.appendChild(userTextDirectionProbe);
+    document.body.appendChild(userTextDirectionProbeHost);
+  }
+
+  function resolveUserTextDirection(value) {
+    const fallbackDirection = getUiLanguageDirection();
+    const normalizedValue = typeof value === 'string'
+      ? value
+      : value === null || typeof value === 'undefined'
+        ? ''
+        : String(value);
+
+    if (!normalizedValue) return fallbackDirection;
+
+    ensureUserTextDirectionProbe();
+    if (
+      !userTextDirectionProbeHost
+      || !userTextDirectionProbe
+      || typeof window.getComputedStyle !== 'function'
+    ) {
+      return fallbackDirection;
+    }
+
+    userTextDirectionProbeHost.setAttribute('dir', fallbackDirection);
+    userTextDirectionProbe.textContent = normalizedValue;
+    const computedDirection = window.getComputedStyle(userTextDirectionProbe).direction;
+    userTextDirectionProbe.textContent = '';
+    return computedDirection === 'rtl' ? 'rtl' : 'ltr';
   }
 
   const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
@@ -270,6 +324,8 @@
     normalizeLangTag,
     getLangBase,
     getLanguageDirection,
+    getUiLanguageDirection,
+    resolveUserTextDirection,
     applyWindowLanguageAttributes,
     renderLocalizedLabelWithInvariantValue,
   };

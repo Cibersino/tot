@@ -154,6 +154,7 @@
           editor.setRangeText(text, start, end, 'end');
           const newCaret = start + text.length;
           setCaretSafe(newCaret);
+          dispatchNativeInputEvent();
           return true;
         }
 
@@ -167,6 +168,7 @@
         editor.value = before + text + after;
         const newCaret = before.length + text.length;
         setCaretSafe(newCaret);
+        dispatchNativeInputEvent();
         return true;
       } catch (err) {
         log.error('tryNativeInsertAtSelection error:', err);
