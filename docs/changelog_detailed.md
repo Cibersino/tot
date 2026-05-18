@@ -55,6 +55,8 @@ Reglas:
 - Los PDFs que exceden el límite de entrada del proveedor OCR dejan de caer en un fallo genérico: ahora la app ofrece volver a páginas, usar ruta nativa si existe o derivar al split automático del PDF completo.
 - La ejecución batch añade progreso contextual (`unidad/archivo/ruta`), snapshots JSON automáticos por unidad cuando aplica y un reporte final con copy/export de resultados.
 - La activación de Google OCR deja de depender solo de un fallo durante la extracción y pasa a poder iniciarse explícitamente desde `Menú > Preferencias`, reutilizando el mismo disclosure y la misma secuencia OAuth que usa la recuperación automática.
+- Abortar una extracción deja de devolver inmediatamente la ventana principal a idle: la UI entra en un estado explícito de `cancelación pendiente`, conserva el contexto visible del archivo/tiempo y mantiene bloqueadas las interacciones hasta que el cierre real del flujo termina.
+- El manejo de dirección de texto se normaliza en preview, editor, presets y disclosure OCR para que contenido RTL o mixto no quede visualmente invertido ni mal alineado respecto de la UI efectiva.
 
 ### Agregado
 
@@ -82,7 +84,9 @@ Reglas:
 - Dependencia runtime directa `pdf-lib@^1.17.1` para materializar localmente los subsets PDF usados por el modo `Page range`.
 - Entrada `Enable Google OCR` / `Activar Google OCR` / `Enchufar Google OCR` en `Menú > Preferencias` para iniciar la conexión OCR desde la ventana principal sin esperar a que una extracción la requiera.
 - Módulos renderer shared `text_extraction_ocr_activation_flow.js` y `text_extraction_ocr_activation.js` para centralizar la secuencia `prepare` → disclosure → `launch` y exponerla tanto al menú de preferencias como a la recuperación de extracción.
+- Helpers renderer shared `RendererI18n.getUiLanguageDirection()` y `RendererI18n.resolveUserTextDirection(value)` para derivar la dirección efectiva del contenido y reutilizarla en preview, editor, presets y disclosure OCR.
 - Cobertura unitaria dedicada para activación OCR desde menú, flujo compartido y recuperación (`text_extraction_ocr_activation*.test.js`).
+- Cobertura unitaria adicional para el estado `cancellation pending` y para políticas de dirección de texto en preview/editor/presets/disclosure (`text_extraction_status_ui.test.js`, `text_extraction_entry.test.js`, `text_extraction_batch_flow.test.js`, `current_text_selector_section.test.js`, `editor_text_direction_policy.test.js`, `renderer_i18n_text_direction.test.js`, `preset_modal.test.js`, `presets_description_direction.test.js`, `wpm_controls_preset_description.test.js`, `text_extraction_ocr_activation_disclosure_modal.test.js`).
 
 ### Cambiado
 
@@ -104,6 +108,12 @@ Reglas:
 - La recuperación de setup OCR deja de reimplementar por su cuenta `prepare`, disclosure y `launch`, y pasa a delegar en un flujo compartido de activación que devuelve resultados estructurados y mantiene `renderer.js` como wiring de alto nivel.
 - `Menú > Preferencias` deja de ofrecer solo la desconexión OCR y pasa a exponer también la activación explícita desde la misma superficie.
 - Las alertas de activación OCR distinguen ahora el contexto `activar desde menú` del contexto `recuperar extracción`, con copy específico para éxito, cancelación y fallo cuando la acción nace en preferencias.
+- Tras `Abort extraction`, la superficie de estado deja de desmontarse apenas cae el lock main-owned y pasa por una fase visible de `cancellation pending` con elapsed congelado, filename retenido y botón de abort oculto hasta que el modal final single-file o el reporte final batch quedan realmente resueltos.
+- El guard global de acciones de la ventana principal extiende el lock de extracción para cubrir también la finalización post-aborto, incluyendo picker, drag/drop, presets, WPM y demás controles interactivos.
+- El disclosure modal de activación OCR adopta `dir` efectivo de la UI y propiedades CSS lógicas (`text-align: start`, `padding-inline-start`, `margin-inline-start`) para espejar correctamente listas y acciones cuando el idioma activo es RTL.
+- El preview del texto vigente deja de mantener un probador de dirección propio y pasa a reutilizar la resolución shared de `RendererI18n`, aplicando la dirección efectiva del contenido también al modo truncado/sin spoiler.
+- El editor completo deja de depender de `dir="auto"` hardcodeado en HTML y recalcula la dirección del `textarea` en bootstrap, escritura local, sync externa, clear y cambios de idioma.
+- Las descripciones de presets en main window y en `preset_modal` dejan de renderizarse como texto neutro fijo y pasan a actualizar `dir` según el contenido efectivo del campo.
 
 ### Arreglado
 
@@ -117,6 +127,8 @@ Reglas:
 - Rechazar el disclosure de activación OCR desde `Menú > Preferencias` o desde la recuperación de extracción deja de disparar avisos de fallo genéricos y pasa a tratarse como cancelación explícita del usuario.
 - La activación OCR lanzada desde preferencias deja de colapsar fallos heterogéneos en un mensaje único y pasa a distinguir credenciales ausentes/inválidas, token inválido, falta de conectividad, cuota/rate limit y cancelación del OAuth.
 - Si la recuperación automática no dispone de los bridges IPC de activación OCR, deja de consumir el flujo como fallo manejado y vuelve al fallback no recuperado en vez de mostrar diagnóstico engañoso.
+- Abortar una extracción deja de desbloquear prematuramente la main window antes de que el flujo single-file o batch termine de cerrar su UI final; además, la notificación al usuario ahora distingue `cancelación solicitada` de `cancelación completada`.
+- El disclosure de activación OCR, el preview del texto vigente y las descripciones de presets dejan de presentar dirección/alineación inconsistente cuando el contenido del usuario o la UI efectiva trabajan en RTL o bidi mixto.
 
 ### Migración
 
