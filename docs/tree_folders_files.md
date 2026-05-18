@@ -11,16 +11,10 @@ No es un inventario exhaustivo de cada archivo.
 tot/
 ├── .github/
 │ └── workflows/
-│   └── test.yml                  # workflow GitHub Actions del baseline automatizado (`npm test` en Windows)
+│   └── test.yml                   # {workflow GitHub Actions del baseline automatizado (`npm test` en Windows)}
 ├── .vscode/                       # {carpeta ignorada por git}
-│ ├── settings.json
-│ └── tasks.json
 ├── build-output/                  # {vacío} {carpeta ignorada por git}
-├── build-resources/               # recursos solo de packaging (electron-builder)
-│ ├── after-all-artifact-build.js
-│ ├── logo-cibersino.ico
-│ ├── logo-cibersino.png
-│ └── README.md
+├── build-resources/               # {recursos solo de packaging (electron-builder)}
 ├── config/                        # {generada en primer arranque} {carpeta ignorada por git}
 │ ├── presets_defaults/
 │ │ ├── defaults_presets.json   
@@ -41,7 +35,7 @@ tot/
 │ │ ├── credentials.json
 │ │ └── token.json
 │ ├── saved_current_texts/
-│ │ └── reading_speed_test_pool/  # {pool local del reading speed test; sincronizado al arranque, contenido sin state inline}
+│ │ └── reading_speed_test_pool/   # {pool local del reading speed test; sincronizado al arranque, contenido sin state inline}
 │ └── user_settings.json
 ├── docs/
 │ ├── releases/                    # {con subcarpetas por release con docs de chequeo}
@@ -53,41 +47,14 @@ tot/
 │ └── tree_folders_files.md
 ├── electron/
 │ ├── assets/
-│ │ └── ocr_google_drive/         # {credenciales OAuth desktop empaquetadas para OCR Google}
-│ │   ├── credentials.json        # {ignorado por git; material real provisto por el owner para builds de producción}
+│ │ └── ocr_google_drive/          # {credenciales OAuth desktop empaquetadas para OCR Google}
+│ │   ├── credentials.json         # {ignorado por git; material real provisto por el owner para builds de producción}
 │ │   └── README.md
 │ ├── presets/                     # {presets para restauración de fábrica}
 │ │ ├── defaults_presets.json
 │ │ ├── defaults_presets_en.json
 │ │ └── defaults_presets_es.json
-│ ├── main.js
-│ ├── preload.js
-│ ├── language_preload.js
-│ ├── editor_preload.js
-│ ├── editor_find_preload.js
-│ ├── task_editor_preload.js
-│ ├── preset_preload.js
-│ ├── flotante_preload.js
-│ ├── reading_test_questions_preload.js
-│ ├── reading_test_result_preload.js
-│ ├── fs_storage.js
-│ ├── settings.js
-│ ├── spellcheck.js
-│ ├── text_state.js
-│ ├── current_text_snapshots_main.js
-│ ├── tasks_main.js
-│ ├── task_editor_state.js
-│ ├── editor_state.js
-│ ├── editor_find_main.js
-│ ├── editor_find_session.js
-│ ├── editor_find_shortcuts.js
-│ ├── editor_text_size.js
-│ ├── reading_test_pool/          # {starter files versionados del reading speed test}
-│ ├── reading_test_pool.js
-│ ├── reading_test_pool_import.js
-│ ├── reading_test_session.js
-│ ├── reading_test_session_windows.js
-│ ├── reading_test_session_flow.js
+│ ├── reading_test_pool/           # {starter files versionados del reading speed test}
 │ ├── text_extraction_platform/
 │ │ ├── platform_adapters/
 │ │ │ ├── common.js
@@ -124,33 +91,42 @@ tot/
 │ │ ├── ocr_google_drive_token_storage.js
 │ │ ├── ocr_google_drive_route.js
 │ │ └── ocr_image_normalization.js
+│ ├── main.js
+│ ├── preload.js
+│ ├── language_preload.js
+│ ├── editor_preload.js
+│ ├── editor_find_preload.js
+│ ├── task_editor_preload.js
+│ ├── preset_preload.js
+│ ├── flotante_preload.js
+│ ├── reading_test_questions_preload.js
+│ ├── reading_test_result_preload.js
+│ ├── fs_storage.js
+│ ├── settings.js
+│ ├── spellcheck.js
+│ ├── text_state.js
+│ ├── current_text_snapshots_main.js
+│ ├── tasks_main.js
+│ ├── task_editor_state.js
+│ ├── editor_state.js
+│ ├── editor_find_main.js
+│ ├── editor_find_session.js
+│ ├── editor_find_shortcuts.js
+│ ├── editor_text_size.js
+│ ├── reading_test_pool.js
+│ ├── reading_test_pool_import.js
+│ ├── reading_test_session.js
+│ ├── reading_test_session_windows.js
+│ ├── reading_test_session_flow.js
 │ ├── presets_main.js
 │ ├── menu_builder.js
 │ ├── updater.js
 │ ├── link_openers.js
 │ ├── constants_main.js
 │ └── log.js
-├── extensions/                    # extensiones/superficies nuevas distribuidas fuera de Electron
+├── extensions/                    # {extensiones/superficies nuevas distribuidas fuera de Electron}
 │ └── reading-time/
-│   └── chrome/                    # extensión Chrome MV3 para estimar tiempo de lectura sobre texto seleccionado
-│     ├── _locales/
-│     │ ├── en/
-│     │ │ └── messages.json
-│     │ └── es/
-│     │   └── messages.json
-│     ├── icons/
-│     │ ├── icon-128.png
-│     │ ├── icon-16.png
-│     │ ├── icon-32.png
-│     │ └── icon-48.png
-│     ├── content-script.js
-│     ├── content.css
-│     ├── logic.js
-│     ├── manifest.json
-│     ├── popup.css
-│     ├── popup.html
-│     ├── popup.js
-│     └── service-worker.js
+│   └── chrome/
 ├── i18n/                          # {subcarpetas por idioma y variantes regionales}
 │ └── languages.json
 ├── public/
@@ -169,7 +145,7 @@ tot/
 │ │ ├── Baskervville-VariableFont_wght.ttf
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
 │ │ └── Baskervville.css
-│ ├── third_party_licenses/       # {licencias/notices versionados de terceros redistribuidos}
+│ ├── third_party_licenses/        # {licencias/notices versionados de terceros redistribuidos}
 │ ├── info/
 │ │ ├── acerca_de.html
 │ │ ├── instrucciones.es.html
@@ -247,112 +223,8 @@ tot/
 │ ├── reading_test_questions.css
 │ ├── reading_test_result.css
 │ └── style.css
-├── test/
-│ ├── fixtures/
-│ │ └── pdf/                      # fixtures PDF sintéticos versionados para el baseline unitario de page-range extraction
-│ ├── smoke/
-│ │ └── electron_launch_smoke.test.js
-│ ├── unit/
-│ │ ├── electron/
-│ │ │ ├── current_text_snapshots_main.test.js
-│ │ │ ├── editor_find_main.test.js
-│ │ │ ├── editor_state.test.js
-│ │ │ ├── native_pdf_selectable_text_probe.test.js
-│ │ │ ├── text_extraction_heavy_pdf_split_core.test.js
-│ │ │ ├── text_extraction_generated_pdf_reveal_ipc.test.js
-│ │ │ ├── text_extraction_pdf_page_selection.test.js
-│ │ │ ├── text_extraction_prepare_execute_core.test.js
-│ │ │ ├── text_extraction_prepare_ipc.test.js
-│ │ │ ├── text_extraction_prepared_store.test.js
-│ │ │ ├── text_extraction_supported_formats.test.js
-│ │ │ ├── ocr_google_drive_activation_state.test.js
-│ │ │ ├── ocr_google_drive_provider_failure_classification.test.js
-│ │ │ ├── ocr_google_drive_provider_failure.test.js
-│ │ │ ├── ocr_google_drive_secure_oauth.test.js
-│ │ │ ├── reading_test_pool.test.js
-│ │ │ ├── reading_test_pool_import.test.js
-│ │ │ ├── reading_test_session_flow.test.js
-│ │ │ ├── spellcheck.test.js
-│ │ │ ├── settings.test.js
-│ │ │ └── task_editor_state.test.js
-│ │ └── shared/
-│ │   ├── count_core.test.js
-│ │   ├── editor_engine_commit_policy.test.js
-│ │   ├── editor_find_renderer.test.js
-│ │   ├── editor_find_replace_core.test.js
-│ │   ├── editor_maximized_layout_core.test.js
-│ │   ├── editor_ui_margin_persistence.test.js
-│ │   ├── format_core.test.js
-│ │   ├── reading_test_questions_core.test.js
-│ │   ├── snapshot_save_tags_modal.test.js
-│ │   ├── text_extraction_ocr_activation.test.js
-│ │   ├── text_extraction_ocr_activation_flow.test.js
-│ │   ├── text_extraction_ocr_activation_recovery.test.js
-│ │   ├── text_extraction_batch_final_modal.test.js
-│ │   ├── text_extraction_batch_flow.test.js
-│ │   ├── text_extraction_batch_planning_modal.test.js
-│ │   ├── text_extraction_entry.test.js
-│ │   ├── text_extraction_single_file_heavy_pdf_modal.test.js
-│ │   └── text_extraction_status_ui.test.js
-│ └── README.md
-├── website/                       # {sitio web}
-│ └── public/
-│   ├── app-privacy/
-│   │ └── index.html
-│   ├── assets/
-│   │ ├── brand/
-│   │ │ ├── logo-cibersino.svg
-│   │ │ └── logo-tot.svg
-│   │ ├── demo/
-│   │ │ └── guia-basica.gif
-│   │ ├── extension/
-│   │ │ └── tot-symbols.32.png
-│   │ └── social/
-│   │   ├── instagram-black.svg
-│   │   ├── instagram-white.svg
-│   │   ├── kofi_symbol.png
-│   │   ├── SOURCES.md
-│   │   ├── x-black.png
-│   │   ├── x-white.png
-│   │   └── youtube.png
-│   ├── chrome-extension-privacy/
-│   │ └── index.html
-│   ├── en/
-│   │ ├── app-privacy/
-│   │ │ ├── google-ocr/
-│   │ │ │ └── index.html
-│   │ │ └── index.html
-│   │ ├── chrome-extension-privacy/
-│   │ │ └── index.html
-│   │ ├── privacy-cookies/
-│   │ │ └── index.html
-│   │ ├── terms/
-│   │ │ └── index.html
-│   │ └── index.html
-│   ├── es/
-│   │ ├── app-privacy/
-│   │ │ ├── google-ocr/
-│   │ │ │ └── index.html
-│   │ │ └── index.html
-│   │ ├── chrome-extension-privacy/
-│   │ │ └── index.html
-│   │ ├── privacy-cookies/
-│   │ │ └── index.html
-│   │ ├── terms/
-│   │ │ └── index.html
-│   │ └── index.html
-│   ├── terms/
-│   │ └── index.html
-│   ├── _headers
-│   ├── download-resolver.js
-│   ├── extension-resolver.js
-│   ├── index.html
-│   ├── favicon.svg
-│   ├── favicon.ico
-│   ├── og-image.png
-│   ├── robots.txt
-│   ├── site-language.js
-│   └── styles.css
+├── test/                          # {tests de desarrollo automátizados de la app}
+├── website/                       # {sitio web de la app}
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
 ├── .editorconfig
 ├── .eslintrc.cjs
@@ -503,28 +375,6 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 
-### 3.1) Extensión Chrome (`extensions/reading-time/chrome`)
-
-- `extensions/reading-time/chrome/manifest.json` — Manifiesto MV3 de la extensión: action popup, `service_worker`, permiso `storage`, command `toggle-current-tab`, content scripts sobre `http(s)` y `web_accessible_resources` para `content.css`.
-- `extensions/reading-time/chrome/service-worker.js` — Orquestador background de la extensión: resuelve el sitio activo/tab actual, persiste el estado disabled por `origin` en `chrome.storage.local`, atiende mensajes `getSiteState` / `setSiteEnabled` y propaga cambios a tabs del mismo origen.
-- `extensions/reading-time/chrome/logic.js` — Núcleo compartido/importable de la extensión: normalización de texto, resolución de locale, conteo de palabras con `Intl.Segmenter`, parseo de WPM y formateo del tiempo estimado.
-- `extensions/reading-time/chrome/content-script.js` — Content script inyectado en páginas: observa selección de texto, monta el overlay shadow-DOM, calcula/actualiza el tiempo estimado, persiste WPM local y responde el `origin` de la top frame al background.
-- `extensions/reading-time/chrome/popup.html` + `popup.css` + `popup.js` — UI del popup de la acción del navegador: consulta el estado del sitio activo, permite activar/desactivar la extensión por sitio y muestra feedback de carga/error.
-- `extensions/reading-time/chrome/_locales/<lang>/messages.json` — Strings localizados de la extensión (`es`, `en`) consumidos por manifest, popup y overlay.
-- `extensions/reading-time/chrome/icons/*.png` — Íconos empaquetados de la extensión para action/manifest.
-
-### 3.2) Testing automatizado
-
-- `.github/workflows/test.yml` — Workflow GitHub Actions del baseline automatizado actual; corre `npm ci` + `npm test` sobre `windows-latest`.
-- `test/README.md` — Convenciones del layout de tests y separación entre baseline unitario y smoke suite local.
-- `test/fixtures/pdf/` — Fixtures PDF sintéticos, versionados y no personales para el baseline unitario del flujo page-range (`selectable text`, `image only`, `encrypted`), sin depender de archivos locales ignorados bajo `tools_local/`.
-- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo text extraction (`settings`, `task_editor_state`, `editor_state` para `maximizedTextWidthPx`/window-state IPC, `spellcheck`, formatos soportados, prepared store, inspect/prepare/execute de page-range, heavy split planning, materialización/cleanup de subset PDFs, reveal de PDFs retenidos, snapshots gestionados no interactivos, parsing/clasificación OCR, OAuth desktop seguro de Google OCR y helpers del flujo `reading_test_session_flow`, más `editor_find_main.test.js` para autorización IPC, re-sync al refocus y orquestación request-scoped de replace).
-- `test/unit/electron/reading_test_pool.test.js` — Cobertura del pool del reading speed test: sincronización startup del starter set, seguimiento de hashes, estado externo `used` y prune de filas/archivos gestionados obsoletos.
-- `test/unit/electron/reading_test_pool_import.test.js` — Cobertura del importador del pool del reading speed test: validación de `.json`/`.zip`, duplicados, persistencia de última carpeta y reporte de fallas de escritura.
-- `test/unit/electron/spellcheck.test.js` — Cobertura del spellcheck main-owned: resolución de idiomas soportados, aplicación sobre `Session` y controller `createController(...)`/fallbacks de sesión.
-- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`, `editor_find_replace_core`, `editor_maximized_layout_core`, `reading_test_questions_core`) y de contratos UI puntuales como la persistencia del margen maximizado del editor en `editor_ui`, el commit policy de `editor_engine`, el wiring de `editor_find`, la activación OCR shared/manual/recovery, la planificación/reporte batch, el handoff de single-file heavy PDF, el modal compartido de snapshot tags y la superficie de status de text extraction.
-- `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; además valida que el startup tolere el schema vigente mínimo de settings (incluyendo flags nuevos como `spellcheckEnabled` y `editorFontSizePx`); no forma parte de `npm test` ni del workflow CI base.
-
 ### 4) i18n (estructura y responsabilidades)
 
 - `i18n/languages.json` — Catálogo de idiomas soportados (y metadatos si aplica).
@@ -583,37 +433,6 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`, y registra el hook `afterAllArtifactBuild` que reenvuelve los `.zip` distribuidos bajo una carpeta raíz `toT-<version>/`.
 - `package-lock.json` — Lockfile npm usado también por el workflow CI (`npm ci`).
-
-### 6.1) Sitio web estático (website/public)
-
-- `website/public/index.html` — Landing neutral del sitio público (`https://totapp.org/`), usada como entrada x-default, selector explícito de idioma y preview visual de la app mediante `assets/demo/guia-basica.gif`.
-- `website/public/es/index.html` — Versión en español (`https://totapp.org/es/`), con switch de idioma, CTA de descarga y bloque "Síguenos"; define `window.totDownloadConfig` para el resolvedor de descarga por plataforma.
-- `website/public/en/index.html` — Versión en inglés (`https://totapp.org/en/`), con switch de idioma, CTA de descarga y bloque "Follow us"; define `window.totDownloadConfig` para el resolvedor de descarga por plataforma.
-- `website/public/download-resolver.js` — Helper compartido del sitio para detectar plataforma/arquitectura del navegador, consultar el último release en GitHub, seleccionar el asset estable más adecuado y abrir el modal con instrucciones de instalación.
-- `website/public/extension-resolver.js` — Helper compartido del sitio para adaptar el CTA de la extensión según el navegador detectado y enlazar la Chrome Web Store desde las landings por idioma.
-- `website/public/app-privacy/index.html` — Ruta neutral `x-default` hacia la política pública de privacidad de la app; redirige según idioma preferido vía `site-language.js`.
-- `website/public/es/app-privacy/index.html` — Política de privacidad pública de la app en español.
-- `website/public/en/app-privacy/index.html` — Política de privacidad pública de la app en inglés.
-- `website/public/es/app-privacy/google-ocr/index.html` — Página pública específica de privacidad para Google OCR en español.
-- `website/public/en/app-privacy/google-ocr/index.html` — Página pública específica de privacidad para Google OCR en inglés.
-- `website/public/terms/index.html` — Ruta neutral `x-default` hacia los términos de servicio; redirige según idioma preferido vía `site-language.js`.
-- `website/public/es/terms/index.html` — Términos de servicio del sitio web y de la app en español.
-- `website/public/en/terms/index.html` — Términos de servicio del sitio web y de la app en inglés.
-- `website/public/chrome-extension-privacy/index.html` — Política pública de privacidad de la extensión Chrome `toT — Tiempo de lectura`; documenta datos locales, permisos y ausencia de transmisión/telemetría.
-- `website/public/es/chrome-extension-privacy/index.html` — Política pública de privacidad de la extensión Chrome en español.
-- `website/public/en/chrome-extension-privacy/index.html` — Política pública de privacidad de la extensión Chrome en inglés.
-- `website/public/es/privacy-cookies/index.html` — Política mínima de privacidad/cookies en español.
-- `website/public/en/privacy-cookies/index.html` — Política mínima de privacidad/cookies en inglés.
-- Footers y paneles de descarga de `index.html`, `es/index.html` y `en/index.html` — incluyen enlaces visibles a privacidad/cookies y, en las rutas por idioma, también a la política pública de privacidad de la app y a términos de servicio.
-- `website/public/site-language.js` — Helper compartido del sitio estático para detectar/persistir idioma preferido, resaltar la entrada recomendada en `/` y soportar redirecciones neutrales como `/app-privacy/` y `/terms/`.
-- `website/public/styles.css` — Hoja de estilos compartida para las tres rutas.
-- `website/public/assets/brand/*.svg` — Logos locales del proyecto/desarrollador usados en el header y footer (`logo-tot.svg`, `logo-cibersino.svg`).
-- `website/public/assets/demo/guia-basica.gif` — Demo visual embebida en la landing neutral del sitio.
-- `website/public/assets/extension/tot-symbols.32.png` — Isotipo local usado en el bloque/CTA de la extensión dentro de las landings públicas.
-- `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Ko-fi, X light/dark y YouTube) y `SOURCES.md` como trazabilidad de origen de assets.
-- `website/public/_headers` — Políticas de headers para Cloudflare Pages (incluye noindex para dominios preview/versionados).
-- `website/public/robots.txt` — Reglas de robots para el dominio público.
-- `website/public/favicon.*` y `website/public/og-image.png` — Activos comunes de branding/preview social.
 
 ### 6.2) Branding local en la app (public/assets)
 
