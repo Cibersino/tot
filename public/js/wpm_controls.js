@@ -110,6 +110,20 @@
       return window.RendererPresets || {};
     }
 
+    function applyPresetDescriptionText(descriptionText = '') {
+      const rendererPresets = getRendererPresetsBridge();
+      if (!presetDescription) return;
+      if (typeof rendererPresets.applyPresetDescriptionText === 'function') {
+        rendererPresets.applyPresetDescriptionText(presetDescription, descriptionText);
+        return;
+      }
+      log.warnOnce(
+        'wpm-controls.applyPresetDescriptionText.missing',
+        '[wpm-controls] RendererPresets.applyPresetDescriptionText unavailable; using plain text fallback.'
+      );
+      presetDescription.textContent = typeof descriptionText === 'string' ? descriptionText : String(descriptionText || '');
+    }
+
     // =============================================================================
     // WPM sync helpers
     // =============================================================================
@@ -173,9 +187,7 @@
       if (presetsSelect && preset && preset.name) {
         presetsSelect.value = preset.name;
       }
-      if (presetDescription) {
-        presetDescription.textContent = preset && preset.description ? preset.description : '';
-      }
+      applyPresetDescriptionText(preset && preset.description ? preset.description : '');
     }
 
     function notifyPresetSelectionChanged(preset) {
@@ -201,13 +213,13 @@
     function resetPresetSelection() {
       currentPresetName = null;
       if (presetsSelect) presetsSelect.selectedIndex = -1;
-      if (presetDescription) presetDescription.textContent = '';
+      applyPresetDescriptionText('');
       notifyPresetSelectionChanged(null);
     }
 
     function resetPresetsState() {
       if (presetsSelect) presetsSelect.innerHTML = '';
-      if (presetDescription) presetDescription.textContent = '';
+      applyPresetDescriptionText('');
       allPresetsCache = [];
       currentPresetName = null;
       notifyPresetSelectionChanged(null);

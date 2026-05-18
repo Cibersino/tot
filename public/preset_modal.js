@@ -71,12 +71,24 @@
     // =============================================================================
     // i18n helpers
     // =============================================================================
-    const { loadRendererTranslations, tRenderer, msgRenderer, applyWindowLanguageAttributes } = window.RendererI18n || {};
-    if (!loadRendererTranslations || !tRenderer || !msgRenderer || !applyWindowLanguageAttributes) {
+    const {
+      loadRendererTranslations,
+      tRenderer,
+      msgRenderer,
+      applyWindowLanguageAttributes,
+      resolveUserTextDirection,
+    } = window.RendererI18n || {};
+    if (!loadRendererTranslations || !tRenderer || !msgRenderer || !applyWindowLanguageAttributes || !resolveUserTextDirection) {
       throw new Error('[preset_modal] RendererI18n unavailable; cannot continue');
     }
     const tr = (path) => tRenderer(path);
     const mr = (path, params = {}) => msgRenderer(path, params);
+
+    function updatePresetDescriptionDirection() {
+      const direction = resolveUserTextDirection(descEl.value || '');
+      descEl.setAttribute('dir', direction);
+      return direction;
+    }
 
     async function ensurePresetTranslations(lang) {
       const target = (lang || '').toLowerCase() || DEFAULT_LANG;
@@ -151,6 +163,7 @@
             }
 
             await applyPresetTranslations(mode);
+            updatePresetDescriptionDirection();
             // Update char count initial
             const currLen = descEl.value ? descEl.value.length : 0;
             charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
@@ -175,6 +188,7 @@
           if (!nextLang || nextLang === idiomaActual) return;
           idiomaActual = nextLang;
           await applyPresetTranslations(mode);
+          updatePresetDescriptionDirection();
         } catch (err) {
           log.warn('preset_modal: failed to apply settings update:', err);
         }
@@ -214,12 +228,13 @@
     // UI event listeners
     // =============================================================================
     descEl.addEventListener('input', () => {
+      if (descEl.value.length > descMaxLength) {
+        descEl.value = descEl.value.substring(0, descMaxLength);
+      }
+      updatePresetDescriptionDirection();
       const currentLength = descEl.value.length;
       const remaining = descMaxLength - currentLength;
       charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining });
-      if (currentLength >= descMaxLength) {
-        descEl.value = descEl.value.substring(0, descMaxLength);
-      }
     });
 
     nameEl.addEventListener('input', () => {
@@ -286,6 +301,7 @@
     (async function initCharCount() {
       const currLen = descEl.value ? descEl.value.length : 0;
       charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
+      updatePresetDescriptionDirection();
     })();
 
   }); // DOMContentLoaded

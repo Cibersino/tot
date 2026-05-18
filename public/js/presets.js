@@ -27,10 +27,14 @@
   }
   const { DEFAULT_LANG } = AppConstants;
   const { RendererI18n } = window;
-  if (!RendererI18n || typeof RendererI18n.getLangBase !== 'function') {
-    throw new Error('[presets] RendererI18n.getLangBase unavailable; cannot continue');
+  if (
+    !RendererI18n
+    || typeof RendererI18n.getLangBase !== 'function'
+    || typeof RendererI18n.resolveUserTextDirection !== 'function'
+  ) {
+    throw new Error('[presets] RendererI18n direction helpers unavailable; cannot continue');
   }
-  const { getLangBase } = RendererI18n;
+  const { getLangBase, resolveUserTextDirection } = RendererI18n;
 
   // =============================================================================
   // Helpers (merge + DOM utilities)
@@ -78,11 +82,22 @@
     });
   }
 
+  function applyPresetDescriptionText(presetDescription, descriptionText = '') {
+    if (!presetDescription) return;
+    const normalizedText = typeof descriptionText === 'string'
+      ? descriptionText
+      : descriptionText === null || typeof descriptionText === 'undefined'
+        ? ''
+        : String(descriptionText);
+    presetDescription.textContent = normalizedText;
+    presetDescription.setAttribute('dir', resolveUserTextDirection(normalizedText));
+  }
+
   function applyPresetSelection(preset, domRefs = {}) {
     if (!preset) return;
     const { selectEl, presetDescription } = domRefs;
     if (selectEl) selectEl.value = preset.name;
-    if (presetDescription) presetDescription.textContent = preset.description || '';
+    applyPresetDescriptionText(presetDescription, preset.description || '');
   }
 
   // =============================================================================
@@ -177,7 +192,7 @@
       }
     } else {
       if (selectEl) selectEl.selectedIndex = -1;
-      if (presetDescription) presetDescription.textContent = '';
+      applyPresetDescriptionText(presetDescription, '');
     }
 
     return selected;
@@ -189,6 +204,7 @@
   window.RendererPresets = {
     combinePresets,
     fillPresetsSelect,
+    applyPresetDescriptionText,
     applyPresetSelection,
     loadPresetsIntoDom,
     resolvePresetSelection
