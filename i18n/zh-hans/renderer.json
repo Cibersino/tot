@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "所选文件无法由原生提取读取，或文件已损坏。",
       "text_extraction_native_encrypted_or_password_protected": "所选 PDF 已加密或受密码保护，无法通过原生路径提取。",
       "text_extraction_native_cancelled": "原生提取已取消。",
-      "text_extraction_native_unsupported_format": "原生提取路径不支持此文件格式。",
+      "text_extraction_unsupported_format": "此文件格式不支持文本提取。",
       "wip_diseno_skins": "WIP：皮肤选择器将在未来版本中从这里打开。",
       "wip_diseno_crono": "WIP：悬浮秒表设置将在未来版本中从这里打开。",
       "wip_diseno_fuentes": "WIP：字体选择器将在未来版本中从这里打开。",

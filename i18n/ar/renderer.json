@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "الملف المحدد غير قابل للقراءة أو تالف بالنسبة إلى الاستخراج الأصلي.",
       "text_extraction_native_encrypted_or_password_protected": "ملف PDF المحدد مشفر أو محمي بكلمة مرور ولا يمكن استخراجه عبر المسار الأصلي.",
       "text_extraction_native_cancelled": "تم إلغاء الاستخراج الأصلي.",
-      "text_extraction_native_unsupported_format": "تنسيق الملف هذا غير مدعوم في مسار الاستخراج الأصلي.",
+      "text_extraction_unsupported_format": "تنسيق الملف هذا غير مدعوم لاستخراج النص.",
       "wip_diseno_skins": "قيد العمل: سيُفتح محدد السمات هنا في إصدار لاحق.",
       "wip_diseno_crono": "قيد العمل: ستُفتح إعدادات ساعة الإيقاف العائمة هنا في إصدار لاحق.",
       "wip_diseno_fuentes": "قيد العمل: سيُفتح محدد الخطوط هنا في إصدار لاحق.",

@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "فایل انتخاب‌شده برای استخراج بومی خواندنی نیست یا خراب است.",
       "text_extraction_native_encrypted_or_password_protected": "PDF انتخاب‌شده رمزگذاری‌شده یا دارای گذرواژه است و به‌صورت بومی قابل استخراج نیست.",
       "text_extraction_native_cancelled": "استخراج بومی لغو شد.",
-      "text_extraction_native_unsupported_format": "این قالب فایل توسط مسیر استخراج بومی پشتیبانی نمی‌شود.",
+      "text_extraction_unsupported_format": "این قالب فایل برای استخراج متن پشتیبانی نمی‌شود.",
       "wip_diseno_skins": "در دست ساخت: انتخابگر پوسته‌ها در نسخه‌ای آینده اینجا باز خواهد شد.",
       "wip_diseno_crono": "در دست ساخت: تنظیمات کرنومتر شناور در نسخه‌ای آینده اینجا باز خواهد شد.",
       "wip_diseno_fuentes": "در دست ساخت: انتخابگر فونت‌ها در نسخه‌ای آینده اینجا باز خواهد شد.",

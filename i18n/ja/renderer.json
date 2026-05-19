@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "選択したファイルはネイティブ抽出では読み取れないか、破損しています。",
       "text_extraction_native_encrypted_or_password_protected": "選択した PDF は暗号化またはパスワード保護されているため、ネイティブ抽出できません。",
       "text_extraction_native_cancelled": "ネイティブ抽出はキャンセルされました。",
-      "text_extraction_native_unsupported_format": "このファイル形式はネイティブ抽出ルートではサポートされていません。",
+      "text_extraction_unsupported_format": "このファイル形式はテキスト抽出に対応していません。",
       "wip_diseno_skins": "WIP: スキンセレクターは将来のバージョンでここから開きます。",
       "wip_diseno_crono": "WIP: フローティングストップウォッチ設定は将来のバージョンでここから開きます。",
       "wip_diseno_fuentes": "WIP: フォントセレクターは将来のバージョンでここから開きます。",

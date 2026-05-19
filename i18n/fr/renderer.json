@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Le fichier sélectionné est illisible ou corrompu pour l'extraction native.",
       "text_extraction_native_encrypted_or_password_protected": "Le PDF sélectionné est chiffré ou protégé par mot de passe et ne peut pas être extrait nativement.",
       "text_extraction_native_cancelled": "L'extraction native a été annulée.",
-      "text_extraction_native_unsupported_format": "Ce format de fichier n'est pas pris en charge par la route d'extraction native.",
+      "text_extraction_unsupported_format": "Ce format de fichier n’est pas pris en charge pour l’extraction de texte.",
       "wip_diseno_skins": "WIP : Le sélecteur de skins s'ouvrira ici dans une version future.",
       "wip_diseno_crono": "WIP : Les paramètres du chronomètre flottant s'ouvriront ici dans une version future.",
       "wip_diseno_fuentes": "WIP : Le sélecteur de polices de caractères s'ouvrira ici dans une version future.",

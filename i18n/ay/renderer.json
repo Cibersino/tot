@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Ajllita archivo nativa apsuñatakix janiw ullañjamäkiti jan ukax dañatawa.",
       "text_extraction_native_encrypted_or_password_protected": "Ajllita PDF ukax cifrado jan ukax contraseña ukamp jark’atawa; nativa thakhimp janiw apsuñjamäkiti.",
       "text_extraction_native_cancelled": "Nativa apsuña suyt’ayata.",
-      "text_extraction_native_unsupported_format": "Aka archivo formato nativa apsuña thakhin janiw soportatäkiti.",
+      "text_extraction_unsupported_format": "Aka archivo formatox janiw texto apsuñataki yanapt’kiti.",
       "wip_diseno_skins": "WIP: Skins ajllirix jutïr versión ukan aka chiqan jist’aratani.",
       "wip_diseno_crono": "WIP: Tuyuri pachayupiri configuración jutïr versión ukan aka chiqan jist’aratani.",
       "wip_diseno_fuentes": "WIP: Fuentes ajllirix jutïr versión ukan aka chiqan jist’aratani.",

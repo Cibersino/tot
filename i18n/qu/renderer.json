@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Akllasqa archivoqa nativa qichuypaq mana ñawinchasqa utaq waqllisqa.",
       "text_extraction_native_encrypted_or_password_protected": "Akllasqa PDFqa cifrado utaq contraseña nisqawan hark'asqa; nativa ñanwan mana qichuy atikunchu.",
       "text_extraction_native_cancelled": "Nativa qichuy saqisqa.",
-      "text_extraction_native_unsupported_format": "Kay archivo formatoqa nativa qichuy ñanpi mana yanapasqachu.",
+      "text_extraction_unsupported_format": "Kay archivo formatoqa manam texto qichunapaq yanapanchu.",
       "wip_diseno_skins": "WIP: Kaypi hamuq versiónpi skins akllana kichakunqa.",
       "wip_diseno_crono": "WIP: Kaypi hamuq versiónpi wayraqpi puriq pachayupaqpa configuraciónnin kichakunqa.",
       "wip_diseno_fuentes": "WIP: Kaypi hamuq versiónpi qillqa rikch'ay akllana kichakunqa.",

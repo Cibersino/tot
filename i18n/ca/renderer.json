@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "El fitxer seleccionat és il·legible o està corrupte per a l’extracció nativa.",
       "text_extraction_native_encrypted_or_password_protected": "El PDF seleccionat està encriptat o protegit amb contrasenya i no es pot extreure per ruta nativa.",
       "text_extraction_native_cancelled": "L’extracció nativa s’ha cancel·lat.",
-      "text_extraction_native_unsupported_format": "Aquest format de fitxer no està admès per la ruta d’extracció nativa.",
+      "text_extraction_unsupported_format": "Aquest format de fitxer no és compatible amb l’extracció de text.",
       "wip_diseno_skins": "WIP: Aquí s’obrirà el selector de skins en una versió futura.",
       "wip_diseno_crono": "WIP: Aquí s’obrirà la configuració del cronòmetre flotant en una versió futura.",
       "wip_diseno_fuentes": "WIP: Aquí s’obrirà el selector de tipus de lletra en una versió futura.",

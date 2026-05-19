@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Ifayela elikhethiwe alifundeki noma lonakele ukuze likhishwe nge-native.",
       "text_extraction_native_encrypted_or_password_protected": "I-PDF ekhethiwe ibethelwe noma ivikelwe ngephasiwedi futhi ayikwazi ukukhishwa nge-native.",
       "text_extraction_native_cancelled": "Ukukhishwa kwe-native kukhanseliwe.",
-      "text_extraction_native_unsupported_format": "Lolu hlobo lwefayela alusekelwa yindlela yokukhishwa kwe-native.",
+      "text_extraction_unsupported_format": "Le fomethi yefayela ayisekelwa ekukhishweni kombhalo.",
       "wip_diseno_skins": "WIP: Isikhethi sezindikimba sizovuleka lapha enguqulweni yesikhathi esizayo.",
       "wip_diseno_crono": "WIP: Izilungiselelo zesibali-sikhathi esintantayo zizovuleka lapha enguqulweni yesikhathi esizayo.",
       "wip_diseno_fuentes": "WIP: Isikhethi samafonti sizovuleka lapha enguqulweni yesikhathi esizayo.",

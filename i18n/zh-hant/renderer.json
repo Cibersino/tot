@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "所選檔案無法由原生擷取讀取，或檔案已損壞。",
       "text_extraction_native_encrypted_or_password_protected": "所選 PDF 已加密或受密碼保護，無法透過原生路徑擷取。",
       "text_extraction_native_cancelled": "原生擷取已取消。",
-      "text_extraction_native_unsupported_format": "原生擷取路徑不支援此檔案格式。",
+      "text_extraction_unsupported_format": "此檔案格式不支援文字擷取。",
       "wip_diseno_skins": "WIP：介面主題選擇器將在未來版本中開啟。",
       "wip_diseno_crono": "WIP：浮動碼錶設定將在未來版本中開啟。",
       "wip_diseno_fuentes": "WIP：字型選擇器將在未來版本中開啟。",

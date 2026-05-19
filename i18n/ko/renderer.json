@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "선택한 파일은 네이티브 추출에서 읽을 수 없거나 손상되었습니다.",
       "text_extraction_native_encrypted_or_password_protected": "선택한 PDF가 암호화되었거나 암호로 보호되어 네이티브로 추출할 수 없습니다.",
       "text_extraction_native_cancelled": "네이티브 추출이 취소되었습니다.",
-      "text_extraction_native_unsupported_format": "이 파일 형식은 네이티브 추출 경로에서 지원되지 않습니다.",
+      "text_extraction_unsupported_format": "이 파일 형식은 텍스트 추출에 지원되지 않습니다.",
       "wip_diseno_skins": "WIP: 스킨 선택기는 향후 버전에서 여기서 열립니다.",
       "wip_diseno_crono": "WIP: 플로팅 스톱워치 설정은 향후 버전에서 여기서 열립니다.",
       "wip_diseno_fuentes": "WIP: 글꼴 선택기는 향후 버전에서 여기서 열립니다.",

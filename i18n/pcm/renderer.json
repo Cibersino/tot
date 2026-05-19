@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Di selected file unreadable or corrupt for native extraction.",
       "text_extraction_native_encrypted_or_password_protected": "Di selected PDF encrypted or password-protected and no fit extract natively.",
       "text_extraction_native_cancelled": "Native extraction was cancelled.",
-      "text_extraction_native_unsupported_format": "Dis file format no dey supported by native extraction route.",
+      "text_extraction_unsupported_format": "Dis file format no dey supported for text extraction.",
       "wip_diseno_skins": "WIP: Di skins selector go open here for future version.",
       "wip_diseno_crono": "WIP: Floating stopwatch settings go open here for future version.",
       "wip_diseno_fuentes": "WIP: Di fonts selector go open here for future version.",

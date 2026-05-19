@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Die ausgewählte Datei ist für die native Extraktion unlesbar oder beschädigt.",
       "text_extraction_native_encrypted_or_password_protected": "Die ausgewählte PDF ist verschlüsselt oder passwortgeschützt und kann nicht nativ extrahiert werden.",
       "text_extraction_native_cancelled": "Die native Extraktion wurde abgebrochen.",
-      "text_extraction_native_unsupported_format": "Dieses Dateiformat wird von der nativen Extraktionsroute nicht unterstützt.",
+      "text_extraction_unsupported_format": "Dieses Dateiformat wird für die Textextraktion nicht unterstützt.",
       "wip_diseno_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_crono": "WIP: Die Einstellungen für die schwebende Stoppuhr werden hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_fuentes": "WIP: Der Schriftarten-Selektor wird hier in einer zukünftigen Version geöffnet.",

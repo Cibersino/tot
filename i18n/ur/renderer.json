@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "منتخب فائل native extraction کے لیے پڑھی نہیں جا سکتی یا corrupt ہے۔",
       "text_extraction_native_encrypted_or_password_protected": "منتخب PDF encrypted یا password-protected ہے اور native route سے نہیں نکالی جا سکتی۔",
       "text_extraction_native_cancelled": "Native extraction منسوخ ہو گئی۔",
-      "text_extraction_native_unsupported_format": "یہ فائل فارمیٹ native extraction route سے supported نہیں۔",
+      "text_extraction_unsupported_format": "یہ فائل فارمیٹ متن نکالنے کے لیے معاون نہیں ہے۔",
       "wip_diseno_skins": "WIP: skins selector مستقبل کے ورژن میں یہاں کھلے گا۔",
       "wip_diseno_crono": "WIP: floating stopwatch settings مستقبل کے ورژن میں یہاں کھلیں گی۔",
       "wip_diseno_fuentes": "WIP: fonts selector مستقبل کے ورژن میں یہاں کھلے گا۔",

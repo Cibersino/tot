@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Seçili dosya yerel çıkarma için okunamıyor veya bozuk.",
       "text_extraction_native_encrypted_or_password_protected": "Seçili PDF şifreli veya parola korumalı olduğu için yerel olarak çıkarılamaz.",
       "text_extraction_native_cancelled": "Yerel çıkarma iptal edildi.",
-      "text_extraction_native_unsupported_format": "Bu dosya biçimi yerel çıkarma yolu tarafından desteklenmiyor.",
+      "text_extraction_unsupported_format": "Bu dosya biçimi metin çıkarma için desteklenmiyor.",
       "wip_diseno_skins": "WIP: Tema seçici gelecek bir sürümde burada açılacak.",
       "wip_diseno_crono": "WIP: Yüzen kronometre ayarları gelecek bir sürümde burada açılacak.",
       "wip_diseno_fuentes": "WIP: Yazı tipi seçici gelecek bir sürümde burada açılacak.",

@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Hautatutako fitxategia ezin da irakurri edo hondatuta dago erauzketa natiborako.",
       "text_extraction_native_encrypted_or_password_protected": "Hautatutako PDFa zifratuta edo pasahitzez babestuta dago eta ezin da bide natibotik erauzi.",
       "text_extraction_native_cancelled": "Erauzketa natiboa bertan behera utzi da.",
-      "text_extraction_native_unsupported_format": "Fitxategi-formatu hau ez dago erauzketa natiboaren bidean onartuta.",
+      "text_extraction_unsupported_format": "Fitxategi-formatu hau ez da onartzen testua erauzteko.",
       "wip_diseno_skins": "WIP: azal hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
       "wip_diseno_crono": "WIP: kronometro flotatzailearen konfigurazioa etorkizuneko bertsio batean irekiko da hemen.",
       "wip_diseno_fuentes": "WIP: letra-tipoen hautatzailea etorkizuneko bertsio batean irekiko da hemen.",

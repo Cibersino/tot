@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Kāore e taea te pānui i te kōnae kua tīpakohia, kua kino rānei mō te tangohanga native.",
       "text_extraction_native_encrypted_or_password_protected": "Kua whakamuna, kua tiakina rānei te PDF kua tīpakohia ki te kupuhipa, ā, kāore e taea te tango mā te ara native.",
       "text_extraction_native_cancelled": "Kua whakakorea te tangohanga native.",
-      "text_extraction_native_unsupported_format": "Kāore tēnei hōputu kōnae e tautokona e te ara tangohanga native.",
+      "text_extraction_unsupported_format": "Kāore tēnei hōputu kōnae e tautokona mō te tangohanga kuputuhi.",
       "wip_diseno_skins": "WIP: Ka whakatuwhera te kaikōwhiri skins ki konei i tētahi putanga ā muri ake.",
       "wip_diseno_crono": "WIP: Ka whakatuwhera ngā tautuhinga matawā mānu ki konei i tētahi putanga ā muri ake.",
       "wip_diseno_fuentes": "WIP: Ka whakatuwhera te kaikōwhiri momotuhi ki konei i tētahi putanga ā muri ake.",

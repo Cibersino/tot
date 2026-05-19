@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Tệp đã chọn không đọc được hoặc bị hỏng đối với trích xuất native.",
       "text_extraction_native_encrypted_or_password_protected": "PDF đã chọn được mã hóa hoặc bảo vệ bằng mật khẩu và không thể trích xuất native.",
       "text_extraction_native_cancelled": "Trích xuất native đã bị hủy.",
-      "text_extraction_native_unsupported_format": "Định dạng tệp này không được tuyến trích xuất native hỗ trợ.",
+      "text_extraction_unsupported_format": "Định dạng tệp này không được hỗ trợ để trích xuất văn bản.",
       "wip_diseno_skins": "WIP: Bộ chọn giao diện sẽ mở tại đây trong phiên bản tương lai.",
       "wip_diseno_crono": "WIP: Cài đặt đồng hồ bấm giờ nổi sẽ mở tại đây trong phiên bản tương lai.",
       "wip_diseno_fuentes": "WIP: Bộ chọn phông chữ sẽ mở tại đây trong phiên bản tương lai.",

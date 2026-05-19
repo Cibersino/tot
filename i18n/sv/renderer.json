@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Den valda filen är oläsbar eller skadad för inbyggd extrahering.",
       "text_extraction_native_encrypted_or_password_protected": "Den valda PDF-filen är krypterad eller lösenordsskyddad och kan inte extraheras med inbyggd extrahering.",
       "text_extraction_native_cancelled": "Inbyggd extrahering avbröts.",
-      "text_extraction_native_unsupported_format": "Detta filformat stöds inte av den inbyggda extraheringsvägen.",
+      "text_extraction_unsupported_format": "Det här filformatet stöds inte för textextrahering.",
       "wip_diseno_skins": "WIP: Skin-väljaren öppnas här i en framtida version.",
       "wip_diseno_crono": "WIP: Inställningar för flytande stoppur öppnas här i en framtida version.",
       "wip_diseno_fuentes": "WIP: Typsnittsväljaren öppnas här i en framtida version.",

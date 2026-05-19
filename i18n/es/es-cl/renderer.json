@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "El archivo elegido no se puede leer o está hecho bolsa pa' extracción nativa.",
       "text_extraction_native_encrypted_or_password_protected": "El PDF elegido viene encriptado o con contraseña, así que no se puede sacar por la ruta nativa.",
       "text_extraction_native_cancelled": "La extracción nativa quedó cancelada.",
-      "text_extraction_native_unsupported_format": "Ese formato de archivo no está soportado por la ruta nativa.",
+      "text_extraction_unsupported_format": "Este formato de archivo no apaña pa’ extraer texto.",
       "wip_diseno_skins": "WIP: Aquí vamos a cambiar las pilchas.",
       "wip_diseno_crono": "WIP: Aquí vamos a arreglar el reloj porfiado.",
       "wip_diseno_fuentes": "WIP: Aquí elegís el tipo de letra.",

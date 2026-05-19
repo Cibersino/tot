@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "Fichye chwazi a pa lizib oswa li koripsyon pou ekstraksyon natif.",
       "text_extraction_native_encrypted_or_password_protected": "PDF chwazi a ankode oswa pwoteje ak modpas epi li pa ka ekstrè pa chemen natif.",
       "text_extraction_native_cancelled": "Ekstraksyon natif te anile.",
-      "text_extraction_native_unsupported_format": "Fòma fichye sa a pa sipòte pa chemen ekstraksyon natif la.",
+      "text_extraction_unsupported_format": "Fòma fichye sa a pa sipòte pou ekstraksyon tèks.",
       "wip_diseno_skins": "WIP: selektè skins la ap louvri isit nan yon vèsyon pi devan.",
       "wip_diseno_crono": "WIP: paramèt kwonomèt flòtan an ap louvri isit nan yon vèsyon pi devan.",
       "wip_diseno_fuentes": "WIP: selektè polis yo ap louvri isit nan yon vèsyon pi devan.",
