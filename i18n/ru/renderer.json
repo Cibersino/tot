@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "Для OCR требуется подключение к интернету. Проверьте подключение и попробуйте снова.",
       "text_extraction_ocr_setup_missing_credentials": "OCR недоступен в этой сборке приложения, потому что отсутствуют включенные в приложение OAuth-учетные данные Google.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR недоступен в этой сборке приложения, потому что включенные в приложение OAuth-учетные данные Google недействительны.",
-      "text_extraction_ocr_restricted": "Маршрут OCR ограничен для этого типа файла.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR временно заблокирован квотой/лимитом частоты запросов. Подождите и повторите попытку.",
       "text_extraction_ocr_input_too_large": "PDF, который OCR должен был загрузить, превышает лимит поставщика. Измените страницы, используйте нативный маршрут или автоматически разделите весь PDF.",
       "text_extraction_ocr_runtime_error": "Во время извлечения произошла ошибка выполнения OCR. Проверьте консоль и повторите попытку.",

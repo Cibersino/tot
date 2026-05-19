@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "OCR membutuhkan koneksi internet. Periksa koneksi Anda dan coba lagi.",
       "text_extraction_ocr_setup_missing_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak ada.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak valid.",
-      "text_extraction_ocr_restricted": "Rute OCR dibatasi untuk jenis file ini.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR untuk sementara diblokir oleh kuota/batas laju. Tunggu dan coba lagi.",
       "text_extraction_ocr_input_too_large": "PDF yang akan diunggah oleh OCR melebihi batas penyedia. Sesuaikan halaman, gunakan jalur bawaan, atau pisahkan PDF lengkap secara otomatis.",
       "text_extraction_ocr_runtime_error": "Terjadi kesalahan runtime OCR selama ekstraksi. Periksa konsol dan coba lagi.",

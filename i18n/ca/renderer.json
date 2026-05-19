@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "L’OCR requereix connexió a internet. Revisa la connexió i torna-ho a provar.",
       "text_extraction_ocr_setup_missing_credentials": "L’OCR no està disponible en aquest build de l’app perquè falten les credencials OAuth de Google incloses amb l’app.",
       "text_extraction_ocr_setup_invalid_credentials": "L’OCR no està disponible en aquest build de l’app perquè les credencials OAuth de Google incloses amb l’app són invàlides.",
-      "text_extraction_ocr_restricted": "La ruta OCR està restringida per a aquest tipus de fitxer.",
       "text_extraction_ocr_quota_or_rate_limited": "L’OCR està bloquejat temporalment per quota/límit de taxa. Espera i torna-ho a provar.",
       "text_extraction_ocr_input_too_large": "El PDF que OCR havia de pujar supera el límit del proveïdor. Ajusta les pàgines, usa la ruta nativa o divideix automàticament el PDF complet.",
       "text_extraction_ocr_runtime_error": "S’ha produït un error d’execució OCR durant extracció. Revisa la consola i torna-ho a provar.",

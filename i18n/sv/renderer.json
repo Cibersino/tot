@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "OCR kräver en internetanslutning. Kontrollera anslutningen och försök igen.",
       "text_extraction_ocr_setup_missing_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna saknas.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna är ogiltiga.",
-      "text_extraction_ocr_restricted": "OCR-vägen är begränsad för denna filtyp.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR är tillfälligt blockerat av kvot-/hastighetsbegränsningar. Vänta och försök igen.",
       "text_extraction_ocr_input_too_large": "PDF-filen som OCR skulle ladda upp överskrider leverantörens gräns. Justera sidor, använd den inbyggda metoden eller dela hela PDF-filen automatiskt.",
       "text_extraction_ocr_runtime_error": "Ett OCR-runtimefel uppstod under extrahering. Kontrollera konsolen och försök igen.",

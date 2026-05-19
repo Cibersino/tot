@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "OCR mande koneksyon entènèt. Tcheke koneksyon ou epi eseye ankò.",
       "text_extraction_ocr_setup_missing_credentials": "OCR pa disponib nan build app sa a paske kalifikasyon Google OAuth ki enkli yo manke.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR pa disponib nan build app sa a paske kalifikasyon Google OAuth ki enkli yo pa valab.",
-      "text_extraction_ocr_restricted": "Chemen OCR la gen restriksyon pou kalite fichye sa a.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR bloke tanporèman akòz kota/limit frekans. Tann epi eseye ankò.",
       "text_extraction_ocr_input_too_large": "PDF OCR t ap telechaje a depase limit founisè a. Ajiste paj yo, sèvi ak chemen natif la, oswa divize PDF konplè a otomatikman.",
       "text_extraction_ocr_runtime_error": "Gen yon erè runtime OCR ki fèt pandan ekstrè. Tcheke konsole a epi eseye ankò.",

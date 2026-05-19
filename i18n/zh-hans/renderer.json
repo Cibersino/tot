@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "OCR 需要互联网连接。请检查连接后重试。",
       "text_extraction_ocr_setup_missing_credentials": "此应用构建中的 OCR 不可用，因为缺少随应用打包的 Google OAuth 凭据。",
       "text_extraction_ocr_setup_invalid_credentials": "此应用构建中的 OCR 不可用，因为随应用打包的 Google OAuth 凭据无效。",
-      "text_extraction_ocr_restricted": "此文件类型的 OCR 路径受限。",
       "text_extraction_ocr_quota_or_rate_limited": "OCR 因配额/速率限制而暂时受阻。请稍后重试。",
       "text_extraction_ocr_input_too_large": "OCR 将要上传的 PDF 超过提供方限制。请调整页面、使用原生路径，或自动拆分完整 PDF。",
       "text_extraction_ocr_runtime_error": "提取过程中发生 OCR 运行时错误。请检查控制台并重试。",

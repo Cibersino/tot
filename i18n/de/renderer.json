@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "OCR benötigt eine Internetverbindung. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
       "text_extraction_ocr_setup_missing_credentials": "Für die OCR-Einrichtung fehlt credentials.json. Wählen Sie eine gültige Google-OAuth-Anmeldedatei aus und versuchen Sie es erneut.",
       "text_extraction_ocr_setup_invalid_credentials": "Die ausgewählte Anmeldedatei ist für Google OAuth ungültig. Wählen Sie eine gültige credentials.json und versuchen Sie es erneut.",
-      "text_extraction_ocr_restricted": "Die OCR-Route ist für diesen Dateityp eingeschränkt.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR ist vorübergehend durch Quoten-/Ratenlimits blockiert. Warten Sie und versuchen Sie es erneut.",
       "text_extraction_ocr_input_too_large": "Das PDF, das OCR hochladen wollte, überschreitet das Anbieterlimit. Passen Sie die Seiten an, verwenden Sie die native Route oder teilen Sie das vollständige PDF automatisch auf.",
       "text_extraction_ocr_runtime_error": "Während der Extraktion ist ein OCR-Laufzeitfehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",

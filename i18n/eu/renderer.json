@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "OCR-k Interneteko konexioa behar du. Egiaztatu konexioa eta saiatu berriro.",
       "text_extraction_ocr_setup_missing_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak falta direlako.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak baliogabeak direlako.",
-      "text_extraction_ocr_restricted": "OCR bidea mugatuta dago fitxategi mota honetarako.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR aldi baterako blokeatuta dago kuota/tasa-mugen ondorioz. Itxaron eta saiatu berriro.",
       "text_extraction_ocr_input_too_large": "OCR-k igo behar zuen PDFak hornitzailearen muga gainditzen du. Doitu orriak, erabili bide natiboa edo zatitu automatikoki PDF osoa.",
       "text_extraction_ocr_runtime_error": "OCR exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",

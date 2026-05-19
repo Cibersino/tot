@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "OCR needs internet connection. Check your connection and try again.",
       "text_extraction_ocr_setup_missing_credentials": "OCR no dey available for dis app build because bundled Google OAuth credentials dey missing.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR no dey available for dis app build because bundled Google OAuth credentials no valid.",
-      "text_extraction_ocr_restricted": "OCR route dey restricted for dis file type.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR dey temporarily blocked by quota/rate limits. Wait and retry.",
       "text_extraction_ocr_input_too_large": "Di PDF wey OCR wan upload pass provider limit. Adjust pages, use native route, or split di full PDF automatically.",
       "text_extraction_ocr_runtime_error": "OCR runtime error happen during text extraction. Check console and retry.",

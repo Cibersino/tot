@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "يتطلب OCR اتصالًا بالإنترنت. تحقق من اتصالك وحاول مرة أخرى.",
       "text_extraction_ocr_setup_missing_credentials": "OCR غير متاح في هذا البناء من التطبيق لأن بيانات اعتماد Google OAuth المضمّنة مفقودة.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR غير متاح في هذا البناء من التطبيق لأن بيانات اعتماد Google OAuth المضمّنة غير صالحة.",
-      "text_extraction_ocr_restricted": "مسار OCR مقيّد لهذا النوع من الملفات.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR محظور مؤقتًا بسبب الحصة/حدود المعدل. انتظر ثم أعد المحاولة.",
       "text_extraction_ocr_input_too_large": "يتجاوز ملف PDF الذي كان OCR سيُحمّله حدّ المزوّد. عدّل الصفحات، أو استخدم المسار الأصلي، أو قسّم ملف PDF الكامل تلقائيًا.",
       "text_extraction_ocr_runtime_error": "حدث خطأ تشغيل OCR أثناء الاستخراج. راجع وحدة التحكم وحاول مرة أخرى.",

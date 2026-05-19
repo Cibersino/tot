@@ -524,7 +524,6 @@
       "text_extraction_ocr_connectivity_failed": "OCR-এর জন্য ইন্টারনেট সংযোগ দরকার। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।",
       "text_extraction_ocr_setup_missing_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অনুপস্থিত।",
       "text_extraction_ocr_setup_invalid_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অকার্যকর।",
-      "text_extraction_ocr_restricted": "এই ফাইল ধরনের জন্য OCR রুট সীমাবদ্ধ।",
       "text_extraction_ocr_quota_or_rate_limited": "quota/rate limit-এর কারণে OCR সাময়িকভাবে অবরুদ্ধ। অপেক্ষা করে আবার চেষ্টা করুন।",
       "text_extraction_ocr_input_too_large": "OCR যে PDF আপলোড করতে যাচ্ছিল সেটি সরবরাহকারীর সীমা ছাড়িয়েছে। পৃষ্ঠা ঠিক করুন, নেটিভ রুট ব্যবহার করুন, অথবা সম্পূর্ণ PDF স্বয়ংক্রিয়ভাবে ভাগ করুন।",
       "text_extraction_ocr_runtime_error": "নিষ্কাশনের সময় OCR runtime ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
