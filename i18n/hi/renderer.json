@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अनुपस्थित हैं।",
       "text_extraction_ocr_setup_invalid_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अमान्य हैं।",
       "text_extraction_ocr_quota_or_rate_limited": "OCR अस्थायी रूप से quota/rate limit के कारण अवरुद्ध है। प्रतीक्षा करें और फिर प्रयास करें।",
-      "text_extraction_ocr_input_too_large": "OCR जिस PDF को अपलोड करने वाला था वह प्रदाता की सीमा से अधिक है। पृष्ठ समायोजित करें, नेटिव मार्ग उपयोग करें, या पूरी PDF स्वचालित रूप से बाँटें।",
       "text_extraction_ocr_runtime_error": "निकासी के दौरान OCR runtime त्रुटि हुई। कंसोल देखें और फिर प्रयास करें।",
       "text_extraction_ocr_cancelled": "OCR निकासी रद्द कर दी गई।",
       "text_extraction_ocr_cleanup_warning": "OCR पूरा हुआ, लेकिन अस्थायी remote फ़ाइल cleanup विफल रहा। अपना Google Drive फ़ोल्डर देखें।",

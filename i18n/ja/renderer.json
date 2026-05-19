@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "このアプリビルドには同梱の Google OAuth 認証情報がないため、OCR は利用できません。",
       "text_extraction_ocr_setup_invalid_credentials": "このアプリビルドに同梱された Google OAuth 認証情報が無効なため、OCR は利用できません。",
       "text_extraction_ocr_quota_or_rate_limited": "OCR はクォータ/レート制限により一時的にブロックされています。しばらく待ってから再試行してください。",
-      "text_extraction_ocr_input_too_large": "OCR がアップロードしようとした PDF はプロバイダーの上限を超えています。ページを調整するか、ネイティブを使用するか、PDF 全体を自動分割してください。",
       "text_extraction_ocr_runtime_error": "抽出中に OCR 実行時エラーが発生しました。コンソールを確認して再試行してください。",
       "text_extraction_ocr_cancelled": "OCR 抽出はキャンセルされました。",
       "text_extraction_ocr_cleanup_warning": "OCR は完了しましたが、一時リモートファイルのクリーンアップに失敗しました。Google Drive フォルダを確認してください。",

@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "Bu uygulama derlemesinde paketlenmiş Google OAuth kimlik bilgileri eksik olduğu için OCR kullanılamıyor.",
       "text_extraction_ocr_setup_invalid_credentials": "Bu uygulama derlemesinde paketlenmiş Google OAuth kimlik bilgileri geçersiz olduğu için OCR kullanılamıyor.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR kota/hız sınırları nedeniyle geçici olarak engellendi. Bekleyin ve yeniden deneyin.",
-      "text_extraction_ocr_input_too_large": "OCR’ın yüklemek üzere olduğu PDF sağlayıcı sınırını aşıyor. Sayfaları ayarlayın, yerleşik yöntemi kullanın veya tam PDF’yi otomatik olarak bölün.",
       "text_extraction_ocr_runtime_error": "Çıkarma sırasında OCR çalışma zamanı hatası oluştu. Konsolu kontrol edin ve yeniden deneyin.",
       "text_extraction_ocr_cancelled": "OCR çıkarma iptal edildi.",
       "text_extraction_ocr_cleanup_warning": "OCR tamamlandı, ancak geçici uzak dosya temizliği başarısız oldu. Google Drive klasörünüzü kontrol edin.",

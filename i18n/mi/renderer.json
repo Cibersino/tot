@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te ngaro o ngā raraunga Google OAuth kua takai ki te taupānga.",
       "text_extraction_ocr_setup_invalid_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te muhu o ngā raraunga Google OAuth kua takai ki te taupānga.",
       "text_extraction_ocr_quota_or_rate_limited": "Kua āraia rangitahitia te OCR e ngā quota/tepe auau. Tatari ka ngana anō.",
-      "text_extraction_ocr_input_too_large": "Ka hipa te PDF i whakaritea e OCR kia tukuatu i te tepe kaiwhakarato. Whakatikahia ngā whārangi, whakamahia te ara native, wehea aunoa rānei te PDF katoa.",
       "text_extraction_ocr_runtime_error": "I puta he hapa whakahaere OCR i te tango. Tirohia te papatohu ka ngana anō.",
       "text_extraction_ocr_cancelled": "Kua whakakorea te tango OCR.",
       "text_extraction_ocr_cleanup_warning": "Kua oti te OCR, engari i rahua te horoi i te kōnae rangitahi mamao. Tirohia tō kōpaki Google Drive.",

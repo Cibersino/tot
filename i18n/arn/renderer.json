@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "OCR mew credentials.json faltaley. Düllinge kiñe valid Google OAuth credenciales archivo ka wiño küdaw.",
       "text_extraction_ocr_setup_invalid_credentials": "Düllingelu credenciales archivo no küme Google OAuth mew. Düllinge kiñe valid credentials.json ka wiño küdaw.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR cuota/rate limit mew pichi antü bloqueadongey. Pichi alünnge ka wiño küdaw.",
-      "text_extraction_ocr_input_too_large": "PDF ñi OCR amulal rume tripay límite proveedor. Kümeeltunge püle, püne nativa rüpü, kam dividir automáticamente kom PDF.",
       "text_extraction_ocr_runtime_error": "Extracción mew OCR runtime welulkuy. Kintunge consola ka wiño küdaw.",
       "text_extraction_ocr_cancelled": "OCR extracción katrüntuy.",
       "text_extraction_ocr_cleanup_warning": "OCR afi tañi küdaw, welu pepilay lifeltuam ti chillka kamapu mu. Adkintunge mi carpeta Google Drive mu.",

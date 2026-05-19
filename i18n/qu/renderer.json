@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna faltan.",
       "text_extraction_ocr_setup_invalid_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna mana allinchu.",
       "text_extraction_ocr_quota_or_rate_limited": "OCRqa temporalmente quota/tasa límite rayku hark'asqa. Suyay hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_input_too_large": "PDF OCR apachinanta munasqanqa proveedorpa límite-ninta yallin. P'anqakunata allichay, nativa ñanta llamk'achiy utaq llapan PDFta kikinmanta t'aqay.",
       "text_extraction_ocr_runtime_error": "Qichuy ukhupi OCR ejecución pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
       "text_extraction_ocr_cancelled": "OCR qichuy saqisqa.",
       "text_extraction_ocr_cleanup_warning": "OCR tukusqa, ichaqa temporal remoto archivo pichay pantarun. Google Drive carpetaykita qhaway.",

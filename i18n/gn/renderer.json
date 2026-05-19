@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "OCR ndojepurukuaái ko app build-pe ofaltágui credencial OAuth Google oúva app ndive.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR ndojepurukuaái ko app build-pe credencial OAuth Google oúva app ndive ndoikóigui.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR ojejoko sapy’a cuota/límite de tasa rehe. Eha’arõ ha eha’ã jey.",
-      "text_extraction_ocr_input_too_large": "PDF OCR ohupíta va’ekue ohasa límite proveedor rehegua. Emohenda página, eipuru ruta nativa, térã emboja’o automático PDF tuichakue.",
       "text_extraction_ocr_runtime_error": "Oiko OCR runtime error text extraction aja. Ehecha consola ha eha’ã jey.",
       "text_extraction_ocr_cancelled": "OCR extracción ojeheja.",
       "text_extraction_ocr_cleanup_warning": "OCR opa, hákatu limpieza temporal remota archivo rehegua ojavy. Ehecha nde Google Drive carpeta.",

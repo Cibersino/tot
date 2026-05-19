@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "OCR no está disponible en este build de la app porque faltan las credenciales OAuth de Google incluidas con la app.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR no está disponible en este build de la app porque las credenciales OAuth de Google incluidas con la app son inválidas.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR está bloqueado temporalmente por cuota/límite de tasa. Espera y reintenta.",
-      "text_extraction_ocr_input_too_large": "El PDF que OCR iba a subir supera el límite del proveedor. Ajusta páginas, usa nativa o divide automáticamente el PDF completo.",
       "text_extraction_ocr_runtime_error": "Ocurrió un error de ejecución OCR durante extracción. Revisa consola y reintenta.",
       "text_extraction_ocr_cancelled": "La extracción OCR fue cancelada.",
       "text_extraction_ocr_cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",

@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অনুপস্থিত।",
       "text_extraction_ocr_setup_invalid_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অকার্যকর।",
       "text_extraction_ocr_quota_or_rate_limited": "quota/rate limit-এর কারণে OCR সাময়িকভাবে অবরুদ্ধ। অপেক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_input_too_large": "OCR যে PDF আপলোড করতে যাচ্ছিল সেটি সরবরাহকারীর সীমা ছাড়িয়েছে। পৃষ্ঠা ঠিক করুন, নেটিভ রুট ব্যবহার করুন, অথবা সম্পূর্ণ PDF স্বয়ংক্রিয়ভাবে ভাগ করুন।",
       "text_extraction_ocr_runtime_error": "নিষ্কাশনের সময় OCR runtime ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
       "text_extraction_ocr_cancelled": "OCR নিষ্কাশন বাতিল করা হয়েছে।",
       "text_extraction_ocr_cleanup_warning": "OCR শেষ হয়েছে, কিন্তু অস্থায়ী remote ফাইল cleanup ব্যর্থ হয়েছে। আপনার Google Drive ফোল্ডার দেখুন।",

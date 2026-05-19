@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "OCR không khả dụng trong bản dựng ứng dụng này vì thiếu thông tin xác thực Google OAuth được đóng gói.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR không khả dụng trong bản dựng ứng dụng này vì thông tin xác thực Google OAuth được đóng gói không hợp lệ.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR tạm thời bị chặn do hạn mức/giới hạn tốc độ. Hãy chờ rồi thử lại.",
-      "text_extraction_ocr_input_too_large": "PDF mà OCR sắp tải lên vượt quá giới hạn của nhà cung cấp. Điều chỉnh các trang, dùng phương thức tích hợp hoặc tự động chia PDF đầy đủ.",
       "text_extraction_ocr_runtime_error": "Đã xảy ra lỗi runtime OCR trong khi trích xuất. Hãy kiểm tra console và thử lại.",
       "text_extraction_ocr_cancelled": "Trích xuất OCR đã bị hủy.",
       "text_extraction_ocr_cleanup_warning": "OCR đã hoàn tất, nhưng không thể dọn tệp tạm thời từ xa. Hãy kiểm tra thư mục Google Drive của bạn.",

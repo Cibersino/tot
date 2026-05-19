@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "OCR در این build برنامه در دسترس نیست، چون اعتبارنامه‌های Google OAuth همراه برنامه وجود ندارند.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR در این build برنامه در دسترس نیست، چون اعتبارنامه‌های Google OAuth همراه برنامه نامعتبرند.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR موقتاً به دلیل سهمیه/محدودیت نرخ مسدود شده است. صبر کنید و دوباره تلاش کنید.",
-      "text_extraction_ocr_input_too_large": "PDFی که OCR می‌خواست بارگذاری کند از حد ارائه‌دهنده بیشتر است. صفحه‌ها را تنظیم کنید، از مسیر بومی استفاده کنید، یا PDF کامل را به‌طور خودکار تقسیم کنید.",
       "text_extraction_ocr_runtime_error": "هنگام استخراج با OCR خطای زمان اجرا رخ داد. کنسول را بررسی کنید و دوباره تلاش کنید.",
       "text_extraction_ocr_cancelled": "استخراج OCR لغو شد.",
       "text_extraction_ocr_cleanup_warning": "OCR پایان یافت، اما پاک‌سازی فایل موقت راه دور ناموفق بود. پوشه Google Drive خود را بررسی کنید.",

@@ -525,7 +525,6 @@
       "text_extraction_ocr_setup_missing_credentials": "此應用程式建置中的 OCR 無法使用，因為缺少隨應用程式打包的 Google OAuth 憑證。",
       "text_extraction_ocr_setup_invalid_credentials": "此應用程式建置中的 OCR 無法使用，因為隨應用程式打包的 Google OAuth 憑證無效。",
       "text_extraction_ocr_quota_or_rate_limited": "OCR 因配額／速率限制而暫時受阻。請稍後重試。",
-      "text_extraction_ocr_input_too_large": "OCR 將要上傳的 PDF 超過供應方限制。請調整頁面、使用原生路徑，或自動分割完整 PDF。",
       "text_extraction_ocr_runtime_error": "擷取過程中發生 OCR 執行階段錯誤。請檢查主控台並重試。",
       "text_extraction_ocr_cancelled": "OCR 擷取已取消。",
       "text_extraction_ocr_cleanup_warning": "OCR 已完成，但暫時遠端檔案清理失敗。請檢查你的 Google Drive 資料夾。",
