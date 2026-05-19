@@ -532,7 +532,7 @@
       "text_extraction_native_unreadable_or_corrupt": "The selected file is unreadable or corrupt for native extraction.",
       "text_extraction_native_encrypted_or_password_protected": "The selected PDF is encrypted or password-protected and cannot be extracted natively.",
       "text_extraction_native_cancelled": "Native extraction was cancelled.",
-      "text_extraction_native_unsupported_format": "This file format is not supported by the native extraction route.",
+      "text_extraction_unsupported_format": "This file format is not supported for text extraction.",
       "wip_diseno_skins": "WIP: The skins selector will open here in a future version.",
       "wip_diseno_crono": "WIP: Floating stopwatch settings will open here in a future version.",
       "wip_diseno_fuentes": "WIP: The fonts selector will open here in a future version.",

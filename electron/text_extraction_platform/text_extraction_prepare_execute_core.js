@@ -458,7 +458,7 @@ function buildUnsupportedFormatPrepareFailure(fileInfo) {
       triageReason: 'unsupported_format',
       ocrSetupState: 'not_checked',
     }),
-    primaryAlertKey: 'renderer.alerts.text_extraction_native_unsupported_format',
+    primaryAlertKey: 'renderer.alerts.text_extraction_unsupported_format',
     warningAlertKeys: [],
     error: {
       code: 'unsupported_format',
@@ -931,7 +931,6 @@ function resolvePrimaryAlertKey(routeKind, result) {
   if (routeKind === 'native') {
     if (state === 'success') return '';
     if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_native_cancelled';
-    if (code === 'unsupported_format') return 'renderer.alerts.text_extraction_native_unsupported_format';
     if (code === 'native_encrypted_or_password_protected') {
       return 'renderer.alerts.text_extraction_native_encrypted_or_password_protected';
     }
@@ -939,22 +938,26 @@ function resolvePrimaryAlertKey(routeKind, result) {
     return 'renderer.alerts.text_extraction_native_runtime_error';
   }
 
-  if (state === 'success') return '';
-  if (code === 'ocr_input_too_large') return '';
-  if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_ocr_cancelled';
-  if (code === 'ocr_activation_required') return 'renderer.alerts.text_extraction_ocr_activation_required';
-  if (code === 'credentials_missing') return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
-  if (code === 'credentials_invalid') return 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
-  if (code === 'ocr_token_state_invalid') return 'renderer.alerts.text_extraction_ocr_token_state_invalid';
-  if (code === 'connectivity_failed') return 'renderer.alerts.text_extraction_ocr_connectivity_failed';
-  if (code === 'quota_or_rate_limited') return 'renderer.alerts.text_extraction_ocr_quota_or_rate_limited';
-  if (code === PROVIDER_API_DISABLED_CODE
-    || code === 'auth_failed'
-    || code === 'platform_runtime_failed'
-    || code === 'ocr_unavailable') {
-    return 'renderer.alerts.text_extraction_ocr_unavailable';
+  if (routeKind === 'ocr') {
+    if (state === 'success') return '';
+    if (code === 'ocr_input_too_large') return '';
+    if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_ocr_cancelled';
+    if (code === 'ocr_activation_required') return 'renderer.alerts.text_extraction_ocr_activation_required';
+    if (code === 'credentials_missing') return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
+    if (code === 'credentials_invalid') return 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
+    if (code === 'ocr_token_state_invalid') return 'renderer.alerts.text_extraction_ocr_token_state_invalid';
+    if (code === 'connectivity_failed') return 'renderer.alerts.text_extraction_ocr_connectivity_failed';
+    if (code === 'quota_or_rate_limited') return 'renderer.alerts.text_extraction_ocr_quota_or_rate_limited';
+    if (code === PROVIDER_API_DISABLED_CODE
+      || code === 'auth_failed'
+      || code === 'platform_runtime_failed'
+      || code === 'ocr_unavailable') {
+      return 'renderer.alerts.text_extraction_ocr_unavailable';
+    }
+    return 'renderer.alerts.text_extraction_ocr_runtime_error';
   }
-  return 'renderer.alerts.text_extraction_ocr_runtime_error';
+
+  return 'renderer.alerts.text_extraction_error';
 }
 
 function resolveWarningAlertKeys(routeKind, result) {

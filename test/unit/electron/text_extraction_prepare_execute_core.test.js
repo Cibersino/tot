@@ -506,8 +506,71 @@ test('prepareSelectedFile returns a structured unsupported-format failure when n
   assert.equal(result.executionKind, null);
   assert.equal(result.routeMetadata.triageReason, 'unsupported_format');
   assert.deepEqual(result.routeMetadata.availableRoutes, []);
-  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_native_unsupported_format');
+  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_unsupported_format');
   assert.equal(result.error.code, 'unsupported_format');
+});
+
+test('executePreparedImport treats execution-time unsupported format as a native runtime error', async (t) => {
+  const { core, restore } = loadCoreWithNativeRouteMock(async () => ({
+    state: 'failure',
+    executedRoute: 'native',
+    text: '',
+    warnings: [],
+    summary: 'Native route blocked: unsupported format.',
+    provenance: {
+      sourceFileName: 'sample.txt',
+      sourceFileExt: 'txt',
+      sourceFileKind: 'text_document',
+      ocrProvider: null,
+      metadataSafeForLogs: {
+        parserType: 'plain_text',
+      },
+    },
+    error: {
+      code: 'unsupported_format',
+      message: 'Selected file format is not supported by native extraction route.',
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: 'unsupported_extension',
+      },
+    },
+  }));
+  t.after(restore);
+
+  const controller = createExecutingController();
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo: getFileInfo('sample.txt'),
+      ocrLanguage: 'es',
+      pdfPageSelection: null,
+      generatedPdfArtifactPolicy: null,
+      processingInputFileName: 'sample.txt',
+      routeMetadata: {
+        fileKind: 'text_document',
+        availableRoutes: ['native'],
+        chosenRoute: 'native',
+        executedRoute: null,
+        executionKind: 'native',
+        pdfTriage: 'not_pdf',
+        triageReason: 'non_pdf',
+        ocrSetupState: 'not_checked',
+      },
+      requiresRouteChoice: false,
+      routeChoiceOptions: [],
+    },
+    routePreference: '',
+    resolvePaths: () => ({
+      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.executionKind, 'native');
+  assert.equal(result.result.state, 'failure');
+  assert.equal(result.result.error.code, 'unsupported_format');
+  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_native_runtime_error');
 });
 
 test('inspectSelectedFile returns PDF page-count metadata for selectable fixture', async () => {
