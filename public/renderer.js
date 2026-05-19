@@ -2171,22 +2171,32 @@ async function handleOpenReadingSpeedTest() {
 // =============================================================================
 // Preset buttons are wired here; preset modals and native confirmation
 // dialogs are handled by main.
-function bindPresetActions() {
-  btnNewPreset.addEventListener('click', () => {
-    if (!guardUserAction('preset-new')) return;
-    try {
-      if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-        window.electronAPI.openPresetModal(wpmControls.getWpm());
-      } else {
-        log.warnOnce(
-          'renderer.ipc.openPresetModal.unavailable',
-          'openPresetModal unavailable in electronAPI; preset-new action skipped.'
-        );
-        window.Notify.notifyMain('renderer.alerts.modal_unavailable');
-      }
-    } catch (err) {
-      log.error('Error opening new preset modal:', err);
+async function openPresetModalFromMain(payload) {
+  if (!window.electronAPI || typeof window.electronAPI.openPresetModal !== 'function') {
+    log.warnOnce(
+      'renderer.ipc.openPresetModal.unavailable',
+      'openPresetModal unavailable in electronAPI; preset-modal action skipped.'
+    );
+    window.Notify.notifyMain('renderer.alerts.modal_unavailable');
+    return;
+  }
+
+  try {
+    const res = await window.electronAPI.openPresetModal(payload);
+    if (!res || res.ok === false) {
+      log.error('Preset modal open failed:', res);
+      window.Notify.notifyMain('renderer.alerts.preset_modal_open_error');
     }
+  } catch (err) {
+    log.error('Error opening preset modal:', err);
+    window.Notify.notifyMain('renderer.alerts.preset_modal_open_error');
+  }
+}
+
+function bindPresetActions() {
+  btnNewPreset.addEventListener('click', async () => {
+    if (!guardUserAction('preset-new')) return;
+    await openPresetModalFromMain(wpmControls.getWpm());
   });
 
   // Edit preset
@@ -2214,18 +2224,10 @@ function bindPresetActions() {
       } catch (err) {
         log.warnOnce('log.debug.openPresetModal', 'log.debug failed (ignored):', err);
       }
-      if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-        window.electronAPI.openPresetModal(payload);
-      } else {
-        log.warnOnce(
-          'renderer.ipc.openPresetModal.unavailable',
-          'openPresetModal unavailable in electronAPI; preset-edit action skipped.'
-        );
-        window.Notify.notifyMain('renderer.alerts.edit_unavailable');
-      }
+      await openPresetModalFromMain(payload);
     } catch (err) {
-      log.error('Error opening edit preset modal:', err);
-      window.Notify.notifyMain('renderer.alerts.edit_error');
+      log.error('Error preparing edit preset modal payload:', err);
+      window.Notify.notifyMain('renderer.alerts.preset_modal_open_error');
     }
   });
 
