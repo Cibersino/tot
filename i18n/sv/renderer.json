@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Ett fel uppstod vid begäran om att avbryta extrahering. Kontrollera konsolen.",
       "text_extraction_cancellation_requested": "Avbrytning begärd. Vänta tills den aktuella extraheringen är klar.",
       "text_extraction_cancellation_complete": "Avbrytning slutförd.",
-      "text_extraction_drop_single_file_only": "Släpp exakt en fil för att starta extrahering.",
       "text_extraction_drop_invalid_file": "Det släppta objektet är inte en giltig lokal fil.",
       "text_extraction_pdf_unreadable_or_corrupt": "Den här PDF-filen är oläsbar eller skadad. Kontrollera filen och försök igen.",
       "text_extraction_pdf_encrypted_or_password_protected": "Den här PDF-filen är krypterad eller lösenordsskyddad. Lås upp den och försök igen.",

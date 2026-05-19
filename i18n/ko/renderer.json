@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "추출 중단을 요청하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
       "text_extraction_cancellation_requested": "취소가 요청되었습니다. 현재 추출이 끝날 때까지 기다려 주세요.",
       "text_extraction_cancellation_complete": "취소가 완료되었습니다.",
-      "text_extraction_drop_single_file_only": "추출을 시작하려면 파일 하나만 놓으세요.",
       "text_extraction_drop_invalid_file": "놓은 항목이 유효한 로컬 파일이 아닙니다.",
       "text_extraction_pdf_unreadable_or_corrupt": "이 PDF는 읽을 수 없거나 손상되었습니다. 파일을 확인한 뒤 다시 시도하세요.",
       "text_extraction_pdf_encrypted_or_password_protected": "이 PDF는 암호화되어 있거나 비밀번호로 보호되어 있습니다. 잠금을 해제한 뒤 다시 시도하세요.",

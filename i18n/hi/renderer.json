@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "निकासी रोकने का अनुरोध करते समय त्रुटि हुई। कंसोल देखें।",
       "text_extraction_cancellation_requested": "रद्द करने का अनुरोध किया गया है। कृपया वर्तमान निकासी पूरी होने तक प्रतीक्षा करें।",
       "text_extraction_cancellation_complete": "रद्दीकरण पूरा हुआ।",
-      "text_extraction_drop_single_file_only": "निकासी शुरू करने के लिए ठीक एक फ़ाइल छोड़ें।",
       "text_extraction_drop_invalid_file": "छोड़ा गया आइटम मान्य स्थानीय फ़ाइल नहीं है।",
       "text_extraction_pdf_unreadable_or_corrupt": "यह PDF पढ़ी नहीं जा सकती या दूषित है। फ़ाइल जाँचें और फिर से कोशिश करें।",
       "text_extraction_pdf_encrypted_or_password_protected": "यह PDF एन्क्रिप्टेड है या पासवर्ड से सुरक्षित है। इसे अनलॉक करें और फिर से कोशिश करें।",

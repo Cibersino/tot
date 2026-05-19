@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Si è verificato un errore durante la richiesta di interruzione di estrazione. Controlla la console.",
       "text_extraction_cancellation_requested": "Annullamento richiesto. Attendi il completamento dell’estrazione corrente.",
       "text_extraction_cancellation_complete": "Annullamento completato.",
-      "text_extraction_drop_single_file_only": "Rilascia esattamente un file per avviare estrazione.",
       "text_extraction_drop_invalid_file": "L'elemento rilasciato non è un file locale valido.",
       "text_extraction_pdf_unreadable_or_corrupt": "Questo PDF è illeggibile o danneggiato. Controlla il file e riprova.",
       "text_extraction_pdf_encrypted_or_password_protected": "Questo PDF è crittografato o protetto da password. Sbloccalo e riprova.",

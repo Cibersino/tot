@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Error happen while requesting text extraction abort. Check console.",
       "text_extraction_cancellation_requested": "Cancellation requested. Abeg wait until di current extraction finish.",
       "text_extraction_cancellation_complete": "Cancellation done.",
-      "text_extraction_drop_single_file_only": "Drop exactly one file to start text extraction.",
       "text_extraction_drop_invalid_file": "Dropped item no be valid local file.",
       "text_extraction_pdf_unreadable_or_corrupt": "Dis PDF no fit read or e don spoil. Check di file and try again.",
       "text_extraction_pdf_encrypted_or_password_protected": "Dis PDF dey encrypted or password dey protect am. Unlock am and try again.",

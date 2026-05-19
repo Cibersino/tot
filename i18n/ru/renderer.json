@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Произошла ошибка при запросе прерывания извлечения. Проверьте консоль.",
       "text_extraction_cancellation_requested": "Запрошена отмена. Дождитесь завершения текущего извлечения.",
       "text_extraction_cancellation_complete": "Отмена завершена.",
-      "text_extraction_drop_single_file_only": "Перетащите ровно один файл, чтобы начать извлечение.",
       "text_extraction_drop_invalid_file": "Перетащенный элемент не является допустимым локальным файлом.",
       "text_extraction_pdf_unreadable_or_corrupt": "Этот PDF невозможно прочитать или он повреждён. Проверьте файл и повторите попытку.",
       "text_extraction_pdf_encrypted_or_password_protected": "Этот PDF зашифрован или защищён паролем. Разблокируйте его и повторите попытку.",

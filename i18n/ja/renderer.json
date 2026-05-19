@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "抽出の中止要求中にエラーが発生しました。コンソールを確認してください。",
       "text_extraction_cancellation_requested": "キャンセルを要求しました。現在の抽出が完了するまでお待ちください。",
       "text_extraction_cancellation_complete": "キャンセルが完了しました。",
-      "text_extraction_drop_single_file_only": "抽出を開始するには、ファイルを1つだけドロップしてください。",
       "text_extraction_drop_invalid_file": "ドロップされた項目は有効なローカルファイルではありません。",
       "text_extraction_pdf_unreadable_or_corrupt": "この PDF は読み取れないか破損しています。ファイルを確認して、もう一度お試しください。",
       "text_extraction_pdf_encrypted_or_password_protected": "この PDF は暗号化されているか、パスワードで保護されています。ロックを解除して、もう一度お試しください。",

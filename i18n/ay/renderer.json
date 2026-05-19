@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Apsuña abortaña mayiñan pantjasiw utji. Consola uñakipam.",
       "text_extraction_cancellation_requested": "Suyt’ayaña mayitawa. Jichha apsuña tukusiñapkama suyt’am.",
       "text_extraction_cancellation_complete": "Suyt’ayaña tukuyata.",
-      "text_extraction_drop_single_file_only": "Apsuña qalltañatakix mä archivo sapaki jaquntam.",
       "text_extraction_drop_invalid_file": "Jaquntata elementox janiw mä local archivo válido ukäkiti.",
       "text_extraction_pdf_unreadable_or_corrupt": "Aka PDF janiw ullañjamäkiti jan ukax qʼañuchatawa. Archivo uñakipam ukat mayamp yantʼam.",
       "text_extraction_pdf_encrypted_or_password_protected": "Aka PDF jistʼantatawa jan ukax contraseña ukamp jarkʼatawa. Jistʼaram ukat mayamp yantʼam.",

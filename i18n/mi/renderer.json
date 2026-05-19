@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "I puta he hapa i te tono whakakore tango. Tirohia te papatohu.",
       "text_extraction_cancellation_requested": "Kua tonoa te whakakore. Taihoa kia mutu te tangohanga o nāianei.",
       "text_extraction_cancellation_complete": "Kua oti te whakakore.",
-      "text_extraction_drop_single_file_only": "Tukua kotahi anake te kōnae hei tīmata i te tango.",
       "text_extraction_drop_invalid_file": "Ehara te tūemi kua tukuna i te kōnae paetata tika.",
       "text_extraction_pdf_unreadable_or_corrupt": "Kāore tēnei PDF e taea te pānui, kua hē rānei. Tirohia te kōnae ka ngana anō.",
       "text_extraction_pdf_encrypted_or_password_protected": "Kua whakamunatia tēnei PDF, kua tiakina rānei ki te kupuhipa. Wewetea ka ngana anō.",

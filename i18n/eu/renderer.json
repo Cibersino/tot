@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Errorea gertatu da erauzketa bertan behera uzteko eskaeran. Begiratu kontsola.",
       "text_extraction_cancellation_requested": "Ezeztapena eskatu da. Itxaron uneko erauzketa amaitu arte.",
       "text_extraction_cancellation_complete": "Ezeztapena amaitu da.",
-      "text_extraction_drop_single_file_only": "Jaregin fitxategi bakar bat erauzketa hasteko.",
       "text_extraction_drop_invalid_file": "Jaregindako elementua ez da fitxategi lokal balioduna.",
       "text_extraction_pdf_unreadable_or_corrupt": "PDF hau ezin da irakurri edo hondatuta dago. Egiaztatu fitxategia eta saiatu berriro.",
       "text_extraction_pdf_encrypted_or_password_protected": "PDF hau enkriptatuta dago edo pasahitzez babestuta dago. Desblokeatu eta saiatu berriro.",

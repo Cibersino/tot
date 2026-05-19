@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Cagó la custión al pedir el aborto de extracción. Lorea la consola.",
       "text_extraction_cancellation_requested": "Cancelación pedida. Espera a que termine la extracción actual, no seas ansioso.",
       "text_extraction_cancellation_complete": "Cancelación lista.",
-      "text_extraction_drop_single_file_only": "Tira exactamente un archivo pa' partir extracción.",
       "text_extraction_drop_invalid_file": "La custión que soltaste no es un archivo local válido.",
       "text_extraction_pdf_unreadable_or_corrupt": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
       "text_extraction_pdf_encrypted_or_password_protected": "Este PDF está encriptado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",

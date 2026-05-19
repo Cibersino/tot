@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Çıkarma durdurma isteği gönderilirken hata oluştu. Konsolu kontrol edin.",
       "text_extraction_cancellation_requested": "İptal istendi. Lütfen geçerli çıkarma bitene kadar bekleyin.",
       "text_extraction_cancellation_complete": "İptal tamamlandı.",
-      "text_extraction_drop_single_file_only": "Çıkarma başlatmak için tam olarak bir dosya bırakın.",
       "text_extraction_drop_invalid_file": "Bırakılan öğe geçerli bir yerel dosya değil.",
       "text_extraction_pdf_unreadable_or_corrupt": "Bu PDF okunamıyor veya bozuk. Dosyayı kontrol edip tekrar deneyin.",
       "text_extraction_pdf_encrypted_or_password_protected": "Bu PDF şifrelenmiş veya parola korumalı. Kilidini açıp tekrar deneyin.",

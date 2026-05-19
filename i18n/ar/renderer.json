@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "حدث خطأ أثناء طلب إيقاف الاستخراج. راجع وحدة التحكم.",
       "text_extraction_cancellation_requested": "تم طلب الإلغاء. يُرجى الانتظار حتى ينتهي الاستخراج الحالي.",
       "text_extraction_cancellation_complete": "اكتمل الإلغاء.",
-      "text_extraction_drop_single_file_only": "أفلت ملفًا واحدًا فقط لبدء الاستخراج.",
       "text_extraction_drop_invalid_file": "العنصر المُفلَت ليس ملفًا محليًا صالحًا.",
       "text_extraction_pdf_unreadable_or_corrupt": "ملف PDF هذا غير قابل للقراءة أو تالف. تحقّق من الملف وحاول مرة أخرى.",
       "text_extraction_pdf_encrypted_or_password_protected": "ملف PDF هذا مشفّر أو محمي بكلمة مرور. أزِل الحماية عنه وحاول مرة أخرى.",

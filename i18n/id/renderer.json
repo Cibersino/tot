@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Terjadi kesalahan saat meminta pembatalan ekstraksi. Periksa konsol.",
       "text_extraction_cancellation_requested": "Pembatalan diminta. Harap tunggu sampai ekstraksi saat ini selesai.",
       "text_extraction_cancellation_complete": "Pembatalan selesai.",
-      "text_extraction_drop_single_file_only": "Jatuhkan tepat satu file untuk memulai ekstraksi.",
       "text_extraction_drop_invalid_file": "Item yang dijatuhkan bukan file lokal yang valid.",
       "text_extraction_pdf_unreadable_or_corrupt": "PDF ini tidak dapat dibaca atau rusak. Periksa file dan coba lagi.",
       "text_extraction_pdf_encrypted_or_password_protected": "PDF ini dienkripsi atau dilindungi kata sandi. Buka kuncinya dan coba lagi.",

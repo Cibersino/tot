@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Extracción aborto mütrümün mu welulkuy. Kintunge consola.",
       "text_extraction_cancellation_requested": "Katrüntun ngillañmagey. Üngümnge fantepu extracción afülu.",
       "text_extraction_cancellation_complete": "Katrüntun afuy.",
-      "text_extraction_drop_single_file_only": "Extracción amulal, müten kiñe archivo eltunge.",
       "text_extraction_drop_invalid_file": "Eltungechi dungu no rüf local archivo.",
       "text_extraction_pdf_unreadable_or_corrupt": "Tüfachi PDF ngelay ñi küme chillkatungeal kam weñangekey. Azkintunge archivo ka wiñol küdawtunge.",
       "text_extraction_pdf_encrypted_or_password_protected": "Tüfachi PDF müley ñi nürüfün kam contraseña mew kuñiwtun. Nülalnge ka wiñol küdawtunge.",
