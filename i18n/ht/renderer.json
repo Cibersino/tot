@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Gen yon erè ki fèt pandan demann anilasyon ekstrè a. Tcheke konsole a.",
       "text_extraction_cancellation_requested": "Anilasyon mande. Tanpri tann jiskaske ekstraksyon aktyèl la fini.",
       "text_extraction_cancellation_complete": "Anilasyon fini.",
-      "text_extraction_cancelled": "Ekstrè te anile.",
       "text_extraction_drop_single_file_only": "Lage egzakteman yon sèl fichye pou kòmanse ekstrè.",
       "text_extraction_drop_invalid_file": "Eleman lage a pa yon fichye lokal valab.",
       "text_extraction_pdf_unreadable_or_corrupt": "PDF sa a pa ka li oswa li domaje. Tcheke fichye a epi eseye ankò.",

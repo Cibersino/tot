@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "请求中止提取时发生错误。请检查控制台。",
       "text_extraction_cancellation_requested": "已请求取消。请等待当前提取完成。",
       "text_extraction_cancellation_complete": "取消已完成。",
-      "text_extraction_cancelled": "提取已取消。",
       "text_extraction_drop_single_file_only": "请只拖放一个文件来启动提取。",
       "text_extraction_drop_invalid_file": "拖放的项目不是有效的本地文件。",
       "text_extraction_pdf_unreadable_or_corrupt": "此 PDF 无法读取或已损坏。请检查文件并重试。",

@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Kuvele iphutha ngesikhathi kucelwa ukumisa ukukhishwa. Hlola ikhonsoli.",
       "text_extraction_cancellation_requested": "Ukukhansela kuceliwe. Sicela ulinde kuze kuphele ukukhishwa kwamanje.",
       "text_extraction_cancellation_complete": "Ukukhansela kuqediwe.",
-      "text_extraction_cancelled": "Ukukhishwa kukhanseliwe.",
       "text_extraction_drop_single_file_only": "Dedela ifayela elilodwa kuphela ukuze uqale ukukhishwa.",
       "text_extraction_drop_invalid_file": "Into ededeliwe ayilona ifayela lendawo elivumelekile.",
       "text_extraction_pdf_unreadable_or_corrupt": "Le PDF ayifundeki noma yonakele. Hlola ifayela bese uzama futhi.",

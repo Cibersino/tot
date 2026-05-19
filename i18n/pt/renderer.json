@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Ocorreu um erro ao solicitar o cancelamento da extração. Verifique o console.",
       "text_extraction_cancellation_requested": "Cancelamento solicitado. Aguarde até que a extração atual termine.",
       "text_extraction_cancellation_complete": "Cancelamento concluído.",
-      "text_extraction_cancelled": "A extração foi cancelada.",
       "text_extraction_drop_single_file_only": "Solte exatamente um arquivo para iniciar a extração.",
       "text_extraction_drop_invalid_file": "O item solto não é um arquivo local válido.",
       "text_extraction_pdf_unreadable_or_corrupt": "Este PDF está ilegível ou corrompido. Verifique o arquivo e tente novamente.",

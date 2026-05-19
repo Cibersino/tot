@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "নিষ্কাশন বন্ধ করার অনুরোধ করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
       "text_extraction_cancellation_requested": "বাতিল করার অনুরোধ করা হয়েছে। বর্তমান এক্সট্রাকশন শেষ হওয়া পর্যন্ত অপেক্ষা করুন।",
       "text_extraction_cancellation_complete": "বাতিল সম্পন্ন হয়েছে।",
-      "text_extraction_cancelled": "নিষ্কাশন বাতিল করা হয়েছে।",
       "text_extraction_drop_single_file_only": "নিষ্কাশন শুরু করতে ঠিক একটি ফাইল ছেড়ে দিন।",
       "text_extraction_drop_invalid_file": "ছেড়ে দেওয়া আইটেমটি বৈধ লোকাল ফাইল নয়।",
       "text_extraction_pdf_unreadable_or_corrupt": "এই PDF পড়া যাচ্ছে না অথবা ক্ষতিগ্রস্ত। ফাইলটি পরীক্ষা করে আবার চেষ্টা করুন।",

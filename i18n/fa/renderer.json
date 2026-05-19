@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "هنگام درخواست لغو استخراج خطایی رخ داد. کنسول را بررسی کنید.",
       "text_extraction_cancellation_requested": "لغو درخواست شد. لطفاً تا پایان استخراج فعلی صبر کنید.",
       "text_extraction_cancellation_complete": "لغو کامل شد.",
-      "text_extraction_cancelled": "استخراج لغو شد.",
       "text_extraction_drop_single_file_only": "برای شروع استخراج دقیقاً یک فایل رها کنید.",
       "text_extraction_drop_invalid_file": "مورد رهاشده یک فایل محلی معتبر نیست.",
       "text_extraction_pdf_unreadable_or_corrupt": "این PDF خواندنی نیست یا خراب است. فایل را بررسی کنید و دوباره تلاش کنید.",

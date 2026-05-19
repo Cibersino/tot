@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "نکالنے کا عمل روکنے کی درخواست کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
       "text_extraction_cancellation_requested": "منسوخی کی درخواست ہو گئی۔ براہِ کرم موجودہ استخراج ختم ہونے تک انتظار کریں۔",
       "text_extraction_cancellation_complete": "منسوخی مکمل ہو گئی۔",
-      "text_extraction_cancelled": "نکالنے کا عمل منسوخ ہو گیا۔",
       "text_extraction_drop_single_file_only": "نکالنے کا عمل شروع کرنے کے لیے بالکل ایک فائل چھوڑیں۔",
       "text_extraction_drop_invalid_file": "چھوڑی گئی شے درست مقامی فائل نہیں۔",
       "text_extraction_pdf_unreadable_or_corrupt": "یہ PDF پڑھنے کے قابل نہیں یا خراب ہے۔ فائل چیک کریں اور دوبارہ کوشش کریں۔",

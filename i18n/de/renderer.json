@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Beim Anfordern des Abbruchs von Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
       "text_extraction_cancellation_requested": "Abbruch angefordert. Bitte warten Sie, bis die aktuelle Extraktion abgeschlossen ist.",
       "text_extraction_cancellation_complete": "Abbruch abgeschlossen.",
-      "text_extraction_cancelled": "Extraktion wurde abgebrochen.",
       "text_extraction_drop_single_file_only": "Legen Sie genau eine Datei ab, um Extraktion zu starten.",
       "text_extraction_drop_invalid_file": "Das abgelegte Element ist keine gültige lokale Datei.",
       "text_extraction_pdf_unreadable_or_corrupt": "Diese PDF-Datei ist nicht lesbar oder beschädigt. Prüfe die Datei und versuche es erneut.",

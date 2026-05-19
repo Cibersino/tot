@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Qichuy sayachiy mañakuypi pantay karqan. Consolata qhaway.",
       "text_extraction_cancellation_requested": "Saqiy mañakurun. Kunan qichuy tukukunankama suyay.",
       "text_extraction_cancellation_complete": "Saqiy tukusqa.",
-      "text_extraction_cancelled": "Qichuy saqisqa.",
       "text_extraction_drop_single_file_only": "Qichuy qallarinapaq huk archivollata saqiy.",
       "text_extraction_drop_invalid_file": "Saqisqa elementoqa mana allin local archivochu.",
       "text_extraction_pdf_unreadable_or_corrupt": "Kay PDF mana ñawinchay atikuqchu icha waqllisqa kachkan. Archivo-ta qhawariy hinaspa yapamanta ruray.",

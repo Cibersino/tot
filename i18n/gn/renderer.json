@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Oiko jejavy ejerure aja text extraction abort. Ehecha consola.",
       "text_extraction_cancellation_requested": "Ojejerure ojeheja hag̃ua. Eha’arõ extracción ko’ág̃agua opa peve.",
       "text_extraction_cancellation_complete": "Ojeheja oñemohu’ã.",
-      "text_extraction_cancelled": "Text extraction ojeheja.",
       "text_extraction_drop_single_file_only": "Epoi peteĩ archivo añónte reñepyrũ hag̃ua text extraction.",
       "text_extraction_drop_invalid_file": "Elemento ojeityva’ekue ndaha’éi archivo local válido.",
       "text_extraction_pdf_unreadable_or_corrupt": "Ko PDF ndaikatúi oñemoñeʼẽ térã oñembyai. Ehecha pe archivo ha ehaʼã jey.",

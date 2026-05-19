@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Đã xảy ra lỗi khi yêu cầu hủy trích xuất. Hãy kiểm tra console.",
       "text_extraction_cancellation_requested": "Đã yêu cầu hủy. Vui lòng chờ đến khi lần trích xuất hiện tại hoàn tất.",
       "text_extraction_cancellation_complete": "Đã hủy xong.",
-      "text_extraction_cancelled": "Trích xuất đã bị hủy.",
       "text_extraction_drop_single_file_only": "Hãy thả đúng một tệp để bắt đầu trích xuất.",
       "text_extraction_drop_invalid_file": "Mục được thả không phải là tệp cục bộ hợp lệ.",
       "text_extraction_pdf_unreadable_or_corrupt": "PDF này không đọc được hoặc đã bị hỏng. Hãy kiểm tra tệp rồi thử lại.",

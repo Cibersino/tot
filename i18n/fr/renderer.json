@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "Une erreur s'est produite lors de la demande d'annulation de l'extraction. Vérifiez la console.",
       "text_extraction_cancellation_requested": "Annulation demandée. Veuillez attendre la fin de l’extraction en cours.",
       "text_extraction_cancellation_complete": "Annulation terminée.",
-      "text_extraction_cancelled": "L'extraction a été annulée.",
       "text_extraction_drop_single_file_only": "Déposez exactement un fichier pour démarrer l'extraction.",
       "text_extraction_drop_invalid_file": "L'élément déposé n'est pas un fichier local valide.",
       "text_extraction_pdf_unreadable_or_corrupt": "Ce PDF est illisible ou corrompu. Vérifiez le fichier et réessayez.",

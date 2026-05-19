@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "要求中止擷取時發生錯誤。請檢查主控台。",
       "text_extraction_cancellation_requested": "已要求取消。請等待目前的擷取完成。",
       "text_extraction_cancellation_complete": "取消已完成。",
-      "text_extraction_cancelled": "擷取已取消。",
       "text_extraction_drop_single_file_only": "請拖放剛好一個檔案以啟動擷取。",
       "text_extraction_drop_invalid_file": "拖放的項目不是有效的本機檔案。",
       "text_extraction_pdf_unreadable_or_corrupt": "此 PDF 無法讀取或已損毀。請檢查檔案並再試一次。",

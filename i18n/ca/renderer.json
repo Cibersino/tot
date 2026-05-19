@@ -492,7 +492,6 @@
       "text_extraction_abort_error": "S’ha produït un error en sol·licitar l’avortament d’extracció. Revisa la consola.",
       "text_extraction_cancellation_requested": "Cancel·lació sol·licitada. Espera que acabi l’extracció actual.",
       "text_extraction_cancellation_complete": "Cancel·lació completada.",
-      "text_extraction_cancelled": "Extracció s’ha cancel·lat.",
       "text_extraction_drop_single_file_only": "Deixa anar exactament un fitxer per iniciar extracció.",
       "text_extraction_drop_invalid_file": "L’element deixat anar no és un fitxer local vàlid.",
       "text_extraction_pdf_unreadable_or_corrupt": "Aquest PDF és il·legible o està malmès. Revisa el fitxer i torna-ho a provar.",
