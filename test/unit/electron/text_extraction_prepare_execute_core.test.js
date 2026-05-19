@@ -963,7 +963,7 @@ test('executePreparedImport materializes the selected PDF range for native succe
   assert.equal(result.result.provenance.sourceFileName, 'selectable_text_fixture_12_pages.pdf');
   assert.equal(result.result.provenance.metadataSafeForLogs.processingInputSource, 'generated_pdf_subset');
   assert.equal(result.result.provenance.metadataSafeForLogs.generatedPdfArtifactRetained, false);
-  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_native_apply_pending');
+  assert.equal(result.primaryAlertKey, '');
   assert.deepEqual(result.warningAlertKeys, []);
   assert.deepEqual(controller.enterCalls, [
     {

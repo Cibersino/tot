@@ -929,7 +929,7 @@ function resolvePrimaryAlertKey(routeKind, result) {
   }
 
   if (routeKind === 'native') {
-    if (state === 'success') return 'renderer.alerts.text_extraction_native_apply_pending';
+    if (state === 'success') return '';
     if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_native_cancelled';
     if (code === 'unsupported_format') return 'renderer.alerts.text_extraction_native_unsupported_format';
     if (code === 'native_encrypted_or_password_protected') {
@@ -939,7 +939,8 @@ function resolvePrimaryAlertKey(routeKind, result) {
     return 'renderer.alerts.text_extraction_native_runtime_error';
   }
 
-  if (state === 'success') return 'renderer.alerts.text_extraction_ocr_apply_pending';
+  if (state === 'success') return '';
+  if (code === 'ocr_input_too_large') return '';
   if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_ocr_cancelled';
   if (code === 'ocr_activation_required') return 'renderer.alerts.text_extraction_ocr_activation_required';
   if (code === 'credentials_missing') return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
