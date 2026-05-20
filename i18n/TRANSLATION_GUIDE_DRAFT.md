@@ -160,7 +160,7 @@ Include tips: no
       },
       "task_library_row_save_overwrite": {
         "es": "Ya existe \"{name}\" en la biblioteca. ¿Sobrescribir?",
-        "en": "An entry named \"{name}\" already exists in the library. Overwrite?"
+        "en": "\"{name}\" already exists in the library. Overwrite?"
       },
       "task_library_row_delete": {
         "es": "¿Eliminar \"{name}\" de la biblioteca?",
@@ -487,8 +487,8 @@ Include tips: no
           "en": "Unit {index}/{count}"
         },
         "text_extraction_input_progress": {
-          "es": "Archivo {index}/{count}",
-          "en": "File {index}/{count}"
+          "es": "Ítem {index}/{count}",
+          "en": "Item {index}/{count}"
         },
         "text_extraction_route_native": {
           "es": "Nativa",
