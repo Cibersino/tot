@@ -4,13 +4,13 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Editor UI module for the renderer editor page.
+// Text Editor UI module for the renderer editor page.
 // Responsibilities:
-// - Apply editor translations and keep editor element language attributes in sync.
+// - Apply Text Editor translations and keep editor element language attributes in sync.
 // - Update local spellcheck, font size, and read-progress UI state.
-// - Restore editor focus after UI actions that temporarily move it elsewhere.
+// - Restore Text Editor focus after UI actions that temporarily move it elsewhere.
 // - Control the reading-test prestart overlay and its related UI state.
-// - Persist editor text-size changes through the editor bridge when available.
+// - Persist Text Editor text-size changes through the editor bridge when available.
 
 (() => {
   // =============================================================================
@@ -320,14 +320,14 @@
           ctx.engine.setSelectionSafe(0, 0);
         }
       } catch (err) {
-        log.warn('Failed to set editor selection to top (ignored):', err);
+        log.warn('Failed to set Text Editor selection to top (ignored):', err);
       }
 
       try {
         editor.scrollTop = 0;
         editor.scrollLeft = 0;
       } catch (err) {
-        log.warn('Failed to scroll editor to top (ignored):', err);
+        log.warn('Failed to scroll Text Editor to top (ignored):', err);
       }
 
       scheduleReadProgressUiUpdate();
@@ -380,7 +380,7 @@
           updateEditorTextDirection();
         }
       } catch (err) {
-        log.warn('Editor wrap styles failed (ignored):', err);
+        log.warn('Text Editor wrap styles failed (ignored):', err);
       }
     }
 
@@ -390,7 +390,7 @@
 
       if (!editorAPI || typeof editorAPI.setEditorFontSizePx !== 'function') {
         log.warn(
-          'editorAPI.setEditorFontSizePx missing; editor text-size update ignored.'
+          'editorAPI.setEditorFontSizePx missing; Text Editor text-size update ignored.'
         );
         return false;
       }
@@ -409,7 +409,7 @@
         }
         return true;
       } catch (err) {
-        log.error('Error updating editor font size setting:', err);
+        log.error('Error updating Text Editor font size setting:', err);
         setLocalEditorFontSizePx(previousFontSizePx);
         return false;
       }
@@ -426,7 +426,7 @@
 
       if (!editorAPI || typeof editorAPI.setMaximizedTextWidthPx !== 'function') {
         log.warn(
-          'editorAPI.setMaximizedTextWidthPx missing; maximized editor width update ignored.'
+          'editorAPI.setMaximizedTextWidthPx missing; maximized Text Editor width update ignored.'
         );
         return false;
       }
@@ -447,7 +447,7 @@
         }
         return true;
       } catch (err) {
-        log.error('Error updating editor maximized text width setting:', err);
+        log.error('Error updating Text Editor maximized text width setting:', err);
         setLocalEditorMaximizedTextWidthPx(previousTextWidthPx);
         return false;
       }
@@ -523,7 +523,7 @@
           target.setPointerCapture(pointerId);
         }
       } catch (err) {
-        log.warn('Editor gutter pointer capture failed (ignored):', err);
+        log.warn('Text Editor gutter pointer capture failed (ignored):', err);
       }
 
       const onPointerMove = (moveEvent) => {

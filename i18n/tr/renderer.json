@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Tarayıcı uzantısı",
-      "subtitle": "Okuma süresi",
+      "subtitle": "Tiempo de lectura",
       "availability": "Şu anda Chrome'da kullanılabilir. Yakında daha fazla tarayıcıya gelecek.",
       "chrome_store_aria": "Uzantının Chrome Web Store sayfasını aç",
       "close_aria": "Tarayıcı uzantısı iletişim kutusunu kapat"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Snapshot, snapshot klasörünün içinde olmalıdır.",
       "snapshot_truncated": "Snapshot en büyük boyutu aşıyor ve kesildi.",
       "snapshot_unavailable": "Snapshot işlevi kullanılamıyor.",
-      "modal_unavailable": "Modal işlevi kullanılamıyor.",
+      "browser_extension_modal_open_blocked": "Tarayıcı uzantısı iletişim kutusu şu anda açılamıyor.",
       "preset_not_found": "Seçili ön ayar önbellekte bulunamadı.",
+      "preset_modal_unavailable": "Preset iletişim kutusu bu uygulama derlemesinde kullanılamıyor.",
       "preset_modal_open_error": "Preset iletişim kutusu açılırken bir hata oluştu. Konsolu kontrol edin.",
       "delete_error": "Ön ayar silinirken hata oluştu. Konsolu kontrol edin.",
       "restore_error": "Ön ayarlar geri yüklenirken hata oluştu. Konsolu kontrol edin.",

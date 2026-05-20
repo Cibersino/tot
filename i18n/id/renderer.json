@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Ekstensi browser",
-      "subtitle": "Waktu membaca",
+      "subtitle": "Tiempo de lectura",
       "availability": "Tersedia di Chrome sekarang. Browser lain akan segera menyusul.",
       "chrome_store_aria": "Buka halaman Chrome Web Store ekstensi",
       "close_aria": "Tutup dialog ekstensi browser"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Snapshot harus berada di dalam folder snapshots.",
       "snapshot_truncated": "Snapshot melebihi ukuran maksimum dan dipotong.",
       "snapshot_unavailable": "Fungsi snapshot tidak tersedia.",
-      "modal_unavailable": "Fungsi modal tidak tersedia.",
+      "browser_extension_modal_open_blocked": "Dialog ekstensi browser tidak dapat dibuka saat ini.",
       "preset_not_found": "Preset yang dipilih tidak ditemukan dalam cache.",
+      "preset_modal_unavailable": "Dialog preset tidak tersedia di build aplikasi ini.",
       "preset_modal_open_error": "Terjadi kesalahan saat membuka dialog preset. Periksa konsol.",
       "delete_error": "Terjadi kesalahan saat menghapus preset. Periksa konsol.",
       "restore_error": "Terjadi kesalahan saat memulihkan preset. Periksa konsol.",

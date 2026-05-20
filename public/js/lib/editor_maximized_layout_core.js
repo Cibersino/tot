@@ -4,7 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Shared sizing core for the maximized manual-editor layout.
+// Shared sizing core for the maximized Text Editor layout.
 // Responsibilities:
 // - Normalize and clamp the persisted preferred text-column width.
 // - Clamp the rendered width to the currently available maximized stage width.

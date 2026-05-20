@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Extensió del navegador",
-      "subtitle": "Temps de lectura",
+      "subtitle": "Tiempo de lectura",
       "availability": "Disponible ara a Chrome. Aviat arribarà a més navegadors.",
       "chrome_store_aria": "Obre la pàgina de l'extensió a Chrome Web Store",
       "close_aria": "Tanca el diàleg de l'extensió del navegador"
@@ -477,8 +477,9 @@
       "snapshot_outside": "El snapshot ha d’estar dins de la carpeta de desament.",
       "snapshot_truncated": "El snapshot supera la mida màxima i s’ha truncat.",
       "snapshot_unavailable": "La funció de snapshots no està disponible.",
-      "modal_unavailable": "Funcionalitat de modal no disponible.",
+      "browser_extension_modal_open_blocked": "El diàleg de l’extensió del navegador no es pot obrir ara mateix.",
       "preset_not_found": "El preset seleccionat no s’ha trobat a la memòria cau.",
+      "preset_modal_unavailable": "El diàleg del preset no està disponible en aquesta build de l’app.",
       "preset_modal_open_error": "S’ha produït un error en obrir el diàleg de predefinits. Consulta la consola.",
       "delete_error": "S’ha produït un error en eliminar el preset. Revisa la consola.",
       "restore_error": "S’ha produït un error en restaurar els presets. Revisa la consola.",

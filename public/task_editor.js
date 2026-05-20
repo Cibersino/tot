@@ -4,7 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Task editor renderer.
+// Task Editor renderer.
 // - Render and edit task rows.
 // - Compute per-row and total durations.
 // - Persist task lists and column widths via taskEditorAPI.
@@ -18,7 +18,7 @@ if (typeof window.getLogger !== 'function') {
   throw new Error('[task-editor] window.getLogger unavailable; cannot continue');
 }
 const log = window.getLogger('task-editor');
-log.debug('Task editor starting...');
+log.debug('Task Editor starting...');
 const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[task-editor] AppConstants unavailable; verify constants.js load order');

@@ -18,14 +18,14 @@ const TASK_ROW_COMMENT_MAX_CHARS = 1200; // Max chars for task row "comment" (co
 const TASK_ROW_LINK_MAX_CHARS = 1000; // Max chars for task row "link" (enlace).
 const OCR_PROVIDER_LIMIT_MB = 50; // Maximum Google OCR upload size in megabytes used by heavy-PDF planning and provider-facing limits.
 const HEAVY_SPLIT_SAFETY_FACTOR = 0.75; // Safety factor applied to the provider limit when estimating generated split size.
-const EDITOR_FONT_SIZE_MIN_PX = 12; // Minimum font size for the manual editor textarea.
-const EDITOR_FONT_SIZE_MAX_PX = 36; // Maximum font size for the manual editor textarea.
-const EDITOR_FONT_SIZE_DEFAULT_PX = 20; // Default font size for the manual editor textarea.
-const EDITOR_FONT_SIZE_STEP_PX = 2; // Step used by editor text-size controls and shortcuts.
-const EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX = 480; // Minimum centered text-column width when the editor is maximized.
-const EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX = 1600; // Maximum centered text-column width when the editor is maximized.
-const EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX = 960; // Default centered text-column width when the editor is maximized.
-const EDITOR_FIND_INPUT_MAX_CHARS = 512; // Max chars for the editor find input. Must match public/js/constants.js.
+const EDITOR_FONT_SIZE_MIN_PX = 12; // Minimum font size for the Text Editor textarea.
+const EDITOR_FONT_SIZE_MAX_PX = 36; // Maximum font size for the Text Editor textarea.
+const EDITOR_FONT_SIZE_DEFAULT_PX = 20; // Default font size for the Text Editor textarea.
+const EDITOR_FONT_SIZE_STEP_PX = 2; // Step used by Text Editor text-size controls and shortcuts.
+const EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX = 480; // Minimum centered text-column width when the Text Editor is maximized.
+const EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX = 1600; // Maximum centered text-column width when the Text Editor is maximized.
+const EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX = 960; // Default centered text-column width when the Text Editor is maximized.
+const EDITOR_FIND_INPUT_MAX_CHARS = 512; // Max chars for the Text Editor find input. Must match public/js/constants.js.
 
 module.exports = {
   DEFAULT_LANG,

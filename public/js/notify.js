@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Resolve renderer i18n keys to displayable text.
 // - Show blocking alerts and confirms for main-window notices.
-// - Show toast notifications for main and editor contexts.
+// - Show toast notifications for main and Text Editor contexts.
 // - Provide a small, stable window.Notify surface for callers.
 // =============================================================================
 

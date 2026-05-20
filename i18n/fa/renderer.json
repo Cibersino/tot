@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "افزونه مرورگر",
-      "subtitle": "زمان مطالعه",
+      "subtitle": "Tiempo de lectura",
       "availability": "اکنون در Chrome در دسترس است. به‌زودی مرورگرهای بیشتری اضافه می‌شوند.",
       "chrome_store_aria": "باز کردن صفحه افزونه در Chrome Web Store",
       "close_aria": "بستن پنجره افزونه مرورگر"
@@ -477,8 +477,9 @@
       "snapshot_outside": "اسنپ‌شات باید داخل پوشه اسنپ‌شات‌ها باشد.",
       "snapshot_truncated": "اسنپ‌شات از حداکثر اندازه بیشتر است و کوتاه شد.",
       "snapshot_unavailable": "قابلیت اسنپ‌شات در دسترس نیست.",
-      "modal_unavailable": "قابلیت مودال در دسترس نیست.",
+      "browser_extension_modal_open_blocked": "گفت‌وگوی افزونهٔ مرورگر در حال حاضر باز نمی‌شود.",
       "preset_not_found": "پیش‌تنظیم انتخاب‌شده در کش پیدا نشد.",
+      "preset_modal_unavailable": "گفت‌وگوی preset در این build برنامه در دسترس نیست.",
       "preset_modal_open_error": "هنگام باز کردن گفت‌وگوی preset خطایی رخ داد. کنسول را بررسی کنید.",
       "delete_error": "هنگام حذف پیش‌تنظیم خطایی رخ داد. کنسول را بررسی کنید.",
       "restore_error": "هنگام بازگرداندن پیش‌تنظیم‌ها خطایی رخ داد. کنسول را بررسی کنید.",

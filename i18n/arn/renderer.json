@@ -373,11 +373,11 @@
     },
     "reading_test": {
       "prestart": {
-        "reminder": "Nüngünge Play (▶) feyti Ventana Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Nüngünge Püntüal/Wiñotual (⏹) müten ayülemi tami katrüal tüfachi pepiluwün."
+        "reminder": "Nüngünge Play (▶) feyti Cronómetro Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Nüngünge Püntüal/Wiñotual (⏹) müten ayülemi tami katrüal tüfachi pepiluwün."
       },
       "entry": {
         "title": "Pepiluwün ñi pürüm chillkatun",
-        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka ka üyümlayaymi tami nüngüal Play (▶) feyti Ventana Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.\nWünen amutulaymi, rakiduamüngeymi tüfachi pepiluwün chillka engün müten müley 5 ka 15 minutos küme rakiduam mu, gelay interrupciones.\nTüfachi pool pichi chillka engün müten müley, feymew küme rakiduamngeymi tami chum tripachi. Kümelay rüf müten tripayal füta chillka mew, felew müten küme dungu, küme amuluwün ka contexto, ka weda dungu, mental recapitulación ka fatigue, mülekey ti chillkatun mu.",
+        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka ka üyümlayaymi tami nüngüal Play (▶) feyti Cronómetro Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.\nWünen amutulaymi, rakiduamüngeymi tüfachi pepiluwün chillka engün müten müley 5 ka 15 minutos küme rakiduam mu, gelay interrupciones.\nTüfachi pool pichi chillka engün müten müley, feymew küme rakiduamngeymi tami chum tripachi. Kümelay rüf müten tripayal füta chillka mew, felew müten küme dungu, küme amuluwün ka contexto, ka weda dungu, mental recapitulación ka fatigue, mülekey ti chillkatun mu.",
         "eligible_count": "Dullngechi chillka:",
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
         "visible_empty_bundled_hidden_message": "Ti app mew mülelu test archivos ellkañmangeygün ka ngelay visible test archivos petu nülay. Wiño pepefinge feyengün kam importafinge doy archivos tami amutual.",
@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Extensión navegador mew",
-      "subtitle": "Chillkatun antü",
+      "subtitle": "Tiempo de lectura",
       "availability": "Chrome mew müley feichi. Püñeñ mew kake navegadores müleay.",
       "chrome_store_aria": "Nülan página extensión Chrome Web Store mew",
       "close_aria": "Nürüfün diálogo extensión navegador mew"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Snapshot müley snapshot carpeta mew ka.",
       "snapshot_truncated": "Snapshot afiy ka pichikünutuy.",
       "snapshot_unavailable": "Snapshot küzawtuwe chem müley.",
-      "modal_unavailable": "Modal ngelay küzaw mu.",
+      "browser_extension_modal_open_blocked": "Navegador extensión diálogo fewla nülalay.",
       "preset_not_found": "Ngelay preset caché mu.",
+      "preset_modal_unavailable": "Preset diálogo tüfachi app build mew no nielay.",
       "preset_modal_open_error": "Preset diálogo nülal mew welulkuy. Kintunge consola.",
       "delete_error": "Welulkuy ñamümün preset mu. Kintunge consola.",
       "restore_error": "Welulkuy wiñotun mu. Kintunge consola.",
@@ -595,7 +596,7 @@
         }
       },
       "instrucciones": {
-        "title": "Manual de uso"
+        "title": "¿Cómo usar la app?"
       },
       "links_interes": {
         "title": "Ayüfalchi links",

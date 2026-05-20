@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "浏览器扩展",
-      "subtitle": "阅读时间",
+      "subtitle": "Tiempo de lectura",
       "availability": "现已在 Chrome 上提供。更多浏览器即将支持。",
       "chrome_store_aria": "打开扩展的 Chrome Web Store 页面",
       "close_aria": "关闭浏览器扩展对话框"
@@ -477,8 +477,9 @@
       "snapshot_outside": "快照必须位于快照文件夹内。",
       "snapshot_truncated": "快照超过最大大小，已被截断。",
       "snapshot_unavailable": "快照功能不可用。",
-      "modal_unavailable": "模态窗口功能不可用。",
+      "browser_extension_modal_open_blocked": "目前无法打开浏览器扩展对话框。",
       "preset_not_found": "缓存中找不到所选预设。",
+      "preset_modal_unavailable": "此应用构建中预设对话框不可用。",
       "preset_modal_open_error": "打开预设对话框时发生错误。请检查控制台。",
       "delete_error": "删除预设时发生错误。请检查控制台。",
       "restore_error": "恢复预设时发生错误。请检查控制台。",

@@ -27,7 +27,7 @@
         "delete_preset": "Delete selected preset",
         "reset_presets": "Restore default presets",
         "help_button": "Show useful tip",
-        "flotante_window": "Floating window"
+        "flotante_window": "Floating Stopwatch"
       },
       "aria": {
         "text_extraction": "Extract text from file",
@@ -42,8 +42,8 @@
         "crono_display": "Stopwatch display",
         "crono_toggle": "Start or pause stopwatch",
         "crono_reset": "Reset stopwatch",
-        "floating_window_toggle": "Floating window",
-        "floating_window_group": "Floating window controls"
+        "floating_window_toggle": "Floating Stopwatch",
+        "floating_window_group": "Floating Stopwatch controls"
       },
       "speed": {
         "title": "READING SPEED",
@@ -373,11 +373,11 @@
     },
     "reading_test": {
       "prestart": {
-        "reminder": "Press Play (▶) for di Floating Window when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Press Stop/Reset (⏹) only if you wan cancel di test."
+        "reminder": "Press Play (▶) for di Floating Stopwatch when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Press Stop/Reset (⏹) only if you wan cancel di test."
       },
       "entry": {
         "title": "Reading speed test",
-        "intro": "Dis test go help estimate your real reading speed through guided session. Di app go open di text and wait make you press Play (▶) for di Floating Window when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Use Stop/Reset (⏹) only if you wan cancel di test. After, you fit check comprehension questions if di text get dem and, for di end, create preset from di result.\nBefore you start, remember say these test texts usually need between 5 and 15 minutes of steady concentration, without interruption.\nDis pool dey use short texts, so take di result with care. No use am directly judge long texts, where good factors like flow and context build-up, and bad factors like mental recap and tiredness, usually dey matter.",
+        "intro": "Dis test go help estimate your real reading speed through guided session. Di app go open di text and wait make you press Play (▶) for di Floating Stopwatch when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Use Stop/Reset (⏹) only if you wan cancel di test. After, you fit check comprehension questions if di text get dem and, for di end, create preset from di result.\nBefore you start, remember say these test texts usually need between 5 and 15 minutes of steady concentration, without interruption.\nDis pool dey use short texts, so take di result with care. No use am directly judge long texts, where good factors like flow and context build-up, and bad factors like mental recap and tiredness, usually dey matter.",
         "eligible_count": "Eligible files:",
         "pool_exhausted_message": "No unused test files remain. Reset di pool or add more files.",
         "visible_empty_bundled_hidden_message": "Built-in test files dey hidden now, and no visible unused test files remain. Show di built-in files again or import more files to continue.",
@@ -477,8 +477,9 @@
       "snapshot_outside": "Snapshot must dey inside di snapshots folder.",
       "snapshot_truncated": "Snapshot pass maximum size and dem truncate am.",
       "snapshot_unavailable": "Snapshot feature no dey available.",
-      "modal_unavailable": "Modal feature no dey available.",
+      "browser_extension_modal_open_blocked": "Di browser extension dialog no fit open right now.",
       "preset_not_found": "Selected preset no dey cache.",
+      "preset_modal_unavailable": "Di preset dialog no dey available for dis app build.",
       "preset_modal_open_error": "Error happen while opening di preset dialog. Check console.",
       "delete_error": "Error happen while deleting preset. Check console.",
       "restore_error": "Error happen while restoring presets. Check console.",
@@ -534,7 +535,7 @@
       "text_extraction_native_cancelled": "Native extraction was cancelled.",
       "text_extraction_unsupported_format": "Dis file format no dey supported for text extraction.",
       "wip_diseno_skins": "WIP: Di skins selector go open here for future version.",
-      "wip_diseno_crono": "WIP: Floating stopwatch settings go open here for future version.",
+      "wip_diseno_crono": "WIP: Floating Stopwatch settings go open here for future version.",
       "wip_diseno_fuentes": "WIP: Di fonts selector go open here for future version.",
       "wip_diseno_colores": "WIP: Di colours selector go open here for future version.",
       "wip_shortcuts": "WIP: Di keyboard shortcuts selector go open here for future version.",

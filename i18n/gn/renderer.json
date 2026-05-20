@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Jepysokue kundahárape g̃uarã",
-      "subtitle": "Aravo jehecharã",
+      "subtitle": "Tiempo de lectura",
       "availability": "Ojeguereko ko'ág̃a Chrome-pe. Oútama kundahára hetave ko'ẽrõitéma.",
       "chrome_store_aria": "Eipe'a jepysokue Chrome Web Store rogue",
       "close_aria": "Emboty jepysokue kundahárape g̃uarã ñe'ẽryru"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Snapshot oĩva’erã snapshots carpeta ryepýpe.",
       "snapshot_truncated": "Snapshot ohasa tuichakue máximo ha oñekytĩ.",
       "snapshot_unavailable": "Snapshot función ndojepurukuaái.",
-      "modal_unavailable": "Modal función ndojepurukuaái.",
+      "browser_extension_modal_open_blocked": "Navegador extensión diálogo ndaikatúi ojeipe’a ko’ág̃a.",
       "preset_not_found": "Preset ojeporavóva ndojejuhúi caché-pe.",
+      "preset_modal_unavailable": "Preset diálogo ndojeporukuaái ko app build-pe.",
       "preset_modal_open_error": "Oiko jejavy ojeipe’a aja preset diálogo. Ehecha consola.",
       "delete_error": "Oiko jejavy oñembogue aja preset. Ehecha consola.",
       "restore_error": "Oiko jejavy oñemoĩjey aja presets. Ehecha consola.",
@@ -524,7 +525,7 @@
       "text_extraction_ocr_connectivity_failed": "OCR oikotevẽ internet rehe. Ehecha ne conexión ha eha’ã jey.",
       "text_extraction_ocr_setup_missing_credentials": "OCR ndojepurukuaái ko app build-pe ofaltágui credencial OAuth Google oúva app ndive.",
       "text_extraction_ocr_setup_invalid_credentials": "OCR ndojepurukuaái ko app build-pe credencial OAuth Google oúva app ndive ndoikóigui.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR ojejoko sapy’a cuota/límite de tasa rehe. Eha’arõ ha eha’ã jey.",
+      "text_extraction_ocr_quota_or_rate_limited": "OCR ojejoko sapy’a cuota/límite de uso rehe. Eha’arõ ha eha’ã jey.",
       "text_extraction_ocr_runtime_error": "Oiko OCR runtime error text extraction aja. Ehecha consola ha eha’ã jey.",
       "text_extraction_ocr_cancelled": "OCR extracción ojeheja.",
       "text_extraction_ocr_cleanup_warning": "OCR opa, hákatu limpieza temporal remota archivo rehegua ojavy. Ehecha nde Google Drive carpeta.",

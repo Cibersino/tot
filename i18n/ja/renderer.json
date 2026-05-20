@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "ブラウザー拡張機能",
-      "subtitle": "読書時間",
+      "subtitle": "Tiempo de lectura",
       "availability": "現在 Chrome で利用できます。ほかのブラウザーにも近日対応予定です。",
       "chrome_store_aria": "拡張機能の Chrome Web Store ページを開く",
       "close_aria": "ブラウザー拡張機能のダイアログを閉じる"
@@ -477,8 +477,9 @@
       "snapshot_outside": "スナップショットは保存フォルダ内にある必要があります。",
       "snapshot_truncated": "スナップショットが最大サイズを超えたため、切り詰められました。",
       "snapshot_unavailable": "スナップショット機能は利用できません。",
-      "modal_unavailable": "モーダル機能は利用できません。",
+      "browser_extension_modal_open_blocked": "ブラウザー拡張機能のダイアログは現在開けません。",
       "preset_not_found": "選択したプリセットがキャッシュに見つかりません。",
+      "preset_modal_unavailable": "このアプリビルドではプリセットダイアログを利用できません。",
       "preset_modal_open_error": "プリセットダイアログを開く際にエラーが発生しました。コンソールを確認してください。",
       "delete_error": "プリセットの削除中にエラーが発生しました。コンソールを確認してください。",
       "restore_error": "プリセットの復元中にエラーが発生しました。コンソールを確認してください。",

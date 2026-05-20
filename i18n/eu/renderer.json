@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Nabigatzailearen hedapena",
-      "subtitle": "Irakurketa-denbora",
+      "subtitle": "Tiempo de lectura",
       "availability": "Orain Chrome-n erabilgarri. Laster nabigatzaile gehiagotan ere bai.",
       "chrome_store_aria": "Ireki hedapenaren Chrome Web Store orria",
       "close_aria": "Itxi nabigatzailearen hedapenaren elkarrizketa-koadroa"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Snapshotak snapshots karpetaren barruan egon behar du.",
       "snapshot_truncated": "Snapshotak gehieneko tamaina gainditzen du eta moztu egin da.",
       "snapshot_unavailable": "Snapshoten funtzioa ez dago erabilgarri.",
-      "modal_unavailable": "Modalaren funtzionalitatea ez dago erabilgarri.",
+      "browser_extension_modal_open_blocked": "Arakatzailearen luzapenaren elkarrizketa ezin da une honetan ireki.",
       "preset_not_found": "Hautatutako aurrezarpena ez da cachean aurkitu.",
+      "preset_modal_unavailable": "Preset elkarrizketa ez dago erabilgarri app honen build honetan.",
       "preset_modal_open_error": "Errorea gertatu da aurrezarpenen elkarrizketa irekitzean. Begiratu kontsola.",
       "delete_error": "Errorea gertatu da aurrezarpena ezabatzean. Begiratu kontsola.",
       "restore_error": "Errorea gertatu da aurrezarpenak leheneratzean. Begiratu kontsola.",

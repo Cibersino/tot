@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "瀏覽器擴充功能",
-      "subtitle": "閱讀時間",
+      "subtitle": "Tiempo de lectura",
       "availability": "現已於 Chrome 提供。更多瀏覽器即將支援。",
       "chrome_store_aria": "開啟擴充功能的 Chrome Web Store 頁面",
       "close_aria": "關閉瀏覽器擴充功能對話框"
@@ -477,8 +477,9 @@
       "snapshot_outside": "快照必須位於快照資料夾內。",
       "snapshot_truncated": "快照超過最大大小，已被截斷。",
       "snapshot_unavailable": "快照功能無法使用。",
-      "modal_unavailable": "對話框功能無法使用。",
+      "browser_extension_modal_open_blocked": "目前無法開啟瀏覽器擴充功能對話框。",
       "preset_not_found": "快取中找不到所選預設。",
+      "preset_modal_unavailable": "此應用程式建置中無法使用預設對話框。",
       "preset_modal_open_error": "開啟預設對話框時發生錯誤。請檢查主控台。",
       "delete_error": "刪除預設時發生錯誤。請檢查主控台。",
       "restore_error": "還原預設值時發生錯誤。請檢查主控台。",

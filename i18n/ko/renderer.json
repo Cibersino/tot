@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "브라우저 확장 프로그램",
-      "subtitle": "읽기 시간",
+      "subtitle": "Tiempo de lectura",
       "availability": "지금 Chrome에서 사용할 수 있습니다. 더 많은 브라우저가 곧 지원됩니다.",
       "chrome_store_aria": "확장 프로그램의 Chrome Web Store 페이지 열기",
       "close_aria": "브라우저 확장 프로그램 대화상자 닫기"
@@ -477,8 +477,9 @@
       "snapshot_outside": "스냅샷은 저장 폴더 안에 있어야 합니다.",
       "snapshot_truncated": "스냅샷이 최대 크기를 초과하여 잘렸습니다.",
       "snapshot_unavailable": "스냅샷 기능을 사용할 수 없습니다.",
-      "modal_unavailable": "모달 기능을 사용할 수 없습니다.",
+      "browser_extension_modal_open_blocked": "지금은 브라우저 확장 프로그램 대화 상자를 열 수 없습니다.",
       "preset_not_found": "선택한 프리셋을 캐시에서 찾을 수 없습니다.",
+      "preset_modal_unavailable": "이 앱 빌드에서는 프리셋 대화 상자를 사용할 수 없습니다.",
       "preset_modal_open_error": "프리셋 대화 상자를 여는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
       "delete_error": "프리셋을 삭제하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
       "restore_error": "프리셋을 복원하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",

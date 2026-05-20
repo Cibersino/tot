@@ -4,10 +4,10 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-process coordinator for editor native find/search.
+// Main-process coordinator for Text Editor native find/search.
 // Responsibilities:
 // - Own the find window lifecycle (create/show/close/position).
-// - Handle editor/find-window shortcuts via before-input-event.
+// - Handle Text Editor/find-window shortcuts via before-input-event.
 // - Drive native search lifecycle using webContents.findInPage APIs.
 // - Keep find UI state synced from found-in-page events.
 // - Enforce that find IPC commands are accepted only from the find window.
@@ -34,7 +34,7 @@ const {
 } = require('./constants_main');
 
 const log = Log.get('editor-find-main');
-log.debug('Editor find main starting...');
+log.debug('Text Editor find main starting...');
 
 // =============================================================================
 // Constants / config (paths, window size)
@@ -127,7 +127,7 @@ function safeSendToFindWindow(channel, payload) {
   } catch (err) {
     log.warnOnce(
       `editorFind.send.${channel}`,
-      `editor find send('${channel}') failed (ignored):`,
+      `Text Editor find send('${channel}') failed (ignored):`,
       err
     );
   }
@@ -149,7 +149,7 @@ function sendToFindWindowAfterLoad(wc, channel, payload) {
   } catch (err) {
     log.warnOnce(
       `editorFind.sendAfterLoad.${channel}`,
-      `editor find post-load send('${channel}') failed (ignored):`,
+      `Text Editor find post-load send('${channel}') failed (ignored):`,
       err
     );
   }
@@ -173,7 +173,7 @@ function focusEditorWindow() {
   } catch (err) {
     log.warnOnce(
       'editorFind.focusEditor.failed',
-      'Unable to focus editor window after find close (ignored):',
+      'Unable to focus Text Editor after find close (ignored):',
       err
     );
   }
@@ -242,7 +242,7 @@ function runEditorShortcutAction(actionName) {
   if (!actions || typeof actions[actionName] !== 'function') {
     log.warnOnce(
       `editorFind.shortcutAction.missing:${actionName}`,
-      'Editor shortcut action unavailable (ignored):',
+      'Text Editor shortcut action unavailable (ignored):',
       actionName
     );
     return;
@@ -251,7 +251,7 @@ function runEditorShortcutAction(actionName) {
   try {
     actions[actionName]();
   } catch (err) {
-    log.error(`Error running editor shortcut action '${actionName}':`, err);
+    log.error(`Error running Text Editor shortcut action '${actionName}':`, err);
   }
 }
 
@@ -327,7 +327,7 @@ function positionFindWindow() {
   } catch (err) {
     log.warnOnce(
       'editorFind.position.failed',
-      'Unable to position editor find window (ignored):',
+      'Unable to position Text Editor find window (ignored):',
       err
     );
   }
@@ -350,21 +350,21 @@ function detachFindWindow() {
     'before-input-event',
     onBeforeInput,
     'editorFind.detachFind.beforeInput',
-    'Unable to detach find before-input-event listener (ignored):'
+    'Unable to detach Text Editor find before-input-event listener (ignored):'
   );
   removeListenerWithWarn(
     wc,
     'did-finish-load',
     onDidFinishLoad,
     'editorFind.detachFind.didFinishLoad',
-    'Unable to detach find did-finish-load listener (ignored):'
+    'Unable to detach Text Editor find did-finish-load listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'focus',
     onFocus,
     'editorFind.detachFind.focus',
-    'Unable to detach find focus listener (ignored):'
+    'Unable to detach Text Editor find focus listener (ignored):'
   );
 
   findListeners = null;
@@ -422,7 +422,7 @@ function createFindWindow() {
   if (!hostWin) {
     log.warnOnce(
       'editorFind.create.noEditor',
-      'createFindWindow ignored: editor window unavailable.'
+      'createFindWindow ignored: Text Editor unavailable.'
     );
     return null;
   }
@@ -488,7 +488,7 @@ function closeFindWindow() {
     win.close();
   } catch (err) {
     closingFindWindow = false;
-    log.error('Error closing editor find window:', err);
+    log.error('Error closing Text Editor find window:', err);
   }
 }
 
@@ -501,9 +501,9 @@ function openFindUi({
   if (!editorWin) {
     log.warnOnce(
       'editorFind.open.noEditor',
-      'openFindUi ignored: editor window unavailable.'
+      'openFindUi ignored: Text Editor unavailable.'
     );
-    return { ok: false, error: 'editor window unavailable' };
+    return { ok: false, error: 'Text Editor unavailable' };
   }
 
   const existing = resolveFindWindow();
@@ -703,56 +703,56 @@ function detachEditorWindow() {
     'before-input-event',
     onBeforeInput,
     'editorFind.detachEditor.beforeInput',
-    'Unable to detach editor before-input-event listener (ignored):'
+    'Unable to detach Text Editor before-input-event listener (ignored):'
   );
   removeListenerWithWarn(
     wc,
     'found-in-page',
     onFoundInPage,
     'editorFind.detachEditor.foundInPage',
-    'Unable to detach editor found-in-page listener (ignored):'
+    'Unable to detach Text Editor found-in-page listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'move',
     onMove,
     'editorFind.detachEditor.move',
-    'Unable to detach editor move listener (ignored):'
+    'Unable to detach Text Editor move listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'resize',
     onResize,
     'editorFind.detachEditor.resize',
-    'Unable to detach editor resize listener (ignored):'
+    'Unable to detach Text Editor resize listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'maximize',
     onMaximize,
     'editorFind.detachEditor.maximize',
-    'Unable to detach editor maximize listener (ignored):'
+    'Unable to detach Text Editor maximize listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'unmaximize',
     onUnmaximize,
     'editorFind.detachEditor.unmaximize',
-    'Unable to detach editor unmaximize listener (ignored):'
+    'Unable to detach Text Editor unmaximize listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'close',
     onClose,
     'editorFind.detachEditor.close',
-    'Unable to detach editor close listener (ignored):'
+    'Unable to detach Text Editor close listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'closed',
     onClosed,
     'editorFind.detachEditor.closed',
-    'Unable to detach editor closed listener (ignored):'
+    'Unable to detach Text Editor closed listener (ignored):'
   );
 
   editorListeners = null;
@@ -765,7 +765,7 @@ function attachEditorWindow(editorWin, options = {}) {
   editorShortcutActions = options && typeof options === 'object' ? options : null;
 
   if (!isAliveWindow(editorWin)) {
-    throw new Error('attachEditorWindow requires a live editor window');
+    throw new Error('attachEditorWindow requires a live Text Editor window');
   }
   editorWinRef = editorWin;
 
@@ -774,14 +774,14 @@ function attachEditorWindow(editorWin, options = {}) {
     try {
       handleEditorBeforeInput(event, input);
     } catch (err) {
-      log.error('Error in editor before-input-event handler:', err);
+      log.error('Error in Text Editor before-input-event handler:', err);
     }
   };
   const onFoundInPage = (_event, result) => {
     try {
       handleFoundInPage(result);
     } catch (err) {
-      log.error('Error in found-in-page handler:', err);
+      log.error('Error in Text Editor found-in-page handler:', err);
     }
   };
 

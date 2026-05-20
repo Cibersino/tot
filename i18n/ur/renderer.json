@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "براؤزر ایکسٹینشن",
-      "subtitle": "مطالعے کا وقت",
+      "subtitle": "Tiempo de lectura",
       "availability": "ابھی Chrome پر دستیاب ہے۔ مزید براؤزرز جلد آ رہے ہیں۔",
       "chrome_store_aria": "ایکسٹینشن کا Chrome Web Store صفحہ کھولیں",
       "close_aria": "براؤزر ایکسٹینشن کا ڈائیلاگ بند کریں"
@@ -477,8 +477,9 @@
       "snapshot_outside": "اسنیپ شاٹ snapshots فولڈر کے اندر ہونا چاہیے۔",
       "snapshot_truncated": "اسنیپ شاٹ زیادہ سے زیادہ سائز سے بڑا ہے اور کاٹ دیا گیا ہے۔",
       "snapshot_unavailable": "اسنیپ شاٹ فیچر دستیاب نہیں۔",
-      "modal_unavailable": "موڈل فیچر دستیاب نہیں۔",
+      "browser_extension_modal_open_blocked": "براؤزر ایکسٹینشن ڈائیلاگ ابھی نہیں کھولا جا سکتا۔",
       "preset_not_found": "منتخب پری سیٹ کیش میں نہیں ملا۔",
+      "preset_modal_unavailable": "اس ایپ بلڈ میں پری سیٹ ڈائیلاگ دستیاب نہیں ہے۔",
       "preset_modal_open_error": "پری سیٹ ڈائیلاگ کھولتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
       "delete_error": "پری سیٹ حذف کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
       "restore_error": "پری سیٹس بحال کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
@@ -534,7 +535,7 @@
       "text_extraction_native_cancelled": "Native extraction منسوخ ہو گئی۔",
       "text_extraction_unsupported_format": "یہ فائل فارمیٹ متن نکالنے کے لیے معاون نہیں ہے۔",
       "wip_diseno_skins": "WIP: skins selector مستقبل کے ورژن میں یہاں کھلے گا۔",
-      "wip_diseno_crono": "WIP: floating stopwatch settings مستقبل کے ورژن میں یہاں کھلیں گی۔",
+      "wip_diseno_crono": "WIP: Floating Stopwatch settings مستقبل کے ورژن میں یہاں کھلیں گی۔",
       "wip_diseno_fuentes": "WIP: fonts selector مستقبل کے ورژن میں یہاں کھلے گا۔",
       "wip_diseno_colores": "WIP: colors selector مستقبل کے ورژن میں یہاں کھلے گا۔",
       "wip_shortcuts": "WIP: keyboard shortcuts selector مستقبل کے ورژن میں یہاں کھلے گا۔",

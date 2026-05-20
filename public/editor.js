@@ -5,11 +5,11 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Validate required renderer surfaces before editor bootstrap continues.
-// - Wire editor UI and editor engine modules together through shared context.
-// - Bootstrap config, settings, translations, and initial editor text state.
-// - Register editorAPI listeners and DOM event handlers for editor interactions.
-// - Coordinate local editor actions with main-process text synchronization.
+// - Validate required renderer surfaces before Text Editor bootstrap continues.
+// - Wire Text Editor UI and Text Editor engine modules together through shared context.
+// - Bootstrap config, settings, translations, and initial Text Editor text state.
+// - Register editorAPI listeners and DOM event handlers for Text Editor interactions.
+// - Coordinate local Text Editor actions with main-process text synchronization.
 // =============================================================================
 
 // =============================================================================
@@ -20,7 +20,7 @@ if (typeof window.getLogger !== 'function') {
 }
 const log = window.getLogger('editor');
 
-log.debug('Manual editor starting...');
+log.debug('Text Editor starting...');
 
 // =============================================================================
 // Constants / config
@@ -298,7 +298,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
         ctx.ui.updateEditorTextSizeUi();
       }
     } catch (err) {
-      log.warn('editor: failed to apply settings update:', err);
+      log.warn('Text Editor: failed to apply settings update:', err);
     }
   });
 } else {
@@ -344,7 +344,7 @@ if (readingTestPrestartOverlay) {
     ctx.ui.updateEditorTextDirection();
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
   } catch (err) {
-    log.error('Error initializing editor:', err);
+    log.error('Error initializing Text Editor:', err);
   }
 })();
 
@@ -537,7 +537,7 @@ if (btnCalc) btnCalc.addEventListener('click', () => {
     const res = ctx.editorAPI.setCurrentText({ text: editor.value || '', meta: { source: 'editor', action: 'overwrite' } });
     ctx.engine.handleTruncationResponse(res);
   } catch (err) {
-    log.error('Error executing CALC/SAVE:', err);
+    log.error('Error executing Apply:', err);
     window.Notify.notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
     ctx.ui.restoreFocusToEditor();
   }
@@ -606,7 +606,7 @@ if (spellcheckToggle) {
 if (btnTextSizeDecrease) {
   btnTextSizeDecrease.addEventListener('click', () => {
     ctx.ui.decreaseEditorFontSize().catch((err) => {
-      log.error('Error decreasing editor font size:', err);
+      log.error('Error decreasing Text Editor font size:', err);
     });
   });
 }
@@ -614,7 +614,7 @@ if (btnTextSizeDecrease) {
 if (btnTextSizeIncrease) {
   btnTextSizeIncrease.addEventListener('click', () => {
     ctx.ui.increaseEditorFontSize().catch((err) => {
-      log.error('Error increasing editor font size:', err);
+      log.error('Error increasing Text Editor font size:', err);
     });
   });
 }
@@ -622,7 +622,7 @@ if (btnTextSizeIncrease) {
 if (btnTextSizeReset) {
   btnTextSizeReset.addEventListener('click', () => {
     ctx.ui.resetEditorFontSize().catch((err) => {
-      log.error('Error resetting editor font size:', err);
+      log.error('Error resetting Text Editor font size:', err);
     });
   });
 }
@@ -633,7 +633,7 @@ if (editorLeftGutter) {
   });
   editorLeftGutter.addEventListener('dblclick', () => {
     ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
-      log.error('Error resetting editor maximized text width:', err);
+      log.error('Error resetting Text Editor maximized text width:', err);
     });
   });
 }
@@ -644,7 +644,7 @@ if (editorRightGutter) {
   });
   editorRightGutter.addEventListener('dblclick', () => {
     ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
-      log.error('Error resetting editor maximized text width:', err);
+      log.error('Error resetting Text Editor maximized text width:', err);
     });
   });
 }

@@ -4,7 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Persist and restore editor window geometry and maximized state.
+// Persist and restore Text Editor window geometry and maximized state.
 // - Reads/writes editor_state.json via fs_storage.
 // - Normalizes persisted state and validates reduced bounds.
 // - Attaches window event handlers to persist changes.
@@ -26,7 +26,7 @@ const {
 const Log = require('./log');
 
 const log = Log.get('editor-state');
-log.debug('Editor state starting...');
+log.debug('Text Editor state starting...');
 
 // =============================================================================
 // Constants / defaults
@@ -171,7 +171,7 @@ function getWindowState(editorWin) {
 
 function notifyWindowState(editorWin, logContext = 'editorState.notifyWindowState') {
   if (!hasLiveWebContents(editorWin)) {
-    log.warn('editor-window-state skipped (ignored): editor window unavailable.', logContext);
+    log.warn('editor-window-state skipped (ignored): Text Editor window unavailable.', logContext);
     return false;
   }
 
@@ -237,7 +237,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
       saver(editorStateFile, state);
     } catch (err) {
-      log.error('[editor_state] Error saving editor reduced state:', err);
+      log.error('[editor_state] Error saving Text Editor reduced state:', err);
     }
   };
 
@@ -275,7 +275,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
         log.warnOnce(
           'editor-state.unmaximize.fallback-reduced',
           'unmaximize: reduced bounds missing; using fallback placement (ignored).',
-          'note: may be normal until the editor window is first resized/moved while not maximized.'
+          'note: may be normal until the Text Editor window is first resized/moved while not maximized.'
         );
         // Fallback: place at upper-right half of the current monitor work area.
         const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
@@ -302,7 +302,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       saver(editorStateFile, state);
       notifyWindowState(editorWin, 'editorWin.unmaximize');
     } catch (err) {
-      log.error('[editor_state] Error handling editor unmaximize:', err);
+      log.error('[editor_state] Error handling Text Editor unmaximize:', err);
     }
   });
 
@@ -314,7 +314,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       state.maximized = editorWin.isMaximized();
       saver(editorStateFile, state);
     } catch (err) {
-      log.error('[editor_state] Error saving editor closed state:', err);
+      log.error('[editor_state] Error saving Text Editor closed state:', err);
     }
   });
 }
@@ -329,7 +329,7 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
       if (typeof getEditorWindow !== 'function') {
         log.warnOnce(
           'editor-state.getEditorWindow.unavailable',
-          'getEditorWindow unavailable; editor window-state IPC skipped.'
+          'getEditorWindow unavailable; Text Editor window-state IPC skipped.'
         );
         return {
           ok: false,

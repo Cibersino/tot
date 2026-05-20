@@ -24,7 +24,8 @@
 
   <p><strong>toT</strong> is a desktop app that turns text into estimated reading time and helps you plan realistic
     reading workloads. It combines text extraction from text and image files, configurable WPM presets,
-    precise counting, text snapshots, a task editor, a stopwatch, and a reading speed test so you can measure,
+    precise counting, text snapshots, a text editor, a task editor, a stopwatch, and a reading speed test so you can
+    measure,
     organize, and complete readings with less guesswork.</p>
 
   <article class="instrucciones-document">
@@ -57,7 +58,7 @@
               <li>The text extraction from the image will begin. When it finishes, in the final apply modal choose
                 <strong>Overwrite</strong> and apply that representative page once.
               </li>
-              <li>Open the <strong>Manual Editor</strong> (⌨) to inspect the extracted result. If necessary, make
+              <li>Open the <strong>Text Editor</strong> (⌨) to inspect the extracted result. If necessary, make
                 adjustments.</li>
               <li>Then, in the results section, use the multiplier below the estimated time with the book's total page
                 count to project the full estimate.
@@ -70,7 +71,8 @@
             <ul>
               <li>Once the current text is ready, click <strong>Reading speed test</strong>.</li>
               <li>In the entry modal, choose <strong>Start with current text</strong>.</li>
-              <li>Read that text under normal conditions and use the <strong>Floating Window</strong> to pause when you
+              <li>Read that text under normal conditions and use the <strong>Floating Stopwatch</strong> to pause when
+                you
                 finish.</li>
               <li>When the flow ends, save the suggested preset based on the measured WPM.</li>
               <li><strong>Warning:</strong> very short tests, especially one-page samples, tend to overestimate
@@ -94,10 +96,10 @@
           <li>
             <p><strong>Edit the text (if needed)</strong></p>
             <ul>
-              <li>Open <strong>Manual Editor</strong> (⌨).</li>
+              <li>Open <strong>Text Editor</strong> (⌨).</li>
               <li>Correct everything weird: line breaks, hyphenation or “garbage” (menus, ads, repeated headers).
               </li>
-              <li>You can modify or add whatever you want, by typing or pasting in the Manual Editor.</li>
+              <li>You can modify or add whatever you want, by typing or pasting in the Text Editor.</li>
             </ul>
           </li>
 
@@ -134,7 +136,8 @@
             <ul>
               <li>Click <strong>Reading speed test</strong>.</li>
               <li>Follow the test's instructions and guided flow.</li>
-              <li>For a representative first measurement, choose a <strong>non-fiction</strong> text of <strong>normal</strong> difficulty from the text
+              <li>For a representative first measurement, choose a <strong>non-fiction</strong> text of
+                <strong>normal</strong> difficulty from the text
                 pool.</li>
               <li>Use the result as a better reference for your presets and future estimates.</li>
             </ul>
@@ -143,15 +146,16 @@
 
         <p><strong>If something goes wrong (rapid diagnosis):</strong></p>
         <ul>
-          <li><strong>“Weird” pasted text (PDF/columns):</strong> go through Manual Editor and clean up line
+          <li><strong>“Weird” pasted text (PDF/columns):</strong> go through Text Editor and clean up line
             breaks/hyphens.
           </li>
-          <li><strong>Absurd counts:</strong> check the text in the Manual Editor (copies from PDF often bring noise).
+          <li><strong>Absurd counts:</strong> check the text in the Text Editor (copies from PDF often bring noise).
           </li>
           <li><strong>Estimate too high/too low:</strong> review your WPM and test Simple vs Precise.</li>
           <li><strong>The app detects that a PDF exceeds the OCR size limit:</strong> if you only need part of it, use
             <strong>Page range</strong>; if you need the whole PDF, use the <strong>automatic split</strong> when the
-            app offers it.</li>
+            app offers it.
+          </li>
         </ul>
       </div>
     </section>
@@ -186,7 +190,7 @@
             planning for multiple files, and automatic full-PDF split when OCR needs a heavy PDF to be divided first.
           </li>
           <li>Text can be entered by pasting it from the clipboard and/or manually.</li>
-          <li>Full-text editor with find/replace.</li>
+          <li>Text editor with find and replace.</li>
           <li>Reading-time estimation with configurable WPM (words per minute).</li>
           <li>Word and character counting (with/without spaces).</li>
           <li>“Precise mode” word segmentation using <code>Intl.Segmenter</code>.</li>
@@ -195,7 +199,7 @@
             questions, and create custom presets.</li>
           <li>Stopwatch with real WPM calculation; optional floating window.</li>
           <li>Text snapshots: save/load current texts.</li>
-          <li>Task editor: text list organizer to plan readings.</li>
+          <li>Task editor: reading plan organizer.</li>
           <li>Multi-language UI: <code>es</code>, <code>arn</code>, <code>en</code>,
             <code>fr</code>, <code>de</code>, <code>it</code>, <code>pt</code>.
           </li>
@@ -230,7 +234,8 @@
             <strong>Page range</strong>; then you can use Native or OCR extraction.
           </li>
           <li><strong>Scanned PDF without selectable text:</strong> first choose <strong>All pages</strong> or
-            <strong>Page range</strong>; then OCR is used.</li>
+            <strong>Page range</strong>; then OCR is used.
+          </li>
         </ul>
 
         <ol>
@@ -238,7 +243,8 @@
             files, a visual drop highlight is shown).</li>
           <li>If the file is a PDF, first choose <strong>All pages</strong> or a continuous
             <strong>Page range</strong>. If you choose a range, you can also decide whether to keep the locally
-            generated PDF with those pages after processing.</li>
+            generated PDF with those pages after processing.
+          </li>
           <li>If a selectable-text PDF is detected, choose <strong>Use native</strong> or
             <strong>Use OCR</strong> (recommendation: try native first, it's faster).
           </li>
@@ -334,19 +340,20 @@
         <p><strong>Fast quality control:</strong></p>
         <ul>
           <li>If you copy from PDF or formatted sources/documents, check for extraneous line breaks, dashes, or
-            invisible spaces. If you see problems, go through the Manual Editor (Path 1C or Step 2).</li>
+            invisible spaces. If you see problems, go through the Text Editor (Path 1C or Step 2).</li>
         </ul>
 
-        <h4>Route 1C — Type or paste directly into the Manual Editor</h4>
+        <h4>Route 1C — Type or paste directly into the Text Editor</h4>
 
         <ol>
-          <li>Open <strong>Manual Editor</strong> with the button <strong>⌨</strong>.</li>
+          <li>Open <strong>Text Editor</strong> with the button <strong>⌨</strong>.</li>
           <li>Paste or type the text directly there.</li>
           <li>You can undo/redo as in any text editor: Ctrl+Z / Ctrl+Y (Windows/Linux); Cmd+Z / Cmd+Shift+Z (Mac).</li>
-          <li>You can also perform searches and replacements: Ctrl+F / Ctrl+H (Windows/Linux); Cmd+F / Cmd+Option+F (Mac).</li>
+          <li>You can also perform searches and replacements: Ctrl+F / Ctrl+H (Windows/Linux); Cmd+F / Cmd+Option+F
+            (Mac).</li>
         </ol>
 
-        <p><strong>Note:</strong> The Manual Editor, in addition to updating and saving the current text immediately, by
+        <p><strong>Note:</strong> The Text Editor, in addition to updating and saving the current text immediately, by
           default recalculates the count and generates the estimate automatically. If you want the latter to be manual,
           you can remove the “calculate while typing” check in the editor window and use the CALCULATE button.</p>
 
@@ -359,7 +366,7 @@
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/editor-manual-sobre-ventana-principal.png"
-            alt="Screenshot: manual editor on main window" loading="lazy" decoding="async" />
+            alt="Screenshot: Text Editor on main window" loading="lazy" decoding="async" />
         </figure>
 
         <h4>Route 1D — Mixing (recommended for real texts)</h4>
@@ -367,7 +374,7 @@
         <ol>
           <li>Load a quick draft with <strong>📋↺</strong>.</li>
           <li>Use <strong>📋+</strong> to add missing sections.</li>
-          <li>Open <strong>Manual Editor</strong> to:
+          <li>Open <strong>Text Editor</strong> to:
             <ul>
               <li>remove garbage (repeated headers, numbering, line breaks),</li>
               <li>correct paragraphs,</li>
@@ -378,7 +385,7 @@
         </ol>
 
         <p><strong>Note:</strong> You can completely empty the current text quickly with the <strong>🗑</strong> button
-          in the main window or in the manual editor.</p>
+          in the main window or in the Text Editor.</p>
 
         <h4>Route 1E — Save / Load snapshots</h4>
 
@@ -391,7 +398,8 @@
             <strong>language</strong>, <strong>type</strong>, and <strong>difficulty</strong>. After you confirm there,
             the app opens a native “save file” dialog rooted at <code>config/saved_current_texts/</code>. You can save
             into <strong>subfolders</strong> (and create folders) as long as you stay inside that snapshots tree. The
-            snapshot is saved as JSON.</li>
+            snapshot is saved as JSON.
+          </li>
           <li><strong>📂</strong>: opens a native “open file” dialog and lets you pick any snapshot file inside
             <code>config/saved_current_texts/</code> (including subfolders). The app will ask for confirmation because
             it will overwrite the current text.
@@ -412,7 +420,7 @@
           <li>Are there copying artifacts (many line breaks, dashes “-” at the end of each line)?</li>
         </ul>
 
-        <p>If the answer is “yes”, go back to the Manual Editor and correct. This step usually avoids errors in real
+        <p>If the answer is “yes”, go back to the Text Editor and correct. This step usually avoids errors in real
           WPM and estimate.</p>
 
         <hr />
@@ -569,8 +577,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <h3>Step 6 — Reading speed test</h3>
 
         <figure class="instrucciones-media">
-          <img src="./assets/instrucciones/reading-speed-test.png" alt="Screenshot: reading speed test"
-            loading="lazy" decoding="async" />
+          <img src="./assets/instrucciones/reading-speed-test.png" alt="Screenshot: reading speed test" loading="lazy"
+            decoding="async" />
         </figure>
 
         <p>This flow is designed to calibrate a custom WPM through a guided measurement and turn that result into a
@@ -589,12 +597,14 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li>Leave the <strong>current text</strong> exactly as the sample you want to use.</li>
           <li>Click <strong>Reading speed test</strong>.</li>
           <li>In the entry modal, choose <strong>Start with current text</strong>.</li>
-          <li>The <strong>Editor</strong> and the <strong>Floating Window</strong> will open; read normally.</li>
-          <li>When you finish, pause pressing <strong>(⏸)</strong> in the Floating Window.</li>
+          <li>The <strong>Text Editor</strong> and the <strong>Floating Stopwatch</strong> will open; read normally.
+          </li>
+          <li>When you finish, pause pressing <strong>(⏸)</strong> in the Floating Stopwatch.</li>
           <li>The app will compute the WPM and open the preset modal so you can save it as a custom preset.</li>
         </ol>
 
-        <p><strong>Note:</strong> you can cancel the test pressing <strong>(⏹)</strong> in the Floating Window. If you cancel this path, the current text is preserved.</p>
+        <p><strong>Note:</strong> you can cancel the test pressing <strong>(⏹)</strong> in the Floating Stopwatch. If
+          you cancel this path, the current text is preserved.</p>
 
         <h4>6.3 “Random text” path</h4>
         <ol>
@@ -605,11 +615,12 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li>Click <strong>⟲</strong> next to <strong>Eligible files</strong> if you want to mark all pool texts as
             unused again.</li>
           <li>Press <strong>Start with random text</strong> so the app chooses an eligible text from the pool.</li>
-          <li>Read that text in the guided session and pause from the Floating Window when you finish.</li>
+          <li>Read that text in the guided session and pause from the Floating Stopwatch when you finish.</li>
           <li>If that text includes comprehension questions, they will appear before the preset modal.</li>
         </ol>
 
-        <p><strong>Note:</strong> you can cancel the test pressing <strong>(⏹)</strong> in the Floating Window. If you cancel this path, the current text is <strong>not</strong> preserved.</p>
+        <p><strong>Note:</strong> you can cancel the test pressing <strong>(⏹)</strong> in the Floating Stopwatch. If
+          you cancel this path, the current text is <strong>not</strong> preserved.</p>
 
         <h4>6.4 Interpretation and warnings</h4>
         <ul>
@@ -625,7 +636,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <h3>Step 7 — Tasks: plan and track readings</h3>
 
         <figure class="instrucciones-media">
-          <img src="./assets/instrucciones/editor-tareas.png" alt="Screenshot: task editor window" loading="lazy"
+          <img src="./assets/instrucciones/editor-tareas.png" alt="Screenshot: Task Editor window" loading="lazy"
             decoding="async" />
         </figure>
 
@@ -636,16 +647,17 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <h4>7.1 Open the Task Editor</h4>
         <ul>
-          <li>From the main window, open the Task Editor using the Tasks controls: <strong>📝</strong> (new task) or
+          <li>From the main window, open the Task Editor using the tasks controls: <strong>📝</strong> (new task) or
             <strong>🗃️</strong> (load task).
           </li>
-          <li><strong>📝</strong> opens an empty task list.</li>
-          <li><strong>🗃️</strong> lets you pick an existing saved task list.</li>
+          <li><strong>📝</strong> opens an empty task.</li>
+          <li><strong>🗃️</strong> lets you pick an existing saved task.</li>
         </ul>
 
-        <h4>7.2 Add and edit items (rows)</h4>
+        <h4>7.2 Add and edit rows in the reading item list</h4>
         <p>
-          Open de task editor with <strong>📝</strong>. Yo can add rows clicking <strong>“Add row”</strong>. Each row
+          Open the <strong>Task Editor</strong> with <strong>📝</strong>. You can add rows by clicking <strong>“Add
+            row”</strong>. Each row
           represents one reading item with these columns: <strong>Text</strong>, <strong>Time</strong>,
           <strong>%</strong> (percent complete), <strong>Left</strong> (remaining time), <strong>Link</strong>,
           <strong>Comment</strong>, and <strong>Actions</strong>.
@@ -679,11 +691,11 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <h4>7.4 Save, load and delete tasks</h4>
         <ul>
-          <li>To save a task list choose a name for your task and click <strong>“Save”</strong> in the Task editor
+          <li>To save a task choose a name and click <strong>“Save”</strong> in the Task Editor
             window. It will open the save folder, where you must choose a file name (a JSON file) and click "Save".</li>
           <li>For your safety, there is no auto-save. If you want to update a saved task, you must save it again. You
             can overwrite the file in the folder if you don't want to create another task.</li>
-          <li>To load a previously saved task list, click the <strong>🗃️</strong> (load) button in the Main window.
+          <li>To load a previously saved task, click the <strong>🗃️</strong> (load) button in the Main window.
           </li>
           <li>To delete a task, load it and click the <strong>“Delete”</strong> in the Task Editor.</li>
         </ul>
@@ -691,17 +703,17 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p><strong>Note:</strong> Saved tasks are stored in the user configuration folder under
           <code>config/tasks/lists/</code>. You can manage them directly from the file system if needed.
 
-        <h4>7.5 Library (reusable rows)</h4>
+        <h4>7.5 Library (reusable reading items)</h4>
         <p>
-          In the Tasks editor window you can save a row into a reusable <strong>Library</strong>. This is useful for
-          items you read frequently or use in different tasks. To save a row to the Library, click the
-          <strong>💾</strong> (save to library) action in that row. The saved entry will be available in the list of the
+          In the Task Editor window you can save a reading item into a <strong>Library</strong>. This is useful for
+          items you read frequently or use in different tasks. To save a reading item to the Library, click the
+          <strong>💾</strong> (save to library) action in its row. The saved item will be available in the list of the
           Library, clicking <strong>Load library</strong> in the Task Editor. From there you can load in your task any
-          row you saved.
+          reading item you saved.
         </p>
 
         <figure class="instrucciones-media">
-          <img src="./assets/instrucciones/editor-tareas-library.png" alt="Screenshot: task editor with library"
+          <img src="./assets/instrucciones/editor-tareas-library.png" alt="Screenshot: Task Editor with library"
             loading="lazy" decoding="async" />
         </figure>
 
@@ -754,15 +766,17 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           </li>
         </ul>
 
-        <h4>8.3 Floating Window (if you read in another app)</h4>
+        <h4>8.3 Floating Stopwatch (if you read in another app)</h4>
 
         <figure class="instrucciones-media">
-          <img src="./assets/instrucciones/ventana-flotante.png" alt="Screenshot: Floating Window and stopwatch control"
-            loading="lazy" decoding="async" />
+          <img src="./assets/instrucciones/ventana-flotante.png"
+            alt="Screenshot: Floating Stopwatch and Stopwatch control" loading="lazy" decoding="async" />
         </figure>
 
-        <p>Use the Floating Window to control the Stopwatch without constantly switching windows. In the main window,
-          <strong>▣</strong> turns it on or off.</p>
+        <p>Use the <strong>Floating Stopwatch</strong> to control the Stopwatch without constantly switching windows. In
+          the main window,
+          <strong>▣</strong> turns it on or off.
+        </p>
 
         <hr />
 
@@ -783,8 +797,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             deleted after processing and they are kept locally only when you explicitly choose to keep them.</li>
           <li><strong>Presets</strong> (custom and default preset status).</li>
           <li><strong>Reading speed test</strong>: local test-text pool and its external local usage state file.</li>
-          <li><strong>Status of windows</strong> (e.g. size/position of the editor).</li>
-          <li><strong>Tasks</strong>: task lists, task library, link allowlist, and Task Editor UI state (window
+          <li><strong>Status of windows</strong> (e.g. size/position of the Text Editor).</li>
+          <li><strong>Tasks</strong>: reading item lists, readings library, link allowlist, and Task Editor UI state (window
             geometry and column widths).</li>
         </ul>
 
@@ -795,9 +809,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p>If you only want to disconnect Google OCR without deleting the rest of the app configuration, use
           <strong>Menu &gt; Preferences &gt; Disconnect Google OCR</strong>. On success, the app revokes the saved
-          Google token and
-          deletes the local OCR token file. App-managed local Google OAuth credentials may remain so OCR can
-          reconnect later.
+          Google token and deletes the local OCR token file. App-managed local Google OAuth credentials may remain so
+          OCR can reconnect later.
           As an external fallback/control, you can also revoke the app's access from your Google Account
           permissions/security controls.
         </p>
@@ -859,7 +872,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Reading/annotation apps</strong>: metrics, progress, counting or markers.</li>
         </ul>
         <p>What is distinctive about <em>toT</em> is that it works as an <strong>operational</strong> tool: build a
-          <strong>current text</strong> (clipboard and/or editor), set <strong>WPM/presets</strong>, compare
+          <strong>current text</strong> (clipboard and/or Text Editor), set <strong>WPM/presets</strong>, compare
           <strong>Simple vs Precise</strong>, <strong>measure real WPM</strong> with Stopwatch (including Floating
           Window), and use a guided <strong>reading speed test</strong> to calibrate presets from either the current
           text or pool texts.
@@ -928,14 +941,15 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>Saved text snapshots</strong> (optional library under
                 <code>config/saved_current_texts/</code>).
               </li>
-              <li><strong>Reading speed test</strong>: local test-text pool and its external local usage state file.</li>
+              <li><strong>Reading speed test</strong>: local test-text pool and its external local usage state file.
+              </li>
               <li><strong>Google extraction setup state</strong>: app-managed local Google OAuth credentials and, when
                 the Google-backed extraction path is connected, the local Google token state.</li>
               <li><strong>Locally generated PDFs from PDF extraction</strong>: if you extract a PDF page range, or if
                 the app automatically splits a heavy full PDF for OCR, it may create generated local PDFs; by default
                 they are deleted after processing and they are kept locally only when you explicitly choose to keep
                 them.</li>
-              <li><strong>Saved tasks</strong> (task lists, task library and link allowlist).</li>
+              <li><strong>Saved tasks</strong> (reading item lists, readings library and link allowlist).</li>
             </ul>
           </li>
           <li><strong>Internet:</strong> the app may require connection when you execute actions that use external
@@ -970,13 +984,13 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p>Via contribution to the repository:</p>
         <ul>
           <li>Translations are handled as <strong>JSON files</strong> per language (and as HTML files in the case of
-            “How to use”).</li>
+            these instructions).</li>
           <li>To improve a translation: adjust existing strings (terminology consistent with the UI).</li>
           <li>To add a language: it is added to the language manifest and the corresponding translation files are
             created.</li>
         </ul>
         <p>Operational recommendation: before translating massively, define a minimum glossary (for example:“current
-          text”, “precise/simple mode”, “Floating Window”, “presets”, “real WPM”).</p>
+          text”, “precise/simple mode”, “floating window”, “presets”, “real WPM”).</p>
 
         <hr />
 
@@ -1022,7 +1036,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ul>
           <li>Divide giant texts into parts (chapters/sections) and measure separately.</li>
           <li>If you are building a corpus, use <strong>📋+</strong> and control the size.</li>
-          <li>If copying from PDF/columns, first clean up in the <strong>Manual Editor</strong> (reduce garbage before
+          <li>If copying from PDF/columns, first clean up in the <strong>Text Editor</strong> (reduce garbage before
             growing text).</li>
         </ul>
 

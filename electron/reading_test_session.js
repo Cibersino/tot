@@ -379,7 +379,7 @@ function createController(options = {}) {
     try {
       closeFlotanteWindow();
     } catch (err) {
-      log.warn('Reading-test floating window close failed (ignored):', err);
+      log.warn('Reading-test Floating Stopwatch close failed (ignored):', err);
     }
   }
 

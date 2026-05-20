@@ -1,6 +1,6 @@
-/* Manual editor window styles.
+/* Text Editor window styles.
    Loaded from public/editor.html.
-   Owner boundary: editor window layout, bottom bar, and Reading Test prestart UI only. */
+   Owner boundary: Text Editor window layout, bottom bar, and Reading Test prestart UI only. */
 
 /* Design tokens */
 :root {
@@ -33,7 +33,7 @@ body {
   gap: 0;
 }
 
-/* Editor surface */
+/* Text Editor surface */
 .editor-wrap {
   position: relative;
   display: flex;

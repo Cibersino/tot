@@ -4,12 +4,12 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Editor engine module for the renderer editor page.
+// Text Editor engine module for the renderer editor page.
 // Responsibilities:
 // - Read and update selection state used by typing, paste, drop, and replace flows.
 // - Apply native-first insert and replace operations with local fallbacks.
 // - Build replace responses for main-driven requests.
-// - Synchronize editor text back to main and surface truncation feedback.
+// - Synchronize Text Editor text back to main and surface truncation feedback.
 // - Reconcile external text updates without echoing editor-originated changes back to main.
 
 (() => {
@@ -147,7 +147,7 @@
 
         log.warnOnce(
           'editor.execCommand.insert',
-          "document.execCommand('insertText') unavailable or failed; using editor insert fallback."
+          "document.execCommand('insertText') unavailable or failed; using Text Editor insert fallback."
         );
 
         if (typeof editor.setRangeText === 'function') {
@@ -591,7 +591,7 @@
         }
 
         const prevSuppressLocalUpdate = state.suppressLocalUpdate;
-        // Prevent main-driven updates from re-triggering local editor sync while applying them.
+        // Prevent main-driven updates from re-triggering local Text Editor sync while applying them.
         state.suppressLocalUpdate = true;
         try {
           const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;

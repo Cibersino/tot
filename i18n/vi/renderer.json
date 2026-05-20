@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Tiện ích mở rộng trình duyệt",
-      "subtitle": "Thời gian đọc",
+      "subtitle": "Tiempo de lectura",
       "availability": "Hiện đã có trên Chrome. Nhiều trình duyệt khác sẽ sớm được hỗ trợ.",
       "chrome_store_aria": "Mở trang Chrome Web Store của tiện ích",
       "close_aria": "Đóng hộp thoại tiện ích mở rộng trình duyệt"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Bản lưu phải nằm trong thư mục bản lưu.",
       "snapshot_truncated": "Bản lưu vượt quá kích thước tối đa và đã bị cắt bớt.",
       "snapshot_unavailable": "Chức năng bản lưu không khả dụng.",
-      "modal_unavailable": "Chức năng modal không khả dụng.",
+      "browser_extension_modal_open_blocked": "Không thể mở hộp thoại tiện ích mở rộng trình duyệt ngay bây giờ.",
       "preset_not_found": "Không tìm thấy preset đã chọn trong bộ nhớ đệm.",
+      "preset_modal_unavailable": "Hộp thoại preset không khả dụng trong bản build ứng dụng này.",
       "preset_modal_open_error": "Đã xảy ra lỗi khi mở hộp thoại preset. Hãy kiểm tra console.",
       "delete_error": "Đã xảy ra lỗi khi xóa preset. Hãy kiểm tra console.",
       "restore_error": "Đã xảy ra lỗi khi khôi phục preset. Hãy kiểm tra console.",

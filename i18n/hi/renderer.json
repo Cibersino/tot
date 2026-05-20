@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "ब्राउज़र एक्सटेंशन",
-      "subtitle": "पढ़ने का समय",
+      "subtitle": "Tiempo de lectura",
       "availability": "अभी Chrome पर उपलब्ध है। जल्द ही और ब्राउज़रों पर आएगा।",
       "chrome_store_aria": "एक्सटेंशन का Chrome Web Store पेज खोलें",
       "close_aria": "ब्राउज़र एक्सटेंशन संवाद बंद करें"
@@ -477,8 +477,9 @@
       "snapshot_outside": "स्नैपशॉट सहेजने वाले फ़ोल्डर के अंदर होना चाहिए।",
       "snapshot_truncated": "स्नैपशॉट अधिकतम आकार से अधिक है और काट दिया गया।",
       "snapshot_unavailable": "स्नैपशॉट सुविधा उपलब्ध नहीं है।",
-      "modal_unavailable": "मोडल सुविधा उपलब्ध नहीं है।",
+      "browser_extension_modal_open_blocked": "ब्राउज़र एक्सटेंशन डायलॉग अभी नहीं खोला जा सकता।",
       "preset_not_found": "चयनित प्रीसेट कैश में नहीं मिला।",
+      "preset_modal_unavailable": "इस ऐप बिल्ड में प्रीसेट डायलॉग उपलब्ध नहीं है।",
       "preset_modal_open_error": "प्रीसेट डायलॉग खोलते समय त्रुटि हुई। कंसोल देखें।",
       "delete_error": "प्रीसेट हटाते समय त्रुटि हुई। कंसोल देखें।",
       "restore_error": "प्रीसेट पुनर्स्थापित करते समय त्रुटि हुई। कंसोल देखें।",
@@ -534,7 +535,7 @@
       "text_extraction_native_cancelled": "Native extraction रद्द कर दी गई।",
       "text_extraction_unsupported_format": "यह फ़ाइल प्रारूप पाठ निकासी के लिए समर्थित नहीं है।",
       "wip_diseno_skins": "WIP: skins selector भविष्य के संस्करण में यहाँ खुलेगा।",
-      "wip_diseno_crono": "WIP: floating stopwatch settings भविष्य के संस्करण में यहाँ खुलेंगी।",
+      "wip_diseno_crono": "WIP: Floating Stopwatch settings भविष्य के संस्करण में यहाँ खुलेंगी।",
       "wip_diseno_fuentes": "WIP: fonts selector भविष्य के संस्करण में यहाँ खुलेगा।",
       "wip_diseno_colores": "WIP: colors selector भविष्य के संस्करण में यहाँ खुलेगा।",
       "wip_shortcuts": "WIP: keyboard shortcuts selector भविष्य के संस्करण में यहाँ खुलेगा।",

@@ -7,12 +7,12 @@
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Manual de uso — toT</title>
+  <title>¿Cómo usar la app? — toT</title>
 </head>
 
 <body>
   <h3>toT</h3>
-  <h1>Manual de uso</h1>
+  <h1>¿Cómo usar la app?</h1>
 
   <nav aria-label="Secciones del manual">
     <ul>
@@ -24,7 +24,7 @@
 
   <p><strong>toT</strong> es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a
     planificar cargas de lectura realistas. Combina extracción de texto desde archivos de texto e imagen,
-    presets de WPM configurables, conteo preciso, snapshots de texto, editor de tareas, cronómetro y test de velocidad
+    presets de WPM configurables, conteo preciso, snapshots de texto, un editor de texto, un editor de tareas, cronómetro y test de velocidad
     de lectura para que puedas medir, organizar y completar lecturas con menos margen de adivinación.</p>
 
   <article class="instrucciones-document">
@@ -57,7 +57,7 @@
                 con Google Drive.</li>
               <li>La extracción de texto desde la imagen comenzará. Cuando termine, en el modal final de aplicación
                 elige <strong>Sobrescribir</strong> y aplica esa página representativa una sola vez.</li>
-              <li>Abre el <strong>Editor manual</strong> (⌨) para inspeccionar el resultado extraído. Si hace falta,
+              <li>Abre el <strong>Editor de Texto</strong> (⌨) para inspeccionar el resultado extraído. Si hace falta,
                 haz ajustes.</li>
               <li>Luego, en la sección de resultados, usa el multiplicador bajo el tiempo estimado con la cantidad total
                 de páginas del libro para proyectar la estimación completa.</li>
@@ -69,7 +69,7 @@
             <ul>
               <li>Con el texto actual ya listo, pulsa <strong>Test de velocidad de lectura</strong>.</li>
               <li>En el modal inicial, elige <strong>Iniciar con texto actual</strong>.</li>
-              <li>Lee ese texto en condiciones normales y usa la <strong>Ventana Flotante</strong> para pausar al
+              <li>Lee ese texto en condiciones normales y usa el <strong>Cronómetro Flotante</strong> para pausar al
                 terminar.</li>
               <li>Cuando el flujo termine, guarda el preset sugerido a partir del WPM medido.</li>
               <li><strong>Advertencia:</strong> tests muy cortos, especialmente de una sola página, suelen
@@ -92,7 +92,7 @@
           <li>
             <p><strong>Edita el texto (si lo necesitas)</strong></p>
             <ul>
-              <li>Abre el <strong>Editor manual</strong> (⌨).</li>
+              <li>Abre el <strong>Editor de Texto</strong> (⌨).</li>
               <li>Corrige si ves saltos de línea raros, guiones de corte o “basura” (menús, anuncios, encabezados
                 repetidos).</li>
               <li>Puedes modificar o agregar lo que quieras, escribiendo o pegando en el mismo editor.</li>
@@ -142,8 +142,8 @@
 
         <p><strong>Si algo sale raro (diagnóstico rápido):</strong></p>
         <ul>
-          <li><strong>Texto pegado “raro” (PDF/columnas):</strong> pasa por Editor manual y limpia saltos/guiones.</li>
-          <li><strong>Conteos absurdos:</strong> revisa el texto en el Editor manual (copias desde PDF suelen traer
+          <li><strong>Texto pegado “raro” (PDF/columnas):</strong> pasa por Editor de Texto y limpia saltos/guiones.</li>
+          <li><strong>Conteos absurdos:</strong> revisa el texto en el Editor de Texto (copias desde PDF suelen traer
             ruido).</li>
           <li><strong>Estimación demasiado alta/baja:</strong> revisa tu WPM y prueba Simple vs Preciso.</li>
           <li><strong>La app detecta que un PDF excede el límite de tamaño para OCR:</strong> si solo necesitas una
@@ -184,7 +184,7 @@
             OCR necesita partir un PDF pesado.
           </li>
           <li>Introducir texto pegándolo desde el portapapeles y/o manualmente.</li>
-          <li>Editor de texto completo con búsqueda y reemplazo.</li>
+          <li>Editor de texto con búsqueda y reemplazo.</li>
           <li>Estimación de tiempo de lectura con WPM configurable (palabras por minuto).</li>
           <li>Conteo de palabras y caracteres (con y sin espacios).</li>
           <li>Segmentación de palabras en “modo preciso” usando <code>Intl.Segmenter</code>.</li>
@@ -193,7 +193,7 @@
             opcionales de comprensión y crear presets personalizados.</li>
           <li>Cronómetro con cálculo de WPM real; ventana flotante opcional.</li>
           <li>Snapshots de texto: guardar y cargar textos actuales.</li>
-          <li>Editor de tareas: organizador de listas de textos para planificar lecturas.</li>
+          <li>Editor de tareas: organizador de planes de lectura.</li>
           <li>Interfaz multilingüe: <code>es</code>, <code>arn</code>, <code>en</code>,
             <code>fr</code>, <code>de</code>, <code>it</code>, <code>pt</code>.
           </li>
@@ -334,20 +334,20 @@
         <p><strong>Control de calidad rápido:</strong></p>
         <ul>
           <li>Si copias desde PDF o fuentes con formato, revisa si quedaron saltos de línea extraños, guiones de corte,
-            o espacios invisibles. Si ves problemas, pasa por el Editor manual (Ruta 1C o Paso 2).</li>
+            o espacios invisibles. Si ves problemas, pasa por el Editor de Texto (Ruta 1C o Paso 2).</li>
         </ul>
 
-        <h4>Ruta 1C — Escribir o pegar directamente en el Editor manual</h4>
+        <h4>Ruta 1C — Escribir o pegar directamente en el Editor de Texto</h4>
 
         <ol>
-          <li>Abre el <strong>Editor manual</strong> con el botón <strong>⌨</strong>.</li>
+          <li>Abre el <strong>Editor de Texto</strong> con el botón <strong>⌨</strong>.</li>
           <li>Pega o escribe el texto directamente allí.</li>
           <li>Puedes hacer undo/redo como en cualquier editor de texto: Ctrl+Z / Ctrl+Y (Windows/Linux); Cmd+Z /
             Cmd+Shift+Z (Mac).</li>
           <li>También puedes realizar búsquedas y reemplazos: Ctrl+F / Ctrl+H (Windows/Linux); Cmd+F / Cmd+Option+F (Mac).</li>
         </ol>
 
-        <p><strong>Nota:</strong> El Editor manual, además de actualizar y guardar el texto actual inmediatamente, por
+        <p><strong>Nota:</strong> El Editor de Texto, además de actualizar y guardar el texto actual inmediatamente, por
           defecto recalcula el conteo y genera la estimación automáticamente. Si quieres que esto último sea manual,
           puedes quitar el check de “calcular mientras escribe” en la ventana del editor y usar el botón CALCULAR.</p>
 
@@ -360,7 +360,7 @@
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/editor-manual-sobre-ventana-principal.png"
-            alt="Captura: editor manual sobre ventana principal" loading="lazy" decoding="async" />
+            alt="Captura: Editor de Texto sobre ventana principal" loading="lazy" decoding="async" />
         </figure>
 
         <h4>Ruta 1D — Mezcla (recomendada para textos reales)</h4>
@@ -368,7 +368,7 @@
         <ol>
           <li>Carga un borrador rápido con <strong>📋↺</strong>.</li>
           <li>Usa <strong>📋+</strong> para sumar secciones que falten.</li>
-          <li>Abre el <strong>Editor manual</strong> para:
+          <li>Abre el <strong>Editor de Texto</strong> para:
             <ul>
               <li>eliminar basura (encabezados repetidos, numeraciones, saltos de línea),</li>
               <li>corregir párrafos,</li>
@@ -379,7 +379,7 @@
         </ol>
 
         <p><strong>Nota:</strong> Puedes vaciar completamente el texto actual rápidamente con el botón
-          <strong>🗑</strong> de la ventana principal o del editor manual.
+          <strong>🗑</strong> de la ventana principal o del Editor de Texto.
         </p>
 
         <h4>Ruta 1E — Guardar / Cargar snapshots</h4>
@@ -413,7 +413,7 @@
           <li>¿Hay artefactos de copiado (muchos saltos de línea, guiones “-” al final de cada línea)?</li>
         </ul>
 
-        <p>Si la respuesta es “sí”, vuelve al Editor manual y corrige. Este paso suele ahorrar errores en WPM real y
+        <p>Si la respuesta es “sí”, vuelve al Editor de Texto y corrige. Este paso suele ahorrar errores en WPM real y
           estimaciones.</p>
 
         <hr />
@@ -594,12 +594,12 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li>Deja listo el <strong>texto actual</strong> que realmente quieres usar como muestra.</li>
           <li>Haz clic en <strong>Test de velocidad de lectura</strong>.</li>
           <li>En el modal inicial, elige <strong>Iniciar con texto actual</strong>.</li>
-          <li>Se abrirán el <strong>Editor</strong> y la <strong>Ventana Flotante</strong>; lee normalmente.</li>
-          <li>Cuando termines, pausa presionando <strong>(⏸)</strong> en la Ventana Flotante.</li>
+          <li>Se abrirán el <strong>Editor de Texto</strong> y el <strong>Cronómetro Flotante</strong>; lee normalmente.</li>
+          <li>Cuando termines, pausa presionando <strong>(⏸)</strong> en el Cronómetro Flotante.</li>
           <li>La app calculará el WPM y abrirá el modal de preset para que lo guardes como preset personalizado.</li>
         </ol>
 
-        <p><strong>Nota:</strong> puedes cancelar el test presionando <strong>(⏹)</strong> en la Ventana Flotante. Si cancelas esta ruta, el texto actual se conserva.</p>
+        <p><strong>Nota:</strong> puedes cancelar el test presionando <strong>(⏹)</strong> en el Cronómetro Flotante. Si cancelas esta ruta, el texto actual se conserva.</p>
 
         <h4>6.3 Ruta “texto aleatorio”</h4>
         <ol>
@@ -610,11 +610,11 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li>Pulsa <strong>⟲</strong> junto a <strong>Archivos elegibles</strong> si quieres volver a marcar como no
             usados todos los textos del pool.</li>
           <li>Pulsa <strong>Iniciar con texto aleatorio</strong> para que la app elija un texto elegible del pool.</li>
-          <li>Lee el texto en la sesión guiada y presiona <strong>(⏸)</strong> en la Ventana Flotante al terminar.</li>
+          <li>Lee el texto en la sesión guiada y presiona <strong>(⏸)</strong> en el Cronómetro Flotante al terminar.</li>
           <li>Si ese texto incluye preguntas de comprensión, aparecerán antes del modal de presets.</li>
         </ol>
 
-        <p><strong>Nota:</strong> puedes cancelar el test presionando <strong>(⏹)</strong> en la Ventana Flotante. Si cancelas esta ruta, el texto actual <strong>no</strong> se conserva.</p>
+        <p><strong>Nota:</strong> puedes cancelar el test presionando <strong>(⏹)</strong> en el Cronómetro Flotante. Si cancelas esta ruta, el texto actual <strong>no</strong> se conserva.</p>
 
         <h4>6.4 Interpretación y advertencias</h4>
         <ul>
@@ -630,7 +630,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <h3>Paso 7 — Tareas: planear y rastrear lecturas</h3>
 
         <figure class="instrucciones-media">
-          <img src="./assets/instrucciones/editor-tareas.png" alt="Captura: ventana del editor de tareas" loading="lazy"
+          <img src="./assets/instrucciones/editor-tareas.png" alt="Captura: ventana del Editor de Tareas" loading="lazy"
             decoding="async" />
         </figure>
 
@@ -639,17 +639,17 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           con tiempo estimado, progreso y enlaces.
         </p>
 
-        <h4>7.1 Abrir el editor de tareas</h4>
+        <h4>7.1 Abrir el Editor de Tareas</h4>
         <ul>
-          <li>Desde la ventana principal, abre el editor de tareas usando los controles de Tareas: <strong>📝</strong>
+          <li>Desde la ventana principal, abre el Editor de Tareas usando los controles de tareas: <strong>📝</strong>
             (nueva tarea) o <strong>🗃️</strong> (cargar tarea).</li>
-          <li><strong>📝</strong> abre una lista de tareas vacía.</li>
-          <li><strong>🗃️</strong> te permite elegir una lista de tareas guardada existente.</li>
+          <li><strong>📝</strong> abre una tarea vacía.</li>
+          <li><strong>🗃️</strong> te permite elegir una tarea guardada existente.</li>
         </ul>
 
-        <h4>7.2 Agregar y editar elementos (filas)</h4>
+        <h4>7.2 Agregar y editar filas en la lista de lecturas</h4>
         <p>
-          Abre el editor de tareas con <strong>📝</strong>. Puedes agregar filas haciendo clic en <strong>“Add
+          Abre el <strong>Editor de Tareas</strong> con <strong>📝</strong>. Puedes agregar filas haciendo clic en <strong>“Add
             row”</strong>. Cada fila representa un elemento de lectura con estas columnas: <strong>Texto</strong>,
           <strong>Tiempo</strong>, <strong>%</strong> (porcentaje completado), <strong>Falta</strong> (tiempo restante),
           <strong>Enlace</strong>, <strong>Comentario</strong>, y <strong>Acciones</strong>.
@@ -688,31 +688,32 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <h4>7.4 Guardar, cargar y eliminar tareas</h4>
         <ul>
-          <li>Para guardar una lista de tareas, elige un nombre para tu tarea y haz clic en <strong>“Guardar”</strong>
-            en la ventana del editor de tareas. Se abrirá la carpeta de guardado, donde deberás elegir un nombre de
+          <li>Para guardar una tarea, elige un nombre y haz clic en <strong>“Guardar”</strong>
+            en la ventana del Editor de Tareas. Se abrirá la carpeta de guardado, donde deberás elegir un nombre de
             archivo (un archivo JSON) y hacer clic en "Guardar".</li>
           <li>Por tu seguridad, no hay auto-guardado. Si quieres actualizar una tarea guardada, debes guardarla
             nuevamente. Puedes sobrescribir el archivo en la carpeta si no quieres crear otra tarea.</li>
-          <li>Para cargar una lista de tareas previamente guardada, haz clic en el botón <strong>🗃️</strong> (cargar)
+          <li>Para cargar una tarea previamente guardada, haz clic en el botón <strong>🗃️</strong> (cargar)
             en la ventana principal.</li>
-          <li>Para eliminar una tarea, cárgala y haz clic en <strong>“Eliminar”</strong> en el editor de tareas.</li>
+          <li>Para eliminar una tarea, cárgala y haz clic en <strong>“Eliminar”</strong> en el Editor de Tareas.</li>
         </ul>
 
         <p><strong>Nota:</strong> Las tareas guardadas se almacenan en la carpeta de configuración del usuario bajo
           <code>config/tasks/lists/</code>. Puedes administrarlas directamente desde el sistema de archivos si es
           necesario.
 
-        <h4>7.5 Biblioteca (filas reutilizables)</h4>
+        <h4>7.5 Biblioteca (lecturas reutilizables)</h4>
         <p>
-          En la ventana del editor de Tareas, puedes guardar una fila en una <strong>Biblioteca</strong> reutilizable.
-          Esto es útil para elementos que leas con frecuencia o utilizas en diferentes tareas. Para guardar una fila en
-          la biblioteca, has clic en la acción <strong>💾</strong> (guardar en la biblioteca) en esa fila. La entrada
-          guardada estará disponible en la lista de la Biblioteca, haciendo clic en <strong>Cargar biblioteca</strong>
-          en el Editor de tareas. Desde allí puedes cargar en tu tarea cualquier fila que hayas guardado.
+          En la ventana del Editor de Tareas, puedes guardar una lectura en una <strong>Biblioteca</strong> reutilizable.
+          Esto es útil para elementos que leas con frecuencia o utilizas en diferentes tareas. Para guardar una lectura en
+          la biblioteca, haz clic en la acción <strong>💾</strong> (guardar en la biblioteca) en la fila correspondiente. 
+          La lectura guardada estará disponible en la lista de la Biblioteca, haciendo clic en 
+          <strong>Cargar biblioteca</strong> en el Editor de Tareas. Desde allí puedes cargar en tu tarea cualquier 
+          lectura que hayas guardado.
         </p>
 
         <figure class="instrucciones-media">
-          <img src="./assets/instrucciones/editor-tareas-library.png" alt="Captura: editor de tareas con biblioteca"
+          <img src="./assets/instrucciones/editor-tareas-library.png" alt="Captura: Editor de Tareas con biblioteca"
             loading="lazy" decoding="async" />
         </figure>
 
@@ -763,14 +764,14 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             fracciones de segundo no visualizadas en la estimación y/o el cronómetro, y/o a los redondeos.</li>
         </ul>
 
-        <h4>8.3 Ventana flotante (si lees en otra app)</h4>
+        <h4>8.3 Cronómetro Flotante (si lees en otra app)</h4>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/ventana-flotante.png"
-            alt="Captura: ventana flotante y control del cronómetro" loading="lazy" decoding="async" />
+            alt="Captura: Cronómetro Flotante y controles del cronómetro" loading="lazy" decoding="async" />
         </figure>
 
-        <p>Usa la ventana flotante para controlar el cronómetro sin cambiar de ventana constantemente. En la ventana
+        <p>Usa el <strong>Cronómetro Flotante</strong> para controlar el cronómetro sin cambiar de ventana constantemente. En la ventana
           principal, <strong>▣</strong> la activa o desactiva.</p>
 
         <hr />
@@ -794,9 +795,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Test de velocidad de lectura</strong>: pool local de textos del test y su archivo local externo
             de estado de uso.
           </li>
-          <li><strong>Estado de ventanas</strong> (por ejemplo: tamaño/posición del editor).</li>
-          <li><strong>Tareas</strong>: listas de tareas, biblioteca de tareas, lista de enlaces permitidos y estado de
-            la interfaz de usuario del Editor de tareas (geometría de ventana y ancho de columna).</li>
+          <li><strong>Estado de ventanas</strong> (por ejemplo: tamaño/posición del Editor de Texto).</li>
+          <li><strong>Tareas</strong>: listas de lecturas, biblioteca de lecturas, lista de enlaces permitidos y estado de
+            la interfaz de usuario del Editor de Tareas (geometría de ventana y ancho de columna).</li>
         </ul>
 
         <p><strong>Implicación:</strong></p>
@@ -869,7 +870,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Apps de lectura/anotación</strong>: métricas, progreso, conteo o marcadores.</li>
         </ul>
         <p>Lo distintivo de <em>toT</em> es que funciona como herramienta <strong>operacional</strong>: construir un
-          <strong>texto actual</strong> (portapapeles y/o editor), fijar <strong>WPM/presets</strong>, comparar
+          <strong>texto actual</strong> (portapapeles y/o Editor de Texto), fijar <strong>WPM/presets</strong>, comparar
           <strong>Simple vs Preciso</strong>, <strong>medir WPM real</strong> con cronómetro (incluida la ventana
           flotante), y usar un <strong>test de velocidad de lectura</strong> guiado para calibrar presets con el texto
           actual o con textos del pool.
@@ -945,7 +946,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>PDFs locales generados por extracción PDF</strong>: si extraes un rango de páginas de un PDF,
                 o si la app divide automáticamente un PDF completo pesado para OCR, puede crear PDFs locales generados;
                 por defecto se eliminan al terminar y solo se conservan localmente cuando eliges guardarlos.</li>
-              <li><strong>Tareas guardadas</strong> (listas de tareas, biblioteca de tareas y lista de enlaces
+              <li><strong>Tareas guardadas</strong> (listas de lecturas, biblioteca de lecturas y lista de enlaces
                 permitidos).</li>
             </ul>
           </li>
@@ -953,7 +954,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             externos, como:
             <ul>
               <li>abrir enlaces externos en los que el usuario hizo clic (incluidos los enlaces abiertos desde páginas
-                informativas y desde Tareas),
+                informativas y desde el Editor de Tareas),
               </li>
               <li>comprobar/abrir información de actualización (por ejemplo, en GitHub),</li>
               <li>si decides usar una ruta de extracción asistida por Google: autorizar Google en el navegador del
@@ -982,7 +983,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p>Vía contribución al repositorio:</p>
         <ul>
           <li>Las traducciones se manejan como <strong>archivos JSON</strong> por idioma (y como archivos HTML en el
-            caso del “Manual de uso”).</li>
+            caso de estas instrucciones).</li>
           <li>Para mejorar una traducción: ajusta strings existentes (terminología consistente con la UI).</li>
           <li>Para añadir un idioma: se agrega al manifiesto de idiomas y se crean los archivos de traducción
             correspondientes.</li>
@@ -1036,7 +1037,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ul>
           <li>Divide textos gigantes en partes (capítulos/secciones) y mide por separado.</li>
           <li>Si estás armando un corpus, usa <strong>📋+</strong> y controla el tamaño.</li>
-          <li>Si copias desde PDF/columnas, primero limpia en el <strong>Editor manual</strong> (reduce basura antes de
+          <li>Si copias desde PDF/columnas, primero limpia en el <strong>Editor de Texto</strong> (reduce basura antes de
             crecer el texto).</li>
         </ul>
 
@@ -1085,7 +1086,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <h3>“¿Qué estudios hay sobre la velocidad de lectura?”</h3>
         <p>Hay estudios sobre velocidad de lectura y comprensión en distintos contextos.</p>
-        <p>Para referencias concretas, revisa <em>Menú</em> &gt; <em>Links de interés</em>.</p>
+        <p>Para referencias concretas, revisa <em>Menú</em> &gt; <em>Enlaces de interés</em>.</p>
 
         <hr />
 

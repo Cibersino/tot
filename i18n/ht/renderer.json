@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Ekstansyon navigatè",
-      "subtitle": "Tan lekti",
+      "subtitle": "Tiempo de lectura",
       "availability": "Disponib kounye a sou Chrome. Lòt navigatè ap vini byento.",
       "chrome_store_aria": "Louvri paj Chrome Web Store ekstansyon an",
       "close_aria": "Fèmen dyalòg ekstansyon navigatè a"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Snapshot la dwe anndan katab snapshot yo.",
       "snapshot_truncated": "Snapshot la depase gwosè maksimòm lan epi li te tronke.",
       "snapshot_unavailable": "Fonksyon snapshot la pa disponib.",
-      "modal_unavailable": "Fonksyon modal la pa disponib.",
+      "browser_extension_modal_open_blocked": "Dyalòg ekstansyon navigatè a pa ka louvri kounye a.",
       "preset_not_found": "Preset chwazi a pa jwenn nan kach la.",
+      "preset_modal_unavailable": "Dyalòg preset la pa disponib nan build app sa a.",
       "preset_modal_open_error": "Gen yon erè ki rive pandan ouvèti dyalòg preset la. Gade konsole a.",
       "delete_error": "Gen yon erè ki fèt pandan efase preset la. Tcheke konsole a.",
       "restore_error": "Gen yon erè ki fèt pandan retabli preset yo. Tcheke konsole a.",

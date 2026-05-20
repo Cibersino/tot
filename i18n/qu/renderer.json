@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Navegadorpa extensiónnin",
-      "subtitle": "Ñawinchay pacha",
+      "subtitle": "Tiempo de lectura",
       "availability": "Kunanqa Chrome-pi kachkanña. Aswan achka navegadorkunamanqa utqayllam chayanqa.",
       "chrome_store_aria": "Extensiónpa Chrome Web Store p'ankanta kichay",
       "close_aria": "Navegadorpa extensiónnin dialogota wichq'ay"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Snapshotqa waqaychana carpetapa ukunpi kanan.",
       "snapshot_truncated": "Snapshot hatun kayninmanta aswan karqan hinaspa kuchusqa.",
       "snapshot_unavailable": "Snapshot ruwana mana kanchu.",
-      "modal_unavailable": "Modal ruwana mana kanchu.",
+      "browser_extension_modal_open_blocked": "Navegador extensión diálogota kunan manam kichayta atikunchu.",
       "preset_not_found": "Akllasqa preset cachepi mana tarisqachu.",
+      "preset_modal_unavailable": "Preset diálogota kay app buildpi manam apaykachayta atikunchu.",
       "preset_modal_open_error": "Preset diálogota kichaspa pantay karqan. Consolata qhaway.",
       "delete_error": "Preset chinkachiypi pantay karqan. Consolata qhaway.",
       "restore_error": "Presets kutichiypi pantay karqan. Consolata qhaway.",

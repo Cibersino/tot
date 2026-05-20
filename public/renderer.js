@@ -10,9 +10,9 @@
 // - Applies i18n labels and number formatting.
 // - Maintains text preview, counts, and time estimates.
 // - Coordinates text extraction and OCR entry flows from the main window.
-// - Wires presets, clipboard actions, editor, tasks, and help tips.
+// - Wires presets, clipboard actions, Text Editor, Task Editor, and help tips.
 // - Hosts the info modal and top-bar menu actions.
-// - Integrates the stopwatch controller and floating window toggle.
+// - Integrates the Stopwatch controller and the Floating Stopwatch toggle.
 // =============================================================================
 // Logger and constants
 // =============================================================================
@@ -514,7 +514,7 @@ function applyTranslations() {
   applyAriaLabel(btnEditPreset, 'renderer.main.tooltips.edit_preset');
   applyAriaLabel(btnDeletePreset, 'renderer.main.tooltips.delete_preset');
   applyAriaLabel(btnResetDefaultPresets, 'renderer.main.tooltips.reset_presets');
-  // Floating window toggle
+  // Floating Stopwatch toggle
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
   if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window');
   // Section titles
@@ -888,7 +888,7 @@ function armIpcSubscriptions() {
     } else {
       log.warnOnce(
         'renderer.ipc.onEditorReady.unavailable',
-        'onEditorReady unavailable; editor loader may not clear.'
+        'onEditorReady unavailable; Text Editor loader may not clear.'
       );
     }
   } else {
@@ -1841,7 +1841,7 @@ function initializeDelegatedIntegrations() {
   );
 }
 
-// Editor launch state mirrors the pending UI while the editor window opens.
+// Text Editor launch state mirrors the pending UI while the Text Editor window opens.
 function showEditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
   currentTextSelectorSection.setEditorLaunchPending(true);
@@ -1982,7 +1982,7 @@ async function handleOpenEditor() {
   try {
     const openEditor = getOptionalElectronMethod('openEditor', {
       dedupeKey: 'renderer.ipc.openEditor.unavailable',
-      unavailableMessage: 'openEditor unavailable; editor launch skipped.'
+      unavailableMessage: 'openEditor unavailable; Text Editor launch skipped.'
     });
     if (!openEditor) {
       hideEditorLoader();
@@ -1990,7 +1990,7 @@ async function handleOpenEditor() {
     }
     await openEditor();
   } catch (err) {
-    log.error('Error opening editor:', err);
+    log.error('Error opening Text Editor:', err);
     hideEditorLoader();
   }
 }
@@ -2058,7 +2058,7 @@ async function handleSaveSnapshot() {
 }
 
 // =============================================================================
-// Task selector (open task editor)
+// Task selector (open Task Editor)
 // =============================================================================
 function handleTaskOpenResult(res, { mode } = {}) {
   if (!res || res.ok === false) {
@@ -2093,7 +2093,7 @@ async function handleNewTask() {
     const res = await window.electronAPI.openTaskEditor('new');
     handleTaskOpenResult(res, { mode: 'new' });
   } catch (err) {
-    log.error('Error opening task editor (new):', err);
+    log.error('Error opening Task Editor (new):', err);
     window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
   }
 }
@@ -2112,7 +2112,7 @@ async function handleLoadTask() {
     const res = await window.electronAPI.openTaskEditor('load');
     handleTaskOpenResult(res, { mode: 'load' });
   } catch (err) {
-    log.error('Error opening task editor (load):', err);
+    log.error('Error opening Task Editor (load):', err);
     window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
   }
 }
@@ -2177,7 +2177,7 @@ async function openPresetModalFromMain(payload) {
       'renderer.ipc.openPresetModal.unavailable',
       'openPresetModal unavailable in electronAPI; preset-modal action skipped.'
     );
-    window.Notify.notifyMain('renderer.alerts.modal_unavailable');
+    window.Notify.notifyMain('renderer.alerts.preset_modal_unavailable');
     return;
   }
 

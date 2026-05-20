@@ -4,12 +4,12 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Shared literal matching and replace-all core for editor find/replace.
+// Shared literal matching and replace-all core for Text Editor find/replace.
 // Responsibilities:
 // - Normalize matching for case-sensitive and case-insensitive comparisons.
 // - Mirror native find behavior by folding common Latin diacritics when matchCase is off.
 // - Check whether the current selection still matches a literal query.
-// - Compute replace-all output without mutating editor state directly.
+// - Compute replace-all output without mutating Text Editor state directly.
 
 // =============================================================================
 // Module Factory

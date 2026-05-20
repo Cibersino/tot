@@ -4,11 +4,11 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-process shortcut predicate helpers for editor native find/search.
+// Main-process shortcut predicate helpers for Text Editor native find/search.
 // Responsibilities:
 // - Normalize letter-based shortcut matching across input.key and input.code.
 // - Classify open-find and open-replace shortcut combinations.
-// - Classify F3 and Escape shortcut checks used by editor/find handlers.
+// - Classify F3 and Escape shortcut checks used by Text Editor/find handlers.
 // - Classify shared text-size shortcut combinations.
 
 // =============================================================================

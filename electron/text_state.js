@@ -9,7 +9,7 @@
 // - Load/save current text state on startup and before-quit.
 // - Provide clipboard reads to the main window via IPC with sender/size checks.
 // - Register IPC handlers for get-current-text, set-current-text, force-clear-editor, clipboard-read-text.
-// - Broadcast text updates to main and editor windows (best-effort).
+// - Broadcast text updates to main and Text Editor windows (best-effort).
 // - Ensure settings file exists on quit (compatibility behavior).
 
 // =============================================================================
@@ -154,7 +154,7 @@ function applyCurrentText(rawText, rawMeta) {
   // Notify main window (for renderer to update preview/results)
   safeSend(mainWin, 'current-text-updated', currentText);
 
-  // Notify editor with object { text, meta }
+  // Notify Text Editor with object { text, meta }
   const incomingMeta = sanitizeMeta(rawMeta);
   safeSend(editorWin, 'editor-text-updated', {
     text: currentText,
@@ -256,7 +256,7 @@ function init(options) {
  * - set-current-text
  * - force-clear-editor
  * - clipboard-read-text
- * Broadcasts updates to main/editor windows (best-effort).
+ * Broadcasts updates to main/Text Editor windows (best-effort).
  */
 function registerIpc(ipcMain, windowsResolver) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -364,7 +364,7 @@ function registerIpc(ipcMain, windowsResolver) {
     }
   });
 
-  // Forced cleaning of the editor (invoked from the main screen)
+  // Forced cleaning of the Text Editor (invoked from the main screen)
   ipcMain.handle('force-clear-editor', async () => {
     try {
       const { mainWin, editorWin } = getWindows() || {};
@@ -375,7 +375,7 @@ function registerIpc(ipcMain, windowsResolver) {
       // Notify main window (as in main.js stable)
       safeSend(mainWin, 'current-text-updated', currentText);
 
-      // Notify the editor to run its local cleaning logic
+      // Notify the Text Editor to run its local cleaning logic
       safeSend(editorWin, 'editor-force-clear', '');
 
       return { ok: true };

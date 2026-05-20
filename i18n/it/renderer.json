@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Estensione del browser",
-      "subtitle": "Tempo di lettura",
+      "subtitle": "Tiempo de lectura",
       "availability": "Disponibile ora su Chrome. Altri browser in arrivo a breve.",
       "chrome_store_aria": "Apri la pagina Chrome Web Store dell'estensione",
       "close_aria": "Chiudi la finestra di dialogo dell'estensione del browser"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Lo snapshot deve essere all'interno della cartella degli snapshot.",
       "snapshot_truncated": "Lo snapshot supera la dimensione massima ed è stato troncato.",
       "snapshot_unavailable": "Funzionalità snapshot non disponibile.",
-      "modal_unavailable": "Funzionalità modale non disponibile.",
+      "browser_extension_modal_open_blocked": "La finestra di dialogo dell’estensione del browser non può essere aperta in questo momento.",
       "preset_not_found": "Il preset selezionato non è stato trovato nella cache.",
+      "preset_modal_unavailable": "La finestra di dialogo del preset non è disponibile in questa build dell’app.",
       "preset_modal_open_error": "Si è verificato un errore durante l’apertura della finestra di dialogo del preset. Controlla la console.",
       "delete_error": "Si è verificato un errore durante l'eliminazione del preset. Controlla la console.",
       "restore_error": "Si è verificato un errore durante il ripristino dei preset. Controlla la console.",

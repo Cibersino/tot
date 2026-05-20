@@ -16,7 +16,7 @@
         "edit": "Truquearse con el texto completo",
         "clear": "Limpieza es viveza",
         "snapshot_load": "Cargar un coso de texto",
-        "snapshot_save": "Salvar el texto vigente en un coso",
+        "snapshot_save": "Salvar el texto actual en un coso",
         "task_new": "Armar nueva misión",
         "task_load": "Cargar misión",
         "browser_extension": "Extensión pal navegador",
@@ -27,7 +27,7 @@
         "delete_preset": "Pitiarse el preset",
         "reset_presets": "Dejar los presets como venían",
         "help_button": "Informeishon",
-        "flotante_window": "Ventanita porfiada"
+        "flotante_window": "Cronómetro Porfiado"
       },
       "aria": {
         "text_extraction": "Sacarle texto a un archivo",
@@ -42,8 +42,8 @@
         "crono_display": "Display del cronómetro",
         "crono_toggle": "Iniciar o pausar cronómetro",
         "crono_reset": "Reiniciar cronómetro",
-        "floating_window_toggle": "Ventana flotante",
-        "floating_window_group": "Grupo de controles de ventana flotante"
+        "floating_window_toggle": "Cronómetro Porfiado",
+        "floating_window_group": "Grupo de controles del Cronómetro Porfiado"
       },
       "speed": {
         "title": "QUÉ TAN RÁPIDO LEÍS",
@@ -205,7 +205,7 @@
     "editor": {
       "title": "toT — El texto completito",
       "placeholder": "Escribe o pega la custión aquí...",
-      "calc_button": "CALC/SAVE",
+      "calc_button": "Aplicar",
       "calc_while_typing": "Auto",
       "spellcheck": "Ortografía",
       "text_size_label": "Tamaño",
@@ -373,11 +373,11 @@
     },
     "reading_test": {
       "prestart": {
-        "reminder": "Aprieta Play (▶) en la Ventana Flotante cuando estís listo pa' empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Aprieta Detener/Reiniciar (⏹) solo si querís cancelar el test."
+        "reminder": "Aprieta Play (▶) en el Cronómetro Porfiado cuando estís listo pa' empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Aprieta Detener/Reiniciar (⏹) solo si querís cancelar el test."
       },
       "entry": {
         "title": "Test de ritmo de lectura",
-        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto y va a esperar a que apretís Play (▶) en la Ventana Flotante cuando estís listo para empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nAntes de empezar, ten presente que estos textos de prueba suelen pedir entre 5 y 15 minutos de concentración de corrido, sin interrupciones.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
+        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto y va a esperar a que apretís Play (▶) en el Cronómetro Porfiado cuando estís listo para empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Usa Detener/Restablecer (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nAntes de empezar, ten presente que estos textos de prueba suelen pedir entre 5 y 15 minutos de concentración de corrido, sin interrupciones.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
         "eligible_count": "Archivos elegibles:",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Podís restablecer el pool o meter más archivos.",
         "visible_empty_bundled_hidden_message": "Los archivos de test integrados están ocultos y no quedan archivos visibles sin usar. Muéstralos de nuevo o importa más archivos pa' seguir.",
@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Extensión pal navegador",
-      "subtitle": "Tiempo pa' leer",
+      "subtitle": "Tiempo de lectura",
       "availability": "Disponible al tiro en Chrome. Más navegadores pronto.",
       "chrome_store_aria": "Abrir la página de la extensión en Chrome Web Store",
       "close_aria": "Cerrar diálogo de extensión pal navegador"
@@ -477,8 +477,9 @@
       "snapshot_outside": "El coso debe estar aentro de la carpeta de cosos.",
       "snapshot_truncated": "El coso se extralimitó y fue mochao.",
       "snapshot_unavailable": "Funcionalidad del coso no disponible.",
-      "modal_unavailable": "Esa ventanita todavía no está lista.",
+      "browser_extension_modal_open_blocked": "La ventanita de la extensión del navegador no se puede abrir ahora mismo.",
       "preset_not_found": "No pillamos el preset en la caleta.",
+      "preset_modal_unavailable": "La ventanita de preset no está disponible en esta build de la app.",
       "preset_modal_open_error": "Se fue a negro abriendo el diálogo del preset. Revisa la consola.",
       "delete_error": "No se pudo borrar el preset. Lorea la consola.",
       "restore_error": "Cagó el reseteo de los presets. Lorea la consola.",
@@ -494,7 +495,7 @@
       "text_extraction_cancellation_complete": "Cancelación lista.",
       "text_extraction_drop_invalid_file": "La custión que soltaste no es un archivo local válido.",
       "text_extraction_pdf_unreadable_or_corrupt": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Este PDF está encriptado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
+      "text_extraction_pdf_encrypted_or_password_protected": "Este PDF está cifrado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
       "text_extraction_pdf_page_count_unavailable": "No fue posible inspeccionar el conteo de páginas de este PDF. Revisa el archivo y vuelve a intentarlo.",
       "text_extraction_pdf_page_selection_invalid": "El rango de páginas seleccionado para el PDF es inválido. Ajusta el rango y vuelve a intentarlo.",
       "text_extraction_pdf_subset_creation_failed": "No fue posible crear el PDF de páginas seleccionadas para la extracción. Revisa el archivo y vuelve a intentarlo.",
@@ -525,12 +526,12 @@
       "text_extraction_ocr_setup_missing_credentials": "Falta credentials.json pa' OCR. Elige un archivo válido de credenciales OAuth de Google y prueba otra vez.",
       "text_extraction_ocr_setup_invalid_credentials": "El archivo de credenciales elegido no sirve pa' Google OAuth. Elige un credentials.json válido y prueba de nuevo.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR quedó bloqueado por cuota o rate limit. Espera un rato y prueba otra vez.",
-      "text_extraction_ocr_runtime_error": "Hubo un cagazo en la ejecución OCR durante extracción. Lorea la consola y prueba otra vez.",
+      "text_extraction_ocr_runtime_error": "Hubo un cagazo en la ejecución OCR durante la extracción. Lorea la consola y prueba otra vez.",
       "text_extraction_ocr_cancelled": "La extracción OCR quedó cancelada.",
       "text_extraction_ocr_cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
       "text_extraction_native_runtime_error": "Hubo un cagazo en la extracción nativa durante la extracción. Lorea la consola y prueba otra vez.",
       "text_extraction_native_unreadable_or_corrupt": "El archivo elegido no se puede leer o está hecho bolsa pa' extracción nativa.",
-      "text_extraction_native_encrypted_or_password_protected": "El PDF elegido viene encriptado o con contraseña, así que no se puede sacar por la ruta nativa.",
+      "text_extraction_native_encrypted_or_password_protected": "El PDF elegido viene cifrado o con contraseña, así que no se puede sacar por la ruta nativa.",
       "text_extraction_native_cancelled": "La extracción nativa quedó cancelada.",
       "text_extraction_unsupported_format": "Este formato de archivo no apaña pa’ extraer texto.",
       "wip_diseno_skins": "WIP: Aquí vamos a cambiar las pilchas.",
@@ -595,7 +596,7 @@
         }
       },
       "instrucciones": {
-        "title": "Manual de uso"
+        "title": "¿Cómo usar la app?"
       },
       "links_interes": {
         "title": "Links bacanes",

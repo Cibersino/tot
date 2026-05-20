@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "ব্রাউজার এক্সটেনশন",
-      "subtitle": "পড়ার সময়",
+      "subtitle": "Tiempo de lectura",
       "availability": "এখন Chrome-এ উপলব্ধ। শিগগিরই আরও ব্রাউজারে আসছে।",
       "chrome_store_aria": "এক্সটেনশনের Chrome Web Store পৃষ্ঠা খুলুন",
       "close_aria": "ব্রাউজার এক্সটেনশন ডায়ালগ বন্ধ করুন"
@@ -477,8 +477,9 @@
       "snapshot_outside": "স্ন্যাপশটটি snapshots ফোল্ডারের ভিতরে থাকতে হবে।",
       "snapshot_truncated": "স্ন্যাপশট সর্বোচ্চ আকার ছাড়িয়েছে এবং কেটে দেওয়া হয়েছে।",
       "snapshot_unavailable": "স্ন্যাপশট ফিচার উপলব্ধ নেই।",
-      "modal_unavailable": "মোডাল ফিচার উপলব্ধ নয়।",
+      "browser_extension_modal_open_blocked": "ব্রাউজার এক্সটেনশন ডায়ালগ এখন খোলা যাবে না।",
       "preset_not_found": "নির্বাচিত প্রিসেট ক্যাশে পাওয়া যায়নি।",
+      "preset_modal_unavailable": "এই অ্যাপ বিল্ডে প্রিসেট ডায়ালগ উপলভ্য নয়।",
       "preset_modal_open_error": "প্রিসেট ডায়ালগ খোলার সময় একটি ত্রুটি ঘটেছে। কনসোল দেখুন।",
       "delete_error": "প্রিসেট মুছে ফেলার সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
       "restore_error": "প্রিসেট পুনরুদ্ধারের সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
@@ -534,7 +535,7 @@
       "text_extraction_native_cancelled": "Native extraction বাতিল করা হয়েছে।",
       "text_extraction_unsupported_format": "এই ফাইল ফরম্যাটটি টেক্সট এক্সট্রাকশনের জন্য সমর্থিত নয়।",
       "wip_diseno_skins": "WIP: skins selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
-      "wip_diseno_crono": "WIP: floating stopwatch settings ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
+      "wip_diseno_crono": "WIP: Floating Stopwatch settings ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
       "wip_diseno_fuentes": "WIP: fonts selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
       "wip_diseno_colores": "WIP: colors selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
       "wip_shortcuts": "WIP: keyboard shortcuts selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",

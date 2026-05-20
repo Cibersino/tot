@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Isandiso sesiphequluli",
-      "subtitle": "Isikhathi sokufunda",
+      "subtitle": "Tiempo de lectura",
       "availability": "Siyatholakala ku-Chrome manje. Ezinye iziphequluli ziyeza maduze.",
       "chrome_store_aria": "Vula ikhasi le-Chrome Web Store lesandiso",
       "close_aria": "Vala ibhokisi lesandiso sesiphequluli"
@@ -477,8 +477,9 @@
       "snapshot_outside": "I-snapshot kufanele ibe ngaphakathi kwefolda yokugcina.",
       "snapshot_truncated": "I-snapshot idlula umkhawulo omkhulu futhi inqanyuliwe.",
       "snapshot_unavailable": "Isici sama-snapshot asitholakali.",
-      "modal_unavailable": "Isici se-modal asitholakali.",
+      "browser_extension_modal_open_blocked": "Ingxoxo yesandiso sesiphequluli ayikwazi ukuvulwa njengamanje.",
       "preset_not_found": "Iphrezethi ekhethiwe ayitholakalanga ku-cache.",
+      "preset_modal_unavailable": "Ingxoxo ye-preset ayitholakali kule build yohlelo lokusebenza.",
       "preset_modal_open_error": "Kuvele iphutha ngesikhathi kuvulwa ingxoxo ye-preset. Hlola ikhonsoli.",
       "delete_error": "Kuvele iphutha ngesikhathi kususwa iphrezethi. Hlola ikhonsoli.",
       "restore_error": "Kuvele iphutha ngesikhathi kubuyiselwa amaphrezethi. Hlola ikhonsoli.",

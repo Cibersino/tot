@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Browser-Erweiterung",
-      "subtitle": "Lesezeit",
+      "subtitle": "Tiempo de lectura",
       "availability": "Jetzt in Chrome verfügbar. Weitere Browser folgen bald.",
       "chrome_store_aria": "Die Chrome Web Store-Seite der Erweiterung öffnen",
       "close_aria": "Dialog der Browser-Erweiterung schließen"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Der Snapshot muss sich innerhalb des Snapshot-Ordners befinden.",
       "snapshot_truncated": "Der Snapshot überschreitet die maximale Größe und wurde gekürzt.",
       "snapshot_unavailable": "Snapshot-Funktionalität nicht verfügbar.",
-      "modal_unavailable": "Die Modal-Funktionalität ist nicht verfügbar.",
+      "browser_extension_modal_open_blocked": "Der Browsererweiterungsdialog kann derzeit nicht geöffnet werden.",
       "preset_not_found": "Preset im Cache nicht gefunden.",
+      "preset_modal_unavailable": "Der Preset-Dialog ist in diesem App-Build nicht verfügbar.",
       "preset_modal_open_error": "Beim Öffnen des Preset-Dialogs ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
       "delete_error": "Beim Löschen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
       "restore_error": "Beim Wiederherstellen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",

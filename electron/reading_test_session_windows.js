@@ -6,9 +6,9 @@
 // =============================================================================
 // Reading-test window helpers.
 // Responsibilities:
-// - Wait for editor/flotante window readiness and visibility.
+// - Wait for Text Editor / Floating Stopwatch readiness and visibility.
 // - Open the reading session windows.
-// - Update the editor prestart overlay state.
+// - Update the Text Editor prestart overlay state.
 // - Open the result/questions modal windows.
 // =============================================================================
 

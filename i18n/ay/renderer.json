@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Navegador extención",
-      "subtitle": "Ullaña pacha",
+      "subtitle": "Tiempo de lectura",
       "availability": "Jichhax Chrome ukan utji. Juk'amp navegaduranakax niya jutaniwa.",
       "chrome_store_aria": "Chrome Web Store ukan extención panka jist'araña",
       "close_aria": "Navegador extención diálogo jist'antaña"
@@ -477,8 +477,9 @@
       "snapshot_outside": "Snapshot ukax imañ carpeta manqhan utjañapawa.",
       "snapshot_truncated": "Snapshot ukax máximo tamaño sipans jilawa ukat khuchhuratawa.",
       "snapshot_unavailable": "Snapshot lurawix janiw utjkiti.",
-      "modal_unavailable": "Modal lurawix janiw utjkiti.",
+      "browser_extension_modal_open_blocked": "Navegador extensión diálogo jichhax janiw jist’araskaspati.",
       "preset_not_found": "Ajllita preset janiw cache ukan jikiskiti.",
+      "preset_modal_unavailable": "Preset diálogo aka app buildan janiw utjkiti.",
       "preset_modal_open_error": "Preset diálogo jist’arañan pantjasiw utji. Consola uñakipam.",
       "delete_error": "Preset chhaqtayañan pantjasiw utji. Consola uñakipam.",
       "restore_error": "Presets kutt’ayañan pantjasiw utji. Consola uñakipam.",

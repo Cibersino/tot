@@ -456,7 +456,7 @@
     },
     "browser_extension": {
       "title": "Extensão do navegador",
-      "subtitle": "Tempo de leitura",
+      "subtitle": "Tiempo de lectura",
       "availability": "Disponível agora no Chrome. Mais navegadores em breve.",
       "chrome_store_aria": "Abrir página da extensão na Chrome Web Store",
       "close_aria": "Fechar diálogo da extensão do navegador"
@@ -477,8 +477,9 @@
       "snapshot_outside": "O snapshot deve estar dentro da pasta de snapshots.",
       "snapshot_truncated": "O snapshot excede o tamanho máximo e foi truncado.",
       "snapshot_unavailable": "Funcionalidade de snapshot indisponível.",
-      "modal_unavailable": "Funcionalidade do modal indisponível.",
+      "browser_extension_modal_open_blocked": "A caixa de diálogo da extensão do navegador não pode ser aberta agora.",
       "preset_not_found": "O preset selecionado não foi encontrado no cache.",
+      "preset_modal_unavailable": "A caixa de diálogo do preset não está disponível nesta build do app.",
       "preset_modal_open_error": "Ocorreu um erro ao abrir a caixa de diálogo de predefinição. Verifique o console.",
       "delete_error": "Ocorreu um erro ao excluir o preset. Verifique o console.",
       "restore_error": "Ocorreu um erro ao restaurar os presets. Verifique o console.",
@@ -595,10 +596,10 @@
         }
       },
       "instrucciones": {
-        "title": "Manual de uso"
+        "title": "¿Cómo usar a app?"
       },
       "links_interes": {
-        "title": "Links de interesse",
+        "title": "Enlaces de interesse",
         "section_biblio_label": "Referências bibliográficas"
       }
     }

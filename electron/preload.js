@@ -44,7 +44,7 @@ const api = {
         );
     },
 
-    // Text / clipboard / editor
+    // Text / clipboard / Text Editor
     readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
     openEditor: () => ipcRenderer.invoke('open-editor'),
     forceClearEditor: () => ipcRenderer.invoke('force-clear-editor'),
@@ -98,7 +98,7 @@ const api = {
         return subscribeWithUnsub('preset-created', listener, 'removeListener error (preset-created):');
     },
 
-    // Task editor
+    // Task Editor
     openTaskEditor: (mode) => ipcRenderer.invoke('open-task-editor', { mode }),
 
     // Menu / external links / updates
@@ -123,7 +123,7 @@ const api = {
         return subscribeWithUnsub('crono-state', wrapper, 'removeListener error (crono-state):');
     },
 
-    // Floating window
+    // Floating Stopwatch (flotante)
     openFlotanteWindow: async () => {
         return ipcRenderer.invoke('flotante-open');
     },
