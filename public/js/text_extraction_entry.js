@@ -448,7 +448,7 @@
           } catch (err) {
             textExtractionStatusUi.clearPendingExecutionContext();
             log.error('text extraction route-choice modal failed:', err);
-            window.Notify.notifyMain('renderer.alerts.text_extraction_route_choice_required');
+            window.Notify.notifyMain('renderer.alerts.text_extraction_route_choice_error');
             return;
           }
           if (hasAttemptFreshnessGuard && !isLatestTextExtractionPrepareAttempt(latestAttemptId)) {
@@ -735,9 +735,9 @@
         });
         if (!applyResult || applyResult.ok !== true) {
           if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-            window.Notify.notifyMain('renderer.alerts.text_extraction_apply_too_large');
+            window.Notify.notifyMain('renderer.alerts.apply_too_large');
           } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-            window.Notify.notifyMain('renderer.alerts.text_extraction_apply_text_limit');
+            window.Notify.notifyMain('renderer.alerts.append_text_limit');
           } else {
             window.Notify.notifyMain('renderer.alerts.text_extraction_apply_error');
           }
@@ -745,7 +745,7 @@
         }
 
         if (applyResult.truncated) {
-          window.Notify.notifyMain('renderer.alerts.text_extraction_apply_truncated');
+          window.Notify.notifyMain('renderer.alerts.apply_truncated');
         }
         return;
       }

@@ -801,6 +801,12 @@
     if (code === 'ocr_token_state_invalid') {
       return 'renderer.alerts.text_extraction_batch_ocr_token_state_invalid';
     }
+    if (code === 'connectivity_failed') {
+      return 'renderer.alerts.text_extraction_batch_ocr_connectivity_failed';
+    }
+    if (code === 'quota_or_rate_limited') {
+      return 'renderer.alerts.text_extraction_batch_ocr_quota_or_rate_limited';
+    }
     return 'renderer.alerts.text_extraction_batch_ocr_unavailable';
   }
 

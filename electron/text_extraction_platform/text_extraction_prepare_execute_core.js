@@ -1791,7 +1791,7 @@ async function executePreparedImport({
       code: resolvedRoute.reason === 'route_choice_required'
         ? 'ROUTE_CHOICE_REQUIRED'
         : 'ROUTE_RESOLUTION_FAILED',
-      primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_required',
+      primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_error',
     };
   }
 

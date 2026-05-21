@@ -1907,7 +1907,7 @@ async function handleClipboardOverwrite() {
   try {
     const read = await readClipboardText({
       tooLargeKey: 'renderer.alerts.clipboard_too_large',
-      unavailableKey: 'renderer.alerts.clipboard_error'
+      unavailableKey: 'renderer.alerts.overwrite_clipboard_error'
     });
     if (!read.ok) return;
     const clip = read.text;
@@ -1919,9 +1919,9 @@ async function handleClipboardOverwrite() {
     });
     if (!applyResult || applyResult.ok !== true) {
       if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
+        window.Notify.notifyMain('renderer.alerts.apply_too_large');
       } else {
-        window.Notify.notifyMain('renderer.alerts.clipboard_error');
+        window.Notify.notifyMain('renderer.alerts.overwrite_clipboard_error');
       }
       return;
     }
@@ -1930,11 +1930,11 @@ async function handleClipboardOverwrite() {
       throw new Error('current-text-updated subscription unavailable');
     }
     if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
+      window.Notify.notifyMain('renderer.alerts.apply_truncated');
     }
   } catch (err) {
     log.error('clipboard error:', err);
-    window.Notify.notifyMain('renderer.alerts.clipboard_error');
+    window.Notify.notifyMain('renderer.alerts.overwrite_clipboard_error');
   }
 }
 
@@ -1942,8 +1942,8 @@ async function handleClipboardAppend() {
   if (!guardUserAction('clipboard-append')) return;
   try {
     const read = await readClipboardText({
-      tooLargeKey: 'renderer.alerts.append_too_large',
-      unavailableKey: 'renderer.alerts.append_error'
+      tooLargeKey: 'renderer.alerts.clipboard_too_large',
+      unavailableKey: 'renderer.alerts.append_clipboard_error'
     });
     if (!read.ok) return;
     const clip = read.text;
@@ -1955,11 +1955,11 @@ async function handleClipboardAppend() {
     });
     if (!applyResult || applyResult.ok !== true) {
       if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.append_too_large');
+        window.Notify.notifyMain('renderer.alerts.apply_too_large');
       } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-        window.Notify.notifyMain('renderer.alerts.text_limit');
+        window.Notify.notifyMain('renderer.alerts.append_text_limit');
       } else {
-        window.Notify.notifyMain('renderer.alerts.append_error');
+        window.Notify.notifyMain('renderer.alerts.append_clipboard_error');
       }
       return;
     }
@@ -1968,11 +1968,11 @@ async function handleClipboardAppend() {
       throw new Error('current-text-updated subscription unavailable');
     }
     if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.append_overflow');
+      window.Notify.notifyMain('renderer.alerts.apply_truncated');
     }
   } catch (err) {
     log.error('An error occurred while pasting the clipboard:', err);
-    window.Notify.notifyMain('renderer.alerts.append_error');
+    window.Notify.notifyMain('renderer.alerts.append_clipboard_error');
   }
 }
 
