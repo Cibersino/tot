@@ -3,7 +3,43 @@
 Este documento es JSONC documental, no JSON válido del repo.
 Conserva la estructura de `main.json` y `renderer.json`, pero cada key muestra el baseline conjunto `es`/`en`.
 
-Este borrador contiene una primera capa de notas por key: `[PROPÓSITO]` y `[PENDIENTE]`.
+Este borrador contiene una primera capa de notas por key centrada en `[PROPÓSITO]`; también admite `[PENDIENTE]` cuando haya decisiones transitorias abiertas.
+
+## Notas por key
+
+Este documento puede incluir comentarios por key en formato JSONC documental. Ejemplo:
+
+    "key": {
+      "es": "...",
+      "en": "..."
+      // [TAG] comentario
+    }
+
+Las notas no reemplazan el baseline `es`/`en` ni obligan a traducir literalmente desde uno de esos idiomas. Su función es fijar contexto traductivo cuando el baseline visible no basta para evitar ambigüedad, drift o decisiones inestables.
+
+Una key sin nota no está incompleta: solo significa que, para esa key, el baseline `es`/`en` se considera suficiente.
+
+### Tags
+
+`[PROPÓSITO]`  
+Aclara el uso funcional de una key cuando ese contexto es necesario para evitar una traducción incorrecta o inestable. No documenta la UI por documentarla, no parafrasea el string y no debe inferirse solo desde el path de la key.
+
+`[CONCEPTO_APP]`  
+Marca el concepto canónico de la app activo en una key. No define ni explica el concepto; solo lo identifica para mantener consistencia terminológica.
+
+`[PROTEGIDO]`  
+Marca formas que deben conservarse o tratarse con especial cuidado: nombres propios, servicios, acrónimos, unidades, tokens, placeholders, símbolos o formas técnicas que no deben normalizarse libremente.
+
+`[NO_CONFUNDIR]`  
+Advierte una confusión traductiva concreta entre conceptos, superficies, rutas o acciones similares de la app.
+
+### Tags transitorios (sección temporal)
+
+`[PENDIENTE]`  
+Marca una decisión o verificación abierta cuando hay riesgo real de mala traducción, drift o ambigüedad, pero falta evidencia o decisión suficiente para fijar un criterio estable. No se usa para dudas genéricas. Este tag es transitorio y no debe quedar en la guía definitiva.
+
+`[DRIFT]`  
+Marca una inconsistencia real y temporal entre baseline, UI, documentación o comportamiento esperado. Este tag es transitorio y no debe quedar en la guía definitiva.
 
 ## Fuentes
 
@@ -2265,7 +2301,7 @@ Este borrador contiene una primera capa de notas por key: `[PROPÓSITO]` y `[PEN
       "reading_test_visible_empty_bundled_hidden": {
         "es": "Los archivos de test incorporados están desactivados y no hay archivos disponibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
         "en": "The built-in test files are disabled and there are no remaining unused files. Re-enable them or import more files to continue."
-        // // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
+        // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
       },
       "reading_test_current_text_empty": {
         "es": "El texto actual está vacío. Carga o escribe un texto antes de iniciar el test con texto actual.",
@@ -2348,7 +2384,7 @@ Este borrador contiene una primera capa de notas por key: `[PROPÓSITO]` y `[PEN
       "text_truncated": {
         "es": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",
         "en": "Text was truncated to fit the application limit."
-        // // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
+        // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
       },
       "calc_error": {
         "es": "Ocurrió un error al guardar el texto como texto actual.",
