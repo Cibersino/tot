@@ -1,11 +1,9 @@
 # Guía general i18n — baseline ES/EN
 
-Estado: borrador generado automáticamente.
-
 Este documento es JSONC documental, no JSON válido del repo.
 Conserva la estructura de `main.json` y `renderer.json`, pero cada key muestra el baseline conjunto `es`/`en`.
 
-Este primer borrador no contiene tags ni notas por key.
+Este borrador contiene una primera capa de notas por key: `[PROPÓSITO]` y `[PENDIENTE]`.
 
 ## Fuentes
 
@@ -13,16 +11,6 @@ Este primer borrador no contiene tags ni notas por key.
 - `i18n/en/main.json`
 - `i18n/es/renderer.json`
 - `i18n/en/renderer.json`
-
-Archivos leídos por el script:
-
-```txt
-ES main:      C:\Users\manue\Documents\toT\tot\i18n\es\main.json
-EN main:      C:\Users\manue\Documents\toT\tot\i18n\en\main.json
-ES renderer:  C:\Users\manue\Documents\toT\tot\i18n\es\renderer.json
-EN renderer:  C:\Users\manue\Documents\toT\tot\i18n\en\renderer.json
-Include tips: no
-```
 
 ## main.json
 
@@ -758,7 +746,7 @@ Include tips: no
         "generated_inputs_preview": {
           "es": "Partes previstas para extracción:",
           "en": "Planned parts for extraction:"
-          // [PROPÓSITO] Lista de los PDFs locales que la app prevé generar como ítems de extracción del texto del PDF pesado. Son los nombres de archivos nuevos que representan rangos de páginas del PDF fuente que se prepararan para subir al proveedor Google OCR.
+          // [PROPÓSITO] Lista de los PDFs locales que la app prevé generar como ítems de extracción del texto del PDF pesado. Son nombres de archivos nuevos que representan rangos de páginas del PDF fuente preparados para subir al proveedor Google OCR.
         },
         "unit_label": {
           "es": "Unidad {index}",
@@ -1422,7 +1410,7 @@ Include tips: no
         "comentario": {
           "es": "",
           "en": ""
-          // [PROPÓSITO] Los valores en ES/EN están vacíos intencionalmente. Esto se debe a no encontrar un término de reemplazo más adecuado para una columna estrecha que exprese su contenido: poner y abrir comentario y selección y carga del snapshot de texto, opcionales, asociados a la fila.
+          // [PROPÓSITO] Columna estrecha para acciones opcionales de comentario y snapshot asociadas a la fila. ES/EN la dejan sin label visible, pero otros idiomas pueden optar por un label breve si resulta más claro.
         },
         "acciones": {
           "es": "Acciones",
@@ -1489,7 +1477,7 @@ Include tips: no
         "library_row_load": {
           "es": "Cargar fila",
           "en": "Load row"
-          // Agregar una fila guardada a la tabla desde la biblioteca de lecturas.
+          // [PROPÓSITO] Agregar una fila guardada a la tabla desde la biblioteca de lecturas.
         },
         "library_row_delete": {
           "es": "Eliminar de biblioteca",
@@ -2277,7 +2265,7 @@ Include tips: no
       "reading_test_visible_empty_bundled_hidden": {
         "es": "Los archivos de test incorporados están desactivados y no hay archivos disponibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
         "en": "The built-in test files are disabled and there are no remaining unused files. Re-enable them or import more files to continue."
-        // [PROPÓSITO] Alerta safeguard cuando los archivos incorporados están desactivados y no quedan archivos disponibles sin usar y se intenta iniciar el test aleatorio. Es safeguard porque no es reproducible normalmente.
+        // // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
       },
       "reading_test_current_text_empty": {
         "es": "El texto actual está vacío. Carga o escribe un texto antes de iniciar el test con texto actual.",
@@ -2360,7 +2348,7 @@ Include tips: no
       "text_truncated": {
         "es": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",
         "en": "Text was truncated to fit the application limit."
-        // [PROPÓSITO] Alerta safeguard del Editor de Texto. No reproducible normalmente como `renderer.alerts.apply_truncated`.
+        // // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
       },
       "calc_error": {
         "es": "Ocurrió un error al guardar el texto como texto actual.",
