@@ -489,7 +489,7 @@
       "text_extraction_precondition_blocked": "Para iniciar la extracción, cierra todas las ventanas secundarias y detén el cronómetro.",
       "text_extraction_precondition_error": "Ocurrió un error al revisar las precondiciones de extracción.",
       "text_extraction_processing_locked": "Hay una extracción en curso. Las interacciones de la ventana principal están bloqueadas hasta que termine la extracción o sea cancelada.",
-      "text_extraction_abort_error": "Ocurrió un error al solicitar el aborto de extracción.",
+      "text_extraction_abort_error": "Ocurrió un error al solicitar la cancelación.",
       "text_extraction_cancellation_requested": "Cancelación solicitada. Espera a que termine la extracción actual.",
       "text_extraction_cancellation_complete": "La cancelación terminó.",
       "text_extraction_drop_invalid_file": "El elemento soltado no es un archivo local válido.",
