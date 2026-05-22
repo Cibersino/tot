@@ -63,13 +63,6 @@ const api = {
     'editor-window-state-changed callback error:',
     'removeListener error (editor-window-state-changed):'
   ),
-  // Listener to force clear content (main will send 'editor-force-clear')
-  onForceClear: (cb) => subscribeWithUnsub(
-    'editor-force-clear',
-    cb,
-    'editor-force-clear callback error:',
-    'removeListener error (editor-force-clear):'
-  ),
   onReadingTestPrestartStateChanged: (cb) => subscribeWithUnsub(
     'reading-test-prestart-state-changed',
     cb,

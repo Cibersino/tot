@@ -384,9 +384,6 @@ function createEditorScriptHarness() {
     onExternalUpdate(cb) {
       subscriptions.externalUpdate = cb;
     },
-    onForceClear(cb) {
-      subscriptions.forceClear = cb;
-    },
     onReplaceRequest(cb) {
       subscriptions.replaceRequest = cb;
     },
@@ -455,7 +452,7 @@ test('editor UI applies resolved direction to the textarea surface', () => {
   assert.equal(harness.editor.getAttribute('dir'), 'ltr');
 });
 
-test('editor script recomputes textarea direction on local input, external updates, clear, and language changes', async () => {
+test('editor script recomputes textarea direction on local input, external updates, init text, and language changes', async () => {
   const harness = await bootstrapEditorScriptHarness();
 
   harness.elements.editorArea.value = 'typed text';
@@ -469,11 +466,6 @@ test('editor script recomputes textarea direction on local input, external updat
   harness.updateDirectionCalls.length = 0;
   await harness.subscriptions.initText({ text: 'مرحبا', meta: { source: 'main', action: 'init' } });
   assert.deepEqual(harness.updateDirectionCalls, ['مرحبا']);
-
-  harness.updateDirectionCalls.length = 0;
-  harness.elements.editorArea.value = 'to clear';
-  harness.subscriptions.forceClear();
-  assert.deepEqual(harness.updateDirectionCalls, ['']);
 
   harness.updateDirectionCalls.length = 0;
   harness.elements.editorArea.value = '  250  ';

@@ -47,7 +47,6 @@ const api = {
     // Text / clipboard / Text Editor
     readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
     openEditor: () => ipcRenderer.invoke('open-editor'),
-    forceClearEditor: () => ipcRenderer.invoke('force-clear-editor'),
     getCurrentText: () => ipcRenderer.invoke('get-current-text'),
     setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
     saveCurrentTextSnapshot: (payload) => ipcRenderer.invoke('current-text-snapshot-save', payload),

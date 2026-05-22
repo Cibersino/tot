@@ -76,9 +76,6 @@ if (typeof window.editorAPI.onInitText !== 'function') {
 if (typeof window.editorAPI.onExternalUpdate !== 'function') {
   throw new Error('[editor] editorAPI.onExternalUpdate unavailable; cannot continue');
 }
-if (typeof window.editorAPI.onForceClear !== 'function') {
-  throw new Error('[editor] editorAPI.onForceClear unavailable; cannot continue');
-}
 if (typeof window.editorAPI.onReplaceRequest !== 'function') {
   throw new Error('[editor] editorAPI.onReplaceRequest unavailable; cannot continue');
 }
@@ -359,20 +356,6 @@ ctx.editorAPI.onExternalUpdate(async (p) => {
   await ctx.engine.applyExternalUpdate(p);
   ctx.ui.updateEditorTextDirection();
 });
-ctx.editorAPI.onForceClear(() => {
-  try {
-    ctx.state.suppressLocalUpdate = true;
-    editor.value = '';
-    ctx.ui.updateEditorTextDirection();
-    ctx.ui.scheduleReadProgressUiUpdate();
-    ctx.engine.sendCurrentTextToMain('clear', { text: '' });
-  } catch (err) {
-    log.error('Error in onForceClear:', err);
-  } finally {
-    ctx.state.suppressLocalUpdate = false;
-    ctx.ui.restoreFocusToEditor();
-  }
-});
 
 ctx.editorAPI.onReplaceRequest((payload) => {
   const requestId = Number(payload && payload.requestId);
@@ -521,14 +504,6 @@ btnTrash.addEventListener('click', () => {
   editor.value = '';
   ctx.ui.updateEditorTextDirection();
   ctx.ui.scheduleReadProgressUiUpdate();
-  ctx.engine.sendCurrentTextToMain('clear', {
-    text: '',
-    onFallbackError: (err) => log.warnOnce(
-      'setCurrentText.trash.clear.fallback',
-      'editorAPI.setCurrentText fallback failed (ignored):',
-      err
-    )
-  });
   ctx.ui.restoreFocusToEditor();
 });
 
