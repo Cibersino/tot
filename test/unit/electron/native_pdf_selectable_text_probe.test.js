@@ -5,9 +5,11 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { PDFDocument } = require('pdf-lib');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 const {
   probeNativePdfSelectableText,
@@ -26,7 +28,7 @@ const silentLog = {
 };
 
 async function createMixedPdfFixture(t) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-native-probe-range-'));
+  const dir = createTestTempDir('native-pdf-probe-range');
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 
   const mixedPdf = await PDFDocument.create();

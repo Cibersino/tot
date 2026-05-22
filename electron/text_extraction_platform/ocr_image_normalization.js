@@ -16,8 +16,11 @@
 // =============================================================================
 
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
+const {
+  cleanupRuntimeTempRunDir,
+  createRuntimeTempRunDir,
+} = require('../app_temp_paths');
 
 // =============================================================================
 // Error and filesystem helpers
@@ -47,15 +50,8 @@ function createBaseName(sourceFileName) {
 }
 
 function cleanupTempDir(tempDirPath) {
-  if (!tempDirPath) return '';
-  try {
-    if (fs.existsSync(tempDirPath)) {
-      fs.rmSync(tempDirPath, { recursive: true, force: true });
-    }
-    return '';
-  } catch {
-    return 'cleanup:image_normalization_cleanup_failed';
-  }
+  const cleanupWarning = cleanupRuntimeTempRunDir(tempDirPath, { force: true });
+  return cleanupWarning ? 'cleanup:image_normalization_cleanup_failed' : '';
 }
 
 const PNG_NORMALIZATION_REQUIRED_EXTS = new Set(['webp', 'tif', 'tiff']);
@@ -107,7 +103,7 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
     );
   }
 
-  const tempDirPath = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-ocr-image-'));
+  const tempDirPath = createRuntimeTempRunDir('ocr-image');
   const uploadFileName = `${createBaseName(fileInfo.sourceFileName)}.png`;
   const uploadFilePath = path.join(tempDirPath, uploadFileName);
 
@@ -159,4 +155,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/ocr_image_normalization.js
 // =============================================================================
-

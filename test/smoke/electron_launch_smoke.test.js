@@ -3,14 +3,16 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { spawn } = require('node:child_process');
+const {
+  createTestTempDir,
+} = require('../helpers/test_temp_paths');
 
 const electronBinary = require('electron');
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'tot-electron-smoke-'));
+  return createTestTempDir('electron-smoke');
 }
 
 function writeSmokeSettingsFile(userDataDir) {

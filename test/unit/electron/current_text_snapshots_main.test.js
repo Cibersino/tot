@@ -5,8 +5,10 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 function createIpcMainDouble() {
   const handlers = new Map();
@@ -200,7 +202,7 @@ function loadSnapshotsMainWithMocks({
 }
 
 test('non-interactive snapshot save creates deterministic collision-safe files and preserves tags', async (t) => {
-  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-current-text-snapshots-test-'));
+  const rootDir = createTestTempDir('current-text-snapshots');
   t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
 
   const senderWin = {
@@ -254,7 +256,7 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
 });
 
 test('open snapshots folder delegates to shell.openPath using the snapshots root', async (t) => {
-  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-current-text-snapshots-open-test-'));
+  const rootDir = createTestTempDir('current-text-snapshots-open');
   t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
 
   const senderWin = {

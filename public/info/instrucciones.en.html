@@ -793,8 +793,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Google OCR setup state</strong>: app-managed local Google OAuth credentials and, when OCR is
             connected, the local Google OCR token state.</li>
           <li><strong>Locally generated PDFs from PDF extraction</strong>: if you extract a PDF page range, or if the
-            app automatically splits a heavy full PDF for OCR, it may create generated local PDFs; by default they are
-            deleted after processing and they are kept locally only when you explicitly choose to keep them.</li>
+            app automatically splits a heavy full PDF for OCR, it may create temporary local PDFs in an app-owned temp
+            area. The app attempts best-effort cleanup during processing and at normal shutdown; retained copies stay
+            outside that temp area.</li>
           <li><strong>Presets</strong> (custom and default preset status).</li>
           <li><strong>Reading speed test</strong>: local test-text pool and its external local usage state file.</li>
           <li><strong>Status of windows</strong> (e.g. size/position of the Text Editor).</li>
@@ -946,9 +947,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>Google extraction setup state</strong>: app-managed local Google OAuth credentials and, when
                 the Google-backed extraction path is connected, the local Google token state.</li>
               <li><strong>Locally generated PDFs from PDF extraction</strong>: if you extract a PDF page range, or if
-                the app automatically splits a heavy full PDF for OCR, it may create generated local PDFs; by default
-                they are deleted after processing and they are kept locally only when you explicitly choose to keep
-                them.</li>
+                the app automatically splits a heavy full PDF for OCR, it may create temporary local PDFs in an
+                app-owned temp area. The app attempts best-effort cleanup during processing and at normal shutdown;
+                retained copies stay outside that temp area.</li>
               <li><strong>Saved tasks</strong> (reading item lists, readings library and link allowlist).</li>
             </ul>
           </li>

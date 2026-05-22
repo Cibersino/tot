@@ -7,6 +7,9 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 const {
   canonicalizeGeneratedPdfArtifactPolicy,
@@ -16,21 +19,30 @@ const {
   resolveProcessingInputFileName,
 } = require('../../../electron/text_extraction_platform/text_extraction_pdf_page_selection');
 const {
+  isInsideRuntimeTempRoot,
+} = require('../../../electron/app_temp_paths');
+const {
   getFileInfo,
 } = require('../../../electron/text_extraction_platform/text_extraction_prepare_execute_core');
 
 const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
 
-function loadPdfPageSelectionModuleWithMocks({ fsOverrides = {}, logDouble = null } = {}) {
+function loadPdfPageSelectionModuleWithMocks({
+  fsOverrides = {},
+  logDouble = null,
+  appTempPathsOverrides = null,
+} = {}) {
   const modulePath = path.resolve(
     __dirname,
     '../../../electron/text_extraction_platform/text_extraction_pdf_page_selection.js'
   );
   const fsModulePath = require.resolve('fs');
   const logModulePath = path.resolve(__dirname, '../../../electron/log.js');
+  const appTempPathsModulePath = path.resolve(__dirname, '../../../electron/app_temp_paths.js');
   const originalTargetModule = require.cache[modulePath];
   const originalFsModule = require.cache[fsModulePath];
   const originalLogModule = require.cache[logModulePath];
+  const originalAppTempPathsModule = require.cache[appTempPathsModulePath];
   const realFs = require('fs');
   const mockFs = { ...realFs, ...fsOverrides };
   const fakeLog = logDouble || {
@@ -59,6 +71,20 @@ function loadPdfPageSelectionModuleWithMocks({ fsOverrides = {}, logDouble = nul
     },
   };
 
+  delete require.cache[appTempPathsModulePath];
+  if (appTempPathsOverrides && typeof appTempPathsOverrides === 'object') {
+    const actualAppTempPathsModule = require(appTempPathsModulePath);
+    require.cache[appTempPathsModulePath] = {
+      id: appTempPathsModulePath,
+      filename: appTempPathsModulePath,
+      loaded: true,
+      exports: {
+        ...actualAppTempPathsModule,
+        ...appTempPathsOverrides,
+      },
+    };
+  }
+
   delete require.cache[modulePath];
   const loadedModule = require(modulePath);
 
@@ -78,6 +104,11 @@ function loadPdfPageSelectionModuleWithMocks({ fsOverrides = {}, logDouble = nul
       require.cache[logModulePath] = originalLogModule;
     } else {
       delete require.cache[logModulePath];
+    }
+    if (originalAppTempPathsModule) {
+      require.cache[appTempPathsModulePath] = originalAppTempPathsModule;
+    } else {
+      delete require.cache[appTempPathsModulePath];
     }
   }
 
@@ -172,6 +203,7 @@ test('materializePdfPageSelectionInput creates and cleans up a temporary subset 
   assert.equal(materialized.processingInputSource, 'generated_pdf_subset');
   assert.equal(materialized.processingInputFileName, 'selectable_text_fixture_12_pages_pages_02_03.pdf');
   assert.equal(fs.existsSync(materialized.effectiveFilePath), true);
+  assert.equal(isInsideRuntimeTempRoot(materialized.effectiveFilePath), true);
 
   const subsetInspection = await inspectPdfFile({
     fileInfo: getFileInfo(materialized.effectiveFilePath),
@@ -192,7 +224,7 @@ test('materializePdfPageSelectionInput creates and cleans up a temporary subset 
 });
 
 test('materializePdfPageSelectionInput retains subset PDFs under the caller-owned keep directory', async (t) => {
-  const retainedDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-generated-pdfs-keep-'));
+  const retainedDir = createTestTempDir('generated-pdf-keep');
   t.after(() => fs.rmSync(retainedDir, { recursive: true, force: true }));
 
   const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
@@ -266,20 +298,21 @@ test('materializePdfPageSelectionInput keeps page-selection failure primary and 
     debug() {},
     info() {},
   };
-  const realFs = require('fs');
   const { loadedModule, restore } = loadPdfPageSelectionModuleWithMocks({
-    fsOverrides: {
-      rmSync(targetPath, options) {
-        if (typeof targetPath === 'string'
-          && targetPath.includes(`${path.sep}run-`)
-          && options
-          && options.recursive === true
-          && options.force === true) {
-          const err = new Error('cleanup denied');
-          err.code = 'EPERM';
-          throw err;
-        }
-        return realFs.rmSync(targetPath, options);
+    appTempPathsOverrides: {
+      cleanupRuntimeTempRunDir(runDir) {
+        return {
+          warningCode: 'cleanup:runtime_temp_run_dir_cleanup_failed',
+          detailsSafeForLogs: {
+            stage: 'cleanup_runtime_temp_run_dir',
+            runDir,
+            resolvedRunDir: runDir,
+            runtimeTempRoot: path.join(os.tmpdir(), 'tot-temp'),
+            errorName: 'Error',
+            errorCode: 'EPERM',
+            errorMessage: 'cleanup denied',
+          },
+        };
       },
     },
     logDouble,

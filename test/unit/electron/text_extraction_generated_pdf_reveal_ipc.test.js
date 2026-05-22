@@ -5,8 +5,10 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 function createIpcMainDouble() {
   const handlers = new Map();
@@ -84,7 +86,7 @@ test('generated PDF reveal IPC reveals retained artifacts inside the allowed roo
   const { revealIpc, restore } = loadRevealIpcWithElectronMock(senderWin);
   t.after(restore);
 
-  const retainedRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-generated-pdfs-root-'));
+  const retainedRoot = createTestTempDir('retained-generated-pdfs-root');
   t.after(() => fs.rmSync(retainedRoot, { recursive: true, force: true }));
   const runDir = path.join(retainedRoot, 'run-123');
   fs.mkdirSync(runDir, { recursive: true });
@@ -96,7 +98,7 @@ test('generated PDF reveal IPC reveals retained artifacts inside the allowed roo
   revealIpc.registerIpc(ipcMain, {
     getWindows: () => ({ mainWin: senderWin }),
     resolvePaths: () => ({
-      generatedPdfArtifactsDir: retainedRoot,
+      retainedGeneratedPdfArtifactsDir: retainedRoot,
     }),
     shellApi: {
       showItemInFolder(filePath) {
@@ -125,8 +127,8 @@ test('generated PDF reveal IPC rejects artifacts outside the allowed root', asyn
   const { revealIpc, restore } = loadRevealIpcWithElectronMock(senderWin);
   t.after(restore);
 
-  const retainedRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-generated-pdfs-root-'));
-  const outsideRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-generated-pdfs-outside-'));
+  const retainedRoot = createTestTempDir('retained-generated-pdfs-root');
+  const outsideRoot = createTestTempDir('retained-generated-pdfs-outside');
   t.after(() => fs.rmSync(retainedRoot, { recursive: true, force: true }));
   t.after(() => fs.rmSync(outsideRoot, { recursive: true, force: true }));
   const outsideArtifactPath = path.join(outsideRoot, 'saved_subset.pdf');
@@ -137,7 +139,7 @@ test('generated PDF reveal IPC rejects artifacts outside the allowed root', asyn
   revealIpc.registerIpc(ipcMain, {
     getWindows: () => ({ mainWin: senderWin }),
     resolvePaths: () => ({
-      generatedPdfArtifactsDir: retainedRoot,
+      retainedGeneratedPdfArtifactsDir: retainedRoot,
     }),
     shellApi: {
       showItemInFolder(filePath) {

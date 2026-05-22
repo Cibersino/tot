@@ -1464,7 +1464,7 @@ async function executePreparedHeavySplitUnit({
       fileInfo: preparedRecord.fileInfo,
       pdfPageSelection: generatedInput.pdfPageSelection,
       generatedPdfArtifactPolicy: preparedRecord.generatedPdfArtifactPolicy,
-      retainedArtifactsDir: paths.generatedPdfArtifactsDir,
+      retainedArtifactsDir: paths.retainedGeneratedPdfArtifactsDir,
     });
 
     if (!materializedInput || materializedInput.ok !== true) {
@@ -1868,7 +1868,7 @@ async function executePreparedImport({
       fileInfo,
       pdfPageSelection: preparedRecord.pdfPageSelection,
       generatedPdfArtifactPolicy: preparedRecord.generatedPdfArtifactPolicy,
-      retainedArtifactsDir: paths.generatedPdfArtifactsDir,
+      retainedArtifactsDir: paths.retainedGeneratedPdfArtifactsDir,
     });
 
     if (!materializedInput || materializedInput.ok !== true) {

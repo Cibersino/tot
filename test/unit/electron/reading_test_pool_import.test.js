@@ -3,9 +3,11 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const AdmZip = require('adm-zip');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 const {
   IMPORT_CONFLICT_STRATEGY,
@@ -13,7 +15,7 @@ const {
 } = require('../../../electron/reading_test_pool_import');
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'tot-reading-test-import-'));
+  return createTestTempDir('reading-test-import');
 }
 
 function writeJson(filePath, data) {
