@@ -367,7 +367,6 @@
         "link_error": "Fel vid öppning av länk."
       },
       "confirm": {
-        "discard_changes": "Det finns osparade ändringar. Kasta dem?",
         "close_unsaved": "Det finns osparade ändringar. Stäng utan att spara?"
       }
     },

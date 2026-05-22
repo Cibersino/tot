@@ -1064,12 +1064,13 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Main reflects updated text only after you press the button.
 
 #### REG-EDITOR-04 Editor clear
-**Goal:** clearing inside editor clears main consistently.
+**Goal:** clearing inside editor only clears the editor textarea.
 1. Use editor clear control (trash/clear).
-2. Confirm main shows empty state.
+2. Confirm the editor textarea becomes empty.
+3. Confirm the main window current text remains unchanged.
 
 **Expected:**
-- Editor clear sends state update to main; both stay consistent.
+- Editor clear is local-only and does not send a current-text update to main.
 
 #### REG-EDITOR-05 Find (Ctrl+F) — dedicated find window + navigation + highlight
 **Goal:** Find works on textarea content through the dedicated find window, scrolls to matches, and keeps the match highlight visible while focus stays in the find input.

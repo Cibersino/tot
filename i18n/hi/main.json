@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "क्या मौजूदा स्नैपशॉट फ़ाइल को ओवरराइट करना है?",
       "snapshot_overwrite_load": "क्या चयनित स्नैपशॉट \"{name}\" से वर्तमान पाठ बदलना है?",
       "task_delete_confirm": "क्या कार्य-सूची \"{name}\" हटानी है?",
+      "task_discard_changes_confirm": "बिना सहेजे बदलाव हैं। क्या उन्हें छोड़ना है?",
       "task_library_row_save_overwrite": "लाइब्रेरी में \"{name}\" नाम की प्रविष्टि पहले से मौजूद है। क्या ओवरराइट करना है?",
       "task_library_row_delete": "क्या लाइब्रेरी से \"{name}\" हटाना है?",
       "task_link_confirm": "क्या यह लिंक खोलना है?",

@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "هل تريد استبدال ملف اللقطة النصية الموجود؟",
       "snapshot_overwrite_load": "هل تريد استبدال النص الحالي باللقطة النصية المحددة \"{name}\"؟",
       "task_delete_confirm": "هل تريد حذف قائمة المهام \"{name}\"؟",
+      "task_discard_changes_confirm": "توجد تغييرات غير محفوظة. هل تريد تجاهلها؟",
       "task_library_row_save_overwrite": "يوجد إدخال باسم \"{name}\" في المكتبة. هل تريد استبداله؟",
       "task_library_row_delete": "هل تريد حذف \"{name}\" من المكتبة؟",
       "task_link_confirm": "هل تريد فتح هذا الرابط؟",

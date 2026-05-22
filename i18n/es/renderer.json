@@ -157,6 +157,7 @@
         "failure_legend": "Comportamiento ante fallos",
         "failure_default": "Finalizar la unidad tras el último éxito y seguir con la siguiente",
         "failure_continue": "Omitir el ítem fallido y seguir dentro de la misma unidad",
+        "overwrite_confirm": "Esto sobrescribirá el texto actual cuando comience la extracción. ¿Deseas continuar?",
         "start_button": "Iniciar extracción",
         "cancel_button": "Cancelar",
         "close_aria": "Cerrar planificación de extracción por lotes"
@@ -367,7 +368,6 @@
         "link_error": "Error al abrir enlace o ruta local."
       },
       "confirm": {
-        "discard_changes": "Hay cambios sin guardar. ¿Desea descartarlos?",
         "close_unsaved": "Hay cambios sin guardar. ¿Cerrar sin guardar?"
       }
     },

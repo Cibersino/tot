@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "¿Emyengoviátapa snapshot oĩmava?",
       "snapshot_overwrite_load": "¿Emyengoviátapa jehai ko’ág̃agua snapshot ojeporavóva \"{name}\" rupive?",
       "task_delete_confirm": "¿Emboguetepa tembiaporã lista \"{name}\"?",
+      "task_discard_changes_confirm": "Oĩ ñemoambue oñeñongatu’ỹva. ¿Rehejátapa?",
       "task_library_row_save_overwrite": "Oĩmava \"{name}\" biblioteca-pe. ¿Emyengoviátapa?",
       "task_library_row_delete": "¿Emboguetepa \"{name}\" biblioteca-gui?",
       "task_link_confirm": "¿Eipe’átapa ko link?",

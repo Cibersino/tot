@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Gainidatzi lehendik dagoen snapshota?",
       "snapshot_overwrite_load": "Ordeztu uneko testua hautatutako \"{name}\" snapshotarekin?",
       "task_delete_confirm": "Ezabatu \"{name}\" ataza-zerrenda?",
+      "task_discard_changes_confirm": "Gorde gabeko aldaketak daude. Baztertu nahi dituzu?",
       "task_library_row_save_overwrite": "\"{name}\" izeneko sarrera badago jada liburutegian. Gainidatzi?",
       "task_library_row_delete": "Ezabatu \"{name}\" liburutegitik?",
       "task_link_confirm": "Ireki esteka hau?",

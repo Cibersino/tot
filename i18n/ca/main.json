@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Vols sobreescriure el snapshot existent?",
       "snapshot_overwrite_load": "Vols substituir el text actual pel snapshot seleccionat \"{name}\"?",
       "task_delete_confirm": "Vols eliminar la llista de tasques \"{name}\"?",
+      "task_discard_changes_confirm": "Hi ha canvis sense desar. Vols descartar-los?",
       "task_library_row_save_overwrite": "Ja existeix \"{name}\" a la biblioteca. Vols sobreescriure’l?",
       "task_library_row_delete": "Vols eliminar \"{name}\" de la biblioteca?",
       "task_link_confirm": "Vols obrir aquest enllaç?",

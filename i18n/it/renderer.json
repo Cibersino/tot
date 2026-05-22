@@ -367,7 +367,6 @@
         "link_error": "Errore durante l'apertura del link."
       },
       "confirm": {
-        "discard_changes": "Ci sono modifiche non salvate. Vuoi annullarle?",
         "close_unsaved": "Ci sono modifiche non salvate. Chiudere comunque?"
       }
     },

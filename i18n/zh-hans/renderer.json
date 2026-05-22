@@ -367,7 +367,6 @@
         "link_error": "打开链接时出错。"
       },
       "confirm": {
-        "discard_changes": "存在未保存的更改。要放弃它们吗？",
         "close_unsaved": "存在未保存的更改。要不保存就关闭吗？"
       }
     },

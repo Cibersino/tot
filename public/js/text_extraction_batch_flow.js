@@ -812,39 +812,58 @@
 
   async function validateBatchStart(state) {
     const plannedOcrInputs = getPlannedOcrInputs(state);
-    if (!plannedOcrInputs.length) {
-      return true;
+    if (plannedOcrInputs.length) {
+      const checkTextExtractionOcrAvailability = getOptionalElectronMethod('checkTextExtractionOcrAvailability', {
+        dedupeKey: 'renderer.ipc.checkTextExtractionOcrAvailability.unavailable',
+        unavailableMessage: 'checkTextExtractionOcrAvailability unavailable; batch OCR start check cannot continue.',
+      });
+      if (!checkTextExtractionOcrAvailability) {
+        window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+        return false;
+      }
+
+      let availabilityResult = null;
+      try {
+        availabilityResult = await checkTextExtractionOcrAvailability();
+      } catch (err) {
+        log.error('Batch OCR availability check failed unexpectedly:', err);
+        window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+        return false;
+      }
+
+      if (!(availabilityResult && availabilityResult.ok === true && availabilityResult.available === true)) {
+        log.warn('Batch OCR start blocked because OCR is unavailable for the final plan:', {
+          ocrInputCount: plannedOcrInputs.length,
+          code: availabilityResult && availabilityResult.code ? availabilityResult.code : '',
+          state: availabilityResult && availabilityResult.state ? availabilityResult.state : '',
+        });
+        window.Notify.notifyMain(mapBatchOcrBlockedAlertKey(availabilityResult));
+        return false;
+      }
     }
 
-    const checkTextExtractionOcrAvailability = getOptionalElectronMethod('checkTextExtractionOcrAvailability', {
-      dedupeKey: 'renderer.ipc.checkTextExtractionOcrAvailability.unavailable',
-      unavailableMessage: 'checkTextExtractionOcrAvailability unavailable; batch OCR start check cannot continue.',
+    const getCurrentText = getOptionalElectronMethod('getCurrentText', {
+      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
+      unavailableMessage: 'getCurrentText unavailable; batch overwrite confirmation check cannot continue.',
     });
-    if (!checkTextExtractionOcrAvailability) {
+    if (!getCurrentText) {
       window.Notify.notifyMain('renderer.alerts.text_extraction_error');
       return false;
     }
 
-    let availabilityResult = null;
+    let currentText = '';
     try {
-      availabilityResult = await checkTextExtractionOcrAvailability();
+      currentText = String(await getCurrentText() || '');
     } catch (err) {
-      log.error('Batch OCR availability check failed unexpectedly:', err);
+      log.error('Batch current-text check failed unexpectedly:', err);
       window.Notify.notifyMain('renderer.alerts.text_extraction_error');
       return false;
     }
 
-    if (availabilityResult && availabilityResult.ok === true && availabilityResult.available === true) {
+    if (currentText.trim().length < 1) {
       return true;
     }
-
-    log.warn('Batch OCR start blocked because OCR is unavailable for the final plan:', {
-      ocrInputCount: plannedOcrInputs.length,
-      code: availabilityResult && availabilityResult.code ? availabilityResult.code : '',
-      state: availabilityResult && availabilityResult.state ? availabilityResult.state : '',
-    });
-    window.Notify.notifyMain(mapBatchOcrBlockedAlertKey(availabilityResult));
-    return false;
+    return window.Notify.confirmMain('renderer.text_extraction.batch_plan.overwrite_confirm');
   }
 
   function mapPreparedIdInvalidReason(execution) {

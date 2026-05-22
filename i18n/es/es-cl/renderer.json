@@ -367,7 +367,6 @@
         "link_error": "Error al abrir la ruta."
       },
       "confirm": {
-        "discard_changes": "Hay modificaciones sin salvar. ¿Querís descartarlos?",
         "close_unsaved": "Hay modificaciones sin salvar. ¿Querís cerrar igual?"
       }
     },

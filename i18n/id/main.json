@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Timpa file snapshot yang sudah ada?",
       "snapshot_overwrite_load": "Ganti teks saat ini dengan snapshot yang dipilih \"{name}\"?",
       "task_delete_confirm": "Hapus daftar tugas \"{name}\"?",
+      "task_discard_changes_confirm": "Ada perubahan yang belum disimpan. Buang perubahan?",
       "task_library_row_save_overwrite": "Entri bernama \"{name}\" sudah ada di pustaka. Timpa?",
       "task_library_row_delete": "Hapus \"{name}\" dari pustaka?",
       "task_link_confirm": "Buka tautan ini?",

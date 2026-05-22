@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Overwrite di snapshot file wey dey already?",
       "snapshot_overwrite_load": "Replace current text with di selected snapshot \"{name}\"?",
       "task_delete_confirm": "Delete di task list \"{name}\"?",
+      "task_discard_changes_confirm": "Unsaved changes dey. Discard dem?",
       "task_library_row_save_overwrite": "Entry wey get di name \"{name}\" dey already for library. Overwrite am?",
       "task_library_row_delete": "Delete \"{name}\" from library?",
       "task_link_confirm": "Open dis link?",

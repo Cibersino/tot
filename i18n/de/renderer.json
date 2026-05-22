@@ -367,7 +367,6 @@
         "link_error": "Fehler beim Öffnen des Links."
       },
       "confirm": {
-        "discard_changes": "Es gibt ungespeicherte Änderungen. Diese verwerfen?",
         "close_unsaved": "Es gibt ungespeicherte Änderungen. Ohne Speichern schließen?"
       }
     },

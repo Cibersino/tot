@@ -367,7 +367,6 @@
         "link_error": "Kesalahan saat membuka tautan."
       },
       "confirm": {
-        "discard_changes": "Ada perubahan yang belum disimpan. Buang perubahan?",
         "close_unsaved": "Ada perubahan yang belum disimpan. Tutup tanpa menyimpan?"
       }
     },

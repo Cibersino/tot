@@ -367,7 +367,6 @@
         "link_error": "開啟連結時發生錯誤。"
       },
       "confirm": {
-        "discard_changes": "有未儲存的變更。要放棄這些變更嗎？",
         "close_unsaved": "有未儲存的變更。要不儲存就關閉嗎？"
       }
     },

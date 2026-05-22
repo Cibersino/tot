@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "기존 스냅샷 파일을 덮어쓸까요?",
       "snapshot_overwrite_load": "선택한 스냅샷 \"{name}\"(으)로 현재 텍스트를 교체할까요?",
       "task_delete_confirm": "작업 목록 \"{name}\"을(를) 삭제할까요?",
+      "task_discard_changes_confirm": "저장되지 않은 변경 사항이 있습니다. 버릴까요?",
       "task_library_row_save_overwrite": "라이브러리에 \"{name}\" 항목이 이미 있습니다. 덮어쓸까요?",
       "task_library_row_delete": "라이브러리에서 \"{name}\"을(를) 삭제할까요?",
       "task_link_confirm": "이 링크를 열까요?",

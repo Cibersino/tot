@@ -8,7 +8,7 @@
 // - Own in-memory current text and enforce max length.
 // - Load/save current text state on startup and before-quit.
 // - Provide clipboard reads to the main window via IPC with sender/size checks.
-// - Register IPC handlers for get-current-text, set-current-text, force-clear-editor, clipboard-read-text.
+// - Register IPC handlers for get-current-text, set-current-text, clipboard-read-text.
 // - Broadcast text updates to main and Text Editor windows (best-effort).
 // - Ensure settings file exists on quit (compatibility behavior).
 
@@ -254,7 +254,6 @@ function init(options) {
  * Register IPC handlers for text and clipboard:
  * - get-current-text
  * - set-current-text
- * - force-clear-editor
  * - clipboard-read-text
  * Broadcasts updates to main/Text Editor windows (best-effort).
  */
@@ -360,27 +359,6 @@ function registerIpc(ipcMain, windowsResolver) {
       if (msg !== 'set-current-text payload too large') {
         log.error('Error in set-current-text:', err);
       }
-      return { ok: false, error: String(err) };
-    }
-  });
-
-  // Forced cleaning of the Text Editor (invoked from the main screen)
-  ipcMain.handle('force-clear-editor', async () => {
-    try {
-      const { mainWin, editorWin } = getWindows() || {};
-
-      // Maintain internal status
-      currentText = '';
-
-      // Notify main window (as in main.js stable)
-      safeSend(mainWin, 'current-text-updated', currentText);
-
-      // Notify the Text Editor to run its local cleaning logic
-      safeSend(editorWin, 'editor-force-clear', '');
-
-      return { ok: true };
-    } catch (err) {
-      log.error('Error in force-clear-editor:', err);
       return { ok: false, error: String(err) };
     }
   });

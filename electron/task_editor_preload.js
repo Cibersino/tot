@@ -59,6 +59,7 @@ const api = {
   openTaskLink: (raw) => ipcRenderer.invoke('task-open-link', { raw }),
   getColumnWidths: () => ipcRenderer.invoke('task-columns-load'),
   saveColumnWidths: (widths) => ipcRenderer.invoke('task-columns-save', { widths }),
+  setDirtyState: (dirty) => ipcRenderer.send('task-editor-dirty-state', { dirty: !!dirty }),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   onSettingsChanged: (cb) => {
     const listener = (_e, settings) => {

@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Ghi đè tệp bản lưu hiện có?",
       "snapshot_overwrite_load": "Thay thế văn bản hiện tại bằng bản lưu đã chọn \"{name}\"?",
       "task_delete_confirm": "Xóa danh sách tác vụ \"{name}\"?",
+      "task_discard_changes_confirm": "Có thay đổi chưa lưu. Bỏ các thay đổi đó?",
       "task_library_row_save_overwrite": "Đã có một mục tên \"{name}\" trong thư viện. Ghi đè?",
       "task_library_row_delete": "Xóa \"{name}\" khỏi thư viện?",
       "task_link_confirm": "Mở liên kết này?",

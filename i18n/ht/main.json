@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Ranplase fichye snapshot ki deja egziste a?",
       "snapshot_overwrite_load": "Ranplase tèks aktyèl la ak snapshot chwazi a \"{name}\"?",
       "task_delete_confirm": "Efase lis travay \"{name}\" la?",
+      "task_discard_changes_confirm": "Gen chanjman ki pa sove. Jete yo?",
       "task_library_row_save_overwrite": "Gen yon antre ki rele \"{name}\" deja nan bibliyotèk la. Ranplase li?",
       "task_library_row_delete": "Efase \"{name}\" nan bibliyotèk la?",
       "task_link_confirm": "Louvri lyen sa a?",

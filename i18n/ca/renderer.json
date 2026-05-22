@@ -367,7 +367,6 @@
         "link_error": "Error en obrir l’enllaç."
       },
       "confirm": {
-        "discard_changes": "Hi ha canvis sense desar. Vols descartar-los?",
         "close_unsaved": "Hi ha canvis sense desar. Vols tancar sense desar?"
       }
     },

@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Sovrascrivere lo snapshot esistente?",
       "snapshot_overwrite_load": "Sostituire il testo attuale con lo snapshot selezionato \"{name}\"?",
       "task_delete_confirm": "Eliminare la lista di attività \"{name}\"?",
+      "task_discard_changes_confirm": "Ci sono modifiche non salvate. Vuoi annullarle?",
       "task_library_row_save_overwrite": "Un elemento chiamato \"{name}\" esiste già nella libreria. Sovrascrivere?",
       "task_library_row_delete": "Eliminare \"{name}\" dalla libreria?",
       "task_link_confirm": "Aprire questo link?",
