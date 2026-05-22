@@ -129,6 +129,7 @@ Reglas:
 - Si la recuperación automática no dispone de los bridges IPC de activación OCR, deja de consumir el flujo como fallo manejado y vuelve al fallback no recuperado en vez de mostrar diagnóstico engañoso.
 - Abortar una extracción deja de desbloquear prematuramente la main window antes de que el flujo single-file o batch termine de cerrar su UI final; además, la notificación al usuario ahora distingue `cancelación solicitada` de `cancelación completada`.
 - El disclosure de activación OCR, el preview del texto vigente y las descripciones de presets dejan de presentar dirección/alineación inconsistente cuando el contenido del usuario o la UI efectiva trabajan en RTL o bidi mixto.
+- Editor de Tareas: descartar cambios no guardados al abrir/cargar otra tarea deja de dejar la nueva tarea en un estado donde algunos inputs visibles no aceptaban escritura hasta cambiar de ventana y volver.
 
 ### Migración
 
@@ -145,12 +146,16 @@ Reglas:
   - agrega `updateTextExtractionProcessingSession(payload)` → `ipcRenderer.invoke('text-extraction-update-processing-session', payload)`
   - agrega `exitTextExtractionProcessingSession(payload)` → `ipcRenderer.invoke('text-extraction-exit-processing-session', payload)`
   - agrega `openCurrentTextSnapshotsFolder()` → `ipcRenderer.invoke('current-text-snapshot-open-folder')`
+- Preload `window.taskEditorAPI`:
+  - agrega `setDirtyState(dirty:boolean)` → `ipcRenderer.send('task-editor-dirty-state', { dirty })`
 - IPC renderer ↔ main:
   - nuevo canal `text-extraction-inspect-selected-file`
   - nuevo canal `text-extraction-reveal-generated-pdf`
   - nuevos canales `text-extraction-enter-processing-session`, `text-extraction-update-processing-session` y `text-extraction-exit-processing-session`
   - nuevo canal `current-text-snapshot-open-folder`
   - `text-extraction-open-picker` puede devolver `filePaths[]` además de `filePath` cuando el picker vuelve múltiples archivos válidos
+  - nuevo canal `task-editor-dirty-state`
+  - `open-task-editor` puede devolver `code: 'CONFIRM_DENIED'` cuando el usuario cancela el descarte nativo de cambios no guardados del Editor de Tareas ya abierto
 - `text-extraction-prepare-selected-file`:
   - el payload acepta `pdfPageSelection`, `generatedPdfArtifactPolicy`, `planningMode` y `forceHeavySplitFullSource`
   - la respuesta preparada puede incluir `planningMode`, `forceHeavySplitFullSource`, `pdfPageSelection`, `generatedPdfArtifactPolicy` y `processingInputFileName` canonizados
