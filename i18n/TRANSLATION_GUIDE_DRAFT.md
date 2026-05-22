@@ -28,7 +28,7 @@ Aclara el uso funcional de una key cuando ese contexto es necesario para evitar 
 Marca el concepto canónico de la app activo en una key. No define ni explica el concepto; solo lo identifica para mantener consistencia terminológica.
 
 `[PROTEGIDO]`  
-Marca formas que deben conservarse o tratarse con especial cuidado: nombres propios, servicios, acrónimos, unidades, tokens, placeholders, símbolos o formas técnicas que no deben normalizarse libremente.
+Marca formas que deben conservarse o tratarse con especial cuidado: nombres propios, servicios, acrónimos, unidades, tokens, símbolos o formas técnicas que no deben normalizarse libremente.
 
 `[NO_CONFUNDIR]`  
 Advierte una confusión traductiva concreta entre conceptos, superficies, rutas o acciones similares de la app.
@@ -69,6 +69,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
       "faq": {
         "es": "Preguntas frecuentes (FAQ)",
         "en": "Frequently asked questions (FAQ)"
+        // [PROTEGIDO] `FAQ`
       },
       "preferencias": {
         "es": "Preferencias",
@@ -113,12 +114,14 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "en": "Enable Google OCR"
         // [PROPÓSITO] Acción de Preferencias que inicia la activación/autorización de Google OCR para poder usar la ruta OCR conectada.
         // [CONCEPTO_APP] Google OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "disconnect_google_ocr": {
         "es": "Desconectar Google OCR",
         "en": "Disconnect Google OCR"
         // [PROPÓSITO] Acción de Preferencias que revoca/desconecta el estado local de Google OCR, no una pausa temporal del OCR.
         // [CONCEPTO_APP] Google OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "links_interes": {
         "es": "Enlaces de interés",
@@ -151,6 +154,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
       "toggle_devtools": {
         "es": "Toggle DevTools",
         "en": "Toggle DevTools"
+        // [PROTEGIDO] `DevTools`
       },
       "language": {
         "empty": {
@@ -223,17 +227,20 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "es": "Desconectar Google OCR",
         "en": "Disconnect Google OCR"
         // [CONCEPTO_APP] Google OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "disconnect_google_ocr_confirm": {
         "es": "¿Desconectar Google OCR?",
         "en": "Disconnect Google OCR?"
         // [CONCEPTO_APP] Google OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "disconnect_google_ocr_detail": {
         "es": "Esto revoca el token guardado de inicio de sesión de Google OCR y elimina el archivo de token local de esta app. Las credenciales OAuth de Google locales gestionadas por la app pueden mantenerse para que OCR pueda reconectarse más adelante.",
         "en": "This revokes the saved Google OCR sign-in token and deletes the local token file from this app. App-managed local Google OAuth credentials may remain so OCR can reconnect later."
         // [PROPÓSITO] Explica que la desconexión afecta el token/estado local de inicio de sesión de Google OCR; las credenciales OAuth gestionadas por la app pueden quedar disponibles para reconectar.
         // [CONCEPTO_APP] Google OCR; token local OCR; credenciales OAuth OCR
+        // [PROTEGIDO] `Google OCR`; `OAuth`; `Google`; `OCR`
       },
       "delete_preset_confirm": {
         "es": "¿Eliminar el preset \"{name}\"?",
@@ -393,10 +400,12 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "cibersino_website": {
           "es": "Sitio de Cibersino",
           "en": "Cibersino website"
+          // [PROTEGIDO] `Cibersino`
         },
         "cibersino_kofi": {
           "es": "Apóyame en Ko-fi",
           "en": "Support me on Ko-fi"
+          // [PROTEGIDO] `Ko-fi`
         },
         "new_preset": {
           "es": "Crear un nuevo preset",
@@ -518,6 +527,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "es": "palabras por minuto (WPM)",
           "en": "words per minute (WPM)"
           // [CONCEPTO_APP] velocidad de lectura; palabras por minuto (WPM)
+          // [PROTEGIDO] `WPM`
         }
       },
       "results": {
@@ -530,6 +540,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "es": "⏱ Tiempo estimado de lectura: ",
           "en": "⏱ Estimated reading time: "
           // [CONCEPTO_APP] tiempo estimado de lectura
+          // [PROTEGIDO] `⏱`
         },
         "words": {
           "es": "Palabras: {n}",
@@ -559,6 +570,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Based on Intl.Segmenter"
           // [PROPÓSITO] Tooltip técnico del modo preciso de conteo; describe la base de segmentación usada para calcular la cantidad de palabras y caracteres.
           // [CONCEPTO_APP] modo preciso
+          // [PROTEGIDO] `Intl.Segmenter`
         }
       },
       "crono": {
@@ -605,12 +617,14 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Running OCR extraction..."
           // [PROPÓSITO] Estado de ejecución cuando la extracción usa OCR.
           // [CONCEPTO_APP] extracción de texto; OCR
+          // [PROTEGIDO] `OCR`
         },
         "text_extraction_waiting_ocr_delayed": {
           "es": "Ejecutando OCR. Algunos archivos tardan más.",
           "en": "Running OCR. Some files take longer."
           // [PROPÓSITO] Estado prolongado de OCR para indicar espera normal en archivos que tardan más.
           // [CONCEPTO_APP] extracción de texto; OCR
+          // [PROTEGIDO] `OCR`
         },
         "text_extraction_unit_progress": {
           "es": "Unidad {index}/{count}",
@@ -635,6 +649,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "OCR"
           // [PROPÓSITO] Label corto de ruta OCR en estados de procesamiento.
           // [CONCEPTO_APP] OCR
+          // [PROTEGIDO] `OCR`
         },
         "text_extraction_elapsed": {
           "es": "Transcurrido: ",
@@ -654,12 +669,14 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "es": "Opciones de extracción PDF",
           "en": "PDF extraction options"
           // [CONCEPTO_APP] extracción de texto; PDF fuente; selección de páginas PDF
+          // [PROTEGIDO] `PDF`
         },
         "message": {
           "es": "Elige si quieres procesar todo el PDF o un rango contiguo de páginas antes de la extracción.",
           "en": "Choose whether to process the whole PDF or one contiguous page range before extraction."
           // [PROPÓSITO] Modal previo a la extracción PDF; define si se procesa todo el PDF o un rango contiguo de páginas.
           // [CONCEPTO_APP] PDF fuente; selección de páginas PDF
+          // [PROTEGIDO] `PDF`
         },
         "file_label": {
           "es": "Archivo:",
@@ -706,6 +723,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Keep the generated selected-page PDF after processing"
           // [PROPÓSITO] Checkbox para conservar el PDF generado con páginas seleccionadas después de usarlo como insumo de extracción.
           // [CONCEPTO_APP] PDF generado; PDF guardado; selección de páginas PDF
+          // [PROTEGIDO] `PDF`
         },
         "continue_button": {
           "es": "Continuar",
@@ -718,6 +736,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "close_aria": {
           "es": "Cerrar ventana de opciones de extracción PDF",
           "en": "Close PDF extraction options window"
+          // [PROTEGIDO] `PDF`
         },
         "invalid_range": {
           "es": "Ingresa un rango contiguo de páginas entre 1 y {totalPages}.",
@@ -737,6 +756,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Both extraction routes are available for this PDF. Choose one to continue."
           // [PROPÓSITO] Ventana modal para PDFs donde están disponibles ruta nativa y OCR; obliga a elegir una ruta antes de continuar.
           // [CONCEPTO_APP] ruta de extracción; ruta nativa; OCR
+          // [PROTEGIDO] `PDF`
         },
         "native_button": {
           "es": "Usar nativa",
@@ -749,6 +769,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Use OCR"
           // [PROPÓSITO] Botón que selecciona la ruta OCR para continuar la extracción.
           // [CONCEPTO_APP] OCR
+          // [PROTEGIDO] `OCR`
         },
         "cancel_button": {
           "es": "Cancelar",
@@ -764,36 +785,43 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "es": "Revisar activación de Google OCR",
           "en": "Review Google OCR activation"
           // [CONCEPTO_APP] Google OCR
+          // [PROTEGIDO] `Google OCR`
         },
         "intro": {
           "es": "toT usa servicios de Google para OCR. Si continúas, se abrirá el navegador para que autorices esta app.",
           "en": "toT uses Google services for OCR. Continuing will open your browser so you can authorize this app."
           // [CONCEPTO_APP] Google OCR
+          // [PROTEGIDO] `toT`; `Google`; `OCR`
         },
         "selected_files": {
           "es": "Solo se envían a Google los archivos que eliges para OCR.",
           "en": "Only files you choose for OCR are sent to Google."
           // [CONCEPTO_APP] Google OCR
+          // [PROTEGIDO] `Google`; `OCR`
         },
         "local_storage": {
           "es": "Esta app guarda credenciales OAuth de Google para OCR gestionadas por la app y el estado local del token de Google en esta instancia.",
           "en": "This app stores app-managed Google OAuth credentials for OCR and local Google token state in this app instance."
           // [CONCEPTO_APP] Google OCR; token local OCR; credenciales OAuth OCR
+          // [PROTEGIDO] `OAuth`; `Google`; `OCR`
         },
         "remote_cleanup": {
           "es": "Después de exportar, la app intenta eliminar el documento temporal de Google de tu Google Drive.",
           "en": "After export, the app attempts to remove the temporary Google document from your Google Drive."
           // [CONCEPTO_APP] Google OCR
+          // [PROTEGIDO] `Google`; `Google Drive`
         },
         "disconnect": {
           "es": "Más tarde puedes desconectar esta conexión desde Preferencias > Desconectar Google OCR.",
           "en": "You can later disconnect via Preferences > Disconnect Google OCR."
           // [CONCEPTO_APP] Google OCR
+          // [PROTEGIDO] `Google OCR`
         },
         "proceed_button": {
           "es": "Continuar con Google",
           "en": "Continue to Google"
           // [CONCEPTO_APP] Google OCR
+          // [PROTEGIDO] `Google`
         },
         "cancel_button": {
           "es": "Cancelar",
@@ -806,6 +834,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "close_aria": {
           "es": "Cerrar ventana de activación de Google OCR",
           "en": "Close OCR activation disclosure window"
+          // [PROTEGIDO] `Google OCR`; `OCR`
         }
       },
       "apply_modal": {
@@ -857,18 +886,21 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "The generated PDF was kept after extraction."
           // [PROPÓSITO] Mensaje posterior a extracción cuando se conservó un PDF generado localmente.
           // [CONCEPTO_APP] extracción de texto; PDF generado; PDF guardado
+          // [PROTEGIDO] `PDF`
         },
         "saved_pdf_label": {
           "es": "PDF guardado: ",
           "en": "Saved PDF: "
           // [PROPÓSITO] Label de nombre del PDF generado que quedó guardado.
           // [CONCEPTO_APP] PDF generado; PDF guardado
+          // [PROTEGIDO] `PDF`
         },
         "reveal_saved_pdf_button": {
           "es": "Mostrar PDF guardado",
           "en": "Reveal saved PDF"
           // [PROPÓSITO] Acción para abrir en el sistema la carpeta del PDF generado guardado.
           // [CONCEPTO_APP] PDF generado; PDF guardado
+          // [PROTEGIDO] `PDF`
         }
       },
       "batch_plan": {
@@ -883,6 +915,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Process full PDF in parts"
           // [PROPÓSITO] Variante del plan de extracción por lotes cuando el texto de un PDF pesado se extrae completo vía OCR, pero dividido por partes. De esta manera la app sortea el límite de tamaño de subida por archivo que impone el proveedor Google OCR.
           // [CONCEPTO_APP] PDF completo por partes; PDF fuente; OCR
+          // [PROTEGIDO] `PDF`
         },
         "pages_all": {
           "es": "Todas las páginas",
@@ -898,6 +931,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "es": "PDF pesado",
           "en": "Heavy PDF"
           // [CONCEPTO_APP] PDF fuente; OCR
+          // [PROTEGIDO] `PDF`
         },
         "generated_inputs_preview": {
           "es": "Partes previstas para extracción:",
@@ -946,6 +980,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Keep generated PDF"
           // [PROPÓSITO] Checkbox para conservar PDFs generados durante la extracción por lotes.
           // [CONCEPTO_APP] PDF generado; PDF guardado; extracción por lotes
+          // [PROTEGIDO] `PDF`
         },
         "edit_tags": {
           "es": "Etiquetas",
@@ -1036,6 +1071,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Heavy PDF extraction final report"
           // [PROPÓSITO] Informe mostrado al terminar la extracción de un PDF pesado procesado por partes.
           // [CONCEPTO_APP] PDF completo por partes; PDF fuente
+          // [PROTEGIDO] `PDF`
         },
         "omitted": {
           "es": "omitido",
@@ -1048,6 +1084,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Reveal saved PDF"
           // [PROPÓSITO] Acción para abrir en el sistema la carpeta de un PDF generado que fue conservado.
           // [CONCEPTO_APP] PDF generado; PDF guardado
+          // [PROTEGIDO] `PDF`
         },
         "current_text_has_output": {
           "es": "El texto actual fue modificado.",
@@ -1066,6 +1103,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Created text snapshots can be loaded from the main window using the '📂' button."
           // [PROPÓSITO] Guía para cargar los snapshots de texto creados por el proceso de extracción de texto.
           // [CONCEPTO_APP] snapshot de texto; extracción por lotes
+          // [PROTEGIDO] `📂`
         },
         "elapsed": {
           "es": "Tiempo total de extracción: ",
@@ -1141,24 +1179,28 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Full PDF too large for OCR"
           // [PROPÓSITO] Caso en que el PDF fuente completo supera el límite OCR y puede procesarse por partes.
           // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR
+          // [PROTEGIDO] `PDF`; `OCR`
         },
         "case_a_message": {
           "es": "El PDF completo supera el límite del proveedor OCR ({providerLimitMb} MB). Puedes procesar su extracción automáticamente por partes, conservando el archivo original. Alternativamente, puedes usar la ruta de extracción nativa.",
           "en": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process its extraction automatically in parts, keeping the original file. Alternatively, you can use the native extraction route."
           // [PROPÓSITO] Explica que el PDF fuente completo supera el límite del proveedor OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR; ruta nativa
+          // [PROTEGIDO] `PDF`; `OCR`; `MB`
         },
         "case_b_title": {
           "es": "PDF generado demasiado grande para OCR",
           "en": "Generated PDF too large for OCR"
           // [PROPÓSITO] Caso en que el PDF generado desde un rango seleccionado supera el límite OCR.
           // [CONCEPTO_APP] PDF generado; OCR
+          // [PROTEGIDO] `PDF`; `OCR`
         },
         "case_b_message": {
           "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a páginas, usar ruta nativa o procesar el PDF completo por partes.",
           "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use native route, or process the full PDF in parts."
           // [PROPÓSITO] Explica que el PDF generado para el rango no se subió por exceder el límite OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF generado; selección de páginas PDF; OCR; ruta nativa; PDF completo por partes
+          // [PROTEGIDO] `PDF`; `OCR`; `MB`
         },
         "source_file_label": {
           "es": "Archivo fuente:",
@@ -1176,11 +1218,13 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Generated PDF:"
           // [PROPÓSITO] Label del PDF generado desde selección de páginas en la ventana de PDF pesado.
           // [CONCEPTO_APP] PDF generado
+          // [PROTEGIDO] `PDF`
         },
         "generated_pdf_size_label": {
           "es": "Tamaño del PDF generado:",
           "en": "Generated PDF size:"
           // [CONCEPTO_APP] PDF generado
+          // [PROTEGIDO] `PDF`
         },
         "source_size_label": {
           "es": "Tamaño del archivo fuente:",
@@ -1197,6 +1241,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Process the full PDF in parts"
           // [PROPÓSITO] Acción para ir a la ventana modal de extracción del PDF completo por partes.
           // [CONCEPTO_APP] PDF completo por partes; PDF fuente
+          // [PROTEGIDO] `PDF`
         },
         "return_to_pages_button": {
           "es": "Volver a páginas",
@@ -1215,6 +1260,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Reveal saved PDF"
           // [PROPÓSITO] Acción para mostrar la carpeta del PDF generado guardado, disponible si el usuario eligió conservarlo previamente.
           // [CONCEPTO_APP] PDF generado; PDF guardado
+          // [PROTEGIDO] `PDF`
         },
         "cancel_button": {
           "es": "Cancelar",
@@ -1223,6 +1269,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "close_aria": {
           "es": "Cerrar ventana de PDF pesado para OCR",
           "en": "Close heavy PDF for OCR window"
+          // [PROTEGIDO] `PDF`; `OCR`
         }
       }
     },
@@ -1231,6 +1278,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "es": "toT — Editor de Texto",
         "en": "toT — Text Editor"
         // [CONCEPTO_APP] Editor de Texto
+        // [PROTEGIDO] `toT`
       },
       "placeholder": {
         "es": "Escribe o pega aquí...",
@@ -1274,6 +1322,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
       "text_size_value": {
         "es": "{value} px",
         "en": "{value} px"
+        // [PROTEGIDO] `px`
       },
       "read_progress_label": {
         "es": "Leído",
@@ -1578,6 +1627,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "es": "toT — Editor de Tareas",
         "en": "toT — Task Editor"
         // [CONCEPTO_APP] tarea
+        // [PROTEGIDO] `toT`
       },
       "labels": {
         "name": {
@@ -1630,6 +1680,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "es": "%",
           "en": "%"
           // [CONCEPTO_APP] fila de lectura
+          // [PROTEGIDO] `%`
         },
         "falta": {
           "es": "Falta",
@@ -1895,6 +1946,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Press Stop/Reset (⏹) only if you want to cancel the test."
           // [PROPÓSITO] Instrucción previa al test: el usuario debe iniciar la medición con Play en el Cronómetro Flotante; Pausa termina el test.
           // [CONCEPTO_APP] Test de velocidad de lectura; Cronómetro Flotante
+          // [PROTEGIDO] `▶`; `⏸`; `⏹`
         }
       },
       "entry": {
@@ -1908,6 +1960,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "This test is meant to estimate your real reading speed through a guided session. The app will open the text and wait for you to press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nBefore you begin, keep in mind that these test texts usually require between 5 and 15 minutes of uninterrupted concentration.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play."
           // [PROPÓSITO] Introducción completa del flujo guiado; explica inicio con Cronómetro Flotante, preguntas opcionales y creación posterior de preset.
           // [CONCEPTO_APP] Test de velocidad de lectura; Cronómetro Flotante; pool del test; preset de velocidad de lectura; Editor de Texto
+          // [PROTEGIDO] `▶`; `⏸`; `⏹`
         },
         "eligible_count": {
           "es": "Archivos elegibles:",
@@ -2037,6 +2090,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
             "es": "Obtener más archivos de test desde la carpeta de Google Drive",
             "en": "Get more test files from the Google Drive folder"
             // [CONCEPTO_APP] archivos de test; pool del test
+            // [PROTEGIDO] `Google Drive`
           },
           "import_files": {
             "es": "Importar archivos de test desde tu dispositivo",
@@ -2137,6 +2191,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
           "en": "Measured WPM"
           // [PROPÓSITO] Resultado de velocidad medido por el test, expresado en WPM.
           // [CONCEPTO_APP] Test de velocidad de lectura; velocidad de lectura
+          // [PROTEGIDO] `WPM`
         },
         "elapsed_time": {
           "es": "Tiempo",
@@ -2187,6 +2242,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "es": "WPM:",
         "en": "WPM:"
         // [CONCEPTO_APP] preset de velocidad de lectura; velocidad de lectura
+        // [PROTEGIDO] `WPM`
       },
       "description": {
         "es": "Descripción:",
@@ -2229,11 +2285,13 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "es": "Disponible ahora en Chrome. Más navegadores pronto.",
         "en": "Available on Chrome now. More browsers coming soon."
         // [CONCEPTO_APP] extensión del navegador
+        // [PROTEGIDO] `Chrome`
       },
       "chrome_store_aria": {
         "es": "Abrir página de Chrome Web Store de la extensión",
         "en": "Open the extension Chrome Web Store page"
         // [CONCEPTO_APP] extensión del navegador
+        // [PROTEGIDO] `Chrome Web Store`
       },
       "close_aria": {
         "es": "Cerrar ventana de extensión del navegador",
@@ -2408,34 +2466,40 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "es": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
         "en": "This PDF is unreadable or corrupt. Check the file and try again."
         // [CONCEPTO_APP] PDF fuente
+        // [PROTEGIDO] `PDF`
       },
       "text_extraction_pdf_encrypted_or_password_protected": {
         "es": "Este PDF está cifrado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
         "en": "This PDF is encrypted or password-protected. Unlock it and try again."
         // [CONCEPTO_APP] PDF fuente
+        // [PROTEGIDO] `PDF`
       },
       "text_extraction_pdf_page_count_unavailable": {
         "es": "No fue posible determinar el número de páginas de este PDF.",
         "en": "Could not determine the number of pages in this PDF."
         // [CONCEPTO_APP] PDF fuente
+        // [PROTEGIDO] `PDF`
       },
       "text_extraction_pdf_page_selection_invalid": {
         "es": "El rango de páginas seleccionado para el PDF es inválido. Ajusta el rango y vuelve a intentarlo.",
         "en": "The selected PDF page range is invalid. Adjust the range and try again."
         // [PROPÓSITO] Alerta cuando la selección de páginas PDF no es válida para continuar.
         // [CONCEPTO_APP] selección de páginas PDF
+        // [PROTEGIDO] `PDF`
       },
       "text_extraction_pdf_subset_creation_failed": {
         "es": "No fue posible crear el PDF de páginas seleccionadas para la extracción. Revisa el archivo y vuelve a intentarlo.",
         "en": "The selected-page PDF could not be created for extraction. Check the file and try again."
         // [PROPÓSITO] Alerta cuando falla la creación del PDF generado de páginas seleccionadas.
         // [CONCEPTO_APP] PDF generado; selección de páginas PDF
+        // [PROTEGIDO] `PDF`
       },
       "text_extraction_generated_pdf_cleanup_warning": {
         "es": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
         "en": "Extraction finished, but a generated local PDF could not be cleaned up automatically."
         // [PROPÓSITO] Advertencia de limpieza local fallida de un PDF generado después de completar extracción.
         // [CONCEPTO_APP] PDF generado
+        // [PROTEGIDO] `PDF`
       },
       "text_extraction_route_choice_error": {
         "es": "Ocurrió un error al elegir la ruta de extracción.",
@@ -2448,6 +2512,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "en": "The saved PDF could not be revealed. Check whether the file still exists."
         // [PROPÓSITO] Alerta cuando no se puede mostrar la carpeta de un PDF generado guardado.
         // [CONCEPTO_APP] PDF generado; PDF guardado
+        // [PROTEGIDO] `PDF`
       },
       "text_extraction_apply_error": {
         "es": "Ocurrió un error al aplicar el texto extraído.",
@@ -2465,128 +2530,152 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "en": "This batch includes OCR items, but Google OCR is not enabled. Use Preferences > Enable Google OCR, then start the extraction again."
         // [PROPÓSITO] Alerta previa a lote con ítems OCR cuando Google OCR no está activado.
         // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; OCR; Google OCR; token local OCR
+        // [PROTEGIDO] `OCR`; `Google OCR`
       },
       "text_extraction_batch_ocr_token_state_invalid": {
         "es": "Este lote incluye ítems con OCR, pero el estado guardado de inicio de sesión de Google OCR no es válido. Usa Preferencias > Activar Google OCR de nuevo y luego vuelve a iniciar la extracción.",
         "en": "This batch includes OCR items, but the saved Google OCR sign-in state is invalid. Use Preferences > Enable Google OCR again, then start the extraction again."
         // [PROPÓSITO] Alerta previa a lote con OCR cuando el estado guardado de inicio de sesión no es válido.
         // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
+        // [PROTEGIDO] `OCR`; `Google OCR`
       },
       "text_extraction_batch_ocr_connectivity_failed": {
         "es": "Este lote incluye ítems con OCR, pero OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo antes de iniciar la extracción.",
         "en": "This batch includes OCR items, but OCR requires an internet connection. Check your connection and try again before starting the extraction."
         // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_batch_ocr_quota_or_rate_limited": {
         "es": "Este lote incluye ítems con OCR, pero OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo antes de iniciar la extracción.",
         "en": "This batch includes OCR items, but OCR is temporarily blocked by quota/rate limits. Wait and try again before starting the extraction."
         // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_batch_ocr_unavailable": {
         "es": "Este lote incluye ítems con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está activado, usa Preferencias > Activar Google OCR. Si ya estaba activado, revisa el estado/configuración de OCR y vuelve a intentarlo antes de iniciar la extracción.",
         "en": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise check the OCR setup/status and try again before starting the extraction."
         // [PROPÓSITO] Alerta previa a lote cuando OCR no está disponible para ítems que lo requieren.
         // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
+        // [PROTEGIDO] `OCR`; `Google OCR`
       },
       "text_extraction_ocr_unavailable": {
         "es": "OCR no está disponible. Revisa la configuración/autenticación y vuelve a intentarlo.",
         "en": "OCR is unavailable. Check setup/auth status and try again."
         // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_ocr_activation_required": {
         "es": "Se requiere activar OCR. Inicia sesión en Google OCR y vuelve a intentarlo.",
         "en": "OCR activation is required. Sign in to Google OCR and try again."
         // [PROPÓSITO] Alerta durante extracción individual cuando OCR requiere activación/autenticación antes de continuar.
         // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+        // [PROTEGIDO] `OCR`; `Google OCR`
       },
       "text_extraction_ocr_activation_success": {
         "es": "Activación OCR completada. Reintentando extracción.",
         "en": "OCR activation completed. Retrying extraction."
         // [PROPÓSITO] Alerta de activación OCR completada con reintento automático de extracción.
         // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_ocr_activation_cancelled": {
         "es": "La activación OCR fue cancelada. La extracción no continuó.",
         "en": "OCR activation was cancelled. Extraction did not continue."
         // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_ocr_token_state_invalid": {
         "es": "El estado guardado de inicio de sesión de Google OCR es inválido. Reconecta Google OCR y vuelve a intentarlo.",
         "en": "Saved Google OCR sign-in state is invalid. Reconnect Google OCR and try again."
         // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "text_extraction_ocr_activation_failed": {
         "es": "La activación OCR falló. Revisa la configuración/autenticación y vuelve a intentarlo.",
         "en": "OCR activation failed. Check setup/auth status and try again."
         // [CONCEPTO_APP] OCR; Google OCR; token local OCR; credenciales OAuth OCR
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_ocr_enable_success": {
         "es": "Google OCR quedó activado.",
         "en": "Google OCR is now enabled."
         // [PROPÓSITO] Alerta de activación manual de Google OCR desde Preferencias.
         // [CONCEPTO_APP] Google OCR; token local OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "text_extraction_ocr_enable_cancelled": {
         "es": "La activación de Google OCR fue cancelada.",
         "en": "Google OCR activation was cancelled."
         // [CONCEPTO_APP] Google OCR; token local OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "text_extraction_ocr_enable_failed": {
         "es": "No se pudo activar Google OCR. Revisa la configuración/autenticación y vuelve a intentarlo.",
         "en": "Google OCR could not be enabled. Check setup/auth status and try again."
         // [CONCEPTO_APP] Google OCR; token local OCR; credenciales OAuth OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "text_extraction_ocr_disconnect_success": {
         "es": "Google OCR fue desconectado. El token guardado de Google fue revocado y se eliminó el estado local de inicio de sesión.",
         "en": "Google OCR was disconnected. The saved Google token was revoked and the local sign-in state was removed."
         // [PROPÓSITO] Alerta de desconexión manual de Google OCR con revocación/eliminación del estado local.
         // [CONCEPTO_APP] Google OCR; token local OCR
+        // [PROTEGIDO] `Google OCR`; `Google`
       },
       "text_extraction_ocr_disconnect_not_connected": {
         "es": "Google OCR no está conectado actualmente en esta instancia de la app.",
         "en": "Google OCR is not currently connected in this app instance."
         // [CONCEPTO_APP] Google OCR; token local OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "text_extraction_ocr_disconnect_failed": {
         "es": "La desconexión de Google OCR falló. El estado guardado de inicio de sesión no fue eliminado.",
         "en": "Google OCR disconnect failed. The saved sign-in state was not removed."
         // [CONCEPTO_APP] Google OCR; token local OCR
+        // [PROTEGIDO] `Google OCR`
       },
       "text_extraction_ocr_connectivity_failed": {
         "es": "OCR requiere conexión a internet. Revisa tu conexión y reintenta.",
         "en": "OCR requires an internet connection. Check your connection and try again."
         // [CONCEPTO_APP] OCR; Google OCR
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_ocr_setup_missing_credentials": {
         "es": "OCR no está disponible en este build de la app porque faltan las credenciales OAuth de Google incluidas con la app.",
         "en": "OCR is unavailable in this app build because the bundled Google OAuth credentials are missing."
         // [CONCEPTO_APP] OCR; Google OCR; credenciales OAuth OCR
+        // [PROTEGIDO] `OCR`; `OAuth`; `Google`
       },
       "text_extraction_ocr_setup_invalid_credentials": {
         "es": "OCR no está disponible en este build de la app porque las credenciales OAuth de Google incluidas con la app son inválidas.",
         "en": "OCR is unavailable in this app build because the bundled Google OAuth credentials are invalid."
         // [CONCEPTO_APP] OCR; Google OCR; credenciales OAuth OCR
+        // [PROTEGIDO] `OCR`; `OAuth`; `Google`
       },
       "text_extraction_ocr_quota_or_rate_limited": {
         "es": "OCR está bloqueado temporalmente por cuota/límite de uso. Espera y reintenta.",
         "en": "OCR is temporarily blocked by quota/rate limits. Wait and retry."
         // [CONCEPTO_APP] OCR; Google OCR
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_ocr_runtime_error": {
         "es": "Ocurrió un error de ejecución OCR durante la extracción.",
         "en": "An OCR runtime error occurred during extraction."
         // [CONCEPTO_APP] OCR; extracción de texto
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_ocr_cancelled": {
         "es": "La extracción OCR fue cancelada.",
         "en": "OCR text extraction was cancelled."
         // [CONCEPTO_APP] OCR; extracción de texto
+        // [PROTEGIDO] `OCR`
       },
       "text_extraction_ocr_cleanup_warning": {
         "es": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
         "en": "OCR finished, but temporary remote file cleanup failed. Check your Google Drive folder."
         // [PROPÓSITO] Advertencia de limpieza remota fallida del documento temporal usado por OCR.
         // [CONCEPTO_APP] OCR; Google OCR; extracción de texto
+        // [PROTEGIDO] `OCR`; `Google Drive`
       },
       "text_extraction_native_runtime_error": {
         "es": "Ocurrió un error en la ejecución de la extracción nativa.",
@@ -2603,6 +2692,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "en": "The selected PDF is encrypted or password-protected and cannot be extracted natively."
         // [PROPÓSITO] Alerta específica de PDF cifrado/protegido cuando la ruta nativa no puede extraerlo.
         // [CONCEPTO_APP] ruta nativa; PDF fuente; extracción de texto
+        // [PROTEGIDO] `PDF`
       },
       "text_extraction_native_cancelled": {
         "es": "La extracción nativa fue cancelada.",
@@ -2617,23 +2707,28 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
       "wip_diseno_skins": {
         "es": "WIP: Aquí se abrirá el selector de skins en una futura versión.",
         "en": "WIP: The skins selector will open here in a future version."
+        // [PROTEGIDO] `WIP`
       },
       "wip_diseno_crono": {
         "es": "WIP: Aquí se abrirá la configuración del Cronómetro Flotante en una futura versión.",
         "en": "WIP: Floating Stopwatch settings will open here in a future version."
         // [CONCEPTO_APP] Cronómetro Flotante
+        // [PROTEGIDO] `WIP`
       },
       "wip_diseno_fuentes": {
         "es": "WIP: Aquí se abrirá el selector de fuentes en una futura versión.",
         "en": "WIP: The fonts selector will open here in a future version."
+        // [PROTEGIDO] `WIP`
       },
       "wip_diseno_colores": {
         "es": "WIP: Aquí se abrirá el selector de colores en una futura versión.",
         "en": "WIP: The colors selector will open here in a future version."
+        // [PROTEGIDO] `WIP`
       },
       "wip_shortcuts": {
         "es": "WIP: Aquí se abrirá el selector de atajos del teclado en una futura versión.",
         "en": "WIP: The keyboard shortcuts selector will open here in a future version."
+        // [PROTEGIDO] `WIP`
       },
       "reading_test_unavailable": {
         "es": "La funcionalidad del test de velocidad de lectura no está disponible.",
@@ -2673,6 +2768,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "en": "The test result could not be converted into a valid WPM. The flow ended without opening the preset window."
         // [PROPÓSITO] Alerta cuando el resultado del test no puede convertirse en un WPM válido y la ventana modal para creación de un preset de velocidad se deja sin abrir.
         // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
+        // [PROTEGIDO] `WPM`
       },
       "reading_test_result_unavailable": {
         "es": "No se pudo mostrar el resultado de velocidad de lectura. El flujo continuó.",
@@ -2781,6 +2877,7 @@ Marca una inconsistencia real y temporal entre baseline, UI, documentación o co
         "es": "WPM debe ser un número entre {min} y {max}.",
         "en": "WPM must be a number between {min} and {max}."
         // [CONCEPTO_APP] preset de velocidad de lectura; velocidad de lectura
+        // [PROTEGIDO] `WPM`
       },
       "create_error": {
         "es": "Ocurrió un error al crear el preset.",
