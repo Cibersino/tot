@@ -250,13 +250,15 @@ function buildAppMenu(lang, opts = {}) {
         const reason = reasonRaw || 'interaction_locked';
         const reasonLabel = reason === 'processing_mode'
             ? 'processing-mode lock active'
-            : (reason === 'pre_ready' ? 'pre-READY' : `lock:${reason}`);
+            : (reason === 'current_text_pending'
+                ? 'current-text pending lock active'
+                : (reason === 'pre_ready' ? 'pre-READY' : `lock:${reason}`));
         log.warnOnce(
             `menu_builder.inert.${reason}:${actionId}`,
             `Menu action ignored (${reasonLabel}):`,
             actionId
         );
-        if (reason === 'processing_mode') {
+        if (reason === 'processing_mode' || reason === 'current_text_pending') {
             const mainWindow = resolveMainWindow();
             if (mainWindow && !mainWindow.isDestroyed()) {
                 try {

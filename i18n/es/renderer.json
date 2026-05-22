@@ -55,6 +55,8 @@
         "words": "Palabras: {n}",
         "chars_no_space": "Caracteres (sin espacios): {n}",
         "chars": "Caracteres: {n}",
+        "value_pending": "pendiente...",
+        "value_unavailable": "no disponible",
         "precise_mode": "Modo preciso",
         "precise_tooltip": "Basado en Intl.Segmenter"
       },
@@ -64,6 +66,10 @@
         "controls_label": "Controles del cronómetro"
       },
       "processing": {
+        "current_text_waiting": "Actualizando el texto actual...",
+        "current_text_waiting_startup": "Asentando el texto actual...",
+        "current_text_waiting_editor": "Sincronizando cambios del Editor de Texto...",
+        "current_text_elapsed": "Transcurrido: ",
         "text_extraction_placeholder": "Procesando extracción...",
         "text_extraction_preparing": "Preparando la ruta de extracción...",
         "text_extraction_cancellation_pending": "Cancelación solicitada. Espera...",
@@ -489,6 +495,7 @@
       "text_extraction_precondition_blocked": "Para iniciar la extracción, cierra todas las ventanas secundarias y detén el cronómetro.",
       "text_extraction_precondition_error": "Ocurrió un error al revisar las precondiciones de extracción.",
       "text_extraction_processing_locked": "Hay una extracción en curso. Las interacciones de la ventana principal están bloqueadas hasta que termine la extracción o sea cancelada.",
+      "current_text_processing_locked": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
       "text_extraction_abort_error": "Ocurrió un error al solicitar la cancelación.",
       "text_extraction_cancellation_requested": "Cancelación solicitada. Espera a que termine la extracción actual.",
       "text_extraction_cancellation_complete": "La cancelación terminó.",

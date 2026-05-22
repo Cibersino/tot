@@ -109,6 +109,13 @@
     processingInputFileName: '',
     processingInputSource: '',
   };
+  let currentTextProcessingState = {
+    active: false,
+    requestId: 0,
+    sinceEpochMs: null,
+    source: '',
+    action: '',
+  };
   let prepareActiveCount = 0;
   let abortFinalizationState = {
     active: false,
@@ -217,6 +224,19 @@
     };
   }
 
+  function normalizeCurrentTextProcessingState(rawState) {
+    const state = rawState && typeof rawState === 'object' ? rawState : {};
+    const requestId = Number(state.requestId);
+    const sinceEpochMs = Number(state.sinceEpochMs);
+    return {
+      active: state.active === true,
+      requestId: Number.isFinite(requestId) && requestId > 0 ? Math.floor(requestId) : 0,
+      sinceEpochMs: Number.isFinite(sinceEpochMs) && sinceEpochMs > 0 ? Math.floor(sinceEpochMs) : null,
+      source: typeof state.source === 'string' ? state.source.trim() : '',
+      action: typeof state.action === 'string' ? state.action.trim() : '',
+    };
+  }
+
   function cloneProcessingModeState() {
     return { ...processingModeState };
   }
@@ -231,6 +251,10 @@
 
   function isAbortFinalizationActive() {
     return abortFinalizationState.active === true;
+  }
+
+  function isCurrentTextProcessingActive() {
+    return currentTextProcessingState.active === true;
   }
 
   function getElapsedMsSince(rawSinceEpochMs) {
@@ -292,6 +316,15 @@
     }
     if (isPrepareActive()) {
       return tRenderer('renderer.main.processing.text_extraction_preparing');
+    }
+    if (isCurrentTextProcessingActive()) {
+      if (currentTextProcessingState.action === 'initial_load') {
+        return tRenderer('renderer.main.processing.current_text_waiting_startup');
+      }
+      if (currentTextProcessingState.source === 'editor') {
+        return tRenderer('renderer.main.processing.current_text_waiting_editor');
+      }
+      return tRenderer('renderer.main.processing.current_text_waiting');
     }
     if (pendingExecutionRoute === 'native') {
       return tRenderer('renderer.main.processing.text_extraction_waiting_native');
@@ -358,6 +391,9 @@
     if (isProcessingModeActive() && processingModeState.processingInputFileName) {
       return processingModeState.processingInputFileName;
     }
+    if (isCurrentTextProcessingActive()) {
+      return '';
+    }
     return pendingSourceFileName;
   }
 
@@ -372,8 +408,9 @@
 
   function syncProcessingShellUi() {
     const processingActive = isProcessingModeActive();
+    const currentTextActive = isCurrentTextProcessingActive();
     const abortFinalizationActive = isAbortFinalizationActive();
-    const active = processingActive || abortFinalizationActive || isPrepareActive();
+    const active = processingActive || currentTextActive || abortFinalizationActive || isPrepareActive();
 
     if (selectorControlsNormal) {
       selectorControlsNormal.hidden = active;
@@ -421,13 +458,18 @@
     if (!textExtractionProcessingElapsed) return;
 
     const processingActive = isProcessingModeActive();
+    const currentTextActive = isCurrentTextProcessingActive();
     const abortFinalizationActive = isAbortFinalizationActive();
     const elapsedMs = processingActive
       ? (elapsedMsOverride === null
         ? getElapsedMsSince(processingModeState.sinceEpochMs)
         : elapsedMsOverride)
-      : (abortFinalizationActive ? abortFinalizationState.elapsedMs : null);
-    const elapsedValueText = (processingActive || abortFinalizationActive)
+      : (currentTextActive
+        ? (elapsedMsOverride === null
+          ? getElapsedMsSince(currentTextProcessingState.sinceEpochMs)
+          : elapsedMsOverride)
+        : (abortFinalizationActive ? abortFinalizationState.elapsedMs : null));
+    const elapsedValueText = (processingActive || currentTextActive || abortFinalizationActive)
       ? getProcessingElapsedValueText(elapsedMs)
       : '';
     const showElapsed = !!elapsedValueText;
@@ -439,7 +481,9 @@
     }
     renderElapsedLabelWithValue(
       textExtractionProcessingElapsed,
-      'renderer.main.processing.text_extraction_elapsed',
+      currentTextActive
+        ? 'renderer.main.processing.current_text_elapsed'
+        : 'renderer.main.processing.text_extraction_elapsed',
       elapsedValueText
     );
   }
@@ -470,12 +514,16 @@
   function ensureElapsedTimer() {
     if (elapsedTimerId !== null) return;
     elapsedTimerId = window.setInterval(() => {
-      if (!isProcessingModeActive()) {
+      if (!isProcessingModeActive() && !isCurrentTextProcessingActive()) {
         stopElapsedTimer();
         return;
       }
-      const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
-      syncDelayedBusyCopyUi(elapsedMs);
+      const elapsedMs = isProcessingModeActive()
+        ? getElapsedMsSince(processingModeState.sinceEpochMs)
+        : getElapsedMsSince(currentTextProcessingState.sinceEpochMs);
+      if (isProcessingModeActive()) {
+        syncDelayedBusyCopyUi(elapsedMs);
+      }
       syncElapsedUi({ elapsedMsOverride: elapsedMs });
     }, ELAPSED_TICK_MS);
   }
@@ -522,6 +570,29 @@
         lockId: nextState.lockId,
         source,
         reason: nextState.reason,
+      });
+    }
+  }
+
+  function applyCurrentTextProcessingState(rawState, { source = 'unknown' } = {}) {
+    const prevState = { ...currentTextProcessingState };
+    currentTextProcessingState = normalizeCurrentTextProcessingState(rawState);
+
+    syncProcessingUi();
+    if (currentTextProcessingState.active && currentTextProcessingState.sinceEpochMs) {
+      ensureElapsedTimer();
+    } else if (!isProcessingModeActive()) {
+      stopElapsedTimer();
+    }
+
+    if (prevState.active !== currentTextProcessingState.active
+      || (currentTextProcessingState.active && prevState.requestId !== currentTextProcessingState.requestId)) {
+      log.info('current text processing changed:', {
+        active: currentTextProcessingState.active,
+        requestId: currentTextProcessingState.requestId,
+        source,
+        currentTextSource: currentTextProcessingState.source,
+        action: currentTextProcessingState.action,
       });
     }
   }
@@ -597,6 +668,7 @@
 
   window.TextExtractionStatusUi = {
     applyProcessingModeState,
+    applyCurrentTextProcessingState,
     applyTranslations,
     beginAbortFinalization,
     beginPrepare,
@@ -606,6 +678,7 @@
     getAbortButton,
     getFinalElapsedValueText,
     isAbortFinalizationActive,
+    isCurrentTextProcessingActive,
     isProcessingModeActive,
     setPendingExecutionContext,
   };

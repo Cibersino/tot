@@ -49,17 +49,29 @@ const api = {
     openEditor: () => ipcRenderer.invoke('open-editor'),
     getCurrentText: () => ipcRenderer.invoke('get-current-text'),
     setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
+    getCurrentTextProcessingState: () => ipcRenderer.invoke('current-text-processing-get-state'),
+    resolveCurrentTextProcessing: (payload) => ipcRenderer.invoke('current-text-processing-resolve', payload),
     saveCurrentTextSnapshot: (payload) => ipcRenderer.invoke('current-text-snapshot-save', payload),
     openCurrentTextSnapshotsFolder: () => ipcRenderer.invoke('current-text-snapshot-open-folder'),
     loadCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-load'),
     onCurrentTextUpdated: (cb) => {
-        const listener = (_e, text) => {
-            try { cb(text); } catch (err) { console.error('current-text-updated callback error:', err); }
+        const listener = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('current-text-updated callback error:', err); }
         };
         return subscribeWithUnsub(
             'current-text-updated',
             listener,
             'removeListener error (current-text-updated):'
+        );
+    },
+    onCurrentTextProcessingStateChanged: (cb) => {
+        const listener = (_e, state) => {
+            try { cb(state); } catch (err) { console.error('current-text-processing-state callback error:', err); }
+        };
+        return subscribeWithUnsub(
+            'current-text-processing-state-changed',
+            listener,
+            'removeListener error (current-text-processing-state-changed):'
         );
     },
     onEditorReady: (cb) => {

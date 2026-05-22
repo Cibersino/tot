@@ -62,6 +62,7 @@ if (!textExtractionBatchFlow
 
 const textExtractionStatusUi = window.TextExtractionStatusUi;
 if (!textExtractionStatusUi
+  || typeof textExtractionStatusUi.applyCurrentTextProcessingState !== 'function'
   || typeof textExtractionStatusUi.applyProcessingModeState !== 'function'
   || typeof textExtractionStatusUi.applyTranslations !== 'function'
   || typeof textExtractionStatusUi.beginAbortFinalization !== 'function'
@@ -72,6 +73,7 @@ if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.getAbortButton !== 'function'
   || typeof textExtractionStatusUi.getFinalElapsedValueText !== 'function'
   || typeof textExtractionStatusUi.isAbortFinalizationActive !== 'function'
+  || typeof textExtractionStatusUi.isCurrentTextProcessingActive !== 'function'
   || typeof textExtractionStatusUi.isProcessingModeActive !== 'function'
   || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] TextExtractionStatusUi unavailable; cannot continue');
@@ -94,8 +96,21 @@ if (!currentTextSelectorSection
 }
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
+  || typeof resultsTimeMultiplier.clearBaseTotalSeconds !== 'function'
   || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function') {
   throw new Error('[renderer] ResultsTimeMultiplier unavailable; cannot continue');
+}
+const currentTextRuntime = window.CurrentTextRuntime || null;
+if (!currentTextRuntime
+  || typeof currentTextRuntime.applyCurrentTextProcessingState !== 'function'
+  || typeof currentTextRuntime.configure !== 'function'
+  || typeof currentTextRuntime.getCurrentText !== 'function'
+  || typeof currentTextRuntime.handleCurrentTextUpdated !== 'function'
+  || typeof currentTextRuntime.installCurrentTextState !== 'function'
+  || typeof currentTextRuntime.requestDerivedRefresh !== 'function'
+  || typeof currentTextRuntime.requestTimeOnlyRefresh !== 'function'
+  || typeof currentTextRuntime.syncBootstrapState !== 'function') {
+  throw new Error('[renderer] CurrentTextRuntime unavailable; cannot continue');
 }
 const readingSpeedTestUi = window.ReadingSpeedTestUi || null;
 if (!readingSpeedTestUi
@@ -113,10 +128,6 @@ if (!readingSpeedTestUi
 // =============================================================================
 let lastHelpTipIdx = -1;
 
-const resChars = document.getElementById('resChars');
-const resCharsNoSpace = document.getElementById('resCharsNoSpace');
-const resWords = document.getElementById('resWords');
-const resTime = document.getElementById('resTime');
 const resultsTimeMultiplierInput = document.getElementById('resultsTimeMultiplierInput');
 
 const toggleModoPreciso = document.getElementById('toggleModoPreciso');
@@ -157,6 +168,21 @@ const wpmControls = WpmControls.createController({
   },
 });
 
+if (!window.electronAPI || typeof window.electronAPI.resolveCurrentTextProcessing !== 'function') {
+  throw new Error('[renderer] electronAPI.resolveCurrentTextProcessing unavailable; cannot continue');
+}
+currentTextRuntime.configure({
+  currentTextSelectorSection,
+  resultsTimeMultiplier,
+  getCountContext: () => ({
+    modoConteo,
+    idioma: idiomaActual,
+  }),
+  getSettingsCache: () => settingsCache,
+  getWpm: () => wpmControls.getWpm(),
+  resolveCurrentTextProcessing: window.electronAPI.resolveCurrentTextProcessing.bind(window.electronAPI),
+});
+
 // =============================================================================
 // Startup gating + handshake
 // =============================================================================
@@ -174,6 +200,10 @@ function isAbortFinalizationActive() {
   return textExtractionStatusUi.isAbortFinalizationActive();
 }
 
+function isCurrentTextProcessingActive() {
+  return textExtractionStatusUi.isCurrentTextProcessingActive();
+}
+
 function setControlInteractionLocked(element, locked) {
   if (!element) return;
   element.disabled = locked;
@@ -189,6 +219,7 @@ function syncPresetActionButtons({ interactionLocked } = {}) {
     ? interactionLocked
     : !isRendererReady()
       || isProcessingModeActive()
+      || isCurrentTextProcessingActive()
       || isAbortFinalizationActive()
       || isReadingTestInteractionLocked();
   const disabled = locked || !hasSelectedPreset();
@@ -207,6 +238,7 @@ function isReadingTestSessionActive() {
 function syncMainInteractionLockUi() {
   const locked = !isRendererReady()
     || isProcessingModeActive()
+    || isCurrentTextProcessingActive()
     || isAbortFinalizationActive()
     || isReadingTestInteractionLocked();
 
@@ -267,6 +299,7 @@ function hasBlockingMainWindowModalOpen() {
 function canAcceptTextExtractionDrop() {
   return isRendererReady()
     && !isProcessingModeActive()
+    && !isCurrentTextProcessingActive()
     && !isAbortFinalizationActive()
     && !isReadingTestSessionActive()
     && !hasBlockingMainWindowModalOpen();
@@ -296,14 +329,17 @@ function maybeNotifyProcessingLock(actionId) {
   const now = Date.now();
   if ((now - lastProcessingLockNoticeAt) < PROCESSING_LOCK_NOTICE_THROTTLE_MS) return;
   lastProcessingLockNoticeAt = now;
+  const alertKey = isAbortFinalizationActive()
+    ? 'renderer.alerts.text_extraction_cancellation_requested'
+    : (isProcessingModeActive()
+      ? 'renderer.alerts.text_extraction_processing_locked'
+      : 'renderer.alerts.current_text_processing_locked');
   window.Notify.notifyMain(
-    isAbortFinalizationActive()
-      ? 'renderer.alerts.text_extraction_cancellation_requested'
-      : 'renderer.alerts.text_extraction_processing_locked'
+    alertKey
   );
   log.warnOnce(
     `renderer.processing_lock.${actionId}`,
-    'Renderer action ignored (processing-mode lock active):',
+    'Renderer action ignored (main-window processing lock active):',
     actionId
   );
 }
@@ -322,7 +358,7 @@ function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
   const isAbortAction = normalizedActionId === 'text-extraction-abort';
   if (!allowDuringProcessing
     && !isAbortAction
-    && (isProcessingModeActive() || isAbortFinalizationActive())) {
+    && (isProcessingModeActive() || isCurrentTextProcessingActive() || isAbortFinalizationActive())) {
     maybeNotifyProcessingLock(normalizedActionId);
     return false;
   }
@@ -401,7 +437,6 @@ function markRendererInvariantsReady() {
 // =============================================================================
 // Shared state and limits
 // =============================================================================
-let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
 let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
@@ -419,7 +454,9 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
+let bootstrapCurrentTextPayload = null;
 let textExtractionPrepareAttemptId = 0;
+let bootstrapCurrentTextProcessingState = null;
 let lastProcessingLockNoticeAt = 0;
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
@@ -443,14 +480,12 @@ const {
   msgRenderer,
   getRendererValue,
   applyWindowLanguageAttributes,
-  renderLocalizedLabelWithInvariantValue,
 } = window.RendererI18n || {};
 if (!loadRendererTranslations
   || !tRenderer
   || !msgRenderer
   || !getRendererValue
-  || !applyWindowLanguageAttributes
-  || !renderLocalizedLabelWithInvariantValue) {
+  || !applyWindowLanguageAttributes) {
   throw new Error('[renderer] RendererI18n unavailable; cannot continue');
 }
 applyWindowLanguageAttributes(DEFAULT_LANG);
@@ -586,15 +621,13 @@ const { contarTexto: contarTextoModulo } = window.CountUtils || {};
 if (typeof contarTextoModulo !== 'function') {
   throw new Error('[renderer] CountUtils unavailable; cannot continue');
 }
+const { obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
+if (!obtenerSeparadoresDeNumeros || !formatearNumero) {
+  throw new Error('[renderer] FormatUtils unavailable; cannot continue');
+}
 
 function contarTexto(texto) {
   return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
-}
-
-function normalizeText(value) {
-  if (typeof value === 'string') return value;
-  if (value === null || typeof value === 'undefined') return '';
-  return String(value);
 }
 
 // Update mode/language from other parts (e.g., menu actions)
@@ -605,90 +638,37 @@ function setModoConteo(nuevoModo) {
 }
 
 // =============================================================================
-// Time formatting
-// =============================================================================
-const { getExactTotalSeconds, getDisplayTimeParts, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
-if (!getExactTotalSeconds || !getDisplayTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
-  throw new Error('[renderer] FormatUtils unavailable; cannot continue');
-}
-
-// =============================================================================
 // Preview and results
 // =============================================================================
-let currentTextStats = null;
-
-function formatInvariantEstimatedDuration(hours, minutes, seconds) {
-  return `${hours}h ${minutes}m ${seconds}s`;
+function getCurrentTextValue() {
+  return currentTextRuntime.getCurrentText();
 }
 
-function renderEstimatedTime(totalSeconds) {
-  const { hours, minutes, seconds } = getDisplayTimeParts(totalSeconds);
-  renderLocalizedLabelWithInvariantValue(resTime, {
-    labelText: tRenderer('renderer.main.results.time_label'),
-    valueText: formatInvariantEstimatedDuration(hours, minutes, seconds),
-    valueDirection: 'ltr',
-  });
-  resultsTimeMultiplier.setBaseTotalSeconds(totalSeconds);
-}
-
-async function updatePreviewAndResults(text) {
-  const normalizedText = normalizeText(text);
-  currentTextSelectorSection.renderPreview(normalizedText, {
-    emptyText: tRenderer('renderer.main.selector_empty'),
-  });
-
-  const stats = contarTexto(normalizedText);
-  currentTextStats = stats;
-  const idioma = idiomaActual; // Cached on startup and updated by listener if applicable
-  const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
-
-  // Format numbers according to language
-  const caracteresFormateado = formatearNumero(stats.conEspacios, separadorMiles, separadorDecimal);
-  const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
-  const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
-
-  resChars.textContent = msgRenderer('renderer.main.results.chars', { n: caracteresFormateado });
-  resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado });
-  resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado });
-
-  const totalSeconds = getExactTotalSeconds(stats.palabras, wpmControls.getWpm());
-  renderEstimatedTime(totalSeconds);
-}
-
-function startPreviewAndResultsUpdate(text, reason) {
-  updatePreviewAndResults(text).catch((err) => {
-    log.error(`Error updating preview/results after ${reason}:`, err);
-  });
+function startPreviewAndResultsUpdate(textOrReason, maybeReason) {
+  const reason = typeof maybeReason === 'string'
+    ? maybeReason
+    : (typeof textOrReason === 'string' ? textOrReason : 'current-text refresh');
+  currentTextRuntime.requestDerivedRefresh(reason);
 }
 
 function updateTimeOnlyFromStats() {
-  if (!currentTextStats) {
-    log.warnOnce(
-      'renderer.timeOnly.noStats',
-      'WPM-only update requested without text stats; time not updated.'
-    );
-    return;
-  }
-  const totalSeconds = getExactTotalSeconds(currentTextStats.palabras, wpmControls.getWpm());
-  renderEstimatedTime(totalSeconds);
+  currentTextRuntime.requestTimeOnlyRefresh('wpm change');
 }
 
 function installCurrentTextState(text) {
-  const nextText = normalizeText(text);
-  currentText = nextText;
-  return nextText;
+  currentTextRuntime.installCurrentTextState(text);
+  return getCurrentTextValue();
 }
 
-function setCurrentTextAndUpdateUI(text, options = {}) {
-  const previousText = currentText;
-  const nextText = normalizeText(text);
-  currentText = nextText;
-  startPreviewAndResultsUpdate(nextText, 'current-text update');
-  if (options.applyRules) {
-    if (cronoController && typeof cronoController.handleTextChange === 'function') {
-      cronoController.handleTextChange(previousText, nextText);
-    }
-  }
+function setCurrentTextAndUpdateUI(payload, options = {}) {
+  currentTextRuntime.handleCurrentTextUpdated(payload, {
+    onAuthoritativeTextChanged: (previousText, nextText) => {
+      if (!options.applyRules) return;
+      if (cronoController && typeof cronoController.handleTextChange === 'function') {
+        cronoController.handleTextChange(previousText, nextText);
+      }
+    },
+  });
 }
 
 // Listen for stopwatch status from main (authoritative state)
@@ -770,9 +750,9 @@ const settingsChangeHandler = async (newSettings) => {
       }
     }
     if (isRendererReady()) {
-      startPreviewAndResultsUpdate(currentText, 'settings change');
+      startPreviewAndResultsUpdate(getCurrentTextValue(), 'settings change');
       if (modeChanged && cronoController && typeof cronoController.handleTextChange === 'function') {
-        cronoController.handleTextChange(null, currentText);
+        cronoController.handleTextChange(null, getCurrentTextValue());
       }
     }
   } catch (err) {
@@ -784,17 +764,21 @@ function armIpcSubscriptions() {
   // Subscribe to updates from main (current text changes)
   if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
     hasCurrentTextSubscription = true;
-    window.electronAPI.onCurrentTextUpdated((text) => {
+    window.electronAPI.onCurrentTextUpdated((payload) => {
       try {
         if (!isRendererReady()) {
-          installCurrentTextState(text || '');
+          bootstrapCurrentTextPayload = payload;
+          const bootstrapText = payload && typeof payload === 'object' && !Array.isArray(payload)
+            ? payload.text
+            : payload;
+          installCurrentTextState(bootstrapText || '');
           log.warnOnce(
             'BOOTSTRAP:renderer.preReady.currentTextUpdated',
             'current-text-updated received pre-READY; state updated only.'
           );
           return;
         }
-        setCurrentTextAndUpdateUI(text || '', { applyRules: true });
+        setCurrentTextAndUpdateUI(payload || '', { applyRules: true });
       } catch (err) {
         log.error('Error handling current-text-updated:', err);
       }
@@ -819,7 +803,7 @@ function armIpcSubscriptions() {
           settingsSnapshot: settingsCache,
           language: idiomaActual,
           electronAPI: window.electronAPI,
-          onWpmChanged: () => startPreviewAndResultsUpdate(currentText, 'preset-created sync'),
+          onWpmChanged: () => startPreviewAndResultsUpdate(getCurrentTextValue(), 'preset-created sync'),
         });
       } catch (err) {
         log.error('Error handling preset-created event:', err);
@@ -874,6 +858,23 @@ function armIpcSubscriptions() {
       );
     }
 
+    if (typeof window.electronAPI.onCurrentTextProcessingStateChanged === 'function') {
+      window.electronAPI.onCurrentTextProcessingStateChanged((state) => {
+        try {
+          if (!isRendererReady()) {
+            bootstrapCurrentTextProcessingState = state;
+          }
+          textExtractionStatusUi.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
+          currentTextRuntime.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
+          syncMainInteractionLockUi();
+        } catch (err) {
+          log.error('Error handling current-text-processing-state-changed:', err);
+        }
+      });
+    } else {
+      throw new Error('[renderer] electronAPI.onCurrentTextProcessingStateChanged unavailable; cannot maintain current text pending synchronization');
+    }
+
     if (typeof window.electronAPI.onEditorReady === 'function') {
       window.electronAPI.onEditorReady(() => {
         if (!isRendererReady()) {
@@ -920,9 +921,9 @@ function setupToggleModoPreciso() {
         toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
 
         // Immediate recount of the current text
-        startPreviewAndResultsUpdate(currentText, 'mode toggle');
+        startPreviewAndResultsUpdate(getCurrentTextValue(), 'mode toggle');
         if (cronoController && typeof cronoController.handleTextChange === 'function') {
-          cronoController.handleTextChange(null, currentText);
+          cronoController.handleTextChange(null, getCurrentTextValue());
         }
 
         // Attempt to persist settings via IPC (if preload/main implemented setModeConteo)
@@ -1026,22 +1027,77 @@ async function runStartupOrchestrator() {
       log.warn('BOOTSTRAP: applyTranslations failed (ignored):', err);
     }
 
-    // Get current initial text (state-only)
+    let initialText = '';
     const getCurrentText = getOptionalElectronMethod('getCurrentText', {
       dedupeKey: 'BOOTSTRAP:renderer.ipc.getCurrentText.unavailable',
       unavailableMessage: 'getCurrentText unavailable; bootstrap will use empty text.'
     });
     if (getCurrentText) {
       try {
-        const initialText = await getCurrentText();
-        installCurrentTextState(initialText || '');
+        initialText = String(await getCurrentText() || '');
       } catch (err) {
         log.error('Error loading initial current text:', err);
-        installCurrentTextState('');
+        initialText = '';
       }
-    } else {
-      installCurrentTextState('');
     }
+
+    const getCurrentTextProcessingState = getOptionalElectronMethod('getCurrentTextProcessingState', {
+      dedupeKey: 'BOOTSTRAP:renderer.ipc.getCurrentTextProcessingState.unavailable',
+      unavailableMessage: 'getCurrentTextProcessingState unavailable; current-text pending bootstrap cannot continue.'
+    });
+    if (!getCurrentTextProcessingState) {
+      throw new Error('[renderer] electronAPI.getCurrentTextProcessingState unavailable; cannot bootstrap current-text pending state');
+    }
+
+    let startupCurrentTextProcessingState = bootstrapCurrentTextProcessingState || {
+      active: false,
+      requestId: 0,
+      sinceEpochMs: null,
+      source: '',
+      action: '',
+    };
+    try {
+      const currentTextProcessingResult = await getCurrentTextProcessingState();
+      if (currentTextProcessingResult && currentTextProcessingResult.ok === true) {
+        startupCurrentTextProcessingState = currentTextProcessingResult.state || startupCurrentTextProcessingState;
+      } else {
+        log.warn(
+          'BOOTSTRAP: getCurrentTextProcessingState returned non-ok result; keeping current-text pending inactive:',
+          currentTextProcessingResult
+        );
+      }
+    } catch (err) {
+      log.warn('BOOTSTRAP: getCurrentTextProcessingState failed; keeping current-text pending inactive:', err);
+    }
+
+    if (bootstrapCurrentTextPayload) {
+      const bootstrapPayload = (
+        bootstrapCurrentTextPayload
+        && typeof bootstrapCurrentTextPayload === 'object'
+        && !Array.isArray(bootstrapCurrentTextPayload)
+      )
+        ? bootstrapCurrentTextPayload
+        : { text: bootstrapCurrentTextPayload };
+      const bootstrapRequestId = Number(bootstrapPayload.requestId);
+      const startupRequestId = Number(
+        startupCurrentTextProcessingState && startupCurrentTextProcessingState.requestId
+      );
+      if (Number.isInteger(bootstrapRequestId) && bootstrapRequestId > 0) {
+        if (!Number.isInteger(startupRequestId) || bootstrapRequestId >= startupRequestId) {
+          initialText = String(bootstrapPayload.text || '');
+        }
+      } else if (!startupCurrentTextProcessingState.active) {
+        initialText = String(bootstrapPayload.text || '');
+      }
+    }
+
+    currentTextRuntime.syncBootstrapState({
+      initialText,
+      processingState: startupCurrentTextProcessingState,
+    });
+    textExtractionStatusUi.applyCurrentTextProcessingState(startupCurrentTextProcessingState, {
+      source: 'startup_query',
+    });
 
     const getTextExtractionProcessingMode = getOptionalElectronMethod('getTextExtractionProcessingMode', {
       dedupeKey: 'BOOTSTRAP:renderer.ipc.getTextExtractionProcessingMode.unavailable',
@@ -1078,7 +1134,7 @@ async function runStartupOrchestrator() {
     markRendererInvariantsReady();
 
     // Final update after presets load in case WPM changed
-    startPreviewAndResultsUpdate(currentText, 'startup kickoff');
+    startPreviewAndResultsUpdate(getCurrentTextValue(), 'startup kickoff');
   } catch (err) {
     log.error('Error initializing renderer:', err);
   }
@@ -2255,7 +2311,7 @@ function bindPresetActions() {
       if (res && res.ok) {
         // On success, reload presets and apply fallback selection if needed.
         await loadPresets({ settingsSnapshot: settingsCache || {} });
-        startPreviewAndResultsUpdate(currentText, 'preset delete');
+        startPreviewAndResultsUpdate(getCurrentTextValue(), 'preset delete');
         // No further UI dialog required; main already showed confirmation.
         return;
       } else {
@@ -2292,7 +2348,7 @@ function bindPresetActions() {
       if (res && res.ok) {
         // Reload presets to reflect restored defaults
         await loadPresets({ settingsSnapshot: settingsCache || {} });
-        startPreviewAndResultsUpdate(currentText, 'preset restore');
+        startPreviewAndResultsUpdate(getCurrentTextValue(), 'preset restore');
         return;
       } else {
         if (res && res.code === 'CANCELLED') {
@@ -2331,7 +2387,7 @@ const initCronoController = () => {
     obtenerSeparadoresDeNumeros,
     formatearNumero,
     getIdiomaActual: () => idiomaActual,
-    getCurrentText: () => currentText,
+    getCurrentText: () => getCurrentTextValue(),
     getSettingsCache: () => settingsCache,
     playLabel: labels.playLabel,
     pauseLabel: labels.pauseLabel

@@ -148,9 +148,16 @@
     renderMultipliedTime();
   }
 
+  function clearBaseTotalSeconds() {
+    if (!ensureElements('clearBaseTotalSeconds')) return;
+    baseTotalSeconds = null;
+    renderMultipliedTime();
+  }
+
   bindEvents();
 
   window.ResultsTimeMultiplier = {
+    clearBaseTotalSeconds,
     setBaseTotalSeconds,
   };
 })();

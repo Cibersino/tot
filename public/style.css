@@ -474,6 +474,28 @@ pre#textPreview .preview-static {
   unicode-bidi: isolate;
 }
 
+.selector-text.current-text-status--pending #textPreview,
+.results.current-text-status--pending .result-highlight,
+.results.current-text-status--pending .result-list {
+  opacity: 0.72;
+  filter: saturate(0.88);
+}
+
+.selector-text.current-text-status--degraded #textPreview {
+  border-color: var(--danger-border);
+  background: var(--input-error-bg);
+}
+
+.results.current-text-status--degraded .result-highlight {
+  border-color: var(--danger-border);
+  background: var(--input-error-bg);
+}
+
+.results.current-text-status--degraded .result-list,
+.results.current-text-status--degraded .big-time {
+  color: var(--error-strong);
+}
+
 /* Text selector controls */
 .controls {
   position: relative;

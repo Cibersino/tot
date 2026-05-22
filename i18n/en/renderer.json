@@ -55,6 +55,8 @@
         "words": "Words: {n}",
         "chars_no_space": "Characters (no spaces): {n}",
         "chars": "Characters: {n}",
+        "value_pending": "pending...",
+        "value_unavailable": "unavailable",
         "precise_mode": "Precise mode",
         "precise_tooltip": "Based on Intl.Segmenter"
       },
@@ -64,6 +66,10 @@
         "controls_label": "Stopwatch controls"
       },
       "processing": {
+        "current_text_waiting": "Updating current text...",
+        "current_text_waiting_startup": "Settling current text...",
+        "current_text_waiting_editor": "Syncing Text Editor changes...",
+        "current_text_elapsed": "Elapsed: ",
         "text_extraction_placeholder": "Extracting text...",
         "text_extraction_preparing": "Preparing extraction route...",
         "text_extraction_cancellation_pending": "Cancellation requested. Please wait...",
@@ -489,6 +495,7 @@
       "text_extraction_precondition_blocked": "To start text extraction, close all secondary windows and stop the stopwatch.",
       "text_extraction_precondition_error": "An error occurred while checking text extraction preconditions.",
       "text_extraction_processing_locked": "There is an extraction in progress. Main-window interactions are locked until the extraction finishes or is cancelled.",
+      "current_text_processing_locked": "Current text is still updating. Main-window interactions are locked until the latest text settles.",
       "text_extraction_abort_error": "An error occurred while requesting cancellation.",
       "text_extraction_cancellation_requested": "Cancellation requested. Please wait until the current extraction finishes.",
       "text_extraction_cancellation_complete": "Cancellation finished.",

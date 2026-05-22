@@ -1698,6 +1698,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Hard-cap overflow paths truncate safely when applicable.
 - UI remains responsive and user receives notice on limit/truncation scenarios.
 
+### EDGE-01A Current-text pending honesty on startup
+**Goal:** a saved large current text uses the same explicit pending contract during startup.
+1. Save or otherwise leave a very large current text in the app.
+2. Fully close the app.
+3. Relaunch the app and watch the current-text area before counts/time finish settling.
+
+**Expected:**
+- If startup settling is still in flight, the shared processing/status bar is visible for current text.
+- Main-window controls and menu actions remain locked until the latest current-text settle finishes.
+- Preview/results/time do not appear normally settled during pending; pending placeholders or the pending styling remain visible until final derived values land.
+
 ### EDGE-02 Offline updater
 **Goal:** updater fails gracefully without hanging.
 1. Disable network.
@@ -1737,6 +1748,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - If projected payload exceeds IPC cap, append is aborted with the same “append too large” behavior.
 - If text limit is already reached, append is blocked with text-limit behavior.
 - Current text is not corrupted and app remains responsive.
+
+### EDGE-05A Current-text pending lock during large runtime updates
+**Goal:** large runtime current-text mutations show one strong pending owner and ignore stale completions.
+1. Start with a very large text source, for example a long clipboard payload, a large snapshot, or a large edit from Text Editor typing sync.
+2. Trigger a current-text mutation such as **📋↺**, **📋+**, snapshot load, or a debounced Text Editor sync.
+3. While the current-text area is still settling, try main-window controls and at least one menu action.
+4. If practical, trigger a second current-text mutation before the first settle finishes.
+
+**Expected:**
+- The shared processing/status bar shows current-text pending instead of leaving the area looking settled.
+- Main-window controls and menu actions stay locked while current-text pending is active.
+- Preview reflects the authoritative latest text, while counts/time remain visibly pending until the latest settle finishes.
+- If overlapping updates occur, only the latest text-derived completion becomes authoritative; older completions do not leave the UI looking finally settled afterward.
 
 ### EDGE-06 Text extraction unsupported format
 **Goal:** unsupported files fail with a specific user-visible message and no broken UI state.
