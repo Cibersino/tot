@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Tuhia anō te kōnae hopunga kuputuhi e tīariari ana?",
       "snapshot_overwrite_load": "Whakakapia te kuputuhi o nāianei ki te hopunga kua tīpakohia \"{name}\"?",
       "task_delete_confirm": "Muku te rārangi tūmahi \"{name}\"?",
+      "task_discard_changes_confirm": "He panoni kāore anō kia tiakina. Makaia?",
       "task_library_row_save_overwrite": "Kua tīariari kē tētahi tāurunga ko \"{name}\" te ingoa i te pātaka. Tuhia anō?",
       "task_library_row_delete": "Muku \"{name}\" i te pātaka?",
       "task_link_confirm": "Whakatuwheratia tēnei hononga?",

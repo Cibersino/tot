@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Kachkaq snapshotta qillqaychu?",
       "snapshot_overwrite_load": "Kunan qillqata akllasqa snapshot \"{name}\" nisqawan tikraychu?",
       "task_delete_confirm": "Llamk'ana lista \"{name}\" nisqata chinkachiychu?",
+      "task_discard_changes_confirm": "Mana waqaychasqa tikraykuna kan. Saqiyta munankichu?",
       "task_library_row_save_overwrite": "Bibliotecapi \"{name}\" ña kachkan. Qillqaychu?",
       "task_library_row_delete": "Bibliotecamanta \"{name}\" chinkachiychu?",
       "task_link_confirm": "Kay linkta kichaychu?",

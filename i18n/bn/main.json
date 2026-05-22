@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "বিদ্যমান স্ন্যাপশট ফাইলটি ওভাররাইট করবেন?",
       "snapshot_overwrite_load": "নির্বাচিত স্ন্যাপশট \"{name}\" দিয়ে বর্তমান লেখা প্রতিস্থাপন করবেন?",
       "task_delete_confirm": "টাস্ক তালিকা \"{name}\" মুছে ফেলবেন?",
+      "task_discard_changes_confirm": "সংরক্ষণ না করা পরিবর্তন আছে। সেগুলো বাতিল করবেন?",
       "task_library_row_save_overwrite": "লাইব্রেরিতে \"{name}\" নামে একটি এন্ট্রি আগে থেকেই আছে। ওভাররাইট করবেন?",
       "task_library_row_delete": "লাইব্রেরি থেকে \"{name}\" মুছে ফেলবেন?",
       "task_link_confirm": "এই লিংকটি খুলবেন?",

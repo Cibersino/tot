@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "کیا موجودہ اسنیپ شاٹ فائل کو اوور رائٹ کرنا ہے؟",
       "snapshot_overwrite_load": "کیا منتخب اسنیپ شاٹ \"{name}\" سے موجودہ متن بدلنا ہے؟",
       "task_delete_confirm": "کیا ٹاسک فہرست \"{name}\" حذف کرنی ہے؟",
+      "task_discard_changes_confirm": "غیر محفوظ شدہ تبدیلیاں موجود ہیں۔ کیا انہیں رد کرنا ہے؟",
       "task_library_row_save_overwrite": "لائبریری میں \"{name}\" نام کی ایک انٹری پہلے سے موجود ہے۔ اوور رائٹ کریں؟",
       "task_library_row_delete": "کیا \"{name}\" کو لائبریری سے حذف کرنا ہے؟",
       "task_link_confirm": "کیا یہ لنک کھولنا ہے؟",

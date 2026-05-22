@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "فایل اسنپ‌شات موجود بازنویسی شود؟",
       "snapshot_overwrite_load": "متن فعلی با اسنپ‌شات انتخاب‌شده «{name}» جایگزین شود؟",
       "task_delete_confirm": "فهرست کار «{name}» حذف شود؟",
+      "task_discard_changes_confirm": "تغییرات ذخیره‌نشده وجود دارد. نادیده گرفته شوند؟",
       "task_library_row_save_overwrite": "ورودی‌ای با نام «{name}» از قبل در کتابخانه وجود دارد. بازنویسی شود؟",
       "task_library_row_delete": "«{name}» از کتابخانه حذف شود؟",
       "task_link_confirm": "این پیوند باز شود؟",

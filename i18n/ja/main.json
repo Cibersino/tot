@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "既存のスナップショットファイルを上書きしますか？",
       "snapshot_overwrite_load": "選択したスナップショット「{name}」で現在のテキストを置き換えますか？",
       "task_delete_confirm": "タスクリスト「{name}」を削除しますか？",
+      "task_discard_changes_confirm": "未保存の変更があります。破棄しますか？",
       "task_library_row_save_overwrite": "ライブラリに「{name}」がすでに存在します。上書きしますか？",
       "task_library_row_delete": "ライブラリから「{name}」を削除しますか？",
       "task_link_confirm": "このリンクを開きますか？",

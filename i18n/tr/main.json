@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Var olan snapshot dosyasının üzerine yazılsın mı?",
       "snapshot_overwrite_load": "Geçerli metin seçili \"{name}\" snapshot'ı ile değiştirilsin mi?",
       "task_delete_confirm": "\"{name}\" görev listesi silinsin mi?",
+      "task_discard_changes_confirm": "Kaydedilmemiş değişiklikler var. Vazgeçilsin mi?",
       "task_library_row_save_overwrite": "Kütüphanede \"{name}\" adlı bir kayıt zaten var. Üzerine yazılsın mı?",
       "task_library_row_delete": "\"{name}\" kütüphaneden silinsin mi?",
       "task_link_confirm": "Bu bağlantı açılsın mı?",

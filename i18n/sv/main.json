@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Skriva över befintlig snapshotfil?",
       "snapshot_overwrite_load": "Ersätta aktuell text med vald snapshot \"{name}\"?",
       "task_delete_confirm": "Ta bort uppgiftslistan \"{name}\"?",
+      "task_discard_changes_confirm": "Det finns osparade ändringar. Kasta dem?",
       "task_library_row_save_overwrite": "En post med namnet \"{name}\" finns redan i biblioteket. Skriva över?",
       "task_library_row_delete": "Ta bort \"{name}\" från biblioteket?",
       "task_link_confirm": "Öppna den här länken?",

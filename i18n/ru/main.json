@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Перезаписать существующий снапшот?",
       "snapshot_overwrite_load": "Заменить текущий текст выбранным снапшотом \"{name}\"?",
       "task_delete_confirm": "Удалить список задач \"{name}\"?",
+      "task_discard_changes_confirm": "Есть несохраненные изменения. Отменить их?",
       "task_library_row_save_overwrite": "Запись \"{name}\" уже есть в библиотеке. Перезаписать?",
       "task_library_row_delete": "Удалить \"{name}\" из библиотеки?",
       "task_link_confirm": "Открыть эту ссылку?",

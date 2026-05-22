@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "覆蓋現有快照檔案？",
       "snapshot_overwrite_load": "用所選快照“{name}”取代目前文字？",
       "task_delete_confirm": "刪除任務清單“{name}”？",
+      "task_discard_changes_confirm": "有未儲存的變更。要放棄這些變更嗎？",
       "task_library_row_save_overwrite": "資料庫中已存在名為“{name}”的項目。要覆蓋嗎？",
       "task_library_row_delete": "從資料庫刪除“{name}”？",
       "task_link_confirm": "開啟此連結？",

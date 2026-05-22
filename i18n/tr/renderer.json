@@ -367,7 +367,6 @@
         "link_error": "Bağlantı açılırken hata oluştu."
       },
       "confirm": {
-        "discard_changes": "Kaydedilmemiş değişiklikler var. Vazgeçilsin mi?",
         "close_unsaved": "Kaydedilmemiş değişiklikler var. Kaydetmeden kapatılsın mı?"
       }
     },

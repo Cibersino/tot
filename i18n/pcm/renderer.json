@@ -367,7 +367,6 @@
         "link_error": "Error opening link."
       },
       "confirm": {
-        "discard_changes": "Unsaved changes dey. Discard dem?",
         "close_unsaved": "Unsaved changes dey. Close without saving?"
       }
     },

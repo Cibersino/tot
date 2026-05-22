@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Deseja sobrescrever o snapshot existente?",
       "snapshot_overwrite_load": "Deseja substituir o texto atual pelo snapshot selecionado \"{name}\"?",
       "task_delete_confirm": "Deseja excluir a lista de tarefas \"{name}\"?",
+      "task_discard_changes_confirm": "Existem mudanças não salvas. Deseja descartá-las?",
       "task_library_row_save_overwrite": "Já existe uma entrada chamada \"{name}\" na biblioteca. Deseja sobrescrever?",
       "task_library_row_delete": "Deseja excluir \"{name}\" da biblioteca?",
       "task_link_confirm": "Deseja abrir este link?",

@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Utjki uka snapshot ukar qillqaña?",
       "snapshot_overwrite_load": "Jichha qillqataxa ajllita snapshot \"{name}\" ukamp lantintañati?",
       "task_delete_confirm": "Tarea lista \"{name}\" chhaqtayañati?",
+      "task_discard_changes_confirm": "Jan imata mayjt’awinakaw utji. Jaytañ munasmati?",
       "task_library_row_save_overwrite": "Biblioteca ukan \"{name}\" sat sutix niy utji. Lantintañati?",
       "task_library_row_delete": "Biblioteca ukat \"{name}\" chhaqtayañati?",
       "task_link_confirm": "Aka link jist’arañati?",

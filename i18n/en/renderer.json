@@ -368,7 +368,6 @@
         "link_error": "Error opening link or local path."
       },
       "confirm": {
-        "discard_changes": "There are unsaved changes. Discard them?",
         "close_unsaved": "There are unsaved changes. Close without saving?"
       }
     },

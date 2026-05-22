@@ -36,6 +36,7 @@
       "snapshot_overwrite_save": "Bhala phezu kwefayela le-snapshot elikhona?",
       "snapshot_overwrite_load": "Buyisela umbhalo wamanje nge-snapshot ekhethiwe \"{name}\"?",
       "task_delete_confirm": "Susa uhlu lwemisebenzi \"{name}\"?",
+      "task_discard_changes_confirm": "Kunezinguquko ezingakagcinwa. Uzilahle?",
       "task_library_row_save_overwrite": "Into ebizwa ngokuthi \"{name}\" isivele ikhona kulabhulali. Ubhale phezu kwayo?",
       "task_library_row_delete": "Susa \"{name}\" kulabhulali?",
       "task_link_confirm": "Vula lesi sixhumanisi?",

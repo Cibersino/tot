@@ -355,6 +355,11 @@ Estados de revisión recomendados:
         "en": "Delete the task \"{name}\"?"
         // [CONCEPTO_APP] tarea
       },
+      "task_discard_changes_confirm": {
+        "es": "Hay una tarea abierta con cambios sin guardar. ¿Desea descartarlos?",
+        "en": "There is an open task with unsaved changes. Discard them?"
+        // [CONCEPTO_APP] tarea
+      },
       "task_library_row_save_overwrite": {
         "es": "Ya existe \"{name}\" en la biblioteca. ¿Sobrescribir?",
         "en": "\"{name}\" already exists in the library. Overwrite?"
@@ -2096,12 +2101,6 @@ Estados de revisión recomendados:
         }
       },
       "confirm": {
-        "discard_changes": {
-          "es": "Hay cambios sin guardar. ¿Desea descartarlos?",
-          "en": "There are unsaved changes. Discard them?"
-          // [PROPÓSITO] Mensaje que aparece cuando se abre una tarea mientras ya hay una tarea abierta con cambios no guardados.
-          // [CONCEPTO_APP] tarea
-        },
         "close_unsaved": {
           "es": "Hay cambios sin guardar. ¿Cerrar sin guardar?",
           "en": "There are unsaved changes. Close without saving?"

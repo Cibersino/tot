@@ -139,12 +139,31 @@ const MIN_COL_WIDTH = 10;
 // Helpers
 // =============================================================================
 function markDirty() {
+  if (dirty) return;
   dirty = true;
+  syncDirtyState();
 }
 
 function resetDirty() {
+  if (!dirty) return;
   dirty = false;
+  syncDirtyState();
 }
+
+function syncDirtyState() {
+  const api = window.taskEditorAPI;
+  if (!api || typeof api.setDirtyState !== 'function') {
+    log.warnOnce('task_editor.setDirtyState.missing', 'taskEditorAPI.setDirtyState unavailable; dirty state sync disabled.');
+    return;
+  }
+  try {
+    api.setDirtyState(dirty);
+  } catch (err) {
+    log.warnOnce('task_editor.setDirtyState.failed', 'taskEditorAPI.setDirtyState failed (ignored):', err);
+  }
+}
+
+syncDirtyState();
 
 function clampTaskName(input) {
   const name = String(input || '');
@@ -1090,9 +1109,6 @@ if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowTo
 // =============================================================================
 if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
   window.taskEditorAPI.onInit((payload) => {
-    if (dirty) {
-      if (!window.Notify.confirmMain('renderer.tasks.confirm.discard_changes')) return;
-    }
     applyTaskPayload(payload);
   });
 } else {

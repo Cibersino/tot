@@ -367,7 +367,6 @@
         "link_error": "Erro ao abrir o link."
       },
       "confirm": {
-        "discard_changes": "Existem mudanças não salvas. Deseja descartá-las?",
         "close_unsaved": "Existem mudanças não salvas. Deseja fechar sem salvar?"
       }
     },

@@ -367,7 +367,6 @@
         "link_error": "Erreur lors de l'ouverture du lien."
       },
       "confirm": {
-        "discard_changes": "Des modifications non sauvegardées existent. Voulez-vous les ignorer ?",
         "close_unsaved": "Des modifications non sauvegardées existent. Voulez-vous fermer sans sauvegarder ?"
       }
     },

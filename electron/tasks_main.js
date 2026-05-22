@@ -47,6 +47,7 @@ log.debug('Tasks main starting...');
 // Constants / config
 // =============================================================================
 const TASK_EXT = '.json';
+let taskEditorDirty = false;
 
 // =============================================================================
 // Helpers (paths, dialogs, file IO)
@@ -116,6 +117,26 @@ function getDefaultTaskFileName(rootDir, taskName) {
     idx += 1;
   }
   return `${base}_${idx}${TASK_EXT}`;
+}
+
+async function confirmTaskEditorDiscardIfDirty({ mainWin, taskEditorWin }) {
+  if (!taskEditorDirty) return true;
+  if (!taskEditorWin || taskEditorWin.isDestroyed()) {
+    taskEditorDirty = false;
+    return true;
+  }
+
+  const dialogTexts = getDialogTexts();
+  const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+  const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+  const conf = await dialog.showMessageBox(mainWin || taskEditorWin || null, {
+    type: 'none',
+    buttons: [continueLabel, cancelLabel],
+    defaultId: 1,
+    cancelId: 1,
+    message: resolveDialogText(dialogTexts, 'task_discard_changes_confirm'),
+  });
+  return conf.response !== 1;
 }
 
 function normalizeSavePath(filePath) {
@@ -343,6 +364,19 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   const resolveMainWin = () => resolveWins().mainWin || null;
   const resolveTaskEditorWin = () => resolveWins().taskEditorWin || null;
 
+  ipcMain.on('task-editor-dirty-state', (event, payload) => {
+    const taskEditorWin = resolveTaskEditorWin();
+    const senderWin = BrowserWindow.fromWebContents(event.sender);
+    if (!taskEditorWin || !senderWin || senderWin !== taskEditorWin) {
+      log.warnOnce(
+        'tasks_main.dirty_state.unauthorized',
+        'task-editor-dirty-state unauthorized (ignored).'
+      );
+      return;
+    }
+    taskEditorDirty = !!(payload && payload.dirty);
+  });
+
   // =============================================================================
   // IPC: open Task Editor (new/load)
   // =============================================================================
@@ -366,6 +400,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const mode = payload && payload.mode === 'load' ? 'load' : 'new';
 
       if (mode === 'new') {
+        const allowDiscard = await confirmTaskEditorDiscardIfDirty({
+          mainWin,
+          taskEditorWin: resolveTaskEditorWin(),
+        });
+        if (!allowDiscard) return { ok: false, code: 'CONFIRM_DENIED' };
         ensureTaskEditorWindow();
         const taskEditorWin = resolveTaskEditorWin();
         if (taskEditorWin) {
@@ -374,6 +413,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
             task: { meta: { name: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, rows: [] },
             sourcePath: null,
           });
+          taskEditorDirty = false;
         } else {
           log.warnOnce(
             'send.task-editor-init.new',
@@ -421,6 +461,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: false, code: normalized.code || 'INVALID_SCHEMA', message: normalized.message };
       }
 
+      const allowDiscard = await confirmTaskEditorDiscardIfDirty({
+        mainWin,
+        taskEditorWin: resolveTaskEditorWin(),
+      });
+      if (!allowDiscard) return { ok: false, code: 'CONFIRM_DENIED' };
+
       ensureTaskEditorWindow();
       const taskEditorWin = resolveTaskEditorWin();
       if (taskEditorWin) {
@@ -429,6 +475,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
           task: normalized.task,
           sourcePath: selectedReal,
         });
+        taskEditorDirty = false;
       } else {
         log.warnOnce(
           'send.task-editor-init.load',

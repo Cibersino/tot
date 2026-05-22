@@ -368,7 +368,6 @@
         "link_error": "Error al abrir enlace o ruta local."
       },
       "confirm": {
-        "discard_changes": "Hay cambios sin guardar. ¿Desea descartarlos?",
         "close_unsaved": "Hay cambios sin guardar. ¿Cerrar sin guardar?"
       }
     },
