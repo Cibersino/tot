@@ -112,7 +112,7 @@ Reglas:
 - El guard global de acciones de la ventana principal extiende el lock de extracción para cubrir también la finalización post-aborto, incluyendo picker, drag/drop, presets, WPM y demás controles interactivos.
 - El disclosure modal de activación OCR adopta `dir` efectivo de la UI y propiedades CSS lógicas (`text-align: start`, `padding-inline-start`, `margin-inline-start`) para espejar correctamente listas y acciones cuando el idioma activo es RTL.
 - El preview del texto vigente deja de mantener un probador de dirección propio y pasa a reutilizar la resolución shared de `RendererI18n`, aplicando la dirección efectiva del contenido también al modo truncado/sin spoiler.
-- El editor completo deja de depender de `dir="auto"` hardcodeado en HTML y recalcula la dirección del `textarea` en bootstrap, escritura local, sync externa, clear y cambios de idioma.
+- El editor completo deja de depender de `dir="auto"` hardcodeado en HTML y recalcula la dirección del `textarea` en bootstrap, escritura local, sync externa y cambios de idioma; además, el botón `clear` del editor pasa a limpiar solo el `textarea` local y deja de vaciar el `current text` de la ventana principal.
 - Las descripciones de presets en main window y en `preset_modal` dejan de renderizarse como texto neutro fijo y pasan a actualizar `dir` según el contenido efectivo del campo.
 
 ### Arreglado
