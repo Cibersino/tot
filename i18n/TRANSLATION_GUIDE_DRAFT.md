@@ -28,7 +28,7 @@ Aclara el uso funcional de una key cuando ese contexto es necesario para evitar 
 Marca el concepto canónico de la app activo en una key. No define ni explica el concepto; solo lo identifica para mantener consistencia terminológica.
 
 `[PROTEGIDO]`  
-Marca formas que deben conservarse o tratarse con especial cuidado: nombres propios, servicios, acrónimos, unidades, tokens, símbolos o formas técnicas que no deben normalizarse libremente.
+Marca formas que deben conservarse o tratarse con especial cuidado: nombres propios, servicios, acrónimos, unidades, tokens, placeholders, símbolos o formas técnicas que no deben normalizarse libremente.
 
 `[NO_CONFUNDIR]`  
 Advierte una confusión traductiva concreta entre conceptos, superficies, rutas o acciones similares de la app.
@@ -40,6 +40,60 @@ Marca una decisión o verificación abierta cuando hay riesgo real de mala tradu
 
 `[DRIFT]`  
 Marca una inconsistencia real y temporal entre baseline, UI, documentación o comportamiento esperado. Este tag es transitorio y no debe quedar en la guía definitiva.
+
+## Glosario de conceptos de la app
+
+Este glosario fija el alcance de los conceptos marcados con `[CONCEPTO_APP]`. Las definiciones describen el uso canónico dentro de la app; no reemplazan el baseline `es`/`en` ni obligan a traducir cada término de forma literal.
+
+| Concepto | Alcance en la app |
+|---|---|
+| `texto actual` | Texto central actualmente cargado en la ventana principal; alimenta el cálculo de tiempo, puede editarse, reemplazarse, ampliarse, guardarse como snapshot o usarse para iniciar el test. |
+| `reemplazar texto actual` | Acción `Replace`: sustituye el contenido del texto actual por el contenido entrante en un flujo que ofrece la alternativa reemplazar/agregar. |
+| `agregar al texto actual` | Acción `Append`: conserva el texto actual y suma el contenido entrante al final, en vez de reemplazarlo. |
+| `repeticiones de pegado` | Cantidad de iteraciones con que se pega el texto del portapapeles en las acciones de reemplazo o agregado. |
+| `tiempo estimado de lectura` | Duración calculada para leer el texto actual según el conteo y la velocidad configurada. |
+| `velocidad de lectura` | Valor en WPM usado en dos acepciones: velocidad configurada/presupuesta para estimar tiempo de lectura y velocidad real medida por cronómetro o test. |
+| `palabras por minuto (WPM)` | Unidad numérica de velocidad de lectura usada en presets, selector, cronómetro y resultados medidos. |
+| `preset de velocidad de lectura` | Configuración guardada de WPM para estimar tiempo de lectura; puede crearse, editarse, restaurarse o generarse desde un resultado medido. |
+| `modo preciso` | Modo de conteo basado en `Intl.Segmenter` para segmentación de palabras y caracteres. |
+| `Editor de Texto` | Ventana de edición manual donde el usuario puede escribir, pegar, corregir y aplicar texto hacia el texto actual. |
+| `Cronómetro` | Cronómetro de la app usado para medir lectura y calcular velocidad real. Debe estar detenido/restablecido para ciertos flujos. |
+| `Cronómetro Flotante` | Ventana flotante del cronómetro; en el test guiado controla el inicio y término de la medición. |
+| `snapshot de texto` | Guardado/carga de texto actual como archivo de snapshot; puede tener etiquetas, cargarse como texto actual, asociarse a filas o crearse desde extracción por lotes. |
+| `etiquetas de snapshot de texto` | Metadatos opcionales de snapshot, como idioma, tipo y dificultad; también pueden configurarse para snapshots creados desde unidades de extracción por lotes. |
+| `extracción de texto` | Flujo para obtener texto desde archivos y luego aplicarlo al texto actual o guardarlo según el flujo. Puede pasar por opciones PDF, ruta nativa, OCR o lote. |
+| `ruta de extracción` | Camino elegido o resuelto para extraer texto; distingue ruta nativa y OCR. |
+| `ruta nativa` | Ruta local/no OCR de extracción de texto desde archivos compatibles o PDFs con texto seleccionable. |
+| `OCR` | Ruta de extracción por reconocimiento óptico; se usa para imágenes, PDFs escaneados/aplanados o casos donde la ruta OCR es elegida/requerida. |
+| `Google OCR` | Integración conectada de OCR mediante servicios de Google; requiere activación/autorización y puede usar documentos temporales remotos. |
+| `credenciales OAuth OCR` | Credenciales OAuth de Google gestionadas por la app para habilitar la integración OCR. No son el estado de sesión del usuario. |
+| `token local OCR` | Estado local de inicio de sesión/token guardado para Google OCR; puede revocarse o eliminarse al desconectar. |
+| `PDF fuente` | PDF original seleccionado por el usuario antes de generar subconjuntos, partes o artefactos derivados. |
+| `selección de páginas PDF` | Elección de todas las páginas o de un rango contiguo antes de extraer; puede materializar un PDF generado con páginas seleccionadas. |
+| `PDF generado` | PDF local derivado por la app, por ejemplo desde un rango de páginas o una división por partes, usado como insumo de extracción. |
+| `PDF guardado` | PDF generado que el usuario decidió conservar después del procesamiento. |
+| `PDF completo por partes` | Modo para procesar un PDF pesado completo mediante partes generadas para respetar límites del proveedor OCR. |
+| `extracción por lotes` | Flujo de planificación, ejecución e informe final para extraer texto desde múltiples entradas o desde un PDF completo dividido en partes. |
+| `unidad de extracción por lotes` | Contenedor de planificación/ejecución dentro del lote; agrupa uno o más ítems, puede tener nombre, etiquetas y política de fallos, y puede producir snapshot. |
+| `ítem de extracción por lotes` | Entrada individual dentro de una unidad de lote: archivo fuente o parte generada que se procesa y puede fallar, omitirse o completarse. |
+| `Test de velocidad de lectura` | Flujo guiado para medir velocidad real de lectura con texto del pool o texto actual, preguntas opcionales y posible creación de preset. |
+| `pool del test` | Conjunto local de archivos disponibles para el test, con estado de uso, filtros y opción de restablecimiento. |
+| `archivos de test` | Archivos que alimentan el pool del test; pueden venir incorporados, importarse desde el dispositivo u obtenerse desde una fuente externa. |
+| `tests incorporados` | Archivos iniciales incluidos con la app para el test; pueden mostrarse u ocultarse dentro del pool. |
+| `tarea` | Plan de lectura del Editor de Tareas; agrupa filas de lectura y puede guardarse, cargarse o validarse como archivo de tarea. |
+| `fila de lectura` | Entrada individual de una tarea; representa una lectura con tiempo, avance/restante, enlace/ruta, comentario, acciones y posible snapshot asociado. |
+| `biblioteca de lecturas` | Biblioteca de filas guardadas reutilizables dentro del Editor de Tareas; no equivale a una tarea completa. |
+| `extensión del navegador` | Superficie informativa de la extensión de Chrome; es una herramienta separada de la app de escritorio y no reemplaza sus funciones de extracción. |
+| `ventanas secundarias` | Ventanas auxiliares abiertas por la app; ciertos flujos exigen cerrarlas para partir desde un estado estable. |
+
+Desambiguaciones puntuales del glosario:
+
+- `snapshot de texto`: no es captura de pantalla; refiere a texto guardado/cargable por la app.
+- `velocidad de lectura`: distinguir velocidad configurada para estimación de velocidad real medida por cronómetro o test.
+- `PDF fuente`, `PDF generado` y `PDF guardado`: no son intercambiables; el primero es el original, el segundo es un derivado creado por la app y el tercero es un derivado conservado por decisión del usuario.
+- `credenciales OAuth OCR` y `token local OCR`: no son lo mismo; las credenciales habilitan la integración, el token representa estado local de autorización/sesión.
+- `unidad de extracción por lotes` e `ítem de extracción por lotes`: la unidad agrupa; el ítem es la entrada procesada dentro de esa unidad.
+- `biblioteca de lecturas`, `fila de lectura` y `tarea`: la biblioteca guarda filas reutilizables; la tarea agrupa filas; una fila no es una tarea completa.
 
 ## Fuentes
 
