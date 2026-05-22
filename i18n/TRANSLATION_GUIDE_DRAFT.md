@@ -955,6 +955,7 @@ Desambiguaciones puntuales del glosario:
           // [PROPÓSITO] Acción para abrir en el sistema la carpeta del PDF generado guardado.
           // [CONCEPTO_APP] PDF generado; PDF guardado
           // [PROTEGIDO] `PDF`
+          // [NO_CONFUNDIR] `Reveal` significa mostrar en el sistema de archivos, no abrir ni visualizar el PDF.
         }
       },
       "batch_plan": {
@@ -1139,6 +1140,7 @@ Desambiguaciones puntuales del glosario:
           // [PROPÓSITO] Acción para abrir en el sistema la carpeta de un PDF generado que fue conservado.
           // [CONCEPTO_APP] PDF generado; PDF guardado
           // [PROTEGIDO] `PDF`
+          // [NO_CONFUNDIR] `Reveal` significa mostrar en el sistema de archivos, no abrir ni visualizar el PDF.
         },
         "current_text_has_output": {
           "es": "El texto actual fue modificado.",
@@ -1315,6 +1317,7 @@ Desambiguaciones puntuales del glosario:
           // [PROPÓSITO] Acción para mostrar la carpeta del PDF generado guardado, disponible si el usuario eligió conservarlo previamente.
           // [CONCEPTO_APP] PDF generado; PDF guardado
           // [PROTEGIDO] `PDF`
+          // [NO_CONFUNDIR] `Reveal` significa mostrar en el sistema de archivos, no abrir ni visualizar el PDF.
         },
         "cancel_button": {
           "es": "Cancelar",
@@ -1383,6 +1386,7 @@ Desambiguaciones puntuales del glosario:
         "en": "Read"
         // [PROPÓSITO] Label del progreso porcentual de lectura dentro del editor, no una métrica de extracción.
         // [CONCEPTO_APP] Editor de Texto
+        // [NO_CONFUNDIR] `Read` aquí es participio/progreso ya leído, no una acción o imperativo de leer.
       },
       "read_progress_aria": {
         "es": "Progreso de lectura: {value}",
@@ -1425,10 +1429,12 @@ Desambiguaciones puntuales del glosario:
       "replace": {
         "es": "Reemplazar",
         "en": "Replace"
+        // [NO_CONFUNDIR] Aquí `Replace` pertenece a buscar/reemplazar dentro del Editor de Texto, no a la acción reemplazar/agregar del texto actual.
       },
       "replace_all": {
         "es": "Reemplazar todo",
         "en": "Replace all"
+        // [NO_CONFUNDIR] Aquí `Replace all` reemplaza coincidencias de búsqueda dentro del Editor de Texto, no el texto actual completo.
       },
       "prev_title": {
         "es": "Coincidencia anterior",
@@ -1700,6 +1706,7 @@ Desambiguaciones puntuales del glosario:
           "en": "Left"
           // [PROPÓSITO] Tiempo total restante de la tarea. Es la suma del tiempo restante de cada fila/lectura de la tarea.
           // [CONCEPTO_APP] tarea; fila de lectura
+          // [NO_CONFUNDIR] `Left` significa restante/faltante, no lado izquierdo.
         },
         "empty": {
           "es": "(vacío)",
@@ -1741,6 +1748,7 @@ Desambiguaciones puntuales del glosario:
           "en": "Left"
           // [PROPÓSITO] Columna de tiempo restante de una fila de lectura.
           // [CONCEPTO_APP] fila de lectura
+          // [NO_CONFUNDIR] `Left` significa restante/faltante, no lado izquierdo.
         },
         "enlace": {
           "es": "Enlace o ruta local",
@@ -1830,11 +1838,13 @@ Desambiguaciones puntuales del glosario:
           "en": "Load row"
           // [PROPÓSITO] Agregar una fila guardada a la tabla desde la biblioteca de lecturas.
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
+          // [NO_CONFUNDIR] Cargar una fila desde la biblioteca no carga una tarea completa; agrega una fila guardada a la tabla.
         },
         "library_row_delete": {
           "es": "Eliminar de biblioteca",
           "en": "Delete from library"
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
+          // [NO_CONFUNDIR] Eliminar de biblioteca borra la fila guardada reutilizable; no elimina una tarea completa ni necesariamente la fila de la tabla abierta.
         },
         "snapshot_load": {
           "es": "Cargar snapshot en texto actual",
@@ -1847,12 +1857,14 @@ Desambiguaciones puntuales del glosario:
           "en": "Select a text snapshot for this row"
           // [PROPÓSITO] Acción para seleccionar un snapshot de texto guardado y asociarlo a la fila.
           // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          // [NO_CONFUNDIR] Seleccionar un snapshot para la fila no lo carga como texto actual; solo lo asocia a esa fila.
         },
         "snapshot_clear": {
           "es": "Quitar snapshot seleccionado de esta fila",
           "en": "Remove selected snapshot from this row"
           // [PROPÓSITO] Acción para quitar de la fila la asociación con un snapshot seleccionado.
           // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          // [NO_CONFUNDIR] Quitar el snapshot de la fila no elimina el snapshot guardado; elimina solo la asociación con esa fila.
         },
         "link_open": {
           "es": "Abrir enlace o ruta local",
@@ -2043,6 +2055,7 @@ Desambiguaciones puntuales del glosario:
           "en": "This will replace the current text with a random eligible text from the pool. Do you want to continue?"
           // [PROPÓSITO] Confirmación porque iniciar con texto aleatorio reemplaza el texto actual.
           // [CONCEPTO_APP] texto actual; pool del test
+          // [NO_CONFUNDIR] Este reemplazo no es la acción `Replace` del par reemplazar/agregar; iniciar con texto aleatorio carga otro texto como texto actual.
         },
         "reset_confirm": {
           "es": "Esto restablecerá todo el pool del test y volverá a marcar todos sus archivos como no usados. ¿Deseas continuar?",
