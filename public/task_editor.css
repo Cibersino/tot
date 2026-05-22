@@ -1,6 +1,6 @@
-/* Task editor window styles.
+/* Task Editor window styles.
    Loaded by public/task_editor.html.
-   Owner boundary: task editor layout, table, and task-specific modals only. */
+   Owner boundary: Task Editor layout, table, and task-specific modals only. */
 
 /* Design tokens */
 :root {

@@ -4,7 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Persist and restore task editor window geometry and maximized state.
+// Persist and restore Task Editor window geometry and maximized state.
 // - Reads/writes task_editor_state.json via fs_storage.
 // - Validates stored reduced bounds against available displays when possible.
 // - Attaches move/resize/maximize/close handlers to persist state changes.
@@ -17,7 +17,7 @@ const { getTaskEditorStateFile, loadJson, saveJson } = require('./fs_storage');
 const Log = require('./log');
 
 const log = Log.get('task-editor-state');
-log.debug('Task editor state starting...');
+log.debug('Task Editor state starting...');
 
 // =============================================================================
 // Constants / defaults
@@ -193,7 +193,7 @@ function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
       if (!reduced) {
         log.warnOnce(
           'task-editor-state.save.invalid-reduced',
-          'saveReducedState: current task editor bounds are invalid; save skipped (ignored).'
+          'saveReducedState: current Task Editor bounds are invalid; save skipped (ignored).'
         );
         return;
       }
@@ -203,7 +203,7 @@ function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
       state.reduced = reduced;
       saver(stateFile, state);
     } catch (err) {
-      log.error('[task_editor_state] Error saving reduced task editor state:', err);
+      log.error('[task_editor_state] Error saving reduced Task Editor state:', err);
     }
   };
 
@@ -213,7 +213,7 @@ function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
       state.maximized = !!maximized;
       saver(stateFile, state);
     } catch (err) {
-      log.error('[task_editor_state] Error saving task editor maximized flag:', err);
+      log.error('[task_editor_state] Error saving Task Editor maximized flag:', err);
     }
   };
 
@@ -230,7 +230,7 @@ function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
       }
       saveMaximizedFlag(maximized);
     } catch (err) {
-      log.error('[task_editor_state] Error saving task editor closed state:', err);
+      log.error('[task_editor_state] Error saving Task Editor closed state:', err);
     }
   });
 }

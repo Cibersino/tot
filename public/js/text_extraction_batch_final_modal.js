@@ -143,12 +143,88 @@
     return button;
   }
 
+  function isHeavySplitGeneratedRowsUnit(unit) {
+    return !!(
+      unit
+      && unit.exclusiveHeavy === true
+      && unit.heavyGeneratedInputRows === true
+      && Array.isArray(unit.inputs)
+      && unit.inputs.length
+    );
+  }
+
+  function normalizeReportState(state) {
+    const normalizedState = typeof state === 'string' ? state : '';
+    if (normalizedState === 'success') return 'success';
+    if (normalizedState === 'cancelled' || normalizedState.indexOf('cancelled') === 0) return 'cancelled';
+    if (normalizedState === 'omitted') return 'omitted';
+    return normalizedState ? 'failed' : '';
+  }
+
+  function formatReportStatusText(state, code = '') {
+    const normalizedState = normalizeReportState(state);
+    if (!normalizedState || normalizedState === 'success') {
+      return '';
+    }
+    if (normalizedState === 'omitted') {
+      return tRenderer('renderer.text_extraction.batch_report.omitted');
+    }
+    if (normalizedState === 'cancelled') {
+      if (code) {
+        return formatTranslation('renderer.text_extraction.batch_report.cancelled_with_code', {
+          code,
+        });
+      }
+      return tRenderer('renderer.text_extraction.batch_report.cancelled_fallback');
+    }
+    if (code) {
+      return formatTranslation('renderer.text_extraction.batch_report.failed_with_code', {
+        code,
+      });
+    }
+    return tRenderer('renderer.text_extraction.batch_report.failed_fallback');
+  }
+
+  function buildReportStatusSuffix(state, code = '') {
+    const statusText = formatReportStatusText(state, code);
+    return statusText ? `(${statusText})` : '';
+  }
+
+  function getHeavySplitOverallStatusText(unit) {
+    if (!unit || !isHeavySplitGeneratedRowsUnit(unit)) {
+      return '';
+    }
+    return formatReportStatusText(unit.overallState, unit.overallCode || '');
+  }
+
+  function renderHeavySplitUnitMetaRows(unit) {
+    if (!isHeavySplitGeneratedRowsUnit(unit)) {
+      return [];
+    }
+
+    const rows = [];
+    if (unit.sourceFileName && unit.unitTitle !== unit.sourceFileName) {
+      rows.push(createDomElement('div', {
+        className: 'text-extraction-batch-final-unit-meta',
+        textContent: `${tRenderer('renderer.text_extraction.single_file_heavy.source_file_label')} ${unit.sourceFileName}`,
+      }));
+    }
+
+    const overallStatusText = getHeavySplitOverallStatusText(unit);
+    if (overallStatusText) {
+      rows.push(createDomElement('div', {
+        className: 'text-extraction-batch-final-unit-meta text-extraction-batch-final-unit-meta--status',
+        textContent: `${tRenderer('renderer.text_extraction.batch_report.split_result_label')} ${overallStatusText}`,
+      }));
+    }
+    return rows;
+  }
+
   function renderGeneratedInputRow(generatedInput, index, unitKey) {
-    const label = generatedInput.state === 'failed'
-      ? `(${generatedInput.code || tRenderer('renderer.text_extraction.batch_report.failed_fallback')})`
-      : (generatedInput.state === 'omitted'
-        ? `(${tRenderer('renderer.text_extraction.batch_report.omitted')})`
-        : '');
+    const label = buildReportStatusSuffix(
+      generatedInput && generatedInput.state,
+      generatedInput && generatedInput.code ? generatedInput.code : ''
+    );
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-generated',
       attributes: {
@@ -169,11 +245,10 @@
   }
 
   function renderInputRow(input, index, unitKey) {
-    const label = input.state === 'failed'
-      ? `(${input.code || tRenderer('renderer.text_extraction.batch_report.failed_fallback')})`
-      : (input.state === 'omitted'
-        ? `(${tRenderer('renderer.text_extraction.batch_report.omitted')})`
-        : '');
+    const label = buildReportStatusSuffix(
+      input && input.state,
+      input && input.code ? input.code : ''
+    );
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-input',
       attributes: {
@@ -184,7 +259,7 @@
       className: 'text-extraction-batch-final-input-main',
     });
     const mainText = createDomElement('span', {
-      textContent: `${input.fileName} ${label}`.trim(),
+      textContent: `${(input.displayName || input.fileName)} ${label}`.trim(),
     });
     const revealButton = createRevealGeneratedPdfButton(
       input
@@ -214,6 +289,7 @@
     section.appendChild(createDomElement('h3', {
       textContent: unit.unitTitle,
     }));
+    renderHeavySplitUnitMetaRows(unit).forEach((row) => section.appendChild(row));
     (Array.isArray(unit.inputs) ? unit.inputs : []).forEach((input, inputIndex) => {
       section.appendChild(renderInputRow(input, inputIndex, `unit-${unitIndex}`));
     });
@@ -250,25 +326,26 @@
     lines.push('');
     report.units.forEach((unit) => {
       lines.push(unit.unitTitle);
+      if (isHeavySplitGeneratedRowsUnit(unit) && unit.sourceFileName && unit.unitTitle !== unit.sourceFileName) {
+        lines.push(`${tRenderer('renderer.text_extraction.single_file_heavy.source_file_label')} ${unit.sourceFileName}`);
+      }
+      const overallStatusText = getHeavySplitOverallStatusText(unit);
+      if (overallStatusText) {
+        lines.push(`${tRenderer('renderer.text_extraction.batch_report.split_result_label')} ${overallStatusText}`);
+      }
       unit.inputs.forEach((input) => {
-        const label = input.state === 'failed'
-          ? ` (${formatTranslation('renderer.text_extraction.batch_report.failed_with_code', {
-            code: input.code || tRenderer('renderer.text_extraction.batch_report.failed_fallback'),
-          })})`
-          : (input.state === 'omitted'
-            ? ` (${tRenderer('renderer.text_extraction.batch_report.omitted')})`
-            : '');
-        lines.push(`- ${input.fileName}${label}`);
+        const label = buildReportStatusSuffix(
+          input && input.state,
+          input && input.code ? input.code : ''
+        );
+        lines.push(`- ${input.displayName || input.fileName}${label ? ` ${label}` : ''}`);
         if (Array.isArray(input.generatedInputs)) {
           input.generatedInputs.forEach((generatedInput) => {
-            const generatedLabel = generatedInput.state === 'failed'
-              ? ` (${formatTranslation('renderer.text_extraction.batch_report.failed_with_code', {
-                code: generatedInput.code || tRenderer('renderer.text_extraction.batch_report.failed_fallback'),
-              })})`
-              : (generatedInput.state === 'omitted'
-                ? ` (${tRenderer('renderer.text_extraction.batch_report.omitted')})`
-                : '');
-            lines.push(`  - ${generatedInput.fileName}${generatedLabel}`);
+            const generatedLabel = buildReportStatusSuffix(
+              generatedInput && generatedInput.state,
+              generatedInput && generatedInput.code ? generatedInput.code : ''
+            );
+            lines.push(`  - ${generatedInput.fileName}${generatedLabel ? ` ${generatedLabel}` : ''}`);
           });
         }
       });

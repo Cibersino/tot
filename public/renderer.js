@@ -10,9 +10,9 @@
 // - Applies i18n labels and number formatting.
 // - Maintains text preview, counts, and time estimates.
 // - Coordinates text extraction and OCR entry flows from the main window.
-// - Wires presets, clipboard actions, editor, tasks, and help tips.
+// - Wires presets, clipboard actions, Text Editor, Task Editor, and help tips.
 // - Hosts the info modal and top-bar menu actions.
-// - Integrates the stopwatch controller and floating window toggle.
+// - Integrates the Stopwatch controller and the Floating Stopwatch toggle.
 // =============================================================================
 // Logger and constants
 // =============================================================================
@@ -64,11 +64,14 @@ const textExtractionStatusUi = window.TextExtractionStatusUi;
 if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.applyProcessingModeState !== 'function'
   || typeof textExtractionStatusUi.applyTranslations !== 'function'
+  || typeof textExtractionStatusUi.beginAbortFinalization !== 'function'
   || typeof textExtractionStatusUi.beginPrepare !== 'function'
   || typeof textExtractionStatusUi.clearPendingExecutionContext !== 'function'
+  || typeof textExtractionStatusUi.endAbortFinalization !== 'function'
   || typeof textExtractionStatusUi.endPrepare !== 'function'
   || typeof textExtractionStatusUi.getAbortButton !== 'function'
   || typeof textExtractionStatusUi.getFinalElapsedValueText !== 'function'
+  || typeof textExtractionStatusUi.isAbortFinalizationActive !== 'function'
   || typeof textExtractionStatusUi.isProcessingModeActive !== 'function'
   || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] TextExtractionStatusUi unavailable; cannot continue');
@@ -167,6 +170,10 @@ function isProcessingModeActive() {
   return textExtractionStatusUi.isProcessingModeActive();
 }
 
+function isAbortFinalizationActive() {
+  return textExtractionStatusUi.isAbortFinalizationActive();
+}
+
 function setControlInteractionLocked(element, locked) {
   if (!element) return;
   element.disabled = locked;
@@ -180,7 +187,10 @@ function hasSelectedPreset() {
 function syncPresetActionButtons({ interactionLocked } = {}) {
   const locked = typeof interactionLocked === 'boolean'
     ? interactionLocked
-    : !isRendererReady() || isProcessingModeActive() || isReadingTestInteractionLocked();
+    : !isRendererReady()
+      || isProcessingModeActive()
+      || isAbortFinalizationActive()
+      || isReadingTestInteractionLocked();
   const disabled = locked || !hasSelectedPreset();
   setControlInteractionLocked(btnEditPreset, disabled);
   setControlInteractionLocked(btnDeletePreset, disabled);
@@ -197,6 +207,7 @@ function isReadingTestSessionActive() {
 function syncMainInteractionLockUi() {
   const locked = !isRendererReady()
     || isProcessingModeActive()
+    || isAbortFinalizationActive()
     || isReadingTestInteractionLocked();
 
   currentTextSelectorSection.setInteractionLocked(locked);
@@ -256,6 +267,7 @@ function hasBlockingMainWindowModalOpen() {
 function canAcceptTextExtractionDrop() {
   return isRendererReady()
     && !isProcessingModeActive()
+    && !isAbortFinalizationActive()
     && !isReadingTestSessionActive()
     && !hasBlockingMainWindowModalOpen();
 }
@@ -284,7 +296,11 @@ function maybeNotifyProcessingLock(actionId) {
   const now = Date.now();
   if ((now - lastProcessingLockNoticeAt) < PROCESSING_LOCK_NOTICE_THROTTLE_MS) return;
   lastProcessingLockNoticeAt = now;
-  window.Notify.notifyMain('renderer.alerts.text_extraction_processing_locked');
+  window.Notify.notifyMain(
+    isAbortFinalizationActive()
+      ? 'renderer.alerts.text_extraction_cancellation_requested'
+      : 'renderer.alerts.text_extraction_processing_locked'
+  );
   log.warnOnce(
     `renderer.processing_lock.${actionId}`,
     'Renderer action ignored (processing-mode lock active):',
@@ -304,7 +320,9 @@ function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
   }
 
   const isAbortAction = normalizedActionId === 'text-extraction-abort';
-  if (!allowDuringProcessing && !isAbortAction && isProcessingModeActive()) {
+  if (!allowDuringProcessing
+    && !isAbortAction
+    && (isProcessingModeActive() || isAbortFinalizationActive())) {
     maybeNotifyProcessingLock(normalizedActionId);
     return false;
   }
@@ -496,7 +514,7 @@ function applyTranslations() {
   applyAriaLabel(btnEditPreset, 'renderer.main.tooltips.edit_preset');
   applyAriaLabel(btnDeletePreset, 'renderer.main.tooltips.delete_preset');
   applyAriaLabel(btnResetDefaultPresets, 'renderer.main.tooltips.reset_presets');
-  // Floating window toggle
+  // Floating Stopwatch toggle
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
   if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window');
   // Section titles
@@ -870,7 +888,7 @@ function armIpcSubscriptions() {
     } else {
       log.warnOnce(
         'renderer.ipc.onEditorReady.unavailable',
-        'onEditorReady unavailable; editor loader may not clear.'
+        'onEditorReady unavailable; Text Editor loader may not clear.'
       );
     }
   } else {
@@ -1757,6 +1775,7 @@ function configureTextExtractionModules() {
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,
     requestPreparedImport,
+    syncMainInteractionLockUi,
     textExtractionStatusUi,
   });
 
@@ -1768,6 +1787,7 @@ function configureTextExtractionModules() {
     guardUserAction,
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,
+    syncMainInteractionLockUi,
     textExtractionBatchFlow,
     textExtractionStatusUi,
     isLatestTextExtractionPrepareAttempt,
@@ -1821,7 +1841,7 @@ function initializeDelegatedIntegrations() {
   );
 }
 
-// Editor launch state mirrors the pending UI while the editor window opens.
+// Text Editor launch state mirrors the pending UI while the Text Editor window opens.
 function showEditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
   currentTextSelectorSection.setEditorLaunchPending(true);
@@ -1865,10 +1885,12 @@ async function handleTextExtractionAbort() {
       return;
     }
 
+    textExtractionStatusUi.beginAbortFinalization();
     if (result.state) {
       textExtractionStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
     }
-    window.Notify.notifyMain('renderer.alerts.text_extraction_cancelled');
+    syncMainInteractionLockUi();
+    window.Notify.notifyMain('renderer.alerts.text_extraction_cancellation_requested');
   } catch (err) {
     log.error('Error handling text extraction abort:', err);
     window.Notify.notifyMain('renderer.alerts.text_extraction_abort_error');
@@ -1885,7 +1907,7 @@ async function handleClipboardOverwrite() {
   try {
     const read = await readClipboardText({
       tooLargeKey: 'renderer.alerts.clipboard_too_large',
-      unavailableKey: 'renderer.alerts.clipboard_error'
+      unavailableKey: 'renderer.alerts.overwrite_clipboard_error'
     });
     if (!read.ok) return;
     const clip = read.text;
@@ -1897,9 +1919,9 @@ async function handleClipboardOverwrite() {
     });
     if (!applyResult || applyResult.ok !== true) {
       if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
+        window.Notify.notifyMain('renderer.alerts.apply_too_large');
       } else {
-        window.Notify.notifyMain('renderer.alerts.clipboard_error');
+        window.Notify.notifyMain('renderer.alerts.overwrite_clipboard_error');
       }
       return;
     }
@@ -1908,11 +1930,11 @@ async function handleClipboardOverwrite() {
       throw new Error('current-text-updated subscription unavailable');
     }
     if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
+      window.Notify.notifyMain('renderer.alerts.apply_truncated');
     }
   } catch (err) {
     log.error('clipboard error:', err);
-    window.Notify.notifyMain('renderer.alerts.clipboard_error');
+    window.Notify.notifyMain('renderer.alerts.overwrite_clipboard_error');
   }
 }
 
@@ -1920,8 +1942,8 @@ async function handleClipboardAppend() {
   if (!guardUserAction('clipboard-append')) return;
   try {
     const read = await readClipboardText({
-      tooLargeKey: 'renderer.alerts.append_too_large',
-      unavailableKey: 'renderer.alerts.append_error'
+      tooLargeKey: 'renderer.alerts.clipboard_too_large',
+      unavailableKey: 'renderer.alerts.append_clipboard_error'
     });
     if (!read.ok) return;
     const clip = read.text;
@@ -1933,11 +1955,11 @@ async function handleClipboardAppend() {
     });
     if (!applyResult || applyResult.ok !== true) {
       if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.append_too_large');
+        window.Notify.notifyMain('renderer.alerts.apply_too_large');
       } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-        window.Notify.notifyMain('renderer.alerts.text_limit');
+        window.Notify.notifyMain('renderer.alerts.append_text_limit');
       } else {
-        window.Notify.notifyMain('renderer.alerts.append_error');
+        window.Notify.notifyMain('renderer.alerts.append_clipboard_error');
       }
       return;
     }
@@ -1946,11 +1968,11 @@ async function handleClipboardAppend() {
       throw new Error('current-text-updated subscription unavailable');
     }
     if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.append_overflow');
+      window.Notify.notifyMain('renderer.alerts.apply_truncated');
     }
   } catch (err) {
     log.error('An error occurred while pasting the clipboard:', err);
-    window.Notify.notifyMain('renderer.alerts.append_error');
+    window.Notify.notifyMain('renderer.alerts.append_clipboard_error');
   }
 }
 
@@ -1960,7 +1982,7 @@ async function handleOpenEditor() {
   try {
     const openEditor = getOptionalElectronMethod('openEditor', {
       dedupeKey: 'renderer.ipc.openEditor.unavailable',
-      unavailableMessage: 'openEditor unavailable; editor launch skipped.'
+      unavailableMessage: 'openEditor unavailable; Text Editor launch skipped.'
     });
     if (!openEditor) {
       hideEditorLoader();
@@ -1968,7 +1990,7 @@ async function handleOpenEditor() {
     }
     await openEditor();
   } catch (err) {
-    log.error('Error opening editor:', err);
+    log.error('Error opening Text Editor:', err);
     hideEditorLoader();
   }
 }
@@ -2036,7 +2058,7 @@ async function handleSaveSnapshot() {
 }
 
 // =============================================================================
-// Task selector (open task editor)
+// Task selector (open Task Editor)
 // =============================================================================
 function handleTaskOpenResult(res, { mode } = {}) {
   if (!res || res.ok === false) {
@@ -2071,7 +2093,7 @@ async function handleNewTask() {
     const res = await window.electronAPI.openTaskEditor('new');
     handleTaskOpenResult(res, { mode: 'new' });
   } catch (err) {
-    log.error('Error opening task editor (new):', err);
+    log.error('Error opening Task Editor (new):', err);
     window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
   }
 }
@@ -2090,7 +2112,7 @@ async function handleLoadTask() {
     const res = await window.electronAPI.openTaskEditor('load');
     handleTaskOpenResult(res, { mode: 'load' });
   } catch (err) {
-    log.error('Error opening task editor (load):', err);
+    log.error('Error opening Task Editor (load):', err);
     window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
   }
 }
@@ -2149,22 +2171,32 @@ async function handleOpenReadingSpeedTest() {
 // =============================================================================
 // Preset buttons are wired here; preset modals and native confirmation
 // dialogs are handled by main.
-function bindPresetActions() {
-  btnNewPreset.addEventListener('click', () => {
-    if (!guardUserAction('preset-new')) return;
-    try {
-      if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-        window.electronAPI.openPresetModal(wpmControls.getWpm());
-      } else {
-        log.warnOnce(
-          'renderer.ipc.openPresetModal.unavailable',
-          'openPresetModal unavailable in electronAPI; preset-new action skipped.'
-        );
-        window.Notify.notifyMain('renderer.alerts.modal_unavailable');
-      }
-    } catch (err) {
-      log.error('Error opening new preset modal:', err);
+async function openPresetModalFromMain(payload) {
+  if (!window.electronAPI || typeof window.electronAPI.openPresetModal !== 'function') {
+    log.warnOnce(
+      'renderer.ipc.openPresetModal.unavailable',
+      'openPresetModal unavailable in electronAPI; preset-modal action skipped.'
+    );
+    window.Notify.notifyMain('renderer.alerts.preset_modal_unavailable');
+    return;
+  }
+
+  try {
+    const res = await window.electronAPI.openPresetModal(payload);
+    if (!res || res.ok === false) {
+      log.error('Preset modal open failed:', res);
+      window.Notify.notifyMain('renderer.alerts.preset_modal_open_error');
     }
+  } catch (err) {
+    log.error('Error opening preset modal:', err);
+    window.Notify.notifyMain('renderer.alerts.preset_modal_open_error');
+  }
+}
+
+function bindPresetActions() {
+  btnNewPreset.addEventListener('click', async () => {
+    if (!guardUserAction('preset-new')) return;
+    await openPresetModalFromMain(wpmControls.getWpm());
   });
 
   // Edit preset
@@ -2192,18 +2224,10 @@ function bindPresetActions() {
       } catch (err) {
         log.warnOnce('log.debug.openPresetModal', 'log.debug failed (ignored):', err);
       }
-      if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-        window.electronAPI.openPresetModal(payload);
-      } else {
-        log.warnOnce(
-          'renderer.ipc.openPresetModal.unavailable',
-          'openPresetModal unavailable in electronAPI; preset-edit action skipped.'
-        );
-        window.Notify.notifyMain('renderer.alerts.edit_unavailable');
-      }
+      await openPresetModalFromMain(payload);
     } catch (err) {
-      log.error('Error opening edit preset modal:', err);
-      window.Notify.notifyMain('renderer.alerts.edit_error');
+      log.error('Error preparing edit preset modal payload:', err);
+      window.Notify.notifyMain('renderer.alerts.preset_modal_open_error');
     }
   });
 

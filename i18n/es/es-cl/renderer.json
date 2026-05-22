@@ -16,7 +16,7 @@
         "edit": "Truquearse con el texto completo",
         "clear": "Limpieza es viveza",
         "snapshot_load": "Cargar un coso de texto",
-        "snapshot_save": "Salvar el texto vigente en un coso",
+        "snapshot_save": "Salvar el texto actual en un coso",
         "task_new": "Armar nueva misión",
         "task_load": "Cargar misión",
         "browser_extension": "Extensión pal navegador",
@@ -27,7 +27,7 @@
         "delete_preset": "Pitiarse el preset",
         "reset_presets": "Dejar los presets como venían",
         "help_button": "Informeishon",
-        "flotante_window": "Ventanita porfiada"
+        "flotante_window": "Cronómetro Porfiado"
       },
       "aria": {
         "text_extraction": "Sacarle texto a un archivo",
@@ -42,8 +42,8 @@
         "crono_display": "Display del cronómetro",
         "crono_toggle": "Iniciar o pausar cronómetro",
         "crono_reset": "Reiniciar cronómetro",
-        "floating_window_toggle": "Ventana flotante",
-        "floating_window_group": "Grupo de controles de ventana flotante"
+        "floating_window_toggle": "Cronómetro Porfiado",
+        "floating_window_group": "Grupo de controles del Cronómetro Porfiado"
       },
       "speed": {
         "title": "QUÉ TAN RÁPIDO LEÍS",
@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Sacando texto...",
         "text_extraction_preparing": "Preparando la extracción...",
+        "text_extraction_cancellation_pending": "Cancelación pedida. Aguanta un poquito...",
         "text_extraction_waiting_native": "Sacando texto del archivo...",
         "text_extraction_waiting_ocr": "Corriendo OCR...",
         "text_extraction_waiting_ocr_delayed": "Corriendo OCR. Algunas custiones se demoran más.",
@@ -132,7 +133,6 @@
         "title": "Armar extracción por lotes",
         "single_file_title": "Armar división automática del PDF",
         "pages_all": "Toas las páginas",
-        "pages_range": "Páginas {fromPage}-{toPage}",
         "tags_none": "Sin etiquetas",
         "heavy_pdf_badge": "PDF pesao",
         "generated_inputs_preview": "PDFs que se van a armar",
@@ -174,8 +174,11 @@
         "open_snapshots_folder": "Abrir carpeta de cosos",
         "ok_button": "Ya era",
         "close_aria": "Cerrar informe final de extracción por lotes",
+        "split_result_label": "Resultado de la división:",
         "failed_fallback": "cagó",
         "failed_with_code": "cagó: {code}",
+        "cancelled_fallback": "cancelado",
+        "cancelled_with_code": "cancelado: {code}",
         "snapshot_not_created": "(no se armó JSON)",
         "snapshot_created": "{filename} quedó armado",
         "snapshot_creation_failed": "(cagó la creación del JSON: {code})"
@@ -196,14 +199,13 @@
         "use_native_button": "Usar la nativa",
         "reveal_generated_pdf_button": "Mostrar PDF generado",
         "cancel_button": "Cancelar",
-        "close_aria": "Cerrar diálogo de PDF pesao pa' OCR",
-        "selected_range_value": "Páginas {fromPage}-{toPage}"
+        "close_aria": "Cerrar diálogo de PDF pesao pa' OCR"
       }
     },
     "editor": {
       "title": "toT — El texto completito",
       "placeholder": "Escribe o pega la custión aquí...",
-      "calc_button": "CALC/SAVE",
+      "calc_button": "Aplicar",
       "calc_while_typing": "Auto",
       "spellcheck": "Ortografía",
       "text_size_label": "Tamaño",
@@ -371,11 +373,11 @@
     },
     "reading_test": {
       "prestart": {
-        "reminder": "Aprieta Play (▶) en la Ventana Flotante cuando estís listo pa' empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Aprieta Detener/Reiniciar (⏹) solo si querís cancelar el test."
+        "reminder": "Aprieta Play (▶) en el Cronómetro Porfiado cuando estís listo pa' empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Aprieta Detener/Reiniciar (⏹) solo si querís cancelar el test."
       },
       "entry": {
         "title": "Test de ritmo de lectura",
-        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto y va a esperar a que apretís Play (▶) en la Ventana Flotante cuando estís listo para empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nAntes de empezar, ten presente que estos textos de prueba suelen pedir entre 5 y 15 minutos de concentración de corrido, sin interrupciones.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
+        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto y va a esperar a que apretís Play (▶) en el Cronómetro Porfiado cuando estís listo para empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Usa Detener/Restablecer (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nAntes de empezar, ten presente que estos textos de prueba suelen pedir entre 5 y 15 minutos de concentración de corrido, sin interrupciones.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
         "eligible_count": "Archivos elegibles:",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Podís restablecer el pool o meter más archivos.",
         "visible_empty_bundled_hidden_message": "Los archivos de test integrados están ocultos y no quedan archivos visibles sin usar. Muéstralos de nuevo o importa más archivos pa' seguir.",
@@ -454,19 +456,18 @@
     },
     "browser_extension": {
       "title": "Extensión pal navegador",
-      "subtitle": "Tiempo pa' leer",
+      "subtitle": "Tiempo de lectura",
       "availability": "Disponible al tiro en Chrome. Más navegadores pronto.",
       "chrome_store_aria": "Abrir la página de la extensión en Chrome Web Store",
       "close_aria": "Cerrar diálogo de extensión pal navegador"
     },
     "alerts": {
       "clipboard_too_large": "Chaaa, el texto del portapapeles es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
-      "append_too_large": "El texto resultante es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
-      "clipboard_overflow": "Te fuiste en la volá, la custión que copiaste es muy larga, la tuve que mochar.",
-      "append_overflow": "Te fuiste en la volá, La custión que querís agregar es muy larga, la tuve que mochar.",
-      "text_limit": "No entra na' más: ya se llenó la custión.",
-      "clipboard_error": "Cagó la custión al pegar. Lorea la consola.",
-      "append_error": "Cagó la custión al agregar texto. Lorea la consola.",
+      "apply_too_large": "El texto quedaría demasiado guatón pa aplicarlo. Achícalo y prueba de nuevo.",
+      "apply_truncated": "El texto fue mochao pa que cupiera en el límite de la app.",
+      "append_text_limit": "No se puede seguir agregando texto: ya se llenó la custión.",
+      "overwrite_clipboard_error": "Cagó el reemplazo con lo del portapapeles.",
+      "append_clipboard_error": "Cagó agregar lo del portapapeles.",
       "clear_error": "No te lo pudiste pitiar. Lorea la consola.",
       "snapshot_save_success": "Coso salvado.",
       "snapshot_save_error": "No se pudo salvar el coso.",
@@ -475,10 +476,10 @@
       "snapshot_outside": "El coso debe estar aentro de la carpeta de cosos.",
       "snapshot_truncated": "El coso se extralimitó y fue mochao.",
       "snapshot_unavailable": "Funcionalidad del coso no disponible.",
-      "modal_unavailable": "Esa ventanita todavía no está lista.",
+      "browser_extension_modal_open_blocked": "La ventanita de la extensión del navegador no se puede abrir ahora mismo.",
       "preset_not_found": "No pillamos el preset en la caleta.",
-      "edit_unavailable": "Todavía no se puede editar esta custión.",
-      "edit_error": "Drama al editar el preset. Lorea la consola.",
+      "preset_modal_unavailable": "La ventanita de preset no está disponible en esta build de la app.",
+      "preset_modal_open_error": "Se fue a negro abriendo el diálogo del preset. Revisa la consola.",
       "delete_error": "No se pudo borrar el preset. Lorea la consola.",
       "restore_error": "Cagó el reseteo de los presets. Lorea la consola.",
       "open_presets_unsupported": "No se puede abrir la carpeta aquí, hno.",
@@ -489,24 +490,23 @@
       "text_extraction_precondition_error": "Cagó la revisión de precondiciones de extracción. Lorea la consola.",
       "text_extraction_processing_locked": "La extracción está andando. La ventana principal queda bloqueada hasta que termine la cosa o la abortís.",
       "text_extraction_abort_error": "Cagó la custión al pedir el aborto de extracción. Lorea la consola.",
-      "text_extraction_cancelled": "La extracción quedó cancelada.",
-      "text_extraction_drop_single_file_only": "Tira exactamente un archivo pa' partir extracción.",
+      "text_extraction_cancellation_requested": "Cancelación pedida. Espera a que termine la extracción actual, no seas ansioso.",
+      "text_extraction_cancellation_complete": "Cancelación lista.",
       "text_extraction_drop_invalid_file": "La custión que soltaste no es un archivo local válido.",
       "text_extraction_pdf_unreadable_or_corrupt": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Este PDF está encriptado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
+      "text_extraction_pdf_encrypted_or_password_protected": "Este PDF está cifrado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
       "text_extraction_pdf_page_count_unavailable": "No fue posible inspeccionar el conteo de páginas de este PDF. Revisa el archivo y vuelve a intentarlo.",
       "text_extraction_pdf_page_selection_invalid": "El rango de páginas seleccionado para el PDF es inválido. Ajusta el rango y vuelve a intentarlo.",
       "text_extraction_pdf_subset_creation_failed": "No fue posible crear el PDF de páginas seleccionadas para la extracción. Revisa el archivo y vuelve a intentarlo.",
       "text_extraction_generated_pdf_cleanup_warning": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
-      "text_extraction_route_choice_required": "Hay que elegir una ruta pa' este PDF antes de seguir con la extracción.",
+      "text_extraction_route_choice_error": "Cagó la elección de ruta de extracción.",
       "text_extraction_generated_pdf_reveal_failed": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
       "text_extraction_apply_error": "Cagó la custión al aplicar el texto extraído. Lorea la consola y prueba otra vez.",
-      "text_extraction_apply_too_large": "El texto que queda armado es demasiado grande pa' procesarlo. Bájale las repeticiones y prueba otra vez.",
-      "text_extraction_apply_text_limit": "No se puede agregar el texto extraído: ya se llenó la custión.",
-      "text_extraction_apply_truncated": "El texto extraído se pasó de largo y lo mochamos pa' que cupiera.",
       "text_extraction_prepare_invalid": "La solicitud preparada de extracción ya no sirve. Parte la movida de nuevo.",
       "text_extraction_batch_ocr_activation_required": "Este lote trae elementos con OCR, pero Google OCR no está enchufado. Usa A tu pinta > Enchufar Google OCR y después parte el lote de nuevo.",
       "text_extraction_batch_ocr_token_state_invalid": "Este lote trae elementos con OCR, pero el login guardado de Google OCR salió chueco. Usa A tu pinta > Enchufar Google OCR de nuevo y después parte el lote de nuevo.",
+      "text_extraction_batch_ocr_connectivity_failed": "Este lote trae custiones con OCR, pero OCR necesita internet. Revisa la conexión y prueba de nuevo antes de partir la extracción.",
+      "text_extraction_batch_ocr_quota_or_rate_limited": "Este lote trae custiones con OCR, pero OCR está bloqueado un rato por cuota/límite de uso. Espera y prueba de nuevo antes de partir la extracción.",
       "text_extraction_batch_ocr_unavailable": "Este lote trae elementos con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está enchufado, usa A tu pinta > Enchufar Google OCR. Si ya estaba enchufado, revisa setup/auth de OCR y prueba otra vez antes de partir el lote.",
       "text_extraction_ocr_unavailable": "OCR no está disponible. Revisa setup/auth y prueba otra vez.",
       "text_extraction_ocr_activation_required": "Hay que activar OCR. Inicia sesión en Google OCR y prueba de nuevo.",
@@ -523,19 +523,15 @@
       "text_extraction_ocr_connectivity_failed": "OCR necesita internet. Revisa la conexión y prueba otra vez.",
       "text_extraction_ocr_setup_missing_credentials": "Falta credentials.json pa' OCR. Elige un archivo válido de credenciales OAuth de Google y prueba otra vez.",
       "text_extraction_ocr_setup_invalid_credentials": "El archivo de credenciales elegido no sirve pa' Google OAuth. Elige un credentials.json válido y prueba de nuevo.",
-      "text_extraction_ocr_restricted": "La ruta OCR está restringida pa' este tipo de archivo.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR quedó bloqueado por cuota o rate limit. Espera un rato y prueba otra vez.",
-      "text_extraction_ocr_input_too_large": "El PDF que OCR iba a subir se pasa del límite del proveedor. Ajusta páginas, usa la nativa o divide automáticamente el PDF completo.",
-      "text_extraction_ocr_runtime_error": "Hubo un cagazo en la ejecución OCR durante extracción. Lorea la consola y prueba otra vez.",
+      "text_extraction_ocr_runtime_error": "Hubo un cagazo en la ejecución OCR durante la extracción. Lorea la consola y prueba otra vez.",
       "text_extraction_ocr_cancelled": "La extracción OCR quedó cancelada.",
       "text_extraction_ocr_cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
-      "text_extraction_ocr_apply_pending": "La extracción OCR terminó, pero la parte de aplicar el resultado después todavía está pendiente.",
       "text_extraction_native_runtime_error": "Hubo un cagazo en la extracción nativa durante la extracción. Lorea la consola y prueba otra vez.",
       "text_extraction_native_unreadable_or_corrupt": "El archivo elegido no se puede leer o está hecho bolsa pa' extracción nativa.",
-      "text_extraction_native_encrypted_or_password_protected": "El PDF elegido viene encriptado o con contraseña, así que no se puede sacar por la ruta nativa.",
+      "text_extraction_native_encrypted_or_password_protected": "El PDF elegido viene cifrado o con contraseña, así que no se puede sacar por la ruta nativa.",
       "text_extraction_native_cancelled": "La extracción nativa quedó cancelada.",
-      "text_extraction_native_unsupported_format": "Ese formato de archivo no está soportado por la ruta nativa.",
-      "text_extraction_native_apply_pending": "La extracción nativa terminó, pero la parte de aplicar el resultado después todavía está pendiente.",
+      "text_extraction_unsupported_format": "Este formato de archivo no apaña pa’ extraer texto.",
       "wip_diseno_skins": "WIP: Aquí vamos a cambiar las pilchas.",
       "wip_diseno_crono": "WIP: Aquí vamos a arreglar el reloj porfiado.",
       "wip_diseno_fuentes": "WIP: Aquí elegís el tipo de letra.",
@@ -598,7 +594,7 @@
         }
       },
       "instrucciones": {
-        "title": "Manual de uso"
+        "title": "¿Cómo usar la app?"
       },
       "links_interes": {
         "title": "Links bacanes",

@@ -66,6 +66,7 @@
       "processing": {
         "text_extraction_placeholder": "Extracción amuley...",
         "text_extraction_preparing": "Elkünoel extraer rüpü...",
+        "text_extraction_cancellation_pending": "Katrüntun ngillañmagey. Üngümnge...",
         "text_extraction_waiting_native": "Archivo mew wirin nentungey...",
         "text_extraction_waiting_ocr": "OCR extracción amuley...",
         "text_extraction_waiting_ocr_delayed": "OCR amuley. Kiñeke archivo müten pichi alün.",
@@ -132,7 +133,6 @@
         "title": "Wakichin extracción lote mew",
         "single_file_title": "Wakichin división automática PDF mew",
         "pages_all": "Kom püle",
-        "pages_range": "Püle {fromPage}-{toPage}",
         "tags_none": "Tag mülenolu",
         "heavy_pdf_badge": "Fütra PDF",
         "generated_inputs_preview": "PDF dewmaiael",
@@ -174,8 +174,11 @@
         "open_snapshots_folder": "Nülan snapshots carpeta",
         "ok_button": "Llowün",
         "close_aria": "Nürüfün informe final lote extracción",
+        "split_result_label": "Resultado división:",
         "failed_fallback": "Welulkuy",
         "failed_with_code": "Welulkuy: {code}",
+        "cancelled_fallback": "katrüntuy",
+        "cancelled_with_code": "katrüntuy: {code}",
         "snapshot_not_created": "(JSON dewmalay)",
         "snapshot_created": "{filename} dewmatuy",
         "snapshot_creation_failed": "(JSON dewman welulkuy: {code})"
@@ -196,8 +199,7 @@
         "use_native_button": "Püne nativa rüpü",
         "reveal_generated_pdf_button": "Penge PDF dewmal",
         "cancel_button": "Katrüntun",
-        "close_aria": "Nürüfün diálogo fütra PDF OCR mew",
-        "selected_range_value": "Püle {fromPage}-{toPage}"
+        "close_aria": "Nürüfün diálogo fütra PDF OCR mew"
       }
     },
     "editor": {
@@ -371,11 +373,11 @@
     },
     "reading_test": {
       "prestart": {
-        "reminder": "Nüngünge Play (▶) feyti Ventana Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Nüngünge Püntüal/Wiñotual (⏹) müten ayülemi tami katrüal tüfachi pepiluwün."
+        "reminder": "Nüngünge Play (▶) feyti Cronómetro Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Nüngünge Püntüal/Wiñotual (⏹) müten ayülemi tami katrüal tüfachi pepiluwün."
       },
       "entry": {
         "title": "Pepiluwün ñi pürüm chillkatun",
-        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka ka üyümlayaymi tami nüngüal Play (▶) feyti Ventana Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.\nWünen amutulaymi, rakiduamüngeymi tüfachi pepiluwün chillka engün müten müley 5 ka 15 minutos küme rakiduam mu, gelay interrupciones.\nTüfachi pool pichi chillka engün müten müley, feymew küme rakiduamngeymi tami chum tripachi. Kümelay rüf müten tripayal füta chillka mew, felew müten küme dungu, küme amuluwün ka contexto, ka weda dungu, mental recapitulación ka fatigue, mülekey ti chillkatun mu.",
+        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka ka üyümlayaymi tami nüngüal Play (▶) feyti Cronómetro Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.\nWünen amutulaymi, rakiduamüngeymi tüfachi pepiluwün chillka engün müten müley 5 ka 15 minutos küme rakiduam mu, gelay interrupciones.\nTüfachi pool pichi chillka engün müten müley, feymew küme rakiduamngeymi tami chum tripachi. Kümelay rüf müten tripayal füta chillka mew, felew müten küme dungu, küme amuluwün ka contexto, ka weda dungu, mental recapitulación ka fatigue, mülekey ti chillkatun mu.",
         "eligible_count": "Dullngechi chillka:",
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
         "visible_empty_bundled_hidden_message": "Ti app mew mülelu test archivos ellkañmangeygün ka ngelay visible test archivos petu nülay. Wiño pepefinge feyengün kam importafinge doy archivos tami amutual.",
@@ -454,19 +456,18 @@
     },
     "browser_extension": {
       "title": "Extensión navegador mew",
-      "subtitle": "Chillkatun antü",
+      "subtitle": "Tiempo de lectura",
       "availability": "Chrome mew müley feichi. Püñeñ mew kake navegadores müleay.",
       "chrome_store_aria": "Nülan página extensión Chrome Web Store mew",
       "close_aria": "Nürüfün diálogo extensión navegador mew"
     },
     "alerts": {
       "clipboard_too_large": "Portapapeles wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
-      "append_too_large": "Wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
-      "clipboard_overflow": "Wirin portapapeles mu afiy, pichikünutuy.",
-      "append_overflow": "Yafkantun wirin afiy, pichikünutuy.",
-      "text_limit": "Pewfala wirin: afiy tachi fütra wirin.",
-      "clipboard_error": "Welulkuy pültrün mu. Kintunge consola.",
-      "append_error": "Welulkuy yafkantun wirin mu. Kintunge consola.",
+      "apply_too_large": "Tüfachi texto fütra rume amuleay, apply no pepi. Pichiñma ka wiño küdaw.",
+      "apply_truncated": "Texto trunkael aplicación limite mew konal.",
+      "append_text_limit": "No pepi append texto: fütra tamaño limite mew puwüyi.",
+      "overwrite_clipboard_error": "Kiñe error müley portapapeles mew texto reemplazar mew.",
+      "append_clipboard_error": "Kiñe error müley portapapeles mew texto append mew.",
       "clear_error": "Welulkuy lifün mu. Kintunge consola.",
       "snapshot_save_success": "Snapshot elküntuy.",
       "snapshot_save_error": "Chem welulkuy elkünun snapshot mu.",
@@ -475,10 +476,10 @@
       "snapshot_outside": "Snapshot müley snapshot carpeta mew ka.",
       "snapshot_truncated": "Snapshot afiy ka pichikünutuy.",
       "snapshot_unavailable": "Snapshot küzawtuwe chem müley.",
-      "modal_unavailable": "Modal ngelay küzaw mu.",
+      "browser_extension_modal_open_blocked": "Navegador extensión diálogo fewla nülalay.",
       "preset_not_found": "Ngelay preset caché mu.",
-      "edit_unavailable": "Wirintun ngelay küzaw mu.",
-      "edit_error": "Welulkuy wirin preset mu. Kintunge consola.",
+      "preset_modal_unavailable": "Preset diálogo tüfachi app build mew no nielay.",
+      "preset_modal_open_error": "Preset diálogo nülal mew welulkuy. Kintunge consola.",
       "delete_error": "Welulkuy ñamümün preset mu. Kintunge consola.",
       "restore_error": "Welulkuy wiñotun mu. Kintunge consola.",
       "open_presets_unsupported": "Pewfala nülan presets carpeta faw.",
@@ -489,8 +490,8 @@
       "text_extraction_precondition_error": "Extracción precondiciones kintun mu welulkuy. Kintunge consola.",
       "text_extraction_processing_locked": "Extracción petu küzawüley. Tüfa processing afingelu kam abortaringelu mew, ventana principal mu interacciones bloqueadongey.",
       "text_extraction_abort_error": "Extracción aborto mütrümün mu welulkuy. Kintunge consola.",
-      "text_extraction_cancelled": "Extracción katrüntuy.",
-      "text_extraction_drop_single_file_only": "Extracción amulal, müten kiñe archivo eltunge.",
+      "text_extraction_cancellation_requested": "Katrüntun ngillañmagey. Üngümnge fantepu extracción afülu.",
+      "text_extraction_cancellation_complete": "Katrüntun afuy.",
       "text_extraction_drop_invalid_file": "Eltungechi dungu no rüf local archivo.",
       "text_extraction_pdf_unreadable_or_corrupt": "Tüfachi PDF ngelay ñi küme chillkatungeal kam weñangekey. Azkintunge archivo ka wiñol küdawtunge.",
       "text_extraction_pdf_encrypted_or_password_protected": "Tüfachi PDF müley ñi nürüfün kam contraseña mew kuñiwtun. Nülalnge ka wiñol küdawtunge.",
@@ -498,15 +499,14 @@
       "text_extraction_pdf_page_selection_invalid": "PDF püle zullin rango küme noley. Kümeeltunge rango ka wiñol küdawtunge.",
       "text_extraction_pdf_subset_creation_failed": "Pepilay ñi dewmalngeal PDF zullin püle mew extracción ñi küdaw mew. Azkintunge archivo ka wiñol küdawtunge.",
       "text_extraction_generated_pdf_cleanup_warning": "Extracción afiy, welu pepilay ñi müleweyümew liftungeal kiñe local PDF dewmal.",
-      "text_extraction_route_choice_required": "Tüfachi PDF mew extracción amuleael, kiñe rüpü dülliafuy.",
+      "text_extraction_route_choice_error": "Kiñe error müley extracción route dullin mew.",
       "text_extraction_generated_pdf_reveal_failed": "Pepilay ñi pengeal elkun PDF. Azkintunge petu mülelechi archivo.",
       "text_extraction_apply_error": "Nentulelu wirin püneal mu welulkuy. Kintunge consola ka wiño küdaw.",
-      "text_extraction_apply_too_large": "Nentulelu wirin rume fütra. Pichikünunge repeticiones ka wiño küdaw.",
-      "text_extraction_apply_text_limit": "Pepi ngelay yapelün nentulelu wirin: afiy tachi fütra límite.",
-      "text_extraction_apply_truncated": "Püneel nentulelu wirin afiy límite mu ka pichikünutuy.",
       "text_extraction_prepare_invalid": "Extracción mu elkünütuyechi solicitud no küme müley. Wiño amulnge kom rüpü.",
       "text_extraction_batch_ocr_activation_required": "Tüfachi lote mew müley OCR items, welu Google OCR activado ngelay. Püne Düllin > Activar Google OCR, ka wiño amulnge lote.",
       "text_extraction_batch_ocr_token_state_invalid": "Tüfachi lote mew müley OCR items, welu Google OCR login estado elkünulu no küme. Püne ka Düllin > Activar Google OCR, ka wiño amulnge lote.",
+      "text_extraction_batch_ocr_connectivity_failed": "Tüfachi batch mew müley OCR items, welu OCR Internet conexión duamniey. Konexión pefiñ ka extracción ñi wüñol mew wiño küdaw.",
+      "text_extraction_batch_ocr_quota_or_rate_limited": "Tüfachi batch mew müley OCR items, welu OCR quota/rate limits mew temporal bloqueado. Üngüm ka extracción ñi wüñol mew wiño küdaw.",
       "text_extraction_batch_ocr_unavailable": "Tüfachi lote mew müley OCR items, welu Google OCR fantepu mülelay. OCR petu activado ngelaymew, püne Düllin > Activar Google OCR. Femngelaymew, kintunge OCR setup/auth ka wiño küdaw petu lote amulnolu.",
       "text_extraction_ocr_unavailable": "OCR mülelay. Kintunge setup/auth ka wiño küdaw.",
       "text_extraction_ocr_activation_required": "OCR activación müleyafuy. Google OCR mew loginünge ka wiño küdaw.",
@@ -523,19 +523,15 @@
       "text_extraction_ocr_connectivity_failed": "OCR internet conexión müleyafuy. Kintunge tami conexión ka wiño küdaw.",
       "text_extraction_ocr_setup_missing_credentials": "OCR mew credentials.json faltaley. Düllinge kiñe valid Google OAuth credenciales archivo ka wiño küdaw.",
       "text_extraction_ocr_setup_invalid_credentials": "Düllingelu credenciales archivo no küme Google OAuth mew. Düllinge kiñe valid credentials.json ka wiño küdaw.",
-      "text_extraction_ocr_restricted": "Tüfachi archivo tipo mew OCR rüpü restringidongey.",
       "text_extraction_ocr_quota_or_rate_limited": "OCR cuota/rate limit mew pichi antü bloqueadongey. Pichi alünnge ka wiño küdaw.",
-      "text_extraction_ocr_input_too_large": "PDF ñi OCR amulal rume tripay límite proveedor. Kümeeltunge püle, püne nativa rüpü, kam dividir automáticamente kom PDF.",
       "text_extraction_ocr_runtime_error": "Extracción mew OCR runtime welulkuy. Kintunge consola ka wiño küdaw.",
       "text_extraction_ocr_cancelled": "OCR extracción katrüntuy.",
       "text_extraction_ocr_cleanup_warning": "OCR afi tañi küdaw, welu pepilay lifeltuam ti chillka kamapu mu. Adkintunge mi carpeta Google Drive mu.",
-      "text_extraction_ocr_apply_pending": "OCR extracción afmatuy. Inan püneal rüpü petu implementation mu müley.",
       "text_extraction_native_runtime_error": "Extracción mew extracción nativa runtime welulkuy. Kintunge consola ka wiño küdaw.",
       "text_extraction_native_unreadable_or_corrupt": "Düllingelu archivo no pepikawün kam corrupto müley extracción nativa mew.",
       "text_extraction_native_encrypted_or_password_protected": "Düllingelu PDF encriptadongey kam password mew protegidongey; femngechi pepi ngelay nativa rüpü mew extraer.",
       "text_extraction_native_cancelled": "Extracción nativa katrüntuy.",
-      "text_extraction_native_unsupported_format": "Tüfachi archivo formato no soportadongey extracción nativa rüpü mew.",
-      "text_extraction_native_apply_pending": "Extracción nativa afmatuy. Inan püneal rüpü petu implementation mu müley.",
+      "text_extraction_unsupported_format": "Tüfachi archivo formato no soportadongey texto extracción mew.",
       "wip_diseno_skins": "WIP: Faw nülai düllin skins küpalechi version mu.",
       "wip_diseno_crono": "WIP: Faw nülai configuration üngümwe küpalechi version mu.",
       "wip_diseno_fuentes": "WIP: Faw nülai düllin wirintun küpalechi version mu.",
@@ -598,7 +594,7 @@
         }
       },
       "instrucciones": {
-        "title": "Manual de uso"
+        "title": "¿Cómo usar la app?"
       },
       "links_interes": {
         "title": "Ayüfalchi links",

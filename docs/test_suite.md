@@ -1498,7 +1498,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Goal:** external links are restricted; app docs open properly (packaged preferred).
 1. From About (or other UI link points), attempt to open:
    - GitHub release/docs links (allowed host)
-   - DOI links from “Links de interés” (allowed host)
+   - DOI links from “Enlaces de interés” (allowed host)
 2. (Packaged build) open bundled docs (LICENSE, PRIVACY, etc.) if wired in UI.
 
 **Expected:**

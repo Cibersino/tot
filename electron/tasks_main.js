@@ -5,12 +5,12 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Open/load the task editor and send task-editor-init payloads.
+// - Open/load the Task Editor and send task-editor-init payloads.
 // - Save/delete task lists via native dialogs with path containment under config/tasks/lists.
 // - Manage task library entries (list/save/delete) under config/tasks.
 // - Persist task column widths under config/tasks.
 // - Open task links with confirmation and allowlist rules.
-// - Register IPC handlers for task editor actions.
+// - Register IPC handlers for Task Editor actions.
 // =============================================================================
 
 // =============================================================================
@@ -344,7 +344,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   const resolveTaskEditorWin = () => resolveWins().taskEditorWin || null;
 
   // =============================================================================
-  // IPC: open task editor (new/load)
+  // IPC: open Task Editor (new/load)
   // =============================================================================
   ipcMain.handle('open-task-editor', async (event, payload) => {
     try {

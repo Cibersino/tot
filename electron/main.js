@@ -7,7 +7,7 @@
 // Main process entry point (Electron).
 // Responsibilities:
 // - Initialize storage-backed state used by startup, settings, and current text.
-// - Create and manage application windows (main, editor, preset modal, language picker, flotante).
+// - Create and manage application windows (main, Text Editor, Task Editor, preset modal, language picker, flotante).
 // - Own startup gating between language resolution, renderer readiness, and menu enablement.
 // - Own main-process-only coordination such as "crono" state and processing-mode window behavior.
 // - Register main-owned IPC handlers and wire delegated feature IPC modules to shared main-process services.
@@ -74,7 +74,6 @@ log.debug('Main process starting...');
 
 const spellcheckController = spellcheck.createController({
   settingsState,
-  log,
 });
 const editorTextSizeController = editorTextSize.createController({
   settingsState,
@@ -227,7 +226,7 @@ function resolveMainWindow() {
 
 function sendEditorInitText(logContext) {
   if (!hasLiveWebContents(editorWin)) {
-    log.warn('editor-init-text skipped (ignored): editor window unavailable.', logContext);
+    log.warn('editor-init-text skipped (ignored): Text Editor window unavailable.', logContext);
     return;
   }
 
@@ -387,11 +386,11 @@ function resolveTextExtractionRuntimePaths() {
 // We keep references so we can reuse windows (avoid duplicates), send IPC messages and close related windows during shutdown.
 
 let mainWin = null;     // Main window (index.html)
-let editorWin = null;   // Editor window (editor.html) - user edits current text
+let editorWin = null;   // Text Editor window (editor.html) - user edits current text
 let presetWin = null;   // Preset modal (preset_modal.html) - create/edit preset
 let langWin = null;     // Language selection window (first launch)
-let flotanteWin = null; // Floating stopwatch window (flotante.html)
-let taskEditorWin = null; // Task editor window (task_editor.html)
+let flotanteWin = null; // Floating Stopwatch (flotante.html)
+let taskEditorWin = null; // Task Editor window (task_editor.html)
 let taskEditorForceClose = false;
 let pendingMainWindowCloseAfterProcessingAbort = false;
 let readingTestSessionController = null;
@@ -642,8 +641,8 @@ function createMainWindow() {
 }
 
 /**
- * Create the editor window (public/editor.html).
- * The editor uses editor_state.js to remember size/position/maximized state.
+ * Create the Text Editor window (public/editor.html).
+ * The Text Editor uses editor_state.js to remember size/position/maximized state.
  */
 function createEditorWindow(options = {}) {
   spellcheckController.apply();
@@ -679,7 +678,7 @@ function createEditorWindow(options = {}) {
     },
   });
 
-  // The editor window uses custom in-page controls; hide the native menu bar.
+  // The Text Editor window uses custom in-page controls; hide the native menu bar.
   editorWin.setMenu(null);
   editorWin.setMenuBarVisibility(false);
   editorWin.__totSavedMaximized = !!(state && state.maximized === true);
@@ -689,7 +688,7 @@ function createEditorWindow(options = {}) {
   try {
     editorFindMain.attachEditorWindow(editorWin, editorTextSizeController.getShortcutActions());
   } catch (err) {
-    log.error('Error attaching editor find listeners:', err);
+    log.error('Error attaching Text Editor find listeners:', err);
   }
 
   // When ready, apply maximized state (if needed), show it, and send initial data.
@@ -701,7 +700,7 @@ function createEditorWindow(options = {}) {
       sendEditorInitText('createEditorWindow');
       notifyMainEditorReady('createEditorWindow');
     } catch (err) {
-      log.error('Error showing editor:', err);
+      log.error('Error showing Text Editor:', err);
     }
   });
 
@@ -718,7 +717,7 @@ function createEditorWindow(options = {}) {
 }
 
 /**
- * Create the task editor window (public/task_editor.html).
+ * Create the Task Editor window (public/task_editor.html).
  * Restores persisted reduced geometry and maximized state.
  */
 function createTaskEditorWindow() {
@@ -761,7 +760,7 @@ function createTaskEditorWindow() {
       }
       taskEditorWin.show();
     } catch (err) {
-      log.error('Error showing task editor window:', err);
+      log.error('Error showing Task Editor window:', err);
     }
   });
 
@@ -775,12 +774,12 @@ function createTaskEditorWindow() {
     try {
       taskEditorWin.webContents.send('task-editor-request-close');
     } catch (err) {
-      log.warnOnce('taskEditor.close.requestFailed', 'task editor close request failed; forcing close.', err);
+      log.warnOnce('taskEditor.close.requestFailed', 'Task Editor close request failed; forcing close.', err);
       taskEditorForceClose = true;
       try {
         taskEditorWin.close();
       } catch (closeErr) {
-        log.error('Error forcing task editor close:', closeErr);
+        log.error('Error forcing Task Editor close:', closeErr);
       }
     }
   });
@@ -1006,9 +1005,9 @@ function resolveLanguage(reason) {
 }
 
 // =============================================================================
-// Floating window - window placement safety
+// Floating Stopwatch - window placement safety
 // =============================================================================
-// The flotante window is a small always-on-top stopwatch UI.
+// The Floating Stopwatch is a small always-on-top stopwatch window.
 // We keep it fully visible by clamping its bounds to the display "work area"
 // (the usable desktop area excluding taskbar/dock).
 
@@ -1136,7 +1135,7 @@ function installWorkAreaGuard(win, opts = {}) {
 }
 
 /**
- * Create (or restore) the floating stopwatch window (public/flotante.html).
+ * Create (or restore) Floating Stopwatch (public/flotante.html).
  * - If already open, reuse it (avoid duplicates).
  * - Default position: near bottom-right of the primary display work area.
  */
@@ -1226,7 +1225,7 @@ async function createFlotanteWindow(options = {}) {
   let winClosing = false;
   win.on('close', () => { winClosing = true; });
 
-  // When the floating window closes, clear the reference and notify main UI.
+  // When Floating Stopwatch closes, clear the reference and notify main UI.
   win.on('closed', () => {
     if (flotanteWin === win) {
       flotanteWin = null;
@@ -1485,7 +1484,7 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
   }
 });
 
-// Floating window: open/close + commands from the flotante UI
+// Floating Stopwatch: open/close + commands from the flotante UI
 ipcMain.handle('flotante-open', async () => {
   if (!guardMainUserAction('flotante-open', 'flotante-open ignored (pre-READY).')) {
     return { ok: false, error: 'not ready' };

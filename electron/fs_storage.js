@@ -7,7 +7,7 @@
 // Main-process file system storage helpers.
 // Responsibilities:
 // - Initialize the config root under app.getPath('userData') once Electron is ready.
-// - Resolve stable paths for settings, current text, editor state, presets, current-text snapshots, task files, and text extraction + OCR storage.
+// - Resolve stable paths for settings, current text, Text Editor state, presets, current-text snapshots, task files, and text extraction + OCR storage.
 // - Ensure required storage directories exist before reads and writes.
 // - Read and write small JSON files with recoverable fallback handling.
 // - Stay synchronous because it is used only from the Electron main process.
@@ -236,10 +236,10 @@ const LOAD_JSON_FILE_METADATA = Object.freeze({
     missingNote: ' (note: may be normal on first run; file is created during startup)',
   },
   'editor_state.json': {
-    missingNote: ' (note: may be normal on first run; file is created when editor window is opened for the first time)',
+    missingNote: ' (note: may be normal on first run; file is created when Text Editor window is opened for the first time)',
   },
   'task_editor_state.json': {
-    missingNote: ' (note: may be normal on first run; file is created after the task editor window is opened and window state is saved)',
+    missingNote: ' (note: may be normal on first run; file is created after the Task Editor window is opened and window state is saved)',
   },
 });
 

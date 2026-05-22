@@ -153,7 +153,7 @@ async function handleExecutePrepared(event, payload = {}, {
         code: routeResolution.reason === 'route_choice_required'
           ? 'ROUTE_CHOICE_REQUIRED'
           : 'ROUTE_RESOLUTION_FAILED',
-        primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_required',
+        primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_error',
       };
     }
 
@@ -215,7 +215,6 @@ async function handleExecutePrepared(event, payload = {}, {
       heavySplitFailurePolicy: request.heavySplitFailurePolicy,
       resolvePaths,
       controller,
-      log,
     });
 
     if (execution && execution.ok === true) {

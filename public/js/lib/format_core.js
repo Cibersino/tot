@@ -20,22 +20,18 @@
     root.FormatCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
-  function createNoopLog() {
-    return {
-      warnOnce() {},
-    };
-  }
-
   function createFormatUtils({
     DEFAULT_LANG,
     normalizeLangTag = (lang) => String(lang || '').trim().toLowerCase(),
     getLangBase = null,
-    log = null,
+    log,
   } = {}) {
-    const safeLog = log && typeof log === 'object' ? log : createNoopLog();
     const defaultLang = typeof DEFAULT_LANG === 'string' ? DEFAULT_LANG.trim().toLowerCase() : '';
     if (!defaultLang) {
       throw new Error('[format_core] DEFAULT_LANG is required');
+    }
+    if (!log || typeof log.warnOnce !== 'function') {
+      throw new Error('[format_core] log.warnOnce() is required');
     }
     const resolveLangBase = typeof getLangBase === 'function'
       ? getLangBase
@@ -63,12 +59,10 @@
 
     async function obtenerSeparadoresDeNumeros(idioma, settingsCache) {
       if (settingsCache === null) {
-        if (typeof safeLog.warnOnce === 'function') {
-          safeLog.warnOnce(
-            'format.numberFormatting.settingsCacheNull',
-            'settingsCache null; using hardcoded defaults.'
-          );
-        }
+        log.warnOnce(
+          'format.numberFormatting.settingsCacheNull',
+          'settingsCache null; using hardcoded defaults.'
+        );
         return { separadorMiles: '.', separadorDecimal: ',' };
       }
 
@@ -79,22 +73,18 @@
 
       const defaultKey = resolveLangBase(defaultLang) || defaultLang;
       if (nf && nf[defaultKey]) {
-        if (typeof safeLog.warnOnce === 'function') {
-          safeLog.warnOnce(
-            `format.numberFormatting.fallback:${langKey}`,
-            'Missing numberFormatting for langKey; using default:',
-            { langKey, defaultKey }
-          );
-        }
+        log.warnOnce(
+          `format.numberFormatting.fallback:${langKey}`,
+          'Missing numberFormatting for langKey; using default:',
+          { langKey, defaultKey }
+        );
         return nf[defaultKey];
       }
 
-      if (typeof safeLog.warnOnce === 'function') {
-        safeLog.warnOnce(
-          'format.numberFormatting.missing',
-          'numberFormatting missing; using hardcoded defaults.'
-        );
-      }
+      log.warnOnce(
+        'format.numberFormatting.missing',
+        'numberFormatting missing; using hardcoded defaults.'
+      );
       return { separadorMiles: '.', separadorDecimal: ',' };
     }
 

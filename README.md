@@ -7,7 +7,7 @@
 
 # toT — de Texto a Tiempo
 
-**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina extracción de texto desde documentos e imágenes, presets de WPM configurables, conteo preciso, snapshots de textos, organizador de tareas, cronómetro con ventana flotante y tests de velocidad de lectura. Te permite medir, organizar y terminar lecturas con menos incertidumbre.
+**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina extracción de texto desde documentos e imágenes, presets de WPM configurables, conteo preciso, snapshots de texto, organizador de tareas, cronómetro con ventana flotante y tests de velocidad de lectura. Te permite medir, organizar y terminar lecturas con menos incertidumbre.
 
 ![Guía básica animada](public/assets/instrucciones/guia-basica.gif)
 
@@ -25,15 +25,15 @@
 
 * Importar texto directamente desde `txt`, `md`, `html`, `htm`, `docx` y `pdf` con texto seleccionable; extraer texto mediante la ruta respaldada por Google desde `rtf` y `odt`; aplicar OCR a imágenes (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) y PDF escaneados o aplanados; además de planificar extracción por lotes para múltiples archivos en cola y división automática del PDF completo cuando OCR requiere partir un PDF pesado.
 * El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.
-* Editor de texto completo con búsqueda.
+* Editor de texto con búsqueda y reemplazo.
 * Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.
 * Conteo de palabras y caracteres (con/sin espacios).
 * Segmentación “precisa” de palabras usando `Intl.Segmenter`.
 * Presets de WPM: crear/editar/eliminar + restaurar valores por defecto.
 * Cronómetro con cálculo de WPM real + ventana flotante.
-* Snapshots de textos: guardar/cargar los textos actuales.
+* Snapshots de texto: guardar/cargar los textos actuales.
 * Test de velocidad de lectura: flujo guiado con texto aleatorio desde pool o con el texto actual, medición de WPM, preguntas opcionales de comprensión y creación asistida de presets.
-* Editor de tareas: organizador de listas de textos para planificar lecturas.
+* Editor de tareas: organizador de planes de lectura.
 * Interfaz multi-idioma con más de 25 idiomas activos.
 
 ---
@@ -80,12 +80,12 @@ Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar
 Accesos rápidos visibles en la ventana principal:
 * `📥`: extraer texto desde archivo (incluye flujo OCR cuando aplica, planificación por lotes para varios archivos y división automática de PDFs pesados para OCR).
 * `📋↺` / `📋+`: reemplazar o agregar texto desde portapapeles.
-* `⌨`: abrir editor de texto completo.
+* `⌨`: abrir Editor de Texto.
 * `💾` / `📂`: guardar/cargar snapshot del texto actual.
 * `📝` / `🗃️`: nueva tarea o cargar tarea.
 * `Test de velocidad de lectura`: iniciar un test guiado desde un texto del pool o desde el texto actual.
 * `＋` / `✎` / `🗑` / `⟲`: crear, editar, eliminar o restaurar presets de WPM.
-* `▣`: activar o desactivar la ventana flotante del cronómetro.
+* `▣`: activar o desactivar el Cronómetro Flotante.
 * `Modo preciso`: activar o desactivar el modo preciso de conteo de palabras y caracteres.
 
 ---
@@ -117,7 +117,7 @@ El artefacto se genera en `build-output/`.
 
 ### Notas para desarrolladores (DevTools, logs y menú Development)
 
-**DevTools es por ventana.** Los logs del renderer se ven en la consola de DevTools de *cada* ventana (principal, editor, presets, etc.).
+**DevTools es por ventana.** Los logs del renderer se ven en la consola de DevTools de *cada* ventana (principal, presets, etc.).
 DevTools solo decide si *muestra* mensajes (Verbose/Info/etc.). El logger de la app además filtra por nivel, así que para ver `debug`/`info`
 debes subir el nivel del logger.
 
@@ -196,7 +196,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 * Import text directly from `txt`, `md`, `html`, `htm`, `docx`, and `pdf` with selectable text; extract text through the Google-backed path from `rtf` and `odt`; run OCR on images (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) and scanned or flattened PDFs; and plan batch extraction for multiple queued files plus automatic full-PDF split when OCR needs a heavy PDF to be divided first.
 * Text can be entered by pasting it from the clipboard and/or manually.
-* Full-text editor with find.
+* Text editor with find and replace.
 * Reading-time estimation with configurable WPM (words per minute).
 * Word and character counting (with/without spaces).
 * “Precise mode” word segmentation using `Intl.Segmenter`.
@@ -204,7 +204,7 @@ MIT — ver [`LICENSE`](LICENSE).
 * Stopwatch with real WPM calculation; optional floating window.
 * Text snapshots: save/load current texts.
 * Reading speed test: guided flow with random pool text or the current text, WPM measurement, optional comprehension questions, and assisted preset creation.
-* Task editor: text list organizer to plan readings.
+* Task editor: reading plan organizer.
 * Multi-language UI with 25+ active languages.
 
 ---
@@ -254,12 +254,12 @@ Usage instructions are included in the app menu (“How to use?”).
 Quick actions in the main window:
 * `📥`: extract text from file (includes OCR when needed, batch planning for multiple files, and automatic heavy-PDF split for OCR).
 * `📋↺` / `📋+`: replace or append clipboard text.
-* `⌨`: open full-text editor.
+* `⌨`: open Text Editor.
 * `💾` / `📂`: save/load current-text snapshot.
 * `📝` / `🗃️`: new task or load task.
 * `Reading speed test`: start a guided test from pool text or from the current text.
 * `＋` / `✎` / `🗑` / `⟲`: create, edit, delete, or restore WPM presets.
-* `▣`: enable or disable the stopwatch floating window.
+* `▣`: enable or disable the Floating Stopwatch.
 * `Precise mode`: enable or disable the precise mode for counting words and characters.
 
 ---
@@ -291,7 +291,7 @@ The artifact is generated in `build-output/`.
 
 ### Developer notes (DevTools, logs, and the Development menu)
 
-**DevTools is per-window.** Renderer logs live in the DevTools Console of *each* window (main, editor, presets, etc.).
+**DevTools is per-window.** Renderer logs live in the DevTools Console of *each* window (main, presets, etc.).
 DevTools only decides whether messages are *shown* (Verbose/Info/etc.). The app logger also filters by level, so to see `debug`/`info`
 you must raise the logger level.
 

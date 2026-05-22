@@ -7,28 +7,74 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 function createElement(id) {
-  let textContent = '';
-  let innerHTML = '';
   const listeners = new Map();
   const attributes = {};
+  const childNodes = [];
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function clearChildren() {
+    childNodes.length = 0;
+  }
+
+  function appendChild(node) {
+    childNodes.push(node);
+    return node;
+  }
+
+  function serializeNode(node) {
+    if (!node) return '';
+    if (node.nodeType === 3) {
+      return escapeHtml(node.textContent);
+    }
+    const serializedAttributes = Object.entries(node.attributes || {})
+      .map(([name, value]) => ` ${name}="${escapeHtml(value)}"`)
+      .join('');
+    return `<${node.tagName}${serializedAttributes}>${node.childNodes.map(serializeNode).join('')}</${node.tagName}>`;
+  }
+
+  function getTextFromNode(node) {
+    if (!node) return '';
+    if (node.nodeType === 3) return node.textContent;
+    return (node.childNodes || []).map(getTextFromNode).join('');
+  }
 
   return {
+    nodeType: 1,
     id,
+    tagName: 'div',
+    attributes,
+    childNodes,
     hidden: false,
     disabled: false,
-    textContent: '',
     value: '',
+    appendChild,
     get textContent() {
-      return textContent;
+      return childNodes.map(getTextFromNode).join('');
     },
     set textContent(value) {
-      textContent = String(value);
+      clearChildren();
+      appendChild({
+        nodeType: 3,
+        textContent: String(value),
+      });
     },
     get innerHTML() {
-      return innerHTML;
+      return childNodes.map(serializeNode).join('');
     },
     set innerHTML(value) {
-      innerHTML = String(value);
+      clearChildren();
+      appendChild({
+        nodeType: 3,
+        textContent: String(value),
+      });
     },
     addEventListener(type, handler) {
       if (!listeners.has(type)) {
@@ -49,6 +95,12 @@ function createElement(id) {
     },
     getAttribute(name) {
       return Object.prototype.hasOwnProperty.call(attributes, name) ? attributes[name] : null;
+    },
+    get dir() {
+      return attributes.dir || '';
+    },
+    set dir(value) {
+      attributes.dir = String(value);
     },
     focus() {},
   };
@@ -121,8 +173,24 @@ function createHarness() {
       },
     },
     document: {
+      documentElement: {
+        dataset: {
+          languageDirection: 'rtl',
+        },
+      },
       getElementById(id) {
         return elements[id] || null;
+      },
+      createElement(tagName) {
+        const element = createElement('');
+        element.tagName = String(tagName || 'div').toLowerCase();
+        return element;
+      },
+      createTextNode(text) {
+        return {
+          nodeType: 3,
+          textContent: String(text ?? ''),
+        };
       },
     },
     console,
@@ -148,7 +216,8 @@ test('single-file heavy PDF modal moves provider limit into Case B intro and rem
     caseKind: 'case_b',
     sourceFileName: 'book.pdf',
     sourceFileSizeBytes: 458 * 1024 * 1024,
-    selectedRangeText: 'Pages 100-220',
+    selectedRangeFromPage: 100,
+    selectedRangeToPage: 220,
     generatedPdfFileName: 'book_pages_100_220.pdf',
     generatedPdfSizeBytes: 72.4 * 1024 * 1024,
     providerLimitBytes: 50 * 1024 * 1024,
@@ -160,24 +229,28 @@ test('single-file heavy PDF modal moves provider limit into Case B intro and rem
     /50 MB/
   );
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
-    /Source file:/
+    harness.elements.textExtractionSingleFileHeavyPdfModalMessage.innerHTML,
+    /<bdi dir="ltr">50 MB<\/bdi>/
   );
   assert.match(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
-    /Selected range:/
+    /<strong>Source file:<\/strong> <bdi dir="ltr">book\.pdf<\/bdi>/
   );
   assert.match(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
-    /Source file size:/
+    /<strong>Selected range:<\/strong> <bdi dir="ltr">100-220<\/bdi>/
   );
   assert.match(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
-    /Generated PDF size:/
+    /<strong>Source file size:<\/strong> <bdi dir="ltr">458 MB<\/bdi>/
+  );
+  assert.match(
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    /<strong>Generated PDF size:<\/strong> <bdi dir="ltr">72\.4 MB<\/bdi>/
   );
   assert.doesNotMatch(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
-    /Generated PDF:/
+    /<strong>Generated PDF:<\/strong>/
   );
   assert.doesNotMatch(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
@@ -215,12 +288,16 @@ test('single-file heavy PDF modal includes provider limit in Case A intro', asyn
     /50 MB/
   );
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
-    /Source file size:/
+    harness.elements.textExtractionSingleFileHeavyPdfModalMessage.innerHTML,
+    /<bdi dir="ltr">50 MB<\/bdi>/
   );
   assert.match(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
-    /Total pages:/
+    /<strong>Source file size:<\/strong> <bdi dir="ltr">458 MB<\/bdi>/
+  );
+  assert.match(
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    /<strong>Total pages:<\/strong> <bdi dir="ltr">516<\/bdi>/
   );
   assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReturnToPages.hidden, false);
   assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.hidden, true);
@@ -241,7 +318,8 @@ test('single-file heavy PDF modal shows generated PDF filename only when a retai
     caseKind: 'case_b',
     sourceFileName: 'book.pdf',
     sourceFileSizeBytes: 458 * 1024 * 1024,
-    selectedRangeText: 'Pages 100-220',
+    selectedRangeFromPage: 100,
+    selectedRangeToPage: 220,
     generatedPdfFileName: 'book_pages_100_220.pdf',
     generatedPdfSizeBytes: 72.4 * 1024 * 1024,
     providerLimitBytes: 50 * 1024 * 1024,
@@ -255,7 +333,7 @@ test('single-file heavy PDF modal shows generated PDF filename only when a retai
 
   assert.match(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
-    /Generated PDF:/
+    /<strong>Generated PDF:<\/strong> <bdi dir="ltr">book_pages_100_220\.pdf<\/bdi>/
   );
   assert.match(
     harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,

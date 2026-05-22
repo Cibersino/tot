@@ -32,6 +32,7 @@
 
   const modal = document.getElementById('textExtractionOcrActivationDisclosureModal');
   const backdrop = document.getElementById('textExtractionOcrActivationDisclosureBackdrop');
+  const panel = document.getElementById('textExtractionOcrActivationDisclosurePanel');
   const title = document.getElementById('textExtractionOcrActivationDisclosureTitle');
   const intro = document.getElementById('textExtractionOcrActivationDisclosureIntro');
   const itemSelectedFiles = document.getElementById('textExtractionOcrActivationDisclosureSelectedFiles');
@@ -50,6 +51,7 @@
   function hasRequiredElements() {
     return !!(modal
       && backdrop
+      && panel
       && title
       && intro
       && itemSelectedFiles
@@ -60,6 +62,19 @@
       && btnProceed
       && btnCancel
       && btnClose);
+  }
+
+  function getUiLanguageDirection() {
+    const languageDirection = document && document.documentElement
+      ? document.documentElement.dataset.languageDirection
+      : '';
+    return languageDirection === 'rtl' ? 'rtl' : 'ltr';
+  }
+
+  function applyModalDirection() {
+    const direction = getUiLanguageDirection();
+    modal.dir = direction;
+    panel.dir = direction;
   }
 
   async function openPrivacyPolicy() {
@@ -107,6 +122,7 @@
       throw new Error('OCR activation disclosure modal DOM elements missing.');
     }
 
+    applyModalDirection();
     applyModalCopy();
 
     return await new Promise((resolve) => {
@@ -165,5 +181,4 @@
 // =============================================================================
 // End of public/js/text_extraction_ocr_activation_disclosure_modal.js
 // =============================================================================
-
 

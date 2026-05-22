@@ -110,8 +110,14 @@
     processingInputSource: '',
   };
   let prepareActiveCount = 0;
+  let abortFinalizationState = {
+    active: false,
+    fileName: '',
+    elapsedMs: null,
+  };
   let pendingExecutionRoute = '';
   let pendingSourceFileName = '';
+  let lastExecutionSourceFileName = '';
   let lastExecutionElapsedMs = null;
   let elapsedTimerId = null;
 
@@ -223,6 +229,10 @@
     return prepareActiveCount > 0;
   }
 
+  function isAbortFinalizationActive() {
+    return abortFinalizationState.active === true;
+  }
+
   function getElapsedMsSince(rawSinceEpochMs) {
     const sinceEpochMs = Number(rawSinceEpochMs);
     if (!Number.isFinite(sinceEpochMs) || sinceEpochMs <= 0) return null;
@@ -256,9 +266,11 @@
     }
   }
 
-  function resetPendingExecutionContextState() {
+  function resetPendingExecutionContextState({ preserveSourceFileName = false } = {}) {
     pendingExecutionRoute = '';
-    pendingSourceFileName = '';
+    if (!preserveSourceFileName) {
+      pendingSourceFileName = '';
+    }
   }
 
   function renderElapsedLabelWithValue(container, labelKey, valueText) {
@@ -271,6 +283,9 @@
   }
 
   function getBusyLabelText({ elapsedMsOverride = null } = {}) {
+    if (isAbortFinalizationActive()) {
+      return tRenderer('renderer.main.processing.text_extraction_cancellation_pending');
+    }
     const progressLabelText = getProgressLabelText();
     if (progressLabelText) {
       return progressLabelText;
@@ -337,6 +352,9 @@
   }
 
   function getDisplayedSourceFileName() {
+    if (isAbortFinalizationActive() && abortFinalizationState.fileName) {
+      return abortFinalizationState.fileName;
+    }
     if (isProcessingModeActive() && processingModeState.processingInputFileName) {
       return processingModeState.processingInputFileName;
     }
@@ -354,7 +372,8 @@
 
   function syncProcessingShellUi() {
     const processingActive = isProcessingModeActive();
-    const active = processingActive || isPrepareActive();
+    const abortFinalizationActive = isAbortFinalizationActive();
+    const active = processingActive || abortFinalizationActive || isPrepareActive();
 
     if (selectorControlsNormal) {
       selectorControlsNormal.hidden = active;
@@ -365,10 +384,11 @@
       selectorControlsProcessing.setAttribute('aria-hidden', active ? 'false' : 'true');
     }
     if (btnTextExtractionAbort) {
-      btnTextExtractionAbort.hidden = !processingActive;
-      btnTextExtractionAbort.disabled = !processingActive;
-      btnTextExtractionAbort.setAttribute('aria-hidden', processingActive ? 'false' : 'true');
-      btnTextExtractionAbort.tabIndex = processingActive ? 0 : -1;
+      const abortButtonVisible = processingActive && !abortFinalizationActive;
+      btnTextExtractionAbort.hidden = !abortButtonVisible;
+      btnTextExtractionAbort.disabled = !abortButtonVisible;
+      btnTextExtractionAbort.setAttribute('aria-hidden', abortButtonVisible ? 'false' : 'true');
+      btnTextExtractionAbort.tabIndex = abortButtonVisible ? 0 : -1;
     }
   }
 
@@ -401,10 +421,13 @@
     if (!textExtractionProcessingElapsed) return;
 
     const processingActive = isProcessingModeActive();
-    const elapsedMs = elapsedMsOverride === null
-      ? getElapsedMsSince(processingModeState.sinceEpochMs)
-      : elapsedMsOverride;
-    const elapsedValueText = processingActive
+    const abortFinalizationActive = isAbortFinalizationActive();
+    const elapsedMs = processingActive
+      ? (elapsedMsOverride === null
+        ? getElapsedMsSince(processingModeState.sinceEpochMs)
+        : elapsedMsOverride)
+      : (abortFinalizationActive ? abortFinalizationState.elapsedMs : null);
+    const elapsedValueText = (processingActive || abortFinalizationActive)
       ? getProcessingElapsedValueText(elapsedMs)
       : '';
     const showElapsed = !!elapsedValueText;
@@ -474,12 +497,16 @@
 
     if (!prevActive && nextState.active) {
       lastExecutionElapsedMs = null;
+      lastExecutionSourceFileName = '';
       if (nextState.processingInputFileName) {
         pendingSourceFileName = nextState.processingInputFileName;
       }
     } else if (prevActive && !nextState.active) {
       lastExecutionElapsedMs = getElapsedMsSince(prevState.sinceEpochMs);
-      resetPendingExecutionContextState();
+      lastExecutionSourceFileName = prevState.processingInputFileName || pendingSourceFileName;
+      resetPendingExecutionContextState({
+        preserveSourceFileName: isAbortFinalizationActive(),
+      });
     }
 
     syncProcessingUi();
@@ -517,7 +544,35 @@
   }
 
   function clearPendingExecutionContext() {
-    resetPendingExecutionContextState();
+    resetPendingExecutionContextState({
+      preserveSourceFileName: isAbortFinalizationActive(),
+    });
+    syncProcessingUi();
+  }
+
+  function beginAbortFinalization(context = {}) {
+    const explicitFileName = constrainDisplayFileName(context.fileName);
+    const fallbackFileName = getDisplayedSourceFileName()
+      || lastExecutionSourceFileName
+      || pendingSourceFileName;
+    abortFinalizationState = {
+      active: true,
+      fileName: explicitFileName || fallbackFileName,
+      elapsedMs: getFinalElapsedMs(),
+    };
+    syncProcessingUi();
+  }
+
+  function endAbortFinalization() {
+    abortFinalizationState = {
+      active: false,
+      fileName: '',
+      elapsedMs: null,
+    };
+    if (!isProcessingModeActive() && !isPrepareActive()) {
+      lastExecutionSourceFileName = '';
+      resetPendingExecutionContextState();
+    }
     syncProcessingUi();
   }
 
@@ -543,11 +598,14 @@
   window.TextExtractionStatusUi = {
     applyProcessingModeState,
     applyTranslations,
+    beginAbortFinalization,
     beginPrepare,
     clearPendingExecutionContext,
+    endAbortFinalization,
     endPrepare,
     getAbortButton,
     getFinalElapsedValueText,
+    isAbortFinalizationActive,
     isProcessingModeActive,
     setPendingExecutionContext,
   };

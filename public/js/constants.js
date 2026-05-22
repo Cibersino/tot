@@ -4,7 +4,7 @@
 (() => {
   const DEFAULTS = {
     DEFAULT_LANG: 'es', // Default language for the app. It must match 'electron/constants_main.js'. This can be overridden by user settings.
-    MAX_TEXT_CHARS: 50_000_000, // Renderer fallback. Real limit from main (constants_main.js via IPC).
+    MAX_TEXT_CHARS: 10_000_000, // Renderer fallback. Real limit from main (constants_main.js via IPC).
     PASTE_ALLOW_LIMIT: 10_000, // Max chars allowed in paste. This is a soft limit to prevent performance issues.
     SMALL_UPDATE_THRESHOLD: 200_000, // Small-document threshold for native whole-text and append-update paths.
     WPM_MIN: 10, // Minimum WPM for reading speed.
@@ -18,15 +18,15 @@
     TASK_NAME_MAX_CHARS: 50, // Max chars for task list name. Must match electron/constants_main.js.
     TASK_ROW_TEXT_MAX_CHARS: 200, // Max chars for task row "text" (texto). Must match electron/constants_main.js.
     TASK_ROW_LINK_MAX_CHARS: 1000, // Max chars for task row "link" (enlace). Must match electron/constants_main.js.
-    EDITOR_FONT_SIZE_MIN_PX: 12, // Minimum font size for the manual editor textarea.
-    EDITOR_FONT_SIZE_MAX_PX: 36, // Maximum font size for the manual editor textarea.
-    EDITOR_FONT_SIZE_DEFAULT_PX: 20, // Default font size for the manual editor textarea.
-    EDITOR_FONT_SIZE_STEP_PX: 2, // Step used by editor text-size controls and shortcuts.
-    EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX: 480, // Minimum centered text-column width when the editor is maximized.
-    EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX: 1600, // Maximum centered text-column width when the editor is maximized.
-    EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX: 960, // Default centered text-column width when the editor is maximized.
+    EDITOR_FONT_SIZE_MIN_PX: 12, // Minimum font size for the Text Editor textarea.
+    EDITOR_FONT_SIZE_MAX_PX: 36, // Maximum font size for the Text Editor textarea.
+    EDITOR_FONT_SIZE_DEFAULT_PX: 20, // Default font size for the Text Editor textarea.
+    EDITOR_FONT_SIZE_STEP_PX: 2, // Step used by Text Editor text-size controls and shortcuts.
+    EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX: 480, // Minimum centered text-column width when the Text Editor is maximized.
+    EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX: 1600, // Maximum centered text-column width when the Text Editor is maximized.
+    EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX: 960, // Default centered text-column width when the Text Editor is maximized.
     EDITOR_MAXIMIZED_GUTTER_MIN_PX: 40, // Minimum visible gutter size on each side while maximized.
-    EDITOR_FIND_INPUT_MAX_CHARS: 512, // Max chars for the editor find input. Must match electron/constants_main.js.
+    EDITOR_FIND_INPUT_MAX_CHARS: 512, // Max chars for the Text Editor find input. Must match electron/constants_main.js.
     PREVIEW_INLINE_THRESHOLD: 1200, // If text is shorter than this, show it all in the preview.
     PREVIEW_START_CHARS: 275, // Number of chars to show at the start of the preview.
     PREVIEW_END_CHARS: 275, // Number of chars to show at the end of the preview.

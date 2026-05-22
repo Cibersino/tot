@@ -82,9 +82,9 @@ function createSession({
     if (!editorWin) {
       log.warnOnce(
         'editorFind.runFind.noEditor',
-        'runFind ignored: editor window unavailable.'
+        'runFind ignored: Text Editor window unavailable.'
       );
-      return { ok: false, error: 'editor window unavailable' };
+      return { ok: false, error: 'Text Editor window unavailable' };
     }
 
     try {
@@ -265,13 +265,13 @@ function createSession({
 
     const editorWin = resolveEditorWindow();
     if (!editorWin) {
-      log.warn('editor-replace-request skipped (ignored): editor window unavailable.', operation);
+      log.warn('editor-replace-request skipped (ignored): Text Editor window unavailable.', operation);
       return Promise.resolve({
         ok: false,
         status: 'editor-window-unavailable',
         operation,
         replacements: 0,
-        error: 'editor window unavailable',
+        error: 'Text Editor window unavailable',
       });
     }
 
@@ -286,7 +286,7 @@ function createSession({
           status: 'timeout',
           operation,
           replacements: 0,
-          error: 'editor replace request timed out',
+          error: 'Text Editor replace request timed out',
         });
       }, REPLACE_PIPELINE_TIMEOUT_MS);
 
@@ -385,13 +385,13 @@ function createSession({
     const replacement = clampFindInputText(rawReplacement);
     const editorWin = resolveEditorWindow();
     if (!editorWin) {
-      log.warn('replace-current ignored: editor window unavailable.');
+      log.warn('replace-current ignored: Text Editor window unavailable.');
       return {
         ok: false,
         status: 'editor-window-unavailable',
         operation: 'replace-current',
         replacements: 0,
-        error: 'editor window unavailable',
+        error: 'Text Editor window unavailable',
       };
     }
 
@@ -482,13 +482,13 @@ function createSession({
 
     const replacement = clampFindInputText(rawReplacement);
     if (!resolveEditorWindow()) {
-      log.warn('replace-all ignored: editor window unavailable.');
+      log.warn('replace-all ignored: Text Editor window unavailable.');
       return {
         ok: false,
         status: 'editor-window-unavailable',
         operation: 'replace-all',
         replacements: 0,
-        error: 'editor window unavailable',
+        error: 'Text Editor window unavailable',
       };
     }
 
@@ -580,7 +580,7 @@ function createSession({
         status: 'invalid-response',
         operation: operation || 'replace-current',
         replacements: 0,
-        error: 'invalid editor replace response',
+        error: 'invalid Text Editor replace response',
       });
   }
 

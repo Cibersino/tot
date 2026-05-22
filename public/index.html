@@ -38,12 +38,12 @@
     <div id="startupSplash" class="startup-splash" aria-hidden="true">
       <div class="startup-splash__spinner" aria-hidden="true"></div>
     </div>
-    <!-- Editor Loader (top right corner) -->
-    <div id="editorLoader" class="editor-loader" aria-live="polite" title="Cargando editor"></div>
+    <!-- Text Editor Loader (top right corner) -->
+    <div id="editorLoader" class="editor-loader" aria-live="polite" title="Cargando Editor de Texto"></div>
 
     <!-- 1) TEXT SELECTOR -->
     <section class="selector-text" aria-labelledby="selector-title">
-      <h3 id="selector-title" class="section-title">Primera y última parte del texto analizado:</h3>
+      <h3 id="selector-title" class="section-title">Primera y última parte del texto actual:</h3>
       <pre id="textPreview">(vacío)</pre>
       <div class="controls">
         <div id="selectorControlsNormal" class="controls-row">
@@ -158,9 +158,9 @@
       <div class="crono-controls" role="group" aria-label="Controles del cronómetro">
         <button id="cronoToggle" class="btn-standard">▶</button>
         <button id="cronoReset" class="btn-standard">⏹</button>
-        <div class="vf-switch-wrapper" aria-label="Ventana flotante">
+        <div class="vf-switch-wrapper" aria-label="Cronómetro Flotante">
           <span class="vf-label" aria-hidden="true">▣</span>
-          <label class="switch" title="Ventana flotante">
+          <label class="switch" title="Cronómetro Flotante">
             <input type="checkbox" id="toggleVF" role="switch" aria-checked="false" />
             <span class="slider round" aria-hidden="true"></span>
           </label>
@@ -257,13 +257,13 @@
             </div>
             <p id="textExtractionPdfOptionsModalSelectedCount" class="text-extraction-pdf-options-modal-selected-count"
               hidden aria-hidden="true"></p>
+            <p id="textExtractionPdfOptionsModalValidation" class="text-extraction-pdf-options-modal-validation" hidden
+              aria-hidden="true"></p>
             <label id="textExtractionPdfOptionsModalKeepWrap" class="text-extraction-pdf-options-modal-keep-option"
               hidden aria-hidden="true">
               <input id="textExtractionPdfOptionsModalKeepGeneratedPdf" type="checkbox" />
               <span id="textExtractionPdfOptionsModalKeepLabel">Conservar el PDF generado después del procesamiento</span>
             </label>
-            <p id="textExtractionPdfOptionsModalValidation" class="text-extraction-pdf-options-modal-validation" hidden
-              aria-hidden="true"></p>
           </div>
           <div class="text-extraction-pdf-options-modal-actions">
             <button id="textExtractionPdfOptionsModalContinue" class="btn-standard" type="button">Continuar</button>
@@ -406,8 +406,8 @@
           <div id="textExtractionSingleFileHeavyPdfModalDetails" class="text-extraction-single-file-heavy-modal-details">
           </div>
           <div class="text-extraction-single-file-heavy-modal-actions">
-            <button id="textExtractionSingleFileHeavyPdfModalSplit" class="btn-standard" type="button">Dividir y
-              procesar el PDF completo</button>
+            <button id="textExtractionSingleFileHeavyPdfModalSplit" class="btn-standard" type="button">Procesar el PDF 
+              por partes</button>
             <button id="textExtractionSingleFileHeavyPdfModalReturnToPages" class="btn-standard" type="button">Volver a
               páginas</button>
             <button id="textExtractionSingleFileHeavyPdfModalUseNative" class="btn-standard" type="button">Usar
@@ -476,7 +476,7 @@
               aria-controls="readingTestEntryModalIntro" aria-expanded="false">Mostrar instrucciones</button>
             <p id="readingTestEntryModalIntro" hidden>Este test sirve para estimar tu velocidad real de lectura con una
               sesión guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando
-              termines, pulsa Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el
+              termines, pulsa Pausa (⏸) en el Cronómetro Flotante. Usa Detener/Restablecer (⏹) solo si quieres cancelar el
               test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset
               con el resultado.</p>
           </div>
@@ -534,7 +534,7 @@
       aria-labelledby="textExtractionOcrActivationDisclosureTitle"
       aria-describedby="textExtractionOcrActivationDisclosureBody" aria-modal="true">
       <div id="textExtractionOcrActivationDisclosureBackdrop" class="info-modal-backdrop"></div>
-      <div class="text-extraction-ocr-activation-disclosure-panel" role="document">
+      <div id="textExtractionOcrActivationDisclosurePanel" class="text-extraction-ocr-activation-disclosure-panel" role="document">
         <header class="text-extraction-ocr-activation-disclosure-header">
           <h2 id="textExtractionOcrActivationDisclosureTitle">Revisar activación de Google OCR</h2>
           <button id="textExtractionOcrActivationDisclosureClose" class="btn-standard" type="button"
@@ -592,6 +592,7 @@
   <script src="./js/main_logo_links.js"></script>
   <script src="./js/current_text_snapshots.js"></script>
   <script src="./js/text_apply_canonical.js"></script>
+  <script src="./js/text_extraction_pdf_page_selection.js"></script>
   <script src="./js/text_extraction_batch_flow.js"></script>
   <script src="./js/text_extraction_status_ui.js"></script>
   <script src="./js/text_extraction_pdf_options_modal.js"></script>

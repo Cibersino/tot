@@ -294,6 +294,42 @@ function createHarness() {
     'renderer.text_extraction.pdf_options.invalid_range': 'Enter a contiguous page range between 1 and {totalPages}.',
   };
 
+  function toPositiveIntegerOrNull(rawValue) {
+    const value = Number(rawValue);
+    if (!Number.isInteger(value) || value < 1) return null;
+    return value;
+  }
+
+  function buildAllPagesSelection(totalPages) {
+    const safeTotalPages = toPositiveIntegerOrNull(totalPages) || 1;
+    return {
+      mode: 'all',
+      fromPage: 1,
+      toPage: safeTotalPages,
+      selectedPageCount: safeTotalPages,
+      totalPages: safeTotalPages,
+    };
+  }
+
+  function canonicalizePageSelection(selection, totalPages) {
+    const safeTotalPages = toPositiveIntegerOrNull(totalPages) || 1;
+    if (!selection || selection.mode !== 'range') {
+      return buildAllPagesSelection(safeTotalPages);
+    }
+    const fromPage = toPositiveIntegerOrNull(selection.fromPage);
+    const toPage = toPositiveIntegerOrNull(selection.toPage);
+    if (!fromPage || !toPage || fromPage > toPage || toPage > safeTotalPages) {
+      return null;
+    }
+    return {
+      mode: 'range',
+      fromPage,
+      toPage,
+      selectedPageCount: (toPage - fromPage) + 1,
+      totalPages: safeTotalPages,
+    };
+  }
+
   const sandbox = {
     window: {
       Notify: {},
@@ -309,6 +345,83 @@ function createHarness() {
       RendererI18n: {
         tRenderer(key) {
           return translations[key] || key;
+        },
+      },
+      TextExtractionPdfPageSelection: {
+        buildAllPagesSelection,
+        buildPageSelectionDraft({ pdfPageSelection = null, totalPages } = {}) {
+          const safeTotalPages = toPositiveIntegerOrNull(totalPages)
+            || toPositiveIntegerOrNull(pdfPageSelection && pdfPageSelection.totalPages)
+            || 1;
+          const canonicalSelection = canonicalizePageSelection(pdfPageSelection, safeTotalPages);
+          if (canonicalSelection && canonicalSelection.mode === 'range') {
+            return {
+              mode: 'range',
+              fromPage: String(canonicalSelection.fromPage),
+              toPage: String(canonicalSelection.toPage),
+              totalPages: safeTotalPages,
+            };
+          }
+          return {
+            mode: 'all',
+            fromPage: '1',
+            toPage: String(safeTotalPages),
+            totalPages: safeTotalPages,
+          };
+        },
+        getPageSelectionUiState(pageSelectionDraft) {
+          const safeDraft = pageSelectionDraft && typeof pageSelectionDraft === 'object' ? pageSelectionDraft : {};
+          const totalPages = toPositiveIntegerOrNull(safeDraft.totalPages) || 1;
+          const draftMode = typeof safeDraft.mode === 'string' ? safeDraft.mode.trim().toLowerCase() : 'all';
+          if (draftMode !== 'range') {
+            const allPagesSelection = buildAllPagesSelection(totalPages);
+            return {
+              showRange: false,
+              isValid: true,
+              submitDisabled: false,
+              selectedCountText: '',
+              validationText: '',
+              invalidInputKey: '',
+              selectedPageCount: allPagesSelection.selectedPageCount,
+              totalPages,
+              pdfPageSelection: allPagesSelection,
+            };
+          }
+
+          const canonicalSelection = canonicalizePageSelection({
+            mode: 'range',
+            fromPage: safeDraft.fromPage,
+            toPage: safeDraft.toPage,
+          }, totalPages);
+          if (!canonicalSelection) {
+            const fromPage = toPositiveIntegerOrNull(safeDraft.fromPage);
+            const toPage = toPositiveIntegerOrNull(safeDraft.toPage);
+            return {
+              showRange: true,
+              isValid: false,
+              submitDisabled: true,
+              selectedCountText: '',
+              validationText: translations['renderer.text_extraction.pdf_options.invalid_range']
+                .replace('{totalPages}', String(totalPages)),
+              invalidInputKey: !fromPage
+                ? 'fromPage'
+                : ((!toPage || fromPage > toPage || toPage > totalPages) ? 'toPage' : ''),
+              selectedPageCount: 0,
+              totalPages,
+              pdfPageSelection: null,
+            };
+          }
+          return {
+            showRange: true,
+            isValid: true,
+            submitDisabled: false,
+            selectedCountText: `${translations['renderer.text_extraction.pdf_options.selected_page_count_label']}${canonicalSelection.selectedPageCount}`,
+            validationText: '',
+            invalidInputKey: '',
+            selectedPageCount: canonicalSelection.selectedPageCount,
+            totalPages,
+            pdfPageSelection: canonicalSelection,
+          };
         },
       },
       addEventListener(type, handler) {
@@ -378,7 +491,7 @@ test('batch planning modal exposes direct all-pages and range controls for ordin
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'All pages',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'all',
@@ -422,7 +535,6 @@ test('batch planning modal exposes direct all-pages and range controls for ordin
           selectedPageCount: 12,
           totalPages: 12,
         };
-        input.pagesSummary = 'All pages';
         input.canToggleKeep = false;
         return;
       }
@@ -433,7 +545,6 @@ test('batch planning modal exposes direct all-pages and range controls for ordin
         selectedPageCount: (action.pdfPageSelection.toPage - action.pdfPageSelection.fromPage) + 1,
         totalPages: 12,
       };
-      input.pagesSummary = `Pages ${action.pdfPageSelection.fromPage}-${action.pdfPageSelection.toPage}`;
       input.canToggleKeep = true;
     },
   };
@@ -522,6 +633,8 @@ test('batch planning modal exposes direct all-pages and range controls for ordin
         mode: 'range',
         fromPage: 4,
         toPage: 6,
+        selectedPageCount: 3,
+        totalPages: 12,
       },
     }
   );
@@ -571,7 +684,7 @@ test('batch planning modal shows keep control when page inputs auto-promote sele
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'All pages',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'all',
@@ -615,7 +728,6 @@ test('batch planning modal shows keep control when page inputs auto-promote sele
           selectedPageCount: 12,
           totalPages: 12,
         };
-        input.pagesSummary = 'All pages';
         input.canToggleKeep = false;
         return;
       }
@@ -626,7 +738,6 @@ test('batch planning modal shows keep control when page inputs auto-promote sele
         selectedPageCount: (action.pdfPageSelection.toPage - action.pdfPageSelection.fromPage) + 1,
         totalPages: 12,
       };
-      input.pagesSummary = `Pages ${action.pdfPageSelection.fromPage}-${action.pdfPageSelection.toPage}`;
       input.canToggleKeep = true;
     },
   };
@@ -663,6 +774,8 @@ test('batch planning modal shows keep control when page inputs auto-promote sele
         mode: 'range',
         fromPage: 4,
         toPage: 12,
+        selectedPageCount: 9,
+        totalPages: 12,
       },
     }
   );
@@ -698,7 +811,7 @@ test('batch planning modal preserves typed invalid to-page drafts while editing'
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'Pages 10-12',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'range',
@@ -741,7 +854,6 @@ test('batch planning modal preserves typed invalid to-page drafts while editing'
         selectedPageCount: (action.pdfPageSelection.toPage - action.pdfPageSelection.fromPage) + 1,
         totalPages: 12,
       };
-      input.pagesSummary = `Pages ${action.pdfPageSelection.fromPage}-${action.pdfPageSelection.toPage}`;
       input.canToggleKeep = true;
     },
   };
@@ -796,7 +908,7 @@ test('batch planning modal blocks start while a visible page-range draft is inva
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'Pages 10-12',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'range',
@@ -839,7 +951,6 @@ test('batch planning modal blocks start while a visible page-range draft is inva
         selectedPageCount: (action.pdfPageSelection.toPage - action.pdfPageSelection.fromPage) + 1,
         totalPages: 12,
       };
-      input.pagesSummary = `Pages ${action.pdfPageSelection.fromPage}-${action.pdfPageSelection.toPage}`;
       input.canToggleKeep = true;
     },
   };
@@ -884,6 +995,8 @@ test('batch planning modal blocks start while a visible page-range draft is inva
         mode: 'range',
         fromPage: 10,
         toPage: 11,
+        selectedPageCount: 2,
+        totalPages: 12,
       },
     }
   );
@@ -914,7 +1027,7 @@ test('batch planning modal preserves panel scroll and control focus across reren
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'All pages',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'all',
@@ -953,7 +1066,7 @@ test('batch planning modal preserves panel scroll and control focus across reren
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'All pages',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'all',
@@ -1097,7 +1210,7 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'All pages',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'all',
@@ -1138,7 +1251,7 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'All pages',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'all',
@@ -1234,7 +1347,7 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'All pages',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'all',
@@ -1261,7 +1374,7 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
             alertCode: '',
             activeRoute: 'native',
             routeOptions: ['native'],
-            pagesSummary: 'All pages',
+            pagesSummary: '',
             canEditPages: true,
             pdfPageSelection: {
               mode: 'all',

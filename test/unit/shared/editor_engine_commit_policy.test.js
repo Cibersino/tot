@@ -39,6 +39,7 @@ function createHarness({
   smallUpdateThreshold = 10,
   maxTextChars = 1_000_000,
   execCommandBehavior = 'success',
+  disableSetRangeText = false,
 } = {}) {
   const execCalls = [];
   const setRangeTextCalls = [];
@@ -65,7 +66,14 @@ function createHarness({
       this.selectionStart = start;
       this.selectionEnd = end;
     },
-    setRangeText(text, start, end, mode) {
+    dispatchEvent(event) {
+      dispatchedEvents.push(event && event.type ? event.type : 'unknown');
+      return true;
+    },
+  };
+
+  if (!disableSetRangeText) {
+    editor.setRangeText = function setRangeText(text, start, end, mode) {
       setRangeTextCalls.push({ text, start, end, mode });
       this.value = this.value.slice(0, start) + String(text) + this.value.slice(end);
       if (mode === 'end') {
@@ -73,12 +81,8 @@ function createHarness({
         this.selectionStart = nextPos;
         this.selectionEnd = nextPos;
       }
-    },
-    dispatchEvent(event) {
-      dispatchedEvents.push(event && event.type ? event.type : 'unknown');
-      return true;
-    },
-  };
+    };
+  }
 
   const previousActiveElement = {
     focusCount: 0,
@@ -289,4 +293,101 @@ test('append_newline keeps its suffix fast path for small suffixes', async () =>
   assert.equal(execCalls[0].text, '\n\nbeta');
   assert.equal(setRangeTextCalls.length, 0);
   assert.deepEqual(visibilityHistory, []);
+});
+
+test('insert fallback via setRangeText dispatches input after text mutation', () => {
+  const { engine, editor, dispatchedEvents } = createHarness({
+    initialValue: 'abc',
+    execCommandBehavior: 'fail',
+  });
+
+  engine.handleTextTransferInsert(
+    {
+      preventDefault() {},
+      stopPropagation() {},
+    },
+    {
+      getText: () => 'Z',
+      insertOptions: { action: 'drop' },
+    }
+  );
+
+  assert.equal(editor.value, 'abcZ');
+  assert.deepEqual(dispatchedEvents, ['input']);
+});
+
+test('insert direct-splice fallback dispatches input after text mutation', () => {
+  const { engine, editor, dispatchedEvents } = createHarness({
+    initialValue: 'abc',
+    execCommandBehavior: 'fail',
+    disableSetRangeText: true,
+  });
+
+  engine.handleTextTransferInsert(
+    {
+      preventDefault() {},
+      stopPropagation() {},
+    },
+    {
+      getText: () => 'Z',
+      insertOptions: { action: 'paste' },
+    }
+  );
+
+  assert.equal(editor.value, 'abcZ');
+  assert.deepEqual(dispatchedEvents, ['input']);
+});
+
+test('replace-current setRangeText fallback dispatches input after text mutation', () => {
+  const { engine, editor, dispatchedEvents } = createHarness({
+    initialValue: 'alpha',
+    execCommandBehavior: 'fail',
+  });
+  editor.selectionStart = 0;
+  editor.selectionEnd = 5;
+
+  const result = engine.handleReplaceRequest({
+    operation: 'replace-current',
+    requestId: 3,
+    query: 'alpha',
+    replacement: 'beta',
+    matchCase: false,
+  });
+
+  assert.equal(result.status, 'replaced');
+  assert.equal(editor.value, 'beta');
+  assert.deepEqual(dispatchedEvents, ['input']);
+});
+
+test('overwrite whole-value direct fallback dispatches input after text mutation', async () => {
+  const { engine, editor, dispatchedEvents } = createHarness({
+    initialValue: 'old',
+    smallUpdateThreshold: 10,
+    execCommandBehavior: 'fail',
+    disableSetRangeText: true,
+  });
+
+  await engine.applyExternalUpdate({
+    text: 'tiny',
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+
+  assert.equal(editor.value, 'tiny');
+  assert.deepEqual(dispatchedEvents, ['input']);
+});
+
+test('append_newline setRangeText fallback dispatches input after text mutation', async () => {
+  const { engine, editor, dispatchedEvents } = createHarness({
+    initialValue: 'alpha',
+    smallUpdateThreshold: 10,
+    execCommandBehavior: 'fail',
+  });
+
+  await engine.applyExternalUpdate({
+    text: 'alpha\nbeta',
+    meta: { source: 'main-window', action: 'append_newline' },
+  });
+
+  assert.equal(editor.value, 'alpha\nbeta');
+  assert.deepEqual(dispatchedEvents, ['input']);
 });

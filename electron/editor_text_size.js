@@ -4,11 +4,11 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-process controller for manual-editor textarea font size.
+// Main-process controller for Text Editor textarea font size.
 // Responsibilities:
 // - Read and persist editorFontSizePx through shared settings.
 // - Broadcast settings-updated after changes.
-// - Expose feature-level actions for UI controls and editor shortcuts.
+// - Expose feature-level actions for UI controls and Text Editor shortcuts.
 
 // =============================================================================
 // Imports / logger
@@ -20,7 +20,7 @@ const {
 } = require('./constants_main');
 
 const log = Log.get('editor-text-size');
-log.debug('Editor text-size controller starting...');
+log.debug('Text Editor text-size controller starting...');
 
 // =============================================================================
 // Controller factory

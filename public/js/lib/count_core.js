@@ -19,18 +19,13 @@
     root.CountCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
-  function createNoopLog() {
-    return {
-      warn() {},
-      warnOnce() {},
-    };
-  }
-
-  function createCountUtils({ DEFAULT_LANG, log = null, intlObject = Intl } = {}) {
-    const safeLog = log && typeof log === 'object' ? log : createNoopLog();
+  function createCountUtils({ DEFAULT_LANG, log, intlObject = Intl } = {}) {
     const defaultLang = typeof DEFAULT_LANG === 'string' ? DEFAULT_LANG.trim() : '';
     if (!defaultLang) {
       throw new Error('[count_core] DEFAULT_LANG is required');
+    }
+    if (!log || typeof log.warn !== 'function' || typeof log.warnOnce !== 'function') {
+      throw new Error('[count_core] log.warn() and log.warnOnce() are required');
     }
 
     const HYPHEN_JOINERS = new Set([
@@ -47,9 +42,7 @@
       reAlnumOnly = new RegExp('^[\\p{L}\\p{N}]+$', 'u');
     } catch {
       reAlnumOnly = /^[A-Za-z0-9]+$/;
-      if (typeof safeLog.warn === 'function') {
-        safeLog.warn('Unicode property escapes unsupported; using ASCII alnum fallback.');
-      }
+      log.warn('Unicode property escapes unsupported; using ASCII alnum fallback.');
     }
 
     function hasIntlSegmenter() {
@@ -87,9 +80,7 @@
 
     function contarTextoPreciso(texto, language) {
       if (!hasIntlSegmenter()) {
-        if (typeof safeLog.warnOnce === 'function') {
-          safeLog.warnOnce('count.intl-segmenter-missing', 'Intl.Segmenter unavailable; using fallback segmentation.');
-        }
+        log.warnOnce('count.intl-segmenter-missing', 'Intl.Segmenter unavailable; using fallback segmentation.');
         return contarTextoPrecisoFallback(texto);
       }
 

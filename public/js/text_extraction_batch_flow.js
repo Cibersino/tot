@@ -25,6 +25,12 @@
     throw new Error('[text-extraction-batch-flow] RendererI18n.tRenderer unavailable; cannot continue');
   }
   const { tRenderer } = window.RendererI18n;
+  const pdfPageSelectionHelper = window.TextExtractionPdfPageSelection || null;
+  if (!pdfPageSelectionHelper
+    || typeof pdfPageSelectionHelper.buildAllPagesSelection !== 'function'
+    || typeof pdfPageSelectionHelper.canonicalizePageSelection !== 'function') {
+    throw new Error('[text-extraction-batch-flow] TextExtractionPdfPageSelection dependencies unavailable; cannot continue');
+  }
   const snapshotTagCatalog = window.SnapshotTagCatalog || null;
   if (!snapshotTagCatalog || !Array.isArray(snapshotTagCatalog.LANGUAGE_OPTIONS)) {
     throw new Error('[text-extraction-batch-flow] SnapshotTagCatalog unavailable; cannot continue');
@@ -60,6 +66,7 @@
       hasBlockingModalOpen: null,
       hasCurrentTextSubscription: null,
       requestPreparedImport: null,
+      syncMainInteractionLockUi: null,
       textExtractionStatusUi: null,
       ...nextDeps,
     };
@@ -83,13 +90,22 @@
   function getStatusUi() {
     const { textExtractionStatusUi } = requireDeps();
     if (!textExtractionStatusUi
+      || typeof textExtractionStatusUi.endAbortFinalization !== 'function'
       || typeof textExtractionStatusUi.beginPrepare !== 'function'
       || typeof textExtractionStatusUi.endPrepare !== 'function'
+      || typeof textExtractionStatusUi.isAbortFinalizationActive !== 'function'
       || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function'
       || typeof textExtractionStatusUi.clearPendingExecutionContext !== 'function') {
       throw new Error('[text-extraction-batch-flow] textExtractionStatusUi dependency incomplete');
     }
     return textExtractionStatusUi;
+  }
+
+  function syncMainInteractionLockUi() {
+    const { syncMainInteractionLockUi: syncUi } = requireDeps();
+    if (typeof syncUi === 'function') {
+      syncUi();
+    }
   }
 
   // =============================================================================
@@ -146,29 +162,6 @@
     const groupKey = `batch-unit-${nextUnitId}`;
     nextUnitId += 1;
     return groupKey;
-  }
-
-  function buildAllPagesSelection(totalPages) {
-    const safeTotalPages = Number.isInteger(Number(totalPages)) && Number(totalPages) > 0
-      ? Number(totalPages)
-      : 1;
-    return {
-      mode: 'all',
-      fromPage: 1,
-      toPage: safeTotalPages,
-      selectedPageCount: safeTotalPages,
-      totalPages: safeTotalPages,
-    };
-  }
-
-  function formatPageSelectionSummary(selection) {
-    const safeSelection = selection && typeof selection === 'object' ? selection : null;
-    if (!safeSelection || safeSelection.mode === 'all') {
-      return tRenderer('renderer.text_extraction.batch_plan.pages_all');
-    }
-    return tRenderer('renderer.text_extraction.batch_plan.pages_range')
-      .replace('{fromPage}', String(safeSelection.fromPage || ''))
-      .replace('{toPage}', String(safeSelection.toPage || ''));
   }
 
   function getTagLabel(options, value) {
@@ -292,6 +285,40 @@
     return `${displayLabel} - ${safeCustomName}`;
   }
 
+  function formatSyntheticUnitTitle(unitIndex) {
+    return `unit_${unitIndex + 1}`;
+  }
+
+  function removeFinalExtensionSegment(rawValue) {
+    const value = normalizeNonEmptyString(rawValue);
+    if (!value) return '';
+    const lastDotIndex = value.lastIndexOf('.');
+    if (lastDotIndex <= 0) {
+      return value;
+    }
+    return value.slice(0, lastDotIndex);
+  }
+
+  function deriveVisibleUnitTitle({ customName, exclusiveHeavy, sourceInput, unitIndex }) {
+    if (customName) {
+      return customName;
+    }
+    if (exclusiveHeavy && sourceInput) {
+      return sourceInput.fileName;
+    }
+    return formatSyntheticUnitTitle(unitIndex);
+  }
+
+  function deriveUnitSnapshotFileBaseSource({ customName, inputs, unitIndex }) {
+    if (customName) {
+      return customName;
+    }
+    if (Array.isArray(inputs) && inputs.length === 1 && inputs[0]) {
+      return removeFinalExtensionSegment(inputs[0].fileName);
+    }
+    return formatSyntheticUnitTitle(unitIndex);
+  }
+
   function buildInputModel({ filePath, preparation }) {
     const safePreparation = preparation && typeof preparation === 'object' ? preparation : null;
     const fileInfo = safePreparation && safePreparation.fileInfo && typeof safePreparation.fileInfo === 'object'
@@ -304,7 +331,7 @@
       || (isPdfInput({
         fileKind: routeMetadata.fileKind || fileInfo.sourceFileKind,
       })
-        ? buildAllPagesSelection(routeMetadata.pdfTotalPages || 1)
+        ? pdfPageSelectionHelper.buildAllPagesSelection(routeMetadata.pdfTotalPages || 1)
         : null);
     const generatedPdfArtifactPolicy = cloneArtifactPolicy(safePreparation && safePreparation.generatedPdfArtifactPolicy)
       || (isPdfInput({
@@ -423,12 +450,21 @@
         const unitMeta = state.unitMetaByKey[unitKey] || {};
         const sourceInput = unitInputs[0];
         const customName = normalizeNonEmptyString(unitMeta.customName);
-        const title = customName
-          || (exclusiveHeavy ? sourceInput.fileName : `unit_${unitIndex + 1}`);
+        const title = deriveVisibleUnitTitle({
+          customName,
+          exclusiveHeavy,
+          sourceInput,
+          unitIndex,
+        });
         return {
           unitKey,
           title,
           customName,
+          snapshotFileBaseSource: deriveUnitSnapshotFileBaseSource({
+            customName,
+            inputs: unitInputs,
+            unitIndex,
+          }),
           displayLabel: exclusiveHeavy ? sourceInput.fileName : formatUnitDisplayLabel(unitIndex),
           optionLabel: exclusiveHeavy ? sourceInput.fileName : formatUnitOptionLabel(unitIndex, customName),
           tags: cloneTags(unitMeta.tags),
@@ -488,7 +524,7 @@
     input.activeRoute = normalizedRoute;
     const isHeavy = isHeavySplitActive(input);
     if (wasHeavy !== isHeavy && isPdfInput(input)) {
-      input.pdfPageSelection = buildAllPagesSelection(
+      input.pdfPageSelection = pdfPageSelectionHelper.buildAllPagesSelection(
         input.pdfPageSelection && input.pdfPageSelection.totalPages
           ? input.pdfPageSelection.totalPages
           : (input.preparation
@@ -583,26 +619,13 @@
     const input = state.inputs.find((candidate) => candidate.inputId === inputId);
     if (!input || !canEditPages(input) || !nextPdfPageSelection) return;
     const totalPages = getPdfTotalPages(input);
-    if (nextPdfPageSelection.mode === 'all') {
-      input.pdfPageSelection = buildAllPagesSelection(totalPages);
-      return;
-    }
-    const fromPage = Number(nextPdfPageSelection.fromPage);
-    const toPage = Number(nextPdfPageSelection.toPage);
-    if (!Number.isInteger(fromPage)
-      || !Number.isInteger(toPage)
-      || fromPage < 1
-      || toPage < fromPage
-      || toPage > totalPages) {
-      return;
-    }
-    input.pdfPageSelection = {
-      mode: 'range',
-      fromPage,
-      toPage,
-      selectedPageCount: (toPage - fromPage) + 1,
+    const canonicalSelection = pdfPageSelectionHelper.canonicalizePageSelection(nextPdfPageSelection, {
       totalPages,
-    };
+    });
+    if (!canonicalSelection) {
+      return;
+    }
+    input.pdfPageSelection = canonicalSelection;
   }
 
   function buildPlannerViewModel(state) {
@@ -639,8 +662,8 @@
           alertCode: getInputAlertCode(input),
           activeRoute: normalizeRoute(input.activeRoute),
           routeOptions: [...input.routeOptions],
-          pagesSummary: input.pdfPageSelection
-            ? formatPageSelectionSummary(input.pdfPageSelection)
+          pagesSummary: !canEditPages(input) && isPdfInput(input)
+            ? tRenderer('renderer.text_extraction.batch_plan.pages_all')
             : '',
           canEditPages: canEditPages(input),
           pdfPageSelection: cloneSelection(input.pdfPageSelection),
@@ -778,6 +801,12 @@
     if (code === 'ocr_token_state_invalid') {
       return 'renderer.alerts.text_extraction_batch_ocr_token_state_invalid';
     }
+    if (code === 'connectivity_failed') {
+      return 'renderer.alerts.text_extraction_batch_ocr_connectivity_failed';
+    }
+    if (code === 'quota_or_rate_limited') {
+      return 'renderer.alerts.text_extraction_batch_ocr_quota_or_rate_limited';
+    }
     return 'renderer.alerts.text_extraction_batch_ocr_unavailable';
   }
 
@@ -846,13 +875,13 @@
     });
   }
 
-  async function autoSaveUnitSnapshot(unitName, tags) {
+  async function autoSaveUnitSnapshot(fileBaseSource, tags) {
     if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
       return { ok: false, code: 'WRITE_FAILED' };
     }
     return window.electronAPI.saveCurrentTextSnapshot({
       nonInteractive: true,
-      autoFileBaseName: unitName,
+      autoFileBaseName: fileBaseSource,
       tags: tags || null,
     });
   }
@@ -894,8 +923,37 @@
     };
   }
 
+  const LTR_ISOLATE = '\u2066';
+  const POP_DIRECTIONAL_ISOLATE = '\u2069';
+
+  function formatIsolatedPageRangeToken(pdfPageSelection) {
+    const totalPages = pdfPageSelection && Number.isInteger(Number(pdfPageSelection.totalPages))
+      ? Number(pdfPageSelection.totalPages)
+      : 0;
+    const canonicalSelection = pdfPageSelectionHelper.canonicalizePageSelection(pdfPageSelection, {
+      totalPages: totalPages > 0 ? totalPages : 1,
+    });
+    if (!canonicalSelection || canonicalSelection.mode !== 'range') {
+      return '';
+    }
+    return `${LTR_ISOLATE}${canonicalSelection.fromPage}-${canonicalSelection.toPage}${POP_DIRECTIONAL_ISOLATE}`;
+  }
+
+  function formatReportInputDisplayName(fileName, pdfPageSelection) {
+    const baseFileName = normalizeNonEmptyString(fileName);
+    if (!baseFileName || !pdfPageSelection || pdfPageSelection.mode !== 'range') {
+      return baseFileName;
+    }
+    const isolatedRangeToken = formatIsolatedPageRangeToken(pdfPageSelection);
+    if (!isolatedRangeToken) {
+      return baseFileName;
+    }
+    return `${baseFileName} (${isolatedRangeToken})`;
+  }
+
   function buildInputReportRecord({
     fileName,
+    displayName = '',
     state,
     code = '',
     generatedInputs = [],
@@ -903,11 +961,72 @@
   }) {
     return {
       fileName,
+      displayName: normalizeNonEmptyString(displayName) || normalizeNonEmptyString(fileName),
       state,
       code,
       generatedInputs,
       generatedPdfArtifact,
     };
+  }
+
+  function mapExecutionResultStateToReportState(executionResult) {
+    const state = executionResult && typeof executionResult.state === 'string'
+      ? executionResult.state
+      : '';
+    if (state === 'success') return 'success';
+    if (state === 'cancelled' || state.indexOf('cancelled') === 0) return 'cancelled';
+    if (state === 'omitted') return 'omitted';
+    return 'failed';
+  }
+
+  function mapGeneratedInputStateToReportState(generatedInputState) {
+    const state = typeof generatedInputState === 'string'
+      ? generatedInputState
+      : '';
+    if (state === 'success') return 'success';
+    if (state === 'cancelled' || state.indexOf('cancelled') === 0) return 'cancelled';
+    if (state === 'omitted') return 'omitted';
+    return 'failed';
+  }
+
+  function appendExecutionResultToUnitReport({
+    unitReport,
+    input,
+    executionResult,
+    heavyGeneratedInputs,
+  }) {
+    if (!unitReport || !input || !executionResult) {
+      return;
+    }
+
+    if (unitReport.exclusiveHeavy === true
+      && Array.isArray(heavyGeneratedInputs)
+      && heavyGeneratedInputs.length) {
+      unitReport.heavyGeneratedInputRows = true;
+      unitReport.sourceFileName = input.fileName;
+      unitReport.overallState = mapExecutionResultStateToReportState(executionResult);
+      unitReport.overallCode = executionResult.error && executionResult.error.code
+        ? executionResult.error.code
+        : '';
+      heavyGeneratedInputs.forEach((generatedInput) => {
+        unitReport.inputs.push(buildInputReportRecord({
+          fileName: generatedInput.fileName,
+          state: generatedInput.state,
+          code: generatedInput.code,
+          generatedPdfArtifact: generatedInput.generatedPdfArtifact,
+        }));
+      });
+      return;
+    }
+
+    unitReport.inputs.push(buildInputReportRecord({
+      fileName: input.fileName,
+      displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
+      state: mapExecutionResultStateToReportState(executionResult),
+      code: executionResult.error && executionResult.error.code ? executionResult.error.code : '',
+      generatedInputs: heavyGeneratedInputs,
+      generatedPdfArtifact: executionResult.generatedPdfArtifact || null,
+    }));
   }
 
   function buildBatchProcessingContext({
@@ -934,6 +1053,7 @@
     for (let index = startIndex; index < unitInputs.length; index += 1) {
       unitReport.inputs.push(buildInputReportRecord({
         fileName: unitInputs[index].fileName,
+        displayName: formatReportInputDisplayName(unitInputs[index].fileName, unitInputs[index].pdfPageSelection),
         state: 'omitted',
         code: 'omitted',
       }));
@@ -946,8 +1066,13 @@
       finalReport.units.push({
         unitTitle: unit.title,
         exclusiveHeavy: unit.exclusiveHeavy,
+        sourceFileName: unit.exclusiveHeavy && unit.inputs[0] ? unit.inputs[0].fileName : '',
+        overallState: '',
+        overallCode: '',
+        heavyGeneratedInputRows: false,
         inputs: unit.inputs.map((input) => buildInputReportRecord({
           fileName: input.fileName,
+          displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
           state: 'omitted',
           code: 'omitted',
         })),
@@ -1048,6 +1173,10 @@
         const unitReport = {
           unitTitle: unit.title,
           exclusiveHeavy: unit.exclusiveHeavy,
+          sourceFileName: unit.exclusiveHeavy && unit.inputs[0] ? unit.inputs[0].fileName : '',
+          overallState: '',
+          overallCode: '',
+          heavyGeneratedInputRows: false,
           inputs: [],
           snapshotResult: null,
         };
@@ -1059,6 +1188,7 @@
           if (closeUnitAfterFailure) {
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
+              displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
               state: 'omitted',
               code: 'omitted',
             }));
@@ -1078,7 +1208,8 @@
             batchCancelled = true;
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
-              state: 'failed',
+              displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
+              state: 'cancelled',
               code: 'aborted_by_user',
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
@@ -1086,7 +1217,7 @@
           }
 
           const executionSelection = isHeavySplitActive(input)
-            ? buildAllPagesSelection(input.pdfPageSelection && input.pdfPageSelection.totalPages)
+            ? pdfPageSelectionHelper.buildAllPagesSelection(input.pdfPageSelection && input.pdfPageSelection.totalPages)
             : cloneSelection(input.pdfPageSelection);
           const preparationRequest = {
             filePath: input.filePath,
@@ -1105,7 +1236,8 @@
             batchCancelled = true;
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
-              state: 'failed',
+              displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
+              state: 'cancelled',
               code: 'aborted_by_user',
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
@@ -1119,6 +1251,7 @@
               : 'prepare_failed';
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
+              displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
               state: 'failed',
               code: failureCode,
             }));
@@ -1157,7 +1290,7 @@
               : (execution && execution.code ? String(execution.code).toLowerCase() : 'execution_failed');
             unitReport.inputs.push(buildInputReportRecord({
               fileName: input.fileName,
-              state: 'failed',
+              state: failureCode === 'active_session_required' ? 'cancelled' : 'failed',
               code: failureCode,
             }));
             if (failureCode === 'active_session_required') {
@@ -1180,6 +1313,7 @@
             if (!applyResult || applyResult.ok !== true) {
               unitReport.inputs.push(buildInputReportRecord({
                 fileName: input.fileName,
+                displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
                 state: 'failed',
                 code: applyResult && applyResult.code ? applyResult.code : 'apply_failed',
               }));
@@ -1196,23 +1330,18 @@
             && Array.isArray(execution.result.heavySplitExecution.generatedInputs)
               ? execution.result.heavySplitExecution.generatedInputs.map((generatedInput) => ({
                 fileName: generatedInput.fileName,
-                state: generatedInput.state === 'success'
-                  ? 'success'
-                  : (generatedInput.state === 'omitted'
-                    ? 'omitted'
-                    : 'failed'),
+                state: mapGeneratedInputStateToReportState(generatedInput.state),
                 code: generatedInput.errorCode || '',
                 generatedPdfArtifact: generatedInput.generatedPdfArtifact || null,
               }))
               : [];
 
-          unitReport.inputs.push(buildInputReportRecord({
-            fileName: input.fileName,
-            state: isSuccess ? 'success' : 'failed',
-            code: execution.result.error && execution.result.error.code ? execution.result.error.code : '',
-            generatedInputs: heavyGeneratedInputs,
-            generatedPdfArtifact: execution.result.generatedPdfArtifact || null,
-          }));
+          appendExecutionResultToUnitReport({
+            unitReport,
+            input,
+            executionResult: execution.result,
+            heavyGeneratedInputs,
+          });
 
           if (isCancelled) {
             batchCancelled = true;
@@ -1227,7 +1356,7 @@
 
         const snapshotRequired = units.length > 1 && unitProducedText;
         const snapshotResult = snapshotRequired
-          ? await autoSaveUnitSnapshot(unit.title, unit.tags)
+          ? await autoSaveUnitSnapshot(unit.snapshotFileBaseSource, unit.tags)
           : null;
         unitReport.snapshotResult = buildUnitResultLine({
           required: snapshotRequired,
@@ -1262,24 +1391,34 @@
       }
     };
 
-    await window.Notify.promptTextExtractionBatchFinalReport({
-      report: finalReport,
-      elapsedValueText: textExtractionStatusUi.getFinalElapsedValueText(),
-      onRevealGeneratedPdf: async (artifactPath) => {
-        const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-          dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
-          unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; reveal action disabled.',
-        });
-        if (!revealTextExtractionGeneratedPdf) {
-          throw new Error('revealTextExtractionGeneratedPdf unavailable');
-        }
-        const revealResult = await revealTextExtractionGeneratedPdf({ artifactPath });
-        if (!revealResult || revealResult.ok !== true) {
-          throw new Error('revealTextExtractionGeneratedPdf failed');
-        }
-      },
-      onOpenSnapshotsFolder: openSnapshotsFolder,
-    });
+    try {
+      const finalReportPrompt = window.Notify.promptTextExtractionBatchFinalReport({
+        report: finalReport,
+        elapsedValueText: textExtractionStatusUi.getFinalElapsedValueText(),
+        onRevealGeneratedPdf: async (artifactPath) => {
+          const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
+            dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
+            unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; reveal action disabled.',
+          });
+          if (!revealTextExtractionGeneratedPdf) {
+            throw new Error('revealTextExtractionGeneratedPdf unavailable');
+          }
+          const revealResult = await revealTextExtractionGeneratedPdf({ artifactPath });
+          if (!revealResult || revealResult.ok !== true) {
+            throw new Error('revealTextExtractionGeneratedPdf failed');
+          }
+        },
+        onOpenSnapshotsFolder: openSnapshotsFolder,
+      });
+      textExtractionStatusUi.endAbortFinalization();
+      syncMainInteractionLockUi();
+      await finalReportPrompt;
+    } catch (err) {
+      textExtractionStatusUi.endAbortFinalization();
+      syncMainInteractionLockUi();
+      log.error('Batch final report prompt failed:', err);
+      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+    }
   }
 
   async function startFromSelectedFiles({

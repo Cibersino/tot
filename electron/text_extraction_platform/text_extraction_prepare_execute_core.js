@@ -20,6 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const { BrowserWindow } = require('electron');
 
+const Log = require('../log');
 const { PROVIDER_API_DISABLED_CODE } = require('./ocr_google_drive_provider_failure');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
 const { runGoogleDriveOcrRoute } = require('./ocr_google_drive_route');
@@ -42,6 +43,8 @@ const {
   getNativeParserForExt,
   getOcrSourceMimeTypeForExt,
 } = require('./text_extraction_supported_formats');
+
+const log = Log.get('text-extraction-prepare-execute-core');
 
 // =============================================================================
 // IPC wrapper boundary helpers
@@ -208,6 +211,21 @@ function getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy) {
 // Prepare/build helpers
 // =============================================================================
 
+function getProbeMetadataSafeForLogs(probeResult) {
+  const metadata = probeResult && probeResult.metadataSafeForLogs && typeof probeResult.metadataSafeForLogs === 'object'
+    ? probeResult.metadataSafeForLogs
+    : {};
+  return {
+    pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
+    totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
+    foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
+    probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
+    probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
+    selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
+    elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
+  };
+}
+
 function getProbeFailureDetails(probeResult) {
   if (!probeResult || probeResult.state !== 'failure') return null;
   const error = probeResult.error && typeof probeResult.error === 'object'
@@ -217,43 +235,21 @@ function getProbeFailureDetails(probeResult) {
   const details = error.detailsSafeForLogs && typeof error.detailsSafeForLogs === 'object'
     ? error.detailsSafeForLogs
     : {};
-  const metadata = probeResult.metadataSafeForLogs && typeof probeResult.metadataSafeForLogs === 'object'
-    ? probeResult.metadataSafeForLogs
-    : {};
 
   return {
     code: typeof error.code === 'string' ? error.code : '',
     errorName: typeof details.errorName === 'string' ? details.errorName : '',
     errorCode: typeof details.errorCode === 'string' ? details.errorCode : '',
     selectableText: typeof probeResult.selectableText === 'string' ? probeResult.selectableText : 'unknown',
-    metadataSafeForLogs: {
-      pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
-      totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
-      foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
-      probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
-      probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
-      selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
-      elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
-    },
+    metadataSafeForLogs: getProbeMetadataSafeForLogs(probeResult),
   };
 }
 
 function getProbeSuccessDetails(probeResult) {
   if (!probeResult || probeResult.state !== 'success') return null;
-  const metadata = probeResult.metadataSafeForLogs && typeof probeResult.metadataSafeForLogs === 'object'
-    ? probeResult.metadataSafeForLogs
-    : {};
   return {
     selectableText: typeof probeResult.selectableText === 'string' ? probeResult.selectableText : 'unknown',
-    metadataSafeForLogs: {
-      pagesScanned: Number.isFinite(metadata.pagesScanned) ? metadata.pagesScanned : 0,
-      totalPages: Number.isFinite(metadata.totalPages) ? metadata.totalPages : 0,
-      foundAtPage: Number.isFinite(metadata.foundAtPage) ? metadata.foundAtPage : null,
-      probedFromPage: Number.isFinite(metadata.probedFromPage) ? metadata.probedFromPage : null,
-      probedToPage: Number.isFinite(metadata.probedToPage) ? metadata.probedToPage : null,
-      selectedPageCount: Number.isFinite(metadata.selectedPageCount) ? metadata.selectedPageCount : null,
-      elapsedMs: Number.isFinite(metadata.elapsedMs) ? metadata.elapsedMs : 0,
-    },
+    metadataSafeForLogs: getProbeMetadataSafeForLogs(probeResult),
   };
 }
 
@@ -462,7 +458,7 @@ function buildUnsupportedFormatPrepareFailure(fileInfo) {
       triageReason: 'unsupported_format',
       ocrSetupState: 'not_checked',
     }),
-    primaryAlertKey: 'renderer.alerts.text_extraction_native_unsupported_format',
+    primaryAlertKey: 'renderer.alerts.text_extraction_unsupported_format',
     warningAlertKeys: [],
     error: {
       code: 'unsupported_format',
@@ -528,7 +524,7 @@ function buildOcrSetupValidationRuntimeFailure(err) {
 // Keep unexpected resolvePaths()/validation exceptions on the same structured
 // OCR-unavailable prepare path instead of letting prepare IPC fall through to
 // a generic handler failure.
-async function validateOcrSetup(resolvePaths, log) {
+async function validateOcrSetup(resolvePaths) {
   try {
     const paths = resolvePaths();
     return validateGoogleDriveOcrSetup({
@@ -613,10 +609,9 @@ async function resolveNonPdfOcrPreparation({
   fileInfo,
   ocrLanguage,
   resolvePaths,
-  log,
 }) {
   const processingInputFileName = fileInfo.fileName;
-  const validation = await validateOcrSetup(resolvePaths, log);
+  const validation = await validateOcrSetup(resolvePaths);
   if (!validation || validation.ok !== true) {
     return buildOcrPrepareFailure({
       fileInfo,
@@ -656,7 +651,6 @@ async function resolvePdfPreparation({
   requestedPdfPageSelection,
   requestedGeneratedPdfArtifactPolicy,
   resolvePaths,
-  log,
 }) {
   const pdfInspection = await inspectPdfFile({ fileInfo });
   if (!pdfInspection || pdfInspection.ok !== true || pdfInspection.isPdf !== true) {
@@ -749,7 +743,7 @@ async function resolvePdfPreparation({
   const nativeProbeSuccess = getProbeSuccessDetails(nativeProbeResult);
   const nativeAvailable = !!(nativeProbeSuccess && nativeProbeSuccess.selectableText === 'present');
 
-  const ocrValidation = await validateOcrSetup(resolvePaths, log);
+  const ocrValidation = await validateOcrSetup(resolvePaths);
   const ocrReady = !!(ocrValidation && ocrValidation.ok === true);
   const ocrSetupState = resolveSetupState(ocrValidation);
   const ocrSetupCode = resolveSetupCode(ocrValidation);
@@ -882,7 +876,6 @@ async function prepareSelectedFile({
   pdfPageSelection,
   generatedPdfArtifactPolicy,
   resolvePaths,
-  log,
 }) {
   const fileInfo = getFileInfo(filePath);
   const nativeParser = getNativeParserForExt(fileInfo.sourceFileExt);
@@ -897,7 +890,6 @@ async function prepareSelectedFile({
       requestedPdfPageSelection: pdfPageSelection,
       requestedGeneratedPdfArtifactPolicy: generatedPdfArtifactPolicy,
       resolvePaths,
-      log,
     });
   }
 
@@ -906,7 +898,6 @@ async function prepareSelectedFile({
       fileInfo,
       ocrLanguage,
       resolvePaths,
-      log,
     });
   }
 
@@ -938,9 +929,8 @@ function resolvePrimaryAlertKey(routeKind, result) {
   }
 
   if (routeKind === 'native') {
-    if (state === 'success') return 'renderer.alerts.text_extraction_native_apply_pending';
+    if (state === 'success') return '';
     if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_native_cancelled';
-    if (code === 'unsupported_format') return 'renderer.alerts.text_extraction_native_unsupported_format';
     if (code === 'native_encrypted_or_password_protected') {
       return 'renderer.alerts.text_extraction_native_encrypted_or_password_protected';
     }
@@ -948,22 +938,26 @@ function resolvePrimaryAlertKey(routeKind, result) {
     return 'renderer.alerts.text_extraction_native_runtime_error';
   }
 
-  if (state === 'success') return 'renderer.alerts.text_extraction_ocr_apply_pending';
-  if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_ocr_cancelled';
-  if (code === 'ocr_input_too_large') return 'renderer.alerts.text_extraction_ocr_input_too_large';
-  if (code === 'ocr_activation_required') return 'renderer.alerts.text_extraction_ocr_activation_required';
-  if (code === 'credentials_missing') return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
-  if (code === 'credentials_invalid') return 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
-  if (code === 'ocr_token_state_invalid') return 'renderer.alerts.text_extraction_ocr_token_state_invalid';
-  if (code === 'connectivity_failed') return 'renderer.alerts.text_extraction_ocr_connectivity_failed';
-  if (code === 'quota_or_rate_limited') return 'renderer.alerts.text_extraction_ocr_quota_or_rate_limited';
-  if (code === PROVIDER_API_DISABLED_CODE
-    || code === 'auth_failed'
-    || code === 'platform_runtime_failed'
-    || code === 'ocr_unavailable') {
-    return 'renderer.alerts.text_extraction_ocr_unavailable';
+  if (routeKind === 'ocr') {
+    if (state === 'success') return '';
+    if (code === 'ocr_input_too_large') return '';
+    if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_ocr_cancelled';
+    if (code === 'ocr_activation_required') return 'renderer.alerts.text_extraction_ocr_activation_required';
+    if (code === 'credentials_missing') return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
+    if (code === 'credentials_invalid') return 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
+    if (code === 'ocr_token_state_invalid') return 'renderer.alerts.text_extraction_ocr_token_state_invalid';
+    if (code === 'connectivity_failed') return 'renderer.alerts.text_extraction_ocr_connectivity_failed';
+    if (code === 'quota_or_rate_limited') return 'renderer.alerts.text_extraction_ocr_quota_or_rate_limited';
+    if (code === PROVIDER_API_DISABLED_CODE
+      || code === 'auth_failed'
+      || code === 'platform_runtime_failed'
+      || code === 'ocr_unavailable') {
+      return 'renderer.alerts.text_extraction_ocr_unavailable';
+    }
+    return 'renderer.alerts.text_extraction_ocr_runtime_error';
   }
-  return 'renderer.alerts.text_extraction_ocr_runtime_error';
+
+  return 'renderer.alerts.text_extraction_error';
 }
 
 function resolveWarningAlertKeys(routeKind, result) {
@@ -1022,7 +1016,6 @@ function enforceFailureAbortInvariants({
   fileInfo,
   isExecutionOwned,
   result,
-  log,
 }) {
   const safeResult = result && typeof result === 'object' ? { ...result } : null;
   if (!safeResult) return result;
@@ -1069,6 +1062,7 @@ function buildPreparedCancelledResult({
   routeMetadata,
   processingInputContext,
   detailsSafeForLogs,
+  heavySplitExecution = null,
   summary,
   message,
 }) {
@@ -1084,6 +1078,10 @@ function buildPreparedCancelledResult({
         text: '',
         warnings: [],
         summary,
+        heavySplitExecution:
+          heavySplitExecution && typeof heavySplitExecution === 'object'
+            ? { ...heavySplitExecution }
+            : null,
         provenance: {
           sourceFileName: preparedRecord.fileInfo.fileName,
           sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
@@ -1345,14 +1343,12 @@ function buildControllerExecutionContext({
   };
 }
 
-function updateControllerProcessingContext(controller, nextContext, log) {
+function updateControllerProcessingContext(controller, nextContext) {
   if (!controller || typeof controller.update !== 'function') return;
   try {
     controller.update(nextContext);
   } catch (err) {
-    if (log && typeof log.warn === 'function') {
-      log.warn('Processing-mode metadata update failed (ignored):', err);
-    }
+    log.warn('Processing-mode metadata update failed (ignored):', err);
   }
 }
 
@@ -1387,13 +1383,21 @@ function buildHeavySplitChildStatus({
   };
 }
 
+function appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, startIndex) {
+  for (let omittedIndex = startIndex; omittedIndex < generatedInputs.length; omittedIndex += 1) {
+    childStatuses.push(buildHeavySplitChildStatus({
+      generatedInput: generatedInputs[omittedIndex],
+      state: 'omitted',
+    }));
+  }
+}
+
 async function executePreparedHeavySplitUnit({
   preparedRecord,
   routeMetadata,
   productRoute,
   resolvePaths,
   controller,
-  log,
   executionOwnsController,
   heavySplitFailurePolicy,
   processingContext,
@@ -1453,7 +1457,7 @@ async function executePreparedHeavySplitUnit({
       processingInputFileName: generatedInput.processingInputFileName,
       processingInputSource: 'generated_pdf_split_input',
     };
-    updateControllerProcessingContext(controller, childProcessingContext, log);
+    updateControllerProcessingContext(controller, childProcessingContext);
 
     const paths = resolvePaths();
     const materializedInput = await materializePdfPageSelectionInput({
@@ -1481,12 +1485,7 @@ async function executePreparedHeavySplitUnit({
         errorCode: error.code || 'pdf_subset_creation_failed',
       }));
       if (heavySplitFailurePolicy !== 'omit_failed_and_continue') {
-        for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
-          childStatuses.push(buildHeavySplitChildStatus({
-            generatedInput: generatedInputs[omittedIndex],
-            state: 'omitted',
-          }));
-        }
+        appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, index + 1);
         break;
       }
       continue;
@@ -1501,30 +1500,34 @@ async function executePreparedHeavySplitUnit({
       ...childProcessingContext,
       processingInputFileName: materializedInput.processingInputFileName,
       processingInputSource: 'generated_pdf_split_input',
-    }, log);
+    });
 
     if (!executionOwnsController()) {
       const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
         ? cleanupGeneratedArtifact()
         : null;
-      if (cleanupWarning) cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+      if (cleanupWarning) {
+        log.warn(
+          'Generated PDF subset cleanup failed (ignored):',
+          cleanupWarning.detailsSafeForLogs || cleanupWarning
+        );
+        cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+      }
       childStatuses.push(buildHeavySplitChildStatus({
         generatedInput,
         state: 'cancelled_before_route_dispatch',
         generatedPdfArtifact,
       }));
-      for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
-        childStatuses.push(buildHeavySplitChildStatus({
-          generatedInput: generatedInputs[omittedIndex],
-          state: 'omitted',
-        }));
-      }
+      appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, index + 1);
       const cancelledExecution = buildPreparedCancelledResult({
         preparedRecord,
         productRoute,
         executionKind: 'google_drive',
         routeMetadata,
         processingInputContext: unitProcessingInputContext,
+        heavySplitExecution: {
+          generatedInputs: childStatuses,
+        },
         summary: 'Heavy PDF OCR split cancelled by user before OCR upload.',
         message: 'Heavy PDF OCR split was cancelled by user before OCR upload.',
         detailsSafeForLogs: {
@@ -1556,7 +1559,6 @@ async function executePreparedHeavySplitUnit({
         bundledCredentialsFailureReason: paths.bundledCredentialsFailureReason,
         bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
         ocrLanguage: preparedRecord.ocrLanguage,
-        log,
         isAborted: () => !executionOwnsController(),
       });
       childResult = enforceFailureAbortInvariants({
@@ -1564,13 +1566,18 @@ async function executePreparedHeavySplitUnit({
         fileInfo: preparedRecord.fileInfo,
         isExecutionOwned: executionOwnsController,
         result: childResult,
-        log,
       });
     } finally {
       const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
         ? cleanupGeneratedArtifact()
         : null;
-      if (cleanupWarning) cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+      if (cleanupWarning) {
+        log.warn(
+          'Generated PDF subset cleanup failed (ignored):',
+          cleanupWarning.detailsSafeForLogs || cleanupWarning
+        );
+        cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+      }
     }
 
     if (childResult && childResult.state === 'success') {
@@ -1599,18 +1606,16 @@ async function executePreparedHeavySplitUnit({
             : '',
         generatedPdfArtifact,
       }));
-      for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
-        childStatuses.push(buildHeavySplitChildStatus({
-          generatedInput: generatedInputs[omittedIndex],
-          state: 'omitted',
-        }));
-      }
+      appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, index + 1);
       const cancelledExecution = buildPreparedCancelledResult({
         preparedRecord,
         productRoute,
         executionKind: 'google_drive',
         routeMetadata,
         processingInputContext: unitProcessingInputContext,
+        heavySplitExecution: {
+          generatedInputs: childStatuses,
+        },
         summary: 'Heavy PDF OCR split cancelled by user.',
         message: 'Heavy PDF OCR split was cancelled by user.',
         detailsSafeForLogs: {
@@ -1655,12 +1660,7 @@ async function executePreparedHeavySplitUnit({
       generatedPdfArtifact,
     }));
     if (heavySplitFailurePolicy !== 'omit_failed_and_continue') {
-      for (let omittedIndex = index + 1; omittedIndex < generatedInputs.length; omittedIndex += 1) {
-        childStatuses.push(buildHeavySplitChildStatus({
-          generatedInput: generatedInputs[omittedIndex],
-          state: 'omitted',
-        }));
-      }
+      appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, index + 1);
       break;
     }
   }
@@ -1783,7 +1783,6 @@ async function executePreparedImport({
   heavySplitFailurePolicy = 'finish_unit_after_last_success',
   resolvePaths,
   controller,
-  log,
 }) {
   const resolvedRoute = resolvePreparedRoute(preparedRecord, routePreference);
   if (!resolvedRoute.ok) {
@@ -1792,7 +1791,7 @@ async function executePreparedImport({
       code: resolvedRoute.reason === 'route_choice_required'
         ? 'ROUTE_CHOICE_REQUIRED'
         : 'ROUTE_RESOLUTION_FAILED',
-      primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_required',
+      primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_error',
     };
   }
 
@@ -1815,7 +1814,7 @@ async function executePreparedImport({
         state: controller.getState(),
       };
     }
-    updateControllerProcessingContext(controller, controllerExecutionContext, log);
+    updateControllerProcessingContext(controller, controllerExecutionContext);
     executionState = getControllerStateSnapshot(controller);
   } else {
     const enterTransition = controller.enter(controllerExecutionContext);
@@ -1857,7 +1856,6 @@ async function executePreparedImport({
         productRoute,
         resolvePaths,
         controller,
-        log,
         executionOwnsController,
         heavySplitFailurePolicy,
         processingContext,
@@ -1903,7 +1901,7 @@ async function executePreparedImport({
         ...controllerExecutionContext,
         processingInputFileName: materializedInput.processingInputFileName,
         processingInputSource: materializedInput.processingInputSource,
-      }, log);
+      });
       cleanupGeneratedArtifact = typeof materializedInput.cleanupGeneratedArtifact === 'function'
         ? materializedInput.cleanupGeneratedArtifact
         : null;
@@ -1948,14 +1946,12 @@ async function executePreparedImport({
         const nativeResult = await runNativeExtractionRoute({
           filePath: materializedInput.effectiveFilePath,
           isAborted: () => !executionOwnsController(),
-          log,
         });
         const safeNativeResult = enforceFailureAbortInvariants({
           routeKind: 'native',
           fileInfo,
           isExecutionOwned: executionOwnsController,
           result: nativeResult,
-          log,
         });
         executionResult = {
           executionKind,
@@ -1981,7 +1977,6 @@ async function executePreparedImport({
           bundledCredentialsFailureReason: paths.bundledCredentialsFailureReason,
           bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
           ocrLanguage: preparedRecord.ocrLanguage,
-          log,
           isAborted: () => !executionOwnsController(),
         });
         const safeOcrResult = enforceFailureAbortInvariants({
@@ -1989,7 +1984,6 @@ async function executePreparedImport({
           fileInfo,
           isExecutionOwned: executionOwnsController,
           result: ocrResult,
-          log,
         });
         executionResult = {
           executionKind,

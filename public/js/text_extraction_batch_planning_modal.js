@@ -27,6 +27,13 @@
     throw new Error('[text-extraction-batch-planning-modal] RendererI18n.tRenderer unavailable; cannot continue');
   }
   const { tRenderer } = window.RendererI18n;
+  const pdfPageSelectionHelper = window.TextExtractionPdfPageSelection || null;
+  if (!pdfPageSelectionHelper
+    || typeof pdfPageSelectionHelper.buildAllPagesSelection !== 'function'
+    || typeof pdfPageSelectionHelper.buildPageSelectionDraft !== 'function'
+    || typeof pdfPageSelectionHelper.getPageSelectionUiState !== 'function') {
+    throw new Error('[text-extraction-batch-planning-modal] TextExtractionPdfPageSelection dependencies unavailable; cannot continue');
+  }
 
   // =============================================================================
   // DOM references
@@ -69,64 +76,11 @@
       && btnClose);
   }
 
-  function formatTranslation(key, replacements = {}) {
-    let text = tRenderer(key);
-    Object.keys(replacements).forEach((name) => {
-      text = text.replace(`{${name}}`, String(replacements[name]));
-    });
-    return text;
-  }
-
-  function normalizePageNumber(rawValue) {
-    const value = Number(rawValue);
-    if (!Number.isInteger(value) || value < 1) return null;
-    return value;
-  }
-
   function buildPageSelectionDraft(input) {
-    const totalPages = Number.isInteger(Number(input && input.pdfTotalPages))
-      && Number(input.pdfTotalPages) > 0
-      ? Number(input.pdfTotalPages)
-      : 1;
-    const selection = input && input.pdfPageSelection && typeof input.pdfPageSelection === 'object'
-      ? input.pdfPageSelection
-      : {
-        mode: 'all',
-        fromPage: 1,
-        toPage: totalPages,
-      };
-    return {
-      mode: selection.mode === 'range' ? 'range' : 'all',
-      fromPage: String(selection.fromPage || 1),
-      toPage: String(selection.toPage || totalPages),
-      totalPages,
-    };
-  }
-
-  function getPageSelectionRangeState(pageSelectionDraft) {
-    if (!pageSelectionDraft || pageSelectionDraft.mode !== 'range') {
-      return {
-        ok: true,
-        selectedPageCount: Number(pageSelectionDraft && pageSelectionDraft.totalPages) || 1,
-      };
-    }
-    const totalPages = Number(pageSelectionDraft.totalPages) || 1;
-    const fromPage = normalizePageNumber(pageSelectionDraft.fromPage);
-    const toPage = normalizePageNumber(pageSelectionDraft.toPage);
-    if (!fromPage || !toPage || fromPage > toPage || toPage > totalPages) {
-      return {
-        ok: false,
-        errorText: formatTranslation('renderer.text_extraction.pdf_options.invalid_range', {
-          totalPages,
-        }),
-      };
-    }
-    return {
-      ok: true,
-      fromPage,
-      toPage,
-      selectedPageCount: (toPage - fromPage) + 1,
-    };
+    return pdfPageSelectionHelper.buildPageSelectionDraft({
+      pdfPageSelection: input && input.pdfPageSelection ? input.pdfPageSelection : null,
+      totalPages: input && input.pdfTotalPages,
+    });
   }
 
   function createDomElement(tagName, options = {}) {
@@ -308,28 +262,21 @@
       toPage: String(root._totalPages || 1),
       totalPages: root._totalPages || 1,
     };
-    const showRange = safeDraft.mode === 'range';
-    const rangeState = getPageSelectionRangeState(safeDraft);
-    const selectedCountText = showRange && rangeState.ok
-      ? `${tRenderer('renderer.text_extraction.pdf_options.selected_page_count_label')}${String(rangeState.selectedPageCount)}`
-      : '';
-    const validationText = showRange && !rangeState.ok
-      ? rangeState.errorText
-      : '';
+    const uiState = pdfPageSelectionHelper.getPageSelectionUiState(safeDraft);
 
-    root._allRadio.checked = !showRange;
-    root._rangeRadio.checked = showRange;
+    root._allRadio.checked = uiState.showRange !== true;
+    root._rangeRadio.checked = uiState.showRange === true;
     root._fromInput.max = String(root._totalPages || 1);
     root._toInput.max = String(root._totalPages || 1);
     if (!preserveTypedValues) {
       root._fromInput.value = String(safeDraft.fromPage || 1);
       root._toInput.value = String(safeDraft.toPage || root._totalPages || 1);
     }
-    setElementVisibility(root._rangeGrid, showRange);
-    root._countEl.textContent = selectedCountText;
-    setElementVisibility(root._countEl, !!selectedCountText);
-    root._validationEl.textContent = validationText;
-    setElementVisibility(root._validationEl, !!validationText);
+    setElementVisibility(root._rangeGrid, uiState.showRange === true);
+    root._countEl.textContent = uiState.selectedCountText;
+    setElementVisibility(root._countEl, !!uiState.selectedCountText);
+    root._validationEl.textContent = uiState.validationText;
+    setElementVisibility(root._validationEl, !!uiState.validationText);
   }
 
   function createPageSelectionControls(input, pageSelectionDraft, pageSelectionRoots) {
@@ -697,7 +644,10 @@
     section.appendChild(inputsWrap);
 
     if (unit.exclusiveHeavy && Array.isArray(unit.generatedInputsPreview) && unit.generatedInputsPreview.length) {
-      section.appendChild(createDomElement('p', {
+      const previewWrap = createDomElement('div', {
+        className: 'text-extraction-batch-plan-heavy-preview',
+      });
+      previewWrap.appendChild(createDomElement('p', {
         className: 'text-extraction-batch-plan-heavy-preview-label',
         textContent: tRenderer('renderer.text_extraction.batch_plan.generated_inputs_preview'),
       }));
@@ -709,7 +659,8 @@
           textContent: generatedInput.processingInputFileName,
         }));
       });
-      section.appendChild(previewList);
+      previewWrap.appendChild(previewList);
+      section.appendChild(previewWrap);
     }
 
     if (unit.canConfigureTags) {
@@ -861,8 +812,8 @@
         for (const [inputId, draft] of pageSelectionDrafts.entries()) {
           const input = findInputById(inputId);
           if (!input || input.canEditPages !== true) continue;
-          if (!draft || draft.mode !== 'range') continue;
-          if (!getPageSelectionRangeState(draft).ok) {
+          const uiState = pdfPageSelectionHelper.getPageSelectionUiState(draft);
+          if (uiState.showRange === true && uiState.isValid !== true) {
             return true;
           }
         }
@@ -874,14 +825,12 @@
           const input = findInputById(inputId);
           const root = pageSelectionRoots.get(inputId);
           if (!input || input.canEditPages !== true || !root) continue;
-          if (!draft || draft.mode !== 'range') continue;
-          const totalPages = Number(draft.totalPages) || 1;
-          const fromPage = normalizePageNumber(draft.fromPage);
-          const toPage = normalizePageNumber(draft.toPage);
-          if (!fromPage) {
+          const uiState = pdfPageSelectionHelper.getPageSelectionUiState(draft);
+          if (uiState.showRange !== true || uiState.isValid === true) continue;
+          if (uiState.invalidInputKey === 'fromPage') {
             return root._fromInput || null;
           }
-          if (!toPage || fromPage > toPage || toPage > totalPages) {
+          if (uiState.invalidInputKey === 'toPage') {
             return root._toInput || root._fromInput || null;
           }
         }
@@ -1106,7 +1055,7 @@
             controller.applyAction({
               type: 'set_pdf_page_selection',
               inputId,
-              pdfPageSelection: { mode: 'all' },
+              pdfPageSelection: pdfPageSelectionHelper.buildAllPagesSelection(input.pdfTotalPages),
             });
             currentModel = controller.getViewModel();
             refreshPageSelectionControl(inputId, { preserveTypedValues: false });
@@ -1117,16 +1066,12 @@
           const nextDraft = pageSelectionDrafts.get(inputId) || buildPageSelectionDraft(input);
           nextDraft.mode = 'range';
           pageSelectionDrafts.set(inputId, nextDraft);
-          const rangeState = getPageSelectionRangeState(nextDraft);
-          if (rangeState.ok) {
+          const uiState = pdfPageSelectionHelper.getPageSelectionUiState(nextDraft);
+          if (uiState.pdfPageSelection) {
             controller.applyAction({
               type: 'set_pdf_page_selection',
               inputId,
-              pdfPageSelection: {
-                mode: 'range',
-                fromPage: rangeState.fromPage,
-                toPage: rangeState.toPage,
-              },
+              pdfPageSelection: uiState.pdfPageSelection,
             });
             currentModel = controller.getViewModel();
             refreshKeepControl(inputId);
@@ -1158,16 +1103,12 @@
           nextDraft.mode = 'range';
           nextDraft[action === 'set-page-from' ? 'fromPage' : 'toPage'] = String(target.value || '');
           pageSelectionDrafts.set(inputId, nextDraft);
-          const rangeState = getPageSelectionRangeState(nextDraft);
-          if (rangeState.ok) {
+          const uiState = pdfPageSelectionHelper.getPageSelectionUiState(nextDraft);
+          if (uiState.pdfPageSelection) {
             controller.applyAction({
               type: 'set_pdf_page_selection',
               inputId,
-              pdfPageSelection: {
-                mode: 'range',
-                fromPage: rangeState.fromPage,
-                toPage: rangeState.toPage,
-              },
+              pdfPageSelection: uiState.pdfPageSelection,
             });
             currentModel = controller.getViewModel();
             refreshKeepControl(inputId);

@@ -26,8 +26,18 @@ function createLogSpy() {
   };
 }
 
+function createWarnLogDouble() {
+  return {
+    warn() {},
+    warnOnce() {},
+  };
+}
+
 test('createCountUtils simple mode counts words and characters by whitespace rules', () => {
-  const utils = createCountUtils({ DEFAULT_LANG: TEST_DEFAULT_LANG });
+  const utils = createCountUtils({
+    DEFAULT_LANG: TEST_DEFAULT_LANG,
+    log: createWarnLogDouble(),
+  });
 
   assert.deepEqual(
     utils.contarTexto('hola mundo', { modoConteo: 'simple' }),
@@ -40,7 +50,10 @@ test('createCountUtils simple mode counts words and characters by whitespace rul
 });
 
 test('createCountUtils precise mode joins hyphenated compounds into one word', () => {
-  const utils = createCountUtils({ DEFAULT_LANG: 'en' });
+  const utils = createCountUtils({
+    DEFAULT_LANG: 'en',
+    log: createWarnLogDouble(),
+  });
 
   const result = utils.contarTextoPreciso('state-of-the-art e-mail 3-4', 'en');
 
@@ -53,6 +66,7 @@ test('createCountUtils uses injected DEFAULT_LANG for direct precise counting wh
   const seenLanguages = [];
   const utils = createCountUtils({
     DEFAULT_LANG: TEST_DEFAULT_LANG,
+    log: createWarnLogDouble(),
     intlObject: {
       Segmenter: class SegmenterMock {
         constructor(language, options) {
@@ -122,7 +136,14 @@ test('createCountUtils warns and uses ASCII fallback when unicode property escap
 
 test('createCountUtils requires DEFAULT_LANG to be injected', () => {
   assert.throws(
-    () => createCountUtils(),
+    () => createCountUtils({ log: createWarnLogDouble() }),
     /\[count_core\] DEFAULT_LANG is required/
+  );
+});
+
+test('createCountUtils requires injected warn and warnOnce logging', () => {
+  assert.throws(
+    () => createCountUtils({ DEFAULT_LANG: TEST_DEFAULT_LANG }),
+    /\[count_core\] log\.warn\(\) and log\.warnOnce\(\) are required/
   );
 });

@@ -17,6 +17,8 @@ function createHarness({
   let pdfOptionsPromptCount = 0;
   let singleFileHeavyPromptCount = 0;
   let executePreparedTextExtractionCallCount = 0;
+  let syncMainInteractionLockUiCallCount = 0;
+  let abortFinalizationActive = false;
   const nextPdfOptionsResponses = Array.isArray(pdfOptionsResponses)
     ? [...pdfOptionsResponses]
     : null;
@@ -71,9 +73,6 @@ function createHarness({
       },
       RendererI18n: {
         tRenderer(key) {
-          if (key === 'renderer.text_extraction.single_file_heavy.selected_range_value') {
-            return 'Pages {fromPage}-{toPage}';
-          }
           return key;
         },
       },
@@ -89,6 +88,23 @@ function createHarness({
   vm.runInContext(source, sandbox, { filename: 'public/js/text_extraction_entry.js' });
 
   const entry = sandbox.window.TextExtractionEntry;
+  const textExtractionStatusUi = {
+    applyProcessingModeState() {},
+    beginAbortFinalization() {
+      abortFinalizationActive = true;
+    },
+    clearPendingExecutionContext() {},
+    endAbortFinalization() {
+      abortFinalizationActive = false;
+    },
+    getFinalElapsedValueText() {
+      return '0:01';
+    },
+    isAbortFinalizationActive() {
+      return abortFinalizationActive;
+    },
+    setPendingExecutionContext() {},
+  };
   entry.configure({
     getClipboardRepeatCount() {
       return 1;
@@ -148,14 +164,10 @@ function createHarness({
     hasCurrentTextSubscription() {
       return true;
     },
-    textExtractionStatusUi: {
-      applyProcessingModeState() {},
-      clearPendingExecutionContext() {},
-      getFinalElapsedValueText() {
-        return '0:01';
-      },
-      setPendingExecutionContext() {},
+    syncMainInteractionLockUi() {
+      syncMainInteractionLockUiCallCount += 1;
     },
+    textExtractionStatusUi,
     textExtractionBatchFlow: {
       async startFromSelectedFiles() {},
       async startSyntheticSingleFileHeavySplit() {},
@@ -204,6 +216,13 @@ function createHarness({
     getExecutePreparedTextExtractionCallCount() {
       return executePreparedTextExtractionCallCount;
     },
+    getSyncMainInteractionLockUiCallCount() {
+      return syncMainInteractionLockUiCallCount;
+    },
+    isAbortFinalizationActive() {
+      return abortFinalizationActive;
+    },
+    textExtractionStatusUi,
   };
 }
 
@@ -221,7 +240,8 @@ test('single-file entry passes source file size into the Case B heavy-PDF modal 
   assert.equal(modalOptions.caseKind, 'case_b');
   assert.equal(modalOptions.sourceFileName, 'book.pdf');
   assert.equal(modalOptions.sourceFileSizeBytes, 458 * 1024 * 1024);
-  assert.equal(modalOptions.selectedRangeText, 'Pages 100-220');
+  assert.equal(modalOptions.selectedRangeFromPage, 100);
+  assert.equal(modalOptions.selectedRangeToPage, 220);
   assert.equal(modalOptions.generatedPdfFileName, 'book_pages_100_220.pdf');
   assert.equal(modalOptions.generatedPdfSizeBytes, 72.4 * 1024 * 1024);
   assert.equal(modalOptions.providerLimitBytes, 50 * 1024 * 1024);
@@ -264,6 +284,7 @@ test('single-file entry returns to PDF options from the Case A heavy-PDF modal',
           chosenRoute: 'ocr',
           availableRoutes: ['native', 'ocr'],
           pdfTotalPages: 516,
+          ocrProviderLimitBytes: 50 * 1024 * 1024,
           heavySplitEligible: true,
         },
       },
@@ -285,4 +306,34 @@ test('single-file entry returns to PDF options from the Case A heavy-PDF modal',
   assert.equal(modalOptions.sourceFileName, 'book.pdf');
   assert.equal(modalOptions.sourceFileSizeBytes, 458 * 1024 * 1024);
   assert.equal(modalOptions.totalPages, 516);
+  assert.equal(modalOptions.providerLimitBytes, 50 * 1024 * 1024);
+});
+
+test('single-file cancellation finishes abort finalization only after execution settles', async () => {
+  const harness = createHarness({
+    executePreparedTextExtractionResult: {
+      ok: true,
+      primaryAlertKey: 'renderer.alerts.text_extraction_ocr_cancelled',
+      result: {
+        state: 'cancelled',
+        text: '',
+        error: {
+          code: 'aborted_by_user',
+        },
+      },
+    },
+  });
+
+  harness.textExtractionStatusUi.beginAbortFinalization();
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  assert.equal(harness.isAbortFinalizationActive(), false);
+  assert.equal(harness.getSyncMainInteractionLockUiCallCount(), 1);
+  assert.deepEqual(
+    harness.notifications,
+    ['renderer.alerts.text_extraction_cancellation_complete']
+  );
 });

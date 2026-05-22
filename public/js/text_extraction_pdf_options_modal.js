@@ -21,13 +21,17 @@
   const log = window.getLogger('text-extraction-pdf-options-modal');
   log.debug('Text extraction PDF options modal starting...');
   if (!window.RendererI18n
-    || typeof window.RendererI18n.msgRenderer !== 'function'
     || typeof window.RendererI18n.renderLocalizedLabelWithInvariantValue !== 'function'
     || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-pdf-options-modal] RendererI18n dependencies unavailable; cannot continue');
   }
+  const pdfPageSelectionHelper = window.TextExtractionPdfPageSelection || null;
+  if (!pdfPageSelectionHelper
+    || typeof pdfPageSelectionHelper.buildPageSelectionDraft !== 'function'
+    || typeof pdfPageSelectionHelper.getPageSelectionUiState !== 'function') {
+    throw new Error('[text-extraction-pdf-options-modal] TextExtractionPdfPageSelection dependencies unavailable; cannot continue');
+  }
   const {
-    msgRenderer,
     renderLocalizedLabelWithInvariantValue,
     tRenderer,
   } = window.RendererI18n;
@@ -94,16 +98,6 @@
       && btnClose);
   }
 
-  function getRangeMode() {
-    return rangeRadio.checked === true;
-  }
-
-  function normalizePageNumber(rawValue) {
-    const value = Number(rawValue);
-    if (!Number.isInteger(value) || value < 1) return null;
-    return value;
-  }
-
   function setValidationText(text) {
     const safeText = typeof text === 'string' ? text.trim() : '';
     validation.hidden = !safeText;
@@ -111,16 +105,11 @@
     validation.textContent = safeText;
   }
 
-  function syncRangeVisibility() {
-    const showRange = getRangeMode();
-    rangeFields.hidden = !showRange;
-    rangeFields.setAttribute('aria-hidden', showRange ? 'false' : 'true');
-    keepWrap.hidden = !showRange;
-    keepWrap.setAttribute('aria-hidden', showRange ? 'false' : 'true');
-    if (!showRange) {
-      keepCheckbox.checked = false;
-      setValidationText('');
-    }
+  function setSelectedCountText(text) {
+    const safeText = typeof text === 'string' ? text.trim() : '';
+    selectedCountSummary.hidden = !safeText;
+    selectedCountSummary.setAttribute('aria-hidden', safeText ? 'false' : 'true');
+    selectedCountSummary.textContent = safeText;
   }
 
   function renderSummaryValue(element, labelKey, valueText) {
@@ -131,79 +120,49 @@
     });
   }
 
-  function getInvalidRangeMessage(totalPages) {
-    return msgRenderer('renderer.text_extraction.pdf_options.invalid_range', {
-      totalPages: String(totalPages),
-    });
+  function syncStaticFieldConstraints(totalPages) {
+    fromInput.min = '1';
+    fromInput.max = String(totalPages);
+    fromInput.step = '1';
+    toInput.min = '1';
+    toInput.max = String(totalPages);
+    toInput.step = '1';
   }
 
-  function getCurrentRange(totalPages) {
-    const fromPage = normalizePageNumber(fromInput.value);
-    const toPage = normalizePageNumber(toInput.value);
-    if (!fromPage || !toPage) {
-      return { ok: false, errorText: getInvalidRangeMessage(totalPages) };
+  function syncPageSelectionControls(uiState, { preserveTypedValues = false } = {}) {
+    allPagesRadio.checked = uiState.showRange !== true;
+    rangeRadio.checked = uiState.showRange === true;
+    rangeFields.hidden = uiState.showRange !== true;
+    rangeFields.setAttribute('aria-hidden', uiState.showRange === true ? 'false' : 'true');
+    keepWrap.hidden = uiState.showRange !== true;
+    keepWrap.setAttribute('aria-hidden', uiState.showRange === true ? 'false' : 'true');
+    if (!preserveTypedValues && pageSelectionDraft) {
+      fromInput.value = String(pageSelectionDraft.fromPage || '1');
+      toInput.value = String(pageSelectionDraft.toPage || uiState.totalPages || 1);
     }
-    if (fromPage > toPage || toPage > totalPages) {
-      return { ok: false, errorText: getInvalidRangeMessage(totalPages) };
-    }
-    return {
-      ok: true,
-      fromPage,
-      toPage,
-      selectedPageCount: (toPage - fromPage) + 1,
-    };
+    setSelectedCountText(uiState.selectedCountText);
+    setValidationText(uiState.validationText);
+    btnContinue.disabled = uiState.submitDisabled === true;
   }
 
-  function syncSelectedCount(totalPages) {
-    if (!getRangeMode()) {
-      selectedCountSummary.hidden = true;
-      selectedCountSummary.setAttribute('aria-hidden', 'true');
-      selectedCountSummary.textContent = '';
-      return;
-    }
-
-    const rangeState = getCurrentRange(totalPages);
-    selectedCountSummary.hidden = false;
-    selectedCountSummary.setAttribute('aria-hidden', 'false');
-    if (!rangeState.ok) {
-      selectedCountSummary.textContent = '';
-      return;
-    }
-
-    renderSummaryValue(
-      selectedCountSummary,
-      'renderer.text_extraction.pdf_options.selected_page_count_label',
-      String(rangeState.selectedPageCount)
-    );
+  function syncDynamicState({ preserveTypedValues = false } = {}) {
+    const uiState = pdfPageSelectionHelper.getPageSelectionUiState(pageSelectionDraft);
+    syncPageSelectionControls(uiState, { preserveTypedValues });
+    return uiState;
   }
 
-  function buildModalResult(totalPages) {
-    if (!getRangeMode()) {
-      return {
-        pdfPageSelection: {
-          mode: 'all',
-        },
-        generatedPdfArtifactPolicy: {
-          mode: 'delete',
-        },
-      };
-    }
+  let pageSelectionDraft = null;
 
-    const rangeState = getCurrentRange(totalPages);
-    if (!rangeState.ok) {
-      setValidationText(rangeState.errorText);
+  function buildModalResult() {
+    const uiState = pdfPageSelectionHelper.getPageSelectionUiState(pageSelectionDraft);
+    if (!uiState.pdfPageSelection) {
       return null;
     }
 
-    setValidationText('');
     return {
-      pdfPageSelection: {
-        mode: 'range',
-        fromPage: rangeState.fromPage,
-        toPage: rangeState.toPage,
-      },
+      pdfPageSelection: uiState.pdfPageSelection,
       generatedPdfArtifactPolicy: {
-        mode: keepCheckbox.checked ? 'keep' : 'delete',
+        mode: uiState.showRange === true && keepCheckbox.checked === true ? 'keep' : 'delete',
       },
     };
   }
@@ -234,24 +193,37 @@
   }
 
   function resetModalState(totalPages) {
-    allPagesRadio.checked = true;
-    rangeRadio.checked = false;
-    fromInput.min = '1';
-    fromInput.max = String(totalPages);
-    fromInput.step = '1';
-    fromInput.value = '1';
-    toInput.min = '1';
-    toInput.max = String(totalPages);
-    toInput.step = '1';
-    toInput.value = String(totalPages);
+    pageSelectionDraft = pdfPageSelectionHelper.buildPageSelectionDraft({ totalPages });
+    syncStaticFieldConstraints(totalPages);
     keepCheckbox.checked = false;
-    setValidationText('');
-    syncDynamicState(totalPages);
+    syncDynamicState({ preserveTypedValues: false });
   }
 
-  function syncDynamicState(totalPages) {
-    syncRangeVisibility();
-    syncSelectedCount(totalPages);
+  function updateDraftRangeValues() {
+    if (!pageSelectionDraft) return;
+    pageSelectionDraft.fromPage = String(fromInput.value || '');
+    pageSelectionDraft.toPage = String(toInput.value || '');
+  }
+
+  function updateDraftMode(nextMode) {
+    if (!pageSelectionDraft) return;
+    if (nextMode === 'range') {
+      pageSelectionDraft.mode = 'range';
+      return;
+    }
+
+    pageSelectionDraft = pdfPageSelectionHelper.buildPageSelectionDraft({
+      totalPages: pageSelectionDraft.totalPages,
+    });
+  }
+
+  function focusInvalidInput(uiState) {
+    const target = uiState && uiState.invalidInputKey === 'fromPage'
+      ? fromInput
+      : toInput;
+    if (target && typeof target.focus === 'function') {
+      target.focus();
+    }
   }
 
   // =============================================================================
@@ -303,15 +275,23 @@
       };
 
       const onModeChange = () => {
-        setValidationText('');
-        syncDynamicState(totalPages);
+        updateDraftMode(rangeRadio.checked === true ? 'range' : 'all');
+        if (pageSelectionDraft && pageSelectionDraft.mode !== 'range') {
+          keepCheckbox.checked = false;
+        }
+        syncDynamicState({ preserveTypedValues: false });
       };
       const onRangeInput = () => {
-        syncSelectedCount(totalPages);
+        updateDraftRangeValues();
+        syncDynamicState({ preserveTypedValues: true });
       };
       const onContinue = () => {
-        const result = buildModalResult(totalPages);
-        if (!result) return;
+        const uiState = syncDynamicState({ preserveTypedValues: true });
+        const result = buildModalResult();
+        if (!result) {
+          focusInvalidInput(uiState);
+          return;
+        }
         finish(result);
       };
       const onCancel = () => finish(null);

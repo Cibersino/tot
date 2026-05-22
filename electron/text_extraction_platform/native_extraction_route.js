@@ -18,6 +18,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const Log = require('../log');
 const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
 const {
@@ -25,6 +26,8 @@ const {
   isUnreadableOrCorruptPdfError,
 } = require('./text_extraction_pdf_error_detection');
 const { getNativeParserForExt } = require('./text_extraction_supported_formats');
+
+const log = Log.get('text-extraction-native-route');
 
 // =============================================================================
 // Text normalization helpers
@@ -356,7 +359,6 @@ function buildFailureResultForError({
 async function runNativeExtractionRoute({
   filePath,
   isAborted,
-  log,
 } = {}) {
   const source = getSourceInfo(filePath);
   const provenance = {
