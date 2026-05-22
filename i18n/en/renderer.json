@@ -157,6 +157,7 @@
         "failure_legend": "Failure behavior",
         "failure_default": "Finalize the unit after the last success and continue with the next unit",
         "failure_continue": "Omit the failed item and continue inside the same unit",
+        "overwrite_confirm": "This will overwrite the current text when extraction starts. Do you want to continue?",
         "start_button": "Start extraction",
         "cancel_button": "Cancel",
         "close_aria": "Close batch extraction planning"
