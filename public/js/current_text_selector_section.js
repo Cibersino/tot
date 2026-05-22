@@ -40,6 +40,7 @@
     PREVIEW_START_CHARS,
     PREVIEW_END_CHARS,
   } = AppConstants;
+  const TRACE_LARGE_TEXT_CHARS = 1_000_000;
 
   const selectorTitle = document.getElementById('selector-title');
   const textPreview = document.getElementById('textPreview');
@@ -140,6 +141,10 @@
     return normalizePreviewValue(text).replace(/\r?\n/g, '   ');
   }
 
+  function roundMs(value) {
+    return Math.round(Number(value) * 100) / 100;
+  }
+
   function buildPreviewRenderModel(text, { emptyText = '', showPreviewEnd = true } = {}) {
     const displayText = normalizePreviewDisplayText(text);
     const displayLength = displayText.length;
@@ -217,15 +222,30 @@
 
   function renderPreviewFromState() {
     if (!textPreview) return;
+    const previewTraceActive = lastPreviewText.length >= TRACE_LARGE_TEXT_CHARS;
+    const previewTraceStartMs = previewTraceActive ? performance.now() : 0;
+    const buildStartMs = previewTraceActive ? performance.now() : 0;
     const previewModel = buildPreviewRenderModel(lastPreviewText, {
       emptyText: lastPreviewEmptyText,
       showPreviewEnd: isPreviewSpoilerEnabled(),
     });
+    const buildElapsedMs = previewTraceActive ? performance.now() - buildStartMs : 0;
+    const domStartMs = previewTraceActive ? performance.now() : 0;
     textPreview.setAttribute('dir', previewModel.direction);
     textPreview.textContent = '';
 
     if (previewModel.kind === 'plain') {
       textPreview.appendChild(createPreviewTextFragment(previewModel.text));
+      if (previewTraceActive) {
+        log.info('Current-text preview trace:', {
+          textLength: lastPreviewText.length,
+          kind: previewModel.kind,
+          showPreviewEnd: isPreviewSpoilerEnabled(),
+          buildMs: roundMs(buildElapsedMs),
+          domMs: roundMs(performance.now() - domStartMs),
+          totalMs: roundMs(performance.now() - previewTraceStartMs),
+        });
+      }
       return;
     }
 
@@ -238,6 +258,16 @@
           previewModel.direction
         )
       );
+      if (previewTraceActive) {
+        log.info('Current-text preview trace:', {
+          textLength: lastPreviewText.length,
+          kind: previewModel.kind,
+          showPreviewEnd: isPreviewSpoilerEnabled(),
+          buildMs: roundMs(buildElapsedMs),
+          domMs: roundMs(performance.now() - domStartMs),
+          totalMs: roundMs(performance.now() - previewTraceStartMs),
+        });
+      }
       return;
     }
 
@@ -250,6 +280,16 @@
       )
     );
     textPreview.appendChild(createPreviewTextFragment(previewModel.end));
+    if (previewTraceActive) {
+      log.info('Current-text preview trace:', {
+        textLength: lastPreviewText.length,
+        kind: previewModel.kind,
+        showPreviewEnd: isPreviewSpoilerEnabled(),
+        buildMs: roundMs(buildElapsedMs),
+        domMs: roundMs(performance.now() - domStartMs),
+        totalMs: roundMs(performance.now() - previewTraceStartMs),
+      });
+    }
   }
 
   function initializeClipboardRepeatInput() {

@@ -22,6 +22,15 @@ if (typeof window.getLogger !== 'function') {
 const log = window.getLogger('renderer');
 
 log.debug('Renderer main starting...');
+const rendererStartupTraceOriginMs = performance.now();
+
+function roundMs(value) {
+  return Math.round(Number(value) * 100) / 100;
+}
+
+function getRendererStartupElapsedMs() {
+  return roundMs(performance.now() - rendererStartupTraceOriginMs);
+}
 
 const { AppConstants } = window;
 if (!AppConstants) {
@@ -417,6 +426,9 @@ function maybeUnblockReady() {
 
   sendSplashRemoved();
   syncMainInteractionLockUi();
+  log.info('Startup READY trace: splash removed and renderer unlocked.', {
+    sinceStartupMs: getRendererStartupElapsedMs(),
+  });
 }
 
 function markRendererInvariantsReady() {
@@ -827,6 +839,9 @@ function armIpcSubscriptions() {
           return;
         }
         startupReadyReceived = true;
+        log.info('Startup READY trace: startup:ready received from main.', {
+          sinceStartupMs: getRendererStartupElapsedMs(),
+        });
         maybeUnblockReady();
       });
     } else {
@@ -1034,7 +1049,13 @@ async function runStartupOrchestrator() {
     });
     if (getCurrentText) {
       try {
+        const getCurrentTextStartMs = performance.now();
         initialText = String(await getCurrentText() || '');
+        log.info('Startup current-text renderer trace: getCurrentText completed.', {
+          sinceStartupMs: getRendererStartupElapsedMs(),
+          durationMs: roundMs(performance.now() - getCurrentTextStartMs),
+          textLength: initialText.length,
+        });
       } catch (err) {
         log.error('Error loading initial current text:', err);
         initialText = '';
@@ -1057,9 +1078,17 @@ async function runStartupOrchestrator() {
       action: '',
     };
     try {
+      const getProcessingStateStartMs = performance.now();
       const currentTextProcessingResult = await getCurrentTextProcessingState();
       if (currentTextProcessingResult && currentTextProcessingResult.ok === true) {
         startupCurrentTextProcessingState = currentTextProcessingResult.state || startupCurrentTextProcessingState;
+        log.info('Startup current-text renderer trace: getCurrentTextProcessingState completed.', {
+          sinceStartupMs: getRendererStartupElapsedMs(),
+          durationMs: roundMs(performance.now() - getProcessingStateStartMs),
+          active: startupCurrentTextProcessingState.active === true,
+          requestId: startupCurrentTextProcessingState.requestId || 0,
+          action: startupCurrentTextProcessingState.action || '',
+        });
       } else {
         log.warn(
           'BOOTSTRAP: getCurrentTextProcessingState returned non-ok result; keeping current-text pending inactive:',
@@ -1091,12 +1120,20 @@ async function runStartupOrchestrator() {
       }
     }
 
+    const bootstrapApplyStartMs = performance.now();
     currentTextRuntime.syncBootstrapState({
       initialText,
       processingState: startupCurrentTextProcessingState,
     });
     textExtractionStatusUi.applyCurrentTextProcessingState(startupCurrentTextProcessingState, {
       source: 'startup_query',
+    });
+    log.info('Startup current-text renderer trace: bootstrap state installed.', {
+      sinceStartupMs: getRendererStartupElapsedMs(),
+      durationMs: roundMs(performance.now() - bootstrapApplyStartMs),
+      textLength: initialText.length,
+      active: startupCurrentTextProcessingState.active === true,
+      requestId: startupCurrentTextProcessingState.requestId || 0,
     });
 
     const getTextExtractionProcessingMode = getOptionalElectronMethod('getTextExtractionProcessingMode', {
@@ -1121,7 +1158,12 @@ async function runStartupOrchestrator() {
     syncMainInteractionLockUi();
 
     // Load presets and save them to the cache
+    const loadPresetsStartMs = performance.now();
     await loadPresets({ settingsSnapshot });
+    log.info('Startup presets trace: loadPresets completed.', {
+      sinceStartupMs: getRendererStartupElapsedMs(),
+      durationMs: roundMs(performance.now() - loadPresetsStartMs),
+    });
 
     if (typeof syncToggleFromSettings === 'function') {
       try {
@@ -1132,6 +1174,9 @@ async function runStartupOrchestrator() {
     }
 
     markRendererInvariantsReady();
+    log.info('Startup READY trace: renderer invariants marked ready.', {
+      sinceStartupMs: getRendererStartupElapsedMs(),
+    });
 
     // Final update after presets load in case WPM changed
     startPreviewAndResultsUpdate(getCurrentTextValue(), 'startup kickoff');

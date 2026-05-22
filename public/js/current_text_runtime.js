@@ -73,6 +73,7 @@
     source: '',
     action: '',
   };
+  const TRACE_LARGE_TEXT_CHARS = 1_000_000;
 
   // =============================================================================
   // Helpers
@@ -169,6 +170,18 @@
     return renderAuthoritySequence;
   }
 
+  function roundMs(value) {
+    return Math.round(Number(value) * 100) / 100;
+  }
+
+  function shouldTraceCurrentTextWork(reason, textLength) {
+    const normalizedReason = typeof reason === 'string' ? reason : '';
+    return normalizedReason.includes('startup')
+      || normalizedReason.includes('bootstrap')
+      || currentTextProcessingState.action === 'initial_load'
+      || Number(textLength) >= TRACE_LARGE_TEXT_CHARS;
+  }
+
   function renderPreview() {
     const { currentTextSelectorSection } = requireDeps();
     currentTextSelectorSection.renderPreview(currentText, {
@@ -255,21 +268,41 @@
     syncStatusClasses();
   }
 
-  async function buildSettledDerivedState() {
+  async function buildSettledDerivedState(reason = 'unknown') {
     const { getSettingsCache, getWpm } = requireDeps();
+    const deriveStartMs = performance.now();
     const normalizedText = normalizeText(currentText);
-    const stats = contarTextoModulo(normalizedText, getCountArgs());
     const countArgs = getCountArgs();
+    const countStartMs = performance.now();
+    const stats = contarTextoModulo(normalizedText, countArgs);
+    const countElapsedMs = performance.now() - countStartMs;
     const settingsCache = getSettingsCache();
+    const separatorsStartMs = performance.now();
     const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
       countArgs.idioma,
       settingsCache
     );
+    const separatorsElapsedMs = performance.now() - separatorsStartMs;
+    const formatStartMs = performance.now();
     const charsText = formatearNumero(stats.conEspacios, separadorMiles, separadorDecimal);
     const charsNoSpaceText = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
     const wordsText = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
     const totalSeconds = getExactTotalSeconds(stats.palabras, getWpm());
     const timeParts = getDisplayTimeParts(totalSeconds);
+    const formatElapsedMs = performance.now() - formatStartMs;
+    const deriveElapsedMs = performance.now() - deriveStartMs;
+    if (shouldTraceCurrentTextWork(reason, normalizedText.length)) {
+      log.info('Current-text derive trace:', {
+        reason,
+        textLength: normalizedText.length,
+        modeConteo: countArgs.modoConteo,
+        idioma: countArgs.idioma,
+        countMs: roundMs(countElapsedMs),
+        separatorsMs: roundMs(separatorsElapsedMs),
+        formatMs: roundMs(formatElapsedMs),
+        totalMs: roundMs(deriveElapsedMs),
+      });
+    }
     return {
       stats,
       charsText,
@@ -320,40 +353,59 @@
   async function runPendingSettleLoop(requestId, reason) {
     pendingSettleInFlight = true;
     log.debug('Current-text pending settle loop started:', { requestId, reason });
+    const settleStartMs = performance.now();
+    let settleOutcome = 'inactive_before_loop';
     try {
       while (isActivePendingRequest(requestId)) {
+        settleOutcome = 'loop_active';
         const settleConfigVersion = derivedConfigVersion;
         pendingSettleRerunRequested = false;
         try {
-          const derivedState = await buildSettledDerivedState();
+          const derivedState = await buildSettledDerivedState(reason);
           if (!isActivePendingRequest(requestId)) {
+            settleOutcome = 'superseded_before_apply';
             return;
           }
           if (settleConfigVersion !== derivedConfigVersion || pendingSettleRerunRequested) {
+            settleOutcome = 'rerun_requested';
             continue;
           }
           applySettledDerivedState(derivedState);
           if (!isActivePendingRequest(requestId)) {
+            settleOutcome = 'superseded_after_apply';
             return;
           }
           if (settleConfigVersion !== derivedConfigVersion || pendingSettleRerunRequested) {
+            settleOutcome = 'rerun_requested_post_apply';
             continue;
           }
+          settleOutcome = 'resolved_ok';
           await resolveCurrentTextProcessing(requestId, true);
           return;
         } catch (err) {
           if (!isActivePendingRequest(requestId)) {
+            settleOutcome = 'superseded_after_error';
             return;
           }
           log.error('Current-text pending settle failed:', err);
           degradedRequestId = requestId;
           renderDegradedDerivedValues();
+          settleOutcome = 'resolved_error';
           await resolveCurrentTextProcessing(requestId, false);
           return;
         }
       }
     } finally {
       pendingSettleInFlight = false;
+      if (shouldTraceCurrentTextWork(reason, currentText.length)) {
+        log.info('Current-text pending settle loop trace:', {
+          requestId,
+          reason,
+          outcome: settleOutcome,
+          textLength: currentText.length,
+          totalMs: roundMs(performance.now() - settleStartMs),
+        });
+      }
       if (currentTextProcessingState.active && currentTextProcessingState.requestId !== requestId) {
         schedulePendingSettle(`followup:${reason}`);
       }
@@ -385,7 +437,7 @@
   }
 
   function runStandaloneDerivedRefresh(reason, refreshSequence = bumpRenderAuthoritySequence()) {
-    void buildSettledDerivedState()
+    void buildSettledDerivedState(reason)
       .then((derivedState) => {
         if (refreshSequence !== renderAuthoritySequence) {
           log.info('Stale standalone current-text derived refresh ignored:', {
@@ -422,20 +474,42 @@
   }
 
   function syncBootstrapState({ initialText, processingState } = {}) {
+    const bootstrapStartMs = performance.now();
     const normalizedState = normalizeCurrentTextProcessingState(processingState);
+    const setStateStartMs = performance.now();
     setCurrentTextInternal(initialText, {
       requestId: normalizedState.active ? normalizedState.requestId : 0,
     });
+    const setStateElapsedMs = performance.now() - setStateStartMs;
     bumpRenderAuthoritySequence();
     currentTextProcessingState = normalizedState;
+    let placeholderElapsedMs = 0;
     if (normalizedState.active) {
       degradedRequestId = 0;
+      const placeholderStartMs = performance.now();
       renderPendingDerivedValues();
+      placeholderElapsedMs = performance.now() - placeholderStartMs;
       schedulePendingSettle('bootstrap');
+      log.info('Startup current-text bootstrap trace:', {
+        textLength: currentText.length,
+        requestId: normalizedState.requestId,
+        pendingActive: true,
+        setStateMs: roundMs(setStateElapsedMs),
+        placeholderMs: roundMs(placeholderElapsedMs),
+        totalMs: roundMs(performance.now() - bootstrapStartMs),
+      });
       return;
     }
     syncStatusClasses();
     runStandaloneDerivedRefresh('bootstrap');
+    log.info('Startup current-text bootstrap trace:', {
+      textLength: currentText.length,
+      requestId: normalizedState.requestId,
+      pendingActive: false,
+      setStateMs: roundMs(setStateElapsedMs),
+      placeholderMs: roundMs(placeholderElapsedMs),
+      totalMs: roundMs(performance.now() - bootstrapStartMs),
+    });
   }
 
   function applyCurrentTextProcessingState(rawState, { source = 'unknown' } = {}) {
