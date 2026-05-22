@@ -16,8 +16,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
 const Log = require('./log');
+const {
+  resolveRuntimeTempFilePath,
+} = require('./app_temp_paths');
 
 // =============================================================================
 // Constants / config
@@ -189,21 +191,8 @@ async function fileExists(filePath) {
   }
 }
 
-function getTempDir(app) {
-  try {
-    return app.getPath('temp');
-  } catch (err) {
-    log.warnOnce(
-      'link_openers.tempPath.fallback',
-      'open-app-doc temp path fallback: app.getPath("temp") failed; using os.tmpdir().',
-      err
-    );
-    return os.tmpdir();
-  }
-}
-
-async function copyToTemp(app, srcPath, tempName) {
-  const tempPath = path.join(getTempDir(app), tempName);
+async function copyToTemp(srcPath, tempName) {
+  const tempPath = resolveRuntimeTempFilePath('app-docs', tempName);
   const data = await fs.promises.readFile(srcPath);
   await fs.promises.writeFile(tempPath, data);
   return tempPath;
@@ -225,7 +214,7 @@ async function openBundledPublicDoc(app, shell, rawKey, relativePath, tempName) 
     return { ok: false, reason: 'not_found' };
   }
 
-  const tempPath = await copyToTemp(app, srcPath, tempName);
+  const tempPath = await copyToTemp(srcPath, tempName);
   return openPathWithLog(shell, rawKey, tempPath);
 }
 
@@ -429,7 +418,7 @@ function registerLinkIpc({ ipcMain, app, shell }) {
         return { ok: false, reason: 'not_found' };
       }
 
-      const tempPath = await copyToTemp(app, fallbackPath, `tot_${fileName}`);
+      const tempPath = await copyToTemp(fallbackPath, `tot_${fileName}`);
       return openPathWithLog(shell, rawKey, tempPath);
     } catch (err) {
       log.error('Error processing open-app-doc:', err);

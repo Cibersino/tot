@@ -3,13 +3,15 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 const readingTestPool = require('../../../electron/reading_test_pool');
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'tot-reading-test-pool-'));
+  return createTestTempDir('reading-test-pool');
 }
 
 function writeJson(filePath, data) {

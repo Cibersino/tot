@@ -22,6 +22,9 @@ const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
 const {
+  cleanupRuntimeTempRoot,
+} = require('./app_temp_paths');
+const {
   MAX_TEXT_CHARS,
   MAX_IPC_CHARS,
   MAX_META_STR_CHARS,
@@ -376,7 +379,7 @@ function resolveTextExtractionRuntimePaths() {
       && typeof bundledCredentialsBootstrap.detailsSafeForLogs === 'object'
         ? bundledCredentialsBootstrap.detailsSafeForLogs
         : {},
-    generatedPdfArtifactsDir: path.join(app.getPath('userData'), 'tot-generated-pdfs'),
+    retainedGeneratedPdfArtifactsDir: path.join(app.getPath('userData'), 'tot-generated-pdfs'),
   };
 }
 
@@ -1950,6 +1953,14 @@ app.on('will-quit', () => {
     }
   } catch (err) {
     log.error('Error clearing stopwatch in will-quit:', err);
+  }
+
+  const runtimeTempCleanupWarning = cleanupRuntimeTempRoot();
+  if (runtimeTempCleanupWarning) {
+    log.warn(
+      'Runtime temp root cleanup failed (ignored):',
+      runtimeTempCleanupWarning.detailsSafeForLogs || runtimeTempCleanupWarning
+    );
   }
 });
 

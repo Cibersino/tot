@@ -3,8 +3,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 function loadFreshPreparedStore() {
   const modulePath = path.resolve(__dirname, '../../../electron/text_extraction_platform/text_extraction_prepared_store.js');
@@ -13,7 +15,7 @@ function loadFreshPreparedStore() {
 }
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'tot-prepared-store-'));
+  return createTestTempDir('prepared-store');
 }
 
 test('createPreparedRecord and peekPreparedRecord expose active records', () => {
@@ -96,4 +98,3 @@ test('readSourceFileFingerprint returns resolved path, size, and floored mtime',
   assert.equal(Number.isInteger(fingerprint.mtimeMs), true);
   assert.ok(fingerprint.mtimeMs > 0);
 });
-

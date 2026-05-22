@@ -89,15 +89,15 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, shellApi } = {}) {
       }
 
       const paths = resolvePaths() || {};
-      const generatedPdfArtifactsDir = typeof paths.generatedPdfArtifactsDir === 'string'
-        ? paths.generatedPdfArtifactsDir.trim()
+      const retainedGeneratedPdfArtifactsDir = typeof paths.retainedGeneratedPdfArtifactsDir === 'string'
+        ? paths.retainedGeneratedPdfArtifactsDir.trim()
         : '';
-      if (!generatedPdfArtifactsDir) {
+      if (!retainedGeneratedPdfArtifactsDir) {
         log.error('Generated PDF artifacts root unavailable; reveal request rejected.');
         return { ok: false, code: 'REVEAL_GENERATED_PDF_FAILED' };
       }
 
-      const resolvedAllowedRoot = resolveRealPathOrFallback(generatedPdfArtifactsDir);
+      const resolvedAllowedRoot = resolveRealPathOrFallback(retainedGeneratedPdfArtifactsDir);
       const resolvedArtifactPath = resolveRealPathOrFallback(payload.artifactPath);
       if (!isPathInsideRoot(resolvedArtifactPath, resolvedAllowedRoot)) {
         log.warn('Generated PDF reveal rejected for path outside allowed root:', {

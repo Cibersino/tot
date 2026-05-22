@@ -5,9 +5,12 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { PDFDocument } = require('pdf-lib');
+const {
+  createTestTempDir,
+  getTestTempDir,
+} = require('../../helpers/test_temp_paths');
 const {
   inspectPdfFile,
 } = require('../../../electron/text_extraction_platform/text_extraction_pdf_page_selection');
@@ -26,6 +29,11 @@ const {
 const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
 const SCANNED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
 const ENCRYPTED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/encrypted_selectable_text_fixture.pdf');
+const RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR = path.join(
+  getTestTempDir('retained-generated-pdfs'),
+  'tests'
+);
+const GENERATED_PDF_SUBSET_FIXTURE_DIR = getTestTempDir('generated-pdf-subset-fixtures');
 
 function loadCoreWithMocks({
   mockRunNativeExtractionRoute = null,
@@ -273,7 +281,7 @@ const silentLog = {
 };
 
 async function createMixedPdfFixture(t) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-issue-271-mixed-pdf-'));
+  const dir = createTestTempDir('issue-271-mixed-pdf');
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 
   const sourcePdf = await PDFDocument.create();
@@ -560,7 +568,7 @@ test('executePreparedImport treats execution-time unsupported format as a native
     },
     routePreference: '',
     resolvePaths: () => ({
-      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
     }),
     controller,
     log: silentLog,
@@ -609,7 +617,7 @@ test('prepareSelectedFile triages the selected PDF range instead of the whole do
     bundledCredentialsFailureCode: 'credentials_missing',
     bundledCredentialsFailureReason: 'bundled_credentials_missing',
     bundledCredentialsFailureDetailsSafeForLogs: {},
-    generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+    retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
   });
 
   const scannedRangePreparation = await prepareSelectedFile({
@@ -667,7 +675,7 @@ test('prepareSelectedFile uses source-PDF triage in batch planning mode even whe
     bundledCredentialsFailureCode: 'credentials_missing',
     bundledCredentialsFailureReason: 'bundled_credentials_missing',
     bundledCredentialsFailureDetailsSafeForLogs: {},
-    generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+    retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
   });
 
   const batchPlanningPreparation = await prepareSelectedFile({
@@ -770,7 +778,7 @@ test('prepareSelectedFile preserves forced full-source heavy split as main-owned
       bundledCredentialsFailureCode: '',
       bundledCredentialsFailureReason: '',
       bundledCredentialsFailureDetailsSafeForLogs: {},
-      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
     }),
     log: silentLog,
   });
@@ -839,7 +847,7 @@ test('prepareSelectedFile fails instead of silently demoting a forced full-sourc
       bundledCredentialsFailureCode: '',
       bundledCredentialsFailureReason: '',
       bundledCredentialsFailureDetailsSafeForLogs: {},
-      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
     }),
     log: silentLog,
   });
@@ -1008,7 +1016,7 @@ test('executePreparedImport materializes the selected PDF range for native succe
     },
     routePreference: '',
     resolvePaths: () => ({
-      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
     }),
     controller,
     log: silentLog,
@@ -1065,7 +1073,7 @@ test('executePreparedImport skips route dispatch after cancellation during subse
         return {
           ok: true,
           materialized: true,
-          effectiveFilePath: path.join(os.tmpdir(), 'aborted_subset.pdf'),
+          effectiveFilePath: path.join(GENERATED_PDF_SUBSET_FIXTURE_DIR, 'aborted_subset.pdf'),
           processingInputFileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
           processingInputSource: 'generated_pdf_subset',
           generatedPdfArtifact: {
@@ -1114,7 +1122,7 @@ test('executePreparedImport skips route dispatch after cancellation during subse
     },
     routePreference: '',
     resolvePaths: () => ({
-      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
     }),
     controller,
     log: silentLog,
@@ -1148,7 +1156,7 @@ test('executePreparedImport does not release a replacement processing lock after
         return {
           ok: true,
           materialized: true,
-          effectiveFilePath: path.join(os.tmpdir(), 'replacement_subset.pdf'),
+          effectiveFilePath: path.join(GENERATED_PDF_SUBSET_FIXTURE_DIR, 'replacement_subset.pdf'),
           processingInputFileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
           processingInputSource: 'generated_pdf_subset',
           generatedPdfArtifact: {
@@ -1197,7 +1205,7 @@ test('executePreparedImport does not release a replacement processing lock after
     },
     routePreference: '',
     resolvePaths: () => ({
-      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
     }),
     controller,
     log: silentLog,
@@ -1307,7 +1315,7 @@ test('executePreparedImport processes heavy split through generated child PDFs i
       bundledCredentialsFailureCode: '',
       bundledCredentialsFailureReason: '',
       bundledCredentialsFailureDetailsSafeForLogs: {},
-      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
     }),
     controller,
     log: silentLog,
@@ -1460,7 +1468,7 @@ test('executePreparedImport preserves heavy split child statuses on cancellation
       bundledCredentialsFailureCode: '',
       bundledCredentialsFailureReason: '',
       bundledCredentialsFailureDetailsSafeForLogs: {},
-      generatedPdfArtifactsDir: path.join(os.tmpdir(), 'tot-generated-pdfs-tests'),
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
     }),
     controller,
     log: silentLog,
@@ -1497,7 +1505,7 @@ test('executePreparedImport preserves heavy split child statuses on cancellation
 });
 
 test('executePreparedImport keeps retained generated PDFs only on heavy split child statuses', async (t) => {
-  const retainedArtifactsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-heavy-split-retained-'));
+  const retainedArtifactsDir = createTestTempDir('heavy-split-retained');
   t.after(() => fs.rmSync(retainedArtifactsDir, { recursive: true, force: true }));
 
   const ocrRouteCalls = [];
@@ -1579,7 +1587,7 @@ test('executePreparedImport keeps retained generated PDFs only on heavy split ch
       bundledCredentialsFailureCode: '',
       bundledCredentialsFailureReason: '',
       bundledCredentialsFailureDetailsSafeForLogs: {},
-      generatedPdfArtifactsDir: retainedArtifactsDir,
+      retainedGeneratedPdfArtifactsDir: retainedArtifactsDir,
     }),
     controller,
     log: silentLog,

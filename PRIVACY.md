@@ -1,7 +1,7 @@
 # Política de privacidad — toT
 
-Fecha de vigencia: `2026-04-21`  
-Versión app: `1.2.0`
+Fecha de vigencia: `2026-05-22`  
+Versión app: `1.4.0`
 
 ## 1. Resumen
 
@@ -28,6 +28,7 @@ La app puede guardar localmente, según su uso y configuración:
 - preferencias de usuario, por ejemplo idioma;
 - estado de ventanas y sesión;
 - texto actual y estado de trabajo;
+- archivos temporales locales creados por la app para ciertos flujos de procesamiento de archivos;
 - presets de WPM y su personalización;
 - snapshots guardados por el usuario;
 - estado local del test de velocidad de lectura, incluido el pool local de textos, el archivo externo de estado de uso y payloads opcionales de preguntas;
@@ -86,6 +87,8 @@ La app no solicita permisos especiales del sistema para enviar datos de uso. El 
 ## 5. Retención y control por el usuario
 
 - Los datos persistidos por la app se almacenan localmente.
+- Algunos flujos de procesamiento pueden crear archivos temporales locales bajo un directorio temporal propio de la app. La app intenta limpiarlos durante la operación y al cierre normal de la sesión, pero esa limpieza es de mejor esfuerzo.
+- Los PDFs generados que el usuario decide conservar explícitamente se guardan fuera de ese directorio temporal y no forman parte de esa limpieza.
 - Si solo quieres desconectar Google OCR, usa `Menú > Preferencias > Desconectar Google OCR`.
 - Puedes eliminar los datos locales borrando la configuración o el estado de la app en tu sistema, o desinstalando la app y eliminando sus archivos de configuración.
 - Si contactas al desarrollador por correo o mediante GitHub Issues, el desarrollador recibe solo la información que decidas incluir.

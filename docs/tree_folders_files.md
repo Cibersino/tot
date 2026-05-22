@@ -91,6 +91,7 @@ tot/
 │ │ ├── ocr_google_drive_token_storage.js
 │ │ ├── ocr_google_drive_route.js
 │ │ └── ocr_image_normalization.js
+│ ├── app_temp_paths.js
 │ ├── main.js
 │ ├── preload.js
 │ ├── language_preload.js
@@ -289,6 +290,7 @@ tot/
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
 - `electron/task_editor_state.js` — Persistencia/estado de la ventana del Editor de Tareas (tamaño, posición y maximizado).
+- `electron/app_temp_paths.js` — Helper main-owned/importable de temporales de runtime: centraliza el root `os.tmpdir()/tot-temp/`, crea subdirectorios/paths temporales app-owned y expone helpers de contención y cleanup best-effort.
 - `electron/text_extraction_platform/text_extraction_file_picker_ipc.js` — File picker nativo del flujo text extraction; resuelve carpeta por defecto/persistida, permite selección múltiple, guarda la última carpeta usada cuando la selección es válida y deriva la lista de extensiones soportadas desde el contrato compartido de formatos.
 - `electron/text_extraction_platform/text_extraction_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.
 - `electron/text_extraction_platform/text_extraction_processing_mode_ipc.js` — Controlador/IPC del processing mode de text extraction: lock state con `lockId`, broadcast al renderer, solicitud de abort y metadata saneada de progreso por unidad/archivo + ruta/input efectivo para batch execution y heavy split.

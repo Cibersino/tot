@@ -57,6 +57,7 @@ Reglas:
 - La activación de Google OCR deja de depender solo de un fallo durante la extracción y pasa a poder iniciarse explícitamente desde `Menú > Preferencias`, reutilizando el mismo disclosure y la misma secuencia OAuth que usa la recuperación automática.
 - Abortar una extracción deja de devolver inmediatamente la ventana principal a idle: la UI entra en un estado explícito de `cancelación pendiente`, conserva el contexto visible del archivo/tiempo y mantiene bloqueadas las interacciones hasta que el cierre real del flujo termina.
 - El manejo de dirección de texto se normaliza en preview, editor, presets y disclosure OCR para que contenido RTL o mixto no quede visualmente invertido ni mal alineado respecto de la UI efectiva.
+- Los artefactos temporales locales de runtime dejan de dispersarse en `%TEMP%`: subsets PDF, normalización OCR y copias temporales de app-docs/licencias pasan a centralizarse bajo un root app-owned con limpieza best-effort al cierre normal.
 
 ### Agregado
 
@@ -85,6 +86,7 @@ Reglas:
 - Entrada `Enable Google OCR` / `Activar Google OCR` / `Enchufar Google OCR` en `Menú > Preferencias` para iniciar la conexión OCR desde la ventana principal sin esperar a que una extracción la requiera.
 - Módulos renderer shared `text_extraction_ocr_activation_flow.js` y `text_extraction_ocr_activation.js` para centralizar la secuencia `prepare` → disclosure → `launch` y exponerla tanto al menú de preferencias como a la recuperación de extracción.
 - Helpers renderer shared `RendererI18n.getUiLanguageDirection()` y `RendererI18n.resolveUserTextDirection(value)` para derivar la dirección efectiva del contenido y reutilizarla en preview, editor, presets y disclosure OCR.
+- Helper main-owned `electron/app_temp_paths.js` para centralizar paths temporales de runtime y separar explícitamente runtime (`%TEMP%/tot-temp/`) de tests (`%TEMP%/tot-temp-test/`).
 - Cobertura unitaria dedicada para activación OCR desde menú, flujo compartido y recuperación (`text_extraction_ocr_activation*.test.js`).
 - Cobertura unitaria adicional para el estado `cancellation pending` y para políticas de dirección de texto en preview/editor/presets/disclosure (`text_extraction_status_ui.test.js`, `text_extraction_entry.test.js`, `text_extraction_batch_flow.test.js`, `current_text_selector_section.test.js`, `editor_text_direction_policy.test.js`, `renderer_i18n_text_direction.test.js`, `preset_modal.test.js`, `presets_description_direction.test.js`, `wpm_controls_preset_description.test.js`, `text_extraction_ocr_activation_disclosure_modal.test.js`).
 
@@ -100,6 +102,7 @@ Reglas:
 - El drag/drop de `text extraction` deja de bloquear el caso multi-file y reutiliza el mismo planner batch que la multi-selección desde picker.
 - El `processing mode` de extracción amplía su estado visible: además del lock global, ahora puede transportar progreso de `unitIndex/unitCount`, `inputIndex/inputCount`, `selectedRoute` y `processingInputFileName`.
 - La barra de procesamiento deja de mostrar solo “waiting + basename” en todos los casos y pasa a exponer `unidad/archivo/ruta` durante ejecución batch, manteniendo el basename efectivo como filename visible.
+- Los archivos temporales locales de runtime dejan de escribirse cada uno en namespaces top-level separados de `%TEMP%` y pasan a resolverse desde un helper compartido; los PDFs retenidos siguen fuera de `%TEMP%` bajo storage persistente.
 - La preparación batch para PDFs deja de hacer triage solo contra el rango actualmente elegido y puede forzar explícitamente el análisis/split del PDF fuente completo cuando el input se convierte en unidad heavy-split.
 - La elección `keep/delete` de PDFs generados sigue siendo intención por corrida/planner abierto; lo que persiste entre sesiones es el artefacto retenido, no una preferencia global de usuario.
 - El guardado de snapshots del texto actual amplía su misma superficie IPC para soportar saves no interactivos con `autoFileBaseName`, reutilizados ahora por la ejecución batch en vez de abrir un segundo flujo de persistencia paralelo.
@@ -123,6 +126,7 @@ Reglas:
 - El modal final de aplicación deja de mostrar un bloque vacío para PDFs guardados cuando no existe ningún artefacto retenido.
 - Un OCR sobre PDF cuyo source completo supera el límite del proveedor deja de caer directamente en error runtime y pasa por una recuperación explícita hacia `volver a páginas` / `usar nativa` / `split automático`.
 - Un OCR cuyo subset PDF por rango queda demasiado grande deja de intentar continuar con upload inválido y pasa a una recuperación explícita que también puede revelar el artefacto retenido si existe.
+- Las copias temporales de app-docs/licencias y otros artefactos locales de runtime dejan de quedar sueltos directamente bajo `%TEMP%`, y el cierre normal de la app intenta limpiar el root temporal app-owned completo.
 - La ejecución batch deja de depender de diálogos nativos manuales para guardar snapshots por unidad y evita colisiones sobre nombres repetidos mediante sufijos deterministas (`_2`, `_3`, ...).
 - Rechazar el disclosure de activación OCR desde `Menú > Preferencias` o desde la recuperación de extracción deja de disparar avisos de fallo genéricos y pasa a tratarse como cancelación explícita del usuario.
 - La activación OCR lanzada desde preferencias deja de colapsar fallos heterogéneos en un mensaje único y pasa a distinguir credenciales ausentes/inválidas, token inválido, falta de conectividad, cuota/rate limit y cancelación del OAuth.
@@ -171,8 +175,11 @@ Reglas:
   - nuevos namespaces `renderer.text_extraction.batch_plan.*`, `renderer.text_extraction.batch_report.*` y `renderer.text_extraction.single_file_heavy.*`
   - nuevas strings `renderer.main.processing.text_extraction_unit_progress`, `text_extraction_input_progress`, `text_extraction_route_native` y `text_extraction_route_ocr`
 - Storage / filesystem:
-  - los subsets temporales en política `delete` se materializan bajo `os.tmpdir()/tot-generated-pdfs/`
+  - el runtime temp app-owned se centraliza bajo `os.tmpdir()/tot-temp/`
+  - los subsets temporales en política `delete` se materializan bajo `os.tmpdir()/tot-temp/generated-pdf-subsets/`
+  - los temporales de normalización OCR y las copias temporales de app-docs/licencias también quedan bajo `os.tmpdir()/tot-temp/`
   - los subsets retenidos en política `keep` se guardan bajo `app.getPath('userData')/tot-generated-pdfs/`
+  - los temporales de tests usan un root separado `os.tmpdir()/tot-temp-test/`
   - los snapshots batch auto-creados reutilizan `config/saved_current_texts/` con nombres normalizados y colisión segura
 
 ---

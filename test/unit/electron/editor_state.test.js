@@ -5,8 +5,10 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 const FS_STORAGE_PATH = path.resolve(__dirname, '../../../electron/fs_storage.js');
 const EDITOR_STATE_PATH = path.resolve(__dirname, '../../../electron/editor_state.js');
@@ -18,7 +20,7 @@ function loadFreshModule(modulePath) {
 }
 
 function createStorageHarness(t, initialState) {
-  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-editor-state-test-'));
+  const userDataDir = createTestTempDir('editor-state');
   t.after(() => fs.rmSync(userDataDir, { recursive: true, force: true }));
 
   const fsStorage = loadFreshModule(FS_STORAGE_PATH);

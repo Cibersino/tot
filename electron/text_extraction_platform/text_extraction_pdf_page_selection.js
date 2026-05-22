@@ -17,10 +17,13 @@
 
 const crypto = require('crypto');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { PDFDocument } = require('pdf-lib');
 const Log = require('../log');
+const {
+  cleanupRuntimeTempRunDir,
+  createRuntimeTempRunDir,
+} = require('../app_temp_paths');
 const {
   isPdfPasswordProtectedError,
   isUnreadableOrCorruptPdfError,
@@ -30,12 +33,6 @@ const log = Log.get('text-extraction-pdf-page-selection');
 
 // =============================================================================
 // Constants / config
-// =============================================================================
-
-const GENERATED_PDF_TEMP_ROOT_NAME = 'tot-generated-pdfs';
-
-// =============================================================================
-// Error / normalization helpers
 // =============================================================================
 
 function buildError(code, message, detailsSafeForLogs = {}) {
@@ -357,22 +354,17 @@ function resolveProcessingInputFileName({ fileInfo, pdfPageSelection } = {}) {
 // =============================================================================
 
 function cleanupMaterializationFailure(runDir) {
-  const safeRunDir = typeof runDir === 'string' ? runDir.trim() : '';
-  if (!safeRunDir || !fs.existsSync(safeRunDir)) return null;
-  try {
-    fs.rmSync(safeRunDir, { recursive: true, force: true });
+  const cleanupWarning = cleanupRuntimeTempRunDir(runDir, { force: true });
+  if (!cleanupWarning) {
     return null;
-  } catch (err) {
-    const cleanupFailure = {
-      stage: 'cleanup_materialization_failure',
-      runDir: safeRunDir,
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorCode: String(err && err.code ? err.code : ''),
-      errorMessage: String(err && err.message ? err.message : err || ''),
-    };
-    log.warn('Generated PDF materialization cleanup failed (ignored):', cleanupFailure);
-    return cleanupFailure;
   }
+  const cleanupFailure = {
+    ...cleanupWarning.detailsSafeForLogs,
+    stage: 'cleanup_materialization_failure',
+    runDir: typeof runDir === 'string' ? runDir.trim() : '',
+  };
+  log.warn('Generated PDF materialization cleanup failed (ignored):', cleanupFailure);
+  return cleanupFailure;
 }
 
 async function materializePdfPageSelectionInput({
@@ -405,12 +397,8 @@ async function materializePdfPageSelectionInput({
   }
 
   const sourceFilePath = path.resolve(toSafeFilePath(safeFileInfo) || '');
-  const runId = crypto.randomUUID();
   const retainedArtifactsDirRaw = String(retainedArtifactsDir || '').trim();
-  const runRoot = safePolicy.mode === 'keep'
-    ? (retainedArtifactsDirRaw ? path.resolve(retainedArtifactsDirRaw) : '')
-    : path.join(os.tmpdir(), GENERATED_PDF_TEMP_ROOT_NAME);
-  if (safePolicy.mode === 'keep' && !runRoot) {
+  if (safePolicy.mode === 'keep' && !retainedArtifactsDirRaw) {
     return {
       ok: false,
       error: buildError(
@@ -425,7 +413,9 @@ async function materializePdfPageSelectionInput({
     };
   }
 
-  const runDir = path.join(runRoot, `run-${runId}`);
+  const runDir = safePolicy.mode === 'keep'
+    ? path.join(path.resolve(retainedArtifactsDirRaw), `run-${crypto.randomUUID()}`)
+    : createRuntimeTempRunDir('generated-pdf-subsets');
   const subsetFileName = processingInputFileName;
   const subsetFilePath = path.join(runDir, subsetFileName);
 
@@ -481,23 +471,19 @@ async function materializePdfPageSelectionInput({
       retainedArtifactPath: safePolicy.mode === 'keep' ? subsetFilePath : '',
       cleanupGeneratedArtifact: () => {
         if (safePolicy.mode !== 'delete') return null;
-        if (!fs.existsSync(runDir)) return null;
-        try {
-          fs.rmSync(runDir, { recursive: true, force: false });
+        const cleanupWarning = cleanupRuntimeTempRunDir(runDir, { force: false });
+        if (!cleanupWarning) {
           return null;
-        } catch (err) {
-          return {
-            warningCode: 'cleanup:pdf_subset_cleanup_failed',
-            detailsSafeForLogs: {
-              stage: 'cleanup_generated_subset',
-              runDir,
-              fileName: subsetFileName,
-              errorName: String(err && err.name ? err.name : 'Error'),
-              errorCode: String(err && err.code ? err.code : ''),
-              errorMessage: String(err && err.message ? err.message : err || ''),
-            },
-          };
         }
+        return {
+          warningCode: 'cleanup:pdf_subset_cleanup_failed',
+          detailsSafeForLogs: {
+            ...cleanupWarning.detailsSafeForLogs,
+            stage: 'cleanup_generated_subset',
+            runDir,
+            fileName: subsetFileName,
+          },
+        };
       },
     };
   } catch (err) {

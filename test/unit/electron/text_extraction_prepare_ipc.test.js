@@ -103,7 +103,7 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
       bundledCredentialsFailureCode: '',
       bundledCredentialsFailureReason: '',
       bundledCredentialsFailureDetailsSafeForLogs: {},
-      generatedPdfArtifactsDir: path.resolve(__dirname, '../../../tmp-generated-pdfs-test'),
+      retainedGeneratedPdfArtifactsDir: path.resolve(__dirname, '../../../tmp-generated-pdfs-test'),
     }),
   });
 
@@ -293,7 +293,7 @@ test('prepare IPC forwards forceHeavySplitFullSource into prepareSelectedFile an
       bundledCredentialsFailureCode: '',
       bundledCredentialsFailureReason: '',
       bundledCredentialsFailureDetailsSafeForLogs: {},
-      generatedPdfArtifactsDir: path.resolve(__dirname, '../../../tmp-generated-pdfs-test'),
+      retainedGeneratedPdfArtifactsDir: path.resolve(__dirname, '../../../tmp-generated-pdfs-test'),
     }),
   });
 

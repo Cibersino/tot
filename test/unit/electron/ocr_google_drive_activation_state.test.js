@@ -3,15 +3,17 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 const {
   resolveGoogleDriveOcrAvailability,
 } = require('../../../electron/text_extraction_platform/ocr_google_drive_activation_state');
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'tot-ocr-activation-state-'));
+  return createTestTempDir('ocr-activation-state');
 }
 
 test('returns credentials_missing when credentials file is absent', (t) => {
@@ -87,4 +89,3 @@ test('returns ready when both credentials and token files exist', (t) => {
     }
   );
 });
-
