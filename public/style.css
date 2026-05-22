@@ -1665,6 +1665,11 @@ select#presets:focus {
   gap: 8px;
 }
 
+.text-extraction-batch-plan-heavy-preview {
+  display: grid;
+  gap: 4px;
+}
+
 .text-extraction-batch-plan-input-row {
   display: grid;
   gap: 8px;
@@ -1768,6 +1773,10 @@ select#presets:focus {
   display: grid;
   gap: 4px;
   font-size: var(--font-size-note);
+}
+
+.text-extraction-batch-plan-heavy-preview-label {
+  margin: 0;
 }
 
 .text-extraction-batch-plan-page-scope {

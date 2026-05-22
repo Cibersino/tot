@@ -644,7 +644,10 @@
     section.appendChild(inputsWrap);
 
     if (unit.exclusiveHeavy && Array.isArray(unit.generatedInputsPreview) && unit.generatedInputsPreview.length) {
-      section.appendChild(createDomElement('p', {
+      const previewWrap = createDomElement('div', {
+        className: 'text-extraction-batch-plan-heavy-preview',
+      });
+      previewWrap.appendChild(createDomElement('p', {
         className: 'text-extraction-batch-plan-heavy-preview-label',
         textContent: tRenderer('renderer.text_extraction.batch_plan.generated_inputs_preview'),
       }));
@@ -656,7 +659,8 @@
           textContent: generatedInput.processingInputFileName,
         }));
       });
-      section.appendChild(previewList);
+      previewWrap.appendChild(previewList);
+      section.appendChild(previewWrap);
     }
 
     if (unit.canConfigureTags) {
