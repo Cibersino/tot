@@ -9,6 +9,7 @@ const vm = require('node:vm');
 function createHarness({
   preparationsByPath,
   ocrAvailabilityResult = { ok: true, available: true, state: 'ready', code: '' },
+  currentText = '',
   promptBatchPlanResult = null,
   onPromptBatchPlan = null,
   executionResultsByProcessingInputFileName = {},
@@ -56,6 +57,9 @@ function createHarness({
       Notify: {
         notifyMain(key) {
           notifications.push(key);
+        },
+        confirmMain() {
+          return true;
         },
         async promptTextExtractionBatchPlan({ controller }) {
           capturedViewModel = controller.getViewModel();
@@ -180,6 +184,9 @@ function createHarness({
       }
       if (methodName === 'getTextExtractionProcessingMode') {
         return async () => ({ ok: true, state: { active: true } });
+      }
+      if (methodName === 'getCurrentText') {
+        return async () => currentText;
       }
       if (methodName === 'enterTextExtractionProcessingSession') {
         return async () => ({ ok: true });
