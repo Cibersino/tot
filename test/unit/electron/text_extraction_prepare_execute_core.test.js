@@ -896,7 +896,7 @@ test('executePreparedImport rejects unresolved route choice before starting work
   assert.deepEqual(result, {
     ok: false,
     code: 'ROUTE_CHOICE_REQUIRED',
-    primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_required',
+    primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_error',
   });
   assert.deepEqual(controller.enterCalls, []);
   assert.deepEqual(controller.exitCalls, []);
