@@ -13,6 +13,7 @@ Para traducir o revisar un idioma:
 3. Usa el glosario para mantener estables los conceptos de app. El glosario define alcance; las guías por idioma deciden la formulación local cuando haya más de una solución legítima.
 4. Preserva los elementos marcados como protegidos y los placeholders. Ajusta la gramática alrededor de ellos sin alterar su forma técnica.
 5. Documenta decisiones idiomáticas, dudas locales o excepciones en la guía específica del idioma, no en esta guía global.
+6. Cuando el contexto visual sea relevante, consulta las capturas de ventanas en `docs/screenshots/windows/` como referencia auxiliar.
 
 ## 2. Jerarquía de decisión
 
