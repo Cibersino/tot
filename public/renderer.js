@@ -121,6 +121,7 @@ if (!currentTextRuntime
   || typeof currentTextRuntime.requestDerivedRefresh !== 'function'
   || typeof currentTextRuntime.requestStatsDisplayRefresh !== 'function'
   || typeof currentTextRuntime.requestTimeOnlyRefresh !== 'function'
+  || typeof currentTextRuntime.startDeferredBootstrapSettle !== 'function'
   || typeof currentTextRuntime.syncBootstrapState !== 'function') {
   throw new Error('[renderer] CurrentTextRuntime unavailable; cannot continue');
 }
@@ -436,6 +437,23 @@ function sendSplashRemoved() {
   splashRemovedSent = true;
 }
 
+function scheduleDeferredBootstrapSettleAfterUnlock() {
+  const kickOffBootstrapSettle = () => {
+    setTimeout(() => {
+      currentTextRuntime.startDeferredBootstrapSettle();
+    }, 0);
+  };
+
+  if (typeof window.requestAnimationFrame === 'function') {
+    window.requestAnimationFrame(kickOffBootstrapSettle);
+    return;
+  }
+
+  setTimeout(() => {
+    currentTextRuntime.startDeferredBootstrapSettle();
+  }, 0);
+}
+
 function maybeUnblockReady() {
   if (!rendererInvariantsReady || !startupReadyReceived) return;
   if (rendererReadyState === 'READY') return;
@@ -452,6 +470,7 @@ function maybeUnblockReady() {
 
   sendSplashRemoved();
   syncMainInteractionLockUi();
+  scheduleDeferredBootstrapSettleAfterUnlock();
   log.info('Startup READY trace: splash removed and renderer unlocked.', {
     sinceStartupMs: getRendererStartupElapsedMs(),
   });

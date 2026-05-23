@@ -86,6 +86,7 @@
     source: '',
     action: '',
   };
+  let deferredBootstrapSettleRequestId = 0;
   const TRACE_LARGE_TEXT_CHARS = 1_000_000;
   const REFRESH_KIND_NONE = 'none';
   const REFRESH_KIND_TIME_ONLY = 'time_only';
@@ -174,6 +175,25 @@
       source: typeof state.source === 'string' ? state.source.trim() : '',
       action: typeof state.action === 'string' ? state.action.trim() : '',
     };
+  }
+
+  function armDeferredBootstrapSettle(requestId) {
+    deferredBootstrapSettleRequestId = normalizePositiveInteger(requestId);
+  }
+
+  function clearDeferredBootstrapSettle({ requestId = 0, force = false } = {}) {
+    if (deferredBootstrapSettleRequestId < 1) return false;
+    const normalizedRequestId = normalizePositiveInteger(requestId);
+    if (!force && normalizedRequestId > 0 && deferredBootstrapSettleRequestId !== normalizedRequestId) {
+      return false;
+    }
+    deferredBootstrapSettleRequestId = 0;
+    return true;
+  }
+
+  function isDeferredBootstrapSettleRequest(requestId) {
+    return deferredBootstrapSettleRequestId > 0
+      && deferredBootstrapSettleRequestId === normalizePositiveInteger(requestId);
   }
 
   function normalizeStandaloneFullRefreshPendingState(rawState) {
@@ -611,6 +631,9 @@
   function schedulePendingSettle(reason) {
     const requestId = currentTextProcessingState.requestId;
     if (!isActivePendingRequest(requestId)) return;
+    if (isDeferredBootstrapSettleRequest(requestId)) {
+      return;
+    }
     if (currentTextAppliedRequestId !== requestId) {
       return;
     }
@@ -813,10 +836,10 @@
       degradedRequestId = 0;
       standaloneDerivedDegraded = false;
       clearQueuedStandaloneFollowup();
+      armDeferredBootstrapSettle(normalizedState.requestId);
       const placeholderStartMs = performance.now();
       renderPendingDerivedValues();
       placeholderElapsedMs = performance.now() - placeholderStartMs;
-      schedulePendingSettle('bootstrap');
       log.info('Startup current-text bootstrap trace:', {
         textLength: currentText.length,
         requestId: normalizedState.requestId,
@@ -827,6 +850,7 @@
       });
       return;
     }
+    clearDeferredBootstrapSettle({ force: true });
     syncStatusClasses();
     runStandaloneDerivedRefresh('bootstrap');
     log.info('Startup current-text bootstrap trace:', {
@@ -842,6 +866,14 @@
   function applyCurrentTextProcessingState(rawState, { source = 'unknown' } = {}) {
     const nextState = normalizeCurrentTextProcessingState(rawState);
     currentTextProcessingState = nextState;
+    if (!nextState.active) {
+      clearDeferredBootstrapSettle({ force: true });
+    } else if (
+      deferredBootstrapSettleRequestId > 0
+      && deferredBootstrapSettleRequestId !== nextState.requestId
+    ) {
+      clearDeferredBootstrapSettle({ force: true });
+    }
     if (nextState.active) {
       bumpRenderAuthoritySequence();
       degradedRequestId = 0;
@@ -856,6 +888,26 @@
       return;
     }
     syncStatusClasses();
+  }
+
+  function startDeferredBootstrapSettle() {
+    const requestId = deferredBootstrapSettleRequestId;
+    if (requestId < 1) return;
+    if (!isActivePendingRequest(requestId) || currentTextAppliedRequestId !== requestId) {
+      clearDeferredBootstrapSettle({ force: true });
+      log.info('Startup current-text deferred bootstrap settle cancelled before kickoff.', {
+        deferredRequestId: requestId,
+        activeRequestId: currentTextProcessingState.requestId,
+        currentTextAppliedRequestId,
+      });
+      return;
+    }
+    clearDeferredBootstrapSettle({ requestId });
+    log.info('Startup current-text deferred bootstrap settle starting.', {
+      requestId,
+      textLength: currentText.length,
+    });
+    schedulePendingSettle('bootstrap');
   }
 
   function handleCurrentTextUpdated(payload, { onAuthoritativeTextChanged = null } = {}) {
@@ -957,6 +1009,7 @@
     requestDerivedRefresh,
     requestStatsDisplayRefresh,
     requestTimeOnlyRefresh,
+    startDeferredBootstrapSettle,
     syncBootstrapState,
   };
 })();

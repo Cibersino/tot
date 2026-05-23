@@ -458,9 +458,109 @@ test('stats_display merges into pending current-text settling without an extra p
   const previewCallsBefore = harness.previewCalls.length;
   harness.api.requestStatsDisplayRefresh('pending merge');
   assert.equal(harness.previewCalls.length, previewCallsBefore);
+  assert.equal(harness.countCalls.length, 0);
 
+  harness.api.startDeferredBootstrapSettle();
   deferredSeparators.resolve();
   await flushAsyncWork();
+});
+
+test('syncBootstrapState with active startup pending installs placeholders without starting settle inline', async () => {
+  const harness = createHarness();
+
+  harness.api.syncBootstrapState({
+    initialText: 'uno dos tres',
+    processingState: {
+      active: true,
+      requestId: 1,
+      sinceEpochMs: Date.now(),
+      source: 'main',
+      action: 'initial_load',
+    },
+  });
+
+  assert.equal(harness.countCalls.length, 0);
+  assert.equal(
+    harness.elements.resChars.textContent,
+    'renderer.main.results.chars:[pending]'
+  );
+
+  await flushAsyncWork();
+
+  assert.equal(harness.countCalls.length, 0);
+
+  harness.api.startDeferredBootstrapSettle();
+  await flushAsyncWork();
+
+  assert.equal(harness.countCalls.length, 1);
+});
+
+test('deferred bootstrap settle starts only once', async () => {
+  const harness = createHarness();
+
+  harness.api.syncBootstrapState({
+    initialText: 'uno dos tres',
+    processingState: {
+      active: true,
+      requestId: 1,
+      sinceEpochMs: Date.now(),
+      source: 'main',
+      action: 'initial_load',
+    },
+  });
+
+  harness.api.startDeferredBootstrapSettle();
+  harness.api.startDeferredBootstrapSettle();
+  await flushAsyncWork();
+
+  assert.equal(harness.countCalls.length, 1);
+});
+
+test('deferred bootstrap settle cancels silently when startup request is no longer active at kickoff', async () => {
+  const harness = createHarness();
+
+  harness.api.syncBootstrapState({
+    initialText: 'uno dos tres',
+    processingState: {
+      active: true,
+      requestId: 1,
+      sinceEpochMs: Date.now(),
+      source: 'main',
+      action: 'initial_load',
+    },
+  });
+  harness.api.applyCurrentTextProcessingState({
+    active: false,
+    requestId: 0,
+    sinceEpochMs: null,
+    source: '',
+    action: '',
+  });
+
+  harness.api.startDeferredBootstrapSettle();
+  await flushAsyncWork();
+
+  assert.equal(harness.countCalls.length, 0);
+});
+
+test('non-startup current-text pending paths still settle without deferred bootstrap kickoff', async () => {
+  const harness = createHarness();
+
+  harness.api.applyCurrentTextProcessingState({
+    active: true,
+    requestId: 2,
+    sinceEpochMs: Date.now(),
+    source: 'main',
+    action: 'overwrite',
+  });
+  harness.api.handleCurrentTextUpdated({
+    text: 'uno dos tres',
+    requestId: 2,
+  });
+
+  await flushAsyncWork();
+
+  assert.equal(harness.countCalls.length, 1);
 });
 
 test('stale queued standalone follow-up does not leak into a later successful full derive', async () => {
