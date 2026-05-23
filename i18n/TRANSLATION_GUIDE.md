@@ -723,6 +723,18 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Label de cantidad de caracteres del texto actual
           // [CONCEPTO_APP] texto actual
         },
+        "value_pending": {
+          "es": "pendiente...",
+          "en": "pending..."
+          // [PROPÓSITO] Valor temporal mostrado mientras los resultados de conteo del texto actual aún no están listos.
+          // [CONCEPTO_APP] texto actual
+        },
+        "value_unavailable": {
+          "es": "no disponible",
+          "en": "unavailable"
+          // [PROPÓSITO] Valor de resguardo cuando un resultado de conteo del texto actual no puede mostrarse.
+          // [CONCEPTO_APP] texto actual
+        },
         "precise_mode": {
           "es": "Modo preciso",
           "en": "Precise mode"
@@ -754,6 +766,38 @@ Estados de revisión recomendados:
         }
       },
       "processing": {
+        "current_text_waiting": {
+          "es": "Actualizando el texto actual...",
+          "en": "Updating current text..."
+          // [PROPÓSITO] Estado de procesamiento mientras la app aplica o actualiza el texto actual, antes de que la UI vuelva a estar estable.
+          // [CONCEPTO_APP] texto actual
+          // [NO_CONFUNDIR] No es estado de extracción de texto desde archivo; pertenece al asentamiento del texto actual.
+        },
+        "current_text_recount_waiting": {
+          "es": "Recalculando los resultados del texto actual...",
+          "en": "Recalculating current-text results..."
+          // [PROPÓSITO] Estado de procesamiento mientras se recalculan conteos/resultados del texto actual.
+          // [CONCEPTO_APP] texto actual
+          // [NO_CONFUNDIR] No indica extracción de texto ni OCR; indica reconteo del texto actual.
+        },
+        "current_text_waiting_startup": {
+          "es": "Asentando el texto actual...",
+          "en": "Settling current text..."
+          // [PROPÓSITO] Estado de arranque mientras la app estabiliza el texto actual inicial y sus resultados.
+          // [CONCEPTO_APP] texto actual
+        },
+        "current_text_waiting_editor": {
+          "es": "Sincronizando cambios del Editor de Texto...",
+          "en": "Syncing Text Editor changes..."
+          // [PROPÓSITO] Estado de sincronización cuando cambios del Editor de Texto se están aplicando al texto actual.
+          // [CONCEPTO_APP] Editor de Texto; texto actual
+        },
+        "current_text_elapsed": {
+          "es": "Transcurrido: ",
+          "en": "Elapsed: "
+          // [PROPÓSITO] Señala el tiempo transcurrido en vivo durante actualización, sincronización o reconteo del texto actual.
+          // [CONCEPTO_APP] texto actual
+        },
         "text_extraction_placeholder": {
           "es": "Procesando extracción...",
           "en": "Extracting text..."
@@ -1208,6 +1252,13 @@ Estados de revisión recomendados:
           "en": "Omit the failed item and continue inside the same unit"
           // [PROPÓSITO] Política de fallo de la extracción de texto que omite el ítem con extracción fallida y continúa dentro de la misma unidad.
           // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; unidad de extracción por lotes
+        },
+        "overwrite_confirm": {
+          "es": "Esto sobrescribirá el texto actual cuando comience la extracción. ¿Deseas continuar?",
+          "en": "This will overwrite the current text when extraction starts. Do you want to continue?"
+          // [PROPÓSITO] Confirmación previa al inicio de una extracción por lotes que aplicará el resultado reemplazando el texto actual.
+          // [CONCEPTO_APP] extracción por lotes; texto actual; reemplazar texto actual
+          // [NO_CONFUNDIR] No se refiere a sobrescribir archivos ni snapshots; se refiere al texto actual de la ventana principal.
         },
         "start_button": {
           "es": "Iniciar extracción",
@@ -2482,7 +2533,7 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Informa que la operación sobre el texto actual no puede completarse porque, al aplicar el texto, el resultado final superaría el límite del texto actual admitido por la app.
         // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
       },
-      "applytruncated_": {
+      "apply_truncated": {
         "es": "El texto fue truncado para ajustarse al límite de la aplicación.",
         "en": "The text was truncated to fit the application limit."
         // [PROPÓSITO] Informa que la operación sobre el texto actual se completó, pero el texto final quedó recortado para ajustarse al límite del texto actual admitido por la app.
@@ -2611,6 +2662,20 @@ Estados de revisión recomendados:
         "en": "There is an extraction in progress. Main-window interactions are locked until the extraction finishes or is cancelled."
         // [PROPÓSITO] Alerta cuando una extracción en curso bloquea interacciones de la ventana principal.
         // [CONCEPTO_APP] extracción de texto
+      },
+      "current_text_processing_locked": {
+        "es": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
+        "en": "Current text is still updating. Main-window interactions are locked until the latest text settles."
+        // [PROPÓSITO] Alerta cuando una actualización del texto actual bloquea temporalmente interacciones de la ventana principal.
+        // [CONCEPTO_APP] texto actual
+        // [NO_CONFUNDIR] No indica una extracción de texto en curso; indica que el texto actual aún no se estabiliza.
+      },
+      "current_text_recount_locked": {
+        "es": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
+        "en": "Current-text results are still being recalculated. Main-window interactions are locked until the latest recount settles."
+        // [PROPÓSITO] Alerta cuando el reconteo de resultados del texto actual bloquea temporalmente interacciones de la ventana principal.
+        // [CONCEPTO_APP] texto actual
+        // [NO_CONFUNDIR] No indica extracción, OCR ni aplicación de texto nuevo; indica reconteo pendiente.
       },
       "text_extraction_abort_error": {
         "es": "Ocurrió un error al solicitar la cancelación.",
