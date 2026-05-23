@@ -117,9 +117,15 @@ if (!currentTextRuntime
   || typeof currentTextRuntime.handleCurrentTextUpdated !== 'function'
   || typeof currentTextRuntime.installCurrentTextState !== 'function'
   || typeof currentTextRuntime.requestDerivedRefresh !== 'function'
+  || typeof currentTextRuntime.requestStatsDisplayRefresh !== 'function'
   || typeof currentTextRuntime.requestTimeOnlyRefresh !== 'function'
   || typeof currentTextRuntime.syncBootstrapState !== 'function') {
   throw new Error('[renderer] CurrentTextRuntime unavailable; cannot continue');
+}
+const currentTextRefreshPolicyModule = window.CurrentTextRefreshPolicy || null;
+if (!currentTextRefreshPolicyModule
+  || typeof currentTextRefreshPolicyModule.createController !== 'function') {
+  throw new Error('[renderer] CurrentTextRefreshPolicy unavailable; cannot continue');
 }
 const readingSpeedTestUi = window.ReadingSpeedTestUi || null;
 if (!readingSpeedTestUi
@@ -190,6 +196,17 @@ currentTextRuntime.configure({
   getSettingsCache: () => settingsCache,
   getWpm: () => wpmControls.getWpm(),
   resolveCurrentTextProcessing: window.electronAPI.resolveCurrentTextProcessing.bind(window.electronAPI),
+});
+const currentTextRefreshPolicy = currentTextRefreshPolicyModule.createController({
+  requestFullRefresh: (reason) => {
+    currentTextRuntime.requestDerivedRefresh(reason);
+  },
+  requestStatsDisplayRefresh: (reason) => {
+    currentTextRuntime.requestStatsDisplayRefresh(reason);
+  },
+  requestTimeOnlyRefresh: (reason) => {
+    currentTextRuntime.requestTimeOnlyRefresh(reason);
+  },
 });
 
 // =============================================================================
@@ -726,9 +743,15 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
 // =============================================================================
 const settingsChangeHandler = async (newSettings) => {
   try {
+    const previousSettings = settingsCache || {};
+    const previousCountContext = {
+      modoConteo,
+      idioma: idiomaActual,
+    };
     settingsCache = newSettings || {};
     const nuevoIdioma = settingsCache.language || DEFAULT_LANG;
     const idiomaCambio = (nuevoIdioma !== idiomaActual);
+    let presetOutcome = null;
     if (idiomaCambio) {
       idiomaActual = nuevoIdioma;
       applyWindowLanguageAttributes(idiomaActual);
@@ -747,7 +770,10 @@ const settingsChangeHandler = async (newSettings) => {
         log.warn('applyTranslations failed after settings change (ignored):', err);
       }
       try {
-        await loadPresets({ settingsSnapshot: settingsCache });
+        const presetLoadResult = await loadPresets({ settingsSnapshot: settingsCache });
+        presetOutcome = presetLoadResult && presetLoadResult.selectionOutcome
+          ? presetLoadResult.selectionOutcome
+          : null;
       } catch (err) {
         log.error('Error loading presets after language change:', err);
       }
@@ -762,7 +788,17 @@ const settingsChangeHandler = async (newSettings) => {
       }
     }
     if (isRendererReady()) {
-      startPreviewAndResultsUpdate(getCurrentTextValue(), 'settings change');
+      currentTextRefreshPolicy.dispatchSettingsChange({
+        previousSettings,
+        nextSettings: settingsCache,
+        previousCountContext,
+        nextCountContext: {
+          modoConteo,
+          idioma: idiomaActual,
+        },
+        presetOutcome,
+        reason: 'settings change',
+      });
       if (modeChanged && cronoController && typeof cronoController.handleTextChange === 'function') {
         cronoController.handleTextChange(null, getCurrentTextValue());
       }
@@ -810,13 +846,18 @@ function armIpcSubscriptions() {
         return;
       }
       try {
-        await wpmControls.handlePresetCreated({
+        const presetCreatedResult = await wpmControls.handlePresetCreated({
           preset,
           settingsSnapshot: settingsCache,
           language: idiomaActual,
           electronAPI: window.electronAPI,
-          onWpmChanged: () => startPreviewAndResultsUpdate(getCurrentTextValue(), 'preset-created sync'),
         });
+        currentTextRefreshPolicy.dispatchPresetOutcome(
+          presetCreatedResult && presetCreatedResult.selectionOutcome
+            ? presetCreatedResult.selectionOutcome
+            : null,
+          'preset-created sync'
+        );
       } catch (err) {
         log.error('Error handling preset-created event:', err);
       }
@@ -1159,11 +1200,17 @@ async function runStartupOrchestrator() {
 
     // Load presets and save them to the cache
     const loadPresetsStartMs = performance.now();
-    await loadPresets({ settingsSnapshot });
+    const presetLoadResult = await loadPresets({ settingsSnapshot });
     log.info('Startup presets trace: loadPresets completed.', {
       sinceStartupMs: getRendererStartupElapsedMs(),
       durationMs: roundMs(performance.now() - loadPresetsStartMs),
     });
+    currentTextRefreshPolicy.dispatchPresetOutcome(
+      presetLoadResult && presetLoadResult.selectionOutcome
+        ? presetLoadResult.selectionOutcome
+        : null,
+      'startup preset resolution'
+    );
 
     if (typeof syncToggleFromSettings === 'function') {
       try {
@@ -1177,9 +1224,6 @@ async function runStartupOrchestrator() {
     log.info('Startup READY trace: renderer invariants marked ready.', {
       sinceStartupMs: getRendererStartupElapsedMs(),
     });
-
-    // Final update after presets load in case WPM changed
-    startPreviewAndResultsUpdate(getCurrentTextValue(), 'startup kickoff');
   } catch (err) {
     log.error('Error initializing renderer:', err);
   }
@@ -2355,8 +2399,13 @@ function bindPresetActions() {
 
       if (res && res.ok) {
         // On success, reload presets and apply fallback selection if needed.
-        await loadPresets({ settingsSnapshot: settingsCache || {} });
-        startPreviewAndResultsUpdate(getCurrentTextValue(), 'preset delete');
+        const presetDeleteResult = await loadPresets({ settingsSnapshot: settingsCache || {} });
+        currentTextRefreshPolicy.dispatchPresetOutcome(
+          presetDeleteResult && presetDeleteResult.selectionOutcome
+            ? presetDeleteResult.selectionOutcome
+            : null,
+          'preset delete'
+        );
         // No further UI dialog required; main already showed confirmation.
         return;
       } else {
@@ -2392,8 +2441,13 @@ function bindPresetActions() {
 
       if (res && res.ok) {
         // Reload presets to reflect restored defaults
-        await loadPresets({ settingsSnapshot: settingsCache || {} });
-        startPreviewAndResultsUpdate(getCurrentTextValue(), 'preset restore');
+        const presetRestoreResult = await loadPresets({ settingsSnapshot: settingsCache || {} });
+        currentTextRefreshPolicy.dispatchPresetOutcome(
+          presetRestoreResult && presetRestoreResult.selectionOutcome
+            ? presetRestoreResult.selectionOutcome
+            : null,
+          'preset restore'
+        );
         return;
       } else {
         if (res && res.code === 'CANCELLED') {

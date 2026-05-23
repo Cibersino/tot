@@ -67,6 +67,11 @@
   let currentTextAppliedRequestId = 0;
   let latestAuthoritativeRequestIdSeen = 0;
   let degradedRequestId = 0;
+  let standaloneDerivedRefreshInFlight = false;
+  let standaloneDerivedRefreshSequence = 0;
+  let queuedStandaloneFollowupKind = 'none';
+  let queuedStandaloneFollowupReason = '';
+  let queuedStandaloneFollowupOwnerSequence = 0;
   let currentTextProcessingState = {
     active: false,
     requestId: 0,
@@ -75,6 +80,10 @@
     action: '',
   };
   const TRACE_LARGE_TEXT_CHARS = 1_000_000;
+  const REFRESH_KIND_NONE = 'none';
+  const REFRESH_KIND_TIME_ONLY = 'time_only';
+  const REFRESH_KIND_STATS_DISPLAY = 'stats_display';
+  const REFRESH_KIND_FULL = 'full';
 
   // =============================================================================
   // Helpers
@@ -183,6 +192,55 @@
       || Number(textLength) >= TRACE_LARGE_TEXT_CHARS;
   }
 
+  function getRefreshKindPriority(kind) {
+    if (kind === REFRESH_KIND_FULL) return 3;
+    if (kind === REFRESH_KIND_STATS_DISPLAY) return 2;
+    if (kind === REFRESH_KIND_TIME_ONLY) return 1;
+    return 0;
+  }
+
+  function mergeRefreshKind(currentKind, nextKind) {
+    return getRefreshKindPriority(nextKind) > getRefreshKindPriority(currentKind)
+      ? nextKind
+      : currentKind;
+  }
+
+  function clearQueuedStandaloneFollowup() {
+    queuedStandaloneFollowupKind = REFRESH_KIND_NONE;
+    queuedStandaloneFollowupReason = '';
+    queuedStandaloneFollowupOwnerSequence = 0;
+  }
+
+  function clearQueuedStandaloneFollowupForOwner(ownerSequence) {
+    const normalizedOwnerSequence = normalizePositiveInteger(ownerSequence);
+    if (normalizedOwnerSequence < 1) return;
+    if (queuedStandaloneFollowupOwnerSequence !== normalizedOwnerSequence) return;
+    clearQueuedStandaloneFollowup();
+  }
+
+  function queueStandaloneFollowup(kind, reason, ownerSequence) {
+    const normalizedOwnerSequence = normalizePositiveInteger(ownerSequence);
+    if (normalizedOwnerSequence < 1) {
+      log.error('Standalone follow-up queue requested without an active owner sequence.');
+      return;
+    }
+    if (queuedStandaloneFollowupOwnerSequence !== normalizedOwnerSequence) {
+      queuedStandaloneFollowupKind = kind;
+      queuedStandaloneFollowupReason = typeof reason === 'string' ? reason : '';
+      queuedStandaloneFollowupOwnerSequence = normalizedOwnerSequence;
+      return;
+    }
+    const mergedKind = mergeRefreshKind(queuedStandaloneFollowupKind, kind);
+    if (mergedKind !== queuedStandaloneFollowupKind) {
+      queuedStandaloneFollowupKind = mergedKind;
+      queuedStandaloneFollowupReason = reason;
+      return;
+    }
+    if (mergedKind === kind && typeof reason === 'string' && reason) {
+      queuedStandaloneFollowupReason = reason;
+    }
+  }
+
   function renderPreview() {
     const { currentTextSelectorSection } = requireDeps();
     currentTextSelectorSection.renderPreview(currentText, {
@@ -241,7 +299,10 @@
     return `${hours}h ${minutes}m ${seconds}s`;
   }
 
-  function applySettledDerivedState(derivedState) {
+  function applyDisplayDerivedState(derivedState, {
+    previewMode = 'always',
+    persistStats = false,
+  } = {}) {
     const { resultsTimeMultiplier } = requireDeps();
     const derived = derivedState && typeof derivedState === 'object' ? derivedState : {};
     const stats = derived.stats || {
@@ -249,9 +310,12 @@
       sinEspacios: 0,
       palabras: 0,
     };
-    currentTextStats = stats;
-    degradedRequestId = 0;
-    renderPreview();
+    if (persistStats) {
+      currentTextStats = stats;
+    }
+    if (previewMode === 'always' || (previewMode === 'empty-only' && currentText.length === 0)) {
+      renderPreview();
+    }
     if (resChars) {
       resChars.textContent = msgRenderer('renderer.main.results.chars', { n: derived.charsText });
     }
@@ -267,6 +331,21 @@
     renderTimeValue(derived.timeText);
     resultsTimeMultiplier.setBaseTotalSeconds(derived.totalSeconds);
     syncStatusClasses();
+  }
+
+  function applySettledDerivedState(derivedState) {
+    degradedRequestId = 0;
+    applyDisplayDerivedState(derivedState, {
+      previewMode: 'always',
+      persistStats: true,
+    });
+  }
+
+  function applyStatsDisplayDerivedState(derivedState) {
+    applyDisplayDerivedState(derivedState, {
+      previewMode: 'empty-only',
+      persistStats: false,
+    });
   }
 
   async function buildSettledDerivedState(reason = 'unknown') {
@@ -306,6 +385,50 @@
     }
     return {
       stats,
+      charsText,
+      charsNoSpaceText,
+      wordsText,
+      totalSeconds,
+      timeText: formatInvariantEstimatedDuration(timeParts.hours, timeParts.minutes, timeParts.seconds),
+    };
+  }
+
+  async function buildDisplayDerivedStateFromStats(stats, reason = 'unknown') {
+    const { getSettingsCache, getWpm } = requireDeps();
+    const displayStartMs = performance.now();
+    const normalizedStats = stats && typeof stats === 'object' ? stats : {
+      conEspacios: 0,
+      sinEspacios: 0,
+      palabras: 0,
+    };
+    const countArgs = getCountArgs();
+    const settingsCache = getSettingsCache();
+    const separatorsStartMs = performance.now();
+    const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
+      countArgs.idioma,
+      settingsCache
+    );
+    const separatorsElapsedMs = performance.now() - separatorsStartMs;
+    const formatStartMs = performance.now();
+    const charsText = formatearNumero(normalizedStats.conEspacios, separadorMiles, separadorDecimal);
+    const charsNoSpaceText = formatearNumero(normalizedStats.sinEspacios, separadorMiles, separadorDecimal);
+    const wordsText = formatearNumero(normalizedStats.palabras, separadorMiles, separadorDecimal);
+    const totalSeconds = getExactTotalSeconds(normalizedStats.palabras, getWpm());
+    const timeParts = getDisplayTimeParts(totalSeconds);
+    const formatElapsedMs = performance.now() - formatStartMs;
+    if (shouldTraceCurrentTextWork(reason, currentText.length)) {
+      log.info('Current-text display refresh trace:', {
+        reason,
+        textLength: currentText.length,
+        modeConteo: countArgs.modoConteo,
+        idioma: countArgs.idioma,
+        separatorsMs: roundMs(separatorsElapsedMs),
+        formatMs: roundMs(formatElapsedMs),
+        totalMs: roundMs(performance.now() - displayStartMs),
+      });
+    }
+    return {
+      stats: normalizedStats,
       charsText,
       charsNoSpaceText,
       wordsText,
@@ -416,7 +539,6 @@
   function schedulePendingSettle(reason) {
     const requestId = currentTextProcessingState.requestId;
     if (!isActivePendingRequest(requestId)) return;
-    renderPendingDerivedValues();
     if (currentTextAppliedRequestId !== requestId) {
       return;
     }
@@ -437,10 +559,72 @@
     }
   }
 
+  function renderTimeOnlyFromCurrentStats() {
+    if (!currentTextStats) {
+      log.warnOnce(
+        'current_text_runtime.timeOnly.noStats',
+        'WPM-only update requested without current text stats; time not updated.'
+      );
+      return;
+    }
+    const { getWpm, resultsTimeMultiplier } = requireDeps();
+    const totalSeconds = getExactTotalSeconds(currentTextStats.palabras, getWpm());
+    const timeParts = getDisplayTimeParts(totalSeconds);
+    renderTimeValue(formatInvariantEstimatedDuration(timeParts.hours, timeParts.minutes, timeParts.seconds));
+    resultsTimeMultiplier.setBaseTotalSeconds(totalSeconds);
+  }
+
+  function runStandaloneStatsDisplayRefresh(reason, refreshSequence = bumpRenderAuthoritySequence()) {
+    if (!currentTextStats) {
+      log.warnOnce(
+        'current_text_runtime.statsDisplay.noStats',
+        'Display-only refresh requested without current text stats; results not updated.'
+      );
+      return;
+    }
+    void buildDisplayDerivedStateFromStats(currentTextStats, reason)
+      .then((derivedState) => {
+        if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
+          return;
+        }
+        applyStatsDisplayDerivedState(derivedState);
+      })
+      .catch((err) => {
+        if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
+          return;
+        }
+        log.error(`Current-text display-only refresh failed after ${reason}:`, err);
+      });
+  }
+
+  function runQueuedStandaloneFollowup(refreshSequence) {
+    if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
+      clearQueuedStandaloneFollowupForOwner(refreshSequence);
+      return;
+    }
+    if (queuedStandaloneFollowupOwnerSequence !== refreshSequence) {
+      clearQueuedStandaloneFollowup();
+      return;
+    }
+    const followupKind = queuedStandaloneFollowupKind;
+    const followupReason = queuedStandaloneFollowupReason;
+    clearQueuedStandaloneFollowup();
+    if (followupKind === REFRESH_KIND_TIME_ONLY) {
+      renderTimeOnlyFromCurrentStats();
+      return;
+    }
+    if (followupKind === REFRESH_KIND_STATS_DISPLAY) {
+      runStandaloneStatsDisplayRefresh(followupReason || 'standalone followup');
+    }
+  }
+
   function runStandaloneDerivedRefresh(reason, refreshSequence = bumpRenderAuthoritySequence()) {
+    standaloneDerivedRefreshInFlight = true;
+    standaloneDerivedRefreshSequence = refreshSequence;
     void buildSettledDerivedState(reason)
       .then((derivedState) => {
         if (refreshSequence !== renderAuthoritySequence) {
+          clearQueuedStandaloneFollowupForOwner(refreshSequence);
           log.info('Stale standalone current-text derived refresh ignored:', {
             reason,
             refreshSequence,
@@ -449,15 +633,25 @@
           return;
         }
         if (currentTextProcessingState.active) {
+          clearQueuedStandaloneFollowupForOwner(refreshSequence);
           return;
         }
         applySettledDerivedState(derivedState);
+        runQueuedStandaloneFollowup(refreshSequence);
       })
       .catch((err) => {
         if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
+          clearQueuedStandaloneFollowupForOwner(refreshSequence);
           return;
         }
+        clearQueuedStandaloneFollowupForOwner(refreshSequence);
         log.error(`Current-text standalone derived refresh failed after ${reason}:`, err);
+      })
+      .finally(() => {
+        if (standaloneDerivedRefreshSequence === refreshSequence) {
+          standaloneDerivedRefreshSequence = 0;
+          standaloneDerivedRefreshInFlight = false;
+        }
       });
   }
 
@@ -487,6 +681,7 @@
     let placeholderElapsedMs = 0;
     if (normalizedState.active) {
       degradedRequestId = 0;
+      clearQueuedStandaloneFollowup();
       const placeholderStartMs = performance.now();
       renderPendingDerivedValues();
       placeholderElapsedMs = performance.now() - placeholderStartMs;
@@ -519,6 +714,7 @@
     if (nextState.active) {
       bumpRenderAuthoritySequence();
       degradedRequestId = 0;
+      clearQueuedStandaloneFollowup();
       renderPendingDerivedValues();
       schedulePendingSettle(`state:${source}`);
       return;
@@ -542,18 +738,19 @@
     const previousText = currentText;
     setCurrentTextInternal(normalizedPayload.text, { requestId });
     const refreshSequence = bumpRenderAuthoritySequence();
-    renderPreview();
     if (typeof onAuthoritativeTextChanged === 'function' && previousText !== currentText) {
       onAuthoritativeTextChanged(previousText, currentText);
     }
 
     if (isActivePendingRequest(requestId)) {
       degradedRequestId = 0;
+      clearQueuedStandaloneFollowup();
       renderPendingDerivedValues();
       schedulePendingSettle('current_text_updated');
       return;
     }
 
+    renderPreview();
     runStandaloneDerivedRefresh('current-text update', refreshSequence);
   }
 
@@ -561,33 +758,37 @@
     derivedConfigVersion += 1;
     const refreshSequence = bumpRenderAuthoritySequence();
     if (currentTextProcessingState.active) {
-      renderPendingDerivedValues();
       schedulePendingSettle(`merge:${reason}`);
       return;
     }
     runStandaloneDerivedRefresh(reason, refreshSequence);
   }
 
-  function requestTimeOnlyRefresh(reason) {
-    derivedConfigVersion += 1;
-    bumpRenderAuthoritySequence();
+  function requestStatsDisplayRefresh(reason) {
     if (currentTextProcessingState.active) {
-      renderPendingDerivedValues();
+      derivedConfigVersion += 1;
       schedulePendingSettle(`merge:${reason}`);
       return;
     }
-    if (!currentTextStats) {
-      log.warnOnce(
-        'current_text_runtime.timeOnly.noStats',
-        'WPM-only update requested without current text stats; time not updated.'
-      );
+    if (standaloneDerivedRefreshInFlight) {
+      queueStandaloneFollowup(REFRESH_KIND_STATS_DISPLAY, reason, standaloneDerivedRefreshSequence);
       return;
     }
-    const { getWpm, resultsTimeMultiplier } = requireDeps();
-    const totalSeconds = getExactTotalSeconds(currentTextStats.palabras, getWpm());
-    const timeParts = getDisplayTimeParts(totalSeconds);
-    renderTimeValue(formatInvariantEstimatedDuration(timeParts.hours, timeParts.minutes, timeParts.seconds));
-    resultsTimeMultiplier.setBaseTotalSeconds(totalSeconds);
+    runStandaloneStatsDisplayRefresh(reason);
+  }
+
+  function requestTimeOnlyRefresh(reason) {
+    if (currentTextProcessingState.active) {
+      derivedConfigVersion += 1;
+      schedulePendingSettle(`merge:${reason}`);
+      return;
+    }
+    if (standaloneDerivedRefreshInFlight) {
+      queueStandaloneFollowup(REFRESH_KIND_TIME_ONLY, reason, standaloneDerivedRefreshSequence);
+      return;
+    }
+    bumpRenderAuthoritySequence();
+    renderTimeOnlyFromCurrentStats();
   }
 
   window.CurrentTextRuntime = {
@@ -597,6 +798,7 @@
     handleCurrentTextUpdated,
     installCurrentTextState,
     requestDerivedRefresh,
+    requestStatsDisplayRefresh,
     requestTimeOnlyRefresh,
     syncBootstrapState,
   };
