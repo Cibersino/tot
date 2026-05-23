@@ -116,6 +116,12 @@
     source: '',
     action: '',
   };
+  let standaloneFullRefreshPendingState = {
+    active: false,
+    ownerSequence: 0,
+    sinceEpochMs: null,
+    reason: '',
+  };
   let prepareActiveCount = 0;
   let abortFinalizationState = {
     active: false,
@@ -237,6 +243,26 @@
     };
   }
 
+  function normalizeStandaloneFullRefreshPendingState(rawState) {
+    const state = rawState && typeof rawState === 'object' ? rawState : {};
+    const ownerSequence = Number(state.ownerSequence);
+    const sinceEpochMs = Number(state.sinceEpochMs);
+    if (state.active !== true || !Number.isFinite(ownerSequence) || ownerSequence < 1) {
+      return {
+        active: false,
+        ownerSequence: 0,
+        sinceEpochMs: null,
+        reason: '',
+      };
+    }
+    return {
+      active: true,
+      ownerSequence: Math.floor(ownerSequence),
+      sinceEpochMs: Number.isFinite(sinceEpochMs) && sinceEpochMs > 0 ? Math.floor(sinceEpochMs) : null,
+      reason: typeof state.reason === 'string' ? state.reason.trim() : '',
+    };
+  }
+
   function cloneProcessingModeState() {
     return { ...processingModeState };
   }
@@ -255,6 +281,14 @@
 
   function isCurrentTextProcessingActive() {
     return currentTextProcessingState.active === true;
+  }
+
+  function isStandaloneFullRefreshPendingActive() {
+    return standaloneFullRefreshPendingState.active === true;
+  }
+
+  function isCurrentTextAreaPendingActive() {
+    return isCurrentTextProcessingActive() || isStandaloneFullRefreshPendingActive();
   }
 
   function getElapsedMsSince(rawSinceEpochMs) {
@@ -326,6 +360,9 @@
       }
       return tRenderer('renderer.main.processing.current_text_waiting');
     }
+    if (isStandaloneFullRefreshPendingActive()) {
+      return tRenderer('renderer.main.processing.current_text_recount_waiting');
+    }
     if (pendingExecutionRoute === 'native') {
       return tRenderer('renderer.main.processing.text_extraction_waiting_native');
     }
@@ -394,6 +431,9 @@
     if (isCurrentTextProcessingActive()) {
       return '';
     }
+    if (isStandaloneFullRefreshPendingActive()) {
+      return '';
+    }
     return pendingSourceFileName;
   }
 
@@ -409,8 +449,13 @@
   function syncProcessingShellUi() {
     const processingActive = isProcessingModeActive();
     const currentTextActive = isCurrentTextProcessingActive();
+    const standaloneFullRefreshActive = isStandaloneFullRefreshPendingActive();
     const abortFinalizationActive = isAbortFinalizationActive();
-    const active = processingActive || currentTextActive || abortFinalizationActive || isPrepareActive();
+    const active = processingActive
+      || currentTextActive
+      || standaloneFullRefreshActive
+      || abortFinalizationActive
+      || isPrepareActive();
 
     if (selectorControlsNormal) {
       selectorControlsNormal.hidden = active;
@@ -459,17 +504,25 @@
 
     const processingActive = isProcessingModeActive();
     const currentTextActive = isCurrentTextProcessingActive();
+    const standaloneFullRefreshActive = isStandaloneFullRefreshPendingActive();
     const abortFinalizationActive = isAbortFinalizationActive();
     const elapsedMs = processingActive
       ? (elapsedMsOverride === null
         ? getElapsedMsSince(processingModeState.sinceEpochMs)
         : elapsedMsOverride)
-      : (currentTextActive
+      : ((currentTextActive || standaloneFullRefreshActive)
         ? (elapsedMsOverride === null
-          ? getElapsedMsSince(currentTextProcessingState.sinceEpochMs)
+          ? getElapsedMsSince(
+            currentTextActive
+              ? currentTextProcessingState.sinceEpochMs
+              : standaloneFullRefreshPendingState.sinceEpochMs
+          )
           : elapsedMsOverride)
         : (abortFinalizationActive ? abortFinalizationState.elapsedMs : null));
-    const elapsedValueText = (processingActive || currentTextActive || abortFinalizationActive)
+    const elapsedValueText = (processingActive
+      || currentTextActive
+      || standaloneFullRefreshActive
+      || abortFinalizationActive)
       ? getProcessingElapsedValueText(elapsedMs)
       : '';
     const showElapsed = !!elapsedValueText;
@@ -481,7 +534,7 @@
     }
     renderElapsedLabelWithValue(
       textExtractionProcessingElapsed,
-      currentTextActive
+      (currentTextActive || standaloneFullRefreshActive)
         ? 'renderer.main.processing.current_text_elapsed'
         : 'renderer.main.processing.text_extraction_elapsed',
       elapsedValueText
@@ -514,13 +567,17 @@
   function ensureElapsedTimer() {
     if (elapsedTimerId !== null) return;
     elapsedTimerId = window.setInterval(() => {
-      if (!isProcessingModeActive() && !isCurrentTextProcessingActive()) {
+      if (!isProcessingModeActive() && !isCurrentTextAreaPendingActive()) {
         stopElapsedTimer();
         return;
       }
       const elapsedMs = isProcessingModeActive()
         ? getElapsedMsSince(processingModeState.sinceEpochMs)
-        : getElapsedMsSince(currentTextProcessingState.sinceEpochMs);
+        : getElapsedMsSince(
+          isCurrentTextProcessingActive()
+            ? currentTextProcessingState.sinceEpochMs
+            : standaloneFullRefreshPendingState.sinceEpochMs
+        );
       if (isProcessingModeActive()) {
         syncDelayedBusyCopyUi(elapsedMs);
       }
@@ -597,6 +654,29 @@
     }
   }
 
+  function applyStandaloneFullRefreshPendingState(rawState, { source = 'unknown' } = {}) {
+    const prevState = { ...standaloneFullRefreshPendingState };
+    standaloneFullRefreshPendingState = normalizeStandaloneFullRefreshPendingState(rawState);
+
+    syncProcessingUi();
+    if (standaloneFullRefreshPendingState.active && standaloneFullRefreshPendingState.sinceEpochMs) {
+      ensureElapsedTimer();
+    } else if (!isProcessingModeActive() && !isCurrentTextProcessingActive()) {
+      stopElapsedTimer();
+    }
+
+    if (prevState.active !== standaloneFullRefreshPendingState.active
+      || (standaloneFullRefreshPendingState.active
+        && prevState.ownerSequence !== standaloneFullRefreshPendingState.ownerSequence)) {
+      log.info('standalone current text recount pending changed:', {
+        active: standaloneFullRefreshPendingState.active,
+        ownerSequence: standaloneFullRefreshPendingState.ownerSequence,
+        source,
+        reason: standaloneFullRefreshPendingState.reason,
+      });
+    }
+  }
+
   function beginPrepare(context = {}) {
     updatePendingSourceFileNameFromContext(context);
     prepareActiveCount += 1;
@@ -669,6 +749,7 @@
   window.TextExtractionStatusUi = {
     applyProcessingModeState,
     applyCurrentTextProcessingState,
+    applyStandaloneFullRefreshPendingState,
     applyTranslations,
     beginAbortFinalization,
     beginPrepare,
@@ -678,8 +759,10 @@
     getAbortButton,
     getFinalElapsedValueText,
     isAbortFinalizationActive,
+    isCurrentTextAreaPendingActive,
     isCurrentTextProcessingActive,
     isProcessingModeActive,
+    isStandaloneFullRefreshPendingActive,
     setPendingExecutionContext,
   };
 })();

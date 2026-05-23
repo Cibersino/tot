@@ -67,6 +67,7 @@
       },
       "processing": {
         "current_text_waiting": "Actualizando el texto actual...",
+        "current_text_recount_waiting": "Recalculando los resultados del texto actual...",
         "current_text_waiting_startup": "Asentando el texto actual...",
         "current_text_waiting_editor": "Sincronizando cambios del Editor de Texto...",
         "current_text_elapsed": "Transcurrido: ",
@@ -496,6 +497,7 @@
       "text_extraction_precondition_error": "Ocurrió un error al revisar las precondiciones de extracción.",
       "text_extraction_processing_locked": "Hay una extracción en curso. Las interacciones de la ventana principal están bloqueadas hasta que termine la extracción o sea cancelada.",
       "current_text_processing_locked": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
+      "current_text_recount_locked": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
       "text_extraction_abort_error": "Ocurrió un error al solicitar la cancelación.",
       "text_extraction_cancellation_requested": "Cancelación solicitada. Espera a que termine la extracción actual.",
       "text_extraction_cancellation_complete": "La cancelación terminó.",

@@ -56,6 +56,9 @@ function createHarness() {
     'renderer.main.processing.text_extraction_input_progress': 'File {index}/{count}',
     'renderer.main.processing.text_extraction_route_native': 'Native',
     'renderer.main.processing.text_extraction_route_ocr': 'OCR',
+    'renderer.main.processing.current_text_waiting': 'Updating current text...',
+    'renderer.main.processing.current_text_recount_waiting': 'Recalculating current-text results...',
+    'renderer.main.processing.current_text_elapsed': 'Current text elapsed: ',
     'renderer.main.processing.text_extraction_elapsed': 'Elapsed: ',
     'renderer.main.tooltips.text_extraction_abort': 'Abort extraction',
     'renderer.main.aria.text_extraction_abort': 'Abort text extraction',
@@ -373,6 +376,66 @@ test('abort finalization keeps the processing shell visible with frozen elapsed 
   assert.equal(harness.api.isAbortFinalizationActive(), false);
   assert.equal(harness.elements.selectorControlsProcessing.hidden, true);
   assert.equal(harness.elements.textExtractionProcessingFilename.hidden, true);
+});
+
+test('standalone full refresh pending reuses the current-text processing shell and elapsed row', () => {
+  const harness = createHarness();
+
+  harness.setNowMs(5000);
+  harness.api.applyStandaloneFullRefreshPendingState({
+    active: true,
+    ownerSequence: 3,
+    sinceEpochMs: 2000,
+    reason: 'mode toggle',
+  }, { source: 'test' });
+
+  assert.equal(harness.api.isCurrentTextAreaPendingActive(), true);
+  assert.equal(harness.elements.selectorControlsNormal.hidden, true);
+  assert.equal(harness.elements.selectorControlsProcessing.hidden, false);
+  assert.equal(
+    harness.elements.textExtractionProcessingLabel.textContent,
+    'Recalculating current-text results...'
+  );
+  assert.equal(harness.elements.textExtractionProcessingFilename.hidden, true);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.hidden, false);
+  assert.equal(
+    harness.elements.textExtractionProcessingElapsed.textContent,
+    'Current text elapsed: 00:03'
+  );
+  assert.equal(harness.elements.btnTextExtractionAbort.hidden, true);
+
+  harness.api.applyStandaloneFullRefreshPendingState({
+    active: false,
+    ownerSequence: 0,
+    sinceEpochMs: null,
+  }, { source: 'test_complete' });
+
+  assert.equal(harness.api.isCurrentTextAreaPendingActive(), false);
+  assert.equal(harness.elements.selectorControlsProcessing.hidden, true);
+});
+
+test('broader processing owner stays visible while standalone full refresh pending is also active', () => {
+  const harness = createHarness();
+
+  harness.setNowMs(1000);
+  harness.api.applyProcessingModeState({
+    active: true,
+    lockId: 9,
+    sinceEpochMs: 1000,
+    selectedRoute: 'ocr',
+  }, { source: 'test_processing' });
+  harness.api.applyStandaloneFullRefreshPendingState({
+    active: true,
+    ownerSequence: 4,
+    sinceEpochMs: 1000,
+    reason: 'mode toggle',
+  }, { source: 'test_pending' });
+
+  assert.equal(
+    harness.elements.textExtractionProcessingLabel.textContent,
+    'OCR'
+  );
+  assert.equal(harness.elements.btnTextExtractionAbort.hidden, false);
 });
 
 test('terminal states clear filename context and hide the bar', () => {

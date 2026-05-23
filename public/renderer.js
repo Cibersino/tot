@@ -82,8 +82,10 @@ if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.getAbortButton !== 'function'
   || typeof textExtractionStatusUi.getFinalElapsedValueText !== 'function'
   || typeof textExtractionStatusUi.isAbortFinalizationActive !== 'function'
+  || typeof textExtractionStatusUi.isCurrentTextAreaPendingActive !== 'function'
   || typeof textExtractionStatusUi.isCurrentTextProcessingActive !== 'function'
   || typeof textExtractionStatusUi.isProcessingModeActive !== 'function'
+  || typeof textExtractionStatusUi.isStandaloneFullRefreshPendingActive !== 'function'
   || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] TextExtractionStatusUi unavailable; cannot continue');
 }
@@ -195,6 +197,7 @@ currentTextRuntime.configure({
   }),
   getSettingsCache: () => settingsCache,
   getWpm: () => wpmControls.getWpm(),
+  applyStandaloneFullRefreshPendingState: textExtractionStatusUi.applyStandaloneFullRefreshPendingState,
   resolveCurrentTextProcessing: window.electronAPI.resolveCurrentTextProcessing.bind(window.electronAPI),
 });
 const currentTextRefreshPolicy = currentTextRefreshPolicyModule.createController({
@@ -226,8 +229,12 @@ function isAbortFinalizationActive() {
   return textExtractionStatusUi.isAbortFinalizationActive();
 }
 
-function isCurrentTextProcessingActive() {
-  return textExtractionStatusUi.isCurrentTextProcessingActive();
+function isCurrentTextAreaPendingActive() {
+  return textExtractionStatusUi.isCurrentTextAreaPendingActive();
+}
+
+function isStandaloneFullRefreshPendingActive() {
+  return textExtractionStatusUi.isStandaloneFullRefreshPendingActive();
 }
 
 function setControlInteractionLocked(element, locked) {
@@ -245,7 +252,7 @@ function syncPresetActionButtons({ interactionLocked } = {}) {
     ? interactionLocked
     : !isRendererReady()
       || isProcessingModeActive()
-      || isCurrentTextProcessingActive()
+      || isCurrentTextAreaPendingActive()
       || isAbortFinalizationActive()
       || isReadingTestInteractionLocked();
   const disabled = locked || !hasSelectedPreset();
@@ -264,7 +271,7 @@ function isReadingTestSessionActive() {
 function syncMainInteractionLockUi() {
   const locked = !isRendererReady()
     || isProcessingModeActive()
-    || isCurrentTextProcessingActive()
+    || isCurrentTextAreaPendingActive()
     || isAbortFinalizationActive()
     || isReadingTestInteractionLocked();
 
@@ -325,7 +332,7 @@ function hasBlockingMainWindowModalOpen() {
 function canAcceptTextExtractionDrop() {
   return isRendererReady()
     && !isProcessingModeActive()
-    && !isCurrentTextProcessingActive()
+    && !isCurrentTextAreaPendingActive()
     && !isAbortFinalizationActive()
     && !isReadingTestSessionActive()
     && !hasBlockingMainWindowModalOpen();
@@ -359,7 +366,9 @@ function maybeNotifyProcessingLock(actionId) {
     ? 'renderer.alerts.text_extraction_cancellation_requested'
     : (isProcessingModeActive()
       ? 'renderer.alerts.text_extraction_processing_locked'
-      : 'renderer.alerts.current_text_processing_locked');
+      : (isStandaloneFullRefreshPendingActive()
+        ? 'renderer.alerts.current_text_recount_locked'
+        : 'renderer.alerts.current_text_processing_locked'));
   window.Notify.notifyMain(
     alertKey
   );
@@ -384,7 +393,7 @@ function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
   const isAbortAction = normalizedActionId === 'text-extraction-abort';
   if (!allowDuringProcessing
     && !isAbortAction
-    && (isProcessingModeActive() || isCurrentTextProcessingActive() || isAbortFinalizationActive())) {
+    && (isProcessingModeActive() || isCurrentTextAreaPendingActive() || isAbortFinalizationActive())) {
     maybeNotifyProcessingLock(normalizedActionId);
     return false;
   }

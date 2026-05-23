@@ -25,6 +25,9 @@ function createClassList() {
       values.add(name);
       return true;
     },
+    contains(name) {
+      return values.has(name);
+    },
   };
 }
 
@@ -57,6 +60,7 @@ function createDeferred() {
 async function flushAsyncWork() {
   await Promise.resolve();
   await Promise.resolve();
+  await new Promise((resolve) => setTimeout(resolve, 0));
   await new Promise((resolve) => setImmediate(resolve));
   await Promise.resolve();
 }
@@ -66,6 +70,7 @@ function createHarness() {
   const errors = [];
   const previewCalls = [];
   const countCalls = [];
+  const standalonePendingCalls = [];
   const separatorQueue = [];
   let separatorCalls = 0;
   const elements = {
@@ -221,6 +226,12 @@ function createHarness() {
     async resolveCurrentTextProcessing() {
       return { ok: true };
     },
+    applyStandaloneFullRefreshPendingState(state, context = {}) {
+      standalonePendingCalls.push({
+        state: { ...state },
+        context: { ...context },
+      });
+    },
   });
 
   return {
@@ -236,6 +247,7 @@ function createHarness() {
     get separatorCalls() {
       return separatorCalls;
     },
+    standalonePendingCalls,
     setCountContext(nextContext) {
       countContext = { ...countContext, ...nextContext };
     },
@@ -253,6 +265,88 @@ function createHarness() {
     },
   };
 }
+
+test('standalone full refresh enters pending before deferred recount starts and settles afterward', async () => {
+  const harness = createHarness();
+
+  harness.api.installCurrentTextState('uno dos tres');
+  harness.api.requestDerivedRefresh('mode toggle');
+
+  assert.equal(harness.countCalls.length, 0);
+  assert.equal(harness.standalonePendingCalls.length, 1);
+  assert.equal(harness.standalonePendingCalls[0].state.active, true);
+  assert.equal(
+    harness.elements.resChars.textContent,
+    'renderer.main.results.chars:[pending]'
+  );
+  assert.equal(
+    harness.elements.selectorSection.classList.contains('current-text-status--pending'),
+    true
+  );
+  assert.equal(harness.elements.selectorSection.getAttribute('aria-busy'), 'true');
+
+  await flushAsyncWork();
+
+  assert.equal(harness.countCalls.length, 1);
+  assert.equal(harness.standalonePendingCalls.at(-1).state.active, false);
+  assert.equal(
+    harness.elements.selectorSection.classList.contains('current-text-status--pending'),
+    false
+  );
+  assert.equal(harness.elements.selectorSection.getAttribute('aria-busy'), 'false');
+});
+
+test('display-only refreshes queue behind a standalone full refresh before counting starts', async () => {
+  const harness = createHarness();
+
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos tres' });
+  await flushAsyncWork();
+
+  harness.api.requestDerivedRefresh('mode toggle');
+  harness.setSettingsCache({
+    numberFormatting: {
+      es: { separadorMiles: ' ', separadorDecimal: ';' },
+      en: { separadorMiles: ',', separadorDecimal: '.' },
+    },
+  });
+  harness.api.requestStatsDisplayRefresh('formatting change');
+
+  assert.equal(harness.countCalls.length, 1);
+  assert.equal(
+    harness.elements.resChars.textContent,
+    'renderer.main.results.chars:[pending]'
+  );
+
+  await flushAsyncWork();
+
+  assert.equal(harness.countCalls.length, 2);
+  assert.equal(harness.elements.resChars.textContent, 'renderer.main.results.chars:12[ ;]');
+});
+
+test('standalone full refresh failure clears pending and leaves degraded values visible', async () => {
+  const harness = createHarness();
+
+  harness.api.installCurrentTextState('uno dos tres');
+  harness.queueSeparatorResolver(() => Promise.reject(new Error('separator failure')));
+  harness.api.requestDerivedRefresh('mode toggle');
+
+  await flushAsyncWork();
+
+  assert.equal(harness.standalonePendingCalls.at(-1).state.active, false);
+  assert.equal(
+    harness.elements.selectorSection.classList.contains('current-text-status--pending'),
+    false
+  );
+  assert.equal(
+    harness.elements.selectorSection.classList.contains('current-text-status--degraded'),
+    true
+  );
+  assert.equal(
+    harness.elements.resChars.textContent,
+    'renderer.main.results.chars:[unavailable]'
+  );
+  assert.equal(harness.errors.length > 0, true);
+});
 
 test('stats_display refresh reuses cached stats without recounting or rerendering a non-empty preview', async () => {
   const harness = createHarness();
