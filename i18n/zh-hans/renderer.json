@@ -55,6 +55,8 @@
         "words": "词数：{n}",
         "chars_no_space": "字符数（不含空格）：{n}",
         "chars": "字符数：{n}",
+        "value_pending": "待处理...",
+        "value_unavailable": "不可用",
         "precise_mode": "精确模式",
         "precise_tooltip": "基于 Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "秒表控件"
       },
       "processing": {
+        "current_text_waiting": "正在更新当前文本...",
+        "current_text_recount_waiting": "正在重新计算当前文本结果...",
+        "current_text_waiting_startup": "正在稳定当前文本...",
+        "current_text_waiting_editor": "正在同步 Text Editor 更改...",
+        "current_text_elapsed": "已用时间：",
         "text_extraction_placeholder": "正在处理提取...",
         "text_extraction_preparing": "正在准备提取路径...",
         "text_extraction_cancellation_pending": "已请求取消。请稍候...",
@@ -157,6 +164,7 @@
         "failure_legend": "失败时的行为",
         "failure_default": "在最后一次成功后关闭该单元，并继续下一个单元",
         "failure_continue": "跳过失败项，并继续处理同一单元",
+        "overwrite_confirm": "提取开始时将覆盖当前文本。是否继续？",
         "start_button": "开始提取",
         "cancel_button": "取消",
         "close_aria": "关闭批量提取规划"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "要启动提取，请关闭所有次级窗口并停止秒表。",
       "text_extraction_precondition_error": "检查提取前置条件时发生错误。请检查控制台。",
       "text_extraction_processing_locked": "提取正在处理。主窗口交互会被锁定，直到处理结束或你中止操作。",
+      "current_text_processing_locked": "当前文本仍在更新。在最新文本稳定之前，主窗口交互将被锁定。",
+      "current_text_recount_locked": "当前文本结果仍在重新计算。在最新重新计数稳定之前，主窗口交互将被锁定。",
       "text_extraction_abort_error": "请求中止提取时发生错误。请检查控制台。",
       "text_extraction_cancellation_requested": "已请求取消。请等待当前提取完成。",
       "text_extraction_cancellation_complete": "取消已完成。",

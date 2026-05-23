@@ -55,6 +55,8 @@
         "words": "語数: {n}",
         "chars_no_space": "文字数（空白なし）: {n}",
         "chars": "文字数: {n}",
+        "value_pending": "保留中...",
+        "value_unavailable": "利用不可",
         "precise_mode": "精密モード",
         "precise_tooltip": "Intl.Segmenter に基づく"
       },
@@ -64,6 +66,11 @@
         "controls_label": "ストップウォッチ操作"
       },
       "processing": {
+        "current_text_waiting": "現在のテキストを更新しています...",
+        "current_text_recount_waiting": "現在のテキストの結果を再計算しています...",
+        "current_text_waiting_startup": "現在のテキストを安定化しています...",
+        "current_text_waiting_editor": "Text Editor の変更を同期しています...",
+        "current_text_elapsed": "経過時間: ",
         "text_extraction_placeholder": "テキストを抽出中...",
         "text_extraction_preparing": "抽出ルートを準備中...",
         "text_extraction_cancellation_pending": "キャンセルを要求しました。お待ちください...",
@@ -157,6 +164,7 @@
         "failure_legend": "失敗時の動作",
         "failure_default": "最後の成功後にユニットを閉じ、次のユニットへ進む",
         "failure_continue": "失敗した項目をスキップし、同じユニット内で続行する",
+        "overwrite_confirm": "抽出が開始されると現在のテキストが上書きされます。続行しますか？",
         "start_button": "抽出を開始",
         "cancel_button": "キャンセル",
         "close_aria": "一括抽出の計画を閉じる"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "抽出を開始するには、すべてのサブウィンドウを閉じ、ストップウォッチを停止してください。",
       "text_extraction_precondition_error": "抽出の前提条件確認中にエラーが発生しました。コンソールを確認してください。",
       "text_extraction_processing_locked": "抽出を処理中です。処理が終了するか中止するまで、メインウィンドウの操作はロックされます。",
+      "current_text_processing_locked": "現在のテキストはまだ更新中です。最新のテキストが安定するまでメインウィンドウの操作はロックされます。",
+      "current_text_recount_locked": "現在のテキストの結果はまだ再計算中です。最新の再計算が安定するまでメインウィンドウの操作はロックされます。",
       "text_extraction_abort_error": "抽出の中止要求中にエラーが発生しました。コンソールを確認してください。",
       "text_extraction_cancellation_requested": "キャンセルを要求しました。現在の抽出が完了するまでお待ちください。",
       "text_extraction_cancellation_complete": "キャンセルが完了しました。",

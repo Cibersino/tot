@@ -55,6 +55,8 @@
         "words": "Arunaka: {n}",
         "chars_no_space": "Chimpunaka (jan ch’usa chiqanakampi): {n}",
         "chars": "Chimpunaka: {n}",
+        "value_pending": "suyt’asa...",
+        "value_unavailable": "janiw utjkiti",
         "precise_mode": "Chiqapa modo",
         "precise_tooltip": "Intl.Segmenter ukarjam lurata"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Pachayupiri apnaqañanaka"
       },
       "processing": {
+        "current_text_waiting": "Jichha textox machaqachaskiwa...",
+        "current_text_recount_waiting": "Jichha texton resultadonakap wasitat jakthapiskaniwa...",
+        "current_text_waiting_startup": "Jichha textox askichaskiwa...",
+        "current_text_waiting_editor": "Text Editor cambionakax sincronizaskiwa...",
+        "current_text_elapsed": "Saraqata: ",
         "text_extraction_placeholder": "Qillqata apsuskakiwa...",
         "text_extraction_preparing": "Apsuña thakhi wakichaskakiwa...",
         "text_extraction_cancellation_pending": "Suyt’ayaña mayitawa. Suyt’am...",
@@ -157,6 +164,7 @@
         "failure_legend": "Pantjasiwi utjipan kun luraña",
         "failure_default": "Qhipa suma lurawit unidad jist’antaña ukat jutïr unidadampi sarantaña",
         "failure_continue": "Pantjasit item jaytaña ukat pachpa unidadan sarantaña",
+        "overwrite_confirm": "Extracción qalltkani ukhax jichha textox mayjt’ayatarakini. ¿Sarantaskakïtati?",
         "start_button": "Apsuña qalltaña",
         "cancel_button": "Suyt’ayaña",
         "close_aria": "Lote apsuña wakichawi jist’antaña"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Apsuña qalltañatakix taqi secundario ventananaka jist’antam ukat pachayupiri suyt’aytam.",
       "text_extraction_precondition_error": "Apsuña precondiciones uñakipañan pantjasiw utji. Consola uñakipam.",
       "text_extraction_processing_locked": "Apsuña procesaskiwa. Principal ventana interacciones ukax procesamiento tukuykam jan ukax abortañkam jist’antatawa.",
+      "current_text_processing_locked": "Jichha textox machaqachaskakiwa. Ventana principal ukan lurawinakax qhipa texto askichasiñkamax jist’antatawa.",
+      "current_text_recount_locked": "Jichha texton resultadonakapax wasitat jakthapiskakiwa. Ventana principal ukan lurawinakax qhipa jakthapiwi askichasiñkamax jist’antatawa.",
       "text_extraction_abort_error": "Apsuña abortaña mayiñan pantjasiw utji. Consola uñakipam.",
       "text_extraction_cancellation_requested": "Suyt’ayaña mayitawa. Jichha apsuña tukusiñapkama suyt’am.",
       "text_extraction_cancellation_complete": "Suyt’ayaña tukuyata.",

@@ -55,6 +55,8 @@
         "words": "शब्द: {n}",
         "chars_no_space": "अक्षर (बिना स्पेस): {n}",
         "chars": "अक्षर: {n}",
+        "value_pending": "लंबित...",
+        "value_unavailable": "उपलब्ध नहीं",
         "precise_mode": "सटीक मोड",
         "precise_tooltip": "Intl.Segmenter पर आधारित"
       },
@@ -64,6 +66,11 @@
         "controls_label": "स्टॉपवॉच नियंत्रण"
       },
       "processing": {
+        "current_text_waiting": "वर्तमान पाठ अपडेट किया जा रहा है...",
+        "current_text_recount_waiting": "वर्तमान पाठ के परिणाम दोबारा गिने जा रहे हैं...",
+        "current_text_waiting_startup": "वर्तमान पाठ स्थिर किया जा रहा है...",
+        "current_text_waiting_editor": "Text Editor के बदलाव सिंक किए जा रहे हैं...",
+        "current_text_elapsed": "बीता समय: ",
         "text_extraction_placeholder": "पाठ निकाला जा रहा है...",
         "text_extraction_preparing": "निकासी मार्ग तैयार किया जा रहा है...",
         "text_extraction_cancellation_pending": "रद्द करने का अनुरोध किया गया है। कृपया प्रतीक्षा करें...",
@@ -157,6 +164,7 @@
         "failure_legend": "विफलता पर व्यवहार",
         "failure_default": "अंतिम सफलता के बाद इकाई बंद करें और अगली इकाई पर जारी रखें",
         "failure_continue": "विफलता छोड़ें और उसी इकाई में जारी रखें",
+        "overwrite_confirm": "एक्सट्रैक्शन शुरू होने पर यह वर्तमान पाठ को बदल देगा। क्या आप जारी रखना चाहते हैं?",
         "start_button": "निकासी शुरू करें",
         "cancel_button": "रद्द करें",
         "close_aria": "समूहगत निकासी योजना बंद करें"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "निकासी शुरू करने के लिए सभी द्वितीयक विंडो बंद करें और स्टॉपवॉच रोकें।",
       "text_extraction_precondition_error": "निकासी की पूर्व-शर्तें जाँचते समय त्रुटि हुई। कंसोल देखें।",
       "text_extraction_processing_locked": "निकासी संसाधित हो रही है। प्रक्रिया समाप्त होने या आपके रोकने तक मुख्य विंडो की अंतःक्रियाएँ लॉक हैं।",
+      "current_text_processing_locked": "वर्तमान पाठ अभी भी अपडेट हो रहा है। नवीनतम पाठ स्थिर होने तक मुख्य विंडो की इंटरैक्शन लॉक रहेंगी।",
+      "current_text_recount_locked": "वर्तमान पाठ के परिणाम अभी भी दोबारा गिने जा रहे हैं। नवीनतम पुनर्गणना स्थिर होने तक मुख्य विंडो की इंटरैक्शन लॉक रहेंगी।",
       "text_extraction_abort_error": "निकासी रोकने का अनुरोध करते समय त्रुटि हुई। कंसोल देखें।",
       "text_extraction_cancellation_requested": "रद्द करने का अनुरोध किया गया है। कृपया वर्तमान निकासी पूरी होने तक प्रतीक्षा करें।",
       "text_extraction_cancellation_complete": "रद्दीकरण पूरा हुआ।",

@@ -55,6 +55,8 @@
         "words": "واژه‌ها: {n}",
         "chars_no_space": "نویسه‌ها (بدون فاصله): {n}",
         "chars": "نویسه‌ها: {n}",
+        "value_pending": "در انتظار...",
+        "value_unavailable": "در دسترس نیست",
         "precise_mode": "حالت دقیق",
         "precise_tooltip": "بر پایه Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "کنترل‌های کرنومتر"
       },
       "processing": {
+        "current_text_waiting": "در حال به‌روزرسانی متن فعلی...",
+        "current_text_recount_waiting": "در حال محاسبهٔ دوبارهٔ نتایج متن فعلی...",
+        "current_text_waiting_startup": "در حال پایدار کردن متن فعلی...",
+        "current_text_waiting_editor": "در حال همگام‌سازی تغییرات ویرایشگر متن...",
+        "current_text_elapsed": "سپری‌شده: ",
         "text_extraction_placeholder": "در حال استخراج متن...",
         "text_extraction_preparing": "در حال آماده‌سازی مسیر استخراج...",
         "text_extraction_cancellation_pending": "لغو درخواست شد. لطفاً صبر کنید...",
@@ -157,6 +164,7 @@
         "failure_legend": "رفتار هنگام شکست",
         "failure_default": "بستن واحد پس از آخرین موفقیت و ادامه با واحد بعدی",
         "failure_continue": "رد کردن مورد ناموفق و ادامه در همان واحد",
+        "overwrite_confirm": "با شروع استخراج، متن فعلی بازنویسی می‌شود. ادامه می‌دهید؟",
         "start_button": "شروع استخراج",
         "cancel_button": "لغو",
         "close_aria": "بستن برنامه‌ریزی استخراج دسته‌ای"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "برای شروع استخراج، همه پنجره‌های فرعی را ببندید و کرنومتر را متوقف کنید.",
       "text_extraction_precondition_error": "هنگام بررسی پیش‌شرط‌های استخراج خطایی رخ داد. کنسول را بررسی کنید.",
       "text_extraction_processing_locked": "استخراج در حال پردازش است. تعاملات پنجره اصلی تا پایان پردازش یا لغو آن قفل می‌ماند.",
+      "current_text_processing_locked": "متن فعلی هنوز در حال به‌روزرسانی است. تعاملات پنجرهٔ اصلی تا پایدار شدن آخرین متن قفل می‌ماند.",
+      "current_text_recount_locked": "نتایج متن فعلی هنوز در حال محاسبهٔ دوباره است. تعاملات پنجرهٔ اصلی تا پایدار شدن آخرین بازشماری قفل می‌ماند.",
       "text_extraction_abort_error": "هنگام درخواست لغو استخراج خطایی رخ داد. کنسول را بررسی کنید.",
       "text_extraction_cancellation_requested": "لغو درخواست شد. لطفاً تا پایان استخراج فعلی صبر کنید.",
       "text_extraction_cancellation_complete": "لغو کامل شد.",

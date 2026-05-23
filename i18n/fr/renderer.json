@@ -55,6 +55,8 @@
         "words": "Mots : {n}",
         "chars_no_space": "Caractères (sans espaces) : {n}",
         "chars": "Caractères : {n}",
+        "value_pending": "en attente...",
+        "value_unavailable": "indisponible",
         "precise_mode": "Mode précis",
         "precise_tooltip": "Basé sur Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Contrôles du chronomètre"
       },
       "processing": {
+        "current_text_waiting": "Mise à jour du texte actuel...",
+        "current_text_recount_waiting": "Recalcul des résultats du texte actuel...",
+        "current_text_waiting_startup": "Stabilisation du texte actuel...",
+        "current_text_waiting_editor": "Synchronisation des modifications de l’Éditeur de Texte...",
+        "current_text_elapsed": "Écoulé : ",
         "text_extraction_placeholder": "Extraction du texte...",
         "text_extraction_preparing": "Préparation de la route d'extraction...",
         "text_extraction_cancellation_pending": "Annulation demandée. Veuillez patienter...",
@@ -157,6 +164,7 @@
         "failure_legend": "Comportement en cas d’échec",
         "failure_default": "Fermer l’unité après le dernier succès et continuer avec l’unité suivante",
         "failure_continue": "Ignorer l’échec et continuer dans la même unité",
+        "overwrite_confirm": "Cela remplacera le texte actuel au démarrage de l’extraction. Voulez-vous continuer ?",
         "start_button": "Démarrer l’extraction",
         "cancel_button": "Annuler",
         "close_aria": "Fermer la planification de l’extraction par lots"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Pour démarrer l'extraction, fermez toutes les fenêtres secondaires et arrêtez le chronomètre.",
       "text_extraction_precondition_error": "Une erreur s'est produite lors de la vérification des préconditions de l'extraction. Vérifiez la console.",
       "text_extraction_processing_locked": "L'extraction est en cours. Les interactions de la fenêtre principale sont verrouillées jusqu'à la fin du traitement ou jusqu'à ce que vous l'annuliez.",
+      "current_text_processing_locked": "Le texte actuel est encore en cours de mise à jour. Les interactions de la fenêtre principale restent verrouillées jusqu’à la stabilisation du texte le plus récent.",
+      "current_text_recount_locked": "Les résultats du texte actuel sont encore en cours de recalcul. Les interactions de la fenêtre principale restent verrouillées jusqu’à la stabilisation du dernier recalcul.",
       "text_extraction_abort_error": "Une erreur s'est produite lors de la demande d'annulation de l'extraction. Vérifiez la console.",
       "text_extraction_cancellation_requested": "Annulation demandée. Veuillez attendre la fin de l’extraction en cours.",
       "text_extraction_cancellation_complete": "Annulation terminée.",

@@ -55,6 +55,8 @@
         "words": "Hitzak: {n}",
         "chars_no_space": "Karaktereak (zuriunerik gabe): {n}",
         "chars": "Karaktereak: {n}",
+        "value_pending": "zain...",
+        "value_unavailable": "ez dago erabilgarri",
         "precise_mode": "Modu zehatza",
         "precise_tooltip": "Intl.Segmenter-en oinarritua"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Kronometroaren kontrolak"
       },
       "processing": {
+        "current_text_waiting": "Uneko testua eguneratzen...",
+        "current_text_recount_waiting": "Uneko testuaren emaitzak berriz kalkulatzen...",
+        "current_text_waiting_startup": "Uneko testua egonkortzen...",
+        "current_text_waiting_editor": "Text Editor-eko aldaketak sinkronizatzen...",
+        "current_text_elapsed": "Igarotakoa: ",
         "text_extraction_placeholder": "Testua erauzten...",
         "text_extraction_preparing": "Erauzketa bidea prestatzen...",
         "text_extraction_cancellation_pending": "Ezeztapena eskatu da. Itxaron...",
@@ -157,6 +164,7 @@
         "failure_legend": "Huts egitean jokabidea",
         "failure_default": "Itxi unitatea azken arrakastaren ondoren eta jarraitu hurrengo unitatearekin",
         "failure_continue": "Saltatu huts egindako elementua eta jarraitu unitate berean",
+        "overwrite_confirm": "Honek uneko testua gainidatziko du erauzketa hasten denean. Jarraitu nahi duzu?",
         "start_button": "Hasi erauzketa",
         "cancel_button": "Utzi",
         "close_aria": "Itxi multzokako erauzketa-planifikazioa"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Erauzketa hasteko, itxi bigarren mailako leiho guztiak eta gelditu kronometroa.",
       "text_extraction_precondition_error": "Errorea gertatu da erauzketa aurrebaldintzak egiaztatzean. Begiratu kontsola.",
       "text_extraction_processing_locked": "Erauzketa prozesatzen ari da. Leiho nagusiko interakzioak blokeatuta daude prozesua amaitu arte edo bertan behera utzi arte.",
+      "current_text_processing_locked": "Uneko testua oraindik eguneratzen ari da. Leiho nagusiko interakzioak blokeatuta egongo dira azken testua egonkortu arte.",
+      "current_text_recount_locked": "Uneko testuaren emaitzak oraindik berriz kalkulatzen ari dira. Leiho nagusiko interakzioak blokeatuta egongo dira azken berriz kalkulua egonkortu arte.",
       "text_extraction_abort_error": "Errorea gertatu da erauzketa bertan behera uzteko eskaeran. Begiratu kontsola.",
       "text_extraction_cancellation_requested": "Ezeztapena eskatu da. Itxaron uneko erauzketa amaitu arte.",
       "text_extraction_cancellation_complete": "Ezeztapena amaitu da.",

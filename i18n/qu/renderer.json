@@ -55,6 +55,8 @@
         "words": "Simikuna: {n}",
         "chars_no_space": "Sanampakuna (ch'usaqkunawan mana): {n}",
         "chars": "Sanampakuna: {n}",
+        "value_pending": "suyasqa...",
+        "value_unavailable": "mana kanchu",
         "precise_mode": "Chiqap modo",
         "precise_tooltip": "Intl.Segmenter nisqapi hap'ipakusqa"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Pachayupaq kamachiqkuna"
       },
       "processing": {
+        "current_text_waiting": "Kunan textoqa musuqyachisqa kachkan...",
+        "current_text_recount_waiting": "Kunan textopa resultadokunaqa yapamanta yupasqa kachkan...",
+        "current_text_waiting_startup": "Kunan textoqa takyachisqa kachkan...",
+        "current_text_waiting_editor": "Text Editorpa tikraykuna sincronizasqa kachkan...",
+        "current_text_elapsed": "Ña pasasqa: ",
         "text_extraction_placeholder": "Qichuyta ruwachkan...",
         "text_extraction_preparing": "Qichuy ñanta wakichichkan...",
         "text_extraction_cancellation_pending": "Saqiy mañakurun. Suyay...",
@@ -157,6 +164,7 @@
         "failure_legend": "Pantay kaptin imata ruwana",
         "failure_default": "Qhipa allin ruwasqamanta unidadta wichq'ay hinaspa qatiq unidadwan hinalla riy",
         "failure_continue": "Pantasqa itemta saqiy hinaspa kikin unidad ukhupi hinalla riy",
+        "overwrite_confirm": "Extracción qallariqtin kunan textota reemplazanki. ¿Qatiyta munankichu?",
         "start_button": "Qichuyta qallariy",
         "cancel_button": "Saqiy",
         "close_aria": "T'aqa qichuy planifikayta wichq'ay"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Qichuy qallarinapaq, llapan iskay ñiqi ventanakunata wichq'ay hinaspa pachayupaqta sayachiy.",
       "text_extraction_precondition_error": "Qichuypa ñawpaq condicionninkuna qhawaypi pantay karqan. Consolata qhaway.",
       "text_extraction_processing_locked": "Qichuy ruwachkan. Hatun ventanapi ruraykuna hark'asqa kanqa ruwana tukukunankama utaq qan sayachinaykikama.",
+      "current_text_processing_locked": "Kunan textoqa musuqyachisqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa musuq texto takyanankama.",
+      "current_text_recount_locked": "Kunan textopa resultadokunaqa yapamanta yupasqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa qhipa yupay takyankama.",
       "text_extraction_abort_error": "Qichuy sayachiy mañakuypi pantay karqan. Consolata qhaway.",
       "text_extraction_cancellation_requested": "Saqiy mañakurun. Kunan qichuy tukukunankama suyay.",
       "text_extraction_cancellation_complete": "Saqiy tukusqa.",

@@ -55,6 +55,8 @@
         "words": "Parole: {n}",
         "chars_no_space": "Caratteri (senza spazi): {n}",
         "chars": "Caratteri: {n}",
+        "value_pending": "in sospeso...",
+        "value_unavailable": "non disponibile",
         "precise_mode": "Modalità precisa",
         "precise_tooltip": "Basato su Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Controlli del cronometro"
       },
       "processing": {
+        "current_text_waiting": "Aggiornamento del testo corrente...",
+        "current_text_recount_waiting": "Ricalcolo dei risultati del testo corrente...",
+        "current_text_waiting_startup": "Stabilizzazione del testo corrente...",
+        "current_text_waiting_editor": "Sincronizzazione delle modifiche dell’Editor di Testo...",
+        "current_text_elapsed": "Trascorso: ",
         "text_extraction_placeholder": "Estrazione del testo...",
         "text_extraction_preparing": "Preparazione del percorso di estrazione...",
         "text_extraction_cancellation_pending": "Annullamento richiesto. Attendi...",
@@ -157,6 +164,7 @@
         "failure_legend": "Comportamento in caso di errore",
         "failure_default": "Chiudere l’unità dopo l’ultimo successo e continuare con l’unità successiva",
         "failure_continue": "Omettere l’errore e continuare nella stessa unità",
+        "overwrite_confirm": "Questo sovrascriverà il testo corrente all’avvio dell’estrazione. Vuoi continuare?",
         "start_button": "Avvia estrazione",
         "cancel_button": "Annulla",
         "close_aria": "Chiudi pianificazione dell’estrazione per lotti"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Per avviare estrazione, chiudi tutte le finestre secondarie e arresta il cronometro.",
       "text_extraction_precondition_error": "Si è verificato un errore durante il controllo delle precondizioni di estrazione. Controlla la console.",
       "text_extraction_processing_locked": "L'estrazione è in corso. Le interazioni nella finestra principale sono bloccate fino al termine dell'elaborazione o finché non interrompi.",
+      "current_text_processing_locked": "Il testo corrente è ancora in aggiornamento. Le interazioni della finestra principale restano bloccate finché il testo più recente non si stabilizza.",
+      "current_text_recount_locked": "I risultati del testo corrente sono ancora in fase di ricalcolo. Le interazioni della finestra principale restano bloccate finché l’ultimo ricalcolo non si stabilizza.",
       "text_extraction_abort_error": "Si è verificato un errore durante la richiesta di interruzione di estrazione. Controlla la console.",
       "text_extraction_cancellation_requested": "Annullamento richiesto. Attendi il completamento dell’estrazione corrente.",
       "text_extraction_cancellation_complete": "Annullamento completato.",

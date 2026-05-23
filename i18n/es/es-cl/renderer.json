@@ -55,6 +55,8 @@
         "words": "Palabras: {n}",
         "chars_no_space": "Letras (sin spaces): {n}",
         "chars": "Letras totales: {n}",
+        "value_pending": "pendiente...",
+        "value_unavailable": "no disponible",
         "precise_mode": "Modo fino",
         "precise_tooltip": "Contar de forma pulenta y elegante"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Botones del reloj"
       },
       "processing": {
+        "current_text_waiting": "Actualizando el texto actual...",
+        "current_text_recount_waiting": "Recalculando los resultados del texto actual...",
+        "current_text_waiting_startup": "Asentando el texto actual...",
+        "current_text_waiting_editor": "Sincronizando cambios del Editor de Texto...",
+        "current_text_elapsed": "Transcurrido: ",
         "text_extraction_placeholder": "Sacando texto...",
         "text_extraction_preparing": "Preparando la extracción...",
         "text_extraction_cancellation_pending": "Cancelación pedida. Aguanta un poquito...",
@@ -157,6 +164,7 @@
         "failure_legend": "Qué hacer si una custión falla",
         "failure_default": "Cerrar la unidad después de la última que salió bien y seguir con la siguiente",
         "failure_continue": "Saltarse el cagazo y seguir en la misma unidad",
+        "overwrite_confirm": "Esto va a sobrescribir el texto actual cuando parta la extracción. ¿Seguro que quieres seguir?",
         "start_button": "Partir la extracción",
         "cancel_button": "Cancelar",
         "close_aria": "Cerrar planificación de extracción por lotes"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Pa' partir extracción, cierra toas las ventanas chicas y para el cronómetro.",
       "text_extraction_precondition_error": "Cagó la revisión de precondiciones de extracción. Lorea la consola.",
       "text_extraction_processing_locked": "La extracción está andando. La ventana principal queda bloqueada hasta que termine la cosa o la abortís.",
+      "current_text_processing_locked": "El texto actual todavía se está actualizando. La ventana principal queda bloqueada hasta que el texto más reciente se asiente.",
+      "current_text_recount_locked": "Los resultados del texto actual todavía se están recalculando. La ventana principal queda bloqueada hasta que el último reconteo se asiente.",
       "text_extraction_abort_error": "Cagó la custión al pedir el aborto de extracción. Lorea la consola.",
       "text_extraction_cancellation_requested": "Cancelación pedida. Espera a que termine la extracción actual, no seas ansioso.",
       "text_extraction_cancellation_complete": "Cancelación lista.",

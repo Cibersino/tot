@@ -55,6 +55,8 @@
         "words": "단어: {n}",
         "chars_no_space": "문자(공백 제외): {n}",
         "chars": "문자: {n}",
+        "value_pending": "대기 중...",
+        "value_unavailable": "사용할 수 없음",
         "precise_mode": "정밀 모드",
         "precise_tooltip": "Intl.Segmenter 기반"
       },
@@ -64,6 +66,11 @@
         "controls_label": "스톱워치 컨트롤"
       },
       "processing": {
+        "current_text_waiting": "현재 텍스트를 업데이트하는 중...",
+        "current_text_recount_waiting": "현재 텍스트 결과를 다시 계산하는 중...",
+        "current_text_waiting_startup": "현재 텍스트를 안정화하는 중...",
+        "current_text_waiting_editor": "Text Editor 변경 사항을 동기화하는 중...",
+        "current_text_elapsed": "경과: ",
         "text_extraction_placeholder": "텍스트 추출 중...",
         "text_extraction_preparing": "추출 경로 준비 중...",
         "text_extraction_cancellation_pending": "취소가 요청되었습니다. 잠시 기다려 주세요...",
@@ -157,6 +164,7 @@
         "failure_legend": "실패 시 동작",
         "failure_default": "마지막 성공 후 단위를 닫고 다음 단위로 계속",
         "failure_continue": "실패를 건너뛰고 같은 단위 안에서 계속",
+        "overwrite_confirm": "추출이 시작되면 현재 텍스트를 덮어씁니다. 계속하시겠습니까?",
         "start_button": "추출 시작",
         "cancel_button": "취소",
         "close_aria": "일괄 추출 계획 닫기"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "추출을 시작하려면 모든 보조 창을 닫고 스톱워치를 정지하세요.",
       "text_extraction_precondition_error": "추출 사전 조건을 확인하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
       "text_extraction_processing_locked": "추출이 처리 중입니다. 처리가 끝나거나 중단할 때까지 메인 창 상호작용이 잠깁니다.",
+      "current_text_processing_locked": "현재 텍스트가 아직 업데이트 중입니다. 최신 텍스트가 안정될 때까지 메인 창 상호작용이 잠깁니다.",
+      "current_text_recount_locked": "현재 텍스트 결과가 아직 다시 계산 중입니다. 최신 재계산이 안정될 때까지 메인 창 상호작용이 잠깁니다.",
       "text_extraction_abort_error": "추출 중단을 요청하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
       "text_extraction_cancellation_requested": "취소가 요청되었습니다. 현재 추출이 끝날 때까지 기다려 주세요.",
       "text_extraction_cancellation_complete": "취소가 완료되었습니다.",

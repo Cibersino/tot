@@ -55,6 +55,8 @@
         "words": "Words: {n}",
         "chars_no_space": "Characters (no spaces): {n}",
         "chars": "Characters: {n}",
+        "value_pending": "dey wait...",
+        "value_unavailable": "no dey available",
         "precise_mode": "Precise mode",
         "precise_tooltip": "Based on Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Stopwatch controls"
       },
       "processing": {
+        "current_text_waiting": "Dey update current text...",
+        "current_text_recount_waiting": "Dey recalculate current-text results...",
+        "current_text_waiting_startup": "Dey settle current text...",
+        "current_text_waiting_editor": "Dey sync Text Editor changes...",
+        "current_text_elapsed": "Time wey don pass: ",
         "text_extraction_placeholder": "Extracting text...",
         "text_extraction_preparing": "Preparing text extraction route...",
         "text_extraction_cancellation_pending": "Cancellation requested. Abeg wait...",
@@ -157,6 +164,7 @@
         "failure_legend": "What to do if e fail",
         "failure_default": "Close di unit after di last success and continue with di next unit",
         "failure_continue": "Skip di failed item and continue inside di same unit",
+        "overwrite_confirm": "Dis go overwrite current text when extraction start. You wan continue?",
         "start_button": "Start extraction",
         "cancel_button": "Cancel",
         "close_aria": "Close batch extraction planner"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "To start text extraction, close all secondary windows and stop di stopwatch.",
       "text_extraction_precondition_error": "Error happen while checking text extraction preconditions. Check console.",
       "text_extraction_processing_locked": "Text extraction dey processing. Main-window interactions dey locked until processing end or you abort am.",
+      "current_text_processing_locked": "Current text still dey update. Main-window interactions dey locked until di latest text settle.",
+      "current_text_recount_locked": "Current-text results still dey recalculate. Main-window interactions dey locked until di latest recount settle.",
       "text_extraction_abort_error": "Error happen while requesting text extraction abort. Check console.",
       "text_extraction_cancellation_requested": "Cancellation requested. Abeg wait until di current extraction finish.",
       "text_extraction_cancellation_complete": "Cancellation done.",

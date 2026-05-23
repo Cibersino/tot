@@ -55,6 +55,8 @@
         "words": "Dungu: {n}",
         "chars_no_space": "Wirintun welli ngelulu: {n}",
         "chars": "Wirin: {n}",
+        "value_pending": "ngüman...",
+        "value_unavailable": "no nielay",
         "precise_mode": "Rüf rakiduam",
         "precise_tooltip": "Inatun Intl.Segmenter mu"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Üngümwe küzawtuwe"
       },
       "processing": {
+        "current_text_waiting": "Current text updatekünuwküley...",
+        "current_text_recount_waiting": "Current text resultados wiño rakinmekey...",
+        "current_text_waiting_startup": "Current text asentakünuwküley...",
+        "current_text_waiting_editor": "Text Editor cambios sync-künuwküley...",
+        "current_text_elapsed": "Rupay: ",
         "text_extraction_placeholder": "Extracción amuley...",
         "text_extraction_preparing": "Elkünoel extraer rüpü...",
         "text_extraction_cancellation_pending": "Katrüntun ngillañmagey. Üngümnge...",
@@ -157,6 +164,7 @@
         "failure_legend": "Welulkuy mülele chumgechi amuleal",
         "failure_default": "Nürüfün unidad inan küme tripachi mew ka amulnge inan unidad mew",
         "failure_continue": "Rupan item welulkuy ka amulnge tüfachi unidad mew",
+        "overwrite_confirm": "Extracción mülelu, tüfachi current text reemplazangey. ¿Amuleaymi?",
         "start_button": "Amulnge extracción",
         "cancel_button": "Katrüntun",
         "close_aria": "Nürüfün wakichin lote extracción"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Extracción amulal, kom ventanas secundarias nürüfünge ka üngümwe mütüntunge.",
       "text_extraction_precondition_error": "Extracción precondiciones kintun mu welulkuy. Kintunge consola.",
       "text_extraction_processing_locked": "Extracción petu küzawüley. Tüfa processing afingelu kam abortaringelu mew, ventana principal mu interacciones bloqueadongey.",
+      "current_text_processing_locked": "Current text petu updatekünuwküley. Main window interacciones bloqueadongey texto asentamün mew.",
+      "current_text_recount_locked": "Current text resultados petu wiño rakinmekey. Main window interacciones bloqueadongey rakin asentamün mew.",
       "text_extraction_abort_error": "Extracción aborto mütrümün mu welulkuy. Kintunge consola.",
       "text_extraction_cancellation_requested": "Katrüntun ngillañmagey. Üngümnge fantepu extracción afülu.",
       "text_extraction_cancellation_complete": "Katrüntun afuy.",

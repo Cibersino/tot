@@ -55,6 +55,8 @@
         "words": "Kupu: {n}",
         "chars_no_space": "Pūāhua (kāore he mokowā): {n}",
         "chars": "Pūāhua: {n}",
+        "value_pending": "e tāria ana...",
+        "value_unavailable": "kāore i te wātea",
         "precise_mode": "Aratau tōtika",
         "precise_tooltip": "E hāngai ana ki Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Ngā mana matawā"
       },
       "processing": {
+        "current_text_waiting": "E whakahōu ana i te kuputuhi onāianei...",
+        "current_text_recount_waiting": "E tātai anō ana i ngā hua o te kuputuhi onāianei...",
+        "current_text_waiting_startup": "E whakau ana i te kuputuhi onāianei...",
+        "current_text_waiting_editor": "E tukutahi ana i ngā panonitanga Text Editor...",
+        "current_text_elapsed": "Kua hipa: ",
         "text_extraction_placeholder": "Kei te tukatuka tangohanga...",
         "text_extraction_preparing": "Kei te whakarite i te ara tango...",
         "text_extraction_cancellation_pending": "Kua tonoa te whakakore. Taihoa...",
@@ -157,6 +164,7 @@
         "failure_legend": "Whanonga ina rahua",
         "failure_default": "Katia te wāhanga i muri i te angitū whakamutunga, ā, haere tonu ki te wāhanga whai muri",
         "failure_continue": "Peke i te tūemi i rahua, ā, haere tonu i roto i taua wāhanga",
+        "overwrite_confirm": "Ka whakakapi tēnei i te kuputuhi onāianei ina tīmata te tangohanga. Me haere tonu?",
         "start_button": "Tīmata tangohanga",
         "cancel_button": "Whakakore",
         "close_aria": "Katia te whakamahere tangohanga ā-rōpū"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Hei tīmata i te tango, katia ngā matapihi tuarua katoa, ā, whakamutua te matawā.",
       "text_extraction_precondition_error": "I puta he hapa i te taki i ngā herenga tōmua tango. Tirohia te papatohu.",
       "text_extraction_processing_locked": "Kei te tukatuka te tango. Kua raka ngā taunekeneke matapihi matua kia mutu rā anō te tukatuka, kia whakakorea rānei e koe.",
+      "current_text_processing_locked": "Kei te whakahōu tonu te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te kuputuhi hou.",
+      "current_text_recount_locked": "Kei te tātai anō tonu ngā hua o te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te tātaitanga hou.",
       "text_extraction_abort_error": "I puta he hapa i te tono whakakore tango. Tirohia te papatohu.",
       "text_extraction_cancellation_requested": "Kua tonoa te whakakore. Taihoa kia mutu te tangohanga o nāianei.",
       "text_extraction_cancellation_complete": "Kua oti te whakakore.",

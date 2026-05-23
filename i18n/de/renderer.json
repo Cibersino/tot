@@ -55,6 +55,8 @@
         "words": "Wörter: {n}",
         "chars_no_space": "Zeichen (ohne Leerzeichen): {n}",
         "chars": "Zeichen: {n}",
+        "value_pending": "ausstehend...",
+        "value_unavailable": "nicht verfügbar",
         "precise_mode": "Präziser Modus",
         "precise_tooltip": "Basierend auf Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Stoppuhr-Steuerung"
       },
       "processing": {
+        "current_text_waiting": "Aktueller Text wird aktualisiert...",
+        "current_text_recount_waiting": "Ergebnisse des aktuellen Texts werden neu berechnet...",
+        "current_text_waiting_startup": "Aktueller Text wird stabilisiert...",
+        "current_text_waiting_editor": "Änderungen des Texteditors werden synchronisiert...",
+        "current_text_elapsed": "Verstrichen: ",
         "text_extraction_placeholder": "Text wird extrahiert...",
         "text_extraction_preparing": "Extraktionsroute wird vorbereitet...",
         "text_extraction_cancellation_pending": "Abbruch angefordert. Bitte warten...",
@@ -157,6 +164,7 @@
         "failure_legend": "Verhalten bei Fehlern",
         "failure_default": "Einheit nach dem letzten Erfolg schließen und mit der nächsten Einheit fortfahren",
         "failure_continue": "Fehler auslassen und innerhalb derselben Einheit fortfahren",
+        "overwrite_confirm": "Dadurch wird der aktuelle Text beim Start der Extraktion überschrieben. Möchten Sie fortfahren?",
         "start_button": "Extraktion starten",
         "cancel_button": "Abbrechen",
         "close_aria": "Planung der Stapelextraktion schließen"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Um Extraktion zu starten, schließen Sie alle Nebenfenster und stoppen Sie die Stoppuhr.",
       "text_extraction_precondition_error": "Beim Prüfen der Voraussetzungen für Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
       "text_extraction_processing_locked": "Extraktion wird verarbeitet. Interaktionen im Hauptfenster sind gesperrt, bis die Verarbeitung endet oder Sie abbrechen.",
+      "current_text_processing_locked": "Der aktuelle Text wird noch aktualisiert. Interaktionen im Hauptfenster bleiben gesperrt, bis der neueste Text stabil ist.",
+      "current_text_recount_locked": "Die Ergebnisse des aktuellen Texts werden noch neu berechnet. Interaktionen im Hauptfenster bleiben gesperrt, bis die neueste Neuberechnung stabil ist.",
       "text_extraction_abort_error": "Beim Anfordern des Abbruchs von Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
       "text_extraction_cancellation_requested": "Abbruch angefordert. Bitte warten Sie, bis die aktuelle Extraktion abgeschlossen ist.",
       "text_extraction_cancellation_complete": "Abbruch abgeschlossen.",

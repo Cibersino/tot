@@ -55,6 +55,8 @@
         "words": "Ñe’ẽ: {n}",
         "chars_no_space": "Tai/karakter (pa’ũ’ỹre): {n}",
         "chars": "Tai/karakter: {n}",
+        "value_pending": "oha’arõva...",
+        "value_unavailable": "ndaipóri",
         "precise_mode": "Modo preciso",
         "precise_tooltip": "Intl.Segmenter rehe oñemopyendáva"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Cronómetro controles"
       },
       "processing": {
+        "current_text_waiting": "Texto ko’ag̃agua oñembopyahu hína...",
+        "current_text_recount_waiting": "Texto ko’ag̃agua resultado oñeñemboheko jey hína...",
+        "current_text_waiting_startup": "Texto ko’ag̃agua oñemohenda hína...",
+        "current_text_waiting_editor": "Text Editor moambue oñesincroniza hína...",
+        "current_text_elapsed": "Ohasáva: ",
         "text_extraction_placeholder": "Oñeguenohẽ jehai...",
         "text_extraction_preparing": "Oñembosako’i text extraction rape...",
         "text_extraction_cancellation_pending": "Ojejerure ojeheja hag̃ua. Eha’arõ...",
@@ -157,6 +164,7 @@
         "failure_legend": "Mba’épa ojejapo ojavýramo",
         "failure_default": "Emboty unidad último éxito rire ha esegi unidad oúvape",
         "failure_continue": "Eheja item ojavýva ha esegi unidad peteĩme",
+        "overwrite_confirm": "Extracción oñepyrũvo, texto ko’ag̃agua oñemyengoviáta. ¿Rehojeyse?",
         "start_button": "Eñepyrũ extracción",
         "cancel_button": "Eheja",
         "close_aria": "Emboty extracción lote-pe ñembosako’i"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Reñepyrũ hag̃ua text extraction, emboty opaite ventana secundaria ha ejoko cronómetro.",
       "text_extraction_precondition_error": "Oiko jejavy ojehecha aja text extraction precondiciones. Ehecha consola.",
       "text_extraction_processing_locked": "Text extraction oprocesa hína. Ventana principal interacciones ojejoko procesamiento opa peve térã reabortá peve.",
+      "current_text_processing_locked": "Texto ko’ag̃agua oñembopyahu gueteri. Ventana principal rehegua interacciones oñembotýta texto ipyahuvéva oñemohenda peve.",
+      "current_text_recount_locked": "Texto ko’ag̃agua resultado oñeñemboheko jey gueteri. Ventana principal rehegua interacciones oñembotýta conteo ipaháva oñemohenda peve.",
       "text_extraction_abort_error": "Oiko jejavy ejerure aja text extraction abort. Ehecha consola.",
       "text_extraction_cancellation_requested": "Ojejerure ojeheja hag̃ua. Eha’arõ extracción ko’ág̃agua opa peve.",
       "text_extraction_cancellation_complete": "Ojeheja oñemohu’ã.",
