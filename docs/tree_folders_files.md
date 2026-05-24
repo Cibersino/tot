@@ -107,6 +107,7 @@ tot/
 │ ├── spellcheck.js
 │ ├── text_state.js
 │ ├── current_text_snapshots_main.js
+│ ├── current_text_processing_state_ipc.js
 │ ├── tasks_main.js
 │ ├── task_editor_state.js
 │ ├── editor_state.js
@@ -196,6 +197,8 @@ tot/
 │ │ ├── text_extraction_drag_drop.js
 │ │ ├── text_extraction_single_file_heavy_pdf_modal.js
 │ │ ├── current_text_selector_section.js
+│ │ ├── current_text_runtime.js
+│ │ ├── current_text_refresh_policy.js
 │ │ ├── editor_ui.js
 │ │ ├── editor_engine.js
 │ │ └── log.js
@@ -277,6 +280,7 @@ tot/
 - `electron/spellcheck.js` — Política/controlador del spellcheck de Electron: resuelve el diccionario a usar según el idioma activo de la app, aplica la configuración sobre `session.defaultSession`, respeta `spellcheckEnabled` y deshabilita spellcheck cuando el tag activo no tiene diccionario soportado (p.ej. `arn`, `es-cl`) en vez de delegar silenciosamente al locale del SO.
 - `electron/text_state.js` — Estado del texto actual: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshots_main.js` — Snapshots del texto actual (save/load): valida payloads del flujo save, abre diálogos nativos o resuelve paths determinísticos no interactivos para callers gestionados, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots simples `{ "text": "<string>" }`, snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos compatibles con payload opcional `readingTest`, expone además la apertura de la carpeta de snapshots, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
+- `electron/current_text_processing_state_ipc.js` — Controlador main-owned y superficie IPC del estado pendiente del current text: mantiene el lifecycle autoritativo de settle con `lockId`/`requestId`, sanea metadata de contexto, ignora resoluciones stale y expone lectura/broadcast del estado hacia la ventana principal autorizada.
 - `electron/editor_state.js` — Persistencia/estado de la ventana del Editor de Texto (tamaño/posición/maximizado y `maximizedTextWidthPx`), su integración con el `BrowserWindow` y el bridge IPC/notificaciones del estado de ventana hacia el renderer del editor.
 - `electron/editor_find_main.js` — Coordinador main-owned del find/replace del Editor de Texto: conserva el ciclo de vida de la ventana dedicada, el wiring Electron-specific de listeners/IPC autorizado, los atajos (`Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Shift+F3`, `Esc`, `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0`) y la orquestación de alto nivel entre ventana editor y ventana find.
 - `electron/editor_find_session.js` — Sesión/state machine main-owned del find/replace del Editor de Texto: encapsula el estado mutable del query, navegación `findInPage`, re-sync al refocar la ventana Find, waits/pending request scoped, y la tubería main↔editor de `Replace` / `Replace All` con sincronización de estado basada en `found-in-page`.
@@ -372,6 +376,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/text_extraction_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de uno o varios archivos al entry flow compartido, con branch explícito hacia batch planning cuando corresponde.
 - `public/js/text_extraction_single_file_heavy_pdf_modal.js` — Modal blocking del caso heavy PDF en single-file OCR: explica los casos A/B del límite `50 MB`, mantiene explícito el handoff a full-source automatic split y expone reveal del generated PDF retenido cuando existe.
 - `public/js/current_text_selector_section.js` — Owner UI de la sección “texto actual” en la ventana principal: concentra el título, el preview del texto actual, el toolbar local de esa sección, el lock state específico de sus controles y el toggle `Spoiler`, que permite ocultar el tramo final del preview sin devolver esa lógica a `public/renderer.js`.
+- `public/js/current_text_runtime.js` — Owner renderer del runtime del current text en la ventana principal: conserva el preview/result rendering autoritativo, fusiona recalculaciones derivadas dentro del settle activo, reporta éxito/fallo al lifecycle pendiente main-owned y mantiene explícito el modo degradado cuando una actualización derivada falla.
+- `public/js/current_text_refresh_policy.js` — Política compartida de refresh del current text: clasifica cambios de settings/presets entre `time_only`, `stats_display` y `full`, prioriza el refresh más fuerte y expone un controlador pequeño para despachar la acción correcta sin devolver esa taxonomía a `public/renderer.js`.
 - `public/js/editor_ui.js` — Módulo UI del Editor de Texto: i18n del editor, `spellcheck`, tamaño de texto, layout maximizado con gutters simétricos y persistencia de `maximizedTextWidthPx`, progreso de lectura, restauración de foco y overlay prestart del reading speed test.
 - `public/js/editor_engine.js` — Módulo de lógica/sync del Editor de Texto: helpers de selección e inserción, `replace current/all`, sincronización con main, truncation handling, paste/drop y aplicación de updates externos.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
