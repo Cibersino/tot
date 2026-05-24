@@ -57,6 +57,8 @@ Reglas:
 - La activación de Google OCR deja de depender solo de un fallo durante la extracción y pasa a poder iniciarse explícitamente desde `Menú > Preferencias`, reutilizando el mismo disclosure y la misma secuencia OAuth que usa la recuperación automática.
 - Abortar una extracción deja de devolver inmediatamente la ventana principal a idle: la UI entra en un estado explícito de `cancelación pendiente`, conserva el contexto visible del archivo/tiempo y mantiene bloqueadas las interacciones hasta que el cierre real del flujo termina.
 - El manejo de dirección de texto se normaliza en preview, editor, presets y disclosure OCR para que contenido RTL o mixto no quede visualmente invertido ni mal alineado respecto de la UI efectiva.
+- La ventana principal deja de rehacer recuentos completos del texto vigente cuando un cambio solo afecta `WPM`, formateo numérico visible o la resolución efectiva del preset; ahora clasifica esos refreshes y reutiliza stats/cache cuando el texto no cambió, y cuando sí hace falta un recuento completo muestra un estado pending/recount explícito hasta que se asiente la corrida autoritativa más reciente, incluido un kickoff diferido en startup para no disparar ese settle antes de que la UI salga realmente del bloqueo inicial.
+- El núcleo de conteo deja de depender de recorridos/materializaciones redundantes y pasa a contadores streaming para `simple` y para el fallback de `preciso`; cuando `Intl.Segmenter` está disponible, el modo preciso conserva la semántica visible de whitespace, grafemas y segmentación de palabras, pero separa los pases de grafemas y palabras para reducir trabajo intermedio sobre textos grandes.
 - Los artefactos temporales locales de runtime dejan de dispersarse en `%TEMP%`: subsets PDF, normalización OCR y copias temporales de app-docs/licencias pasan a centralizarse bajo un root app-owned con limpieza best-effort al cierre normal.
 
 ### Agregado
@@ -86,9 +88,13 @@ Reglas:
 - Entrada `Enable Google OCR` / `Activar Google OCR` / `Enchufar Google OCR` en `Menú > Preferencias` para iniciar la conexión OCR desde la ventana principal sin esperar a que una extracción la requiera.
 - Módulos renderer shared `text_extraction_ocr_activation_flow.js` y `text_extraction_ocr_activation.js` para centralizar la secuencia `prepare` → disclosure → `launch` y exponerla tanto al menú de preferencias como a la recuperación de extracción.
 - Helpers renderer shared `RendererI18n.getUiLanguageDirection()` y `RendererI18n.resolveUserTextDirection(value)` para derivar la dirección efectiva del contenido y reutilizarla en preview, editor, presets y disclosure OCR.
+- Superficie shared de pending del texto vigente, con controlador main-owned `current_text_processing_state_ipc.js`, owner renderer `current_text_runtime.js` y wiring del status shell para reflejar `updating current text`, `settling current text`, `syncing Text Editor changes` y `recalculating current-text results` sin dejar el área como ya asentada.
+- Módulo renderer shared `current_text_refresh_policy.js` para clasificar refreshes del texto vigente entre `full`, `stats_display` y `time_only`, priorizar la recalculación mínima suficiente y mantener esa taxonomía fuera de `public/renderer.js`.
 - Helper main-owned `electron/app_temp_paths.js` para centralizar paths temporales de runtime y separar explícitamente runtime (`%TEMP%/tot-temp/`) de tests (`%TEMP%/tot-temp-test/`).
 - Cobertura unitaria dedicada para activación OCR desde menú, flujo compartido y recuperación (`text_extraction_ocr_activation*.test.js`).
 - Cobertura unitaria adicional para el estado `cancellation pending` y para políticas de dirección de texto en preview/editor/presets/disclosure (`text_extraction_status_ui.test.js`, `text_extraction_entry.test.js`, `text_extraction_batch_flow.test.js`, `current_text_selector_section.test.js`, `editor_text_direction_policy.test.js`, `renderer_i18n_text_direction.test.js`, `preset_modal.test.js`, `presets_description_direction.test.js`, `wpm_controls_preset_description.test.js`, `text_extraction_ocr_activation_disclosure_modal.test.js`).
+- Cobertura unitaria adicional para la nueva política de refresh del texto vigente, el runtime derivado y los outcomes efectivos de presets/WPM (`current_text_refresh_policy.test.js`, `current_text_runtime.test.js`, `wpm_controls_refresh_outcome.test.js`), incluyendo el arranque diferido del settle bootstrap y su cancelación/once-semantics cuando el request inicial deja de ser vigente antes del kickoff.
+- Cobertura manual adicional en `docs/test_suite.md` para honestidad del pending del current text al arranque y durante mutaciones runtime grandes (`EDGE-01A`, `EDGE-05A`), más cobertura unitaria de `count_core` sobre whitespace mixto en `simple` y sobre el fallback de `preciso` sin `Intl.Segmenter` (`count_core.test.js`).
 
 ### Cambiado
 
@@ -117,6 +123,10 @@ Reglas:
 - El preview del texto vigente deja de mantener un probador de dirección propio y pasa a reutilizar la resolución shared de `RendererI18n`, aplicando la dirección efectiva del contenido también al modo truncado/sin spoiler.
 - El editor completo deja de depender de `dir="auto"` hardcodeado en HTML y recalcula la dirección del `textarea` en bootstrap, escritura local, sync externa y cambios de idioma; además, el botón `clear` del editor pasa a limpiar solo el `textarea` local y deja de vaciar el `current text` de la ventana principal.
 - Las descripciones de presets en main window y en `preset_modal` dejan de renderizarse como texto neutro fijo y pasan a actualizar `dir` según el contenido efectivo del campo.
+- Los cambios de settings/preset en la ventana principal dejan de resolver siempre `startPreviewAndResultsUpdate(...)` como refresh genérico; ahora distinguen `full`, `stats_display` y `time_only`, de modo que cambios de idioma simple o separadores reformatean resultados sin recontar y cambios de `WPM` recalculan solo el tiempo estimado.
+- La resolución de presets (`loadPresets`, `handlePresetCreated`, restore/delete) deja de limitarse a recargar el catálogo y pasa a devolver el outcome efectivo de selección (`previous/next preset`, `previous/next WPM`, `wpmChanged`) para que la UI decida el refresh mínimo correcto incluso cuando hubo fallback de preset.
+- El `current text` deja de depender de updates optimistas locales del renderer y pasa a un settle lifecycle main-owned con `requestId`, placeholders explícitos, elapsed propio y bloqueo homogéneo de controles/menú tanto en startup como en clipboard, snapshots, sync del Editor de Texto y recuentos standalone disparados por cambios de modo/settings; en startup, el settle bootstrap ya no arranca inline durante la sincronización inicial, sino diferido hasta después del desbloqueo/salida del splash para evitar trabajo pesado antes de que la ventana principal quede realmente lista.
+- `public/js/lib/count_core.js` deja de construir arrays completos para los caminos frecuentes de conteo y pasa a contar en streaming tanto en `simple` como en el fallback de `preciso`; el modo preciso con `Intl.Segmenter` conserva la lógica de compounds con guion, pero computa grafemas/no-whitespace y segmentación de palabras en iteraciones separadas para recortar materialización intermedia sin alterar el contrato visible.
 
 ### Arreglado
 
@@ -133,6 +143,10 @@ Reglas:
 - Si la recuperación automática no dispone de los bridges IPC de activación OCR, deja de consumir el flujo como fallo manejado y vuelve al fallback no recuperado en vez de mostrar diagnóstico engañoso.
 - Abortar una extracción deja de desbloquear prematuramente la main window antes de que el flujo single-file o batch termine de cerrar su UI final; además, la notificación al usuario ahora distingue `cancelación solicitada` de `cancelación completada`.
 - El disclosure de activación OCR, el preview del texto vigente y las descripciones de presets dejan de presentar dirección/alineación inconsistente cuando el contenido del usuario o la UI efectiva trabajan en RTL o bidi mixto.
+- Ajustar `WPM`, cambiar separadores numéricos del idioma activo o resolver un fallback de preset deja de disparar recuentos completos redundantes del texto vigente y rerenders innecesarios del preview cuando bastaba reutilizar `currentTextStats` para refrescar tiempo o formato visible; cuando el cambio sí obliga a un recount standalone, la UI ya no aparenta estado asentado antes de que ese recálculo termine o degrade explícitamente.
+- Los refreshes `stats_display` / `time_only` que llegan mientras hay una derivación standalone o un settle pendiente dejan de perderse o filtrarse sobre una corrida posterior de otro texto; ahora quedan acotados a la secuencia activa y no contaminan un `current text` más nuevo.
+- Un arranque con current text grande, una mutación runtime superpuesta o un sync tardío del Editor de Texto dejan de poder mostrar resultados “finales” viejos o desbloquear interacciones antes de tiempo; solo la última corrida autoritativa puede resolver el pending del texto vigente, y el settle bootstrap ya no se dispara prematuramente antes de que el renderer abandone el bloqueo inicial.
+- El conteo `simple` sobre whitespace mixto y el fallback de `preciso` sin `Intl.Segmenter` dejan de depender de recorridos inconsistentes para caracteres/palabras; ahora preservan explícitamente la semántica esperada de whitespace JS y de grafemas visibles sin inflar trabajo intermedio.
 - Editor de Tareas: descartar cambios no guardados al abrir/cargar otra tarea deja de dejar la nueva tarea en un estado donde algunos inputs visibles no aceptaban escritura hasta cambiar de ventana y volver.
 
 ### Migración
@@ -150,6 +164,10 @@ Reglas:
   - agrega `updateTextExtractionProcessingSession(payload)` → `ipcRenderer.invoke('text-extraction-update-processing-session', payload)`
   - agrega `exitTextExtractionProcessingSession(payload)` → `ipcRenderer.invoke('text-extraction-exit-processing-session', payload)`
   - agrega `openCurrentTextSnapshotsFolder()` → `ipcRenderer.invoke('current-text-snapshot-open-folder')`
+  - agrega `getCurrentTextProcessingState()` → `ipcRenderer.invoke('current-text-processing-get-state')`
+  - agrega `resolveCurrentTextProcessing(payload)` → `ipcRenderer.invoke('current-text-processing-resolve', payload)`
+  - agrega `onCurrentTextProcessingStateChanged(cb)` ← evento `current-text-processing-state-changed`
+  - `onCurrentTextUpdated(cb)` deja de emitir solo `text:string` y pasa a entregar `{ text, requestId, meta }`
 - Preload `window.taskEditorAPI`:
   - agrega `setDirtyState(dirty:boolean)` → `ipcRenderer.send('task-editor-dirty-state', { dirty })`
 - IPC renderer ↔ main:
@@ -157,9 +175,15 @@ Reglas:
   - nuevo canal `text-extraction-reveal-generated-pdf`
   - nuevos canales `text-extraction-enter-processing-session`, `text-extraction-update-processing-session` y `text-extraction-exit-processing-session`
   - nuevo canal `current-text-snapshot-open-folder`
+  - nuevos canales `current-text-processing-get-state` y `current-text-processing-resolve`
+  - nuevo evento `current-text-processing-state-changed`
+  - `current-text-updated` y `editor-text-updated` pasan a transportar payload objeto con `{ text, requestId, meta }`
   - `text-extraction-open-picker` puede devolver `filePaths[]` además de `filePath` cuando el picker vuelve múltiples archivos válidos
   - nuevo canal `task-editor-dirty-state`
   - `open-task-editor` puede devolver `code: 'CONFIRM_DENIED'` cuando el usuario cancela el descarte nativo de cambios no guardados del Editor de Tareas ya abierto
+- `set-current-text`:
+  - mantiene compatibilidad con payload string o `{ text, meta }`
+  - la respuesta puede incluir `requestId:number|null` además de `ok`, `truncated`, `length` y `text`
 - `text-extraction-prepare-selected-file`:
   - el payload acepta `pdfPageSelection`, `generatedPdfArtifactPolicy`, `planningMode` y `forceHeavySplitFullSource`
   - la respuesta preparada puede incluir `planningMode`, `forceHeavySplitFullSource`, `pdfPageSelection`, `generatedPdfArtifactPolicy` y `processingInputFileName` canonizados
@@ -174,6 +198,9 @@ Reglas:
   - nuevo namespace `renderer.text_extraction_pdf_options.*` para título, copy, labels, botones, `close_aria` y validación inline del modal PDF
   - nuevos namespaces `renderer.text_extraction.batch_plan.*`, `renderer.text_extraction.batch_report.*` y `renderer.text_extraction.single_file_heavy.*`
   - nuevas strings `renderer.main.processing.text_extraction_unit_progress`, `text_extraction_input_progress`, `text_extraction_route_native` y `text_extraction_route_ocr`
+  - nuevas strings `renderer.main.results.value_pending`, `renderer.main.results.value_unavailable`
+  - nuevas strings `renderer.main.processing.current_text_waiting`, `current_text_waiting_startup`, `current_text_waiting_editor`, `current_text_recount_waiting` y `current_text_elapsed`
+  - nuevas strings `renderer.alerts.current_text_processing_locked` y `renderer.alerts.current_text_recount_locked`
 - Storage / filesystem:
   - el runtime temp app-owned se centraliza bajo `os.tmpdir()/tot-temp/`
   - los subsets temporales en política `delete` se materializan bajo `os.tmpdir()/tot-temp/generated-pdf-subsets/`
