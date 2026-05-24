@@ -16,7 +16,6 @@
 // Imports / logger
 // =============================================================================
 const fs = require('fs');
-const { performance } = require('node:perf_hooks');
 const { BrowserWindow, clipboard } = require('electron');
 const Log = require('./log');
 const {
@@ -69,10 +68,6 @@ function normalizeLineEndings(text) {
   const value = String(text || '');
   if (!value.includes('\r')) return value;
   return value.replace(/\r\n?/g, '\n');
-}
-
-function roundMs(value) {
-  return Math.round(Number(value) * 100) / 100;
 }
 
 // =============================================================================
@@ -215,7 +210,6 @@ function applyCurrentText(rawText, rawMeta) {
  */
 function init(options) {
   const opts = options || {};
-  const initStartMs = performance.now();
 
   loadJson = opts.loadJson;
   saveJson = opts.saveJson;
@@ -230,11 +224,7 @@ function init(options) {
   maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
 
   // Initial load from disk + truncated if hard cap is exceeded
-  let startupLineEndingsNormalized = false;
-  let startupTruncated = false;
-  let startupLoadElapsedMs = 0;
   try {
-    const loadStartMs = performance.now();
     let raw = loadJson
       ? loadJson(currentTextFile, { text: '' })
       : { text: '' };
@@ -255,12 +245,10 @@ function init(options) {
 
     const normalizedTxt = normalizeLineEndings(txt);
     const lineEndingsNormalized = normalizedTxt !== txt;
-    startupLineEndingsNormalized = lineEndingsNormalized;
     txt = normalizedTxt;
 
     let shouldPersistNormalized = lineEndingsNormalized;
     if (txt.length > maxTextChars) {
-      startupTruncated = true;
       log.warn(
         `Initial text exceeds effective hard cap (${txt.length} > ${maxTextChars}); truncated and saved.`
       );
@@ -279,24 +267,14 @@ function init(options) {
     }
 
     currentText = txt;
-    startupLoadElapsedMs = performance.now() - loadStartMs;
   } catch (err) {
     log.error('Error loading current text file:', err);
     currentText = '';
-    startupLoadElapsedMs = performance.now() - initStartMs;
   }
 
   beginCurrentTextProcessing({
     source: 'main',
     action: 'initial_load',
-  });
-
-  log.info('Startup current-text main init trace:', {
-    textLength: currentText.length,
-    lineEndingsNormalized: startupLineEndingsNormalized,
-    truncated: startupTruncated,
-    loadMs: roundMs(startupLoadElapsedMs),
-    totalMs: roundMs(performance.now() - initStartMs),
   });
 
   // Persistence in before-quit
