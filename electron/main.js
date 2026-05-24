@@ -46,6 +46,7 @@ const {
 const settingsState = require('./settings');
 const textState = require('./text_state');
 const editorState = require('./editor_state');
+const editorWindowLifecycle = require('./editor_window_lifecycle');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const snapshotsMain = require('./current_text_snapshots_main');
@@ -78,6 +79,10 @@ log.debug('Main process starting...');
 
 const spellcheckController = spellcheck.createController({
   settingsState,
+});
+const editorWindowLifecycleController = editorWindowLifecycle.createController({
+  log,
+  editorState,
 });
 const editorTextSizeController = editorTextSize.createController({
   settingsState,
@@ -176,11 +181,11 @@ function isPlainObject(x) {
 }
 
 function isAliveWindow(win) {
-  return !!(win && !win.isDestroyed());
+  return editorWindowLifecycle.isAliveWindow(win);
 }
 
 function hasLiveWebContents(win) {
-  return !!(isAliveWindow(win) && win.webContents && !win.webContents.isDestroyed());
+  return editorWindowLifecycle.hasLiveWebContents(win);
 }
 
 function isMainInteractive() {
@@ -256,55 +261,8 @@ function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
 }
 
-function sendEditorInitText(logContext) {
-  if (!hasLiveWebContents(editorWin)) {
-    log.warn('editor-init-text skipped (ignored): Text Editor window unavailable.', logContext);
-    return;
-  }
-
-  try {
-    const initialText = textState.getCurrentText();
-    editorWin.webContents.send('editor-init-text', {
-      text: initialText || '',
-      meta: { source: 'main', action: 'init' },
-    });
-  } catch (err) {
-    log.error(`Error sending editor-init-text from ${logContext}:`, err);
-  }
-}
-
-function notifyMainEditorReady(logContext) {
-  if (!hasLiveWebContents(mainWin)) {
-    log.warn('editor-ready notification skipped (ignored): main window unavailable.', logContext);
-    return;
-  }
-
-  try {
-    mainWin.webContents.send('editor-ready');
-  } catch (err) {
-    log.warn(`Unable to notify editor-ready from ${logContext}:`, err);
-  }
-}
-
 function showEditorWindow(options = {}) {
-  if (!isAliveWindow(editorWin)) return null;
-
-  const shouldMaximize = !!(
-    options.maximize === true
-    || (options.useSavedMaximized !== false && editorWin.__totSavedMaximized === true)
-  );
-
-  if (shouldMaximize && typeof editorWin.maximize === 'function' && !editorWin.isMaximized()) {
-    editorWin.maximize();
-  }
-
-  if (typeof editorWin.show === 'function' && !editorWin.isVisible()) {
-    editorWin.show();
-  }
-
-  editorState.notifyWindowState(editorWin, 'showEditorWindow');
-
-  return editorWin;
+  return editorWindowLifecycleController.showEditorWindow(editorWin, options);
 }
 
 function getSettingsBroadcastWindows() {
@@ -338,19 +296,13 @@ function getPreconditionContext() {
 }
 
 function ensureEditorWindowOpen(options = {}) {
-  const deferShow = !!(options && options.deferShow);
-
-  if (!isAliveWindow(editorWin)) {
-    createEditorWindow({ deferShow });
-  } else {
-    if (!deferShow) {
-      showEditorWindow();
-    }
-    sendEditorInitText('ensureEditorWindowOpen');
-    notifyMainEditorReady('ensureEditorWindowOpen');
-  }
-
-  return editorWin;
+  return editorWindowLifecycleController.ensureEditorWindowOpen({
+    editorWin,
+    mainWin,
+    createEditorWindow,
+    options,
+    logContext: 'ensureEditorWindowOpen',
+  });
 }
 
 function requestCloseEditorWindow() {
@@ -723,14 +675,15 @@ function createEditorWindow(options = {}) {
     log.error('Error attaching Text Editor find listeners:', err);
   }
 
-  // When ready, apply maximized state (if needed), show it, and send initial data.
+  // When ready, apply maximized state (if needed), show it, and clear the main-window launch loader.
   editorWin.once('ready-to-show', () => {
     try {
-      if (!deferShow) {
-        showEditorWindow();
-      }
-      sendEditorInitText('createEditorWindow');
-      notifyMainEditorReady('createEditorWindow');
+      editorWindowLifecycleController.handleEditorWindowReady({
+        editorWin,
+        mainWin,
+        deferShow,
+        logContext: 'createEditorWindow',
+      });
     } catch (err) {
       log.error('Error showing Text Editor:', err);
     }
@@ -746,6 +699,8 @@ function createEditorWindow(options = {}) {
     }
     editorWin = null;
   });
+
+  return editorWin;
 }
 
 /**

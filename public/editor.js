@@ -70,8 +70,8 @@ if (!window.editorAPI) {
 if (typeof window.editorAPI.setCurrentText !== 'function') {
   throw new Error('[editor] editorAPI.setCurrentText unavailable; cannot continue');
 }
-if (typeof window.editorAPI.onInitText !== 'function') {
-  throw new Error('[editor] editorAPI.onInitText unavailable; cannot continue');
+if (typeof window.editorAPI.getCurrentText !== 'function') {
+  throw new Error('[editor] editorAPI.getCurrentText unavailable; cannot continue');
 }
 if (typeof window.editorAPI.onExternalUpdate !== 'function') {
   throw new Error('[editor] editorAPI.onExternalUpdate unavailable; cannot continue');
@@ -190,10 +190,7 @@ const ctx = {
 ctx.ui = window.EditorUI.createEditorUI(ctx);
 ctx.engine = window.EditorEngine.createEditorEngine(ctx);
 
-// =============================================================================
-// Bootstrap: config and translations (async, best-effort)
-// =============================================================================
-(async () => {
+async function bootstrapEditorEnvironment() {
   try {
     if (typeof ctx.editorAPI.getAppConfig !== 'function') {
       log.warn('BOOTSTRAP: editorAPI.getAppConfig missing; using defaults.');
@@ -242,7 +239,7 @@ ctx.engine = window.EditorEngine.createEditorEngine(ctx);
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
   }
-})();
+}
 
 // warnOnce keys are editor-scoped; use log.warnOnce directly.
 ctx.ui.applyTextareaDefaults();
@@ -320,38 +317,38 @@ if (readingTestPrestartOverlay) {
   });
 }
 
-// =============================================================================
-// Bootstrap: initial text seed
-// =============================================================================
-(async () => {
+async function bootstrapInitialEditorText() {
+  let initialText = '';
+
   try {
-    let initialText = '';
-
-    if (typeof ctx.editorAPI.getCurrentText !== 'function') {
-      log.warn('BOOTSTRAP: editorAPI.getCurrentText missing; initialization will rely on onInitText.');
-    } else {
-      try {
-        initialText = await ctx.editorAPI.getCurrentText();
-      } catch (err) {
-        log.warn('BOOTSTRAP: getCurrentText failed; initialization will use empty text:', err);
-      }
-    }
-
-    await ctx.engine.applyExternalUpdate({ text: initialText || '', meta: { source: 'main', action: 'init' } });
-    ctx.ui.updateEditorTextDirection();
-    btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
+    initialText = String(await ctx.editorAPI.getCurrentText() || '');
   } catch (err) {
-    log.error('Error initializing Text Editor:', err);
+    throw new Error(`[editor] editorAPI.getCurrentText failed during bootstrap: ${String(err)}`);
   }
-})();
+
+  await ctx.engine.applyExternalUpdate({
+    text: initialText,
+    meta: { source: 'main', action: 'init' },
+  });
+  ctx.ui.updateEditorTextDirection();
+  btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
+}
+
+// =============================================================================
+// Bootstrap: config, settings, and initial text
+// =============================================================================
+Promise.resolve()
+  .then(async () => {
+    await bootstrapEditorEnvironment();
+    await bootstrapInitialEditorText();
+  })
+  .catch((err) => {
+    log.error('BOOTSTRAP: Text Editor startup failed:', err);
+  });
 
 // =============================================================================
 // Bridge listeners
 // =============================================================================
-ctx.editorAPI.onInitText(async (p) => {
-  await ctx.engine.applyExternalUpdate(p);
-  ctx.ui.updateEditorTextDirection();
-});
 ctx.editorAPI.onExternalUpdate(async (p) => {
   await ctx.engine.applyExternalUpdate(p);
   ctx.ui.updateEditorTextDirection();
