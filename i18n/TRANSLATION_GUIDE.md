@@ -79,6 +79,8 @@ Un mismo concepto funcional debe mantener una forma estable dentro de cada idiom
 
 Cuando existan varias soluciones legítimas, la guía específica del idioma debe registrar la opción preferida, alternativas descartadas, excepciones aceptadas o dudas abiertas. La revisión key por key debe permitir discusión lingüística razonada, no aplicar reglas mecánicas sin atender la superficie concreta.
 
+La consistencia interna de un idioma no exige homogeneizar soluciones entre idiomas distintos. No debe normalizarse puntuación, elipsis, espaciado o casing de forma transversal si esa normalización borra una convención local o puede afectar renderizado/script.
+
 ## 4. Notas por key
 
 Las notas por key aparecen como comentarios JSONC documentales junto al baseline:
