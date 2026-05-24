@@ -8,8 +8,8 @@
     normalizeText,
     hasIntlSegmenter,
     resolveLocale,
-    countWords,
-    shouldShowUnavailableOverlay,
+    countWordsNormalized,
+    shouldShowUnavailableOverlayNormalized,
     parseWpm,
     estimateSeconds,
     formatDuration,
@@ -161,7 +161,7 @@
     }
 
     if (!hasIntlSegmenter()) {
-      if (!shouldShowUnavailableOverlay(text)) {
+      if (!shouldShowUnavailableOverlayNormalized(text)) {
         scheduleHide();
         return;
       }
@@ -176,7 +176,7 @@
       navigator.language
     );
 
-    const wordCount = countWords(text, currentLocale);
+    const wordCount = countWordsNormalized(text, currentLocale);
     if (wordCount < CONSTANTS.MIN_WORDS) {
       scheduleHide();
       return;
