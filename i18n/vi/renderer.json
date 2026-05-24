@@ -55,6 +55,8 @@
         "words": "Từ: {n}",
         "chars_no_space": "Ký tự (không tính khoảng trắng): {n}",
         "chars": "Ký tự: {n}",
+        "value_pending": "đang chờ...",
+        "value_unavailable": "không khả dụng",
         "precise_mode": "Chế độ chính xác",
         "precise_tooltip": "Dựa trên Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Điều khiển đồng hồ bấm giờ"
       },
       "processing": {
+        "current_text_waiting": "Đang cập nhật văn bản hiện tại...",
+        "current_text_recount_waiting": "Đang tính lại kết quả của văn bản hiện tại...",
+        "current_text_waiting_startup": "Đang ổn định văn bản hiện tại...",
+        "current_text_waiting_editor": "Đang đồng bộ thay đổi từ Text Editor...",
+        "current_text_elapsed": "Đã trôi qua: ",
         "text_extraction_placeholder": "Đang trích xuất văn bản...",
         "text_extraction_preparing": "Đang chuẩn bị tuyến trích xuất...",
         "text_extraction_cancellation_pending": "Đã yêu cầu hủy. Vui lòng chờ...",
@@ -157,6 +164,7 @@
         "failure_legend": "Cách xử lý khi thất bại",
         "failure_default": "Đóng đơn vị sau lần thành công cuối cùng và tiếp tục với đơn vị tiếp theo",
         "failure_continue": "Bỏ qua lỗi và tiếp tục trong cùng đơn vị",
+        "overwrite_confirm": "Thao tác này sẽ ghi đè văn bản hiện tại khi quá trình trích xuất bắt đầu. Bạn có muốn tiếp tục không?",
         "start_button": "Bắt đầu trích xuất",
         "cancel_button": "Hủy",
         "close_aria": "Đóng kế hoạch trích xuất theo lô"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Để bắt đầu trích xuất, hãy đóng tất cả cửa sổ phụ và dừng đồng hồ bấm giờ.",
       "text_extraction_precondition_error": "Đã xảy ra lỗi khi kiểm tra điều kiện trích xuất. Hãy kiểm tra console.",
       "text_extraction_processing_locked": "Trích xuất đang xử lý. Tương tác với cửa sổ chính bị khóa cho đến khi xử lý xong hoặc bạn hủy.",
+      "current_text_processing_locked": "Văn bản hiện tại vẫn đang được cập nhật. Tương tác với cửa sổ chính bị khóa cho đến khi văn bản mới nhất ổn định.",
+      "current_text_recount_locked": "Kết quả của văn bản hiện tại vẫn đang được tính lại. Tương tác với cửa sổ chính bị khóa cho đến khi lần tính lại mới nhất ổn định.",
       "text_extraction_abort_error": "Đã xảy ra lỗi khi yêu cầu hủy trích xuất. Hãy kiểm tra console.",
       "text_extraction_cancellation_requested": "Đã yêu cầu hủy. Vui lòng chờ đến khi lần trích xuất hiện tại hoàn tất.",
       "text_extraction_cancellation_complete": "Đã hủy xong.",

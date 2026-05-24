@@ -55,6 +55,8 @@
         "words": "الكلمات: {n}",
         "chars_no_space": "الأحرف (من دون مسافات): {n}",
         "chars": "الأحرف: {n}",
+        "value_pending": "قيد الانتظار...",
+        "value_unavailable": "غير متاح",
         "precise_mode": "الوضع الدقيق",
         "precise_tooltip": "استنادًا إلى Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "عناصر التحكم في ساعة الإيقاف"
       },
       "processing": {
+        "current_text_waiting": "جارٍ تحديث النص الحالي...",
+        "current_text_recount_waiting": "جارٍ إعادة حساب نتائج النص الحالي...",
+        "current_text_waiting_startup": "جارٍ تثبيت النص الحالي...",
+        "current_text_waiting_editor": "جارٍ مزامنة تغييرات محرر النصوص...",
+        "current_text_elapsed": "الوقت المنقضي: ",
         "text_extraction_placeholder": "جارٍ استخراج النص...",
         "text_extraction_preparing": "جارٍ تحضير مسار الاستخراج...",
         "text_extraction_cancellation_pending": "تم طلب الإلغاء. يُرجى الانتظار...",
@@ -157,6 +164,7 @@
         "failure_legend": "السلوك عند الفشل",
         "failure_default": "إغلاق الوحدة بعد آخر نجاح ومتابعة الوحدة التالية",
         "failure_continue": "تجاوز الفشل والمتابعة داخل الوحدة نفسها",
+        "overwrite_confirm": "سيؤدي هذا إلى استبدال النص الحالي عند بدء الاستخراج. هل تريد المتابعة؟",
         "start_button": "بدء الاستخراج",
         "cancel_button": "إلغاء",
         "close_aria": "إغلاق تخطيط الاستخراج الدفعي"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "لبدء الاستخراج، أغلق كل النوافذ الثانوية وأوقف ساعة الإيقاف.",
       "text_extraction_precondition_error": "حدث خطأ أثناء التحقق من شروط الاستخراج المسبقة. راجع وحدة التحكم.",
       "text_extraction_processing_locked": "الاستخراج قيد المعالجة. تظل تفاعلات النافذة الرئيسية مقفلة حتى تنتهي المعالجة أو توقفها.",
+      "current_text_processing_locked": "لا يزال النص الحالي قيد التحديث. تظل تفاعلات النافذة الرئيسية مقفلة حتى يستقر النص الأحدث.",
+      "current_text_recount_locked": "لا تزال نتائج النص الحالي قيد إعادة الحساب. تظل تفاعلات النافذة الرئيسية مقفلة حتى يستقر آخر حساب.",
       "text_extraction_abort_error": "حدث خطأ أثناء طلب إيقاف الاستخراج. راجع وحدة التحكم.",
       "text_extraction_cancellation_requested": "تم طلب الإلغاء. يُرجى الانتظار حتى ينتهي الاستخراج الحالي.",
       "text_extraction_cancellation_complete": "اكتمل الإلغاء.",

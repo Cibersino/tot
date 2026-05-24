@@ -49,6 +49,22 @@ test('createCountUtils simple mode counts words and characters by whitespace rul
   );
 });
 
+test('createCountUtils simple mode preserves JS whitespace semantics on mixed whitespace input', () => {
+  const utils = createCountUtils({
+    DEFAULT_LANG: TEST_DEFAULT_LANG,
+    log: createWarnLogDouble(),
+  });
+
+  assert.deepEqual(
+    utils.contarTexto('\r\n\tuno\u00a0dos  tres\r\ncuatro\t\tcinco ', { modoConteo: 'simple' }),
+    {
+      conEspacios: 32,
+      sinEspacios: 21,
+      palabras: 5,
+    }
+  );
+});
+
 test('createCountUtils precise mode joins hyphenated compounds into one word', () => {
   const utils = createCountUtils({
     DEFAULT_LANG: 'en',
@@ -108,6 +124,23 @@ test('createCountUtils falls back when Intl.Segmenter is unavailable', () => {
   });
   assert.equal(utils.hasIntlSegmenter(), false);
   assert.equal(warnOnceCalls.length, 1);
+});
+
+test('createCountUtils fallback keeps precise-mode whitespace and grapheme semantics', () => {
+  const utils = createCountUtils({
+    DEFAULT_LANG: TEST_DEFAULT_LANG,
+    log: createWarnLogDouble(),
+    intlObject: {},
+  });
+
+  assert.deepEqual(
+    utils.contarTextoPrecisoFallback('hola\u00a0mundo\t\nemoji 😀 aquí'),
+    {
+      conEspacios: 24,
+      sinEspacios: 19,
+      palabras: 5,
+    }
+  );
 });
 
 test('createCountUtils warns and uses ASCII fallback when unicode property escapes are unsupported', () => {

@@ -40,7 +40,6 @@
     PREVIEW_START_CHARS,
     PREVIEW_END_CHARS,
   } = AppConstants;
-
   const selectorTitle = document.getElementById('selector-title');
   const textPreview = document.getElementById('textPreview');
   const btnTextExtraction = document.getElementById('btnTextExtraction');

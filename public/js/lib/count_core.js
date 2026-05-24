@@ -36,6 +36,7 @@
       '\u2013',
       '\u2212',
     ]);
+    const reWhitespace = /\s/;
 
     let reAlnumOnly;
     try {
@@ -63,60 +64,139 @@
         : defaultLang;
     }
 
-    function contarTextoSimple(texto) {
-      const conEspacios = texto.length;
-      const sinEspacios = texto.replace(/\s+/g, '').length;
-      const palabras = texto.trim() === '' ? 0 : texto.trim().split(/\s+/).length;
-      return { conEspacios, sinEspacios, palabras };
+    function countSimpleStreamingRange(texto, startIndex, endIndex, state) {
+      for (let index = startIndex; index < endIndex; index += 1) {
+        const segment = texto[index];
+        const isWhitespace = reWhitespace.test(segment);
+        if (isWhitespace) {
+          state.insideWord = false;
+        } else {
+          state.sinEspacios += 1;
+          if (!state.insideWord) {
+            state.palabras += 1;
+            state.insideWord = true;
+          }
+        }
+      }
     }
 
-    function contarTextoPrecisoFallback(texto) {
-      const graphemes = [...texto];
-      const conEspacios = graphemes.length;
-      const sinEspacios = graphemes.filter((c) => !/\s/.test(c)).length;
-      const palabras = texto.trim() === '' ? 0 : texto.trim().split(/\s+/).length;
-      return { conEspacios, sinEspacios, palabras };
+    function finalizeSimpleStats(texto, state) {
+      return {
+        conEspacios: texto.length,
+        sinEspacios: state.sinEspacios,
+        palabras: state.palabras,
+      };
     }
 
-    function contarTextoPreciso(texto, language) {
+    function countSimpleStreaming(texto) {
+      const state = {
+        sinEspacios: 0,
+        palabras: 0,
+        insideWord: false,
+      };
+      countSimpleStreamingRange(texto, 0, texto.length, state);
+      return finalizeSimpleStats(texto, state);
+    }
+
+    function consumePreciseFallbackUnit(segment, state) {
+      const isWhitespace = reWhitespace.test(segment);
+      state.conEspacios += 1;
+      if (isWhitespace) {
+        state.insideWord = false;
+      } else {
+        state.sinEspacios += 1;
+        if (!state.insideWord) {
+          state.palabras += 1;
+          state.insideWord = true;
+        }
+      }
+    }
+
+    function finalizePreciseFallbackStats(state) {
+      return {
+        conEspacios: state.conEspacios,
+        sinEspacios: state.sinEspacios,
+        palabras: state.palabras,
+      };
+    }
+
+    function countPreciseFallbackStreaming(texto) {
+      const state = {
+        conEspacios: 0,
+        sinEspacios: 0,
+        palabras: 0,
+        insideWord: false,
+      };
+      for (const segment of texto) {
+        consumePreciseFallbackUnit(segment, state);
+      }
+      return finalizePreciseFallbackStats(state);
+    }
+
+    function consumePreciseWordSegment(seg, state) {
+      if (seg && seg.isWordLike) {
+        const joinable = isAlnumOnlySegment(seg.segment);
+
+        if (!(state.pendingHyphenJoin && joinable)) {
+          state.palabras += 1;
+        }
+
+        state.pendingHyphenJoin = false;
+        state.prevWasJoinableWord = joinable;
+      } else {
+        if (seg && isHyphenJoinerSegment(seg.segment) && state.prevWasJoinableWord) {
+          state.pendingHyphenJoin = true;
+        } else {
+          state.pendingHyphenJoin = false;
+        }
+        state.prevWasJoinableWord = false;
+      }
+    }
+
+    function countPreciseStreaming(texto, language) {
       if (!hasIntlSegmenter()) {
         log.warnOnce('count.intl-segmenter-missing', 'Intl.Segmenter unavailable; using fallback segmentation.');
-        return contarTextoPrecisoFallback(texto);
+        return countPreciseFallbackStreaming(texto);
       }
 
       const resolvedLanguage = resolveLanguage(language);
       const segGraf = new intlObject.Segmenter(resolvedLanguage, { granularity: 'grapheme' });
-      const grafemas = [...segGraf.segment(texto)];
-      const conEspacios = grafemas.length;
-      const sinEspacios = grafemas.filter((g) => !/\s/.test(g.segment)).length;
-
-      const segPal = new intlObject.Segmenter(resolvedLanguage, { granularity: 'word' });
-
-      let palabras = 0;
-      let prevWasJoinableWord = false;
-      let pendingHyphenJoin = false;
-
-      for (const seg of segPal.segment(texto)) {
-        if (seg && seg.isWordLike) {
-          const joinable = isAlnumOnlySegment(seg.segment);
-
-          if (!(pendingHyphenJoin && joinable)) {
-            palabras += 1;
-          }
-
-          pendingHyphenJoin = false;
-          prevWasJoinableWord = joinable;
-        } else {
-          if (seg && isHyphenJoinerSegment(seg.segment) && prevWasJoinableWord) {
-            pendingHyphenJoin = true;
-          } else {
-            pendingHyphenJoin = false;
-          }
-          prevWasJoinableWord = false;
+      let conEspacios = 0;
+      let sinEspacios = 0;
+      for (const grapheme of segGraf.segment(texto)) {
+        conEspacios += 1;
+        if (!reWhitespace.test(grapheme.segment)) {
+          sinEspacios += 1;
         }
       }
 
-      return { conEspacios, sinEspacios, palabras };
+      const segPal = new intlObject.Segmenter(resolvedLanguage, { granularity: 'word' });
+      const wordState = {
+        palabras: 0,
+        prevWasJoinableWord: false,
+        pendingHyphenJoin: false,
+      };
+      for (const seg of segPal.segment(texto)) {
+        consumePreciseWordSegment(seg, wordState);
+      }
+
+      return {
+        conEspacios,
+        sinEspacios,
+        palabras: wordState.palabras,
+      };
+    }
+
+    function contarTextoSimple(texto) {
+      return countSimpleStreaming(texto);
+    }
+
+    function contarTextoPrecisoFallback(texto) {
+      return countPreciseFallbackStreaming(texto);
+    }
+
+    function contarTextoPreciso(texto, language) {
+      return countPreciseStreaming(texto, language);
     }
 
     function contarTexto(texto, opts = {}) {

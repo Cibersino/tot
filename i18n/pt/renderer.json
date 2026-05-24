@@ -55,6 +55,8 @@
         "words": "Palavras: {n}",
         "chars_no_space": "Caracteres (sem espaços): {n}",
         "chars": "Caracteres: {n}",
+        "value_pending": "pendente...",
+        "value_unavailable": "indisponível",
         "precise_mode": "Modo preciso",
         "precise_tooltip": "Baseado em Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Controles do cronômetro"
       },
       "processing": {
+        "current_text_waiting": "Atualizando o texto atual...",
+        "current_text_recount_waiting": "Recalculando os resultados do texto atual...",
+        "current_text_waiting_startup": "Estabilizando o texto atual...",
+        "current_text_waiting_editor": "Sincronizando alterações do Editor de Texto...",
+        "current_text_elapsed": "Decorrido: ",
         "text_extraction_placeholder": "Extraindo texto...",
         "text_extraction_preparing": "Preparando rota de extração...",
         "text_extraction_cancellation_pending": "Cancelamento solicitado. Aguarde...",
@@ -157,6 +164,7 @@
         "failure_legend": "Comportamento em caso de falha",
         "failure_default": "Fechar a unidade após o último sucesso e continuar com a próxima unidade",
         "failure_continue": "Omitir a falha e continuar dentro da mesma unidade",
+        "overwrite_confirm": "Isso substituirá o texto atual quando a extração começar. Deseja continuar?",
         "start_button": "Iniciar extração",
         "cancel_button": "Cancelar",
         "close_aria": "Fechar planejamento da extração em lote"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Para iniciar a extração, feche todas as janelas secundárias e pare o cronômetro.",
       "text_extraction_precondition_error": "Ocorreu um erro ao verificar as precondições da extração. Verifique o console.",
       "text_extraction_processing_locked": "A extração está em processamento. As interações na janela principal ficam bloqueadas até o processamento terminar ou você cancelar.",
+      "current_text_processing_locked": "O texto atual ainda está sendo atualizado. As interações da janela principal ficam bloqueadas até o texto mais recente estabilizar.",
+      "current_text_recount_locked": "Os resultados do texto atual ainda estão sendo recalculados. As interações da janela principal ficam bloqueadas até o recálculo mais recente estabilizar.",
       "text_extraction_abort_error": "Ocorreu um erro ao solicitar o cancelamento da extração. Verifique o console.",
       "text_extraction_cancellation_requested": "Cancelamento solicitado. Aguarde até que a extração atual termine.",
       "text_extraction_cancellation_complete": "Cancelamento concluído.",

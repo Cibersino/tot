@@ -109,6 +109,19 @@
     processingInputFileName: '',
     processingInputSource: '',
   };
+  let currentTextProcessingState = {
+    active: false,
+    requestId: 0,
+    sinceEpochMs: null,
+    source: '',
+    action: '',
+  };
+  let standaloneFullRefreshPendingState = {
+    active: false,
+    ownerSequence: 0,
+    sinceEpochMs: null,
+    reason: '',
+  };
   let prepareActiveCount = 0;
   let abortFinalizationState = {
     active: false,
@@ -217,6 +230,39 @@
     };
   }
 
+  function normalizeCurrentTextProcessingState(rawState) {
+    const state = rawState && typeof rawState === 'object' ? rawState : {};
+    const requestId = Number(state.requestId);
+    const sinceEpochMs = Number(state.sinceEpochMs);
+    return {
+      active: state.active === true,
+      requestId: Number.isFinite(requestId) && requestId > 0 ? Math.floor(requestId) : 0,
+      sinceEpochMs: Number.isFinite(sinceEpochMs) && sinceEpochMs > 0 ? Math.floor(sinceEpochMs) : null,
+      source: typeof state.source === 'string' ? state.source.trim() : '',
+      action: typeof state.action === 'string' ? state.action.trim() : '',
+    };
+  }
+
+  function normalizeStandaloneFullRefreshPendingState(rawState) {
+    const state = rawState && typeof rawState === 'object' ? rawState : {};
+    const ownerSequence = Number(state.ownerSequence);
+    const sinceEpochMs = Number(state.sinceEpochMs);
+    if (state.active !== true || !Number.isFinite(ownerSequence) || ownerSequence < 1) {
+      return {
+        active: false,
+        ownerSequence: 0,
+        sinceEpochMs: null,
+        reason: '',
+      };
+    }
+    return {
+      active: true,
+      ownerSequence: Math.floor(ownerSequence),
+      sinceEpochMs: Number.isFinite(sinceEpochMs) && sinceEpochMs > 0 ? Math.floor(sinceEpochMs) : null,
+      reason: typeof state.reason === 'string' ? state.reason.trim() : '',
+    };
+  }
+
   function cloneProcessingModeState() {
     return { ...processingModeState };
   }
@@ -231,6 +277,18 @@
 
   function isAbortFinalizationActive() {
     return abortFinalizationState.active === true;
+  }
+
+  function isCurrentTextProcessingActive() {
+    return currentTextProcessingState.active === true;
+  }
+
+  function isStandaloneFullRefreshPendingActive() {
+    return standaloneFullRefreshPendingState.active === true;
+  }
+
+  function isCurrentTextAreaPendingActive() {
+    return isCurrentTextProcessingActive() || isStandaloneFullRefreshPendingActive();
   }
 
   function getElapsedMsSince(rawSinceEpochMs) {
@@ -292,6 +350,18 @@
     }
     if (isPrepareActive()) {
       return tRenderer('renderer.main.processing.text_extraction_preparing');
+    }
+    if (isCurrentTextProcessingActive()) {
+      if (currentTextProcessingState.action === 'initial_load') {
+        return tRenderer('renderer.main.processing.current_text_waiting_startup');
+      }
+      if (currentTextProcessingState.source === 'editor') {
+        return tRenderer('renderer.main.processing.current_text_waiting_editor');
+      }
+      return tRenderer('renderer.main.processing.current_text_waiting');
+    }
+    if (isStandaloneFullRefreshPendingActive()) {
+      return tRenderer('renderer.main.processing.current_text_recount_waiting');
     }
     if (pendingExecutionRoute === 'native') {
       return tRenderer('renderer.main.processing.text_extraction_waiting_native');
@@ -358,6 +428,12 @@
     if (isProcessingModeActive() && processingModeState.processingInputFileName) {
       return processingModeState.processingInputFileName;
     }
+    if (isCurrentTextProcessingActive()) {
+      return '';
+    }
+    if (isStandaloneFullRefreshPendingActive()) {
+      return '';
+    }
     return pendingSourceFileName;
   }
 
@@ -372,8 +448,14 @@
 
   function syncProcessingShellUi() {
     const processingActive = isProcessingModeActive();
+    const currentTextActive = isCurrentTextProcessingActive();
+    const standaloneFullRefreshActive = isStandaloneFullRefreshPendingActive();
     const abortFinalizationActive = isAbortFinalizationActive();
-    const active = processingActive || abortFinalizationActive || isPrepareActive();
+    const active = processingActive
+      || currentTextActive
+      || standaloneFullRefreshActive
+      || abortFinalizationActive
+      || isPrepareActive();
 
     if (selectorControlsNormal) {
       selectorControlsNormal.hidden = active;
@@ -421,13 +503,26 @@
     if (!textExtractionProcessingElapsed) return;
 
     const processingActive = isProcessingModeActive();
+    const currentTextActive = isCurrentTextProcessingActive();
+    const standaloneFullRefreshActive = isStandaloneFullRefreshPendingActive();
     const abortFinalizationActive = isAbortFinalizationActive();
     const elapsedMs = processingActive
       ? (elapsedMsOverride === null
         ? getElapsedMsSince(processingModeState.sinceEpochMs)
         : elapsedMsOverride)
-      : (abortFinalizationActive ? abortFinalizationState.elapsedMs : null);
-    const elapsedValueText = (processingActive || abortFinalizationActive)
+      : ((currentTextActive || standaloneFullRefreshActive)
+        ? (elapsedMsOverride === null
+          ? getElapsedMsSince(
+            currentTextActive
+              ? currentTextProcessingState.sinceEpochMs
+              : standaloneFullRefreshPendingState.sinceEpochMs
+          )
+          : elapsedMsOverride)
+        : (abortFinalizationActive ? abortFinalizationState.elapsedMs : null));
+    const elapsedValueText = (processingActive
+      || currentTextActive
+      || standaloneFullRefreshActive
+      || abortFinalizationActive)
       ? getProcessingElapsedValueText(elapsedMs)
       : '';
     const showElapsed = !!elapsedValueText;
@@ -439,7 +534,9 @@
     }
     renderElapsedLabelWithValue(
       textExtractionProcessingElapsed,
-      'renderer.main.processing.text_extraction_elapsed',
+      (currentTextActive || standaloneFullRefreshActive)
+        ? 'renderer.main.processing.current_text_elapsed'
+        : 'renderer.main.processing.text_extraction_elapsed',
       elapsedValueText
     );
   }
@@ -470,12 +567,20 @@
   function ensureElapsedTimer() {
     if (elapsedTimerId !== null) return;
     elapsedTimerId = window.setInterval(() => {
-      if (!isProcessingModeActive()) {
+      if (!isProcessingModeActive() && !isCurrentTextAreaPendingActive()) {
         stopElapsedTimer();
         return;
       }
-      const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
-      syncDelayedBusyCopyUi(elapsedMs);
+      const elapsedMs = isProcessingModeActive()
+        ? getElapsedMsSince(processingModeState.sinceEpochMs)
+        : getElapsedMsSince(
+          isCurrentTextProcessingActive()
+            ? currentTextProcessingState.sinceEpochMs
+            : standaloneFullRefreshPendingState.sinceEpochMs
+        );
+      if (isProcessingModeActive()) {
+        syncDelayedBusyCopyUi(elapsedMs);
+      }
       syncElapsedUi({ elapsedMsOverride: elapsedMs });
     }, ELAPSED_TICK_MS);
   }
@@ -522,6 +627,52 @@
         lockId: nextState.lockId,
         source,
         reason: nextState.reason,
+      });
+    }
+  }
+
+  function applyCurrentTextProcessingState(rawState, { source = 'unknown' } = {}) {
+    const prevState = { ...currentTextProcessingState };
+    currentTextProcessingState = normalizeCurrentTextProcessingState(rawState);
+
+    syncProcessingUi();
+    if (currentTextProcessingState.active && currentTextProcessingState.sinceEpochMs) {
+      ensureElapsedTimer();
+    } else if (!isProcessingModeActive()) {
+      stopElapsedTimer();
+    }
+
+    if (prevState.active !== currentTextProcessingState.active
+      || (currentTextProcessingState.active && prevState.requestId !== currentTextProcessingState.requestId)) {
+      log.info('current text processing changed:', {
+        active: currentTextProcessingState.active,
+        requestId: currentTextProcessingState.requestId,
+        source,
+        currentTextSource: currentTextProcessingState.source,
+        action: currentTextProcessingState.action,
+      });
+    }
+  }
+
+  function applyStandaloneFullRefreshPendingState(rawState, { source = 'unknown' } = {}) {
+    const prevState = { ...standaloneFullRefreshPendingState };
+    standaloneFullRefreshPendingState = normalizeStandaloneFullRefreshPendingState(rawState);
+
+    syncProcessingUi();
+    if (standaloneFullRefreshPendingState.active && standaloneFullRefreshPendingState.sinceEpochMs) {
+      ensureElapsedTimer();
+    } else if (!isProcessingModeActive() && !isCurrentTextProcessingActive()) {
+      stopElapsedTimer();
+    }
+
+    if (prevState.active !== standaloneFullRefreshPendingState.active
+      || (standaloneFullRefreshPendingState.active
+        && prevState.ownerSequence !== standaloneFullRefreshPendingState.ownerSequence)) {
+      log.info('standalone current text recount pending changed:', {
+        active: standaloneFullRefreshPendingState.active,
+        ownerSequence: standaloneFullRefreshPendingState.ownerSequence,
+        source,
+        reason: standaloneFullRefreshPendingState.reason,
       });
     }
   }
@@ -597,6 +748,8 @@
 
   window.TextExtractionStatusUi = {
     applyProcessingModeState,
+    applyCurrentTextProcessingState,
+    applyStandaloneFullRefreshPendingState,
     applyTranslations,
     beginAbortFinalization,
     beginPrepare,
@@ -606,7 +759,10 @@
     getAbortButton,
     getFinalElapsedValueText,
     isAbortFinalizationActive,
+    isCurrentTextAreaPendingActive,
+    isCurrentTextProcessingActive,
     isProcessingModeActive,
+    isStandaloneFullRefreshPendingActive,
     setPendingExecutionContext,
   };
 })();

@@ -55,6 +55,8 @@
         "words": "Amagama: {n}",
         "chars_no_space": "Izinhlamvu (ngaphandle kwezikhala): {n}",
         "chars": "Izinhlamvu: {n}",
+        "value_pending": "kulindile...",
+        "value_unavailable": "akutholakali",
         "precise_mode": "Imodi enembile",
         "precise_tooltip": "Isekelwe ku-Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Izilawuli zesibali-sikhathi"
       },
       "processing": {
+        "current_text_waiting": "Kubuyekezwa umbhalo wamanje...",
+        "current_text_recount_waiting": "Kubalwa kabusha imiphumela yombhalo wamanje...",
+        "current_text_waiting_startup": "Kuzinziswa umbhalo wamanje...",
+        "current_text_waiting_editor": "Kuvumelaniswa izinguquko ze-Text Editor...",
+        "current_text_elapsed": "Isikhathi esidlulile: ",
         "text_extraction_placeholder": "Kucutshungulwa ukukhishwa...",
         "text_extraction_preparing": "Kulungiswa indlela yokukhishwa...",
         "text_extraction_cancellation_pending": "Ukukhansela kuceliwe. Sicela ulinde...",
@@ -157,6 +164,7 @@
         "failure_legend": "Ukuziphatha uma kwehluleka",
         "failure_default": "Vala iyunithi ngemva kokuphumelela kokugcina bese uqhubeka neyunithi elandelayo",
         "failure_continue": "Yeqa into ehlulekile bese uqhubeka kuleyo yunithi",
+        "overwrite_confirm": "Lokhu kuzobhala phezu kombhalo wamanje lapho ukukhishwa kuqala. Ufuna ukuqhubeka?",
         "start_button": "Qala ukukhishwa",
         "cancel_button": "Khansela",
         "close_aria": "Vala ukuhlela ukukhishwa okuyiqoqo"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Ukuze uqale ukukhishwa, vala wonke amawindi esibili bese umisa isibali-sikhathi.",
       "text_extraction_precondition_error": "Kuvele iphutha ngesikhathi kuhlolwa izimfuneko zokukhishwa. Hlola ikhonsoli.",
       "text_extraction_processing_locked": "Ukukhishwa kuyacutshungulwa. Ukusebenzisana kwewindi elikhulu kuvinjiwe kuze kuphele ukucubungula noma ukukhiphe.",
+      "current_text_processing_locked": "Umbhalo wamanje usavuselelwa. Ukusebenzisana kwewindi elikhulu kukhiyiwe kuze kuzinze umbhalo wakamuva.",
+      "current_text_recount_locked": "Imiphumela yombhalo wamanje isabalwa kabusha. Ukusebenzisana kwewindi elikhulu kukhiyiwe kuze kuzinze ukubalwa kabusha kwakamuva.",
       "text_extraction_abort_error": "Kuvele iphutha ngesikhathi kucelwa ukumisa ukukhishwa. Hlola ikhonsoli.",
       "text_extraction_cancellation_requested": "Ukukhansela kuceliwe. Sicela ulinde kuze kuphele ukukhishwa kwamanje.",
       "text_extraction_cancellation_complete": "Ukukhansela kuqediwe.",

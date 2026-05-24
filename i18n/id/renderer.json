@@ -55,6 +55,8 @@
         "words": "Kata: {n}",
         "chars_no_space": "Karakter (tanpa spasi): {n}",
         "chars": "Karakter: {n}",
+        "value_pending": "tertunda...",
+        "value_unavailable": "tidak tersedia",
         "precise_mode": "Mode presisi",
         "precise_tooltip": "Berdasarkan Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Kontrol stopwatch"
       },
       "processing": {
+        "current_text_waiting": "Memperbarui teks saat ini...",
+        "current_text_recount_waiting": "Menghitung ulang hasil teks saat ini...",
+        "current_text_waiting_startup": "Menstabilkan teks saat ini...",
+        "current_text_waiting_editor": "Menyinkronkan perubahan Text Editor...",
+        "current_text_elapsed": "Berlalu: ",
         "text_extraction_placeholder": "Mengekstrak teks...",
         "text_extraction_preparing": "Menyiapkan rute ekstraksi...",
         "text_extraction_cancellation_pending": "Pembatalan diminta. Harap tunggu...",
@@ -157,6 +164,7 @@
         "failure_legend": "Perilaku saat gagal",
         "failure_default": "Tutup unit setelah keberhasilan terakhir dan lanjutkan ke unit berikutnya",
         "failure_continue": "Lewati kegagalan dan lanjutkan di dalam unit yang sama",
+        "overwrite_confirm": "Ini akan menimpa teks saat ini saat ekstraksi dimulai. Apakah Anda ingin melanjutkan?",
         "start_button": "Mulai ekstraksi",
         "cancel_button": "Batal",
         "close_aria": "Tutup perencanaan ekstraksi berkelompok"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Untuk memulai ekstraksi, tutup semua jendela sekunder dan hentikan stopwatch.",
       "text_extraction_precondition_error": "Terjadi kesalahan saat memeriksa prasyarat ekstraksi. Periksa konsol.",
       "text_extraction_processing_locked": "Ekstraksi sedang diproses. Interaksi jendela utama dikunci sampai proses selesai atau Anda membatalkannya.",
+      "current_text_processing_locked": "Teks saat ini masih diperbarui. Interaksi jendela utama dikunci sampai teks terbaru stabil.",
+      "current_text_recount_locked": "Hasil teks saat ini masih dihitung ulang. Interaksi jendela utama dikunci sampai penghitungan ulang terbaru stabil.",
       "text_extraction_abort_error": "Terjadi kesalahan saat meminta pembatalan ekstraksi. Periksa konsol.",
       "text_extraction_cancellation_requested": "Pembatalan diminta. Harap tunggu sampai ekstraksi saat ini selesai.",
       "text_extraction_cancellation_complete": "Pembatalan selesai.",

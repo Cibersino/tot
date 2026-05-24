@@ -237,6 +237,39 @@
       onWpmChanged(wpm, preset);
     }
 
+    function normalizePresetName(name) {
+      return typeof name === 'string' && name.trim()
+        ? name.trim()
+        : null;
+    }
+
+    function buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName) {
+      const nextSelectedPresetName = normalizePresetName(currentPresetName);
+      return {
+        previousWpm,
+        nextWpm: wpm,
+        wpmChanged: wpm !== previousWpm,
+        previousSelectedPresetName: normalizePresetName(previousSelectedPresetName),
+        nextSelectedPresetName,
+        selectedPresetChanged: normalizePresetName(previousSelectedPresetName) !== nextSelectedPresetName,
+      };
+    }
+
+    function clearSelectedPreset() {
+      currentPresetName = null;
+      applyPresetUiSelection(null);
+      notifyPresetSelectionChanged(null);
+    }
+
+    function applyResolvedPresetSelection(selected) {
+      if (selected) {
+        applySelectedPreset(selected);
+        return selected;
+      }
+      clearSelectedPreset();
+      return null;
+    }
+
     function createPresetSelectionSettings(settingsSnapshot) {
       return Object.assign({}, settingsSnapshot || {}, {
         selected_preset_by_language: {}
@@ -273,18 +306,21 @@
       settingsSnapshot,
       language,
       electronAPI,
-      onWpmChanged,
     } = {}) {
+      const previousWpm = wpm;
+      const previousSelectedPresetName = currentPresetName;
       if (!hasRendererPresetsSelectionBridge()) {
         log.warn(
           'Preset selection skipped because RendererPresets.resolvePresetSelection is unavailable.'
         );
-        return resetPresetsState();
+        return {
+          presets: resetPresetsState(),
+          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
+        };
       }
       try {
         const { resolvePresetSelection } = getRendererPresetsBridge();
         await reloadPresetsList({ settingsSnapshot, language, electronAPI });
-        const previousWpm = wpm;
         const selected = await resolvePresetSelection({
           list: allPresetsCache,
           settings: settingsSnapshot,
@@ -294,18 +330,17 @@
           presetDescription,
           electronAPI
         });
-        if (selected) {
-          applySelectedPreset(selected);
-          notifyWpmChanged(previousWpm, onWpmChanged, selected);
-        } else {
-          currentPresetName = null;
-          applyPresetUiSelection(null);
-          notifyPresetSelectionChanged(null);
-        }
-        return allPresetsCache;
+        applyResolvedPresetSelection(selected);
+        return {
+          presets: allPresetsCache,
+          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
+        };
       } catch (err) {
         log.error('RendererPresets.resolvePresetSelection failed during loadPresets:', err);
-        return resetPresetsState();
+        return {
+          presets: resetPresetsState(),
+          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
+        };
       }
     }
 
@@ -314,21 +349,34 @@
       settingsSnapshot,
       language,
       electronAPI,
-      onWpmChanged,
     } = {}) {
+      const previousWpm = wpm;
+      const previousSelectedPresetName = currentPresetName;
       try {
         const updated = await reloadPresetsList({ settingsSnapshot, language, electronAPI });
         if (!hasRendererPresetsSelectionBridge()) {
           log.warn(
             'Preset-created selection sync skipped because RendererPresets.resolvePresetSelection is unavailable.'
           );
-          return updated;
+          return {
+            presets: updated,
+            selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
+          };
         }
         const { resolvePresetSelection } = getRendererPresetsBridge();
-        if (!preset || !preset.name) return updated;
+        if (!preset || !preset.name) {
+          return {
+            presets: updated,
+            selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
+          };
+        }
         const found = updated.find(item => item.name === preset.name);
-        if (!found) return updated;
-        const previousWpm = wpm;
+        if (!found) {
+          return {
+            presets: updated,
+            selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
+          };
+        }
         const neutralSettings = createPresetSelectionSettings(settingsSnapshot);
         const selected = await resolvePresetSelection({
           list: updated,
@@ -339,14 +387,17 @@
           presetDescription,
           electronAPI
         });
-        if (selected) {
-          applySelectedPreset(selected);
-          notifyWpmChanged(previousWpm, onWpmChanged, selected);
-        }
-        return updated;
+        applyResolvedPresetSelection(selected);
+        return {
+          presets: updated,
+          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
+        };
       } catch (err) {
         log.error('RendererPresets.resolvePresetSelection failed during handlePresetCreated:', err);
-        return allPresetsCache;
+        return {
+          presets: allPresetsCache,
+          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
+        };
       }
     }
 

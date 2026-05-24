@@ -29,6 +29,22 @@
     return String(text || '').replace(/\s+/g, ' ').trim();
   }
 
+  function hasMinimumNormalizedWordCount(normalizedText, minimumWordCount) {
+    if (!normalizedText) return false;
+
+    let wordCount = 1;
+    for (let index = 0; index < normalizedText.length; index += 1) {
+      if (normalizedText[index] === ' ') {
+        wordCount += 1;
+        if (wordCount >= minimumWordCount) {
+          return true;
+        }
+      }
+    }
+
+    return wordCount >= minimumWordCount;
+  }
+
   function hasIntlSegmenter(intlObject) {
     const intlSource = intlObject || Intl;
     return !!(intlSource && typeof intlSource.Segmenter === 'function');
@@ -83,6 +99,10 @@
 
   function countWords(text, locale, intlObject) {
     const normalized = normalizeText(text);
+    return countWordsNormalized(normalized, locale, intlObject);
+  }
+
+  function countWordsNormalized(normalized, locale, intlObject) {
     if (!normalized) return 0;
 
     const intlSource = intlObject || Intl;
@@ -119,8 +139,11 @@
 
   function shouldShowUnavailableOverlay(text) {
     const normalized = normalizeText(text);
-    if (!normalized) return false;
-    return normalized.split(/\s+/).length >= CONSTANTS.MIN_WORDS;
+    return shouldShowUnavailableOverlayNormalized(normalized);
+  }
+
+  function shouldShowUnavailableOverlayNormalized(normalized) {
+    return hasMinimumNormalizedWordCount(normalized, CONSTANTS.MIN_WORDS);
   }
 
   function parseWpm(value) {
@@ -162,7 +185,9 @@
     hasIntlSegmenter,
     resolveLocale,
     countWords,
+    countWordsNormalized,
     shouldShowUnavailableOverlay,
+    shouldShowUnavailableOverlayNormalized,
     parseWpm,
     estimateSeconds,
     formatDuration,

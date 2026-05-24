@@ -55,6 +55,8 @@
         "words": "শব্দ: {n}",
         "chars_no_space": "অক্ষর (স্পেস ছাড়া): {n}",
         "chars": "অক্ষর: {n}",
+        "value_pending": "অপেক্ষমাণ...",
+        "value_unavailable": "উপলভ্য নয়",
         "precise_mode": "নির্ভুল মোড",
         "precise_tooltip": "Intl.Segmenter-এর উপর ভিত্তি করে"
       },
@@ -64,6 +66,11 @@
         "controls_label": "স্টপওয়াচ নিয়ন্ত্রণ"
       },
       "processing": {
+        "current_text_waiting": "বর্তমান লেখা আপডেট করা হচ্ছে...",
+        "current_text_recount_waiting": "বর্তমান লেখার ফলাফল পুনরায় গণনা করা হচ্ছে...",
+        "current_text_waiting_startup": "বর্তমান লেখা স্থির করা হচ্ছে...",
+        "current_text_waiting_editor": "Text Editor-এর পরিবর্তন সিঙ্ক করা হচ্ছে...",
+        "current_text_elapsed": "অতিবাহিত: ",
         "text_extraction_placeholder": "লেখা নিষ্কাশন করা হচ্ছে...",
         "text_extraction_preparing": "নিষ্কাশন রুট প্রস্তুত করা হচ্ছে...",
         "text_extraction_cancellation_pending": "বাতিল করার অনুরোধ করা হয়েছে। অপেক্ষা করুন...",
@@ -157,6 +164,7 @@
         "failure_legend": "ব্যর্থ হলে আচরণ",
         "failure_default": "শেষ সফলতার পরে ইউনিট বন্ধ করে পরের ইউনিটে চালিয়ে যান",
         "failure_continue": "ব্যর্থতা এড়িয়ে একই ইউনিটে চালিয়ে যান",
+        "overwrite_confirm": "এক্সট্রাকশন শুরু হলে এটি বর্তমান লেখা প্রতিস্থাপন করবে। আপনি কি চালিয়ে যেতে চান?",
         "start_button": "নিষ্কাশন শুরু করুন",
         "cancel_button": "বাতিল",
         "close_aria": "দলগত নিষ্কাশনের পরিকল্পনা বন্ধ করুন"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "নিষ্কাশন শুরু করতে সব সেকেন্ডারি উইন্ডো বন্ধ করুন এবং স্টপওয়াচ থামান।",
       "text_extraction_precondition_error": "নিষ্কাশনের পূর্বশর্ত পরীক্ষা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
       "text_extraction_processing_locked": "নিষ্কাশন প্রক্রিয়াধীন। প্রক্রিয়া শেষ না হওয়া বা আপনি বন্ধ না করা পর্যন্ত প্রধান উইন্ডোর মিথস্ক্রিয়া লক থাকবে।",
+      "current_text_processing_locked": "বর্তমান লেখা এখনও আপডেট হচ্ছে। সর্বশেষ লেখা স্থির না হওয়া পর্যন্ত মূল উইন্ডোর ইন্টারঅ্যাকশন লক থাকবে।",
+      "current_text_recount_locked": "বর্তমান লেখার ফলাফল এখনও পুনরায় গণনা করা হচ্ছে। সর্বশেষ গণনা স্থির না হওয়া পর্যন্ত মূল উইন্ডোর ইন্টারঅ্যাকশন লক থাকবে।",
       "text_extraction_abort_error": "নিষ্কাশন বন্ধ করার অনুরোধ করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
       "text_extraction_cancellation_requested": "বাতিল করার অনুরোধ করা হয়েছে। বর্তমান এক্সট্রাকশন শেষ হওয়া পর্যন্ত অপেক্ষা করুন।",
       "text_extraction_cancellation_complete": "বাতিল সম্পন্ন হয়েছে।",

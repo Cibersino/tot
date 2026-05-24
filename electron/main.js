@@ -59,6 +59,7 @@ const spellcheck = require('./spellcheck');
 const readingTestSession = require('./reading_test_session');
 const readingTestPoolImport = require('./reading_test_pool_import');
 const readingTestPool = require('./reading_test_pool');
+const currentTextProcessingStateIpc = require('./current_text_processing_state_ipc');
 const textExtractionFilePickerIpc = require('./text_extraction_platform/text_extraction_file_picker_ipc');
 const textExtractionPreconditionsIpc = require('./text_extraction_platform/text_extraction_preconditions_ipc');
 const textExtractionProcessingModeIpc = require('./text_extraction_platform/text_extraction_processing_mode_ipc');
@@ -133,6 +134,23 @@ const textExtractionProcessingModeController = textExtractionProcessingModeIpc.c
   },
 });
 
+const currentTextProcessingStateController = currentTextProcessingStateIpc.createController({
+  onStateChanged: (state) => {
+    try {
+      const targetWin = resolveMainWindow();
+      if (hasLiveWebContents(targetWin)) {
+        targetWin.webContents.send('current-text-processing-state-changed', state);
+      } else {
+        log.warn(
+          'current-text-processing-state-changed broadcast skipped (ignored): main window unavailable.'
+        );
+      }
+    } catch (err) {
+      log.warn('Failed to broadcast current-text processing state (ignored):', err);
+    }
+  },
+});
+
 // =============================================================================
 // Constants / config (paths, defaults, limits)
 // =============================================================================
@@ -172,12 +190,14 @@ function isMainInteractive() {
 function isMainMenuInteractive() {
   return isMainInteractive()
     && !textExtractionProcessingModeController.isActive()
+    && !currentTextProcessingStateController.isActive()
     && !(readingTestSessionController && readingTestSessionController.isInteractionLocked());
 }
 
 function getMainInteractionBlockReason() {
   if (!isMainInteractive()) return 'pre_ready';
   if (textExtractionProcessingModeController.isActive()) return 'processing_mode';
+  if (currentTextProcessingStateController.isActive()) return 'current_text_pending';
   if (readingTestSessionController && readingTestSessionController.isInteractionLocked()) {
     return readingTestSessionController.getInteractionBlockReason() || 'reading_test_session';
   }
@@ -204,6 +224,15 @@ function guardMainUserAction(actionId, message, { allowDuringProcessing = false,
     log.warnOnce(
       `main.processingLock.${actionId}`,
       'Main action ignored (processing-mode lock active):',
+      actionId
+    );
+    return false;
+  }
+
+  if (!allowDuringProcessing && currentTextProcessingStateController.isActive()) {
+    log.warnOnce(
+      `main.currentTextLock.${actionId}`,
+      'Main action ignored (current-text pending lock active):',
       actionId
     );
     return false;
@@ -1742,6 +1771,7 @@ app.whenReady().then(() => {
     settingsFile: SETTINGS_FILE,
     app,
     maxTextChars: MAX_TEXT_CHARS,
+    currentTextProcessingController: currentTextProcessingStateController,
   });
 
   // Load settings (normalized and persisted) via settingsState.
@@ -1759,6 +1789,13 @@ app.whenReady().then(() => {
     mainWin,
     editorWin,
   }));
+
+  currentTextProcessingStateIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    controller: currentTextProcessingStateController,
+  });
 
   editorState.registerIpc(ipcMain, {
     getEditorWindow: () => editorWin,

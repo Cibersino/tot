@@ -55,6 +55,8 @@
         "words": "詞數：{n}",
         "chars_no_space": "字元數（不含空格）：{n}",
         "chars": "字元數：{n}",
+        "value_pending": "待處理...",
+        "value_unavailable": "無法使用",
         "precise_mode": "精確模式",
         "precise_tooltip": "基於 Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "碼錶控制項"
       },
       "processing": {
+        "current_text_waiting": "正在更新目前文字...",
+        "current_text_recount_waiting": "正在重新計算目前文字結果...",
+        "current_text_waiting_startup": "正在穩定目前文字...",
+        "current_text_waiting_editor": "正在同步 Text Editor 變更...",
+        "current_text_elapsed": "已用時間：",
         "text_extraction_placeholder": "正在處理擷取...",
         "text_extraction_preparing": "正在準備擷取路徑...",
         "text_extraction_cancellation_pending": "已要求取消。請稍候...",
@@ -157,6 +164,7 @@
         "failure_legend": "失敗時的行為",
         "failure_default": "在最後一次成功後關閉該單元，並繼續下一個單元",
         "failure_continue": "略過失敗項，並繼續處理同一單元",
+        "overwrite_confirm": "擷取開始時將覆寫目前文字。是否繼續？",
         "start_button": "開始擷取",
         "cancel_button": "取消",
         "close_aria": "關閉批次擷取規劃"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "要啟動擷取，請關閉所有次要視窗並停止碼錶。",
       "text_extraction_precondition_error": "檢查擷取前置條件時發生錯誤。請檢查主控台。",
       "text_extraction_processing_locked": "擷取正在處理。主視窗互動會被鎖定，直到處理結束或你中止動作。",
+      "current_text_processing_locked": "目前文字仍在更新。在最新文字穩定之前，主視窗互動會被鎖定。",
+      "current_text_recount_locked": "目前文字結果仍在重新計算。在最新重新計數穩定之前，主視窗互動會被鎖定。",
       "text_extraction_abort_error": "要求中止擷取時發生錯誤。請檢查主控台。",
       "text_extraction_cancellation_requested": "已要求取消。請等待目前的擷取完成。",
       "text_extraction_cancellation_complete": "取消已完成。",

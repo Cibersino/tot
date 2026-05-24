@@ -55,6 +55,8 @@
         "words": "Paraules: {n}",
         "chars_no_space": "Caràcters (sense espais): {n}",
         "chars": "Caràcters: {n}",
+        "value_pending": "pendent...",
+        "value_unavailable": "no disponible",
         "precise_mode": "Mode precís",
         "precise_tooltip": "Basat en Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Controls del cronòmetre"
       },
       "processing": {
+        "current_text_waiting": "S’està actualitzant el text actual...",
+        "current_text_recount_waiting": "S’estan recalculant els resultats del text actual...",
+        "current_text_waiting_startup": "S’està estabilitzant el text actual...",
+        "current_text_waiting_editor": "S’estan sincronitzant els canvis de l’Editor de Text...",
+        "current_text_elapsed": "Transcorregut: ",
         "text_extraction_placeholder": "Processant l’extracció...",
         "text_extraction_preparing": "Preparant la ruta d’extracció...",
         "text_extraction_cancellation_pending": "Cancel·lació sol·licitada. Espera...",
@@ -157,6 +164,7 @@
         "failure_legend": "Comportament en cas de fallada",
         "failure_default": "Tancar la unitat després de l’últim èxit i continuar amb la unitat següent",
         "failure_continue": "Ometre l’element fallit i continuar dins la mateixa unitat",
+        "overwrite_confirm": "Això sobreescriurà el text actual quan comenci l’extracció. Vols continuar?",
         "start_button": "Iniciar extracció",
         "cancel_button": "Cancel·lar",
         "close_aria": "Tancar la planificació de l’extracció per lots"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "Per iniciar extracció, tanca totes les finestres secundàries i atura el cronòmetre.",
       "text_extraction_precondition_error": "S’ha produït un error en revisar les precondicions d’extracció. Revisa la consola.",
       "text_extraction_processing_locked": "Extracció està processant. Les interaccions de la finestra principal estan bloquejades fins que acabi el processament o l’avortis.",
+      "current_text_processing_locked": "El text actual encara s’està actualitzant. Les interaccions de la finestra principal queden bloquejades fins que s’estabilitzi el text més recent.",
+      "current_text_recount_locked": "Els resultats del text actual encara s’estan recalculant. Les interaccions de la finestra principal queden bloquejades fins que s’estabilitzi l’últim recompte.",
       "text_extraction_abort_error": "S’ha produït un error en sol·licitar l’avortament d’extracció. Revisa la consola.",
       "text_extraction_cancellation_requested": "Cancel·lació sol·licitada. Espera que acabi l’extracció actual.",
       "text_extraction_cancellation_complete": "Cancel·lació completada.",

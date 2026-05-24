@@ -55,6 +55,8 @@
         "words": "Ord: {n}",
         "chars_no_space": "Tecken (utan blanksteg): {n}",
         "chars": "Tecken: {n}",
+        "value_pending": "väntar...",
+        "value_unavailable": "inte tillgängligt",
         "precise_mode": "Precist läge",
         "precise_tooltip": "Baserat på Intl.Segmenter"
       },
@@ -64,6 +66,11 @@
         "controls_label": "Stoppurskontroller"
       },
       "processing": {
+        "current_text_waiting": "Uppdaterar aktuell text...",
+        "current_text_recount_waiting": "Beräknar om resultaten för aktuell text...",
+        "current_text_waiting_startup": "Stabiliserar aktuell text...",
+        "current_text_waiting_editor": "Synkroniserar ändringar från Text Editor...",
+        "current_text_elapsed": "Förflutet: ",
         "text_extraction_placeholder": "Extraherar text...",
         "text_extraction_preparing": "Förbereder extraheringsväg...",
         "text_extraction_cancellation_pending": "Avbrytning begärd. Vänta...",
@@ -157,6 +164,7 @@
         "failure_legend": "Beteende vid fel",
         "failure_default": "Stäng enheten efter den sista lyckade åtgärden och fortsätt med nästa enhet",
         "failure_continue": "Hoppa över felet och fortsätt inom samma enhet",
+        "overwrite_confirm": "Detta skriver över den aktuella texten när extraheringen startar. Vill du fortsätta?",
         "start_button": "Starta extrahering",
         "cancel_button": "Avbryt",
         "close_aria": "Stäng planering för satsvis extrahering"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "För att starta extrahering, stäng alla sekundära fönster och stoppa stoppuret.",
       "text_extraction_precondition_error": "Ett fel uppstod vid kontroll av villkor för extrahering. Kontrollera konsolen.",
       "text_extraction_processing_locked": "Extrahering bearbetas. Interaktioner i huvudfönstret är låsta tills bearbetningen är klar eller du avbryter.",
+      "current_text_processing_locked": "Den aktuella texten uppdateras fortfarande. Interaktioner i huvudfönstret är låsta tills den senaste texten har stabiliserats.",
+      "current_text_recount_locked": "Resultaten för den aktuella texten beräknas fortfarande om. Interaktioner i huvudfönstret är låsta tills den senaste omberäkningen har stabiliserats.",
       "text_extraction_abort_error": "Ett fel uppstod vid begäran om att avbryta extrahering. Kontrollera konsolen.",
       "text_extraction_cancellation_requested": "Avbrytning begärd. Vänta tills den aktuella extraheringen är klar.",
       "text_extraction_cancellation_complete": "Avbrytning slutförd.",

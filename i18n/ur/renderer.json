@@ -55,6 +55,8 @@
         "words": "الفاظ: {n}",
         "chars_no_space": "حروف (بغیر اسپیس): {n}",
         "chars": "حروف: {n}",
+        "value_pending": "زیر التوا...",
+        "value_unavailable": "دستیاب نہیں",
         "precise_mode": "درست موڈ",
         "precise_tooltip": "Intl.Segmenter پر مبنی"
       },
@@ -64,6 +66,11 @@
         "controls_label": "اسٹاپ واچ کنٹرولز"
       },
       "processing": {
+        "current_text_waiting": "موجودہ متن اپ ڈیٹ ہو رہا ہے...",
+        "current_text_recount_waiting": "موجودہ متن کے نتائج دوبارہ شمار ہو رہے ہیں...",
+        "current_text_waiting_startup": "موجودہ متن مستحکم کیا جا رہا ہے...",
+        "current_text_waiting_editor": "Text Editor کی تبدیلیاں ہم وقت کی جا رہی ہیں...",
+        "current_text_elapsed": "گزرا وقت: ",
         "text_extraction_placeholder": "متن نکالا جا رہا ہے...",
         "text_extraction_preparing": "نکالنے کا راستہ تیار کیا جا رہا ہے...",
         "text_extraction_cancellation_pending": "منسوخی کی درخواست ہو گئی۔ براہِ کرم انتظار کریں...",
@@ -157,6 +164,7 @@
         "failure_legend": "ناکامی پر برتاؤ",
         "failure_default": "آخری کامیابی کے بعد یونٹ بند کریں اور اگلے یونٹ پر جاری رکھیں",
         "failure_continue": "ناکامی چھوڑ کر اسی یونٹ میں جاری رکھیں",
+        "overwrite_confirm": "ایکسٹریکشن شروع ہونے پر یہ موجودہ متن کو بدل دے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟",
         "start_button": "اخذ شروع کریں",
         "cancel_button": "منسوخ",
         "close_aria": "گروہی اخذ کی منصوبہ بندی بند کریں"
@@ -488,6 +496,8 @@
       "text_extraction_precondition_blocked": "نکالنے کا عمل شروع کرنے کے لیے تمام ثانوی ونڈوز بند کریں اور اسٹاپ واچ روکیں۔",
       "text_extraction_precondition_error": "نکالنے کی پیشگی شرائط چیک کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
       "text_extraction_processing_locked": "نکالنے کا عمل جاری ہے۔ عمل ختم ہونے یا آپ کے روکنے تک مرکزی ونڈو کے تعاملات لاک رہیں گے۔",
+      "current_text_processing_locked": "موجودہ متن ابھی اپ ڈیٹ ہو رہا ہے۔ تازہ ترین متن مستحکم ہونے تک مرکزی ونڈو کی تعاملات لاک رہیں گی۔",
+      "current_text_recount_locked": "موجودہ متن کے نتائج ابھی دوبارہ شمار ہو رہے ہیں۔ تازہ ترین دوبارہ گنتی مستحکم ہونے تک مرکزی ونڈو کی تعاملات لاک رہیں گی۔",
       "text_extraction_abort_error": "نکالنے کا عمل روکنے کی درخواست کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
       "text_extraction_cancellation_requested": "منسوخی کی درخواست ہو گئی۔ براہِ کرم موجودہ استخراج ختم ہونے تک انتظار کریں۔",
       "text_extraction_cancellation_complete": "منسوخی مکمل ہو گئی۔",

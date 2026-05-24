@@ -13,6 +13,7 @@ Para traducir o revisar un idioma:
 3. Usa el glosario para mantener estables los conceptos de app. El glosario define alcance; las guías por idioma deciden la formulación local cuando haya más de una solución legítima.
 4. Preserva los elementos marcados como protegidos y los placeholders. Ajusta la gramática alrededor de ellos sin alterar su forma técnica.
 5. Documenta decisiones idiomáticas, dudas locales o excepciones en la guía específica del idioma, no en esta guía global.
+6. Cuando el contexto visual sea relevante, consulta las capturas de ventanas en `docs/screenshots/windows/` como referencia auxiliar.
 
 ## 2. Jerarquía de decisión
 
@@ -26,7 +27,61 @@ Cuando haya tensión entre key, `es`, `en`, traducción literal o preferencia es
 
 No traduzcas solo desde el path de la key. No normalices una aparente inconsistencia sin verificar si responde a una superficie distinta, a una restricción de layout o a una decisión ya documentada.
 
-## 3. Notas por key
+## 3. Criterios editoriales transversales
+
+Estos criterios aplican a todos los idiomas. Las guías específicas por idioma deben desarrollar soluciones locales, no redefinir estas reglas generales.
+
+### 3.1 Idiomas padre y variantes
+
+Un idioma padre no es una base vaciada, artificialmente neutral o meramente funcional para que sus variantes tengan identidad. Cada idioma padre tiene una voz editorial completa y debe sostener por sí mismo una experiencia de uso estable.
+
+Las variantes funcionan como capas de especialización mediante fallback directo. Sobrescriben keys cuando existe una diferencia lingüística, cultural, terminológica, tonal o experimental justificada. Su existencia no obliga al idioma padre a borrar marcas legítimas de uso, registro o riqueza expresiva.
+
+### 3.2 Comprensibilidad amplia sin neutralización rígida
+
+La localización debe ser comprensible para usuarios nativos o competentes del idioma elegido. Esto no equivale a perseguir neutralidad rígida, a evitar toda marca local ni a reducir términos técnicos a la fórmula más plana posible.
+
+Puede usarse una forma precisa, natural y suficientemente transmisible para la comunidad amplia del idioma aunque no sea la opción más neutra o escolarizada. Una forma que dependa de una variante estrecha, de un registro demasiado local o de una marca que distraiga del propósito de la UI debe reservarse para una guía local, una variante o una decisión explícita.
+
+### 3.3 Baseline semántico y traducibilidad
+
+`es` y `en` funcionan como baseline semántico conjunto, pero ningún idioma debe empobrecerse, deformarse o volverse artificial para facilitar la traducción a otros idiomas. La traducibilidad se resuelve con glosario, notas por key, guías específicas, discusión editorial e inventario vivo.
+
+Si una formulación local es semánticamente más precisa que una traducción literal del baseline, puede preferirse siempre que conserve el propósito de la key y no rompa tokens protegidos, placeholders, layout o contrato runtime.
+
+### 3.4 Préstamos, calcos y términos externos
+
+Los préstamos de otros idiomas, calcos y términos externos no deben aceptarse ni rechazarse por principio. Cada idioma debe decidir si conserva, adapta, traduce o evita esas formas según naturalidad local, claridad, uso técnico, estabilidad terminológica y restricciones de interfaz.
+
+Cuando haya más de una solución legítima, la guía específica del idioma debe registrar el criterio adoptado. La decisión no debe reducirse a purismo, moda técnica ni traducción mecánica.
+
+### 3.5 Superficie, layout y densidad textual
+
+La traducción debe considerar la superficie real de la key: botón, menú, tooltip, label compacto, estado de progreso, alerta, modal explicativo, informe, guía o documento. Esa superficie define cuánto espacio hay para elaborar, qué tan directa debe ser la acción y cuánto peso puede soportar el texto.
+
+En superficies compactas o layout sensible, priorizar claridad operativa, brevedad y estabilidad visual sin forzar literalidad. En textos explicativos, ayudas, disclosures, reportes o documentos, puede admitirse mayor densidad conceptual, precisión terminológica y riqueza expresiva.
+
+### 3.6 Valores dinámicos, género y número
+
+Cuando una key combine texto localizado con placeholders o valores dinámicos, la formulación debe ser robusta frente a género, número, categoría gramatical, dirección de texto y tipo de valor desconocidos.
+
+Preferir estructuras que no dependan de concordancias frágiles con la variable. Evitar fórmulas como `el/la`, `sr(a)`, `archivo(s)` o soluciones equivalentes, salvo que la guía específica del idioma documente una razón fuerte. Son preferibles patrones nominales, impersonales, segmentados o de label + valor cuando reduzcan ambigüedad.
+
+### 3.7 Convenciones formales de escritura
+
+Cada idioma debe definir en su guía específica sus convenciones de escritura: puntuación, mayúsculas, comillas, elipsis, espacios, abreviaturas, tratamiento de siglas, separación de unidades y estilo de títulos o botones.
+
+La guía global no debe imponer esas formas, pero sí exigir consistencia interna. Una diferencia formal solo debe aceptarse cuando responda al idioma, la superficie o una restricción real de interfaz.
+
+### 3.8 Terminología estable y dudas abiertas
+
+Un mismo concepto funcional debe mantener una forma estable dentro de cada idioma, salvo que haya una diferencia real de superficie, acción o estado. La variación estilística no debe introducir ambigüedad entre conceptos de app.
+
+Cuando existan varias soluciones legítimas, la guía específica del idioma debe registrar la opción preferida, alternativas descartadas, excepciones aceptadas o dudas abiertas. La revisión key por key debe permitir discusión lingüística razonada, no aplicar reglas mecánicas sin atender la superficie concreta.
+
+La consistencia interna de un idioma no exige homogeneizar soluciones entre idiomas distintos. No debe normalizarse puntuación, elipsis, espaciado o casing de forma transversal si esa normalización borra una convención local o puede afectar renderizado/script.
+
+## 4. Notas por key
 
 Las notas por key aparecen como comentarios JSONC documentales junto al baseline:
 
@@ -52,7 +107,7 @@ Marca formas que deben conservarse o tratarse con especial cuidado: nombres prop
 `[NO_CONFUNDIR]`  
 Advierte una confusión traductiva concreta y razonable entre conceptos, superficies, rutas o acciones similares de la app. No debe usarse para repetir el glosario ni para advertencias remotas que el contexto ya descarta.
 
-## 4. Glosario de conceptos de la app
+## 5. Glosario de conceptos de la app
 
 Este glosario fija el alcance de los conceptos marcados con `[CONCEPTO_APP]`. Las definiciones describen el uso canónico dentro de la app; no reemplazan el baseline `es`/`en` ni obligan a traducir cada término de forma literal.
 
@@ -106,7 +161,7 @@ Desambiguaciones puntuales del glosario:
 - `unidad de extracción por lotes` e `ítem de extracción por lotes`: la unidad agrupa; el ítem es la entrada procesada dentro de esa unidad.
 - `biblioteca de lecturas`, `fila de lectura` y `tarea`: la biblioteca guarda filas reutilizables; la tarea agrupa filas; una fila no es una tarea completa.
 
-## 5. Contenido protegido, placeholders y valores dinámicos
+## 6. Contenido protegido, placeholders y valores dinámicos
 
 Los elementos marcados como `[PROTEGIDO]` no se traducen ni se normalizan libremente. La frase alrededor puede adaptarse al idioma, pero la forma protegida debe conservarse salvo que una guía específica del idioma documente una excepción aprobada.
 
@@ -118,7 +173,7 @@ Reglas prácticas:
 - No traducir extensiones, rutas, nombres de archivo, URLs ni tokens tipo código.
 - Las referencias internas a UI deben coincidir con el texto localizado real que verá el usuario en ese idioma.
 
-## 6. RTL, scripts y valores técnicos
+## 7. RTL, scripts y valores técnicos
 
 La traducción no debe esconder problemas de display. Si una cadena con tokens latinos, números, rangos, unidades, rutas o nombres de archivo se ve ambigua en RTL u otro script, primero hay que distinguir si el problema es de traducción o de composición/renderizado.
 
@@ -132,7 +187,7 @@ Criterios operativos:
 
 El preflight RTL del issue 286 dejó cerrados los follow-ups renderer-owned detectados antes de esta guía: descripciones de preset, disclosure de activación de Google OCR y valores de tamaño/rango en PDF pesado. La guía debe conservar esas decisiones como criterio, no reabrirlas como traducción de strings.
 
-## 7. Relación con guías específicas por idioma
+## 8. Relación con guías específicas por idioma
 
 Esta guía global define el canon semántico y operativo. Las guías específicas por idioma (`i18n/<lang>/LANGUAGE_GUIDE_<lang>.md`) documentan cómo se escribe ese canon en cada idioma.
 
@@ -155,7 +210,7 @@ Debe ir a la guía de idioma:
 
 `es` y `en` funcionan como baseline semántico conjunto. Sus guías específicas deben registrar decisiones locales, pero no degradar esta guía global a una lista de preferencias de español o inglés.
 
-## 8. Relación con `i18n_language_policy.md`
+## 9. Relación con `i18n_language_policy.md`
 
 Esta guía gobierna traducción, terminología, copy y revisión lingüística. `tools_local/coding_rules/i18n_language_policy.md` gobierna política de desarrollo/runtime: propietarios de bundles, fallback, separación main/renderer y uso correcto de helpers i18n.
 
@@ -167,7 +222,7 @@ Al revisar traducciones, tener presentes estas fronteras:
 - La guía de traducción no renombra keys ni cambia arquitectura i18n.
 - Si un problema requiere modificar composición de valores técnicos, dirección de un nodo o owner de runtime, debe tratarse como cambio de código/política i18n, no como simple copy polish.
 
-## 9. Validación y estados de revisión
+## 10. Validación y estados de revisión
 
 La validación automática protege invariantes objetivos; no certifica calidad lingüística completa.
 
@@ -199,7 +254,7 @@ Estados de revisión recomendados:
 - `open question`: conserva una duda concreta que no debe resolverse por inferencia.
 - `blocked by UI/display issue`: la traducción no puede cerrarse sin corregir o clasificar un problema de render/layout.
 
-## 10. Baseline documental
+## 11. Baseline documental
 
 - `i18n/es/main.json`
 - `i18n/en/main.json`
@@ -723,6 +778,18 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Label de cantidad de caracteres del texto actual
           // [CONCEPTO_APP] texto actual
         },
+        "value_pending": {
+          "es": "pendiente...",
+          "en": "pending..."
+          // [PROPÓSITO] Valor temporal mostrado mientras los resultados de conteo del texto actual aún no están listos.
+          // [CONCEPTO_APP] texto actual
+        },
+        "value_unavailable": {
+          "es": "no disponible",
+          "en": "unavailable"
+          // [PROPÓSITO] Valor de resguardo cuando un resultado de conteo del texto actual no puede mostrarse.
+          // [CONCEPTO_APP] texto actual
+        },
         "precise_mode": {
           "es": "Modo preciso",
           "en": "Precise mode"
@@ -754,6 +821,38 @@ Estados de revisión recomendados:
         }
       },
       "processing": {
+        "current_text_waiting": {
+          "es": "Actualizando el texto actual...",
+          "en": "Updating current text..."
+          // [PROPÓSITO] Estado de procesamiento mientras la app aplica o actualiza el texto actual, antes de que la UI vuelva a estar estable.
+          // [CONCEPTO_APP] texto actual
+          // [NO_CONFUNDIR] No es estado de extracción de texto desde archivo; pertenece al asentamiento del texto actual.
+        },
+        "current_text_recount_waiting": {
+          "es": "Recalculando los resultados del texto actual...",
+          "en": "Recalculating current-text results..."
+          // [PROPÓSITO] Estado de procesamiento mientras se recalculan conteos/resultados del texto actual.
+          // [CONCEPTO_APP] texto actual
+          // [NO_CONFUNDIR] No indica extracción de texto ni OCR; indica reconteo del texto actual.
+        },
+        "current_text_waiting_startup": {
+          "es": "Asentando el texto actual...",
+          "en": "Settling current text..."
+          // [PROPÓSITO] Estado de arranque mientras la app estabiliza el texto actual inicial y sus resultados.
+          // [CONCEPTO_APP] texto actual
+        },
+        "current_text_waiting_editor": {
+          "es": "Sincronizando cambios del Editor de Texto...",
+          "en": "Syncing Text Editor changes..."
+          // [PROPÓSITO] Estado de sincronización cuando cambios del Editor de Texto se están aplicando al texto actual.
+          // [CONCEPTO_APP] Editor de Texto; texto actual
+        },
+        "current_text_elapsed": {
+          "es": "Transcurrido: ",
+          "en": "Elapsed: "
+          // [PROPÓSITO] Señala el tiempo transcurrido en vivo durante actualización, sincronización o reconteo del texto actual.
+          // [CONCEPTO_APP] texto actual
+        },
         "text_extraction_placeholder": {
           "es": "Procesando extracción...",
           "en": "Extracting text..."
@@ -1208,6 +1307,13 @@ Estados de revisión recomendados:
           "en": "Omit the failed item and continue inside the same unit"
           // [PROPÓSITO] Política de fallo de la extracción de texto que omite el ítem con extracción fallida y continúa dentro de la misma unidad.
           // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; unidad de extracción por lotes
+        },
+        "overwrite_confirm": {
+          "es": "Esto sobrescribirá el texto actual cuando comience la extracción. ¿Deseas continuar?",
+          "en": "This will overwrite the current text when extraction starts. Do you want to continue?"
+          // [PROPÓSITO] Confirmación previa al inicio de una extracción por lotes que aplicará el resultado reemplazando el texto actual.
+          // [CONCEPTO_APP] extracción por lotes; texto actual; reemplazar texto actual
+          // [NO_CONFUNDIR] No se refiere a sobrescribir archivos ni snapshots; se refiere al texto actual de la ventana principal.
         },
         "start_button": {
           "es": "Iniciar extracción",
@@ -2482,7 +2588,7 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Informa que la operación sobre el texto actual no puede completarse porque, al aplicar el texto, el resultado final superaría el límite del texto actual admitido por la app.
         // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
       },
-      "applytruncated_": {
+      "apply_truncated": {
         "es": "El texto fue truncado para ajustarse al límite de la aplicación.",
         "en": "The text was truncated to fit the application limit."
         // [PROPÓSITO] Informa que la operación sobre el texto actual se completó, pero el texto final quedó recortado para ajustarse al límite del texto actual admitido por la app.
@@ -2611,6 +2717,20 @@ Estados de revisión recomendados:
         "en": "There is an extraction in progress. Main-window interactions are locked until the extraction finishes or is cancelled."
         // [PROPÓSITO] Alerta cuando una extracción en curso bloquea interacciones de la ventana principal.
         // [CONCEPTO_APP] extracción de texto
+      },
+      "current_text_processing_locked": {
+        "es": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
+        "en": "Current text is still updating. Main-window interactions are locked until the latest text settles."
+        // [PROPÓSITO] Alerta cuando una actualización del texto actual bloquea temporalmente interacciones de la ventana principal.
+        // [CONCEPTO_APP] texto actual
+        // [NO_CONFUNDIR] No indica una extracción de texto en curso; indica que el texto actual aún no se estabiliza.
+      },
+      "current_text_recount_locked": {
+        "es": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
+        "en": "Current-text results are still being recalculated. Main-window interactions are locked until the latest recount settles."
+        // [PROPÓSITO] Alerta cuando el reconteo de resultados del texto actual bloquea temporalmente interacciones de la ventana principal.
+        // [CONCEPTO_APP] texto actual
+        // [NO_CONFUNDIR] No indica extracción, OCR ni aplicación de texto nuevo; indica reconteo pendiente.
       },
       "text_extraction_abort_error": {
         "es": "Ocurrió un error al solicitar la cancelación.",

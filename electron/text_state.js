@@ -86,6 +86,7 @@ let saveJson = null;
 let currentTextFile = null;
 let settingsFile = null;
 let appRef = null;
+let currentTextProcessingController = null;
 
 // Window resolver for best-effort UI notifications.
 let getWindows = () => ({ mainWin: null, editorWin: null });
@@ -134,7 +135,25 @@ function persistCurrentTextOnQuit() {
   }
 }
 
+function beginCurrentTextProcessing(rawMeta) {
+  if (!currentTextProcessingController || typeof currentTextProcessingController.begin !== 'function') {
+    log.warnOnce(
+      'text_state.current_text_processing.unavailable',
+      'Current-text processing controller unavailable; pending lifecycle begin skipped.'
+    );
+    return null;
+  }
+  try {
+    return currentTextProcessingController.begin(rawMeta);
+  } catch (err) {
+    log.error('Current-text processing begin failed:', err);
+    return null;
+  }
+}
+
 function applyCurrentText(rawText, rawMeta) {
+  const incomingMeta = sanitizeMeta(rawMeta);
+  const processingState = beginCurrentTextProcessing(incomingMeta);
   let text = normalizeLineEndings(rawText);
   let truncated = false;
 
@@ -152,17 +171,28 @@ function applyCurrentText(rawText, rawMeta) {
   const { mainWin, editorWin } = getWindows() || {};
 
   // Notify main window (for renderer to update preview/results)
-  safeSend(mainWin, 'current-text-updated', currentText);
+  safeSend(mainWin, 'current-text-updated', {
+    text: currentText,
+    requestId: processingState && Number.isInteger(processingState.requestId)
+      ? processingState.requestId
+      : null,
+    meta: incomingMeta || { source: 'main', action: 'set' },
+  });
 
   // Notify Text Editor with object { text, meta }
-  const incomingMeta = sanitizeMeta(rawMeta);
   safeSend(editorWin, 'editor-text-updated', {
     text: currentText,
+    requestId: processingState && Number.isInteger(processingState.requestId)
+      ? processingState.requestId
+      : null,
     meta: incomingMeta || { source: 'main', action: 'set' },
   });
 
   return {
     ok: true,
+    requestId: processingState && Number.isInteger(processingState.requestId)
+      ? processingState.requestId
+      : null,
     truncated,
     length: currentText.length,
     text: currentText,
@@ -186,6 +216,7 @@ function init(options) {
   currentTextFile = opts.currentTextFile;
   settingsFile = opts.settingsFile;
   appRef = opts.app || null;
+  currentTextProcessingController = opts.currentTextProcessingController || null;
 
   if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
     maxTextChars = opts.maxTextChars;
@@ -240,6 +271,11 @@ function init(options) {
     log.error('Error loading current text file:', err);
     currentText = '';
   }
+
+  beginCurrentTextProcessing({
+    source: 'main',
+    action: 'initial_load',
+  });
 
   // Persistence in before-quit
   if (appRef && typeof appRef.on === 'function') {
