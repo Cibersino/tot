@@ -29,6 +29,7 @@ const api = {
   getAppConfig: () => ipcRenderer.invoke('get-app-config'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   getWindowState: () => ipcRenderer.invoke('get-editor-window-state'),
+  reportBasePresentationState: (payload) => ipcRenderer.send('editor-report-base-presentation-state', payload),
   setSpellcheckEnabled: (enabled) => ipcRenderer.invoke('set-spellcheck-enabled', enabled),
   setEditorFontSizePx: (fontSizePx) => ipcRenderer.invoke('set-editor-font-size-px', fontSizePx),
   setMaximizedTextWidthPx: (textWidthPx) => ipcRenderer.invoke('set-editor-maximized-text-width-px', textWidthPx),

@@ -631,9 +631,12 @@ function createMainWindow() {
 function createEditorWindow(options = {}) {
   spellcheckController.apply();
   const deferShow = !!(options && options.deferShow);
+  const waitForBasePresentationReady = !!(options && options.waitForBasePresentationReady);
 
   // Load last saved window state (size/position/maximized) from editor_state.js.
-  const state = editorState.loadInitialState(loadJson);
+  const state = options && options.startupState
+    ? options.startupState
+    : editorState.loadInitialState(loadJson);
 
   // Determine whether we have a valid saved "reduced" (non-maximized) state.
   const hasReduced =
@@ -653,7 +656,7 @@ function createEditorWindow(options = {}) {
     resizable: true,
     minimizable: true,
     maximizable: true,
-    show: false, // Show only after ready-to-show to avoid flicker.
+    show: false, // The lifecycle owner decides when a fresh editor is safe to present.
     webPreferences: {
       preload: path.join(__dirname, 'editor_preload.js'),
       contextIsolation: true,
@@ -667,7 +670,19 @@ function createEditorWindow(options = {}) {
   editorWin.setMenuBarVisibility(false);
   editorWin.__totSavedMaximized = !!(state && state.maximized === true);
 
-  editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
+  const startupQuery = {};
+  if (options && (options.initialPresentationMode === 'maximized' || options.initialPresentationMode === 'reduced')) {
+    startupQuery.initialPresentationMode = options.initialPresentationMode;
+  }
+  if (options && Number.isInteger(options.firstShowGeneration) && options.firstShowGeneration > 0) {
+    startupQuery.firstShowGeneration = String(options.firstShowGeneration);
+  }
+
+  const loadFileOptions = Object.keys(startupQuery).length > 0
+    ? { query: startupQuery }
+    : undefined;
+
+  editorWin.loadFile(path.join(__dirname, '../public/editor.html'), loadFileOptions);
 
   try {
     editorFindMain.attachEditorWindow(editorWin, editorTextSizeController.getShortcutActions());
@@ -675,13 +690,13 @@ function createEditorWindow(options = {}) {
     log.error('Error attaching Text Editor find listeners:', err);
   }
 
-  // When ready, apply maximized state (if needed), show it, and clear the main-window launch loader.
+  // Keep the editor hidden here when startup presentation must be finalized later.
   editorWin.once('ready-to-show', () => {
     try {
       editorWindowLifecycleController.handleEditorWindowReady({
         editorWin,
-        mainWin,
         deferShow,
+        waitForBasePresentationReady,
         logContext: 'createEditorWindow',
       });
     } catch (err) {
@@ -694,7 +709,12 @@ function createEditorWindow(options = {}) {
 
   // Drop reference on close so the window can be recreated later.
   editorWin.on('closed', () => {
-    if (readingTestSessionController) {
+    const startupCloseHandled = editorWindowLifecycleController.handleEditorWindowClosed({
+      editorWin,
+      mainWin,
+      logContext: 'editorWin.closed',
+    });
+    if (!startupCloseHandled && readingTestSessionController) {
       readingTestSessionController.handleEditorClosed();
     }
     editorWin = null;
@@ -1554,15 +1574,32 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
 // Editor window: open (create or focus) and push current text
 ipcMain.handle('open-editor', () => {
-  if (!guardMainUserAction('open-editor', 'open-editor ignored (pre-READY).')) {
-    return { ok: false, error: 'not ready' };
-  }
   try {
-    ensureEditorWindowOpen();
-    return { ok: true };
+    return editorWindowLifecycleController.handleOpenEditor({
+      guardOpenEditor: () => guardMainUserAction('open-editor', 'open-editor ignored (pre-READY).'),
+      editorWin,
+      mainWin,
+      createEditorWindow,
+      startupState: editorState.loadInitialState(loadJson),
+      logContext: 'open-editor',
+    });
   } catch (err) {
     log.error('Error processing open-editor:', err);
     return { ok: false, error: String(err) };
+  }
+});
+
+ipcMain.on('editor-report-base-presentation-state', (event, payload) => {
+  try {
+    editorWindowLifecycleController.handleBasePresentationStateReport({
+      event,
+      editorWin,
+      mainWin,
+      payload,
+      logContext: 'editor-report-base-presentation-state',
+    });
+  } catch (err) {
+    log.error('Error processing editor-report-base-presentation-state:', err);
   }
 });
 

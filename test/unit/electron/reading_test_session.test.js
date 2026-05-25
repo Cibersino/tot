@@ -127,6 +127,7 @@ function createControllerHarness({
   entries,
   showBundledEntries = true,
   currentText = '',
+  preconditionContext = null,
 } = {}) {
   const senderWin = {
     isDestroyed() {
@@ -142,14 +143,18 @@ function createControllerHarness({
   });
   const { readingTestSession, restore } = loadReadingTestSessionWithMocks(readingTestPoolMock, senderWin);
   const ipcMain = createIpcMainDouble();
+  let ensureEditorWindowCalls = 0;
   const controller = readingTestSession.createController({
     resolveMainWindow: () => senderWin,
-    getPreconditionContext: () => ({
+    getPreconditionContext: () => (preconditionContext || {
       openSecondaryWindows: [],
       stopwatchRunning: false,
     }),
     isProcessingModeActive: () => false,
-    ensureEditorWindow: async () => senderWin,
+    ensureEditorWindow: async () => {
+      ensureEditorWindowCalls += 1;
+      return senderWin;
+    },
     showEditorWindow() {},
     ensureFlotanteWindow: async () => senderWin,
     closeEditorWindow() {},
@@ -168,6 +173,7 @@ function createControllerHarness({
   return {
     ipcMain,
     senderEvent: { sender: senderWin.webContents },
+    getEnsureEditorWindowCalls: () => ensureEditorWindowCalls,
     restore,
   };
 }
@@ -346,6 +352,41 @@ test('reading-test bundled visibility setter updates persisted entry data contra
     assert.equal(result.entries.length, 1);
     assert.equal(result.entries[0].fileName, 'imported.json');
     assert.equal(result.entryEmptyState, 'none');
+  } finally {
+    harness.restore();
+  }
+});
+
+test('reading-test start stays on the existing blocked path when the editor window is already open', async () => {
+  const harness = createControllerHarness({
+    entries: [
+      {
+        snapshotRelPath: '/reading_speed_test_pool/imported.json',
+        fileName: 'imported.json',
+        text: 'Imported text.',
+        tags: { language: 'en' },
+        used: false,
+        isBundled: false,
+      },
+    ],
+    preconditionContext: {
+      openSecondaryWindows: [{ id: 'editor', label: 'editor', isOpen: true }],
+      stopwatchRunning: false,
+    },
+  });
+
+  try {
+    const result = await harness.ipcMain.invoke(
+      'reading-test-start',
+      harness.senderEvent,
+      { sourceMode: 'pool', selection: {} }
+    );
+    assert.deepEqual(result, {
+      ok: false,
+      code: 'PRECONDITION_BLOCKED',
+      guidanceKey: 'renderer.alerts.reading_test_precondition_blocked',
+    });
+    assert.equal(harness.getEnsureEditorWindowCalls(), 0);
   } finally {
     harness.restore();
   }

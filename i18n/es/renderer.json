@@ -558,6 +558,8 @@
       "reading_test_questions_unavailable": "No se pudo abrir la ventana de preguntas de comprensión. El flujo terminó antes de crear el preset.",
       "reading_test_pool_import_failed": "No se pudieron importar los archivos del test de velocidad de lectura.",
       "reading_test_start_failed": "No se pudo iniciar el test de velocidad de lectura.",
+      "text_editor_start_failed": "No se pudo iniciar el Editor de Texto.",
+      "text_editor_start_timeout": "El Editor de Texto tardó demasiado en iniciar y fue cerrado.",
       "reading_test_cancelled": "El test de velocidad de lectura fue cancelado.",
       "reading_test_cancelled_window_closed": "El test de velocidad de lectura fue cancelado porque una de sus ventanas de sesión se cerró."
     },

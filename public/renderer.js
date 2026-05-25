@@ -944,21 +944,14 @@ function armIpcSubscriptions() {
       throw new Error('[renderer] electronAPI.onCurrentTextProcessingStateChanged unavailable; cannot maintain current text pending synchronization');
     }
 
-    if (typeof window.electronAPI.onEditorReady === 'function') {
-      window.electronAPI.onEditorReady(() => {
-        if (!isRendererReady()) {
-          log.warnOnce(
-            'BOOTSTRAP:renderer.preReady.editorReady',
-            'editor-ready received pre-READY; ignored.'
-          );
-          return;
-        }
-        hideEditorLoader();
+    if (typeof window.electronAPI.onEditorFirstShowState === 'function') {
+      window.electronAPI.onEditorFirstShowState((payload) => {
+        handleEditorFirstShowState(payload);
       });
     } else {
       log.warnOnce(
-        'renderer.ipc.onEditorReady.unavailable',
-        'onEditorReady unavailable; Text Editor loader may not clear.'
+        'renderer.ipc.onEditorFirstShowState.unavailable',
+        'onEditorFirstShowState unavailable; Text Editor loader may not clear.'
       );
     }
   } else {
@@ -1980,6 +1973,39 @@ function hideEditorLoader() {
   currentTextSelectorSection.setEditorLaunchPending(false);
 }
 
+function handleEditorFirstShowState(payload) {
+  if (!isRendererReady()) {
+    log.warnOnce(
+      'BOOTSTRAP:renderer.preReady.editorFirstShowState',
+      'editor-first-show-state received pre-READY; ignored.'
+    );
+    return;
+  }
+
+  hideEditorLoader();
+
+  if (!payload || typeof payload !== 'object') {
+    log.error('editor-first-show-state payload invalid:', payload);
+    return;
+  }
+
+  if (payload.state === 'ready' || payload.state === 'closed') {
+    return;
+  }
+
+  if (payload.state !== 'failed') {
+    log.error('editor-first-show-state payload has unsupported state:', payload);
+    return;
+  }
+
+  if (payload.reason === 'startup-timeout') {
+    window.Notify.notifyMain('renderer.alerts.text_editor_start_timeout');
+    return;
+  }
+
+  window.Notify.notifyMain('renderer.alerts.text_editor_start_failed');
+}
+
 // =============================================================================
 // Text extraction actions
 // =============================================================================
@@ -2116,7 +2142,25 @@ async function handleOpenEditor() {
       hideEditorLoader();
       return;
     }
-    await openEditor();
+    const result = await openEditor();
+    if (!result || typeof result.ok !== 'boolean') {
+      log.error('open-editor result invalid:', result);
+      hideEditorLoader();
+      return;
+    }
+    if (result.ok !== true) {
+      log.error('open-editor failed:', result);
+      hideEditorLoader();
+      return;
+    }
+    if (result.launchDisposition === 'reused-visible') {
+      hideEditorLoader();
+      return;
+    }
+    if (result.launchDisposition !== 'first-show-pending') {
+      log.error('open-editor returned unsupported launchDisposition:', result);
+      hideEditorLoader();
+    }
   } catch (err) {
     log.error('Error opening Text Editor:', err);
     hideEditorLoader();

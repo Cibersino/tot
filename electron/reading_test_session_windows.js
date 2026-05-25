@@ -154,11 +154,25 @@ async function openReadingSessionWindows(options = {}) {
   } = options;
 
   resetCrono();
-  const editorWin = ensureEditorWindow({ deferShow: true });
+  const editorWindowInfo = ensureEditorWindow({
+    deferShow: true,
+    waitForBasePresentationReady: true,
+    startupOwner: 'reading-test',
+    initialPresentationMode: 'maximized',
+  });
+  if (!editorWindowInfo || editorWindowInfo.ok !== true || !editorWindowInfo.editorWin) {
+    throw new Error(
+      editorWindowInfo && editorWindowInfo.error
+        ? String(editorWindowInfo.error)
+        : 'READING_TEST_EDITOR_WINDOW_UNAVAILABLE'
+    );
+  }
+  const editorWin = editorWindowInfo.editorWin;
   const flotanteWin = await ensureFlotanteWindow();
   await Promise.all([
     waitForWindowRendererLoad(editorWin, 'EDITOR', log, timeoutMs),
     waitForWindowVisible(flotanteWin, 'FLOTANTE', log, timeoutMs),
+    editorWindowInfo.baseReadyPromise || Promise.resolve(),
   ]);
 
   return { editorWin, flotanteWin };

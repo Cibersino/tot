@@ -9,11 +9,14 @@ const vm = require('node:vm');
 function loadEditorPreload() {
   const subscriptions = [];
   const removed = [];
+  const sent = [];
   let exposedApi = null;
 
   const ipcRenderer = {
     invoke() {},
-    send() {},
+    send(channel, payload) {
+      sent.push({ channel, payload });
+    },
     on(channel, listener) {
       subscriptions.push({ channel, listener });
     },
@@ -52,6 +55,7 @@ function loadEditorPreload() {
     exposedApi,
     subscriptions,
     removed,
+    sent,
   };
 }
 
@@ -71,6 +75,7 @@ test('editor preload exposes the expected editor API surface', () => {
       'onReplaceRequest',
       'onSettingsChanged',
       'onWindowStateChanged',
+      'reportBasePresentationState',
       'sendReplaceResponse',
       'setCurrentText',
       'setEditorFontSizePx',
@@ -98,4 +103,23 @@ test('editor preload keeps editor-text-updated as an unsubscribe-based recurrent
   assert.equal(removed.length, 1);
   assert.equal(removed[0].channel, 'editor-text-updated');
   assert.equal(removed[0].listener, subscriptions[0].listener);
+});
+
+test('editor preload reports base presentation state through the main bridge', () => {
+  const { exposedApi, sent } = loadEditorPreload();
+
+  exposedApi.api.reportBasePresentationState({
+    generation: 7,
+    status: 'ready',
+  });
+
+  assert.deepEqual(sent, [
+    {
+      channel: 'editor-report-base-presentation-state',
+      payload: {
+        generation: 7,
+        status: 'ready',
+      },
+    },
+  ]);
 });

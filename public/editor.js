@@ -64,6 +64,15 @@ if (
   throw new Error('[editor] EditorFindReplaceCore unavailable; cannot continue');
 }
 
+const editorStartupPresentation = window.EditorStartupPresentation;
+if (
+  !editorStartupPresentation
+  || typeof editorStartupPresentation.parseStartupQuery !== 'function'
+  || typeof editorStartupPresentation.createStartupPresentationController !== 'function'
+) {
+  throw new Error('[editor] EditorStartupPresentation unavailable; cannot continue');
+}
+
 if (!window.editorAPI) {
   throw new Error('[editor] editorAPI unavailable; cannot continue');
 }
@@ -81,6 +90,12 @@ if (typeof window.editorAPI.onReplaceRequest !== 'function') {
 }
 if (typeof window.editorAPI.sendReplaceResponse !== 'function') {
   throw new Error('[editor] editorAPI.sendReplaceResponse unavailable; cannot continue');
+}
+if (typeof window.editorAPI.getWindowState !== 'function') {
+  throw new Error('[editor] editorAPI.getWindowState unavailable; cannot continue');
+}
+if (typeof window.editorAPI.reportBasePresentationState !== 'function') {
+  throw new Error('[editor] editorAPI.reportBasePresentationState unavailable; cannot continue');
 }
 
 if (!window.EditorUI || typeof window.EditorUI.createEditorUI !== 'function') {
@@ -120,6 +135,8 @@ const readProgressValue = document.getElementById('editorReadProgressValue');
 const bottomBar = document.getElementById('bottomBar');
 const readingTestPrestartOverlay = document.getElementById('readingTestPrestartOverlay');
 const readingTestPrestartMessage = document.getElementById('readingTestPrestartMessage');
+const startupQuery = editorStartupPresentation.parseStartupQuery(window.location.search || '');
+const startupPresentation = editorStartupPresentation.createStartupPresentationController(startupQuery);
 
 // =============================================================================
 // Shared context
@@ -176,12 +193,14 @@ const ctx = {
     spellcheckEnabled: true,
     spellcheckAvailable: true,
     editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
-    editorWindowMaximized: false,
+    editorWindowMaximized: startupPresentation.isInitiallyMaximized(),
     maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
     editorMarginDrag: null,
     readProgressFramePending: false,
     idiomaActual: DEFAULT_LANG,
     translationsLoadedFor: null,
+    startupFirstShowGeneration: startupPresentation.firstShowGeneration,
+    startupPresentation,
   },
   ui: null,
   engine: null,
@@ -189,6 +208,64 @@ const ctx = {
 
 ctx.ui = window.EditorUI.createEditorUI(ctx);
 ctx.engine = window.EditorEngine.createEditorEngine(ctx);
+
+function applyActualWindowState(windowState) {
+  ctx.state.editorWindowMaximized = !!(windowState && windowState.maximized === true);
+  ctx.state.maximizedTextWidthPx = ctx.ui.clampEditorMaximizedTextWidthPx(
+    windowState && windowState.maximizedTextWidthPx
+  );
+  ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
+  ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
+}
+
+function captureActualWindowState(windowState) {
+  if (windowState && windowState.ok === false) {
+    log.warn(
+      'BOOTSTRAP: editorAPI.getWindowState returned a non-ok result; keeping startup presentation until a live window-state update arrives.',
+      windowState.error || 'unknown'
+    );
+    return;
+  }
+  const nextWindowState = ctx.state.startupPresentation.captureActualWindowState(windowState);
+  if (nextWindowState) {
+    applyActualWindowState(nextWindowState);
+  }
+}
+
+function releaseStartupPresentationLock() {
+  const nextWindowState = ctx.state.startupPresentation.releaseStartupLock();
+  if (nextWindowState) {
+    applyActualWindowState(nextWindowState);
+  }
+}
+
+function nextAnimationFrame() {
+  if (typeof window.requestAnimationFrame !== 'function') {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => resolve());
+  });
+}
+
+function reportBasePresentationState(payload) {
+  const generation = ctx.state.startupFirstShowGeneration;
+  if (!Number.isInteger(generation) || generation <= 0) {
+    log.warn('BOOTSTRAP: startup firstShowGeneration missing; base presentation report skipped.');
+    return;
+  }
+  try {
+    ctx.editorAPI.reportBasePresentationState({
+      generation,
+      status: payload && payload.status === 'failed' ? 'failed' : 'ready',
+      ...(payload && typeof payload.reason === 'string' && payload.reason.trim()
+        ? { reason: payload.reason.trim() }
+        : {}),
+    });
+  } catch (err) {
+    log.error('BOOTSTRAP: reportBasePresentationState failed:', err);
+  }
+}
 
 async function bootstrapEditorEnvironment() {
   try {
@@ -217,22 +294,12 @@ async function bootstrapEditorEnvironment() {
     } else {
       log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
     }
-    if (typeof ctx.editorAPI.getWindowState === 'function') {
-      const windowState = await ctx.editorAPI.getWindowState();
-      ctx.state.editorWindowMaximized = !!(windowState && windowState.maximized === true);
-      ctx.state.maximizedTextWidthPx = ctx.ui.clampEditorMaximizedTextWidthPx(
-        windowState && windowState.maximizedTextWidthPx
-      );
-    } else {
-      log.warn('BOOTSTRAP: editorAPI.getWindowState missing; maximized layout detection disabled.');
-    }
+    captureActualWindowState(await ctx.editorAPI.getWindowState());
     ctx.ui.setLocalSpellcheckState({
       preferenceEnabled: ctx.state.spellcheckEnabled,
       available: ctx.state.spellcheckAvailable,
     });
     ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
-    ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
-    ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
     window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
     await ctx.ui.applyEditorTranslations();
     ctx.ui.updateEditorTextDirection();
@@ -301,8 +368,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
 
 if (typeof ctx.editorAPI.onWindowStateChanged === 'function') {
   ctx.editorAPI.onWindowStateChanged((windowState) => {
-    ctx.ui.setLocalEditorWindowMaximized(!!(windowState && windowState.maximized === true));
-    ctx.ui.setLocalEditorMaximizedTextWidthPx(windowState && windowState.maximizedTextWidthPx);
+    captureActualWindowState(windowState);
   });
 } else {
   log.warn('BOOTSTRAP: editorAPI.onWindowStateChanged missing; live maximized layout updates disabled.');
@@ -341,9 +407,13 @@ Promise.resolve()
   .then(async () => {
     await bootstrapEditorEnvironment();
     await bootstrapInitialEditorText();
+    releaseStartupPresentationLock();
+    await nextAnimationFrame();
+    reportBasePresentationState({ status: 'ready' });
   })
   .catch((err) => {
     log.error('BOOTSTRAP: Text Editor startup failed:', err);
+    reportBasePresentationState({ status: 'failed', reason: 'bootstrap-failed' });
   });
 
 // =============================================================================

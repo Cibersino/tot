@@ -558,6 +558,8 @@
       "reading_test_questions_unavailable": "The comprehension questions window could not be opened. The flow ended before preset creation.",
       "reading_test_pool_import_failed": "The reading speed test files could not be imported.",
       "reading_test_start_failed": "The reading speed test could not be started.",
+      "text_editor_start_failed": "The Text Editor could not be started.",
+      "text_editor_start_timeout": "The Text Editor took too long to start and was closed.",
       "reading_test_cancelled": "The reading speed test was cancelled.",
       "reading_test_cancelled_window_closed": "The reading speed test was cancelled because one of its session windows closed."
     },
