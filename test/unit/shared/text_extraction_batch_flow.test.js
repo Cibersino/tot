@@ -14,6 +14,7 @@ function createHarness({
   onPromptBatchPlan = null,
   executionResultsByProcessingInputFileName = {},
   promptBatchFinalReportImpl = null,
+  applyTextViaCanonicalPathImpl = null,
 }) {
   let capturedViewModel = null;
   let capturedController = null;
@@ -205,7 +206,12 @@ function createHarness({
     getOcrLanguage() {
       return 'en';
     },
-    applyTextViaCanonicalPath: async () => ({ ok: true }),
+    applyTextViaCanonicalPath: async (payload) => {
+      if (typeof applyTextViaCanonicalPathImpl === 'function') {
+        return applyTextViaCanonicalPathImpl(payload);
+      }
+      return { ok: true };
+    },
     hasCurrentTextSubscription() {
       return true;
     },
@@ -1380,4 +1386,115 @@ test('batch execution final report annotates ordinary selected-page PDF rows wit
       },
     ]
   );
+});
+
+test('batch execution final report preserves apply truncation on ordinary success rows', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\chapter.pdf': createPreparation({
+      fileName: 'chapter.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'chapter.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Extracted chapter text',
+          error: null,
+          generatedPdfArtifact: null,
+        },
+      },
+    },
+    applyTextViaCanonicalPathImpl: async () => ({ ok: true, truncated: true }),
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-ordinary-truncation-report',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.deepEqual(
+    report.units[0].inputs,
+    [
+      {
+        fileName: 'chapter.pdf',
+        displayName: 'chapter.pdf',
+        state: 'success',
+        code: '',
+        applyTruncated: true,
+        generatedInputs: [],
+        generatedPdfArtifact: null,
+      },
+    ]
+  );
+});
+
+test('batch execution final report preserves apply truncation on heavy split success units', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\book.pdf': createPreparation({
+      fileName: 'book.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 120,
+        selectedPageCount: 120,
+        totalPages: 120,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'book.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Heavy OCR text',
+          error: null,
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [
+              {
+                fileName: 'book_pages_001_020.pdf',
+                state: 'success',
+                errorCode: '',
+                generatedPdfArtifact: null,
+              },
+            ],
+          },
+        },
+      },
+    },
+    applyTextViaCanonicalPathImpl: async () => ({ ok: true, truncated: true }),
+  });
+
+  await harness.batchFlow.startSyntheticSingleFileHeavySplit({
+    filePath: 'C:\\docs\\book.pdf',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.ok(report);
+  assert.equal(report.units[0].overallState, 'success');
+  assert.equal(report.units[0].applyTruncated, true);
+  assert.equal(report.units[0].heavyGeneratedInputRows, true);
 });

@@ -249,6 +249,7 @@ function createHarness() {
     'renderer.text_extraction.batch_report.omitted': 'Omitted',
     'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
     'renderer.text_extraction.batch_report.failed_with_code': 'failed: {code}',
+    'renderer.text_extraction.batch_report.applied_truncated': 'applied with truncation',
     'renderer.text_extraction.batch_report.payload_too_large': 'too large to apply',
     'renderer.text_extraction.batch_report.text_limit': 'text limit reached',
     'renderer.text_extraction.batch_report.cancelled_with_code': 'cancelled: {code}',
@@ -593,6 +594,47 @@ test('batch final modal renders direct labels for payload-too-large and text-lim
   await promptPromise;
 });
 
+test('batch final modal renders truncation labels for successful ordinary rows', async () => {
+  const harness = createHarness();
+
+  const report = {
+    flowKind: 'batch',
+    hadOutput: true,
+    units: [
+      {
+        unitTitle: 'unit_1',
+        snapshotResult: {
+          state: 'not_created',
+          text: 'Snapshot not created',
+        },
+        inputs: [
+          {
+            fileName: 'truncated.pdf',
+            state: 'success',
+            applyTruncated: true,
+          },
+        ],
+      },
+    ],
+  };
+
+  const promptPromise = harness.prompt({
+    report,
+    elapsedValueText: '00:42',
+  });
+
+  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
+  assert.match(renderedHtml, /truncated\.pdf \(applied with truncation\)/);
+
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.equal(harness.clipboardWrites.length, 1);
+  assert.match(harness.clipboardWrites[0], /- truncated\.pdf \(applied with truncation\)/);
+
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
+});
+
 test('batch final modal renders heavy split success with custom unit title, source line, and child rows only', async () => {
   const harness = createHarness();
 
@@ -705,6 +747,55 @@ test('batch final modal renders heavy split overall status when child rows exist
   assert.match(harness.clipboardWrites[0], /Split result: cancelled: aborted_by_user/);
   assert.match(harness.clipboardWrites[0], /- book_pages_001_020\.pdf \(cancelled: aborted_by_user\)/);
   assert.doesNotMatch(harness.clipboardWrites[0], /- book\.pdf(?:\r?\n|$)/);
+
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
+});
+
+test('batch final modal renders heavy split truncation in the overall status row', async () => {
+  const harness = createHarness();
+
+  const report = {
+    flowKind: 'single_file_split',
+    hadOutput: true,
+    units: [
+      {
+        unitTitle: 'Chapter 3 OCR',
+        exclusiveHeavy: true,
+        sourceFileName: 'book.pdf',
+        overallState: 'success',
+        overallCode: '',
+        applyTruncated: true,
+        heavyGeneratedInputRows: true,
+        snapshotResult: {
+          state: 'not_created',
+          text: 'Snapshot not created',
+        },
+        inputs: [
+          {
+            fileName: 'book_pages_001_020.pdf',
+            state: 'success',
+            generatedPdfArtifact: {
+              retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf',
+            },
+          },
+        ],
+      },
+    ],
+  };
+
+  const promptPromise = harness.prompt({
+    report,
+    elapsedValueText: '00:42',
+  });
+
+  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
+  assert.match(renderedHtml, /Split result: applied with truncation/);
+
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.equal(harness.clipboardWrites.length, 1);
+  assert.match(harness.clipboardWrites[0], /Split result: applied with truncation/);
 
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;
