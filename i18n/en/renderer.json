@@ -70,7 +70,6 @@
         "current_text_recount_waiting": "Recalculating current-text results...",
         "current_text_waiting_startup": "Settling current text...",
         "current_text_waiting_editor": "Syncing Text Editor changes...",
-        "current_text_elapsed": "Elapsed: ",
         "text_extraction_placeholder": "Extracting text...",
         "text_extraction_preparing": "Preparing extraction route...",
         "text_extraction_cancellation_pending": "Cancellation requested. Please wait...",

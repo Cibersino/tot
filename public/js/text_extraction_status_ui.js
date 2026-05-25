@@ -503,26 +503,13 @@
     if (!textExtractionProcessingElapsed) return;
 
     const processingActive = isProcessingModeActive();
-    const currentTextActive = isCurrentTextProcessingActive();
-    const standaloneFullRefreshActive = isStandaloneFullRefreshPendingActive();
     const abortFinalizationActive = isAbortFinalizationActive();
     const elapsedMs = processingActive
       ? (elapsedMsOverride === null
         ? getElapsedMsSince(processingModeState.sinceEpochMs)
         : elapsedMsOverride)
-      : ((currentTextActive || standaloneFullRefreshActive)
-        ? (elapsedMsOverride === null
-          ? getElapsedMsSince(
-            currentTextActive
-              ? currentTextProcessingState.sinceEpochMs
-              : standaloneFullRefreshPendingState.sinceEpochMs
-          )
-          : elapsedMsOverride)
-        : (abortFinalizationActive ? abortFinalizationState.elapsedMs : null));
-    const elapsedValueText = (processingActive
-      || currentTextActive
-      || standaloneFullRefreshActive
-      || abortFinalizationActive)
+      : (abortFinalizationActive ? abortFinalizationState.elapsedMs : null);
+    const elapsedValueText = (processingActive || abortFinalizationActive)
       ? getProcessingElapsedValueText(elapsedMs)
       : '';
     const showElapsed = !!elapsedValueText;
@@ -534,9 +521,7 @@
     }
     renderElapsedLabelWithValue(
       textExtractionProcessingElapsed,
-      (currentTextActive || standaloneFullRefreshActive)
-        ? 'renderer.main.processing.current_text_elapsed'
-        : 'renderer.main.processing.text_extraction_elapsed',
+      'renderer.main.processing.text_extraction_elapsed',
       elapsedValueText
     );
   }

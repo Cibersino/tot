@@ -847,12 +847,6 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Estado de sincronización cuando cambios del Editor de Texto se están aplicando al texto actual.
           // [CONCEPTO_APP] Editor de Texto; texto actual
         },
-        "current_text_elapsed": {
-          "es": "Transcurrido: ",
-          "en": "Elapsed: "
-          // [PROPÓSITO] Señala el tiempo transcurrido en vivo durante actualización, sincronización o reconteo del texto actual.
-          // [CONCEPTO_APP] texto actual
-        },
         "text_extraction_placeholder": {
           "es": "Procesando extracción...",
           "en": "Extracting text..."
