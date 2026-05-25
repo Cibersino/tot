@@ -169,6 +169,12 @@
     if (normalizedState === 'omitted') {
       return tRenderer('renderer.text_extraction.batch_report.omitted');
     }
+    if (normalizedState === 'failed' && code === 'PAYLOAD_TOO_LARGE') {
+      return tRenderer('renderer.text_extraction.batch_report.payload_too_large');
+    }
+    if (normalizedState === 'failed' && code === 'TEXT_LIMIT') {
+      return tRenderer('renderer.text_extraction.batch_report.text_limit');
+    }
     if (normalizedState === 'cancelled') {
       if (code) {
         return formatTranslation('renderer.text_extraction.batch_report.cancelled_with_code', {

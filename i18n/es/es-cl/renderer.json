@@ -184,6 +184,8 @@
         "split_result_label": "Resultado de la división:",
         "failed_fallback": "cagó",
         "failed_with_code": "cagó: {code}",
+        "payload_too_large": "demasiado grande pa' aplicar",
+        "text_limit": "se llegó al límite del texto",
         "cancelled_fallback": "cancelado",
         "cancelled_with_code": "cancelado: {code}",
         "snapshot_not_created": "(no se armó JSON)",

@@ -184,6 +184,8 @@
         "split_result_label": "Split result:",
         "failed_fallback": "failed",
         "failed_with_code": "failed: {code}",
+        "payload_too_large": "too large to apply",
+        "text_limit": "text limit reached",
         "cancelled_fallback": "cancelled",
         "cancelled_with_code": "cancelled: {code}",
         "snapshot_not_created": "(no text snapshot created)",

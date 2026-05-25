@@ -184,6 +184,8 @@
         "split_result_label": "Resultado de la división:",
         "failed_fallback": "falló",
         "failed_with_code": "falló: {code}",
+        "payload_too_large": "demasiado grande para aplicar",
+        "text_limit": "se alcanzó el límite de texto",
         "cancelled_fallback": "cancelada",
         "cancelled_with_code": "cancelada: {code}",
         "snapshot_not_created": "(no se creó snapshot de texto)",

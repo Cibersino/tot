@@ -249,6 +249,8 @@ function createHarness() {
     'renderer.text_extraction.batch_report.omitted': 'Omitted',
     'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
     'renderer.text_extraction.batch_report.failed_with_code': 'failed: {code}',
+    'renderer.text_extraction.batch_report.payload_too_large': 'too large to apply',
+    'renderer.text_extraction.batch_report.text_limit': 'text limit reached',
     'renderer.text_extraction.batch_report.cancelled_with_code': 'cancelled: {code}',
     'renderer.text_extraction.single_file_heavy.source_file_label': 'Source file:',
     'renderer.alerts.text_extraction_generated_pdf_reveal_failed': 'Reveal failed',
@@ -534,6 +536,58 @@ test('batch final modal renders ordinary failed, cancelled, and omitted rows con
   assert.match(harness.clipboardWrites[0], /- failed\.pdf \(failed: native_extraction_failed\)/);
   assert.match(harness.clipboardWrites[0], /- cancelled\.pdf \(cancelled: aborted_by_user\)/);
   assert.match(harness.clipboardWrites[0], /- omitted\.pdf \(Omitted\)/);
+
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
+});
+
+test('batch final modal renders direct labels for payload-too-large and text-limit failures', async () => {
+  const harness = createHarness();
+
+  const report = {
+    flowKind: 'batch',
+    hadOutput: false,
+    units: [
+      {
+        unitTitle: 'unit_1',
+        snapshotResult: {
+          state: 'not_created',
+          text: 'Snapshot not created',
+        },
+        inputs: [
+          {
+            fileName: 'too-large.pdf',
+            state: 'failed',
+            code: 'PAYLOAD_TOO_LARGE',
+          },
+          {
+            fileName: 'limit.pdf',
+            state: 'failed',
+            code: 'TEXT_LIMIT',
+          },
+        ],
+      },
+    ],
+  };
+
+  const promptPromise = harness.prompt({
+    report,
+    elapsedValueText: '00:42',
+  });
+
+  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
+  assert.match(renderedHtml, /too-large\.pdf \(too large to apply\)/);
+  assert.match(renderedHtml, /limit\.pdf \(text limit reached\)/);
+  assert.doesNotMatch(renderedHtml, /failed: too large to apply/);
+  assert.doesNotMatch(renderedHtml, /failed: text limit reached/);
+
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.equal(harness.clipboardWrites.length, 1);
+  assert.match(harness.clipboardWrites[0], /- too-large\.pdf \(too large to apply\)/);
+  assert.match(harness.clipboardWrites[0], /- limit\.pdf \(text limit reached\)/);
+  assert.doesNotMatch(harness.clipboardWrites[0], /failed: too large to apply/);
+  assert.doesNotMatch(harness.clipboardWrites[0], /failed: text limit reached/);
 
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;
