@@ -222,7 +222,6 @@
       "decrease_text_size": "Уменьшить размер текста",
       "increase_text_size": "Увеличить размер текста",
       "reset_text_size": "Сбросить размер текста",
-      "text_size_value": "{value} px",
       "read_progress_label": "Прочитано",
       "read_progress_aria": "Прогресс чтения: {value}",
       "clear_title": "Очистить"

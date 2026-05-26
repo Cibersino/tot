@@ -222,7 +222,6 @@
       "decrease_text_size": "Qillqapa sayayninta pisiyachiy",
       "increase_text_size": "Qillqapa sayayninta hatunyachiy",
       "reset_text_size": "Qillqapa sayayninta kutichiy",
-      "text_size_value": "{value} px",
       "read_progress_label": "Ñawinchisqa",
       "read_progress_aria": "Ñawinchay ñawpariy: {value}",
       "clear_title": "Pichay"

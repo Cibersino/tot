@@ -222,7 +222,6 @@
       "decrease_text_size": "লেখার আকার কমান",
       "increase_text_size": "লেখার আকার বাড়ান",
       "reset_text_size": "লেখার আকার রিসেট করুন",
-      "text_size_value": "{value} px",
       "read_progress_label": "পড়া হয়েছে",
       "read_progress_aria": "পড়ার অগ্রগতি: {value}",
       "clear_title": "খালি করুন"

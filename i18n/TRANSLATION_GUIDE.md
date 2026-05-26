@@ -168,7 +168,7 @@ Los elementos marcados como `[PROTEGIDO]` no se traducen ni se normalizan librem
 Reglas prácticas:
 
 - Preservar exactamente los placeholders `{...}`: nombre, cantidad y función.
-- Preservar acrónimos y formatos invariantes como `WPM`, `OCR`, `PDF`, `URL`, `OAuth`, `JSON`, unidades como `MB` y `px`, símbolos como `%`, y controles como `▶`, `⏸`, `⏹`, `📂` cuando estén protegidos.
+- Preservar acrónimos y formatos invariantes como `WPM`, `OCR`, `PDF`, `URL`, `OAuth`, `JSON`, unidades como `MB`, símbolos como `%`, y controles como `▶`, `⏸`, `⏹`, `📂` cuando estén protegidos.
 - Mantener nombres propios y servicios como `toT`, `Cibersino`, `Google OCR`, `Google Drive`, `Chrome Web Store`, `GitHub` y `Ko-fi`.
 - No traducir extensiones, rutas, nombres de archivo, URLs ni tokens tipo código.
 - Las referencias internas a UI deben coincidir con el texto localizado real que verá el usuario en ese idioma.
@@ -1604,11 +1604,6 @@ Estados de revisión recomendados:
       "reset_text_size": {
         "es": "Restablecer tamaño del texto",
         "en": "Reset text size"
-      },
-      "text_size_value": {
-        "es": "{value} px",
-        "en": "{value} px"
-        // [PROTEGIDO] `px`
       },
       "read_progress_label": {
         "es": "Leído",

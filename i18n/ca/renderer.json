@@ -222,7 +222,6 @@
       "decrease_text_size": "Reduir la mida del text",
       "increase_text_size": "Augmentar la mida del text",
       "reset_text_size": "Restablir la mida del text",
-      "text_size_value": "{value} px",
       "read_progress_label": "Llegit",
       "read_progress_aria": "Progrés de lectura: {value}",
       "clear_title": "Buidar"

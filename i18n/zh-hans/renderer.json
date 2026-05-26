@@ -222,7 +222,6 @@
       "decrease_text_size": "减小文本大小",
       "increase_text_size": "增大文本大小",
       "reset_text_size": "重置文本大小",
-      "text_size_value": "{value} px",
       "read_progress_label": "已读",
       "read_progress_aria": "阅读进度：{value}",
       "clear_title": "清空"

@@ -222,7 +222,6 @@
       "decrease_text_size": "Giảm cỡ chữ",
       "increase_text_size": "Tăng cỡ chữ",
       "reset_text_size": "Đặt lại cỡ chữ",
-      "text_size_value": "{value} px",
       "read_progress_label": "Đã đọc",
       "read_progress_aria": "Tiến độ đọc: {value}",
       "clear_title": "Xóa"

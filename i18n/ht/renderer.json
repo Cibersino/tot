@@ -222,7 +222,6 @@
       "decrease_text_size": "Diminye gwosè tèks la",
       "increase_text_size": "Ogmante gwosè tèks la",
       "reset_text_size": "Reyajiste gwosè tèks la",
-      "text_size_value": "{value} px",
       "read_progress_label": "Li",
       "read_progress_aria": "Pwogrè lekti: {value}",
       "clear_title": "Vide"

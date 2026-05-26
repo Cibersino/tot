@@ -182,6 +182,7 @@ function createHarness() {
     documentElement,
     editorWrap,
     editor,
+    textSizeValue,
     spellcheckToggle,
   };
 }
@@ -200,6 +201,15 @@ test('setLocalSpellcheckState keeps the saved preference checked while disabling
   assert.equal(harness.spellcheckToggle.disabled, true);
   assert.equal(harness.editor.spellcheck, false);
   assert.equal(harness.editor.attributes.spellcheck, 'false');
+});
+
+test('updateEditorTextSizeUi composes the technical font-size value at the consumer boundary', () => {
+  const harness = createHarness();
+
+  harness.ui.updateEditorTextSizeUi();
+
+  assert.equal(harness.textSizeValue.attributes['data-label'], '20 px');
+  assert.equal(harness.textSizeValue.attributes['aria-label'], '20 px');
 });
 
 test('persistEditorMaximizedTextWidthPx persists drag-updated width when local state was already updated optimistically', async () => {

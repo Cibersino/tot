@@ -222,7 +222,6 @@
       "decrease_text_size": "縮小文字大小",
       "increase_text_size": "放大文字大小",
       "reset_text_size": "重設文字大小",
-      "text_size_value": "{value} px",
       "read_progress_label": "已讀",
       "read_progress_aria": "閱讀進度：{value}",
       "clear_title": "清除"

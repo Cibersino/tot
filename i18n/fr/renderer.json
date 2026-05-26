@@ -222,7 +222,6 @@
       "decrease_text_size": "Réduire la taille du texte",
       "increase_text_size": "Augmenter la taille du texte",
       "reset_text_size": "Réinitialiser la taille du texte",
-      "text_size_value": "{value} px",
       "read_progress_label": "Lu",
       "read_progress_aria": "Progression de lecture : {value}",
       "clear_title": "Vider"

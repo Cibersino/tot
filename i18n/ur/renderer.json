@@ -222,7 +222,6 @@
       "decrease_text_size": "متن کا سائز کم کریں",
       "increase_text_size": "متن کا سائز بڑھائیں",
       "reset_text_size": "متن کا سائز ری سیٹ کریں",
-      "text_size_value": "{value} px",
       "read_progress_label": "پڑھا گیا",
       "read_progress_aria": "پڑھنے کی پیش رفت: {value}",
       "clear_title": "صاف کریں"

@@ -223,12 +223,13 @@
       syncEditorMaximizedLayout();
     }
 
+    function formatEditorTextSizeValue(value) {
+      return `${value} px`;
+    }
+
     function updateEditorTextSizeUi() {
       if (textSizeValue) {
-        const valueText = trMsg(
-          'renderer.editor.text_size_value',
-          { value: state.editorFontSizePx }
-        );
+        const valueText = formatEditorTextSizeValue(state.editorFontSizePx);
         textSizeValue.setAttribute('data-label', valueText);
         textSizeValue.setAttribute('aria-label', valueText);
       }

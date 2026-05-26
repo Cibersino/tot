@@ -222,7 +222,6 @@
       "decrease_text_size": "Reduce text size",
       "increase_text_size": "Increase text size",
       "reset_text_size": "Reset text size",
-      "text_size_value": "{value} px",
       "read_progress_label": "Read",
       "read_progress_aria": "Read progress: {value}",
       "clear_title": "Clear"

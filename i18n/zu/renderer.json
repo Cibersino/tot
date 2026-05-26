@@ -222,7 +222,6 @@
       "decrease_text_size": "Nciphisa usayizi wombhalo",
       "increase_text_size": "Khulisa usayizi wombhalo",
       "reset_text_size": "Buyisela usayizi wombhalo",
-      "text_size_value": "{value} px",
       "read_progress_label": "Kufundiwe",
       "read_progress_aria": "Inqubekela phambili yokufunda: {value}",
       "clear_title": "Sula"

@@ -222,7 +222,6 @@
       "decrease_text_size": "Perkecil ukuran teks",
       "increase_text_size": "Perbesar ukuran teks",
       "reset_text_size": "Reset ukuran teks",
-      "text_size_value": "{value} px",
       "read_progress_label": "Dibaca",
       "read_progress_aria": "Progres baca: {value}",
       "clear_title": "Kosongkan"
