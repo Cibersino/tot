@@ -847,6 +847,12 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Estado de sincronización cuando cambios del Editor de Texto se están aplicando al texto actual.
           // [CONCEPTO_APP] Editor de Texto; texto actual
         },
+        "current_text_elapsed": {
+          "es": "Transcurrido: ",
+          "en": "Elapsed: "
+          // [PROPÓSITO] Señala el tiempo transcurrido en vivo durante actualización, sincronización o reconteo del texto actual.
+          // [CONCEPTO_APP] texto actual
+        },
         "text_extraction_placeholder": {
           "es": "Procesando extracción...",
           "en": "Extracting text..."
@@ -1408,6 +1414,24 @@ Estados de revisión recomendados:
           "es": "falló: {code}",
           "en": "failed: {code}"
           // [CONCEPTO_APP] extracción de texto
+        },
+        "applied_truncated": {
+          "es": "aplicado con truncamiento",
+          "en": "applied with truncation"
+          // [PROPÓSITO] Estado breve del informe final cuando el texto extraído de un ítem se aplicó al texto actual, pero fue truncado por límite de tamaño.
+          // [CONCEPTO_APP] extracción por lotes; texto actual
+        },
+        "payload_too_large": {
+          "es": "demasiado grande para aplicar",
+          "en": "too large to apply"
+          // [PROPÓSITO] Estado breve del informe final cuando el texto extraído de un ítem es demasiado grande para aplicarse al texto actual.
+          // [CONCEPTO_APP] extracción por lotes; texto actual
+        },
+        "text_limit": {
+          "es": "se alcanzó el límite de texto",
+          "en": "text limit reached"
+          // [PROPÓSITO] Estado breve del informe final cuando la extracción por lotes en una unidad alcanza el límite admitido para el texto actual.
+          // [CONCEPTO_APP] extracción por lotes; texto actual
         },
         "cancelled_fallback": {
           "es": "cancelada",
@@ -2244,9 +2268,9 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] pool del test; archivos de test
         },
         "visible_empty_bundled_hidden_message": {
-          "es": "Los archivos de test incorporados están desactivados y no hay archivos disponibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
+          "es": "Los archivos de test incorporados están desactivados y no quedan archivos visibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
           "en": "The built-in test files are disabled and there are no remaining unused files. Re-enable them or import more files to continue."
-          // [PROPÓSITO] Estado en que los tests incorporados están desactivados y no quedan archivos disponibles sin usar.
+          // [PROPÓSITO] Estado en que los tests incorporados están desactivados y no quedan archivos visibles sin usar.
           // [CONCEPTO_APP] pool del test; archivos de test; tests incorporados
         },
         "close_aria": {
@@ -2286,8 +2310,8 @@ Estados de revisión recomendados:
             // [CONCEPTO_APP] archivos de test; pool del test
           },
           "detail": {
-            "es": "El pool ya contiene {count} de los nombres de archivo de destino.",
-            "en": "The pool already contains {count} of the destination file names."
+            "es": "El pool contiene {count} de los nombres de archivo de destino.",
+            "en": "The pool contains {count} of the destination file names."
             // [CONCEPTO_APP] archivos de test; pool del test
           },
           "buttons": {
@@ -3036,7 +3060,7 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] pool del test; archivos de test
       },
       "reading_test_visible_empty_bundled_hidden": {
-        "es": "Los archivos de test incorporados están desactivados y no hay archivos disponibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
+        "es": "Los archivos de test incorporados están desactivados y no quedan archivos visibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
         "en": "The built-in test files are disabled and there are no remaining unused files. Re-enable them or import more files to continue."
         // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
         // [CONCEPTO_APP] pool del test; archivos de test; tests incorporados
@@ -3079,6 +3103,16 @@ Estados de revisión recomendados:
         "es": "No se pudo iniciar el test de velocidad de lectura.",
         "en": "The reading speed test could not be started."
         // [CONCEPTO_APP] Test de velocidad de lectura
+      },
+      "text_editor_start_failed": {
+        "es": "No se pudo iniciar el Editor de Texto.",
+        "en": "The Text Editor could not be started."
+        // [CONCEPTO_APP] Editor de Texto
+      },
+      "text_editor_start_timeout": {
+        "es": "El Editor de Texto tardó demasiado en iniciar y fue cerrado.",
+        "en": "The Text Editor took too long to start and was closed."
+        // [CONCEPTO_APP] Editor de Texto
       },
       "reading_test_cancelled": {
         "es": "El test de velocidad de lectura fue cancelado.",
