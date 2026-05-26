@@ -258,6 +258,9 @@ function createEditorScriptHarness({
 
   const sandbox = {
     window: {
+      location: {
+        search: '',
+      },
       getLogger() {
         return {
           debug() {},
@@ -315,6 +318,7 @@ function createEditorScriptHarness({
         createEditorUI() {
           return {
             clampEditorFontSizePx(value) { return Number(value) || 20; },
+            clampEditorMaximizedTextWidthPx(value) { return Number(value) || 960; },
             setLocalSpellcheckState() {},
             setLocalEditorFontSizePx() {},
             setLocalEditorMaximizedTextWidthPx() {},
@@ -394,6 +398,7 @@ function createEditorScriptHarness({
         this.type = type;
       }
     },
+    URLSearchParams,
     setTimeout,
     clearTimeout,
   };
@@ -414,6 +419,7 @@ function createEditorScriptHarness({
       return { language: 'en', spellcheckEnabled: true, spellcheckAvailable: true, editorFontSizePx: 20 };
     },
     async getWindowState() { return { maximized: false, maximizedTextWidthPx: 960 }; },
+    reportBasePresentationState() {},
     onSettingsChanged(cb) {
       subscriptions.settingsChanged = cb;
     },
@@ -433,6 +439,13 @@ function createEditorScriptHarness({
   }
 
   vm.createContext(sandbox);
+  const startupPresentationSource = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/editor_startup_presentation.js'),
+    'utf8'
+  );
+  vm.runInContext(startupPresentationSource, sandbox, {
+    filename: 'public/js/editor_startup_presentation.js'
+  });
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/editor.js'),
     'utf8'
