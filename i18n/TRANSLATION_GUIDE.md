@@ -113,53 +113,53 @@ Este glosario fija el alcance de los conceptos marcados con `[CONCEPTO_APP]`. La
 
 | Concepto | Alcance en la app |
 |---|---|
-| `texto actual` | Texto central actualmente cargado en la ventana principal; alimenta el cálculo de tiempo, puede editarse, reemplazarse, ampliarse, guardarse como snapshot o usarse para iniciar el test. |
-| `reemplazar texto actual` | Acción `Replace`: sustituye el contenido del texto actual por el contenido entrante en un flujo que ofrece la alternativa reemplazar/agregar. |
 | `agregar al texto actual` | Acción `Append`: conserva el texto actual y suma el contenido entrante al final, en vez de reemplazarlo. |
-| `repeticiones de pegado` | Cantidad de iteraciones con que se pega el texto del portapapeles en las acciones de reemplazo o agregado. |
-| `tiempo estimado de lectura` | Duración calculada para leer el texto actual según el conteo y la velocidad configurada. |
-| `velocidad de lectura` | Valor en WPM usado en dos acepciones: velocidad configurada/presupuesta para estimar tiempo de lectura y velocidad real medida por cronómetro o test. |
-| `palabras por minuto (WPM)` | Unidad numérica de velocidad de lectura usada en presets, selector, cronómetro y resultados medidos. |
-| `preset de velocidad de lectura` | Configuración guardada de WPM para estimar tiempo de lectura; puede crearse, editarse, restaurarse o generarse desde un resultado medido. |
-| `modo preciso` | Modo de conteo basado en `Intl.Segmenter` para segmentación de palabras y caracteres. |
-| `Editor de Texto` | Ventana de edición manual donde el usuario puede escribir, pegar, corregir y aplicar texto hacia el texto actual. |
+| `archivos de test` | Archivos que alimentan el pool del test; pueden venir incorporados, importarse desde el dispositivo u obtenerse desde una fuente externa. |
+| `biblioteca de lecturas` | Biblioteca de filas guardadas reutilizables dentro del Editor de Tareas; no equivale a una tarea completa. |
+| `credenciales OAuth OCR` | Credenciales OAuth de Google gestionadas por la app para habilitar la integración OCR. No son el estado de sesión del usuario. |
 | `Cronómetro` | Cronómetro de la app usado para medir lectura y calcular velocidad real. Debe estar detenido/restablecido para ciertos flujos. |
 | `Cronómetro Flotante` | Ventana flotante del cronómetro; en el test guiado controla el inicio y término de la medición. |
-| `snapshot de texto` | Guardado/carga de texto actual como archivo de snapshot; puede tener etiquetas, cargarse como texto actual, asociarse a filas o crearse desde extracción por lotes. |
+| `Editor de Texto` | Ventana de edición manual donde el usuario puede escribir, pegar, corregir y aplicar texto hacia el texto actual. |
 | `etiquetas de snapshot de texto` | Metadatos opcionales de snapshot, como idioma, tipo y dificultad; también pueden configurarse para snapshots creados desde unidades de extracción por lotes. |
 | `extracción de texto` | Flujo para obtener texto desde archivos y luego aplicarlo al texto actual o guardarlo según el flujo. Puede pasar por opciones PDF, ruta nativa, OCR o lote. |
-| `ruta de extracción` | Camino elegido o resuelto para extraer texto; distingue ruta nativa y OCR. |
-| `ruta nativa` | Ruta local/no OCR de extracción de texto desde archivos compatibles o PDFs con texto seleccionable. |
-| `OCR` | Ruta de extracción por reconocimiento óptico; se usa para imágenes, PDFs escaneados/aplanados o casos donde la ruta OCR es elegida/requerida. |
+| `extensión del navegador` | Superficie informativa de la extensión de Chrome; es una herramienta separada de la app de escritorio y no reemplaza sus funciones de extracción. |
+| `extracción por lotes` | Flujo de planificación, ejecución e informe final para extraer texto desde múltiples entradas o desde un PDF completo dividido en partes. |
+| `fila de lectura` | Entrada individual de una tarea. Puede nombrarse como `fila` cuando la superficie trata la entrada como estructura de tabla —agregar, mover, eliminar, validar o nombrar filas—, y como `lectura` cuando la superficie la trata como contenido reutilizable o guardado en la biblioteca de lecturas. No equivale a una tarea completa. |
 | `Google OCR` | Integración conectada de OCR mediante servicios de Google; requiere activación/autorización y puede usar documentos temporales remotos. |
-| `credenciales OAuth OCR` | Credenciales OAuth de Google gestionadas por la app para habilitar la integración OCR. No son el estado de sesión del usuario. |
-| `token local OCR` | Estado local de inicio de sesión/token guardado para Google OCR; puede revocarse o eliminarse al desconectar. |
+| `ítem de extracción por lotes` | Entrada individual dentro de una unidad de lote: archivo fuente o parte generada que se procesa y puede fallar, omitirse o completarse. |
+| `modo preciso` | Modo de conteo basado en `Intl.Segmenter` para segmentación de palabras y caracteres. |
+| `palabras por minuto (WPM)` | Unidad numérica de velocidad de lectura usada en presets, selector, cronómetro y resultados medidos. |
+| `PDF completo por partes` | Modo para procesar un PDF pesado completo mediante partes generadas para respetar límites del proveedor OCR. |
 | `PDF fuente` | PDF original seleccionado por el usuario antes de generar subconjuntos, partes o artefactos derivados. |
-| `selección de páginas PDF` | Elección de todas las páginas o de un rango contiguo antes de extraer; puede materializar un PDF generado con páginas seleccionadas. |
 | `PDF generado` | PDF local derivado por la app, por ejemplo desde un rango de páginas o una división por partes, usado como insumo de extracción. |
 | `PDF guardado` | PDF generado que el usuario decidió conservar después del procesamiento. |
-| `PDF completo por partes` | Modo para procesar un PDF pesado completo mediante partes generadas para respetar límites del proveedor OCR. |
-| `extracción por lotes` | Flujo de planificación, ejecución e informe final para extraer texto desde múltiples entradas o desde un PDF completo dividido en partes. |
-| `unidad de extracción por lotes` | Contenedor de planificación/ejecución dentro del lote; agrupa uno o más ítems, puede tener nombre, etiquetas y política de fallos, y puede producir snapshot. |
-| `ítem de extracción por lotes` | Entrada individual dentro de una unidad de lote: archivo fuente o parte generada que se procesa y puede fallar, omitirse o completarse. |
-| `Test de velocidad de lectura` | Flujo guiado para medir velocidad real de lectura con texto del pool o texto actual, preguntas opcionales y posible creación de preset. |
 | `pool del test` | Conjunto local de archivos disponibles para el test, con estado de uso, filtros y opción de restablecimiento. |
-| `archivos de test` | Archivos que alimentan el pool del test; pueden venir incorporados, importarse desde el dispositivo u obtenerse desde una fuente externa. |
-| `tests incorporados` | Archivos iniciales incluidos con la app para el test; pueden mostrarse u ocultarse dentro del pool. |
+| `preset de velocidad de lectura` | Configuración guardada de WPM para estimar tiempo de lectura; puede crearse, editarse, restaurarse o generarse desde un resultado medido. |
+| `reemplazar texto actual` | Acción `Replace`: sustituye el contenido del texto actual por el contenido entrante en un flujo que ofrece la alternativa reemplazar/agregar. |
+| `repeticiones de pegado` | Cantidad de iteraciones con que se pega el texto del portapapeles en las acciones de reemplazo o agregado. |
+| `ruta de extracción` | Camino elegido o resuelto para extraer texto; distingue ruta nativa y OCR. |
+| `ruta nativa` | Ruta local/no OCR de extracción de texto desde archivos compatibles o PDFs con texto seleccionable. |
+| `ruta OCR` | Ruta de extracción por reconocimiento óptico; se usa para imágenes, PDFs escaneados/aplanados o casos donde la ruta OCR es elegida/requerida. |
+| `selección de páginas PDF` | Elección de todas las páginas o de un rango contiguo antes de extraer; puede materializar un PDF generado con páginas seleccionadas. |
+| `snapshot de texto` | Guardado/carga de texto actual como archivo de snapshot; puede tener etiquetas, cargarse como texto actual, asociarse a filas o crearse desde extracción por lotes. |
 | `tarea` | Plan de lectura del Editor de Tareas; agrupa filas de lectura y puede guardarse, cargarse o validarse como archivo de tarea. |
-| `fila de lectura` | Entrada individual de una tarea; representa una lectura con tiempo, avance/restante, enlace/ruta, comentario, acciones y posible snapshot asociado. |
-| `biblioteca de lecturas` | Biblioteca de filas guardadas reutilizables dentro del Editor de Tareas; no equivale a una tarea completa. |
-| `extensión del navegador` | Superficie informativa de la extensión de Chrome; es una herramienta separada de la app de escritorio y no reemplaza sus funciones de extracción. |
+| `Test de velocidad de lectura` | Flujo guiado para medir velocidad real de lectura con texto del pool o texto actual, preguntas opcionales y posible creación de preset. |
+| `tests incorporados` | Archivos iniciales incluidos con la app para el test; pueden mostrarse u ocultarse dentro del pool. |
+| `texto actual` | Texto central actualmente cargado en la ventana principal; alimenta el cálculo de tiempo, puede editarse, reemplazarse, ampliarse, guardarse como snapshot o usarse para iniciar el test. |
+| `tiempo estimado de lectura` | Duración calculada para leer el texto actual según el conteo y la velocidad configurada. |
+| `token local OCR` | Estado local de inicio de sesión/token guardado para Google OCR; puede revocarse o eliminarse al desconectar. |
+| `unidad de extracción por lotes` | Contenedor de planificación/ejecución dentro del lote; agrupa uno o más ítems, puede tener nombre, etiquetas y política de fallos, y puede producir snapshot. |
+| `velocidad de lectura` | Valor en WPM usado en dos acepciones: velocidad configurada/presupuesta para estimar tiempo de lectura y velocidad real medida por cronómetro o test. |
 | `ventanas secundarias` | Ventanas auxiliares abiertas por la app; ciertos flujos exigen cerrarlas para partir desde un estado estable. |
 
 Desambiguaciones puntuales del glosario:
 
-- `snapshot de texto`: no es captura de pantalla; refiere a texto guardado/cargable por la app.
-- `velocidad de lectura`: distinguir velocidad configurada para estimación de velocidad real medida por cronómetro o test.
-- `PDF fuente`, `PDF generado` y `PDF guardado`: no son intercambiables; el primero es el original, el segundo es un derivado creado por la app y el tercero es un derivado conservado por decisión del usuario.
+- `biblioteca de lecturas`, `fila de lectura` y `tarea`: la tarea agrupa filas de lectura; la biblioteca guarda esas entradas como lecturas reutilizables; una fila/lectura no es una tarea completa.
 - `credenciales OAuth OCR` y `token local OCR`: no son lo mismo; las credenciales habilitan la integración, el token representa estado local de autorización/sesión.
+- `PDF fuente`, `PDF generado` y `PDF guardado`: no son intercambiables; el primero es el original, el segundo es un derivado creado por la app y el tercero es un derivado conservado por decisión del usuario.
+- `snapshot de texto`: no es captura de pantalla; refiere a texto guardado/cargable por la app.
 - `unidad de extracción por lotes` e `ítem de extracción por lotes`: la unidad agrupa; el ítem es la entrada procesada dentro de esa unidad.
-- `biblioteca de lecturas`, `fila de lectura` y `tarea`: la biblioteca guarda filas reutilizables; la tarea agrupa filas; una fila no es una tarea completa.
+- `velocidad de lectura`: distinguir velocidad configurada para estimación de velocidad real medida por cronómetro o test.
 
 ## 6. Contenido protegido, placeholders y valores dinámicos
 
@@ -345,8 +345,8 @@ Estados de revisión recomendados:
         "en": "?"
       },
       "actualizar_version": {
-        "es": "Actualizar a última versión",
-        "en": "Update to latest version"
+        "es": "Actualizar a la última versión",
+        "en": "Update to the latest version"
       },
       "acerca_de": {
         "es": "Acerca de",
@@ -411,8 +411,8 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] tarea
       },
       "task_discard_changes_confirm": {
-        "es": "Hay una tarea abierta con cambios sin guardar. ¿Desea descartarlos?",
-        "en": "There is an open task with unsaved changes. Discard them?"
+        "es": "Hay una tarea abierta con cambios sin guardar. ¿Descartar los cambios?",
+        "en": "There is an open task with unsaved changes. Discard changes?"
         // [CONCEPTO_APP] tarea
       },
       "task_library_row_save_overwrite": {
@@ -472,8 +472,8 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] preset de velocidad de lectura
       },
       "edit_preset_confirm": {
-        "es": "¿Está seguro de reemplazar \"{name}\" por el preset actual?",
-        "en": "Are you sure you want to replace \"{name}\" with the current preset?"
+        "es": "¿Reemplazar \"{name}\" por el preset actual?",
+        "en": "Replace \"{name}\" with the current preset?"
         // [PROPÓSITO] Confirmación de reemplazo del preset seleccionado por los valores actualmente editados.
         // [CONCEPTO_APP] preset de velocidad de lectura
       },
@@ -549,7 +549,7 @@ Estados de revisión recomendados:
       },
       "tooltips": {
         "text_extraction": {
-          "es": "Extraer texto desde archivo",
+          "es": "Extraer texto de archivos",
           "en": "Extract text from file"
           // [PROPÓSITO] Acción de entrada a la extracción de texto desde archivos; puede derivar en ruta nativa, OCR, opciones PDF o lote.
           // [CONCEPTO_APP] extracción de texto
@@ -560,13 +560,13 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] extracción de texto
         },
         "overwrite_clipboard": {
-          "es": "Reemplazar texto actual con el texto del portapapeles",
-          "en": "Replace current text with clipboard text"
+          "es": "Reemplazar el texto actual con el texto del portapapeles",
+          "en": "Replace the current text with clipboard text"
           // [CONCEPTO_APP] texto actual; reemplazar texto actual
         },
         "append_clipboard": {
-          "es": "Agregar texto del portapapeles al final del texto actual",
-          "en": "Append clipboard text at the end of current text"
+          "es": "Agregar el texto del portapapeles al final del texto actual",
+          "en": "Append the clipboard text at the end of current text"
           // [PROPÓSITO] Agrega el texto del portapapeles al final del texto actual desde un nuevo párrafo.
           // [CONCEPTO_APP] texto actual; agregar al texto actual
         },
@@ -658,8 +658,8 @@ Estados de revisión recomendados:
       },
       "aria": {
         "text_extraction": {
-          "es": "Extraer texto desde archivo",
-          "en": "Extract text from file"
+          "es": "Seleccionar archivos para extraer texto",
+          "en": "Select files to extract text from"
           // [CONCEPTO_APP] extracción de texto
         },
         "text_extraction_abort": {
@@ -697,9 +697,9 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] preset de velocidad de lectura
         },
         "precise_mode_toggle": {
-          "es": "Modo preciso",
-          "en": "Precise mode"
-          // [PROPÓSITO] Label de toggle del modo preciso. Layout estrecho.
+          "es": "Activar/desactivar el modo preciso",
+          "en": "Precise mode toggle"
+          // [PROPÓSITO] Label accesible de toggle del modo preciso.
           // [CONCEPTO_APP] modo preciso
         },
         "crono_controls": {
@@ -708,7 +708,7 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] Cronómetro
         },
         "crono_display": {
-          "es": "Display del cronómetro",
+          "es": "Indicador del cronómetro",
           "en": "Stopwatch display"
           // [PROPÓSITO] Visualización del cronómetro.
           // [CONCEPTO_APP] Cronómetro
@@ -928,7 +928,7 @@ Estados de revisión recomendados:
     "text_extraction": {
       "pdf_options": {
         "title": {
-          "es": "Opciones de extracción PDF",
+          "es": "Opciones de extracción del PDF",
           "en": "PDF extraction options"
           // [CONCEPTO_APP] extracción de texto; PDF fuente; selección de páginas PDF
           // [PROTEGIDO] `PDF`
@@ -981,7 +981,7 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] selección de páginas PDF
         },
         "keep_generated_pdf_label": {
-          "es": "Conservar el PDF generado de páginas seleccionadas después del procesamiento",
+          "es": "Conservar el PDF generado con las páginas seleccionadas después del procesamiento",
           "en": "Keep the generated selected-page PDF after processing"
           // [PROPÓSITO] Checkbox para conservar el PDF generado con páginas seleccionadas después de usarlo como insumo de extracción.
           // [CONCEPTO_APP] PDF generado; PDF guardado; selección de páginas PDF
@@ -996,7 +996,7 @@ Estados de revisión recomendados:
           "en": "Cancel"
         },
         "close_aria": {
-          "es": "Cerrar ventana de opciones de extracción PDF",
+          "es": "Cerrar ventana de opciones de extracción del PDF",
           "en": "Close PDF extraction options window"
           // [PROTEGIDO] `PDF`
         },
@@ -1044,7 +1044,7 @@ Estados de revisión recomendados:
       },
       "ocr_activation_disclosure": {
         "title": {
-          "es": "Revisar activación de Google OCR",
+          "es": "Revisar la activación de Google OCR",
           "en": "Review Google OCR activation"
           // [CONCEPTO_APP] Google OCR
           // [PROTEGIDO] `Google OCR`
@@ -1062,8 +1062,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `Google`; `OCR`
         },
         "local_storage": {
-          "es": "Esta app guarda credenciales OAuth de Google para OCR gestionadas por la app y el estado local del token de Google en esta instancia.",
-          "en": "This app stores app-managed Google OAuth credentials for OCR and local Google token state in this app instance."
+          "es": "Esta app guarda credenciales OAuth de Google para OCR, gestionadas por la app, y el estado local del token de Google en esta instancia.",
+          "en": "This app saves Google OCR OAuth credentials, managed by the app, and the local state of the Google token in this instance."
           // [CONCEPTO_APP] Google OCR; token local OCR; credenciales OAuth OCR
           // [PROTEGIDO] `OAuth`; `Google`; `OCR`
         },
@@ -1197,7 +1197,7 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `PDF`
         },
         "generated_inputs_preview": {
-          "es": "Partes previstas para extracción:",
+          "es": "Partes previstas para la extracción:",
           "en": "Planned parts for extraction:"
           // [PROPÓSITO] Lista de los PDFs locales que la app prevé generar como ítems de extracción del texto del PDF pesado. Son nombres de archivos nuevos que representan rangos de páginas del PDF fuente preparados para subir al proveedor Google OCR.
           // [CONCEPTO_APP] PDF completo por partes; PDF fuente; ítem de extracción por lotes; Google OCR
@@ -1239,8 +1239,8 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] ítem de extracción por lotes
         },
         "keep_generated_pdf": {
-          "es": "Conservar PDF generado",
-          "en": "Keep generated PDF"
+          "es": "Conservar PDFs generados",
+          "en": "Keep generated PDFs"
           // [PROPÓSITO] Checkbox para conservar PDFs generados durante la extracción por lotes.
           // [CONCEPTO_APP] PDF generado; PDF guardado; extracción por lotes
           // [PROTEGIDO] `PDF`
@@ -1297,8 +1297,8 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; unidad de extracción por lotes
         },
         "failure_default": {
-          "es": "Finalizar la unidad tras el último éxito y seguir con la siguiente",
-          "en": "Finalize the unit after the last success and continue with the next unit"
+          "es": "Finalizar la unidad tras el último ítem exitoso y seguir con la siguiente",
+          "en": "End the unit after the last successful item and continue with the next one"
           // [PROPÓSITO] Política de fallo de la extracción de texto que cierra la unidad tras el último ítem exitosamente extraído y continúa con la unidad siguiente.
           // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; unidad de extracción por lotes
         },
@@ -1309,8 +1309,8 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; unidad de extracción por lotes
         },
         "overwrite_confirm": {
-          "es": "Esto sobrescribirá el texto actual cuando comience la extracción. ¿Deseas continuar?",
-          "en": "This will overwrite the current text when extraction starts. Do you want to continue?"
+          "es": "Esto reemplazará el texto actual cuando comience la extracción. ¿Deseas continuar?",
+          "en": "This will replace the current text when extraction starts. Do you want to continue?"
           // [PROPÓSITO] Confirmación previa al inicio de una extracción por lotes que aplicará el resultado reemplazando el texto actual.
           // [CONCEPTO_APP] extracción por lotes; texto actual; reemplazar texto actual
           // [NO_CONFUNDIR] No se refiere a sobrescribir archivos ni snapshots; se refiere al texto actual de la ventana principal.
@@ -1476,6 +1476,7 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Explica que el PDF fuente completo supera el límite del proveedor OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR; ruta nativa
           // [PROTEGIDO] `PDF`; `OCR`; `MB`
+          // [NO_CONFUNDIR] `procesar su extracción` es intencional: no promete extracción directa inmediata; anticipa el paso hacia el flujo/modal de procesamiento del PDF completo por partes.
         },
         "case_b_title": {
           "es": "PDF generado demasiado grande para OCR",
@@ -1485,15 +1486,15 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `PDF`; `OCR`
         },
         "case_b_message": {
-          "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a páginas, usar ruta nativa o procesar el PDF completo por partes.",
+          "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a la selección de páginas, usar la ruta nativa o procesar el PDF completo por partes.",
           "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use native route, or process the full PDF in parts."
           // [PROPÓSITO] Explica que el PDF generado para el rango no se subió por exceder el límite OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF generado; selección de páginas PDF; OCR; ruta nativa; PDF completo por partes
           // [PROTEGIDO] `PDF`; `OCR`; `MB`
         },
         "source_file_label": {
-          "es": "Archivo fuente:",
-          "en": "Source file:"
+          "es": "PDF fuente:",
+          "en": "Source PDF:"
           // [PROPÓSITO] Label del PDF fuente original en la ventana de PDF pesado.
           // [CONCEPTO_APP] PDF fuente
         },
@@ -1516,8 +1517,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `PDF`
         },
         "source_size_label": {
-          "es": "Tamaño del archivo fuente:",
-          "en": "Source file size:"
+          "es": "Tamaño del PDF fuente:",
+          "en": "Source PDF size:"
           // [CONCEPTO_APP] PDF fuente
         },
         "total_pages_label": {
@@ -1526,11 +1527,12 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] PDF fuente
         },
         "split_button": {
-          "es": "Procesar el PDF completo por partes",
-          "en": "Process the full PDF in parts"
+          "es": "Procesar el PDF por partes",
+          "en": "Process PDF in parts"
           // [PROPÓSITO] Acción para ir a la ventana modal de extracción del PDF completo por partes.
           // [CONCEPTO_APP] PDF completo por partes; PDF fuente
           // [PROTEGIDO] `PDF`
+          // [NO_CONFUNDIR] Aunque el botón abre el camino de extracción por partes, su acción inmediata es procesar/planificar el PDF pesado por partes.
         },
         "return_to_pages_button": {
           "es": "Volver a páginas",
@@ -1709,8 +1711,8 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] snapshot de texto; etiquetas de snapshot de texto
       },
       "message": {
-        "es": "Etiqueta opcionalmente este snapshot de texto antes de elegir dónde guardarlo.",
-        "en": "Optionally tag this text snapshot before choosing where to save it."
+        "es": "Puedes etiquetar este snapshot de texto antes de elegir dónde guardarlo.",
+        "en": "You can optionally tag this text snapshot before choosing where to save it."
         // [PROPÓSITO] Modal previo a guardar snapshot; permite asignar etiquetas opcionales antes de elegir ubicación.
         // [CONCEPTO_APP] snapshot de texto; etiquetas de snapshot de texto
       },
@@ -1953,7 +1955,7 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] biblioteca de lecturas
         },
         "search_placeholder": {
-          "es": "Buscar en biblioteca...",
+          "es": "Buscar en la biblioteca...",
           "en": "Search library..."
           // [CONCEPTO_APP] biblioteca de lecturas
         }
@@ -2062,26 +2064,26 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] fila de lectura
         },
         "library_row_save": {
-          "es": "Guardar en biblioteca",
-          "en": "Save to library"
+          "es": "Guardar lectura en la biblioteca",
+          "en": "Save reading to the library"
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
         },
         "library_row_load": {
-          "es": "Cargar fila",
-          "en": "Load row"
+          "es": "Cargar lectura en la tarea",
+          "en": "Load reading to the task"
           // [PROPÓSITO] Agregar una fila guardada a la tabla desde la biblioteca de lecturas.
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
           // [NO_CONFUNDIR] Cargar una fila desde la biblioteca no carga una tarea completa; agrega una fila guardada a la tabla.
         },
         "library_row_delete": {
-          "es": "Eliminar de biblioteca",
-          "en": "Delete from library"
+          "es": "Eliminar lectura de la biblioteca",
+          "en": "Delete reading from the library"
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
           // [NO_CONFUNDIR] Eliminar de biblioteca borra la fila guardada reutilizable; no elimina una tarea completa ni necesariamente la fila de la tabla abierta.
         },
         "snapshot_load": {
-          "es": "Cargar snapshot en texto actual",
-          "en": "Load snapshot to current text"
+          "es": "Cargar snapshot como texto actual",
+          "en": "Load snapshot as current text"
           // [PROPÓSITO] Acción para cargar el snapshot de texto asociado a la fila como texto actual de la app.
           // [CONCEPTO_APP] snapshot de texto; texto actual; fila de lectura
         },
@@ -2114,13 +2116,13 @@ Estados de revisión recomendados:
           "en": "Comment"
         },
         "library_title": {
-          "es": "Biblioteca",
-          "en": "Library"
+          "es": "Biblioteca de lecturas",
+          "en": "Reading library"
           // [CONCEPTO_APP] biblioteca de lecturas
         },
         "library_save_title": {
-          "es": "Guardar en biblioteca",
-          "en": "Save to library"
+          "es": "Guardar lectura en la biblioteca",
+          "en": "Save reading to the library"
           // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
         },
         "library_save_question": {
@@ -2166,7 +2168,7 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] tarea
         },
         "task_invalid_file": {
-          "es": "Archivo de tareas inválido.",
+          "es": "Archivo de tarea inválido.",
           "en": "Invalid task file."
           // [CONCEPTO_APP] tarea
         },
@@ -2192,23 +2194,23 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] fila de lectura
         },
         "library_load_error": {
-          "es": "No se pudo cargar la biblioteca.",
-          "en": "Could not load the library."
+          "es": "No se pudo cargar la lectura en la tarea.",
+          "en": "Could not load the reading to the task."
           // [CONCEPTO_APP] biblioteca de lecturas
         },
         "library_save_error": {
-          "es": "No se pudo guardar en la biblioteca.",
-          "en": "Could not save to the library."
+          "es": "No se pudo guardar la lectura en la biblioteca.",
+          "en": "Could not save the reading to the library."
           // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
         },
         "library_save_success": {
-          "es": "Fila guardada en la biblioteca.",
-          "en": "Row saved to the library."
+          "es": "Lectura guardada en la biblioteca.",
+          "en": "Reading saved to the library."
           // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
         },
         "library_delete_error": {
-          "es": "No se pudo eliminar de la biblioteca.",
-          "en": "Could not delete from the library."
+          "es": "No se pudo eliminar la lectura de la biblioteca.",
+          "en": "Could not delete the reading from the library."
           // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
         },
         "link_blocked": {
@@ -2310,8 +2312,8 @@ Estados de revisión recomendados:
             // [CONCEPTO_APP] archivos de test; pool del test
           },
           "detail": {
-            "es": "El pool contiene {count} de los nombres de archivo de destino.",
-            "en": "The pool contains {count} of the destination file names."
+            "es": "El pool ya contiene {count} de los nombres de archivo de destino.",
+            "en": "The pool already contains {count} of the destination filenames."
             // [CONCEPTO_APP] archivos de test; pool del test
           },
           "buttons": {
@@ -2547,8 +2549,8 @@ Estados de revisión recomendados:
         "en": "Short description..."
       },
       "char_count": {
-        "es": "{remaining} caracteres restantes",
-        "en": "{remaining} characters left"
+        "es": "Caracteres restantes: {remaining}",
+        "en": "Remaining characters: {remaining}"
       },
       "hint": {
         "es": "Los presets personalizados se guardan en la configuración del usuario.",
@@ -2607,7 +2609,7 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
       },
       "apply_truncated": {
-        "es": "El texto fue truncado para ajustarse al límite de la aplicación.",
+        "es": "El texto fue truncado para ajustarse al límite de la app.",
         "en": "The text was truncated to fit the application limit."
         // [PROPÓSITO] Informa que la operación sobre el texto actual se completó, pero el texto final quedó recortado para ajustarse al límite del texto actual admitido por la app.
         // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
@@ -2619,18 +2621,18 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
       },
       "overwrite_clipboard_error": {
-        "es": "Ocurrió un error al reemplazar texto desde el portapapeles.",
-        "en": "An error occurred while replacing text from the clipboard."
+        "es": "Ocurrió un error al reemplazar el texto actual con el texto del portapapeles.",
+        "en": "An error occurred while replacing the current text with the clipboard text."
         // [CONCEPTO_APP] texto actual; reemplazar texto actual; repeticiones de pegado
       },
       "append_clipboard_error": {
-        "es": "Ocurrió un error al agregar texto desde el portapapeles.",
-        "en": "An error occurred while appending text from the clipboard."
+        "es": "Ocurrió un error al agregar el texto del portapapeles al texto actual.",
+        "en": "An error occurred while appending the clipboard text to the current text."
         // [CONCEPTO_APP] texto actual; agregar al texto actual; repeticiones de pegado
       },
       "clear_error": {
-        "es": "Ocurrió un error al vaciar el texto.",
-        "en": "An error occurred while clearing text."
+        "es": "Ocurrió un error al vaciar el texto actual.",
+        "en": "An error occurred while clearing the current text."
         // [CONCEPTO_APP] texto actual
       },
       "snapshot_save_success": {
@@ -2943,7 +2945,7 @@ Estados de revisión recomendados:
         // [PROTEGIDO] `Google OCR`
       },
       "text_extraction_ocr_connectivity_failed": {
-        "es": "OCR requiere conexión a internet. Revisa tu conexión y reintenta.",
+        "es": "OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo.",
         "en": "OCR requires an internet connection. Check your connection and try again."
         // [CONCEPTO_APP] OCR; Google OCR
         // [PROTEGIDO] `OCR`
@@ -2961,13 +2963,13 @@ Estados de revisión recomendados:
         // [PROTEGIDO] `OCR`; `OAuth`; `Google`
       },
       "text_extraction_ocr_quota_or_rate_limited": {
-        "es": "OCR está bloqueado temporalmente por cuota/límite de uso. Espera y reintenta.",
-        "en": "OCR is temporarily blocked by quota/rate limits. Wait and retry."
+        "es": "OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo.",
+        "en": "OCR is temporarily blocked by quota/rate limits. Wait and try again."
         // [CONCEPTO_APP] OCR; Google OCR
         // [PROTEGIDO] `OCR`
       },
       "text_extraction_ocr_runtime_error": {
-        "es": "Ocurrió un error de ejecución OCR durante la extracción.",
+        "es": "Ocurrió un error de ejecución de OCR durante la extracción.",
         "en": "An OCR runtime error occurred during extraction."
         // [CONCEPTO_APP] OCR; extracción de texto
         // [PROTEGIDO] `OCR`
@@ -3008,8 +3010,8 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] ruta nativa; extracción de texto
       },
       "text_extraction_unsupported_format": {
-        "es": "Este formato de archivo no está soportado para la extracción de texto.",
-        "en": "This file format is not supported for text extraction."
+        "es": "La extracción de texto no admite este formato de archivo.",
+        "en": "Text extraction does not support this file format."
         // [CONCEPTO_APP] extracción de texto
       },
       "wip_diseno_skins": {
@@ -3173,7 +3175,7 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] Editor de Texto
       },
       "text_truncated": {
-        "es": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",
+        "es": "El texto fue truncado para ajustarse al límite máximo de la app.",
         "en": "Text was truncated to fit the application limit."
         // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
         // [CONCEPTO_APP] Editor de Texto; texto actual
@@ -3219,7 +3221,7 @@ Estados de revisión recomendados:
         "en": "Loading..."
       },
       "missing_content": {
-        "es": "No hay contenido disponible para '{name}'.",
+        "es": "No hay contenido disponible para \"{name}\".",
         "en": "No content is available for '{name}'."
       },
       "external": {
