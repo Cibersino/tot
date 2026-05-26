@@ -12,36 +12,39 @@ tot/
 ├── .github/
 │ └── workflows/
 │   └── test.yml                   # {workflow GitHub Actions del baseline automatizado (`npm test` en Windows)}
-├── .vscode/                       # {carpeta ignorada por git}
-├── build-output/                  # {vacío} {carpeta ignorada por git}
 ├── build-resources/               # {recursos solo de packaging (electron-builder)}
 ├── config/                        # {generada en primer arranque} {carpeta ignorada por git}
+│ ├── ocr_google_drive/
+│ │ ├── credentials.json
+│ │ └── token.json
 │ ├── presets_defaults/
 │ │ ├── defaults_presets.json   
 │ │ ├── defaults_presets_en.json
 │ │ └── defaults_presets_es.json
+│ ├── saved_current_texts/
+│ │ └── reading_speed_test_pool/   # {pool local del reading speed test; sincronizado al arranque, contenido sin state inline}
 │ ├── tasks/
-│ │ ├── lists/
-│ │ ├── library.json
 │ │ ├── allowed_hosts.json
 │ │ ├── column_widths.json
+│ │ ├── library.json
+│ │ ├── lists/
 │ │ └── task_editor_state.json
 │ ├── current_text.json
 │ ├── editor_state.json
-│ ├── text_extraction_state.json
 │ ├── reading_test_pool_import_state.json
 │ ├── reading_test_pool_state.json
-│ ├── ocr_google_drive/
-│ │ ├── credentials.json
-│ │ └── token.json
-│ ├── saved_current_texts/
-│ │ └── reading_speed_test_pool/   # {pool local del reading speed test; sincronizado al arranque, contenido sin state inline}
+│ ├── text_extraction_state.json
 │ └── user_settings.json
 ├── docs/
 │ ├── releases/                    # {con subcarpetas por release con docs de chequeo}
+│ │ ├── legal_baseline.md
 │ │ ├── release_checklist.md
-│ │ ├── security_baseline.md
-│ │ └── legal_baseline.md
+│ │ └── security_baseline.md
+| ├── screenshots/ 
+│ │ ├── windows/
+| | | ├── en/
+| | | └── es/
+│ │ └── README.md
 │ ├── changelog_detailed.md
 │ ├── test_suite.md
 │ └── tree_folders_files.md
@@ -58,100 +61,101 @@ tot/
 │ ├── text_extraction_platform/
 │ │ ├── platform_adapters/
 │ │ │ ├── common.js
-│ │ │ ├── windows.js
 │ │ │ ├── darwin.js
+│ │ │ ├── fallback.js
 │ │ │ ├── linux.js
-│ │ │ └── fallback.js
-│ │ ├── text_extraction_file_picker_ipc.js
-│ │ ├── text_extraction_preconditions_ipc.js
-│ │ ├── text_extraction_processing_mode_ipc.js
-│ │ ├── text_extraction_pdf_inspect_ipc.js
-│ │ ├── text_extraction_ocr_activation_ipc.js
-│ │ ├── text_extraction_ocr_disconnect_ipc.js
-│ │ ├── text_extraction_generated_pdf_reveal_ipc.js
-│ │ ├── text_extraction_heavy_pdf_split_core.js
-│ │ ├── text_extraction_prepare_execute_core.js
-│ │ ├── text_extraction_prepare_ipc.js
-│ │ ├── text_extraction_execute_prepared_ipc.js
-│ │ ├── text_extraction_prepared_store.js
-│ │ ├── text_extraction_platform_adapter.js
-│ │ ├── text_extraction_supported_formats.js
-│ │ ├── text_extraction_pdf_error_detection.js
-│ │ ├── text_extraction_pdf_page_selection.js
+│ │ │ └── windows.js
 │ │ ├── native_extraction_route.js
 │ │ ├── native_pdf_selectable_text_probe.js
 │ │ ├── ocr_google_drive_activation_state.js
 │ │ ├── ocr_google_drive_bundled_credentials.js
 │ │ ├── ocr_google_drive_credentials_file.js
 │ │ ├── ocr_google_drive_oauth_client.js
-│ │ ├── ocr_google_drive_secure_oauth.js
-│ │ ├── ocr_google_drive_provider_failure_classification.js
 │ │ ├── ocr_google_drive_provider_failure.js
+│ │ ├── ocr_google_drive_provider_failure_classification.js
+│ │ ├── ocr_google_drive_route.js
+│ │ ├── ocr_google_drive_secure_oauth.js
 │ │ ├── ocr_google_drive_setup_validation.js
 │ │ ├── ocr_google_drive_token_storage.js
-│ │ ├── ocr_google_drive_route.js
-│ │ └── ocr_image_normalization.js
+│ │ ├── ocr_image_normalization.js
+│ │ ├── text_extraction_execute_prepared_ipc.js
+│ │ ├── text_extraction_file_picker_ipc.js
+│ │ ├── text_extraction_generated_pdf_reveal_ipc.js
+│ │ ├── text_extraction_heavy_pdf_split_core.js
+│ │ ├── text_extraction_ocr_activation_ipc.js
+│ │ ├── text_extraction_ocr_disconnect_ipc.js
+│ │ ├── text_extraction_pdf_error_detection.js
+│ │ ├── text_extraction_pdf_inspect_ipc.js
+│ │ ├── text_extraction_pdf_page_selection.js
+│ │ ├── text_extraction_platform_adapter.js
+│ │ ├── text_extraction_preconditions_ipc.js
+│ │ ├── text_extraction_prepare_execute_core.js
+│ │ ├── text_extraction_prepare_ipc.js
+│ │ ├── text_extraction_prepared_store.js
+│ │ ├── text_extraction_processing_mode_ipc.js
+│ │ └── text_extraction_supported_formats.js
 │ ├── app_temp_paths.js
-│ ├── main.js
-│ ├── preload.js
-│ ├── language_preload.js
-│ ├── editor_preload.js
-│ ├── editor_find_preload.js
-│ ├── task_editor_preload.js
-│ ├── preset_preload.js
-│ ├── flotante_preload.js
-│ ├── reading_test_questions_preload.js
-│ ├── reading_test_result_preload.js
-│ ├── fs_storage.js
-│ ├── settings.js
-│ ├── spellcheck.js
-│ ├── text_state.js
-│ ├── current_text_snapshots_main.js
+│ ├── constants_main.js
+│ ├── current_text_processing_main_bridge.js
 │ ├── current_text_processing_state_ipc.js
-│ ├── tasks_main.js
-│ ├── task_editor_state.js
-│ ├── editor_state.js
+│ ├── current_text_snapshots_main.js
 │ ├── editor_find_main.js
+│ ├── editor_find_preload.js
 │ ├── editor_find_session.js
 │ ├── editor_find_shortcuts.js
+│ ├── editor_preload.js
+│ ├── editor_state.js
 │ ├── editor_text_size.js
+│ ├── editor_window_lifecycle.js
+│ ├── flotante_preload.js
+│ ├── fs_storage.js
+│ ├── language_preload.js
+│ ├── link_openers.js
+│ ├── log.js
+│ ├── main.js
+│ ├── menu_builder.js
+│ ├── preset_preload.js
+│ ├── presets_main.js
+│ ├── preload.js
 │ ├── reading_test_pool.js
 │ ├── reading_test_pool_import.js
+│ ├── reading_test_questions_preload.js
+│ ├── reading_test_result_preload.js
 │ ├── reading_test_session.js
-│ ├── reading_test_session_windows.js
 │ ├── reading_test_session_flow.js
-│ ├── presets_main.js
-│ ├── menu_builder.js
-│ ├── updater.js
-│ ├── link_openers.js
-│ ├── constants_main.js
-│ └── log.js
-├── extensions/                    # {extensiones/superficies nuevas distribuidas fuera de Electron}
+│ ├── reading_test_session_windows.js
+│ ├── settings.js
+│ ├── spellcheck.js
+│ ├── task_editor_preload.js
+│ ├── task_editor_state.js
+│ ├── tasks_main.js
+│ ├── text_state.js
+│ └── updater.js
+├── extensions/                    # {extensiones de navegadores distribuidas fuera de Electron}
 │ └── reading-time/
 │   └── chrome/
 ├── i18n/                          # {subcarpetas por idioma y variantes regionales}
-│ └── languages.json
+│ ├── languages.json
+| └── TRANSLATION_GUIDE.md
+├── node_modules/                  # { }
 ├── public/
 │ ├── assets/
-│ │ ├── extension/
-│ │ │ ├── chrome-web-store-badge.png
-│ │ │ └── tot-symbols.64.png
+│ │ ├── extension/                 # { }
 │ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
-│ │ ├── SOURCES.md
+│ │ ├── kofi_symbol.png
 │ │ ├── logo-cibersino.svg
 │ │ ├── logo-tot.120x120.png
 │ │ ├── logo-tot.png
 │ │ ├── logo-tot.svg
-│ │ └── kofi_symbol.png
+│ │ └── SOURCES.md
 │ ├── fonts/
-│ │ ├── Baskervville-VariableFont_wght.ttf
+│ │ ├── Baskervville.css
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
-│ │ └── Baskervville.css
-│ ├── third_party_licenses/        # {licencias/notices versionados de terceros redistribuidos}
+│ │ └── Baskervville-VariableFont_wght.ttf
 │ ├── info/
 │ │ ├── acerca_de.html
-│ │ ├── instrucciones.es.html
 │ │ ├── instrucciones.en.html
+│ │ ├── instrucciones.es.html
 │ │ └── links_interes.html
 │ ├── js/
 │ │ ├── lib/
@@ -162,86 +166,88 @@ tot/
 │ │ │ ├── reading_test_filters_core.js
 │ │ │ ├── reading_test_questions_core.js
 │ │ │ └── snapshot_tag_catalog.js
-│ │ ├── count.js
-│ │ ├── presets.js
-│ │ ├── crono.js
-│ │ ├── menu_actions.js
-│ │ ├── current_text_snapshots.js
-│ │ ├── snapshot_save_tags_modal.js
-│ │ ├── reading_speed_test.js
-│ │ ├── format.js
-│ │ ├── results_time_multiplier.js
-│ │ ├── i18n.js
-│ │ ├── constants.js
-│ │ ├── wpm_curve.js
-│ │ ├── wpm_controls.js
-│ │ ├── notify.js
-│ │ ├── info_modal_links.js
-│ │ ├── main_logo_links.js
 │ │ ├── browser_extension_modal.js
+│ │ ├── constants.js
+│ │ ├── count.js
+│ │ ├── crono.js
+│ │ ├── current_text_refresh_policy.js
+│ │ ├── current_text_runtime.js
+│ │ ├── current_text_selector_section.js
+│ │ ├── current_text_snapshots.js
+│ │ ├── editor_engine.js
+│ │ ├── editor_startup_presentation.js
+│ │ ├── editor_ui.js
+│ │ ├── format.js
+│ │ ├── i18n.js
+│ │ ├── info_modal_links.js
+│ │ ├── log.js
+│ │ ├── main_logo_links.js
+│ │ ├── menu_actions.js
+│ │ ├── notify.js
+│ │ ├── presets.js
+│ │ ├── reading_speed_test.js
+│ │ ├── results_time_multiplier.js
+│ │ ├── snapshot_save_tags_modal.js
 │ │ ├── text_apply_canonical.js
-│ │ ├── text_extraction_pdf_page_selection.js
-│ │ ├── text_extraction_status_ui.js
-│ │ ├── text_extraction_batch_planning_modal.js
-│ │ ├── text_extraction_batch_final_modal.js
-│ │ ├── text_extraction_pdf_options_modal.js
-│ │ ├── text_extraction_route_choice_modal.js
 │ │ ├── text_extraction_apply_modal.js
+│ │ ├── text_extraction_batch_final_modal.js
+│ │ ├── text_extraction_batch_flow.js
+│ │ ├── text_extraction_batch_planning_modal.js
+│ │ ├── text_extraction_drag_drop.js
+│ │ ├── text_extraction_entry.js
+│ │ ├── text_extraction_ocr_activation.js
 │ │ ├── text_extraction_ocr_activation_disclosure_modal.js
 │ │ ├── text_extraction_ocr_activation_flow.js
-│ │ ├── text_extraction_ocr_activation.js
 │ │ ├── text_extraction_ocr_activation_recovery.js
 │ │ ├── text_extraction_ocr_disconnect.js
-│ │ ├── text_extraction_entry.js
-│ │ ├── text_extraction_batch_flow.js
-│ │ ├── text_extraction_drag_drop.js
+│ │ ├── text_extraction_pdf_options_modal.js
+│ │ ├── text_extraction_pdf_page_selection.js
+│ │ ├── text_extraction_route_choice_modal.js
 │ │ ├── text_extraction_single_file_heavy_pdf_modal.js
-│ │ ├── current_text_selector_section.js
-│ │ ├── current_text_runtime.js
-│ │ ├── current_text_refresh_policy.js
-│ │ ├── editor_ui.js
-│ │ ├── editor_engine.js
-│ │ └── log.js
-│ ├── renderer.js
-│ ├── language_window.js
+│ │ ├── text_extraction_status_ui.js
+│ │ ├── wpm_controls.js
+│ │ └── wpm_curve.js
+│ ├── third_party_licenses/        # {licencias/notices versionados de terceros redistribuidos}
+│ ├── editor.css
+│ ├── editor.html
 │ ├── editor.js
+│ ├── editor_find.css
+│ ├── editor_find.html
 │ ├── editor_find.js
-│ ├── task_editor.js
-│ ├── preset_modal.js
+│ ├── flotante.css
+│ ├── flotante.html
 │ ├── flotante.js
-│ ├── reading_test_questions.js
-│ ├── reading_test_result.js
 │ ├── index.html
 │ ├── language_window.html
-│ ├── editor.html
-│ ├── editor_find.html
-│ ├── task_editor.html
+│ ├── language_window.js
 │ ├── preset_modal.html
-│ ├── flotante.html
-│ ├── reading_test_questions.html
-│ ├── reading_test_result.html
-│ ├── editor.css
-│ ├── editor_find.css
-│ ├── task_editor.css
-│ ├── flotante.css
+│ ├── preset_modal.js
 │ ├── reading_test_questions.css
+│ ├── reading_test_questions.html
+│ ├── reading_test_questions.js
 │ ├── reading_test_result.css
-│ └── style.css
+│ ├── reading_test_result.html
+│ ├── reading_test_result.js
+│ ├── renderer.js
+│ ├── style.css
+│ ├── task_editor.css
+│ ├── task_editor.html
+│ └── task_editor.js
 ├── test/                          # {tests de desarrollo automátizados de la app}
+| └── README.md
 ├── website/                       # {sitio web de la app}
-├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
 ├── .editorconfig
 ├── .eslintrc.cjs
 ├── .gitattributes
 ├── .gitignore
-├── jsconfig.json
-├── package.json
-├── package-lock.json
-├── ToDo.md
 ├── CHANGELOG.md
+├── jsconfig.json
+├── LICENSE
+├── package-lock.json
+├── package.json
 ├── PRIVACY.md
 ├── README.md
-└── LICENSE
+└── ToDo.md
 ```
 
 ## Guía rápida
@@ -281,7 +287,9 @@ tot/
 - `electron/text_state.js` — Estado del texto actual: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshots_main.js` — Snapshots del texto actual (save/load): valida payloads del flujo save, abre diálogos nativos o resuelve paths determinísticos no interactivos para callers gestionados, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots simples `{ "text": "<string>" }`, snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos compatibles con payload opcional `readingTest`, expone además la apertura de la carpeta de snapshots, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
 - `electron/current_text_processing_state_ipc.js` — Controlador main-owned y superficie IPC del estado pendiente del current text: mantiene el lifecycle autoritativo de settle con `lockId`/`requestId`, sanea metadata de contexto, ignora resoluciones stale y expone lectura/broadcast del estado hacia la ventana principal autorizada.
+- `electron/current_text_processing_main_bridge.js` — Bridge main→renderer del estado autoritativo de procesamiento del current text: difunde `current-text-processing-state-changed` hacia la ventana principal cuando existe un `webContents` vivo y siembra el estado inicial al cargar el renderer, tolerando como no-op normal la fase de bootstrap previa a la creación de la ventana principal.
 - `electron/editor_state.js` — Persistencia/estado de la ventana del Editor de Texto (tamaño/posición/maximizado y `maximizedTextWidthPx`), su integración con el `BrowserWindow` y el bridge IPC/notificaciones del estado de ventana hacia el renderer del editor.
+- `electron/editor_window_lifecycle.js` — Controlador main-owned del ciclo de vida visible/oculto del Editor de Texto: centraliza hidden startup con generación de first-show, timeout de producto, coordinación de `base presentation ready`, conflictos de owner (`ordinary` vs `reading-test`), reveal/focus/maximize de la ventana y manejo consistente de cierre temprano o fallback tardío.
 - `electron/editor_find_main.js` — Coordinador main-owned del find/replace del Editor de Texto: conserva el ciclo de vida de la ventana dedicada, el wiring Electron-specific de listeners/IPC autorizado, los atajos (`Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Shift+F3`, `Esc`, `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0`) y la orquestación de alto nivel entre ventana editor y ventana find.
 - `electron/editor_find_session.js` — Sesión/state machine main-owned del find/replace del Editor de Texto: encapsula el estado mutable del query, navegación `findInPage`, re-sync al refocar la ventana Find, waits/pending request scoped, y la tubería main↔editor de `Replace` / `Replace All` con sincronización de estado basada en `found-in-page`.
 - `electron/editor_find_shortcuts.js` — Helpers puros/importables de shortcuts del find del Editor de Texto: detección de `Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Esc` y shortcuts de tamaño de texto; se mantiene sin estado para reducir ruido en `editor_find_main.js`.
@@ -378,6 +386,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/current_text_selector_section.js` — Owner UI de la sección “texto actual” en la ventana principal: concentra el título, el preview del texto actual, el toolbar local de esa sección, el lock state específico de sus controles y el toggle `Spoiler`, que permite ocultar el tramo final del preview sin devolver esa lógica a `public/renderer.js`.
 - `public/js/current_text_runtime.js` — Owner renderer del runtime del current text en la ventana principal: conserva el preview/result rendering autoritativo, fusiona recalculaciones derivadas dentro del settle activo, reporta éxito/fallo al lifecycle pendiente main-owned y mantiene explícito el modo degradado cuando una actualización derivada falla.
 - `public/js/current_text_refresh_policy.js` — Política compartida de refresh del current text: clasifica cambios de settings/presets entre `time_only`, `stats_display` y `full`, prioriza el refresh más fuerte y expone un controlador pequeño para despachar la acción correcta sin devolver esa taxonomía a `public/renderer.js`.
+- `public/js/editor_startup_presentation.js` — Núcleo renderer del startup presentation del Editor de Texto: parsea los query params de arranque inyectados por main (`initialPresentationMode`, `firstShowGeneration`), conserva estable la intención inicial de presentación hasta que el estado real/nativo esté listo y bufferiza updates de window state mientras el lock de startup sigue activo.
 - `public/js/editor_ui.js` — Módulo UI del Editor de Texto: i18n del editor, `spellcheck`, tamaño de texto, layout maximizado con gutters simétricos y persistencia de `maximizedTextWidthPx`, progreso de lectura, restauración de foco y overlay prestart del reading speed test.
 - `public/js/editor_engine.js` — Módulo de lógica/sync del Editor de Texto: helpers de selección e inserción, `replace current/all`, sincronización con main, truncation handling, paste/drop y aplicación de updates externos.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
@@ -447,7 +456,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/assets/SOURCES.md` — Trazabilidad local de procedencia para assets runtime de `public/assets/`, especialmente los de terceros o sujetos a términos de marca.
 - `public/assets/logo-tot.svg` / `public/assets/logo-tot.png` / `public/assets/logo-tot.120x120.png` — Branding de la app usado en la ventana principal y variantes raster cuadradas auxiliares del proyecto.
 - `public/assets/logo-cibersino.svg` — Branding del desarrollador usado en la ventana principal.
-- `public/assets/kofi_symbol.png` — Símbolo de Ko-fi usado en la ventana principal junto al logo de Cibersino; asset runtime copiado desde `tools_local` para mantener la procedencia local/original separada del sitio web.
+- `public/assets/kofi_symbol.png` — Símbolo de Ko-fi usado en la ventana principal junto al logo de Cibersino.
 - `public/assets/extension/` — Assets runtime del acceso a la extensión del navegador en la app (`tot-symbols.64.png`, `chrome-web-store-badge.png`).
 
 ### 6.3) Recursos de packaging (build-resources)

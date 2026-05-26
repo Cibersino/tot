@@ -46,6 +46,7 @@ const {
 const settingsState = require('./settings');
 const textState = require('./text_state');
 const editorState = require('./editor_state');
+const editorWindowLifecycle = require('./editor_window_lifecycle');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const snapshotsMain = require('./current_text_snapshots_main');
@@ -60,6 +61,7 @@ const readingTestSession = require('./reading_test_session');
 const readingTestPoolImport = require('./reading_test_pool_import');
 const readingTestPool = require('./reading_test_pool');
 const currentTextProcessingStateIpc = require('./current_text_processing_state_ipc');
+const currentTextProcessingMainBridge = require('./current_text_processing_main_bridge');
 const textExtractionFilePickerIpc = require('./text_extraction_platform/text_extraction_file_picker_ipc');
 const textExtractionPreconditionsIpc = require('./text_extraction_platform/text_extraction_preconditions_ipc');
 const textExtractionProcessingModeIpc = require('./text_extraction_platform/text_extraction_processing_mode_ipc');
@@ -78,6 +80,10 @@ log.debug('Main process starting...');
 
 const spellcheckController = spellcheck.createController({
   settingsState,
+});
+const editorWindowLifecycleController = editorWindowLifecycle.createController({
+  log,
+  editorState,
 });
 const editorTextSizeController = editorTextSize.createController({
   settingsState,
@@ -134,21 +140,17 @@ const textExtractionProcessingModeController = textExtractionProcessingModeIpc.c
   },
 });
 
+let currentTextProcessingStateMainBridge = null;
 const currentTextProcessingStateController = currentTextProcessingStateIpc.createController({
   onStateChanged: (state) => {
-    try {
-      const targetWin = resolveMainWindow();
-      if (hasLiveWebContents(targetWin)) {
-        targetWin.webContents.send('current-text-processing-state-changed', state);
-      } else {
-        log.warn(
-          'current-text-processing-state-changed broadcast skipped (ignored): main window unavailable.'
-        );
-      }
-    } catch (err) {
-      log.warn('Failed to broadcast current-text processing state (ignored):', err);
-    }
+    currentTextProcessingStateMainBridge.handleStateChanged(state);
   },
+});
+currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBridge({
+  controller: currentTextProcessingStateController,
+  resolveMainWindow,
+  hasLiveWebContents,
+  log,
 });
 
 // =============================================================================
@@ -176,11 +178,11 @@ function isPlainObject(x) {
 }
 
 function isAliveWindow(win) {
-  return !!(win && !win.isDestroyed());
+  return editorWindowLifecycle.isAliveWindow(win);
 }
 
 function hasLiveWebContents(win) {
-  return !!(isAliveWindow(win) && win.webContents && !win.webContents.isDestroyed());
+  return editorWindowLifecycle.hasLiveWebContents(win);
 }
 
 function isMainInteractive() {
@@ -256,55 +258,8 @@ function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
 }
 
-function sendEditorInitText(logContext) {
-  if (!hasLiveWebContents(editorWin)) {
-    log.warn('editor-init-text skipped (ignored): Text Editor window unavailable.', logContext);
-    return;
-  }
-
-  try {
-    const initialText = textState.getCurrentText();
-    editorWin.webContents.send('editor-init-text', {
-      text: initialText || '',
-      meta: { source: 'main', action: 'init' },
-    });
-  } catch (err) {
-    log.error(`Error sending editor-init-text from ${logContext}:`, err);
-  }
-}
-
-function notifyMainEditorReady(logContext) {
-  if (!hasLiveWebContents(mainWin)) {
-    log.warn('editor-ready notification skipped (ignored): main window unavailable.', logContext);
-    return;
-  }
-
-  try {
-    mainWin.webContents.send('editor-ready');
-  } catch (err) {
-    log.warn(`Unable to notify editor-ready from ${logContext}:`, err);
-  }
-}
-
 function showEditorWindow(options = {}) {
-  if (!isAliveWindow(editorWin)) return null;
-
-  const shouldMaximize = !!(
-    options.maximize === true
-    || (options.useSavedMaximized !== false && editorWin.__totSavedMaximized === true)
-  );
-
-  if (shouldMaximize && typeof editorWin.maximize === 'function' && !editorWin.isMaximized()) {
-    editorWin.maximize();
-  }
-
-  if (typeof editorWin.show === 'function' && !editorWin.isVisible()) {
-    editorWin.show();
-  }
-
-  editorState.notifyWindowState(editorWin, 'showEditorWindow');
-
-  return editorWin;
+  return editorWindowLifecycleController.showEditorWindow(editorWin, options);
 }
 
 function getSettingsBroadcastWindows() {
@@ -338,19 +293,13 @@ function getPreconditionContext() {
 }
 
 function ensureEditorWindowOpen(options = {}) {
-  const deferShow = !!(options && options.deferShow);
-
-  if (!isAliveWindow(editorWin)) {
-    createEditorWindow({ deferShow });
-  } else {
-    if (!deferShow) {
-      showEditorWindow();
-    }
-    sendEditorInitText('ensureEditorWindowOpen');
-    notifyMainEditorReady('ensureEditorWindowOpen');
-  }
-
-  return editorWin;
+  return editorWindowLifecycleController.ensureEditorWindowOpen({
+    editorWin,
+    mainWin,
+    createEditorWindow,
+    options,
+    logContext: 'ensureEditorWindowOpen',
+  });
 }
 
 function requestCloseEditorWindow() {
@@ -577,6 +526,7 @@ function createMainWindow() {
         'text-extraction-processing-mode-changed',
         textExtractionProcessingModeController.getState()
       );
+      currentTextProcessingStateMainBridge.seedMainWindow(mainWin);
       if (readingTestSessionController) {
         mainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
       } else {
@@ -679,9 +629,12 @@ function createMainWindow() {
 function createEditorWindow(options = {}) {
   spellcheckController.apply();
   const deferShow = !!(options && options.deferShow);
+  const waitForBasePresentationReady = !!(options && options.waitForBasePresentationReady);
 
   // Load last saved window state (size/position/maximized) from editor_state.js.
-  const state = editorState.loadInitialState(loadJson);
+  const state = options && options.startupState
+    ? options.startupState
+    : editorState.loadInitialState(loadJson);
 
   // Determine whether we have a valid saved "reduced" (non-maximized) state.
   const hasReduced =
@@ -701,7 +654,7 @@ function createEditorWindow(options = {}) {
     resizable: true,
     minimizable: true,
     maximizable: true,
-    show: false, // Show only after ready-to-show to avoid flicker.
+    show: false, // The lifecycle owner decides when a fresh editor is safe to present.
     webPreferences: {
       preload: path.join(__dirname, 'editor_preload.js'),
       contextIsolation: true,
@@ -715,7 +668,19 @@ function createEditorWindow(options = {}) {
   editorWin.setMenuBarVisibility(false);
   editorWin.__totSavedMaximized = !!(state && state.maximized === true);
 
-  editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
+  const startupQuery = {};
+  if (options && (options.initialPresentationMode === 'maximized' || options.initialPresentationMode === 'reduced')) {
+    startupQuery.initialPresentationMode = options.initialPresentationMode;
+  }
+  if (options && Number.isInteger(options.firstShowGeneration) && options.firstShowGeneration > 0) {
+    startupQuery.firstShowGeneration = String(options.firstShowGeneration);
+  }
+
+  const loadFileOptions = Object.keys(startupQuery).length > 0
+    ? { query: startupQuery }
+    : undefined;
+
+  editorWin.loadFile(path.join(__dirname, '../public/editor.html'), loadFileOptions);
 
   try {
     editorFindMain.attachEditorWindow(editorWin, editorTextSizeController.getShortcutActions());
@@ -723,14 +688,15 @@ function createEditorWindow(options = {}) {
     log.error('Error attaching Text Editor find listeners:', err);
   }
 
-  // When ready, apply maximized state (if needed), show it, and send initial data.
+  // Keep the editor hidden here when startup presentation must be finalized later.
   editorWin.once('ready-to-show', () => {
     try {
-      if (!deferShow) {
-        showEditorWindow();
-      }
-      sendEditorInitText('createEditorWindow');
-      notifyMainEditorReady('createEditorWindow');
+      editorWindowLifecycleController.handleEditorWindowReady({
+        editorWin,
+        deferShow,
+        waitForBasePresentationReady,
+        logContext: 'createEditorWindow',
+      });
     } catch (err) {
       log.error('Error showing Text Editor:', err);
     }
@@ -741,11 +707,18 @@ function createEditorWindow(options = {}) {
 
   // Drop reference on close so the window can be recreated later.
   editorWin.on('closed', () => {
-    if (readingTestSessionController) {
+    const startupCloseHandled = editorWindowLifecycleController.handleEditorWindowClosed({
+      editorWin,
+      mainWin,
+      logContext: 'editorWin.closed',
+    });
+    if (!startupCloseHandled && readingTestSessionController) {
       readingTestSessionController.handleEditorClosed();
     }
     editorWin = null;
   });
+
+  return editorWin;
 }
 
 /**
@@ -1599,15 +1572,32 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
 // Editor window: open (create or focus) and push current text
 ipcMain.handle('open-editor', () => {
-  if (!guardMainUserAction('open-editor', 'open-editor ignored (pre-READY).')) {
-    return { ok: false, error: 'not ready' };
-  }
   try {
-    ensureEditorWindowOpen();
-    return { ok: true };
+    return editorWindowLifecycleController.handleOpenEditor({
+      guardOpenEditor: () => guardMainUserAction('open-editor', 'open-editor ignored (pre-READY).'),
+      editorWin,
+      mainWin,
+      createEditorWindow,
+      startupState: editorState.loadInitialState(loadJson),
+      logContext: 'open-editor',
+    });
   } catch (err) {
     log.error('Error processing open-editor:', err);
     return { ok: false, error: String(err) };
+  }
+});
+
+ipcMain.on('editor-report-base-presentation-state', (event, payload) => {
+  try {
+    editorWindowLifecycleController.handleBasePresentationStateReport({
+      event,
+      editorWin,
+      mainWin,
+      payload,
+      logContext: 'editor-report-base-presentation-state',
+    });
+  } catch (err) {
+    log.error('Error processing editor-report-base-presentation-state:', err);
   }
 });
 

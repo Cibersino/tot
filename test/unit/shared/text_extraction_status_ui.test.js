@@ -58,7 +58,6 @@ function createHarness() {
     'renderer.main.processing.text_extraction_route_ocr': 'OCR',
     'renderer.main.processing.current_text_waiting': 'Updating current text...',
     'renderer.main.processing.current_text_recount_waiting': 'Recalculating current-text results...',
-    'renderer.main.processing.current_text_elapsed': 'Current text elapsed: ',
     'renderer.main.processing.text_extraction_elapsed': 'Elapsed: ',
     'renderer.main.tooltips.text_extraction_abort': 'Abort extraction',
     'renderer.main.aria.text_extraction_abort': 'Abort text extraction',
@@ -378,7 +377,7 @@ test('abort finalization keeps the processing shell visible with frozen elapsed 
   assert.equal(harness.elements.textExtractionProcessingFilename.hidden, true);
 });
 
-test('standalone full refresh pending reuses the current-text processing shell and elapsed row', () => {
+test('standalone full refresh pending reuses the current-text processing shell without an elapsed row', () => {
   const harness = createHarness();
 
   harness.setNowMs(5000);
@@ -397,11 +396,8 @@ test('standalone full refresh pending reuses the current-text processing shell a
     'Recalculating current-text results...'
   );
   assert.equal(harness.elements.textExtractionProcessingFilename.hidden, true);
-  assert.equal(harness.elements.textExtractionProcessingElapsed.hidden, false);
-  assert.equal(
-    harness.elements.textExtractionProcessingElapsed.textContent,
-    'Current text elapsed: 00:03'
-  );
+  assert.equal(harness.elements.textExtractionProcessingElapsed.hidden, true);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, '');
   assert.equal(harness.elements.btnTextExtractionAbort.hidden, true);
 
   harness.api.applyStandaloneFullRefreshPendingState({

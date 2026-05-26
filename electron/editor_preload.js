@@ -29,6 +29,7 @@ const api = {
   getAppConfig: () => ipcRenderer.invoke('get-app-config'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   getWindowState: () => ipcRenderer.invoke('get-editor-window-state'),
+  reportBasePresentationState: (payload) => ipcRenderer.send('editor-report-base-presentation-state', payload),
   setSpellcheckEnabled: (enabled) => ipcRenderer.invoke('set-spellcheck-enabled', enabled),
   setEditorFontSizePx: (fontSizePx) => ipcRenderer.invoke('set-editor-font-size-px', fontSizePx),
   setMaximizedTextWidthPx: (textWidthPx) => ipcRenderer.invoke('set-editor-maximized-text-width-px', textWidthPx),
@@ -39,12 +40,6 @@ const api = {
     'removeListener error (editor-replace-request):'
   ),
   sendReplaceResponse: (payload) => ipcRenderer.send('editor-replace-response', payload),
-  onInitText: (cb) => subscribeWithUnsub(
-    'editor-init-text',
-    cb,
-    'editor-init-text callback error:',
-    'removeListener error (editor-init-text):'
-  ),
   onExternalUpdate: (cb) => subscribeWithUnsub(
     'editor-text-updated',
     cb,

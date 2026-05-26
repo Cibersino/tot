@@ -161,13 +161,25 @@
     return normalizedState ? 'failed' : '';
   }
 
-  function formatReportStatusText(state, code = '') {
+  function formatReportStatusText(state, code = '', { applyTruncated = false } = {}) {
     const normalizedState = normalizeReportState(state);
-    if (!normalizedState || normalizedState === 'success') {
+    if (!normalizedState) {
+      return '';
+    }
+    if (normalizedState === 'success') {
+      if (applyTruncated === true) {
+        return tRenderer('renderer.text_extraction.batch_report.applied_truncated');
+      }
       return '';
     }
     if (normalizedState === 'omitted') {
       return tRenderer('renderer.text_extraction.batch_report.omitted');
+    }
+    if (normalizedState === 'failed' && code === 'PAYLOAD_TOO_LARGE') {
+      return tRenderer('renderer.text_extraction.batch_report.payload_too_large');
+    }
+    if (normalizedState === 'failed' && code === 'TEXT_LIMIT') {
+      return tRenderer('renderer.text_extraction.batch_report.text_limit');
     }
     if (normalizedState === 'cancelled') {
       if (code) {
@@ -185,8 +197,8 @@
     return tRenderer('renderer.text_extraction.batch_report.failed_fallback');
   }
 
-  function buildReportStatusSuffix(state, code = '') {
-    const statusText = formatReportStatusText(state, code);
+  function buildReportStatusSuffix(state, code = '', { applyTruncated = false } = {}) {
+    const statusText = formatReportStatusText(state, code, { applyTruncated });
     return statusText ? `(${statusText})` : '';
   }
 
@@ -194,7 +206,9 @@
     if (!unit || !isHeavySplitGeneratedRowsUnit(unit)) {
       return '';
     }
-    return formatReportStatusText(unit.overallState, unit.overallCode || '');
+    return formatReportStatusText(unit.overallState, unit.overallCode || '', {
+      applyTruncated: unit.applyTruncated === true,
+    });
   }
 
   function renderHeavySplitUnitMetaRows(unit) {
@@ -223,7 +237,10 @@
   function renderGeneratedInputRow(generatedInput, index, unitKey) {
     const label = buildReportStatusSuffix(
       generatedInput && generatedInput.state,
-      generatedInput && generatedInput.code ? generatedInput.code : ''
+      generatedInput && generatedInput.code ? generatedInput.code : '',
+      {
+        applyTruncated: generatedInput && generatedInput.applyTruncated === true,
+      }
     );
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-generated',
@@ -247,7 +264,10 @@
   function renderInputRow(input, index, unitKey) {
     const label = buildReportStatusSuffix(
       input && input.state,
-      input && input.code ? input.code : ''
+      input && input.code ? input.code : '',
+      {
+        applyTruncated: input && input.applyTruncated === true,
+      }
     );
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-input',
@@ -336,14 +356,20 @@
       unit.inputs.forEach((input) => {
         const label = buildReportStatusSuffix(
           input && input.state,
-          input && input.code ? input.code : ''
+          input && input.code ? input.code : '',
+          {
+            applyTruncated: input && input.applyTruncated === true,
+          }
         );
         lines.push(`- ${input.displayName || input.fileName}${label ? ` ${label}` : ''}`);
         if (Array.isArray(input.generatedInputs)) {
           input.generatedInputs.forEach((generatedInput) => {
             const generatedLabel = buildReportStatusSuffix(
               generatedInput && generatedInput.state,
-              generatedInput && generatedInput.code ? generatedInput.code : ''
+              generatedInput && generatedInput.code ? generatedInput.code : '',
+              {
+                applyTruncated: generatedInput && generatedInput.applyTruncated === true,
+              }
             );
             lines.push(`  - ${generatedInput.fileName}${generatedLabel ? ` ${generatedLabel}` : ''}`);
           });

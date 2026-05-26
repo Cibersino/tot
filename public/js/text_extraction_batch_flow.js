@@ -975,10 +975,11 @@
     displayName = '',
     state,
     code = '',
+    applyTruncated = false,
     generatedInputs = [],
     generatedPdfArtifact = null,
   }) {
-    return {
+    const record = {
       fileName,
       displayName: normalizeNonEmptyString(displayName) || normalizeNonEmptyString(fileName),
       state,
@@ -986,6 +987,10 @@
       generatedInputs,
       generatedPdfArtifact,
     };
+    if (applyTruncated === true) {
+      record.applyTruncated = true;
+    }
+    return record;
   }
 
   function mapExecutionResultStateToReportState(executionResult) {
@@ -1012,6 +1017,7 @@
     unitReport,
     input,
     executionResult,
+    applyResult,
     heavyGeneratedInputs,
   }) {
     if (!unitReport || !input || !executionResult) {
@@ -1027,6 +1033,7 @@
       unitReport.overallCode = executionResult.error && executionResult.error.code
         ? executionResult.error.code
         : '';
+      unitReport.applyTruncated = !!(applyResult && applyResult.truncated);
       heavyGeneratedInputs.forEach((generatedInput) => {
         unitReport.inputs.push(buildInputReportRecord({
           fileName: generatedInput.fileName,
@@ -1043,6 +1050,7 @@
       displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
       state: mapExecutionResultStateToReportState(executionResult),
       code: executionResult.error && executionResult.error.code ? executionResult.error.code : '',
+      applyTruncated: !!(applyResult && applyResult.truncated),
       generatedInputs: heavyGeneratedInputs,
       generatedPdfArtifact: executionResult.generatedPdfArtifact || null,
     }));
@@ -1195,6 +1203,7 @@
           sourceFileName: unit.exclusiveHeavy && unit.inputs[0] ? unit.inputs[0].fileName : '',
           overallState: '',
           overallCode: '',
+          applyTruncated: false,
           heavyGeneratedInputRows: false,
           inputs: [],
           snapshotResult: null,
@@ -1326,9 +1335,10 @@
           const isCancelled = execution.result.state === 'cancelled';
           const isSuccess = execution.result.state === 'success';
           const hasText = isSuccess && typeof execution.result.text === 'string' && execution.result.text.length > 0;
+          let applyResult = null;
           if (hasText) {
             const applyMode = unitProducedText ? 'append' : 'overwrite';
-            const applyResult = await applyExecutionText(applyMode, execution.result.text);
+            applyResult = await applyExecutionText(applyMode, execution.result.text);
             if (!applyResult || applyResult.ok !== true) {
               unitReport.inputs.push(buildInputReportRecord({
                 fileName: input.fileName,
@@ -1359,6 +1369,7 @@
             unitReport,
             input,
             executionResult: execution.result,
+            applyResult: hasText ? applyResult : null,
             heavyGeneratedInputs,
           });
 

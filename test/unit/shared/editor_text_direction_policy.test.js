@@ -193,11 +193,20 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
   };
 }
 
-function createEditorScriptHarness() {
+function createEditorScriptHarness({
+  appConfig = {},
+  getAppConfigImpl = async () => appConfig,
+  getCurrentTextImpl = async () => '',
+  includeGetCurrentText = true,
+} = {}) {
   const subscriptions = {};
   const updateDirectionCalls = [];
   const applyWindowLanguageAttributesCalls = [];
   const replaceResponses = [];
+  const bootstrapApplyCalls = [];
+  const errorLogs = [];
+  const warnLogs = [];
+  let getCurrentTextCallCount = 0;
 
   const elements = {
     editorWrap: createElement('editorWrap'),
@@ -249,13 +258,24 @@ function createEditorScriptHarness() {
 
   const sandbox = {
     window: {
+      location: {
+        search: '',
+      },
       getLogger() {
         return {
           debug() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
-          errorOnce() {},
+          warn(...args) {
+            warnLogs.push(args);
+          },
+          warnOnce(...args) {
+            warnLogs.push(args);
+          },
+          error(...args) {
+            errorLogs.push(args);
+          },
+          errorOnce(...args) {
+            errorLogs.push(args);
+          },
         };
       },
       AppConstants: {
@@ -271,8 +291,9 @@ function createEditorScriptHarness() {
         EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX: 960,
         EDITOR_MAXIMIZED_GUTTER_MIN_PX: 40,
         MAX_TEXT_CHARS: 100000,
-        applyConfig() {
-          return 100000;
+        applyConfig(cfg = {}) {
+          const max = Number(cfg.maxTextChars);
+          return Number.isFinite(max) && max > 0 ? max : 100000;
         },
       },
       EditorMaximizedLayoutCore: {
@@ -297,6 +318,7 @@ function createEditorScriptHarness() {
         createEditorUI() {
           return {
             clampEditorFontSizePx(value) { return Number(value) || 20; },
+            clampEditorMaximizedTextWidthPx(value) { return Number(value) || 960; },
             setLocalSpellcheckState() {},
             setLocalEditorFontSizePx() {},
             setLocalEditorMaximizedTextWidthPx() {},
@@ -322,12 +344,16 @@ function createEditorScriptHarness() {
         },
       },
       EditorEngine: {
-        createEditorEngine() {
+        createEditorEngine(engineCtx) {
           return {
             getSelectionRange() { return { start: 0, end: 0 }; },
             getInsertionCapacity() { return 100000; },
             getBeforeInputIncomingLength() { return null; },
             async applyExternalUpdate(payload) {
+              bootstrapApplyCalls.push({
+                payload,
+                maxTextCharsAtApply: engineCtx.state.maxTextChars,
+              });
               if (payload && typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'text')) {
                 elements.editorArea.value = String(payload.text || '');
               } else {
@@ -372,15 +398,13 @@ function createEditorScriptHarness() {
         this.type = type;
       }
     },
+    URLSearchParams,
     setTimeout,
     clearTimeout,
   };
 
   sandbox.window.editorAPI = {
     setCurrentText() { return { ok: true }; },
-    onInitText(cb) {
-      subscriptions.initText = cb;
-    },
     onExternalUpdate(cb) {
       subscriptions.externalUpdate = cb;
     },
@@ -390,11 +414,12 @@ function createEditorScriptHarness() {
     sendReplaceResponse(response) {
       replaceResponses.push(response);
     },
-    async getAppConfig() { return {}; },
+    async getAppConfig() { return getAppConfigImpl(); },
     async getSettings() {
       return { language: 'en', spellcheckEnabled: true, spellcheckAvailable: true, editorFontSizePx: 20 };
     },
     async getWindowState() { return { maximized: false, maximizedTextWidthPx: 960 }; },
+    reportBasePresentationState() {},
     onSettingsChanged(cb) {
       subscriptions.settingsChanged = cb;
     },
@@ -404,11 +429,23 @@ function createEditorScriptHarness() {
     onReadingTestPrestartStateChanged(cb) {
       subscriptions.prestartChanged = cb;
     },
-    async getCurrentText() { return ''; },
     async setSpellcheckEnabled() { return { ok: true }; },
   };
+  if (includeGetCurrentText) {
+    sandbox.window.editorAPI.getCurrentText = async () => {
+      getCurrentTextCallCount += 1;
+      return getCurrentTextImpl();
+    };
+  }
 
   vm.createContext(sandbox);
+  const startupPresentationSource = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/editor_startup_presentation.js'),
+    'utf8'
+  );
+  vm.runInContext(startupPresentationSource, sandbox, {
+    filename: 'public/js/editor_startup_presentation.js'
+  });
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/editor.js'),
     'utf8'
@@ -421,11 +458,15 @@ function createEditorScriptHarness() {
     updateDirectionCalls,
     applyWindowLanguageAttributesCalls,
     replaceResponses,
+    bootstrapApplyCalls,
+    errorLogs,
+    warnLogs,
+    getCurrentTextCallCount: () => getCurrentTextCallCount,
   };
 }
 
-async function bootstrapEditorScriptHarness() {
-  const harness = createEditorScriptHarness();
+async function bootstrapEditorScriptHarness(options = {}) {
+  const harness = createEditorScriptHarness(options);
   await tick();
   await tick();
   harness.updateDirectionCalls.length = 0;
@@ -452,7 +493,58 @@ test('editor UI applies resolved direction to the textarea surface', () => {
   assert.equal(harness.editor.getAttribute('dir'), 'ltr');
 });
 
-test('editor script recomputes textarea direction on local input, external updates, init text, and language changes', async () => {
+test('editor script bootstraps initial text once through getCurrentText with init meta', async () => {
+  const harness = await bootstrapEditorScriptHarness({
+    getCurrentTextImpl: async () => 'bootstrap text',
+  });
+
+  assert.equal(harness.getCurrentTextCallCount(), 1);
+  assert.equal(harness.bootstrapApplyCalls.length, 1);
+  assert.equal(harness.bootstrapApplyCalls[0].payload.text, 'bootstrap text');
+  assert.equal(harness.bootstrapApplyCalls[0].payload.meta.source, 'main');
+  assert.equal(harness.bootstrapApplyCalls[0].payload.meta.action, 'init');
+});
+
+test('editor script fails fast when getCurrentText is missing', () => {
+  assert.throws(
+    () => createEditorScriptHarness({ includeGetCurrentText: false }),
+    /\[editor\] editorAPI\.getCurrentText unavailable; cannot continue/
+  );
+});
+
+test('editor script logs a startup failure when getCurrentText bootstrap rejects', async () => {
+  const harness = await bootstrapEditorScriptHarness({
+    getCurrentTextImpl: async () => {
+      throw new Error('bootstrap failed');
+    },
+  });
+
+  assert.equal(harness.getCurrentTextCallCount(), 1);
+  assert.equal(harness.bootstrapApplyCalls.length, 0);
+  assert.equal(harness.errorLogs.length, 1);
+  assert.match(String(harness.errorLogs[0][0]), /BOOTSTRAP: Text Editor startup failed:/);
+  assert.match(String(harness.errorLogs[0][1]), /editorAPI\.getCurrentText failed during bootstrap/);
+});
+
+test('editor script resolves config before applying the initial text seed', async () => {
+  const callOrder = [];
+  const harness = await bootstrapEditorScriptHarness({
+    getAppConfigImpl: async () => {
+      callOrder.push('getAppConfig');
+      return { maxTextChars: 7 };
+    },
+    getCurrentTextImpl: async () => {
+      callOrder.push('getCurrentText');
+      return '123456789';
+    },
+  });
+
+  assert.deepEqual(callOrder, ['getAppConfig', 'getCurrentText']);
+  assert.equal(harness.bootstrapApplyCalls.length, 1);
+  assert.equal(harness.bootstrapApplyCalls[0].maxTextCharsAtApply, 7);
+});
+
+test('editor script recomputes textarea direction on local input, external updates, and language changes', async () => {
   const harness = await bootstrapEditorScriptHarness();
 
   harness.elements.editorArea.value = 'typed text';
@@ -462,10 +554,6 @@ test('editor script recomputes textarea direction on local input, external updat
   harness.updateDirectionCalls.length = 0;
   await harness.subscriptions.externalUpdate({ text: 'שלום', meta: { source: 'main' } });
   assert.deepEqual(harness.updateDirectionCalls, ['שלום']);
-
-  harness.updateDirectionCalls.length = 0;
-  await harness.subscriptions.initText({ text: 'مرحبا', meta: { source: 'main', action: 'init' } });
-  assert.deepEqual(harness.updateDirectionCalls, ['مرحبا']);
 
   harness.updateDirectionCalls.length = 0;
   harness.elements.editorArea.value = '  250  ';

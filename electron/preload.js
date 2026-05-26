@@ -74,9 +74,15 @@ const api = {
             'removeListener error (current-text-processing-state-changed):'
         );
     },
-    onEditorReady: (cb) => {
-        const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
-        return subscribeWithUnsub('editor-ready', listener, 'removeListener error (editor-ready):');
+    onEditorFirstShowState: (cb) => {
+        const listener = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('editor-first-show-state callback error:', err); }
+        };
+        return subscribeWithUnsub(
+            'editor-first-show-state',
+            listener,
+            'removeListener error (editor-first-show-state):'
+        );
     },
 
     // Settings / app info

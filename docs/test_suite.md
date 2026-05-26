@@ -1707,6 +1707,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - If startup settling is still in flight, the shared processing/status bar is visible for current text.
 - Main-window controls and menu actions remain locked until the latest current-text settle finishes.
+- The current-text pending bar does not show a live elapsed row during startup settle.
 - Preview/results/time do not appear normally settled during pending; pending placeholders or the pending styling remain visible until final derived values land.
 
 ### EDGE-02 Offline updater
@@ -1759,6 +1760,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - The shared processing/status bar shows current-text pending instead of leaving the area looking settled.
 - Main-window controls and menu actions stay locked while current-text pending is active.
+- The current-text pending bar does not show a live elapsed row during runtime settle or standalone recount.
 - Preview reflects the authoritative latest text, while counts/time remain visibly pending until the latest settle finishes.
 - If overlapping updates occur, only the latest text-derived completion becomes authoritative; older completions do not leave the UI looking finally settled afterward.
 
