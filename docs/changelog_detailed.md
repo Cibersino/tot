@@ -57,7 +57,8 @@ Reglas:
 - La activación de Google OCR deja de depender solo de un fallo durante la extracción y pasa a poder iniciarse explícitamente desde `Menú > Preferencias`, reutilizando el mismo disclosure y la misma secuencia OAuth que usa la recuperación automática.
 - Abortar una extracción deja de devolver inmediatamente la ventana principal a idle: la UI entra en un estado explícito de `cancelación pendiente`, conserva el contexto visible del archivo/tiempo y mantiene bloqueadas las interacciones hasta que el cierre real del flujo termina.
 - El manejo de dirección de texto se normaliza en preview, editor, presets y disclosure OCR para que contenido RTL o mixto no quede visualmente invertido ni mal alineado respecto de la UI efectiva.
-- El Text Editor deja de inicializar el texto por dos caminos competidores (`push` desde main + `pull` desde renderer) y pasa a un único arranque renderer-owned vía `getCurrentText()`, evitando re-inicializaciones al reabrir una ventana ya viva y preservando borradores locales no sincronizados.
+- El Text Editor deja de inicializar el texto por dos caminos competidores (`push` desde main + `pull` desde renderer) y pasa a un único arranque renderer-owned vía `getCurrentText()`, evitando re-inicializaciones al reabrir una ventana ya viva, preservando borradores locales no sincronizados y desacoplando el primer show visible de una señal de ready demasiado temprana.
+- La apertura del Text Editor deja de depender de un `editor-ready` genérico para limpiar el loader de la ventana principal: el primer show ahora espera una confirmación explícita de presentación base desde el renderer, mientras una ventana ya viva simplemente se revela y enfoca sin rebootstrap.
 - La ventana principal deja de rehacer recuentos completos del texto vigente cuando un cambio solo afecta `WPM`, formateo numérico visible o la resolución efectiva del preset; ahora clasifica esos refreshes y reutiliza stats/cache cuando el texto no cambió, y cuando sí hace falta un recuento completo muestra un estado pending/recount explícito hasta que se asiente la corrida autoritativa más reciente, incluido un kickoff diferido en startup para no disparar ese settle antes de que la UI salga realmente del bloqueo inicial.
 - El núcleo de conteo deja de depender de recorridos/materializaciones redundantes y pasa a contadores streaming para `simple` y para el fallback de `preciso`; cuando `Intl.Segmenter` está disponible, el modo preciso conserva la semántica visible de whitespace, grafemas y segmentación de palabras, pero separa los pases de grafemas y palabras para reducir trabajo intermedio sobre textos grandes.
 - Los artefactos temporales locales de runtime dejan de dispersarse en `%TEMP%`: subsets PDF, normalización OCR y copias temporales de app-docs/licencias pasan a centralizarse bajo un root app-owned con limpieza best-effort al cierre normal.
@@ -91,10 +92,11 @@ Reglas:
 - Helpers renderer shared `RendererI18n.getUiLanguageDirection()` y `RendererI18n.resolveUserTextDirection(value)` para derivar la dirección efectiva del contenido y reutilizarla en preview, editor, presets y disclosure OCR.
 - Superficie shared de pending del texto vigente, con controlador main-owned `current_text_processing_state_ipc.js`, owner renderer `current_text_runtime.js` y wiring del status shell para reflejar `updating current text`, `settling current text`, `syncing Text Editor changes` y `recalculating current-text results` sin dejar el área como ya asentada.
 - Módulo renderer shared `current_text_refresh_policy.js` para clasificar refreshes del texto vigente entre `full`, `stats_display` y `time_only`, priorizar la recalculación mínima suficiente y mantener esa taxonomía fuera de `public/renderer.js`.
+- Módulo renderer shared `editor_startup_presentation.js` para parsear el contexto de primer show del Text Editor, mantener bloqueada su presentación inicial y aplicar el estado real de ventana solo cuando el bootstrap base ya quedó listo.
 - Helper main-owned `electron/app_temp_paths.js` para centralizar paths temporales de runtime y separar explícitamente runtime (`%TEMP%/tot-temp/`) de tests (`%TEMP%/tot-temp-test/`).
 - Cobertura unitaria dedicada para activación OCR desde menú, flujo compartido y recuperación (`text_extraction_ocr_activation*.test.js`).
 - Cobertura unitaria adicional para el estado `cancellation pending` y para políticas de dirección de texto en preview/editor/presets/disclosure (`text_extraction_status_ui.test.js`, `text_extraction_entry.test.js`, `text_extraction_batch_flow.test.js`, `current_text_selector_section.test.js`, `editor_text_direction_policy.test.js`, `renderer_i18n_text_direction.test.js`, `preset_modal.test.js`, `presets_description_direction.test.js`, `wpm_controls_preset_description.test.js`, `text_extraction_ocr_activation_disclosure_modal.test.js`).
-- Cobertura unitaria adicional para el bootstrap single-path y la coordinación de reapertura del Text Editor (`editor_preload.test.js`, `editor_window_lifecycle.test.js`), más ampliación de `editor_text_direction_policy.test.js` para cubrir `getCurrentText()` como arranque único, fallo bootstrap explícito y orden `config → seed inicial`.
+- Cobertura unitaria adicional para el bootstrap single-path, el primer show diferido y la coordinación de reapertura del Text Editor (`editor_preload.test.js`, `preload.test.js`, `editor_window_lifecycle.test.js`, `reading_test_session_windows.test.js`, `editor_startup_presentation.test.js`), más ampliación de `editor_text_direction_policy.test.js` para cubrir `getCurrentText()` como arranque único, fallo bootstrap explícito y orden `config → seed inicial`.
 - Cobertura unitaria adicional para la nueva política de refresh del texto vigente, el runtime derivado y los outcomes efectivos de presets/WPM (`current_text_refresh_policy.test.js`, `current_text_runtime.test.js`, `wpm_controls_refresh_outcome.test.js`), incluyendo el arranque diferido del settle bootstrap y su cancelación/once-semantics cuando el request inicial deja de ser vigente antes del kickoff.
 - Cobertura manual adicional en `docs/test_suite.md` para honestidad del pending del current text al arranque y durante mutaciones runtime grandes (`EDGE-01A`, `EDGE-05A`), más cobertura unitaria de `count_core` sobre whitespace mixto en `simple` y sobre el fallback de `preciso` sin `Intl.Segmenter` (`count_core.test.js`).
 
@@ -125,7 +127,7 @@ Reglas:
 - El preview del texto vigente deja de mantener un probador de dirección propio y pasa a reutilizar la resolución shared de `RendererI18n`, aplicando la dirección efectiva del contenido también al modo truncado/sin spoiler.
 - El editor completo deja de depender de `dir="auto"` hardcodeado en HTML y recalcula la dirección del `textarea` en bootstrap, escritura local, sync externa y cambios de idioma; además, el botón `clear` del editor pasa a limpiar solo el `textarea` local y deja de vaciar el `current text` de la ventana principal.
 - El arranque del Text Editor deja de combinar `editor-init-text` con un fetch paralelo y pasa a un único bootstrap renderer-owned vía `getCurrentText()`, aplicado después de resolver el `maxTextChars` efectivo del editor.
-- `open-editor` deja de resembrar una ventana del Text Editor ya viva; al reabrirla ahora solo la muestra/enfoca y reutiliza `editor-ready` para limpiar el loader de la ventana principal sin tocar el borrador local.
+- `open-editor` deja de resembrar una ventana del Text Editor ya viva; al reabrirla ahora solo la muestra/enfoca sin tocar el borrador local, y cuando necesita crear una nueva ventana pasa por un primer show oculto con handshake `editor-first-show-state` para limpiar el loader solo después de que la presentación base quede realmente lista.
 - Las descripciones de presets en main window y en `preset_modal` dejan de renderizarse como texto neutro fijo y pasan a actualizar `dir` según el contenido efectivo del campo.
 - Los cambios de settings/preset en la ventana principal dejan de resolver siempre `startPreviewAndResultsUpdate(...)` como refresh genérico; ahora distinguen `full`, `stats_display` y `time_only`, de modo que cambios de idioma simple o separadores reformatean resultados sin recontar y cambios de `WPM` recalculan solo el tiempo estimado.
 - La resolución de presets (`loadPresets`, `handlePresetCreated`, restore/delete) deja de limitarse a recargar el catálogo y pasa a devolver el outcome efectivo de selección (`previous/next preset`, `previous/next WPM`, `wpmChanged`) para que la UI decida el refresh mínimo correcto incluso cuando hubo fallback de preset.
@@ -150,6 +152,7 @@ Reglas:
 - El disclosure de activación OCR, el preview del texto vigente y las descripciones de presets dejan de presentar dirección/alineación inconsistente cuando el contenido del usuario o la UI efectiva trabajan en RTL o bidi mixto.
 - El Text Editor deja de poder aplicar el seed inicial por dos rutas de bootstrap distintas o de sobrescribir el `textarea` local al reabrirse desde `open-editor`; el arranque inicial ahora ocurre una sola vez desde `getCurrentText()` y una ventana ya viva conserva su draft no sincronizado.
 - Si el `maxTextChars` efectivo del editor difiere del fallback renderer, el seed inicial deja de poder aplicarse contra el límite por defecto antes de que llegue la configuración real.
+- La apertura del Text Editor desde la ventana principal, incluida la variante oculta/maximizada que reutiliza `reading test`, deja de poder quedar con loader colgado, ventana intermedia o cierre silencioso cuando el bootstrap base no termina a tiempo; ahora el primer show usa generación explícita, fallo reportado y timeout productizado de `60s` con aviso diferenciado para timeout vs. fallo de arranque.
 - Ajustar `WPM`, cambiar separadores numéricos del idioma activo o resolver un fallback de preset deja de disparar recuentos completos redundantes del texto vigente y rerenders innecesarios del preview cuando bastaba reutilizar `currentTextStats` para refrescar tiempo o formato visible; cuando el cambio sí obliga a un recount standalone, la UI ya no aparenta estado asentado antes de que ese recálculo termine o degrade explícitamente.
 - Los refreshes `stats_display` / `time_only` que llegan mientras hay una derivación standalone o un settle pendiente dejan de perderse o filtrarse sobre una corrida posterior de otro texto; ahora quedan acotados a la secuencia activa y no contaminan un `current text` más nuevo.
 - Un arranque con current text grande, una mutación runtime superpuesta o un sync tardío del Editor de Texto dejan de poder mostrar resultados “finales” viejos o desbloquear interacciones antes de tiempo; solo la última corrida autoritativa puede resolver el pending del texto vigente, y el settle bootstrap ya no se dispara prematuramente antes de que el renderer abandone el bloqueo inicial.
@@ -174,8 +177,11 @@ Reglas:
   - agrega `getCurrentTextProcessingState()` → `ipcRenderer.invoke('current-text-processing-get-state')`
   - agrega `resolveCurrentTextProcessing(payload)` → `ipcRenderer.invoke('current-text-processing-resolve', payload)`
   - agrega `onCurrentTextProcessingStateChanged(cb)` ← evento `current-text-processing-state-changed`
+  - agrega `onEditorFirstShowState(cb)` ← evento `editor-first-show-state`
   - remueve `onInitText(cb)` ← evento `editor-init-text`
   - `onCurrentTextUpdated(cb)` deja de emitir solo `text:string` y pasa a entregar `{ text, requestId, meta }`
+- Preload `window.editorAPI`:
+  - agrega `reportBasePresentationState(payload)` → `ipcRenderer.send('editor-report-base-presentation-state', payload)`
 - Preload `window.taskEditorAPI`:
   - agrega `setDirtyState(dirty:boolean)` → `ipcRenderer.send('task-editor-dirty-state', { dirty })`
 - IPC renderer ↔ main:
@@ -185,10 +191,13 @@ Reglas:
   - nuevo canal `current-text-snapshot-open-folder`
   - nuevos canales `current-text-processing-get-state` y `current-text-processing-resolve`
   - nuevo evento `current-text-processing-state-changed`
+  - nuevo canal `editor-report-base-presentation-state`
+  - nuevo evento `editor-first-show-state`
   - se remueve `editor-init-text` del contrato activo de arranque del Text Editor; `editor-text-updated` queda como único push main → editor post-bootstrap
   - `current-text-updated` y `editor-text-updated` pasan a transportar payload objeto con `{ text, requestId, meta }`
   - `text-extraction-open-picker` puede devolver `filePaths[]` además de `filePath` cuando el picker vuelve múltiples archivos válidos
   - nuevo canal `task-editor-dirty-state`
+  - `open-editor` puede devolver `launchDisposition: 'first-show-pending' | 'reused-visible'` cuando la apertura fue aceptada
   - `open-task-editor` puede devolver `code: 'CONFIRM_DENIED'` cuando el usuario cancela el descarte nativo de cambios no guardados del Editor de Tareas ya abierto
 - `set-current-text`:
   - mantiene compatibilidad con payload string o `{ text, meta }`
@@ -210,6 +219,7 @@ Reglas:
   - nuevas strings `renderer.main.results.value_pending`, `renderer.main.results.value_unavailable`
   - nuevas strings `renderer.main.processing.current_text_waiting`, `current_text_waiting_startup`, `current_text_waiting_editor`, `current_text_recount_waiting` y `current_text_elapsed`
   - nuevas strings `renderer.alerts.current_text_processing_locked` y `renderer.alerts.current_text_recount_locked`
+  - nuevas strings `renderer.alerts.text_editor_start_failed` y `renderer.alerts.text_editor_start_timeout`
 - Storage / filesystem:
   - el runtime temp app-owned se centraliza bajo `os.tmpdir()/tot-temp/`
   - los subsets temporales en política `delete` se materializan bajo `os.tmpdir()/tot-temp/generated-pdf-subsets/`
