@@ -395,13 +395,13 @@ Estados de revisión recomendados:
       },
       "snapshot_overwrite_save": {
         "es": "¿Sobrescribir el snapshot existente?",
-        "en": "Overwrite existing snapshot file?"
+        "en": "Overwrite existing text snapshot?"
         // [PROPÓSITO] Confirmación al guardar un snapshot de texto sobre un archivo ya existente.
         // [CONCEPTO_APP] snapshot de texto
       },
       "snapshot_overwrite_load": {
         "es": "¿Reemplazar el texto actual con el snapshot seleccionado \"{name}\"?",
-        "en": "Replace current text with the selected snapshot \"{name}\"?"
+        "en": "Replace current text with the selected text snapshot \"{name}\"?"
         // [PROPÓSITO] Confirmación al cargar un snapshot y reemplazar el texto actual de la app.
         // [CONCEPTO_APP] snapshot de texto; texto actual; reemplazar texto actual
       },
@@ -466,9 +466,9 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] preset de velocidad de lectura
       },
       "restore_defaults_confirm": {
-        "es": "¿Restaurar presets por defecto (generales y para el idioma \"{lang}\") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.",
-        "en": "Restore default presets (general and language \"{lang}\") to original? This will revert removals and changes to default presets for the active language."
-        // [PROPÓSITO] Confirmación para restaurar presets por defecto generales y del idioma activo, revirtiendo cambios sobre esos defaults.
+        "es": "¿Restaurar presets por defecto (generales y para el idioma \"{lang}\")? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.",
+        "en": "Restore default presets (general and language \"{lang}\")? This will restore removed default presets and revert changes to default presets for the active language."
+        /// [PROPÓSITO] Confirmación para restaurar presets por defecto generales y del idioma activo, recuperando defaults eliminados o revirtiendo cambios hechos sobre esos presets.
         // [CONCEPTO_APP] preset de velocidad de lectura
       },
       "edit_preset_confirm": {
@@ -566,13 +566,13 @@ Estados de revisión recomendados:
         },
         "append_clipboard": {
           "es": "Agregar el texto del portapapeles al final del texto actual",
-          "en": "Append the clipboard text at the end of current text"
+          "en": "Append clipboard text to the end of the current text"
           // [PROPÓSITO] Agrega el texto del portapapeles al final del texto actual desde un nuevo párrafo.
           // [CONCEPTO_APP] texto actual; agregar al texto actual
         },
         "clipboard_repeat_count": {
           "es": "Repeticiones de pegado",
-          "en": "Clipboard repetitions"
+          "en": "Paste repetitions"
           // [PROPÓSITO] Número de iteraciones en que se pega el texto del portapapeles en el texto actual, reemplazándolo o agregándolo al final, dependiendo de la acción elegida por el usuario.
           // [CONCEPTO_APP] texto actual; repeticiones de pegado
         },
@@ -595,7 +595,7 @@ Estados de revisión recomendados:
         },
         "snapshot_save": {
           "es": "Guardar el texto actual en un snapshot",
-          "en": "Save current text to a snapshot"
+          "en": "Save current text to a text snapshot"
           // [PROPÓSITO] Acción para guardar el texto actual como snapshot de texto.
           // [CONCEPTO_APP] snapshot de texto; texto actual
         },
@@ -865,7 +865,7 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] extracción de texto; ruta de extracción
         },
         "text_extraction_cancellation_pending": {
-          "es": "Cancelación solicitada. Espera...",
+          "es": "Cancelación solicitada. Por favor, espera...",
           "en": "Cancellation requested. Please wait..."
         },
         "text_extraction_waiting_native": {
@@ -882,8 +882,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `OCR`
         },
         "text_extraction_waiting_ocr_delayed": {
-          "es": "Ejecutando OCR. Algunos archivos tardan más...",
-          "en": "Running OCR. Some files take longer..."
+          "es": "Ejecutando OCR. Algunos archivos tardan más. Por favor espera...",
+          "en": "Running OCR. Some files take longer. Please wait..."
           // [PROPÓSITO] Estado prolongado de OCR para indicar espera normal en archivos que tardan más.
           // [CONCEPTO_APP] extracción de texto; OCR
           // [PROTEGIDO] `OCR`
@@ -1062,8 +1062,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `Google`; `OCR`
         },
         "local_storage": {
-          "es": "Esta app guarda credenciales OAuth de Google para OCR, gestionadas por la app, y el estado local del token de Google en esta instancia.",
-          "en": "This app saves Google OCR OAuth credentials, managed by the app, and the local state of the Google token in this instance."
+          "es": "Esta app guarda las credenciales OAuth de Google para OCR, gestionadas por la app, y el estado local del token de Google en esta instancia.",
+          "en": "This app saves app-managed Google OCR OAuth credentials and the local state of the Google token in this instance."
           // [CONCEPTO_APP] Google OCR; token local OCR; credenciales OAuth OCR
           // [PROTEGIDO] `OAuth`; `Google`; `OCR`
         },
@@ -1471,8 +1471,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `PDF`; `OCR`
         },
         "case_a_message": {
-          "es": "El PDF completo supera el límite del proveedor OCR ({providerLimitMb} MB). Puedes procesar su extracción automáticamente por partes, conservando el archivo original. Alternativamente, puedes usar la ruta de extracción nativa.",
-          "en": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process its extraction automatically in parts, keeping the original file. Alternatively, you can use the native extraction route."
+          "es": "El PDF completo supera el límite del proveedor OCR ({providerLimitMb} MB). Puedes procesarlo automáticamente por partes, conservando el archivo original. Alternativamente, puedes usar la ruta de extracción nativa.",
+          "en": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route."
           // [PROPÓSITO] Explica que el PDF fuente completo supera el límite del proveedor OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR; ruta nativa
           // [PROTEGIDO] `PDF`; `OCR`; `MB`
@@ -1487,7 +1487,7 @@ Estados de revisión recomendados:
         },
         "case_b_message": {
           "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a la selección de páginas, usar la ruta nativa o procesar el PDF completo por partes.",
-          "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use native route, or process the full PDF in parts."
+          "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route, or process the full PDF in parts."
           // [PROPÓSITO] Explica que el PDF generado para el rango no se subió por exceder el límite OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF generado; selección de páginas PDF; OCR; ruta nativa; PDF completo por partes
           // [PROTEGIDO] `PDF`; `OCR`; `MB`
@@ -2024,13 +2024,13 @@ Estados de revisión recomendados:
         },
         "open_library": {
           "es": "Abrir biblioteca",
-          "en": "Open library"
+          "en": "Open reading library"
           // [PROPÓSITO] Abrir ventana modal de la biblioteca de lecturas, para seleccionar una fila guardada y agregarla a la tabla.
           // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
         },
         "select_snapshot": {
           "es": "Seleccionar snapshot",
-          "en": "Select snapshot"
+          "en": "Select text snapshot"
           // [PROPÓSITO] Acción para asociar un snapshot de texto a una fila de lectura.
           // [CONCEPTO_APP] snapshot de texto; fila de lectura
         },
@@ -2083,7 +2083,7 @@ Estados de revisión recomendados:
         },
         "snapshot_load": {
           "es": "Cargar snapshot como texto actual",
-          "en": "Load snapshot as current text"
+          "en": "Load text snapshot as current text"
           // [PROPÓSITO] Acción para cargar el snapshot de texto asociado a la fila como texto actual de la app.
           // [CONCEPTO_APP] snapshot de texto; texto actual; fila de lectura
         },
@@ -2661,8 +2661,8 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] snapshot de texto
       },
       "snapshot_truncated": {
-        "es": "El snapshot de texto excede el tamaño máximo y fue truncado.",
-        "en": "Text snapshot exceeds the maximum size and was truncated."
+        "es": "El snapshot de texto excedía el tamaño máximo y fue truncado.",
+        "en": "Text snapshot exceeded the maximum size and was truncated."
         // [PROPÓSITO] El texto contenido por el snapshot fue aplicado al texto actual, pero fue truncado al superar el límite admitido por la app.
         // [CONCEPTO_APP] snapshot de texto; texto actual
       },
@@ -2733,21 +2733,21 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] extracción de texto; Cronómetro; ventanas secundarias
       },
       "text_extraction_processing_locked": {
-        "es": "Hay una extracción en curso. Por favor, espera...",
-        "en": "There is an extraction in progress. Please, wait..."
+        "es": "Hay una extracción en curso. Las interacciones de la ventana principal están bloqueadas hasta que termine la extracción o sea cancelada.",
+        "en": "There is an extraction in progress. Main-window interactions are locked until the extraction finishes or is cancelled."
         // [PROPÓSITO] Alerta cuando una extracción en curso bloquea interacciones de la ventana principal.
         // [CONCEPTO_APP] extracción de texto
       },
       "current_text_processing_locked": {
-        "es": "El texto actual todavía se está actualizando. Por favor, espera...",
-        "en": "Current text is still updating. Please, wait..."
+        "es": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
+        "en": "Current text is still updating. Main-window interactions are locked until the latest text settles."
         // [PROPÓSITO] Alerta cuando una actualización del texto actual bloquea temporalmente interacciones de la ventana principal.
         // [CONCEPTO_APP] texto actual
         // [NO_CONFUNDIR] No indica una extracción de texto en curso; indica que el texto actual aún no se estabiliza.
       },
       "current_text_recount_locked": {
-        "es": "Los resultados del texto actual todavía se están recalculando. Por favor, espera...",
-        "en": "Current text results are still being recalculated. Please, wait..."
+        "es": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
+        "en": "Current text results are still being recalculated. Main-window interactions are locked until the latest recount settles."
         // [PROPÓSITO] Alerta cuando el reconteo de resultados del texto actual bloquea temporalmente interacciones de la ventana principal.
         // [CONCEPTO_APP] texto actual
         // [NO_CONFUNDIR] No indica extracción, OCR ni aplicación de texto nuevo; indica reconteo pendiente.
@@ -2863,7 +2863,7 @@ Estados de revisión recomendados:
       },
       "text_extraction_batch_ocr_unavailable": {
         "es": "Este lote incluye ítems con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está activado, usa Preferencias > Activar Google OCR. Si ya estaba activado, revisa el estado/configuración de OCR y vuelve a intentarlo antes de iniciar la extracción.",
-        "en": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise check the OCR setup/status and try again before starting the extraction."
+        "en": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise, check the OCR setup/status and try again before starting the extraction."
         // [PROPÓSITO] Alerta previa a lote cuando OCR no está disponible para ítems que lo requieren.
         // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
         // [PROTEGIDO] `OCR`; `Google OCR`
@@ -3069,7 +3069,7 @@ Estados de revisión recomendados:
       },
       "reading_test_current_text_empty": {
         "es": "El texto actual está vacío. Carga o escribe un texto antes de iniciar el test con texto actual.",
-        "en": "The current text is empty. Load or type a text before starting the test with current text."
+        "en": "The current text is empty. Load or type text before starting the test with current text."
         // [PROPÓSITO] Alerta específica de inicio del test con texto actual vacío.
         // [CONCEPTO_APP] Test de velocidad de lectura; texto actual
       },
@@ -3222,7 +3222,7 @@ Estados de revisión recomendados:
       },
       "missing_content": {
         "es": "No hay contenido disponible para \"{name}\".",
-        "en": "No content is available for '{name}'."
+        "en": "No content is available for \"{name}\"."
       },
       "external": {
         "blocked": {

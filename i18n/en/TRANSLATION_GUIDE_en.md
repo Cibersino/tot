@@ -88,7 +88,7 @@ These conventions govern review of strings in the `en` bundles.
 | Short alerts | Complete sentences normally close with a period: `Task saved.` |
 | Labels with colons | Use colons when introducing immediate values: `Source PDF:`, `Speed:`, `Elapsed: `. |
 | Ellipses | Use `...` in progress/waiting states and placeholders unless a cross-UI typography decision changes this. |
-| Quotation marks | Use straight double quotes for dynamic names when needed: `"{name}"`. Do not apply them mechanically to numbers, units, paths, or codes. |
+| Quotation marks | Use straight double quotes for dynamic names when needed; in JSON strings, escape them as `\"{name}\"`. Do not apply them mechanically to numbers, units, paths, or codes. |
 | Apostrophes | Use standard ASCII apostrophes in JSON strings: `you're`, `app's`. Do not introduce typographic apostrophes without a repo-wide decision. |
 | Hyphenated compounds | Use hyphens when they improve English parsing: `password-protected PDF`, `built-in tests`, `selected-page PDF`. Do not over-hyphenate stable noun phrases such as `current text`, `text snapshot`, or `reading speed`. |
 | Technical acronyms and units | Preserve `WPM`, `OCR`, `PDF`, `URL`, `JSON`, `OAuth`, `MB`, and `px` according to the global guide. |
