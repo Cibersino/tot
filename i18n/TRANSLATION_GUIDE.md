@@ -1612,12 +1612,6 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] Editor de Texto
         // [NO_CONFUNDIR] `Read` aquí es participio/progreso ya leído, no una acción o imperativo de leer.
       },
-      "read_progress_aria": {
-        "es": "Progreso de lectura: {value}",
-        "en": "Read progress: {value}"
-        // [PROPÓSITO] Etiqueta accesible del progreso de lectura dentro del editor.
-        // [CONCEPTO_APP] Editor de Texto
-      },
       "clear_title": {
         "es": "Vaciar",
         "en": "Clear"

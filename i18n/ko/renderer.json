@@ -223,7 +223,6 @@
       "increase_text_size": "텍스트 크기 늘리기",
       "reset_text_size": "텍스트 크기 재설정",
       "read_progress_label": "읽음",
-      "read_progress_aria": "읽기 진행률: {value}",
       "clear_title": "비우기"
     },
     "editor_find": {

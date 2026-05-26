@@ -223,7 +223,6 @@
       "increase_text_size": "Handitu testuaren tamaina",
       "reset_text_size": "Berrezarri testuaren tamaina",
       "read_progress_label": "Irakurria",
-      "read_progress_aria": "Irakurketaren aurrerapena: {value}",
       "clear_title": "Hustu"
     },
     "editor_find": {

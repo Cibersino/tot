@@ -223,7 +223,6 @@
       "increase_text_size": "文字サイズを大きくする",
       "reset_text_size": "文字サイズをリセット",
       "read_progress_label": "読了",
-      "read_progress_aria": "読書進捗: {value}",
       "clear_title": "空にする"
     },
     "editor_find": {

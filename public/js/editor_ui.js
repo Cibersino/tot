@@ -49,15 +49,13 @@
     const {
       loadRendererTranslations,
       tRenderer,
-      msgRenderer,
       resolveUserTextDirection,
     } = ctx.rendererI18n || {};
-    if (!loadRendererTranslations || !tRenderer || !msgRenderer || !resolveUserTextDirection) {
+    if (!loadRendererTranslations || !tRenderer || !resolveUserTextDirection) {
       throw new Error('[editor] RendererI18n unavailable; cannot continue');
     }
 
     const tr = (path) => tRenderer(path);
-    const trMsg = (path, params) => msgRenderer(path, params);
 
     // =============================================================================
     // Translation And Document Helpers
@@ -267,10 +265,7 @@
 
       const readProgressPercent = computeReadProgressPercent();
       const percentValueText = `${readProgressPercent}%`;
-      const ariaText = trMsg(
-        'renderer.editor.read_progress_aria',
-        { value: percentValueText }
-      );
+      const ariaText = `${tr('renderer.editor.read_progress_label')}: ${percentValueText}`;
 
       readProgressValue.setAttribute('data-label', percentValueText);
       readProgressValue.setAttribute('aria-label', ariaText);

@@ -223,7 +223,6 @@
       "increase_text_size": "Öka textstorlek",
       "reset_text_size": "Återställ textstorlek",
       "read_progress_label": "Läst",
-      "read_progress_aria": "Läsprogress: {value}",
       "clear_title": "Rensa"
     },
     "editor_find": {

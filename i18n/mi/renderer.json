@@ -223,7 +223,6 @@
       "increase_text_size": "Whakanui i te rahi kuputuhi",
       "reset_text_size": "Whakahoki i te rahi kuputuhi",
       "read_progress_label": "Kua pānuitia",
-      "read_progress_aria": "Kauneke pānui: {value}",
       "clear_title": "Ūkui"
     },
     "editor_find": {

@@ -223,7 +223,6 @@
       "increase_text_size": "تكبير حجم النص",
       "reset_text_size": "إعادة ضبط حجم النص",
       "read_progress_label": "المقروء",
-      "read_progress_aria": "تقدّم القراءة: {value}",
       "clear_title": "مسح"
     },
     "editor_find": {

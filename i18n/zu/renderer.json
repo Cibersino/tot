@@ -223,7 +223,6 @@
       "increase_text_size": "Khulisa usayizi wombhalo",
       "reset_text_size": "Buyisela usayizi wombhalo",
       "read_progress_label": "Kufundiwe",
-      "read_progress_aria": "Inqubekela phambili yokufunda: {value}",
       "clear_title": "Sula"
     },
     "editor_find": {

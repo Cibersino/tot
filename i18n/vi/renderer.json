@@ -223,7 +223,6 @@
       "increase_text_size": "Tăng cỡ chữ",
       "reset_text_size": "Đặt lại cỡ chữ",
       "read_progress_label": "Đã đọc",
-      "read_progress_aria": "Tiến độ đọc: {value}",
       "clear_title": "Xóa"
     },
     "editor_find": {

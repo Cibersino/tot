@@ -223,7 +223,6 @@
       "increase_text_size": "Увеличить размер текста",
       "reset_text_size": "Сбросить размер текста",
       "read_progress_label": "Прочитано",
-      "read_progress_aria": "Прогресс чтения: {value}",
       "clear_title": "Очистить"
     },
     "editor_find": {

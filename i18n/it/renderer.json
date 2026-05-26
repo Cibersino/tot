@@ -223,7 +223,6 @@
       "increase_text_size": "Aumenta dimensione del testo",
       "reset_text_size": "Reimposta dimensione del testo",
       "read_progress_label": "Letto",
-      "read_progress_aria": "Avanzamento lettura: {value}",
       "clear_title": "Svuota"
     },
     "editor_find": {

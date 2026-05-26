@@ -223,7 +223,6 @@
       "increase_text_size": "पाठ आकार बढ़ाएँ",
       "reset_text_size": "पाठ आकार रीसेट करें",
       "read_progress_label": "पढ़ा गया",
-      "read_progress_aria": "पठन प्रगति: {value}",
       "clear_title": "खाली करें"
     },
     "editor_find": {

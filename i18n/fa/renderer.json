@@ -223,7 +223,6 @@
       "increase_text_size": "افزایش اندازه متن",
       "reset_text_size": "بازنشانی اندازه متن",
       "read_progress_label": "خوانده‌شده",
-      "read_progress_aria": "پیشرفت خواندن: {value}",
       "clear_title": "پاک کردن"
     },
     "editor_find": {
