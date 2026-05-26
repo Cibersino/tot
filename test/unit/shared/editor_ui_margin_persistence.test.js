@@ -208,8 +208,8 @@ test('updateEditorTextSizeUi composes the technical font-size value at the consu
 
   harness.ui.updateEditorTextSizeUi();
 
-  assert.equal(harness.textSizeValue.attributes['data-label'], '20 px');
-  assert.equal(harness.textSizeValue.attributes['aria-label'], '20 px');
+  assert.equal(harness.textSizeValue.attributes['data-label'], '20');
+  assert.equal(harness.textSizeValue.attributes['aria-label'], '20');
 });
 
 test('persistEditorMaximizedTextWidthPx persists drag-updated width when local state was already updated optimistically', async () => {

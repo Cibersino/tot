@@ -224,7 +224,7 @@
     }
 
     function formatEditorTextSizeValue(value) {
-      return `${value} px`;
+      return String(value);
     }
 
     function updateEditorTextSizeUi() {

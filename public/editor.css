@@ -208,7 +208,6 @@ body {
   align-items: center;
   justify-content: center;
   height: 32px;
-  padding: 0 8px;
   box-sizing: border-box;
   border-radius: 6px;
   border: 1px solid transparent;
@@ -225,8 +224,7 @@ body {
 }
 
 .editor-text-size-value {
-  margin: 0 -10px;
-  min-width: 52px;
+  padding: 0;
 }
 
 .editor-read-progress {
@@ -237,6 +235,7 @@ body {
 }
 
 .editor-read-progress-value {
+  padding: 0 8px;
   min-width: 48px;
 }
 
@@ -354,8 +353,8 @@ body.editor-margin-dragging .editor-gutter::after {
   }
 
   .editor-text-size-value {
-    min-width: 48px;
-    padding: 0 6px;
+    min-width: 0;
+    padding: 0 2px;
   }
 
   body.editor-maximized-layout .editor-gutter::after {
