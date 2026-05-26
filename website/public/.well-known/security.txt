@@ -1,4 +1,4 @@
 Contact: mailto:cibersino@gmail.com
-Preferred-Languages: es, en
+Expires: 2026-11-26T00:00:00Z
 Canonical: https://totapp.org/.well-known/security.txt
-Expires: 2026-11-24T00:00:00Z
+Preferred-Languages: es, en
