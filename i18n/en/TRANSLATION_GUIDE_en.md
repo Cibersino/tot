@@ -93,12 +93,20 @@ These conventions govern review of strings in the `en` bundles.
 | Hyphenated compounds | Use hyphens when they improve English parsing: `password-protected PDF`, `built-in tests`, `selected-page PDF`. Do not over-hyphenate stable noun phrases such as `current text`, `text snapshot`, or `reading speed`. |
 | Technical acronyms and units | Preserve `WPM`, `OCR`, `PDF`, `URL`, `JSON`, `OAuth`, `MB`, and `px` according to the global guide. |
 
-## 6. Open review points
+## 6. English spelling variants
 
-These points are not bundle corrections yet. They should be checked during the English bundle stabilization pass.
+For recognized English spelling variants with no intended semantic, product, or surface distinction, use one stable form across the `en` bundles. When more than one form is equally valid, prefer the one that best preserves natural interface reading, clarity, and lexical continuity within toT.
 
-- Decide whether `cancelled` / `canceled` should be standardized, and on which English spelling convention.
-- Review dense compounds such as `current-text results` against their actual UI surface.
-- Review whether `application limit` or `app limit` better fits each alert surface.
-- Review whether singular `file` strings remain correct where the runtime can accept multiple files.
-- Review whether `Keep generated PDFs` is acceptable in every current surface, or whether selected-page PDF contexts need a more specific label.
+Use these spelling choices consistently:
+
+| Use | Avoid |
+|---|---|
+| `authorize`, `authorization`, `authorized` | `authorise`, `authorisation`, `authorised` |
+| `behavior` | `behaviour` |
+| `cancelled`, `cancelling`; keep with `cancellation` | `canceled`, `canceling` |
+| `color` | `colour` |
+| `customize`, `customized` | `customise`, `customised` |
+| `dialog` for UI windows | `dialogue` for UI windows |
+| `focused` | `focussed` |
+| `labeled`, `labeling` | `labelled`, `labelling` |
+| `program` | `programme` |

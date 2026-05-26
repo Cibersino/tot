@@ -550,7 +550,7 @@ Estados de revisión recomendados:
       "tooltips": {
         "text_extraction": {
           "es": "Extraer texto de archivos",
-          "en": "Extract text from file"
+          "en": "Extract text from files"
           // [PROPÓSITO] Acción de entrada a la extracción de texto desde archivos; puede derivar en ruta nativa, OCR, opciones PDF o lote.
           // [CONCEPTO_APP] extracción de texto
         },
@@ -830,7 +830,7 @@ Estados de revisión recomendados:
         },
         "current_text_recount_waiting": {
           "es": "Recalculando los resultados del texto actual...",
-          "en": "Recalculating current-text results..."
+          "en": "Recalculating current text results..."
           // [PROPÓSITO] Estado de procesamiento mientras se recalculan conteos/resultados del texto actual.
           // [CONCEPTO_APP] texto actual
           // [NO_CONFUNDIR] No indica extracción de texto ni OCR; indica reconteo del texto actual.
@@ -882,8 +882,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `OCR`
         },
         "text_extraction_waiting_ocr_delayed": {
-          "es": "Ejecutando OCR. Algunos archivos tardan más.",
-          "en": "Running OCR. Some files take longer."
+          "es": "Ejecutando OCR. Algunos archivos tardan más...",
+          "en": "Running OCR. Some files take longer..."
           // [PROPÓSITO] Estado prolongado de OCR para indicar espera normal en archivos que tardan más.
           // [CONCEPTO_APP] extracción de texto; OCR
           // [PROTEGIDO] `OCR`
@@ -2610,7 +2610,7 @@ Estados de revisión recomendados:
       },
       "apply_truncated": {
         "es": "El texto fue truncado para ajustarse al límite de la app.",
-        "en": "The text was truncated to fit the application limit."
+        "en": "The text was truncated to fit the app limit."
         // [PROPÓSITO] Informa que la operación sobre el texto actual se completó, pero el texto final quedó recortado para ajustarse al límite del texto actual admitido por la app.
         // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
       },
@@ -2733,21 +2733,21 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] extracción de texto; Cronómetro; ventanas secundarias
       },
       "text_extraction_processing_locked": {
-        "es": "Hay una extracción en curso. Las interacciones de la ventana principal están bloqueadas hasta que termine la extracción o sea cancelada.",
-        "en": "There is an extraction in progress. Main-window interactions are locked until the extraction finishes or is cancelled."
+        "es": "Hay una extracción en curso. Por favor, espera...",
+        "en": "There is an extraction in progress. Please, wait..."
         // [PROPÓSITO] Alerta cuando una extracción en curso bloquea interacciones de la ventana principal.
         // [CONCEPTO_APP] extracción de texto
       },
       "current_text_processing_locked": {
-        "es": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
-        "en": "Current text is still updating. Main-window interactions are locked until the latest text settles."
+        "es": "El texto actual todavía se está actualizando. Por favor, espera...",
+        "en": "Current text is still updating. Please, wait..."
         // [PROPÓSITO] Alerta cuando una actualización del texto actual bloquea temporalmente interacciones de la ventana principal.
         // [CONCEPTO_APP] texto actual
         // [NO_CONFUNDIR] No indica una extracción de texto en curso; indica que el texto actual aún no se estabiliza.
       },
       "current_text_recount_locked": {
-        "es": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
-        "en": "Current-text results are still being recalculated. Main-window interactions are locked until the latest recount settles."
+        "es": "Los resultados del texto actual todavía se están recalculando. Por favor, espera...",
+        "en": "Current text results are still being recalculated. Please, wait..."
         // [PROPÓSITO] Alerta cuando el reconteo de resultados del texto actual bloquea temporalmente interacciones de la ventana principal.
         // [CONCEPTO_APP] texto actual
         // [NO_CONFUNDIR] No indica extracción, OCR ni aplicación de texto nuevo; indica reconteo pendiente.
@@ -2758,8 +2758,8 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] extracción de texto
       },
       "text_extraction_cancellation_requested": {
-        "es": "Cancelación solicitada. Espera a que termine la extracción actual.",
-        "en": "Cancellation requested. Please wait until the current extraction finishes."
+        "es": "Cancelación solicitada. Por favor, espera a que termine.",
+        "en": "Cancellation requested. Please wait for it to finish."
         // [CONCEPTO_APP] extracción de texto
       },
       "text_extraction_cancellation_complete": {
@@ -3176,7 +3176,7 @@ Estados de revisión recomendados:
       },
       "text_truncated": {
         "es": "El texto fue truncado para ajustarse al límite máximo de la app.",
-        "en": "Text was truncated to fit the application limit."
+        "en": "Text was truncated to fit the app limit."
         // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
         // [CONCEPTO_APP] Editor de Texto; texto actual
       },
