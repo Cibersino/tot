@@ -96,7 +96,7 @@
         "from_page_label": "From page",
         "to_page_label": "To page",
         "selected_page_count_label": "Selected pages: ",
-        "keep_generated_pdf_label": "Keep generated PDFs",
+        "keep_generated_pdf_label": "Keep the generated selected-page PDF after processing",
         "continue_button": "Continue",
         "cancel_button": "Cancel",
         "close_aria": "Close PDF extraction options window",
