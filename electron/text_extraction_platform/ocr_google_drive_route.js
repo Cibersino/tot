@@ -488,7 +488,21 @@ async function runGoogleDriveOcrRoute({
     });
   }
 
-  const drive = google.drive({ version: 'v3', auth: oauthClient });
+  let drive = null;
+  try {
+    drive = google.drive({ version: 'v3', auth: oauthClient });
+  } catch (err) {
+    return buildPreflightResultWithError({
+      summary: 'OCR route failed before upload: Drive client initialization failed.',
+      provenance,
+      code: 'platform_runtime_failed',
+      message: 'Google Drive OCR runtime could not initialize the Drive client.',
+      detailsSafeForLogs: {
+        reason: 'drive_client_init_failed',
+        errorName: toSafeErrorName(err),
+      },
+    });
+  }
   let tempDocumentId = '';
   let result = null;
   const cleanupWarnings = [];
