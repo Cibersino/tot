@@ -60,6 +60,10 @@ function sanitizeProcessingContext(context = {}) {
   };
 }
 
+function normalizePayloadContext(payload) {
+  return payload && typeof payload === 'object' ? payload : {};
+}
+
 // =============================================================================
 // Shared state controller
 // =============================================================================
@@ -108,14 +112,7 @@ function createController({ onStateChanged } = {}) {
     }
   };
 
-  const enter = (context = {}) => {
-    if (active) return { changed: false, state: getState() };
-
-    active = true;
-    lockId += 1;
-    sinceEpochMs = Date.now();
-    source = sanitizeMeta(context.source);
-    reason = sanitizeMeta(context.reason);
+  const assignProcessingContext = (context = {}) => {
     ({
       unitIndex,
       unitCount,
@@ -125,6 +122,27 @@ function createController({ onStateChanged } = {}) {
       processingInputFileName,
       processingInputSource,
     } = sanitizeProcessingContext(context));
+  };
+
+  const clearProcessingContext = () => {
+    unitIndex = null;
+    unitCount = null;
+    inputIndex = null;
+    inputCount = null;
+    selectedRoute = '';
+    processingInputFileName = '';
+    processingInputSource = '';
+  };
+
+  const enter = (context = {}) => {
+    if (active) return { changed: false, state: getState() };
+
+    active = true;
+    lockId += 1;
+    sinceEpochMs = Date.now();
+    source = sanitizeMeta(context.source);
+    reason = sanitizeMeta(context.reason);
+    assignProcessingContext(context);
 
     log.info('Processing mode enabled:', { lockId, source, reason });
     notifyStateChanged();
@@ -138,13 +156,7 @@ function createController({ onStateChanged } = {}) {
     sinceEpochMs = null;
     source = sanitizeMeta(context.source);
     reason = sanitizeMeta(context.reason);
-    unitIndex = null;
-    unitCount = null;
-    inputIndex = null;
-    inputCount = null;
-    selectedRoute = '';
-    processingInputFileName = '';
-    processingInputSource = '';
+    clearProcessingContext();
 
     log.info('Processing mode disabled:', { lockId, source, reason });
     notifyStateChanged();
@@ -153,14 +165,7 @@ function createController({ onStateChanged } = {}) {
 
   const update = (context = {}) => {
     if (!active) return { changed: false, state: getState() };
-    const next = sanitizeProcessingContext(context);
-    unitIndex = next.unitIndex;
-    unitCount = next.unitCount;
-    inputIndex = next.inputIndex;
-    inputCount = next.inputCount;
-    selectedRoute = next.selectedRoute;
-    processingInputFileName = next.processingInputFileName;
-    processingInputSource = next.processingInputSource;
+    assignProcessingContext(context);
     notifyStateChanged();
     return { changed: true, state: getState() };
   };
@@ -250,7 +255,7 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
 
-      const context = payload && typeof payload === 'object' ? payload : {};
+      const context = normalizePayloadContext(payload);
       const transition = controller.enter(context);
       if (!transition.changed && controller.isActive()) {
         return { ok: false, code: 'ALREADY_ACTIVE', state: controller.getState() };
@@ -272,7 +277,7 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
         return { ok: false, code: 'NOT_ACTIVE', state: controller.getState() };
       }
 
-      const context = payload && typeof payload === 'object' ? payload : {};
+      const context = normalizePayloadContext(payload);
       const transition = controller.update(context);
       return { ok: true, state: transition.state };
     } catch (err) {
@@ -291,7 +296,7 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
         return { ok: false, code: 'NOT_ACTIVE', state: controller.getState() };
       }
 
-      const context = payload && typeof payload === 'object' ? payload : {};
+      const context = normalizePayloadContext(payload);
       const transition = controller.exit(context);
       return { ok: true, state: transition.state };
     } catch (err) {
@@ -307,7 +312,7 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
 
-      const context = payload && typeof payload === 'object' ? payload : {};
+      const context = normalizePayloadContext(payload);
       return controller.requestAbort(context);
     } catch (err) {
       log.error('text-extraction-request-abort failed:', err);
