@@ -64,6 +64,16 @@ function normalizePayloadContext(payload) {
   return payload && typeof payload === 'object' ? payload : {};
 }
 
+function hasRequiredControllerMethods(controller) {
+  return !!controller
+    && typeof controller.getState === 'function'
+    && typeof controller.isActive === 'function'
+    && typeof controller.enter === 'function'
+    && typeof controller.update === 'function'
+    && typeof controller.exit === 'function'
+    && typeof controller.requestAbort === 'function';
+}
+
 // =============================================================================
 // Shared state controller
 // =============================================================================
@@ -226,7 +236,7 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
   if (typeof getWindows !== 'function') {
     throw new Error('[text_extraction_processing_mode] registerIpc requires getWindows()');
   }
-  if (!controller || typeof controller.getState !== 'function' || typeof controller.requestAbort !== 'function') {
+  if (!hasRequiredControllerMethods(controller)) {
     throw new Error('[text_extraction_processing_mode] registerIpc requires controller');
   }
 
