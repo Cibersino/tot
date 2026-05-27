@@ -271,7 +271,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
     || typeof controller.enter !== 'function'
     || typeof controller.exit !== 'function'
     || typeof controller.getState !== 'function'
-    || typeof controller.isActive !== 'function') {
+    || typeof controller.isActive !== 'function'
+    || typeof controller.update !== 'function') {
     log.error('[text_extraction_execute_prepared_ipc] registerIpc requires processing-mode controller');
     throw new Error('[text_extraction_execute_prepared_ipc] registerIpc requires processing-mode controller');
   }
