@@ -210,6 +210,8 @@ Debe ir a la guía de idioma:
 - tratamiento local de tokens latinos en scripts no latinos;
 - dudas abiertas y nivel de revisión de ese idioma.
 
+Las guías específicas no deben reenumerar reglas transversales, placeholders, tokens protegidos, invariantes, definiciones del glosario ni la jerarquía de decisión global. Solo deben mencionar esos elementos cuando exista una decisión local, una excepción aprobada, un riesgo idiomático concreto o una convención formal propia del idioma.
+
 `es` y `en` funcionan como baseline semántico conjunto. Sus guías específicas deben registrar decisiones locales, pero no degradar esta guía global a una lista de preferencias de español o inglés.
 
 ## 9. Relación con `i18n_language_policy.md`

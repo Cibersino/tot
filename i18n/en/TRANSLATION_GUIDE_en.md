@@ -91,7 +91,6 @@ These conventions govern review of strings in the `en` bundles.
 | Quotation marks | Use straight double quotes for dynamic names when needed; in JSON strings, escape them as `\"{name}\"`. Do not apply them mechanically to numbers, units, paths, or codes. |
 | Apostrophes | Use standard ASCII apostrophes in JSON strings: `you're`, `app's`. Do not introduce typographic apostrophes without a repo-wide decision. |
 | Hyphenated compounds | Use hyphens when they improve English parsing: `password-protected PDF`, `built-in tests`, `selected-page PDF`. Do not over-hyphenate stable noun phrases such as `current text`, `text snapshot`, or `reading speed`. |
-| Technical acronyms and units | Preserve `WPM`, `OCR`, `PDF`, `URL`, `JSON`, `OAuth`, `MB`, and `px` according to the global guide. |
 
 ## 6. English spelling variants
 
