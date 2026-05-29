@@ -37,6 +37,8 @@ Un idioma padre no es una base vaciada, artificialmente neutral o meramente func
 
 Las variantes funcionan como capas de especialización mediante fallback directo. Sobrescriben keys cuando existe una diferencia lingüística, cultural, terminológica, tonal o experimental justificada. Su existencia no obliga al idioma padre a borrar marcas legítimas de uso, registro o riqueza expresiva.
 
+El idioma padre puede ser un locale regional cuando la arquitectura de fallback o una decisión editorial/pragmática así lo definan. En ese caso, su condición de padre no borra su carácter local ni convierte sus variantes en formas subordinadas culturalmente: solo establece la relación técnica y editorial desde la cual se especializan las diferencias justificadas.
+
 ### 3.2 Comprensibilidad amplia sin neutralización rígida
 
 La localización debe ser comprensible para usuarios nativos o competentes del idioma elegido. Esto no equivale a perseguir neutralidad rígida, a evitar toda marca local ni a reducir términos técnicos a la fórmula más plana posible.

@@ -88,5 +88,5 @@ Estas convenciones rigen la revisión de los strings del bundle `es`.
 | Labels con dos puntos | Usar dos puntos cuando introducen un valor inmediato: `Archivo:`, `Velocidad:`. |
 | Elipsis | Usar `...` en estados de progreso/espera por función visual de proceso. Decidir caso a caso si utilizar `…` o `...` en usos editoriales o de truncamiento. |
 | Comillas | Usar comillas dobles rectas para nombres dinámicos cuando ayuden a delimitar el valor; en JSON deben escaparse como `\"{name}\"`. No aplicarlas mecánicamente a placeholders numéricos, códigos, porcentajes, unidades o valores ya presentados como label. |
-| Siglas técnicas | Usar `WPM`, `OCR`, `PDF`, `URL`, `JSON`, `OAuth` según la guía general y el baseline. |
-| Unidades | Usar separación y forma técnica existente: `{value} px`, `{providerLimitMb} MB`. |
+| Siglas técnicas | Usar `WPM`, `OCR`, `PDF`, `URL`, `JSON`, `OAuth`, `px` según la guía general y el baseline. |
+| Unidades | Usar separación y forma técnica existente. Ejemplo: `{providerLimitMb} MB`. |
