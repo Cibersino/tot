@@ -39,10 +39,10 @@ These forms govern frequent English concepts in toT. This is not a full glossary
 | `extraction route` | General term for the native/OCR route choice. | Do not normalize to `method` unless a new surface clearly needs that wording. |
 | `Floating Stopwatch` | Name of the floating stopwatch surface. | Use initial capitals as a surface name. |
 | `generated PDF` | Local PDF derivative created by the app. | Use for selected-page or split-part artifacts created by toT. |
-| `Google OCR` | Use for the connected Google OCR integration. | Keep distinct from generic OCR, token state, OAuth credentials, and temporary Google documents. |
 | `item` | Use for the entry processed inside a batch unit. | Do not force `file` when generated parts or non-file processing inputs may be involved. |
 | `native route` / `native extraction route` | Use `native route` in compact route-choice surfaces; use the fuller form when clarity requires it. | `Native` alone is acceptable only when the OCR contrast is visible. |
-| `OCR` / `OCR extraction` | Use `OCR` as the technical route/technology term. | Preserve the acronym. |
+| `OCR extraction` | Use when the surface names the OCR route or process as extraction. | Use `OCR` alone in compact route labels or status text where the contrast is clear. Do not expand to `optical character recognition` in normal UI copy. |
+| `reading` | Use when the surface presents the task entry as reading content rather than table structure. | This covers the `Reading` column and saved/reusable library entries. Use `row` for structural table operations such as add, move, validate, or delete a row. |
 | `Reading time` | English title of the browser extension. | Do not replace with `Reading speed test` or `Estimated reading time`. |
 | `reading library` | Library of reusable readings inside the Task Editor. | Avoid plain `library` when ambiguity is likely. |
 | `reading speed test` | Stable term for the guided speed-measurement flow. | Use sentence case unless the surface explicitly treats it as a formal title. |
