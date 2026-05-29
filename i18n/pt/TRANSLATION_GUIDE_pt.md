@@ -1,18 +1,18 @@
-# Guia específica de idioma — Português brasileiro (`pt-br`)
+# Guia específica de idioma — Português (`pt`)
 
-Esta guia específica deve ser lida junto com [`../TRANSLATION_GUIDE.md`](../TRANSLATION_GUIDE.md) e com o baseline semântico conjunto `es`/`en`. Ela registra decisões editoriais próprias do português brasileiro de toT.
+Esta guia específica deve ser lida junto com [`../TRANSLATION_GUIDE.md`](../TRANSLATION_GUIDE.md) e com o baseline semântico conjunto `es`/`en`. Ela registra decisões editoriais próprias do português de toT.
 
-Na revisão de `pt-br`, `es` é uma referência especialmente útil pela proximidade com o português brasileiro, mas não deve funcionar como fonte única nem como matriz de calco. As decisões devem ser verificadas contra `en`, contra o glosário global e contra a superfície real da key.
+Na revisão de `pt`, `es` é uma referência especialmente útil pela proximidade com o português brasileiro usado como norma de referência, mas não deve funcionar como fonte única nem como matriz de calco. As decisões devem ser verificadas contra `en`, contra o glosário global e contra a superfície real da key.
 
-## 1. Modelo editorial do português brasileiro
+## 1. Modelo editorial do português
 
-Esta guia trata do português brasileiro (`pt-br`) como idioma pai do português em toT. Essa é uma decisão editorial e técnica: `pt-br` deve sustentar por si mesmo uma experiência completa da app, sem funcionar como uma camada provisória, neutra ou genérica.
+Esta guia trata do português (`pt`) em toT. Por decisão editorial e pragmática, o português de toT usa português brasileiro claro, natural e tecnicamente preciso como norma de referência.
 
-A voz de `pt-br` deve ser clara, natural e tecnicamente precisa. A revisão deve aceitar formas brasileiras estáveis quando elas tornam a interface mais legível, precisa ou idiomática. Não é necessário substituir uma forma brasileira clara por uma alternativa supostamente mais neutra.
+Essa escolha não pretende criar um português neutro ou genérico. Quando houver diferenças relevantes entre variantes do português, a forma brasileira estável deve ser a referência principal, salvo decisão documentada para uma superfície específica.
 
-`pt-pt` existe como variante. Diferenças próprias do português europeu devem ser tratadas nessa variante, não antecipadas por meio de um `pt-br` esvaziado, artificialmente neutralizado ou preventivamente genérico.
+A revisão deve aceitar formas brasileiras quando elas tornam a interface mais legível, precisa ou idiomática. Não é necessário substituir uma forma brasileira clara por uma alternativa supostamente mais neutra.
 
-O objetivo não é produzir coloquialidade marcada nem regionalismo por si só. Formas excessivamente locais, informais ou dependentes de uso regional estreito devem ser evitadas, salvo decisão documentada para uma superfície específica.
+O objetivo não é produzir coloquialidade marcada nem regionalismo por si só. Formas excessivamente locais, informais ou dependentes de uso regional estreito devem ser evitadas.
 
 ## 2. Tratamento do usuário
 
@@ -36,7 +36,7 @@ Evitar construções pronominais artificiais ou excessivamente formais quando um
 
 Estas formas não constituem um glosário completo; registram termos do português brasileiro de toT onde existe risco de drift ou uma decisão local relevante.
 
-| Termo em `pt-br`                          | Uso                                                                                                                               | Notas / alternativas                                                                                                                                                                    |
+| Termo em `pt`                          | Uso                                                                                                                               | Notas / alternativas                                                                                                                                                                    |
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `adicionar` / `adicionar ao texto atual`  | Conceito estável para somar conteúdo ao final do texto atual.                                                                     | Preferir em comandos e tooltips da ação de adicionar. `Acrescentar` pode explicar a ação em prosa, mas não deve substituir o termo estável sem decisão documentada. Evitar `anexar`. |
 | `substituir` / `substituir o texto atual` | Conceito estável para trocar o texto atual por conteúdo entrante.                                                                 | Não usar `sobrescrever` como nome do conceito, embora a ação possa sobrescrever o conteúdo anterior.                                                                                    |
@@ -74,9 +74,9 @@ Estas formas não constituem um glosário completo; registram termos do portugu�
 
 ## 4. Empréstimos e termos externos
 
-Estas formas são usadas em `pt-br` quando a decisão local é conservar, limitar ou adaptar um empréstimo, tecnicismo, token externo ou forma não plenamente portuguesa.
+Estas formas são usadas em `pt` quando a decisão local é conservar, limitar ou adaptar um empréstimo, tecnicismo, token externo ou forma não plenamente portuguesa.
 
-| Termo             | Uso em `pt-br`                                                                                  | Nota                                                                                                                                                      |
+| Termo             | Uso em `pt`                                                                                  | Nota                                                                                                                                                      |
 | ----------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `app`             | Usar como forma normal de produto.                                                              | `Aplicativo` pode ser usado em registros mais formais, legais ou explicativos se melhorar a superfície.                                                   |
 | `build`           | Reservar para artefato ou versão técnica da app.                                                | Não traduzir mecanicamente como `compilação` se soar artificial na superfície.                                                                            |
@@ -95,7 +95,7 @@ Estas formas são usadas em `pt-br` quando a decisão local é conservar, limita
 
 ## 5. Convenções formais do português brasileiro
 
-Estas convenções regem a revisão dos strings do bundle `pt-br`.
+Estas convenções regem a revisão dos strings do bundle `pt`.
 
 | Aspecto              | Convenção                                                                                                                                                                                                                                  |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -112,9 +112,9 @@ Estas convenções regem a revisão dos strings do bundle `pt-br`.
 
 ## 6. Escolhas brasileiras estáveis
 
-Quando houver mais de uma forma plausível, usar a forma brasileira estável e mais natural para a superfície. A coluna “Evitar como padrão” inclui formas europeias, anglicismos, calcos ou alternativas técnicas que não devem virar padrão automático em `pt-br`.
+Quando houver mais de uma forma plausível, usar a forma brasileira estável e mais natural para a superfície. A coluna “Evitar como padrão” inclui formas europeias, anglicismos, calcos ou alternativas técnicas que não devem virar padrão automático em `pt`.
 
-| Usar em `pt-br`                                                   | Evitar como padrão                                             |
+| Usar em `pt`                                                   | Evitar como padrão                                             |
 | ----------------------------------------------------------------- | -------------------------------------------------------------- |
 | `arquivo`                                                         | `ficheiro`                                                     |
 | `usuário`                                                         | `utilizador`                                                   |
