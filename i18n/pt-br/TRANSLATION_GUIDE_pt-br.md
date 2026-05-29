@@ -1,6 +1,8 @@
 # Guia específica de idioma — Português brasileiro (`pt-br`)
 
-Esta guia específica deve ser lida junto com [`../TRANSLATION_GUIDE.md`](../TRANSLATION_GUIDE.md). Ela registra decisões editoriais próprias do português brasileiro de toT.
+Esta guia específica deve ser lida junto com [`../TRANSLATION_GUIDE.md`](../TRANSLATION_GUIDE.md) e com o baseline semântico conjunto `es`/`en`. Ela registra decisões editoriais próprias do português brasileiro de toT.
+
+Na revisão de `pt-br`, `es` é uma referência especialmente útil pela proximidade com o português brasileiro, mas não deve funcionar como fonte única nem como matriz de calco. As decisões devem ser verificadas contra `en`, contra o glosário global e contra a superfície real da key.
 
 ## 1. Modelo editorial do português brasileiro
 
