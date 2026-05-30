@@ -112,8 +112,8 @@
         if (text.startsWith('WPM')) lbl.childNodes[0].textContent = tr('renderer.modal_preset.wpm');
         if (text.startsWith('Descripcion') || text.startsWith('Descripci') || text.startsWith('Description')) lbl.childNodes[0].textContent = tr('renderer.modal_preset.description');
       });
-      if (nameEl && nameEl.placeholder) nameEl.placeholder = tr('renderer.modal_preset.placeholder');
-      if (descEl && descEl.placeholder) descEl.placeholder = tr('renderer.modal_preset.placeholder');
+      if (nameEl && nameEl.placeholder) nameEl.placeholder = tr('renderer.modal_preset.name_placeholder');
+      if (descEl && descEl.placeholder) descEl.placeholder = tr('renderer.modal_preset.description_placeholder');
       if (charCountEl) charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: descMaxLength });
       if (hintEl) hintEl.textContent = tr('renderer.modal_preset.hint');
       if (btnSave) btnSave.textContent = tr('renderer.modal_preset.save');

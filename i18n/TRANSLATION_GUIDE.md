@@ -2521,6 +2521,10 @@ Estados de revisión recomendados:
         "es": "Nombre:",
         "en": "Name:"
       },
+      "name_placeholder": {
+        "es": "Nombre del preset",
+        "en": "Preset name"
+      },
       "wpm": {
         "es": "WPM:",
         "en": "WPM:"
@@ -2531,7 +2535,7 @@ Estados de revisión recomendados:
         "es": "Descripción:",
         "en": "Description:"
       },
-      "placeholder": {
+      "description_placeholder": {
         "es": "Descripción breve...",
         "en": "Short description..."
       },
