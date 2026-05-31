@@ -658,3 +658,27 @@ test('editor Apply action uses the shared editor commit path with overwrite sema
   assert.equal(harness.sendCurrentTextCalls[0].action, 'overwrite');
   assert.equal(harness.sendCurrentTextCalls[0].options.text, 'apply me');
 });
+
+test('editor Clear action commits empty text through the shared engine path when auto is on', async () => {
+  const harness = await bootstrapEditorScriptHarness();
+
+  harness.elements.editorArea.value = 'trash me';
+  harness.elements.btnTrash.dispatch('click');
+
+  assert.equal(harness.elements.editorArea.value, '');
+  assert.equal(harness.sendCurrentTextCalls.length, 1);
+  assert.equal(harness.sendCurrentTextCalls[0].action, 'clear');
+  assert.equal(harness.sendCurrentTextCalls[0].options.text, '');
+});
+
+test('editor Clear action does not commit when auto is off', async () => {
+  const harness = await bootstrapEditorScriptHarness();
+
+  harness.elements.calcWhileTyping.checked = false;
+  harness.elements.calcWhileTyping.dispatch('change');
+  harness.elements.editorArea.value = 'trash me';
+  harness.elements.btnTrash.dispatch('click');
+
+  assert.equal(harness.elements.editorArea.value, '');
+  assert.equal(harness.sendCurrentTextCalls.length, 0);
+});

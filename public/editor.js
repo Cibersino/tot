@@ -571,6 +571,16 @@ btnTrash.addEventListener('click', () => {
   editor.value = '';
   ctx.ui.updateEditorTextDirection();
   ctx.ui.scheduleReadProgressUiUpdate();
+  if (calcWhileTyping && calcWhileTyping.checked) {
+    const didSend = ctx.engine.sendCurrentTextToMain('clear', {
+      text: '',
+      onPrimaryError: (err) => log.error('Error executing Clear:', err),
+      onFallbackError: (err) => log.error('Error executing Clear fallback:', err),
+    });
+    if (!didSend) {
+      window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
+    }
+  }
   ctx.ui.restoreFocusToEditor();
 });
 
