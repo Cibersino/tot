@@ -449,7 +449,7 @@
     }
 
     function notifyTextTruncated() {
-      window.Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
+      window.Notify.notifyEditor('renderer.editor.alerts.text_truncated', { type: 'warn', duration: 5000 });
     }
 
     function handleTruncationResponse(resPromise) {
@@ -473,10 +473,10 @@
         const action = (options && typeof options.action === 'string') ? options.action : 'paste';
         const limitAlertKey = (options && typeof options.limitAlertKey === 'string')
           ? options.limitAlertKey
-          : 'renderer.editor_alerts.paste_limit';
+          : 'renderer.editor.alerts.paste_limit';
         const truncatedAlertKey = (options && typeof options.truncatedAlertKey === 'string')
           ? options.truncatedAlertKey
-          : 'renderer.editor_alerts.paste_truncated';
+          : 'renderer.editor.alerts.paste_truncated';
         const syncOptions = {};
         if (options && typeof options.onPrimaryError === 'function') {
           syncOptions.onPrimaryError = options.onPrimaryError;
@@ -518,10 +518,10 @@
       const source = transferConfig && transferConfig.source ? transferConfig.source : 'transfer';
       const noTextAlertKey = transferConfig && transferConfig.noTextAlertKey
         ? transferConfig.noTextAlertKey
-        : 'renderer.editor_alerts.paste_no_text';
+        : 'renderer.editor.alerts.paste_no_text';
       const tooBigAlertKey = transferConfig && transferConfig.tooBigAlertKey
         ? transferConfig.tooBigAlertKey
-        : 'renderer.editor_alerts.paste_too_big';
+        : 'renderer.editor.alerts.paste_too_big';
       const insertOptions = transferConfig && transferConfig.insertOptions ? transferConfig.insertOptions : {};
       const getText = transferConfig && typeof transferConfig.getText === 'function'
         ? transferConfig.getText

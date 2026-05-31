@@ -139,7 +139,7 @@ function createHarness() {
     'renderer.text_extraction.single_file_heavy.reveal_generated_pdf_button': 'Reveal generated PDF',
     'renderer.text_extraction.single_file_heavy.cancel_button': 'Cancel',
     'renderer.text_extraction.single_file_heavy.close_aria': 'Close heavy PDF for OCR dialog',
-    'renderer.alerts.text_extraction_generated_pdf_reveal_failed': 'Reveal failed',
+    'renderer.text_extraction.alerts.generated_pdf_reveal_failed': 'Reveal failed',
   };
 
   const sandbox = {

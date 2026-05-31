@@ -388,27 +388,27 @@
   function refreshPoolEntriesFromResult(result) {
     if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
       log.error('Reading-test entry-flow result invalid:', result);
-      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.reading_test.alerts.pool_error');
       return false;
     }
     if (result.ok !== true) {
       window.Notify.notifyMain(
         typeof result.guidanceKey === 'string'
           ? result.guidanceKey
-          : 'renderer.alerts.reading_test_pool_error'
+          : 'renderer.reading_test.alerts.pool_error'
       );
       return false;
     }
     if (typeof result.canOpen !== 'boolean') {
       log.error('Reading-test entry-flow result missing canOpen flag:', result);
-      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.reading_test.alerts.pool_error');
       return false;
     }
     if (!result.canOpen) {
       window.Notify.notifyMain(
         typeof result.guidanceKey === 'string'
           ? result.guidanceKey
-          : 'renderer.alerts.reading_test_precondition_blocked'
+          : 'renderer.reading_test.alerts.precondition_blocked'
       );
       return false;
     }
@@ -418,7 +418,7 @@
       || typeof result.showBundledEntries !== 'boolean'
       || typeof result.entryEmptyState !== 'string') {
       log.error('Reading-test entry-flow success payload invalid:', result);
-      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.reading_test.alerts.pool_error');
       return false;
     }
 
@@ -438,7 +438,7 @@
         'reading-speed-test.getEntryData.missing',
         'getReadingTestEntryData unavailable; reading speed test entry flow skipped.'
       );
-      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
+      window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
       return null;
     }
 
@@ -446,7 +446,7 @@
       return await getEntryData();
     } catch (err) {
       log.error('Reading-test entry data request failed:', err);
-      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.reading_test.alerts.pool_error');
       return null;
     }
   }
@@ -518,7 +518,7 @@
         'reading-speed-test.resetPool.missing',
         'resetReadingTestPool unavailable; pool reset skipped.'
       );
-      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
+      window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
       return;
     }
 
@@ -533,7 +533,7 @@
       }
     } catch (err) {
       log.error('Reading-test pool reset failed:', err);
-      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.reading_test.alerts.pool_error');
     }
 
     setStabilizing(false);
@@ -588,7 +588,7 @@
         'reading-speed-test.import.missing',
         'importReadingTestPoolFiles unavailable; reading-test pool import skipped.'
       );
-      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
+      window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
       return;
     }
 
@@ -599,7 +599,7 @@
       if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
         setStabilizing(false);
         log.error('Reading-test pool import result invalid:', result);
-        window.Notify.notifyMain('renderer.alerts.reading_test_pool_import_failed');
+        window.Notify.notifyMain('renderer.reading_test.alerts.pool_import_failed');
         return;
       }
 
@@ -608,7 +608,7 @@
         window.Notify.notifyMain(
           typeof result.guidanceKey === 'string'
             ? result.guidanceKey
-            : 'renderer.alerts.reading_test_pool_import_failed'
+            : 'renderer.reading_test.alerts.pool_import_failed'
         );
         return;
       }
@@ -624,7 +624,7 @@
     } catch (err) {
       setStabilizing(false);
       log.error('Reading-test pool import failed unexpectedly:', err);
-      window.Notify.notifyMain('renderer.alerts.reading_test_pool_import_failed');
+      window.Notify.notifyMain('renderer.reading_test.alerts.pool_import_failed');
     }
   }
 
@@ -637,7 +637,7 @@
         'reading-speed-test.setShowBundledEntries.missing',
         'setReadingTestShowBundledEntries unavailable; reading-test bundled visibility toggle skipped.'
       );
-      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
+      window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
       render();
       return;
     }
@@ -658,7 +658,7 @@
     } catch (err) {
       showBundledEntries = previousShowBundledEntries;
       log.error('Reading-test bundled visibility update failed:', err);
-      window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
+      window.Notify.notifyMain('renderer.reading_test.alerts.pool_error');
     }
 
     setStabilizing(false);
@@ -717,14 +717,14 @@
 
       if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
         log.error('Reading-test start result invalid:', result);
-        window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
+        window.Notify.notifyMain('renderer.reading_test.alerts.start_failed');
         return;
       }
       if (result.ok !== true) {
         window.Notify.notifyMain(
           typeof result.guidanceKey === 'string'
             ? result.guidanceKey
-            : 'renderer.alerts.reading_test_start_failed'
+            : 'renderer.reading_test.alerts.start_failed'
         );
         return;
       }
@@ -733,7 +733,7 @@
     } catch (err) {
       setStabilizing(false);
       log.error('Reading-test start failed unexpectedly:', err);
-      window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
+      window.Notify.notifyMain('renderer.reading_test.alerts.start_failed');
     }
   }
 
@@ -753,7 +753,7 @@
         'reading-speed-test.start.missing',
         'startReadingTest unavailable; reading speed test start skipped.'
       );
-      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
+      window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
       return;
     }
 
@@ -769,7 +769,7 @@
         'reading-speed-test.start-current-text.missing',
         'startReadingTest unavailable; current-text reading speed test start skipped.'
       );
-      window.Notify.notifyMain('renderer.alerts.reading_test_unavailable');
+      window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
       return;
     }
 

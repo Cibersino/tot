@@ -30,13 +30,13 @@
   // Constants / config
   // =============================================================================
   const TOAST_KEYS = Object.freeze({
-    saveSuccess: 'renderer.alerts.snapshot_save_success',
-    saveError: 'renderer.alerts.snapshot_save_error',
-    loadSuccess: 'renderer.alerts.snapshot_load_success',
-    loadError: 'renderer.alerts.snapshot_load_error',
-    outside: 'renderer.alerts.snapshot_outside',
-    truncated: 'renderer.alerts.snapshot_truncated',
-    unavailable: 'renderer.alerts.snapshot_unavailable',
+    saveSuccess: 'renderer.snapshots.alerts.save_success',
+    saveError: 'renderer.snapshots.alerts.save_error',
+    loadSuccess: 'renderer.snapshots.alerts.load_success',
+    loadError: 'renderer.snapshots.alerts.load_error',
+    outside: 'renderer.snapshots.alerts.outside',
+    truncated: 'renderer.snapshots.alerts.truncated',
+    unavailable: 'renderer.snapshots.alerts.unavailable',
   });
 
   // =============================================================================

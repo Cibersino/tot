@@ -466,28 +466,28 @@ if (typeof ctx.editorAPI.onReadingTestPrestartStateChanged === 'function') {
 if (editor) {
   const pasteTransferConfig = {
     source: 'paste',
-    noTextAlertKey: 'renderer.editor_alerts.paste_no_text',
-    tooBigAlertKey: 'renderer.editor_alerts.paste_too_big',
+    noTextAlertKey: 'renderer.editor.alerts.paste_no_text',
+    tooBigAlertKey: 'renderer.editor.alerts.paste_too_big',
     getText: (event) => (event.clipboardData && event.clipboardData.getData('text/plain')) || '',
     insertOptions: {
       action: 'paste',
-      limitAlertKey: 'renderer.editor_alerts.paste_limit',
-      truncatedAlertKey: 'renderer.editor_alerts.paste_truncated'
+      limitAlertKey: 'renderer.editor.alerts.paste_limit',
+      truncatedAlertKey: 'renderer.editor.alerts.paste_truncated'
     }
   };
 
   const dropTransferConfig = {
     source: 'drop',
-    noTextAlertKey: 'renderer.editor_alerts.drop_no_text',
-    tooBigAlertKey: 'renderer.editor_alerts.drop_too_big',
+    noTextAlertKey: 'renderer.editor.alerts.drop_no_text',
+    tooBigAlertKey: 'renderer.editor.alerts.drop_too_big',
     getText: (event) => {
       const dt = event.dataTransfer;
       return (dt && dt.getData && dt.getData('text/plain')) || '';
     },
     insertOptions: {
       action: 'drop',
-      limitAlertKey: 'renderer.editor_alerts.drop_limit',
-      truncatedAlertKey: 'renderer.editor_alerts.drop_truncated',
+      limitAlertKey: 'renderer.editor.alerts.drop_limit',
+      truncatedAlertKey: 'renderer.editor.alerts.drop_truncated',
       onFallbackError: (err) => log.warnOnce(
         'setCurrentText.drop.fallback',
         'editorAPI.setCurrentText fallback failed (ignored):',
@@ -516,7 +516,7 @@ if (editor) {
       const available = ctx.engine.getInsertionCapacity();
       if (available <= 0) {
         ev.preventDefault();
-        window.Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+        window.Notify.notifyEditor('renderer.editor.alerts.type_limit', { type: 'warn', duration: 5000 });
         ctx.ui.restoreFocusToEditor(start);
         return;
       }
@@ -524,7 +524,7 @@ if (editor) {
       const incomingLength = ctx.engine.getBeforeInputIncomingLength(ev);
       if (incomingLength !== null && incomingLength > available) {
         ev.preventDefault();
-        window.Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+        window.Notify.notifyEditor('renderer.editor.alerts.type_limit', { type: 'warn', duration: 5000 });
         ctx.ui.restoreFocusToEditor(start);
       }
     } catch (err) {
@@ -580,7 +580,7 @@ if (btnCalc) btnCalc.addEventListener('click', () => {
     ctx.engine.handleTruncationResponse(res);
   } catch (err) {
     log.error('Error executing Apply:', err);
-    window.Notify.notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
+    window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
     ctx.ui.restoreFocusToEditor();
   }
 });

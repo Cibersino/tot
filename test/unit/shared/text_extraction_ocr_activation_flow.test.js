@@ -72,7 +72,7 @@ function createHarness({
             ok: true,
             state: 'ready',
             code: '',
-            alertKey: 'renderer.alerts.text_extraction_ocr_activation_success',
+            alertKey: 'renderer.text_extraction.alerts.ocr.activation_success',
           };
         };
       }

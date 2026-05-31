@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Waktu berjalan: ",
         "text_extraction_drop_here": "Jatuhkan file untuk mengekstrak teks"
+      },
+      "alerts": {
+        "clipboard_too_large": "Teks clipboard terlalu besar untuk diproses. Kurangi dan coba lagi.",
+        "apply_too_large": "Teks akan menjadi terlalu besar untuk diterapkan. Kurangi lalu coba lagi.",
+        "apply_truncated": "Teks dipotong agar sesuai dengan batas aplikasi.",
+        "append_text_limit": "Tidak dapat menambahkan teks: ukuran maksimum tercapai.",
+        "overwrite_clipboard_error": "Terjadi kesalahan saat mengganti teks dari clipboard.",
+        "append_clipboard_error": "Terjadi kesalahan saat menambahkan teks dari clipboard.",
+        "clear_error": "Terjadi kesalahan saat mengosongkan teks. Periksa konsol.",
+        "current_text_processing_locked": "Teks saat ini masih diperbarui. Interaksi jendela utama dikunci sampai teks terbaru stabil.",
+        "current_text_recount_locked": "Hasil teks saat ini masih dihitung ulang. Interaksi jendela utama dikunci sampai penghitungan ulang terbaru stabil.",
+        "wip": {
+          "design_skins": "WIP: Pemilih skin akan dibuka di sini pada versi mendatang.",
+          "floating_stopwatch": "WIP: Pengaturan stopwatch mengambang akan dibuka di sini pada versi mendatang.",
+          "fonts": "WIP: Pemilih font akan dibuka di sini pada versi mendatang.",
+          "colors": "WIP: Pemilih warna akan dibuka di sini pada versi mendatang.",
+          "shortcuts": "WIP: Pemilih pintasan keyboard akan dibuka di sini pada versi mendatang."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Tampilkan PDF yang dibuat",
         "cancel_button": "Batal",
         "close_aria": "Tutup dialog PDF berat untuk OCR"
+      },
+      "alerts": {
+        "start_error": "Terjadi kesalahan saat memulai ekstraksi. Periksa konsol.",
+        "precondition_blocked": "Untuk memulai ekstraksi, tutup semua jendela sekunder dan hentikan stopwatch.",
+        "precondition_error": "Terjadi kesalahan saat memeriksa prasyarat ekstraksi. Periksa konsol.",
+        "processing_locked": "Ekstraksi sedang diproses. Interaksi jendela utama dikunci sampai proses selesai atau Anda membatalkannya.",
+        "abort_error": "Terjadi kesalahan saat meminta pembatalan ekstraksi. Periksa konsol.",
+        "cancellation_requested": "Pembatalan diminta. Harap tunggu sampai ekstraksi saat ini selesai.",
+        "cancellation_complete": "Pembatalan selesai.",
+        "drop_invalid_file": "Item yang dijatuhkan bukan file lokal yang valid.",
+        "generated_pdf_cleanup_warning": "Ekstraksi selesai, tetapi PDF lokal yang dibuat tidak dapat dibersihkan secara otomatis.",
+        "route_choice_error": "Terjadi kesalahan saat memilih rute ekstraksi.",
+        "generated_pdf_reveal_failed": "PDF tersimpan tidak dapat ditampilkan. Periksa apakah file masih ada.",
+        "apply_error": "Terjadi kesalahan saat menerapkan teks hasil ekstraksi. Periksa konsol dan coba lagi.",
+        "prepare_invalid": "Permintaan ekstraksi yang disiapkan tidak lagi valid. Mulai ulang alur.",
+        "unsupported_format": "Format file ini tidak didukung untuk ekstraksi teks.",
+        "pdf": {
+          "unreadable_or_corrupt": "PDF ini tidak dapat dibaca atau rusak. Periksa file dan coba lagi.",
+          "encrypted_or_password_protected": "PDF ini dienkripsi atau dilindungi kata sandi. Buka kuncinya dan coba lagi.",
+          "page_count_unavailable": "Jumlah halaman PDF ini tidak dapat diperiksa. Periksa file dan coba lagi.",
+          "page_selection_invalid": "Rentang halaman PDF yang dipilih tidak valid. Sesuaikan rentang dan coba lagi.",
+          "subset_creation_failed": "PDF berisi halaman yang dipilih tidak dapat dibuat untuk ekstraksi. Periksa file dan coba lagi."
+        },
+        "ocr": {
+          "unavailable": "OCR tidak tersedia. Periksa status setup/auth dan coba lagi.",
+          "activation_required": "Aktivasi OCR diperlukan. Masuk ke Google OCR dan coba lagi.",
+          "activation_success": "Aktivasi OCR selesai. Mencoba ulang ekstraksi.",
+          "activation_cancelled": "Aktivasi OCR dibatalkan. Ekstraksi tidak dilanjutkan.",
+          "token_state_invalid": "Status masuk Google OCR yang tersimpan tidak valid. Sambungkan ulang Google OCR dan coba lagi.",
+          "activation_failed": "Aktivasi OCR gagal. Periksa status setup/auth dan coba lagi.",
+          "enable_success": "Google OCR sekarang aktif.",
+          "enable_cancelled": "Aktivasi Google OCR dibatalkan.",
+          "enable_failed": "Google OCR tidak dapat diaktifkan. Periksa penyiapan/status autentikasi dan coba lagi.",
+          "disconnect_success": "Google OCR telah diputuskan. Token Google yang tersimpan dicabut dan status masuk lokal dihapus.",
+          "disconnect_not_connected": "Google OCR saat ini tidak tersambung dalam instance aplikasi ini.",
+          "disconnect_failed": "Pemutusan Google OCR gagal. Status masuk yang tersimpan tidak dihapus.",
+          "connectivity_failed": "OCR membutuhkan koneksi internet. Periksa koneksi Anda dan coba lagi.",
+          "setup_missing_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak ada.",
+          "setup_invalid_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak valid.",
+          "quota_or_rate_limited": "OCR untuk sementara diblokir oleh kuota/batas laju. Tunggu dan coba lagi.",
+          "runtime_error": "Terjadi kesalahan runtime OCR selama ekstraksi. Periksa konsol dan coba lagi.",
+          "cancelled": "Ekstraksi OCR dibatalkan.",
+          "cleanup_warning": "OCR selesai, tetapi pembersihan file sementara jarak jauh gagal. Periksa folder Google Drive Anda."
+        },
+        "batch_ocr": {
+          "activation_required": "Kelompok ini mencakup item OCR, tetapi Google OCR belum diaktifkan. Gunakan Preferensi > Aktifkan Google OCR, lalu mulai ulang kelompok.",
+          "token_state_invalid": "Kelompok ini mencakup item OCR, tetapi status masuk Google OCR yang tersimpan tidak valid. Gunakan Preferensi > Aktifkan Google OCR lagi, lalu mulai ulang kelompok.",
+          "connectivity_failed": "Batch ini mencakup item OCR, tetapi OCR memerlukan koneksi internet. Periksa koneksi Anda dan coba lagi sebelum memulai ekstraksi.",
+          "quota_or_rate_limited": "Batch ini mencakup item OCR, tetapi OCR sementara diblokir oleh batas kuota/laju. Tunggu lalu coba lagi sebelum memulai ekstraksi.",
+          "unavailable": "Kelompok ini mencakup item OCR, tetapi Google OCR sedang tidak tersedia. Jika OCR belum diaktifkan, gunakan Preferensi > Aktifkan Google OCR. Jika sudah, periksa penyiapan/status OCR dan coba lagi sebelum memulai kelompok."
+        },
+        "native": {
+          "runtime_error": "Terjadi kesalahan runtime ekstraksi native selama ekstraksi. Periksa konsol dan coba lagi.",
+          "unreadable_or_corrupt": "File yang dipilih tidak dapat dibaca atau rusak untuk ekstraksi native.",
+          "encrypted_or_password_protected": "PDF yang dipilih terenkripsi atau dilindungi kata sandi dan tidak dapat diekstrak secara native.",
+          "cancelled": "Ekstraksi native dibatalkan."
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "Perbesar ukuran teks",
       "reset_text_size": "Reset ukuran teks",
       "read_progress_label": "Dibaca",
-      "clear_title": "Kosongkan"
+      "clear_title": "Kosongkan",
+      "alerts": {
+        "start_failed": "Text Editor tidak dapat dimulai.",
+        "start_timeout": "Text Editor terlalu lama dimulai dan ditutup.",
+        "paste_too_big": "Teks terlalu besar untuk ditempel langsung. Gunakan tombol di jendela utama.",
+        "drop_too_big": "Teks yang dijatuhkan terlalu besar. Gunakan tombol di jendela utama untuk menambahkan teks besar.",
+        "paste_no_text": "Clipboard tidak berisi teks biasa.",
+        "drop_no_text": "Seret dan jatuhkan: tidak ada teks biasa terdeteksi.",
+        "type_limit": "Tidak dapat mengetik teks lagi: ukuran maksimum tercapai.",
+        "paste_limit": "Tidak dapat menempel teks lagi: ukuran maksimum tercapai.",
+        "drop_limit": "Tidak dapat menjatuhkan teks lagi: ukuran maksimum tercapai.",
+        "paste_truncated": "Teks yang ditempel dipotong agar tidak melebihi batas maksimum.",
+        "drop_truncated": "Teks yang diseret melebihi ruang yang tersedia dan dipotong.",
+        "text_truncated": "Teks dipotong agar sesuai dengan batas aplikasi.",
+        "calc_error": "Terjadi kesalahan saat menghitung. Periksa konsol."
+      }
     },
     "editor_find": {
       "input_placeholder": "Cari...",
@@ -242,6 +332,17 @@
       "replace_timeout": "Penggantian kehabisan waktu. Coba lagi.",
       "status_no_matches": "Tidak ada kecocokan",
       "status_empty_query": "Ketik untuk mencari"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot disimpan.",
+        "save_error": "Tidak dapat menyimpan snapshot.",
+        "load_success": "Snapshot dimuat.",
+        "load_error": "Tidak dapat memuat snapshot.",
+        "outside": "Snapshot harus berada di dalam folder snapshots.",
+        "truncated": "Snapshot melebihi ukuran maksimum dan dipotong.",
+        "unavailable": "Fungsi snapshot tidak tersedia."
+      }
     },
     "snapshot_save_tags": {
       "title": "Simpan snapshot teks",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "Lanjutkan"
         }
+      },
+      "alerts": {
+        "unavailable": "Fitur tes kecepatan membaca tidak tersedia.",
+        "precondition_blocked": "Tes kecepatan membaca hanya dapat dimulai dari keadaan aplikasi yang stabil. Tutup jendela sekunder dan pastikan stopwatch berhenti.",
+        "pool_error": "Terjadi kesalahan saat memeriksa pool tes kecepatan membaca.",
+        "no_matching_files": "Tidak ada file tes yang belum digunakan dan cocok dengan pilihan saat ini.",
+        "visible_empty_bundled_hidden": "File tes bawaan disembunyikan, dan saat ini tidak ada file tes terlihat yang belum digunakan. Tampilkan kembali file bawaan atau impor lebih banyak file untuk melanjutkan.",
+        "current_text_empty": "Teks saat ini kosong. Muat atau ketik teks sebelum memulai tes dengan teks saat ini.",
+        "result_invalid": "Hasil tes tidak dapat dikonversi menjadi WPM yang valid. Alur berakhir tanpa membuka modal preset.",
+        "result_unavailable": "Hasil kecepatan membaca tidak dapat ditampilkan. Alur dilanjutkan.",
+        "preset_unavailable": "Modal preset tidak dapat dibuka setelah tes.",
+        "questions_unavailable": "Modal pertanyaan pemahaman tidak dapat dibuka. Alur berakhir sebelum pembuatan preset.",
+        "pool_import_failed": "File tes kecepatan membaca tidak dapat diimpor.",
+        "start_failed": "Tes kecepatan membaca tidak dapat dimulai.",
+        "cancelled": "Tes kecepatan membaca dibatalkan.",
+        "cancelled_window_closed": "Tes kecepatan membaca dibatalkan karena salah satu jendela sesi ditutup."
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "{remaining} karakter tersisa",
       "hint": "Preset kustom disimpan dalam pengaturan pengguna.",
       "cancel": "Batal",
-      "save": "Simpan"
+      "save": "Simpan",
+      "alerts": {
+        "unavailable": "Dialog preset tidak tersedia di build aplikasi ini.",
+        "open_error": "Terjadi kesalahan saat membuka dialog preset. Periksa konsol.",
+        "name_empty": "Nama tidak boleh kosong.",
+        "wpm_invalid": "WPM harus berupa angka antara {min} dan {max}.",
+        "create_error": "Terjadi kesalahan saat membuat preset. Periksa konsol.",
+        "edit_error": "Terjadi kesalahan saat mengedit preset. Periksa konsol.",
+        "process_error": "Terjadi kesalahan saat memproses preset. Periksa konsol."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Preset yang dipilih tidak ditemukan dalam cache.",
+        "delete_error": "Terjadi kesalahan saat menghapus preset. Periksa konsol.",
+        "restore_error": "Terjadi kesalahan saat memulihkan preset. Periksa konsol.",
+        "open_folder_unsupported": "Tidak dapat membuka folder preset di lingkungan ini.",
+        "open_folder_error": "Terjadi kesalahan saat mencoba membuka folder preset. Periksa konsol.",
+        "open_default_folder_failed": "Tidak dapat membuka folder preset bawaan. Periksa konsol untuk detail."
+      }
     },
     "browser_extension": {
       "title": "Ekstensi browser",
       "subtitle": "Tiempo de lectura",
       "availability": "Tersedia di Chrome sekarang. Browser lain akan segera menyusul.",
       "chrome_store_aria": "Buka halaman Chrome Web Store ekstensi",
-      "close_aria": "Tutup dialog ekstensi browser"
-    },
-    "alerts": {
-      "clipboard_too_large": "Teks clipboard terlalu besar untuk diproses. Kurangi dan coba lagi.",
-      "apply_too_large": "Teks akan menjadi terlalu besar untuk diterapkan. Kurangi lalu coba lagi.",
-      "apply_truncated": "Teks dipotong agar sesuai dengan batas aplikasi.",
-      "append_text_limit": "Tidak dapat menambahkan teks: ukuran maksimum tercapai.",
-      "overwrite_clipboard_error": "Terjadi kesalahan saat mengganti teks dari clipboard.",
-      "append_clipboard_error": "Terjadi kesalahan saat menambahkan teks dari clipboard.",
-      "clear_error": "Terjadi kesalahan saat mengosongkan teks. Periksa konsol.",
-      "snapshot_save_success": "Snapshot disimpan.",
-      "snapshot_save_error": "Tidak dapat menyimpan snapshot.",
-      "snapshot_load_success": "Snapshot dimuat.",
-      "snapshot_load_error": "Tidak dapat memuat snapshot.",
-      "snapshot_outside": "Snapshot harus berada di dalam folder snapshots.",
-      "snapshot_truncated": "Snapshot melebihi ukuran maksimum dan dipotong.",
-      "snapshot_unavailable": "Fungsi snapshot tidak tersedia.",
-      "browser_extension_modal_open_blocked": "Dialog ekstensi browser tidak dapat dibuka saat ini.",
-      "preset_not_found": "Preset yang dipilih tidak ditemukan dalam cache.",
-      "preset_modal_unavailable": "Dialog preset tidak tersedia di build aplikasi ini.",
-      "preset_modal_open_error": "Terjadi kesalahan saat membuka dialog preset. Periksa konsol.",
-      "delete_error": "Terjadi kesalahan saat menghapus preset. Periksa konsol.",
-      "restore_error": "Terjadi kesalahan saat memulihkan preset. Periksa konsol.",
-      "open_presets_unsupported": "Tidak dapat membuka folder preset di lingkungan ini.",
-      "open_presets_error": "Terjadi kesalahan saat mencoba membuka folder preset. Periksa konsol.",
-      "open_presets_fail": "Tidak dapat membuka folder preset bawaan. Periksa konsol untuk detail.",
-      "text_extraction_error": "Terjadi kesalahan saat memulai ekstraksi. Periksa konsol.",
-      "text_extraction_precondition_blocked": "Untuk memulai ekstraksi, tutup semua jendela sekunder dan hentikan stopwatch.",
-      "text_extraction_precondition_error": "Terjadi kesalahan saat memeriksa prasyarat ekstraksi. Periksa konsol.",
-      "text_extraction_processing_locked": "Ekstraksi sedang diproses. Interaksi jendela utama dikunci sampai proses selesai atau Anda membatalkannya.",
-      "current_text_processing_locked": "Teks saat ini masih diperbarui. Interaksi jendela utama dikunci sampai teks terbaru stabil.",
-      "current_text_recount_locked": "Hasil teks saat ini masih dihitung ulang. Interaksi jendela utama dikunci sampai penghitungan ulang terbaru stabil.",
-      "text_extraction_abort_error": "Terjadi kesalahan saat meminta pembatalan ekstraksi. Periksa konsol.",
-      "text_extraction_cancellation_requested": "Pembatalan diminta. Harap tunggu sampai ekstraksi saat ini selesai.",
-      "text_extraction_cancellation_complete": "Pembatalan selesai.",
-      "text_extraction_drop_invalid_file": "Item yang dijatuhkan bukan file lokal yang valid.",
-      "text_extraction_pdf_unreadable_or_corrupt": "PDF ini tidak dapat dibaca atau rusak. Periksa file dan coba lagi.",
-      "text_extraction_pdf_encrypted_or_password_protected": "PDF ini dienkripsi atau dilindungi kata sandi. Buka kuncinya dan coba lagi.",
-      "text_extraction_pdf_page_count_unavailable": "Jumlah halaman PDF ini tidak dapat diperiksa. Periksa file dan coba lagi.",
-      "text_extraction_pdf_page_selection_invalid": "Rentang halaman PDF yang dipilih tidak valid. Sesuaikan rentang dan coba lagi.",
-      "text_extraction_pdf_subset_creation_failed": "PDF berisi halaman yang dipilih tidak dapat dibuat untuk ekstraksi. Periksa file dan coba lagi.",
-      "text_extraction_generated_pdf_cleanup_warning": "Ekstraksi selesai, tetapi PDF lokal yang dibuat tidak dapat dibersihkan secara otomatis.",
-      "text_extraction_route_choice_error": "Terjadi kesalahan saat memilih rute ekstraksi.",
-      "text_extraction_generated_pdf_reveal_failed": "PDF tersimpan tidak dapat ditampilkan. Periksa apakah file masih ada.",
-      "text_extraction_apply_error": "Terjadi kesalahan saat menerapkan teks hasil ekstraksi. Periksa konsol dan coba lagi.",
-      "text_extraction_prepare_invalid": "Permintaan ekstraksi yang disiapkan tidak lagi valid. Mulai ulang alur.",
-      "text_extraction_batch_ocr_activation_required": "Kelompok ini mencakup item OCR, tetapi Google OCR belum diaktifkan. Gunakan Preferensi > Aktifkan Google OCR, lalu mulai ulang kelompok.",
-      "text_extraction_batch_ocr_token_state_invalid": "Kelompok ini mencakup item OCR, tetapi status masuk Google OCR yang tersimpan tidak valid. Gunakan Preferensi > Aktifkan Google OCR lagi, lalu mulai ulang kelompok.",
-      "text_extraction_batch_ocr_connectivity_failed": "Batch ini mencakup item OCR, tetapi OCR memerlukan koneksi internet. Periksa koneksi Anda dan coba lagi sebelum memulai ekstraksi.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Batch ini mencakup item OCR, tetapi OCR sementara diblokir oleh batas kuota/laju. Tunggu lalu coba lagi sebelum memulai ekstraksi.",
-      "text_extraction_batch_ocr_unavailable": "Kelompok ini mencakup item OCR, tetapi Google OCR sedang tidak tersedia. Jika OCR belum diaktifkan, gunakan Preferensi > Aktifkan Google OCR. Jika sudah, periksa penyiapan/status OCR dan coba lagi sebelum memulai kelompok.",
-      "text_extraction_ocr_unavailable": "OCR tidak tersedia. Periksa status setup/auth dan coba lagi.",
-      "text_extraction_ocr_activation_required": "Aktivasi OCR diperlukan. Masuk ke Google OCR dan coba lagi.",
-      "text_extraction_ocr_activation_success": "Aktivasi OCR selesai. Mencoba ulang ekstraksi.",
-      "text_extraction_ocr_activation_cancelled": "Aktivasi OCR dibatalkan. Ekstraksi tidak dilanjutkan.",
-      "text_extraction_ocr_token_state_invalid": "Status masuk Google OCR yang tersimpan tidak valid. Sambungkan ulang Google OCR dan coba lagi.",
-      "text_extraction_ocr_activation_failed": "Aktivasi OCR gagal. Periksa status setup/auth dan coba lagi.",
-      "text_extraction_ocr_enable_success": "Google OCR sekarang aktif.",
-      "text_extraction_ocr_enable_cancelled": "Aktivasi Google OCR dibatalkan.",
-      "text_extraction_ocr_enable_failed": "Google OCR tidak dapat diaktifkan. Periksa penyiapan/status autentikasi dan coba lagi.",
-      "text_extraction_ocr_disconnect_success": "Google OCR telah diputuskan. Token Google yang tersimpan dicabut dan status masuk lokal dihapus.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR saat ini tidak tersambung dalam instance aplikasi ini.",
-      "text_extraction_ocr_disconnect_failed": "Pemutusan Google OCR gagal. Status masuk yang tersimpan tidak dihapus.",
-      "text_extraction_ocr_connectivity_failed": "OCR membutuhkan koneksi internet. Periksa koneksi Anda dan coba lagi.",
-      "text_extraction_ocr_setup_missing_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak ada.",
-      "text_extraction_ocr_setup_invalid_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak valid.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR untuk sementara diblokir oleh kuota/batas laju. Tunggu dan coba lagi.",
-      "text_extraction_ocr_runtime_error": "Terjadi kesalahan runtime OCR selama ekstraksi. Periksa konsol dan coba lagi.",
-      "text_extraction_ocr_cancelled": "Ekstraksi OCR dibatalkan.",
-      "text_extraction_ocr_cleanup_warning": "OCR selesai, tetapi pembersihan file sementara jarak jauh gagal. Periksa folder Google Drive Anda.",
-      "text_extraction_native_runtime_error": "Terjadi kesalahan runtime ekstraksi native selama ekstraksi. Periksa konsol dan coba lagi.",
-      "text_extraction_native_unreadable_or_corrupt": "File yang dipilih tidak dapat dibaca atau rusak untuk ekstraksi native.",
-      "text_extraction_native_encrypted_or_password_protected": "PDF yang dipilih terenkripsi atau dilindungi kata sandi dan tidak dapat diekstrak secara native.",
-      "text_extraction_native_cancelled": "Ekstraksi native dibatalkan.",
-      "text_extraction_unsupported_format": "Format file ini tidak didukung untuk ekstraksi teks.",
-      "wip_diseno_skins": "WIP: Pemilih skin akan dibuka di sini pada versi mendatang.",
-      "wip_diseno_crono": "WIP: Pengaturan stopwatch mengambang akan dibuka di sini pada versi mendatang.",
-      "wip_diseno_fuentes": "WIP: Pemilih font akan dibuka di sini pada versi mendatang.",
-      "wip_diseno_colores": "WIP: Pemilih warna akan dibuka di sini pada versi mendatang.",
-      "wip_shortcuts": "WIP: Pemilih pintasan keyboard akan dibuka di sini pada versi mendatang.",
-      "reading_test_unavailable": "Fitur tes kecepatan membaca tidak tersedia.",
-      "reading_test_precondition_blocked": "Tes kecepatan membaca hanya dapat dimulai dari keadaan aplikasi yang stabil. Tutup jendela sekunder dan pastikan stopwatch berhenti.",
-      "reading_test_pool_error": "Terjadi kesalahan saat memeriksa pool tes kecepatan membaca.",
-      "reading_test_no_matching_files": "Tidak ada file tes yang belum digunakan dan cocok dengan pilihan saat ini.",
-      "reading_test_visible_empty_bundled_hidden": "File tes bawaan disembunyikan, dan saat ini tidak ada file tes terlihat yang belum digunakan. Tampilkan kembali file bawaan atau impor lebih banyak file untuk melanjutkan.",
-      "reading_test_current_text_empty": "Teks saat ini kosong. Muat atau ketik teks sebelum memulai tes dengan teks saat ini.",
-      "reading_test_result_invalid": "Hasil tes tidak dapat dikonversi menjadi WPM yang valid. Alur berakhir tanpa membuka modal preset.",
-      "reading_test_result_unavailable": "Hasil kecepatan membaca tidak dapat ditampilkan. Alur dilanjutkan.",
-      "reading_test_preset_unavailable": "Modal preset tidak dapat dibuka setelah tes.",
-      "reading_test_questions_unavailable": "Modal pertanyaan pemahaman tidak dapat dibuka. Alur berakhir sebelum pembuatan preset.",
-      "reading_test_pool_import_failed": "File tes kecepatan membaca tidak dapat diimpor.",
-      "reading_test_start_failed": "Tes kecepatan membaca tidak dapat dimulai.",
-      "text_editor_start_failed": "Text Editor tidak dapat dimulai.",
-      "text_editor_start_timeout": "Text Editor terlalu lama dimulai dan ditutup.",
-      "reading_test_cancelled": "Tes kecepatan membaca dibatalkan.",
-      "reading_test_cancelled_window_closed": "Tes kecepatan membaca dibatalkan karena salah satu jendela sesi ditutup."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Teks terlalu besar untuk ditempel langsung. Gunakan tombol di jendela utama.",
-      "drop_too_big": "Teks yang dijatuhkan terlalu besar. Gunakan tombol di jendela utama untuk menambahkan teks besar.",
-      "paste_no_text": "Clipboard tidak berisi teks biasa.",
-      "drop_no_text": "Seret dan jatuhkan: tidak ada teks biasa terdeteksi.",
-      "type_limit": "Tidak dapat mengetik teks lagi: ukuran maksimum tercapai.",
-      "paste_limit": "Tidak dapat menempel teks lagi: ukuran maksimum tercapai.",
-      "drop_limit": "Tidak dapat menjatuhkan teks lagi: ukuran maksimum tercapai.",
-      "paste_truncated": "Teks yang ditempel dipotong agar tidak melebihi batas maksimum.",
-      "drop_truncated": "Teks yang diseret melebihi ruang yang tersedia dan dipotong.",
-      "text_truncated": "Teks dipotong agar sesuai dengan batas aplikasi.",
-      "calc_error": "Terjadi kesalahan saat menghitung. Periksa konsol."
-    },
-    "preset_alerts": {
-      "name_empty": "Nama tidak boleh kosong.",
-      "wpm_invalid": "WPM harus berupa angka antara {min} dan {max}.",
-      "create_error": "Terjadi kesalahan saat membuat preset. Periksa konsol.",
-      "edit_error": "Terjadi kesalahan saat mengedit preset. Periksa konsol.",
-      "process_error": "Terjadi kesalahan saat memproses preset. Periksa konsol."
+      "close_aria": "Tutup dialog ekstensi browser",
+      "alerts": {
+        "modal_open_blocked": "Dialog ekstensi browser tidak dapat dibuka saat ini."
+      }
     },
     "info": {
       "loading": "Memuat...",

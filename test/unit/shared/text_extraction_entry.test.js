@@ -313,7 +313,7 @@ test('single-file cancellation finishes abort finalization only after execution 
   const harness = createHarness({
     executePreparedTextExtractionResult: {
       ok: true,
-      primaryAlertKey: 'renderer.alerts.text_extraction_ocr_cancelled',
+      primaryAlertKey: 'renderer.text_extraction.alerts.ocr.cancelled',
       result: {
         state: 'cancelled',
         text: '',
@@ -334,6 +334,6 @@ test('single-file cancellation finishes abort finalization only after execution 
   assert.equal(harness.getSyncMainInteractionLockUiCallCount(), 1);
   assert.deepEqual(
     harness.notifications,
-    ['renderer.alerts.text_extraction_cancellation_complete']
+    ['renderer.text_extraction.alerts.cancellation_complete']
   );
 });

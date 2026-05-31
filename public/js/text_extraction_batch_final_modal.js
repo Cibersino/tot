@@ -459,7 +459,7 @@
           await onRevealGeneratedPdf(target.getAttribute('data-artifact-path') || '');
         } catch (err) {
           log.error('Generated PDF reveal failed from final modal:', err);
-          window.Notify.notifyMain('renderer.alerts.text_extraction_generated_pdf_reveal_failed');
+          window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         }
       };
       const onCopy = async () => {

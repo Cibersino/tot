@@ -75,7 +75,7 @@ function buildBlockedResult({ openSecondaryWindows, stopwatchRunning }) {
     canStart: false,
     state: 'precondition_rejected',
     reasons,
-    guidanceKey: 'renderer.alerts.text_extraction_precondition_blocked',
+    guidanceKey: 'renderer.text_extraction.alerts.precondition_blocked',
     detailsSafeForLogs: {
       openSecondaryWindowIds: openSecondaryWindows.map((w) => w.id),
       openSecondaryWindowCount: openSecondaryWindows.length,
@@ -167,7 +167,7 @@ function registerIpc(ipcMain, { getWindows, getPreconditionContext } = {}) {
         canStart: false,
         state: 'failure',
         reasons: ['precondition_check_failed'],
-        guidanceKey: 'renderer.alerts.text_extraction_precondition_error',
+        guidanceKey: 'renderer.text_extraction.alerts.precondition_error',
         detailsSafeForLogs: {
           errorName: String(err && err.name ? err.name : 'Error'),
           errorMessage: String(err && err.message ? err.message : err || ''),

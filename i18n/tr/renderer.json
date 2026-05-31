@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Geçen süre: ",
         "text_extraction_drop_here": "Metni çıkarmak için dosyayı bırakın"
+      },
+      "alerts": {
+        "clipboard_too_large": "Pano metni işlenemeyecek kadar büyük. Kısaltın ve yeniden deneyin.",
+        "apply_too_large": "Metin uygulanamayacak kadar büyük hale gelecek. Kısaltıp tekrar deneyin.",
+        "apply_truncated": "Metin, uygulama sınırına sığması için kısaltıldı.",
+        "append_text_limit": "Metin eklenemiyor: maksimum boyuta ulaşıldı.",
+        "overwrite_clipboard_error": "Panodan metin değiştirilirken bir hata oluştu.",
+        "append_clipboard_error": "Panodan metin eklenirken bir hata oluştu.",
+        "clear_error": "Metin temizlenirken hata oluştu. Konsolu kontrol edin.",
+        "current_text_processing_locked": "Geçerli metin hâlâ güncelleniyor. En son metin sabitlenene kadar ana pencere etkileşimleri kilitli kalır.",
+        "current_text_recount_locked": "Geçerli metin sonuçları hâlâ yeniden hesaplanıyor. En son yeniden hesaplama sabitlenene kadar ana pencere etkileşimleri kilitli kalır.",
+        "wip": {
+          "design_skins": "WIP: Tema seçici gelecek bir sürümde burada açılacak.",
+          "floating_stopwatch": "WIP: Yüzen kronometre ayarları gelecek bir sürümde burada açılacak.",
+          "fonts": "WIP: Yazı tipi seçici gelecek bir sürümde burada açılacak.",
+          "colors": "WIP: Renk seçici gelecek bir sürümde burada açılacak.",
+          "shortcuts": "WIP: Klavye kısayolları seçici gelecek bir sürümde burada açılacak."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Oluşturulan PDF’yi göster",
         "cancel_button": "İptal",
         "close_aria": "OCR için ağır PDF iletişim kutusunu kapat"
+      },
+      "alerts": {
+        "start_error": "Çıkarma başlatılırken hata oluştu. Konsolu kontrol edin.",
+        "precondition_blocked": "Çıkarma başlatmak için tüm ikincil pencereleri kapatın ve kronometreyi durdurun.",
+        "precondition_error": "Çıkarma ön koşulları denetlenirken hata oluştu. Konsolu kontrol edin.",
+        "processing_locked": "Çıkarma işleniyor. İşlem bitene veya siz durdurana kadar ana pencere etkileşimleri kilitli kalır.",
+        "abort_error": "Çıkarma durdurma isteği gönderilirken hata oluştu. Konsolu kontrol edin.",
+        "cancellation_requested": "İptal istendi. Lütfen geçerli çıkarma bitene kadar bekleyin.",
+        "cancellation_complete": "İptal tamamlandı.",
+        "drop_invalid_file": "Bırakılan öğe geçerli bir yerel dosya değil.",
+        "generated_pdf_cleanup_warning": "Çıkarma tamamlandı, ancak oluşturulan yerel PDF otomatik olarak temizlenemedi.",
+        "route_choice_error": "Çıkarma rotası seçilirken bir hata oluştu.",
+        "generated_pdf_reveal_failed": "Kaydedilen PDF gösterilemedi. Dosyanın hâlâ var olup olmadığını kontrol edin.",
+        "apply_error": "Çıkarılan metin uygulanırken hata oluştu. Konsolu kontrol edin ve yeniden deneyin.",
+        "prepare_invalid": "Hazırlanan çıkarma isteği artık geçerli değil. Akışı yeniden başlatın.",
+        "unsupported_format": "Bu dosya biçimi metin çıkarma için desteklenmiyor.",
+        "pdf": {
+          "unreadable_or_corrupt": "Bu PDF okunamıyor veya bozuk. Dosyayı kontrol edip tekrar deneyin.",
+          "encrypted_or_password_protected": "Bu PDF şifrelenmiş veya parola korumalı. Kilidini açıp tekrar deneyin.",
+          "page_count_unavailable": "Bu PDF’nin sayfa sayısı incelenemedi. Dosyayı kontrol edip tekrar deneyin.",
+          "page_selection_invalid": "Seçilen PDF sayfa aralığı geçersiz. Aralığı ayarlayıp tekrar deneyin.",
+          "subset_creation_failed": "Çıkarma için seçili sayfalardan PDF oluşturulamadı. Dosyayı kontrol edip tekrar deneyin."
+        },
+        "ocr": {
+          "unavailable": "OCR kullanılamıyor. Kurulum/yetkilendirme durumunu kontrol edin ve yeniden deneyin.",
+          "activation_required": "OCR aktivasyonu gerekli. Google OCR'de oturum açın ve yeniden deneyin.",
+          "activation_success": "OCR aktivasyonu tamamlandı. Çıkarma yeniden deneniyor.",
+          "activation_cancelled": "OCR aktivasyonu iptal edildi. Çıkarma devam etmedi.",
+          "token_state_invalid": "Kayıtlı Google OCR oturum açma durumu geçersiz. Google OCR'yi yeniden bağlayın ve yeniden deneyin.",
+          "activation_failed": "OCR aktivasyonu başarısız oldu. Kurulum/yetkilendirme durumunu kontrol edin ve yeniden deneyin.",
+          "enable_success": "Google OCR artık etkin.",
+          "enable_cancelled": "Google OCR etkinleştirme iptal edildi.",
+          "enable_failed": "Google OCR etkinleştirilemedi. Kurulum/kimlik doğrulama durumunu kontrol edin ve yeniden deneyin.",
+          "disconnect_success": "Google OCR bağlantısı kesildi. Kayıtlı Google token'ı iptal edildi ve yerel oturum açma durumu kaldırıldı.",
+          "disconnect_not_connected": "Google OCR bu uygulama örneğinde şu anda bağlı değil.",
+          "disconnect_failed": "Google OCR bağlantısını kesme başarısız oldu. Kayıtlı oturum açma durumu kaldırılmadı.",
+          "connectivity_failed": "OCR internet bağlantısı gerektirir. Bağlantınızı kontrol edin ve yeniden deneyin.",
+          "setup_missing_credentials": "Bu uygulama derlemesinde paketlenmiş Google OAuth kimlik bilgileri eksik olduğu için OCR kullanılamıyor.",
+          "setup_invalid_credentials": "Bu uygulama derlemesinde paketlenmiş Google OAuth kimlik bilgileri geçersiz olduğu için OCR kullanılamıyor.",
+          "quota_or_rate_limited": "OCR kota/hız sınırları nedeniyle geçici olarak engellendi. Bekleyin ve yeniden deneyin.",
+          "runtime_error": "Çıkarma sırasında OCR çalışma zamanı hatası oluştu. Konsolu kontrol edin ve yeniden deneyin.",
+          "cancelled": "OCR çıkarma iptal edildi.",
+          "cleanup_warning": "OCR tamamlandı, ancak geçici uzak dosya temizliği başarısız oldu. Google Drive klasörünüzü kontrol edin."
+        },
+        "batch_ocr": {
+          "activation_required": "Bu toplu işlem OCR öğeleri içeriyor, ancak Google OCR etkin değil. Tercihler > Google OCR’ı etkinleştir seçeneğini kullanın ve ardından toplu işlemi yeniden başlatın.",
+          "token_state_invalid": "Bu toplu işlem OCR öğeleri içeriyor, ancak kaydedilmiş Google OCR oturum açma durumu geçersiz. Tercihler > Google OCR’ı etkinleştir seçeneğini yeniden kullanın ve ardından toplu işlemi yeniden başlatın.",
+          "connectivity_failed": "Bu toplu işlem OCR öğeleri içeriyor, ancak OCR için internet bağlantısı gerekir. Çıkarma işlemini başlatmadan önce bağlantınızı kontrol edip tekrar deneyin.",
+          "quota_or_rate_limited": "Bu toplu işlem OCR öğeleri içeriyor, ancak OCR kota/hız sınırları nedeniyle geçici olarak engellendi. Çıkarma işlemini başlatmadan önce bekleyip tekrar deneyin.",
+          "unavailable": "Bu toplu işlem OCR öğeleri içeriyor, ancak Google OCR şu anda kullanılamıyor. OCR henüz etkin değilse Tercihler > Google OCR’ı etkinleştir seçeneğini kullanın. Aksi halde OCR kurulumu/durumunu kontrol edin ve toplu işlemi başlatmadan önce yeniden deneyin."
+        },
+        "native": {
+          "runtime_error": "Çıkarma sırasında yerel çıkarma çalışma zamanı hatası oluştu. Konsolu kontrol edin ve yeniden deneyin.",
+          "unreadable_or_corrupt": "Seçili dosya yerel çıkarma için okunamıyor veya bozuk.",
+          "encrypted_or_password_protected": "Seçili PDF şifreli veya parola korumalı olduğu için yerel olarak çıkarılamaz.",
+          "cancelled": "Yerel çıkarma iptal edildi."
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "Metin boyutunu büyüt",
       "reset_text_size": "Metin boyutunu sıfırla",
       "read_progress_label": "Okundu",
-      "clear_title": "Temizle"
+      "clear_title": "Temizle",
+      "alerts": {
+        "start_failed": "Text Editor başlatılamadı.",
+        "start_timeout": "Text Editor başlamak için çok uzun sürdü ve kapatıldı.",
+        "paste_too_big": "Metin doğrudan yapıştırılamayacak kadar büyük. Ana pencere düğmelerini kullanın.",
+        "drop_too_big": "Bırakılan metin çok büyük. Büyük metin eklemek için ana pencere düğmelerini kullanın.",
+        "paste_no_text": "Pano düz metin içermiyor.",
+        "drop_no_text": "Sürükle-bırak: düz metin algılanmadı.",
+        "type_limit": "Daha fazla metin yazılamıyor: en büyük boyuta ulaşıldı.",
+        "paste_limit": "Daha fazla metin yapıştırılamıyor: en büyük boyuta ulaşıldı.",
+        "drop_limit": "Daha fazla metin bırakılamıyor: en büyük boyuta ulaşıldı.",
+        "paste_truncated": "Üst sınırın aşılmasını önlemek için yapıştırılan metin kesildi.",
+        "drop_truncated": "Sürüklenen metin kullanılabilir alanı aştı ve kesildi.",
+        "text_truncated": "Metin uygulama sınırına sığması için kesildi.",
+        "calc_error": "Hesaplama sırasında hata oluştu. Konsolu kontrol edin."
+      }
     },
     "editor_find": {
       "input_placeholder": "Bul...",
@@ -242,6 +332,17 @@
       "replace_timeout": "Değiştirme zaman aşımına uğradı. Yeniden deneyin.",
       "status_no_matches": "Eşleşme yok",
       "status_empty_query": "Aramak için yazın"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot kaydedildi.",
+        "save_error": "Snapshot kaydedilemedi.",
+        "load_success": "Snapshot yüklendi.",
+        "load_error": "Snapshot yüklenemedi.",
+        "outside": "Snapshot, snapshot klasörünün içinde olmalıdır.",
+        "truncated": "Snapshot en büyük boyutu aşıyor ve kesildi.",
+        "unavailable": "Snapshot işlevi kullanılamıyor."
+      }
     },
     "snapshot_save_tags": {
       "title": "Metin snapshot'ını kaydet",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "Devam et"
         }
+      },
+      "alerts": {
+        "unavailable": "Okuma hızı testi özelliği kullanılamıyor.",
+        "precondition_blocked": "Okuma hızı testi yalnızca uygulama kararlı durumdayken başlatılabilir. İkincil pencereleri kapatın ve kronometrenin durduğundan emin olun.",
+        "pool_error": "Okuma hızı testi havuzu denetlenirken hata oluştu.",
+        "no_matching_files": "Geçerli seçimle eşleşen kullanılmamış test dosyası kalmadı.",
+        "visible_empty_bundled_hidden": "Yerleşik test dosyaları gizli ve şu anda görünür kullanılmamış test dosyası yok. Devam etmek için yerleşik dosyaları yeniden gösterin veya daha fazla dosya içe aktarın.",
+        "current_text_empty": "Geçerli metin boş. Testi geçerli metinle başlatmadan önce bir metin yükleyin veya yazın.",
+        "result_invalid": "Test sonucu geçerli bir WPM değerine dönüştürülemedi. Akış, ön ayar modalını açmadan sona erdi.",
+        "result_unavailable": "Okuma hızı sonucu gösterilemedi. Akış devam etti.",
+        "preset_unavailable": "Testten sonra ön ayar modalı açılamadı.",
+        "questions_unavailable": "Anlama soruları modalı açılamadı. Akış, ön ayar oluşturulmadan sona erdi.",
+        "pool_import_failed": "Okuma hızı testi dosyaları içe aktarılamadı.",
+        "start_failed": "Okuma hızı testi başlatılamadı.",
+        "cancelled": "Okuma hızı testi iptal edildi.",
+        "cancelled_window_closed": "Oturum pencerelerinden biri kapandığı için okuma hızı testi iptal edildi."
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "{remaining} karakter kaldı",
       "hint": "Özel ön ayarlar kullanıcı ayarlarında saklanır.",
       "cancel": "İptal",
-      "save": "Kaydet"
+      "save": "Kaydet",
+      "alerts": {
+        "unavailable": "Preset iletişim kutusu bu uygulama derlemesinde kullanılamıyor.",
+        "open_error": "Preset iletişim kutusu açılırken bir hata oluştu. Konsolu kontrol edin.",
+        "name_empty": "Ad boş olamaz.",
+        "wpm_invalid": "WPM {min} ile {max} arasında bir sayı olmalıdır.",
+        "create_error": "Ön ayar oluşturulurken hata oluştu. Konsolu kontrol edin.",
+        "edit_error": "Ön ayar düzenlenirken hata oluştu. Konsolu kontrol edin.",
+        "process_error": "Ön ayar işlenirken hata oluştu. Konsolu kontrol edin."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Seçili ön ayar önbellekte bulunamadı.",
+        "delete_error": "Ön ayar silinirken hata oluştu. Konsolu kontrol edin.",
+        "restore_error": "Ön ayarlar geri yüklenirken hata oluştu. Konsolu kontrol edin.",
+        "open_folder_unsupported": "Bu ortamda ön ayar klasörü açılamaz.",
+        "open_folder_error": "Ön ayar klasörü açılmaya çalışılırken hata oluştu. Konsolu kontrol edin.",
+        "open_default_folder_failed": "Varsayılan ön ayar klasörü açılamadı. Ayrıntılar için konsolu kontrol edin."
+      }
     },
     "browser_extension": {
       "title": "Tarayıcı uzantısı",
       "subtitle": "Tiempo de lectura",
       "availability": "Şu anda Chrome'da kullanılabilir. Yakında daha fazla tarayıcıya gelecek.",
       "chrome_store_aria": "Uzantının Chrome Web Store sayfasını aç",
-      "close_aria": "Tarayıcı uzantısı iletişim kutusunu kapat"
-    },
-    "alerts": {
-      "clipboard_too_large": "Pano metni işlenemeyecek kadar büyük. Kısaltın ve yeniden deneyin.",
-      "apply_too_large": "Metin uygulanamayacak kadar büyük hale gelecek. Kısaltıp tekrar deneyin.",
-      "apply_truncated": "Metin, uygulama sınırına sığması için kısaltıldı.",
-      "append_text_limit": "Metin eklenemiyor: maksimum boyuta ulaşıldı.",
-      "overwrite_clipboard_error": "Panodan metin değiştirilirken bir hata oluştu.",
-      "append_clipboard_error": "Panodan metin eklenirken bir hata oluştu.",
-      "clear_error": "Metin temizlenirken hata oluştu. Konsolu kontrol edin.",
-      "snapshot_save_success": "Snapshot kaydedildi.",
-      "snapshot_save_error": "Snapshot kaydedilemedi.",
-      "snapshot_load_success": "Snapshot yüklendi.",
-      "snapshot_load_error": "Snapshot yüklenemedi.",
-      "snapshot_outside": "Snapshot, snapshot klasörünün içinde olmalıdır.",
-      "snapshot_truncated": "Snapshot en büyük boyutu aşıyor ve kesildi.",
-      "snapshot_unavailable": "Snapshot işlevi kullanılamıyor.",
-      "browser_extension_modal_open_blocked": "Tarayıcı uzantısı iletişim kutusu şu anda açılamıyor.",
-      "preset_not_found": "Seçili ön ayar önbellekte bulunamadı.",
-      "preset_modal_unavailable": "Preset iletişim kutusu bu uygulama derlemesinde kullanılamıyor.",
-      "preset_modal_open_error": "Preset iletişim kutusu açılırken bir hata oluştu. Konsolu kontrol edin.",
-      "delete_error": "Ön ayar silinirken hata oluştu. Konsolu kontrol edin.",
-      "restore_error": "Ön ayarlar geri yüklenirken hata oluştu. Konsolu kontrol edin.",
-      "open_presets_unsupported": "Bu ortamda ön ayar klasörü açılamaz.",
-      "open_presets_error": "Ön ayar klasörü açılmaya çalışılırken hata oluştu. Konsolu kontrol edin.",
-      "open_presets_fail": "Varsayılan ön ayar klasörü açılamadı. Ayrıntılar için konsolu kontrol edin.",
-      "text_extraction_error": "Çıkarma başlatılırken hata oluştu. Konsolu kontrol edin.",
-      "text_extraction_precondition_blocked": "Çıkarma başlatmak için tüm ikincil pencereleri kapatın ve kronometreyi durdurun.",
-      "text_extraction_precondition_error": "Çıkarma ön koşulları denetlenirken hata oluştu. Konsolu kontrol edin.",
-      "text_extraction_processing_locked": "Çıkarma işleniyor. İşlem bitene veya siz durdurana kadar ana pencere etkileşimleri kilitli kalır.",
-      "current_text_processing_locked": "Geçerli metin hâlâ güncelleniyor. En son metin sabitlenene kadar ana pencere etkileşimleri kilitli kalır.",
-      "current_text_recount_locked": "Geçerli metin sonuçları hâlâ yeniden hesaplanıyor. En son yeniden hesaplama sabitlenene kadar ana pencere etkileşimleri kilitli kalır.",
-      "text_extraction_abort_error": "Çıkarma durdurma isteği gönderilirken hata oluştu. Konsolu kontrol edin.",
-      "text_extraction_cancellation_requested": "İptal istendi. Lütfen geçerli çıkarma bitene kadar bekleyin.",
-      "text_extraction_cancellation_complete": "İptal tamamlandı.",
-      "text_extraction_drop_invalid_file": "Bırakılan öğe geçerli bir yerel dosya değil.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Bu PDF okunamıyor veya bozuk. Dosyayı kontrol edip tekrar deneyin.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Bu PDF şifrelenmiş veya parola korumalı. Kilidini açıp tekrar deneyin.",
-      "text_extraction_pdf_page_count_unavailable": "Bu PDF’nin sayfa sayısı incelenemedi. Dosyayı kontrol edip tekrar deneyin.",
-      "text_extraction_pdf_page_selection_invalid": "Seçilen PDF sayfa aralığı geçersiz. Aralığı ayarlayıp tekrar deneyin.",
-      "text_extraction_pdf_subset_creation_failed": "Çıkarma için seçili sayfalardan PDF oluşturulamadı. Dosyayı kontrol edip tekrar deneyin.",
-      "text_extraction_generated_pdf_cleanup_warning": "Çıkarma tamamlandı, ancak oluşturulan yerel PDF otomatik olarak temizlenemedi.",
-      "text_extraction_route_choice_error": "Çıkarma rotası seçilirken bir hata oluştu.",
-      "text_extraction_generated_pdf_reveal_failed": "Kaydedilen PDF gösterilemedi. Dosyanın hâlâ var olup olmadığını kontrol edin.",
-      "text_extraction_apply_error": "Çıkarılan metin uygulanırken hata oluştu. Konsolu kontrol edin ve yeniden deneyin.",
-      "text_extraction_prepare_invalid": "Hazırlanan çıkarma isteği artık geçerli değil. Akışı yeniden başlatın.",
-      "text_extraction_batch_ocr_activation_required": "Bu toplu işlem OCR öğeleri içeriyor, ancak Google OCR etkin değil. Tercihler > Google OCR’ı etkinleştir seçeneğini kullanın ve ardından toplu işlemi yeniden başlatın.",
-      "text_extraction_batch_ocr_token_state_invalid": "Bu toplu işlem OCR öğeleri içeriyor, ancak kaydedilmiş Google OCR oturum açma durumu geçersiz. Tercihler > Google OCR’ı etkinleştir seçeneğini yeniden kullanın ve ardından toplu işlemi yeniden başlatın.",
-      "text_extraction_batch_ocr_connectivity_failed": "Bu toplu işlem OCR öğeleri içeriyor, ancak OCR için internet bağlantısı gerekir. Çıkarma işlemini başlatmadan önce bağlantınızı kontrol edip tekrar deneyin.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Bu toplu işlem OCR öğeleri içeriyor, ancak OCR kota/hız sınırları nedeniyle geçici olarak engellendi. Çıkarma işlemini başlatmadan önce bekleyip tekrar deneyin.",
-      "text_extraction_batch_ocr_unavailable": "Bu toplu işlem OCR öğeleri içeriyor, ancak Google OCR şu anda kullanılamıyor. OCR henüz etkin değilse Tercihler > Google OCR’ı etkinleştir seçeneğini kullanın. Aksi halde OCR kurulumu/durumunu kontrol edin ve toplu işlemi başlatmadan önce yeniden deneyin.",
-      "text_extraction_ocr_unavailable": "OCR kullanılamıyor. Kurulum/yetkilendirme durumunu kontrol edin ve yeniden deneyin.",
-      "text_extraction_ocr_activation_required": "OCR aktivasyonu gerekli. Google OCR'de oturum açın ve yeniden deneyin.",
-      "text_extraction_ocr_activation_success": "OCR aktivasyonu tamamlandı. Çıkarma yeniden deneniyor.",
-      "text_extraction_ocr_activation_cancelled": "OCR aktivasyonu iptal edildi. Çıkarma devam etmedi.",
-      "text_extraction_ocr_token_state_invalid": "Kayıtlı Google OCR oturum açma durumu geçersiz. Google OCR'yi yeniden bağlayın ve yeniden deneyin.",
-      "text_extraction_ocr_activation_failed": "OCR aktivasyonu başarısız oldu. Kurulum/yetkilendirme durumunu kontrol edin ve yeniden deneyin.",
-      "text_extraction_ocr_enable_success": "Google OCR artık etkin.",
-      "text_extraction_ocr_enable_cancelled": "Google OCR etkinleştirme iptal edildi.",
-      "text_extraction_ocr_enable_failed": "Google OCR etkinleştirilemedi. Kurulum/kimlik doğrulama durumunu kontrol edin ve yeniden deneyin.",
-      "text_extraction_ocr_disconnect_success": "Google OCR bağlantısı kesildi. Kayıtlı Google token'ı iptal edildi ve yerel oturum açma durumu kaldırıldı.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR bu uygulama örneğinde şu anda bağlı değil.",
-      "text_extraction_ocr_disconnect_failed": "Google OCR bağlantısını kesme başarısız oldu. Kayıtlı oturum açma durumu kaldırılmadı.",
-      "text_extraction_ocr_connectivity_failed": "OCR internet bağlantısı gerektirir. Bağlantınızı kontrol edin ve yeniden deneyin.",
-      "text_extraction_ocr_setup_missing_credentials": "Bu uygulama derlemesinde paketlenmiş Google OAuth kimlik bilgileri eksik olduğu için OCR kullanılamıyor.",
-      "text_extraction_ocr_setup_invalid_credentials": "Bu uygulama derlemesinde paketlenmiş Google OAuth kimlik bilgileri geçersiz olduğu için OCR kullanılamıyor.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR kota/hız sınırları nedeniyle geçici olarak engellendi. Bekleyin ve yeniden deneyin.",
-      "text_extraction_ocr_runtime_error": "Çıkarma sırasında OCR çalışma zamanı hatası oluştu. Konsolu kontrol edin ve yeniden deneyin.",
-      "text_extraction_ocr_cancelled": "OCR çıkarma iptal edildi.",
-      "text_extraction_ocr_cleanup_warning": "OCR tamamlandı, ancak geçici uzak dosya temizliği başarısız oldu. Google Drive klasörünüzü kontrol edin.",
-      "text_extraction_native_runtime_error": "Çıkarma sırasında yerel çıkarma çalışma zamanı hatası oluştu. Konsolu kontrol edin ve yeniden deneyin.",
-      "text_extraction_native_unreadable_or_corrupt": "Seçili dosya yerel çıkarma için okunamıyor veya bozuk.",
-      "text_extraction_native_encrypted_or_password_protected": "Seçili PDF şifreli veya parola korumalı olduğu için yerel olarak çıkarılamaz.",
-      "text_extraction_native_cancelled": "Yerel çıkarma iptal edildi.",
-      "text_extraction_unsupported_format": "Bu dosya biçimi metin çıkarma için desteklenmiyor.",
-      "wip_diseno_skins": "WIP: Tema seçici gelecek bir sürümde burada açılacak.",
-      "wip_diseno_crono": "WIP: Yüzen kronometre ayarları gelecek bir sürümde burada açılacak.",
-      "wip_diseno_fuentes": "WIP: Yazı tipi seçici gelecek bir sürümde burada açılacak.",
-      "wip_diseno_colores": "WIP: Renk seçici gelecek bir sürümde burada açılacak.",
-      "wip_shortcuts": "WIP: Klavye kısayolları seçici gelecek bir sürümde burada açılacak.",
-      "reading_test_unavailable": "Okuma hızı testi özelliği kullanılamıyor.",
-      "reading_test_precondition_blocked": "Okuma hızı testi yalnızca uygulama kararlı durumdayken başlatılabilir. İkincil pencereleri kapatın ve kronometrenin durduğundan emin olun.",
-      "reading_test_pool_error": "Okuma hızı testi havuzu denetlenirken hata oluştu.",
-      "reading_test_no_matching_files": "Geçerli seçimle eşleşen kullanılmamış test dosyası kalmadı.",
-      "reading_test_visible_empty_bundled_hidden": "Yerleşik test dosyaları gizli ve şu anda görünür kullanılmamış test dosyası yok. Devam etmek için yerleşik dosyaları yeniden gösterin veya daha fazla dosya içe aktarın.",
-      "reading_test_current_text_empty": "Geçerli metin boş. Testi geçerli metinle başlatmadan önce bir metin yükleyin veya yazın.",
-      "reading_test_result_invalid": "Test sonucu geçerli bir WPM değerine dönüştürülemedi. Akış, ön ayar modalını açmadan sona erdi.",
-      "reading_test_result_unavailable": "Okuma hızı sonucu gösterilemedi. Akış devam etti.",
-      "reading_test_preset_unavailable": "Testten sonra ön ayar modalı açılamadı.",
-      "reading_test_questions_unavailable": "Anlama soruları modalı açılamadı. Akış, ön ayar oluşturulmadan sona erdi.",
-      "reading_test_pool_import_failed": "Okuma hızı testi dosyaları içe aktarılamadı.",
-      "reading_test_start_failed": "Okuma hızı testi başlatılamadı.",
-      "text_editor_start_failed": "Text Editor başlatılamadı.",
-      "text_editor_start_timeout": "Text Editor başlamak için çok uzun sürdü ve kapatıldı.",
-      "reading_test_cancelled": "Okuma hızı testi iptal edildi.",
-      "reading_test_cancelled_window_closed": "Oturum pencerelerinden biri kapandığı için okuma hızı testi iptal edildi."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Metin doğrudan yapıştırılamayacak kadar büyük. Ana pencere düğmelerini kullanın.",
-      "drop_too_big": "Bırakılan metin çok büyük. Büyük metin eklemek için ana pencere düğmelerini kullanın.",
-      "paste_no_text": "Pano düz metin içermiyor.",
-      "drop_no_text": "Sürükle-bırak: düz metin algılanmadı.",
-      "type_limit": "Daha fazla metin yazılamıyor: en büyük boyuta ulaşıldı.",
-      "paste_limit": "Daha fazla metin yapıştırılamıyor: en büyük boyuta ulaşıldı.",
-      "drop_limit": "Daha fazla metin bırakılamıyor: en büyük boyuta ulaşıldı.",
-      "paste_truncated": "Üst sınırın aşılmasını önlemek için yapıştırılan metin kesildi.",
-      "drop_truncated": "Sürüklenen metin kullanılabilir alanı aştı ve kesildi.",
-      "text_truncated": "Metin uygulama sınırına sığması için kesildi.",
-      "calc_error": "Hesaplama sırasında hata oluştu. Konsolu kontrol edin."
-    },
-    "preset_alerts": {
-      "name_empty": "Ad boş olamaz.",
-      "wpm_invalid": "WPM {min} ile {max} arasında bir sayı olmalıdır.",
-      "create_error": "Ön ayar oluşturulurken hata oluştu. Konsolu kontrol edin.",
-      "edit_error": "Ön ayar düzenlenirken hata oluştu. Konsolu kontrol edin.",
-      "process_error": "Ön ayar işlenirken hata oluştu. Konsolu kontrol edin."
+      "close_aria": "Tarayıcı uzantısı iletişim kutusunu kapat",
+      "alerts": {
+        "modal_open_blocked": "Tarayıcı uzantısı iletişim kutusu şu anda açılamıyor."
+      }
     },
     "info": {
       "loading": "Yükleniyor...",

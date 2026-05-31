@@ -279,7 +279,7 @@ test('reading-test start returns hidden-bundled guidance when no visible unused 
     );
     assert.deepEqual(result, {
       ok: false,
-      guidanceKey: 'renderer.alerts.reading_test_visible_empty_bundled_hidden',
+      guidanceKey: 'renderer.reading_test.alerts.visible_empty_bundled_hidden',
       code: 'VISIBLE_EMPTY_BUNDLED_HIDDEN',
     });
   } finally {
@@ -310,7 +310,7 @@ test('reading-test start keeps no-matching guidance for ordinary filter mismatch
     );
     assert.deepEqual(result, {
       ok: false,
-      guidanceKey: 'renderer.alerts.reading_test_no_matching_files',
+      guidanceKey: 'renderer.reading_test.alerts.no_matching_files',
       code: 'NO_MATCHING_FILES',
     });
   } finally {
@@ -384,7 +384,7 @@ test('reading-test start stays on the existing blocked path when the editor wind
     assert.deepEqual(result, {
       ok: false,
       code: 'PRECONDITION_BLOCKED',
-      guidanceKey: 'renderer.alerts.reading_test_precondition_blocked',
+      guidanceKey: 'renderer.reading_test.alerts.precondition_blocked',
     });
     assert.equal(harness.getEnsureEditorWindowCalls(), 0);
   } finally {

@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Kua hipa: ",
         "text_extraction_drop_here": "Tukua te kōnae ki konei hei tango kuputuhi"
+      },
+      "alerts": {
+        "clipboard_too_large": "He nui rawa te kuputuhi o te papatopenga hei tukatuka. Whakaitia ka ngana anō.",
+        "apply_too_large": "He nui rawa te tuhinga mēnā ka whakamahia. Whakaitihia, kātahi ka ngana anō.",
+        "apply_truncated": "I poroa te tuhinga kia uru ki te tepe o te taupānga.",
+        "append_text_limit": "Kāore e taea te tāpiri i te tuhinga: kua tae ki te rahi mōrahi.",
+        "overwrite_clipboard_error": "I hapa i te whakakapi i te tuhinga mai i te papatopenga.",
+        "append_clipboard_error": "I hapa i te tāpiri i te tuhinga mai i te papatopenga.",
+        "clear_error": "I puta he hapa i te ūkui kuputuhi. Tirohia te papatohu.",
+        "current_text_processing_locked": "Kei te whakahōu tonu te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te kuputuhi hou.",
+        "current_text_recount_locked": "Kei te tātai anō tonu ngā hua o te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te tātaitanga hou.",
+        "wip": {
+          "design_skins": "WIP: Ka whakatuwhera te kaikōwhiri skins ki konei i tētahi putanga ā muri ake.",
+          "floating_stopwatch": "WIP: Ka whakatuwhera ngā tautuhinga matawā mānu ki konei i tētahi putanga ā muri ake.",
+          "fonts": "WIP: Ka whakatuwhera te kaikōwhiri momotuhi ki konei i tētahi putanga ā muri ake.",
+          "colors": "WIP: Ka whakatuwhera te kaikōwhiri tae ki konei i tētahi putanga ā muri ake.",
+          "shortcuts": "WIP: Ka whakatuwhera te kaikōwhiri pokatata papapātuhi ki konei i tētahi putanga ā muri ake."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Whakaatu PDF i hangaia",
         "cancel_button": "Whakakore",
         "close_aria": "Katia te kōrero PDF nui mō te OCR"
+      },
+      "alerts": {
+        "start_error": "I puta he hapa i te tīmata i te tango. Tirohia te papatohu.",
+        "precondition_blocked": "Hei tīmata i te tango, katia ngā matapihi tuarua katoa, ā, whakamutua te matawā.",
+        "precondition_error": "I puta he hapa i te taki i ngā herenga tōmua tango. Tirohia te papatohu.",
+        "processing_locked": "Kei te tukatuka te tango. Kua raka ngā taunekeneke matapihi matua kia mutu rā anō te tukatuka, kia whakakorea rānei e koe.",
+        "abort_error": "I puta he hapa i te tono whakakore tango. Tirohia te papatohu.",
+        "cancellation_requested": "Kua tonoa te whakakore. Taihoa kia mutu te tangohanga o nāianei.",
+        "cancellation_complete": "Kua oti te whakakore.",
+        "drop_invalid_file": "Ehara te tūemi kua tukuna i te kōnae paetata tika.",
+        "generated_pdf_cleanup_warning": "Kua oti te tangohanga, engari kāore i taea te whakapai aunoa i tētahi PDF ā-rohe i hangaia.",
+        "route_choice_error": "I hapa i te kōwhiri i te ara tango kupu.",
+        "generated_pdf_reveal_failed": "Kāore i taea te whakaatu i te PDF kua tiakina. Tirohia mēnā kei reira tonu te kōnae.",
+        "apply_error": "I puta he hapa i te hoatu i te kuputuhi kua tangohia. Tirohia te papatohu ka ngana anō.",
+        "prepare_invalid": "Kua kore e tika te tono tango kua whakaritea. Tīmata anō te rere.",
+        "unsupported_format": "Kāore tēnei hōputu kōnae e tautokona mō te tangohanga kuputuhi.",
+        "pdf": {
+          "unreadable_or_corrupt": "Kāore tēnei PDF e taea te pānui, kua hē rānei. Tirohia te kōnae ka ngana anō.",
+          "encrypted_or_password_protected": "Kua whakamunatia tēnei PDF, kua tiakina rānei ki te kupuhipa. Wewetea ka ngana anō.",
+          "page_count_unavailable": "Kāore i taea te tirotiro i te maha o ngā whārangi o tēnei PDF. Tirohia te kōnae ka ngana anō.",
+          "page_selection_invalid": "Kāore te awhe whārangi PDF kua tīpakohia i te tika. Whakatikahia te awhe ka ngana anō.",
+          "subset_creation_failed": "Kāore i taea te waihanga i te PDF o ngā whārangi kua tīpakohia mō te tangohanga. Tirohia te kōnae ka ngana anō."
+        },
+        "ocr": {
+          "unavailable": "Kāore te OCR e wātea ana. Tirohia te whakarite/mana takiuru ka ngana anō.",
+          "activation_required": "Me whakahohe te OCR. Takiuru ki Google OCR ka ngana anō.",
+          "activation_success": "Kua oti te whakahohe OCR. Kei te whakamātau anō i te tangohanga.",
+          "activation_cancelled": "Kua whakakorea te whakahohe OCR. Kāore te tango i haere tonu.",
+          "token_state_invalid": "He muhu te āhua takiuru Google OCR kua tiakina. Tūhono anō ki Google OCR ka ngana anō.",
+          "activation_failed": "I rahua te whakahohe OCR. Tirohia te whakarite/mana takiuru ka ngana anō.",
+          "enable_success": "Kua whakahohea a Google OCR.",
+          "enable_cancelled": "Kua whakakorea te whakahohe Google OCR.",
+          "enable_failed": "Kāore i taea te whakahohe Google OCR. Tirohia te whakarite/mana takiuru ka ngana anō.",
+          "disconnect_success": "Kua momotuhia a Google OCR. Kua whakakorengia te tōkena Google kua tiakina, ā, kua tangohia te āhua takiuru paetata.",
+          "disconnect_not_connected": "Kāore a Google OCR i te tūhono i tēnei tāutanga taupānga.",
+          "disconnect_failed": "I rahua te momotu Google OCR. Kāore te āhua takiuru kua tiakina i tangohia.",
+          "connectivity_failed": "Me whai hononga ipurangi te OCR. Tirohia tō hononga ka ngana anō.",
+          "setup_missing_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te ngaro o ngā raraunga Google OAuth kua takai ki te taupānga.",
+          "setup_invalid_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te muhu o ngā raraunga Google OAuth kua takai ki te taupānga.",
+          "quota_or_rate_limited": "Kua āraia rangitahitia te OCR e ngā quota/tepe auau. Tatari ka ngana anō.",
+          "runtime_error": "I puta he hapa whakahaere OCR i te tango. Tirohia te papatohu ka ngana anō.",
+          "cancelled": "Kua whakakorea te tango OCR.",
+          "cleanup_warning": "Kua oti te OCR, engari i rahua te horoi i te kōnae rangitahi mamao. Tirohia tō kōpaki Google Drive."
+        },
+        "batch_ocr": {
+          "activation_required": "He tūemi OCR kei tēnei rōpū, engari kāore a Google OCR i te whakahohea. Whakamahia Manakohanga > Whakahohe Google OCR, kātahi ka tīmata anō i te rōpū.",
+          "token_state_invalid": "He tūemi OCR kei tēnei rōpū, engari he muhu te āhua takiuru Google OCR kua tiakina. Whakamahia anō Manakohanga > Whakahohe Google OCR, kātahi ka tīmata anō i te rōpū.",
+          "connectivity_failed": "Kei roto i tēnei batch ētahi tūemi OCR, engari me whai hononga Ipurangi a OCR. Tirohia tō hononga ka ngana anō i mua i te tīmata i te tango kupu.",
+          "quota_or_rate_limited": "Kei roto i tēnei batch ētahi tūemi OCR, engari kua aukatia a OCR mō te wā poto e ngā tepe quota/rate. Tatari, ā, ngana anō i mua i te tīmata i te tango kupu.",
+          "unavailable": "He tūemi OCR kei tēnei rōpū, engari kāore a Google OCR e wātea ana ināianei. Mēnā kāore anō te OCR kia whakahohea, whakamahia Manakohanga > Whakahohe Google OCR. Ki te kore, tirohia te whakarite/mana takiuru OCR, kātahi ka ngana anō i mua i te tīmata i te rōpū."
+        },
+        "native": {
+          "runtime_error": "I puta he hapa whakahaere tangohanga native i te tango. Tirohia te papatohu ka ngana anō.",
+          "unreadable_or_corrupt": "Kāore e taea te pānui i te kōnae kua tīpakohia, kua kino rānei mō te tangohanga native.",
+          "encrypted_or_password_protected": "Kua whakamuna, kua tiakina rānei te PDF kua tīpakohia ki te kupuhipa, ā, kāore e taea te tango mā te ara native.",
+          "cancelled": "Kua whakakorea te tangohanga native."
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "Whakanui i te rahi kuputuhi",
       "reset_text_size": "Whakahoki i te rahi kuputuhi",
       "read_progress_label": "Kua pānuitia",
-      "clear_title": "Ūkui"
+      "clear_title": "Ūkui",
+      "alerts": {
+        "start_failed": "Kāore i taea te tīmata i te Text Editor.",
+        "start_timeout": "I roa rawa te tīmata o te Text Editor, ā, i katia.",
+        "paste_too_big": "He nui rawa te kuputuhi hei whakapiri tika. Whakamahia ngā pātene o te matapihi matua.",
+        "drop_too_big": "He nui rawa te kuputuhi kua tukuna. Whakamahia ngā pātene o te matapihi matua hei tāpiri kuputuhi nui.",
+        "paste_no_text": "Kāore he kuputuhi noa i te papatopenga.",
+        "drop_no_text": "Tōia ka tuku: kāore i kitea he kuputuhi noa.",
+        "type_limit": "Kāore e taea te pato kuputuhi anō: kua tae ki te rahinga mōrahi.",
+        "paste_limit": "Kāore e taea te whakapiri kuputuhi anō: kua tae ki te rahinga mōrahi.",
+        "drop_limit": "Kāore e taea te tuku kuputuhi anō: kua tae ki te rahinga mōrahi.",
+        "paste_truncated": "I tapahia te kuputuhi kua whakapirihia kia kore e hipa i te mōrahi.",
+        "drop_truncated": "I hipa te kuputuhi kua tōia i te wāhi wātea, ā, i tapahia.",
+        "text_truncated": "I tapahia te kuputuhi kia uru ki te rohe taupānga.",
+        "calc_error": "I puta he hapa i te tatau. Tirohia te papatohu."
+      }
     },
     "editor_find": {
       "input_placeholder": "Kimi...",
@@ -242,6 +332,17 @@
       "replace_timeout": "Kua pau te wā mō te whakakapi. Ngana anō.",
       "status_no_matches": "Kāore he ōritenga",
       "status_empty_query": "Patohia hei kimi"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Kua tiakina te hopunga.",
+        "save_error": "Kāore i taea te tiaki i te hopunga.",
+        "load_success": "Kua utaina te hopunga.",
+        "load_error": "Kāore i taea te uta i te hopunga.",
+        "outside": "Me noho te hopunga ki roto i te kōpaki hopunga.",
+        "truncated": "I hipa te hopunga i te rahinga mōrahi, ā, i tapahia.",
+        "unavailable": "Kāore te āheinga hopunga e wātea ana."
+      }
     },
     "snapshot_save_tags": {
       "title": "Tiaki hopunga kuputuhi",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "Haere tonu"
         }
+      },
+      "alerts": {
+        "unavailable": "Kāore te āheinga whakamātautau tere pānui e wātea ana.",
+        "precondition_blocked": "Ka taea anake te tīmata i te whakamātautau tere pānui i tētahi āhua tau o te taupānga. Katia ngā matapihi tuarua, ā, kia mutu te matawā.",
+        "pool_error": "I puta he hapa i te taki i te pool whakamātautau tere pānui.",
+        "no_matching_files": "Kāore he kōnae whakamātautau kāore anō kia whakamahia e ōrite ana ki te tīpakonga o nāianei.",
+        "visible_empty_bundled_hidden": "Kei te hunaia ngā kōnae whakamātautau kua hangaia ki roto, ā, kāore he kōnae whakamātautau kitea kāore anō kia whakamahia e wātea ana i tēnei wā. Whakaaturia anō ngā kōnae hanga-roto, kawemai rānei i ētahi atu kōnae kia haere tonu ai.",
+        "current_text_empty": "Kāore he kuputuhi o nāianei. Uta, patohia rānei he kuputuhi i mua i te tīmata i te whakamātautau ki te kuputuhi o nāianei.",
+        "result_invalid": "Kāore i taea te huri i te hua whakamātautau hei WPM tika. I mutu te rere me te kore whakatuwhera i te modal preset.",
+        "result_unavailable": "Kāore i taea te whakaatu i te hua tere pānui. I haere tonu te rere.",
+        "preset_unavailable": "Kāore i taea te whakatuwhera i te modal preset i muri i te whakamātautau.",
+        "questions_unavailable": "Kāore i taea te whakatuwhera i te modal pātai mārama. I mutu te rere i mua i te waihanga preset.",
+        "pool_import_failed": "Kāore i taea te kawemai i ngā kōnae whakamātautau tere pānui.",
+        "start_failed": "Kāore i taea te tīmata i te whakamātautau tere pānui.",
+        "cancelled": "Kua whakakorea te whakamātautau tere pānui.",
+        "cancelled_window_closed": "Kua whakakorea te whakamātautau tere pānui nā te katia o tētahi o ngā matapihi wātū."
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "E {remaining} ngā pūāhua e toe ana",
       "hint": "Ka tiakina ngā preset ritenga ki ngā tautuhinga kaiwhakamahi.",
       "cancel": "Whakakore",
-      "save": "Tiaki"
+      "save": "Tiaki",
+      "alerts": {
+        "unavailable": "Kāore te kōrero preset i te wātea i tēnei build o te taupānga.",
+        "open_error": "I puta he hapa i te whakatuwheratanga o te kōrero preset. Tirohia te papatohu.",
+        "name_empty": "Kāore e āhei kia noho kau te ingoa.",
+        "wpm_invalid": "Me noho te WPM hei tau i waenga i te {min} me te {max}.",
+        "create_error": "I puta he hapa i te waihanga i te preset. Tirohia te papatohu.",
+        "edit_error": "I puta he hapa i te whakatika i te preset. Tirohia te papatohu.",
+        "process_error": "I puta he hapa i te tukatuka i te preset. Tirohia te papatohu."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Kāore te preset kua tīpakohia i kitea i te keteroki.",
+        "delete_error": "I puta he hapa i te muku i te preset. Tirohia te papatohu.",
+        "restore_error": "I puta he hapa i te whakahoki preset. Tirohia te papatohu.",
+        "open_folder_unsupported": "Kāore e taea te whakatuwhera i te kōpaki preset i tēnei taiao.",
+        "open_folder_error": "I puta he hapa i te ngana ki te whakatuwhera i te kōpaki preset. Tirohia te papatohu.",
+        "open_default_folder_failed": "Kāore i taea te whakatuwhera i te kōpaki preset taunoa. Tirohia te papatohu mō ngā taipitopito."
+      }
     },
     "browser_extension": {
       "title": "Toronga pūtirotiro",
       "subtitle": "Reading Time",
       "availability": "Kei te wātea i Chrome ināianei. Ka tae mai ētahi atu pūtirotiro ākuanei.",
       "chrome_store_aria": "Whakatuwhera i te whārangi Chrome Web Store o te toronga",
-      "close_aria": "Katia te kōrero toronga pūtirotiro"
-    },
-    "alerts": {
-      "clipboard_too_large": "He nui rawa te kuputuhi o te papatopenga hei tukatuka. Whakaitia ka ngana anō.",
-      "apply_too_large": "He nui rawa te tuhinga mēnā ka whakamahia. Whakaitihia, kātahi ka ngana anō.",
-      "apply_truncated": "I poroa te tuhinga kia uru ki te tepe o te taupānga.",
-      "append_text_limit": "Kāore e taea te tāpiri i te tuhinga: kua tae ki te rahi mōrahi.",
-      "overwrite_clipboard_error": "I hapa i te whakakapi i te tuhinga mai i te papatopenga.",
-      "append_clipboard_error": "I hapa i te tāpiri i te tuhinga mai i te papatopenga.",
-      "clear_error": "I puta he hapa i te ūkui kuputuhi. Tirohia te papatohu.",
-      "snapshot_save_success": "Kua tiakina te hopunga.",
-      "snapshot_save_error": "Kāore i taea te tiaki i te hopunga.",
-      "snapshot_load_success": "Kua utaina te hopunga.",
-      "snapshot_load_error": "Kāore i taea te uta i te hopunga.",
-      "snapshot_outside": "Me noho te hopunga ki roto i te kōpaki hopunga.",
-      "snapshot_truncated": "I hipa te hopunga i te rahinga mōrahi, ā, i tapahia.",
-      "snapshot_unavailable": "Kāore te āheinga hopunga e wātea ana.",
-      "browser_extension_modal_open_blocked": "Kāore e taea te whakatuwhera i te kōrero toronga pūtirotiro i tēnei wā.",
-      "preset_not_found": "Kāore te preset kua tīpakohia i kitea i te keteroki.",
-      "preset_modal_unavailable": "Kāore te kōrero preset i te wātea i tēnei build o te taupānga.",
-      "preset_modal_open_error": "I puta he hapa i te whakatuwheratanga o te kōrero preset. Tirohia te papatohu.",
-      "delete_error": "I puta he hapa i te muku i te preset. Tirohia te papatohu.",
-      "restore_error": "I puta he hapa i te whakahoki preset. Tirohia te papatohu.",
-      "open_presets_unsupported": "Kāore e taea te whakatuwhera i te kōpaki preset i tēnei taiao.",
-      "open_presets_error": "I puta he hapa i te ngana ki te whakatuwhera i te kōpaki preset. Tirohia te papatohu.",
-      "open_presets_fail": "Kāore i taea te whakatuwhera i te kōpaki preset taunoa. Tirohia te papatohu mō ngā taipitopito.",
-      "text_extraction_error": "I puta he hapa i te tīmata i te tango. Tirohia te papatohu.",
-      "text_extraction_precondition_blocked": "Hei tīmata i te tango, katia ngā matapihi tuarua katoa, ā, whakamutua te matawā.",
-      "text_extraction_precondition_error": "I puta he hapa i te taki i ngā herenga tōmua tango. Tirohia te papatohu.",
-      "text_extraction_processing_locked": "Kei te tukatuka te tango. Kua raka ngā taunekeneke matapihi matua kia mutu rā anō te tukatuka, kia whakakorea rānei e koe.",
-      "current_text_processing_locked": "Kei te whakahōu tonu te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te kuputuhi hou.",
-      "current_text_recount_locked": "Kei te tātai anō tonu ngā hua o te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te tātaitanga hou.",
-      "text_extraction_abort_error": "I puta he hapa i te tono whakakore tango. Tirohia te papatohu.",
-      "text_extraction_cancellation_requested": "Kua tonoa te whakakore. Taihoa kia mutu te tangohanga o nāianei.",
-      "text_extraction_cancellation_complete": "Kua oti te whakakore.",
-      "text_extraction_drop_invalid_file": "Ehara te tūemi kua tukuna i te kōnae paetata tika.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Kāore tēnei PDF e taea te pānui, kua hē rānei. Tirohia te kōnae ka ngana anō.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Kua whakamunatia tēnei PDF, kua tiakina rānei ki te kupuhipa. Wewetea ka ngana anō.",
-      "text_extraction_pdf_page_count_unavailable": "Kāore i taea te tirotiro i te maha o ngā whārangi o tēnei PDF. Tirohia te kōnae ka ngana anō.",
-      "text_extraction_pdf_page_selection_invalid": "Kāore te awhe whārangi PDF kua tīpakohia i te tika. Whakatikahia te awhe ka ngana anō.",
-      "text_extraction_pdf_subset_creation_failed": "Kāore i taea te waihanga i te PDF o ngā whārangi kua tīpakohia mō te tangohanga. Tirohia te kōnae ka ngana anō.",
-      "text_extraction_generated_pdf_cleanup_warning": "Kua oti te tangohanga, engari kāore i taea te whakapai aunoa i tētahi PDF ā-rohe i hangaia.",
-      "text_extraction_route_choice_error": "I hapa i te kōwhiri i te ara tango kupu.",
-      "text_extraction_generated_pdf_reveal_failed": "Kāore i taea te whakaatu i te PDF kua tiakina. Tirohia mēnā kei reira tonu te kōnae.",
-      "text_extraction_apply_error": "I puta he hapa i te hoatu i te kuputuhi kua tangohia. Tirohia te papatohu ka ngana anō.",
-      "text_extraction_prepare_invalid": "Kua kore e tika te tono tango kua whakaritea. Tīmata anō te rere.",
-      "text_extraction_batch_ocr_activation_required": "He tūemi OCR kei tēnei rōpū, engari kāore a Google OCR i te whakahohea. Whakamahia Manakohanga > Whakahohe Google OCR, kātahi ka tīmata anō i te rōpū.",
-      "text_extraction_batch_ocr_token_state_invalid": "He tūemi OCR kei tēnei rōpū, engari he muhu te āhua takiuru Google OCR kua tiakina. Whakamahia anō Manakohanga > Whakahohe Google OCR, kātahi ka tīmata anō i te rōpū.",
-      "text_extraction_batch_ocr_connectivity_failed": "Kei roto i tēnei batch ētahi tūemi OCR, engari me whai hononga Ipurangi a OCR. Tirohia tō hononga ka ngana anō i mua i te tīmata i te tango kupu.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Kei roto i tēnei batch ētahi tūemi OCR, engari kua aukatia a OCR mō te wā poto e ngā tepe quota/rate. Tatari, ā, ngana anō i mua i te tīmata i te tango kupu.",
-      "text_extraction_batch_ocr_unavailable": "He tūemi OCR kei tēnei rōpū, engari kāore a Google OCR e wātea ana ināianei. Mēnā kāore anō te OCR kia whakahohea, whakamahia Manakohanga > Whakahohe Google OCR. Ki te kore, tirohia te whakarite/mana takiuru OCR, kātahi ka ngana anō i mua i te tīmata i te rōpū.",
-      "text_extraction_ocr_unavailable": "Kāore te OCR e wātea ana. Tirohia te whakarite/mana takiuru ka ngana anō.",
-      "text_extraction_ocr_activation_required": "Me whakahohe te OCR. Takiuru ki Google OCR ka ngana anō.",
-      "text_extraction_ocr_activation_success": "Kua oti te whakahohe OCR. Kei te whakamātau anō i te tangohanga.",
-      "text_extraction_ocr_activation_cancelled": "Kua whakakorea te whakahohe OCR. Kāore te tango i haere tonu.",
-      "text_extraction_ocr_token_state_invalid": "He muhu te āhua takiuru Google OCR kua tiakina. Tūhono anō ki Google OCR ka ngana anō.",
-      "text_extraction_ocr_activation_failed": "I rahua te whakahohe OCR. Tirohia te whakarite/mana takiuru ka ngana anō.",
-      "text_extraction_ocr_enable_success": "Kua whakahohea a Google OCR.",
-      "text_extraction_ocr_enable_cancelled": "Kua whakakorea te whakahohe Google OCR.",
-      "text_extraction_ocr_enable_failed": "Kāore i taea te whakahohe Google OCR. Tirohia te whakarite/mana takiuru ka ngana anō.",
-      "text_extraction_ocr_disconnect_success": "Kua momotuhia a Google OCR. Kua whakakorengia te tōkena Google kua tiakina, ā, kua tangohia te āhua takiuru paetata.",
-      "text_extraction_ocr_disconnect_not_connected": "Kāore a Google OCR i te tūhono i tēnei tāutanga taupānga.",
-      "text_extraction_ocr_disconnect_failed": "I rahua te momotu Google OCR. Kāore te āhua takiuru kua tiakina i tangohia.",
-      "text_extraction_ocr_connectivity_failed": "Me whai hononga ipurangi te OCR. Tirohia tō hononga ka ngana anō.",
-      "text_extraction_ocr_setup_missing_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te ngaro o ngā raraunga Google OAuth kua takai ki te taupānga.",
-      "text_extraction_ocr_setup_invalid_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te muhu o ngā raraunga Google OAuth kua takai ki te taupānga.",
-      "text_extraction_ocr_quota_or_rate_limited": "Kua āraia rangitahitia te OCR e ngā quota/tepe auau. Tatari ka ngana anō.",
-      "text_extraction_ocr_runtime_error": "I puta he hapa whakahaere OCR i te tango. Tirohia te papatohu ka ngana anō.",
-      "text_extraction_ocr_cancelled": "Kua whakakorea te tango OCR.",
-      "text_extraction_ocr_cleanup_warning": "Kua oti te OCR, engari i rahua te horoi i te kōnae rangitahi mamao. Tirohia tō kōpaki Google Drive.",
-      "text_extraction_native_runtime_error": "I puta he hapa whakahaere tangohanga native i te tango. Tirohia te papatohu ka ngana anō.",
-      "text_extraction_native_unreadable_or_corrupt": "Kāore e taea te pānui i te kōnae kua tīpakohia, kua kino rānei mō te tangohanga native.",
-      "text_extraction_native_encrypted_or_password_protected": "Kua whakamuna, kua tiakina rānei te PDF kua tīpakohia ki te kupuhipa, ā, kāore e taea te tango mā te ara native.",
-      "text_extraction_native_cancelled": "Kua whakakorea te tangohanga native.",
-      "text_extraction_unsupported_format": "Kāore tēnei hōputu kōnae e tautokona mō te tangohanga kuputuhi.",
-      "wip_diseno_skins": "WIP: Ka whakatuwhera te kaikōwhiri skins ki konei i tētahi putanga ā muri ake.",
-      "wip_diseno_crono": "WIP: Ka whakatuwhera ngā tautuhinga matawā mānu ki konei i tētahi putanga ā muri ake.",
-      "wip_diseno_fuentes": "WIP: Ka whakatuwhera te kaikōwhiri momotuhi ki konei i tētahi putanga ā muri ake.",
-      "wip_diseno_colores": "WIP: Ka whakatuwhera te kaikōwhiri tae ki konei i tētahi putanga ā muri ake.",
-      "wip_shortcuts": "WIP: Ka whakatuwhera te kaikōwhiri pokatata papapātuhi ki konei i tētahi putanga ā muri ake.",
-      "reading_test_unavailable": "Kāore te āheinga whakamātautau tere pānui e wātea ana.",
-      "reading_test_precondition_blocked": "Ka taea anake te tīmata i te whakamātautau tere pānui i tētahi āhua tau o te taupānga. Katia ngā matapihi tuarua, ā, kia mutu te matawā.",
-      "reading_test_pool_error": "I puta he hapa i te taki i te pool whakamātautau tere pānui.",
-      "reading_test_no_matching_files": "Kāore he kōnae whakamātautau kāore anō kia whakamahia e ōrite ana ki te tīpakonga o nāianei.",
-      "reading_test_visible_empty_bundled_hidden": "Kei te hunaia ngā kōnae whakamātautau kua hangaia ki roto, ā, kāore he kōnae whakamātautau kitea kāore anō kia whakamahia e wātea ana i tēnei wā. Whakaaturia anō ngā kōnae hanga-roto, kawemai rānei i ētahi atu kōnae kia haere tonu ai.",
-      "reading_test_current_text_empty": "Kāore he kuputuhi o nāianei. Uta, patohia rānei he kuputuhi i mua i te tīmata i te whakamātautau ki te kuputuhi o nāianei.",
-      "reading_test_result_invalid": "Kāore i taea te huri i te hua whakamātautau hei WPM tika. I mutu te rere me te kore whakatuwhera i te modal preset.",
-      "reading_test_result_unavailable": "Kāore i taea te whakaatu i te hua tere pānui. I haere tonu te rere.",
-      "reading_test_preset_unavailable": "Kāore i taea te whakatuwhera i te modal preset i muri i te whakamātautau.",
-      "reading_test_questions_unavailable": "Kāore i taea te whakatuwhera i te modal pātai mārama. I mutu te rere i mua i te waihanga preset.",
-      "reading_test_pool_import_failed": "Kāore i taea te kawemai i ngā kōnae whakamātautau tere pānui.",
-      "reading_test_start_failed": "Kāore i taea te tīmata i te whakamātautau tere pānui.",
-      "text_editor_start_failed": "Kāore i taea te tīmata i te Text Editor.",
-      "text_editor_start_timeout": "I roa rawa te tīmata o te Text Editor, ā, i katia.",
-      "reading_test_cancelled": "Kua whakakorea te whakamātautau tere pānui.",
-      "reading_test_cancelled_window_closed": "Kua whakakorea te whakamātautau tere pānui nā te katia o tētahi o ngā matapihi wātū."
-    },
-    "editor_alerts": {
-      "paste_too_big": "He nui rawa te kuputuhi hei whakapiri tika. Whakamahia ngā pātene o te matapihi matua.",
-      "drop_too_big": "He nui rawa te kuputuhi kua tukuna. Whakamahia ngā pātene o te matapihi matua hei tāpiri kuputuhi nui.",
-      "paste_no_text": "Kāore he kuputuhi noa i te papatopenga.",
-      "drop_no_text": "Tōia ka tuku: kāore i kitea he kuputuhi noa.",
-      "type_limit": "Kāore e taea te pato kuputuhi anō: kua tae ki te rahinga mōrahi.",
-      "paste_limit": "Kāore e taea te whakapiri kuputuhi anō: kua tae ki te rahinga mōrahi.",
-      "drop_limit": "Kāore e taea te tuku kuputuhi anō: kua tae ki te rahinga mōrahi.",
-      "paste_truncated": "I tapahia te kuputuhi kua whakapirihia kia kore e hipa i te mōrahi.",
-      "drop_truncated": "I hipa te kuputuhi kua tōia i te wāhi wātea, ā, i tapahia.",
-      "text_truncated": "I tapahia te kuputuhi kia uru ki te rohe taupānga.",
-      "calc_error": "I puta he hapa i te tatau. Tirohia te papatohu."
-    },
-    "preset_alerts": {
-      "name_empty": "Kāore e āhei kia noho kau te ingoa.",
-      "wpm_invalid": "Me noho te WPM hei tau i waenga i te {min} me te {max}.",
-      "create_error": "I puta he hapa i te waihanga i te preset. Tirohia te papatohu.",
-      "edit_error": "I puta he hapa i te whakatika i te preset. Tirohia te papatohu.",
-      "process_error": "I puta he hapa i te tukatuka i te preset. Tirohia te papatohu."
+      "close_aria": "Katia te kōrero toronga pūtirotiro",
+      "alerts": {
+        "modal_open_blocked": "Kāore e taea te whakatuwhera i te kōrero toronga pūtirotiro i tēnei wā."
+      }
     },
     "info": {
       "loading": "Kei te uta...",

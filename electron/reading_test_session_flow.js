@@ -78,7 +78,7 @@ async function continueArmingSession(selectedEntry, options = {}) {
     setArmingReady(true);
   } catch (err) {
     log.error('Reading-test session arming failed:', err);
-    failArmingSession(selectedEntry, 'renderer.alerts.reading_test_start_failed');
+    failArmingSession(selectedEntry, 'renderer.reading_test.alerts.start_failed');
   }
 }
 
@@ -109,7 +109,7 @@ function startArmedSession(options = {}) {
   const { editorWin, flotanteWin } = getActiveSessionWindows();
   if (!isAliveWindow(editorWin) || !isAliveWindow(flotanteWin)) {
     log.error('Reading-test start-from-arming failed: session window unavailable.');
-    failArmingSession(selectedEntry, 'renderer.alerts.reading_test_start_failed');
+    failArmingSession(selectedEntry, 'renderer.reading_test.alerts.start_failed');
     return;
   }
 
@@ -140,7 +140,7 @@ function startArmedSession(options = {}) {
       }
     }
     log.error('Reading-test start-from-arming failed:', err);
-    failArmingSession(selectedEntry, 'renderer.alerts.reading_test_start_failed');
+    failArmingSession(selectedEntry, 'renderer.reading_test.alerts.start_failed');
   }
 }
 
@@ -161,7 +161,7 @@ function computeCurrentWpm(options = {}) {
     ? cronoState.elapsed
     : 0;
   if (!(elapsed > 0)) {
-    return { ok: false, guidanceKey: 'renderer.alerts.reading_test_result_invalid', code: 'ELAPSED_INVALID' };
+    return { ok: false, guidanceKey: 'renderer.reading_test.alerts.result_invalid', code: 'ELAPSED_INVALID' };
   }
 
   const currentText = String(getCurrentText() || '');
@@ -172,12 +172,12 @@ function computeCurrentWpm(options = {}) {
   });
   const wordCount = stats && typeof stats.palabras === 'number' ? stats.palabras : 0;
   if (!(wordCount > 0)) {
-    return { ok: false, guidanceKey: 'renderer.alerts.reading_test_result_invalid', code: 'WORD_COUNT_INVALID' };
+    return { ok: false, guidanceKey: 'renderer.reading_test.alerts.result_invalid', code: 'WORD_COUNT_INVALID' };
   }
 
   const rawWpm = (wordCount / (elapsed / 1000)) * 60;
   if (!Number.isFinite(rawWpm)) {
-    return { ok: false, guidanceKey: 'renderer.alerts.reading_test_result_invalid', code: 'WPM_INVALID' };
+    return { ok: false, guidanceKey: 'renderer.reading_test.alerts.result_invalid', code: 'WPM_INVALID' };
   }
 
   const roundedWpm = Math.round(rawWpm);
@@ -258,13 +258,13 @@ function beginPresetStep(wpm, options = {}) {
     presetWin = openPresetWindow(buildPrefilledPresetPayload(wpm));
   } catch (err) {
     log.warn('Reading-test preset window open failed (ignored):', err);
-    emitNotice('renderer.alerts.reading_test_preset_unavailable', { type: 'error' });
+    emitNotice('renderer.reading_test.alerts.preset_unavailable', { type: 'error' });
     clearSession();
     return;
   }
   if (!presetWin || presetWin.isDestroyed()) {
     log.warn('Reading-test preset window unavailable (ignored): openPresetWindow returned no live window.');
-    emitNotice('renderer.alerts.reading_test_preset_unavailable', { type: 'error' });
+    emitNotice('renderer.reading_test.alerts.preset_unavailable', { type: 'error' });
     clearSession();
     return;
   }
@@ -318,14 +318,14 @@ async function finishRunningSession(options = {}) {
       wordCount: wpmInfo.wordCount,
     });
     if (!resultWindowInfo.ok) {
-      emitNotice('renderer.alerts.reading_test_result_unavailable', { type: 'warn' });
+      emitNotice('renderer.reading_test.alerts.result_unavailable', { type: 'warn' });
     }
 
     if (selectedEntry.hasValidQuestions) {
       setStage('questions');
       const questionsWindowInfo = await openQuestionsWindow(selectedEntry.questions);
       if (!questionsWindowInfo.ok) {
-        emitNotice('renderer.alerts.reading_test_questions_unavailable', { type: 'warn' });
+        emitNotice('renderer.reading_test.alerts.questions_unavailable', { type: 'warn' });
       }
     }
 
@@ -383,7 +383,7 @@ function handleUnexpectedWindowClosed(flagName, options = {}) {
     runtimeFlags[flagName] = false;
     return;
   }
-  cancelActiveSession('renderer.alerts.reading_test_cancelled_window_closed', { type: 'warn' });
+  cancelActiveSession('renderer.reading_test.alerts.cancelled_window_closed', { type: 'warn' });
 }
 
 async function startPoolSession(selection, options = {}) {
@@ -400,7 +400,7 @@ async function startPoolSession(selection, options = {}) {
 
   try {
     if (state.active) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
     }
 
     const selectionInfo = ensureEligibleSelection(selection);
@@ -408,7 +408,7 @@ async function startPoolSession(selection, options = {}) {
 
     const selectedEntry = chooseRandomEntry(selectionInfo.eligibleEntries);
     if (!selectedEntry) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_no_matching_files', code: 'NO_MATCHING_FILES' };
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.no_matching_files', code: 'NO_MATCHING_FILES' };
     }
 
     const applyResult = applyCurrentText(selectedEntry.text, {
@@ -416,7 +416,7 @@ async function startPoolSession(selection, options = {}) {
       action: 'overwrite',
     });
     if (!applyResult || applyResult.ok !== true) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: 'TEXT_APPLY_FAILED' };
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.start_failed', code: 'TEXT_APPLY_FAILED' };
     }
 
     const sessionEntry = buildSessionEntry('pool', selectedEntry);
@@ -441,10 +441,10 @@ async function startCurrentTextSession(options = {}) {
 
   try {
     if (state.active) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
     }
     if (!hasCurrentText()) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
     }
 
     const sessionEntry = buildSessionEntry('current_text');
@@ -477,7 +477,7 @@ function handleFlotanteCommand(cmd, options = {}) {
       return true;
     }
     if (cmd.cmd === 'reset') {
-      cancelActiveSession('renderer.alerts.reading_test_cancelled', { type: 'warn' });
+      cancelActiveSession('renderer.reading_test.alerts.cancelled', { type: 'warn' });
       return true;
     }
     if (cmd.cmd === 'set') {
@@ -495,7 +495,7 @@ function handleFlotanteCommand(cmd, options = {}) {
   }
 
   if (cmd.cmd === 'reset') {
-    cancelActiveSession('renderer.alerts.reading_test_cancelled', { type: 'warn' });
+    cancelActiveSession('renderer.reading_test.alerts.cancelled', { type: 'warn' });
     return true;
   }
 

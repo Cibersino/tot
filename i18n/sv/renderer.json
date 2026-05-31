@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Förfluten tid: ",
         "text_extraction_drop_here": "Släpp filen för att extrahera text"
+      },
+      "alerts": {
+        "clipboard_too_large": "Urklippstexten är för stor för att bearbeta. Minska den och försök igen.",
+        "apply_too_large": "Texten skulle bli för stor för att tillämpas. Korta den och försök igen.",
+        "apply_truncated": "Texten trunkerades för att rymmas inom programmets gräns.",
+        "append_text_limit": "Det går inte att lägga till texten: maximal storlek har nåtts.",
+        "overwrite_clipboard_error": "Ett fel uppstod när text från urklipp skulle ersätta den nuvarande texten.",
+        "append_clipboard_error": "Ett fel uppstod när text från urklipp skulle läggas till.",
+        "clear_error": "Ett fel uppstod när texten skulle rensas. Kontrollera konsolen.",
+        "current_text_processing_locked": "Den aktuella texten uppdateras fortfarande. Interaktioner i huvudfönstret är låsta tills den senaste texten har stabiliserats.",
+        "current_text_recount_locked": "Resultaten för den aktuella texten beräknas fortfarande om. Interaktioner i huvudfönstret är låsta tills den senaste omberäkningen har stabiliserats.",
+        "wip": {
+          "design_skins": "WIP: Skin-väljaren öppnas här i en framtida version.",
+          "floating_stopwatch": "WIP: Inställningar för flytande stoppur öppnas här i en framtida version.",
+          "fonts": "WIP: Typsnittsväljaren öppnas här i en framtida version.",
+          "colors": "WIP: Färgväljaren öppnas här i en framtida version.",
+          "shortcuts": "WIP: Väljaren för tangentbordsgenvägar öppnas här i en framtida version."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Visa genererad PDF",
         "cancel_button": "Avbryt",
         "close_aria": "Stäng dialogen för tung PDF för OCR"
+      },
+      "alerts": {
+        "start_error": "Ett fel uppstod när extrahering skulle startas. Kontrollera konsolen.",
+        "precondition_blocked": "För att starta extrahering, stäng alla sekundära fönster och stoppa stoppuret.",
+        "precondition_error": "Ett fel uppstod vid kontroll av villkor för extrahering. Kontrollera konsolen.",
+        "processing_locked": "Extrahering bearbetas. Interaktioner i huvudfönstret är låsta tills bearbetningen är klar eller du avbryter.",
+        "abort_error": "Ett fel uppstod vid begäran om att avbryta extrahering. Kontrollera konsolen.",
+        "cancellation_requested": "Avbrytning begärd. Vänta tills den aktuella extraheringen är klar.",
+        "cancellation_complete": "Avbrytning slutförd.",
+        "drop_invalid_file": "Det släppta objektet är inte en giltig lokal fil.",
+        "generated_pdf_cleanup_warning": "Extraheringen slutfördes, men en genererad lokal PDF-fil kunde inte rensas automatiskt.",
+        "route_choice_error": "Ett fel uppstod när extraheringsrutt skulle väljas.",
+        "generated_pdf_reveal_failed": "Den sparade PDF-filen kunde inte visas. Kontrollera om filen fortfarande finns.",
+        "apply_error": "Ett fel uppstod när extraherad text skulle tillämpas. Kontrollera konsolen och försök igen.",
+        "prepare_invalid": "Den förberedda extraheringsbegäran är inte längre giltig. Starta flödet igen.",
+        "unsupported_format": "Det här filformatet stöds inte för textextrahering.",
+        "pdf": {
+          "unreadable_or_corrupt": "Den här PDF-filen är oläsbar eller skadad. Kontrollera filen och försök igen.",
+          "encrypted_or_password_protected": "Den här PDF-filen är krypterad eller lösenordsskyddad. Lås upp den och försök igen.",
+          "page_count_unavailable": "Det gick inte att kontrollera sidantalet i den här PDF-filen. Kontrollera filen och försök igen.",
+          "page_selection_invalid": "Det valda sidintervallet för PDF-filen är ogiltigt. Justera intervallet och försök igen.",
+          "subset_creation_failed": "PDF-filen med de valda sidorna kunde inte skapas för extrahering. Kontrollera filen och försök igen."
+        },
+        "ocr": {
+          "unavailable": "OCR är inte tillgängligt. Kontrollera konfiguration/autentiseringsstatus och försök igen.",
+          "activation_required": "OCR-aktivering krävs. Logga in i Google OCR och försök igen.",
+          "activation_success": "OCR-aktivering slutförd. Försöker extrahera igen.",
+          "activation_cancelled": "OCR-aktiveringen avbröts. Extrahering fortsatte inte.",
+          "token_state_invalid": "Sparad inloggningsstatus för Google OCR är ogiltig. Anslut Google OCR igen och försök igen.",
+          "activation_failed": "OCR-aktivering misslyckades. Kontrollera konfiguration/autentiseringsstatus och försök igen.",
+          "enable_success": "Google OCR är nu aktiverat.",
+          "enable_cancelled": "Aktiveringen av Google OCR avbröts.",
+          "enable_failed": "Google OCR kunde inte aktiveras. Kontrollera konfiguration/autentiseringsstatus och försök igen.",
+          "disconnect_success": "Google OCR kopplades från. Den sparade Google-token återkallades och den lokala inloggningsstatusen togs bort.",
+          "disconnect_not_connected": "Google OCR är för närvarande inte anslutet i denna appinstans.",
+          "disconnect_failed": "Frånkoppling av Google OCR misslyckades. Den sparade inloggningsstatusen togs inte bort.",
+          "connectivity_failed": "OCR kräver en internetanslutning. Kontrollera anslutningen och försök igen.",
+          "setup_missing_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna saknas.",
+          "setup_invalid_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna är ogiltiga.",
+          "quota_or_rate_limited": "OCR är tillfälligt blockerat av kvot-/hastighetsbegränsningar. Vänta och försök igen.",
+          "runtime_error": "Ett OCR-runtimefel uppstod under extrahering. Kontrollera konsolen och försök igen.",
+          "cancelled": "OCR-extrahering avbröts.",
+          "cleanup_warning": "OCR slutfördes, men rensning av tillfällig fjärrfil misslyckades. Kontrollera din Google Drive-mapp."
+        },
+        "batch_ocr": {
+          "activation_required": "Denna sats innehåller OCR-objekt, men Google OCR är inte aktiverat. Använd Inställningar > Aktivera Google OCR och starta sedan satsen igen.",
+          "token_state_invalid": "Denna sats innehåller OCR-objekt, men det sparade Google OCR-inloggningstillståndet är ogiltigt. Använd Inställningar > Aktivera Google OCR igen och starta sedan satsen igen.",
+          "connectivity_failed": "Den här batchen innehåller OCR-objekt, men OCR kräver en internetanslutning. Kontrollera anslutningen och försök igen innan du startar extraheringen.",
+          "quota_or_rate_limited": "Den här batchen innehåller OCR-objekt, men OCR är tillfälligt blockerat av kvot-/hastighetsgränser. Vänta och försök igen innan du startar extraheringen.",
+          "unavailable": "Denna sats innehåller OCR-objekt, men Google OCR är inte tillgängligt just nu. Om OCR ännu inte är aktiverat, använd Inställningar > Aktivera Google OCR. Kontrollera annars OCR-konfiguration/status och försök igen innan du startar satsen."
+        },
+        "native": {
+          "runtime_error": "Ett fel uppstod i den inbyggda extraheringen under extrahering. Kontrollera konsolen och försök igen.",
+          "unreadable_or_corrupt": "Den valda filen är oläsbar eller skadad för inbyggd extrahering.",
+          "encrypted_or_password_protected": "Den valda PDF-filen är krypterad eller lösenordsskyddad och kan inte extraheras med inbyggd extrahering.",
+          "cancelled": "Inbyggd extrahering avbröts."
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "Öka textstorlek",
       "reset_text_size": "Återställ textstorlek",
       "read_progress_label": "Läst",
-      "clear_title": "Rensa"
+      "clear_title": "Rensa",
+      "alerts": {
+        "start_failed": "Text Editor kunde inte startas.",
+        "start_timeout": "Text Editor tog för lång tid att starta och stängdes.",
+        "paste_too_big": "Texten är för stor för att klistras in direkt. Använd knapparna i huvudfönstret.",
+        "drop_too_big": "Den släppta texten är för stor. Använd knapparna i huvudfönstret för att lägga till stor text.",
+        "paste_no_text": "Urklippet innehåller ingen oformaterad text.",
+        "drop_no_text": "Dra och släpp: ingen oformaterad text upptäcktes.",
+        "type_limit": "Kan inte skriva mer text: maximal storlek har nåtts.",
+        "paste_limit": "Kan inte klistra in mer text: maximal storlek har nåtts.",
+        "drop_limit": "Kan inte släppa mer text: maximal storlek har nåtts.",
+        "paste_truncated": "Den inklistrade texten kortades för att undvika att maxgränsen överskrids.",
+        "drop_truncated": "Den dragna texten överskred tillgängligt utrymme och har kortats.",
+        "text_truncated": "Texten kortades för att rymmas inom appens gräns.",
+        "calc_error": "Ett fel uppstod vid beräkning. Kontrollera konsolen."
+      }
     },
     "editor_find": {
       "input_placeholder": "Sök...",
@@ -242,6 +332,17 @@
       "replace_timeout": "Ersättningen tog för lång tid. Försök igen.",
       "status_no_matches": "Inga träffar",
       "status_empty_query": "Skriv för att söka"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot sparad.",
+        "save_error": "Kunde inte spara snapshoten.",
+        "load_success": "Snapshot inläst.",
+        "load_error": "Kunde inte läsa in snapshoten.",
+        "outside": "Snapshoten måste ligga i snapshotmappen.",
+        "truncated": "Snapshoten överskrider maximal storlek och har kortats.",
+        "unavailable": "Snapshotfunktionen är inte tillgänglig."
+      }
     },
     "snapshot_save_tags": {
       "title": "Spara textsnapshot",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "Fortsätt"
         }
+      },
+      "alerts": {
+        "unavailable": "Funktionen för test av läshastighet är inte tillgänglig.",
+        "precondition_blocked": "Testet av läshastighet kan endast starta från ett stabilt apptillstånd. Stäng sekundära fönster och se till att stoppuret är stoppat.",
+        "pool_error": "Ett fel uppstod vid kontroll av poolen för test av läshastighet.",
+        "no_matching_files": "Det finns inga återstående oanvända testfiler som matchar det aktuella valet.",
+        "visible_empty_bundled_hidden": "De inbyggda testfilerna är dolda och det finns för närvarande inga synliga oanvända testfiler tillgängliga. Visa de inbyggda filerna igen eller importera fler filer för att fortsätta.",
+        "current_text_empty": "Aktuell text är tom. Läs in eller skriv en text innan du startar testet med aktuell text.",
+        "result_invalid": "Testresultatet kunde inte omvandlas till ett giltigt WPM. Flödet avslutades utan att öppna modalen för förinställningar.",
+        "result_unavailable": "Resultatet för läshastighet kunde inte visas. Flödet fortsatte.",
+        "preset_unavailable": "Modalen för förinställningar kunde inte öppnas efter testet.",
+        "questions_unavailable": "Modalen med förståelsefrågor kunde inte öppnas. Flödet avslutades före skapande av förinställning.",
+        "pool_import_failed": "Filerna för test av läshastighet kunde inte importeras.",
+        "start_failed": "Testet av läshastighet kunde inte startas.",
+        "cancelled": "Testet av läshastighet avbröts.",
+        "cancelled_window_closed": "Testet av läshastighet avbröts eftersom ett av sessionsfönstren stängdes."
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "{remaining} tecken kvar",
       "hint": "Anpassade förinställningar sparas i användarinställningarna.",
       "cancel": "Avbryt",
-      "save": "Spara"
+      "save": "Spara",
+      "alerts": {
+        "unavailable": "Preset-dialogen är inte tillgänglig i den här app-builden.",
+        "open_error": "Ett fel uppstod när preset-dialogen öppnades. Kontrollera konsolen.",
+        "name_empty": "Namn får inte vara tomt.",
+        "wpm_invalid": "WPM måste vara ett tal mellan {min} och {max}.",
+        "create_error": "Ett fel uppstod när förinställningen skulle skapas. Kontrollera konsolen.",
+        "edit_error": "Ett fel uppstod när förinställningen skulle redigeras. Kontrollera konsolen.",
+        "process_error": "Ett fel uppstod vid behandling av förinställningen. Kontrollera konsolen."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Vald förinställning hittades inte i cachen.",
+        "delete_error": "Ett fel uppstod vid borttagning av förinställningen. Kontrollera konsolen.",
+        "restore_error": "Ett fel uppstod vid återställning av förinställningar. Kontrollera konsolen.",
+        "open_folder_unsupported": "Kan inte öppna mappen med förinställningar i denna miljö.",
+        "open_folder_error": "Ett fel uppstod vid försök att öppna mappen med förinställningar. Kontrollera konsolen.",
+        "open_default_folder_failed": "Kunde inte öppna mappen med standardförinställningar. Kontrollera konsolen för detaljer."
+      }
     },
     "browser_extension": {
       "title": "Webbläsartillägg",
       "subtitle": "Tiempo de lectura",
       "availability": "Finns i Chrome nu. Fler webbläsare kommer snart.",
       "chrome_store_aria": "Öppna tilläggets sida i Chrome Web Store",
-      "close_aria": "Stäng dialogrutan för webbläsartillägget"
-    },
-    "alerts": {
-      "clipboard_too_large": "Urklippstexten är för stor för att bearbeta. Minska den och försök igen.",
-      "apply_too_large": "Texten skulle bli för stor för att tillämpas. Korta den och försök igen.",
-      "apply_truncated": "Texten trunkerades för att rymmas inom programmets gräns.",
-      "append_text_limit": "Det går inte att lägga till texten: maximal storlek har nåtts.",
-      "overwrite_clipboard_error": "Ett fel uppstod när text från urklipp skulle ersätta den nuvarande texten.",
-      "append_clipboard_error": "Ett fel uppstod när text från urklipp skulle läggas till.",
-      "clear_error": "Ett fel uppstod när texten skulle rensas. Kontrollera konsolen.",
-      "snapshot_save_success": "Snapshot sparad.",
-      "snapshot_save_error": "Kunde inte spara snapshoten.",
-      "snapshot_load_success": "Snapshot inläst.",
-      "snapshot_load_error": "Kunde inte läsa in snapshoten.",
-      "snapshot_outside": "Snapshoten måste ligga i snapshotmappen.",
-      "snapshot_truncated": "Snapshoten överskrider maximal storlek och har kortats.",
-      "snapshot_unavailable": "Snapshotfunktionen är inte tillgänglig.",
-      "browser_extension_modal_open_blocked": "Dialogrutan för webbläsartillägget kan inte öppnas just nu.",
-      "preset_not_found": "Vald förinställning hittades inte i cachen.",
-      "preset_modal_unavailable": "Preset-dialogen är inte tillgänglig i den här app-builden.",
-      "preset_modal_open_error": "Ett fel uppstod när preset-dialogen öppnades. Kontrollera konsolen.",
-      "delete_error": "Ett fel uppstod vid borttagning av förinställningen. Kontrollera konsolen.",
-      "restore_error": "Ett fel uppstod vid återställning av förinställningar. Kontrollera konsolen.",
-      "open_presets_unsupported": "Kan inte öppna mappen med förinställningar i denna miljö.",
-      "open_presets_error": "Ett fel uppstod vid försök att öppna mappen med förinställningar. Kontrollera konsolen.",
-      "open_presets_fail": "Kunde inte öppna mappen med standardförinställningar. Kontrollera konsolen för detaljer.",
-      "text_extraction_error": "Ett fel uppstod när extrahering skulle startas. Kontrollera konsolen.",
-      "text_extraction_precondition_blocked": "För att starta extrahering, stäng alla sekundära fönster och stoppa stoppuret.",
-      "text_extraction_precondition_error": "Ett fel uppstod vid kontroll av villkor för extrahering. Kontrollera konsolen.",
-      "text_extraction_processing_locked": "Extrahering bearbetas. Interaktioner i huvudfönstret är låsta tills bearbetningen är klar eller du avbryter.",
-      "current_text_processing_locked": "Den aktuella texten uppdateras fortfarande. Interaktioner i huvudfönstret är låsta tills den senaste texten har stabiliserats.",
-      "current_text_recount_locked": "Resultaten för den aktuella texten beräknas fortfarande om. Interaktioner i huvudfönstret är låsta tills den senaste omberäkningen har stabiliserats.",
-      "text_extraction_abort_error": "Ett fel uppstod vid begäran om att avbryta extrahering. Kontrollera konsolen.",
-      "text_extraction_cancellation_requested": "Avbrytning begärd. Vänta tills den aktuella extraheringen är klar.",
-      "text_extraction_cancellation_complete": "Avbrytning slutförd.",
-      "text_extraction_drop_invalid_file": "Det släppta objektet är inte en giltig lokal fil.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Den här PDF-filen är oläsbar eller skadad. Kontrollera filen och försök igen.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Den här PDF-filen är krypterad eller lösenordsskyddad. Lås upp den och försök igen.",
-      "text_extraction_pdf_page_count_unavailable": "Det gick inte att kontrollera sidantalet i den här PDF-filen. Kontrollera filen och försök igen.",
-      "text_extraction_pdf_page_selection_invalid": "Det valda sidintervallet för PDF-filen är ogiltigt. Justera intervallet och försök igen.",
-      "text_extraction_pdf_subset_creation_failed": "PDF-filen med de valda sidorna kunde inte skapas för extrahering. Kontrollera filen och försök igen.",
-      "text_extraction_generated_pdf_cleanup_warning": "Extraheringen slutfördes, men en genererad lokal PDF-fil kunde inte rensas automatiskt.",
-      "text_extraction_route_choice_error": "Ett fel uppstod när extraheringsrutt skulle väljas.",
-      "text_extraction_generated_pdf_reveal_failed": "Den sparade PDF-filen kunde inte visas. Kontrollera om filen fortfarande finns.",
-      "text_extraction_apply_error": "Ett fel uppstod när extraherad text skulle tillämpas. Kontrollera konsolen och försök igen.",
-      "text_extraction_prepare_invalid": "Den förberedda extraheringsbegäran är inte längre giltig. Starta flödet igen.",
-      "text_extraction_batch_ocr_activation_required": "Denna sats innehåller OCR-objekt, men Google OCR är inte aktiverat. Använd Inställningar > Aktivera Google OCR och starta sedan satsen igen.",
-      "text_extraction_batch_ocr_token_state_invalid": "Denna sats innehåller OCR-objekt, men det sparade Google OCR-inloggningstillståndet är ogiltigt. Använd Inställningar > Aktivera Google OCR igen och starta sedan satsen igen.",
-      "text_extraction_batch_ocr_connectivity_failed": "Den här batchen innehåller OCR-objekt, men OCR kräver en internetanslutning. Kontrollera anslutningen och försök igen innan du startar extraheringen.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Den här batchen innehåller OCR-objekt, men OCR är tillfälligt blockerat av kvot-/hastighetsgränser. Vänta och försök igen innan du startar extraheringen.",
-      "text_extraction_batch_ocr_unavailable": "Denna sats innehåller OCR-objekt, men Google OCR är inte tillgängligt just nu. Om OCR ännu inte är aktiverat, använd Inställningar > Aktivera Google OCR. Kontrollera annars OCR-konfiguration/status och försök igen innan du startar satsen.",
-      "text_extraction_ocr_unavailable": "OCR är inte tillgängligt. Kontrollera konfiguration/autentiseringsstatus och försök igen.",
-      "text_extraction_ocr_activation_required": "OCR-aktivering krävs. Logga in i Google OCR och försök igen.",
-      "text_extraction_ocr_activation_success": "OCR-aktivering slutförd. Försöker extrahera igen.",
-      "text_extraction_ocr_activation_cancelled": "OCR-aktiveringen avbröts. Extrahering fortsatte inte.",
-      "text_extraction_ocr_token_state_invalid": "Sparad inloggningsstatus för Google OCR är ogiltig. Anslut Google OCR igen och försök igen.",
-      "text_extraction_ocr_activation_failed": "OCR-aktivering misslyckades. Kontrollera konfiguration/autentiseringsstatus och försök igen.",
-      "text_extraction_ocr_enable_success": "Google OCR är nu aktiverat.",
-      "text_extraction_ocr_enable_cancelled": "Aktiveringen av Google OCR avbröts.",
-      "text_extraction_ocr_enable_failed": "Google OCR kunde inte aktiveras. Kontrollera konfiguration/autentiseringsstatus och försök igen.",
-      "text_extraction_ocr_disconnect_success": "Google OCR kopplades från. Den sparade Google-token återkallades och den lokala inloggningsstatusen togs bort.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR är för närvarande inte anslutet i denna appinstans.",
-      "text_extraction_ocr_disconnect_failed": "Frånkoppling av Google OCR misslyckades. Den sparade inloggningsstatusen togs inte bort.",
-      "text_extraction_ocr_connectivity_failed": "OCR kräver en internetanslutning. Kontrollera anslutningen och försök igen.",
-      "text_extraction_ocr_setup_missing_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna saknas.",
-      "text_extraction_ocr_setup_invalid_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna är ogiltiga.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR är tillfälligt blockerat av kvot-/hastighetsbegränsningar. Vänta och försök igen.",
-      "text_extraction_ocr_runtime_error": "Ett OCR-runtimefel uppstod under extrahering. Kontrollera konsolen och försök igen.",
-      "text_extraction_ocr_cancelled": "OCR-extrahering avbröts.",
-      "text_extraction_ocr_cleanup_warning": "OCR slutfördes, men rensning av tillfällig fjärrfil misslyckades. Kontrollera din Google Drive-mapp.",
-      "text_extraction_native_runtime_error": "Ett fel uppstod i den inbyggda extraheringen under extrahering. Kontrollera konsolen och försök igen.",
-      "text_extraction_native_unreadable_or_corrupt": "Den valda filen är oläsbar eller skadad för inbyggd extrahering.",
-      "text_extraction_native_encrypted_or_password_protected": "Den valda PDF-filen är krypterad eller lösenordsskyddad och kan inte extraheras med inbyggd extrahering.",
-      "text_extraction_native_cancelled": "Inbyggd extrahering avbröts.",
-      "text_extraction_unsupported_format": "Det här filformatet stöds inte för textextrahering.",
-      "wip_diseno_skins": "WIP: Skin-väljaren öppnas här i en framtida version.",
-      "wip_diseno_crono": "WIP: Inställningar för flytande stoppur öppnas här i en framtida version.",
-      "wip_diseno_fuentes": "WIP: Typsnittsväljaren öppnas här i en framtida version.",
-      "wip_diseno_colores": "WIP: Färgväljaren öppnas här i en framtida version.",
-      "wip_shortcuts": "WIP: Väljaren för tangentbordsgenvägar öppnas här i en framtida version.",
-      "reading_test_unavailable": "Funktionen för test av läshastighet är inte tillgänglig.",
-      "reading_test_precondition_blocked": "Testet av läshastighet kan endast starta från ett stabilt apptillstånd. Stäng sekundära fönster och se till att stoppuret är stoppat.",
-      "reading_test_pool_error": "Ett fel uppstod vid kontroll av poolen för test av läshastighet.",
-      "reading_test_no_matching_files": "Det finns inga återstående oanvända testfiler som matchar det aktuella valet.",
-      "reading_test_visible_empty_bundled_hidden": "De inbyggda testfilerna är dolda och det finns för närvarande inga synliga oanvända testfiler tillgängliga. Visa de inbyggda filerna igen eller importera fler filer för att fortsätta.",
-      "reading_test_current_text_empty": "Aktuell text är tom. Läs in eller skriv en text innan du startar testet med aktuell text.",
-      "reading_test_result_invalid": "Testresultatet kunde inte omvandlas till ett giltigt WPM. Flödet avslutades utan att öppna modalen för förinställningar.",
-      "reading_test_result_unavailable": "Resultatet för läshastighet kunde inte visas. Flödet fortsatte.",
-      "reading_test_preset_unavailable": "Modalen för förinställningar kunde inte öppnas efter testet.",
-      "reading_test_questions_unavailable": "Modalen med förståelsefrågor kunde inte öppnas. Flödet avslutades före skapande av förinställning.",
-      "reading_test_pool_import_failed": "Filerna för test av läshastighet kunde inte importeras.",
-      "reading_test_start_failed": "Testet av läshastighet kunde inte startas.",
-      "text_editor_start_failed": "Text Editor kunde inte startas.",
-      "text_editor_start_timeout": "Text Editor tog för lång tid att starta och stängdes.",
-      "reading_test_cancelled": "Testet av läshastighet avbröts.",
-      "reading_test_cancelled_window_closed": "Testet av läshastighet avbröts eftersom ett av sessionsfönstren stängdes."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Texten är för stor för att klistras in direkt. Använd knapparna i huvudfönstret.",
-      "drop_too_big": "Den släppta texten är för stor. Använd knapparna i huvudfönstret för att lägga till stor text.",
-      "paste_no_text": "Urklippet innehåller ingen oformaterad text.",
-      "drop_no_text": "Dra och släpp: ingen oformaterad text upptäcktes.",
-      "type_limit": "Kan inte skriva mer text: maximal storlek har nåtts.",
-      "paste_limit": "Kan inte klistra in mer text: maximal storlek har nåtts.",
-      "drop_limit": "Kan inte släppa mer text: maximal storlek har nåtts.",
-      "paste_truncated": "Den inklistrade texten kortades för att undvika att maxgränsen överskrids.",
-      "drop_truncated": "Den dragna texten överskred tillgängligt utrymme och har kortats.",
-      "text_truncated": "Texten kortades för att rymmas inom appens gräns.",
-      "calc_error": "Ett fel uppstod vid beräkning. Kontrollera konsolen."
-    },
-    "preset_alerts": {
-      "name_empty": "Namn får inte vara tomt.",
-      "wpm_invalid": "WPM måste vara ett tal mellan {min} och {max}.",
-      "create_error": "Ett fel uppstod när förinställningen skulle skapas. Kontrollera konsolen.",
-      "edit_error": "Ett fel uppstod när förinställningen skulle redigeras. Kontrollera konsolen.",
-      "process_error": "Ett fel uppstod vid behandling av förinställningen. Kontrollera konsolen."
+      "close_aria": "Stäng dialogrutan för webbläsartillägget",
+      "alerts": {
+        "modal_open_blocked": "Dialogrutan för webbläsartillägget kan inte öppnas just nu."
+      }
     },
     "info": {
       "loading": "Läser in...",

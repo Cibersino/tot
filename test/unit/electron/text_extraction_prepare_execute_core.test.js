@@ -514,7 +514,7 @@ test('prepareSelectedFile returns a structured unsupported-format failure when n
   assert.equal(result.executionKind, null);
   assert.equal(result.routeMetadata.triageReason, 'unsupported_format');
   assert.deepEqual(result.routeMetadata.availableRoutes, []);
-  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_unsupported_format');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.unsupported_format');
   assert.equal(result.error.code, 'unsupported_format');
 });
 
@@ -578,7 +578,7 @@ test('executePreparedImport treats execution-time unsupported format as a native
   assert.equal(result.executionKind, 'native');
   assert.equal(result.result.state, 'failure');
   assert.equal(result.result.error.code, 'unsupported_format');
-  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_native_runtime_error');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.native.runtime_error');
 });
 
 test('inspectSelectedFile returns PDF page-count metadata for selectable fixture', async () => {
@@ -605,7 +605,7 @@ test('inspectSelectedFile returns neutral PDF alert keys for encrypted PDFs', as
   assert.equal(result.error.code, 'native_encrypted_or_password_protected');
   assert.equal(
     result.primaryAlertKey,
-    'renderer.alerts.text_extraction_pdf_encrypted_or_password_protected'
+    'renderer.text_extraction.alerts.pdf.encrypted_or_password_protected'
   );
 });
 
@@ -880,7 +880,7 @@ test('prepareSelectedFile returns neutral PDF alert keys for encrypted PDFs', as
   assert.equal(result.error.code, 'native_encrypted_or_password_protected');
   assert.equal(
     result.primaryAlertKey,
-    'renderer.alerts.text_extraction_pdf_encrypted_or_password_protected'
+    'renderer.text_extraction.alerts.pdf.encrypted_or_password_protected'
   );
 });
 
@@ -904,7 +904,7 @@ test('executePreparedImport rejects unresolved route choice before starting work
   assert.deepEqual(result, {
     ok: false,
     code: 'ROUTE_CHOICE_REQUIRED',
-    primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_error',
+    primaryAlertKey: 'renderer.text_extraction.alerts.route_choice_error',
   });
   assert.deepEqual(controller.enterCalls, []);
   assert.deepEqual(controller.exitCalls, []);
@@ -1134,7 +1134,7 @@ test('executePreparedImport skips route dispatch after cancellation during subse
   assert.equal(result.result.error.code, 'aborted_by_user');
   assert.equal(result.result.error.detailsSafeForLogs.stage, 'pre_route_dispatch');
   assert.equal(result.result.error.detailsSafeForLogs.reason, 'execution_ownership_lost');
-  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_native_cancelled');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.native.cancelled');
   assert.equal(nativeRouteCalls, 0);
   assert.equal(cleanupCalls, 1);
   assert.deepEqual(controller.exitCalls, []);

@@ -423,7 +423,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         return {
           ok: false,
           code: 'SESSION_ACTIVE',
-          guidanceKey: 'renderer.alerts.reading_test_precondition_blocked',
+          guidanceKey: 'renderer.reading_test.alerts.precondition_blocked',
         };
       }
 
@@ -445,7 +445,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         return {
           ok: false,
           code: 'IMPORT_FAILED',
-          guidanceKey: 'renderer.alerts.reading_test_pool_import_failed',
+          guidanceKey: 'renderer.reading_test.alerts.pool_import_failed',
         };
       }
       if (dialogResult.canceled) {
@@ -456,7 +456,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         return {
           ok: false,
           code: 'IMPORT_FAILED',
-          guidanceKey: 'renderer.alerts.reading_test_pool_import_failed',
+          guidanceKey: 'renderer.reading_test.alerts.pool_import_failed',
         };
       }
       if (!dialogResult.filePaths.length) {
@@ -536,7 +536,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
       return {
         ok: false,
         code: 'IMPORT_FAILED',
-        guidanceKey: 'renderer.alerts.reading_test_pool_import_failed',
+        guidanceKey: 'renderer.reading_test.alerts.pool_import_failed',
       };
     }
   });

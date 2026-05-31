@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Aravo ohasáva: ",
         "text_extraction_drop_here": "Epoi archivo ko’ápe egueru/eipe’a hag̃ua jehai"
+      },
+      "alerts": {
+        "clipboard_too_large": "Portapapeles jehai tuichaiterei oñeprocesa hag̃ua. Emomichĩ ha eha’ã jey.",
+        "apply_too_large": "Ko jehaipyre tuichaitereíta oñemoĩ hag̃ua. Momichĩ ha eha'ã jey.",
+        "apply_truncated": "Ko jehaipyre oñekytĩ oike hag̃ua app límite-pe.",
+        "append_text_limit": "Ndaikatúi oñembojoapy jehaipyre: og̃uahẽma tuichakue máximo-pe.",
+        "overwrite_clipboard_error": "Oiko peteĩ jejavy oñemyengoviávo jehaipyre portapapeles-gui.",
+        "append_clipboard_error": "Oiko peteĩ jejavy oñembojoapývo jehaipyre portapapeles-gui.",
+        "clear_error": "Oiko jejavy oñemopotĩ aja jehai. Ehecha consola.",
+        "current_text_processing_locked": "Texto ko’ag̃agua oñembopyahu gueteri. Ventana principal rehegua interacciones oñembotýta texto ipyahuvéva oñemohenda peve.",
+        "current_text_recount_locked": "Texto ko’ag̃agua resultado oñeñemboheko jey gueteri. Ventana principal rehegua interacciones oñembotýta conteo ipaháva oñemohenda peve.",
+        "wip": {
+          "design_skins": "WIP: Ko’ápe ojepe’áta selector de skins versión oútavape.",
+          "floating_stopwatch": "WIP: Ko’ápe ojepe’áta configuración cronómetro ovevýiva rehegua versión oútavape.",
+          "fonts": "WIP: Ko’ápe ojepe’áta selector de fuentes versión oútavape.",
+          "colors": "WIP: Ko’ápe ojepe’áta selector de colores versión oútavape.",
+          "shortcuts": "WIP: Ko’ápe ojepe’áta selector de atajos de teclado versión oútavape."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Ehechauka PDF ojejapóva",
         "cancel_button": "Eheja",
         "close_aria": "Emboty diálogo PDF pohýi OCR-pe g̃uarã"
+      },
+      "alerts": {
+        "start_error": "Oiko jejavy oñepyrũ aja text extraction. Ehecha consola.",
+        "precondition_blocked": "Reñepyrũ hag̃ua text extraction, emboty opaite ventana secundaria ha ejoko cronómetro.",
+        "precondition_error": "Oiko jejavy ojehecha aja text extraction precondiciones. Ehecha consola.",
+        "processing_locked": "Text extraction oprocesa hína. Ventana principal interacciones ojejoko procesamiento opa peve térã reabortá peve.",
+        "abort_error": "Oiko jejavy ejerure aja text extraction abort. Ehecha consola.",
+        "cancellation_requested": "Ojejerure ojeheja hag̃ua. Eha’arõ extracción ko’ág̃agua opa peve.",
+        "cancellation_complete": "Ojeheja oñemohu’ã.",
+        "drop_invalid_file": "Elemento ojeityva’ekue ndaha’éi archivo local válido.",
+        "generated_pdf_cleanup_warning": "Pe extracción opa, ha katu ndaikatúi oñemopotĩ ijehegui peteĩ PDF local ojejapóva.",
+        "route_choice_error": "Oiko peteĩ jejavy ojeporavóvo extracción ruta.",
+        "generated_pdf_reveal_failed": "Ndaikatúi ojehechauka pe PDF oñeñongatúva. Ehecha pe archivo oĩ gueteripa.",
+        "apply_error": "Oiko jejavy ojepuru aja jehai ojeipe’áva. Ehecha consola ha eha’ã jey.",
+        "prepare_invalid": "Text extraction pedido oñembosako’iva’ekue ndoikovéima. Emoñepyrũjey flujo.",
+        "unsupported_format": "Ko archivo formato ndojeporúi texto extracción-pe g̃uarã.",
+        "pdf": {
+          "unreadable_or_corrupt": "Ko PDF ndaikatúi oñemoñeʼẽ térã oñembyai. Ehecha pe archivo ha ehaʼã jey.",
+          "encrypted_or_password_protected": "Ko PDF oñemboty térã contraseña rupive oñeñangareko hese. Eipeʼa ha ehaʼã jey.",
+          "page_count_unavailable": "Ndaikatúi ojehecha mboy página oguereko ko PDF. Ehecha pe archivo ha ehaʼã jey.",
+          "page_selection_invalid": "Pe rango de páginas PDF ojeporavóva ndoikói. Emohenda pe rango ha ehaʼã jey.",
+          "subset_creation_failed": "Ndaikatúi ojejapo PDF umi página ojeporavóvagui extracción-pe g̃uarã. Ehecha pe archivo ha ehaʼã jey."
+        },
+        "ocr": {
+          "unavailable": "OCR ndojepurukuaái. Ehecha setup/auth ha eha’ã jey.",
+          "activation_required": "Tekotevẽ OCR activación. Eike Google OCR-pe ha eha’ã jey.",
+          "activation_success": "OCR activación opa. Oñeha’ã jey extracción.",
+          "activation_cancelled": "OCR activación ojeheja. Text extraction ndosegíri.",
+          "token_state_invalid": "Estado oñeñongatúva Google OCR jeike rehegua ndoikói. Embojoaju jey Google OCR ha eha’ã jey.",
+          "activation_failed": "OCR activación ojavy. Ehecha setup/auth ha eha’ã jey.",
+          "enable_success": "Google OCR oñemyendy.",
+          "enable_cancelled": "Google OCR ñemyendy ojeheja.",
+          "enable_failed": "Ndaikatúi oñemyendy Google OCR. Ehecha setup/auth ha eha’ã jey.",
+          "disconnect_success": "Google OCR ojehekýi. Token Google oñeñongatúva ojerrevoca ha estado local jeike rehegua oñembogue.",
+          "disconnect_not_connected": "Google OCR noĩri conectado ko app instancia-pe ko’ág̃a.",
+          "disconnect_failed": "Google OCR jehekýi ojavy. Estado jeike rehegua oñeñongatúva noñemboguei.",
+          "connectivity_failed": "OCR oikotevẽ internet rehe. Ehecha ne conexión ha eha’ã jey.",
+          "setup_missing_credentials": "OCR ndojepurukuaái ko app build-pe ofaltágui credencial OAuth Google oúva app ndive.",
+          "setup_invalid_credentials": "OCR ndojepurukuaái ko app build-pe credencial OAuth Google oúva app ndive ndoikóigui.",
+          "quota_or_rate_limited": "OCR ojejoko sapy’a cuota/límite de uso rehe. Eha’arõ ha eha’ã jey.",
+          "runtime_error": "Oiko OCR runtime error text extraction aja. Ehecha consola ha eha’ã jey.",
+          "cancelled": "OCR extracción ojeheja.",
+          "cleanup_warning": "OCR opa, hákatu limpieza temporal remota archivo rehegua ojavy. Ehecha nde Google Drive carpeta."
+        },
+        "batch_ocr": {
+          "activation_required": "Ko lote oguereko elemento OCR, hákatu Google OCR noĩri activado. Eipuru Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",
+          "token_state_invalid": "Ko lote oguereko elemento OCR, hákatu estado oñeñongatúva Google OCR jeike rehegua ndoikói. Eipuru jey Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",
+          "connectivity_failed": "Ko batch oguereko OCR mba'e, hákatu OCR oikotevẽ Internet conexión. Ehecha nde conexión ha eha'ã jey eñepyrũ mboyve extracción.",
+          "quota_or_rate_limited": "Ko batch oguereko OCR mba'e, hákatu OCR ojokohína sapy'ami quota/rate limits rehe. Eha'arõ ha eha'ã jey eñepyrũ mboyve extracción.",
+          "unavailable": "Ko lote oguereko elemento OCR, hákatu Google OCR ndojepurukuaái ko’ág̃a. OCR noĩriramo gueteri activado, eipuru Preferencias > Emyandy Google OCR. Ndaupéichairamo, ehecha OCR setup/auth ha eha’ã jey reñepyrũ mboyve lote."
+        },
+        "native": {
+          "runtime_error": "Oiko error runtime extracción nativa text extraction aja. Ehecha consola ha eha’ã jey.",
+          "unreadable_or_corrupt": "Archivo ojeporavóva ndaikatúi ojelee térã oñembyaíma extracción nativa-pe g̃uarã.",
+          "encrypted_or_password_protected": "PDF ojeporavóva oĩ encriptado térã contraseña reheve ha ndaikatúi ojeipe’a ruta nativa rupive.",
+          "cancelled": "Extracción nativa ojeheja."
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "Embotuicha jehai tuichakue",
       "reset_text_size": "Emoĩjey jehai tuichakue",
       "read_progress_label": "Oñemoñe’ẽma",
-      "clear_title": "Emopotĩ"
+      "clear_title": "Emopotĩ",
+      "alerts": {
+        "start_failed": "Text Editor ndaikatúi oñepyrũ.",
+        "start_timeout": "Text Editor oñepyrũ hag̃ua ipukueterei ha oñemboty.",
+        "paste_too_big": "Jehai tuichaiterei oñemboja hag̃ua directamente. Eipuru ventana principal botón.",
+        "drop_too_big": "Jehai ojeityva’ekue tuichaiterei. Eipuru ventana principal botón.",
+        "paste_no_text": "Portapapeles ndoguerekói jehai plano.",
+        "drop_no_text": "Arrastrar y soltar: ndojejuhúi jehai plano.",
+        "type_limit": "Ndaikatúi rehai jehai hetave: oñeguahẽma tuichakue máximo-pe.",
+        "paste_limit": "Ndaikatúi remboja jehai hetave: oñeguahẽma tuichakue máximo-pe.",
+        "drop_limit": "Ndaikatúi reity jehai hetave: oñeguahẽma tuichakue máximo-pe.",
+        "paste_truncated": "Jehai oñembojava’ekue oñekytĩ ani hag̃ua ohasa máximo.",
+        "drop_truncated": "Jehai ojeityva’ekue ohasa espacio disponible ha oñekytĩ.",
+        "text_truncated": "Jehai oñekytĩ oike hag̃ua límite máximo app-pe.",
+        "calc_error": "Oiko jejavy ojejapo aja cálculo. Ehecha consola."
+      }
     },
     "editor_find": {
       "input_placeholder": "Heka...",
@@ -242,6 +332,17 @@
       "replace_timeout": "Ñemyengovia ipukueterei. Eha’ã jey.",
       "status_no_matches": "Ndaipóri ojojáva",
       "status_empty_query": "Ehai eheka hag̃ua"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot oñeñongatu.",
+        "save_error": "Ndaikatúi oñeñongatu snapshot.",
+        "load_success": "Snapshot oñemyanyhẽ.",
+        "load_error": "Ndaikatúi oñemyanyhẽ snapshot.",
+        "outside": "Snapshot oĩva’erã snapshots carpeta ryepýpe.",
+        "truncated": "Snapshot ohasa tuichakue máximo ha oñekytĩ.",
+        "unavailable": "Snapshot función ndojepurukuaái."
+      }
     },
     "snapshot_save_tags": {
       "title": "Eñongatu jehai snapshot",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "Esegí"
         }
+      },
+      "alerts": {
+        "unavailable": "Moñe’ẽ pya’ekue test función ndojepurukuaái.",
+        "precondition_blocked": "Moñe’ẽ pya’ekue test ikatu oñepyrũ app estado estable guive añoite. Emboty ventana secundaria ha eñangareko cronómetro opyta hague.",
+        "pool_error": "Oiko jejavy ojehecha aja moñe’ẽ pya’ekue test pool.",
+        "no_matching_files": "Ndaipóri archivo test ojepuru’ỹva ojoajúva selección ko’ág̃agua ndive.",
+        "visible_empty_bundled_hidden": "Umi archivo test integradokuéra oñeñomi ha ndaipóri archivo test jehecháva ojepuru’ỹva ko'ág̃a. Ehechauka jey térã egueru archivo hetave ikatu hag̃uáicha resegi.",
+        "current_text_empty": "Jehai ko’ág̃agua nandi. Emyanyhẽ térã ehai peteĩ jehai reñepyrũ mboyve test jehai ko’ág̃agua reheve.",
+        "result_invalid": "Test resultado ndaikatúi oñembohasa WPM válido-pe. Flujo opa oipe’a’ỹre modal preset.",
+        "result_unavailable": "Ndaikatúi ojehechauka moñe’ẽ pya’ekue resultado. Flujo osegi.",
+        "preset_unavailable": "Ndaikatúi ojepe’a modal preset test rire.",
+        "questions_unavailable": "Ndaikatúi ojepe’a modal porandu comprensión rehegua. Flujo opa preset jejapo mboyve.",
+        "pool_import_failed": "Ndaikatúi ojegueru archivo moñe’ẽ pya’ekue test rehegua.",
+        "start_failed": "Ndaikatúi oñepyrũ moñe’ẽ pya’ekue test.",
+        "cancelled": "Moñe’ẽ pya’ekue test ojeheja.",
+        "cancelled_window_closed": "Moñe’ẽ pya’ekue test ojeheja peteĩ ventana sesión rehegua oñembotýgui."
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "{remaining} karakter opytáva",
       "hint": "Preset personalizado oñeñongatu usuario configuración-pe.",
       "cancel": "Eheja",
-      "save": "Ñongatu"
+      "save": "Ñongatu",
+      "alerts": {
+        "unavailable": "Preset diálogo ndojeporukuaái ko app build-pe.",
+        "open_error": "Oiko jejavy ojeipe’a aja preset diálogo. Ehecha consola.",
+        "name_empty": "Téra ndaikatúi nandi.",
+        "wpm_invalid": "WPM ha’eva’erã número {min} ha {max} pa’ũme.",
+        "create_error": "Oiko jejavy ojejapo aja preset. Ehecha consola.",
+        "edit_error": "Oiko jejavy oñemyatyrõ aja preset. Ehecha consola.",
+        "process_error": "Oiko jejavy oñeprocesa aja preset. Ehecha consola."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Preset ojeporavóva ndojejuhúi caché-pe.",
+        "delete_error": "Oiko jejavy oñembogue aja preset. Ehecha consola.",
+        "restore_error": "Oiko jejavy oñemoĩjey aja presets. Ehecha consola.",
+        "open_folder_unsupported": "Ndaikatúi ojepe’a presets carpeta ko entorno-pe.",
+        "open_folder_error": "Oiko jejavy ojepe’ase aja presets carpeta. Ehecha consola.",
+        "open_default_folder_failed": "Ndaikatúi ojepe’a carpeta preset ñepyrũrã rehegua. Ehecha consola reikuaave hag̃ua."
+      }
     },
     "browser_extension": {
       "title": "Jepysokue kundahárape g̃uarã",
       "subtitle": "Tiempo de lectura",
       "availability": "Ojeguereko ko'ág̃a Chrome-pe. Oútama kundahára hetave ko'ẽrõitéma.",
       "chrome_store_aria": "Eipe'a jepysokue Chrome Web Store rogue",
-      "close_aria": "Emboty jepysokue kundahárape g̃uarã ñe'ẽryru"
-    },
-    "alerts": {
-      "clipboard_too_large": "Portapapeles jehai tuichaiterei oñeprocesa hag̃ua. Emomichĩ ha eha’ã jey.",
-      "apply_too_large": "Ko jehaipyre tuichaitereíta oñemoĩ hag̃ua. Momichĩ ha eha'ã jey.",
-      "apply_truncated": "Ko jehaipyre oñekytĩ oike hag̃ua app límite-pe.",
-      "append_text_limit": "Ndaikatúi oñembojoapy jehaipyre: og̃uahẽma tuichakue máximo-pe.",
-      "overwrite_clipboard_error": "Oiko peteĩ jejavy oñemyengoviávo jehaipyre portapapeles-gui.",
-      "append_clipboard_error": "Oiko peteĩ jejavy oñembojoapývo jehaipyre portapapeles-gui.",
-      "clear_error": "Oiko jejavy oñemopotĩ aja jehai. Ehecha consola.",
-      "snapshot_save_success": "Snapshot oñeñongatu.",
-      "snapshot_save_error": "Ndaikatúi oñeñongatu snapshot.",
-      "snapshot_load_success": "Snapshot oñemyanyhẽ.",
-      "snapshot_load_error": "Ndaikatúi oñemyanyhẽ snapshot.",
-      "snapshot_outside": "Snapshot oĩva’erã snapshots carpeta ryepýpe.",
-      "snapshot_truncated": "Snapshot ohasa tuichakue máximo ha oñekytĩ.",
-      "snapshot_unavailable": "Snapshot función ndojepurukuaái.",
-      "browser_extension_modal_open_blocked": "Navegador extensión diálogo ndaikatúi ojeipe’a ko’ág̃a.",
-      "preset_not_found": "Preset ojeporavóva ndojejuhúi caché-pe.",
-      "preset_modal_unavailable": "Preset diálogo ndojeporukuaái ko app build-pe.",
-      "preset_modal_open_error": "Oiko jejavy ojeipe’a aja preset diálogo. Ehecha consola.",
-      "delete_error": "Oiko jejavy oñembogue aja preset. Ehecha consola.",
-      "restore_error": "Oiko jejavy oñemoĩjey aja presets. Ehecha consola.",
-      "open_presets_unsupported": "Ndaikatúi ojepe’a presets carpeta ko entorno-pe.",
-      "open_presets_error": "Oiko jejavy ojepe’ase aja presets carpeta. Ehecha consola.",
-      "open_presets_fail": "Ndaikatúi ojepe’a carpeta preset ñepyrũrã rehegua. Ehecha consola reikuaave hag̃ua.",
-      "text_extraction_error": "Oiko jejavy oñepyrũ aja text extraction. Ehecha consola.",
-      "text_extraction_precondition_blocked": "Reñepyrũ hag̃ua text extraction, emboty opaite ventana secundaria ha ejoko cronómetro.",
-      "text_extraction_precondition_error": "Oiko jejavy ojehecha aja text extraction precondiciones. Ehecha consola.",
-      "text_extraction_processing_locked": "Text extraction oprocesa hína. Ventana principal interacciones ojejoko procesamiento opa peve térã reabortá peve.",
-      "current_text_processing_locked": "Texto ko’ag̃agua oñembopyahu gueteri. Ventana principal rehegua interacciones oñembotýta texto ipyahuvéva oñemohenda peve.",
-      "current_text_recount_locked": "Texto ko’ag̃agua resultado oñeñemboheko jey gueteri. Ventana principal rehegua interacciones oñembotýta conteo ipaháva oñemohenda peve.",
-      "text_extraction_abort_error": "Oiko jejavy ejerure aja text extraction abort. Ehecha consola.",
-      "text_extraction_cancellation_requested": "Ojejerure ojeheja hag̃ua. Eha’arõ extracción ko’ág̃agua opa peve.",
-      "text_extraction_cancellation_complete": "Ojeheja oñemohu’ã.",
-      "text_extraction_drop_invalid_file": "Elemento ojeityva’ekue ndaha’éi archivo local válido.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Ko PDF ndaikatúi oñemoñeʼẽ térã oñembyai. Ehecha pe archivo ha ehaʼã jey.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Ko PDF oñemboty térã contraseña rupive oñeñangareko hese. Eipeʼa ha ehaʼã jey.",
-      "text_extraction_pdf_page_count_unavailable": "Ndaikatúi ojehecha mboy página oguereko ko PDF. Ehecha pe archivo ha ehaʼã jey.",
-      "text_extraction_pdf_page_selection_invalid": "Pe rango de páginas PDF ojeporavóva ndoikói. Emohenda pe rango ha ehaʼã jey.",
-      "text_extraction_pdf_subset_creation_failed": "Ndaikatúi ojejapo PDF umi página ojeporavóvagui extracción-pe g̃uarã. Ehecha pe archivo ha ehaʼã jey.",
-      "text_extraction_generated_pdf_cleanup_warning": "Pe extracción opa, ha katu ndaikatúi oñemopotĩ ijehegui peteĩ PDF local ojejapóva.",
-      "text_extraction_route_choice_error": "Oiko peteĩ jejavy ojeporavóvo extracción ruta.",
-      "text_extraction_generated_pdf_reveal_failed": "Ndaikatúi ojehechauka pe PDF oñeñongatúva. Ehecha pe archivo oĩ gueteripa.",
-      "text_extraction_apply_error": "Oiko jejavy ojepuru aja jehai ojeipe’áva. Ehecha consola ha eha’ã jey.",
-      "text_extraction_prepare_invalid": "Text extraction pedido oñembosako’iva’ekue ndoikovéima. Emoñepyrũjey flujo.",
-      "text_extraction_batch_ocr_activation_required": "Ko lote oguereko elemento OCR, hákatu Google OCR noĩri activado. Eipuru Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",
-      "text_extraction_batch_ocr_token_state_invalid": "Ko lote oguereko elemento OCR, hákatu estado oñeñongatúva Google OCR jeike rehegua ndoikói. Eipuru jey Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",
-      "text_extraction_batch_ocr_connectivity_failed": "Ko batch oguereko OCR mba'e, hákatu OCR oikotevẽ Internet conexión. Ehecha nde conexión ha eha'ã jey eñepyrũ mboyve extracción.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Ko batch oguereko OCR mba'e, hákatu OCR ojokohína sapy'ami quota/rate limits rehe. Eha'arõ ha eha'ã jey eñepyrũ mboyve extracción.",
-      "text_extraction_batch_ocr_unavailable": "Ko lote oguereko elemento OCR, hákatu Google OCR ndojepurukuaái ko’ág̃a. OCR noĩriramo gueteri activado, eipuru Preferencias > Emyandy Google OCR. Ndaupéichairamo, ehecha OCR setup/auth ha eha’ã jey reñepyrũ mboyve lote.",
-      "text_extraction_ocr_unavailable": "OCR ndojepurukuaái. Ehecha setup/auth ha eha’ã jey.",
-      "text_extraction_ocr_activation_required": "Tekotevẽ OCR activación. Eike Google OCR-pe ha eha’ã jey.",
-      "text_extraction_ocr_activation_success": "OCR activación opa. Oñeha’ã jey extracción.",
-      "text_extraction_ocr_activation_cancelled": "OCR activación ojeheja. Text extraction ndosegíri.",
-      "text_extraction_ocr_token_state_invalid": "Estado oñeñongatúva Google OCR jeike rehegua ndoikói. Embojoaju jey Google OCR ha eha’ã jey.",
-      "text_extraction_ocr_activation_failed": "OCR activación ojavy. Ehecha setup/auth ha eha’ã jey.",
-      "text_extraction_ocr_enable_success": "Google OCR oñemyendy.",
-      "text_extraction_ocr_enable_cancelled": "Google OCR ñemyendy ojeheja.",
-      "text_extraction_ocr_enable_failed": "Ndaikatúi oñemyendy Google OCR. Ehecha setup/auth ha eha’ã jey.",
-      "text_extraction_ocr_disconnect_success": "Google OCR ojehekýi. Token Google oñeñongatúva ojerrevoca ha estado local jeike rehegua oñembogue.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR noĩri conectado ko app instancia-pe ko’ág̃a.",
-      "text_extraction_ocr_disconnect_failed": "Google OCR jehekýi ojavy. Estado jeike rehegua oñeñongatúva noñemboguei.",
-      "text_extraction_ocr_connectivity_failed": "OCR oikotevẽ internet rehe. Ehecha ne conexión ha eha’ã jey.",
-      "text_extraction_ocr_setup_missing_credentials": "OCR ndojepurukuaái ko app build-pe ofaltágui credencial OAuth Google oúva app ndive.",
-      "text_extraction_ocr_setup_invalid_credentials": "OCR ndojepurukuaái ko app build-pe credencial OAuth Google oúva app ndive ndoikóigui.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR ojejoko sapy’a cuota/límite de uso rehe. Eha’arõ ha eha’ã jey.",
-      "text_extraction_ocr_runtime_error": "Oiko OCR runtime error text extraction aja. Ehecha consola ha eha’ã jey.",
-      "text_extraction_ocr_cancelled": "OCR extracción ojeheja.",
-      "text_extraction_ocr_cleanup_warning": "OCR opa, hákatu limpieza temporal remota archivo rehegua ojavy. Ehecha nde Google Drive carpeta.",
-      "text_extraction_native_runtime_error": "Oiko error runtime extracción nativa text extraction aja. Ehecha consola ha eha’ã jey.",
-      "text_extraction_native_unreadable_or_corrupt": "Archivo ojeporavóva ndaikatúi ojelee térã oñembyaíma extracción nativa-pe g̃uarã.",
-      "text_extraction_native_encrypted_or_password_protected": "PDF ojeporavóva oĩ encriptado térã contraseña reheve ha ndaikatúi ojeipe’a ruta nativa rupive.",
-      "text_extraction_native_cancelled": "Extracción nativa ojeheja.",
-      "text_extraction_unsupported_format": "Ko archivo formato ndojeporúi texto extracción-pe g̃uarã.",
-      "wip_diseno_skins": "WIP: Ko’ápe ojepe’áta selector de skins versión oútavape.",
-      "wip_diseno_crono": "WIP: Ko’ápe ojepe’áta configuración cronómetro ovevýiva rehegua versión oútavape.",
-      "wip_diseno_fuentes": "WIP: Ko’ápe ojepe’áta selector de fuentes versión oútavape.",
-      "wip_diseno_colores": "WIP: Ko’ápe ojepe’áta selector de colores versión oútavape.",
-      "wip_shortcuts": "WIP: Ko’ápe ojepe’áta selector de atajos de teclado versión oútavape.",
-      "reading_test_unavailable": "Moñe’ẽ pya’ekue test función ndojepurukuaái.",
-      "reading_test_precondition_blocked": "Moñe’ẽ pya’ekue test ikatu oñepyrũ app estado estable guive añoite. Emboty ventana secundaria ha eñangareko cronómetro opyta hague.",
-      "reading_test_pool_error": "Oiko jejavy ojehecha aja moñe’ẽ pya’ekue test pool.",
-      "reading_test_no_matching_files": "Ndaipóri archivo test ojepuru’ỹva ojoajúva selección ko’ág̃agua ndive.",
-      "reading_test_visible_empty_bundled_hidden": "Umi archivo test integradokuéra oñeñomi ha ndaipóri archivo test jehecháva ojepuru’ỹva ko'ág̃a. Ehechauka jey térã egueru archivo hetave ikatu hag̃uáicha resegi.",
-      "reading_test_current_text_empty": "Jehai ko’ág̃agua nandi. Emyanyhẽ térã ehai peteĩ jehai reñepyrũ mboyve test jehai ko’ág̃agua reheve.",
-      "reading_test_result_invalid": "Test resultado ndaikatúi oñembohasa WPM válido-pe. Flujo opa oipe’a’ỹre modal preset.",
-      "reading_test_result_unavailable": "Ndaikatúi ojehechauka moñe’ẽ pya’ekue resultado. Flujo osegi.",
-      "reading_test_preset_unavailable": "Ndaikatúi ojepe’a modal preset test rire.",
-      "reading_test_questions_unavailable": "Ndaikatúi ojepe’a modal porandu comprensión rehegua. Flujo opa preset jejapo mboyve.",
-      "reading_test_pool_import_failed": "Ndaikatúi ojegueru archivo moñe’ẽ pya’ekue test rehegua.",
-      "reading_test_start_failed": "Ndaikatúi oñepyrũ moñe’ẽ pya’ekue test.",
-      "text_editor_start_failed": "Text Editor ndaikatúi oñepyrũ.",
-      "text_editor_start_timeout": "Text Editor oñepyrũ hag̃ua ipukueterei ha oñemboty.",
-      "reading_test_cancelled": "Moñe’ẽ pya’ekue test ojeheja.",
-      "reading_test_cancelled_window_closed": "Moñe’ẽ pya’ekue test ojeheja peteĩ ventana sesión rehegua oñembotýgui."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Jehai tuichaiterei oñemboja hag̃ua directamente. Eipuru ventana principal botón.",
-      "drop_too_big": "Jehai ojeityva’ekue tuichaiterei. Eipuru ventana principal botón.",
-      "paste_no_text": "Portapapeles ndoguerekói jehai plano.",
-      "drop_no_text": "Arrastrar y soltar: ndojejuhúi jehai plano.",
-      "type_limit": "Ndaikatúi rehai jehai hetave: oñeguahẽma tuichakue máximo-pe.",
-      "paste_limit": "Ndaikatúi remboja jehai hetave: oñeguahẽma tuichakue máximo-pe.",
-      "drop_limit": "Ndaikatúi reity jehai hetave: oñeguahẽma tuichakue máximo-pe.",
-      "paste_truncated": "Jehai oñembojava’ekue oñekytĩ ani hag̃ua ohasa máximo.",
-      "drop_truncated": "Jehai ojeityva’ekue ohasa espacio disponible ha oñekytĩ.",
-      "text_truncated": "Jehai oñekytĩ oike hag̃ua límite máximo app-pe.",
-      "calc_error": "Oiko jejavy ojejapo aja cálculo. Ehecha consola."
-    },
-    "preset_alerts": {
-      "name_empty": "Téra ndaikatúi nandi.",
-      "wpm_invalid": "WPM ha’eva’erã número {min} ha {max} pa’ũme.",
-      "create_error": "Oiko jejavy ojejapo aja preset. Ehecha consola.",
-      "edit_error": "Oiko jejavy oñemyatyrõ aja preset. Ehecha consola.",
-      "process_error": "Oiko jejavy oñeprocesa aja preset. Ehecha consola."
+      "close_aria": "Emboty jepysokue kundahárape g̃uarã ñe'ẽryru",
+      "alerts": {
+        "modal_open_blocked": "Navegador extensión diálogo ndaikatúi ojeipe’a ko’ág̃a."
+      }
     },
     "info": {
       "loading": "Oñemyanyhẽ...",

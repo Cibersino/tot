@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "経過時間: ",
         "text_extraction_drop_here": "テキストを抽出するファイルをドロップ"
+      },
+      "alerts": {
+        "clipboard_too_large": "クリップボードのテキストが大きすぎて処理できません。短くしてから再試行してください。",
+        "apply_too_large": "適用するとテキストが大きくなりすぎます。短くしてからもう一度試してください。",
+        "apply_truncated": "アプリケーションの上限に収まるようにテキストを切り詰めました。",
+        "append_text_limit": "テキストを追加できません: 最大サイズに達しました。",
+        "overwrite_clipboard_error": "クリップボードのテキストを置き換えるときにエラーが発生しました。",
+        "append_clipboard_error": "クリップボードのテキストを追加するときにエラーが発生しました。",
+        "clear_error": "テキストを空にする際にエラーが発生しました。コンソールを確認してください。",
+        "current_text_processing_locked": "現在のテキストはまだ更新中です。最新のテキストが安定するまでメインウィンドウの操作はロックされます。",
+        "current_text_recount_locked": "現在のテキストの結果はまだ再計算中です。最新の再計算が安定するまでメインウィンドウの操作はロックされます。",
+        "wip": {
+          "design_skins": "WIP: スキンセレクターは将来のバージョンでここから開きます。",
+          "floating_stopwatch": "WIP: フローティングストップウォッチ設定は将来のバージョンでここから開きます。",
+          "fonts": "WIP: フォントセレクターは将来のバージョンでここから開きます。",
+          "colors": "WIP: 色セレクターは将来のバージョンでここから開きます。",
+          "shortcuts": "WIP: キーボードショートカットセレクターは将来のバージョンでここから開きます。"
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "生成 PDF を表示",
         "cancel_button": "キャンセル",
         "close_aria": "OCR 用大型 PDF ダイアログを閉じる"
+      },
+      "alerts": {
+        "start_error": "抽出の開始中にエラーが発生しました。コンソールを確認してください。",
+        "precondition_blocked": "抽出を開始するには、すべてのサブウィンドウを閉じ、ストップウォッチを停止してください。",
+        "precondition_error": "抽出の前提条件確認中にエラーが発生しました。コンソールを確認してください。",
+        "processing_locked": "抽出を処理中です。処理が終了するか中止するまで、メインウィンドウの操作はロックされます。",
+        "abort_error": "抽出の中止要求中にエラーが発生しました。コンソールを確認してください。",
+        "cancellation_requested": "キャンセルを要求しました。現在の抽出が完了するまでお待ちください。",
+        "cancellation_complete": "キャンセルが完了しました。",
+        "drop_invalid_file": "ドロップされた項目は有効なローカルファイルではありません。",
+        "generated_pdf_cleanup_warning": "抽出は完了しましたが、生成されたローカル PDF を自動的に削除できませんでした。",
+        "route_choice_error": "抽出ルートの選択中にエラーが発生しました。",
+        "generated_pdf_reveal_failed": "保存済み PDF を表示できませんでした。ファイルがまだ存在するか確認してください。",
+        "apply_error": "抽出テキストの適用中にエラーが発生しました。コンソールを確認して再試行してください。",
+        "prepare_invalid": "準備済みの抽出リクエストは無効になっています。フローを最初から開始してください。",
+        "unsupported_format": "このファイル形式はテキスト抽出に対応していません。",
+        "pdf": {
+          "unreadable_or_corrupt": "この PDF は読み取れないか破損しています。ファイルを確認して、もう一度お試しください。",
+          "encrypted_or_password_protected": "この PDF は暗号化されているか、パスワードで保護されています。ロックを解除して、もう一度お試しください。",
+          "page_count_unavailable": "この PDF のページ数を確認できませんでした。ファイルを確認して、もう一度お試しください。",
+          "page_selection_invalid": "選択された PDF のページ範囲が無効です。範囲を調整して、もう一度お試しください。",
+          "subset_creation_failed": "抽出用の選択ページ PDF を作成できませんでした。ファイルを確認して、もう一度お試しください。"
+        },
+        "ocr": {
+          "unavailable": "OCR は利用できません。セットアップ/認証状態を確認して再試行してください。",
+          "activation_required": "OCR の有効化が必要です。Google OCR にログインして再試行してください。",
+          "activation_success": "OCR の有効化が完了しました。抽出を再試行しています。",
+          "activation_cancelled": "OCR の有効化はキャンセルされました。抽出は続行されませんでした。",
+          "token_state_invalid": "保存された Google OCR ログイン状態が無効です。Google OCR に再接続してから再試行してください。",
+          "activation_failed": "OCR の有効化に失敗しました。セットアップ/認証状態を確認して再試行してください。",
+          "enable_success": "Google OCR が有効になりました。",
+          "enable_cancelled": "Google OCR の有効化はキャンセルされました。",
+          "enable_failed": "Google OCR を有効化できませんでした。セットアップ/認証状態を確認して再試行してください。",
+          "disconnect_success": "Google OCR を切断しました。保存された Google トークンは取り消され、ローカルのログイン状態は削除されました。",
+          "disconnect_not_connected": "このアプリインスタンスでは Google OCR は現在接続されていません。",
+          "disconnect_failed": "Google OCR の切断に失敗しました。保存されたログイン状態は削除されませんでした。",
+          "connectivity_failed": "OCR にはインターネット接続が必要です。接続を確認して再試行してください。",
+          "setup_missing_credentials": "このアプリビルドには同梱の Google OAuth 認証情報がないため、OCR は利用できません。",
+          "setup_invalid_credentials": "このアプリビルドに同梱された Google OAuth 認証情報が無効なため、OCR は利用できません。",
+          "quota_or_rate_limited": "OCR はクォータ/レート制限により一時的にブロックされています。しばらく待ってから再試行してください。",
+          "runtime_error": "抽出中に OCR 実行時エラーが発生しました。コンソールを確認して再試行してください。",
+          "cancelled": "OCR 抽出はキャンセルされました。",
+          "cleanup_warning": "OCR は完了しましたが、一時リモートファイルのクリーンアップに失敗しました。Google Drive フォルダを確認してください。"
+        },
+        "batch_ocr": {
+          "activation_required": "この一括処理には OCR 項目が含まれていますが、Google OCR が有効ではありません。設定 > Google OCR を有効化 から有効化してから、一括処理を再開してください。",
+          "token_state_invalid": "この一括処理には OCR 項目が含まれていますが、保存された Google OCR ログイン状態が無効です。設定 > Google OCR を有効化 からもう一度有効化してから、一括処理を再開してください。",
+          "connectivity_failed": "このバッチには OCR 項目が含まれていますが、OCR にはインターネット接続が必要です。接続を確認し、抽出を開始する前にもう一度試してください。",
+          "quota_or_rate_limited": "このバッチには OCR 項目が含まれていますが、OCR はクォータ/レート制限により一時的にブロックされています。しばらく待ってから、抽出を開始する前にもう一度試してください。",
+          "unavailable": "この一括処理には OCR 項目が含まれていますが、Google OCR は現在利用できません。OCR がまだ有効でない場合は、設定 > Google OCR を有効化 から有効化してください。それ以外の場合は、一括処理を開始する前に OCR のセットアップ/状態を確認して再試行してください。"
+        },
+        "native": {
+          "runtime_error": "抽出中にネイティブ抽出の実行時エラーが発生しました。コンソールを確認して再試行してください。",
+          "unreadable_or_corrupt": "選択したファイルはネイティブ抽出では読み取れないか、破損しています。",
+          "encrypted_or_password_protected": "選択した PDF は暗号化またはパスワード保護されているため、ネイティブ抽出できません。",
+          "cancelled": "ネイティブ抽出はキャンセルされました。"
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "文字サイズを大きくする",
       "reset_text_size": "文字サイズをリセット",
       "read_progress_label": "読了",
-      "clear_title": "空にする"
+      "clear_title": "空にする",
+      "alerts": {
+        "start_failed": "Text Editor を起動できませんでした。",
+        "start_timeout": "Text Editor の起動に時間がかかりすぎたため閉じられました。",
+        "paste_too_big": "直接貼り付けるにはテキストが大きすぎます。メインウィンドウのボタンを使用してください。",
+        "drop_too_big": "ドロップされたテキストが大きすぎます。メインウィンドウのボタンを使用してください。",
+        "paste_no_text": "クリップボードにプレーンテキストが含まれていません。",
+        "drop_no_text": "ドラッグ＆ドロップ: プレーンテキストが検出されませんでした。",
+        "type_limit": "これ以上入力できません。最大サイズに達しています。",
+        "paste_limit": "これ以上貼り付けできません。最大サイズに達しています。",
+        "drop_limit": "これ以上ドロップできません。最大サイズに達しています。",
+        "paste_truncated": "最大サイズを超えないように、貼り付けたテキストは切り詰められました。",
+        "drop_truncated": "ドラッグされたテキストが利用可能な容量を超えたため、切り詰められました。",
+        "text_truncated": "アプリケーションの上限に合わせるため、テキストは切り詰められました。",
+        "calc_error": "計算中にエラーが発生しました。コンソールを確認してください。"
+      }
     },
     "editor_find": {
       "input_placeholder": "検索...",
@@ -242,6 +332,17 @@
       "replace_timeout": "置換に時間がかかりすぎました。もう一度お試しください。",
       "status_no_matches": "一致なし",
       "status_empty_query": "検索語を入力してください"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "スナップショットを保存しました。",
+        "save_error": "スナップショットを保存できませんでした。",
+        "load_success": "スナップショットを読み込みました。",
+        "load_error": "スナップショットを読み込めませんでした。",
+        "outside": "スナップショットは保存フォルダ内にある必要があります。",
+        "truncated": "スナップショットが最大サイズを超えたため、切り詰められました。",
+        "unavailable": "スナップショット機能は利用できません。"
+      }
     },
     "snapshot_save_tags": {
       "title": "テキストスナップショットを保存",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "続行"
         }
+      },
+      "alerts": {
+        "unavailable": "読書速度テスト機能は利用できません。",
+        "precondition_blocked": "読書速度テストは、アプリが安定した状態のときだけ開始できます。サブウィンドウを閉じ、ストップウォッチが停止していることを確認してください。",
+        "pool_error": "読書速度テストのプール確認中にエラーが発生しました。",
+        "no_matching_files": "現在の選択に一致する未使用のテストファイルが残っていません。",
+        "visible_empty_bundled_hidden": "内蔵テストファイルは非表示になっており、現在利用できる未使用の表示テストファイルはありません。続行するには、内蔵ファイルを再表示するか、さらにファイルをインポートしてください。",
+        "current_text_empty": "現在のテキストは空です。現在のテキストでテストを開始する前に、テキストを読み込むか入力してください。",
+        "result_invalid": "テスト結果を有効な WPM に変換できませんでした。プリセットモーダルを開かずにフローを終了しました。",
+        "result_unavailable": "読書速度の結果を表示できませんでした。フローは続行しました。",
+        "preset_unavailable": "テスト後にプリセットモーダルを開けませんでした。",
+        "questions_unavailable": "読解問題モーダルを開けませんでした。プリセット作成前にフローを終了しました。",
+        "pool_import_failed": "読書速度テストファイルをインポートできませんでした。",
+        "start_failed": "読書速度テストを開始できませんでした。",
+        "cancelled": "読書速度テストはキャンセルされました。",
+        "cancelled_window_closed": "セッションウィンドウの1つが閉じられたため、読書速度テストはキャンセルされました。"
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "残り {remaining} 文字",
       "hint": "カスタムプリセットはユーザー設定に保存されます。",
       "cancel": "キャンセル",
-      "save": "保存"
+      "save": "保存",
+      "alerts": {
+        "unavailable": "このアプリビルドではプリセットダイアログを利用できません。",
+        "open_error": "プリセットダイアログを開く際にエラーが発生しました。コンソールを確認してください。",
+        "name_empty": "名前は空にできません。",
+        "wpm_invalid": "WPM は {min} から {max} までの数値である必要があります。",
+        "create_error": "プリセットの作成中にエラーが発生しました。コンソールを確認してください。",
+        "edit_error": "プリセットの編集中にエラーが発生しました。コンソールを確認してください。",
+        "process_error": "プリセットの処理中にエラーが発生しました。コンソールを確認してください。"
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "選択したプリセットがキャッシュに見つかりません。",
+        "delete_error": "プリセットの削除中にエラーが発生しました。コンソールを確認してください。",
+        "restore_error": "プリセットの復元中にエラーが発生しました。コンソールを確認してください。",
+        "open_folder_unsupported": "この環境ではプリセットフォルダを開けません。",
+        "open_folder_error": "プリセットフォルダを開く際にエラーが発生しました。コンソールを確認してください。",
+        "open_default_folder_failed": "デフォルトプリセットフォルダを開けませんでした。詳細はコンソールを確認してください。"
+      }
     },
     "browser_extension": {
       "title": "ブラウザー拡張機能",
       "subtitle": "Tiempo de lectura",
       "availability": "現在 Chrome で利用できます。ほかのブラウザーにも近日対応予定です。",
       "chrome_store_aria": "拡張機能の Chrome Web Store ページを開く",
-      "close_aria": "ブラウザー拡張機能のダイアログを閉じる"
-    },
-    "alerts": {
-      "clipboard_too_large": "クリップボードのテキストが大きすぎて処理できません。短くしてから再試行してください。",
-      "apply_too_large": "適用するとテキストが大きくなりすぎます。短くしてからもう一度試してください。",
-      "apply_truncated": "アプリケーションの上限に収まるようにテキストを切り詰めました。",
-      "append_text_limit": "テキストを追加できません: 最大サイズに達しました。",
-      "overwrite_clipboard_error": "クリップボードのテキストを置き換えるときにエラーが発生しました。",
-      "append_clipboard_error": "クリップボードのテキストを追加するときにエラーが発生しました。",
-      "clear_error": "テキストを空にする際にエラーが発生しました。コンソールを確認してください。",
-      "snapshot_save_success": "スナップショットを保存しました。",
-      "snapshot_save_error": "スナップショットを保存できませんでした。",
-      "snapshot_load_success": "スナップショットを読み込みました。",
-      "snapshot_load_error": "スナップショットを読み込めませんでした。",
-      "snapshot_outside": "スナップショットは保存フォルダ内にある必要があります。",
-      "snapshot_truncated": "スナップショットが最大サイズを超えたため、切り詰められました。",
-      "snapshot_unavailable": "スナップショット機能は利用できません。",
-      "browser_extension_modal_open_blocked": "ブラウザー拡張機能のダイアログは現在開けません。",
-      "preset_not_found": "選択したプリセットがキャッシュに見つかりません。",
-      "preset_modal_unavailable": "このアプリビルドではプリセットダイアログを利用できません。",
-      "preset_modal_open_error": "プリセットダイアログを開く際にエラーが発生しました。コンソールを確認してください。",
-      "delete_error": "プリセットの削除中にエラーが発生しました。コンソールを確認してください。",
-      "restore_error": "プリセットの復元中にエラーが発生しました。コンソールを確認してください。",
-      "open_presets_unsupported": "この環境ではプリセットフォルダを開けません。",
-      "open_presets_error": "プリセットフォルダを開く際にエラーが発生しました。コンソールを確認してください。",
-      "open_presets_fail": "デフォルトプリセットフォルダを開けませんでした。詳細はコンソールを確認してください。",
-      "text_extraction_error": "抽出の開始中にエラーが発生しました。コンソールを確認してください。",
-      "text_extraction_precondition_blocked": "抽出を開始するには、すべてのサブウィンドウを閉じ、ストップウォッチを停止してください。",
-      "text_extraction_precondition_error": "抽出の前提条件確認中にエラーが発生しました。コンソールを確認してください。",
-      "text_extraction_processing_locked": "抽出を処理中です。処理が終了するか中止するまで、メインウィンドウの操作はロックされます。",
-      "current_text_processing_locked": "現在のテキストはまだ更新中です。最新のテキストが安定するまでメインウィンドウの操作はロックされます。",
-      "current_text_recount_locked": "現在のテキストの結果はまだ再計算中です。最新の再計算が安定するまでメインウィンドウの操作はロックされます。",
-      "text_extraction_abort_error": "抽出の中止要求中にエラーが発生しました。コンソールを確認してください。",
-      "text_extraction_cancellation_requested": "キャンセルを要求しました。現在の抽出が完了するまでお待ちください。",
-      "text_extraction_cancellation_complete": "キャンセルが完了しました。",
-      "text_extraction_drop_invalid_file": "ドロップされた項目は有効なローカルファイルではありません。",
-      "text_extraction_pdf_unreadable_or_corrupt": "この PDF は読み取れないか破損しています。ファイルを確認して、もう一度お試しください。",
-      "text_extraction_pdf_encrypted_or_password_protected": "この PDF は暗号化されているか、パスワードで保護されています。ロックを解除して、もう一度お試しください。",
-      "text_extraction_pdf_page_count_unavailable": "この PDF のページ数を確認できませんでした。ファイルを確認して、もう一度お試しください。",
-      "text_extraction_pdf_page_selection_invalid": "選択された PDF のページ範囲が無効です。範囲を調整して、もう一度お試しください。",
-      "text_extraction_pdf_subset_creation_failed": "抽出用の選択ページ PDF を作成できませんでした。ファイルを確認して、もう一度お試しください。",
-      "text_extraction_generated_pdf_cleanup_warning": "抽出は完了しましたが、生成されたローカル PDF を自動的に削除できませんでした。",
-      "text_extraction_route_choice_error": "抽出ルートの選択中にエラーが発生しました。",
-      "text_extraction_generated_pdf_reveal_failed": "保存済み PDF を表示できませんでした。ファイルがまだ存在するか確認してください。",
-      "text_extraction_apply_error": "抽出テキストの適用中にエラーが発生しました。コンソールを確認して再試行してください。",
-      "text_extraction_prepare_invalid": "準備済みの抽出リクエストは無効になっています。フローを最初から開始してください。",
-      "text_extraction_batch_ocr_activation_required": "この一括処理には OCR 項目が含まれていますが、Google OCR が有効ではありません。設定 > Google OCR を有効化 から有効化してから、一括処理を再開してください。",
-      "text_extraction_batch_ocr_token_state_invalid": "この一括処理には OCR 項目が含まれていますが、保存された Google OCR ログイン状態が無効です。設定 > Google OCR を有効化 からもう一度有効化してから、一括処理を再開してください。",
-      "text_extraction_batch_ocr_connectivity_failed": "このバッチには OCR 項目が含まれていますが、OCR にはインターネット接続が必要です。接続を確認し、抽出を開始する前にもう一度試してください。",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "このバッチには OCR 項目が含まれていますが、OCR はクォータ/レート制限により一時的にブロックされています。しばらく待ってから、抽出を開始する前にもう一度試してください。",
-      "text_extraction_batch_ocr_unavailable": "この一括処理には OCR 項目が含まれていますが、Google OCR は現在利用できません。OCR がまだ有効でない場合は、設定 > Google OCR を有効化 から有効化してください。それ以外の場合は、一括処理を開始する前に OCR のセットアップ/状態を確認して再試行してください。",
-      "text_extraction_ocr_unavailable": "OCR は利用できません。セットアップ/認証状態を確認して再試行してください。",
-      "text_extraction_ocr_activation_required": "OCR の有効化が必要です。Google OCR にログインして再試行してください。",
-      "text_extraction_ocr_activation_success": "OCR の有効化が完了しました。抽出を再試行しています。",
-      "text_extraction_ocr_activation_cancelled": "OCR の有効化はキャンセルされました。抽出は続行されませんでした。",
-      "text_extraction_ocr_token_state_invalid": "保存された Google OCR ログイン状態が無効です。Google OCR に再接続してから再試行してください。",
-      "text_extraction_ocr_activation_failed": "OCR の有効化に失敗しました。セットアップ/認証状態を確認して再試行してください。",
-      "text_extraction_ocr_enable_success": "Google OCR が有効になりました。",
-      "text_extraction_ocr_enable_cancelled": "Google OCR の有効化はキャンセルされました。",
-      "text_extraction_ocr_enable_failed": "Google OCR を有効化できませんでした。セットアップ/認証状態を確認して再試行してください。",
-      "text_extraction_ocr_disconnect_success": "Google OCR を切断しました。保存された Google トークンは取り消され、ローカルのログイン状態は削除されました。",
-      "text_extraction_ocr_disconnect_not_connected": "このアプリインスタンスでは Google OCR は現在接続されていません。",
-      "text_extraction_ocr_disconnect_failed": "Google OCR の切断に失敗しました。保存されたログイン状態は削除されませんでした。",
-      "text_extraction_ocr_connectivity_failed": "OCR にはインターネット接続が必要です。接続を確認して再試行してください。",
-      "text_extraction_ocr_setup_missing_credentials": "このアプリビルドには同梱の Google OAuth 認証情報がないため、OCR は利用できません。",
-      "text_extraction_ocr_setup_invalid_credentials": "このアプリビルドに同梱された Google OAuth 認証情報が無効なため、OCR は利用できません。",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR はクォータ/レート制限により一時的にブロックされています。しばらく待ってから再試行してください。",
-      "text_extraction_ocr_runtime_error": "抽出中に OCR 実行時エラーが発生しました。コンソールを確認して再試行してください。",
-      "text_extraction_ocr_cancelled": "OCR 抽出はキャンセルされました。",
-      "text_extraction_ocr_cleanup_warning": "OCR は完了しましたが、一時リモートファイルのクリーンアップに失敗しました。Google Drive フォルダを確認してください。",
-      "text_extraction_native_runtime_error": "抽出中にネイティブ抽出の実行時エラーが発生しました。コンソールを確認して再試行してください。",
-      "text_extraction_native_unreadable_or_corrupt": "選択したファイルはネイティブ抽出では読み取れないか、破損しています。",
-      "text_extraction_native_encrypted_or_password_protected": "選択した PDF は暗号化またはパスワード保護されているため、ネイティブ抽出できません。",
-      "text_extraction_native_cancelled": "ネイティブ抽出はキャンセルされました。",
-      "text_extraction_unsupported_format": "このファイル形式はテキスト抽出に対応していません。",
-      "wip_diseno_skins": "WIP: スキンセレクターは将来のバージョンでここから開きます。",
-      "wip_diseno_crono": "WIP: フローティングストップウォッチ設定は将来のバージョンでここから開きます。",
-      "wip_diseno_fuentes": "WIP: フォントセレクターは将来のバージョンでここから開きます。",
-      "wip_diseno_colores": "WIP: 色セレクターは将来のバージョンでここから開きます。",
-      "wip_shortcuts": "WIP: キーボードショートカットセレクターは将来のバージョンでここから開きます。",
-      "reading_test_unavailable": "読書速度テスト機能は利用できません。",
-      "reading_test_precondition_blocked": "読書速度テストは、アプリが安定した状態のときだけ開始できます。サブウィンドウを閉じ、ストップウォッチが停止していることを確認してください。",
-      "reading_test_pool_error": "読書速度テストのプール確認中にエラーが発生しました。",
-      "reading_test_no_matching_files": "現在の選択に一致する未使用のテストファイルが残っていません。",
-      "reading_test_visible_empty_bundled_hidden": "内蔵テストファイルは非表示になっており、現在利用できる未使用の表示テストファイルはありません。続行するには、内蔵ファイルを再表示するか、さらにファイルをインポートしてください。",
-      "reading_test_current_text_empty": "現在のテキストは空です。現在のテキストでテストを開始する前に、テキストを読み込むか入力してください。",
-      "reading_test_result_invalid": "テスト結果を有効な WPM に変換できませんでした。プリセットモーダルを開かずにフローを終了しました。",
-      "reading_test_result_unavailable": "読書速度の結果を表示できませんでした。フローは続行しました。",
-      "reading_test_preset_unavailable": "テスト後にプリセットモーダルを開けませんでした。",
-      "reading_test_questions_unavailable": "読解問題モーダルを開けませんでした。プリセット作成前にフローを終了しました。",
-      "reading_test_pool_import_failed": "読書速度テストファイルをインポートできませんでした。",
-      "reading_test_start_failed": "読書速度テストを開始できませんでした。",
-      "text_editor_start_failed": "Text Editor を起動できませんでした。",
-      "text_editor_start_timeout": "Text Editor の起動に時間がかかりすぎたため閉じられました。",
-      "reading_test_cancelled": "読書速度テストはキャンセルされました。",
-      "reading_test_cancelled_window_closed": "セッションウィンドウの1つが閉じられたため、読書速度テストはキャンセルされました。"
-    },
-    "editor_alerts": {
-      "paste_too_big": "直接貼り付けるにはテキストが大きすぎます。メインウィンドウのボタンを使用してください。",
-      "drop_too_big": "ドロップされたテキストが大きすぎます。メインウィンドウのボタンを使用してください。",
-      "paste_no_text": "クリップボードにプレーンテキストが含まれていません。",
-      "drop_no_text": "ドラッグ＆ドロップ: プレーンテキストが検出されませんでした。",
-      "type_limit": "これ以上入力できません。最大サイズに達しています。",
-      "paste_limit": "これ以上貼り付けできません。最大サイズに達しています。",
-      "drop_limit": "これ以上ドロップできません。最大サイズに達しています。",
-      "paste_truncated": "最大サイズを超えないように、貼り付けたテキストは切り詰められました。",
-      "drop_truncated": "ドラッグされたテキストが利用可能な容量を超えたため、切り詰められました。",
-      "text_truncated": "アプリケーションの上限に合わせるため、テキストは切り詰められました。",
-      "calc_error": "計算中にエラーが発生しました。コンソールを確認してください。"
-    },
-    "preset_alerts": {
-      "name_empty": "名前は空にできません。",
-      "wpm_invalid": "WPM は {min} から {max} までの数値である必要があります。",
-      "create_error": "プリセットの作成中にエラーが発生しました。コンソールを確認してください。",
-      "edit_error": "プリセットの編集中にエラーが発生しました。コンソールを確認してください。",
-      "process_error": "プリセットの処理中にエラーが発生しました。コンソールを確認してください。"
+      "close_aria": "ブラウザー拡張機能のダイアログを閉じる",
+      "alerts": {
+        "modal_open_blocked": "ブラウザー拡張機能のダイアログは現在開けません。"
+      }
     },
     "info": {
       "loading": "読み込み中...",

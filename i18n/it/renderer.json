@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Tempo trascorso: ",
         "text_extraction_drop_here": "Rilascia un file per estrarre testo"
+      },
+      "alerts": {
+        "clipboard_too_large": "Il testo degli appunti è troppo grande per essere elaborato. Riducilo e riprova.",
+        "apply_too_large": "Il testo diventerebbe troppo grande per essere applicato. Riducilo e riprova.",
+        "apply_truncated": "Il testo è stato troncato per rientrare nel limite dell'applicazione.",
+        "append_text_limit": "Impossibile aggiungere il testo: dimensione massima raggiunta.",
+        "overwrite_clipboard_error": "Si è verificato un errore durante la sostituzione del testo dagli appunti.",
+        "append_clipboard_error": "Si è verificato un errore durante l'aggiunta del testo dagli appunti.",
+        "clear_error": "Si è verificato un errore durante la cancellazione del testo. Controlla la console.",
+        "current_text_processing_locked": "Il testo corrente è ancora in aggiornamento. Le interazioni della finestra principale restano bloccate finché il testo più recente non si stabilizza.",
+        "current_text_recount_locked": "I risultati del testo corrente sono ancora in fase di ricalcolo. Le interazioni della finestra principale restano bloccate finché l’ultimo ricalcolo non si stabilizza.",
+        "wip": {
+          "design_skins": "WIP: Il selettore di skin si aprirà qui in una versione futura.",
+          "floating_stopwatch": "WIP: I parametri del cronometro fluttuante si apriranno qui in una versione futura.",
+          "fonts": "WIP: Il selettore di font si aprirà qui in una versione futura.",
+          "colors": "WIP: Il selettore di colori si aprirà qui in una versione futura.",
+          "shortcuts": "WIP: Il selettore di scorciatoie da tastiera si aprirà qui in una versione futura."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Mostra PDF generato",
         "cancel_button": "Annulla",
         "close_aria": "Chiudi finestra PDF pesante per OCR"
+      },
+      "alerts": {
+        "start_error": "Si è verificato un errore durante l'avvio di estrazione. Controlla la console.",
+        "precondition_blocked": "Per avviare estrazione, chiudi tutte le finestre secondarie e arresta il cronometro.",
+        "precondition_error": "Si è verificato un errore durante il controllo delle precondizioni di estrazione. Controlla la console.",
+        "processing_locked": "L'estrazione è in corso. Le interazioni nella finestra principale sono bloccate fino al termine dell'elaborazione o finché non interrompi.",
+        "abort_error": "Si è verificato un errore durante la richiesta di interruzione di estrazione. Controlla la console.",
+        "cancellation_requested": "Annullamento richiesto. Attendi il completamento dell’estrazione corrente.",
+        "cancellation_complete": "Annullamento completato.",
+        "drop_invalid_file": "L'elemento rilasciato non è un file locale valido.",
+        "generated_pdf_cleanup_warning": "L’estrazione è terminata, ma non è stato possibile pulire automaticamente un PDF locale generato.",
+        "route_choice_error": "Si è verificato un errore durante la scelta del percorso di estrazione.",
+        "generated_pdf_reveal_failed": "Non è stato possibile mostrare il PDF salvato. Controlla se il file esiste ancora.",
+        "apply_error": "Si è verificato un errore durante l'applicazione del testo estratto. Controlla la console e riprova.",
+        "prepare_invalid": "La richiesta preparata di estrazione non è più valida. Avvia di nuovo il flusso.",
+        "unsupported_format": "Questo formato di file non è supportato per l’estrazione del testo.",
+        "pdf": {
+          "unreadable_or_corrupt": "Questo PDF è illeggibile o danneggiato. Controlla il file e riprova.",
+          "encrypted_or_password_protected": "Questo PDF è crittografato o protetto da password. Sbloccalo e riprova.",
+          "page_count_unavailable": "Non è stato possibile controllare il numero di pagine di questo PDF. Controlla il file e riprova.",
+          "page_selection_invalid": "L’intervallo di pagine PDF selezionato non è valido. Modifica l’intervallo e riprova.",
+          "subset_creation_failed": "Non è stato possibile creare il PDF delle pagine selezionate per l’estrazione. Controlla il file e riprova."
+        },
+        "ocr": {
+          "unavailable": "L'OCR non è disponibile. Controlla lo stato della configurazione/autenticazione e riprova.",
+          "activation_required": "È richiesta l'attivazione dell'OCR. Accedi a Google OCR e riprova.",
+          "activation_success": "Attivazione OCR completata. Nuovo tentativo di estrazione.",
+          "activation_cancelled": "L'attivazione OCR è stata annullata. L'estrazione non è proseguita.",
+          "token_state_invalid": "Lo stato di accesso Google OCR salvato non è valido. Ricollega Google OCR e riprova.",
+          "activation_failed": "L'attivazione OCR non è riuscita. Controlla lo stato della configurazione/autenticazione e riprova.",
+          "enable_success": "Google OCR è ora attivo.",
+          "enable_cancelled": "L’attivazione di Google OCR è stata annullata.",
+          "enable_failed": "Non è stato possibile attivare Google OCR. Controlla configurazione/stato di autenticazione e riprova.",
+          "disconnect_success": "Google OCR è stato disconnesso. Il token Google salvato è stato revocato e lo stato di accesso locale è stato rimosso.",
+          "disconnect_not_connected": "Google OCR non è attualmente connesso in questa istanza dell'app.",
+          "disconnect_failed": "Disconnessione di Google OCR non riuscita. Lo stato di accesso salvato non è stato rimosso.",
+          "connectivity_failed": "L'OCR richiede una connessione Internet. Controlla la connessione e riprova.",
+          "setup_missing_credentials": "Nella configurazione OCR manca credentials.json. Seleziona un file di credenziali Google OAuth valido e riprova.",
+          "setup_invalid_credentials": "Il file di credenziali selezionato non è valido per Google OAuth. Scegli un credentials.json valido e riprova.",
+          "quota_or_rate_limited": "L'OCR è temporaneamente bloccato da limiti di quota/frequenza. Attendi e riprova.",
+          "runtime_error": "Si è verificato un errore di esecuzione OCR durante estrazione. Controlla la console e riprova.",
+          "cancelled": "L'estrazione OCR è stata annullata.",
+          "cleanup_warning": "L'OCR e terminato, ma la pulizia temporanea remota del file non e riuscita. Controlla la tua cartella Google Drive."
+        },
+        "batch_ocr": {
+          "activation_required": "Questo lotto include elementi OCR, ma Google OCR non è attivo. Usa Preferenze > Attiva Google OCR, quindi riavvia il lotto.",
+          "token_state_invalid": "Questo lotto include elementi OCR, ma lo stato di accesso Google OCR salvato non è valido. Usa di nuovo Preferenze > Attiva Google OCR, quindi riavvia il lotto.",
+          "connectivity_failed": "Questo batch include elementi OCR, ma OCR richiede una connessione Internet. Controlla la connessione e riprova prima di avviare l'estrazione.",
+          "quota_or_rate_limited": "Questo batch include elementi OCR, ma OCR è temporaneamente bloccato da limiti di quota/frequenza. Attendi e riprova prima di avviare l'estrazione.",
+          "unavailable": "Questo lotto include elementi OCR, ma Google OCR non è disponibile al momento. Se OCR non è ancora attivo, usa Preferenze > Attiva Google OCR. Altrimenti controlla configurazione/stato OCR e riprova prima di avviare il lotto."
+        },
+        "native": {
+          "runtime_error": "Si è verificato un errore di esecuzione dell'estrazione nativa durante estrazione. Controlla la console e riprova.",
+          "unreadable_or_corrupt": "Il file selezionato è illeggibile o corrotto per l'estrazione nativa.",
+          "encrypted_or_password_protected": "Il PDF selezionato è cifrato o protetto da password e non può essere estratto nativamente.",
+          "cancelled": "L'estrazione nativa è stata annullata."
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "Aumenta dimensione del testo",
       "reset_text_size": "Reimposta dimensione del testo",
       "read_progress_label": "Letto",
-      "clear_title": "Svuota"
+      "clear_title": "Svuota",
+      "alerts": {
+        "start_failed": "L’Editor di Testo non è riuscito ad avviarsi.",
+        "start_timeout": "L’Editor di Testo ha impiegato troppo tempo ad avviarsi ed è stato chiuso.",
+        "paste_too_big": "Il testo è troppo grande per essere incollato direttamente. Usa i pulsanti della finestra principale.",
+        "drop_too_big": "Il testo trascinato è troppo grande. Usa i pulsanti della finestra principale per aggiungere grandi quantità di testo.",
+        "paste_no_text": "Gli appunti non contengono testo semplice.",
+        "drop_no_text": "Trascina e rilascia: nessun testo semplice rilevato.",
+        "type_limit": "Non è possibile scrivere più testo: dimensione massima raggiunta.",
+        "paste_limit": "Non è possibile incollare più testo: dimensione massima raggiunta.",
+        "drop_limit": "Impossibile rilasciare altro testo: dimensione massima raggiunta.",
+        "paste_truncated": "Il testo incollato è stato troncato perché supera la dimensione massima consentita.",
+        "drop_truncated": "Il testo trascinato ha superato lo spazio disponibile ed è stato troncato.",
+        "text_truncated": "Il testo è stato troncato per adattarsi al limite massimo dell'applicazione.",
+        "calc_error": "Si è verificato un errore durante il calcolo. Controlla la console."
+      }
     },
     "editor_find": {
       "input_placeholder": "Trova...",
@@ -242,6 +332,17 @@
       "replace_timeout": "La sostituzione ha richiesto troppo tempo. Riprova.",
       "status_no_matches": "Nessuna corrispondenza",
       "status_empty_query": "Digita per cercare"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot salvato.",
+        "save_error": "Impossibile salvare lo snapshot.",
+        "load_success": "Snapshot caricato.",
+        "load_error": "Impossibile caricare lo snapshot.",
+        "outside": "Lo snapshot deve essere all'interno della cartella degli snapshot.",
+        "truncated": "Lo snapshot supera la dimensione massima ed è stato troncato.",
+        "unavailable": "Funzionalità snapshot non disponibile."
+      }
     },
     "snapshot_save_tags": {
       "title": "Salva snapshot di testo",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "Continua"
         }
+      },
+      "alerts": {
+        "unavailable": "La funzionalità del test di velocità di lettura non è disponibile.",
+        "precondition_blocked": "Il test di velocità di lettura può iniziare solo da uno stato stabile dell'app. Chiudi le finestre secondarie e assicurati che il cronometro sia fermo.",
+        "pool_error": "Si è verificato un errore durante il controllo del pool del test di velocità di lettura.",
+        "no_matching_files": "Non restano file di test non usati che corrispondano alla selezione corrente.",
+        "visible_empty_bundled_hidden": "I file di test integrati sono nascosti e al momento non sono disponibili file di test visibili non utilizzati. Mostra di nuovo i file integrati oppure importa altri file per continuare.",
+        "current_text_empty": "Il testo corrente è vuoto. Carica o scrivi prima un testo prima di avviare il test con il testo corrente.",
+        "result_invalid": "Il risultato del test non ha potuto essere convertito in un WPM valido. Il flusso è terminato senza aprire la finestra del preset.",
+        "result_unavailable": "Non è stato possibile mostrare il risultato della velocità di lettura. Il flusso è continuato.",
+        "preset_unavailable": "La finestra del preset non ha potuto essere aperta dopo il test.",
+        "questions_unavailable": "La finestra delle domande di comprensione non ha potuto essere aperta. Il flusso è terminato prima della creazione del preset.",
+        "pool_import_failed": "Non è stato possibile importare i file del test di velocità di lettura.",
+        "start_failed": "Non è stato possibile avviare il test di velocità di lettura.",
+        "cancelled": "Il test di velocità di lettura è stato annullato.",
+        "cancelled_window_closed": "Il test di velocità di lettura è stato annullato perché una delle sue finestre di sessione è stata chiusa."
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "{remaining} caratteri rimanenti",
       "hint": "I preset personalizzati sono memorizzati nelle impostazioni utente.",
       "cancel": "Annulla",
-      "save": "Salva"
+      "save": "Salva",
+      "alerts": {
+        "unavailable": "La finestra di dialogo del preset non è disponibile in questa build dell’app.",
+        "open_error": "Si è verificato un errore durante l’apertura della finestra di dialogo del preset. Controlla la console.",
+        "name_empty": "Il nome non può essere vuoto.",
+        "wpm_invalid": "WPM deve essere un numero tra {min} e {max}.",
+        "create_error": "Si è verificato un errore durante la creazione del preset. Controlla la console.",
+        "edit_error": "Si è verificato un errore durante la modifica del preset. Controlla la console.",
+        "process_error": "Si è verificato un errore durante il processo del preset. Controlla la console."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Il preset selezionato non è stato trovato nella cache.",
+        "delete_error": "Si è verificato un errore durante l'eliminazione del preset. Controlla la console.",
+        "restore_error": "Si è verificato un errore durante il ripristino dei preset. Controlla la console.",
+        "open_folder_unsupported": "L'apertura dei preset non è supportata in questo ambiente.",
+        "open_folder_error": "Si è verificato un errore durante l'apertura dei preset. Controlla la console.",
+        "open_default_folder_failed": "Impossibile aprire la cartella dei preset predefiniti. Controlla la console per ulteriori dettagli."
+      }
     },
     "browser_extension": {
       "title": "Estensione del browser",
       "subtitle": "Tiempo de lectura",
       "availability": "Disponibile ora su Chrome. Altri browser in arrivo a breve.",
       "chrome_store_aria": "Apri la pagina Chrome Web Store dell'estensione",
-      "close_aria": "Chiudi la finestra di dialogo dell'estensione del browser"
-    },
-    "alerts": {
-      "clipboard_too_large": "Il testo degli appunti è troppo grande per essere elaborato. Riducilo e riprova.",
-      "apply_too_large": "Il testo diventerebbe troppo grande per essere applicato. Riducilo e riprova.",
-      "apply_truncated": "Il testo è stato troncato per rientrare nel limite dell'applicazione.",
-      "append_text_limit": "Impossibile aggiungere il testo: dimensione massima raggiunta.",
-      "overwrite_clipboard_error": "Si è verificato un errore durante la sostituzione del testo dagli appunti.",
-      "append_clipboard_error": "Si è verificato un errore durante l'aggiunta del testo dagli appunti.",
-      "clear_error": "Si è verificato un errore durante la cancellazione del testo. Controlla la console.",
-      "snapshot_save_success": "Snapshot salvato.",
-      "snapshot_save_error": "Impossibile salvare lo snapshot.",
-      "snapshot_load_success": "Snapshot caricato.",
-      "snapshot_load_error": "Impossibile caricare lo snapshot.",
-      "snapshot_outside": "Lo snapshot deve essere all'interno della cartella degli snapshot.",
-      "snapshot_truncated": "Lo snapshot supera la dimensione massima ed è stato troncato.",
-      "snapshot_unavailable": "Funzionalità snapshot non disponibile.",
-      "browser_extension_modal_open_blocked": "La finestra di dialogo dell’estensione del browser non può essere aperta in questo momento.",
-      "preset_not_found": "Il preset selezionato non è stato trovato nella cache.",
-      "preset_modal_unavailable": "La finestra di dialogo del preset non è disponibile in questa build dell’app.",
-      "preset_modal_open_error": "Si è verificato un errore durante l’apertura della finestra di dialogo del preset. Controlla la console.",
-      "delete_error": "Si è verificato un errore durante l'eliminazione del preset. Controlla la console.",
-      "restore_error": "Si è verificato un errore durante il ripristino dei preset. Controlla la console.",
-      "open_presets_unsupported": "L'apertura dei preset non è supportata in questo ambiente.",
-      "open_presets_error": "Si è verificato un errore durante l'apertura dei preset. Controlla la console.",
-      "open_presets_fail": "Impossibile aprire la cartella dei preset predefiniti. Controlla la console per ulteriori dettagli.",
-      "text_extraction_error": "Si è verificato un errore durante l'avvio di estrazione. Controlla la console.",
-      "text_extraction_precondition_blocked": "Per avviare estrazione, chiudi tutte le finestre secondarie e arresta il cronometro.",
-      "text_extraction_precondition_error": "Si è verificato un errore durante il controllo delle precondizioni di estrazione. Controlla la console.",
-      "text_extraction_processing_locked": "L'estrazione è in corso. Le interazioni nella finestra principale sono bloccate fino al termine dell'elaborazione o finché non interrompi.",
-      "current_text_processing_locked": "Il testo corrente è ancora in aggiornamento. Le interazioni della finestra principale restano bloccate finché il testo più recente non si stabilizza.",
-      "current_text_recount_locked": "I risultati del testo corrente sono ancora in fase di ricalcolo. Le interazioni della finestra principale restano bloccate finché l’ultimo ricalcolo non si stabilizza.",
-      "text_extraction_abort_error": "Si è verificato un errore durante la richiesta di interruzione di estrazione. Controlla la console.",
-      "text_extraction_cancellation_requested": "Annullamento richiesto. Attendi il completamento dell’estrazione corrente.",
-      "text_extraction_cancellation_complete": "Annullamento completato.",
-      "text_extraction_drop_invalid_file": "L'elemento rilasciato non è un file locale valido.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Questo PDF è illeggibile o danneggiato. Controlla il file e riprova.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Questo PDF è crittografato o protetto da password. Sbloccalo e riprova.",
-      "text_extraction_pdf_page_count_unavailable": "Non è stato possibile controllare il numero di pagine di questo PDF. Controlla il file e riprova.",
-      "text_extraction_pdf_page_selection_invalid": "L’intervallo di pagine PDF selezionato non è valido. Modifica l’intervallo e riprova.",
-      "text_extraction_pdf_subset_creation_failed": "Non è stato possibile creare il PDF delle pagine selezionate per l’estrazione. Controlla il file e riprova.",
-      "text_extraction_generated_pdf_cleanup_warning": "L’estrazione è terminata, ma non è stato possibile pulire automaticamente un PDF locale generato.",
-      "text_extraction_route_choice_error": "Si è verificato un errore durante la scelta del percorso di estrazione.",
-      "text_extraction_generated_pdf_reveal_failed": "Non è stato possibile mostrare il PDF salvato. Controlla se il file esiste ancora.",
-      "text_extraction_apply_error": "Si è verificato un errore durante l'applicazione del testo estratto. Controlla la console e riprova.",
-      "text_extraction_prepare_invalid": "La richiesta preparata di estrazione non è più valida. Avvia di nuovo il flusso.",
-      "text_extraction_batch_ocr_activation_required": "Questo lotto include elementi OCR, ma Google OCR non è attivo. Usa Preferenze > Attiva Google OCR, quindi riavvia il lotto.",
-      "text_extraction_batch_ocr_token_state_invalid": "Questo lotto include elementi OCR, ma lo stato di accesso Google OCR salvato non è valido. Usa di nuovo Preferenze > Attiva Google OCR, quindi riavvia il lotto.",
-      "text_extraction_batch_ocr_connectivity_failed": "Questo batch include elementi OCR, ma OCR richiede una connessione Internet. Controlla la connessione e riprova prima di avviare l'estrazione.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Questo batch include elementi OCR, ma OCR è temporaneamente bloccato da limiti di quota/frequenza. Attendi e riprova prima di avviare l'estrazione.",
-      "text_extraction_batch_ocr_unavailable": "Questo lotto include elementi OCR, ma Google OCR non è disponibile al momento. Se OCR non è ancora attivo, usa Preferenze > Attiva Google OCR. Altrimenti controlla configurazione/stato OCR e riprova prima di avviare il lotto.",
-      "text_extraction_ocr_unavailable": "L'OCR non è disponibile. Controlla lo stato della configurazione/autenticazione e riprova.",
-      "text_extraction_ocr_activation_required": "È richiesta l'attivazione dell'OCR. Accedi a Google OCR e riprova.",
-      "text_extraction_ocr_activation_success": "Attivazione OCR completata. Nuovo tentativo di estrazione.",
-      "text_extraction_ocr_activation_cancelled": "L'attivazione OCR è stata annullata. L'estrazione non è proseguita.",
-      "text_extraction_ocr_token_state_invalid": "Lo stato di accesso Google OCR salvato non è valido. Ricollega Google OCR e riprova.",
-      "text_extraction_ocr_activation_failed": "L'attivazione OCR non è riuscita. Controlla lo stato della configurazione/autenticazione e riprova.",
-      "text_extraction_ocr_enable_success": "Google OCR è ora attivo.",
-      "text_extraction_ocr_enable_cancelled": "L’attivazione di Google OCR è stata annullata.",
-      "text_extraction_ocr_enable_failed": "Non è stato possibile attivare Google OCR. Controlla configurazione/stato di autenticazione e riprova.",
-      "text_extraction_ocr_disconnect_success": "Google OCR è stato disconnesso. Il token Google salvato è stato revocato e lo stato di accesso locale è stato rimosso.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR non è attualmente connesso in questa istanza dell'app.",
-      "text_extraction_ocr_disconnect_failed": "Disconnessione di Google OCR non riuscita. Lo stato di accesso salvato non è stato rimosso.",
-      "text_extraction_ocr_connectivity_failed": "L'OCR richiede una connessione Internet. Controlla la connessione e riprova.",
-      "text_extraction_ocr_setup_missing_credentials": "Nella configurazione OCR manca credentials.json. Seleziona un file di credenziali Google OAuth valido e riprova.",
-      "text_extraction_ocr_setup_invalid_credentials": "Il file di credenziali selezionato non è valido per Google OAuth. Scegli un credentials.json valido e riprova.",
-      "text_extraction_ocr_quota_or_rate_limited": "L'OCR è temporaneamente bloccato da limiti di quota/frequenza. Attendi e riprova.",
-      "text_extraction_ocr_runtime_error": "Si è verificato un errore di esecuzione OCR durante estrazione. Controlla la console e riprova.",
-      "text_extraction_ocr_cancelled": "L'estrazione OCR è stata annullata.",
-      "text_extraction_ocr_cleanup_warning": "L'OCR e terminato, ma la pulizia temporanea remota del file non e riuscita. Controlla la tua cartella Google Drive.",
-      "text_extraction_native_runtime_error": "Si è verificato un errore di esecuzione dell'estrazione nativa durante estrazione. Controlla la console e riprova.",
-      "text_extraction_native_unreadable_or_corrupt": "Il file selezionato è illeggibile o corrotto per l'estrazione nativa.",
-      "text_extraction_native_encrypted_or_password_protected": "Il PDF selezionato è cifrato o protetto da password e non può essere estratto nativamente.",
-      "text_extraction_native_cancelled": "L'estrazione nativa è stata annullata.",
-      "text_extraction_unsupported_format": "Questo formato di file non è supportato per l’estrazione del testo.",
-      "wip_diseno_skins": "WIP: Il selettore di skin si aprirà qui in una versione futura.",
-      "wip_diseno_crono": "WIP: I parametri del cronometro fluttuante si apriranno qui in una versione futura.",
-      "wip_diseno_fuentes": "WIP: Il selettore di font si aprirà qui in una versione futura.",
-      "wip_diseno_colores": "WIP: Il selettore di colori si aprirà qui in una versione futura.",
-      "wip_shortcuts": "WIP: Il selettore di scorciatoie da tastiera si aprirà qui in una versione futura.",
-      "reading_test_unavailable": "La funzionalità del test di velocità di lettura non è disponibile.",
-      "reading_test_precondition_blocked": "Il test di velocità di lettura può iniziare solo da uno stato stabile dell'app. Chiudi le finestre secondarie e assicurati che il cronometro sia fermo.",
-      "reading_test_pool_error": "Si è verificato un errore durante il controllo del pool del test di velocità di lettura.",
-      "reading_test_no_matching_files": "Non restano file di test non usati che corrispondano alla selezione corrente.",
-      "reading_test_visible_empty_bundled_hidden": "I file di test integrati sono nascosti e al momento non sono disponibili file di test visibili non utilizzati. Mostra di nuovo i file integrati oppure importa altri file per continuare.",
-      "reading_test_current_text_empty": "Il testo corrente è vuoto. Carica o scrivi prima un testo prima di avviare il test con il testo corrente.",
-      "reading_test_result_invalid": "Il risultato del test non ha potuto essere convertito in un WPM valido. Il flusso è terminato senza aprire la finestra del preset.",
-      "reading_test_result_unavailable": "Non è stato possibile mostrare il risultato della velocità di lettura. Il flusso è continuato.",
-      "reading_test_preset_unavailable": "La finestra del preset non ha potuto essere aperta dopo il test.",
-      "reading_test_questions_unavailable": "La finestra delle domande di comprensione non ha potuto essere aperta. Il flusso è terminato prima della creazione del preset.",
-      "reading_test_pool_import_failed": "Non è stato possibile importare i file del test di velocità di lettura.",
-      "reading_test_start_failed": "Non è stato possibile avviare il test di velocità di lettura.",
-      "text_editor_start_failed": "L’Editor di Testo non è riuscito ad avviarsi.",
-      "text_editor_start_timeout": "L’Editor di Testo ha impiegato troppo tempo ad avviarsi ed è stato chiuso.",
-      "reading_test_cancelled": "Il test di velocità di lettura è stato annullato.",
-      "reading_test_cancelled_window_closed": "Il test di velocità di lettura è stato annullato perché una delle sue finestre di sessione è stata chiusa."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Il testo è troppo grande per essere incollato direttamente. Usa i pulsanti della finestra principale.",
-      "drop_too_big": "Il testo trascinato è troppo grande. Usa i pulsanti della finestra principale per aggiungere grandi quantità di testo.",
-      "paste_no_text": "Gli appunti non contengono testo semplice.",
-      "drop_no_text": "Trascina e rilascia: nessun testo semplice rilevato.",
-      "type_limit": "Non è possibile scrivere più testo: dimensione massima raggiunta.",
-      "paste_limit": "Non è possibile incollare più testo: dimensione massima raggiunta.",
-      "drop_limit": "Impossibile rilasciare altro testo: dimensione massima raggiunta.",
-      "paste_truncated": "Il testo incollato è stato troncato perché supera la dimensione massima consentita.",
-      "drop_truncated": "Il testo trascinato ha superato lo spazio disponibile ed è stato troncato.",
-      "text_truncated": "Il testo è stato troncato per adattarsi al limite massimo dell'applicazione.",
-      "calc_error": "Si è verificato un errore durante il calcolo. Controlla la console."
-    },
-    "preset_alerts": {
-      "name_empty": "Il nome non può essere vuoto.",
-      "wpm_invalid": "WPM deve essere un numero tra {min} e {max}.",
-      "create_error": "Si è verificato un errore durante la creazione del preset. Controlla la console.",
-      "edit_error": "Si è verificato un errore durante la modifica del preset. Controlla la console.",
-      "process_error": "Si è verificato un errore durante il processo del preset. Controlla la console."
+      "close_aria": "Chiudi la finestra di dialogo dell'estensione del browser",
+      "alerts": {
+        "modal_open_blocked": "La finestra di dialogo dell’estensione del browser non può essere aperta in questo momento."
+      }
     },
     "info": {
       "loading": "Caricamento...",

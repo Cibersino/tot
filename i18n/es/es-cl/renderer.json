@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Tiempo corrido: ",
         "text_extraction_drop_here": "Suelta el archivo pa sacarle texto"
+      },
+      "alerts": {
+        "clipboard_too_large": "Chaaa, el texto del portapapeles es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
+        "apply_too_large": "El texto quedaría demasiado guatón pa aplicarlo. Achícalo y prueba de nuevo.",
+        "apply_truncated": "El texto fue mochao pa que cupiera en el límite de la app.",
+        "append_text_limit": "No se puede seguir agregando texto: ya se llenó la custión.",
+        "overwrite_clipboard_error": "Cagó el reemplazo con lo del portapapeles.",
+        "append_clipboard_error": "Cagó agregar lo del portapapeles.",
+        "clear_error": "No te lo pudiste pitiar. Lorea la consola.",
+        "current_text_processing_locked": "El texto actual todavía se está actualizando. La ventana principal queda bloqueada hasta que el texto más reciente se asiente.",
+        "current_text_recount_locked": "Los resultados del texto actual todavía se están recalculando. La ventana principal queda bloqueada hasta que el último reconteo se asiente.",
+        "wip": {
+          "design_skins": "WIP: Aquí vamos a cambiar las pilchas.",
+          "floating_stopwatch": "WIP: Aquí vamos a arreglar el reloj porfiado.",
+          "fonts": "WIP: Aquí elegís el tipo de letra.",
+          "colors": "WIP: Aquí le tirái pintura.",
+          "shortcuts": "WIP: Aquí configurái los atajos del teclao."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Mostrar PDF generado",
         "cancel_button": "Cancelar",
         "close_aria": "Cerrar diálogo de PDF pesao pa' OCR"
+      },
+      "alerts": {
+        "start_error": "Cagó la custión al partir la extracción. Lorea la consola.",
+        "precondition_blocked": "Pa' partir extracción, cierra toas las ventanas chicas y para el cronómetro.",
+        "precondition_error": "Cagó la revisión de precondiciones de extracción. Lorea la consola.",
+        "processing_locked": "La extracción está andando. La ventana principal queda bloqueada hasta que termine la cosa o la abortís.",
+        "abort_error": "Cagó la custión al pedir el aborto de extracción. Lorea la consola.",
+        "cancellation_requested": "Cancelación pedida. Espera a que termine la extracción actual, no seas ansioso.",
+        "cancellation_complete": "Cancelación lista.",
+        "drop_invalid_file": "La custión que soltaste no es un archivo local válido.",
+        "generated_pdf_cleanup_warning": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
+        "route_choice_error": "Cagó la elección de ruta de extracción.",
+        "generated_pdf_reveal_failed": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
+        "apply_error": "Cagó la custión al aplicar el texto extraído. Lorea la consola y prueba otra vez.",
+        "prepare_invalid": "La solicitud preparada de extracción ya no sirve. Parte la movida de nuevo.",
+        "unsupported_format": "Este formato de archivo no apaña pa’ extraer texto.",
+        "pdf": {
+          "unreadable_or_corrupt": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
+          "encrypted_or_password_protected": "Este PDF está cifrado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
+          "page_count_unavailable": "No fue posible inspeccionar el conteo de páginas de este PDF. Revisa el archivo y vuelve a intentarlo.",
+          "page_selection_invalid": "El rango de páginas seleccionado para el PDF es inválido. Ajusta el rango y vuelve a intentarlo.",
+          "subset_creation_failed": "No fue posible crear el PDF de páginas seleccionadas para la extracción. Revisa el archivo y vuelve a intentarlo."
+        },
+        "ocr": {
+          "unavailable": "OCR no está disponible. Revisa setup/auth y prueba otra vez.",
+          "activation_required": "Hay que activar OCR. Inicia sesión en Google OCR y prueba de nuevo.",
+          "activation_success": "La activación OCR quedó lista. Reintentando la extracción.",
+          "activation_cancelled": "La activación OCR quedó cancelada. La extracción no siguió.",
+          "token_state_invalid": "El estado guardado de inicio de sesión de Google OCR no sirve. Activa la lesera de nuevo.",
+          "activation_failed": "Falló la activación OCR. Revisa setup/auth y prueba otra vez.",
+          "enable_success": "Google OCR quedó enchufado.",
+          "enable_cancelled": "La activación de Google OCR quedó cancelada.",
+          "enable_failed": "No se pudo enchufar Google OCR. Revisa setup/auth y prueba otra vez.",
+          "disconnect_success": "Google OCR quedó desconectado. Se revocó el token guardado de Google y se borró el estado local de inicio de sesión.",
+          "disconnect_not_connected": "Google OCR no está conectado en esta instancia de la app.",
+          "disconnect_failed": "Falló la desconexión de Google OCR. El estado guardado de inicio de sesión no se borró.",
+          "connectivity_failed": "OCR necesita internet. Revisa la conexión y prueba otra vez.",
+          "setup_missing_credentials": "Falta credentials.json pa' OCR. Elige un archivo válido de credenciales OAuth de Google y prueba otra vez.",
+          "setup_invalid_credentials": "El archivo de credenciales elegido no sirve pa' Google OAuth. Elige un credentials.json válido y prueba de nuevo.",
+          "quota_or_rate_limited": "OCR quedó bloqueado por cuota o rate limit. Espera un rato y prueba otra vez.",
+          "runtime_error": "Hubo un cagazo en la ejecución OCR durante la extracción. Lorea la consola y prueba otra vez.",
+          "cancelled": "La extracción OCR quedó cancelada.",
+          "cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive."
+        },
+        "batch_ocr": {
+          "activation_required": "Este lote trae elementos con OCR, pero Google OCR no está enchufado. Usa A tu pinta > Enchufar Google OCR y después parte el lote de nuevo.",
+          "token_state_invalid": "Este lote trae elementos con OCR, pero el login guardado de Google OCR salió chueco. Usa A tu pinta > Enchufar Google OCR de nuevo y después parte el lote de nuevo.",
+          "connectivity_failed": "Este lote trae custiones con OCR, pero OCR necesita internet. Revisa la conexión y prueba de nuevo antes de partir la extracción.",
+          "quota_or_rate_limited": "Este lote trae custiones con OCR, pero OCR está bloqueado un rato por cuota/límite de uso. Espera y prueba de nuevo antes de partir la extracción.",
+          "unavailable": "Este lote trae elementos con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está enchufado, usa A tu pinta > Enchufar Google OCR. Si ya estaba enchufado, revisa setup/auth de OCR y prueba otra vez antes de partir el lote."
+        },
+        "native": {
+          "runtime_error": "Hubo un cagazo en la extracción nativa durante la extracción. Lorea la consola y prueba otra vez.",
+          "unreadable_or_corrupt": "El archivo elegido no se puede leer o está hecho bolsa pa' extracción nativa.",
+          "encrypted_or_password_protected": "El PDF elegido viene cifrado o con contraseña, así que no se puede sacar por la ruta nativa.",
+          "cancelled": "La extracción nativa quedó cancelada."
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "Agrandar el texto",
       "reset_text_size": "Dejar el tamaño como estaba",
       "read_progress_label": "Leído",
-      "clear_title": "Pitiarse too"
+      "clear_title": "Pitiarse too",
+      "alerts": {
+        "start_failed": "No se pudo iniciar el Editor de Texto.",
+        "start_timeout": "El Editor de Texto se demoró demasiado en partir y se cerró.",
+        "paste_too_big": "La custión es muy grande. Usa los botones de afuera.",
+        "drop_too_big": "Tiraste mucha info. Usa los botones de afuera.",
+        "paste_no_text": "No tenís nada de texto copiao, está pelao.",
+        "drop_no_text": "Lo que tiraste no tiene niuna letra.",
+        "type_limit": "Ya no podís escribir más, se llenó.",
+        "paste_limit": "Ya no podís pegar más, se llenó.",
+        "drop_limit": "Ya no podís soltar más texto, se llenó.",
+        "paste_truncated": "Se cortó el texto pa' que cupiera.",
+        "drop_truncated": "Lo que tiraste estaba muy largo y lo mochamos.",
+        "text_truncated": "Mochamos el texto pa' que entre en la aplicación.",
+        "calc_error": "Cagaron las matemáticas. Lorea la consola."
+      }
     },
     "editor_find": {
       "input_placeholder": "Pilla algo...",
@@ -242,6 +332,17 @@
       "replace_timeout": "La custión de reemplazo se demoró mucho. Inténtalo de nuevo.",
       "status_no_matches": "No pillamos niuna custión",
       "status_empty_query": "Escribe algo po"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Coso salvado.",
+        "save_error": "No se pudo salvar el coso.",
+        "load_success": "Coso cargado.",
+        "load_error": "No se pudo cargar el coso.",
+        "outside": "El coso debe estar aentro de la carpeta de cosos.",
+        "truncated": "El coso se extralimitó y fue mochao.",
+        "unavailable": "Funcionalidad del coso no disponible."
+      }
     },
     "snapshot_save_tags": {
       "title": "Salvar coso de texto",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "Continuar"
         }
+      },
+      "alerts": {
+        "unavailable": "El test de ritmo de lectura no está disponible.",
+        "precondition_blocked": "Pa' partir el test de ritmo de lectura, cierra toas las ventanas chicas y para el cronómetro.",
+        "pool_error": "Cagó la carga del pool de archivos pal' test de ritmo de lectura.",
+        "no_matching_files": "No quedan archivos de test sin usar que calcen con la selección actual.",
+        "visible_empty_bundled_hidden": "Los archivos de test integrados están ocultos y no hay archivos visibles sin usar. Muéstralos de nuevo o importa más archivos pa' seguir.",
+        "current_text_empty": "El texto actual está pelao. Llenalo con algo y prueba de nuevo, o elige iniciar el test con un archivo del pool.",
+        "result_invalid": "El resultado del test no pudo pasar a un WPM válido. La vuelta terminó sin abrir el modal del preset.",
+        "result_unavailable": "No se pudo mostrar el resultado de ritmo de lectura. La vuelta siguió igual.",
+        "preset_unavailable": "No se pudo abrir el modal del preset después del test.",
+        "questions_unavailable": "No se pudo abrir el modal de preguntas de comprensión lectora. La vuelta terminó antes de crear el preset.",
+        "pool_import_failed": "No se pudieron importar los archivos del test de ritmo de lectura.",
+        "start_failed": "Cagó el inicio del test de ritmo de lectura.",
+        "cancelled": "El test de ritmo de lectura fue cancelado.",
+        "cancelled_window_closed": "El test se canceló porque se cerró una de las ventanas necesarias pa' hacerlo."
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "Te quedan {remaining} letras",
       "hint": "Los presets quedan guardaos en el sistema.",
       "cancel": "Ni cagando",
-      "save": "Guardar"
+      "save": "Guardar",
+      "alerts": {
+        "unavailable": "La ventanita de preset no está disponible en esta build de la app.",
+        "open_error": "Se fue a negro abriendo el diálogo del preset. Revisa la consola.",
+        "name_empty": "No podís dejar el nombre vacío.",
+        "wpm_invalid": "El WPM tiene que ser entre {min} y {max}, no seas pajarón.",
+        "create_error": "Cagó la creación del preset. Lorea la consola.",
+        "edit_error": "Mala volá al editar el preset. Lorea la consola.",
+        "process_error": "Drama al procesar el preset. Lorea la consola."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "No pillamos el preset en la caleta.",
+        "delete_error": "No se pudo borrar el preset. Lorea la consola.",
+        "restore_error": "Cagó el reseteo de los presets. Lorea la consola.",
+        "open_folder_unsupported": "No se puede abrir la carpeta aquí, hno.",
+        "open_folder_error": "Drama al intentar abrir la carpeta. Lorea la consola.",
+        "open_default_folder_failed": "No pudimos abrir la carpeta de presets. Lorea la consola."
+      }
     },
     "browser_extension": {
       "title": "Extensión pal navegador",
       "subtitle": "Tiempo de lectura",
       "availability": "Disponible al tiro en Chrome. Más navegadores pronto.",
       "chrome_store_aria": "Abrir la página de la extensión en Chrome Web Store",
-      "close_aria": "Cerrar diálogo de extensión pal navegador"
-    },
-    "alerts": {
-      "clipboard_too_large": "Chaaa, el texto del portapapeles es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
-      "apply_too_large": "El texto quedaría demasiado guatón pa aplicarlo. Achícalo y prueba de nuevo.",
-      "apply_truncated": "El texto fue mochao pa que cupiera en el límite de la app.",
-      "append_text_limit": "No se puede seguir agregando texto: ya se llenó la custión.",
-      "overwrite_clipboard_error": "Cagó el reemplazo con lo del portapapeles.",
-      "append_clipboard_error": "Cagó agregar lo del portapapeles.",
-      "clear_error": "No te lo pudiste pitiar. Lorea la consola.",
-      "snapshot_save_success": "Coso salvado.",
-      "snapshot_save_error": "No se pudo salvar el coso.",
-      "snapshot_load_success": "Coso cargado.",
-      "snapshot_load_error": "No se pudo cargar el coso.",
-      "snapshot_outside": "El coso debe estar aentro de la carpeta de cosos.",
-      "snapshot_truncated": "El coso se extralimitó y fue mochao.",
-      "snapshot_unavailable": "Funcionalidad del coso no disponible.",
-      "browser_extension_modal_open_blocked": "La ventanita de la extensión del navegador no se puede abrir ahora mismo.",
-      "preset_not_found": "No pillamos el preset en la caleta.",
-      "preset_modal_unavailable": "La ventanita de preset no está disponible en esta build de la app.",
-      "preset_modal_open_error": "Se fue a negro abriendo el diálogo del preset. Revisa la consola.",
-      "delete_error": "No se pudo borrar el preset. Lorea la consola.",
-      "restore_error": "Cagó el reseteo de los presets. Lorea la consola.",
-      "open_presets_unsupported": "No se puede abrir la carpeta aquí, hno.",
-      "open_presets_error": "Drama al intentar abrir la carpeta. Lorea la consola.",
-      "open_presets_fail": "No pudimos abrir la carpeta de presets. Lorea la consola.",
-      "text_extraction_error": "Cagó la custión al partir la extracción. Lorea la consola.",
-      "text_extraction_precondition_blocked": "Pa' partir extracción, cierra toas las ventanas chicas y para el cronómetro.",
-      "text_extraction_precondition_error": "Cagó la revisión de precondiciones de extracción. Lorea la consola.",
-      "text_extraction_processing_locked": "La extracción está andando. La ventana principal queda bloqueada hasta que termine la cosa o la abortís.",
-      "current_text_processing_locked": "El texto actual todavía se está actualizando. La ventana principal queda bloqueada hasta que el texto más reciente se asiente.",
-      "current_text_recount_locked": "Los resultados del texto actual todavía se están recalculando. La ventana principal queda bloqueada hasta que el último reconteo se asiente.",
-      "text_extraction_abort_error": "Cagó la custión al pedir el aborto de extracción. Lorea la consola.",
-      "text_extraction_cancellation_requested": "Cancelación pedida. Espera a que termine la extracción actual, no seas ansioso.",
-      "text_extraction_cancellation_complete": "Cancelación lista.",
-      "text_extraction_drop_invalid_file": "La custión que soltaste no es un archivo local válido.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Este PDF está cifrado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
-      "text_extraction_pdf_page_count_unavailable": "No fue posible inspeccionar el conteo de páginas de este PDF. Revisa el archivo y vuelve a intentarlo.",
-      "text_extraction_pdf_page_selection_invalid": "El rango de páginas seleccionado para el PDF es inválido. Ajusta el rango y vuelve a intentarlo.",
-      "text_extraction_pdf_subset_creation_failed": "No fue posible crear el PDF de páginas seleccionadas para la extracción. Revisa el archivo y vuelve a intentarlo.",
-      "text_extraction_generated_pdf_cleanup_warning": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
-      "text_extraction_route_choice_error": "Cagó la elección de ruta de extracción.",
-      "text_extraction_generated_pdf_reveal_failed": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
-      "text_extraction_apply_error": "Cagó la custión al aplicar el texto extraído. Lorea la consola y prueba otra vez.",
-      "text_extraction_prepare_invalid": "La solicitud preparada de extracción ya no sirve. Parte la movida de nuevo.",
-      "text_extraction_batch_ocr_activation_required": "Este lote trae elementos con OCR, pero Google OCR no está enchufado. Usa A tu pinta > Enchufar Google OCR y después parte el lote de nuevo.",
-      "text_extraction_batch_ocr_token_state_invalid": "Este lote trae elementos con OCR, pero el login guardado de Google OCR salió chueco. Usa A tu pinta > Enchufar Google OCR de nuevo y después parte el lote de nuevo.",
-      "text_extraction_batch_ocr_connectivity_failed": "Este lote trae custiones con OCR, pero OCR necesita internet. Revisa la conexión y prueba de nuevo antes de partir la extracción.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Este lote trae custiones con OCR, pero OCR está bloqueado un rato por cuota/límite de uso. Espera y prueba de nuevo antes de partir la extracción.",
-      "text_extraction_batch_ocr_unavailable": "Este lote trae elementos con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está enchufado, usa A tu pinta > Enchufar Google OCR. Si ya estaba enchufado, revisa setup/auth de OCR y prueba otra vez antes de partir el lote.",
-      "text_extraction_ocr_unavailable": "OCR no está disponible. Revisa setup/auth y prueba otra vez.",
-      "text_extraction_ocr_activation_required": "Hay que activar OCR. Inicia sesión en Google OCR y prueba de nuevo.",
-      "text_extraction_ocr_activation_success": "La activación OCR quedó lista. Reintentando la extracción.",
-      "text_extraction_ocr_activation_cancelled": "La activación OCR quedó cancelada. La extracción no siguió.",
-      "text_extraction_ocr_token_state_invalid": "El estado guardado de inicio de sesión de Google OCR no sirve. Activa la lesera de nuevo.",
-      "text_extraction_ocr_activation_failed": "Falló la activación OCR. Revisa setup/auth y prueba otra vez.",
-      "text_extraction_ocr_enable_success": "Google OCR quedó enchufado.",
-      "text_extraction_ocr_enable_cancelled": "La activación de Google OCR quedó cancelada.",
-      "text_extraction_ocr_enable_failed": "No se pudo enchufar Google OCR. Revisa setup/auth y prueba otra vez.",
-      "text_extraction_ocr_disconnect_success": "Google OCR quedó desconectado. Se revocó el token guardado de Google y se borró el estado local de inicio de sesión.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR no está conectado en esta instancia de la app.",
-      "text_extraction_ocr_disconnect_failed": "Falló la desconexión de Google OCR. El estado guardado de inicio de sesión no se borró.",
-      "text_extraction_ocr_connectivity_failed": "OCR necesita internet. Revisa la conexión y prueba otra vez.",
-      "text_extraction_ocr_setup_missing_credentials": "Falta credentials.json pa' OCR. Elige un archivo válido de credenciales OAuth de Google y prueba otra vez.",
-      "text_extraction_ocr_setup_invalid_credentials": "El archivo de credenciales elegido no sirve pa' Google OAuth. Elige un credentials.json válido y prueba de nuevo.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR quedó bloqueado por cuota o rate limit. Espera un rato y prueba otra vez.",
-      "text_extraction_ocr_runtime_error": "Hubo un cagazo en la ejecución OCR durante la extracción. Lorea la consola y prueba otra vez.",
-      "text_extraction_ocr_cancelled": "La extracción OCR quedó cancelada.",
-      "text_extraction_ocr_cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
-      "text_extraction_native_runtime_error": "Hubo un cagazo en la extracción nativa durante la extracción. Lorea la consola y prueba otra vez.",
-      "text_extraction_native_unreadable_or_corrupt": "El archivo elegido no se puede leer o está hecho bolsa pa' extracción nativa.",
-      "text_extraction_native_encrypted_or_password_protected": "El PDF elegido viene cifrado o con contraseña, así que no se puede sacar por la ruta nativa.",
-      "text_extraction_native_cancelled": "La extracción nativa quedó cancelada.",
-      "text_extraction_unsupported_format": "Este formato de archivo no apaña pa’ extraer texto.",
-      "wip_diseno_skins": "WIP: Aquí vamos a cambiar las pilchas.",
-      "wip_diseno_crono": "WIP: Aquí vamos a arreglar el reloj porfiado.",
-      "wip_diseno_fuentes": "WIP: Aquí elegís el tipo de letra.",
-      "wip_diseno_colores": "WIP: Aquí le tirái pintura.",
-      "wip_shortcuts": "WIP: Aquí configurái los atajos del teclao.",
-      "reading_test_unavailable": "El test de ritmo de lectura no está disponible.",
-      "reading_test_precondition_blocked": "Pa' partir el test de ritmo de lectura, cierra toas las ventanas chicas y para el cronómetro.",
-      "reading_test_pool_error": "Cagó la carga del pool de archivos pal' test de ritmo de lectura.",
-      "reading_test_no_matching_files": "No quedan archivos de test sin usar que calcen con la selección actual.",
-      "reading_test_visible_empty_bundled_hidden": "Los archivos de test integrados están ocultos y no hay archivos visibles sin usar. Muéstralos de nuevo o importa más archivos pa' seguir.",
-      "reading_test_current_text_empty": "El texto actual está pelao. Llenalo con algo y prueba de nuevo, o elige iniciar el test con un archivo del pool.",
-      "reading_test_result_invalid": "El resultado del test no pudo pasar a un WPM válido. La vuelta terminó sin abrir el modal del preset.",
-      "reading_test_result_unavailable": "No se pudo mostrar el resultado de ritmo de lectura. La vuelta siguió igual.",
-      "reading_test_preset_unavailable": "No se pudo abrir el modal del preset después del test.",
-      "reading_test_questions_unavailable": "No se pudo abrir el modal de preguntas de comprensión lectora. La vuelta terminó antes de crear el preset.",
-      "reading_test_pool_import_failed": "No se pudieron importar los archivos del test de ritmo de lectura.",
-      "reading_test_start_failed": "Cagó el inicio del test de ritmo de lectura.",
-      "text_editor_start_failed": "No se pudo iniciar el Editor de Texto.",
-      "text_editor_start_timeout": "El Editor de Texto se demoró demasiado en partir y se cerró.",
-      "reading_test_cancelled": "El test de ritmo de lectura fue cancelado.",
-      "reading_test_cancelled_window_closed": "El test se canceló porque se cerró una de las ventanas necesarias pa' hacerlo."
-    },
-    "editor_alerts": {
-      "paste_too_big": "La custión es muy grande. Usa los botones de afuera.",
-      "drop_too_big": "Tiraste mucha info. Usa los botones de afuera.",
-      "paste_no_text": "No tenís nada de texto copiao, está pelao.",
-      "drop_no_text": "Lo que tiraste no tiene niuna letra.",
-      "type_limit": "Ya no podís escribir más, se llenó.",
-      "paste_limit": "Ya no podís pegar más, se llenó.",
-      "drop_limit": "Ya no podís soltar más texto, se llenó.",
-      "paste_truncated": "Se cortó el texto pa' que cupiera.",
-      "drop_truncated": "Lo que tiraste estaba muy largo y lo mochamos.",
-      "text_truncated": "Mochamos el texto pa' que entre en la aplicación.",
-      "calc_error": "Cagaron las matemáticas. Lorea la consola."
-    },
-    "preset_alerts": {
-      "name_empty": "No podís dejar el nombre vacío.",
-      "wpm_invalid": "El WPM tiene que ser entre {min} y {max}, no seas pajarón.",
-      "create_error": "Cagó la creación del preset. Lorea la consola.",
-      "edit_error": "Mala volá al editar el preset. Lorea la consola.",
-      "process_error": "Drama al procesar el preset. Lorea la consola."
+      "close_aria": "Cerrar diálogo de extensión pal navegador",
+      "alerts": {
+        "modal_open_blocked": "La ventanita de la extensión del navegador no se puede abrir ahora mismo."
+      }
     },
     "info": {
       "loading": "Cargando...",

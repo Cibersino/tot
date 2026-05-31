@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "已用时间：",
         "text_extraction_drop_here": "拖放文件以提取文本"
+      },
+      "alerts": {
+        "clipboard_too_large": "剪贴板文本过大，无法处理。请减少内容后重试。",
+        "apply_too_large": "应用后文本会变得过大。请缩短后重试。",
+        "apply_truncated": "文本已被截断以符合应用程序限制。",
+        "append_text_limit": "无法追加文本：已达到最大大小。",
+        "overwrite_clipboard_error": "从剪贴板替换文本时发生错误。",
+        "append_clipboard_error": "从剪贴板追加文本时发生错误。",
+        "clear_error": "清空文本时发生错误。请检查控制台。",
+        "current_text_processing_locked": "当前文本仍在更新。在最新文本稳定之前，主窗口交互将被锁定。",
+        "current_text_recount_locked": "当前文本结果仍在重新计算。在最新重新计数稳定之前，主窗口交互将被锁定。",
+        "wip": {
+          "design_skins": "WIP：皮肤选择器将在未来版本中从这里打开。",
+          "floating_stopwatch": "WIP：悬浮秒表设置将在未来版本中从这里打开。",
+          "fonts": "WIP：字体选择器将在未来版本中从这里打开。",
+          "colors": "WIP：颜色选择器将在未来版本中从这里打开。",
+          "shortcuts": "WIP：键盘快捷键选择器将在未来版本中从这里打开。"
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "显示生成的 PDF",
         "cancel_button": "取消",
         "close_aria": "关闭 OCR 大型 PDF 对话框"
+      },
+      "alerts": {
+        "start_error": "启动提取时发生错误。请检查控制台。",
+        "precondition_blocked": "要启动提取，请关闭所有次级窗口并停止秒表。",
+        "precondition_error": "检查提取前置条件时发生错误。请检查控制台。",
+        "processing_locked": "提取正在处理。主窗口交互会被锁定，直到处理结束或你中止操作。",
+        "abort_error": "请求中止提取时发生错误。请检查控制台。",
+        "cancellation_requested": "已请求取消。请等待当前提取完成。",
+        "cancellation_complete": "取消已完成。",
+        "drop_invalid_file": "拖放的项目不是有效的本地文件。",
+        "generated_pdf_cleanup_warning": "提取已完成，但无法自动清理生成的本地 PDF。",
+        "route_choice_error": "选择提取路线时发生错误。",
+        "generated_pdf_reveal_failed": "无法显示已保存的 PDF。请检查文件是否仍然存在。",
+        "apply_error": "应用提取文本时发生错误。请检查控制台并重试。",
+        "prepare_invalid": "已准备好的提取请求不再有效。请重新启动流程。",
+        "unsupported_format": "此文件格式不支持文本提取。",
+        "pdf": {
+          "unreadable_or_corrupt": "此 PDF 无法读取或已损坏。请检查文件并重试。",
+          "encrypted_or_password_protected": "此 PDF 已加密或受密码保护。请解锁后重试。",
+          "page_count_unavailable": "无法检查此 PDF 的页数。请检查文件并重试。",
+          "page_selection_invalid": "所选 PDF 页码范围无效。请调整范围并重试。",
+          "subset_creation_failed": "无法为提取创建所选页面的 PDF。请检查文件并重试。"
+        },
+        "ocr": {
+          "unavailable": "OCR 不可用。请检查设置/授权状态后重试。",
+          "activation_required": "需要激活 OCR。请登录 Google OCR 后重试。",
+          "activation_success": "OCR 激活完成。正在重试提取。",
+          "activation_cancelled": "OCR 激活已取消。提取未继续。",
+          "token_state_invalid": "已保存的 Google OCR 登录状态无效。请重新连接 Google OCR 后重试。",
+          "activation_failed": "OCR 激活失败。请检查设置/授权状态后重试。",
+          "enable_success": "Google OCR 现已启用。",
+          "enable_cancelled": "Google OCR 启用已取消。",
+          "enable_failed": "无法启用 Google OCR。请检查设置/授权状态后重试。",
+          "disconnect_success": "Google OCR 已断开连接。已撤销保存的 Google 令牌，并移除了本地登录状态。",
+          "disconnect_not_connected": "Google OCR 当前未在此应用实例中连接。",
+          "disconnect_failed": "断开 Google OCR 连接失败。已保存的登录状态未被移除。",
+          "connectivity_failed": "OCR 需要互联网连接。请检查连接后重试。",
+          "setup_missing_credentials": "此应用构建中的 OCR 不可用，因为缺少随应用打包的 Google OAuth 凭据。",
+          "setup_invalid_credentials": "此应用构建中的 OCR 不可用，因为随应用打包的 Google OAuth 凭据无效。",
+          "quota_or_rate_limited": "OCR 因配额/速率限制而暂时受阻。请稍后重试。",
+          "runtime_error": "提取过程中发生 OCR 运行时错误。请检查控制台并重试。",
+          "cancelled": "OCR 提取已取消。",
+          "cleanup_warning": "OCR 已完成，但临时远程文件清理失败。请检查你的 Google Drive 文件夹。"
+        },
+        "batch_ocr": {
+          "activation_required": "此批量任务包含 OCR 项目，但 Google OCR 尚未启用。请使用“偏好设置 > 启用 Google OCR”，然后重新启动批量任务。",
+          "token_state_invalid": "此批量任务包含 OCR 项目，但保存的 Google OCR 登录状态无效。请再次使用“偏好设置 > 启用 Google OCR”，然后重新启动批量任务。",
+          "connectivity_failed": "此批次包含 OCR 项，但 OCR 需要互联网连接。请检查连接，并在开始提取前重试。",
+          "quota_or_rate_limited": "此批次包含 OCR 项，但 OCR 因配额/速率限制而暂时受阻。请等待，并在开始提取前重试。",
+          "unavailable": "此批量任务包含 OCR 项目，但 Google OCR 目前不可用。如果 OCR 尚未启用，请使用“偏好设置 > 启用 Google OCR”。否则，请在启动批量任务前检查 OCR 设置/状态并重试。"
+        },
+        "native": {
+          "runtime_error": "提取过程中发生原生提取运行时错误。请检查控制台并重试。",
+          "unreadable_or_corrupt": "所选文件无法由原生提取读取，或文件已损坏。",
+          "encrypted_or_password_protected": "所选 PDF 已加密或受密码保护，无法通过原生路径提取。",
+          "cancelled": "原生提取已取消。"
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "增大文本大小",
       "reset_text_size": "重置文本大小",
       "read_progress_label": "已读",
-      "clear_title": "清空"
+      "clear_title": "清空",
+      "alerts": {
+        "start_failed": "无法启动 Text Editor。",
+        "start_timeout": "Text Editor 启动时间过长，已被关闭。",
+        "paste_too_big": "文本过大，无法直接粘贴。请使用主窗口按钮。",
+        "drop_too_big": "拖放的文本过大。请使用主窗口按钮。",
+        "paste_no_text": "剪贴板不包含纯文本。",
+        "drop_no_text": "拖放：未检测到纯文本。",
+        "type_limit": "无法继续输入文本：已达到最大大小。",
+        "paste_limit": "无法继续粘贴文本：已达到最大大小。",
+        "drop_limit": "无法继续拖放文本：已达到最大大小。",
+        "paste_truncated": "粘贴的文本已被截断，以避免超过最大值。",
+        "drop_truncated": "拖入的文本超过可用空间，已被截断。",
+        "text_truncated": "文本已被截断，以符合应用最大限制。",
+        "calc_error": "计算时发生错误。请检查控制台。"
+      }
     },
     "editor_find": {
       "input_placeholder": "查找...",
@@ -242,6 +332,17 @@
       "replace_timeout": "替换超时。请重试。",
       "status_no_matches": "没有匹配项",
       "status_empty_query": "输入内容以搜索"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "快照已保存。",
+        "save_error": "无法保存快照。",
+        "load_success": "快照已加载。",
+        "load_error": "无法加载快照。",
+        "outside": "快照必须位于快照文件夹内。",
+        "truncated": "快照超过最大大小，已被截断。",
+        "unavailable": "快照功能不可用。"
+      }
     },
     "snapshot_save_tags": {
       "title": "保存文本快照",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "继续"
         }
+      },
+      "alerts": {
+        "unavailable": "阅读速度测试功能不可用。",
+        "precondition_blocked": "阅读速度测试只能在应用处于稳定状态时启动。请关闭次级窗口，并确保秒表已停止。",
+        "pool_error": "检查阅读速度测试文本池时发生错误。",
+        "no_matching_files": "没有剩余未使用且符合当前选择的测试文件。",
+        "visible_empty_bundled_hidden": "内置测试文件已隐藏，当前没有可见的未使用测试文件可用。请重新显示内置文件，或导入更多文件后继续。",
+        "current_text_empty": "当前文本为空。请先加载或输入文本，再使用当前文本开始测试。",
+        "result_invalid": "测试结果无法转换为有效的 WPM。流程结束，未打开预设模态窗口。",
+        "result_unavailable": "无法显示阅读速度结果。流程已继续。",
+        "preset_unavailable": "测试后无法打开预设模态窗口。",
+        "questions_unavailable": "无法打开理解题模态窗口。流程在创建预设前结束。",
+        "pool_import_failed": "无法导入阅读速度测试文件。",
+        "start_failed": "无法启动阅读速度测试。",
+        "cancelled": "阅读速度测试已取消。",
+        "cancelled_window_closed": "阅读速度测试已取消，因为其中一个会话窗口被关闭。"
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "剩余 {remaining} 个字符",
       "hint": "自定义预设会保存在用户设置中。",
       "cancel": "取消",
-      "save": "保存"
+      "save": "保存",
+      "alerts": {
+        "unavailable": "此应用构建中预设对话框不可用。",
+        "open_error": "打开预设对话框时发生错误。请检查控制台。",
+        "name_empty": "名称不能为空。",
+        "wpm_invalid": "WPM 必须是 {min} 到 {max} 之间的数字。",
+        "create_error": "创建预设时发生错误。请检查控制台。",
+        "edit_error": "编辑预设时发生错误。请检查控制台。",
+        "process_error": "处理预设时发生错误。请检查控制台。"
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "缓存中找不到所选预设。",
+        "delete_error": "删除预设时发生错误。请检查控制台。",
+        "restore_error": "恢复预设时发生错误。请检查控制台。",
+        "open_folder_unsupported": "无法在此环境中打开预设文件夹。",
+        "open_folder_error": "尝试打开预设文件夹时发生错误。请检查控制台。",
+        "open_default_folder_failed": "无法打开默认预设文件夹。请查看控制台了解更多详情。"
+      }
     },
     "browser_extension": {
       "title": "浏览器扩展",
       "subtitle": "Tiempo de lectura",
       "availability": "现已在 Chrome 上提供。更多浏览器即将支持。",
       "chrome_store_aria": "打开扩展的 Chrome Web Store 页面",
-      "close_aria": "关闭浏览器扩展对话框"
-    },
-    "alerts": {
-      "clipboard_too_large": "剪贴板文本过大，无法处理。请减少内容后重试。",
-      "apply_too_large": "应用后文本会变得过大。请缩短后重试。",
-      "apply_truncated": "文本已被截断以符合应用程序限制。",
-      "append_text_limit": "无法追加文本：已达到最大大小。",
-      "overwrite_clipboard_error": "从剪贴板替换文本时发生错误。",
-      "append_clipboard_error": "从剪贴板追加文本时发生错误。",
-      "clear_error": "清空文本时发生错误。请检查控制台。",
-      "snapshot_save_success": "快照已保存。",
-      "snapshot_save_error": "无法保存快照。",
-      "snapshot_load_success": "快照已加载。",
-      "snapshot_load_error": "无法加载快照。",
-      "snapshot_outside": "快照必须位于快照文件夹内。",
-      "snapshot_truncated": "快照超过最大大小，已被截断。",
-      "snapshot_unavailable": "快照功能不可用。",
-      "browser_extension_modal_open_blocked": "目前无法打开浏览器扩展对话框。",
-      "preset_not_found": "缓存中找不到所选预设。",
-      "preset_modal_unavailable": "此应用构建中预设对话框不可用。",
-      "preset_modal_open_error": "打开预设对话框时发生错误。请检查控制台。",
-      "delete_error": "删除预设时发生错误。请检查控制台。",
-      "restore_error": "恢复预设时发生错误。请检查控制台。",
-      "open_presets_unsupported": "无法在此环境中打开预设文件夹。",
-      "open_presets_error": "尝试打开预设文件夹时发生错误。请检查控制台。",
-      "open_presets_fail": "无法打开默认预设文件夹。请查看控制台了解更多详情。",
-      "text_extraction_error": "启动提取时发生错误。请检查控制台。",
-      "text_extraction_precondition_blocked": "要启动提取，请关闭所有次级窗口并停止秒表。",
-      "text_extraction_precondition_error": "检查提取前置条件时发生错误。请检查控制台。",
-      "text_extraction_processing_locked": "提取正在处理。主窗口交互会被锁定，直到处理结束或你中止操作。",
-      "current_text_processing_locked": "当前文本仍在更新。在最新文本稳定之前，主窗口交互将被锁定。",
-      "current_text_recount_locked": "当前文本结果仍在重新计算。在最新重新计数稳定之前，主窗口交互将被锁定。",
-      "text_extraction_abort_error": "请求中止提取时发生错误。请检查控制台。",
-      "text_extraction_cancellation_requested": "已请求取消。请等待当前提取完成。",
-      "text_extraction_cancellation_complete": "取消已完成。",
-      "text_extraction_drop_invalid_file": "拖放的项目不是有效的本地文件。",
-      "text_extraction_pdf_unreadable_or_corrupt": "此 PDF 无法读取或已损坏。请检查文件并重试。",
-      "text_extraction_pdf_encrypted_or_password_protected": "此 PDF 已加密或受密码保护。请解锁后重试。",
-      "text_extraction_pdf_page_count_unavailable": "无法检查此 PDF 的页数。请检查文件并重试。",
-      "text_extraction_pdf_page_selection_invalid": "所选 PDF 页码范围无效。请调整范围并重试。",
-      "text_extraction_pdf_subset_creation_failed": "无法为提取创建所选页面的 PDF。请检查文件并重试。",
-      "text_extraction_generated_pdf_cleanup_warning": "提取已完成，但无法自动清理生成的本地 PDF。",
-      "text_extraction_route_choice_error": "选择提取路线时发生错误。",
-      "text_extraction_generated_pdf_reveal_failed": "无法显示已保存的 PDF。请检查文件是否仍然存在。",
-      "text_extraction_apply_error": "应用提取文本时发生错误。请检查控制台并重试。",
-      "text_extraction_prepare_invalid": "已准备好的提取请求不再有效。请重新启动流程。",
-      "text_extraction_batch_ocr_activation_required": "此批量任务包含 OCR 项目，但 Google OCR 尚未启用。请使用“偏好设置 > 启用 Google OCR”，然后重新启动批量任务。",
-      "text_extraction_batch_ocr_token_state_invalid": "此批量任务包含 OCR 项目，但保存的 Google OCR 登录状态无效。请再次使用“偏好设置 > 启用 Google OCR”，然后重新启动批量任务。",
-      "text_extraction_batch_ocr_connectivity_failed": "此批次包含 OCR 项，但 OCR 需要互联网连接。请检查连接，并在开始提取前重试。",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "此批次包含 OCR 项，但 OCR 因配额/速率限制而暂时受阻。请等待，并在开始提取前重试。",
-      "text_extraction_batch_ocr_unavailable": "此批量任务包含 OCR 项目，但 Google OCR 目前不可用。如果 OCR 尚未启用，请使用“偏好设置 > 启用 Google OCR”。否则，请在启动批量任务前检查 OCR 设置/状态并重试。",
-      "text_extraction_ocr_unavailable": "OCR 不可用。请检查设置/授权状态后重试。",
-      "text_extraction_ocr_activation_required": "需要激活 OCR。请登录 Google OCR 后重试。",
-      "text_extraction_ocr_activation_success": "OCR 激活完成。正在重试提取。",
-      "text_extraction_ocr_activation_cancelled": "OCR 激活已取消。提取未继续。",
-      "text_extraction_ocr_token_state_invalid": "已保存的 Google OCR 登录状态无效。请重新连接 Google OCR 后重试。",
-      "text_extraction_ocr_activation_failed": "OCR 激活失败。请检查设置/授权状态后重试。",
-      "text_extraction_ocr_enable_success": "Google OCR 现已启用。",
-      "text_extraction_ocr_enable_cancelled": "Google OCR 启用已取消。",
-      "text_extraction_ocr_enable_failed": "无法启用 Google OCR。请检查设置/授权状态后重试。",
-      "text_extraction_ocr_disconnect_success": "Google OCR 已断开连接。已撤销保存的 Google 令牌，并移除了本地登录状态。",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR 当前未在此应用实例中连接。",
-      "text_extraction_ocr_disconnect_failed": "断开 Google OCR 连接失败。已保存的登录状态未被移除。",
-      "text_extraction_ocr_connectivity_failed": "OCR 需要互联网连接。请检查连接后重试。",
-      "text_extraction_ocr_setup_missing_credentials": "此应用构建中的 OCR 不可用，因为缺少随应用打包的 Google OAuth 凭据。",
-      "text_extraction_ocr_setup_invalid_credentials": "此应用构建中的 OCR 不可用，因为随应用打包的 Google OAuth 凭据无效。",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR 因配额/速率限制而暂时受阻。请稍后重试。",
-      "text_extraction_ocr_runtime_error": "提取过程中发生 OCR 运行时错误。请检查控制台并重试。",
-      "text_extraction_ocr_cancelled": "OCR 提取已取消。",
-      "text_extraction_ocr_cleanup_warning": "OCR 已完成，但临时远程文件清理失败。请检查你的 Google Drive 文件夹。",
-      "text_extraction_native_runtime_error": "提取过程中发生原生提取运行时错误。请检查控制台并重试。",
-      "text_extraction_native_unreadable_or_corrupt": "所选文件无法由原生提取读取，或文件已损坏。",
-      "text_extraction_native_encrypted_or_password_protected": "所选 PDF 已加密或受密码保护，无法通过原生路径提取。",
-      "text_extraction_native_cancelled": "原生提取已取消。",
-      "text_extraction_unsupported_format": "此文件格式不支持文本提取。",
-      "wip_diseno_skins": "WIP：皮肤选择器将在未来版本中从这里打开。",
-      "wip_diseno_crono": "WIP：悬浮秒表设置将在未来版本中从这里打开。",
-      "wip_diseno_fuentes": "WIP：字体选择器将在未来版本中从这里打开。",
-      "wip_diseno_colores": "WIP：颜色选择器将在未来版本中从这里打开。",
-      "wip_shortcuts": "WIP：键盘快捷键选择器将在未来版本中从这里打开。",
-      "reading_test_unavailable": "阅读速度测试功能不可用。",
-      "reading_test_precondition_blocked": "阅读速度测试只能在应用处于稳定状态时启动。请关闭次级窗口，并确保秒表已停止。",
-      "reading_test_pool_error": "检查阅读速度测试文本池时发生错误。",
-      "reading_test_no_matching_files": "没有剩余未使用且符合当前选择的测试文件。",
-      "reading_test_visible_empty_bundled_hidden": "内置测试文件已隐藏，当前没有可见的未使用测试文件可用。请重新显示内置文件，或导入更多文件后继续。",
-      "reading_test_current_text_empty": "当前文本为空。请先加载或输入文本，再使用当前文本开始测试。",
-      "reading_test_result_invalid": "测试结果无法转换为有效的 WPM。流程结束，未打开预设模态窗口。",
-      "reading_test_result_unavailable": "无法显示阅读速度结果。流程已继续。",
-      "reading_test_preset_unavailable": "测试后无法打开预设模态窗口。",
-      "reading_test_questions_unavailable": "无法打开理解题模态窗口。流程在创建预设前结束。",
-      "reading_test_pool_import_failed": "无法导入阅读速度测试文件。",
-      "reading_test_start_failed": "无法启动阅读速度测试。",
-      "text_editor_start_failed": "无法启动 Text Editor。",
-      "text_editor_start_timeout": "Text Editor 启动时间过长，已被关闭。",
-      "reading_test_cancelled": "阅读速度测试已取消。",
-      "reading_test_cancelled_window_closed": "阅读速度测试已取消，因为其中一个会话窗口被关闭。"
-    },
-    "editor_alerts": {
-      "paste_too_big": "文本过大，无法直接粘贴。请使用主窗口按钮。",
-      "drop_too_big": "拖放的文本过大。请使用主窗口按钮。",
-      "paste_no_text": "剪贴板不包含纯文本。",
-      "drop_no_text": "拖放：未检测到纯文本。",
-      "type_limit": "无法继续输入文本：已达到最大大小。",
-      "paste_limit": "无法继续粘贴文本：已达到最大大小。",
-      "drop_limit": "无法继续拖放文本：已达到最大大小。",
-      "paste_truncated": "粘贴的文本已被截断，以避免超过最大值。",
-      "drop_truncated": "拖入的文本超过可用空间，已被截断。",
-      "text_truncated": "文本已被截断，以符合应用最大限制。",
-      "calc_error": "计算时发生错误。请检查控制台。"
-    },
-    "preset_alerts": {
-      "name_empty": "名称不能为空。",
-      "wpm_invalid": "WPM 必须是 {min} 到 {max} 之间的数字。",
-      "create_error": "创建预设时发生错误。请检查控制台。",
-      "edit_error": "编辑预设时发生错误。请检查控制台。",
-      "process_error": "处理预设时发生错误。请检查控制台。"
+      "close_aria": "关闭浏览器扩展对话框",
+      "alerts": {
+        "modal_open_blocked": "目前无法打开浏览器扩展对话框。"
+      }
     },
     "info": {
       "loading": "正在加载...",

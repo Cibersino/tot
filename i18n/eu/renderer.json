@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Igarotako denbora: ",
         "text_extraction_drop_here": "Jaregin fitxategia testua erauzteko"
+      },
+      "alerts": {
+        "clipboard_too_large": "Arbeleko testua handiegia da prozesatzeko. Laburtu eta saiatu berriro.",
+        "apply_too_large": "Testua aplikatzeko handiegia bihurtuko litzateke. Murriztu eta saiatu berriro.",
+        "apply_truncated": "Testua aplikazioaren mugara egokitzeko moztu da.",
+        "append_text_limit": "Ezin da testua erantsi: gehieneko tamainara iritsi da.",
+        "overwrite_clipboard_error": "Errore bat gertatu da arbeletik testua ordezkatzean.",
+        "append_clipboard_error": "Errore bat gertatu da arbeletik testua eranstean.",
+        "clear_error": "Errorea gertatu da testua hustean. Begiratu kontsola.",
+        "current_text_processing_locked": "Uneko testua oraindik eguneratzen ari da. Leiho nagusiko interakzioak blokeatuta egongo dira azken testua egonkortu arte.",
+        "current_text_recount_locked": "Uneko testuaren emaitzak oraindik berriz kalkulatzen ari dira. Leiho nagusiko interakzioak blokeatuta egongo dira azken berriz kalkulua egonkortu arte.",
+        "wip": {
+          "design_skins": "WIP: azal hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
+          "floating_stopwatch": "WIP: kronometro flotatzailearen konfigurazioa etorkizuneko bertsio batean irekiko da hemen.",
+          "fonts": "WIP: letra-tipoen hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
+          "colors": "WIP: koloreen hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
+          "shortcuts": "WIP: teklatu-lasterbideen hautatzailea etorkizuneko bertsio batean irekiko da hemen."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Erakutsi sortutako PDFa",
         "cancel_button": "Utzi",
         "close_aria": "Itxi OCR-rako PDF handiaren elkarrizketa"
+      },
+      "alerts": {
+        "start_error": "Errorea gertatu da erauzketa prozesua hastean. Begiratu kontsola.",
+        "precondition_blocked": "Erauzketa hasteko, itxi bigarren mailako leiho guztiak eta gelditu kronometroa.",
+        "precondition_error": "Errorea gertatu da erauzketa aurrebaldintzak egiaztatzean. Begiratu kontsola.",
+        "processing_locked": "Erauzketa prozesatzen ari da. Leiho nagusiko interakzioak blokeatuta daude prozesua amaitu arte edo bertan behera utzi arte.",
+        "abort_error": "Errorea gertatu da erauzketa bertan behera uzteko eskaeran. Begiratu kontsola.",
+        "cancellation_requested": "Ezeztapena eskatu da. Itxaron uneko erauzketa amaitu arte.",
+        "cancellation_complete": "Ezeztapena amaitu da.",
+        "drop_invalid_file": "Jaregindako elementua ez da fitxategi lokal balioduna.",
+        "generated_pdf_cleanup_warning": "Erauzketa amaitu da, baina sortutako tokiko PDF bat ezin izan da automatikoki garbitu.",
+        "route_choice_error": "Errore bat gertatu da erauzketa-ibilbidea aukeratzean.",
+        "generated_pdf_reveal_failed": "Ezin izan da gordetako PDFa erakutsi. Egiaztatu fitxategia oraindik badagoen.",
+        "apply_error": "Errorea gertatu da erauzitako testua aplikatzean. Begiratu kontsola eta saiatu berriro.",
+        "prepare_invalid": "Prestatutako erauzketa eskaera ez da jada baliozkoa. Hasi fluxua berriro.",
+        "unsupported_format": "Fitxategi-formatu hau ez da onartzen testua erauzteko.",
+        "pdf": {
+          "unreadable_or_corrupt": "PDF hau ezin da irakurri edo hondatuta dago. Egiaztatu fitxategia eta saiatu berriro.",
+          "encrypted_or_password_protected": "PDF hau enkriptatuta dago edo pasahitzez babestuta dago. Desblokeatu eta saiatu berriro.",
+          "page_count_unavailable": "Ezin izan da PDF honen orri kopurua aztertu. Egiaztatu fitxategia eta saiatu berriro.",
+          "page_selection_invalid": "Hautatutako PDF orri-tartea ez da baliozkoa. Doitu tartea eta saiatu berriro.",
+          "subset_creation_failed": "Ezin izan da hautatutako orrien PDFa sortu erauzketarako. Egiaztatu fitxategia eta saiatu berriro."
+        },
+        "ocr": {
+          "unavailable": "OCR ez dago erabilgarri. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
+          "activation_required": "OCR aktibatzea beharrezkoa da. Hasi saioa Google OCR-en eta saiatu berriro.",
+          "activation_success": "OCR aktibazioa osatu da. Erauzketa berriz saiatzen.",
+          "activation_cancelled": "OCR aktibazioa bertan behera utzi da. Erauzketa prozesuak ez du jarraitu.",
+          "token_state_invalid": "Gordetako Google OCR saio-hasieraren egoera baliogabea da. Berriz konektatu Google OCR eta saiatu berriro.",
+          "activation_failed": "OCR aktibazioak huts egin du. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
+          "enable_success": "Google OCR aktibatu da.",
+          "enable_cancelled": "Google OCR aktibazioa bertan behera utzi da.",
+          "enable_failed": "Ezin izan da Google OCR aktibatu. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
+          "disconnect_success": "Google OCR deskonektatu da. Gordetako Google tokena baliogabetu da eta saio-hasieraren egoera lokala kendu da.",
+          "disconnect_not_connected": "Google OCR ez dago une honetan konektatuta aplikazio-instantzia honetan.",
+          "disconnect_failed": "Google OCR deskonektatzeak huts egin du. Gordetako saio-hasieraren egoera ez da kendu.",
+          "connectivity_failed": "OCR-k Interneteko konexioa behar du. Egiaztatu konexioa eta saiatu berriro.",
+          "setup_missing_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak falta direlako.",
+          "setup_invalid_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak baliogabeak direlako.",
+          "quota_or_rate_limited": "OCR aldi baterako blokeatuta dago kuota/tasa-mugen ondorioz. Itxaron eta saiatu berriro.",
+          "runtime_error": "OCR exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",
+          "cancelled": "OCR erauzketa prozesua bertan behera utzi da.",
+          "cleanup_warning": "OCR amaitu da, baina urruneko aldi baterako fitxategiaren garbiketak huts egin du. Begiratu zure Google Drive karpeta."
+        },
+        "batch_ocr": {
+          "activation_required": "Multzo honek OCR elementuak ditu, baina Google OCR ez dago aktibatuta. Erabili Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",
+          "token_state_invalid": "Multzo honek OCR elementuak ditu, baina gordetako Google OCR saio-hasieraren egoera baliogabea da. Erabili berriro Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",
+          "connectivity_failed": "Batch honek OCR elementuak ditu, baina OCR-k Interneteko konexioa behar du. Egiaztatu konexioa eta saiatu berriro erauzketa hasi aurretik.",
+          "quota_or_rate_limited": "Batch honek OCR elementuak ditu, baina OCR aldi baterako blokeatuta dago kuota/maiztasun mugengatik. Itxaron eta saiatu berriro erauzketa hasi aurretik.",
+          "unavailable": "Multzo honek OCR elementuak ditu, baina Google OCR ez dago erabilgarri une honetan. OCR oraindik aktibatuta ez badago, erabili Hobespenak > Aktibatu Google OCR. Bestela, egiaztatu OCR konfigurazioa/autentifikazioa eta saiatu berriro multzoa hasi aurretik."
+        },
+        "native": {
+          "runtime_error": "Erauzketa natiboaren exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",
+          "unreadable_or_corrupt": "Hautatutako fitxategia ezin da irakurri edo hondatuta dago erauzketa natiborako.",
+          "encrypted_or_password_protected": "Hautatutako PDFa zifratuta edo pasahitzez babestuta dago eta ezin da bide natibotik erauzi.",
+          "cancelled": "Erauzketa natiboa bertan behera utzi da."
+        }
       }
     },
     "editor": {
@@ -223,7 +298,22 @@
       "increase_text_size": "Handitu testuaren tamaina",
       "reset_text_size": "Berrezarri testuaren tamaina",
       "read_progress_label": "Irakurria",
-      "clear_title": "Hustu"
+      "clear_title": "Hustu",
+      "alerts": {
+        "start_failed": "Ezin izan da Text Editor abiarazi.",
+        "start_timeout": "Text Editor-ek denbora gehiegi behar izan du abiarazteko eta itxi egin da.",
+        "paste_too_big": "Testua handiegia da zuzenean itsasteko. Erabili leiho nagusiko botoiak.",
+        "drop_too_big": "Jaregindako testua handiegia da. Erabili leiho nagusiko botoiak testu handia gehitzeko.",
+        "paste_no_text": "Arbelean ez dago testu arruntik.",
+        "drop_no_text": "Arrastatu eta jaregin: ez da testu arruntik detektatu.",
+        "type_limit": "Ezin da testu gehiago idatzi: gehieneko tamainara iritsi da.",
+        "paste_limit": "Ezin da testu gehiago itsatsi: gehieneko tamainara iritsi da.",
+        "drop_limit": "Ezin da testu gehiago jaregin: gehieneko tamainara iritsi da.",
+        "paste_truncated": "Itsatsitako testua moztu da gehienekoa ez gainditzeko.",
+        "drop_truncated": "Arrastatutako testuak erabilgarri zegoen espazioa gainditzen zuen eta moztu egin da.",
+        "text_truncated": "Testua moztu da aplikazioaren mugara egokitzeko.",
+        "calc_error": "Errorea gertatu da kalkulatzean. Begiratu kontsola."
+      }
     },
     "editor_find": {
       "input_placeholder": "Bilatu...",
@@ -242,6 +332,17 @@
       "replace_timeout": "Ordezteko eragiketak denbora gehiegi hartu du. Saiatu berriro.",
       "status_no_matches": "Ez dago bat-etortzerik",
       "status_empty_query": "Idatzi bilatzeko"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshota gordeta.",
+        "save_error": "Ezin izan da snapshota gorde.",
+        "load_success": "Snapshota kargatuta.",
+        "load_error": "Ezin izan da snapshota kargatu.",
+        "outside": "Snapshotak snapshots karpetaren barruan egon behar du.",
+        "truncated": "Snapshotak gehieneko tamaina gainditzen du eta moztu egin da.",
+        "unavailable": "Snapshoten funtzioa ez dago erabilgarri."
+      }
     },
     "snapshot_save_tags": {
       "title": "Gorde testu-snapshota",
@@ -445,6 +546,22 @@
         "buttons": {
           "continue": "Jarraitu"
         }
+      },
+      "alerts": {
+        "unavailable": "Irakurketa-abiaduraren testaren funtzionalitatea ez dago erabilgarri.",
+        "precondition_blocked": "Irakurketa-abiaduraren testa aplikazioaren egoera egonkor batetik bakarrik has daiteke. Itxi bigarren mailako leihoak eta ziurtatu kronometroa geldituta dagoela.",
+        "pool_error": "Errorea gertatu da irakurketa-abiaduraren testaren poola egiaztatzean.",
+        "no_matching_files": "Ez dago uneko hautapenarekin bat datorren erabili gabeko test-fitxategirik.",
+        "visible_empty_bundled_hidden": "Barneko test-fitxategiak ezkutatuta daude, eta une honetan ez dago erabiltzeke dagoen fitxategi ikusgarririk erabilgarri. Erakutsi berriro barneko fitxategiak edo inportatu fitxategi gehiago jarraitzeko.",
+        "current_text_empty": "Uneko testua hutsik dago. Kargatu edo idatzi testu bat uneko testuarekin testa hasi aurretik.",
+        "result_invalid": "Testaren emaitza ezin izan da WPM baliozko bihurtu. Fluxua aurrezarpen-modalik ireki gabe amaitu da.",
+        "result_unavailable": "Ezin izan da irakurketa-abiaduraren emaitza erakutsi. Fluxuak jarraitu du.",
+        "preset_unavailable": "Ezin izan da aurrezarpen-modala ireki testaren ondoren.",
+        "questions_unavailable": "Ezin izan da ulermen-galderen modala ireki. Fluxua aurrezarpena sortu aurretik amaitu da.",
+        "pool_import_failed": "Ezin izan dira irakurketa-abiaduraren testaren fitxategiak inportatu.",
+        "start_failed": "Ezin izan da irakurketa-abiaduraren testa hasi.",
+        "cancelled": "Irakurketa-abiaduraren testa bertan behera utzi da.",
+        "cancelled_window_closed": "Irakurketa-abiaduraren testa bertan behera utzi da saioko leihoetako bat itxi delako."
       }
     },
     "modal_preset": {
@@ -460,129 +577,36 @@
       "char_count": "{remaining} karaktere falta dira",
       "hint": "Aurrezarpen pertsonalizatuak erabiltzailearen ezarpenetan gordetzen dira.",
       "cancel": "Utzi",
-      "save": "Gorde"
+      "save": "Gorde",
+      "alerts": {
+        "unavailable": "Preset elkarrizketa ez dago erabilgarri app honen build honetan.",
+        "open_error": "Errorea gertatu da aurrezarpenen elkarrizketa irekitzean. Begiratu kontsola.",
+        "name_empty": "Izena ezin da hutsik egon.",
+        "wpm_invalid": "WPM {min} eta {max} arteko zenbaki bat izan behar da.",
+        "create_error": "Errorea gertatu da aurrezarpena sortzean. Begiratu kontsola.",
+        "edit_error": "Errorea gertatu da aurrezarpena editatzean. Begiratu kontsola.",
+        "process_error": "Errorea gertatu da aurrezarpena prozesatzean. Begiratu kontsola."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Hautatutako aurrezarpena ez da cachean aurkitu.",
+        "delete_error": "Errorea gertatu da aurrezarpena ezabatzean. Begiratu kontsola.",
+        "restore_error": "Errorea gertatu da aurrezarpenak leheneratzean. Begiratu kontsola.",
+        "open_folder_unsupported": "Ezin da aurrezarpenen karpeta ireki ingurune honetan.",
+        "open_folder_error": "Errorea gertatu da aurrezarpenen karpeta irekitzean. Begiratu kontsola.",
+        "open_default_folder_failed": "Ezin izan da aurrezarpen lehenetsien karpeta ireki. Begiratu kontsola xehetasun gehiagorako."
+      }
     },
     "browser_extension": {
       "title": "Nabigatzailearen hedapena",
       "subtitle": "Tiempo de lectura",
       "availability": "Orain Chrome-n erabilgarri. Laster nabigatzaile gehiagotan ere bai.",
       "chrome_store_aria": "Ireki hedapenaren Chrome Web Store orria",
-      "close_aria": "Itxi nabigatzailearen hedapenaren elkarrizketa-koadroa"
-    },
-    "alerts": {
-      "clipboard_too_large": "Arbeleko testua handiegia da prozesatzeko. Laburtu eta saiatu berriro.",
-      "apply_too_large": "Testua aplikatzeko handiegia bihurtuko litzateke. Murriztu eta saiatu berriro.",
-      "apply_truncated": "Testua aplikazioaren mugara egokitzeko moztu da.",
-      "append_text_limit": "Ezin da testua erantsi: gehieneko tamainara iritsi da.",
-      "overwrite_clipboard_error": "Errore bat gertatu da arbeletik testua ordezkatzean.",
-      "append_clipboard_error": "Errore bat gertatu da arbeletik testua eranstean.",
-      "clear_error": "Errorea gertatu da testua hustean. Begiratu kontsola.",
-      "snapshot_save_success": "Snapshota gordeta.",
-      "snapshot_save_error": "Ezin izan da snapshota gorde.",
-      "snapshot_load_success": "Snapshota kargatuta.",
-      "snapshot_load_error": "Ezin izan da snapshota kargatu.",
-      "snapshot_outside": "Snapshotak snapshots karpetaren barruan egon behar du.",
-      "snapshot_truncated": "Snapshotak gehieneko tamaina gainditzen du eta moztu egin da.",
-      "snapshot_unavailable": "Snapshoten funtzioa ez dago erabilgarri.",
-      "browser_extension_modal_open_blocked": "Arakatzailearen luzapenaren elkarrizketa ezin da une honetan ireki.",
-      "preset_not_found": "Hautatutako aurrezarpena ez da cachean aurkitu.",
-      "preset_modal_unavailable": "Preset elkarrizketa ez dago erabilgarri app honen build honetan.",
-      "preset_modal_open_error": "Errorea gertatu da aurrezarpenen elkarrizketa irekitzean. Begiratu kontsola.",
-      "delete_error": "Errorea gertatu da aurrezarpena ezabatzean. Begiratu kontsola.",
-      "restore_error": "Errorea gertatu da aurrezarpenak leheneratzean. Begiratu kontsola.",
-      "open_presets_unsupported": "Ezin da aurrezarpenen karpeta ireki ingurune honetan.",
-      "open_presets_error": "Errorea gertatu da aurrezarpenen karpeta irekitzean. Begiratu kontsola.",
-      "open_presets_fail": "Ezin izan da aurrezarpen lehenetsien karpeta ireki. Begiratu kontsola xehetasun gehiagorako.",
-      "text_extraction_error": "Errorea gertatu da erauzketa prozesua hastean. Begiratu kontsola.",
-      "text_extraction_precondition_blocked": "Erauzketa hasteko, itxi bigarren mailako leiho guztiak eta gelditu kronometroa.",
-      "text_extraction_precondition_error": "Errorea gertatu da erauzketa aurrebaldintzak egiaztatzean. Begiratu kontsola.",
-      "text_extraction_processing_locked": "Erauzketa prozesatzen ari da. Leiho nagusiko interakzioak blokeatuta daude prozesua amaitu arte edo bertan behera utzi arte.",
-      "current_text_processing_locked": "Uneko testua oraindik eguneratzen ari da. Leiho nagusiko interakzioak blokeatuta egongo dira azken testua egonkortu arte.",
-      "current_text_recount_locked": "Uneko testuaren emaitzak oraindik berriz kalkulatzen ari dira. Leiho nagusiko interakzioak blokeatuta egongo dira azken berriz kalkulua egonkortu arte.",
-      "text_extraction_abort_error": "Errorea gertatu da erauzketa bertan behera uzteko eskaeran. Begiratu kontsola.",
-      "text_extraction_cancellation_requested": "Ezeztapena eskatu da. Itxaron uneko erauzketa amaitu arte.",
-      "text_extraction_cancellation_complete": "Ezeztapena amaitu da.",
-      "text_extraction_drop_invalid_file": "Jaregindako elementua ez da fitxategi lokal balioduna.",
-      "text_extraction_pdf_unreadable_or_corrupt": "PDF hau ezin da irakurri edo hondatuta dago. Egiaztatu fitxategia eta saiatu berriro.",
-      "text_extraction_pdf_encrypted_or_password_protected": "PDF hau enkriptatuta dago edo pasahitzez babestuta dago. Desblokeatu eta saiatu berriro.",
-      "text_extraction_pdf_page_count_unavailable": "Ezin izan da PDF honen orri kopurua aztertu. Egiaztatu fitxategia eta saiatu berriro.",
-      "text_extraction_pdf_page_selection_invalid": "Hautatutako PDF orri-tartea ez da baliozkoa. Doitu tartea eta saiatu berriro.",
-      "text_extraction_pdf_subset_creation_failed": "Ezin izan da hautatutako orrien PDFa sortu erauzketarako. Egiaztatu fitxategia eta saiatu berriro.",
-      "text_extraction_generated_pdf_cleanup_warning": "Erauzketa amaitu da, baina sortutako tokiko PDF bat ezin izan da automatikoki garbitu.",
-      "text_extraction_route_choice_error": "Errore bat gertatu da erauzketa-ibilbidea aukeratzean.",
-      "text_extraction_generated_pdf_reveal_failed": "Ezin izan da gordetako PDFa erakutsi. Egiaztatu fitxategia oraindik badagoen.",
-      "text_extraction_apply_error": "Errorea gertatu da erauzitako testua aplikatzean. Begiratu kontsola eta saiatu berriro.",
-      "text_extraction_prepare_invalid": "Prestatutako erauzketa eskaera ez da jada baliozkoa. Hasi fluxua berriro.",
-      "text_extraction_batch_ocr_activation_required": "Multzo honek OCR elementuak ditu, baina Google OCR ez dago aktibatuta. Erabili Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",
-      "text_extraction_batch_ocr_token_state_invalid": "Multzo honek OCR elementuak ditu, baina gordetako Google OCR saio-hasieraren egoera baliogabea da. Erabili berriro Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",
-      "text_extraction_batch_ocr_connectivity_failed": "Batch honek OCR elementuak ditu, baina OCR-k Interneteko konexioa behar du. Egiaztatu konexioa eta saiatu berriro erauzketa hasi aurretik.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Batch honek OCR elementuak ditu, baina OCR aldi baterako blokeatuta dago kuota/maiztasun mugengatik. Itxaron eta saiatu berriro erauzketa hasi aurretik.",
-      "text_extraction_batch_ocr_unavailable": "Multzo honek OCR elementuak ditu, baina Google OCR ez dago erabilgarri une honetan. OCR oraindik aktibatuta ez badago, erabili Hobespenak > Aktibatu Google OCR. Bestela, egiaztatu OCR konfigurazioa/autentifikazioa eta saiatu berriro multzoa hasi aurretik.",
-      "text_extraction_ocr_unavailable": "OCR ez dago erabilgarri. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
-      "text_extraction_ocr_activation_required": "OCR aktibatzea beharrezkoa da. Hasi saioa Google OCR-en eta saiatu berriro.",
-      "text_extraction_ocr_activation_success": "OCR aktibazioa osatu da. Erauzketa berriz saiatzen.",
-      "text_extraction_ocr_activation_cancelled": "OCR aktibazioa bertan behera utzi da. Erauzketa prozesuak ez du jarraitu.",
-      "text_extraction_ocr_token_state_invalid": "Gordetako Google OCR saio-hasieraren egoera baliogabea da. Berriz konektatu Google OCR eta saiatu berriro.",
-      "text_extraction_ocr_activation_failed": "OCR aktibazioak huts egin du. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
-      "text_extraction_ocr_enable_success": "Google OCR aktibatu da.",
-      "text_extraction_ocr_enable_cancelled": "Google OCR aktibazioa bertan behera utzi da.",
-      "text_extraction_ocr_enable_failed": "Ezin izan da Google OCR aktibatu. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
-      "text_extraction_ocr_disconnect_success": "Google OCR deskonektatu da. Gordetako Google tokena baliogabetu da eta saio-hasieraren egoera lokala kendu da.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR ez dago une honetan konektatuta aplikazio-instantzia honetan.",
-      "text_extraction_ocr_disconnect_failed": "Google OCR deskonektatzeak huts egin du. Gordetako saio-hasieraren egoera ez da kendu.",
-      "text_extraction_ocr_connectivity_failed": "OCR-k Interneteko konexioa behar du. Egiaztatu konexioa eta saiatu berriro.",
-      "text_extraction_ocr_setup_missing_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak falta direlako.",
-      "text_extraction_ocr_setup_invalid_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak baliogabeak direlako.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR aldi baterako blokeatuta dago kuota/tasa-mugen ondorioz. Itxaron eta saiatu berriro.",
-      "text_extraction_ocr_runtime_error": "OCR exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",
-      "text_extraction_ocr_cancelled": "OCR erauzketa prozesua bertan behera utzi da.",
-      "text_extraction_ocr_cleanup_warning": "OCR amaitu da, baina urruneko aldi baterako fitxategiaren garbiketak huts egin du. Begiratu zure Google Drive karpeta.",
-      "text_extraction_native_runtime_error": "Erauzketa natiboaren exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",
-      "text_extraction_native_unreadable_or_corrupt": "Hautatutako fitxategia ezin da irakurri edo hondatuta dago erauzketa natiborako.",
-      "text_extraction_native_encrypted_or_password_protected": "Hautatutako PDFa zifratuta edo pasahitzez babestuta dago eta ezin da bide natibotik erauzi.",
-      "text_extraction_native_cancelled": "Erauzketa natiboa bertan behera utzi da.",
-      "text_extraction_unsupported_format": "Fitxategi-formatu hau ez da onartzen testua erauzteko.",
-      "wip_diseno_skins": "WIP: azal hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
-      "wip_diseno_crono": "WIP: kronometro flotatzailearen konfigurazioa etorkizuneko bertsio batean irekiko da hemen.",
-      "wip_diseno_fuentes": "WIP: letra-tipoen hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
-      "wip_diseno_colores": "WIP: koloreen hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
-      "wip_shortcuts": "WIP: teklatu-lasterbideen hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
-      "reading_test_unavailable": "Irakurketa-abiaduraren testaren funtzionalitatea ez dago erabilgarri.",
-      "reading_test_precondition_blocked": "Irakurketa-abiaduraren testa aplikazioaren egoera egonkor batetik bakarrik has daiteke. Itxi bigarren mailako leihoak eta ziurtatu kronometroa geldituta dagoela.",
-      "reading_test_pool_error": "Errorea gertatu da irakurketa-abiaduraren testaren poola egiaztatzean.",
-      "reading_test_no_matching_files": "Ez dago uneko hautapenarekin bat datorren erabili gabeko test-fitxategirik.",
-      "reading_test_visible_empty_bundled_hidden": "Barneko test-fitxategiak ezkutatuta daude, eta une honetan ez dago erabiltzeke dagoen fitxategi ikusgarririk erabilgarri. Erakutsi berriro barneko fitxategiak edo inportatu fitxategi gehiago jarraitzeko.",
-      "reading_test_current_text_empty": "Uneko testua hutsik dago. Kargatu edo idatzi testu bat uneko testuarekin testa hasi aurretik.",
-      "reading_test_result_invalid": "Testaren emaitza ezin izan da WPM baliozko bihurtu. Fluxua aurrezarpen-modalik ireki gabe amaitu da.",
-      "reading_test_result_unavailable": "Ezin izan da irakurketa-abiaduraren emaitza erakutsi. Fluxuak jarraitu du.",
-      "reading_test_preset_unavailable": "Ezin izan da aurrezarpen-modala ireki testaren ondoren.",
-      "reading_test_questions_unavailable": "Ezin izan da ulermen-galderen modala ireki. Fluxua aurrezarpena sortu aurretik amaitu da.",
-      "reading_test_pool_import_failed": "Ezin izan dira irakurketa-abiaduraren testaren fitxategiak inportatu.",
-      "reading_test_start_failed": "Ezin izan da irakurketa-abiaduraren testa hasi.",
-      "text_editor_start_failed": "Ezin izan da Text Editor abiarazi.",
-      "text_editor_start_timeout": "Text Editor-ek denbora gehiegi behar izan du abiarazteko eta itxi egin da.",
-      "reading_test_cancelled": "Irakurketa-abiaduraren testa bertan behera utzi da.",
-      "reading_test_cancelled_window_closed": "Irakurketa-abiaduraren testa bertan behera utzi da saioko leihoetako bat itxi delako."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Testua handiegia da zuzenean itsasteko. Erabili leiho nagusiko botoiak.",
-      "drop_too_big": "Jaregindako testua handiegia da. Erabili leiho nagusiko botoiak testu handia gehitzeko.",
-      "paste_no_text": "Arbelean ez dago testu arruntik.",
-      "drop_no_text": "Arrastatu eta jaregin: ez da testu arruntik detektatu.",
-      "type_limit": "Ezin da testu gehiago idatzi: gehieneko tamainara iritsi da.",
-      "paste_limit": "Ezin da testu gehiago itsatsi: gehieneko tamainara iritsi da.",
-      "drop_limit": "Ezin da testu gehiago jaregin: gehieneko tamainara iritsi da.",
-      "paste_truncated": "Itsatsitako testua moztu da gehienekoa ez gainditzeko.",
-      "drop_truncated": "Arrastatutako testuak erabilgarri zegoen espazioa gainditzen zuen eta moztu egin da.",
-      "text_truncated": "Testua moztu da aplikazioaren mugara egokitzeko.",
-      "calc_error": "Errorea gertatu da kalkulatzean. Begiratu kontsola."
-    },
-    "preset_alerts": {
-      "name_empty": "Izena ezin da hutsik egon.",
-      "wpm_invalid": "WPM {min} eta {max} arteko zenbaki bat izan behar da.",
-      "create_error": "Errorea gertatu da aurrezarpena sortzean. Begiratu kontsola.",
-      "edit_error": "Errorea gertatu da aurrezarpena editatzean. Begiratu kontsola.",
-      "process_error": "Errorea gertatu da aurrezarpena prozesatzean. Begiratu kontsola."
+      "close_aria": "Itxi nabigatzailearen hedapenaren elkarrizketa-koadroa",
+      "alerts": {
+        "modal_open_blocked": "Arakatzailearen luzapenaren elkarrizketa ezin da une honetan ireki."
+      }
     },
     "info": {
       "loading": "Kargatzen...",

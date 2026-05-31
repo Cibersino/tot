@@ -276,10 +276,10 @@ function createController(options = {}) {
   function checkEntryAvailability() {
     try {
       if (state.active) {
-        return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'SESSION_ACTIVE');
+        return buildBlockedResult('renderer.reading_test.alerts.precondition_blocked', 'SESSION_ACTIVE');
       }
       if (isProcessingModeActive()) {
-        return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PROCESSING_ACTIVE');
+        return buildBlockedResult('renderer.reading_test.alerts.precondition_blocked', 'PROCESSING_ACTIVE');
       }
 
       const context = getPreconditionContext();
@@ -293,12 +293,12 @@ function createController(options = {}) {
         : 0;
       const stopwatchAtZero = stopwatchElapsed === 0;
       if (openSecondaryWindows.length > 0 || stopwatchRunning || !stopwatchAtZero) {
-        return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PRECONDITION_BLOCKED');
+        return buildBlockedResult('renderer.reading_test.alerts.precondition_blocked', 'PRECONDITION_BLOCKED');
       }
 
       const poolInfo = readingTestPool.listPoolEntries();
       if (!poolInfo.ok) {
-        return buildBlockedResult('renderer.alerts.reading_test_pool_error', poolInfo.code || 'POOL_SCAN_FAILED');
+        return buildBlockedResult('renderer.reading_test.alerts.pool_error', poolInfo.code || 'POOL_SCAN_FAILED');
       }
 
       const entries = poolInfo.entries;
@@ -325,7 +325,7 @@ function createController(options = {}) {
   function ensureEligibleSelection(selection) {
     const poolInfo = readingTestPool.listPoolEntries();
     if (!poolInfo.ok) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_pool_error', code: poolInfo.code };
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.pool_error', code: poolInfo.code };
     }
 
     const showBundledEntries = readingTestPool.getShowBundledEntries();
@@ -335,7 +335,7 @@ function createController(options = {}) {
       && readingTestPool.hasHiddenBundledUnusedEntries(poolInfo.entries, showBundledEntries)) {
       return {
         ok: false,
-        guidanceKey: 'renderer.alerts.reading_test_visible_empty_bundled_hidden',
+        guidanceKey: 'renderer.reading_test.alerts.visible_empty_bundled_hidden',
         code: 'VISIBLE_EMPTY_BUNDLED_HIDDEN',
       };
     }
@@ -345,7 +345,7 @@ function createController(options = {}) {
       readingTestFiltersCore.normalizeSelection(selection)
     );
     if (!eligibleEntries.length) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_no_matching_files', code: 'NO_MATCHING_FILES' };
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.no_matching_files', code: 'NO_MATCHING_FILES' };
     }
 
     return { ok: true, eligibleEntries };
@@ -599,12 +599,12 @@ function createController(options = {}) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
       if (state.active) {
-        return { ok: false, code: 'SESSION_ACTIVE', guidanceKey: 'renderer.alerts.reading_test_precondition_blocked' };
+        return { ok: false, code: 'SESSION_ACTIVE', guidanceKey: 'renderer.reading_test.alerts.precondition_blocked' };
       }
 
       const resetInfo = readingTestPool.resetPoolUsageState();
       if (!resetInfo.ok) {
-        return { ok: false, code: resetInfo.code || 'POOL_RESET_FAILED', guidanceKey: 'renderer.alerts.reading_test_pool_error' };
+        return { ok: false, code: resetInfo.code || 'POOL_RESET_FAILED', guidanceKey: 'renderer.reading_test.alerts.pool_error' };
       }
 
       return checkEntryAvailability();
@@ -615,7 +615,7 @@ function createController(options = {}) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
       if (state.active) {
-        return { ok: false, code: 'SESSION_ACTIVE', guidanceKey: 'renderer.alerts.reading_test_precondition_blocked' };
+        return { ok: false, code: 'SESSION_ACTIVE', guidanceKey: 'renderer.reading_test.alerts.precondition_blocked' };
       }
 
       const setInfo = readingTestPool.setShowBundledEntries(nextValue);
@@ -623,7 +623,7 @@ function createController(options = {}) {
         return {
           ok: false,
           code: setInfo.code || 'READING_TEST_SET_SHOW_BUNDLED_ENTRIES_FAILED',
-          guidanceKey: 'renderer.alerts.reading_test_pool_error',
+          guidanceKey: 'renderer.reading_test.alerts.pool_error',
         };
       }
 

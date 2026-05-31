@@ -921,6 +921,89 @@ Estados de revisión recomendados:
           "en": "Drop here to extract text"
           // [CONCEPTO_APP] extracción de texto
         }
+      },
+      "alerts": {
+        "clipboard_too_large": {
+          "es": "El texto del portapapeles es demasiado grande para usarse. Acórtalo y vuelve a intentarlo.",
+          "en": "Clipboard text is too large to use. Shorten it and try again."
+          // [PROPÓSITO] Informa que la operación sobre el texto actual no puede comenzar porque el texto tomado desde el portapapeles ya supera el límite de caracteres para usarlo como entrada.
+          // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual
+        },
+        "apply_too_large": {
+          "es": "El texto quedaría demasiado grande para aplicarlo. Redúcelo y vuelve a intentarlo.",
+          "en": "The text would become too large to apply. Reduce it and try again."
+          // [PROPÓSITO] Informa que la operación sobre el texto actual no puede completarse porque, al aplicar el texto, el resultado final superaría el límite del texto actual admitido por la app.
+          // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
+        },
+        "apply_truncated": {
+          "es": "El texto fue truncado para ajustarse al límite de la app.",
+          "en": "The text was truncated to fit the app limit."
+          // [PROPÓSITO] Informa que la operación sobre el texto actual se completó, pero el texto final quedó recortado para ajustarse al límite del texto actual admitido por la app.
+          // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
+        },
+        "append_text_limit": {
+          "es": "No se puede agregar el texto: ya se alcanzó el tamaño máximo.",
+          "en": "Cannot append the text: maximum size reached."
+          // [PROPÓSITO] Informa que no se puede seguir agregando texto porque el texto actual ya alcanzó el límite máximo admitido por la app.
+          // [CONCEPTO_APP] texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
+        },
+        "overwrite_clipboard_error": {
+          "es": "Ocurrió un error al reemplazar el texto actual con el texto del portapapeles.",
+          "en": "An error occurred while replacing the current text with the clipboard text."
+          // [CONCEPTO_APP] texto actual; reemplazar texto actual; repeticiones de pegado
+        },
+        "append_clipboard_error": {
+          "es": "Ocurrió un error al agregar el texto del portapapeles al texto actual.",
+          "en": "An error occurred while appending the clipboard text to the current text."
+          // [CONCEPTO_APP] texto actual; agregar al texto actual; repeticiones de pegado
+        },
+        "clear_error": {
+          "es": "Ocurrió un error al vaciar el texto actual.",
+          "en": "An error occurred while clearing the current text."
+          // [CONCEPTO_APP] texto actual
+        },
+        "current_text_processing_locked": {
+          "es": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
+          "en": "Current text is still updating. Main-window interactions are locked until the latest text settles."
+          // [PROPÓSITO] Alerta cuando una actualización del texto actual bloquea temporalmente interacciones de la ventana principal.
+          // [CONCEPTO_APP] texto actual
+          // [NO_CONFUNDIR] No indica una extracción de texto en curso; indica que el texto actual aún no se estabiliza.
+        },
+        "current_text_recount_locked": {
+          "es": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
+          "en": "Current text results are still being recalculated. Main-window interactions are locked until the latest recount settles."
+          // [PROPÓSITO] Alerta cuando el reconteo de resultados del texto actual bloquea temporalmente interacciones de la ventana principal.
+          // [CONCEPTO_APP] texto actual
+          // [NO_CONFUNDIR] No indica extracción, OCR ni aplicación de texto nuevo; indica reconteo pendiente.
+        },
+        "wip": {
+          "design_skins": {
+            "es": "WIP: Aquí se abrirá el selector de skins en una futura versión.",
+            "en": "WIP: The skins selector will open here in a future version."
+            // [PROTEGIDO] `WIP`
+          },
+          "floating_stopwatch": {
+            "es": "WIP: Aquí se abrirá la configuración del Cronómetro Flotante en una futura versión.",
+            "en": "WIP: Floating Stopwatch settings will open here in a future version."
+            // [CONCEPTO_APP] Cronómetro Flotante
+            // [PROTEGIDO] `WIP`
+          },
+          "fonts": {
+            "es": "WIP: Aquí se abrirá el selector de fuentes en una futura versión.",
+            "en": "WIP: The fonts selector will open here in a future version."
+            // [PROTEGIDO] `WIP`
+          },
+          "colors": {
+            "es": "WIP: Aquí se abrirá el selector de colores en una futura versión.",
+            "en": "WIP: The colors selector will open here in a future version."
+            // [PROTEGIDO] `WIP`
+          },
+          "shortcuts": {
+            "es": "WIP: Aquí se abrirá el selector de atajos del teclado en una futura versión.",
+            "en": "WIP: The keyboard shortcuts selector will open here in a future version."
+            // [PROTEGIDO] `WIP`
+          }
+        }
       }
     },
     "text_extraction": {
@@ -1561,6 +1644,300 @@ Estados de revisión recomendados:
           "en": "Close heavy PDF for OCR window"
           // [PROTEGIDO] `PDF`; `OCR`
         }
+      },
+      "alerts": {
+        "start_error": {
+          "es": "Ocurrió un error al iniciar la extracción.",
+          "en": "An error occurred while starting extraction."
+          // [CONCEPTO_APP] extracción de texto
+        },
+        "precondition_blocked": {
+          "es": "Para iniciar la extracción, cierra todas las ventanas secundarias y detén el cronómetro.",
+          "en": "To start text extraction, close all secondary windows and stop the stopwatch."
+          // [PROPÓSITO] Alerta de bloqueo preventivo antes de iniciar extracción por ventanas secundarias abiertas o cronómetro no restablecido a 0.
+          // [CONCEPTO_APP] extracción de texto; Cronómetro; ventanas secundarias
+        },
+        "precondition_error": {
+          "es": "Ocurrió un error al revisar las precondiciones de extracción.",
+          "en": "An error occurred while checking text extraction preconditions."
+          // [CONCEPTO_APP] extracción de texto; Cronómetro; ventanas secundarias
+        },
+        "processing_locked": {
+          "es": "Hay una extracción en curso. Las interacciones de la ventana principal están bloqueadas hasta que termine la extracción o sea cancelada.",
+          "en": "There is an extraction in progress. Main-window interactions are locked until the extraction finishes or is cancelled."
+          // [PROPÓSITO] Alerta cuando una extracción en curso bloquea interacciones de la ventana principal.
+          // [CONCEPTO_APP] extracción de texto
+        },
+        "abort_error": {
+          "es": "Ocurrió un error al solicitar la cancelación.",
+          "en": "An error occurred while requesting cancellation."
+          // [CONCEPTO_APP] extracción de texto
+        },
+        "cancellation_requested": {
+          "es": "Cancelación solicitada. Por favor, espera a que termine.",
+          "en": "Cancellation requested. Please wait for it to finish."
+          // [CONCEPTO_APP] extracción de texto
+        },
+        "cancellation_complete": {
+          "es": "La cancelación terminó.",
+          "en": "Cancellation finished."
+          // [CONCEPTO_APP] extracción de texto
+        },
+        "drop_invalid_file": {
+          "es": "El elemento soltado no es un archivo local válido.",
+          "en": "Dropped item is not a valid local file."
+          // [CONCEPTO_APP] extracción de texto
+        },
+        "generated_pdf_cleanup_warning": {
+          "es": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
+          "en": "Extraction finished, but a generated local PDF could not be cleaned up automatically."
+          // [PROPÓSITO] Advertencia de limpieza local fallida de un PDF generado después de completar extracción.
+          // [CONCEPTO_APP] PDF generado
+          // [PROTEGIDO] `PDF`
+        },
+        "route_choice_error": {
+          "es": "Ocurrió un error al elegir la ruta de extracción.",
+          "en": "An error occurred while choosing the extraction route."
+          // [PROPÓSITO] Alerta de fallo en el paso crítico de elección de ruta de extracción.
+          // [CONCEPTO_APP] ruta de extracción
+        },
+        "generated_pdf_reveal_failed": {
+          "es": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
+          "en": "The saved PDF could not be revealed. Check whether the file still exists."
+          // [PROPÓSITO] Alerta cuando no se puede mostrar la carpeta de un PDF generado guardado.
+          // [CONCEPTO_APP] PDF generado; PDF guardado
+          // [PROTEGIDO] `PDF`
+        },
+        "apply_error": {
+          "es": "Ocurrió un error al aplicar el texto extraído.",
+          "en": "An error occurred while applying extracted text."
+          // [CONCEPTO_APP] extracción de texto; texto actual
+        },
+        "prepare_invalid": {
+          "es": "La solicitud preparada de extracción ya no es válida. Inicia el flujo nuevamente.",
+          "en": "The prepared extraction request is no longer valid. Start the flow again."
+          // [PROPÓSITO] Informa que el estado preparado para ejecutar la extracción ya no es válido o ya no coincide con el archivo fuente, por lo que el flujo debe iniciarse de nuevo.
+          // [CONCEPTO_APP] extracción de texto; PDF fuente
+        },
+        "unsupported_format": {
+          "es": "La extracción de texto no admite este formato de archivo.",
+          "en": "Text extraction does not support this file format."
+          // [CONCEPTO_APP] extracción de texto
+        },
+        "pdf": {
+          "unreadable_or_corrupt": {
+            "es": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
+            "en": "This PDF is unreadable or corrupt. Check the file and try again."
+            // [CONCEPTO_APP] PDF fuente
+            // [PROTEGIDO] `PDF`
+          },
+          "encrypted_or_password_protected": {
+            "es": "Este PDF está cifrado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
+            "en": "This PDF is encrypted or password-protected. Unlock it and try again."
+            // [CONCEPTO_APP] PDF fuente
+            // [PROTEGIDO] `PDF`
+          },
+          "page_count_unavailable": {
+            "es": "No fue posible determinar el número de páginas de este PDF.",
+            "en": "Could not determine the number of pages in this PDF."
+            // [CONCEPTO_APP] PDF fuente
+            // [PROTEGIDO] `PDF`
+          },
+          "page_selection_invalid": {
+            "es": "El rango de páginas seleccionado para el PDF es inválido. Ajusta el rango y vuelve a intentarlo.",
+            "en": "The selected PDF page range is invalid. Adjust the range and try again."
+            // [PROPÓSITO] Alerta cuando la selección de páginas PDF no es válida para continuar.
+            // [CONCEPTO_APP] selección de páginas PDF
+            // [PROTEGIDO] `PDF`
+          },
+          "subset_creation_failed": {
+            "es": "No fue posible crear el PDF de páginas seleccionadas para la extracción. Revisa el archivo y vuelve a intentarlo.",
+            "en": "The selected-page PDF could not be created for extraction. Check the file and try again."
+            // [PROPÓSITO] Alerta cuando falla la creación del PDF generado de páginas seleccionadas.
+            // [CONCEPTO_APP] PDF generado; selección de páginas PDF
+            // [PROTEGIDO] `PDF`
+          }
+        },
+        "ocr": {
+          "unavailable": {
+            "es": "OCR no está disponible. Revisa la configuración/autenticación y vuelve a intentarlo.",
+            "en": "OCR is unavailable. Check setup/auth status and try again."
+            // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+            // [PROTEGIDO] `OCR`
+          },
+          "activation_required": {
+            "es": "Se requiere activar OCR. Inicia sesión en Google OCR y vuelve a intentarlo.",
+            "en": "OCR activation is required. Sign in to Google OCR and try again."
+            // [PROPÓSITO] Alerta durante extracción individual cuando OCR requiere activación/autenticación antes de continuar.
+            // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+            // [PROTEGIDO] `OCR`; `Google OCR`
+          },
+          "activation_success": {
+            "es": "Activación OCR completada. Reintentando extracción.",
+            "en": "OCR activation completed. Retrying extraction."
+            // [PROPÓSITO] Alerta de activación OCR completada con reintento automático de extracción.
+            // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+            // [PROTEGIDO] `OCR`
+          },
+          "activation_cancelled": {
+            "es": "La activación OCR fue cancelada. La extracción no continuó.",
+            "en": "OCR activation was cancelled. Extraction did not continue."
+            // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+            // [PROTEGIDO] `OCR`
+          },
+          "token_state_invalid": {
+            "es": "El estado guardado de inicio de sesión de Google OCR es inválido. Reconecta Google OCR y vuelve a intentarlo.",
+            "en": "Saved Google OCR sign-in state is invalid. Reconnect Google OCR and try again."
+            // [CONCEPTO_APP] OCR; Google OCR; token local OCR
+            // [PROTEGIDO] `Google OCR`
+          },
+          "activation_failed": {
+            "es": "La activación OCR falló. Revisa la configuración/autenticación y vuelve a intentarlo.",
+            "en": "OCR activation failed. Check setup/auth status and try again."
+            // [CONCEPTO_APP] OCR; Google OCR; token local OCR; credenciales OAuth OCR
+            // [PROTEGIDO] `OCR`
+          },
+          "enable_success": {
+            "es": "Google OCR quedó activado.",
+            "en": "Google OCR is now enabled."
+            // [PROPÓSITO] Alerta de activación manual de Google OCR desde Preferencias.
+            // [CONCEPTO_APP] Google OCR; token local OCR
+            // [PROTEGIDO] `Google OCR`
+          },
+          "enable_cancelled": {
+            "es": "La activación de Google OCR fue cancelada.",
+            "en": "Google OCR activation was cancelled."
+            // [CONCEPTO_APP] Google OCR; token local OCR
+            // [PROTEGIDO] `Google OCR`
+          },
+          "enable_failed": {
+            "es": "No se pudo activar Google OCR. Revisa la configuración/autenticación y vuelve a intentarlo.",
+            "en": "Google OCR could not be enabled. Check setup/auth status and try again."
+            // [CONCEPTO_APP] Google OCR; token local OCR; credenciales OAuth OCR
+            // [PROTEGIDO] `Google OCR`
+          },
+          "disconnect_success": {
+            "es": "Google OCR fue desconectado. El token guardado de Google fue revocado y se eliminó el estado local de inicio de sesión.",
+            "en": "Google OCR was disconnected. The saved Google token was revoked and the local sign-in state was removed."
+            // [PROPÓSITO] Alerta de desconexión manual de Google OCR con revocación/eliminación del estado local.
+            // [CONCEPTO_APP] Google OCR; token local OCR
+            // [PROTEGIDO] `Google OCR`; `Google`
+          },
+          "disconnect_not_connected": {
+            "es": "Google OCR no está conectado actualmente en esta instancia de la app.",
+            "en": "Google OCR is not currently connected in this app instance."
+            // [CONCEPTO_APP] Google OCR; token local OCR
+            // [PROTEGIDO] `Google OCR`
+          },
+          "disconnect_failed": {
+            "es": "La desconexión de Google OCR falló. El estado guardado de inicio de sesión no fue eliminado.",
+            "en": "Google OCR disconnect failed. The saved sign-in state was not removed."
+            // [CONCEPTO_APP] Google OCR; token local OCR
+            // [PROTEGIDO] `Google OCR`
+          },
+          "connectivity_failed": {
+            "es": "OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo.",
+            "en": "OCR requires an internet connection. Check your connection and try again."
+            // [CONCEPTO_APP] OCR; Google OCR
+            // [PROTEGIDO] `OCR`
+          },
+          "setup_missing_credentials": {
+            "es": "OCR no está disponible en este build de la app porque faltan las credenciales OAuth de Google incluidas con la app.",
+            "en": "OCR is unavailable in this app build because the bundled Google OAuth credentials are missing."
+            // [CONCEPTO_APP] OCR; Google OCR; credenciales OAuth OCR
+            // [PROTEGIDO] `OCR`; `OAuth`; `Google`
+          },
+          "setup_invalid_credentials": {
+            "es": "OCR no está disponible en este build de la app porque las credenciales OAuth de Google incluidas con la app son inválidas.",
+            "en": "OCR is unavailable in this app build because the bundled Google OAuth credentials are invalid."
+            // [CONCEPTO_APP] OCR; Google OCR; credenciales OAuth OCR
+            // [PROTEGIDO] `OCR`; `OAuth`; `Google`
+          },
+          "quota_or_rate_limited": {
+            "es": "OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo.",
+            "en": "OCR is temporarily blocked by quota/rate limits. Wait and try again."
+            // [CONCEPTO_APP] OCR; Google OCR
+            // [PROTEGIDO] `OCR`
+          },
+          "runtime_error": {
+            "es": "Ocurrió un error de ejecución de OCR durante la extracción.",
+            "en": "An OCR runtime error occurred during extraction."
+            // [CONCEPTO_APP] OCR; extracción de texto
+            // [PROTEGIDO] `OCR`
+          },
+          "cancelled": {
+            "es": "La extracción OCR fue cancelada.",
+            "en": "OCR text extraction was cancelled."
+            // [CONCEPTO_APP] OCR; extracción de texto
+            // [PROTEGIDO] `OCR`
+          },
+          "cleanup_warning": {
+            "es": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
+            "en": "OCR finished, but temporary remote file cleanup failed. Check your Google Drive folder."
+            // [PROPÓSITO] Advertencia de limpieza remota fallida del documento temporal usado por OCR.
+            // [CONCEPTO_APP] OCR; Google OCR; extracción de texto
+            // [PROTEGIDO] `OCR`; `Google Drive`
+          }
+        },
+        "batch_ocr": {
+          "activation_required": {
+            "es": "Este lote incluye ítems con OCR, pero Google OCR no está activado. Usa Preferencias > Activar Google OCR y luego vuelve a iniciar la extracción.",
+            "en": "This batch includes OCR items, but Google OCR is not enabled. Use Preferences > Enable Google OCR, then start the extraction again."
+            // [PROPÓSITO] Alerta previa a lote con ítems OCR cuando Google OCR no está activado.
+            // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; OCR; Google OCR; token local OCR
+            // [PROTEGIDO] `OCR`; `Google OCR`
+          },
+          "token_state_invalid": {
+            "es": "Este lote incluye ítems con OCR, pero el estado guardado de inicio de sesión de Google OCR no es válido. Usa Preferencias > Activar Google OCR de nuevo y luego vuelve a iniciar la extracción.",
+            "en": "This batch includes OCR items, but the saved Google OCR sign-in state is invalid. Use Preferences > Enable Google OCR again, then start the extraction again."
+            // [PROPÓSITO] Alerta previa a lote con OCR cuando el estado guardado de inicio de sesión no es válido.
+            // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
+            // [PROTEGIDO] `OCR`; `Google OCR`
+          },
+          "connectivity_failed": {
+            "es": "Este lote incluye ítems con OCR, pero OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo antes de iniciar la extracción.",
+            "en": "This batch includes OCR items, but OCR requires an internet connection. Check your connection and try again before starting the extraction."
+            // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
+            // [PROTEGIDO] `OCR`
+          },
+          "quota_or_rate_limited": {
+            "es": "Este lote incluye ítems con OCR, pero OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo antes de iniciar la extracción.",
+            "en": "This batch includes OCR items, but OCR is temporarily blocked by quota/rate limits. Wait and try again before starting the extraction."
+            // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
+            // [PROTEGIDO] `OCR`
+          },
+          "unavailable": {
+            "es": "Este lote incluye ítems con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está activado, usa Preferencias > Activar Google OCR. Si ya estaba activado, revisa el estado/configuración de OCR y vuelve a intentarlo antes de iniciar la extracción.",
+            "en": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise, check the OCR setup/status and try again before starting the extraction."
+            // [PROPÓSITO] Alerta previa a lote cuando OCR no está disponible para ítems que lo requieren.
+            // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
+            // [PROTEGIDO] `OCR`; `Google OCR`
+          }
+        },
+        "native": {
+          "runtime_error": {
+            "es": "Ocurrió un error en la ejecución de la extracción nativa.",
+            "en": "A native extraction runtime error occurred."
+            // [CONCEPTO_APP] ruta nativa; extracción de texto
+          },
+          "unreadable_or_corrupt": {
+            "es": "El archivo seleccionado es ilegible o está corrupto para extracción nativa.",
+            "en": "The selected file is unreadable or corrupt for native extraction."
+            // [CONCEPTO_APP] ruta nativa; extracción de texto
+          },
+          "encrypted_or_password_protected": {
+            "es": "El PDF seleccionado está cifrado o protegido por contraseña y no puede extraerse por ruta nativa.",
+            "en": "The selected PDF is encrypted or password-protected and cannot be extracted natively."
+            // [PROPÓSITO] Alerta específica de PDF cifrado/protegido cuando la ruta nativa no puede extraerlo.
+            // [CONCEPTO_APP] ruta nativa; PDF fuente; extracción de texto
+            // [PROTEGIDO] `PDF`
+          },
+          "cancelled": {
+            "es": "La extracción nativa fue cancelada.",
+            "en": "Native extraction was cancelled."
+            // [CONCEPTO_APP] ruta nativa; extracción de texto
+          }
+        }
       }
     },
     "editor": {
@@ -1621,6 +1998,75 @@ Estados de revisión recomendados:
         "en": "Clear"
         // [PROPÓSITO] Borrar todo el texto del Editor de Texto.
         // [CONCEPTO_APP] Editor de Texto
+      },
+      "alerts": {
+        "start_failed": {
+          "es": "No se pudo iniciar el Editor de Texto.",
+          "en": "The Text Editor could not be started."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "start_timeout": {
+          "es": "El Editor de Texto tardó demasiado en iniciar y fue cerrado.",
+          "en": "The Text Editor took too long to start and was closed."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "paste_too_big": {
+          "es": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
+          "en": "Text too large to paste directly. Use the main window buttons."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "drop_too_big": {
+          "es": "Texto arrastrado demasiado grande. Usa los botones de la ventana principal.",
+          "en": "Dropped text is too large. Use the main window buttons to add large text."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "paste_no_text": {
+          "es": "El portapapeles no contiene texto plano.",
+          "en": "Clipboard does not contain plain text."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "drop_no_text": {
+          "es": "Arrastrar y soltar: no se detectó texto plano.",
+          "en": "Drag and drop: no plain text detected."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "type_limit": {
+          "es": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido.",
+          "en": "Cannot type more text: maximum size reached."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "paste_limit": {
+          "es": "No es posible pegar más texto: ya se alcanzó el tamaño máximo permitido.",
+          "en": "Cannot paste more text: maximum size reached."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "drop_limit": {
+          "es": "No es posible soltar más texto: ya se alcanzó el tamaño máximo permitido.",
+          "en": "Cannot drop more text: maximum size reached."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "paste_truncated": {
+          "es": "El texto pegado se ha truncado para no exceder el máximo permitido.",
+          "en": "Pasted text was truncated to avoid exceeding the maximum."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "drop_truncated": {
+          "es": "El texto arrastrado excedía el espacio disponible y fue truncado.",
+          "en": "Dragged text exceeded the available space and was truncated."
+          // [CONCEPTO_APP] Editor de Texto
+        },
+        "text_truncated": {
+          "es": "El texto fue truncado para ajustarse al límite máximo de la app.",
+          "en": "Text was truncated to fit the app limit."
+          // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
+          // [CONCEPTO_APP] Editor de Texto; texto actual
+        },
+        "calc_error": {
+          "es": "Ocurrió un error al guardar el texto como texto actual.",
+          "en": "An error occurred while saving the text as the current text."
+          // [PROPÓSITO] Alerta de fallo al guardar desde el Editor de Texto hacia el texto actual con `Aplicar` o auto-aplicar.
+          // [CONCEPTO_APP] Editor de Texto; texto actual
+        }
       }
     },
     "editor_find": {
@@ -1689,6 +2135,46 @@ Estados de revisión recomendados:
       "status_empty_query": {
         "es": "Escribe para buscar",
         "en": "Type to search"
+      }
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": {
+          "es": "Snapshot de texto guardado.",
+          "en": "Text snapshot saved."
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "save_error": {
+          "es": "No se pudo guardar el snapshot de texto.",
+          "en": "Could not save the text snapshot."
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "load_success": {
+          "es": "Snapshot de texto cargado.",
+          "en": "Text snapshot loaded."
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "load_error": {
+          "es": "No se pudo cargar el snapshot de texto.",
+          "en": "Could not load the text snapshot."
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "outside": {
+          "es": "El snapshot de texto debe estar dentro de la carpeta de snapshots.",
+          "en": "The text snapshot must be inside the snapshots folder."
+          // [CONCEPTO_APP] snapshot de texto
+        },
+        "truncated": {
+          "es": "El snapshot de texto excedía el tamaño máximo y fue truncado.",
+          "en": "Text snapshot exceeded the maximum size and was truncated."
+          // [PROPÓSITO] El texto contenido por el snapshot fue aplicado al texto actual, pero fue truncado al superar el límite admitido por la app.
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "unavailable": {
+          "es": "La función de snapshots de texto no está disponible.",
+          "en": "Text snapshot functionality is unavailable."
+          // [CONCEPTO_APP] snapshot de texto
+        }
       }
     },
     "snapshot_save_tags": {
@@ -2494,6 +2980,85 @@ Estados de revisión recomendados:
             "en": "Continue"
           }
         }
+      },
+      "alerts": {
+        "unavailable": {
+          "es": "La funcionalidad del test de velocidad de lectura no está disponible.",
+          "en": "The reading speed test feature is unavailable."
+          // [CONCEPTO_APP] Test de velocidad de lectura
+        },
+        "precondition_blocked": {
+          "es": "El test de velocidad de lectura solo puede iniciarse desde un estado estable de la app. Cierra las ventanas secundarias y asegúrate de que el cronómetro esté detenido.",
+          "en": "The reading speed test can only start from a steady app state. Close secondary windows and make sure the stopwatch is stopped."
+          // [PROPÓSITO] Alerta de bloqueo preventivo del test por estado no estable de la app.
+          // [CONCEPTO_APP] Test de velocidad de lectura; Cronómetro; ventanas secundarias
+        },
+        "pool_error": {
+          "es": "Ocurrió un error al revisar el pool del test de velocidad de lectura.",
+          "en": "An error occurred while checking the reading speed test pool."
+          // [CONCEPTO_APP] pool del test
+        },
+        "no_matching_files": {
+          "es": "No quedan archivos de test sin usar que coincidan con la selección actual.",
+          "en": "There are no remaining unused test files that match the current selection."
+          // [CONCEPTO_APP] pool del test; archivos de test
+        },
+        "visible_empty_bundled_hidden": {
+          "es": "Los archivos de test incorporados están desactivados y no quedan archivos visibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
+          "en": "The built-in test files are disabled and there are no remaining unused files. Re-enable them or import more files to continue."
+          // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
+          // [CONCEPTO_APP] pool del test; archivos de test; tests incorporados
+        },
+        "current_text_empty": {
+          "es": "El texto actual está vacío. Carga o escribe un texto antes de iniciar el test con texto actual.",
+          "en": "The current text is empty. Load or type text before starting the test with current text."
+          // [PROPÓSITO] Alerta específica de inicio del test con texto actual vacío.
+          // [CONCEPTO_APP] Test de velocidad de lectura; texto actual
+        },
+        "result_invalid": {
+          "es": "El resultado del test no pudo convertirse en un WPM válido. El flujo terminó sin abrir la ventana de preset.",
+          "en": "The test result could not be converted into a valid WPM. The flow ended without opening the preset window."
+          // [PROPÓSITO] Alerta cuando el resultado del test no puede convertirse en un WPM válido y la ventana modal para creación de un preset de velocidad se deja sin abrir.
+          // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
+          // [PROTEGIDO] `WPM`
+        },
+        "result_unavailable": {
+          "es": "No se pudo mostrar el resultado de velocidad de lectura. El flujo continuó.",
+          "en": "The reading speed result could not be shown. The flow continued."
+          // [CONCEPTO_APP] Test de velocidad de lectura
+        },
+        "preset_unavailable": {
+          "es": "No se pudo abrir la ventana de preset después del test.",
+          "en": "The preset window could not be opened after the test."
+          // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
+        },
+        "questions_unavailable": {
+          "es": "No se pudo abrir la ventana de preguntas de comprensión. El flujo terminó antes de crear el preset.",
+          "en": "The comprehension questions window could not be opened. The flow ended before preset creation."
+          // [PROPÓSITO] Alerta cuando no puede abrirse la ventana de preguntas y el flujo termina antes de crear preset de velocidad.
+          // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
+        },
+        "pool_import_failed": {
+          "es": "No se pudieron importar los archivos del test de velocidad de lectura.",
+          "en": "The reading speed test files could not be imported."
+          // [CONCEPTO_APP] pool del test; archivos de test
+        },
+        "start_failed": {
+          "es": "No se pudo iniciar el test de velocidad de lectura.",
+          "en": "The reading speed test could not be started."
+          // [CONCEPTO_APP] Test de velocidad de lectura
+        },
+        "cancelled": {
+          "es": "El test de velocidad de lectura fue cancelado.",
+          "en": "The reading speed test was cancelled."
+          // [CONCEPTO_APP] Test de velocidad de lectura
+        },
+        "cancelled_window_closed": {
+          "es": "El test de velocidad de lectura fue cancelado porque una de sus ventanas de sesión se cerró.",
+          "en": "The reading speed test was cancelled because one of its session windows closed."
+          // [PROPÓSITO] Alerta de cancelación del test causada por cierre de una ventana de sesión.
+          // [CONCEPTO_APP] Test de velocidad de lectura
+        }
       }
     },
     "modal_preset": {
@@ -2554,6 +3119,78 @@ Estados de revisión recomendados:
       "save": {
         "es": "Guardar",
         "en": "Save"
+      },
+      "alerts": {
+        "unavailable": {
+          "es": "La ventana de preset no está disponible en esta build de la app.",
+          "en": "The preset window is unavailable in this app build."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "open_error": {
+          "es": "Ocurrió un error al abrir la ventana de preset.",
+          "en": "An error occurred while opening the preset window."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "name_empty": {
+          "es": "El nombre no puede estar vacío.",
+          "en": "Name cannot be empty."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "wpm_invalid": {
+          "es": "WPM debe ser un número entre {min} y {max}.",
+          "en": "WPM must be a number between {min} and {max}."
+          // [CONCEPTO_APP] preset de velocidad de lectura; velocidad de lectura
+          // [PROTEGIDO] `WPM`
+        },
+        "create_error": {
+          "es": "Ocurrió un error al crear el preset.",
+          "en": "An error occurred while creating the preset."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "edit_error": {
+          "es": "Ocurrió un error al editar el preset.",
+          "en": "An error occurred while editing the preset."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "process_error": {
+          "es": "Ocurrió un error al procesar el preset.",
+          "en": "An error occurred while processing the preset."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        }
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": {
+          "es": "Preset seleccionado no encontrado.",
+          "en": "Selected preset not found."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "delete_error": {
+          "es": "Ocurrió un error al borrar el preset.",
+          "en": "An error occurred while deleting the preset."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "restore_error": {
+          "es": "Ocurrió un error al restaurar presets.",
+          "en": "An error occurred while restoring presets."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "open_folder_unsupported": {
+          "es": "No es posible abrir la carpeta de presets en este entorno.",
+          "en": "Cannot open presets folder in this environment."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "open_folder_error": {
+          "es": "Ocurrió un error al intentar abrir la carpeta de presets.",
+          "en": "An error occurred while trying to open the presets folder."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "open_default_folder_failed": {
+          "es": "No se pudo abrir la carpeta de presets por defecto.",
+          "en": "Could not open the default presets folder."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        }
       }
     },
     "browser_extension": {
@@ -2584,626 +3221,13 @@ Estados de revisión recomendados:
         "es": "Cerrar ventana de extensión del navegador",
         "en": "Close browser extension window"
         // [CONCEPTO_APP] extensión del navegador
-      }
-    },
-    "alerts": {
-      "clipboard_too_large": {
-        "es": "El texto del portapapeles es demasiado grande para usarse. Acórtalo y vuelve a intentarlo.",
-        "en": "Clipboard text is too large to use. Shorten it and try again."
-        // [PROPÓSITO] Informa que la operación sobre el texto actual no puede comenzar porque el texto tomado desde el portapapeles ya supera el límite de caracteres para usarlo como entrada.
-        // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual
       },
-      "apply_too_large": {
-        "es": "El texto quedaría demasiado grande para aplicarlo. Redúcelo y vuelve a intentarlo.",
-        "en": "The text would become too large to apply. Reduce it and try again."
-        // [PROPÓSITO] Informa que la operación sobre el texto actual no puede completarse porque, al aplicar el texto, el resultado final superaría el límite del texto actual admitido por la app.
-        // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
-      },
-      "apply_truncated": {
-        "es": "El texto fue truncado para ajustarse al límite de la app.",
-        "en": "The text was truncated to fit the app limit."
-        // [PROPÓSITO] Informa que la operación sobre el texto actual se completó, pero el texto final quedó recortado para ajustarse al límite del texto actual admitido por la app.
-        // [CONCEPTO_APP] texto actual; reemplazar texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
-      },
-      "append_text_limit": {
-        "es": "No se puede agregar el texto: ya se alcanzó el tamaño máximo.",
-        "en": "Cannot append the text: maximum size reached."
-        // [PROPÓSITO] Informa que no se puede seguir agregando texto porque el texto actual ya alcanzó el límite máximo admitido por la app.
-        // [CONCEPTO_APP] texto actual; agregar al texto actual; repeticiones de pegado; extracción de texto
-      },
-      "overwrite_clipboard_error": {
-        "es": "Ocurrió un error al reemplazar el texto actual con el texto del portapapeles.",
-        "en": "An error occurred while replacing the current text with the clipboard text."
-        // [CONCEPTO_APP] texto actual; reemplazar texto actual; repeticiones de pegado
-      },
-      "append_clipboard_error": {
-        "es": "Ocurrió un error al agregar el texto del portapapeles al texto actual.",
-        "en": "An error occurred while appending the clipboard text to the current text."
-        // [CONCEPTO_APP] texto actual; agregar al texto actual; repeticiones de pegado
-      },
-      "clear_error": {
-        "es": "Ocurrió un error al vaciar el texto actual.",
-        "en": "An error occurred while clearing the current text."
-        // [CONCEPTO_APP] texto actual
-      },
-      "snapshot_save_success": {
-        "es": "Snapshot de texto guardado.",
-        "en": "Text snapshot saved."
-        // [CONCEPTO_APP] snapshot de texto; texto actual
-      },
-      "snapshot_save_error": {
-        "es": "No se pudo guardar el snapshot de texto.",
-        "en": "Could not save the text snapshot."
-        // [CONCEPTO_APP] snapshot de texto; texto actual
-      },
-      "snapshot_load_success": {
-        "es": "Snapshot de texto cargado.",
-        "en": "Text snapshot loaded."
-        // [CONCEPTO_APP] snapshot de texto; texto actual
-      },
-      "snapshot_load_error": {
-        "es": "No se pudo cargar el snapshot de texto.",
-        "en": "Could not load the text snapshot."
-        // [CONCEPTO_APP] snapshot de texto; texto actual
-      },
-      "snapshot_outside": {
-        "es": "El snapshot de texto debe estar dentro de la carpeta de snapshots.",
-        "en": "The text snapshot must be inside the snapshots folder."
-        // [CONCEPTO_APP] snapshot de texto
-      },
-      "snapshot_truncated": {
-        "es": "El snapshot de texto excedía el tamaño máximo y fue truncado.",
-        "en": "Text snapshot exceeded the maximum size and was truncated."
-        // [PROPÓSITO] El texto contenido por el snapshot fue aplicado al texto actual, pero fue truncado al superar el límite admitido por la app.
-        // [CONCEPTO_APP] snapshot de texto; texto actual
-      },
-      "snapshot_unavailable": {
-        "es": "La función de snapshots de texto no está disponible.",
-        "en": "Text snapshot functionality is unavailable."
-        // [CONCEPTO_APP] snapshot de texto
-      },
-      "browser_extension_modal_open_blocked": {
-        "es": "La ventana de la extensión del navegador no puede abrirse ahora mismo.",
-        "en": "The browser extension window cannot be opened right now."
-        // [CONCEPTO_APP] extensión del navegador
-      },
-      "preset_not_found": {
-        "es": "Preset seleccionado no encontrado.",
-        "en": "Selected preset not found."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "preset_modal_unavailable": {
-        "es": "La ventana de preset no está disponible en esta build de la app.",
-        "en": "The preset window is unavailable in this app build."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "preset_modal_open_error": {
-        "es": "Ocurrió un error al abrir la ventana de preset.",
-        "en": "An error occurred while opening the preset window."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "delete_error": {
-        "es": "Ocurrió un error al borrar el preset.",
-        "en": "An error occurred while deleting the preset."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "restore_error": {
-        "es": "Ocurrió un error al restaurar presets.",
-        "en": "An error occurred while restoring presets."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "open_presets_unsupported": {
-        "es": "No es posible abrir la carpeta de presets en este entorno.",
-        "en": "Cannot open presets folder in this environment."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "open_presets_error": {
-        "es": "Ocurrió un error al intentar abrir la carpeta de presets.",
-        "en": "An error occurred while trying to open the presets folder."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "open_presets_fail": {
-        "es": "No se pudo abrir la carpeta de presets por defecto.",
-        "en": "Could not open the default presets folder."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "text_extraction_error": {
-        "es": "Ocurrió un error al iniciar la extracción.",
-        "en": "An error occurred while starting extraction."
-        // [CONCEPTO_APP] extracción de texto
-      },
-      "text_extraction_precondition_blocked": {
-        "es": "Para iniciar la extracción, cierra todas las ventanas secundarias y detén el cronómetro.",
-        "en": "To start text extraction, close all secondary windows and stop the stopwatch."
-        // [PROPÓSITO] Alerta de bloqueo preventivo antes de iniciar extracción por ventanas secundarias abiertas o cronómetro no restablecido a 0.
-        // [CONCEPTO_APP] extracción de texto; Cronómetro; ventanas secundarias
-      },
-      "text_extraction_precondition_error": {
-        "es": "Ocurrió un error al revisar las precondiciones de extracción.",
-        "en": "An error occurred while checking text extraction preconditions."
-        // [CONCEPTO_APP] extracción de texto; Cronómetro; ventanas secundarias
-      },
-      "text_extraction_processing_locked": {
-        "es": "Hay una extracción en curso. Las interacciones de la ventana principal están bloqueadas hasta que termine la extracción o sea cancelada.",
-        "en": "There is an extraction in progress. Main-window interactions are locked until the extraction finishes or is cancelled."
-        // [PROPÓSITO] Alerta cuando una extracción en curso bloquea interacciones de la ventana principal.
-        // [CONCEPTO_APP] extracción de texto
-      },
-      "current_text_processing_locked": {
-        "es": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
-        "en": "Current text is still updating. Main-window interactions are locked until the latest text settles."
-        // [PROPÓSITO] Alerta cuando una actualización del texto actual bloquea temporalmente interacciones de la ventana principal.
-        // [CONCEPTO_APP] texto actual
-        // [NO_CONFUNDIR] No indica una extracción de texto en curso; indica que el texto actual aún no se estabiliza.
-      },
-      "current_text_recount_locked": {
-        "es": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
-        "en": "Current text results are still being recalculated. Main-window interactions are locked until the latest recount settles."
-        // [PROPÓSITO] Alerta cuando el reconteo de resultados del texto actual bloquea temporalmente interacciones de la ventana principal.
-        // [CONCEPTO_APP] texto actual
-        // [NO_CONFUNDIR] No indica extracción, OCR ni aplicación de texto nuevo; indica reconteo pendiente.
-      },
-      "text_extraction_abort_error": {
-        "es": "Ocurrió un error al solicitar la cancelación.",
-        "en": "An error occurred while requesting cancellation."
-        // [CONCEPTO_APP] extracción de texto
-      },
-      "text_extraction_cancellation_requested": {
-        "es": "Cancelación solicitada. Por favor, espera a que termine.",
-        "en": "Cancellation requested. Please wait for it to finish."
-        // [CONCEPTO_APP] extracción de texto
-      },
-      "text_extraction_cancellation_complete": {
-        "es": "La cancelación terminó.",
-        "en": "Cancellation finished."
-        // [CONCEPTO_APP] extracción de texto
-      },
-      "text_extraction_drop_invalid_file": {
-        "es": "El elemento soltado no es un archivo local válido.",
-        "en": "Dropped item is not a valid local file."
-        // [CONCEPTO_APP] extracción de texto
-      },
-      "text_extraction_pdf_unreadable_or_corrupt": {
-        "es": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
-        "en": "This PDF is unreadable or corrupt. Check the file and try again."
-        // [CONCEPTO_APP] PDF fuente
-        // [PROTEGIDO] `PDF`
-      },
-      "text_extraction_pdf_encrypted_or_password_protected": {
-        "es": "Este PDF está cifrado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
-        "en": "This PDF is encrypted or password-protected. Unlock it and try again."
-        // [CONCEPTO_APP] PDF fuente
-        // [PROTEGIDO] `PDF`
-      },
-      "text_extraction_pdf_page_count_unavailable": {
-        "es": "No fue posible determinar el número de páginas de este PDF.",
-        "en": "Could not determine the number of pages in this PDF."
-        // [CONCEPTO_APP] PDF fuente
-        // [PROTEGIDO] `PDF`
-      },
-      "text_extraction_pdf_page_selection_invalid": {
-        "es": "El rango de páginas seleccionado para el PDF es inválido. Ajusta el rango y vuelve a intentarlo.",
-        "en": "The selected PDF page range is invalid. Adjust the range and try again."
-        // [PROPÓSITO] Alerta cuando la selección de páginas PDF no es válida para continuar.
-        // [CONCEPTO_APP] selección de páginas PDF
-        // [PROTEGIDO] `PDF`
-      },
-      "text_extraction_pdf_subset_creation_failed": {
-        "es": "No fue posible crear el PDF de páginas seleccionadas para la extracción. Revisa el archivo y vuelve a intentarlo.",
-        "en": "The selected-page PDF could not be created for extraction. Check the file and try again."
-        // [PROPÓSITO] Alerta cuando falla la creación del PDF generado de páginas seleccionadas.
-        // [CONCEPTO_APP] PDF generado; selección de páginas PDF
-        // [PROTEGIDO] `PDF`
-      },
-      "text_extraction_generated_pdf_cleanup_warning": {
-        "es": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
-        "en": "Extraction finished, but a generated local PDF could not be cleaned up automatically."
-        // [PROPÓSITO] Advertencia de limpieza local fallida de un PDF generado después de completar extracción.
-        // [CONCEPTO_APP] PDF generado
-        // [PROTEGIDO] `PDF`
-      },
-      "text_extraction_route_choice_error": {
-        "es": "Ocurrió un error al elegir la ruta de extracción.",
-        "en": "An error occurred while choosing the extraction route."
-        // [PROPÓSITO] Alerta de fallo en el paso crítico de elección de ruta de extracción.
-        // [CONCEPTO_APP] ruta de extracción
-      },
-      "text_extraction_generated_pdf_reveal_failed": {
-        "es": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
-        "en": "The saved PDF could not be revealed. Check whether the file still exists."
-        // [PROPÓSITO] Alerta cuando no se puede mostrar la carpeta de un PDF generado guardado.
-        // [CONCEPTO_APP] PDF generado; PDF guardado
-        // [PROTEGIDO] `PDF`
-      },
-      "text_extraction_apply_error": {
-        "es": "Ocurrió un error al aplicar el texto extraído.",
-        "en": "An error occurred while applying extracted text."
-        // [CONCEPTO_APP] extracción de texto; texto actual
-      },
-      "text_extraction_prepare_invalid": {
-        "es": "La solicitud preparada de extracción ya no es válida. Inicia el flujo nuevamente.",
-        "en": "The prepared extraction request is no longer valid. Start the flow again."
-        // [PROPÓSITO] Informa que el estado preparado para ejecutar la extracción ya no es válido o ya no coincide con el archivo fuente, por lo que el flujo debe iniciarse de nuevo.
-        // [CONCEPTO_APP] extracción de texto; PDF fuente
-      },
-      "text_extraction_batch_ocr_activation_required": {
-        "es": "Este lote incluye ítems con OCR, pero Google OCR no está activado. Usa Preferencias > Activar Google OCR y luego vuelve a iniciar la extracción.",
-        "en": "This batch includes OCR items, but Google OCR is not enabled. Use Preferences > Enable Google OCR, then start the extraction again."
-        // [PROPÓSITO] Alerta previa a lote con ítems OCR cuando Google OCR no está activado.
-        // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; OCR; Google OCR; token local OCR
-        // [PROTEGIDO] `OCR`; `Google OCR`
-      },
-      "text_extraction_batch_ocr_token_state_invalid": {
-        "es": "Este lote incluye ítems con OCR, pero el estado guardado de inicio de sesión de Google OCR no es válido. Usa Preferencias > Activar Google OCR de nuevo y luego vuelve a iniciar la extracción.",
-        "en": "This batch includes OCR items, but the saved Google OCR sign-in state is invalid. Use Preferences > Enable Google OCR again, then start the extraction again."
-        // [PROPÓSITO] Alerta previa a lote con OCR cuando el estado guardado de inicio de sesión no es válido.
-        // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
-        // [PROTEGIDO] `OCR`; `Google OCR`
-      },
-      "text_extraction_batch_ocr_connectivity_failed": {
-        "es": "Este lote incluye ítems con OCR, pero OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo antes de iniciar la extracción.",
-        "en": "This batch includes OCR items, but OCR requires an internet connection. Check your connection and try again before starting the extraction."
-        // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_batch_ocr_quota_or_rate_limited": {
-        "es": "Este lote incluye ítems con OCR, pero OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo antes de iniciar la extracción.",
-        "en": "This batch includes OCR items, but OCR is temporarily blocked by quota/rate limits. Wait and try again before starting the extraction."
-        // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_batch_ocr_unavailable": {
-        "es": "Este lote incluye ítems con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está activado, usa Preferencias > Activar Google OCR. Si ya estaba activado, revisa el estado/configuración de OCR y vuelve a intentarlo antes de iniciar la extracción.",
-        "en": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise, check the OCR setup/status and try again before starting the extraction."
-        // [PROPÓSITO] Alerta previa a lote cuando OCR no está disponible para ítems que lo requieren.
-        // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
-        // [PROTEGIDO] `OCR`; `Google OCR`
-      },
-      "text_extraction_ocr_unavailable": {
-        "es": "OCR no está disponible. Revisa la configuración/autenticación y vuelve a intentarlo.",
-        "en": "OCR is unavailable. Check setup/auth status and try again."
-        // [CONCEPTO_APP] OCR; Google OCR; token local OCR
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_ocr_activation_required": {
-        "es": "Se requiere activar OCR. Inicia sesión en Google OCR y vuelve a intentarlo.",
-        "en": "OCR activation is required. Sign in to Google OCR and try again."
-        // [PROPÓSITO] Alerta durante extracción individual cuando OCR requiere activación/autenticación antes de continuar.
-        // [CONCEPTO_APP] OCR; Google OCR; token local OCR
-        // [PROTEGIDO] `OCR`; `Google OCR`
-      },
-      "text_extraction_ocr_activation_success": {
-        "es": "Activación OCR completada. Reintentando extracción.",
-        "en": "OCR activation completed. Retrying extraction."
-        // [PROPÓSITO] Alerta de activación OCR completada con reintento automático de extracción.
-        // [CONCEPTO_APP] OCR; Google OCR; token local OCR
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_ocr_activation_cancelled": {
-        "es": "La activación OCR fue cancelada. La extracción no continuó.",
-        "en": "OCR activation was cancelled. Extraction did not continue."
-        // [CONCEPTO_APP] OCR; Google OCR; token local OCR
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_ocr_token_state_invalid": {
-        "es": "El estado guardado de inicio de sesión de Google OCR es inválido. Reconecta Google OCR y vuelve a intentarlo.",
-        "en": "Saved Google OCR sign-in state is invalid. Reconnect Google OCR and try again."
-        // [CONCEPTO_APP] OCR; Google OCR; token local OCR
-        // [PROTEGIDO] `Google OCR`
-      },
-      "text_extraction_ocr_activation_failed": {
-        "es": "La activación OCR falló. Revisa la configuración/autenticación y vuelve a intentarlo.",
-        "en": "OCR activation failed. Check setup/auth status and try again."
-        // [CONCEPTO_APP] OCR; Google OCR; token local OCR; credenciales OAuth OCR
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_ocr_enable_success": {
-        "es": "Google OCR quedó activado.",
-        "en": "Google OCR is now enabled."
-        // [PROPÓSITO] Alerta de activación manual de Google OCR desde Preferencias.
-        // [CONCEPTO_APP] Google OCR; token local OCR
-        // [PROTEGIDO] `Google OCR`
-      },
-      "text_extraction_ocr_enable_cancelled": {
-        "es": "La activación de Google OCR fue cancelada.",
-        "en": "Google OCR activation was cancelled."
-        // [CONCEPTO_APP] Google OCR; token local OCR
-        // [PROTEGIDO] `Google OCR`
-      },
-      "text_extraction_ocr_enable_failed": {
-        "es": "No se pudo activar Google OCR. Revisa la configuración/autenticación y vuelve a intentarlo.",
-        "en": "Google OCR could not be enabled. Check setup/auth status and try again."
-        // [CONCEPTO_APP] Google OCR; token local OCR; credenciales OAuth OCR
-        // [PROTEGIDO] `Google OCR`
-      },
-      "text_extraction_ocr_disconnect_success": {
-        "es": "Google OCR fue desconectado. El token guardado de Google fue revocado y se eliminó el estado local de inicio de sesión.",
-        "en": "Google OCR was disconnected. The saved Google token was revoked and the local sign-in state was removed."
-        // [PROPÓSITO] Alerta de desconexión manual de Google OCR con revocación/eliminación del estado local.
-        // [CONCEPTO_APP] Google OCR; token local OCR
-        // [PROTEGIDO] `Google OCR`; `Google`
-      },
-      "text_extraction_ocr_disconnect_not_connected": {
-        "es": "Google OCR no está conectado actualmente en esta instancia de la app.",
-        "en": "Google OCR is not currently connected in this app instance."
-        // [CONCEPTO_APP] Google OCR; token local OCR
-        // [PROTEGIDO] `Google OCR`
-      },
-      "text_extraction_ocr_disconnect_failed": {
-        "es": "La desconexión de Google OCR falló. El estado guardado de inicio de sesión no fue eliminado.",
-        "en": "Google OCR disconnect failed. The saved sign-in state was not removed."
-        // [CONCEPTO_APP] Google OCR; token local OCR
-        // [PROTEGIDO] `Google OCR`
-      },
-      "text_extraction_ocr_connectivity_failed": {
-        "es": "OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo.",
-        "en": "OCR requires an internet connection. Check your connection and try again."
-        // [CONCEPTO_APP] OCR; Google OCR
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_ocr_setup_missing_credentials": {
-        "es": "OCR no está disponible en este build de la app porque faltan las credenciales OAuth de Google incluidas con la app.",
-        "en": "OCR is unavailable in this app build because the bundled Google OAuth credentials are missing."
-        // [CONCEPTO_APP] OCR; Google OCR; credenciales OAuth OCR
-        // [PROTEGIDO] `OCR`; `OAuth`; `Google`
-      },
-      "text_extraction_ocr_setup_invalid_credentials": {
-        "es": "OCR no está disponible en este build de la app porque las credenciales OAuth de Google incluidas con la app son inválidas.",
-        "en": "OCR is unavailable in this app build because the bundled Google OAuth credentials are invalid."
-        // [CONCEPTO_APP] OCR; Google OCR; credenciales OAuth OCR
-        // [PROTEGIDO] `OCR`; `OAuth`; `Google`
-      },
-      "text_extraction_ocr_quota_or_rate_limited": {
-        "es": "OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo.",
-        "en": "OCR is temporarily blocked by quota/rate limits. Wait and try again."
-        // [CONCEPTO_APP] OCR; Google OCR
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_ocr_runtime_error": {
-        "es": "Ocurrió un error de ejecución de OCR durante la extracción.",
-        "en": "An OCR runtime error occurred during extraction."
-        // [CONCEPTO_APP] OCR; extracción de texto
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_ocr_cancelled": {
-        "es": "La extracción OCR fue cancelada.",
-        "en": "OCR text extraction was cancelled."
-        // [CONCEPTO_APP] OCR; extracción de texto
-        // [PROTEGIDO] `OCR`
-      },
-      "text_extraction_ocr_cleanup_warning": {
-        "es": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
-        "en": "OCR finished, but temporary remote file cleanup failed. Check your Google Drive folder."
-        // [PROPÓSITO] Advertencia de limpieza remota fallida del documento temporal usado por OCR.
-        // [CONCEPTO_APP] OCR; Google OCR; extracción de texto
-        // [PROTEGIDO] `OCR`; `Google Drive`
-      },
-      "text_extraction_native_runtime_error": {
-        "es": "Ocurrió un error en la ejecución de la extracción nativa.",
-        "en": "A native extraction runtime error occurred."
-        // [CONCEPTO_APP] ruta nativa; extracción de texto
-      },
-      "text_extraction_native_unreadable_or_corrupt": {
-        "es": "El archivo seleccionado es ilegible o está corrupto para extracción nativa.",
-        "en": "The selected file is unreadable or corrupt for native extraction."
-        // [CONCEPTO_APP] ruta nativa; extracción de texto
-      },
-      "text_extraction_native_encrypted_or_password_protected": {
-        "es": "El PDF seleccionado está cifrado o protegido por contraseña y no puede extraerse por ruta nativa.",
-        "en": "The selected PDF is encrypted or password-protected and cannot be extracted natively."
-        // [PROPÓSITO] Alerta específica de PDF cifrado/protegido cuando la ruta nativa no puede extraerlo.
-        // [CONCEPTO_APP] ruta nativa; PDF fuente; extracción de texto
-        // [PROTEGIDO] `PDF`
-      },
-      "text_extraction_native_cancelled": {
-        "es": "La extracción nativa fue cancelada.",
-        "en": "Native extraction was cancelled."
-        // [CONCEPTO_APP] ruta nativa; extracción de texto
-      },
-      "text_extraction_unsupported_format": {
-        "es": "La extracción de texto no admite este formato de archivo.",
-        "en": "Text extraction does not support this file format."
-        // [CONCEPTO_APP] extracción de texto
-      },
-      "wip_diseno_skins": {
-        "es": "WIP: Aquí se abrirá el selector de skins en una futura versión.",
-        "en": "WIP: The skins selector will open here in a future version."
-        // [PROTEGIDO] `WIP`
-      },
-      "wip_diseno_crono": {
-        "es": "WIP: Aquí se abrirá la configuración del Cronómetro Flotante en una futura versión.",
-        "en": "WIP: Floating Stopwatch settings will open here in a future version."
-        // [CONCEPTO_APP] Cronómetro Flotante
-        // [PROTEGIDO] `WIP`
-      },
-      "wip_diseno_fuentes": {
-        "es": "WIP: Aquí se abrirá el selector de fuentes en una futura versión.",
-        "en": "WIP: The fonts selector will open here in a future version."
-        // [PROTEGIDO] `WIP`
-      },
-      "wip_diseno_colores": {
-        "es": "WIP: Aquí se abrirá el selector de colores en una futura versión.",
-        "en": "WIP: The colors selector will open here in a future version."
-        // [PROTEGIDO] `WIP`
-      },
-      "wip_shortcuts": {
-        "es": "WIP: Aquí se abrirá el selector de atajos del teclado en una futura versión.",
-        "en": "WIP: The keyboard shortcuts selector will open here in a future version."
-        // [PROTEGIDO] `WIP`
-      },
-      "reading_test_unavailable": {
-        "es": "La funcionalidad del test de velocidad de lectura no está disponible.",
-        "en": "The reading speed test feature is unavailable."
-        // [CONCEPTO_APP] Test de velocidad de lectura
-      },
-      "reading_test_precondition_blocked": {
-        "es": "El test de velocidad de lectura solo puede iniciarse desde un estado estable de la app. Cierra las ventanas secundarias y asegúrate de que el cronómetro esté detenido.",
-        "en": "The reading speed test can only start from a steady app state. Close secondary windows and make sure the stopwatch is stopped."
-        // [PROPÓSITO] Alerta de bloqueo preventivo del test por estado no estable de la app.
-        // [CONCEPTO_APP] Test de velocidad de lectura; Cronómetro; ventanas secundarias
-      },
-      "reading_test_pool_error": {
-        "es": "Ocurrió un error al revisar el pool del test de velocidad de lectura.",
-        "en": "An error occurred while checking the reading speed test pool."
-        // [CONCEPTO_APP] pool del test
-      },
-      "reading_test_no_matching_files": {
-        "es": "No quedan archivos de test sin usar que coincidan con la selección actual.",
-        "en": "There are no remaining unused test files that match the current selection."
-        // [CONCEPTO_APP] pool del test; archivos de test
-      },
-      "reading_test_visible_empty_bundled_hidden": {
-        "es": "Los archivos de test incorporados están desactivados y no quedan archivos visibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
-        "en": "The built-in test files are disabled and there are no remaining unused files. Re-enable them or import more files to continue."
-        // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
-        // [CONCEPTO_APP] pool del test; archivos de test; tests incorporados
-      },
-      "reading_test_current_text_empty": {
-        "es": "El texto actual está vacío. Carga o escribe un texto antes de iniciar el test con texto actual.",
-        "en": "The current text is empty. Load or type text before starting the test with current text."
-        // [PROPÓSITO] Alerta específica de inicio del test con texto actual vacío.
-        // [CONCEPTO_APP] Test de velocidad de lectura; texto actual
-      },
-      "reading_test_result_invalid": {
-        "es": "El resultado del test no pudo convertirse en un WPM válido. El flujo terminó sin abrir la ventana de preset.",
-        "en": "The test result could not be converted into a valid WPM. The flow ended without opening the preset window."
-        // [PROPÓSITO] Alerta cuando el resultado del test no puede convertirse en un WPM válido y la ventana modal para creación de un preset de velocidad se deja sin abrir.
-        // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
-        // [PROTEGIDO] `WPM`
-      },
-      "reading_test_result_unavailable": {
-        "es": "No se pudo mostrar el resultado de velocidad de lectura. El flujo continuó.",
-        "en": "The reading speed result could not be shown. The flow continued."
-        // [CONCEPTO_APP] Test de velocidad de lectura
-      },
-      "reading_test_preset_unavailable": {
-        "es": "No se pudo abrir la ventana de preset después del test.",
-        "en": "The preset window could not be opened after the test."
-        // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
-      },
-      "reading_test_questions_unavailable": {
-        "es": "No se pudo abrir la ventana de preguntas de comprensión. El flujo terminó antes de crear el preset.",
-        "en": "The comprehension questions window could not be opened. The flow ended before preset creation."
-        // [PROPÓSITO] Alerta cuando no puede abrirse la ventana de preguntas y el flujo termina antes de crear preset de velocidad.
-        // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
-      },
-      "reading_test_pool_import_failed": {
-        "es": "No se pudieron importar los archivos del test de velocidad de lectura.",
-        "en": "The reading speed test files could not be imported."
-        // [CONCEPTO_APP] pool del test; archivos de test
-      },
-      "reading_test_start_failed": {
-        "es": "No se pudo iniciar el test de velocidad de lectura.",
-        "en": "The reading speed test could not be started."
-        // [CONCEPTO_APP] Test de velocidad de lectura
-      },
-      "text_editor_start_failed": {
-        "es": "No se pudo iniciar el Editor de Texto.",
-        "en": "The Text Editor could not be started."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "text_editor_start_timeout": {
-        "es": "El Editor de Texto tardó demasiado en iniciar y fue cerrado.",
-        "en": "The Text Editor took too long to start and was closed."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "reading_test_cancelled": {
-        "es": "El test de velocidad de lectura fue cancelado.",
-        "en": "The reading speed test was cancelled."
-        // [CONCEPTO_APP] Test de velocidad de lectura
-      },
-      "reading_test_cancelled_window_closed": {
-        "es": "El test de velocidad de lectura fue cancelado porque una de sus ventanas de sesión se cerró.",
-        "en": "The reading speed test was cancelled because one of its session windows closed."
-        // [PROPÓSITO] Alerta de cancelación del test causada por cierre de una ventana de sesión.
-        // [CONCEPTO_APP] Test de velocidad de lectura
-      }
-    },
-    "editor_alerts": {
-      "paste_too_big": {
-        "es": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
-        "en": "Text too large to paste directly. Use the main window buttons."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "drop_too_big": {
-        "es": "Texto arrastrado demasiado grande. Usa los botones de la ventana principal.",
-        "en": "Dropped text is too large. Use the main window buttons to add large text."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "paste_no_text": {
-        "es": "El portapapeles no contiene texto plano.",
-        "en": "Clipboard does not contain plain text."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "drop_no_text": {
-        "es": "Arrastrar y soltar: no se detectó texto plano.",
-        "en": "Drag and drop: no plain text detected."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "type_limit": {
-        "es": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido.",
-        "en": "Cannot type more text: maximum size reached."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "paste_limit": {
-        "es": "No es posible pegar más texto: ya se alcanzó el tamaño máximo permitido.",
-        "en": "Cannot paste more text: maximum size reached."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "drop_limit": {
-        "es": "No es posible soltar más texto: ya se alcanzó el tamaño máximo permitido.",
-        "en": "Cannot drop more text: maximum size reached."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "paste_truncated": {
-        "es": "El texto pegado se ha truncado para no exceder el máximo permitido.",
-        "en": "Pasted text was truncated to avoid exceeding the maximum."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "drop_truncated": {
-        "es": "El texto arrastrado excedía el espacio disponible y fue truncado.",
-        "en": "Dragged text exceeded the available space and was truncated."
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "text_truncated": {
-        "es": "El texto fue truncado para ajustarse al límite máximo de la app.",
-        "en": "Text was truncated to fit the app limit."
-        // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
-        // [CONCEPTO_APP] Editor de Texto; texto actual
-      },
-      "calc_error": {
-        "es": "Ocurrió un error al guardar el texto como texto actual.",
-        "en": "An error occurred while saving the text as the current text."
-        // [PROPÓSITO] Alerta de fallo al guardar desde el Editor de Texto hacia el texto actual con `Aplicar` o auto-aplicar.
-        // [CONCEPTO_APP] Editor de Texto; texto actual
-      }
-    },
-    "preset_alerts": {
-      "name_empty": {
-        "es": "El nombre no puede estar vacío.",
-        "en": "Name cannot be empty."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "wpm_invalid": {
-        "es": "WPM debe ser un número entre {min} y {max}.",
-        "en": "WPM must be a number between {min} and {max}."
-        // [CONCEPTO_APP] preset de velocidad de lectura; velocidad de lectura
-        // [PROTEGIDO] `WPM`
-      },
-      "create_error": {
-        "es": "Ocurrió un error al crear el preset.",
-        "en": "An error occurred while creating the preset."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "edit_error": {
-        "es": "Ocurrió un error al editar el preset.",
-        "en": "An error occurred while editing the preset."
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "process_error": {
-        "es": "Ocurrió un error al procesar el preset.",
-        "en": "An error occurred while processing the preset."
-        // [CONCEPTO_APP] preset de velocidad de lectura
+      "alerts": {
+        "modal_open_blocked": {
+          "es": "La ventana de la extensión del navegador no puede abrirse ahora mismo.",
+          "en": "The browser extension window cannot be opened right now."
+          // [CONCEPTO_APP] extensión del navegador
+        }
       }
     },
     "info": {

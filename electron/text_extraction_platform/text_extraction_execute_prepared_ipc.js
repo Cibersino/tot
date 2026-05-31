@@ -88,7 +88,7 @@ function buildInvalidPreparedIdResponse(reason) {
     ok: false,
     code: 'PREPARED_ID_INVALID',
     invalidReason: reason,
-    primaryAlertKey: 'renderer.alerts.text_extraction_prepare_invalid',
+    primaryAlertKey: 'renderer.text_extraction.alerts.prepare_invalid',
   };
 }
 
@@ -157,7 +157,7 @@ async function handleExecutePrepared(event, payload = {}, {
         code: routeResolution.reason === 'route_choice_required'
           ? 'ROUTE_CHOICE_REQUIRED'
           : 'ROUTE_RESOLUTION_FAILED',
-        primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_error',
+        primaryAlertKey: 'renderer.text_extraction.alerts.route_choice_error',
       };
     }
 
