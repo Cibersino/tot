@@ -31,6 +31,7 @@ function loadSnapshotsMainWithMocks({
   rootDir,
   currentText = 'Snapshot text',
   shellOpenPathResult = '',
+  messageBoxResponse = 0,
 }) {
   const electronModulePath = require.resolve('electron');
   const snapshotsModulePath = path.resolve(
@@ -61,6 +62,7 @@ function loadSnapshotsMainWithMocks({
   const originalSettingsModule = require.cache[settingsModulePath];
   const originalMenuBuilderModule = require.cache[menuBuilderModulePath];
   const openPathCalls = [];
+  const showMessageBoxCalls = [];
 
   require.cache[electronModulePath] = {
     id: electronModulePath,
@@ -74,8 +76,9 @@ function loadSnapshotsMainWithMocks({
         async showOpenDialog() {
           throw new Error('showOpenDialog should not be used in this snapshot test');
         },
-        async showMessageBox() {
-          return { response: 0 };
+        async showMessageBox(ownerWin, options) {
+          showMessageBoxCalls.push({ ownerWin, options });
+          return { response: messageBoxResponse };
         },
       },
       BrowserWindow: {
@@ -198,6 +201,7 @@ function loadSnapshotsMainWithMocks({
     snapshotsMain,
     restore,
     openPathCalls,
+    showMessageBoxCalls,
   };
 }
 
@@ -286,4 +290,77 @@ test('open snapshots folder delegates to shell.openPath using the snapshots root
     path: rootDir,
   });
   assert.deepEqual(openPathCalls, [rootDir]);
+});
+
+test('snapshot load skips overwrite confirmation when current text is empty', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-load-empty');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const snapshotPath = path.join(rootDir, 'empty-target.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Loaded snapshot text' }, null, 2));
+
+  const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: '',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/empty-target.json' }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.filename, 'empty-target.json');
+  assert.equal(showMessageBoxCalls.length, 0);
+});
+
+test('snapshot load still asks for overwrite confirmation when current text is not empty', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-load-confirm');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const snapshotPath = path.join(rootDir, 'confirm-target.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Loaded snapshot text' }, null, 2));
+
+  const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'Existing text',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/confirm-target.json' }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(showMessageBoxCalls.length, 1);
 });
