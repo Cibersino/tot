@@ -642,6 +642,8 @@ Reglas:
   - el arranque poda filas de estado huérfanas y elimina starter files gestionados que ya no forman parte del bundle actual.
 - Reading speed test / race conditions:
   - la ventana de preguntas deja de poder abrir vacía cuando el payload `reading-test-questions-init` llegaba antes de que el renderer registrara su callback; el preload ahora bufferiza y reproduce el último payload init.
+- Snapshots / UX:
+  - al cargar un snapshot, la confirmación `snapshot_overwrite_load` deja de mostrarse cuando el `current text` está vacío.
 
 ### Contratos tocados
 
