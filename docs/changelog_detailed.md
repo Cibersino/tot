@@ -62,6 +62,7 @@ Reglas:
 - La ventana principal deja de rehacer recuentos completos del texto vigente cuando un cambio solo afecta `WPM`, formateo numérico visible o la resolución efectiva del preset; ahora clasifica esos refreshes y reutiliza stats/cache cuando el texto no cambió, y cuando sí hace falta un recuento completo muestra un estado pending/recount explícito hasta que se asiente la corrida autoritativa más reciente, incluido un kickoff diferido en startup para no disparar ese settle antes de que la UI salga realmente del bloqueo inicial.
 - El núcleo de conteo deja de depender de recorridos/materializaciones redundantes y pasa a contadores streaming para `simple` y para el fallback de `preciso`; cuando `Intl.Segmenter` está disponible, el modo preciso conserva la semántica visible de whitespace, grafemas y segmentación de palabras, pero separa los pases de grafemas y palabras para reducir trabajo intermedio sobre textos grandes.
 - Los artefactos temporales locales de runtime dejan de dispersarse en `%TEMP%`: subsets PDF, normalización OCR y copias temporales de app-docs/licencias pasan a centralizarse bajo un root app-owned con limpieza best-effort al cierre normal.
+- Las alerts del renderer dejan de concentrarse en los owners planos `renderer.alerts`, `renderer.editor_alerts` y `renderer.preset_alerts`, y pasan a namespaces por feature (`renderer.main.alerts`, `renderer.text_extraction.alerts`, `renderer.editor.alerts`, `renderer.snapshots.alerts`, `renderer.reading_test.alerts`, `renderer.modal_preset.alerts`, `renderer.presets.alerts`, `renderer.browser_extension.alerts`) alineados con el código, los bundles locales y la guía de traducción.
 
 ### Agregado
 
@@ -134,6 +135,7 @@ Reglas:
 - El `current text` deja de depender de updates optimistas locales del renderer y pasa a un settle lifecycle main-owned con `requestId`, placeholders explícitos, elapsed propio y bloqueo homogéneo de controles/menú tanto en startup como en clipboard, snapshots, sync del Editor de Texto y recuentos standalone disparados por cambios de modo/settings; en startup, el settle bootstrap ya no arranca inline durante la sincronización inicial, sino diferido hasta después del desbloqueo/salida del splash para evitar trabajo pesado antes de que la ventana principal quede realmente lista.
 - `public/js/lib/count_core.js` deja de construir arrays completos para los caminos frecuentes de conteo y pasa a contar en streaming tanto en `simple` como en el fallback de `preciso`; el modo preciso con `Intl.Segmenter` conserva la lógica de compounds con guion, pero computa grafemas/no-whitespace y segmentación de palabras en iteraciones separadas para recortar materialización intermedia sin alterar el contrato visible.
 - La extensión Chrome `reading-time` alinea su path de conteo con la optimización aplicable del algoritmo nuevo de Desktop para texto ya normalizado: evita re-normalizar y deja de usar `split(/\s+/)` en el umbral mínimo del overlay sin cambiar la semántica visible de la selección.
+- La taxonomía de alerts renderer deja de mezclar avisos de ventana principal, extracción, editor, snapshots, reading test, modal de presets, presets y extensión bajo owners globales; el contrato i18n activo pasa a agruparlos por superficie funcional y el runtime deja de referenciar las rutas legacy `renderer.alerts.*`, `renderer.editor_alerts.*` y `renderer.preset_alerts.*`.
 
 ### Arreglado
 
@@ -220,8 +222,9 @@ Reglas:
   - nuevas strings `renderer.main.processing.text_extraction_unit_progress`, `text_extraction_input_progress`, `text_extraction_route_native` y `text_extraction_route_ocr`
   - nuevas strings `renderer.main.results.value_pending`, `renderer.main.results.value_unavailable`
   - nuevas strings `renderer.main.processing.current_text_waiting`, `current_text_waiting_startup`, `current_text_waiting_editor`, `current_text_recount_waiting` y `current_text_elapsed`
-  - nuevas strings `renderer.alerts.current_text_processing_locked` y `renderer.alerts.current_text_recount_locked`
-  - nuevas strings `renderer.alerts.text_editor_start_failed` y `renderer.alerts.text_editor_start_timeout`
+  - el contrato activo de alerts del renderer deja de usar `renderer.alerts.*`, `renderer.editor_alerts.*` y `renderer.preset_alerts.*` como owners globales y redistribuye esas keys bajo `renderer.main.alerts.*`, `renderer.text_extraction.alerts.*`, `renderer.editor.alerts.*`, `renderer.snapshots.alerts.*`, `renderer.reading_test.alerts.*`, `renderer.modal_preset.alerts.*`, `renderer.presets.alerts.*` y `renderer.browser_extension.alerts.*`
+  - nuevas strings `renderer.main.alerts.current_text_processing_locked` y `renderer.main.alerts.current_text_recount_locked`
+  - nuevas strings `renderer.editor.alerts.start_failed` y `renderer.editor.alerts.start_timeout`
 - Storage / filesystem:
   - el runtime temp app-owned se centraliza bajo `os.tmpdir()/tot-temp/`
   - los subsets temporales en política `delete` se materializan bajo `os.tmpdir()/tot-temp/generated-pdf-subsets/`
