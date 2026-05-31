@@ -403,12 +403,12 @@ function attachFindWindow(win) {
     tryDispatchPendingFocus();
   };
   const onFocus = () => {
-    try {
-      tryDispatchPendingFocus();
-      rerunCurrentQueryOnCurrentText();
-    } catch (err) {
-      log.error('Error in find focus handler:', err);
-    }
+    tryDispatchPendingFocus();
+    Promise.resolve()
+      .then(() => session.refreshCurrentQueryKeepingActiveMatch())
+      .catch((err) => {
+        log.error('Error in find focus handler:', err);
+      });
   };
 
   wc.on('before-input-event', onBeforeInput);

@@ -343,19 +343,40 @@ test('replace-current setRangeText fallback dispatches input after text mutation
     initialValue: 'alpha',
     execCommandBehavior: 'fail',
   });
-  editor.selectionStart = 0;
-  editor.selectionEnd = 5;
 
   const result = engine.handleReplaceRequest({
     operation: 'replace-current',
     requestId: 3,
     query: 'alpha',
     replacement: 'beta',
+    activeMatchOrdinal: 1,
     matchCase: false,
   });
 
   assert.equal(result.status, 'replaced');
   assert.equal(editor.value, 'beta');
+  assert.deepEqual(dispatchedEvents, ['input']);
+});
+
+test('replace-current can target a later literal match without relying on the live selection', () => {
+  const { engine, editor, dispatchedEvents } = createHarness({
+    initialValue: 'uno alpha dos alpha tres',
+    execCommandBehavior: 'fail',
+  });
+  editor.selectionStart = 0;
+  editor.selectionEnd = 3;
+
+  const result = engine.handleReplaceRequest({
+    operation: 'replace-current',
+    requestId: 4,
+    query: 'alpha',
+    replacement: 'beta',
+    activeMatchOrdinal: 2,
+    matchCase: false,
+  });
+
+  assert.equal(result.status, 'replaced');
+  assert.equal(editor.value, 'uno alpha dos beta tres');
   assert.deepEqual(dispatchedEvents, ['input']);
 });
 

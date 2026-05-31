@@ -176,20 +176,12 @@
       }
     }
 
-    function selectionMatchesCurrentEditorSelection(query, matchCase = false) {
-      const { start, end } = getSelectionRange();
-      return editorFindReplaceCore.selectionMatchesLiteralQuery({
-        value: editor.value,
-        selectionStart: start,
-        selectionEnd: end,
-        query,
-        matchCase,
-      });
-    }
+    function tryNativeReplaceSelectionWithoutSync(start, end, replacementText) {
+      const previousActiveElement = document.activeElement;
 
-    function tryNativeReplaceCurrentSelectionWithoutSync(replacementText) {
       try {
-        const { start, end } = getSelectionRange();
+        editor.focus();
+        setSelectionSafe(start, end);
 
         try {
           const ok = document.execCommand && document.execCommand('insertText', false, replacementText);
@@ -222,8 +214,10 @@
         dispatchNativeInputEvent();
         return true;
       } catch (err) {
-        log.error('tryNativeReplaceCurrentSelectionWithoutSync error:', err);
+        log.error('tryNativeReplaceSelectionWithoutSync error:', err);
         return false;
+      } finally {
+        restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.replaceCurrent.selection');
       }
     }
 
@@ -304,6 +298,7 @@
       const requestId = Number(payload && payload.requestId);
       const query = typeof payload?.query === 'string' ? payload.query : '';
       const replacement = typeof payload?.replacement === 'string' ? payload.replacement : '';
+      const activeMatchOrdinal = Number(payload && payload.activeMatchOrdinal);
       const matchCase = !!(payload && payload.matchCase);
 
       if (!query) {
@@ -313,14 +308,25 @@
         });
       }
 
-      if (!selectionMatchesCurrentEditorSelection(query, matchCase)) {
+      const explicitRange = editorFindReplaceCore.resolveLiteralMatchByOrdinal({
+        value: editor.value,
+        query,
+        ordinal: activeMatchOrdinal,
+        matchCase,
+      });
+
+      if (!explicitRange) {
         return buildReplaceResponse('replace-current', requestId, {
           status: 'selection-mismatch',
           replacements: 0,
         });
       }
 
-      const replaced = tryNativeReplaceCurrentSelectionWithoutSync(replacement);
+      const replaced = tryNativeReplaceSelectionWithoutSync(
+        explicitRange.start,
+        explicitRange.end,
+        replacement
+      );
       if (!replaced) {
         return buildReplaceResponse('replace-current', requestId, {
           ok: false,

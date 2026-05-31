@@ -58,7 +58,7 @@ if (
 const editorFindReplaceCore = window.EditorFindReplaceCore;
 if (
   !editorFindReplaceCore ||
-  typeof editorFindReplaceCore.selectionMatchesLiteralQuery !== 'function' ||
+  typeof editorFindReplaceCore.resolveLiteralMatchByOrdinal !== 'function' ||
   typeof editorFindReplaceCore.computeLiteralReplaceAll !== 'function'
 ) {
   throw new Error('[editor] EditorFindReplaceCore unavailable; cannot continue');

@@ -294,7 +294,6 @@ test('replace-current waits for matching search completion and authorized matchi
       finalUpdate: true,
     });
     await tick();
-    assert.equal(editorWin.webContents.stopFindCalls.length, 0);
 
     editorWin.webContents.emit('found-in-page', {}, {
       requestId: resyncRequestId,
@@ -304,13 +303,13 @@ test('replace-current waits for matching search completion and authorized matchi
     });
     await tick();
 
-    assert.deepEqual(editorWin.webContents.stopFindCalls, ['keepSelection']);
-
     const replaceRequestMessage = getLastMessage(
       editorWin.webContents.sentMessages,
       'editor-replace-request'
     );
     assert.ok(replaceRequestMessage, 'expected editor replace request to be sent');
+    assert.equal(replaceRequestMessage.payload.activeMatchOrdinal, 1);
+    assert.deepEqual(editorWin.webContents.stopFindCalls, []);
 
     ipcMain.emitChannel('editor-replace-response', { sender: {} }, {
       requestId: replaceRequestMessage.payload.requestId,
@@ -354,6 +353,99 @@ test('replace-current waits for matching search completion and authorized matchi
       requestId: refreshRequestId,
       matches: 1,
       activeMatchOrdinal: 1,
+      finalUpdate: true,
+    });
+
+    const result = await replacePromise;
+    assert.equal(result.status, 'replaced');
+    assert.equal(result.replacements, 1);
+  } finally {
+    restore();
+  }
+});
+
+test('replace-current preserves the active match ordinal across resync before requesting the replace', async () => {
+  const {
+    ipcMain,
+    editorWin,
+    findEvent,
+    restore,
+  } = await setupFindHarness();
+
+  try {
+    await ipcMain.invoke('editor-find-set-query', findEvent, 'prueba');
+    const initialRequestId = editorWin.webContents.findCalls.at(-1).requestId;
+    editorWin.webContents.emit('found-in-page', {}, {
+      requestId: initialRequestId,
+      matches: 3,
+      activeMatchOrdinal: 2,
+      finalUpdate: true,
+    });
+
+    const replacePromise = ipcMain.invoke('editor-find-replace-current', findEvent, 'cambio');
+    const resyncRequestId = editorWin.webContents.findCalls.at(-1).requestId;
+
+    editorWin.webContents.emit('found-in-page', {}, {
+      requestId: resyncRequestId,
+      matches: 3,
+      activeMatchOrdinal: 1,
+      finalUpdate: true,
+    });
+    await tick();
+
+    const restoreOrdinalRequestId = editorWin.webContents.findCalls.at(-1).requestId;
+    assert.notEqual(restoreOrdinalRequestId, resyncRequestId);
+    assert.deepEqual(editorWin.webContents.findCalls.at(-1).options, {
+      forward: true,
+      findNext: false,
+      matchCase: false,
+    });
+
+    editorWin.webContents.emit('found-in-page', {}, {
+      requestId: restoreOrdinalRequestId,
+      matches: 3,
+      activeMatchOrdinal: 2,
+      finalUpdate: true,
+    });
+    await tick();
+
+    const replaceRequestMessage = getLastMessage(
+      editorWin.webContents.sentMessages,
+      'editor-replace-request'
+    );
+    assert.ok(replaceRequestMessage, 'expected editor replace request to be sent');
+    assert.equal(replaceRequestMessage.payload.activeMatchOrdinal, 2);
+
+    ipcMain.emitChannel('editor-replace-response', { sender: editorWin.webContents }, {
+      requestId: replaceRequestMessage.payload.requestId,
+      ok: true,
+      status: 'replaced',
+      operation: 'replace-current',
+      replacements: 1,
+    });
+    await tick();
+
+    const refreshRequestId = editorWin.webContents.findCalls.at(-1).requestId;
+    editorWin.webContents.emit('found-in-page', {}, {
+      requestId: refreshRequestId,
+      matches: 2,
+      activeMatchOrdinal: 1,
+      finalUpdate: true,
+    });
+    await tick();
+
+    const refreshOrdinalRequestId = editorWin.webContents.findCalls.at(-1).requestId;
+    assert.notEqual(refreshOrdinalRequestId, refreshRequestId);
+    assert.deepEqual(editorWin.webContents.findCalls.at(-1).options, {
+      forward: true,
+      findNext: false,
+      matchCase: false,
+    });
+
+    editorWin.webContents.emit('found-in-page', {}, {
+      requestId: refreshOrdinalRequestId,
+      matches: 2,
+      activeMatchOrdinal: 2,
       finalUpdate: true,
     });
 

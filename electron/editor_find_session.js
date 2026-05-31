@@ -45,6 +45,24 @@ function createSession({
     return state.query.length > 0;
   }
 
+  function coercePreferredOrdinal(rawOrdinal, fallback = 1) {
+    const preferred = Number(rawOrdinal);
+    if (!Number.isFinite(preferred) || preferred < 1) {
+      return fallback;
+    }
+    return Math.floor(preferred);
+  }
+
+  function clampOrdinalToMatches(rawOrdinal, matchCount = state.matches) {
+    const safeMatchCount = Number(matchCount);
+    if (!Number.isFinite(safeMatchCount) || safeMatchCount < 1) {
+      return 0;
+    }
+
+    const preferred = coercePreferredOrdinal(rawOrdinal, 1);
+    return Math.min(preferred, Math.floor(safeMatchCount));
+  }
+
   function clearPendingResyncRequest() {
     pendingResyncRequestId = null;
   }
@@ -235,6 +253,69 @@ function createSession({
     });
   }
 
+  async function navigateToMatchOrdinal(rawTargetOrdinal) {
+    const targetOrdinal = clampOrdinalToMatches(rawTargetOrdinal);
+    if (!targetOrdinal) {
+      return {
+        ok: true,
+        status: 'noop-no-matches',
+        matches: 0,
+        activeMatchOrdinal: 0,
+      };
+    }
+
+    let currentOrdinal = clampOrdinalToMatches(state.activeMatchOrdinal);
+    if (!currentOrdinal) {
+      currentOrdinal = 1;
+    }
+
+    const stepsRemaining = Math.abs(targetOrdinal - currentOrdinal);
+    if (stepsRemaining === 0) {
+      return {
+        ok: true,
+        status: 'completed',
+        matches: state.matches,
+        activeMatchOrdinal: currentOrdinal,
+      };
+    }
+
+    const forward = targetOrdinal > currentOrdinal;
+
+    for (let stepIndex = 0; stepIndex < stepsRemaining; stepIndex += 1) {
+      const res = runFind({
+        forward,
+        findNext: false,
+        matchCase: false,
+      });
+      if (!res.ok || !res.requestId) {
+        return {
+          ok: false,
+          status: 'navigate-start-failed',
+          error: res.error || 'find navigation start failed',
+          matches: state.matches,
+          activeMatchOrdinal: state.activeMatchOrdinal,
+        };
+      }
+
+      const navigationResult = await waitForSearchCompletion(res.requestId);
+      if (!navigationResult.ok) {
+        return {
+          ok: false,
+          status: navigationResult.status || 'navigate-failed',
+          matches: state.matches,
+          activeMatchOrdinal: state.activeMatchOrdinal,
+        };
+      }
+    }
+
+    return {
+      ok: true,
+      status: 'completed',
+      matches: state.matches,
+      activeMatchOrdinal: clampOrdinalToMatches(state.activeMatchOrdinal),
+    };
+  }
+
   function clearPendingEditorReplace(status = 'aborted') {
     if (!pendingEditorReplace) return;
 
@@ -303,6 +384,7 @@ function createSession({
           operation,
           query: String(payload && payload.query ? payload.query : ''),
           replacement: String(payload && payload.replacement ? payload.replacement : ''),
+          activeMatchOrdinal: coercePreferredOrdinal(payload && payload.activeMatchOrdinal, 1),
           matchCase: !!(payload && payload.matchCase),
         });
       } catch (err) {
@@ -347,19 +429,61 @@ function createSession({
     return { ok: true, requestId: res.requestId };
   }
 
-  async function refreshFindAfterReplaceAction(warnKey, warnLabel) {
+  async function rerunCurrentQueryAndRestoreOrdinal(rawPreferredOrdinal) {
+    const preferredOrdinal = coercePreferredOrdinal(rawPreferredOrdinal, state.activeMatchOrdinal || 1);
+    const refresh = rerunCurrentQueryOnCurrentText();
+    if (!refresh.ok || !refresh.requestId) {
+      return {
+        ok: false,
+        status: 'resync-start-failed',
+        error: refresh.error || 'find re-sync start failed',
+        matches: state.matches,
+        activeMatchOrdinal: state.activeMatchOrdinal,
+      };
+    }
+
+    const refreshResult = await waitForSearchCompletion(refresh.requestId);
+    if (!refreshResult.ok) {
+      return {
+        ok: false,
+        status: refreshResult.status || 'resync-failed',
+        matches: state.matches,
+        activeMatchOrdinal: state.activeMatchOrdinal,
+      };
+    }
+
+    if (!Number.isFinite(refreshResult.matches) || refreshResult.matches <= 0) {
+      return {
+        ok: true,
+        status: 'completed',
+        matches: 0,
+        activeMatchOrdinal: 0,
+      };
+    }
+
+    const targetOrdinal = clampOrdinalToMatches(preferredOrdinal, refreshResult.matches);
+    if (targetOrdinal <= 1) {
+      return {
+        ok: true,
+        status: 'completed',
+        matches: refreshResult.matches,
+        activeMatchOrdinal: clampOrdinalToMatches(state.activeMatchOrdinal, refreshResult.matches),
+      };
+    }
+
+    return navigateToMatchOrdinal(targetOrdinal);
+  }
+
+  async function refreshFindAfterReplaceAction(warnKey, warnLabel, preferredOrdinal = 1) {
     if (!hasQuery()) return;
 
-    const refresh = rerunCurrentQueryOnCurrentText();
-    if (refresh.ok && refresh.requestId) {
-      const refreshResult = await waitForSearchCompletion(refresh.requestId);
-      if (!refreshResult.ok) {
-        log.warnOnce(
-          warnKey,
-          `${warnLabel} refresh search did not complete cleanly (ignored):`,
-          refreshResult.status
-        );
-      }
+    const refreshResult = await rerunCurrentQueryAndRestoreOrdinal(preferredOrdinal);
+    if (!refreshResult.ok) {
+      log.warnOnce(
+        warnKey,
+        `${warnLabel} refresh search did not complete cleanly (ignored):`,
+        refreshResult.status
+      );
     }
   }
 
@@ -395,29 +519,19 @@ function createSession({
       };
     }
 
-    let stoppedFindSelection = false;
+    const preferredTargetOrdinal = coercePreferredOrdinal(state.activeMatchOrdinal, 1);
+    let shouldRefresh = false;
     setBusy(true);
 
     try {
-      const resync = rerunCurrentQueryOnCurrentText();
-      if (!resync.ok || !resync.requestId) {
-        return {
-          ok: false,
-          status: 'resync-start-failed',
-          operation: 'replace-current',
-          replacements: 0,
-          error: resync.error || 'replace re-sync start failed',
-        };
-      }
-
-      const resyncResult = await waitForSearchCompletion(resync.requestId);
+      const resyncResult = await rerunCurrentQueryAndRestoreOrdinal(preferredTargetOrdinal);
       if (!resyncResult.ok) {
         return {
           ok: false,
           status: resyncResult.status || 'resync-failed',
           operation: 'replace-current',
           replacements: 0,
-          error: '',
+          error: resyncResult.error || '',
         };
       }
 
@@ -430,30 +544,26 @@ function createSession({
         };
       }
 
-      try {
-        editorWin.webContents.stopFindInPage('keepSelection');
-        stoppedFindSelection = true;
-      } catch (err) {
-        log.warn("replace-current stopFindInPage('keepSelection') failed (ignored):", err);
-        return {
-          ok: false,
-          status: 'keep-selection-failed',
-          operation: 'replace-current',
-          replacements: 0,
-          error: String(err),
-        };
-      }
-
-      return requestEditorReplace('replace-current', {
+      const replaceResult = await requestEditorReplace('replace-current', {
         query: state.query,
         replacement,
         matchCase: false,
+        activeMatchOrdinal: clampOrdinalToMatches(preferredTargetOrdinal, resyncResult.matches),
       });
+
+      shouldRefresh = !!(
+        replaceResult &&
+        replaceResult.ok !== false &&
+        Number(replaceResult.replacements) > 0
+      );
+
+      return replaceResult;
     } finally {
-      if (stoppedFindSelection) {
+      if (shouldRefresh) {
         await refreshFindAfterReplaceAction(
           'editorFind.replaceCurrent.refresh',
-          'replace-current'
+          'replace-current',
+          preferredTargetOrdinal
         );
       }
 
@@ -594,6 +704,7 @@ function createSession({
     handleFoundInPage,
     hasQuery,
     navigate,
+    refreshCurrentQueryKeepingActiveMatch: () => rerunCurrentQueryAndRestoreOrdinal(state.activeMatchOrdinal),
     replaceAll,
     replaceCurrent,
     rerunCurrentQueryOnCurrentText,
