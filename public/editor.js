@@ -575,11 +575,12 @@ btnTrash.addEventListener('click', () => {
 });
 
 if (btnCalc) btnCalc.addEventListener('click', () => {
-  try {
-    const res = ctx.editorAPI.setCurrentText({ text: editor.value || '', meta: { source: 'editor', action: 'overwrite' } });
-    ctx.engine.handleTruncationResponse(res);
-  } catch (err) {
-    log.error('Error executing Apply:', err);
+  const didSend = ctx.engine.sendCurrentTextToMain('overwrite', {
+    text: editor.value || '',
+    onPrimaryError: (err) => log.error('Error executing Apply:', err),
+    onFallbackError: (err) => log.error('Error executing Apply fallback:', err),
+  });
+  if (!didSend) {
     window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
     ctx.ui.restoreFocusToEditor();
   }
