@@ -4,6 +4,9 @@ process.env.TOT_LOG_LEVEL = 'silent';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
 function createIpcMainDouble() {
   const handlers = new Map();
@@ -77,24 +80,16 @@ function createReadingTestPoolMock({
 }
 
 function loadReadingTestSessionWithMocks(readingTestPoolMock, senderWin) {
-  const electronModulePath = require.resolve('electron');
   const poolModulePath = require.resolve('../../../electron/reading_test_pool');
   const sessionModulePath = require.resolve('../../../electron/reading_test_session');
-  const originalElectronModule = require.cache[electronModulePath];
   const originalPoolModule = require.cache[poolModulePath];
-
-  require.cache[electronModulePath] = {
-    id: electronModulePath,
-    filename: electronModulePath,
-    loaded: true,
-    exports: {
-      BrowserWindow: {
-        fromWebContents(webContents) {
-          return webContents === senderWin.webContents ? senderWin : null;
-        },
+  const restoreElectronModule = installElectronModuleMock({
+    BrowserWindow: {
+      fromWebContents(webContents) {
+        return webContents === senderWin.webContents ? senderWin : null;
       },
     },
-  };
+  });
 
   require.cache[poolModulePath] = {
     id: poolModulePath,
@@ -113,11 +108,7 @@ function loadReadingTestSessionWithMocks(readingTestPoolMock, senderWin) {
     } else {
       delete require.cache[poolModulePath];
     }
-    if (originalElectronModule) {
-      require.cache[electronModulePath] = originalElectronModule;
-    } else {
-      delete require.cache[electronModulePath];
-    }
+    restoreElectronModule();
   }
 
   return { readingTestSession, restore };

@@ -9,6 +9,9 @@ const path = require('node:path');
 const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
 const FS_STORAGE_PATH = path.resolve(__dirname, '../../../electron/fs_storage.js');
 const EDITOR_STATE_PATH = path.resolve(__dirname, '../../../electron/editor_state.js');
@@ -22,6 +25,7 @@ function loadFreshModule(modulePath) {
 function createStorageHarness(t, initialState) {
   const userDataDir = createTestTempDir('editor-state');
   t.after(() => fs.rmSync(userDataDir, { recursive: true, force: true }));
+  t.after(installElectronModuleMock());
 
   const fsStorage = loadFreshModule(FS_STORAGE_PATH);
   fsStorage.initStorage({

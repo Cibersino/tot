@@ -5,6 +5,9 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { EventEmitter } = require('node:events');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
 function createIpcMainMock() {
   const handlers = new Map();
@@ -139,25 +142,17 @@ function getLastMessage(sentMessages, channel) {
 }
 
 function loadEditorFindMainWithMocks() {
-  const electronModulePath = require.resolve('electron');
-  const originalElectronModule = require.cache[electronModulePath];
-
   FakeFindWindow.reset();
-  require.cache[electronModulePath] = {
-    id: electronModulePath,
-    filename: electronModulePath,
-    loaded: true,
-    exports: {
-      BrowserWindow: FakeFindWindow,
-      screen: {
-        getDisplayNearestPoint() {
-          return {
-            workArea: { x: 0, y: 0, width: 1600, height: 900 },
-          };
-        },
+  const restoreElectronModule = installElectronModuleMock({
+    BrowserWindow: FakeFindWindow,
+    screen: {
+      getDisplayNearestPoint() {
+        return {
+          workArea: { x: 0, y: 0, width: 1600, height: 900 },
+        };
       },
     },
-  };
+  });
 
   const modulePath = require.resolve('../../../electron/editor_find_main');
   delete require.cache[modulePath];
@@ -165,11 +160,7 @@ function loadEditorFindMainWithMocks() {
 
   function restore() {
     delete require.cache[modulePath];
-    if (originalElectronModule) {
-      require.cache[electronModulePath] = originalElectronModule;
-      return;
-    }
-    delete require.cache[electronModulePath];
+    restoreElectronModule();
   }
 
   return { editorFindMain, restore };

@@ -12,8 +12,35 @@ const {
   getTestTempDir,
 } = require('../../helpers/test_temp_paths');
 const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
+const {
   inspectPdfFile,
 } = require('../../../electron/text_extraction_platform/text_extraction_pdf_page_selection');
+
+const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
+const SCANNED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
+const ENCRYPTED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/encrypted_selectable_text_fixture.pdf');
+const RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR = path.join(
+  getTestTempDir('retained-generated-pdfs'),
+  'tests'
+);
+const GENERATED_PDF_SUBSET_FIXTURE_DIR = getTestTempDir('generated-pdf-subset-fixtures');
+const CORE_MODULE_PATH = path.resolve(
+  __dirname,
+  '../../../electron/text_extraction_platform/text_extraction_prepare_execute_core.js'
+);
+
+function loadCoreExports() {
+  const restoreElectronModule = installElectronModuleMock();
+  delete require.cache[CORE_MODULE_PATH];
+  try {
+    return require(CORE_MODULE_PATH);
+  } finally {
+    delete require.cache[CORE_MODULE_PATH];
+    restoreElectronModule();
+  }
+}
 
 const {
   executePreparedImport,
@@ -24,16 +51,7 @@ const {
   resolveInspectPayload,
   resolvePreparePayload,
   resolvePreparedRoute,
-} = require('../../../electron/text_extraction_platform/text_extraction_prepare_execute_core');
-
-const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
-const SCANNED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
-const ENCRYPTED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/encrypted_selectable_text_fixture.pdf');
-const RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR = path.join(
-  getTestTempDir('retained-generated-pdfs'),
-  'tests'
-);
-const GENERATED_PDF_SUBSET_FIXTURE_DIR = getTestTempDir('generated-pdf-subset-fixtures');
+} = loadCoreExports();
 
 function loadCoreWithMocks({
   mockRunNativeExtractionRoute = null,
@@ -42,11 +60,9 @@ function loadCoreWithMocks({
   mockProbeNativePdfSelectableText = null,
   heavyPdfSplitCoreOverrides = null,
   pdfPageSelectionOverrides = null,
+  electronOverrides = null,
 } = {}) {
-  const coreModulePath = path.resolve(
-    __dirname,
-    '../../../electron/text_extraction_platform/text_extraction_prepare_execute_core.js'
-  );
+  const coreModulePath = CORE_MODULE_PATH;
   const nativeRouteModulePath = path.resolve(
     __dirname,
     '../../../electron/text_extraction_platform/native_extraction_route.js'
@@ -78,6 +94,7 @@ function loadCoreWithMocks({
   const originalNativePdfProbeModule = require.cache[nativePdfProbeModulePath];
   const originalHeavyPdfSplitCoreModule = require.cache[heavyPdfSplitCoreModulePath];
   const originalPdfPageSelectionModule = require.cache[pdfPageSelectionModulePath];
+  const restoreElectronModule = installElectronModuleMock(electronOverrides);
 
   if (typeof mockRunNativeExtractionRoute === 'function') {
     require.cache[nativeRouteModulePath] = {
@@ -189,6 +206,7 @@ function loadCoreWithMocks({
     } else if (pdfPageSelectionOverrides && typeof pdfPageSelectionOverrides === 'object') {
       delete require.cache[pdfPageSelectionModulePath];
     }
+    restoreElectronModule();
   }
 
   return {

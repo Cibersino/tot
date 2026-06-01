@@ -9,6 +9,9 @@ const path = require('node:path');
 const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
 function createIpcMainDouble() {
   const handlers = new Map();
@@ -33,7 +36,6 @@ function loadSnapshotsMainWithMocks({
   shellOpenPathResult = '',
   messageBoxResponse = 0,
 }) {
-  const electronModulePath = require.resolve('electron');
   const snapshotsModulePath = path.resolve(
     __dirname,
     '../../../electron/current_text_snapshots_main.js'
@@ -55,7 +57,6 @@ function loadSnapshotsMainWithMocks({
     '../../../electron/menu_builder.js'
   );
 
-  const originalElectronModule = require.cache[electronModulePath];
   const originalSnapshotsModule = require.cache[snapshotsModulePath];
   const originalFsStorageModule = require.cache[fsStorageModulePath];
   const originalTextStateModule = require.cache[textStateModulePath];
@@ -63,37 +64,31 @@ function loadSnapshotsMainWithMocks({
   const originalMenuBuilderModule = require.cache[menuBuilderModulePath];
   const openPathCalls = [];
   const showMessageBoxCalls = [];
-
-  require.cache[electronModulePath] = {
-    id: electronModulePath,
-    filename: electronModulePath,
-    loaded: true,
-    exports: {
-      dialog: {
-        async showSaveDialog() {
-          throw new Error('showSaveDialog should not be used in non-interactive snapshot tests');
-        },
-        async showOpenDialog() {
-          throw new Error('showOpenDialog should not be used in this snapshot test');
-        },
-        async showMessageBox(ownerWin, options) {
-          showMessageBoxCalls.push({ ownerWin, options });
-          return { response: messageBoxResponse };
-        },
+  const restoreElectronModule = installElectronModuleMock({
+    dialog: {
+      async showSaveDialog() {
+        throw new Error('showSaveDialog should not be used in non-interactive snapshot tests');
       },
-      BrowserWindow: {
-        fromWebContents(webContents) {
-          return webContents === senderWin.webContents ? senderWin : null;
-        },
+      async showOpenDialog() {
+        throw new Error('showOpenDialog should not be used in this snapshot test');
       },
-      shell: {
-        async openPath(targetPath) {
-          openPathCalls.push(targetPath);
-          return shellOpenPathResult;
-        },
+      async showMessageBox(ownerWin, options) {
+        showMessageBoxCalls.push({ ownerWin, options });
+        return { response: messageBoxResponse };
       },
     },
-  };
+    BrowserWindow: {
+      fromWebContents(webContents) {
+        return webContents === senderWin.webContents ? senderWin : null;
+      },
+    },
+    shell: {
+      async openPath(targetPath) {
+        openPathCalls.push(targetPath);
+        return shellOpenPathResult;
+      },
+    },
+  });
 
   require.cache[fsStorageModulePath] = {
     id: fsStorageModulePath,
@@ -165,12 +160,7 @@ function loadSnapshotsMainWithMocks({
     } else {
       delete require.cache[snapshotsModulePath];
     }
-
-    if (originalElectronModule) {
-      require.cache[electronModulePath] = originalElectronModule;
-    } else {
-      delete require.cache[electronModulePath];
-    }
+    restoreElectronModule();
 
     if (originalFsStorageModule) {
       require.cache[fsStorageModulePath] = originalFsStorageModule;
