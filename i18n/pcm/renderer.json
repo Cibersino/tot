@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Time wey don pass: ",
         "text_extraction_drop_here": "Drop file to extract text"
+      },
+      "alerts": {
+        "clipboard_too_large": "Clipboard text too large to process. Reduce am and try again.",
+        "apply_too_large": "Di text go too big to apply am. Reduce am and try again.",
+        "apply_truncated": "Di text don cut short make e fit di app limit.",
+        "append_text_limit": "No fit append di text: maximum size don reach.",
+        "overwrite_clipboard_error": "Error happen while replacing text from clipboard.",
+        "append_clipboard_error": "Error happen while appending text from clipboard.",
+        "clear_error": "Error happen while clearing text. Check console.",
+        "current_text_processing_locked": "Current text still dey update. Main-window interactions dey locked until di latest text settle.",
+        "current_text_recount_locked": "Current-text results still dey recalculate. Main-window interactions dey locked until di latest recount settle.",
+        "wip": {
+          "design_skins": "WIP: Di skins selector go open here for future version.",
+          "floating_stopwatch": "WIP: Floating Stopwatch settings go open here for future version.",
+          "fonts": "WIP: Di fonts selector go open here for future version.",
+          "colors": "WIP: Di colours selector go open here for future version.",
+          "shortcuts": "WIP: Di keyboard shortcuts selector go open here for future version."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Show generated PDF",
         "cancel_button": "Cancel",
         "close_aria": "Close heavy PDF for OCR dialog"
+      },
+      "alerts": {
+        "start_error": "Error happen while starting text extraction. Check console.",
+        "precondition_blocked": "To start text extraction, close all secondary windows and stop di stopwatch.",
+        "precondition_error": "Error happen while checking text extraction preconditions. Check console.",
+        "processing_locked": "Text extraction dey processing. Main-window interactions dey locked until processing end or you abort am.",
+        "abort_error": "Error happen while requesting text extraction abort. Check console.",
+        "cancellation_requested": "Cancellation requested. Abeg wait until di current extraction finish.",
+        "cancellation_complete": "Cancellation done.",
+        "drop_invalid_file": "Dropped item no be valid local file.",
+        "generated_pdf_cleanup_warning": "Extraction don finish, but one generated local PDF no fit clean up automatically.",
+        "route_choice_error": "Error happen while choosing extraction route.",
+        "generated_pdf_reveal_failed": "Di saved PDF no fit show. Check whether di file still dey.",
+        "apply_error": "Error happen while applying extracted text. Check console and retry.",
+        "prepare_invalid": "Di prepared text extraction request no valid again. Start di flow again.",
+        "unsupported_format": "Dis file format no dey supported for text extraction.",
+        "pdf": {
+          "unreadable_or_corrupt": "Dis PDF no fit read or e don spoil. Check di file and try again.",
+          "encrypted_or_password_protected": "Dis PDF dey encrypted or password dey protect am. Unlock am and try again.",
+          "page_count_unavailable": "Di app no fit check how many pages dis PDF get. Check di file and try again.",
+          "page_selection_invalid": "Di PDF page range wey you select no valid. Adjust di range and try again.",
+          "subset_creation_failed": "Di app no fit create di selected-page PDF for extraction. Check di file and try again."
+        },
+        "ocr": {
+          "unavailable": "OCR no dey available. Check setup/auth status and try again.",
+          "activation_required": "OCR activation dey required. Sign in to Google OCR and try again.",
+          "activation_success": "OCR activation completed. Retrying extraction.",
+          "activation_cancelled": "OCR activation was cancelled. Text extraction no continue.",
+          "token_state_invalid": "Saved Google OCR sign-in state no valid. Reconnect Google OCR and try again.",
+          "activation_failed": "OCR activation fail. Check setup/auth status and try again.",
+          "enable_success": "Google OCR don enable.",
+          "enable_cancelled": "Google OCR enable cancelled.",
+          "enable_failed": "Could not enable Google OCR. Check setup/auth status and try again.",
+          "disconnect_success": "Google OCR was disconnected. Di saved Google token was revoked and di local sign-in state was removed.",
+          "disconnect_not_connected": "Google OCR no dey connected for dis app instance now.",
+          "disconnect_failed": "Google OCR disconnect fail. Di saved sign-in state no removed.",
+          "connectivity_failed": "OCR needs internet connection. Check your connection and try again.",
+          "setup_missing_credentials": "OCR no dey available for dis app build because bundled Google OAuth credentials dey missing.",
+          "setup_invalid_credentials": "OCR no dey available for dis app build because bundled Google OAuth credentials no valid.",
+          "quota_or_rate_limited": "OCR dey temporarily blocked by quota/rate limits. Wait and retry.",
+          "runtime_error": "OCR runtime error happen during text extraction. Check console and retry.",
+          "cancelled": "OCR text extraction was cancelled.",
+          "cleanup_warning": "OCR finish, but temporary remote file cleanup fail. Check your Google Drive folder."
+        },
+        "batch_ocr": {
+          "activation_required": "Dis batch get OCR items, but Google OCR no dey enabled. Use Preferences > Enable Google OCR, then start di batch again.",
+          "token_state_invalid": "Dis batch get OCR items, but saved Google OCR sign-in state no valid. Use Preferences > Enable Google OCR again, then start di batch again.",
+          "connectivity_failed": "Dis batch get OCR items, but OCR need internet connection. Check your connection and try again before you start extraction.",
+          "quota_or_rate_limited": "Dis batch get OCR items, but OCR dey temporarily blocked by quota/rate limits. Wait and try again before you start extraction.",
+          "unavailable": "Dis batch get OCR items, but Google OCR no dey available now. If OCR never enable yet, use Preferences > Enable Google OCR. Otherwise, check OCR setup/auth status and try again before you start di batch."
+        },
+        "native": {
+          "runtime_error": "Native extraction runtime error happen during text extraction. Check console and retry.",
+          "unreadable_or_corrupt": "Di selected file unreadable or corrupt for native extraction.",
+          "encrypted_or_password_protected": "Di selected PDF encrypted or password-protected and no fit extract natively.",
+          "cancelled": "Native extraction was cancelled."
+        }
       }
     },
     "editor": {
@@ -222,10 +297,23 @@
       "decrease_text_size": "Reduce text size",
       "increase_text_size": "Increase text size",
       "reset_text_size": "Reset text size",
-      "text_size_value": "{value} px",
       "read_progress_label": "Read",
-      "read_progress_aria": "Read progress: {value}",
-      "clear_title": "Clear"
+      "clear_title": "Clear",
+      "alerts": {
+        "start_failed": "Text Editor no fit start.",
+        "start_timeout": "Text Editor take too long to start, so e close.",
+        "paste_too_big": "Text too large to paste directly. Use di main window buttons.",
+        "drop_too_big": "Dropped text too large. Use di main window buttons to add large text.",
+        "paste_no_text": "Clipboard no contain plain text.",
+        "drop_no_text": "Drag and drop: no plain text detected.",
+        "type_limit": "Cannot type more text: maximum size don reach.",
+        "paste_limit": "Cannot paste more text: maximum size don reach.",
+        "drop_limit": "Cannot drop more text: maximum size don reach.",
+        "paste_truncated": "Pasted text was truncated to avoid passing di maximum.",
+        "drop_truncated": "Dragged text pass available space and dem truncate am.",
+        "text_truncated": "Text was truncated to fit di app limit.",
+        "calc_error": "Error happen while calculating. Check console."
+      }
     },
     "editor_find": {
       "input_placeholder": "Find...",
@@ -244,6 +332,17 @@
       "replace_timeout": "Replace take too long. Try again.",
       "status_no_matches": "No matches",
       "status_empty_query": "Type to search"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot saved.",
+        "save_error": "Could not save snapshot.",
+        "load_success": "Snapshot loaded.",
+        "load_error": "Could not load snapshot.",
+        "outside": "Snapshot must dey inside di snapshots folder.",
+        "truncated": "Snapshot pass maximum size and dem truncate am.",
+        "unavailable": "Snapshot feature no dey available."
+      }
     },
     "snapshot_save_tags": {
       "title": "Save text snapshot",
@@ -447,6 +546,22 @@
         "buttons": {
           "continue": "Continue"
         }
+      },
+      "alerts": {
+        "unavailable": "Reading speed test feature no dey available.",
+        "precondition_blocked": "Reading speed test fit start only when di app dey steady. Close secondary windows and make sure stopwatch don stop.",
+        "pool_error": "Error happen while checking reading speed test pool.",
+        "no_matching_files": "No unused test files remain wey match di current selection.",
+        "visible_empty_bundled_hidden": "Built-in test files dey hidden, and no visible unused test files dey available now. Show di built-in files again or import more files to continue.",
+        "current_text_empty": "Current text empty. Load or type text before you start di test with current text.",
+        "result_invalid": "Di test result no fit convert to valid WPM. Di flow end without opening preset modal.",
+        "result_unavailable": "Could not show reading speed result. Di flow continue.",
+        "preset_unavailable": "Could not open preset modal after di test.",
+        "questions_unavailable": "Could not open comprehension questions modal. Di flow end before preset creation.",
+        "pool_import_failed": "Reading speed test files could not be imported.",
+        "start_failed": "Reading speed test could not start.",
+        "cancelled": "Reading speed test was cancelled.",
+        "cancelled_window_closed": "Reading speed test was cancelled because one of its session windows closed."
       }
     },
     "modal_preset": {
@@ -455,135 +570,43 @@
       "heading_new": "Create new preset",
       "heading_edit": "Edit selected preset",
       "name": "Name:",
+      "name_placeholder": "Preset name",
       "wpm": "WPM:",
       "description": "Description:",
-      "placeholder": "Short description...",
+      "description_placeholder": "Short description...",
       "char_count": "{remaining} characters left",
       "hint": "Custom presets dey stored for user settings.",
       "cancel": "Cancel",
-      "save": "Save"
+      "save": "Save",
+      "alerts": {
+        "unavailable": "Di preset dialog no dey available for dis app build.",
+        "open_error": "Error happen while opening di preset dialog. Check console.",
+        "name_empty": "Name no fit dey empty.",
+        "wpm_invalid": "WPM must be number between {min} and {max}.",
+        "create_error": "Error happen while creating preset. Check console.",
+        "edit_error": "Error happen while editing preset. Check console.",
+        "process_error": "Error happen while processing preset. Check console."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Selected preset no dey cache.",
+        "delete_error": "Error happen while deleting preset. Check console.",
+        "restore_error": "Error happen while restoring presets. Check console.",
+        "open_folder_unsupported": "Cannot open presets folder for dis environment.",
+        "open_folder_error": "Error happen while trying to open presets folder. Check console.",
+        "open_default_folder_failed": "Could not open default presets folder. Check console for details."
+      }
     },
     "browser_extension": {
       "title": "Browser extension",
       "subtitle": "Reading time",
       "availability": "E don dey available for Chrome now. More browsers go come soon.",
       "chrome_store_aria": "Open di extension Chrome Web Store page",
-      "close_aria": "Close browser extension dialog"
-    },
-    "alerts": {
-      "clipboard_too_large": "Clipboard text too large to process. Reduce am and try again.",
-      "apply_too_large": "Di text go too big to apply am. Reduce am and try again.",
-      "apply_truncated": "Di text don cut short make e fit di app limit.",
-      "append_text_limit": "No fit append di text: maximum size don reach.",
-      "overwrite_clipboard_error": "Error happen while replacing text from clipboard.",
-      "append_clipboard_error": "Error happen while appending text from clipboard.",
-      "clear_error": "Error happen while clearing text. Check console.",
-      "snapshot_save_success": "Snapshot saved.",
-      "snapshot_save_error": "Could not save snapshot.",
-      "snapshot_load_success": "Snapshot loaded.",
-      "snapshot_load_error": "Could not load snapshot.",
-      "snapshot_outside": "Snapshot must dey inside di snapshots folder.",
-      "snapshot_truncated": "Snapshot pass maximum size and dem truncate am.",
-      "snapshot_unavailable": "Snapshot feature no dey available.",
-      "browser_extension_modal_open_blocked": "Di browser extension dialog no fit open right now.",
-      "preset_not_found": "Selected preset no dey cache.",
-      "preset_modal_unavailable": "Di preset dialog no dey available for dis app build.",
-      "preset_modal_open_error": "Error happen while opening di preset dialog. Check console.",
-      "delete_error": "Error happen while deleting preset. Check console.",
-      "restore_error": "Error happen while restoring presets. Check console.",
-      "open_presets_unsupported": "Cannot open presets folder for dis environment.",
-      "open_presets_error": "Error happen while trying to open presets folder. Check console.",
-      "open_presets_fail": "Could not open default presets folder. Check console for details.",
-      "text_extraction_error": "Error happen while starting text extraction. Check console.",
-      "text_extraction_precondition_blocked": "To start text extraction, close all secondary windows and stop di stopwatch.",
-      "text_extraction_precondition_error": "Error happen while checking text extraction preconditions. Check console.",
-      "text_extraction_processing_locked": "Text extraction dey processing. Main-window interactions dey locked until processing end or you abort am.",
-      "current_text_processing_locked": "Current text still dey update. Main-window interactions dey locked until di latest text settle.",
-      "current_text_recount_locked": "Current-text results still dey recalculate. Main-window interactions dey locked until di latest recount settle.",
-      "text_extraction_abort_error": "Error happen while requesting text extraction abort. Check console.",
-      "text_extraction_cancellation_requested": "Cancellation requested. Abeg wait until di current extraction finish.",
-      "text_extraction_cancellation_complete": "Cancellation done.",
-      "text_extraction_drop_invalid_file": "Dropped item no be valid local file.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Dis PDF no fit read or e don spoil. Check di file and try again.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Dis PDF dey encrypted or password dey protect am. Unlock am and try again.",
-      "text_extraction_pdf_page_count_unavailable": "Di app no fit check how many pages dis PDF get. Check di file and try again.",
-      "text_extraction_pdf_page_selection_invalid": "Di PDF page range wey you select no valid. Adjust di range and try again.",
-      "text_extraction_pdf_subset_creation_failed": "Di app no fit create di selected-page PDF for extraction. Check di file and try again.",
-      "text_extraction_generated_pdf_cleanup_warning": "Extraction don finish, but one generated local PDF no fit clean up automatically.",
-      "text_extraction_route_choice_error": "Error happen while choosing extraction route.",
-      "text_extraction_generated_pdf_reveal_failed": "Di saved PDF no fit show. Check whether di file still dey.",
-      "text_extraction_apply_error": "Error happen while applying extracted text. Check console and retry.",
-      "text_extraction_prepare_invalid": "Di prepared text extraction request no valid again. Start di flow again.",
-      "text_extraction_batch_ocr_activation_required": "Dis batch get OCR items, but Google OCR no dey enabled. Use Preferences > Enable Google OCR, then start di batch again.",
-      "text_extraction_batch_ocr_token_state_invalid": "Dis batch get OCR items, but saved Google OCR sign-in state no valid. Use Preferences > Enable Google OCR again, then start di batch again.",
-      "text_extraction_batch_ocr_connectivity_failed": "Dis batch get OCR items, but OCR need internet connection. Check your connection and try again before you start extraction.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Dis batch get OCR items, but OCR dey temporarily blocked by quota/rate limits. Wait and try again before you start extraction.",
-      "text_extraction_batch_ocr_unavailable": "Dis batch get OCR items, but Google OCR no dey available now. If OCR never enable yet, use Preferences > Enable Google OCR. Otherwise, check OCR setup/auth status and try again before you start di batch.",
-      "text_extraction_ocr_unavailable": "OCR no dey available. Check setup/auth status and try again.",
-      "text_extraction_ocr_activation_required": "OCR activation dey required. Sign in to Google OCR and try again.",
-      "text_extraction_ocr_activation_success": "OCR activation completed. Retrying extraction.",
-      "text_extraction_ocr_activation_cancelled": "OCR activation was cancelled. Text extraction no continue.",
-      "text_extraction_ocr_token_state_invalid": "Saved Google OCR sign-in state no valid. Reconnect Google OCR and try again.",
-      "text_extraction_ocr_activation_failed": "OCR activation fail. Check setup/auth status and try again.",
-      "text_extraction_ocr_enable_success": "Google OCR don enable.",
-      "text_extraction_ocr_enable_cancelled": "Google OCR enable cancelled.",
-      "text_extraction_ocr_enable_failed": "Could not enable Google OCR. Check setup/auth status and try again.",
-      "text_extraction_ocr_disconnect_success": "Google OCR was disconnected. Di saved Google token was revoked and di local sign-in state was removed.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR no dey connected for dis app instance now.",
-      "text_extraction_ocr_disconnect_failed": "Google OCR disconnect fail. Di saved sign-in state no removed.",
-      "text_extraction_ocr_connectivity_failed": "OCR needs internet connection. Check your connection and try again.",
-      "text_extraction_ocr_setup_missing_credentials": "OCR no dey available for dis app build because bundled Google OAuth credentials dey missing.",
-      "text_extraction_ocr_setup_invalid_credentials": "OCR no dey available for dis app build because bundled Google OAuth credentials no valid.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR dey temporarily blocked by quota/rate limits. Wait and retry.",
-      "text_extraction_ocr_runtime_error": "OCR runtime error happen during text extraction. Check console and retry.",
-      "text_extraction_ocr_cancelled": "OCR text extraction was cancelled.",
-      "text_extraction_ocr_cleanup_warning": "OCR finish, but temporary remote file cleanup fail. Check your Google Drive folder.",
-      "text_extraction_native_runtime_error": "Native extraction runtime error happen during text extraction. Check console and retry.",
-      "text_extraction_native_unreadable_or_corrupt": "Di selected file unreadable or corrupt for native extraction.",
-      "text_extraction_native_encrypted_or_password_protected": "Di selected PDF encrypted or password-protected and no fit extract natively.",
-      "text_extraction_native_cancelled": "Native extraction was cancelled.",
-      "text_extraction_unsupported_format": "Dis file format no dey supported for text extraction.",
-      "wip_diseno_skins": "WIP: Di skins selector go open here for future version.",
-      "wip_diseno_crono": "WIP: Floating Stopwatch settings go open here for future version.",
-      "wip_diseno_fuentes": "WIP: Di fonts selector go open here for future version.",
-      "wip_diseno_colores": "WIP: Di colours selector go open here for future version.",
-      "wip_shortcuts": "WIP: Di keyboard shortcuts selector go open here for future version.",
-      "reading_test_unavailable": "Reading speed test feature no dey available.",
-      "reading_test_precondition_blocked": "Reading speed test fit start only when di app dey steady. Close secondary windows and make sure stopwatch don stop.",
-      "reading_test_pool_error": "Error happen while checking reading speed test pool.",
-      "reading_test_no_matching_files": "No unused test files remain wey match di current selection.",
-      "reading_test_visible_empty_bundled_hidden": "Built-in test files dey hidden, and no visible unused test files dey available now. Show di built-in files again or import more files to continue.",
-      "reading_test_current_text_empty": "Current text empty. Load or type text before you start di test with current text.",
-      "reading_test_result_invalid": "Di test result no fit convert to valid WPM. Di flow end without opening preset modal.",
-      "reading_test_result_unavailable": "Could not show reading speed result. Di flow continue.",
-      "reading_test_preset_unavailable": "Could not open preset modal after di test.",
-      "reading_test_questions_unavailable": "Could not open comprehension questions modal. Di flow end before preset creation.",
-      "reading_test_pool_import_failed": "Reading speed test files could not be imported.",
-      "reading_test_start_failed": "Reading speed test could not start.",
-      "text_editor_start_failed": "Text Editor no fit start.",
-      "text_editor_start_timeout": "Text Editor take too long to start, so e close.",
-      "reading_test_cancelled": "Reading speed test was cancelled.",
-      "reading_test_cancelled_window_closed": "Reading speed test was cancelled because one of its session windows closed."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Text too large to paste directly. Use di main window buttons.",
-      "drop_too_big": "Dropped text too large. Use di main window buttons to add large text.",
-      "paste_no_text": "Clipboard no contain plain text.",
-      "drop_no_text": "Drag and drop: no plain text detected.",
-      "type_limit": "Cannot type more text: maximum size don reach.",
-      "paste_limit": "Cannot paste more text: maximum size don reach.",
-      "drop_limit": "Cannot drop more text: maximum size don reach.",
-      "paste_truncated": "Pasted text was truncated to avoid passing di maximum.",
-      "drop_truncated": "Dragged text pass available space and dem truncate am.",
-      "text_truncated": "Text was truncated to fit di app limit.",
-      "calc_error": "Error happen while calculating. Check console."
-    },
-    "preset_alerts": {
-      "name_empty": "Name no fit dey empty.",
-      "wpm_invalid": "WPM must be number between {min} and {max}.",
-      "create_error": "Error happen while creating preset. Check console.",
-      "edit_error": "Error happen while editing preset. Check console.",
-      "process_error": "Error happen while processing preset. Check console."
+      "close_aria": "Close browser extension dialog",
+      "alerts": {
+        "modal_open_blocked": "Di browser extension dialog no fit open right now."
+      }
     },
     "info": {
       "loading": "Loading...",

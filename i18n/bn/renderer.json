@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "অতিবাহিত: ",
         "text_extraction_drop_here": "লেখা নিষ্কাশনের জন্য ফাইল ছেড়ে দিন"
+      },
+      "alerts": {
+        "clipboard_too_large": "ক্লিপবোর্ডের লেখা প্রক্রিয়াকরণের জন্য খুব বড়। ছোট করে আবার চেষ্টা করুন।",
+        "apply_too_large": "টেক্সটটি প্রয়োগ করার জন্য খুব বড় হয়ে যাবে। এটি কমিয়ে আবার চেষ্টা করুন।",
+        "apply_truncated": "অ্যাপ্লিকেশনের সীমার মধ্যে রাখতে টেক্সটটি কেটে ছোট করা হয়েছে।",
+        "append_text_limit": "টেক্সট যোগ করা যাচ্ছে না: সর্বোচ্চ আকারে পৌঁছে গেছে।",
+        "overwrite_clipboard_error": "ক্লিপবোর্ড থেকে টেক্সট প্রতিস্থাপন করার সময় একটি ত্রুটি ঘটেছে।",
+        "append_clipboard_error": "ক্লিপবোর্ড থেকে টেক্সট যোগ করার সময় একটি ত্রুটি ঘটেছে।",
+        "clear_error": "লেখা খালি করার সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "current_text_processing_locked": "বর্তমান লেখা এখনও আপডেট হচ্ছে। সর্বশেষ লেখা স্থির না হওয়া পর্যন্ত মূল উইন্ডোর ইন্টারঅ্যাকশন লক থাকবে।",
+        "current_text_recount_locked": "বর্তমান লেখার ফলাফল এখনও পুনরায় গণনা করা হচ্ছে। সর্বশেষ গণনা স্থির না হওয়া পর্যন্ত মূল উইন্ডোর ইন্টারঅ্যাকশন লক থাকবে।",
+        "wip": {
+          "design_skins": "WIP: skins selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
+          "floating_stopwatch": "WIP: Floating Stopwatch settings ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
+          "fonts": "WIP: fonts selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
+          "colors": "WIP: colors selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
+          "shortcuts": "WIP: keyboard shortcuts selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।"
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "তৈরি PDF দেখান",
         "cancel_button": "বাতিল",
         "close_aria": "OCR-এর জন্য ভারী PDF ডায়ালগ বন্ধ করুন"
+      },
+      "alerts": {
+        "start_error": "নিষ্কাশন শুরু করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "precondition_blocked": "নিষ্কাশন শুরু করতে সব সেকেন্ডারি উইন্ডো বন্ধ করুন এবং স্টপওয়াচ থামান।",
+        "precondition_error": "নিষ্কাশনের পূর্বশর্ত পরীক্ষা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "processing_locked": "নিষ্কাশন প্রক্রিয়াধীন। প্রক্রিয়া শেষ না হওয়া বা আপনি বন্ধ না করা পর্যন্ত প্রধান উইন্ডোর মিথস্ক্রিয়া লক থাকবে।",
+        "abort_error": "নিষ্কাশন বন্ধ করার অনুরোধ করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "cancellation_requested": "বাতিল করার অনুরোধ করা হয়েছে। বর্তমান এক্সট্রাকশন শেষ হওয়া পর্যন্ত অপেক্ষা করুন।",
+        "cancellation_complete": "বাতিল সম্পন্ন হয়েছে।",
+        "drop_invalid_file": "ছেড়ে দেওয়া আইটেমটি বৈধ লোকাল ফাইল নয়।",
+        "generated_pdf_cleanup_warning": "এক্সট্র্যাকশন শেষ হয়েছে, কিন্তু তৈরি হওয়া স্থানীয় PDF স্বয়ংক্রিয়ভাবে পরিষ্কার করা যায়নি।",
+        "route_choice_error": "extraction route নির্বাচন করার সময় একটি ত্রুটি ঘটেছে।",
+        "generated_pdf_reveal_failed": "সংরক্ষিত PDF দেখানো যায়নি। ফাইলটি এখনও আছে কি না পরীক্ষা করুন।",
+        "apply_error": "নিষ্কাশিত লেখা প্রয়োগ করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
+        "prepare_invalid": "প্রস্তুত করা নিষ্কাশন অনুরোধ আর বৈধ নয়। প্রবাহটি আবার শুরু করুন।",
+        "unsupported_format": "এই ফাইল ফরম্যাটটি টেক্সট এক্সট্রাকশনের জন্য সমর্থিত নয়।",
+        "pdf": {
+          "unreadable_or_corrupt": "এই PDF পড়া যাচ্ছে না অথবা ক্ষতিগ্রস্ত। ফাইলটি পরীক্ষা করে আবার চেষ্টা করুন।",
+          "encrypted_or_password_protected": "এই PDF এনক্রিপ্টেড অথবা পাসওয়ার্ড-সুরক্ষিত। এটি আনলক করে আবার চেষ্টা করুন।",
+          "page_count_unavailable": "এই PDF-এর পৃষ্ঠা সংখ্যা পরীক্ষা করা যায়নি। ফাইলটি পরীক্ষা করে আবার চেষ্টা করুন।",
+          "page_selection_invalid": "নির্বাচিত PDF পৃষ্ঠা-পরিসরটি বৈধ নয়। পরিসরটি ঠিক করে আবার চেষ্টা করুন।",
+          "subset_creation_failed": "এক্সট্র্যাকশনের জন্য নির্বাচিত পৃষ্ঠাগুলোর PDF তৈরি করা যায়নি। ফাইলটি পরীক্ষা করে আবার চেষ্টা করুন।"
+        },
+        "ocr": {
+          "unavailable": "OCR উপলব্ধ নেই। setup/auth অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।",
+          "activation_required": "OCR সক্রিয়করণ প্রয়োজন। Google OCR-এ সাইন ইন করে আবার চেষ্টা করুন।",
+          "activation_success": "OCR সক্রিয়করণ সম্পন্ন হয়েছে। নিষ্কাশন আবার চেষ্টা করা হচ্ছে।",
+          "activation_cancelled": "OCR সক্রিয়করণ বাতিল করা হয়েছে। নিষ্কাশন চালিয়ে যায়নি।",
+          "token_state_invalid": "সংরক্ষিত Google OCR সাইন-ইন অবস্থা অকার্যকর। Google OCR পুনরায় সংযোগ করে আবার চেষ্টা করুন।",
+          "activation_failed": "OCR সক্রিয়করণ ব্যর্থ হয়েছে। setup/auth অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।",
+          "enable_success": "Google OCR সক্রিয় হয়েছে।",
+          "enable_cancelled": "Google OCR সক্রিয়করণ বাতিল হয়েছে।",
+          "enable_failed": "Google OCR সক্রিয় করা যায়নি। সেটআপ/প্রমাণীকরণ অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।",
+          "disconnect_success": "Google OCR বিচ্ছিন্ন হয়েছে। সংরক্ষিত Google টোকেন বাতিল করা হয়েছে এবং লোকাল সাইন-ইন অবস্থা সরানো হয়েছে।",
+          "disconnect_not_connected": "এই অ্যাপ ইনস্ট্যান্সে Google OCR বর্তমানে সংযুক্ত নয়।",
+          "disconnect_failed": "Google OCR বিচ্ছিন্নকরণ ব্যর্থ হয়েছে। সংরক্ষিত সাইন-ইন অবস্থা সরানো হয়নি।",
+          "connectivity_failed": "OCR-এর জন্য ইন্টারনেট সংযোগ দরকার। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।",
+          "setup_missing_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অনুপস্থিত।",
+          "setup_invalid_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অকার্যকর।",
+          "quota_or_rate_limited": "quota/rate limit-এর কারণে OCR সাময়িকভাবে অবরুদ্ধ। অপেক্ষা করে আবার চেষ্টা করুন।",
+          "runtime_error": "নিষ্কাশনের সময় OCR runtime ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
+          "cancelled": "OCR নিষ্কাশন বাতিল করা হয়েছে।",
+          "cleanup_warning": "OCR শেষ হয়েছে, কিন্তু অস্থায়ী remote ফাইল cleanup ব্যর্থ হয়েছে। আপনার Google Drive ফোল্ডার দেখুন।"
+        },
+        "batch_ocr": {
+          "activation_required": "এই দলে OCR আইটেম আছে, কিন্তু Google OCR সক্রিয় নয়। পছন্দসমূহ > Google OCR সক্রিয় করুন ব্যবহার করুন, তারপর দলটি আবার শুরু করুন।",
+          "token_state_invalid": "এই দলে OCR আইটেম আছে, কিন্তু সংরক্ষিত Google OCR সাইন-ইন অবস্থা অকার্যকর। পছন্দসমূহ > Google OCR সক্রিয় করুন আবার ব্যবহার করুন, তারপর দলটি আবার শুরু করুন।",
+          "connectivity_failed": "এই ব্যাচে OCR আইটেম আছে, কিন্তু OCR-এর জন্য ইন্টারনেট সংযোগ দরকার। সংযোগ পরীক্ষা করে extraction শুরু করার আগে আবার চেষ্টা করুন।",
+          "quota_or_rate_limited": "এই ব্যাচে OCR আইটেম আছে, কিন্তু quota/rate limit-এর কারণে OCR সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ অপেক্ষা করে extraction শুরু করার আগে আবার চেষ্টা করুন।",
+          "unavailable": "এই দলে OCR আইটেম আছে, কিন্তু Google OCR এখন উপলব্ধ নয়। OCR এখনও সক্রিয় না হলে পছন্দসমূহ > Google OCR সক্রিয় করুন ব্যবহার করুন। নইলে দল শুরু করার আগে OCR সেটআপ/প্রমাণীকরণ অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।"
+        },
+        "native": {
+          "runtime_error": "নিষ্কাশনের সময় native extraction runtime ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
+          "unreadable_or_corrupt": "নির্বাচিত ফাইলটি native extraction-এর জন্য পড়া যাচ্ছে না বা corrupt.",
+          "encrypted_or_password_protected": "নির্বাচিত PDF encrypted বা password-protected, তাই native route দিয়ে নিষ্কাশন করা যায় না।",
+          "cancelled": "Native extraction বাতিল করা হয়েছে।"
+        }
       }
     },
     "editor": {
@@ -222,10 +297,23 @@
       "decrease_text_size": "লেখার আকার কমান",
       "increase_text_size": "লেখার আকার বাড়ান",
       "reset_text_size": "লেখার আকার রিসেট করুন",
-      "text_size_value": "{value} px",
       "read_progress_label": "পড়া হয়েছে",
-      "read_progress_aria": "পড়ার অগ্রগতি: {value}",
-      "clear_title": "খালি করুন"
+      "clear_title": "খালি করুন",
+      "alerts": {
+        "start_failed": "Text Editor শুরু করা যায়নি।",
+        "start_timeout": "Text Editor শুরু হতে খুব বেশি সময় নিয়েছে এবং বন্ধ করা হয়েছে।",
+        "paste_too_big": "লেখা সরাসরি পেস্ট করার জন্য খুব বড়। প্রধান উইন্ডোর বোতাম ব্যবহার করুন।",
+        "drop_too_big": "ছেড়ে দেওয়া লেখা খুব বড়। বড় লেখা যোগ করতে প্রধান উইন্ডোর বোতাম ব্যবহার করুন।",
+        "paste_no_text": "ক্লিপবোর্ডে plain text নেই।",
+        "drop_no_text": "Drag and drop: plain text পাওয়া যায়নি।",
+        "type_limit": "আর লেখা যায় না: সর্বোচ্চ আকারে পৌঁছে গেছে।",
+        "paste_limit": "আর পেস্ট করা যায় না: সর্বোচ্চ আকারে পৌঁছে গেছে।",
+        "drop_limit": "আর drop করা যায় না: সর্বোচ্চ আকারে পৌঁছে গেছে।",
+        "paste_truncated": "সর্বোচ্চ সীমা অতিক্রম এড়াতে পেস্ট করা লেখা কেটে দেওয়া হয়েছে।",
+        "drop_truncated": "টেনে আনা লেখা উপলব্ধ স্থানের বেশি ছিল এবং কেটে দেওয়া হয়েছে।",
+        "text_truncated": "অ্যাপের সীমার মধ্যে আনতে লেখা কেটে দেওয়া হয়েছে।",
+        "calc_error": "গণনা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।"
+      }
     },
     "editor_find": {
       "input_placeholder": "খুঁজুন...",
@@ -244,6 +332,17 @@
       "replace_timeout": "প্রতিস্থাপনে সময় শেষ। আবার চেষ্টা করুন।",
       "status_no_matches": "কোনও মিল নেই",
       "status_empty_query": "খুঁজতে লিখুন"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "স্ন্যাপশট সংরক্ষিত হয়েছে।",
+        "save_error": "স্ন্যাপশট সংরক্ষণ করা যায়নি।",
+        "load_success": "স্ন্যাপশট লোড হয়েছে।",
+        "load_error": "স্ন্যাপশট লোড করা যায়নি।",
+        "outside": "স্ন্যাপশটটি snapshots ফোল্ডারের ভিতরে থাকতে হবে।",
+        "truncated": "স্ন্যাপশট সর্বোচ্চ আকার ছাড়িয়েছে এবং কেটে দেওয়া হয়েছে।",
+        "unavailable": "স্ন্যাপশট ফিচার উপলব্ধ নেই।"
+      }
     },
     "snapshot_save_tags": {
       "title": "লেখার স্ন্যাপশট সংরক্ষণ",
@@ -447,6 +546,22 @@
         "buttons": {
           "continue": "চালিয়ে যান"
         }
+      },
+      "alerts": {
+        "unavailable": "পড়ার গতি পরীক্ষা ফিচার উপলব্ধ নেই।",
+        "precondition_blocked": "পড়ার গতি পরীক্ষা কেবল অ্যাপের স্থির অবস্থা থেকে শুরু করা যায়। সেকেন্ডারি উইন্ডো বন্ধ করুন এবং স্টপওয়াচ থেমে আছে কি না নিশ্চিত করুন।",
+        "pool_error": "পড়ার গতি পরীক্ষার পুল পরীক্ষা করতে গিয়ে ত্রুটি হয়েছে।",
+        "no_matching_files": "বর্তমান নির্বাচনের সঙ্গে মেলে এমন কোনও অব্যবহৃত পরীক্ষার ফাইল নেই।",
+        "visible_empty_bundled_hidden": "অন্তর্নির্মিত টেস্ট ফাইলগুলো লুকানো আছে, এবং বর্তমানে কোনো দৃশ্যমান অব্যবহৃত টেস্ট ফাইল নেই। এগুলো আবার দেখান অথবা আরও ফাইল ইমপোর্ট করুন।",
+        "current_text_empty": "বর্তমান লেখা খালি। বর্তমান লেখা দিয়ে পরীক্ষা শুরু করার আগে একটি লেখা লোড করুন বা লিখুন।",
+        "result_invalid": "পরীক্ষার ফলাফল বৈধ WPM-এ রূপান্তর করা যায়নি। প্রিসেট মোডাল না খুলেই প্রবাহ শেষ হয়েছে।",
+        "result_unavailable": "পড়ার গতির ফলাফল দেখানো যায়নি। প্রবাহ চালিয়ে গেছে।",
+        "preset_unavailable": "পরীক্ষার পরে প্রিসেট মোডাল খোলা যায়নি।",
+        "questions_unavailable": "বোঝাপড়ার প্রশ্নের মোডাল খোলা যায়নি। প্রিসেট তৈরির আগে প্রবাহ শেষ হয়েছে।",
+        "pool_import_failed": "পড়ার গতি পরীক্ষার ফাইল আমদানি করা যায়নি।",
+        "start_failed": "পড়ার গতি পরীক্ষা শুরু করা যায়নি।",
+        "cancelled": "পড়ার গতি পরীক্ষা বাতিল করা হয়েছে।",
+        "cancelled_window_closed": "পড়ার গতি পরীক্ষা বাতিল হয়েছে, কারণ এর session windows-এর একটি বন্ধ হয়ে গেছে।"
       }
     },
     "modal_preset": {
@@ -455,135 +570,43 @@
       "heading_new": "নতুন প্রিসেট তৈরি করুন",
       "heading_edit": "নির্বাচিত প্রিসেট সম্পাদনা করুন",
       "name": "নাম:",
+      "name_placeholder": "প্রিসেটের নাম",
       "wpm": "WPM:",
       "description": "বর্ণনা:",
-      "placeholder": "সংক্ষিপ্ত বর্ণনা...",
+      "description_placeholder": "সংক্ষিপ্ত বর্ণনা...",
       "char_count": "{remaining} অক্ষর বাকি",
       "hint": "কাস্টম প্রিসেট ব্যবহারকারী সেটিংসে সংরক্ষিত হয়।",
       "cancel": "বাতিল",
-      "save": "সংরক্ষণ"
+      "save": "সংরক্ষণ",
+      "alerts": {
+        "unavailable": "এই অ্যাপ বিল্ডে প্রিসেট ডায়ালগ উপলভ্য নয়।",
+        "open_error": "প্রিসেট ডায়ালগ খোলার সময় একটি ত্রুটি ঘটেছে। কনসোল দেখুন।",
+        "name_empty": "নাম খালি হতে পারে না।",
+        "wpm_invalid": "WPM {min} এবং {max}-এর মধ্যে একটি সংখ্যা হতে হবে।",
+        "create_error": "প্রিসেট তৈরি করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "edit_error": "প্রিসেট সম্পাদনা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "process_error": "প্রিসেট প্রক্রিয়াকরণে ত্রুটি হয়েছে। কনসোল দেখুন।"
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "নির্বাচিত প্রিসেট ক্যাশে পাওয়া যায়নি।",
+        "delete_error": "প্রিসেট মুছে ফেলার সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "restore_error": "প্রিসেট পুনরুদ্ধারের সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "open_folder_unsupported": "এই পরিবেশে প্রিসেট ফোল্ডার খোলা যায় না।",
+        "open_folder_error": "প্রিসেট ফোল্ডার খুলতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "open_default_folder_failed": "ডিফল্ট প্রিসেট ফোল্ডার খোলা যায়নি। বিস্তারিত জানতে কনসোল দেখুন।"
+      }
     },
     "browser_extension": {
       "title": "ব্রাউজার এক্সটেনশন",
       "subtitle": "Tiempo de lectura",
       "availability": "এখন Chrome-এ উপলব্ধ। শিগগিরই আরও ব্রাউজারে আসছে।",
       "chrome_store_aria": "এক্সটেনশনের Chrome Web Store পৃষ্ঠা খুলুন",
-      "close_aria": "ব্রাউজার এক্সটেনশন ডায়ালগ বন্ধ করুন"
-    },
-    "alerts": {
-      "clipboard_too_large": "ক্লিপবোর্ডের লেখা প্রক্রিয়াকরণের জন্য খুব বড়। ছোট করে আবার চেষ্টা করুন।",
-      "apply_too_large": "টেক্সটটি প্রয়োগ করার জন্য খুব বড় হয়ে যাবে। এটি কমিয়ে আবার চেষ্টা করুন।",
-      "apply_truncated": "অ্যাপ্লিকেশনের সীমার মধ্যে রাখতে টেক্সটটি কেটে ছোট করা হয়েছে।",
-      "append_text_limit": "টেক্সট যোগ করা যাচ্ছে না: সর্বোচ্চ আকারে পৌঁছে গেছে।",
-      "overwrite_clipboard_error": "ক্লিপবোর্ড থেকে টেক্সট প্রতিস্থাপন করার সময় একটি ত্রুটি ঘটেছে।",
-      "append_clipboard_error": "ক্লিপবোর্ড থেকে টেক্সট যোগ করার সময় একটি ত্রুটি ঘটেছে।",
-      "clear_error": "লেখা খালি করার সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
-      "snapshot_save_success": "স্ন্যাপশট সংরক্ষিত হয়েছে।",
-      "snapshot_save_error": "স্ন্যাপশট সংরক্ষণ করা যায়নি।",
-      "snapshot_load_success": "স্ন্যাপশট লোড হয়েছে।",
-      "snapshot_load_error": "স্ন্যাপশট লোড করা যায়নি।",
-      "snapshot_outside": "স্ন্যাপশটটি snapshots ফোল্ডারের ভিতরে থাকতে হবে।",
-      "snapshot_truncated": "স্ন্যাপশট সর্বোচ্চ আকার ছাড়িয়েছে এবং কেটে দেওয়া হয়েছে।",
-      "snapshot_unavailable": "স্ন্যাপশট ফিচার উপলব্ধ নেই।",
-      "browser_extension_modal_open_blocked": "ব্রাউজার এক্সটেনশন ডায়ালগ এখন খোলা যাবে না।",
-      "preset_not_found": "নির্বাচিত প্রিসেট ক্যাশে পাওয়া যায়নি।",
-      "preset_modal_unavailable": "এই অ্যাপ বিল্ডে প্রিসেট ডায়ালগ উপলভ্য নয়।",
-      "preset_modal_open_error": "প্রিসেট ডায়ালগ খোলার সময় একটি ত্রুটি ঘটেছে। কনসোল দেখুন।",
-      "delete_error": "প্রিসেট মুছে ফেলার সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
-      "restore_error": "প্রিসেট পুনরুদ্ধারের সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
-      "open_presets_unsupported": "এই পরিবেশে প্রিসেট ফোল্ডার খোলা যায় না।",
-      "open_presets_error": "প্রিসেট ফোল্ডার খুলতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
-      "open_presets_fail": "ডিফল্ট প্রিসেট ফোল্ডার খোলা যায়নি। বিস্তারিত জানতে কনসোল দেখুন।",
-      "text_extraction_error": "নিষ্কাশন শুরু করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
-      "text_extraction_precondition_blocked": "নিষ্কাশন শুরু করতে সব সেকেন্ডারি উইন্ডো বন্ধ করুন এবং স্টপওয়াচ থামান।",
-      "text_extraction_precondition_error": "নিষ্কাশনের পূর্বশর্ত পরীক্ষা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
-      "text_extraction_processing_locked": "নিষ্কাশন প্রক্রিয়াধীন। প্রক্রিয়া শেষ না হওয়া বা আপনি বন্ধ না করা পর্যন্ত প্রধান উইন্ডোর মিথস্ক্রিয়া লক থাকবে।",
-      "current_text_processing_locked": "বর্তমান লেখা এখনও আপডেট হচ্ছে। সর্বশেষ লেখা স্থির না হওয়া পর্যন্ত মূল উইন্ডোর ইন্টারঅ্যাকশন লক থাকবে।",
-      "current_text_recount_locked": "বর্তমান লেখার ফলাফল এখনও পুনরায় গণনা করা হচ্ছে। সর্বশেষ গণনা স্থির না হওয়া পর্যন্ত মূল উইন্ডোর ইন্টারঅ্যাকশন লক থাকবে।",
-      "text_extraction_abort_error": "নিষ্কাশন বন্ধ করার অনুরোধ করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
-      "text_extraction_cancellation_requested": "বাতিল করার অনুরোধ করা হয়েছে। বর্তমান এক্সট্রাকশন শেষ হওয়া পর্যন্ত অপেক্ষা করুন।",
-      "text_extraction_cancellation_complete": "বাতিল সম্পন্ন হয়েছে।",
-      "text_extraction_drop_invalid_file": "ছেড়ে দেওয়া আইটেমটি বৈধ লোকাল ফাইল নয়।",
-      "text_extraction_pdf_unreadable_or_corrupt": "এই PDF পড়া যাচ্ছে না অথবা ক্ষতিগ্রস্ত। ফাইলটি পরীক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_pdf_encrypted_or_password_protected": "এই PDF এনক্রিপ্টেড অথবা পাসওয়ার্ড-সুরক্ষিত। এটি আনলক করে আবার চেষ্টা করুন।",
-      "text_extraction_pdf_page_count_unavailable": "এই PDF-এর পৃষ্ঠা সংখ্যা পরীক্ষা করা যায়নি। ফাইলটি পরীক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_pdf_page_selection_invalid": "নির্বাচিত PDF পৃষ্ঠা-পরিসরটি বৈধ নয়। পরিসরটি ঠিক করে আবার চেষ্টা করুন।",
-      "text_extraction_pdf_subset_creation_failed": "এক্সট্র্যাকশনের জন্য নির্বাচিত পৃষ্ঠাগুলোর PDF তৈরি করা যায়নি। ফাইলটি পরীক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_generated_pdf_cleanup_warning": "এক্সট্র্যাকশন শেষ হয়েছে, কিন্তু তৈরি হওয়া স্থানীয় PDF স্বয়ংক্রিয়ভাবে পরিষ্কার করা যায়নি।",
-      "text_extraction_route_choice_error": "extraction route নির্বাচন করার সময় একটি ত্রুটি ঘটেছে।",
-      "text_extraction_generated_pdf_reveal_failed": "সংরক্ষিত PDF দেখানো যায়নি। ফাইলটি এখনও আছে কি না পরীক্ষা করুন।",
-      "text_extraction_apply_error": "নিষ্কাশিত লেখা প্রয়োগ করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
-      "text_extraction_prepare_invalid": "প্রস্তুত করা নিষ্কাশন অনুরোধ আর বৈধ নয়। প্রবাহটি আবার শুরু করুন।",
-      "text_extraction_batch_ocr_activation_required": "এই দলে OCR আইটেম আছে, কিন্তু Google OCR সক্রিয় নয়। পছন্দসমূহ > Google OCR সক্রিয় করুন ব্যবহার করুন, তারপর দলটি আবার শুরু করুন।",
-      "text_extraction_batch_ocr_token_state_invalid": "এই দলে OCR আইটেম আছে, কিন্তু সংরক্ষিত Google OCR সাইন-ইন অবস্থা অকার্যকর। পছন্দসমূহ > Google OCR সক্রিয় করুন আবার ব্যবহার করুন, তারপর দলটি আবার শুরু করুন।",
-      "text_extraction_batch_ocr_connectivity_failed": "এই ব্যাচে OCR আইটেম আছে, কিন্তু OCR-এর জন্য ইন্টারনেট সংযোগ দরকার। সংযোগ পরীক্ষা করে extraction শুরু করার আগে আবার চেষ্টা করুন।",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "এই ব্যাচে OCR আইটেম আছে, কিন্তু quota/rate limit-এর কারণে OCR সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ অপেক্ষা করে extraction শুরু করার আগে আবার চেষ্টা করুন।",
-      "text_extraction_batch_ocr_unavailable": "এই দলে OCR আইটেম আছে, কিন্তু Google OCR এখন উপলব্ধ নয়। OCR এখনও সক্রিয় না হলে পছন্দসমূহ > Google OCR সক্রিয় করুন ব্যবহার করুন। নইলে দল শুরু করার আগে OCR সেটআপ/প্রমাণীকরণ অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_unavailable": "OCR উপলব্ধ নেই। setup/auth অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_activation_required": "OCR সক্রিয়করণ প্রয়োজন। Google OCR-এ সাইন ইন করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_activation_success": "OCR সক্রিয়করণ সম্পন্ন হয়েছে। নিষ্কাশন আবার চেষ্টা করা হচ্ছে।",
-      "text_extraction_ocr_activation_cancelled": "OCR সক্রিয়করণ বাতিল করা হয়েছে। নিষ্কাশন চালিয়ে যায়নি।",
-      "text_extraction_ocr_token_state_invalid": "সংরক্ষিত Google OCR সাইন-ইন অবস্থা অকার্যকর। Google OCR পুনরায় সংযোগ করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_activation_failed": "OCR সক্রিয়করণ ব্যর্থ হয়েছে। setup/auth অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_enable_success": "Google OCR সক্রিয় হয়েছে।",
-      "text_extraction_ocr_enable_cancelled": "Google OCR সক্রিয়করণ বাতিল হয়েছে।",
-      "text_extraction_ocr_enable_failed": "Google OCR সক্রিয় করা যায়নি। সেটআপ/প্রমাণীকরণ অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_disconnect_success": "Google OCR বিচ্ছিন্ন হয়েছে। সংরক্ষিত Google টোকেন বাতিল করা হয়েছে এবং লোকাল সাইন-ইন অবস্থা সরানো হয়েছে।",
-      "text_extraction_ocr_disconnect_not_connected": "এই অ্যাপ ইনস্ট্যান্সে Google OCR বর্তমানে সংযুক্ত নয়।",
-      "text_extraction_ocr_disconnect_failed": "Google OCR বিচ্ছিন্নকরণ ব্যর্থ হয়েছে। সংরক্ষিত সাইন-ইন অবস্থা সরানো হয়নি।",
-      "text_extraction_ocr_connectivity_failed": "OCR-এর জন্য ইন্টারনেট সংযোগ দরকার। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_setup_missing_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অনুপস্থিত।",
-      "text_extraction_ocr_setup_invalid_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অকার্যকর।",
-      "text_extraction_ocr_quota_or_rate_limited": "quota/rate limit-এর কারণে OCR সাময়িকভাবে অবরুদ্ধ। অপেক্ষা করে আবার চেষ্টা করুন।",
-      "text_extraction_ocr_runtime_error": "নিষ্কাশনের সময় OCR runtime ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
-      "text_extraction_ocr_cancelled": "OCR নিষ্কাশন বাতিল করা হয়েছে।",
-      "text_extraction_ocr_cleanup_warning": "OCR শেষ হয়েছে, কিন্তু অস্থায়ী remote ফাইল cleanup ব্যর্থ হয়েছে। আপনার Google Drive ফোল্ডার দেখুন।",
-      "text_extraction_native_runtime_error": "নিষ্কাশনের সময় native extraction runtime ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
-      "text_extraction_native_unreadable_or_corrupt": "নির্বাচিত ফাইলটি native extraction-এর জন্য পড়া যাচ্ছে না বা corrupt.",
-      "text_extraction_native_encrypted_or_password_protected": "নির্বাচিত PDF encrypted বা password-protected, তাই native route দিয়ে নিষ্কাশন করা যায় না।",
-      "text_extraction_native_cancelled": "Native extraction বাতিল করা হয়েছে।",
-      "text_extraction_unsupported_format": "এই ফাইল ফরম্যাটটি টেক্সট এক্সট্রাকশনের জন্য সমর্থিত নয়।",
-      "wip_diseno_skins": "WIP: skins selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
-      "wip_diseno_crono": "WIP: Floating Stopwatch settings ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
-      "wip_diseno_fuentes": "WIP: fonts selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
-      "wip_diseno_colores": "WIP: colors selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
-      "wip_shortcuts": "WIP: keyboard shortcuts selector ভবিষ্যৎ সংস্করণে এখানে খুলবে।",
-      "reading_test_unavailable": "পড়ার গতি পরীক্ষা ফিচার উপলব্ধ নেই।",
-      "reading_test_precondition_blocked": "পড়ার গতি পরীক্ষা কেবল অ্যাপের স্থির অবস্থা থেকে শুরু করা যায়। সেকেন্ডারি উইন্ডো বন্ধ করুন এবং স্টপওয়াচ থেমে আছে কি না নিশ্চিত করুন।",
-      "reading_test_pool_error": "পড়ার গতি পরীক্ষার পুল পরীক্ষা করতে গিয়ে ত্রুটি হয়েছে।",
-      "reading_test_no_matching_files": "বর্তমান নির্বাচনের সঙ্গে মেলে এমন কোনও অব্যবহৃত পরীক্ষার ফাইল নেই।",
-      "reading_test_visible_empty_bundled_hidden": "অন্তর্নির্মিত টেস্ট ফাইলগুলো লুকানো আছে, এবং বর্তমানে কোনো দৃশ্যমান অব্যবহৃত টেস্ট ফাইল নেই। এগুলো আবার দেখান অথবা আরও ফাইল ইমপোর্ট করুন।",
-      "reading_test_current_text_empty": "বর্তমান লেখা খালি। বর্তমান লেখা দিয়ে পরীক্ষা শুরু করার আগে একটি লেখা লোড করুন বা লিখুন।",
-      "reading_test_result_invalid": "পরীক্ষার ফলাফল বৈধ WPM-এ রূপান্তর করা যায়নি। প্রিসেট মোডাল না খুলেই প্রবাহ শেষ হয়েছে।",
-      "reading_test_result_unavailable": "পড়ার গতির ফলাফল দেখানো যায়নি। প্রবাহ চালিয়ে গেছে।",
-      "reading_test_preset_unavailable": "পরীক্ষার পরে প্রিসেট মোডাল খোলা যায়নি।",
-      "reading_test_questions_unavailable": "বোঝাপড়ার প্রশ্নের মোডাল খোলা যায়নি। প্রিসেট তৈরির আগে প্রবাহ শেষ হয়েছে।",
-      "reading_test_pool_import_failed": "পড়ার গতি পরীক্ষার ফাইল আমদানি করা যায়নি।",
-      "reading_test_start_failed": "পড়ার গতি পরীক্ষা শুরু করা যায়নি।",
-      "text_editor_start_failed": "Text Editor শুরু করা যায়নি।",
-      "text_editor_start_timeout": "Text Editor শুরু হতে খুব বেশি সময় নিয়েছে এবং বন্ধ করা হয়েছে।",
-      "reading_test_cancelled": "পড়ার গতি পরীক্ষা বাতিল করা হয়েছে।",
-      "reading_test_cancelled_window_closed": "পড়ার গতি পরীক্ষা বাতিল হয়েছে, কারণ এর session windows-এর একটি বন্ধ হয়ে গেছে।"
-    },
-    "editor_alerts": {
-      "paste_too_big": "লেখা সরাসরি পেস্ট করার জন্য খুব বড়। প্রধান উইন্ডোর বোতাম ব্যবহার করুন।",
-      "drop_too_big": "ছেড়ে দেওয়া লেখা খুব বড়। বড় লেখা যোগ করতে প্রধান উইন্ডোর বোতাম ব্যবহার করুন।",
-      "paste_no_text": "ক্লিপবোর্ডে plain text নেই।",
-      "drop_no_text": "Drag and drop: plain text পাওয়া যায়নি।",
-      "type_limit": "আর লেখা যায় না: সর্বোচ্চ আকারে পৌঁছে গেছে।",
-      "paste_limit": "আর পেস্ট করা যায় না: সর্বোচ্চ আকারে পৌঁছে গেছে।",
-      "drop_limit": "আর drop করা যায় না: সর্বোচ্চ আকারে পৌঁছে গেছে।",
-      "paste_truncated": "সর্বোচ্চ সীমা অতিক্রম এড়াতে পেস্ট করা লেখা কেটে দেওয়া হয়েছে।",
-      "drop_truncated": "টেনে আনা লেখা উপলব্ধ স্থানের বেশি ছিল এবং কেটে দেওয়া হয়েছে।",
-      "text_truncated": "অ্যাপের সীমার মধ্যে আনতে লেখা কেটে দেওয়া হয়েছে।",
-      "calc_error": "গণনা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।"
-    },
-    "preset_alerts": {
-      "name_empty": "নাম খালি হতে পারে না।",
-      "wpm_invalid": "WPM {min} এবং {max}-এর মধ্যে একটি সংখ্যা হতে হবে।",
-      "create_error": "প্রিসেট তৈরি করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
-      "edit_error": "প্রিসেট সম্পাদনা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
-      "process_error": "প্রিসেট প্রক্রিয়াকরণে ত্রুটি হয়েছে। কনসোল দেখুন।"
+      "close_aria": "ব্রাউজার এক্সটেনশন ডায়ালগ বন্ধ করুন",
+      "alerts": {
+        "modal_open_blocked": "ব্রাউজার এক্সটেনশন ডায়ালগ এখন খোলা যাবে না।"
+      }
     },
     "info": {
       "loading": "লোড হচ্ছে...",

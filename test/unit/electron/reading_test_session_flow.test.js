@@ -112,7 +112,7 @@ test('startArmedSession rolls back pool usage if start fails after committing us
     ['markPoolEntryUsed', 'reading_speed_test_pool/sample.json', true],
     ['showEditorPrestart', false],
     ['markPoolEntryUsed', 'reading_speed_test_pool/sample.json', false],
-    ['failArmingSession', 'reading_speed_test_pool/sample.json', 'renderer.alerts.reading_test_start_failed'],
+    ['failArmingSession', 'reading_speed_test_pool/sample.json', 'renderer.reading_test.alerts.start_failed'],
   ]);
 });
 

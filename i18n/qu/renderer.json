@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Puriq pacha: ",
         "text_extraction_drop_here": "Archivota kayman saqiy qillqata apamunapaq utaq qichunapaq"
+      },
+      "alerts": {
+        "clipboard_too_large": "Portapapeles qillqa ancha hatunmi ruwachinapaq. Pisiyachiy hinaspa wakmanta ruwapay.",
+        "apply_too_large": "Kay qillqa churaypaq sinchi hatun kanman. Pisiyachiy hinaspa yapamanta ruray.",
+        "apply_truncated": "Qillqa aplikasyunpa sayayninman yaykunanpaq kuchusqa karqan.",
+        "append_text_limit": "Manam qillqata yapayta atikunchu: hatun kaypa tukuyninman chayasqa.",
+        "overwrite_clipboard_error": "Portapapeles-manta qillqata rantichkaspa pantay karqan.",
+        "append_clipboard_error": "Portapapeles-manta qillqata yapachkaspa pantay karqan.",
+        "clear_error": "Qillqa pichaypi pantay karqan. Consolata qhaway.",
+        "current_text_processing_locked": "Kunan textoqa musuqyachisqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa musuq texto takyanankama.",
+        "current_text_recount_locked": "Kunan textopa resultadokunaqa yapamanta yupasqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa qhipa yupay takyankama.",
+        "wip": {
+          "design_skins": "WIP: Kaypi hamuq versiónpi skins akllana kichakunqa.",
+          "floating_stopwatch": "WIP: Kaypi hamuq versiónpi wayraqpi puriq pachayupaqpa configuraciónnin kichakunqa.",
+          "fonts": "WIP: Kaypi hamuq versiónpi qillqa rikch'ay akllana kichakunqa.",
+          "colors": "WIP: Kaypi hamuq versiónpi llimp'i akllana kichakunqa.",
+          "shortcuts": "WIP: Kaypi hamuq versiónpi teclado ñankuna akllana kichakunqa."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Ruwasqa PDFta rikuchiy",
         "cancel_button": "Saqiy",
         "close_aria": "OCRpaq hatun PDF dialogota wichq'ay"
+      },
+      "alerts": {
+        "start_error": "Qichuy qallariypi pantay karqan. Consolata qhaway.",
+        "precondition_blocked": "Qichuy qallarinapaq, llapan iskay ñiqi ventanakunata wichq'ay hinaspa pachayupaqta sayachiy.",
+        "precondition_error": "Qichuypa ñawpaq condicionninkuna qhawaypi pantay karqan. Consolata qhaway.",
+        "processing_locked": "Qichuy ruwachkan. Hatun ventanapi ruraykuna hark'asqa kanqa ruwana tukukunankama utaq qan sayachinaykikama.",
+        "abort_error": "Qichuy sayachiy mañakuypi pantay karqan. Consolata qhaway.",
+        "cancellation_requested": "Saqiy mañakurun. Kunan qichuy tukukunankama suyay.",
+        "cancellation_complete": "Saqiy tukusqa.",
+        "drop_invalid_file": "Saqisqa elementoqa mana allin local archivochu.",
+        "generated_pdf_cleanup_warning": "Extracción tukukurqan, ichaqa mana atikurqanchu ruwasqa local PDF-ta kikinmanta pichay.",
+        "route_choice_error": "Extracción ruta akllachkaspa pantay karqan.",
+        "generated_pdf_reveal_failed": "Mana atikurqanchu waqaychasqa PDF-ta rikuchiy. Archivo kachkanraqchu qhawariy.",
+        "apply_error": "Qichusqa qillqata churaypi pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
+        "prepare_invalid": "Wakichisqa qichuy mañakuyqa ña mana allinchu. Flujo wakmanta qallariy.",
+        "unsupported_format": "Kay archivo formatoqa manam texto qichunapaq yanapanchu.",
+        "pdf": {
+          "unreadable_or_corrupt": "Kay PDF mana ñawinchay atikuqchu icha waqllisqa kachkan. Archivo-ta qhawariy hinaspa yapamanta ruray.",
+          "encrypted_or_password_protected": "Kay PDF pakasqa icha contraseña-wan amachasqa kachkan. Kichay hinaspa yapamanta ruray.",
+          "page_count_unavailable": "Mana atikurqanchu kay PDF haykʼa pʼanqayuq kasqanta qhawariy. Archivo-ta qhawariy hinaspa yapamanta ruray.",
+          "page_selection_invalid": "PDF pʼanqakunap ajllasqa rango-n mana allinchu. Rango-ta allichay hinaspa yapamanta ruray.",
+          "subset_creation_failed": "Mana atikurqanchu extracciónpaq ajllasqa pʼanqakunamanta PDF-ta ruray. Archivo-ta qhawariy hinaspa yapamanta ruray."
+        },
+        "ocr": {
+          "unavailable": "OCR mana kanchu. Setup/auth qhaway hinaspa wakmanta ruwapay.",
+          "activation_required": "OCRta activay kanan. Google OCRpi yaykuy hinaspa wakmanta ruwapay.",
+          "activation_success": "OCR activay tukusqa. Qichuyta wakmanta ruwachkan.",
+          "activation_cancelled": "OCR activay saqisqa. Qichuy mana hinalla rirqanchu.",
+          "token_state_invalid": "Google OCR yaykuna waqaychasqa estado mana allinchu. Google OCRta wakmanta t'inkiy hinaspa wakmanta ruwapay.",
+          "activation_failed": "OCR activay pantarun. Setup/auth qhaway hinaspa wakmanta ruwapay.",
+          "enable_success": "Google OCR activasqa.",
+          "enable_cancelled": "Google OCR activay saqisqa.",
+          "enable_failed": "Google OCR mana activakunchu. Setup/auth qhaway hinaspa wakmanta ruwapay.",
+          "disconnect_success": "Google OCR t'aqasqa. Waqaychasqa Google token qhichusqa hinaspa local yaykuna estado pichasqa.",
+          "disconnect_not_connected": "Google OCRqa kay app instanciapi kunan mana t'inkisqachu.",
+          "disconnect_failed": "Google OCR t'aqay pantarun. Waqaychasqa yaykuna estado mana pichasqachu.",
+          "connectivity_failed": "OCRqa internet t'inkiyta munan. T'inkiykita qhaway hinaspa wakmanta ruwapay.",
+          "setup_missing_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna faltan.",
+          "setup_invalid_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna mana allinchu.",
+          "quota_or_rate_limited": "OCRqa temporalmente quota/tasa límite rayku hark'asqa. Suyay hinaspa wakmanta ruwapay.",
+          "runtime_error": "Qichuy ukhupi OCR ejecución pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
+          "cancelled": "OCR qichuy saqisqa.",
+          "cleanup_warning": "OCR tukusqa, ichaqa temporal remoto archivo pichay pantarun. Google Drive carpetaykita qhaway."
+        },
+        "batch_ocr": {
+          "activation_required": "Kay t'aqaqa OCR itemkunata charin, ichaqa Google OCR mana activasqachu. Akllaykuna > Google OCRta activay llamk'achiy, hinaspa t'aqata wakmanta qallariy.",
+          "token_state_invalid": "Kay t'aqaqa OCR itemkunata charin, ichaqa waqaychasqa Google OCR yaykuna estado mana allinchu. Akllaykuna > Google OCRta activay wakmanta llamk'achiy, hinaspa t'aqata wakmanta qallariy.",
+          "connectivity_failed": "Kay batch OCR kaqkunata hap'in, ichaqa OCR internet tinkuyta munan. Tinkuyta qhawariy hinaspa extracción qallariy manaraq yapamanta ruray.",
+          "quota_or_rate_limited": "Kay batch OCR kaqkunata hap'in, ichaqa OCR quota/rate limits rayku huk ratulla hark'asqa kachkan. Suyay hinaspa extracción qallariy manaraq yapamanta ruray.",
+          "unavailable": "Kay t'aqaqa OCR itemkunata charin, ichaqa Google OCR kunan mana kanchu. OCR manaraq activasqa kaptinqa, Akllaykuna > Google OCRta activay llamk'achiy. Mana chayqa, OCR setup/auth qhaway hinaspa wakmanta ruwapay t'aqata qallariy ñawpaqta."
+        },
+        "native": {
+          "runtime_error": "Qichuy ukhupi nativa qichuy ejecución pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
+          "unreadable_or_corrupt": "Akllasqa archivoqa nativa qichuypaq mana ñawinchasqa utaq waqllisqa.",
+          "encrypted_or_password_protected": "Akllasqa PDFqa cifrado utaq contraseña nisqawan hark'asqa; nativa ñanwan mana qichuy atikunchu.",
+          "cancelled": "Nativa qichuy saqisqa."
+        }
       }
     },
     "editor": {
@@ -222,10 +297,23 @@
       "decrease_text_size": "Qillqapa sayayninta pisiyachiy",
       "increase_text_size": "Qillqapa sayayninta hatunyachiy",
       "reset_text_size": "Qillqapa sayayninta kutichiy",
-      "text_size_value": "{value} px",
       "read_progress_label": "Ñawinchisqa",
-      "read_progress_aria": "Ñawinchay ñawpariy: {value}",
-      "clear_title": "Pichay"
+      "clear_title": "Pichay",
+      "alerts": {
+        "start_failed": "Text Editor mana qallariyta atirqachu.",
+        "start_timeout": "Text Editor qallariynin ancha unay karqan, chaymi wisqasqa karqan.",
+        "paste_too_big": "Qillqa ancha hatunmi chiqapta k'askachinapaq. Hatun ventanapa botonkuna llamk'achiy.",
+        "drop_too_big": "Aysasqa qillqa ancha hatunmi. Hatun ventanapa botonkuna llamk'achiy.",
+        "paste_no_text": "Portapapeles mana llamp'u qillqayuqchu.",
+        "drop_no_text": "Aysay-saqiy: mana llamp'u qillqa tarisqachu.",
+        "type_limit": "Aswan qillqay mana atikunchu: ña saqisqa hatun kayman chayasqa.",
+        "paste_limit": "Aswan qillqata k'askachiy mana atikunchu: ña saqisqa hatun kayman chayasqa.",
+        "drop_limit": "Aswan qillqata saqiy mana atikunchu: ña saqisqa hatun kayman chayasqa.",
+        "paste_truncated": "K'askachisqa qillqa kuchusqa, ama saqisqa hatun kayta yallinchu.",
+        "drop_truncated": "Aysasqa qillqa kachkaq espaciomanta aswan karqan hinaspa kuchusqa.",
+        "text_truncated": "Qillqa apppa hatun kayninman tupananpaq kuchusqa.",
+        "calc_error": "Yupaypi pantay karqan. Consolata qhaway."
+      }
     },
     "editor_find": {
       "input_placeholder": "Maskay...",
@@ -244,6 +332,17 @@
       "replace_timeout": "Tikrayqa ancha unayta hap'irqan. Wakmanta ruwapay.",
       "status_no_matches": "Mana tinkuyniyuq",
       "status_empty_query": "Maskanapaq qillqay"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot waqaychasqa.",
+        "save_error": "Snapshot mana waqaychakunchu.",
+        "load_success": "Snapshot kargasqa.",
+        "load_error": "Snapshot mana kargakunchu.",
+        "outside": "Snapshotqa waqaychana carpetapa ukunpi kanan.",
+        "truncated": "Snapshot hatun kayninmanta aswan karqan hinaspa kuchusqa.",
+        "unavailable": "Snapshot ruwana mana kanchu."
+      }
     },
     "snapshot_save_tags": {
       "title": "Qillqa snapshotta waqaychay",
@@ -447,6 +546,22 @@
         "buttons": {
           "continue": "Hinalla riy"
         }
+      },
+      "alerts": {
+        "unavailable": "Ñawinchay utqaynin test ruwana mana kanchu.",
+        "precondition_blocked": "Ñawinchay utqaynin testqa apppa estable estadonmantalla qallariy atikun. Iskay ñiqi ventanakunata wichq'ay hinaspa pachayupaq sayasqa kasqanta qhaway.",
+        "pool_error": "Ñawinchay utqaynin test pool qhawaypi pantay karqan.",
+        "no_matching_files": "Kunan akllasqawan tinkuq mana llamk'achisqa test archivokuna puchuqchu.",
+        "visible_empty_bundled_hidden": "Apppi kaq test archivokuna pakasqa kachkan hinaspa kunanqa mana rikukuq mana llamk'achisqa test archivokuna manam kanchu. Wakmanta rikuchiy utaq aswan archivokunata apamuy qatiqaypaq.",
+        "current_text_empty": "Kunan qillqa ch'usaqmi. Kunan qillqawan test qallarinaykipaq qillqata kargay utaq qillqay.",
+        "result_invalid": "Test ruwasqata mana allin WPMman tikray atikurqanchu. Flujoqa preset modal mana kichaspa tukurqan.",
+        "result_unavailable": "Ñawinchay utqaynin ruwasqata mana rikuchiy atikurqanchu. Flujoqa hinalla rirqan.",
+        "preset_unavailable": "Testmanta qhipa preset modal mana kichakunchu.",
+        "questions_unavailable": "Hamut'ay tapukuy modal mana kichakunchu. Flujoqa preset ruwana ñawpaqta tukurqan.",
+        "pool_import_failed": "Ñawinchay utqaynin test archivokuna mana apamuy atikurqanchu.",
+        "start_failed": "Ñawinchay utqaynin test mana qallariy atikurqanchu.",
+        "cancelled": "Ñawinchay utqaynin test saqisqa.",
+        "cancelled_window_closed": "Ñawinchay utqaynin test saqisqa, imaraykuchus sesión ventanakunamanta huk wichq'akusqa."
       }
     },
     "modal_preset": {
@@ -455,135 +570,43 @@
       "heading_new": "Musuq preset ruwakuy",
       "heading_edit": "Akllasqa presetta allichay",
       "name": "Suti:",
+      "name_placeholder": "Presetpa sutin",
       "wpm": "WPM:",
       "description": "Nisqaynin:",
-      "placeholder": "Taksa nisqaynin...",
+      "description_placeholder": "Taksa nisqaynin...",
       "char_count": "{remaining} sanampakuna puchun",
       "hint": "Sapaq presetsqa llamk'aqpa configuraciónninpi waqaychakun.",
       "cancel": "Saqiy",
-      "save": "Waqaychay"
+      "save": "Waqaychay",
+      "alerts": {
+        "unavailable": "Preset diálogota kay app buildpi manam apaykachayta atikunchu.",
+        "open_error": "Preset diálogota kichaspa pantay karqan. Consolata qhaway.",
+        "name_empty": "Sutiqa mana ch'usaq kananchu.",
+        "wpm_invalid": "WPMqa {min} hinaspa {max} chawpipi yupay kanan.",
+        "create_error": "Preset ruwakuypi pantay karqan. Consolata qhaway.",
+        "edit_error": "Preset allichaypi pantay karqan. Consolata qhaway.",
+        "process_error": "Preset ruwachiypi pantay karqan. Consolata qhaway."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Akllasqa preset cachepi mana tarisqachu.",
+        "delete_error": "Preset chinkachiypi pantay karqan. Consolata qhaway.",
+        "restore_error": "Presets kutichiypi pantay karqan. Consolata qhaway.",
+        "open_folder_unsupported": "Kay pachapi presets carpetata kichay mana atikunchu.",
+        "open_folder_error": "Presets carpetata kichayta munaspa pantay karqan. Consolata qhaway.",
+        "open_default_folder_failed": "Kikinmanta presets carpetata mana kichay atikunchu. Aswan willakuypaq consolata qhaway."
+      }
     },
     "browser_extension": {
       "title": "Navegadorpa extensiónnin",
       "subtitle": "Tiempo de lectura",
       "availability": "Kunanqa Chrome-pi kachkanña. Aswan achka navegadorkunamanqa utqayllam chayanqa.",
       "chrome_store_aria": "Extensiónpa Chrome Web Store p'ankanta kichay",
-      "close_aria": "Navegadorpa extensiónnin dialogota wichq'ay"
-    },
-    "alerts": {
-      "clipboard_too_large": "Portapapeles qillqa ancha hatunmi ruwachinapaq. Pisiyachiy hinaspa wakmanta ruwapay.",
-      "apply_too_large": "Kay qillqa churaypaq sinchi hatun kanman. Pisiyachiy hinaspa yapamanta ruray.",
-      "apply_truncated": "Qillqa aplikasyunpa sayayninman yaykunanpaq kuchusqa karqan.",
-      "append_text_limit": "Manam qillqata yapayta atikunchu: hatun kaypa tukuyninman chayasqa.",
-      "overwrite_clipboard_error": "Portapapeles-manta qillqata rantichkaspa pantay karqan.",
-      "append_clipboard_error": "Portapapeles-manta qillqata yapachkaspa pantay karqan.",
-      "clear_error": "Qillqa pichaypi pantay karqan. Consolata qhaway.",
-      "snapshot_save_success": "Snapshot waqaychasqa.",
-      "snapshot_save_error": "Snapshot mana waqaychakunchu.",
-      "snapshot_load_success": "Snapshot kargasqa.",
-      "snapshot_load_error": "Snapshot mana kargakunchu.",
-      "snapshot_outside": "Snapshotqa waqaychana carpetapa ukunpi kanan.",
-      "snapshot_truncated": "Snapshot hatun kayninmanta aswan karqan hinaspa kuchusqa.",
-      "snapshot_unavailable": "Snapshot ruwana mana kanchu.",
-      "browser_extension_modal_open_blocked": "Navegador extensión diálogota kunan manam kichayta atikunchu.",
-      "preset_not_found": "Akllasqa preset cachepi mana tarisqachu.",
-      "preset_modal_unavailable": "Preset diálogota kay app buildpi manam apaykachayta atikunchu.",
-      "preset_modal_open_error": "Preset diálogota kichaspa pantay karqan. Consolata qhaway.",
-      "delete_error": "Preset chinkachiypi pantay karqan. Consolata qhaway.",
-      "restore_error": "Presets kutichiypi pantay karqan. Consolata qhaway.",
-      "open_presets_unsupported": "Kay pachapi presets carpetata kichay mana atikunchu.",
-      "open_presets_error": "Presets carpetata kichayta munaspa pantay karqan. Consolata qhaway.",
-      "open_presets_fail": "Kikinmanta presets carpetata mana kichay atikunchu. Aswan willakuypaq consolata qhaway.",
-      "text_extraction_error": "Qichuy qallariypi pantay karqan. Consolata qhaway.",
-      "text_extraction_precondition_blocked": "Qichuy qallarinapaq, llapan iskay ñiqi ventanakunata wichq'ay hinaspa pachayupaqta sayachiy.",
-      "text_extraction_precondition_error": "Qichuypa ñawpaq condicionninkuna qhawaypi pantay karqan. Consolata qhaway.",
-      "text_extraction_processing_locked": "Qichuy ruwachkan. Hatun ventanapi ruraykuna hark'asqa kanqa ruwana tukukunankama utaq qan sayachinaykikama.",
-      "current_text_processing_locked": "Kunan textoqa musuqyachisqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa musuq texto takyanankama.",
-      "current_text_recount_locked": "Kunan textopa resultadokunaqa yapamanta yupasqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa qhipa yupay takyankama.",
-      "text_extraction_abort_error": "Qichuy sayachiy mañakuypi pantay karqan. Consolata qhaway.",
-      "text_extraction_cancellation_requested": "Saqiy mañakurun. Kunan qichuy tukukunankama suyay.",
-      "text_extraction_cancellation_complete": "Saqiy tukusqa.",
-      "text_extraction_drop_invalid_file": "Saqisqa elementoqa mana allin local archivochu.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Kay PDF mana ñawinchay atikuqchu icha waqllisqa kachkan. Archivo-ta qhawariy hinaspa yapamanta ruray.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Kay PDF pakasqa icha contraseña-wan amachasqa kachkan. Kichay hinaspa yapamanta ruray.",
-      "text_extraction_pdf_page_count_unavailable": "Mana atikurqanchu kay PDF haykʼa pʼanqayuq kasqanta qhawariy. Archivo-ta qhawariy hinaspa yapamanta ruray.",
-      "text_extraction_pdf_page_selection_invalid": "PDF pʼanqakunap ajllasqa rango-n mana allinchu. Rango-ta allichay hinaspa yapamanta ruray.",
-      "text_extraction_pdf_subset_creation_failed": "Mana atikurqanchu extracciónpaq ajllasqa pʼanqakunamanta PDF-ta ruray. Archivo-ta qhawariy hinaspa yapamanta ruray.",
-      "text_extraction_generated_pdf_cleanup_warning": "Extracción tukukurqan, ichaqa mana atikurqanchu ruwasqa local PDF-ta kikinmanta pichay.",
-      "text_extraction_route_choice_error": "Extracción ruta akllachkaspa pantay karqan.",
-      "text_extraction_generated_pdf_reveal_failed": "Mana atikurqanchu waqaychasqa PDF-ta rikuchiy. Archivo kachkanraqchu qhawariy.",
-      "text_extraction_apply_error": "Qichusqa qillqata churaypi pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
-      "text_extraction_prepare_invalid": "Wakichisqa qichuy mañakuyqa ña mana allinchu. Flujo wakmanta qallariy.",
-      "text_extraction_batch_ocr_activation_required": "Kay t'aqaqa OCR itemkunata charin, ichaqa Google OCR mana activasqachu. Akllaykuna > Google OCRta activay llamk'achiy, hinaspa t'aqata wakmanta qallariy.",
-      "text_extraction_batch_ocr_token_state_invalid": "Kay t'aqaqa OCR itemkunata charin, ichaqa waqaychasqa Google OCR yaykuna estado mana allinchu. Akllaykuna > Google OCRta activay wakmanta llamk'achiy, hinaspa t'aqata wakmanta qallariy.",
-      "text_extraction_batch_ocr_connectivity_failed": "Kay batch OCR kaqkunata hap'in, ichaqa OCR internet tinkuyta munan. Tinkuyta qhawariy hinaspa extracción qallariy manaraq yapamanta ruray.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Kay batch OCR kaqkunata hap'in, ichaqa OCR quota/rate limits rayku huk ratulla hark'asqa kachkan. Suyay hinaspa extracción qallariy manaraq yapamanta ruray.",
-      "text_extraction_batch_ocr_unavailable": "Kay t'aqaqa OCR itemkunata charin, ichaqa Google OCR kunan mana kanchu. OCR manaraq activasqa kaptinqa, Akllaykuna > Google OCRta activay llamk'achiy. Mana chayqa, OCR setup/auth qhaway hinaspa wakmanta ruwapay t'aqata qallariy ñawpaqta.",
-      "text_extraction_ocr_unavailable": "OCR mana kanchu. Setup/auth qhaway hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_activation_required": "OCRta activay kanan. Google OCRpi yaykuy hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_activation_success": "OCR activay tukusqa. Qichuyta wakmanta ruwachkan.",
-      "text_extraction_ocr_activation_cancelled": "OCR activay saqisqa. Qichuy mana hinalla rirqanchu.",
-      "text_extraction_ocr_token_state_invalid": "Google OCR yaykuna waqaychasqa estado mana allinchu. Google OCRta wakmanta t'inkiy hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_activation_failed": "OCR activay pantarun. Setup/auth qhaway hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_enable_success": "Google OCR activasqa.",
-      "text_extraction_ocr_enable_cancelled": "Google OCR activay saqisqa.",
-      "text_extraction_ocr_enable_failed": "Google OCR mana activakunchu. Setup/auth qhaway hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_disconnect_success": "Google OCR t'aqasqa. Waqaychasqa Google token qhichusqa hinaspa local yaykuna estado pichasqa.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCRqa kay app instanciapi kunan mana t'inkisqachu.",
-      "text_extraction_ocr_disconnect_failed": "Google OCR t'aqay pantarun. Waqaychasqa yaykuna estado mana pichasqachu.",
-      "text_extraction_ocr_connectivity_failed": "OCRqa internet t'inkiyta munan. T'inkiykita qhaway hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_setup_missing_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna faltan.",
-      "text_extraction_ocr_setup_invalid_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna mana allinchu.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCRqa temporalmente quota/tasa límite rayku hark'asqa. Suyay hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_runtime_error": "Qichuy ukhupi OCR ejecución pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
-      "text_extraction_ocr_cancelled": "OCR qichuy saqisqa.",
-      "text_extraction_ocr_cleanup_warning": "OCR tukusqa, ichaqa temporal remoto archivo pichay pantarun. Google Drive carpetaykita qhaway.",
-      "text_extraction_native_runtime_error": "Qichuy ukhupi nativa qichuy ejecución pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
-      "text_extraction_native_unreadable_or_corrupt": "Akllasqa archivoqa nativa qichuypaq mana ñawinchasqa utaq waqllisqa.",
-      "text_extraction_native_encrypted_or_password_protected": "Akllasqa PDFqa cifrado utaq contraseña nisqawan hark'asqa; nativa ñanwan mana qichuy atikunchu.",
-      "text_extraction_native_cancelled": "Nativa qichuy saqisqa.",
-      "text_extraction_unsupported_format": "Kay archivo formatoqa manam texto qichunapaq yanapanchu.",
-      "wip_diseno_skins": "WIP: Kaypi hamuq versiónpi skins akllana kichakunqa.",
-      "wip_diseno_crono": "WIP: Kaypi hamuq versiónpi wayraqpi puriq pachayupaqpa configuraciónnin kichakunqa.",
-      "wip_diseno_fuentes": "WIP: Kaypi hamuq versiónpi qillqa rikch'ay akllana kichakunqa.",
-      "wip_diseno_colores": "WIP: Kaypi hamuq versiónpi llimp'i akllana kichakunqa.",
-      "wip_shortcuts": "WIP: Kaypi hamuq versiónpi teclado ñankuna akllana kichakunqa.",
-      "reading_test_unavailable": "Ñawinchay utqaynin test ruwana mana kanchu.",
-      "reading_test_precondition_blocked": "Ñawinchay utqaynin testqa apppa estable estadonmantalla qallariy atikun. Iskay ñiqi ventanakunata wichq'ay hinaspa pachayupaq sayasqa kasqanta qhaway.",
-      "reading_test_pool_error": "Ñawinchay utqaynin test pool qhawaypi pantay karqan.",
-      "reading_test_no_matching_files": "Kunan akllasqawan tinkuq mana llamk'achisqa test archivokuna puchuqchu.",
-      "reading_test_visible_empty_bundled_hidden": "Apppi kaq test archivokuna pakasqa kachkan hinaspa kunanqa mana rikukuq mana llamk'achisqa test archivokuna manam kanchu. Wakmanta rikuchiy utaq aswan archivokunata apamuy qatiqaypaq.",
-      "reading_test_current_text_empty": "Kunan qillqa ch'usaqmi. Kunan qillqawan test qallarinaykipaq qillqata kargay utaq qillqay.",
-      "reading_test_result_invalid": "Test ruwasqata mana allin WPMman tikray atikurqanchu. Flujoqa preset modal mana kichaspa tukurqan.",
-      "reading_test_result_unavailable": "Ñawinchay utqaynin ruwasqata mana rikuchiy atikurqanchu. Flujoqa hinalla rirqan.",
-      "reading_test_preset_unavailable": "Testmanta qhipa preset modal mana kichakunchu.",
-      "reading_test_questions_unavailable": "Hamut'ay tapukuy modal mana kichakunchu. Flujoqa preset ruwana ñawpaqta tukurqan.",
-      "reading_test_pool_import_failed": "Ñawinchay utqaynin test archivokuna mana apamuy atikurqanchu.",
-      "reading_test_start_failed": "Ñawinchay utqaynin test mana qallariy atikurqanchu.",
-      "text_editor_start_failed": "Text Editor mana qallariyta atirqachu.",
-      "text_editor_start_timeout": "Text Editor qallariynin ancha unay karqan, chaymi wisqasqa karqan.",
-      "reading_test_cancelled": "Ñawinchay utqaynin test saqisqa.",
-      "reading_test_cancelled_window_closed": "Ñawinchay utqaynin test saqisqa, imaraykuchus sesión ventanakunamanta huk wichq'akusqa."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Qillqa ancha hatunmi chiqapta k'askachinapaq. Hatun ventanapa botonkuna llamk'achiy.",
-      "drop_too_big": "Aysasqa qillqa ancha hatunmi. Hatun ventanapa botonkuna llamk'achiy.",
-      "paste_no_text": "Portapapeles mana llamp'u qillqayuqchu.",
-      "drop_no_text": "Aysay-saqiy: mana llamp'u qillqa tarisqachu.",
-      "type_limit": "Aswan qillqay mana atikunchu: ña saqisqa hatun kayman chayasqa.",
-      "paste_limit": "Aswan qillqata k'askachiy mana atikunchu: ña saqisqa hatun kayman chayasqa.",
-      "drop_limit": "Aswan qillqata saqiy mana atikunchu: ña saqisqa hatun kayman chayasqa.",
-      "paste_truncated": "K'askachisqa qillqa kuchusqa, ama saqisqa hatun kayta yallinchu.",
-      "drop_truncated": "Aysasqa qillqa kachkaq espaciomanta aswan karqan hinaspa kuchusqa.",
-      "text_truncated": "Qillqa apppa hatun kayninman tupananpaq kuchusqa.",
-      "calc_error": "Yupaypi pantay karqan. Consolata qhaway."
-    },
-    "preset_alerts": {
-      "name_empty": "Sutiqa mana ch'usaq kananchu.",
-      "wpm_invalid": "WPMqa {min} hinaspa {max} chawpipi yupay kanan.",
-      "create_error": "Preset ruwakuypi pantay karqan. Consolata qhaway.",
-      "edit_error": "Preset allichaypi pantay karqan. Consolata qhaway.",
-      "process_error": "Preset ruwachiypi pantay karqan. Consolata qhaway."
+      "close_aria": "Navegadorpa extensiónnin dialogota wichq'ay",
+      "alerts": {
+        "modal_open_blocked": "Navegador extensión diálogota kunan manam kichayta atikunchu."
+      }
     },
     "info": {
       "loading": "Kargachkan...",

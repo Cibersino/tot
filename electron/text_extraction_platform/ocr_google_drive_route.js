@@ -132,6 +132,25 @@ function buildResultWithError({
   });
 }
 
+function buildPreflightResultWithError({
+  summary = '',
+  provenance,
+  code,
+  message,
+  detailsSafeForLogs = {},
+}) {
+  return buildResultWithError({
+    summary,
+    provenance,
+    code,
+    message,
+    detailsSafeForLogs: {
+      stage: 'preflight',
+      ...detailsSafeForLogs,
+    },
+  });
+}
+
 function classifyPersistedTokenReadFailure(tokenReadCode) {
   const normalized = String(tokenReadCode || '').trim();
   if (normalized === 'missing_file') {
@@ -357,26 +376,24 @@ async function runGoogleDriveOcrRoute({
   };
 
   if (!fileInfo.absoluteFilePath || !fs.existsSync(fileInfo.absoluteFilePath)) {
-    return buildResultWithError({
+    return buildPreflightResultWithError({
       summary: 'OCR route failed before upload: source file is missing.',
       provenance,
       code: 'unreadable_or_corrupt',
       message: 'Selected file is missing or unreadable.',
       detailsSafeForLogs: {
-        stage: 'preflight',
         reason: 'missing_source_file',
       },
     });
   }
 
   if (!fileInfo.sourceMimeType) {
-    return buildResultWithError({
+    return buildPreflightResultWithError({
       summary: 'OCR route blocked: unsupported source format.',
       provenance,
       code: 'unsupported_format',
       message: 'Selected file format is not supported by OCR route.',
       detailsSafeForLogs: {
-        stage: 'preflight',
         reason: 'unsupported_extension',
         sourceFileExt: fileInfo.sourceFileExt,
       },
@@ -389,13 +406,12 @@ async function runGoogleDriveOcrRoute({
       : (bundledCredentialsFailureCode === 'credentials_invalid'
         ? 'OCR credentials are invalid.'
         : 'OCR credentials could not be prepared due to a runtime/platform error.');
-    return buildResultWithError({
+    return buildPreflightResultWithError({
       summary: 'OCR route failed before upload: bundled credentials are unavailable.',
       provenance,
       code: bundledCredentialsFailureCode,
       message,
       detailsSafeForLogs: {
-        stage: 'preflight',
         reason: bundledCredentialsFailureReason || 'bundled_credentials_unavailable',
         ...bundledCredentialsFailureDetailsSafeForLogs,
       },
@@ -410,13 +426,12 @@ async function runGoogleDriveOcrRoute({
     const credentialsCode = credentialsRead.code === 'missing_file'
       ? 'credentials_missing'
       : 'credentials_invalid';
-    return buildResultWithError({
+    return buildPreflightResultWithError({
       summary: 'OCR route failed before upload: credentials missing or invalid.',
       provenance,
       code: credentialsCode,
       message: 'OCR credentials are missing or invalid.',
       detailsSafeForLogs: {
-        stage: 'preflight',
         reason: credentialsCode,
         credentialsReadCode: credentialsRead.code || 'invalid_shape',
         errorName: credentialsRead.errorName || '',
@@ -431,13 +446,12 @@ async function runGoogleDriveOcrRoute({
   } catch (err) {
     const tokenReadCode = String(err && err.code ? err.code : '');
     const tokenFailure = classifyPersistedTokenReadFailure(tokenReadCode);
-    return buildResultWithError({
+    return buildPreflightResultWithError({
       summary: tokenFailure.summary,
       provenance,
       code: tokenFailure.code,
       message: tokenFailure.message,
       detailsSafeForLogs: {
-        stage: 'preflight',
         reason: 'token_read_failed',
         tokenReadCode,
         errorName: toSafeErrorName(err),
@@ -447,13 +461,12 @@ async function runGoogleDriveOcrRoute({
 
   const tokenState = describePersistedGoogleToken(tokenJson);
   if (!tokenState.acceptablePersistedTokenShape) {
-    return buildResultWithError({
+    return buildPreflightResultWithError({
       summary: 'OCR route failed before upload: saved token state is invalid.',
       provenance,
       code: 'ocr_token_state_invalid',
       message: 'Saved Google OCR sign-in state is invalid. Reconnect and try again.',
       detailsSafeForLogs: {
-        stage: 'preflight',
         reason: 'invalid_token_shape',
       },
     });
@@ -463,20 +476,33 @@ async function runGoogleDriveOcrRoute({
   try {
     oauthClient = buildGoogleOAuthClient(credentialsJson, tokenJson);
   } catch (err) {
-    return buildResultWithError({
+    return buildPreflightResultWithError({
       summary: 'OCR route failed before upload: OAuth client initialization failed.',
       provenance,
       code: 'auth_failed',
       message: 'OCR authentication is invalid. Reconnect your account.',
       detailsSafeForLogs: {
-        stage: 'preflight',
         reason: 'oauth_client_init_failed',
         errorName: toSafeErrorName(err),
       },
     });
   }
 
-  const drive = google.drive({ version: 'v3', auth: oauthClient });
+  let drive = null;
+  try {
+    drive = google.drive({ version: 'v3', auth: oauthClient });
+  } catch (err) {
+    return buildPreflightResultWithError({
+      summary: 'OCR route failed before upload: Drive client initialization failed.',
+      provenance,
+      code: 'platform_runtime_failed',
+      message: 'Google Drive OCR runtime could not initialize the Drive client.',
+      detailsSafeForLogs: {
+        reason: 'drive_client_init_failed',
+        errorName: toSafeErrorName(err),
+      },
+    });
+  }
   let tempDocumentId = '';
   let result = null;
   const cleanupWarnings = [];
@@ -494,13 +520,12 @@ async function runGoogleDriveOcrRoute({
 
     const uploadInputStats = readUploadInputStats(uploadInput, fileInfo);
     if (uploadInputStats.sizeBytes > OCR_PROVIDER_LIMIT_BYTES) {
-      result = buildResultWithError({
+      result = buildPreflightResultWithError({
         summary: 'OCR route blocked before upload: OCR input exceeds provider size limit.',
         provenance,
         code: 'ocr_input_too_large',
         message: 'Effective OCR input exceeds the provider size limit and was not uploaded.',
         detailsSafeForLogs: {
-          stage: 'preflight',
           reason: 'ocr_input_too_large',
           effectiveInputFileName: uploadInputStats.fileName,
           effectiveInputSizeBytes: uploadInputStats.sizeBytes,
@@ -599,13 +624,12 @@ async function runGoogleDriveOcrRoute({
         },
       });
     } else if (errorCode === 'image_normalizer_unavailable') {
-      result = buildResultWithError({
+      result = buildPreflightResultWithError({
         summary: 'OCR route failed before upload: image normalizer is unavailable.',
         provenance,
         code: 'platform_runtime_failed',
         message: 'OCR preprocessing runtime is unavailable in this app build.',
         detailsSafeForLogs: {
-          stage: 'preflight',
           reason: 'image_normalizer_unavailable',
           errorName: toSafeErrorName(err),
           errorMessage: toSafeErrorMessage(err),
@@ -616,13 +640,12 @@ async function runGoogleDriveOcrRoute({
       const sourceFileExtUpper = String(
         getErrorDetailsSafeForLogs(err).sourceFileExt || fileInfo.sourceFileExt || 'image'
       ).toUpperCase();
-      result = buildResultWithError({
+      result = buildPreflightResultWithError({
         summary: `OCR route failed before upload: ${sourceFileExtUpper}-to-PNG normalization failed.`,
         provenance,
         code: 'unreadable_or_corrupt',
         message: `Selected ${sourceFileExtUpper} file could not be converted for OCR upload.`,
         detailsSafeForLogs: {
-          stage: 'preflight',
           reason: 'source_to_png_conversion_failed',
           errorName: toSafeErrorName(err),
           errorMessage: toSafeErrorMessage(err),

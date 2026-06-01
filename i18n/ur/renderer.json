@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "گزرا ہوا وقت: ",
         "text_extraction_drop_here": "متن نکالنے کے لیے فائل یہاں چھوڑیں"
+      },
+      "alerts": {
+        "clipboard_too_large": "کلپ بورڈ کا متن کارروائی کے لیے بہت بڑا ہے۔ اسے کم کریں اور دوبارہ کوشش کریں۔",
+        "apply_too_large": "متن لاگو کرنے کے لیے بہت بڑا ہو جائے گا۔ اسے کم کریں اور دوبارہ کوشش کریں۔",
+        "apply_truncated": "متن کو ایپلیکیشن کی حد میں فٹ کرنے کے لیے مختصر کر دیا گیا۔",
+        "append_text_limit": "متن شامل نہیں کیا جا سکتا: زیادہ سے زیادہ حجم تک پہنچ گیا ہے۔",
+        "overwrite_clipboard_error": "کلپ بورڈ سے متن بدلتے وقت ایک خرابی پیش آئی۔",
+        "append_clipboard_error": "کلپ بورڈ سے متن شامل کرتے وقت ایک خرابی پیش آئی۔",
+        "clear_error": "متن صاف کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "current_text_processing_locked": "موجودہ متن ابھی اپ ڈیٹ ہو رہا ہے۔ تازہ ترین متن مستحکم ہونے تک مرکزی ونڈو کی تعاملات لاک رہیں گی۔",
+        "current_text_recount_locked": "موجودہ متن کے نتائج ابھی دوبارہ شمار ہو رہے ہیں۔ تازہ ترین دوبارہ گنتی مستحکم ہونے تک مرکزی ونڈو کی تعاملات لاک رہیں گی۔",
+        "wip": {
+          "design_skins": "WIP: skins selector مستقبل کے ورژن میں یہاں کھلے گا۔",
+          "floating_stopwatch": "WIP: Floating Stopwatch settings مستقبل کے ورژن میں یہاں کھلیں گی۔",
+          "fonts": "WIP: fonts selector مستقبل کے ورژن میں یہاں کھلے گا۔",
+          "colors": "WIP: colors selector مستقبل کے ورژن میں یہاں کھلے گا۔",
+          "shortcuts": "WIP: keyboard shortcuts selector مستقبل کے ورژن میں یہاں کھلے گا۔"
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "بنائی گئی PDF دکھائیں",
         "cancel_button": "منسوخ",
         "close_aria": "OCR کے لیے بھاری PDF کا ڈائیلاگ بند کریں"
+      },
+      "alerts": {
+        "start_error": "نکالنے کا عمل شروع کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "precondition_blocked": "نکالنے کا عمل شروع کرنے کے لیے تمام ثانوی ونڈوز بند کریں اور اسٹاپ واچ روکیں۔",
+        "precondition_error": "نکالنے کی پیشگی شرائط چیک کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "processing_locked": "نکالنے کا عمل جاری ہے۔ عمل ختم ہونے یا آپ کے روکنے تک مرکزی ونڈو کے تعاملات لاک رہیں گے۔",
+        "abort_error": "نکالنے کا عمل روکنے کی درخواست کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "cancellation_requested": "منسوخی کی درخواست ہو گئی۔ براہِ کرم موجودہ استخراج ختم ہونے تک انتظار کریں۔",
+        "cancellation_complete": "منسوخی مکمل ہو گئی۔",
+        "drop_invalid_file": "چھوڑی گئی شے درست مقامی فائل نہیں۔",
+        "generated_pdf_cleanup_warning": "اخذ مکمل ہو گیا، لیکن بنائی گئی مقامی PDF خودکار طور پر صاف نہیں کی جا سکی۔",
+        "route_choice_error": "استخراج کا راستہ منتخب کرتے وقت ایک خرابی پیش آئی۔",
+        "generated_pdf_reveal_failed": "محفوظ شدہ PDF دکھائی نہیں جا سکی۔ چیک کریں کہ فائل اب بھی موجود ہے یا نہیں۔",
+        "apply_error": "نکالا گیا متن لاگو کرتے وقت خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
+        "prepare_invalid": "تیار شدہ نکالنے کی درخواست اب درست نہیں۔ فلو دوبارہ شروع کریں۔",
+        "unsupported_format": "یہ فائل فارمیٹ متن نکالنے کے لیے معاون نہیں ہے۔",
+        "pdf": {
+          "unreadable_or_corrupt": "یہ PDF پڑھنے کے قابل نہیں یا خراب ہے۔ فائل چیک کریں اور دوبارہ کوشش کریں۔",
+          "encrypted_or_password_protected": "یہ PDF انکرپٹڈ ہے یا پاس ورڈ سے محفوظ ہے۔ اسے اَن لاک کریں اور دوبارہ کوشش کریں۔",
+          "page_count_unavailable": "اس PDF کے صفحات کی تعداد کا معائنہ نہیں کیا جا سکا۔ فائل چیک کریں اور دوبارہ کوشش کریں۔",
+          "page_selection_invalid": "منتخب کردہ PDF صفحہ رینج غلط ہے۔ رینج درست کریں اور دوبارہ کوشش کریں۔",
+          "subset_creation_failed": "اخذ کرنے کے لیے منتخب صفحات کی PDF نہیں بنائی جا سکی۔ فائل چیک کریں اور دوبارہ کوشش کریں۔"
+        },
+        "ocr": {
+          "unavailable": "OCR دستیاب نہیں۔ setup/auth حالت چیک کریں اور دوبارہ کوشش کریں۔",
+          "activation_required": "OCR فعال کرنا ضروری ہے۔ Google OCR میں سائن اِن کریں اور دوبارہ کوشش کریں۔",
+          "activation_success": "OCR فعال ہو گیا۔ نکالنے کا عمل دوبارہ آزمایا جا رہا ہے۔",
+          "activation_cancelled": "OCR فعال کرنے کا عمل منسوخ ہو گیا۔ نکالنے کا عمل جاری نہیں رہا۔",
+          "token_state_invalid": "محفوظ شدہ Google OCR سائن اِن حالت درست نہیں۔ Google OCR دوبارہ منسلک کریں اور کوشش کریں۔",
+          "activation_failed": "OCR فعال نہیں ہو سکا۔ setup/auth حالت چیک کریں اور دوبارہ کوشش کریں۔",
+          "enable_success": "Google OCR فعال ہو گیا۔",
+          "enable_cancelled": "Google OCR فعال کرنا منسوخ ہو گیا۔",
+          "enable_failed": "Google OCR فعال نہیں ہو سکا۔ ترتیب/توثیق کی حالت چیک کریں اور دوبارہ کوشش کریں۔",
+          "disconnect_success": "Google OCR منقطع ہو گیا۔ محفوظ شدہ Google ٹوکن منسوخ کر دیا گیا اور مقامی سائن اِن حالت ہٹا دی گئی۔",
+          "disconnect_not_connected": "اس ایپ انسٹینس میں Google OCR فی الحال منسلک نہیں۔",
+          "disconnect_failed": "Google OCR منقطع کرنے میں ناکامی۔ محفوظ شدہ سائن اِن حالت نہیں ہٹائی گئی۔",
+          "connectivity_failed": "OCR کے لیے انٹرنیٹ کنکشن ضروری ہے۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+          "setup_missing_credentials": "اس ایپ build میں OCR دستیاب نہیں کیونکہ bundled Google OAuth credentials موجود نہیں۔",
+          "setup_invalid_credentials": "اس ایپ build میں OCR دستیاب نہیں کیونکہ bundled Google OAuth credentials درست نہیں۔",
+          "quota_or_rate_limited": "quota/rate limits کی وجہ سے OCR عارضی طور پر رکا ہوا ہے۔ انتظار کریں اور دوبارہ کوشش کریں۔",
+          "runtime_error": "نکالنے کے دوران OCR runtime خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
+          "cancelled": "OCR نکالنے کا عمل منسوخ ہو گیا۔",
+          "cleanup_warning": "OCR مکمل ہو گیا، لیکن عارضی remote فائل cleanup ناکام ہو گیا۔ اپنا Google Drive فولڈر چیک کریں۔"
+        },
+        "batch_ocr": {
+          "activation_required": "اس گروہ میں OCR عناصر شامل ہیں، لیکن Google OCR فعال نہیں۔ ترجیحات > Google OCR فعال کریں استعمال کریں، پھر گروہ دوبارہ شروع کریں۔",
+          "token_state_invalid": "اس گروہ میں OCR عناصر شامل ہیں، لیکن محفوظ شدہ Google OCR سائن اِن حالت درست نہیں۔ ترجیحات > Google OCR فعال کریں دوبارہ استعمال کریں، پھر گروہ دوبارہ شروع کریں۔",
+          "connectivity_failed": "اس بیچ میں OCR آئٹمز شامل ہیں، لیکن OCR کے لیے انٹرنیٹ کنکشن درکار ہے۔ استخراج شروع کرنے سے پہلے اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+          "quota_or_rate_limited": "اس بیچ میں OCR آئٹمز شامل ہیں، لیکن OCR کو quota/rate limits کی وجہ سے عارضی طور پر روک دیا گیا ہے۔ انتظار کریں اور استخراج شروع کرنے سے پہلے دوبارہ کوشش کریں۔",
+          "unavailable": "اس گروہ میں OCR عناصر شامل ہیں، لیکن Google OCR اس وقت دستیاب نہیں۔ اگر OCR ابھی فعال نہیں تو ترجیحات > Google OCR فعال کریں استعمال کریں۔ ورنہ گروہ شروع کرنے سے پہلے OCR ترتیب/توثیق کی حالت چیک کریں اور دوبارہ کوشش کریں۔"
+        },
+        "native": {
+          "runtime_error": "نکالنے کے دوران native extraction runtime خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
+          "unreadable_or_corrupt": "منتخب فائل native extraction کے لیے پڑھی نہیں جا سکتی یا corrupt ہے۔",
+          "encrypted_or_password_protected": "منتخب PDF encrypted یا password-protected ہے اور native route سے نہیں نکالی جا سکتی۔",
+          "cancelled": "Native extraction منسوخ ہو گئی۔"
+        }
       }
     },
     "editor": {
@@ -222,10 +297,23 @@
       "decrease_text_size": "متن کا سائز کم کریں",
       "increase_text_size": "متن کا سائز بڑھائیں",
       "reset_text_size": "متن کا سائز ری سیٹ کریں",
-      "text_size_value": "{value} px",
       "read_progress_label": "پڑھا گیا",
-      "read_progress_aria": "پڑھنے کی پیش رفت: {value}",
-      "clear_title": "صاف کریں"
+      "clear_title": "صاف کریں",
+      "alerts": {
+        "start_failed": "Text Editor شروع نہیں کیا جا سکا۔",
+        "start_timeout": "Text Editor شروع ہونے میں بہت زیادہ وقت لگا اور اسے بند کر دیا گیا۔",
+        "paste_too_big": "متن براہِ راست پیسٹ کرنے کے لیے بہت بڑا ہے۔ مرکزی ونڈو کے بٹن استعمال کریں۔",
+        "drop_too_big": "چھوڑا گیا متن بہت بڑا ہے۔ بڑا متن شامل کرنے کے لیے مرکزی ونڈو کے بٹن استعمال کریں۔",
+        "paste_no_text": "کلپ بورڈ میں plain text نہیں ہے۔",
+        "drop_no_text": "Drag and drop: plain text نہیں ملا۔",
+        "type_limit": "مزید متن نہیں لکھا جا سکتا: زیادہ سے زیادہ سائز تک پہنچ چکا ہے۔",
+        "paste_limit": "مزید متن پیسٹ نہیں کیا جا سکتا: زیادہ سے زیادہ سائز تک پہنچ چکا ہے۔",
+        "drop_limit": "مزید متن drop نہیں کیا جا سکتا: زیادہ سے زیادہ سائز تک پہنچ چکا ہے۔",
+        "paste_truncated": "حد سے زیادہ ہونے سے بچانے کے لیے پیسٹ کیا گیا متن کاٹ دیا گیا۔",
+        "drop_truncated": "کھینچا گیا متن دستیاب جگہ سے زیادہ تھا اور کاٹ دیا گیا۔",
+        "text_truncated": "ایپ کی حد میں فٹ کرنے کے لیے متن کاٹ دیا گیا۔",
+        "calc_error": "حساب کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔"
+      }
     },
     "editor_find": {
       "input_placeholder": "تلاش کریں...",
@@ -244,6 +332,17 @@
       "replace_timeout": "تبدیلی کا وقت ختم ہو گیا۔ دوبارہ کوشش کریں۔",
       "status_no_matches": "کوئی مماثلت نہیں",
       "status_empty_query": "تلاش کے لیے لکھیں"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "اسنیپ شاٹ محفوظ ہو گیا۔",
+        "save_error": "اسنیپ شاٹ محفوظ نہیں ہو سکا۔",
+        "load_success": "اسنیپ شاٹ لوڈ ہو گیا۔",
+        "load_error": "اسنیپ شاٹ لوڈ نہیں ہو سکا۔",
+        "outside": "اسنیپ شاٹ snapshots فولڈر کے اندر ہونا چاہیے۔",
+        "truncated": "اسنیپ شاٹ زیادہ سے زیادہ سائز سے بڑا ہے اور کاٹ دیا گیا ہے۔",
+        "unavailable": "اسنیپ شاٹ فیچر دستیاب نہیں۔"
+      }
     },
     "snapshot_save_tags": {
       "title": "متن کا اسنیپ شاٹ محفوظ کریں",
@@ -447,6 +546,22 @@
         "buttons": {
           "continue": "جاری رکھیں"
         }
+      },
+      "alerts": {
+        "unavailable": "پڑھنے کی رفتار کا ٹیسٹ فیچر دستیاب نہیں۔",
+        "precondition_blocked": "پڑھنے کی رفتار کا ٹیسٹ صرف ایپ کی مستحکم حالت سے شروع ہو سکتا ہے۔ ثانوی ونڈوز بند کریں اور یقینی بنائیں کہ اسٹاپ واچ رکی ہوئی ہے۔",
+        "pool_error": "پڑھنے کی رفتار کے ٹیسٹ پول کو چیک کرتے وقت خرابی ہوئی۔",
+        "no_matching_files": "موجودہ انتخاب سے ملنے والی کوئی غیر استعمال شدہ ٹیسٹ فائل باقی نہیں۔",
+        "visible_empty_bundled_hidden": "بلٹ اِن ٹیسٹ فائلیں مخفی ہیں اور اس وقت کوئی نظر آنے والی غیر استعمال شدہ ٹیسٹ فائل دستیاب نہیں۔ جاری رکھنے کے لیے بلٹ اِن فائلیں دوبارہ دکھائیں یا مزید فائلیں درآمد کریں۔",
+        "current_text_empty": "موجودہ متن خالی ہے۔ موجودہ متن سے ٹیسٹ شروع کرنے سے پہلے کوئی متن لوڈ کریں یا لکھیں۔",
+        "result_invalid": "ٹیسٹ کا نتیجہ درست WPM میں تبدیل نہیں ہو سکا۔ فلو پری سیٹ موڈل کھولے بغیر ختم ہو گیا۔",
+        "result_unavailable": "پڑھنے کی رفتار کا نتیجہ دکھایا نہیں جا سکا۔ فلو جاری رہا۔",
+        "preset_unavailable": "ٹیسٹ کے بعد پری سیٹ موڈل نہیں کھل سکا۔",
+        "questions_unavailable": "فہم کے سوالات کا موڈل نہیں کھل سکا۔ پری سیٹ بنانے سے پہلے فلو ختم ہو گیا۔",
+        "pool_import_failed": "پڑھنے کی رفتار کے ٹیسٹ فائلیں درآمد نہیں ہو سکیں۔",
+        "start_failed": "پڑھنے کی رفتار کا ٹیسٹ شروع نہیں ہو سکا۔",
+        "cancelled": "پڑھنے کی رفتار کا ٹیسٹ منسوخ ہو گیا۔",
+        "cancelled_window_closed": "پڑھنے کی رفتار کا ٹیسٹ منسوخ ہو گیا کیونکہ اس کی session windows میں سے ایک بند ہو گئی۔"
       }
     },
     "modal_preset": {
@@ -455,135 +570,43 @@
       "heading_new": "نیا پری سیٹ بنائیں",
       "heading_edit": "منتخب پری سیٹ میں ترمیم کریں",
       "name": "نام:",
+      "name_placeholder": "پری سیٹ کا نام",
       "wpm": "WPM:",
       "description": "تفصیل:",
-      "placeholder": "مختصر تفصیل...",
+      "description_placeholder": "مختصر تفصیل...",
       "char_count": "{remaining} حروف باقی",
       "hint": "کسٹم پری سیٹس صارف کی ترتیبات میں محفوظ ہوتے ہیں۔",
       "cancel": "منسوخ",
-      "save": "محفوظ کریں"
+      "save": "محفوظ کریں",
+      "alerts": {
+        "unavailable": "اس ایپ بلڈ میں پری سیٹ ڈائیلاگ دستیاب نہیں ہے۔",
+        "open_error": "پری سیٹ ڈائیلاگ کھولتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "name_empty": "نام خالی نہیں ہو سکتا۔",
+        "wpm_invalid": "WPM {min} اور {max} کے درمیان ایک عدد ہونا چاہیے۔",
+        "create_error": "پری سیٹ بناتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "edit_error": "پری سیٹ میں ترمیم کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "process_error": "پری سیٹ پر کارروائی کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔"
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "منتخب پری سیٹ کیش میں نہیں ملا۔",
+        "delete_error": "پری سیٹ حذف کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "restore_error": "پری سیٹس بحال کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "open_folder_unsupported": "اس ماحول میں پری سیٹس فولڈر نہیں کھل سکتا۔",
+        "open_folder_error": "پری سیٹس فولڈر کھولنے کی کوشش میں خرابی ہوئی۔ کنسول دیکھیں۔",
+        "open_default_folder_failed": "ڈیفالٹ پری سیٹس فولڈر نہیں کھل سکا۔ تفصیلات کے لیے کنسول دیکھیں۔"
+      }
     },
     "browser_extension": {
       "title": "براؤزر ایکسٹینشن",
       "subtitle": "Tiempo de lectura",
       "availability": "ابھی Chrome پر دستیاب ہے۔ مزید براؤزرز جلد آ رہے ہیں۔",
       "chrome_store_aria": "ایکسٹینشن کا Chrome Web Store صفحہ کھولیں",
-      "close_aria": "براؤزر ایکسٹینشن کا ڈائیلاگ بند کریں"
-    },
-    "alerts": {
-      "clipboard_too_large": "کلپ بورڈ کا متن کارروائی کے لیے بہت بڑا ہے۔ اسے کم کریں اور دوبارہ کوشش کریں۔",
-      "apply_too_large": "متن لاگو کرنے کے لیے بہت بڑا ہو جائے گا۔ اسے کم کریں اور دوبارہ کوشش کریں۔",
-      "apply_truncated": "متن کو ایپلیکیشن کی حد میں فٹ کرنے کے لیے مختصر کر دیا گیا۔",
-      "append_text_limit": "متن شامل نہیں کیا جا سکتا: زیادہ سے زیادہ حجم تک پہنچ گیا ہے۔",
-      "overwrite_clipboard_error": "کلپ بورڈ سے متن بدلتے وقت ایک خرابی پیش آئی۔",
-      "append_clipboard_error": "کلپ بورڈ سے متن شامل کرتے وقت ایک خرابی پیش آئی۔",
-      "clear_error": "متن صاف کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-      "snapshot_save_success": "اسنیپ شاٹ محفوظ ہو گیا۔",
-      "snapshot_save_error": "اسنیپ شاٹ محفوظ نہیں ہو سکا۔",
-      "snapshot_load_success": "اسنیپ شاٹ لوڈ ہو گیا۔",
-      "snapshot_load_error": "اسنیپ شاٹ لوڈ نہیں ہو سکا۔",
-      "snapshot_outside": "اسنیپ شاٹ snapshots فولڈر کے اندر ہونا چاہیے۔",
-      "snapshot_truncated": "اسنیپ شاٹ زیادہ سے زیادہ سائز سے بڑا ہے اور کاٹ دیا گیا ہے۔",
-      "snapshot_unavailable": "اسنیپ شاٹ فیچر دستیاب نہیں۔",
-      "browser_extension_modal_open_blocked": "براؤزر ایکسٹینشن ڈائیلاگ ابھی نہیں کھولا جا سکتا۔",
-      "preset_not_found": "منتخب پری سیٹ کیش میں نہیں ملا۔",
-      "preset_modal_unavailable": "اس ایپ بلڈ میں پری سیٹ ڈائیلاگ دستیاب نہیں ہے۔",
-      "preset_modal_open_error": "پری سیٹ ڈائیلاگ کھولتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-      "delete_error": "پری سیٹ حذف کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-      "restore_error": "پری سیٹس بحال کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-      "open_presets_unsupported": "اس ماحول میں پری سیٹس فولڈر نہیں کھل سکتا۔",
-      "open_presets_error": "پری سیٹس فولڈر کھولنے کی کوشش میں خرابی ہوئی۔ کنسول دیکھیں۔",
-      "open_presets_fail": "ڈیفالٹ پری سیٹس فولڈر نہیں کھل سکا۔ تفصیلات کے لیے کنسول دیکھیں۔",
-      "text_extraction_error": "نکالنے کا عمل شروع کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-      "text_extraction_precondition_blocked": "نکالنے کا عمل شروع کرنے کے لیے تمام ثانوی ونڈوز بند کریں اور اسٹاپ واچ روکیں۔",
-      "text_extraction_precondition_error": "نکالنے کی پیشگی شرائط چیک کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-      "text_extraction_processing_locked": "نکالنے کا عمل جاری ہے۔ عمل ختم ہونے یا آپ کے روکنے تک مرکزی ونڈو کے تعاملات لاک رہیں گے۔",
-      "current_text_processing_locked": "موجودہ متن ابھی اپ ڈیٹ ہو رہا ہے۔ تازہ ترین متن مستحکم ہونے تک مرکزی ونڈو کی تعاملات لاک رہیں گی۔",
-      "current_text_recount_locked": "موجودہ متن کے نتائج ابھی دوبارہ شمار ہو رہے ہیں۔ تازہ ترین دوبارہ گنتی مستحکم ہونے تک مرکزی ونڈو کی تعاملات لاک رہیں گی۔",
-      "text_extraction_abort_error": "نکالنے کا عمل روکنے کی درخواست کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-      "text_extraction_cancellation_requested": "منسوخی کی درخواست ہو گئی۔ براہِ کرم موجودہ استخراج ختم ہونے تک انتظار کریں۔",
-      "text_extraction_cancellation_complete": "منسوخی مکمل ہو گئی۔",
-      "text_extraction_drop_invalid_file": "چھوڑی گئی شے درست مقامی فائل نہیں۔",
-      "text_extraction_pdf_unreadable_or_corrupt": "یہ PDF پڑھنے کے قابل نہیں یا خراب ہے۔ فائل چیک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_pdf_encrypted_or_password_protected": "یہ PDF انکرپٹڈ ہے یا پاس ورڈ سے محفوظ ہے۔ اسے اَن لاک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_pdf_page_count_unavailable": "اس PDF کے صفحات کی تعداد کا معائنہ نہیں کیا جا سکا۔ فائل چیک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_pdf_page_selection_invalid": "منتخب کردہ PDF صفحہ رینج غلط ہے۔ رینج درست کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_pdf_subset_creation_failed": "اخذ کرنے کے لیے منتخب صفحات کی PDF نہیں بنائی جا سکی۔ فائل چیک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_generated_pdf_cleanup_warning": "اخذ مکمل ہو گیا، لیکن بنائی گئی مقامی PDF خودکار طور پر صاف نہیں کی جا سکی۔",
-      "text_extraction_route_choice_error": "استخراج کا راستہ منتخب کرتے وقت ایک خرابی پیش آئی۔",
-      "text_extraction_generated_pdf_reveal_failed": "محفوظ شدہ PDF دکھائی نہیں جا سکی۔ چیک کریں کہ فائل اب بھی موجود ہے یا نہیں۔",
-      "text_extraction_apply_error": "نکالا گیا متن لاگو کرتے وقت خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
-      "text_extraction_prepare_invalid": "تیار شدہ نکالنے کی درخواست اب درست نہیں۔ فلو دوبارہ شروع کریں۔",
-      "text_extraction_batch_ocr_activation_required": "اس گروہ میں OCR عناصر شامل ہیں، لیکن Google OCR فعال نہیں۔ ترجیحات > Google OCR فعال کریں استعمال کریں، پھر گروہ دوبارہ شروع کریں۔",
-      "text_extraction_batch_ocr_token_state_invalid": "اس گروہ میں OCR عناصر شامل ہیں، لیکن محفوظ شدہ Google OCR سائن اِن حالت درست نہیں۔ ترجیحات > Google OCR فعال کریں دوبارہ استعمال کریں، پھر گروہ دوبارہ شروع کریں۔",
-      "text_extraction_batch_ocr_connectivity_failed": "اس بیچ میں OCR آئٹمز شامل ہیں، لیکن OCR کے لیے انٹرنیٹ کنکشن درکار ہے۔ استخراج شروع کرنے سے پہلے اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "اس بیچ میں OCR آئٹمز شامل ہیں، لیکن OCR کو quota/rate limits کی وجہ سے عارضی طور پر روک دیا گیا ہے۔ انتظار کریں اور استخراج شروع کرنے سے پہلے دوبارہ کوشش کریں۔",
-      "text_extraction_batch_ocr_unavailable": "اس گروہ میں OCR عناصر شامل ہیں، لیکن Google OCR اس وقت دستیاب نہیں۔ اگر OCR ابھی فعال نہیں تو ترجیحات > Google OCR فعال کریں استعمال کریں۔ ورنہ گروہ شروع کرنے سے پہلے OCR ترتیب/توثیق کی حالت چیک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_ocr_unavailable": "OCR دستیاب نہیں۔ setup/auth حالت چیک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_ocr_activation_required": "OCR فعال کرنا ضروری ہے۔ Google OCR میں سائن اِن کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_ocr_activation_success": "OCR فعال ہو گیا۔ نکالنے کا عمل دوبارہ آزمایا جا رہا ہے۔",
-      "text_extraction_ocr_activation_cancelled": "OCR فعال کرنے کا عمل منسوخ ہو گیا۔ نکالنے کا عمل جاری نہیں رہا۔",
-      "text_extraction_ocr_token_state_invalid": "محفوظ شدہ Google OCR سائن اِن حالت درست نہیں۔ Google OCR دوبارہ منسلک کریں اور کوشش کریں۔",
-      "text_extraction_ocr_activation_failed": "OCR فعال نہیں ہو سکا۔ setup/auth حالت چیک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_ocr_enable_success": "Google OCR فعال ہو گیا۔",
-      "text_extraction_ocr_enable_cancelled": "Google OCR فعال کرنا منسوخ ہو گیا۔",
-      "text_extraction_ocr_enable_failed": "Google OCR فعال نہیں ہو سکا۔ ترتیب/توثیق کی حالت چیک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_ocr_disconnect_success": "Google OCR منقطع ہو گیا۔ محفوظ شدہ Google ٹوکن منسوخ کر دیا گیا اور مقامی سائن اِن حالت ہٹا دی گئی۔",
-      "text_extraction_ocr_disconnect_not_connected": "اس ایپ انسٹینس میں Google OCR فی الحال منسلک نہیں۔",
-      "text_extraction_ocr_disconnect_failed": "Google OCR منقطع کرنے میں ناکامی۔ محفوظ شدہ سائن اِن حالت نہیں ہٹائی گئی۔",
-      "text_extraction_ocr_connectivity_failed": "OCR کے لیے انٹرنیٹ کنکشن ضروری ہے۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_ocr_setup_missing_credentials": "اس ایپ build میں OCR دستیاب نہیں کیونکہ bundled Google OAuth credentials موجود نہیں۔",
-      "text_extraction_ocr_setup_invalid_credentials": "اس ایپ build میں OCR دستیاب نہیں کیونکہ bundled Google OAuth credentials درست نہیں۔",
-      "text_extraction_ocr_quota_or_rate_limited": "quota/rate limits کی وجہ سے OCR عارضی طور پر رکا ہوا ہے۔ انتظار کریں اور دوبارہ کوشش کریں۔",
-      "text_extraction_ocr_runtime_error": "نکالنے کے دوران OCR runtime خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
-      "text_extraction_ocr_cancelled": "OCR نکالنے کا عمل منسوخ ہو گیا۔",
-      "text_extraction_ocr_cleanup_warning": "OCR مکمل ہو گیا، لیکن عارضی remote فائل cleanup ناکام ہو گیا۔ اپنا Google Drive فولڈر چیک کریں۔",
-      "text_extraction_native_runtime_error": "نکالنے کے دوران native extraction runtime خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
-      "text_extraction_native_unreadable_or_corrupt": "منتخب فائل native extraction کے لیے پڑھی نہیں جا سکتی یا corrupt ہے۔",
-      "text_extraction_native_encrypted_or_password_protected": "منتخب PDF encrypted یا password-protected ہے اور native route سے نہیں نکالی جا سکتی۔",
-      "text_extraction_native_cancelled": "Native extraction منسوخ ہو گئی۔",
-      "text_extraction_unsupported_format": "یہ فائل فارمیٹ متن نکالنے کے لیے معاون نہیں ہے۔",
-      "wip_diseno_skins": "WIP: skins selector مستقبل کے ورژن میں یہاں کھلے گا۔",
-      "wip_diseno_crono": "WIP: Floating Stopwatch settings مستقبل کے ورژن میں یہاں کھلیں گی۔",
-      "wip_diseno_fuentes": "WIP: fonts selector مستقبل کے ورژن میں یہاں کھلے گا۔",
-      "wip_diseno_colores": "WIP: colors selector مستقبل کے ورژن میں یہاں کھلے گا۔",
-      "wip_shortcuts": "WIP: keyboard shortcuts selector مستقبل کے ورژن میں یہاں کھلے گا۔",
-      "reading_test_unavailable": "پڑھنے کی رفتار کا ٹیسٹ فیچر دستیاب نہیں۔",
-      "reading_test_precondition_blocked": "پڑھنے کی رفتار کا ٹیسٹ صرف ایپ کی مستحکم حالت سے شروع ہو سکتا ہے۔ ثانوی ونڈوز بند کریں اور یقینی بنائیں کہ اسٹاپ واچ رکی ہوئی ہے۔",
-      "reading_test_pool_error": "پڑھنے کی رفتار کے ٹیسٹ پول کو چیک کرتے وقت خرابی ہوئی۔",
-      "reading_test_no_matching_files": "موجودہ انتخاب سے ملنے والی کوئی غیر استعمال شدہ ٹیسٹ فائل باقی نہیں۔",
-      "reading_test_visible_empty_bundled_hidden": "بلٹ اِن ٹیسٹ فائلیں مخفی ہیں اور اس وقت کوئی نظر آنے والی غیر استعمال شدہ ٹیسٹ فائل دستیاب نہیں۔ جاری رکھنے کے لیے بلٹ اِن فائلیں دوبارہ دکھائیں یا مزید فائلیں درآمد کریں۔",
-      "reading_test_current_text_empty": "موجودہ متن خالی ہے۔ موجودہ متن سے ٹیسٹ شروع کرنے سے پہلے کوئی متن لوڈ کریں یا لکھیں۔",
-      "reading_test_result_invalid": "ٹیسٹ کا نتیجہ درست WPM میں تبدیل نہیں ہو سکا۔ فلو پری سیٹ موڈل کھولے بغیر ختم ہو گیا۔",
-      "reading_test_result_unavailable": "پڑھنے کی رفتار کا نتیجہ دکھایا نہیں جا سکا۔ فلو جاری رہا۔",
-      "reading_test_preset_unavailable": "ٹیسٹ کے بعد پری سیٹ موڈل نہیں کھل سکا۔",
-      "reading_test_questions_unavailable": "فہم کے سوالات کا موڈل نہیں کھل سکا۔ پری سیٹ بنانے سے پہلے فلو ختم ہو گیا۔",
-      "reading_test_pool_import_failed": "پڑھنے کی رفتار کے ٹیسٹ فائلیں درآمد نہیں ہو سکیں۔",
-      "reading_test_start_failed": "پڑھنے کی رفتار کا ٹیسٹ شروع نہیں ہو سکا۔",
-      "text_editor_start_failed": "Text Editor شروع نہیں کیا جا سکا۔",
-      "text_editor_start_timeout": "Text Editor شروع ہونے میں بہت زیادہ وقت لگا اور اسے بند کر دیا گیا۔",
-      "reading_test_cancelled": "پڑھنے کی رفتار کا ٹیسٹ منسوخ ہو گیا۔",
-      "reading_test_cancelled_window_closed": "پڑھنے کی رفتار کا ٹیسٹ منسوخ ہو گیا کیونکہ اس کی session windows میں سے ایک بند ہو گئی۔"
-    },
-    "editor_alerts": {
-      "paste_too_big": "متن براہِ راست پیسٹ کرنے کے لیے بہت بڑا ہے۔ مرکزی ونڈو کے بٹن استعمال کریں۔",
-      "drop_too_big": "چھوڑا گیا متن بہت بڑا ہے۔ بڑا متن شامل کرنے کے لیے مرکزی ونڈو کے بٹن استعمال کریں۔",
-      "paste_no_text": "کلپ بورڈ میں plain text نہیں ہے۔",
-      "drop_no_text": "Drag and drop: plain text نہیں ملا۔",
-      "type_limit": "مزید متن نہیں لکھا جا سکتا: زیادہ سے زیادہ سائز تک پہنچ چکا ہے۔",
-      "paste_limit": "مزید متن پیسٹ نہیں کیا جا سکتا: زیادہ سے زیادہ سائز تک پہنچ چکا ہے۔",
-      "drop_limit": "مزید متن drop نہیں کیا جا سکتا: زیادہ سے زیادہ سائز تک پہنچ چکا ہے۔",
-      "paste_truncated": "حد سے زیادہ ہونے سے بچانے کے لیے پیسٹ کیا گیا متن کاٹ دیا گیا۔",
-      "drop_truncated": "کھینچا گیا متن دستیاب جگہ سے زیادہ تھا اور کاٹ دیا گیا۔",
-      "text_truncated": "ایپ کی حد میں فٹ کرنے کے لیے متن کاٹ دیا گیا۔",
-      "calc_error": "حساب کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔"
-    },
-    "preset_alerts": {
-      "name_empty": "نام خالی نہیں ہو سکتا۔",
-      "wpm_invalid": "WPM {min} اور {max} کے درمیان ایک عدد ہونا چاہیے۔",
-      "create_error": "پری سیٹ بناتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-      "edit_error": "پری سیٹ میں ترمیم کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-      "process_error": "پری سیٹ پر کارروائی کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔"
+      "close_aria": "براؤزر ایکسٹینشن کا ڈائیلاگ بند کریں",
+      "alerts": {
+        "modal_open_blocked": "براؤزر ایکسٹینشن ڈائیلاگ ابھی نہیں کھولا جا سکتا۔"
+      }
     },
     "info": {
       "loading": "لوڈ ہو رہا ہے...",

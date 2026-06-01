@@ -254,7 +254,7 @@ function createHarness() {
     'renderer.text_extraction.batch_report.text_limit': 'text limit reached',
     'renderer.text_extraction.batch_report.cancelled_with_code': 'cancelled: {code}',
     'renderer.text_extraction.single_file_heavy.source_file_label': 'Source file:',
-    'renderer.alerts.text_extraction_generated_pdf_reveal_failed': 'Reveal failed',
+    'renderer.text_extraction.alerts.generated_pdf_reveal_failed': 'Reveal failed',
   };
 
   const sandbox = {

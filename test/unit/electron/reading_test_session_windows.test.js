@@ -2,8 +2,17 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const path = require('node:path');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
-const readingTestSessionWindows = require('../../../electron/reading_test_session_windows');
+function loadFreshReadingTestSessionWindows(t) {
+  const modulePath = path.resolve(__dirname, '../../../electron/reading_test_session_windows.js');
+  t.after(installElectronModuleMock());
+  delete require.cache[require.resolve(modulePath)];
+  return require(modulePath);
+}
 
 function createWindowDouble({ visible = true, loading = false } = {}) {
   return {
@@ -42,7 +51,8 @@ function createWindowDouble({ visible = true, loading = false } = {}) {
   };
 }
 
-test('openReadingSessionWindows starts a hidden maximized editor bootstrap and waits for base readiness', async () => {
+test('openReadingSessionWindows starts a hidden maximized editor bootstrap and waits for base readiness', async (t) => {
+  const readingTestSessionWindows = loadFreshReadingTestSessionWindows(t);
   const calls = [];
   const editorWin = createWindowDouble({ visible: false, loading: false });
   const flotanteWin = createWindowDouble({ visible: true, loading: false });

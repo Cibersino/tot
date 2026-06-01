@@ -355,12 +355,12 @@ function maybeNotifyProcessingLock(actionId) {
   if ((now - lastProcessingLockNoticeAt) < PROCESSING_LOCK_NOTICE_THROTTLE_MS) return;
   lastProcessingLockNoticeAt = now;
   const alertKey = isAbortFinalizationActive()
-    ? 'renderer.alerts.text_extraction_cancellation_requested'
+    ? 'renderer.text_extraction.alerts.cancellation_requested'
     : (isProcessingModeActive()
-      ? 'renderer.alerts.text_extraction_processing_locked'
+      ? 'renderer.text_extraction.alerts.processing_locked'
       : (isStandaloneFullRefreshPendingActive()
-        ? 'renderer.alerts.current_text_recount_locked'
-        : 'renderer.alerts.current_text_processing_locked'));
+        ? 'renderer.main.alerts.current_text_recount_locked'
+        : 'renderer.main.alerts.current_text_processing_locked'));
   window.Notify.notifyMain(
     alertKey
   );
@@ -1591,19 +1591,19 @@ function registerMenuActions() {
     registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
     registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
     registerMenuActionGuarded('diseno_skins', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
+      window.Notify.notifyMain('renderer.main.alerts.wip.design_skins'); // WIP
     });
     registerMenuActionGuarded('diseno_crono_flotante', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // WIP
+      window.Notify.notifyMain('renderer.main.alerts.wip.floating_stopwatch'); // WIP
     });
     registerMenuActionGuarded('diseno_fuentes', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // WIP
+      window.Notify.notifyMain('renderer.main.alerts.wip.fonts'); // WIP
     });
     registerMenuActionGuarded('diseno_colores', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // WIP
+      window.Notify.notifyMain('renderer.main.alerts.wip.colors'); // WIP
     });
     registerMenuActionGuarded('shortcuts', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_shortcuts'); // WIP
+      window.Notify.notifyMain('renderer.main.alerts.wip.shortcuts'); // WIP
     });
     registerMenuActionGuarded('presets_por_defecto', async () => {
       try {
@@ -1612,7 +1612,7 @@ function registerMenuActions() {
             'renderer.ipc.openDefaultPresetsFolder.unavailable',
             'openDefaultPresetsFolder unavailable at electronAPI; action skipped.'
           );
-          window.Notify.notifyMain('renderer.alerts.open_presets_unsupported');
+          window.Notify.notifyMain('renderer.presets.alerts.open_folder_unsupported');
           return;
         }
 
@@ -1626,10 +1626,10 @@ function registerMenuActions() {
         // In case of failure, inform the user
         const errMsg = res && res.error ? String(res.error) : 'Unknown';
         log.error('default presets folder failed to open:', errMsg);
-        window.Notify.notifyMain('renderer.alerts.open_presets_fail');
+        window.Notify.notifyMain('renderer.presets.alerts.open_default_folder_failed');
       } catch (err) {
         log.error('default presets folder failed to open', err);
-        window.Notify.notifyMain('renderer.alerts.open_presets_error');
+        window.Notify.notifyMain('renderer.presets.alerts.open_folder_error');
       }
     });
     registerMenuActionGuarded('enable_google_ocr', async () => {
@@ -1639,7 +1639,7 @@ function registerMenuActions() {
           'renderer.textExtraction.ocrActivation.entrypoint.unavailable',
           'TextExtractionOcrActivation.startFromPreferencesMenu unavailable; menu action skipped.'
         );
-        window.Notify.notifyMain('renderer.alerts.text_extraction_ocr_activation_failed');
+        window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
         return;
       }
 
@@ -1652,7 +1652,7 @@ function registerMenuActions() {
           'renderer.textExtraction.ocrDisconnect.entrypoint.unavailable',
           'TextExtractionOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.'
         );
-        window.Notify.notifyMain('renderer.alerts.text_extraction_ocr_disconnect_failed');
+        window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.disconnect_failed');
         return;
       }
 
@@ -1999,11 +1999,11 @@ function handleEditorFirstShowState(payload) {
   }
 
   if (payload.reason === 'startup-timeout') {
-    window.Notify.notifyMain('renderer.alerts.text_editor_start_timeout');
+    window.Notify.notifyMain('renderer.editor.alerts.start_timeout');
     return;
   }
 
-  window.Notify.notifyMain('renderer.alerts.text_editor_start_failed');
+  window.Notify.notifyMain('renderer.editor.alerts.start_failed');
 }
 
 // =============================================================================
@@ -2021,7 +2021,7 @@ async function handleTextExtractionAbort() {
       unavailableMessage: 'requestTextExtractionAbort unavailable; abort action skipped.'
     });
     if (!requestTextExtractionAbort) {
-      window.Notify.notifyMain('renderer.alerts.text_extraction_abort_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
       return;
     }
 
@@ -2035,7 +2035,7 @@ async function handleTextExtractionAbort() {
         return;
       }
       log.error('text extraction abort failed:', result);
-      window.Notify.notifyMain('renderer.alerts.text_extraction_abort_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
       return;
     }
 
@@ -2044,10 +2044,10 @@ async function handleTextExtractionAbort() {
       textExtractionStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
     }
     syncMainInteractionLockUi();
-    window.Notify.notifyMain('renderer.alerts.text_extraction_cancellation_requested');
+    window.Notify.notifyMain('renderer.text_extraction.alerts.cancellation_requested');
   } catch (err) {
     log.error('Error handling text extraction abort:', err);
-    window.Notify.notifyMain('renderer.alerts.text_extraction_abort_error');
+    window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
   }
 }
 
@@ -2060,8 +2060,8 @@ async function handleClipboardOverwrite() {
   if (!guardUserAction('clipboard-overwrite')) return;
   try {
     const read = await readClipboardText({
-      tooLargeKey: 'renderer.alerts.clipboard_too_large',
-      unavailableKey: 'renderer.alerts.overwrite_clipboard_error'
+      tooLargeKey: 'renderer.main.alerts.clipboard_too_large',
+      unavailableKey: 'renderer.main.alerts.overwrite_clipboard_error'
     });
     if (!read.ok) return;
     const clip = read.text;
@@ -2073,9 +2073,9 @@ async function handleClipboardOverwrite() {
     });
     if (!applyResult || applyResult.ok !== true) {
       if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.apply_too_large');
+        window.Notify.notifyMain('renderer.main.alerts.apply_too_large');
       } else {
-        window.Notify.notifyMain('renderer.alerts.overwrite_clipboard_error');
+        window.Notify.notifyMain('renderer.main.alerts.overwrite_clipboard_error');
       }
       return;
     }
@@ -2084,11 +2084,11 @@ async function handleClipboardOverwrite() {
       throw new Error('current-text-updated subscription unavailable');
     }
     if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.apply_truncated');
+      window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
     }
   } catch (err) {
     log.error('clipboard error:', err);
-    window.Notify.notifyMain('renderer.alerts.overwrite_clipboard_error');
+    window.Notify.notifyMain('renderer.main.alerts.overwrite_clipboard_error');
   }
 }
 
@@ -2096,8 +2096,8 @@ async function handleClipboardAppend() {
   if (!guardUserAction('clipboard-append')) return;
   try {
     const read = await readClipboardText({
-      tooLargeKey: 'renderer.alerts.clipboard_too_large',
-      unavailableKey: 'renderer.alerts.append_clipboard_error'
+      tooLargeKey: 'renderer.main.alerts.clipboard_too_large',
+      unavailableKey: 'renderer.main.alerts.append_clipboard_error'
     });
     if (!read.ok) return;
     const clip = read.text;
@@ -2109,11 +2109,11 @@ async function handleClipboardAppend() {
     });
     if (!applyResult || applyResult.ok !== true) {
       if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-        window.Notify.notifyMain('renderer.alerts.apply_too_large');
+        window.Notify.notifyMain('renderer.main.alerts.apply_too_large');
       } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-        window.Notify.notifyMain('renderer.alerts.append_text_limit');
+        window.Notify.notifyMain('renderer.main.alerts.append_text_limit');
       } else {
-        window.Notify.notifyMain('renderer.alerts.append_clipboard_error');
+        window.Notify.notifyMain('renderer.main.alerts.append_clipboard_error');
       }
       return;
     }
@@ -2122,11 +2122,11 @@ async function handleClipboardAppend() {
       throw new Error('current-text-updated subscription unavailable');
     }
     if (applyResult.truncated) {
-      window.Notify.notifyMain('renderer.alerts.apply_truncated');
+      window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
     }
   } catch (err) {
     log.error('An error occurred while pasting the clipboard:', err);
-    window.Notify.notifyMain('renderer.alerts.append_clipboard_error');
+    window.Notify.notifyMain('renderer.main.alerts.append_clipboard_error');
   }
 }
 
@@ -2175,7 +2175,7 @@ async function handleClearText() {
       unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
     });
     if (!setCurrentText) {
-      window.Notify.notifyMain('renderer.alerts.clear_error');
+      window.Notify.notifyMain('renderer.main.alerts.clear_error');
       return;
     }
     const resp = await setCurrentText({
@@ -2190,7 +2190,7 @@ async function handleClearText() {
     }
   } catch (err) {
     log.error('Error clearing text from main window:', err);
-    window.Notify.notifyMain('renderer.alerts.clear_error');
+    window.Notify.notifyMain('renderer.main.alerts.clear_error');
   }
 }
 
@@ -2334,7 +2334,7 @@ async function handleOpenReadingSpeedTest() {
     await readingSpeedTestUi.openEntryFlow();
   } catch (err) {
     log.error('Error opening reading speed test flow:', err);
-    window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
+    window.Notify.notifyMain('renderer.reading_test.alerts.start_failed');
   }
 }
 
@@ -2349,7 +2349,7 @@ async function openPresetModalFromMain(payload) {
       'renderer.ipc.openPresetModal.unavailable',
       'openPresetModal unavailable in electronAPI; preset-modal action skipped.'
     );
-    window.Notify.notifyMain('renderer.alerts.preset_modal_unavailable');
+    window.Notify.notifyMain('renderer.modal_preset.alerts.unavailable');
     return;
   }
 
@@ -2357,11 +2357,11 @@ async function openPresetModalFromMain(payload) {
     const res = await window.electronAPI.openPresetModal(payload);
     if (!res || res.ok === false) {
       log.error('Preset modal open failed:', res);
-      window.Notify.notifyMain('renderer.alerts.preset_modal_open_error');
+      window.Notify.notifyMain('renderer.modal_preset.alerts.open_error');
     }
   } catch (err) {
     log.error('Error opening preset modal:', err);
-    window.Notify.notifyMain('renderer.alerts.preset_modal_open_error');
+    window.Notify.notifyMain('renderer.modal_preset.alerts.open_error');
   }
 }
 
@@ -2385,7 +2385,7 @@ function bindPresetActions() {
       // Find preset data from cache
       const preset = wpmControls.getAllPresets().find(p => p.name === selectedName);
       if (!preset) {
-        window.Notify.notifyMain('renderer.alerts.preset_not_found');
+        window.Notify.notifyMain('renderer.presets.alerts.not_found');
         return;
       }
 
@@ -2399,7 +2399,7 @@ function bindPresetActions() {
       await openPresetModalFromMain(payload);
     } catch (err) {
       log.error('Error preparing edit preset modal payload:', err);
-      window.Notify.notifyMain('renderer.alerts.preset_modal_open_error');
+      window.Notify.notifyMain('renderer.modal_preset.alerts.open_error');
     }
   });
 
@@ -2418,7 +2418,7 @@ function bindPresetActions() {
         unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'
       });
       if (!requestDeletePreset) {
-        window.Notify.notifyMain('renderer.alerts.delete_error');
+        window.Notify.notifyMain('renderer.presets.alerts.delete_error');
         return;
       }
       // Call main to request deletion; main shows native dialogs as needed
@@ -2443,11 +2443,11 @@ function bindPresetActions() {
         }
         // Unexpected error: log and show a simple alert
         log.error('Error deleting preset:', res && res.error ? res.error : res);
-        window.Notify.notifyMain('renderer.alerts.delete_error');
+        window.Notify.notifyMain('renderer.presets.alerts.delete_error');
       }
     } catch (err) {
       log.error('Error in deletion request:', err);
-      window.Notify.notifyMain('renderer.alerts.delete_error');
+      window.Notify.notifyMain('renderer.presets.alerts.delete_error');
     }
   });
 
@@ -2460,7 +2460,7 @@ function bindPresetActions() {
         unavailableMessage: 'requestRestoreDefaults unavailable; presets restore action skipped.'
       });
       if (!requestRestoreDefaults) {
-        window.Notify.notifyMain('renderer.alerts.restore_error');
+        window.Notify.notifyMain('renderer.presets.alerts.restore_error');
         return;
       }
       // Call main to request restore. Main will show a native confirmation dialog.
@@ -2482,11 +2482,11 @@ function bindPresetActions() {
           return;
         }
         log.error('Error restoring presets:', res && res.error ? res.error : res);
-        window.Notify.notifyMain('renderer.alerts.restore_error');
+        window.Notify.notifyMain('renderer.presets.alerts.restore_error');
       }
     } catch (err) {
       log.error('Error in restoring request:', err);
-      window.Notify.notifyMain('renderer.alerts.restore_error');
+      window.Notify.notifyMain('renderer.presets.alerts.restore_error');
     }
   });
 }

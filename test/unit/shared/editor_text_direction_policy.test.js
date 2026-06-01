@@ -204,6 +204,7 @@ function createEditorScriptHarness({
   const applyWindowLanguageAttributesCalls = [];
   const replaceResponses = [];
   const bootstrapApplyCalls = [];
+  const sendCurrentTextCalls = [];
   const errorLogs = [];
   const warnLogs = [];
   let getCurrentTextCallCount = 0;
@@ -305,8 +306,23 @@ function createEditorScriptHarness({
         },
       },
       EditorFindReplaceCore: {
-        selectionMatchesLiteralQuery() { return false; },
-        computeLiteralReplaceAll() { return { ok: true }; },
+        resolveLiteralMatchByOrdinal() { return null; },
+        computeLiteralReplaceAll() {
+          return { replacements: 0, nextValue: '' };
+        },
+      },
+      EditorStartupPresentation: {
+        parseStartupQuery() {
+          return {};
+        },
+        createStartupPresentationController() {
+          return {
+            firstShowGeneration: 1,
+            isInitiallyMaximized() { return false; },
+            captureActualWindowState(windowState) { return windowState || null; },
+            releaseStartupLock() { return null; },
+          };
+        },
       },
       RendererI18n: {
         applyWindowLanguageAttributes(lang) {
@@ -360,7 +376,10 @@ function createEditorScriptHarness({
                 elements.editorArea.value = String(payload || '');
               }
             },
-            sendCurrentTextToMain() {},
+            sendCurrentTextToMain(action, options) {
+              sendCurrentTextCalls.push({ action, options });
+              return true;
+            },
             handleTextTransferInsert(event, transferConfig) {
               const text = transferConfig.getText(event);
               elements.editorArea.value = String(text || '');
@@ -459,6 +478,7 @@ function createEditorScriptHarness({
     applyWindowLanguageAttributesCalls,
     replaceResponses,
     bootstrapApplyCalls,
+    sendCurrentTextCalls,
     errorLogs,
     warnLogs,
     getCurrentTextCallCount: () => getCurrentTextCallCount,
@@ -624,4 +644,41 @@ test('editor script recomputes direction for paste, drop, replace, append update
   harness.elements.editorArea.value = 'trash me';
   harness.elements.btnTrash.dispatch('click');
   assert.deepEqual(harness.updateDirectionCalls, ['']);
+});
+
+test('editor Apply action uses the shared editor commit path with overwrite semantics', async () => {
+  const harness = await bootstrapEditorScriptHarness();
+
+  harness.elements.calcWhileTyping.checked = false;
+  harness.elements.calcWhileTyping.dispatch('change');
+  harness.elements.editorArea.value = 'apply me';
+  harness.elements.btnCalc.dispatch('click');
+
+  assert.equal(harness.sendCurrentTextCalls.length, 1);
+  assert.equal(harness.sendCurrentTextCalls[0].action, 'overwrite');
+  assert.equal(harness.sendCurrentTextCalls[0].options.text, 'apply me');
+});
+
+test('editor Clear action commits empty text through the shared engine path when auto is on', async () => {
+  const harness = await bootstrapEditorScriptHarness();
+
+  harness.elements.editorArea.value = 'trash me';
+  harness.elements.btnTrash.dispatch('click');
+
+  assert.equal(harness.elements.editorArea.value, '');
+  assert.equal(harness.sendCurrentTextCalls.length, 1);
+  assert.equal(harness.sendCurrentTextCalls[0].action, 'clear');
+  assert.equal(harness.sendCurrentTextCalls[0].options.text, '');
+});
+
+test('editor Clear action does not commit when auto is off', async () => {
+  const harness = await bootstrapEditorScriptHarness();
+
+  harness.elements.calcWhileTyping.checked = false;
+  harness.elements.calcWhileTyping.dispatch('change');
+  harness.elements.editorArea.value = 'trash me';
+  harness.elements.btnTrash.dispatch('click');
+
+  assert.equal(harness.elements.editorArea.value, '');
+  assert.equal(harness.sendCurrentTextCalls.length, 0);
 });

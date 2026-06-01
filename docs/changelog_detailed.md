@@ -62,6 +62,7 @@ Reglas:
 - La ventana principal deja de rehacer recuentos completos del texto vigente cuando un cambio solo afecta `WPM`, formateo numérico visible o la resolución efectiva del preset; ahora clasifica esos refreshes y reutiliza stats/cache cuando el texto no cambió, y cuando sí hace falta un recuento completo muestra un estado pending/recount explícito hasta que se asiente la corrida autoritativa más reciente, incluido un kickoff diferido en startup para no disparar ese settle antes de que la UI salga realmente del bloqueo inicial.
 - El núcleo de conteo deja de depender de recorridos/materializaciones redundantes y pasa a contadores streaming para `simple` y para el fallback de `preciso`; cuando `Intl.Segmenter` está disponible, el modo preciso conserva la semántica visible de whitespace, grafemas y segmentación de palabras, pero separa los pases de grafemas y palabras para reducir trabajo intermedio sobre textos grandes.
 - Los artefactos temporales locales de runtime dejan de dispersarse en `%TEMP%`: subsets PDF, normalización OCR y copias temporales de app-docs/licencias pasan a centralizarse bajo un root app-owned con limpieza best-effort al cierre normal.
+- Las alerts del renderer dejan de concentrarse en los owners planos `renderer.alerts`, `renderer.editor_alerts` y `renderer.preset_alerts`, y pasan a namespaces por feature (`renderer.main.alerts`, `renderer.text_extraction.alerts`, `renderer.editor.alerts`, `renderer.snapshots.alerts`, `renderer.reading_test.alerts`, `renderer.modal_preset.alerts`, `renderer.presets.alerts`, `renderer.browser_extension.alerts`) alineados con el código, los bundles locales y la guía de traducción.
 
 ### Agregado
 
@@ -125,7 +126,7 @@ Reglas:
 - El guard global de acciones de la ventana principal extiende el lock de extracción para cubrir también la finalización post-aborto, incluyendo picker, drag/drop, presets, WPM y demás controles interactivos.
 - El disclosure modal de activación OCR adopta `dir` efectivo de la UI y propiedades CSS lógicas (`text-align: start`, `padding-inline-start`, `margin-inline-start`) para espejar correctamente listas y acciones cuando el idioma activo es RTL.
 - El preview del texto vigente deja de mantener un probador de dirección propio y pasa a reutilizar la resolución shared de `RendererI18n`, aplicando la dirección efectiva del contenido también al modo truncado/sin spoiler.
-- El editor completo deja de depender de `dir="auto"` hardcodeado en HTML y recalcula la dirección del `textarea` en bootstrap, escritura local, sync externa y cambios de idioma; además, el botón `clear` del editor pasa a limpiar solo el `textarea` local y deja de vaciar el `current text` de la ventana principal.
+- El editor completo deja de depender de `dir="auto"` hardcodeado en HTML y recalcula la dirección del `textarea` en bootstrap, escritura local, sync externa y cambios de idioma; además, el botón `clear` del editor pasa a usar el mismo pipeline de commit del editor: siempre limpia el `textarea` local, solo sincroniza `clear` cuando `Auto` está activo y con `Auto` desactivado deja intacto el `current text` de la ventana principal.
 - El arranque del Text Editor deja de combinar `editor-init-text` con un fetch paralelo y pasa a un único bootstrap renderer-owned vía `getCurrentText()`, aplicado después de resolver el `maxTextChars` efectivo del editor.
 - `open-editor` deja de resembrar una ventana del Text Editor ya viva; al reabrirla ahora solo la muestra/enfoca sin tocar el borrador local, y cuando necesita crear una nueva ventana pasa por un primer show oculto con handshake `editor-first-show-state` para limpiar el loader solo después de que la presentación base quede realmente lista.
 - Las descripciones de presets en main window y en `preset_modal` dejan de renderizarse como texto neutro fijo y pasan a actualizar `dir` según el contenido efectivo del campo.
@@ -134,6 +135,7 @@ Reglas:
 - El `current text` deja de depender de updates optimistas locales del renderer y pasa a un settle lifecycle main-owned con `requestId`, placeholders explícitos, elapsed propio y bloqueo homogéneo de controles/menú tanto en startup como en clipboard, snapshots, sync del Editor de Texto y recuentos standalone disparados por cambios de modo/settings; en startup, el settle bootstrap ya no arranca inline durante la sincronización inicial, sino diferido hasta después del desbloqueo/salida del splash para evitar trabajo pesado antes de que la ventana principal quede realmente lista.
 - `public/js/lib/count_core.js` deja de construir arrays completos para los caminos frecuentes de conteo y pasa a contar en streaming tanto en `simple` como en el fallback de `preciso`; el modo preciso con `Intl.Segmenter` conserva la lógica de compounds con guion, pero computa grafemas/no-whitespace y segmentación de palabras en iteraciones separadas para recortar materialización intermedia sin alterar el contrato visible.
 - La extensión Chrome `reading-time` alinea su path de conteo con la optimización aplicable del algoritmo nuevo de Desktop para texto ya normalizado: evita re-normalizar y deja de usar `split(/\s+/)` en el umbral mínimo del overlay sin cambiar la semántica visible de la selección.
+- La taxonomía de alerts renderer deja de mezclar avisos de ventana principal, extracción, editor, snapshots, reading test, modal de presets, presets y extensión bajo owners globales; el contrato i18n activo pasa a agruparlos por superficie funcional y el runtime deja de referenciar las rutas legacy `renderer.alerts.*`, `renderer.editor_alerts.*` y `renderer.preset_alerts.*`.
 
 ### Arreglado
 
@@ -145,6 +147,8 @@ Reglas:
 - Un OCR cuyo subset PDF por rango queda demasiado grande deja de intentar continuar con upload inválido y pasa a una recuperación explícita que también puede revelar el artefacto retenido si existe.
 - Las copias temporales de app-docs/licencias y otros artefactos locales de runtime dejan de quedar sueltos directamente bajo `%TEMP%`, y el cierre normal de la app intenta limpiar el root temporal app-owned completo.
 - La ejecución batch deja de depender de diálogos nativos manuales para guardar snapshots por unidad y evita colisiones sobre nombres repetidos mediante sufijos deterministas (`_2`, `_3`, ...).
+- El botón `clear` del Text Editor deja de quedar desacoplado del modo `Auto`: ahora, cuando `Auto` está activo, limpia el `textarea` local y sincroniza `clear` con main; con `Auto` desactivado, la limpieza sigue siendo solo local.
+- El pipeline `paste`/`drop` del Text Editor deja de aplicar siempre el `current text`: ahora conserva la inserción local/nativa como owner del cambio y solo sincroniza con main cuando `Auto` está activo.
 - Rechazar el disclosure de activación OCR desde `Menú > Preferencias` o desde la recuperación de extracción deja de disparar avisos de fallo genéricos y pasa a tratarse como cancelación explícita del usuario.
 - La activación OCR lanzada desde preferencias deja de colapsar fallos heterogéneos en un mensaje único y pasa a distinguir credenciales ausentes/inválidas, token inválido, falta de conectividad, cuota/rate limit y cancelación del OAuth.
 - Si la recuperación automática no dispone de los bridges IPC de activación OCR, deja de consumir el flujo como fallo manejado y vuelve al fallback no recuperado en vez de mostrar diagnóstico engañoso.
@@ -153,6 +157,7 @@ Reglas:
 - El Text Editor deja de poder aplicar el seed inicial por dos rutas de bootstrap distintas o de sobrescribir el `textarea` local al reabrirse desde `open-editor`; el arranque inicial ahora ocurre una sola vez desde `getCurrentText()` y una ventana ya viva conserva su draft no sincronizado.
 - Si el `maxTextChars` efectivo del editor difiere del fallback renderer, el seed inicial deja de poder aplicarse contra el límite por defecto antes de que llegue la configuración real.
 - La apertura del Text Editor desde la ventana principal, incluida la variante oculta/maximizada que reutiliza `reading test`, deja de poder quedar con loader colgado, ventana intermedia o cierre silencioso cuando el bootstrap base no termina a tiempo; ahora el primer show usa generación explícita, fallo reportado y timeout productizado de `60s` con aviso diferenciado para timeout vs. fallo de arranque.
+- El `Replace` del find del Text Editor deja de poder perder la coincidencia activa al re-sincronizar el query y deriva en dos fallos visibles del flujo single-step: reemplazar una ocurrencia posterior a la enfocada o caer en un no-op sobre coincidencias no iniciales; ahora el refresh conserva la coincidencia vigente y el replace se aplica sobre el match literal correcto, dejando además de depender de la selección nativa incidental del `<textarea>`.
 - Ajustar `WPM`, cambiar separadores numéricos del idioma activo o resolver un fallback de preset deja de disparar recuentos completos redundantes del texto vigente y rerenders innecesarios del preview cuando bastaba reutilizar `currentTextStats` para refrescar tiempo o formato visible; cuando el cambio sí obliga a un recount standalone, la UI ya no aparenta estado asentado antes de que ese recálculo termine o degrade explícitamente.
 - Los refreshes `stats_display` / `time_only` que llegan mientras hay una derivación standalone o un settle pendiente dejan de perderse o filtrarse sobre una corrida posterior de otro texto; ahora quedan acotados a la secuencia activa y no contaminan un `current text` más nuevo.
 - Un arranque con current text grande, una mutación runtime superpuesta o un sync tardío del Editor de Texto dejan de poder mostrar resultados “finales” viejos o desbloquear interacciones antes de tiempo; solo la última corrida autoritativa puede resolver el pending del texto vigente, y el settle bootstrap ya no se dispara prematuramente antes de que el renderer abandone el bloqueo inicial.
@@ -193,6 +198,7 @@ Reglas:
   - nuevo evento `current-text-processing-state-changed`
   - nuevo canal `editor-report-base-presentation-state`
   - nuevo evento `editor-first-show-state`
+  - el evento interno main → editor `editor-replace-request` amplía su payload con `activeMatchOrdinal:number` para que `Replace` del find del Text Editor apunte a la coincidencia activa explícita durante el re-sync del query
   - se remueve `editor-init-text` del contrato activo de arranque del Text Editor; `editor-text-updated` queda como único push main → editor post-bootstrap
   - `current-text-updated` y `editor-text-updated` pasan a transportar payload objeto con `{ text, requestId, meta }`
   - `text-extraction-open-picker` puede devolver `filePaths[]` además de `filePath` cuando el picker vuelve múltiples archivos válidos
@@ -218,8 +224,9 @@ Reglas:
   - nuevas strings `renderer.main.processing.text_extraction_unit_progress`, `text_extraction_input_progress`, `text_extraction_route_native` y `text_extraction_route_ocr`
   - nuevas strings `renderer.main.results.value_pending`, `renderer.main.results.value_unavailable`
   - nuevas strings `renderer.main.processing.current_text_waiting`, `current_text_waiting_startup`, `current_text_waiting_editor`, `current_text_recount_waiting` y `current_text_elapsed`
-  - nuevas strings `renderer.alerts.current_text_processing_locked` y `renderer.alerts.current_text_recount_locked`
-  - nuevas strings `renderer.alerts.text_editor_start_failed` y `renderer.alerts.text_editor_start_timeout`
+  - el contrato activo de alerts del renderer deja de usar `renderer.alerts.*`, `renderer.editor_alerts.*` y `renderer.preset_alerts.*` como owners globales y redistribuye esas keys bajo `renderer.main.alerts.*`, `renderer.text_extraction.alerts.*`, `renderer.editor.alerts.*`, `renderer.snapshots.alerts.*`, `renderer.reading_test.alerts.*`, `renderer.modal_preset.alerts.*`, `renderer.presets.alerts.*` y `renderer.browser_extension.alerts.*`
+  - nuevas strings `renderer.main.alerts.current_text_processing_locked` y `renderer.main.alerts.current_text_recount_locked`
+  - nuevas strings `renderer.editor.alerts.start_failed` y `renderer.editor.alerts.start_timeout`
 - Storage / filesystem:
   - el runtime temp app-owned se centraliza bajo `os.tmpdir()/tot-temp/`
   - los subsets temporales en política `delete` se materializan bajo `os.tmpdir()/tot-temp/generated-pdf-subsets/`
@@ -637,6 +644,8 @@ Reglas:
   - el arranque poda filas de estado huérfanas y elimina starter files gestionados que ya no forman parte del bundle actual.
 - Reading speed test / race conditions:
   - la ventana de preguntas deja de poder abrir vacía cuando el payload `reading-test-questions-init` llegaba antes de que el renderer registrara su callback; el preload ahora bufferiza y reproduce el último payload init.
+- Snapshots / UX:
+  - al cargar un snapshot, la confirmación `snapshot_overwrite_load` deja de mostrarse cuando el `current text` está vacío.
 
 ### Contratos tocados
 

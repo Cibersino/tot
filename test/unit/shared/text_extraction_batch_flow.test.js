@@ -531,7 +531,7 @@ test('batch start validation blocks OCR routes before execution when Google OCR 
   assert.equal(harness.getOcrAvailabilityCallCount(), 1);
   assert.deepEqual(
     harness.notifications,
-    ['renderer.alerts.text_extraction_batch_ocr_activation_required']
+    ['renderer.text_extraction.alerts.batch_ocr.activation_required']
   );
 });
 
@@ -1189,7 +1189,7 @@ test('batch final report prompt synchronous failure clears abort finalization an
   assert.equal(harness.getSyncMainInteractionLockUiCallCount(), 1);
   assert.deepEqual(
     harness.notifications,
-    ['renderer.alerts.text_extraction_error']
+    ['renderer.text_extraction.alerts.start_error']
   );
 });
 

@@ -781,11 +781,11 @@
 
   function resolvePreconditionFailure(preconditions) {
     if (!preconditions || preconditions.ok === false) {
-      window.Notify.notifyMain('renderer.alerts.text_extraction_precondition_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
       return true;
     }
     if (!preconditions.canStart) {
-      window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.alerts.text_extraction_precondition_blocked');
+      window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.text_extraction.alerts.precondition_blocked');
       return true;
     }
     return false;
@@ -796,18 +796,18 @@
       ? availabilityResult.code
       : '';
     if (code === 'ocr_activation_required') {
-      return 'renderer.alerts.text_extraction_batch_ocr_activation_required';
+      return 'renderer.text_extraction.alerts.batch_ocr.activation_required';
     }
     if (code === 'ocr_token_state_invalid') {
-      return 'renderer.alerts.text_extraction_batch_ocr_token_state_invalid';
+      return 'renderer.text_extraction.alerts.batch_ocr.token_state_invalid';
     }
     if (code === 'connectivity_failed') {
-      return 'renderer.alerts.text_extraction_batch_ocr_connectivity_failed';
+      return 'renderer.text_extraction.alerts.batch_ocr.connectivity_failed';
     }
     if (code === 'quota_or_rate_limited') {
-      return 'renderer.alerts.text_extraction_batch_ocr_quota_or_rate_limited';
+      return 'renderer.text_extraction.alerts.batch_ocr.quota_or_rate_limited';
     }
-    return 'renderer.alerts.text_extraction_batch_ocr_unavailable';
+    return 'renderer.text_extraction.alerts.batch_ocr.unavailable';
   }
 
   async function validateBatchStart(state) {
@@ -818,7 +818,7 @@
         unavailableMessage: 'checkTextExtractionOcrAvailability unavailable; batch OCR start check cannot continue.',
       });
       if (!checkTextExtractionOcrAvailability) {
-        window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
         return false;
       }
 
@@ -827,7 +827,7 @@
         availabilityResult = await checkTextExtractionOcrAvailability();
       } catch (err) {
         log.error('Batch OCR availability check failed unexpectedly:', err);
-        window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
         return false;
       }
 
@@ -847,7 +847,7 @@
       unavailableMessage: 'getCurrentText unavailable; batch overwrite confirmation check cannot continue.',
     });
     if (!getCurrentText) {
-      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return false;
     }
 
@@ -856,7 +856,7 @@
       currentText = String(await getCurrentText() || '');
     } catch (err) {
       log.error('Batch current-text check failed unexpectedly:', err);
-      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return false;
     }
 
@@ -1155,7 +1155,7 @@
       || !enterTextExtractionProcessingSession
       || !updateTextExtractionProcessingSession
       || !exitTextExtractionProcessingSession) {
-      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
 
@@ -1188,7 +1188,7 @@
       ...initialContext,
     });
     if (!sessionEnterResult || sessionEnterResult.ok !== true) {
-      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
 
@@ -1447,7 +1447,7 @@
       textExtractionStatusUi.endAbortFinalization();
       syncMainInteractionLockUi();
       log.error('Batch final report prompt failed:', err);
-      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
     }
   }
 
@@ -1482,7 +1482,7 @@
       unavailableMessage: 'checkTextExtractionPreconditions unavailable; batch entrypoint skipped.',
     });
     if (!checkTextExtractionPreconditions) {
-      window.Notify.notifyMain('renderer.alerts.text_extraction_precondition_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
       return;
     }
 
@@ -1493,7 +1493,7 @@
 
     const inputs = await preparePlanInputs(normalizedFilePaths);
     if (!inputs) {
-      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
 

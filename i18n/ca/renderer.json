@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Transcorregut: ",
         "text_extraction_drop_here": "Deixa anar el fitxer per extreure text"
+      },
+      "alerts": {
+        "clipboard_too_large": "El text del porta-retalls és massa gran per processar-lo. Redueix-lo i torna-ho a provar.",
+        "apply_too_large": "El text esdevindria massa gran per aplicar-lo. Redueix-lo i torna-ho a provar.",
+        "apply_truncated": "El text s'ha truncat per ajustar-se al límit de l'aplicació.",
+        "append_text_limit": "No es pot afegir el text: s'ha assolit la mida màxima.",
+        "overwrite_clipboard_error": "S'ha produït un error en substituir text des del porta-retalls.",
+        "append_clipboard_error": "S'ha produït un error en afegir text des del porta-retalls.",
+        "clear_error": "S’ha produït un error en buidar el text. Revisa la consola.",
+        "current_text_processing_locked": "El text actual encara s’està actualitzant. Les interaccions de la finestra principal queden bloquejades fins que s’estabilitzi el text més recent.",
+        "current_text_recount_locked": "Els resultats del text actual encara s’estan recalculant. Les interaccions de la finestra principal queden bloquejades fins que s’estabilitzi l’últim recompte.",
+        "wip": {
+          "design_skins": "WIP: Aquí s’obrirà el selector de skins en una versió futura.",
+          "floating_stopwatch": "WIP: Aquí s’obrirà la configuració del cronòmetre flotant en una versió futura.",
+          "fonts": "WIP: Aquí s’obrirà el selector de tipus de lletra en una versió futura.",
+          "colors": "WIP: Aquí s’obrirà el selector de colors en una versió futura.",
+          "shortcuts": "WIP: Aquí s’obrirà el selector de dreceres de teclat en una versió futura."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Mostra el PDF generat",
         "cancel_button": "Cancel·lar",
         "close_aria": "Tancar el diàleg de PDF gran per a OCR"
+      },
+      "alerts": {
+        "start_error": "S’ha produït un error en iniciar extracció. Revisa la consola.",
+        "precondition_blocked": "Per iniciar extracció, tanca totes les finestres secundàries i atura el cronòmetre.",
+        "precondition_error": "S’ha produït un error en revisar les precondicions d’extracció. Revisa la consola.",
+        "processing_locked": "Extracció està processant. Les interaccions de la finestra principal estan bloquejades fins que acabi el processament o l’avortis.",
+        "abort_error": "S’ha produït un error en sol·licitar l’avortament d’extracció. Revisa la consola.",
+        "cancellation_requested": "Cancel·lació sol·licitada. Espera que acabi l’extracció actual.",
+        "cancellation_complete": "Cancel·lació completada.",
+        "drop_invalid_file": "L’element deixat anar no és un fitxer local vàlid.",
+        "generated_pdf_cleanup_warning": "L’extracció ha acabat, però no s’ha pogut netejar automàticament un PDF local generat.",
+        "route_choice_error": "S'ha produït un error en triar la ruta d'extracció.",
+        "generated_pdf_reveal_failed": "No s’ha pogut mostrar el PDF desat. Comprova si el fitxer encara existeix.",
+        "apply_error": "S’ha produït un error en aplicar el text extret. Revisa la consola i torna-ho a provar.",
+        "prepare_invalid": "La sol·licitud preparada d’extracció ja no és vàlida. Inicia el flux de nou.",
+        "unsupported_format": "Aquest format de fitxer no és compatible amb l’extracció de text.",
+        "pdf": {
+          "unreadable_or_corrupt": "Aquest PDF és il·legible o està malmès. Revisa el fitxer i torna-ho a provar.",
+          "encrypted_or_password_protected": "Aquest PDF està encriptat o protegit amb contrasenya. Desbloqueja’l i torna-ho a provar.",
+          "page_count_unavailable": "No s’ha pogut inspeccionar el nombre de pàgines d’aquest PDF. Revisa el fitxer i torna-ho a provar.",
+          "page_selection_invalid": "L’interval de pàgines seleccionat del PDF no és vàlid. Ajusta l’interval i torna-ho a provar.",
+          "subset_creation_failed": "No s’ha pogut crear el PDF de les pàgines seleccionades per a l’extracció. Revisa el fitxer i torna-ho a provar."
+        },
+        "ocr": {
+          "unavailable": "L’OCR no està disponible. Revisa la configuració/autenticació i torna-ho a provar.",
+          "activation_required": "Cal activar l’OCR. Inicia sessió a Google OCR i torna-ho a provar.",
+          "activation_success": "Activació OCR completada. Reintentant l’extracció.",
+          "activation_cancelled": "L’activació OCR s’ha cancel·lat. Extracció no ha continuat.",
+          "token_state_invalid": "L’estat desat d’inici de sessió de Google OCR és invàlid. Reconnecta Google OCR i torna-ho a provar.",
+          "activation_failed": "L’activació OCR ha fallat. Revisa la configuració/autenticació i torna-ho a provar.",
+          "enable_success": "Google OCR s’ha activat.",
+          "enable_cancelled": "L’activació de Google OCR s’ha cancel·lat.",
+          "enable_failed": "No s’ha pogut activar Google OCR. Revisa la configuració/autenticació i torna-ho a provar.",
+          "disconnect_success": "Google OCR s’ha desconnectat. El testimoni de Google desat s’ha revocat i s’ha eliminat l’estat local d’inici de sessió.",
+          "disconnect_not_connected": "Google OCR no està connectat actualment en aquesta instància de l’app.",
+          "disconnect_failed": "La desconnexió de Google OCR ha fallat. L’estat desat d’inici de sessió no s’ha eliminat.",
+          "connectivity_failed": "L’OCR requereix connexió a internet. Revisa la connexió i torna-ho a provar.",
+          "setup_missing_credentials": "L’OCR no està disponible en aquest build de l’app perquè falten les credencials OAuth de Google incloses amb l’app.",
+          "setup_invalid_credentials": "L’OCR no està disponible en aquest build de l’app perquè les credencials OAuth de Google incloses amb l’app són invàlides.",
+          "quota_or_rate_limited": "L’OCR està bloquejat temporalment per quota/límit de taxa. Espera i torna-ho a provar.",
+          "runtime_error": "S’ha produït un error d’execució OCR durant extracció. Revisa la consola i torna-ho a provar.",
+          "cancelled": "L’extracció OCR s’ha cancel·lat.",
+          "cleanup_warning": "L’OCR ha acabat, però ha fallat la neteja temporal remota del fitxer. Revisa la teva carpeta de Google Drive."
+        },
+        "batch_ocr": {
+          "activation_required": "Aquest lot inclou elements OCR, però Google OCR no està activat. Usa Preferències > Activar Google OCR i torna a iniciar el lot.",
+          "token_state_invalid": "Aquest lot inclou elements OCR, però l’estat d’inici de sessió desat de Google OCR és invàlid. Torna a usar Preferències > Activar Google OCR i torna a iniciar el lot.",
+          "connectivity_failed": "Aquest lot inclou elements OCR, però OCR requereix connexió a Internet. Revisa la connexió i torna-ho a provar abans d'iniciar l'extracció.",
+          "quota_or_rate_limited": "Aquest lot inclou elements OCR, però OCR està bloquejat temporalment per límits de quota/freqüència. Espera i torna-ho a provar abans d'iniciar l'extracció.",
+          "unavailable": "Aquest lot inclou elements OCR, però Google OCR no està disponible ara. Si OCR encara no està activat, usa Preferències > Activar Google OCR. Altrament, revisa la configuració/autenticació d’OCR i torna-ho a provar abans d’iniciar el lot."
+        },
+        "native": {
+          "runtime_error": "S’ha produït un error d’execució d’extracció nativa durant extracció. Revisa la consola i torna-ho a provar.",
+          "unreadable_or_corrupt": "El fitxer seleccionat és il·legible o està corrupte per a l’extracció nativa.",
+          "encrypted_or_password_protected": "El PDF seleccionat està encriptat o protegit amb contrasenya i no es pot extreure per ruta nativa.",
+          "cancelled": "L’extracció nativa s’ha cancel·lat."
+        }
       }
     },
     "editor": {
@@ -222,10 +297,23 @@
       "decrease_text_size": "Reduir la mida del text",
       "increase_text_size": "Augmentar la mida del text",
       "reset_text_size": "Restablir la mida del text",
-      "text_size_value": "{value} px",
       "read_progress_label": "Llegit",
-      "read_progress_aria": "Progrés de lectura: {value}",
-      "clear_title": "Buidar"
+      "clear_title": "Buidar",
+      "alerts": {
+        "start_failed": "No s’ha pogut iniciar l’Editor de Text.",
+        "start_timeout": "L’Editor de Text ha trigat massa a iniciar-se i s’ha tancat.",
+        "paste_too_big": "Text massa gran per enganxar-lo directament. Fes servir els botons de la finestra principal.",
+        "drop_too_big": "Text arrossegat massa gran. Fes servir els botons de la finestra principal.",
+        "paste_no_text": "El porta-retalls no conté text pla.",
+        "drop_no_text": "Arrossegar i deixar anar: no s’ha detectat text pla.",
+        "type_limit": "No és possible escriure més text: ja s’ha assolit la mida màxima permesa.",
+        "paste_limit": "No és possible enganxar més text: ja s’ha assolit la mida màxima permesa.",
+        "drop_limit": "No és possible deixar anar més text: ja s’ha assolit la mida màxima permesa.",
+        "paste_truncated": "El text enganxat s’ha truncat per no superar el màxim permès.",
+        "drop_truncated": "El text arrossegat superava l’espai disponible i s’ha truncat.",
+        "text_truncated": "El text s’ha truncat per ajustar-se al límit màxim de l’aplicació.",
+        "calc_error": "S’ha produït un error en calcular. Revisa la consola."
+      }
     },
     "editor_find": {
       "input_placeholder": "Cercar...",
@@ -244,6 +332,17 @@
       "replace_timeout": "La substitució ha trigat massa. Torna-ho a provar.",
       "status_no_matches": "Sense coincidències",
       "status_empty_query": "Escriu per cercar"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot desat.",
+        "save_error": "No s’ha pogut desar el snapshot.",
+        "load_success": "Snapshot carregat.",
+        "load_error": "No s’ha pogut carregar el snapshot.",
+        "outside": "El snapshot ha d’estar dins de la carpeta de desament.",
+        "truncated": "El snapshot supera la mida màxima i s’ha truncat.",
+        "unavailable": "La funció de snapshots no està disponible."
+      }
     },
     "snapshot_save_tags": {
       "title": "Desar snapshot de text",
@@ -447,6 +546,22 @@
         "buttons": {
           "continue": "Continuar"
         }
+      },
+      "alerts": {
+        "unavailable": "La funcionalitat del test de velocitat de lectura no està disponible.",
+        "precondition_blocked": "El test de velocitat de lectura només es pot iniciar des d’un estat estable de l’app. Tanca les finestres secundàries i assegura’t que el cronòmetre estigui aturat.",
+        "pool_error": "S’ha produït un error en revisar el pool del test de velocitat de lectura.",
+        "no_matching_files": "No queden fitxers de test sense usar que coincideixin amb la selecció actual.",
+        "visible_empty_bundled_hidden": "Els fitxers de prova integrats estan ocults i ara no hi ha fitxers de prova visibles sense usar disponibles. Torna a mostrar els fitxers integrats o importa'n més per continuar.",
+        "current_text_empty": "El text actual està buit. Carrega o escriu un text abans d’iniciar el test amb el text actual.",
+        "result_invalid": "El resultat del test no s’ha pogut convertir en un WPM vàlid. El flux ha acabat sense obrir el modal de preset.",
+        "result_unavailable": "No s’ha pogut mostrar el resultat de velocitat de lectura. El flux ha continuat.",
+        "preset_unavailable": "No s’ha pogut obrir el modal de preset després del test.",
+        "questions_unavailable": "No s’ha pogut obrir el modal de preguntes de comprensió. El flux ha acabat abans de crear el preset.",
+        "pool_import_failed": "No s’han pogut importar els fitxers del test de velocitat de lectura.",
+        "start_failed": "No s’ha pogut iniciar el test de velocitat de lectura.",
+        "cancelled": "El test de velocitat de lectura s’ha cancel·lat.",
+        "cancelled_window_closed": "El test de velocitat de lectura s’ha cancel·lat perquè una de les finestres de sessió s’ha tancat."
       }
     },
     "modal_preset": {
@@ -455,135 +570,43 @@
       "heading_new": "Crear un preset nou",
       "heading_edit": "Editar el preset seleccionat",
       "name": "Nom:",
+      "name_placeholder": "Nom del preset",
       "wpm": "WPM:",
       "description": "Descripció:",
-      "placeholder": "Descripció breu...",
+      "description_placeholder": "Descripció breu...",
       "char_count": "{remaining} caràcters restants",
       "hint": "Els presets personalitzats es desen a la configuració de l’usuari.",
       "cancel": "Cancel·lar",
-      "save": "Desar"
+      "save": "Desar",
+      "alerts": {
+        "unavailable": "El diàleg del preset no està disponible en aquesta build de l’app.",
+        "open_error": "S’ha produït un error en obrir el diàleg de predefinits. Consulta la consola.",
+        "name_empty": "El nom no pot estar buit.",
+        "wpm_invalid": "WPM ha de ser un nombre entre {min} i {max}.",
+        "create_error": "S’ha produït un error en crear el preset. Revisa la consola.",
+        "edit_error": "S’ha produït un error en editar el preset. Revisa la consola.",
+        "process_error": "S’ha produït un error en processar el preset. Revisa la consola."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "El preset seleccionat no s’ha trobat a la memòria cau.",
+        "delete_error": "S’ha produït un error en eliminar el preset. Revisa la consola.",
+        "restore_error": "S’ha produït un error en restaurar els presets. Revisa la consola.",
+        "open_folder_unsupported": "No és possible obrir la carpeta de presets en aquest entorn.",
+        "open_folder_error": "S’ha produït un error en intentar obrir la carpeta de presets. Revisa la consola.",
+        "open_default_folder_failed": "No s’ha pogut obrir la carpeta de presets per defecte. Revisa la consola per a més detalls."
+      }
     },
     "browser_extension": {
       "title": "Extensió del navegador",
       "subtitle": "Tiempo de lectura",
       "availability": "Disponible ara a Chrome. Aviat arribarà a més navegadors.",
       "chrome_store_aria": "Obre la pàgina de l'extensió a Chrome Web Store",
-      "close_aria": "Tanca el diàleg de l'extensió del navegador"
-    },
-    "alerts": {
-      "clipboard_too_large": "El text del porta-retalls és massa gran per processar-lo. Redueix-lo i torna-ho a provar.",
-      "apply_too_large": "El text esdevindria massa gran per aplicar-lo. Redueix-lo i torna-ho a provar.",
-      "apply_truncated": "El text s'ha truncat per ajustar-se al límit de l'aplicació.",
-      "append_text_limit": "No es pot afegir el text: s'ha assolit la mida màxima.",
-      "overwrite_clipboard_error": "S'ha produït un error en substituir text des del porta-retalls.",
-      "append_clipboard_error": "S'ha produït un error en afegir text des del porta-retalls.",
-      "clear_error": "S’ha produït un error en buidar el text. Revisa la consola.",
-      "snapshot_save_success": "Snapshot desat.",
-      "snapshot_save_error": "No s’ha pogut desar el snapshot.",
-      "snapshot_load_success": "Snapshot carregat.",
-      "snapshot_load_error": "No s’ha pogut carregar el snapshot.",
-      "snapshot_outside": "El snapshot ha d’estar dins de la carpeta de desament.",
-      "snapshot_truncated": "El snapshot supera la mida màxima i s’ha truncat.",
-      "snapshot_unavailable": "La funció de snapshots no està disponible.",
-      "browser_extension_modal_open_blocked": "El diàleg de l’extensió del navegador no es pot obrir ara mateix.",
-      "preset_not_found": "El preset seleccionat no s’ha trobat a la memòria cau.",
-      "preset_modal_unavailable": "El diàleg del preset no està disponible en aquesta build de l’app.",
-      "preset_modal_open_error": "S’ha produït un error en obrir el diàleg de predefinits. Consulta la consola.",
-      "delete_error": "S’ha produït un error en eliminar el preset. Revisa la consola.",
-      "restore_error": "S’ha produït un error en restaurar els presets. Revisa la consola.",
-      "open_presets_unsupported": "No és possible obrir la carpeta de presets en aquest entorn.",
-      "open_presets_error": "S’ha produït un error en intentar obrir la carpeta de presets. Revisa la consola.",
-      "open_presets_fail": "No s’ha pogut obrir la carpeta de presets per defecte. Revisa la consola per a més detalls.",
-      "text_extraction_error": "S’ha produït un error en iniciar extracció. Revisa la consola.",
-      "text_extraction_precondition_blocked": "Per iniciar extracció, tanca totes les finestres secundàries i atura el cronòmetre.",
-      "text_extraction_precondition_error": "S’ha produït un error en revisar les precondicions d’extracció. Revisa la consola.",
-      "text_extraction_processing_locked": "Extracció està processant. Les interaccions de la finestra principal estan bloquejades fins que acabi el processament o l’avortis.",
-      "current_text_processing_locked": "El text actual encara s’està actualitzant. Les interaccions de la finestra principal queden bloquejades fins que s’estabilitzi el text més recent.",
-      "current_text_recount_locked": "Els resultats del text actual encara s’estan recalculant. Les interaccions de la finestra principal queden bloquejades fins que s’estabilitzi l’últim recompte.",
-      "text_extraction_abort_error": "S’ha produït un error en sol·licitar l’avortament d’extracció. Revisa la consola.",
-      "text_extraction_cancellation_requested": "Cancel·lació sol·licitada. Espera que acabi l’extracció actual.",
-      "text_extraction_cancellation_complete": "Cancel·lació completada.",
-      "text_extraction_drop_invalid_file": "L’element deixat anar no és un fitxer local vàlid.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Aquest PDF és il·legible o està malmès. Revisa el fitxer i torna-ho a provar.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Aquest PDF està encriptat o protegit amb contrasenya. Desbloqueja’l i torna-ho a provar.",
-      "text_extraction_pdf_page_count_unavailable": "No s’ha pogut inspeccionar el nombre de pàgines d’aquest PDF. Revisa el fitxer i torna-ho a provar.",
-      "text_extraction_pdf_page_selection_invalid": "L’interval de pàgines seleccionat del PDF no és vàlid. Ajusta l’interval i torna-ho a provar.",
-      "text_extraction_pdf_subset_creation_failed": "No s’ha pogut crear el PDF de les pàgines seleccionades per a l’extracció. Revisa el fitxer i torna-ho a provar.",
-      "text_extraction_generated_pdf_cleanup_warning": "L’extracció ha acabat, però no s’ha pogut netejar automàticament un PDF local generat.",
-      "text_extraction_route_choice_error": "S'ha produït un error en triar la ruta d'extracció.",
-      "text_extraction_generated_pdf_reveal_failed": "No s’ha pogut mostrar el PDF desat. Comprova si el fitxer encara existeix.",
-      "text_extraction_apply_error": "S’ha produït un error en aplicar el text extret. Revisa la consola i torna-ho a provar.",
-      "text_extraction_prepare_invalid": "La sol·licitud preparada d’extracció ja no és vàlida. Inicia el flux de nou.",
-      "text_extraction_batch_ocr_activation_required": "Aquest lot inclou elements OCR, però Google OCR no està activat. Usa Preferències > Activar Google OCR i torna a iniciar el lot.",
-      "text_extraction_batch_ocr_token_state_invalid": "Aquest lot inclou elements OCR, però l’estat d’inici de sessió desat de Google OCR és invàlid. Torna a usar Preferències > Activar Google OCR i torna a iniciar el lot.",
-      "text_extraction_batch_ocr_connectivity_failed": "Aquest lot inclou elements OCR, però OCR requereix connexió a Internet. Revisa la connexió i torna-ho a provar abans d'iniciar l'extracció.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Aquest lot inclou elements OCR, però OCR està bloquejat temporalment per límits de quota/freqüència. Espera i torna-ho a provar abans d'iniciar l'extracció.",
-      "text_extraction_batch_ocr_unavailable": "Aquest lot inclou elements OCR, però Google OCR no està disponible ara. Si OCR encara no està activat, usa Preferències > Activar Google OCR. Altrament, revisa la configuració/autenticació d’OCR i torna-ho a provar abans d’iniciar el lot.",
-      "text_extraction_ocr_unavailable": "L’OCR no està disponible. Revisa la configuració/autenticació i torna-ho a provar.",
-      "text_extraction_ocr_activation_required": "Cal activar l’OCR. Inicia sessió a Google OCR i torna-ho a provar.",
-      "text_extraction_ocr_activation_success": "Activació OCR completada. Reintentant l’extracció.",
-      "text_extraction_ocr_activation_cancelled": "L’activació OCR s’ha cancel·lat. Extracció no ha continuat.",
-      "text_extraction_ocr_token_state_invalid": "L’estat desat d’inici de sessió de Google OCR és invàlid. Reconnecta Google OCR i torna-ho a provar.",
-      "text_extraction_ocr_activation_failed": "L’activació OCR ha fallat. Revisa la configuració/autenticació i torna-ho a provar.",
-      "text_extraction_ocr_enable_success": "Google OCR s’ha activat.",
-      "text_extraction_ocr_enable_cancelled": "L’activació de Google OCR s’ha cancel·lat.",
-      "text_extraction_ocr_enable_failed": "No s’ha pogut activar Google OCR. Revisa la configuració/autenticació i torna-ho a provar.",
-      "text_extraction_ocr_disconnect_success": "Google OCR s’ha desconnectat. El testimoni de Google desat s’ha revocat i s’ha eliminat l’estat local d’inici de sessió.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR no està connectat actualment en aquesta instància de l’app.",
-      "text_extraction_ocr_disconnect_failed": "La desconnexió de Google OCR ha fallat. L’estat desat d’inici de sessió no s’ha eliminat.",
-      "text_extraction_ocr_connectivity_failed": "L’OCR requereix connexió a internet. Revisa la connexió i torna-ho a provar.",
-      "text_extraction_ocr_setup_missing_credentials": "L’OCR no està disponible en aquest build de l’app perquè falten les credencials OAuth de Google incloses amb l’app.",
-      "text_extraction_ocr_setup_invalid_credentials": "L’OCR no està disponible en aquest build de l’app perquè les credencials OAuth de Google incloses amb l’app són invàlides.",
-      "text_extraction_ocr_quota_or_rate_limited": "L’OCR està bloquejat temporalment per quota/límit de taxa. Espera i torna-ho a provar.",
-      "text_extraction_ocr_runtime_error": "S’ha produït un error d’execució OCR durant extracció. Revisa la consola i torna-ho a provar.",
-      "text_extraction_ocr_cancelled": "L’extracció OCR s’ha cancel·lat.",
-      "text_extraction_ocr_cleanup_warning": "L’OCR ha acabat, però ha fallat la neteja temporal remota del fitxer. Revisa la teva carpeta de Google Drive.",
-      "text_extraction_native_runtime_error": "S’ha produït un error d’execució d’extracció nativa durant extracció. Revisa la consola i torna-ho a provar.",
-      "text_extraction_native_unreadable_or_corrupt": "El fitxer seleccionat és il·legible o està corrupte per a l’extracció nativa.",
-      "text_extraction_native_encrypted_or_password_protected": "El PDF seleccionat està encriptat o protegit amb contrasenya i no es pot extreure per ruta nativa.",
-      "text_extraction_native_cancelled": "L’extracció nativa s’ha cancel·lat.",
-      "text_extraction_unsupported_format": "Aquest format de fitxer no és compatible amb l’extracció de text.",
-      "wip_diseno_skins": "WIP: Aquí s’obrirà el selector de skins en una versió futura.",
-      "wip_diseno_crono": "WIP: Aquí s’obrirà la configuració del cronòmetre flotant en una versió futura.",
-      "wip_diseno_fuentes": "WIP: Aquí s’obrirà el selector de tipus de lletra en una versió futura.",
-      "wip_diseno_colores": "WIP: Aquí s’obrirà el selector de colors en una versió futura.",
-      "wip_shortcuts": "WIP: Aquí s’obrirà el selector de dreceres de teclat en una versió futura.",
-      "reading_test_unavailable": "La funcionalitat del test de velocitat de lectura no està disponible.",
-      "reading_test_precondition_blocked": "El test de velocitat de lectura només es pot iniciar des d’un estat estable de l’app. Tanca les finestres secundàries i assegura’t que el cronòmetre estigui aturat.",
-      "reading_test_pool_error": "S’ha produït un error en revisar el pool del test de velocitat de lectura.",
-      "reading_test_no_matching_files": "No queden fitxers de test sense usar que coincideixin amb la selecció actual.",
-      "reading_test_visible_empty_bundled_hidden": "Els fitxers de prova integrats estan ocults i ara no hi ha fitxers de prova visibles sense usar disponibles. Torna a mostrar els fitxers integrats o importa'n més per continuar.",
-      "reading_test_current_text_empty": "El text actual està buit. Carrega o escriu un text abans d’iniciar el test amb el text actual.",
-      "reading_test_result_invalid": "El resultat del test no s’ha pogut convertir en un WPM vàlid. El flux ha acabat sense obrir el modal de preset.",
-      "reading_test_result_unavailable": "No s’ha pogut mostrar el resultat de velocitat de lectura. El flux ha continuat.",
-      "reading_test_preset_unavailable": "No s’ha pogut obrir el modal de preset després del test.",
-      "reading_test_questions_unavailable": "No s’ha pogut obrir el modal de preguntes de comprensió. El flux ha acabat abans de crear el preset.",
-      "reading_test_pool_import_failed": "No s’han pogut importar els fitxers del test de velocitat de lectura.",
-      "reading_test_start_failed": "No s’ha pogut iniciar el test de velocitat de lectura.",
-      "text_editor_start_failed": "No s’ha pogut iniciar l’Editor de Text.",
-      "text_editor_start_timeout": "L’Editor de Text ha trigat massa a iniciar-se i s’ha tancat.",
-      "reading_test_cancelled": "El test de velocitat de lectura s’ha cancel·lat.",
-      "reading_test_cancelled_window_closed": "El test de velocitat de lectura s’ha cancel·lat perquè una de les finestres de sessió s’ha tancat."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Text massa gran per enganxar-lo directament. Fes servir els botons de la finestra principal.",
-      "drop_too_big": "Text arrossegat massa gran. Fes servir els botons de la finestra principal.",
-      "paste_no_text": "El porta-retalls no conté text pla.",
-      "drop_no_text": "Arrossegar i deixar anar: no s’ha detectat text pla.",
-      "type_limit": "No és possible escriure més text: ja s’ha assolit la mida màxima permesa.",
-      "paste_limit": "No és possible enganxar més text: ja s’ha assolit la mida màxima permesa.",
-      "drop_limit": "No és possible deixar anar més text: ja s’ha assolit la mida màxima permesa.",
-      "paste_truncated": "El text enganxat s’ha truncat per no superar el màxim permès.",
-      "drop_truncated": "El text arrossegat superava l’espai disponible i s’ha truncat.",
-      "text_truncated": "El text s’ha truncat per ajustar-se al límit màxim de l’aplicació.",
-      "calc_error": "S’ha produït un error en calcular. Revisa la consola."
-    },
-    "preset_alerts": {
-      "name_empty": "El nom no pot estar buit.",
-      "wpm_invalid": "WPM ha de ser un nombre entre {min} i {max}.",
-      "create_error": "S’ha produït un error en crear el preset. Revisa la consola.",
-      "edit_error": "S’ha produït un error en editar el preset. Revisa la consola.",
-      "process_error": "S’ha produït un error en processar el preset. Revisa la consola."
+      "close_aria": "Tanca el diàleg de l'extensió del navegador",
+      "alerts": {
+        "modal_open_blocked": "El diàleg de l’extensió del navegador no es pot obrir ara mateix."
+      }
     },
     "info": {
       "loading": "Carregant...",

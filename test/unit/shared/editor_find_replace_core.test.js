@@ -4,68 +4,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const {
-  selectionMatchesLiteralQuery,
+  findLiteralMatchRanges,
+  resolveLiteralMatchByOrdinal,
   computeLiteralReplaceAll,
 } = require('../../../public/js/lib/editor_find_replace_core');
-
-test('selectionMatchesLiteralQuery uses case-insensitive matching by default', () => {
-  assert.equal(
-    selectionMatchesLiteralQuery({
-      value: 'uno Prueba dos',
-      selectionStart: 4,
-      selectionEnd: 10,
-      query: 'prueba',
-      matchCase: false,
-    }),
-    true
-  );
-
-  assert.equal(
-    selectionMatchesLiteralQuery({
-      value: 'uno Prueba dos',
-      selectionStart: 4,
-      selectionEnd: 10,
-      query: 'PRUEBAS',
-      matchCase: false,
-    }),
-    false
-  );
-});
-
-test('selectionMatchesLiteralQuery folds accents when matchCase is off', () => {
-  assert.equal(
-    selectionMatchesLiteralQuery({
-      value: 'uno canción dos',
-      selectionStart: 4,
-      selectionEnd: 11,
-      query: 'cancion',
-      matchCase: false,
-    }),
-    true
-  );
-
-  assert.equal(
-    selectionMatchesLiteralQuery({
-      value: 'uno cancion dos',
-      selectionStart: 4,
-      selectionEnd: 11,
-      query: 'canción',
-      matchCase: false,
-    }),
-    true
-  );
-
-  assert.equal(
-    selectionMatchesLiteralQuery({
-      value: 'uno canción dos',
-      selectionStart: 4,
-      selectionEnd: 11,
-      query: 'cancion',
-      matchCase: true,
-    }),
-    false
-  );
-});
 
 test('computeLiteralReplaceAll replaces left-to-right with non-overlapping matches', () => {
   const result = computeLiteralReplaceAll({
@@ -120,5 +62,41 @@ test('computeLiteralReplaceAll returns unchanged text when there are no matches 
       replacements: 0,
       nextValue: 'alpha beta',
     }
+  );
+});
+
+test('findLiteralMatchRanges returns non-overlapping literal ranges left-to-right', () => {
+  assert.deepEqual(
+    findLiteralMatchRanges({
+      value: 'uno cancion dos canción tres',
+      query: 'cancion',
+      matchCase: false,
+    }),
+    [
+      { start: 4, end: 11 },
+      { start: 16, end: 23 },
+    ]
+  );
+});
+
+test('resolveLiteralMatchByOrdinal returns the requested match range', () => {
+  assert.deepEqual(
+    resolveLiteralMatchByOrdinal({
+      value: 'alpha beta alpha beta',
+      query: 'beta',
+      ordinal: 2,
+      matchCase: false,
+    }),
+    { start: 17, end: 21 }
+  );
+
+  assert.equal(
+    resolveLiteralMatchByOrdinal({
+      value: 'alpha beta',
+      query: 'beta',
+      ordinal: 3,
+      matchCase: false,
+    }),
+    null
   );
 });

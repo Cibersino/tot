@@ -205,7 +205,7 @@
       }
     }
     if (!filePaths.length) {
-      window.Notify.notifyMain('renderer.alerts.text_extraction_drop_invalid_file');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.drop_invalid_file');
       return;
     }
 
@@ -218,13 +218,13 @@
         });
       } catch (err) {
         log.error('Dropped batch text extraction flow failed unexpectedly:', err);
-        window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       }
       return;
     }
     if (typeof startFromFilePath !== 'function') {
       log.error('startFromFilePath dependency missing; cannot continue dropped text extraction flow.');
-      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
 
@@ -235,7 +235,7 @@
       });
     } catch (err) {
       log.error('Dropped text extraction flow failed unexpectedly:', err);
-      window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
     }
   }
 

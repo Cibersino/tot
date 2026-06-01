@@ -12,8 +12,35 @@ const {
   getTestTempDir,
 } = require('../../helpers/test_temp_paths');
 const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
+const {
   inspectPdfFile,
 } = require('../../../electron/text_extraction_platform/text_extraction_pdf_page_selection');
+
+const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
+const SCANNED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
+const ENCRYPTED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/encrypted_selectable_text_fixture.pdf');
+const RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR = path.join(
+  getTestTempDir('retained-generated-pdfs'),
+  'tests'
+);
+const GENERATED_PDF_SUBSET_FIXTURE_DIR = getTestTempDir('generated-pdf-subset-fixtures');
+const CORE_MODULE_PATH = path.resolve(
+  __dirname,
+  '../../../electron/text_extraction_platform/text_extraction_prepare_execute_core.js'
+);
+
+function loadCoreExports() {
+  const restoreElectronModule = installElectronModuleMock();
+  delete require.cache[CORE_MODULE_PATH];
+  try {
+    return require(CORE_MODULE_PATH);
+  } finally {
+    delete require.cache[CORE_MODULE_PATH];
+    restoreElectronModule();
+  }
+}
 
 const {
   executePreparedImport,
@@ -24,16 +51,7 @@ const {
   resolveInspectPayload,
   resolvePreparePayload,
   resolvePreparedRoute,
-} = require('../../../electron/text_extraction_platform/text_extraction_prepare_execute_core');
-
-const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
-const SCANNED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
-const ENCRYPTED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/encrypted_selectable_text_fixture.pdf');
-const RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR = path.join(
-  getTestTempDir('retained-generated-pdfs'),
-  'tests'
-);
-const GENERATED_PDF_SUBSET_FIXTURE_DIR = getTestTempDir('generated-pdf-subset-fixtures');
+} = loadCoreExports();
 
 function loadCoreWithMocks({
   mockRunNativeExtractionRoute = null,
@@ -42,11 +60,9 @@ function loadCoreWithMocks({
   mockProbeNativePdfSelectableText = null,
   heavyPdfSplitCoreOverrides = null,
   pdfPageSelectionOverrides = null,
+  electronOverrides = null,
 } = {}) {
-  const coreModulePath = path.resolve(
-    __dirname,
-    '../../../electron/text_extraction_platform/text_extraction_prepare_execute_core.js'
-  );
+  const coreModulePath = CORE_MODULE_PATH;
   const nativeRouteModulePath = path.resolve(
     __dirname,
     '../../../electron/text_extraction_platform/native_extraction_route.js'
@@ -78,6 +94,7 @@ function loadCoreWithMocks({
   const originalNativePdfProbeModule = require.cache[nativePdfProbeModulePath];
   const originalHeavyPdfSplitCoreModule = require.cache[heavyPdfSplitCoreModulePath];
   const originalPdfPageSelectionModule = require.cache[pdfPageSelectionModulePath];
+  const restoreElectronModule = installElectronModuleMock(electronOverrides);
 
   if (typeof mockRunNativeExtractionRoute === 'function') {
     require.cache[nativeRouteModulePath] = {
@@ -189,6 +206,7 @@ function loadCoreWithMocks({
     } else if (pdfPageSelectionOverrides && typeof pdfPageSelectionOverrides === 'object') {
       delete require.cache[pdfPageSelectionModulePath];
     }
+    restoreElectronModule();
   }
 
   return {
@@ -514,7 +532,7 @@ test('prepareSelectedFile returns a structured unsupported-format failure when n
   assert.equal(result.executionKind, null);
   assert.equal(result.routeMetadata.triageReason, 'unsupported_format');
   assert.deepEqual(result.routeMetadata.availableRoutes, []);
-  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_unsupported_format');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.unsupported_format');
   assert.equal(result.error.code, 'unsupported_format');
 });
 
@@ -578,7 +596,7 @@ test('executePreparedImport treats execution-time unsupported format as a native
   assert.equal(result.executionKind, 'native');
   assert.equal(result.result.state, 'failure');
   assert.equal(result.result.error.code, 'unsupported_format');
-  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_native_runtime_error');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.native.runtime_error');
 });
 
 test('inspectSelectedFile returns PDF page-count metadata for selectable fixture', async () => {
@@ -605,7 +623,7 @@ test('inspectSelectedFile returns neutral PDF alert keys for encrypted PDFs', as
   assert.equal(result.error.code, 'native_encrypted_or_password_protected');
   assert.equal(
     result.primaryAlertKey,
-    'renderer.alerts.text_extraction_pdf_encrypted_or_password_protected'
+    'renderer.text_extraction.alerts.pdf.encrypted_or_password_protected'
   );
 });
 
@@ -880,7 +898,7 @@ test('prepareSelectedFile returns neutral PDF alert keys for encrypted PDFs', as
   assert.equal(result.error.code, 'native_encrypted_or_password_protected');
   assert.equal(
     result.primaryAlertKey,
-    'renderer.alerts.text_extraction_pdf_encrypted_or_password_protected'
+    'renderer.text_extraction.alerts.pdf.encrypted_or_password_protected'
   );
 });
 
@@ -904,7 +922,7 @@ test('executePreparedImport rejects unresolved route choice before starting work
   assert.deepEqual(result, {
     ok: false,
     code: 'ROUTE_CHOICE_REQUIRED',
-    primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_error',
+    primaryAlertKey: 'renderer.text_extraction.alerts.route_choice_error',
   });
   assert.deepEqual(controller.enterCalls, []);
   assert.deepEqual(controller.exitCalls, []);
@@ -1134,7 +1152,7 @@ test('executePreparedImport skips route dispatch after cancellation during subse
   assert.equal(result.result.error.code, 'aborted_by_user');
   assert.equal(result.result.error.detailsSafeForLogs.stage, 'pre_route_dispatch');
   assert.equal(result.result.error.detailsSafeForLogs.reason, 'execution_ownership_lost');
-  assert.equal(result.primaryAlertKey, 'renderer.alerts.text_extraction_native_cancelled');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.native.cancelled');
   assert.equal(nativeRouteCalls, 0);
   assert.equal(cleanupCalls, 1);
   assert.deepEqual(controller.exitCalls, []);

@@ -9,6 +9,9 @@ const path = require('node:path');
 const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
 function createIpcMainDouble() {
   const handlers = new Map();
@@ -31,8 +34,8 @@ function loadSnapshotsMainWithMocks({
   rootDir,
   currentText = 'Snapshot text',
   shellOpenPathResult = '',
+  messageBoxResponse = 0,
 }) {
-  const electronModulePath = require.resolve('electron');
   const snapshotsModulePath = path.resolve(
     __dirname,
     '../../../electron/current_text_snapshots_main.js'
@@ -54,43 +57,38 @@ function loadSnapshotsMainWithMocks({
     '../../../electron/menu_builder.js'
   );
 
-  const originalElectronModule = require.cache[electronModulePath];
   const originalSnapshotsModule = require.cache[snapshotsModulePath];
   const originalFsStorageModule = require.cache[fsStorageModulePath];
   const originalTextStateModule = require.cache[textStateModulePath];
   const originalSettingsModule = require.cache[settingsModulePath];
   const originalMenuBuilderModule = require.cache[menuBuilderModulePath];
   const openPathCalls = [];
-
-  require.cache[electronModulePath] = {
-    id: electronModulePath,
-    filename: electronModulePath,
-    loaded: true,
-    exports: {
-      dialog: {
-        async showSaveDialog() {
-          throw new Error('showSaveDialog should not be used in non-interactive snapshot tests');
-        },
-        async showOpenDialog() {
-          throw new Error('showOpenDialog should not be used in this snapshot test');
-        },
-        async showMessageBox() {
-          return { response: 0 };
-        },
+  const showMessageBoxCalls = [];
+  const restoreElectronModule = installElectronModuleMock({
+    dialog: {
+      async showSaveDialog() {
+        throw new Error('showSaveDialog should not be used in non-interactive snapshot tests');
       },
-      BrowserWindow: {
-        fromWebContents(webContents) {
-          return webContents === senderWin.webContents ? senderWin : null;
-        },
+      async showOpenDialog() {
+        throw new Error('showOpenDialog should not be used in this snapshot test');
       },
-      shell: {
-        async openPath(targetPath) {
-          openPathCalls.push(targetPath);
-          return shellOpenPathResult;
-        },
+      async showMessageBox(ownerWin, options) {
+        showMessageBoxCalls.push({ ownerWin, options });
+        return { response: messageBoxResponse };
       },
     },
-  };
+    BrowserWindow: {
+      fromWebContents(webContents) {
+        return webContents === senderWin.webContents ? senderWin : null;
+      },
+    },
+    shell: {
+      async openPath(targetPath) {
+        openPathCalls.push(targetPath);
+        return shellOpenPathResult;
+      },
+    },
+  });
 
   require.cache[fsStorageModulePath] = {
     id: fsStorageModulePath,
@@ -162,12 +160,7 @@ function loadSnapshotsMainWithMocks({
     } else {
       delete require.cache[snapshotsModulePath];
     }
-
-    if (originalElectronModule) {
-      require.cache[electronModulePath] = originalElectronModule;
-    } else {
-      delete require.cache[electronModulePath];
-    }
+    restoreElectronModule();
 
     if (originalFsStorageModule) {
       require.cache[fsStorageModulePath] = originalFsStorageModule;
@@ -198,6 +191,7 @@ function loadSnapshotsMainWithMocks({
     snapshotsMain,
     restore,
     openPathCalls,
+    showMessageBoxCalls,
   };
 }
 
@@ -286,4 +280,77 @@ test('open snapshots folder delegates to shell.openPath using the snapshots root
     path: rootDir,
   });
   assert.deepEqual(openPathCalls, [rootDir]);
+});
+
+test('snapshot load skips overwrite confirmation when current text is empty', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-load-empty');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const snapshotPath = path.join(rootDir, 'empty-target.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Loaded snapshot text' }, null, 2));
+
+  const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: '',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/empty-target.json' }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.filename, 'empty-target.json');
+  assert.equal(showMessageBoxCalls.length, 0);
+});
+
+test('snapshot load still asks for overwrite confirmation when current text is not empty', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-load-confirm');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const snapshotPath = path.join(rootDir, 'confirm-target.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Loaded snapshot text' }, null, 2));
+
+  const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'Existing text',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/confirm-target.json' }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(showMessageBoxCalls.length, 1);
 });

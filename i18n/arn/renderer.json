@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Amuln antü: ",
         "text_extraction_drop_here": "Eltunge archivo faw, wirin extraer aal"
+      },
+      "alerts": {
+        "clipboard_too_large": "Portapapeles wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
+        "apply_too_large": "Tüfachi texto fütra rume amuleay, apply no pepi. Pichiñma ka wiño küdaw.",
+        "apply_truncated": "Texto trunkael aplicación limite mew konal.",
+        "append_text_limit": "No pepi append texto: fütra tamaño limite mew puwüyi.",
+        "overwrite_clipboard_error": "Kiñe error müley portapapeles mew texto reemplazar mew.",
+        "append_clipboard_error": "Kiñe error müley portapapeles mew texto append mew.",
+        "clear_error": "Welulkuy lifün mu. Kintunge consola.",
+        "current_text_processing_locked": "Current text petu updatekünuwküley. Main window interacciones bloqueadongey texto asentamün mew.",
+        "current_text_recount_locked": "Current text resultados petu wiño rakinmekey. Main window interacciones bloqueadongey rakin asentamün mew.",
+        "wip": {
+          "design_skins": "WIP: Faw nülai düllin skins küpalechi version mu.",
+          "floating_stopwatch": "WIP: Faw nülai configuration üngümwe küpalechi version mu.",
+          "fonts": "WIP: Faw nülai düllin wirintun küpalechi version mu.",
+          "colors": "WIP: Faw nülai düllin vvün küpalechi version mu.",
+          "shortcuts": "WIP: Faw nülai düllin shortcuts küpalechi version mu."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Penge PDF dewmal",
         "cancel_button": "Katrüntun",
         "close_aria": "Nürüfün diálogo fütra PDF OCR mew"
+      },
+      "alerts": {
+        "start_error": "Extracción mu welulkuy. Kintunge consola.",
+        "precondition_blocked": "Extracción amulal, kom ventanas secundarias nürüfünge ka üngümwe mütüntunge.",
+        "precondition_error": "Extracción precondiciones kintun mu welulkuy. Kintunge consola.",
+        "processing_locked": "Extracción petu küzawüley. Tüfa processing afingelu kam abortaringelu mew, ventana principal mu interacciones bloqueadongey.",
+        "abort_error": "Extracción aborto mütrümün mu welulkuy. Kintunge consola.",
+        "cancellation_requested": "Katrüntun ngillañmagey. Üngümnge fantepu extracción afülu.",
+        "cancellation_complete": "Katrüntun afuy.",
+        "drop_invalid_file": "Eltungechi dungu no rüf local archivo.",
+        "generated_pdf_cleanup_warning": "Extracción afiy, welu pepilay ñi müleweyümew liftungeal kiñe local PDF dewmal.",
+        "route_choice_error": "Kiñe error müley extracción route dullin mew.",
+        "generated_pdf_reveal_failed": "Pepilay ñi pengeal elkun PDF. Azkintunge petu mülelechi archivo.",
+        "apply_error": "Nentulelu wirin püneal mu welulkuy. Kintunge consola ka wiño küdaw.",
+        "prepare_invalid": "Extracción mu elkünütuyechi solicitud no küme müley. Wiño amulnge kom rüpü.",
+        "unsupported_format": "Tüfachi archivo formato no soportadongey texto extracción mew.",
+        "pdf": {
+          "unreadable_or_corrupt": "Tüfachi PDF ngelay ñi küme chillkatungeal kam weñangekey. Azkintunge archivo ka wiñol küdawtunge.",
+          "encrypted_or_password_protected": "Tüfachi PDF müley ñi nürüfün kam contraseña mew kuñiwtun. Nülalnge ka wiñol küdawtunge.",
+          "page_count_unavailable": "Pepilay ñi azkintungeal chumten püle niefi tüfachi PDF. Azkintunge archivo ka wiñol küdawtunge.",
+          "page_selection_invalid": "PDF püle zullin rango küme noley. Kümeeltunge rango ka wiñol küdawtunge.",
+          "subset_creation_failed": "Pepilay ñi dewmalngeal PDF zullin püle mew extracción ñi küdaw mew. Azkintunge archivo ka wiñol küdawtunge."
+        },
+        "ocr": {
+          "unavailable": "OCR mülelay. Kintunge setup/auth ka wiño küdaw.",
+          "activation_required": "OCR activación müleyafuy. Google OCR mew loginünge ka wiño küdaw.",
+          "activation_success": "OCR activación afmatuy. Extracción wiño küdawüley.",
+          "activation_cancelled": "OCR activación katrüntuy. Extracción amulalelay.",
+          "token_state_invalid": "Google OCR ñi konün elkünuel kümelay. Ka nütufinge Google OCR ka wiño fementunge.",
+          "activation_failed": "OCR activación welulkuy. Kintunge setup/auth ka wiño küdaw.",
+          "enable_success": "Google OCR activadotuy.",
+          "enable_cancelled": "Google OCR activación katrüntuy.",
+          "enable_failed": "Pepilay activar Google OCR. Kintunge setup/auth ka wiño küdaw.",
+          "disconnect_success": "Google OCR nürüftuy. Google mu elkünutulu token revocadotuy ka local login estado ñamümtuy.",
+          "disconnect_not_connected": "Tüfachi app instancia mew Google OCR petu konektalelay.",
+          "disconnect_failed": "Google OCR nürüfün welulkuy. Elkünutulu login estado no ñamümtuy.",
+          "connectivity_failed": "OCR internet conexión müleyafuy. Kintunge tami conexión ka wiño küdaw.",
+          "setup_missing_credentials": "OCR mew credentials.json faltaley. Düllinge kiñe valid Google OAuth credenciales archivo ka wiño küdaw.",
+          "setup_invalid_credentials": "Düllingelu credenciales archivo no küme Google OAuth mew. Düllinge kiñe valid credentials.json ka wiño küdaw.",
+          "quota_or_rate_limited": "OCR cuota/rate limit mew pichi antü bloqueadongey. Pichi alünnge ka wiño küdaw.",
+          "runtime_error": "Extracción mew OCR runtime welulkuy. Kintunge consola ka wiño küdaw.",
+          "cancelled": "OCR extracción katrüntuy.",
+          "cleanup_warning": "OCR afi tañi küdaw, welu pepilay lifeltuam ti chillka kamapu mu. Adkintunge mi carpeta Google Drive mu."
+        },
+        "batch_ocr": {
+          "activation_required": "Tüfachi lote mew müley OCR items, welu Google OCR activado ngelay. Püne Düllin > Activar Google OCR, ka wiño amulnge lote.",
+          "token_state_invalid": "Tüfachi lote mew müley OCR items, welu Google OCR login estado elkünulu no küme. Püne ka Düllin > Activar Google OCR, ka wiño amulnge lote.",
+          "connectivity_failed": "Tüfachi batch mew müley OCR items, welu OCR Internet conexión duamniey. Konexión pefiñ ka extracción ñi wüñol mew wiño küdaw.",
+          "quota_or_rate_limited": "Tüfachi batch mew müley OCR items, welu OCR quota/rate limits mew temporal bloqueado. Üngüm ka extracción ñi wüñol mew wiño küdaw.",
+          "unavailable": "Tüfachi lote mew müley OCR items, welu Google OCR fantepu mülelay. OCR petu activado ngelaymew, püne Düllin > Activar Google OCR. Femngelaymew, kintunge OCR setup/auth ka wiño küdaw petu lote amulnolu."
+        },
+        "native": {
+          "runtime_error": "Extracción mew extracción nativa runtime welulkuy. Kintunge consola ka wiño küdaw.",
+          "unreadable_or_corrupt": "Düllingelu archivo no pepikawün kam corrupto müley extracción nativa mew.",
+          "encrypted_or_password_protected": "Düllingelu PDF encriptadongey kam password mew protegidongey; femngechi pepi ngelay nativa rüpü mew extraer.",
+          "cancelled": "Extracción nativa katrüntuy."
+        }
       }
     },
     "editor": {
@@ -222,10 +297,23 @@
       "decrease_text_size": "Pichikünun wirin",
       "increase_text_size": "Fütrakünun wirin",
       "reset_text_size": "Wiño püneal wirin",
-      "text_size_value": "{value} px",
       "read_progress_label": "Chillkatun",
-      "read_progress_aria": "Chillkatun amun: {value}",
-      "clear_title": "Lifün"
+      "clear_title": "Lifün",
+      "alerts": {
+        "start_failed": "Text Editor no pudo iniciar.",
+        "start_timeout": "Text Editor fütrañmaw iniciar mew ka nürüfüngey.",
+        "paste_too_big": "Wirin rume fütra pültrüal. Püne tati botones ventana mu.",
+        "drop_too_big": "Wirin küpalyelu rume fütra. Püne tati botones ventana mu.",
+        "paste_no_text": "Portapapeles nielay wirin.",
+        "drop_no_text": "Küpalyelu: nielay wirin faw.",
+        "type_limit": "Pewfala wirin: afiy tachi fütra wirin.",
+        "paste_limit": "Pewfala pültrün: afiy tachi fütra wirin.",
+        "drop_limit": "Pepi ngelay nütrofal kangelu: afiy tachi fütra límite.",
+        "paste_truncated": "Pültrün wirin pichikünutuy.",
+        "drop_truncated": "Küpalyelu wirin afiy ka pichikünutuy.",
+        "text_truncated": "Wirin pichikünutuy tachi app mew.",
+        "calc_error": "Welulkuy rakiduam mu. Kintunge consola."
+      }
     },
     "editor_find": {
       "input_placeholder": "Kintun...",
@@ -244,6 +332,17 @@
       "replace_timeout": "Alüñmay ti llowtugen. Wiño pepi deumange.",
       "status_no_matches": "Chem no rume kintulay",
       "status_empty_query": "Wiringe kintuael"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot elküntuy.",
+        "save_error": "Chem welulkuy elkünun snapshot mu.",
+        "load_success": "Snapshot kintunuy.",
+        "load_error": "Chem welulkuy kintunun snapshot mu.",
+        "outside": "Snapshot müley snapshot carpeta mew ka.",
+        "truncated": "Snapshot afiy ka pichikünutuy.",
+        "unavailable": "Snapshot küzawtuwe chem müley."
+      }
     },
     "snapshot_save_tags": {
       "title": "Elkünun textu snapshot",
@@ -447,6 +546,22 @@
         "buttons": {
           "continue": "Amuleal"
         }
+      },
+      "alerts": {
+        "unavailable": "Pepiluwün ñi pürüm chillkatun müleyay.",
+        "precondition_blocked": "Pepiluwün ñi pürüm chillkatun yalltuay müten app llowkülelu mu. Ñafün kachu ventanakuna ka kintunge feyti relüf ñafküley.",
+        "pool_error": "Wedalküley kintun trawün (pool) pepiluwal.",
+        "no_matching_files": "Ngelay pepiluwal we chillka feypingen mu.",
+        "visible_empty_bundled_hidden": "Ti app mew mülelu test archivos ellkañmangeygün ka fantepu ngelay visible test archivos petu nülay. Wiño pepefinge feyengün kam importafinge doy archivos tami amutual.",
+        "current_text_empty": "Ngelay chillka fantepu. Yafmatunge kam wirintunge chillka petu yalltun.",
+        "result_invalid": "Chum tripachi pepiluwün gelay WPM. Amulelay kintual modal preset.",
+        "result_unavailable": "Pepilay pengelün chum tripachi pürüm chillkatun. Feymew amutuy ti rüpü.",
+        "preset_unavailable": "Ngelay kintual modal preset pepiluwün mu.",
+        "questions_unavailable": "Ngelay kintual modal ramtun. Amulelay yalltul preset.",
+        "pool_import_failed": "Pepiluwün ñi pürüm chillkatun archivos koneltulay.",
+        "start_failed": "Ngelay yalltuwal pepiluwün ñi pürüm chillkatun.",
+        "cancelled": "Pepiluwün ñi pürüm chillkatun katrütungey.",
+        "cancelled_window_closed": "Pepiluwün ñi pürüm chillkatun katrütungey ñafün mu kiñe ventana."
       }
     },
     "modal_preset": {
@@ -455,135 +570,43 @@
       "heading_new": "Dewman we preset",
       "heading_edit": "Wirin düllilu preset",
       "name": "Üi:",
+      "name_placeholder": "Preset ñi üy",
       "wpm": "WPM:",
       "description": "Nütram:",
-      "placeholder": "Pichi nütram...",
+      "description_placeholder": "Pichi nütram...",
       "char_count": "{remaining} wirin müley",
       "hint": "Preset elkünütuymi tami configuración mew.",
       "cancel": "Katrüntun",
-      "save": "Elkünun"
+      "save": "Elkünun",
+      "alerts": {
+        "unavailable": "Preset diálogo tüfachi app build mew no nielay.",
+        "open_error": "Preset diálogo nülal mew welulkuy. Kintunge consola.",
+        "name_empty": "Üi welli mülelay.",
+        "wpm_invalid": "WPM müley {min} ka {max} mu.",
+        "create_error": "Welulkuy dewman preset mu. Kintunge consola.",
+        "edit_error": "Welulkuy wirin preset mu. Kintunge consola.",
+        "process_error": "Welulkuy küzaw preset mu. Kintunge consola."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Ngelay preset caché mu.",
+        "delete_error": "Welulkuy ñamümün preset mu. Kintunge consola.",
+        "restore_error": "Welulkuy wiñotun mu. Kintunge consola.",
+        "open_folder_unsupported": "Pewfala nülan presets carpeta faw.",
+        "open_folder_error": "Welulkuy nülan presets carpeta mu. Kintunge consola.",
+        "open_default_folder_failed": "Pewfala nülan presets carpeta müyey. Kintunge consola."
+      }
     },
     "browser_extension": {
       "title": "Extensión navegador mew",
       "subtitle": "Tiempo de lectura",
       "availability": "Chrome mew müley feichi. Püñeñ mew kake navegadores müleay.",
       "chrome_store_aria": "Nülan página extensión Chrome Web Store mew",
-      "close_aria": "Nürüfün diálogo extensión navegador mew"
-    },
-    "alerts": {
-      "clipboard_too_large": "Portapapeles wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
-      "apply_too_large": "Tüfachi texto fütra rume amuleay, apply no pepi. Pichiñma ka wiño küdaw.",
-      "apply_truncated": "Texto trunkael aplicación limite mew konal.",
-      "append_text_limit": "No pepi append texto: fütra tamaño limite mew puwüyi.",
-      "overwrite_clipboard_error": "Kiñe error müley portapapeles mew texto reemplazar mew.",
-      "append_clipboard_error": "Kiñe error müley portapapeles mew texto append mew.",
-      "clear_error": "Welulkuy lifün mu. Kintunge consola.",
-      "snapshot_save_success": "Snapshot elküntuy.",
-      "snapshot_save_error": "Chem welulkuy elkünun snapshot mu.",
-      "snapshot_load_success": "Snapshot kintunuy.",
-      "snapshot_load_error": "Chem welulkuy kintunun snapshot mu.",
-      "snapshot_outside": "Snapshot müley snapshot carpeta mew ka.",
-      "snapshot_truncated": "Snapshot afiy ka pichikünutuy.",
-      "snapshot_unavailable": "Snapshot küzawtuwe chem müley.",
-      "browser_extension_modal_open_blocked": "Navegador extensión diálogo fewla nülalay.",
-      "preset_not_found": "Ngelay preset caché mu.",
-      "preset_modal_unavailable": "Preset diálogo tüfachi app build mew no nielay.",
-      "preset_modal_open_error": "Preset diálogo nülal mew welulkuy. Kintunge consola.",
-      "delete_error": "Welulkuy ñamümün preset mu. Kintunge consola.",
-      "restore_error": "Welulkuy wiñotun mu. Kintunge consola.",
-      "open_presets_unsupported": "Pewfala nülan presets carpeta faw.",
-      "open_presets_error": "Welulkuy nülan presets carpeta mu. Kintunge consola.",
-      "open_presets_fail": "Pewfala nülan presets carpeta müyey. Kintunge consola.",
-      "text_extraction_error": "Extracción mu welulkuy. Kintunge consola.",
-      "text_extraction_precondition_blocked": "Extracción amulal, kom ventanas secundarias nürüfünge ka üngümwe mütüntunge.",
-      "text_extraction_precondition_error": "Extracción precondiciones kintun mu welulkuy. Kintunge consola.",
-      "text_extraction_processing_locked": "Extracción petu küzawüley. Tüfa processing afingelu kam abortaringelu mew, ventana principal mu interacciones bloqueadongey.",
-      "current_text_processing_locked": "Current text petu updatekünuwküley. Main window interacciones bloqueadongey texto asentamün mew.",
-      "current_text_recount_locked": "Current text resultados petu wiño rakinmekey. Main window interacciones bloqueadongey rakin asentamün mew.",
-      "text_extraction_abort_error": "Extracción aborto mütrümün mu welulkuy. Kintunge consola.",
-      "text_extraction_cancellation_requested": "Katrüntun ngillañmagey. Üngümnge fantepu extracción afülu.",
-      "text_extraction_cancellation_complete": "Katrüntun afuy.",
-      "text_extraction_drop_invalid_file": "Eltungechi dungu no rüf local archivo.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Tüfachi PDF ngelay ñi küme chillkatungeal kam weñangekey. Azkintunge archivo ka wiñol küdawtunge.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Tüfachi PDF müley ñi nürüfün kam contraseña mew kuñiwtun. Nülalnge ka wiñol küdawtunge.",
-      "text_extraction_pdf_page_count_unavailable": "Pepilay ñi azkintungeal chumten püle niefi tüfachi PDF. Azkintunge archivo ka wiñol küdawtunge.",
-      "text_extraction_pdf_page_selection_invalid": "PDF püle zullin rango küme noley. Kümeeltunge rango ka wiñol küdawtunge.",
-      "text_extraction_pdf_subset_creation_failed": "Pepilay ñi dewmalngeal PDF zullin püle mew extracción ñi küdaw mew. Azkintunge archivo ka wiñol küdawtunge.",
-      "text_extraction_generated_pdf_cleanup_warning": "Extracción afiy, welu pepilay ñi müleweyümew liftungeal kiñe local PDF dewmal.",
-      "text_extraction_route_choice_error": "Kiñe error müley extracción route dullin mew.",
-      "text_extraction_generated_pdf_reveal_failed": "Pepilay ñi pengeal elkun PDF. Azkintunge petu mülelechi archivo.",
-      "text_extraction_apply_error": "Nentulelu wirin püneal mu welulkuy. Kintunge consola ka wiño küdaw.",
-      "text_extraction_prepare_invalid": "Extracción mu elkünütuyechi solicitud no küme müley. Wiño amulnge kom rüpü.",
-      "text_extraction_batch_ocr_activation_required": "Tüfachi lote mew müley OCR items, welu Google OCR activado ngelay. Püne Düllin > Activar Google OCR, ka wiño amulnge lote.",
-      "text_extraction_batch_ocr_token_state_invalid": "Tüfachi lote mew müley OCR items, welu Google OCR login estado elkünulu no küme. Püne ka Düllin > Activar Google OCR, ka wiño amulnge lote.",
-      "text_extraction_batch_ocr_connectivity_failed": "Tüfachi batch mew müley OCR items, welu OCR Internet conexión duamniey. Konexión pefiñ ka extracción ñi wüñol mew wiño küdaw.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Tüfachi batch mew müley OCR items, welu OCR quota/rate limits mew temporal bloqueado. Üngüm ka extracción ñi wüñol mew wiño küdaw.",
-      "text_extraction_batch_ocr_unavailable": "Tüfachi lote mew müley OCR items, welu Google OCR fantepu mülelay. OCR petu activado ngelaymew, püne Düllin > Activar Google OCR. Femngelaymew, kintunge OCR setup/auth ka wiño küdaw petu lote amulnolu.",
-      "text_extraction_ocr_unavailable": "OCR mülelay. Kintunge setup/auth ka wiño küdaw.",
-      "text_extraction_ocr_activation_required": "OCR activación müleyafuy. Google OCR mew loginünge ka wiño küdaw.",
-      "text_extraction_ocr_activation_success": "OCR activación afmatuy. Extracción wiño küdawüley.",
-      "text_extraction_ocr_activation_cancelled": "OCR activación katrüntuy. Extracción amulalelay.",
-      "text_extraction_ocr_token_state_invalid": "Google OCR ñi konün elkünuel kümelay. Ka nütufinge Google OCR ka wiño fementunge.",
-      "text_extraction_ocr_activation_failed": "OCR activación welulkuy. Kintunge setup/auth ka wiño küdaw.",
-      "text_extraction_ocr_enable_success": "Google OCR activadotuy.",
-      "text_extraction_ocr_enable_cancelled": "Google OCR activación katrüntuy.",
-      "text_extraction_ocr_enable_failed": "Pepilay activar Google OCR. Kintunge setup/auth ka wiño küdaw.",
-      "text_extraction_ocr_disconnect_success": "Google OCR nürüftuy. Google mu elkünutulu token revocadotuy ka local login estado ñamümtuy.",
-      "text_extraction_ocr_disconnect_not_connected": "Tüfachi app instancia mew Google OCR petu konektalelay.",
-      "text_extraction_ocr_disconnect_failed": "Google OCR nürüfün welulkuy. Elkünutulu login estado no ñamümtuy.",
-      "text_extraction_ocr_connectivity_failed": "OCR internet conexión müleyafuy. Kintunge tami conexión ka wiño küdaw.",
-      "text_extraction_ocr_setup_missing_credentials": "OCR mew credentials.json faltaley. Düllinge kiñe valid Google OAuth credenciales archivo ka wiño küdaw.",
-      "text_extraction_ocr_setup_invalid_credentials": "Düllingelu credenciales archivo no küme Google OAuth mew. Düllinge kiñe valid credentials.json ka wiño küdaw.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR cuota/rate limit mew pichi antü bloqueadongey. Pichi alünnge ka wiño küdaw.",
-      "text_extraction_ocr_runtime_error": "Extracción mew OCR runtime welulkuy. Kintunge consola ka wiño küdaw.",
-      "text_extraction_ocr_cancelled": "OCR extracción katrüntuy.",
-      "text_extraction_ocr_cleanup_warning": "OCR afi tañi küdaw, welu pepilay lifeltuam ti chillka kamapu mu. Adkintunge mi carpeta Google Drive mu.",
-      "text_extraction_native_runtime_error": "Extracción mew extracción nativa runtime welulkuy. Kintunge consola ka wiño küdaw.",
-      "text_extraction_native_unreadable_or_corrupt": "Düllingelu archivo no pepikawün kam corrupto müley extracción nativa mew.",
-      "text_extraction_native_encrypted_or_password_protected": "Düllingelu PDF encriptadongey kam password mew protegidongey; femngechi pepi ngelay nativa rüpü mew extraer.",
-      "text_extraction_native_cancelled": "Extracción nativa katrüntuy.",
-      "text_extraction_unsupported_format": "Tüfachi archivo formato no soportadongey texto extracción mew.",
-      "wip_diseno_skins": "WIP: Faw nülai düllin skins küpalechi version mu.",
-      "wip_diseno_crono": "WIP: Faw nülai configuration üngümwe küpalechi version mu.",
-      "wip_diseno_fuentes": "WIP: Faw nülai düllin wirintun küpalechi version mu.",
-      "wip_diseno_colores": "WIP: Faw nülai düllin vvün küpalechi version mu.",
-      "wip_shortcuts": "WIP: Faw nülai düllin shortcuts küpalechi version mu.",
-      "reading_test_unavailable": "Pepiluwün ñi pürüm chillkatun müleyay.",
-      "reading_test_precondition_blocked": "Pepiluwün ñi pürüm chillkatun yalltuay müten app llowkülelu mu. Ñafün kachu ventanakuna ka kintunge feyti relüf ñafküley.",
-      "reading_test_pool_error": "Wedalküley kintun trawün (pool) pepiluwal.",
-      "reading_test_no_matching_files": "Ngelay pepiluwal we chillka feypingen mu.",
-      "reading_test_visible_empty_bundled_hidden": "Ti app mew mülelu test archivos ellkañmangeygün ka fantepu ngelay visible test archivos petu nülay. Wiño pepefinge feyengün kam importafinge doy archivos tami amutual.",
-      "reading_test_current_text_empty": "Ngelay chillka fantepu. Yafmatunge kam wirintunge chillka petu yalltun.",
-      "reading_test_result_invalid": "Chum tripachi pepiluwün gelay WPM. Amulelay kintual modal preset.",
-      "reading_test_result_unavailable": "Pepilay pengelün chum tripachi pürüm chillkatun. Feymew amutuy ti rüpü.",
-      "reading_test_preset_unavailable": "Ngelay kintual modal preset pepiluwün mu.",
-      "reading_test_questions_unavailable": "Ngelay kintual modal ramtun. Amulelay yalltul preset.",
-      "reading_test_pool_import_failed": "Pepiluwün ñi pürüm chillkatun archivos koneltulay.",
-      "reading_test_start_failed": "Ngelay yalltuwal pepiluwün ñi pürüm chillkatun.",
-      "text_editor_start_failed": "Text Editor no pudo iniciar.",
-      "text_editor_start_timeout": "Text Editor fütrañmaw iniciar mew ka nürüfüngey.",
-      "reading_test_cancelled": "Pepiluwün ñi pürüm chillkatun katrütungey.",
-      "reading_test_cancelled_window_closed": "Pepiluwün ñi pürüm chillkatun katrütungey ñafün mu kiñe ventana."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Wirin rume fütra pültrüal. Püne tati botones ventana mu.",
-      "drop_too_big": "Wirin küpalyelu rume fütra. Püne tati botones ventana mu.",
-      "paste_no_text": "Portapapeles nielay wirin.",
-      "drop_no_text": "Küpalyelu: nielay wirin faw.",
-      "type_limit": "Pewfala wirin: afiy tachi fütra wirin.",
-      "paste_limit": "Pewfala pültrün: afiy tachi fütra wirin.",
-      "drop_limit": "Pepi ngelay nütrofal kangelu: afiy tachi fütra límite.",
-      "paste_truncated": "Pültrün wirin pichikünutuy.",
-      "drop_truncated": "Küpalyelu wirin afiy ka pichikünutuy.",
-      "text_truncated": "Wirin pichikünutuy tachi app mew.",
-      "calc_error": "Welulkuy rakiduam mu. Kintunge consola."
-    },
-    "preset_alerts": {
-      "name_empty": "Üi welli mülelay.",
-      "wpm_invalid": "WPM müley {min} ka {max} mu.",
-      "create_error": "Welulkuy dewman preset mu. Kintunge consola.",
-      "edit_error": "Welulkuy wirin preset mu. Kintunge consola.",
-      "process_error": "Welulkuy küzaw preset mu. Kintunge consola."
+      "close_aria": "Nürüfün diálogo extensión navegador mew",
+      "alerts": {
+        "modal_open_blocked": "Navegador extensión diálogo fewla nülalay."
+      }
     },
     "info": {
       "loading": "Cargando...",

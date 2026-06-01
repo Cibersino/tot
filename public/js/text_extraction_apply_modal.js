@@ -209,7 +209,7 @@
           await onRevealGeneratedPdf();
         } catch (err) {
           log.error('Reveal saved generated PDF failed:', err);
-          window.Notify.notifyMain('renderer.alerts.text_extraction_generated_pdf_reveal_failed');
+          window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         } finally {
           revealPending = false;
           btnRevealSavedPdf.disabled = false;

@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Sarat pacha: ",
         "text_extraction_drop_here": "Qillqata apsuñatak archivo aka chiqar jaquntam"
+      },
+      "alerts": {
+        "clipboard_too_large": "Portapapeles qillqatax sinti jach’awa procesañatak. Jisk’acham ukat wasitat yant’am.",
+        "apply_too_large": "Qillqatax apnaqañatakix sinti jach'äniwa. Jisk'acham ukat wasitat yant'am.",
+        "apply_truncated": "Qillqatax appan límite ukar phuqhañatakix khuchhuqatawa.",
+        "append_text_limit": "Qillqata yapxatañax janiwa wakiskiti: máximo tamaño puritawa.",
+        "overwrite_clipboard_error": "Portapapeles ukat qillqata mayjt'ayañan pantjasiwi utji.",
+        "append_clipboard_error": "Portapapeles ukat qillqata yapxatañan pantjasiwi utji.",
+        "clear_error": "Qillqata pichhañan pantjasiw utji. Consola uñakipam.",
+        "current_text_processing_locked": "Jichha textox machaqachaskakiwa. Ventana principal ukan lurawinakax qhipa texto askichasiñkamax jist’antatawa.",
+        "current_text_recount_locked": "Jichha texton resultadonakapax wasitat jakthapiskakiwa. Ventana principal ukan lurawinakax qhipa jakthapiwi askichasiñkamax jist’antatawa.",
+        "wip": {
+          "design_skins": "WIP: Skins ajllirix jutïr versión ukan aka chiqan jist’aratani.",
+          "floating_stopwatch": "WIP: Tuyuri pachayupiri configuración jutïr versión ukan aka chiqan jist’aratani.",
+          "fonts": "WIP: Fuentes ajllirix jutïr versión ukan aka chiqan jist’aratani.",
+          "colors": "WIP: Saminaka ajllirix jutïr versión ukan aka chiqan jist’aratani.",
+          "shortcuts": "WIP: Teclado jank’a thakhinaka ajllirix jutïr versión ukan aka chiqan jist’aratani."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Lurat PDF uñachayaña",
         "cancel_button": "Suyt’ayaña",
         "close_aria": "OCR ukatak jach’a PDF diálogo jist’antaña"
+      },
+      "alerts": {
+        "start_error": "Apsuña qalltañan pantjasiw utji. Consola uñakipam.",
+        "precondition_blocked": "Apsuña qalltañatakix taqi secundario ventananaka jist’antam ukat pachayupiri suyt’aytam.",
+        "precondition_error": "Apsuña precondiciones uñakipañan pantjasiw utji. Consola uñakipam.",
+        "processing_locked": "Apsuña procesaskiwa. Principal ventana interacciones ukax procesamiento tukuykam jan ukax abortañkam jist’antatawa.",
+        "abort_error": "Apsuña abortaña mayiñan pantjasiw utji. Consola uñakipam.",
+        "cancellation_requested": "Suyt’ayaña mayitawa. Jichha apsuña tukusiñapkama suyt’am.",
+        "cancellation_complete": "Suyt’ayaña tukuyata.",
+        "drop_invalid_file": "Jaquntata elementox janiw mä local archivo válido ukäkiti.",
+        "generated_pdf_cleanup_warning": "Extracción tukuyxiwa, ukampis lurat local PDF janiw automáticamente pichsusiñjamäkänti.",
+        "route_choice_error": "Extracción ruta ajlliñan pantjasiwi utji.",
+        "generated_pdf_reveal_failed": "Imat PDF janiw uñachayañjamäkiti. Archivo ukax wali utjaskiti uñakipam.",
+        "apply_error": "Apsuta qillqata apnaqañan pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
+        "prepare_invalid": "Wakicht’ata apsuña mayiwix janiw válido ukäxiti. Flujo wasitat qalltam.",
+        "unsupported_format": "Aka archivo formatox janiw texto apsuñataki yanapt’kiti.",
+        "pdf": {
+          "unreadable_or_corrupt": "Aka PDF janiw ullañjamäkiti jan ukax qʼañuchatawa. Archivo uñakipam ukat mayamp yantʼam.",
+          "encrypted_or_password_protected": "Aka PDF jistʼantatawa jan ukax contraseña ukamp jarkʼatawa. Jistʼaram ukat mayamp yantʼam.",
+          "page_count_unavailable": "Aka PDF qhawqha laphinakani uk janiw uñakipañjamäkänti. Archivo uñakipam ukat mayamp yantʼam.",
+          "page_selection_invalid": "PDF laphinakan ajllit rango ukax janiw walïkiti. Rango chiqañcham ukat mayamp yantʼam.",
+          "subset_creation_failed": "Ajllit laphinakat PDF lurañax janiw wakiskänti extracción ukatakixa. Archivo uñakipam ukat mayamp yantʼam."
+        },
+        "ocr": {
+          "unavailable": "OCR janiw utjkiti. Setup/auth uñakipam ukat wasitat yant’am.",
+          "activation_required": "OCR activación wakisiwa. Google OCR ukar mantam ukat wasitat yant’am.",
+          "activation_success": "OCR activación tukuyata. Apsuña wasitat yant’askiwa.",
+          "activation_cancelled": "OCR activación suyt’ayata. Apsuña janiw sarantkiti.",
+          "token_state_invalid": "Imata Google OCR mantaña estado janiw walikiti. Google OCR wasitat mayacham ukat wasitat yant’am.",
+          "activation_failed": "OCR activación pantjasi. Setup/auth uñakipam ukat wasitat yant’am.",
+          "enable_success": "Google OCR activata.",
+          "enable_cancelled": "Google OCR activaña suyt’ayata.",
+          "enable_failed": "Google OCR janiw activaskiti. Setup/auth uñakipam ukat wasitat yant’am.",
+          "disconnect_success": "Google OCR apsutawa. Imata Google token revocatawa ukat local mantaña estado chhaqtayatäwa.",
+          "disconnect_not_connected": "Google OCR jichhax aka app instancia ukan janiw mayachatäkiti.",
+          "disconnect_failed": "Google OCR apsuñax pantjasi. Imata mantaña estado janiw chhaqtayatäkiti.",
+          "connectivity_failed": "OCR ukax internet mayachawi muni. Mayachawim uñakipam ukat wasitat yant’am.",
+          "setup_missing_credentials": "Aka app build ukan OCR janiw utjkiti, appamp chikt’ata Google OAuth credencialanakax faltatap layku.",
+          "setup_invalid_credentials": "Aka app build ukan OCR janiw utjkiti, appamp chikt’ata Google OAuth credencialanakax jan walïtap layku.",
+          "quota_or_rate_limited": "OCR ukax quota/tasa límite layku mä juk’a pachax jark’atawa. Suyt’am ukat wasitat yant’am.",
+          "runtime_error": "Apsuña taypin OCR ejecución pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
+          "cancelled": "OCR apsuña suyt’ayata.",
+          "cleanup_warning": "OCR tukuyiwa, ukampis temporal remoto archivo pichhaña pantjasi. Google Drive carpetam uñakipam."
+        },
+        "batch_ocr": {
+          "activation_required": "Aka lote ukax OCR item-naka apani, ukampis Google OCR janiw activatäkiti. Ajllitanaka > Google OCR activaña apnaqam, ukat lote wasitat qalltam.",
+          "token_state_invalid": "Aka lote ukax OCR item-naka apani, ukampis imata Google OCR mantaña estado janiw walikiti. Ajllitanaka > Google OCR activaña wasitat apnaqam, ukat lote wasitat qalltam.",
+          "connectivity_failed": "Aka batch OCR items ukaniwa, ukampis OCR internet conexión munaraki. Conexión uñakipam ukat extracción qalltañ janïr wasitat yant'am.",
+          "quota_or_rate_limited": "Aka batch OCR items ukaniwa, ukampis OCR quota/rate limits layku mä juk'a pachax jark'antatawa. Suyam ukat extracción qalltañ janïr wasitat yant'am.",
+          "unavailable": "Aka lote ukax OCR item-naka apani, ukampis Google OCR jichhax janiw utjkiti. OCR janïr activatäkchi ukhax Ajllitanaka > Google OCR activaña apnaqam. Jan ukhamäkchi ukhax OCR setup/auth uñakipam ukat lote qalltañ nayraqat wasitat yant’am."
+        },
+        "native": {
+          "runtime_error": "Apsuña taypin nativa extracción runtime pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
+          "unreadable_or_corrupt": "Ajllita archivo nativa apsuñatakix janiw ullañjamäkiti jan ukax dañatawa.",
+          "encrypted_or_password_protected": "Ajllita PDF ukax cifrado jan ukax contraseña ukamp jark’atawa; nativa thakhimp janiw apsuñjamäkiti.",
+          "cancelled": "Nativa apsuña suyt’ayata."
+        }
       }
     },
     "editor": {
@@ -222,10 +297,23 @@
       "decrease_text_size": "Qillqa tamaño jisk’achaña",
       "increase_text_size": "Qillqa tamaño jach’achaña",
       "reset_text_size": "Qillqa tamaño kutt’ayaña",
-      "text_size_value": "{value} px",
       "read_progress_label": "Ullata",
-      "read_progress_aria": "Ullañ nayrar sartawi: {value}",
-      "clear_title": "Pichhaña"
+      "clear_title": "Pichhaña",
+      "alerts": {
+        "start_failed": "Text Editor janiw qalltañjamäkänti.",
+        "start_timeout": "Text Editor qalltaw sinti jayaräna ukat jist’antatäna.",
+        "paste_too_big": "Qillqatax chiqak k’askachañatak sinti jach’awa. Principal ventana botonanak apnaqam.",
+        "drop_too_big": "Jaquntata qillqatax sinti jach’awa. Jach’a qillqata yapxatañatak principal ventana botonanak apnaqam.",
+        "paste_no_text": "Portapapeles ukax llamp’u qillqata janiw utjkiti.",
+        "drop_no_text": "Aysuña ukat jaquntaña: llamp’u qillqata janiw jikiskiti.",
+        "type_limit": "Janiw juk’amp qillqañjamäkiti: máximo tamaño ukar puritawa.",
+        "paste_limit": "Janiw juk’amp qillqata k’askachañjamäkiti: máximo tamaño ukar puritawa.",
+        "drop_limit": "Janiw juk’amp qillqata jaquntañjamäkiti: máximo tamaño ukar puritawa.",
+        "paste_truncated": "K’askachata qillqata máximo ukar jan jilantañapatak khuchhuratawa.",
+        "drop_truncated": "Aysuta qillqatax utjki uka espacio sipans jilänwa ukat khuchhuratawa.",
+        "text_truncated": "Qillqatax app límite ukar mantañapatak khuchhuratawa.",
+        "calc_error": "Jakhuñan pantjasiw utji. Consola uñakipam."
+      }
     },
     "editor_find": {
       "input_placeholder": "Thaqaña...",
@@ -244,6 +332,17 @@
       "replace_timeout": "Lantintañax sinti jayaw tukuwayi. Wasitat yant’am.",
       "status_no_matches": "Janiw jakthapiwix utjkiti",
       "status_empty_query": "Thaqañatak qillqt’am"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot imata.",
+        "save_error": "Snapshot janiw imaskiti.",
+        "load_success": "Snapshot cargata.",
+        "load_error": "Snapshot janiw cargaskiti.",
+        "outside": "Snapshot ukax imañ carpeta manqhan utjañapawa.",
+        "truncated": "Snapshot ukax máximo tamaño sipans jilawa ukat khuchhuratawa.",
+        "unavailable": "Snapshot lurawix janiw utjkiti."
+      }
     },
     "snapshot_save_tags": {
       "title": "Qillqata snapshot imaña",
@@ -447,6 +546,22 @@
         "buttons": {
           "continue": "Sarantaskakiña"
         }
+      },
+      "alerts": {
+        "unavailable": "Ullañ jank’akïwi test lurawix janiw utjkiti.",
+        "precondition_blocked": "Ullañ jank’akïwi test ukax appan estable estado ukatakiw qalltasispa. Secundario ventananak jist’antam ukat pachayupiri suyt’atätap uñjam.",
+        "pool_error": "Ullañ jank’akïwi test pool uñakipañan pantjasiw utji.",
+        "no_matching_files": "Jichha ajllitamp jakthapir jan apnaqata test archivunakax janiw qhiparkiti.",
+        "visible_empty_bundled_hidden": "App ukan utjki uka test archivunakax imantatäpxiwa ukat janiw kuna uñjkañ jan apnaqata test archivunakas utjkiti. Wasitamp uñachayam jan ukax juk’amp archivunaka apanim sarantañataki.",
+        "current_text_empty": "Jichha qillqatax ch’usawa. Jichha qillqatamp test qalltañatakix qillqata cargar jan ukax qillqt’am.",
+        "result_invalid": "Test resultado ukax válido WPM ukar janiw tukuyaskänti. Flujo preset modal jan jist’arasaw tukuyi.",
+        "result_unavailable": "Ullañ jank’akïwi resultado janiw uñachayaskiti. Flujo sarantaskakiwa.",
+        "preset_unavailable": "Test qhipat preset modal janiw jist’araskiti.",
+        "questions_unavailable": "Comprensión jiskt’awinaka modal janiw jist’araskiti. Flujo preset lurañ nayraqat tukuyi.",
+        "pool_import_failed": "Ullañ jank’akïwi test archivunak janiw apanitakiti.",
+        "start_failed": "Ullañ jank’akïwi test janiw qalltaskiti.",
+        "cancelled": "Ullañ jank’akïwi test suyt’ayata.",
+        "cancelled_window_closed": "Ullañ jank’akïwi test suyt’ayata, sesión ventananakat mayax jist’antatapat."
       }
     },
     "modal_preset": {
@@ -455,135 +570,43 @@
       "heading_new": "Machaq preset luraña",
       "heading_edit": "Ajllita preset askichaña",
       "name": "Suti:",
+      "name_placeholder": "Preset sutipa",
       "wpm": "WPM:",
       "description": "Qhanañchawi:",
-      "placeholder": "Jisk’a qhanañchawi...",
+      "description_placeholder": "Jisk’a qhanañchawi...",
       "char_count": "{remaining} chimpunaka qhiparki",
       "hint": "Personal presets ukax usuario configuración ukan imatawa.",
       "cancel": "Suyt’ayaña",
-      "save": "Imaña"
+      "save": "Imaña",
+      "alerts": {
+        "unavailable": "Preset diálogo aka app buildan janiw utjkiti.",
+        "open_error": "Preset diálogo jist’arañan pantjasiw utji. Consola uñakipam.",
+        "name_empty": "Sutix janiw ch’usañapäkiti.",
+        "wpm_invalid": "WPM ukax {min} ukat {max} taypin mä jakhüñapawa.",
+        "create_error": "Preset lurañan pantjasiw utji. Consola uñakipam.",
+        "edit_error": "Preset askichañan pantjasiw utji. Consola uñakipam.",
+        "process_error": "Preset procesañan pantjasiw utji. Consola uñakipam."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Ajllita preset janiw cache ukan jikiskiti.",
+        "delete_error": "Preset chhaqtayañan pantjasiw utji. Consola uñakipam.",
+        "restore_error": "Presets kutt’ayañan pantjasiw utji. Consola uñakipam.",
+        "open_folder_unsupported": "Aka entorno ukan presets carpeta jist’arañax janiw wakiskiti.",
+        "open_folder_error": "Presets carpeta jist’arañ yant’añan pantjasiw utji. Consola uñakipam.",
+        "open_default_folder_failed": "Default presets carpeta janiw jist’araskiti. Juk’amp yatiñatak consola uñakipam."
+      }
     },
     "browser_extension": {
       "title": "Navegador extención",
       "subtitle": "Tiempo de lectura",
       "availability": "Jichhax Chrome ukan utji. Juk'amp navegaduranakax niya jutaniwa.",
       "chrome_store_aria": "Chrome Web Store ukan extención panka jist'araña",
-      "close_aria": "Navegador extención diálogo jist'antaña"
-    },
-    "alerts": {
-      "clipboard_too_large": "Portapapeles qillqatax sinti jach’awa procesañatak. Jisk’acham ukat wasitat yant’am.",
-      "apply_too_large": "Qillqatax apnaqañatakix sinti jach'äniwa. Jisk'acham ukat wasitat yant'am.",
-      "apply_truncated": "Qillqatax appan límite ukar phuqhañatakix khuchhuqatawa.",
-      "append_text_limit": "Qillqata yapxatañax janiwa wakiskiti: máximo tamaño puritawa.",
-      "overwrite_clipboard_error": "Portapapeles ukat qillqata mayjt'ayañan pantjasiwi utji.",
-      "append_clipboard_error": "Portapapeles ukat qillqata yapxatañan pantjasiwi utji.",
-      "clear_error": "Qillqata pichhañan pantjasiw utji. Consola uñakipam.",
-      "snapshot_save_success": "Snapshot imata.",
-      "snapshot_save_error": "Snapshot janiw imaskiti.",
-      "snapshot_load_success": "Snapshot cargata.",
-      "snapshot_load_error": "Snapshot janiw cargaskiti.",
-      "snapshot_outside": "Snapshot ukax imañ carpeta manqhan utjañapawa.",
-      "snapshot_truncated": "Snapshot ukax máximo tamaño sipans jilawa ukat khuchhuratawa.",
-      "snapshot_unavailable": "Snapshot lurawix janiw utjkiti.",
-      "browser_extension_modal_open_blocked": "Navegador extensión diálogo jichhax janiw jist’araskaspati.",
-      "preset_not_found": "Ajllita preset janiw cache ukan jikiskiti.",
-      "preset_modal_unavailable": "Preset diálogo aka app buildan janiw utjkiti.",
-      "preset_modal_open_error": "Preset diálogo jist’arañan pantjasiw utji. Consola uñakipam.",
-      "delete_error": "Preset chhaqtayañan pantjasiw utji. Consola uñakipam.",
-      "restore_error": "Presets kutt’ayañan pantjasiw utji. Consola uñakipam.",
-      "open_presets_unsupported": "Aka entorno ukan presets carpeta jist’arañax janiw wakiskiti.",
-      "open_presets_error": "Presets carpeta jist’arañ yant’añan pantjasiw utji. Consola uñakipam.",
-      "open_presets_fail": "Default presets carpeta janiw jist’araskiti. Juk’amp yatiñatak consola uñakipam.",
-      "text_extraction_error": "Apsuña qalltañan pantjasiw utji. Consola uñakipam.",
-      "text_extraction_precondition_blocked": "Apsuña qalltañatakix taqi secundario ventananaka jist’antam ukat pachayupiri suyt’aytam.",
-      "text_extraction_precondition_error": "Apsuña precondiciones uñakipañan pantjasiw utji. Consola uñakipam.",
-      "text_extraction_processing_locked": "Apsuña procesaskiwa. Principal ventana interacciones ukax procesamiento tukuykam jan ukax abortañkam jist’antatawa.",
-      "current_text_processing_locked": "Jichha textox machaqachaskakiwa. Ventana principal ukan lurawinakax qhipa texto askichasiñkamax jist’antatawa.",
-      "current_text_recount_locked": "Jichha texton resultadonakapax wasitat jakthapiskakiwa. Ventana principal ukan lurawinakax qhipa jakthapiwi askichasiñkamax jist’antatawa.",
-      "text_extraction_abort_error": "Apsuña abortaña mayiñan pantjasiw utji. Consola uñakipam.",
-      "text_extraction_cancellation_requested": "Suyt’ayaña mayitawa. Jichha apsuña tukusiñapkama suyt’am.",
-      "text_extraction_cancellation_complete": "Suyt’ayaña tukuyata.",
-      "text_extraction_drop_invalid_file": "Jaquntata elementox janiw mä local archivo válido ukäkiti.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Aka PDF janiw ullañjamäkiti jan ukax qʼañuchatawa. Archivo uñakipam ukat mayamp yantʼam.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Aka PDF jistʼantatawa jan ukax contraseña ukamp jarkʼatawa. Jistʼaram ukat mayamp yantʼam.",
-      "text_extraction_pdf_page_count_unavailable": "Aka PDF qhawqha laphinakani uk janiw uñakipañjamäkänti. Archivo uñakipam ukat mayamp yantʼam.",
-      "text_extraction_pdf_page_selection_invalid": "PDF laphinakan ajllit rango ukax janiw walïkiti. Rango chiqañcham ukat mayamp yantʼam.",
-      "text_extraction_pdf_subset_creation_failed": "Ajllit laphinakat PDF lurañax janiw wakiskänti extracción ukatakixa. Archivo uñakipam ukat mayamp yantʼam.",
-      "text_extraction_generated_pdf_cleanup_warning": "Extracción tukuyxiwa, ukampis lurat local PDF janiw automáticamente pichsusiñjamäkänti.",
-      "text_extraction_route_choice_error": "Extracción ruta ajlliñan pantjasiwi utji.",
-      "text_extraction_generated_pdf_reveal_failed": "Imat PDF janiw uñachayañjamäkiti. Archivo ukax wali utjaskiti uñakipam.",
-      "text_extraction_apply_error": "Apsuta qillqata apnaqañan pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
-      "text_extraction_prepare_invalid": "Wakicht’ata apsuña mayiwix janiw válido ukäxiti. Flujo wasitat qalltam.",
-      "text_extraction_batch_ocr_activation_required": "Aka lote ukax OCR item-naka apani, ukampis Google OCR janiw activatäkiti. Ajllitanaka > Google OCR activaña apnaqam, ukat lote wasitat qalltam.",
-      "text_extraction_batch_ocr_token_state_invalid": "Aka lote ukax OCR item-naka apani, ukampis imata Google OCR mantaña estado janiw walikiti. Ajllitanaka > Google OCR activaña wasitat apnaqam, ukat lote wasitat qalltam.",
-      "text_extraction_batch_ocr_connectivity_failed": "Aka batch OCR items ukaniwa, ukampis OCR internet conexión munaraki. Conexión uñakipam ukat extracción qalltañ janïr wasitat yant'am.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Aka batch OCR items ukaniwa, ukampis OCR quota/rate limits layku mä juk'a pachax jark'antatawa. Suyam ukat extracción qalltañ janïr wasitat yant'am.",
-      "text_extraction_batch_ocr_unavailable": "Aka lote ukax OCR item-naka apani, ukampis Google OCR jichhax janiw utjkiti. OCR janïr activatäkchi ukhax Ajllitanaka > Google OCR activaña apnaqam. Jan ukhamäkchi ukhax OCR setup/auth uñakipam ukat lote qalltañ nayraqat wasitat yant’am.",
-      "text_extraction_ocr_unavailable": "OCR janiw utjkiti. Setup/auth uñakipam ukat wasitat yant’am.",
-      "text_extraction_ocr_activation_required": "OCR activación wakisiwa. Google OCR ukar mantam ukat wasitat yant’am.",
-      "text_extraction_ocr_activation_success": "OCR activación tukuyata. Apsuña wasitat yant’askiwa.",
-      "text_extraction_ocr_activation_cancelled": "OCR activación suyt’ayata. Apsuña janiw sarantkiti.",
-      "text_extraction_ocr_token_state_invalid": "Imata Google OCR mantaña estado janiw walikiti. Google OCR wasitat mayacham ukat wasitat yant’am.",
-      "text_extraction_ocr_activation_failed": "OCR activación pantjasi. Setup/auth uñakipam ukat wasitat yant’am.",
-      "text_extraction_ocr_enable_success": "Google OCR activata.",
-      "text_extraction_ocr_enable_cancelled": "Google OCR activaña suyt’ayata.",
-      "text_extraction_ocr_enable_failed": "Google OCR janiw activaskiti. Setup/auth uñakipam ukat wasitat yant’am.",
-      "text_extraction_ocr_disconnect_success": "Google OCR apsutawa. Imata Google token revocatawa ukat local mantaña estado chhaqtayatäwa.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR jichhax aka app instancia ukan janiw mayachatäkiti.",
-      "text_extraction_ocr_disconnect_failed": "Google OCR apsuñax pantjasi. Imata mantaña estado janiw chhaqtayatäkiti.",
-      "text_extraction_ocr_connectivity_failed": "OCR ukax internet mayachawi muni. Mayachawim uñakipam ukat wasitat yant’am.",
-      "text_extraction_ocr_setup_missing_credentials": "Aka app build ukan OCR janiw utjkiti, appamp chikt’ata Google OAuth credencialanakax faltatap layku.",
-      "text_extraction_ocr_setup_invalid_credentials": "Aka app build ukan OCR janiw utjkiti, appamp chikt’ata Google OAuth credencialanakax jan walïtap layku.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR ukax quota/tasa límite layku mä juk’a pachax jark’atawa. Suyt’am ukat wasitat yant’am.",
-      "text_extraction_ocr_runtime_error": "Apsuña taypin OCR ejecución pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
-      "text_extraction_ocr_cancelled": "OCR apsuña suyt’ayata.",
-      "text_extraction_ocr_cleanup_warning": "OCR tukuyiwa, ukampis temporal remoto archivo pichhaña pantjasi. Google Drive carpetam uñakipam.",
-      "text_extraction_native_runtime_error": "Apsuña taypin nativa extracción runtime pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
-      "text_extraction_native_unreadable_or_corrupt": "Ajllita archivo nativa apsuñatakix janiw ullañjamäkiti jan ukax dañatawa.",
-      "text_extraction_native_encrypted_or_password_protected": "Ajllita PDF ukax cifrado jan ukax contraseña ukamp jark’atawa; nativa thakhimp janiw apsuñjamäkiti.",
-      "text_extraction_native_cancelled": "Nativa apsuña suyt’ayata.",
-      "text_extraction_unsupported_format": "Aka archivo formatox janiw texto apsuñataki yanapt’kiti.",
-      "wip_diseno_skins": "WIP: Skins ajllirix jutïr versión ukan aka chiqan jist’aratani.",
-      "wip_diseno_crono": "WIP: Tuyuri pachayupiri configuración jutïr versión ukan aka chiqan jist’aratani.",
-      "wip_diseno_fuentes": "WIP: Fuentes ajllirix jutïr versión ukan aka chiqan jist’aratani.",
-      "wip_diseno_colores": "WIP: Saminaka ajllirix jutïr versión ukan aka chiqan jist’aratani.",
-      "wip_shortcuts": "WIP: Teclado jank’a thakhinaka ajllirix jutïr versión ukan aka chiqan jist’aratani.",
-      "reading_test_unavailable": "Ullañ jank’akïwi test lurawix janiw utjkiti.",
-      "reading_test_precondition_blocked": "Ullañ jank’akïwi test ukax appan estable estado ukatakiw qalltasispa. Secundario ventananak jist’antam ukat pachayupiri suyt’atätap uñjam.",
-      "reading_test_pool_error": "Ullañ jank’akïwi test pool uñakipañan pantjasiw utji.",
-      "reading_test_no_matching_files": "Jichha ajllitamp jakthapir jan apnaqata test archivunakax janiw qhiparkiti.",
-      "reading_test_visible_empty_bundled_hidden": "App ukan utjki uka test archivunakax imantatäpxiwa ukat janiw kuna uñjkañ jan apnaqata test archivunakas utjkiti. Wasitamp uñachayam jan ukax juk’amp archivunaka apanim sarantañataki.",
-      "reading_test_current_text_empty": "Jichha qillqatax ch’usawa. Jichha qillqatamp test qalltañatakix qillqata cargar jan ukax qillqt’am.",
-      "reading_test_result_invalid": "Test resultado ukax válido WPM ukar janiw tukuyaskänti. Flujo preset modal jan jist’arasaw tukuyi.",
-      "reading_test_result_unavailable": "Ullañ jank’akïwi resultado janiw uñachayaskiti. Flujo sarantaskakiwa.",
-      "reading_test_preset_unavailable": "Test qhipat preset modal janiw jist’araskiti.",
-      "reading_test_questions_unavailable": "Comprensión jiskt’awinaka modal janiw jist’araskiti. Flujo preset lurañ nayraqat tukuyi.",
-      "reading_test_pool_import_failed": "Ullañ jank’akïwi test archivunak janiw apanitakiti.",
-      "reading_test_start_failed": "Ullañ jank’akïwi test janiw qalltaskiti.",
-      "text_editor_start_failed": "Text Editor janiw qalltañjamäkänti.",
-      "text_editor_start_timeout": "Text Editor qalltaw sinti jayaräna ukat jist’antatäna.",
-      "reading_test_cancelled": "Ullañ jank’akïwi test suyt’ayata.",
-      "reading_test_cancelled_window_closed": "Ullañ jank’akïwi test suyt’ayata, sesión ventananakat mayax jist’antatapat."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Qillqatax chiqak k’askachañatak sinti jach’awa. Principal ventana botonanak apnaqam.",
-      "drop_too_big": "Jaquntata qillqatax sinti jach’awa. Jach’a qillqata yapxatañatak principal ventana botonanak apnaqam.",
-      "paste_no_text": "Portapapeles ukax llamp’u qillqata janiw utjkiti.",
-      "drop_no_text": "Aysuña ukat jaquntaña: llamp’u qillqata janiw jikiskiti.",
-      "type_limit": "Janiw juk’amp qillqañjamäkiti: máximo tamaño ukar puritawa.",
-      "paste_limit": "Janiw juk’amp qillqata k’askachañjamäkiti: máximo tamaño ukar puritawa.",
-      "drop_limit": "Janiw juk’amp qillqata jaquntañjamäkiti: máximo tamaño ukar puritawa.",
-      "paste_truncated": "K’askachata qillqata máximo ukar jan jilantañapatak khuchhuratawa.",
-      "drop_truncated": "Aysuta qillqatax utjki uka espacio sipans jilänwa ukat khuchhuratawa.",
-      "text_truncated": "Qillqatax app límite ukar mantañapatak khuchhuratawa.",
-      "calc_error": "Jakhuñan pantjasiw utji. Consola uñakipam."
-    },
-    "preset_alerts": {
-      "name_empty": "Sutix janiw ch’usañapäkiti.",
-      "wpm_invalid": "WPM ukax {min} ukat {max} taypin mä jakhüñapawa.",
-      "create_error": "Preset lurañan pantjasiw utji. Consola uñakipam.",
-      "edit_error": "Preset askichañan pantjasiw utji. Consola uñakipam.",
-      "process_error": "Preset procesañan pantjasiw utji. Consola uñakipam."
+      "close_aria": "Navegador extención diálogo jist'antaña",
+      "alerts": {
+        "modal_open_blocked": "Navegador extensión diálogo jichhax janiw jist’araskaspati."
+      }
     },
     "info": {
       "loading": "Cargaskakiwa...",

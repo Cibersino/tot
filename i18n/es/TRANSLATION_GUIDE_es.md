@@ -31,7 +31,7 @@ Evitar mezclar tratamientos dentro de una misma superficie si no hay una razón 
 
 ## 3. Léxico funcional
 
-Estas formas rigen conceptos frecuentes del español de toT.
+Estas formas no constituyen un glosario completo; registran términos del español de toT donde existe riesgo de drift o una decisión local relevante.
 
 | Concepto | Forma preferida en `es` | Notas / alternativas |
 |---|---|---|
@@ -42,9 +42,7 @@ Estas formas rigen conceptos frecuentes del español de toT.
 | `Editor de Texto` | `Editor de Texto` | Nombre de ventana/superficie. |
 | `extracción de texto` | `extracción de texto` | Nombre del flujo para obtener texto desde archivos. No sustituir por `importación` como concepto estable de la app. La operación puede importar, cargar o procesar contenido según el caso, pero el flujo se nombra como extracción. |
 | `extracción por lotes` | `extracción por lotes` | Evitar alternar con `extracción masiva` o `extracción en bloque` sin decisión documentada. |
-| `Google OCR` | `Google OCR` | Usar como forma protegida. |
 | `ítem` | `ítem` | Usar cuando refiera a la entrada individual dentro de una unidad de extracción por lotes. No alternar con `elemento` para ese concepto. Esto no prohíbe usar `elemento` en otros contextos. |
-| `OCR` | `OCR` | Usar como sigla técnica. |
 | `PDF fuente` | `PDF fuente` | Usar para el archivo original seleccionado. |
 | `PDF generado` | `PDF generado` | Usar para derivados locales creados por la app. |
 | `PDF guardado` | `PDF guardado` | Usar para derivados conservados por decisión del usuario. |
@@ -70,7 +68,7 @@ Estas formas se usan en `es` con el alcance indicado.
 | `skins` | Usar `Skins` mientras la sección permanezca WIP. | La terminología definitiva de esa superficie se definirá en la implementación correspondiente, actualmente asociada al Issue #264. |
 | `snapshot` | Usar como préstamo técnico. | Funciona como tecnicismo de la app y evita confusión con `captura de pantalla`. Usar normalmente como `snapshot de texto`. |
 | `spoiler` | Usar como préstamo funcional. | Designa la función que oculta el segmento final del preview del texto actual para evitar anticipar contenido. No traducir mecánicamente como `revelación`, `anticipo` o `destripe`; si aparece fuera de esta superficie, revisar según contexto. |
-| `toggle` | Usar como préstamo técnico-funcional. | Especialmente en superficies técnicas compactas donde designa una acción de activar/desactivar, mostrar/ocultar o alternar estado, como `Toggle DevTools`. No traducir mecánicamente si la alternativa española resulta menos clara. |
+| `Toggle DevTools` | Conservar como rótulo técnico protegido del menú de desarrollo. | No extender `toggle` como término general de UI; en superficies de usuario preferir `activar/desactivar`, `mostrar/ocultar` o `alternar` según contexto. |
 | `token` | Usar como préstamo técnico. | Especialmente en contextos como `token local OCR`. No traducir por calcos artificiales; puede explicarse como estado local de autorización o sesión cuando la superficie lo requiera. |
 | `tooltip` | Evitar en UI de usuario; permitir en documentación técnica si aparece. | En strings visibles, preferir `ayuda`, `descripción`, `etiqueta`, `mensaje` u otra forma contextual. |
 | `WIP` | Usar solo como token técnico protegido en superficies temporales. | No usar como estilo general de usuario final si la superficie deja de ser temporal. |
@@ -88,5 +86,3 @@ Estas convenciones rigen la revisión de los strings del bundle `es`.
 | Labels con dos puntos | Usar dos puntos cuando introducen un valor inmediato: `Archivo:`, `Velocidad:`. |
 | Elipsis | Usar `...` en estados de progreso/espera por función visual de proceso. Decidir caso a caso si utilizar `…` o `...` en usos editoriales o de truncamiento. |
 | Comillas | Usar comillas dobles rectas para nombres dinámicos cuando ayuden a delimitar el valor; en JSON deben escaparse como `\"{name}\"`. No aplicarlas mecánicamente a placeholders numéricos, códigos, porcentajes, unidades o valores ya presentados como label. |
-| Siglas técnicas | Usar `WPM`, `OCR`, `PDF`, `URL`, `JSON`, `OAuth` según la guía general y el baseline. |
-| Unidades | Usar separación y forma técnica existente: `{value} px`, `{providerLimitMb} MB`. |

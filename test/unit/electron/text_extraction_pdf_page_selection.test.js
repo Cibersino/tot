@@ -10,6 +10,9 @@ const path = require('path');
 const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
 const {
   canonicalizeGeneratedPdfArtifactPolicy,
@@ -21,11 +24,27 @@ const {
 const {
   isInsideRuntimeTempRoot,
 } = require('../../../electron/app_temp_paths');
-const {
-  getFileInfo,
-} = require('../../../electron/text_extraction_platform/text_extraction_prepare_execute_core');
 
 const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
+const CORE_MODULE_PATH = path.resolve(
+  __dirname,
+  '../../../electron/text_extraction_platform/text_extraction_prepare_execute_core.js'
+);
+
+function loadCoreExports() {
+  const restoreElectronModule = installElectronModuleMock();
+  delete require.cache[CORE_MODULE_PATH];
+  try {
+    return require(CORE_MODULE_PATH);
+  } finally {
+    delete require.cache[CORE_MODULE_PATH];
+    restoreElectronModule();
+  }
+}
+
+const {
+  getFileInfo,
+} = loadCoreExports();
 
 function loadPdfPageSelectionModuleWithMocks({
   fsOverrides = {},

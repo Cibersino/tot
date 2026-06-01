@@ -349,6 +349,10 @@ async function confirmLoadOverwrite(ownerWin, name = '') {
   return dialogResult && dialogResult.response === 0;
 }
 
+function hasCurrentTextToOverwrite() {
+  return String(textState.getCurrentText() || '').length > 0;
+}
+
 function resolveMainWin(getWindows) {
   if (typeof getWindows !== 'function') {
     log.warnOnce(
@@ -580,9 +584,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         snapshotRelPath = selectedInfo.snapshotRelPath;
       }
 
-      const confirmed = await confirmLoadOverwrite(resolveOwnerWin(event, getWindows), path.basename(selectedReal));
-      if (!confirmed) {
-        return { ok: false, code: 'CONFIRM_DENIED' };
+      if (hasCurrentTextToOverwrite()) {
+        const confirmed = await confirmLoadOverwrite(
+          resolveOwnerWin(event, getWindows),
+          path.basename(selectedReal)
+        );
+        if (!confirmed) {
+          return { ok: false, code: 'CONFIRM_DENIED' };
+        }
       }
 
       const parsed = parseSnapshotFile(selectedReal);

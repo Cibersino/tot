@@ -67,7 +67,7 @@ function getDialogTexts() {
 
 function buildFailure({
   code = 'disconnect_failed',
-  alertKey = 'renderer.alerts.text_extraction_ocr_disconnect_failed',
+  alertKey = 'renderer.text_extraction.alerts.ocr.disconnect_failed',
   detailsSafeForLogs = {},
 } = {}) {
   return {
@@ -80,7 +80,7 @@ function buildFailure({
 
 function buildSuccess({
   code = 'disconnected',
-  alertKey = 'renderer.alerts.text_extraction_ocr_disconnect_success',
+  alertKey = 'renderer.text_extraction.alerts.ocr.disconnect_success',
   detailsSafeForLogs = {},
 } = {}) {
   return {
@@ -216,7 +216,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           });
           return buildFailure({
             code: 'not_connected',
-            alertKey: 'renderer.alerts.text_extraction_ocr_disconnect_not_connected',
+            alertKey: 'renderer.text_extraction.alerts.ocr.disconnect_not_connected',
             detailsSafeForLogs: {
               stage: 'token_read',
               reason: 'missing_file',

@@ -85,6 +85,25 @@ function resolveMainWindow(getWindows) {
   return windows.mainWin || null;
 }
 
+function buildPrepareFingerprintFailure(routeMetadata, err) {
+  return {
+    ok: true,
+    prepareFailed: true,
+    executionKind: null,
+    routeMetadata,
+    primaryAlertKey: 'renderer.text_extraction.alerts.start_error',
+    warningAlertKeys: [],
+    error: {
+      code: 'unreadable_or_corrupt',
+      message: 'Selected file is missing or unreadable before execute.',
+      detailsSafeForLogs: {
+        stage: 'prepare_fingerprint',
+        errorMessage: String(err && err.message ? err.message : err || ''),
+      },
+    },
+  };
+}
+
 // =============================================================================
 // IPC registration / handler
 // =============================================================================
@@ -152,22 +171,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         // Fingerprint loss invalidates execute-time freshness checks, so degrade
         // to a structured prepare failure instead of exposing a prepared ID.
         log.error('text extraction prepare fingerprint read failed:', err);
-        return {
-          ok: true,
-          prepareFailed: true,
-          executionKind: null,
-          routeMetadata,
-          primaryAlertKey: 'renderer.alerts.text_extraction_error',
-          warningAlertKeys: [],
-          error: {
-            code: 'unreadable_or_corrupt',
-            message: 'Selected file is missing or unreadable before execute.',
-            detailsSafeForLogs: {
-              stage: 'prepare_fingerprint',
-              errorMessage: String(err && err.message ? err.message : err || ''),
-            },
-          },
-        };
+        return buildPrepareFingerprintFailure(routeMetadata, err);
       }
 
       const preparedRecord = createPreparedRecord({

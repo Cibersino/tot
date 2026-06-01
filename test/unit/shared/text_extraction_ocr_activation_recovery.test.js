@@ -103,7 +103,7 @@ test('OCR activation recovery reuses the shared flow, notifies success, and retr
   });
 
   assert.deepEqual(harness.notifications, [
-    'renderer.alerts.text_extraction_ocr_activation_success',
+    'renderer.text_extraction.alerts.ocr.activation_success',
   ]);
   assert.equal(harness.getActivationCallCount(), 1);
   assert.equal(harness.getRetryPrepareCallCount(), 1);
@@ -184,7 +184,7 @@ test('OCR activation recovery uses recovery-specific cancellation messaging for 
   });
 
   assert.deepEqual(harness.notifications, [
-    'renderer.alerts.text_extraction_ocr_activation_cancelled',
+    'renderer.text_extraction.alerts.ocr.activation_cancelled',
   ]);
   assert.equal(harness.getActivationCallCount(), 1);
   assert.equal(harness.getRetryPrepareCallCount(), 0);

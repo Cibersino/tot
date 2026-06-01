@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "बीता समय: ",
         "text_extraction_drop_here": "पाठ आयात/निकालने के लिए फ़ाइल छोड़ें"
+      },
+      "alerts": {
+        "clipboard_too_large": "क्लिपबोर्ड पाठ संसाधित करने के लिए बहुत बड़ा है। इसे कम करें और फिर प्रयास करें।",
+        "apply_too_large": "टेक्स्ट लागू करने के लिए बहुत बड़ा हो जाएगा। इसे कम करें और फिर कोशिश करें।",
+        "apply_truncated": "टेक्स्ट को एप्लिकेशन सीमा में फिट करने के लिए छोटा कर दिया गया।",
+        "append_text_limit": "टेक्स्ट जोड़ा नहीं जा सकता: अधिकतम आकार पहुँच गया है।",
+        "overwrite_clipboard_error": "क्लिपबोर्ड से टेक्स्ट बदलते समय त्रुटि हुई।",
+        "append_clipboard_error": "क्लिपबोर्ड से टेक्स्ट जोड़ते समय त्रुटि हुई।",
+        "clear_error": "पाठ खाली करते समय त्रुटि हुई। कंसोल देखें।",
+        "current_text_processing_locked": "वर्तमान पाठ अभी भी अपडेट हो रहा है। नवीनतम पाठ स्थिर होने तक मुख्य विंडो की इंटरैक्शन लॉक रहेंगी।",
+        "current_text_recount_locked": "वर्तमान पाठ के परिणाम अभी भी दोबारा गिने जा रहे हैं। नवीनतम पुनर्गणना स्थिर होने तक मुख्य विंडो की इंटरैक्शन लॉक रहेंगी।",
+        "wip": {
+          "design_skins": "WIP: skins selector भविष्य के संस्करण में यहाँ खुलेगा।",
+          "floating_stopwatch": "WIP: Floating Stopwatch settings भविष्य के संस्करण में यहाँ खुलेंगी।",
+          "fonts": "WIP: fonts selector भविष्य के संस्करण में यहाँ खुलेगा।",
+          "colors": "WIP: colors selector भविष्य के संस्करण में यहाँ खुलेगा।",
+          "shortcuts": "WIP: keyboard shortcuts selector भविष्य के संस्करण में यहाँ खुलेगा।"
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "बनाई गई PDF दिखाएँ",
         "cancel_button": "रद्द करें",
         "close_aria": "OCR के लिए भारी PDF संवाद बंद करें"
+      },
+      "alerts": {
+        "start_error": "निकासी शुरू करते समय त्रुटि हुई। कंसोल देखें।",
+        "precondition_blocked": "निकासी शुरू करने के लिए सभी द्वितीयक विंडो बंद करें और स्टॉपवॉच रोकें।",
+        "precondition_error": "निकासी की पूर्व-शर्तें जाँचते समय त्रुटि हुई। कंसोल देखें।",
+        "processing_locked": "निकासी संसाधित हो रही है। प्रक्रिया समाप्त होने या आपके रोकने तक मुख्य विंडो की अंतःक्रियाएँ लॉक हैं।",
+        "abort_error": "निकासी रोकने का अनुरोध करते समय त्रुटि हुई। कंसोल देखें।",
+        "cancellation_requested": "रद्द करने का अनुरोध किया गया है। कृपया वर्तमान निकासी पूरी होने तक प्रतीक्षा करें।",
+        "cancellation_complete": "रद्दीकरण पूरा हुआ।",
+        "drop_invalid_file": "छोड़ा गया आइटम मान्य स्थानीय फ़ाइल नहीं है।",
+        "generated_pdf_cleanup_warning": "एक्सट्रैक्शन पूरा हो गया, लेकिन बनाई गई स्थानीय PDF को अपने-आप साफ़ नहीं किया जा सका।",
+        "route_choice_error": "extraction route चुनते समय त्रुटि हुई।",
+        "generated_pdf_reveal_failed": "सहेजी गई PDF दिखाई नहीं जा सकी। जाँचें कि फ़ाइल अभी भी मौजूद है या नहीं।",
+        "apply_error": "निकाला गया पाठ लागू करते समय त्रुटि हुई। कंसोल देखें और फिर प्रयास करें।",
+        "prepare_invalid": "तैयार निकासी अनुरोध अब मान्य नहीं है। प्रवाह फिर से शुरू करें।",
+        "unsupported_format": "यह फ़ाइल प्रारूप पाठ निकासी के लिए समर्थित नहीं है।",
+        "pdf": {
+          "unreadable_or_corrupt": "यह PDF पढ़ी नहीं जा सकती या दूषित है। फ़ाइल जाँचें और फिर से कोशिश करें।",
+          "encrypted_or_password_protected": "यह PDF एन्क्रिप्टेड है या पासवर्ड से सुरक्षित है। इसे अनलॉक करें और फिर से कोशिश करें।",
+          "page_count_unavailable": "इस PDF की पृष्ठ संख्या जाँची नहीं जा सकी। फ़ाइल जाँचें और फिर से कोशिश करें।",
+          "page_selection_invalid": "चयनित PDF पृष्ठ-सीमा अमान्य है। सीमा समायोजित करें और फिर से कोशिश करें।",
+          "subset_creation_failed": "एक्सट्रैक्शन के लिए चयनित पृष्ठों वाली PDF बनाई नहीं जा सकी। फ़ाइल जाँचें और फिर से कोशिश करें।"
+        },
+        "ocr": {
+          "unavailable": "OCR उपलब्ध नहीं है। setup/auth स्थिति जाँचें और फिर प्रयास करें।",
+          "activation_required": "OCR सक्रियण आवश्यक है। Google OCR में साइन इन करें और फिर प्रयास करें।",
+          "activation_success": "OCR सक्रियण पूरा हुआ। निकासी फिर से प्रयास की जा रही है।",
+          "activation_cancelled": "OCR सक्रियण रद्द किया गया। निकासी जारी नहीं रही।",
+          "token_state_invalid": "सहेजी गई Google OCR साइन-इन स्थिति अमान्य है। Google OCR फिर से कनेक्ट करें और फिर प्रयास करें।",
+          "activation_failed": "OCR सक्रियण विफल हुआ। setup/auth स्थिति जाँचें और फिर प्रयास करें।",
+          "enable_success": "Google OCR सक्षम हो गया।",
+          "enable_cancelled": "Google OCR सक्षम करना रद्द किया गया।",
+          "enable_failed": "Google OCR सक्षम नहीं किया जा सका। सेटअप/प्रमाणीकरण स्थिति जाँचें और फिर प्रयास करें।",
+          "disconnect_success": "Google OCR डिस्कनेक्ट कर दिया गया। सहेजा गया Google टोकन रद्द कर दिया गया और स्थानीय साइन-इन स्थिति हटा दी गई।",
+          "disconnect_not_connected": "इस ऐप इंस्टेंस में Google OCR अभी कनेक्ट नहीं है।",
+          "disconnect_failed": "Google OCR डिस्कनेक्शन विफल हुआ। सहेजी गई साइन-इन स्थिति हटाई नहीं गई।",
+          "connectivity_failed": "OCR के लिए इंटरनेट कनेक्शन आवश्यक है। अपना कनेक्शन जाँचें और फिर प्रयास करें।",
+          "setup_missing_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अनुपस्थित हैं।",
+          "setup_invalid_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अमान्य हैं।",
+          "quota_or_rate_limited": "OCR अस्थायी रूप से quota/rate limit के कारण अवरुद्ध है। प्रतीक्षा करें और फिर प्रयास करें।",
+          "runtime_error": "निकासी के दौरान OCR runtime त्रुटि हुई। कंसोल देखें और फिर प्रयास करें।",
+          "cancelled": "OCR निकासी रद्द कर दी गई।",
+          "cleanup_warning": "OCR पूरा हुआ, लेकिन अस्थायी remote फ़ाइल cleanup विफल रहा। अपना Google Drive फ़ोल्डर देखें।"
+        },
+        "batch_ocr": {
+          "activation_required": "इस समूह में OCR आइटम हैं, लेकिन Google OCR सक्षम नहीं है। प्राथमिकताएँ > Google OCR सक्षम करें उपयोग करें, फिर समूह फिर से शुरू करें।",
+          "token_state_invalid": "इस समूह में OCR आइटम हैं, लेकिन सहेजी गई Google OCR साइन-इन स्थिति अमान्य है। प्राथमिकताएँ > Google OCR सक्षम करें फिर से उपयोग करें, फिर समूह फिर से शुरू करें।",
+          "connectivity_failed": "इस बैच में OCR आइटम हैं, लेकिन OCR के लिए इंटरनेट कनेक्शन चाहिए। extraction शुरू करने से पहले अपना कनेक्शन जाँचें और फिर कोशिश करें।",
+          "quota_or_rate_limited": "इस बैच में OCR आइटम हैं, लेकिन quota/rate limits के कारण OCR अस्थायी रूप से अवरुद्ध है। प्रतीक्षा करें और extraction शुरू करने से पहले फिर कोशिश करें।",
+          "unavailable": "इस समूह में OCR आइटम हैं, लेकिन Google OCR अभी उपलब्ध नहीं है। यदि OCR अभी सक्षम नहीं है, तो प्राथमिकताएँ > Google OCR सक्षम करें उपयोग करें। अन्यथा समूह शुरू करने से पहले OCR सेटअप/प्रमाणीकरण स्थिति जाँचें और फिर प्रयास करें।"
+        },
+        "native": {
+          "runtime_error": "निकासी के दौरान native extraction runtime त्रुटि हुई। कंसोल देखें और फिर प्रयास करें।",
+          "unreadable_or_corrupt": "चयनित फ़ाइल native extraction के लिए पढ़ने योग्य नहीं है या corrupt है।",
+          "encrypted_or_password_protected": "चयनित PDF encrypted या password-protected है और native route से निकाली नहीं जा सकती।",
+          "cancelled": "Native extraction रद्द कर दी गई।"
+        }
       }
     },
     "editor": {
@@ -222,10 +297,23 @@
       "decrease_text_size": "पाठ आकार घटाएँ",
       "increase_text_size": "पाठ आकार बढ़ाएँ",
       "reset_text_size": "पाठ आकार रीसेट करें",
-      "text_size_value": "{value} px",
       "read_progress_label": "पढ़ा गया",
-      "read_progress_aria": "पठन प्रगति: {value}",
-      "clear_title": "खाली करें"
+      "clear_title": "खाली करें",
+      "alerts": {
+        "start_failed": "Text Editor शुरू नहीं किया जा सका।",
+        "start_timeout": "Text Editor शुरू होने में बहुत अधिक समय लगा और उसे बंद कर दिया गया।",
+        "paste_too_big": "पाठ सीधे चिपकाने के लिए बहुत बड़ा है। मुख्य विंडो के बटन उपयोग करें।",
+        "drop_too_big": "खींचकर छोड़ा गया पाठ बहुत बड़ा है। बड़ा पाठ जोड़ने के लिए मुख्य विंडो के बटन उपयोग करें।",
+        "paste_no_text": "क्लिपबोर्ड में plain text नहीं है।",
+        "drop_no_text": "Drag and drop: plain text नहीं मिला।",
+        "type_limit": "और पाठ नहीं लिखा जा सकता: अधिकतम आकार पहुँच गया है।",
+        "paste_limit": "और पाठ नहीं चिपकाया जा सकता: अधिकतम आकार पहुँच गया है।",
+        "drop_limit": "और पाठ drop नहीं किया जा सकता: अधिकतम आकार पहुँच गया है।",
+        "paste_truncated": "अधिकतम सीमा से बचने के लिए चिपकाया गया पाठ काट दिया गया।",
+        "drop_truncated": "खींचा गया पाठ उपलब्ध स्थान से अधिक था और काट दिया गया।",
+        "text_truncated": "ऐप की सीमा में फिट करने के लिए पाठ काट दिया गया।",
+        "calc_error": "गणना करते समय त्रुटि हुई। कंसोल देखें।"
+      }
     },
     "editor_find": {
       "input_placeholder": "खोजें...",
@@ -244,6 +332,17 @@
       "replace_timeout": "बदलाव में बहुत समय लगा। फिर प्रयास करें।",
       "status_no_matches": "कोई मिलान नहीं",
       "status_empty_query": "खोजने के लिए लिखें"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "स्नैपशॉट सहेजा गया।",
+        "save_error": "स्नैपशॉट सहेजा नहीं जा सका।",
+        "load_success": "स्नैपशॉट लोड हुआ।",
+        "load_error": "स्नैपशॉट लोड नहीं हो सका।",
+        "outside": "स्नैपशॉट सहेजने वाले फ़ोल्डर के अंदर होना चाहिए।",
+        "truncated": "स्नैपशॉट अधिकतम आकार से अधिक है और काट दिया गया।",
+        "unavailable": "स्नैपशॉट सुविधा उपलब्ध नहीं है।"
+      }
     },
     "snapshot_save_tags": {
       "title": "पाठ स्नैपशॉट सहेजें",
@@ -447,6 +546,22 @@
         "buttons": {
           "continue": "जारी रखें"
         }
+      },
+      "alerts": {
+        "unavailable": "पठन गति परीक्षण सुविधा उपलब्ध नहीं है।",
+        "precondition_blocked": "पठन गति परीक्षण केवल ऐप की स्थिर स्थिति से शुरू हो सकता है। द्वितीयक विंडो बंद करें और सुनिश्चित करें कि स्टॉपवॉच रुकी हुई है।",
+        "pool_error": "पठन गति परीक्षण पूल जाँचते समय त्रुटि हुई।",
+        "no_matching_files": "वर्तमान चयन से मेल खाने वाली कोई अप्रयुक्त परीक्षण फ़ाइल शेष नहीं है।",
+        "visible_empty_bundled_hidden": "अंतर्निहित टेस्ट फ़ाइलें छिपी हुई हैं और वर्तमान में कोई दृश्य, अप्रयुक्त टेस्ट फ़ाइल उपलब्ध नहीं है। जारी रखने के लिए अंतर्निहित फ़ाइलों को फिर से दिखाएँ या और फ़ाइलें इम्पोर्ट करें।",
+        "current_text_empty": "वर्तमान पाठ खाली है। वर्तमान पाठ से परीक्षण शुरू करने से पहले कोई पाठ लोड करें या लिखें।",
+        "result_invalid": "परीक्षण परिणाम को मान्य WPM में बदला नहीं जा सका। प्रीसेट मोडल खोले बिना प्रवाह समाप्त हुआ।",
+        "result_unavailable": "पठन गति परिणाम दिखाया नहीं जा सका। प्रवाह जारी रहा।",
+        "preset_unavailable": "परीक्षण के बाद प्रीसेट मोडल नहीं खोला जा सका।",
+        "questions_unavailable": "समझ प्रश्नों का मोडल नहीं खोला जा सका। प्रीसेट निर्माण से पहले प्रवाह समाप्त हुआ।",
+        "pool_import_failed": "पठन गति परीक्षण फ़ाइलें आयात नहीं की जा सकीं।",
+        "start_failed": "पठन गति परीक्षण शुरू नहीं किया जा सका।",
+        "cancelled": "पठन गति परीक्षण रद्द कर दिया गया।",
+        "cancelled_window_closed": "पठन गति परीक्षण रद्द कर दिया गया क्योंकि उसकी session windows में से एक बंद हो गई।"
       }
     },
     "modal_preset": {
@@ -455,135 +570,43 @@
       "heading_new": "नया प्रीसेट बनाएँ",
       "heading_edit": "चयनित प्रीसेट संपादित करें",
       "name": "नाम:",
+      "name_placeholder": "प्रीसेट नाम",
       "wpm": "WPM:",
       "description": "विवरण:",
-      "placeholder": "संक्षिप्त विवरण...",
+      "description_placeholder": "संक्षिप्त विवरण...",
       "char_count": "{remaining} अक्षर शेष",
       "hint": "कस्टम प्रीसेट उपयोगकर्ता सेटिंग्स में सहेजे जाते हैं।",
       "cancel": "रद्द करें",
-      "save": "सहेजें"
+      "save": "सहेजें",
+      "alerts": {
+        "unavailable": "इस ऐप बिल्ड में प्रीसेट डायलॉग उपलब्ध नहीं है।",
+        "open_error": "प्रीसेट डायलॉग खोलते समय त्रुटि हुई। कंसोल देखें।",
+        "name_empty": "नाम खाली नहीं हो सकता।",
+        "wpm_invalid": "WPM {min} और {max} के बीच की संख्या होनी चाहिए।",
+        "create_error": "प्रीसेट बनाते समय त्रुटि हुई। कंसोल देखें।",
+        "edit_error": "प्रीसेट संपादित करते समय त्रुटि हुई। कंसोल देखें।",
+        "process_error": "प्रीसेट संसाधित करते समय त्रुटि हुई। कंसोल देखें।"
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "चयनित प्रीसेट कैश में नहीं मिला।",
+        "delete_error": "प्रीसेट हटाते समय त्रुटि हुई। कंसोल देखें।",
+        "restore_error": "प्रीसेट पुनर्स्थापित करते समय त्रुटि हुई। कंसोल देखें।",
+        "open_folder_unsupported": "इस वातावरण में प्रीसेट फ़ोल्डर नहीं खोला जा सकता।",
+        "open_folder_error": "प्रीसेट फ़ोल्डर खोलने का प्रयास करते समय त्रुटि हुई। कंसोल देखें।",
+        "open_default_folder_failed": "डिफ़ॉल्ट प्रीसेट फ़ोल्डर नहीं खुल सका। अधिक जानकारी के लिए कंसोल देखें।"
+      }
     },
     "browser_extension": {
       "title": "ब्राउज़र एक्सटेंशन",
       "subtitle": "Tiempo de lectura",
       "availability": "अभी Chrome पर उपलब्ध है। जल्द ही और ब्राउज़रों पर आएगा।",
       "chrome_store_aria": "एक्सटेंशन का Chrome Web Store पेज खोलें",
-      "close_aria": "ब्राउज़र एक्सटेंशन संवाद बंद करें"
-    },
-    "alerts": {
-      "clipboard_too_large": "क्लिपबोर्ड पाठ संसाधित करने के लिए बहुत बड़ा है। इसे कम करें और फिर प्रयास करें।",
-      "apply_too_large": "टेक्स्ट लागू करने के लिए बहुत बड़ा हो जाएगा। इसे कम करें और फिर कोशिश करें।",
-      "apply_truncated": "टेक्स्ट को एप्लिकेशन सीमा में फिट करने के लिए छोटा कर दिया गया।",
-      "append_text_limit": "टेक्स्ट जोड़ा नहीं जा सकता: अधिकतम आकार पहुँच गया है।",
-      "overwrite_clipboard_error": "क्लिपबोर्ड से टेक्स्ट बदलते समय त्रुटि हुई।",
-      "append_clipboard_error": "क्लिपबोर्ड से टेक्स्ट जोड़ते समय त्रुटि हुई।",
-      "clear_error": "पाठ खाली करते समय त्रुटि हुई। कंसोल देखें।",
-      "snapshot_save_success": "स्नैपशॉट सहेजा गया।",
-      "snapshot_save_error": "स्नैपशॉट सहेजा नहीं जा सका।",
-      "snapshot_load_success": "स्नैपशॉट लोड हुआ।",
-      "snapshot_load_error": "स्नैपशॉट लोड नहीं हो सका।",
-      "snapshot_outside": "स्नैपशॉट सहेजने वाले फ़ोल्डर के अंदर होना चाहिए।",
-      "snapshot_truncated": "स्नैपशॉट अधिकतम आकार से अधिक है और काट दिया गया।",
-      "snapshot_unavailable": "स्नैपशॉट सुविधा उपलब्ध नहीं है।",
-      "browser_extension_modal_open_blocked": "ब्राउज़र एक्सटेंशन डायलॉग अभी नहीं खोला जा सकता।",
-      "preset_not_found": "चयनित प्रीसेट कैश में नहीं मिला।",
-      "preset_modal_unavailable": "इस ऐप बिल्ड में प्रीसेट डायलॉग उपलब्ध नहीं है।",
-      "preset_modal_open_error": "प्रीसेट डायलॉग खोलते समय त्रुटि हुई। कंसोल देखें।",
-      "delete_error": "प्रीसेट हटाते समय त्रुटि हुई। कंसोल देखें।",
-      "restore_error": "प्रीसेट पुनर्स्थापित करते समय त्रुटि हुई। कंसोल देखें।",
-      "open_presets_unsupported": "इस वातावरण में प्रीसेट फ़ोल्डर नहीं खोला जा सकता।",
-      "open_presets_error": "प्रीसेट फ़ोल्डर खोलने का प्रयास करते समय त्रुटि हुई। कंसोल देखें।",
-      "open_presets_fail": "डिफ़ॉल्ट प्रीसेट फ़ोल्डर नहीं खुल सका। अधिक जानकारी के लिए कंसोल देखें।",
-      "text_extraction_error": "निकासी शुरू करते समय त्रुटि हुई। कंसोल देखें।",
-      "text_extraction_precondition_blocked": "निकासी शुरू करने के लिए सभी द्वितीयक विंडो बंद करें और स्टॉपवॉच रोकें।",
-      "text_extraction_precondition_error": "निकासी की पूर्व-शर्तें जाँचते समय त्रुटि हुई। कंसोल देखें।",
-      "text_extraction_processing_locked": "निकासी संसाधित हो रही है। प्रक्रिया समाप्त होने या आपके रोकने तक मुख्य विंडो की अंतःक्रियाएँ लॉक हैं।",
-      "current_text_processing_locked": "वर्तमान पाठ अभी भी अपडेट हो रहा है। नवीनतम पाठ स्थिर होने तक मुख्य विंडो की इंटरैक्शन लॉक रहेंगी।",
-      "current_text_recount_locked": "वर्तमान पाठ के परिणाम अभी भी दोबारा गिने जा रहे हैं। नवीनतम पुनर्गणना स्थिर होने तक मुख्य विंडो की इंटरैक्शन लॉक रहेंगी।",
-      "text_extraction_abort_error": "निकासी रोकने का अनुरोध करते समय त्रुटि हुई। कंसोल देखें।",
-      "text_extraction_cancellation_requested": "रद्द करने का अनुरोध किया गया है। कृपया वर्तमान निकासी पूरी होने तक प्रतीक्षा करें।",
-      "text_extraction_cancellation_complete": "रद्दीकरण पूरा हुआ।",
-      "text_extraction_drop_invalid_file": "छोड़ा गया आइटम मान्य स्थानीय फ़ाइल नहीं है।",
-      "text_extraction_pdf_unreadable_or_corrupt": "यह PDF पढ़ी नहीं जा सकती या दूषित है। फ़ाइल जाँचें और फिर से कोशिश करें।",
-      "text_extraction_pdf_encrypted_or_password_protected": "यह PDF एन्क्रिप्टेड है या पासवर्ड से सुरक्षित है। इसे अनलॉक करें और फिर से कोशिश करें।",
-      "text_extraction_pdf_page_count_unavailable": "इस PDF की पृष्ठ संख्या जाँची नहीं जा सकी। फ़ाइल जाँचें और फिर से कोशिश करें।",
-      "text_extraction_pdf_page_selection_invalid": "चयनित PDF पृष्ठ-सीमा अमान्य है। सीमा समायोजित करें और फिर से कोशिश करें।",
-      "text_extraction_pdf_subset_creation_failed": "एक्सट्रैक्शन के लिए चयनित पृष्ठों वाली PDF बनाई नहीं जा सकी। फ़ाइल जाँचें और फिर से कोशिश करें।",
-      "text_extraction_generated_pdf_cleanup_warning": "एक्सट्रैक्शन पूरा हो गया, लेकिन बनाई गई स्थानीय PDF को अपने-आप साफ़ नहीं किया जा सका।",
-      "text_extraction_route_choice_error": "extraction route चुनते समय त्रुटि हुई।",
-      "text_extraction_generated_pdf_reveal_failed": "सहेजी गई PDF दिखाई नहीं जा सकी। जाँचें कि फ़ाइल अभी भी मौजूद है या नहीं।",
-      "text_extraction_apply_error": "निकाला गया पाठ लागू करते समय त्रुटि हुई। कंसोल देखें और फिर प्रयास करें।",
-      "text_extraction_prepare_invalid": "तैयार निकासी अनुरोध अब मान्य नहीं है। प्रवाह फिर से शुरू करें।",
-      "text_extraction_batch_ocr_activation_required": "इस समूह में OCR आइटम हैं, लेकिन Google OCR सक्षम नहीं है। प्राथमिकताएँ > Google OCR सक्षम करें उपयोग करें, फिर समूह फिर से शुरू करें।",
-      "text_extraction_batch_ocr_token_state_invalid": "इस समूह में OCR आइटम हैं, लेकिन सहेजी गई Google OCR साइन-इन स्थिति अमान्य है। प्राथमिकताएँ > Google OCR सक्षम करें फिर से उपयोग करें, फिर समूह फिर से शुरू करें।",
-      "text_extraction_batch_ocr_connectivity_failed": "इस बैच में OCR आइटम हैं, लेकिन OCR के लिए इंटरनेट कनेक्शन चाहिए। extraction शुरू करने से पहले अपना कनेक्शन जाँचें और फिर कोशिश करें।",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "इस बैच में OCR आइटम हैं, लेकिन quota/rate limits के कारण OCR अस्थायी रूप से अवरुद्ध है। प्रतीक्षा करें और extraction शुरू करने से पहले फिर कोशिश करें।",
-      "text_extraction_batch_ocr_unavailable": "इस समूह में OCR आइटम हैं, लेकिन Google OCR अभी उपलब्ध नहीं है। यदि OCR अभी सक्षम नहीं है, तो प्राथमिकताएँ > Google OCR सक्षम करें उपयोग करें। अन्यथा समूह शुरू करने से पहले OCR सेटअप/प्रमाणीकरण स्थिति जाँचें और फिर प्रयास करें।",
-      "text_extraction_ocr_unavailable": "OCR उपलब्ध नहीं है। setup/auth स्थिति जाँचें और फिर प्रयास करें।",
-      "text_extraction_ocr_activation_required": "OCR सक्रियण आवश्यक है। Google OCR में साइन इन करें और फिर प्रयास करें।",
-      "text_extraction_ocr_activation_success": "OCR सक्रियण पूरा हुआ। निकासी फिर से प्रयास की जा रही है।",
-      "text_extraction_ocr_activation_cancelled": "OCR सक्रियण रद्द किया गया। निकासी जारी नहीं रही।",
-      "text_extraction_ocr_token_state_invalid": "सहेजी गई Google OCR साइन-इन स्थिति अमान्य है। Google OCR फिर से कनेक्ट करें और फिर प्रयास करें।",
-      "text_extraction_ocr_activation_failed": "OCR सक्रियण विफल हुआ। setup/auth स्थिति जाँचें और फिर प्रयास करें।",
-      "text_extraction_ocr_enable_success": "Google OCR सक्षम हो गया।",
-      "text_extraction_ocr_enable_cancelled": "Google OCR सक्षम करना रद्द किया गया।",
-      "text_extraction_ocr_enable_failed": "Google OCR सक्षम नहीं किया जा सका। सेटअप/प्रमाणीकरण स्थिति जाँचें और फिर प्रयास करें।",
-      "text_extraction_ocr_disconnect_success": "Google OCR डिस्कनेक्ट कर दिया गया। सहेजा गया Google टोकन रद्द कर दिया गया और स्थानीय साइन-इन स्थिति हटा दी गई।",
-      "text_extraction_ocr_disconnect_not_connected": "इस ऐप इंस्टेंस में Google OCR अभी कनेक्ट नहीं है।",
-      "text_extraction_ocr_disconnect_failed": "Google OCR डिस्कनेक्शन विफल हुआ। सहेजी गई साइन-इन स्थिति हटाई नहीं गई।",
-      "text_extraction_ocr_connectivity_failed": "OCR के लिए इंटरनेट कनेक्शन आवश्यक है। अपना कनेक्शन जाँचें और फिर प्रयास करें।",
-      "text_extraction_ocr_setup_missing_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अनुपस्थित हैं।",
-      "text_extraction_ocr_setup_invalid_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अमान्य हैं।",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR अस्थायी रूप से quota/rate limit के कारण अवरुद्ध है। प्रतीक्षा करें और फिर प्रयास करें।",
-      "text_extraction_ocr_runtime_error": "निकासी के दौरान OCR runtime त्रुटि हुई। कंसोल देखें और फिर प्रयास करें।",
-      "text_extraction_ocr_cancelled": "OCR निकासी रद्द कर दी गई।",
-      "text_extraction_ocr_cleanup_warning": "OCR पूरा हुआ, लेकिन अस्थायी remote फ़ाइल cleanup विफल रहा। अपना Google Drive फ़ोल्डर देखें।",
-      "text_extraction_native_runtime_error": "निकासी के दौरान native extraction runtime त्रुटि हुई। कंसोल देखें और फिर प्रयास करें।",
-      "text_extraction_native_unreadable_or_corrupt": "चयनित फ़ाइल native extraction के लिए पढ़ने योग्य नहीं है या corrupt है।",
-      "text_extraction_native_encrypted_or_password_protected": "चयनित PDF encrypted या password-protected है और native route से निकाली नहीं जा सकती।",
-      "text_extraction_native_cancelled": "Native extraction रद्द कर दी गई।",
-      "text_extraction_unsupported_format": "यह फ़ाइल प्रारूप पाठ निकासी के लिए समर्थित नहीं है।",
-      "wip_diseno_skins": "WIP: skins selector भविष्य के संस्करण में यहाँ खुलेगा।",
-      "wip_diseno_crono": "WIP: Floating Stopwatch settings भविष्य के संस्करण में यहाँ खुलेंगी।",
-      "wip_diseno_fuentes": "WIP: fonts selector भविष्य के संस्करण में यहाँ खुलेगा।",
-      "wip_diseno_colores": "WIP: colors selector भविष्य के संस्करण में यहाँ खुलेगा।",
-      "wip_shortcuts": "WIP: keyboard shortcuts selector भविष्य के संस्करण में यहाँ खुलेगा।",
-      "reading_test_unavailable": "पठन गति परीक्षण सुविधा उपलब्ध नहीं है।",
-      "reading_test_precondition_blocked": "पठन गति परीक्षण केवल ऐप की स्थिर स्थिति से शुरू हो सकता है। द्वितीयक विंडो बंद करें और सुनिश्चित करें कि स्टॉपवॉच रुकी हुई है।",
-      "reading_test_pool_error": "पठन गति परीक्षण पूल जाँचते समय त्रुटि हुई।",
-      "reading_test_no_matching_files": "वर्तमान चयन से मेल खाने वाली कोई अप्रयुक्त परीक्षण फ़ाइल शेष नहीं है।",
-      "reading_test_visible_empty_bundled_hidden": "अंतर्निहित टेस्ट फ़ाइलें छिपी हुई हैं और वर्तमान में कोई दृश्य, अप्रयुक्त टेस्ट फ़ाइल उपलब्ध नहीं है। जारी रखने के लिए अंतर्निहित फ़ाइलों को फिर से दिखाएँ या और फ़ाइलें इम्पोर्ट करें।",
-      "reading_test_current_text_empty": "वर्तमान पाठ खाली है। वर्तमान पाठ से परीक्षण शुरू करने से पहले कोई पाठ लोड करें या लिखें।",
-      "reading_test_result_invalid": "परीक्षण परिणाम को मान्य WPM में बदला नहीं जा सका। प्रीसेट मोडल खोले बिना प्रवाह समाप्त हुआ।",
-      "reading_test_result_unavailable": "पठन गति परिणाम दिखाया नहीं जा सका। प्रवाह जारी रहा।",
-      "reading_test_preset_unavailable": "परीक्षण के बाद प्रीसेट मोडल नहीं खोला जा सका।",
-      "reading_test_questions_unavailable": "समझ प्रश्नों का मोडल नहीं खोला जा सका। प्रीसेट निर्माण से पहले प्रवाह समाप्त हुआ।",
-      "reading_test_pool_import_failed": "पठन गति परीक्षण फ़ाइलें आयात नहीं की जा सकीं।",
-      "reading_test_start_failed": "पठन गति परीक्षण शुरू नहीं किया जा सका।",
-      "text_editor_start_failed": "Text Editor शुरू नहीं किया जा सका।",
-      "text_editor_start_timeout": "Text Editor शुरू होने में बहुत अधिक समय लगा और उसे बंद कर दिया गया।",
-      "reading_test_cancelled": "पठन गति परीक्षण रद्द कर दिया गया।",
-      "reading_test_cancelled_window_closed": "पठन गति परीक्षण रद्द कर दिया गया क्योंकि उसकी session windows में से एक बंद हो गई।"
-    },
-    "editor_alerts": {
-      "paste_too_big": "पाठ सीधे चिपकाने के लिए बहुत बड़ा है। मुख्य विंडो के बटन उपयोग करें।",
-      "drop_too_big": "खींचकर छोड़ा गया पाठ बहुत बड़ा है। बड़ा पाठ जोड़ने के लिए मुख्य विंडो के बटन उपयोग करें।",
-      "paste_no_text": "क्लिपबोर्ड में plain text नहीं है।",
-      "drop_no_text": "Drag and drop: plain text नहीं मिला।",
-      "type_limit": "और पाठ नहीं लिखा जा सकता: अधिकतम आकार पहुँच गया है।",
-      "paste_limit": "और पाठ नहीं चिपकाया जा सकता: अधिकतम आकार पहुँच गया है।",
-      "drop_limit": "और पाठ drop नहीं किया जा सकता: अधिकतम आकार पहुँच गया है।",
-      "paste_truncated": "अधिकतम सीमा से बचने के लिए चिपकाया गया पाठ काट दिया गया।",
-      "drop_truncated": "खींचा गया पाठ उपलब्ध स्थान से अधिक था और काट दिया गया।",
-      "text_truncated": "ऐप की सीमा में फिट करने के लिए पाठ काट दिया गया।",
-      "calc_error": "गणना करते समय त्रुटि हुई। कंसोल देखें।"
-    },
-    "preset_alerts": {
-      "name_empty": "नाम खाली नहीं हो सकता।",
-      "wpm_invalid": "WPM {min} और {max} के बीच की संख्या होनी चाहिए।",
-      "create_error": "प्रीसेट बनाते समय त्रुटि हुई। कंसोल देखें।",
-      "edit_error": "प्रीसेट संपादित करते समय त्रुटि हुई। कंसोल देखें।",
-      "process_error": "प्रीसेट संसाधित करते समय त्रुटि हुई। कंसोल देखें।"
+      "close_aria": "ब्राउज़र एक्सटेंशन संवाद बंद करें",
+      "alerts": {
+        "modal_open_blocked": "ब्राउज़र एक्सटेंशन डायलॉग अभी नहीं खोला जा सकता।"
+      }
     },
     "info": {
       "loading": "लोड हो रहा है...",

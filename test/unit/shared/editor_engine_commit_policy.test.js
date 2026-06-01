@@ -40,10 +40,12 @@ function createHarness({
   maxTextChars = 1_000_000,
   execCommandBehavior = 'success',
   disableSetRangeText = false,
+  autoEnabled = true,
 } = {}) {
   const execCalls = [];
   const setRangeTextCalls = [];
   const dispatchedEvents = [];
+  const setCurrentTextCalls = [];
   const style = createVisibilityStyleRecorder();
 
   const editor = {
@@ -142,9 +144,17 @@ function createHarness({
 
   const engine = sandbox.window.EditorEngine.createEditorEngine({
     log,
-    editorAPI: {},
+    editorAPI: {
+      setCurrentText(payload) {
+        setCurrentTextCalls.push(payload);
+        return { ok: true };
+      },
+    },
     editorFindReplaceCore,
-    dom: { editor },
+    dom: {
+      editor,
+      calcWhileTyping: { checked: autoEnabled },
+    },
     state: {
       maxTextChars,
       suppressLocalUpdate: false,
@@ -161,6 +171,7 @@ function createHarness({
     editor,
     execCalls,
     setRangeTextCalls,
+    setCurrentTextCalls,
     dispatchedEvents,
     previousActiveElement,
     visibilityHistory: style.history,
@@ -338,24 +349,89 @@ test('insert direct-splice fallback dispatches input after text mutation', () =>
   assert.deepEqual(dispatchedEvents, ['input']);
 });
 
+test('paste transfer commits through setCurrentText only when auto is on', () => {
+  const { engine, editor, setCurrentTextCalls } = createHarness({
+    initialValue: 'abc',
+    autoEnabled: true,
+  });
+
+  engine.handleTextTransferInsert(
+    {
+      preventDefault() {},
+      stopPropagation() {},
+    },
+    {
+      getText: () => 'Z',
+      insertOptions: { action: 'paste' },
+    }
+  );
+
+  assert.equal(editor.value, 'abcZ');
+  assert.equal(setCurrentTextCalls.length, 1);
+  assert.equal(setCurrentTextCalls[0].meta.action, 'paste');
+  assert.equal(setCurrentTextCalls[0].text, 'abcZ');
+});
+
+test('drop transfer stays local when auto is off', () => {
+  const { engine, editor, setCurrentTextCalls } = createHarness({
+    initialValue: 'abc',
+    autoEnabled: false,
+  });
+
+  engine.handleTextTransferInsert(
+    {
+      preventDefault() {},
+      stopPropagation() {},
+    },
+    {
+      getText: () => 'Z',
+      insertOptions: { action: 'drop' },
+    }
+  );
+
+  assert.equal(editor.value, 'abcZ');
+  assert.equal(setCurrentTextCalls.length, 0);
+});
+
 test('replace-current setRangeText fallback dispatches input after text mutation', () => {
   const { engine, editor, dispatchedEvents } = createHarness({
     initialValue: 'alpha',
     execCommandBehavior: 'fail',
   });
-  editor.selectionStart = 0;
-  editor.selectionEnd = 5;
 
   const result = engine.handleReplaceRequest({
     operation: 'replace-current',
     requestId: 3,
     query: 'alpha',
     replacement: 'beta',
+    activeMatchOrdinal: 1,
     matchCase: false,
   });
 
   assert.equal(result.status, 'replaced');
   assert.equal(editor.value, 'beta');
+  assert.deepEqual(dispatchedEvents, ['input']);
+});
+
+test('replace-current can target a later literal match without relying on the live selection', () => {
+  const { engine, editor, dispatchedEvents } = createHarness({
+    initialValue: 'uno alpha dos alpha tres',
+    execCommandBehavior: 'fail',
+  });
+  editor.selectionStart = 0;
+  editor.selectionEnd = 3;
+
+  const result = engine.handleReplaceRequest({
+    operation: 'replace-current',
+    requestId: 4,
+    query: 'alpha',
+    replacement: 'beta',
+    activeMatchOrdinal: 2,
+    matchCase: false,
+  });
+
+  assert.equal(result.status, 'replaced');
+  assert.equal(editor.value, 'uno alpha dos beta tres');
   assert.deepEqual(dispatchedEvents, ['input']);
 });
 

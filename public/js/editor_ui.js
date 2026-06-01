@@ -49,15 +49,13 @@
     const {
       loadRendererTranslations,
       tRenderer,
-      msgRenderer,
       resolveUserTextDirection,
     } = ctx.rendererI18n || {};
-    if (!loadRendererTranslations || !tRenderer || !msgRenderer || !resolveUserTextDirection) {
+    if (!loadRendererTranslations || !tRenderer || !resolveUserTextDirection) {
       throw new Error('[editor] RendererI18n unavailable; cannot continue');
     }
 
     const tr = (path) => tRenderer(path);
-    const trMsg = (path, params) => msgRenderer(path, params);
 
     // =============================================================================
     // Translation And Document Helpers
@@ -223,12 +221,13 @@
       syncEditorMaximizedLayout();
     }
 
+    function formatEditorTextSizeValue(value) {
+      return String(value);
+    }
+
     function updateEditorTextSizeUi() {
       if (textSizeValue) {
-        const valueText = trMsg(
-          'renderer.editor.text_size_value',
-          { value: state.editorFontSizePx }
-        );
+        const valueText = formatEditorTextSizeValue(state.editorFontSizePx);
         textSizeValue.setAttribute('data-label', valueText);
         textSizeValue.setAttribute('aria-label', valueText);
       }
@@ -266,10 +265,7 @@
 
       const readProgressPercent = computeReadProgressPercent();
       const percentValueText = `${readProgressPercent}%`;
-      const ariaText = trMsg(
-        'renderer.editor.read_progress_aria',
-        { value: percentValueText }
-      );
+      const ariaText = `${tr('renderer.editor.read_progress_label')}: ${percentValueText}`;
 
       readProgressValue.setAttribute('data-label', percentValueText);
       readProgressValue.setAttribute('aria-label', ariaText);

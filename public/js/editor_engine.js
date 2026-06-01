@@ -19,7 +19,7 @@
 
   function createEditorEngine(ctx) {
     const { log, editorAPI, editorFindReplaceCore, dom, state } = ctx;
-    const { editor } = dom;
+    const { editor, calcWhileTyping } = dom;
 
     // =============================================================================
     // Selection And Native Edit Helpers
@@ -176,20 +176,12 @@
       }
     }
 
-    function selectionMatchesCurrentEditorSelection(query, matchCase = false) {
-      const { start, end } = getSelectionRange();
-      return editorFindReplaceCore.selectionMatchesLiteralQuery({
-        value: editor.value,
-        selectionStart: start,
-        selectionEnd: end,
-        query,
-        matchCase,
-      });
-    }
+    function tryNativeReplaceSelectionWithoutSync(start, end, replacementText) {
+      const previousActiveElement = document.activeElement;
 
-    function tryNativeReplaceCurrentSelectionWithoutSync(replacementText) {
       try {
-        const { start, end } = getSelectionRange();
+        editor.focus();
+        setSelectionSafe(start, end);
 
         try {
           const ok = document.execCommand && document.execCommand('insertText', false, replacementText);
@@ -222,8 +214,10 @@
         dispatchNativeInputEvent();
         return true;
       } catch (err) {
-        log.error('tryNativeReplaceCurrentSelectionWithoutSync error:', err);
+        log.error('tryNativeReplaceSelectionWithoutSync error:', err);
         return false;
+      } finally {
+        restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.replaceCurrent.selection');
       }
     }
 
@@ -304,6 +298,7 @@
       const requestId = Number(payload && payload.requestId);
       const query = typeof payload?.query === 'string' ? payload.query : '';
       const replacement = typeof payload?.replacement === 'string' ? payload.replacement : '';
+      const activeMatchOrdinal = Number(payload && payload.activeMatchOrdinal);
       const matchCase = !!(payload && payload.matchCase);
 
       if (!query) {
@@ -313,14 +308,25 @@
         });
       }
 
-      if (!selectionMatchesCurrentEditorSelection(query, matchCase)) {
+      const explicitRange = editorFindReplaceCore.resolveLiteralMatchByOrdinal({
+        value: editor.value,
+        query,
+        ordinal: activeMatchOrdinal,
+        matchCase,
+      });
+
+      if (!explicitRange) {
         return buildReplaceResponse('replace-current', requestId, {
           status: 'selection-mismatch',
           replacements: 0,
         });
       }
 
-      const replaced = tryNativeReplaceCurrentSelectionWithoutSync(replacement);
+      const replaced = tryNativeReplaceSelectionWithoutSync(
+        explicitRange.start,
+        explicitRange.end,
+        replacement
+      );
       if (!replaced) {
         return buildReplaceResponse('replace-current', requestId, {
           ok: false,
@@ -449,7 +455,7 @@
     }
 
     function notifyTextTruncated() {
-      window.Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
+      window.Notify.notifyEditor('renderer.editor.alerts.text_truncated', { type: 'warn', duration: 5000 });
     }
 
     function handleTruncationResponse(resPromise) {
@@ -470,20 +476,12 @@
 
     function insertTextAtCursor(rawText, options = {}) {
       try {
-        const action = (options && typeof options.action === 'string') ? options.action : 'paste';
         const limitAlertKey = (options && typeof options.limitAlertKey === 'string')
           ? options.limitAlertKey
-          : 'renderer.editor_alerts.paste_limit';
+          : 'renderer.editor.alerts.paste_limit';
         const truncatedAlertKey = (options && typeof options.truncatedAlertKey === 'string')
           ? options.truncatedAlertKey
-          : 'renderer.editor_alerts.paste_truncated';
-        const syncOptions = {};
-        if (options && typeof options.onPrimaryError === 'function') {
-          syncOptions.onPrimaryError = options.onPrimaryError;
-        }
-        if (options && typeof options.onFallbackError === 'function') {
-          syncOptions.onFallbackError = options.onFallbackError;
-        }
+          : 'renderer.editor.alerts.paste_truncated';
         const available = getInsertionCapacity();
         if (available <= 0) {
           window.Notify.notifyEditor(limitAlertKey, { type: 'warn' });
@@ -499,8 +497,6 @@
         }
 
         tryNativeInsertAtSelection(toInsert);
-
-        sendCurrentTextToMain(action, syncOptions);
 
         if (truncated) {
           window.Notify.notifyEditor(truncatedAlertKey, { type: 'warn', duration: 5000 });
@@ -518,10 +514,10 @@
       const source = transferConfig && transferConfig.source ? transferConfig.source : 'transfer';
       const noTextAlertKey = transferConfig && transferConfig.noTextAlertKey
         ? transferConfig.noTextAlertKey
-        : 'renderer.editor_alerts.paste_no_text';
+        : 'renderer.editor.alerts.paste_no_text';
       const tooBigAlertKey = transferConfig && transferConfig.tooBigAlertKey
         ? transferConfig.tooBigAlertKey
-        : 'renderer.editor_alerts.paste_too_big';
+        : 'renderer.editor.alerts.paste_too_big';
       const insertOptions = transferConfig && transferConfig.insertOptions ? transferConfig.insertOptions : {};
       const getText = transferConfig && typeof transferConfig.getText === 'function'
         ? transferConfig.getText
@@ -550,7 +546,34 @@
           return;
         }
 
-        insertTextAtCursor(text, insertOptions);
+        const action = (insertOptions && typeof insertOptions.action === 'string')
+          ? insertOptions.action
+          : 'paste';
+        const syncOptions = {};
+        if (insertOptions && typeof insertOptions.onPrimaryError === 'function') {
+          syncOptions.onPrimaryError = insertOptions.onPrimaryError;
+        }
+        if (insertOptions && typeof insertOptions.onFallbackError === 'function') {
+          syncOptions.onFallbackError = insertOptions.onFallbackError;
+        }
+
+        const prevSuppressLocalUpdate = state.suppressLocalUpdate;
+        let insertResult = null;
+        state.suppressLocalUpdate = true;
+        try {
+          insertResult = insertTextAtCursor(text, insertOptions);
+        } finally {
+          state.suppressLocalUpdate = prevSuppressLocalUpdate;
+        }
+
+        if (
+          insertResult &&
+          insertResult.inserted > 0 &&
+          calcWhileTyping &&
+          calcWhileTyping.checked
+        ) {
+          sendCurrentTextToMain(action, syncOptions);
+        }
       } catch (err) {
         log.error(`${source} handler error:`, err);
         ctx.ui.restoreFocusToEditor();

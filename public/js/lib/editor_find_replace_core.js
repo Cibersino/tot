@@ -8,7 +8,6 @@
 // Responsibilities:
 // - Normalize matching for case-sensitive and case-insensitive comparisons.
 // - Mirror native find behavior by folding common Latin diacritics when matchCase is off.
-// - Check whether the current selection still matches a literal query.
 // - Compute replace-all output without mutating Text Editor state directly.
 
 // =============================================================================
@@ -32,29 +31,57 @@ function createEditorFindReplaceCore() {
       .toLocaleLowerCase();
   }
 
-  function selectionMatchesLiteralQuery({
+  function findLiteralMatchRanges({
     value = '',
-    selectionStart = 0,
-    selectionEnd = 0,
     query = '',
     matchCase = false,
   } = {}) {
-    const needle = String(query || '');
-    if (!needle) return false;
-
-    const start = Number(selectionStart);
-    const end = Number(selectionEnd);
-    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
-      return false;
-    }
-
     const sourceText = String(value || '');
-    const selectedText = sourceText.slice(start, end);
-    if (selectedText.length !== needle.length) {
-      return false;
+    const needle = String(query || '');
+
+    if (!needle) {
+      return [];
     }
 
-    return normalizeForMatch(selectedText, matchCase) === normalizeForMatch(needle, matchCase);
+    const haystack = normalizeForMatch(sourceText, matchCase);
+    const normalizedNeedle = normalizeForMatch(needle, matchCase);
+    const needleLength = needle.length;
+    let fromIndex = 0;
+    const ranges = [];
+
+    while (fromIndex <= sourceText.length) {
+      const matchIndex = haystack.indexOf(normalizedNeedle, fromIndex);
+      if (matchIndex === -1) {
+        break;
+      }
+
+      ranges.push({
+        start: matchIndex,
+        end: matchIndex + needleLength,
+      });
+      fromIndex = matchIndex + needleLength;
+    }
+
+    return ranges;
+  }
+
+  function resolveLiteralMatchByOrdinal({
+    value = '',
+    query = '',
+    ordinal = 0,
+    matchCase = false,
+  } = {}) {
+    const targetOrdinal = Number(ordinal);
+    if (!Number.isFinite(targetOrdinal) || targetOrdinal < 1) {
+      return null;
+    }
+
+    const ranges = findLiteralMatchRanges({
+      value,
+      query,
+      matchCase,
+    });
+    return ranges[targetOrdinal - 1] || null;
   }
 
   function computeLiteralReplaceAll({
@@ -73,30 +100,24 @@ function createEditorFindReplaceCore() {
         nextValue: sourceText,
       };
     }
-
-    const haystack = normalizeForMatch(sourceText, matchCase);
-    const normalizedNeedle = normalizeForMatch(needle, matchCase);
-    const needleLength = needle.length;
+    const ranges = findLiteralMatchRanges({
+      value: sourceText,
+      query: needle,
+      matchCase,
+    });
     let fromIndex = 0;
-    let replacements = 0;
     const parts = [];
 
-    while (fromIndex <= sourceText.length) {
-      const matchIndex = haystack.indexOf(normalizedNeedle, fromIndex);
-      if (matchIndex === -1) {
-        parts.push(sourceText.slice(fromIndex));
-        break;
-      }
-
-      parts.push(sourceText.slice(fromIndex, matchIndex));
+    for (const range of ranges) {
+      parts.push(sourceText.slice(fromIndex, range.start));
       parts.push(replacementText);
-      fromIndex = matchIndex + needleLength;
-      replacements += 1;
+      fromIndex = range.end;
     }
+    parts.push(sourceText.slice(fromIndex));
 
     return {
-      replacements,
-      nextValue: replacements > 0 ? parts.join('') : sourceText,
+      replacements: ranges.length,
+      nextValue: ranges.length > 0 ? parts.join('') : sourceText,
     };
   }
 
@@ -105,7 +126,8 @@ function createEditorFindReplaceCore() {
   // =============================================================================
 
   return {
-    selectionMatchesLiteralQuery,
+    findLiteralMatchRanges,
+    resolveLiteralMatchByOrdinal,
     computeLiteralReplaceAll,
   };
 }

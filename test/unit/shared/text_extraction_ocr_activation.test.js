@@ -68,7 +68,7 @@ test('Preferences-menu OCR activation notifies success after the shared flow suc
 
   assert.equal(result.ok, true);
   assert.deepEqual(harness.notifications, [
-    'renderer.alerts.text_extraction_ocr_enable_success',
+    'renderer.text_extraction.alerts.ocr.enable_success',
   ]);
   assert.equal(harness.getActivationCallCount(), 1);
 });
@@ -102,7 +102,7 @@ test('Preferences-menu OCR activation forwards activation failure alerts from th
 
   assert.equal(result.ok, false);
   assert.deepEqual(harness.notifications, [
-    'renderer.alerts.text_extraction_ocr_enable_cancelled',
+    'renderer.text_extraction.alerts.ocr.enable_cancelled',
   ]);
   assert.equal(harness.getActivationCallCount(), 1);
 });
@@ -120,7 +120,7 @@ test('Preferences-menu OCR activation uses setup-specific alerts for credential 
 
   assert.equal(result.ok, false);
   assert.deepEqual(harness.notifications, [
-    'renderer.alerts.text_extraction_ocr_setup_missing_credentials',
+    'renderer.text_extraction.alerts.ocr.setup_missing_credentials',
   ]);
   assert.equal(harness.getActivationCallCount(), 1);
 });

@@ -184,21 +184,21 @@ function resolveSetupCode(validationResult) {
 
 function resolvePdfAlertKey(code) {
   if (code === 'native_encrypted_or_password_protected') {
-    return 'renderer.alerts.text_extraction_pdf_encrypted_or_password_protected';
+    return 'renderer.text_extraction.alerts.pdf.encrypted_or_password_protected';
   }
   if (code === 'unreadable_or_corrupt') {
-    return 'renderer.alerts.text_extraction_pdf_unreadable_or_corrupt';
+    return 'renderer.text_extraction.alerts.pdf.unreadable_or_corrupt';
   }
   if (code === 'pdf_page_count_unavailable') {
-    return 'renderer.alerts.text_extraction_pdf_page_count_unavailable';
+    return 'renderer.text_extraction.alerts.pdf.page_count_unavailable';
   }
   if (code === 'pdf_page_selection_invalid') {
-    return 'renderer.alerts.text_extraction_pdf_page_selection_invalid';
+    return 'renderer.text_extraction.alerts.pdf.page_selection_invalid';
   }
   if (code === 'pdf_subset_creation_failed') {
-    return 'renderer.alerts.text_extraction_pdf_subset_creation_failed';
+    return 'renderer.text_extraction.alerts.pdf.subset_creation_failed';
   }
-  return 'renderer.alerts.text_extraction_error';
+  return 'renderer.text_extraction.alerts.start_error';
 }
 
 function getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy) {
@@ -363,19 +363,19 @@ function buildOcrPrepareFailure({
   const state = resolveSetupState(validationResult);
   const code = resolveSetupCode(validationResult) || 'platform_runtime_failed';
 
-  let primaryAlertKey = 'renderer.alerts.text_extraction_ocr_unavailable';
+  let primaryAlertKey = 'renderer.text_extraction.alerts.ocr.unavailable';
   if (state === 'ocr_activation_required' || code === 'ocr_activation_required') {
-    primaryAlertKey = 'renderer.alerts.text_extraction_ocr_activation_required';
+    primaryAlertKey = 'renderer.text_extraction.alerts.ocr.activation_required';
   } else if (code === 'credentials_missing') {
-    primaryAlertKey = 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
+    primaryAlertKey = 'renderer.text_extraction.alerts.ocr.setup_missing_credentials';
   } else if (code === 'credentials_invalid') {
-    primaryAlertKey = 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
+    primaryAlertKey = 'renderer.text_extraction.alerts.ocr.setup_invalid_credentials';
   } else if (code === 'ocr_token_state_invalid') {
-    primaryAlertKey = 'renderer.alerts.text_extraction_ocr_token_state_invalid';
+    primaryAlertKey = 'renderer.text_extraction.alerts.ocr.token_state_invalid';
   } else if (code === 'connectivity_failed') {
-    primaryAlertKey = 'renderer.alerts.text_extraction_ocr_connectivity_failed';
+    primaryAlertKey = 'renderer.text_extraction.alerts.ocr.connectivity_failed';
   } else if (code === 'quota_or_rate_limited') {
-    primaryAlertKey = 'renderer.alerts.text_extraction_ocr_quota_or_rate_limited';
+    primaryAlertKey = 'renderer.text_extraction.alerts.ocr.quota_or_rate_limited';
   }
 
   return buildPrepareFailure({
@@ -413,8 +413,8 @@ function buildNativePrepareFailure({
   const failure = getProbeFailureDetails(probeResult);
   const code = failure ? failure.code : '';
   const pdfAlertKey = resolvePdfAlertKey(code);
-  const primaryAlertKey = pdfAlertKey === 'renderer.alerts.text_extraction_error'
-    ? 'renderer.alerts.text_extraction_native_runtime_error'
+  const primaryAlertKey = pdfAlertKey === 'renderer.text_extraction.alerts.start_error'
+    ? 'renderer.text_extraction.alerts.native.runtime_error'
     : pdfAlertKey;
 
   return buildPrepareFailure({
@@ -458,7 +458,7 @@ function buildUnsupportedFormatPrepareFailure(fileInfo) {
       triageReason: 'unsupported_format',
       ocrSetupState: 'not_checked',
     }),
-    primaryAlertKey: 'renderer.alerts.text_extraction_unsupported_format',
+    primaryAlertKey: 'renderer.text_extraction.alerts.unsupported_format',
     warningAlertKeys: [],
     error: {
       code: 'unsupported_format',
@@ -809,7 +809,7 @@ async function resolvePdfPreparation({
       fileInfo,
       executionKind: routeMetadata.executionKind,
       routeMetadata,
-      primaryAlertKey: 'renderer.alerts.text_extraction_error',
+      primaryAlertKey: 'renderer.text_extraction.alerts.start_error',
       warningAlertKeys: [],
       error: {
         code: 'heavy_split_plan_invalid',
@@ -919,45 +919,45 @@ function resolvePrimaryAlertKey(routeKind, result) {
     : '';
 
   if (code === 'pdf_page_count_unavailable') {
-    return 'renderer.alerts.text_extraction_pdf_page_count_unavailable';
+    return 'renderer.text_extraction.alerts.pdf.page_count_unavailable';
   }
   if (code === 'pdf_page_selection_invalid') {
-    return 'renderer.alerts.text_extraction_pdf_page_selection_invalid';
+    return 'renderer.text_extraction.alerts.pdf.page_selection_invalid';
   }
   if (code === 'pdf_subset_creation_failed') {
-    return 'renderer.alerts.text_extraction_pdf_subset_creation_failed';
+    return 'renderer.text_extraction.alerts.pdf.subset_creation_failed';
   }
 
   if (routeKind === 'native') {
     if (state === 'success') return '';
-    if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_native_cancelled';
+    if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.text_extraction.alerts.native.cancelled';
     if (code === 'native_encrypted_or_password_protected') {
-      return 'renderer.alerts.text_extraction_native_encrypted_or_password_protected';
+      return 'renderer.text_extraction.alerts.native.encrypted_or_password_protected';
     }
-    if (code === 'unreadable_or_corrupt') return 'renderer.alerts.text_extraction_native_unreadable_or_corrupt';
-    return 'renderer.alerts.text_extraction_native_runtime_error';
+    if (code === 'unreadable_or_corrupt') return 'renderer.text_extraction.alerts.native.unreadable_or_corrupt';
+    return 'renderer.text_extraction.alerts.native.runtime_error';
   }
 
   if (routeKind === 'ocr') {
     if (state === 'success') return '';
     if (code === 'ocr_input_too_large') return '';
-    if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.text_extraction_ocr_cancelled';
-    if (code === 'ocr_activation_required') return 'renderer.alerts.text_extraction_ocr_activation_required';
-    if (code === 'credentials_missing') return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
-    if (code === 'credentials_invalid') return 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
-    if (code === 'ocr_token_state_invalid') return 'renderer.alerts.text_extraction_ocr_token_state_invalid';
-    if (code === 'connectivity_failed') return 'renderer.alerts.text_extraction_ocr_connectivity_failed';
-    if (code === 'quota_or_rate_limited') return 'renderer.alerts.text_extraction_ocr_quota_or_rate_limited';
+    if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.text_extraction.alerts.ocr.cancelled';
+    if (code === 'ocr_activation_required') return 'renderer.text_extraction.alerts.ocr.activation_required';
+    if (code === 'credentials_missing') return 'renderer.text_extraction.alerts.ocr.setup_missing_credentials';
+    if (code === 'credentials_invalid') return 'renderer.text_extraction.alerts.ocr.setup_invalid_credentials';
+    if (code === 'ocr_token_state_invalid') return 'renderer.text_extraction.alerts.ocr.token_state_invalid';
+    if (code === 'connectivity_failed') return 'renderer.text_extraction.alerts.ocr.connectivity_failed';
+    if (code === 'quota_or_rate_limited') return 'renderer.text_extraction.alerts.ocr.quota_or_rate_limited';
     if (code === PROVIDER_API_DISABLED_CODE
       || code === 'auth_failed'
       || code === 'platform_runtime_failed'
       || code === 'ocr_unavailable') {
-      return 'renderer.alerts.text_extraction_ocr_unavailable';
+      return 'renderer.text_extraction.alerts.ocr.unavailable';
     }
-    return 'renderer.alerts.text_extraction_ocr_runtime_error';
+    return 'renderer.text_extraction.alerts.ocr.runtime_error';
   }
 
-  return 'renderer.alerts.text_extraction_error';
+  return 'renderer.text_extraction.alerts.start_error';
 }
 
 function resolveWarningAlertKeys(routeKind, result) {
@@ -965,7 +965,7 @@ function resolveWarningAlertKeys(routeKind, result) {
   const alertKeys = [];
 
   if (warnings.some((warning) => warning === 'cleanup:pdf_subset_cleanup_failed')) {
-    alertKeys.push('renderer.alerts.text_extraction_generated_pdf_cleanup_warning');
+    alertKeys.push('renderer.text_extraction.alerts.generated_pdf_cleanup_warning');
   }
 
   if (routeKind === 'ocr'
@@ -974,7 +974,7 @@ function resolveWarningAlertKeys(routeKind, result) {
       && warning.startsWith('cleanup:')
       && warning !== 'cleanup:pdf_subset_cleanup_failed'
     ))) {
-    alertKeys.push('renderer.alerts.text_extraction_ocr_cleanup_warning');
+    alertKeys.push('renderer.text_extraction.alerts.ocr.cleanup_warning');
   }
 
   return alertKeys;
@@ -1791,7 +1791,7 @@ async function executePreparedImport({
       code: resolvedRoute.reason === 'route_choice_required'
         ? 'ROUTE_CHOICE_REQUIRED'
         : 'ROUTE_RESOLUTION_FAILED',
-      primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_error',
+      primaryAlertKey: 'renderer.text_extraction.alerts.route_choice_error',
     };
   }
 

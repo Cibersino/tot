@@ -58,27 +58,27 @@
     const code = typeof safeResult.code === 'string' ? safeResult.code : '';
 
     if (safeResult.ok === true) {
-      return 'renderer.alerts.text_extraction_ocr_enable_success';
+      return 'renderer.text_extraction.alerts.ocr.enable_success';
     }
     if (code === 'credentials_missing') {
-      return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
+      return 'renderer.text_extraction.alerts.ocr.setup_missing_credentials';
     }
     if (code === 'credentials_invalid') {
-      return 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
+      return 'renderer.text_extraction.alerts.ocr.setup_invalid_credentials';
     }
     if (code === 'ocr_token_state_invalid') {
-      return 'renderer.alerts.text_extraction_ocr_token_state_invalid';
+      return 'renderer.text_extraction.alerts.ocr.token_state_invalid';
     }
     if (code === 'connectivity_failed') {
-      return 'renderer.alerts.text_extraction_ocr_connectivity_failed';
+      return 'renderer.text_extraction.alerts.ocr.connectivity_failed';
     }
     if (code === 'quota_or_rate_limited') {
-      return 'renderer.alerts.text_extraction_ocr_quota_or_rate_limited';
+      return 'renderer.text_extraction.alerts.ocr.quota_or_rate_limited';
     }
     if (code === 'ocr_activation_cancelled') {
-      return 'renderer.alerts.text_extraction_ocr_enable_cancelled';
+      return 'renderer.text_extraction.alerts.ocr.enable_cancelled';
     }
-    return 'renderer.alerts.text_extraction_ocr_enable_failed';
+    return 'renderer.text_extraction.alerts.ocr.enable_failed';
   }
 
   // =============================================================================
@@ -90,7 +90,7 @@
       activationFlow = getActivationFlow();
     } catch (err) {
       log.error('OCR activation flow unavailable for Preferences menu:', err);
-      window.Notify.notifyMain('renderer.alerts.text_extraction_ocr_activation_failed');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
       return {
         ok: false,
         state: 'failure',

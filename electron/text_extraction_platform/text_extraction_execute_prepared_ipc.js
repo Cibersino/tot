@@ -88,7 +88,7 @@ function buildInvalidPreparedIdResponse(reason) {
     ok: false,
     code: 'PREPARED_ID_INVALID',
     invalidReason: reason,
-    primaryAlertKey: 'renderer.alerts.text_extraction_prepare_invalid',
+    primaryAlertKey: 'renderer.text_extraction.alerts.prepare_invalid',
   };
 }
 
@@ -98,6 +98,13 @@ function buildInvalidPreparedIdLogFields(prepareId, reason, extraFields = {}) {
     reason,
     ...extraFields,
   };
+}
+
+function warnInvalidPreparedIdAndBuildResponse(prepareId, reason, extraFields = {}) {
+  log.warn('text extraction prepared id invalid/expired/reused:', {
+    ...buildInvalidPreparedIdLogFields(prepareId, reason, extraFields),
+  });
+  return buildInvalidPreparedIdResponse(reason);
 }
 
 // =============================================================================
@@ -124,10 +131,7 @@ async function handleExecutePrepared(event, payload = {}, {
     const preparedLookup = peekPreparedRecord(request.prepareId);
     if (!preparedLookup.ok || !preparedLookup.record) {
       const invalidReason = preparedLookup.reason || 'invalid_or_expired';
-      log.warn('text extraction prepared id invalid/expired/reused:', {
-        ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
-      });
-      return buildInvalidPreparedIdResponse(invalidReason);
+      return warnInvalidPreparedIdAndBuildResponse(request.prepareId, invalidReason);
     }
 
     const preparedRecord = preparedLookup.record;
@@ -153,7 +157,7 @@ async function handleExecutePrepared(event, payload = {}, {
         code: routeResolution.reason === 'route_choice_required'
           ? 'ROUTE_CHOICE_REQUIRED'
           : 'ROUTE_RESOLUTION_FAILED',
-        primaryAlertKey: 'renderer.alerts.text_extraction_route_choice_error',
+        primaryAlertKey: 'renderer.text_extraction.alerts.route_choice_error',
       };
     }
 
@@ -161,18 +165,13 @@ async function handleExecutePrepared(event, payload = {}, {
     try {
       currentFingerprint = readSourceFileFingerprint(preparedRecord.fileInfo.filePath);
     } catch (err) {
-      log.warn('text extraction prepared id invalid/expired/reused:', {
+      return warnInvalidPreparedIdAndBuildResponse(request.prepareId, 'fingerprint_read_failed', {
         errorMessage: String(err && err.message ? err.message : err || ''),
-        ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_read_failed'),
       });
-      return buildInvalidPreparedIdResponse('fingerprint_read_failed');
     }
 
     if (!fingerprintsMatch(preparedRecord.sourceFileFingerprint, currentFingerprint)) {
-      log.warn('text extraction prepared id invalid/expired/reused:', {
-        ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_mismatch'),
-      });
-      return buildInvalidPreparedIdResponse('fingerprint_mismatch');
+      return warnInvalidPreparedIdAndBuildResponse(request.prepareId, 'fingerprint_mismatch');
     }
 
     if (controller.isActive() && request.reuseActiveProcessingLock !== true) {
@@ -186,10 +185,7 @@ async function handleExecutePrepared(event, payload = {}, {
     const consumeResult = consumePreparedRecord(request.prepareId);
     if (!consumeResult.ok || !consumeResult.record) {
       const invalidReason = consumeResult.reason || 'invalid_or_expired';
-      log.warn('text extraction prepared id invalid/expired/reused:', {
-        ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
-      });
-      return buildInvalidPreparedIdResponse(invalidReason);
+      return warnInvalidPreparedIdAndBuildResponse(request.prepareId, invalidReason);
     }
 
     log.info('text extraction execute started:', {
@@ -275,7 +271,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
     || typeof controller.enter !== 'function'
     || typeof controller.exit !== 'function'
     || typeof controller.getState !== 'function'
-    || typeof controller.isActive !== 'function') {
+    || typeof controller.isActive !== 'function'
+    || typeof controller.update !== 'function') {
     log.error('[text_extraction_execute_prepared_ipc] registerIpc requires processing-mode controller');
     throw new Error('[text_extraction_execute_prepared_ipc] registerIpc requires processing-mode controller');
   }

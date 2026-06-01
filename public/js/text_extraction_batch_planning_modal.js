@@ -952,7 +952,7 @@
             canStart = await controller.validateStart();
           } catch (err) {
             log.error('Batch planning start validation failed unexpectedly:', err);
-            window.Notify.notifyMain('renderer.alerts.text_extraction_error');
+            window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
             canStart = false;
           } finally {
             startValidationInFlight = false;

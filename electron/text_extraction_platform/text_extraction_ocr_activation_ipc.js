@@ -57,30 +57,30 @@ function ensureParentDir(filePath) {
 
 function mapCodeToAlertKey(code) {
   if (code === 'credentials_missing') {
-    return 'renderer.alerts.text_extraction_ocr_setup_missing_credentials';
+    return 'renderer.text_extraction.alerts.ocr.setup_missing_credentials';
   }
   if (code === 'credentials_invalid') {
-    return 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials';
+    return 'renderer.text_extraction.alerts.ocr.setup_invalid_credentials';
   }
   if (code === PROVIDER_API_DISABLED_CODE) {
-    return 'renderer.alerts.text_extraction_ocr_unavailable';
+    return 'renderer.text_extraction.alerts.ocr.unavailable';
   }
   if (code === 'ocr_activation_cancelled') {
-    return 'renderer.alerts.text_extraction_ocr_activation_cancelled';
+    return 'renderer.text_extraction.alerts.ocr.activation_cancelled';
   }
   if (code === 'ocr_activation_required') {
-    return 'renderer.alerts.text_extraction_ocr_activation_required';
+    return 'renderer.text_extraction.alerts.ocr.activation_required';
   }
   if (code === 'ocr_token_state_invalid') {
-    return 'renderer.alerts.text_extraction_ocr_token_state_invalid';
+    return 'renderer.text_extraction.alerts.ocr.token_state_invalid';
   }
   if (code === 'connectivity_failed') {
-    return 'renderer.alerts.text_extraction_ocr_connectivity_failed';
+    return 'renderer.text_extraction.alerts.ocr.connectivity_failed';
   }
   if (code === 'quota_or_rate_limited') {
-    return 'renderer.alerts.text_extraction_ocr_quota_or_rate_limited';
+    return 'renderer.text_extraction.alerts.ocr.quota_or_rate_limited';
   }
-  return 'renderer.alerts.text_extraction_ocr_activation_failed';
+  return 'renderer.text_extraction.alerts.ocr.activation_failed';
 }
 
 function mapValidationToActivationResult(validationResult) {
@@ -89,7 +89,7 @@ function mapValidationToActivationResult(validationResult) {
       ok: true,
       state: 'ready',
       code: '',
-      alertKey: 'renderer.alerts.text_extraction_ocr_activation_success',
+      alertKey: 'renderer.text_extraction.alerts.ocr.activation_success',
       detailsSafeForLogs: {},
     };
   }
@@ -246,7 +246,7 @@ function mapAuthenticateError(err) {
     return buildFailure({
       state: 'cancelled',
       code: 'ocr_activation_cancelled',
-      alertKey: 'renderer.alerts.text_extraction_ocr_activation_cancelled',
+      alertKey: 'renderer.text_extraction.alerts.ocr.activation_cancelled',
       detailsSafeForLogs: {
         stage: 'oauth_authenticate',
         errorName: name,
@@ -332,7 +332,7 @@ function validateStoredCredentialsFile({
     return buildFailure({
       state: 'failure',
       code: 'credentials_invalid',
-      alertKey: 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials',
+      alertKey: 'renderer.text_extraction.alerts.ocr.setup_invalid_credentials',
       detailsSafeForLogs: {
         stage,
         reason: 'read_failed',
@@ -346,7 +346,7 @@ function validateStoredCredentialsFile({
     return buildFailure({
       state: 'failure',
       code: 'credentials_invalid',
-      alertKey: 'renderer.alerts.text_extraction_ocr_setup_invalid_credentials',
+      alertKey: 'renderer.text_extraction.alerts.ocr.setup_invalid_credentials',
       detailsSafeForLogs: {
         stage,
         reason: 'invalid_credentials_shape',

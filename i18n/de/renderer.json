@@ -82,6 +82,24 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Verstrichen: ",
         "text_extraction_drop_here": "Datei hier ablegen, um Text zu extrahieren"
+      },
+      "alerts": {
+        "clipboard_too_large": "Der Text in der Zwischenablage ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
+        "apply_too_large": "Der Text würde zu groß werden, um angewendet zu werden. Kürzen Sie ihn und versuchen Sie es erneut.",
+        "apply_truncated": "Der Text wurde gekürzt, um das Anwendungslimit einzuhalten.",
+        "append_text_limit": "Der Text kann nicht angehängt werden: maximale Größe erreicht.",
+        "overwrite_clipboard_error": "Beim Ersetzen von Text aus der Zwischenablage ist ein Fehler aufgetreten.",
+        "append_clipboard_error": "Beim Anhängen von Text aus der Zwischenablage ist ein Fehler aufgetreten.",
+        "clear_error": "Beim Löschen des Textes ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+        "current_text_processing_locked": "Der aktuelle Text wird noch aktualisiert. Interaktionen im Hauptfenster bleiben gesperrt, bis der neueste Text stabil ist.",
+        "current_text_recount_locked": "Die Ergebnisse des aktuellen Texts werden noch neu berechnet. Interaktionen im Hauptfenster bleiben gesperrt, bis die neueste Neuberechnung stabil ist.",
+        "wip": {
+          "design_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",
+          "floating_stopwatch": "WIP: Die Einstellungen für die schwebende Stoppuhr werden hier in einer zukünftigen Version geöffnet.",
+          "fonts": "WIP: Der Schriftarten-Selektor wird hier in einer zukünftigen Version geöffnet.",
+          "colors": "WIP: Der Farb-Selektor wird hier in einer zukünftigen Version geöffnet.",
+          "shortcuts": "WIP: Der Tastenkombinations-Selektor wird hier in einer zukünftigen Version geöffnet."
+        }
       }
     },
     "text_extraction": {
@@ -210,6 +228,63 @@
         "reveal_generated_pdf_button": "Erzeugtes PDF anzeigen",
         "cancel_button": "Abbrechen",
         "close_aria": "Dialog für großes PDF bei OCR schließen"
+      },
+      "alerts": {
+        "start_error": "Beim Starten der Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
+        "precondition_blocked": "Um Extraktion zu starten, schließen Sie alle Nebenfenster und stoppen Sie die Stoppuhr.",
+        "precondition_error": "Beim Prüfen der Voraussetzungen für Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
+        "processing_locked": "Extraktion wird verarbeitet. Interaktionen im Hauptfenster sind gesperrt, bis die Verarbeitung endet oder Sie abbrechen.",
+        "abort_error": "Beim Anfordern des Abbruchs von Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
+        "cancellation_requested": "Abbruch angefordert. Bitte warten Sie, bis die aktuelle Extraktion abgeschlossen ist.",
+        "cancellation_complete": "Abbruch abgeschlossen.",
+        "drop_invalid_file": "Das abgelegte Element ist keine gültige lokale Datei.",
+        "generated_pdf_cleanup_warning": "Die Extraktion wurde abgeschlossen, aber eine erzeugte lokale PDF-Datei konnte nicht automatisch bereinigt werden.",
+        "route_choice_error": "Beim Auswählen der Extraktionsroute ist ein Fehler aufgetreten.",
+        "generated_pdf_reveal_failed": "Die gespeicherte PDF-Datei konnte nicht angezeigt werden. Prüfe, ob die Datei noch existiert.",
+        "apply_error": "Beim Anwenden des extrahierten Textes ist ein Fehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
+        "prepare_invalid": "Die vorbereitete Extraktionsanfrage ist nicht mehr gültig. Starten Sie den Ablauf erneut.",
+        "unsupported_format": "Dieses Dateiformat wird für die Textextraktion nicht unterstützt.",
+        "pdf": {
+          "unreadable_or_corrupt": "Diese PDF-Datei ist nicht lesbar oder beschädigt. Prüfe die Datei und versuche es erneut.",
+          "encrypted_or_password_protected": "Diese PDF-Datei ist verschlüsselt oder passwortgeschützt. Entsperre sie und versuche es erneut.",
+          "page_count_unavailable": "Die Seitenzahl dieser PDF-Datei konnte nicht ermittelt werden. Prüfe die Datei und versuche es erneut.",
+          "page_selection_invalid": "Der ausgewählte PDF-Seitenbereich ist ungültig. Passe den Bereich an und versuche es erneut.",
+          "subset_creation_failed": "Die PDF-Datei mit den ausgewählten Seiten konnte für die Extraktion nicht erstellt werden. Prüfe die Datei und versuche es erneut."
+        },
+        "ocr": {
+          "unavailable": "OCR ist nicht verfügbar. Prüfen Sie den Einrichtungs-/Authentifizierungsstatus und versuchen Sie es erneut.",
+          "activation_required": "OCR-Aktivierung ist erforderlich. Melden Sie sich bei Google OCR an und versuchen Sie es erneut.",
+          "activation_success": "OCR-Aktivierung abgeschlossen. Extraktion wird erneut versucht.",
+          "activation_cancelled": "OCR-Aktivierung wurde abgebrochen. Extraktion wurde nicht fortgesetzt.",
+          "token_state_invalid": "Der gespeicherte Google-OCR-Anmeldestatus ist ungültig. Verbinden Sie Google OCR erneut und versuchen Sie es noch einmal.",
+          "activation_failed": "OCR-Aktivierung fehlgeschlagen. Prüfen Sie den Einrichtungs-/Authentifizierungsstatus und versuchen Sie es erneut.",
+          "enable_success": "Google OCR ist jetzt aktiviert.",
+          "enable_cancelled": "Die Aktivierung von Google OCR wurde abgebrochen.",
+          "enable_failed": "Google OCR konnte nicht aktiviert werden. Prüfen Sie den Einrichtungs-/Authentifizierungsstatus und versuchen Sie es erneut.",
+          "disconnect_success": "Google OCR wurde getrennt. Das gespeicherte Google-Token wurde widerrufen und der lokale Anmeldestatus wurde entfernt.",
+          "disconnect_not_connected": "Google OCR ist in dieser App-Instanz derzeit nicht verbunden.",
+          "disconnect_failed": "Das Trennen von Google OCR ist fehlgeschlagen. Der gespeicherte Anmeldestatus wurde nicht entfernt.",
+          "connectivity_failed": "OCR benötigt eine Internetverbindung. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+          "setup_missing_credentials": "Für die OCR-Einrichtung fehlt credentials.json. Wählen Sie eine gültige Google-OAuth-Anmeldedatei aus und versuchen Sie es erneut.",
+          "setup_invalid_credentials": "Die ausgewählte Anmeldedatei ist für Google OAuth ungültig. Wählen Sie eine gültige credentials.json und versuchen Sie es erneut.",
+          "quota_or_rate_limited": "OCR ist vorübergehend durch Quoten-/Ratenlimits blockiert. Warten Sie und versuchen Sie es erneut.",
+          "runtime_error": "Während der Extraktion ist ein OCR-Laufzeitfehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
+          "cancelled": "OCR-Extraktion wurde abgebrochen.",
+          "cleanup_warning": "OCR wurde abgeschlossen, aber die temporäre entfernte Dateibereinigung ist fehlgeschlagen. Prufen Sie Ihren Google-Drive-Ordner."
+        },
+        "batch_ocr": {
+          "activation_required": "Dieser Stapel enthält OCR-Elemente, aber Google OCR ist nicht aktiviert. Verwenden Sie Einstellungen > Google OCR aktivieren und starten Sie den Stapel dann erneut.",
+          "token_state_invalid": "Dieser Stapel enthält OCR-Elemente, aber der gespeicherte Google OCR-Anmeldestatus ist ungültig. Verwenden Sie erneut Einstellungen > Google OCR aktivieren und starten Sie den Stapel dann erneut.",
+          "connectivity_failed": "Dieser Batch enthält OCR-Elemente, aber OCR benötigt eine Internetverbindung. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut, bevor Sie die Extraktion starten.",
+          "quota_or_rate_limited": "Dieser Batch enthält OCR-Elemente, aber OCR ist durch Kontingent-/Ratenlimits vorübergehend blockiert. Warten Sie und versuchen Sie es erneut, bevor Sie die Extraktion starten.",
+          "unavailable": "Dieser Stapel enthält OCR-Elemente, aber Google OCR ist derzeit nicht verfügbar. Wenn OCR noch nicht aktiviert ist, verwenden Sie Einstellungen > Google OCR aktivieren. Andernfalls prüfen Sie die OCR-Einrichtung/den OCR-Status und versuchen Sie es vor dem Start des Stapels erneut."
+        },
+        "native": {
+          "runtime_error": "Während der Extraktion ist ein Laufzeitfehler bei der nativen Extraktion aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
+          "unreadable_or_corrupt": "Die ausgewählte Datei ist für die native Extraktion unlesbar oder beschädigt.",
+          "encrypted_or_password_protected": "Die ausgewählte PDF ist verschlüsselt oder passwortgeschützt und kann nicht nativ extrahiert werden.",
+          "cancelled": "Die native Extraktion wurde abgebrochen."
+        }
       }
     },
     "editor": {
@@ -222,10 +297,23 @@
       "decrease_text_size": "Textgröße verkleinern",
       "increase_text_size": "Textgröße vergrößern",
       "reset_text_size": "Textgröße zurücksetzen",
-      "text_size_value": "{value} px",
       "read_progress_label": "Gelesen",
-      "read_progress_aria": "Lesefortschritt: {value}",
-      "clear_title": "Löschen"
+      "clear_title": "Löschen",
+      "alerts": {
+        "start_failed": "Der Texteditor konnte nicht gestartet werden.",
+        "start_timeout": "Der Texteditor brauchte zu lange zum Starten und wurde geschlossen.",
+        "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",
+        "drop_too_big": "Abgelegter Text ist zu groß. Verwenden Sie die Schaltflächen im Hauptfenster, um großen Text hinzuzufügen.",
+        "paste_no_text": "Die Zwischenablage enthält keinen reinen Text.",
+        "drop_no_text": "Ziehen und Ablegen: Kein reiner Text erkannt.",
+        "type_limit": "Kann nicht mehr Text tippen: Maximale Größe erreicht.",
+        "paste_limit": "Kann nicht mehr Text einfügen: Maximale Größe erreicht.",
+        "drop_limit": "Es kann nicht mehr Text abgelegt werden: Maximale Größe erreicht.",
+        "paste_truncated": "Eingefügter Text wurde gekürzt, um das Maximum zu vermeiden.",
+        "drop_truncated": "Abgelegter Text hat den verfügbaren Speicherplatz überschritten und wurde gekürzt.",
+        "text_truncated": "Text wurde gekürzt, um die Anwendungsgrenze zu passen.",
+        "calc_error": "Beim Berechnen ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
+      }
     },
     "editor_find": {
       "input_placeholder": "Suchen...",
@@ -244,6 +332,17 @@
       "replace_timeout": "Ersetzen hat zu lange gedauert. Bitte erneut versuchen.",
       "status_no_matches": "Keine Treffer",
       "status_empty_query": "Zum Suchen tippen"
+    },
+    "snapshots": {
+      "alerts": {
+        "save_success": "Snapshot gespeichert.",
+        "save_error": "Snapshot konnte nicht gespeichert werden.",
+        "load_success": "Snapshot geladen.",
+        "load_error": "Snapshot konnte nicht geladen werden.",
+        "outside": "Der Snapshot muss sich innerhalb des Snapshot-Ordners befinden.",
+        "truncated": "Der Snapshot überschreitet die maximale Größe und wurde gekürzt.",
+        "unavailable": "Snapshot-Funktionalität nicht verfügbar."
+      }
     },
     "snapshot_save_tags": {
       "title": "Text-Snapshot speichern",
@@ -447,6 +546,22 @@
         "buttons": {
           "continue": "Weiter"
         }
+      },
+      "alerts": {
+        "unavailable": "Die Funktion für den Lesegeschwindigkeitstest ist nicht verfügbar.",
+        "precondition_blocked": "Der Lesegeschwindigkeitstest kann nur aus einem stabilen App-Zustand gestartet werden. Schließen Sie Nebenfenster und stellen Sie sicher, dass die Stoppuhr angehalten ist.",
+        "pool_error": "Beim Prüfen des Pools für den Lesegeschwindigkeitstest ist ein Fehler aufgetreten.",
+        "no_matching_files": "Es sind keine unbenutzten Testdateien mehr vorhanden, die zur aktuellen Auswahl passen.",
+        "visible_empty_bundled_hidden": "Die integrierten Testdateien sind ausgeblendet, und derzeit sind keine sichtbaren unbenutzten Testdateien verfügbar. Blende die integrierten Dateien wieder ein oder importiere weitere Dateien, um fortzufahren.",
+        "current_text_empty": "Der aktuelle Text ist leer. Laden oder schreiben Sie zuerst einen Text, bevor Sie den Test mit aktuellem Text starten.",
+        "result_invalid": "Das Testergebnis konnte nicht in einen gültigen WPM-Wert umgewandelt werden. Der Ablauf endete, ohne den Preset-Dialog zu öffnen.",
+        "result_unavailable": "Das Ergebnis der Lesegeschwindigkeit konnte nicht angezeigt werden. Der Ablauf wurde fortgesetzt.",
+        "preset_unavailable": "Der Preset-Dialog konnte nach dem Test nicht geöffnet werden.",
+        "questions_unavailable": "Der Dialog mit den Verständnisfragen konnte nicht geöffnet werden. Der Ablauf endete vor der Erstellung des Presets.",
+        "pool_import_failed": "Die Dateien für den Lesegeschwindigkeitstest konnten nicht importiert werden.",
+        "start_failed": "Der Lesegeschwindigkeitstest konnte nicht gestartet werden.",
+        "cancelled": "Der Lesegeschwindigkeitstest wurde abgebrochen.",
+        "cancelled_window_closed": "Der Lesegeschwindigkeitstest wurde abgebrochen, weil eines seiner Sitzungsfenster geschlossen wurde."
       }
     },
     "modal_preset": {
@@ -455,135 +570,43 @@
       "heading_new": "Neues Preset erstellen",
       "heading_edit": "Ausgewähltes Preset bearbeiten",
       "name": "Name:",
+      "name_placeholder": "Preset-Name",
       "wpm": "WPM:",
       "description": "Beschreibung:",
-      "placeholder": "Kurze Beschreibung...",
+      "description_placeholder": "Kurze Beschreibung...",
       "char_count": "{remaining} Zeichen übrig",
       "hint": "Benutzerdefinierte Presets werden in den Benutzereinstellungen gespeichert.",
       "cancel": "Abbrechen",
-      "save": "Speichern"
+      "save": "Speichern",
+      "alerts": {
+        "unavailable": "Der Preset-Dialog ist in diesem App-Build nicht verfügbar.",
+        "open_error": "Beim Öffnen des Preset-Dialogs ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
+        "name_empty": "Name darf nicht leer sein.",
+        "wpm_invalid": "WPM muss eine Zahl zwischen {min} und {max} sein.",
+        "create_error": "Beim Erstellen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+        "edit_error": "Beim Bearbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+        "process_error": "Beim Verarbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
+      }
+    },
+    "presets": {
+      "alerts": {
+        "not_found": "Preset im Cache nicht gefunden.",
+        "delete_error": "Beim Löschen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+        "restore_error": "Beim Wiederherstellen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+        "open_folder_unsupported": "Das Öffnen von Presets wird in dieser Umgebung nicht unterstützt.",
+        "open_folder_error": "Beim Öffnen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+        "open_default_folder_failed": "Konnte die Standard-Preset-Ordner nicht öffnen. Überprüfen Sie die Konsole für weitere Details."
+      }
     },
     "browser_extension": {
       "title": "Browser-Erweiterung",
       "subtitle": "Tiempo de lectura",
       "availability": "Jetzt in Chrome verfügbar. Weitere Browser folgen bald.",
       "chrome_store_aria": "Die Chrome Web Store-Seite der Erweiterung öffnen",
-      "close_aria": "Dialog der Browser-Erweiterung schließen"
-    },
-    "alerts": {
-      "clipboard_too_large": "Der Text in der Zwischenablage ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
-      "apply_too_large": "Der Text würde zu groß werden, um angewendet zu werden. Kürzen Sie ihn und versuchen Sie es erneut.",
-      "apply_truncated": "Der Text wurde gekürzt, um das Anwendungslimit einzuhalten.",
-      "append_text_limit": "Der Text kann nicht angehängt werden: maximale Größe erreicht.",
-      "overwrite_clipboard_error": "Beim Ersetzen von Text aus der Zwischenablage ist ein Fehler aufgetreten.",
-      "append_clipboard_error": "Beim Anhängen von Text aus der Zwischenablage ist ein Fehler aufgetreten.",
-      "clear_error": "Beim Löschen des Textes ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-      "snapshot_save_success": "Snapshot gespeichert.",
-      "snapshot_save_error": "Snapshot konnte nicht gespeichert werden.",
-      "snapshot_load_success": "Snapshot geladen.",
-      "snapshot_load_error": "Snapshot konnte nicht geladen werden.",
-      "snapshot_outside": "Der Snapshot muss sich innerhalb des Snapshot-Ordners befinden.",
-      "snapshot_truncated": "Der Snapshot überschreitet die maximale Größe und wurde gekürzt.",
-      "snapshot_unavailable": "Snapshot-Funktionalität nicht verfügbar.",
-      "browser_extension_modal_open_blocked": "Der Browsererweiterungsdialog kann derzeit nicht geöffnet werden.",
-      "preset_not_found": "Preset im Cache nicht gefunden.",
-      "preset_modal_unavailable": "Der Preset-Dialog ist in diesem App-Build nicht verfügbar.",
-      "preset_modal_open_error": "Beim Öffnen des Preset-Dialogs ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
-      "delete_error": "Beim Löschen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-      "restore_error": "Beim Wiederherstellen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-      "open_presets_unsupported": "Das Öffnen von Presets wird in dieser Umgebung nicht unterstützt.",
-      "open_presets_error": "Beim Öffnen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-      "open_presets_fail": "Konnte die Standard-Preset-Ordner nicht öffnen. Überprüfen Sie die Konsole für weitere Details.",
-      "text_extraction_error": "Beim Starten der Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
-      "text_extraction_precondition_blocked": "Um Extraktion zu starten, schließen Sie alle Nebenfenster und stoppen Sie die Stoppuhr.",
-      "text_extraction_precondition_error": "Beim Prüfen der Voraussetzungen für Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
-      "text_extraction_processing_locked": "Extraktion wird verarbeitet. Interaktionen im Hauptfenster sind gesperrt, bis die Verarbeitung endet oder Sie abbrechen.",
-      "current_text_processing_locked": "Der aktuelle Text wird noch aktualisiert. Interaktionen im Hauptfenster bleiben gesperrt, bis der neueste Text stabil ist.",
-      "current_text_recount_locked": "Die Ergebnisse des aktuellen Texts werden noch neu berechnet. Interaktionen im Hauptfenster bleiben gesperrt, bis die neueste Neuberechnung stabil ist.",
-      "text_extraction_abort_error": "Beim Anfordern des Abbruchs von Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
-      "text_extraction_cancellation_requested": "Abbruch angefordert. Bitte warten Sie, bis die aktuelle Extraktion abgeschlossen ist.",
-      "text_extraction_cancellation_complete": "Abbruch abgeschlossen.",
-      "text_extraction_drop_invalid_file": "Das abgelegte Element ist keine gültige lokale Datei.",
-      "text_extraction_pdf_unreadable_or_corrupt": "Diese PDF-Datei ist nicht lesbar oder beschädigt. Prüfe die Datei und versuche es erneut.",
-      "text_extraction_pdf_encrypted_or_password_protected": "Diese PDF-Datei ist verschlüsselt oder passwortgeschützt. Entsperre sie und versuche es erneut.",
-      "text_extraction_pdf_page_count_unavailable": "Die Seitenzahl dieser PDF-Datei konnte nicht ermittelt werden. Prüfe die Datei und versuche es erneut.",
-      "text_extraction_pdf_page_selection_invalid": "Der ausgewählte PDF-Seitenbereich ist ungültig. Passe den Bereich an und versuche es erneut.",
-      "text_extraction_pdf_subset_creation_failed": "Die PDF-Datei mit den ausgewählten Seiten konnte für die Extraktion nicht erstellt werden. Prüfe die Datei und versuche es erneut.",
-      "text_extraction_generated_pdf_cleanup_warning": "Die Extraktion wurde abgeschlossen, aber eine erzeugte lokale PDF-Datei konnte nicht automatisch bereinigt werden.",
-      "text_extraction_route_choice_error": "Beim Auswählen der Extraktionsroute ist ein Fehler aufgetreten.",
-      "text_extraction_generated_pdf_reveal_failed": "Die gespeicherte PDF-Datei konnte nicht angezeigt werden. Prüfe, ob die Datei noch existiert.",
-      "text_extraction_apply_error": "Beim Anwenden des extrahierten Textes ist ein Fehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
-      "text_extraction_prepare_invalid": "Die vorbereitete Extraktionsanfrage ist nicht mehr gültig. Starten Sie den Ablauf erneut.",
-      "text_extraction_batch_ocr_activation_required": "Dieser Stapel enthält OCR-Elemente, aber Google OCR ist nicht aktiviert. Verwenden Sie Einstellungen > Google OCR aktivieren und starten Sie den Stapel dann erneut.",
-      "text_extraction_batch_ocr_token_state_invalid": "Dieser Stapel enthält OCR-Elemente, aber der gespeicherte Google OCR-Anmeldestatus ist ungültig. Verwenden Sie erneut Einstellungen > Google OCR aktivieren und starten Sie den Stapel dann erneut.",
-      "text_extraction_batch_ocr_connectivity_failed": "Dieser Batch enthält OCR-Elemente, aber OCR benötigt eine Internetverbindung. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut, bevor Sie die Extraktion starten.",
-      "text_extraction_batch_ocr_quota_or_rate_limited": "Dieser Batch enthält OCR-Elemente, aber OCR ist durch Kontingent-/Ratenlimits vorübergehend blockiert. Warten Sie und versuchen Sie es erneut, bevor Sie die Extraktion starten.",
-      "text_extraction_batch_ocr_unavailable": "Dieser Stapel enthält OCR-Elemente, aber Google OCR ist derzeit nicht verfügbar. Wenn OCR noch nicht aktiviert ist, verwenden Sie Einstellungen > Google OCR aktivieren. Andernfalls prüfen Sie die OCR-Einrichtung/den OCR-Status und versuchen Sie es vor dem Start des Stapels erneut.",
-      "text_extraction_ocr_unavailable": "OCR ist nicht verfügbar. Prüfen Sie den Einrichtungs-/Authentifizierungsstatus und versuchen Sie es erneut.",
-      "text_extraction_ocr_activation_required": "OCR-Aktivierung ist erforderlich. Melden Sie sich bei Google OCR an und versuchen Sie es erneut.",
-      "text_extraction_ocr_activation_success": "OCR-Aktivierung abgeschlossen. Extraktion wird erneut versucht.",
-      "text_extraction_ocr_activation_cancelled": "OCR-Aktivierung wurde abgebrochen. Extraktion wurde nicht fortgesetzt.",
-      "text_extraction_ocr_token_state_invalid": "Der gespeicherte Google-OCR-Anmeldestatus ist ungültig. Verbinden Sie Google OCR erneut und versuchen Sie es noch einmal.",
-      "text_extraction_ocr_activation_failed": "OCR-Aktivierung fehlgeschlagen. Prüfen Sie den Einrichtungs-/Authentifizierungsstatus und versuchen Sie es erneut.",
-      "text_extraction_ocr_enable_success": "Google OCR ist jetzt aktiviert.",
-      "text_extraction_ocr_enable_cancelled": "Die Aktivierung von Google OCR wurde abgebrochen.",
-      "text_extraction_ocr_enable_failed": "Google OCR konnte nicht aktiviert werden. Prüfen Sie den Einrichtungs-/Authentifizierungsstatus und versuchen Sie es erneut.",
-      "text_extraction_ocr_disconnect_success": "Google OCR wurde getrennt. Das gespeicherte Google-Token wurde widerrufen und der lokale Anmeldestatus wurde entfernt.",
-      "text_extraction_ocr_disconnect_not_connected": "Google OCR ist in dieser App-Instanz derzeit nicht verbunden.",
-      "text_extraction_ocr_disconnect_failed": "Das Trennen von Google OCR ist fehlgeschlagen. Der gespeicherte Anmeldestatus wurde nicht entfernt.",
-      "text_extraction_ocr_connectivity_failed": "OCR benötigt eine Internetverbindung. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
-      "text_extraction_ocr_setup_missing_credentials": "Für die OCR-Einrichtung fehlt credentials.json. Wählen Sie eine gültige Google-OAuth-Anmeldedatei aus und versuchen Sie es erneut.",
-      "text_extraction_ocr_setup_invalid_credentials": "Die ausgewählte Anmeldedatei ist für Google OAuth ungültig. Wählen Sie eine gültige credentials.json und versuchen Sie es erneut.",
-      "text_extraction_ocr_quota_or_rate_limited": "OCR ist vorübergehend durch Quoten-/Ratenlimits blockiert. Warten Sie und versuchen Sie es erneut.",
-      "text_extraction_ocr_runtime_error": "Während der Extraktion ist ein OCR-Laufzeitfehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
-      "text_extraction_ocr_cancelled": "OCR-Extraktion wurde abgebrochen.",
-      "text_extraction_ocr_cleanup_warning": "OCR wurde abgeschlossen, aber die temporäre entfernte Dateibereinigung ist fehlgeschlagen. Prufen Sie Ihren Google-Drive-Ordner.",
-      "text_extraction_native_runtime_error": "Während der Extraktion ist ein Laufzeitfehler bei der nativen Extraktion aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
-      "text_extraction_native_unreadable_or_corrupt": "Die ausgewählte Datei ist für die native Extraktion unlesbar oder beschädigt.",
-      "text_extraction_native_encrypted_or_password_protected": "Die ausgewählte PDF ist verschlüsselt oder passwortgeschützt und kann nicht nativ extrahiert werden.",
-      "text_extraction_native_cancelled": "Die native Extraktion wurde abgebrochen.",
-      "text_extraction_unsupported_format": "Dieses Dateiformat wird für die Textextraktion nicht unterstützt.",
-      "wip_diseno_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",
-      "wip_diseno_crono": "WIP: Die Einstellungen für die schwebende Stoppuhr werden hier in einer zukünftigen Version geöffnet.",
-      "wip_diseno_fuentes": "WIP: Der Schriftarten-Selektor wird hier in einer zukünftigen Version geöffnet.",
-      "wip_diseno_colores": "WIP: Der Farb-Selektor wird hier in einer zukünftigen Version geöffnet.",
-      "wip_shortcuts": "WIP: Der Tastenkombinations-Selektor wird hier in einer zukünftigen Version geöffnet.",
-      "reading_test_unavailable": "Die Funktion für den Lesegeschwindigkeitstest ist nicht verfügbar.",
-      "reading_test_precondition_blocked": "Der Lesegeschwindigkeitstest kann nur aus einem stabilen App-Zustand gestartet werden. Schließen Sie Nebenfenster und stellen Sie sicher, dass die Stoppuhr angehalten ist.",
-      "reading_test_pool_error": "Beim Prüfen des Pools für den Lesegeschwindigkeitstest ist ein Fehler aufgetreten.",
-      "reading_test_no_matching_files": "Es sind keine unbenutzten Testdateien mehr vorhanden, die zur aktuellen Auswahl passen.",
-      "reading_test_visible_empty_bundled_hidden": "Die integrierten Testdateien sind ausgeblendet, und derzeit sind keine sichtbaren unbenutzten Testdateien verfügbar. Blende die integrierten Dateien wieder ein oder importiere weitere Dateien, um fortzufahren.",
-      "reading_test_current_text_empty": "Der aktuelle Text ist leer. Laden oder schreiben Sie zuerst einen Text, bevor Sie den Test mit aktuellem Text starten.",
-      "reading_test_result_invalid": "Das Testergebnis konnte nicht in einen gültigen WPM-Wert umgewandelt werden. Der Ablauf endete, ohne den Preset-Dialog zu öffnen.",
-      "reading_test_result_unavailable": "Das Ergebnis der Lesegeschwindigkeit konnte nicht angezeigt werden. Der Ablauf wurde fortgesetzt.",
-      "reading_test_preset_unavailable": "Der Preset-Dialog konnte nach dem Test nicht geöffnet werden.",
-      "reading_test_questions_unavailable": "Der Dialog mit den Verständnisfragen konnte nicht geöffnet werden. Der Ablauf endete vor der Erstellung des Presets.",
-      "reading_test_pool_import_failed": "Die Dateien für den Lesegeschwindigkeitstest konnten nicht importiert werden.",
-      "reading_test_start_failed": "Der Lesegeschwindigkeitstest konnte nicht gestartet werden.",
-      "text_editor_start_failed": "Der Texteditor konnte nicht gestartet werden.",
-      "text_editor_start_timeout": "Der Texteditor brauchte zu lange zum Starten und wurde geschlossen.",
-      "reading_test_cancelled": "Der Lesegeschwindigkeitstest wurde abgebrochen.",
-      "reading_test_cancelled_window_closed": "Der Lesegeschwindigkeitstest wurde abgebrochen, weil eines seiner Sitzungsfenster geschlossen wurde."
-    },
-    "editor_alerts": {
-      "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",
-      "drop_too_big": "Abgelegter Text ist zu groß. Verwenden Sie die Schaltflächen im Hauptfenster, um großen Text hinzuzufügen.",
-      "paste_no_text": "Die Zwischenablage enthält keinen reinen Text.",
-      "drop_no_text": "Ziehen und Ablegen: Kein reiner Text erkannt.",
-      "type_limit": "Kann nicht mehr Text tippen: Maximale Größe erreicht.",
-      "paste_limit": "Kann nicht mehr Text einfügen: Maximale Größe erreicht.",
-      "drop_limit": "Es kann nicht mehr Text abgelegt werden: Maximale Größe erreicht.",
-      "paste_truncated": "Eingefügter Text wurde gekürzt, um das Maximum zu vermeiden.",
-      "drop_truncated": "Abgelegter Text hat den verfügbaren Speicherplatz überschritten und wurde gekürzt.",
-      "text_truncated": "Text wurde gekürzt, um die Anwendungsgrenze zu passen.",
-      "calc_error": "Beim Berechnen ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
-    },
-    "preset_alerts": {
-      "name_empty": "Name darf nicht leer sein.",
-      "wpm_invalid": "WPM muss eine Zahl zwischen {min} und {max} sein.",
-      "create_error": "Beim Erstellen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-      "edit_error": "Beim Bearbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-      "process_error": "Beim Verarbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
+      "close_aria": "Dialog der Browser-Erweiterung schließen",
+      "alerts": {
+        "modal_open_blocked": "Der Browsererweiterungsdialog kann derzeit nicht geöffnet werden."
+      }
     },
     "info": {
       "loading": "Lädt...",

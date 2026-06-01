@@ -59,7 +59,7 @@
   // Public entrypoint
   // =============================================================================
   async function startFromPreferencesMenu() {
-    const failureAlertKey = 'renderer.alerts.text_extraction_ocr_disconnect_failed';
+    const failureAlertKey = 'renderer.text_extraction.alerts.ocr.disconnect_failed';
 
     let disconnectTextExtractionOcr = null;
     try {
@@ -105,7 +105,7 @@
     }
 
     window.Notify.notifyMain(alertKey || (result.ok === true
-      ? 'renderer.alerts.text_extraction_ocr_disconnect_success'
+      ? 'renderer.text_extraction.alerts.ocr.disconnect_success'
       : failureAlertKey));
   }
 

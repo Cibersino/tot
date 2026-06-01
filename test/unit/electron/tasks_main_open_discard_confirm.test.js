@@ -6,6 +6,9 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
 function createIpcMainMock() {
   const handlers = new Map();
@@ -51,34 +54,26 @@ function createWindow(name) {
 }
 
 function loadFreshTasksMain({ dialogResponse = 1 } = {}) {
-  const electronModulePath = require.resolve('electron');
-  const originalElectronModule = require.cache[electronModulePath];
   const menuBuilderModulePath = path.resolve(__dirname, '../../../electron/menu_builder.js');
   const originalMenuBuilderModule = require.cache[menuBuilderModulePath];
   const settingsModulePath = path.resolve(__dirname, '../../../electron/settings.js');
   const originalSettingsModule = require.cache[settingsModulePath];
 
   const dialogCalls = [];
-
-  require.cache[electronModulePath] = {
-    id: electronModulePath,
-    filename: electronModulePath,
-    loaded: true,
-    exports: {
-      dialog: {
-        async showMessageBox(owner, options) {
-          dialogCalls.push({ owner, options });
-          return { response: dialogResponse };
-        },
-      },
-      shell: {},
-      BrowserWindow: {
-        fromWebContents(webContents) {
-          return webContents && webContents.__mockWindow ? webContents.__mockWindow : null;
-        },
+  const restoreElectronModule = installElectronModuleMock({
+    dialog: {
+      async showMessageBox(owner, options) {
+        dialogCalls.push({ owner, options });
+        return { response: dialogResponse };
       },
     },
-  };
+    shell: {},
+    BrowserWindow: {
+      fromWebContents(webContents) {
+        return webContents && webContents.__mockWindow ? webContents.__mockWindow : null;
+      },
+    },
+  });
 
   require.cache[menuBuilderModulePath] = {
     id: menuBuilderModulePath,
@@ -116,11 +111,7 @@ function loadFreshTasksMain({ dialogResponse = 1 } = {}) {
 
   function restore() {
     delete require.cache[require.resolve(modulePath)];
-    if (originalElectronModule) {
-      require.cache[electronModulePath] = originalElectronModule;
-    } else {
-      delete require.cache[electronModulePath];
-    }
+    restoreElectronModule();
     if (originalMenuBuilderModule) {
       require.cache[menuBuilderModulePath] = originalMenuBuilderModule;
     } else {

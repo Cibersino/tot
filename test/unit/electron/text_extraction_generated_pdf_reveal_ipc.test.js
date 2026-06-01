@@ -9,6 +9,9 @@ const path = require('path');
 const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
 function createIpcMainDouble() {
   const handlers = new Map();
@@ -27,7 +30,6 @@ function createIpcMainDouble() {
 }
 
 function loadRevealIpcWithElectronMock(senderWin) {
-  const electronModulePath = require.resolve('electron');
   const coreModulePath = path.resolve(
     __dirname,
     '../../../electron/text_extraction_platform/text_extraction_prepare_execute_core.js'
@@ -36,21 +38,14 @@ function loadRevealIpcWithElectronMock(senderWin) {
     __dirname,
     '../../../electron/text_extraction_platform/text_extraction_generated_pdf_reveal_ipc.js'
   );
-  const originalElectronModule = require.cache[electronModulePath];
   const originalCoreModule = require.cache[coreModulePath];
-
-  require.cache[electronModulePath] = {
-    id: electronModulePath,
-    filename: electronModulePath,
-    loaded: true,
-    exports: {
-      BrowserWindow: {
-        fromWebContents(webContents) {
-          return webContents === senderWin.webContents ? senderWin : null;
-        },
+  const restoreElectronModule = installElectronModuleMock({
+    BrowserWindow: {
+      fromWebContents(webContents) {
+        return webContents === senderWin.webContents ? senderWin : null;
       },
     },
-  };
+  });
 
   delete require.cache[coreModulePath];
   delete require.cache[revealIpcModulePath];
@@ -63,11 +58,7 @@ function loadRevealIpcWithElectronMock(senderWin) {
     } else {
       delete require.cache[coreModulePath];
     }
-    if (originalElectronModule) {
-      require.cache[electronModulePath] = originalElectronModule;
-    } else {
-      delete require.cache[electronModulePath];
-    }
+    restoreElectronModule();
   }
 
   return {
