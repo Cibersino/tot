@@ -5,9 +5,28 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
+const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
 
-function loadFreshMenuBuilder() {
+function loadFreshMenuBuilder(t) {
   const modulePath = path.resolve(__dirname, '../../../electron/menu_builder.js');
+  t.after(installElectronModuleMock({
+    app: {
+      isPackaged: true,
+    },
+    Menu: {
+      buildFromTemplate() {
+        return {};
+      },
+      setApplicationMenu() {},
+    },
+    BrowserWindow: {
+      getFocusedWindow() {
+        return null;
+      },
+    },
+  }));
   delete require.cache[require.resolve(modulePath)];
   return require(modulePath);
 }
@@ -21,8 +40,8 @@ function createLogDouble() {
   };
 }
 
-test('resolveDialogText uses the caller-injected logger for missing dialog keys', () => {
-  const menuBuilder = loadFreshMenuBuilder();
+test('resolveDialogText uses the caller-injected logger for missing dialog keys', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
   const log = createLogDouble();
 
   const result = menuBuilder.resolveDialogText({}, 'continue_button', 'Continue', {
@@ -39,8 +58,8 @@ test('resolveDialogText uses the caller-injected logger for missing dialog keys'
   ]);
 });
 
-test('resolveDialogText requires caller-injected warnOnce logging', () => {
-  const menuBuilder = loadFreshMenuBuilder();
+test('resolveDialogText requires caller-injected warnOnce logging', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
 
   assert.throws(
     () => menuBuilder.resolveDialogText({}, 'continue_button', 'Continue'),
