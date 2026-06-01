@@ -2480,14 +2480,14 @@ Estados de revisión recomendados:
         "save": {
           "es": "Guardar",
           "en": "Save"
-          // [PROPÓSITO] Guardar fila en la biblioteca de lecturas.
-          // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
+          // [PROPÓSITO] Guardar tarea.
+          // [CONCEPTO_APP] tarea
         },
         "delete": {
           "es": "Eliminar",
           "en": "Delete"
-          // [PROPÓSITO] Eliminar fila de la tabla.
-          // [CONCEPTO_APP] fila de lectura
+          // [PROPÓSITO] Eliminar tarea.
+          // [CONCEPTO_APP] tarea.
         },
         "add_row": {
           "es": "Agregar fila",
