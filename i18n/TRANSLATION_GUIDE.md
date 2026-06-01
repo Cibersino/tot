@@ -470,8 +470,8 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] preset de velocidad de lectura
       },
       "restore_defaults_confirm": {
-        "es": "¿Restaurar presets por defecto (generales y para el idioma \"{lang}\")? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.",
-        "en": "Restore default presets (general and language \"{lang}\")? This will restore removed default presets and revert changes to default presets for the active language."
+        "es": "¿Restaurar presets por defecto (generales y para el idioma \"{lang}\")? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo. Los presets personalizados no se verán afectados.",
+        "en": "Restore default presets (general and language \"{lang}\")? This will restore removed default presets and revert changes to default presets for the active language. Custom presets will not be affected."
         /// [PROPÓSITO] Confirmación para restaurar presets por defecto generales y del idioma activo, recuperando defaults eliminados o revirtiendo cambios hechos sobre esos presets.
         // [CONCEPTO_APP] preset de velocidad de lectura
       },
