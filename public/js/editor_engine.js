@@ -19,7 +19,7 @@
 
   function createEditorEngine(ctx) {
     const { log, editorAPI, editorFindReplaceCore, dom, state } = ctx;
-    const { editor } = dom;
+    const { editor, calcWhileTyping } = dom;
 
     // =============================================================================
     // Selection And Native Edit Helpers
@@ -476,20 +476,12 @@
 
     function insertTextAtCursor(rawText, options = {}) {
       try {
-        const action = (options && typeof options.action === 'string') ? options.action : 'paste';
         const limitAlertKey = (options && typeof options.limitAlertKey === 'string')
           ? options.limitAlertKey
           : 'renderer.editor.alerts.paste_limit';
         const truncatedAlertKey = (options && typeof options.truncatedAlertKey === 'string')
           ? options.truncatedAlertKey
           : 'renderer.editor.alerts.paste_truncated';
-        const syncOptions = {};
-        if (options && typeof options.onPrimaryError === 'function') {
-          syncOptions.onPrimaryError = options.onPrimaryError;
-        }
-        if (options && typeof options.onFallbackError === 'function') {
-          syncOptions.onFallbackError = options.onFallbackError;
-        }
         const available = getInsertionCapacity();
         if (available <= 0) {
           window.Notify.notifyEditor(limitAlertKey, { type: 'warn' });
@@ -505,8 +497,6 @@
         }
 
         tryNativeInsertAtSelection(toInsert);
-
-        sendCurrentTextToMain(action, syncOptions);
 
         if (truncated) {
           window.Notify.notifyEditor(truncatedAlertKey, { type: 'warn', duration: 5000 });
@@ -556,7 +546,34 @@
           return;
         }
 
-        insertTextAtCursor(text, insertOptions);
+        const action = (insertOptions && typeof insertOptions.action === 'string')
+          ? insertOptions.action
+          : 'paste';
+        const syncOptions = {};
+        if (insertOptions && typeof insertOptions.onPrimaryError === 'function') {
+          syncOptions.onPrimaryError = insertOptions.onPrimaryError;
+        }
+        if (insertOptions && typeof insertOptions.onFallbackError === 'function') {
+          syncOptions.onFallbackError = insertOptions.onFallbackError;
+        }
+
+        const prevSuppressLocalUpdate = state.suppressLocalUpdate;
+        let insertResult = null;
+        state.suppressLocalUpdate = true;
+        try {
+          insertResult = insertTextAtCursor(text, insertOptions);
+        } finally {
+          state.suppressLocalUpdate = prevSuppressLocalUpdate;
+        }
+
+        if (
+          insertResult &&
+          insertResult.inserted > 0 &&
+          calcWhileTyping &&
+          calcWhileTyping.checked
+        ) {
+          sendCurrentTextToMain(action, syncOptions);
+        }
       } catch (err) {
         log.error(`${source} handler error:`, err);
         ctx.ui.restoreFocusToEditor();
