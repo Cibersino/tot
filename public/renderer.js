@@ -1143,7 +1143,7 @@ async function runStartupOrchestrator() {
       try {
         initialText = String(await getCurrentText() || '');
       } catch (err) {
-        log.error('Error loading initial current text:', err);
+        log.warn('BOOTSTRAP: getCurrentText failed; bootstrap will use empty text:', err);
         initialText = '';
       }
     }
@@ -1887,7 +1887,7 @@ async function resolveDroppedFilePath(file) {
       }
       log.warn('getPathForFile returned empty/invalid; falling back to File.path.');
     } catch (err) {
-      log.error('Failed to resolve dropped file path via electronAPI.getPathForFile:', err);
+      log.warn('getPathForFile failed; falling back to File.path:', err);
     }
   }
 
