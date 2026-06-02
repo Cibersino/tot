@@ -6,15 +6,14 @@
 // =============================================================================
 // Main renderer entry point for the primary window UI.
 // Responsibilities:
-// - Bootstraps the renderer UI and pulls config/settings from main.
-// - Applies i18n labels and number formatting.
-// - Maintains text preview, counts, and time estimates.
-// - Coordinates text extraction and OCR entry flows from the main window.
-// - Wires presets, clipboard actions, Text Editor, Task Editor, and help tips.
-// - Hosts the info modal and top-bar menu actions.
-// - Integrates the Stopwatch controller and the Floating Stopwatch toggle.
+// - Bootstrap renderer state from main-owned config, settings, and READY signals.
+// - Apply renderer i18n labels, language attributes, and number formatting.
+// - Maintain current-text preview, counts, and reading-time estimates.
+// - Coordinate text extraction, OCR entry, and current-text apply flows.
+// - Wire presets, clipboard actions, Text Editor, Task Editor, and reading-test entry.
+// - Host top-level UI integrations such as the info modal, menu actions, and stopwatch controller.
 // =============================================================================
-// Logger and constants
+// Logger and startup constants
 // =============================================================================
 if (typeof window.getLogger !== 'function') {
   throw new Error('[renderer] getLogger unavailable; cannot initialize renderer');
@@ -144,7 +143,7 @@ if (!readingSpeedTestUi
 }
 
 // =============================================================================
-// UI keys and static lists
+// UI controls and panels
 // =============================================================================
 const resultsTimeMultiplierInput = document.getElementById('resultsTimeMultiplierInput');
 
@@ -165,7 +164,6 @@ const cronoDisplayInput = document.getElementById('cronoDisplay');
 const cronoToggleBtnMain = document.getElementById('cronoToggle');
 const cronoResetBtnMain = document.getElementById('cronoReset');
 
-// Preset DOM references
 const presetsSelect = document.getElementById('presets');
 const btnNewPreset = document.getElementById('btnNewPreset');
 const btnEditPreset = document.getElementById('btnEditPreset');
@@ -174,12 +172,11 @@ const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets')
 const presetDescription = document.getElementById('presetDescription');
 
 // =============================================================================
-// Shared state and limits
+// Shared state and core controllers
 // =============================================================================
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
 let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
-// Global cache and state for count/language
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
 let idiomaActual = DEFAULT_LANG; // Initializes on startup
 let settingsCache = null;     // Settings cache (number formatting, language, etc.)
@@ -720,7 +717,6 @@ function contarTexto(texto) {
   return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
 }
 
-// Update mode/language from other parts (e.g., menu actions)
 function setModoConteo(nuevoModo) {
   if (nuevoModo === 'simple' || nuevoModo === 'preciso') {
     modoConteo = nuevoModo;
@@ -780,7 +776,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
 }
 
 // =============================================================================
-// Preset loading (merge + shadowing)
+// Preset loading
 // =============================================================================
 function resolveSettingsSnapshot(settingsSnapshot) {
   return (settingsSnapshot && typeof settingsSnapshot === 'object')
@@ -1620,7 +1616,7 @@ async function showInfoModal(key) {
 // =============================================================================
 // Top bar menu actions
 // =============================================================================
-// menu_actions.js must be loaded before renderer.js
+// menu_actions.js must load before renderer.js so top-bar registrations have a stable surface.
 function registerMenuActions() {
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
     const registerMenuActionGuarded = (actionId, handler) => {
@@ -2334,7 +2330,7 @@ async function handleLoadTask() {
 // =============================================================================
 // Reading tools
 // =============================================================================
-// Show a random help tip via Notify.
+// Avoid repeating the same tip twice in a row when multiple tips exist.
 function bindHelpAction() {
   if (btnHelp) {
     btnHelp.addEventListener('click', () => {
