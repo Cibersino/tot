@@ -7,44 +7,6 @@
         "reading_speed_test": "Moñe’ẽ pya’ekue test",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Eru/eipe’a jehai archivo-gui",
-        "text_extraction_abort": "Eheja extracción",
-        "overwrite_clipboard": "Emyengovia jehai ko’ág̃agua portapapeles reheve",
-        "append_clipboard": "Embojoapy portapapeles jehai ko’ág̃agua pahápe (línea pyahu)",
-        "clipboard_repeat_count": "Mboja jey jey",
-        "edit": "Eipe’a jehai ko’ág̃agua henyhẽva ventana",
-        "clear": "Emopotĩ jehai ko’ág̃agua",
-        "snapshot_load": "Emyanyhẽ jehai snapshot",
-        "snapshot_save": "Eñongatu jehai ko’ág̃agua snapshot-pe",
-        "task_new": "Tembiaporã pyahu",
-        "task_load": "Emyanyhẽ tembiaporã",
-        "browser_extension": "Jepysokue kundahárape g̃uarã",
-        "cibersino_website": "Cibersino web",
-        "cibersino_kofi": "Chepytyvõ Ko-fi-pe",
-        "new_preset": "Ejapo preset pyahu",
-        "edit_preset": "Emyatyrõ preset ojeporavóva",
-        "delete_preset": "Embogue preset ojeporavóva",
-        "reset_presets": "Emoĩjey preset ñepyrũrã",
-        "help_button": "Ehechauka ñe’ẽporã oipytyvõva",
-        "flotante_window": "Ventana ovevýiva"
-      },
-      "aria": {
-        "text_extraction": "Eru térã eipe’a jehai archivo-gui",
-        "text_extraction_abort": "Eheja extracción",
-        "browser_extension": "Eipe'a jepysokue kundahárape g̃uarã ñe'ẽryru",
-        "clipboard_repeat_count": "Mboja jey jey",
-        "wpm_input": "Ñe’ẽ peteĩ minuto-pe",
-        "wpm_slider": "Ñe’ẽ peteĩ minuto-pe slider",
-        "speed_presets": "Pya’ekue presets",
-        "precise_mode_toggle": "Modo preciso",
-        "crono_controls": "Cronómetro controles",
-        "crono_display": "Cronómetro display",
-        "crono_toggle": "Emoñepyrũ térã epytu’u cronómetro",
-        "crono_reset": "Emoñepyrũjey cronómetro",
-        "floating_window_toggle": "Ventana ovevýiva",
-        "floating_window_group": "Ventana ovevýiva controles"
-      },
       "speed": {
         "title": "MOÑE’Ẽ PYA’EKUE",
         "wpm_label": "ñe’ẽ peteĩ minuto-pe (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Aravo ohasáva: ",
         "text_extraction_drop_here": "Epoi archivo ko’ápe egueru/eipe’a hag̃ua jehai"
+      },
+      "tooltips": {
+        "text_extraction": "Eru/eipe’a jehai archivo-gui",
+        "text_extraction_abort": "Eheja extracción",
+        "overwrite_clipboard": "Emyengovia jehai ko’ág̃agua portapapeles reheve",
+        "append_clipboard": "Embojoapy portapapeles jehai ko’ág̃agua pahápe (línea pyahu)",
+        "clipboard_repeat_count": "Mboja jey jey",
+        "edit": "Eipe’a jehai ko’ág̃agua henyhẽva ventana",
+        "clear": "Emopotĩ jehai ko’ág̃agua",
+        "snapshot_load": "Emyanyhẽ jehai snapshot",
+        "snapshot_save": "Eñongatu jehai ko’ág̃agua snapshot-pe",
+        "task_new": "Tembiaporã pyahu",
+        "task_load": "Emyanyhẽ tembiaporã",
+        "browser_extension": "Jepysokue kundahárape g̃uarã",
+        "cibersino_website": "Cibersino web",
+        "cibersino_kofi": "Chepytyvõ Ko-fi-pe",
+        "new_preset": "Ejapo preset pyahu",
+        "edit_preset": "Emyatyrõ preset ojeporavóva",
+        "delete_preset": "Embogue preset ojeporavóva",
+        "reset_presets": "Emoĩjey preset ñepyrũrã",
+        "help_button": "Ehechauka ñe’ẽporã oipytyvõva",
+        "flotante_window": "Ventana ovevýiva"
+      },
+      "aria": {
+        "text_extraction": "Eru térã eipe’a jehai archivo-gui",
+        "text_extraction_abort": "Eheja extracción",
+        "browser_extension": "Eipe'a jepysokue kundahárape g̃uarã ñe'ẽryru",
+        "clipboard_repeat_count": "Mboja jey jey",
+        "wpm_input": "Ñe’ẽ peteĩ minuto-pe",
+        "wpm_slider": "Ñe’ẽ peteĩ minuto-pe slider",
+        "speed_presets": "Pya’ekue presets",
+        "precise_mode_toggle": "Modo preciso",
+        "crono_controls": "Cronómetro controles",
+        "crono_display": "Cronómetro display",
+        "crono_toggle": "Emoñepyrũ térã epytu’u cronómetro",
+        "crono_reset": "Emoñepyrũjey cronómetro",
+        "floating_window_toggle": "Ventana ovevýiva",
+        "floating_window_group": "Ventana ovevýiva controles"
       },
       "alerts": {
         "clipboard_too_large": "Portapapeles jehai tuichaiterei oñeprocesa hag̃ua. Emomichĩ ha eha’ã jey.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "PDF oñeñongatúva: ",
         "reveal_saved_pdf_button": "Ehechauka PDF oñeñongatúva"
       },
+      "single_file_heavy": {
+        "case_a_title": "PDF tuichakue tuichaiterei OCR-pe g̃uarã",
+        "case_a_message": "PDF tuichakue ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Ikatu eipe’a planificador compartido oñemboja’o hag̃ua automático archivo ojejapótavape extracción mboyve.",
+        "case_b_title": "Rango ojejapóva tuichaiterei OCR-pe g̃uarã",
+        "case_b_message": "PDF ojejapóva rango ojeporavóvape g̃uarã ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Archivo noñemondói. Ikatu reho jey página jeporavópe, reipuru ruta nativa, térã eipe’a planificador compartido oñemboja’o hag̃ua PDF tuichakue.",
+        "source_file_label": "Archivo fuente:",
+        "selected_range_label": "Rango ojeporavóva:",
+        "generated_pdf_label": "PDF ojejapóva:",
+        "generated_pdf_size_label": "PDF ojejapóva tuichakue:",
+        "source_size_label": "Archivo fuente tuichakue:",
+        "total_pages_label": "Página opavave:",
+        "split_button": "Emboja’o ha embosako’i PDF tuichakue",
+        "return_to_pages_button": "Eju jey página-kuérape",
+        "use_native_button": "Eipuru ruta nativa",
+        "reveal_generated_pdf_button": "Ehechauka PDF ojejapóva",
+        "cancel_button": "Eheja",
+        "close_aria": "Emboty diálogo PDF pohýi OCR-pe g̃uarã"
+      },
       "batch_plan": {
         "title": "Embosako’i extracción lote-pe",
         "single_file_title": "Embosako’i PDF ñemboja’o automático",
@@ -181,7 +199,6 @@
         "failure_legend": "Mba’épa ojejapo ojavýramo",
         "failure_default": "Emboty unidad último éxito rire ha esegi unidad oúvape",
         "failure_continue": "Eheja item ojavýva ha esegi unidad peteĩme",
-        "overwrite_confirm": "Extracción oñepyrũvo, texto ko’ag̃agua oñemyengoviáta. ¿Rehojeyse?",
         "start_button": "Eñepyrũ extracción",
         "cancel_button": "Eheja",
         "close_aria": "Emboty extracción lote-pe ñembosako’i"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} ojejapo",
         "snapshot_creation_failed": "(JSON jejapo ojavy: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "PDF tuichakue tuichaiterei OCR-pe g̃uarã",
-        "case_a_message": "PDF tuichakue ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Ikatu eipe’a planificador compartido oñemboja’o hag̃ua automático archivo ojejapótavape extracción mboyve.",
-        "case_b_title": "Rango ojejapóva tuichaiterei OCR-pe g̃uarã",
-        "case_b_message": "PDF ojejapóva rango ojeporavóvape g̃uarã ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Archivo noñemondói. Ikatu reho jey página jeporavópe, reipuru ruta nativa, térã eipe’a planificador compartido oñemboja’o hag̃ua PDF tuichakue.",
-        "source_file_label": "Archivo fuente:",
-        "selected_range_label": "Rango ojeporavóva:",
-        "generated_pdf_label": "PDF ojejapóva:",
-        "generated_pdf_size_label": "PDF ojejapóva tuichakue:",
-        "source_size_label": "Archivo fuente tuichakue:",
-        "total_pages_label": "Página opavave:",
-        "split_button": "Emboja’o ha embosako’i PDF tuichakue",
-        "return_to_pages_button": "Eju jey página-kuérape",
-        "use_native_button": "Eipuru ruta nativa",
-        "reveal_generated_pdf_button": "Ehechauka PDF ojejapóva",
-        "cancel_button": "Eheja",
-        "close_aria": "Emboty diálogo PDF pohýi OCR-pe g̃uarã"
-      },
       "alerts": {
+        "overwrite_confirm": "Extracción oñepyrũvo, texto ko’ag̃agua oñemyengoviáta. ¿Rehojeyse?",
         "start_error": "Oiko jejavy oñepyrũ aja text extraction. Ehecha consola.",
         "precondition_blocked": "Reñepyrũ hag̃ua text extraction, emboty opaite ventana secundaria ha ejoko cronómetro.",
         "precondition_error": "Oiko jejavy ojehecha aja text extraction precondiciones. Ehecha consola.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "Pe rango de páginas PDF ojeporavóva ndoikói. Emohenda pe rango ha ehaʼã jey.",
           "subset_creation_failed": "Ndaikatúi ojejapo PDF umi página ojeporavóvagui extracción-pe g̃uarã. Ehecha pe archivo ha ehaʼã jey."
         },
+        "native": {
+          "runtime_error": "Oiko error runtime extracción nativa text extraction aja. Ehecha consola ha eha’ã jey.",
+          "unreadable_or_corrupt": "Archivo ojeporavóva ndaikatúi ojelee térã oñembyaíma extracción nativa-pe g̃uarã.",
+          "encrypted_or_password_protected": "PDF ojeporavóva oĩ encriptado térã contraseña reheve ha ndaikatúi ojeipe’a ruta nativa rupive.",
+          "cancelled": "Extracción nativa ojeheja."
+        },
         "ocr": {
           "unavailable": "OCR ndojepurukuaái. Ehecha setup/auth ha eha’ã jey.",
           "activation_required": "Tekotevẽ OCR activación. Eike Google OCR-pe ha eha’ã jey.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR ojejoko sapy’a cuota/límite de uso rehe. Eha’arõ ha eha’ã jey.",
           "runtime_error": "Oiko OCR runtime error text extraction aja. Ehecha consola ha eha’ã jey.",
           "cancelled": "OCR extracción ojeheja.",
-          "cleanup_warning": "OCR opa, hákatu limpieza temporal remota archivo rehegua ojavy. Ehecha nde Google Drive carpeta."
-        },
-        "batch_ocr": {
-          "activation_required": "Ko lote oguereko elemento OCR, hákatu Google OCR noĩri activado. Eipuru Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",
-          "token_state_invalid": "Ko lote oguereko elemento OCR, hákatu estado oñeñongatúva Google OCR jeike rehegua ndoikói. Eipuru jey Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",
-          "connectivity_failed": "Ko batch oguereko OCR mba'e, hákatu OCR oikotevẽ Internet conexión. Ehecha nde conexión ha eha'ã jey eñepyrũ mboyve extracción.",
-          "quota_or_rate_limited": "Ko batch oguereko OCR mba'e, hákatu OCR ojokohína sapy'ami quota/rate limits rehe. Eha'arõ ha eha'ã jey eñepyrũ mboyve extracción.",
-          "unavailable": "Ko lote oguereko elemento OCR, hákatu Google OCR ndojepurukuaái ko’ág̃a. OCR noĩriramo gueteri activado, eipuru Preferencias > Emyandy Google OCR. Ndaupéichairamo, ehecha OCR setup/auth ha eha’ã jey reñepyrũ mboyve lote."
-        },
-        "native": {
-          "runtime_error": "Oiko error runtime extracción nativa text extraction aja. Ehecha consola ha eha’ã jey.",
-          "unreadable_or_corrupt": "Archivo ojeporavóva ndaikatúi ojelee térã oñembyaíma extracción nativa-pe g̃uarã.",
-          "encrypted_or_password_protected": "PDF ojeporavóva oĩ encriptado térã contraseña reheve ha ndaikatúi ojeipe’a ruta nativa rupive.",
-          "cancelled": "Extracción nativa ojeheja."
+          "cleanup_warning": "OCR opa, hákatu limpieza temporal remota archivo rehegua ojavy. Ehecha nde Google Drive carpeta.",
+          "batch_ocr": {
+            "activation_required": "Ko lote oguereko elemento OCR, hákatu Google OCR noĩri activado. Eipuru Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",
+            "token_state_invalid": "Ko lote oguereko elemento OCR, hákatu estado oñeñongatúva Google OCR jeike rehegua ndoikói. Eipuru jey Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",
+            "connectivity_failed": "Ko batch oguereko OCR mba'e, hákatu OCR oikotevẽ Internet conexión. Ehecha nde conexión ha eha'ã jey eñepyrũ mboyve extracción.",
+            "quota_or_rate_limited": "Ko batch oguereko OCR mba'e, hákatu OCR ojokohína sapy'ami quota/rate limits rehe. Eha'arõ ha eha'ã jey eñepyrũ mboyve extracción.",
+            "unavailable": "Ko lote oguereko elemento OCR, hákatu Google OCR ndojepurukuaái ko’ág̃a. OCR noĩriramo gueteri activado, eipuru Preferencias > Emyandy Google OCR. Ndaupéichairamo, ehecha OCR setup/auth ha eha’ã jey reñepyrũ mboyve lote."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Emoĩjey jehai tuichakue",
       "read_progress_label": "Oñemoñe’ẽma",
       "clear_title": "Emopotĩ",
+      "editor_find": {
+        "input_placeholder": "Heka...",
+        "input_aria": "Heka jehaipyrépe",
+        "expand_title": "Ehechauka ñemyengovia",
+        "collapse_title": "Eñomi ñemyengovia",
+        "replace_placeholder": "Myengovia...",
+        "replace_aria": "Jehaipyre ñemyengoviarã",
+        "replace": "Myengovia",
+        "replace_all": "Myengovia opaite",
+        "prev_title": "Juhu mboyvegua",
+        "next_title": "Juhu oúvagui",
+        "close_title": "Emboty barra jeheka",
+        "replace_title": "Emyengovia jeju ko’ág̃agua",
+        "replace_all_title": "Emyengovia opaite jeju",
+        "replace_timeout": "Ñemyengovia ipukueterei. Eha’ã jey.",
+        "status_no_matches": "Ndaipóri ojojáva",
+        "status_empty_query": "Ehai eheka hag̃ua"
+      },
       "alerts": {
         "start_failed": "Text Editor ndaikatúi oñepyrũ.",
         "start_timeout": "Text Editor oñepyrũ hag̃ua ipukueterei ha oñemboty.",
@@ -315,36 +333,7 @@
         "calc_error": "Oiko jejavy ojejapo aja cálculo. Ehecha consola."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Heka...",
-      "input_aria": "Heka jehaipyrépe",
-      "expand_title": "Ehechauka ñemyengovia",
-      "collapse_title": "Eñomi ñemyengovia",
-      "replace_placeholder": "Myengovia...",
-      "replace_aria": "Jehaipyre ñemyengoviarã",
-      "replace": "Myengovia",
-      "replace_all": "Myengovia opaite",
-      "prev_title": "Juhu mboyvegua",
-      "next_title": "Juhu oúvagui",
-      "close_title": "Emboty barra jeheka",
-      "replace_title": "Emyengovia jeju ko’ág̃agua",
-      "replace_all_title": "Emyengovia opaite jeju",
-      "replace_timeout": "Ñemyengovia ipukueterei. Eha’ã jey.",
-      "status_no_matches": "Ndaipóri ojojáva",
-      "status_empty_query": "Ehai eheka hag̃ua"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Snapshot oñeñongatu.",
-        "save_error": "Ndaikatúi oñeñongatu snapshot.",
-        "load_success": "Snapshot oñemyanyhẽ.",
-        "load_error": "Ndaikatúi oñemyanyhẽ snapshot.",
-        "outside": "Snapshot oĩva’erã snapshots carpeta ryepýpe.",
-        "truncated": "Snapshot ohasa tuichakue máximo ha oñekytĩ.",
-        "unavailable": "Snapshot función ndojepurukuaái."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Eñongatu jehai snapshot",
       "message": "Eñongatu hag̃ua renda reiporavo mboyve, ikatu emoĩ etiqueta ko jehai snapshot-pe.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Normal",
           "hard": "Hasy"
         }
+      },
+      "alerts": {
+        "save_success": "Snapshot oñeñongatu.",
+        "save_error": "Ndaikatúi oñeñongatu snapshot.",
+        "load_success": "Snapshot oñemyanyhẽ.",
+        "load_error": "Ndaikatúi oñemyanyhẽ snapshot.",
+        "outside": "Snapshot oĩva’erã snapshots carpeta ryepýpe.",
+        "truncated": "Snapshot ohasa tuichakue máximo ha oñekytĩ.",
+        "unavailable": "Snapshot función ndojepurukuaái."
       }
     },
     "tasks": {
       "title": "toT — Tembiaporã",
-      "labels": {
-        "name": "Téra",
-        "summary_total": "Opaite",
-        "summary_left": "Hemby",
-        "empty": "(nandi)",
-        "search": "Heka",
-        "search_placeholder": "Heka biblioteca-pe..."
-      },
+      "name": "Téra",
+      "save_button": "Ñongatu",
+      "delete_button": "Mbogue",
+      "summary_total": "Opaite",
+      "summary_left": "Hemby",
+      "add_row_button": "Embojoapy fila",
+      "open_library_button": "Eipe’a biblioteca",
       "columns": {
         "texto": "Jehai",
         "tiempo": "Aravo",
@@ -423,36 +420,37 @@
         "falta": "Hembýva",
         "enlace": "Link",
         "comentario": "",
-        "acciones": "Tembiapo"
+        "acciones": "Tembiapo",
+        "tooltips": {
+          "link_open": "Eipe’a link",
+          "snapshot_load": "Emyanyhẽ jehai snapshot ko fila-pe g̃uarã",
+          "comment": "Embojoapy/emyatyrõ comentario",
+          "move_up": "Emboguejy yvateve fila",
+          "move_down": "Emboguejy yvýpe fila",
+          "library_row_save": "Eñongatu biblioteca-pe",
+          "delete_row": "Embogue fila"
+        }
       },
-      "buttons": {
-        "save": "Ñongatu",
-        "delete": "Mbogue",
-        "add_row": "Embojoapy fila",
-        "open_library": "Eipe’a biblioteca",
-        "select_snapshot": "Eiporavo snapshot",
-        "cancel": "Eheja",
-        "yes": "Hẽe",
-        "no": "Nahániri"
-      },
-      "tooltips": {
-        "move_up": "Emboguejy yvateve fila",
-        "move_down": "Emboguejy yvýpe fila",
-        "delete_row": "Embogue fila",
-        "library_row_save": "Eñongatu biblioteca-pe",
-        "library_row_load": "Emyanyhẽ fila",
-        "library_row_delete": "Embogue biblioteca-gui",
-        "snapshot_load": "Emyanyhẽ jehai snapshot ko fila-pe g̃uarã",
-        "snapshot_select": "Eiporavo snapshot ko fila-pe g̃uarã",
-        "snapshot_clear": "Eipe’a snapshot ojeporavóva ko fila-gui",
-        "link_open": "Eipe’a link",
-        "comment": "Embojoapy/emyatyrõ comentario"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Comentario",
+        "snapshot_select": "Eiporavo snapshot",
+        "snapshot_select_tooltip": "Eiporavo snapshot ko fila-pe g̃uarã",
+        "snapshot_clear": "Eipe’a snapshot ojeporavóva ko fila-gui"
+      },
+      "biblioteca": {
         "library_title": "Biblioteca",
+        "search": "Heka",
+        "search_placeholder": "Heka biblioteca-pe...",
+        "empty": "(nandi)",
+        "library_row_load": "Emyanyhẽ fila",
+        "library_row_delete": "Embogue biblioteca-gui"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Eñongatu biblioteca-pe",
-        "library_save_question": "¿Emoĩ comentario?"
+        "library_save_question": "¿Emoĩ comentario?",
+        "yes": "Hẽe",
+        "no": "Nahániri",
+        "cancel": "Eheja"
       },
       "alerts": {
         "task_unavailable": "Tembiaporã función ndojepurukuaái.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Ndaikatúi oñembogue biblioteca-gui.",
         "link_blocked": "Link ojejokóva.",
         "link_missing": "Archivo ndojejuhúi.",
-        "link_error": "Link jeipe’ápe oiko jejavy."
-      },
-      "confirm": {
+        "link_error": "Link jeipe’ápe oiko jejavy.",
         "close_unsaved": "Oĩ ñemoambue oñeñongatu’ỹva. ¿Embotýtapa eñongatu’ỹre?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Reñepyrũ hag̃ua reime vove listo, eity Play (▶) Ventana ovevýivape. Test oñepyrũ rire, ani eity Pausa (⏸) remohu’ã meve moñe’ẽ: Pausa omohu’ã test; nomombytu’úi cronómetro. Eity Detener/Reiniciar (⏹) reheja hag̃ua test añoite."
-      },
       "entry": {
         "title": "Moñe’ẽ pya’ekue test",
+        "show_instructions": "Ehechauka instrucciones",
+        "hide_instructions": "Eñomi instrucciones",
         "intro": "Ko test oipytyvõ ojekuaa hag̃ua ne moñe’ẽ pya’ekue añetegua peteĩ sesión guiada rupive. App oipe’áta jehai ha oha’arõta reity Play (▶) Ventana ovevýivape reime vove listo reñepyrũ hag̃ua. Test oñepyrũ rire, ani eity Pausa (⏸) remohu’ã meve moñe’ẽ: Pausa omohu’ã test; nomombytu’úi cronómetro. Eipuru Detener/Reiniciar (⏹) rehejaséramo test añoite. Upe rire ikatu rehecha porandu comprensión rehegua jehai oguerekóramo, ha pahápe ejapo preset resultado reheve.\nReñepyrũ mboyve, ehechakuaa ko’ã jehai prueba rehegua oikotevẽ jepi 5 ha 15 minuto pa’ũme concentración oñekytĩ’ỹva.\nKo pool oipuru jehai mbyky, upévare einterpreta resultado ñeñangarekópe. Ndojeguerahaiva’erã directamente jehai puku rehe, upépe oikegui mba’e iporãva, fluidez ha contexto ñemopu’ãicha, ha mba’e ikatúva omboguejy, recapitulación mental ha kane’õicha.",
         "eligible_count": "Archivo ikatúva ojepuru:",
+        "show_bundled_entries": "Test ypykuéva",
+        "get_more_files": "Ehupyty archivo hetave",
+        "import_files_button": "Eru archivo",
+        "start_random_text_button": "Eñepyrũ jehai aleatorio reheve",
+        "start_current_text_button": "Eñepyrũ jehai ko’ág̃agua reheve",
         "pool_exhausted_message": "Ndaipóri archivo test ojepuru’ỹva. Emoñepyrũjey pool térã embojoapy archivo hetave.",
         "visible_empty_bundled_hidden_message": "Umi archivo test integradokuéra oñeñomi ha ndaipóri archivo test jehecháva ojepuru’ỹva. Ehechauka jey térã egueru archivo hetave ikatu hag̃uáicha resegi.",
         "close_aria": "Emboty diálogo moñe’ẽ pya’ekue test rehegua",
         "start_random_confirm": "Kóva omyengoviáta jehai ko’ág̃agua peteĩ jehai aleatorio ikatúva ojepuru pool-gui. ¿Resegisépa?",
         "reset_confirm": "Kóva omoñepyrũjeýta test pool tuichakue ha omoĩjeýta opaite archivo ojepuru’ỹvaramo. ¿Resegisépa?",
-        "import_summary": "Importación opa. Oñeguerúva: {imported}. Duplicado ojehejava’ekue: {skippedDuplicates}. Validación ojavyva’ekue: {failedValidation}. Archivo comprimido ryepypegua ojavyva’ekue: {failedArchiveEntries}. Escritura ojavyva’ekue: {failedWrites}.",
-        "import_conflict": {
-          "title": "Archivo jegueru",
-          "message": "Oĩ archivo oñeguerúva oĩmava pool-pe. ¿Mba’éichapa remboguatase duplicado?",
-          "detail": "{count} archivo destino réra oĩmava pool-pe.",
-          "buttons": {
-            "skip": "Eheja duplicado",
-            "replace": "Emyengovia duplicado",
-            "cancel": "Eheja importación"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Ehupyty archivo hetave",
-          "import_files": "Eru archivo",
-          "show_instructions": "Ehechauka instrucciones",
-          "hide_instructions": "Eñomi instrucciones",
-          "start_random_text": "Eñepyrũ jehai aleatorio reheve",
-          "start_current_text": "Eñepyrũ jehai ko’ág̃agua reheve",
-          "show_bundled_entries": "Test ypykuéva"
-        },
         "tooltips": {
           "show_bundled_entries": "Emoinge pool-pe umi archivo test ñepyrũrã integradokuéra app-pe",
           "get_more_files": "Ehupyty archivo test hetave Google Drive carpeta-gui",
@@ -519,7 +499,21 @@
           "reset_pool": "Emoñepyrũjey test pool",
           "start_random_text": "Emoñepyrũ test peteĩ jehai aleatorio ikatúva ojepuru pool-gui",
           "start_current_text": "Emoñepyrũ test jehai ko’ág̃agua reheve"
+        },
+        "import": {
+          "import_summary": "Importación opa. Oñeguerúva: {imported}. Duplicado ojehejava’ekue: {skippedDuplicates}. Validación ojavyva’ekue: {failedValidation}. Archivo comprimido ryepypegua ojavyva’ekue: {failedArchiveEntries}. Escritura ojavyva’ekue: {failedWrites}.",
+          "import_conflict": {
+            "title": "Archivo jegueru",
+            "message": "Oĩ archivo oñeguerúva oĩmava pool-pe. ¿Mba’éichapa remboguatase duplicado?",
+            "detail": "{count} archivo destino réra oĩmava pool-pe.",
+            "skip_button": "Eheja duplicado",
+            "replace_button": "Emyengovia duplicado",
+            "cancel_button": "Eheja importación"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Reñepyrũ hag̃ua reime vove listo, eity Play (▶) Ventana ovevýivape. Test oñepyrũ rire, ani eity Pausa (⏸) remohu’ã meve moñe’ẽ: Pausa omohu’ã test; nomombytu’úi cronómetro. Eity Detener/Reiniciar (⏹) reheja hag̃ua test añoite."
       },
       "questions": {
         "title": "Moñe’ẽ ñemohesakã porandu",
@@ -533,19 +527,15 @@
         "result_summary": "{correct} {total}-gui hekopete ({percentage})",
         "chance_at_least_observed": "Probabilidad rehupyty hag̃ua ko puntaje térã hetave reiporavóramo aleatoriamente: {percentage}",
         "fatal_invalid": "Porandu payload ndoikói.",
-        "buttons": {
-          "check": "Ehecha resultado",
-          "continue": "Esegí"
-        }
+        "check_button": "Ehecha resultado",
+        "continue_button": "Esegí"
       },
       "result": {
         "title": "Moñe’ẽ pya’ekue resultado",
         "measured_wpm": "WPM oñemediáva",
         "elapsed_time": "Aravo",
         "word_count": "Ñe’ẽ",
-        "buttons": {
-          "continue": "Esegí"
-        }
+        "continue_button": "Esegí"
       },
       "alerts": {
         "unavailable": "Moñe’ẽ pya’ekue test función ndojepurukuaái.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "Moñe’ẽ pya’ekue test ojeheja peteĩ ventana sesión rehegua oñembotýgui."
       }
     },
-    "modal_preset": {
-      "title_new": "Preset pyahu",
-      "title_edit": "Emyatyrõ preset",
-      "heading_new": "Ejapo preset pyahu",
-      "heading_edit": "Emyatyrõ preset ojeporavóva",
-      "name": "Téra:",
-      "name_placeholder": "Preset réra",
-      "wpm": "WPM:",
-      "description": "Ñemyesakã:",
-      "description_placeholder": "Ñemyesakã mbyky...",
-      "char_count": "{remaining} karakter opytáva",
-      "hint": "Preset personalizado oñeñongatu usuario configuración-pe.",
-      "cancel": "Eheja",
-      "save": "Ñongatu",
+    "presets": {
+      "preset_modal": {
+        "title_new": "Preset pyahu",
+        "title_edit": "Emyatyrõ preset",
+        "heading_new": "Ejapo preset pyahu",
+        "heading_edit": "Emyatyrõ preset ojeporavóva",
+        "name": "Téra:",
+        "name_placeholder": "Preset réra",
+        "wpm": "WPM:",
+        "description": "Ñemyesakã:",
+        "description_placeholder": "Ñemyesakã mbyky...",
+        "char_count": "{remaining} karakter opytáva",
+        "hint": "Preset personalizado oñeñongatu usuario configuración-pe.",
+        "cancel": "Eheja",
+        "save": "Ñongatu"
+      },
       "alerts": {
+        "not_found": "Preset ojeporavóva ndojejuhúi caché-pe.",
+        "delete_error": "Oiko jejavy oñembogue aja preset. Ehecha consola.",
+        "restore_error": "Oiko jejavy oñemoĩjey aja presets. Ehecha consola.",
+        "open_folder_unsupported": "Ndaikatúi ojepe’a presets carpeta ko entorno-pe.",
+        "open_folder_error": "Oiko jejavy ojepe’ase aja presets carpeta. Ehecha consola.",
+        "open_default_folder_failed": "Ndaikatúi ojepe’a carpeta preset ñepyrũrã rehegua. Ehecha consola reikuaave hag̃ua.",
         "unavailable": "Preset diálogo ndojeporukuaái ko app build-pe.",
         "open_error": "Oiko jejavy ojeipe’a aja preset diálogo. Ehecha consola.",
         "name_empty": "Téra ndaikatúi nandi.",
@@ -586,16 +584,6 @@
         "create_error": "Oiko jejavy ojejapo aja preset. Ehecha consola.",
         "edit_error": "Oiko jejavy oñemyatyrõ aja preset. Ehecha consola.",
         "process_error": "Oiko jejavy oñeprocesa aja preset. Ehecha consola."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Preset ojeporavóva ndojejuhúi caché-pe.",
-        "delete_error": "Oiko jejavy oñembogue aja preset. Ehecha consola.",
-        "restore_error": "Oiko jejavy oñemoĩjey aja presets. Ehecha consola.",
-        "open_folder_unsupported": "Ndaikatúi ojepe’a presets carpeta ko entorno-pe.",
-        "open_folder_error": "Oiko jejavy ojepe’ase aja presets carpeta. Ehecha consola.",
-        "open_default_folder_failed": "Ndaikatúi ojepe’a carpeta preset ñepyrũrã rehegua. Ehecha consola reikuaave hag̃ua."
       }
     },
     "browser_extension": {

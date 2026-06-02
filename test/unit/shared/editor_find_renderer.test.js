@@ -185,7 +185,7 @@ test('replace-current timeout shows a toast in the find window', async () => {
 
   assert.deepEqual(harness.replaceCurrentCalls, ['cambio']);
   assert.equal(harness.notifyCalls.length, 1);
-  assert.equal(harness.notifyCalls[0].key, 'renderer.editor_find.replace_timeout');
+  assert.equal(harness.notifyCalls[0].key, 'renderer.editor.editor_find.replace_timeout');
   assert.equal(harness.notifyCalls[0].options.type, 'error');
   assert.equal(harness.notifyCalls[0].options.duration, 5000);
 });
@@ -211,7 +211,7 @@ test('replace-all timeout shows a toast in the find window', async () => {
 
   assert.deepEqual(harness.replaceAllCalls, ['cambio']);
   assert.equal(harness.notifyCalls.length, 1);
-  assert.equal(harness.notifyCalls[0].key, 'renderer.editor_find.replace_timeout');
+  assert.equal(harness.notifyCalls[0].key, 'renderer.editor.editor_find.replace_timeout');
   assert.equal(harness.notifyCalls[0].options.type, 'error');
   assert.equal(harness.notifyCalls[0].options.duration, 5000);
 });

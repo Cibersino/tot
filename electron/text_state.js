@@ -5,12 +5,12 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Own in-memory current text and enforce max length.
-// - Load/save current text state on startup and before-quit.
-// - Provide clipboard reads to the main window via IPC with sender/size checks.
-// - Register IPC handlers for get-current-text, set-current-text, clipboard-read-text.
-// - Broadcast text updates to main and Text Editor windows (best-effort).
-// - Ensure settings file exists on quit (compatibility behavior).
+// - Own in-memory current text, normalize line endings, and enforce size limits.
+// - Load persisted current text during init and save it during app shutdown.
+// - Accept current-text updates from authorized IPC senders only.
+// - Expose get-current-text, set-current-text, and clipboard-read-text handlers.
+// - Broadcast current-text updates to the main window and Text Editor window.
+// - Preserve compatibility behavior for the settings file on quit.
 
 // =============================================================================
 // Imports / logger
@@ -92,9 +92,9 @@ let currentTextProcessingController = null;
 let getWindows = () => ({ mainWin: null, editorWin: null });
 
 // =============================================================================
-// Helpers (best-effort send + persistence)
+// Runtime helpers
 // =============================================================================
-// Best-effort window send; avoids throwing during shutdown races.
+// Best-effort window send; avoids surfacing shutdown races as hard failures.
 function safeSend(win, channel, payload) {
   if (!win || win.isDestroyed()) {
     return;
@@ -111,7 +111,7 @@ function safeSend(win, channel, payload) {
   }
 }
 
-// Persist current text and ensure settings file exists (compatibility behavior).
+// Persist current text and preserve the historical settings-file side effect on quit.
 function persistCurrentTextOnQuit() {
   try {
     if (saveJson && currentTextFile) {
@@ -151,9 +151,41 @@ function beginCurrentTextProcessing(rawMeta) {
   }
 }
 
+function getProcessingRequestId(processingState) {
+  return processingState && Number.isInteger(processingState.requestId)
+    ? processingState.requestId
+    : null;
+}
+
+function isAllowedSenderWindow(targetWin, senderWin) {
+  return !!(targetWin && !targetWin.isDestroyed() && senderWin && senderWin === targetWin);
+}
+
+function getNormalizedSetCurrentTextAction(incomingMeta) {
+  const incomingAction = incomingMeta && typeof incomingMeta.action === 'string'
+    ? incomingMeta.action
+    : '';
+  const normalizedAction = ALLOWED_SET_CURRENT_TEXT_ACTIONS.has(incomingAction)
+    ? incomingAction
+    : 'set';
+
+  if (incomingAction && normalizedAction === 'set' && incomingAction !== 'set') {
+    log.warnOnce(
+      'text_state.setCurrentText.invalid_action',
+      `set-current-text invalid action '${incomingAction}'; using 'set'.`
+    );
+  }
+
+  return normalizedAction;
+}
+
+// =============================================================================
+// Text application / bootstrap load
+// =============================================================================
 function applyCurrentText(rawText, rawMeta) {
   const incomingMeta = sanitizeMeta(rawMeta);
   const processingState = beginCurrentTextProcessing(incomingMeta);
+  const requestId = getProcessingRequestId(processingState);
   let text = normalizeLineEndings(rawText);
   let truncated = false;
 
@@ -169,61 +201,34 @@ function applyCurrentText(rawText, rawMeta) {
   currentText = text;
 
   const { mainWin, editorWin } = getWindows() || {};
+  const broadcastMeta = incomingMeta || { source: 'main', action: 'set' };
 
   // Notify main window (for renderer to update preview/results)
   safeSend(mainWin, 'current-text-updated', {
     text: currentText,
-    requestId: processingState && Number.isInteger(processingState.requestId)
-      ? processingState.requestId
-      : null,
-    meta: incomingMeta || { source: 'main', action: 'set' },
+    requestId,
+    meta: broadcastMeta,
   });
 
   // Notify Text Editor with object { text, meta }
   safeSend(editorWin, 'editor-text-updated', {
     text: currentText,
-    requestId: processingState && Number.isInteger(processingState.requestId)
-      ? processingState.requestId
-      : null,
-    meta: incomingMeta || { source: 'main', action: 'set' },
+    requestId,
+    meta: broadcastMeta,
   });
 
   return {
     ok: true,
-    requestId: processingState && Number.isInteger(processingState.requestId)
-      ? processingState.requestId
-      : null,
+    requestId,
     truncated,
     length: currentText.length,
     text: currentText,
   };
 }
 
-// =============================================================================
-// Initialization / lifecycle
-// =============================================================================
-/**
- * Initialize the text state:
- * - Load from currentTextFile
- * - Apply initial truncation using the effective hard cap
- * - Register persistence in app.before-quit
- */
-function init(options) {
-  const opts = options || {};
-
-  loadJson = opts.loadJson;
-  saveJson = opts.saveJson;
-  currentTextFile = opts.currentTextFile;
-  settingsFile = opts.settingsFile;
-  appRef = opts.app || null;
-  currentTextProcessingController = opts.currentTextProcessingController || null;
-
-  if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
-    maxTextChars = opts.maxTextChars;
-  }
-  maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
-
-  // Initial load from disk + truncated if hard cap is exceeded
+// Initial file load keeps legacy persisted shapes working, then normalizes to the
+// current in-memory/storage format before the rest of init continues.
+function loadInitialCurrentText() {
   try {
     let raw = loadJson
       ? loadJson(currentTextFile, { text: '' })
@@ -271,6 +276,32 @@ function init(options) {
     log.error('Error loading current text file:', err);
     currentText = '';
   }
+}
+
+// =============================================================================
+// Initialization / lifecycle
+// =============================================================================
+/**
+ * Initialize module state, load persisted text, start processing tracking, and
+ * attach before-quit persistence if an app instance was provided.
+ */
+function init(options) {
+  const opts = options || {};
+
+  loadJson = opts.loadJson;
+  saveJson = opts.saveJson;
+  currentTextFile = opts.currentTextFile;
+  settingsFile = opts.settingsFile;
+  appRef = opts.app || null;
+  currentTextProcessingController = opts.currentTextProcessingController || null;
+
+  if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
+    maxTextChars = opts.maxTextChars;
+  }
+  maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
+
+  // Initial load from disk + truncated if hard cap is exceeded
+  loadInitialCurrentText();
 
   beginCurrentTextProcessing({
     source: 'main',
@@ -287,11 +318,8 @@ function init(options) {
 // IPC registration / handlers
 // =============================================================================
 /**
- * Register IPC handlers for text and clipboard:
- * - get-current-text
- * - set-current-text
- * - clipboard-read-text
- * Broadcasts updates to main/Text Editor windows (best-effort).
+ * Register the text-related IPC handlers and capture the window resolver used
+ * for sender authorization and best-effort update broadcasts.
  */
 function registerIpc(ipcMain, windowsResolver) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -304,14 +332,14 @@ function registerIpc(ipcMain, windowsResolver) {
     getWindows = () => windowsResolver;
   }
 
-  // Returns the current text as a simple string (compatibility)
+  // Keep the simple string return shape for existing consumers.
   ipcMain.handle('get-current-text', async () => {
     return currentText || '';
   });
   ipcMain.handle('clipboard-read-text', (event) => {
     const { mainWin } = getWindows() || {};
     const senderWin = BrowserWindow.fromWebContents(event.sender);
-    if (!mainWin || mainWin.isDestroyed() || !senderWin || senderWin !== mainWin) {
+    if (!isAllowedSenderWindow(mainWin, senderWin)) {
       log.warnOnce(
         'text_state.clipboardRead.unauthorized',
         'clipboard-read-text unauthorized (ignored).'
@@ -341,8 +369,8 @@ function registerIpc(ipcMain, windowsResolver) {
         ? BrowserWindow.fromWebContents(_event.sender)
         : null;
 
-      const mainAllowed = !!(mainWin && !mainWin.isDestroyed() && senderWin && senderWin === mainWin);
-      const editorAllowed = !!(editorWin && !editorWin.isDestroyed() && senderWin && senderWin === editorWin);
+      const mainAllowed = isAllowedSenderWindow(mainWin, senderWin);
+      const editorAllowed = isAllowedSenderWindow(editorWin, senderWin);
 
       if (!mainAllowed && !editorAllowed) {
         log.warnOnce(
@@ -372,18 +400,7 @@ function registerIpc(ipcMain, windowsResolver) {
         throw new Error('set-current-text payload too large');
       }
       const incomingMeta = hasTextProp ? sanitizeMeta(payload.meta) : null;
-      const incomingAction = incomingMeta && typeof incomingMeta.action === 'string'
-        ? incomingMeta.action
-        : '';
-      const normalizedAction = ALLOWED_SET_CURRENT_TEXT_ACTIONS.has(incomingAction)
-        ? incomingAction
-        : 'set';
-      if (incomingAction && normalizedAction === 'set' && incomingAction !== 'set') {
-        log.warnOnce(
-          'text_state.setCurrentText.invalid_action',
-          `set-current-text invalid action '${incomingAction}'; using 'set'.`
-        );
-      }
+      const normalizedAction = getNormalizedSetCurrentTextAction(incomingMeta);
 
       const normalizedMeta = {
         source: editorAllowed ? 'editor' : 'main-window',

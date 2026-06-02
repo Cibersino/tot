@@ -980,6 +980,18 @@ function resolveWarningAlertKeys(routeKind, result) {
   return alertKeys;
 }
 
+function buildCleanupWarningLogDetails(cleanupWarning) {
+  if (!cleanupWarning || typeof cleanupWarning.warningCode !== 'string') {
+    return null;
+  }
+  return {
+    warningCode: cleanupWarning.warningCode,
+    ...(cleanupWarning.detailsSafeForLogs && typeof cleanupWarning.detailsSafeForLogs === 'object'
+      ? cleanupWarning.detailsSafeForLogs
+      : {}),
+  };
+}
+
 function resolveExitReason(routeKind, result) {
   if (!result || typeof result.state !== 'string') {
     return `text_extraction_${routeKind}_finished`;
@@ -1506,12 +1518,13 @@ async function executePreparedHeavySplitUnit({
       const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
         ? cleanupGeneratedArtifact()
         : null;
-      if (cleanupWarning) {
+      const cleanupWarningLogDetails = buildCleanupWarningLogDetails(cleanupWarning);
+      if (cleanupWarningLogDetails) {
         log.warn(
           'Generated PDF subset cleanup failed (ignored):',
-          cleanupWarning.detailsSafeForLogs || cleanupWarning
+          cleanupWarningLogDetails
         );
-        cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+        cleanupWarnings.push(cleanupWarning.warningCode);
       }
       childStatuses.push(buildHeavySplitChildStatus({
         generatedInput,
@@ -1571,12 +1584,13 @@ async function executePreparedHeavySplitUnit({
       const cleanupWarning = typeof cleanupGeneratedArtifact === 'function'
         ? cleanupGeneratedArtifact()
         : null;
-      if (cleanupWarning) {
+      const cleanupWarningLogDetails = buildCleanupWarningLogDetails(cleanupWarning);
+      if (cleanupWarningLogDetails) {
         log.warn(
           'Generated PDF subset cleanup failed (ignored):',
-          cleanupWarning.detailsSafeForLogs || cleanupWarning
+          cleanupWarningLogDetails
         );
-        cleanupWarnings.push(cleanupWarning.warningCode || String(cleanupWarning));
+        cleanupWarnings.push(cleanupWarning.warningCode);
       }
     }
 
@@ -2015,8 +2029,9 @@ async function executePreparedImport({
   } finally {
     if (cleanupGeneratedArtifact) {
       const cleanupWarning = cleanupGeneratedArtifact();
-      if (cleanupWarning && typeof cleanupWarning.warningCode === 'string') {
-        log.warn('Generated PDF subset cleanup failed (ignored):', cleanupWarning.detailsSafeForLogs || {});
+      const cleanupWarningLogDetails = buildCleanupWarningLogDetails(cleanupWarning);
+      if (cleanupWarningLogDetails) {
+        log.warn('Generated PDF subset cleanup failed (ignored):', cleanupWarningLogDetails);
         if (executionResult && executionResult.result) {
           executionResult.result.warnings = Array.isArray(executionResult.result.warnings)
             ? executionResult.result.warnings

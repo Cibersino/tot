@@ -688,11 +688,14 @@ async function runGoogleDriveOcrRoute({
     }
 
     if (uploadInput && typeof uploadInput.cleanup === 'function') {
-      const warning = uploadInput.cleanup();
-      if (warning) {
-        cleanupWarnings.push(String(warning));
+      const cleanupWarning = uploadInput.cleanup();
+      if (cleanupWarning && typeof cleanupWarning.warningCode === 'string') {
+        cleanupWarnings.push(cleanupWarning.warningCode);
         log.warn('OCR upload cleanup failed (ignored):', {
-          warning: String(warning),
+          warningCode: cleanupWarning.warningCode,
+          ...(cleanupWarning.detailsSafeForLogs && typeof cleanupWarning.detailsSafeForLogs === 'object'
+            ? cleanupWarning.detailsSafeForLogs
+            : {}),
         });
       }
     }

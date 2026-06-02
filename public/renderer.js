@@ -135,8 +135,6 @@ if (!readingSpeedTestUi
 // =============================================================================
 // UI keys and static lists
 // =============================================================================
-let lastHelpTipIdx = -1;
-
 const resultsTimeMultiplierInput = document.getElementById('resultsTimeMultiplierInput');
 
 const toggleModoPreciso = document.getElementById('toggleModoPreciso');
@@ -163,6 +161,33 @@ const btnEditPreset = document.getElementById('btnEditPreset');
 const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
 const presetDescription = document.getElementById('presetDescription');
+
+// =============================================================================
+// Shared state and limits
+// =============================================================================
+// Local limit in renderer to prevent concatenations that create excessively large strings
+let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
+let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
+// Global cache and state for count/language
+let modoConteo = 'preciso';   // Precise by default; can be `simple`
+let idiomaActual = DEFAULT_LANG; // Initializes on startup
+let settingsCache = null;     // Settings cache (number formatting, language, etc.)
+let cronoController = null;
+let rendererReadyState = 'PRE_READY';
+let rendererInvariantsReady = false;
+let startupReadyReceived = false;
+let rendererCoreReadySent = false;
+let splashRemovedSent = false;
+let ipcSubscriptionsArmed = false;
+let uiListenersArmed = false;
+let syncToggleFromSettings = null;
+let hasCurrentTextSubscription = false;
+let bootstrapCurrentTextPayload = null;
+let textExtractionPrepareAttemptId = 0;
+let bootstrapCurrentTextProcessingState = null;
+let lastHelpTipIdx = -1;
+let lastProcessingLockNoticeAt = 0;
+
 const { WpmControls } = window;
 if (!WpmControls || typeof WpmControls.createController !== 'function') {
   throw new Error('[renderer] WpmControls unavailable; cannot continue');
@@ -477,32 +502,6 @@ function markRendererInvariantsReady() {
   sendRendererCoreReady();
   maybeUnblockReady();
 }
-
-
-// =============================================================================
-// Shared state and limits
-// =============================================================================
-// Local limit in renderer to prevent concatenations that create excessively large strings
-let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
-let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
-// Global cache and state for count/language
-let modoConteo = 'preciso';   // Precise by default; can be `simple`
-let idiomaActual = DEFAULT_LANG; // Initializes on startup
-let settingsCache = null;     // Settings cache (number formatting, language, etc.)
-let cronoController = null;
-let rendererReadyState = 'PRE_READY';
-let rendererInvariantsReady = false;
-let startupReadyReceived = false;
-let rendererCoreReadySent = false;
-let splashRemovedSent = false;
-let ipcSubscriptionsArmed = false;
-let uiListenersArmed = false;
-let syncToggleFromSettings = null;
-let hasCurrentTextSubscription = false;
-let bootstrapCurrentTextPayload = null;
-let textExtractionPrepareAttemptId = 0;
-let bootstrapCurrentTextProcessingState = null;
-let lastProcessingLockNoticeAt = 0;
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
   const api = window.electronAPI;
@@ -1787,6 +1786,12 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
   });
 }
 
+function assertCurrentTextSubscription() {
+  if (!hasCurrentTextSubscription) {
+    throw new Error('current-text-updated subscription unavailable');
+  }
+}
+
 // =============================================================================
 // Text extraction integration helpers
 // =============================================================================
@@ -2079,10 +2084,7 @@ async function handleClipboardOverwrite() {
       }
       return;
     }
-
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
-    }
+    assertCurrentTextSubscription();
     if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
     }
@@ -2117,10 +2119,7 @@ async function handleClipboardAppend() {
       }
       return;
     }
-
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
-    }
+    assertCurrentTextSubscription();
     if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
     }
@@ -2185,9 +2184,7 @@ async function handleClearText() {
     if (resp && resp.ok === false) {
       throw new Error(resp.error || 'set-current-text failed');
     }
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
-    }
+    assertCurrentTextSubscription();
   } catch (err) {
     log.error('Error clearing text from main window:', err);
     window.Notify.notifyMain('renderer.main.alerts.clear_error');
@@ -2251,19 +2248,25 @@ function handleTaskOpenResult(res, { mode } = {}) {
   }
 }
 
+async function openTaskEditorForMode(mode, { unavailableMessage } = {}) {
+  const openTaskEditor = getOptionalElectronMethod('openTaskEditor', {
+    dedupeKey: 'renderer.ipc.openTaskEditor.unavailable',
+    unavailableMessage,
+  });
+  if (!openTaskEditor) {
+    window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+    return;
+  }
+  const res = await openTaskEditor(mode);
+  handleTaskOpenResult(res, { mode });
+}
+
 async function handleNewTask() {
   if (!guardUserAction('task-new')) return;
   try {
-    if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-      log.warnOnce(
-        'renderer.ipc.openTaskEditor.unavailable',
-        'openTaskEditor unavailable; new-task action skipped.'
-      );
-      window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-      return;
-    }
-    const res = await window.electronAPI.openTaskEditor('new');
-    handleTaskOpenResult(res, { mode: 'new' });
+    await openTaskEditorForMode('new', {
+      unavailableMessage: 'openTaskEditor unavailable; new-task action skipped.'
+    });
   } catch (err) {
     log.error('Error opening Task Editor (new):', err);
     window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
@@ -2273,16 +2276,9 @@ async function handleNewTask() {
 async function handleLoadTask() {
   if (!guardUserAction('task-load')) return;
   try {
-    if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-      log.warnOnce(
-        'renderer.ipc.openTaskEditor.unavailable',
-        'openTaskEditor unavailable; load-task action skipped.'
-      );
-      window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-      return;
-    }
-    const res = await window.electronAPI.openTaskEditor('load');
-    handleTaskOpenResult(res, { mode: 'load' });
+    await openTaskEditorForMode('load', {
+      unavailableMessage: 'openTaskEditor unavailable; load-task action skipped.'
+    });
   } catch (err) {
     log.error('Error opening Task Editor (load):', err);
     window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
@@ -2349,7 +2345,7 @@ async function openPresetModalFromMain(payload) {
       'renderer.ipc.openPresetModal.unavailable',
       'openPresetModal unavailable in electronAPI; preset-modal action skipped.'
     );
-    window.Notify.notifyMain('renderer.modal_preset.alerts.unavailable');
+    window.Notify.notifyMain('renderer.presets.alerts.unavailable');
     return;
   }
 
@@ -2357,11 +2353,11 @@ async function openPresetModalFromMain(payload) {
     const res = await window.electronAPI.openPresetModal(payload);
     if (!res || res.ok === false) {
       log.error('Preset modal open failed:', res);
-      window.Notify.notifyMain('renderer.modal_preset.alerts.open_error');
+      window.Notify.notifyMain('renderer.presets.alerts.open_error');
     }
   } catch (err) {
     log.error('Error opening preset modal:', err);
-    window.Notify.notifyMain('renderer.modal_preset.alerts.open_error');
+    window.Notify.notifyMain('renderer.presets.alerts.open_error');
   }
 }
 
@@ -2399,7 +2395,7 @@ function bindPresetActions() {
       await openPresetModalFromMain(payload);
     } catch (err) {
       log.error('Error preparing edit preset modal payload:', err);
-      window.Notify.notifyMain('renderer.modal_preset.alerts.open_error');
+      window.Notify.notifyMain('renderer.presets.alerts.open_error');
     }
   });
 

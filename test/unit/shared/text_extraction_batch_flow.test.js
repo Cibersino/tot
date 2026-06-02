@@ -403,7 +403,7 @@ test('batch flow opens shared tags modal with batch-planning copy overrides', as
         titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
         messageKey: 'renderer.text_extraction.batch_plan.tags_modal.message',
         confirmKey: 'renderer.text_extraction.batch_plan.tags_modal.confirm_button',
-        cancelKey: 'renderer.snapshot_save_tags.buttons.cancel',
+        cancelKey: 'renderer.snapshots.buttons.cancel',
         closeAriaKey: 'renderer.text_extraction.batch_plan.tags_modal.close_aria',
       },
     }

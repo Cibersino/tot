@@ -115,11 +115,11 @@
 
   function resolveCopy(copy = {}) {
     const snapshotCopy = {
-      titleKey: 'renderer.snapshot_save_tags.title',
-      messageKey: 'renderer.snapshot_save_tags.message',
-      confirmKey: 'renderer.snapshot_save_tags.buttons.confirm',
-      cancelKey: 'renderer.snapshot_save_tags.buttons.cancel',
-      closeAriaKey: 'renderer.snapshot_save_tags.close_aria',
+      titleKey: 'renderer.snapshots.title',
+      messageKey: 'renderer.snapshots.message',
+      confirmKey: 'renderer.snapshots.buttons.confirm',
+      cancelKey: 'renderer.snapshots.buttons.cancel',
+      closeAriaKey: 'renderer.snapshots.close_aria',
     };
     return {
       titleKey: typeof copy.titleKey === 'string' && copy.titleKey.trim()
@@ -144,9 +144,9 @@
     const resolvedCopy = resolveCopy(copy);
     title.textContent = tRenderer(resolvedCopy.titleKey);
     message.textContent = tRenderer(resolvedCopy.messageKey);
-    languageLabel.textContent = tRenderer('renderer.snapshot_save_tags.labels.language');
-    typeLabel.textContent = tRenderer('renderer.snapshot_save_tags.labels.type');
-    difficultyLabel.textContent = tRenderer('renderer.snapshot_save_tags.labels.difficulty');
+    languageLabel.textContent = tRenderer('renderer.snapshots.labels.language');
+    typeLabel.textContent = tRenderer('renderer.snapshots.labels.type');
+    difficultyLabel.textContent = tRenderer('renderer.snapshots.labels.difficulty');
     btnConfirm.textContent = tRenderer(resolvedCopy.confirmKey);
     btnCancel.textContent = tRenderer(resolvedCopy.cancelKey);
     btnClose.setAttribute(
@@ -157,17 +157,17 @@
     setSelectOptions(
       languageSelect,
       getSortedOptionsByLabel(LANGUAGE_OPTIONS),
-      tRenderer('renderer.snapshot_save_tags.empty.language')
+      tRenderer('renderer.snapshots.empty.language')
     );
     setSelectOptions(
       typeSelect,
       TYPE_OPTIONS,
-      tRenderer('renderer.snapshot_save_tags.empty.type')
+      tRenderer('renderer.snapshots.empty.type')
     );
     setSelectOptions(
       difficultySelect,
       DIFFICULTY_OPTIONS,
-      tRenderer('renderer.snapshot_save_tags.empty.difficulty')
+      tRenderer('renderer.snapshots.empty.difficulty')
     );
 
     languageSelect.value = '';

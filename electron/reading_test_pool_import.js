@@ -314,13 +314,13 @@ function normalizeDialogCopy(rawDialogCopy) {
   };
 
   return {
-    conflictTitle: normalize(copy.conflictTitle, 'renderer.reading_test.entry.import_conflict.title'),
-    conflictMessage: normalize(copy.conflictMessage, 'renderer.reading_test.entry.import_conflict.message'),
-    conflictDetail: normalize(copy.conflictDetail, 'renderer.reading_test.entry.import_conflict.detail'),
+    conflictTitle: normalize(copy.conflictTitle, 'renderer.reading_test.entry.import.import_conflict.title'),
+    conflictMessage: normalize(copy.conflictMessage, 'renderer.reading_test.entry.import.import_conflict.message'),
+    conflictDetail: normalize(copy.conflictDetail, 'renderer.reading_test.entry.import.import_conflict.detail'),
     buttons: {
-      skip: normalize(copy.buttons && copy.buttons.skip, 'renderer.reading_test.entry.import_conflict.buttons.skip'),
-      replace: normalize(copy.buttons && copy.buttons.replace, 'renderer.reading_test.entry.import_conflict.buttons.replace'),
-      cancel: normalize(copy.buttons && copy.buttons.cancel, 'renderer.reading_test.entry.import_conflict.buttons.cancel'),
+      skip: normalize(copy.buttons && copy.buttons.skip, 'renderer.reading_test.entry.import.import_conflict.skip_button'),
+      replace: normalize(copy.buttons && copy.buttons.replace, 'renderer.reading_test.entry.import.import_conflict.replace_button'),
+      cancel: normalize(copy.buttons && copy.buttons.cancel, 'renderer.reading_test.entry.import.import_conflict.cancel_button'),
     },
   };
 }
@@ -558,4 +558,3 @@ module.exports = {
 // =============================================================================
 // End of electron/reading_test_pool_import.js
 // =============================================================================
-

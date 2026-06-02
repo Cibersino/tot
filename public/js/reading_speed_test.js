@@ -210,7 +210,7 @@
   }
 
   function getCategoryDisplayLabel(category) {
-    const key = `renderer.snapshot_save_tags.labels.${category}`;
+    const key = `renderer.snapshots.labels.${category}`;
     return tRenderer(key);
   }
 
@@ -340,8 +340,8 @@
     introToggle.setAttribute('aria-expanded', introExpanded ? 'true' : 'false');
     introToggle.textContent = tRenderer(
       introExpanded
-        ? 'renderer.reading_test.entry.buttons.hide_instructions'
-        : 'renderer.reading_test.entry.buttons.show_instructions'
+        ? 'renderer.reading_test.entry.hide_instructions'
+        : 'renderer.reading_test.entry.show_instructions'
     );
   }
 
@@ -353,19 +353,19 @@
       'aria-label',
       tRenderer('renderer.reading_test.entry.close_aria')
     );
-    showBundledText.textContent = tRenderer('renderer.reading_test.entry.buttons.show_bundled_entries');
+    showBundledText.textContent = tRenderer('renderer.reading_test.entry.show_bundled_entries');
     showBundledLabel.title = tRenderer('renderer.reading_test.entry.tooltips.show_bundled_entries');
     showBundledCheckbox.checked = showBundledEntries;
     showBundledCheckbox.setAttribute('aria-label', showBundledText.textContent);
-    getMoreFilesLink.textContent = tRenderer('renderer.reading_test.entry.buttons.get_more_files');
+    getMoreFilesLink.textContent = tRenderer('renderer.reading_test.entry.get_more_files');
     getMoreFilesLink.title = tRenderer('renderer.reading_test.entry.tooltips.get_more_files');
-    importButton.textContent = tRenderer('renderer.reading_test.entry.buttons.import_files');
+    importButton.textContent = tRenderer('renderer.reading_test.entry.import_files_button');
     importButton.title = tRenderer('renderer.reading_test.entry.tooltips.import_files');
     resetButton.title = tRenderer('renderer.reading_test.entry.tooltips.reset_pool');
     resetButton.setAttribute('aria-label', resetButton.title);
-    btnStart.textContent = tRenderer('renderer.reading_test.entry.buttons.start_random_text');
+    btnStart.textContent = tRenderer('renderer.reading_test.entry.start_random_text_button');
     btnStart.title = tRenderer('renderer.reading_test.entry.tooltips.start_random_text');
-    btnStartCurrentText.textContent = tRenderer('renderer.reading_test.entry.buttons.start_current_text');
+    btnStartCurrentText.textContent = tRenderer('renderer.reading_test.entry.start_current_text_button');
     btnStartCurrentText.title = tRenderer('renderer.reading_test.entry.tooltips.start_current_text');
 
     renderEligibleCount();
@@ -549,7 +549,7 @@
       ? 'info'
       : (totalFailed > 0 || (Number(result.skippedDuplicates) || 0) > 0 ? 'warn' : 'info');
 
-    window.Notify.toastMain('renderer.reading_test.entry.import_summary', {
+    window.Notify.toastMain('renderer.reading_test.entry.import.import_summary', {
       type: toastType,
       params: {
         imported: Number(result.imported) || 0,
@@ -564,16 +564,16 @@
   function buildImportDialogPayload() {
     return {
       conflictDialog: {
-        conflictTitle: tRenderer('renderer.reading_test.entry.import_conflict.title'),
-        conflictMessage: tRenderer('renderer.reading_test.entry.import_conflict.message'),
+        conflictTitle: tRenderer('renderer.reading_test.entry.import.import_conflict.title'),
+        conflictMessage: tRenderer('renderer.reading_test.entry.import.import_conflict.message'),
         conflictDetail: msgRenderer(
-          'renderer.reading_test.entry.import_conflict.detail',
+          'renderer.reading_test.entry.import.import_conflict.detail',
           { count: '{count}' }
         ),
         buttons: {
-          skip: tRenderer('renderer.reading_test.entry.import_conflict.buttons.skip'),
-          replace: tRenderer('renderer.reading_test.entry.import_conflict.buttons.replace'),
-          cancel: tRenderer('renderer.reading_test.entry.import_conflict.buttons.cancel'),
+          skip: tRenderer('renderer.reading_test.entry.import.import_conflict.skip_button'),
+          replace: tRenderer('renderer.reading_test.entry.import.import_conflict.replace_button'),
+          cancel: tRenderer('renderer.reading_test.entry.import.import_conflict.cancel_button'),
         },
       },
     };

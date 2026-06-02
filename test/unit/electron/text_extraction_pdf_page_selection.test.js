@@ -273,6 +273,64 @@ test('materializePdfPageSelectionInput retains subset PDFs under the caller-owne
   assert.equal(materialized.cleanupGeneratedArtifact(), null);
 });
 
+test('materializePdfPageSelectionInput preserves subordinate cleanup lineage inside route-owned cleanup warnings', async (t) => {
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+  const selection = canonicalizePdfPageSelection(
+    {
+      mode: 'range',
+      fromPage: 2,
+      toPage: 3,
+    },
+    { totalPages: 12 }
+  ).pdfPageSelection;
+  const { loadedModule, restore } = loadPdfPageSelectionModuleWithMocks({
+    appTempPathsOverrides: {
+      cleanupRuntimeTempRunDir(runDir) {
+        return {
+          warningCode: 'cleanup:runtime_temp_run_dir_cleanup_failed',
+          detailsSafeForLogs: {
+            stage: 'cleanup_runtime_temp_run_dir',
+            runDir,
+            resolvedRunDir: runDir,
+            runtimeTempRoot: path.join(os.tmpdir(), 'tot-temp'),
+            errorName: 'Error',
+            errorCode: 'EPERM',
+            errorMessage: 'cleanup denied',
+          },
+        };
+      },
+    },
+  });
+  t.after(restore);
+
+  const materialized = await loadedModule.materializePdfPageSelectionInput({
+    fileInfo,
+    pdfPageSelection: selection,
+    generatedPdfArtifactPolicy: { mode: 'delete' },
+  });
+
+  assert.equal(materialized.ok, true);
+  const cleanupWarning = materialized.cleanupGeneratedArtifact();
+  assert.deepEqual(cleanupWarning, {
+    warningCode: 'cleanup:pdf_subset_cleanup_failed',
+    detailsSafeForLogs: {
+      stage: 'cleanup_generated_subset',
+      runDir: path.dirname(materialized.effectiveFilePath),
+      fileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
+      cleanupWarningCode: 'cleanup:runtime_temp_run_dir_cleanup_failed',
+      cleanupWarningDetails: {
+        stage: 'cleanup_runtime_temp_run_dir',
+        runDir: path.dirname(materialized.effectiveFilePath),
+        resolvedRunDir: path.dirname(materialized.effectiveFilePath),
+        runtimeTempRoot: path.join(os.tmpdir(), 'tot-temp'),
+        errorName: 'Error',
+        errorCode: 'EPERM',
+        errorMessage: 'cleanup denied',
+      },
+    },
+  });
+});
+
 test('resolveProcessingInputFileName pads range bounds to the source PDF page-count width', () => {
   assert.equal(
     resolveProcessingInputFileName({

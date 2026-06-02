@@ -124,7 +124,7 @@ function createHarness({ initialLanguage = 'en', presetDescMax = 120 } = {}) {
         async loadRendererTranslations() {},
         tRenderer(path) { return path; },
         msgRenderer(path, params = {}) {
-          if (path === 'renderer.modal_preset.char_count') {
+          if (path === 'renderer.presets.preset_modal.char_count') {
             return `${params.remaining} remaining`;
           }
           return path;

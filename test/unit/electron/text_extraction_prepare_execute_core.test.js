@@ -61,6 +61,7 @@ function loadCoreWithMocks({
   heavyPdfSplitCoreOverrides = null,
   pdfPageSelectionOverrides = null,
   electronOverrides = null,
+  mockLog = null,
 } = {}) {
   const coreModulePath = CORE_MODULE_PATH;
   const nativeRouteModulePath = path.resolve(
@@ -87,6 +88,10 @@ function loadCoreWithMocks({
     __dirname,
     '../../../electron/text_extraction_platform/text_extraction_pdf_page_selection.js'
   );
+  const logModulePath = path.resolve(
+    __dirname,
+    '../../../electron/log.js'
+  );
   const originalCoreModule = require.cache[coreModulePath];
   const originalNativeRouteModule = require.cache[nativeRouteModulePath];
   const originalOcrRouteModule = require.cache[ocrRouteModulePath];
@@ -94,6 +99,7 @@ function loadCoreWithMocks({
   const originalNativePdfProbeModule = require.cache[nativePdfProbeModulePath];
   const originalHeavyPdfSplitCoreModule = require.cache[heavyPdfSplitCoreModulePath];
   const originalPdfPageSelectionModule = require.cache[pdfPageSelectionModulePath];
+  const originalLogModule = require.cache[logModulePath];
   const restoreElectronModule = installElectronModuleMock(electronOverrides);
 
   if (typeof mockRunNativeExtractionRoute === 'function') {
@@ -166,6 +172,19 @@ function loadCoreWithMocks({
     };
   }
 
+  if (mockLog && typeof mockLog === 'object') {
+    require.cache[logModulePath] = {
+      id: logModulePath,
+      filename: logModulePath,
+      loaded: true,
+      exports: {
+        get() {
+          return mockLog;
+        },
+      },
+    };
+  }
+
   delete require.cache[coreModulePath];
   const core = require(coreModulePath);
 
@@ -205,6 +224,11 @@ function loadCoreWithMocks({
       require.cache[pdfPageSelectionModulePath] = originalPdfPageSelectionModule;
     } else if (pdfPageSelectionOverrides && typeof pdfPageSelectionOverrides === 'object') {
       delete require.cache[pdfPageSelectionModulePath];
+    }
+    if (mockLog && typeof mockLog === 'object' && originalLogModule) {
+      require.cache[logModulePath] = originalLogModule;
+    } else if (mockLog && typeof mockLog === 'object') {
+      delete require.cache[logModulePath];
     }
     restoreElectronModule();
   }
@@ -1240,6 +1264,110 @@ test('executePreparedImport does not release a replacement processing lock after
   assert.equal(controller.getState().lockId, 99);
 });
 
+test('executePreparedImport logs structured generated-PDF cleanup warnings and preserves warning codes on the final cleanup boundary', async (t) => {
+  const warnCalls = [];
+  const mockLog = {
+    warn(...args) {
+      warnCalls.push(args);
+    },
+    warnOnce() {},
+    error() {},
+    errorOnce() {},
+    debug() {},
+    info() {},
+  };
+  const { core, restore } = loadCoreWithMocks({
+    mockRunNativeExtractionRoute: async () => ({
+      state: 'success',
+      executedRoute: 'native',
+      text: 'Extracted text',
+      warnings: [],
+      summary: 'Native route succeeded.',
+      provenance: {
+        metadataSafeForLogs: {},
+      },
+      error: null,
+    }),
+    pdfPageSelectionOverrides: {
+      materializePdfPageSelectionInput: async () => ({
+        ok: true,
+        materialized: true,
+        effectiveFilePath: path.join(GENERATED_PDF_SUBSET_FIXTURE_DIR, 'cleanup-warning-final.pdf'),
+        processingInputFileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
+        processingInputSource: 'generated_pdf_subset',
+        generatedPdfArtifact: {
+          fileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
+          policyMode: 'delete',
+          retained: false,
+        },
+        retainedArtifactPath: '',
+        cleanupGeneratedArtifact: () => ({
+          warningCode: 'cleanup:pdf_subset_cleanup_failed',
+          detailsSafeForLogs: {
+            stage: 'cleanup_generated_subset',
+            runDir: 'C:\\temp\\tot-run',
+            fileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
+          },
+        }),
+      }),
+    },
+    mockLog,
+  });
+  t.after(restore);
+
+  const controller = createExecutingController();
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo: getFileInfo(SELECTABLE_PDF_FIXTURE),
+      ocrLanguage: 'es',
+      pdfPageSelection: {
+        mode: 'range',
+        fromPage: 2,
+        toPage: 3,
+        selectedPageCount: 2,
+        totalPages: 12,
+      },
+      generatedPdfArtifactPolicy: {
+        mode: 'delete',
+      },
+      processingInputFileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
+      routeMetadata: {
+        fileKind: 'pdf',
+        availableRoutes: ['native'],
+        chosenRoute: 'native',
+        executedRoute: null,
+        executionKind: 'native',
+        pdfTriage: 'native_only',
+        triageReason: 'native_text_detected',
+        ocrSetupState: 'not_checked',
+      },
+      requiresRouteChoice: false,
+      routeChoiceOptions: [],
+    },
+    routePreference: '',
+    resolvePaths: () => ({
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.result.state, 'success');
+  assert.deepEqual(result.result.warnings, ['cleanup:pdf_subset_cleanup_failed']);
+  assert.deepEqual(result.warningAlertKeys, [
+    'renderer.text_extraction.alerts.generated_pdf_cleanup_warning',
+  ]);
+  assert.equal(warnCalls.length, 1);
+  assert.equal(warnCalls[0][0], 'Generated PDF subset cleanup failed (ignored):');
+  assert.deepEqual(warnCalls[0][1], {
+    warningCode: 'cleanup:pdf_subset_cleanup_failed',
+    stage: 'cleanup_generated_subset',
+    runDir: 'C:\\temp\\tot-run',
+    fileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
+  });
+});
+
 test('executePreparedImport processes heavy split through generated child PDFs instead of uploading the full source PDF', async (t) => {
   const ocrRouteCalls = [];
   const { core, restore } = loadCoreWithMocks({
@@ -1520,6 +1648,171 @@ test('executePreparedImport preserves heavy split child statuses on cancellation
       },
     ]
   );
+});
+
+test('executePreparedImport logs structured generated-PDF cleanup warnings and preserves warning codes on heavy split cleanup boundaries', async (t) => {
+  const warnCalls = [];
+  const mockLog = {
+    warn(...args) {
+      warnCalls.push(args);
+    },
+    warnOnce() {},
+    error() {},
+    errorOnce() {},
+    debug() {},
+    info() {},
+  };
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async (args) => ({
+      state: 'success',
+      executedRoute: 'ocr',
+      text: `Extracted from ${path.basename(args.filePath)}`,
+      warnings: [],
+      provenance: {
+        metadataSafeForLogs: {},
+      },
+      error: null,
+    }),
+    pdfPageSelectionOverrides: {
+      materializePdfPageSelectionInput: async ({ pdfPageSelection }) => {
+        const fromPage = pdfPageSelection && pdfPageSelection.fromPage;
+        const toPage = pdfPageSelection && pdfPageSelection.toPage;
+        return {
+          ok: true,
+          materialized: true,
+          effectiveFilePath: path.join(
+            GENERATED_PDF_SUBSET_FIXTURE_DIR,
+            `heavy-split-${String(fromPage).padStart(2, '0')}-${String(toPage).padStart(2, '0')}.pdf`
+          ),
+          processingInputFileName: `selectable_text_fixture_12_pages_pages_${String(fromPage).padStart(2, '0')}_${String(toPage).padStart(2, '0')}.pdf`,
+          processingInputSource: 'generated_pdf_split_input',
+          generatedPdfArtifact: {
+            fileName: `selectable_text_fixture_12_pages_pages_${String(fromPage).padStart(2, '0')}_${String(toPage).padStart(2, '0')}.pdf`,
+            policyMode: 'delete',
+            retained: false,
+          },
+          retainedArtifactPath: '',
+          cleanupGeneratedArtifact: () => ({
+            warningCode: 'cleanup:pdf_subset_cleanup_failed',
+            detailsSafeForLogs: {
+              stage: 'cleanup_generated_subset',
+              runDir: `C:\\temp\\tot-run-${fromPage}-${toPage}`,
+              fileName: `selectable_text_fixture_12_pages_pages_${String(fromPage).padStart(2, '0')}_${String(toPage).padStart(2, '0')}.pdf`,
+            },
+          }),
+        };
+      },
+    },
+    mockLog,
+  });
+  t.after(restore);
+
+  const controller = createExecutingController();
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo,
+      ocrLanguage: 'es',
+      planningMode: 'batch',
+      forceHeavySplitFullSource: true,
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+      generatedPdfArtifactPolicy: {
+        mode: 'delete',
+      },
+      processingInputFileName: 'selectable_text_fixture_12_pages.pdf',
+      routeMetadata: {
+        fileKind: 'pdf',
+        availableRoutes: ['native', 'ocr'],
+        chosenRoute: null,
+        executedRoute: null,
+        executionKind: null,
+        pdfTriage: 'both',
+        triageReason: 'native_text_detected_and_ocr_ready_choice_required',
+        ocrSetupState: 'ready',
+        heavySplitEligible: true,
+        heavySplitPreview: {
+          ok: true,
+          generatedInputs: [
+            {
+              inputIndex: 1,
+              fromPage: 1,
+              toPage: 2,
+              pdfPageSelection: {
+                mode: 'range',
+                fromPage: 1,
+                toPage: 2,
+                selectedPageCount: 2,
+                totalPages: 12,
+              },
+              processingInputFileName: 'selectable_text_fixture_12_pages_pages_01_02.pdf',
+            },
+            {
+              inputIndex: 2,
+              fromPage: 3,
+              toPage: 4,
+              pdfPageSelection: {
+                mode: 'range',
+                fromPage: 3,
+                toPage: 4,
+                selectedPageCount: 2,
+                totalPages: 12,
+              },
+              processingInputFileName: 'selectable_text_fixture_12_pages_pages_03_04.pdf',
+            },
+          ],
+        },
+      },
+      requiresRouteChoice: true,
+      routeChoiceOptions: ['native', 'ocr'],
+    },
+    routePreference: 'ocr',
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.result.state, 'success');
+  assert.deepEqual(result.result.warnings, [
+    'cleanup:pdf_subset_cleanup_failed',
+    'cleanup:pdf_subset_cleanup_failed',
+  ]);
+  assert.deepEqual(result.warningAlertKeys, [
+    'renderer.text_extraction.alerts.generated_pdf_cleanup_warning',
+  ]);
+  assert.equal(warnCalls.length, 2);
+  assert.deepEqual(warnCalls[0], [
+    'Generated PDF subset cleanup failed (ignored):',
+    {
+      warningCode: 'cleanup:pdf_subset_cleanup_failed',
+      stage: 'cleanup_generated_subset',
+      runDir: 'C:\\temp\\tot-run-1-2',
+      fileName: 'selectable_text_fixture_12_pages_pages_01_02.pdf',
+    },
+  ]);
+  assert.deepEqual(warnCalls[1], [
+    'Generated PDF subset cleanup failed (ignored):',
+    {
+      warningCode: 'cleanup:pdf_subset_cleanup_failed',
+      stage: 'cleanup_generated_subset',
+      runDir: 'C:\\temp\\tot-run-3-4',
+      fileName: 'selectable_text_fixture_12_pages_pages_03_04.pdf',
+    },
+  ]);
 });
 
 test('executePreparedImport keeps retained generated PDFs only on heavy split child statuses', async (t) => {

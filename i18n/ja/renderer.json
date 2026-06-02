@@ -7,44 +7,6 @@
         "reading_speed_test": "読書速度テスト",
         "preview_spoiler": "ネタバレ防止"
       },
-      "tooltips": {
-        "text_extraction": "ファイルからテキストを抽出",
-        "text_extraction_abort": "抽出を中止",
-        "overwrite_clipboard": "クリップボードの内容で現在のテキストを置き換える",
-        "append_clipboard": "クリップボードの内容を現在のテキストの末尾に追加（改行）",
-        "clipboard_repeat_count": "貼り付け回数",
-        "edit": "現在の全文テキストウィンドウを開く",
-        "clear": "現在のテキストを空にする",
-        "snapshot_load": "テキストスナップショットを読み込む",
-        "snapshot_save": "現在のテキストをスナップショットに保存",
-        "task_new": "新しいタスク",
-        "task_load": "タスクを読み込む",
-        "browser_extension": "ブラウザー拡張機能",
-        "cibersino_website": "Cibersino のサイト",
-        "cibersino_kofi": "Ko-fi で支援する",
-        "new_preset": "新しいプリセットを作成",
-        "edit_preset": "選択したプリセットを編集",
-        "delete_preset": "選択したプリセットを削除",
-        "reset_presets": "デフォルトプリセットを復元",
-        "help_button": "役立つヒントを表示",
-        "flotante_window": "フローティングウィンドウ"
-      },
-      "aria": {
-        "text_extraction": "ファイルからテキストを抽出",
-        "text_extraction_abort": "抽出を中止",
-        "browser_extension": "ブラウザー拡張機能のダイアログを開く",
-        "clipboard_repeat_count": "貼り付け回数",
-        "wpm_input": "1分あたりの語数",
-        "wpm_slider": "1分あたりの語数スライダー",
-        "speed_presets": "速度プリセット",
-        "precise_mode_toggle": "精密モード",
-        "crono_controls": "ストップウォッチ操作",
-        "crono_display": "ストップウォッチ表示",
-        "crono_toggle": "ストップウォッチを開始または一時停止",
-        "crono_reset": "ストップウォッチをリセット",
-        "floating_window_toggle": "フローティングウィンドウ",
-        "floating_window_group": "フローティングウィンドウ操作"
-      },
       "speed": {
         "title": "読書速度",
         "wpm_label": "1分あたりの語数（WPM）"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "経過時間: ",
         "text_extraction_drop_here": "テキストを抽出するファイルをドロップ"
+      },
+      "tooltips": {
+        "text_extraction": "ファイルからテキストを抽出",
+        "text_extraction_abort": "抽出を中止",
+        "overwrite_clipboard": "クリップボードの内容で現在のテキストを置き換える",
+        "append_clipboard": "クリップボードの内容を現在のテキストの末尾に追加（改行）",
+        "clipboard_repeat_count": "貼り付け回数",
+        "edit": "現在の全文テキストウィンドウを開く",
+        "clear": "現在のテキストを空にする",
+        "snapshot_load": "テキストスナップショットを読み込む",
+        "snapshot_save": "現在のテキストをスナップショットに保存",
+        "task_new": "新しいタスク",
+        "task_load": "タスクを読み込む",
+        "browser_extension": "ブラウザー拡張機能",
+        "cibersino_website": "Cibersino のサイト",
+        "cibersino_kofi": "Ko-fi で支援する",
+        "new_preset": "新しいプリセットを作成",
+        "edit_preset": "選択したプリセットを編集",
+        "delete_preset": "選択したプリセットを削除",
+        "reset_presets": "デフォルトプリセットを復元",
+        "help_button": "役立つヒントを表示",
+        "flotante_window": "フローティングウィンドウ"
+      },
+      "aria": {
+        "text_extraction": "ファイルからテキストを抽出",
+        "text_extraction_abort": "抽出を中止",
+        "browser_extension": "ブラウザー拡張機能のダイアログを開く",
+        "clipboard_repeat_count": "貼り付け回数",
+        "wpm_input": "1分あたりの語数",
+        "wpm_slider": "1分あたりの語数スライダー",
+        "speed_presets": "速度プリセット",
+        "precise_mode_toggle": "精密モード",
+        "crono_controls": "ストップウォッチ操作",
+        "crono_display": "ストップウォッチ表示",
+        "crono_toggle": "ストップウォッチを開始または一時停止",
+        "crono_reset": "ストップウォッチをリセット",
+        "floating_window_toggle": "フローティングウィンドウ",
+        "floating_window_group": "フローティングウィンドウ操作"
       },
       "alerts": {
         "clipboard_too_large": "クリップボードのテキストが大きすぎて処理できません。短くしてから再試行してください。",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "保存済み PDF: ",
         "reveal_saved_pdf_button": "保存済み PDF を表示"
       },
+      "single_file_heavy": {
+        "case_a_title": "PDF 全体が OCR には大きすぎます",
+        "case_a_message": "PDF 全体が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。共有プランナーを開き、抽出前に生成された入力ファイルに自動分割できます。",
+        "case_b_title": "生成された範囲が OCR には大きすぎます",
+        "case_b_message": "選択範囲用に生成された PDF が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。アップロードされませんでした。ページ選択に戻るか、ネイティブを使用するか、共有プランナーを開いて PDF 全体を分割できます。",
+        "source_file_label": "元ファイル:",
+        "selected_range_label": "選択範囲:",
+        "generated_pdf_label": "生成 PDF:",
+        "generated_pdf_size_label": "生成 PDF サイズ:",
+        "source_size_label": "元ファイルサイズ:",
+        "total_pages_label": "総ページ数:",
+        "split_button": "PDF 全体を分割して計画",
+        "return_to_pages_button": "ページへ戻る",
+        "use_native_button": "ネイティブを使用",
+        "reveal_generated_pdf_button": "生成 PDF を表示",
+        "cancel_button": "キャンセル",
+        "close_aria": "OCR 用大型 PDF ダイアログを閉じる"
+      },
       "batch_plan": {
         "title": "一括抽出を計画",
         "single_file_title": "PDF の自動分割を計画",
@@ -181,7 +199,6 @@
         "failure_legend": "失敗時の動作",
         "failure_default": "最後の成功後にユニットを閉じ、次のユニットへ進む",
         "failure_continue": "失敗した項目をスキップし、同じユニット内で続行する",
-        "overwrite_confirm": "抽出が開始されると現在のテキストが上書きされます。続行しますか？",
         "start_button": "抽出を開始",
         "cancel_button": "キャンセル",
         "close_aria": "一括抽出の計画を閉じる"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} を作成しました",
         "snapshot_creation_failed": "（JSON 作成失敗: {code}）"
       },
-      "single_file_heavy": {
-        "case_a_title": "PDF 全体が OCR には大きすぎます",
-        "case_a_message": "PDF 全体が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。共有プランナーを開き、抽出前に生成された入力ファイルに自動分割できます。",
-        "case_b_title": "生成された範囲が OCR には大きすぎます",
-        "case_b_message": "選択範囲用に生成された PDF が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。アップロードされませんでした。ページ選択に戻るか、ネイティブを使用するか、共有プランナーを開いて PDF 全体を分割できます。",
-        "source_file_label": "元ファイル:",
-        "selected_range_label": "選択範囲:",
-        "generated_pdf_label": "生成 PDF:",
-        "generated_pdf_size_label": "生成 PDF サイズ:",
-        "source_size_label": "元ファイルサイズ:",
-        "total_pages_label": "総ページ数:",
-        "split_button": "PDF 全体を分割して計画",
-        "return_to_pages_button": "ページへ戻る",
-        "use_native_button": "ネイティブを使用",
-        "reveal_generated_pdf_button": "生成 PDF を表示",
-        "cancel_button": "キャンセル",
-        "close_aria": "OCR 用大型 PDF ダイアログを閉じる"
-      },
       "alerts": {
+        "overwrite_confirm": "抽出が開始されると現在のテキストが上書きされます。続行しますか？",
         "start_error": "抽出の開始中にエラーが発生しました。コンソールを確認してください。",
         "precondition_blocked": "抽出を開始するには、すべてのサブウィンドウを閉じ、ストップウォッチを停止してください。",
         "precondition_error": "抽出の前提条件確認中にエラーが発生しました。コンソールを確認してください。",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "選択された PDF のページ範囲が無効です。範囲を調整して、もう一度お試しください。",
           "subset_creation_failed": "抽出用の選択ページ PDF を作成できませんでした。ファイルを確認して、もう一度お試しください。"
         },
+        "native": {
+          "runtime_error": "抽出中にネイティブ抽出の実行時エラーが発生しました。コンソールを確認して再試行してください。",
+          "unreadable_or_corrupt": "選択したファイルはネイティブ抽出では読み取れないか、破損しています。",
+          "encrypted_or_password_protected": "選択した PDF は暗号化またはパスワード保護されているため、ネイティブ抽出できません。",
+          "cancelled": "ネイティブ抽出はキャンセルされました。"
+        },
         "ocr": {
           "unavailable": "OCR は利用できません。セットアップ/認証状態を確認して再試行してください。",
           "activation_required": "OCR の有効化が必要です。Google OCR にログインして再試行してください。",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR はクォータ/レート制限により一時的にブロックされています。しばらく待ってから再試行してください。",
           "runtime_error": "抽出中に OCR 実行時エラーが発生しました。コンソールを確認して再試行してください。",
           "cancelled": "OCR 抽出はキャンセルされました。",
-          "cleanup_warning": "OCR は完了しましたが、一時リモートファイルのクリーンアップに失敗しました。Google Drive フォルダを確認してください。"
-        },
-        "batch_ocr": {
-          "activation_required": "この一括処理には OCR 項目が含まれていますが、Google OCR が有効ではありません。設定 > Google OCR を有効化 から有効化してから、一括処理を再開してください。",
-          "token_state_invalid": "この一括処理には OCR 項目が含まれていますが、保存された Google OCR ログイン状態が無効です。設定 > Google OCR を有効化 からもう一度有効化してから、一括処理を再開してください。",
-          "connectivity_failed": "このバッチには OCR 項目が含まれていますが、OCR にはインターネット接続が必要です。接続を確認し、抽出を開始する前にもう一度試してください。",
-          "quota_or_rate_limited": "このバッチには OCR 項目が含まれていますが、OCR はクォータ/レート制限により一時的にブロックされています。しばらく待ってから、抽出を開始する前にもう一度試してください。",
-          "unavailable": "この一括処理には OCR 項目が含まれていますが、Google OCR は現在利用できません。OCR がまだ有効でない場合は、設定 > Google OCR を有効化 から有効化してください。それ以外の場合は、一括処理を開始する前に OCR のセットアップ/状態を確認して再試行してください。"
-        },
-        "native": {
-          "runtime_error": "抽出中にネイティブ抽出の実行時エラーが発生しました。コンソールを確認して再試行してください。",
-          "unreadable_or_corrupt": "選択したファイルはネイティブ抽出では読み取れないか、破損しています。",
-          "encrypted_or_password_protected": "選択した PDF は暗号化またはパスワード保護されているため、ネイティブ抽出できません。",
-          "cancelled": "ネイティブ抽出はキャンセルされました。"
+          "cleanup_warning": "OCR は完了しましたが、一時リモートファイルのクリーンアップに失敗しました。Google Drive フォルダを確認してください。",
+          "batch_ocr": {
+            "activation_required": "この一括処理には OCR 項目が含まれていますが、Google OCR が有効ではありません。設定 > Google OCR を有効化 から有効化してから、一括処理を再開してください。",
+            "token_state_invalid": "この一括処理には OCR 項目が含まれていますが、保存された Google OCR ログイン状態が無効です。設定 > Google OCR を有効化 からもう一度有効化してから、一括処理を再開してください。",
+            "connectivity_failed": "このバッチには OCR 項目が含まれていますが、OCR にはインターネット接続が必要です。接続を確認し、抽出を開始する前にもう一度試してください。",
+            "quota_or_rate_limited": "このバッチには OCR 項目が含まれていますが、OCR はクォータ/レート制限により一時的にブロックされています。しばらく待ってから、抽出を開始する前にもう一度試してください。",
+            "unavailable": "この一括処理には OCR 項目が含まれていますが、Google OCR は現在利用できません。OCR がまだ有効でない場合は、設定 > Google OCR を有効化 から有効化してください。それ以外の場合は、一括処理を開始する前に OCR のセットアップ/状態を確認して再試行してください。"
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "文字サイズをリセット",
       "read_progress_label": "読了",
       "clear_title": "空にする",
+      "editor_find": {
+        "input_placeholder": "検索...",
+        "input_aria": "テキスト内を検索",
+        "expand_title": "置換を表示",
+        "collapse_title": "置換を非表示",
+        "replace_placeholder": "置換...",
+        "replace_aria": "置換テキスト",
+        "replace": "置換",
+        "replace_all": "すべて置換",
+        "prev_title": "前の一致",
+        "next_title": "次の一致",
+        "close_title": "検索バーを閉じる",
+        "replace_title": "現在の一致を置換",
+        "replace_all_title": "すべての一致を置換",
+        "replace_timeout": "置換に時間がかかりすぎました。もう一度お試しください。",
+        "status_no_matches": "一致なし",
+        "status_empty_query": "検索語を入力してください"
+      },
       "alerts": {
         "start_failed": "Text Editor を起動できませんでした。",
         "start_timeout": "Text Editor の起動に時間がかかりすぎたため閉じられました。",
@@ -315,36 +333,7 @@
         "calc_error": "計算中にエラーが発生しました。コンソールを確認してください。"
       }
     },
-    "editor_find": {
-      "input_placeholder": "検索...",
-      "input_aria": "テキスト内を検索",
-      "expand_title": "置換を表示",
-      "collapse_title": "置換を非表示",
-      "replace_placeholder": "置換...",
-      "replace_aria": "置換テキスト",
-      "replace": "置換",
-      "replace_all": "すべて置換",
-      "prev_title": "前の一致",
-      "next_title": "次の一致",
-      "close_title": "検索バーを閉じる",
-      "replace_title": "現在の一致を置換",
-      "replace_all_title": "すべての一致を置換",
-      "replace_timeout": "置換に時間がかかりすぎました。もう一度お試しください。",
-      "status_no_matches": "一致なし",
-      "status_empty_query": "検索語を入力してください"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "スナップショットを保存しました。",
-        "save_error": "スナップショットを保存できませんでした。",
-        "load_success": "スナップショットを読み込みました。",
-        "load_error": "スナップショットを読み込めませんでした。",
-        "outside": "スナップショットは保存フォルダ内にある必要があります。",
-        "truncated": "スナップショットが最大サイズを超えたため、切り詰められました。",
-        "unavailable": "スナップショット機能は利用できません。"
-      }
-    },
-    "snapshot_save_tags": {
       "title": "テキストスナップショットを保存",
       "message": "保存場所を選ぶ前に、このテキストスナップショットへ任意でタグを付けられます。",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "普通",
           "hard": "難しい"
         }
+      },
+      "alerts": {
+        "save_success": "スナップショットを保存しました。",
+        "save_error": "スナップショットを保存できませんでした。",
+        "load_success": "スナップショットを読み込みました。",
+        "load_error": "スナップショットを読み込めませんでした。",
+        "outside": "スナップショットは保存フォルダ内にある必要があります。",
+        "truncated": "スナップショットが最大サイズを超えたため、切り詰められました。",
+        "unavailable": "スナップショット機能は利用できません。"
       }
     },
     "tasks": {
       "title": "toT — タスク",
-      "labels": {
-        "name": "名前",
-        "summary_total": "合計",
-        "summary_left": "残り",
-        "empty": "（空）",
-        "search": "検索",
-        "search_placeholder": "ライブラリを検索..."
-      },
+      "name": "名前",
+      "save_button": "保存",
+      "delete_button": "削除",
+      "summary_total": "合計",
+      "summary_left": "残り",
+      "add_row_button": "行を追加",
+      "open_library_button": "ライブラリを開く",
       "columns": {
         "texto": "テキスト",
         "tiempo": "時間",
@@ -423,36 +420,37 @@
         "falta": "残り",
         "enlace": "リンク",
         "comentario": "",
-        "acciones": "操作"
+        "acciones": "操作",
+        "tooltips": {
+          "link_open": "リンクを開く",
+          "snapshot_load": "この行にテキストスナップショットを読み込む",
+          "comment": "コメントを追加/編集",
+          "move_up": "行を上へ移動",
+          "move_down": "行を下へ移動",
+          "library_row_save": "ライブラリに保存",
+          "delete_row": "行を削除"
+        }
       },
-      "buttons": {
-        "save": "保存",
-        "delete": "削除",
-        "add_row": "行を追加",
-        "open_library": "ライブラリを開く",
-        "select_snapshot": "スナップショットを選択",
-        "cancel": "キャンセル",
-        "yes": "はい",
-        "no": "いいえ"
-      },
-      "tooltips": {
-        "move_up": "行を上へ移動",
-        "move_down": "行を下へ移動",
-        "delete_row": "行を削除",
-        "library_row_save": "ライブラリに保存",
-        "library_row_load": "行を読み込む",
-        "library_row_delete": "ライブラリから削除",
-        "snapshot_load": "この行にテキストスナップショットを読み込む",
-        "snapshot_select": "この行のテキストスナップショットを選択",
-        "snapshot_clear": "この行から選択したスナップショットを外す",
-        "link_open": "リンクを開く",
-        "comment": "コメントを追加/編集"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "コメント",
+        "snapshot_select": "スナップショットを選択",
+        "snapshot_select_tooltip": "この行のテキストスナップショットを選択",
+        "snapshot_clear": "この行から選択したスナップショットを外す"
+      },
+      "biblioteca": {
         "library_title": "ライブラリ",
+        "search": "検索",
+        "search_placeholder": "ライブラリを検索...",
+        "empty": "（空）",
+        "library_row_load": "行を読み込む",
+        "library_row_delete": "ライブラリから削除"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "ライブラリに保存",
-        "library_save_question": "コメントを含めますか？"
+        "library_save_question": "コメントを含めますか？",
+        "yes": "はい",
+        "no": "いいえ",
+        "cancel": "キャンセル"
       },
       "alerts": {
         "task_unavailable": "タスク機能は利用できません。",
@@ -473,45 +471,27 @@
         "library_delete_error": "ライブラリから削除できませんでした。",
         "link_blocked": "リンクがブロックされました。",
         "link_missing": "ファイルが見つかりません。",
-        "link_error": "リンクを開く際にエラーが発生しました。"
-      },
-      "confirm": {
+        "link_error": "リンクを開く際にエラーが発生しました。",
         "close_unsaved": "未保存の変更があります。保存せずに閉じますか？"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "開始する準備ができたら、フローティングウィンドウで Play（▶）を押してください。テスト開始後は、読み終わるまで Pause（⏸）を押さないでください。Pause はテストを終了するもので、タイマーを一時停止するものではありません。テストをキャンセルする場合のみ Stop/Reset（⏹）を押してください。"
-      },
       "entry": {
         "title": "読書速度テスト",
+        "show_instructions": "説明を表示",
+        "hide_instructions": "説明を非表示",
         "intro": "このテストは、ガイド付きセッションで実際の読書速度を推定するためのものです。アプリがテキストを開き、開始する準備ができたらフローティングウィンドウで Play（▶）を押すまで待機します。テスト開始後は、読み終わるまで Pause（⏸）を押さないでください。Pause はテストを終了するもので、タイマーを一時停止するものではありません。キャンセルしたい場合のみ Stop/Reset（⏹）を使用してください。その後、テキストに理解度問題が含まれていれば確認でき、最後に結果からプリセットを作成できます。\n始める前に、これらのテスト用テキストは通常、5〜15分ほど中断なしの集中を必要とすることを考慮してください。\nこのプールは短いテキストを使用するため、結果は慎重に解釈してください。長文読書にそのまま外挿すべきではありません。長文では、流れや文脈の蓄積といった正の要因と、頭の中での再整理や疲労といった負の要因が働くことが多いためです。",
         "eligible_count": "対象ファイル:",
+        "show_bundled_entries": "基本テスト",
+        "get_more_files": "ファイルを追加取得",
+        "import_files_button": "ファイルをインポート",
+        "start_random_text_button": "ランダムテキストで開始",
+        "start_current_text_button": "現在のテキストで開始",
         "pool_exhausted_message": "未使用のテストファイルが残っていません。プールをリセットするか、ファイルを追加してください。",
         "visible_empty_bundled_hidden_message": "内蔵テストファイルは現在非表示で、表示中の未使用テストファイルは残っていません。続行するには、内蔵ファイルを再表示するか、さらにファイルをインポートしてください。",
         "close_aria": "読書速度テストダイアログを閉じる",
         "start_random_confirm": "現在のテキストは、プール内の対象ランダムテキストで上書きされます。続行しますか？",
         "reset_confirm": "テストプール全体をリセットし、すべてのファイルを未使用として再マークします。続行しますか？",
-        "import_summary": "インポート完了。インポート: {imported}。重複スキップ: {skippedDuplicates}。検証失敗: {failedValidation}。圧縮ファイル内エントリ失敗: {failedArchiveEntries}。書き込み失敗: {failedWrites}。",
-        "import_conflict": {
-          "title": "ファイルをインポート",
-          "message": "インポートしたファイルの一部はすでにプールに存在します。重複をどのように処理しますか？",
-          "detail": "{count} 個の保存先ファイル名がすでにプールに存在します。",
-          "buttons": {
-            "skip": "重複をスキップ",
-            "replace": "重複を置換",
-            "cancel": "インポートをキャンセル"
-          }
-        },
-        "buttons": {
-          "get_more_files": "ファイルを追加取得",
-          "import_files": "ファイルをインポート",
-          "show_instructions": "説明を表示",
-          "hide_instructions": "説明を非表示",
-          "start_random_text": "ランダムテキストで開始",
-          "start_current_text": "現在のテキストで開始",
-          "show_bundled_entries": "基本テスト"
-        },
         "tooltips": {
           "show_bundled_entries": "アプリに同梱されている初期テストファイルをプールに含めます",
           "get_more_files": "Google Drive フォルダから追加のテストファイルを取得",
@@ -519,7 +499,21 @@
           "reset_pool": "テストプールをリセット",
           "start_random_text": "プール内の対象ランダムテキストでテストを開始",
           "start_current_text": "現在のテキストでテストを開始"
+        },
+        "import": {
+          "import_summary": "インポート完了。インポート: {imported}。重複スキップ: {skippedDuplicates}。検証失敗: {failedValidation}。圧縮ファイル内エントリ失敗: {failedArchiveEntries}。書き込み失敗: {failedWrites}。",
+          "import_conflict": {
+            "title": "ファイルをインポート",
+            "message": "インポートしたファイルの一部はすでにプールに存在します。重複をどのように処理しますか？",
+            "detail": "{count} 個の保存先ファイル名がすでにプールに存在します。",
+            "skip_button": "重複をスキップ",
+            "replace_button": "重複を置換",
+            "cancel_button": "インポートをキャンセル"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "開始する準備ができたら、フローティングウィンドウで Play（▶）を押してください。テスト開始後は、読み終わるまで Pause（⏸）を押さないでください。Pause はテストを終了するもので、タイマーを一時停止するものではありません。テストをキャンセルする場合のみ Stop/Reset（⏹）を押してください。"
       },
       "questions": {
         "title": "読解問題",
@@ -533,19 +527,15 @@
         "result_summary": "{total} 問中 {correct} 問正解（{percentage}）",
         "chance_at_least_observed": "ランダム回答で少なくともこのスコアを得る確率: {percentage}",
         "fatal_invalid": "問題データが無効です。",
-        "buttons": {
-          "check": "結果を見る",
-          "continue": "続行"
-        }
+        "check_button": "結果を見る",
+        "continue_button": "続行"
       },
       "result": {
         "title": "読書速度の結果",
         "measured_wpm": "測定 WPM",
         "elapsed_time": "時間",
         "word_count": "語数",
-        "buttons": {
-          "continue": "続行"
-        }
+        "continue_button": "続行"
       },
       "alerts": {
         "unavailable": "読書速度テスト機能は利用できません。",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "セッションウィンドウの1つが閉じられたため、読書速度テストはキャンセルされました。"
       }
     },
-    "modal_preset": {
-      "title_new": "新しいプリセット",
-      "title_edit": "プリセットを編集",
-      "heading_new": "新しいプリセットを作成",
-      "heading_edit": "選択したプリセットを編集",
-      "name": "名前:",
-      "name_placeholder": "プリセット名",
-      "wpm": "WPM:",
-      "description": "説明:",
-      "description_placeholder": "短い説明...",
-      "char_count": "残り {remaining} 文字",
-      "hint": "カスタムプリセットはユーザー設定に保存されます。",
-      "cancel": "キャンセル",
-      "save": "保存",
+    "presets": {
+      "preset_modal": {
+        "title_new": "新しいプリセット",
+        "title_edit": "プリセットを編集",
+        "heading_new": "新しいプリセットを作成",
+        "heading_edit": "選択したプリセットを編集",
+        "name": "名前:",
+        "name_placeholder": "プリセット名",
+        "wpm": "WPM:",
+        "description": "説明:",
+        "description_placeholder": "短い説明...",
+        "char_count": "残り {remaining} 文字",
+        "hint": "カスタムプリセットはユーザー設定に保存されます。",
+        "cancel": "キャンセル",
+        "save": "保存"
+      },
       "alerts": {
+        "not_found": "選択したプリセットがキャッシュに見つかりません。",
+        "delete_error": "プリセットの削除中にエラーが発生しました。コンソールを確認してください。",
+        "restore_error": "プリセットの復元中にエラーが発生しました。コンソールを確認してください。",
+        "open_folder_unsupported": "この環境ではプリセットフォルダを開けません。",
+        "open_folder_error": "プリセットフォルダを開く際にエラーが発生しました。コンソールを確認してください。",
+        "open_default_folder_failed": "デフォルトプリセットフォルダを開けませんでした。詳細はコンソールを確認してください。",
         "unavailable": "このアプリビルドではプリセットダイアログを利用できません。",
         "open_error": "プリセットダイアログを開く際にエラーが発生しました。コンソールを確認してください。",
         "name_empty": "名前は空にできません。",
@@ -586,16 +584,6 @@
         "create_error": "プリセットの作成中にエラーが発生しました。コンソールを確認してください。",
         "edit_error": "プリセットの編集中にエラーが発生しました。コンソールを確認してください。",
         "process_error": "プリセットの処理中にエラーが発生しました。コンソールを確認してください。"
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "選択したプリセットがキャッシュに見つかりません。",
-        "delete_error": "プリセットの削除中にエラーが発生しました。コンソールを確認してください。",
-        "restore_error": "プリセットの復元中にエラーが発生しました。コンソールを確認してください。",
-        "open_folder_unsupported": "この環境ではプリセットフォルダを開けません。",
-        "open_folder_error": "プリセットフォルダを開く際にエラーが発生しました。コンソールを確認してください。",
-        "open_default_folder_failed": "デフォルトプリセットフォルダを開けませんでした。詳細はコンソールを確認してください。"
       }
     },
     "browser_extension": {

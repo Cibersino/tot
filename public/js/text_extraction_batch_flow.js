@@ -728,7 +728,7 @@
             titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
             messageKey: 'renderer.text_extraction.batch_plan.tags_modal.message',
             confirmKey: 'renderer.text_extraction.batch_plan.tags_modal.confirm_button',
-            cancelKey: 'renderer.snapshot_save_tags.buttons.cancel',
+            cancelKey: 'renderer.snapshots.buttons.cancel',
             closeAriaKey: 'renderer.text_extraction.batch_plan.tags_modal.close_aria',
           },
         });
@@ -863,7 +863,7 @@
     if (currentText.trim().length < 1) {
       return true;
     }
-    return window.Notify.confirmMain('renderer.text_extraction.batch_plan.overwrite_confirm');
+    return window.Notify.confirmMain('renderer.text_extraction.alerts.overwrite_confirm');
   }
 
   function mapPreparedIdInvalidReason(execution) {

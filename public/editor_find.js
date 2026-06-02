@@ -134,10 +134,10 @@ async function ensureTranslations(lang) {
 
 function resolveStatusText() {
   if (!findState.query) {
-    return tr('renderer.editor_find.status_empty_query');
+    return tr('renderer.editor.editor_find.status_empty_query');
   }
   if (findState.matches <= 0) {
-    return tr('renderer.editor_find.status_no_matches');
+    return tr('renderer.editor.editor_find.status_no_matches');
   }
   const current = Math.max(1, Math.min(findState.activeMatchOrdinal || 1, findState.matches));
   return `${current}/${findState.matches}`;
@@ -165,8 +165,8 @@ function applyUiState() {
   toggleEl.textContent = findState.expanded ? '˅' : '˃';
 
   const toggleTitleKey = findState.expanded
-    ? 'renderer.editor_find.collapse_title'
-    : 'renderer.editor_find.expand_title';
+    ? 'renderer.editor.editor_find.collapse_title'
+    : 'renderer.editor.editor_find.expand_title';
   const toggleTitle = tr(toggleTitleKey);
   toggleEl.title = toggleTitle;
   toggleEl.setAttribute('aria-label', toggleTitle);
@@ -175,26 +175,26 @@ function applyUiState() {
 async function applyTranslations() {
   await ensureTranslations(idiomaActual);
 
-  const title = tr('renderer.editor_find.input_aria');
+  const title = tr('renderer.editor.editor_find.input_aria');
   document.title = title;
   wrapEl.setAttribute('aria-label', title);
 
-  inputEl.placeholder = tr('renderer.editor_find.input_placeholder');
-  inputEl.setAttribute('aria-label', tr('renderer.editor_find.input_aria'));
-  replaceInputEl.placeholder = tr('renderer.editor_find.replace_placeholder');
-  replaceInputEl.setAttribute('aria-label', tr('renderer.editor_find.replace_aria'));
+  inputEl.placeholder = tr('renderer.editor.editor_find.input_placeholder');
+  inputEl.setAttribute('aria-label', tr('renderer.editor.editor_find.input_aria'));
+  replaceInputEl.placeholder = tr('renderer.editor.editor_find.replace_placeholder');
+  replaceInputEl.setAttribute('aria-label', tr('renderer.editor.editor_find.replace_aria'));
 
-  replaceOneEl.textContent = tr('renderer.editor_find.replace');
-  replaceAllEl.textContent = tr('renderer.editor_find.replace_all');
+  replaceOneEl.textContent = tr('renderer.editor.editor_find.replace');
+  replaceAllEl.textContent = tr('renderer.editor.editor_find.replace_all');
 
-  prevEl.title = tr('renderer.editor_find.prev_title');
-  nextEl.title = tr('renderer.editor_find.next_title');
-  closeEl.title = tr('renderer.editor_find.close_title');
+  prevEl.title = tr('renderer.editor.editor_find.prev_title');
+  nextEl.title = tr('renderer.editor.editor_find.next_title');
+  closeEl.title = tr('renderer.editor.editor_find.close_title');
   prevEl.setAttribute('aria-label', prevEl.title);
   nextEl.setAttribute('aria-label', nextEl.title);
   closeEl.setAttribute('aria-label', closeEl.title);
-  replaceOneEl.title = tr('renderer.editor_find.replace_title');
-  replaceAllEl.title = tr('renderer.editor_find.replace_all_title');
+  replaceOneEl.title = tr('renderer.editor.editor_find.replace_title');
+  replaceAllEl.title = tr('renderer.editor.editor_find.replace_all_title');
 
   applyUiState();
 }
@@ -237,7 +237,7 @@ function focusRequestedTarget(target, selectAll = false) {
 
 function notifyReplaceTimeout() {
   try {
-    window.Notify.notifyEditor('renderer.editor_find.replace_timeout', {
+    window.Notify.notifyEditor('renderer.editor.editor_find.replace_timeout', {
       type: 'error',
       duration: 5000,
     });

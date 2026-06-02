@@ -7,44 +7,6 @@
         "reading_speed_test": "Prueba tu ritmo de lectura",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Sacarle texto a un archivo",
-        "text_extraction_abort": "Parar la sacadera",
-        "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
-        "append_clipboard": "Pegar lo copiao en la línea de abajo",
-        "clipboard_repeat_count": "Cantidad de veces que te repetís el plato",
-        "edit": "Truquearse con el texto completo",
-        "clear": "Limpieza es viveza",
-        "snapshot_load": "Cargar un coso de texto",
-        "snapshot_save": "Salvar el texto actual en un coso",
-        "task_new": "Armar nueva misión",
-        "task_load": "Cargar misión",
-        "browser_extension": "Extensión pal navegador",
-        "cibersino_website": "Sitio de Cibersino",
-        "cibersino_kofi": "Apóyame en Ko-fi",
-        "new_preset": "Armar nuevo preset",
-        "edit_preset": "Arreglar el preset",
-        "delete_preset": "Pitiarse el preset",
-        "reset_presets": "Dejar los presets como venían",
-        "help_button": "Informeishon",
-        "flotante_window": "Cronómetro Porfiado"
-      },
-      "aria": {
-        "text_extraction": "Sacarle texto a un archivo",
-        "text_extraction_abort": "Abortar extracción",
-        "browser_extension": "Abrir diálogo de extensión pal navegador",
-        "clipboard_repeat_count": "Repeticiones del portapapeles",
-        "wpm_input": "Palabras por minuto",
-        "wpm_slider": "Deslizador de palabras por minuto",
-        "speed_presets": "Presets de velocidad",
-        "precise_mode_toggle": "Modo preciso",
-        "crono_controls": "Controles del cronómetro",
-        "crono_display": "Display del cronómetro",
-        "crono_toggle": "Iniciar o pausar cronómetro",
-        "crono_reset": "Reiniciar cronómetro",
-        "floating_window_toggle": "Cronómetro Porfiado",
-        "floating_window_group": "Grupo de controles del Cronómetro Porfiado"
-      },
       "speed": {
         "title": "QUÉ TAN RÁPIDO LEÍS",
         "wpm_label": "palabras por minuto (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Tiempo corrido: ",
         "text_extraction_drop_here": "Suelta el archivo pa sacarle texto"
+      },
+      "tooltips": {
+        "text_extraction": "Sacarle texto a un archivo",
+        "text_extraction_abort": "Parar la sacadera",
+        "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
+        "append_clipboard": "Pegar lo copiao en la línea de abajo",
+        "clipboard_repeat_count": "Cantidad de veces que te repetís el plato",
+        "edit": "Truquearse con el texto completo",
+        "clear": "Limpieza es viveza",
+        "snapshot_load": "Cargar un coso de texto",
+        "snapshot_save": "Salvar el texto actual en un coso",
+        "task_new": "Armar nueva misión",
+        "task_load": "Cargar misión",
+        "browser_extension": "Extensión pal navegador",
+        "cibersino_website": "Sitio de Cibersino",
+        "cibersino_kofi": "Apóyame en Ko-fi",
+        "new_preset": "Armar nuevo preset",
+        "edit_preset": "Arreglar el preset",
+        "delete_preset": "Pitiarse el preset",
+        "reset_presets": "Dejar los presets como venían",
+        "help_button": "Informeishon",
+        "flotante_window": "Cronómetro Porfiado"
+      },
+      "aria": {
+        "text_extraction": "Sacarle texto a un archivo",
+        "text_extraction_abort": "Abortar extracción",
+        "browser_extension": "Abrir diálogo de extensión pal navegador",
+        "clipboard_repeat_count": "Repeticiones del portapapeles",
+        "wpm_input": "Palabras por minuto",
+        "wpm_slider": "Deslizador de palabras por minuto",
+        "speed_presets": "Presets de velocidad",
+        "precise_mode_toggle": "Modo preciso",
+        "crono_controls": "Controles del cronómetro",
+        "crono_display": "Display del cronómetro",
+        "crono_toggle": "Iniciar o pausar cronómetro",
+        "crono_reset": "Reiniciar cronómetro",
+        "floating_window_toggle": "Cronómetro Porfiado",
+        "floating_window_group": "Grupo de controles del Cronómetro Porfiado"
       },
       "alerts": {
         "clipboard_too_large": "Chaaa, el texto del portapapeles es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "PDF guardado: ",
         "reveal_saved_pdf_button": "Mostrar PDF guardado"
       },
+      "single_file_heavy": {
+        "case_a_title": "El PDF completito es muy pesado pa' OCR",
+        "case_a_message": "El PDF completo se pasa del límite del proveedor OCR ({providerLimitMb} MB). Podís abrir la planificación compartida pa' dividirlo automáticamente en PDFs generados antes de extraer.",
+        "case_b_title": "El rango generado es muy pesado pa' OCR",
+        "case_b_message": "El PDF generado pa'l rango elegido se pasa del límite del proveedor OCR ({providerLimitMb} MB). No se subió. Podís volver a páginas, usar la nativa o abrir la planificación compartida pa' dividir el PDF completo.",
+        "source_file_label": "Archivo fuente:",
+        "selected_range_label": "Rango elegido:",
+        "generated_pdf_label": "PDF generado:",
+        "generated_pdf_size_label": "Tamaño del PDF generado:",
+        "source_size_label": "Tamaño del archivo fuente:",
+        "total_pages_label": "Páginas totales:",
+        "split_button": "Dividir y planificar el PDF completo",
+        "return_to_pages_button": "Volver a páginas",
+        "use_native_button": "Usar la nativa",
+        "reveal_generated_pdf_button": "Mostrar PDF generado",
+        "cancel_button": "Cancelar",
+        "close_aria": "Cerrar diálogo de PDF pesao pa' OCR"
+      },
       "batch_plan": {
         "title": "Armar extracción por lotes",
         "single_file_title": "Armar división automática del PDF",
@@ -181,7 +199,6 @@
         "failure_legend": "Qué hacer si una custión falla",
         "failure_default": "Cerrar la unidad después de la última que salió bien y seguir con la siguiente",
         "failure_continue": "Saltarse el cagazo y seguir en la misma unidad",
-        "overwrite_confirm": "Esto va a sobrescribir el texto actual cuando parta la extracción. ¿Seguro que quieres seguir?",
         "start_button": "Partir la extracción",
         "cancel_button": "Cancelar",
         "close_aria": "Cerrar planificación de extracción por lotes"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} quedó armado",
         "snapshot_creation_failed": "(cagó la creación del JSON: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "El PDF completito es muy pesado pa' OCR",
-        "case_a_message": "El PDF completo se pasa del límite del proveedor OCR ({providerLimitMb} MB). Podís abrir la planificación compartida pa' dividirlo automáticamente en PDFs generados antes de extraer.",
-        "case_b_title": "El rango generado es muy pesado pa' OCR",
-        "case_b_message": "El PDF generado pa'l rango elegido se pasa del límite del proveedor OCR ({providerLimitMb} MB). No se subió. Podís volver a páginas, usar la nativa o abrir la planificación compartida pa' dividir el PDF completo.",
-        "source_file_label": "Archivo fuente:",
-        "selected_range_label": "Rango elegido:",
-        "generated_pdf_label": "PDF generado:",
-        "generated_pdf_size_label": "Tamaño del PDF generado:",
-        "source_size_label": "Tamaño del archivo fuente:",
-        "total_pages_label": "Páginas totales:",
-        "split_button": "Dividir y planificar el PDF completo",
-        "return_to_pages_button": "Volver a páginas",
-        "use_native_button": "Usar la nativa",
-        "reveal_generated_pdf_button": "Mostrar PDF generado",
-        "cancel_button": "Cancelar",
-        "close_aria": "Cerrar diálogo de PDF pesao pa' OCR"
-      },
       "alerts": {
+        "overwrite_confirm": "Esto va a sobrescribir el texto actual cuando parta la extracción. ¿Seguro que quieres seguir?",
         "start_error": "Cagó la custión al partir la extracción. Lorea la consola.",
         "precondition_blocked": "Pa' partir extracción, cierra toas las ventanas chicas y para el cronómetro.",
         "precondition_error": "Cagó la revisión de precondiciones de extracción. Lorea la consola.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "El rango de páginas seleccionado para el PDF es inválido. Ajusta el rango y vuelve a intentarlo.",
           "subset_creation_failed": "No fue posible crear el PDF de páginas seleccionadas para la extracción. Revisa el archivo y vuelve a intentarlo."
         },
+        "native": {
+          "runtime_error": "Hubo un cagazo en la extracción nativa durante la extracción. Lorea la consola y prueba otra vez.",
+          "unreadable_or_corrupt": "El archivo elegido no se puede leer o está hecho bolsa pa' extracción nativa.",
+          "encrypted_or_password_protected": "El PDF elegido viene cifrado o con contraseña, así que no se puede sacar por la ruta nativa.",
+          "cancelled": "La extracción nativa quedó cancelada."
+        },
         "ocr": {
           "unavailable": "OCR no está disponible. Revisa setup/auth y prueba otra vez.",
           "activation_required": "Hay que activar OCR. Inicia sesión en Google OCR y prueba de nuevo.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR quedó bloqueado por cuota o rate limit. Espera un rato y prueba otra vez.",
           "runtime_error": "Hubo un cagazo en la ejecución OCR durante la extracción. Lorea la consola y prueba otra vez.",
           "cancelled": "La extracción OCR quedó cancelada.",
-          "cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive."
-        },
-        "batch_ocr": {
-          "activation_required": "Este lote trae elementos con OCR, pero Google OCR no está enchufado. Usa A tu pinta > Enchufar Google OCR y después parte el lote de nuevo.",
-          "token_state_invalid": "Este lote trae elementos con OCR, pero el login guardado de Google OCR salió chueco. Usa A tu pinta > Enchufar Google OCR de nuevo y después parte el lote de nuevo.",
-          "connectivity_failed": "Este lote trae custiones con OCR, pero OCR necesita internet. Revisa la conexión y prueba de nuevo antes de partir la extracción.",
-          "quota_or_rate_limited": "Este lote trae custiones con OCR, pero OCR está bloqueado un rato por cuota/límite de uso. Espera y prueba de nuevo antes de partir la extracción.",
-          "unavailable": "Este lote trae elementos con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está enchufado, usa A tu pinta > Enchufar Google OCR. Si ya estaba enchufado, revisa setup/auth de OCR y prueba otra vez antes de partir el lote."
-        },
-        "native": {
-          "runtime_error": "Hubo un cagazo en la extracción nativa durante la extracción. Lorea la consola y prueba otra vez.",
-          "unreadable_or_corrupt": "El archivo elegido no se puede leer o está hecho bolsa pa' extracción nativa.",
-          "encrypted_or_password_protected": "El PDF elegido viene cifrado o con contraseña, así que no se puede sacar por la ruta nativa.",
-          "cancelled": "La extracción nativa quedó cancelada."
+          "cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
+          "batch_ocr": {
+            "activation_required": "Este lote trae elementos con OCR, pero Google OCR no está enchufado. Usa A tu pinta > Enchufar Google OCR y después parte el lote de nuevo.",
+            "token_state_invalid": "Este lote trae elementos con OCR, pero el login guardado de Google OCR salió chueco. Usa A tu pinta > Enchufar Google OCR de nuevo y después parte el lote de nuevo.",
+            "connectivity_failed": "Este lote trae custiones con OCR, pero OCR necesita internet. Revisa la conexión y prueba de nuevo antes de partir la extracción.",
+            "quota_or_rate_limited": "Este lote trae custiones con OCR, pero OCR está bloqueado un rato por cuota/límite de uso. Espera y prueba de nuevo antes de partir la extracción.",
+            "unavailable": "Este lote trae elementos con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está enchufado, usa A tu pinta > Enchufar Google OCR. Si ya estaba enchufado, revisa setup/auth de OCR y prueba otra vez antes de partir el lote."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Dejar el tamaño como estaba",
       "read_progress_label": "Leído",
       "clear_title": "Pitiarse too",
+      "editor_find": {
+        "input_placeholder": "Pilla algo...",
+        "input_aria": "Pillar palabras en la custión",
+        "expand_title": "Mostrar reemplazo",
+        "collapse_title": "Ocultar reemplazo",
+        "replace_placeholder": "Reemplazar...",
+        "replace_aria": "Texto de reemplazo",
+        "replace": "Reemplazar",
+        "replace_all": "Reemplazar todo",
+        "prev_title": "La de atrás",
+        "next_title": "La que sigue",
+        "close_title": "Pitiarse la barra de búsqueda",
+        "replace_title": "Reemplazar coincidencia actual",
+        "replace_all_title": "Reemplazar todas las coincidencias",
+        "replace_timeout": "La custión de reemplazo se demoró mucho. Inténtalo de nuevo.",
+        "status_no_matches": "No pillamos niuna custión",
+        "status_empty_query": "Escribe algo po"
+      },
       "alerts": {
         "start_failed": "No se pudo iniciar el Editor de Texto.",
         "start_timeout": "El Editor de Texto se demoró demasiado en partir y se cerró.",
@@ -315,36 +333,7 @@
         "calc_error": "Cagaron las matemáticas. Lorea la consola."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Pilla algo...",
-      "input_aria": "Pillar palabras en la custión",
-      "expand_title": "Mostrar reemplazo",
-      "collapse_title": "Ocultar reemplazo",
-      "replace_placeholder": "Reemplazar...",
-      "replace_aria": "Texto de reemplazo",
-      "replace": "Reemplazar",
-      "replace_all": "Reemplazar todo",
-      "prev_title": "La de atrás",
-      "next_title": "La que sigue",
-      "close_title": "Pitiarse la barra de búsqueda",
-      "replace_title": "Reemplazar coincidencia actual",
-      "replace_all_title": "Reemplazar todas las coincidencias",
-      "replace_timeout": "La custión de reemplazo se demoró mucho. Inténtalo de nuevo.",
-      "status_no_matches": "No pillamos niuna custión",
-      "status_empty_query": "Escribe algo po"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Coso salvado.",
-        "save_error": "No se pudo salvar el coso.",
-        "load_success": "Coso cargado.",
-        "load_error": "No se pudo cargar el coso.",
-        "outside": "El coso debe estar aentro de la carpeta de cosos.",
-        "truncated": "El coso se extralimitó y fue mochao.",
-        "unavailable": "Funcionalidad del coso no disponible."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Salvar coso de texto",
       "message": "Etiqueta opcionalmente este coso de texto antes de elegir dónde salvarlo.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Normal",
           "hard": "Difícil"
         }
+      },
+      "alerts": {
+        "save_success": "Coso salvado.",
+        "save_error": "No se pudo salvar el coso.",
+        "load_success": "Coso cargado.",
+        "load_error": "No se pudo cargar el coso.",
+        "outside": "El coso debe estar aentro de la carpeta de cosos.",
+        "truncated": "El coso se extralimitó y fue mochao.",
+        "unavailable": "Funcionalidad del coso no disponible."
       }
     },
     "tasks": {
       "title": "toT — Misiones",
-      "labels": {
-        "name": "Mote",
-        "summary_total": "Total",
-        "summary_left": "Falta",
-        "empty": "(pelao)",
-        "search": "Rastrear",
-        "search_placeholder": "Rastrear en la biblio..."
-      },
+      "name": "Mote",
+      "save_button": "Salvar",
+      "delete_button": "Pitiarse",
+      "summary_total": "Total",
+      "summary_left": "Falta",
+      "add_row_button": "Añadir fila",
+      "open_library_button": "Abrir biblio",
       "columns": {
         "texto": "Texto",
         "tiempo": "Tiempo",
@@ -423,36 +420,37 @@
         "falta": "Falta",
         "enlace": "Ruta",
         "comentario": "",
-        "acciones": "Acciones"
+        "acciones": "Acciones",
+        "tooltips": {
+          "link_open": "Abrir ruta",
+          "snapshot_load": "Cargar un coso de texto para esta fila",
+          "comment": "Añadir/editar opinión",
+          "move_up": "Subir fila",
+          "move_down": "Bajar fila",
+          "library_row_save": "Guardar en biblio",
+          "delete_row": "Pitiarse la fila"
+        }
       },
-      "buttons": {
-        "save": "Salvar",
-        "delete": "Pitiarse",
-        "add_row": "Añadir fila",
-        "open_library": "Abrir biblio",
-        "select_snapshot": "Seleccionar coso",
-        "cancel": "Cancelar",
-        "yes": "Sí",
-        "no": "No"
-      },
-      "tooltips": {
-        "move_up": "Subir fila",
-        "move_down": "Bajar fila",
-        "delete_row": "Pitiarse la fila",
-        "library_row_save": "Guardar en biblio",
-        "library_row_load": "Cargar fila",
-        "library_row_delete": "Pitiarsela de la biblio",
-        "snapshot_load": "Cargar un coso de texto para esta fila",
-        "snapshot_select": "Seleccionar un coso de texto para esta fila",
-        "snapshot_clear": "Quitar el coso seleccionado de esta fila",
-        "link_open": "Abrir ruta",
-        "comment": "Añadir/editar opinión"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Opinión",
+        "snapshot_select": "Seleccionar coso",
+        "snapshot_select_tooltip": "Seleccionar un coso de texto para esta fila",
+        "snapshot_clear": "Quitar el coso seleccionado de esta fila"
+      },
+      "biblioteca": {
         "library_title": "Biblio",
+        "search": "Rastrear",
+        "search_placeholder": "Rastrear en la biblio...",
+        "empty": "(pelao)",
+        "library_row_load": "Cargar fila",
+        "library_row_delete": "Pitiarsela de la biblio"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Salvar en biblio",
-        "library_save_question": "¿Incluir opinión?"
+        "library_save_question": "¿Incluir opinión?",
+        "yes": "Sí",
+        "no": "No",
+        "cancel": "Cancelar"
       },
       "alerts": {
         "task_unavailable": "Operacionalidad de misiones no disponible.",
@@ -473,45 +471,27 @@
         "library_delete_error": "No se pudo pitiarse la fila de la biblio.",
         "link_blocked": "Ruta bloqueada.",
         "link_missing": "Ruta extraviada.",
-        "link_error": "Error al abrir la ruta."
-      },
-      "confirm": {
+        "link_error": "Error al abrir la ruta.",
         "close_unsaved": "Hay modificaciones sin salvar. ¿Querís cerrar igual?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Aprieta Play (▶) en el Cronómetro Porfiado cuando estís listo pa' empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Aprieta Detener/Reiniciar (⏹) solo si querís cancelar el test."
-      },
       "entry": {
         "title": "Test de ritmo de lectura",
+        "show_instructions": "Mostrar instrucciones",
+        "hide_instructions": "Ocultar instrucciones",
         "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto y va a esperar a que apretís Play (▶) en el Cronómetro Porfiado cuando estís listo para empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Usa Detener/Restablecer (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nAntes de empezar, ten presente que estos textos de prueba suelen pedir entre 5 y 15 minutos de concentración de corrido, sin interrupciones.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
         "eligible_count": "Archivos elegibles:",
+        "show_bundled_entries": "Tests base",
+        "get_more_files": "Traer más archivos",
+        "import_files_button": "Importar archivos",
+        "start_random_text_button": "Partir con texto random",
+        "start_current_text_button": "Partir con texto actual",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Podís restablecer el pool o meter más archivos.",
         "visible_empty_bundled_hidden_message": "Los archivos de test integrados están ocultos y no quedan archivos visibles sin usar. Muéstralos de nuevo o importa más archivos pa' seguir.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",
         "start_random_confirm": "Esto va a pitiarse el texto actual y lo va a cambiar por un texto random elegible del pool. ¿Querís seguir?",
         "reset_confirm": "¿Querís restablecer el pool de archivos elegibles? Esto va a recargar los archivos disponibles pa' iniciar el test, incluyendo los que ya usaste.",
-        "import_summary": "Terminó la importación. Entraron: {imported}. Duplicados saltados: {skippedDuplicates}. Validaciones fallidas: {failedValidation}. Entradas fallidas del comprimido: {failedArchiveEntries}. Escrituras fallidas: {failedWrites}.",
-        "import_conflict": {
-          "title": "Importar archivos",
-          "message": "Algunos archivos que querís importar ya están en el pool. ¿Qué hacimos con los duplicados?",
-          "detail": "Ya hay {count} nombre(s) de archivo de destino metidos en el pool.",
-          "buttons": {
-            "skip": "Saltarse duplicados",
-            "replace": "Reemplazar duplicados",
-            "cancel": "Cancelar importación"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Traer más archivos",
-          "import_files": "Importar archivos",
-          "show_instructions": "Mostrar instrucciones",
-          "hide_instructions": "Ocultar instrucciones",
-          "start_random_text": "Partir con texto random",
-          "start_current_text": "Partir con texto actual",
-          "show_bundled_entries": "Tests base"
-        },
         "tooltips": {
           "show_bundled_entries": "Meter al pool los archivos de test base que vienen con la app",
           "get_more_files": "Traer más archivos de prueba del directorio de Google Drive",
@@ -519,7 +499,21 @@
           "reset_pool": "Restablecer el pool de archivos de prueba",
           "start_random_text": "Iniciar la prueba con un texto aleatorio elegible del pool",
           "start_current_text": "Iniciar la prueba con el texto actual"
+        },
+        "import": {
+          "import_summary": "Terminó la importación. Entraron: {imported}. Duplicados saltados: {skippedDuplicates}. Validaciones fallidas: {failedValidation}. Entradas fallidas del comprimido: {failedArchiveEntries}. Escrituras fallidas: {failedWrites}.",
+          "import_conflict": {
+            "title": "Importar archivos",
+            "message": "Algunos archivos que querís importar ya están en el pool. ¿Qué hacimos con los duplicados?",
+            "detail": "Ya hay {count} nombre(s) de archivo de destino metidos en el pool.",
+            "skip_button": "Saltarse duplicados",
+            "replace_button": "Reemplazar duplicados",
+            "cancel_button": "Cancelar importación"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Aprieta Play (▶) en el Cronómetro Porfiado cuando estís listo pa' empezar. Una vez que el test haya partido, no apretís Pausa (⏸) hasta terminar de leer: Pausa termina el test; no deja el cronómetro en pausa. Aprieta Detener/Reiniciar (⏹) solo si querís cancelar el test."
       },
       "questions": {
         "title": "Preguntas de comprensión lectora",
@@ -533,19 +527,15 @@
         "result_summary": "{correct} de {total} correctas ({percentage})",
         "chance_at_least_observed": "Probabilidad de sacar al menos este puntaje al responder al achunte: {percentage}",
         "fatal_invalid": "La carga de preguntas es inválida.",
-        "buttons": {
-          "check": "Ver resultado",
-          "continue": "Continuar"
-        }
+        "check_button": "Ver resultado",
+        "continue_button": "Continuar"
       },
       "result": {
         "title": "Resultado de velocidad de lectura",
         "measured_wpm": "WPM medidos",
         "elapsed_time": "Tiempo",
         "word_count": "Palabras",
-        "buttons": {
-          "continue": "Continuar"
-        }
+        "continue_button": "Continuar"
       },
       "alerts": {
         "unavailable": "El test de ritmo de lectura no está disponible.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "El test se canceló porque se cerró una de las ventanas necesarias pa' hacerlo."
       }
     },
-    "modal_preset": {
-      "title_new": "Nuevo preset",
-      "title_edit": "Editar preset",
-      "heading_new": "Armar nuevo preset",
-      "heading_edit": "Arreglar el preset",
-      "name": "Nombre:",
-      "name_placeholder": "Nombre del preset",
-      "wpm": "WPM:",
-      "description": "De qué se trata la custión:",
-      "description_placeholder": "Un resumen cortito...",
-      "char_count": "Te quedan {remaining} letras",
-      "hint": "Los presets quedan guardaos en el sistema.",
-      "cancel": "Ni cagando",
-      "save": "Guardar",
+    "presets": {
+      "preset_modal": {
+        "title_new": "Nuevo preset",
+        "title_edit": "Editar preset",
+        "heading_new": "Armar nuevo preset",
+        "heading_edit": "Arreglar el preset",
+        "name": "Nombre:",
+        "name_placeholder": "Nombre del preset",
+        "wpm": "WPM:",
+        "description": "De qué se trata la custión:",
+        "description_placeholder": "Un resumen cortito...",
+        "char_count": "Te quedan {remaining} letras",
+        "hint": "Los presets quedan guardaos en el sistema.",
+        "cancel": "Ni cagando",
+        "save": "Guardar"
+      },
       "alerts": {
+        "not_found": "No pillamos el preset en la caleta.",
+        "delete_error": "No se pudo borrar el preset. Lorea la consola.",
+        "restore_error": "Cagó el reseteo de los presets. Lorea la consola.",
+        "open_folder_unsupported": "No se puede abrir la carpeta aquí, hno.",
+        "open_folder_error": "Drama al intentar abrir la carpeta. Lorea la consola.",
+        "open_default_folder_failed": "No pudimos abrir la carpeta de presets. Lorea la consola.",
         "unavailable": "La ventanita de preset no está disponible en esta build de la app.",
         "open_error": "Se fue a negro abriendo el diálogo del preset. Revisa la consola.",
         "name_empty": "No podís dejar el nombre vacío.",
@@ -586,16 +584,6 @@
         "create_error": "Cagó la creación del preset. Lorea la consola.",
         "edit_error": "Mala volá al editar el preset. Lorea la consola.",
         "process_error": "Drama al procesar el preset. Lorea la consola."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "No pillamos el preset en la caleta.",
-        "delete_error": "No se pudo borrar el preset. Lorea la consola.",
-        "restore_error": "Cagó el reseteo de los presets. Lorea la consola.",
-        "open_folder_unsupported": "No se puede abrir la carpeta aquí, hno.",
-        "open_folder_error": "Drama al intentar abrir la carpeta. Lorea la consola.",
-        "open_default_folder_failed": "No pudimos abrir la carpeta de presets. Lorea la consola."
       }
     },
     "browser_extension": {

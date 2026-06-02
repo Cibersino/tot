@@ -7,44 +7,6 @@
         "reading_speed_test": "Irakurketa-abiaduraren testa",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Erauzi testua fitxategitik",
-        "text_extraction_abort": "Bertan behera utzi erauzketa",
-        "overwrite_clipboard": "Ordeztu uneko testua arbeleko edukiarekin",
-        "append_clipboard": "Gehitu arbeleko testua uneko testuaren amaieran (lerro berria)",
-        "clipboard_repeat_count": "Itsaste-errepikapenak",
-        "edit": "Ireki uneko testu osoaren leihoa",
-        "clear": "Hustu uneko testua",
-        "snapshot_load": "Kargatu testu-snapshota",
-        "snapshot_save": "Gorde uneko testua snapshot batean",
-        "task_new": "Ataza berria",
-        "task_load": "Kargatu ataza",
-        "browser_extension": "Nabigatzailearen hedapena",
-        "cibersino_website": "Cibersino webgunea",
-        "cibersino_kofi": "Babestu Ko-fi-n",
-        "new_preset": "Sortu aurrezarpen berria",
-        "edit_preset": "Editatu hautatutako aurrezarpena",
-        "delete_preset": "Ezabatu hautatutako aurrezarpena",
-        "reset_presets": "Leheneratu aurrezarpen lehenetsiak",
-        "help_button": "Erakutsi aholku erabilgarria",
-        "flotante_window": "Leiho flotatzailea"
-      },
-      "aria": {
-        "text_extraction": "Erauzi testua fitxategitik",
-        "text_extraction_abort": "Bertan behera utzi erauzketa",
-        "browser_extension": "Ireki nabigatzailearen hedapenaren elkarrizketa-koadroa",
-        "clipboard_repeat_count": "Itsaste-errepikapenak",
-        "wpm_input": "Hitzak minutuko",
-        "wpm_slider": "Hitzak minutuko balioaren graduatzailea",
-        "speed_presets": "Abiadura-aurrezarpenak",
-        "precise_mode_toggle": "Modu zehatza",
-        "crono_controls": "Kronometroaren kontrolak",
-        "crono_display": "Kronometroaren pantaila",
-        "crono_toggle": "Hasi edo pausatu kronometroa",
-        "crono_reset": "Berrezarri kronometroa",
-        "floating_window_toggle": "Leiho flotatzailea",
-        "floating_window_group": "Leiho flotatzailearen kontrolak"
-      },
       "speed": {
         "title": "IRAKURKETA-ABIADURA",
         "wpm_label": "hitz minutuko (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Igarotako denbora: ",
         "text_extraction_drop_here": "Jaregin fitxategia testua erauzteko"
+      },
+      "tooltips": {
+        "text_extraction": "Erauzi testua fitxategitik",
+        "text_extraction_abort": "Bertan behera utzi erauzketa",
+        "overwrite_clipboard": "Ordeztu uneko testua arbeleko edukiarekin",
+        "append_clipboard": "Gehitu arbeleko testua uneko testuaren amaieran (lerro berria)",
+        "clipboard_repeat_count": "Itsaste-errepikapenak",
+        "edit": "Ireki uneko testu osoaren leihoa",
+        "clear": "Hustu uneko testua",
+        "snapshot_load": "Kargatu testu-snapshota",
+        "snapshot_save": "Gorde uneko testua snapshot batean",
+        "task_new": "Ataza berria",
+        "task_load": "Kargatu ataza",
+        "browser_extension": "Nabigatzailearen hedapena",
+        "cibersino_website": "Cibersino webgunea",
+        "cibersino_kofi": "Babestu Ko-fi-n",
+        "new_preset": "Sortu aurrezarpen berria",
+        "edit_preset": "Editatu hautatutako aurrezarpena",
+        "delete_preset": "Ezabatu hautatutako aurrezarpena",
+        "reset_presets": "Leheneratu aurrezarpen lehenetsiak",
+        "help_button": "Erakutsi aholku erabilgarria",
+        "flotante_window": "Leiho flotatzailea"
+      },
+      "aria": {
+        "text_extraction": "Erauzi testua fitxategitik",
+        "text_extraction_abort": "Bertan behera utzi erauzketa",
+        "browser_extension": "Ireki nabigatzailearen hedapenaren elkarrizketa-koadroa",
+        "clipboard_repeat_count": "Itsaste-errepikapenak",
+        "wpm_input": "Hitzak minutuko",
+        "wpm_slider": "Hitzak minutuko balioaren graduatzailea",
+        "speed_presets": "Abiadura-aurrezarpenak",
+        "precise_mode_toggle": "Modu zehatza",
+        "crono_controls": "Kronometroaren kontrolak",
+        "crono_display": "Kronometroaren pantaila",
+        "crono_toggle": "Hasi edo pausatu kronometroa",
+        "crono_reset": "Berrezarri kronometroa",
+        "floating_window_toggle": "Leiho flotatzailea",
+        "floating_window_group": "Leiho flotatzailearen kontrolak"
       },
       "alerts": {
         "clipboard_too_large": "Arbeleko testua handiegia da prozesatzeko. Laburtu eta saiatu berriro.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "Gordetako PDFa: ",
         "reveal_saved_pdf_button": "Erakutsi gordetako PDFa"
       },
+      "single_file_heavy": {
+        "case_a_title": "PDF osoa handiegia da OCR-rako",
+        "case_a_message": "PDF osoak OCR hornitzailearen muga ({providerLimitMb} MB) gainditzen du. Planifikatzaile partekatua ireki dezakezu erauzketa baino lehen automatikoki sortutako fitxategietan zatitzeko.",
+        "case_b_title": "Sortutako tartea handiegia da OCR-rako",
+        "case_b_message": "Hautatutako tarterako sortutako PDFak OCR hornitzailearen muga ({providerLimitMb} MB) gainditzen du. Fitxategia ez da igo. Orrien hautapenera itzul zaitezke, bide natiboa erabil dezakezu, edo planifikatzaile partekatua ireki PDF osoa zatitzeko.",
+        "source_file_label": "Iturburu-fitxategia:",
+        "selected_range_label": "Hautatutako tartea:",
+        "generated_pdf_label": "Sortutako PDFa:",
+        "generated_pdf_size_label": "Sortutako PDFaren tamaina:",
+        "source_size_label": "Iturburu-fitxategiaren tamaina:",
+        "total_pages_label": "Orriak guztira:",
+        "split_button": "Zatitu eta planifikatu PDF osoa",
+        "return_to_pages_button": "Itzuli orrietara",
+        "use_native_button": "Erabili bide natiboa",
+        "reveal_generated_pdf_button": "Erakutsi sortutako PDFa",
+        "cancel_button": "Utzi",
+        "close_aria": "Itxi OCR-rako PDF handiaren elkarrizketa"
+      },
       "batch_plan": {
         "title": "Planifikatu multzokako erauzketa",
         "single_file_title": "Planifikatu PDFaren zatitze automatikoa",
@@ -181,7 +199,6 @@
         "failure_legend": "Huts egitean jokabidea",
         "failure_default": "Itxi unitatea azken arrakastaren ondoren eta jarraitu hurrengo unitatearekin",
         "failure_continue": "Saltatu huts egindako elementua eta jarraitu unitate berean",
-        "overwrite_confirm": "Honek uneko testua gainidatziko du erauzketa hasten denean. Jarraitu nahi duzu?",
         "start_button": "Hasi erauzketa",
         "cancel_button": "Utzi",
         "close_aria": "Itxi multzokako erauzketa-planifikazioa"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} sortu da",
         "snapshot_creation_failed": "(JSON sortzeak huts egin du: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "PDF osoa handiegia da OCR-rako",
-        "case_a_message": "PDF osoak OCR hornitzailearen muga ({providerLimitMb} MB) gainditzen du. Planifikatzaile partekatua ireki dezakezu erauzketa baino lehen automatikoki sortutako fitxategietan zatitzeko.",
-        "case_b_title": "Sortutako tartea handiegia da OCR-rako",
-        "case_b_message": "Hautatutako tarterako sortutako PDFak OCR hornitzailearen muga ({providerLimitMb} MB) gainditzen du. Fitxategia ez da igo. Orrien hautapenera itzul zaitezke, bide natiboa erabil dezakezu, edo planifikatzaile partekatua ireki PDF osoa zatitzeko.",
-        "source_file_label": "Iturburu-fitxategia:",
-        "selected_range_label": "Hautatutako tartea:",
-        "generated_pdf_label": "Sortutako PDFa:",
-        "generated_pdf_size_label": "Sortutako PDFaren tamaina:",
-        "source_size_label": "Iturburu-fitxategiaren tamaina:",
-        "total_pages_label": "Orriak guztira:",
-        "split_button": "Zatitu eta planifikatu PDF osoa",
-        "return_to_pages_button": "Itzuli orrietara",
-        "use_native_button": "Erabili bide natiboa",
-        "reveal_generated_pdf_button": "Erakutsi sortutako PDFa",
-        "cancel_button": "Utzi",
-        "close_aria": "Itxi OCR-rako PDF handiaren elkarrizketa"
-      },
       "alerts": {
+        "overwrite_confirm": "Honek uneko testua gainidatziko du erauzketa hasten denean. Jarraitu nahi duzu?",
         "start_error": "Errorea gertatu da erauzketa prozesua hastean. Begiratu kontsola.",
         "precondition_blocked": "Erauzketa hasteko, itxi bigarren mailako leiho guztiak eta gelditu kronometroa.",
         "precondition_error": "Errorea gertatu da erauzketa aurrebaldintzak egiaztatzean. Begiratu kontsola.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "Hautatutako PDF orri-tartea ez da baliozkoa. Doitu tartea eta saiatu berriro.",
           "subset_creation_failed": "Ezin izan da hautatutako orrien PDFa sortu erauzketarako. Egiaztatu fitxategia eta saiatu berriro."
         },
+        "native": {
+          "runtime_error": "Erauzketa natiboaren exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",
+          "unreadable_or_corrupt": "Hautatutako fitxategia ezin da irakurri edo hondatuta dago erauzketa natiborako.",
+          "encrypted_or_password_protected": "Hautatutako PDFa zifratuta edo pasahitzez babestuta dago eta ezin da bide natibotik erauzi.",
+          "cancelled": "Erauzketa natiboa bertan behera utzi da."
+        },
         "ocr": {
           "unavailable": "OCR ez dago erabilgarri. Egiaztatu konfigurazioa/autentifikazioa eta saiatu berriro.",
           "activation_required": "OCR aktibatzea beharrezkoa da. Hasi saioa Google OCR-en eta saiatu berriro.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR aldi baterako blokeatuta dago kuota/tasa-mugen ondorioz. Itxaron eta saiatu berriro.",
           "runtime_error": "OCR exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",
           "cancelled": "OCR erauzketa prozesua bertan behera utzi da.",
-          "cleanup_warning": "OCR amaitu da, baina urruneko aldi baterako fitxategiaren garbiketak huts egin du. Begiratu zure Google Drive karpeta."
-        },
-        "batch_ocr": {
-          "activation_required": "Multzo honek OCR elementuak ditu, baina Google OCR ez dago aktibatuta. Erabili Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",
-          "token_state_invalid": "Multzo honek OCR elementuak ditu, baina gordetako Google OCR saio-hasieraren egoera baliogabea da. Erabili berriro Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",
-          "connectivity_failed": "Batch honek OCR elementuak ditu, baina OCR-k Interneteko konexioa behar du. Egiaztatu konexioa eta saiatu berriro erauzketa hasi aurretik.",
-          "quota_or_rate_limited": "Batch honek OCR elementuak ditu, baina OCR aldi baterako blokeatuta dago kuota/maiztasun mugengatik. Itxaron eta saiatu berriro erauzketa hasi aurretik.",
-          "unavailable": "Multzo honek OCR elementuak ditu, baina Google OCR ez dago erabilgarri une honetan. OCR oraindik aktibatuta ez badago, erabili Hobespenak > Aktibatu Google OCR. Bestela, egiaztatu OCR konfigurazioa/autentifikazioa eta saiatu berriro multzoa hasi aurretik."
-        },
-        "native": {
-          "runtime_error": "Erauzketa natiboaren exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",
-          "unreadable_or_corrupt": "Hautatutako fitxategia ezin da irakurri edo hondatuta dago erauzketa natiborako.",
-          "encrypted_or_password_protected": "Hautatutako PDFa zifratuta edo pasahitzez babestuta dago eta ezin da bide natibotik erauzi.",
-          "cancelled": "Erauzketa natiboa bertan behera utzi da."
+          "cleanup_warning": "OCR amaitu da, baina urruneko aldi baterako fitxategiaren garbiketak huts egin du. Begiratu zure Google Drive karpeta.",
+          "batch_ocr": {
+            "activation_required": "Multzo honek OCR elementuak ditu, baina Google OCR ez dago aktibatuta. Erabili Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",
+            "token_state_invalid": "Multzo honek OCR elementuak ditu, baina gordetako Google OCR saio-hasieraren egoera baliogabea da. Erabili berriro Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",
+            "connectivity_failed": "Batch honek OCR elementuak ditu, baina OCR-k Interneteko konexioa behar du. Egiaztatu konexioa eta saiatu berriro erauzketa hasi aurretik.",
+            "quota_or_rate_limited": "Batch honek OCR elementuak ditu, baina OCR aldi baterako blokeatuta dago kuota/maiztasun mugengatik. Itxaron eta saiatu berriro erauzketa hasi aurretik.",
+            "unavailable": "Multzo honek OCR elementuak ditu, baina Google OCR ez dago erabilgarri une honetan. OCR oraindik aktibatuta ez badago, erabili Hobespenak > Aktibatu Google OCR. Bestela, egiaztatu OCR konfigurazioa/autentifikazioa eta saiatu berriro multzoa hasi aurretik."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Berrezarri testuaren tamaina",
       "read_progress_label": "Irakurria",
       "clear_title": "Hustu",
+      "editor_find": {
+        "input_placeholder": "Bilatu...",
+        "input_aria": "Bilatu testuan",
+        "expand_title": "Erakutsi ordezteko kontrolak",
+        "collapse_title": "Ezkutatu ordezteko kontrolak",
+        "replace_placeholder": "Ordeztu...",
+        "replace_aria": "Ordezko testua",
+        "replace": "Ordeztu",
+        "replace_all": "Ordeztu dena",
+        "prev_title": "Aurreko bat-etortzea",
+        "next_title": "Hurrengo bat-etortzea",
+        "close_title": "Itxi bilaketa-barra",
+        "replace_title": "Ordeztu uneko bat-etortzea",
+        "replace_all_title": "Ordeztu bat-etortze guztiak",
+        "replace_timeout": "Ordezteko eragiketak denbora gehiegi hartu du. Saiatu berriro.",
+        "status_no_matches": "Ez dago bat-etortzerik",
+        "status_empty_query": "Idatzi bilatzeko"
+      },
       "alerts": {
         "start_failed": "Ezin izan da Text Editor abiarazi.",
         "start_timeout": "Text Editor-ek denbora gehiegi behar izan du abiarazteko eta itxi egin da.",
@@ -315,36 +333,7 @@
         "calc_error": "Errorea gertatu da kalkulatzean. Begiratu kontsola."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Bilatu...",
-      "input_aria": "Bilatu testuan",
-      "expand_title": "Erakutsi ordezteko kontrolak",
-      "collapse_title": "Ezkutatu ordezteko kontrolak",
-      "replace_placeholder": "Ordeztu...",
-      "replace_aria": "Ordezko testua",
-      "replace": "Ordeztu",
-      "replace_all": "Ordeztu dena",
-      "prev_title": "Aurreko bat-etortzea",
-      "next_title": "Hurrengo bat-etortzea",
-      "close_title": "Itxi bilaketa-barra",
-      "replace_title": "Ordeztu uneko bat-etortzea",
-      "replace_all_title": "Ordeztu bat-etortze guztiak",
-      "replace_timeout": "Ordezteko eragiketak denbora gehiegi hartu du. Saiatu berriro.",
-      "status_no_matches": "Ez dago bat-etortzerik",
-      "status_empty_query": "Idatzi bilatzeko"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Snapshota gordeta.",
-        "save_error": "Ezin izan da snapshota gorde.",
-        "load_success": "Snapshota kargatuta.",
-        "load_error": "Ezin izan da snapshota kargatu.",
-        "outside": "Snapshotak snapshots karpetaren barruan egon behar du.",
-        "truncated": "Snapshotak gehieneko tamaina gainditzen du eta moztu egin da.",
-        "unavailable": "Snapshoten funtzioa ez dago erabilgarri."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Gorde testu-snapshota",
       "message": "Nahi baduzu, etiketa ezazu testu-snapshot hau non gorde aukeratu aurretik.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Normala",
           "hard": "Zaila"
         }
+      },
+      "alerts": {
+        "save_success": "Snapshota gordeta.",
+        "save_error": "Ezin izan da snapshota gorde.",
+        "load_success": "Snapshota kargatuta.",
+        "load_error": "Ezin izan da snapshota kargatu.",
+        "outside": "Snapshotak snapshots karpetaren barruan egon behar du.",
+        "truncated": "Snapshotak gehieneko tamaina gainditzen du eta moztu egin da.",
+        "unavailable": "Snapshoten funtzioa ez dago erabilgarri."
       }
     },
     "tasks": {
       "title": "toT — Atazak",
-      "labels": {
-        "name": "Izena",
-        "summary_total": "Guztira",
-        "summary_left": "Falta",
-        "empty": "(hutsik)",
-        "search": "Bilatu",
-        "search_placeholder": "Bilatu liburutegian..."
-      },
+      "name": "Izena",
+      "save_button": "Gorde",
+      "delete_button": "Ezabatu",
+      "summary_total": "Guztira",
+      "summary_left": "Falta",
+      "add_row_button": "Gehitu errenkada",
+      "open_library_button": "Ireki liburutegia",
       "columns": {
         "texto": "Testua",
         "tiempo": "Denbora",
@@ -423,36 +420,37 @@
         "falta": "Geratzen",
         "enlace": "Esteka",
         "comentario": "",
-        "acciones": "Ekintzak"
+        "acciones": "Ekintzak",
+        "tooltips": {
+          "link_open": "Ireki esteka",
+          "snapshot_load": "Kargatu testu-snapshot bat errenkada honetarako",
+          "comment": "Gehitu/editatu iruzkina",
+          "move_up": "Eraman gora",
+          "move_down": "Eraman behera",
+          "library_row_save": "Gorde liburutegian",
+          "delete_row": "Ezabatu errenkada"
+        }
       },
-      "buttons": {
-        "save": "Gorde",
-        "delete": "Ezabatu",
-        "add_row": "Gehitu errenkada",
-        "open_library": "Ireki liburutegia",
-        "select_snapshot": "Hautatu snapshota",
-        "cancel": "Utzi",
-        "yes": "Bai",
-        "no": "Ez"
-      },
-      "tooltips": {
-        "move_up": "Eraman gora",
-        "move_down": "Eraman behera",
-        "delete_row": "Ezabatu errenkada",
-        "library_row_save": "Gorde liburutegian",
-        "library_row_load": "Kargatu errenkada",
-        "library_row_delete": "Ezabatu liburutegitik",
-        "snapshot_load": "Kargatu testu-snapshot bat errenkada honetarako",
-        "snapshot_select": "Hautatu testu-snapshot bat errenkada honetarako",
-        "snapshot_clear": "Kendu hautatutako snapshota errenkada honetatik",
-        "link_open": "Ireki esteka",
-        "comment": "Gehitu/editatu iruzkina"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Iruzkina",
+        "snapshot_select": "Hautatu snapshota",
+        "snapshot_select_tooltip": "Hautatu testu-snapshot bat errenkada honetarako",
+        "snapshot_clear": "Kendu hautatutako snapshota errenkada honetatik"
+      },
+      "biblioteca": {
         "library_title": "Liburutegia",
+        "search": "Bilatu",
+        "search_placeholder": "Bilatu liburutegian...",
+        "empty": "(hutsik)",
+        "library_row_load": "Kargatu errenkada",
+        "library_row_delete": "Ezabatu liburutegitik"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Gorde liburutegian",
-        "library_save_question": "Iruzkina sartu?"
+        "library_save_question": "Iruzkina sartu?",
+        "yes": "Bai",
+        "no": "Ez",
+        "cancel": "Utzi"
       },
       "alerts": {
         "task_unavailable": "Atazen funtzionalitatea ez dago erabilgarri.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Ezin izan da liburutegitik ezabatu.",
         "link_blocked": "Esteka blokeatuta.",
         "link_missing": "Fitxategia ez da aurkitu.",
-        "link_error": "Errorea esteka irekitzean."
-      },
-      "confirm": {
+        "link_error": "Errorea esteka irekitzean.",
         "close_unsaved": "Gorde gabeko aldaketak daude. Itxi gorde gabe?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Sakatu Play (▶) Leiho Flotatzailean hasteko prest zaudenean. Testa hasi ondoren, ez sakatu Pausa (⏸) irakurtzen amaitu arte: Pausak testa amaitzen du; ez du kronometroa pausatzen. Sakatu Gelditu/Berrezarri (⏹) testa bertan behera utzi nahi baduzu soilik."
-      },
       "entry": {
         "title": "Irakurketa-abiaduraren testa",
+        "show_instructions": "Erakutsi argibideak",
+        "hide_instructions": "Ezkutatu argibideak",
         "intro": "Test honek zure benetako irakurketa-abiadura kalkulatzeko balio du saio gidatu baten bidez. Aplikazioak testua irekiko du eta hasteko prest zaudenean Leiho Flotatzailean Play (▶) sakatu arte itxarongo du. Testa hasi ondoren, ez sakatu Pausa (⏸) irakurtzen amaitu arte: Pausak testa amaitzen du; ez du kronometroa pausatzen. Erabili Gelditu/Berrezarri (⏹) testa bertan behera utzi nahi baduzu soilik. Ondoren, testuak ulermen-galderak baditu, berrikusi ahal izango dituzu eta, amaieran, emaitzarekin aurrezarpen bat sortu ahal izango duzu.\nHasi aurretik, kontuan izan probako testu hauek normalean 5 eta 15 minutu arteko kontzentrazio jarraitua eskatzen dutela, etenik gabe.\nPool honek testu laburrak erabiltzen ditu; beraz, interpretatu emaitza zuhurtziaz. Ez litzateke zuzenean testu luzeetara estrapolatu behar, haietan normalean faktore positiboak —jarioa eta testuingurua metatzea— eta faktore negatiboak —buruko laburbilketa eta nekea— agertzen baitira.",
         "eligible_count": "Fitxategi hautagarriak:",
+        "show_bundled_entries": "Oinarrizko testak",
+        "get_more_files": "Lortu fitxategi gehiago",
+        "import_files_button": "Inportatu fitxategiak",
+        "start_random_text_button": "Hasi ausazko testuarekin",
+        "start_current_text_button": "Hasi uneko testuarekin",
         "pool_exhausted_message": "Ez da erabili gabeko test-fitxategirik geratzen. Berrezarri poola edo gehitu fitxategi gehiago.",
         "visible_empty_bundled_hidden_message": "Barneko test-fitxategiak ezkutatuta daude une honetan, eta ez da erabiltzeke dagoen fitxategi ikusgarririk geratzen. Erakutsi berriro barneko fitxategiak edo inportatu fitxategi gehiago jarraitzeko.",
         "close_aria": "Itxi irakurketa-abiaduraren testaren elkarrizketa",
         "start_random_confirm": "Honek uneko testua pool-eko ausazko testu hautagarri batekin gainidatziko du. Jarraitu nahi duzu?",
         "reset_confirm": "Honek testaren pool osoa berrezarriko du eta haren fitxategi guztiak berriz erabili gabe gisa markatuko ditu. Jarraitu nahi duzu?",
-        "import_summary": "Inportazioa amaituta. Inportatuak: {imported}. Bikoiztuak saltatuta: {skippedDuplicates}. Balidazio hutsak: {failedValidation}. Konprimitutako artxiboko sarrera hutsak: {failedArchiveEntries}. Idazketa hutsak: {failedWrites}.",
-        "import_conflict": {
-          "title": "Inportatu fitxategiak",
-          "message": "Inportatutako fitxategi batzuk dagoeneko badaude poolean. Nola kudeatu nahi dituzu bikoiztuak?",
-          "detail": "{count} helburuko fitxategi-izen badago/badaude dagoeneko poolean.",
-          "buttons": {
-            "skip": "Saltatu bikoiztuak",
-            "replace": "Ordeztu bikoiztuak",
-            "cancel": "Utzi inportazioa"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Lortu fitxategi gehiago",
-          "import_files": "Inportatu fitxategiak",
-          "show_instructions": "Erakutsi argibideak",
-          "hide_instructions": "Ezkutatu argibideak",
-          "start_random_text": "Hasi ausazko testuarekin",
-          "start_current_text": "Hasi uneko testuarekin",
-          "show_bundled_entries": "Oinarrizko testak"
-        },
         "tooltips": {
           "show_bundled_entries": "Sartu poolean aplikazioarekin datozen hasierako test-fitxategiak",
           "get_more_files": "Lortu test-fitxategi gehiago Google Drive karpetatik",
@@ -519,7 +499,21 @@
           "reset_pool": "Berrezarri testaren poola",
           "start_random_text": "Hasi testa pool-eko ausazko testu hautagarri batekin",
           "start_current_text": "Hasi testa uneko testuarekin"
+        },
+        "import": {
+          "import_summary": "Inportazioa amaituta. Inportatuak: {imported}. Bikoiztuak saltatuta: {skippedDuplicates}. Balidazio hutsak: {failedValidation}. Konprimitutako artxiboko sarrera hutsak: {failedArchiveEntries}. Idazketa hutsak: {failedWrites}.",
+          "import_conflict": {
+            "title": "Inportatu fitxategiak",
+            "message": "Inportatutako fitxategi batzuk dagoeneko badaude poolean. Nola kudeatu nahi dituzu bikoiztuak?",
+            "detail": "{count} helburuko fitxategi-izen badago/badaude dagoeneko poolean.",
+            "skip_button": "Saltatu bikoiztuak",
+            "replace_button": "Ordeztu bikoiztuak",
+            "cancel_button": "Utzi inportazioa"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Sakatu Play (▶) Leiho Flotatzailean hasteko prest zaudenean. Testa hasi ondoren, ez sakatu Pausa (⏸) irakurtzen amaitu arte: Pausak testa amaitzen du; ez du kronometroa pausatzen. Sakatu Gelditu/Berrezarri (⏹) testa bertan behera utzi nahi baduzu soilik."
       },
       "questions": {
         "title": "Irakurmen-galderak",
@@ -533,19 +527,15 @@
         "result_summary": "{correct} zuzen {total}-tik ({percentage})",
         "chance_at_least_observed": "Ausaz erantzunda gutxienez puntuazio hori lortzeko probabilitatea: {percentage}",
         "fatal_invalid": "Galderen payload-a baliogabea da.",
-        "buttons": {
-          "check": "Ikusi emaitza",
-          "continue": "Jarraitu"
-        }
+        "check_button": "Ikusi emaitza",
+        "continue_button": "Jarraitu"
       },
       "result": {
         "title": "Irakurketa-abiaduraren emaitza",
         "measured_wpm": "Neurtutako WPM",
         "elapsed_time": "Denbora",
         "word_count": "Hitzak",
-        "buttons": {
-          "continue": "Jarraitu"
-        }
+        "continue_button": "Jarraitu"
       },
       "alerts": {
         "unavailable": "Irakurketa-abiaduraren testaren funtzionalitatea ez dago erabilgarri.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "Irakurketa-abiaduraren testa bertan behera utzi da saioko leihoetako bat itxi delako."
       }
     },
-    "modal_preset": {
-      "title_new": "Aurrezarpen berria",
-      "title_edit": "Editatu aurrezarpena",
-      "heading_new": "Sortu aurrezarpen berria",
-      "heading_edit": "Editatu hautatutako aurrezarpena",
-      "name": "Izena:",
-      "name_placeholder": "Presetaren izena",
-      "wpm": "WPM:",
-      "description": "Deskribapena:",
-      "description_placeholder": "Deskribapen laburra...",
-      "char_count": "{remaining} karaktere falta dira",
-      "hint": "Aurrezarpen pertsonalizatuak erabiltzailearen ezarpenetan gordetzen dira.",
-      "cancel": "Utzi",
-      "save": "Gorde",
+    "presets": {
+      "preset_modal": {
+        "title_new": "Aurrezarpen berria",
+        "title_edit": "Editatu aurrezarpena",
+        "heading_new": "Sortu aurrezarpen berria",
+        "heading_edit": "Editatu hautatutako aurrezarpena",
+        "name": "Izena:",
+        "name_placeholder": "Presetaren izena",
+        "wpm": "WPM:",
+        "description": "Deskribapena:",
+        "description_placeholder": "Deskribapen laburra...",
+        "char_count": "{remaining} karaktere falta dira",
+        "hint": "Aurrezarpen pertsonalizatuak erabiltzailearen ezarpenetan gordetzen dira.",
+        "cancel": "Utzi",
+        "save": "Gorde"
+      },
       "alerts": {
+        "not_found": "Hautatutako aurrezarpena ez da cachean aurkitu.",
+        "delete_error": "Errorea gertatu da aurrezarpena ezabatzean. Begiratu kontsola.",
+        "restore_error": "Errorea gertatu da aurrezarpenak leheneratzean. Begiratu kontsola.",
+        "open_folder_unsupported": "Ezin da aurrezarpenen karpeta ireki ingurune honetan.",
+        "open_folder_error": "Errorea gertatu da aurrezarpenen karpeta irekitzean. Begiratu kontsola.",
+        "open_default_folder_failed": "Ezin izan da aurrezarpen lehenetsien karpeta ireki. Begiratu kontsola xehetasun gehiagorako.",
         "unavailable": "Preset elkarrizketa ez dago erabilgarri app honen build honetan.",
         "open_error": "Errorea gertatu da aurrezarpenen elkarrizketa irekitzean. Begiratu kontsola.",
         "name_empty": "Izena ezin da hutsik egon.",
@@ -586,16 +584,6 @@
         "create_error": "Errorea gertatu da aurrezarpena sortzean. Begiratu kontsola.",
         "edit_error": "Errorea gertatu da aurrezarpena editatzean. Begiratu kontsola.",
         "process_error": "Errorea gertatu da aurrezarpena prozesatzean. Begiratu kontsola."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Hautatutako aurrezarpena ez da cachean aurkitu.",
-        "delete_error": "Errorea gertatu da aurrezarpena ezabatzean. Begiratu kontsola.",
-        "restore_error": "Errorea gertatu da aurrezarpenak leheneratzean. Begiratu kontsola.",
-        "open_folder_unsupported": "Ezin da aurrezarpenen karpeta ireki ingurune honetan.",
-        "open_folder_error": "Errorea gertatu da aurrezarpenen karpeta irekitzean. Begiratu kontsola.",
-        "open_default_folder_failed": "Ezin izan da aurrezarpen lehenetsien karpeta ireki. Begiratu kontsola xehetasun gehiagorako."
       }
     },
     "browser_extension": {
