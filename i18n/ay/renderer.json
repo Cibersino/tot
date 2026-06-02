@@ -7,44 +7,6 @@
         "reading_speed_test": "Ullañ jank’akïwi test",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Archivut qillqata apsuña",
-        "text_extraction_abort": "Apsuña suyt’ayaña",
-        "overwrite_clipboard": "Jichha qillqata portapapeles ukamp lantintaña",
-        "append_clipboard": "Portapapeles qillqata jichha qillqat tukuyar yapxataña (machaq siqi)",
-        "clipboard_repeat_count": "K’askachaña kutinaka",
-        "edit": "Jichha phuqhata qillqat ventana jist’araña",
-        "clear": "Jichha qillqata pichhaña",
-        "snapshot_load": "Qillqata snapshot cargar",
-        "snapshot_save": "Jichha qillqata snapshot ukar imaña",
-        "task_new": "Machaq tarea",
-        "task_load": "Tarea cargar",
-        "browser_extension": "Navegador extención",
-        "cibersino_website": "Cibersino web",
-        "cibersino_kofi": "Ko-fi ukan yanapt’ita",
-        "new_preset": "Machaq preset luraña",
-        "edit_preset": "Ajllita preset askichaña",
-        "delete_preset": "Ajllita preset chhaqtayaña",
-        "reset_presets": "Nayraqat wakichata presets kutt’ayaña",
-        "help_button": "Wakiskiri iwxt’a uñachayaña",
-        "flotante_window": "Tuyuri ventana"
-      },
-      "aria": {
-        "text_extraction": "Archivut qillqata apsuña",
-        "text_extraction_abort": "Apsuña suyt’ayaña",
-        "browser_extension": "Navegador extención diálogo jist'araña",
-        "clipboard_repeat_count": "K’askachaña kutinaka",
-        "wpm_input": "Sapa minutun arunaka",
-        "wpm_slider": "Sapa minutun arunaka llusk’achiri",
-        "speed_presets": "Jank’aki preset-naka",
-        "precise_mode_toggle": "Chiqapa modo",
-        "crono_controls": "Pachayupiri apnaqañanaka",
-        "crono_display": "Pachayupiri uñachayiri",
-        "crono_toggle": "Pachayupiri qalltaña jan ukax samart’ayaña",
-        "crono_reset": "Pachayupiri wasitat qalltaña",
-        "floating_window_toggle": "Tuyuri ventana",
-        "floating_window_group": "Tuyuri ventana apnaqañanaka"
-      },
       "speed": {
         "title": "ULLAÑ JANK’AKÏWI",
         "wpm_label": "sapa minutun arunaka (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Sarat pacha: ",
         "text_extraction_drop_here": "Qillqata apsuñatak archivo aka chiqar jaquntam"
+      },
+      "tooltips": {
+        "text_extraction": "Archivut qillqata apsuña",
+        "text_extraction_abort": "Apsuña suyt’ayaña",
+        "overwrite_clipboard": "Jichha qillqata portapapeles ukamp lantintaña",
+        "append_clipboard": "Portapapeles qillqata jichha qillqat tukuyar yapxataña (machaq siqi)",
+        "clipboard_repeat_count": "K’askachaña kutinaka",
+        "edit": "Jichha phuqhata qillqat ventana jist’araña",
+        "clear": "Jichha qillqata pichhaña",
+        "snapshot_load": "Qillqata snapshot cargar",
+        "snapshot_save": "Jichha qillqata snapshot ukar imaña",
+        "task_new": "Machaq tarea",
+        "task_load": "Tarea cargar",
+        "browser_extension": "Navegador extención",
+        "cibersino_website": "Cibersino web",
+        "cibersino_kofi": "Ko-fi ukan yanapt’ita",
+        "new_preset": "Machaq preset luraña",
+        "edit_preset": "Ajllita preset askichaña",
+        "delete_preset": "Ajllita preset chhaqtayaña",
+        "reset_presets": "Nayraqat wakichata presets kutt’ayaña",
+        "help_button": "Wakiskiri iwxt’a uñachayaña",
+        "flotante_window": "Tuyuri ventana"
+      },
+      "aria": {
+        "text_extraction": "Archivut qillqata apsuña",
+        "text_extraction_abort": "Apsuña suyt’ayaña",
+        "browser_extension": "Navegador extención diálogo jist'araña",
+        "clipboard_repeat_count": "K’askachaña kutinaka",
+        "wpm_input": "Sapa minutun arunaka",
+        "wpm_slider": "Sapa minutun arunaka llusk’achiri",
+        "speed_presets": "Jank’aki preset-naka",
+        "precise_mode_toggle": "Chiqapa modo",
+        "crono_controls": "Pachayupiri apnaqañanaka",
+        "crono_display": "Pachayupiri uñachayiri",
+        "crono_toggle": "Pachayupiri qalltaña jan ukax samart’ayaña",
+        "crono_reset": "Pachayupiri wasitat qalltaña",
+        "floating_window_toggle": "Tuyuri ventana",
+        "floating_window_group": "Tuyuri ventana apnaqañanaka"
       },
       "alerts": {
         "clipboard_too_large": "Portapapeles qillqatax sinti jach’awa procesañatak. Jisk’acham ukat wasitat yant’am.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "Imat PDF: ",
         "reveal_saved_pdf_button": "Imat PDF uñachayaña"
       },
+      "single_file_heavy": {
+        "case_a_title": "Taqpach PDF ukax OCR ukatak sinti jach’awa",
+        "case_a_message": "Taqpach PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Compartido planificador jist’arasmawa, extracción nayraqat kikin lurata archivonakar t’aqañataki.",
+        "case_b_title": "Lurat rango ukax OCR ukatak sinti jach’awa",
+        "case_b_message": "Ajllit rango ukatak lurat PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Archivo janiw apayaskiti. Laphinaka ajlliñar kutt’asmawa, nativa thakhi apnaqasmawa, jan ukax compartido planificador jist’arasmawa taqpach PDF t’aqañataki.",
+        "source_file_label": "Fuente archivo:",
+        "selected_range_label": "Ajllit rango:",
+        "generated_pdf_label": "Lurat PDF:",
+        "generated_pdf_size_label": "Lurat PDF tamaño:",
+        "source_size_label": "Fuente archivo tamaño:",
+        "total_pages_label": "Taqpach laphinaka:",
+        "split_button": "Taqpach PDF t’aqaña ukat wakichayaña",
+        "return_to_pages_button": "Laphinakaru kutt’aña",
+        "use_native_button": "Nativa thakhi apnaqaña",
+        "reveal_generated_pdf_button": "Lurat PDF uñachayaña",
+        "cancel_button": "Suyt’ayaña",
+        "close_aria": "OCR ukatak jach’a PDF diálogo jist’antaña"
+      },
       "batch_plan": {
         "title": "Lote apsuña wakichayaña",
         "single_file_title": "PDF kikin automatik t’aqaña wakichayaña",
@@ -181,7 +199,6 @@
         "failure_legend": "Pantjasiwi utjipan kun luraña",
         "failure_default": "Qhipa suma lurawit unidad jist’antaña ukat jutïr unidadampi sarantaña",
         "failure_continue": "Pantjasit item jaytaña ukat pachpa unidadan sarantaña",
-        "overwrite_confirm": "Extracción qalltkani ukhax jichha textox mayjt’ayatarakini. ¿Sarantaskakïtati?",
         "start_button": "Apsuña qalltaña",
         "cancel_button": "Suyt’ayaña",
         "close_aria": "Lote apsuña wakichawi jist’antaña"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} lurata",
         "snapshot_creation_failed": "(JSON lurañax pantjasi: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "Taqpach PDF ukax OCR ukatak sinti jach’awa",
-        "case_a_message": "Taqpach PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Compartido planificador jist’arasmawa, extracción nayraqat kikin lurata archivonakar t’aqañataki.",
-        "case_b_title": "Lurat rango ukax OCR ukatak sinti jach’awa",
-        "case_b_message": "Ajllit rango ukatak lurat PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Archivo janiw apayaskiti. Laphinaka ajlliñar kutt’asmawa, nativa thakhi apnaqasmawa, jan ukax compartido planificador jist’arasmawa taqpach PDF t’aqañataki.",
-        "source_file_label": "Fuente archivo:",
-        "selected_range_label": "Ajllit rango:",
-        "generated_pdf_label": "Lurat PDF:",
-        "generated_pdf_size_label": "Lurat PDF tamaño:",
-        "source_size_label": "Fuente archivo tamaño:",
-        "total_pages_label": "Taqpach laphinaka:",
-        "split_button": "Taqpach PDF t’aqaña ukat wakichayaña",
-        "return_to_pages_button": "Laphinakaru kutt’aña",
-        "use_native_button": "Nativa thakhi apnaqaña",
-        "reveal_generated_pdf_button": "Lurat PDF uñachayaña",
-        "cancel_button": "Suyt’ayaña",
-        "close_aria": "OCR ukatak jach’a PDF diálogo jist’antaña"
-      },
       "alerts": {
+        "overwrite_confirm": "Extracción qalltkani ukhax jichha textox mayjt’ayatarakini. ¿Sarantaskakïtati?",
         "start_error": "Apsuña qalltañan pantjasiw utji. Consola uñakipam.",
         "precondition_blocked": "Apsuña qalltañatakix taqi secundario ventananaka jist’antam ukat pachayupiri suyt’aytam.",
         "precondition_error": "Apsuña precondiciones uñakipañan pantjasiw utji. Consola uñakipam.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "PDF laphinakan ajllit rango ukax janiw walïkiti. Rango chiqañcham ukat mayamp yantʼam.",
           "subset_creation_failed": "Ajllit laphinakat PDF lurañax janiw wakiskänti extracción ukatakixa. Archivo uñakipam ukat mayamp yantʼam."
         },
+        "native": {
+          "runtime_error": "Apsuña taypin nativa extracción runtime pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
+          "unreadable_or_corrupt": "Ajllita archivo nativa apsuñatakix janiw ullañjamäkiti jan ukax dañatawa.",
+          "encrypted_or_password_protected": "Ajllita PDF ukax cifrado jan ukax contraseña ukamp jark’atawa; nativa thakhimp janiw apsuñjamäkiti.",
+          "cancelled": "Nativa apsuña suyt’ayata."
+        },
         "ocr": {
           "unavailable": "OCR janiw utjkiti. Setup/auth uñakipam ukat wasitat yant’am.",
           "activation_required": "OCR activación wakisiwa. Google OCR ukar mantam ukat wasitat yant’am.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR ukax quota/tasa límite layku mä juk’a pachax jark’atawa. Suyt’am ukat wasitat yant’am.",
           "runtime_error": "Apsuña taypin OCR ejecución pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
           "cancelled": "OCR apsuña suyt’ayata.",
-          "cleanup_warning": "OCR tukuyiwa, ukampis temporal remoto archivo pichhaña pantjasi. Google Drive carpetam uñakipam."
-        },
-        "batch_ocr": {
-          "activation_required": "Aka lote ukax OCR item-naka apani, ukampis Google OCR janiw activatäkiti. Ajllitanaka > Google OCR activaña apnaqam, ukat lote wasitat qalltam.",
-          "token_state_invalid": "Aka lote ukax OCR item-naka apani, ukampis imata Google OCR mantaña estado janiw walikiti. Ajllitanaka > Google OCR activaña wasitat apnaqam, ukat lote wasitat qalltam.",
-          "connectivity_failed": "Aka batch OCR items ukaniwa, ukampis OCR internet conexión munaraki. Conexión uñakipam ukat extracción qalltañ janïr wasitat yant'am.",
-          "quota_or_rate_limited": "Aka batch OCR items ukaniwa, ukampis OCR quota/rate limits layku mä juk'a pachax jark'antatawa. Suyam ukat extracción qalltañ janïr wasitat yant'am.",
-          "unavailable": "Aka lote ukax OCR item-naka apani, ukampis Google OCR jichhax janiw utjkiti. OCR janïr activatäkchi ukhax Ajllitanaka > Google OCR activaña apnaqam. Jan ukhamäkchi ukhax OCR setup/auth uñakipam ukat lote qalltañ nayraqat wasitat yant’am."
-        },
-        "native": {
-          "runtime_error": "Apsuña taypin nativa extracción runtime pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
-          "unreadable_or_corrupt": "Ajllita archivo nativa apsuñatakix janiw ullañjamäkiti jan ukax dañatawa.",
-          "encrypted_or_password_protected": "Ajllita PDF ukax cifrado jan ukax contraseña ukamp jark’atawa; nativa thakhimp janiw apsuñjamäkiti.",
-          "cancelled": "Nativa apsuña suyt’ayata."
+          "cleanup_warning": "OCR tukuyiwa, ukampis temporal remoto archivo pichhaña pantjasi. Google Drive carpetam uñakipam.",
+          "batch_ocr": {
+            "activation_required": "Aka lote ukax OCR item-naka apani, ukampis Google OCR janiw activatäkiti. Ajllitanaka > Google OCR activaña apnaqam, ukat lote wasitat qalltam.",
+            "token_state_invalid": "Aka lote ukax OCR item-naka apani, ukampis imata Google OCR mantaña estado janiw walikiti. Ajllitanaka > Google OCR activaña wasitat apnaqam, ukat lote wasitat qalltam.",
+            "connectivity_failed": "Aka batch OCR items ukaniwa, ukampis OCR internet conexión munaraki. Conexión uñakipam ukat extracción qalltañ janïr wasitat yant'am.",
+            "quota_or_rate_limited": "Aka batch OCR items ukaniwa, ukampis OCR quota/rate limits layku mä juk'a pachax jark'antatawa. Suyam ukat extracción qalltañ janïr wasitat yant'am.",
+            "unavailable": "Aka lote ukax OCR item-naka apani, ukampis Google OCR jichhax janiw utjkiti. OCR janïr activatäkchi ukhax Ajllitanaka > Google OCR activaña apnaqam. Jan ukhamäkchi ukhax OCR setup/auth uñakipam ukat lote qalltañ nayraqat wasitat yant’am."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Qillqa tamaño kutt’ayaña",
       "read_progress_label": "Ullata",
       "clear_title": "Pichhaña",
+      "editor_find": {
+        "input_placeholder": "Thaqaña...",
+        "input_aria": "Qillqatan thaqaña",
+        "expand_title": "Lantintaña uñachayaña",
+        "collapse_title": "Lantintaña imantaña",
+        "replace_placeholder": "Lantintaña...",
+        "replace_aria": "Lantintañ qillqata",
+        "replace": "Lantintaña",
+        "replace_all": "Taqpach lantintaña",
+        "prev_title": "Nayrïr jakthapiwi",
+        "next_title": "Jutïr jakthapiwi",
+        "close_title": "Thaqañ barra jist’antaña",
+        "replace_title": "Jichha jakthapiwi lantintaña",
+        "replace_all_title": "Taqpach jakthapiwinaka lantintaña",
+        "replace_timeout": "Lantintañax sinti jayaw tukuwayi. Wasitat yant’am.",
+        "status_no_matches": "Janiw jakthapiwix utjkiti",
+        "status_empty_query": "Thaqañatak qillqt’am"
+      },
       "alerts": {
         "start_failed": "Text Editor janiw qalltañjamäkänti.",
         "start_timeout": "Text Editor qalltaw sinti jayaräna ukat jist’antatäna.",
@@ -315,36 +333,7 @@
         "calc_error": "Jakhuñan pantjasiw utji. Consola uñakipam."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Thaqaña...",
-      "input_aria": "Qillqatan thaqaña",
-      "expand_title": "Lantintaña uñachayaña",
-      "collapse_title": "Lantintaña imantaña",
-      "replace_placeholder": "Lantintaña...",
-      "replace_aria": "Lantintañ qillqata",
-      "replace": "Lantintaña",
-      "replace_all": "Taqpach lantintaña",
-      "prev_title": "Nayrïr jakthapiwi",
-      "next_title": "Jutïr jakthapiwi",
-      "close_title": "Thaqañ barra jist’antaña",
-      "replace_title": "Jichha jakthapiwi lantintaña",
-      "replace_all_title": "Taqpach jakthapiwinaka lantintaña",
-      "replace_timeout": "Lantintañax sinti jayaw tukuwayi. Wasitat yant’am.",
-      "status_no_matches": "Janiw jakthapiwix utjkiti",
-      "status_empty_query": "Thaqañatak qillqt’am"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Snapshot imata.",
-        "save_error": "Snapshot janiw imaskiti.",
-        "load_success": "Snapshot cargata.",
-        "load_error": "Snapshot janiw cargaskiti.",
-        "outside": "Snapshot ukax imañ carpeta manqhan utjañapawa.",
-        "truncated": "Snapshot ukax máximo tamaño sipans jilawa ukat khuchhuratawa.",
-        "unavailable": "Snapshot lurawix janiw utjkiti."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Qillqata snapshot imaña",
       "message": "Kawkhansa imañ munta uk ajlliñ nayraqat, aka qillqata snapshot ukar munañaparjam etiqueta ucham.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Normal",
           "hard": "Ch’ama"
         }
+      },
+      "alerts": {
+        "save_success": "Snapshot imata.",
+        "save_error": "Snapshot janiw imaskiti.",
+        "load_success": "Snapshot cargata.",
+        "load_error": "Snapshot janiw cargaskiti.",
+        "outside": "Snapshot ukax imañ carpeta manqhan utjañapawa.",
+        "truncated": "Snapshot ukax máximo tamaño sipans jilawa ukat khuchhuratawa.",
+        "unavailable": "Snapshot lurawix janiw utjkiti."
       }
     },
     "tasks": {
       "title": "toT — Tareanaka",
-      "labels": {
-        "name": "Suti",
-        "summary_total": "Taqpacha",
-        "summary_left": "Jilt'a",
-        "empty": "(ch’usa)",
-        "search": "Thaqaña",
-        "search_placeholder": "Biblioteca ukan thaqaña..."
-      },
+      "name": "Suti",
+      "save_button": "Imaña",
+      "delete_button": "Chhaqtayaña",
+      "summary_total": "Taqpacha",
+      "summary_left": "Jilt'a",
+      "add_row_button": "Siqi yapxataña",
+      "open_library_button": "Biblioteca jist’araña",
       "columns": {
         "texto": "Qillqata",
         "tiempo": "Pacha",
@@ -423,36 +420,37 @@
         "falta": "Qhipa",
         "enlace": "Link",
         "comentario": "",
-        "acciones": "Lurañanaka"
+        "acciones": "Lurañanaka",
+        "tooltips": {
+          "link_open": "Link jist’araña",
+          "snapshot_load": "Aka siqitak qillqata snapshot cargar",
+          "comment": "Comentario yapxataña/askichaña",
+          "move_up": "Siqi alayar apaña",
+          "move_down": "Siqi aynachar apaña",
+          "library_row_save": "Biblioteca ukar imaña",
+          "delete_row": "Siqi chhaqtayaña"
+        }
       },
-      "buttons": {
-        "save": "Imaña",
-        "delete": "Chhaqtayaña",
-        "add_row": "Siqi yapxataña",
-        "open_library": "Biblioteca jist’araña",
-        "select_snapshot": "Snapshot ajlliña",
-        "cancel": "Suyt’ayaña",
-        "yes": "Jïsa",
-        "no": "Janiwa"
-      },
-      "tooltips": {
-        "move_up": "Siqi alayar apaña",
-        "move_down": "Siqi aynachar apaña",
-        "delete_row": "Siqi chhaqtayaña",
-        "library_row_save": "Biblioteca ukar imaña",
-        "library_row_load": "Siqi cargar",
-        "library_row_delete": "Biblioteca ukat chhaqtayaña",
-        "snapshot_load": "Aka siqitak qillqata snapshot cargar",
-        "snapshot_select": "Aka siqitak snapshot ajlliña",
-        "snapshot_clear": "Aka siqit ajllita snapshot apsuña",
-        "link_open": "Link jist’araña",
-        "comment": "Comentario yapxataña/askichaña"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Comentario",
+        "snapshot_select": "Snapshot ajlliña",
+        "snapshot_select_tooltip": "Aka siqitak snapshot ajlliña",
+        "snapshot_clear": "Aka siqit ajllita snapshot apsuña"
+      },
+      "biblioteca": {
         "library_title": "Biblioteca",
+        "search": "Thaqaña",
+        "search_placeholder": "Biblioteca ukan thaqaña...",
+        "empty": "(ch’usa)",
+        "library_row_load": "Siqi cargar",
+        "library_row_delete": "Biblioteca ukat chhaqtayaña"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Biblioteca ukar imaña",
-        "library_save_question": "Comentario uchañati?"
+        "library_save_question": "Comentario uchañati?",
+        "yes": "Jïsa",
+        "no": "Janiwa",
+        "cancel": "Suyt’ayaña"
       },
       "alerts": {
         "task_unavailable": "Tareas lurawi janiw utjkiti.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Biblioteca ukat janiw chhaqtayaskiti.",
         "link_blocked": "Link jark’ata.",
         "link_missing": "Archivo janiw jikiskiti.",
-        "link_error": "Link jist’arañan pantjasiwi."
-      },
-      "confirm": {
+        "link_error": "Link jist’arañan pantjasiwi.",
         "close_unsaved": "Jan imata mayjt’awinakaw utji. Jan imasax jist’antañati?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Qalltañatak wakicht’atäkasax Tuyuri Ventana ukan Play (▶) limt’am. Test qalltkipanxa, ullañ tukuykamax Pausa (⏸) jan limt’amti: Pausa ukax test tukuyi; janiw pachayupir samart’aykiti. Test chhaqtayañatakikix Stop/Reset (⏹) limt’am."
-      },
       "entry": {
         "title": "Ullañ jank’akïwi test",
+        "show_instructions": "Yatichawinaka uñachayaña",
+        "hide_instructions": "Yatichawinaka imantaña",
         "intro": "Aka test ukax irpata sesión tuqiw chiqa ullañ jank’akïwim uñt’ayañatak lurata. Appax qillqata jist’arani ukat qalltañatak wakicht’atäkasax Tuyuri Ventana ukan Play (▶) limt’añam suyäni. Test qalltkipanxa, ullañ tukuykamax Pausa (⏸) jan limt’amti: Pausa ukax test tukuyi; janiw pachayupir samart’aykiti. Test chhaqtayañatakikix Stop/Reset (⏹) apnaqam. Ukxarux, qillqatax jiskt’awinakanïchi ukhax comprensión jiskt’awinak uñakipasma, ukat tukuyarux resultado ukamp preset lurasma.\nQalltañ nayraqat amuyam: aka prueba qillqatanakax jilpachax 5 ukat 15 minutunakkam jan ch’axwañamp yäqañ munapxi.\nAka pool ukax jisk’a qillqatanak apnaqi; ukhamax resultado ukax amuyump uñjam. Janiw jach’a qillqatanakar chiqak apañäkiti, kunalaykutix ukan fluidez ukat contexto katuqañjama aski factores ukhamarak mental recapitulation ukat qarjawi factors mantapxi.",
         "eligible_count": "Wakiskiri archivunaka:",
+        "show_bundled_entries": "Test básicos",
+        "get_more_files": "Juk’amp archivunaka katuña",
+        "import_files_button": "Archivunaka apaniña",
+        "start_random_text_button": "Kawkïr qillqatamp qalltaña",
+        "start_current_text_button": "Jichha qillqatamp qalltaña",
         "pool_exhausted_message": "Janiw jan apnaqata test archivunakax qhiparkiti. Pool wasitat qalltayam jan ukax juk’amp archivunaka yapxatam.",
         "visible_empty_bundled_hidden_message": "App ukan utjki uka test archivunakax imantatäpxiwa ukat janiw kuna uñjkañ jan apnaqata test archivunakas utjkiti. Wasitamp uñachayam jan ukax juk’amp archivunaka apanim sarantañataki.",
         "close_aria": "Ullañ jank’akïwi test diálogo jist’antaña",
         "start_random_confirm": "Akax jichha qillqata pool ukan mä wakiskiri qillqatampi lantintani. Sarantañ munasmati?",
         "reset_confirm": "Akax taqpach test pool wasitat qalltayani ukat taqi archivunakap jan apnaqatajam markachani. Sarantañ munasmati?",
-        "import_summary": "Apaniñax tukuyata. Apanitaka: {imported}. Duplicados jaytatanaka: {skippedDuplicates}. Validación pantjatanaka: {failedValidation}. Archivo comprimido mantañan pantjatanaka: {failedArchiveEntries}. Qillqañ pantjatanaka: {failedWrites}.",
-        "import_conflict": {
-          "title": "Archivunaka apaniña",
-          "message": "Yaqhip apanit archivunakax pool ukan niy utji. Duplicados kunjam apnaqañ munta?",
-          "detail": "{count} destino archivo sutinakax pool ukan niy utji.",
-          "buttons": {
-            "skip": "Duplicados jaytaña",
-            "replace": "Duplicados lantintaña",
-            "cancel": "Apaniña suyt’ayaña"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Juk’amp archivunaka katuña",
-          "import_files": "Archivunaka apaniña",
-          "show_instructions": "Yatichawinaka uñachayaña",
-          "hide_instructions": "Yatichawinaka imantaña",
-          "start_random_text": "Kawkïr qillqatamp qalltaña",
-          "start_current_text": "Jichha qillqatamp qalltaña",
-          "show_bundled_entries": "Test básicos"
-        },
         "tooltips": {
           "show_bundled_entries": "Pool ukar app ukan utjki uka qallta test archivunaka yapxataña",
           "get_more_files": "Google Drive carpeta ukat juk’amp test archivunaka katuña",
@@ -519,7 +499,21 @@
           "reset_pool": "Test pool wasitat qalltaña",
           "start_random_text": "Pool ukan mä wakiskiri qillqatamp test qalltaña",
           "start_current_text": "Jichha qillqatamp test qalltaña"
+        },
+        "import": {
+          "import_summary": "Apaniñax tukuyata. Apanitaka: {imported}. Duplicados jaytatanaka: {skippedDuplicates}. Validación pantjatanaka: {failedValidation}. Archivo comprimido mantañan pantjatanaka: {failedArchiveEntries}. Qillqañ pantjatanaka: {failedWrites}.",
+          "import_conflict": {
+            "title": "Archivunaka apaniña",
+            "message": "Yaqhip apanit archivunakax pool ukan niy utji. Duplicados kunjam apnaqañ munta?",
+            "detail": "{count} destino archivo sutinakax pool ukan niy utji.",
+            "skip_button": "Duplicados jaytaña",
+            "replace_button": "Duplicados lantintaña",
+            "cancel_button": "Apaniña suyt’ayaña"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Qalltañatak wakicht’atäkasax Tuyuri Ventana ukan Play (▶) limt’am. Test qalltkipanxa, ullañ tukuykamax Pausa (⏸) jan limt’amti: Pausa ukax test tukuyi; janiw pachayupir samart’aykiti. Test chhaqtayañatakikix Stop/Reset (⏹) limt’am."
       },
       "questions": {
         "title": "Ullañ amuyt’añ jiskt’awinaka",
@@ -533,19 +527,15 @@
         "result_summary": "{correct} / {total} chiqapa ({percentage})",
         "chance_at_least_observed": "Kawkïr jaysasax aka puntaje jan ukax juk’amp katuñ probabilidad: {percentage}",
         "fatal_invalid": "Jiskt’awinak payload janiw walikiti.",
-        "buttons": {
-          "check": "Resultado uñaña",
-          "continue": "Sarantaskakiña"
-        }
+        "check_button": "Resultado uñaña",
+        "continue_button": "Sarantaskakiña"
       },
       "result": {
         "title": "Ullañ jank’akïwi resultado",
         "measured_wpm": "Tupata WPM",
         "elapsed_time": "Pacha",
         "word_count": "Arunaka",
-        "buttons": {
-          "continue": "Sarantaskakiña"
-        }
+        "continue_button": "Sarantaskakiña"
       },
       "alerts": {
         "unavailable": "Ullañ jank’akïwi test lurawix janiw utjkiti.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "Ullañ jank’akïwi test suyt’ayata, sesión ventananakat mayax jist’antatapat."
       }
     },
-    "modal_preset": {
-      "title_new": "Machaq preset",
-      "title_edit": "Preset askichaña",
-      "heading_new": "Machaq preset luraña",
-      "heading_edit": "Ajllita preset askichaña",
-      "name": "Suti:",
-      "name_placeholder": "Preset sutipa",
-      "wpm": "WPM:",
-      "description": "Qhanañchawi:",
-      "description_placeholder": "Jisk’a qhanañchawi...",
-      "char_count": "{remaining} chimpunaka qhiparki",
-      "hint": "Personal presets ukax usuario configuración ukan imatawa.",
-      "cancel": "Suyt’ayaña",
-      "save": "Imaña",
+    "presets": {
+      "preset_modal": {
+        "title_new": "Machaq preset",
+        "title_edit": "Preset askichaña",
+        "heading_new": "Machaq preset luraña",
+        "heading_edit": "Ajllita preset askichaña",
+        "name": "Suti:",
+        "name_placeholder": "Preset sutipa",
+        "wpm": "WPM:",
+        "description": "Qhanañchawi:",
+        "description_placeholder": "Jisk’a qhanañchawi...",
+        "char_count": "{remaining} chimpunaka qhiparki",
+        "hint": "Personal presets ukax usuario configuración ukan imatawa.",
+        "cancel": "Suyt’ayaña",
+        "save": "Imaña"
+      },
       "alerts": {
+        "not_found": "Ajllita preset janiw cache ukan jikiskiti.",
+        "delete_error": "Preset chhaqtayañan pantjasiw utji. Consola uñakipam.",
+        "restore_error": "Presets kutt’ayañan pantjasiw utji. Consola uñakipam.",
+        "open_folder_unsupported": "Aka entorno ukan presets carpeta jist’arañax janiw wakiskiti.",
+        "open_folder_error": "Presets carpeta jist’arañ yant’añan pantjasiw utji. Consola uñakipam.",
+        "open_default_folder_failed": "Default presets carpeta janiw jist’araskiti. Juk’amp yatiñatak consola uñakipam.",
         "unavailable": "Preset diálogo aka app buildan janiw utjkiti.",
         "open_error": "Preset diálogo jist’arañan pantjasiw utji. Consola uñakipam.",
         "name_empty": "Sutix janiw ch’usañapäkiti.",
@@ -586,16 +584,6 @@
         "create_error": "Preset lurañan pantjasiw utji. Consola uñakipam.",
         "edit_error": "Preset askichañan pantjasiw utji. Consola uñakipam.",
         "process_error": "Preset procesañan pantjasiw utji. Consola uñakipam."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Ajllita preset janiw cache ukan jikiskiti.",
-        "delete_error": "Preset chhaqtayañan pantjasiw utji. Consola uñakipam.",
-        "restore_error": "Presets kutt’ayañan pantjasiw utji. Consola uñakipam.",
-        "open_folder_unsupported": "Aka entorno ukan presets carpeta jist’arañax janiw wakiskiti.",
-        "open_folder_error": "Presets carpeta jist’arañ yant’añan pantjasiw utji. Consola uñakipam.",
-        "open_default_folder_failed": "Default presets carpeta janiw jist’araskiti. Juk’amp yatiñatak consola uñakipam."
       }
     },
     "browser_extension": {

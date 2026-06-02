@@ -2349,7 +2349,7 @@ async function openPresetModalFromMain(payload) {
       'renderer.ipc.openPresetModal.unavailable',
       'openPresetModal unavailable in electronAPI; preset-modal action skipped.'
     );
-    window.Notify.notifyMain('renderer.modal_preset.alerts.unavailable');
+    window.Notify.notifyMain('renderer.presets.alerts.unavailable');
     return;
   }
 
@@ -2357,11 +2357,11 @@ async function openPresetModalFromMain(payload) {
     const res = await window.electronAPI.openPresetModal(payload);
     if (!res || res.ok === false) {
       log.error('Preset modal open failed:', res);
-      window.Notify.notifyMain('renderer.modal_preset.alerts.open_error');
+      window.Notify.notifyMain('renderer.presets.alerts.open_error');
     }
   } catch (err) {
     log.error('Error opening preset modal:', err);
-    window.Notify.notifyMain('renderer.modal_preset.alerts.open_error');
+    window.Notify.notifyMain('renderer.presets.alerts.open_error');
   }
 }
 
@@ -2399,7 +2399,7 @@ function bindPresetActions() {
       await openPresetModalFromMain(payload);
     } catch (err) {
       log.error('Error preparing edit preset modal payload:', err);
-      window.Notify.notifyMain('renderer.modal_preset.alerts.open_error');
+      window.Notify.notifyMain('renderer.presets.alerts.open_error');
     }
   });
 

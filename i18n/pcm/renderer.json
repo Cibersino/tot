@@ -7,44 +7,6 @@
         "reading_speed_test": "Reading speed test",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Text extraction text from file",
-        "text_extraction_abort": "Abort extraction",
-        "overwrite_clipboard": "Replace current text with clipboard",
-        "append_clipboard": "Add clipboard to di end of current text (new line)",
-        "clipboard_repeat_count": "Clipboard repetitions",
-        "edit": "Open full current text window",
-        "clear": "Clear current text",
-        "snapshot_load": "Load text snapshot",
-        "snapshot_save": "Save current text as snapshot",
-        "task_new": "New task",
-        "task_load": "Load task",
-        "browser_extension": "Browser extension",
-        "cibersino_website": "Cibersino website",
-        "cibersino_kofi": "Support me on Ko-fi",
-        "new_preset": "Create new preset",
-        "edit_preset": "Edit selected preset",
-        "delete_preset": "Delete selected preset",
-        "reset_presets": "Restore default presets",
-        "help_button": "Show useful tip",
-        "flotante_window": "Floating Stopwatch"
-      },
-      "aria": {
-        "text_extraction": "Extract text from file",
-        "text_extraction_abort": "Abort extraction",
-        "browser_extension": "Open browser extension dialog",
-        "clipboard_repeat_count": "Paste repetitions",
-        "wpm_input": "Words per minute",
-        "wpm_slider": "Words-per-minute slider",
-        "speed_presets": "Speed presets",
-        "precise_mode_toggle": "Precise mode",
-        "crono_controls": "Stopwatch controls",
-        "crono_display": "Stopwatch display",
-        "crono_toggle": "Start or pause stopwatch",
-        "crono_reset": "Reset stopwatch",
-        "floating_window_toggle": "Floating Stopwatch",
-        "floating_window_group": "Floating Stopwatch controls"
-      },
       "speed": {
         "title": "READING SPEED",
         "wpm_label": "words per minute (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Time wey don pass: ",
         "text_extraction_drop_here": "Drop file to extract text"
+      },
+      "tooltips": {
+        "text_extraction": "Text extraction text from file",
+        "text_extraction_abort": "Abort extraction",
+        "overwrite_clipboard": "Replace current text with clipboard",
+        "append_clipboard": "Add clipboard to di end of current text (new line)",
+        "clipboard_repeat_count": "Clipboard repetitions",
+        "edit": "Open full current text window",
+        "clear": "Clear current text",
+        "snapshot_load": "Load text snapshot",
+        "snapshot_save": "Save current text as snapshot",
+        "task_new": "New task",
+        "task_load": "Load task",
+        "browser_extension": "Browser extension",
+        "cibersino_website": "Cibersino website",
+        "cibersino_kofi": "Support me on Ko-fi",
+        "new_preset": "Create new preset",
+        "edit_preset": "Edit selected preset",
+        "delete_preset": "Delete selected preset",
+        "reset_presets": "Restore default presets",
+        "help_button": "Show useful tip",
+        "flotante_window": "Floating Stopwatch"
+      },
+      "aria": {
+        "text_extraction": "Extract text from file",
+        "text_extraction_abort": "Abort extraction",
+        "browser_extension": "Open browser extension dialog",
+        "clipboard_repeat_count": "Paste repetitions",
+        "wpm_input": "Words per minute",
+        "wpm_slider": "Words-per-minute slider",
+        "speed_presets": "Speed presets",
+        "precise_mode_toggle": "Precise mode",
+        "crono_controls": "Stopwatch controls",
+        "crono_display": "Stopwatch display",
+        "crono_toggle": "Start or pause stopwatch",
+        "crono_reset": "Reset stopwatch",
+        "floating_window_toggle": "Floating Stopwatch",
+        "floating_window_group": "Floating Stopwatch controls"
       },
       "alerts": {
         "clipboard_too_large": "Clipboard text too large to process. Reduce am and try again.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "Saved PDF: ",
         "reveal_saved_pdf_button": "Show saved PDF"
       },
+      "single_file_heavy": {
+        "case_a_title": "Di full PDF too large for OCR",
+        "case_a_message": "Di full PDF pass di OCR provider limit ({providerLimitMb} MB). You fit open di shared planner make e split am automatically into generated files before extraction.",
+        "case_b_title": "Di generated range too large for OCR",
+        "case_b_message": "Di PDF wey dem generate for di selected range pass di OCR provider limit ({providerLimitMb} MB). Di file no upload. You fit go back to page selection, use native route, or open di shared planner to split di full PDF.",
+        "source_file_label": "Source file:",
+        "selected_range_label": "Selected range:",
+        "generated_pdf_label": "Generated PDF:",
+        "generated_pdf_size_label": "Generated PDF size:",
+        "source_size_label": "Source file size:",
+        "total_pages_label": "Total pages:",
+        "split_button": "Split and plan full PDF",
+        "return_to_pages_button": "Return to pages",
+        "use_native_button": "Use native route",
+        "reveal_generated_pdf_button": "Show generated PDF",
+        "cancel_button": "Cancel",
+        "close_aria": "Close heavy PDF for OCR dialog"
+      },
       "batch_plan": {
         "title": "Plan batch extraction",
         "single_file_title": "Plan automatic PDF split",
@@ -181,7 +199,6 @@
         "failure_legend": "What to do if e fail",
         "failure_default": "Close di unit after di last success and continue with di next unit",
         "failure_continue": "Skip di failed item and continue inside di same unit",
-        "overwrite_confirm": "Dis go overwrite current text when extraction start. You wan continue?",
         "start_button": "Start extraction",
         "cancel_button": "Cancel",
         "close_aria": "Close batch extraction planner"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} created",
         "snapshot_creation_failed": "(JSON creation fail: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "Di full PDF too large for OCR",
-        "case_a_message": "Di full PDF pass di OCR provider limit ({providerLimitMb} MB). You fit open di shared planner make e split am automatically into generated files before extraction.",
-        "case_b_title": "Di generated range too large for OCR",
-        "case_b_message": "Di PDF wey dem generate for di selected range pass di OCR provider limit ({providerLimitMb} MB). Di file no upload. You fit go back to page selection, use native route, or open di shared planner to split di full PDF.",
-        "source_file_label": "Source file:",
-        "selected_range_label": "Selected range:",
-        "generated_pdf_label": "Generated PDF:",
-        "generated_pdf_size_label": "Generated PDF size:",
-        "source_size_label": "Source file size:",
-        "total_pages_label": "Total pages:",
-        "split_button": "Split and plan full PDF",
-        "return_to_pages_button": "Return to pages",
-        "use_native_button": "Use native route",
-        "reveal_generated_pdf_button": "Show generated PDF",
-        "cancel_button": "Cancel",
-        "close_aria": "Close heavy PDF for OCR dialog"
-      },
       "alerts": {
+        "overwrite_confirm": "Dis go overwrite current text when extraction start. You wan continue?",
         "start_error": "Error happen while starting text extraction. Check console.",
         "precondition_blocked": "To start text extraction, close all secondary windows and stop di stopwatch.",
         "precondition_error": "Error happen while checking text extraction preconditions. Check console.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "Di PDF page range wey you select no valid. Adjust di range and try again.",
           "subset_creation_failed": "Di app no fit create di selected-page PDF for extraction. Check di file and try again."
         },
+        "native": {
+          "runtime_error": "Native extraction runtime error happen during text extraction. Check console and retry.",
+          "unreadable_or_corrupt": "Di selected file unreadable or corrupt for native extraction.",
+          "encrypted_or_password_protected": "Di selected PDF encrypted or password-protected and no fit extract natively.",
+          "cancelled": "Native extraction was cancelled."
+        },
         "ocr": {
           "unavailable": "OCR no dey available. Check setup/auth status and try again.",
           "activation_required": "OCR activation dey required. Sign in to Google OCR and try again.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR dey temporarily blocked by quota/rate limits. Wait and retry.",
           "runtime_error": "OCR runtime error happen during text extraction. Check console and retry.",
           "cancelled": "OCR text extraction was cancelled.",
-          "cleanup_warning": "OCR finish, but temporary remote file cleanup fail. Check your Google Drive folder."
-        },
-        "batch_ocr": {
-          "activation_required": "Dis batch get OCR items, but Google OCR no dey enabled. Use Preferences > Enable Google OCR, then start di batch again.",
-          "token_state_invalid": "Dis batch get OCR items, but saved Google OCR sign-in state no valid. Use Preferences > Enable Google OCR again, then start di batch again.",
-          "connectivity_failed": "Dis batch get OCR items, but OCR need internet connection. Check your connection and try again before you start extraction.",
-          "quota_or_rate_limited": "Dis batch get OCR items, but OCR dey temporarily blocked by quota/rate limits. Wait and try again before you start extraction.",
-          "unavailable": "Dis batch get OCR items, but Google OCR no dey available now. If OCR never enable yet, use Preferences > Enable Google OCR. Otherwise, check OCR setup/auth status and try again before you start di batch."
-        },
-        "native": {
-          "runtime_error": "Native extraction runtime error happen during text extraction. Check console and retry.",
-          "unreadable_or_corrupt": "Di selected file unreadable or corrupt for native extraction.",
-          "encrypted_or_password_protected": "Di selected PDF encrypted or password-protected and no fit extract natively.",
-          "cancelled": "Native extraction was cancelled."
+          "cleanup_warning": "OCR finish, but temporary remote file cleanup fail. Check your Google Drive folder.",
+          "batch_ocr": {
+            "activation_required": "Dis batch get OCR items, but Google OCR no dey enabled. Use Preferences > Enable Google OCR, then start di batch again.",
+            "token_state_invalid": "Dis batch get OCR items, but saved Google OCR sign-in state no valid. Use Preferences > Enable Google OCR again, then start di batch again.",
+            "connectivity_failed": "Dis batch get OCR items, but OCR need internet connection. Check your connection and try again before you start extraction.",
+            "quota_or_rate_limited": "Dis batch get OCR items, but OCR dey temporarily blocked by quota/rate limits. Wait and try again before you start extraction.",
+            "unavailable": "Dis batch get OCR items, but Google OCR no dey available now. If OCR never enable yet, use Preferences > Enable Google OCR. Otherwise, check OCR setup/auth status and try again before you start di batch."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Reset text size",
       "read_progress_label": "Read",
       "clear_title": "Clear",
+      "editor_find": {
+        "input_placeholder": "Find...",
+        "input_aria": "Find inside text",
+        "expand_title": "Show replace controls",
+        "collapse_title": "Hide replace controls",
+        "replace_placeholder": "Replace...",
+        "replace_aria": "Replacement text",
+        "replace": "Replace",
+        "replace_all": "Replace all",
+        "prev_title": "Previous match",
+        "next_title": "Next match",
+        "close_title": "Close find bar",
+        "replace_title": "Replace current match",
+        "replace_all_title": "Replace all matches",
+        "replace_timeout": "Replace take too long. Try again.",
+        "status_no_matches": "No matches",
+        "status_empty_query": "Type to search"
+      },
       "alerts": {
         "start_failed": "Text Editor no fit start.",
         "start_timeout": "Text Editor take too long to start, so e close.",
@@ -315,36 +333,7 @@
         "calc_error": "Error happen while calculating. Check console."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Find...",
-      "input_aria": "Find inside text",
-      "expand_title": "Show replace controls",
-      "collapse_title": "Hide replace controls",
-      "replace_placeholder": "Replace...",
-      "replace_aria": "Replacement text",
-      "replace": "Replace",
-      "replace_all": "Replace all",
-      "prev_title": "Previous match",
-      "next_title": "Next match",
-      "close_title": "Close find bar",
-      "replace_title": "Replace current match",
-      "replace_all_title": "Replace all matches",
-      "replace_timeout": "Replace take too long. Try again.",
-      "status_no_matches": "No matches",
-      "status_empty_query": "Type to search"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Snapshot saved.",
-        "save_error": "Could not save snapshot.",
-        "load_success": "Snapshot loaded.",
-        "load_error": "Could not load snapshot.",
-        "outside": "Snapshot must dey inside di snapshots folder.",
-        "truncated": "Snapshot pass maximum size and dem truncate am.",
-        "unavailable": "Snapshot feature no dey available."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Save text snapshot",
       "message": "You fit tag dis text snapshot before you choose where to save am.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Normal",
           "hard": "Hard"
         }
+      },
+      "alerts": {
+        "save_success": "Snapshot saved.",
+        "save_error": "Could not save snapshot.",
+        "load_success": "Snapshot loaded.",
+        "load_error": "Could not load snapshot.",
+        "outside": "Snapshot must dey inside di snapshots folder.",
+        "truncated": "Snapshot pass maximum size and dem truncate am.",
+        "unavailable": "Snapshot feature no dey available."
       }
     },
     "tasks": {
       "title": "toT — Tasks",
-      "labels": {
-        "name": "Name",
-        "summary_total": "Total",
-        "summary_left": "Remain",
-        "empty": "(empty)",
-        "search": "Search",
-        "search_placeholder": "Search library..."
-      },
+      "name": "Name",
+      "save_button": "Save",
+      "delete_button": "Delete",
+      "summary_total": "Total",
+      "summary_left": "Remain",
+      "add_row_button": "Add row",
+      "open_library_button": "Open library",
       "columns": {
         "texto": "Text",
         "tiempo": "Time",
@@ -423,36 +420,37 @@
         "falta": "Remain",
         "enlace": "Link",
         "comentario": "",
-        "acciones": "Actions"
+        "acciones": "Actions",
+        "tooltips": {
+          "link_open": "Open link",
+          "snapshot_load": "Load text snapshot for dis row",
+          "comment": "Add/edit comment",
+          "move_up": "Move row up",
+          "move_down": "Move row down",
+          "library_row_save": "Save to library",
+          "delete_row": "Delete row"
+        }
       },
-      "buttons": {
-        "save": "Save",
-        "delete": "Delete",
-        "add_row": "Add row",
-        "open_library": "Open library",
-        "select_snapshot": "Select snapshot",
-        "cancel": "Cancel",
-        "yes": "Yes",
-        "no": "No"
-      },
-      "tooltips": {
-        "move_up": "Move row up",
-        "move_down": "Move row down",
-        "delete_row": "Delete row",
-        "library_row_save": "Save to library",
-        "library_row_load": "Load row",
-        "library_row_delete": "Delete from library",
-        "snapshot_load": "Load text snapshot for dis row",
-        "snapshot_select": "Select text snapshot for dis row",
-        "snapshot_clear": "Remove selected snapshot from dis row",
-        "link_open": "Open link",
-        "comment": "Add/edit comment"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Comment",
+        "snapshot_select": "Select snapshot",
+        "snapshot_select_tooltip": "Select text snapshot for dis row",
+        "snapshot_clear": "Remove selected snapshot from dis row"
+      },
+      "biblioteca": {
         "library_title": "Library",
+        "search": "Search",
+        "search_placeholder": "Search library...",
+        "empty": "(empty)",
+        "library_row_load": "Load row",
+        "library_row_delete": "Delete from library"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Save to library",
-        "library_save_question": "Include comment?"
+        "library_save_question": "Include comment?",
+        "yes": "Yes",
+        "no": "No",
+        "cancel": "Cancel"
       },
       "alerts": {
         "task_unavailable": "Task feature no dey available.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Could not delete from library.",
         "link_blocked": "Link blocked.",
         "link_missing": "File no dey found.",
-        "link_error": "Error opening link."
-      },
-      "confirm": {
+        "link_error": "Error opening link.",
         "close_unsaved": "Unsaved changes dey. Close without saving?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Press Play (▶) for di Floating Stopwatch when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Press Stop/Reset (⏹) only if you wan cancel di test."
-      },
       "entry": {
         "title": "Reading speed test",
+        "show_instructions": "Show instructions",
+        "hide_instructions": "Hide instructions",
         "intro": "Dis test go help estimate your real reading speed through guided session. Di app go open di text and wait make you press Play (▶) for di Floating Stopwatch when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Use Stop/Reset (⏹) only if you wan cancel di test. After, you fit check comprehension questions if di text get dem and, for di end, create preset from di result.\nBefore you start, remember say these test texts usually need between 5 and 15 minutes of steady concentration, without interruption.\nDis pool dey use short texts, so take di result with care. No use am directly judge long texts, where good factors like flow and context build-up, and bad factors like mental recap and tiredness, usually dey matter.",
         "eligible_count": "Eligible files:",
+        "show_bundled_entries": "Base tests",
+        "get_more_files": "Get more files",
+        "import_files_button": "Import files",
+        "start_random_text_button": "Start with random text",
+        "start_current_text_button": "Start with current text",
         "pool_exhausted_message": "No unused test files remain. Reset di pool or add more files.",
         "visible_empty_bundled_hidden_message": "Built-in test files dey hidden now, and no visible unused test files remain. Show di built-in files again or import more files to continue.",
         "close_aria": "Close reading speed test dialog",
         "start_random_confirm": "Dis go overwrite di current text with random eligible text from di pool. You wan continue?",
         "reset_confirm": "Dis go reset di whole test pool and mark all files as unused again. You wan continue?",
-        "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}.",
-        "import_conflict": {
-          "title": "Import files",
-          "message": "Some imported files already dey for pool. How you wan handle duplicates?",
-          "detail": "{count} destination filename(s) already dey for pool.",
-          "buttons": {
-            "skip": "Skip duplicates",
-            "replace": "Replace duplicates",
-            "cancel": "Cancel import"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Get more files",
-          "import_files": "Import files",
-          "show_instructions": "Show instructions",
-          "hide_instructions": "Hide instructions",
-          "start_random_text": "Start with random text",
-          "start_current_text": "Start with current text",
-          "show_bundled_entries": "Base tests"
-        },
         "tooltips": {
           "show_bundled_entries": "Include di starter test files wey come with di app for di pool",
           "get_more_files": "Get more test files from di Google Drive folder",
@@ -519,7 +499,21 @@
           "reset_pool": "Reset test pool",
           "start_random_text": "Start di test with random eligible text from di pool",
           "start_current_text": "Start di test with di current text"
+        },
+        "import": {
+          "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}.",
+          "import_conflict": {
+            "title": "Import files",
+            "message": "Some imported files already dey for pool. How you wan handle duplicates?",
+            "detail": "{count} destination filename(s) already dey for pool.",
+            "skip_button": "Skip duplicates",
+            "replace_button": "Replace duplicates",
+            "cancel_button": "Cancel import"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Press Play (▶) for di Floating Stopwatch when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Press Stop/Reset (⏹) only if you wan cancel di test."
       },
       "questions": {
         "title": "Reading comprehension questions",
@@ -533,19 +527,15 @@
         "result_summary": "{correct} out of {total} correct ({percentage})",
         "chance_at_least_observed": "Chance to get at least dis score by random guessing: {percentage}",
         "fatal_invalid": "Di questions payload no valid.",
-        "buttons": {
-          "check": "Check result",
-          "continue": "Continue"
-        }
+        "check_button": "Check result",
+        "continue_button": "Continue"
       },
       "result": {
         "title": "Reading speed result",
         "measured_wpm": "Measured WPM",
         "elapsed_time": "Time",
         "word_count": "Words",
-        "buttons": {
-          "continue": "Continue"
-        }
+        "continue_button": "Continue"
       },
       "alerts": {
         "unavailable": "Reading speed test feature no dey available.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "Reading speed test was cancelled because one of its session windows closed."
       }
     },
-    "modal_preset": {
-      "title_new": "New preset",
-      "title_edit": "Edit preset",
-      "heading_new": "Create new preset",
-      "heading_edit": "Edit selected preset",
-      "name": "Name:",
-      "name_placeholder": "Preset name",
-      "wpm": "WPM:",
-      "description": "Description:",
-      "description_placeholder": "Short description...",
-      "char_count": "{remaining} characters left",
-      "hint": "Custom presets dey stored for user settings.",
-      "cancel": "Cancel",
-      "save": "Save",
+    "presets": {
+      "preset_modal": {
+        "title_new": "New preset",
+        "title_edit": "Edit preset",
+        "heading_new": "Create new preset",
+        "heading_edit": "Edit selected preset",
+        "name": "Name:",
+        "name_placeholder": "Preset name",
+        "wpm": "WPM:",
+        "description": "Description:",
+        "description_placeholder": "Short description...",
+        "char_count": "{remaining} characters left",
+        "hint": "Custom presets dey stored for user settings.",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
       "alerts": {
+        "not_found": "Selected preset no dey cache.",
+        "delete_error": "Error happen while deleting preset. Check console.",
+        "restore_error": "Error happen while restoring presets. Check console.",
+        "open_folder_unsupported": "Cannot open presets folder for dis environment.",
+        "open_folder_error": "Error happen while trying to open presets folder. Check console.",
+        "open_default_folder_failed": "Could not open default presets folder. Check console for details.",
         "unavailable": "Di preset dialog no dey available for dis app build.",
         "open_error": "Error happen while opening di preset dialog. Check console.",
         "name_empty": "Name no fit dey empty.",
@@ -586,16 +584,6 @@
         "create_error": "Error happen while creating preset. Check console.",
         "edit_error": "Error happen while editing preset. Check console.",
         "process_error": "Error happen while processing preset. Check console."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Selected preset no dey cache.",
-        "delete_error": "Error happen while deleting preset. Check console.",
-        "restore_error": "Error happen while restoring presets. Check console.",
-        "open_folder_unsupported": "Cannot open presets folder for dis environment.",
-        "open_folder_error": "Error happen while trying to open presets folder. Check console.",
-        "open_default_folder_failed": "Could not open default presets folder. Check console for details."
       }
     },
     "browser_extension": {

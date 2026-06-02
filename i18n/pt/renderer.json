@@ -7,44 +7,6 @@
         "reading_speed_test": "Teste de velocidade de leitura",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Extrair texto de arquivos",
-        "text_extraction_abort": "Abortar extração",
-        "overwrite_clipboard": "Substituir o texto atual pelo conteúdo da área de transferência",
-        "append_clipboard": "Adicionar o conteúdo da área de transferência ao final do texto atual",
-        "clipboard_repeat_count": "Repetições de colagem",
-        "edit": "Abrir Editor de Texto",
-        "clear": "Limpar o texto atual",
-        "snapshot_load": "Carregar snapshot de texto",
-        "snapshot_save": "Salvar o texto atual em um snapshot de texto",
-        "task_new": "Criar nova tarefa",
-        "task_load": "Carregar tarefa",
-        "browser_extension": "Extensão do navegador",
-        "cibersino_website": "Site do Cibersino",
-        "cibersino_kofi": "Apoie-me no Ko-fi",
-        "new_preset": "Criar um novo preset",
-        "edit_preset": "Editar o preset selecionado",
-        "delete_preset": "Excluir o preset selecionado",
-        "reset_presets": "Restaurar presets padrão",
-        "help_button": "Mostrar dica útil",
-        "flotante_window": "Cronômetro Flutuante"
-      },
-      "aria": {
-        "text_extraction": "Selecionar arquivos para extrair texto",
-        "text_extraction_abort": "Abortar extração",
-        "browser_extension": "Abrir janela da extensão do navegador",
-        "clipboard_repeat_count": "Repetições de colagem",
-        "wpm_input": "Palavras por minuto",
-        "wpm_slider": "Controle deslizante de palavras por minuto",
-        "speed_presets": "Presets de velocidade",
-        "precise_mode_toggle": "Ativar ou desativar o modo preciso",
-        "crono_controls": "Controles do cronômetro",
-        "crono_display": "Indicador do cronômetro",
-        "crono_toggle": "Iniciar ou pausar o cronômetro",
-        "crono_reset": "Parar e zerar o cronômetro",
-        "floating_window_toggle": "Cronômetro Flutuante",
-        "floating_window_group": "Controles do Cronômetro Flutuante"
-      },
       "speed": {
         "title": "VELOCIDADE DE LEITURA",
         "wpm_label": "palavras por minuto (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Tempo decorrido: ",
         "text_extraction_drop_here": "Solte aqui para extrair texto"
+      },
+      "tooltips": {
+        "text_extraction": "Extrair texto de arquivos",
+        "text_extraction_abort": "Abortar extração",
+        "overwrite_clipboard": "Substituir o texto atual pelo conteúdo da área de transferência",
+        "append_clipboard": "Adicionar o conteúdo da área de transferência ao final do texto atual",
+        "clipboard_repeat_count": "Repetições de colagem",
+        "edit": "Abrir Editor de Texto",
+        "clear": "Limpar o texto atual",
+        "snapshot_load": "Carregar snapshot de texto",
+        "snapshot_save": "Salvar o texto atual em um snapshot de texto",
+        "task_new": "Criar nova tarefa",
+        "task_load": "Carregar tarefa",
+        "browser_extension": "Extensão do navegador",
+        "cibersino_website": "Site do Cibersino",
+        "cibersino_kofi": "Apoie-me no Ko-fi",
+        "new_preset": "Criar um novo preset",
+        "edit_preset": "Editar o preset selecionado",
+        "delete_preset": "Excluir o preset selecionado",
+        "reset_presets": "Restaurar presets padrão",
+        "help_button": "Mostrar dica útil",
+        "flotante_window": "Cronômetro Flutuante"
+      },
+      "aria": {
+        "text_extraction": "Selecionar arquivos para extrair texto",
+        "text_extraction_abort": "Abortar extração",
+        "browser_extension": "Abrir janela da extensão do navegador",
+        "clipboard_repeat_count": "Repetições de colagem",
+        "wpm_input": "Palavras por minuto",
+        "wpm_slider": "Controle deslizante de palavras por minuto",
+        "speed_presets": "Presets de velocidade",
+        "precise_mode_toggle": "Ativar ou desativar o modo preciso",
+        "crono_controls": "Controles do cronômetro",
+        "crono_display": "Indicador do cronômetro",
+        "crono_toggle": "Iniciar ou pausar o cronômetro",
+        "crono_reset": "Parar e zerar o cronômetro",
+        "floating_window_toggle": "Cronômetro Flutuante",
+        "floating_window_group": "Controles do Cronômetro Flutuante"
       },
       "alerts": {
         "clipboard_too_large": "O texto da área de transferência é muito grande para processar. Reduza-o e tente novamente.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "PDF salvo: ",
         "reveal_saved_pdf_button": "Mostrar PDF salvo"
       },
+      "single_file_heavy": {
+        "case_a_title": "PDF completo grande demais para OCR",
+        "case_a_message": "O PDF completo excede o limite do provedor OCR ({providerLimitMb} MB). Você pode processá-lo automaticamente em partes, mantendo o arquivo original. Como alternativa, pode usar a rota nativa.",
+        "case_b_title": "PDF gerado grande demais para OCR",
+        "case_b_message": "O PDF gerado para o intervalo selecionado excede o limite do provedor OCR ({providerLimitMb} MB). Ele não foi enviado. Você pode voltar à seleção de páginas, usar a rota nativa ou processar o PDF completo em partes.",
+        "source_file_label": "PDF de origem:",
+        "selected_range_label": "Intervalo selecionado:",
+        "generated_pdf_label": "PDF gerado:",
+        "generated_pdf_size_label": "Tamanho do PDF gerado:",
+        "source_size_label": "Tamanho do PDF de origem:",
+        "total_pages_label": "Total de páginas:",
+        "split_button": "Processar o PDF em partes",
+        "return_to_pages_button": "Voltar às páginas",
+        "use_native_button": "Usar rota nativa",
+        "reveal_generated_pdf_button": "Mostrar PDF salvo",
+        "cancel_button": "Cancelar",
+        "close_aria": "Fechar diálogo de PDF pesado para OCR"
+      },
       "batch_plan": {
         "title": "Planejar extração em lote",
         "single_file_title": "Processar o PDF completo em partes",
@@ -181,7 +199,6 @@
         "failure_legend": "Comportamento em caso de falha",
         "failure_default": "Encerrar a unidade após o último item bem-sucedido e continuar com a próxima unidade",
         "failure_continue": "Omitir o item com falha e continuar dentro da mesma unidade",
-        "overwrite_confirm": "Isso substituirá o texto atual quando a extração começar. Deseja continuar?",
         "start_button": "Iniciar extração",
         "cancel_button": "Cancelar",
         "close_aria": "Fechar planejamento da extração em lote"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} criado",
         "snapshot_creation_failed": "(falha ao criar snapshot de texto: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "PDF completo grande demais para OCR",
-        "case_a_message": "O PDF completo excede o limite do provedor OCR ({providerLimitMb} MB). Você pode processá-lo automaticamente em partes, mantendo o arquivo original. Como alternativa, pode usar a rota nativa.",
-        "case_b_title": "PDF gerado grande demais para OCR",
-        "case_b_message": "O PDF gerado para o intervalo selecionado excede o limite do provedor OCR ({providerLimitMb} MB). Ele não foi enviado. Você pode voltar à seleção de páginas, usar a rota nativa ou processar o PDF completo em partes.",
-        "source_file_label": "PDF de origem:",
-        "selected_range_label": "Intervalo selecionado:",
-        "generated_pdf_label": "PDF gerado:",
-        "generated_pdf_size_label": "Tamanho do PDF gerado:",
-        "source_size_label": "Tamanho do PDF de origem:",
-        "total_pages_label": "Total de páginas:",
-        "split_button": "Processar o PDF em partes",
-        "return_to_pages_button": "Voltar às páginas",
-        "use_native_button": "Usar rota nativa",
-        "reveal_generated_pdf_button": "Mostrar PDF salvo",
-        "cancel_button": "Cancelar",
-        "close_aria": "Fechar diálogo de PDF pesado para OCR"
-      },
       "alerts": {
+        "overwrite_confirm": "Isso substituirá o texto atual quando a extração começar. Deseja continuar?",
         "start_error": "Ocorreu um erro ao iniciar a extração.",
         "precondition_blocked": "Para iniciar a extração, feche todas as janelas secundárias e zere o cronômetro.",
         "precondition_error": "Ocorreu um erro ao verificar as precondições da extração.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "O intervalo de páginas selecionado para o PDF é inválido. Ajuste o intervalo e tente novamente.",
           "subset_creation_failed": "Não foi possível criar o PDF das páginas selecionadas para a extração. Verifique o arquivo e tente novamente."
         },
+        "native": {
+          "runtime_error": "Ocorreu um erro de execução na extração nativa.",
+          "unreadable_or_corrupt": "O arquivo selecionado está ilegível ou corrompido para a extração nativa.",
+          "encrypted_or_password_protected": "O PDF selecionado está criptografado ou protegido por senha e não pode ser extraído pela rota nativa.",
+          "cancelled": "A extração nativa foi cancelada."
+        },
         "ocr": {
           "unavailable": "O OCR não está disponível. Verifique a configuração e a autenticação e tente novamente.",
           "activation_required": "A ativação do OCR é necessária. Entre no Google OCR e tente novamente.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "O OCR está temporariamente bloqueado por limites de cota ou taxa. Aguarde e tente novamente.",
           "runtime_error": "Ocorreu um erro de execução do OCR durante a extração.",
           "cancelled": "A extração OCR foi cancelada.",
-          "cleanup_warning": "O OCR terminou, mas a limpeza do arquivo remoto temporário falhou. Verifique sua pasta do Google Drive."
-        },
-        "batch_ocr": {
-          "activation_required": "Este lote inclui itens com OCR, mas o Google OCR não está ativado. Use Preferências > Ativar Google OCR e depois inicie a extração novamente.",
-          "token_state_invalid": "Este lote inclui itens com OCR, mas o estado salvo de acesso do Google OCR é inválido. Use Preferências > Ativar Google OCR novamente e depois inicie a extração novamente.",
-          "connectivity_failed": "Este lote inclui itens com OCR, mas o OCR exige conexão com a internet. Verifique sua conexão e tente novamente antes de iniciar a extração.",
-          "quota_or_rate_limited": "Este lote inclui itens com OCR, mas o OCR está temporariamente bloqueado por limites de cota ou taxa. Aguarde e tente novamente antes de iniciar a extração.",
-          "unavailable": "Este lote inclui itens com OCR, mas o Google OCR não está disponível agora. Se o OCR ainda não estiver ativado, use Preferências > Ativar Google OCR. Caso contrário, verifique a configuração ou o estado do OCR e tente novamente antes de iniciar a extração."
-        },
-        "native": {
-          "runtime_error": "Ocorreu um erro de execução na extração nativa.",
-          "unreadable_or_corrupt": "O arquivo selecionado está ilegível ou corrompido para a extração nativa.",
-          "encrypted_or_password_protected": "O PDF selecionado está criptografado ou protegido por senha e não pode ser extraído pela rota nativa.",
-          "cancelled": "A extração nativa foi cancelada."
+          "cleanup_warning": "O OCR terminou, mas a limpeza do arquivo remoto temporário falhou. Verifique sua pasta do Google Drive.",
+          "batch_ocr": {
+            "activation_required": "Este lote inclui itens com OCR, mas o Google OCR não está ativado. Use Preferências > Ativar Google OCR e depois inicie a extração novamente.",
+            "token_state_invalid": "Este lote inclui itens com OCR, mas o estado salvo de acesso do Google OCR é inválido. Use Preferências > Ativar Google OCR novamente e depois inicie a extração novamente.",
+            "connectivity_failed": "Este lote inclui itens com OCR, mas o OCR exige conexão com a internet. Verifique sua conexão e tente novamente antes de iniciar a extração.",
+            "quota_or_rate_limited": "Este lote inclui itens com OCR, mas o OCR está temporariamente bloqueado por limites de cota ou taxa. Aguarde e tente novamente antes de iniciar a extração.",
+            "unavailable": "Este lote inclui itens com OCR, mas o Google OCR não está disponível agora. Se o OCR ainda não estiver ativado, use Preferências > Ativar Google OCR. Caso contrário, verifique a configuração ou o estado do OCR e tente novamente antes de iniciar a extração."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Restaurar tamanho do texto",
       "read_progress_label": "Lido",
       "clear_title": "Limpar",
+      "editor_find": {
+        "input_placeholder": "Buscar...",
+        "input_aria": "Buscar no texto",
+        "expand_title": "Mostrar controles de substituição",
+        "collapse_title": "Ocultar controles de substituição",
+        "replace_placeholder": "Substituir...",
+        "replace_aria": "Texto de substituição",
+        "replace": "Substituir",
+        "replace_all": "Substituir tudo",
+        "prev_title": "Correspondência anterior",
+        "next_title": "Correspondência seguinte",
+        "close_title": "Fechar a barra de busca",
+        "replace_title": "Substituir correspondência atual",
+        "replace_all_title": "Substituir todas as correspondências",
+        "replace_timeout": "A substituição demorou demais. Tente novamente.",
+        "status_no_matches": "Sem correspondências",
+        "status_empty_query": "Digite para buscar"
+      },
       "alerts": {
         "start_failed": "O Editor de Texto não pôde ser iniciado.",
         "start_timeout": "O Editor de Texto demorou demais para iniciar e foi fechado.",
@@ -315,36 +333,7 @@
         "calc_error": "Ocorreu um erro ao salvar o texto como texto atual."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Buscar...",
-      "input_aria": "Buscar no texto",
-      "expand_title": "Mostrar controles de substituição",
-      "collapse_title": "Ocultar controles de substituição",
-      "replace_placeholder": "Substituir...",
-      "replace_aria": "Texto de substituição",
-      "replace": "Substituir",
-      "replace_all": "Substituir tudo",
-      "prev_title": "Correspondência anterior",
-      "next_title": "Correspondência seguinte",
-      "close_title": "Fechar a barra de busca",
-      "replace_title": "Substituir correspondência atual",
-      "replace_all_title": "Substituir todas as correspondências",
-      "replace_timeout": "A substituição demorou demais. Tente novamente.",
-      "status_no_matches": "Sem correspondências",
-      "status_empty_query": "Digite para buscar"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Snapshot de texto salvo.",
-        "save_error": "Não foi possível salvar o snapshot de texto.",
-        "load_success": "Snapshot de texto carregado.",
-        "load_error": "Não foi possível carregar o snapshot de texto.",
-        "outside": "O snapshot de texto deve estar dentro da pasta de snapshots de texto.",
-        "truncated": "O snapshot de texto excedeu o tamanho máximo e foi truncado.",
-        "unavailable": "A funcionalidade de snapshots de texto não está disponível."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Salvar snapshot de texto",
       "message": "Você pode adicionar etiquetas opcionais a este snapshot de texto antes de escolher onde salvá-lo.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Normal",
           "hard": "Difícil"
         }
+      },
+      "alerts": {
+        "save_success": "Snapshot de texto salvo.",
+        "save_error": "Não foi possível salvar o snapshot de texto.",
+        "load_success": "Snapshot de texto carregado.",
+        "load_error": "Não foi possível carregar o snapshot de texto.",
+        "outside": "O snapshot de texto deve estar dentro da pasta de snapshots de texto.",
+        "truncated": "O snapshot de texto excedeu o tamanho máximo e foi truncado.",
+        "unavailable": "A funcionalidade de snapshots de texto não está disponível."
       }
     },
     "tasks": {
       "title": "toT — Editor de Tarefas",
-      "labels": {
-        "name": "Nome",
-        "summary_total": "Total",
-        "summary_left": "Falta",
-        "empty": "(vazio)",
-        "search": "Buscar",
-        "search_placeholder": "Buscar na biblioteca..."
-      },
+      "name": "Nome",
+      "save_button": "Salvar",
+      "delete_button": "Excluir",
+      "summary_total": "Total",
+      "summary_left": "Falta",
+      "add_row_button": "Adicionar linha",
+      "open_library_button": "Abrir biblioteca de leituras",
       "columns": {
         "texto": "Leitura",
         "tiempo": "Tempo",
@@ -423,36 +420,37 @@
         "falta": "Falta",
         "enlace": "Link ou caminho local",
         "comentario": "",
-        "acciones": "Ações"
+        "acciones": "Ações",
+        "tooltips": {
+          "link_open": "Abrir link ou caminho local",
+          "snapshot_load": "Carregar snapshot de texto como texto atual",
+          "comment": "Adicionar ou editar comentário",
+          "move_up": "Mover para cima",
+          "move_down": "Mover para baixo",
+          "library_row_save": "Salvar leitura na biblioteca",
+          "delete_row": "Excluir linha"
+        }
       },
-      "buttons": {
-        "save": "Salvar",
-        "delete": "Excluir",
-        "add_row": "Adicionar linha",
-        "open_library": "Abrir biblioteca de leituras",
-        "select_snapshot": "Selecionar snapshot de texto",
-        "cancel": "Cancelar",
-        "yes": "Sim",
-        "no": "Não"
-      },
-      "tooltips": {
-        "move_up": "Mover para cima",
-        "move_down": "Mover para baixo",
-        "delete_row": "Excluir linha",
-        "library_row_save": "Salvar leitura na biblioteca",
-        "library_row_load": "Carregar leitura na tarefa",
-        "library_row_delete": "Excluir leitura da biblioteca",
-        "snapshot_load": "Carregar snapshot de texto como texto atual",
-        "snapshot_select": "Selecionar snapshot de texto para esta linha",
-        "snapshot_clear": "Remover o snapshot de texto desta linha",
-        "link_open": "Abrir link ou caminho local",
-        "comment": "Adicionar ou editar comentário"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Comentário",
+        "snapshot_select": "Selecionar snapshot de texto",
+        "snapshot_select_tooltip": "Selecionar snapshot de texto para esta linha",
+        "snapshot_clear": "Remover o snapshot de texto desta linha"
+      },
+      "biblioteca": {
         "library_title": "Biblioteca de leituras",
+        "search": "Buscar",
+        "search_placeholder": "Buscar na biblioteca...",
+        "empty": "(vazio)",
+        "library_row_load": "Carregar leitura na tarefa",
+        "library_row_delete": "Excluir leitura da biblioteca"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Salvar leitura na biblioteca",
-        "library_save_question": "Incluir um comentário?"
+        "library_save_question": "Incluir um comentário?",
+        "yes": "Sim",
+        "no": "Não",
+        "cancel": "Cancelar"
       },
       "alerts": {
         "task_unavailable": "Funcionalidade de tarefas indisponível.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Não foi possível excluir a leitura da biblioteca de leituras.",
         "link_blocked": "Link bloqueado.",
         "link_missing": "Arquivo não encontrado.",
-        "link_error": "Erro ao abrir link ou caminho local."
-      },
-      "confirm": {
+        "link_error": "Erro ao abrir link ou caminho local.",
         "close_unsaved": "Existem mudanças não salvas. Deseja fechar sem salvar?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Pressione Play (▶) no Cronômetro Flutuante quando estiver pronto para começar. Depois que o teste começar, não pressione Pausa (⏸) até terminar a leitura: Pausa encerra o teste; ela não pausa o cronômetro. Pressione Parar/Redefinir (⏹) somente se quiser cancelar o teste."
-      },
       "entry": {
         "title": "Teste de velocidade de leitura",
+        "show_instructions": "Mostrar instruções",
+        "hide_instructions": "Ocultar instruções",
         "intro": "Este teste serve para estimar sua velocidade real de leitura por meio de uma sessão guiada. O app abrirá o texto e esperará que você pressione Play (▶) no Cronômetro Flutuante quando estiver pronto para começar. Depois que o teste começar, não pressione Pausa (⏸) até terminar a leitura: Pausa encerra o teste; ela não pausa o cronômetro. Use Parar/Redefinir (⏹) somente se quiser cancelar o teste. Depois, você poderá revisar perguntas de compreensão se o texto as incluir e, ao final, criar um preset a partir do resultado.\nAntes de começar, tenha em mente que estes textos de teste costumam exigir entre 5 e 15 minutos de concentração ininterrupta.\nEste pool usa textos curtos, então interprete o resultado com cautela. Ele não deve ser extrapolado diretamente para textos longos, onde normalmente entram em jogo fatores positivos, como a aquisição de fluidez e de contexto, e fatores negativos, como a recapitulação mental e a fadiga.",
         "eligible_count": "Arquivos elegíveis:",
+        "show_bundled_entries": "Testes incorporados",
+        "get_more_files": "Obter mais arquivos",
+        "import_files_button": "Importar arquivos",
+        "start_random_text_button": "Iniciar com texto aleatório",
+        "start_current_text_button": "Iniciar com texto atual",
         "pool_exhausted_message": "Não restam arquivos de teste não usados. Redefina o pool ou adicione mais arquivos.",
         "visible_empty_bundled_hidden_message": "Os arquivos de teste incorporados estão ocultos no momento e não restam arquivos de teste visíveis sem uso. Mostre os arquivos incorporados novamente ou importe mais arquivos para continuar.",
         "close_aria": "Fechar diálogo do teste de velocidade de leitura",
         "start_random_confirm": "Isso substituirá o texto atual por um texto aleatório elegível do pool. Deseja continuar?",
         "reset_confirm": "Isso redefinirá todo o pool do teste e marcará todos os arquivos dele novamente como não usados. Deseja continuar?",
-        "import_summary": "Importação concluída. Importados: {imported}. Duplicados ignorados: {skippedDuplicates}. Validações com falha: {failedValidation}. Entradas de arquivo compactado com falha: {failedArchiveEntries}. Escritas com falha: {failedWrites}.",
-        "import_conflict": {
-          "title": "Importar arquivos",
-          "message": "Alguns arquivos importados já existem no pool. Como você quer lidar com os duplicados?",
-          "detail": "O pool já contém {count} dos nomes de arquivo de destino.",
-          "buttons": {
-            "skip": "Ignorar duplicados",
-            "replace": "Substituir duplicados",
-            "cancel": "Cancelar importação"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Obter mais arquivos",
-          "import_files": "Importar arquivos",
-          "show_instructions": "Mostrar instruções",
-          "hide_instructions": "Ocultar instruções",
-          "start_random_text": "Iniciar com texto aleatório",
-          "start_current_text": "Iniciar com texto atual",
-          "show_bundled_entries": "Testes incorporados"
-        },
         "tooltips": {
           "show_bundled_entries": "Incluir no pool os arquivos de teste iniciais incorporados ao app",
           "get_more_files": "Obter mais arquivos de teste da pasta do Google Drive",
@@ -519,7 +499,21 @@
           "reset_pool": "Redefinir pool do teste",
           "start_random_text": "Iniciar o teste com um texto aleatório elegível do pool",
           "start_current_text": "Iniciar o teste com o texto atual"
+        },
+        "import": {
+          "import_summary": "Importação concluída. Importados: {imported}. Duplicados ignorados: {skippedDuplicates}. Validações com falha: {failedValidation}. Entradas de arquivo compactado com falha: {failedArchiveEntries}. Escritas com falha: {failedWrites}.",
+          "import_conflict": {
+            "title": "Importar arquivos",
+            "message": "Alguns arquivos importados já existem no pool. Como você quer lidar com os duplicados?",
+            "detail": "O pool já contém {count} dos nomes de arquivo de destino.",
+            "skip_button": "Ignorar duplicados",
+            "replace_button": "Substituir duplicados",
+            "cancel_button": "Cancelar importação"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Pressione Play (▶) no Cronômetro Flutuante quando estiver pronto para começar. Depois que o teste começar, não pressione Pausa (⏸) até terminar a leitura: Pausa encerra o teste; ela não pausa o cronômetro. Pressione Parar/Redefinir (⏹) somente se quiser cancelar o teste."
       },
       "questions": {
         "title": "Questões de compreensão de leitura",
@@ -533,19 +527,15 @@
         "result_summary": "{correct} de {total} corretas ({percentage})",
         "chance_at_least_observed": "Probabilidade de obter pelo menos essa pontuação ao responder ao acaso: {percentage}",
         "fatal_invalid": "Os dados das perguntas são inválidos.",
-        "buttons": {
-          "check": "Ver resultado",
-          "continue": "Continuar"
-        }
+        "check_button": "Ver resultado",
+        "continue_button": "Continuar"
       },
       "result": {
         "title": "Resultado da velocidade de leitura",
         "measured_wpm": "WPM medidos",
         "elapsed_time": "Tempo",
         "word_count": "Palavras",
-        "buttons": {
-          "continue": "Continuar"
-        }
+        "continue_button": "Continuar"
       },
       "alerts": {
         "unavailable": "A funcionalidade do teste de velocidade de leitura não está disponível.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "O teste de velocidade de leitura foi cancelado porque uma das janelas da sessão foi fechada."
       }
     },
-    "modal_preset": {
-      "title_new": "Novo preset",
-      "title_edit": "Editar preset",
-      "heading_new": "Criar um novo preset",
-      "heading_edit": "Editar o preset selecionado",
-      "name": "Nome:",
-      "name_placeholder": "Nome do preset",
-      "wpm": "WPM:",
-      "description": "Descrição:",
-      "description_placeholder": "Breve descrição...",
-      "char_count": "Caracteres restantes: {remaining}",
-      "hint": "Presets personalizados são armazenados nas configurações do usuário.",
-      "cancel": "Cancelar",
-      "save": "Salvar",
+    "presets": {
+      "preset_modal": {
+        "title_new": "Novo preset",
+        "title_edit": "Editar preset",
+        "heading_new": "Criar um novo preset",
+        "heading_edit": "Editar o preset selecionado",
+        "name": "Nome:",
+        "name_placeholder": "Nome do preset",
+        "wpm": "WPM:",
+        "description": "Descrição:",
+        "description_placeholder": "Breve descrição...",
+        "char_count": "Caracteres restantes: {remaining}",
+        "hint": "Presets personalizados são armazenados nas configurações do usuário.",
+        "cancel": "Cancelar",
+        "save": "Salvar"
+      },
       "alerts": {
+        "not_found": "Preset selecionado não encontrado.",
+        "delete_error": "Ocorreu um erro ao excluir o preset.",
+        "restore_error": "Ocorreu um erro ao restaurar os presets.",
+        "open_folder_unsupported": "Não é possível abrir a pasta de presets neste ambiente.",
+        "open_folder_error": "Ocorreu um erro ao abrir a pasta de presets.",
+        "open_default_folder_failed": "Não foi possível abrir a pasta de presets padrão.",
         "unavailable": "A caixa de diálogo do preset não está disponível nesta build do app.",
         "open_error": "Ocorreu um erro ao abrir a caixa de diálogo do preset.",
         "name_empty": "O nome não pode estar vazio.",
@@ -586,16 +584,6 @@
         "create_error": "Ocorreu um erro ao criar o preset.",
         "edit_error": "Ocorreu um erro ao editar o preset.",
         "process_error": "Ocorreu um erro ao processar o preset."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Preset selecionado não encontrado.",
-        "delete_error": "Ocorreu um erro ao excluir o preset.",
-        "restore_error": "Ocorreu um erro ao restaurar os presets.",
-        "open_folder_unsupported": "Não é possível abrir a pasta de presets neste ambiente.",
-        "open_folder_error": "Ocorreu um erro ao abrir a pasta de presets.",
-        "open_default_folder_failed": "Não foi possível abrir a pasta de presets padrão."
       }
     },
     "browser_extension": {

@@ -488,7 +488,7 @@ function renderRow(row) {
   enlaceBtn.type = 'button';
   enlaceBtn.className = 'icon-btn';
   enlaceBtn.textContent = '↗️';
-  enlaceBtn.title = tr('renderer.tasks.tooltips.link_open');
+  enlaceBtn.title = tr('renderer.tasks.columns.tooltips.link_open');
   enlaceBtn.setAttribute('aria-label', enlaceBtn.title);
   enlaceBtn.addEventListener('click', async () => {
     const raw = enlaceInput.value;
@@ -522,13 +522,13 @@ function renderRow(row) {
   if (snapshotRelPath) {
     const snapshotBtn = buildActionButton(
       '📥',
-      'renderer.tasks.tooltips.snapshot_load',
+      'renderer.tasks.columns.tooltips.snapshot_load',
       () => {
         loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
       }
     );
     snapshotBtn.classList.add('icon-btn--tiny');
-    const snapshotTitle = tr('renderer.tasks.tooltips.snapshot_load');
+    const snapshotTitle = tr('renderer.tasks.columns.tooltips.snapshot_load');
     snapshotBtn.title = `${snapshotTitle} ${snapshotRelPath}`.trim();
     snapshotBtn.setAttribute('aria-label', snapshotBtn.title);
     commentActions.appendChild(snapshotBtn);
@@ -537,7 +537,7 @@ function renderRow(row) {
   commentBtn.type = 'button';
   commentBtn.className = 'icon-btn icon-btn--tiny';
   commentBtn.textContent = '💬';
-  commentBtn.title = tr('renderer.tasks.tooltips.comment');
+  commentBtn.title = tr('renderer.tasks.columns.tooltips.comment');
   commentBtn.setAttribute('aria-label', commentBtn.title);
   commentBtn.addEventListener('click', () => {
     pendingCommentRowId = row.id;
@@ -554,10 +554,10 @@ function renderRow(row) {
   const actionsWrap = document.createElement('div');
   actionsWrap.className = 'cell-actions';
 
-  const btnUp = buildActionButton('↑', 'renderer.tasks.tooltips.move_up', () => moveRow(row.id, -1));
-  const btnDown = buildActionButton('↓', 'renderer.tasks.tooltips.move_down', () => moveRow(row.id, 1));
-  const btnDelete = buildActionButton('🗑', 'renderer.tasks.tooltips.delete_row', () => deleteRow(row.id));
-  const btnSaveLib = buildActionButton('💾', 'renderer.tasks.tooltips.library_row_save', () => {
+  const btnUp = buildActionButton('↑', 'renderer.tasks.columns.tooltips.move_up', () => moveRow(row.id, -1));
+  const btnDown = buildActionButton('↓', 'renderer.tasks.columns.tooltips.move_down', () => moveRow(row.id, 1));
+  const btnDelete = buildActionButton('🗑', 'renderer.tasks.columns.tooltips.delete_row', () => deleteRow(row.id));
+  const btnSaveLib = buildActionButton('💾', 'renderer.tasks.columns.tooltips.library_row_save', () => {
     pendingLibraryRowId = row.id;
     openModal(includeCommentModal);
   });
@@ -884,7 +884,7 @@ function renderLibraryItems(items) {
     const actions = document.createElement('div');
     actions.className = 'cell-actions';
 
-    const btnLoad = buildActionButton('📥', 'renderer.tasks.tooltips.library_row_load', () => {
+    const btnLoad = buildActionButton('📥', 'renderer.tasks.biblioteca.library_row_load', () => {
       addRow({
         texto: entry.texto,
         tiempoSeconds: Number(entry.tiempoSeconds) || 0,
@@ -895,7 +895,7 @@ function renderLibraryItems(items) {
       });
       closeModal(libraryModal);
     });
-    const btnDelete = buildActionButton('🗑', 'renderer.tasks.tooltips.library_row_delete', async () => {
+    const btnDelete = buildActionButton('🗑', 'renderer.tasks.biblioteca.library_row_delete', async () => {
       const api = getTaskEditorApi('deleteLibraryEntry');
       if (!api) return;
       const delRes = await api.deleteLibraryEntry(entry.texto);
@@ -974,13 +974,13 @@ async function saveRowToLibrary(includeComment) {
 async function applyTaskEditorTranslations() {
   await ensureTaskEditorTranslations(idiomaActual);
   document.title = tr('renderer.tasks.title');
-  if (taskNameLabel) taskNameLabel.textContent = tr('renderer.tasks.labels.name');
-  if (taskSummaryTotalLabel) taskSummaryTotalLabel.textContent = tr('renderer.tasks.labels.summary_total');
-  if (taskSummaryLeftLabel) taskSummaryLeftLabel.textContent = tr('renderer.tasks.labels.summary_left');
-  if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.buttons.save');
-  if (btnTaskDelete) btnTaskDelete.textContent = tr('renderer.tasks.buttons.delete');
-  if (btnTaskAddRow) btnTaskAddRow.textContent = tr('renderer.tasks.buttons.add_row');
-  if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.buttons.open_library');
+  if (taskNameLabel) taskNameLabel.textContent = tr('renderer.tasks.name');
+  if (taskSummaryTotalLabel) taskSummaryTotalLabel.textContent = tr('renderer.tasks.summary_total');
+  if (taskSummaryLeftLabel) taskSummaryLeftLabel.textContent = tr('renderer.tasks.summary_left');
+  if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.save_button');
+  if (btnTaskDelete) btnTaskDelete.textContent = tr('renderer.tasks.delete_button');
+  if (btnTaskAddRow) btnTaskAddRow.textContent = tr('renderer.tasks.add_row_button');
+  if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.open_library_button');
 
   if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto');
   if (thTiempo) thTiempo.textContent = tr('renderer.tasks.columns.tiempo');
@@ -990,33 +990,33 @@ async function applyTaskEditorTranslations() {
   if (thComentario) thComentario.textContent = tr('renderer.tasks.columns.comentario');
   if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones');
 
-  if (commentTitle) commentTitle.textContent = tr('renderer.tasks.modals.comment_title');
-  if (commentSave) commentSave.textContent = tr('renderer.tasks.buttons.save');
-  if (commentCancel) commentCancel.textContent = tr('renderer.tasks.buttons.cancel');
+  if (commentTitle) commentTitle.textContent = tr('renderer.tasks.comentario_modal.comment_title');
+  if (commentSave) commentSave.textContent = tr('renderer.tasks.save_button');
+  if (commentCancel) commentCancel.textContent = tr('renderer.tasks.guardar_lectura_modal.cancel');
   if (commentSnapshotSelect) {
-    commentSnapshotSelect.textContent = tr('renderer.tasks.buttons.select_snapshot');
-    commentSnapshotSelect.title = tr('renderer.tasks.tooltips.snapshot_select');
+    commentSnapshotSelect.textContent = tr('renderer.tasks.comentario_modal.snapshot_select');
+    commentSnapshotSelect.title = tr('renderer.tasks.comentario_modal.snapshot_select_tooltip');
     commentSnapshotSelect.setAttribute('aria-label', commentSnapshotSelect.title || commentSnapshotSelect.textContent || '');
   }
   if (commentSnapshotClear) {
     commentSnapshotClear.textContent = '🗙';
-    commentSnapshotClear.title = tr('renderer.tasks.tooltips.snapshot_clear');
+    commentSnapshotClear.title = tr('renderer.tasks.comentario_modal.snapshot_clear');
     commentSnapshotClear.setAttribute('aria-label', commentSnapshotClear.title || '');
   }
 
-  if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title');
-  if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.labels.search');
+  if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.biblioteca.library_title');
+  if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.biblioteca.search');
   if (librarySearchInput) {
-    librarySearchInput.setAttribute('placeholder', tr('renderer.tasks.labels.search_placeholder'));
+    librarySearchInput.setAttribute('placeholder', tr('renderer.tasks.biblioteca.search_placeholder'));
   }
 
-  if (includeCommentTitle) includeCommentTitle.textContent = tr('renderer.tasks.modals.library_save_title');
-  if (includeCommentText) includeCommentText.textContent = tr('renderer.tasks.modals.library_save_question');
-  if (includeCommentYes) includeCommentYes.textContent = tr('renderer.tasks.buttons.yes');
-  if (includeCommentNo) includeCommentNo.textContent = tr('renderer.tasks.buttons.no');
-  if (includeCommentCancel) includeCommentCancel.textContent = tr('renderer.tasks.buttons.cancel');
+  if (includeCommentTitle) includeCommentTitle.textContent = tr('renderer.tasks.guardar_lectura_modal.library_save_title');
+  if (includeCommentText) includeCommentText.textContent = tr('renderer.tasks.guardar_lectura_modal.library_save_question');
+  if (includeCommentYes) includeCommentYes.textContent = tr('renderer.tasks.guardar_lectura_modal.yes');
+  if (includeCommentNo) includeCommentNo.textContent = tr('renderer.tasks.guardar_lectura_modal.no');
+  if (includeCommentCancel) includeCommentCancel.textContent = tr('renderer.tasks.guardar_lectura_modal.cancel');
 
-  if (libraryEmpty) libraryEmpty.textContent = tr('renderer.tasks.labels.empty');
+  if (libraryEmpty) libraryEmpty.textContent = tr('renderer.tasks.biblioteca.empty');
 
   renderTable();
 }
@@ -1125,7 +1125,7 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'func
       window.taskEditorAPI.confirmClose();
       return;
     }
-    if (window.Notify.confirmMain('renderer.tasks.confirm.close_unsaved')) {
+    if (window.Notify.confirmMain('renderer.tasks.alerts.close_unsaved')) {
       window.taskEditorAPI.confirmClose();
     }
   });

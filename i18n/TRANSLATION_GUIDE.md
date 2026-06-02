@@ -551,6 +551,189 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] texto actual
         }
       },
+      "speed": {
+        "title": {
+          "es": "VELOCIDAD DE LECTURA",
+          "en": "READING SPEED"
+          // [CONCEPTO_APP] velocidad de lectura
+        },
+        "wpm_label": {
+          "es": "palabras por minuto (WPM)",
+          "en": "words per minute (WPM)"
+          // [CONCEPTO_APP] velocidad de lectura; palabras por minuto (WPM)
+          // [PROTEGIDO] `WPM`
+        }
+      },
+      "results": {
+        "title": {
+          "es": "RESULTADOS DEL CONTEO",
+          "en": "COUNT RESULTS"
+          // [PROPÓSITO] Título de la sección que muestra el tiempo estimado de lectura y el conteo de palabras y caracteres del texto actual.
+        },
+        "time_label": {
+          "es": "⏱ Tiempo estimado de lectura: ",
+          "en": "⏱ Estimated reading time: "
+          // [CONCEPTO_APP] tiempo estimado de lectura
+          // [PROTEGIDO] `⏱`
+        },
+        "words": {
+          "es": "Palabras: {n}",
+          "en": "Words: {n}"
+          // [PROPÓSITO] Label de cantidad de palabras del texto actual
+          // [CONCEPTO_APP] texto actual
+        },
+        "chars_no_space": {
+          "es": "Caracteres (sin espacios): {n}",
+          "en": "Characters (no spaces): {n}"
+          // [PROPÓSITO] Label de cantidad de caracteres sin espacio del texto actual
+          // [CONCEPTO_APP] texto actual
+        },
+        "chars": {
+          "es": "Caracteres: {n}",
+          "en": "Characters: {n}"
+          // [PROPÓSITO] Label de cantidad de caracteres del texto actual
+          // [CONCEPTO_APP] texto actual
+        },
+        "value_pending": {
+          "es": "pendiente...",
+          "en": "pending..."
+          // [PROPÓSITO] Valor temporal mostrado mientras los resultados de conteo del texto actual aún no están listos.
+          // [CONCEPTO_APP] texto actual
+        },
+        "value_unavailable": {
+          "es": "no disponible",
+          "en": "unavailable"
+          // [PROPÓSITO] Valor de resguardo cuando un resultado de conteo del texto actual no puede mostrarse.
+          // [CONCEPTO_APP] texto actual
+        },
+        "precise_mode": {
+          "es": "Modo preciso",
+          "en": "Precise mode"
+          // [CONCEPTO_APP] modo preciso
+        },
+        "precise_tooltip": {
+          "es": "Basado en Intl.Segmenter",
+          "en": "Based on Intl.Segmenter"
+          // [PROPÓSITO] Tooltip técnico del modo preciso de conteo; describe la base de segmentación usada para calcular la cantidad de palabras y caracteres.
+          // [CONCEPTO_APP] modo preciso
+          // [PROTEGIDO] `Intl.Segmenter`
+        }
+      },
+      "crono": {
+        "title": {
+          "es": "CRONÓMETRO",
+          "en": "STOPWATCH"
+          // [CONCEPTO_APP] Cronómetro
+        },
+        "speed": {
+          "es": "Velocidad:",
+          "en": "Speed:"
+          // [CONCEPTO_APP] Cronómetro; velocidad de lectura
+        },
+        "controls_label": {
+          "es": "Controles del cronómetro",
+          "en": "Stopwatch controls"
+          // [CONCEPTO_APP] Cronómetro
+        }
+      },
+      "processing": {
+        "current_text_waiting": {
+          "es": "Actualizando el texto actual...",
+          "en": "Updating current text..."
+          // [PROPÓSITO] Estado de procesamiento mientras la app aplica o actualiza el texto actual, antes de que la UI vuelva a estar estable.
+          // [CONCEPTO_APP] texto actual
+          // [NO_CONFUNDIR] No es estado de extracción de texto desde archivo; pertenece al asentamiento del texto actual.
+        },
+        "current_text_recount_waiting": {
+          "es": "Recalculando los resultados del texto actual...",
+          "en": "Recalculating current text results..."
+          // [PROPÓSITO] Estado de procesamiento mientras se recalculan conteos/resultados del texto actual.
+          // [CONCEPTO_APP] texto actual
+          // [NO_CONFUNDIR] No indica extracción de texto ni OCR; indica reconteo del texto actual.
+        },
+        "current_text_waiting_startup": {
+          "es": "Asentando el texto actual...",
+          "en": "Settling current text..."
+          // [PROPÓSITO] Estado de arranque mientras la app estabiliza el texto actual inicial y sus resultados.
+          // [CONCEPTO_APP] texto actual
+        },
+        "current_text_waiting_editor": {
+          "es": "Sincronizando cambios del Editor de Texto...",
+          "en": "Syncing Text Editor changes..."
+          // [PROPÓSITO] Estado de sincronización cuando cambios del Editor de Texto se están aplicando al texto actual.
+          // [CONCEPTO_APP] Editor de Texto; texto actual
+        },
+        "text_extraction_placeholder": {
+          "es": "Procesando extracción...",
+          "en": "Extracting text..."
+          // [CONCEPTO_APP] extracción de texto
+        },
+        "text_extraction_preparing": {
+          "es": "Preparando la ruta de extracción...",
+          "en": "Preparing extraction route..."
+          // [PROPÓSITO] Estado previo a ejecutar extracción: la app está resolviendo ruta/opciones antes del procesamiento efectivo.
+          // [CONCEPTO_APP] extracción de texto; ruta de extracción
+        },
+        "text_extraction_cancellation_pending": {
+          "es": "Cancelación solicitada. Por favor, espera...",
+          "en": "Cancellation requested. Please wait..."
+        },
+        "text_extraction_waiting_native": {
+          "es": "Extrayendo texto del archivo...",
+          "en": "Extracting text from file..."
+          // [PROPÓSITO] Estado de ejecución cuando la extracción usa la ruta nativa/local.
+          // [CONCEPTO_APP] extracción de texto; ruta nativa
+        },
+        "text_extraction_waiting_ocr": {
+          "es": "Ejecutando extracción OCR...",
+          "en": "Running OCR extraction..."
+          // [PROPÓSITO] Estado de ejecución cuando la extracción usa OCR.
+          // [CONCEPTO_APP] extracción de texto; OCR
+          // [PROTEGIDO] `OCR`
+        },
+        "text_extraction_waiting_ocr_delayed": {
+          "es": "Ejecutando OCR. Algunos archivos tardan más. Por favor, espera...",
+          "en": "Running OCR. Some files take longer. Please wait..."
+          // [PROPÓSITO] Estado prolongado de OCR para indicar espera normal en archivos que tardan más.
+          // [CONCEPTO_APP] extracción de texto; OCR
+          // [PROTEGIDO] `OCR`
+        },
+        "text_extraction_unit_progress": {
+          "es": "Unidad {index}/{count}",
+          "en": "Unit {index}/{count}"
+          // [PROPÓSITO] Progreso por unidad de extracción por lotes.
+          // [CONCEPTO_APP] extracción por lotes; unidad de extracción por lotes
+        },
+        "text_extraction_input_progress": {
+          "es": "Ítem {index}/{count}",
+          "en": "Item {index}/{count}"
+          // [PROPÓSITO] Progreso por ítem dentro de una unidad de extracción por lotes.
+          // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes
+        },
+        "text_extraction_route_native": {
+          "es": "Nativa",
+          "en": "Native"
+          // [PROPÓSITO] Label corto de ruta de extracción nativa/local en estados de procesamiento.
+          // [CONCEPTO_APP] ruta nativa
+        },
+        "text_extraction_route_ocr": {
+          "es": "OCR",
+          "en": "OCR"
+          // [PROPÓSITO] Label corto de ruta OCR en estados de procesamiento.
+          // [CONCEPTO_APP] OCR
+          // [PROTEGIDO] `OCR`
+        },
+        "text_extraction_elapsed": {
+          "es": "Transcurrido: ",
+          "en": "Elapsed: "
+          // [PROPÓSITO] Señala el tiempo transcurrido en vivo en la barra de progreso
+        },
+        "text_extraction_drop_here": {
+          "es": "Suelta aquí para extraer texto",
+          "en": "Drop here to extract text"
+          // [CONCEPTO_APP] extracción de texto
+        }
+      },
       "tooltips": {
         "text_extraction": {
           "es": "Extraer texto de archivos",
@@ -737,189 +920,6 @@ Estados de revisión recomendados:
           "es": "Controles del Cronómetro Flotante",
           "en": "Floating Stopwatch controls"
           // [CONCEPTO_APP] Cronómetro Flotante
-        }
-      },
-      "speed": {
-        "title": {
-          "es": "VELOCIDAD DE LECTURA",
-          "en": "READING SPEED"
-          // [CONCEPTO_APP] velocidad de lectura
-        },
-        "wpm_label": {
-          "es": "palabras por minuto (WPM)",
-          "en": "words per minute (WPM)"
-          // [CONCEPTO_APP] velocidad de lectura; palabras por minuto (WPM)
-          // [PROTEGIDO] `WPM`
-        }
-      },
-      "results": {
-        "title": {
-          "es": "RESULTADOS DEL CONTEO",
-          "en": "COUNT RESULTS"
-          // [PROPÓSITO] Título de la sección que muestra el tiempo estimado de lectura y el conteo de palabras y caracteres del texto actual.
-        },
-        "time_label": {
-          "es": "⏱ Tiempo estimado de lectura: ",
-          "en": "⏱ Estimated reading time: "
-          // [CONCEPTO_APP] tiempo estimado de lectura
-          // [PROTEGIDO] `⏱`
-        },
-        "words": {
-          "es": "Palabras: {n}",
-          "en": "Words: {n}"
-          // [PROPÓSITO] Label de cantidad de palabras del texto actual
-          // [CONCEPTO_APP] texto actual
-        },
-        "chars_no_space": {
-          "es": "Caracteres (sin espacios): {n}",
-          "en": "Characters (no spaces): {n}"
-          // [PROPÓSITO] Label de cantidad de caracteres sin espacio del texto actual
-          // [CONCEPTO_APP] texto actual
-        },
-        "chars": {
-          "es": "Caracteres: {n}",
-          "en": "Characters: {n}"
-          // [PROPÓSITO] Label de cantidad de caracteres del texto actual
-          // [CONCEPTO_APP] texto actual
-        },
-        "value_pending": {
-          "es": "pendiente...",
-          "en": "pending..."
-          // [PROPÓSITO] Valor temporal mostrado mientras los resultados de conteo del texto actual aún no están listos.
-          // [CONCEPTO_APP] texto actual
-        },
-        "value_unavailable": {
-          "es": "no disponible",
-          "en": "unavailable"
-          // [PROPÓSITO] Valor de resguardo cuando un resultado de conteo del texto actual no puede mostrarse.
-          // [CONCEPTO_APP] texto actual
-        },
-        "precise_mode": {
-          "es": "Modo preciso",
-          "en": "Precise mode"
-          // [CONCEPTO_APP] modo preciso
-        },
-        "precise_tooltip": {
-          "es": "Basado en Intl.Segmenter",
-          "en": "Based on Intl.Segmenter"
-          // [PROPÓSITO] Tooltip técnico del modo preciso de conteo; describe la base de segmentación usada para calcular la cantidad de palabras y caracteres.
-          // [CONCEPTO_APP] modo preciso
-          // [PROTEGIDO] `Intl.Segmenter`
-        }
-      },
-      "crono": {
-        "title": {
-          "es": "CRONÓMETRO",
-          "en": "STOPWATCH"
-          // [CONCEPTO_APP] Cronómetro
-        },
-        "speed": {
-          "es": "Velocidad:",
-          "en": "Speed:"
-          // [CONCEPTO_APP] Cronómetro; velocidad de lectura
-        },
-        "controls_label": {
-          "es": "Controles del cronómetro",
-          "en": "Stopwatch controls"
-          // [CONCEPTO_APP] Cronómetro
-        }
-      },
-      "processing": {
-        "current_text_waiting": {
-          "es": "Actualizando el texto actual...",
-          "en": "Updating current text..."
-          // [PROPÓSITO] Estado de procesamiento mientras la app aplica o actualiza el texto actual, antes de que la UI vuelva a estar estable.
-          // [CONCEPTO_APP] texto actual
-          // [NO_CONFUNDIR] No es estado de extracción de texto desde archivo; pertenece al asentamiento del texto actual.
-        },
-        "current_text_recount_waiting": {
-          "es": "Recalculando los resultados del texto actual...",
-          "en": "Recalculating current text results..."
-          // [PROPÓSITO] Estado de procesamiento mientras se recalculan conteos/resultados del texto actual.
-          // [CONCEPTO_APP] texto actual
-          // [NO_CONFUNDIR] No indica extracción de texto ni OCR; indica reconteo del texto actual.
-        },
-        "current_text_waiting_startup": {
-          "es": "Asentando el texto actual...",
-          "en": "Settling current text..."
-          // [PROPÓSITO] Estado de arranque mientras la app estabiliza el texto actual inicial y sus resultados.
-          // [CONCEPTO_APP] texto actual
-        },
-        "current_text_waiting_editor": {
-          "es": "Sincronizando cambios del Editor de Texto...",
-          "en": "Syncing Text Editor changes..."
-          // [PROPÓSITO] Estado de sincronización cuando cambios del Editor de Texto se están aplicando al texto actual.
-          // [CONCEPTO_APP] Editor de Texto; texto actual
-        },
-        "text_extraction_placeholder": {
-          "es": "Procesando extracción...",
-          "en": "Extracting text..."
-          // [CONCEPTO_APP] extracción de texto
-        },
-        "text_extraction_preparing": {
-          "es": "Preparando la ruta de extracción...",
-          "en": "Preparing extraction route..."
-          // [PROPÓSITO] Estado previo a ejecutar extracción: la app está resolviendo ruta/opciones antes del procesamiento efectivo.
-          // [CONCEPTO_APP] extracción de texto; ruta de extracción
-        },
-        "text_extraction_cancellation_pending": {
-          "es": "Cancelación solicitada. Por favor, espera...",
-          "en": "Cancellation requested. Please wait..."
-        },
-        "text_extraction_waiting_native": {
-          "es": "Extrayendo texto del archivo...",
-          "en": "Extracting text from file..."
-          // [PROPÓSITO] Estado de ejecución cuando la extracción usa la ruta nativa/local.
-          // [CONCEPTO_APP] extracción de texto; ruta nativa
-        },
-        "text_extraction_waiting_ocr": {
-          "es": "Ejecutando extracción OCR...",
-          "en": "Running OCR extraction..."
-          // [PROPÓSITO] Estado de ejecución cuando la extracción usa OCR.
-          // [CONCEPTO_APP] extracción de texto; OCR
-          // [PROTEGIDO] `OCR`
-        },
-        "text_extraction_waiting_ocr_delayed": {
-          "es": "Ejecutando OCR. Algunos archivos tardan más. Por favor espera...",
-          "en": "Running OCR. Some files take longer. Please wait..."
-          // [PROPÓSITO] Estado prolongado de OCR para indicar espera normal en archivos que tardan más.
-          // [CONCEPTO_APP] extracción de texto; OCR
-          // [PROTEGIDO] `OCR`
-        },
-        "text_extraction_unit_progress": {
-          "es": "Unidad {index}/{count}",
-          "en": "Unit {index}/{count}"
-          // [PROPÓSITO] Progreso por unidad de extracción por lotes.
-          // [CONCEPTO_APP] extracción por lotes; unidad de extracción por lotes
-        },
-        "text_extraction_input_progress": {
-          "es": "Ítem {index}/{count}",
-          "en": "Item {index}/{count}"
-          // [PROPÓSITO] Progreso por ítem dentro de una unidad de extracción por lotes.
-          // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes
-        },
-        "text_extraction_route_native": {
-          "es": "Nativa",
-          "en": "Native"
-          // [PROPÓSITO] Label corto de ruta de extracción nativa/local en estados de procesamiento.
-          // [CONCEPTO_APP] ruta nativa
-        },
-        "text_extraction_route_ocr": {
-          "es": "OCR",
-          "en": "OCR"
-          // [PROPÓSITO] Label corto de ruta OCR en estados de procesamiento.
-          // [CONCEPTO_APP] OCR
-          // [PROTEGIDO] `OCR`
-        },
-        "text_extraction_elapsed": {
-          "es": "Transcurrido: ",
-          "en": "Elapsed: "
-          // [PROPÓSITO] Señala el tiempo transcurrido en vivo en la barra de progreso
-        },
-        "text_extraction_drop_here": {
-          "es": "Suelta aquí para extraer texto",
-          "en": "Drop here to extract text"
-          // [CONCEPTO_APP] extracción de texto
         }
       },
       "alerts": {
@@ -1247,6 +1247,108 @@ Estados de revisión recomendados:
           // [NO_CONFUNDIR] `Reveal` significa mostrar en el sistema de archivos, no abrir ni visualizar el PDF.
         }
       },
+      "single_file_heavy": {
+        "case_a_title": {
+          "es": "PDF completo demasiado grande para OCR",
+          "en": "Full PDF too large for OCR"
+          // [PROPÓSITO] Caso en que el PDF fuente completo supera el límite OCR y puede procesarse por partes.
+          // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR
+          // [PROTEGIDO] `PDF`; `OCR`
+        },
+        "case_a_message": {
+          "es": "El PDF completo supera el límite del proveedor OCR ({providerLimitMb} MB). Puedes procesarlo automáticamente por partes, conservando el archivo original. Alternativamente, puedes usar la ruta de extracción nativa.",
+          "en": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route."
+          // [PROPÓSITO] Explica que el PDF fuente completo supera el límite del proveedor OCR y ofrece alternativas.
+          // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR; ruta nativa
+          // [PROTEGIDO] `PDF`; `OCR`; `MB`
+          // [NO_CONFUNDIR] `procesar su extracción` es intencional: no promete extracción directa inmediata; anticipa el paso hacia el flujo/modal de procesamiento del PDF completo por partes.
+        },
+        "case_b_title": {
+          "es": "PDF generado demasiado grande para OCR",
+          "en": "Generated PDF too large for OCR"
+          // [PROPÓSITO] Caso en que el PDF generado desde un rango seleccionado supera el límite OCR.
+          // [CONCEPTO_APP] PDF generado; OCR
+          // [PROTEGIDO] `PDF`; `OCR`
+        },
+        "case_b_message": {
+          "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a la selección de páginas, usar la ruta nativa o procesar el PDF completo por partes.",
+          "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route, or process the full PDF in parts."
+          // [PROPÓSITO] Explica que el PDF generado para el rango no se subió por exceder el límite OCR y ofrece alternativas.
+          // [CONCEPTO_APP] PDF generado; selección de páginas PDF; OCR; ruta nativa; PDF completo por partes
+          // [PROTEGIDO] `PDF`; `OCR`; `MB`
+        },
+        "source_file_label": {
+          "es": "PDF fuente:",
+          "en": "Source PDF:"
+          // [PROPÓSITO] Label del PDF fuente original en la ventana de PDF pesado.
+          // [CONCEPTO_APP] PDF fuente
+        },
+        "selected_range_label": {
+          "es": "Rango seleccionado:",
+          "en": "Selected range:"
+          // [CONCEPTO_APP] selección de páginas PDF
+        },
+        "generated_pdf_label": {
+          "es": "PDF generado:",
+          "en": "Generated PDF:"
+          // [PROPÓSITO] Label del PDF generado desde selección de páginas en la ventana de PDF pesado.
+          // [CONCEPTO_APP] PDF generado
+          // [PROTEGIDO] `PDF`
+        },
+        "generated_pdf_size_label": {
+          "es": "Tamaño del PDF generado:",
+          "en": "Generated PDF size:"
+          // [CONCEPTO_APP] PDF generado
+          // [PROTEGIDO] `PDF`
+        },
+        "source_size_label": {
+          "es": "Tamaño del PDF fuente:",
+          "en": "Source PDF size:"
+          // [CONCEPTO_APP] PDF fuente
+        },
+        "total_pages_label": {
+          "es": "Páginas totales:",
+          "en": "Total pages:"
+          // [CONCEPTO_APP] PDF fuente
+        },
+        "split_button": {
+          "es": "Procesar el PDF por partes",
+          "en": "Process PDF in parts"
+          // [PROPÓSITO] Acción para ir a la ventana modal de extracción del PDF completo por partes.
+          // [CONCEPTO_APP] PDF completo por partes; PDF fuente
+          // [PROTEGIDO] `PDF`
+          // [NO_CONFUNDIR] Aunque el botón abre el camino de extracción por partes, su acción inmediata es procesar/planificar el PDF pesado por partes.
+        },
+        "return_to_pages_button": {
+          "es": "Volver a páginas",
+          "en": "Back to pages"
+          // [PROPÓSITO] Acción para volver a la selección de páginas del PDF.
+          // [CONCEPTO_APP] selección de páginas PDF
+        },
+        "use_native_button": {
+          "es": "Usar nativa",
+          "en": "Use native"
+          // [PROPÓSITO] Acción para usar ruta nativa como alternativa al OCR en este caso.
+          // [CONCEPTO_APP] ruta nativa
+        },
+        "reveal_generated_pdf_button": {
+          "es": "Mostrar PDF guardado",
+          "en": "Reveal saved PDF"
+          // [PROPÓSITO] Acción para mostrar la carpeta del PDF generado guardado, disponible si el usuario eligió conservarlo previamente.
+          // [CONCEPTO_APP] PDF generado; PDF guardado
+          // [PROTEGIDO] `PDF`
+          // [NO_CONFUNDIR] `Reveal` significa mostrar en el sistema de archivos, no abrir ni visualizar el PDF.
+        },
+        "cancel_button": {
+          "es": "Cancelar",
+          "en": "Cancel"
+        },
+        "close_aria": {
+          "es": "Cerrar ventana de PDF pesado para OCR",
+          "en": "Close heavy PDF for OCR window"
+          // [PROTEGIDO] `PDF`; `OCR`
+        }
+      },
       "batch_plan": {
         "title": {
           "es": "Planificar extracción por lotes",
@@ -1388,13 +1490,6 @@ Estados de revisión recomendados:
           "en": "Omit the failed item and continue inside the same unit"
           // [PROPÓSITO] Política de fallo de la extracción de texto que omite el ítem con extracción fallida y continúa dentro de la misma unidad.
           // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; unidad de extracción por lotes
-        },
-        "overwrite_confirm": {
-          "es": "Esto reemplazará el texto actual cuando comience la extracción. ¿Deseas continuar?",
-          "en": "This will replace the current text when extraction starts. Do you want to continue?"
-          // [PROPÓSITO] Confirmación previa al inicio de una extracción por lotes que aplicará el resultado reemplazando el texto actual.
-          // [CONCEPTO_APP] extracción por lotes; texto actual; reemplazar texto actual
-          // [NO_CONFUNDIR] No se refiere a sobrescribir archivos ni snapshots; se refiere al texto actual de la ventana principal.
         },
         "start_button": {
           "es": "Iniciar extracción",
@@ -1543,109 +1638,14 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] snapshot de texto; unidad de extracción por lotes
         }
       },
-      "single_file_heavy": {
-        "case_a_title": {
-          "es": "PDF completo demasiado grande para OCR",
-          "en": "Full PDF too large for OCR"
-          // [PROPÓSITO] Caso en que el PDF fuente completo supera el límite OCR y puede procesarse por partes.
-          // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR
-          // [PROTEGIDO] `PDF`; `OCR`
-        },
-        "case_a_message": {
-          "es": "El PDF completo supera el límite del proveedor OCR ({providerLimitMb} MB). Puedes procesarlo automáticamente por partes, conservando el archivo original. Alternativamente, puedes usar la ruta de extracción nativa.",
-          "en": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route."
-          // [PROPÓSITO] Explica que el PDF fuente completo supera el límite del proveedor OCR y ofrece alternativas.
-          // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR; ruta nativa
-          // [PROTEGIDO] `PDF`; `OCR`; `MB`
-          // [NO_CONFUNDIR] `procesar su extracción` es intencional: no promete extracción directa inmediata; anticipa el paso hacia el flujo/modal de procesamiento del PDF completo por partes.
-        },
-        "case_b_title": {
-          "es": "PDF generado demasiado grande para OCR",
-          "en": "Generated PDF too large for OCR"
-          // [PROPÓSITO] Caso en que el PDF generado desde un rango seleccionado supera el límite OCR.
-          // [CONCEPTO_APP] PDF generado; OCR
-          // [PROTEGIDO] `PDF`; `OCR`
-        },
-        "case_b_message": {
-          "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a la selección de páginas, usar la ruta nativa o procesar el PDF completo por partes.",
-          "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route, or process the full PDF in parts."
-          // [PROPÓSITO] Explica que el PDF generado para el rango no se subió por exceder el límite OCR y ofrece alternativas.
-          // [CONCEPTO_APP] PDF generado; selección de páginas PDF; OCR; ruta nativa; PDF completo por partes
-          // [PROTEGIDO] `PDF`; `OCR`; `MB`
-        },
-        "source_file_label": {
-          "es": "PDF fuente:",
-          "en": "Source PDF:"
-          // [PROPÓSITO] Label del PDF fuente original en la ventana de PDF pesado.
-          // [CONCEPTO_APP] PDF fuente
-        },
-        "selected_range_label": {
-          "es": "Rango seleccionado:",
-          "en": "Selected range:"
-          // [CONCEPTO_APP] selección de páginas PDF
-        },
-        "generated_pdf_label": {
-          "es": "PDF generado:",
-          "en": "Generated PDF:"
-          // [PROPÓSITO] Label del PDF generado desde selección de páginas en la ventana de PDF pesado.
-          // [CONCEPTO_APP] PDF generado
-          // [PROTEGIDO] `PDF`
-        },
-        "generated_pdf_size_label": {
-          "es": "Tamaño del PDF generado:",
-          "en": "Generated PDF size:"
-          // [CONCEPTO_APP] PDF generado
-          // [PROTEGIDO] `PDF`
-        },
-        "source_size_label": {
-          "es": "Tamaño del PDF fuente:",
-          "en": "Source PDF size:"
-          // [CONCEPTO_APP] PDF fuente
-        },
-        "total_pages_label": {
-          "es": "Páginas totales:",
-          "en": "Total pages:"
-          // [CONCEPTO_APP] PDF fuente
-        },
-        "split_button": {
-          "es": "Procesar el PDF por partes",
-          "en": "Process PDF in parts"
-          // [PROPÓSITO] Acción para ir a la ventana modal de extracción del PDF completo por partes.
-          // [CONCEPTO_APP] PDF completo por partes; PDF fuente
-          // [PROTEGIDO] `PDF`
-          // [NO_CONFUNDIR] Aunque el botón abre el camino de extracción por partes, su acción inmediata es procesar/planificar el PDF pesado por partes.
-        },
-        "return_to_pages_button": {
-          "es": "Volver a páginas",
-          "en": "Back to pages"
-          // [PROPÓSITO] Acción para volver a la selección de páginas del PDF.
-          // [CONCEPTO_APP] selección de páginas PDF
-        },
-        "use_native_button": {
-          "es": "Usar nativa",
-          "en": "Use native"
-          // [PROPÓSITO] Acción para usar ruta nativa como alternativa al OCR en este caso.
-          // [CONCEPTO_APP] ruta nativa
-        },
-        "reveal_generated_pdf_button": {
-          "es": "Mostrar PDF guardado",
-          "en": "Reveal saved PDF"
-          // [PROPÓSITO] Acción para mostrar la carpeta del PDF generado guardado, disponible si el usuario eligió conservarlo previamente.
-          // [CONCEPTO_APP] PDF generado; PDF guardado
-          // [PROTEGIDO] `PDF`
-          // [NO_CONFUNDIR] `Reveal` significa mostrar en el sistema de archivos, no abrir ni visualizar el PDF.
-        },
-        "cancel_button": {
-          "es": "Cancelar",
-          "en": "Cancel"
-        },
-        "close_aria": {
-          "es": "Cerrar ventana de PDF pesado para OCR",
-          "en": "Close heavy PDF for OCR window"
-          // [PROTEGIDO] `PDF`; `OCR`
-        }
-      },
       "alerts": {
+        "overwrite_confirm": {
+          "es": "Esto reemplazará el texto actual cuando comience la extracción. ¿Deseas continuar?",
+          "en": "This will replace the current text when extraction starts. Do you want to continue?"
+          // [PROPÓSITO] Confirmación previa al inicio de una extracción por lotes que aplicará el resultado reemplazando el texto actual.
+          // [CONCEPTO_APP] extracción por lotes; texto actual; reemplazar texto actual
+          // [NO_CONFUNDIR] No se refiere a sobrescribir archivos ni snapshots; se refiere al texto actual de la ventana principal.
+        },
         "start_error": {
           "es": "Ocurrió un error al iniciar la extracción.",
           "en": "An error occurred while starting extraction."
@@ -1756,6 +1756,30 @@ Estados de revisión recomendados:
             // [PROPÓSITO] Alerta cuando falla la creación del PDF generado de páginas seleccionadas.
             // [CONCEPTO_APP] PDF generado; selección de páginas PDF
             // [PROTEGIDO] `PDF`
+          }
+        },
+        "native": {
+          "runtime_error": {
+            "es": "Ocurrió un error en la ejecución de la extracción nativa.",
+            "en": "A native extraction runtime error occurred."
+            // [CONCEPTO_APP] ruta nativa; extracción de texto
+          },
+          "unreadable_or_corrupt": {
+            "es": "El archivo seleccionado es ilegible o está corrupto para extracción nativa.",
+            "en": "The selected file is unreadable or corrupt for native extraction."
+            // [CONCEPTO_APP] ruta nativa; extracción de texto
+          },
+          "encrypted_or_password_protected": {
+            "es": "El PDF seleccionado está cifrado o protegido por contraseña y no puede extraerse por ruta nativa.",
+            "en": "The selected PDF is encrypted or password-protected and cannot be extracted natively."
+            // [PROPÓSITO] Alerta específica de PDF cifrado/protegido cuando la ruta nativa no puede extraerlo.
+            // [CONCEPTO_APP] ruta nativa; PDF fuente; extracción de texto
+            // [PROTEGIDO] `PDF`
+          },
+          "cancelled": {
+            "es": "La extracción nativa fue cancelada.",
+            "en": "Native extraction was cancelled."
+            // [CONCEPTO_APP] ruta nativa; extracción de texto
           }
         },
         "ocr": {
@@ -1877,65 +1901,41 @@ Estados de revisión recomendados:
             // [PROPÓSITO] Advertencia de limpieza remota fallida del documento temporal usado por OCR.
             // [CONCEPTO_APP] OCR; Google OCR; extracción de texto
             // [PROTEGIDO] `OCR`; `Google Drive`
-          }
-        },
-        "batch_ocr": {
-          "activation_required": {
-            "es": "Este lote incluye ítems con OCR, pero Google OCR no está activado. Usa Preferencias > Activar Google OCR y luego vuelve a iniciar la extracción.",
-            "en": "This batch includes OCR items, but Google OCR is not enabled. Use Preferences > Enable Google OCR, then start the extraction again."
-            // [PROPÓSITO] Alerta previa a lote con ítems OCR cuando Google OCR no está activado.
-            // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; OCR; Google OCR; token local OCR
-            // [PROTEGIDO] `OCR`; `Google OCR`
           },
-          "token_state_invalid": {
-            "es": "Este lote incluye ítems con OCR, pero el estado guardado de inicio de sesión de Google OCR no es válido. Usa Preferencias > Activar Google OCR de nuevo y luego vuelve a iniciar la extracción.",
-            "en": "This batch includes OCR items, but the saved Google OCR sign-in state is invalid. Use Preferences > Enable Google OCR again, then start the extraction again."
-            // [PROPÓSITO] Alerta previa a lote con OCR cuando el estado guardado de inicio de sesión no es válido.
-            // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
-            // [PROTEGIDO] `OCR`; `Google OCR`
-          },
-          "connectivity_failed": {
-            "es": "Este lote incluye ítems con OCR, pero OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo antes de iniciar la extracción.",
-            "en": "This batch includes OCR items, but OCR requires an internet connection. Check your connection and try again before starting the extraction."
-            // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
-            // [PROTEGIDO] `OCR`
-          },
-          "quota_or_rate_limited": {
-            "es": "Este lote incluye ítems con OCR, pero OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo antes de iniciar la extracción.",
-            "en": "This batch includes OCR items, but OCR is temporarily blocked by quota/rate limits. Wait and try again before starting the extraction."
-            // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
-            // [PROTEGIDO] `OCR`
-          },
-          "unavailable": {
-            "es": "Este lote incluye ítems con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está activado, usa Preferencias > Activar Google OCR. Si ya estaba activado, revisa el estado/configuración de OCR y vuelve a intentarlo antes de iniciar la extracción.",
-            "en": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise, check the OCR setup/status and try again before starting the extraction."
-            // [PROPÓSITO] Alerta previa a lote cuando OCR no está disponible para ítems que lo requieren.
-            // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
-            // [PROTEGIDO] `OCR`; `Google OCR`
-          }
-        },
-        "native": {
-          "runtime_error": {
-            "es": "Ocurrió un error en la ejecución de la extracción nativa.",
-            "en": "A native extraction runtime error occurred."
-            // [CONCEPTO_APP] ruta nativa; extracción de texto
-          },
-          "unreadable_or_corrupt": {
-            "es": "El archivo seleccionado es ilegible o está corrupto para extracción nativa.",
-            "en": "The selected file is unreadable or corrupt for native extraction."
-            // [CONCEPTO_APP] ruta nativa; extracción de texto
-          },
-          "encrypted_or_password_protected": {
-            "es": "El PDF seleccionado está cifrado o protegido por contraseña y no puede extraerse por ruta nativa.",
-            "en": "The selected PDF is encrypted or password-protected and cannot be extracted natively."
-            // [PROPÓSITO] Alerta específica de PDF cifrado/protegido cuando la ruta nativa no puede extraerlo.
-            // [CONCEPTO_APP] ruta nativa; PDF fuente; extracción de texto
-            // [PROTEGIDO] `PDF`
-          },
-          "cancelled": {
-            "es": "La extracción nativa fue cancelada.",
-            "en": "Native extraction was cancelled."
-            // [CONCEPTO_APP] ruta nativa; extracción de texto
+          "batch_ocr": {
+            "activation_required": {
+              "es": "Este lote incluye ítems con OCR, pero Google OCR no está activado. Usa Preferencias > Activar Google OCR y luego vuelve a iniciar la extracción.",
+              "en": "This batch includes OCR items, but Google OCR is not enabled. Use Preferences > Enable Google OCR, then start the extraction again."
+              // [PROPÓSITO] Alerta previa a lote con ítems OCR cuando Google OCR no está activado.
+              // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; OCR; Google OCR; token local OCR
+              // [PROTEGIDO] `OCR`; `Google OCR`
+            },
+            "token_state_invalid": {
+              "es": "Este lote incluye ítems con OCR, pero el estado guardado de inicio de sesión de Google OCR no es válido. Usa Preferencias > Activar Google OCR de nuevo y luego vuelve a iniciar la extracción.",
+              "en": "This batch includes OCR items, but the saved Google OCR sign-in state is invalid. Use Preferences > Enable Google OCR again, then start the extraction again."
+              // [PROPÓSITO] Alerta previa a lote con OCR cuando el estado guardado de inicio de sesión no es válido.
+              // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
+              // [PROTEGIDO] `OCR`; `Google OCR`
+            },
+            "connectivity_failed": {
+              "es": "Este lote incluye ítems con OCR, pero OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo antes de iniciar la extracción.",
+              "en": "This batch includes OCR items, but OCR requires an internet connection. Check your connection and try again before starting the extraction."
+              // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
+              // [PROTEGIDO] `OCR`
+            },
+            "quota_or_rate_limited": {
+              "es": "Este lote incluye ítems con OCR, pero OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo antes de iniciar la extracción.",
+              "en": "This batch includes OCR items, but OCR is temporarily blocked by quota/rate limits. Wait and try again before starting the extraction."
+              // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
+              // [PROTEGIDO] `OCR`
+            },
+            "unavailable": {
+              "es": "Este lote incluye ítems con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está activado, usa Preferencias > Activar Google OCR. Si ya estaba activado, revisa el estado/configuración de OCR y vuelve a intentarlo antes de iniciar la extracción.",
+              "en": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise, check the OCR setup/status and try again before starting the extraction."
+              // [PROPÓSITO] Alerta previa a lote cuando OCR no está disponible para ítems que lo requieren.
+              // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
+              // [PROTEGIDO] `OCR`; `Google OCR`
+            }
           }
         }
       }
@@ -1998,6 +1998,74 @@ Estados de revisión recomendados:
         "en": "Clear"
         // [PROPÓSITO] Borrar todo el texto del Editor de Texto.
         // [CONCEPTO_APP] Editor de Texto
+      },
+      "editor_find": {
+        "input_placeholder": {
+          "es": "Buscar...",
+          "en": "Find..."
+        },
+        "input_aria": {
+          "es": "Buscar en el texto",
+          "en": "Find in text"
+        },
+        "expand_title": {
+          "es": "Mostrar reemplazo",
+          "en": "Show replace controls"
+        },
+        "collapse_title": {
+          "es": "Ocultar reemplazo",
+          "en": "Hide replace controls"
+        },
+        "replace_placeholder": {
+          "es": "Reemplazar...",
+          "en": "Replace..."
+        },
+        "replace_aria": {
+          "es": "Texto de reemplazo",
+          "en": "Replacement text"
+        },
+        "replace": {
+          "es": "Reemplazar",
+          "en": "Replace"
+          // [NO_CONFUNDIR] Aquí `Replace` pertenece a buscar/reemplazar dentro del Editor de Texto, no a la acción reemplazar/agregar del texto actual.
+        },
+        "replace_all": {
+          "es": "Reemplazar todo",
+          "en": "Replace all"
+          // [NO_CONFUNDIR] Aquí `Replace all` reemplaza coincidencias de búsqueda dentro del Editor de Texto, no el texto actual completo.
+        },
+        "prev_title": {
+          "es": "Coincidencia anterior",
+          "en": "Previous match"
+        },
+        "next_title": {
+          "es": "Coincidencia siguiente",
+          "en": "Next match"
+        },
+        "close_title": {
+          "es": "Cerrar barra de búsqueda",
+          "en": "Close find bar"
+        },
+        "replace_title": {
+          "es": "Reemplazar coincidencia actual",
+          "en": "Replace current match"
+        },
+        "replace_all_title": {
+          "es": "Reemplazar todas las coincidencias",
+          "en": "Replace all matches"
+        },
+        "replace_timeout": {
+          "es": "El reemplazo tardó demasiado. Inténtalo de nuevo.",
+          "en": "Replace timed out. Try again."
+        },
+        "status_no_matches": {
+          "es": "Sin coincidencias",
+          "en": "No matches"
+        },
+        "status_empty_query": {
+          "es": "Escribe para buscar",
+          "en": "Type to search"
+        }
       },
       "alerts": {
         "start_failed": {
@@ -2069,115 +2137,7 @@ Estados de revisión recomendados:
         }
       }
     },
-    "editor_find": {
-      "input_placeholder": {
-        "es": "Buscar...",
-        "en": "Find..."
-      },
-      "input_aria": {
-        "es": "Buscar en el texto",
-        "en": "Find in text"
-      },
-      "expand_title": {
-        "es": "Mostrar reemplazo",
-        "en": "Show replace controls"
-      },
-      "collapse_title": {
-        "es": "Ocultar reemplazo",
-        "en": "Hide replace controls"
-      },
-      "replace_placeholder": {
-        "es": "Reemplazar...",
-        "en": "Replace..."
-      },
-      "replace_aria": {
-        "es": "Texto de reemplazo",
-        "en": "Replacement text"
-      },
-      "replace": {
-        "es": "Reemplazar",
-        "en": "Replace"
-        // [NO_CONFUNDIR] Aquí `Replace` pertenece a buscar/reemplazar dentro del Editor de Texto, no a la acción reemplazar/agregar del texto actual.
-      },
-      "replace_all": {
-        "es": "Reemplazar todo",
-        "en": "Replace all"
-        // [NO_CONFUNDIR] Aquí `Replace all` reemplaza coincidencias de búsqueda dentro del Editor de Texto, no el texto actual completo.
-      },
-      "prev_title": {
-        "es": "Coincidencia anterior",
-        "en": "Previous match"
-      },
-      "next_title": {
-        "es": "Coincidencia siguiente",
-        "en": "Next match"
-      },
-      "close_title": {
-        "es": "Cerrar barra de búsqueda",
-        "en": "Close find bar"
-      },
-      "replace_title": {
-        "es": "Reemplazar coincidencia actual",
-        "en": "Replace current match"
-      },
-      "replace_all_title": {
-        "es": "Reemplazar todas las coincidencias",
-        "en": "Replace all matches"
-      },
-      "replace_timeout": {
-        "es": "El reemplazo tardó demasiado. Inténtalo de nuevo.",
-        "en": "Replace timed out. Try again."
-      },
-      "status_no_matches": {
-        "es": "Sin coincidencias",
-        "en": "No matches"
-      },
-      "status_empty_query": {
-        "es": "Escribe para buscar",
-        "en": "Type to search"
-      }
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": {
-          "es": "Snapshot de texto guardado.",
-          "en": "Text snapshot saved."
-          // [CONCEPTO_APP] snapshot de texto; texto actual
-        },
-        "save_error": {
-          "es": "No se pudo guardar el snapshot de texto.",
-          "en": "Could not save the text snapshot."
-          // [CONCEPTO_APP] snapshot de texto; texto actual
-        },
-        "load_success": {
-          "es": "Snapshot de texto cargado.",
-          "en": "Text snapshot loaded."
-          // [CONCEPTO_APP] snapshot de texto; texto actual
-        },
-        "load_error": {
-          "es": "No se pudo cargar el snapshot de texto.",
-          "en": "Could not load the text snapshot."
-          // [CONCEPTO_APP] snapshot de texto; texto actual
-        },
-        "outside": {
-          "es": "El snapshot de texto debe estar dentro de la carpeta de snapshots.",
-          "en": "The text snapshot must be inside the snapshots folder."
-          // [CONCEPTO_APP] snapshot de texto
-        },
-        "truncated": {
-          "es": "El snapshot de texto excedía el tamaño máximo y fue truncado.",
-          "en": "Text snapshot exceeded the maximum size and was truncated."
-          // [PROPÓSITO] El texto contenido por el snapshot fue aplicado al texto actual, pero fue truncado al superar el límite admitido por la app.
-          // [CONCEPTO_APP] snapshot de texto; texto actual
-        },
-        "unavailable": {
-          "es": "La función de snapshots de texto no está disponible.",
-          "en": "Text snapshot functionality is unavailable."
-          // [CONCEPTO_APP] snapshot de texto
-        }
-      }
-    },
-    "snapshot_save_tags": {
       "title": {
         "es": "Guardar snapshot de texto",
         "en": "Save text snapshot"
@@ -2388,6 +2348,44 @@ Estados de revisión recomendados:
             "en": "Hard"
           }
         }
+      },
+      "alerts": {
+        "save_success": {
+          "es": "Snapshot de texto guardado.",
+          "en": "Text snapshot saved."
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "save_error": {
+          "es": "No se pudo guardar el snapshot de texto.",
+          "en": "Could not save the text snapshot."
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "load_success": {
+          "es": "Snapshot de texto cargado.",
+          "en": "Text snapshot loaded."
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "load_error": {
+          "es": "No se pudo cargar el snapshot de texto.",
+          "en": "Could not load the text snapshot."
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "outside": {
+          "es": "El snapshot de texto debe estar dentro de la carpeta de snapshots.",
+          "en": "The text snapshot must be inside the snapshots folder."
+          // [CONCEPTO_APP] snapshot de texto
+        },
+        "truncated": {
+          "es": "El snapshot de texto excedía el tamaño máximo y fue truncado.",
+          "en": "Text snapshot exceeded the maximum size and was truncated."
+          // [PROPÓSITO] El texto contenido por el snapshot fue aplicado al texto actual, pero fue truncado al superar el límite admitido por la app.
+          // [CONCEPTO_APP] snapshot de texto; texto actual
+        },
+        "unavailable": {
+          "es": "La función de snapshots de texto no está disponible.",
+          "en": "Text snapshot functionality is unavailable."
+          // [CONCEPTO_APP] snapshot de texto
+        }
       }
     },
     "tasks": {
@@ -2397,41 +2395,47 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] tarea
         // [PROTEGIDO] `toT`
       },
-      "labels": {
-        "name": {
-          "es": "Nombre",
-          "en": "Name"
-          // [CONCEPTO_APP] tarea
-        },
-        "summary_total": {
-          "es": "Total",
-          "en": "Total"
-          // [PROPÓSITO] Tiempo total de la tarea. Es la suma del tiempo estimado de cada fila de lectura de la tarea.
-          // [CONCEPTO_APP] tarea; fila de lectura
-        },
-        "summary_left": {
-          "es": "Falta",
-          "en": "Left"
-          // [PROPÓSITO] Tiempo total restante de la tarea. Es la suma del tiempo restante de cada fila/lectura de la tarea.
-          // [CONCEPTO_APP] tarea; fila de lectura
-          // [NO_CONFUNDIR] `Left` significa restante/faltante, no lado izquierdo.
-        },
-        "empty": {
-          "es": "(vacío)",
-          "en": "(empty)"
-          // [PROPÓSITO] Biblioteca de lecturas no tiene filas que mostrar, ya sea porque no hay filas guardadas o porque no hay coincidencias de búsqueda.
-          // [CONCEPTO_APP] biblioteca de lecturas
-        },
-        "search": {
-          "es": "Buscar",
-          "en": "Search"
-          // [CONCEPTO_APP] biblioteca de lecturas
-        },
-        "search_placeholder": {
-          "es": "Buscar en la biblioteca...",
-          "en": "Search library..."
-          // [CONCEPTO_APP] biblioteca de lecturas
-        }
+      "name": {
+        "es": "Nombre",
+        "en": "Name"
+        // [CONCEPTO_APP] tarea
+      },
+      "save_button": {
+        "es": "Guardar",
+        "en": "Save"
+        // [PROPÓSITO] Guardar tarea.
+        // [CONCEPTO_APP] tarea
+      },
+      "delete_button": {
+        "es": "Eliminar",
+        "en": "Delete"
+        // [PROPÓSITO] Eliminar tarea.
+        // [CONCEPTO_APP] tarea.
+      },
+      "summary_total": {
+        "es": "Total",
+        "en": "Total"
+        // [PROPÓSITO] Tiempo total de la tarea. Es la suma del tiempo estimado de cada fila de lectura de la tarea.
+        // [CONCEPTO_APP] tarea; fila de lectura
+      },
+      "summary_left": {
+        "es": "Falta",
+        "en": "Left"
+        // [PROPÓSITO] Tiempo total restante de la tarea. Es la suma del tiempo restante de cada fila/lectura de la tarea.
+        // [CONCEPTO_APP] tarea; fila de lectura
+        // [NO_CONFUNDIR] `Left` significa restante/faltante, no lado izquierdo.
+      },
+      "add_row_button": {
+        "es": "Agregar fila",
+        "en": "Add row"
+        // [PROPÓSITO] Agregar una fila nueva a la tabla.
+        // [CONCEPTO_APP] fila de lectura
+      },
+      "open_library_button": {
+        "es": "Abrir biblioteca",
+        "en": "Open reading library"
+        // [PROPÓSITO] Abrir ventana modal de la biblioteca de lecturas, para seleccionar una fila guardada y agregarla a la tabla.
+        // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
       },
       "columns": {
         "texto": {
@@ -2474,72 +2478,91 @@ Estados de revisión recomendados:
           "en": "Actions"
           // [PROPÓSITO] Columna con los botones de cada fila para: subir en la tabla, bajar en la tabla, guardar en biblioteca y eliminar de la tabla.
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
+        },
+        "tooltips": {
+          "link_open": {
+            "es": "Abrir enlace o ruta local",
+            "en": "Open link or local path"
+          },
+          "snapshot_load": {
+            "es": "Cargar snapshot como texto actual",
+            "en": "Load text snapshot as current text"
+            // [PROPÓSITO] Acción para cargar el snapshot de texto asociado a la fila como texto actual de la app.
+            // [CONCEPTO_APP] snapshot de texto; texto actual; fila de lectura
+          },
+          "comment": {
+            "es": "Agregar o editar comentario",
+            "en": "Add or edit comment"
+          },
+          "move_up": {
+            "es": "Subir fila",
+            "en": "Move up"
+            // [CONCEPTO_APP] fila de lectura
+          },
+          "move_down": {
+            "es": "Bajar fila",
+            "en": "Move down"
+            // [CONCEPTO_APP] fila de lectura
+          },
+          "library_row_save": {
+            "es": "Guardar lectura en la biblioteca",
+            "en": "Save reading to the library"
+            // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
+          },
+          "delete_row": {
+            "es": "Eliminar fila",
+            "en": "Delete row"
+            // [CONCEPTO_APP] fila de lectura
+          }
         }
       },
-      "buttons": {
-        "save": {
-          "es": "Guardar",
-          "en": "Save"
-          // [PROPÓSITO] Guardar tarea.
-          // [CONCEPTO_APP] tarea
+      "comentario_modal": {
+        "comment_title": {
+          "es": "Comentario",
+          "en": "Comment"
         },
-        "delete": {
-          "es": "Eliminar",
-          "en": "Delete"
-          // [PROPÓSITO] Eliminar tarea.
-          // [CONCEPTO_APP] tarea.
-        },
-        "add_row": {
-          "es": "Agregar fila",
-          "en": "Add row"
-          // [PROPÓSITO] Agregar una fila nueva a la tabla.
-          // [CONCEPTO_APP] fila de lectura
-        },
-        "open_library": {
-          "es": "Abrir biblioteca",
-          "en": "Open reading library"
-          // [PROPÓSITO] Abrir ventana modal de la biblioteca de lecturas, para seleccionar una fila guardada y agregarla a la tabla.
-          // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
-        },
-        "select_snapshot": {
+        "snapshot_select": {
           "es": "Seleccionar snapshot",
           "en": "Select text snapshot"
           // [PROPÓSITO] Acción para asociar un snapshot de texto a una fila de lectura.
           // [CONCEPTO_APP] snapshot de texto; fila de lectura
         },
-        "cancel": {
-          "es": "Cancelar",
-          "en": "Cancel"
+        "snapshot_select_tooltip": {
+          "es": "Seleccionar snapshot para esta fila",
+          "en": "Select a text snapshot for this row"
+          // [PROPÓSITO] Acción para seleccionar un snapshot de texto guardado y asociarlo a la fila.
+          // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          // [NO_CONFUNDIR] Seleccionar un snapshot para la fila no lo carga como texto actual; solo lo asocia a esa fila.
         },
-        "yes": {
-          "es": "Sí",
-          "en": "Yes"
-        },
-        "no": {
-          "es": "No",
-          "en": "No"
+        "snapshot_clear": {
+          "es": "Quitar snapshot seleccionado de esta fila",
+          "en": "Remove selected snapshot from this row"
+          // [PROPÓSITO] Acción para quitar de la fila la asociación con un snapshot seleccionado.
+          // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          // [NO_CONFUNDIR] Quitar el snapshot de la fila no elimina el snapshot guardado; elimina solo la asociación con esa fila.
         }
       },
-      "tooltips": {
-        "move_up": {
-          "es": "Subir fila",
-          "en": "Move up"
-          // [CONCEPTO_APP] fila de lectura
+      "biblioteca": {
+        "library_title": {
+          "es": "Biblioteca de lecturas",
+          "en": "Reading library"
+          // [CONCEPTO_APP] biblioteca de lecturas
         },
-        "move_down": {
-          "es": "Bajar fila",
-          "en": "Move down"
-          // [CONCEPTO_APP] fila de lectura
+        "search": {
+          "es": "Buscar",
+          "en": "Search"
+          // [CONCEPTO_APP] biblioteca de lecturas
         },
-        "delete_row": {
-          "es": "Eliminar fila",
-          "en": "Delete row"
-          // [CONCEPTO_APP] fila de lectura
+        "search_placeholder": {
+          "es": "Buscar en la biblioteca...",
+          "en": "Search library..."
+          // [CONCEPTO_APP] biblioteca de lecturas
         },
-        "library_row_save": {
-          "es": "Guardar lectura en la biblioteca",
-          "en": "Save reading to the library"
-          // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
+        "empty": {
+          "es": "(vacío)",
+          "en": "(empty)"
+          // [PROPÓSITO] Biblioteca de lecturas no tiene filas que mostrar, ya sea porque no hay filas guardadas o porque no hay coincidencias de búsqueda.
+          // [CONCEPTO_APP] biblioteca de lecturas
         },
         "library_row_load": {
           "es": "Cargar lectura en la tarea",
@@ -2553,46 +2576,9 @@ Estados de revisión recomendados:
           "en": "Delete reading from the library"
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
           // [NO_CONFUNDIR] Eliminar de biblioteca borra la fila guardada reutilizable; no elimina una tarea completa ni necesariamente la fila de la tabla abierta.
-        },
-        "snapshot_load": {
-          "es": "Cargar snapshot como texto actual",
-          "en": "Load text snapshot as current text"
-          // [PROPÓSITO] Acción para cargar el snapshot de texto asociado a la fila como texto actual de la app.
-          // [CONCEPTO_APP] snapshot de texto; texto actual; fila de lectura
-        },
-        "snapshot_select": {
-          "es": "Seleccionar snapshot para esta fila",
-          "en": "Select a text snapshot for this row"
-          // [PROPÓSITO] Acción para seleccionar un snapshot de texto guardado y asociarlo a la fila.
-          // [CONCEPTO_APP] snapshot de texto; fila de lectura
-          // [NO_CONFUNDIR] Seleccionar un snapshot para la fila no lo carga como texto actual; solo lo asocia a esa fila.
-        },
-        "snapshot_clear": {
-          "es": "Quitar snapshot seleccionado de esta fila",
-          "en": "Remove selected snapshot from this row"
-          // [PROPÓSITO] Acción para quitar de la fila la asociación con un snapshot seleccionado.
-          // [CONCEPTO_APP] snapshot de texto; fila de lectura
-          // [NO_CONFUNDIR] Quitar el snapshot de la fila no elimina el snapshot guardado; elimina solo la asociación con esa fila.
-        },
-        "link_open": {
-          "es": "Abrir enlace o ruta local",
-          "en": "Open link or local path"
-        },
-        "comment": {
-          "es": "Agregar o editar comentario",
-          "en": "Add or edit comment"
         }
       },
-      "modals": {
-        "comment_title": {
-          "es": "Comentario",
-          "en": "Comment"
-        },
-        "library_title": {
-          "es": "Biblioteca de lecturas",
-          "en": "Reading library"
-          // [CONCEPTO_APP] biblioteca de lecturas
-        },
+      "guardar_lectura_modal": {
         "library_save_title": {
           "es": "Guardar lectura en la biblioteca",
           "en": "Save reading to the library"
@@ -2603,6 +2589,18 @@ Estados de revisión recomendados:
           "en": "Include comment?"
           // [PROPÓSITO] Pregunta si el comentario de la fila debe incluirse al guardar en biblioteca.
           // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
+        },
+        "yes": {
+          "es": "Sí",
+          "en": "Yes"
+        },
+        "no": {
+          "es": "No",
+          "en": "No"
+        },
+        "cancel": {
+          "es": "Cancelar",
+          "en": "Cancel"
         }
       },
       "alerts": {
@@ -2697,9 +2695,7 @@ Estados de revisión recomendados:
         "link_error": {
           "es": "Error al abrir enlace o ruta local.",
           "en": "Error opening link or local path."
-        }
-      },
-      "confirm": {
+        },
         "close_unsaved": {
           "es": "Hay cambios sin guardar. ¿Cerrar sin guardar?",
           "en": "There are unsaved changes. Close without saving?"
@@ -2708,19 +2704,20 @@ Estados de revisión recomendados:
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": {
-          "es": "Pulsa Play (▶) en el Cronómetro Flotante cuando estés listo para empezar. Una vez que el test haya empezado, no pulses Pausa (⏸) hasta terminar de leer: Pausa termina el test; no pone el cronómetro en pausa. Pulsa Detener/Restablecer (⏹) solo para cancelar el test.",
-          "en": "Press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Press Stop/Reset (⏹) only if you want to cancel the test."
-          // [PROPÓSITO] Instrucción previa al test: el usuario debe iniciar la medición con Play en el Cronómetro Flotante; Pausa termina el test.
-          // [CONCEPTO_APP] Test de velocidad de lectura; Cronómetro Flotante
-          // [PROTEGIDO] `▶`; `⏸`; `⏹`
-        }
-      },
       "entry": {
         "title": {
           "es": "Test de velocidad de lectura",
           "en": "Reading speed test"
+          // [CONCEPTO_APP] Test de velocidad de lectura
+        },
+        "show_instructions": {
+          "es": "Mostrar instrucciones",
+          "en": "Show instructions"
+          // [CONCEPTO_APP] Test de velocidad de lectura
+        },
+        "hide_instructions": {
+          "es": "Ocultar instrucciones",
+          "en": "Hide instructions"
           // [CONCEPTO_APP] Test de velocidad de lectura
         },
         "intro": {
@@ -2735,6 +2732,36 @@ Estados de revisión recomendados:
           "en": "Eligible files:"
           // [PROPÓSITO] Conteo de archivos del pool que cumplen los filtros/estado actual para iniciar el test.
           // [CONCEPTO_APP] pool del test; archivos de test
+        },
+        "show_bundled_entries": {
+          "es": "Tests incorporados",
+          "en": "Built-in tests"
+          // [PROPÓSITO] Control de inclusión de archivos de test iniciales que vienen incorporados en el build de la app.
+          // [CONCEPTO_APP] archivos de test; pool del test; tests incorporados
+        },
+        "get_more_files": {
+          "es": "Obtener más archivos",
+          "en": "Get more files"
+          // [PROPÓSITO] Acción para obtener más archivos de test desde la fuente externa configurada. Abre una carpeta de Google Drive en el navegador del sistema.
+          // [CONCEPTO_APP] archivos de test; pool del test
+        },
+        "import_files_button": {
+          "es": "Importar archivos",
+          "en": "Import files"
+          // [PROPÓSITO] Acción para importar archivos de test desde el dispositivo al pool local.
+          // [CONCEPTO_APP] archivos de test; pool del test
+        },
+        "start_random_text_button": {
+          "es": "Iniciar con texto aleatorio",
+          "en": "Start with random text"
+          // [PROPÓSITO] Inicia el test reemplazando el texto actual por un texto elegible aleatorio del pool.
+          // [CONCEPTO_APP] Test de velocidad de lectura; pool del test; texto actual
+        },
+        "start_current_text_button": {
+          "es": "Iniciar con texto actual",
+          "en": "Start with current text"
+          // [PROPÓSITO] Inicia el test usando el texto actual, no un archivo del pool.
+          // [CONCEPTO_APP] Test de velocidad de lectura; texto actual
         },
         "pool_exhausted_message": {
           "es": "No quedan archivos de test sin usar. Restablece el pool o agrega más archivos.",
@@ -2764,90 +2791,6 @@ Estados de revisión recomendados:
           "en": "This will reset the whole test pool and mark all of its files as unused again. Do you want to continue?"
           // [PROPÓSITO] Confirmación para restablecer el estado de uso de todo el pool del test.
           // [CONCEPTO_APP] pool del test; archivos de test
-        },
-        "import_summary": {
-          "es": "Importación finalizada. Importados: {imported}. Duplicados omitidos: {skippedDuplicates}. Validaciones fallidas: {failedValidation}. Entradas de archivo comprimido fallidas: {failedArchiveEntries}. Escrituras fallidas: {failedWrites}.",
-          "en": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}."
-          // [PROPÓSITO] Resumen posterior a importar archivos de test al pool.
-          // [CONCEPTO_APP] pool del test; archivos de test
-        },
-        "import_conflict": {
-          "title": {
-            "es": "Importar archivos",
-            "en": "Import files"
-            // [PROPÓSITO] Título de la ventana modal de importación de archivos cuando hay archivos conflictivos.
-            // [CONCEPTO_APP] archivos de test; pool del test
-          },
-          "message": {
-            "es": "Algunos archivos importados ya existen en el pool. ¿Cómo quieres manejar los duplicados?",
-            "en": "Some imported files already exist in the pool. How should duplicates be handled?"
-            // [PROPÓSITO] Decisión de manejo de duplicados al importar archivos al pool del test.
-            // [CONCEPTO_APP] archivos de test; pool del test
-          },
-          "detail": {
-            "es": "El pool ya contiene {count} de los nombres de archivo de destino.",
-            "en": "The pool already contains {count} of the destination filenames."
-            // [CONCEPTO_APP] archivos de test; pool del test
-          },
-          "buttons": {
-            "skip": {
-              "es": "Omitir duplicados",
-              "en": "Skip duplicates"
-              // [CONCEPTO_APP] archivos de test; pool del test
-            },
-            "replace": {
-              "es": "Reemplazar duplicados",
-              "en": "Replace duplicates"
-              // [CONCEPTO_APP] archivos de test; pool del test
-            },
-            "cancel": {
-              "es": "Cancelar importación",
-              "en": "Cancel import"
-              // [CONCEPTO_APP] archivos de test; pool del test
-            }
-          }
-        },
-        "buttons": {
-          "get_more_files": {
-            "es": "Obtener más archivos",
-            "en": "Get more files"
-            // [PROPÓSITO] Acción para obtener más archivos de test desde la fuente externa configurada. Abre una carpeta de Google Drive en el navegador del sistema.
-            // [CONCEPTO_APP] archivos de test; pool del test
-          },
-          "import_files": {
-            "es": "Importar archivos",
-            "en": "Import files"
-            // [PROPÓSITO] Acción para importar archivos de test desde el dispositivo al pool local.
-            // [CONCEPTO_APP] archivos de test; pool del test
-          },
-          "show_instructions": {
-            "es": "Mostrar instrucciones",
-            "en": "Show instructions"
-            // [CONCEPTO_APP] Test de velocidad de lectura
-          },
-          "hide_instructions": {
-            "es": "Ocultar instrucciones",
-            "en": "Hide instructions"
-            // [CONCEPTO_APP] Test de velocidad de lectura
-          },
-          "start_random_text": {
-            "es": "Iniciar con texto aleatorio",
-            "en": "Start with random text"
-            // [PROPÓSITO] Inicia el test reemplazando el texto actual por un texto elegible aleatorio del pool.
-            // [CONCEPTO_APP] Test de velocidad de lectura; pool del test; texto actual
-          },
-          "start_current_text": {
-            "es": "Iniciar con texto actual",
-            "en": "Start with current text"
-            // [PROPÓSITO] Inicia el test usando el texto actual, no un archivo del pool.
-            // [CONCEPTO_APP] Test de velocidad de lectura; texto actual
-          },
-          "show_bundled_entries": {
-            "es": "Tests incorporados",
-            "en": "Built-in tests"
-            // [PROPÓSITO] Control de inclusión de archivos de test iniciales que vienen incorporados en el build de la app.
-            // [CONCEPTO_APP] archivos de test; pool del test; tests incorporados
-          }
         },
         "tooltips": {
           "show_bundled_entries": {
@@ -2882,6 +2825,57 @@ Estados de revisión recomendados:
             "en": "Start the test with the current text"
             // [CONCEPTO_APP] Test de velocidad de lectura; texto actual
           }
+        },
+        "import": {
+          "import_summary": {
+            "es": "Importación finalizada. Importados: {imported}. Duplicados omitidos: {skippedDuplicates}. Validaciones fallidas: {failedValidation}. Entradas de archivo comprimido fallidas: {failedArchiveEntries}. Escrituras fallidas: {failedWrites}.",
+            "en": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}."
+            // [PROPÓSITO] Resumen posterior a importar archivos de test al pool.
+            // [CONCEPTO_APP] pool del test; archivos de test
+          },
+          "import_conflict": {
+            "title": {
+              "es": "Importar archivos",
+              "en": "Import files"
+              // [PROPÓSITO] Título de la ventana modal de importación de archivos cuando hay archivos conflictivos.
+              // [CONCEPTO_APP] archivos de test; pool del test
+            },
+            "message": {
+              "es": "Algunos archivos importados ya existen en el pool. ¿Cómo quieres manejar los duplicados?",
+              "en": "Some imported files already exist in the pool. How should duplicates be handled?"
+              // [PROPÓSITO] Decisión de manejo de duplicados al importar archivos al pool del test.
+              // [CONCEPTO_APP] archivos de test; pool del test
+            },
+            "detail": {
+              "es": "El pool ya contiene {count} de los nombres de archivo de destino.",
+              "en": "The pool already contains {count} of the destination filenames."
+              // [CONCEPTO_APP] archivos de test; pool del test
+            },
+            "skip_button": {
+              "es": "Omitir duplicados",
+              "en": "Skip duplicates"
+              // [CONCEPTO_APP] archivos de test; pool del test
+            },
+            "replace_button": {
+              "es": "Reemplazar duplicados",
+              "en": "Replace duplicates"
+              // [CONCEPTO_APP] archivos de test; pool del test
+            },
+            "cancel_button": {
+              "es": "Cancelar importación",
+              "en": "Cancel import"
+              // [CONCEPTO_APP] archivos de test; pool del test
+            }
+          }
+        }
+      },
+      "prestart": {
+        "reminder": {
+          "es": "Pulsa Play (▶) en el Cronómetro Flotante cuando estés listo para empezar. Una vez que el test haya empezado, no pulses Pausa (⏸) hasta terminar de leer: Pausa termina el test; no pone el cronómetro en pausa. Pulsa Detener/Restablecer (⏹) solo para cancelar el test.",
+          "en": "Press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Press Stop/Reset (⏹) only if you want to cancel the test."
+          // [PROPÓSITO] Instrucción previa al test: el usuario debe iniciar la medición con Play en el Cronómetro Flotante; Pausa termina el test.
+          // [CONCEPTO_APP] Test de velocidad de lectura; Cronómetro Flotante
+          // [PROTEGIDO] `▶`; `⏸`; `⏹`
         }
       },
       "questions": {
@@ -2938,15 +2932,13 @@ Estados de revisión recomendados:
           "es": "La carga de preguntas es inválida.",
           "en": "The questions data is invalid."
         },
-        "buttons": {
-          "check": {
-            "es": "Ver resultado",
-            "en": "Check result"
-          },
-          "continue": {
-            "es": "Continuar",
-            "en": "Continue"
-          }
+        "check_button": {
+          "es": "Ver resultado",
+          "en": "Check result"
+        },
+        "continue_button": {
+          "es": "Continuar",
+          "en": "Continue"
         }
       },
       "result": {
@@ -2974,11 +2966,9 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Label de la cantidad de palabras del texto del test.
           // [CONCEPTO_APP] Test de velocidad de lectura
         },
-        "buttons": {
-          "continue": {
-            "es": "Continuar",
-            "en": "Continue"
-          }
+        "continue_button": {
+          "es": "Continuar",
+          "en": "Continue"
         }
       },
       "alerts": {
@@ -3004,7 +2994,7 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] pool del test; archivos de test
         },
         "visible_empty_bundled_hidden": {
-          "es": "Los archivos de test incorporados están desactivados y no quedan archivos visibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
+          "es": "Los archivos de test incorporados están desactivados y no hay archivos disponibles sin usar. Vuelve a activarlos o importa más archivos para continuar.",
           "en": "The built-in test files are disabled and there are no remaining unused files. Re-enable them or import more files to continue."
           // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
           // [CONCEPTO_APP] pool del test; archivos de test; tests incorporados
@@ -3061,66 +3051,98 @@ Estados de revisión recomendados:
         }
       }
     },
-    "modal_preset": {
-      "title_new": {
-        "es": "Nuevo preset",
-        "en": "New preset"
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "title_edit": {
-        "es": "Editar preset",
-        "en": "Edit preset"
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "heading_new": {
-        "es": "Crear nuevo preset",
-        "en": "Create new preset"
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "heading_edit": {
-        "es": "Editar preset seleccionado",
-        "en": "Edit selected preset"
-        // [CONCEPTO_APP] preset de velocidad de lectura
-      },
-      "name": {
-        "es": "Nombre:",
-        "en": "Name:"
-      },
-      "name_placeholder": {
-        "es": "Nombre del preset",
-        "en": "Preset name"
-      },
-      "wpm": {
-        "es": "WPM:",
-        "en": "WPM:"
-        // [CONCEPTO_APP] preset de velocidad de lectura; velocidad de lectura
-        // [PROTEGIDO] `WPM`
-      },
-      "description": {
-        "es": "Descripción:",
-        "en": "Description:"
-      },
-      "description_placeholder": {
-        "es": "Descripción breve...",
-        "en": "Short description..."
-      },
-      "char_count": {
-        "es": "Caracteres restantes: {remaining}",
-        "en": "Remaining characters: {remaining}"
-      },
-      "hint": {
-        "es": "Los presets personalizados se guardan en la configuración del usuario.",
-        "en": "Custom presets are stored in user settings."
-      },
-      "cancel": {
-        "es": "Cancelar",
-        "en": "Cancel"
-      },
-      "save": {
-        "es": "Guardar",
-        "en": "Save"
+    "presets": {
+      "preset_modal": {
+        "title_new": {
+          "es": "Nuevo preset",
+          "en": "New preset"
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "title_edit": {
+          "es": "Editar preset",
+          "en": "Edit preset"
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "heading_new": {
+          "es": "Crear nuevo preset",
+          "en": "Create new preset"
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "heading_edit": {
+          "es": "Editar preset seleccionado",
+          "en": "Edit selected preset"
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "name": {
+          "es": "Nombre:",
+          "en": "Name:"
+        },
+        "name_placeholder": {
+          "es": "Nombre del preset",
+          "en": "Preset name"
+        },
+        "wpm": {
+          "es": "WPM:",
+          "en": "WPM:"
+          // [CONCEPTO_APP] preset de velocidad de lectura; velocidad de lectura
+          // [PROTEGIDO] `WPM`
+        },
+        "description": {
+          "es": "Descripción:",
+          "en": "Description:"
+        },
+        "description_placeholder": {
+          "es": "Descripción breve...",
+          "en": "Short description..."
+        },
+        "char_count": {
+          "es": "Caracteres restantes: {remaining}",
+          "en": "Remaining characters: {remaining}"
+        },
+        "hint": {
+          "es": "Los presets personalizados se guardan en la configuración del usuario.",
+          "en": "Custom presets are stored in user settings."
+        },
+        "cancel": {
+          "es": "Cancelar",
+          "en": "Cancel"
+        },
+        "save": {
+          "es": "Guardar",
+          "en": "Save"
+        }
       },
       "alerts": {
+        "not_found": {
+          "es": "Preset seleccionado no encontrado.",
+          "en": "Selected preset not found."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "delete_error": {
+          "es": "Ocurrió un error al borrar el preset.",
+          "en": "An error occurred while deleting the preset."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "restore_error": {
+          "es": "Ocurrió un error al restaurar presets.",
+          "en": "An error occurred while restoring presets."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "open_folder_unsupported": {
+          "es": "No es posible abrir la carpeta de presets en este entorno.",
+          "en": "Cannot open presets folder in this environment."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "open_folder_error": {
+          "es": "Ocurrió un error al intentar abrir la carpeta de presets.",
+          "en": "An error occurred while trying to open the presets folder."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "open_default_folder_failed": {
+          "es": "No se pudo abrir la carpeta de presets por defecto.",
+          "en": "Could not open the default presets folder."
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
         "unavailable": {
           "es": "La ventana de preset no está disponible en esta build de la app.",
           "en": "The preset window is unavailable in this app build."
@@ -3155,40 +3177,6 @@ Estados de revisión recomendados:
         "process_error": {
           "es": "Ocurrió un error al procesar el preset.",
           "en": "An error occurred while processing the preset."
-          // [CONCEPTO_APP] preset de velocidad de lectura
-        }
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": {
-          "es": "Preset seleccionado no encontrado.",
-          "en": "Selected preset not found."
-          // [CONCEPTO_APP] preset de velocidad de lectura
-        },
-        "delete_error": {
-          "es": "Ocurrió un error al borrar el preset.",
-          "en": "An error occurred while deleting the preset."
-          // [CONCEPTO_APP] preset de velocidad de lectura
-        },
-        "restore_error": {
-          "es": "Ocurrió un error al restaurar presets.",
-          "en": "An error occurred while restoring presets."
-          // [CONCEPTO_APP] preset de velocidad de lectura
-        },
-        "open_folder_unsupported": {
-          "es": "No es posible abrir la carpeta de presets en este entorno.",
-          "en": "Cannot open presets folder in this environment."
-          // [CONCEPTO_APP] preset de velocidad de lectura
-        },
-        "open_folder_error": {
-          "es": "Ocurrió un error al intentar abrir la carpeta de presets.",
-          "en": "An error occurred while trying to open the presets folder."
-          // [CONCEPTO_APP] preset de velocidad de lectura
-        },
-        "open_default_folder_failed": {
-          "es": "No se pudo abrir la carpeta de presets por defecto.",
-          "en": "Could not open the default presets folder."
           // [CONCEPTO_APP] preset de velocidad de lectura
         }
       }

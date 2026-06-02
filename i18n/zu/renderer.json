@@ -7,44 +7,6 @@
         "reading_speed_test": "Ukuhlolwa kwejubane lokufunda",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Khipha umbhalo efayeleni",
-        "text_extraction_abort": "Misa ukukhishwa",
-        "overwrite_clipboard": "Buyisela umbhalo wamanje ngowasebhodini lokunamathisela",
-        "append_clipboard": "Namathisela okusebhodini lokunamathisela ekugcineni kombhalo wamanje (umugqa omusha)",
-        "clipboard_repeat_count": "Ukuphindaphinda kokunamathisela",
-        "edit": "Vula iwindi lombhalo wamanje ophelele",
-        "clear": "Sula umbhalo wamanje",
-        "snapshot_load": "Layisha i-snapshot yombhalo",
-        "snapshot_save": "Gcina umbhalo wamanje njenge-snapshot",
-        "task_new": "Umsebenzi omusha",
-        "task_load": "Layisha umsebenzi",
-        "browser_extension": "Isandiso sesiphequluli",
-        "cibersino_website": "Iwebhusayithi ye-Cibersino",
-        "cibersino_kofi": "Sekela ku-Ko-fi",
-        "new_preset": "Dala iphrezethi entsha",
-        "edit_preset": "Hlela iphrezethi ekhethiwe",
-        "delete_preset": "Susa iphrezethi ekhethiwe",
-        "reset_presets": "Buyisela amaphrezethi azenzakalelayo",
-        "help_button": "Bonisa icebiso eliwusizo",
-        "flotante_window": "Iwindi elintantayo"
-      },
-      "aria": {
-        "text_extraction": "Khipha umbhalo efayeleni",
-        "text_extraction_abort": "Misa ukukhishwa",
-        "browser_extension": "Vula ibhokisi lesandiso sesiphequluli",
-        "clipboard_repeat_count": "Ukuphindaphinda kokunamathisela",
-        "wpm_input": "Amagama ngomzuzu",
-        "wpm_slider": "Isilayida samagama ngomzuzu",
-        "speed_presets": "Amaphrezethi ejubane",
-        "precise_mode_toggle": "Imodi enembile",
-        "crono_controls": "Izilawuli zesibali-sikhathi",
-        "crono_display": "Isibonisi sesibali-sikhathi",
-        "crono_toggle": "Qalisa noma misa isibali-sikhathi",
-        "crono_reset": "Setha kabusha isibali-sikhathi",
-        "floating_window_toggle": "Iwindi elintantayo",
-        "floating_window_group": "Izilawuli zewindi elintantayo"
-      },
       "speed": {
         "title": "IJUBANE LOKUFUNDA",
         "wpm_label": "amagama ngomzuzu (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Isikhathi esidlulile: ",
         "text_extraction_drop_here": "Dedela ifayela ukuze ungenise noma ukhiphe umbhalo"
+      },
+      "tooltips": {
+        "text_extraction": "Khipha umbhalo efayeleni",
+        "text_extraction_abort": "Misa ukukhishwa",
+        "overwrite_clipboard": "Buyisela umbhalo wamanje ngowasebhodini lokunamathisela",
+        "append_clipboard": "Namathisela okusebhodini lokunamathisela ekugcineni kombhalo wamanje (umugqa omusha)",
+        "clipboard_repeat_count": "Ukuphindaphinda kokunamathisela",
+        "edit": "Vula iwindi lombhalo wamanje ophelele",
+        "clear": "Sula umbhalo wamanje",
+        "snapshot_load": "Layisha i-snapshot yombhalo",
+        "snapshot_save": "Gcina umbhalo wamanje njenge-snapshot",
+        "task_new": "Umsebenzi omusha",
+        "task_load": "Layisha umsebenzi",
+        "browser_extension": "Isandiso sesiphequluli",
+        "cibersino_website": "Iwebhusayithi ye-Cibersino",
+        "cibersino_kofi": "Sekela ku-Ko-fi",
+        "new_preset": "Dala iphrezethi entsha",
+        "edit_preset": "Hlela iphrezethi ekhethiwe",
+        "delete_preset": "Susa iphrezethi ekhethiwe",
+        "reset_presets": "Buyisela amaphrezethi azenzakalelayo",
+        "help_button": "Bonisa icebiso eliwusizo",
+        "flotante_window": "Iwindi elintantayo"
+      },
+      "aria": {
+        "text_extraction": "Khipha umbhalo efayeleni",
+        "text_extraction_abort": "Misa ukukhishwa",
+        "browser_extension": "Vula ibhokisi lesandiso sesiphequluli",
+        "clipboard_repeat_count": "Ukuphindaphinda kokunamathisela",
+        "wpm_input": "Amagama ngomzuzu",
+        "wpm_slider": "Isilayida samagama ngomzuzu",
+        "speed_presets": "Amaphrezethi ejubane",
+        "precise_mode_toggle": "Imodi enembile",
+        "crono_controls": "Izilawuli zesibali-sikhathi",
+        "crono_display": "Isibonisi sesibali-sikhathi",
+        "crono_toggle": "Qalisa noma misa isibali-sikhathi",
+        "crono_reset": "Setha kabusha isibali-sikhathi",
+        "floating_window_toggle": "Iwindi elintantayo",
+        "floating_window_group": "Izilawuli zewindi elintantayo"
       },
       "alerts": {
         "clipboard_too_large": "Umbhalo osebhodini lokunamathisela mkhulu kakhulu ukuthi ucutshungulwe. Wunciphise bese uzama futhi.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "I-PDF egciniwe: ",
         "reveal_saved_pdf_button": "Bonisa i-PDF egciniwe"
       },
+      "single_file_heavy": {
+        "case_a_title": "I-PDF ephelele inkulu kakhulu ku-OCR",
+        "case_a_message": "I-PDF ephelele idlula umkhawulo womhlinzeki we-OCR ({providerLimitMb} MB). Ungavula isihleli esabiwe ukuze uyihlukanise ngokuzenzakalelayo ibe amafayela adaliwayo ngaphambi kokukhishwa.",
+        "case_b_title": "Ibanga elidaliwe likhulu kakhulu ku-OCR",
+        "case_b_message": "I-PDF edalelwe ibanga elikhethiwe idlula umkhawulo womhlinzeki we-OCR ({providerLimitMb} MB). Ifayela alilayishwanga. Ungabuyela ekukhetheni amakhasi, usebenzise indlela ye-native, noma uvule isihleli esabiwe ukuze uhlukanise i-PDF ephelele.",
+        "source_file_label": "Ifayela lomthombo:",
+        "selected_range_label": "Ibanga elikhethiwe:",
+        "generated_pdf_label": "I-PDF edaliwe:",
+        "generated_pdf_size_label": "Usayizi we-PDF edaliwe:",
+        "source_size_label": "Usayizi wefayela lomthombo:",
+        "total_pages_label": "Amakhasi esewonke:",
+        "split_button": "Hlukanisa futhi uhlele i-PDF ephelele",
+        "return_to_pages_button": "Buyela emakhasini",
+        "use_native_button": "Sebenzisa indlela ye-native",
+        "reveal_generated_pdf_button": "Bonisa i-PDF edaliwe",
+        "cancel_button": "Khansela",
+        "close_aria": "Vala ibhokisi le-PDF enkulu ye-OCR"
+      },
       "batch_plan": {
         "title": "Hlela ukukhishwa okuyiqoqo",
         "single_file_title": "Hlela ukuhlukaniswa okuzenzakalelayo kwe-PDF",
@@ -181,7 +199,6 @@
         "failure_legend": "Ukuziphatha uma kwehluleka",
         "failure_default": "Vala iyunithi ngemva kokuphumelela kokugcina bese uqhubeka neyunithi elandelayo",
         "failure_continue": "Yeqa into ehlulekile bese uqhubeka kuleyo yunithi",
-        "overwrite_confirm": "Lokhu kuzobhala phezu kombhalo wamanje lapho ukukhishwa kuqala. Ufuna ukuqhubeka?",
         "start_button": "Qala ukukhishwa",
         "cancel_button": "Khansela",
         "close_aria": "Vala ukuhlela ukukhishwa okuyiqoqo"
@@ -211,25 +228,8 @@
         "snapshot_created": "Kudaliwe {filename}",
         "snapshot_creation_failed": "(Ukudala i-JSON kwehlulekile: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "I-PDF ephelele inkulu kakhulu ku-OCR",
-        "case_a_message": "I-PDF ephelele idlula umkhawulo womhlinzeki we-OCR ({providerLimitMb} MB). Ungavula isihleli esabiwe ukuze uyihlukanise ngokuzenzakalelayo ibe amafayela adaliwayo ngaphambi kokukhishwa.",
-        "case_b_title": "Ibanga elidaliwe likhulu kakhulu ku-OCR",
-        "case_b_message": "I-PDF edalelwe ibanga elikhethiwe idlula umkhawulo womhlinzeki we-OCR ({providerLimitMb} MB). Ifayela alilayishwanga. Ungabuyela ekukhetheni amakhasi, usebenzise indlela ye-native, noma uvule isihleli esabiwe ukuze uhlukanise i-PDF ephelele.",
-        "source_file_label": "Ifayela lomthombo:",
-        "selected_range_label": "Ibanga elikhethiwe:",
-        "generated_pdf_label": "I-PDF edaliwe:",
-        "generated_pdf_size_label": "Usayizi we-PDF edaliwe:",
-        "source_size_label": "Usayizi wefayela lomthombo:",
-        "total_pages_label": "Amakhasi esewonke:",
-        "split_button": "Hlukanisa futhi uhlele i-PDF ephelele",
-        "return_to_pages_button": "Buyela emakhasini",
-        "use_native_button": "Sebenzisa indlela ye-native",
-        "reveal_generated_pdf_button": "Bonisa i-PDF edaliwe",
-        "cancel_button": "Khansela",
-        "close_aria": "Vala ibhokisi le-PDF enkulu ye-OCR"
-      },
       "alerts": {
+        "overwrite_confirm": "Lokhu kuzobhala phezu kombhalo wamanje lapho ukukhishwa kuqala. Ufuna ukuqhubeka?",
         "start_error": "Kuvele iphutha ngesikhathi kuqalwa ukukhishwa. Hlola ikhonsoli.",
         "precondition_blocked": "Ukuze uqale ukukhishwa, vala wonke amawindi esibili bese umisa isibali-sikhathi.",
         "precondition_error": "Kuvele iphutha ngesikhathi kuhlolwa izimfuneko zokukhishwa. Hlola ikhonsoli.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "Ibanga lamakhasi e-PDF elikhethiwe alivumelekile. Lungisa ibanga bese uzama futhi.",
           "subset_creation_failed": "Akukwazekanga ukudala i-PDF yamakhasi akhethiwe ukuze kukhishwe umbhalo. Hlola ifayela bese uzama futhi."
         },
+        "native": {
+          "runtime_error": "Kuvele iphutha lokusebenza lokukhishwa kwe-native ngesikhathi sokukhishwa. Hlola ikhonsoli bese uzama futhi.",
+          "unreadable_or_corrupt": "Ifayela elikhethiwe alifundeki noma lonakele ukuze likhishwe nge-native.",
+          "encrypted_or_password_protected": "I-PDF ekhethiwe ibethelwe noma ivikelwe ngephasiwedi futhi ayikwazi ukukhishwa nge-native.",
+          "cancelled": "Ukukhishwa kwe-native kukhanseliwe."
+        },
         "ocr": {
           "unavailable": "I-OCR ayitholakali. Hlola ukusethwa/ukugunyazwa bese uzama futhi.",
           "activation_required": "Kudingeka ukuvula i-OCR. Ngena ngemvume ku-Google OCR bese uzama futhi.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "I-OCR ivinjwe okwesikhashana ngenxa yekhota/umkhawulo wezinga. Linda bese uzama futhi.",
           "runtime_error": "Kuvele iphutha lokusebenza le-OCR ngesikhathi sokukhishwa. Hlola ikhonsoli bese uzama futhi.",
           "cancelled": "Ukukhishwa kwe-OCR kukhanseliwe.",
-          "cleanup_warning": "I-OCR iqediwe, kodwa ukuhlanzwa kwefayela lesikhashana elikude kuhlulekile. Hlola ifolda yakho ye-Google Drive."
-        },
-        "batch_ocr": {
-          "activation_required": "Leli qoqo liqukethe izinto ze-OCR, kodwa i-Google OCR ayivuliwe. Sebenzisa Izintandokazi > Vula i-Google OCR, bese uqala iqoqo futhi.",
-          "token_state_invalid": "Leli qoqo liqukethe izinto ze-OCR, kodwa isimo sokungena se-Google OCR esigciniwe asivumelekile. Sebenzisa futhi Izintandokazi > Vula i-Google OCR, bese uqala iqoqo futhi.",
-          "connectivity_failed": "Le batch iqukethe izinto ze-OCR, kodwa i-OCR idinga uxhumano lwe-inthanethi. Hlola uxhumano lwakho bese uzama futhi ngaphambi kokuqala ukukhipha umbhalo.",
-          "quota_or_rate_limited": "Le batch iqukethe izinto ze-OCR, kodwa i-OCR ivinjwe okwesikhashana imikhawulo ye-quota/rate. Linda bese uzama futhi ngaphambi kokuqala ukukhipha umbhalo.",
-          "unavailable": "Leli qoqo liqukethe izinto ze-OCR, kodwa i-Google OCR ayitholakali manje. Uma i-OCR ingakavulwa, sebenzisa Izintandokazi > Vula i-Google OCR. Uma kungenjalo, hlola ukusethwa/ukugunyazwa kwe-OCR bese uzama futhi ngaphambi kokuqala iqoqo."
-        },
-        "native": {
-          "runtime_error": "Kuvele iphutha lokusebenza lokukhishwa kwe-native ngesikhathi sokukhishwa. Hlola ikhonsoli bese uzama futhi.",
-          "unreadable_or_corrupt": "Ifayela elikhethiwe alifundeki noma lonakele ukuze likhishwe nge-native.",
-          "encrypted_or_password_protected": "I-PDF ekhethiwe ibethelwe noma ivikelwe ngephasiwedi futhi ayikwazi ukukhishwa nge-native.",
-          "cancelled": "Ukukhishwa kwe-native kukhanseliwe."
+          "cleanup_warning": "I-OCR iqediwe, kodwa ukuhlanzwa kwefayela lesikhashana elikude kuhlulekile. Hlola ifolda yakho ye-Google Drive.",
+          "batch_ocr": {
+            "activation_required": "Leli qoqo liqukethe izinto ze-OCR, kodwa i-Google OCR ayivuliwe. Sebenzisa Izintandokazi > Vula i-Google OCR, bese uqala iqoqo futhi.",
+            "token_state_invalid": "Leli qoqo liqukethe izinto ze-OCR, kodwa isimo sokungena se-Google OCR esigciniwe asivumelekile. Sebenzisa futhi Izintandokazi > Vula i-Google OCR, bese uqala iqoqo futhi.",
+            "connectivity_failed": "Le batch iqukethe izinto ze-OCR, kodwa i-OCR idinga uxhumano lwe-inthanethi. Hlola uxhumano lwakho bese uzama futhi ngaphambi kokuqala ukukhipha umbhalo.",
+            "quota_or_rate_limited": "Le batch iqukethe izinto ze-OCR, kodwa i-OCR ivinjwe okwesikhashana imikhawulo ye-quota/rate. Linda bese uzama futhi ngaphambi kokuqala ukukhipha umbhalo.",
+            "unavailable": "Leli qoqo liqukethe izinto ze-OCR, kodwa i-Google OCR ayitholakali manje. Uma i-OCR ingakavulwa, sebenzisa Izintandokazi > Vula i-Google OCR. Uma kungenjalo, hlola ukusethwa/ukugunyazwa kwe-OCR bese uzama futhi ngaphambi kokuqala iqoqo."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Buyisela usayizi wombhalo",
       "read_progress_label": "Kufundiwe",
       "clear_title": "Sula",
+      "editor_find": {
+        "input_placeholder": "Sesha...",
+        "input_aria": "Sesha embhalweni",
+        "expand_title": "Bonisa izilawuli zokubuyisela",
+        "collapse_title": "Fihla izilawuli zokubuyisela",
+        "replace_placeholder": "Buyisela...",
+        "replace_aria": "Umbhalo ozobuyisela",
+        "replace": "Buyisela",
+        "replace_all": "Buyisela konke",
+        "prev_title": "Okufanayo kwangaphambilini",
+        "next_title": "Okufanayo okulandelayo",
+        "close_title": "Vala ibha yokusesha",
+        "replace_title": "Buyisela okufanayo kwamanje",
+        "replace_all_title": "Buyisela konke okufanayo",
+        "replace_timeout": "Ukubuyisela kuthathe isikhathi eside. Zama futhi.",
+        "status_no_matches": "Akukho okufanayo",
+        "status_empty_query": "Bhala ukuze useshe"
+      },
       "alerts": {
         "start_failed": "I-Text Editor ayikwazanga ukuqaliswa.",
         "start_timeout": "I-Text Editor ithathe isikhathi eside kakhulu ukuqala futhi yavalwa.",
@@ -315,36 +333,7 @@
         "calc_error": "Kuvele iphutha ngesikhathi kubalwa. Hlola ikhonsoli."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Sesha...",
-      "input_aria": "Sesha embhalweni",
-      "expand_title": "Bonisa izilawuli zokubuyisela",
-      "collapse_title": "Fihla izilawuli zokubuyisela",
-      "replace_placeholder": "Buyisela...",
-      "replace_aria": "Umbhalo ozobuyisela",
-      "replace": "Buyisela",
-      "replace_all": "Buyisela konke",
-      "prev_title": "Okufanayo kwangaphambilini",
-      "next_title": "Okufanayo okulandelayo",
-      "close_title": "Vala ibha yokusesha",
-      "replace_title": "Buyisela okufanayo kwamanje",
-      "replace_all_title": "Buyisela konke okufanayo",
-      "replace_timeout": "Ukubuyisela kuthathe isikhathi eside. Zama futhi.",
-      "status_no_matches": "Akukho okufanayo",
-      "status_empty_query": "Bhala ukuze useshe"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "I-snapshot igciniwe.",
-        "save_error": "Ayikwazanga ukugcina i-snapshot.",
-        "load_success": "I-snapshot ilayishiwe.",
-        "load_error": "Ayikwazanga ukulayisha i-snapshot.",
-        "outside": "I-snapshot kufanele ibe ngaphakathi kwefolda yokugcina.",
-        "truncated": "I-snapshot idlula umkhawulo omkhulu futhi inqanyuliwe.",
-        "unavailable": "Isici sama-snapshot asitholakali."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Gcina i-snapshot yombhalo",
       "message": "Uma uthanda, faka amathegi kule snapshot yombhalo ngaphambi kokukhetha ukuthi igcinwa kuphi.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Okuvamile",
           "hard": "Kunzima"
         }
+      },
+      "alerts": {
+        "save_success": "I-snapshot igciniwe.",
+        "save_error": "Ayikwazanga ukugcina i-snapshot.",
+        "load_success": "I-snapshot ilayishiwe.",
+        "load_error": "Ayikwazanga ukulayisha i-snapshot.",
+        "outside": "I-snapshot kufanele ibe ngaphakathi kwefolda yokugcina.",
+        "truncated": "I-snapshot idlula umkhawulo omkhulu futhi inqanyuliwe.",
+        "unavailable": "Isici sama-snapshot asitholakali."
       }
     },
     "tasks": {
       "title": "toT — Imisebenzi",
-      "labels": {
-        "name": "Igama",
-        "summary_total": "Isamba",
-        "summary_left": "Okusele",
-        "empty": "(akunalutho)",
-        "search": "Sesha",
-        "search_placeholder": "Sesha kulabhulali..."
-      },
+      "name": "Igama",
+      "save_button": "Gcina",
+      "delete_button": "Susa",
+      "summary_total": "Isamba",
+      "summary_left": "Okusele",
+      "add_row_button": "Engeza umugqa",
+      "open_library_button": "Vula ilabhulali",
       "columns": {
         "texto": "Umbhalo",
         "tiempo": "Isikhathi",
@@ -423,36 +420,37 @@
         "falta": "Esele",
         "enlace": "Isixhumanisi",
         "comentario": "",
-        "acciones": "Izenzo"
+        "acciones": "Izenzo",
+        "tooltips": {
+          "link_open": "Vula isixhumanisi",
+          "snapshot_load": "Layisha i-snapshot yombhalo kulo mugqa",
+          "comment": "Engeza/hlela ukuphawula",
+          "move_up": "Hambisa umugqa phezulu",
+          "move_down": "Hambisa umugqa phansi",
+          "library_row_save": "Gcina kulabhulali",
+          "delete_row": "Susa umugqa"
+        }
       },
-      "buttons": {
-        "save": "Gcina",
-        "delete": "Susa",
-        "add_row": "Engeza umugqa",
-        "open_library": "Vula ilabhulali",
-        "select_snapshot": "Khetha i-snapshot",
-        "cancel": "Khansela",
-        "yes": "Yebo",
-        "no": "Cha"
-      },
-      "tooltips": {
-        "move_up": "Hambisa umugqa phezulu",
-        "move_down": "Hambisa umugqa phansi",
-        "delete_row": "Susa umugqa",
-        "library_row_save": "Gcina kulabhulali",
-        "library_row_load": "Layisha umugqa",
-        "library_row_delete": "Susa kulabhulali",
-        "snapshot_load": "Layisha i-snapshot yombhalo kulo mugqa",
-        "snapshot_select": "Khetha i-snapshot yombhalo kulo mugqa",
-        "snapshot_clear": "Susa i-snapshot ekhethiwe kulo mugqa",
-        "link_open": "Vula isixhumanisi",
-        "comment": "Engeza/hlela ukuphawula"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Ukuphawula",
+        "snapshot_select": "Khetha i-snapshot",
+        "snapshot_select_tooltip": "Khetha i-snapshot yombhalo kulo mugqa",
+        "snapshot_clear": "Susa i-snapshot ekhethiwe kulo mugqa"
+      },
+      "biblioteca": {
         "library_title": "Ilabhulali",
+        "search": "Sesha",
+        "search_placeholder": "Sesha kulabhulali...",
+        "empty": "(akunalutho)",
+        "library_row_load": "Layisha umugqa",
+        "library_row_delete": "Susa kulabhulali"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Gcina kulabhulali",
-        "library_save_question": "Faka ukuphawula?"
+        "library_save_question": "Faka ukuphawula?",
+        "yes": "Yebo",
+        "no": "Cha",
+        "cancel": "Khansela"
       },
       "alerts": {
         "task_unavailable": "Isici semisebenzi asitholakali.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Ayikwazanga ukususa kulabhulali.",
         "link_blocked": "Isixhumanisi sivinjiwe.",
         "link_missing": "Ifayela alitholakalanga.",
-        "link_error": "Iphutha ekuvuleni isixhumanisi."
-      },
-      "confirm": {
+        "link_error": "Iphutha ekuvuleni isixhumanisi.",
         "close_unsaved": "Kunezinguquko ezingakagcinwa. Uvale ngaphandle kokugcina?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Cindezela u-Play (▶) eWindini Elintantayo lapho usukulungele ukuqala. Uma ukuhlolwa sekuqalile, ungacindezeli u-Pause (⏸) uze uqede ukufunda: u-Pause uqeda ukuhlolwa; awumisi isibali-sikhathi. Cindezela u-Stop/Reset (⏹) kuphela uma ufuna ukukhansela ukuhlolwa."
-      },
       "entry": {
         "title": "Ukuhlolwa kwejubane lokufunda",
+        "show_instructions": "Bonisa imiyalelo",
+        "hide_instructions": "Fihla imiyalelo",
         "intro": "Lokhu kuhlolwa kusiza ukulinganisa ijubane lakho langempela lokufunda ngeseshini eqondisiwe. I-app izovula umbhalo bese ilinda ukuthi ucindezele u-Play (▶) eWindini Elintantayo lapho usukulungele ukuqala. Uma ukuhlolwa sekuqalile, ungacindezeli u-Pause (⏸) uze uqede ukufunda: u-Pause uqeda ukuhlolwa; awumisi isibali-sikhathi. Sebenzisa u-Stop/Reset (⏹) kuphela uma ufuna ukukhansela ukuhlolwa. Ngemva kwalokho ungabuyekeza imibuzo yokuqonda uma umbhalo uyifaka, futhi ekugcineni udale iphrezethi ngomphumela.\nNgaphambi kokuba uqale, khumbula ukuthi le mibhalo yokuhlola ivamise ukudinga imizuzu emi-5 kuya kweyi-15 yokugxila okuqhubekayo, ngaphandle kweziphazamiso.\nLe pool isebenzisa imibhalo emifushane, ngakho humusha umphumela ngokuqapha. Akufanele welulwe ngqo emibhalweni emide, lapho kuvame ukungena khona izinto ezisizayo, njengokuthola ukugeleza nomongo, nezinto eziphazamisayo, njengokuphindaphinda engqondweni nokukhathala.",
         "eligible_count": "Amafayela afanelekile:",
+        "show_bundled_entries": "Test base",
+        "get_more_files": "Thola amafayela amaningi",
+        "import_files_button": "Ngenisa amafayela",
+        "start_random_text_button": "Qala ngombhalo ongahleliwe",
+        "start_current_text_button": "Qala ngombhalo wamanje",
         "pool_exhausted_message": "Asekho amafayela okuhlola angasetshenzisiwe. Setha kabusha i-pool noma engeza amafayela amaningi.",
         "visible_empty_bundled_hidden_message": "Amafayela okuhlola akhelwe ngaphakathi afihliwe okwamanje, futhi awekho amafayela okuhlola abonakalayo angakasetshenziswa asele. Wabonise futhi amafayela akhelwe ngaphakathi noma ngenisa amanye amafayela ukuze uqhubeke.",
         "close_aria": "Vala ibhokisi lokuhlolwa kwejubane lokufunda",
         "start_random_confirm": "Lokhu kuzobhala phezu kombhalo wamanje ngombhalo okhethwe ngokungahleliwe ofanelekile ovela ku-pool. Uyafuna ukuqhubeka?",
         "reset_confirm": "Lokhu kuzosetha kabusha yonke i-pool yokuhlola futhi kumake wonke amafayela ayo njengangasetshenzisiwe futhi. Uyafuna ukuqhubeka?",
-        "import_summary": "Ukungenisa kuqediwe. Okungenisiwe: {imported}. Okuyizimpinda okweqiwe: {skippedDuplicates}. Ukuqinisekisa okuhlulekile: {failedValidation}. Okufakiwe efayeleni elicindezelwe okuhlulekile: {failedArchiveEntries}. Ukubhala okuhlulekile: {failedWrites}.",
-        "import_conflict": {
-          "title": "Ngenisa amafayela",
-          "message": "Amanye amafayela angenisiwe asevele ekhona ku-pool. Kufanele kuphathwe kanjani izimpinda?",
-          "detail": "{count} amagama efayela lendawo okuya kuyo asevele ekhona ku-pool.",
-          "buttons": {
-            "skip": "Yeqa izimpinda",
-            "replace": "Buyisela izimpinda",
-            "cancel": "Khansela ukungenisa"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Thola amafayela amaningi",
-          "import_files": "Ngenisa amafayela",
-          "show_instructions": "Bonisa imiyalelo",
-          "hide_instructions": "Fihla imiyalelo",
-          "start_random_text": "Qala ngombhalo ongahleliwe",
-          "start_current_text": "Qala ngombhalo wamanje",
-          "show_bundled_entries": "Test base"
-        },
         "tooltips": {
           "show_bundled_entries": "Faka amafayela okuhlola okuqala afakwe kuhlelo lokusebenza ephulini",
           "get_more_files": "Thola amafayela okuhlola amaningi kufolda ye-Google Drive",
@@ -519,7 +499,21 @@
           "reset_pool": "Setha kabusha i-pool yokuhlola",
           "start_random_text": "Qala ukuhlolwa ngombhalo ongahleliwe ofanelekile ovela ku-pool",
           "start_current_text": "Qala ukuhlolwa ngombhalo wamanje"
+        },
+        "import": {
+          "import_summary": "Ukungenisa kuqediwe. Okungenisiwe: {imported}. Okuyizimpinda okweqiwe: {skippedDuplicates}. Ukuqinisekisa okuhlulekile: {failedValidation}. Okufakiwe efayeleni elicindezelwe okuhlulekile: {failedArchiveEntries}. Ukubhala okuhlulekile: {failedWrites}.",
+          "import_conflict": {
+            "title": "Ngenisa amafayela",
+            "message": "Amanye amafayela angenisiwe asevele ekhona ku-pool. Kufanele kuphathwe kanjani izimpinda?",
+            "detail": "{count} amagama efayela lendawo okuya kuyo asevele ekhona ku-pool.",
+            "skip_button": "Yeqa izimpinda",
+            "replace_button": "Buyisela izimpinda",
+            "cancel_button": "Khansela ukungenisa"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Cindezela u-Play (▶) eWindini Elintantayo lapho usukulungele ukuqala. Uma ukuhlolwa sekuqalile, ungacindezeli u-Pause (⏸) uze uqede ukufunda: u-Pause uqeda ukuhlolwa; awumisi isibali-sikhathi. Cindezela u-Stop/Reset (⏹) kuphela uma ufuna ukukhansela ukuhlolwa."
       },
       "questions": {
         "title": "Imibuzo yokuqonda okufundiwe",
@@ -533,19 +527,15 @@
         "result_summary": "{correct} kokungu-{total} okulungile ({percentage})",
         "chance_at_least_observed": "Amathuba okuthola okungenani lo mphumela ngokuphendula ngokuqagela: {percentage}",
         "fatal_invalid": "Iphakheji yemibuzo ayivumelekile.",
-        "buttons": {
-          "check": "Bona umphumela",
-          "continue": "Qhubeka"
-        }
+        "check_button": "Bona umphumela",
+        "continue_button": "Qhubeka"
       },
       "result": {
         "title": "Umphumela wejubane lokufunda",
         "measured_wpm": "I-WPM elinganisiwe",
         "elapsed_time": "Isikhathi",
         "word_count": "Amagama",
-        "buttons": {
-          "continue": "Qhubeka"
-        }
+        "continue_button": "Qhubeka"
       },
       "alerts": {
         "unavailable": "Isici sokuhlolwa kwejubane lokufunda asitholakali.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "Ukuhlolwa kwejubane lokufunda kukhanseliwe ngoba elinye lamawindi eseshini livaliwe."
       }
     },
-    "modal_preset": {
-      "title_new": "Iphrezethi entsha",
-      "title_edit": "Hlela iphrezethi",
-      "heading_new": "Dala iphrezethi entsha",
-      "heading_edit": "Hlela iphrezethi ekhethiwe",
-      "name": "Igama:",
-      "name_placeholder": "Igama le-preset",
-      "wpm": "WPM:",
-      "description": "Incazelo:",
-      "description_placeholder": "Incazelo emfushane...",
-      "char_count": "Kusele izinhlamvu ezingu-{remaining}",
-      "hint": "Amaphrezethi akho agcinwa kuzilungiselelo zomsebenzisi.",
-      "cancel": "Khansela",
-      "save": "Gcina",
+    "presets": {
+      "preset_modal": {
+        "title_new": "Iphrezethi entsha",
+        "title_edit": "Hlela iphrezethi",
+        "heading_new": "Dala iphrezethi entsha",
+        "heading_edit": "Hlela iphrezethi ekhethiwe",
+        "name": "Igama:",
+        "name_placeholder": "Igama le-preset",
+        "wpm": "WPM:",
+        "description": "Incazelo:",
+        "description_placeholder": "Incazelo emfushane...",
+        "char_count": "Kusele izinhlamvu ezingu-{remaining}",
+        "hint": "Amaphrezethi akho agcinwa kuzilungiselelo zomsebenzisi.",
+        "cancel": "Khansela",
+        "save": "Gcina"
+      },
       "alerts": {
+        "not_found": "Iphrezethi ekhethiwe ayitholakalanga ku-cache.",
+        "delete_error": "Kuvele iphutha ngesikhathi kususwa iphrezethi. Hlola ikhonsoli.",
+        "restore_error": "Kuvele iphutha ngesikhathi kubuyiselwa amaphrezethi. Hlola ikhonsoli.",
+        "open_folder_unsupported": "Akunakwenzeka ukuvula ifolda yamaphrezethi kule ndawo.",
+        "open_folder_error": "Kuvele iphutha ngesikhathi kuzanywa ukuvula ifolda yamaphrezethi. Hlola ikhonsoli.",
+        "open_default_folder_failed": "Ayikwazanga ukuvula ifolda yamaphrezethi azenzakalelayo. Hlola ikhonsoli ukuthola imininingwane.",
         "unavailable": "Ingxoxo ye-preset ayitholakali kule build yohlelo lokusebenza.",
         "open_error": "Kuvele iphutha ngesikhathi kuvulwa ingxoxo ye-preset. Hlola ikhonsoli.",
         "name_empty": "Igama alikwazi ukuba nalutho.",
@@ -586,16 +584,6 @@
         "create_error": "Kuvele iphutha ngesikhathi kudalwa iphrezethi. Hlola ikhonsoli.",
         "edit_error": "Kuvele iphutha ngesikhathi kuhlelwa iphrezethi. Hlola ikhonsoli.",
         "process_error": "Kuvele iphutha ngesikhathi kucutshungulwa iphrezethi. Hlola ikhonsoli."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Iphrezethi ekhethiwe ayitholakalanga ku-cache.",
-        "delete_error": "Kuvele iphutha ngesikhathi kususwa iphrezethi. Hlola ikhonsoli.",
-        "restore_error": "Kuvele iphutha ngesikhathi kubuyiselwa amaphrezethi. Hlola ikhonsoli.",
-        "open_folder_unsupported": "Akunakwenzeka ukuvula ifolda yamaphrezethi kule ndawo.",
-        "open_folder_error": "Kuvele iphutha ngesikhathi kuzanywa ukuvula ifolda yamaphrezethi. Hlola ikhonsoli.",
-        "open_default_folder_failed": "Ayikwazanga ukuvula ifolda yamaphrezethi azenzakalelayo. Hlola ikhonsoli ukuthola imininingwane."
       }
     },
     "browser_extension": {

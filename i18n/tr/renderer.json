@@ -7,44 +7,6 @@
         "reading_speed_test": "Okuma hızı testi",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Dosyadan metin çıkar",
-        "text_extraction_abort": "Çıkarmayı durdur",
-        "overwrite_clipboard": "Geçerli metni panoyla değiştir",
-        "append_clipboard": "Pano metnini geçerli metnin sonuna ekle (yeni satır)",
-        "clipboard_repeat_count": "Pano yinelemeleri",
-        "edit": "Geçerli metnin tam penceresini aç",
-        "clear": "Geçerli metni temizle",
-        "snapshot_load": "Metin snapshot'ı yükle",
-        "snapshot_save": "Geçerli metni snapshot olarak kaydet",
-        "task_new": "Yeni görev",
-        "task_load": "Görev yükle",
-        "browser_extension": "Tarayıcı uzantısı",
-        "cibersino_website": "Cibersino web sitesi",
-        "cibersino_kofi": "Ko-fi'de destekle",
-        "new_preset": "Yeni ön ayar oluştur",
-        "edit_preset": "Seçili ön ayarı düzenle",
-        "delete_preset": "Seçili ön ayarı sil",
-        "reset_presets": "Varsayılan ön ayarları geri yükle",
-        "help_button": "Yararlı bir ipucu göster",
-        "flotante_window": "Yüzen pencere"
-      },
-      "aria": {
-        "text_extraction": "Dosyadan metin çıkar",
-        "text_extraction_abort": "Çıkarmayı durdur",
-        "browser_extension": "Tarayıcı uzantısı iletişim kutusunu aç",
-        "clipboard_repeat_count": "Yapıştırma yinelemeleri",
-        "wpm_input": "Dakikadaki kelime",
-        "wpm_slider": "Dakikadaki kelime kaydırıcısı",
-        "speed_presets": "Hız ön ayarları",
-        "precise_mode_toggle": "Hassas mod",
-        "crono_controls": "Kronometre kontrolleri",
-        "crono_display": "Kronometre göstergesi",
-        "crono_toggle": "Kronometreyi başlat veya duraklat",
-        "crono_reset": "Kronometreyi sıfırla",
-        "floating_window_toggle": "Yüzen pencere",
-        "floating_window_group": "Yüzen pencere kontrolleri"
-      },
       "speed": {
         "title": "OKUMA HIZI",
         "wpm_label": "dakikadaki kelime (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Geçen süre: ",
         "text_extraction_drop_here": "Metni çıkarmak için dosyayı bırakın"
+      },
+      "tooltips": {
+        "text_extraction": "Dosyadan metin çıkar",
+        "text_extraction_abort": "Çıkarmayı durdur",
+        "overwrite_clipboard": "Geçerli metni panoyla değiştir",
+        "append_clipboard": "Pano metnini geçerli metnin sonuna ekle (yeni satır)",
+        "clipboard_repeat_count": "Pano yinelemeleri",
+        "edit": "Geçerli metnin tam penceresini aç",
+        "clear": "Geçerli metni temizle",
+        "snapshot_load": "Metin snapshot'ı yükle",
+        "snapshot_save": "Geçerli metni snapshot olarak kaydet",
+        "task_new": "Yeni görev",
+        "task_load": "Görev yükle",
+        "browser_extension": "Tarayıcı uzantısı",
+        "cibersino_website": "Cibersino web sitesi",
+        "cibersino_kofi": "Ko-fi'de destekle",
+        "new_preset": "Yeni ön ayar oluştur",
+        "edit_preset": "Seçili ön ayarı düzenle",
+        "delete_preset": "Seçili ön ayarı sil",
+        "reset_presets": "Varsayılan ön ayarları geri yükle",
+        "help_button": "Yararlı bir ipucu göster",
+        "flotante_window": "Yüzen pencere"
+      },
+      "aria": {
+        "text_extraction": "Dosyadan metin çıkar",
+        "text_extraction_abort": "Çıkarmayı durdur",
+        "browser_extension": "Tarayıcı uzantısı iletişim kutusunu aç",
+        "clipboard_repeat_count": "Yapıştırma yinelemeleri",
+        "wpm_input": "Dakikadaki kelime",
+        "wpm_slider": "Dakikadaki kelime kaydırıcısı",
+        "speed_presets": "Hız ön ayarları",
+        "precise_mode_toggle": "Hassas mod",
+        "crono_controls": "Kronometre kontrolleri",
+        "crono_display": "Kronometre göstergesi",
+        "crono_toggle": "Kronometreyi başlat veya duraklat",
+        "crono_reset": "Kronometreyi sıfırla",
+        "floating_window_toggle": "Yüzen pencere",
+        "floating_window_group": "Yüzen pencere kontrolleri"
       },
       "alerts": {
         "clipboard_too_large": "Pano metni işlenemeyecek kadar büyük. Kısaltın ve yeniden deneyin.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "Kaydedilen PDF: ",
         "reveal_saved_pdf_button": "Kaydedilen PDF’yi göster"
       },
+      "single_file_heavy": {
+        "case_a_title": "Tam PDF OCR için çok büyük",
+        "case_a_message": "Tam PDF, OCR sağlayıcı sınırını ({providerLimitMb} MB) aşıyor. Çıkarımdan önce otomatik olarak oluşturulmuş girdilere bölmek için ortak planlayıcıyı açabilirsiniz.",
+        "case_b_title": "Oluşturulan aralık OCR için çok büyük",
+        "case_b_message": "Seçilen aralık için oluşturulan PDF, OCR sağlayıcı sınırını ({providerLimitMb} MB) aşıyor. Yüklenmedi. Sayfa seçimine dönebilir, yerleşik yöntemi kullanabilir veya tam PDF’yi bölmek için ortak planlayıcıyı açabilirsiniz.",
+        "source_file_label": "Kaynak dosya:",
+        "selected_range_label": "Seçilen aralık:",
+        "generated_pdf_label": "Oluşturulan PDF:",
+        "generated_pdf_size_label": "Oluşturulan PDF boyutu:",
+        "source_size_label": "Kaynak dosya boyutu:",
+        "total_pages_label": "Toplam sayfa:",
+        "split_button": "Tam PDF’yi böl ve planla",
+        "return_to_pages_button": "Sayfalara geri dön",
+        "use_native_button": "Yerleşik yöntemi kullan",
+        "reveal_generated_pdf_button": "Oluşturulan PDF’yi göster",
+        "cancel_button": "İptal",
+        "close_aria": "OCR için ağır PDF iletişim kutusunu kapat"
+      },
       "batch_plan": {
         "title": "Toplu çıkarımı planla",
         "single_file_title": "Otomatik PDF bölmeyi planla",
@@ -181,7 +199,6 @@
         "failure_legend": "Hata durumundaki davranış",
         "failure_default": "Son başarılı işlemden sonra birimi kapat ve sonraki birimle devam et",
         "failure_continue": "Hatayı atla ve aynı birim içinde devam et",
-        "overwrite_confirm": "Çıkarma başladığında bu işlem geçerli metnin üzerine yazacak. Devam etmek istiyor musunuz?",
         "start_button": "Çıkarımı başlat",
         "cancel_button": "İptal",
         "close_aria": "Toplu çıkarım planlamasını kapat"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} oluşturuldu",
         "snapshot_creation_failed": "(JSON oluşturma başarısız: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "Tam PDF OCR için çok büyük",
-        "case_a_message": "Tam PDF, OCR sağlayıcı sınırını ({providerLimitMb} MB) aşıyor. Çıkarımdan önce otomatik olarak oluşturulmuş girdilere bölmek için ortak planlayıcıyı açabilirsiniz.",
-        "case_b_title": "Oluşturulan aralık OCR için çok büyük",
-        "case_b_message": "Seçilen aralık için oluşturulan PDF, OCR sağlayıcı sınırını ({providerLimitMb} MB) aşıyor. Yüklenmedi. Sayfa seçimine dönebilir, yerleşik yöntemi kullanabilir veya tam PDF’yi bölmek için ortak planlayıcıyı açabilirsiniz.",
-        "source_file_label": "Kaynak dosya:",
-        "selected_range_label": "Seçilen aralık:",
-        "generated_pdf_label": "Oluşturulan PDF:",
-        "generated_pdf_size_label": "Oluşturulan PDF boyutu:",
-        "source_size_label": "Kaynak dosya boyutu:",
-        "total_pages_label": "Toplam sayfa:",
-        "split_button": "Tam PDF’yi böl ve planla",
-        "return_to_pages_button": "Sayfalara geri dön",
-        "use_native_button": "Yerleşik yöntemi kullan",
-        "reveal_generated_pdf_button": "Oluşturulan PDF’yi göster",
-        "cancel_button": "İptal",
-        "close_aria": "OCR için ağır PDF iletişim kutusunu kapat"
-      },
       "alerts": {
+        "overwrite_confirm": "Çıkarma başladığında bu işlem geçerli metnin üzerine yazacak. Devam etmek istiyor musunuz?",
         "start_error": "Çıkarma başlatılırken hata oluştu. Konsolu kontrol edin.",
         "precondition_blocked": "Çıkarma başlatmak için tüm ikincil pencereleri kapatın ve kronometreyi durdurun.",
         "precondition_error": "Çıkarma ön koşulları denetlenirken hata oluştu. Konsolu kontrol edin.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "Seçilen PDF sayfa aralığı geçersiz. Aralığı ayarlayıp tekrar deneyin.",
           "subset_creation_failed": "Çıkarma için seçili sayfalardan PDF oluşturulamadı. Dosyayı kontrol edip tekrar deneyin."
         },
+        "native": {
+          "runtime_error": "Çıkarma sırasında yerel çıkarma çalışma zamanı hatası oluştu. Konsolu kontrol edin ve yeniden deneyin.",
+          "unreadable_or_corrupt": "Seçili dosya yerel çıkarma için okunamıyor veya bozuk.",
+          "encrypted_or_password_protected": "Seçili PDF şifreli veya parola korumalı olduğu için yerel olarak çıkarılamaz.",
+          "cancelled": "Yerel çıkarma iptal edildi."
+        },
         "ocr": {
           "unavailable": "OCR kullanılamıyor. Kurulum/yetkilendirme durumunu kontrol edin ve yeniden deneyin.",
           "activation_required": "OCR aktivasyonu gerekli. Google OCR'de oturum açın ve yeniden deneyin.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR kota/hız sınırları nedeniyle geçici olarak engellendi. Bekleyin ve yeniden deneyin.",
           "runtime_error": "Çıkarma sırasında OCR çalışma zamanı hatası oluştu. Konsolu kontrol edin ve yeniden deneyin.",
           "cancelled": "OCR çıkarma iptal edildi.",
-          "cleanup_warning": "OCR tamamlandı, ancak geçici uzak dosya temizliği başarısız oldu. Google Drive klasörünüzü kontrol edin."
-        },
-        "batch_ocr": {
-          "activation_required": "Bu toplu işlem OCR öğeleri içeriyor, ancak Google OCR etkin değil. Tercihler > Google OCR’ı etkinleştir seçeneğini kullanın ve ardından toplu işlemi yeniden başlatın.",
-          "token_state_invalid": "Bu toplu işlem OCR öğeleri içeriyor, ancak kaydedilmiş Google OCR oturum açma durumu geçersiz. Tercihler > Google OCR’ı etkinleştir seçeneğini yeniden kullanın ve ardından toplu işlemi yeniden başlatın.",
-          "connectivity_failed": "Bu toplu işlem OCR öğeleri içeriyor, ancak OCR için internet bağlantısı gerekir. Çıkarma işlemini başlatmadan önce bağlantınızı kontrol edip tekrar deneyin.",
-          "quota_or_rate_limited": "Bu toplu işlem OCR öğeleri içeriyor, ancak OCR kota/hız sınırları nedeniyle geçici olarak engellendi. Çıkarma işlemini başlatmadan önce bekleyip tekrar deneyin.",
-          "unavailable": "Bu toplu işlem OCR öğeleri içeriyor, ancak Google OCR şu anda kullanılamıyor. OCR henüz etkin değilse Tercihler > Google OCR’ı etkinleştir seçeneğini kullanın. Aksi halde OCR kurulumu/durumunu kontrol edin ve toplu işlemi başlatmadan önce yeniden deneyin."
-        },
-        "native": {
-          "runtime_error": "Çıkarma sırasında yerel çıkarma çalışma zamanı hatası oluştu. Konsolu kontrol edin ve yeniden deneyin.",
-          "unreadable_or_corrupt": "Seçili dosya yerel çıkarma için okunamıyor veya bozuk.",
-          "encrypted_or_password_protected": "Seçili PDF şifreli veya parola korumalı olduğu için yerel olarak çıkarılamaz.",
-          "cancelled": "Yerel çıkarma iptal edildi."
+          "cleanup_warning": "OCR tamamlandı, ancak geçici uzak dosya temizliği başarısız oldu. Google Drive klasörünüzü kontrol edin.",
+          "batch_ocr": {
+            "activation_required": "Bu toplu işlem OCR öğeleri içeriyor, ancak Google OCR etkin değil. Tercihler > Google OCR’ı etkinleştir seçeneğini kullanın ve ardından toplu işlemi yeniden başlatın.",
+            "token_state_invalid": "Bu toplu işlem OCR öğeleri içeriyor, ancak kaydedilmiş Google OCR oturum açma durumu geçersiz. Tercihler > Google OCR’ı etkinleştir seçeneğini yeniden kullanın ve ardından toplu işlemi yeniden başlatın.",
+            "connectivity_failed": "Bu toplu işlem OCR öğeleri içeriyor, ancak OCR için internet bağlantısı gerekir. Çıkarma işlemini başlatmadan önce bağlantınızı kontrol edip tekrar deneyin.",
+            "quota_or_rate_limited": "Bu toplu işlem OCR öğeleri içeriyor, ancak OCR kota/hız sınırları nedeniyle geçici olarak engellendi. Çıkarma işlemini başlatmadan önce bekleyip tekrar deneyin.",
+            "unavailable": "Bu toplu işlem OCR öğeleri içeriyor, ancak Google OCR şu anda kullanılamıyor. OCR henüz etkin değilse Tercihler > Google OCR’ı etkinleştir seçeneğini kullanın. Aksi halde OCR kurulumu/durumunu kontrol edin ve toplu işlemi başlatmadan önce yeniden deneyin."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Metin boyutunu sıfırla",
       "read_progress_label": "Okundu",
       "clear_title": "Temizle",
+      "editor_find": {
+        "input_placeholder": "Bul...",
+        "input_aria": "Metinde bul",
+        "expand_title": "Değiştirme kontrollerini göster",
+        "collapse_title": "Değiştirme kontrollerini gizle",
+        "replace_placeholder": "Değiştir...",
+        "replace_aria": "Değiştirme metni",
+        "replace": "Değiştir",
+        "replace_all": "Tümünü değiştir",
+        "prev_title": "Önceki eşleşme",
+        "next_title": "Sonraki eşleşme",
+        "close_title": "Arama çubuğunu kapat",
+        "replace_title": "Geçerli eşleşmeyi değiştir",
+        "replace_all_title": "Tüm eşleşmeleri değiştir",
+        "replace_timeout": "Değiştirme zaman aşımına uğradı. Yeniden deneyin.",
+        "status_no_matches": "Eşleşme yok",
+        "status_empty_query": "Aramak için yazın"
+      },
       "alerts": {
         "start_failed": "Text Editor başlatılamadı.",
         "start_timeout": "Text Editor başlamak için çok uzun sürdü ve kapatıldı.",
@@ -315,36 +333,7 @@
         "calc_error": "Hesaplama sırasında hata oluştu. Konsolu kontrol edin."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Bul...",
-      "input_aria": "Metinde bul",
-      "expand_title": "Değiştirme kontrollerini göster",
-      "collapse_title": "Değiştirme kontrollerini gizle",
-      "replace_placeholder": "Değiştir...",
-      "replace_aria": "Değiştirme metni",
-      "replace": "Değiştir",
-      "replace_all": "Tümünü değiştir",
-      "prev_title": "Önceki eşleşme",
-      "next_title": "Sonraki eşleşme",
-      "close_title": "Arama çubuğunu kapat",
-      "replace_title": "Geçerli eşleşmeyi değiştir",
-      "replace_all_title": "Tüm eşleşmeleri değiştir",
-      "replace_timeout": "Değiştirme zaman aşımına uğradı. Yeniden deneyin.",
-      "status_no_matches": "Eşleşme yok",
-      "status_empty_query": "Aramak için yazın"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Snapshot kaydedildi.",
-        "save_error": "Snapshot kaydedilemedi.",
-        "load_success": "Snapshot yüklendi.",
-        "load_error": "Snapshot yüklenemedi.",
-        "outside": "Snapshot, snapshot klasörünün içinde olmalıdır.",
-        "truncated": "Snapshot en büyük boyutu aşıyor ve kesildi.",
-        "unavailable": "Snapshot işlevi kullanılamıyor."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Metin snapshot'ını kaydet",
       "message": "Kaydedilecek konumu seçmeden önce bu metin snapshot'ını isteğe bağlı olarak etiketleyin.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Normal",
           "hard": "Zor"
         }
+      },
+      "alerts": {
+        "save_success": "Snapshot kaydedildi.",
+        "save_error": "Snapshot kaydedilemedi.",
+        "load_success": "Snapshot yüklendi.",
+        "load_error": "Snapshot yüklenemedi.",
+        "outside": "Snapshot, snapshot klasörünün içinde olmalıdır.",
+        "truncated": "Snapshot en büyük boyutu aşıyor ve kesildi.",
+        "unavailable": "Snapshot işlevi kullanılamıyor."
       }
     },
     "tasks": {
       "title": "toT — Görevler",
-      "labels": {
-        "name": "Ad",
-        "summary_total": "Toplam",
-        "summary_left": "Kalan",
-        "empty": "(boş)",
-        "search": "Ara",
-        "search_placeholder": "Kütüphanede ara..."
-      },
+      "name": "Ad",
+      "save_button": "Kaydet",
+      "delete_button": "Sil",
+      "summary_total": "Toplam",
+      "summary_left": "Kalan",
+      "add_row_button": "Satır ekle",
+      "open_library_button": "Kütüphaneyi aç",
       "columns": {
         "texto": "Metin",
         "tiempo": "Süre",
@@ -423,36 +420,37 @@
         "falta": "Kalan",
         "enlace": "Bağlantı",
         "comentario": "",
-        "acciones": "Eylemler"
+        "acciones": "Eylemler",
+        "tooltips": {
+          "link_open": "Bağlantıyı aç",
+          "snapshot_load": "Bu satır için metin snapshot'ı yükle",
+          "comment": "Yorum ekle/düzenle",
+          "move_up": "Yukarı taşı",
+          "move_down": "Aşağı taşı",
+          "library_row_save": "Kütüphaneye kaydet",
+          "delete_row": "Satırı sil"
+        }
       },
-      "buttons": {
-        "save": "Kaydet",
-        "delete": "Sil",
-        "add_row": "Satır ekle",
-        "open_library": "Kütüphaneyi aç",
-        "select_snapshot": "Snapshot seç",
-        "cancel": "İptal",
-        "yes": "Evet",
-        "no": "Hayır"
-      },
-      "tooltips": {
-        "move_up": "Yukarı taşı",
-        "move_down": "Aşağı taşı",
-        "delete_row": "Satırı sil",
-        "library_row_save": "Kütüphaneye kaydet",
-        "library_row_load": "Satırı yükle",
-        "library_row_delete": "Kütüphaneden sil",
-        "snapshot_load": "Bu satır için metin snapshot'ı yükle",
-        "snapshot_select": "Bu satır için metin snapshot'ı seç",
-        "snapshot_clear": "Seçili snapshot'ı bu satırdan kaldır",
-        "link_open": "Bağlantıyı aç",
-        "comment": "Yorum ekle/düzenle"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Yorum",
+        "snapshot_select": "Snapshot seç",
+        "snapshot_select_tooltip": "Bu satır için metin snapshot'ı seç",
+        "snapshot_clear": "Seçili snapshot'ı bu satırdan kaldır"
+      },
+      "biblioteca": {
         "library_title": "Kütüphane",
+        "search": "Ara",
+        "search_placeholder": "Kütüphanede ara...",
+        "empty": "(boş)",
+        "library_row_load": "Satırı yükle",
+        "library_row_delete": "Kütüphaneden sil"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Kütüphaneye kaydet",
-        "library_save_question": "Yorum dahil edilsin mi?"
+        "library_save_question": "Yorum dahil edilsin mi?",
+        "yes": "Evet",
+        "no": "Hayır",
+        "cancel": "İptal"
       },
       "alerts": {
         "task_unavailable": "Görev işlevi kullanılamıyor.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Kütüphaneden silinemedi.",
         "link_blocked": "Bağlantı engellendi.",
         "link_missing": "Dosya bulunamadı.",
-        "link_error": "Bağlantı açılırken hata oluştu."
-      },
-      "confirm": {
+        "link_error": "Bağlantı açılırken hata oluştu.",
         "close_unsaved": "Kaydedilmemiş değişiklikler var. Kaydetmeden kapatılsın mı?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Başlamaya hazır olduğunuzda Yüzen Pencere'de Play (▶) düğmesine basın. Test başladıktan sonra okumayı bitirene kadar Pause (⏸) düğmesine basmayın: Pause testi bitirir; zamanlayıcıyı duraklatmaz. Testi iptal etmek istiyorsanız yalnızca Stop/Reset (⏹) düğmesine basın."
-      },
       "entry": {
         "title": "Okuma hızı testi",
+        "show_instructions": "Yönergeleri göster",
+        "hide_instructions": "Yönergeleri gizle",
         "intro": "Bu test, yönlendirmeli bir oturum aracılığıyla gerçek okuma hızınızı tahmin etmek için tasarlanmıştır. Uygulama metni açacak ve başlamaya hazır olduğunuzda Yüzen Pencere'de Play (▶) düğmesine basmanızı bekleyecektir. Test başladıktan sonra okumayı bitirene kadar Pause (⏸) düğmesine basmayın: Pause testi bitirir; zamanlayıcıyı duraklatmaz. Testi iptal etmek istiyorsanız yalnızca Stop/Reset (⏹) kullanın. Sonrasında, metin içeriyorsa anlama sorularını inceleyebilir ve en sonunda sonuçtan bir ön ayar oluşturabilirsiniz.\nBaşlamadan önce, bu test metinlerinin genellikle 5 ila 15 dakika kesintisiz dikkat gerektirdiğini unutmayın.\nBu havuz kısa metinler kullanır; bu yüzden sonucu dikkatle değerlendirin. Akış ve bağlamsal birikim gibi olumlu etkenlerin, zihinsel tekrar ve yorgunluk gibi olumsuz etkenlerin genellikle devreye girdiği uzun metinlere doğrudan genellenmemelidir.",
         "eligible_count": "Uygun dosyalar:",
+        "show_bundled_entries": "Temel testler",
+        "get_more_files": "Daha fazla dosya al",
+        "import_files_button": "Dosyaları içe aktar",
+        "start_random_text_button": "Rastgele metinle başlat",
+        "start_current_text_button": "Geçerli metinle başlat",
         "pool_exhausted_message": "Kullanılmamış test dosyası kalmadı. Havuzu sıfırlayın veya daha fazla dosya ekleyin.",
         "visible_empty_bundled_hidden_message": "Yerleşik test dosyaları şu anda gizli ve görünür durumda kullanılmamış test dosyası kalmadı. Devam etmek için yerleşik dosyaları yeniden gösterin veya daha fazla dosya içe aktarın.",
         "close_aria": "Okuma hızı testi iletişim kutusunu kapat",
         "start_random_confirm": "Bu işlem geçerli metni havuzdan rastgele seçilen uygun bir metinle değiştirecek. Devam etmek istiyor musunuz?",
         "reset_confirm": "Bu işlem tüm test havuzunu sıfırlayacak ve bütün dosyalarını yeniden kullanılmamış olarak işaretleyecek. Devam etmek istiyor musunuz?",
-        "import_summary": "İçe aktarma tamamlandı. İçe aktarılan: {imported}. Atlanan yinelenenler: {skippedDuplicates}. Doğrulama başarısız: {failedValidation}. Arşiv girdisi hataları: {failedArchiveEntries}. Yazma hataları: {failedWrites}.",
-        "import_conflict": {
-          "title": "Dosyaları içe aktar",
-          "message": "İçe aktarılan bazı dosyalar havuzda zaten var. Yinelenenler nasıl ele alınsın?",
-          "detail": "{count} hedef dosya adı havuzda zaten var.",
-          "buttons": {
-            "skip": "Yinelenenleri atla",
-            "replace": "Yinelenenleri değiştir",
-            "cancel": "İçe aktarmayı iptal et"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Daha fazla dosya al",
-          "import_files": "Dosyaları içe aktar",
-          "show_instructions": "Yönergeleri göster",
-          "hide_instructions": "Yönergeleri gizle",
-          "start_random_text": "Rastgele metinle başlat",
-          "start_current_text": "Geçerli metinle başlat",
-          "show_bundled_entries": "Temel testler"
-        },
         "tooltips": {
           "show_bundled_entries": "Uygulamayla birlikte gelen başlangıç test dosyalarını havuza dahil et",
           "get_more_files": "Google Drive klasöründen daha fazla test dosyası al",
@@ -519,7 +499,21 @@
           "reset_pool": "Test havuzunu sıfırla",
           "start_random_text": "Testi havuzdan rastgele seçilen uygun bir metinle başlat",
           "start_current_text": "Testi geçerli metinle başlat"
+        },
+        "import": {
+          "import_summary": "İçe aktarma tamamlandı. İçe aktarılan: {imported}. Atlanan yinelenenler: {skippedDuplicates}. Doğrulama başarısız: {failedValidation}. Arşiv girdisi hataları: {failedArchiveEntries}. Yazma hataları: {failedWrites}.",
+          "import_conflict": {
+            "title": "Dosyaları içe aktar",
+            "message": "İçe aktarılan bazı dosyalar havuzda zaten var. Yinelenenler nasıl ele alınsın?",
+            "detail": "{count} hedef dosya adı havuzda zaten var.",
+            "skip_button": "Yinelenenleri atla",
+            "replace_button": "Yinelenenleri değiştir",
+            "cancel_button": "İçe aktarmayı iptal et"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Başlamaya hazır olduğunuzda Yüzen Pencere'de Play (▶) düğmesine basın. Test başladıktan sonra okumayı bitirene kadar Pause (⏸) düğmesine basmayın: Pause testi bitirir; zamanlayıcıyı duraklatmaz. Testi iptal etmek istiyorsanız yalnızca Stop/Reset (⏹) düğmesine basın."
       },
       "questions": {
         "title": "Okuduğunu Anlama Soruları",
@@ -533,19 +527,15 @@
         "result_summary": "{total} sorudan {correct} doğru ({percentage})",
         "chance_at_least_observed": "Rastgele tahminle en az bu puanı alma olasılığı: {percentage}",
         "fatal_invalid": "Soru payload'u geçersiz.",
-        "buttons": {
-          "check": "Sonucu kontrol et",
-          "continue": "Devam et"
-        }
+        "check_button": "Sonucu kontrol et",
+        "continue_button": "Devam et"
       },
       "result": {
         "title": "Okuma hızı sonucu",
         "measured_wpm": "Ölçülen WPM",
         "elapsed_time": "Süre",
         "word_count": "Kelimeler",
-        "buttons": {
-          "continue": "Devam et"
-        }
+        "continue_button": "Devam et"
       },
       "alerts": {
         "unavailable": "Okuma hızı testi özelliği kullanılamıyor.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "Oturum pencerelerinden biri kapandığı için okuma hızı testi iptal edildi."
       }
     },
-    "modal_preset": {
-      "title_new": "Yeni ön ayar",
-      "title_edit": "Ön ayarı düzenle",
-      "heading_new": "Yeni ön ayar oluştur",
-      "heading_edit": "Seçili ön ayarı düzenle",
-      "name": "Ad:",
-      "name_placeholder": "Preset adı",
-      "wpm": "WPM:",
-      "description": "Açıklama:",
-      "description_placeholder": "Kısa açıklama...",
-      "char_count": "{remaining} karakter kaldı",
-      "hint": "Özel ön ayarlar kullanıcı ayarlarında saklanır.",
-      "cancel": "İptal",
-      "save": "Kaydet",
+    "presets": {
+      "preset_modal": {
+        "title_new": "Yeni ön ayar",
+        "title_edit": "Ön ayarı düzenle",
+        "heading_new": "Yeni ön ayar oluştur",
+        "heading_edit": "Seçili ön ayarı düzenle",
+        "name": "Ad:",
+        "name_placeholder": "Preset adı",
+        "wpm": "WPM:",
+        "description": "Açıklama:",
+        "description_placeholder": "Kısa açıklama...",
+        "char_count": "{remaining} karakter kaldı",
+        "hint": "Özel ön ayarlar kullanıcı ayarlarında saklanır.",
+        "cancel": "İptal",
+        "save": "Kaydet"
+      },
       "alerts": {
+        "not_found": "Seçili ön ayar önbellekte bulunamadı.",
+        "delete_error": "Ön ayar silinirken hata oluştu. Konsolu kontrol edin.",
+        "restore_error": "Ön ayarlar geri yüklenirken hata oluştu. Konsolu kontrol edin.",
+        "open_folder_unsupported": "Bu ortamda ön ayar klasörü açılamaz.",
+        "open_folder_error": "Ön ayar klasörü açılmaya çalışılırken hata oluştu. Konsolu kontrol edin.",
+        "open_default_folder_failed": "Varsayılan ön ayar klasörü açılamadı. Ayrıntılar için konsolu kontrol edin.",
         "unavailable": "Preset iletişim kutusu bu uygulama derlemesinde kullanılamıyor.",
         "open_error": "Preset iletişim kutusu açılırken bir hata oluştu. Konsolu kontrol edin.",
         "name_empty": "Ad boş olamaz.",
@@ -586,16 +584,6 @@
         "create_error": "Ön ayar oluşturulurken hata oluştu. Konsolu kontrol edin.",
         "edit_error": "Ön ayar düzenlenirken hata oluştu. Konsolu kontrol edin.",
         "process_error": "Ön ayar işlenirken hata oluştu. Konsolu kontrol edin."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Seçili ön ayar önbellekte bulunamadı.",
-        "delete_error": "Ön ayar silinirken hata oluştu. Konsolu kontrol edin.",
-        "restore_error": "Ön ayarlar geri yüklenirken hata oluştu. Konsolu kontrol edin.",
-        "open_folder_unsupported": "Bu ortamda ön ayar klasörü açılamaz.",
-        "open_folder_error": "Ön ayar klasörü açılmaya çalışılırken hata oluştu. Konsolu kontrol edin.",
-        "open_default_folder_failed": "Varsayılan ön ayar klasörü açılamadı. Ayrıntılar için konsolu kontrol edin."
       }
     },
     "browser_extension": {

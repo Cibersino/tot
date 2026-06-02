@@ -7,44 +7,6 @@
         "reading_speed_test": "Bài kiểm tra tốc độ đọc",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Trích xuất văn bản từ tệp",
-        "text_extraction_abort": "Hủy trích xuất",
-        "overwrite_clipboard": "Thay thế văn bản hiện tại bằng clipboard",
-        "append_clipboard": "Thêm clipboard vào cuối văn bản hiện tại (dòng mới)",
-        "clipboard_repeat_count": "Số lần lặp clipboard",
-        "edit": "Mở cửa sổ toàn bộ văn bản hiện tại",
-        "clear": "Xóa văn bản hiện tại",
-        "snapshot_load": "Tải bản lưu văn bản",
-        "snapshot_save": "Lưu văn bản hiện tại thành bản lưu",
-        "task_new": "Tác vụ mới",
-        "task_load": "Tải tác vụ",
-        "browser_extension": "Tiện ích mở rộng trình duyệt",
-        "cibersino_website": "Trang web Cibersino",
-        "cibersino_kofi": "Ủng hộ tôi trên Ko-fi",
-        "new_preset": "Tạo preset mới",
-        "edit_preset": "Chỉnh sửa preset đã chọn",
-        "delete_preset": "Xóa preset đã chọn",
-        "reset_presets": "Khôi phục preset mặc định",
-        "help_button": "Hiển thị một mẹo hữu ích",
-        "flotante_window": "Cửa sổ nổi"
-      },
-      "aria": {
-        "text_extraction": "Trích xuất văn bản từ tệp",
-        "text_extraction_abort": "Hủy trích xuất",
-        "browser_extension": "Mở hộp thoại tiện ích mở rộng trình duyệt",
-        "clipboard_repeat_count": "Số lần dán",
-        "wpm_input": "Số từ mỗi phút",
-        "wpm_slider": "Thanh trượt số từ mỗi phút",
-        "speed_presets": "Preset tốc độ",
-        "precise_mode_toggle": "Chế độ chính xác",
-        "crono_controls": "Điều khiển đồng hồ bấm giờ",
-        "crono_display": "Hiển thị đồng hồ bấm giờ",
-        "crono_toggle": "Bắt đầu hoặc tạm dừng đồng hồ bấm giờ",
-        "crono_reset": "Đặt lại đồng hồ bấm giờ",
-        "floating_window_toggle": "Cửa sổ nổi",
-        "floating_window_group": "Điều khiển cửa sổ nổi"
-      },
       "speed": {
         "title": "TỐC ĐỘ ĐỌC",
         "wpm_label": "từ mỗi phút (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Đã trôi qua: ",
         "text_extraction_drop_here": "Thả tệp để trích xuất văn bản"
+      },
+      "tooltips": {
+        "text_extraction": "Trích xuất văn bản từ tệp",
+        "text_extraction_abort": "Hủy trích xuất",
+        "overwrite_clipboard": "Thay thế văn bản hiện tại bằng clipboard",
+        "append_clipboard": "Thêm clipboard vào cuối văn bản hiện tại (dòng mới)",
+        "clipboard_repeat_count": "Số lần lặp clipboard",
+        "edit": "Mở cửa sổ toàn bộ văn bản hiện tại",
+        "clear": "Xóa văn bản hiện tại",
+        "snapshot_load": "Tải bản lưu văn bản",
+        "snapshot_save": "Lưu văn bản hiện tại thành bản lưu",
+        "task_new": "Tác vụ mới",
+        "task_load": "Tải tác vụ",
+        "browser_extension": "Tiện ích mở rộng trình duyệt",
+        "cibersino_website": "Trang web Cibersino",
+        "cibersino_kofi": "Ủng hộ tôi trên Ko-fi",
+        "new_preset": "Tạo preset mới",
+        "edit_preset": "Chỉnh sửa preset đã chọn",
+        "delete_preset": "Xóa preset đã chọn",
+        "reset_presets": "Khôi phục preset mặc định",
+        "help_button": "Hiển thị một mẹo hữu ích",
+        "flotante_window": "Cửa sổ nổi"
+      },
+      "aria": {
+        "text_extraction": "Trích xuất văn bản từ tệp",
+        "text_extraction_abort": "Hủy trích xuất",
+        "browser_extension": "Mở hộp thoại tiện ích mở rộng trình duyệt",
+        "clipboard_repeat_count": "Số lần dán",
+        "wpm_input": "Số từ mỗi phút",
+        "wpm_slider": "Thanh trượt số từ mỗi phút",
+        "speed_presets": "Preset tốc độ",
+        "precise_mode_toggle": "Chế độ chính xác",
+        "crono_controls": "Điều khiển đồng hồ bấm giờ",
+        "crono_display": "Hiển thị đồng hồ bấm giờ",
+        "crono_toggle": "Bắt đầu hoặc tạm dừng đồng hồ bấm giờ",
+        "crono_reset": "Đặt lại đồng hồ bấm giờ",
+        "floating_window_toggle": "Cửa sổ nổi",
+        "floating_window_group": "Điều khiển cửa sổ nổi"
       },
       "alerts": {
         "clipboard_too_large": "Văn bản trong clipboard quá lớn để xử lý. Hãy rút gọn và thử lại.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "PDF đã lưu: ",
         "reveal_saved_pdf_button": "Hiển thị PDF đã lưu"
       },
+      "single_file_heavy": {
+        "case_a_title": "PDF đầy đủ quá lớn cho OCR",
+        "case_a_message": "PDF đầy đủ vượt quá giới hạn của nhà cung cấp OCR ({providerLimitMb} MB). Bạn có thể mở trình lập kế hoạch dùng chung để tự động chia nó thành dữ liệu đầu vào được tạo trước khi trích xuất.",
+        "case_b_title": "Khoảng đã tạo quá lớn cho OCR",
+        "case_b_message": "PDF được tạo cho khoảng trang đã chọn vượt quá giới hạn của nhà cung cấp OCR ({providerLimitMb} MB). Nó không được tải lên. Bạn có thể quay lại phần chọn trang, dùng phương thức tích hợp hoặc mở trình lập kế hoạch dùng chung để chia PDF đầy đủ.",
+        "source_file_label": "Tệp nguồn:",
+        "selected_range_label": "Khoảng đã chọn:",
+        "generated_pdf_label": "PDF đã tạo:",
+        "generated_pdf_size_label": "Kích thước PDF đã tạo:",
+        "source_size_label": "Kích thước tệp nguồn:",
+        "total_pages_label": "Tổng số trang:",
+        "split_button": "Chia và lập kế hoạch PDF đầy đủ",
+        "return_to_pages_button": "Quay lại trang",
+        "use_native_button": "Dùng phương thức tích hợp",
+        "reveal_generated_pdf_button": "Hiển thị PDF đã tạo",
+        "cancel_button": "Hủy",
+        "close_aria": "Đóng hộp thoại PDF nặng cho OCR"
+      },
       "batch_plan": {
         "title": "Lập kế hoạch trích xuất theo lô",
         "single_file_title": "Lập kế hoạch chia PDF tự động",
@@ -181,7 +199,6 @@
         "failure_legend": "Cách xử lý khi thất bại",
         "failure_default": "Đóng đơn vị sau lần thành công cuối cùng và tiếp tục với đơn vị tiếp theo",
         "failure_continue": "Bỏ qua lỗi và tiếp tục trong cùng đơn vị",
-        "overwrite_confirm": "Thao tác này sẽ ghi đè văn bản hiện tại khi quá trình trích xuất bắt đầu. Bạn có muốn tiếp tục không?",
         "start_button": "Bắt đầu trích xuất",
         "cancel_button": "Hủy",
         "close_aria": "Đóng kế hoạch trích xuất theo lô"
@@ -211,25 +228,8 @@
         "snapshot_created": "đã tạo {filename}",
         "snapshot_creation_failed": "(tạo JSON thất bại: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "PDF đầy đủ quá lớn cho OCR",
-        "case_a_message": "PDF đầy đủ vượt quá giới hạn của nhà cung cấp OCR ({providerLimitMb} MB). Bạn có thể mở trình lập kế hoạch dùng chung để tự động chia nó thành dữ liệu đầu vào được tạo trước khi trích xuất.",
-        "case_b_title": "Khoảng đã tạo quá lớn cho OCR",
-        "case_b_message": "PDF được tạo cho khoảng trang đã chọn vượt quá giới hạn của nhà cung cấp OCR ({providerLimitMb} MB). Nó không được tải lên. Bạn có thể quay lại phần chọn trang, dùng phương thức tích hợp hoặc mở trình lập kế hoạch dùng chung để chia PDF đầy đủ.",
-        "source_file_label": "Tệp nguồn:",
-        "selected_range_label": "Khoảng đã chọn:",
-        "generated_pdf_label": "PDF đã tạo:",
-        "generated_pdf_size_label": "Kích thước PDF đã tạo:",
-        "source_size_label": "Kích thước tệp nguồn:",
-        "total_pages_label": "Tổng số trang:",
-        "split_button": "Chia và lập kế hoạch PDF đầy đủ",
-        "return_to_pages_button": "Quay lại trang",
-        "use_native_button": "Dùng phương thức tích hợp",
-        "reveal_generated_pdf_button": "Hiển thị PDF đã tạo",
-        "cancel_button": "Hủy",
-        "close_aria": "Đóng hộp thoại PDF nặng cho OCR"
-      },
       "alerts": {
+        "overwrite_confirm": "Thao tác này sẽ ghi đè văn bản hiện tại khi quá trình trích xuất bắt đầu. Bạn có muốn tiếp tục không?",
         "start_error": "Đã xảy ra lỗi khi bắt đầu trích xuất. Hãy kiểm tra console.",
         "precondition_blocked": "Để bắt đầu trích xuất, hãy đóng tất cả cửa sổ phụ và dừng đồng hồ bấm giờ.",
         "precondition_error": "Đã xảy ra lỗi khi kiểm tra điều kiện trích xuất. Hãy kiểm tra console.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "Phạm vi trang PDF đã chọn không hợp lệ. Hãy điều chỉnh phạm vi rồi thử lại.",
           "subset_creation_failed": "Không thể tạo PDF gồm các trang đã chọn để trích xuất. Hãy kiểm tra tệp rồi thử lại."
         },
+        "native": {
+          "runtime_error": "Đã xảy ra lỗi runtime trích xuất native trong khi trích xuất. Hãy kiểm tra console và thử lại.",
+          "unreadable_or_corrupt": "Tệp đã chọn không đọc được hoặc bị hỏng đối với trích xuất native.",
+          "encrypted_or_password_protected": "PDF đã chọn được mã hóa hoặc bảo vệ bằng mật khẩu và không thể trích xuất native.",
+          "cancelled": "Trích xuất native đã bị hủy."
+        },
         "ocr": {
           "unavailable": "OCR không khả dụng. Hãy kiểm tra trạng thái thiết lập/xác thực và thử lại.",
           "activation_required": "Cần kích hoạt OCR. Hãy đăng nhập Google OCR và thử lại.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR tạm thời bị chặn do hạn mức/giới hạn tốc độ. Hãy chờ rồi thử lại.",
           "runtime_error": "Đã xảy ra lỗi runtime OCR trong khi trích xuất. Hãy kiểm tra console và thử lại.",
           "cancelled": "Trích xuất OCR đã bị hủy.",
-          "cleanup_warning": "OCR đã hoàn tất, nhưng không thể dọn tệp tạm thời từ xa. Hãy kiểm tra thư mục Google Drive của bạn."
-        },
-        "batch_ocr": {
-          "activation_required": "Lô này có các mục OCR, nhưng Google OCR chưa được bật. Dùng Tùy chọn > Bật Google OCR, rồi bắt đầu lại lô.",
-          "token_state_invalid": "Lô này có các mục OCR, nhưng trạng thái đăng nhập Google OCR đã lưu không hợp lệ. Dùng lại Tùy chọn > Bật Google OCR, rồi bắt đầu lại lô.",
-          "connectivity_failed": "Lô này có các mục OCR, nhưng OCR cần kết nối Internet. Kiểm tra kết nối rồi thử lại trước khi bắt đầu trích xuất.",
-          "quota_or_rate_limited": "Lô này có các mục OCR, nhưng OCR tạm thời bị chặn bởi giới hạn hạn mức/tốc độ. Hãy chờ rồi thử lại trước khi bắt đầu trích xuất.",
-          "unavailable": "Lô này có các mục OCR, nhưng Google OCR hiện không khả dụng. Nếu OCR chưa được bật, dùng Tùy chọn > Bật Google OCR. Nếu không, hãy kiểm tra thiết lập/trạng thái OCR và thử lại trước khi bắt đầu lô."
-        },
-        "native": {
-          "runtime_error": "Đã xảy ra lỗi runtime trích xuất native trong khi trích xuất. Hãy kiểm tra console và thử lại.",
-          "unreadable_or_corrupt": "Tệp đã chọn không đọc được hoặc bị hỏng đối với trích xuất native.",
-          "encrypted_or_password_protected": "PDF đã chọn được mã hóa hoặc bảo vệ bằng mật khẩu và không thể trích xuất native.",
-          "cancelled": "Trích xuất native đã bị hủy."
+          "cleanup_warning": "OCR đã hoàn tất, nhưng không thể dọn tệp tạm thời từ xa. Hãy kiểm tra thư mục Google Drive của bạn.",
+          "batch_ocr": {
+            "activation_required": "Lô này có các mục OCR, nhưng Google OCR chưa được bật. Dùng Tùy chọn > Bật Google OCR, rồi bắt đầu lại lô.",
+            "token_state_invalid": "Lô này có các mục OCR, nhưng trạng thái đăng nhập Google OCR đã lưu không hợp lệ. Dùng lại Tùy chọn > Bật Google OCR, rồi bắt đầu lại lô.",
+            "connectivity_failed": "Lô này có các mục OCR, nhưng OCR cần kết nối Internet. Kiểm tra kết nối rồi thử lại trước khi bắt đầu trích xuất.",
+            "quota_or_rate_limited": "Lô này có các mục OCR, nhưng OCR tạm thời bị chặn bởi giới hạn hạn mức/tốc độ. Hãy chờ rồi thử lại trước khi bắt đầu trích xuất.",
+            "unavailable": "Lô này có các mục OCR, nhưng Google OCR hiện không khả dụng. Nếu OCR chưa được bật, dùng Tùy chọn > Bật Google OCR. Nếu không, hãy kiểm tra thiết lập/trạng thái OCR và thử lại trước khi bắt đầu lô."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Đặt lại cỡ chữ",
       "read_progress_label": "Đã đọc",
       "clear_title": "Xóa",
+      "editor_find": {
+        "input_placeholder": "Tìm...",
+        "input_aria": "Tìm trong văn bản",
+        "expand_title": "Hiển thị điều khiển thay thế",
+        "collapse_title": "Ẩn điều khiển thay thế",
+        "replace_placeholder": "Thay thế...",
+        "replace_aria": "Văn bản thay thế",
+        "replace": "Thay thế",
+        "replace_all": "Thay thế tất cả",
+        "prev_title": "Kết quả trước",
+        "next_title": "Kết quả tiếp theo",
+        "close_title": "Đóng thanh tìm kiếm",
+        "replace_title": "Thay thế kết quả hiện tại",
+        "replace_all_title": "Thay thế tất cả kết quả",
+        "replace_timeout": "Thay thế quá thời gian. Hãy thử lại.",
+        "status_no_matches": "Không có kết quả",
+        "status_empty_query": "Nhập để tìm kiếm"
+      },
       "alerts": {
         "start_failed": "Không thể khởi động Text Editor.",
         "start_timeout": "Text Editor khởi động quá lâu và đã bị đóng.",
@@ -315,36 +333,7 @@
         "calc_error": "Đã xảy ra lỗi khi tính toán. Hãy kiểm tra console."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Tìm...",
-      "input_aria": "Tìm trong văn bản",
-      "expand_title": "Hiển thị điều khiển thay thế",
-      "collapse_title": "Ẩn điều khiển thay thế",
-      "replace_placeholder": "Thay thế...",
-      "replace_aria": "Văn bản thay thế",
-      "replace": "Thay thế",
-      "replace_all": "Thay thế tất cả",
-      "prev_title": "Kết quả trước",
-      "next_title": "Kết quả tiếp theo",
-      "close_title": "Đóng thanh tìm kiếm",
-      "replace_title": "Thay thế kết quả hiện tại",
-      "replace_all_title": "Thay thế tất cả kết quả",
-      "replace_timeout": "Thay thế quá thời gian. Hãy thử lại.",
-      "status_no_matches": "Không có kết quả",
-      "status_empty_query": "Nhập để tìm kiếm"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Đã lưu bản lưu.",
-        "save_error": "Không thể lưu bản lưu.",
-        "load_success": "Đã tải bản lưu.",
-        "load_error": "Không thể tải bản lưu.",
-        "outside": "Bản lưu phải nằm trong thư mục bản lưu.",
-        "truncated": "Bản lưu vượt quá kích thước tối đa và đã bị cắt bớt.",
-        "unavailable": "Chức năng bản lưu không khả dụng."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Lưu bản lưu văn bản",
       "message": "Bạn có thể gắn thẻ tùy chọn cho bản lưu văn bản này trước khi chọn nơi lưu.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Bình thường",
           "hard": "Khó"
         }
+      },
+      "alerts": {
+        "save_success": "Đã lưu bản lưu.",
+        "save_error": "Không thể lưu bản lưu.",
+        "load_success": "Đã tải bản lưu.",
+        "load_error": "Không thể tải bản lưu.",
+        "outside": "Bản lưu phải nằm trong thư mục bản lưu.",
+        "truncated": "Bản lưu vượt quá kích thước tối đa và đã bị cắt bớt.",
+        "unavailable": "Chức năng bản lưu không khả dụng."
       }
     },
     "tasks": {
       "title": "toT — Tác vụ",
-      "labels": {
-        "name": "Tên",
-        "summary_total": "Tổng",
-        "summary_left": "Còn lại",
-        "empty": "(trống)",
-        "search": "Tìm kiếm",
-        "search_placeholder": "Tìm trong thư viện..."
-      },
+      "name": "Tên",
+      "save_button": "Lưu",
+      "delete_button": "Xóa",
+      "summary_total": "Tổng",
+      "summary_left": "Còn lại",
+      "add_row_button": "Thêm hàng",
+      "open_library_button": "Mở thư viện",
       "columns": {
         "texto": "Văn bản",
         "tiempo": "Thời gian",
@@ -423,36 +420,37 @@
         "falta": "Còn lại",
         "enlace": "Liên kết",
         "comentario": "",
-        "acciones": "Hành động"
+        "acciones": "Hành động",
+        "tooltips": {
+          "link_open": "Mở liên kết",
+          "snapshot_load": "Tải bản lưu văn bản cho hàng này",
+          "comment": "Thêm/chỉnh sửa bình luận",
+          "move_up": "Di chuyển lên",
+          "move_down": "Di chuyển xuống",
+          "library_row_save": "Lưu vào thư viện",
+          "delete_row": "Xóa hàng"
+        }
       },
-      "buttons": {
-        "save": "Lưu",
-        "delete": "Xóa",
-        "add_row": "Thêm hàng",
-        "open_library": "Mở thư viện",
-        "select_snapshot": "Chọn bản lưu",
-        "cancel": "Hủy",
-        "yes": "Có",
-        "no": "Không"
-      },
-      "tooltips": {
-        "move_up": "Di chuyển lên",
-        "move_down": "Di chuyển xuống",
-        "delete_row": "Xóa hàng",
-        "library_row_save": "Lưu vào thư viện",
-        "library_row_load": "Tải hàng",
-        "library_row_delete": "Xóa khỏi thư viện",
-        "snapshot_load": "Tải bản lưu văn bản cho hàng này",
-        "snapshot_select": "Chọn bản lưu văn bản cho hàng này",
-        "snapshot_clear": "Gỡ bản lưu đã chọn khỏi hàng này",
-        "link_open": "Mở liên kết",
-        "comment": "Thêm/chỉnh sửa bình luận"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Bình luận",
+        "snapshot_select": "Chọn bản lưu",
+        "snapshot_select_tooltip": "Chọn bản lưu văn bản cho hàng này",
+        "snapshot_clear": "Gỡ bản lưu đã chọn khỏi hàng này"
+      },
+      "biblioteca": {
         "library_title": "Thư viện",
+        "search": "Tìm kiếm",
+        "search_placeholder": "Tìm trong thư viện...",
+        "empty": "(trống)",
+        "library_row_load": "Tải hàng",
+        "library_row_delete": "Xóa khỏi thư viện"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Lưu vào thư viện",
-        "library_save_question": "Bao gồm bình luận?"
+        "library_save_question": "Bao gồm bình luận?",
+        "yes": "Có",
+        "no": "Không",
+        "cancel": "Hủy"
       },
       "alerts": {
         "task_unavailable": "Chức năng tác vụ không khả dụng.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Không thể xóa khỏi thư viện.",
         "link_blocked": "Liên kết bị chặn.",
         "link_missing": "Không tìm thấy tệp.",
-        "link_error": "Lỗi khi mở liên kết."
-      },
-      "confirm": {
+        "link_error": "Lỗi khi mở liên kết.",
         "close_unsaved": "Có thay đổi chưa lưu. Đóng mà không lưu?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Nhấn Play (▶) trong Cửa sổ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng bộ đếm thời gian. Chỉ nhấn Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra."
-      },
       "entry": {
         "title": "Bài kiểm tra tốc độ đọc",
+        "show_instructions": "Hiển thị hướng dẫn",
+        "hide_instructions": "Ẩn hướng dẫn",
         "intro": "Bài kiểm tra này nhằm ước tính tốc độ đọc thực tế của bạn qua một phiên được hướng dẫn. Ứng dụng sẽ mở văn bản và chờ bạn nhấn Play (▶) trong Cửa sổ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng bộ đếm thời gian. Chỉ dùng Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra. Sau đó, bạn có thể xem các câu hỏi đọc hiểu nếu văn bản có kèm theo, và cuối cùng tạo một preset từ kết quả.\nTrước khi bắt đầu, hãy nhớ rằng các văn bản kiểm tra này thường cần từ 5 đến 15 phút tập trung không bị gián đoạn.\nPool này dùng các văn bản ngắn, vì vậy hãy diễn giải kết quả một cách thận trọng. Không nên ngoại suy trực tiếp sang văn bản dài, nơi các yếu tố tích cực như nhịp đọc và sự tích lũy ngữ cảnh, cũng như các yếu tố tiêu cực như việc tự tóm lược trong đầu và mệt mỏi, thường phát huy tác động.",
         "eligible_count": "Tệp đủ điều kiện:",
+        "show_bundled_entries": "Test cơ bản",
+        "get_more_files": "Lấy thêm tệp",
+        "import_files_button": "Nhập tệp",
+        "start_random_text_button": "Bắt đầu với văn bản ngẫu nhiên",
+        "start_current_text_button": "Bắt đầu với văn bản hiện tại",
         "pool_exhausted_message": "Không còn tệp kiểm tra chưa dùng nào. Hãy đặt lại pool hoặc thêm tệp mới.",
         "visible_empty_bundled_hidden_message": "Các tệp kiểm tra tích hợp hiện đang bị ẩn và không còn tệp kiểm tra hiển thị nào chưa được dùng. Hãy hiển thị lại các tệp tích hợp hoặc nhập thêm tệp để tiếp tục.",
         "close_aria": "Đóng hộp thoại bài kiểm tra tốc độ đọc",
         "start_random_confirm": "Thao tác này sẽ ghi đè văn bản hiện tại bằng một văn bản đủ điều kiện ngẫu nhiên từ pool. Bạn có muốn tiếp tục?",
         "reset_confirm": "Thao tác này sẽ đặt lại toàn bộ pool kiểm tra và đánh dấu tất cả tệp là chưa dùng lại. Bạn có muốn tiếp tục?",
-        "import_summary": "Nhập xong. Đã nhập: {imported}. Bỏ qua trùng lặp: {skippedDuplicates}. Không đạt xác thực: {failedValidation}. Mục trong gói nén lỗi: {failedArchiveEntries}. Ghi lỗi: {failedWrites}.",
-        "import_conflict": {
-          "title": "Nhập tệp",
-          "message": "Một số tệp được nhập đã tồn tại trong pool. Xử lý tệp trùng như thế nào?",
-          "detail": "{count} tên tệp đích đã tồn tại trong pool.",
-          "buttons": {
-            "skip": "Bỏ qua tệp trùng",
-            "replace": "Thay thế tệp trùng",
-            "cancel": "Hủy nhập"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Lấy thêm tệp",
-          "import_files": "Nhập tệp",
-          "show_instructions": "Hiển thị hướng dẫn",
-          "hide_instructions": "Ẩn hướng dẫn",
-          "start_random_text": "Bắt đầu với văn bản ngẫu nhiên",
-          "start_current_text": "Bắt đầu với văn bản hiện tại",
-          "show_bundled_entries": "Test cơ bản"
-        },
         "tooltips": {
           "show_bundled_entries": "Bao gồm các tệp kiểm tra khởi đầu được tích hợp sẵn trong ứng dụng vào pool",
           "get_more_files": "Lấy thêm tệp kiểm tra từ thư mục Google Drive",
@@ -519,7 +499,21 @@
           "reset_pool": "Đặt lại pool kiểm tra",
           "start_random_text": "Bắt đầu bài kiểm tra với một văn bản đủ điều kiện ngẫu nhiên từ pool",
           "start_current_text": "Bắt đầu bài kiểm tra với văn bản hiện tại"
+        },
+        "import": {
+          "import_summary": "Nhập xong. Đã nhập: {imported}. Bỏ qua trùng lặp: {skippedDuplicates}. Không đạt xác thực: {failedValidation}. Mục trong gói nén lỗi: {failedArchiveEntries}. Ghi lỗi: {failedWrites}.",
+          "import_conflict": {
+            "title": "Nhập tệp",
+            "message": "Một số tệp được nhập đã tồn tại trong pool. Xử lý tệp trùng như thế nào?",
+            "detail": "{count} tên tệp đích đã tồn tại trong pool.",
+            "skip_button": "Bỏ qua tệp trùng",
+            "replace_button": "Thay thế tệp trùng",
+            "cancel_button": "Hủy nhập"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Nhấn Play (▶) trong Cửa sổ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng bộ đếm thời gian. Chỉ nhấn Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra."
       },
       "questions": {
         "title": "Câu hỏi đọc hiểu",
@@ -533,19 +527,15 @@
         "result_summary": "Đúng {correct} trên {total} ({percentage})",
         "chance_at_least_observed": "Xác suất đạt ít nhất điểm này khi đoán ngẫu nhiên: {percentage}",
         "fatal_invalid": "Payload câu hỏi không hợp lệ.",
-        "buttons": {
-          "check": "Kiểm tra kết quả",
-          "continue": "Tiếp tục"
-        }
+        "check_button": "Kiểm tra kết quả",
+        "continue_button": "Tiếp tục"
       },
       "result": {
         "title": "Kết quả tốc độ đọc",
         "measured_wpm": "WPM đo được",
         "elapsed_time": "Thời gian",
         "word_count": "Từ",
-        "buttons": {
-          "continue": "Tiếp tục"
-        }
+        "continue_button": "Tiếp tục"
       },
       "alerts": {
         "unavailable": "Chức năng bài kiểm tra tốc độ đọc không khả dụng.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "Bài kiểm tra tốc độ đọc đã bị hủy vì một trong các cửa sổ phiên đã đóng."
       }
     },
-    "modal_preset": {
-      "title_new": "Preset mới",
-      "title_edit": "Chỉnh sửa preset",
-      "heading_new": "Tạo preset mới",
-      "heading_edit": "Chỉnh sửa preset đã chọn",
-      "name": "Tên:",
-      "name_placeholder": "Tên preset",
-      "wpm": "WPM:",
-      "description": "Mô tả:",
-      "description_placeholder": "Mô tả ngắn...",
-      "char_count": "Còn {remaining} ký tự",
-      "hint": "Preset tùy chỉnh được lưu trong cài đặt người dùng.",
-      "cancel": "Hủy",
-      "save": "Lưu",
+    "presets": {
+      "preset_modal": {
+        "title_new": "Preset mới",
+        "title_edit": "Chỉnh sửa preset",
+        "heading_new": "Tạo preset mới",
+        "heading_edit": "Chỉnh sửa preset đã chọn",
+        "name": "Tên:",
+        "name_placeholder": "Tên preset",
+        "wpm": "WPM:",
+        "description": "Mô tả:",
+        "description_placeholder": "Mô tả ngắn...",
+        "char_count": "Còn {remaining} ký tự",
+        "hint": "Preset tùy chỉnh được lưu trong cài đặt người dùng.",
+        "cancel": "Hủy",
+        "save": "Lưu"
+      },
       "alerts": {
+        "not_found": "Không tìm thấy preset đã chọn trong bộ nhớ đệm.",
+        "delete_error": "Đã xảy ra lỗi khi xóa preset. Hãy kiểm tra console.",
+        "restore_error": "Đã xảy ra lỗi khi khôi phục preset. Hãy kiểm tra console.",
+        "open_folder_unsupported": "Không thể mở thư mục preset trong môi trường này.",
+        "open_folder_error": "Đã xảy ra lỗi khi cố mở thư mục preset. Hãy kiểm tra console.",
+        "open_default_folder_failed": "Không thể mở thư mục preset mặc định. Xem console để biết chi tiết.",
         "unavailable": "Hộp thoại preset không khả dụng trong bản build ứng dụng này.",
         "open_error": "Đã xảy ra lỗi khi mở hộp thoại preset. Hãy kiểm tra console.",
         "name_empty": "Tên không được để trống.",
@@ -586,16 +584,6 @@
         "create_error": "Đã xảy ra lỗi khi tạo preset. Hãy kiểm tra console.",
         "edit_error": "Đã xảy ra lỗi khi chỉnh sửa preset. Hãy kiểm tra console.",
         "process_error": "Đã xảy ra lỗi khi xử lý preset. Hãy kiểm tra console."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Không tìm thấy preset đã chọn trong bộ nhớ đệm.",
-        "delete_error": "Đã xảy ra lỗi khi xóa preset. Hãy kiểm tra console.",
-        "restore_error": "Đã xảy ra lỗi khi khôi phục preset. Hãy kiểm tra console.",
-        "open_folder_unsupported": "Không thể mở thư mục preset trong môi trường này.",
-        "open_folder_error": "Đã xảy ra lỗi khi cố mở thư mục preset. Hãy kiểm tra console.",
-        "open_default_folder_failed": "Không thể mở thư mục preset mặc định. Xem console để biết chi tiết."
       }
     },
     "browser_extension": {

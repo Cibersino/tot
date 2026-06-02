@@ -7,44 +7,6 @@
         "reading_speed_test": "Reading speed test",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Extract text from files",
-        "text_extraction_abort": "Abort extraction",
-        "overwrite_clipboard": "Replace the current text with clipboard text",
-        "append_clipboard": "Append clipboard text to the end of the current text",
-        "clipboard_repeat_count": "Paste repetitions",
-        "edit": "Open Text Editor",
-        "clear": "Clear current text",
-        "snapshot_load": "Load text snapshot",
-        "snapshot_save": "Save current text to a text snapshot",
-        "task_new": "New task",
-        "task_load": "Load task",
-        "browser_extension": "Browser extension",
-        "cibersino_website": "Cibersino website",
-        "cibersino_kofi": "Support me on Ko-fi",
-        "new_preset": "Create a new preset",
-        "edit_preset": "Edit selected preset",
-        "delete_preset": "Delete selected preset",
-        "reset_presets": "Restore default presets",
-        "help_button": "Show a useful tip",
-        "flotante_window": "Floating Stopwatch"
-      },
-      "aria": {
-        "text_extraction": "Select files to extract text from",
-        "text_extraction_abort": "Abort extraction",
-        "browser_extension": "Open browser extension window",
-        "clipboard_repeat_count": "Paste repetitions",
-        "wpm_input": "Words per minute",
-        "wpm_slider": "Words per minute slider",
-        "speed_presets": "Speed presets",
-        "precise_mode_toggle": "Precise mode toggle",
-        "crono_controls": "Stopwatch controls",
-        "crono_display": "Stopwatch display",
-        "crono_toggle": "Start or pause stopwatch",
-        "crono_reset": "Stop and reset stopwatch",
-        "floating_window_toggle": "Floating Stopwatch",
-        "floating_window_group": "Floating Stopwatch controls"
-      },
       "speed": {
         "title": "READING SPEED",
         "wpm_label": "words per minute (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Elapsed: ",
         "text_extraction_drop_here": "Drop here to extract text"
+      },
+      "tooltips": {
+        "text_extraction": "Extract text from files",
+        "text_extraction_abort": "Abort extraction",
+        "overwrite_clipboard": "Replace the current text with clipboard text",
+        "append_clipboard": "Append clipboard text to the end of the current text",
+        "clipboard_repeat_count": "Paste repetitions",
+        "edit": "Open Text Editor",
+        "clear": "Clear current text",
+        "snapshot_load": "Load text snapshot",
+        "snapshot_save": "Save current text to a text snapshot",
+        "task_new": "New task",
+        "task_load": "Load task",
+        "browser_extension": "Browser extension",
+        "cibersino_website": "Cibersino website",
+        "cibersino_kofi": "Support me on Ko-fi",
+        "new_preset": "Create a new preset",
+        "edit_preset": "Edit selected preset",
+        "delete_preset": "Delete selected preset",
+        "reset_presets": "Restore default presets",
+        "help_button": "Show a useful tip",
+        "flotante_window": "Floating Stopwatch"
+      },
+      "aria": {
+        "text_extraction": "Select files to extract text from",
+        "text_extraction_abort": "Abort extraction",
+        "browser_extension": "Open browser extension window",
+        "clipboard_repeat_count": "Paste repetitions",
+        "wpm_input": "Words per minute",
+        "wpm_slider": "Words per minute slider",
+        "speed_presets": "Speed presets",
+        "precise_mode_toggle": "Precise mode toggle",
+        "crono_controls": "Stopwatch controls",
+        "crono_display": "Stopwatch display",
+        "crono_toggle": "Start or pause stopwatch",
+        "crono_reset": "Stop and reset stopwatch",
+        "floating_window_toggle": "Floating Stopwatch",
+        "floating_window_group": "Floating Stopwatch controls"
       },
       "alerts": {
         "clipboard_too_large": "Clipboard text is too large to use. Shorten it and try again.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "Saved PDF: ",
         "reveal_saved_pdf_button": "Reveal saved PDF"
       },
+      "single_file_heavy": {
+        "case_a_title": "Full PDF too large for OCR",
+        "case_a_message": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route.",
+        "case_b_title": "Generated PDF too large for OCR",
+        "case_b_message": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route, or process the full PDF in parts.",
+        "source_file_label": "Source PDF:",
+        "selected_range_label": "Selected range:",
+        "generated_pdf_label": "Generated PDF:",
+        "generated_pdf_size_label": "Generated PDF size:",
+        "source_size_label": "Source PDF size:",
+        "total_pages_label": "Total pages:",
+        "split_button": "Process PDF in parts",
+        "return_to_pages_button": "Back to pages",
+        "use_native_button": "Use native",
+        "reveal_generated_pdf_button": "Reveal saved PDF",
+        "cancel_button": "Cancel",
+        "close_aria": "Close heavy PDF for OCR window"
+      },
       "batch_plan": {
         "title": "Plan batch extraction",
         "single_file_title": "Process full PDF in parts",
@@ -181,7 +199,6 @@
         "failure_legend": "Failure behavior",
         "failure_default": "End the unit after the last successful item and continue with the next one",
         "failure_continue": "Omit the failed item and continue inside the same unit",
-        "overwrite_confirm": "This will replace the current text when extraction starts. Do you want to continue?",
         "start_button": "Start extraction",
         "cancel_button": "Cancel",
         "close_aria": "Close batch extraction planning"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} created",
         "snapshot_creation_failed": "(text snapshot creation failed: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "Full PDF too large for OCR",
-        "case_a_message": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route.",
-        "case_b_title": "Generated PDF too large for OCR",
-        "case_b_message": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route, or process the full PDF in parts.",
-        "source_file_label": "Source PDF:",
-        "selected_range_label": "Selected range:",
-        "generated_pdf_label": "Generated PDF:",
-        "generated_pdf_size_label": "Generated PDF size:",
-        "source_size_label": "Source PDF size:",
-        "total_pages_label": "Total pages:",
-        "split_button": "Process PDF in parts",
-        "return_to_pages_button": "Back to pages",
-        "use_native_button": "Use native",
-        "reveal_generated_pdf_button": "Reveal saved PDF",
-        "cancel_button": "Cancel",
-        "close_aria": "Close heavy PDF for OCR window"
-      },
       "alerts": {
+        "overwrite_confirm": "This will replace the current text when extraction starts. Do you want to continue?",
         "start_error": "An error occurred while starting extraction.",
         "precondition_blocked": "To start text extraction, close all secondary windows and stop the stopwatch.",
         "precondition_error": "An error occurred while checking text extraction preconditions.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "The selected PDF page range is invalid. Adjust the range and try again.",
           "subset_creation_failed": "The selected-page PDF could not be created for extraction. Check the file and try again."
         },
+        "native": {
+          "runtime_error": "A native extraction runtime error occurred.",
+          "unreadable_or_corrupt": "The selected file is unreadable or corrupt for native extraction.",
+          "encrypted_or_password_protected": "The selected PDF is encrypted or password-protected and cannot be extracted natively.",
+          "cancelled": "Native extraction was cancelled."
+        },
         "ocr": {
           "unavailable": "OCR is unavailable. Check setup/auth status and try again.",
           "activation_required": "OCR activation is required. Sign in to Google OCR and try again.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR is temporarily blocked by quota/rate limits. Wait and try again.",
           "runtime_error": "An OCR runtime error occurred during extraction.",
           "cancelled": "OCR text extraction was cancelled.",
-          "cleanup_warning": "OCR finished, but temporary remote file cleanup failed. Check your Google Drive folder."
-        },
-        "batch_ocr": {
-          "activation_required": "This batch includes OCR items, but Google OCR is not enabled. Use Preferences > Enable Google OCR, then start the extraction again.",
-          "token_state_invalid": "This batch includes OCR items, but the saved Google OCR sign-in state is invalid. Use Preferences > Enable Google OCR again, then start the extraction again.",
-          "connectivity_failed": "This batch includes OCR items, but OCR requires an internet connection. Check your connection and try again before starting the extraction.",
-          "quota_or_rate_limited": "This batch includes OCR items, but OCR is temporarily blocked by quota/rate limits. Wait and try again before starting the extraction.",
-          "unavailable": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise, check the OCR setup/status and try again before starting the extraction."
-        },
-        "native": {
-          "runtime_error": "A native extraction runtime error occurred.",
-          "unreadable_or_corrupt": "The selected file is unreadable or corrupt for native extraction.",
-          "encrypted_or_password_protected": "The selected PDF is encrypted or password-protected and cannot be extracted natively.",
-          "cancelled": "Native extraction was cancelled."
+          "cleanup_warning": "OCR finished, but temporary remote file cleanup failed. Check your Google Drive folder.",
+          "batch_ocr": {
+            "activation_required": "This batch includes OCR items, but Google OCR is not enabled. Use Preferences > Enable Google OCR, then start the extraction again.",
+            "token_state_invalid": "This batch includes OCR items, but the saved Google OCR sign-in state is invalid. Use Preferences > Enable Google OCR again, then start the extraction again.",
+            "connectivity_failed": "This batch includes OCR items, but OCR requires an internet connection. Check your connection and try again before starting the extraction.",
+            "quota_or_rate_limited": "This batch includes OCR items, but OCR is temporarily blocked by quota/rate limits. Wait and try again before starting the extraction.",
+            "unavailable": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise, check the OCR setup/status and try again before starting the extraction."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Reset text size",
       "read_progress_label": "Read",
       "clear_title": "Clear",
+      "editor_find": {
+        "input_placeholder": "Find...",
+        "input_aria": "Find in text",
+        "expand_title": "Show replace controls",
+        "collapse_title": "Hide replace controls",
+        "replace_placeholder": "Replace...",
+        "replace_aria": "Replacement text",
+        "replace": "Replace",
+        "replace_all": "Replace all",
+        "prev_title": "Previous match",
+        "next_title": "Next match",
+        "close_title": "Close find bar",
+        "replace_title": "Replace current match",
+        "replace_all_title": "Replace all matches",
+        "replace_timeout": "Replace timed out. Try again.",
+        "status_no_matches": "No matches",
+        "status_empty_query": "Type to search"
+      },
       "alerts": {
         "start_failed": "The Text Editor could not be started.",
         "start_timeout": "The Text Editor took too long to start and was closed.",
@@ -315,36 +333,7 @@
         "calc_error": "An error occurred while saving the text as the current text."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Find...",
-      "input_aria": "Find in text",
-      "expand_title": "Show replace controls",
-      "collapse_title": "Hide replace controls",
-      "replace_placeholder": "Replace...",
-      "replace_aria": "Replacement text",
-      "replace": "Replace",
-      "replace_all": "Replace all",
-      "prev_title": "Previous match",
-      "next_title": "Next match",
-      "close_title": "Close find bar",
-      "replace_title": "Replace current match",
-      "replace_all_title": "Replace all matches",
-      "replace_timeout": "Replace timed out. Try again.",
-      "status_no_matches": "No matches",
-      "status_empty_query": "Type to search"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Text snapshot saved.",
-        "save_error": "Could not save the text snapshot.",
-        "load_success": "Text snapshot loaded.",
-        "load_error": "Could not load the text snapshot.",
-        "outside": "The text snapshot must be inside the snapshots folder.",
-        "truncated": "Text snapshot exceeded the maximum size and was truncated.",
-        "unavailable": "Text snapshot functionality is unavailable."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Save text snapshot",
       "message": "You can optionally tag this text snapshot before choosing where to save it.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Normal",
           "hard": "Hard"
         }
+      },
+      "alerts": {
+        "save_success": "Text snapshot saved.",
+        "save_error": "Could not save the text snapshot.",
+        "load_success": "Text snapshot loaded.",
+        "load_error": "Could not load the text snapshot.",
+        "outside": "The text snapshot must be inside the snapshots folder.",
+        "truncated": "Text snapshot exceeded the maximum size and was truncated.",
+        "unavailable": "Text snapshot functionality is unavailable."
       }
     },
     "tasks": {
       "title": "toT — Task Editor",
-      "labels": {
-        "name": "Name",
-        "summary_total": "Total",
-        "summary_left": "Left",
-        "empty": "(empty)",
-        "search": "Search",
-        "search_placeholder": "Search library..."
-      },
+      "name": "Name",
+      "save_button": "Save",
+      "delete_button": "Delete",
+      "summary_total": "Total",
+      "summary_left": "Left",
+      "add_row_button": "Add row",
+      "open_library_button": "Open reading library",
       "columns": {
         "texto": "Reading",
         "tiempo": "Time",
@@ -423,36 +420,37 @@
         "falta": "Left",
         "enlace": "Link or local path",
         "comentario": "",
-        "acciones": "Actions"
+        "acciones": "Actions",
+        "tooltips": {
+          "link_open": "Open link or local path",
+          "snapshot_load": "Load text snapshot as current text",
+          "comment": "Add or edit comment",
+          "move_up": "Move up",
+          "move_down": "Move down",
+          "library_row_save": "Save reading to the library",
+          "delete_row": "Delete row"
+        }
       },
-      "buttons": {
-        "save": "Save",
-        "delete": "Delete",
-        "add_row": "Add row",
-        "open_library": "Open reading library",
-        "select_snapshot": "Select text snapshot",
-        "cancel": "Cancel",
-        "yes": "Yes",
-        "no": "No"
-      },
-      "tooltips": {
-        "move_up": "Move up",
-        "move_down": "Move down",
-        "delete_row": "Delete row",
-        "library_row_save": "Save reading to the library",
-        "library_row_load": "Load reading to the task",
-        "library_row_delete": "Delete reading from the library",
-        "snapshot_load": "Load text snapshot as current text",
-        "snapshot_select": "Select a text snapshot for this row",
-        "snapshot_clear": "Remove selected snapshot from this row",
-        "link_open": "Open link or local path",
-        "comment": "Add or edit comment"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Comment",
+        "snapshot_select": "Select text snapshot",
+        "snapshot_select_tooltip": "Select a text snapshot for this row",
+        "snapshot_clear": "Remove selected snapshot from this row"
+      },
+      "biblioteca": {
         "library_title": "Reading library",
+        "search": "Search",
+        "search_placeholder": "Search library...",
+        "empty": "(empty)",
+        "library_row_load": "Load reading to the task",
+        "library_row_delete": "Delete reading from the library"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Save reading to the library",
-        "library_save_question": "Include comment?"
+        "library_save_question": "Include comment?",
+        "yes": "Yes",
+        "no": "No",
+        "cancel": "Cancel"
       },
       "alerts": {
         "task_unavailable": "Task functionality is unavailable.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Could not delete the reading from the library.",
         "link_blocked": "Link blocked.",
         "link_missing": "File not found.",
-        "link_error": "Error opening link or local path."
-      },
-      "confirm": {
+        "link_error": "Error opening link or local path.",
         "close_unsaved": "There are unsaved changes. Close without saving?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Press Stop/Reset (⏹) only if you want to cancel the test."
-      },
       "entry": {
         "title": "Reading speed test",
+        "show_instructions": "Show instructions",
+        "hide_instructions": "Hide instructions",
         "intro": "This test is meant to estimate your real reading speed through a guided session. The app will open the text and wait for you to press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nBefore you begin, keep in mind that these test texts usually require between 5 and 15 minutes of uninterrupted concentration.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.",
         "eligible_count": "Eligible files:",
+        "show_bundled_entries": "Built-in tests",
+        "get_more_files": "Get more files",
+        "import_files_button": "Import files",
+        "start_random_text_button": "Start with random text",
+        "start_current_text_button": "Start with current text",
         "pool_exhausted_message": "There are no remaining unused test files. Reset the pool or add more files.",
         "visible_empty_bundled_hidden_message": "The built-in test files are disabled and there are no remaining unused files. Re-enable them or import more files to continue.",
         "close_aria": "Close reading speed test window",
         "start_random_confirm": "This will replace the current text with a random eligible text from the pool. Do you want to continue?",
         "reset_confirm": "This will reset the whole test pool and mark all of its files as unused again. Do you want to continue?",
-        "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}.",
-        "import_conflict": {
-          "title": "Import files",
-          "message": "Some imported files already exist in the pool. How should duplicates be handled?",
-          "detail": "The pool already contains {count} of the destination filenames.",
-          "buttons": {
-            "skip": "Skip duplicates",
-            "replace": "Replace duplicates",
-            "cancel": "Cancel import"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Get more files",
-          "import_files": "Import files",
-          "show_instructions": "Show instructions",
-          "hide_instructions": "Hide instructions",
-          "start_random_text": "Start with random text",
-          "start_current_text": "Start with current text",
-          "show_bundled_entries": "Built-in tests"
-        },
         "tooltips": {
           "show_bundled_entries": "Include the app's bundled starter test files in the pool",
           "get_more_files": "Get more test files from the Google Drive folder",
@@ -519,7 +499,21 @@
           "reset_pool": "Reset test pool",
           "start_random_text": "Start the test with a random eligible text from the pool",
           "start_current_text": "Start the test with the current text"
+        },
+        "import": {
+          "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}.",
+          "import_conflict": {
+            "title": "Import files",
+            "message": "Some imported files already exist in the pool. How should duplicates be handled?",
+            "detail": "The pool already contains {count} of the destination filenames.",
+            "skip_button": "Skip duplicates",
+            "replace_button": "Replace duplicates",
+            "cancel_button": "Cancel import"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Press Stop/Reset (⏹) only if you want to cancel the test."
       },
       "questions": {
         "title": "Reading comprehension questions",
@@ -533,19 +527,15 @@
         "result_summary": "{correct} out of {total} correct ({percentage})",
         "chance_at_least_observed": "Chance of getting at least this score by random guessing: {percentage}",
         "fatal_invalid": "The questions data is invalid.",
-        "buttons": {
-          "check": "Check result",
-          "continue": "Continue"
-        }
+        "check_button": "Check result",
+        "continue_button": "Continue"
       },
       "result": {
         "title": "Reading speed result",
         "measured_wpm": "Measured WPM",
         "elapsed_time": "Time",
         "word_count": "Words",
-        "buttons": {
-          "continue": "Continue"
-        }
+        "continue_button": "Continue"
       },
       "alerts": {
         "unavailable": "The reading speed test feature is unavailable.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "The reading speed test was cancelled because one of its session windows closed."
       }
     },
-    "modal_preset": {
-      "title_new": "New preset",
-      "title_edit": "Edit preset",
-      "heading_new": "Create new preset",
-      "heading_edit": "Edit selected preset",
-      "name": "Name:",
-      "name_placeholder": "Preset name",
-      "wpm": "WPM:",
-      "description": "Description:",
-      "description_placeholder": "Short description...",
-      "char_count": "Remaining characters: {remaining}",
-      "hint": "Custom presets are stored in user settings.",
-      "cancel": "Cancel",
-      "save": "Save",
+    "presets": {
+      "preset_modal": {
+        "title_new": "New preset",
+        "title_edit": "Edit preset",
+        "heading_new": "Create new preset",
+        "heading_edit": "Edit selected preset",
+        "name": "Name:",
+        "name_placeholder": "Preset name",
+        "wpm": "WPM:",
+        "description": "Description:",
+        "description_placeholder": "Short description...",
+        "char_count": "Remaining characters: {remaining}",
+        "hint": "Custom presets are stored in user settings.",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
       "alerts": {
+        "not_found": "Selected preset not found.",
+        "delete_error": "An error occurred while deleting the preset.",
+        "restore_error": "An error occurred while restoring presets.",
+        "open_folder_unsupported": "Cannot open presets folder in this environment.",
+        "open_folder_error": "An error occurred while trying to open the presets folder.",
+        "open_default_folder_failed": "Could not open the default presets folder.",
         "unavailable": "The preset window is unavailable in this app build.",
         "open_error": "An error occurred while opening the preset window.",
         "name_empty": "Name cannot be empty.",
@@ -586,18 +584,6 @@
         "create_error": "An error occurred while creating the preset.",
         "edit_error": "An error occurred while editing the preset.",
         "process_error": "An error occurred while processing the preset."
-      }
-										
-													   
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Selected preset not found.",
-        "delete_error": "An error occurred while deleting the preset.",
-        "restore_error": "An error occurred while restoring presets.",
-        "open_folder_unsupported": "Cannot open presets folder in this environment.",
-        "open_folder_error": "An error occurred while trying to open the presets folder.",
-        "open_default_folder_failed": "Could not open the default presets folder."
       }
     },
     "browser_extension": {

@@ -7,44 +7,6 @@
         "reading_speed_test": "閱讀速度測試",
         "preview_spoiler": "劇透"
       },
-      "tooltips": {
-        "text_extraction": "從檔案擷取文字",
-        "text_extraction_abort": "中止擷取",
-        "overwrite_clipboard": "用剪貼簿內容取代目前文字",
-        "append_clipboard": "將剪貼簿內容附加到目前文字結尾（換行）",
-        "clipboard_repeat_count": "貼上重複次數",
-        "edit": "開啟完整目前文字視窗",
-        "clear": "清除目前文字",
-        "snapshot_load": "載入文字快照",
-        "snapshot_save": "將目前文字儲存為快照",
-        "task_new": "新增任務",
-        "task_load": "載入任務",
-        "browser_extension": "瀏覽器擴充功能",
-        "cibersino_website": "Cibersino 網站",
-        "cibersino_kofi": "在 Ko-fi 支持我",
-        "new_preset": "建立新預設值",
-        "edit_preset": "編輯所選預設值",
-        "delete_preset": "刪除所選預設值",
-        "reset_presets": "還原預設值",
-        "help_button": "顯示實用提示",
-        "flotante_window": "浮動視窗"
-      },
-      "aria": {
-        "text_extraction": "從檔案擷取文字",
-        "text_extraction_abort": "中止擷取",
-        "browser_extension": "開啟瀏覽器擴充功能對話框",
-        "clipboard_repeat_count": "貼上重複次數",
-        "wpm_input": "每分鐘詞數",
-        "wpm_slider": "每分鐘詞數滑桿",
-        "speed_presets": "速度預設值",
-        "precise_mode_toggle": "精確模式",
-        "crono_controls": "碼錶控制項",
-        "crono_display": "碼錶顯示",
-        "crono_toggle": "啟動或暫停碼錶",
-        "crono_reset": "重設碼錶",
-        "floating_window_toggle": "浮動視窗",
-        "floating_window_group": "浮動視窗控制項"
-      },
       "speed": {
         "title": "閱讀速度",
         "wpm_label": "每分鐘詞數（WPM）"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "經過時間：",
         "text_extraction_drop_here": "拖放檔案以擷取文字"
+      },
+      "tooltips": {
+        "text_extraction": "從檔案擷取文字",
+        "text_extraction_abort": "中止擷取",
+        "overwrite_clipboard": "用剪貼簿內容取代目前文字",
+        "append_clipboard": "將剪貼簿內容附加到目前文字結尾（換行）",
+        "clipboard_repeat_count": "貼上重複次數",
+        "edit": "開啟完整目前文字視窗",
+        "clear": "清除目前文字",
+        "snapshot_load": "載入文字快照",
+        "snapshot_save": "將目前文字儲存為快照",
+        "task_new": "新增任務",
+        "task_load": "載入任務",
+        "browser_extension": "瀏覽器擴充功能",
+        "cibersino_website": "Cibersino 網站",
+        "cibersino_kofi": "在 Ko-fi 支持我",
+        "new_preset": "建立新預設值",
+        "edit_preset": "編輯所選預設值",
+        "delete_preset": "刪除所選預設值",
+        "reset_presets": "還原預設值",
+        "help_button": "顯示實用提示",
+        "flotante_window": "浮動視窗"
+      },
+      "aria": {
+        "text_extraction": "從檔案擷取文字",
+        "text_extraction_abort": "中止擷取",
+        "browser_extension": "開啟瀏覽器擴充功能對話框",
+        "clipboard_repeat_count": "貼上重複次數",
+        "wpm_input": "每分鐘詞數",
+        "wpm_slider": "每分鐘詞數滑桿",
+        "speed_presets": "速度預設值",
+        "precise_mode_toggle": "精確模式",
+        "crono_controls": "碼錶控制項",
+        "crono_display": "碼錶顯示",
+        "crono_toggle": "啟動或暫停碼錶",
+        "crono_reset": "重設碼錶",
+        "floating_window_toggle": "浮動視窗",
+        "floating_window_group": "浮動視窗控制項"
       },
       "alerts": {
         "clipboard_too_large": "剪貼簿文字過大，無法處理。請減少內容後重試。",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "已儲存 PDF：",
         "reveal_saved_pdf_button": "顯示已儲存 PDF"
       },
+      "single_file_heavy": {
+        "case_a_title": "完整 PDF 對 OCR 而言過大",
+        "case_a_message": "完整 PDF 超過 OCR 供應方限制（{providerLimitMb} MB）。你可以開啟共用規劃器，在擷取前將其自動分割為產生的輸入檔案。",
+        "case_b_title": "產生的範圍對 OCR 而言過大",
+        "case_b_message": "為所選範圍產生的 PDF 超過 OCR 供應方限制（{providerLimitMb} MB）。該檔案未上傳。你可以返回頁面選擇、使用原生路徑，或開啟共用規劃器來分割完整 PDF。",
+        "source_file_label": "來源檔案：",
+        "selected_range_label": "所選範圍：",
+        "generated_pdf_label": "產生的 PDF：",
+        "generated_pdf_size_label": "產生的 PDF 大小：",
+        "source_size_label": "來源檔案大小：",
+        "total_pages_label": "總頁數：",
+        "split_button": "分割並規劃完整 PDF",
+        "return_to_pages_button": "返回頁面",
+        "use_native_button": "使用原生路徑",
+        "reveal_generated_pdf_button": "顯示產生的 PDF",
+        "cancel_button": "取消",
+        "close_aria": "關閉 OCR 大型 PDF 對話框"
+      },
       "batch_plan": {
         "title": "規劃批次擷取",
         "single_file_title": "規劃自動 PDF 分割",
@@ -181,7 +199,6 @@
         "failure_legend": "失敗時的行為",
         "failure_default": "在最後一次成功後關閉該單元，並繼續下一個單元",
         "failure_continue": "略過失敗項，並繼續處理同一單元",
-        "overwrite_confirm": "擷取開始時將覆寫目前文字。是否繼續？",
         "start_button": "開始擷取",
         "cancel_button": "取消",
         "close_aria": "關閉批次擷取規劃"
@@ -211,25 +228,8 @@
         "snapshot_created": "已建立 {filename}",
         "snapshot_creation_failed": "（JSON 建立失敗：{code}）"
       },
-      "single_file_heavy": {
-        "case_a_title": "完整 PDF 對 OCR 而言過大",
-        "case_a_message": "完整 PDF 超過 OCR 供應方限制（{providerLimitMb} MB）。你可以開啟共用規劃器，在擷取前將其自動分割為產生的輸入檔案。",
-        "case_b_title": "產生的範圍對 OCR 而言過大",
-        "case_b_message": "為所選範圍產生的 PDF 超過 OCR 供應方限制（{providerLimitMb} MB）。該檔案未上傳。你可以返回頁面選擇、使用原生路徑，或開啟共用規劃器來分割完整 PDF。",
-        "source_file_label": "來源檔案：",
-        "selected_range_label": "所選範圍：",
-        "generated_pdf_label": "產生的 PDF：",
-        "generated_pdf_size_label": "產生的 PDF 大小：",
-        "source_size_label": "來源檔案大小：",
-        "total_pages_label": "總頁數：",
-        "split_button": "分割並規劃完整 PDF",
-        "return_to_pages_button": "返回頁面",
-        "use_native_button": "使用原生路徑",
-        "reveal_generated_pdf_button": "顯示產生的 PDF",
-        "cancel_button": "取消",
-        "close_aria": "關閉 OCR 大型 PDF 對話框"
-      },
       "alerts": {
+        "overwrite_confirm": "擷取開始時將覆寫目前文字。是否繼續？",
         "start_error": "啟動擷取時發生錯誤。請檢查主控台。",
         "precondition_blocked": "要啟動擷取，請關閉所有次要視窗並停止碼錶。",
         "precondition_error": "檢查擷取前置條件時發生錯誤。請檢查主控台。",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "所選的 PDF 頁面範圍無效。請調整範圍並再試一次。",
           "subset_creation_failed": "無法為擷取建立所選頁面的 PDF。請檢查檔案並再試一次。"
         },
+        "native": {
+          "runtime_error": "擷取過程中發生原生擷取執行階段錯誤。請檢查主控台並重試。",
+          "unreadable_or_corrupt": "所選檔案無法由原生擷取讀取，或檔案已損壞。",
+          "encrypted_or_password_protected": "所選 PDF 已加密或受密碼保護，無法透過原生路徑擷取。",
+          "cancelled": "原生擷取已取消。"
+        },
         "ocr": {
           "unavailable": "OCR 無法使用。請檢查設定／授權狀態後重試。",
           "activation_required": "需要啟用 OCR。請登入 Google OCR 後重試。",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR 因配額／速率限制而暫時受阻。請稍後重試。",
           "runtime_error": "擷取過程中發生 OCR 執行階段錯誤。請檢查主控台並重試。",
           "cancelled": "OCR 擷取已取消。",
-          "cleanup_warning": "OCR 已完成，但暫時遠端檔案清理失敗。請檢查你的 Google Drive 資料夾。"
-        },
-        "batch_ocr": {
-          "activation_required": "此批次任務包含 OCR 項目，但 Google OCR 尚未啟用。請使用「偏好設定 > 啟用 Google OCR」，然後重新啟動批次任務。",
-          "token_state_invalid": "此批次任務包含 OCR 項目，但已儲存的 Google OCR 登入狀態無效。請再次使用「偏好設定 > 啟用 Google OCR」，然後重新啟動批次任務。",
-          "connectivity_failed": "此批次包含 OCR 項目，但 OCR 需要網際網路連線。請檢查連線，並在開始擷取前重試。",
-          "quota_or_rate_limited": "此批次包含 OCR 項目，但 OCR 因配額/速率限制而暫時受阻。請等待，並在開始擷取前重試。",
-          "unavailable": "此批次任務包含 OCR 項目，但 Google OCR 目前無法使用。如果 OCR 尚未啟用，請使用「偏好設定 > 啟用 Google OCR」。否則，請在啟動批次任務前檢查 OCR 設定／狀態並重試。"
-        },
-        "native": {
-          "runtime_error": "擷取過程中發生原生擷取執行階段錯誤。請檢查主控台並重試。",
-          "unreadable_or_corrupt": "所選檔案無法由原生擷取讀取，或檔案已損壞。",
-          "encrypted_or_password_protected": "所選 PDF 已加密或受密碼保護，無法透過原生路徑擷取。",
-          "cancelled": "原生擷取已取消。"
+          "cleanup_warning": "OCR 已完成，但暫時遠端檔案清理失敗。請檢查你的 Google Drive 資料夾。",
+          "batch_ocr": {
+            "activation_required": "此批次任務包含 OCR 項目，但 Google OCR 尚未啟用。請使用「偏好設定 > 啟用 Google OCR」，然後重新啟動批次任務。",
+            "token_state_invalid": "此批次任務包含 OCR 項目，但已儲存的 Google OCR 登入狀態無效。請再次使用「偏好設定 > 啟用 Google OCR」，然後重新啟動批次任務。",
+            "connectivity_failed": "此批次包含 OCR 項目，但 OCR 需要網際網路連線。請檢查連線，並在開始擷取前重試。",
+            "quota_or_rate_limited": "此批次包含 OCR 項目，但 OCR 因配額/速率限制而暫時受阻。請等待，並在開始擷取前重試。",
+            "unavailable": "此批次任務包含 OCR 項目，但 Google OCR 目前無法使用。如果 OCR 尚未啟用，請使用「偏好設定 > 啟用 Google OCR」。否則，請在啟動批次任務前檢查 OCR 設定／狀態並重試。"
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "重設文字大小",
       "read_progress_label": "已讀",
       "clear_title": "清除",
+      "editor_find": {
+        "input_placeholder": "尋找...",
+        "input_aria": "在文字中尋找",
+        "expand_title": "顯示取代控制項",
+        "collapse_title": "隱藏取代控制項",
+        "replace_placeholder": "取代...",
+        "replace_aria": "取代文字",
+        "replace": "取代",
+        "replace_all": "全部取代",
+        "prev_title": "上一個相符項",
+        "next_title": "下一個相符項",
+        "close_title": "關閉尋找欄",
+        "replace_title": "取代目前相符項",
+        "replace_all_title": "取代所有相符項",
+        "replace_timeout": "取代超時。請重試。",
+        "status_no_matches": "沒有相符項",
+        "status_empty_query": "輸入內容以搜尋"
+      },
       "alerts": {
         "start_failed": "無法啟動 Text Editor。",
         "start_timeout": "Text Editor 啟動時間過長，已被關閉。",
@@ -315,36 +333,7 @@
         "calc_error": "計算時發生錯誤。請檢查主控台。"
       }
     },
-    "editor_find": {
-      "input_placeholder": "尋找...",
-      "input_aria": "在文字中尋找",
-      "expand_title": "顯示取代控制項",
-      "collapse_title": "隱藏取代控制項",
-      "replace_placeholder": "取代...",
-      "replace_aria": "取代文字",
-      "replace": "取代",
-      "replace_all": "全部取代",
-      "prev_title": "上一個相符項",
-      "next_title": "下一個相符項",
-      "close_title": "關閉尋找欄",
-      "replace_title": "取代目前相符項",
-      "replace_all_title": "取代所有相符項",
-      "replace_timeout": "取代超時。請重試。",
-      "status_no_matches": "沒有相符項",
-      "status_empty_query": "輸入內容以搜尋"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "快照已儲存。",
-        "save_error": "無法儲存快照。",
-        "load_success": "快照已載入。",
-        "load_error": "無法載入快照。",
-        "outside": "快照必須位於快照資料夾內。",
-        "truncated": "快照超過最大大小，已被截斷。",
-        "unavailable": "快照功能無法使用。"
-      }
-    },
-    "snapshot_save_tags": {
       "title": "儲存文字快照",
       "message": "在選擇儲存位置前，可選擇為此文字快照新增標籤。",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "一般",
           "hard": "困難"
         }
+      },
+      "alerts": {
+        "save_success": "快照已儲存。",
+        "save_error": "無法儲存快照。",
+        "load_success": "快照已載入。",
+        "load_error": "無法載入快照。",
+        "outside": "快照必須位於快照資料夾內。",
+        "truncated": "快照超過最大大小，已被截斷。",
+        "unavailable": "快照功能無法使用。"
       }
     },
     "tasks": {
       "title": "toT — 任務",
-      "labels": {
-        "name": "名稱",
-        "summary_total": "總計",
-        "summary_left": "剩餘",
-        "empty": "（空）",
-        "search": "搜尋",
-        "search_placeholder": "在資料庫中搜尋..."
-      },
+      "name": "名稱",
+      "save_button": "儲存",
+      "delete_button": "刪除",
+      "summary_total": "總計",
+      "summary_left": "剩餘",
+      "add_row_button": "新增列",
+      "open_library_button": "開啟資料庫",
       "columns": {
         "texto": "文字",
         "tiempo": "時間",
@@ -423,36 +420,37 @@
         "falta": "剩餘",
         "enlace": "連結",
         "comentario": "",
-        "acciones": "動作"
+        "acciones": "動作",
+        "tooltips": {
+          "link_open": "開啟連結",
+          "snapshot_load": "為此列載入文字快照",
+          "comment": "新增／編輯註解",
+          "move_up": "上移列",
+          "move_down": "下移列",
+          "library_row_save": "儲存至資料庫",
+          "delete_row": "刪除列"
+        }
       },
-      "buttons": {
-        "save": "儲存",
-        "delete": "刪除",
-        "add_row": "新增列",
-        "open_library": "開啟資料庫",
-        "select_snapshot": "選擇快照",
-        "cancel": "取消",
-        "yes": "是",
-        "no": "否"
-      },
-      "tooltips": {
-        "move_up": "上移列",
-        "move_down": "下移列",
-        "delete_row": "刪除列",
-        "library_row_save": "儲存至資料庫",
-        "library_row_load": "載入列",
-        "library_row_delete": "從資料庫刪除",
-        "snapshot_load": "為此列載入文字快照",
-        "snapshot_select": "為此列選擇文字快照",
-        "snapshot_clear": "移除此列所選快照",
-        "link_open": "開啟連結",
-        "comment": "新增／編輯註解"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "註解",
+        "snapshot_select": "選擇快照",
+        "snapshot_select_tooltip": "為此列選擇文字快照",
+        "snapshot_clear": "移除此列所選快照"
+      },
+      "biblioteca": {
         "library_title": "資料庫",
+        "search": "搜尋",
+        "search_placeholder": "在資料庫中搜尋...",
+        "empty": "（空）",
+        "library_row_load": "載入列",
+        "library_row_delete": "從資料庫刪除"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "儲存至資料庫",
-        "library_save_question": "包含註解？"
+        "library_save_question": "包含註解？",
+        "yes": "是",
+        "no": "否",
+        "cancel": "取消"
       },
       "alerts": {
         "task_unavailable": "任務功能無法使用。",
@@ -473,45 +471,27 @@
         "library_delete_error": "無法從資料庫刪除。",
         "link_blocked": "連結已已封鎖。",
         "link_missing": "找不到檔案。",
-        "link_error": "開啟連結時發生錯誤。"
-      },
-      "confirm": {
+        "link_error": "開啟連結時發生錯誤。",
         "close_unsaved": "有未儲存的變更。要不儲存就關閉嗎？"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "準備開始時，請在浮動視窗中按 Play（▶）。測試開始後，在讀完之前不要按 Pause（⏸）：Pause 會結束測試，而不是暫停計時。只有在想取消測試時才按 Stop/Reset（⏹）。"
-      },
       "entry": {
         "title": "閱讀速度測試",
+        "show_instructions": "顯示說明",
+        "hide_instructions": "隱藏說明",
         "intro": "此測試用於透過引導式工作階段估計你的實際閱讀速度。應用程式會開啟文字，並等待你準備好後在浮動視窗中按 Play（▶）。測試開始後，在讀完之前不要按 Pause（⏸）：Pause 會結束測試，而不是暫停計時。只有在想取消測試時才使用 Stop/Reset（⏹）。之後，如果文字包含理解問題，你可以查看這些問題；最後，可以根據結果建立一個預設值。\n開始前請注意，這些測試文字通常需要 5 到 15 分鐘的連續專注，期間不要中斷。\n此文字池使用短文字，因此請審慎解讀結果。它不應直接外推至長文字，因為長文字通常會涉及正向因素，例如流暢度和脈絡累積，也會涉及負向因素，例如心理回顧和疲勞。",
         "eligible_count": "符合條件的檔案：",
+        "show_bundled_entries": "基礎測試",
+        "get_more_files": "取得更多檔案",
+        "import_files_button": "匯入檔案",
+        "start_random_text_button": "以隨機文字開始",
+        "start_current_text_button": "以目前文字開始",
         "pool_exhausted_message": "沒有剩餘未使用的測試檔案。請重設文字池或新增更多檔案。",
         "visible_empty_bundled_hidden_message": "內建測試檔案目前已隱藏，而且已沒有可見的未使用測試檔案。請重新顯示內建檔案，或匯入更多檔案後再繼續。",
         "close_aria": "關閉閱讀速度測試對話框",
         "start_random_confirm": "這會用文字池中一個符合條件的隨機文字覆蓋目前文字。要繼續嗎？",
         "reset_confirm": "這會重設整個測試文字池，並將其中所有檔案重新標記為未使用。要繼續嗎？",
-        "import_summary": "匯入完成。已匯入：{imported}。略過的重複項：{skippedDuplicates}。驗證失敗：{failedValidation}。壓縮檔項目失敗：{failedArchiveEntries}。寫入失敗：{failedWrites}。",
-        "import_conflict": {
-          "title": "匯入檔案",
-          "message": "一些匯入的檔案已存在於文字池中。要如何處理重複項？",
-          "detail": "{count} 個目標檔名已存在於文字池中。",
-          "buttons": {
-            "skip": "略過重複項",
-            "replace": "取代重複項",
-            "cancel": "取消匯入"
-          }
-        },
-        "buttons": {
-          "get_more_files": "取得更多檔案",
-          "import_files": "匯入檔案",
-          "show_instructions": "顯示說明",
-          "hide_instructions": "隱藏說明",
-          "start_random_text": "以隨機文字開始",
-          "start_current_text": "以目前文字開始",
-          "show_bundled_entries": "基礎測試"
-        },
         "tooltips": {
           "show_bundled_entries": "將應用程式內建的初始測試檔案包含到池中",
           "get_more_files": "從 Google Drive 資料夾取得更多測試檔案",
@@ -519,7 +499,21 @@
           "reset_pool": "重設測試文字池",
           "start_random_text": "用文字池中符合條件的隨機文字開始測試",
           "start_current_text": "以目前文字開始測試"
+        },
+        "import": {
+          "import_summary": "匯入完成。已匯入：{imported}。略過的重複項：{skippedDuplicates}。驗證失敗：{failedValidation}。壓縮檔項目失敗：{failedArchiveEntries}。寫入失敗：{failedWrites}。",
+          "import_conflict": {
+            "title": "匯入檔案",
+            "message": "一些匯入的檔案已存在於文字池中。要如何處理重複項？",
+            "detail": "{count} 個目標檔名已存在於文字池中。",
+            "skip_button": "略過重複項",
+            "replace_button": "取代重複項",
+            "cancel_button": "取消匯入"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "準備開始時，請在浮動視窗中按 Play（▶）。測試開始後，在讀完之前不要按 Pause（⏸）：Pause 會結束測試，而不是暫停計時。只有在想取消測試時才按 Stop/Reset（⏹）。"
       },
       "questions": {
         "title": "閱讀理解問題",
@@ -533,19 +527,15 @@
         "result_summary": "{total} 題中答對 {correct} 題（{percentage}）",
         "chance_at_least_observed": "隨機作答至少獲得此分數的機率：{percentage}",
         "fatal_invalid": "問題資料無效。",
-        "buttons": {
-          "check": "查看結果",
-          "continue": "繼續"
-        }
+        "check_button": "查看結果",
+        "continue_button": "繼續"
       },
       "result": {
         "title": "閱讀速度結果",
         "measured_wpm": "測得 WPM",
         "elapsed_time": "時間",
         "word_count": "詞數",
-        "buttons": {
-          "continue": "繼續"
-        }
+        "continue_button": "繼續"
       },
       "alerts": {
         "unavailable": "閱讀速度測試功能無法使用。",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "閱讀速度測試已取消，因為其中一個工作階段視窗被關閉。"
       }
     },
-    "modal_preset": {
-      "title_new": "新增預設值",
-      "title_edit": "編輯預設值",
-      "heading_new": "建立新預設值",
-      "heading_edit": "編輯所選預設值",
-      "name": "名稱：",
-      "name_placeholder": "預設名稱",
-      "wpm": "WPM：",
-      "description": "說明：",
-      "description_placeholder": "簡短說明...",
-      "char_count": "剩餘 {remaining} 個字元",
-      "hint": "自訂預設值會儲存在使用者設定中。",
-      "cancel": "取消",
-      "save": "儲存",
+    "presets": {
+      "preset_modal": {
+        "title_new": "新增預設值",
+        "title_edit": "編輯預設值",
+        "heading_new": "建立新預設值",
+        "heading_edit": "編輯所選預設值",
+        "name": "名稱：",
+        "name_placeholder": "預設名稱",
+        "wpm": "WPM：",
+        "description": "說明：",
+        "description_placeholder": "簡短說明...",
+        "char_count": "剩餘 {remaining} 個字元",
+        "hint": "自訂預設值會儲存在使用者設定中。",
+        "cancel": "取消",
+        "save": "儲存"
+      },
       "alerts": {
+        "not_found": "快取中找不到所選預設。",
+        "delete_error": "刪除預設時發生錯誤。請檢查主控台。",
+        "restore_error": "還原預設值時發生錯誤。請檢查主控台。",
+        "open_folder_unsupported": "無法在此環境中開啟預設值資料夾。",
+        "open_folder_error": "嘗試開啟預設值資料夾時發生錯誤。請檢查主控台。",
+        "open_default_folder_failed": "無法開啟預設值資料夾。請查看主控台了解更多詳細資訊。",
         "unavailable": "此應用程式建置中無法使用預設對話框。",
         "open_error": "開啟預設對話框時發生錯誤。請檢查主控台。",
         "name_empty": "名稱不可為空。",
@@ -586,16 +584,6 @@
         "create_error": "建立預設值時發生錯誤。請檢查主控台。",
         "edit_error": "編輯預設值時發生錯誤。請檢查主控台。",
         "process_error": "處理預設值時發生錯誤。請檢查主控台。"
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "快取中找不到所選預設。",
-        "delete_error": "刪除預設時發生錯誤。請檢查主控台。",
-        "restore_error": "還原預設值時發生錯誤。請檢查主控台。",
-        "open_folder_unsupported": "無法在此環境中開啟預設值資料夾。",
-        "open_folder_error": "嘗試開啟預設值資料夾時發生錯誤。請檢查主控台。",
-        "open_default_folder_failed": "無法開啟預設值資料夾。請查看主控台了解更多詳細資訊。"
       }
     },
     "browser_extension": {

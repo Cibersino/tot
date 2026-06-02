@@ -7,44 +7,6 @@
         "reading_speed_test": "পড়ার গতি পরীক্ষা",
         "preview_spoiler": "স্পয়লার"
       },
-      "tooltips": {
-        "text_extraction": "ফাইল থেকে লেখা নিষ্কাশন করুন",
-        "text_extraction_abort": "নিষ্কাশন বন্ধ করুন",
-        "overwrite_clipboard": "ক্লিপবোর্ড দিয়ে বর্তমান লেখা প্রতিস্থাপন করুন",
-        "append_clipboard": "ক্লিপবোর্ডের লেখা বর্তমান লেখার শেষে যোগ করুন (নতুন লাইন)",
-        "clipboard_repeat_count": "ক্লিপবোর্ড পুনরাবৃত্তি",
-        "edit": "সম্পূর্ণ বর্তমান লেখার উইন্ডো খুলুন",
-        "clear": "বর্তমান লেখা খালি করুন",
-        "snapshot_load": "লেখার স্ন্যাপশট লোড করুন",
-        "snapshot_save": "বর্তমান লেখা স্ন্যাপশটে সংরক্ষণ করুন",
-        "task_new": "নতুন টাস্ক",
-        "task_load": "টাস্ক লোড করুন",
-        "browser_extension": "ব্রাউজার এক্সটেনশন",
-        "cibersino_website": "Cibersino ওয়েবসাইট",
-        "cibersino_kofi": "Ko-fi-তে সমর্থন করুন",
-        "new_preset": "নতুন প্রিসেট তৈরি করুন",
-        "edit_preset": "নির্বাচিত প্রিসেট সম্পাদনা করুন",
-        "delete_preset": "নির্বাচিত প্রিসেট মুছে ফেলুন",
-        "reset_presets": "ডিফল্ট প্রিসেট পুনরুদ্ধার করুন",
-        "help_button": "উপযোগী টিপ দেখান",
-        "flotante_window": "ভাসমান উইন্ডো"
-      },
-      "aria": {
-        "text_extraction": "ফাইল থেকে লেখা নিষ্কাশন করুন",
-        "text_extraction_abort": "নিষ্কাশন বন্ধ করুন",
-        "browser_extension": "ব্রাউজার এক্সটেনশন ডায়ালগ খুলুন",
-        "clipboard_repeat_count": "পেস্টের পুনরাবৃত্তি",
-        "wpm_input": "প্রতি মিনিটে শব্দ",
-        "wpm_slider": "প্রতি মিনিটে শব্দের স্লাইডার",
-        "speed_presets": "গতির প্রিসেট",
-        "precise_mode_toggle": "নির্ভুল মোড",
-        "crono_controls": "স্টপওয়াচ নিয়ন্ত্রণ",
-        "crono_display": "স্টপওয়াচ ডিসপ্লে",
-        "crono_toggle": "স্টপওয়াচ শুরু বা বিরতি দিন",
-        "crono_reset": "স্টপওয়াচ রিসেট করুন",
-        "floating_window_toggle": "ভাসমান উইন্ডো",
-        "floating_window_group": "ভাসমান উইন্ডোর নিয়ন্ত্রণ"
-      },
       "speed": {
         "title": "পড়ার গতি",
         "wpm_label": "প্রতি মিনিটে শব্দ (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "অতিবাহিত: ",
         "text_extraction_drop_here": "লেখা নিষ্কাশনের জন্য ফাইল ছেড়ে দিন"
+      },
+      "tooltips": {
+        "text_extraction": "ফাইল থেকে লেখা নিষ্কাশন করুন",
+        "text_extraction_abort": "নিষ্কাশন বন্ধ করুন",
+        "overwrite_clipboard": "ক্লিপবোর্ড দিয়ে বর্তমান লেখা প্রতিস্থাপন করুন",
+        "append_clipboard": "ক্লিপবোর্ডের লেখা বর্তমান লেখার শেষে যোগ করুন (নতুন লাইন)",
+        "clipboard_repeat_count": "ক্লিপবোর্ড পুনরাবৃত্তি",
+        "edit": "সম্পূর্ণ বর্তমান লেখার উইন্ডো খুলুন",
+        "clear": "বর্তমান লেখা খালি করুন",
+        "snapshot_load": "লেখার স্ন্যাপশট লোড করুন",
+        "snapshot_save": "বর্তমান লেখা স্ন্যাপশটে সংরক্ষণ করুন",
+        "task_new": "নতুন টাস্ক",
+        "task_load": "টাস্ক লোড করুন",
+        "browser_extension": "ব্রাউজার এক্সটেনশন",
+        "cibersino_website": "Cibersino ওয়েবসাইট",
+        "cibersino_kofi": "Ko-fi-তে সমর্থন করুন",
+        "new_preset": "নতুন প্রিসেট তৈরি করুন",
+        "edit_preset": "নির্বাচিত প্রিসেট সম্পাদনা করুন",
+        "delete_preset": "নির্বাচিত প্রিসেট মুছে ফেলুন",
+        "reset_presets": "ডিফল্ট প্রিসেট পুনরুদ্ধার করুন",
+        "help_button": "উপযোগী টিপ দেখান",
+        "flotante_window": "ভাসমান উইন্ডো"
+      },
+      "aria": {
+        "text_extraction": "ফাইল থেকে লেখা নিষ্কাশন করুন",
+        "text_extraction_abort": "নিষ্কাশন বন্ধ করুন",
+        "browser_extension": "ব্রাউজার এক্সটেনশন ডায়ালগ খুলুন",
+        "clipboard_repeat_count": "পেস্টের পুনরাবৃত্তি",
+        "wpm_input": "প্রতি মিনিটে শব্দ",
+        "wpm_slider": "প্রতি মিনিটে শব্দের স্লাইডার",
+        "speed_presets": "গতির প্রিসেট",
+        "precise_mode_toggle": "নির্ভুল মোড",
+        "crono_controls": "স্টপওয়াচ নিয়ন্ত্রণ",
+        "crono_display": "স্টপওয়াচ ডিসপ্লে",
+        "crono_toggle": "স্টপওয়াচ শুরু বা বিরতি দিন",
+        "crono_reset": "স্টপওয়াচ রিসেট করুন",
+        "floating_window_toggle": "ভাসমান উইন্ডো",
+        "floating_window_group": "ভাসমান উইন্ডোর নিয়ন্ত্রণ"
       },
       "alerts": {
         "clipboard_too_large": "ক্লিপবোর্ডের লেখা প্রক্রিয়াকরণের জন্য খুব বড়। ছোট করে আবার চেষ্টা করুন।",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "সংরক্ষিত PDF: ",
         "reveal_saved_pdf_button": "সংরক্ষিত PDF দেখান"
       },
+      "single_file_heavy": {
+        "case_a_title": "সম্পূর্ণ PDF OCR-এর জন্য খুব বড়",
+        "case_a_message": "সম্পূর্ণ PDF OCR সরবরাহকারীর সীমা ({providerLimitMb} MB) ছাড়িয়েছে। নিষ্কাশনের আগে এটি স্বয়ংক্রিয়ভাবে তৈরি ফাইলে ভাগ করতে আপনি যৌথ পরিকল্পনাকারী খুলতে পারেন।",
+        "case_b_title": "তৈরি পরিসর OCR-এর জন্য খুব বড়",
+        "case_b_message": "নির্বাচিত পরিসরের জন্য তৈরি PDF OCR সরবরাহকারীর সীমা ({providerLimitMb} MB) ছাড়িয়েছে। ফাইলটি আপলোড করা হয়নি। আপনি পৃষ্ঠা নির্বাচনে ফিরে যেতে পারেন, নেটিভ রুট ব্যবহার করতে পারেন, অথবা সম্পূর্ণ PDF ভাগ করতে যৌথ পরিকল্পনাকারী খুলতে পারেন।",
+        "source_file_label": "উৎস ফাইল:",
+        "selected_range_label": "নির্বাচিত পরিসর:",
+        "generated_pdf_label": "তৈরি PDF:",
+        "generated_pdf_size_label": "তৈরি PDF-এর আকার:",
+        "source_size_label": "উৎস ফাইলের আকার:",
+        "total_pages_label": "মোট পৃষ্ঠা:",
+        "split_button": "সম্পূর্ণ PDF ভাগ করে পরিকল্পনা করুন",
+        "return_to_pages_button": "পৃষ্ঠায় ফিরে যান",
+        "use_native_button": "নেটিভ রুট ব্যবহার করুন",
+        "reveal_generated_pdf_button": "তৈরি PDF দেখান",
+        "cancel_button": "বাতিল",
+        "close_aria": "OCR-এর জন্য ভারী PDF ডায়ালগ বন্ধ করুন"
+      },
       "batch_plan": {
         "title": "দলগত নিষ্কাশনের পরিকল্পনা",
         "single_file_title": "স্বয়ংক্রিয় PDF বিভাজনের পরিকল্পনা",
@@ -181,7 +199,6 @@
         "failure_legend": "ব্যর্থ হলে আচরণ",
         "failure_default": "শেষ সফলতার পরে ইউনিট বন্ধ করে পরের ইউনিটে চালিয়ে যান",
         "failure_continue": "ব্যর্থতা এড়িয়ে একই ইউনিটে চালিয়ে যান",
-        "overwrite_confirm": "এক্সট্রাকশন শুরু হলে এটি বর্তমান লেখা প্রতিস্থাপন করবে। আপনি কি চালিয়ে যেতে চান?",
         "start_button": "নিষ্কাশন শুরু করুন",
         "cancel_button": "বাতিল",
         "close_aria": "দলগত নিষ্কাশনের পরিকল্পনা বন্ধ করুন"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} তৈরি হয়েছে",
         "snapshot_creation_failed": "(JSON তৈরি ব্যর্থ: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "সম্পূর্ণ PDF OCR-এর জন্য খুব বড়",
-        "case_a_message": "সম্পূর্ণ PDF OCR সরবরাহকারীর সীমা ({providerLimitMb} MB) ছাড়িয়েছে। নিষ্কাশনের আগে এটি স্বয়ংক্রিয়ভাবে তৈরি ফাইলে ভাগ করতে আপনি যৌথ পরিকল্পনাকারী খুলতে পারেন।",
-        "case_b_title": "তৈরি পরিসর OCR-এর জন্য খুব বড়",
-        "case_b_message": "নির্বাচিত পরিসরের জন্য তৈরি PDF OCR সরবরাহকারীর সীমা ({providerLimitMb} MB) ছাড়িয়েছে। ফাইলটি আপলোড করা হয়নি। আপনি পৃষ্ঠা নির্বাচনে ফিরে যেতে পারেন, নেটিভ রুট ব্যবহার করতে পারেন, অথবা সম্পূর্ণ PDF ভাগ করতে যৌথ পরিকল্পনাকারী খুলতে পারেন।",
-        "source_file_label": "উৎস ফাইল:",
-        "selected_range_label": "নির্বাচিত পরিসর:",
-        "generated_pdf_label": "তৈরি PDF:",
-        "generated_pdf_size_label": "তৈরি PDF-এর আকার:",
-        "source_size_label": "উৎস ফাইলের আকার:",
-        "total_pages_label": "মোট পৃষ্ঠা:",
-        "split_button": "সম্পূর্ণ PDF ভাগ করে পরিকল্পনা করুন",
-        "return_to_pages_button": "পৃষ্ঠায় ফিরে যান",
-        "use_native_button": "নেটিভ রুট ব্যবহার করুন",
-        "reveal_generated_pdf_button": "তৈরি PDF দেখান",
-        "cancel_button": "বাতিল",
-        "close_aria": "OCR-এর জন্য ভারী PDF ডায়ালগ বন্ধ করুন"
-      },
       "alerts": {
+        "overwrite_confirm": "এক্সট্রাকশন শুরু হলে এটি বর্তমান লেখা প্রতিস্থাপন করবে। আপনি কি চালিয়ে যেতে চান?",
         "start_error": "নিষ্কাশন শুরু করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
         "precondition_blocked": "নিষ্কাশন শুরু করতে সব সেকেন্ডারি উইন্ডো বন্ধ করুন এবং স্টপওয়াচ থামান।",
         "precondition_error": "নিষ্কাশনের পূর্বশর্ত পরীক্ষা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "নির্বাচিত PDF পৃষ্ঠা-পরিসরটি বৈধ নয়। পরিসরটি ঠিক করে আবার চেষ্টা করুন।",
           "subset_creation_failed": "এক্সট্র্যাকশনের জন্য নির্বাচিত পৃষ্ঠাগুলোর PDF তৈরি করা যায়নি। ফাইলটি পরীক্ষা করে আবার চেষ্টা করুন।"
         },
+        "native": {
+          "runtime_error": "নিষ্কাশনের সময় native extraction runtime ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
+          "unreadable_or_corrupt": "নির্বাচিত ফাইলটি native extraction-এর জন্য পড়া যাচ্ছে না বা corrupt.",
+          "encrypted_or_password_protected": "নির্বাচিত PDF encrypted বা password-protected, তাই native route দিয়ে নিষ্কাশন করা যায় না।",
+          "cancelled": "Native extraction বাতিল করা হয়েছে।"
+        },
         "ocr": {
           "unavailable": "OCR উপলব্ধ নেই। setup/auth অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।",
           "activation_required": "OCR সক্রিয়করণ প্রয়োজন। Google OCR-এ সাইন ইন করে আবার চেষ্টা করুন।",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "quota/rate limit-এর কারণে OCR সাময়িকভাবে অবরুদ্ধ। অপেক্ষা করে আবার চেষ্টা করুন।",
           "runtime_error": "নিষ্কাশনের সময় OCR runtime ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
           "cancelled": "OCR নিষ্কাশন বাতিল করা হয়েছে।",
-          "cleanup_warning": "OCR শেষ হয়েছে, কিন্তু অস্থায়ী remote ফাইল cleanup ব্যর্থ হয়েছে। আপনার Google Drive ফোল্ডার দেখুন।"
-        },
-        "batch_ocr": {
-          "activation_required": "এই দলে OCR আইটেম আছে, কিন্তু Google OCR সক্রিয় নয়। পছন্দসমূহ > Google OCR সক্রিয় করুন ব্যবহার করুন, তারপর দলটি আবার শুরু করুন।",
-          "token_state_invalid": "এই দলে OCR আইটেম আছে, কিন্তু সংরক্ষিত Google OCR সাইন-ইন অবস্থা অকার্যকর। পছন্দসমূহ > Google OCR সক্রিয় করুন আবার ব্যবহার করুন, তারপর দলটি আবার শুরু করুন।",
-          "connectivity_failed": "এই ব্যাচে OCR আইটেম আছে, কিন্তু OCR-এর জন্য ইন্টারনেট সংযোগ দরকার। সংযোগ পরীক্ষা করে extraction শুরু করার আগে আবার চেষ্টা করুন।",
-          "quota_or_rate_limited": "এই ব্যাচে OCR আইটেম আছে, কিন্তু quota/rate limit-এর কারণে OCR সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ অপেক্ষা করে extraction শুরু করার আগে আবার চেষ্টা করুন।",
-          "unavailable": "এই দলে OCR আইটেম আছে, কিন্তু Google OCR এখন উপলব্ধ নয়। OCR এখনও সক্রিয় না হলে পছন্দসমূহ > Google OCR সক্রিয় করুন ব্যবহার করুন। নইলে দল শুরু করার আগে OCR সেটআপ/প্রমাণীকরণ অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।"
-        },
-        "native": {
-          "runtime_error": "নিষ্কাশনের সময় native extraction runtime ত্রুটি হয়েছে। কনসোল দেখুন এবং আবার চেষ্টা করুন।",
-          "unreadable_or_corrupt": "নির্বাচিত ফাইলটি native extraction-এর জন্য পড়া যাচ্ছে না বা corrupt.",
-          "encrypted_or_password_protected": "নির্বাচিত PDF encrypted বা password-protected, তাই native route দিয়ে নিষ্কাশন করা যায় না।",
-          "cancelled": "Native extraction বাতিল করা হয়েছে।"
+          "cleanup_warning": "OCR শেষ হয়েছে, কিন্তু অস্থায়ী remote ফাইল cleanup ব্যর্থ হয়েছে। আপনার Google Drive ফোল্ডার দেখুন।",
+          "batch_ocr": {
+            "activation_required": "এই দলে OCR আইটেম আছে, কিন্তু Google OCR সক্রিয় নয়। পছন্দসমূহ > Google OCR সক্রিয় করুন ব্যবহার করুন, তারপর দলটি আবার শুরু করুন।",
+            "token_state_invalid": "এই দলে OCR আইটেম আছে, কিন্তু সংরক্ষিত Google OCR সাইন-ইন অবস্থা অকার্যকর। পছন্দসমূহ > Google OCR সক্রিয় করুন আবার ব্যবহার করুন, তারপর দলটি আবার শুরু করুন।",
+            "connectivity_failed": "এই ব্যাচে OCR আইটেম আছে, কিন্তু OCR-এর জন্য ইন্টারনেট সংযোগ দরকার। সংযোগ পরীক্ষা করে extraction শুরু করার আগে আবার চেষ্টা করুন।",
+            "quota_or_rate_limited": "এই ব্যাচে OCR আইটেম আছে, কিন্তু quota/rate limit-এর কারণে OCR সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ অপেক্ষা করে extraction শুরু করার আগে আবার চেষ্টা করুন।",
+            "unavailable": "এই দলে OCR আইটেম আছে, কিন্তু Google OCR এখন উপলব্ধ নয়। OCR এখনও সক্রিয় না হলে পছন্দসমূহ > Google OCR সক্রিয় করুন ব্যবহার করুন। নইলে দল শুরু করার আগে OCR সেটআপ/প্রমাণীকরণ অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।"
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "লেখার আকার রিসেট করুন",
       "read_progress_label": "পড়া হয়েছে",
       "clear_title": "খালি করুন",
+      "editor_find": {
+        "input_placeholder": "খুঁজুন...",
+        "input_aria": "লেখায় খুঁজুন",
+        "expand_title": "প্রতিস্থাপন নিয়ন্ত্রণ দেখান",
+        "collapse_title": "প্রতিস্থাপন নিয়ন্ত্রণ লুকান",
+        "replace_placeholder": "প্রতিস্থাপন...",
+        "replace_aria": "প্রতিস্থাপনের লেখা",
+        "replace": "প্রতিস্থাপন",
+        "replace_all": "সব প্রতিস্থাপন",
+        "prev_title": "আগের মিল",
+        "next_title": "পরের মিল",
+        "close_title": "খোঁজার বার বন্ধ করুন",
+        "replace_title": "বর্তমান মিল প্রতিস্থাপন করুন",
+        "replace_all_title": "সব মিল প্রতিস্থাপন করুন",
+        "replace_timeout": "প্রতিস্থাপনে সময় শেষ। আবার চেষ্টা করুন।",
+        "status_no_matches": "কোনও মিল নেই",
+        "status_empty_query": "খুঁজতে লিখুন"
+      },
       "alerts": {
         "start_failed": "Text Editor শুরু করা যায়নি।",
         "start_timeout": "Text Editor শুরু হতে খুব বেশি সময় নিয়েছে এবং বন্ধ করা হয়েছে।",
@@ -315,36 +333,7 @@
         "calc_error": "গণনা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।"
       }
     },
-    "editor_find": {
-      "input_placeholder": "খুঁজুন...",
-      "input_aria": "লেখায় খুঁজুন",
-      "expand_title": "প্রতিস্থাপন নিয়ন্ত্রণ দেখান",
-      "collapse_title": "প্রতিস্থাপন নিয়ন্ত্রণ লুকান",
-      "replace_placeholder": "প্রতিস্থাপন...",
-      "replace_aria": "প্রতিস্থাপনের লেখা",
-      "replace": "প্রতিস্থাপন",
-      "replace_all": "সব প্রতিস্থাপন",
-      "prev_title": "আগের মিল",
-      "next_title": "পরের মিল",
-      "close_title": "খোঁজার বার বন্ধ করুন",
-      "replace_title": "বর্তমান মিল প্রতিস্থাপন করুন",
-      "replace_all_title": "সব মিল প্রতিস্থাপন করুন",
-      "replace_timeout": "প্রতিস্থাপনে সময় শেষ। আবার চেষ্টা করুন।",
-      "status_no_matches": "কোনও মিল নেই",
-      "status_empty_query": "খুঁজতে লিখুন"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "স্ন্যাপশট সংরক্ষিত হয়েছে।",
-        "save_error": "স্ন্যাপশট সংরক্ষণ করা যায়নি।",
-        "load_success": "স্ন্যাপশট লোড হয়েছে।",
-        "load_error": "স্ন্যাপশট লোড করা যায়নি।",
-        "outside": "স্ন্যাপশটটি snapshots ফোল্ডারের ভিতরে থাকতে হবে।",
-        "truncated": "স্ন্যাপশট সর্বোচ্চ আকার ছাড়িয়েছে এবং কেটে দেওয়া হয়েছে।",
-        "unavailable": "স্ন্যাপশট ফিচার উপলব্ধ নেই।"
-      }
-    },
-    "snapshot_save_tags": {
       "title": "লেখার স্ন্যাপশট সংরক্ষণ",
       "message": "কোথায় সংরক্ষণ করবেন তা বেছে নেওয়ার আগে চাইলে এই লেখার স্ন্যাপশটে ট্যাগ যোগ করুন।",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "সাধারণ",
           "hard": "কঠিন"
         }
+      },
+      "alerts": {
+        "save_success": "স্ন্যাপশট সংরক্ষিত হয়েছে।",
+        "save_error": "স্ন্যাপশট সংরক্ষণ করা যায়নি।",
+        "load_success": "স্ন্যাপশট লোড হয়েছে।",
+        "load_error": "স্ন্যাপশট লোড করা যায়নি।",
+        "outside": "স্ন্যাপশটটি snapshots ফোল্ডারের ভিতরে থাকতে হবে।",
+        "truncated": "স্ন্যাপশট সর্বোচ্চ আকার ছাড়িয়েছে এবং কেটে দেওয়া হয়েছে।",
+        "unavailable": "স্ন্যাপশট ফিচার উপলব্ধ নেই।"
       }
     },
     "tasks": {
       "title": "toT — টাস্ক",
-      "labels": {
-        "name": "নাম",
-        "summary_total": "মোট",
-        "summary_left": "বাকি",
-        "empty": "(খালি)",
-        "search": "খুঁজুন",
-        "search_placeholder": "লাইব্রেরিতে খুঁজুন..."
-      },
+      "name": "নাম",
+      "save_button": "সংরক্ষণ",
+      "delete_button": "মুছে ফেলুন",
+      "summary_total": "মোট",
+      "summary_left": "বাকি",
+      "add_row_button": "সারি যোগ করুন",
+      "open_library_button": "লাইব্রেরি খুলুন",
       "columns": {
         "texto": "লেখা",
         "tiempo": "সময়",
@@ -423,36 +420,37 @@
         "falta": "বাকি",
         "enlace": "লিংক",
         "comentario": "",
-        "acciones": "ক্রিয়া"
+        "acciones": "ক্রিয়া",
+        "tooltips": {
+          "link_open": "লিংক খুলুন",
+          "snapshot_load": "এই সারির জন্য লেখার স্ন্যাপশট লোড করুন",
+          "comment": "মন্তব্য যোগ/সম্পাদনা করুন",
+          "move_up": "উপরে সরান",
+          "move_down": "নিচে সরান",
+          "library_row_save": "লাইব্রেরিতে সংরক্ষণ করুন",
+          "delete_row": "সারি মুছে ফেলুন"
+        }
       },
-      "buttons": {
-        "save": "সংরক্ষণ",
-        "delete": "মুছে ফেলুন",
-        "add_row": "সারি যোগ করুন",
-        "open_library": "লাইব্রেরি খুলুন",
-        "select_snapshot": "স্ন্যাপশট নির্বাচন করুন",
-        "cancel": "বাতিল",
-        "yes": "হ্যাঁ",
-        "no": "না"
-      },
-      "tooltips": {
-        "move_up": "উপরে সরান",
-        "move_down": "নিচে সরান",
-        "delete_row": "সারি মুছে ফেলুন",
-        "library_row_save": "লাইব্রেরিতে সংরক্ষণ করুন",
-        "library_row_load": "সারি লোড করুন",
-        "library_row_delete": "লাইব্রেরি থেকে মুছে ফেলুন",
-        "snapshot_load": "এই সারির জন্য লেখার স্ন্যাপশট লোড করুন",
-        "snapshot_select": "এই সারির জন্য লেখার স্ন্যাপশট নির্বাচন করুন",
-        "snapshot_clear": "এই সারি থেকে নির্বাচিত স্ন্যাপশট সরান",
-        "link_open": "লিংক খুলুন",
-        "comment": "মন্তব্য যোগ/সম্পাদনা করুন"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "মন্তব্য",
+        "snapshot_select": "স্ন্যাপশট নির্বাচন করুন",
+        "snapshot_select_tooltip": "এই সারির জন্য লেখার স্ন্যাপশট নির্বাচন করুন",
+        "snapshot_clear": "এই সারি থেকে নির্বাচিত স্ন্যাপশট সরান"
+      },
+      "biblioteca": {
         "library_title": "লাইব্রেরি",
+        "search": "খুঁজুন",
+        "search_placeholder": "লাইব্রেরিতে খুঁজুন...",
+        "empty": "(খালি)",
+        "library_row_load": "সারি লোড করুন",
+        "library_row_delete": "লাইব্রেরি থেকে মুছে ফেলুন"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "লাইব্রেরিতে সংরক্ষণ",
-        "library_save_question": "মন্তব্য অন্তর্ভুক্ত করবেন?"
+        "library_save_question": "মন্তব্য অন্তর্ভুক্ত করবেন?",
+        "yes": "হ্যাঁ",
+        "no": "না",
+        "cancel": "বাতিল"
       },
       "alerts": {
         "task_unavailable": "টাস্ক ফিচার উপলব্ধ নেই।",
@@ -473,45 +471,27 @@
         "library_delete_error": "লাইব্রেরি থেকে মুছে ফেলা যায়নি।",
         "link_blocked": "লিংক অবরুদ্ধ।",
         "link_missing": "ফাইল পাওয়া যায়নি।",
-        "link_error": "লিংক খুলতে ত্রুটি।"
-      },
-      "confirm": {
+        "link_error": "লিংক খুলতে ত্রুটি।",
         "close_unsaved": "সংরক্ষণ না করা পরিবর্তন আছে। সংরক্ষণ না করে বন্ধ করবেন?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "শুরু করতে প্রস্তুত হলে ভাসমান উইন্ডোতে Play (▶) চাপুন। পরীক্ষা শুরু হওয়ার পর পড়া শেষ না করা পর্যন্ত Pause (⏸) চাপবেন না: Pause পরীক্ষা শেষ করে; এটি টাইমার থামিয়ে রাখে না। পরীক্ষা বাতিল করতে চাইলে শুধু Stop/Reset (⏹) চাপুন।"
-      },
       "entry": {
         "title": "পড়ার গতি পরীক্ষা",
+        "show_instructions": "নির্দেশাবলি দেখান",
+        "hide_instructions": "নির্দেশাবলি লুকান",
         "intro": "এই পরীক্ষাটি একটি নির্দেশিত সেশনের মাধ্যমে আপনার প্রকৃত পড়ার গতি অনুমান করার জন্য। অ্যাপটি লেখা খুলবে এবং আপনি প্রস্তুত হলে ভাসমান উইন্ডোতে Play (▶) চাপার জন্য অপেক্ষা করবে। পরীক্ষা শুরু হওয়ার পর পড়া শেষ না করা পর্যন্ত Pause (⏸) চাপবেন না: Pause পরীক্ষা শেষ করে; এটি টাইমার থামিয়ে রাখে না। পরীক্ষা বাতিল করতে চাইলে শুধু Stop/Reset (⏹) ব্যবহার করুন। এরপর, লেখায় বোঝাপড়ার প্রশ্ন থাকলে আপনি সেগুলো পর্যালোচনা করতে পারবেন এবং শেষে ফলাফল থেকে একটি প্রিসেট তৈরি করতে পারবেন।\nশুরু করার আগে মনে রাখুন, এই পরীক্ষার লেখাগুলো সাধারণত ৫ থেকে ১৫ মিনিটের নিরবচ্ছিন্ন মনোযোগ দাবি করে।\nএই পুলে ছোট লেখা ব্যবহার করা হয়, তাই ফলাফল সতর্কতার সঙ্গে বিচার করুন। এটি সরাসরি দীর্ঘ লেখায় প্রয়োগ করা উচিত নয়, যেখানে প্রবাহ ও প্রসঙ্গ গড়ে ওঠার মতো ইতিবাচক উপাদান এবং মানসিক পুনরাবৃত্তি ও ক্লান্তির মতো নেতিবাচক উপাদান সাধারণত কাজ করে।",
         "eligible_count": "যোগ্য ফাইল:",
+        "show_bundled_entries": "বেস টেস্ট",
+        "get_more_files": "আরও ফাইল নিন",
+        "import_files_button": "ফাইল আমদানি করুন",
+        "start_random_text_button": "এলোমেলো লেখা দিয়ে শুরু করুন",
+        "start_current_text_button": "বর্তমান লেখা দিয়ে শুরু করুন",
         "pool_exhausted_message": "ব্যবহার না করা কোনও পরীক্ষার ফাইল আর নেই। পুল রিসেট করুন বা আরও ফাইল যোগ করুন।",
         "visible_empty_bundled_hidden_message": "অন্তর্নির্মিত টেস্ট ফাইলগুলো বর্তমানে লুকানো আছে, এবং আর কোনো দৃশ্যমান অব্যবহৃত টেস্ট ফাইল নেই। এগুলো আবার দেখান অথবা আরও ফাইল ইমপোর্ট করুন।",
         "close_aria": "পড়ার গতি পরীক্ষার ডায়ালগ বন্ধ করুন",
         "start_random_confirm": "এটি পুলের একটি এলোমেলো যোগ্য লেখা দিয়ে বর্তমান লেখা প্রতিস্থাপন করবে। আপনি কি চালিয়ে যেতে চান?",
         "reset_confirm": "এটি পুরো পরীক্ষার পুল রিসেট করবে এবং এর সব ফাইল আবার অব্যবহৃত হিসেবে চিহ্নিত করবে। আপনি কি চালিয়ে যেতে চান?",
-        "import_summary": "আমদানি শেষ। আমদানি হয়েছে: {imported}। বাদ দেওয়া ডুপ্লিকেট: {skippedDuplicates}। যাচাই ব্যর্থ: {failedValidation}। আর্কাইভ এন্ট্রি ব্যর্থ: {failedArchiveEntries}। লেখা ব্যর্থ: {failedWrites}।",
-        "import_conflict": {
-          "title": "ফাইল আমদানি করুন",
-          "message": "কিছু আমদানি করা ফাইল পুলে আগে থেকেই আছে। ডুপ্লিকেট কীভাবে সামলানো হবে?",
-          "detail": "{count}টি গন্তব্য ফাইলনাম পুলে আগে থেকেই আছে।",
-          "buttons": {
-            "skip": "ডুপ্লিকেট বাদ দিন",
-            "replace": "ডুপ্লিকেট প্রতিস্থাপন করুন",
-            "cancel": "আমদানি বাতিল করুন"
-          }
-        },
-        "buttons": {
-          "get_more_files": "আরও ফাইল নিন",
-          "import_files": "ফাইল আমদানি করুন",
-          "show_instructions": "নির্দেশাবলি দেখান",
-          "hide_instructions": "নির্দেশাবলি লুকান",
-          "start_random_text": "এলোমেলো লেখা দিয়ে শুরু করুন",
-          "start_current_text": "বর্তমান লেখা দিয়ে শুরু করুন",
-          "show_bundled_entries": "বেস টেস্ট"
-        },
         "tooltips": {
           "show_bundled_entries": "পুলে অ্যাপের অন্তর্ভুক্ত প্রাথমিক টেস্ট ফাইলগুলো অন্তর্ভুক্ত করুন",
           "get_more_files": "Google Drive ফোল্ডার থেকে আরও পরীক্ষার ফাইল নিন",
@@ -519,7 +499,21 @@
           "reset_pool": "পরীক্ষার পুল রিসেট করুন",
           "start_random_text": "পুলের একটি এলোমেলো যোগ্য লেখা দিয়ে পরীক্ষা শুরু করুন",
           "start_current_text": "বর্তমান লেখা দিয়ে পরীক্ষা শুরু করুন"
+        },
+        "import": {
+          "import_summary": "আমদানি শেষ। আমদানি হয়েছে: {imported}। বাদ দেওয়া ডুপ্লিকেট: {skippedDuplicates}। যাচাই ব্যর্থ: {failedValidation}। আর্কাইভ এন্ট্রি ব্যর্থ: {failedArchiveEntries}। লেখা ব্যর্থ: {failedWrites}।",
+          "import_conflict": {
+            "title": "ফাইল আমদানি করুন",
+            "message": "কিছু আমদানি করা ফাইল পুলে আগে থেকেই আছে। ডুপ্লিকেট কীভাবে সামলানো হবে?",
+            "detail": "{count}টি গন্তব্য ফাইলনাম পুলে আগে থেকেই আছে।",
+            "skip_button": "ডুপ্লিকেট বাদ দিন",
+            "replace_button": "ডুপ্লিকেট প্রতিস্থাপন করুন",
+            "cancel_button": "আমদানি বাতিল করুন"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "শুরু করতে প্রস্তুত হলে ভাসমান উইন্ডোতে Play (▶) চাপুন। পরীক্ষা শুরু হওয়ার পর পড়া শেষ না করা পর্যন্ত Pause (⏸) চাপবেন না: Pause পরীক্ষা শেষ করে; এটি টাইমার থামিয়ে রাখে না। পরীক্ষা বাতিল করতে চাইলে শুধু Stop/Reset (⏹) চাপুন।"
       },
       "questions": {
         "title": "পঠন-বোঝাপড়ার প্রশ্ন",
@@ -533,19 +527,15 @@
         "result_summary": "{total}টির মধ্যে {correct}টি সঠিক ({percentage})",
         "chance_at_least_observed": "এলোমেলো অনুমানে অন্তত এই স্কোর পাওয়ার সম্ভাবনা: {percentage}",
         "fatal_invalid": "প্রশ্নের payload অকার্যকর।",
-        "buttons": {
-          "check": "ফলাফল দেখুন",
-          "continue": "চালিয়ে যান"
-        }
+        "check_button": "ফলাফল দেখুন",
+        "continue_button": "চালিয়ে যান"
       },
       "result": {
         "title": "পড়ার গতির ফলাফল",
         "measured_wpm": "পরিমাপিত WPM",
         "elapsed_time": "সময়",
         "word_count": "শব্দ",
-        "buttons": {
-          "continue": "চালিয়ে যান"
-        }
+        "continue_button": "চালিয়ে যান"
       },
       "alerts": {
         "unavailable": "পড়ার গতি পরীক্ষা ফিচার উপলব্ধ নেই।",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "পড়ার গতি পরীক্ষা বাতিল হয়েছে, কারণ এর session windows-এর একটি বন্ধ হয়ে গেছে।"
       }
     },
-    "modal_preset": {
-      "title_new": "নতুন প্রিসেট",
-      "title_edit": "প্রিসেট সম্পাদনা",
-      "heading_new": "নতুন প্রিসেট তৈরি করুন",
-      "heading_edit": "নির্বাচিত প্রিসেট সম্পাদনা করুন",
-      "name": "নাম:",
-      "name_placeholder": "প্রিসেটের নাম",
-      "wpm": "WPM:",
-      "description": "বর্ণনা:",
-      "description_placeholder": "সংক্ষিপ্ত বর্ণনা...",
-      "char_count": "{remaining} অক্ষর বাকি",
-      "hint": "কাস্টম প্রিসেট ব্যবহারকারী সেটিংসে সংরক্ষিত হয়।",
-      "cancel": "বাতিল",
-      "save": "সংরক্ষণ",
+    "presets": {
+      "preset_modal": {
+        "title_new": "নতুন প্রিসেট",
+        "title_edit": "প্রিসেট সম্পাদনা",
+        "heading_new": "নতুন প্রিসেট তৈরি করুন",
+        "heading_edit": "নির্বাচিত প্রিসেট সম্পাদনা করুন",
+        "name": "নাম:",
+        "name_placeholder": "প্রিসেটের নাম",
+        "wpm": "WPM:",
+        "description": "বর্ণনা:",
+        "description_placeholder": "সংক্ষিপ্ত বর্ণনা...",
+        "char_count": "{remaining} অক্ষর বাকি",
+        "hint": "কাস্টম প্রিসেট ব্যবহারকারী সেটিংসে সংরক্ষিত হয়।",
+        "cancel": "বাতিল",
+        "save": "সংরক্ষণ"
+      },
       "alerts": {
+        "not_found": "নির্বাচিত প্রিসেট ক্যাশে পাওয়া যায়নি।",
+        "delete_error": "প্রিসেট মুছে ফেলার সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "restore_error": "প্রিসেট পুনরুদ্ধারের সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "open_folder_unsupported": "এই পরিবেশে প্রিসেট ফোল্ডার খোলা যায় না।",
+        "open_folder_error": "প্রিসেট ফোল্ডার খুলতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
+        "open_default_folder_failed": "ডিফল্ট প্রিসেট ফোল্ডার খোলা যায়নি। বিস্তারিত জানতে কনসোল দেখুন।",
         "unavailable": "এই অ্যাপ বিল্ডে প্রিসেট ডায়ালগ উপলভ্য নয়।",
         "open_error": "প্রিসেট ডায়ালগ খোলার সময় একটি ত্রুটি ঘটেছে। কনসোল দেখুন।",
         "name_empty": "নাম খালি হতে পারে না।",
@@ -586,16 +584,6 @@
         "create_error": "প্রিসেট তৈরি করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
         "edit_error": "প্রিসেট সম্পাদনা করতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
         "process_error": "প্রিসেট প্রক্রিয়াকরণে ত্রুটি হয়েছে। কনসোল দেখুন।"
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "নির্বাচিত প্রিসেট ক্যাশে পাওয়া যায়নি।",
-        "delete_error": "প্রিসেট মুছে ফেলার সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
-        "restore_error": "প্রিসেট পুনরুদ্ধারের সময় ত্রুটি হয়েছে। কনসোল দেখুন।",
-        "open_folder_unsupported": "এই পরিবেশে প্রিসেট ফোল্ডার খোলা যায় না।",
-        "open_folder_error": "প্রিসেট ফোল্ডার খুলতে গিয়ে ত্রুটি হয়েছে। কনসোল দেখুন।",
-        "open_default_folder_failed": "ডিফল্ট প্রিসেট ফোল্ডার খোলা যায়নি। বিস্তারিত জানতে কনসোল দেখুন।"
       }
     },
     "browser_extension": {

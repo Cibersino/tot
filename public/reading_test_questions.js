@@ -281,8 +281,8 @@
       randomTitle.textContent = tr('renderer.reading_test.questions.random_title');
       feedbackTitle.textContent = tr('renderer.reading_test.questions.feedback_title');
       feedbackPrefix.textContent = tr('renderer.reading_test.questions.feedback_prefix');
-      btnCheck.textContent = tr('renderer.reading_test.questions.buttons.check');
-      btnContinue.textContent = tr('renderer.reading_test.questions.buttons.continue');
+      btnCheck.textContent = tr('renderer.reading_test.questions.check_button');
+      btnContinue.textContent = tr('renderer.reading_test.questions.continue_button');
     }
 
     function renderFeedbackLink() {

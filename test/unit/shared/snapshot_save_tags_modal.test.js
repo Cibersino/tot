@@ -85,24 +85,24 @@ function createHarness() {
 
   const windowListeners = new Map();
   const translations = {
-    'renderer.snapshot_save_tags.title': 'Save text snapshot',
-    'renderer.snapshot_save_tags.message': 'Optionally tag this text snapshot before choosing where to save it.',
-    'renderer.snapshot_save_tags.labels.language': 'Language',
-    'renderer.snapshot_save_tags.labels.type': 'Type',
-    'renderer.snapshot_save_tags.labels.difficulty': 'Difficulty',
-    'renderer.snapshot_save_tags.empty.language': 'No language tag',
-    'renderer.snapshot_save_tags.empty.type': 'No type tag',
-    'renderer.snapshot_save_tags.empty.difficulty': 'No difficulty tag',
-    'renderer.snapshot_save_tags.buttons.confirm': 'Save Text Snapshot',
-    'renderer.snapshot_save_tags.buttons.cancel': 'Cancel',
-    'renderer.snapshot_save_tags.close_aria': 'Close save text snapshot dialog',
+    'renderer.snapshots.title': 'Save text snapshot',
+    'renderer.snapshots.message': 'Optionally tag this text snapshot before choosing where to save it.',
+    'renderer.snapshots.labels.language': 'Language',
+    'renderer.snapshots.labels.type': 'Type',
+    'renderer.snapshots.labels.difficulty': 'Difficulty',
+    'renderer.snapshots.empty.language': 'No language tag',
+    'renderer.snapshots.empty.type': 'No type tag',
+    'renderer.snapshots.empty.difficulty': 'No difficulty tag',
+    'renderer.snapshots.buttons.confirm': 'Save Text Snapshot',
+    'renderer.snapshots.buttons.cancel': 'Cancel',
+    'renderer.snapshots.close_aria': 'Close save text snapshot dialog',
     'renderer.text_extraction.batch_plan.tags_modal.title': 'Unit tags',
     'renderer.text_extraction.batch_plan.tags_modal.message': 'Choose optional tags for snapshots created from this unit during batch extraction.',
     'renderer.text_extraction.batch_plan.tags_modal.confirm_button': 'Apply tags',
     'renderer.text_extraction.batch_plan.tags_modal.close_aria': 'Close unit tags dialog',
-    'renderer.snapshot_save_tags.options.language.en': 'English',
-    'renderer.snapshot_save_tags.options.type.fiction': 'Fiction',
-    'renderer.snapshot_save_tags.options.difficulty.easy': 'Easy',
+    'renderer.snapshots.options.language.en': 'English',
+    'renderer.snapshots.options.type.fiction': 'Fiction',
+    'renderer.snapshots.options.difficulty.easy': 'Easy',
   };
 
   const sandbox = {
@@ -123,9 +123,9 @@ function createHarness() {
         },
       },
       SnapshotTagCatalog: {
-        LANGUAGE_OPTIONS: [{ value: 'en', labelKey: 'renderer.snapshot_save_tags.options.language.en' }],
-        TYPE_OPTIONS: [{ value: 'fiction', labelKey: 'renderer.snapshot_save_tags.options.type.fiction' }],
-        DIFFICULTY_OPTIONS: [{ value: 'easy', labelKey: 'renderer.snapshot_save_tags.options.difficulty.easy' }],
+        LANGUAGE_OPTIONS: [{ value: 'en', labelKey: 'renderer.snapshots.options.language.en' }],
+        TYPE_OPTIONS: [{ value: 'fiction', labelKey: 'renderer.snapshots.options.type.fiction' }],
+        DIFFICULTY_OPTIONS: [{ value: 'easy', labelKey: 'renderer.snapshots.options.difficulty.easy' }],
       },
       addEventListener(type, handler) {
         if (!windowListeners.has(type)) {

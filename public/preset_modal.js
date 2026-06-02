@@ -101,23 +101,23 @@
     async function applyPresetTranslations(modeForHeading = mode) {
       await ensurePresetTranslations(idiomaActual);
       const isEdit = modeForHeading === 'edit';
-      const headingKey = isEdit ? 'renderer.modal_preset.heading_edit' : 'renderer.modal_preset.heading_new';
-      const titleKey = isEdit ? 'renderer.modal_preset.title_edit' : 'renderer.modal_preset.title_new';
+      const headingKey = isEdit ? 'renderer.presets.preset_modal.heading_edit' : 'renderer.presets.preset_modal.heading_new';
+      const titleKey = isEdit ? 'renderer.presets.preset_modal.title_edit' : 'renderer.presets.preset_modal.title_new';
       document.title = tr(titleKey);
       if (h3El) h3El.textContent = tr(headingKey);
       const labels = document.querySelectorAll('label');
       labels.forEach((lbl) => {
         const text = (lbl.textContent || '').trim();
-        if (text.startsWith('Nombre') || text.startsWith('Name')) lbl.childNodes[0].textContent = tr('renderer.modal_preset.name');
-        if (text.startsWith('WPM')) lbl.childNodes[0].textContent = tr('renderer.modal_preset.wpm');
-        if (text.startsWith('Descripcion') || text.startsWith('Descripci') || text.startsWith('Description')) lbl.childNodes[0].textContent = tr('renderer.modal_preset.description');
+        if (text.startsWith('Nombre') || text.startsWith('Name')) lbl.childNodes[0].textContent = tr('renderer.presets.preset_modal.name');
+        if (text.startsWith('WPM')) lbl.childNodes[0].textContent = tr('renderer.presets.preset_modal.wpm');
+        if (text.startsWith('Descripcion') || text.startsWith('Descripci') || text.startsWith('Description')) lbl.childNodes[0].textContent = tr('renderer.presets.preset_modal.description');
       });
-      if (nameEl && nameEl.placeholder) nameEl.placeholder = tr('renderer.modal_preset.name_placeholder');
-      if (descEl && descEl.placeholder) descEl.placeholder = tr('renderer.modal_preset.description_placeholder');
-      if (charCountEl) charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: descMaxLength });
-      if (hintEl) hintEl.textContent = tr('renderer.modal_preset.hint');
-      if (btnSave) btnSave.textContent = tr('renderer.modal_preset.save');
-      if (btnCancel) btnCancel.textContent = tr('renderer.modal_preset.cancel');
+      if (nameEl && nameEl.placeholder) nameEl.placeholder = tr('renderer.presets.preset_modal.name_placeholder');
+      if (descEl && descEl.placeholder) descEl.placeholder = tr('renderer.presets.preset_modal.description_placeholder');
+      if (charCountEl) charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining: descMaxLength });
+      if (hintEl) hintEl.textContent = tr('renderer.presets.preset_modal.hint');
+      if (btnSave) btnSave.textContent = tr('renderer.presets.preset_modal.save');
+      if (btnCancel) btnCancel.textContent = tr('renderer.presets.preset_modal.cancel');
     }
 
     // =============================================================================
@@ -166,7 +166,7 @@
             updatePresetDescriptionDirection();
             // Update char count initial
             const currLen = descEl.value ? descEl.value.length : 0;
-            charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
+            charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
           } catch (err) {
             log.error('Error applying preset-init data:', err);
           }
@@ -209,12 +209,12 @@
       const desc = (descEl.value || '').trim();
 
       if (!name) {
-        window.Notify.notifyMain('renderer.modal_preset.alerts.name_empty');
+        window.Notify.notifyMain('renderer.presets.alerts.name_empty');
         return null;
       }
 
       if (!Number.isFinite(wpm) || wpm < WPM_MIN || wpm > WPM_MAX) {
-        window.Notify.notifyMain('renderer.modal_preset.alerts.wpm_invalid', {
+        window.Notify.notifyMain('renderer.presets.alerts.wpm_invalid', {
           min: WPM_MIN,
           max: WPM_MAX
         });
@@ -234,7 +234,7 @@
       updatePresetDescriptionDirection();
       const currentLength = descEl.value.length;
       const remaining = descMaxLength - currentLength;
-      charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining });
+      charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining });
     });
 
     nameEl.addEventListener('input', () => {
@@ -255,11 +255,11 @@
               window.close();
             } else {
               if (res && res.code === 'CANCELLED') return;
-              window.Notify.notifyMain('renderer.modal_preset.alerts.edit_error');
+              window.Notify.notifyMain('renderer.presets.alerts.edit_error');
               log.error('Error editing preset (response):', res);
             }
           } else {
-            window.Notify.notifyMain('renderer.modal_preset.alerts.process_error');
+            window.Notify.notifyMain('renderer.presets.alerts.process_error');
             log.errorOnce('preset-modal.editPreset.missing', '[preset_modal] presetAPI.editPreset missing');
           }
         } else {
@@ -268,16 +268,16 @@
             if (res && res.ok) {
               window.close();
             } else {
-              window.Notify.notifyMain('renderer.modal_preset.alerts.create_error');
+              window.Notify.notifyMain('renderer.presets.alerts.create_error');
               log.error('Error creating preset (response):', res);
             }
           } else {
-            window.Notify.notifyMain('renderer.modal_preset.alerts.process_error');
+            window.Notify.notifyMain('renderer.presets.alerts.process_error');
             log.errorOnce('preset-modal.createPreset.missing', '[preset_modal] presetAPI.createPreset missing');
           }
         }
       } catch (err) {
-        window.Notify.notifyMain('renderer.modal_preset.alerts.process_error');
+        window.Notify.notifyMain('renderer.presets.alerts.process_error');
         log.error('Error in save preset:', err);
       }
     });
@@ -300,7 +300,7 @@
     // =============================================================================
     (async function initCharCount() {
       const currLen = descEl.value ? descEl.value.length : 0;
-      charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
+      charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
       updatePresetDescriptionDirection();
     })();
 

@@ -7,44 +7,6 @@
         "reading_speed_test": "Tes kecepatan membaca",
         "preview_spoiler": "Spoiler"
       },
-      "tooltips": {
-        "text_extraction": "Ekstrak teks dari file",
-        "text_extraction_abort": "Batalkan ekstraksi",
-        "overwrite_clipboard": "Ganti teks saat ini dengan clipboard",
-        "append_clipboard": "Tambahkan clipboard ke akhir teks saat ini (baris baru)",
-        "clipboard_repeat_count": "Pengulangan clipboard",
-        "edit": "Buka jendela teks saat ini lengkap",
-        "clear": "Kosongkan teks saat ini",
-        "snapshot_load": "Muat snapshot teks",
-        "snapshot_save": "Simpan teks saat ini ke snapshot",
-        "task_new": "Tugas baru",
-        "task_load": "Muat tugas",
-        "browser_extension": "Ekstensi browser",
-        "cibersino_website": "Situs web Cibersino",
-        "cibersino_kofi": "Dukung saya di Ko-fi",
-        "new_preset": "Buat preset baru",
-        "edit_preset": "Edit preset yang dipilih",
-        "delete_preset": "Hapus preset yang dipilih",
-        "reset_presets": "Pulihkan preset bawaan",
-        "help_button": "Tampilkan tip berguna",
-        "flotante_window": "Jendela mengambang"
-      },
-      "aria": {
-        "text_extraction": "Ekstrak teks dari file",
-        "text_extraction_abort": "Batalkan ekstraksi",
-        "browser_extension": "Buka dialog ekstensi browser",
-        "clipboard_repeat_count": "Pengulangan tempel",
-        "wpm_input": "Kata per menit",
-        "wpm_slider": "Slider kata per menit",
-        "speed_presets": "Preset kecepatan",
-        "precise_mode_toggle": "Mode presisi",
-        "crono_controls": "Kontrol stopwatch",
-        "crono_display": "Tampilan stopwatch",
-        "crono_toggle": "Mulai atau jeda stopwatch",
-        "crono_reset": "Reset stopwatch",
-        "floating_window_toggle": "Jendela mengambang",
-        "floating_window_group": "Kontrol jendela mengambang"
-      },
       "speed": {
         "title": "KECEPATAN MEMBACA",
         "wpm_label": "kata per menit (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "Waktu berjalan: ",
         "text_extraction_drop_here": "Jatuhkan file untuk mengekstrak teks"
+      },
+      "tooltips": {
+        "text_extraction": "Ekstrak teks dari file",
+        "text_extraction_abort": "Batalkan ekstraksi",
+        "overwrite_clipboard": "Ganti teks saat ini dengan clipboard",
+        "append_clipboard": "Tambahkan clipboard ke akhir teks saat ini (baris baru)",
+        "clipboard_repeat_count": "Pengulangan clipboard",
+        "edit": "Buka jendela teks saat ini lengkap",
+        "clear": "Kosongkan teks saat ini",
+        "snapshot_load": "Muat snapshot teks",
+        "snapshot_save": "Simpan teks saat ini ke snapshot",
+        "task_new": "Tugas baru",
+        "task_load": "Muat tugas",
+        "browser_extension": "Ekstensi browser",
+        "cibersino_website": "Situs web Cibersino",
+        "cibersino_kofi": "Dukung saya di Ko-fi",
+        "new_preset": "Buat preset baru",
+        "edit_preset": "Edit preset yang dipilih",
+        "delete_preset": "Hapus preset yang dipilih",
+        "reset_presets": "Pulihkan preset bawaan",
+        "help_button": "Tampilkan tip berguna",
+        "flotante_window": "Jendela mengambang"
+      },
+      "aria": {
+        "text_extraction": "Ekstrak teks dari file",
+        "text_extraction_abort": "Batalkan ekstraksi",
+        "browser_extension": "Buka dialog ekstensi browser",
+        "clipboard_repeat_count": "Pengulangan tempel",
+        "wpm_input": "Kata per menit",
+        "wpm_slider": "Slider kata per menit",
+        "speed_presets": "Preset kecepatan",
+        "precise_mode_toggle": "Mode presisi",
+        "crono_controls": "Kontrol stopwatch",
+        "crono_display": "Tampilan stopwatch",
+        "crono_toggle": "Mulai atau jeda stopwatch",
+        "crono_reset": "Reset stopwatch",
+        "floating_window_toggle": "Jendela mengambang",
+        "floating_window_group": "Kontrol jendela mengambang"
       },
       "alerts": {
         "clipboard_too_large": "Teks clipboard terlalu besar untuk diproses. Kurangi dan coba lagi.",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "PDF tersimpan: ",
         "reveal_saved_pdf_button": "Tampilkan PDF tersimpan"
       },
+      "single_file_heavy": {
+        "case_a_title": "PDF lengkap terlalu besar untuk OCR",
+        "case_a_message": "PDF lengkap melebihi batas penyedia OCR ({providerLimitMb} MB). Anda dapat membuka perencana bersama untuk memisahkannya secara otomatis menjadi masukan yang dibuat sebelum ekstraksi.",
+        "case_b_title": "Rentang yang dibuat terlalu besar untuk OCR",
+        "case_b_message": "PDF yang dibuat untuk rentang terpilih melebihi batas penyedia OCR ({providerLimitMb} MB). File tersebut tidak diunggah. Anda dapat kembali ke pemilihan halaman, menggunakan jalur bawaan, atau membuka perencana bersama untuk memisahkan PDF lengkap.",
+        "source_file_label": "File sumber:",
+        "selected_range_label": "Rentang terpilih:",
+        "generated_pdf_label": "PDF yang dibuat:",
+        "generated_pdf_size_label": "Ukuran PDF yang dibuat:",
+        "source_size_label": "Ukuran file sumber:",
+        "total_pages_label": "Total halaman:",
+        "split_button": "Pisahkan dan rencanakan PDF lengkap",
+        "return_to_pages_button": "Kembali ke halaman",
+        "use_native_button": "Gunakan jalur bawaan",
+        "reveal_generated_pdf_button": "Tampilkan PDF yang dibuat",
+        "cancel_button": "Batal",
+        "close_aria": "Tutup dialog PDF berat untuk OCR"
+      },
       "batch_plan": {
         "title": "Rencanakan ekstraksi berkelompok",
         "single_file_title": "Rencanakan pemisahan PDF otomatis",
@@ -181,7 +199,6 @@
         "failure_legend": "Perilaku saat gagal",
         "failure_default": "Tutup unit setelah keberhasilan terakhir dan lanjutkan ke unit berikutnya",
         "failure_continue": "Lewati kegagalan dan lanjutkan di dalam unit yang sama",
-        "overwrite_confirm": "Ini akan menimpa teks saat ini saat ekstraksi dimulai. Apakah Anda ingin melanjutkan?",
         "start_button": "Mulai ekstraksi",
         "cancel_button": "Batal",
         "close_aria": "Tutup perencanaan ekstraksi berkelompok"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} dibuat",
         "snapshot_creation_failed": "(pembuatan JSON gagal: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "PDF lengkap terlalu besar untuk OCR",
-        "case_a_message": "PDF lengkap melebihi batas penyedia OCR ({providerLimitMb} MB). Anda dapat membuka perencana bersama untuk memisahkannya secara otomatis menjadi masukan yang dibuat sebelum ekstraksi.",
-        "case_b_title": "Rentang yang dibuat terlalu besar untuk OCR",
-        "case_b_message": "PDF yang dibuat untuk rentang terpilih melebihi batas penyedia OCR ({providerLimitMb} MB). File tersebut tidak diunggah. Anda dapat kembali ke pemilihan halaman, menggunakan jalur bawaan, atau membuka perencana bersama untuk memisahkan PDF lengkap.",
-        "source_file_label": "File sumber:",
-        "selected_range_label": "Rentang terpilih:",
-        "generated_pdf_label": "PDF yang dibuat:",
-        "generated_pdf_size_label": "Ukuran PDF yang dibuat:",
-        "source_size_label": "Ukuran file sumber:",
-        "total_pages_label": "Total halaman:",
-        "split_button": "Pisahkan dan rencanakan PDF lengkap",
-        "return_to_pages_button": "Kembali ke halaman",
-        "use_native_button": "Gunakan jalur bawaan",
-        "reveal_generated_pdf_button": "Tampilkan PDF yang dibuat",
-        "cancel_button": "Batal",
-        "close_aria": "Tutup dialog PDF berat untuk OCR"
-      },
       "alerts": {
+        "overwrite_confirm": "Ini akan menimpa teks saat ini saat ekstraksi dimulai. Apakah Anda ingin melanjutkan?",
         "start_error": "Terjadi kesalahan saat memulai ekstraksi. Periksa konsol.",
         "precondition_blocked": "Untuk memulai ekstraksi, tutup semua jendela sekunder dan hentikan stopwatch.",
         "precondition_error": "Terjadi kesalahan saat memeriksa prasyarat ekstraksi. Periksa konsol.",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "Rentang halaman PDF yang dipilih tidak valid. Sesuaikan rentang dan coba lagi.",
           "subset_creation_failed": "PDF berisi halaman yang dipilih tidak dapat dibuat untuk ekstraksi. Periksa file dan coba lagi."
         },
+        "native": {
+          "runtime_error": "Terjadi kesalahan runtime ekstraksi native selama ekstraksi. Periksa konsol dan coba lagi.",
+          "unreadable_or_corrupt": "File yang dipilih tidak dapat dibaca atau rusak untuk ekstraksi native.",
+          "encrypted_or_password_protected": "PDF yang dipilih terenkripsi atau dilindungi kata sandi dan tidak dapat diekstrak secara native.",
+          "cancelled": "Ekstraksi native dibatalkan."
+        },
         "ocr": {
           "unavailable": "OCR tidak tersedia. Periksa status setup/auth dan coba lagi.",
           "activation_required": "Aktivasi OCR diperlukan. Masuk ke Google OCR dan coba lagi.",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "OCR untuk sementara diblokir oleh kuota/batas laju. Tunggu dan coba lagi.",
           "runtime_error": "Terjadi kesalahan runtime OCR selama ekstraksi. Periksa konsol dan coba lagi.",
           "cancelled": "Ekstraksi OCR dibatalkan.",
-          "cleanup_warning": "OCR selesai, tetapi pembersihan file sementara jarak jauh gagal. Periksa folder Google Drive Anda."
-        },
-        "batch_ocr": {
-          "activation_required": "Kelompok ini mencakup item OCR, tetapi Google OCR belum diaktifkan. Gunakan Preferensi > Aktifkan Google OCR, lalu mulai ulang kelompok.",
-          "token_state_invalid": "Kelompok ini mencakup item OCR, tetapi status masuk Google OCR yang tersimpan tidak valid. Gunakan Preferensi > Aktifkan Google OCR lagi, lalu mulai ulang kelompok.",
-          "connectivity_failed": "Batch ini mencakup item OCR, tetapi OCR memerlukan koneksi internet. Periksa koneksi Anda dan coba lagi sebelum memulai ekstraksi.",
-          "quota_or_rate_limited": "Batch ini mencakup item OCR, tetapi OCR sementara diblokir oleh batas kuota/laju. Tunggu lalu coba lagi sebelum memulai ekstraksi.",
-          "unavailable": "Kelompok ini mencakup item OCR, tetapi Google OCR sedang tidak tersedia. Jika OCR belum diaktifkan, gunakan Preferensi > Aktifkan Google OCR. Jika sudah, periksa penyiapan/status OCR dan coba lagi sebelum memulai kelompok."
-        },
-        "native": {
-          "runtime_error": "Terjadi kesalahan runtime ekstraksi native selama ekstraksi. Periksa konsol dan coba lagi.",
-          "unreadable_or_corrupt": "File yang dipilih tidak dapat dibaca atau rusak untuk ekstraksi native.",
-          "encrypted_or_password_protected": "PDF yang dipilih terenkripsi atau dilindungi kata sandi dan tidak dapat diekstrak secara native.",
-          "cancelled": "Ekstraksi native dibatalkan."
+          "cleanup_warning": "OCR selesai, tetapi pembersihan file sementara jarak jauh gagal. Periksa folder Google Drive Anda.",
+          "batch_ocr": {
+            "activation_required": "Kelompok ini mencakup item OCR, tetapi Google OCR belum diaktifkan. Gunakan Preferensi > Aktifkan Google OCR, lalu mulai ulang kelompok.",
+            "token_state_invalid": "Kelompok ini mencakup item OCR, tetapi status masuk Google OCR yang tersimpan tidak valid. Gunakan Preferensi > Aktifkan Google OCR lagi, lalu mulai ulang kelompok.",
+            "connectivity_failed": "Batch ini mencakup item OCR, tetapi OCR memerlukan koneksi internet. Periksa koneksi Anda dan coba lagi sebelum memulai ekstraksi.",
+            "quota_or_rate_limited": "Batch ini mencakup item OCR, tetapi OCR sementara diblokir oleh batas kuota/laju. Tunggu lalu coba lagi sebelum memulai ekstraksi.",
+            "unavailable": "Kelompok ini mencakup item OCR, tetapi Google OCR sedang tidak tersedia. Jika OCR belum diaktifkan, gunakan Preferensi > Aktifkan Google OCR. Jika sudah, periksa penyiapan/status OCR dan coba lagi sebelum memulai kelompok."
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "Reset ukuran teks",
       "read_progress_label": "Dibaca",
       "clear_title": "Kosongkan",
+      "editor_find": {
+        "input_placeholder": "Cari...",
+        "input_aria": "Cari dalam teks",
+        "expand_title": "Tampilkan kontrol ganti",
+        "collapse_title": "Sembunyikan kontrol ganti",
+        "replace_placeholder": "Ganti...",
+        "replace_aria": "Teks pengganti",
+        "replace": "Ganti",
+        "replace_all": "Ganti semua",
+        "prev_title": "Kecocokan sebelumnya",
+        "next_title": "Kecocokan berikutnya",
+        "close_title": "Tutup bilah pencarian",
+        "replace_title": "Ganti kecocokan saat ini",
+        "replace_all_title": "Ganti semua kecocokan",
+        "replace_timeout": "Penggantian kehabisan waktu. Coba lagi.",
+        "status_no_matches": "Tidak ada kecocokan",
+        "status_empty_query": "Ketik untuk mencari"
+      },
       "alerts": {
         "start_failed": "Text Editor tidak dapat dimulai.",
         "start_timeout": "Text Editor terlalu lama dimulai dan ditutup.",
@@ -315,36 +333,7 @@
         "calc_error": "Terjadi kesalahan saat menghitung. Periksa konsol."
       }
     },
-    "editor_find": {
-      "input_placeholder": "Cari...",
-      "input_aria": "Cari dalam teks",
-      "expand_title": "Tampilkan kontrol ganti",
-      "collapse_title": "Sembunyikan kontrol ganti",
-      "replace_placeholder": "Ganti...",
-      "replace_aria": "Teks pengganti",
-      "replace": "Ganti",
-      "replace_all": "Ganti semua",
-      "prev_title": "Kecocokan sebelumnya",
-      "next_title": "Kecocokan berikutnya",
-      "close_title": "Tutup bilah pencarian",
-      "replace_title": "Ganti kecocokan saat ini",
-      "replace_all_title": "Ganti semua kecocokan",
-      "replace_timeout": "Penggantian kehabisan waktu. Coba lagi.",
-      "status_no_matches": "Tidak ada kecocokan",
-      "status_empty_query": "Ketik untuk mencari"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "Snapshot disimpan.",
-        "save_error": "Tidak dapat menyimpan snapshot.",
-        "load_success": "Snapshot dimuat.",
-        "load_error": "Tidak dapat memuat snapshot.",
-        "outside": "Snapshot harus berada di dalam folder snapshots.",
-        "truncated": "Snapshot melebihi ukuran maksimum dan dipotong.",
-        "unavailable": "Fungsi snapshot tidak tersedia."
-      }
-    },
-    "snapshot_save_tags": {
       "title": "Simpan snapshot teks",
       "message": "Secara opsional, beri tag pada snapshot teks ini sebelum memilih lokasi penyimpanan.",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "Normal",
           "hard": "Sulit"
         }
+      },
+      "alerts": {
+        "save_success": "Snapshot disimpan.",
+        "save_error": "Tidak dapat menyimpan snapshot.",
+        "load_success": "Snapshot dimuat.",
+        "load_error": "Tidak dapat memuat snapshot.",
+        "outside": "Snapshot harus berada di dalam folder snapshots.",
+        "truncated": "Snapshot melebihi ukuran maksimum dan dipotong.",
+        "unavailable": "Fungsi snapshot tidak tersedia."
       }
     },
     "tasks": {
       "title": "toT — Tugas",
-      "labels": {
-        "name": "Nama",
-        "summary_total": "Total",
-        "summary_left": "Sisa",
-        "empty": "(kosong)",
-        "search": "Cari",
-        "search_placeholder": "Cari pustaka..."
-      },
+      "name": "Nama",
+      "save_button": "Simpan",
+      "delete_button": "Hapus",
+      "summary_total": "Total",
+      "summary_left": "Sisa",
+      "add_row_button": "Tambah baris",
+      "open_library_button": "Buka pustaka",
       "columns": {
         "texto": "Teks",
         "tiempo": "Waktu",
@@ -423,36 +420,37 @@
         "falta": "Sisa",
         "enlace": "Tautan",
         "comentario": "",
-        "acciones": "Aksi"
+        "acciones": "Aksi",
+        "tooltips": {
+          "link_open": "Buka tautan",
+          "snapshot_load": "Muat snapshot teks untuk baris ini",
+          "comment": "Tambah/edit komentar",
+          "move_up": "Pindahkan ke atas",
+          "move_down": "Pindahkan ke bawah",
+          "library_row_save": "Simpan ke pustaka",
+          "delete_row": "Hapus baris"
+        }
       },
-      "buttons": {
-        "save": "Simpan",
-        "delete": "Hapus",
-        "add_row": "Tambah baris",
-        "open_library": "Buka pustaka",
-        "select_snapshot": "Pilih snapshot",
-        "cancel": "Batal",
-        "yes": "Ya",
-        "no": "Tidak"
-      },
-      "tooltips": {
-        "move_up": "Pindahkan ke atas",
-        "move_down": "Pindahkan ke bawah",
-        "delete_row": "Hapus baris",
-        "library_row_save": "Simpan ke pustaka",
-        "library_row_load": "Muat baris",
-        "library_row_delete": "Hapus dari pustaka",
-        "snapshot_load": "Muat snapshot teks untuk baris ini",
-        "snapshot_select": "Pilih snapshot teks untuk baris ini",
-        "snapshot_clear": "Hapus snapshot yang dipilih dari baris ini",
-        "link_open": "Buka tautan",
-        "comment": "Tambah/edit komentar"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "Komentar",
+        "snapshot_select": "Pilih snapshot",
+        "snapshot_select_tooltip": "Pilih snapshot teks untuk baris ini",
+        "snapshot_clear": "Hapus snapshot yang dipilih dari baris ini"
+      },
+      "biblioteca": {
         "library_title": "Pustaka",
+        "search": "Cari",
+        "search_placeholder": "Cari pustaka...",
+        "empty": "(kosong)",
+        "library_row_load": "Muat baris",
+        "library_row_delete": "Hapus dari pustaka"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "Simpan ke pustaka",
-        "library_save_question": "Sertakan komentar?"
+        "library_save_question": "Sertakan komentar?",
+        "yes": "Ya",
+        "no": "Tidak",
+        "cancel": "Batal"
       },
       "alerts": {
         "task_unavailable": "Fitur tugas tidak tersedia.",
@@ -473,45 +471,27 @@
         "library_delete_error": "Tidak dapat menghapus dari pustaka.",
         "link_blocked": "Tautan diblokir.",
         "link_missing": "File tidak ditemukan.",
-        "link_error": "Kesalahan saat membuka tautan."
-      },
-      "confirm": {
+        "link_error": "Kesalahan saat membuka tautan.",
         "close_unsaved": "Ada perubahan yang belum disimpan. Tutup tanpa menyimpan?"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "Tekan Play (▶) di Jendela Mengambang saat Anda siap mulai. Setelah tes dimulai, jangan tekan Pause (⏸) sebelum selesai membaca: Pause mengakhiri tes; bukan menjeda timer. Tekan Stop/Reset (⏹) hanya jika ingin membatalkan tes."
-      },
       "entry": {
         "title": "Tes kecepatan membaca",
+        "show_instructions": "Tampilkan instruksi",
+        "hide_instructions": "Sembunyikan instruksi",
         "intro": "Tes ini dimaksudkan untuk memperkirakan kecepatan membaca nyata Anda melalui sesi terpandu. Aplikasi akan membuka teks dan menunggu Anda menekan Play (▶) di Jendela Mengambang saat siap mulai. Setelah tes dimulai, jangan tekan Pause (⏸) sebelum selesai membaca: Pause mengakhiri tes; bukan menjeda timer. Gunakan Stop/Reset (⏹) hanya jika ingin membatalkan tes. Setelah itu, Anda dapat meninjau pertanyaan pemahaman jika teks menyertakannya dan, pada akhir proses, membuat preset dari hasilnya.\nSebelum mulai, ingat bahwa teks tes ini biasanya memerlukan 5 hingga 15 menit konsentrasi tanpa gangguan.\nPool ini menggunakan teks pendek, jadi perlakukan hasilnya dengan hati-hati. Hasil tersebut tidak boleh langsung diekstrapolasi ke teks panjang, yang biasanya melibatkan faktor positif seperti alur dan pembentukan konteks, serta faktor negatif seperti rekapitulasi mental dan kelelahan.",
         "eligible_count": "File memenuhi syarat:",
+        "show_bundled_entries": "Tes dasar",
+        "get_more_files": "Ambil file lain",
+        "import_files_button": "Impor file",
+        "start_random_text_button": "Mulai dengan teks acak",
+        "start_current_text_button": "Mulai dengan teks saat ini",
         "pool_exhausted_message": "Tidak ada lagi file tes yang belum digunakan. Reset pool atau tambahkan file lain.",
         "visible_empty_bundled_hidden_message": "File tes bawaan saat ini disembunyikan, dan tidak ada lagi file tes terlihat yang belum digunakan. Tampilkan kembali file bawaan atau impor lebih banyak file untuk melanjutkan.",
         "close_aria": "Tutup dialog tes kecepatan membaca",
         "start_random_confirm": "Ini akan menimpa teks saat ini dengan teks acak yang memenuhi syarat dari pool. Anda ingin melanjutkan?",
         "reset_confirm": "Ini akan mereset seluruh pool tes dan menandai semua filenya sebagai belum digunakan lagi. Anda ingin melanjutkan?",
-        "import_summary": "Impor selesai. Diimpor: {imported}. Duplikat dilewati: {skippedDuplicates}. Validasi gagal: {failedValidation}. Entri arsip gagal: {failedArchiveEntries}. Penulisan gagal: {failedWrites}.",
-        "import_conflict": {
-          "title": "Impor file",
-          "message": "Beberapa file yang diimpor sudah ada di pool. Bagaimana duplikat harus ditangani?",
-          "detail": "{count} nama file tujuan sudah ada di pool.",
-          "buttons": {
-            "skip": "Lewati duplikat",
-            "replace": "Ganti duplikat",
-            "cancel": "Batalkan impor"
-          }
-        },
-        "buttons": {
-          "get_more_files": "Ambil file lain",
-          "import_files": "Impor file",
-          "show_instructions": "Tampilkan instruksi",
-          "hide_instructions": "Sembunyikan instruksi",
-          "start_random_text": "Mulai dengan teks acak",
-          "start_current_text": "Mulai dengan teks saat ini",
-          "show_bundled_entries": "Tes dasar"
-        },
         "tooltips": {
           "show_bundled_entries": "Sertakan file tes awal bawaan aplikasi dalam pool",
           "get_more_files": "Ambil file tes lain dari folder Google Drive",
@@ -519,7 +499,21 @@
           "reset_pool": "Reset pool tes",
           "start_random_text": "Mulai tes dengan teks acak yang memenuhi syarat dari pool",
           "start_current_text": "Mulai tes dengan teks saat ini"
+        },
+        "import": {
+          "import_summary": "Impor selesai. Diimpor: {imported}. Duplikat dilewati: {skippedDuplicates}. Validasi gagal: {failedValidation}. Entri arsip gagal: {failedArchiveEntries}. Penulisan gagal: {failedWrites}.",
+          "import_conflict": {
+            "title": "Impor file",
+            "message": "Beberapa file yang diimpor sudah ada di pool. Bagaimana duplikat harus ditangani?",
+            "detail": "{count} nama file tujuan sudah ada di pool.",
+            "skip_button": "Lewati duplikat",
+            "replace_button": "Ganti duplikat",
+            "cancel_button": "Batalkan impor"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "Tekan Play (▶) di Jendela Mengambang saat Anda siap mulai. Setelah tes dimulai, jangan tekan Pause (⏸) sebelum selesai membaca: Pause mengakhiri tes; bukan menjeda timer. Tekan Stop/Reset (⏹) hanya jika ingin membatalkan tes."
       },
       "questions": {
         "title": "Pertanyaan Pemahaman Bacaan",
@@ -533,19 +527,15 @@
         "result_summary": "{correct} dari {total} benar ({percentage})",
         "chance_at_least_observed": "Peluang memperoleh setidaknya skor ini dengan tebakan acak: {percentage}",
         "fatal_invalid": "Payload pertanyaan tidak valid.",
-        "buttons": {
-          "check": "Periksa hasil",
-          "continue": "Lanjutkan"
-        }
+        "check_button": "Periksa hasil",
+        "continue_button": "Lanjutkan"
       },
       "result": {
         "title": "Hasil kecepatan membaca",
         "measured_wpm": "WPM terukur",
         "elapsed_time": "Waktu",
         "word_count": "Kata",
-        "buttons": {
-          "continue": "Lanjutkan"
-        }
+        "continue_button": "Lanjutkan"
       },
       "alerts": {
         "unavailable": "Fitur tes kecepatan membaca tidak tersedia.",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "Tes kecepatan membaca dibatalkan karena salah satu jendela sesi ditutup."
       }
     },
-    "modal_preset": {
-      "title_new": "Preset baru",
-      "title_edit": "Edit preset",
-      "heading_new": "Buat preset baru",
-      "heading_edit": "Edit preset yang dipilih",
-      "name": "Nama:",
-      "name_placeholder": "Nama preset",
-      "wpm": "WPM:",
-      "description": "Deskripsi:",
-      "description_placeholder": "Deskripsi singkat...",
-      "char_count": "{remaining} karakter tersisa",
-      "hint": "Preset kustom disimpan dalam pengaturan pengguna.",
-      "cancel": "Batal",
-      "save": "Simpan",
+    "presets": {
+      "preset_modal": {
+        "title_new": "Preset baru",
+        "title_edit": "Edit preset",
+        "heading_new": "Buat preset baru",
+        "heading_edit": "Edit preset yang dipilih",
+        "name": "Nama:",
+        "name_placeholder": "Nama preset",
+        "wpm": "WPM:",
+        "description": "Deskripsi:",
+        "description_placeholder": "Deskripsi singkat...",
+        "char_count": "{remaining} karakter tersisa",
+        "hint": "Preset kustom disimpan dalam pengaturan pengguna.",
+        "cancel": "Batal",
+        "save": "Simpan"
+      },
       "alerts": {
+        "not_found": "Preset yang dipilih tidak ditemukan dalam cache.",
+        "delete_error": "Terjadi kesalahan saat menghapus preset. Periksa konsol.",
+        "restore_error": "Terjadi kesalahan saat memulihkan preset. Periksa konsol.",
+        "open_folder_unsupported": "Tidak dapat membuka folder preset di lingkungan ini.",
+        "open_folder_error": "Terjadi kesalahan saat mencoba membuka folder preset. Periksa konsol.",
+        "open_default_folder_failed": "Tidak dapat membuka folder preset bawaan. Periksa konsol untuk detail.",
         "unavailable": "Dialog preset tidak tersedia di build aplikasi ini.",
         "open_error": "Terjadi kesalahan saat membuka dialog preset. Periksa konsol.",
         "name_empty": "Nama tidak boleh kosong.",
@@ -586,16 +584,6 @@
         "create_error": "Terjadi kesalahan saat membuat preset. Periksa konsol.",
         "edit_error": "Terjadi kesalahan saat mengedit preset. Periksa konsol.",
         "process_error": "Terjadi kesalahan saat memproses preset. Periksa konsol."
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "Preset yang dipilih tidak ditemukan dalam cache.",
-        "delete_error": "Terjadi kesalahan saat menghapus preset. Periksa konsol.",
-        "restore_error": "Terjadi kesalahan saat memulihkan preset. Periksa konsol.",
-        "open_folder_unsupported": "Tidak dapat membuka folder preset di lingkungan ini.",
-        "open_folder_error": "Terjadi kesalahan saat mencoba membuka folder preset. Periksa konsol.",
-        "open_default_folder_failed": "Tidak dapat membuka folder preset bawaan. Periksa konsol untuk detail."
       }
     },
     "browser_extension": {

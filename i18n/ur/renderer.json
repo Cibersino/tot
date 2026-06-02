@@ -7,44 +7,6 @@
         "reading_speed_test": "پڑھنے کی رفتار کا ٹیسٹ",
         "preview_spoiler": "اسپوائلر"
       },
-      "tooltips": {
-        "text_extraction": "فائل سے متن نکالیں",
-        "text_extraction_abort": "نکالنے کا عمل روکیں",
-        "overwrite_clipboard": "کلپ بورڈ سے موجودہ متن بدلیں",
-        "append_clipboard": "کلپ بورڈ کا متن موجودہ متن کے آخر میں شامل کریں (نئی سطر)",
-        "clipboard_repeat_count": "کلپ بورڈ کی تکراریں",
-        "edit": "مکمل موجودہ متن کی ونڈو کھولیں",
-        "clear": "موجودہ متن صاف کریں",
-        "snapshot_load": "متن کا اسنیپ شاٹ لوڈ کریں",
-        "snapshot_save": "موجودہ متن کو اسنیپ شاٹ میں محفوظ کریں",
-        "task_new": "نیا ٹاسک",
-        "task_load": "ٹاسک لوڈ کریں",
-        "browser_extension": "براؤزر ایکسٹینشن",
-        "cibersino_website": "Cibersino ویب سائٹ",
-        "cibersino_kofi": "Ko-fi پر تعاون کریں",
-        "new_preset": "نیا پری سیٹ بنائیں",
-        "edit_preset": "منتخب پری سیٹ میں ترمیم کریں",
-        "delete_preset": "منتخب پری سیٹ حذف کریں",
-        "reset_presets": "ڈیفالٹ پری سیٹس بحال کریں",
-        "help_button": "ایک مفید ٹپ دکھائیں",
-        "flotante_window": "تیرتی ہوئی ونڈو"
-      },
-      "aria": {
-        "text_extraction": "فائل سے متن نکالیں",
-        "text_extraction_abort": "نکالنے کا عمل روکیں",
-        "browser_extension": "براؤزر ایکسٹینشن کا ڈائیلاگ کھولیں",
-        "clipboard_repeat_count": "پیسٹ کی تکراریں",
-        "wpm_input": "الفاظ فی منٹ",
-        "wpm_slider": "الفاظ فی منٹ کا سلائیڈر",
-        "speed_presets": "رفتار کے پری سیٹس",
-        "precise_mode_toggle": "درست موڈ",
-        "crono_controls": "اسٹاپ واچ کنٹرولز",
-        "crono_display": "اسٹاپ واچ ڈسپلے",
-        "crono_toggle": "اسٹاپ واچ شروع کریں یا روکیں",
-        "crono_reset": "اسٹاپ واچ ری سیٹ کریں",
-        "floating_window_toggle": "تیرتی ہوئی ونڈو",
-        "floating_window_group": "تیرتی ہوئی ونڈو کے کنٹرولز"
-      },
       "speed": {
         "title": "پڑھنے کی رفتار",
         "wpm_label": "الفاظ فی منٹ (WPM)"
@@ -82,6 +44,44 @@
         "text_extraction_route_ocr": "OCR",
         "text_extraction_elapsed": "گزرا ہوا وقت: ",
         "text_extraction_drop_here": "متن نکالنے کے لیے فائل یہاں چھوڑیں"
+      },
+      "tooltips": {
+        "text_extraction": "فائل سے متن نکالیں",
+        "text_extraction_abort": "نکالنے کا عمل روکیں",
+        "overwrite_clipboard": "کلپ بورڈ سے موجودہ متن بدلیں",
+        "append_clipboard": "کلپ بورڈ کا متن موجودہ متن کے آخر میں شامل کریں (نئی سطر)",
+        "clipboard_repeat_count": "کلپ بورڈ کی تکراریں",
+        "edit": "مکمل موجودہ متن کی ونڈو کھولیں",
+        "clear": "موجودہ متن صاف کریں",
+        "snapshot_load": "متن کا اسنیپ شاٹ لوڈ کریں",
+        "snapshot_save": "موجودہ متن کو اسنیپ شاٹ میں محفوظ کریں",
+        "task_new": "نیا ٹاسک",
+        "task_load": "ٹاسک لوڈ کریں",
+        "browser_extension": "براؤزر ایکسٹینشن",
+        "cibersino_website": "Cibersino ویب سائٹ",
+        "cibersino_kofi": "Ko-fi پر تعاون کریں",
+        "new_preset": "نیا پری سیٹ بنائیں",
+        "edit_preset": "منتخب پری سیٹ میں ترمیم کریں",
+        "delete_preset": "منتخب پری سیٹ حذف کریں",
+        "reset_presets": "ڈیفالٹ پری سیٹس بحال کریں",
+        "help_button": "ایک مفید ٹپ دکھائیں",
+        "flotante_window": "تیرتی ہوئی ونڈو"
+      },
+      "aria": {
+        "text_extraction": "فائل سے متن نکالیں",
+        "text_extraction_abort": "نکالنے کا عمل روکیں",
+        "browser_extension": "براؤزر ایکسٹینشن کا ڈائیلاگ کھولیں",
+        "clipboard_repeat_count": "پیسٹ کی تکراریں",
+        "wpm_input": "الفاظ فی منٹ",
+        "wpm_slider": "الفاظ فی منٹ کا سلائیڈر",
+        "speed_presets": "رفتار کے پری سیٹس",
+        "precise_mode_toggle": "درست موڈ",
+        "crono_controls": "اسٹاپ واچ کنٹرولز",
+        "crono_display": "اسٹاپ واچ ڈسپلے",
+        "crono_toggle": "اسٹاپ واچ شروع کریں یا روکیں",
+        "crono_reset": "اسٹاپ واچ ری سیٹ کریں",
+        "floating_window_toggle": "تیرتی ہوئی ونڈو",
+        "floating_window_group": "تیرتی ہوئی ونڈو کے کنٹرولز"
       },
       "alerts": {
         "clipboard_too_large": "کلپ بورڈ کا متن کارروائی کے لیے بہت بڑا ہے۔ اسے کم کریں اور دوبارہ کوشش کریں۔",
@@ -153,6 +153,24 @@
         "saved_pdf_label": "محفوظ شدہ PDF: ",
         "reveal_saved_pdf_button": "محفوظ شدہ PDF دکھائیں"
       },
+      "single_file_heavy": {
+        "case_a_title": "مکمل PDF OCR کے لیے بہت بڑی ہے",
+        "case_a_message": "مکمل PDF OCR فراہم کنندہ کی حد ({providerLimitMb} MB) سے زیادہ ہے۔ آپ مشترکہ منصوبہ ساز کھول کر اسے اخذ سے پہلے خودکار طور پر بنائی جانے والی فائلوں میں تقسیم کر سکتے ہیں۔",
+        "case_b_title": "بنائی گئی حد OCR کے لیے بہت بڑی ہے",
+        "case_b_message": "منتخب حد کے لیے بنائی گئی PDF OCR فراہم کنندہ کی حد ({providerLimitMb} MB) سے زیادہ ہے۔ فائل اپ لوڈ نہیں ہوئی۔ آپ صفحات کے انتخاب پر واپس جا سکتے ہیں، مقامی طریقہ استعمال کر سکتے ہیں، یا مکمل PDF تقسیم کرنے کے لیے مشترکہ منصوبہ ساز کھول سکتے ہیں۔",
+        "source_file_label": "ماخذ فائل:",
+        "selected_range_label": "منتخب حد:",
+        "generated_pdf_label": "بنائی گئی PDF:",
+        "generated_pdf_size_label": "بنائی گئی PDF کا سائز:",
+        "source_size_label": "ماخذ فائل کا سائز:",
+        "total_pages_label": "کل صفحات:",
+        "split_button": "مکمل PDF تقسیم کریں اور منصوبہ بنائیں",
+        "return_to_pages_button": "صفحات پر واپس جائیں",
+        "use_native_button": "مقامی طریقہ استعمال کریں",
+        "reveal_generated_pdf_button": "بنائی گئی PDF دکھائیں",
+        "cancel_button": "منسوخ",
+        "close_aria": "OCR کے لیے بھاری PDF کا ڈائیلاگ بند کریں"
+      },
       "batch_plan": {
         "title": "گروہی اخذ کی منصوبہ بندی",
         "single_file_title": "خودکار PDF تقسیم کی منصوبہ بندی",
@@ -181,7 +199,6 @@
         "failure_legend": "ناکامی پر برتاؤ",
         "failure_default": "آخری کامیابی کے بعد یونٹ بند کریں اور اگلے یونٹ پر جاری رکھیں",
         "failure_continue": "ناکامی چھوڑ کر اسی یونٹ میں جاری رکھیں",
-        "overwrite_confirm": "ایکسٹریکشن شروع ہونے پر یہ موجودہ متن کو بدل دے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟",
         "start_button": "اخذ شروع کریں",
         "cancel_button": "منسوخ",
         "close_aria": "گروہی اخذ کی منصوبہ بندی بند کریں"
@@ -211,25 +228,8 @@
         "snapshot_created": "{filename} بن گیا",
         "snapshot_creation_failed": "(JSON بنانا ناکام: {code})"
       },
-      "single_file_heavy": {
-        "case_a_title": "مکمل PDF OCR کے لیے بہت بڑی ہے",
-        "case_a_message": "مکمل PDF OCR فراہم کنندہ کی حد ({providerLimitMb} MB) سے زیادہ ہے۔ آپ مشترکہ منصوبہ ساز کھول کر اسے اخذ سے پہلے خودکار طور پر بنائی جانے والی فائلوں میں تقسیم کر سکتے ہیں۔",
-        "case_b_title": "بنائی گئی حد OCR کے لیے بہت بڑی ہے",
-        "case_b_message": "منتخب حد کے لیے بنائی گئی PDF OCR فراہم کنندہ کی حد ({providerLimitMb} MB) سے زیادہ ہے۔ فائل اپ لوڈ نہیں ہوئی۔ آپ صفحات کے انتخاب پر واپس جا سکتے ہیں، مقامی طریقہ استعمال کر سکتے ہیں، یا مکمل PDF تقسیم کرنے کے لیے مشترکہ منصوبہ ساز کھول سکتے ہیں۔",
-        "source_file_label": "ماخذ فائل:",
-        "selected_range_label": "منتخب حد:",
-        "generated_pdf_label": "بنائی گئی PDF:",
-        "generated_pdf_size_label": "بنائی گئی PDF کا سائز:",
-        "source_size_label": "ماخذ فائل کا سائز:",
-        "total_pages_label": "کل صفحات:",
-        "split_button": "مکمل PDF تقسیم کریں اور منصوبہ بنائیں",
-        "return_to_pages_button": "صفحات پر واپس جائیں",
-        "use_native_button": "مقامی طریقہ استعمال کریں",
-        "reveal_generated_pdf_button": "بنائی گئی PDF دکھائیں",
-        "cancel_button": "منسوخ",
-        "close_aria": "OCR کے لیے بھاری PDF کا ڈائیلاگ بند کریں"
-      },
       "alerts": {
+        "overwrite_confirm": "ایکسٹریکشن شروع ہونے پر یہ موجودہ متن کو بدل دے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟",
         "start_error": "نکالنے کا عمل شروع کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
         "precondition_blocked": "نکالنے کا عمل شروع کرنے کے لیے تمام ثانوی ونڈوز بند کریں اور اسٹاپ واچ روکیں۔",
         "precondition_error": "نکالنے کی پیشگی شرائط چیک کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
@@ -251,6 +251,12 @@
           "page_selection_invalid": "منتخب کردہ PDF صفحہ رینج غلط ہے۔ رینج درست کریں اور دوبارہ کوشش کریں۔",
           "subset_creation_failed": "اخذ کرنے کے لیے منتخب صفحات کی PDF نہیں بنائی جا سکی۔ فائل چیک کریں اور دوبارہ کوشش کریں۔"
         },
+        "native": {
+          "runtime_error": "نکالنے کے دوران native extraction runtime خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
+          "unreadable_or_corrupt": "منتخب فائل native extraction کے لیے پڑھی نہیں جا سکتی یا corrupt ہے۔",
+          "encrypted_or_password_protected": "منتخب PDF encrypted یا password-protected ہے اور native route سے نہیں نکالی جا سکتی۔",
+          "cancelled": "Native extraction منسوخ ہو گئی۔"
+        },
         "ocr": {
           "unavailable": "OCR دستیاب نہیں۔ setup/auth حالت چیک کریں اور دوبارہ کوشش کریں۔",
           "activation_required": "OCR فعال کرنا ضروری ہے۔ Google OCR میں سائن اِن کریں اور دوبارہ کوشش کریں۔",
@@ -270,20 +276,14 @@
           "quota_or_rate_limited": "quota/rate limits کی وجہ سے OCR عارضی طور پر رکا ہوا ہے۔ انتظار کریں اور دوبارہ کوشش کریں۔",
           "runtime_error": "نکالنے کے دوران OCR runtime خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
           "cancelled": "OCR نکالنے کا عمل منسوخ ہو گیا۔",
-          "cleanup_warning": "OCR مکمل ہو گیا، لیکن عارضی remote فائل cleanup ناکام ہو گیا۔ اپنا Google Drive فولڈر چیک کریں۔"
-        },
-        "batch_ocr": {
-          "activation_required": "اس گروہ میں OCR عناصر شامل ہیں، لیکن Google OCR فعال نہیں۔ ترجیحات > Google OCR فعال کریں استعمال کریں، پھر گروہ دوبارہ شروع کریں۔",
-          "token_state_invalid": "اس گروہ میں OCR عناصر شامل ہیں، لیکن محفوظ شدہ Google OCR سائن اِن حالت درست نہیں۔ ترجیحات > Google OCR فعال کریں دوبارہ استعمال کریں، پھر گروہ دوبارہ شروع کریں۔",
-          "connectivity_failed": "اس بیچ میں OCR آئٹمز شامل ہیں، لیکن OCR کے لیے انٹرنیٹ کنکشن درکار ہے۔ استخراج شروع کرنے سے پہلے اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
-          "quota_or_rate_limited": "اس بیچ میں OCR آئٹمز شامل ہیں، لیکن OCR کو quota/rate limits کی وجہ سے عارضی طور پر روک دیا گیا ہے۔ انتظار کریں اور استخراج شروع کرنے سے پہلے دوبارہ کوشش کریں۔",
-          "unavailable": "اس گروہ میں OCR عناصر شامل ہیں، لیکن Google OCR اس وقت دستیاب نہیں۔ اگر OCR ابھی فعال نہیں تو ترجیحات > Google OCR فعال کریں استعمال کریں۔ ورنہ گروہ شروع کرنے سے پہلے OCR ترتیب/توثیق کی حالت چیک کریں اور دوبارہ کوشش کریں۔"
-        },
-        "native": {
-          "runtime_error": "نکالنے کے دوران native extraction runtime خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
-          "unreadable_or_corrupt": "منتخب فائل native extraction کے لیے پڑھی نہیں جا سکتی یا corrupt ہے۔",
-          "encrypted_or_password_protected": "منتخب PDF encrypted یا password-protected ہے اور native route سے نہیں نکالی جا سکتی۔",
-          "cancelled": "Native extraction منسوخ ہو گئی۔"
+          "cleanup_warning": "OCR مکمل ہو گیا، لیکن عارضی remote فائل cleanup ناکام ہو گیا۔ اپنا Google Drive فولڈر چیک کریں۔",
+          "batch_ocr": {
+            "activation_required": "اس گروہ میں OCR عناصر شامل ہیں، لیکن Google OCR فعال نہیں۔ ترجیحات > Google OCR فعال کریں استعمال کریں، پھر گروہ دوبارہ شروع کریں۔",
+            "token_state_invalid": "اس گروہ میں OCR عناصر شامل ہیں، لیکن محفوظ شدہ Google OCR سائن اِن حالت درست نہیں۔ ترجیحات > Google OCR فعال کریں دوبارہ استعمال کریں، پھر گروہ دوبارہ شروع کریں۔",
+            "connectivity_failed": "اس بیچ میں OCR آئٹمز شامل ہیں، لیکن OCR کے لیے انٹرنیٹ کنکشن درکار ہے۔ استخراج شروع کرنے سے پہلے اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+            "quota_or_rate_limited": "اس بیچ میں OCR آئٹمز شامل ہیں، لیکن OCR کو quota/rate limits کی وجہ سے عارضی طور پر روک دیا گیا ہے۔ انتظار کریں اور استخراج شروع کرنے سے پہلے دوبارہ کوشش کریں۔",
+            "unavailable": "اس گروہ میں OCR عناصر شامل ہیں، لیکن Google OCR اس وقت دستیاب نہیں۔ اگر OCR ابھی فعال نہیں تو ترجیحات > Google OCR فعال کریں استعمال کریں۔ ورنہ گروہ شروع کرنے سے پہلے OCR ترتیب/توثیق کی حالت چیک کریں اور دوبارہ کوشش کریں۔"
+          }
         }
       }
     },
@@ -299,6 +299,24 @@
       "reset_text_size": "متن کا سائز ری سیٹ کریں",
       "read_progress_label": "پڑھا گیا",
       "clear_title": "صاف کریں",
+      "editor_find": {
+        "input_placeholder": "تلاش کریں...",
+        "input_aria": "متن میں تلاش کریں",
+        "expand_title": "تبدیلی کے کنٹرولز دکھائیں",
+        "collapse_title": "تبدیلی کے کنٹرولز چھپائیں",
+        "replace_placeholder": "بدلیں...",
+        "replace_aria": "بدلنے والا متن",
+        "replace": "بدلیں",
+        "replace_all": "سب بدلیں",
+        "prev_title": "پچھلا مماثل نتیجہ",
+        "next_title": "اگلا مماثل نتیجہ",
+        "close_title": "تلاش بار بند کریں",
+        "replace_title": "موجودہ مماثل نتیجہ بدلیں",
+        "replace_all_title": "تمام مماثل نتائج بدلیں",
+        "replace_timeout": "تبدیلی کا وقت ختم ہو گیا۔ دوبارہ کوشش کریں۔",
+        "status_no_matches": "کوئی مماثلت نہیں",
+        "status_empty_query": "تلاش کے لیے لکھیں"
+      },
       "alerts": {
         "start_failed": "Text Editor شروع نہیں کیا جا سکا۔",
         "start_timeout": "Text Editor شروع ہونے میں بہت زیادہ وقت لگا اور اسے بند کر دیا گیا۔",
@@ -315,36 +333,7 @@
         "calc_error": "حساب کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔"
       }
     },
-    "editor_find": {
-      "input_placeholder": "تلاش کریں...",
-      "input_aria": "متن میں تلاش کریں",
-      "expand_title": "تبدیلی کے کنٹرولز دکھائیں",
-      "collapse_title": "تبدیلی کے کنٹرولز چھپائیں",
-      "replace_placeholder": "بدلیں...",
-      "replace_aria": "بدلنے والا متن",
-      "replace": "بدلیں",
-      "replace_all": "سب بدلیں",
-      "prev_title": "پچھلا مماثل نتیجہ",
-      "next_title": "اگلا مماثل نتیجہ",
-      "close_title": "تلاش بار بند کریں",
-      "replace_title": "موجودہ مماثل نتیجہ بدلیں",
-      "replace_all_title": "تمام مماثل نتائج بدلیں",
-      "replace_timeout": "تبدیلی کا وقت ختم ہو گیا۔ دوبارہ کوشش کریں۔",
-      "status_no_matches": "کوئی مماثلت نہیں",
-      "status_empty_query": "تلاش کے لیے لکھیں"
-    },
     "snapshots": {
-      "alerts": {
-        "save_success": "اسنیپ شاٹ محفوظ ہو گیا۔",
-        "save_error": "اسنیپ شاٹ محفوظ نہیں ہو سکا۔",
-        "load_success": "اسنیپ شاٹ لوڈ ہو گیا۔",
-        "load_error": "اسنیپ شاٹ لوڈ نہیں ہو سکا۔",
-        "outside": "اسنیپ شاٹ snapshots فولڈر کے اندر ہونا چاہیے۔",
-        "truncated": "اسنیپ شاٹ زیادہ سے زیادہ سائز سے بڑا ہے اور کاٹ دیا گیا ہے۔",
-        "unavailable": "اسنیپ شاٹ فیچر دستیاب نہیں۔"
-      }
-    },
-    "snapshot_save_tags": {
       "title": "متن کا اسنیپ شاٹ محفوظ کریں",
       "message": "محفوظ کرنے کی جگہ منتخب کرنے سے پہلے چاہیں تو اس متن کے اسنیپ شاٹ کو ٹیگ کریں۔",
       "labels": {
@@ -404,18 +393,26 @@
           "normal": "معمولی",
           "hard": "مشکل"
         }
+      },
+      "alerts": {
+        "save_success": "اسنیپ شاٹ محفوظ ہو گیا۔",
+        "save_error": "اسنیپ شاٹ محفوظ نہیں ہو سکا۔",
+        "load_success": "اسنیپ شاٹ لوڈ ہو گیا۔",
+        "load_error": "اسنیپ شاٹ لوڈ نہیں ہو سکا۔",
+        "outside": "اسنیپ شاٹ snapshots فولڈر کے اندر ہونا چاہیے۔",
+        "truncated": "اسنیپ شاٹ زیادہ سے زیادہ سائز سے بڑا ہے اور کاٹ دیا گیا ہے۔",
+        "unavailable": "اسنیپ شاٹ فیچر دستیاب نہیں۔"
       }
     },
     "tasks": {
       "title": "toT — ٹاسکس",
-      "labels": {
-        "name": "نام",
-        "summary_total": "کل",
-        "summary_left": "باقی",
-        "empty": "(خالی)",
-        "search": "تلاش",
-        "search_placeholder": "لائبریری میں تلاش کریں..."
-      },
+      "name": "نام",
+      "save_button": "محفوظ کریں",
+      "delete_button": "حذف کریں",
+      "summary_total": "کل",
+      "summary_left": "باقی",
+      "add_row_button": "قطار شامل کریں",
+      "open_library_button": "لائبریری کھولیں",
       "columns": {
         "texto": "متن",
         "tiempo": "وقت",
@@ -423,36 +420,37 @@
         "falta": "باقی",
         "enlace": "لنک",
         "comentario": "",
-        "acciones": "اعمال"
+        "acciones": "اعمال",
+        "tooltips": {
+          "link_open": "لنک کھولیں",
+          "snapshot_load": "اس قطار کے لیے متن کا اسنیپ شاٹ لوڈ کریں",
+          "comment": "تبصرہ شامل/ترمیم کریں",
+          "move_up": "اوپر منتقل کریں",
+          "move_down": "نیچے منتقل کریں",
+          "library_row_save": "لائبریری میں محفوظ کریں",
+          "delete_row": "قطار حذف کریں"
+        }
       },
-      "buttons": {
-        "save": "محفوظ کریں",
-        "delete": "حذف کریں",
-        "add_row": "قطار شامل کریں",
-        "open_library": "لائبریری کھولیں",
-        "select_snapshot": "اسنیپ شاٹ منتخب کریں",
-        "cancel": "منسوخ",
-        "yes": "ہاں",
-        "no": "نہیں"
-      },
-      "tooltips": {
-        "move_up": "اوپر منتقل کریں",
-        "move_down": "نیچے منتقل کریں",
-        "delete_row": "قطار حذف کریں",
-        "library_row_save": "لائبریری میں محفوظ کریں",
-        "library_row_load": "قطار لوڈ کریں",
-        "library_row_delete": "لائبریری سے حذف کریں",
-        "snapshot_load": "اس قطار کے لیے متن کا اسنیپ شاٹ لوڈ کریں",
-        "snapshot_select": "اس قطار کے لیے متن کا اسنیپ شاٹ منتخب کریں",
-        "snapshot_clear": "اس قطار سے منتخب اسنیپ شاٹ ہٹائیں",
-        "link_open": "لنک کھولیں",
-        "comment": "تبصرہ شامل/ترمیم کریں"
-      },
-      "modals": {
+      "comentario_modal": {
         "comment_title": "تبصرہ",
+        "snapshot_select": "اسنیپ شاٹ منتخب کریں",
+        "snapshot_select_tooltip": "اس قطار کے لیے متن کا اسنیپ شاٹ منتخب کریں",
+        "snapshot_clear": "اس قطار سے منتخب اسنیپ شاٹ ہٹائیں"
+      },
+      "biblioteca": {
         "library_title": "لائبریری",
+        "search": "تلاش",
+        "search_placeholder": "لائبریری میں تلاش کریں...",
+        "empty": "(خالی)",
+        "library_row_load": "قطار لوڈ کریں",
+        "library_row_delete": "لائبریری سے حذف کریں"
+      },
+      "guardar_lectura_modal": {
         "library_save_title": "لائبریری میں محفوظ کریں",
-        "library_save_question": "تبصرہ شامل کریں؟"
+        "library_save_question": "تبصرہ شامل کریں؟",
+        "yes": "ہاں",
+        "no": "نہیں",
+        "cancel": "منسوخ"
       },
       "alerts": {
         "task_unavailable": "ٹاسک فیچر دستیاب نہیں۔",
@@ -473,45 +471,27 @@
         "library_delete_error": "لائبریری سے حذف نہیں ہو سکا۔",
         "link_blocked": "لنک بلاک کر دیا گیا۔",
         "link_missing": "فائل نہیں ملی۔",
-        "link_error": "لنک کھولنے میں خرابی۔"
-      },
-      "confirm": {
+        "link_error": "لنک کھولنے میں خرابی۔",
         "close_unsaved": "غیر محفوظ شدہ تبدیلیاں موجود ہیں۔ محفوظ کیے بغیر بند کریں؟"
       }
     },
     "reading_test": {
-      "prestart": {
-        "reminder": "شروع کرنے کے لیے تیار ہوں تو تیرتی ہوئی ونڈو میں Play (▶) دبائیں۔ ٹیسٹ شروع ہونے کے بعد پڑھائی مکمل ہونے تک Pause (⏸) نہ دبائیں: Pause ٹیسٹ ختم کر دیتا ہے؛ یہ ٹائمر کو عارضی طور پر نہیں روکتا۔ Stop/Reset (⏹) صرف اس صورت میں دبائیں جب آپ ٹیسٹ منسوخ کرنا چاہتے ہوں۔"
-      },
       "entry": {
         "title": "پڑھنے کی رفتار کا ٹیسٹ",
+        "show_instructions": "ہدایات دکھائیں",
+        "hide_instructions": "ہدایات چھپائیں",
         "intro": "یہ ٹیسٹ ایک رہنما سیشن کے ذریعے آپ کی حقیقی پڑھنے کی رفتار کا اندازہ لگانے کے لیے ہے۔ ایپ متن کھولے گی اور آپ کے تیار ہونے پر تیرتی ہوئی ونڈو میں Play (▶) دبانے کا انتظار کرے گی۔ ٹیسٹ شروع ہونے کے بعد پڑھائی مکمل ہونے تک Pause (⏸) نہ دبائیں: Pause ٹیسٹ ختم کر دیتا ہے؛ یہ ٹائمر کو عارضی طور پر نہیں روکتا۔ Stop/Reset (⏹) صرف اس صورت میں استعمال کریں جب آپ ٹیسٹ منسوخ کرنا چاہتے ہوں۔ اس کے بعد، اگر متن میں فہم کے سوالات شامل ہوں تو آپ انہیں دیکھ سکتے ہیں، اور آخر میں نتیجے سے ایک پری سیٹ بنا سکتے ہیں۔\nشروع کرنے سے پہلے یاد رکھیں کہ یہ ٹیسٹ متون عموماً 5 سے 15 منٹ کی مسلسل توجہ چاہتے ہیں۔\nیہ پول مختصر متون استعمال کرتا ہے، اس لیے نتیجے کو احتیاط سے لیں۔ اسے براہِ راست طویل متون پر لاگو نہیں کرنا چاہیے، جہاں بہاؤ اور سیاق و سباق کی تعمیر جیسے مثبت عوامل، اور ذہنی تکرار اور تھکن جیسے منفی عوامل عموماً اثر انداز ہوتے ہیں۔",
         "eligible_count": "اہل فائلیں:",
+        "show_bundled_entries": "بیس ٹیسٹ",
+        "get_more_files": "مزید فائلیں حاصل کریں",
+        "import_files_button": "فائلیں درآمد کریں",
+        "start_random_text_button": "بے ترتیب متن سے شروع کریں",
+        "start_current_text_button": "موجودہ متن سے شروع کریں",
         "pool_exhausted_message": "کوئی غیر استعمال شدہ ٹیسٹ فائل باقی نہیں۔ پول ری سیٹ کریں یا مزید فائلیں شامل کریں۔",
         "visible_empty_bundled_hidden_message": "بلٹ اِن ٹیسٹ فائلیں اس وقت مخفی ہیں اور کوئی نظر آنے والی غیر استعمال شدہ ٹیسٹ فائل باقی نہیں رہی۔ جاری رکھنے کے لیے بلٹ اِن فائلیں دوبارہ دکھائیں یا مزید فائلیں درآمد کریں۔",
         "close_aria": "پڑھنے کی رفتار کے ٹیسٹ کا ڈائیلاگ بند کریں",
         "start_random_confirm": "یہ پول کے ایک بے ترتیب اہل متن سے موجودہ متن بدل دے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟",
         "reset_confirm": "یہ پورے ٹیسٹ پول کو ری سیٹ کرے گا اور اس کی تمام فائلوں کو دوبارہ غیر استعمال شدہ نشان زد کرے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟",
-        "import_summary": "درآمد مکمل۔ درآمد شدہ: {imported}۔ چھوڑے گئے ڈپلیکیٹس: {skippedDuplicates}۔ توثیق ناکام: {failedValidation}۔ ناکام آرکائیو اندراجات: {failedArchiveEntries}۔ ناکام لکھائیاں: {failedWrites}۔",
-        "import_conflict": {
-          "title": "فائلیں درآمد کریں",
-          "message": "کچھ درآمد شدہ فائلیں پول میں پہلے سے موجود ہیں۔ ڈپلیکیٹس کے ساتھ کیا کیا جائے؟",
-          "detail": "{count} منزل فائل نام پہلے سے پول میں موجود ہیں۔",
-          "buttons": {
-            "skip": "ڈپلیکیٹس چھوڑ دیں",
-            "replace": "ڈپلیکیٹس بدل دیں",
-            "cancel": "درآمد منسوخ کریں"
-          }
-        },
-        "buttons": {
-          "get_more_files": "مزید فائلیں حاصل کریں",
-          "import_files": "فائلیں درآمد کریں",
-          "show_instructions": "ہدایات دکھائیں",
-          "hide_instructions": "ہدایات چھپائیں",
-          "start_random_text": "بے ترتیب متن سے شروع کریں",
-          "start_current_text": "موجودہ متن سے شروع کریں",
-          "show_bundled_entries": "بیس ٹیسٹ"
-        },
         "tooltips": {
           "show_bundled_entries": "ایپ کے ساتھ شامل ابتدائی ٹیسٹ فائلوں کو پول میں شامل کریں",
           "get_more_files": "Google Drive فولڈر سے مزید ٹیسٹ فائلیں حاصل کریں",
@@ -519,7 +499,21 @@
           "reset_pool": "ٹیسٹ پول ری سیٹ کریں",
           "start_random_text": "پول کے ایک بے ترتیب اہل متن سے ٹیسٹ شروع کریں",
           "start_current_text": "موجودہ متن سے ٹیسٹ شروع کریں"
+        },
+        "import": {
+          "import_summary": "درآمد مکمل۔ درآمد شدہ: {imported}۔ چھوڑے گئے ڈپلیکیٹس: {skippedDuplicates}۔ توثیق ناکام: {failedValidation}۔ ناکام آرکائیو اندراجات: {failedArchiveEntries}۔ ناکام لکھائیاں: {failedWrites}۔",
+          "import_conflict": {
+            "title": "فائلیں درآمد کریں",
+            "message": "کچھ درآمد شدہ فائلیں پول میں پہلے سے موجود ہیں۔ ڈپلیکیٹس کے ساتھ کیا کیا جائے؟",
+            "detail": "{count} منزل فائل نام پہلے سے پول میں موجود ہیں۔",
+            "skip_button": "ڈپلیکیٹس چھوڑ دیں",
+            "replace_button": "ڈپلیکیٹس بدل دیں",
+            "cancel_button": "درآمد منسوخ کریں"
+          }
         }
+      },
+      "prestart": {
+        "reminder": "شروع کرنے کے لیے تیار ہوں تو تیرتی ہوئی ونڈو میں Play (▶) دبائیں۔ ٹیسٹ شروع ہونے کے بعد پڑھائی مکمل ہونے تک Pause (⏸) نہ دبائیں: Pause ٹیسٹ ختم کر دیتا ہے؛ یہ ٹائمر کو عارضی طور پر نہیں روکتا۔ Stop/Reset (⏹) صرف اس صورت میں دبائیں جب آپ ٹیسٹ منسوخ کرنا چاہتے ہوں۔"
       },
       "questions": {
         "title": "فہمِ مطالعہ کے سوالات",
@@ -533,19 +527,15 @@
         "result_summary": "{total} میں سے {correct} درست ({percentage})",
         "chance_at_least_observed": "بے ترتیب اندازے سے کم از کم یہ اسکور حاصل کرنے کا امکان: {percentage}",
         "fatal_invalid": "سوالات کا payload درست نہیں۔",
-        "buttons": {
-          "check": "نتیجہ چیک کریں",
-          "continue": "جاری رکھیں"
-        }
+        "check_button": "نتیجہ چیک کریں",
+        "continue_button": "جاری رکھیں"
       },
       "result": {
         "title": "پڑھنے کی رفتار کا نتیجہ",
         "measured_wpm": "ناپا گیا WPM",
         "elapsed_time": "وقت",
         "word_count": "الفاظ",
-        "buttons": {
-          "continue": "جاری رکھیں"
-        }
+        "continue_button": "جاری رکھیں"
       },
       "alerts": {
         "unavailable": "پڑھنے کی رفتار کا ٹیسٹ فیچر دستیاب نہیں۔",
@@ -564,21 +554,29 @@
         "cancelled_window_closed": "پڑھنے کی رفتار کا ٹیسٹ منسوخ ہو گیا کیونکہ اس کی session windows میں سے ایک بند ہو گئی۔"
       }
     },
-    "modal_preset": {
-      "title_new": "نیا پری سیٹ",
-      "title_edit": "پری سیٹ میں ترمیم",
-      "heading_new": "نیا پری سیٹ بنائیں",
-      "heading_edit": "منتخب پری سیٹ میں ترمیم کریں",
-      "name": "نام:",
-      "name_placeholder": "پری سیٹ کا نام",
-      "wpm": "WPM:",
-      "description": "تفصیل:",
-      "description_placeholder": "مختصر تفصیل...",
-      "char_count": "{remaining} حروف باقی",
-      "hint": "کسٹم پری سیٹس صارف کی ترتیبات میں محفوظ ہوتے ہیں۔",
-      "cancel": "منسوخ",
-      "save": "محفوظ کریں",
+    "presets": {
+      "preset_modal": {
+        "title_new": "نیا پری سیٹ",
+        "title_edit": "پری سیٹ میں ترمیم",
+        "heading_new": "نیا پری سیٹ بنائیں",
+        "heading_edit": "منتخب پری سیٹ میں ترمیم کریں",
+        "name": "نام:",
+        "name_placeholder": "پری سیٹ کا نام",
+        "wpm": "WPM:",
+        "description": "تفصیل:",
+        "description_placeholder": "مختصر تفصیل...",
+        "char_count": "{remaining} حروف باقی",
+        "hint": "کسٹم پری سیٹس صارف کی ترتیبات میں محفوظ ہوتے ہیں۔",
+        "cancel": "منسوخ",
+        "save": "محفوظ کریں"
+      },
       "alerts": {
+        "not_found": "منتخب پری سیٹ کیش میں نہیں ملا۔",
+        "delete_error": "پری سیٹ حذف کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "restore_error": "پری سیٹس بحال کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
+        "open_folder_unsupported": "اس ماحول میں پری سیٹس فولڈر نہیں کھل سکتا۔",
+        "open_folder_error": "پری سیٹس فولڈر کھولنے کی کوشش میں خرابی ہوئی۔ کنسول دیکھیں۔",
+        "open_default_folder_failed": "ڈیفالٹ پری سیٹس فولڈر نہیں کھل سکا۔ تفصیلات کے لیے کنسول دیکھیں۔",
         "unavailable": "اس ایپ بلڈ میں پری سیٹ ڈائیلاگ دستیاب نہیں ہے۔",
         "open_error": "پری سیٹ ڈائیلاگ کھولتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
         "name_empty": "نام خالی نہیں ہو سکتا۔",
@@ -586,16 +584,6 @@
         "create_error": "پری سیٹ بناتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
         "edit_error": "پری سیٹ میں ترمیم کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
         "process_error": "پری سیٹ پر کارروائی کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔"
-      }
-    },
-    "presets": {
-      "alerts": {
-        "not_found": "منتخب پری سیٹ کیش میں نہیں ملا۔",
-        "delete_error": "پری سیٹ حذف کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-        "restore_error": "پری سیٹس بحال کرتے وقت خرابی ہوئی۔ کنسول دیکھیں۔",
-        "open_folder_unsupported": "اس ماحول میں پری سیٹس فولڈر نہیں کھل سکتا۔",
-        "open_folder_error": "پری سیٹس فولڈر کھولنے کی کوشش میں خرابی ہوئی۔ کنسول دیکھیں۔",
-        "open_default_folder_failed": "ڈیفالٹ پری سیٹس فولڈر نہیں کھل سکا۔ تفصیلات کے لیے کنسول دیکھیں۔"
       }
     },
     "browser_extension": {

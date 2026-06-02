@@ -213,7 +213,7 @@
       document.title = tRenderer('renderer.reading_test.result.title');
       elements.title.textContent = tRenderer('renderer.reading_test.result.title');
       elements.wpmLabel.textContent = tRenderer('renderer.reading_test.result.measured_wpm');
-      elements.btnContinue.textContent = tRenderer('renderer.reading_test.result.buttons.continue');
+      elements.btnContinue.textContent = tRenderer('renderer.reading_test.result.continue_button');
       const measuredWpmText = await formatInteger(state.measuredWpm);
       const wordCountText = await formatInteger(state.wordCount);
       const metricDirection = currentWindowLanguageDirection === 'rtl' ? 'rtl' : 'ltr';
