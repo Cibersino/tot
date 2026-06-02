@@ -1,10 +1,26 @@
 // electron/editor_window_lifecycle.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Coordinate Text Editor window open/show behavior across ordinary and hidden startup flows.
+// - Track one hidden-startup cycle at a time, including waiter resolution and timeout cleanup.
+// - Validate base-presentation reports before they can advance the startup lifecycle.
+// - Notify the main window about first-show lifecycle states through editor-first-show-state.
+// - Centralize lifecycle-owned close/dispose handling for hidden startup failures and timeouts.
+//
+// =============================================================================
+// Constants / config
+// =============================================================================
 // Product rule override:
 // hidden editor startup is capped at 60 seconds even if bootstrap is still progressing.
 const EDITOR_HIDDEN_STARTUP_TIMEOUT_MS = 60000;
 
+// =============================================================================
+// Helpers
+// =============================================================================
 function isAliveWindow(win) {
   return !!(win && !win.isDestroyed());
 }
@@ -31,6 +47,9 @@ function requireCreateEditorWindow(createEditorWindow, logContext) {
   throw new Error(`[editor_window_lifecycle] createEditorWindow required from ${logContext}`);
 }
 
+// =============================================================================
+// Controller factory / lifecycle coordination
+// =============================================================================
 function createController({ log, editorState }) {
   if (!log || typeof log.warn !== 'function' || typeof log.error !== 'function') {
     throw new Error('[editor_window_lifecycle] createController requires log');
@@ -44,6 +63,7 @@ function createController({ log, editorState }) {
   let pendingLifecycleOwnedCloseWindow = null;
   const startupCycleWaiters = new Map();
 
+  // Hidden startup uses generation-scoped waiters so late or stale reports can be rejected safely.
   function createStartupCycleWaiter(generation) {
     let resolvePromise;
     let rejectPromise;
@@ -173,6 +193,7 @@ function createController({ log, editorState }) {
     return editorWin;
   }
 
+  // Ordinary startup can fall back to a direct show path if first-show finalization fails late.
   function applyHiddenStartupMaximize(editorWin, logContext) {
     if (!isAliveWindow(editorWin)) {
       throw new Error('EDITOR_WINDOW_UNAVAILABLE');
@@ -290,6 +311,7 @@ function createController({ log, editorState }) {
     }, EDITOR_HIDDEN_STARTUP_TIMEOUT_MS);
   }
 
+  // A fresh hidden startup always creates a new generation and owns its waiter lifecycle.
   function beginFreshHiddenStartup({
     owner,
     initialPresentationMode,
@@ -485,6 +507,7 @@ function createController({ log, editorState }) {
     };
   }
 
+  // Base-presentation reports are accepted only from the live editor window for the active generation.
   function handleBasePresentationStateReport({ event, editorWin, mainWin, payload, logContext }) {
     if (!isPlainObject(payload)) {
       log.warn('editor-report-base-presentation-state ignored: invalid payload.', payload);
@@ -592,9 +615,16 @@ function createController({ log, editorState }) {
   };
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   EDITOR_HIDDEN_STARTUP_TIMEOUT_MS,
   isAliveWindow,
   hasLiveWebContents,
   createController,
 };
+
+// =============================================================================
+// End of electron/editor_window_lifecycle.js
+// =============================================================================
