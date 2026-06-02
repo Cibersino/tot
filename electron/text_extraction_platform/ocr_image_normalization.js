@@ -41,6 +41,24 @@ function buildNormalizationError(code, message, detailsSafeForLogs = {}) {
   return err;
 }
 
+function buildCleanupFailureWarning(cleanupWarning, tempDirPath) {
+  if (!cleanupWarning || typeof cleanupWarning.warningCode !== 'string') {
+    return null;
+  }
+  return {
+    warningCode: 'cleanup:image_normalization_cleanup_failed',
+    detailsSafeForLogs: {
+      stage: 'cleanup_image_normalization',
+      tempDirPath: String(tempDirPath || '').trim(),
+      cleanupWarningCode: cleanupWarning.warningCode,
+      cleanupWarningDetails:
+        cleanupWarning.detailsSafeForLogs && typeof cleanupWarning.detailsSafeForLogs === 'object'
+          ? { ...cleanupWarning.detailsSafeForLogs }
+          : {},
+    },
+  };
+}
+
 function createBaseName(sourceFileName) {
   const base = path.basename(
     String(sourceFileName || ''),
@@ -51,7 +69,7 @@ function createBaseName(sourceFileName) {
 
 function cleanupTempDir(tempDirPath) {
   const cleanupWarning = cleanupRuntimeTempRunDir(tempDirPath, { force: true });
-  return cleanupWarning ? 'cleanup:image_normalization_cleanup_failed' : '';
+  return buildCleanupFailureWarning(cleanupWarning, tempDirPath);
 }
 
 const PNG_NORMALIZATION_REQUIRED_EXTS = new Set(['webp', 'tif', 'tiff']);
@@ -66,7 +84,7 @@ function passthroughUpload(fileInfo) {
     uploadFileName: fileInfo.sourceFileName,
     uploadMimeType: fileInfo.sourceMimeType,
     metadataSafeForLogs: {},
-    cleanup: () => '',
+    cleanup: () => null,
   };
 }
 
@@ -118,7 +136,7 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
       throw new Error('Converted PNG output is missing or empty.');
     }
   } catch (err) {
-    cleanupTempDir(tempDirPath);
+    const cleanupWarning = cleanupTempDir(tempDirPath);
     throw buildNormalizationError(
       'source_to_png_conversion_failed',
       'Source-image-to-PNG normalization failed.',
@@ -127,6 +145,12 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
         sourceFileExt: fileInfo.sourceFileExt,
         errorName: toSafeErrorName(err),
         errorMessage: toSafeErrorMessage(err),
+        ...(cleanupWarning
+          ? {
+            cleanupWarningCode: cleanupWarning.warningCode,
+            cleanupFailure: cleanupWarning.detailsSafeForLogs,
+          }
+          : {}),
       }
     );
   }
