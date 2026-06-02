@@ -135,8 +135,6 @@ if (!readingSpeedTestUi
 // =============================================================================
 // UI keys and static lists
 // =============================================================================
-let lastHelpTipIdx = -1;
-
 const resultsTimeMultiplierInput = document.getElementById('resultsTimeMultiplierInput');
 
 const toggleModoPreciso = document.getElementById('toggleModoPreciso');
@@ -163,6 +161,33 @@ const btnEditPreset = document.getElementById('btnEditPreset');
 const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
 const presetDescription = document.getElementById('presetDescription');
+
+// =============================================================================
+// Shared state and limits
+// =============================================================================
+// Local limit in renderer to prevent concatenations that create excessively large strings
+let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
+let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
+// Global cache and state for count/language
+let modoConteo = 'preciso';   // Precise by default; can be `simple`
+let idiomaActual = DEFAULT_LANG; // Initializes on startup
+let settingsCache = null;     // Settings cache (number formatting, language, etc.)
+let cronoController = null;
+let rendererReadyState = 'PRE_READY';
+let rendererInvariantsReady = false;
+let startupReadyReceived = false;
+let rendererCoreReadySent = false;
+let splashRemovedSent = false;
+let ipcSubscriptionsArmed = false;
+let uiListenersArmed = false;
+let syncToggleFromSettings = null;
+let hasCurrentTextSubscription = false;
+let bootstrapCurrentTextPayload = null;
+let textExtractionPrepareAttemptId = 0;
+let bootstrapCurrentTextProcessingState = null;
+let lastHelpTipIdx = -1;
+let lastProcessingLockNoticeAt = 0;
+
 const { WpmControls } = window;
 if (!WpmControls || typeof WpmControls.createController !== 'function') {
   throw new Error('[renderer] WpmControls unavailable; cannot continue');
@@ -477,32 +502,6 @@ function markRendererInvariantsReady() {
   sendRendererCoreReady();
   maybeUnblockReady();
 }
-
-
-// =============================================================================
-// Shared state and limits
-// =============================================================================
-// Local limit in renderer to prevent concatenations that create excessively large strings
-let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
-let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
-// Global cache and state for count/language
-let modoConteo = 'preciso';   // Precise by default; can be `simple`
-let idiomaActual = DEFAULT_LANG; // Initializes on startup
-let settingsCache = null;     // Settings cache (number formatting, language, etc.)
-let cronoController = null;
-let rendererReadyState = 'PRE_READY';
-let rendererInvariantsReady = false;
-let startupReadyReceived = false;
-let rendererCoreReadySent = false;
-let splashRemovedSent = false;
-let ipcSubscriptionsArmed = false;
-let uiListenersArmed = false;
-let syncToggleFromSettings = null;
-let hasCurrentTextSubscription = false;
-let bootstrapCurrentTextPayload = null;
-let textExtractionPrepareAttemptId = 0;
-let bootstrapCurrentTextProcessingState = null;
-let lastProcessingLockNoticeAt = 0;
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
   const api = window.electronAPI;
