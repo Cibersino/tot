@@ -157,6 +157,28 @@ function getProcessingRequestId(processingState) {
     : null;
 }
 
+function isAllowedSenderWindow(targetWin, senderWin) {
+  return !!(targetWin && !targetWin.isDestroyed() && senderWin && senderWin === targetWin);
+}
+
+function getNormalizedSetCurrentTextAction(incomingMeta) {
+  const incomingAction = incomingMeta && typeof incomingMeta.action === 'string'
+    ? incomingMeta.action
+    : '';
+  const normalizedAction = ALLOWED_SET_CURRENT_TEXT_ACTIONS.has(incomingAction)
+    ? incomingAction
+    : 'set';
+
+  if (incomingAction && normalizedAction === 'set' && incomingAction !== 'set') {
+    log.warnOnce(
+      'text_state.setCurrentText.invalid_action',
+      `set-current-text invalid action '${incomingAction}'; using 'set'.`
+    );
+  }
+
+  return normalizedAction;
+}
+
 function applyCurrentText(rawText, rawMeta) {
   const incomingMeta = sanitizeMeta(rawMeta);
   const processingState = beginCurrentTextProcessing(incomingMeta);
@@ -317,7 +339,7 @@ function registerIpc(ipcMain, windowsResolver) {
   ipcMain.handle('clipboard-read-text', (event) => {
     const { mainWin } = getWindows() || {};
     const senderWin = BrowserWindow.fromWebContents(event.sender);
-    if (!mainWin || mainWin.isDestroyed() || !senderWin || senderWin !== mainWin) {
+    if (!isAllowedSenderWindow(mainWin, senderWin)) {
       log.warnOnce(
         'text_state.clipboardRead.unauthorized',
         'clipboard-read-text unauthorized (ignored).'
@@ -347,8 +369,8 @@ function registerIpc(ipcMain, windowsResolver) {
         ? BrowserWindow.fromWebContents(_event.sender)
         : null;
 
-      const mainAllowed = !!(mainWin && !mainWin.isDestroyed() && senderWin && senderWin === mainWin);
-      const editorAllowed = !!(editorWin && !editorWin.isDestroyed() && senderWin && senderWin === editorWin);
+      const mainAllowed = isAllowedSenderWindow(mainWin, senderWin);
+      const editorAllowed = isAllowedSenderWindow(editorWin, senderWin);
 
       if (!mainAllowed && !editorAllowed) {
         log.warnOnce(
@@ -378,18 +400,7 @@ function registerIpc(ipcMain, windowsResolver) {
         throw new Error('set-current-text payload too large');
       }
       const incomingMeta = hasTextProp ? sanitizeMeta(payload.meta) : null;
-      const incomingAction = incomingMeta && typeof incomingMeta.action === 'string'
-        ? incomingMeta.action
-        : '';
-      const normalizedAction = ALLOWED_SET_CURRENT_TEXT_ACTIONS.has(incomingAction)
-        ? incomingAction
-        : 'set';
-      if (incomingAction && normalizedAction === 'set' && incomingAction !== 'set') {
-        log.warnOnce(
-          'text_state.setCurrentText.invalid_action',
-          `set-current-text invalid action '${incomingAction}'; using 'set'.`
-        );
-      }
+      const normalizedAction = getNormalizedSetCurrentTextAction(incomingMeta);
 
       const normalizedMeta = {
         source: editorAllowed ? 'editor' : 'main-window',
