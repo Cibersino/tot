@@ -4,13 +4,14 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-process controller and IPC surface for authoritative current-text pending
-// state.
+// Main-process controller and IPC surface for authoritative current-text
+// processing state.
 // Responsibilities:
-// - Own the latest authoritative current-text settle lifecycle used by main.
-// - Keep the lock authoritative in main while the renderer-derived UI settles.
-// - Ignore stale renderer settle completions when a newer text update exists.
-// - Expose current state to the main renderer and broadcast state changes.
+// - Own the authoritative current-text processing lifecycle in main.
+// - Keep request and lock tracking authoritative while renderer work settles.
+// - Reject stale or invalid resolve attempts without corrupting state.
+// - Expose current state through main-process IPC handlers.
+// - Notify an injected onStateChanged callback after state transitions.
 
 // =============================================================================
 // Imports / logger
@@ -22,7 +23,7 @@ const Log = require('./log');
 const log = Log.get('current-text-processing-state');
 
 // =============================================================================
-// Constants / helpers
+// Constants / sanitizers
 // =============================================================================
 
 const MAX_META_CHARS = 160;
@@ -149,7 +150,7 @@ function createController({ onStateChanged } = {}) {
 }
 
 // =============================================================================
-// IPC registration / handlers
+// Authorization helper
 // =============================================================================
 
 function isAuthorizedSender(event, mainWin) {
@@ -170,6 +171,10 @@ function isAuthorizedSender(event, mainWin) {
     return false;
   }
 }
+
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
 
 function registerIpc(ipcMain, { getWindows, controller } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
