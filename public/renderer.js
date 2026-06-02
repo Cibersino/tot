@@ -42,6 +42,7 @@ const textExtractionEntry = window.TextExtractionEntry;
 if (!textExtractionEntry
   || typeof textExtractionEntry.configure !== 'function'
   || typeof textExtractionEntry.startFromFilePath !== 'function'
+  || typeof textExtractionEntry.startFromFilePaths !== 'function'
   || typeof textExtractionEntry.startFromPicker !== 'function') {
   throw new Error('[renderer] TextExtractionEntry unavailable; cannot continue');
 }
@@ -64,6 +65,7 @@ const textExtractionStatusUi = window.TextExtractionStatusUi;
 if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.applyCurrentTextProcessingState !== 'function'
   || typeof textExtractionStatusUi.applyProcessingModeState !== 'function'
+  || typeof textExtractionStatusUi.applyStandaloneFullRefreshPendingState !== 'function'
   || typeof textExtractionStatusUi.applyTranslations !== 'function'
   || typeof textExtractionStatusUi.beginAbortFinalization !== 'function'
   || typeof textExtractionStatusUi.beginPrepare !== 'function'
@@ -330,11 +332,31 @@ function isAriaHiddenElementVisible(elementId) {
   return !!(element && element.getAttribute('aria-hidden') === 'false');
 }
 
+function hasBrowserExtensionBlockingModalOpen() {
+  if (!browserExtensionModal) return false;
+  if (typeof browserExtensionModal.hasBlockingModalOpen !== 'function') {
+    log.warnOnce(
+      'renderer.browserExtensionModal.hasBlockingModalOpen.unavailable',
+      'BrowserExtensionModal.hasBlockingModalOpen unavailable; browser extension modal blocking state will be ignored.'
+    );
+    return false;
+  }
+
+  try {
+    return !!browserExtensionModal.hasBlockingModalOpen();
+  } catch (err) {
+    log.warnOnce(
+      'renderer.browserExtensionModal.hasBlockingModalOpen.failed',
+      'BrowserExtensionModal.hasBlockingModalOpen failed; browser extension modal blocking state will be ignored:',
+      err
+    );
+    return false;
+  }
+}
+
 function hasBlockingMainWindowModalOpen() {
   return isAriaHiddenElementVisible('infoModal')
-    || !!(browserExtensionModal
-      && typeof browserExtensionModal.hasBlockingModalOpen === 'function'
-      && browserExtensionModal.hasBlockingModalOpen())
+    || hasBrowserExtensionBlockingModalOpen()
     || isAriaHiddenElementVisible('textExtractionPdfOptionsModal')
     || isAriaHiddenElementVisible('textExtractionRouteModal')
     || isAriaHiddenElementVisible('textExtractionApplyModal')
