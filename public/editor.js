@@ -267,6 +267,21 @@ function reportBasePresentationState(payload) {
   }
 }
 
+function applyInitialLocalUiState() {
+  ctx.ui.applyTextareaDefaults();
+  window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
+  ctx.ui.applyEditorLanguage();
+  ctx.ui.updateEditorTextDirection();
+  ctx.ui.setLocalSpellcheckState({
+    preferenceEnabled: ctx.state.spellcheckEnabled,
+    available: ctx.state.spellcheckAvailable,
+  });
+  ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
+  ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
+  ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
+  ctx.ui.updateReadProgressUi();
+}
+
 async function bootstrapEditorEnvironment() {
   try {
     if (typeof ctx.editorAPI.getAppConfig !== 'function') {
@@ -308,19 +323,38 @@ async function bootstrapEditorEnvironment() {
   }
 }
 
+async function bootstrapInitialEditorText() {
+  let initialText = '';
+
+  try {
+    initialText = String(await ctx.editorAPI.getCurrentText() || '');
+  } catch (err) {
+    throw new Error(`[editor] editorAPI.getCurrentText failed during bootstrap: ${String(err)}`);
+  }
+
+  await ctx.engine.applyExternalUpdate({
+    text: initialText,
+    meta: { source: 'main', action: 'init' },
+  });
+  ctx.ui.updateEditorTextDirection();
+  btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
+}
+
+function registerEditorMarginGutter(gutter, side) {
+  if (!gutter) return;
+
+  gutter.addEventListener('pointerdown', (event) => {
+    ctx.ui.handleEditorMarginPointerDown(event, side);
+  });
+  gutter.addEventListener('dblclick', () => {
+    ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
+      log.error('Error resetting Text Editor maximized text width:', err);
+    });
+  });
+}
+
 // warnOnce keys are editor-scoped; use log.warnOnce directly.
-ctx.ui.applyTextareaDefaults();
-window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
-ctx.ui.applyEditorLanguage();
-ctx.ui.updateEditorTextDirection();
-ctx.ui.setLocalSpellcheckState({
-  preferenceEnabled: ctx.state.spellcheckEnabled,
-  available: ctx.state.spellcheckAvailable,
-});
-ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
-ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
-ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
-ctx.ui.updateReadProgressUi();
+applyInitialLocalUiState();
 
 // =============================================================================
 // Settings integration
@@ -381,23 +415,6 @@ if (readingTestPrestartOverlay) {
       event.stopPropagation();
     }
   });
-}
-
-async function bootstrapInitialEditorText() {
-  let initialText = '';
-
-  try {
-    initialText = String(await ctx.editorAPI.getCurrentText() || '');
-  } catch (err) {
-    throw new Error(`[editor] editorAPI.getCurrentText failed during bootstrap: ${String(err)}`);
-  }
-
-  await ctx.engine.applyExternalUpdate({
-    text: initialText,
-    meta: { source: 'main', action: 'init' },
-  });
-  ctx.ui.updateEditorTextDirection();
-  btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
 }
 
 // =============================================================================
@@ -680,27 +697,8 @@ if (btnTextSizeReset) {
   });
 }
 
-if (editorLeftGutter) {
-  editorLeftGutter.addEventListener('pointerdown', (event) => {
-    ctx.ui.handleEditorMarginPointerDown(event, 'left');
-  });
-  editorLeftGutter.addEventListener('dblclick', () => {
-    ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
-      log.error('Error resetting Text Editor maximized text width:', err);
-    });
-  });
-}
-
-if (editorRightGutter) {
-  editorRightGutter.addEventListener('pointerdown', (event) => {
-    ctx.ui.handleEditorMarginPointerDown(event, 'right');
-  });
-  editorRightGutter.addEventListener('dblclick', () => {
-    ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
-      log.error('Error resetting Text Editor maximized text width:', err);
-    });
-  });
-}
+registerEditorMarginGutter(editorLeftGutter, 'left');
+registerEditorMarginGutter(editorRightGutter, 'right');
 
 // =============================================================================
 // End of public/editor.js
