@@ -8,11 +8,9 @@
 // - Provide save/load snapshot flows for current text via native dialogs.
 // - Persist optional snapshot tag metadata on save.
 // - Enforce snapshot path containment under config/saved_current_texts.
-// - Validate legacy and tagged snapshot JSON schemas:
-//   { text: "<string>" }
-//   { text: "<string>", tags?: { language?, type?, difficulty? }, readingTest?: { ... } }
+// - Validate snapshot JSON payloads before save and after load.
 // - Apply loaded snapshots through text_state (same semantics as overwrite).
-// - Register IPC handlers: current-text-snapshot-save / current-text-snapshot-select / current-text-snapshot-load.
+// - Register IPC handlers for save, open-folder, select, and load flows.
 // =============================================================================
 
 // =============================================================================
@@ -35,6 +33,11 @@ const menuBuilder = require('./menu_builder');
 
 const log = Log.get('current-text-snapshots');
 log.debug('Current text snapshots main starting...');
+
+// =============================================================================
+// Startup dependency validation
+// =============================================================================
+
 if (!snapshotTagCatalog
   || !Array.isArray(snapshotTagCatalog.TAG_KEYS)
   || typeof snapshotTagCatalog.isPlainObject !== 'function'
