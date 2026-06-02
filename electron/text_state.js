@@ -5,12 +5,12 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Own in-memory current text and enforce max length.
-// - Load/save current text state on startup and before-quit.
-// - Provide clipboard reads to the main window via IPC with sender/size checks.
-// - Register IPC handlers for get-current-text, set-current-text, clipboard-read-text.
-// - Broadcast text updates to main and Text Editor windows (best-effort).
-// - Ensure settings file exists on quit (compatibility behavior).
+// - Own in-memory current text, normalize line endings, and enforce size limits.
+// - Load persisted current text during init and save it during app shutdown.
+// - Accept current-text updates from authorized IPC senders only.
+// - Expose get-current-text, set-current-text, and clipboard-read-text handlers.
+// - Broadcast current-text updates to the main window and Text Editor window.
+// - Preserve compatibility behavior for the settings file on quit.
 
 // =============================================================================
 // Imports / logger
@@ -92,9 +92,9 @@ let currentTextProcessingController = null;
 let getWindows = () => ({ mainWin: null, editorWin: null });
 
 // =============================================================================
-// Helpers (best-effort send + persistence)
+// Runtime helpers
 // =============================================================================
-// Best-effort window send; avoids throwing during shutdown races.
+// Best-effort window send; avoids surfacing shutdown races as hard failures.
 function safeSend(win, channel, payload) {
   if (!win || win.isDestroyed()) {
     return;
@@ -111,7 +111,7 @@ function safeSend(win, channel, payload) {
   }
 }
 
-// Persist current text and ensure settings file exists (compatibility behavior).
+// Persist current text and preserve the historical settings-file side effect on quit.
 function persistCurrentTextOnQuit() {
   try {
     if (saveJson && currentTextFile) {
@@ -179,6 +179,9 @@ function getNormalizedSetCurrentTextAction(incomingMeta) {
   return normalizedAction;
 }
 
+// =============================================================================
+// Text application / bootstrap load
+// =============================================================================
 function applyCurrentText(rawText, rawMeta) {
   const incomingMeta = sanitizeMeta(rawMeta);
   const processingState = beginCurrentTextProcessing(incomingMeta);
@@ -223,6 +226,8 @@ function applyCurrentText(rawText, rawMeta) {
   };
 }
 
+// Initial file load keeps legacy persisted shapes working, then normalizes to the
+// current in-memory/storage format before the rest of init continues.
 function loadInitialCurrentText() {
   try {
     let raw = loadJson
@@ -277,10 +282,8 @@ function loadInitialCurrentText() {
 // Initialization / lifecycle
 // =============================================================================
 /**
- * Initialize the text state:
- * - Load from currentTextFile
- * - Apply initial truncation using the effective hard cap
- * - Register persistence in app.before-quit
+ * Initialize module state, load persisted text, start processing tracking, and
+ * attach before-quit persistence if an app instance was provided.
  */
 function init(options) {
   const opts = options || {};
@@ -315,11 +318,8 @@ function init(options) {
 // IPC registration / handlers
 // =============================================================================
 /**
- * Register IPC handlers for text and clipboard:
- * - get-current-text
- * - set-current-text
- * - clipboard-read-text
- * Broadcasts updates to main/Text Editor windows (best-effort).
+ * Register the text-related IPC handlers and capture the window resolver used
+ * for sender authorization and best-effort update broadcasts.
  */
 function registerIpc(ipcMain, windowsResolver) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -332,7 +332,7 @@ function registerIpc(ipcMain, windowsResolver) {
     getWindows = () => windowsResolver;
   }
 
-  // Returns the current text as a simple string (compatibility)
+  // Keep the simple string return shape for existing consumers.
   ipcMain.handle('get-current-text', async () => {
     return currentText || '';
   });
