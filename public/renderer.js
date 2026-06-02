@@ -32,6 +32,15 @@ const {
   DEFAULT_LANG,
   MAX_CLIPBOARD_REPEAT,
 } = AppConstants;
+if (typeof DEFAULT_LANG !== 'string' || !DEFAULT_LANG.trim()) {
+  throw new Error('[renderer] AppConstants.DEFAULT_LANG unavailable; cannot continue');
+}
+if (!Number.isFinite(MAX_CLIPBOARD_REPEAT) || MAX_CLIPBOARD_REPEAT < 1) {
+  throw new Error('[renderer] AppConstants.MAX_CLIPBOARD_REPEAT unavailable; cannot continue');
+}
+if (!Number.isFinite(AppConstants.MAX_TEXT_CHARS) || AppConstants.MAX_TEXT_CHARS < 1) {
+  throw new Error('[renderer] AppConstants.MAX_TEXT_CHARS unavailable; cannot continue');
+}
 
 // =============================================================================
 // DOM references
@@ -203,6 +212,16 @@ const wpmControls = WpmControls.createController({
     syncPresetActionButtons();
   },
 });
+if (!wpmControls
+  || typeof wpmControls.applyExternalWpm !== 'function'
+  || typeof wpmControls.bind !== 'function'
+  || typeof wpmControls.getAllPresets !== 'function'
+  || typeof wpmControls.getWpm !== 'function'
+  || typeof wpmControls.handlePresetCreated !== 'function'
+  || typeof wpmControls.handlePresetSelectionChange !== 'function'
+  || typeof wpmControls.loadPresets !== 'function') {
+  throw new Error('[renderer] WpmControls controller unavailable; cannot continue');
+}
 
 if (!window.electronAPI || typeof window.electronAPI.resolveCurrentTextProcessing !== 'function') {
   throw new Error('[renderer] electronAPI.resolveCurrentTextProcessing unavailable; cannot continue');
@@ -230,6 +249,11 @@ const currentTextRefreshPolicy = currentTextRefreshPolicyModule.createController
     currentTextRuntime.requestTimeOnlyRefresh(reason);
   },
 });
+if (!currentTextRefreshPolicy
+  || typeof currentTextRefreshPolicy.dispatchPresetOutcome !== 'function'
+  || typeof currentTextRefreshPolicy.dispatchSettingsChange !== 'function') {
+  throw new Error('[renderer] CurrentTextRefreshPolicy controller unavailable; cannot continue');
+}
 
 // =============================================================================
 // Startup gating + handshake
