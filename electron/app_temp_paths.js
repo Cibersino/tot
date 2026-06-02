@@ -1,12 +1,37 @@
 // electron/app_temp_paths.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process runtime temp path helpers.
+// Responsibilities:
+// - Build app-scoped temp roots, per-kind directories, and per-run temp directories.
+// - Normalize temp kind and file-name inputs before creating paths on disk.
+// - Resolve containment checks so cleanup only targets the runtime temp subtree.
+// - Return structured cleanup warnings for callers to log at the owning boundary.
+// - Keep missing-path cleanup as an explicit no-op where that is the helper contract.
+//
+// =============================================================================
+
+// =============================================================================
+// Imports
+// =============================================================================
+
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const RUNTIME_TEMP_ROOT_NAME = 'tot-temp';
 const RUN_DIR_PREFIX = 'run-';
+
+// =============================================================================
+// Helpers (normalization + diagnostics)
+// =============================================================================
 
 function toTrimmedString(value) {
   return typeof value === 'string' ? value.trim() : '';
@@ -62,6 +87,10 @@ function isRelativePathInsideRoot(relativePath, { allowRoot = false } = {}) {
   return !relativePath.startsWith('..') && !path.isAbsolute(relativePath);
 }
 
+// =============================================================================
+// Path builders / resolvers
+// =============================================================================
+
 function getRuntimeTempRoot() {
   return path.join(os.tmpdir(), RUNTIME_TEMP_ROOT_NAME);
 }
@@ -85,6 +114,10 @@ function resolveRuntimeTempFilePath(kind, fileName) {
   const tempDir = createRuntimeTempDir(kind);
   return path.join(tempDir, normalizeTempFileName(fileName));
 }
+
+// =============================================================================
+// Containment checks + cleanup
+// =============================================================================
 
 function isInsideRuntimeTempRoot(candidatePath) {
   const safeCandidatePath = toTrimmedString(candidatePath);
@@ -153,6 +186,10 @@ function cleanupRuntimeTempRoot() {
   }
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   cleanupRuntimeTempRoot,
   cleanupRuntimeTempRunDir,
@@ -162,3 +199,7 @@ module.exports = {
   isInsideRuntimeTempRoot,
   resolveRuntimeTempFilePath,
 };
+
+// =============================================================================
+// End of electron/app_temp_paths.js
+// =============================================================================
