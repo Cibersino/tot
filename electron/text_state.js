@@ -151,9 +151,16 @@ function beginCurrentTextProcessing(rawMeta) {
   }
 }
 
+function getProcessingRequestId(processingState) {
+  return processingState && Number.isInteger(processingState.requestId)
+    ? processingState.requestId
+    : null;
+}
+
 function applyCurrentText(rawText, rawMeta) {
   const incomingMeta = sanitizeMeta(rawMeta);
   const processingState = beginCurrentTextProcessing(incomingMeta);
+  const requestId = getProcessingRequestId(processingState);
   let text = normalizeLineEndings(rawText);
   let truncated = false;
 
@@ -169,61 +176,32 @@ function applyCurrentText(rawText, rawMeta) {
   currentText = text;
 
   const { mainWin, editorWin } = getWindows() || {};
+  const broadcastMeta = incomingMeta || { source: 'main', action: 'set' };
 
   // Notify main window (for renderer to update preview/results)
   safeSend(mainWin, 'current-text-updated', {
     text: currentText,
-    requestId: processingState && Number.isInteger(processingState.requestId)
-      ? processingState.requestId
-      : null,
-    meta: incomingMeta || { source: 'main', action: 'set' },
+    requestId,
+    meta: broadcastMeta,
   });
 
   // Notify Text Editor with object { text, meta }
   safeSend(editorWin, 'editor-text-updated', {
     text: currentText,
-    requestId: processingState && Number.isInteger(processingState.requestId)
-      ? processingState.requestId
-      : null,
-    meta: incomingMeta || { source: 'main', action: 'set' },
+    requestId,
+    meta: broadcastMeta,
   });
 
   return {
     ok: true,
-    requestId: processingState && Number.isInteger(processingState.requestId)
-      ? processingState.requestId
-      : null,
+    requestId,
     truncated,
     length: currentText.length,
     text: currentText,
   };
 }
 
-// =============================================================================
-// Initialization / lifecycle
-// =============================================================================
-/**
- * Initialize the text state:
- * - Load from currentTextFile
- * - Apply initial truncation using the effective hard cap
- * - Register persistence in app.before-quit
- */
-function init(options) {
-  const opts = options || {};
-
-  loadJson = opts.loadJson;
-  saveJson = opts.saveJson;
-  currentTextFile = opts.currentTextFile;
-  settingsFile = opts.settingsFile;
-  appRef = opts.app || null;
-  currentTextProcessingController = opts.currentTextProcessingController || null;
-
-  if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
-    maxTextChars = opts.maxTextChars;
-  }
-  maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
-
-  // Initial load from disk + truncated if hard cap is exceeded
+function loadInitialCurrentText() {
   try {
     let raw = loadJson
       ? loadJson(currentTextFile, { text: '' })
@@ -271,6 +249,34 @@ function init(options) {
     log.error('Error loading current text file:', err);
     currentText = '';
   }
+}
+
+// =============================================================================
+// Initialization / lifecycle
+// =============================================================================
+/**
+ * Initialize the text state:
+ * - Load from currentTextFile
+ * - Apply initial truncation using the effective hard cap
+ * - Register persistence in app.before-quit
+ */
+function init(options) {
+  const opts = options || {};
+
+  loadJson = opts.loadJson;
+  saveJson = opts.saveJson;
+  currentTextFile = opts.currentTextFile;
+  settingsFile = opts.settingsFile;
+  appRef = opts.app || null;
+  currentTextProcessingController = opts.currentTextProcessingController || null;
+
+  if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
+    maxTextChars = opts.maxTextChars;
+  }
+  maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
+
+  // Initial load from disk + truncated if hard cap is exceeded
+  loadInitialCurrentText();
 
   beginCurrentTextProcessing({
     source: 'main',
