@@ -218,12 +218,20 @@ function applyActualWindowState(windowState) {
   ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
 }
 
-function captureActualWindowState(windowState) {
+function captureActualWindowState(windowState, options = {}) {
+  const bootstrap = !!(options && options.bootstrap);
   if (windowState && windowState.ok === false) {
-    log.warn(
-      'BOOTSTRAP: editorAPI.getWindowState returned a non-ok result; keeping startup presentation until a live window-state update arrives.',
-      windowState.error || 'unknown'
-    );
+    if (bootstrap) {
+      log.warn(
+        'BOOTSTRAP: editorAPI.getWindowState returned a non-ok result; keeping startup presentation until a live window-state update arrives.',
+        windowState.error || 'unknown'
+      );
+    } else {
+      log.warn(
+        'editorAPI.onWindowStateChanged returned a non-ok result; keeping current maximized layout state.',
+        windowState.error || 'unknown'
+      );
+    }
     return;
   }
   const nextWindowState = ctx.state.startupPresentation.captureActualWindowState(windowState);
@@ -309,13 +317,26 @@ async function bootstrapEditorEnvironment() {
     } else {
       log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
     }
-    captureActualWindowState(await ctx.editorAPI.getWindowState());
-    ctx.ui.setLocalSpellcheckState({
-      preferenceEnabled: ctx.state.spellcheckEnabled,
-      available: ctx.state.spellcheckAvailable,
-    });
-    ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
-    window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
+  } catch (err) {
+    log.warn('BOOTSTRAP: getSettings failed; using default editor settings:', err);
+  }
+  try {
+    captureActualWindowState(await ctx.editorAPI.getWindowState(), { bootstrap: true });
+  } catch (err) {
+    log.warn(
+      'BOOTSTRAP: getWindowState failed; keeping startup presentation until a live window-state update arrives:',
+      err
+    );
+  }
+
+  ctx.ui.setLocalSpellcheckState({
+    preferenceEnabled: ctx.state.spellcheckEnabled,
+    available: ctx.state.spellcheckAvailable,
+  });
+  ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
+  window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
+
+  try {
     await ctx.ui.applyEditorTranslations();
     ctx.ui.updateEditorTextDirection();
   } catch (err) {
@@ -402,7 +423,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
 
 if (typeof ctx.editorAPI.onWindowStateChanged === 'function') {
   ctx.editorAPI.onWindowStateChanged((windowState) => {
-    captureActualWindowState(windowState);
+    captureActualWindowState(windowState, { bootstrap: false });
   });
 } else {
   log.warn('BOOTSTRAP: editorAPI.onWindowStateChanged missing; live maximized layout updates disabled.');
@@ -505,8 +526,7 @@ if (editor) {
       action: 'drop',
       limitAlertKey: 'renderer.editor.alerts.drop_limit',
       truncatedAlertKey: 'renderer.editor.alerts.drop_truncated',
-      onFallbackError: (err) => log.warnOnce(
-        'setCurrentText.drop.fallback',
+      onFallbackError: (err) => log.warn(
         'editorAPI.setCurrentText fallback failed (ignored):',
         err
       )
@@ -591,7 +611,7 @@ btnTrash.addEventListener('click', () => {
   if (calcWhileTyping && calcWhileTyping.checked) {
     const didSend = ctx.engine.sendCurrentTextToMain('clear', {
       text: '',
-      onPrimaryError: (err) => log.error('Error executing Clear:', err),
+      onPrimaryError: (err) => log.warn('Text Editor clear payload sync failed; using fallback:', err),
       onFallbackError: (err) => log.error('Error executing Clear fallback:', err),
     });
     if (!didSend) {
@@ -604,7 +624,7 @@ btnTrash.addEventListener('click', () => {
 if (btnCalc) btnCalc.addEventListener('click', () => {
   const didSend = ctx.engine.sendCurrentTextToMain('overwrite', {
     text: editor.value || '',
-    onPrimaryError: (err) => log.error('Error executing Apply:', err),
+    onPrimaryError: (err) => log.warn('Text Editor apply payload sync failed; using fallback:', err),
     onFallbackError: (err) => log.error('Error executing Apply fallback:', err),
   });
   if (!didSend) {
@@ -618,8 +638,7 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     btnCalc.disabled = true;
     ctx.engine.sendCurrentTextToMain('typing_toggle_on', {
       text: editor.value || '',
-      onFallbackError: (err) => log.warnOnce(
-        'setCurrentText.typing_toggle_on.fallback',
+      onFallbackError: (err) => log.warn(
         'editorAPI.setCurrentText fallback failed (typing toggle on ignored):',
         err
       )
@@ -642,8 +661,7 @@ if (spellcheckToggle) {
     }
 
     if (!ctx.editorAPI || typeof ctx.editorAPI.setSpellcheckEnabled !== 'function') {
-      log.warnOnce(
-        'editor.spellcheck.apiMissing',
+      log.warn(
         'editorAPI.setSpellcheckEnabled missing; spellcheck toggle ignored.'
       );
       ctx.ui.setLocalSpellcheckState({
