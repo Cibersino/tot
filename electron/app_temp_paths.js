@@ -57,6 +57,11 @@ function resolveRealPathOrFallback(candidatePath) {
   }
 }
 
+function isRelativePathInsideRoot(relativePath, { allowRoot = false } = {}) {
+  if (relativePath === '') return allowRoot;
+  return !relativePath.startsWith('..') && !path.isAbsolute(relativePath);
+}
+
 function getRuntimeTempRoot() {
   return path.join(os.tmpdir(), RUNTIME_TEMP_ROOT_NAME);
 }
@@ -88,8 +93,7 @@ function isInsideRuntimeTempRoot(candidatePath) {
   const runtimeTempRoot = resolveRealPathOrFallback(getRuntimeTempRoot());
   const resolvedCandidatePath = resolveRealPathOrFallback(safeCandidatePath);
   const relativePath = path.relative(runtimeTempRoot, resolvedCandidatePath);
-  return relativePath === ''
-    || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath));
+  return isRelativePathInsideRoot(relativePath, { allowRoot: true });
 }
 
 function cleanupRuntimeTempRunDir(runDir, { force = true } = {}) {
@@ -99,9 +103,7 @@ function cleanupRuntimeTempRunDir(runDir, { force = true } = {}) {
   const runtimeTempRoot = resolveRealPathOrFallback(getRuntimeTempRoot());
   const resolvedRunDir = resolveRealPathOrFallback(safeRunDir);
   const relativePath = path.relative(runtimeTempRoot, resolvedRunDir);
-  const isDescendantDir = !!relativePath
-    && !relativePath.startsWith('..')
-    && !path.isAbsolute(relativePath);
+  const isDescendantDir = isRelativePathInsideRoot(relativePath);
 
   if (!isDescendantDir) {
     return buildCleanupWarning(
