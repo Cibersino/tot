@@ -271,7 +271,7 @@ function reportBasePresentationState(payload) {
         : {}),
     });
   } catch (err) {
-    log.error('BOOTSTRAP: reportBasePresentationState failed:', err);
+    log.error('BOOTSTRAP: reportBasePresentationState call failed:', err);
   }
 }
 
@@ -414,7 +414,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
         ctx.ui.updateEditorTextSizeUi();
       }
     } catch (err) {
-      log.warn('Text Editor: failed to apply settings update:', err);
+      log.warn('Text Editor settings update failed:', err);
     }
   });
 } else {
@@ -468,7 +468,7 @@ ctx.editorAPI.onReplaceRequest((payload) => {
   Promise.resolve()
     .then(() => ctx.engine.handleReplaceRequest(payload || {}))
     .catch((err) => {
-      log.error('handleReplaceRequest error:', err);
+      log.error('Text Editor replace request handling failed:', err);
       return {
         requestId,
         operation: payload && payload.operation === 'replace-all' ? 'replace-all' : 'replace-current',
@@ -483,7 +483,7 @@ ctx.editorAPI.onReplaceRequest((payload) => {
       try {
         ctx.editorAPI.sendReplaceResponse(response);
       } catch (err) {
-        log.error('sendReplaceResponse error:', err);
+        log.error('Text Editor replace response send failed:', err);
       }
     });
 });
@@ -565,7 +565,7 @@ if (editor) {
         ctx.ui.restoreFocusToEditor(start);
       }
     } catch (err) {
-      log.error('beforeinput guard error:', err);
+      log.error('Text Editor beforeinput guard failed:', err);
     }
   });
 }
@@ -612,7 +612,7 @@ btnTrash.addEventListener('click', () => {
     const didSend = ctx.engine.sendCurrentTextToMain('clear', {
       text: '',
       onPrimaryError: (err) => log.warn('Text Editor clear payload sync failed; using fallback:', err),
-      onFallbackError: (err) => log.error('Error executing Clear fallback:', err),
+      onFallbackError: (err) => log.error('Text Editor clear fallback sync failed:', err),
     });
     if (!didSend) {
       window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
@@ -625,7 +625,7 @@ if (btnCalc) btnCalc.addEventListener('click', () => {
   const didSend = ctx.engine.sendCurrentTextToMain('overwrite', {
     text: editor.value || '',
     onPrimaryError: (err) => log.warn('Text Editor apply payload sync failed; using fallback:', err),
-    onFallbackError: (err) => log.error('Error executing Apply fallback:', err),
+    onFallbackError: (err) => log.error('Text Editor apply fallback sync failed:', err),
   });
   if (!didSend) {
     window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
@@ -682,7 +682,7 @@ if (spellcheckToggle) {
         throw new Error(result && result.error ? String(result.error) : 'unknown');
       }
     } catch (err) {
-      log.error('Error updating spellcheck setting:', err);
+      log.error('Text Editor spellcheck update failed:', err);
       ctx.ui.setLocalSpellcheckState({
         preferenceEnabled: previousEnabled,
         available: previousAvailable,
@@ -694,7 +694,7 @@ if (spellcheckToggle) {
 if (btnTextSizeDecrease) {
   btnTextSizeDecrease.addEventListener('click', () => {
     ctx.ui.decreaseEditorFontSize().catch((err) => {
-      log.error('Error decreasing Text Editor font size:', err);
+      log.error('Text Editor font size decrease failed:', err);
     });
   });
 }
@@ -702,7 +702,7 @@ if (btnTextSizeDecrease) {
 if (btnTextSizeIncrease) {
   btnTextSizeIncrease.addEventListener('click', () => {
     ctx.ui.increaseEditorFontSize().catch((err) => {
-      log.error('Error increasing Text Editor font size:', err);
+      log.error('Text Editor font size increase failed:', err);
     });
   });
 }
@@ -710,7 +710,7 @@ if (btnTextSizeIncrease) {
 if (btnTextSizeReset) {
   btnTextSizeReset.addEventListener('click', () => {
     ctx.ui.resetEditorFontSize().catch((err) => {
-      log.error('Error resetting Text Editor font size:', err);
+      log.error('Text Editor font size reset failed:', err);
     });
   });
 }
