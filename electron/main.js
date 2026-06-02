@@ -1986,7 +1986,10 @@ app.on('will-quit', () => {
   if (runtimeTempCleanupWarning) {
     log.warn(
       'Runtime temp root cleanup failed (ignored):',
-      runtimeTempCleanupWarning.detailsSafeForLogs || runtimeTempCleanupWarning
+      {
+        warningCode: runtimeTempCleanupWarning.warningCode,
+        ...runtimeTempCleanupWarning.detailsSafeForLogs,
+      }
     );
   }
 });
