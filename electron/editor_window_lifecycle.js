@@ -90,7 +90,7 @@ function createController({ log, editorState }) {
 
   function notifyMainEditorFirstShowState(mainWin, payload, logContext) {
     if (!hasLiveWebContents(mainWin)) {
-      log.warn('editor-first-show-state notification skipped (ignored): main window unavailable.', logContext);
+      log.warn('editor-first-show-state notification failed (ignored): main window unavailable.', logContext);
       return false;
     }
 
@@ -98,7 +98,7 @@ function createController({ log, editorState }) {
       mainWin.webContents.send('editor-first-show-state', payload);
       return true;
     } catch (err) {
-      log.warn(`Unable to notify editor-first-show-state from ${logContext}:`, err);
+      log.warn('editor-first-show-state notification failed (ignored):', logContext, err);
       return false;
     }
   }
