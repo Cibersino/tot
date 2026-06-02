@@ -478,10 +478,14 @@ async function materializePdfPageSelectionInput({
         return {
           warningCode: 'cleanup:pdf_subset_cleanup_failed',
           detailsSafeForLogs: {
-            ...cleanupWarning.detailsSafeForLogs,
             stage: 'cleanup_generated_subset',
             runDir,
             fileName: subsetFileName,
+            cleanupWarningCode: cleanupWarning.warningCode,
+            cleanupWarningDetails:
+              cleanupWarning.detailsSafeForLogs && typeof cleanupWarning.detailsSafeForLogs === 'object'
+                ? { ...cleanupWarning.detailsSafeForLogs }
+                : {},
           },
         };
       },
