@@ -24,6 +24,13 @@ function buildWaiterError(code) {
   return err;
 }
 
+function requireCreateEditorWindow(createEditorWindow, logContext) {
+  if (typeof createEditorWindow === 'function') {
+    return createEditorWindow;
+  }
+  throw new Error(`[editor_window_lifecycle] createEditorWindow required from ${logContext}`);
+}
+
 function createController({ log, editorState }) {
   if (!log || typeof log.warn !== 'function' || typeof log.error !== 'function') {
     throw new Error('[editor_window_lifecycle] createController requires log');
@@ -306,7 +313,8 @@ function createController({ log, editorState }) {
     let freshEditorWin = null;
 
     try {
-      freshEditorWin = createEditorWindow({
+      const createWindow = requireCreateEditorWindow(createEditorWindow, logContext);
+      freshEditorWin = createWindow({
         ...options,
         deferShow: true,
         waitForBasePresentationReady: true,
@@ -413,9 +421,10 @@ function createController({ log, editorState }) {
         });
       }
 
+      const createWindow = requireCreateEditorWindow(createEditorWindow, logContext);
       return {
         ok: true,
-        editorWin: createEditorWindow(options),
+        editorWin: createWindow(options),
         baseReadyPromise: null,
       };
     }
