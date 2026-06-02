@@ -1,6 +1,3 @@
-# Index
-jsconfig.json
-
 # Node / npm
 node_modules/
 npm-debug.log*
@@ -11,9 +8,6 @@ yarn-error.log*
 build-output/
 dist/
 out/
-
-# VS Code
-.vscode/
 
 # OS files
 .DS_Store
