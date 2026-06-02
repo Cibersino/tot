@@ -5,11 +5,11 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Validate required renderer surfaces before Text Editor bootstrap continues.
-// - Wire Text Editor UI and Text Editor engine modules together through shared context.
-// - Bootstrap config, settings, translations, and initial Text Editor text state.
-// - Register editorAPI listeners and DOM event handlers for Text Editor interactions.
-// - Coordinate local Text Editor actions with main-process text synchronization.
+// - Validate required renderer surfaces before Text Editor startup continues.
+// - Build the shared editor context consumed by the UI and engine modules.
+// - Apply bootstrap config, settings, translations, and initial text state.
+// - Keep editor window state and settings-driven UI in sync with bridge updates.
+// - Route local editor interactions back through the main-process text bridge.
 // =============================================================================
 
 // =============================================================================
@@ -139,7 +139,7 @@ const startupQuery = editorStartupPresentation.parseStartupQuery(window.location
 const startupPresentation = editorStartupPresentation.createStartupPresentationController(startupQuery);
 
 // =============================================================================
-// Shared context
+// Shared state / context
 // =============================================================================
 const ctx = {
   log,
@@ -209,6 +209,9 @@ const ctx = {
 ctx.ui = window.EditorUI.createEditorUI(ctx);
 ctx.engine = window.EditorEngine.createEditorEngine(ctx);
 
+// =============================================================================
+// Helpers
+// =============================================================================
 function applyActualWindowState(windowState) {
   ctx.state.editorWindowMaximized = !!(windowState && windowState.maximized === true);
   ctx.state.maximizedTextWidthPx = ctx.ui.clampEditorMaximizedTextWidthPx(
@@ -374,12 +377,11 @@ function registerEditorMarginGutter(gutter, side) {
   });
 }
 
-// warnOnce keys are editor-scoped; use log.warnOnce directly.
+// =============================================================================
+// Live bridge integration
+// =============================================================================
 applyInitialLocalUiState();
 
-// =============================================================================
-// Settings integration
-// =============================================================================
 if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
   ctx.editorAPI.onSettingsChanged(async (settings) => {
     try {
@@ -439,7 +441,7 @@ if (readingTestPrestartOverlay) {
 }
 
 // =============================================================================
-// Bootstrap: config, settings, and initial text
+// App lifecycle / bootstrapping
 // =============================================================================
 Promise.resolve()
   .then(async () => {
