@@ -1786,6 +1786,12 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
   });
 }
 
+function assertCurrentTextSubscription() {
+  if (!hasCurrentTextSubscription) {
+    throw new Error('current-text-updated subscription unavailable');
+  }
+}
+
 // =============================================================================
 // Text extraction integration helpers
 // =============================================================================
@@ -2078,10 +2084,7 @@ async function handleClipboardOverwrite() {
       }
       return;
     }
-
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
-    }
+    assertCurrentTextSubscription();
     if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
     }
@@ -2116,10 +2119,7 @@ async function handleClipboardAppend() {
       }
       return;
     }
-
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
-    }
+    assertCurrentTextSubscription();
     if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
     }
@@ -2184,9 +2184,7 @@ async function handleClearText() {
     if (resp && resp.ok === false) {
       throw new Error(resp.error || 'set-current-text failed');
     }
-    if (!hasCurrentTextSubscription) {
-      throw new Error('current-text-updated subscription unavailable');
-    }
+    assertCurrentTextSubscription();
   } catch (err) {
     log.error('Error clearing text from main window:', err);
     window.Notify.notifyMain('renderer.main.alerts.clear_error');
@@ -2250,19 +2248,25 @@ function handleTaskOpenResult(res, { mode } = {}) {
   }
 }
 
+async function openTaskEditorForMode(mode, { unavailableMessage } = {}) {
+  const openTaskEditor = getOptionalElectronMethod('openTaskEditor', {
+    dedupeKey: 'renderer.ipc.openTaskEditor.unavailable',
+    unavailableMessage,
+  });
+  if (!openTaskEditor) {
+    window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+    return;
+  }
+  const res = await openTaskEditor(mode);
+  handleTaskOpenResult(res, { mode });
+}
+
 async function handleNewTask() {
   if (!guardUserAction('task-new')) return;
   try {
-    if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-      log.warnOnce(
-        'renderer.ipc.openTaskEditor.unavailable',
-        'openTaskEditor unavailable; new-task action skipped.'
-      );
-      window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-      return;
-    }
-    const res = await window.electronAPI.openTaskEditor('new');
-    handleTaskOpenResult(res, { mode: 'new' });
+    await openTaskEditorForMode('new', {
+      unavailableMessage: 'openTaskEditor unavailable; new-task action skipped.'
+    });
   } catch (err) {
     log.error('Error opening Task Editor (new):', err);
     window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
@@ -2272,16 +2276,9 @@ async function handleNewTask() {
 async function handleLoadTask() {
   if (!guardUserAction('task-load')) return;
   try {
-    if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
-      log.warnOnce(
-        'renderer.ipc.openTaskEditor.unavailable',
-        'openTaskEditor unavailable; load-task action skipped.'
-      );
-      window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
-      return;
-    }
-    const res = await window.electronAPI.openTaskEditor('load');
-    handleTaskOpenResult(res, { mode: 'load' });
+    await openTaskEditorForMode('load', {
+      unavailableMessage: 'openTaskEditor unavailable; load-task action skipped.'
+    });
   } catch (err) {
     log.error('Error opening Task Editor (load):', err);
     window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
