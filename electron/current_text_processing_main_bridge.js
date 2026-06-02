@@ -3,12 +3,22 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Bridges authoritative current-text processing state from main to the main
-// renderer. During bootstrap, state may become active before the main window
-// exists; that pre-window phase is a contractually normal no-op for live
-// broadcasts because the renderer receives the authoritative seed on load.
+// Responsibilities:
+// - define the main-to-renderer channel for current-text processing state,
+// - validate the collaborators required to bridge that state safely,
+// - forward live state changes to the main window when live delivery is possible,
+// - keep the pre-window bootstrap phase silent by contract,
+// - seed the renderer with the authoritative controller snapshot after load.
+
+// =============================================================================
+// Constants
+// =============================================================================
 
 const CHANNEL = 'current-text-processing-state-changed';
+
+// =============================================================================
+// Bridge Factory
+// =============================================================================
 
 function createBridge({
   controller,
@@ -29,6 +39,8 @@ function createBridge({
     throw new Error('[current_text_processing_main_bridge] createBridge requires log.warn()');
   }
 
+  // Live broadcasts are optional until the main window exists. That pre-window
+  // phase stays silent because the renderer receives the authoritative seed.
   function handleStateChanged(state) {
     try {
       const targetWin = resolveMainWindow();
@@ -47,6 +59,8 @@ function createBridge({
     }
   }
 
+  // Renderer load receives a fresh snapshot instead of replaying missed live
+  // broadcasts from the pre-window bootstrap phase.
   function seedMainWindow(mainWin) {
     try {
       if (!hasLiveWebContents(mainWin)) {
@@ -67,6 +81,12 @@ function createBridge({
   };
 }
 
+// =============================================================================
+// Exports
+// =============================================================================
+
 module.exports = {
   createBridge,
 };
+
+// End of electron/current_text_processing_main_bridge.js
