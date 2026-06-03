@@ -850,19 +850,21 @@
         focusedElement: captureFocusableDescriptor(document.activeElement),
       });
 
+      const setScrollTop = (value) => {
+        if (panel && typeof panel.scrollTop === 'number') {
+          panel.scrollTop = value;
+          return;
+        }
+        if (body && typeof body.scrollTop === 'number') {
+          body.scrollTop = value;
+        }
+      };
+
       const restoreRerenderUiState = (uiState) => {
         if (!uiState) return;
-        if (panel && typeof panel.scrollTop === 'number') {
-          panel.scrollTop = uiState.scrollTop;
-        } else if (body && typeof body.scrollTop === 'number') {
-          body.scrollTop = uiState.scrollTop;
-        }
+        setScrollTop(uiState.scrollTop);
         restoreFocusFromDescriptor(uiState.focusedElement);
-        if (panel && typeof panel.scrollTop === 'number') {
-          panel.scrollTop = uiState.scrollTop;
-        } else if (body && typeof body.scrollTop === 'number') {
-          body.scrollTop = uiState.scrollTop;
-        }
+        setScrollTop(uiState.scrollTop);
       };
 
       const rerender = () => {
@@ -885,6 +887,24 @@
         failurePolicyContinue.checked = currentModel.failurePolicy === 'omit_failed_and_continue';
         syncStartButtonState();
         restoreRerenderUiState(uiState);
+      };
+
+      const applyResolvedPageSelection = (inputId, pdfPageSelection) => {
+        controller.applyAction({
+          type: 'set_pdf_page_selection',
+          inputId,
+          pdfPageSelection,
+        });
+        currentModel = controller.getViewModel();
+        refreshKeepControl(inputId);
+      };
+
+      const applyDraftPageSelectionIfValid = (inputId, draft) => {
+        const uiState = pdfPageSelectionHelper.getPageSelectionUiState(draft);
+        if (!uiState.pdfPageSelection) {
+          return;
+        }
+        applyResolvedPageSelection(inputId, uiState.pdfPageSelection);
       };
 
       const finish = (result) => {
@@ -1052,30 +1072,18 @@
           if (!input || input.canEditPages !== true) return;
           if (target.value === 'all') {
             pageSelectionDrafts.delete(inputId);
-            controller.applyAction({
-              type: 'set_pdf_page_selection',
+            applyResolvedPageSelection(
               inputId,
-              pdfPageSelection: pdfPageSelectionHelper.buildAllPagesSelection(input.pdfTotalPages),
-            });
-            currentModel = controller.getViewModel();
+              pdfPageSelectionHelper.buildAllPagesSelection(input.pdfTotalPages)
+            );
             refreshPageSelectionControl(inputId, { preserveTypedValues: false });
-            refreshKeepControl(inputId);
             syncStartButtonState();
             return;
           }
           const nextDraft = pageSelectionDrafts.get(inputId) || buildPageSelectionDraft(input);
           nextDraft.mode = 'range';
           pageSelectionDrafts.set(inputId, nextDraft);
-          const uiState = pdfPageSelectionHelper.getPageSelectionUiState(nextDraft);
-          if (uiState.pdfPageSelection) {
-            controller.applyAction({
-              type: 'set_pdf_page_selection',
-              inputId,
-              pdfPageSelection: uiState.pdfPageSelection,
-            });
-            currentModel = controller.getViewModel();
-            refreshKeepControl(inputId);
-          }
+          applyDraftPageSelectionIfValid(inputId, nextDraft);
           refreshPageSelectionControl(inputId, { preserveTypedValues: false });
           syncStartButtonState();
         }
@@ -1103,16 +1111,7 @@
           nextDraft.mode = 'range';
           nextDraft[action === 'set-page-from' ? 'fromPage' : 'toPage'] = String(target.value || '');
           pageSelectionDrafts.set(inputId, nextDraft);
-          const uiState = pdfPageSelectionHelper.getPageSelectionUiState(nextDraft);
-          if (uiState.pdfPageSelection) {
-            controller.applyAction({
-              type: 'set_pdf_page_selection',
-              inputId,
-              pdfPageSelection: uiState.pdfPageSelection,
-            });
-            currentModel = controller.getViewModel();
-            refreshKeepControl(inputId);
-          }
+          applyDraftPageSelectionIfValid(inputId, nextDraft);
           refreshPageSelectionControl(inputId, { preserveTypedValues: true });
           syncStartButtonState();
         }
@@ -1135,11 +1134,7 @@
       rerender();
       modal.setAttribute('aria-hidden', 'false');
       focusElementWithoutScroll(btnClose || btnPresetAll || btnStart);
-      if (panel && typeof panel.scrollTop === 'number') {
-        panel.scrollTop = 0;
-      } else if (body && typeof body.scrollTop === 'number') {
-        body.scrollTop = 0;
-      }
+      setScrollTop(0);
     });
   }
 
