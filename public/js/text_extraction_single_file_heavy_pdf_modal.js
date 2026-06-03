@@ -90,6 +90,10 @@
 
     container.textContent = '';
     if (parts.length < 2) {
+      log.warn(
+        'Single-file heavy PDF modal translation placeholder missing; rendering template without isolated value:',
+        { key, placeholderToken, tokenSuffix }
+      );
       container.textContent = template;
       return;
     }
@@ -274,7 +278,7 @@
         try {
           await onRevealGeneratedPdf();
         } catch (err) {
-          log.error('Single-file heavy modal reveal failed:', err);
+          log.warn('Single-file heavy modal reveal failed (ignored):', err);
           window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         }
       };
