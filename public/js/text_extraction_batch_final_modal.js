@@ -448,7 +448,11 @@
 
       const onBodyClick = async (event) => {
         const target = event.target && event.target.closest ? event.target.closest('[data-action="reveal-generated-pdf"]') : null;
-        if (!target || typeof onRevealGeneratedPdf !== 'function') return;
+        if (!target) return;
+        if (typeof onRevealGeneratedPdf !== 'function') {
+          log.warn('Generated PDF reveal action ignored: onRevealGeneratedPdf unavailable.');
+          return;
+        }
         try {
           await onRevealGeneratedPdf(target.getAttribute('data-artifact-path') || '');
         } catch (err) {
@@ -464,7 +468,10 @@
         }
       };
       const onOpenSnapshots = async () => {
-        if (typeof onOpenSnapshotsFolder !== 'function') return;
+        if (typeof onOpenSnapshotsFolder !== 'function') {
+          log.warn('Open snapshots folder action ignored: onOpenSnapshotsFolder unavailable.');
+          return;
+        }
         try {
           await onOpenSnapshotsFolder();
         } catch (err) {
