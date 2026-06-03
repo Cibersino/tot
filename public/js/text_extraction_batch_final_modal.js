@@ -401,6 +401,9 @@
       log.error('Batch final modal DOM elements missing.');
       return;
     }
+    if (!report || typeof report !== 'object' || !Array.isArray(report.units)) {
+      log.warn('Batch final modal received invalid report payload; rendering fallback report.');
+    }
     const safeReport = normalizeReport(report);
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
     const reportText = buildReportText(safeReport, normalizedElapsedValueText);
