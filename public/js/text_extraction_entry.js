@@ -5,14 +5,15 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Own the shared main-window text extraction entry flow.
-// - Let picker and drag/drop feed the same prepare/execute/apply pipeline.
-// - Keep renderer.js limited to wiring and shared app-level helpers.
+// - Own the shared main-window text extraction entry flow for picker and file-based starts.
+// - Reuse one inspect/prepare/execute/apply pipeline across single-file entrypoints.
+// - Coordinate single-file heavy-PDF decisions, including reruns and batch-flow handoff.
+// - Keep renderer.js limited to dependency wiring and app-level orchestration.
 // =============================================================================
 
 (() => {
   // =============================================================================
-  // Logger bootstrap
+  // Runtime dependencies / logger
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text-extraction-entry] window.getLogger unavailable; cannot continue');
@@ -53,7 +54,7 @@
   }
 
   // =============================================================================
-  // Local helpers
+  // Dependency + normalization helpers
   // =============================================================================
   function requireConfiguredDeps() {
     if (!deps) {
@@ -116,6 +117,9 @@
     return textExtractionBatchFlow;
   }
 
+  // =============================================================================
+  // Recovery + result helpers
+  // =============================================================================
   function resolvePrimaryAlertKey(resultLike) {
     return (resultLike && typeof resultLike.primaryAlertKey === 'string' && resultLike.primaryAlertKey.trim())
       ? resultLike.primaryAlertKey
@@ -257,7 +261,7 @@
   }
 
   // =============================================================================
-  // Shared text extraction flow
+  // Shared entry flow
   // =============================================================================
   async function runSharedFlow({
     filePath,
