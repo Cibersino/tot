@@ -98,9 +98,20 @@
       };
     }
 
-    const activationResult = await activationFlow.startActivationFlow({
-      source: 'preferences_menu',
-    });
+    let activationResult = null;
+    try {
+      activationResult = await activationFlow.startActivationFlow({
+        source: 'preferences_menu',
+      });
+    } catch (err) {
+      log.error('OCR activation flow failed for Preferences menu:', err);
+      window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
+      return {
+        ok: false,
+        state: 'failure',
+        code: 'activation_failed',
+      };
+    }
 
     if (activationResult && activationResult.ok === true) {
       window.Notify.notifyMain(mapMenuActivationAlertKey(activationResult));
