@@ -102,23 +102,23 @@
       source: 'preferences_menu',
     });
 
-    if (!activationResult || activationResult.ok !== true) {
-      if (activationResult
-        && activationResult.state === 'cancelled'
-        && activationResult.code === 'ocr_activation_disclosure_declined') {
+    if (activationResult && activationResult.ok === true) {
+      window.Notify.notifyMain(mapMenuActivationAlertKey(activationResult));
       return activationResult;
     }
 
-      window.Notify.notifyMain(mapMenuActivationAlertKey(activationResult));
-      return activationResult || {
-        ok: false,
-        state: 'failure',
-        code: 'activation_failed',
-      };
+    if (activationResult
+      && activationResult.state === 'cancelled'
+      && activationResult.code === 'ocr_activation_disclosure_declined') {
+      return activationResult;
     }
 
     window.Notify.notifyMain(mapMenuActivationAlertKey(activationResult));
-    return activationResult;
+    return activationResult || {
+      ok: false,
+      state: 'failure',
+      code: 'activation_failed',
+    };
   }
 
   // =============================================================================
