@@ -113,6 +113,10 @@
       };
     }
 
+    if (!activationResult || typeof activationResult !== 'object') {
+      log.warn('OCR activation flow returned no result object; using generic failure fallback:', activationResult);
+    }
+
     if (activationResult && activationResult.ok === true) {
       window.Notify.notifyMain(mapMenuActivationAlertKey(activationResult));
       return activationResult;
