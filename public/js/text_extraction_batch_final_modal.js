@@ -12,6 +12,10 @@
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
+
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text-extraction-batch-final-modal] window.getLogger unavailable; cannot continue');
   }
@@ -21,6 +25,10 @@
     throw new Error('[text-extraction-batch-final-modal] RendererI18n.tRenderer unavailable; cannot continue');
   }
   const { tRenderer } = window.RendererI18n;
+
+  // =============================================================================
+  // DOM references
+  // =============================================================================
 
   const modal = document.getElementById('textExtractionBatchFinalModal');
   const backdrop = document.getElementById('textExtractionBatchFinalModalBackdrop');
@@ -33,6 +41,10 @@
   const btnOpenSnapshots = document.getElementById('textExtractionBatchFinalModalOpenSnapshots');
   const btnOk = document.getElementById('textExtractionBatchFinalModalOk');
   const btnClose = document.getElementById('textExtractionBatchFinalModalClose');
+
+  // =============================================================================
+  // Helpers
+  // =============================================================================
 
   function hasRequiredElements() {
     return !!(modal
@@ -391,6 +403,10 @@
     await navigator.clipboard.writeText(reportText);
   }
 
+  // =============================================================================
+  // Public prompt
+  // =============================================================================
+
   async function promptBatchFinalReport({
     report,
     elapsedValueText = '',
@@ -505,6 +521,10 @@
       }
     });
   }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
 
   window.Notify.promptTextExtractionBatchFinalReport = promptBatchFinalReport;
 })();
