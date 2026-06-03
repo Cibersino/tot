@@ -86,7 +86,7 @@ tot/
 │ │ ├── text_extraction_ocr_disconnect_ipc.js
 │ │ ├── text_extraction_pdf_error_detection.js
 │ │ ├── text_extraction_pdf_inspect_ipc.js
-│ │ ├── text_extraction_pdf_page_selection.js
+│ │ ├── text_extraction_pdf_selection_pipeline.js
 │ │ ├── text_extraction_platform_adapter.js
 │ │ ├── text_extraction_preconditions_ipc.js
 │ │ ├── text_extraction_prepare_execute_core.js
@@ -201,7 +201,7 @@ tot/
 │ │ ├── text_extraction_ocr_activation_recovery.js
 │ │ ├── text_extraction_ocr_disconnect.js
 │ │ ├── text_extraction_pdf_options_modal.js
-│ │ ├── text_extraction_pdf_page_selection.js
+│ │ ├── text_extraction_pdf_page_selection_ui_model.js
 │ │ ├── text_extraction_route_choice_modal.js
 │ │ ├── text_extraction_single_file_heavy_pdf_modal.js
 │ │ ├── text_extraction_status_ui.js
@@ -318,7 +318,7 @@ tot/
 - `electron/text_extraction_platform/text_extraction_platform_adapter.js` + `electron/text_extraction_platform/platform_adapters/*.js` — Abstracción por plataforma para carpeta inicial del picker y normalización de paths (Windows-first, pero portable a macOS/Linux).
 - `electron/text_extraction_platform/text_extraction_supported_formats.js` — Contrato compartido de formatos soportados por text extraction: centraliza extensiones nativas, extensiones Google-backed y extensiones OCR/imagen, además de los helpers reutilizados por picker, prepare y rutas de ejecución.
 - `electron/text_extraction_platform/text_extraction_pdf_error_detection.js` — Helper compartido para clasificar errores PDF de cifrado/password y corrupción/lectura inválida, reutilizado por inspect, probe y ruta nativa para evitar drift entre heurísticas duplicadas.
-- `electron/text_extraction_platform/text_extraction_pdf_page_selection.js` — Owner del estado y trabajo local de page-range para PDFs: inspect de `totalPages`, canonicalización de `pdfPageSelection`/`generatedPdfArtifactPolicy`, nombres visibles del `processingInputFile`, materialización del subset PDF, cleanup/retención y warnings técnicos de cleanup.
+- `electron/text_extraction_platform/text_extraction_pdf_selection_pipeline.js` — Owner del estado y trabajo local de page-range para PDFs: inspect de `totalPages`, canonicalización de `pdfPageSelection`/`generatedPdfArtifactPolicy`, nombres visibles del `processingInputFile`, materialización del subset PDF, cleanup/retención y warnings técnicos de cleanup.
 - `electron/text_extraction_platform/native_extraction_route.js` — Ruta de extracción nativa para `txt`, `md`, `html`, `docx` y PDFs con text layer; consume el contrato compartido de formatos y opera sobre el `processingInputFile` efectivo, que puede ser un subset PDF materializado.
 - `electron/text_extraction_platform/native_pdf_selectable_text_probe.js` — Probe de PDF para detectar si existe texto seleccionable utilizable antes de decidir la ruta; ahora puede sondear solo el rango seleccionado en vez del documento completo.
 - `electron/text_extraction_platform/ocr_google_drive_activation_state.js` — Estado grueso de disponibilidad OCR a partir de presencia de `credentials.json`/`token.json`; distingue `credentials_missing`, `ocr_activation_required` y `ready` antes de validaciones más profundas.
@@ -367,7 +367,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/browser_extension_modal.js` — Owner renderer del acceso a la extensión del navegador desde la ventana principal: gestiona el modal informativo, el foco/restauración, el lock state y el puente seguro hacia Chrome Web Store.
 - `public/js/text_apply_canonical.js` — Helpers canónicos de aplicar texto (`overwrite` / `append` / repeticiones) reutilizados por clipboard y por el flujo de extracción.
 - `public/js/results_time_multiplier.js` — Controla el multiplicador de tiempo bajo el resultado estimado: valida el input como numero natural, conserva el estado base recibido desde `public/renderer.js` y renderiza el tiempo multiplicado en la ventana principal.
-- `public/js/text_extraction_pdf_page_selection.js` — Owner renderer compartido del modelo `pdfPageSelection` para text extraction: construye drafts de UI, canonicaliza `all/range`, deriva estado visible (`selected count`, `invalid range`, enable/disable de submit) y formatea summaries/range labels para los consumers renderer.
+- `public/js/text_extraction_pdf_page_selection_ui_model.js` — Owner renderer compartido del modelo `pdfPageSelection` para text extraction: construye drafts de UI, canonicaliza `all/range`, deriva estado visible (`selected count`, `invalid range`, enable/disable de submit) y formatea summaries/range labels para los consumers renderer.
 - `public/js/text_extraction_status_ui.js` — Superficie visual del flujo text extraction en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido, botón abort, progreso por unidad/archivo y nombre seguro del `processingInputFile` (original, subset materializado o child generado por heavy split) sin exponer paths completos.
 - `public/js/text_extraction_batch_planning_modal.js` — Modal/shared planner del batch extraction: renderiza unidades/inputs reordenables, consume el helper compartido de `pdfPageSelection` para page scope por input y disable/focus de ranges inválidos, aplica failure policy común y permite toggle de conservación de generated PDFs + edición de tags sin mover la lógica de negocio a `renderer.js`.
 - `public/js/text_extraction_batch_final_modal.js` — Modal final compartido de batch/heavy execution: resume resultados por unidad, acciones de copy report / abrir carpeta de snapshots y reveal de artefactos generados retenidos sin crear una segunda superficie de reporte.

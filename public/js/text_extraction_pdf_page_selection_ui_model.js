@@ -1,4 +1,4 @@
-// public/js/text_extraction_pdf_page_selection.js
+// public/js/text_extraction_pdf_page_selection_ui_model.js
 'use strict';
 
 // =============================================================================
@@ -209,5 +209,5 @@
 })();
 
 // =============================================================================
-// End of public/js/text_extraction_pdf_page_selection.js
+// End of public/js/text_extraction_pdf_page_selection_ui_model.js
 // =============================================================================
