@@ -5,12 +5,16 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Host the single-file heavy-PDF blocking UI for Issue 267 Case A/Case B.
-// - Keep the full-source automatic split handoff explicit.
-// - Expose retained generated-PDF reveal action when available.
+// - Host the blocking modal used for single-file heavy-PDF decisions.
+// - Resolve case-specific copy and detail rows for Case A and Case B.
+// - Wire the modal actions that return split, page-selection, native, or cancel.
+// - Expose retained generated-PDF reveal behavior when the callback is available.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Runtime Dependencies
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text-extraction-single-file-heavy-pdf-modal] window.getLogger unavailable; cannot continue');
   }
@@ -21,6 +25,9 @@
   }
   const { tRenderer } = window.RendererI18n;
 
+  // =============================================================================
+  // DOM Bindings
+  // =============================================================================
   const modal = document.getElementById('textExtractionSingleFileHeavyPdfModal');
   const backdrop = document.getElementById('textExtractionSingleFileHeavyPdfModalBackdrop');
   const title = document.getElementById('textExtractionSingleFileHeavyPdfModalTitle');
@@ -33,6 +40,9 @@
   const btnCancel = document.getElementById('textExtractionSingleFileHeavyPdfModalCancel');
   const btnClose = document.getElementById('textExtractionSingleFileHeavyPdfModalClose');
 
+  // =============================================================================
+  // Rendering Helpers
+  // =============================================================================
   function hasRequiredElements() {
     return !!(modal
       && backdrop
@@ -174,6 +184,9 @@
     });
   }
 
+  // =============================================================================
+  // Modal Flow
+  // =============================================================================
   async function promptSingleFileHeavyPdf({
     caseKind = 'case_a',
     sourceFileName = '',
@@ -304,6 +317,9 @@
     });
   }
 
+  // =============================================================================
+  // Module Surface
+  // =============================================================================
   window.Notify.promptTextExtractionSingleFileHeavyPdf = promptSingleFileHeavyPdf;
 })();
 
