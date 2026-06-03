@@ -4,18 +4,17 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Renderer script for the preset modal.
 // Responsibilities:
-// - Bind DOM elements and enforce input limits.
-// - Load and apply renderer translations for this modal.
-// - React to preset-init and settings updates from presetAPI.
-// - Validate inputs and trigger create/edit actions.
-// - Keep UI hints and counters in sync.
+// - Validate required modal DOM and shared renderer surfaces before continuing.
+// - Apply preset-init payloads and live settings updates from presetAPI.
+// - Load renderer translations and keep text direction and UI copy in sync.
+// - Validate preset inputs before create/edit actions are sent to main.
+// - Keep modal field constraints, hints, and counters synchronized locally.
 
 (function () {
 
   // =============================================================================
-  // Logger + bootstrap
+  // Logger
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[preset_modal] window.getLogger unavailable; cannot continue');
@@ -69,7 +68,7 @@
     let translationsLoadedFor = null;
 
     // =============================================================================
-    // i18n helpers
+    // Helpers
     // =============================================================================
     const {
       loadRendererTranslations,
@@ -188,7 +187,7 @@
     }
 
     // =============================================================================
-    // presetAPI wiring (init + settings)
+    // Bridge integration
     // =============================================================================
     if (window.presetAPI && typeof window.presetAPI.onInit === 'function') {
       try {
@@ -309,7 +308,7 @@
     });
 
     // =============================================================================
-    // Initial UI sync
+    // App lifecycle / bootstrapping
     // =============================================================================
     (async function initCharCount() {
       updateCharCount();
