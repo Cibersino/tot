@@ -114,6 +114,18 @@
     );
   }
 
+  function normalizeReport(report) {
+    if (!report || typeof report !== 'object') {
+      return { flowKind: 'batch', units: [], hadOutput: false };
+    }
+    return {
+      ...report,
+      flowKind: report.flowKind === 'single_file_split' ? 'single_file_split' : 'batch',
+      units: Array.isArray(report.units) ? report.units : [],
+      hadOutput: report.hadOutput === true,
+    };
+  }
+
   function buildSummaryText(report) {
     const parts = [
       report && report.hadOutput
@@ -202,6 +214,28 @@
     return statusText ? `(${statusText})` : '';
   }
 
+  function getReportItemStatusSuffix(item) {
+    return buildReportStatusSuffix(
+      item && item.state,
+      item && item.code ? item.code : '',
+      {
+        applyTruncated: item && item.applyTruncated === true,
+      }
+    );
+  }
+
+  function getRetainedArtifactPath(item) {
+    return item
+      && item.generatedPdfArtifact
+      && item.generatedPdfArtifact.retainedArtifactPath;
+  }
+
+  function getSnapshotResultText(unit) {
+    return unit && unit.snapshotResult
+      ? unit.snapshotResult.text
+      : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
+  }
+
   function getHeavySplitOverallStatusText(unit) {
     if (!unit || !isHeavySplitGeneratedRowsUnit(unit)) {
       return '';
@@ -235,13 +269,7 @@
   }
 
   function renderGeneratedInputRow(generatedInput, index, unitKey) {
-    const label = buildReportStatusSuffix(
-      generatedInput && generatedInput.state,
-      generatedInput && generatedInput.code ? generatedInput.code : '',
-      {
-        applyTruncated: generatedInput && generatedInput.applyTruncated === true,
-      }
-    );
+    const label = getReportItemStatusSuffix(generatedInput);
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-generated',
       attributes: {
@@ -252,23 +280,13 @@
     const labelText = createDomElement('span', {
       textContent: `${generatedInput.fileName} ${label}`.trim(),
     });
-    const revealButton = createRevealGeneratedPdfButton(
-      generatedInput
-      && generatedInput.generatedPdfArtifact
-      && generatedInput.generatedPdfArtifact.retainedArtifactPath
-    );
+    const revealButton = createRevealGeneratedPdfButton(getRetainedArtifactPath(generatedInput));
     appendChildren(row, [labelText, revealButton]);
     return row;
   }
 
   function renderInputRow(input, index, unitKey) {
-    const label = buildReportStatusSuffix(
-      input && input.state,
-      input && input.code ? input.code : '',
-      {
-        applyTruncated: input && input.applyTruncated === true,
-      }
-    );
+    const label = getReportItemStatusSuffix(input);
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-input',
       attributes: {
@@ -281,11 +299,7 @@
     const mainText = createDomElement('span', {
       textContent: `${(input.displayName || input.fileName)} ${label}`.trim(),
     });
-    const revealButton = createRevealGeneratedPdfButton(
-      input
-      && input.generatedPdfArtifact
-      && input.generatedPdfArtifact.retainedArtifactPath
-    );
+    const revealButton = createRevealGeneratedPdfButton(getRetainedArtifactPath(input));
     appendChildren(main, [mainText, revealButton]);
     row.appendChild(main);
 
@@ -315,9 +329,7 @@
     });
     section.appendChild(createDomElement('div', {
       className: 'text-extraction-batch-final-json-line',
-      textContent: unit.snapshotResult
-        ? unit.snapshotResult.text
-        : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created'),
+      textContent: getSnapshotResultText(unit),
     }));
     return section;
   }
@@ -354,32 +366,16 @@
         lines.push(`${tRenderer('renderer.text_extraction.batch_report.split_result_label')} ${overallStatusText}`);
       }
       unit.inputs.forEach((input) => {
-        const label = buildReportStatusSuffix(
-          input && input.state,
-          input && input.code ? input.code : '',
-          {
-            applyTruncated: input && input.applyTruncated === true,
-          }
-        );
+        const label = getReportItemStatusSuffix(input);
         lines.push(`- ${input.displayName || input.fileName}${label ? ` ${label}` : ''}`);
         if (Array.isArray(input.generatedInputs)) {
           input.generatedInputs.forEach((generatedInput) => {
-            const generatedLabel = buildReportStatusSuffix(
-              generatedInput && generatedInput.state,
-              generatedInput && generatedInput.code ? generatedInput.code : '',
-              {
-                applyTruncated: generatedInput && generatedInput.applyTruncated === true,
-              }
-            );
+            const generatedLabel = getReportItemStatusSuffix(generatedInput);
             lines.push(`  - ${generatedInput.fileName}${generatedLabel ? ` ${generatedLabel}` : ''}`);
           });
         }
       });
-      lines.push(
-        unit.snapshotResult
-          ? unit.snapshotResult.text
-          : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created')
-      );
+      lines.push(getSnapshotResultText(unit));
       lines.push('');
     });
     lines.push(report.hadOutput
@@ -405,9 +401,7 @@
       log.error('Batch final modal DOM elements missing.');
       return;
     }
-    const safeReport = report && typeof report === 'object'
-      ? report
-      : { flowKind: 'batch', units: [], hadOutput: false };
+    const safeReport = normalizeReport(report);
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
     const reportText = buildReportText(safeReport, normalizedElapsedValueText);
 
