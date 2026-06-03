@@ -793,6 +793,7 @@
 
   function resolvePreconditionFailure(preconditions) {
     if (!preconditions || preconditions.ok === false) {
+      log.error('Batch precondition check failed:', preconditions);
       window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
       return true;
     }
@@ -1165,7 +1166,11 @@
     }
     try {
       const stateResult = await getTextExtractionProcessingMode();
-      return !!(stateResult && stateResult.ok === true && stateResult.state && stateResult.state.active === true);
+      if (!stateResult || stateResult.ok !== true) {
+        log.warn('Batch processing session state returned non-ok result; treating batch as cancelled:', stateResult);
+        return false;
+      }
+      return !!(stateResult.state && stateResult.state.active === true);
     } catch (err) {
       log.error('Batch processing session state check failed unexpectedly:', err);
       return false;
@@ -1239,6 +1244,7 @@
         processingInputFileName: '',
       });
     let sessionEnterResult = null;
+    let sessionEnterThrew = false;
     try {
       sessionEnterResult = await enterTextExtractionProcessingSession({
         source: 'text_extraction_batch_execution',
@@ -1246,9 +1252,13 @@
         ...initialContext,
       });
     } catch (err) {
+      sessionEnterThrew = true;
       log.error('Batch processing session start failed unexpectedly:', err);
     }
     if (!sessionEnterResult || sessionEnterResult.ok !== true) {
+      if (!sessionEnterThrew) {
+        log.warn('Batch processing session start returned non-ok result; batch execution cannot continue:', sessionEnterResult);
+      }
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
@@ -1283,6 +1293,7 @@
           }
 
           let sessionUpdateResult = null;
+          let sessionUpdateThrew = false;
           try {
             sessionUpdateResult = await updateTextExtractionProcessingSession(buildBatchProcessingContext({
               unitIndex: unitIndex + 1,
@@ -1294,9 +1305,13 @@
               processingInputSource: 'original_selected_file',
             }));
           } catch (err) {
+            sessionUpdateThrew = true;
             log.error('Batch processing session update failed unexpectedly:', err);
           }
           if (!sessionUpdateResult || sessionUpdateResult.ok !== true) {
+            if (!sessionUpdateThrew) {
+              log.warn('Batch processing session update returned non-ok result; treating batch as cancelled:', sessionUpdateResult);
+            }
             batchCancelled = true;
             unitReport.inputs.push(buildOriginalInputReportRecord(input, {
               state: 'cancelled',
