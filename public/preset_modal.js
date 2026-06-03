@@ -130,14 +130,21 @@
       if (!payload) return;
 
       const incomingMode = (payload.mode === 'edit') ? 'edit' : 'new';
-      mode = incomingMode;
 
       if (incomingMode === 'edit' && payload.preset) {
+        mode = 'edit';
         originalName = payload.preset.name;
         nameEl.value = payload.preset.name || '';
         descEl.value = payload.preset.description || '';
         if (typeof payload.preset.wpm === 'number') wpmEl.value = Math.round(payload.preset.wpm);
         return;
+      }
+
+      if (incomingMode === 'edit') {
+        mode = 'new';
+        log.warn('BOOTSTRAP: preset-init edit payload missing preset; falling back to new mode.');
+      } else {
+        mode = 'new';
       }
 
       if (typeof payload.wpm === 'number') {
@@ -161,7 +168,7 @@
         }
 
         window.Notify.notifyMain('renderer.presets.alerts.process_error');
-        log.errorOnce('preset-modal.editPreset.missing', '[preset_modal] presetAPI.editPreset missing');
+        log.error('presetAPI.editPreset missing.');
         return;
       }
 
@@ -177,7 +184,7 @@
       }
 
       window.Notify.notifyMain('renderer.presets.alerts.process_error');
-      log.errorOnce('preset-modal.createPreset.missing', '[preset_modal] presetAPI.createPreset missing');
+      log.error('presetAPI.createPreset missing.');
     }
 
     // =============================================================================
@@ -193,17 +200,10 @@
                 const settings = await window.presetAPI.getSettings();
                 if (settings && settings.language) idiomaActual = settings.language || idiomaActual;
               } else {
-                log.warnOnce(
-                  'preset-modal.getSettings.missing',
-                  '[preset_modal] presetAPI.getSettings missing; using default language'
-                );
+                log.warn('BOOTSTRAP: presetAPI.getSettings missing; using default language.');
               }
             } catch (err) {
-              log.warnOnce(
-                'preset-modal.getSettings',
-                '[preset_modal] presetAPI.getSettings failed:',
-                err
-              );
+              log.warn('BOOTSTRAP: presetAPI.getSettings failed; using default language:', err);
             }
 
             await ensurePresetTranslations(idiomaActual);
@@ -216,32 +216,30 @@
           }
         });
       } catch (err) {
-        log.error('Error setting up presetAPI.onInit listener:', err);
+        log.error('BOOTSTRAP: presetAPI.onInit listener setup failed:', err);
       }
     } else {
-      log.warnOnce(
-        'preset-modal.onInit.missing',
-        '[preset_modal] presetAPI.onInit missing; modal will not receive init data'
-      );
+      log.warn('BOOTSTRAP: presetAPI.onInit missing; modal will not receive init data.');
     }
 
     if (window.presetAPI && typeof window.presetAPI.onSettingsChanged === 'function') {
-      window.presetAPI.onSettingsChanged(async (settings) => {
-        try {
-          const nextLang = settings && settings.language ? settings.language : '';
-          if (!nextLang || nextLang === idiomaActual) return;
-          idiomaActual = nextLang;
-          await applyPresetTranslations(mode);
-          updatePresetDescriptionDirection();
-        } catch (err) {
-          log.warn('preset_modal: failed to apply settings update:', err);
-        }
-      });
+      try {
+        window.presetAPI.onSettingsChanged(async (settings) => {
+          try {
+            const nextLang = settings && settings.language ? settings.language : '';
+            if (!nextLang || nextLang === idiomaActual) return;
+            idiomaActual = nextLang;
+            await applyPresetTranslations(mode);
+            updatePresetDescriptionDirection();
+          } catch (err) {
+            log.warn('preset_modal: failed to apply settings update:', err);
+          }
+        });
+      } catch (err) {
+        log.warn('BOOTSTRAP: presetAPI.onSettingsChanged listener setup failed; language updates disabled:', err);
+      }
     } else {
-      log.warnOnce(
-        'preset-modal.onSettingsChanged.missing',
-        '[preset_modal] presetAPI.onSettingsChanged missing; language updates disabled'
-      );
+      log.warn('BOOTSTRAP: presetAPI.onSettingsChanged missing; language updates disabled.');
     }
 
     // =============================================================================
