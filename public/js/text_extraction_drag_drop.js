@@ -210,7 +210,12 @@
     }
 
     const { startFromFilePath, startFromFilePaths } = requireConfiguredDeps();
-    if (filePaths.length > 1 && typeof startFromFilePaths === 'function') {
+    if (filePaths.length > 1) {
+      if (typeof startFromFilePaths !== 'function') {
+        log.error('startFromFilePaths dependency missing; cannot continue dropped batch text extraction flow.');
+        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+        return;
+      }
       try {
         await startFromFilePaths({
           filePaths,
@@ -270,4 +275,3 @@
 // =============================================================================
 // End of public/js/text_extraction_drag_drop.js
 // =============================================================================
-
