@@ -28,6 +28,9 @@
   function configure({
     getOptionalElectronMethod = null,
   } = {}) {
+    if (typeof getOptionalElectronMethod !== 'function') {
+      throw new Error('[text-extraction-ocr-activation-flow] configure() requires getOptionalElectronMethod function');
+    }
     deps = {
       getOptionalElectronMethod,
     };
@@ -72,10 +75,17 @@
     if (typeof getOptionalElectronMethod !== 'function') {
       throw new Error('[text-extraction-ocr-activation-flow] getOptionalElectronMethod dependency missing');
     }
-    return getOptionalElectronMethod(methodName, {
+    const bridgeMethod = getOptionalElectronMethod(methodName, {
       dedupeKey,
       unavailableMessage,
     });
+    if (bridgeMethod == null) {
+      return null;
+    }
+    if (typeof bridgeMethod !== 'function') {
+      throw new Error(`[text-extraction-ocr-activation-flow] ${methodName} bridge invalid`);
+    }
+    return bridgeMethod;
   }
 
   function getPrepareMethod() {
