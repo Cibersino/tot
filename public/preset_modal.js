@@ -84,6 +84,12 @@
     const tr = (path) => tRenderer(path);
     const mr = (path, params = {}) => msgRenderer(path, params);
 
+    function updateCharCount() {
+      const currentLength = descEl.value ? descEl.value.length : 0;
+      const remaining = Math.max(0, descMaxLength - currentLength);
+      charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining });
+    }
+
     function updatePresetDescriptionDirection() {
       const direction = resolveUserTextDirection(descEl.value || '');
       descEl.setAttribute('dir', direction);
@@ -120,6 +126,60 @@
       if (btnCancel) btnCancel.textContent = tr('renderer.presets.preset_modal.cancel');
     }
 
+    function applyIncomingPresetPayload(payload) {
+      if (!payload) return;
+
+      const incomingMode = (payload.mode === 'edit') ? 'edit' : 'new';
+      mode = incomingMode;
+
+      if (incomingMode === 'edit' && payload.preset) {
+        originalName = payload.preset.name;
+        nameEl.value = payload.preset.name || '';
+        descEl.value = payload.preset.description || '';
+        if (typeof payload.preset.wpm === 'number') wpmEl.value = Math.round(payload.preset.wpm);
+        return;
+      }
+
+      if (typeof payload.wpm === 'number') {
+        wpmEl.value = Math.round(payload.wpm);
+        if (!nameEl.value.trim()) nameEl.value = `${Math.round(payload.wpm)}wpm`;
+      }
+    }
+
+    async function savePreset(preset) {
+      if (mode === 'edit') {
+        if (window.presetAPI && typeof window.presetAPI.editPreset === 'function') {
+          const res = await window.presetAPI.editPreset(originalName, preset);
+          if (res && res.ok) {
+            window.close();
+            return;
+          }
+          if (res && res.code === 'CANCELLED') return;
+          window.Notify.notifyMain('renderer.presets.alerts.edit_error');
+          log.error('Error editing preset (response):', res);
+          return;
+        }
+
+        window.Notify.notifyMain('renderer.presets.alerts.process_error');
+        log.errorOnce('preset-modal.editPreset.missing', '[preset_modal] presetAPI.editPreset missing');
+        return;
+      }
+
+      if (window.presetAPI && typeof window.presetAPI.createPreset === 'function') {
+        const res = await window.presetAPI.createPreset(preset);
+        if (res && res.ok) {
+          window.close();
+          return;
+        }
+        window.Notify.notifyMain('renderer.presets.alerts.create_error');
+        log.error('Error creating preset (response):', res);
+        return;
+      }
+
+      window.Notify.notifyMain('renderer.presets.alerts.process_error');
+      log.errorOnce('preset-modal.createPreset.missing', '[preset_modal] presetAPI.createPreset missing');
+    }
+
     // =============================================================================
     // presetAPI wiring (init + settings)
     // =============================================================================
@@ -147,26 +207,10 @@
             }
 
             await ensurePresetTranslations(idiomaActual);
-            const incomingMode = (payload.mode === 'edit') ? 'edit' : 'new';
-            mode = incomingMode;
-
-            if (incomingMode === 'edit' && payload.preset) {
-              originalName = payload.preset.name;
-              nameEl.value = payload.preset.name || '';
-              descEl.value = payload.preset.description || '';
-              if (typeof payload.preset.wpm === 'number') wpmEl.value = Math.round(payload.preset.wpm);
-            } else {
-              if (typeof payload.wpm === 'number') {
-                wpmEl.value = Math.round(payload.wpm);
-                if (!nameEl.value.trim()) nameEl.value = `${Math.round(payload.wpm)}wpm`;
-              }
-            }
-
+            applyIncomingPresetPayload(payload);
             await applyPresetTranslations(mode);
             updatePresetDescriptionDirection();
-            // Update char count initial
-            const currLen = descEl.value ? descEl.value.length : 0;
-            charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
+            updateCharCount();
           } catch (err) {
             log.error('Error applying preset-init data:', err);
           }
@@ -232,9 +276,7 @@
         descEl.value = descEl.value.substring(0, descMaxLength);
       }
       updatePresetDescriptionDirection();
-      const currentLength = descEl.value.length;
-      const remaining = descMaxLength - currentLength;
-      charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining });
+      updateCharCount();
     });
 
     nameEl.addEventListener('input', () => {
@@ -248,34 +290,7 @@
       if (!preset) return;
 
       try {
-        if (mode === 'edit') {
-          if (window.presetAPI && typeof window.presetAPI.editPreset === 'function') {
-            const res = await window.presetAPI.editPreset(originalName, preset);
-            if (res && res.ok) {
-              window.close();
-            } else {
-              if (res && res.code === 'CANCELLED') return;
-              window.Notify.notifyMain('renderer.presets.alerts.edit_error');
-              log.error('Error editing preset (response):', res);
-            }
-          } else {
-            window.Notify.notifyMain('renderer.presets.alerts.process_error');
-            log.errorOnce('preset-modal.editPreset.missing', '[preset_modal] presetAPI.editPreset missing');
-          }
-        } else {
-          if (window.presetAPI && typeof window.presetAPI.createPreset === 'function') {
-            const res = await window.presetAPI.createPreset(preset);
-            if (res && res.ok) {
-              window.close();
-            } else {
-              window.Notify.notifyMain('renderer.presets.alerts.create_error');
-              log.error('Error creating preset (response):', res);
-            }
-          } else {
-            window.Notify.notifyMain('renderer.presets.alerts.process_error');
-            log.errorOnce('preset-modal.createPreset.missing', '[preset_modal] presetAPI.createPreset missing');
-          }
-        }
+        await savePreset(preset);
       } catch (err) {
         window.Notify.notifyMain('renderer.presets.alerts.process_error');
         log.error('Error in save preset:', err);
@@ -299,8 +314,7 @@
     // Initial UI sync
     // =============================================================================
     (async function initCharCount() {
-      const currLen = descEl.value ? descEl.value.length : 0;
-      charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
+      updateCharCount();
       updatePresetDescriptionDirection();
     })();
 
