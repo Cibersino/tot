@@ -101,7 +101,7 @@
     } catch (err) {
       log.warnOnce(
         'textExtractionDragDrop.dropEffect',
-        'Unable to update drag/drop effect (ignored):',
+        'Drag/drop effect update failed (ignored):',
         err
       );
     }
@@ -130,7 +130,7 @@
     try {
       return String(await resolver(file) || '').trim();
     } catch (err) {
-      log.error('Failed to resolve dropped file path:', err);
+      log.warn('Dropped file path resolution failed; file ignored:', err);
       return '';
     }
   }
