@@ -38,7 +38,7 @@
     const hintEl = document.querySelector('.hint');
 
     if (!nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
-      log.warn('preset_modal: missing DOM elements, modal script was not initialized.');
+      log.warn('Preset modal initialization skipped: required DOM elements missing.');
       return;
     }
 
@@ -163,7 +163,7 @@
           }
           if (res && res.code === 'CANCELLED') return;
           window.Notify.notifyMain('renderer.presets.alerts.edit_error');
-          log.error('Error editing preset (response):', res);
+          log.error('Preset modal editPreset response failed:', res);
           return;
         }
 
@@ -179,7 +179,7 @@
           return;
         }
         window.Notify.notifyMain('renderer.presets.alerts.create_error');
-        log.error('Error creating preset (response):', res);
+        log.error('Preset modal createPreset response failed:', res);
         return;
       }
 
@@ -212,7 +212,7 @@
             updatePresetDescriptionDirection();
             updateCharCount();
           } catch (err) {
-            log.error('Error applying preset-init data:', err);
+            log.error('Preset modal preset-init handling failed:', err);
           }
         });
       } catch (err) {
@@ -232,7 +232,7 @@
             await applyPresetTranslations(mode);
             updatePresetDescriptionDirection();
           } catch (err) {
-            log.warn('preset_modal: failed to apply settings update:', err);
+            log.warn('Preset modal settings update failed:', err);
           }
         });
       } catch (err) {
@@ -291,7 +291,7 @@
         await savePreset(preset);
       } catch (err) {
         window.Notify.notifyMain('renderer.presets.alerts.process_error');
-        log.error('Error in save preset:', err);
+        log.error('Preset modal save action failed:', err);
       }
     });
 
