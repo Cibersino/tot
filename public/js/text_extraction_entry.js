@@ -99,9 +99,11 @@
 
   function syncMainInteractionLockUi() {
     const { syncMainInteractionLockUi: syncUi } = requireConfiguredDeps();
-    if (typeof syncUi === 'function') {
-      syncUi();
+    if (typeof syncUi !== 'function') {
+      log.warn('syncMainInteractionLockUi dependency unavailable; main interaction lock UI sync skipped.');
+      return;
     }
+    syncUi();
   }
 
   function getBatchFlow() {
