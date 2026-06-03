@@ -67,26 +67,31 @@
     };
   }
 
-  function getPrepareMethod() {
+  function getActivationBridgeMethod(methodName, dedupeKey, unavailableMessage) {
     const { getOptionalElectronMethod } = requireConfiguredDeps();
     if (typeof getOptionalElectronMethod !== 'function') {
       throw new Error('[text-extraction-ocr-activation-flow] getOptionalElectronMethod dependency missing');
     }
-    return getOptionalElectronMethod('prepareTextExtractionOcrActivation', {
-      dedupeKey: 'renderer.ipc.prepareTextExtractionOcrActivation.unavailable',
-      unavailableMessage: 'prepareTextExtractionOcrActivation unavailable; OCR activation flow cannot continue.'
+    return getOptionalElectronMethod(methodName, {
+      dedupeKey,
+      unavailableMessage,
     });
   }
 
+  function getPrepareMethod() {
+    return getActivationBridgeMethod(
+      'prepareTextExtractionOcrActivation',
+      'renderer.ipc.prepareTextExtractionOcrActivation.unavailable',
+      'prepareTextExtractionOcrActivation unavailable; OCR activation flow cannot continue.'
+    );
+  }
+
   function getLaunchMethod() {
-    const { getOptionalElectronMethod } = requireConfiguredDeps();
-    if (typeof getOptionalElectronMethod !== 'function') {
-      throw new Error('[text-extraction-ocr-activation-flow] getOptionalElectronMethod dependency missing');
-    }
-    return getOptionalElectronMethod('launchTextExtractionOcrActivation', {
-      dedupeKey: 'renderer.ipc.launchTextExtractionOcrActivation.unavailable',
-      unavailableMessage: 'launchTextExtractionOcrActivation unavailable; OCR activation flow cannot continue.'
-    });
+    return getActivationBridgeMethod(
+      'launchTextExtractionOcrActivation',
+      'renderer.ipc.launchTextExtractionOcrActivation.unavailable',
+      'launchTextExtractionOcrActivation unavailable; OCR activation flow cannot continue.'
+    );
   }
 
   // =============================================================================
