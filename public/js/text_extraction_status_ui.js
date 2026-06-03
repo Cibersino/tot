@@ -80,7 +80,7 @@
     },
   ].forEach(({ element, id, impact }) => {
     if (!element) {
-      log.warn('Status UI element missing; related UI behavior degraded:', { id, impact });
+      log.warn('BOOTSTRAP: Status UI element missing; related UI behavior degraded:', { id, impact });
     }
   });
 
