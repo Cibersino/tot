@@ -1028,7 +1028,11 @@
           rerender();
           return;
         }
-        if (action === 'edit-tags' && typeof controller.editUnitTags === 'function') {
+        if (action === 'edit-tags') {
+          if (typeof controller.editUnitTags !== 'function') {
+            log.warn('Batch planning edit-tags action ignored: controller.editUnitTags unavailable.');
+            return;
+          }
           await controller.editUnitTags(unitKey);
           rerender();
         }
