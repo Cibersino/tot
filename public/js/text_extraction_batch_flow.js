@@ -722,16 +722,22 @@
       },
       async editUnitTags(unitKey) {
         const currentTags = state.unitMetaByKey[unitKey] ? state.unitMetaByKey[unitKey].tags : null;
-        const nextTags = await window.Notify.promptSnapshotSaveTags({
-          initialTags: currentTags || null,
-          copy: {
-            titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
-            messageKey: 'renderer.text_extraction.batch_plan.tags_modal.message',
-            confirmKey: 'renderer.text_extraction.batch_plan.tags_modal.confirm_button',
-            cancelKey: 'renderer.snapshots.buttons.cancel',
-            closeAriaKey: 'renderer.text_extraction.batch_plan.tags_modal.close_aria',
-          },
-        });
+        let nextTags = null;
+        try {
+          nextTags = await window.Notify.promptSnapshotSaveTags({
+            initialTags: currentTags || null,
+            copy: {
+              titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
+              messageKey: 'renderer.text_extraction.batch_plan.tags_modal.message',
+              confirmKey: 'renderer.text_extraction.batch_plan.tags_modal.confirm_button',
+              cancelKey: 'renderer.snapshots.buttons.cancel',
+              closeAriaKey: 'renderer.text_extraction.batch_plan.tags_modal.close_aria',
+            },
+          });
+        } catch (err) {
+          log.warn('Batch unit tags dialog failed (ignored):', err);
+          return;
+        }
         if (!nextTags) return;
         setUnitTags(state, unitKey, nextTags.tags || null);
       },
@@ -760,16 +766,22 @@
 
     const inputs = [];
     for (const filePath of filePaths) {
-      const preparationRun = await requestPreparedImport({
-        prepareTextExtractionSelectedFile,
-        preparationRequest: {
-          filePath,
-          ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
-          planningMode: 'batch',
-          pdfPageSelection: null,
-          generatedPdfArtifactPolicy: null,
-        },
-      });
+      let preparationRun = null;
+      try {
+        preparationRun = await requestPreparedImport({
+          prepareTextExtractionSelectedFile,
+          preparationRequest: {
+            filePath,
+            ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
+            planningMode: 'batch',
+            pdfPageSelection: null,
+            generatedPdfArtifactPolicy: null,
+          },
+        });
+      } catch (err) {
+        log.error('Batch planning input preparation failed unexpectedly:', err);
+        return null;
+      }
       const preparation = preparationRun ? preparationRun.preparation : null;
       inputs.push(buildInputModel({
         filePath,
@@ -882,27 +894,49 @@
       hasCurrentTextSubscription,
     } = requireDeps();
     if (typeof applyTextViaCanonicalPath !== 'function') {
+      log.warnOnce(
+        'renderer.batch.applyTextViaCanonicalPath.unavailable',
+        'applyTextViaCanonicalPath unavailable; extracted text apply skipped.'
+      );
       return { ok: false, code: 'apply_unavailable' };
     }
     if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
+      log.warnOnce(
+        'renderer.batch.currentTextSubscription.unavailable',
+        'current-text-updated subscription unavailable; extracted text apply skipped.'
+      );
       return { ok: false, code: 'apply_unavailable' };
     }
-    return applyTextViaCanonicalPath({
-      mode,
-      textToApply,
-      repeatCount: 1,
-    });
+    try {
+      return await applyTextViaCanonicalPath({
+        mode,
+        textToApply,
+        repeatCount: 1,
+      });
+    } catch (err) {
+      log.error('Batch text apply failed unexpectedly:', err);
+      return { ok: false, code: 'apply_failed' };
+    }
   }
 
   async function autoSaveUnitSnapshot(fileBaseSource, tags) {
     if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
+      log.warnOnce(
+        'renderer.ipc.saveCurrentTextSnapshot.unavailable',
+        'saveCurrentTextSnapshot unavailable; batch snapshot auto-save skipped.'
+      );
       return { ok: false, code: 'WRITE_FAILED' };
     }
-    return window.electronAPI.saveCurrentTextSnapshot({
-      nonInteractive: true,
-      autoFileBaseName: fileBaseSource,
-      tags: tags || null,
-    });
+    try {
+      return await window.electronAPI.saveCurrentTextSnapshot({
+        nonInteractive: true,
+        autoFileBaseName: fileBaseSource,
+        tags: tags || null,
+      });
+    } catch (err) {
+      log.warn('saveCurrentTextSnapshot failed (ignored):', err);
+      return { ok: false, code: 'WRITE_FAILED' };
+    }
   }
 
   function formatSnapshotResultText(key, replacements = {}) {
@@ -1129,8 +1163,13 @@
     if (typeof getTextExtractionProcessingMode !== 'function') {
       return false;
     }
-    const stateResult = await getTextExtractionProcessingMode();
-    return !!(stateResult && stateResult.ok === true && stateResult.state && stateResult.state.active === true);
+    try {
+      const stateResult = await getTextExtractionProcessingMode();
+      return !!(stateResult && stateResult.ok === true && stateResult.state && stateResult.state.active === true);
+    } catch (err) {
+      log.error('Batch processing session state check failed unexpectedly:', err);
+      return false;
+    }
   }
 
   async function runBatchExecution(state) {
@@ -1139,6 +1178,9 @@
       requestPreparedImport,
     } = requireDeps();
     const textExtractionStatusUi = getStatusUi();
+    if (typeof requestPreparedImport !== 'function') {
+      throw new Error('[text-extraction-batch-flow] requestPreparedImport dependency missing');
+    }
     const prepareTextExtractionSelectedFile = getOptionalElectronMethod('prepareTextExtractionSelectedFile', {
       dedupeKey: 'renderer.ipc.prepareTextExtractionSelectedFile.unavailable',
       unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; batch execution cannot continue.',
@@ -1196,11 +1238,16 @@
         selectedRoute: '',
         processingInputFileName: '',
       });
-    const sessionEnterResult = await enterTextExtractionProcessingSession({
-      source: 'text_extraction_batch_execution',
-      reason: 'batch_execution_session',
-      ...initialContext,
-    });
+    let sessionEnterResult = null;
+    try {
+      sessionEnterResult = await enterTextExtractionProcessingSession({
+        source: 'text_extraction_batch_execution',
+        reason: 'batch_execution_session',
+        ...initialContext,
+      });
+    } catch (err) {
+      log.error('Batch processing session start failed unexpectedly:', err);
+    }
     if (!sessionEnterResult || sessionEnterResult.ok !== true) {
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
@@ -1235,15 +1282,20 @@
             continue;
           }
 
-          const sessionUpdateResult = await updateTextExtractionProcessingSession(buildBatchProcessingContext({
-            unitIndex: unitIndex + 1,
-            unitCount: units.length,
-            inputIndex: inputIndex + 1,
-            inputCount: unit.inputs.length,
-            selectedRoute: input.activeRoute,
-            processingInputFileName: input.fileName,
-            processingInputSource: 'original_selected_file',
-          }));
+          let sessionUpdateResult = null;
+          try {
+            sessionUpdateResult = await updateTextExtractionProcessingSession(buildBatchProcessingContext({
+              unitIndex: unitIndex + 1,
+              unitCount: units.length,
+              inputIndex: inputIndex + 1,
+              inputCount: unit.inputs.length,
+              selectedRoute: input.activeRoute,
+              processingInputFileName: input.fileName,
+              processingInputSource: 'original_selected_file',
+            }));
+          } catch (err) {
+            log.error('Batch processing session update failed unexpectedly:', err);
+          }
           if (!sessionUpdateResult || sessionUpdateResult.ok !== true) {
             batchCancelled = true;
             unitReport.inputs.push(buildOriginalInputReportRecord(input, {
@@ -1266,10 +1318,15 @@
             generatedPdfArtifactPolicy: cloneArtifactPolicy(input.generatedPdfArtifactPolicy),
           };
 
-          const preparationRun = await requestPreparedImport({
-            prepareTextExtractionSelectedFile,
-            preparationRequest,
-          });
+          let preparationRun = null;
+          try {
+            preparationRun = await requestPreparedImport({
+              prepareTextExtractionSelectedFile,
+              preparationRequest,
+            });
+          } catch (err) {
+            log.error('Batch execution preparation failed unexpectedly:', err);
+          }
           if (!(await isProcessingSessionActive(getTextExtractionProcessingMode))) {
             batchCancelled = true;
             unitReport.inputs.push(buildOriginalInputReportRecord(input, {
@@ -1301,21 +1358,26 @@
             fileName: input.fileName,
             processingInputFileName: executionPreparation.processingInputFileName,
           });
-          const execution = await executePreparedTextExtraction({
-            prepareId: executionPreparation.prepareId,
-            routePreference: input.activeRoute,
-            reuseActiveProcessingLock: true,
-            heavySplitFailurePolicy: state.failurePolicy,
-            processingContext: buildBatchProcessingContext({
-              unitIndex: unitIndex + 1,
-              unitCount: units.length,
-              inputIndex: inputIndex + 1,
-              inputCount: unit.inputs.length,
-              selectedRoute: input.activeRoute,
-              processingInputFileName: executionPreparation.processingInputFileName || input.fileName,
-              processingInputSource: 'original_selected_file',
-            }),
-          });
+          let execution = null;
+          try {
+            execution = await executePreparedTextExtraction({
+              prepareId: executionPreparation.prepareId,
+              routePreference: input.activeRoute,
+              reuseActiveProcessingLock: true,
+              heavySplitFailurePolicy: state.failurePolicy,
+              processingContext: buildBatchProcessingContext({
+                unitIndex: unitIndex + 1,
+                unitCount: units.length,
+                inputIndex: inputIndex + 1,
+                inputCount: unit.inputs.length,
+                selectedRoute: input.activeRoute,
+                processingInputFileName: executionPreparation.processingInputFileName || input.fileName,
+                processingInputSource: 'original_selected_file',
+              }),
+            });
+          } catch (err) {
+            log.error('Batch execution run failed unexpectedly:', err);
+          }
           textExtractionStatusUi.clearPendingExecutionContext();
 
           if (!execution || execution.ok !== true || !execution.result) {
@@ -1417,11 +1479,19 @@
 
     const openSnapshotsFolder = async () => {
       if (!window.electronAPI || typeof window.electronAPI.openCurrentTextSnapshotsFolder !== 'function') {
-        throw new Error('openCurrentTextSnapshotsFolder unavailable');
+        log.warnOnce(
+          'renderer.ipc.openCurrentTextSnapshotsFolder.unavailable',
+          'openCurrentTextSnapshotsFolder unavailable; snapshots-folder action skipped.'
+        );
+        return;
       }
-      const result = await window.electronAPI.openCurrentTextSnapshotsFolder();
-      if (!result || result.ok !== true) {
-        throw new Error('openCurrentTextSnapshotsFolder failed');
+      try {
+        const result = await window.electronAPI.openCurrentTextSnapshotsFolder();
+        if (!result || result.ok !== true) {
+          log.warn('openCurrentTextSnapshotsFolder failed (ignored):', result);
+        }
+      } catch (err) {
+        log.warn('openCurrentTextSnapshotsFolder failed (ignored):', err);
       }
     };
 
@@ -1435,11 +1505,18 @@
             unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; reveal action disabled.',
           });
           if (!revealTextExtractionGeneratedPdf) {
-            throw new Error('revealTextExtractionGeneratedPdf unavailable');
+            window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
+            return;
           }
-          const revealResult = await revealTextExtractionGeneratedPdf({ artifactPath });
-          if (!revealResult || revealResult.ok !== true) {
-            throw new Error('revealTextExtractionGeneratedPdf failed');
+          try {
+            const revealResult = await revealTextExtractionGeneratedPdf({ artifactPath });
+            if (!revealResult || revealResult.ok !== true) {
+              log.warn('revealTextExtractionGeneratedPdf failed (ignored):', revealResult);
+              window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
+            }
+          } catch (err) {
+            log.warn('revealTextExtractionGeneratedPdf failed (ignored):', err);
+            window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
           }
         },
         onOpenSnapshotsFolder: openSnapshotsFolder,
@@ -1490,7 +1567,14 @@
       return;
     }
 
-    const preconditions = await checkTextExtractionPreconditions();
+    let preconditions = null;
+    try {
+      preconditions = await checkTextExtractionPreconditions();
+    } catch (err) {
+      log.error('Batch precondition check failed unexpectedly:', err);
+      window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
+      return;
+    }
     if (resolvePreconditionFailure(preconditions)) {
       return;
     }
@@ -1503,9 +1587,16 @@
 
     const plannerState = createPlannerState(inputs, { flowKind, source });
     const plannerController = buildPlannerController(plannerState);
-    const plannerDecision = await window.Notify.promptTextExtractionBatchPlan({
-      controller: plannerController,
-    });
+    let plannerDecision = null;
+    try {
+      plannerDecision = await window.Notify.promptTextExtractionBatchPlan({
+        controller: plannerController,
+      });
+    } catch (err) {
+      log.error('Batch planning prompt failed:', err);
+      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      return;
+    }
     if (!plannerDecision || plannerDecision.action !== 'start') {
       return;
     }
