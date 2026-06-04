@@ -85,6 +85,9 @@
   // =============================================================================
   // Helpers
   // =============================================================================
+
+  // Control-state helpers
+
   function setControlInteractionLocked(element, locked) {
     if (!element) return;
     element.disabled = locked;
@@ -96,6 +99,8 @@
     const locked = selectorInteractionLocked || editorLaunchPending;
     setControlInteractionLocked(btnEdit, locked);
   }
+
+  // Clipboard repeat helpers
 
   function updateClipboardRepeatVisualState(rawValue = '') {
     if (!clipboardRepeatInput) return;
@@ -117,13 +122,7 @@
     return Math.min(numericValue, MAX_CLIPBOARD_REPEAT);
   }
 
-  function bindRequiredAction(element, actionName, handler) {
-    if (!element) return;
-    if (typeof handler !== 'function') {
-      throw new Error(`[current-text-selector-section] Invalid handler for ${actionName}`);
-    }
-    element.addEventListener('click', handler);
-  }
+  // Preview rendering helpers
 
   function normalizePreviewValue(value) {
     if (typeof value === 'string') return value;
@@ -250,6 +249,18 @@
     );
     textPreview.appendChild(createPreviewTextFragment(previewModel.end));
   }
+
+  // Action wiring helpers
+
+  function bindRequiredAction(element, actionName, handler) {
+    if (!element) return;
+    if (typeof handler !== 'function') {
+      throw new Error(`[current-text-selector-section] Invalid handler for ${actionName}`);
+    }
+    element.addEventListener('click', handler);
+  }
+
+  // Initialization helpers
 
   function initializeClipboardRepeatInput() {
     if (!clipboardRepeatInput) return;
