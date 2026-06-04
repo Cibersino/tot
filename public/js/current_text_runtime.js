@@ -57,6 +57,11 @@
   // Shared state
   // =============================================================================
 
+  const REFRESH_KIND_NONE = 'none';
+  const REFRESH_KIND_TIME_ONLY = 'time_only';
+  const REFRESH_KIND_STATS_DISPLAY = 'stats_display';
+  const REFRESH_KIND_FULL = 'full';
+
   let deps = null;
   let currentText = '';
   let currentTextStats = null;
@@ -87,14 +92,12 @@
     action: '',
   };
   let deferredBootstrapSettleRequestId = 0;
-  const REFRESH_KIND_NONE = 'none';
-  const REFRESH_KIND_TIME_ONLY = 'time_only';
-  const REFRESH_KIND_STATS_DISPLAY = 'stats_display';
-  const REFRESH_KIND_FULL = 'full';
 
   // =============================================================================
   // Helpers
   // =============================================================================
+
+  // Dependency / normalization helpers
 
   function configure(nextDeps = {}) {
     deps = {
@@ -176,6 +179,16 @@
     };
   }
 
+  function setCurrentTextInternal(nextText, { requestId = 0 } = {}) {
+    currentText = normalizeText(nextText);
+    if (requestId > 0) {
+      currentTextAppliedRequestId = requestId;
+      latestAuthoritativeRequestIdSeen = Math.max(latestAuthoritativeRequestIdSeen, requestId);
+    } else {
+      currentTextAppliedRequestId = 0;
+    }
+  }
+
   function armDeferredBootstrapSettle(requestId) {
     deferredBootstrapSettleRequestId = normalizePositiveInteger(requestId);
   }
@@ -239,6 +252,8 @@
     return 0;
   }
 
+  // Pending / follow-up state helpers
+
   function mergeRefreshKind(currentKind, nextKind) {
     return getRefreshKindPriority(nextKind) > getRefreshKindPriority(currentKind)
       ? nextKind
@@ -280,6 +295,8 @@
       queuedStandaloneFollowupReason = reason;
     }
   }
+
+  // Rendering helpers
 
   function renderPreview() {
     const { currentTextSelectorSection } = requireDeps();
@@ -427,6 +444,8 @@
     });
   }
 
+  // Derived-state builders
+
   async function buildSettledDerivedState() {
     const { getSettingsCache, getWpm } = requireDeps();
     const normalizedText = normalizeText(currentText);
@@ -479,6 +498,8 @@
       timeText: formatInvariantEstimatedDuration(timeParts.hours, timeParts.minutes, timeParts.seconds),
     };
   }
+
+  // Pending authoritative-settle lifecycle
 
   function isActivePendingRequest(requestId) {
     return currentTextProcessingState.active === true
@@ -576,16 +597,6 @@
     void runPendingSettleLoop(requestId, reason);
   }
 
-  function setCurrentTextInternal(nextText, { requestId = 0 } = {}) {
-    currentText = normalizeText(nextText);
-    if (requestId > 0) {
-      currentTextAppliedRequestId = requestId;
-      latestAuthoritativeRequestIdSeen = Math.max(latestAuthoritativeRequestIdSeen, requestId);
-    } else {
-      currentTextAppliedRequestId = 0;
-    }
-  }
-
   function renderTimeOnlyFromCurrentStats() {
     if (!currentTextStats) {
       log.warnOnce(
@@ -623,6 +634,8 @@
         log.error(`Current-text display-only refresh failed after ${reason}:`, err);
       });
   }
+
+  // Standalone derived-refresh lifecycle
 
   function runQueuedStandaloneFollowup(refreshSequence) {
     if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
