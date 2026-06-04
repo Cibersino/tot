@@ -117,11 +117,14 @@
         rendererPresets.applyPresetDescriptionText(presetDescription, descriptionText);
         return;
       }
+      const fallbackText = typeof descriptionText === 'string'
+        ? descriptionText
+        : String(descriptionText || '');
       log.warnOnce(
         'wpm-controls.applyPresetDescriptionText.missing',
         '[wpm-controls] RendererPresets.applyPresetDescriptionText unavailable; using plain text fallback.'
       );
-      presetDescription.textContent = typeof descriptionText === 'string' ? descriptionText : String(descriptionText || '');
+      presetDescription.textContent = fallbackText;
     }
 
     // =============================================================================
@@ -180,6 +183,17 @@
       return normalizedWpm;
     }
 
+    function notifyWpmChanged(previousWpm, onWpmChanged, preset) {
+      if (typeof onWpmChanged !== 'function' || wpm === previousWpm) {
+        return;
+      }
+      if (typeof preset === 'undefined') {
+        onWpmChanged(wpm);
+        return;
+      }
+      onWpmChanged(wpm, preset);
+    }
+
     // =============================================================================
     // Preset state helpers
     // =============================================================================
@@ -226,17 +240,6 @@
       return allPresetsCache;
     }
 
-    function notifyWpmChanged(previousWpm, onWpmChanged, preset) {
-      if (typeof onWpmChanged !== 'function' || wpm === previousWpm) {
-        return;
-      }
-      if (typeof preset === 'undefined') {
-        onWpmChanged(wpm);
-        return;
-      }
-      onWpmChanged(wpm, preset);
-    }
-
     function normalizePresetName(name) {
       return typeof name === 'string' && name.trim()
         ? name.trim()
@@ -252,6 +255,13 @@
         previousSelectedPresetName: normalizePresetName(previousSelectedPresetName),
         nextSelectedPresetName,
         selectedPresetChanged: normalizePresetName(previousSelectedPresetName) !== nextSelectedPresetName,
+      };
+    }
+
+    function buildPresetFlowResult(previousWpm, previousSelectedPresetName, presets) {
+      return {
+        presets,
+        selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
       };
     }
 
@@ -288,13 +298,13 @@
       }
       try {
         const { loadPresetsIntoDom } = getRendererPresetsBridge();
-        const res = await loadPresetsIntoDom({
+        const loadResult = await loadPresetsIntoDom({
           electronAPI,
           settings: settingsSnapshot,
           language,
           selectEl: presetsSelect
         });
-        allPresetsCache = res && res.list ? res.list.slice() : [];
+        allPresetsCache = loadResult && loadResult.list ? loadResult.list.slice() : [];
         return allPresetsCache;
       } catch (err) {
         log.error('RendererPresets.loadPresetsIntoDom failed:', err);
@@ -313,10 +323,11 @@
         log.warn(
           'Preset selection skipped because RendererPresets.resolvePresetSelection is unavailable.'
         );
-        return {
-          presets: resetPresetsState(),
-          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
-        };
+        return buildPresetFlowResult(
+          previousWpm,
+          previousSelectedPresetName,
+          resetPresetsState()
+        );
       }
       try {
         const { resolvePresetSelection } = getRendererPresetsBridge();
@@ -331,16 +342,18 @@
           electronAPI
         });
         applyResolvedPresetSelection(selected);
-        return {
-          presets: allPresetsCache,
-          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
-        };
+        return buildPresetFlowResult(
+          previousWpm,
+          previousSelectedPresetName,
+          allPresetsCache
+        );
       } catch (err) {
         log.error('RendererPresets.resolvePresetSelection failed during loadPresets:', err);
-        return {
-          presets: resetPresetsState(),
-          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
-        };
+        return buildPresetFlowResult(
+          previousWpm,
+          previousSelectedPresetName,
+          resetPresetsState()
+        );
       }
     }
 
@@ -358,24 +371,15 @@
           log.warn(
             'Preset-created selection sync skipped because RendererPresets.resolvePresetSelection is unavailable.'
           );
-          return {
-            presets: updated,
-            selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
-          };
+          return buildPresetFlowResult(previousWpm, previousSelectedPresetName, updated);
         }
         const { resolvePresetSelection } = getRendererPresetsBridge();
         if (!preset || !preset.name) {
-          return {
-            presets: updated,
-            selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
-          };
+          return buildPresetFlowResult(previousWpm, previousSelectedPresetName, updated);
         }
         const found = updated.find(item => item.name === preset.name);
         if (!found) {
-          return {
-            presets: updated,
-            selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
-          };
+          return buildPresetFlowResult(previousWpm, previousSelectedPresetName, updated);
         }
         const neutralSettings = createPresetSelectionSettings(settingsSnapshot);
         const selected = await resolvePresetSelection({
@@ -388,16 +392,10 @@
           electronAPI
         });
         applyResolvedPresetSelection(selected);
-        return {
-          presets: updated,
-          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
-        };
+        return buildPresetFlowResult(previousWpm, previousSelectedPresetName, updated);
       } catch (err) {
         log.error('RendererPresets.resolvePresetSelection failed during handlePresetCreated:', err);
-        return {
-          presets: allPresetsCache,
-          selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
-        };
+        return buildPresetFlowResult(previousWpm, previousSelectedPresetName, allPresetsCache);
       }
     }
 
