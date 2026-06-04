@@ -94,7 +94,7 @@
     let listenersBound = false;
 
     // =============================================================================
-    // Bridge helpers
+    // RendererPresets helpers
     // =============================================================================
     function hasRendererPresetsCatalogBridge() {
       const rendererPresets = window.RendererPresets || {};
