@@ -36,6 +36,13 @@
     TYPE_OPTIONS,
     DIFFICULTY_OPTIONS,
   } = snapshotTagCatalog;
+  const DEFAULT_COPY = {
+    titleKey: 'renderer.snapshots.title',
+    messageKey: 'renderer.snapshots.message',
+    confirmKey: 'renderer.snapshots.buttons.confirm',
+    cancelKey: 'renderer.snapshots.buttons.cancel',
+    closeAriaKey: 'renderer.snapshots.close_aria',
+  };
 
   // =============================================================================
   // UI elements
@@ -54,25 +61,28 @@
   const btnConfirm = document.getElementById('snapshotSaveTagsModalConfirm');
   const btnCancel = document.getElementById('snapshotSaveTagsModalCancel');
   const btnClose = document.getElementById('snapshotSaveTagsModalClose');
+  const REQUIRED_MODAL_ELEMENTS = [
+    modal,
+    backdrop,
+    title,
+    message,
+    languageLabel,
+    languageSelect,
+    typeLabel,
+    typeSelect,
+    difficultyLabel,
+    difficultySelect,
+    btnConfirm,
+    btnCancel,
+    btnClose,
+  ];
 
   // =============================================================================
   // Helpers
   // =============================================================================
 
   function hasRequiredElements() {
-    return !!(modal
-      && backdrop
-      && title
-      && message
-      && languageLabel
-      && languageSelect
-      && typeLabel
-      && typeSelect
-      && difficultyLabel
-      && difficultySelect
-      && btnConfirm
-      && btnCancel
-      && btnClose);
+    return REQUIRED_MODAL_ELEMENTS.every(Boolean);
   }
 
   function setSelectOptions(selectEl, options, emptyLabel) {
@@ -114,29 +124,22 @@
   }
 
   function resolveCopy(copy = {}) {
-    const snapshotCopy = {
-      titleKey: 'renderer.snapshots.title',
-      messageKey: 'renderer.snapshots.message',
-      confirmKey: 'renderer.snapshots.buttons.confirm',
-      cancelKey: 'renderer.snapshots.buttons.cancel',
-      closeAriaKey: 'renderer.snapshots.close_aria',
-    };
     return {
       titleKey: typeof copy.titleKey === 'string' && copy.titleKey.trim()
         ? copy.titleKey.trim()
-        : snapshotCopy.titleKey,
+        : DEFAULT_COPY.titleKey,
       messageKey: typeof copy.messageKey === 'string' && copy.messageKey.trim()
         ? copy.messageKey.trim()
-        : snapshotCopy.messageKey,
+        : DEFAULT_COPY.messageKey,
       confirmKey: typeof copy.confirmKey === 'string' && copy.confirmKey.trim()
         ? copy.confirmKey.trim()
-        : snapshotCopy.confirmKey,
+        : DEFAULT_COPY.confirmKey,
       cancelKey: typeof copy.cancelKey === 'string' && copy.cancelKey.trim()
         ? copy.cancelKey.trim()
-        : snapshotCopy.cancelKey,
+        : DEFAULT_COPY.cancelKey,
       closeAriaKey: typeof copy.closeAriaKey === 'string' && copy.closeAriaKey.trim()
         ? copy.closeAriaKey.trim()
-        : snapshotCopy.closeAriaKey,
+        : DEFAULT_COPY.closeAriaKey,
     };
   }
 
@@ -212,7 +215,7 @@
         ? document.activeElement
         : null;
 
-      const cleanup = () => {
+      function cleanup() {
         btnConfirm.removeEventListener('click', onConfirm);
         btnCancel.removeEventListener('click', onCancel);
         btnClose.removeEventListener('click', onCancel);
@@ -220,24 +223,30 @@
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
         restorePreviousFocus(previousFocus);
-      };
+      }
 
-      const finish = (result) => {
+      function finish(result) {
         if (settled) return;
         settled = true;
         cleanup();
         resolve(result);
-      };
+      }
 
-      const onConfirm = () => finish({ tags: collectTags() });
-      const onCancel = () => finish(null);
-      const onWindowKeyDown = (ev) => {
+      function onConfirm() {
+        finish({ tags: collectTags() });
+      }
+
+      function onCancel() {
+        finish(null);
+      }
+
+      function onWindowKeyDown(ev) {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
         if (ev.key === 'Escape') {
           ev.preventDefault();
           finish(null);
         }
-      };
+      }
 
       btnConfirm.addEventListener('click', onConfirm);
       btnCancel.addEventListener('click', onCancel);
