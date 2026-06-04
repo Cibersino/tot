@@ -113,17 +113,17 @@
 
     const settingsSnapshot = normalizeSettings(settings, language);
     let defaults = { general: [], languagePresets: {} };
-    if (typeof electronAPI.getDefaultPresets === 'function') {
+    if (typeof electronAPI.getDefaultPresets !== 'function') {
+      log.warnOnce(
+        'presets.getDefaultPresets.missing',
+        '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
+      );
+    } else {
       try {
         defaults = await electronAPI.getDefaultPresets();
       } catch (err) {
         log.error('Error getting default presets from main:', err);
       }
-    } else {
-      log.warnOnce(
-        'presets.getDefaultPresets.missing',
-        '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
-      );
     }
 
     const finalList = combinePresets({ settings: settingsSnapshot, defaults });
@@ -141,32 +141,32 @@
     electronAPI
   }) {
     const settingsSnapshot = normalizeSettings(settings, language);
-    const lang = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
+    const langBase = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
 
     let selected = null;
     const persisted =
       settingsSnapshot &&
       settingsSnapshot.selected_preset_by_language &&
-      typeof settingsSnapshot.selected_preset_by_language[lang] === 'string'
-        ? settingsSnapshot.selected_preset_by_language[lang].trim()
+      typeof settingsSnapshot.selected_preset_by_language[langBase] === 'string'
+        ? settingsSnapshot.selected_preset_by_language[langBase].trim()
         : '';
     const trimmedCurrent = typeof currentPresetName === 'string' ? currentPresetName.trim() : '';
     const hasCurrent = trimmedCurrent.length > 0;
     const selectedName = persisted || (hasCurrent ? trimmedCurrent : '');
-    if (!selectedName && !persisted && !hasCurrent) {
+    if (!selectedName) {
       log.warnOnce(
-        `presets.selectedPreset.none:${lang}`,
+        `presets.selectedPreset.none:${langBase}`,
         'No persisted preset selection for langKey; selecting safe default and persisting (may be normal on first run).',
-        { lang }
+        { lang: langBase }
       );
     }
     if (selectedName) {
       selected = list.find(p => p.name === selectedName) || null;
       if (!selected) {
         log.warnOnce(
-          `presets.selectedPreset.missing:${lang}`,
+          `presets.selectedPreset.missing:${langBase}`,
           'Selected preset not found; falling back to safe preset:',
-          { requested: selectedName, lang }
+          { requested: selectedName, lang: langBase }
         );
       }
     }
@@ -174,25 +174,26 @@
       selected = list.find(p => p.name === 'default') || list[0] || null;
     }
 
-    if (selected) {
-      applyPresetSelection(selected, { selectEl, presetDescription });
-      if (selected.name && selected.name !== persisted) {
-        try {
-          if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
-            await electronAPI.setSelectedPreset(selected.name);
-          } else {
-            log.warnOnce(
-              'presets.setSelectedPreset.missing',
-              '[presets] electronAPI.setSelectedPreset unavailable; selection persistence skipped'
-            );
-          }
-        } catch (err) {
-          log.error('Error persisting selected preset:', err);
-        }
-      }
-    } else {
+    if (!selected) {
       if (selectEl) selectEl.selectedIndex = -1;
       applyPresetDescriptionText(presetDescription, '');
+      return selected;
+    }
+
+    applyPresetSelection(selected, { selectEl, presetDescription });
+    if (selected.name && selected.name !== persisted) {
+      try {
+        if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
+          await electronAPI.setSelectedPreset(selected.name);
+        } else {
+          log.warnOnce(
+            'presets.setSelectedPreset.missing',
+            '[presets] electronAPI.setSelectedPreset unavailable; selection persistence skipped'
+          );
+        }
+      } catch (err) {
+        log.error('Error persisting selected preset:', err);
+      }
     }
 
     return selected;
