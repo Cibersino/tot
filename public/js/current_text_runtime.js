@@ -166,6 +166,14 @@
     return value;
   }
 
+  function createEmptyStats() {
+    return {
+      conEspacios: 0,
+      sinEspacios: 0,
+      palabras: 0,
+    };
+  }
+
   function normalizeCurrentTextProcessingState(rawState) {
     const state = rawState && typeof rawState === 'object' ? rawState : {};
     return {
@@ -390,6 +398,14 @@
     return true;
   }
 
+  function releaseStandaloneRefreshOwner(ownerSequence, source) {
+    clearStandaloneFullRefreshPending({
+      ownerSequence,
+      source,
+    });
+    clearQueuedStandaloneFollowupForOwner(ownerSequence);
+  }
+
   function formatInvariantEstimatedDuration(hours, minutes, seconds) {
     return `${hours}h ${minutes}m ${seconds}s`;
   }
@@ -400,11 +416,7 @@
   } = {}) {
     const { resultsTimeMultiplier } = requireDeps();
     const derived = derivedState && typeof derivedState === 'object' ? derivedState : {};
-    const stats = derived.stats || {
-      conEspacios: 0,
-      sinEspacios: 0,
-      palabras: 0,
-    };
+    const stats = derived.stats || createEmptyStats();
     if (persistStats) {
       currentTextStats = stats;
     }
@@ -446,11 +458,8 @@
 
   // Derived-state builders
 
-  async function buildSettledDerivedState() {
+  async function buildDisplayDerivedStateFromNormalizedStats(stats, countArgs = getCountArgs()) {
     const { getSettingsCache, getWpm } = requireDeps();
-    const normalizedText = normalizeText(currentText);
-    const countArgs = getCountArgs();
-    const stats = contarTextoModulo(normalizedText, countArgs);
     const settingsCache = getSettingsCache();
     const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
       countArgs.idioma,
@@ -471,32 +480,16 @@
     };
   }
 
-  async function buildDisplayDerivedStateFromStats(stats) {
-    const { getSettingsCache, getWpm } = requireDeps();
-    const normalizedStats = stats && typeof stats === 'object' ? stats : {
-      conEspacios: 0,
-      sinEspacios: 0,
-      palabras: 0,
-    };
+  async function buildSettledDerivedState() {
+    const normalizedText = normalizeText(currentText);
     const countArgs = getCountArgs();
-    const settingsCache = getSettingsCache();
-    const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
-      countArgs.idioma,
-      settingsCache
-    );
-    const charsText = formatearNumero(normalizedStats.conEspacios, separadorMiles, separadorDecimal);
-    const charsNoSpaceText = formatearNumero(normalizedStats.sinEspacios, separadorMiles, separadorDecimal);
-    const wordsText = formatearNumero(normalizedStats.palabras, separadorMiles, separadorDecimal);
-    const totalSeconds = getExactTotalSeconds(normalizedStats.palabras, getWpm());
-    const timeParts = getDisplayTimeParts(totalSeconds);
-    return {
-      stats: normalizedStats,
-      charsText,
-      charsNoSpaceText,
-      wordsText,
-      totalSeconds,
-      timeText: formatInvariantEstimatedDuration(timeParts.hours, timeParts.minutes, timeParts.seconds),
-    };
+    const stats = contarTextoModulo(normalizedText, countArgs);
+    return buildDisplayDerivedStateFromNormalizedStats(stats, countArgs);
+  }
+
+  async function buildDisplayDerivedStateFromStats(stats) {
+    const normalizedStats = stats && typeof stats === 'object' ? stats : createEmptyStats();
+    return buildDisplayDerivedStateFromNormalizedStats(normalizedStats);
   }
 
   // Pending authoritative-settle lifecycle
@@ -668,11 +661,7 @@
     void buildSettledDerivedState()
       .then((derivedState) => {
         if (refreshSequence !== renderAuthoritySequence) {
-          clearStandaloneFullRefreshPending({
-            ownerSequence: refreshSequence,
-            source: 'standalone_full_refresh_superseded',
-          });
-          clearQueuedStandaloneFollowupForOwner(refreshSequence);
+          releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_superseded');
           log.info('Stale standalone current-text derived refresh ignored:', {
             reason,
             refreshSequence,
@@ -681,11 +670,7 @@
           return;
         }
         if (currentTextProcessingState.active) {
-          clearStandaloneFullRefreshPending({
-            ownerSequence: refreshSequence,
-            source: 'standalone_full_refresh_taken_over',
-          });
-          clearQueuedStandaloneFollowupForOwner(refreshSequence);
+          releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_taken_over');
           return;
         }
         applySettledDerivedState(derivedState);
@@ -699,11 +684,7 @@
       })
       .catch((err) => {
         if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
-          clearStandaloneFullRefreshPending({
-            ownerSequence: refreshSequence,
-            source: 'standalone_full_refresh_abandoned',
-          });
-          clearQueuedStandaloneFollowupForOwner(refreshSequence);
+          releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_abandoned');
           return;
         }
         clearQueuedStandaloneFollowupForOwner(refreshSequence);
@@ -730,19 +711,11 @@
     renderPendingDerivedValues();
     setTimeout(() => {
       if (refreshSequence !== renderAuthoritySequence) {
-        clearStandaloneFullRefreshPending({
-          ownerSequence: refreshSequence,
-          source: 'standalone_full_refresh_stale_before_start',
-        });
-        clearQueuedStandaloneFollowupForOwner(refreshSequence);
+        releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_stale_before_start');
         return;
       }
       if (currentTextProcessingState.active) {
-        clearStandaloneFullRefreshPending({
-          ownerSequence: refreshSequence,
-          source: 'standalone_full_refresh_merged_before_start',
-        });
-        clearQueuedStandaloneFollowupForOwner(refreshSequence);
+        releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_merged_before_start');
         return;
       }
       if (standaloneFullRefreshPendingState.ownerSequence !== refreshSequence) {
