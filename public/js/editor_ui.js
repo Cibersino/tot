@@ -10,9 +10,13 @@
 // - Update local spellcheck, font size, and read-progress UI state.
 // - Restore Text Editor focus after UI actions that temporarily move it elsewhere.
 // - Control the reading-test prestart overlay and its related UI state.
-// - Persist Text Editor text-size changes through the editor bridge when available.
+// - Persist Text Editor text-size and maximized-width UI preferences through the editor bridge when available.
 
 (() => {
+  // =============================================================================
+  // Logger
+  // =============================================================================
+
   if (typeof window.getLogger !== 'function') {
     throw new Error('[editor-ui] window.getLogger unavailable; cannot continue');
   }
@@ -368,7 +372,7 @@
     }
 
     // =============================================================================
-    // Persistence Helpers
+    // Persistence And Drag Helpers
     // =============================================================================
 
     function applyTextareaDefaults() {
