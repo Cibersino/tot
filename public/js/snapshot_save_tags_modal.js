@@ -263,7 +263,6 @@
   // Exports / module surface
   // =============================================================================
 
-  window.Notify = window.Notify || {};
   window.Notify.promptSnapshotSaveTags = promptSnapshotSaveTags;
 })();
 
