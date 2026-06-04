@@ -2,6 +2,11 @@
 'use strict';
 
 (() => {
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[current-text-refresh-policy] window.getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('current-text-refresh-policy');
+
   const REFRESH_KIND_NONE = 'none';
   const REFRESH_KIND_TIME_ONLY = 'time_only';
   const REFRESH_KIND_STATS_DISPLAY = 'stats_display';
@@ -41,6 +46,10 @@
         return resolved.trim().toLowerCase();
       }
     }
+    log.warnOnce(
+      'current_text_refresh_policy.rendererI18n.getLangBase.fallback',
+      'RendererI18n.getLangBase did not resolve a language base; using fallback.'
+    );
     return String(language || '').trim().toLowerCase().split(/[-_]/)[0] || 'es';
   }
 
