@@ -36,6 +36,11 @@
     TYPE_OPTIONS,
     DIFFICULTY_OPTIONS,
   } = snapshotTagCatalog;
+
+  // =============================================================================
+  // Constants / config
+  // =============================================================================
+
   const DEFAULT_COPY = {
     titleKey: 'renderer.snapshots.title',
     messageKey: 'renderer.snapshots.message',
@@ -45,7 +50,7 @@
   };
 
   // =============================================================================
-  // UI elements
+  // DOM references
   // =============================================================================
 
   const modal = document.getElementById('snapshotSaveTagsModal');
@@ -128,6 +133,7 @@
   }
 
   function resolveCopy(copy = {}) {
+    // Keep prompt copy key-based so renderer i18n remains the text owner.
     const titleKey = normalizeOptionalString(copy.titleKey);
     const messageKey = normalizeOptionalString(copy.messageKey);
     const confirmKey = normalizeOptionalString(copy.confirmKey);
@@ -197,7 +203,7 @@
   }
 
   // =============================================================================
-  // Public entrypoint
+  // Public prompt
   // =============================================================================
 
   async function promptSnapshotSaveTags(options = {}) {
