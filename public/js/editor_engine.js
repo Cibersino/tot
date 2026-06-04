@@ -426,8 +426,7 @@
     function sendCurrentTextToMain(action, options = {}) {
       const hasText = Object.prototype.hasOwnProperty.call(options, 'text');
       const text = hasText ? options.text : editor.value;
-      const onPrimaryError = typeof options.onPrimaryError === 'function' ? options.onPrimaryError : null;
-      const onFallbackError = typeof options.onFallbackError === 'function' ? options.onFallbackError : null;
+      const onError = typeof options.onError === 'function' ? options.onError : null;
 
       try {
         const payload = { text, meta: { source: 'editor', action } };
@@ -435,27 +434,16 @@
         handleTruncationResponse(res);
         return true;
       } catch (err) {
-        if (onPrimaryError) {
-          onPrimaryError(err);
+        if (onError) {
+          onError(err);
         } else {
           log.warnOnce(
-            'editor.setCurrentText.payload_failed',
-            'editorAPI.setCurrentText payload failed; using fallback:',
+            'editor.setCurrentText.failed',
+            'editorAPI.setCurrentText failed (ignored):',
             err
           );
         }
-        try {
-          const resFallback = editorAPI.setCurrentText(text);
-          handleTruncationResponse(resFallback);
-          return true;
-        } catch (fallbackErr) {
-          if (onFallbackError) {
-            onFallbackError(fallbackErr);
-          } else {
-            log.warn('editorAPI.setCurrentText fallback failed (ignored):', fallbackErr);
-          }
-          return false;
-        }
+        return false;
       }
     }
 
@@ -555,11 +543,8 @@
           ? insertOptions.action
           : 'paste';
         const syncOptions = {};
-        if (insertOptions && typeof insertOptions.onPrimaryError === 'function') {
-          syncOptions.onPrimaryError = insertOptions.onPrimaryError;
-        }
-        if (insertOptions && typeof insertOptions.onFallbackError === 'function') {
-          syncOptions.onFallbackError = insertOptions.onFallbackError;
+        if (insertOptions && typeof insertOptions.onError === 'function') {
+          syncOptions.onError = insertOptions.onError;
         }
 
         const prevSuppressLocalUpdate = state.suppressLocalUpdate;

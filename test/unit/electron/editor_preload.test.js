@@ -10,10 +10,13 @@ function loadEditorPreload() {
   const subscriptions = [];
   const removed = [];
   const sent = [];
+  const invoked = [];
   let exposedApi = null;
 
   const ipcRenderer = {
-    invoke() {},
+    invoke(channel, payload) {
+      invoked.push({ channel, payload });
+    },
     send(channel, payload) {
       sent.push({ channel, payload });
     },
@@ -53,6 +56,7 @@ function loadEditorPreload() {
 
   return {
     exposedApi,
+    invoked,
     subscriptions,
     removed,
     sent,
@@ -120,6 +124,23 @@ test('editor preload reports base presentation state through the main bridge', (
         generation: 7,
         status: 'ready',
       },
+    },
+  ]);
+});
+
+test('editor preload forwards setCurrentText canonical payloads unchanged', () => {
+  const { exposedApi, invoked } = loadEditorPreload();
+  const payload = {
+    text: 'abc',
+    meta: { source: 'editor', action: 'typing' },
+  };
+
+  exposedApi.api.setCurrentText(payload);
+
+  assert.deepEqual(invoked, [
+    {
+      channel: 'set-current-text',
+      payload,
     },
   ]);
 });

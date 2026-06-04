@@ -527,8 +527,8 @@ if (editor) {
       action: 'drop',
       limitAlertKey: 'renderer.editor.alerts.drop_limit',
       truncatedAlertKey: 'renderer.editor.alerts.drop_truncated',
-      onFallbackError: (err) => log.warn(
-        'editorAPI.setCurrentText fallback failed (ignored):',
+      onError: (err) => log.warn(
+        'editorAPI.setCurrentText failed (ignored):',
         err
       )
     }
@@ -582,8 +582,8 @@ editor.addEventListener('input', () => {
     if (calcWhileTyping && calcWhileTyping.checked) {
       ctx.state.debounceTimer = setTimeout(() => {
         ctx.engine.sendCurrentTextToMain('typing', {
-          onFallbackError: (err) => log.warnOnce(
-            'editor.setCurrentText.typing.fallback',
+          onError: (err) => log.warnOnce(
+            'editor.setCurrentText.typing',
             'setCurrentText typing sync failed (ignored):',
             err
           )
@@ -612,8 +612,7 @@ btnTrash.addEventListener('click', () => {
   if (calcWhileTyping && calcWhileTyping.checked) {
     const didSend = ctx.engine.sendCurrentTextToMain('clear', {
       text: '',
-      onPrimaryError: (err) => log.warn('Text Editor clear payload sync failed; using fallback:', err),
-      onFallbackError: (err) => log.error('Text Editor clear fallback sync failed:', err),
+      onError: (err) => log.error('Text Editor clear sync failed:', err),
     });
     if (!didSend) {
       window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
@@ -625,8 +624,7 @@ btnTrash.addEventListener('click', () => {
 if (btnCalc) btnCalc.addEventListener('click', () => {
   const didSend = ctx.engine.sendCurrentTextToMain('overwrite', {
     text: editor.value || '',
-    onPrimaryError: (err) => log.warn('Text Editor apply payload sync failed; using fallback:', err),
-    onFallbackError: (err) => log.error('Text Editor apply fallback sync failed:', err),
+    onError: (err) => log.error('Text Editor apply sync failed:', err),
   });
   if (!didSend) {
     window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
@@ -639,8 +637,8 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     btnCalc.disabled = true;
     ctx.engine.sendCurrentTextToMain('typing_toggle_on', {
       text: editor.value || '',
-      onFallbackError: (err) => log.warn(
-        'editorAPI.setCurrentText fallback failed (typing toggle on ignored):',
+      onError: (err) => log.warn(
+        'editorAPI.setCurrentText failed (typing toggle on ignored):',
         err
       )
     });

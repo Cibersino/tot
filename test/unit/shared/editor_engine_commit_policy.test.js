@@ -41,6 +41,7 @@ function createHarness({
   execCommandBehavior = 'success',
   disableSetRangeText = false,
   autoEnabled = true,
+  setCurrentTextImpl = null,
 } = {}) {
   const execCalls = [];
   const setRangeTextCalls = [];
@@ -145,6 +146,9 @@ function createHarness({
   const engine = sandbox.window.EditorEngine.createEditorEngine({
     editorAPI: {
       setCurrentText(payload) {
+        if (typeof setCurrentTextImpl === 'function') {
+          return setCurrentTextImpl(payload, setCurrentTextCalls);
+        }
         setCurrentTextCalls.push(payload);
         return { ok: true };
       },
@@ -390,6 +394,25 @@ test('drop transfer stays local when auto is off', () => {
 
   assert.equal(editor.value, 'abcZ');
   assert.equal(setCurrentTextCalls.length, 0);
+});
+
+test('set-current-text sync does not fallback to legacy string payloads after a synchronous bridge failure', () => {
+  const { engine, setCurrentTextCalls } = createHarness({
+    setCurrentTextImpl(payload, calls) {
+      calls.push(payload);
+      throw new Error('bridge unavailable');
+    },
+  });
+
+  const didSend = engine.sendCurrentTextToMain('overwrite', {
+    text: 'abc',
+  });
+
+  assert.equal(didSend, false);
+  assert.equal(setCurrentTextCalls.length, 1);
+  assert.equal(setCurrentTextCalls[0].text, 'abc');
+  assert.equal(setCurrentTextCalls[0].meta.source, 'editor');
+  assert.equal(setCurrentTextCalls[0].meta.action, 'overwrite');
 });
 
 test('replace-current setRangeText fallback dispatches input after text mutation', () => {
