@@ -100,6 +100,14 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
 
   const sandbox = {
     window: {
+      getLogger() {
+        return {
+          warn() {},
+          warnOnce() {},
+          error() {},
+          debug() {},
+        };
+      },
       requestAnimationFrame(cb) {
         cb();
         return 1;
@@ -121,12 +129,6 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
   vm.runInContext(uiSource, sandbox, { filename: 'public/js/editor_ui.js' });
 
   const ui = sandbox.window.EditorUI.createEditorUI({
-    log: {
-      warn() {},
-      warnOnce() {},
-      error() {},
-      debug() {},
-    },
     editorAPI: {},
     DEFAULT_LANG: 'en',
     EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX: 960,

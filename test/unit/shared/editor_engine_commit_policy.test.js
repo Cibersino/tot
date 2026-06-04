@@ -120,6 +120,14 @@ function createHarness({
 
   const sandbox = {
     window: {
+      getLogger() {
+        return {
+          warn() {},
+          warnOnce() {},
+          error() {},
+          debug() {},
+        };
+      },
       Notify: {
         notifyEditor() {},
       },
@@ -134,16 +142,7 @@ function createHarness({
     'utf8'
   );
   vm.runInContext(engineSource, sandbox, { filename: 'public/js/editor_engine.js' });
-
-  const log = {
-    warnOnce() {},
-    warn() {},
-    error() {},
-    debug() {},
-  };
-
   const engine = sandbox.window.EditorEngine.createEditorEngine({
-    log,
     editorAPI: {
       setCurrentText(payload) {
         setCurrentTextCalls.push(payload);

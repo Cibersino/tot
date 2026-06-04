@@ -61,6 +61,14 @@ function createHarness() {
   const documentElement = { style: createStyleRecorder(), lang: 'es' };
   const body = { classList: createClassList() };
   const windowObj = {
+    getLogger() {
+      return {
+        warn() {},
+        warnOnce() {},
+        error() {},
+        debug() {},
+      };
+    },
     requestAnimationFrame(cb) {
       cb();
       return 1;
@@ -114,12 +122,6 @@ function createHarness() {
   };
 
   const ui = sandbox.window.EditorUI.createEditorUI({
-    log: {
-      warn() {},
-      warnOnce() {},
-      error() {},
-      debug() {},
-    },
     editorAPI: {
       async setMaximizedTextWidthPx(value) {
         editorApiCalls.push(value);

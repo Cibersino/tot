@@ -13,12 +13,17 @@
 // - Persist Text Editor text-size changes through the editor bridge when available.
 
 (() => {
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[editor-ui] window.getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('editor-ui');
+
   // =============================================================================
   // Module Factory
   // =============================================================================
 
   function createEditorUI(ctx) {
-    const { log, editorAPI, DEFAULT_LANG, dom, state } = ctx;
+    const { editorAPI, DEFAULT_LANG, dom, state } = ctx;
     const {
       editorWrap,
       editorLayout,

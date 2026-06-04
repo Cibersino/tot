@@ -13,12 +13,17 @@
 // - Reconcile external text updates without echoing editor-originated changes back to main.
 
 (() => {
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[editor-engine] window.getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('editor-engine');
+
   // =============================================================================
   // Module Factory
   // =============================================================================
 
   function createEditorEngine(ctx) {
-    const { log, editorAPI, editorFindReplaceCore, dom, state } = ctx;
+    const { editorAPI, editorFindReplaceCore, dom, state } = ctx;
     const { editor, calcWhileTyping } = dom;
 
     // =============================================================================

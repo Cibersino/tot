@@ -142,7 +142,6 @@ const startupPresentation = editorStartupPresentation.createStartupPresentationC
 // Shared state / context
 // =============================================================================
 const ctx = {
-  log,
   AppConstants,
   DEFAULT_LANG,
   PASTE_ALLOW_LIMIT,
