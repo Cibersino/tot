@@ -290,43 +290,34 @@
     }
 
     if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title');
-    if (btnTextExtraction) btnTextExtraction.title = tRenderer('renderer.main.tooltips.text_extraction');
-    if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard');
-    if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard');
-    if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit');
-    if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear');
-    if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load');
-    if (btnSaveSnapshot) btnSaveSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_save');
-    if (btnNewTask) btnNewTask.title = tRenderer('renderer.main.tooltips.task_new');
-    if (btnLoadTask) btnLoadTask.title = tRenderer('renderer.main.tooltips.task_load');
+    [
+      [btnTextExtraction, 'renderer.main.tooltips.text_extraction'],
+      [btnOverwriteClipboard, 'renderer.main.tooltips.overwrite_clipboard'],
+      [btnAppendClipboard, 'renderer.main.tooltips.append_clipboard'],
+      [btnEdit, 'renderer.main.tooltips.edit'],
+      [btnEmptyMain, 'renderer.main.tooltips.clear'],
+      [btnLoadSnapshot, 'renderer.main.tooltips.snapshot_load'],
+      [btnSaveSnapshot, 'renderer.main.tooltips.snapshot_save'],
+      [btnNewTask, 'renderer.main.tooltips.task_new'],
+      [btnLoadTask, 'renderer.main.tooltips.task_load'],
+    ].forEach(([element, key]) => {
+      if (element) element.title = tRenderer(key);
+    });
 
-    if (btnTextExtraction) {
-      btnTextExtraction.setAttribute('aria-label', tRenderer('renderer.main.aria.text_extraction'));
-    }
-    if (btnOverwriteClipboard) {
-      btnOverwriteClipboard.setAttribute('aria-label', tRenderer('renderer.main.tooltips.overwrite_clipboard'));
-    }
-    if (btnAppendClipboard) {
-      btnAppendClipboard.setAttribute('aria-label', tRenderer('renderer.main.tooltips.append_clipboard'));
-    }
-    if (btnEdit) {
-      btnEdit.setAttribute('aria-label', tRenderer('renderer.main.tooltips.edit'));
-    }
-    if (btnEmptyMain) {
-      btnEmptyMain.setAttribute('aria-label', tRenderer('renderer.main.tooltips.clear'));
-    }
-    if (btnLoadSnapshot) {
-      btnLoadSnapshot.setAttribute('aria-label', tRenderer('renderer.main.tooltips.snapshot_load'));
-    }
-    if (btnSaveSnapshot) {
-      btnSaveSnapshot.setAttribute('aria-label', tRenderer('renderer.main.tooltips.snapshot_save'));
-    }
-    if (btnNewTask) {
-      btnNewTask.setAttribute('aria-label', tRenderer('renderer.main.tooltips.task_new'));
-    }
-    if (btnLoadTask) {
-      btnLoadTask.setAttribute('aria-label', tRenderer('renderer.main.tooltips.task_load'));
-    }
+    [
+      [btnTextExtraction, 'renderer.main.aria.text_extraction'],
+      [btnOverwriteClipboard, 'renderer.main.tooltips.overwrite_clipboard'],
+      [btnAppendClipboard, 'renderer.main.tooltips.append_clipboard'],
+      [btnEdit, 'renderer.main.tooltips.edit'],
+      [btnEmptyMain, 'renderer.main.tooltips.clear'],
+      [btnLoadSnapshot, 'renderer.main.tooltips.snapshot_load'],
+      [btnSaveSnapshot, 'renderer.main.tooltips.snapshot_save'],
+      [btnNewTask, 'renderer.main.tooltips.task_new'],
+      [btnLoadTask, 'renderer.main.tooltips.task_load'],
+    ].forEach(([element, key]) => {
+      if (element) element.setAttribute('aria-label', tRenderer(key));
+    });
+
     if (clipboardRepeatInput) {
       clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count');
       clipboardRepeatInput.setAttribute('aria-label', tRenderer('renderer.main.aria.clipboard_repeat_count'));
@@ -365,17 +356,21 @@
   } = {}) {
     if (actionsBound) return;
 
-    bindRequiredAction(btnTextExtraction, 'text-extraction', onTextExtraction);
-    bindRequiredAction(btnTextExtractionAbort, 'text-extraction-abort', onTextExtractionAbort);
-    bindRequiredAction(btnOverwriteClipboard, 'clipboard-overwrite', onOverwriteClipboard);
-    bindRequiredAction(btnAppendClipboard, 'clipboard-append', onAppendClipboard);
-    bindRequiredAction(btnEdit, 'open-editor', onOpenEditor);
-    bindRequiredAction(btnEmptyMain, 'clear-text', onClearText);
-    bindRequiredAction(btnLoadSnapshot, 'snapshot-load', onLoadSnapshot);
-    bindRequiredAction(btnSaveSnapshot, 'snapshot-save', onSaveSnapshot);
-    bindRequiredAction(btnNewTask, 'task-new', onNewTask);
-    bindRequiredAction(btnLoadTask, 'task-load', onLoadTask);
-    bindRequiredAction(btnReadingSpeedTest, 'reading-speed-test', onReadingSpeedTest);
+    [
+      [btnTextExtraction, 'text-extraction', onTextExtraction],
+      [btnTextExtractionAbort, 'text-extraction-abort', onTextExtractionAbort],
+      [btnOverwriteClipboard, 'clipboard-overwrite', onOverwriteClipboard],
+      [btnAppendClipboard, 'clipboard-append', onAppendClipboard],
+      [btnEdit, 'open-editor', onOpenEditor],
+      [btnEmptyMain, 'clear-text', onClearText],
+      [btnLoadSnapshot, 'snapshot-load', onLoadSnapshot],
+      [btnSaveSnapshot, 'snapshot-save', onSaveSnapshot],
+      [btnNewTask, 'task-new', onNewTask],
+      [btnLoadTask, 'task-load', onLoadTask],
+      [btnReadingSpeedTest, 'reading-speed-test', onReadingSpeedTest],
+    ].forEach(([element, actionName, handler]) => {
+      bindRequiredAction(element, actionName, handler);
+    });
 
     actionsBound = true;
   }
