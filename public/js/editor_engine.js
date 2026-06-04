@@ -433,6 +433,18 @@
     // Main Text Sync And Transfer Handling
     // =============================================================================
 
+    function handleSetCurrentTextFailure(err, onError) {
+      if (typeof onError === 'function') {
+        onError(err);
+        return;
+      }
+      log.warnOnce(
+        'editor.setCurrentText.failed',
+        'editorAPI.setCurrentText failed (ignored):',
+        err
+      );
+    }
+
     function sendCurrentTextToMain(action, options = {}) {
       const hasText = Object.prototype.hasOwnProperty.call(options, 'text');
       const text = hasText ? options.text : editor.value;
@@ -441,18 +453,10 @@
       try {
         const payload = { text, meta: { source: 'editor', action } };
         const setCurrentTextResult = editorAPI.setCurrentText(payload);
-        handleTruncationResponse(setCurrentTextResult);
+        handleTruncationResponse(setCurrentTextResult, { onError });
         return true;
       } catch (err) {
-        if (onError) {
-          onError(err);
-        } else {
-          log.warnOnce(
-            'editor.setCurrentText.failed',
-            'editorAPI.setCurrentText failed (ignored):',
-            err
-          );
-        }
+        handleSetCurrentTextFailure(err, onError);
         return false;
       }
     }
@@ -473,20 +477,34 @@
       }
     }
 
-    function handleTruncationResponse(setCurrentTextResult) {
+    function handleTruncationResponse(setCurrentTextResult, options = {}) {
+      const onError = typeof options.onError === 'function' ? options.onError : null;
+
       try {
         if (setCurrentTextResult && typeof setCurrentTextResult.then === 'function') {
-          setCurrentTextResult.then((result) => {
-            handleResolvedSetCurrentTextResult(result);
-          }).catch((err) => {
-            log.warn('editorAPI.setCurrentText response handling failed (ignored):', err);
-          });
+          setCurrentTextResult.then(
+            (result) => {
+              try {
+                handleResolvedSetCurrentTextResult(result);
+              } catch (err) {
+                log.error('handleTruncationResponse result handling error:', err);
+              }
+            },
+            (err) => {
+              handleSetCurrentTextFailure(err, onError);
+            }
+          );
           return;
         }
-
-        handleResolvedSetCurrentTextResult(setCurrentTextResult);
       } catch (err) {
         log.error('handleTruncationResponse error:', err);
+        return;
+      }
+
+      try {
+        handleResolvedSetCurrentTextResult(setCurrentTextResult);
+      } catch (err) {
+        log.error('handleTruncationResponse result handling error:', err);
       }
     }
 
