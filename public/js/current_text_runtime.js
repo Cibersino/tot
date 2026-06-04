@@ -520,7 +520,7 @@
         ok,
       });
       if (!result || result.ok !== true) {
-        log.warn('Current-text processing resolve returned non-ok result (ignored):', result);
+        log.error('Current-text processing resolve returned non-ok result:', result);
         return false;
       }
       applyLocalResolvedProcessingState(requestId);
