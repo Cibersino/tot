@@ -192,7 +192,7 @@
     try {
       previousFocus.focus();
     } catch (err) {
-      log.warn('Could not restore previous focus after snapshot save tags modal:', err);
+      log.warn('Snapshot save tags modal focus restore failed (ignored):', err);
     }
   }
 
