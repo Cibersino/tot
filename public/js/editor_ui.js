@@ -553,7 +553,9 @@
           ) {
             target.releasePointerCapture(pointerId);
           }
-        } catch {}
+        } catch (err) {
+          log.warn('Text Editor gutter pointer release failed (ignored):', err);
+        }
       };
 
       state.editorMarginDrag = {
