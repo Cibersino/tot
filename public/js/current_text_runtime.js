@@ -590,6 +590,31 @@
     void runPendingSettleLoop(requestId, reason);
   }
 
+  function mergeDerivedRefreshIntoPendingSettle(reason) {
+    derivedConfigVersion += 1;
+    schedulePendingSettle(`merge:${reason}`);
+  }
+
+  function deferDerivedRefreshWhenBusy(kind, reason) {
+    if (currentTextProcessingState.active) {
+      mergeDerivedRefreshIntoPendingSettle(reason);
+      return true;
+    }
+    if (standaloneFullRefreshPendingState.active) {
+      queueStandaloneFollowup(
+        kind,
+        reason,
+        standaloneFullRefreshPendingState.ownerSequence
+      );
+      return true;
+    }
+    if (standaloneDerivedRefreshInFlight) {
+      queueStandaloneFollowup(kind, reason, standaloneDerivedRefreshSequence);
+      return true;
+    }
+    return false;
+  }
+
   function renderTimeOnlyFromCurrentStats() {
     if (!currentTextStats) {
       log.warnOnce(
@@ -854,42 +879,14 @@
   }
 
   function requestStatsDisplayRefresh(reason) {
-    if (currentTextProcessingState.active) {
-      derivedConfigVersion += 1;
-      schedulePendingSettle(`merge:${reason}`);
-      return;
-    }
-    if (standaloneFullRefreshPendingState.active) {
-      queueStandaloneFollowup(
-        REFRESH_KIND_STATS_DISPLAY,
-        reason,
-        standaloneFullRefreshPendingState.ownerSequence
-      );
-      return;
-    }
-    if (standaloneDerivedRefreshInFlight) {
-      queueStandaloneFollowup(REFRESH_KIND_STATS_DISPLAY, reason, standaloneDerivedRefreshSequence);
+    if (deferDerivedRefreshWhenBusy(REFRESH_KIND_STATS_DISPLAY, reason)) {
       return;
     }
     runStandaloneStatsDisplayRefresh(reason);
   }
 
   function requestTimeOnlyRefresh(reason) {
-    if (currentTextProcessingState.active) {
-      derivedConfigVersion += 1;
-      schedulePendingSettle(`merge:${reason}`);
-      return;
-    }
-    if (standaloneFullRefreshPendingState.active) {
-      queueStandaloneFollowup(
-        REFRESH_KIND_TIME_ONLY,
-        reason,
-        standaloneFullRefreshPendingState.ownerSequence
-      );
-      return;
-    }
-    if (standaloneDerivedRefreshInFlight) {
-      queueStandaloneFollowup(REFRESH_KIND_TIME_ONLY, reason, standaloneDerivedRefreshSequence);
+    if (deferDerivedRefreshWhenBusy(REFRESH_KIND_TIME_ONLY, reason)) {
       return;
     }
     bumpRenderAuthoritySequence();
