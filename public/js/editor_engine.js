@@ -66,7 +66,7 @@
     function selectAllEditor() {
       if (typeof editor.select === 'function') {
         try { editor.select(); }
-        catch (err) { log.warnOnce('editor.select', 'editor.select() failed (ignored):', err); }
+        catch (err) { log.warnOnce('editor.select', 'editor.select() failed; whole-value selection may be incomplete:', err); }
         return;
       }
       setSelectionSafe(0, editor.value.length);
@@ -657,14 +657,9 @@
         editor.value = editor.value + textToInsert;
         dispatchNativeInputEvent();
       } catch (err) {
-        log.warnOnce(
-          'editor.execCommand.appendNewline',
-          "document.execCommand('insertText') unavailable or failed; using append fallback:",
+        log.warn(
+          'appendSmallExternalTextWithoutSync native append path failed; using direct append fallback:',
           err
-        );
-        log.warnOnce(
-          'editor.setRangeText.appendNewline',
-          'editor.setRangeText unavailable; using direct append fallback.'
         );
         editor.value = editor.value + textToInsert;
         dispatchNativeInputEvent();
