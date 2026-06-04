@@ -430,8 +430,8 @@
 
       try {
         const payload = { text, meta: { source: 'editor', action } };
-        const res = editorAPI.setCurrentText(payload);
-        handleTruncationResponse(res);
+        const setCurrentTextResult = editorAPI.setCurrentText(payload);
+        handleTruncationResponse(setCurrentTextResult);
         return true;
       } catch (err) {
         if (onError) {
@@ -451,11 +451,11 @@
       window.Notify.notifyEditor('renderer.editor.alerts.text_truncated', { type: 'warn', duration: 5000 });
     }
 
-    function handleTruncationResponse(resPromise) {
+    function handleTruncationResponse(setCurrentTextResult) {
       try {
-        if (resPromise && typeof resPromise.then === 'function') {
-          resPromise.then((r) => {
-            if (r && r.truncated) {
+        if (setCurrentTextResult && typeof setCurrentTextResult.then === 'function') {
+          setCurrentTextResult.then((result) => {
+            if (result && result.truncated) {
               notifyTextTruncated();
             }
           }).catch((err) => {
@@ -574,17 +574,101 @@
     // External Update Reconciliation
     // =============================================================================
 
+    function normalizeExternalUpdatePayload(payload) {
+      if (payload && typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'text')) {
+        return {
+          incomingMeta: payload.meta || null,
+          newText: String(payload.text || ''),
+        };
+      }
+
+      return {
+        incomingMeta: null,
+        newText: String(payload || ''),
+      };
+    }
+
+    function appendSmallExternalTextWithoutSync(textToInsert) {
+      const previousActiveElement = document.activeElement;
+
+      try {
+        editor.focus();
+        const caretPos = editor.value.length;
+        setCaretSafe(caretPos);
+
+        const ok = document.execCommand && document.execCommand('insertText', false, textToInsert);
+        if (ok) {
+          return;
+        }
+
+        log.warnOnce(
+          'editor.execCommand.appendNewline',
+          "document.execCommand('insertText') unavailable or failed; using append fallback."
+        );
+
+        if (typeof editor.setRangeText === 'function') {
+          editor.setRangeText(textToInsert, caretPos, caretPos, 'end');
+          dispatchNativeInputEvent();
+          return;
+        }
+
+        log.warnOnce(
+          'editor.setRangeText.appendNewline',
+          'editor.setRangeText unavailable; using direct append fallback.'
+        );
+
+        editor.value = editor.value + textToInsert;
+        dispatchNativeInputEvent();
+      } catch (err) {
+        log.warnOnce(
+          'editor.execCommand.appendNewline',
+          "document.execCommand('insertText') unavailable or failed; using append fallback:",
+          err
+        );
+        log.warnOnce(
+          'editor.setRangeText.appendNewline',
+          'editor.setRangeText unavailable; using direct append fallback.'
+        );
+        editor.value = editor.value + textToInsert;
+        dispatchNativeInputEvent();
+      } finally {
+        restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.append_newline.native');
+      }
+    }
+
+    function handleAppendNewlineExternalUpdate(newText, truncated) {
+      if (!newText.startsWith(editor.value)) {
+        return false;
+      }
+
+      const textToInsert = newText.slice(editor.value.length);
+      if (!textToInsert) {
+        return true;
+      }
+
+      if (textToInsert.length <= ctx.SMALL_UPDATE_THRESHOLD) {
+        appendSmallExternalTextWithoutSync(textToInsert);
+        return true;
+      }
+
+      const committed = commitWholeValueWithThresholdPolicy(newText, {
+        nativeFocusWarnKey: 'focus.prevActive.append_newline.native',
+        directFocusWarnKey: 'focus.prevActive.append_newline.full',
+      });
+      if (!committed) {
+        log.error('append_newline full replace failed unexpectedly.');
+      }
+      if (truncated) {
+        notifyTextTruncated();
+      }
+      return true;
+    }
+
     async function applyExternalUpdate(payload) {
       try {
-        let incomingMeta = null;
-        let newText = '';
-
-        if (payload && typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'text')) {
-          newText = String(payload.text || '');
-          incomingMeta = payload.meta || null;
-        } else {
-          newText = String(payload || '');
-        }
+        const normalizedPayload = normalizeExternalUpdatePayload(payload);
+        const incomingMeta = normalizedPayload.incomingMeta;
+        let newText = normalizedPayload.newText;
 
         let truncated = false;
         if (newText.length > state.maxTextChars) {
@@ -610,65 +694,12 @@
           const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;
           const metaAction = incomingMeta && incomingMeta.action ? incomingMeta.action : null;
 
-          if (metaSource === 'main-window' && metaAction === 'append_newline') {
-            if (newText.startsWith(editor.value)) {
-              const toInsert = newText.slice(editor.value.length);
-              if (!toInsert) return;
-              if (toInsert.length <= ctx.SMALL_UPDATE_THRESHOLD) {
-                const prevActive = document.activeElement;
-                try {
-                  editor.focus();
-                  const tpos = editor.value.length;
-                  setCaretSafe(tpos);
-                  const ok = document.execCommand && document.execCommand('insertText', false, toInsert);
-                  if (!ok && typeof editor.setRangeText === 'function') {
-                    log.warnOnce(
-                      'editor.execCommand.appendNewline',
-                      "document.execCommand('insertText') unavailable or failed; using append fallback."
-                    );
-                    editor.setRangeText(toInsert, tpos, tpos, 'end');
-                    dispatchNativeInputEvent();
-                  } else if (!ok) {
-                    log.warnOnce(
-                      'editor.execCommand.appendNewline',
-                      "document.execCommand('insertText') unavailable or failed; using append fallback."
-                    );
-                    log.warnOnce(
-                      'editor.setRangeText.appendNewline',
-                      'editor.setRangeText unavailable; using direct append fallback.'
-                    );
-                    editor.value = editor.value + toInsert;
-                    dispatchNativeInputEvent();
-                  }
-                } catch (err) {
-                  log.warnOnce(
-                    'editor.execCommand.appendNewline',
-                    "document.execCommand('insertText') unavailable or failed; using append fallback:",
-                    err
-                  );
-                  log.warnOnce(
-                    'editor.setRangeText.appendNewline',
-                    'editor.setRangeText unavailable; using direct append fallback.'
-                  );
-                  editor.value = editor.value + toInsert;
-                  dispatchNativeInputEvent();
-                } finally {
-                  restorePreviousActiveElement(prevActive, 'focus.prevActive.append_newline.native');
-                }
-                return;
-              }
-              const committed = commitWholeValueWithThresholdPolicy(newText, {
-                nativeFocusWarnKey: 'focus.prevActive.append_newline.native',
-                directFocusWarnKey: 'focus.prevActive.append_newline.full',
-              });
-              if (!committed) {
-                log.error('append_newline full replace failed unexpectedly.');
-              }
-              if (truncated) {
-                notifyTextTruncated();
-              }
-              return;
-            }
+          if (
+            metaSource === 'main-window' &&
+            metaAction === 'append_newline' &&
+            handleAppendNewlineExternalUpdate(newText, truncated)
+          ) {
+            return;
           }
 
           if (metaSource === 'main' || metaSource === 'main-window' || !metaSource) {
