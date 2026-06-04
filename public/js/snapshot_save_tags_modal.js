@@ -85,6 +85,10 @@
     return REQUIRED_MODAL_ELEMENTS.every(Boolean);
   }
 
+  function normalizeOptionalString(value) {
+    return typeof value === 'string' ? value.trim() : '';
+  }
+
   function setSelectOptions(selectEl, options, emptyLabel) {
     if (!selectEl) return;
     selectEl.innerHTML = '';
@@ -112,9 +116,9 @@
 
   function collectTags() {
     const tags = {};
-    const language = typeof languageSelect.value === 'string' ? languageSelect.value.trim() : '';
-    const type = typeof typeSelect.value === 'string' ? typeSelect.value.trim() : '';
-    const difficulty = typeof difficultySelect.value === 'string' ? difficultySelect.value.trim() : '';
+    const language = normalizeOptionalString(languageSelect.value);
+    const type = normalizeOptionalString(typeSelect.value);
+    const difficulty = normalizeOptionalString(difficultySelect.value);
 
     if (language) tags.language = language;
     if (type) tags.type = type;
@@ -124,22 +128,18 @@
   }
 
   function resolveCopy(copy = {}) {
+    const titleKey = normalizeOptionalString(copy.titleKey);
+    const messageKey = normalizeOptionalString(copy.messageKey);
+    const confirmKey = normalizeOptionalString(copy.confirmKey);
+    const cancelKey = normalizeOptionalString(copy.cancelKey);
+    const closeAriaKey = normalizeOptionalString(copy.closeAriaKey);
+
     return {
-      titleKey: typeof copy.titleKey === 'string' && copy.titleKey.trim()
-        ? copy.titleKey.trim()
-        : DEFAULT_COPY.titleKey,
-      messageKey: typeof copy.messageKey === 'string' && copy.messageKey.trim()
-        ? copy.messageKey.trim()
-        : DEFAULT_COPY.messageKey,
-      confirmKey: typeof copy.confirmKey === 'string' && copy.confirmKey.trim()
-        ? copy.confirmKey.trim()
-        : DEFAULT_COPY.confirmKey,
-      cancelKey: typeof copy.cancelKey === 'string' && copy.cancelKey.trim()
-        ? copy.cancelKey.trim()
-        : DEFAULT_COPY.cancelKey,
-      closeAriaKey: typeof copy.closeAriaKey === 'string' && copy.closeAriaKey.trim()
-        ? copy.closeAriaKey.trim()
-        : DEFAULT_COPY.closeAriaKey,
+      titleKey: titleKey || DEFAULT_COPY.titleKey,
+      messageKey: messageKey || DEFAULT_COPY.messageKey,
+      confirmKey: confirmKey || DEFAULT_COPY.confirmKey,
+      cancelKey: cancelKey || DEFAULT_COPY.cancelKey,
+      closeAriaKey: closeAriaKey || DEFAULT_COPY.closeAriaKey,
     };
   }
 
