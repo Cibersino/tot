@@ -107,6 +107,16 @@
       }
     }
 
+    function withLocalUpdateSuppressed(work) {
+      const previousSuppressLocalUpdate = state.suppressLocalUpdate;
+      state.suppressLocalUpdate = true;
+      try {
+        return work();
+      } finally {
+        state.suppressLocalUpdate = previousSuppressLocalUpdate;
+      }
+    }
+
     function tryNativeReplaceWholeValueSelection(nextValue) {
       let execOk = false;
 
@@ -451,17 +461,30 @@
       window.Notify.notifyEditor('renderer.editor.alerts.text_truncated', { type: 'warn', duration: 5000 });
     }
 
+    function notifyIfTruncated(truncated) {
+      if (truncated) {
+        notifyTextTruncated();
+      }
+    }
+
+    function handleResolvedSetCurrentTextResult(result) {
+      if (result && result.truncated) {
+        notifyTextTruncated();
+      }
+    }
+
     function handleTruncationResponse(setCurrentTextResult) {
       try {
         if (setCurrentTextResult && typeof setCurrentTextResult.then === 'function') {
           setCurrentTextResult.then((result) => {
-            if (result && result.truncated) {
-              notifyTextTruncated();
-            }
+            handleResolvedSetCurrentTextResult(result);
           }).catch((err) => {
             log.warn('editorAPI.setCurrentText response handling failed (ignored):', err);
           });
+          return;
         }
+
+        handleResolvedSetCurrentTextResult(setCurrentTextResult);
       } catch (err) {
         log.error('handleTruncationResponse error:', err);
       }
@@ -547,14 +570,10 @@
           syncOptions.onError = insertOptions.onError;
         }
 
-        const prevSuppressLocalUpdate = state.suppressLocalUpdate;
         let insertResult = null;
-        state.suppressLocalUpdate = true;
-        try {
+        withLocalUpdateSuppressed(() => {
           insertResult = insertTextAtCursor(text, insertOptions);
-        } finally {
-          state.suppressLocalUpdate = prevSuppressLocalUpdate;
-        }
+        });
 
         if (
           insertResult &&
@@ -658,9 +677,7 @@
       if (!committed) {
         log.error('append_newline full replace failed unexpectedly.');
       }
-      if (truncated) {
-        notifyTextTruncated();
-      }
+      notifyIfTruncated(truncated);
       return true;
     }
 
@@ -681,16 +698,12 @@
         }
 
         if (editor.value === newText) {
-          if (truncated) {
-            notifyTextTruncated();
-          }
+          notifyIfTruncated(truncated);
           return;
         }
 
-        const prevSuppressLocalUpdate = state.suppressLocalUpdate;
         // Prevent main-driven updates from re-triggering local Text Editor sync while applying them.
-        state.suppressLocalUpdate = true;
-        try {
+        withLocalUpdateSuppressed(() => {
           const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;
           const metaAction = incomingMeta && incomingMeta.action ? incomingMeta.action : null;
 
@@ -710,19 +723,13 @@
             if (!committed) {
               log.error('Whole-value external update failed unexpectedly.');
             }
-            if (truncated) {
-              notifyTextTruncated();
-            }
+            notifyIfTruncated(truncated);
             return;
           }
 
           replaceEditorValueHidden(newText);
-          if (truncated) {
-            notifyTextTruncated();
-          }
-        } finally {
-          state.suppressLocalUpdate = prevSuppressLocalUpdate;
-        }
+          notifyIfTruncated(truncated);
+        });
       } catch (err) {
         log.error('applyExternalUpdate error:', err);
       }
