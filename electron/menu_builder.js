@@ -287,16 +287,28 @@ function buildAppMenu(lang, opts = {}) {
         );
         if (reason === 'processing_mode' || reason === 'current_text_pending') {
             const mainWindow = resolveMainWindow();
-            if (mainWindow && !mainWindow.isDestroyed()) {
-                try {
-                    mainWindow.webContents.send(MENU_CLICK_CHANNEL, MENU_PROCESSING_LOCK_NOTICE_ACTION);
-                } catch (err) {
-                    log.warnOnce(
-                        'menu_builder.processing_lock_notice.sendFailed',
-                        "webContents.send('menu-click') failed for processing lock notice (ignored):",
-                        err
-                    );
-                }
+            if (!mainWindow) {
+                log.warnOnce(
+                    'menu_builder.processing_lock_notice.noWindow',
+                    "Processing lock notice 'menu-click' send failed (ignored): no mainWindow"
+                );
+                return false;
+            }
+            if (mainWindow.isDestroyed()) {
+                log.warnOnce(
+                    'menu_builder.processing_lock_notice.destroyed',
+                    "Processing lock notice 'menu-click' send failed (ignored): mainWindow destroyed"
+                );
+                return false;
+            }
+            try {
+                mainWindow.webContents.send(MENU_CLICK_CHANNEL, MENU_PROCESSING_LOCK_NOTICE_ACTION);
+            } catch (err) {
+                log.warnOnce(
+                    'menu_builder.processing_lock_notice.sendFailed',
+                    "webContents.send('menu-click') failed for processing lock notice (ignored):",
+                    err
+                );
             }
         }
         return false;
@@ -321,16 +333,14 @@ function buildAppMenu(lang, opts = {}) {
 
         const mainWindow = resolveMainWindow();
         if (!mainWindow) {
-            log.warnOnce(
-                'menu_builder.sendMenuClick.noWindow',
+            log.warn(
                 'menu-click failed (ignored): no mainWindow',
                 payload
             );
             return;
         }
         if (mainWindow.isDestroyed()) {
-            log.warnOnce(
-                'menu_builder.sendMenuClick.destroyed',
+            log.warn(
                 'menu-click failed (ignored): mainWindow destroyed',
                 payload
             );
@@ -340,8 +350,7 @@ function buildAppMenu(lang, opts = {}) {
         try {
             mainWindow.webContents.send(MENU_CLICK_CHANNEL, payload);
         } catch (err) {
-            log.warnOnce(
-                'menu_builder.sendMenuClick.sendFailed',
+            log.warn(
                 "webContents.send('menu-click') failed (ignored):",
                 payload,
                 err
@@ -373,15 +382,13 @@ function buildAppMenu(lang, opts = {}) {
                             try {
                                 onOpenLanguage();
                             } catch (err) {
-                                log.errorOnce(
-                                    'menu_builder.onOpenLanguage',
+                                log.error(
                                     'onOpenLanguage callback failed:',
                                     err
                                 );
                             }
                         } else {
-                            log.warnOnce(
-                                'menu_builder.onOpenLanguage.missing',
+                            log.warn(
                                 'Language menu clicked but no handler was provided (ignored).'
                             );
                         }
@@ -426,12 +433,14 @@ function buildAppMenu(lang, opts = {}) {
                     click: () => {
                         if (!canDispatchMenuAction('dev.reload')) return;
                         const target = resolveDevTarget();
-                        if (!target) return;
+                        if (!target) {
+                            log.warn('dev reload failed (ignored): no target window');
+                            return;
+                        }
                         try {
                             target.webContents.reload();
                         } catch (err) {
-                            log.warnOnce(
-                                'menu_builder.devReload',
+                            log.warn(
                                 'dev reload failed (ignored):',
                                 err
                             );
@@ -444,12 +453,14 @@ function buildAppMenu(lang, opts = {}) {
                     click: () => {
                         if (!canDispatchMenuAction('dev.forceReload')) return;
                         const target = resolveDevTarget();
-                        if (!target) return;
+                        if (!target) {
+                            log.warn('dev force reload failed (ignored): no target window');
+                            return;
+                        }
                         try {
                             target.webContents.reloadIgnoringCache();
                         } catch (err) {
-                            log.warnOnce(
-                                'menu_builder.devForceReload',
+                            log.warn(
                                 'dev force reload failed (ignored):',
                                 err
                             );
@@ -462,12 +473,14 @@ function buildAppMenu(lang, opts = {}) {
                     click: () => {
                         if (!canDispatchMenuAction('dev.toggleDevTools')) return;
                         const target = resolveDevTarget();
-                        if (!target) return;
+                        if (!target) {
+                            log.warn('toggleDevTools failed (ignored): no target window');
+                            return;
+                        }
                         try {
                             target.webContents.toggleDevTools();
                         } catch (err) {
-                            log.warnOnce(
-                                'menu_builder.toggleDevTools',
+                            log.warn(
                                 'toggleDevTools failed (ignored):',
                                 err
                             );
