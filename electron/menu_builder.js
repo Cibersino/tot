@@ -71,9 +71,8 @@ function resolveDialogText(dialogTexts, key, fallback = key, opts = {}) {
     if (!opts.log || typeof opts.log.warnOnce !== 'function') {
         throw new Error('[menu_builder] resolveDialogText requires opts.log.warnOnce');
     }
-    const logger = opts.log;
     const prefix = opts.warnPrefix || 'menu_builder.dialog.missing';
-    logger.warnOnce(
+    opts.log.warnOnce(
         `${prefix}:${key}`,
         'Missing dialog translation key (using fallback):',
         key
@@ -141,7 +140,7 @@ function loadMainTranslations(lang) {
         overlay = loadOverlay(requested, base);
         if (!overlay) {
             log.warnOnce(
-                'menu_builder.loadMainTranslations.overlayMissing',
+                `menu_builder.loadMainTranslations.overlayMissing:${requested}:${base || 'none'}`,
                 'No overlay main.json found (using default only):',
                 { requested, base }
             );
@@ -186,7 +185,7 @@ function loadBundle(langCode, requested, required) {
 
             if (raw.trim() === '') {
                 log.warnOnce(
-                    `menu_builder.loadMainTranslations.empty:${fileVariant}`,
+                    `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`,
                     'main.json is empty (trying fallback):',
                     { requested, langCode, file }
                 );
@@ -196,7 +195,7 @@ function loadBundle(langCode, requested, required) {
             const parsed = JSON.parse(raw);
             if (!isPlainObject(parsed)) {
                 log.warnOnce(
-                    `menu_builder.loadMainTranslations.invalidShape:${fileVariant}`,
+                    `menu_builder.loadMainTranslations.invalidShape:${langCode}:${fileVariant}`,
                     'main.json root must be a JSON object (trying fallback):',
                     { requested, langCode, file }
                 );
@@ -206,7 +205,7 @@ function loadBundle(langCode, requested, required) {
             return parsed;
         } catch (err) {
             log.warnOnce(
-                `menu_builder.loadMainTranslations.failed:${fileVariant}`,
+                `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`,
                 'Failed to load/parse main.json (trying fallback):',
                 { requested, langCode, file },
                 err
@@ -216,7 +215,7 @@ function loadBundle(langCode, requested, required) {
 
     if (required) {
         log.errorOnce(
-            'menu_builder.loadMainTranslations.requiredMissing',
+            `menu_builder.loadMainTranslations.requiredMissing:${langCode}`,
             'Required main.json missing/invalid:',
             { langCode, files }
         );
