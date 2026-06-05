@@ -27,6 +27,14 @@ const { DEFAULT_LANG } = require('./constants_main');
 const { normalizeLangTag, getLangBase } = require('./settings');
 
 // =============================================================================
+// Constants/config
+// =============================================================================
+
+const I18N_DIR = path.join(__dirname, '..', 'i18n');
+const MENU_CLICK_CHANNEL = 'menu-click';
+const MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__';
+
+// =============================================================================
 // Helpers (logging + utilities)
 // =============================================================================
 
@@ -71,6 +79,20 @@ function resolveDialogText(dialogTexts, key, fallback = key, opts = {}) {
         key
     );
     return fallback;
+}
+
+function describeMenuBlockReason(reason) {
+    if (reason === 'processing_mode') return 'processing-mode lock active';
+    if (reason === 'current_text_pending') return 'current-text pending lock active';
+    if (reason === 'pre_ready') return 'pre-READY';
+    return `lock:${reason}`;
+}
+
+function createMenuActionItem(menuTexts, labelKey, actionId, sendMenuClick) {
+    return {
+        label: resolveMenuLabel(menuTexts, labelKey),
+        click: () => sendMenuClick(actionId),
+    };
 }
 
 // =============================================================================
@@ -147,9 +169,9 @@ function loadBundle(langCode, requested, required) {
 
     const files = [];
     if (langCode.includes('-')) {
-        files.push(path.join(__dirname, '..', 'i18n', langBase, langCode, 'main.json'));
+        files.push(path.join(I18N_DIR, langBase, langCode, 'main.json'));
     }
-    files.push(path.join(__dirname, '..', 'i18n', langCode, 'main.json'));
+    files.push(path.join(I18N_DIR, langCode, 'main.json'));
 
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -227,7 +249,6 @@ function buildAppMenu(lang, opts = {}) {
     const tr = loadMainTranslations(effectiveLang) || {};
     const tMain = tr.main || {};
     const m = tMain.menu || {};
-    const MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__';
 
     const resolveMainWindow =
         typeof opts.resolveMainWindow === 'function'
@@ -248,11 +269,7 @@ function buildAppMenu(lang, opts = {}) {
         if (isMenuEnabled()) return true;
         const reasonRaw = String(getMenuBlockReason(actionId) || '').trim();
         const reason = reasonRaw || 'interaction_locked';
-        const reasonLabel = reason === 'processing_mode'
-            ? 'processing-mode lock active'
-            : (reason === 'current_text_pending'
-                ? 'current-text pending lock active'
-                : (reason === 'pre_ready' ? 'pre-READY' : `lock:${reason}`));
+        const reasonLabel = describeMenuBlockReason(reason);
         log.warnOnce(
             `menu_builder.inert.${reason}:${actionId}`,
             `Menu action ignored (${reasonLabel}):`,
@@ -262,7 +279,7 @@ function buildAppMenu(lang, opts = {}) {
             const mainWindow = resolveMainWindow();
             if (mainWindow && !mainWindow.isDestroyed()) {
                 try {
-                    mainWindow.webContents.send('menu-click', MENU_PROCESSING_LOCK_NOTICE_ACTION);
+                    mainWindow.webContents.send(MENU_CLICK_CHANNEL, MENU_PROCESSING_LOCK_NOTICE_ACTION);
                 } catch (err) {
                     log.warnOnce(
                         'menu_builder.processing_lock_notice.sendFailed',
@@ -311,7 +328,7 @@ function buildAppMenu(lang, opts = {}) {
         }
 
         try {
-            mainWindow.webContents.send('menu-click', payload);
+            mainWindow.webContents.send(MENU_CLICK_CHANNEL, payload);
         } catch (err) {
             log.warnOnce(
                 'menu_builder.sendMenuClick.sendFailed',
@@ -329,18 +346,9 @@ function buildAppMenu(lang, opts = {}) {
         {
             label: resolveMenuLabel(m, 'como_usar'),
             submenu: [
-                {
-                    label: resolveMenuLabel(m, 'guia_basica'),
-                    click: () => sendMenuClick('guia_basica'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'instrucciones_completas'),
-                    click: () => sendMenuClick('instrucciones_completas'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'faq'),
-                    click: () => sendMenuClick('faq'),
-                },
+                createMenuActionItem(m, 'guia_basica', 'guia_basica', sendMenuClick),
+                createMenuActionItem(m, 'instrucciones_completas', 'instrucciones_completas', sendMenuClick),
+                createMenuActionItem(m, 'faq', 'faq', sendMenuClick),
             ],
         },
         {
@@ -372,57 +380,24 @@ function buildAppMenu(lang, opts = {}) {
                 {
                     label: resolveMenuLabel(m, 'diseno'),
                     submenu: [
-                        {
-                            label: resolveMenuLabel(m, 'skins'),
-                            click: () => sendMenuClick('diseno_skins'),
-                        },
-                        {
-                            label: resolveMenuLabel(m, 'crono_flotante'),
-                            click: () => sendMenuClick('diseno_crono_flotante'),
-                        },
-                        {
-                            label: resolveMenuLabel(m, 'fuentes'),
-                            click: () => sendMenuClick('diseno_fuentes'),
-                        },
-                        {
-                            label: resolveMenuLabel(m, 'colores'),
-                            click: () => sendMenuClick('diseno_colores'),
-                        },
+                        createMenuActionItem(m, 'skins', 'diseno_skins', sendMenuClick),
+                        createMenuActionItem(m, 'crono_flotante', 'diseno_crono_flotante', sendMenuClick),
+                        createMenuActionItem(m, 'fuentes', 'diseno_fuentes', sendMenuClick),
+                        createMenuActionItem(m, 'colores', 'diseno_colores', sendMenuClick),
                     ],
                 },
-                {
-                    label: resolveMenuLabel(m, 'shortcuts'),
-                    click: () => sendMenuClick('shortcuts'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'presets_por_defecto'),
-                    click: () => sendMenuClick('presets_por_defecto'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'enable_google_ocr'),
-                    click: () => sendMenuClick('enable_google_ocr'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'disconnect_google_ocr'),
-                    click: () => sendMenuClick('disconnect_google_ocr'),
-                },
+                createMenuActionItem(m, 'shortcuts', 'shortcuts', sendMenuClick),
+                createMenuActionItem(m, 'presets_por_defecto', 'presets_por_defecto', sendMenuClick),
+                createMenuActionItem(m, 'enable_google_ocr', 'enable_google_ocr', sendMenuClick),
+                createMenuActionItem(m, 'disconnect_google_ocr', 'disconnect_google_ocr', sendMenuClick),
             ],
         },
-        {
-            label: resolveMenuLabel(m, 'links_interes'),
-            click: () => sendMenuClick('links_interes'),
-        },
+        createMenuActionItem(m, 'links_interes', 'links_interes', sendMenuClick),
         {
             label: resolveMenuLabel(m, 'ayuda'),
             submenu: [
-                {
-                    label: resolveMenuLabel(m, 'actualizar_version'),
-                    click: () => sendMenuClick('actualizar_version'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'acerca_de'),
-                    click: () => sendMenuClick('acerca_de'),
-                },
+                createMenuActionItem(m, 'actualizar_version', 'actualizar_version', sendMenuClick),
+                createMenuActionItem(m, 'acerca_de', 'acerca_de', sendMenuClick),
             ],
         },
     ];
