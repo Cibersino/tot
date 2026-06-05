@@ -123,15 +123,14 @@
     const settingsSnapshot = normalizeSettings(settings, language);
     let defaults = { general: [], languagePresets: {} };
     if (typeof electronAPI.getDefaultPresets !== 'function') {
-      log.warnOnce(
-        'presets.getDefaultPresets.missing',
+      log.warn(
         '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
       );
     } else {
       try {
         defaults = await electronAPI.getDefaultPresets();
       } catch (err) {
-        log.error('Error getting default presets from main:', err);
+        log.warn('Default presets fetch failed; using settings-only presets.', err);
       }
     }
 
@@ -193,13 +192,12 @@
       if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
         await electronAPI.setSelectedPreset(selected.name);
       } else {
-        log.warnOnce(
-          'presets.setSelectedPreset.missing',
-          '[presets] electronAPI.setSelectedPreset unavailable; selection persistence skipped'
+        log.warn(
+          '[presets] Selection persistence failed (ignored): electronAPI.setSelectedPreset unavailable.'
         );
       }
     } catch (err) {
-      log.error('Error persisting selected preset:', err);
+      log.warn('Selection persistence failed (ignored):', err);
     }
 
     return selected;
