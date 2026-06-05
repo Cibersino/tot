@@ -46,6 +46,15 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [1.4.0] toT — Industrial
+
+### Fecha release y último commit
+
+- Fecha: `2026-06-04`
+- Último commit: `c71fd667006d1fe80002544af8860f45eea2e914`
+
 ### Resumen de cambios
 
 - La extracción de texto desde PDFs agrega un paso previo de opciones que permite elegir entre `Todas las páginas` y un `Rango de páginas` contiguo antes de continuar con la extracción.
