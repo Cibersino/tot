@@ -193,7 +193,17 @@ function loadBundle(langCode, requested, required) {
                 continue;
             }
 
-            return JSON.parse(raw);
+            const parsed = JSON.parse(raw);
+            if (!isPlainObject(parsed)) {
+                log.warnOnce(
+                    `menu_builder.loadMainTranslations.invalidShape:${fileVariant}`,
+                    'main.json root must be a JSON object (trying fallback):',
+                    { requested, langCode, file }
+                );
+                continue;
+            }
+
+            return parsed;
         } catch (err) {
             log.warnOnce(
                 `menu_builder.loadMainTranslations.failed:${fileVariant}`,
@@ -223,8 +233,8 @@ function loadBundle(langCode, requested, required) {
 
 function getDialogTexts(lang) {
     const tr = loadMainTranslations(lang);
-    const tMain = tr && tr.main ? tr.main : {};
-    return tMain.dialog || {};
+    const tMain = isPlainObject(tr && tr.main) ? tr.main : {};
+    return isPlainObject(tMain.dialog) ? tMain.dialog : {};
 }
 
 // =============================================================================
@@ -247,8 +257,8 @@ function getDialogTexts(lang) {
 function buildAppMenu(lang, opts = {}) {
     const effectiveLang = normalizeLangTag(lang) || DEFAULT_LANG;
     const tr = loadMainTranslations(effectiveLang) || {};
-    const tMain = tr.main || {};
-    const m = tMain.menu || {};
+    const tMain = isPlainObject(tr.main) ? tr.main : {};
+    const m = isPlainObject(tMain.menu) ? tMain.menu : {};
 
     const resolveMainWindow =
         typeof opts.resolveMainWindow === 'function'
