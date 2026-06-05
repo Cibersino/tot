@@ -1,9 +1,10 @@
-// public/js/text_extraction_pdf_page_selection.js
+// public/js/text_extraction_pdf_page_selection_ui_model.js
 'use strict';
 
 // =============================================================================
 // Overview
 // =============================================================================
+// Shared renderer helper for PDF page-selection state used by text extraction UI.
 // Responsibilities:
 // - Own the shared renderer-side PDF page-selection model for text extraction.
 // - Keep batch and single-file page-range UI on one validation/defaulting path.
@@ -27,7 +28,7 @@
   const { msgRenderer, tRenderer } = window.RendererI18n;
 
   // =============================================================================
-  // Constants
+  // Constants / config
   // =============================================================================
 
   const INVALID_RANGE_KEY = 'renderer.text_extraction.pdf_options.invalid_range';
@@ -206,3 +207,7 @@
     getPageSelectionUiState,
   };
 })();
+
+// =============================================================================
+// End of public/js/text_extraction_pdf_page_selection_ui_model.js
+// =============================================================================

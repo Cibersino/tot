@@ -5,11 +5,11 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Validate required renderer surfaces before Text Editor bootstrap continues.
-// - Wire Text Editor UI and Text Editor engine modules together through shared context.
-// - Bootstrap config, settings, translations, and initial Text Editor text state.
-// - Register editorAPI listeners and DOM event handlers for Text Editor interactions.
-// - Coordinate local Text Editor actions with main-process text synchronization.
+// - Validate required renderer surfaces before Text Editor startup continues.
+// - Build the shared editor context consumed by the UI and engine modules.
+// - Apply bootstrap config, settings, translations, and initial text state.
+// - Keep editor window state and settings-driven UI in sync with bridge updates.
+// - Route local editor interactions back through the main-process text bridge.
 // =============================================================================
 
 // =============================================================================
@@ -139,10 +139,9 @@ const startupQuery = editorStartupPresentation.parseStartupQuery(window.location
 const startupPresentation = editorStartupPresentation.createStartupPresentationController(startupQuery);
 
 // =============================================================================
-// Shared context
+// Shared state / context
 // =============================================================================
 const ctx = {
-  log,
   AppConstants,
   DEFAULT_LANG,
   PASTE_ALLOW_LIMIT,
@@ -209,6 +208,9 @@ const ctx = {
 ctx.ui = window.EditorUI.createEditorUI(ctx);
 ctx.engine = window.EditorEngine.createEditorEngine(ctx);
 
+// =============================================================================
+// Helpers
+// =============================================================================
 function applyActualWindowState(windowState) {
   ctx.state.editorWindowMaximized = !!(windowState && windowState.maximized === true);
   ctx.state.maximizedTextWidthPx = ctx.ui.clampEditorMaximizedTextWidthPx(
@@ -218,12 +220,20 @@ function applyActualWindowState(windowState) {
   ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
 }
 
-function captureActualWindowState(windowState) {
+function captureActualWindowState(windowState, options = {}) {
+  const bootstrap = !!(options && options.bootstrap);
   if (windowState && windowState.ok === false) {
-    log.warn(
-      'BOOTSTRAP: editorAPI.getWindowState returned a non-ok result; keeping startup presentation until a live window-state update arrives.',
-      windowState.error || 'unknown'
-    );
+    if (bootstrap) {
+      log.warn(
+        'BOOTSTRAP: editorAPI.getWindowState returned a non-ok result; keeping startup presentation until a live window-state update arrives.',
+        windowState.error || 'unknown'
+      );
+    } else {
+      log.warn(
+        'editorAPI.onWindowStateChanged returned a non-ok result; keeping current maximized layout state.',
+        windowState.error || 'unknown'
+      );
+    }
     return;
   }
   const nextWindowState = ctx.state.startupPresentation.captureActualWindowState(windowState);
@@ -263,8 +273,23 @@ function reportBasePresentationState(payload) {
         : {}),
     });
   } catch (err) {
-    log.error('BOOTSTRAP: reportBasePresentationState failed:', err);
+    log.error('BOOTSTRAP: reportBasePresentationState call failed:', err);
   }
+}
+
+function applyInitialLocalUiState() {
+  ctx.ui.applyTextareaDefaults();
+  window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
+  ctx.ui.applyEditorLanguage();
+  ctx.ui.updateEditorTextDirection();
+  ctx.ui.setLocalSpellcheckState({
+    preferenceEnabled: ctx.state.spellcheckEnabled,
+    available: ctx.state.spellcheckAvailable,
+  });
+  ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
+  ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
+  ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
+  ctx.ui.updateReadProgressUi();
 }
 
 async function bootstrapEditorEnvironment() {
@@ -294,13 +319,26 @@ async function bootstrapEditorEnvironment() {
     } else {
       log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
     }
-    captureActualWindowState(await ctx.editorAPI.getWindowState());
-    ctx.ui.setLocalSpellcheckState({
-      preferenceEnabled: ctx.state.spellcheckEnabled,
-      available: ctx.state.spellcheckAvailable,
-    });
-    ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
-    window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
+  } catch (err) {
+    log.warn('BOOTSTRAP: getSettings failed; using default editor settings:', err);
+  }
+  try {
+    captureActualWindowState(await ctx.editorAPI.getWindowState(), { bootstrap: true });
+  } catch (err) {
+    log.warn(
+      'BOOTSTRAP: getWindowState failed; keeping startup presentation until a live window-state update arrives:',
+      err
+    );
+  }
+
+  ctx.ui.setLocalSpellcheckState({
+    preferenceEnabled: ctx.state.spellcheckEnabled,
+    available: ctx.state.spellcheckAvailable,
+  });
+  ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
+  window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
+
+  try {
     await ctx.ui.applyEditorTranslations();
     ctx.ui.updateEditorTextDirection();
   } catch (err) {
@@ -308,23 +346,41 @@ async function bootstrapEditorEnvironment() {
   }
 }
 
-// warnOnce keys are editor-scoped; use log.warnOnce directly.
-ctx.ui.applyTextareaDefaults();
-window.RendererI18n.applyWindowLanguageAttributes(ctx.state.idiomaActual);
-ctx.ui.applyEditorLanguage();
-ctx.ui.updateEditorTextDirection();
-ctx.ui.setLocalSpellcheckState({
-  preferenceEnabled: ctx.state.spellcheckEnabled,
-  available: ctx.state.spellcheckAvailable,
-});
-ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
-ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
-ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
-ctx.ui.updateReadProgressUi();
+async function bootstrapInitialEditorText() {
+  let initialText = '';
+
+  try {
+    initialText = String(await ctx.editorAPI.getCurrentText() || '');
+  } catch (err) {
+    throw new Error(`[editor] editorAPI.getCurrentText failed during bootstrap: ${String(err)}`);
+  }
+
+  await ctx.engine.applyExternalUpdate({
+    text: initialText,
+    meta: { source: 'main', action: 'init' },
+  });
+  ctx.ui.updateEditorTextDirection();
+  btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
+}
+
+function registerEditorMarginGutter(gutter, side) {
+  if (!gutter) return;
+
+  gutter.addEventListener('pointerdown', (event) => {
+    ctx.ui.handleEditorMarginPointerDown(event, side);
+  });
+  gutter.addEventListener('dblclick', () => {
+    ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
+      log.error('Error resetting Text Editor maximized text width:', err);
+    });
+  });
+}
 
 // =============================================================================
-// Settings integration
+// Live bridge integration
 // =============================================================================
+applyInitialLocalUiState();
+
 if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
   ctx.editorAPI.onSettingsChanged(async (settings) => {
     try {
@@ -359,7 +415,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
         ctx.ui.updateEditorTextSizeUi();
       }
     } catch (err) {
-      log.warn('Text Editor: failed to apply settings update:', err);
+      log.warn('Text Editor settings update failed:', err);
     }
   });
 } else {
@@ -368,7 +424,7 @@ if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
 
 if (typeof ctx.editorAPI.onWindowStateChanged === 'function') {
   ctx.editorAPI.onWindowStateChanged((windowState) => {
-    captureActualWindowState(windowState);
+    captureActualWindowState(windowState, { bootstrap: false });
   });
 } else {
   log.warn('BOOTSTRAP: editorAPI.onWindowStateChanged missing; live maximized layout updates disabled.');
@@ -383,25 +439,8 @@ if (readingTestPrestartOverlay) {
   });
 }
 
-async function bootstrapInitialEditorText() {
-  let initialText = '';
-
-  try {
-    initialText = String(await ctx.editorAPI.getCurrentText() || '');
-  } catch (err) {
-    throw new Error(`[editor] editorAPI.getCurrentText failed during bootstrap: ${String(err)}`);
-  }
-
-  await ctx.engine.applyExternalUpdate({
-    text: initialText,
-    meta: { source: 'main', action: 'init' },
-  });
-  ctx.ui.updateEditorTextDirection();
-  btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
-}
-
 // =============================================================================
-// Bootstrap: config, settings, and initial text
+// App lifecycle / bootstrapping
 // =============================================================================
 Promise.resolve()
   .then(async () => {
@@ -430,7 +469,7 @@ ctx.editorAPI.onReplaceRequest((payload) => {
   Promise.resolve()
     .then(() => ctx.engine.handleReplaceRequest(payload || {}))
     .catch((err) => {
-      log.error('handleReplaceRequest error:', err);
+      log.error('Text Editor replace request handling failed:', err);
       return {
         requestId,
         operation: payload && payload.operation === 'replace-all' ? 'replace-all' : 'replace-current',
@@ -445,7 +484,7 @@ ctx.editorAPI.onReplaceRequest((payload) => {
       try {
         ctx.editorAPI.sendReplaceResponse(response);
       } catch (err) {
-        log.error('sendReplaceResponse error:', err);
+        log.error('Text Editor replace response send failed:', err);
       }
     });
 });
@@ -488,9 +527,8 @@ if (editor) {
       action: 'drop',
       limitAlertKey: 'renderer.editor.alerts.drop_limit',
       truncatedAlertKey: 'renderer.editor.alerts.drop_truncated',
-      onFallbackError: (err) => log.warnOnce(
-        'setCurrentText.drop.fallback',
-        'editorAPI.setCurrentText fallback failed (ignored):',
+      onError: (err) => log.warn(
+        'editorAPI.setCurrentText failed (ignored):',
         err
       )
     }
@@ -528,7 +566,7 @@ if (editor) {
         ctx.ui.restoreFocusToEditor(start);
       }
     } catch (err) {
-      log.error('beforeinput guard error:', err);
+      log.error('Text Editor beforeinput guard failed:', err);
     }
   });
 }
@@ -544,8 +582,8 @@ editor.addEventListener('input', () => {
     if (calcWhileTyping && calcWhileTyping.checked) {
       ctx.state.debounceTimer = setTimeout(() => {
         ctx.engine.sendCurrentTextToMain('typing', {
-          onFallbackError: (err) => log.warnOnce(
-            'editor.setCurrentText.typing.fallback',
+          onError: (err) => log.warnOnce(
+            'editor.setCurrentText.typing',
             'setCurrentText typing sync failed (ignored):',
             err
           )
@@ -574,8 +612,7 @@ btnTrash.addEventListener('click', () => {
   if (calcWhileTyping && calcWhileTyping.checked) {
     const didSend = ctx.engine.sendCurrentTextToMain('clear', {
       text: '',
-      onPrimaryError: (err) => log.error('Error executing Clear:', err),
-      onFallbackError: (err) => log.error('Error executing Clear fallback:', err),
+      onError: (err) => log.error('Text Editor clear sync failed:', err),
     });
     if (!didSend) {
       window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
@@ -587,8 +624,7 @@ btnTrash.addEventListener('click', () => {
 if (btnCalc) btnCalc.addEventListener('click', () => {
   const didSend = ctx.engine.sendCurrentTextToMain('overwrite', {
     text: editor.value || '',
-    onPrimaryError: (err) => log.error('Error executing Apply:', err),
-    onFallbackError: (err) => log.error('Error executing Apply fallback:', err),
+    onError: (err) => log.error('Text Editor apply sync failed:', err),
   });
   if (!didSend) {
     window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
@@ -601,9 +637,8 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     btnCalc.disabled = true;
     ctx.engine.sendCurrentTextToMain('typing_toggle_on', {
       text: editor.value || '',
-      onFallbackError: (err) => log.warnOnce(
-        'setCurrentText.typing_toggle_on.fallback',
-        'editorAPI.setCurrentText fallback failed (typing toggle on ignored):',
+      onError: (err) => log.warn(
+        'editorAPI.setCurrentText failed (typing toggle on ignored):',
         err
       )
     });
@@ -625,8 +660,7 @@ if (spellcheckToggle) {
     }
 
     if (!ctx.editorAPI || typeof ctx.editorAPI.setSpellcheckEnabled !== 'function') {
-      log.warnOnce(
-        'editor.spellcheck.apiMissing',
+      log.warn(
         'editorAPI.setSpellcheckEnabled missing; spellcheck toggle ignored.'
       );
       ctx.ui.setLocalSpellcheckState({
@@ -647,7 +681,7 @@ if (spellcheckToggle) {
         throw new Error(result && result.error ? String(result.error) : 'unknown');
       }
     } catch (err) {
-      log.error('Error updating spellcheck setting:', err);
+      log.error('Text Editor spellcheck update failed:', err);
       ctx.ui.setLocalSpellcheckState({
         preferenceEnabled: previousEnabled,
         available: previousAvailable,
@@ -659,7 +693,7 @@ if (spellcheckToggle) {
 if (btnTextSizeDecrease) {
   btnTextSizeDecrease.addEventListener('click', () => {
     ctx.ui.decreaseEditorFontSize().catch((err) => {
-      log.error('Error decreasing Text Editor font size:', err);
+      log.error('Text Editor font size decrease failed:', err);
     });
   });
 }
@@ -667,7 +701,7 @@ if (btnTextSizeDecrease) {
 if (btnTextSizeIncrease) {
   btnTextSizeIncrease.addEventListener('click', () => {
     ctx.ui.increaseEditorFontSize().catch((err) => {
-      log.error('Error increasing Text Editor font size:', err);
+      log.error('Text Editor font size increase failed:', err);
     });
   });
 }
@@ -675,32 +709,13 @@ if (btnTextSizeIncrease) {
 if (btnTextSizeReset) {
   btnTextSizeReset.addEventListener('click', () => {
     ctx.ui.resetEditorFontSize().catch((err) => {
-      log.error('Error resetting Text Editor font size:', err);
+      log.error('Text Editor font size reset failed:', err);
     });
   });
 }
 
-if (editorLeftGutter) {
-  editorLeftGutter.addEventListener('pointerdown', (event) => {
-    ctx.ui.handleEditorMarginPointerDown(event, 'left');
-  });
-  editorLeftGutter.addEventListener('dblclick', () => {
-    ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
-      log.error('Error resetting Text Editor maximized text width:', err);
-    });
-  });
-}
-
-if (editorRightGutter) {
-  editorRightGutter.addEventListener('pointerdown', (event) => {
-    ctx.ui.handleEditorMarginPointerDown(event, 'right');
-  });
-  editorRightGutter.addEventListener('dblclick', () => {
-    ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
-      log.error('Error resetting Text Editor maximized text width:', err);
-    });
-  });
-}
+registerEditorMarginGutter(editorLeftGutter, 'left');
+registerEditorMarginGutter(editorRightGutter, 'right');
 
 // =============================================================================
 // End of public/editor.js

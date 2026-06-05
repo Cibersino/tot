@@ -4,11 +4,13 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Builds the app's native (top) menu and main-process dialog texts.
+// Main-process menu and native-dialog translation owner.
 // Responsibilities:
-// - Load translations from i18n/<lang>/main.json with a safe fallback chain.
-// - Build and install the application menu.
-// - Forward menu actions to the main renderer via 'menu-click'.
+// - Load main-process translations from i18n/<lang>/main.json with the repo fallback chain.
+// - Expose helpers for native dialog text resolution used by other main-side modules.
+// - Build and install the native application menu from translated labels.
+// - Gate menu dispatch when main-window interaction is intentionally locked.
+// - Forward approved menu actions to the main renderer via 'menu-click'.
 
 // =============================================================================
 // Imports (external modules)
@@ -27,7 +29,15 @@ const { DEFAULT_LANG } = require('./constants_main');
 const { normalizeLangTag, getLangBase } = require('./settings');
 
 // =============================================================================
-// Helpers (logging + utilities)
+// Constants/config
+// =============================================================================
+
+const I18N_DIR = path.join(__dirname, '..', 'i18n');
+const MENU_CLICK_CHANNEL = 'menu-click';
+const MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__';
+
+// =============================================================================
+// Logger + shared helpers
 // =============================================================================
 
 const log = Log.get('menu');
@@ -58,19 +68,34 @@ function resolveMenuLabel(obj, key, fallback = key) {
     return fallback;
 }
 
+// Exported helper: callers inject their own logger scope/prefix so missing
+// dialog-key diagnostics stay attributed to the feature that requested them.
 function resolveDialogText(dialogTexts, key, fallback = key, opts = {}) {
     if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
     if (!opts.log || typeof opts.log.warnOnce !== 'function') {
         throw new Error('[menu_builder] resolveDialogText requires opts.log.warnOnce');
     }
-    const logger = opts.log;
     const prefix = opts.warnPrefix || 'menu_builder.dialog.missing';
-    logger.warnOnce(
+    opts.log.warnOnce(
         `${prefix}:${key}`,
         'Missing dialog translation key (using fallback):',
         key
     );
     return fallback;
+}
+
+function describeMenuBlockReason(reason) {
+    if (reason === 'processing_mode') return 'processing-mode lock active';
+    if (reason === 'current_text_pending') return 'current-text pending lock active';
+    if (reason === 'pre_ready') return 'pre-READY';
+    return `lock:${reason}`;
+}
+
+function createMenuActionItem(menuTexts, labelKey, actionId, sendMenuClick) {
+    return {
+        label: resolveMenuLabel(menuTexts, labelKey),
+        click: () => sendMenuClick(actionId),
+    };
 }
 
 // =============================================================================
@@ -119,7 +144,7 @@ function loadMainTranslations(lang) {
         overlay = loadOverlay(requested, base);
         if (!overlay) {
             log.warnOnce(
-                'menu_builder.loadMainTranslations.overlayMissing',
+                `menu_builder.loadMainTranslations.overlayMissing:${requested}:${base || 'none'}`,
                 'No overlay main.json found (using default only):',
                 { requested, base }
             );
@@ -147,9 +172,9 @@ function loadBundle(langCode, requested, required) {
 
     const files = [];
     if (langCode.includes('-')) {
-        files.push(path.join(__dirname, '..', 'i18n', langBase, langCode, 'main.json'));
+        files.push(path.join(I18N_DIR, langBase, langCode, 'main.json'));
     }
-    files.push(path.join(__dirname, '..', 'i18n', langCode, 'main.json'));
+    files.push(path.join(I18N_DIR, langCode, 'main.json'));
 
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -164,17 +189,27 @@ function loadBundle(langCode, requested, required) {
 
             if (raw.trim() === '') {
                 log.warnOnce(
-                    `menu_builder.loadMainTranslations.empty:${fileVariant}`,
+                    `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`,
                     'main.json is empty (trying fallback):',
                     { requested, langCode, file }
                 );
                 continue;
             }
 
-            return JSON.parse(raw);
+            const parsed = JSON.parse(raw);
+            if (!isPlainObject(parsed)) {
+                log.warnOnce(
+                    `menu_builder.loadMainTranslations.invalidShape:${langCode}:${fileVariant}`,
+                    'main.json root must be a JSON object (trying fallback):',
+                    { requested, langCode, file }
+                );
+                continue;
+            }
+
+            return parsed;
         } catch (err) {
             log.warnOnce(
-                `menu_builder.loadMainTranslations.failed:${fileVariant}`,
+                `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`,
                 'Failed to load/parse main.json (trying fallback):',
                 { requested, langCode, file },
                 err
@@ -184,7 +219,7 @@ function loadBundle(langCode, requested, required) {
 
     if (required) {
         log.errorOnce(
-            'menu_builder.loadMainTranslations.requiredMissing',
+            `menu_builder.loadMainTranslations.requiredMissing:${langCode}`,
             'Required main.json missing/invalid:',
             { langCode, files }
         );
@@ -194,19 +229,19 @@ function loadBundle(langCode, requested, required) {
 }
 
 // =============================================================================
-// Public helper: dialog texts
+// Public helper: native dialog texts
 // =============================================================================
 // Some dialogs are shown by the main process (Electron native dialogs).
 // This returns the "main.dialog" section from the translation file.
 
 function getDialogTexts(lang) {
     const tr = loadMainTranslations(lang);
-    const tMain = tr && tr.main ? tr.main : {};
-    return tMain.dialog || {};
+    const tMain = isPlainObject(tr && tr.main) ? tr.main : {};
+    return isPlainObject(tMain.dialog) ? tMain.dialog : {};
 }
 
 // =============================================================================
-// Public helper: build the native application menu
+// Public helper: native application menu
 // =============================================================================
 
 /**
@@ -225,9 +260,8 @@ function getDialogTexts(lang) {
 function buildAppMenu(lang, opts = {}) {
     const effectiveLang = normalizeLangTag(lang) || DEFAULT_LANG;
     const tr = loadMainTranslations(effectiveLang) || {};
-    const tMain = tr.main || {};
-    const m = tMain.menu || {};
-    const MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__';
+    const tMain = isPlainObject(tr.main) ? tr.main : {};
+    const m = isPlainObject(tMain.menu) ? tMain.menu : {};
 
     const resolveMainWindow =
         typeof opts.resolveMainWindow === 'function'
@@ -248,11 +282,7 @@ function buildAppMenu(lang, opts = {}) {
         if (isMenuEnabled()) return true;
         const reasonRaw = String(getMenuBlockReason(actionId) || '').trim();
         const reason = reasonRaw || 'interaction_locked';
-        const reasonLabel = reason === 'processing_mode'
-            ? 'processing-mode lock active'
-            : (reason === 'current_text_pending'
-                ? 'current-text pending lock active'
-                : (reason === 'pre_ready' ? 'pre-READY' : `lock:${reason}`));
+        const reasonLabel = describeMenuBlockReason(reason);
         log.warnOnce(
             `menu_builder.inert.${reason}:${actionId}`,
             `Menu action ignored (${reasonLabel}):`,
@@ -260,16 +290,28 @@ function buildAppMenu(lang, opts = {}) {
         );
         if (reason === 'processing_mode' || reason === 'current_text_pending') {
             const mainWindow = resolveMainWindow();
-            if (mainWindow && !mainWindow.isDestroyed()) {
-                try {
-                    mainWindow.webContents.send('menu-click', MENU_PROCESSING_LOCK_NOTICE_ACTION);
-                } catch (err) {
-                    log.warnOnce(
-                        'menu_builder.processing_lock_notice.sendFailed',
-                        "webContents.send('menu-click') failed for processing lock notice (ignored):",
-                        err
-                    );
-                }
+            if (!mainWindow) {
+                log.warnOnce(
+                    'menu_builder.processing_lock_notice.noWindow',
+                    "Processing lock notice 'menu-click' send failed (ignored): no mainWindow"
+                );
+                return false;
+            }
+            if (mainWindow.isDestroyed()) {
+                log.warnOnce(
+                    'menu_builder.processing_lock_notice.destroyed',
+                    "Processing lock notice 'menu-click' send failed (ignored): mainWindow destroyed"
+                );
+                return false;
+            }
+            try {
+                mainWindow.webContents.send(MENU_CLICK_CHANNEL, MENU_PROCESSING_LOCK_NOTICE_ACTION);
+            } catch (err) {
+                log.warnOnce(
+                    'menu_builder.processing_lock_notice.sendFailed',
+                    "webContents.send('menu-click') failed for processing lock notice (ignored):",
+                    err
+                );
             }
         }
         return false;
@@ -283,7 +325,7 @@ function buildAppMenu(lang, opts = {}) {
         return null;
     };
 
-    // Optional hook: the menu can trigger the language picker window.
+    // Optional integration hook supplied by main.js for the language picker.
     const onOpenLanguage =
         typeof opts.onOpenLanguage === 'function' ? opts.onOpenLanguage : null;
 
@@ -294,16 +336,14 @@ function buildAppMenu(lang, opts = {}) {
 
         const mainWindow = resolveMainWindow();
         if (!mainWindow) {
-            log.warnOnce(
-                'menu_builder.sendMenuClick.noWindow',
+            log.warn(
                 'menu-click failed (ignored): no mainWindow',
                 payload
             );
             return;
         }
         if (mainWindow.isDestroyed()) {
-            log.warnOnce(
-                'menu_builder.sendMenuClick.destroyed',
+            log.warn(
                 'menu-click failed (ignored): mainWindow destroyed',
                 payload
             );
@@ -311,10 +351,9 @@ function buildAppMenu(lang, opts = {}) {
         }
 
         try {
-            mainWindow.webContents.send('menu-click', payload);
+            mainWindow.webContents.send(MENU_CLICK_CHANNEL, payload);
         } catch (err) {
-            log.warnOnce(
-                'menu_builder.sendMenuClick.sendFailed',
+            log.warn(
                 "webContents.send('menu-click') failed (ignored):",
                 payload,
                 err
@@ -329,18 +368,9 @@ function buildAppMenu(lang, opts = {}) {
         {
             label: resolveMenuLabel(m, 'como_usar'),
             submenu: [
-                {
-                    label: resolveMenuLabel(m, 'guia_basica'),
-                    click: () => sendMenuClick('guia_basica'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'instrucciones_completas'),
-                    click: () => sendMenuClick('instrucciones_completas'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'faq'),
-                    click: () => sendMenuClick('faq'),
-                },
+                createMenuActionItem(m, 'guia_basica', 'guia_basica', sendMenuClick),
+                createMenuActionItem(m, 'instrucciones_completas', 'instrucciones_completas', sendMenuClick),
+                createMenuActionItem(m, 'faq', 'faq', sendMenuClick),
             ],
         },
         {
@@ -355,15 +385,13 @@ function buildAppMenu(lang, opts = {}) {
                             try {
                                 onOpenLanguage();
                             } catch (err) {
-                                log.errorOnce(
-                                    'menu_builder.onOpenLanguage',
+                                log.error(
                                     'onOpenLanguage callback failed:',
                                     err
                                 );
                             }
                         } else {
-                            log.warnOnce(
-                                'menu_builder.onOpenLanguage.missing',
+                            log.warn(
                                 'Language menu clicked but no handler was provided (ignored).'
                             );
                         }
@@ -372,57 +400,24 @@ function buildAppMenu(lang, opts = {}) {
                 {
                     label: resolveMenuLabel(m, 'diseno'),
                     submenu: [
-                        {
-                            label: resolveMenuLabel(m, 'skins'),
-                            click: () => sendMenuClick('diseno_skins'),
-                        },
-                        {
-                            label: resolveMenuLabel(m, 'crono_flotante'),
-                            click: () => sendMenuClick('diseno_crono_flotante'),
-                        },
-                        {
-                            label: resolveMenuLabel(m, 'fuentes'),
-                            click: () => sendMenuClick('diseno_fuentes'),
-                        },
-                        {
-                            label: resolveMenuLabel(m, 'colores'),
-                            click: () => sendMenuClick('diseno_colores'),
-                        },
+                        createMenuActionItem(m, 'skins', 'diseno_skins', sendMenuClick),
+                        createMenuActionItem(m, 'crono_flotante', 'diseno_crono_flotante', sendMenuClick),
+                        createMenuActionItem(m, 'fuentes', 'diseno_fuentes', sendMenuClick),
+                        createMenuActionItem(m, 'colores', 'diseno_colores', sendMenuClick),
                     ],
                 },
-                {
-                    label: resolveMenuLabel(m, 'shortcuts'),
-                    click: () => sendMenuClick('shortcuts'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'presets_por_defecto'),
-                    click: () => sendMenuClick('presets_por_defecto'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'enable_google_ocr'),
-                    click: () => sendMenuClick('enable_google_ocr'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'disconnect_google_ocr'),
-                    click: () => sendMenuClick('disconnect_google_ocr'),
-                },
+                createMenuActionItem(m, 'shortcuts', 'shortcuts', sendMenuClick),
+                createMenuActionItem(m, 'presets_por_defecto', 'presets_por_defecto', sendMenuClick),
+                createMenuActionItem(m, 'enable_google_ocr', 'enable_google_ocr', sendMenuClick),
+                createMenuActionItem(m, 'disconnect_google_ocr', 'disconnect_google_ocr', sendMenuClick),
             ],
         },
-        {
-            label: resolveMenuLabel(m, 'links_interes'),
-            click: () => sendMenuClick('links_interes'),
-        },
+        createMenuActionItem(m, 'links_interes', 'links_interes', sendMenuClick),
         {
             label: resolveMenuLabel(m, 'ayuda'),
             submenu: [
-                {
-                    label: resolveMenuLabel(m, 'actualizar_version'),
-                    click: () => sendMenuClick('actualizar_version'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'acerca_de'),
-                    click: () => sendMenuClick('acerca_de'),
-                },
+                createMenuActionItem(m, 'actualizar_version', 'actualizar_version', sendMenuClick),
+                createMenuActionItem(m, 'acerca_de', 'acerca_de', sendMenuClick),
             ],
         },
     ];
@@ -441,12 +436,14 @@ function buildAppMenu(lang, opts = {}) {
                     click: () => {
                         if (!canDispatchMenuAction('dev.reload')) return;
                         const target = resolveDevTarget();
-                        if (!target) return;
+                        if (!target) {
+                            log.warn('dev reload failed (ignored): no target window');
+                            return;
+                        }
                         try {
                             target.webContents.reload();
                         } catch (err) {
-                            log.warnOnce(
-                                'menu_builder.devReload',
+                            log.warn(
                                 'dev reload failed (ignored):',
                                 err
                             );
@@ -459,12 +456,14 @@ function buildAppMenu(lang, opts = {}) {
                     click: () => {
                         if (!canDispatchMenuAction('dev.forceReload')) return;
                         const target = resolveDevTarget();
-                        if (!target) return;
+                        if (!target) {
+                            log.warn('dev force reload failed (ignored): no target window');
+                            return;
+                        }
                         try {
                             target.webContents.reloadIgnoringCache();
                         } catch (err) {
-                            log.warnOnce(
-                                'menu_builder.devForceReload',
+                            log.warn(
                                 'dev force reload failed (ignored):',
                                 err
                             );
@@ -477,12 +476,14 @@ function buildAppMenu(lang, opts = {}) {
                     click: () => {
                         if (!canDispatchMenuAction('dev.toggleDevTools')) return;
                         const target = resolveDevTarget();
-                        if (!target) return;
+                        if (!target) {
+                            log.warn('toggleDevTools failed (ignored): no target window');
+                            return;
+                        }
                         try {
                             target.webContents.toggleDevTools();
                         } catch (err) {
-                            log.warnOnce(
-                                'menu_builder.toggleDevTools',
+                            log.warn(
                                 'toggleDevTools failed (ignored):',
                                 err
                             );

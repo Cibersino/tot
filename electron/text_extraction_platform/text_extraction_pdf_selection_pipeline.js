@@ -1,4 +1,4 @@
-// electron/text_extraction_platform/text_extraction_pdf_page_selection.js
+// electron/text_extraction_platform/text_extraction_pdf_selection_pipeline.js
 'use strict';
 
 // =============================================================================
@@ -523,5 +523,5 @@ module.exports = {
 };
 
 // =============================================================================
-// End of electron/text_extraction_platform/text_extraction_pdf_page_selection.js
+// End of electron/text_extraction_platform/text_extraction_pdf_selection_pipeline.js
 // =============================================================================

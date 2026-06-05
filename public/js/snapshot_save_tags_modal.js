@@ -38,7 +38,19 @@
   } = snapshotTagCatalog;
 
   // =============================================================================
-  // UI elements
+  // Constants / config
+  // =============================================================================
+
+  const DEFAULT_COPY = {
+    titleKey: 'renderer.snapshots.title',
+    messageKey: 'renderer.snapshots.message',
+    confirmKey: 'renderer.snapshots.buttons.confirm',
+    cancelKey: 'renderer.snapshots.buttons.cancel',
+    closeAriaKey: 'renderer.snapshots.close_aria',
+  };
+
+  // =============================================================================
+  // DOM references
   // =============================================================================
 
   const modal = document.getElementById('snapshotSaveTagsModal');
@@ -54,25 +66,32 @@
   const btnConfirm = document.getElementById('snapshotSaveTagsModalConfirm');
   const btnCancel = document.getElementById('snapshotSaveTagsModalCancel');
   const btnClose = document.getElementById('snapshotSaveTagsModalClose');
+  const REQUIRED_MODAL_ELEMENTS = [
+    modal,
+    backdrop,
+    title,
+    message,
+    languageLabel,
+    languageSelect,
+    typeLabel,
+    typeSelect,
+    difficultyLabel,
+    difficultySelect,
+    btnConfirm,
+    btnCancel,
+    btnClose,
+  ];
 
   // =============================================================================
   // Helpers
   // =============================================================================
 
   function hasRequiredElements() {
-    return !!(modal
-      && backdrop
-      && title
-      && message
-      && languageLabel
-      && languageSelect
-      && typeLabel
-      && typeSelect
-      && difficultyLabel
-      && difficultySelect
-      && btnConfirm
-      && btnCancel
-      && btnClose);
+    return REQUIRED_MODAL_ELEMENTS.every(Boolean);
+  }
+
+  function normalizeOptionalString(value) {
+    return typeof value === 'string' ? value.trim() : '';
   }
 
   function setSelectOptions(selectEl, options, emptyLabel) {
@@ -102,9 +121,9 @@
 
   function collectTags() {
     const tags = {};
-    const language = typeof languageSelect.value === 'string' ? languageSelect.value.trim() : '';
-    const type = typeof typeSelect.value === 'string' ? typeSelect.value.trim() : '';
-    const difficulty = typeof difficultySelect.value === 'string' ? difficultySelect.value.trim() : '';
+    const language = normalizeOptionalString(languageSelect.value);
+    const type = normalizeOptionalString(typeSelect.value);
+    const difficulty = normalizeOptionalString(difficultySelect.value);
 
     if (language) tags.language = language;
     if (type) tags.type = type;
@@ -114,29 +133,19 @@
   }
 
   function resolveCopy(copy = {}) {
-    const snapshotCopy = {
-      titleKey: 'renderer.snapshots.title',
-      messageKey: 'renderer.snapshots.message',
-      confirmKey: 'renderer.snapshots.buttons.confirm',
-      cancelKey: 'renderer.snapshots.buttons.cancel',
-      closeAriaKey: 'renderer.snapshots.close_aria',
-    };
+    // Keep prompt copy key-based so renderer i18n remains the text owner.
+    const titleKey = normalizeOptionalString(copy.titleKey);
+    const messageKey = normalizeOptionalString(copy.messageKey);
+    const confirmKey = normalizeOptionalString(copy.confirmKey);
+    const cancelKey = normalizeOptionalString(copy.cancelKey);
+    const closeAriaKey = normalizeOptionalString(copy.closeAriaKey);
+
     return {
-      titleKey: typeof copy.titleKey === 'string' && copy.titleKey.trim()
-        ? copy.titleKey.trim()
-        : snapshotCopy.titleKey,
-      messageKey: typeof copy.messageKey === 'string' && copy.messageKey.trim()
-        ? copy.messageKey.trim()
-        : snapshotCopy.messageKey,
-      confirmKey: typeof copy.confirmKey === 'string' && copy.confirmKey.trim()
-        ? copy.confirmKey.trim()
-        : snapshotCopy.confirmKey,
-      cancelKey: typeof copy.cancelKey === 'string' && copy.cancelKey.trim()
-        ? copy.cancelKey.trim()
-        : snapshotCopy.cancelKey,
-      closeAriaKey: typeof copy.closeAriaKey === 'string' && copy.closeAriaKey.trim()
-        ? copy.closeAriaKey.trim()
-        : snapshotCopy.closeAriaKey,
+      titleKey: titleKey || DEFAULT_COPY.titleKey,
+      messageKey: messageKey || DEFAULT_COPY.messageKey,
+      confirmKey: confirmKey || DEFAULT_COPY.confirmKey,
+      cancelKey: cancelKey || DEFAULT_COPY.cancelKey,
+      closeAriaKey: closeAriaKey || DEFAULT_COPY.closeAriaKey,
     };
   }
 
@@ -189,12 +198,12 @@
     try {
       previousFocus.focus();
     } catch (err) {
-      log.warn('Could not restore previous focus after snapshot save tags modal:', err);
+      log.warn('Snapshot save tags modal focus restore failed (ignored):', err);
     }
   }
 
   // =============================================================================
-  // Public entrypoint
+  // Public prompt
   // =============================================================================
 
   async function promptSnapshotSaveTags(options = {}) {
@@ -212,7 +221,7 @@
         ? document.activeElement
         : null;
 
-      const cleanup = () => {
+      function cleanup() {
         btnConfirm.removeEventListener('click', onConfirm);
         btnCancel.removeEventListener('click', onCancel);
         btnClose.removeEventListener('click', onCancel);
@@ -220,24 +229,30 @@
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
         restorePreviousFocus(previousFocus);
-      };
+      }
 
-      const finish = (result) => {
+      function finish(result) {
         if (settled) return;
         settled = true;
         cleanup();
         resolve(result);
-      };
+      }
 
-      const onConfirm = () => finish({ tags: collectTags() });
-      const onCancel = () => finish(null);
-      const onWindowKeyDown = (ev) => {
+      function onConfirm() {
+        finish({ tags: collectTags() });
+      }
+
+      function onCancel() {
+        finish(null);
+      }
+
+      function onWindowKeyDown(ev) {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
         if (ev.key === 'Escape') {
           ev.preventDefault();
           finish(null);
         }
-      };
+      }
 
       btnConfirm.addEventListener('click', onConfirm);
       btnCancel.addEventListener('click', onCancel);
@@ -254,7 +269,6 @@
   // Exports / module surface
   // =============================================================================
 
-  window.Notify = window.Notify || {};
   window.Notify.promptSnapshotSaveTags = promptSnapshotSaveTags;
 })();
 

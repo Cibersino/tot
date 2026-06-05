@@ -1,7 +1,31 @@
 // public/js/current_text_refresh_policy.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Current-text refresh policy owner for main-window derived refresh decisions.
+// Responsibilities:
+// - Define refresh-kind constants and priority ordering.
+// - Normalize settings/count-context inputs used by refresh classification.
+// - Decide whether settings or preset changes require full, stats-only, or time-only refreshes.
+// - Bridge optional RendererI18n.getLangBase usage to local language-base fallback logic.
+// - Build a controller that dispatches refresh requests through injected callbacks.
+
 (() => {
+  // =============================================================================
+  // Logger
+  // =============================================================================
+
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[current-text-refresh-policy] window.getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('current-text-refresh-policy');
+
+  // =============================================================================
+  // Constants / config
+  // =============================================================================
+
   const REFRESH_KIND_NONE = 'none';
   const REFRESH_KIND_TIME_ONLY = 'time_only';
   const REFRESH_KIND_STATS_DISPLAY = 'stats_display';
@@ -13,6 +37,10 @@
     [REFRESH_KIND_STATS_DISPLAY]: 2,
     [REFRESH_KIND_FULL]: 3,
   });
+
+  // =============================================================================
+  // Helpers
+  // =============================================================================
 
   function normalizeSettings(settings) {
     if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
@@ -41,6 +69,10 @@
         return resolved.trim().toLowerCase();
       }
     }
+    log.warnOnce(
+      'current_text_refresh_policy.rendererI18n.getLangBase.fallback',
+      'RendererI18n.getLangBase did not resolve a language base; using fallback.'
+    );
     return String(language || '').trim().toLowerCase().split(/[-_]/)[0] || 'es';
   }
 
@@ -121,6 +153,10 @@
     return pickHigherPriorityRefresh(refreshKind, classifyPresetOutcome(presetOutcome));
   }
 
+  // =============================================================================
+  // Controller factory
+  // =============================================================================
+
   function createController({
     requestFullRefresh,
     requestStatsDisplayRefresh,
@@ -174,6 +210,10 @@
     };
   }
 
+  // =============================================================================
+  // Module surface
+  // =============================================================================
+
   window.CurrentTextRefreshPolicy = {
     REFRESH_KIND_FULL,
     REFRESH_KIND_NONE,
@@ -183,3 +223,7 @@
     pickHigherPriorityRefresh,
   };
 })();
+
+// =============================================================================
+// End of public/js/current_text_refresh_policy.js
+// =============================================================================

@@ -9,10 +9,13 @@ const vm = require('node:vm');
 function loadMainPreload() {
   const subscriptions = [];
   const removed = [];
+  const invoked = [];
   let exposedApi = null;
 
   const ipcRenderer = {
-    invoke() {},
+    invoke(channel, payload) {
+      invoked.push({ channel, payload });
+    },
     send() {},
     on(channel, listener) {
       subscriptions.push({ channel, listener });
@@ -55,6 +58,7 @@ function loadMainPreload() {
 
   return {
     exposedApi,
+    invoked,
     subscriptions,
     removed,
   };
@@ -85,4 +89,21 @@ test('main preload keeps editor-first-show-state as an unsubscribe-based listene
   assert.equal(removed.length, 1);
   assert.equal(removed[0].channel, 'editor-first-show-state');
   assert.equal(removed[0].listener, subscriptions[0].listener);
+});
+
+test('main preload forwards setCurrentText canonical payloads unchanged', () => {
+  const { exposedApi, invoked } = loadMainPreload();
+  const payload = {
+    text: 'xyz',
+    meta: { source: 'main-window', action: 'overwrite' },
+  };
+
+  exposedApi.api.setCurrentText(payload);
+
+  assert.deepEqual(invoked, [
+    {
+      channel: 'set-current-text',
+      payload,
+    },
+  ]);
 });

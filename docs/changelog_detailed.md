@@ -59,6 +59,7 @@ Reglas:
 - El manejo de dirección de texto se normaliza en preview, editor, presets y disclosure OCR para que contenido RTL o mixto no quede visualmente invertido ni mal alineado respecto de la UI efectiva.
 - El Text Editor deja de inicializar el texto por dos caminos competidores (`push` desde main + `pull` desde renderer) y pasa a un único arranque renderer-owned vía `getCurrentText()`, evitando re-inicializaciones al reabrir una ventana ya viva, preservando borradores locales no sincronizados y desacoplando el primer show visible de una señal de ready demasiado temprana.
 - La apertura del Text Editor deja de depender de un `editor-ready` genérico para limpiar el loader de la ventana principal: el primer show ahora espera una confirmación explícita de presentación base desde el renderer, mientras una ventana ya viva simplemente se revela y enfoca sin rebootstrap.
+- El contrato activo de `set-current-text` deja de preservar payloads legacy string y queda canonizado a `{ text, meta }` tanto en la ventana principal como en el Text Editor.
 - La ventana principal deja de rehacer recuentos completos del texto vigente cuando un cambio solo afecta `WPM`, formateo numérico visible o la resolución efectiva del preset; ahora clasifica esos refreshes y reutiliza stats/cache cuando el texto no cambió, y cuando sí hace falta un recuento completo muestra un estado pending/recount explícito hasta que se asiente la corrida autoritativa más reciente, incluido un kickoff diferido en startup para no disparar ese settle antes de que la UI salga realmente del bloqueo inicial.
 - El núcleo de conteo deja de depender de recorridos/materializaciones redundantes y pasa a contadores streaming para `simple` y para el fallback de `preciso`; cuando `Intl.Segmenter` está disponible, el modo preciso conserva la semántica visible de whitespace, grafemas y segmentación de palabras, pero separa los pases de grafemas y palabras para reducir trabajo intermedio sobre textos grandes.
 - Los artefactos temporales locales de runtime dejan de dispersarse en `%TEMP%`: subsets PDF, normalización OCR y copias temporales de app-docs/licencias pasan a centralizarse bajo un root app-owned con limpieza best-effort al cierre normal.
@@ -206,8 +207,10 @@ Reglas:
   - `open-editor` puede devolver `launchDisposition: 'first-show-pending' | 'reused-visible'` cuando la apertura fue aceptada
   - `open-task-editor` puede devolver `code: 'CONFIRM_DENIED'` cuando el usuario cancela el descarte nativo de cambios no guardados del Editor de Tareas ya abierto
 - `set-current-text`:
-  - mantiene compatibilidad con payload string o `{ text, meta }`
+  - deja de aceptar payload string; el shape canónico requerido pasa a ser `{ text, meta }`
   - la respuesta puede incluir `requestId:number|null` además de `ok`, `truncated`, `length` y `text`
+- Preload `window.electronAPI.setCurrentText(payload)` y `window.editorAPI.setCurrentText(payload)`:
+  - el argumento activo/documentado deja de ser genérico y pasa a requerir el payload canónico `{ text, meta }`
 - `text-extraction-prepare-selected-file`:
   - el payload acepta `pdfPageSelection`, `generatedPdfArtifactPolicy`, `planningMode` y `forceHeavySplitFullSource`
   - la respuesta preparada puede incluir `planningMode`, `forceHeavySplitFullSource`, `pdfPageSelection`, `generatedPdfArtifactPolicy` y `processingInputFileName` canonizados

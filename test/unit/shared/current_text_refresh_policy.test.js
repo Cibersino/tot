@@ -10,6 +10,15 @@ function createControllerHarness() {
   const calls = [];
   const sandbox = {
     window: {
+      getLogger() {
+        return {
+          debug() {},
+          info() {},
+          warn() {},
+          warnOnce() {},
+          error() {},
+        };
+      },
       RendererI18n: {
         getLangBase(language) {
           return String(language || '').split(/[-_]/)[0] || 'es';

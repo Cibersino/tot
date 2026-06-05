@@ -13,12 +13,17 @@
 // - Reconcile external text updates without echoing editor-originated changes back to main.
 
 (() => {
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[editor-engine] window.getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('editor-engine');
+
   // =============================================================================
   // Module Factory
   // =============================================================================
 
   function createEditorEngine(ctx) {
-    const { log, editorAPI, editorFindReplaceCore, dom, state } = ctx;
+    const { editorAPI, editorFindReplaceCore, dom, state } = ctx;
     const { editor, calcWhileTyping } = dom;
 
     // =============================================================================
@@ -61,7 +66,7 @@
     function selectAllEditor() {
       if (typeof editor.select === 'function') {
         try { editor.select(); }
-        catch (err) { log.warnOnce('editor.select', 'editor.select() failed (ignored):', err); }
+        catch (err) { log.warnOnce('editor.select', 'editor.select() failed; whole-value selection may be incomplete:', err); }
         return;
       }
       setSelectionSafe(0, editor.value.length);
@@ -99,6 +104,16 @@
         dispatchNativeInputEvent();
       } finally {
         editor.style.visibility = '';
+      }
+    }
+
+    function withLocalUpdateSuppressed(work) {
+      const previousSuppressLocalUpdate = state.suppressLocalUpdate;
+      state.suppressLocalUpdate = true;
+      try {
+        return work();
+      } finally {
+        state.suppressLocalUpdate = previousSuppressLocalUpdate;
       }
     }
 
@@ -418,39 +433,31 @@
     // Main Text Sync And Transfer Handling
     // =============================================================================
 
+    function handleSetCurrentTextFailure(err, onError) {
+      if (typeof onError === 'function') {
+        onError(err);
+        return;
+      }
+      log.warnOnce(
+        'editor.setCurrentText.failed',
+        'editorAPI.setCurrentText failed (ignored):',
+        err
+      );
+    }
+
     function sendCurrentTextToMain(action, options = {}) {
       const hasText = Object.prototype.hasOwnProperty.call(options, 'text');
       const text = hasText ? options.text : editor.value;
-      const onPrimaryError = typeof options.onPrimaryError === 'function' ? options.onPrimaryError : null;
-      const onFallbackError = typeof options.onFallbackError === 'function' ? options.onFallbackError : null;
+      const onError = typeof options.onError === 'function' ? options.onError : null;
 
       try {
         const payload = { text, meta: { source: 'editor', action } };
-        const res = editorAPI.setCurrentText(payload);
-        handleTruncationResponse(res);
+        const setCurrentTextResult = editorAPI.setCurrentText(payload);
+        handleTruncationResponse(setCurrentTextResult, { onError });
         return true;
       } catch (err) {
-        if (onPrimaryError) {
-          onPrimaryError(err);
-        } else {
-          log.warnOnce(
-            'editor.setCurrentText.payload_failed',
-            'editorAPI.setCurrentText payload failed; using fallback:',
-            err
-          );
-        }
-        try {
-          const resFallback = editorAPI.setCurrentText(text);
-          handleTruncationResponse(resFallback);
-          return true;
-        } catch (fallbackErr) {
-          if (onFallbackError) {
-            onFallbackError(fallbackErr);
-          } else {
-            log.warn('editorAPI.setCurrentText fallback failed (ignored):', fallbackErr);
-          }
-          return false;
-        }
+        handleSetCurrentTextFailure(err, onError);
+        return false;
       }
     }
 
@@ -458,19 +465,46 @@
       window.Notify.notifyEditor('renderer.editor.alerts.text_truncated', { type: 'warn', duration: 5000 });
     }
 
-    function handleTruncationResponse(resPromise) {
+    function notifyIfTruncated(truncated) {
+      if (truncated) {
+        notifyTextTruncated();
+      }
+    }
+
+    function handleResolvedSetCurrentTextResult(result) {
+      if (result && result.truncated) {
+        notifyTextTruncated();
+      }
+    }
+
+    function handleTruncationResponse(setCurrentTextResult, options = {}) {
+      const onError = typeof options.onError === 'function' ? options.onError : null;
+
       try {
-        if (resPromise && typeof resPromise.then === 'function') {
-          resPromise.then((r) => {
-            if (r && r.truncated) {
-              notifyTextTruncated();
+        if (setCurrentTextResult && typeof setCurrentTextResult.then === 'function') {
+          setCurrentTextResult.then(
+            (result) => {
+              try {
+                handleResolvedSetCurrentTextResult(result);
+              } catch (err) {
+                log.error('handleTruncationResponse result handling error:', err);
+              }
+            },
+            (err) => {
+              handleSetCurrentTextFailure(err, onError);
             }
-          }).catch((err) => {
-            log.warn('editorAPI.setCurrentText response handling failed (ignored):', err);
-          });
+          );
+          return;
         }
       } catch (err) {
         log.error('handleTruncationResponse error:', err);
+        return;
+      }
+
+      try {
+        handleResolvedSetCurrentTextResult(setCurrentTextResult);
+      } catch (err) {
+        log.error('handleTruncationResponse result handling error:', err);
       }
     }
 
@@ -550,21 +584,14 @@
           ? insertOptions.action
           : 'paste';
         const syncOptions = {};
-        if (insertOptions && typeof insertOptions.onPrimaryError === 'function') {
-          syncOptions.onPrimaryError = insertOptions.onPrimaryError;
-        }
-        if (insertOptions && typeof insertOptions.onFallbackError === 'function') {
-          syncOptions.onFallbackError = insertOptions.onFallbackError;
+        if (insertOptions && typeof insertOptions.onError === 'function') {
+          syncOptions.onError = insertOptions.onError;
         }
 
-        const prevSuppressLocalUpdate = state.suppressLocalUpdate;
         let insertResult = null;
-        state.suppressLocalUpdate = true;
-        try {
+        withLocalUpdateSuppressed(() => {
           insertResult = insertTextAtCursor(text, insertOptions);
-        } finally {
-          state.suppressLocalUpdate = prevSuppressLocalUpdate;
-        }
+        });
 
         if (
           insertResult &&
@@ -584,17 +611,94 @@
     // External Update Reconciliation
     // =============================================================================
 
+    function normalizeExternalUpdatePayload(payload) {
+      if (payload && typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'text')) {
+        return {
+          incomingMeta: payload.meta || null,
+          newText: String(payload.text || ''),
+        };
+      }
+
+      return {
+        incomingMeta: null,
+        newText: String(payload || ''),
+      };
+    }
+
+    function appendSmallExternalTextWithoutSync(textToInsert) {
+      const previousActiveElement = document.activeElement;
+
+      try {
+        editor.focus();
+        const caretPos = editor.value.length;
+        setCaretSafe(caretPos);
+
+        const ok = document.execCommand && document.execCommand('insertText', false, textToInsert);
+        if (ok) {
+          return;
+        }
+
+        log.warnOnce(
+          'editor.execCommand.appendNewline',
+          "document.execCommand('insertText') unavailable or failed; using append fallback."
+        );
+
+        if (typeof editor.setRangeText === 'function') {
+          editor.setRangeText(textToInsert, caretPos, caretPos, 'end');
+          dispatchNativeInputEvent();
+          return;
+        }
+
+        log.warnOnce(
+          'editor.setRangeText.appendNewline',
+          'editor.setRangeText unavailable; using direct append fallback.'
+        );
+
+        editor.value = editor.value + textToInsert;
+        dispatchNativeInputEvent();
+      } catch (err) {
+        log.warn(
+          'appendSmallExternalTextWithoutSync native append path failed; using direct append fallback:',
+          err
+        );
+        editor.value = editor.value + textToInsert;
+        dispatchNativeInputEvent();
+      } finally {
+        restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.append_newline.native');
+      }
+    }
+
+    function handleAppendNewlineExternalUpdate(newText, truncated) {
+      if (!newText.startsWith(editor.value)) {
+        return false;
+      }
+
+      const textToInsert = newText.slice(editor.value.length);
+      if (!textToInsert) {
+        return true;
+      }
+
+      if (textToInsert.length <= ctx.SMALL_UPDATE_THRESHOLD) {
+        appendSmallExternalTextWithoutSync(textToInsert);
+        return true;
+      }
+
+      const committed = commitWholeValueWithThresholdPolicy(newText, {
+        nativeFocusWarnKey: 'focus.prevActive.append_newline.native',
+        directFocusWarnKey: 'focus.prevActive.append_newline.full',
+      });
+      if (!committed) {
+        log.error('append_newline full replace failed unexpectedly.');
+      }
+      notifyIfTruncated(truncated);
+      return true;
+    }
+
     async function applyExternalUpdate(payload) {
       try {
-        let incomingMeta = null;
-        let newText = '';
-
-        if (payload && typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'text')) {
-          newText = String(payload.text || '');
-          incomingMeta = payload.meta || null;
-        } else {
-          newText = String(payload || '');
-        }
+        const normalizedPayload = normalizeExternalUpdatePayload(payload);
+        const incomingMeta = normalizedPayload.incomingMeta;
+        let newText = normalizedPayload.newText;
 
         let truncated = false;
         if (newText.length > state.maxTextChars) {
@@ -607,78 +711,21 @@
         }
 
         if (editor.value === newText) {
-          if (truncated) {
-            notifyTextTruncated();
-          }
+          notifyIfTruncated(truncated);
           return;
         }
 
-        const prevSuppressLocalUpdate = state.suppressLocalUpdate;
         // Prevent main-driven updates from re-triggering local Text Editor sync while applying them.
-        state.suppressLocalUpdate = true;
-        try {
+        withLocalUpdateSuppressed(() => {
           const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;
           const metaAction = incomingMeta && incomingMeta.action ? incomingMeta.action : null;
 
-          if (metaSource === 'main-window' && metaAction === 'append_newline') {
-            if (newText.startsWith(editor.value)) {
-              const toInsert = newText.slice(editor.value.length);
-              if (!toInsert) return;
-              if (toInsert.length <= ctx.SMALL_UPDATE_THRESHOLD) {
-                const prevActive = document.activeElement;
-                try {
-                  editor.focus();
-                  const tpos = editor.value.length;
-                  setCaretSafe(tpos);
-                  const ok = document.execCommand && document.execCommand('insertText', false, toInsert);
-                  if (!ok && typeof editor.setRangeText === 'function') {
-                    log.warnOnce(
-                      'editor.execCommand.appendNewline',
-                      "document.execCommand('insertText') unavailable or failed; using append fallback."
-                    );
-                    editor.setRangeText(toInsert, tpos, tpos, 'end');
-                    dispatchNativeInputEvent();
-                  } else if (!ok) {
-                    log.warnOnce(
-                      'editor.execCommand.appendNewline',
-                      "document.execCommand('insertText') unavailable or failed; using append fallback."
-                    );
-                    log.warnOnce(
-                      'editor.setRangeText.appendNewline',
-                      'editor.setRangeText unavailable; using direct append fallback.'
-                    );
-                    editor.value = editor.value + toInsert;
-                    dispatchNativeInputEvent();
-                  }
-                } catch (err) {
-                  log.warnOnce(
-                    'editor.execCommand.appendNewline',
-                    "document.execCommand('insertText') unavailable or failed; using append fallback:",
-                    err
-                  );
-                  log.warnOnce(
-                    'editor.setRangeText.appendNewline',
-                    'editor.setRangeText unavailable; using direct append fallback.'
-                  );
-                  editor.value = editor.value + toInsert;
-                  dispatchNativeInputEvent();
-                } finally {
-                  restorePreviousActiveElement(prevActive, 'focus.prevActive.append_newline.native');
-                }
-                return;
-              }
-              const committed = commitWholeValueWithThresholdPolicy(newText, {
-                nativeFocusWarnKey: 'focus.prevActive.append_newline.native',
-                directFocusWarnKey: 'focus.prevActive.append_newline.full',
-              });
-              if (!committed) {
-                log.error('append_newline full replace failed unexpectedly.');
-              }
-              if (truncated) {
-                notifyTextTruncated();
-              }
-              return;
-            }
+          if (
+            metaSource === 'main-window' &&
+            metaAction === 'append_newline' &&
+            handleAppendNewlineExternalUpdate(newText, truncated)
+          ) {
+            return;
           }
 
           if (metaSource === 'main' || metaSource === 'main-window' || !metaSource) {
@@ -689,19 +736,13 @@
             if (!committed) {
               log.error('Whole-value external update failed unexpectedly.');
             }
-            if (truncated) {
-              notifyTextTruncated();
-            }
+            notifyIfTruncated(truncated);
             return;
           }
 
           replaceEditorValueHidden(newText);
-          if (truncated) {
-            notifyTextTruncated();
-          }
-        } finally {
-          state.suppressLocalUpdate = prevSuppressLocalUpdate;
-        }
+          notifyIfTruncated(truncated);
+        });
       } catch (err) {
         log.error('applyExternalUpdate error:', err);
       }

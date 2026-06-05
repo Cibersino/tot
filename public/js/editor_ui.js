@@ -10,15 +10,24 @@
 // - Update local spellcheck, font size, and read-progress UI state.
 // - Restore Text Editor focus after UI actions that temporarily move it elsewhere.
 // - Control the reading-test prestart overlay and its related UI state.
-// - Persist Text Editor text-size changes through the editor bridge when available.
+// - Persist Text Editor text-size and maximized-width UI preferences through the editor bridge when available.
 
 (() => {
+  // =============================================================================
+  // Logger
+  // =============================================================================
+
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[editor-ui] window.getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('editor-ui');
+
   // =============================================================================
   // Module Factory
   // =============================================================================
 
   function createEditorUI(ctx) {
-    const { log, editorAPI, DEFAULT_LANG, dom, state } = ctx;
+    const { editorAPI, DEFAULT_LANG, dom, state } = ctx;
     const {
       editorWrap,
       editorLayout,
@@ -363,7 +372,7 @@
     }
 
     // =============================================================================
-    // Persistence Helpers
+    // Persistence And Drag Helpers
     // =============================================================================
 
     function applyTextareaDefaults() {
@@ -553,7 +562,9 @@
           ) {
             target.releasePointerCapture(pointerId);
           }
-        } catch {}
+        } catch (err) {
+          log.warn('Text Editor gutter pointer release failed (ignored):', err);
+        }
       };
 
       state.editorMarginDrag = {

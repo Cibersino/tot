@@ -20,7 +20,7 @@ const {
   inspectPdfFile,
   materializePdfPageSelectionInput,
   resolveProcessingInputFileName,
-} = require('../../../electron/text_extraction_platform/text_extraction_pdf_page_selection');
+} = require('../../../electron/text_extraction_platform/text_extraction_pdf_selection_pipeline');
 const {
   isInsideRuntimeTempRoot,
 } = require('../../../electron/app_temp_paths');
@@ -53,7 +53,7 @@ function loadPdfPageSelectionModuleWithMocks({
 } = {}) {
   const modulePath = path.resolve(
     __dirname,
-    '../../../electron/text_extraction_platform/text_extraction_pdf_page_selection.js'
+    '../../../electron/text_extraction_platform/text_extraction_pdf_selection_pipeline.js'
   );
   const fsModulePath = require.resolve('fs');
   const logModulePath = path.resolve(__dirname, '../../../electron/log.js');

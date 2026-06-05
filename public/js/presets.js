@@ -42,25 +42,34 @@
   function normalizeSettings(settings, language) {
     return (settings && typeof settings === 'object')
       ? settings
-      : { language, presets_by_language: {}, selected_preset_by_language: {} };
+      : {
+        language,
+        presets_by_language: {},
+        disabled_default_presets: {},
+        selected_preset_by_language: {}
+      };
   }
 
   function combinePresets({ settings = {}, defaults = {} }) {
     const langBase = getLangBase(settings.language) || DEFAULT_LANG;
-    const userPresets = (settings.presets_by_language && Array.isArray(settings.presets_by_language[langBase]))
-      ? settings.presets_by_language[langBase].slice()
+    const presetsByLanguage = settings.presets_by_language || {};
+    const disabledPresetsByLanguage = settings.disabled_default_presets || {};
+    const defaultPresetsByLanguage = defaults.languagePresets || {};
+
+    const userPresets = Array.isArray(presetsByLanguage[langBase])
+      ? presetsByLanguage[langBase].slice()
       : [];
     const generalDefaults = Array.isArray(defaults.general) ? defaults.general.slice() : [];
-    const langPresets = (defaults.languagePresets && defaults.languagePresets[langBase] && Array.isArray(defaults.languagePresets[langBase]))
-      ? defaults.languagePresets[langBase]
+    const langPresets = Array.isArray(defaultPresetsByLanguage[langBase])
+      ? defaultPresetsByLanguage[langBase]
       : [];
 
     let combined = generalDefaults.concat(langPresets);
 
-    const disabledByUser = (settings.disabled_default_presets && Array.isArray(settings.disabled_default_presets[langBase]))
-      ? settings.disabled_default_presets[langBase]
+    const disabledByUser = Array.isArray(disabledPresetsByLanguage[langBase])
+      ? disabledPresetsByLanguage[langBase]
       : [];
-    if (disabledByUser.length > 0) {
+    if (disabledByUser.length) {
       combined = combined.filter(p => !disabledByUser.includes(p.name));
     }
 
@@ -113,17 +122,16 @@
 
     const settingsSnapshot = normalizeSettings(settings, language);
     let defaults = { general: [], languagePresets: {} };
-    if (typeof electronAPI.getDefaultPresets === 'function') {
+    if (typeof electronAPI.getDefaultPresets !== 'function') {
+      log.warn(
+        '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
+      );
+    } else {
       try {
         defaults = await electronAPI.getDefaultPresets();
       } catch (err) {
-        log.error('Error getting default presets from main:', err);
+        log.warn('Default presets fetch failed; using settings-only presets.', err);
       }
-    } else {
-      log.warnOnce(
-        'presets.getDefaultPresets.missing',
-        '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
-      );
     }
 
     const finalList = combinePresets({ settings: settingsSnapshot, defaults });
@@ -141,58 +149,53 @@
     electronAPI
   }) {
     const settingsSnapshot = normalizeSettings(settings, language);
-    const lang = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
+    const langBase = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
+    const selectedByLanguage = settingsSnapshot.selected_preset_by_language || {};
 
-    let selected = null;
     const persisted =
-      settingsSnapshot &&
-      settingsSnapshot.selected_preset_by_language &&
-      typeof settingsSnapshot.selected_preset_by_language[lang] === 'string'
-        ? settingsSnapshot.selected_preset_by_language[lang].trim()
+      typeof selectedByLanguage[langBase] === 'string'
+        ? selectedByLanguage[langBase].trim()
         : '';
     const trimmedCurrent = typeof currentPresetName === 'string' ? currentPresetName.trim() : '';
-    const hasCurrent = trimmedCurrent.length > 0;
-    const selectedName = persisted || (hasCurrent ? trimmedCurrent : '');
-    if (!selectedName && !persisted && !hasCurrent) {
-      log.warnOnce(
-        `presets.selectedPreset.none:${lang}`,
+    const selectedName = persisted || trimmedCurrent;
+    if (!selectedName) {
+      log.warn(
         'No persisted preset selection for langKey; selecting safe default and persisting (may be normal on first run).',
-        { lang }
+        { lang: langBase }
       );
     }
-    if (selectedName) {
-      selected = list.find(p => p.name === selectedName) || null;
-      if (!selected) {
-        log.warnOnce(
-          `presets.selectedPreset.missing:${lang}`,
-          'Selected preset not found; falling back to safe preset:',
-          { requested: selectedName, lang }
-        );
-      }
+    const namedSelection = selectedName
+      ? list.find(p => p.name === selectedName) || null
+      : null;
+    if (selectedName && !namedSelection) {
+      log.warn(
+        'Selected preset not found; falling back to safe preset:',
+        { requested: selectedName, lang: langBase }
+      );
     }
-    if (!selected) {
-      selected = list.find(p => p.name === 'default') || list[0] || null;
-    }
+    const selected = namedSelection || list.find(p => p.name === 'default') || list[0] || null;
 
-    if (selected) {
-      applyPresetSelection(selected, { selectEl, presetDescription });
-      if (selected.name && selected.name !== persisted) {
-        try {
-          if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
-            await electronAPI.setSelectedPreset(selected.name);
-          } else {
-            log.warnOnce(
-              'presets.setSelectedPreset.missing',
-              '[presets] electronAPI.setSelectedPreset unavailable; selection persistence skipped'
-            );
-          }
-        } catch (err) {
-          log.error('Error persisting selected preset:', err);
-        }
-      }
-    } else {
+    if (!selected) {
       if (selectEl) selectEl.selectedIndex = -1;
       applyPresetDescriptionText(presetDescription, '');
+      return selected;
+    }
+
+    applyPresetSelection(selected, { selectEl, presetDescription });
+    if (!selected.name || selected.name === persisted) {
+      return selected;
+    }
+
+    try {
+      if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
+        await electronAPI.setSelectedPreset(selected.name);
+      } else {
+        log.warn(
+          '[presets] Selection persistence failed (ignored): electronAPI.setSelectedPreset unavailable.'
+        );
+      }
+    } catch (err) {
+      log.warn('Selection persistence failed (ignored):', err);
     }
 
     return selected;

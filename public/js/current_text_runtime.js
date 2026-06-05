@@ -57,6 +57,11 @@
   // Shared state
   // =============================================================================
 
+  const REFRESH_KIND_NONE = 'none';
+  const REFRESH_KIND_TIME_ONLY = 'time_only';
+  const REFRESH_KIND_STATS_DISPLAY = 'stats_display';
+  const REFRESH_KIND_FULL = 'full';
+
   let deps = null;
   let currentText = '';
   let currentTextStats = null;
@@ -87,14 +92,12 @@
     action: '',
   };
   let deferredBootstrapSettleRequestId = 0;
-  const REFRESH_KIND_NONE = 'none';
-  const REFRESH_KIND_TIME_ONLY = 'time_only';
-  const REFRESH_KIND_STATS_DISPLAY = 'stats_display';
-  const REFRESH_KIND_FULL = 'full';
 
   // =============================================================================
   // Helpers
   // =============================================================================
+
+  // Dependency / normalization helpers
 
   function configure(nextDeps = {}) {
     deps = {
@@ -163,6 +166,14 @@
     return value;
   }
 
+  function createEmptyStats() {
+    return {
+      conEspacios: 0,
+      sinEspacios: 0,
+      palabras: 0,
+    };
+  }
+
   function normalizeCurrentTextProcessingState(rawState) {
     const state = rawState && typeof rawState === 'object' ? rawState : {};
     return {
@@ -174,6 +185,16 @@
       source: typeof state.source === 'string' ? state.source.trim() : '',
       action: typeof state.action === 'string' ? state.action.trim() : '',
     };
+  }
+
+  function setCurrentTextInternal(nextText, { requestId = 0 } = {}) {
+    currentText = normalizeText(nextText);
+    if (requestId > 0) {
+      currentTextAppliedRequestId = requestId;
+      latestAuthoritativeRequestIdSeen = Math.max(latestAuthoritativeRequestIdSeen, requestId);
+    } else {
+      currentTextAppliedRequestId = 0;
+    }
   }
 
   function armDeferredBootstrapSettle(requestId) {
@@ -239,6 +260,8 @@
     return 0;
   }
 
+  // Pending / follow-up state helpers
+
   function mergeRefreshKind(currentKind, nextKind) {
     return getRefreshKindPriority(nextKind) > getRefreshKindPriority(currentKind)
       ? nextKind
@@ -280,6 +303,8 @@
       queuedStandaloneFollowupReason = reason;
     }
   }
+
+  // Rendering helpers
 
   function renderPreview() {
     const { currentTextSelectorSection } = requireDeps();
@@ -373,6 +398,14 @@
     return true;
   }
 
+  function releaseStandaloneRefreshOwner(ownerSequence, source) {
+    clearStandaloneFullRefreshPending({
+      ownerSequence,
+      source,
+    });
+    clearQueuedStandaloneFollowupForOwner(ownerSequence);
+  }
+
   function formatInvariantEstimatedDuration(hours, minutes, seconds) {
     return `${hours}h ${minutes}m ${seconds}s`;
   }
@@ -383,11 +416,7 @@
   } = {}) {
     const { resultsTimeMultiplier } = requireDeps();
     const derived = derivedState && typeof derivedState === 'object' ? derivedState : {};
-    const stats = derived.stats || {
-      conEspacios: 0,
-      sinEspacios: 0,
-      palabras: 0,
-    };
+    const stats = derived.stats || createEmptyStats();
     if (persistStats) {
       currentTextStats = stats;
     }
@@ -427,11 +456,10 @@
     });
   }
 
-  async function buildSettledDerivedState() {
+  // Derived-state builders
+
+  async function buildDisplayDerivedStateFromNormalizedStats(stats, countArgs = getCountArgs()) {
     const { getSettingsCache, getWpm } = requireDeps();
-    const normalizedText = normalizeText(currentText);
-    const countArgs = getCountArgs();
-    const stats = contarTextoModulo(normalizedText, countArgs);
     const settingsCache = getSettingsCache();
     const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
       countArgs.idioma,
@@ -452,33 +480,19 @@
     };
   }
 
-  async function buildDisplayDerivedStateFromStats(stats) {
-    const { getSettingsCache, getWpm } = requireDeps();
-    const normalizedStats = stats && typeof stats === 'object' ? stats : {
-      conEspacios: 0,
-      sinEspacios: 0,
-      palabras: 0,
-    };
+  async function buildSettledDerivedState() {
+    const normalizedText = normalizeText(currentText);
     const countArgs = getCountArgs();
-    const settingsCache = getSettingsCache();
-    const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
-      countArgs.idioma,
-      settingsCache
-    );
-    const charsText = formatearNumero(normalizedStats.conEspacios, separadorMiles, separadorDecimal);
-    const charsNoSpaceText = formatearNumero(normalizedStats.sinEspacios, separadorMiles, separadorDecimal);
-    const wordsText = formatearNumero(normalizedStats.palabras, separadorMiles, separadorDecimal);
-    const totalSeconds = getExactTotalSeconds(normalizedStats.palabras, getWpm());
-    const timeParts = getDisplayTimeParts(totalSeconds);
-    return {
-      stats: normalizedStats,
-      charsText,
-      charsNoSpaceText,
-      wordsText,
-      totalSeconds,
-      timeText: formatInvariantEstimatedDuration(timeParts.hours, timeParts.minutes, timeParts.seconds),
-    };
+    const stats = contarTextoModulo(normalizedText, countArgs);
+    return buildDisplayDerivedStateFromNormalizedStats(stats, countArgs);
   }
+
+  async function buildDisplayDerivedStateFromStats(stats) {
+    const normalizedStats = stats && typeof stats === 'object' ? stats : createEmptyStats();
+    return buildDisplayDerivedStateFromNormalizedStats(normalizedStats);
+  }
+
+  // Pending authoritative-settle lifecycle
 
   function isActivePendingRequest(requestId) {
     return currentTextProcessingState.active === true
@@ -506,7 +520,7 @@
         ok,
       });
       if (!result || result.ok !== true) {
-        log.warn('Current-text processing resolve returned non-ok result (ignored):', result);
+        log.error('Current-text processing resolve returned non-ok result:', result);
         return false;
       }
       applyLocalResolvedProcessingState(requestId);
@@ -576,14 +590,29 @@
     void runPendingSettleLoop(requestId, reason);
   }
 
-  function setCurrentTextInternal(nextText, { requestId = 0 } = {}) {
-    currentText = normalizeText(nextText);
-    if (requestId > 0) {
-      currentTextAppliedRequestId = requestId;
-      latestAuthoritativeRequestIdSeen = Math.max(latestAuthoritativeRequestIdSeen, requestId);
-    } else {
-      currentTextAppliedRequestId = 0;
+  function mergeDerivedRefreshIntoPendingSettle(reason) {
+    derivedConfigVersion += 1;
+    schedulePendingSettle(`merge:${reason}`);
+  }
+
+  function deferDerivedRefreshWhenBusy(kind, reason) {
+    if (currentTextProcessingState.active) {
+      mergeDerivedRefreshIntoPendingSettle(reason);
+      return true;
     }
+    if (standaloneFullRefreshPendingState.active) {
+      queueStandaloneFollowup(
+        kind,
+        reason,
+        standaloneFullRefreshPendingState.ownerSequence
+      );
+      return true;
+    }
+    if (standaloneDerivedRefreshInFlight) {
+      queueStandaloneFollowup(kind, reason, standaloneDerivedRefreshSequence);
+      return true;
+    }
+    return false;
   }
 
   function renderTimeOnlyFromCurrentStats() {
@@ -624,6 +653,8 @@
       });
   }
 
+  // Standalone derived-refresh lifecycle
+
   function runQueuedStandaloneFollowup(refreshSequence) {
     if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
       clearQueuedStandaloneFollowupForOwner(refreshSequence);
@@ -655,11 +686,7 @@
     void buildSettledDerivedState()
       .then((derivedState) => {
         if (refreshSequence !== renderAuthoritySequence) {
-          clearStandaloneFullRefreshPending({
-            ownerSequence: refreshSequence,
-            source: 'standalone_full_refresh_superseded',
-          });
-          clearQueuedStandaloneFollowupForOwner(refreshSequence);
+          releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_superseded');
           log.info('Stale standalone current-text derived refresh ignored:', {
             reason,
             refreshSequence,
@@ -668,11 +695,7 @@
           return;
         }
         if (currentTextProcessingState.active) {
-          clearStandaloneFullRefreshPending({
-            ownerSequence: refreshSequence,
-            source: 'standalone_full_refresh_taken_over',
-          });
-          clearQueuedStandaloneFollowupForOwner(refreshSequence);
+          releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_taken_over');
           return;
         }
         applySettledDerivedState(derivedState);
@@ -686,11 +709,7 @@
       })
       .catch((err) => {
         if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
-          clearStandaloneFullRefreshPending({
-            ownerSequence: refreshSequence,
-            source: 'standalone_full_refresh_abandoned',
-          });
-          clearQueuedStandaloneFollowupForOwner(refreshSequence);
+          releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_abandoned');
           return;
         }
         clearQueuedStandaloneFollowupForOwner(refreshSequence);
@@ -717,19 +736,11 @@
     renderPendingDerivedValues();
     setTimeout(() => {
       if (refreshSequence !== renderAuthoritySequence) {
-        clearStandaloneFullRefreshPending({
-          ownerSequence: refreshSequence,
-          source: 'standalone_full_refresh_stale_before_start',
-        });
-        clearQueuedStandaloneFollowupForOwner(refreshSequence);
+        releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_stale_before_start');
         return;
       }
       if (currentTextProcessingState.active) {
-        clearStandaloneFullRefreshPending({
-          ownerSequence: refreshSequence,
-          source: 'standalone_full_refresh_merged_before_start',
-        });
-        clearQueuedStandaloneFollowupForOwner(refreshSequence);
+        releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_merged_before_start');
         return;
       }
       if (standaloneFullRefreshPendingState.ownerSequence !== refreshSequence) {
@@ -868,42 +879,14 @@
   }
 
   function requestStatsDisplayRefresh(reason) {
-    if (currentTextProcessingState.active) {
-      derivedConfigVersion += 1;
-      schedulePendingSettle(`merge:${reason}`);
-      return;
-    }
-    if (standaloneFullRefreshPendingState.active) {
-      queueStandaloneFollowup(
-        REFRESH_KIND_STATS_DISPLAY,
-        reason,
-        standaloneFullRefreshPendingState.ownerSequence
-      );
-      return;
-    }
-    if (standaloneDerivedRefreshInFlight) {
-      queueStandaloneFollowup(REFRESH_KIND_STATS_DISPLAY, reason, standaloneDerivedRefreshSequence);
+    if (deferDerivedRefreshWhenBusy(REFRESH_KIND_STATS_DISPLAY, reason)) {
       return;
     }
     runStandaloneStatsDisplayRefresh(reason);
   }
 
   function requestTimeOnlyRefresh(reason) {
-    if (currentTextProcessingState.active) {
-      derivedConfigVersion += 1;
-      schedulePendingSettle(`merge:${reason}`);
-      return;
-    }
-    if (standaloneFullRefreshPendingState.active) {
-      queueStandaloneFollowup(
-        REFRESH_KIND_TIME_ONLY,
-        reason,
-        standaloneFullRefreshPendingState.ownerSequence
-      );
-      return;
-    }
-    if (standaloneDerivedRefreshInFlight) {
-      queueStandaloneFollowup(REFRESH_KIND_TIME_ONLY, reason, standaloneDerivedRefreshSequence);
+    if (deferDerivedRefreshWhenBusy(REFRESH_KIND_TIME_ONLY, reason)) {
       return;
     }
     bumpRenderAuthoritySequence();

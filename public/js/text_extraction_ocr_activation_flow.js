@@ -28,6 +28,9 @@
   function configure({
     getOptionalElectronMethod = null,
   } = {}) {
+    if (typeof getOptionalElectronMethod !== 'function') {
+      throw new Error('[text-extraction-ocr-activation-flow] configure() requires getOptionalElectronMethod function');
+    }
     deps = {
       getOptionalElectronMethod,
     };
@@ -67,26 +70,38 @@
     };
   }
 
-  function getPrepareMethod() {
+  function getActivationBridgeMethod(methodName, dedupeKey, unavailableMessage) {
     const { getOptionalElectronMethod } = requireConfiguredDeps();
     if (typeof getOptionalElectronMethod !== 'function') {
       throw new Error('[text-extraction-ocr-activation-flow] getOptionalElectronMethod dependency missing');
     }
-    return getOptionalElectronMethod('prepareTextExtractionOcrActivation', {
-      dedupeKey: 'renderer.ipc.prepareTextExtractionOcrActivation.unavailable',
-      unavailableMessage: 'prepareTextExtractionOcrActivation unavailable; OCR activation flow cannot continue.'
+    const bridgeMethod = getOptionalElectronMethod(methodName, {
+      dedupeKey,
+      unavailableMessage,
     });
+    if (bridgeMethod == null) {
+      return null;
+    }
+    if (typeof bridgeMethod !== 'function') {
+      throw new Error(`[text-extraction-ocr-activation-flow] ${methodName} bridge invalid`);
+    }
+    return bridgeMethod;
+  }
+
+  function getPrepareMethod() {
+    return getActivationBridgeMethod(
+      'prepareTextExtractionOcrActivation',
+      'renderer.ipc.prepareTextExtractionOcrActivation.unavailable',
+      'prepareTextExtractionOcrActivation unavailable; OCR activation flow cannot continue.'
+    );
   }
 
   function getLaunchMethod() {
-    const { getOptionalElectronMethod } = requireConfiguredDeps();
-    if (typeof getOptionalElectronMethod !== 'function') {
-      throw new Error('[text-extraction-ocr-activation-flow] getOptionalElectronMethod dependency missing');
-    }
-    return getOptionalElectronMethod('launchTextExtractionOcrActivation', {
-      dedupeKey: 'renderer.ipc.launchTextExtractionOcrActivation.unavailable',
-      unavailableMessage: 'launchTextExtractionOcrActivation unavailable; OCR activation flow cannot continue.'
-    });
+    return getActivationBridgeMethod(
+      'launchTextExtractionOcrActivation',
+      'renderer.ipc.launchTextExtractionOcrActivation.unavailable',
+      'launchTextExtractionOcrActivation unavailable; OCR activation flow cannot continue.'
+    );
   }
 
   // =============================================================================

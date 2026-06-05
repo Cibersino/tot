@@ -6,15 +6,14 @@
 // =============================================================================
 // Main renderer entry point for the primary window UI.
 // Responsibilities:
-// - Bootstraps the renderer UI and pulls config/settings from main.
-// - Applies i18n labels and number formatting.
-// - Maintains text preview, counts, and time estimates.
-// - Coordinates text extraction and OCR entry flows from the main window.
-// - Wires presets, clipboard actions, Text Editor, Task Editor, and help tips.
-// - Hosts the info modal and top-bar menu actions.
-// - Integrates the Stopwatch controller and the Floating Stopwatch toggle.
+// - Bootstrap renderer state from main-owned config, settings, and READY signals.
+// - Apply renderer i18n labels, language attributes, and number formatting.
+// - Maintain current-text preview, counts, and reading-time estimates.
+// - Coordinate text extraction, OCR entry, and current-text apply flows.
+// - Wire presets, clipboard actions, Text Editor, Task Editor, and reading-test entry.
+// - Host top-level UI integrations such as the info modal, menu actions, and stopwatch controller.
 // =============================================================================
-// Logger and constants
+// Logger and startup constants
 // =============================================================================
 if (typeof window.getLogger !== 'function') {
   throw new Error('[renderer] getLogger unavailable; cannot initialize renderer');
@@ -32,6 +31,15 @@ const {
   DEFAULT_LANG,
   MAX_CLIPBOARD_REPEAT,
 } = AppConstants;
+if (typeof DEFAULT_LANG !== 'string' || !DEFAULT_LANG.trim()) {
+  throw new Error('[renderer] AppConstants.DEFAULT_LANG unavailable; cannot continue');
+}
+if (!Number.isFinite(MAX_CLIPBOARD_REPEAT) || MAX_CLIPBOARD_REPEAT < 1) {
+  throw new Error('[renderer] AppConstants.MAX_CLIPBOARD_REPEAT unavailable; cannot continue');
+}
+if (!Number.isFinite(AppConstants.MAX_TEXT_CHARS) || AppConstants.MAX_TEXT_CHARS < 1) {
+  throw new Error('[renderer] AppConstants.MAX_TEXT_CHARS unavailable; cannot continue');
+}
 
 // =============================================================================
 // DOM references
@@ -42,6 +50,7 @@ const textExtractionEntry = window.TextExtractionEntry;
 if (!textExtractionEntry
   || typeof textExtractionEntry.configure !== 'function'
   || typeof textExtractionEntry.startFromFilePath !== 'function'
+  || typeof textExtractionEntry.startFromFilePaths !== 'function'
   || typeof textExtractionEntry.startFromPicker !== 'function') {
   throw new Error('[renderer] TextExtractionEntry unavailable; cannot continue');
 }
@@ -64,6 +73,7 @@ const textExtractionStatusUi = window.TextExtractionStatusUi;
 if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.applyCurrentTextProcessingState !== 'function'
   || typeof textExtractionStatusUi.applyProcessingModeState !== 'function'
+  || typeof textExtractionStatusUi.applyStandaloneFullRefreshPendingState !== 'function'
   || typeof textExtractionStatusUi.applyTranslations !== 'function'
   || typeof textExtractionStatusUi.beginAbortFinalization !== 'function'
   || typeof textExtractionStatusUi.beginPrepare !== 'function'
@@ -133,7 +143,7 @@ if (!readingSpeedTestUi
 }
 
 // =============================================================================
-// UI keys and static lists
+// UI controls and panels
 // =============================================================================
 const resultsTimeMultiplierInput = document.getElementById('resultsTimeMultiplierInput');
 
@@ -154,7 +164,6 @@ const cronoDisplayInput = document.getElementById('cronoDisplay');
 const cronoToggleBtnMain = document.getElementById('cronoToggle');
 const cronoResetBtnMain = document.getElementById('cronoReset');
 
-// Preset DOM references
 const presetsSelect = document.getElementById('presets');
 const btnNewPreset = document.getElementById('btnNewPreset');
 const btnEditPreset = document.getElementById('btnEditPreset');
@@ -163,12 +172,11 @@ const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets')
 const presetDescription = document.getElementById('presetDescription');
 
 // =============================================================================
-// Shared state and limits
+// Shared state and core controllers
 // =============================================================================
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
 let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
-// Global cache and state for count/language
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
 let idiomaActual = DEFAULT_LANG; // Initializes on startup
 let settingsCache = null;     // Settings cache (number formatting, language, etc.)
@@ -201,6 +209,16 @@ const wpmControls = WpmControls.createController({
     syncPresetActionButtons();
   },
 });
+if (!wpmControls
+  || typeof wpmControls.applyExternalWpm !== 'function'
+  || typeof wpmControls.bind !== 'function'
+  || typeof wpmControls.getAllPresets !== 'function'
+  || typeof wpmControls.getWpm !== 'function'
+  || typeof wpmControls.handlePresetCreated !== 'function'
+  || typeof wpmControls.handlePresetSelectionChange !== 'function'
+  || typeof wpmControls.loadPresets !== 'function') {
+  throw new Error('[renderer] WpmControls controller unavailable; cannot continue');
+}
 
 if (!window.electronAPI || typeof window.electronAPI.resolveCurrentTextProcessing !== 'function') {
   throw new Error('[renderer] electronAPI.resolveCurrentTextProcessing unavailable; cannot continue');
@@ -228,6 +246,11 @@ const currentTextRefreshPolicy = currentTextRefreshPolicyModule.createController
     currentTextRuntime.requestTimeOnlyRefresh(reason);
   },
 });
+if (!currentTextRefreshPolicy
+  || typeof currentTextRefreshPolicy.dispatchPresetOutcome !== 'function'
+  || typeof currentTextRefreshPolicy.dispatchSettingsChange !== 'function') {
+  throw new Error('[renderer] CurrentTextRefreshPolicy controller unavailable; cannot continue');
+}
 
 // =============================================================================
 // Startup gating + handshake
@@ -330,11 +353,31 @@ function isAriaHiddenElementVisible(elementId) {
   return !!(element && element.getAttribute('aria-hidden') === 'false');
 }
 
+function hasBrowserExtensionBlockingModalOpen() {
+  if (!browserExtensionModal) return false;
+  if (typeof browserExtensionModal.hasBlockingModalOpen !== 'function') {
+    log.warnOnce(
+      'renderer.browserExtensionModal.hasBlockingModalOpen.unavailable',
+      'BrowserExtensionModal.hasBlockingModalOpen unavailable; browser extension modal blocking state will be ignored.'
+    );
+    return false;
+  }
+
+  try {
+    return !!browserExtensionModal.hasBlockingModalOpen();
+  } catch (err) {
+    log.warnOnce(
+      'renderer.browserExtensionModal.hasBlockingModalOpen.failed',
+      'BrowserExtensionModal.hasBlockingModalOpen failed; browser extension modal blocking state will be ignored:',
+      err
+    );
+    return false;
+  }
+}
+
 function hasBlockingMainWindowModalOpen() {
   return isAriaHiddenElementVisible('infoModal')
-    || !!(browserExtensionModal
-      && typeof browserExtensionModal.hasBlockingModalOpen === 'function'
-      && browserExtensionModal.hasBlockingModalOpen())
+    || hasBrowserExtensionBlockingModalOpen()
     || isAriaHiddenElementVisible('textExtractionPdfOptionsModal')
     || isAriaHiddenElementVisible('textExtractionRouteModal')
     || isAriaHiddenElementVisible('textExtractionApplyModal')
@@ -674,7 +717,6 @@ function contarTexto(texto) {
   return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
 }
 
-// Update mode/language from other parts (e.g., menu actions)
 function setModoConteo(nuevoModo) {
   if (nuevoModo === 'simple' || nuevoModo === 'preciso') {
     modoConteo = nuevoModo;
@@ -734,7 +776,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
 }
 
 // =============================================================================
-// Preset loading (merge + shadowing)
+// Preset loading
 // =============================================================================
 function resolveSettingsSnapshot(settingsSnapshot) {
   return (settingsSnapshot && typeof settingsSnapshot === 'object')
@@ -1097,7 +1139,7 @@ async function runStartupOrchestrator() {
       try {
         initialText = String(await getCurrentText() || '');
       } catch (err) {
-        log.error('Error loading initial current text:', err);
+        log.warn('BOOTSTRAP: getCurrentText failed; bootstrap will use empty text:', err);
         initialText = '';
       }
     }
@@ -1574,7 +1616,7 @@ async function showInfoModal(key) {
 // =============================================================================
 // Top bar menu actions
 // =============================================================================
-// menu_actions.js must be loaded before renderer.js
+// menu_actions.js must load before renderer.js so top-bar registrations have a stable surface.
 function registerMenuActions() {
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
     const registerMenuActionGuarded = (actionId, handler) => {
@@ -1841,7 +1883,7 @@ async function resolveDroppedFilePath(file) {
       }
       log.warn('getPathForFile returned empty/invalid; falling back to File.path.');
     } catch (err) {
-      log.error('Failed to resolve dropped file path via electronAPI.getPathForFile:', err);
+      log.warn('getPathForFile failed; falling back to File.path:', err);
     }
   }
 
@@ -2288,7 +2330,7 @@ async function handleLoadTask() {
 // =============================================================================
 // Reading tools
 // =============================================================================
-// Show a random help tip via Notify.
+// Avoid repeating the same tip twice in a row when multiple tips exist.
 function bindHelpAction() {
   if (btnHelp) {
     btnHelp.addEventListener('click', () => {

@@ -360,8 +360,7 @@ function registerIpc(ipcMain, windowsResolver) {
     return { ok: true, length: text.length, text };
   });
 
-
-  // set-current-text: accept { text, meta } or simple string
+  // set-current-text: accept canonical payload { text, meta }
   ipcMain.handle('set-current-text', (_event, payload) => {
     try {
       const { mainWin, editorWin } = getWindows() || {};
@@ -380,17 +379,16 @@ function registerIpc(ipcMain, windowsResolver) {
         return { ok: false, error: 'unauthorized' };
       }
 
-      const isPayloadObject = payload && typeof payload === 'object';
-      const hasTextProp =
-        isPayloadObject &&
-        Object.prototype.hasOwnProperty.call(payload, 'text');
-      if (isPayloadObject && !hasTextProp) {
+      const isPayloadObject = isPlainObject(payload);
+      const hasTextProp = isPayloadObject && Object.prototype.hasOwnProperty.call(payload, 'text');
+      if (!hasTextProp) {
         log.warnOnce(
-          'text_state.setCurrentText.missingText',
-          'set-current-text payload missing text; using String(payload).'
+          'text_state.setCurrentText.invalid_payload',
+          'set-current-text requires payload { text, meta }; rejecting.'
         );
+        return { ok: false, error: 'invalid payload' };
       }
-      let text = hasTextProp ? String(payload.text || '') : String(payload || '');
+      const text = String(payload.text || '');
 
       if (text.length > maxIpcChars) {
         log.warnOnce(
@@ -399,7 +397,7 @@ function registerIpc(ipcMain, windowsResolver) {
         );
         throw new Error('set-current-text payload too large');
       }
-      const incomingMeta = hasTextProp ? sanitizeMeta(payload.meta) : null;
+      const incomingMeta = sanitizeMeta(payload.meta);
       const normalizedAction = getNormalizedSetCurrentTextAction(incomingMeta);
 
       const normalizedMeta = {

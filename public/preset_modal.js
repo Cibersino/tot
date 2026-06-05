@@ -4,18 +4,17 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Renderer script for the preset modal.
 // Responsibilities:
-// - Bind DOM elements and enforce input limits.
-// - Load and apply renderer translations for this modal.
-// - React to preset-init and settings updates from presetAPI.
-// - Validate inputs and trigger create/edit actions.
-// - Keep UI hints and counters in sync.
+// - Validate required modal DOM and shared renderer surfaces before continuing.
+// - Apply preset-init payloads and live settings updates from presetAPI.
+// - Load renderer translations and keep text direction and UI copy in sync.
+// - Validate preset inputs before create/edit actions are sent to main.
+// - Keep modal field constraints, hints, and counters synchronized locally.
 
 (function () {
 
   // =============================================================================
-  // Logger + bootstrap
+  // Logger
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[preset_modal] window.getLogger unavailable; cannot continue');
@@ -38,7 +37,7 @@
     const hintEl = document.querySelector('.hint');
 
     if (!nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
-      log.warn('preset_modal: missing DOM elements, modal script was not initialized.');
+      log.warn('Preset modal initialization skipped: required DOM elements missing.');
       return;
     }
 
@@ -69,7 +68,7 @@
     let translationsLoadedFor = null;
 
     // =============================================================================
-    // i18n helpers
+    // Helpers
     // =============================================================================
     const {
       loadRendererTranslations,
@@ -83,6 +82,12 @@
     }
     const tr = (path) => tRenderer(path);
     const mr = (path, params = {}) => msgRenderer(path, params);
+
+    function updateCharCount() {
+      const currentLength = descEl.value ? descEl.value.length : 0;
+      const remaining = Math.max(0, descMaxLength - currentLength);
+      charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining });
+    }
 
     function updatePresetDescriptionDirection() {
       const direction = resolveUserTextDirection(descEl.value || '');
@@ -120,8 +125,69 @@
       if (btnCancel) btnCancel.textContent = tr('renderer.presets.preset_modal.cancel');
     }
 
+    function applyIncomingPresetPayload(payload) {
+      if (!payload) return;
+
+      const incomingMode = (payload.mode === 'edit') ? 'edit' : 'new';
+
+      if (incomingMode === 'edit' && payload.preset) {
+        mode = 'edit';
+        originalName = payload.preset.name;
+        nameEl.value = payload.preset.name || '';
+        descEl.value = payload.preset.description || '';
+        if (typeof payload.preset.wpm === 'number') wpmEl.value = Math.round(payload.preset.wpm);
+        return;
+      }
+
+      if (incomingMode === 'edit') {
+        mode = 'new';
+        log.warn('BOOTSTRAP: preset-init edit payload missing preset; falling back to new mode.');
+      } else {
+        mode = 'new';
+      }
+
+      if (typeof payload.wpm === 'number') {
+        wpmEl.value = Math.round(payload.wpm);
+        if (!nameEl.value.trim()) nameEl.value = `${Math.round(payload.wpm)}wpm`;
+      }
+    }
+
+    async function savePreset(preset) {
+      if (mode === 'edit') {
+        if (window.presetAPI && typeof window.presetAPI.editPreset === 'function') {
+          const res = await window.presetAPI.editPreset(originalName, preset);
+          if (res && res.ok) {
+            window.close();
+            return;
+          }
+          if (res && res.code === 'CANCELLED') return;
+          window.Notify.notifyMain('renderer.presets.alerts.edit_error');
+          log.error('Preset modal editPreset response failed:', res);
+          return;
+        }
+
+        window.Notify.notifyMain('renderer.presets.alerts.process_error');
+        log.error('presetAPI.editPreset missing.');
+        return;
+      }
+
+      if (window.presetAPI && typeof window.presetAPI.createPreset === 'function') {
+        const res = await window.presetAPI.createPreset(preset);
+        if (res && res.ok) {
+          window.close();
+          return;
+        }
+        window.Notify.notifyMain('renderer.presets.alerts.create_error');
+        log.error('Preset modal createPreset response failed:', res);
+        return;
+      }
+
+      window.Notify.notifyMain('renderer.presets.alerts.process_error');
+      log.error('presetAPI.createPreset missing.');
+    }
+
     // =============================================================================
-    // presetAPI wiring (init + settings)
+    // Bridge integration
     // =============================================================================
     if (window.presetAPI && typeof window.presetAPI.onInit === 'function') {
       try {
@@ -133,71 +199,46 @@
                 const settings = await window.presetAPI.getSettings();
                 if (settings && settings.language) idiomaActual = settings.language || idiomaActual;
               } else {
-                log.warnOnce(
-                  'preset-modal.getSettings.missing',
-                  '[preset_modal] presetAPI.getSettings missing; using default language'
-                );
+                log.warn('BOOTSTRAP: presetAPI.getSettings missing; using default language.');
               }
             } catch (err) {
-              log.warnOnce(
-                'preset-modal.getSettings',
-                '[preset_modal] presetAPI.getSettings failed:',
-                err
-              );
+              log.warn('BOOTSTRAP: presetAPI.getSettings failed; using default language:', err);
             }
 
             await ensurePresetTranslations(idiomaActual);
-            const incomingMode = (payload.mode === 'edit') ? 'edit' : 'new';
-            mode = incomingMode;
-
-            if (incomingMode === 'edit' && payload.preset) {
-              originalName = payload.preset.name;
-              nameEl.value = payload.preset.name || '';
-              descEl.value = payload.preset.description || '';
-              if (typeof payload.preset.wpm === 'number') wpmEl.value = Math.round(payload.preset.wpm);
-            } else {
-              if (typeof payload.wpm === 'number') {
-                wpmEl.value = Math.round(payload.wpm);
-                if (!nameEl.value.trim()) nameEl.value = `${Math.round(payload.wpm)}wpm`;
-              }
-            }
-
+            applyIncomingPresetPayload(payload);
             await applyPresetTranslations(mode);
             updatePresetDescriptionDirection();
-            // Update char count initial
-            const currLen = descEl.value ? descEl.value.length : 0;
-            charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
+            updateCharCount();
           } catch (err) {
-            log.error('Error applying preset-init data:', err);
+            log.error('Preset modal preset-init handling failed:', err);
           }
         });
       } catch (err) {
-        log.error('Error setting up presetAPI.onInit listener:', err);
+        log.error('BOOTSTRAP: presetAPI.onInit listener setup failed:', err);
       }
     } else {
-      log.warnOnce(
-        'preset-modal.onInit.missing',
-        '[preset_modal] presetAPI.onInit missing; modal will not receive init data'
-      );
+      log.warn('BOOTSTRAP: presetAPI.onInit missing; modal will not receive init data.');
     }
 
     if (window.presetAPI && typeof window.presetAPI.onSettingsChanged === 'function') {
-      window.presetAPI.onSettingsChanged(async (settings) => {
-        try {
-          const nextLang = settings && settings.language ? settings.language : '';
-          if (!nextLang || nextLang === idiomaActual) return;
-          idiomaActual = nextLang;
-          await applyPresetTranslations(mode);
-          updatePresetDescriptionDirection();
-        } catch (err) {
-          log.warn('preset_modal: failed to apply settings update:', err);
-        }
-      });
+      try {
+        window.presetAPI.onSettingsChanged(async (settings) => {
+          try {
+            const nextLang = settings && settings.language ? settings.language : '';
+            if (!nextLang || nextLang === idiomaActual) return;
+            idiomaActual = nextLang;
+            await applyPresetTranslations(mode);
+            updatePresetDescriptionDirection();
+          } catch (err) {
+            log.warn('Preset modal settings update failed:', err);
+          }
+        });
+      } catch (err) {
+        log.warn('BOOTSTRAP: presetAPI.onSettingsChanged listener setup failed; language updates disabled:', err);
+      }
     } else {
-      log.warnOnce(
-        'preset-modal.onSettingsChanged.missing',
-        '[preset_modal] presetAPI.onSettingsChanged missing; language updates disabled'
-      );
+      log.warn('BOOTSTRAP: presetAPI.onSettingsChanged missing; language updates disabled.');
     }
 
     // =============================================================================
@@ -232,9 +273,7 @@
         descEl.value = descEl.value.substring(0, descMaxLength);
       }
       updatePresetDescriptionDirection();
-      const currentLength = descEl.value.length;
-      const remaining = descMaxLength - currentLength;
-      charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining });
+      updateCharCount();
     });
 
     nameEl.addEventListener('input', () => {
@@ -248,37 +287,10 @@
       if (!preset) return;
 
       try {
-        if (mode === 'edit') {
-          if (window.presetAPI && typeof window.presetAPI.editPreset === 'function') {
-            const res = await window.presetAPI.editPreset(originalName, preset);
-            if (res && res.ok) {
-              window.close();
-            } else {
-              if (res && res.code === 'CANCELLED') return;
-              window.Notify.notifyMain('renderer.presets.alerts.edit_error');
-              log.error('Error editing preset (response):', res);
-            }
-          } else {
-            window.Notify.notifyMain('renderer.presets.alerts.process_error');
-            log.errorOnce('preset-modal.editPreset.missing', '[preset_modal] presetAPI.editPreset missing');
-          }
-        } else {
-          if (window.presetAPI && typeof window.presetAPI.createPreset === 'function') {
-            const res = await window.presetAPI.createPreset(preset);
-            if (res && res.ok) {
-              window.close();
-            } else {
-              window.Notify.notifyMain('renderer.presets.alerts.create_error');
-              log.error('Error creating preset (response):', res);
-            }
-          } else {
-            window.Notify.notifyMain('renderer.presets.alerts.process_error');
-            log.errorOnce('preset-modal.createPreset.missing', '[preset_modal] presetAPI.createPreset missing');
-          }
-        }
+        await savePreset(preset);
       } catch (err) {
         window.Notify.notifyMain('renderer.presets.alerts.process_error');
-        log.error('Error in save preset:', err);
+        log.error('Preset modal save action failed:', err);
       }
     });
 
@@ -296,11 +308,10 @@
     });
 
     // =============================================================================
-    // Initial UI sync
+    // App lifecycle / bootstrapping
     // =============================================================================
     (async function initCharCount() {
-      const currLen = descEl.value ? descEl.value.length : 0;
-      charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining: Math.max(0, descMaxLength - currLen) });
+      updateCharCount();
       updatePresetDescriptionDirection();
     })();
 

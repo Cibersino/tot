@@ -16,7 +16,7 @@ const {
 } = require('../../helpers/electron_module_mock');
 const {
   inspectPdfFile,
-} = require('../../../electron/text_extraction_platform/text_extraction_pdf_page_selection');
+} = require('../../../electron/text_extraction_platform/text_extraction_pdf_selection_pipeline');
 
 const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
 const SCANNED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
@@ -86,7 +86,7 @@ function loadCoreWithMocks({
   );
   const pdfPageSelectionModulePath = path.resolve(
     __dirname,
-    '../../../electron/text_extraction_platform/text_extraction_pdf_page_selection.js'
+    '../../../electron/text_extraction_platform/text_extraction_pdf_selection_pipeline.js'
   );
   const logModulePath = path.resolve(
     __dirname,

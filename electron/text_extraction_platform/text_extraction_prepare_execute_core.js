@@ -32,7 +32,7 @@ const {
   inspectPdfFile,
   materializePdfPageSelectionInput,
   resolveProcessingInputFileName,
-} = require('./text_extraction_pdf_page_selection');
+} = require('./text_extraction_pdf_selection_pipeline');
 const {
   OCR_PROVIDER_LIMIT_BYTES,
   buildHeavyPdfSplitPlan,

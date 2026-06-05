@@ -78,7 +78,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `SM-09`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT/EXTRACT`
-* `electron/text_extraction_platform/text_extraction_pdf_page_selection.js`
+* `electron/text_extraction_platform/text_extraction_pdf_selection_pipeline.js`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT-05`
   * supports parts of `REG-IMPORT-06A`

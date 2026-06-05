@@ -101,7 +101,7 @@
     } catch (err) {
       log.warnOnce(
         'textExtractionDragDrop.dropEffect',
-        'Unable to update drag/drop effect (ignored):',
+        'Drag/drop effect update failed (ignored):',
         err
       );
     }
@@ -130,7 +130,7 @@
     try {
       return String(await resolver(file) || '').trim();
     } catch (err) {
-      log.error('Failed to resolve dropped file path:', err);
+      log.warn('Dropped file path resolution failed; file ignored:', err);
       return '';
     }
   }
@@ -210,7 +210,12 @@
     }
 
     const { startFromFilePath, startFromFilePaths } = requireConfiguredDeps();
-    if (filePaths.length > 1 && typeof startFromFilePaths === 'function') {
+    if (filePaths.length > 1) {
+      if (typeof startFromFilePaths !== 'function') {
+        log.error('startFromFilePaths dependency missing; cannot continue dropped batch text extraction flow.');
+        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+        return;
+      }
       try {
         await startFromFilePaths({
           filePaths,
@@ -270,4 +275,3 @@
 // =============================================================================
 // End of public/js/text_extraction_drag_drop.js
 // =============================================================================
-
