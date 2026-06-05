@@ -4,11 +4,13 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Builds the app's native (top) menu and main-process dialog texts.
+// Main-process menu and native-dialog translation owner.
 // Responsibilities:
-// - Load translations from i18n/<lang>/main.json with a safe fallback chain.
-// - Build and install the application menu.
-// - Forward menu actions to the main renderer via 'menu-click'.
+// - Load main-process translations from i18n/<lang>/main.json with the repo fallback chain.
+// - Expose helpers for native dialog text resolution used by other main-side modules.
+// - Build and install the native application menu from translated labels.
+// - Gate menu dispatch when main-window interaction is intentionally locked.
+// - Forward approved menu actions to the main renderer via 'menu-click'.
 
 // =============================================================================
 // Imports (external modules)
@@ -35,7 +37,7 @@ const MENU_CLICK_CHANNEL = 'menu-click';
 const MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__';
 
 // =============================================================================
-// Helpers (logging + utilities)
+// Logger + shared helpers
 // =============================================================================
 
 const log = Log.get('menu');
@@ -66,6 +68,8 @@ function resolveMenuLabel(obj, key, fallback = key) {
     return fallback;
 }
 
+// Exported helper: callers inject their own logger scope/prefix so missing
+// dialog-key diagnostics stay attributed to the feature that requested them.
 function resolveDialogText(dialogTexts, key, fallback = key, opts = {}) {
     if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
     if (!opts.log || typeof opts.log.warnOnce !== 'function') {
@@ -225,7 +229,7 @@ function loadBundle(langCode, requested, required) {
 }
 
 // =============================================================================
-// Public helper: dialog texts
+// Public helper: native dialog texts
 // =============================================================================
 // Some dialogs are shown by the main process (Electron native dialogs).
 // This returns the "main.dialog" section from the translation file.
@@ -237,7 +241,7 @@ function getDialogTexts(lang) {
 }
 
 // =============================================================================
-// Public helper: build the native application menu
+// Public helper: native application menu
 // =============================================================================
 
 /**
@@ -321,7 +325,7 @@ function buildAppMenu(lang, opts = {}) {
         return null;
     };
 
-    // Optional hook: the menu can trigger the language picker window.
+    // Optional integration hook supplied by main.js for the language picker.
     const onOpenLanguage =
         typeof opts.onOpenLanguage === 'function' ? opts.onOpenLanguage : null;
 
