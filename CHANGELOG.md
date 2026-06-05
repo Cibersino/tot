@@ -12,6 +12,26 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
 - **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
 
+## [1.4.0] toT — Industrial
+- Fecha: `2026-06-04`
+
+- La extracción de texto desde PDFs agrega un paso previo de opciones que permite elegir entre `Todas las páginas` y un `Rango de páginas` contiguo antes de continuar con la extracción.
+- Cuando se elige un rango, tanto la ruta nativa como la ruta OCR trabajan sobre ese subconjunto real de páginas, no sobre el PDF completo.
+- Si la extracción por rango genera un PDF local y el usuario decide conservarlo, la UI permite revelarlo directamente tanto desde el modal final de aplicación como desde el reporte final batch cuando corresponde.
+- La selección múltiple desde picker y drag/drop deja de tratarse como un caso inválido de “single file” y pasa a abrir un planificador de extracción por lotes con unidades, rutas, rangos y política de fallos.
+- Los PDFs que exceden el límite de entrada del proveedor OCR dejan de caer en un fallo genérico: ahora la app ofrece volver a páginas, usar ruta nativa si existe o derivar al split automático del PDF completo.
+- La ejecución batch añade progreso contextual (`unidad/archivo/ruta`), snapshots JSON automáticos por unidad cuando aplica y un reporte final con copy/export de resultados.
+- La activación de Google OCR deja de depender solo de un fallo durante la extracción y pasa a poder iniciarse explícitamente desde `Menú > Preferencias`, reutilizando el mismo disclosure y la misma secuencia OAuth que usa la recuperación automática.
+- Abortar una extracción deja de devolver inmediatamente la ventana principal a idle: la UI entra en un estado explícito de `cancelación pendiente`, conserva el contexto visible del archivo/tiempo y mantiene bloqueadas las interacciones hasta que el cierre real del flujo termina.
+- El manejo de dirección de texto se normaliza en preview, editor, presets y disclosure OCR para que contenido RTL o mixto no quede visualmente invertido ni mal alineado respecto de la UI efectiva.
+- El Text Editor deja de inicializar el texto por dos caminos competidores (`push` desde main + `pull` desde renderer) y pasa a un único arranque renderer-owned vía `getCurrentText()`, evitando re-inicializaciones al reabrir una ventana ya viva, preservando borradores locales no sincronizados y desacoplando el primer show visible de una señal de ready demasiado temprana.
+- La apertura del Text Editor deja de depender de un `editor-ready` genérico para limpiar el loader de la ventana principal: el primer show ahora espera una confirmación explícita de presentación base desde el renderer, mientras una ventana ya viva simplemente se revela y enfoca sin rebootstrap.
+- El contrato activo de `set-current-text` deja de preservar payloads legacy string y queda canonizado a `{ text, meta }` tanto en la ventana principal como en el Text Editor.
+- La ventana principal deja de rehacer recuentos completos del texto vigente cuando un cambio solo afecta `WPM`, formateo numérico visible o la resolución efectiva del preset; ahora clasifica esos refreshes y reutiliza stats/cache cuando el texto no cambió, y cuando sí hace falta un recuento completo muestra un estado pending/recount explícito hasta que se asiente la corrida autoritativa más reciente, incluido un kickoff diferido en startup para no disparar ese settle antes de que la UI salga realmente del bloqueo inicial.
+- El núcleo de conteo deja de depender de recorridos/materializaciones redundantes y pasa a contadores streaming para `simple` y para el fallback de `preciso`; cuando `Intl.Segmenter` está disponible, el modo preciso conserva la semántica visible de whitespace, grafemas y segmentación de palabras, pero separa los pases de grafemas y palabras para reducir trabajo intermedio sobre textos grandes.
+- Los artefactos temporales locales de runtime dejan de dispersarse en `%TEMP%`: subsets PDF, normalización OCR y copias temporales de app-docs/licencias pasan a centralizarse bajo un root app-owned con limpieza best-effort al cierre normal.
+- Las alerts del renderer dejan de concentrarse en los owners planos `renderer.alerts`, `renderer.editor_alerts` y `renderer.preset_alerts`, y pasan a namespaces por feature (`renderer.main.alerts`, `renderer.text_extraction.alerts`, `renderer.editor.alerts`, `renderer.snapshots.alerts`, `renderer.reading_test.alerts`, `renderer.modal_preset.alerts`, `renderer.presets.alerts`, `renderer.browser_extension.alerts`) alineados con el código, los bundles locales y la guía de traducción.
+
 ## [1.3.0] toT — Internacional
 - Fecha: `2026-05-06`
 
