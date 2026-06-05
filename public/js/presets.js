@@ -159,8 +159,7 @@
     const trimmedCurrent = typeof currentPresetName === 'string' ? currentPresetName.trim() : '';
     const selectedName = persisted || trimmedCurrent;
     if (!selectedName) {
-      log.warnOnce(
-        `presets.selectedPreset.none:${langBase}`,
+      log.warn(
         'No persisted preset selection for langKey; selecting safe default and persisting (may be normal on first run).',
         { lang: langBase }
       );
@@ -169,8 +168,7 @@
       ? list.find(p => p.name === selectedName) || null
       : null;
     if (selectedName && !namedSelection) {
-      log.warnOnce(
-        `presets.selectedPreset.missing:${langBase}`,
+      log.warn(
         'Selected preset not found; falling back to safe preset:',
         { requested: selectedName, lang: langBase }
       );
