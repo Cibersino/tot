@@ -49,6 +49,7 @@ Reglas:
 ### Resumen de cambios
 
 - El Task Editor deja de verse como una superficie visual separada: su ventana y sus modales locales pasan a usar la misma familia de colores y el mismo chrome base que la ventana principal.
+- Limpieza interna mínima: se eliminan dos residuos sin uso que solo dejaban warnings de lint en el wiring del Text Editor find y en la cobertura unitaria de `preset_modal`, sin cambiar comportamiento ni contratos.
 
 ### Cambiado
 
@@ -56,6 +57,13 @@ Reglas:
   - la ventana deja la paleta blanca/gris propia y adopta los tonos cálidos base de la app para fondo, paneles, tabla, inputs y botones;
   - los modales locales de comentario, biblioteca y guardado en biblioteca alinean backdrop, panel, bordes, sombra y estados de foco con el lenguaje visual ya usado por los modales principales;
   - la superficie mantiene el mismo scope funcional; el ajuste es deliberadamente visual y de consistencia, sin cambiar flujos ni contratos.
+
+### Removido
+
+- Cleanup técnico menor:
+  - `electron/editor_find_main.js`: se elimina el wrapper local sin uso `rerunCurrentQueryOnCurrentText`, dejando el rerun real encapsulado solo en `editor_find_session.js`, que sigue siendo su owner funcional.
+  - `test/unit/shared/preset_modal.test.js`: se elimina el helper `tick()` no utilizado, que había quedado como residuo de scaffolding de test.
+  - Resultado: `npm run lint` deja de reportar los dos warnings `no-unused-vars` asociados, sin cambios de UX, IPC ni contratos de persistencia.
 
 ---
 
