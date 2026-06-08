@@ -17,6 +17,7 @@
       "enable_google_ocr": "Emyandy Google OCR",
       "disconnect_google_ocr": "Google OCR-gui ejehekýi",
       "links_interes": "Link iporãva",
+      "enlaces_generales": "Link general-kuéra",
       "ayuda": "?",
       "actualizar_version": "Embohekopyahu versión ipyahuvévape",
       "acerca_de": "Ko app rehegua",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Ndaipóri ñe’ẽ ojepurukuaáva",
         "invalid": "Ñe’ẽ lista ndoikói"
+      },
+      "mac": {
+        "mac_services": "Servicios",
+        "mac_hide_app": "Ñomi {app}",
+        "mac_hide_others": "Ñomi ambuéva",
+        "mac_show_all": "Hechauka opaite",
+        "mac_quit_app": "Ñesẽ {app}-gui"
       }
     },
     "dialog": {

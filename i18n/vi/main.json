@@ -17,6 +17,7 @@
       "enable_google_ocr": "Bật Google OCR",
       "disconnect_google_ocr": "Ngắt kết nối Google OCR",
       "links_interes": "Liên kết hữu ích",
+      "enlaces_generales": "Liên kết chung",
       "ayuda": "?",
       "actualizar_version": "Cập nhật lên phiên bản mới nhất",
       "acerca_de": "Giới thiệu",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Không có ngôn ngữ nào khả dụng",
         "invalid": "Danh sách ngôn ngữ không hợp lệ"
+      },
+      "mac": {
+        "mac_services": "Dịch vụ",
+        "mac_hide_app": "Ẩn {app}",
+        "mac_hide_others": "Ẩn mục khác",
+        "mac_show_all": "Hiển thị tất cả",
+        "mac_quit_app": "Thoát {app}"
       }
     },
     "dialog": {

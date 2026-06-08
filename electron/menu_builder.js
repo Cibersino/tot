@@ -98,13 +98,22 @@ function createMenuActionItem(menuTexts, labelKey, actionId, sendMenuClick) {
     };
 }
 
-function resolveMacAppMenuLabel() {
-    if (typeof app.name === 'string' && app.name.trim()) return app.name;
-    if (typeof app.getName === 'function') {
-        const appName = app.getName();
-        if (typeof appName === 'string' && appName.trim()) return appName;
+function resolveAppMenuName() {
+    const candidates = [];
+    if (typeof app.getName === 'function') candidates.push(app.getName());
+    candidates.push(app.name);
+
+    for (const candidate of candidates) {
+        if (typeof candidate === 'string' && candidate.trim()) return candidate;
     }
-    return 'App';
+
+    return 'toT';
+}
+
+function formatMenuLabel(template, params = {}) {
+    return String(template).replace(/\{(\w+)\}/g, (match, key) => (
+        Object.prototype.hasOwnProperty.call(params, key) ? String(params[key]) : match
+    ));
 }
 
 // =============================================================================
@@ -271,6 +280,8 @@ function buildAppMenu(lang, opts = {}) {
     const tr = loadMainTranslations(effectiveLang) || {};
     const tMain = isPlainObject(tr.main) ? tr.main : {};
     const m = isPlainObject(tMain.menu) ? tMain.menu : {};
+    const mMac = isPlainObject(m.mac) ? m.mac : {};
+    const appMenuName = resolveAppMenuName();
 
     const resolveMainWindow =
         typeof opts.resolveMainWindow === 'function'
@@ -376,15 +387,30 @@ function buildAppMenu(lang, opts = {}) {
     const menuTemplate = [];
     if (process.platform === 'darwin') {
         menuTemplate.push({
-            label: resolveMacAppMenuLabel(),
+            label: appMenuName,
             submenu: [
-                { role: 'services' },
+                {
+                    role: 'services',
+                    label: resolveMenuLabel(mMac, 'mac_services'),
+                },
                 { type: 'separator' },
-                { role: 'hide' },
-                { role: 'hideOthers' },
-                { role: 'unhide' },
+                {
+                    role: 'hide',
+                    label: formatMenuLabel(resolveMenuLabel(mMac, 'mac_hide_app'), { app: appMenuName }),
+                },
+                {
+                    role: 'hideOthers',
+                    label: resolveMenuLabel(mMac, 'mac_hide_others'),
+                },
+                {
+                    role: 'unhide',
+                    label: resolveMenuLabel(mMac, 'mac_show_all'),
+                },
                 { type: 'separator' },
-                { role: 'quit' },
+                {
+                    role: 'quit',
+                    label: formatMenuLabel(resolveMenuLabel(mMac, 'mac_quit_app'), { app: appMenuName }),
+                },
             ],
         });
     }
@@ -437,7 +463,12 @@ function buildAppMenu(lang, opts = {}) {
                 createMenuActionItem(m, 'disconnect_google_ocr', 'disconnect_google_ocr', sendMenuClick),
             ],
         },
-        createMenuActionItem(m, 'links_interes', 'links_interes', sendMenuClick),
+        {
+            label: resolveMenuLabel(m, 'links_interes'),
+            submenu: [
+                createMenuActionItem(m, 'enlaces_generales', 'links_interes', sendMenuClick),
+            ],
+        },
         {
             label: resolveMenuLabel(m, 'ayuda'),
             submenu: [

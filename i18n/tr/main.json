@@ -17,6 +17,7 @@
       "enable_google_ocr": "Google OCR’ı etkinleştir",
       "disconnect_google_ocr": "Google OCR bağlantısını kes",
       "links_interes": "Yararlı bağlantılar",
+      "enlaces_generales": "Genel bağlantılar",
       "ayuda": "?",
       "actualizar_version": "En son sürüme güncelle",
       "acerca_de": "Hakkında",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Kullanılabilir dil yok",
         "invalid": "Dil listesi geçersiz"
+      },
+      "mac": {
+        "mac_services": "Servisler",
+        "mac_hide_app": "{app} uygulamasını gizle",
+        "mac_hide_others": "Diğerlerini Gizle",
+        "mac_show_all": "Tümünü Göster",
+        "mac_quit_app": "{app} uygulamasından çık"
       }
     },
     "dialog": {

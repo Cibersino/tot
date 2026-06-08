@@ -17,6 +17,7 @@
       "enable_google_ocr": "Google OCR সক্রিয় করুন",
       "disconnect_google_ocr": "Google OCR বিচ্ছিন্ন করুন",
       "links_interes": "উপযোগী লিংক",
+      "enlaces_generales": "সাধারণ লিঙ্ক",
       "ayuda": "?",
       "actualizar_version": "সর্বশেষ সংস্করণে আপডেট করুন",
       "acerca_de": "পরিচিতি",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "কোনও ভাষা উপলব্ধ নেই",
         "invalid": "ভাষার তালিকা অকার্যকর"
+      },
+      "mac": {
+        "mac_services": "পরিষেবা",
+        "mac_hide_app": "{app} লুকান",
+        "mac_hide_others": "অন্যগুলো লুকান",
+        "mac_show_all": "সব দেখান",
+        "mac_quit_app": "{app} বন্ধ করুন"
       }
     },
     "dialog": {

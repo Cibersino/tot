@@ -344,6 +344,10 @@ Estados de revisión recomendados:
         "es": "Enlaces de interés",
         "en": "Useful links"
       },
+      "enlaces_generales": {
+        "es": "Enlaces generales",
+        "en": "General links"
+      },
       "ayuda": {
         "es": "?",
         "en": "?"
@@ -381,6 +385,29 @@ Estados de revisión recomendados:
         "invalid": {
           "es": "Lista de idiomas inválida",
           "en": "Invalid language list"
+        }
+      },
+      "mac": {
+        // [NO_CONFUNDIR] Etiquetas del menú de aplicación nativo de macOS. “Services”, “Hide Others” y “Show All” son conceptos del sistema referidos a aplicaciones y visibilidad, no a funciones o contenido propios de toT.
+        "mac_services": {
+          "es": "Servicios",
+          "en": "Services"
+        },
+        "mac_hide_app": {
+          "es": "Ocultar {app}",
+          "en": "Hide {app}"
+        },
+        "mac_hide_others": {
+          "es": "Ocultar otros",
+          "en": "Hide Others"
+        },
+        "mac_show_all": {
+          "es": "Mostrar todo",
+          "en": "Show All"
+        },
+        "mac_quit_app": {
+          "es": "Salir de {app}",
+          "en": "Quit {app}"
         }
       }
     },

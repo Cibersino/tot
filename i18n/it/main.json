@@ -17,6 +17,7 @@
       "enable_google_ocr": "Attiva Google OCR",
       "disconnect_google_ocr": "Disconnetti Google OCR",
       "links_interes": "Link di interesse",
+      "enlaces_generales": "Link generali",
       "ayuda": "?",
       "actualizar_version": "Aggiorna versione",
       "acerca_de": "Informazioni",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Nessuna lingua disponibile",
         "invalid": "Elenco lingue non valido"
+      },
+      "mac": {
+        "mac_services": "Servizi",
+        "mac_hide_app": "Nascondi {app}",
+        "mac_hide_others": "Nascondi le altre",
+        "mac_show_all": "Mostra tutto",
+        "mac_quit_app": "Esci da {app}"
       }
     },
     "dialog": {

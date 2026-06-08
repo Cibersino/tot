@@ -17,6 +17,7 @@
       "enable_google_ocr": "Activar Google OCR",
       "disconnect_google_ocr": "Nürüfün Google OCR",
       "links_interes": "Ayüfalchi links",
+      "enlaces_generales": "Pu link generales",
       "ayuda": "?",
       "actualizar_version": "Küpal afkechi version",
       "acerca_de": "Dungu mu",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Ngelay kezungun",
         "invalid": "Kezungun lista no küme"
+      },
+      "mac": {
+        "mac_services": "Servicios",
+        "mac_hide_app": "Eluge {app}",
+        "mac_hide_others": "Eluge kakelu",
+        "mac_show_all": "Pengey kom",
+        "mac_quit_app": "Tripan {app}"
       }
     },
     "dialog": {

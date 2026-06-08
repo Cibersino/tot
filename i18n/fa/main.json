@@ -17,6 +17,7 @@
       "enable_google_ocr": "فعال‌سازی Google OCR",
       "disconnect_google_ocr": "قطع اتصال Google OCR",
       "links_interes": "پیوندهای مفید",
+      "enlaces_generales": "پیوندهای عمومی",
       "ayuda": "؟",
       "actualizar_version": "به‌روزرسانی به آخرین نسخه",
       "acerca_de": "درباره",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "هیچ زبانی در دسترس نیست",
         "invalid": "فهرست زبان‌ها نامعتبر است"
+      },
+      "mac": {
+        "mac_services": "سرویس‌ها",
+        "mac_hide_app": "پنهان کردن {app}",
+        "mac_hide_others": "پنهان کردن دیگران",
+        "mac_show_all": "نمایش همه",
+        "mac_quit_app": "خروج از {app}"
       }
     },
     "dialog": {

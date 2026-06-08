@@ -6,10 +6,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-function tick() {
-  return new Promise((resolve) => setImmediate(resolve));
-}
-
 function createElement(id = '', tagName = 'div') {
   const listeners = {};
   return {

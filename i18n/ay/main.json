@@ -17,6 +17,7 @@
       "enable_google_ocr": "Google OCR activaña",
       "disconnect_google_ocr": "Google OCR ukat mistuña",
       "links_interes": "Wakiskiri linkanaka",
+      "enlaces_generales": "Jach’a links",
       "ayuda": "?",
       "actualizar_version": "Qhipa versión ukar machaqachaña",
       "acerca_de": "Aka tuqita",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Janiw arunakax utjkiti",
         "invalid": "Arunaka lista janiw walikiti"
+      },
+      "mac": {
+        "mac_services": "Servicios",
+        "mac_hide_app": "{app} imantaña",
+        "mac_hide_others": "Yaqhanak imantaña",
+        "mac_show_all": "Taqpach uñachayaña",
+        "mac_quit_app": "{app} jist’antaña"
       }
     },
     "dialog": {
