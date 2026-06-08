@@ -48,11 +48,17 @@ Reglas:
 
 ### Resumen de cambios
 
+- La barra de menú nativa se normaliza entre plataformas: `Enlaces de interés` deja de ser una acción top-level inválida y pasa a un submenu propio, mientras macOS recupera un menú de aplicación dedicado sin mezclar el idioma del sistema con el idioma elegido dentro de toT.
 - El Task Editor deja de verse como una superficie visual separada: su ventana y sus modales locales pasan a usar la misma familia de colores y el mismo chrome base que la ventana principal.
 - Limpieza interna mínima: se eliminan dos residuos sin uso que solo dejaban warnings de lint en el wiring del Text Editor find y en la cobertura unitaria de `preset_modal`, sin cambiar comportamiento ni contratos.
 
 ### Cambiado
 
+- Menú nativo (`electron/menu_builder.js`, `i18n/*/main.json`):
+  - macOS deja de reutilizar el primer menú funcional de la app como menú de aplicación y vuelve a mostrar un bloque dedicado `toT` con acciones nativas `Services` / `Hide` / `Hide Others` / `Show All` / `Quit`;
+  - esas etiquetas del menú de aplicación de macOS dejan de depender del idioma del sistema y pasan a resolverse desde `main.menu.mac`, siguiendo el idioma elegido por el usuario dentro de la app;
+  - `Enlaces de interés` deja de insertarse como acción top-level inválida y pasa a un submenu explícito `Enlaces generales` / `General links`, manteniendo la misma acción `links_interes` y la misma superficie de contenido;
+  - Windows/Linux conservan la misma estructura funcional que macOS para `¿Cómo usar la app?`, `Preferencias`, `Enlaces de interés` y `?`, con la única diferencia deliberada del menú de aplicación nativo prepend-only en Darwin.
 - Task Editor (`public/task_editor.css`):
   - la ventana deja la paleta blanca/gris propia y adopta los tonos cálidos base de la app para fondo, paneles, tabla, inputs y botones;
   - los modales locales de comentario, biblioteca y guardado en biblioteca alinean backdrop, panel, bordes, sombra y estados de foco con el lenguaje visual ya usado por los modales principales;
