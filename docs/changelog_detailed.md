@@ -53,7 +53,7 @@ Reglas:
 ### Fecha release y último commit
 
 - Fecha: `2026-06-07`
-- Último commit: `<TBD>`
+- Último commit: `29921a471bf8445c14d13dc0c102c09dedf5cede`
 
 ### Resumen de cambios
 
