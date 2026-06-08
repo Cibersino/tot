@@ -225,10 +225,6 @@ function clearPendingSessionState(status) {
   clearPendingEditorReplace(status);
 }
 
-function rerunCurrentQueryOnCurrentText() {
-  return session.rerunCurrentQueryOnCurrentText();
-}
-
 function replaceCurrent(rawReplacement) {
   return session.replaceCurrent(rawReplacement);
 }
