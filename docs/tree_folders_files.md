@@ -448,7 +448,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.0) Tooling raíz
 
-- `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`, y registra el hook `afterAllArtifactBuild` que reenvuelve los `.zip` distribuidos bajo una carpeta raíz `toT-<version>/`.
+- `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`, registra el hook `afterAllArtifactBuild` para reempaquetar los `.zip` distribuidos bajo `toT-<version>/INSTALL.txt` + `toT-<version>/toT-app/`, y configura el DMG de macOS para mostrar `INSTALL.txt` junto a la app y el acceso a `Applications`.
 - `package-lock.json` — Lockfile npm usado también por el workflow CI (`npm ci`).
 
 ### 6.2) Branding local en la app (public/assets)
@@ -461,7 +461,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.3) Recursos de packaging (build-resources)
 
-- `build-resources/after-all-artifact-build.js` — Hook post-packaging de `electron-builder`: reempaqueta los artefactos `.zip` ya generados para que el contenido final quede bajo una carpeta raíz única `toT-<version>/`, mejorando la extracción manual del release portable sin alterar el layout interno de `win-unpacked`.
+- `build-resources/after-all-artifact-build.js` — Hook post-packaging de `electron-builder`: reempaqueta los artefactos `.zip` de Windows para que el contenido final quede bajo `toT-<version>/`, agregue `INSTALL.txt` en la raíz visible y mueva la app empaquetada a `toT-<version>/toT-app/`.
+- `build-resources/INSTALL.txt` — Nota bilingüe de instalación y primer inicio visible en los artefactos empaquetados de Windows y macOS.
 - `build-resources/logo-cibersino.ico` — Icono de packaging para Windows.
 - `build-resources/logo-cibersino.png` — Fuente raster canónica de branding para packaging; también usable como input para Linux y para generar `logo-cibersino.icns` en macOS.
 

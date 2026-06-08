@@ -11,6 +11,7 @@ Rules:
 
 Current packaging resources:
 
+* `INSTALL.txt` - visible packaged install note for Windows ZIPs and macOS DMGs
 * `logo-cibersino.ico` — Windows packaging icon
 * `logo-cibersino.png` — canonical raster source and Linux packaging icon
 * `logo-cibersino.icns` — macOS packaging icon (generated on a Mac when needed)

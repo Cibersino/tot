@@ -5,6 +5,7 @@ This repo currently uses the Node built-in test runner for the stable automated 
 ## Directories
 
 * `test/unit/electron/` - unit/integration tests for Node-accessible app modules under `electron/**`
+* `test/unit/packaging/` - unit/integration tests for packaging-only build helpers under `build-resources/**`
 * `test/unit/shared/` - unit tests for shared pure logic extracted from renderer-facing code and shared UI contracts
 * `test/unit/extensions/` - reserved for future tests that need a separate extension-oriented ownership bucket
 * `test/fixtures/` - reserved for reusable fixture files when a test needs stable sample inputs
@@ -46,6 +47,7 @@ The current automated baseline is intentionally focused on low-friction contract
 Today that includes:
 
 * `test/unit/electron/` coverage for Node-accessible main-process modules
+* `test/unit/packaging/` coverage for packaging-only build helpers and artifact layout contracts
 * `test/unit/shared/` coverage for shared pure logic and renderer-adjacent contracts that can be exercised without full UI automation
 
 Renderer-heavy end-to-end flows are still mostly manual. The current smoke layer is intentionally minimal and does not try to replace the manual app-level suite.

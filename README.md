@@ -60,29 +60,22 @@
 1. Si ya tienes una versión anterior de toT, cierra la app y elimina la carpeta extraída anterior.
 2. Ir a [GitHub Releases](https://github.com/Cibersino/tot/releases) y descargar el último **`.zip` portable para Windows**.
 3. Extraer el `.zip` en cualquier carpeta.
-4. Ejecutar el `.exe` dentro de la carpeta extraída.
+4. Abrir la carpeta extraída `toT-<version>`.
+5. Leer `INSTALL.txt`.
+6. Abrir `toT-app` y ejecutar `toT.exe`.
 
-* En Windows, al ejecutar toT por primera vez, Microsoft Defender SmartScreen puede mostrar el aviso “Windows protegió su PC” porque la app es un build portable descargado fuera de Microsoft Store y puede no tener reputación suficiente para Windows. No hagas clic en **No ejecutar**. Para abrir la app, haz clic en **Más información** y luego en **Ejecutar de todas formas**.
+`INSTALL.txt` incluido en el artefacto explica el primer inicio y el aviso de SmartScreen.
 
 ### macOS Apple Silicon
 
 1. Si ya tienes una versión anterior de toT en **Aplicaciones**, cierra la app y elimina esa copia anterior.
 2. Descargar el último **`.dmg` para macOS arm64** desde [GitHub Releases](https://github.com/Cibersino/tot/releases).
 3. Abrir el archivo descargado.
-4. Arrastrar `toT` a la carpeta **Aplicaciones**.
-5. Abrir `toT` desde **Aplicaciones**.
+4. Leer `INSTALL.txt` en la ventana del DMG.
+5. Arrastrar `toT` a la carpeta **Aplicaciones**.
+6. Abrir `toT` desde **Aplicaciones**.
 
-Si macOS muestra el mensaje **“toT está dañado y no puede abrirse”**, eso puede deberse a la cuarentena de seguridad aplicada a apps descargadas de Internet, no necesariamente a que la app esté dañada. **No muevas la app al basurero**. Haz esto:
-
-1. Abre **Terminal**. Puedes encontrarla con `⌘ + Espacio` y escribiendo `Terminal`.
-2. Copia y pega este comando:
-
-```bash
-xattr -dr com.apple.quarantine /Applications/toT.app
-```
-
-3. Presiona **Enter**.
-4. Abre nuevamente `toT` desde **Aplicaciones**.
+`INSTALL.txt` incluido en el DMG explica el primer inicio y el aviso de cuarentena de macOS.
 
 ### Notas:
 
@@ -270,29 +263,22 @@ MIT — ver [`LICENSE`](LICENSE).
 1. If you already have an older version of toT, close the app and delete the previously extracted folder.
 2. Go to [GitHub Releases](https://github.com/Cibersino/tot/releases) and download the latest **Windows portable `.zip`**.
 3. Extract the `.zip` to any folder.
-4. Run the `.exe` inside the extracted folder.
+4. Open the extracted `toT-<version>` folder.
+5. Read `INSTALL.txt`.
+6. Open `toT-app` and run `toT.exe`.
 
-* On Windows, when running toT for the first time, Microsoft Defender SmartScreen may show the “Windows protected your PC” warning because the app is a portable build downloaded outside the Microsoft Store and may not yet have enough reputation for Windows. Do not click **Don’t run**. To open the app, click **More info**, then **Run anyway**.
+The `INSTALL.txt` file included in the artifact explains first-run steps and the SmartScreen warning.
 
 ### macOS Apple Silicon
 
 1. If you already have an older version of toT in **Applications**, close the app and delete that previous copy.
 2. Download the latest **macOS arm64 `.dmg`** from [GitHub Releases](https://github.com/Cibersino/tot/releases).
 3. Open the downloaded file.
-4. Drag `toT` to **Applications**.
-5. Open `toT` from **Applications**.
+4. Read `INSTALL.txt` in the DMG window.
+5. Drag `toT` to **Applications**.
+6. Open `toT` from **Applications**.
 
-If macOS shows **“toT is damaged and can’t be opened”**, this may be caused by the security quarantine applied to apps downloaded from the Internet, not necessarily by the app being damaged. **Do not move the app to the Trash**. Do this:
-
-1. Open **Terminal**. You can find it with `⌘ + Space` and typing `Terminal`.
-2. Copy and paste this command:
-
-```bash
-xattr -dr com.apple.quarantine /Applications/toT.app
-```
-
-3. Press **Enter**.
-4. Open `toT` again from **Applications**.
+The `INSTALL.txt` file included in the DMG explains first-run steps and the macOS quarantine warning.
 
 ### Notes:
 
