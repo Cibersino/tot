@@ -53,7 +53,7 @@ en el artefacto final se inventarian `LICENSE`, `PRIVACY.md`, `public/info/acerc
 - [x] Todo componente redistribuido queda clasificado con nombre, version, origen, licencia o terminos aplicables y decision de redistribucion.
 - [x] Toda obligacion de notice, atribucion, copia de licencia o texto de terceros tiene una cobertura explicita en el release.
 - [x] Ningun componente de terceros queda en estado ambiguo o sin clasificacion legal.
-- [x] Fonts, imagenes, iconos, logos y otros assets de terceros tienen procedencia y permiso de uso identificados.
+- [x] Fonts, imagenes, íconos, logos y otros assets de terceros tienen procedencia y permiso de uso identificados.
 
 ### 3.2 Servicios externos, privacidad y disclosures
 

@@ -1647,7 +1647,7 @@ Reglas:
 - Manual de uso (Issue #85): se reemplaza el placeholder por contenido real con **3 secciones fijas** (IDs `#instrucciones`, `#guia-basica`, `#faq`), se agrega **HTML en inglés**, y se incorporan **assets locales** (PNG/GIF) para capturas/animaciones.
 - El modo **Preciso** corrige el conteo de compuestos con guion (Issue #85): `e-mail`, `co-operate` y similares pasan a contar como **1 palabra**.
 - Editor manual: se habilita búsqueda **Ctrl+F / Cmd+F** con barra de búsqueda, navegación de coincidencias (Enter/Shift+Enter, F3/Shift+F3), modo modal (no edita texto) y resaltado visible incluso con foco en el input.
-- Selector de texto: se actualizan los iconos de overwrite/append del portapapeles a **`📋↺`** y **`📋+`**.
+- Selector de texto: se actualizan los íconos de overwrite/append del portapapeles a **`📋↺`** y **`📋+`**.
 
 ### Agregado
 
@@ -1668,7 +1668,7 @@ Reglas:
   - Se eliminan listeners duplicados del input del cronómetro en `public/renderer.js` y se centralizan en el controller.
   - Las reglas por cambio de texto pasan a delegarse al controller (sin que el módulo se adueñe del ciclo de vida del texto).
 - Selector de texto:
-  - Los botones de overwrite/append del portapapeles cambian sus iconos a **`📋↺`** (sobrescribir) y **`📋+`** (agregar).
+  - Los botones de overwrite/append del portapapeles cambian sus íconos a **`📋↺`** (sobrescribir) y **`📋+`** (agregar).
 - Info modal “Links de interés” (Issue #83):
   - La acción de menú `links_interes` ahora abre `showInfoModal('links_interes')` (en lugar de notificación WIP).
   - Allowlist de links externos: se permite `doi.org` para abrir el DOI desde el modal.

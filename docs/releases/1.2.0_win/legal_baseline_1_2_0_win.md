@@ -59,7 +59,7 @@ Se observaron en el build final `LICENSE`, `PRIVACY.md`, `public/info/acerca_de.
 - [x] Todo componente redistribuido queda clasificado con nombre, versión, origen, licencia o términos aplicables y decisión de redistribución.
 - [x] Toda obligación de notice, atribución, copia de licencia o texto de terceros tiene una cobertura explícita en el release.
 - [x] Ningún componente de terceros queda en estado ambiguo o sin clasificación legal.
-- [x] Fonts, imágenes, iconos, logos y otros assets de terceros tienen procedencia y permiso de uso identificados.
+- [x] Fonts, imágenes, íconos, logos y otros assets de terceros tienen procedencia y permiso de uso identificados.
 
 ### 3.2 Servicios externos, privacidad y disclosures
 

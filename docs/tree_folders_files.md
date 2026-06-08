@@ -463,7 +463,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `build-resources/after-all-artifact-build.js` — Hook post-packaging de `electron-builder`: reempaqueta los artefactos `.zip` de Windows para que el contenido final quede bajo `toT-<version>/`, agregue `INSTALL.txt` en la raíz visible y mueva la app empaquetada a `toT-<version>/toT-app/`.
 - `build-resources/INSTALL.txt` — Nota bilingüe de instalación y primer inicio visible en los artefactos empaquetados de Windows y macOS.
-- `build-resources/logo-cibersino.ico` — Icono de packaging para Windows.
+- `build-resources/logo-cibersino.ico` — Ícono de packaging para Windows.
 - `build-resources/logo-cibersino.png` — Fuente raster canónica de branding para packaging; también usable como input para Linux y para generar `logo-cibersino.icns` en macOS.
 
 ### 7) Política de actualización de este archivo
