@@ -17,6 +17,7 @@
       "enable_google_ocr": "Aktive Google OCR",
       "disconnect_google_ocr": "Dekonekte Google OCR",
       "links_interes": "Lyen itil",
+      "enlaces_generales": "Lyen jeneral",
       "ayuda": "?",
       "actualizar_version": "Mizajou ak dènye vèsyon an",
       "acerca_de": "Konsènan",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Pa gen lang disponib",
         "invalid": "Lis lang lan pa valab"
+      },
+      "mac": {
+        "mac_services": "Sèvis",
+        "mac_hide_app": "Kache {app}",
+        "mac_hide_others": "Kache lòt yo",
+        "mac_show_all": "Montre tout",
+        "mac_quit_app": "Kite {app}"
       }
     },
     "dialog": {

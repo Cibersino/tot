@@ -17,6 +17,7 @@
       "enable_google_ocr": "Включить Google OCR",
       "disconnect_google_ocr": "Отключить Google OCR",
       "links_interes": "Полезные ссылки",
+      "enlaces_generales": "Общие ссылки",
       "ayuda": "?",
       "actualizar_version": "Обновить до последней версии",
       "acerca_de": "О программе",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Нет доступных языков",
         "invalid": "Недопустимый список языков"
+      },
+      "mac": {
+        "mac_services": "Службы",
+        "mac_hide_app": "Скрыть {app}",
+        "mac_hide_others": "Скрыть остальные",
+        "mac_show_all": "Показать все",
+        "mac_quit_app": "Завершить {app}"
       }
     },
     "dialog": {

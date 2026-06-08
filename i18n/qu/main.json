@@ -17,6 +17,7 @@
       "enable_google_ocr": "Google OCRta activay",
       "disconnect_google_ocr": "Google OCR nisqamanta t'aqakuy",
       "links_interes": "Allin linkkuna",
+      "enlaces_generales": "General linkkuna",
       "ayuda": "?",
       "actualizar_version": "Qhipa ruwasqaman kunanchay",
       "acerca_de": "Kaymanta",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Mana rimaykuna kanchu",
         "invalid": "Rimaykuna lista mana allinchu"
+      },
+      "mac": {
+        "mac_services": "Servicios",
+        "mac_hide_app": "Pakay {app}",
+        "mac_hide_others": "Hukkunata pakay",
+        "mac_show_all": "Tukuyta rikuchiy",
+        "mac_quit_app": "{app} manta lluqsiy"
       }
     },
     "dialog": {

@@ -17,6 +17,7 @@
       "enable_google_ocr": "Whakahohe Google OCR",
       "disconnect_google_ocr": "Momotu Google OCR",
       "links_interes": "Ngā hononga whaihua",
+      "enlaces_generales": "Hononga whānui",
       "ayuda": "?",
       "actualizar_version": "Whakahōu ki te putanga hou",
       "acerca_de": "Mō tēnei",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Kāore he reo e wātea ana",
         "invalid": "He rārangi reo muhu"
+      },
+      "mac": {
+        "mac_services": "Ratonga",
+        "mac_hide_app": "Huna {app}",
+        "mac_hide_others": "Huna ērā atu",
+        "mac_show_all": "Whakaatu katoa",
+        "mac_quit_app": "Whakamutua {app}"
       }
     },
     "dialog": {

@@ -17,6 +17,7 @@
       "enable_google_ocr": "Google OCR सक्षम करें",
       "disconnect_google_ocr": "Google OCR डिस्कनेक्ट करें",
       "links_interes": "उपयोगी लिंक",
+      "enlaces_generales": "सामान्य लिंक",
       "ayuda": "?",
       "actualizar_version": "नवीनतम संस्करण में अपडेट करें",
       "acerca_de": "परिचय",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "कोई भाषा उपलब्ध नहीं",
         "invalid": "भाषा सूची अमान्य है"
+      },
+      "mac": {
+        "mac_services": "सेवाएँ",
+        "mac_hide_app": "{app} छिपाएँ",
+        "mac_hide_others": "अन्य छिपाएँ",
+        "mac_show_all": "सभी दिखाएँ",
+        "mac_quit_app": "{app} छोड़ें"
       }
     },
     "dialog": {

@@ -17,6 +17,7 @@
       "enable_google_ocr": "Aktivera Google OCR",
       "disconnect_google_ocr": "Koppla från Google OCR",
       "links_interes": "Användbara länkar",
+      "enlaces_generales": "Allmänna länkar",
       "ayuda": "?",
       "actualizar_version": "Uppdatera till senaste versionen",
       "acerca_de": "Om",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Inga språk tillgängliga",
         "invalid": "Ogiltig språklista"
+      },
+      "mac": {
+        "mac_services": "Tjänster",
+        "mac_hide_app": "Göm {app}",
+        "mac_hide_others": "Göm övriga",
+        "mac_show_all": "Visa alla",
+        "mac_quit_app": "Avsluta {app}"
       }
     },
     "dialog": {

@@ -17,6 +17,7 @@
       "enable_google_ocr": "Activar Google OCR",
       "disconnect_google_ocr": "Desconnectar Google OCR",
       "links_interes": "Enllaços d’interès",
+      "enlaces_generales": "Enllaços generals",
       "ayuda": "?",
       "actualizar_version": "Actualitzar a l’última versió",
       "acerca_de": "Quant a",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "No hi ha idiomes disponibles",
         "invalid": "Llista d’idiomes invàlida"
+      },
+      "mac": {
+        "mac_services": "Serveis",
+        "mac_hide_app": "Amaga {app}",
+        "mac_hide_others": "Amaga les altres",
+        "mac_show_all": "Mostra-ho tot",
+        "mac_quit_app": "Surt de {app}"
       }
     },
     "dialog": {

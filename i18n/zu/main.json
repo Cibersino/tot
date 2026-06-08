@@ -17,6 +17,7 @@
       "enable_google_ocr": "Vula i-Google OCR",
       "disconnect_google_ocr": "Nqamula i-Google OCR",
       "links_interes": "Izixhumanisi eziwusizo",
+      "enlaces_generales": "Izixhumanisi ezijwayelekile",
       "ayuda": "?",
       "actualizar_version": "Buyekeza enguqulweni yakamuva",
       "acerca_de": "Mayelana",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Azikho izilimi ezitholakalayo",
         "invalid": "Uhlu lwezilimi aluvumelekile"
+      },
+      "mac": {
+        "mac_services": "Amasevisi",
+        "mac_hide_app": "Fihla {app}",
+        "mac_hide_others": "Fihla Ezinye",
+        "mac_show_all": "Bonisa Konke",
+        "mac_quit_app": "Vala {app}"
       }
     },
     "dialog": {

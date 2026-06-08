@@ -17,6 +17,7 @@
       "enable_google_ocr": "Enchufar Google OCR",
       "disconnect_google_ocr": "Desenchufar Google OCR",
       "links_interes": "Links bacanes",
+      "enlaces_generales": "Enlaces generales",
       "ayuda": "¿Tai perdío?",
       "actualizar_version": "Ponerse al día con la última versión",
       "acerca_de": "La ficha",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "No hay niun idioma pa' elegir",
         "invalid": "La lista de idiomas salió chueca"
+      },
+      "mac": {
+        "mac_services": "Servicios",
+        "mac_hide_app": "Ocultar {app}",
+        "mac_hide_others": "Ocultar otros",
+        "mac_show_all": "Mostrar todo",
+        "mac_quit_app": "Salir de {app}"
       }
     },
     "dialog": {

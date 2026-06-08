@@ -17,6 +17,7 @@
       "enable_google_ocr": "تفعيل Google OCR",
       "disconnect_google_ocr": "فصل Google OCR",
       "links_interes": "روابط مفيدة",
+      "enlaces_generales": "روابط عامة",
       "ayuda": "؟",
       "actualizar_version": "التحديث إلى أحدث إصدار",
       "acerca_de": "حول",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "لا توجد لغات متاحة",
         "invalid": "قائمة اللغات غير صالحة"
+      },
+      "mac": {
+        "mac_services": "الخدمات",
+        "mac_hide_app": "إخفاء {app}",
+        "mac_hide_others": "إخفاء الآخرين",
+        "mac_show_all": "إظهار الكل",
+        "mac_quit_app": "إنهاء {app}"
       }
     },
     "dialog": {

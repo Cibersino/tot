@@ -17,6 +17,7 @@
       "enable_google_ocr": "Aktibatu Google OCR",
       "disconnect_google_ocr": "Deskonektatu Google OCR",
       "links_interes": "Esteka interesgarriak",
+      "enlaces_generales": "Esteka orokorrak",
       "ayuda": "?",
       "actualizar_version": "Eguneratu azken bertsiora",
       "acerca_de": "Honi buruz",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Ez dago hizkuntzarik erabilgarri",
         "invalid": "Hizkuntza-zerrenda baliogabea"
+      },
+      "mac": {
+        "mac_services": "Zerbitzuak",
+        "mac_hide_app": "Ezkutatu {app}",
+        "mac_hide_others": "Ezkutatu besteak",
+        "mac_show_all": "Erakutsi dena",
+        "mac_quit_app": "Irten {app}-etik"
       }
     },
     "dialog": {

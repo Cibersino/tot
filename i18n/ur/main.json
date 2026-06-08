@@ -17,6 +17,7 @@
       "enable_google_ocr": "Google OCR فعال کریں",
       "disconnect_google_ocr": "Google OCR منقطع کریں",
       "links_interes": "مفید روابط",
+      "enlaces_generales": "عام لنکس",
       "ayuda": "؟",
       "actualizar_version": "تازہ ترین ورژن پر اپ ڈیٹ کریں",
       "acerca_de": "متعلق",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "کوئی زبان دستیاب نہیں",
         "invalid": "زبانوں کی فہرست درست نہیں"
+      },
+      "mac": {
+        "mac_services": "سروسز",
+        "mac_hide_app": "{app} چھپائیں",
+        "mac_hide_others": "دیگر چھپائیں",
+        "mac_show_all": "سب دکھائیں",
+        "mac_quit_app": "{app} بند کریں"
       }
     },
     "dialog": {

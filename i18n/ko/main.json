@@ -17,6 +17,7 @@
       "enable_google_ocr": "Google OCR 활성화",
       "disconnect_google_ocr": "Google OCR 연결 해제",
       "links_interes": "유용한 링크",
+      "enlaces_generales": "일반 링크",
       "ayuda": "?",
       "actualizar_version": "최신 버전으로 업데이트",
       "acerca_de": "정보",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "사용 가능한 언어 없음",
         "invalid": "언어 목록이 올바르지 않음"
+      },
+      "mac": {
+        "mac_services": "서비스",
+        "mac_hide_app": "{app} 가리기",
+        "mac_hide_others": "다른 항목 가리기",
+        "mac_show_all": "모두 보기",
+        "mac_quit_app": "{app} 종료"
       }
     },
     "dialog": {

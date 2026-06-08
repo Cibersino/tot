@@ -17,6 +17,7 @@
       "enable_google_ocr": "啟用 Google OCR",
       "disconnect_google_ocr": "中斷 Google OCR 連線",
       "links_interes": "相關連結",
+      "enlaces_generales": "一般連結",
       "ayuda": "?",
       "actualizar_version": "更新至最新版本",
       "acerca_de": "關於",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "沒有可用語言",
         "invalid": "語言清單無效"
+      },
+      "mac": {
+        "mac_services": "服務",
+        "mac_hide_app": "隱藏 {app}",
+        "mac_hide_others": "隱藏其他",
+        "mac_show_all": "全部顯示",
+        "mac_quit_app": "結束 {app}"
       }
     },
     "dialog": {

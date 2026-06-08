@@ -17,6 +17,7 @@
       "enable_google_ocr": "Aktifkan Google OCR",
       "disconnect_google_ocr": "Putuskan Google OCR",
       "links_interes": "Tautan berguna",
+      "enlaces_generales": "Tautan umum",
       "ayuda": "?",
       "actualizar_version": "Perbarui ke versi terbaru",
       "acerca_de": "Tentang",
@@ -27,6 +28,13 @@
       "language": {
         "empty": "Tidak ada bahasa tersedia",
         "invalid": "Daftar bahasa tidak valid"
+      },
+      "mac": {
+        "mac_services": "Layanan",
+        "mac_hide_app": "Sembunyikan {app}",
+        "mac_hide_others": "Sembunyikan Lainnya",
+        "mac_show_all": "Tampilkan Semua",
+        "mac_quit_app": "Keluar dari {app}"
       }
     },
     "dialog": {
