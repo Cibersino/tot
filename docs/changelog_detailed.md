@@ -46,6 +46,15 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [1.4.1] toT
+
+### Fecha release y último commit
+
+- Fecha: `2026-06-07`
+- Último commit: `<TBD>`
+
 ### Resumen de cambios
 
 - La barra de menú nativa se normaliza entre plataformas: `Enlaces de interés` deja de ser una acción top-level inválida y pasa a un submenu propio, mientras macOS recupera un menú de aplicación dedicado sin mezclar el idioma del sistema con el idioma elegido dentro de toT.
