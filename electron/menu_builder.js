@@ -437,7 +437,12 @@ function buildAppMenu(lang, opts = {}) {
                 createMenuActionItem(m, 'disconnect_google_ocr', 'disconnect_google_ocr', sendMenuClick),
             ],
         },
-        createMenuActionItem(m, 'links_interes', 'links_interes', sendMenuClick),
+        {
+            label: resolveMenuLabel(m, 'links_interes'),
+            submenu: [
+                createMenuActionItem(m, 'enlaces_generales', 'links_interes', sendMenuClick),
+            ],
+        },
         {
             label: resolveMenuLabel(m, 'ayuda'),
             submenu: [

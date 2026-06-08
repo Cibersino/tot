@@ -128,6 +128,11 @@ test('buildAppMenu prepends a native macOS app menu and keeps the custom About i
   ]);
   assert.equal(capturedTemplate[1].label, 'How to use');
   assert.equal(capturedTemplate[2].label, 'Preferences');
+  assert.equal(capturedTemplate[3].label, 'Useful links');
+  assert.deepEqual(
+    capturedTemplate[3].submenu.map((item) => item.label),
+    ['General links']
+  );
   assert.equal(capturedTemplate[4].label, '?');
   assert.deepEqual(
     capturedTemplate[4].submenu.map((item) => item.label),
@@ -153,5 +158,10 @@ test('buildAppMenu keeps How to use as the first top-level menu outside macOS', 
   assert.ok(Array.isArray(capturedTemplate));
   assert.equal(capturedTemplate[0].label, 'How to use');
   assert.equal(capturedTemplate[1].label, 'Preferences');
+  assert.equal(capturedTemplate[2].label, 'Useful links');
+  assert.deepEqual(
+    capturedTemplate[2].submenu.map((item) => item.label),
+    ['General links']
+  );
   assert.equal(capturedTemplate[3].label, '?');
 });
