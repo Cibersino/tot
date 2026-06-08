@@ -12,6 +12,15 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
 - **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
 
+## [1.4.1] toT
+- Fecha: `2026-06-07`
+
+### Resumen de cambios
+
+- La barra de menú nativa se normaliza entre plataformas: `Enlaces de interés` deja de ser una acción top-level inválida y pasa a un submenu propio, mientras macOS recupera un menú de aplicación dedicado sin mezclar el idioma del sistema con el idioma elegido dentro de toT.
+- El Task Editor deja de verse como una superficie visual separada: su ventana y sus modales locales pasan a usar la misma familia de colores y el mismo chrome base que la ventana principal.
+- Limpieza interna mínima: se eliminan dos residuos sin uso que solo dejaban warnings de lint en el wiring del Text Editor find y en la cobertura unitaria de `preset_modal`, sin cambiar comportamiento ni contratos.
+
 ## [1.4.0] toT — Industrial
 - Fecha: `2026-06-04`
 
