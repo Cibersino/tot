@@ -98,6 +98,15 @@ function createMenuActionItem(menuTexts, labelKey, actionId, sendMenuClick) {
     };
 }
 
+function resolveMacAppMenuLabel() {
+    if (typeof app.name === 'string' && app.name.trim()) return app.name;
+    if (typeof app.getName === 'function') {
+        const appName = app.getName();
+        if (typeof appName === 'string' && appName.trim()) return appName;
+    }
+    return 'App';
+}
+
 // =============================================================================
 // Translation loading
 // =============================================================================
@@ -364,7 +373,23 @@ function buildAppMenu(lang, opts = {}) {
     // Menu template:
     // - Prefer translated labels when available.
     // - Each click emits a stable action id (string).
-    const menuTemplate = [
+    const menuTemplate = [];
+    if (process.platform === 'darwin') {
+        menuTemplate.push({
+            label: resolveMacAppMenuLabel(),
+            submenu: [
+                { role: 'services' },
+                { type: 'separator' },
+                { role: 'hide' },
+                { role: 'hideOthers' },
+                { role: 'unhide' },
+                { type: 'separator' },
+                { role: 'quit' },
+            ],
+        });
+    }
+
+    menuTemplate.push(
         {
             label: resolveMenuLabel(m, 'como_usar'),
             submenu: [
@@ -419,8 +444,8 @@ function buildAppMenu(lang, opts = {}) {
                 createMenuActionItem(m, 'actualizar_version', 'actualizar_version', sendMenuClick),
                 createMenuActionItem(m, 'acerca_de', 'acerca_de', sendMenuClick),
             ],
-        },
-    ];
+        }
+    );
 
     // Development menu:
     // - Hidden in packaged builds.
