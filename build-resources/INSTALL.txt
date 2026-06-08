@@ -1,12 +1,11 @@
-toT - Instalación y primer inicio
-
-ES
+[Español]
 
 Este archivo acompaña al build descargado y resume los pasos de apertura,
 instalación y primer inicio. También explica por qué pueden aparecer
 advertencias de seguridad normales la primera vez que abres la app.
 
-Windows
+*WINDOWS*
+
 Si ya usabas una versión anterior de toT, cierra la app y elimina la
 carpeta extraída anterior antes de usar esta copia.
 
@@ -16,17 +15,20 @@ directamente desde la carpeta extraída.
 1. Abre la carpeta toT-app.
 2. Ejecuta toT.exe.
 
-Si Windows muestra "Windows protegió su PC", normalmente se debe a que
-toT es un build portable descargado fuera de Microsoft Store y todavía
-puede no tener suficiente reputación para SmartScreen. Esa advertencia,
-por sí sola, no significa necesariamente que el archivo esté dañado.
+Si Windows muestra "Windows protegió su PC":
+
+Puede deberse a que toT es un build portable descargado fuera de Microsoft
+Store y todavía puede no tener suficiente reputación para SmartScreen. Esa
+advertencia no significa que el archivo sea dañino.
 
 Para abrir la app:
-- No hagas clic en "No ejecutar".
-- Haz clic en "Más información".
-- Luego haz clic en "Ejecutar de todas formas".
 
-macOS Apple Silicon
+3. No hagas clic en "No ejecutar".
+4. Haz clic en "Más información".
+5. Luego haz clic en "Ejecutar de todas formas".
+
+*MAC*
+
 Si ya usabas una versión anterior de toT en Aplicaciones, cierra la app y
 elimina esa copia anterior antes de reemplazarla.
 
@@ -36,22 +38,25 @@ elimina esa copia anterior antes de reemplazarla.
 Conviene abrir la app desde Aplicaciones, no desde la ventana del DMG. Una
 vez copiada, puedes expulsar el DMG si lo deseas.
 
-Si macOS muestra "toT está dañado y no puede abrirse", normalmente se
-debe a la cuarentena de seguridad que macOS aplica a algunas apps
-descargadas de Internet. Ese mensaje no significa necesariamente que la
-app esté realmente dañada.
+Si macOS muestra "toT está dañado y no puede abrirse":
+
+Puede deberse a la cuarentena de seguridad que macOS aplica a algunas apps
+descargadas de Internet. Ese mensaje no significa que la app esté
+realmente dañada.
 
 Para quitar esa cuarentena:
-- No muevas la app al basurero.
-- Abre Terminal. Puedes encontrarla con `⌘ + Espacio` y escribiendo
-  `Terminal`.
-- Ejecuta:
-  xattr -dr com.apple.quarantine /Applications/toT.app
-- Ese comando elimina la cuarentena aplicada a esa copia de toT en
-  Aplicaciones.
-- Luego abre toT otra vez desde Aplicaciones.
 
-Notas
+3. No muevas la app al basurero.
+4. Abre Terminal: pulsa `⌘ + Espacio`, escribe `Terminal` y presiona
+   `Enter`.
+5. Ejecuta:
+   xattr -dr com.apple.quarantine /Applications/toT.app
+6. Ese comando elimina la cuarentena aplicada a esa copia de toT en
+   Aplicaciones.
+7. Luego abre toT otra vez desde Aplicaciones.
+
+*Notas*
+
 - Windows se distribuye como build portable, sin instalador.
 - macOS se distribuye como DMG.
 - Repositorio / documentación general:
@@ -59,13 +64,14 @@ Notas
 
 ----------------------------------------------------------------
 
-EN
+[English]
 
 This file ships with the downloaded build and summarizes the install,
 open, and first-run steps. It also explains why normal security warnings
 may appear the first time you open the app.
 
-Windows
+*WINDOWS*
+
 If you already use an older version of toT, close the app and delete the
 previously extracted folder before using this copy.
 
@@ -76,17 +82,19 @@ directly from the extracted folder.
 2. Run toT.exe.
 
 If Windows shows "Windows protected your PC":
-This usually happens because toT is a portable build downloaded outside
-the Microsoft Store and may not yet have enough reputation for
-SmartScreen. That warning, by itself, does not necessarily mean the file
-is damaged.
+
+This can happen because toT is a portable build downloaded outside the
+Microsoft Store and may not yet have enough reputation for SmartScreen.
+That warning does not mean the file is harmful.
 
 To open the app:
-- Do not click "Don't run".
-- Click "More info".
-- Then click "Run anyway".
 
-macOS Apple Silicon
+3. Do not click "Don't run".
+4. Click "More info".
+5. Then click "Run anyway".
+
+*MAC*
+
 If you already use an older version of toT in Applications, close the app
 and remove that previous copy before replacing it.
 
@@ -97,20 +105,23 @@ It is best to open the app from Applications, not from the DMG window.
 Once copied, you can eject the DMG if you want.
 
 If macOS shows "toT is damaged and can't be opened":
-This usually happens because macOS applies a security quarantine to some
-apps downloaded from the Internet. That message does not necessarily
-mean the app is actually damaged.
+
+This can happen because macOS applies a security quarantine to some apps
+downloaded from the Internet. That message does not mean the app is
+actually damaged.
 
 To remove that quarantine:
-- Do not move the app to the Trash.
-- Open Terminal. You can find it with `⌘ + Space` and typing `Terminal`.
-- Run:
-  xattr -dr com.apple.quarantine /Applications/toT.app
-- That command removes the quarantine attached to that copy of toT in
-  Applications.
-- Then open toT again from Applications.
 
-Notes
+3. Do not move the app to the Trash.
+4. Open Terminal: press `⌘ + Space`, type `Terminal`, and press `Enter`.
+5. Run:
+   xattr -dr com.apple.quarantine /Applications/toT.app
+6. That command removes the quarantine attached to that copy of toT in
+   Applications.
+7. Then open toT again from Applications.
+
+*Notes*
+
 - Windows is distributed as a portable build, with no installer.
 - macOS is distributed as a DMG.
 - Repository / general documentation:
