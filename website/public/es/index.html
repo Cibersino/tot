@@ -134,7 +134,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
         <h2 id="downloadStartModalTitle" class="download-modal__title"></h2>
-        <p id="downloadStartModalBody" class="download-modal__body"></p>
+        <div id="downloadStartModalBody" class="download-modal__body"></div>
         <p id="downloadStartModalSupport" class="download-modal__support"></p>
         <div class="download-modal__actions">
           <button id="downloadStartModalDismiss" class="cta-button download-modal__dismiss"
@@ -190,8 +190,24 @@
         kofiUrl: "https://ko-fi.com/cibersino/",
         title: "Tu descarga ha comenzado",
         messages: {
-          windows: "Se está descargando un archivo ZIP. Extráelo donde quieras, abre la carpeta `toT-<versión>`, lee `INSTALL.txt`, luego abre `toT-app` y ejecuta `toT.exe`.",
-          macos: "Se está descargando un archivo .dmg. Ábrelo, lee `INSTALL.txt` en la ventana del DMG, mueve toT a Aplicaciones y ábrelo desde allí.",
+          windows: {
+            intro: "Se está descargando un archivo ZIP.",
+            steps: [
+              ["Extráelo donde quieras."],
+              ["Abre la carpeta ", { token: "toT-<versión>" }, "."],
+              ["Lee ", { token: "INSTALL.txt" }, "."],
+              ["Abre ", { token: "toT-app" }, " y ejecuta ", { token: "toT.exe" }, "."]
+            ]
+          },
+          macos: {
+            intro: "Se está descargando un archivo .dmg.",
+            steps: [
+              ["Ábrelo."],
+              ["Lee ", { token: "INSTALL.txt" }, " en la ventana del DMG."],
+              ["Mueve toT a Aplicaciones."],
+              ["Ábrelo desde Aplicaciones."]
+            ]
+          },
           linux: "Se está descargando un archivo .AppImage. Abre el archivo .AppImage descargado. Si hace falta, márcalo primero como ejecutable y luego ejecútalo.",
           unknown: "Tu descarga está comenzando. Revisa el archivo descargado y sigue los pasos de instalación correspondientes a tu plataforma."
         },
