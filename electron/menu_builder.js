@@ -98,6 +98,24 @@ function createMenuActionItem(menuTexts, labelKey, actionId, sendMenuClick) {
     };
 }
 
+function resolveAppMenuName() {
+    const candidates = [];
+    if (typeof app.getName === 'function') candidates.push(app.getName());
+    candidates.push(app.name);
+
+    for (const candidate of candidates) {
+        if (typeof candidate === 'string' && candidate.trim()) return candidate;
+    }
+
+    return 'toT';
+}
+
+function formatMenuLabel(template, params = {}) {
+    return String(template).replace(/\{(\w+)\}/g, (match, key) => (
+        Object.prototype.hasOwnProperty.call(params, key) ? String(params[key]) : match
+    ));
+}
+
 // =============================================================================
 // Translation loading
 // =============================================================================
@@ -262,6 +280,8 @@ function buildAppMenu(lang, opts = {}) {
     const tr = loadMainTranslations(effectiveLang) || {};
     const tMain = isPlainObject(tr.main) ? tr.main : {};
     const m = isPlainObject(tMain.menu) ? tMain.menu : {};
+    const mMac = isPlainObject(m.mac) ? m.mac : {};
+    const appMenuName = resolveAppMenuName();
 
     const resolveMainWindow =
         typeof opts.resolveMainWindow === 'function'
@@ -364,7 +384,38 @@ function buildAppMenu(lang, opts = {}) {
     // Menu template:
     // - Prefer translated labels when available.
     // - Each click emits a stable action id (string).
-    const menuTemplate = [
+    const menuTemplate = [];
+    if (process.platform === 'darwin') {
+        menuTemplate.push({
+            label: appMenuName,
+            submenu: [
+                {
+                    role: 'services',
+                    label: resolveMenuLabel(mMac, 'mac_services'),
+                },
+                { type: 'separator' },
+                {
+                    role: 'hide',
+                    label: formatMenuLabel(resolveMenuLabel(mMac, 'mac_hide_app'), { app: appMenuName }),
+                },
+                {
+                    role: 'hideOthers',
+                    label: resolveMenuLabel(mMac, 'mac_hide_others'),
+                },
+                {
+                    role: 'unhide',
+                    label: resolveMenuLabel(mMac, 'mac_show_all'),
+                },
+                { type: 'separator' },
+                {
+                    role: 'quit',
+                    label: formatMenuLabel(resolveMenuLabel(mMac, 'mac_quit_app'), { app: appMenuName }),
+                },
+            ],
+        });
+    }
+
+    menuTemplate.push(
         {
             label: resolveMenuLabel(m, 'como_usar'),
             submenu: [
@@ -425,7 +476,7 @@ function buildAppMenu(lang, opts = {}) {
                 createMenuActionItem(m, 'acerca_de', 'acerca_de', sendMenuClick),
             ],
         }
-    ];
+    );
 
     // Development menu:
     // - Hidden in packaged builds.

@@ -344,6 +344,10 @@ Estados de revisión recomendados:
         "es": "Enlaces de interés",
         "en": "Useful links"
       },
+      "enlaces_generales": {
+        "es": "Enlaces generales",
+        "en": "General links"
+      },
       "ayuda": {
         "es": "?",
         "en": "?"
@@ -381,6 +385,37 @@ Estados de revisión recomendados:
         "invalid": {
           "es": "Lista de idiomas inválida",
           "en": "Invalid language list"
+        }
+      },
+      "mac": {
+        "mac_services": {
+          "es": "Servicios",
+          "en": "Services"
+          // [PROPÓSITO] Etiqueta visible del menú de aplicación nativo exclusivo de macOS. Debe seguir el idioma elegido en la app, aunque la acción siga siendo el role nativo `services`.
+        },
+        "mac_hide_app": {
+          "es": "Ocultar {app}",
+          "en": "Hide {app}"
+          // [PROPÓSITO] Etiqueta visible del role nativo `hide` en el menú de aplicación de macOS.
+          // [PLACEHOLDER] `{app}` = nombre visible de la app. Preservar exactamente el placeholder.
+          // [PROTEGIDO] El valor interpolado de `{app}` es un token técnico/nombre propio de la app y no debe traducirse dentro de la key.
+        },
+        "mac_hide_others": {
+          "es": "Ocultar otros",
+          "en": "Hide Others"
+          // [PROPÓSITO] Etiqueta visible del role nativo `hideOthers` en el menú de aplicación de macOS.
+        },
+        "mac_show_all": {
+          "es": "Mostrar todo",
+          "en": "Show All"
+          // [PROPÓSITO] Etiqueta visible del role nativo `unhide` en el menú de aplicación de macOS.
+        },
+        "mac_quit_app": {
+          "es": "Salir de {app}",
+          "en": "Quit {app}"
+          // [PROPÓSITO] Etiqueta visible del role nativo `quit` en el menú de aplicación de macOS.
+          // [PLACEHOLDER] `{app}` = nombre visible de la app. Preservar exactamente el placeholder.
+          // [PROTEGIDO] El valor interpolado de `{app}` es un token técnico/nombre propio de la app y no debe traducirse dentro de la key.
         }
       }
     },

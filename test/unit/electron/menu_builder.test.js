@@ -50,6 +50,19 @@ function createLogDouble() {
   };
 }
 
+function withPlatform(t, platform) {
+  const originalDescriptor = Object.getOwnPropertyDescriptor(process, 'platform');
+  Object.defineProperty(process, 'platform', {
+    value: platform,
+    configurable: true,
+    enumerable: originalDescriptor.enumerable,
+    writable: false,
+  });
+  t.after(() => {
+    Object.defineProperty(process, 'platform', originalDescriptor);
+  });
+}
+
 test('resolveDialogText uses the caller-injected logger for missing dialog keys', (t) => {
   const menuBuilder = loadFreshMenuBuilder(t);
   const log = createLogDouble();
@@ -77,7 +90,56 @@ test('resolveDialogText requires caller-injected warnOnce logging', (t) => {
   );
 });
 
-test('buildAppMenu keeps the shared top-level menu structure and links submenu', (t) => {
+test('buildAppMenu prepends a localized macOS app menu while preserving shared menus', (t) => {
+  withPlatform(t, 'darwin');
+
+  let capturedTemplate = null;
+  let installedMenu = null;
+  const builtMenu = { tag: 'menu' };
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    app: {
+      isPackaged: true,
+      name: 'toT',
+      getName() {
+        return 'toT';
+      },
+    },
+    Menu: {
+      buildFromTemplate(template) {
+        capturedTemplate = template;
+        return builtMenu;
+      },
+      setApplicationMenu(menu) {
+        installedMenu = menu;
+      },
+    },
+  });
+
+  menuBuilder.buildAppMenu('es');
+
+  assert.equal(installedMenu, builtMenu);
+  assert.ok(Array.isArray(capturedTemplate));
+  assert.equal(capturedTemplate[0].label, 'toT');
+  assert.deepEqual(capturedTemplate[0].submenu, [
+    { role: 'services', label: 'Servicios' },
+    { type: 'separator' },
+    { role: 'hide', label: 'Ocultar toT' },
+    { role: 'hideOthers', label: 'Ocultar otros' },
+    { role: 'unhide', label: 'Mostrar todo' },
+    { type: 'separator' },
+    { role: 'quit', label: 'Salir de toT' },
+  ]);
+  assert.equal(capturedTemplate[1].label, '¿Cómo usar la app?');
+  assert.equal(capturedTemplate[2].label, 'Preferencias');
+  assert.equal(capturedTemplate[3].label, 'Enlaces de interés');
+  assert.deepEqual(
+    capturedTemplate[3].submenu.map((item) => item.label),
+    ['Enlaces generales']
+  );
+  assert.equal(capturedTemplate[4].label, '?');
+});
+
+test('buildAppMenu keeps the shared top-level menu structure and links submenu outside macOS', (t) => {
   let capturedTemplate = null;
   let installedMenu = null;
   const builtMenu = { tag: 'menu' };

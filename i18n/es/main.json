@@ -28,6 +28,13 @@
       "language": {
         "empty": "Sin idiomas disponibles",
         "invalid": "Lista de idiomas inválida"
+      },
+      "mac": {
+        "mac_services": "Servicios",
+        "mac_hide_app": "Ocultar {app}",
+        "mac_hide_others": "Ocultar otros",
+        "mac_show_all": "Mostrar todo",
+        "mac_quit_app": "Salir de {app}"
       }
     },
     "dialog": {
