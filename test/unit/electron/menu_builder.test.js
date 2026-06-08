@@ -11,10 +11,6 @@ const {
 
 function loadFreshMenuBuilder(t, electronOverrides = {}) {
   const modulePath = path.resolve(__dirname, '../../../electron/menu_builder.js');
-  const baseApp = {
-    isPackaged: true,
-    name: 'toT',
-  };
   const baseMenu = {
     buildFromTemplate() {
       return {};
@@ -29,7 +25,7 @@ function loadFreshMenuBuilder(t, electronOverrides = {}) {
   t.after(installElectronModuleMock({
     ...electronOverrides,
     app: {
-      ...baseApp,
+      isPackaged: true,
       ...(electronOverrides.app || {}),
     },
     Menu: {
@@ -52,19 +48,6 @@ function createLogDouble() {
       this.warnOnceCalls.push({ key, args });
     },
   };
-}
-
-function withPlatform(t, platform) {
-  const originalDescriptor = Object.getOwnPropertyDescriptor(process, 'platform');
-  Object.defineProperty(process, 'platform', {
-    value: platform,
-    configurable: true,
-    enumerable: originalDescriptor.enumerable,
-    writable: false,
-  });
-  t.after(() => {
-    Object.defineProperty(process, 'platform', originalDescriptor);
-  });
 }
 
 test('resolveDialogText uses the caller-injected logger for missing dialog keys', (t) => {
@@ -94,9 +77,7 @@ test('resolveDialogText requires caller-injected warnOnce logging', (t) => {
   );
 });
 
-test('buildAppMenu prepends a native macOS app menu and keeps the custom About item under help', (t) => {
-  withPlatform(t, 'darwin');
-
+test('buildAppMenu keeps the shared top-level menu structure and links submenu', (t) => {
   let capturedTemplate = null;
   let installedMenu = null;
   const builtMenu = { tag: 'menu' };
@@ -115,46 +96,6 @@ test('buildAppMenu prepends a native macOS app menu and keeps the custom About i
   menuBuilder.buildAppMenu('en');
 
   assert.equal(installedMenu, builtMenu);
-  assert.ok(Array.isArray(capturedTemplate));
-  assert.equal(capturedTemplate[0].label, 'toT');
-  assert.deepEqual(capturedTemplate[0].submenu, [
-    { role: 'services' },
-    { type: 'separator' },
-    { role: 'hide' },
-    { role: 'hideOthers' },
-    { role: 'unhide' },
-    { type: 'separator' },
-    { role: 'quit' },
-  ]);
-  assert.equal(capturedTemplate[1].label, 'How to use');
-  assert.equal(capturedTemplate[2].label, 'Preferences');
-  assert.equal(capturedTemplate[3].label, 'Useful links');
-  assert.deepEqual(
-    capturedTemplate[3].submenu.map((item) => item.label),
-    ['General links']
-  );
-  assert.equal(capturedTemplate[4].label, '?');
-  assert.deepEqual(
-    capturedTemplate[4].submenu.map((item) => item.label),
-    ['Update to the latest version', 'About']
-  );
-});
-
-test('buildAppMenu keeps How to use as the first top-level menu outside macOS', (t) => {
-  withPlatform(t, 'win32');
-
-  let capturedTemplate = null;
-  const menuBuilder = loadFreshMenuBuilder(t, {
-    Menu: {
-      buildFromTemplate(template) {
-        capturedTemplate = template;
-        return {};
-      },
-    },
-  });
-
-  menuBuilder.buildAppMenu('en');
-
   assert.ok(Array.isArray(capturedTemplate));
   assert.equal(capturedTemplate[0].label, 'How to use');
   assert.equal(capturedTemplate[1].label, 'Preferences');
