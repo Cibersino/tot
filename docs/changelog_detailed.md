@@ -46,6 +46,17 @@ Reglas:
 
 ## Unreleased
 
+### Resumen de cambios
+
+- El Task Editor deja de verse como una superficie visual separada: su ventana y sus modales locales pasan a usar la misma familia de colores y el mismo chrome base que la ventana principal.
+
+### Cambiado
+
+- Task Editor (`public/task_editor.css`):
+  - la ventana deja la paleta blanca/gris propia y adopta los tonos cálidos base de la app para fondo, paneles, tabla, inputs y botones;
+  - los modales locales de comentario, biblioteca y guardado en biblioteca alinean backdrop, panel, bordes, sombra y estados de foco con el lenguaje visual ya usado por los modales principales;
+  - la superficie mantiene el mismo scope funcional; el ajuste es deliberadamente visual y de consistencia, sin cambiar flujos ni contratos.
+
 ---
 
 ## [1.4.0] toT — Industrial
