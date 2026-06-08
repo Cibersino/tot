@@ -46,6 +46,12 @@ Reglas:
 
 ## Unreleased
 
+### Cambiado
+
+- Packaging de release:
+  - los `.zip` de Windows pasan a distribuir `INSTALL.txt` en la raíz visible del artefacto y la app bajo `toT-<version>/toT-app/`;
+  - el DMG de macOS pasa a mostrar `INSTALL.txt` junto a la app y el acceso directo a `Applications`.
+
 ---
 
 ## [1.4.1] toT
