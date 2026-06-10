@@ -170,7 +170,7 @@ Los elementos marcados como `[PROTEGIDO]` no se traducen ni se normalizan librem
 Reglas prácticas:
 
 - Preservar exactamente los placeholders `{...}`: nombre, cantidad y función.
-- Preservar acrónimos y formatos invariantes como `WPM`, `OCR`, `PDF`, `URL`, `OAuth`, `JSON`, unidades como `MB`, símbolos como `%`, y controles como `▶`, `⏸`, `⏹`, `📂` cuando estén protegidos.
+- Preservar acrónimos y formatos invariantes como `WPM`, `OCR`, `PDF`, `URL`, `OAuth`, `JSON`, unidades como `MB` y símbolos como `%` cuando estén protegidos.
 - Mantener nombres propios y servicios como `toT`, `Cibersino`, `Google OCR`, `Google Drive`, `Chrome Web Store`, `GitHub` y `Ko-fi`.
 - No traducir extensiones, rutas, nombres de archivo, URLs ni tokens tipo código.
 - Las referencias internas a UI deben coincidir con el texto localizado real que verá el usuario en ese idioma.
@@ -1573,11 +1573,10 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] texto actual; extracción por lotes
         },
         "snapshot_load_guidance": {
-          "es": "Los snapshots de texto creados se pueden cargar desde la ventana principal usando el botón '📂'.",
-          "en": "Created text snapshots can be loaded from the main window using the '📂' button."
+          "es": "Los snapshots de texto creados se pueden cargar desde la ventana principal con el botón Cargar snapshot de texto.",
+          "en": "Created text snapshots can be loaded from the main window with the Load text snapshot button."
           // [PROPÓSITO] Guía para cargar los snapshots de texto creados por el proceso de extracción de texto.
           // [CONCEPTO_APP] snapshot de texto; extracción por lotes
-          // [PROTEGIDO] `📂`
         },
         "elapsed": {
           "es": "Tiempo total de extracción: ",

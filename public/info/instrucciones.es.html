@@ -51,13 +51,13 @@
               <li>Toma una buena foto de una página representativa de cualquier libro y guárdala en cualquier carpeta de
                 tu computador.</li>
               <li>Elige un WPM base usando un preset o el slider/input (un preset por defecto basta para empezar).</li>
-              <li>Pulsa <strong>📥</strong> o arrastra y suelta esa foto sobre la ventana principal.</li>
+              <li>Pulsa el <strong>botón de extraer texto</strong> o arrastra y suelta esa foto sobre la ventana principal.</li>
               <li>Si es tu primera vez usando el OCR de la app (Reconocimiento Óptico de Caracteres) o aún no lo tienes
                 conectado a una cuenta de Google, sigue los pasos para autorizar y conectar el servicio OCR de Google
                 con Google Drive.</li>
               <li>La extracción de texto desde la imagen comenzará. Cuando termine, en el modal final de aplicación
                 elige <strong>Sobrescribir</strong> y aplica esa página representativa una sola vez.</li>
-              <li>Abre el <strong>Editor de Texto</strong> (⌨) para inspeccionar el resultado extraído. Si hace falta,
+              <li>Abre el <strong>Editor de Texto</strong> con su botón para inspeccionar el resultado extraído. Si hace falta,
                 haz ajustes.</li>
               <li>Luego, en la sección de resultados, usa el multiplicador bajo el tiempo estimado con la cantidad total
                 de páginas del libro para proyectar la estimación completa.</li>
@@ -82,17 +82,17 @@
             <p><strong>Copia desde el portapapeles</strong></p>
             <ul>
               <li>Usa <strong>🗑</strong> para empezar desde cero.</li>
-              <li>Desde cualquier fuente: copia el texto y usa <strong>📋↺</strong>.</li>
-              <li>Si estás armando un texto por partes: usa <strong>📋+</strong> tantas veces como necesites.</li>
+              <li>Desde cualquier fuente: copia el texto y usa <strong>Reemplazar desde el portapapeles</strong>.</li>
+              <li>Si estás armando un texto por partes: usa <strong>Agregar desde el portapapeles</strong> tantas veces como necesites.</li>
               <li>Para repetir el texto del portapapeles en un clic, fija el número en <strong>Repeticiones</strong> y
-                luego aplica la acción: <strong>📋↺</strong> para sobrescribir o <strong>📋+</strong> para anexar.</li>
+                luego aplica la acción: <strong>Reemplazar desde el portapapeles</strong> para sobrescribir o <strong>Agregar desde el portapapeles</strong> para anexar.</li>
             </ul>
           </li>
 
           <li>
             <p><strong>Edita el texto (si lo necesitas)</strong></p>
             <ul>
-              <li>Abre el <strong>Editor de Texto</strong> (⌨).</li>
+              <li>Abre el <strong>Editor de Texto</strong> con su botón.</li>
               <li>Corrige si ves saltos de línea raros, guiones de corte o “basura” (menús, anuncios, encabezados
                 repetidos).</li>
               <li>Puedes modificar o agregar lo que quieras, escribiendo o pegando en el mismo editor.</li>
@@ -213,9 +213,9 @@
 
         <h4>Ruta 1A — Extraer desde archivos (ruta principal recomendada)</h4>
 
-        <p>Usa el botón <strong>📥</strong> para extraer texto directamente desde archivos, con ruteo automático
+        <p>Usa el <strong>botón de extraer texto</strong> para extraer texto directamente desde archivos, con ruteo automático
           según el tipo de archivo. También puedes <strong>arrastrar y soltar</strong> un archivo sobre la ventana
-          principal: ejecuta el mismo flujo de extracción que <strong>📥</strong>.</p>
+          principal: ejecuta el mismo flujo de extracción que ese botón.</p>
 
         <ul>
           <li><strong>Archivos de texto/documento:</strong> <code>.txt</code>, <code>.md</code>, <code>.html</code>,
@@ -231,7 +231,7 @@
         </ul>
 
         <ol>
-          <li>Haz clic en <strong>📥</strong> y elige el archivo, o arrastra/suelta el archivo sobre la ventana
+          <li>Haz clic en el <strong>botón de extraer texto</strong> y elige el archivo, o arrastra/suelta el archivo sobre la ventana
             principal (mientras arrastras archivos, se muestra un resaltado visual de drop).</li>
           <li>Si el archivo es un PDF, primero elige <strong>Todas las páginas</strong> o un
             <strong>Rango de páginas</strong> continuo. Si eliges rango, también puedes decidir si conservar el PDF
@@ -256,7 +256,7 @@
           <li>En esa planificación puedes <strong>reordenar archivos</strong>, <strong>agruparlos en unidades</strong>
             y decidir si te conviene procesarlos juntos o por separado antes de iniciar la ejecución.</li>
           <li>Al terminar, la app muestra un <strong>informe final de extracción por lotes</strong>; cuando una unidad
-            genera snapshots JSON, luego puedes cargarlos desde la ventana principal con <strong>📂</strong>.</li>
+            genera snapshots JSON, luego puedes cargarlos desde la ventana principal con el <strong>botón Cargar snapshot de texto</strong>.</li>
           <li><strong>División automática del PDF completo</strong> sirve cuando la app detecta, antes de subir nada a
             OCR, que el PDF completo excede el límite de tamaño del proveedor y te ofrece partirlo en entradas
             generadas antes de seguir.</li>
@@ -305,14 +305,14 @@
           <li>
             <p>En la ventana principal de la app, elige una de estas acciones:</p>
             <ul>
-              <li><strong>📋↺</strong>: reemplaza completamente el texto actual por el portapapeles.</li>
-              <li><strong>📋+</strong>: añade el portapapeles al final del texto actual.</li>
-              <li><strong>Input de repeticiones de pegado</strong> (junto a <strong>📋↺</strong> y
-                <strong>📋+</strong>): define cuántas veces se aplica el bloque del portapapeles en un solo clic.
+              <li><strong>Reemplazar desde el portapapeles</strong>: reemplaza completamente el texto actual por el portapapeles.</li>
+              <li><strong>Agregar desde el portapapeles</strong>: añade el portapapeles al final del texto actual.</li>
+              <li><strong>Input de repeticiones de pegado</strong> (junto a <strong>Reemplazar desde el portapapeles</strong> y
+                <strong>Agregar desde el portapapeles</strong>): define cuántas veces se aplica el bloque del portapapeles en un solo clic.
               </li>
             </ul>
-            <p><strong>Nota:</strong> con <code>N=2</code>, un clic en <strong>📋↺</strong> sobrescribe una vez y repite
-              una vez más con separación por salto de línea; un clic en <strong>📋+</strong> anexa dos veces. Si el
+            <p><strong>Nota:</strong> con <code>N=2</code>, un clic en <strong>Reemplazar desde el portapapeles</strong> sobrescribe una vez y repite
+              una vez más con separación por salto de línea; un clic en <strong>Agregar desde el portapapeles</strong> anexa dos veces. Si el
               valor
               es inválido (vacío, 0, negativo, decimal o texto), se usa <code>1</code>.</p>
           </li>
@@ -325,9 +325,9 @@
 
         <p><strong>Cuándo usar cada una:</strong></p>
         <ul>
-          <li>Usa <strong>📋↺</strong> cuando vas a trabajar con <em>un solo texto</em> o quieres
+          <li>Usa <strong>Reemplazar desde el portapapeles</strong> cuando vas a trabajar con <em>un solo texto</em> o quieres
             reiniciar.</li>
-          <li>Usa <strong>📋+</strong> cuando estás armando un texto “por partes” (diferentes textos,
+          <li>Usa <strong>Agregar desde el portapapeles</strong> cuando estás armando un texto “por partes” (diferentes textos,
             fragmentos, citas, secciones, capítulos).</li>
         </ul>
 
@@ -340,7 +340,7 @@
         <h4>Ruta 1C — Escribir o pegar directamente en el Editor de Texto</h4>
 
         <ol>
-          <li>Abre el <strong>Editor de Texto</strong> con el botón <strong>⌨</strong>.</li>
+          <li>Abre el <strong>Editor de Texto</strong> con su botón.</li>
           <li>Pega o escribe el texto directamente allí.</li>
           <li>Puedes hacer undo/redo como en cualquier editor de texto: Ctrl+Z / Ctrl+Y (Windows/Linux); Cmd+Z /
             Cmd+Shift+Z (Mac).</li>
@@ -366,8 +366,8 @@
         <h4>Ruta 1D — Mezcla (recomendada para textos reales)</h4>
 
         <ol>
-          <li>Carga un borrador rápido con <strong>📋↺</strong>.</li>
-          <li>Usa <strong>📋+</strong> para sumar secciones que falten.</li>
+          <li>Carga un borrador rápido con <strong>Reemplazar desde el portapapeles</strong>.</li>
+          <li>Usa <strong>Agregar desde el portapapeles</strong> para sumar secciones que falten.</li>
           <li>Abre el <strong>Editor de Texto</strong> para:
             <ul>
               <li>eliminar basura (encabezados repetidos, numeraciones, saltos de línea),</li>
@@ -378,23 +378,23 @@
           </li>
         </ol>
 
-        <p><strong>Nota:</strong> Puedes vaciar completamente el texto actual rápidamente con el botón
-          <strong>🗑</strong> de la ventana principal o del Editor de Texto.
+        <p><strong>Nota:</strong> Puedes vaciar completamente el texto actual rápidamente con el
+          <strong>botón de vaciar texto actual</strong> de la ventana principal o del Editor de Texto.
         </p>
 
         <h4>Ruta 1E — Guardar / Cargar snapshots</h4>
 
         <p>Si reutilizas textos con frecuencia, puedes guardar y cargar <strong>snapshots</strong> del texto actual
-          utilizando los botones <strong>💾</strong> y <strong>📂</strong>.</p>
+          utilizando los botones <strong>Guardar snapshot de texto</strong> y <strong>Cargar snapshot de texto</strong>.</p>
 
         <ul>
-          <li><strong>💾</strong>: primero abre un modal interno donde puedes etiquetar opcionalmente el snapshot por
+          <li><strong>Guardar snapshot de texto</strong>: primero abre un modal interno donde puedes etiquetar opcionalmente el snapshot por
             <strong>idioma</strong>, <strong>tipo</strong> y <strong>dificultad</strong>. Después de confirmar ahí, la
             app abre un cuadro de diálogo nativo para “guardar archivo”, ubicado en
             <code>config/saved_current_texts/</code>. Puedes guardar en <strong>subcarpetas</strong> (y crear carpetas)
             siempre que permanezcas dentro del árbol de snapshots. El snapshot se guarda como JSON.
           </li>
-          <li><strong>📂</strong>: abre un cuadro de diálogo nativo para “abrir archivo” y te permite seleccionar
+          <li><strong>Cargar snapshot de texto</strong>: abre un cuadro de diálogo nativo para “abrir archivo” y te permite seleccionar
             cualquier archivo de snapshot dentro de <code>config/saved_current_texts/</code> (incluidas las
             subcarpetas). La app solicitará confirmación porque sobrescribirá el texto actual.</li>
           <li>Un snapshot cargado se convierte en el nuevo <strong>texto actual</strong> (la misma semántica que otras
@@ -459,12 +459,12 @@
         <h4>3.2 Gestionar presets (si necesitas)</h4>
 
         <ul>
-          <li><strong>＋</strong> para crear un preset si te falta uno para tu caso típico (técnico, pantalla,
+          <li><strong>Crear un nuevo preset</strong> para crear un preset si te falta uno para tu caso típico (técnico, pantalla,
             idioma, etc.).</li>
           <li>Los presets personalizados pueden crearse manualmente, por ejemplo tomando como referencia una medición
             con el cronómetro (ver Paso 8), o de forma más automatizada mediante el test de velocidad de lectura (ver
             Paso 6).</li>
-          <li><strong>✎</strong> para editar un preset si está sistemáticamente alto/bajo o quieres cambiar su nombre
+          <li><strong>Editar preset seleccionado</strong> para editar un preset si está sistemáticamente alto/bajo o quieres cambiar su nombre
             o descripción. También puedes editar los presets por defecto.</li>
           <li><strong>🗑</strong> para eliminar un preset si se te volvió ruido.</li>
           <li><strong>⟲</strong> para restaurar los presets por defecto si quieres volver al set original de presets
@@ -527,7 +527,7 @@
 Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p>Recuerda que <strong>Repeticiones</strong> duplica texto dentro del texto actual, ya sea desde el selector
-          principal (<strong>📋↺</strong>/<strong>📋+</strong>) o desde el modal final de aplicación de
+          principal (<strong>Reemplazar desde el portapapeles</strong>/<strong>Agregar desde el portapapeles</strong>) o desde el modal final de aplicación de
           extracción/OCR. Usa el multiplicador bajo el tiempo estimado cuando quieras proyectar tiempo sin expandir el
           texto actual.</p>
 
@@ -641,15 +641,14 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <h4>7.1 Abrir el Editor de Tareas</h4>
         <ul>
-          <li>Desde la ventana principal, abre el Editor de Tareas usando los controles de tareas: <strong>📝</strong>
-            (nueva tarea) o <strong>🗃️</strong> (cargar tarea).</li>
-          <li><strong>📝</strong> abre una tarea vacía.</li>
-          <li><strong>🗃️</strong> te permite elegir una tarea guardada existente.</li>
+          <li>Desde la ventana principal, abre el Editor de Tareas usando los controles <strong>Nueva tarea</strong> o <strong>Cargar tarea</strong>.</li>
+          <li><strong>Nueva tarea</strong> abre una tarea vacía.</li>
+          <li><strong>Cargar tarea</strong> te permite elegir una tarea guardada existente.</li>
         </ul>
 
         <h4>7.2 Agregar y editar filas en la lista de lecturas</h4>
         <p>
-          Abre el <strong>Editor de Tareas</strong> con <strong>📝</strong>. Puedes agregar filas haciendo clic en <strong>“Add
+          Abre el <strong>Editor de Tareas</strong> con <strong>Nueva tarea</strong>. Puedes agregar filas haciendo clic en <strong>“Add
             row”</strong>. Cada fila representa un elemento de lectura con estas columnas: <strong>Texto</strong>,
           <strong>Tiempo</strong>, <strong>%</strong> (porcentaje completado), <strong>Falta</strong> (tiempo restante),
           <strong>Enlace</strong>, <strong>Comentario</strong>, y <strong>Acciones</strong>.
@@ -662,8 +661,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li>Actualiza <strong>%</strong> con tu porcentaje aproximado completado para rastrear el progreso; el tiempo
             restante en <strong>Falta</strong> se actualiza en consecuencia.</li>
           <li>Use <strong>Enlace</strong> para almacenar una ruta local o una URL HTTPS para el elemento.</li>
-          <li>Use <strong>💬</strong> para cualquier nota que quieras agregar sobre el elemento y/o vincularlo a
-            cualquier <strong>snapshot de texto</strong> guardado (aparecerá un ícono clickeable <strong>📥</strong>).
+          <li>Usa <strong>Agregar comentario</strong> para cualquier nota que quieras agregar sobre el elemento y/o vincularlo a
+            cualquier <strong>snapshot de texto</strong> guardado (aparecerá un ícono clickeable para cargar ese snapshot).
           </li>
         </ul>
 
@@ -693,7 +692,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             archivo (un archivo JSON) y hacer clic en "Guardar".</li>
           <li>Por tu seguridad, no hay auto-guardado. Si quieres actualizar una tarea guardada, debes guardarla
             nuevamente. Puedes sobrescribir el archivo en la carpeta si no quieres crear otra tarea.</li>
-          <li>Para cargar una tarea previamente guardada, haz clic en el botón <strong>🗃️</strong> (cargar)
+          <li>Para cargar una tarea previamente guardada, haz clic en el control <strong>Cargar tarea</strong>
             en la ventana principal.</li>
           <li>Para eliminar una tarea, cárgala y haz clic en <strong>“Eliminar”</strong> en el Editor de Tareas.</li>
         </ul>
@@ -706,7 +705,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p>
           En la ventana del Editor de Tareas, puedes guardar una lectura en una <strong>Biblioteca</strong> reutilizable.
           Esto es útil para elementos que leas con frecuencia o utilizas en diferentes tareas. Para guardar una lectura en
-          la biblioteca, haz clic en la acción <strong>💾</strong> (guardar en la biblioteca) en la fila correspondiente. 
+          la biblioteca, haz clic en la acción <strong>guardar en la biblioteca</strong> en la fila correspondiente. 
           La lectura guardada estará disponible en la lista de la Biblioteca, haciendo clic en 
           <strong>Cargar biblioteca</strong> en el Editor de Tareas. Desde allí puedes cargar en tu tarea cualquier 
           lectura que hayas guardado.
@@ -772,7 +771,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         </figure>
 
         <p>Usa el <strong>Cronómetro Flotante</strong> para controlar el cronómetro sin cambiar de ventana constantemente. En la ventana
-          principal, <strong>▣</strong> la activa o desactiva.</p>
+          principal, el toggle del <strong>Cronómetro Flotante</strong> lo activa o desactiva.</p>
 
         <hr />
 
@@ -1038,7 +1037,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p>Recomendaciones prácticas:</p>
         <ul>
           <li>Divide textos gigantes en partes (capítulos/secciones) y mide por separado.</li>
-          <li>Si estás armando un corpus, usa <strong>📋+</strong> y controla el tamaño.</li>
+          <li>Si estás armando un corpus, usa <strong>Agregar desde el portapapeles</strong> y controla el tamaño.</li>
           <li>Si copias desde PDF/columnas, primero limpia en el <strong>Editor de Texto</strong> (reduce basura antes de
             crecer el texto).</li>
         </ul>

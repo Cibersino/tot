@@ -236,7 +236,7 @@ function createHarness() {
     'renderer.text_extraction.batch_report.single_file_title': 'Automatic PDF split complete',
     'renderer.text_extraction.batch_report.current_text_has_output': 'Current text was updated.',
     'renderer.text_extraction.batch_report.current_text_unchanged': 'Current text was not changed.',
-    'renderer.text_extraction.batch_report.snapshot_load_guidance': 'Created JSON snapshots can be loaded later from the main window with the Load text snapshots button (📂).',
+    'renderer.text_extraction.batch_report.snapshot_load_guidance': 'Created text snapshots can be loaded from the main window with the Load text snapshot button.',
     'renderer.text_extraction.batch_report.elapsed': 'Execution time: ',
     'renderer.text_extraction.batch_report.copy_report': 'Copy report',
     'renderer.text_extraction.batch_report.open_snapshots_folder': 'Open snapshots folder',
@@ -399,7 +399,7 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   assert.equal(harness.elements.textExtractionBatchFinalModalPanel.scrollTop, 0);
   assert.match(harness.elements.textExtractionBatchFinalModalBody.innerHTML, /unit_1/);
   assert.match(harness.elements.textExtractionBatchFinalModalSummary.textContent, /Current text was updated\./);
-  assert.match(harness.elements.textExtractionBatchFinalModalSummary.textContent, /Load text snapshots button/);
+  assert.match(harness.elements.textExtractionBatchFinalModalSummary.textContent, /Load text snapshot button/);
   assert.equal(harness.elements.textExtractionBatchFinalModalElapsed.textContent, 'Execution time: 00:42');
   assert.equal(harness.elements.textExtractionBatchFinalModalElapsed.hidden, false);
   assert.match(harness.elements.textExtractionBatchFinalModalBody.innerHTML, /source_pages_1_4\.pdf/);

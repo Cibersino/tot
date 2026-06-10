@@ -210,7 +210,7 @@
         "reveal_generated_pdf": "Mostrar PDF guardado",
         "current_text_has_output": "El texto actual fue modificado.",
         "current_text_unchanged": "El texto actual no cambió.",
-        "snapshot_load_guidance": "Los snapshots de texto creados se pueden cargar desde la ventana principal usando el botón '📂'.",
+        "snapshot_load_guidance": "Los snapshots de texto creados se pueden cargar desde la ventana principal con el botón Cargar snapshot de texto.",
         "elapsed": "Tiempo total de extracción: ",
         "copy_report": "Copiar informe",
         "open_snapshots_folder": "Abrir carpeta de snapshots de texto",
