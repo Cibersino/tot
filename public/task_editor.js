@@ -19,6 +19,12 @@ if (typeof window.getLogger !== 'function') {
 }
 const log = window.getLogger('task-editor');
 log.debug('Task Editor starting...');
+const rendererIcons = window.RendererIcons || null;
+if (!rendererIcons
+  || typeof rendererIcons.applyIconToElement !== 'function'
+  || typeof rendererIcons.createIconButton !== 'function') {
+  throw new Error('[task-editor] RendererIcons unavailable; cannot continue');
+}
 const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[task-editor] AppConstants unavailable; verify constants.js load order');
@@ -380,16 +386,15 @@ function createRow(data = {}) {
   };
 }
 
-function buildActionButton(labelText, titleKey, onClick) {
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'icon-btn';
-  btn.textContent = labelText;
+function buildActionButton(iconName, titleKey, onClick, { className = 'icon-btn', size = 'lg' } = {}) {
   const title = tr(titleKey);
-  if (title) {
-    btn.title = title;
-    btn.setAttribute('aria-label', title);
-  }
+  const btn = rendererIcons.createIconButton({
+    iconName,
+    className,
+    size,
+    title,
+    ariaLabel: title,
+  });
   btn.addEventListener('click', onClick);
   return btn;
 }
@@ -484,12 +489,14 @@ function renderRow(row) {
       markDirty();
     }
   });
-  const enlaceBtn = document.createElement('button');
-  enlaceBtn.type = 'button';
-  enlaceBtn.className = 'icon-btn';
-  enlaceBtn.textContent = '↗️';
-  enlaceBtn.title = tr('renderer.tasks.columns.tooltips.link_open');
-  enlaceBtn.setAttribute('aria-label', enlaceBtn.title);
+  const linkTitle = tr('renderer.tasks.columns.tooltips.link_open');
+  const enlaceBtn = rendererIcons.createIconButton({
+    iconName: 'open-target',
+    className: 'icon-btn',
+    size: 'lg',
+    title: linkTitle,
+    ariaLabel: linkTitle,
+  });
   enlaceBtn.addEventListener('click', async () => {
     const raw = enlaceInput.value;
     const api = getTaskEditorApi('openTaskLink');
@@ -521,24 +528,25 @@ function renderRow(row) {
   const snapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath || '');
   if (snapshotRelPath) {
     const snapshotBtn = buildActionButton(
-      '📥',
+      'task-text-snapshot-load',
       'renderer.tasks.columns.tooltips.snapshot_load',
       () => {
         loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
       }
     );
-    snapshotBtn.classList.add('icon-btn--tiny');
     const snapshotTitle = tr('renderer.tasks.columns.tooltips.snapshot_load');
     snapshotBtn.title = `${snapshotTitle} ${snapshotRelPath}`.trim();
     snapshotBtn.setAttribute('aria-label', snapshotBtn.title);
     commentActions.appendChild(snapshotBtn);
   }
-  const commentBtn = document.createElement('button');
-  commentBtn.type = 'button';
-  commentBtn.className = 'icon-btn icon-btn--tiny';
-  commentBtn.textContent = '💬';
-  commentBtn.title = tr('renderer.tasks.columns.tooltips.comment');
-  commentBtn.setAttribute('aria-label', commentBtn.title);
+  const commentButtonTitle = tr('renderer.tasks.columns.tooltips.comment');
+  const commentBtn = rendererIcons.createIconButton({
+    iconName: 'task-comment',
+    className: 'icon-btn',
+    size: 'lg',
+    title: commentButtonTitle,
+    ariaLabel: commentButtonTitle,
+  });
   commentBtn.addEventListener('click', () => {
     pendingCommentRowId = row.id;
     pendingCommentSnapshotRelPath = snapshotRelPath;
@@ -554,10 +562,10 @@ function renderRow(row) {
   const actionsWrap = document.createElement('div');
   actionsWrap.className = 'cell-actions';
 
-  const btnUp = buildActionButton('↑', 'renderer.tasks.columns.tooltips.move_up', () => moveRow(row.id, -1));
-  const btnDown = buildActionButton('↓', 'renderer.tasks.columns.tooltips.move_down', () => moveRow(row.id, 1));
-  const btnDelete = buildActionButton('🗑', 'renderer.tasks.columns.tooltips.delete_row', () => deleteRow(row.id));
-  const btnSaveLib = buildActionButton('💾', 'renderer.tasks.columns.tooltips.library_row_save', () => {
+  const btnUp = buildActionButton('arrow-up', 'renderer.tasks.columns.tooltips.move_up', () => moveRow(row.id, -1));
+  const btnDown = buildActionButton('arrow-down', 'renderer.tasks.columns.tooltips.move_down', () => moveRow(row.id, 1));
+  const btnDelete = buildActionButton('trash', 'renderer.tasks.columns.tooltips.delete_row', () => deleteRow(row.id));
+  const btnSaveLib = buildActionButton('task-row-save', 'renderer.tasks.columns.tooltips.library_row_save', () => {
     pendingLibraryRowId = row.id;
     openModal(includeCommentModal);
   });
@@ -884,7 +892,7 @@ function renderLibraryItems(items) {
     const actions = document.createElement('div');
     actions.className = 'cell-actions';
 
-    const btnLoad = buildActionButton('📥', 'renderer.tasks.biblioteca.library_row_load', () => {
+    const btnLoad = buildActionButton('task-row-load', 'renderer.tasks.biblioteca.library_row_load', () => {
       addRow({
         texto: entry.texto,
         tiempoSeconds: Number(entry.tiempoSeconds) || 0,
@@ -895,7 +903,7 @@ function renderLibraryItems(items) {
       });
       closeModal(libraryModal);
     });
-    const btnDelete = buildActionButton('🗑', 'renderer.tasks.biblioteca.library_row_delete', async () => {
+    const btnDelete = buildActionButton('trash', 'renderer.tasks.biblioteca.library_row_delete', async () => {
       const api = getTaskEditorApi('deleteLibraryEntry');
       if (!api) return;
       const delRes = await api.deleteLibraryEntry(entry.texto);
@@ -999,9 +1007,14 @@ async function applyTaskEditorTranslations() {
     commentSnapshotSelect.setAttribute('aria-label', commentSnapshotSelect.title || commentSnapshotSelect.textContent || '');
   }
   if (commentSnapshotClear) {
-    commentSnapshotClear.textContent = '🗙';
     commentSnapshotClear.title = tr('renderer.tasks.comentario_modal.snapshot_clear');
     commentSnapshotClear.setAttribute('aria-label', commentSnapshotClear.title || '');
+    rendererIcons.applyIconToElement(commentSnapshotClear, 'unlink', {
+      size: 'md',
+      preserveContent: false,
+      title: commentSnapshotClear.title,
+      ariaLabel: commentSnapshotClear.title,
+    });
   }
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.biblioteca.library_title');

@@ -591,9 +591,9 @@ function getHelpTipKeyList() {
     .map(({ key }) => `renderer.tips.${key}`);
 }
 
-const getCronoLabels = () => ({
-  playLabel: '▶',
-  pauseLabel: '⏸'
+const getCronoIcons = () => ({
+  playIconName: 'play',
+  pauseIconName: 'pause'
 });
 
 function applyTranslations() {
@@ -679,9 +679,9 @@ function applyTranslations() {
   applyAriaLabel(cronoResetBtn, 'renderer.main.aria.crono_reset');
   applyAriaLabel(toggleVF, 'renderer.main.aria.floating_window_toggle');
   applyAriaLabel(vfSwitchWrapper, 'renderer.main.aria.floating_window_group');
-  const labelsCrono = getCronoLabels();
-  if (cronoController && typeof cronoController.updateLabels === 'function') {
-    cronoController.updateLabels(labelsCrono);
+  const iconsCrono = getCronoIcons();
+  if (cronoController && typeof cronoController.updateIcons === 'function') {
+    cronoController.updateIcons(iconsCrono);
   }
   // Help button title
   if (btnHelp) {
@@ -2543,7 +2543,7 @@ const initCronoController = () => {
     log.warn('RendererCrono.createController unavailable.');
     return;
   }
-  const labels = getCronoLabels();
+  const icons = getCronoIcons();
   cronoController = cronoModule.createController({
     elements: { cronoDisplay, tToggle, tReset, realWpmDisplay, toggleVF },
     electronAPI: window.electronAPI,
@@ -2553,14 +2553,14 @@ const initCronoController = () => {
     getIdiomaActual: () => idiomaActual,
     getCurrentText: () => getCurrentTextValue(),
     getSettingsCache: () => settingsCache,
-    playLabel: labels.playLabel,
-    pauseLabel: labels.pauseLabel
+    playIconName: icons.playIconName,
+    pauseIconName: icons.pauseIconName
   });
   if (cronoController && typeof cronoController.bind === 'function') {
     cronoController.bind();
   }
-  if (cronoController && typeof cronoController.updateLabels === 'function') {
-    cronoController.updateLabels(labels);
+  if (cronoController && typeof cronoController.updateIcons === 'function') {
+    cronoController.updateIcons(icons);
   }
 };
 

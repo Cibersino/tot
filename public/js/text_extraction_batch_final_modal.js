@@ -21,6 +21,10 @@
   }
   const log = window.getLogger('text-extraction-batch-final-modal');
   log.debug('Text extraction batch final modal starting...');
+  const rendererIcons = window.RendererIcons || null;
+  if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
+    throw new Error('[text-extraction-batch-final-modal] RendererIcons unavailable; cannot continue');
+  }
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-batch-final-modal] RendererI18n.tRenderer unavailable; cannot continue');
   }
@@ -155,13 +159,14 @@
       return null;
     }
     const label = tRenderer('renderer.text_extraction.batch_report.reveal_generated_pdf');
-    const button = createDomElement('button', {
+    const button = rendererIcons.createIconButton({
+      iconName: 'open-target',
       className: 'btn-standard btn-standard--square-half',
-      textContent: '⭧',
+      size: 'md',
+      title: label,
+      ariaLabel: label,
       type: 'button',
     });
-    button.title = label;
-    button.setAttribute('aria-label', label);
     button.setAttribute('data-action', 'reveal-generated-pdf');
     button.setAttribute('data-artifact-path', artifactPath);
     return button;

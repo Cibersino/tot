@@ -273,6 +273,18 @@ function createHarness() {
           error() {},
         };
       },
+      RendererIcons: {
+        createIconButton({ iconName, className = '', size = 'md', title = '', ariaLabel = '', type = 'button' } = {}) {
+          const button = createElement('', 'button');
+          button.type = type;
+          button.className = className;
+          if (title) button.title = title;
+          if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
+          if (iconName) button.setAttribute('data-tot-icon', iconName);
+          if (size) button.setAttribute('data-tot-icon-size', size);
+          return button;
+        },
+      },
       RendererI18n: {
         tRenderer(key) {
           return translations[key] || key;
@@ -408,7 +420,7 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   );
   assert.ok(sourceRevealButton);
   assert.ok(heavyChildRevealButton);
-  assert.equal(sourceRevealButton.textContent, '⭧');
+  assert.equal(sourceRevealButton.getAttribute('data-tot-icon'), 'open-target');
   assert.equal(sourceRevealButton.title, 'Reveal generated PDF');
   assert.equal(sourceRevealButton.getAttribute('aria-label'), 'Reveal generated PDF');
   assert.match(sourceRevealButton.className, /btn-standard--square-half/);

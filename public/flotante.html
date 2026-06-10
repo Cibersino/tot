@@ -12,11 +12,15 @@
   <div id="flotante-root" class="flotante-root">
     <div id="crono" class="crono">00:00:00</div>
     <div class="controls">
-      <button id="toggle" class="btn">▶</button>
-      <button id="reset" class="btn">⏹</button>
+      <button id="toggle" class="btn" title="Iniciar o pausar cronómetro" aria-label="Iniciar o pausar cronómetro"
+        data-tot-icon="play" data-tot-icon-size="md"></button>
+      <button id="reset" class="btn" title="Detener y restablecer cronómetro"
+        aria-label="Detener y restablecer cronómetro" data-tot-icon="stop" data-tot-icon-size="md"></button>
     </div>
   </div>
   <script src="js/log.js"></script>
+  <script src="js/generated_icons.js"></script>
+  <script src="js/renderer_icons.js"></script>
   <script src="js/constants.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/crono.js"></script>

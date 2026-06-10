@@ -123,6 +123,12 @@
   --section-radius: 6px;
   --panel-radius: 8px;
   --control-radius-sm: 4px;
+  --tot-icon-size-xs: 12px;
+  --tot-icon-size-sm: 15px;
+  --tot-icon-size-md: 19px;
+  --tot-icon-size-lg: 22px;
+  --tot-icon-size-xl: 26px;
+  --tot-icon-size-xxl: 44px;
 }
 
 /* App shell */
@@ -157,6 +163,55 @@ body {
   display: block;
 }
 
+/* Shared runtime icon system */
+.tot-icon-host {
+  line-height: 1;
+}
+
+.tot-icon-slot {
+  --tot-icon-size: var(--tot-icon-size-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: var(--tot-icon-size);
+  line-height: 0;
+  pointer-events: none;
+}
+
+.tot-icon-slot--xs {
+  --tot-icon-size: var(--tot-icon-size-xs);
+}
+
+.tot-icon-slot--sm {
+  --tot-icon-size: var(--tot-icon-size-sm);
+}
+
+.tot-icon-slot--md {
+  --tot-icon-size: var(--tot-icon-size-md);
+}
+
+.tot-icon-slot--lg {
+  --tot-icon-size: var(--tot-icon-size-lg);
+}
+
+.tot-icon-slot--xl {
+  --tot-icon-size: var(--tot-icon-size-xl);
+}
+
+.tot-icon-slot--xxl {
+  --tot-icon-size: var(--tot-icon-size-xxl);
+}
+
+.tot-icon-svg {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: none;
+  color: currentColor;
+  overflow: visible;
+}
+
 /* Shared section surfaces */
 .app-container>section,
 .app-container>aside {
@@ -185,6 +240,16 @@ body {
   transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
   box-shadow: none;
   user-select: none;
+}
+
+.btn-standard[data-tot-icon] {
+  gap: 0;
+}
+
+.btn-standard--square[data-tot-icon],
+.btn-standard--square-half[data-tot-icon],
+.btn-standard--half[data-tot-icon] {
+  padding: 0;
 }
 
 .btn-standard[hidden] {
@@ -922,7 +987,7 @@ select#presets:focus {
 .cronometro .crono-controls {
   display: flex;
   gap: 6px;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .velocity #wpmInput:focus,
@@ -937,17 +1002,26 @@ select#presets:focus {
   display: flex;
   align-items: center;
   gap: 8px;
+  height: var(--control-height-md);
   margin-left: auto; /* push the switch to the right edge of the group */
   flex: 0 0 auto;
+  overflow: visible;
 }
 
 /* VF label */
 .vf-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-color);
   user-select: none;
   line-height: 1;
+}
+
+.vf-label[data-tot-icon] {
+  gap: 0;
 }
 
 /* Modal surfaces */

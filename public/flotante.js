@@ -22,6 +22,10 @@ if (typeof window.getLogger !== 'function') {
 const log = window.getLogger('flotante');
 
 log.debug('Flotante starting...');
+const rendererIcons = window.RendererIcons || null;
+if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
+  throw new Error('[flotante] RendererIcons.applyIconToElement unavailable; cannot continue');
+}
 
 // =============================================================================
 // Constants / config
@@ -73,8 +77,8 @@ if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
 // =============================================================================
 
 let lastState = { elapsed: 0, running: false, display: '00:00:00' };
-let playLabel = '▶';
-let pauseLabel = '⏸';
+let playIconName = 'play';
+let pauseIconName = 'pause';
 let translationsLoadedFor = null;
 
 // =============================================================================
@@ -104,7 +108,12 @@ function renderState(state) {
     }
   }
   // Button status
-  if (btnToggle) btnToggle.textContent = state.running ? pauseLabel : playLabel;
+  if (btnToggle) {
+    rendererIcons.applyIconToElement(btnToggle, state.running ? pauseIconName : playIconName, {
+      size: 'md',
+      preserveContent: false,
+    });
+  }
 }
 
 // =============================================================================
@@ -138,9 +147,30 @@ async function applyFlotanteTranslations(lang) {
     }
   }
 
-  playLabel = '▶';
-  pauseLabel = '⏸';
-  if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
+  playIconName = 'play';
+  pauseIconName = 'pause';
+  if (btnToggle) {
+    const toggleLabel = tRenderer('renderer.main.aria.crono_toggle');
+    btnToggle.setAttribute('aria-label', toggleLabel);
+    btnToggle.title = toggleLabel;
+    rendererIcons.applyIconToElement(btnToggle, lastState.running ? pauseIconName : playIconName, {
+      size: 'md',
+      preserveContent: false,
+      ariaLabel: toggleLabel,
+      title: toggleLabel,
+    });
+  }
+  if (btnReset) {
+    const resetLabel = tRenderer('renderer.main.aria.crono_reset');
+    btnReset.setAttribute('aria-label', resetLabel);
+    btnReset.title = resetLabel;
+    rendererIcons.applyIconToElement(btnReset, 'stop', {
+      size: 'md',
+      preserveContent: false,
+      ariaLabel: resetLabel,
+      title: resetLabel,
+    });
+  }
 }
 
 // =============================================================================

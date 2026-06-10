@@ -5,6 +5,7 @@
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
+    "generate:icons": "node tools/generate_renderer_icons.js",
     "test": "npm run test:unit",
     "test:unit": "node --test --test-isolation=none \"test/unit/**/*.test.js\"",
     "test:smoke": "node --test --test-isolation=none \"test/smoke/**/*.test.js\"",

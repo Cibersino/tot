@@ -20,6 +20,10 @@
   }
   const log = window.getLogger('info-modal-links');
   log.debug('Info modal links starting...');
+  const rendererIcons = window.RendererIcons || null;
+  if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
+    throw new Error('[info-modal-links] RendererIcons unavailable; cannot continue');
+  }
 
   // =============================================================================
   // Helpers
@@ -55,13 +59,34 @@
     const overlay = document.createElement('div');
     overlay.className = 'info-media-lightbox';
     overlay.setAttribute('aria-hidden', 'true');
-    overlay.innerHTML = `
-      <div class="info-media-lightbox-backdrop" data-info-lightbox-close="1"></div>
-      <div class="info-media-lightbox-panel" role="dialog" aria-modal="true" aria-label="Expanded screenshot preview">
-        <button type="button" class="btn-standard info-media-lightbox-close" aria-label="Close preview" data-info-lightbox-close="1">🗙</button>
-        <img class="info-media-lightbox-image" alt="" />
-      </div>
-    `;
+    const backdrop = document.createElement('div');
+    backdrop.className = 'info-media-lightbox-backdrop';
+    backdrop.setAttribute('data-info-lightbox-close', '1');
+
+    const panel = document.createElement('div');
+    panel.className = 'info-media-lightbox-panel';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', 'Expanded screenshot preview');
+
+    const closeButton = rendererIcons.createIconButton({
+      iconName: 'close',
+      className: 'btn-standard info-media-lightbox-close',
+      size: 'sm',
+      title: 'Close preview',
+      ariaLabel: 'Close preview',
+      type: 'button',
+    });
+    closeButton.setAttribute('data-info-lightbox-close', '1');
+
+    const image = document.createElement('img');
+    image.className = 'info-media-lightbox-image';
+    image.alt = '';
+
+    panel.appendChild(closeButton);
+    panel.appendChild(image);
+    overlay.appendChild(backdrop);
+    overlay.appendChild(panel);
 
     overlay.addEventListener('click', (ev) => {
       const target = ev.target;

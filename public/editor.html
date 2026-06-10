@@ -44,7 +44,9 @@
         <button id="btnTextSizeDecrease" class="btn-text-size" type="button" data-label="-" aria-label="Reducir tamaño del texto" title="Reducir tamaño del texto"></button>
         <output id="editorTextSizeValue" class="editor-text-size-value" data-label="20" aria-live="polite" aria-atomic="true" aria-label="20"></output>
         <button id="btnTextSizeIncrease" class="btn-text-size" type="button" data-label="+" aria-label="Aumentar tamaño del texto" title="Aumentar tamaño del texto"></button>
-        <button id="btnTextSizeReset" class="btn-text-size btn-text-size-reset" type="button" data-label="↺" aria-label="Restablecer tamaño del texto" title="Restablecer tamaño del texto"></button>
+        <button id="btnTextSizeReset" class="btn-text-size btn-text-size-reset" type="button"
+          aria-label="Restablecer tamaño del texto" title="Restablecer tamaño del texto" data-tot-icon="reset"
+          data-tot-icon-size="xs"></button>
       </div>
       <div
         id="editorReadProgress"
@@ -60,7 +62,8 @@
     </div>
 
     <div class="right-controls">
-      <button id="btnTrash" class="btn-trash" data-label="🗑" aria-label="Vaciar" title="Vaciar"></button>
+      <button id="btnTrash" class="btn-trash" aria-label="Vaciar" title="Vaciar"
+        data-tot-icon="trash" data-tot-icon-size="md"></button>
     </div>
   </div>
 
@@ -76,6 +79,8 @@
   </div>
 
   <script src="js/log.js"></script>
+  <script src="js/generated_icons.js"></script>
+  <script src="js/renderer_icons.js"></script>
   <script src="js/notify.js"></script>
   <script src="js/constants.js"></script>
   <script src="js/i18n.js"></script>

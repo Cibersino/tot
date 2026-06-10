@@ -23,6 +23,10 @@
   }
   const log = window.getLogger('text-extraction-batch-planning-modal');
   log.debug('Text extraction batch planning modal starting...');
+  const rendererIcons = window.RendererIcons || null;
+  if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
+    throw new Error('[text-extraction-batch-planning-modal] RendererIcons unavailable; cannot continue');
+  }
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-batch-planning-modal] RendererI18n.tRenderer unavailable; cannot continue');
   }
@@ -232,19 +236,28 @@
     inputId = '',
     unitKey = '',
     disabled = false,
-    visibleText = '',
+    iconName = '',
     className = 'btn-standard',
+    size = 'sm',
   }) {
-    const button = createDomElement('button', {
-      className,
-      textContent: visibleText || tRenderer(labelKey),
-      type: 'button',
-      disabled,
-    });
     const accessibleLabel = tRenderer(labelKey);
-    button.setAttribute('data-action', action);
-    button.setAttribute('aria-label', accessibleLabel);
+    const button = iconName
+      ? rendererIcons.createIconButton({
+        iconName,
+        className,
+        size,
+        title: accessibleLabel,
+        ariaLabel: accessibleLabel,
+        type: 'button',
+      })
+      : createDomElement('button', {
+        className,
+        textContent: accessibleLabel,
+        type: 'button',
+      });
+    button.disabled = disabled === true;
     button.title = accessibleLabel;
+    button.setAttribute('data-action', action);
     if (inputId) {
       button.setAttribute('data-input-id', inputId);
     }
@@ -548,23 +561,26 @@
         action: 'move-input-up',
         inputId: input.inputId,
         disabled: input.canMoveUp !== true,
-        visibleText: '🡩',
+        iconName: 'arrow-up-strong',
         className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
+        size: 'sm',
       }),
       createActionButton({
         labelKey: 'renderer.text_extraction.batch_plan.move_down',
         action: 'move-input-down',
         inputId: input.inputId,
         disabled: input.canMoveDown !== true,
-        visibleText: '🡫',
+        iconName: 'arrow-down-strong',
         className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
+        size: 'sm',
       }),
       createActionButton({
         labelKey: 'renderer.text_extraction.batch_plan.remove_input',
         action: 'remove-input',
         inputId: input.inputId,
-        visibleText: '🗑',
+        iconName: 'trash',
         className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
+        size: 'sm',
       }),
     ]);
 
@@ -612,16 +628,18 @@
         action: 'move-unit-up',
         unitKey: unit.unitKey,
         disabled: unit.canMoveUp !== true,
-        visibleText: '🡩',
+        iconName: 'arrow-up-strong',
         className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
+        size: 'sm',
       }),
       createActionButton({
         labelKey: 'renderer.text_extraction.batch_plan.move_down',
         action: 'move-unit-down',
         unitKey: unit.unitKey,
         disabled: unit.canMoveDown !== true,
-        visibleText: '🡫',
+        iconName: 'arrow-down-strong',
         className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
+        size: 'sm',
       }),
     ]);
     appendChildren(header, [headingWrap, headerActions]);

@@ -73,12 +73,14 @@
     <div class="modal-panel">
       <header class="modal-header">
         <h2 id="commentTitle">Comentario</h2>
-        <button id="commentClose" class="btn-standard" aria-label="Cerrar">🗙</button>
+        <button id="commentClose" class="btn-standard" aria-label="Cerrar" data-tot-icon="close"
+          data-tot-icon-size="lg"></button>
       </header>
       <main class="modal-body">
         <div class="comment-snapshot-row">
           <button id="commentSnapshotSelect" class="btn-standard" type="button">Seleccionar snapshot</button>
-          <button id="commentSnapshotClear" class="btn-standard btn-standard--compact" type="button" hidden>🗙</button>
+          <button id="commentSnapshotClear" class="btn-standard btn-standard--compact" type="button" hidden
+            data-tot-icon="unlink" data-tot-icon-size="md"></button>
           <span id="commentSnapshotPath" class="comment-snapshot-path" hidden></span>
         </div>
         <textarea id="commentInput" rows="6"></textarea>
@@ -96,7 +98,8 @@
     <div class="modal-panel modal-panel--wide">
       <header class="modal-header">
         <h2 id="libraryTitle">Biblioteca</h2>
-        <button id="libraryClose" class="btn-standard" aria-label="Cerrar">🗙</button>
+        <button id="libraryClose" class="btn-standard" aria-label="Cerrar" data-tot-icon="close"
+          data-tot-icon-size="lg"></button>
       </header>
       <main class="modal-body">
         <div class="library-search">
@@ -115,7 +118,8 @@
     <div class="modal-panel">
       <header class="modal-header">
         <h2 id="includeCommentTitle">Guardar en biblioteca</h2>
-        <button id="includeCommentClose" class="btn-standard" aria-label="Cerrar">🗙</button>
+        <button id="includeCommentClose" class="btn-standard" aria-label="Cerrar" data-tot-icon="close"
+          data-tot-icon-size="lg"></button>
       </header>
       <main class="modal-body">
         <p id="includeCommentText">¿Incluir comentario?</p>
@@ -129,6 +133,8 @@
   </div>
 
   <script src="js/log.js"></script>
+  <script src="js/generated_icons.js"></script>
+  <script src="js/renderer_icons.js"></script>
   <script src="js/notify.js"></script>
   <script src="js/constants.js"></script>
   <script src="js/i18n.js"></script>
