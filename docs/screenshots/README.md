@@ -4,55 +4,52 @@ Esta carpeta contiene capturas versionadas de la app usadas como referencia visu
 
 Las capturas son material de documentación y desarrollo. No forman parte del runtime de toT y no deben empaquetarse con los builds distribuidos.
 
-## Estructura
-
-* `windows/`: capturas de ventanas y estados visibles de la app en Windows.
-* `windows/<lang>/`: capturas tomadas con la interfaz configurada en el idioma indicado por el código de carpeta.
-* `windows/language_selector.png`: captura común del selector inicial de idioma, previa a una interfaz localizada concreta.
-
 ## Inventario actual
 
-### Captura común
+### Windows (`windows/`)
 
-| Archivo                         | Superficie                 |
-| ------------------------------- | -------------------------- |
-| `windows/language_selector.png` | Selector inicial de idioma |
+#### Capturas comunes
 
-### Español (`windows/es/`)
+| Archivo                          | Superficie                 |
+| -------------------------------- | -------------------------- |
+| `windows/language_selector.png`  | Selector inicial de idioma |
+| `windows/floating_stopwatch.png` | Cronómetro Flotante        |
 
-| Archivo                           | Superficie / estado                                    |
-| --------------------------------- | ------------------------------------------------------ |
-| `es_main_empty.png`               | Ventana principal sin texto cargado                    |
-| `es_main_non-empty.png`           | Ventana principal con texto cargado                    |
-| `es_editor_maximized.png`         | Editor de Texto maximizado                             |
-| `es_editor_reduced.png`           | Editor de Texto en tamaño reducido                     |
-| `es_task.png`                     | Editor de Tareas                                       |
-| `es_task_library.png`             | Biblioteca de lecturas del Editor de Tareas            |
-| `es_test_start.png`               | Test de velocidad de lectura en ejecución              |
-| `es_test_choose.png`              | Configuración inicial del Test de velocidad de lectura |
-| `es_test_choose_instructions.png` | Instrucciones del Test de velocidad de lectura         |
-| `es_test_questions_1.png`         | Preguntas de comprensión lectora                       |
-| `es_test_questions_2.png`         | Resultado parcial de preguntas y línea de azar         |
-| `es_test_result.png`              | Resultado de velocidad de lectura                      |
-| `es_preset.png`                   | Creación de preset                                     |
+#### Por idioma (`windows/<lang>/`)
 
-### Inglés (`windows/en/`)
+* Por el momento solo `en` y `es`.
 
-| Archivo                           | Superficie / estado                         |
-| --------------------------------- | ------------------------------------------- |
-| `en_main_empty.png`               | Main window with no current text            |
-| `en_main_non-empty.png`           | Main window with current text               |
-| `en_editor_maximized.png`         | Text Editor maximized                       |
-| `en_editor_reduced.png`           | Text Editor in reduced size                 |
-| `en_task.png`                     | Task Editor                                 |
-| `en_task_library.png`             | Task Editor reading library                 |
-| `en_test_start.png`               | Reading speed test in progress              |
-| `en_test_choose.png`              | Reading speed test initial setup            |
-| `en_test_choose_instructions.png` | Reading speed test instructions             |
-| `en_test_questions_1.png`         | Reading comprehension questions             |
-| `en_test_questions_2.png`         | Partial question result and random baseline |
-| `en_test_result.png`              | Reading speed result                        |
-| `en_preset.png`                   | Preset creation                             |
+| Archivo                               | Superficie / estado                                              |
+| ------------------------------------- | ---------------------------------------------------------------- |
+| `<lang>_main_empty.png`               | Ventana principal sin texto cargado                              |
+| `<lang>_main_non-empty.png`           | Ventana principal con texto cargado                              |
+| `<lang>_ocr_activation.png`           | Disclosure de activación de Google OCR                           |
+| `<lang>_apply_text.png`               | Modal para aplicar texto extraído al texto actual                |
+| `<lang>_snapshot_save.png`            | Modal de etiquetas al guardar snapshot de texto                  |
+| `<lang>_pdf_routes.png`               | Modal de selección de ruta de extracción PDF                     |
+| `<lang>_pdf_options.png`              | Modal de opciones de páginas PDF                                 |
+| `<lang>_pdf_heavy_all-pages.png`      | Modal de PDF pesado con opción de todas las páginas              |
+| `<lang>_pdf_heavy_range.png`          | Modal de PDF pesado con rango de páginas                         |
+| `<lang>_batch_plan_1.png`             | Planificador de extracción por lotes parte 1 de 4                |
+| `<lang>_batch_plan_2.png`             | Planificador de extracción por lotes parte 2 de 4                |
+| `<lang>_batch_plan_3.png`             | Planificador de extracción por lotes parte 3 de 4                |
+| `<lang>_batch_plan_4.png`             | Planificador de extracción por lotes parte 4 de 4                |
+| `<lang>_batch_processing.png`         | Progreso de extracción por lotes                                 |
+| `<lang>_batch_final_1.png`            | Reporte final de extracción por lotes parte 1 de 2               |
+| `<lang>_batch_final_2.png`            | Reporte final de extracción por lotes parte 2 de 2               |
+| `<lang>_preset.png`                   | Creación de preset de velocidad de lectura                       |
+| `<lang>_editor_maximized.png`         | Editor de Texto maximizado                                       |
+| `<lang>_editor_reduced.png`           | Editor de Texto en tamaño reducido                               |
+| `<lang>_task.png`                     | Editor de Tareas                                                 |
+| `<lang>_task_library.png`             | Biblioteca de lecturas del Editor de Tareas                      |
+| `<lang>_task_comment_modal.png`       | Modal de comentario del Editor de Tareas                         |
+| `<lang>_task_confirm_comment.png`     | Confirmación para guardar fila de lectura con el comentario      |
+| `<lang>_test_choose.png`              | Configuración inicial del Test de velocidad de lectura           |
+| `<lang>_test_choose_instructions.png` | Instrucciones del Test de velocidad de lectura                   |
+| `<lang>_test_start.png`               | Test de velocidad de lectura en ejecución                        |
+| `<lang>_test_result.png`              | Resultado del Test de velocidad de lectura                       |
+| `<lang>_test_questions_1.png`         | Preguntas de comprensión lectora parte 1 de 2                    |
+| `<lang>_test_questions_2.png`         | Preguntas de comprensión lectora parte 2 de 2                    |
 
 ## Usos previstos
 
