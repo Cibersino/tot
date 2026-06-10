@@ -562,8 +562,12 @@ function renderRow(row) {
   const actionsWrap = document.createElement('div');
   actionsWrap.className = 'cell-actions';
 
-  const btnUp = buildActionButton('arrow-up', 'renderer.tasks.columns.tooltips.move_up', () => moveRow(row.id, -1));
-  const btnDown = buildActionButton('arrow-down', 'renderer.tasks.columns.tooltips.move_down', () => moveRow(row.id, 1));
+  const btnUp = buildActionButton('arrow-up', 'renderer.tasks.columns.tooltips.move_up', () => moveRow(row.id, -1), {
+    className: 'icon-btn icon-btn--half',
+  });
+  const btnDown = buildActionButton('arrow-down', 'renderer.tasks.columns.tooltips.move_down', () => moveRow(row.id, 1), {
+    className: 'icon-btn icon-btn--half',
+  });
   const btnDelete = buildActionButton('trash', 'renderer.tasks.columns.tooltips.delete_row', () => deleteRow(row.id));
   const btnSaveLib = buildActionButton('task-row-save', 'renderer.tasks.columns.tooltips.library_row_save', () => {
     pendingLibraryRowId = row.id;

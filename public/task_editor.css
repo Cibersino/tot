@@ -373,6 +373,12 @@ body {
   padding: 2px 3px;
 }
 
+.icon-btn--half {
+  width: 15px;
+  flex-basis: 15px;
+  padding-inline: 0;
+}
+
 .link-cell {
   display: grid;
   grid-template-columns: 1fr auto;
