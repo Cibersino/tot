@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 24" role="img" aria-labelledby="title">
+  <title id="title">text-extraction</title>
+
+  <rect class="source-photo-frame" x="1.45" y="4.65" width="10.05" height="9.85" rx="1.45" fill="var(--tot-icon-text-extraction-photo-frame, #496f9b)"/>
+  <rect class="source-photo-sky" x="2.25" y="5.45" width="8.45" height="8.25" rx=".82" fill="var(--tot-icon-text-extraction-photo-sky, #9ed2e8)"/>
+  <circle class="source-photo-sun" cx="4.3" cy="7.65" r=".72" fill="var(--tot-icon-text-extraction-photo-sun, #f5d56a)"/>
+  <path class="source-photo-hills" d="M2.7 13.05l2.35-2.75 1.55 1.65 1.35-1.45 2.35 2.55z" fill="var(--tot-icon-text-extraction-photo-hills, #3aa374)"/>
+
+  <g class="source-book" transform="translate(.55 0)">
+    <path class="source-book-cover" d="M6.15 7.15h7.2c.75 0 1.35.6 1.35 1.35v10.2c0 .75-.6 1.35-1.35 1.35h-7.2c-.75 0-1.35-.6-1.35-1.35V8.5c0-.75.6-1.35 1.35-1.35z" fill="var(--tot-icon-text-extraction-book-cover, #334f86)"/>
+    <path class="source-book-page" d="M7.0 8.4h5.8c.42 0 .76.34.76.76v8.95c0 .42-.34.76-.76.76H7.0z" fill="var(--tot-icon-text-extraction-book-page, #d8794f)"/>
+    <path class="source-book-spine" d="M5.0 8.3c0-.64.52-1.15 1.15-1.15h1.15v12.9H6.15A1.15 1.15 0 0 1 5 18.9z" fill="var(--tot-icon-text-extraction-book-spine, #263d6d)"/>
+    <path class="source-book-lines" d="M8.15 10.95h2.8M8.15 13.2h3.3M8.15 15.45h3.65" fill="none" stroke="var(--tot-icon-text-extraction-book-lines, #7b3f18)" stroke-width=".85" stroke-linecap="round" opacity=".95"/>
+    <path class="source-book-bookmark" d="M12.15 8.4h.75v3.2l-.38-.38-.37.38z" fill="var(--tot-icon-text-extraction-book-bookmark, #cf3fa9)"/>
+  </g>
+
+  <path class="result-page" d="M31.15 4.65h6.55l2.05 2.05v11.8c0 .85-.69 1.55-1.55 1.55h-7.05c-.86 0-1.55-.7-1.55-1.55V6.2c0-.86.69-1.55 1.55-1.55z" fill="var(--tot-icon-text-extraction-result-page, #f8fbff)"/>
+  <path class="result-fold" d="M37.7 4.65v2.05h2.05z" fill="var(--tot-icon-text-extraction-result-fold, #b9d2ec)"/>
+  <path class="result-border" d="M31.15 4.65h6.55l2.05 2.05v11.8c0 .85-.69 1.55-1.55 1.55h-7.05c-.86 0-1.55-.7-1.55-1.55V6.2c0-.86.69-1.55 1.55-1.55z" fill="none" stroke="var(--tot-icon-text-extraction-result-border, #6687aa)" stroke-width=".7" opacity=".8"/>
+  <path class="result-lines" d="M31.9 8.7h5.75M31.9 11.45h6.25M31.9 14.2h5.25M31.9 16.95h6.0" fill="none" stroke="var(--tot-icon-text-extraction-result-lines, #28ad78)" stroke-width="1.28" stroke-linecap="round"/>
+
+  <path class="extraction-arrow" d="M17.15 10h5.2V7.8l5.45 4.2-5.45 4.2V14h-5.2z" fill="var(--tot-icon-text-extraction-arrow, #f2b544)"/>
+</svg>

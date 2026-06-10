@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">load-library-entry</title>
+
+  <rect class="load-library-entry-row" x="5.25" y="3.15" width="13.5" height="4.65" rx="1.15"
+        fill="none"
+        stroke="var(--tot-icon-load-library-entry, #5f6f82)"
+        stroke-width="1.25"/>
+
+  <path class="load-library-entry-row-line" d="M7.85 5.48h7.95"
+        fill="none"
+        stroke="var(--tot-icon-load-library-entry, #5f6f82)"
+        stroke-width="1.2"
+        stroke-linecap="round"/>
+
+  <path class="load-library-entry-arrow" d="M12 13.85V9.7m-1.85 1.85L12 9.7l1.85 1.85"
+        fill="none"
+        stroke="var(--tot-icon-load-library-entry, #5f6f82)"
+        stroke-width="1.45"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <path class="load-library-entry-tray" d="M5.1 15.7h13.8l-1.05 4.2H6.15L5.1 15.7z"
+        fill="none"
+        stroke="var(--tot-icon-load-library-entry, #5f6f82)"
+        stroke-width="1.35"
+        stroke-linejoin="round"/>
+
+  <path class="load-library-entry-tray-lip" d="M4.45 15.7h15.1"
+        fill="none"
+        stroke="var(--tot-icon-load-library-entry, #5f6f82)"
+        stroke-width="1.35"
+        stroke-linecap="round"/>
+</svg>

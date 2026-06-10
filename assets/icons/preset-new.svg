@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">preset-new</title>
+  <rect class="preset-card" x="3.25" y="4.25" width="14.5" height="14.5" rx="2.35" fill="var(--tot-icon-preset-card, #64748B)"/>
+  <path class="preset-mark" d="M6.25 8.15h7.1M6.25 11.25h5.15M6.25 14.35h3.55" fill="none" stroke="var(--tot-icon-preset-mark, #eef3f8)" stroke-width="1.35" stroke-linecap="round" opacity=".9"/>
+  <circle class="preset-action" cx="17.1" cy="16.9" r="5.15" fill="var(--tot-icon-preset-new, #22a65a)"/>
+  <path class="preset-action-mark" d="M17.1 13.9v6M14.1 16.9h6" fill="none" stroke="var(--tot-icon-preset-action-mark, #ffffff)" stroke-width="1.85" stroke-linecap="round"/>
+</svg>

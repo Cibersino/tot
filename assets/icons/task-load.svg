@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">task-load</title>
+  <rect class="task-card" x="3.1" y="4.15" width="13.75" height="15.15" rx="2.2" fill="var(--tot-icon-task-card, #7B5BB7)"/>
+  <path class="task-header" d="M5.3 4.15h9.35c1.22 0 2.2.98 2.2 2.2v1.15H3.1V6.35c0-1.22.98-2.2 2.2-2.2z" fill="var(--tot-icon-task-header, #513A86)"/>
+  <circle class="task-dot" cx="6.0" cy="5.85" r=".48" fill="var(--tot-icon-task-chrome, #b7cae6)"/>
+  <circle class="task-dot" cx="7.65" cy="5.85" r=".48" fill="var(--tot-icon-task-chrome, #b7cae6)"/>
+  <path class="task-bullets" d="M6.15 10.2a.72.72 0 1 0 0 .01zm0 3.1a.72.72 0 1 0 0 .01zm0 3.1a.72.72 0 1 0 0 .01z" fill="var(--tot-icon-task-bullets, #9fd0c8)"/>
+  <path class="task-lines" d="M8.15 10.2h5.95M8.15 13.3h4.95M8.15 16.4h5.25" fill="none" stroke="var(--tot-icon-task-lines, #eef6ff)" stroke-width="1.18" stroke-linecap="round" opacity=".96"/>
+  <circle class="task-action" cx="17.35" cy="16.95" r="5.05" fill="var(--tot-icon-task-load-action, #29a6af)"/>
+  <path class="task-action-mark" d="M20.2 15.9h-3.55v-1.75l-3.45 2.8 3.45 2.8V18h3.55z" fill="var(--tot-icon-task-load-mark, #ffffff)"/>
+</svg>

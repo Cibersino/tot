@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">Task comment and linked text snapshot</title>
+  <defs>
+    <style>
+      .task-comment {
+        --icon-color: var(--tot-icon-task-comment, #5f6f82);
+      }
+
+      .task-comment .soft-fill {
+        fill: var(--icon-color);
+        opacity: .10;
+      }
+
+      .task-comment .stroke {
+        fill: none;
+        stroke: var(--icon-color);
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .task-comment .main {
+        stroke-width: 1.42;
+      }
+
+      .task-comment .detail {
+        stroke-width: 1.02;
+        opacity: .82;
+      }
+
+      .task-comment .fold {
+        fill: var(--icon-color);
+        opacity: .26;
+      }
+    </style>
+    <mask id="bubble-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+      <rect x="0" y="0" width="24" height="24" fill="white"/>
+      <rect x="10.2" y="3.85" width="10.2" height="12.8" rx="2.05" fill="black"/>
+    </mask>
+  </defs>
+  <g class="task-comment">
+    <g mask="url(#bubble-cutout)">
+      <path class="soft-fill" d="M5.45 10.6h7.15c1.18 0 2.15.97 2.15 2.15v3.75c0 1.18-.97 2.15-2.15 2.15H9.45L7.15 20.2c-.34.23-.79-.03-.73-.44l.15-1.11H5.45c-1.18 0-2.15-.97-2.15-2.15v-3.75c0-1.18.97-2.15 2.15-2.15z"/>
+      <path class="stroke main" d="M5.45 10.6h7.15c1.18 0 2.15.97 2.15 2.15v3.75c0 1.18-.97 2.15-2.15 2.15H9.45L7.15 20.2c-.34.23-.79-.03-.73-.44l.15-1.11H5.45c-1.18 0-2.15-.97-2.15-2.15v-3.75c0-1.18.97-2.15 2.15-2.15z"/>
+      <path class="stroke detail" d="M5.85 13.55h4.15M5.85 15.8h3.25"/>
+    </g>
+
+    <rect class="soft-fill" x="11.05" y="4.45" width="8.25" height="11.1" rx="1.55"/>
+    <path class="stroke main" d="M12.6 4.45h4.55c1.19 0 2.15.96 2.15 2.15V14c0 .86-.69 1.55-1.55 1.55H12.6c-.86 0-1.55-.69-1.55-1.55v-8c0-.86.69-1.55 1.55-1.55z"/>
+    <path class="fold" d="M16.45 4.45h.7c1.19 0 2.15.96 2.15 2.15v.72h-2.05c-.44 0-.8-.36-.8-.8z"/>
+    <path class="stroke detail" d="M13.05 8.9h4.15M13.05 11.1h3.5M13.05 13.3h3.85"/>
+  </g>
+</svg>

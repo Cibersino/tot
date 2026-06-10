@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">Unlink text snapshot from task row</title>
+  <defs>
+    <style>
+      .task-text-snapshot-clear {
+        fill: none;
+        stroke: var(--tot-icon-task-text-snapshot-clear, #5f6f82);
+        stroke-width: 1.65;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .task-text-snapshot-clear .soft {
+        opacity: .78;
+      }
+    </style>
+  </defs>
+  <g class="task-text-snapshot-clear">
+    <path class="soft" d="M9.65 7.65 8.2 6.2a3.05 3.05 0 0 0-4.3 0 3.05 3.05 0 0 0 0 4.3l2.1 2.1a3.05 3.05 0 0 0 4.3 0"/>
+    <path d="M7.25 9.45 9 11.2"/>
+    <path class="soft" d="M14.35 16.35l1.45 1.45a3.05 3.05 0 0 0 4.3 0 3.05 3.05 0 0 0 0-4.3L18 11.4a3.05 3.05 0 0 0-4.3 0"/>
+    <path d="M16.75 14.55 15 12.8"/>
+  </g>
+</svg>
