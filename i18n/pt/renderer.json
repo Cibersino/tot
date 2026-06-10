@@ -185,7 +185,7 @@
         "move_up": "Mover para cima",
         "move_down": "Mover para baixo",
         "remove_input": "Remover",
-        "keep_generated_pdf": "Manter PDFs gerados",
+        "keep_generated_pdf": "Manter quaisquer PDFs gerados",
         "edit_tags": "Etiquetas",
         "tags_modal": {
           "title": "Etiquetas da unidade",

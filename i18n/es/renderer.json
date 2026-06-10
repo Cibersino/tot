@@ -185,7 +185,7 @@
         "move_up": "Subir",
         "move_down": "Bajar",
         "remove_input": "Quitar",
-        "keep_generated_pdf": "Conservar PDFs generados",
+        "keep_generated_pdf": "Conservar cualquier PDF generado",
         "edit_tags": "Etiquetas",
         "tags_modal": {
           "title": "Etiquetas de la unidad",

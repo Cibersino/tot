@@ -1449,9 +1449,9 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] ítem de extracción por lotes
         },
         "keep_generated_pdf": {
-          "es": "Conservar PDFs generados",
-          "en": "Keep generated PDFs"
-          // [PROPÓSITO] Checkbox para conservar PDFs generados durante la extracción por lotes.
+          "es": "Conservar cualquier PDF generado",
+          "en": "Keep any generated PDFs"
+          // [PROPÓSITO] Checkbox para conservar PDFs generados durante la extracción por lotes. La frase debe cubrir tanto un único PDF generado desde un rango de páginas como varios PDFs generados por división automática de un PDF pesado.
           // [CONCEPTO_APP] PDF generado; PDF guardado; extracción por lotes
           // [PROTEGIDO] `PDF`
         },

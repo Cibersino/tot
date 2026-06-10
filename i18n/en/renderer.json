@@ -185,7 +185,7 @@
         "move_up": "Move up",
         "move_down": "Move down",
         "remove_input": "Remove",
-        "keep_generated_pdf": "Keep generated PDFs",
+        "keep_generated_pdf": "Keep any generated PDFs",
         "edit_tags": "Tags",
         "tags_modal": {
           "title": "Unit tags",
