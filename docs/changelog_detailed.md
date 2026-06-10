@@ -46,11 +46,35 @@ Reglas:
 
 ## Unreleased
 
+### Resumen de cambios
+
+- La app deja de depender de glyphs Unicode como controles funcionales en sus superficies principales y pasa a un sistema compartido de SVGs canónicos generados para renderer.
+- La ventana principal incorpora un botón de icono dedicado para el `Reading speed test` y alinea toolbar, presets, cronómetro y marcador del `Floating Stopwatch` bajo la misma familia visual funcional.
+- El `Text Editor`, la barra de búsqueda/reemplazo, el `Floating Stopwatch`, el `Task Editor` y los modales batch/info migran sus acciones funcionales al mismo modelo de iconos compartidos, reduciendo drift visual y de wiring entre superficies estáticas y controles generados por JS.
+- La documentación y el copy i18n relacionados con estos controles se ajustan para nombrar la acción o el rol del control cuando la referencia histórica por glyph ya no era la guía más precisa.
+
+### Agregado
+
+- Pipeline compartido de iconos funcionales del renderer:
+  - `assets/icons/` como fuente canónica de SVGs aprobados para los controles migrados;
+  - `tools/generate_renderer_icons.js` para generar el catálogo runtime;
+  - `public/js/generated_icons.js` como artefacto renderer autogenerado;
+  - `public/js/renderer_icons.js` como helper común para aplicar iconos a markup estático y a controles creados por JS.
+- Botón iconográfico dedicado de `Reading speed test` en el toolbar de la ventana principal, integrado al mismo sistema compartido de iconos funcionales.
+
 ### Cambiado
 
 - Packaging de release:
   - los `.zip` de Windows pasan a distribuir `INSTALL.txt` en la raíz visible del artefacto y la app bajo `toT-<version>/toT-app/`;
   - el DMG de macOS pasa a mostrar `INSTALL.txt` junto a la app y el acceso directo a `Applications`.
+- Superficies funcionales migradas al sistema compartido de iconos:
+  - ventana principal (`text extraction`, clipboard overwrite/append, `Text Editor`, snapshots, tareas, `Reading speed test`, presets, cronómetro, close buttons repetidos y marcador del `Floating Stopwatch`);
+  - `Text Editor` y barra `find/replace`;
+  - `Floating Stopwatch`;
+  - `Task Editor` estático y controles generados de filas, biblioteca, comentario y apertura de destino;
+  - modales batch (`planning` y `final`) e info lightbox close control.
+- La acción reveal/open del reporte final batch converge en la semántica visual compartida `open-target`, en lugar de mantener una excepción separada para “reveal folder”.
+- El copy de ayuda, instrucciones e i18n de `es`/`en` para snapshots y `reading speed test` deja de depender exclusivamente de referencias históricas por glyph cuando el control migrado ya se describe mejor por nombre o función.
 
 ---
 
