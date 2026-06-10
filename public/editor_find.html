@@ -11,7 +11,8 @@
 <body data-expanded="false">
   <div id="findWrap" class="find-wrap" role="search" aria-label="Buscar en el texto">
     <div class="find-row">
-      <button id="findToggle" class="find-btn find-toggle" type="button" title="Mostrar reemplazo" aria-label="Mostrar reemplazo">˃</button>
+      <button id="findToggle" class="find-btn find-toggle" type="button" title="Mostrar reemplazo"
+        aria-label="Mostrar reemplazo" data-tot-icon="expand" data-tot-icon-size="sm"></button>
       <input
         id="findQuery"
         class="find-input"
@@ -21,10 +22,13 @@
         placeholder="Buscar..."
         aria-label="Buscar en el texto"
       />
-      <button id="findPrev" class="find-btn" type="button" title="Coincidencia anterior">🡩</button>
-      <button id="findNext" class="find-btn" type="button" title="Coincidencia siguiente">🡫</button>
+      <button id="findPrev" class="find-btn" type="button" title="Coincidencia anterior"
+        data-tot-icon="arrow-up-strong" data-tot-icon-size="sm"></button>
+      <button id="findNext" class="find-btn" type="button" title="Coincidencia siguiente"
+        data-tot-icon="arrow-down-strong" data-tot-icon-size="sm"></button>
       <span id="findStatus" class="find-status" role="status" aria-live="polite">Escribe para buscar</span>
-      <button id="findClose" class="find-btn find-close" type="button" title="Cerrar barra de busqueda">🗙</button>
+      <button id="findClose" class="find-btn find-close" type="button" title="Cerrar barra de busqueda"
+        data-tot-icon="close" data-tot-icon-size="sm"></button>
     </div>
     <div id="replaceRow" class="replace-row" hidden>
       <input
@@ -42,6 +46,8 @@
   </div>
 
   <script src="js/log.js"></script>
+  <script src="js/generated_icons.js"></script>
+  <script src="js/renderer_icons.js"></script>
   <script src="js/constants.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/notify.js"></script>

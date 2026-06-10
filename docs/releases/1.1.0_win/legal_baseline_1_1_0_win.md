@@ -63,7 +63,7 @@ Registro requerido en el baseline versionado: lista efectiva de documentos, noti
 - [ ] Todo componente redistribuido queda clasificado con nombre, versión, origen, licencia o términos aplicables y decisión de redistribución.
 - [ ] Toda obligación de notice, atribución, copia de licencia o texto de terceros tiene una cobertura explícita en el release.
 - [ ] Ningún componente de terceros queda en estado ambiguo o sin clasificación legal.
-- [ ] Fonts, imágenes, iconos, logos y otros assets de terceros tienen procedencia y permiso de uso identificados.
+- [ ] Fonts, imágenes, íconos, logos y otros assets de terceros tienen procedencia y permiso de uso identificados.
 
 ### 3.2 Servicios externos, privacidad y disclosures
 

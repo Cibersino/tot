@@ -148,6 +148,74 @@
     if (textAfterLink) supportEl.appendChild(document.createTextNode(textAfterLink));
   }
 
+  function appendRichText(targetEl, fragments) {
+    if (!targetEl || !Array.isArray(fragments)) return;
+
+    for (var i = 0; i < fragments.length; i += 1) {
+      var fragment = fragments[i];
+
+      if (typeof fragment === "string") {
+        targetEl.appendChild(document.createTextNode(fragment));
+        continue;
+      }
+
+      if (!fragment || typeof fragment !== "object") continue;
+
+      if (fragment.token) {
+        var tokenEl = document.createElement("span");
+        tokenEl.className = "download-modal__token";
+        tokenEl.textContent = String(fragment.token);
+        targetEl.appendChild(tokenEl);
+      }
+    }
+  }
+
+  function renderModalBody(bodyEl, message) {
+    if (!bodyEl) return;
+
+    bodyEl.textContent = "";
+
+    if (!message || typeof message !== "object" || Array.isArray(message)) {
+      bodyEl.textContent = message || "";
+      return;
+    }
+
+    if (message.intro) {
+      var introEl = document.createElement("p");
+      introEl.className = "download-modal__intro";
+      introEl.textContent = message.intro;
+      bodyEl.appendChild(introEl);
+    }
+
+    if (Array.isArray(message.steps) && message.steps.length > 0) {
+      var listEl = document.createElement("ol");
+      listEl.className = "download-modal__steps";
+
+      for (var i = 0; i < message.steps.length; i += 1) {
+        var step = message.steps[i];
+        var itemEl = document.createElement("li");
+        itemEl.className = "download-modal__step";
+
+        if (typeof step === "string") {
+          itemEl.textContent = step;
+        } else if (Array.isArray(step)) {
+          appendRichText(itemEl, step);
+        }
+
+        listEl.appendChild(itemEl);
+      }
+
+      bodyEl.appendChild(listEl);
+    }
+
+    if (message.note) {
+      var noteEl = document.createElement("p");
+      noteEl.className = "download-modal__note";
+      noteEl.textContent = message.note;
+      bodyEl.appendChild(noteEl);
+    }
+  }
+
   function createDownloadModalController(config) {
     if (downloadModalController) return downloadModalController;
 
@@ -190,7 +258,7 @@
       var resolvedOs = os || "unknown";
 
       titleEl.textContent = modalConfig.title || "";
-      bodyEl.textContent = messageMap[resolvedOs] || messageMap.unknown || "";
+      renderModalBody(bodyEl, messageMap[resolvedOs] || messageMap.unknown || "");
       closeEl.setAttribute("aria-label", modalConfig.labels && modalConfig.labels.closeAria ? modalConfig.labels.closeAria : "Close");
       dismissEl.textContent = modalConfig.labels && modalConfig.labels.close ? modalConfig.labels.close : "Close";
       buildSupportContent(supportEl, modalConfig);

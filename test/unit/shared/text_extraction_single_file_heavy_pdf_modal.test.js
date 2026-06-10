@@ -113,6 +113,8 @@ function createHarness() {
     textExtractionSingleFileHeavyPdfModalTitle: createElement('textExtractionSingleFileHeavyPdfModalTitle'),
     textExtractionSingleFileHeavyPdfModalMessage: createElement('textExtractionSingleFileHeavyPdfModalMessage'),
     textExtractionSingleFileHeavyPdfModalDetails: createElement('textExtractionSingleFileHeavyPdfModalDetails'),
+    textExtractionSingleFileHeavyPdfModalDetailsRows: createElement('textExtractionSingleFileHeavyPdfModalDetailsRows'),
+    textExtractionSingleFileHeavyPdfModalRevealActions: createElement('textExtractionSingleFileHeavyPdfModalRevealActions'),
     textExtractionSingleFileHeavyPdfModalSplit: createElement('textExtractionSingleFileHeavyPdfModalSplit'),
     textExtractionSingleFileHeavyPdfModalReturnToPages: createElement('textExtractionSingleFileHeavyPdfModalReturnToPages'),
     textExtractionSingleFileHeavyPdfModalUseNative: createElement('textExtractionSingleFileHeavyPdfModalUseNative'),
@@ -233,37 +235,38 @@ test('single-file heavy PDF modal moves provider limit into Case B intro and rem
     /<bdi dir="ltr">50 MB<\/bdi>/
   );
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /<strong>Source file:<\/strong> <bdi dir="ltr">book\.pdf<\/bdi>/
   );
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /<strong>Selected range:<\/strong> <bdi dir="ltr">100-220<\/bdi>/
   );
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /<strong>Source file size:<\/strong> <bdi dir="ltr">458 MB<\/bdi>/
   );
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /<strong>Generated PDF size:<\/strong> <bdi dir="ltr">72\.4 MB<\/bdi>/
   );
   assert.doesNotMatch(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /<strong>Generated PDF:<\/strong>/
   );
   assert.doesNotMatch(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /Generated PDF:[^<]*\([^)]+ MB\)/
   );
   assert.doesNotMatch(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /Provider limit:/
   );
   assert.doesNotMatch(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /Upload status:/
   );
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalRevealActions.hidden, true);
   assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.hidden, true);
 
   harness.elements.textExtractionSingleFileHeavyPdfModalCancel.dispatch('click');
@@ -292,17 +295,18 @@ test('single-file heavy PDF modal includes provider limit in Case A intro', asyn
     /<bdi dir="ltr">50 MB<\/bdi>/
   );
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /<strong>Source file size:<\/strong> <bdi dir="ltr">458 MB<\/bdi>/
   );
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /<strong>Total pages:<\/strong> <bdi dir="ltr">516<\/bdi>/
   );
   assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReturnToPages.hidden, false);
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalRevealActions.hidden, true);
   assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.hidden, true);
   assert.doesNotMatch(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /Generated PDF:/
   );
 
@@ -332,13 +336,14 @@ test('single-file heavy PDF modal shows generated PDF filename only when a retai
   });
 
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /<strong>Generated PDF:<\/strong> <bdi dir="ltr">book_pages_100_220\.pdf<\/bdi>/
   );
   assert.match(
-    harness.elements.textExtractionSingleFileHeavyPdfModalDetails.innerHTML,
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
     /book_pages_100_220\.pdf/
   );
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalRevealActions.hidden, false);
   assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.hidden, false);
 
   harness.elements.textExtractionSingleFileHeavyPdfModalCancel.dispatch('click');

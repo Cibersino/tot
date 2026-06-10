@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">text-editor</title>
+  <rect class="editor-window" x="3.1" y="4.15" width="16.15" height="15.7" rx="2.15" fill="var(--tot-icon-text-editor-window, #5B5FB4)"/>
+  <path class="editor-titlebar" d="M5.25 4.15h11.85c1.19 0 2.15.96 2.15 2.15v1.15H3.1V6.3c0-1.19.96-2.15 2.15-2.15z" fill="var(--tot-icon-text-editor-titlebar, #373B7C)"/>
+  <circle class="editor-chrome-dot" cx="6.1" cy="5.85" r=".55" fill="var(--tot-icon-text-editor-chrome, #b8c9e6)"/>
+  <circle class="editor-chrome-dot" cx="8.05" cy="5.85" r=".55" fill="var(--tot-icon-text-editor-chrome, #b8c9e6)"/>
+  <path class="editor-lines" d="M5.75 10.1h7.65M5.75 12.85h6.15M5.75 15.6h4.85" fill="none" stroke="var(--tot-icon-text-editor-lines, #eef6ff)" stroke-width="1.22" stroke-linecap="round" opacity=".97"/>
+  <path class="editor-pencil-body" d="M12.1 17.35l1.55-3.25 5.15-5.15 2.05 2.05-5.15 5.15z" fill="var(--tot-icon-text-editor-pencil, #f2b84b)"/>
+  <path class="editor-pencil-tip" d="M12.1 17.35l1.55-3.25 2.05 2.05z" fill="var(--tot-icon-text-editor-pencil-tip, #f7e4a8)"/>
+  <path class="editor-pencil-end" d="M18.8 8.95l.8-.8c.34-.34.9-.34 1.24 0l.86.86c.34.34.34.9 0 1.24l-.85.75z" fill="var(--tot-icon-text-editor-pencil-end, #d96f5f)"/>
+</svg>

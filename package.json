@@ -5,6 +5,7 @@
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
+    "generate:icons": "node tools/generate_renderer_icons.js",
     "test": "npm run test:unit",
     "test:unit": "node --test --test-isolation=none \"test/unit/**/*.test.js\"",
     "test:smoke": "node --test --test-isolation=none \"test/smoke/**/*.test.js\"",
@@ -68,6 +69,27 @@
       "icon": "logo-cibersino.icns",
       "target": [
         "dmg"
+      ]
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 140,
+          "y": 220
+        },
+        {
+          "x": 400,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 270,
+          "y": 380,
+          "type": "file",
+          "path": "build-resources/INSTALL.txt",
+          "name": "INSTALL.txt"
+        }
       ]
     },
     "linux": {

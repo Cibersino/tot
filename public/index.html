@@ -47,24 +47,35 @@
       <pre id="textPreview">(vacío)</pre>
       <div class="controls">
         <div id="selectorControlsNormal" class="controls-row">
-          <button id="btnTextExtraction" class="btn-standard" title="Extraer texto desde archivo">📥</button>
+          <button id="btnTextExtraction" class="btn-standard" title="Extraer texto desde archivo"
+            data-tot-icon="text-extraction-wide" data-tot-icon-size="xl"></button>
           <span class="controls-sep" aria-hidden="true"></span>
           <button id="btnOverwriteClipboard" class="btn-standard"
-            title="Reemplazar texto actual con el portapapeles">📋↺</button>
+            title="Reemplazar texto actual con el portapapeles" data-tot-icon="clipboard-overwrite"
+            data-tot-icon-size="xl"></button>
           <button id="btnAppendClipboard" class="btn-standard"
-            title="Pegar portapapeles al final del texto actual (nueva línea)">📋+</button>
+            title="Pegar portapapeles al final del texto actual (nueva línea)" data-tot-icon="clipboard-append"
+            data-tot-icon-size="xl"></button>
           <input id="clipboardRepeatInput" class="clipboard-repeat-input" type="number" min="1" max="9999" step="1"
             value="1" title="Repeticiones de pegado" aria-label="Repeticiones de pegado" />
-          <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto actual completo">⌨</button>
-          <button id="btnEmptyMain" class="btn-standard" title="Vaciar texto actual">🗑</button>
+          <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto actual completo"
+            data-tot-icon="text-editor" data-tot-icon-size="xl"></button>
+          <button id="btnEmptyMain" class="btn-standard" title="Vaciar texto actual" data-tot-icon="trash"
+            data-tot-icon-size="xl"></button>
           <span class="controls-sep" aria-hidden="true"></span>
-          <button id="btnLoadSnapshot" class="btn-standard" title="Cargar snapshot de texto">📂</button>
-          <button id="btnSaveSnapshot" class="btn-standard" title="Guardar el texto actual en un snapshot">💾</button>
+          <button id="btnLoadSnapshot" class="btn-standard" title="Cargar snapshot de texto"
+            data-tot-icon="text-snapshot-load" data-tot-icon-size="xl"></button>
+          <button id="btnSaveSnapshot" class="btn-standard" title="Guardar el texto actual en un snapshot"
+            data-tot-icon="text-snapshot-save" data-tot-icon-size="xl"></button>
           <span class="controls-sep" aria-hidden="true"></span>
-          <button id="btnNewTask" class="btn-standard" title="Nueva tarea">📝</button>
-          <button id="btnLoadTask" class="btn-standard" title="Cargar tarea">🗃️</button>
+          <button id="btnNewTask" class="btn-standard" title="Nueva tarea" data-tot-icon="task-new"
+            data-tot-icon-size="xl"></button>
+          <button id="btnLoadTask" class="btn-standard" title="Cargar tarea" data-tot-icon="task-load"
+            data-tot-icon-size="xl"></button>
           <span class="controls-sep" aria-hidden="true"></span>
-          <button id="btnReadingSpeedTest" class="btn-standard" type="button"></button>
+          <button id="btnReadingSpeedTest" class="btn-standard" type="button"
+            title="Test de velocidad de lectura" aria-label="Test de velocidad de lectura"
+            data-tot-icon="reading-speed-test" data-tot-icon-size="xl"></button>
           <span class="controls-sep" aria-hidden="true"></span>
           <label id="previewSpoilerToggleLabel" class="selector-inline-checkbox" for="previewSpoilerToggle">
             <input id="previewSpoilerToggle" type="checkbox" checked />
@@ -88,8 +99,8 @@
             <span class="text-extraction-processing-placeholder-track" aria-hidden="true">
               <span class="text-extraction-processing-placeholder-fill"></span>
             </span>
-            <button id="btnTextExtractionAbort" class="btn-standard" hidden disabled
-              title="Abortar extracción">⛔</button>
+            <button id="btnTextExtractionAbort" class="btn-standard" hidden disabled title="Abortar extracción"
+              aria-label="Abortar extracción" data-tot-icon="abort-extraction" data-tot-icon-size="xl"></button>
           </div>
         </div>
       </div>
@@ -106,13 +117,16 @@
       <div class="presets-row">
         <select id="presets" aria-label="Presets de velocidad">
         </select>
-        <button id="btnNewPreset" class="btn-standard btn-standard--square" title="Crear un nuevo preset">＋</button>
+        <button id="btnNewPreset" class="btn-standard btn-standard--square" title="Crear un nuevo preset"
+          data-tot-icon="preset-new" data-tot-icon-size="xl"></button>
         <button id="btnEditPreset" class="btn-standard btn-standard--square"
-          title="Editar preset seleccionado" disabled aria-disabled="true">✎</button>
+          title="Editar preset seleccionado" disabled aria-disabled="true" data-tot-icon="preset-edit"
+          data-tot-icon-size="xl"></button>
         <button id="btnDeletePreset" class="btn-standard btn-standard--square"
-          title="Eliminar preset seleccionado" disabled aria-disabled="true">🗑</button>
+          title="Eliminar preset seleccionado" disabled aria-disabled="true" data-tot-icon="trash"
+          data-tot-icon-size="xl"></button>
         <button id="btnResetDefaultPresets" class="btn-standard btn-standard--square-half"
-          title="Restaurar presets por defecto">⟲</button>
+          title="Restaurar presets por defecto" data-tot-icon="reset" data-tot-icon-size="xs"></button>
       </div>
       <div id="presetDescription" class="preset-description" aria-live="polite"></div>
     </aside>
@@ -156,10 +170,12 @@
         <div class="realwpm">Velocidad:<br /><span id="realWpmDisplay">&nbsp;</span></div>
       </div>
       <div class="crono-controls" role="group" aria-label="Controles del cronómetro">
-        <button id="cronoToggle" class="btn-standard">▶</button>
-        <button id="cronoReset" class="btn-standard">⏹</button>
+        <button id="cronoToggle" class="btn-standard" title="Iniciar o pausar cronómetro"
+          aria-label="Iniciar o pausar cronómetro" data-tot-icon="play" data-tot-icon-size="xl"></button>
+        <button id="cronoReset" class="btn-standard" title="Detener y restablecer cronómetro"
+          aria-label="Detener y restablecer cronómetro" data-tot-icon="stop" data-tot-icon-size="xl"></button>
         <div class="vf-switch-wrapper" aria-label="Cronómetro Flotante">
-          <span class="vf-label" aria-hidden="true">▣</span>
+          <span class="vf-label" aria-hidden="true" data-tot-icon="floating-stopwatch" data-tot-icon-size="xxl"></span>
           <label class="switch" title="Cronómetro Flotante">
             <input type="checkbox" id="toggleVF" role="switch" aria-checked="false" />
             <span class="slider round" aria-hidden="true"></span>
@@ -175,7 +191,8 @@
       <div class="info-modal-panel" role="document">
         <header class="info-modal-header">
           <h2 id="infoModalTitle">Info</h2>
-          <button id="infoModalClose" class="btn-standard" aria-label="Cerrar">🗙</button>
+          <button id="infoModalClose" class="btn-standard" aria-label="Cerrar" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <main id="infoModalContent" class="info-modal-content" tabindex="0">
           <!-- Dynamically loaded content -->
@@ -191,7 +208,8 @@
       <div class="browser-extension-modal-panel" role="document">
         <header class="browser-extension-modal-header">
           <button id="browserExtensionModalClose" class="btn-standard" type="button"
-            aria-label="Cerrar diálogo de extensión del navegador">🗙</button>
+            aria-label="Cerrar diálogo de extensión del navegador" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div class="browser-extension-modal-body">
           <div class="browser-extension-modal-copy">
@@ -218,7 +236,8 @@
         <header class="text-extraction-pdf-options-modal-header">
           <h2 id="textExtractionPdfOptionsModalTitle">Opciones de extracción PDF</h2>
           <button id="textExtractionPdfOptionsModalClose" class="btn-standard" type="button"
-            aria-label="Cerrar diálogo de opciones de extracción PDF">🗙</button>
+            aria-label="Cerrar diálogo de opciones de extracción PDF" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div class="text-extraction-pdf-options-modal-body">
           <p id="textExtractionPdfOptionsModalMessage">Elige cuántas páginas del PDF procesar antes de la extracción.</p>
@@ -280,7 +299,8 @@
         <header class="text-extraction-route-modal-header">
           <h2 id="textExtractionRouteModalTitle">Elegir ruta de extracción</h2>
           <button id="textExtractionRouteModalClose" class="btn-standard"
-            aria-label="Cerrar diálogo de ruta de extracción">🗙</button>
+            aria-label="Cerrar diálogo de ruta de extracción" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div class="text-extraction-route-modal-body">
           <p id="textExtractionRouteModalMessage">Este PDF tiene disponibles ambas rutas de extracción. Elige una para
@@ -301,7 +321,8 @@
         <header class="text-extraction-apply-modal-header">
           <h2 id="textExtractionApplyModalTitle">Aplicar texto extraído</h2>
           <button id="textExtractionApplyModalClose" class="btn-standard"
-            aria-label="Cerrar diálogo para aplicar texto extraído">🗙</button>
+            aria-label="Cerrar diálogo para aplicar texto extraído" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div class="text-extraction-apply-modal-body">
           <p id="textExtractionApplyModalMessage">Elige cómo aplicar el texto extraído.</p>
@@ -336,7 +357,8 @@
         <header class="text-extraction-batch-plan-modal-header">
           <h2 id="textExtractionBatchPlanModalTitle">Extracción por lotes</h2>
           <button id="textExtractionBatchPlanClose" class="btn-standard" type="button"
-            aria-label="Cerrar planificación de extracción por lotes">🗙</button>
+            aria-label="Cerrar planificación de extracción por lotes" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div class="text-extraction-batch-plan-modal-body">
           <div class="text-extraction-batch-plan-modal-toolbar">
@@ -375,7 +397,8 @@
         <header class="text-extraction-batch-final-modal-header">
           <h2 id="textExtractionBatchFinalModalTitle">Extracción por lotes completada</h2>
           <button id="textExtractionBatchFinalModalClose" class="btn-standard" type="button"
-            aria-label="Cerrar informe final de extracción por lotes">🗙</button>
+            aria-label="Cerrar informe final de extracción por lotes" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div class="text-extraction-batch-final-modal-body">
           <p id="textExtractionBatchFinalModalSummary"></p>
@@ -399,11 +422,18 @@
         <header class="text-extraction-single-file-heavy-modal-header">
           <h2 id="textExtractionSingleFileHeavyPdfModalTitle">PDF pesado para OCR</h2>
           <button id="textExtractionSingleFileHeavyPdfModalClose" class="btn-standard" type="button"
-            aria-label="Cerrar diálogo de PDF pesado para OCR">🗙</button>
+            aria-label="Cerrar diálogo de PDF pesado para OCR" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div class="text-extraction-single-file-heavy-modal-body">
           <p id="textExtractionSingleFileHeavyPdfModalMessage"></p>
           <div id="textExtractionSingleFileHeavyPdfModalDetails" class="text-extraction-single-file-heavy-modal-details">
+            <div id="textExtractionSingleFileHeavyPdfModalDetailsRows"></div>
+            <div id="textExtractionSingleFileHeavyPdfModalRevealActions"
+              class="text-extraction-single-file-heavy-modal-details-actions" hidden aria-hidden="true">
+              <button id="textExtractionSingleFileHeavyPdfModalReveal" class="btn-standard" type="button">Mostrar PDF
+                generado</button>
+            </div>
           </div>
           <div class="text-extraction-single-file-heavy-modal-actions">
             <button id="textExtractionSingleFileHeavyPdfModalSplit" class="btn-standard" type="button">Procesar el PDF 
@@ -412,8 +442,6 @@
               páginas</button>
             <button id="textExtractionSingleFileHeavyPdfModalUseNative" class="btn-standard" type="button">Usar
               nativa</button>
-            <button id="textExtractionSingleFileHeavyPdfModalReveal" class="btn-standard" type="button">Mostrar PDF
-              generado</button>
             <button id="textExtractionSingleFileHeavyPdfModalCancel" class="btn-standard" type="button">Cancelar</button>
           </div>
         </div>
@@ -427,7 +455,8 @@
         <header class="snapshot-save-tags-modal-header">
           <h2 id="snapshotSaveTagsModalTitle">Guardar snapshot de texto</h2>
           <button id="snapshotSaveTagsModalClose" class="btn-standard" type="button"
-            aria-label="Cerrar diálogo para guardar snapshot de texto">🗙</button>
+            aria-label="Cerrar diálogo para guardar snapshot de texto" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div class="snapshot-save-tags-modal-body">
           <p id="snapshotSaveTagsModalMessage">Etiqueta opcionalmente este snapshot de texto antes de elegir dónde
@@ -467,7 +496,8 @@
       <div class="reading-test-entry-modal-panel" role="document">
         <header class="reading-test-entry-modal-header">
           <button id="readingTestEntryModalClose" class="btn-standard" type="button"
-            aria-label="Cerrar diálogo de test de velocidad de lectura">🗙</button>
+            aria-label="Cerrar diálogo de test de velocidad de lectura" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div class="reading-test-entry-modal-body">
           <h2 id="readingTestEntryModalTitle">Test de velocidad de lectura</h2>
@@ -508,7 +538,8 @@
                 <span id="readingTestEntryModalEligibleCountNumber"
                   class="reading-test-entry-modal-count-number">0</span>
               </div>
-              <button id="readingTestEntryModalReset" class="btn-standard btn-standard--half" type="button">⟲</button>
+              <button id="readingTestEntryModalReset" class="btn-standard btn-standard--half" type="button"
+                data-tot-icon="reset" data-tot-icon-size="xs"></button>
             </div>
             <div class="reading-test-entry-modal-management">
               <label id="readingTestEntryModalShowBundledLabel" class="reading-test-entry-modal-visibility-toggle">
@@ -538,7 +569,8 @@
         <header class="text-extraction-ocr-activation-disclosure-header">
           <h2 id="textExtractionOcrActivationDisclosureTitle">Revisar activación de Google OCR</h2>
           <button id="textExtractionOcrActivationDisclosureClose" class="btn-standard" type="button"
-            aria-label="Cerrar diálogo de activación de Google OCR">🗙</button>
+            aria-label="Cerrar diálogo de activación de Google OCR" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
         </header>
         <div id="textExtractionOcrActivationDisclosureBody" class="text-extraction-ocr-activation-disclosure-body">
           <p id="textExtractionOcrActivationDisclosureIntro">toT usa servicios de Google para OCR. Si continúas, se
@@ -570,6 +602,8 @@
   </div>
 
   <script src="./js/log.js"></script>
+  <script src="./js/generated_icons.js"></script>
+  <script src="./js/renderer_icons.js"></script>
   <script src="./js/constants.js"></script>
   <script src="./js/wpm_curve.js"></script>
   <script src="./js/notify.js"></script>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">text-snapshot-save</title>
+  <rect class="snapshot-shadow" x="4.85" y="4.55" width="9.55" height="13.85" rx="1.75" fill="var(--tot-icon-text-snapshot-shadow, #4E3140)" opacity=".82"/>
+  <rect class="snapshot-card" x="3.35" y="6.15" width="9.75" height="13.15" rx="1.85" fill="var(--tot-icon-text-snapshot-card, #7A4E62)"/>
+  <path class="snapshot-fold" d="M9.75 6.15h1.55c.99 0 1.8.8 1.8 1.8v1.55z" fill="var(--tot-icon-text-snapshot-fold, #B98298)"/>
+  <path class="snapshot-lines" d="M5.5 10.45h5.2M5.5 13.1h4.35M5.5 15.75h4.8" fill="none" stroke="var(--tot-icon-text-snapshot-lines, #eef6ff)" stroke-width="1.18" stroke-linecap="round" opacity=".96"/>
+  <path class="snapshot-save-arrow" d="M17.75 4.775H20V11.575h2.05l-3.2 3.7-3.2-3.7h2.1z" fill="var(--tot-icon-text-snapshot-save-action, #f2b84b)"/>
+  <path class="snapshot-save-entry" d="M16.25 18.025h5.2" fill="none" stroke="var(--tot-icon-text-snapshot-save-action, #f2b84b)" stroke-width="1.55" stroke-linecap="round"/>
+</svg>

@@ -20,6 +20,10 @@ if (typeof window.getLogger !== 'function') {
 
 const log = window.getLogger('editor-find');
 log.debug('Editor find window starting...');
+const rendererIcons = window.RendererIcons || null;
+if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
+  throw new Error('[editor-find] RendererIcons.applyIconToElement unavailable; cannot continue.');
+}
 
 const { AppConstants } = window;
 if (!AppConstants) {
@@ -162,7 +166,10 @@ function applyUiState() {
   toggleEl.disabled = findState.busy;
   closeEl.disabled = findState.busy;
   statusEl.textContent = resolveStatusText();
-  toggleEl.textContent = findState.expanded ? '˅' : '˃';
+  rendererIcons.applyIconToElement(toggleEl, findState.expanded ? 'collapse' : 'expand', {
+    size: 'sm',
+    preserveContent: false,
+  });
 
   const toggleTitleKey = findState.expanded
     ? 'renderer.editor.editor_find.collapse_title'

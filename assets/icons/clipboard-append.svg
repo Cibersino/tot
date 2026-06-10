@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">clipboard-append</title>
+  <rect class="clipboard-body" x="3.1" y="5.1" width="9.2" height="14.2" rx="2.0" fill="var(--tot-icon-clipboard-base, #4F86B8)"/>
+  <rect class="clipboard-tab" x="5.35" y="3.15" width="4.7" height="3.15" rx="1.1" fill="var(--tot-icon-clipboard-tab, #86a9d1)"/>
+  <path class="clipboard-lines" d="M5.35 9.3h4.8M5.35 12.1h4.8M5.35 14.9h3.8" fill="none" stroke="var(--tot-icon-clipboard-lines, #eef6ff)" stroke-width="1.15" stroke-linecap="round" opacity=".96"/>
+  <path class="append-arrow" d="M16.15 18.4v-5.35H14.4l2.95-3.4 2.95 3.4h-1.75v5.35z" fill="var(--tot-icon-clipboard-append-action, #4ab987)"/>
+  <path class="append-plus" d="M17.35 4.25v3.1M15.8 5.8h3.1" fill="none" stroke="var(--tot-icon-clipboard-append-plus, #f1b53f)" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

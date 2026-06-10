@@ -552,6 +552,39 @@ h1 {
   margin: 0;
 }
 
+.download-modal__intro,
+.download-modal__note {
+  margin: 0;
+}
+
+.download-modal__steps {
+  margin: 12px 0 0;
+  padding-left: 1.3rem;
+}
+
+.download-modal__step + .download-modal__step {
+  margin-top: 8px;
+}
+
+.download-modal__note {
+  margin-top: 14px;
+  color: var(--muted-color);
+}
+
+.download-modal__token {
+  display: inline-block;
+  margin: 0 0.08em;
+  padding: 0.08em 0.45em;
+  border: 1px solid rgba(184, 148, 95, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--text-color);
+  font-size: 0.94em;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .download-modal__support {
   margin-top: 14px;
   color: var(--muted-color);

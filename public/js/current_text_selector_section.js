@@ -324,7 +324,6 @@
     }
     if (btnReadingSpeedTest) {
       const label = tRenderer('renderer.main.reading_tools.reading_speed_test');
-      btnReadingSpeedTest.textContent = label;
       if (label) {
         btnReadingSpeedTest.title = label;
         btnReadingSpeedTest.setAttribute('aria-label', label);

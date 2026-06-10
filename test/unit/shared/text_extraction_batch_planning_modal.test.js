@@ -342,6 +342,18 @@ function createHarness() {
           error() {},
         };
       },
+      RendererIcons: {
+        createIconButton({ iconName, className = '', size = 'md', title = '', ariaLabel = '', type = 'button' } = {}) {
+          const button = createElement('', 'button');
+          button.type = type;
+          button.className = className;
+          if (title) button.title = title;
+          if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
+          if (iconName) button.setAttribute('data-tot-icon', iconName);
+          if (size) button.setAttribute('data-tot-icon-size', size);
+          return button;
+        },
+      },
       RendererI18n: {
         tRenderer(key) {
           return translations[key] || key;
@@ -1430,7 +1442,7 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
     }
   );
   assert.ok(moveUpButton);
-  assert.equal(moveUpButton.textContent, '🡩');
+  assert.equal(moveUpButton.getAttribute('data-tot-icon'), 'arrow-up-strong');
   assert.equal(moveUpButton.title, 'Move up');
   assert.equal(moveUpButton.getAttribute('aria-label'), 'Move up');
   assert.match(moveUpButton.className, /btn-standard--square/);
@@ -1443,7 +1455,7 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
     }
   );
   assert.ok(removeButton);
-  assert.equal(removeButton.textContent, '🗑');
+  assert.equal(removeButton.getAttribute('data-tot-icon'), 'trash');
   assert.equal(removeButton.title, 'Remove');
   assert.equal(removeButton.getAttribute('aria-label'), 'Remove');
   assert.match(removeButton.className, /btn-standard--square/);

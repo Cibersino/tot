@@ -185,7 +185,7 @@
         "move_up": "Mover para cima",
         "move_down": "Mover para baixo",
         "remove_input": "Remover",
-        "keep_generated_pdf": "Manter PDFs gerados",
+        "keep_generated_pdf": "Manter quaisquer PDFs gerados",
         "edit_tags": "Etiquetas",
         "tags_modal": {
           "title": "Etiquetas da unidade",
@@ -210,7 +210,7 @@
         "reveal_generated_pdf": "Mostrar PDF salvo",
         "current_text_has_output": "O texto atual foi modificado.",
         "current_text_unchanged": "O texto atual não mudou.",
-        "snapshot_load_guidance": "Os snapshots de texto criados podem ser carregados pela janela principal usando o botão '📂'.",
+        "snapshot_load_guidance": "Os snapshots de texto criados podem ser carregados na janela principal com o botão Carregar snapshot de texto.",
         "elapsed": "Tempo total de extração: ",
         "copy_report": "Copiar relatório",
         "open_snapshots_folder": "Abrir pasta de snapshots de texto",

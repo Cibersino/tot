@@ -99,6 +99,11 @@ function createHarness({
           return lang;
         },
       },
+      RendererIcons: {
+        applyIconToElement(element, iconName) {
+          element.setAttribute('data-tot-icon', iconName);
+        },
+      },
       editorFindAPI: {
         setQuery: async () => {},
         next: async () => {},

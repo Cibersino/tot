@@ -12,6 +12,8 @@ tot/
 ├── .github/
 │ └── workflows/
 │   └── test.yml                   # {workflow GitHub Actions del baseline automatizado (`npm test` en Windows)}
+├── assets/
+│   └── icons/                     # {íconos funcionales canónicos de la app}
 ├── build-resources/               # {recursos solo de packaging (electron-builder)}
 ├── config/                        # {generada en primer arranque} {carpeta ignorada por git}
 │ ├── ocr_google_drive/
@@ -178,6 +180,7 @@ tot/
 │ │ ├── editor_startup_presentation.js
 │ │ ├── editor_ui.js
 │ │ ├── format.js
+│ │ ├── generated_icons.js
 │ │ ├── i18n.js
 │ │ ├── info_modal_links.js
 │ │ ├── log.js
@@ -186,6 +189,7 @@ tot/
 │ │ ├── notify.js
 │ │ ├── presets.js
 │ │ ├── reading_speed_test.js
+│ │ ├── renderer_icons.js
 │ │ ├── results_time_multiplier.js
 │ │ ├── snapshot_save_tags_modal.js
 │ │ ├── text_apply_canonical.js
@@ -235,6 +239,8 @@ tot/
 │ └── task_editor.js
 ├── test/                          # {tests de desarrollo automátizados de la app}
 | └── README.md
+├── tools/
+│ └── generate_renderer_icons.js   # {genera el registro runtime de SVGs funcionales del renderer}
 ├── website/                       # {sitio web de la app}
 ├── .editorconfig
 ├── .eslintrc.cjs
@@ -355,9 +361,11 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/lib/snapshot_tag_catalog.js` — Catálogo puro/importable compartido de tags de snapshot: define los valores canónicos/opciones de `language` / `type` / `difficulty` y centraliza la normalización reutilizada por renderer y main para evitar drift.
 - `public/js/count.js` — Wrapper renderer de conteo: valida dependencias del `window`, construye `window.CountUtils` desde `count_core.js` y conserva la superficie pública existente.
 - `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
+- `public/js/generated_icons.js` — Artefacto runtime autogenerado del renderer: registra el catálogo serializado de SVGs funcionales a partir de `assets/icons/`; no se edita a mano y se regenera con `npm run generate:icons`.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
 - `public/js/presets.js` — Bridge/owner renderer de presets: resuelve catálogo por idioma, rellena el selector en DOM, conserva la descripción visible y persiste la selección activa; deja el ownership de WPM widget sync a `public/js/wpm_controls.js`.
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
+- `public/js/renderer_icons.js` — Helper compartido de íconos funcionales en renderer: consume `generated_icons.js`, resuelve variantes/tamaños y expone la aplicación común de iconos a markup estático y a controles generados por JS.
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto actual: expone `saveSnapshot()` / `loadSnapshot()`, invoca el modal previo de tags al guardar, normaliza metadata opcional de snapshot vía `snapshot_tag_catalog`, llama `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
 - `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: muestra selects opcionales para `language` / `type` / `difficulty`, admite copy overrides compartidos con batch planning, aplica i18n y devuelve tags normalizados o cancelación.
@@ -448,8 +456,9 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.0) Tooling raíz
 
-- `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`, y registra el hook `afterAllArtifactBuild` que reenvuelve los `.zip` distribuidos bajo una carpeta raíz `toT-<version>/`.
+- `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`, registra el hook `afterAllArtifactBuild` para reempaquetar los `.zip` distribuidos bajo `toT-<version>/INSTALL.txt` + `toT-<version>/toT-app/`, y configura el DMG de macOS para mostrar `INSTALL.txt` junto a la app y el acceso a `Applications`.
 - `package-lock.json` — Lockfile npm usado también por el workflow CI (`npm ci`).
+- `tools/generate_renderer_icons.js` — Script de generación del catálogo runtime de íconos funcionales del renderer: lee `assets/icons/`, valida el set canónico y escribe `public/js/generated_icons.js`; se ejecuta mediante `npm run generate:icons`.
 
 ### 6.2) Branding local en la app (public/assets)
 
@@ -461,8 +470,9 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6.3) Recursos de packaging (build-resources)
 
-- `build-resources/after-all-artifact-build.js` — Hook post-packaging de `electron-builder`: reempaqueta los artefactos `.zip` ya generados para que el contenido final quede bajo una carpeta raíz única `toT-<version>/`, mejorando la extracción manual del release portable sin alterar el layout interno de `win-unpacked`.
-- `build-resources/logo-cibersino.ico` — Icono de packaging para Windows.
+- `build-resources/after-all-artifact-build.js` — Hook post-packaging de `electron-builder`: reempaqueta los artefactos `.zip` de Windows para que el contenido final quede bajo `toT-<version>/`, agregue `INSTALL.txt` en la raíz visible y mueva la app empaquetada a `toT-<version>/toT-app/`.
+- `build-resources/INSTALL.txt` — Nota bilingüe de instalación y primer inicio visible en los artefactos empaquetados de Windows y macOS.
+- `build-resources/logo-cibersino.ico` — Ícono de packaging para Windows.
 - `build-resources/logo-cibersino.png` — Fuente raster canónica de branding para packaging; también usable como input para Linux y para generar `logo-cibersino.icns` en macOS.
 
 ### 7) Política de actualización de este archivo

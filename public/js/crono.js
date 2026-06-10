@@ -21,6 +21,10 @@
   }
   const log = window.getLogger('crono');
   log.debug('Crono starting...');
+  const rendererIcons = window.RendererIcons || null;
+  if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
+    throw new Error('[crono] RendererIcons.applyIconToElement unavailable; cannot continue');
+  }
 
   // =============================================================================
   // Helpers (format/parse + WPM)
@@ -81,10 +85,18 @@
   // =============================================================================
   // UI helpers and Electron bridge (flotante)
   // =============================================================================
-  function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel = '▶' }) {
+  function applyToggleIcon(toggleButton, iconName = 'play') {
+    if (!toggleButton) return;
+    rendererIcons.applyIconToElement(toggleButton, iconName, {
+      size: 'md',
+      preserveContent: false,
+    });
+  }
+
+  function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playIconName = 'play' }) {
     if (cronoDisplay) cronoDisplay.value = '00:00:00';
     if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
-    if (tToggle) tToggle.textContent = playLabel;
+    applyToggleIcon(tToggle, playIconName);
   }
 
   async function openFlotante({
@@ -94,8 +106,8 @@
     cronoEditing,
     tToggle,
     setElapsedRunning,
-    playLabel = '▶',
-    pauseLabel = '⏸'
+    playIconName = 'play',
+    pauseIconName = 'pause'
   }) {
     if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function') {
       log.warn('openFlotanteWindow unavailable in electronAPI');
@@ -119,7 +131,7 @@
             if (cronoDisplay && !cronoEditing) {
               cronoDisplay.value = state.display || formatCrono(elapsed);
             }
-            if (tToggle) tToggle.textContent = running ? pauseLabel : playLabel;
+            applyToggleIcon(tToggle, running ? pauseIconName : playIconName);
             return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
           }
         } catch (err) {
@@ -272,8 +284,8 @@
     settingsCache,
     prevRunning = false,
     lastComputedElapsedForWpm = null,
-    playLabel = '>',
-    pauseLabel = '||'
+    playIconName = 'play',
+    pauseIconName = 'pause'
   }) {
     const newElapsed = typeof state?.elapsed === 'number' ? state.elapsed : 0;
     const newRunning = !!state?.running;
@@ -286,7 +298,7 @@
       cronoDisplay.value = state?.display || formatCrono(newElapsed);
     }
 
-    if (tToggle) tToggle.textContent = newRunning ? pauseLabel : playLabel;
+    applyToggleIcon(tToggle, newRunning ? pauseIconName : playIconName);
 
     let updatedLast = lastComputedElapsedForWpm;
     const becamePaused = prevRunning === true && newRunning === false;
@@ -319,7 +331,7 @@
     }
 
     if (!newRunning && newElapsed === 0 && !cronoEditing) {
-      uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel });
+      uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playIconName });
       updatedLast = 0;
     }
 
@@ -347,8 +359,8 @@
       getSettingsCache: typeof options.getSettingsCache === 'function' ? options.getSettingsCache : () => null,
     };
 
-    let playLabel = (typeof options.playLabel === 'string') ? options.playLabel : '▶';
-    let pauseLabel = (typeof options.pauseLabel === 'string') ? options.pauseLabel : '⏸';
+    let playIconName = (typeof options.playIconName === 'string') ? options.playIconName : 'play';
+    let pauseIconName = (typeof options.pauseIconName === 'string') ? options.pauseIconName : 'pause';
 
     let elapsed = 0;
     let running = false;
@@ -372,14 +384,14 @@
         cronoDisplay: elements.cronoDisplay,
         realWpmDisplay: elements.realWpmDisplay,
         tToggle: elements.tToggle,
-        playLabel
+        playIconName
       });
     };
 
-    const updateLabels = (labels = {}) => {
-      if (typeof labels.playLabel === 'string') playLabel = labels.playLabel;
-      if (typeof labels.pauseLabel === 'string') pauseLabel = labels.pauseLabel;
-      if (elements.tToggle) elements.tToggle.textContent = running ? pauseLabel : playLabel;
+    const updateIcons = (icons = {}) => {
+      if (typeof icons.playIconName === 'string') playIconName = icons.playIconName;
+      if (typeof icons.pauseIconName === 'string') pauseIconName = icons.pauseIconName;
+      applyToggleIcon(elements.tToggle, running ? pauseIconName : playIconName);
     };
 
     const updateDeps = (next = {}) => {
@@ -406,8 +418,8 @@
         settingsCache: getSettingsCache(),
         prevRunning,
         lastComputedElapsedForWpm,
-        playLabel,
-        pauseLabel
+        playIconName,
+        pauseIconName
       });
       if (res) {
         elapsed = res.elapsed;
@@ -469,8 +481,8 @@
           elapsed = elapsedVal;
           running = runningVal;
         },
-        playLabel,
-        pauseLabel
+        playIconName,
+        pauseIconName
       });
       if (res && typeof res.elapsed === 'number') {
         lastComputedElapsedForWpm = res.elapsed;
@@ -576,13 +588,13 @@
       }
     };
 
-    updateLabels({ playLabel, pauseLabel });
+    updateIcons({ playIconName, pauseIconName });
 
     return {
       bind,
       handleState,
       handleTextChange,
-      updateLabels,
+      updateIcons,
       updateDeps,
       getState: () => ({
         elapsed,
@@ -609,6 +621,7 @@
     createController
   };
 })();
+
 // =============================================================================
 // End of public/js/crono.js
 // =============================================================================

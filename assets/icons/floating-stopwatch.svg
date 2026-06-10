@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">floating-stopwatch</title>
+
+  <rect class="floating-stopwatch-panel-back" x="5.25" y="5.15" width="11.95" height="9.1" rx="1.85" fill="var(--tot-icon-floating-stopwatch-panel-back, #6f829a)" opacity=".38"/>
+  <rect class="floating-stopwatch-panel-front" x="7.65" y="7.55" width="12.8" height="9.85" rx="1.95" fill="var(--tot-icon-floating-stopwatch-panel-front, #b8d2e6)" stroke="var(--tot-icon-floating-stopwatch-panel-border, #60758f)" stroke-width=".75"/>
+
+  <rect class="floating-stopwatch-crown" x="12.95" y="8.15" width="1.4" height="1.0" rx=".32" fill="var(--tot-icon-floating-stopwatch-case, #52647a)"/>
+  <circle class="floating-stopwatch-face" cx="13.65" cy="12.75" r="3.65" fill="var(--tot-icon-floating-stopwatch-face, #f7fbff)" stroke="var(--tot-icon-floating-stopwatch-case, #52647a)" stroke-width=".85"/>
+  <path class="floating-stopwatch-hand" d="M13.65 12.75l1.6-1.45" fill="none" stroke="var(--tot-icon-floating-stopwatch-hand, #6e8fae)" stroke-width=".9" stroke-linecap="round"/>
+  <circle class="floating-stopwatch-center" cx="13.65" cy="12.75" r=".42" fill="var(--tot-icon-floating-stopwatch-case, #52647a)"/>
+</svg>

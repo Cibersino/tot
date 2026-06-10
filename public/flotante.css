@@ -14,6 +14,34 @@ body {
   user-select: none;
 }
 
+.tot-icon-host {
+  line-height: 1;
+}
+
+.tot-icon-slot {
+  --tot-icon-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: var(--tot-icon-size);
+  line-height: 0;
+  pointer-events: none;
+}
+
+.tot-icon-slot--md {
+  --tot-icon-size: 20px;
+}
+
+.tot-icon-svg {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: none;
+  color: currentColor;
+  overflow: visible;
+}
+
 .flotante-root {
   display: flex;
   align-items: center;
@@ -44,6 +72,9 @@ body {
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 36px;
   height: 36px;
   border: none;
@@ -53,6 +84,10 @@ body {
   font-size: 16px;
   cursor: pointer;
   -webkit-app-region: no-drag;
+}
+
+.btn[data-tot-icon] {
+  padding: 0;
 }
 
 .btn:active {

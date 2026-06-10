@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <title>arrow-down-strong</title>
+  <path d="M12 6.65V17.4" stroke="currentColor" stroke-width="2.35" stroke-linecap="round"/>
+  <path d="M8.6 14L12 17.4L15.4 14" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

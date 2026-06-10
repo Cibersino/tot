@@ -155,7 +155,7 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
   - **No** se resetea si el texto resultante queda **no vacío**.
   - Se resetea **solo** cuando el texto vigente queda **vacío** (overwrite/append/vaciar/editor).
 - Refactor del cronómetro para reducir acoplamiento y duplicación de wiring/estado en renderer.
-- Selector de texto: iconos de overwrite/append del portapapeles actualizados a **`📋↺`** y **`📋+`**.
+- Selector de texto: íconos de overwrite/append del portapapeles actualizados a **`📋↺`** y **`📋+`**.
 
 ### Fixed
 - Conteo (modo **Preciso**, Issue #85): compuestos con guion sin espacios (`e-mail`, `co-operate`, etc.) pasan a contar como **1 palabra**.

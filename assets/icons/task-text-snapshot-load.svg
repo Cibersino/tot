@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">Load linked text snapshot</title>
+  <defs>
+    <style>
+      .task-row-load-linked-snapshot {
+        --icon-color: var(--tot-icon-task-row-load-linked-snapshot, #5f6f82);
+      }
+
+      .task-row-load-linked-snapshot .card-fill {
+        fill: var(--icon-color);
+        opacity: .11;
+      }
+
+      .task-row-load-linked-snapshot .stroke {
+        fill: none;
+        stroke: var(--icon-color);
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .task-row-load-linked-snapshot .fold {
+        fill: var(--icon-color);
+        opacity: .28;
+      }
+
+      .task-row-load-linked-snapshot .line {
+        stroke-width: 1.12;
+        opacity: .82;
+      }
+
+      .task-row-load-linked-snapshot .main {
+        stroke-width: 1.55;
+      }
+
+      .task-row-load-linked-snapshot .action {
+        fill: var(--icon-color);
+      }
+    </style>
+  </defs>
+  <g class="task-row-load-linked-snapshot">
+    <rect class="card-fill" x="4.1" y="5.35" width="9.6" height="13.25" rx="1.8"/>
+    <path class="stroke main" d="M5.9 5.35h5.6c1.22 0 2.2.98 2.2 2.2v9.25c0 .99-.81 1.8-1.8 1.8h-6c-.99 0-1.8-.81-1.8-1.8V7.15c0-.99.81-1.8 1.8-1.8z"/>
+    <path class="fold" d="M10.85 5.35h.65c1.22 0 2.2.98 2.2 2.2v.7h-2.05c-.44 0-.8-.36-.8-.8z"/>
+    <path class="stroke line" d="M6.35 10.05h4.65M6.35 12.6h3.9M6.35 15.15h4.35"/>
+    <path class="action" d="M17.05 18.45h2.1v-6.15h1.85l-2.9-3.35-2.9 3.35h1.85z"/>
+    <path class="stroke main" d="M15.45 5.7h5.1"/>
+  </g>
+</svg>

@@ -185,7 +185,7 @@
         "move_up": "Move up",
         "move_down": "Move down",
         "remove_input": "Remove",
-        "keep_generated_pdf": "Keep generated PDFs",
+        "keep_generated_pdf": "Keep any generated PDFs",
         "edit_tags": "Tags",
         "tags_modal": {
           "title": "Unit tags",
@@ -210,7 +210,7 @@
         "reveal_generated_pdf": "Reveal saved PDF",
         "current_text_has_output": "Current text was modified.",
         "current_text_unchanged": "Current text did not change.",
-        "snapshot_load_guidance": "Created text snapshots can be loaded from the main window using the '📂' button.",
+        "snapshot_load_guidance": "Created text snapshots can be loaded from the main window with the Load text snapshot button.",
         "elapsed": "Total extraction time: ",
         "copy_report": "Copy report",
         "open_snapshots_folder": "Open text snapshots folder",

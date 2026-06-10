@@ -25,6 +25,50 @@
   --modal-backdrop: rgb(0 0 0 / 0.45);
   --font-ui: Arial, sans-serif;
   --gap: 10px;
+  --tot-icon-size-xs: 16px;
+  --tot-icon-size-sm: 20px;
+  --tot-icon-size-md: 24px;
+  --tot-icon-size-lg: 28px;
+}
+
+.tot-icon-host {
+  line-height: 1;
+}
+
+.tot-icon-slot {
+  --tot-icon-size: var(--tot-icon-size-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: var(--tot-icon-size);
+  line-height: 0;
+  pointer-events: none;
+}
+
+.tot-icon-slot--xs {
+  --tot-icon-size: var(--tot-icon-size-xs);
+}
+
+.tot-icon-slot--sm {
+  --tot-icon-size: var(--tot-icon-size-sm);
+}
+
+.tot-icon-slot--md {
+  --tot-icon-size: var(--tot-icon-size-md);
+}
+
+.tot-icon-slot--lg {
+  --tot-icon-size: var(--tot-icon-size-lg);
+}
+
+.tot-icon-svg {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: none;
+  color: currentColor;
+  overflow: visible;
 }
 
 /* Window shell */
@@ -75,28 +119,39 @@ body {
   user-select: none;
 }
 
+.btn-standard[data-tot-icon],
+.icon-btn[data-tot-icon] {
+  gap: 0;
+}
+
 .btn-standard--compact {
-  height: 24px;
-  min-width: 24px;
+  height: 28px;
+  min-width: 28px;
   padding: 4px 6px;
   font-size: 12px;
   line-height: 1;
   flex: 0 0 auto;
 }
 
+.btn-standard--compact[data-tot-icon] {
+  width: 28px;
+  min-width: 28px;
+  padding: 0;
+}
+
 .btn-standard:hover,
-.task-table .icon-btn:hover {
+.icon-btn:hover {
   background: var(--btn-hover-bg);
   box-shadow: var(--section-shadow);
 }
 
 .btn-standard:active,
-.task-table .icon-btn:active {
+.icon-btn:active {
   transform: translateY(1px);
 }
 
 .btn-standard:focus-visible,
-.task-table .icon-btn:focus-visible,
+.icon-btn:focus-visible,
 #taskNameInput:focus-visible,
 .task-table input[type="text"]:focus-visible,
 .task-table input[type="number"]:focus-visible,
@@ -294,12 +349,14 @@ body {
   gap: 6px;
 }
 
-.task-table .icon-btn {
+.icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 6px;
-  min-height: 24px;
+  padding: 3px 5px;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
   border: 1px solid var(--input-border);
   background: var(--surface);
   color: var(--text-strong);
@@ -309,8 +366,17 @@ body {
   transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
 }
 
-.task-table .icon-btn--tiny {
-  padding: 2px;
+.icon-btn--tiny {
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+  padding: 2px 3px;
+}
+
+.icon-btn--half {
+  width: 15px;
+  flex-basis: 15px;
+  padding-inline: 0;
 }
 
 .link-cell {
@@ -440,6 +506,11 @@ body.is-resizing {
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
+}
+
+#libraryModal .modal-body {
+  padding-inline-end: 10px;
+  box-sizing: border-box;
 }
 
 .library-search label {

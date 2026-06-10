@@ -24,6 +24,34 @@ body {
   overflow: hidden;
 }
 
+.tot-icon-host {
+  line-height: 1;
+}
+
+.tot-icon-slot {
+  --tot-icon-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: var(--tot-icon-size);
+  line-height: 0;
+  pointer-events: none;
+}
+
+.tot-icon-slot--sm {
+  --tot-icon-size: 16px;
+}
+
+.tot-icon-svg {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: none;
+  color: currentColor;
+  overflow: visible;
+}
+
 /* Window layout */
 .find-wrap {
   display: flex;
@@ -70,6 +98,9 @@ body[data-expanded="false"] .replace-row {
 }
 
 .find-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: 30px;
   padding: 0 10px;
   border: 1px solid rgba(184, 184, 184, 0.58);
@@ -79,6 +110,10 @@ body[data-expanded="false"] .replace-row {
   background: rgba(255, 255, 255, 0.36);
   cursor: pointer;
   white-space: nowrap;
+}
+
+.find-btn[data-tot-icon] {
+  padding: 0;
 }
 
 .find-input:focus-visible,

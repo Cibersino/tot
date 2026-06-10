@@ -41,10 +41,13 @@
 ## Requisitos
 
 ### Usuarios finales
+
 * **Windows (build portable)**: Windows 10/11 (64-bit).
-* **Planificado**: macOS y Linux (aún no soportado oficialmente).
+* **macOS (DMG arm64)**: Macs con Apple Silicon.
+* **Planificado**: Linux.
 
 ### Desarrolladores (ejecutar desde el código fuente)
+
 * Node.js 18+ (recomendado: LTS actual)
 * npm (incluido con Node.js)
 
@@ -52,12 +55,32 @@
 
 ## Instalación / Cómo ejecutar
 
-1. Ir a [GitHub Releases](https://github.com/Cibersino/tot/releases) y descargar el último **`.zip` portable para Windows**.
-2. Extraer el `.zip` en cualquier carpeta.
-3. Ejecutar el `.exe` dentro de la carpeta extraída.
+### Windows
 
-Notas:
-* Este es un **build portable** (sin instalador).
+1. Si ya tienes una versión anterior de toT, cierra la app y elimina la carpeta extraída anterior.
+2. Ir a [GitHub Releases](https://github.com/Cibersino/tot/releases) y descargar el último **`.zip` portable para Windows**.
+3. Extraer el `.zip` en cualquier carpeta.
+4. Abrir la carpeta extraída `toT-<version>`.
+5. Leer `INSTALL.txt`.
+6. Abrir `toT-app` y ejecutar `toT.exe`.
+
+`INSTALL.txt` incluido en el artefacto explica el primer inicio y el aviso de SmartScreen.
+
+### macOS Apple Silicon
+
+1. Si ya tienes una versión anterior de toT en **Aplicaciones**, cierra la app y elimina esa copia anterior.
+2. Descargar el último **`.dmg` para macOS arm64** desde [GitHub Releases](https://github.com/Cibersino/tot/releases).
+3. Abrir el archivo descargado.
+4. Leer `INSTALL.txt` en la ventana del DMG.
+5. Arrastrar `toT` a la carpeta **Aplicaciones**.
+6. Abrir `toT` desde **Aplicaciones**.
+
+`INSTALL.txt` incluido en el DMG explica el primer inicio y el aviso de cuarentena de macOS.
+
+### Notas:
+
+* El build de Windows es portable, sin instalador.
+* El build de macOS se distribuye como DMG.
 * El estado/configuración se almacena localmente en `app.getPath('userData')/config` (sin dependencia de servicios en la nube).
 * El OCR con Google usa el alcance `drive.file`. Los usuarios requieren una cuenta de Google para usarlo.
 
@@ -78,6 +101,7 @@ La extensión estima el tiempo de lectura del texto que seleccionas en páginas 
 Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar la app?”).
 
 Accesos rápidos visibles en la ventana principal:
+
 * `📥`: extraer texto desde archivo (incluye flujo OCR cuando aplica, planificación por lotes para varios archivos y división automática de PDFs pesados para OCR).
 * `📋↺` / `📋+`: reemplazar o agregar texto desde portapapeles.
 * `⌨`: abrir Editor de Texto.
@@ -122,25 +146,33 @@ DevTools solo decide si *muestra* mensajes (Verbose/Info/etc.). El logger de la 
 debes subir el nivel del logger.
 
 En la consola de DevTools (de la ventana que estás mirando):
-- Ver nivel actual:
-  - `Log.getLevel()`
-- Activar `info`:
-  - `Log.setLevel('info')`
-- Activar `debug`:
-  - `Log.setLevel('debug')`
-- Volver al modo normal (default = `warn`):
-  - `Log.setLevel('warn')`
+
+* Ver nivel actual:
+
+  * `Log.getLevel()`
+* Activar `info`:
+
+  * `Log.setLevel('info')`
+* Activar `debug`:
+
+  * `Log.setLevel('debug')`
+* Volver al modo normal (default = `warn`):
+
+  * `Log.setLevel('warn')`
 
 Importante: si quieres ver logs de inicio (arranque), cambia el nivel y luego reinicia/recarga la app/ventana.
 
 **Menú “Development” (opcional).** En modo desarrollo está oculto por defecto. Para habilitarlo, define `SHOW_DEV_MENU=1`:
 
-- Windows (PowerShell):
-  - `$env:SHOW_DEV_MENU = '1' ; npm start`
-- Windows (cmd.exe):
-  - `set SHOW_DEV_MENU=1 && npm start`
-- Linux/macOS (bash/zsh):
-  - `SHOW_DEV_MENU=1 npm start`
+* Windows (PowerShell):
+
+  * `$env:SHOW_DEV_MENU = '1' ; npm start`
+* Windows (cmd.exe):
+
+  * `set SHOW_DEV_MENU=1 && npm start`
+* Linux/macOS (bash/zsh):
+
+  * `SHOW_DEV_MENU=1 npm start`
 
 Esto es solo para desarrollo: en builds empaquetados no se muestra el menú “Development” y los atajos dev (DevTools/Reload) no están activos.
 
@@ -214,7 +246,8 @@ MIT — ver [`LICENSE`](LICENSE).
 ### End users
 
 * **Windows (portable build)**: Windows 10/11 (64-bit).
-* **Planned**: macOS and Linux (not officially supported yet).
+* **macOS (arm64 DMG)**: Apple Silicon Macs.
+* **Planned**: Linux.
 
 ### Developers (run from source)
 
@@ -225,13 +258,32 @@ MIT — ver [`LICENSE`](LICENSE).
 
 ## Installation / How to run
 
-1. Go to [GitHub Releases](https://github.com/Cibersino/tot/releases) and download the latest **Windows portable `.zip`**.
-2. Extract the `.zip` to any folder.
-3. Run the `.exe` inside the extracted folder.
+### Windows
 
-Notes:
+1. If you already have an older version of toT, close the app and delete the previously extracted folder.
+2. Go to [GitHub Releases](https://github.com/Cibersino/tot/releases) and download the latest **Windows portable `.zip`**.
+3. Extract the `.zip` to any folder.
+4. Open the extracted `toT-<version>` folder.
+5. Read `INSTALL.txt`.
+6. Open `toT-app` and run `toT.exe`.
 
-* This is a **portable build** (no installer).
+The `INSTALL.txt` file included in the artifact explains first-run steps and the SmartScreen warning.
+
+### macOS Apple Silicon
+
+1. If you already have an older version of toT in **Applications**, close the app and delete that previous copy.
+2. Download the latest **macOS arm64 `.dmg`** from [GitHub Releases](https://github.com/Cibersino/tot/releases).
+3. Open the downloaded file.
+4. Read `INSTALL.txt` in the DMG window.
+5. Drag `toT` to **Applications**.
+6. Open `toT` from **Applications**.
+
+The `INSTALL.txt` file included in the DMG explains first-run steps and the macOS quarantine warning.
+
+### Notes:
+
+* The Windows build is portable, with no installer.
+* The macOS build is distributed as a DMG.
 * User settings/state are stored locally in `app.getPath('userData')/config` (no cloud service dependency).
 * Google-based OCR uses the `drive.file` scope. Users need a Google account to use it.
 
@@ -252,6 +304,7 @@ The extension estimates the reading time of text you select on web pages. It is 
 Usage instructions are included in the app menu (“How to use?”).
 
 Quick actions in the main window:
+
 * `📥`: extract text from file (includes OCR when needed, batch planning for multiple files, and automatic heavy-PDF split for OCR).
 * `📋↺` / `📋+`: replace or append clipboard text.
 * `⌨`: open Text Editor.
@@ -296,25 +349,33 @@ DevTools only decides whether messages are *shown* (Verbose/Info/etc.). The app 
 you must raise the logger level.
 
 In the DevTools Console (of the window you are inspecting):
-- Check current level:
-  - `Log.getLevel()`
-- Enable `info`:
-  - `Log.setLevel('info')`
-- Enable `debug`:
-  - `Log.setLevel('debug')`
-- Back to normal (default = `warn`):
-  - `Log.setLevel('warn')`
+
+* Check current level:
+
+  * `Log.getLevel()`
+* Enable `info`:
+
+  * `Log.setLevel('info')`
+* Enable `debug`:
+
+  * `Log.setLevel('debug')`
+* Back to normal (default = `warn`):
+
+  * `Log.setLevel('warn')`
 
 Important: if you want to see early startup logs, change the level and then restart/reload the app/window.
 
 **“Development” menu (optional).** In development, the **Development** menu is hidden by default. To enable it, set `SHOW_DEV_MENU=1`:
 
-- Windows (PowerShell):
-  - `$env:SHOW_DEV_MENU = '1' ; npm start`
-- Windows (cmd.exe):
-  - `set SHOW_DEV_MENU=1 && npm start`
-- Linux/macOS (bash/zsh):
-  - `SHOW_DEV_MENU=1 npm start`
+* Windows (PowerShell):
+
+  * `$env:SHOW_DEV_MENU = '1' ; npm start`
+* Windows (cmd.exe):
+
+  * `set SHOW_DEV_MENU=1 && npm start`
+* Linux/macOS (bash/zsh):
+
+  * `SHOW_DEV_MENU=1 npm start`
 
 This is development-only: in packaged builds the “Development” menu is hidden and the dev shortcuts (DevTools/Reload) are inactive.
 

@@ -132,7 +132,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
         <h2 id="downloadStartModalTitle" class="download-modal__title"></h2>
-        <p id="downloadStartModalBody" class="download-modal__body"></p>
+        <div id="downloadStartModalBody" class="download-modal__body"></div>
         <p id="downloadStartModalSupport" class="download-modal__support"></p>
         <div class="download-modal__actions">
           <button id="downloadStartModalDismiss" class="cta-button download-modal__dismiss" type="button">Close</button>
@@ -187,8 +187,24 @@
         kofiUrl: "https://ko-fi.com/cibersino/",
         title: "Your download has started",
         messages: {
-          windows: "A ZIP file is being downloaded. Extract it wherever you want, open the extracted folder, and run toT.exe.",
-          macos: "A .dmg file is being downloaded. Open the downloaded .dmg file, move toT to Applications, and open it from there.",
+          windows: {
+            intro: "A ZIP file is being downloaded.",
+            steps: [
+              ["Extract it wherever you want."],
+              ["Open the ", { token: "toT-<version>" }, " folder."],
+              ["Read ", { token: "INSTALL.txt" }, "."],
+              ["Open ", { token: "toT-app" }, " and run ", { token: "toT.exe" }, "."]
+            ]
+          },
+          macos: {
+            intro: "A .dmg file is being downloaded.",
+            steps: [
+              ["Open it."],
+              ["Read ", { token: "INSTALL.txt" }, " in the DMG window."],
+              ["Move toT to Applications."],
+              ["Open it from Applications."]
+            ]
+          },
           linux: "An .AppImage file is being downloaded. Open the downloaded .AppImage file. If needed, mark it as executable first, then run it.",
           unknown: "Your download is starting. Check the downloaded file and follow the installation steps for your platform."
         },
