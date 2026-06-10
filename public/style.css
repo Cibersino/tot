@@ -1001,7 +1001,7 @@ select#presets:focus {
 .vf-switch-wrapper {
   display: flex;
   align-items: center;
-  gap: 0px;
+  gap: 4px;
   height: var(--control-height-md);
   margin-left: auto; /* push the switch to the right edge of the group */
   flex: 0 0 auto;
