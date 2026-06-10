@@ -2032,6 +2032,13 @@ select#presets:focus {
   line-height: 1.4;
 }
 
+.text-extraction-single-file-heavy-modal-details-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 /* OCR activation disclosure modal */
 .text-extraction-ocr-activation-disclosure-panel {
   position: relative;

@@ -33,6 +33,8 @@
   const title = document.getElementById('textExtractionSingleFileHeavyPdfModalTitle');
   const message = document.getElementById('textExtractionSingleFileHeavyPdfModalMessage');
   const details = document.getElementById('textExtractionSingleFileHeavyPdfModalDetails');
+  const detailsRows = document.getElementById('textExtractionSingleFileHeavyPdfModalDetailsRows');
+  const revealActions = document.getElementById('textExtractionSingleFileHeavyPdfModalRevealActions');
   const btnSplit = document.getElementById('textExtractionSingleFileHeavyPdfModalSplit');
   const btnReturnToPages = document.getElementById('textExtractionSingleFileHeavyPdfModalReturnToPages');
   const btnUseNative = document.getElementById('textExtractionSingleFileHeavyPdfModalUseNative');
@@ -49,6 +51,8 @@
       && title
       && message
       && details
+      && detailsRows
+      && revealActions
       && btnSplit
       && btnReturnToPages
       && btnUseNative
@@ -143,33 +147,33 @@
     hasRevealableGeneratedPdf = false,
     generatedPdfSizeBytes = 0,
   } = {}) {
-    details.textContent = '';
+    detailsRows.textContent = '';
 
-    appendLabeledValueRow(details, {
+    appendLabeledValueRow(detailsRows, {
       labelKey: 'renderer.text_extraction.single_file_heavy.source_file_label',
       valueText: sourceFileName,
       valueDirection: 'ltr',
     });
-    appendLabeledValueRow(details, {
+    appendLabeledValueRow(detailsRows, {
       labelKey: 'renderer.text_extraction.single_file_heavy.source_size_label',
       valueText: `${formatMegabytes(sourceFileSizeBytes)} MB`,
       valueDirection: 'ltr',
     });
 
     if (isCaseB) {
-      appendLabeledValueRow(details, {
+      appendLabeledValueRow(detailsRows, {
         labelKey: 'renderer.text_extraction.single_file_heavy.selected_range_label',
         valueText: formatPageRangeValue(selectedRangeFromPage, selectedRangeToPage),
         valueDirection: 'ltr',
       });
       if (hasRevealableGeneratedPdf) {
-        appendLabeledValueRow(details, {
+        appendLabeledValueRow(detailsRows, {
           labelKey: 'renderer.text_extraction.single_file_heavy.generated_pdf_label',
           valueText: revealableGeneratedPdfFileName,
           valueDirection: 'ltr',
         });
       }
-      appendLabeledValueRow(details, {
+      appendLabeledValueRow(detailsRows, {
         labelKey: 'renderer.text_extraction.single_file_heavy.generated_pdf_size_label',
         valueText: `${formatMegabytes(generatedPdfSizeBytes)} MB`,
         valueDirection: 'ltr',
@@ -177,7 +181,7 @@
       return;
     }
 
-    appendLabeledValueRow(details, {
+    appendLabeledValueRow(detailsRows, {
       labelKey: 'renderer.text_extraction.single_file_heavy.total_pages_label',
       valueText: String(totalPages || ''),
       valueDirection: 'ltr',
@@ -257,6 +261,8 @@
     btnUseNative.hidden = !canUseNative;
     btnUseNative.setAttribute('aria-hidden', btnUseNative.hidden ? 'true' : 'false');
     const canRevealGeneratedPdf = hasRevealableGeneratedPdf && typeof onRevealGeneratedPdf === 'function';
+    revealActions.hidden = !canRevealGeneratedPdf;
+    revealActions.setAttribute('aria-hidden', revealActions.hidden ? 'true' : 'false');
     btnReveal.hidden = !canRevealGeneratedPdf;
     btnReveal.setAttribute('aria-hidden', btnReveal.hidden ? 'true' : 'false');
 
