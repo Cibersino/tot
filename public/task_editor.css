@@ -508,6 +508,11 @@ body.is-resizing {
   margin-bottom: 10px;
 }
 
+#libraryModal .modal-body {
+  padding-inline-end: 10px;
+  box-sizing: border-box;
+}
+
 .library-search label {
   font-size: 13px;
   color: var(--muted);
