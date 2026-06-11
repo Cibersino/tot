@@ -5,12 +5,17 @@
 // Overview
 // =============================================================================
 // Responsibilities:
+// - Validate renderer startup dependencies for the shared icon registry.
 // - Consume the generated runtime icon registry derived from assets/icons/.
-// - Upgrade static markup placeholders into app-owned SVG controls.
-// - Provide one shared creation/application path for JS-generated icon controls.
+// - Cache parsed SVG templates and rewrite embedded IDs per icon instance.
+// - Apply icons to static markup placeholders and JS-created controls.
+// - Expose the renderer icon helpers used by feature modules.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Renderer bootstrap dependencies
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[renderer-icons] window.getLogger unavailable; cannot continue');
   }
@@ -21,9 +26,15 @@
     throw new Error('[renderer-icons] GeneratedRendererIcons unavailable; run npm run generate:icons');
   }
 
+  // =============================================================================
+  // Shared state
+  // =============================================================================
   const templateCache = new Map();
   let iconInstanceCounter = 0;
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function sanitizeToken(value) {
     const token = String(value || '').trim().toLowerCase();
     return /^[a-z0-9_-]+$/.test(token) ? token : '';
@@ -154,6 +165,9 @@
     });
   }
 
+  // =============================================================================
+  // Public renderer icon helpers
+  // =============================================================================
   function applyIconToElement(element, iconName, {
     size = 'md',
     preserveContent = false,
@@ -223,6 +237,9 @@
     });
   }
 
+  // =============================================================================
+  // Exports and bootstrap upgrade
+  // =============================================================================
   window.RendererIcons = {
     applyIconToElement,
     createIconButton,
