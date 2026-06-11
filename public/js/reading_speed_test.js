@@ -243,6 +243,7 @@
 
   function rebuildFilterState() {
     filterState = filtersCore.computeFilterState(poolEntries, selection);
+    selection = filtersCore.normalizeSelection(filterState.selection);
   }
 
   function setStabilizing(nextValue) {

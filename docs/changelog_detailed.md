@@ -51,6 +51,7 @@ Reglas:
 - La app deja de depender de glyphs Unicode como controles funcionales en sus superficies principales y pasa a un sistema compartido de SVGs canónicos generados para renderer.
 - La ventana principal incorpora un botón de icono dedicado para el `Reading speed test` y alinea toolbar, presets, cronómetro y marcador del `Floating Stopwatch` bajo la misma familia visual funcional.
 - El `Text Editor`, la barra de búsqueda/reemplazo, el `Floating Stopwatch`, el `Task Editor` y los modales batch/info migran sus acciones funcionales al mismo modelo de iconos compartidos, reduciendo drift visual y de wiring entre superficies estáticas y controles generados por JS.
+- El modal de entrada del `Reading speed test` corrige la semántica de habilitación de filtros: cada opción vuelve a deshabilitarse cuando no existe ninguna entrada real compatible bajo las otras categorías activas, sin reactivarse por la unión accidental con valores ya marcados de la misma categoría.
 - La documentación y el copy i18n relacionados con estos controles se ajustan para nombrar la acción o el rol del control cuando la referencia histórica por glyph ya no era la guía más precisa.
 
 ### Agregado
@@ -75,6 +76,13 @@ Reglas:
   - modales batch (`planning` y `final`) e info lightbox close control.
 - La acción reveal/open del reporte final batch converge en la semántica visual compartida `open-target`, en lugar de mantener una excepción separada para “reveal folder”.
 - El copy de ayuda, instrucciones e i18n de `es`/`en` para snapshots y `reading speed test` deja de depender exclusivamente de referencias históricas por glyph cuando el control migrado ya se describe mejor por nombre o función.
+
+### Arreglado
+
+- Filtros del modal de entrada del `Reading speed test` (`public/js/lib/reading_test_filters_core.js`, `public/js/reading_speed_test.js`):
+  - el estado enabled/disabled de cada checkbox deja de evaluarse como suma `OR` dentro de la misma categoría al probar opciones nuevas y pasa a calcularse contra combinaciones reales compatibles con las otras categorías activas;
+  - casos como `language=en` + `difficulty=normal` ya no reactivan `difficulty=hard` cuando no existe ninguna entrada `en + hard` en el pool visible;
+  - al refrescar el pool o cambiar la visibilidad de bundled entries, la selección renderer deja de conservar valores obsoletos invisibles y pasa a reconciliarse con el universo actual de opciones disponibles.
 
 ---
 
