@@ -128,8 +128,29 @@
     };
   }
 
-  function computeOptionState(entries, selection) {
-    const options = collectOptionValues(entries);
+  function reconcileSelectionToOptionValues(selection, optionValues) {
+    const normalized = normalizeSelection(selection);
+    const reconciled = {
+      language: [],
+      type: [],
+      difficulty: [],
+    };
+
+    for (const key of CATEGORY_KEYS) {
+      const availableValues = new Set(Array.isArray(optionValues[key]) ? optionValues[key] : []);
+      reconciled[key] = normalized[key].filter((value) => availableValues.has(value));
+    }
+
+    return reconciled;
+  }
+
+  function buildAvailabilityProbeSelection(selection, category, value) {
+    const probeSelection = cloneSelection(selection);
+    probeSelection[category] = [value];
+    return probeSelection;
+  }
+
+  function computeOptionState(entries, selection, optionValues) {
     const normalized = normalizeSelection(selection);
     const optionState = {
       language: [],
@@ -138,14 +159,13 @@
     };
 
     for (const key of CATEGORY_KEYS) {
-      for (const value of options[key]) {
+      for (const value of optionValues[key]) {
         const checked = normalized[key].includes(value);
         let enabled = checked;
 
         if (!checked) {
-          const nextSelection = cloneSelection(normalized);
-          nextSelection[key].push(value);
-          enabled = getEligibleEntries(entries, nextSelection).length > 0;
+          const probeSelection = buildAvailabilityProbeSelection(normalized, key, value);
+          enabled = getEligibleEntries(entries, probeSelection).length > 0;
         }
 
         optionState[key].push({ value, checked, enabled });
@@ -156,13 +176,14 @@
   }
 
   function computeFilterState(entries, selection) {
-    const normalized = normalizeSelection(selection);
-    const eligibleEntries = getEligibleEntries(entries, normalized);
+    const optionValues = collectOptionValues(entries);
+    const reconciledSelection = reconcileSelectionToOptionValues(selection, optionValues);
+    const eligibleEntries = getEligibleEntries(entries, reconciledSelection);
     return {
-      selection: normalized,
+      selection: reconciledSelection,
       eligibleEntries,
       eligibleCount: eligibleEntries.length,
-      options: computeOptionState(entries, normalized),
+      options: computeOptionState(entries, reconciledSelection, optionValues),
     };
   }
 
