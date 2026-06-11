@@ -226,10 +226,6 @@
   window.RendererIcons = {
     applyIconToElement,
     createIconButton,
-    createIconSlot,
-    getIconMarkup,
-    syncAccessibleName,
-    upgradeStaticIcons,
   };
 
   if (document.readyState === 'loading') {
