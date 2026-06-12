@@ -99,60 +99,68 @@ function loadSharpLib(sourceFileExt) {
   }
 }
 
-function loadOpenJpegRuntime(sourceFileExt) {
-  if (!cachedOpenJpegRuntimePromise) {
-    cachedOpenJpegRuntimePromise = (async () => {
-      let OpenJPEGWASM = null;
+function loadOpenJpegRuntimeFactory(sourceFileExt) {
+  let openJpegRuntimeFactory = null;
 
-      try {
-        OpenJPEGWASM = require('./openjpeg_wasm_runtime');
-      } catch (err) {
-        throw buildNormalizationError(
-          'image_normalizer_unavailable',
-          'JP2 decoder runtime is unavailable in this app build.',
-          {
-            reason: 'openjpeg_require_failed',
-            sourceFileExt,
-            errorName: toSafeErrorName(err),
-            errorMessage: toSafeErrorMessage(err),
-          }
-        );
+  try {
+    openJpegRuntimeFactory = require('./openjpeg_wasm_runtime');
+  } catch (err) {
+    throw buildNormalizationError(
+      'image_normalizer_unavailable',
+      'JP2 decoder runtime is unavailable in this app build.',
+      {
+        reason: 'openjpeg_require_failed',
+        sourceFileExt,
+        errorName: toSafeErrorName(err),
+        errorMessage: toSafeErrorMessage(err),
       }
-
-      if (typeof OpenJPEGWASM !== 'function') {
-        throw buildNormalizationError(
-          'image_normalizer_unavailable',
-          'JP2 decoder runtime entrypoint is unavailable in this app build.',
-          {
-            reason: 'openjpeg_missing_runtime_factory',
-            sourceFileExt,
-          }
-        );
-      }
-
-      try {
-        const runtime = await OpenJPEGWASM();
-        if (!runtime || typeof runtime.J2KDecoder !== 'function') {
-          throw new Error('OpenJPEG runtime did not expose J2KDecoder.');
-        }
-        return runtime;
-      } catch (err) {
-        throw buildNormalizationError(
-          'image_normalizer_unavailable',
-          'JP2 decoder runtime could not initialize in this app build.',
-          {
-            reason: 'openjpeg_runtime_init_failed',
-            sourceFileExt,
-            errorName: toSafeErrorName(err),
-            errorMessage: toSafeErrorMessage(err),
-          }
-        );
-      }
-    })().catch((err) => {
-      cachedOpenJpegRuntimePromise = null;
-      throw err;
-    });
+    );
   }
+
+  if (typeof openJpegRuntimeFactory !== 'function') {
+    throw buildNormalizationError(
+      'image_normalizer_unavailable',
+      'JP2 decoder runtime entrypoint is unavailable in this app build.',
+      {
+        reason: 'openjpeg_missing_runtime_factory',
+        sourceFileExt,
+      }
+    );
+  }
+
+  return openJpegRuntimeFactory;
+}
+
+function loadOpenJpegRuntime(sourceFileExt) {
+  if (cachedOpenJpegRuntimePromise) {
+    return cachedOpenJpegRuntimePromise;
+  }
+
+  cachedOpenJpegRuntimePromise = (async () => {
+    const openJpegRuntimeFactory = loadOpenJpegRuntimeFactory(sourceFileExt);
+
+    try {
+      const runtime = await openJpegRuntimeFactory();
+      if (!runtime || typeof runtime.J2KDecoder !== 'function') {
+        throw new Error('OpenJPEG runtime did not expose J2KDecoder.');
+      }
+      return runtime;
+    } catch (err) {
+      throw buildNormalizationError(
+        'image_normalizer_unavailable',
+        'JP2 decoder runtime could not initialize in this app build.',
+        {
+          reason: 'openjpeg_runtime_init_failed',
+          sourceFileExt,
+          errorName: toSafeErrorName(err),
+          errorMessage: toSafeErrorMessage(err),
+        }
+      );
+    }
+  })().catch((err) => {
+    cachedOpenJpegRuntimePromise = null;
+    throw err;
+  });
 
   return cachedOpenJpegRuntimePromise;
 }
