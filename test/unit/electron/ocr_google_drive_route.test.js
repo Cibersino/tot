@@ -16,6 +16,7 @@ const MODULE_PATH = path.resolve(
 function loadRouteModuleWithMocks({
   logDouble = null,
   normalizeImageForOcrUpload = null,
+  driveFilesOverrides = null,
 } = {}) {
   const logModulePath = path.resolve(__dirname, '../../../electron/log.js');
   const googleApisModulePath = require.resolve('googleapis');
@@ -69,25 +70,31 @@ function loadRouteModuleWithMocks({
     exports: {
       google: {
         drive() {
-          return {
-            files: {
-              async create() {
-                return {
-                  data: {
-                    id: 'temp-doc-1',
-                    name: 'temp-doc-1',
-                  },
-                };
-              },
-              async export() {
-                return {
-                  data: Buffer.from('OCR text'),
-                };
-              },
-              async delete() {
-                return {};
-              },
+          const baseFiles = {
+            async create() {
+              return {
+                data: {
+                  id: 'temp-doc-1',
+                  name: 'temp-doc-1',
+                },
+              };
             },
+            async export() {
+              return {
+                data: Buffer.from('OCR text'),
+              };
+            },
+            async delete() {
+              return {};
+            },
+          };
+          return {
+            files: driveFilesOverrides && typeof driveFilesOverrides === 'object'
+              ? {
+                ...baseFiles,
+                ...driveFilesOverrides,
+              }
+              : baseFiles,
           };
         },
       },
@@ -255,6 +262,275 @@ test('runGoogleDriveOcrRoute logs structured upload cleanup details with warning
       cleanupWarningDetails: {
         errorCode: 'EPERM',
       },
+    });
+  } finally {
+    restore();
+  }
+});
+
+test('runGoogleDriveOcrRoute size-checks the normalized PNG input for JP2 sources', async () => {
+  const tempDir = createTestTempDir('ocr-google-drive-route-jp2-size-check');
+  const sourceFilePath = path.join(tempDir, 'source.jp2');
+  const normalizedFilePath = path.join(tempDir, 'normalized.png');
+  fs.mkdirSync(tempDir, { recursive: true });
+  fs.writeFileSync(sourceFilePath, Buffer.from('jp2'));
+  fs.writeFileSync(normalizedFilePath, Buffer.alloc(64, 1));
+
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    async normalizeImageForOcrUpload() {
+      return {
+        uploadFilePath: normalizedFilePath,
+        uploadFileName: 'source.png',
+        uploadMimeType: 'image/png',
+        metadataSafeForLogs: {
+          normalizedFrom: 'jp2',
+          uploadFileExt: 'png',
+          uploadMimeType: 'image/png',
+        },
+        cleanup() {
+          return null;
+        },
+      };
+    },
+  });
+
+  try {
+    const result = await loadedModule.runGoogleDriveOcrRoute({
+      filePath: sourceFilePath,
+      credentialsPath: path.join(tempDir, 'credentials.json'),
+      tokenPath: path.join(tempDir, 'token.json'),
+      isAborted: () => false,
+    });
+
+    assert.equal(result.state, 'success');
+    assert.equal(result.provenance.sourceFileExt, 'jp2');
+    assert.equal(result.provenance.metadataSafeForLogs.normalizedFrom, 'jp2');
+    assert.equal(result.provenance.metadataSafeForLogs.uploadFileExt, 'png');
+  } finally {
+    restore();
+  }
+});
+
+test('runGoogleDriveOcrRoute uploads the normalized PNG instead of the source JP2 input', async () => {
+  const tempDir = createTestTempDir('ocr-google-drive-route-jp2-upload');
+  const sourceFilePath = path.join(tempDir, 'source.jp2');
+  const normalizedFilePath = path.join(tempDir, 'normalized.png');
+  fs.mkdirSync(tempDir, { recursive: true });
+  fs.writeFileSync(sourceFilePath, Buffer.from('jp2'));
+  fs.writeFileSync(normalizedFilePath, Buffer.from('png'));
+
+  const createCalls = [];
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    driveFilesOverrides: {
+      async create(request) {
+        createCalls.push(request);
+        return {
+          data: {
+            id: 'temp-doc-1',
+            name: 'temp-doc-1',
+          },
+        };
+      },
+    },
+    async normalizeImageForOcrUpload() {
+      return {
+        uploadFilePath: normalizedFilePath,
+        uploadFileName: 'normalized.png',
+        uploadMimeType: 'image/png',
+        metadataSafeForLogs: {
+          normalizedFrom: 'jp2',
+          uploadFileExt: 'png',
+          uploadMimeType: 'image/png',
+        },
+        cleanup() {
+          return {
+            warningCode: 'cleanup:image_normalization_cleanup_failed',
+            detailsSafeForLogs: {
+              stage: 'cleanup_image_normalization',
+              tempDirPath: path.join(tempDir, 'run-1'),
+              cleanupWarningCode: 'cleanup:runtime_temp_run_dir_cleanup_failed',
+              cleanupWarningDetails: {
+                errorCode: 'EPERM',
+              },
+            },
+          };
+        },
+      };
+    },
+  });
+
+  try {
+    const result = await loadedModule.runGoogleDriveOcrRoute({
+      filePath: sourceFilePath,
+      credentialsPath: path.join(tempDir, 'credentials.json'),
+      tokenPath: path.join(tempDir, 'token.json'),
+      isAborted: () => false,
+    });
+
+    assert.equal(result.state, 'success');
+    assert.equal(createCalls.length, 1);
+    assert.equal(createCalls[0].requestBody.name, 'normalized.png');
+    assert.equal(createCalls[0].media.mimeType, 'image/png');
+    assert.equal(createCalls[0].media.body.path, normalizedFilePath);
+    assert.deepEqual(result.warnings, ['cleanup:image_normalization_cleanup_failed']);
+  } finally {
+    restore();
+  }
+});
+
+test('runGoogleDriveOcrRoute logs structured failure details for JP2 normalization failures', async () => {
+  const tempDir = createTestTempDir('ocr-google-drive-route-jp2-failure-log');
+  const sourceFilePath = path.join(tempDir, 'source.jp2');
+  fs.mkdirSync(tempDir, { recursive: true });
+  fs.writeFileSync(sourceFilePath, Buffer.from('jp2'));
+
+  const warnCalls = [];
+  const logDouble = {
+    warn(...args) {
+      warnCalls.push(args);
+    },
+    warnOnce() {},
+    error() {},
+    errorOnce() {},
+    debug() {},
+    info() {},
+  };
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    logDouble,
+    async normalizeImageForOcrUpload() {
+      const err = new Error('decode failed');
+      err.code = 'source_to_png_conversion_failed';
+      err.detailsSafeForLogs = {
+        reason: 'jp2_source_to_png_failed',
+        sourceFileExt: 'jp2',
+      };
+      throw err;
+    },
+  });
+
+  try {
+    const result = await loadedModule.runGoogleDriveOcrRoute({
+      filePath: sourceFilePath,
+      credentialsPath: path.join(tempDir, 'credentials.json'),
+      tokenPath: path.join(tempDir, 'token.json'),
+      isAborted: () => false,
+    });
+
+    assert.equal(result.state, 'failure');
+    assert.equal(result.error.code, 'unreadable_or_corrupt');
+
+    const failureLog = warnCalls.find((call) => call[0] === 'OCR route failed:');
+    assert.ok(failureLog);
+    assert.deepEqual(failureLog[1], {
+      sourceFileExt: 'jp2',
+      sourceFileKind: 'image',
+      errorCode: 'unreadable_or_corrupt',
+      summary: 'OCR route failed before upload: JP2-to-PNG normalization failed.',
+      stage: 'preflight',
+      reason: 'jp2_source_to_png_failed',
+      errorName: 'Error',
+      errorMessage: 'decode failed',
+    });
+  } finally {
+    restore();
+  }
+});
+
+test('runGoogleDriveOcrRoute logs structured provider details for upload-convert failures', async () => {
+  const tempDir = createTestTempDir('ocr-google-drive-route-jp2-provider-failure-log');
+  const sourceFilePath = path.join(tempDir, 'source.jp2');
+  const normalizedFilePath = path.join(tempDir, 'normalized.png');
+  fs.mkdirSync(tempDir, { recursive: true });
+  fs.writeFileSync(sourceFilePath, Buffer.from('jp2'));
+  fs.writeFileSync(normalizedFilePath, Buffer.from('png'));
+
+  const warnCalls = [];
+  const logDouble = {
+    warn(...args) {
+      warnCalls.push(args);
+    },
+    warnOnce() {},
+    error() {},
+    errorOnce() {},
+    debug() {},
+    info() {},
+  };
+  const uploadError = new Error('Google upload rejected the PNG payload.');
+  uploadError.response = {
+    status: 400,
+    data: {
+      error: {
+        message: 'Bad Request',
+      },
+    },
+  };
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    logDouble,
+    driveFilesOverrides: {
+      async create() {
+        throw uploadError;
+      },
+    },
+    async normalizeImageForOcrUpload() {
+      return {
+        uploadFilePath: normalizedFilePath,
+        uploadFileName: 'normalized.png',
+        uploadMimeType: 'image/png',
+        metadataSafeForLogs: {
+          normalizedFrom: 'jp2',
+          decodedWidth: 2400,
+          decodedHeight: 3200,
+          decodedComponentCount: 3,
+          decodedBitsPerSample: 8,
+          normalizedColorMode: 'grayscale_palette_png',
+          uploadFileExt: 'png',
+          uploadMimeType: 'image/png',
+        },
+        cleanup() {
+          return null;
+        },
+      };
+    },
+  });
+
+  try {
+    const result = await loadedModule.runGoogleDriveOcrRoute({
+      filePath: sourceFilePath,
+      credentialsPath: path.join(tempDir, 'credentials.json'),
+      tokenPath: path.join(tempDir, 'token.json'),
+      isAborted: () => false,
+    });
+
+    assert.equal(result.state, 'failure');
+    assert.equal(result.error.code, 'ocr_conversion_failed');
+
+    const failureLog = warnCalls.find((call) => call[0] === 'OCR route failed:');
+    assert.ok(failureLog);
+    assert.deepEqual(failureLog[1], {
+      sourceFileExt: 'jp2',
+      sourceFileKind: 'image',
+      errorCode: 'ocr_conversion_failed',
+      summary: 'OCR route failed during provider workflow.',
+      normalizedFrom: 'jp2',
+      decodedWidth: 2400,
+      decodedHeight: 3200,
+      decodedComponentCount: 3,
+      decodedBitsPerSample: 8,
+      normalizedColorMode: 'grayscale_palette_png',
+      uploadFileExt: 'png',
+      uploadMimeType: 'image/png',
+      stage: 'upload_convert',
+      errorName: 'Error',
+      errorMessage: 'Google upload rejected the PNG payload.',
+      statusCode: 400,
+      reasonCode: '',
+      errorsReason: '',
+      errorInfoReason: '',
+      providerStatus: '',
+      providerService: '',
+      providerConsumer: '',
+      providerMessage: 'Bad Request',
+      networkErrorCode: '',
     });
   } finally {
     restore();

@@ -55,6 +55,9 @@ Reglas:
 - La documentación y el copy i18n relacionados con estos controles se ajustan para nombrar la acción o el rol del control cuando la referencia histórica por glyph ya no era la guía más precisa.
 - La ruta nativa de extracción de texto agrega soporte local para `.epub`, resolviendo el orden de lectura desde `container.xml` + OPF/spine y manteniendo el mismo flujo existente de prepare/execute/apply sin una UI especial.
 - La extracción EPUB promueve `@xmldom/xmldom@0.8.13` a dependencia runtime directa, añade su licencia redistribuida y actualiza manual/QA para incluir `.epub` dentro de los formatos nativos soportados.
+- La extracción OCR agrega soporte para `.jp2` como input solo-imagen dentro del mismo flujo compartido de picker, drag/drop, prepare y ejecución ya existente, sin abrir una ruta ni una UI separadas.
+- El soporte JP2 se implementa con normalización local a PNG antes del upload OCR, usando un runtime OpenJPEG WASM vendorizado dentro del árbol `electron/` y documentación explícita de licencia/provenance en las superficies legales ya existentes de la app.
+- La normalización JP2 deja de producir uploads OCR desproporcionados para escaneos válidos pequeños: el input efectivo que llega al provider queda reducido a una materialización PNG más acotada y evita rechazos `413 Request Too Large` en casos representativos que antes fallaban.
 
 ### Agregado
 
@@ -64,6 +67,8 @@ Reglas:
   - `public/js/generated_icons.js` como artefacto renderer autogenerado;
   - `public/js/renderer_icons.js` como helper común para aplicar iconos a markup estático y a controles creados por JS.
 - Botón iconográfico dedicado de `Reading speed test` en el toolbar de la ventana principal, integrado al mismo sistema compartido de iconos funcionales.
+- Soporte OCR para `.jp2` dentro del flujo compartido de text extraction, con normalizador dedicado `ocr_jp2_normalization.js`, wrapper local `openjpeg_wasm_runtime.js` y bundle runtime vendorizado bajo `electron/text_extraction_platform/vendor/`.
+- Superficies legales/provenance de app-doc para el runtime JP2 redistribuido y para el paquete fuente del que se tomó el artefacto vendorizado, reutilizando `public/third_party_licenses/`, `electron/link_openers.js` y `public/info/acerca_de.html`.
 
 ### Cambiado
 
@@ -78,6 +83,9 @@ Reglas:
   - modales batch (`planning` y `final`) e info lightbox close control.
 - La acción reveal/open del reporte final batch converge en la semántica visual compartida `open-target`, en lugar de mantener una excepción separada para “reveal folder”.
 - El copy de ayuda, instrucciones e i18n de `es`/`en` para snapshots y `reading speed test` deja de depender exclusivamente de referencias históricas por glyph cuando el control migrado ya se describe mejor por nombre o función.
+- El contrato compartido de formatos soportados pasa a incluir `.jp2` solo en la familia OCR/imagen; el picker nativo, drag/drop, prepare y route selection lo heredan desde los owners ya existentes en lugar de abrir wiring especial.
+- `ocr_image_normalization.js` conserva el ownership del contrato de normalización OCR, pero delega la decodificación/materialización de `.jp2` a `ocr_jp2_normalization.js` para mantener aislada la dependencia runtime específica.
+- El runtime JP2 empaquetado deja de arrastrar el árbol completo de dependencias de build del paquete npm original (`tsup`/`esbuild`/`rollup`) y pasa a redistribuir solo el artefacto runtime vendorizado más su documentación legal/provenance asociada.
 
 ### Arreglado
 
@@ -85,6 +93,10 @@ Reglas:
   - el estado enabled/disabled de cada checkbox deja de evaluarse como suma `OR` dentro de la misma categoría al probar opciones nuevas y pasa a calcularse contra combinaciones reales compatibles con las otras categorías activas;
   - casos como `language=en` + `difficulty=normal` ya no reactivan `difficulty=hard` cuando no existe ninguna entrada `en + hard` en el pool visible;
   - al refrescar el pool o cambiar la visibilidad de bundled entries, la selección renderer deja de conservar valores obsoletos invisibles y pasa a reconciliarse con el universo actual de opciones disponibles.
+- OCR JP2 (`electron/text_extraction_platform/ocr_jp2_normalization.js`, `electron/text_extraction_platform/ocr_google_drive_route.js`):
+  - un `.jp2` válido deja de caer en el fallo provider-side `ocr_conversion_failed` por `413 Request Too Large` causado por una materialización PNG local demasiado pesada para el upload OCR efectivo;
+  - la normalización JP2 ahora reduce el output al shape usado realmente por OCR antes del chequeo de tamaño del provider, manteniendo el mismo contrato de cleanup y metadata segura para logs del flujo OCR existente;
+  - el soporte runtime queda desacoplado del paquete npm original para evitar shipping innecesario de dependencias de build en la app empaquetada.
 
 ---
 

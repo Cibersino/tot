@@ -563,6 +563,85 @@ test('prepareSelectedFile returns a native-ready result for EPUB inputs', async 
   assert.equal(result.generatedPdfArtifactPolicy, null);
 });
 
+test('prepareSelectedFile returns an OCR-ready result for JP2 inputs when OCR setup is ready', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockValidateGoogleDriveOcrSetup: () => ({ ok: true }),
+  });
+  t.after(restore);
+
+  const result = await core.prepareSelectedFile({
+    filePath: 'scan.jp2',
+    ocrLanguage: 'es',
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
+    }),
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.prepareReady, true);
+  assert.equal(result.executionKind, 'google_drive');
+  assert.equal(result.processingInputFileName, 'scan.jp2');
+  assert.deepEqual(result.routeMetadata.availableRoutes, ['ocr']);
+  assert.equal(result.routeMetadata.chosenRoute, 'ocr');
+  assert.equal(result.routeMetadata.fileKind, 'image');
+  assert.equal(result.routeMetadata.pdfTriage, 'not_pdf');
+  assert.equal(result.routeMetadata.triageReason, 'non_pdf');
+  assert.equal(result.routeMetadata.ocrSetupState, 'ready');
+});
+
+test('prepareSelectedFile preserves the OCR-unavailable prepare failure for JP2 inputs when setup is not ready', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockValidateGoogleDriveOcrSetup: () => ({
+      ok: false,
+      state: 'ocr_activation_required',
+      error: {
+        code: 'ocr_activation_required',
+        message: 'OCR activation is required before running extraction.',
+        detailsSafeForLogs: {
+          stage: 'preflight',
+          reason: 'missing_token',
+        },
+      },
+    }),
+  });
+  t.after(restore);
+
+  const result = await core.prepareSelectedFile({
+    filePath: 'scan.jp2',
+    ocrLanguage: 'es',
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
+    }),
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.prepareFailed, true);
+  assert.equal(result.executionKind, 'google_drive');
+  assert.equal(result.processingInputFileName, 'scan.jp2');
+  assert.deepEqual(result.routeMetadata.availableRoutes, ['ocr']);
+  assert.equal(result.routeMetadata.chosenRoute, 'ocr');
+  assert.equal(result.routeMetadata.fileKind, 'image');
+  assert.equal(result.routeMetadata.triageReason, 'non_pdf_ocr_unavailable');
+  assert.equal(result.routeMetadata.ocrSetupState, 'ocr_activation_required');
+  assert.equal(result.error.code, 'ocr_activation_required');
+  assert.equal(
+    result.primaryAlertKey,
+    'renderer.text_extraction.alerts.ocr.activation_required'
+  );
+});
+
 test('prepareSelectedFile returns a structured unsupported-format failure when no route exists', async () => {
   const result = await prepareSelectedFile({
     filePath: 'archive.zip',

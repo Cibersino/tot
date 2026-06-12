@@ -210,6 +210,32 @@ function getErrorDetailsSafeForLogs(err) {
     : {};
 }
 
+function buildFailureLogDetails(fileInfo, result) {
+  const safeResult = result && typeof result === 'object' ? result : {};
+  const safeError = safeResult.error && typeof safeResult.error === 'object'
+    ? safeResult.error
+    : {};
+  const safeDetails = safeError.detailsSafeForLogs && typeof safeError.detailsSafeForLogs === 'object'
+    ? safeError.detailsSafeForLogs
+    : {};
+  const safeProvenance = safeResult.provenance && typeof safeResult.provenance === 'object'
+    ? safeResult.provenance
+    : {};
+  const safeMetadata = safeProvenance.metadataSafeForLogs
+    && typeof safeProvenance.metadataSafeForLogs === 'object'
+      ? safeProvenance.metadataSafeForLogs
+      : {};
+
+  return {
+    sourceFileExt: fileInfo.sourceFileExt,
+    sourceFileKind: fileInfo.sourceFileKind,
+    errorCode: String(safeError.code || ''),
+    summary: String(safeResult.summary || ''),
+    ...safeMetadata,
+    ...safeDetails,
+  };
+}
+
 function stripUtf8BomPrefix(text) {
   return String(text || '').replace(/^\uFEFF/, '');
 }
@@ -347,6 +373,15 @@ function buildFailureResult({ stage, provenance, parsedFailure, error }) {
         stage,
         errorName: toSafeErrorName(error),
         errorMessage: toSafeErrorMessage(error),
+        statusCode: parsedFailure.statusCode,
+        reasonCode: String(parsedFailure.errorsReason || parsedFailure.errorInfoReason || ''),
+        errorsReason: String(parsedFailure.errorsReason || ''),
+        errorInfoReason: String(parsedFailure.errorInfoReason || ''),
+        providerStatus: String(parsedFailure.providerStatus || ''),
+        providerService: String(parsedFailure.providerService || ''),
+        providerConsumer: String(parsedFailure.providerConsumer || ''),
+        providerMessage: String(parsedFailure.providerMessage || ''),
+        networkErrorCode: parsedFailure.networkErrorCode,
       }
     ),
   });
@@ -720,6 +755,10 @@ async function runGoogleDriveOcrRoute({
     if (result.state === 'success') {
       result.summary = 'OCR route succeeded with cleanup warning.';
     }
+  }
+
+  if (result.state !== 'success' && result.state !== 'cancelled') {
+    log.warn('OCR route failed:', buildFailureLogDetails(fileInfo, result));
   }
 
   return result;

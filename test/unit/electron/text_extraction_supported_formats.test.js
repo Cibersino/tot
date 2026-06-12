@@ -26,6 +26,7 @@ test('getNativeParserForExt returns empty string for unsupported extensions', ()
 test('getOcrSourceMimeTypeForExt normalizes case and leading dot', () => {
   assert.equal(getOcrSourceMimeTypeForExt('jpg'), 'image/jpeg');
   assert.equal(getOcrSourceMimeTypeForExt('.JPEG'), 'image/jpeg');
+  assert.equal(getOcrSourceMimeTypeForExt(' JP2 '), 'image/jp2');
   assert.equal(getOcrSourceMimeTypeForExt(' odt '), 'application/vnd.oasis.opendocument.text');
   assert.equal(getOcrSourceMimeTypeForExt('.TIFF'), 'image/tiff');
   assert.equal(getOcrSourceMimeTypeForExt(' pdf '), 'application/pdf');
@@ -33,6 +34,9 @@ test('getOcrSourceMimeTypeForExt normalizes case and leading dot', () => {
 
 test('getOcrSourceMimeTypeForExt returns empty string for unsupported extensions', () => {
   assert.equal(getOcrSourceMimeTypeForExt('gif'), '');
+  assert.equal(getOcrSourceMimeTypeForExt('j2k'), '');
+  assert.equal(getOcrSourceMimeTypeForExt('jpf'), '');
+  assert.equal(getOcrSourceMimeTypeForExt('jpx'), '');
   assert.equal(getOcrSourceMimeTypeForExt(''), '');
   assert.equal(getOcrSourceMimeTypeForExt(undefined), '');
 });
@@ -45,6 +49,6 @@ test('supported extension lists stay aligned with the shared contract', () => {
 
   assert.deepEqual(
     getSupportedOcrSourceExtensions().sort(),
-    ['bmp', 'jpeg', 'jpg', 'odt', 'pdf', 'png', 'rtf', 'tif', 'tiff', 'webp']
+    ['bmp', 'jp2', 'jpeg', 'jpg', 'odt', 'pdf', 'png', 'rtf', 'tif', 'tiff', 'webp']
   );
 });

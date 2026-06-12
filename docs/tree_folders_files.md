@@ -67,6 +67,8 @@ tot/
 │ │ │ ├── fallback.js
 │ │ │ ├── linux.js
 │ │ │ └── windows.js
+│ │ ├── vendor/
+│ │ │ └── openjpeg_wasm_runtime.bundle.js
 │ │ ├── epub_text_extraction.js
 │ │ ├── native_extraction_route.js
 │ │ ├── native_pdf_selectable_text_probe.js
@@ -81,6 +83,8 @@ tot/
 │ │ ├── ocr_google_drive_setup_validation.js
 │ │ ├── ocr_google_drive_token_storage.js
 │ │ ├── ocr_image_normalization.js
+│ │ ├── ocr_jp2_normalization.js
+│ │ ├── openjpeg_wasm_runtime.js
 │ │ ├── text_extraction_execute_prepared_ipc.js
 │ │ ├── text_extraction_file_picker_ipc.js
 │ │ ├── text_extraction_generated_pdf_reveal_ipc.js
@@ -339,7 +343,10 @@ tot/
 - `electron/text_extraction_platform/ocr_google_drive_setup_validation.js` — Validación técnica del setup OCR (credenciales, token y reachability de Google Drive); consume el parser compartido y la clasificación post-parse común, pero conserva subtipos y fallback propios del flujo de setup.
 - `electron/text_extraction_platform/ocr_google_drive_token_storage.js` — Lectura/escritura/borrado protegido del token OCR usando `safeStorage` de Electron.
 - `electron/text_extraction_platform/ocr_google_drive_route.js` — Ruta Google Drive/Docs para extracción respaldada por Google: cubre `rtf`/`odt` por conversión de documento y también imágenes/PDFs para OCR, valida el límite de tamaño antes del upload OCR, usa la clasificación post-parse común para fallas provider/runtime y conserva sus fallbacks propios de etapa (`ocr_conversion_failed` / `ocr_export_failed`).
-- `electron/text_extraction_platform/ocr_image_normalization.js` — Normalización local de imágenes para OCR antes del upload cuando el formato lo requiere.
+- `electron/text_extraction_platform/ocr_image_normalization.js` — Owner de la normalización local de imágenes para OCR antes del upload cuando el formato lo requiere; conserva el contrato compartido de `effective upload input` y delega el manejo específico de `.jp2` al módulo dedicado.
+- `electron/text_extraction_platform/ocr_jp2_normalization.js` — Normalización/décodificación específica de `.jp2` para OCR: materializa un PNG temporal compatible con la ruta OCR existente, preserva metadata segura para logs y expone cleanup owner-aware del artefacto generado.
+- `electron/text_extraction_platform/openjpeg_wasm_runtime.js` — Wrapper local mínimo del runtime OpenJPEG WASM usado por la normalización JP2; desacopla el consumidor interno del bundle vendorizado y evita depender del árbol de dependencias de un paquete npm completo en runtime.
+- `electron/text_extraction_platform/vendor/openjpeg_wasm_runtime.bundle.js` — Bundle vendorizado del runtime OpenJPEG WASM redistribuido por la app y consumido solo a través del wrapper local `openjpeg_wasm_runtime.js`.
 - `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
 - `electron/updater.js` — Lógica de actualización (comparación de versión, diálogos y apertura de URL de descarga).
 - `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts, incluyendo `totapp.org` y `ko-fi.com` para superficies fijas de la app) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
