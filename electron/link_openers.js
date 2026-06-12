@@ -90,6 +90,14 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     ),
     tempName: 'tot_LICENSE_sharp_0.34.4.txt',
   },
+  'license-text-extraction-epub': {
+    relativePath: path.join(
+      'public',
+      'third_party_licenses',
+      'LICENSE_@xmldom_xmldom_0.8.13.txt'
+    ),
+    tempName: 'tot_LICENSE_@xmldom_xmldom_0.8.13.txt',
+  },
   'license-reading-test-zip-import': {
     relativePath: path.join(
       'public',

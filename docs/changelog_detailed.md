@@ -53,6 +53,8 @@ Reglas:
 - El `Text Editor`, la barra de búsqueda/reemplazo, el `Floating Stopwatch`, el `Task Editor` y los modales batch/info migran sus acciones funcionales al mismo modelo de iconos compartidos, reduciendo drift visual y de wiring entre superficies estáticas y controles generados por JS.
 - El modal de entrada del `Reading speed test` corrige la semántica de habilitación de filtros: cada opción vuelve a deshabilitarse cuando no existe ninguna entrada real compatible bajo las otras categorías activas, sin reactivarse por la unión accidental con valores ya marcados de la misma categoría.
 - La documentación y el copy i18n relacionados con estos controles se ajustan para nombrar la acción o el rol del control cuando la referencia histórica por glyph ya no era la guía más precisa.
+- La ruta nativa de extracción de texto agrega soporte local para `.epub`, resolviendo el orden de lectura desde `container.xml` + OPF/spine y manteniendo el mismo flujo existente de prepare/execute/apply sin una UI especial.
+- La extracción EPUB promueve `@xmldom/xmldom@0.8.13` a dependencia runtime directa, añade su licencia redistribuida y actualiza manual/QA para incluir `.epub` dentro de los formatos nativos soportados.
 
 ### Agregado
 

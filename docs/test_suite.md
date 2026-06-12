@@ -8,7 +8,7 @@
 - Startup + first-run language selection
 - Text extraction from file picker + multi-select + drag/drop
 - PDF inspect/options flow (`All pages` vs contiguous `Page range`) + single-file heavy-PDF OCR guardrails
-- Native extraction routes (`txt`, `md`, `html`, `docx`, PDF text layer)
+- Native extraction routes (`txt`, `md`, `html`, `docx`, `epub`, PDF text layer)
 - Google-backed extraction routes (`rtf`, `odt`, images, scanned PDFs), including OCR activation/disconnect
 - Text extraction route choice, batch planning/final report, per-unit auto snapshots, generated-PDF retain/reveal path, processing progress, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
@@ -78,6 +78,9 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `SM-09`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT/EXTRACT`
+* `electron/text_extraction_platform/epub_text_extraction.js`
+  * supports parts of `SM-09`
+  * supports parts of `REG-IMPORT/EXTRACT`
 * `electron/text_extraction_platform/text_extraction_pdf_selection_pipeline.js`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT-05`
@@ -91,6 +94,12 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/electron/text_extraction_prepare_execute_core.test.js`
   * supports parts of `SM-10`
   * supports parts of `SM-10B`
+  * supports parts of `REG-IMPORT/EXTRACT`
+* `test/unit/electron/epub_text_extraction.test.js`
+  * supports parts of `SM-09`
+  * supports parts of `REG-IMPORT/EXTRACT`
+* `test/unit/electron/native_extraction_route.test.js`
+  * supports parts of `SM-09`
   * supports parts of `REG-IMPORT/EXTRACT`
 * `test/unit/electron/text_extraction_prepare_ipc.test.js`
   * supports parts of `REG-IMPORT-06A`
@@ -166,7 +175,7 @@ Important limitations:
 
 - Clipboard access available (to test overwrite/append).
 - A local sample-file set available for text extraction:
-  - native samples: `txt`, `md`, `html`, `docx`, PDF with selectable text
+  - native samples: `txt`, `md`, `html`, `docx`, `epub`, PDF with selectable text
   - Google-backed document samples: `rtf`, `odt`
   - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`) and one scanned PDF
 - Network access available for updater check (GitHub API), OCR activation/runtime checks, and first-time Electron spellchecker dictionary downloads on Windows/Linux.
@@ -245,6 +254,7 @@ Prepare a small local sample set whose expected text is known ahead of time:
   - `sample.md`
   - `sample.html`
   - `sample.docx`
+  - `sample.epub`
 - Google-backed document samples:
   - `sample.rtf`
   - `sample.odt`
@@ -376,7 +386,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-09 Text extraction: supported non-PDF quick check
 **Goal:** picker-based text extraction works for a supported non-PDF file and reaches the apply modal.
 1. Click **📥**.
-2. Select a supported non-PDF file such as `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, `sample.rtf`, or `sample.odt`.
+2. Select a supported non-PDF file such as `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, `sample.epub`, `sample.rtf`, or `sample.odt`.
 3. If the apply modal appears, leave repetitions at `1` and choose **Sobrescribir**.
 4. Observe preview and results.
 
@@ -689,13 +699,14 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - `sample.md`
    - `sample.html`
    - `sample.docx`
+   - `sample.epub`
    - `sample.rtf`
    - `sample.odt`
    - `sample_selectable.pdf`
 2. For each successful run, use **Sobrescribir** with repetitions `1`.
 
 **Expected:**
-- `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, and `sample_selectable.pdf` complete through the native route unless the user explicitly chooses OCR for the PDF.
+- `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, `sample.epub`, and `sample_selectable.pdf` complete through the native route unless the user explicitly chooses OCR for the PDF.
 - `sample.rtf` and `sample.odt` complete through the connected Google-backed extraction path.
 - Extracted text is normalized into usable app text (preview/counts/time update).
 - `sample_selectable.pdf` does not require OCR if native text is available and OCR is not explicitly chosen.

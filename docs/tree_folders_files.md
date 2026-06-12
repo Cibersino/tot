@@ -67,6 +67,7 @@ tot/
 │ │ │ ├── fallback.js
 │ │ │ ├── linux.js
 │ │ │ └── windows.js
+│ │ ├── epub_text_extraction.js
 │ │ ├── native_extraction_route.js
 │ │ ├── native_pdf_selectable_text_probe.js
 │ │ ├── ocr_google_drive_activation_state.js
@@ -323,9 +324,10 @@ tot/
 - `electron/text_extraction_platform/text_extraction_prepared_store.js` — Store efímero de requests preparadas con TTL y fingerprint del archivo fuente.
 - `electron/text_extraction_platform/text_extraction_platform_adapter.js` + `electron/text_extraction_platform/platform_adapters/*.js` — Abstracción por plataforma para carpeta inicial del picker y normalización de paths (Windows-first, pero portable a macOS/Linux).
 - `electron/text_extraction_platform/text_extraction_supported_formats.js` — Contrato compartido de formatos soportados por text extraction: centraliza extensiones nativas, extensiones Google-backed y extensiones OCR/imagen, además de los helpers reutilizados por picker, prepare y rutas de ejecución.
+- `electron/text_extraction_platform/epub_text_extraction.js` — Parser/extractor local main-owned para `.epub`: abre el contenedor ZIP, resuelve `container.xml` + OPF/spine para respetar el reading order declarado, aplica límites estructurales de ZIP/XML/XHTML y convierte los documentos spine-linked a texto plano sin ejecutar scripts ni cargar recursos remotos.
 - `electron/text_extraction_platform/text_extraction_pdf_error_detection.js` — Helper compartido para clasificar errores PDF de cifrado/password y corrupción/lectura inválida, reutilizado por inspect, probe y ruta nativa para evitar drift entre heurísticas duplicadas.
 - `electron/text_extraction_platform/text_extraction_pdf_selection_pipeline.js` — Owner del estado y trabajo local de page-range para PDFs: inspect de `totalPages`, canonicalización de `pdfPageSelection`/`generatedPdfArtifactPolicy`, nombres visibles del `processingInputFile`, materialización del subset PDF, cleanup/retención y warnings técnicos de cleanup.
-- `electron/text_extraction_platform/native_extraction_route.js` — Ruta de extracción nativa para `txt`, `md`, `html`, `docx` y PDFs con text layer; consume el contrato compartido de formatos y opera sobre el `processingInputFile` efectivo, que puede ser un subset PDF materializado.
+- `electron/text_extraction_platform/native_extraction_route.js` — Ruta de extracción nativa para `txt`, `md`, `html`, `docx`, `epub` y PDFs con text layer; consume el contrato compartido de formatos y opera sobre el `processingInputFile` efectivo, que puede ser un subset PDF materializado.
 - `electron/text_extraction_platform/native_pdf_selectable_text_probe.js` — Probe de PDF para detectar si existe texto seleccionable utilizable antes de decidir la ruta; ahora puede sondear solo el rango seleccionado en vez del documento completo.
 - `electron/text_extraction_platform/ocr_google_drive_activation_state.js` — Estado grueso de disponibilidad OCR a partir de presencia de `credentials.json`/`token.json`; distingue `credentials_missing`, `ocr_activation_required` y `ready` antes de validaciones más profundas.
 - `electron/text_extraction_platform/ocr_google_drive_bundled_credentials.js` — Bootstrap del modelo OCR de producción: consume el lector compartido de `credentials.json`, valida las credenciales OAuth desktop empaquetadas y materializa/repara el espejo runtime bajo `config/ocr_google_drive/credentials.json` sin pedir importación manual al usuario.

@@ -13,6 +13,7 @@ const {
 test('getNativeParserForExt normalizes case and leading dot', () => {
   assert.equal(getNativeParserForExt('txt'), 'plain_text');
   assert.equal(getNativeParserForExt('.MD'), 'markdown_text');
+  assert.equal(getNativeParserForExt(' EPUB '), 'epub_text');
   assert.equal(getNativeParserForExt(' PDF '), 'pdf_text_layer');
 });
 
@@ -39,7 +40,7 @@ test('getOcrSourceMimeTypeForExt returns empty string for unsupported extensions
 test('supported extension lists stay aligned with the shared contract', () => {
   assert.deepEqual(
     getSupportedNativeExtensions().sort(),
-    ['docx', 'htm', 'html', 'md', 'pdf', 'txt']
+    ['docx', 'epub', 'htm', 'html', 'md', 'pdf', 'txt']
   );
 
   assert.deepEqual(
@@ -47,4 +48,3 @@ test('supported extension lists stay aligned with the shared contract', () => {
     ['bmp', 'jpeg', 'jpg', 'odt', 'pdf', 'png', 'rtf', 'tif', 'tiff', 'webp']
   );
 });
-

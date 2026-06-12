@@ -541,6 +541,28 @@ test('prepareSelectedFile returns a native-ready result for plain text inputs', 
   assert.equal(result.generatedPdfArtifactPolicy, null);
 });
 
+test('prepareSelectedFile returns a native-ready result for EPUB inputs', async () => {
+  const result = await prepareSelectedFile({
+    filePath: 'novel.epub',
+    ocrLanguage: 'es',
+    resolvePaths: () => {
+      throw new Error('resolvePaths should not be used for EPUB native preparation');
+    },
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.prepareReady, true);
+  assert.equal(result.executionKind, 'native');
+  assert.equal(result.routeMetadata.fileKind, 'text_document');
+  assert.deepEqual(result.routeMetadata.availableRoutes, ['native']);
+  assert.equal(result.routeMetadata.chosenRoute, 'native');
+  assert.equal(result.routeMetadata.pdfTriage, 'not_pdf');
+  assert.equal(result.processingInputFileName, 'novel.epub');
+  assert.equal(result.pdfPageSelection, null);
+  assert.equal(result.generatedPdfArtifactPolicy, null);
+});
+
 test('prepareSelectedFile returns a structured unsupported-format failure when no route exists', async () => {
   const result = await prepareSelectedFile({
     filePath: 'archive.zip',
