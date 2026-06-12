@@ -103,6 +103,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `SM-10`
   * supports parts of `SM-10B`
   * supports parts of `REG-IMPORT/EXTRACT`
+  * supports parts of `REG-OCR`
 * `test/unit/electron/epub_text_extraction.test.js`
   * supports parts of `SM-09`
   * supports parts of `REG-IMPORT/EXTRACT`
@@ -132,6 +133,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/shared/text_extraction_entry.test.js`
   * supports parts of `SM-10B`
   * supports parts of `REG-IMPORT-08B`
+  * supports parts of `REG-OCR`
 * `test/unit/shared/text_extraction_batch_flow.test.js`
   * supports parts of `SM-10A`
   * supports parts of `REG-IMPORT-01A`
@@ -183,7 +185,7 @@ Important limitations:
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
 * the editor still has no renderer/UI automation for the spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
 * the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool core in `test/unit/electron/reading_test_pool.test.js` and the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
-* OCR network/provider behavior is still primarily validated through the manual suite, even though JP2 normalization and OCR route contracts now have unit coverage;
+* OCR network/provider behavior is still primarily validated through the manual suite, even though JP2 normalization, OCR route contracts, and the single-file oversized-image alert path now have unit coverage;
 * even with contract-style unit coverage for the batch planner/final report, single-file heavy-PDF modal, and status-bar progress text, the integrated picker/drag-drop entrypoints, PDF options modal, route-choice modal, apply modal reveal path, batch execution handoff, and real window/focus behavior are still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
@@ -292,6 +294,7 @@ Prepare a small local sample set whose expected text is known ahead of time:
   - optional: `sample_heavy_range.pdf` or a known large range inside `sample_heavy_full.pdf` whose generated subset also exceeds `50 MB`, to test the post-subset heavy-PDF recovery modal
 - OCR images:
   - at least one of `sample.jpg`, `sample.png`, `sample.webp`, `sample.bmp`, `sample.tif`, `sample.tiff`, or `sample.jp2`
+  - optional: one OCR-capable image sample whose effective Google OCR upload file is known to be at or above `10 MB`
 - Batch sets:
   - at least one folder containing two or more supported files that can be selected together from the picker
   - preferably one mixed set such as `sample.txt` + `sample_selectable.pdf`, and one set that includes a heavy PDF when available
@@ -959,6 +962,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - The app identifies invalid OCR sign-in state.
 - Recovery path routes back through activation/disclosure instead of silently failing.
+
+#### REG-OCR-03A Image upload hard cap at the effective upload boundary
+**Goal:** OCR-capable images at or above the Google image upload cap fail before upload, without changing the heavy-PDF flow used for oversized PDFs.
+1. Use an OCR-capable image sample prepared for this suite whose effective Google OCR upload file is known to be at or above `10 MB`.
+2. Run it through the normal single-file OCR extraction flow.
+3. If practical, repeat with an image case that requires normalization before OCR and with the same oversized image included in a multi-file batch.
+
+**Expected:**
+- The app cancels the OCR image run before Google upload.
+- In the single-file flow, the app shows the simple oversized-image OCR alert.
+- The limit is enforced against the effective upload file, not only the original source file.
+- The existing `50 MB` oversized-input behavior remains reserved for PDFs and other non-image OCR inputs.
+- In batch, no dedicated alert or modal appears; the failure is reported through the existing final-report row for that file.
 
 #### REG-OCR-04 Disconnect from Preferences
 **Goal:** the Preferences menu disconnect action revokes the saved sign-in state and reports the result clearly.

@@ -274,6 +274,7 @@
           "setup_missing_credentials": "OCR is unavailable in this app build because the bundled Google OAuth credentials are missing.",
           "setup_invalid_credentials": "OCR is unavailable in this app build because the bundled Google OAuth credentials are invalid.",
           "quota_or_rate_limited": "OCR is temporarily blocked by quota/rate limits. Wait and try again.",
+          "image_upload_too_large": "The image file to upload exceeds the size accepted by Google OCR.",
           "runtime_error": "An OCR runtime error occurred during extraction.",
           "cancelled": "OCR text extraction was cancelled.",
           "cleanup_warning": "OCR finished, but temporary remote file cleanup failed. Check your Google Drive folder.",

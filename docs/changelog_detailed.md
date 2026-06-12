@@ -95,7 +95,7 @@ Reglas:
   - al refrescar el pool o cambiar la visibilidad de bundled entries, la selección renderer deja de conservar valores obsoletos invisibles y pasa a reconciliarse con el universo actual de opciones disponibles.
 - OCR JP2 (`electron/text_extraction_platform/ocr_jp2_normalization.js`, `electron/text_extraction_platform/ocr_google_drive_route.js`):
   - un `.jp2` válido deja de caer en el fallo provider-side `ocr_conversion_failed` por `413 Request Too Large` causado por una materialización PNG local demasiado pesada para el upload OCR efectivo;
-  - la normalización JP2 ahora reduce el output al shape usado realmente por OCR antes del chequeo de tamaño del provider, manteniendo el mismo contrato de cleanup y metadata segura para logs del flujo OCR existente;
+  - la normalización JP2 ahora reduce el output al shape usado realmente por OCR antes del chequeo de tamaño del provider, y la ruta OCR pasa a bloquear antes del upload cualquier imagen efectiva `>= 10 MB`, manteniendo el límite existente de `50 MB` para PDFs y otros inputs no-imagen;
   - el soporte runtime queda desacoplado del paquete npm original para evitar shipping innecesario de dependencias de build en la app empaquetada.
 
 ---

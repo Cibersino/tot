@@ -1909,6 +1909,13 @@ Estados de revisión recomendados:
             // [CONCEPTO_APP] OCR; Google OCR
             // [PROTEGIDO] `OCR`
           },
+          "image_upload_too_large": {
+            "es": "El archivo de imagen a subir excede el tamaño aceptado por Google OCR.",
+            "en": "The image file to upload exceeds the size accepted by Google OCR."
+            // [CONCEPTO_APP] OCR; Google OCR; archivo de imagen; subida efectiva
+            // [NO_CONFUNDIR] No describe un PDF pesado ni un ítem de reporte por lotes. Esta clave es solo para la alerta individual en la ruta OCR de imágenes.
+            // [PROTEGIDO] `Google OCR`; `OCR`
+          },
           "runtime_error": {
             "es": "Ocurrió un error de ejecución de OCR durante la extracción.",
             "en": "An OCR runtime error occurred during extraction."
