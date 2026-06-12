@@ -104,7 +104,7 @@ function createEpubError(code, message) {
 // Path / ZIP helpers
 // =============================================================================
 
-function normalizeArchivePath(rawPath, { allowParentSegments = false } = {}) {
+function sanitizeArchiveReference(rawPath) {
   const asString = typeof rawPath === 'string' ? rawPath.trim() : '';
   if (!asString) {
     throw createEpubError('EPUB_INVALID_INTERNAL_PATH', 'EPUB internal path is missing.');
@@ -123,6 +123,11 @@ function normalizeArchivePath(rawPath, { allowParentSegments = false } = {}) {
     throw createEpubError('EPUB_INVALID_INTERNAL_PATH', 'EPUB internal path must stay relative to the archive.');
   }
 
+  return withForwardSlashes;
+}
+
+function normalizeArchivePath(rawPath, { allowParentSegments = false } = {}) {
+  const withForwardSlashes = sanitizeArchiveReference(rawPath);
   const segments = withForwardSlashes.split('/');
   if (!allowParentSegments && segments.includes('..')) {
     throw createEpubError('EPUB_INVALID_INTERNAL_PATH', 'EPUB internal path contains traversal-like segments.');
@@ -144,24 +149,7 @@ function normalizeArchivePath(rawPath, { allowParentSegments = false } = {}) {
 
 function resolveArchivePath(baseFilePath, relativePath) {
   const safeBaseFilePath = normalizeArchivePath(baseFilePath, { allowParentSegments: false });
-  const rawRelativePath = typeof relativePath === 'string' ? relativePath.trim() : '';
-  if (!rawRelativePath) {
-    throw createEpubError('EPUB_INVALID_INTERNAL_PATH', 'EPUB internal path is missing.');
-  }
-  if (rawRelativePath.length > MAX_EPUB_ENTRY_NAME_CHARS) {
-    throw createEpubError('EPUB_INVALID_INTERNAL_PATH', 'EPUB internal path exceeds length bound.');
-  }
-
-  const withoutFragment = rawRelativePath.split('#')[0].split('?')[0].trim();
-  if (!withoutFragment) {
-    throw createEpubError('EPUB_INVALID_INTERNAL_PATH', 'EPUB internal path resolves to empty reference.');
-  }
-
-  const withForwardSlashes = withoutFragment.replace(/\\/g, '/');
-  if (withForwardSlashes.startsWith('/') || withForwardSlashes.startsWith('//') || /^[A-Za-z]:/.test(withForwardSlashes)) {
-    throw createEpubError('EPUB_INVALID_INTERNAL_PATH', 'EPUB internal path must stay relative to the archive.');
-  }
-
+  const withForwardSlashes = sanitizeArchiveReference(relativePath);
   const baseDir = path.posix.dirname(safeBaseFilePath);
   const combined = baseDir && baseDir !== '.'
     ? path.posix.join(baseDir, withForwardSlashes)
@@ -270,6 +258,13 @@ function getLocalName(node) {
   return typeof node.nodeName === 'string' ? node.nodeName.toLowerCase() : '';
 }
 
+function getTrimmedAttribute(node, attributeName) {
+  if (!node || typeof node.getAttribute !== 'function') {
+    return '';
+  }
+  return String(node.getAttribute(attributeName) || '').trim();
+}
+
 function getElementChildrenByLocalName(parentNode, localName) {
   const matches = [];
   if (!parentNode) {
@@ -317,17 +312,11 @@ function resolveRootfilePath(containerDoc) {
   }
 
   const preferredRootfile = rootfiles.find((rootfileNode) => {
-    const mediaType = typeof rootfileNode.getAttribute === 'function'
-      ? String(rootfileNode.getAttribute('media-type') || '').trim().toLowerCase()
-      : '';
-    const fullPath = typeof rootfileNode.getAttribute === 'function'
-      ? String(rootfileNode.getAttribute('full-path') || '').trim()
-      : '';
+    const mediaType = getTrimmedAttribute(rootfileNode, 'media-type').toLowerCase();
+    const fullPath = getTrimmedAttribute(rootfileNode, 'full-path');
     return mediaType === 'application/oebps-package+xml' && fullPath;
   }) || rootfiles.find((rootfileNode) => {
-    const fullPath = typeof rootfileNode.getAttribute === 'function'
-      ? String(rootfileNode.getAttribute('full-path') || '').trim()
-      : '';
+    const fullPath = getTrimmedAttribute(rootfileNode, 'full-path');
     return !!fullPath;
   });
 
@@ -335,7 +324,7 @@ function resolveRootfilePath(containerDoc) {
     throw createEpubError('EPUB_INVALID_CONTAINER_XML', 'EPUB container.xml does not expose a readable rootfile.');
   }
 
-  return normalizeArchivePath(preferredRootfile.getAttribute('full-path'), {
+  return normalizeArchivePath(getTrimmedAttribute(preferredRootfile, 'full-path'), {
     allowParentSegments: false,
   });
 }
@@ -364,12 +353,8 @@ function parsePackageDocument(opfDoc, opfPath) {
 
   const manifestById = new Map();
   manifestItems.forEach((manifestItemNode) => {
-    const id = typeof manifestItemNode.getAttribute === 'function'
-      ? String(manifestItemNode.getAttribute('id') || '').trim()
-      : '';
-    const href = typeof manifestItemNode.getAttribute === 'function'
-      ? String(manifestItemNode.getAttribute('href') || '').trim()
-      : '';
+    const id = getTrimmedAttribute(manifestItemNode, 'id');
+    const href = getTrimmedAttribute(manifestItemNode, 'href');
     if (!id || !href) {
       return;
     }
@@ -378,9 +363,7 @@ function parsePackageDocument(opfDoc, opfPath) {
       id,
       href,
       hrefResolved,
-      mediaType: typeof manifestItemNode.getAttribute === 'function'
-        ? String(manifestItemNode.getAttribute('media-type') || '').trim()
-        : '',
+      mediaType: getTrimmedAttribute(manifestItemNode, 'media-type'),
     });
   });
 
@@ -393,9 +376,7 @@ function parsePackageDocument(opfDoc, opfPath) {
   }
 
   const spineItems = spineItemrefNodes.map((itemrefNode) => {
-    const idref = typeof itemrefNode.getAttribute === 'function'
-      ? String(itemrefNode.getAttribute('idref') || '').trim()
-      : '';
+    const idref = getTrimmedAttribute(itemrefNode, 'idref');
     if (!idref) {
       throw createEpubError('EPUB_INVALID_SPINE', 'EPUB spine contains itemref without idref.');
     }
