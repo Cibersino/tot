@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const Log = require('../log');
 const {
   cleanupRuntimeTempRunDir,
   createRuntimeTempRunDir,
@@ -27,6 +28,7 @@ const {
 
 const SUPPORTED_RAW_CHANNEL_COUNTS = new Set([1, 2, 3, 4]);
 let cachedOpenJpegRuntimePromise = null;
+const log = Log.get('text-extraction-ocr-jp2-normalization');
 
 // =============================================================================
 // Error and cleanup helpers
@@ -299,8 +301,11 @@ async function normalizeJp2ForOcrUpload({ fileInfo } = {}) {
     if (decoder && typeof decoder.delete === 'function') {
       try {
         decoder.delete();
-      } catch (_err) {
-        // Decoder teardown errors are ignored because upload-materialization outcome is already decided.
+      } catch (err) {
+        log.warn('JP2 decoder teardown failed (ignored):', {
+          errorName: toSafeErrorName(err),
+          errorMessage: toSafeErrorMessage(err),
+        });
       }
     }
   }
