@@ -199,12 +199,14 @@ function validateDecodedFrame({ frameInfo, decodedBuffer }) {
 
   const bytesPerSample = bitsPerSample / 8;
   const expectedByteLength = width * height * componentCount * bytesPerSample;
-  const decodedByteLength = toNodeBuffer(decodedBuffer).byteLength;
+  const decodedPixelBuffer = toNodeBuffer(decodedBuffer);
+  const decodedByteLength = decodedPixelBuffer.byteLength;
   if (!Number.isSafeInteger(expectedByteLength) || decodedByteLength !== expectedByteLength) {
     throw new Error('Decoded JP2 buffer size does not match frame metadata.');
   }
 
   return {
+    decodedPixelBuffer,
     width,
     height,
     channels: componentCount,
@@ -249,9 +251,8 @@ async function normalizeJp2ForOcrUpload({ fileInfo } = {}) {
     const decodedBuffer = decoder.getDecodedBuffer();
     const frameInfo = decoder.getFrameInfo();
     validatedFrame = validateDecodedFrame({ frameInfo, decodedBuffer });
-    const decodedPixelBuffer = toNodeBuffer(decodedBuffer);
 
-    await sharpLib(decodedPixelBuffer, {
+    await sharpLib(validatedFrame.decodedPixelBuffer, {
       raw: {
         width: validatedFrame.width,
         height: validatedFrame.height,
