@@ -274,6 +274,7 @@
           "setup_missing_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna saknas.",
           "setup_invalid_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna är ogiltiga.",
           "quota_or_rate_limited": "OCR är tillfälligt blockerat av kvot-/hastighetsbegränsningar. Vänta och försök igen.",
+          "image_upload_too_large": "Bildfilen som ska laddas upp överskrider storleken som Google OCR accepterar.",
           "runtime_error": "Ett OCR-runtimefel uppstod under extrahering. Kontrollera konsolen och försök igen.",
           "cancelled": "OCR-extrahering avbröts.",
           "cleanup_warning": "OCR slutfördes, men rensning av tillfällig fjärrfil misslyckades. Kontrollera din Google Drive-mapp.",

@@ -274,6 +274,7 @@
           "setup_missing_credentials": "I-OCR ayitholakali kule build ye-app ngoba imininingwane ye-Google OAuth efakwe ne-app ayikho.",
           "setup_invalid_credentials": "I-OCR ayitholakali kule build ye-app ngoba imininingwane ye-Google OAuth efakwe ne-app ayivumelekile.",
           "quota_or_rate_limited": "I-OCR ivinjwe okwesikhashana ngenxa yekhota/umkhawulo wezinga. Linda bese uzama futhi.",
+          "image_upload_too_large": "Ifayela lesithombe elizolayishwa lidlula usayizi owamukelwa yi-Google OCR.",
           "runtime_error": "Kuvele iphutha lokusebenza le-OCR ngesikhathi sokukhishwa. Hlola ikhonsoli bese uzama futhi.",
           "cancelled": "Ukukhishwa kwe-OCR kukhanseliwe.",
           "cleanup_warning": "I-OCR iqediwe, kodwa ukuhlanzwa kwefayela lesikhashana elikude kuhlulekile. Hlola ifolda yakho ye-Google Drive.",

@@ -274,6 +274,7 @@
           "setup_missing_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak falta direlako.",
           "setup_invalid_credentials": "OCR ez dago erabilgarri aplikazio-build honetan, aplikazioarekin batera sartutako Google OAuth kredentzialak baliogabeak direlako.",
           "quota_or_rate_limited": "OCR aldi baterako blokeatuta dago kuota/tasa-mugen ondorioz. Itxaron eta saiatu berriro.",
+          "image_upload_too_large": "Igotzeko irudi-fitxategiak Google OCRk onartzen duen tamaina gainditzen du.",
           "runtime_error": "OCR exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",
           "cancelled": "OCR erauzketa prozesua bertan behera utzi da.",
           "cleanup_warning": "OCR amaitu da, baina urruneko aldi baterako fitxategiaren garbiketak huts egin du. Begiratu zure Google Drive karpeta.",

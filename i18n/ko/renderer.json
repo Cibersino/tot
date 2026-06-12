@@ -274,6 +274,7 @@
           "setup_missing_credentials": "이 앱 빌드에는 포함된 Google OAuth 자격 증명이 없어 OCR을 사용할 수 없습니다.",
           "setup_invalid_credentials": "이 앱 빌드에는 포함된 Google OAuth 자격 증명이 올바르지 않아 OCR을 사용할 수 없습니다.",
           "quota_or_rate_limited": "OCR이 할당량/속도 제한으로 일시적으로 차단되었습니다. 기다렸다가 다시 시도하세요.",
+          "image_upload_too_large": "업로드할 이미지 파일이 Google OCR에서 허용하는 크기를 초과합니다.",
           "runtime_error": "추출 중 OCR 런타임 오류가 발생했습니다. 콘솔을 확인하고 다시 시도하세요.",
           "cancelled": "OCR 추출이 취소되었습니다.",
           "cleanup_warning": "OCR은 완료되었지만 임시 원격 파일 정리에 실패했습니다. Google Drive 폴더를 확인하세요.",

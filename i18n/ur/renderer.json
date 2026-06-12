@@ -274,6 +274,7 @@
           "setup_missing_credentials": "اس ایپ build میں OCR دستیاب نہیں کیونکہ bundled Google OAuth credentials موجود نہیں۔",
           "setup_invalid_credentials": "اس ایپ build میں OCR دستیاب نہیں کیونکہ bundled Google OAuth credentials درست نہیں۔",
           "quota_or_rate_limited": "quota/rate limits کی وجہ سے OCR عارضی طور پر رکا ہوا ہے۔ انتظار کریں اور دوبارہ کوشش کریں۔",
+          "image_upload_too_large": "اپ لوڈ کی جانے والی تصویری فائل Google OCR کے قبول کردہ سائز سے بڑی ہے۔",
           "runtime_error": "نکالنے کے دوران OCR runtime خرابی ہوئی۔ کنسول دیکھیں اور دوبارہ کوشش کریں۔",
           "cancelled": "OCR نکالنے کا عمل منسوخ ہو گیا۔",
           "cleanup_warning": "OCR مکمل ہو گیا، لیکن عارضی remote فائل cleanup ناکام ہو گیا۔ اپنا Google Drive فولڈر چیک کریں۔",

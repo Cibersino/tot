@@ -274,6 +274,7 @@
           "setup_missing_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna faltan.",
           "setup_invalid_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna mana allinchu.",
           "quota_or_rate_limited": "OCRqa temporalmente quota/tasa límite rayku hark'asqa. Suyay hinaspa wakmanta ruwapay.",
+          "image_upload_too_large": "Churaypaq siqi archivoqa Google OCR chaskinqan sayaymanta aswan hatunmi.",
           "runtime_error": "Qichuy ukhupi OCR ejecución pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
           "cancelled": "OCR qichuy saqisqa.",
           "cleanup_warning": "OCR tukusqa, ichaqa temporal remoto archivo pichay pantarun. Google Drive carpetaykita qhaway.",

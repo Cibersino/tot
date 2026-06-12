@@ -274,6 +274,7 @@
           "setup_missing_credentials": "此應用程式建置中的 OCR 無法使用，因為缺少隨應用程式打包的 Google OAuth 憑證。",
           "setup_invalid_credentials": "此應用程式建置中的 OCR 無法使用，因為隨應用程式打包的 Google OAuth 憑證無效。",
           "quota_or_rate_limited": "OCR 因配額／速率限制而暫時受阻。請稍後重試。",
+          "image_upload_too_large": "要上傳的圖片檔案超過了 Google OCR 接受的大小。",
           "runtime_error": "擷取過程中發生 OCR 執行階段錯誤。請檢查主控台並重試。",
           "cancelled": "OCR 擷取已取消。",
           "cleanup_warning": "OCR 已完成，但暫時遠端檔案清理失敗。請檢查你的 Google Drive 資料夾。",

@@ -274,6 +274,7 @@
           "setup_missing_credentials": "Aka app build ukan OCR janiw utjkiti, appamp chikt’ata Google OAuth credencialanakax faltatap layku.",
           "setup_invalid_credentials": "Aka app build ukan OCR janiw utjkiti, appamp chikt’ata Google OAuth credencialanakax jan walïtap layku.",
           "quota_or_rate_limited": "OCR ukax quota/tasa límite layku mä juk’a pachax jark’atawa. Suyt’am ukat wasitat yant’am.",
+          "image_upload_too_large": "Apkatatäñataki uka jamuqa archivo ukax Google OCR katuqki uka jach’at jilawa.",
           "runtime_error": "Apsuña taypin OCR ejecución pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
           "cancelled": "OCR apsuña suyt’ayata.",
           "cleanup_warning": "OCR tukuyiwa, ukampis temporal remoto archivo pichhaña pantjasi. Google Drive carpetam uñakipam.",

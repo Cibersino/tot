@@ -274,6 +274,7 @@
           "setup_missing_credentials": "このアプリビルドには同梱の Google OAuth 認証情報がないため、OCR は利用できません。",
           "setup_invalid_credentials": "このアプリビルドに同梱された Google OAuth 認証情報が無効なため、OCR は利用できません。",
           "quota_or_rate_limited": "OCR はクォータ/レート制限により一時的にブロックされています。しばらく待ってから再試行してください。",
+          "image_upload_too_large": "アップロードする画像ファイルが、Google OCR で受け付けられるサイズを超えています。",
           "runtime_error": "抽出中に OCR 実行時エラーが発生しました。コンソールを確認して再試行してください。",
           "cancelled": "OCR 抽出はキャンセルされました。",
           "cleanup_warning": "OCR は完了しましたが、一時リモートファイルのクリーンアップに失敗しました。Google Drive フォルダを確認してください。",

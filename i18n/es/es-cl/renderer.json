@@ -274,6 +274,7 @@
           "setup_missing_credentials": "Falta credentials.json pa' OCR. Elige un archivo válido de credenciales OAuth de Google y prueba otra vez.",
           "setup_invalid_credentials": "El archivo de credenciales elegido no sirve pa' Google OAuth. Elige un credentials.json válido y prueba de nuevo.",
           "quota_or_rate_limited": "OCR quedó bloqueado por cuota o rate limit. Espera un rato y prueba otra vez.",
+          "image_upload_too_large": "El archivo de imagen que se va a subir supera el tamaño aceptado por Google OCR.",
           "runtime_error": "Hubo un cagazo en la ejecución OCR durante la extracción. Lorea la consola y prueba otra vez.",
           "cancelled": "La extracción OCR quedó cancelada.",
           "cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
