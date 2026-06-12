@@ -9,6 +9,7 @@
 // - Load the bundled OpenJPEG WASM runtime only when JP2 normalization is needed.
 // - Decode JP2 sources into raw pixels and materialize a temporary PNG upload input.
 // - Reuse the OCR image-normalization error taxonomy and cleanup-warning shape.
+// - Return upload metadata plus a caller-owned cleanup callback for temp artifacts.
 
 // =============================================================================
 // Imports
@@ -23,10 +24,12 @@ const {
 } = require('../app_temp_paths');
 
 // =============================================================================
-// Constants / runtime cache
+// Constants / module state
 // =============================================================================
 
 const SUPPORTED_RAW_CHANNEL_COUNTS = new Set([1, 2, 3, 4]);
+// Share one in-flight OpenJPEG runtime initialization across callers.
+// If initialization fails, the rejection path clears this cache for a later retry.
 let cachedOpenJpegRuntimePromise = null;
 const log = Log.get('text-extraction-ocr-jp2-normalization');
 
@@ -81,7 +84,7 @@ function createBaseName(sourceFileName) {
 }
 
 // =============================================================================
-// Runtime helpers
+// Runtime and validation helpers
 // =============================================================================
 
 function loadSharpLib(sourceFileExt) {
