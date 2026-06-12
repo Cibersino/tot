@@ -941,6 +941,7 @@ function resolvePrimaryAlertKey(routeKind, result) {
   if (routeKind === 'ocr') {
     if (state === 'success') return '';
     if (code === 'ocr_input_too_large') return '';
+    if (code === 'ocr_image_upload_too_large') return 'renderer.text_extraction.alerts.ocr.image_upload_too_large';
     if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.text_extraction.alerts.ocr.cancelled';
     if (code === 'ocr_activation_required') return 'renderer.text_extraction.alerts.ocr.activation_required';
     if (code === 'credentials_missing') return 'renderer.text_extraction.alerts.ocr.setup_missing_credentials';

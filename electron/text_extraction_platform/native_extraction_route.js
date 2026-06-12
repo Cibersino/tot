@@ -21,6 +21,7 @@ const path = require('path');
 const Log = require('../log');
 const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
+const { extractEpubText } = require('./epub_text_extraction');
 const {
   isPdfPasswordProtectedError,
   isUnreadableOrCorruptPdfError,
@@ -129,6 +130,10 @@ function isCorruptOrUnreadableParserError(parserType, err) {
     }
   }
 
+  if (parserType === 'epub_text' && code.startsWith('EPUB_')) {
+    return true;
+  }
+
   return false;
 }
 
@@ -175,6 +180,10 @@ async function runNativeParser(parserType, absPath) {
       text: String(extraction && extraction.text ? extraction.text : ''),
       warnings,
     };
+  }
+
+  if (parserType === 'epub_text') {
+    return extractEpubText(absPath);
   }
 
   const parserError = new Error(`Unsupported native parser: ${parserType}`);

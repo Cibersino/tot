@@ -541,6 +541,107 @@ test('prepareSelectedFile returns a native-ready result for plain text inputs', 
   assert.equal(result.generatedPdfArtifactPolicy, null);
 });
 
+test('prepareSelectedFile returns a native-ready result for EPUB inputs', async () => {
+  const result = await prepareSelectedFile({
+    filePath: 'novel.epub',
+    ocrLanguage: 'es',
+    resolvePaths: () => {
+      throw new Error('resolvePaths should not be used for EPUB native preparation');
+    },
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.prepareReady, true);
+  assert.equal(result.executionKind, 'native');
+  assert.equal(result.routeMetadata.fileKind, 'text_document');
+  assert.deepEqual(result.routeMetadata.availableRoutes, ['native']);
+  assert.equal(result.routeMetadata.chosenRoute, 'native');
+  assert.equal(result.routeMetadata.pdfTriage, 'not_pdf');
+  assert.equal(result.processingInputFileName, 'novel.epub');
+  assert.equal(result.pdfPageSelection, null);
+  assert.equal(result.generatedPdfArtifactPolicy, null);
+});
+
+test('prepareSelectedFile returns an OCR-ready result for JP2 inputs when OCR setup is ready', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockValidateGoogleDriveOcrSetup: () => ({ ok: true }),
+  });
+  t.after(restore);
+
+  const result = await core.prepareSelectedFile({
+    filePath: 'scan.jp2',
+    ocrLanguage: 'es',
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
+    }),
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.prepareReady, true);
+  assert.equal(result.executionKind, 'google_drive');
+  assert.equal(result.processingInputFileName, 'scan.jp2');
+  assert.deepEqual(result.routeMetadata.availableRoutes, ['ocr']);
+  assert.equal(result.routeMetadata.chosenRoute, 'ocr');
+  assert.equal(result.routeMetadata.fileKind, 'image');
+  assert.equal(result.routeMetadata.pdfTriage, 'not_pdf');
+  assert.equal(result.routeMetadata.triageReason, 'non_pdf');
+  assert.equal(result.routeMetadata.ocrSetupState, 'ready');
+});
+
+test('prepareSelectedFile preserves the OCR-unavailable prepare failure for JP2 inputs when setup is not ready', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockValidateGoogleDriveOcrSetup: () => ({
+      ok: false,
+      state: 'ocr_activation_required',
+      error: {
+        code: 'ocr_activation_required',
+        message: 'OCR activation is required before running extraction.',
+        detailsSafeForLogs: {
+          stage: 'preflight',
+          reason: 'missing_token',
+        },
+      },
+    }),
+  });
+  t.after(restore);
+
+  const result = await core.prepareSelectedFile({
+    filePath: 'scan.jp2',
+    ocrLanguage: 'es',
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
+    }),
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.prepareFailed, true);
+  assert.equal(result.executionKind, 'google_drive');
+  assert.equal(result.processingInputFileName, 'scan.jp2');
+  assert.deepEqual(result.routeMetadata.availableRoutes, ['ocr']);
+  assert.equal(result.routeMetadata.chosenRoute, 'ocr');
+  assert.equal(result.routeMetadata.fileKind, 'image');
+  assert.equal(result.routeMetadata.triageReason, 'non_pdf_ocr_unavailable');
+  assert.equal(result.routeMetadata.ocrSetupState, 'ocr_activation_required');
+  assert.equal(result.error.code, 'ocr_activation_required');
+  assert.equal(
+    result.primaryAlertKey,
+    'renderer.text_extraction.alerts.ocr.activation_required'
+  );
+});
+
 test('prepareSelectedFile returns a structured unsupported-format failure when no route exists', async () => {
   const result = await prepareSelectedFile({
     filePath: 'archive.zip',
@@ -994,6 +1095,93 @@ test('executePreparedImport returns ALREADY_ACTIVE when the controller stays act
     },
   ]);
   assert.deepEqual(controller.exitCalls, []);
+});
+
+test('executePreparedImport maps oversized OCR image uploads to the dedicated alert key', async (t) => {
+  const tempDir = createTestTempDir('text-extraction-prepare-execute-core-image-limit');
+  const sourceFilePath = path.join(tempDir, 'scan.png');
+  fs.mkdirSync(tempDir, { recursive: true });
+  fs.writeFileSync(sourceFilePath, Buffer.from('png'));
+
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async () => ({
+      state: 'failure',
+      executedRoute: 'ocr',
+      text: '',
+      warnings: [],
+      provenance: {
+        metadataSafeForLogs: {},
+      },
+      error: {
+        code: 'ocr_image_upload_too_large',
+        message: 'Effective image upload exceeds the size accepted by Google OCR and was not uploaded.',
+        detailsSafeForLogs: {
+          stage: 'preflight',
+          reason: 'ocr_image_upload_too_large',
+          providerLimitBytes: 10 * 1024 * 1024,
+          providerLimitMB: 10,
+        },
+      },
+    }),
+    pdfPageSelectionOverrides: {
+      async materializePdfPageSelectionInput() {
+        return {
+          ok: true,
+          materialized: false,
+          effectiveFilePath: sourceFilePath,
+          processingInputFileName: 'scan.png',
+          processingInputSource: 'original_selected_file',
+          generatedPdfArtifact: null,
+          retainedArtifactPath: '',
+          cleanupGeneratedArtifact: null,
+        };
+      },
+    },
+  });
+  t.after(restore);
+
+  const controller = createExecutingController();
+  const fileInfo = getFileInfo(sourceFilePath);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo,
+      ocrLanguage: 'es',
+      pdfPageSelection: null,
+      generatedPdfArtifactPolicy: null,
+      processingInputFileName: 'scan.png',
+      routeMetadata: {
+        fileKind: 'image',
+        availableRoutes: ['ocr'],
+        chosenRoute: 'ocr',
+        executedRoute: null,
+        executionKind: 'google_drive',
+        pdfTriage: 'not_pdf',
+        triageReason: 'non_pdf',
+        ocrSetupState: 'ready',
+        heavySplitEligible: false,
+      },
+      requiresRouteChoice: false,
+      routeChoiceOptions: [],
+    },
+    routePreference: '',
+    resolvePaths: () => ({
+      credentialsPath: '',
+      tokenPath: '',
+      bundledCredentialsFailureCode: '',
+      bundledCredentialsFailureReason: '',
+      bundledCredentialsFailureDetailsSafeForLogs: {},
+      retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
+    }),
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.executionKind, 'google_drive');
+  assert.equal(result.result.error.code, 'ocr_image_upload_too_large');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.ocr.image_upload_too_large');
+  assert.deepEqual(result.warningAlertKeys, []);
 });
 
 test('executePreparedImport materializes the selected PDF range for native success and preserves original provenance', async (t) => {

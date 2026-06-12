@@ -16,7 +16,8 @@ const TASK_LIBRARY_MAX_ITEMS = 12000; // Max items allowed in the persisted task
 const TASK_ROW_TEXT_MAX_CHARS = 200; // Max chars for task row "text" (texto).
 const TASK_ROW_COMMENT_MAX_CHARS = 1200; // Max chars for task row "comment" (comentario).
 const TASK_ROW_LINK_MAX_CHARS = 1000; // Max chars for task row "link" (enlace).
-const OCR_PROVIDER_LIMIT_MB = 50; // Maximum Google OCR upload size in megabytes used by heavy-PDF planning and provider-facing limits.
+const OCR_IMAGE_UPLOAD_LIMIT_MB = 10; // Maximum Google OCR image-upload size in megabytes for the effective provider-ready upload file.
+const OCR_PROVIDER_LIMIT_MB = 50; // Maximum Google OCR non-image upload size in megabytes used by heavy-PDF planning and the existing non-image provider-facing limit.
 const HEAVY_SPLIT_SAFETY_FACTOR = 0.75; // Safety factor applied to the provider limit when estimating generated split size.
 const EDITOR_FONT_SIZE_MIN_PX = 12; // Minimum font size for the Text Editor textarea.
 const EDITOR_FONT_SIZE_MAX_PX = 36; // Maximum font size for the Text Editor textarea.
@@ -42,6 +43,7 @@ module.exports = {
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_COMMENT_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
+  OCR_IMAGE_UPLOAD_LIMIT_MB,
   OCR_PROVIDER_LIMIT_MB,
   HEAVY_SPLIT_SAFETY_FACTOR,
   EDITOR_FONT_SIZE_MIN_PX,

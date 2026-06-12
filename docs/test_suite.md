@@ -8,8 +8,8 @@
 - Startup + first-run language selection
 - Text extraction from file picker + multi-select + drag/drop
 - PDF inspect/options flow (`All pages` vs contiguous `Page range`) + single-file heavy-PDF OCR guardrails
-- Native extraction routes (`txt`, `md`, `html`, `docx`, PDF text layer)
-- Google-backed extraction routes (`rtf`, `odt`, images, scanned PDFs), including OCR activation/disconnect
+- Native extraction routes (`txt`, `md`, `html`, `docx`, `epub`, PDF text layer)
+- Google-backed extraction routes (`rtf`, `odt`, OCR-capable images including `.jp2`, scanned PDFs), including OCR activation/disconnect
 - Text extraction route choice, batch planning/final report, per-unit auto snapshots, generated-PDF retain/reveal path, processing progress, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
@@ -78,6 +78,17 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `SM-09`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT/EXTRACT`
+* `electron/text_extraction_platform/ocr_image_normalization.js`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT-07`
+  * supports parts of `REG-OCR`
+* `electron/text_extraction_platform/ocr_jp2_normalization.js`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT-07`
+  * supports parts of `REG-OCR`
+* `electron/text_extraction_platform/epub_text_extraction.js`
+  * supports parts of `SM-09`
+  * supports parts of `REG-IMPORT/EXTRACT`
 * `electron/text_extraction_platform/text_extraction_pdf_selection_pipeline.js`
   * supports parts of `SM-10`
   * supports parts of `REG-IMPORT-05`
@@ -91,6 +102,13 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/electron/text_extraction_prepare_execute_core.test.js`
   * supports parts of `SM-10`
   * supports parts of `SM-10B`
+  * supports parts of `REG-IMPORT/EXTRACT`
+  * supports parts of `REG-OCR`
+* `test/unit/electron/epub_text_extraction.test.js`
+  * supports parts of `SM-09`
+  * supports parts of `REG-IMPORT/EXTRACT`
+* `test/unit/electron/native_extraction_route.test.js`
+  * supports parts of `SM-09`
   * supports parts of `REG-IMPORT/EXTRACT`
 * `test/unit/electron/text_extraction_prepare_ipc.test.js`
   * supports parts of `REG-IMPORT-06A`
@@ -115,6 +133,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/shared/text_extraction_entry.test.js`
   * supports parts of `SM-10B`
   * supports parts of `REG-IMPORT-08B`
+  * supports parts of `REG-OCR`
 * `test/unit/shared/text_extraction_batch_flow.test.js`
   * supports parts of `SM-10A`
   * supports parts of `REG-IMPORT-01A`
@@ -142,13 +161,31 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-OCR`
 * `electron/text_extraction_platform/ocr_google_drive_provider_failure_classification.js`
   * supports parts of `REG-OCR`
+* `electron/text_extraction_platform/ocr_google_drive_route.js`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT-07`
+  * supports parts of `REG-OCR`
+* `test/unit/electron/ocr_image_normalization.test.js`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT-07`
+  * supports parts of `REG-OCR`
+* `test/unit/electron/ocr_jp2_normalization.test.js`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT-07`
+  * supports parts of `REG-OCR`
+* `test/unit/electron/ocr_google_drive_route.test.js`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT-07`
+  * supports parts of `REG-OCR`
+* `test/unit/electron/link_openers.test.js`
+  * supports parts of `REG-MENU-03`
 
 Important limitations:
 
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
 * the editor still has no renderer/UI automation for the spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
 * the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool core in `test/unit/electron/reading_test_pool.test.js` and the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
-* OCR network/provider behavior is still primarily validated through the manual suite;
+* OCR network/provider behavior is still primarily validated through the manual suite, even though JP2 normalization, OCR route contracts, and the single-file oversized-image alert path now have unit coverage;
 * even with contract-style unit coverage for the batch planner/final report, single-file heavy-PDF modal, and status-bar progress text, the integrated picker/drag-drop entrypoints, PDF options modal, route-choice modal, apply modal reveal path, batch execution handoff, and real window/focus behavior are still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
@@ -166,9 +203,9 @@ Important limitations:
 
 - Clipboard access available (to test overwrite/append).
 - A local sample-file set available for text extraction:
-  - native samples: `txt`, `md`, `html`, `docx`, PDF with selectable text
+  - native samples: `txt`, `md`, `html`, `docx`, `epub`, PDF with selectable text
   - Google-backed document samples: `rtf`, `odt`
-  - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`) and one scanned PDF
+  - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`/`jp2`) and one scanned PDF
 - Network access available for updater check (GitHub API), OCR activation/runtime checks, and first-time Electron spellchecker dictionary downloads on Windows/Linux.
 
 ### 1.3 Dev vs packaged caveats (important)
@@ -245,6 +282,7 @@ Prepare a small local sample set whose expected text is known ahead of time:
   - `sample.md`
   - `sample.html`
   - `sample.docx`
+  - `sample.epub`
 - Google-backed document samples:
   - `sample.rtf`
   - `sample.odt`
@@ -255,7 +293,8 @@ Prepare a small local sample set whose expected text is known ahead of time:
   - `sample_heavy_full.pdf` (PDF above the current OCR provider limit of `50 MB`, with enough pages to trigger the heavy-PDF split planner from the single-file OCR flow)
   - optional: `sample_heavy_range.pdf` or a known large range inside `sample_heavy_full.pdf` whose generated subset also exceeds `50 MB`, to test the post-subset heavy-PDF recovery modal
 - OCR images:
-  - at least one of `sample.jpg`, `sample.png`, `sample.webp`, `sample.bmp`, `sample.tif`, or `sample.tiff`
+  - at least one of `sample.jpg`, `sample.png`, `sample.webp`, `sample.bmp`, `sample.tif`, `sample.tiff`, or `sample.jp2`
+  - optional: one OCR-capable image sample whose effective Google OCR upload file is known to be at or above `10 MB`
 - Batch sets:
   - at least one folder containing two or more supported files that can be selected together from the picker
   - preferably one mixed set such as `sample.txt` + `sample_selectable.pdf`, and one set that includes a heavy PDF when available
@@ -376,7 +415,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-09 Text extraction: supported non-PDF quick check
 **Goal:** picker-based text extraction works for a supported non-PDF file and reaches the apply modal.
 1. Click **📥**.
-2. Select a supported non-PDF file such as `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, `sample.rtf`, or `sample.odt`.
+2. Select a supported non-PDF file such as `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, `sample.epub`, `sample.rtf`, or `sample.odt`.
 3. If the apply modal appears, leave repetitions at `1` and choose **Sobrescribir**.
 4. Observe preview and results.
 
@@ -385,11 +424,12 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The app may briefly show prepare/progress UI during the run.
 - The apply modal appears after successful extraction.
 - After **Sobrescribir**, preview/results reflect the extracted text.
+- OCR-only non-PDF inputs such as `.jp2` are covered by `SM-10` / `REG-IMPORT-07`, not by this native/Google-backed quick check.
 
 ### SM-10 Text extraction: PDF page-range + OCR/route-choice quick check
 **Goal:** OCR-capable files and dual-route PDFs respect the PDF options step and can be applied.
 1. Click **📥** and select either:
-   - an OCR-capable image, or
+   - an OCR-capable image such as `sample.jp2`, `sample.tif`, or `sample.tiff`, or
    - a PDF known to have both selectable text and OCR available.
 2. If the file is a PDF, confirm the PDF options modal appears before route choice.
 3. For the PDF path, select either:
@@ -623,6 +663,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The button is present in the main controls row.
 - The picker opens to a reasonable default/persisted folder.
 - Supported formats include native text docs, Google-backed document formats, and OCR-capable images/PDFs.
+- OCR-capable image formats include `.jp2` in addition to the existing raster image set.
 - Cancelling the picker is a no-op.
 
 #### REG-IMPORT-01A Picker multi-selection enters the batch planner
@@ -689,14 +730,16 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - `sample.md`
    - `sample.html`
    - `sample.docx`
+   - `sample.epub`
    - `sample.rtf`
    - `sample.odt`
    - `sample_selectable.pdf`
 2. For each successful run, use **Sobrescribir** with repetitions `1`.
 
 **Expected:**
-- `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, and `sample_selectable.pdf` complete through the native route unless the user explicitly chooses OCR for the PDF.
+- `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, `sample.epub`, and `sample_selectable.pdf` complete through the native route unless the user explicitly chooses OCR for the PDF.
 - `sample.rtf` and `sample.odt` complete through the connected Google-backed extraction path.
+- OCR-only image inputs such as `sample.jp2` are validated separately in `REG-IMPORT-07` and do not participate in the native-route expectations of this test.
 - Extracted text is normalized into usable app text (preview/counts/time update).
 - `sample_selectable.pdf` does not require OCR if native text is available and OCR is not explicitly chosen.
 
@@ -737,13 +780,14 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORT-07 OCR-only routing for images and scanned PDFs
 **Goal:** OCR-only inputs skip native route selection and use the OCR path.
-1. Run text extraction on one OCR-capable image, ideally including one of `sample.tif` or `sample.tiff`.
+1. Run text extraction on one OCR-capable image, ideally including `sample.jp2` plus one of `sample.tif` or `sample.tiff`.
 2. Run text extraction on `sample_scanned.pdf`.
 3. If the scanned PDF has multiple pages, repeat with a selected page range.
 4. If `sample_mixed.pdf` is available, select the scanned-only page range once and the selectable-text page range once.
 
 **Expected:**
 - No native-route option is offered for OCR-only inputs.
+- `.jp2` is accepted by the picker/drag-drop shared flow as an OCR-only image input and does not introduce a separate route or UI branch.
 - If OCR is ready, extraction proceeds to the apply modal.
 - If OCR is not ready, the app surfaces the correct OCR setup/activation failure instead of a generic error.
 - If a scanned PDF range is chosen, OCR operates on the selected range instead of the whole document.
@@ -918,6 +962,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - The app identifies invalid OCR sign-in state.
 - Recovery path routes back through activation/disclosure instead of silently failing.
+
+#### REG-OCR-03A Image upload hard cap at the effective upload boundary
+**Goal:** OCR-capable images at or above the Google image upload cap fail before upload, without changing the heavy-PDF flow used for oversized PDFs.
+1. Use an OCR-capable image sample prepared for this suite whose effective Google OCR upload file is known to be at or above `10 MB`.
+2. Run it through the normal single-file OCR extraction flow.
+3. If practical, repeat with an image case that requires normalization before OCR and with the same oversized image included in a multi-file batch.
+
+**Expected:**
+- The app cancels the OCR image run before Google upload.
+- In the single-file flow, the app shows the simple oversized-image OCR alert.
+- The limit is enforced against the effective upload file, not only the original source file.
+- The existing `50 MB` oversized-input behavior remains reserved for PDFs and other non-image OCR inputs.
+- In batch, no dedicated alert or modal appears; the failure is reported through the existing final-report row for that file.
 
 #### REG-OCR-04 Disconnect from Preferences
 **Goal:** the Preferences menu disconnect action revokes the saved sign-in state and reports the result clearly.
@@ -1500,11 +1557,12 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 1. From About (or other UI link points), attempt to open:
    - GitHub release/docs links (allowed host)
    - DOI links from “Enlaces de interés” (allowed host)
-2. (Packaged build) open bundled docs (LICENSE, PRIVACY, etc.) if wired in UI.
+2. (Packaged build) open bundled docs (LICENSE, PRIVACY, JP2/OpenJPEG runtime license/provenance docs, etc.) if wired in UI.
 
 **Expected:**
 - Only HTTPS + allowlisted hosts are opened externally (GitHub/DOI set).
 - App docs open via OS viewer; missing docs yield safe failure.
+- JP2/runtime legal-provenance entries, when present in About, open through the same `open-app-doc` path as the rest of the packaged app docs.
 
 #### REG-MENU-04 OCR disconnect menu action reachable
 **Goal:** Preferences exposes the OCR disconnect action when the feature is present.

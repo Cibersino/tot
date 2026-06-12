@@ -7,6 +7,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 function createHarness({
+  inspectResult = null,
   pdfOptionsResponses = null,
   singleFileHeavyResponses = null,
   requestPreparedImportResult = null,
@@ -117,7 +118,7 @@ function createHarness({
         return async () => ({ ok: true, canStart: true });
       }
       if (methodName === 'inspectTextExtractionSelectedFile') {
-        return async () => ({
+        return async () => (inspectResult || {
           ok: true,
           isPdf: true,
           totalPages: 516,
@@ -336,4 +337,62 @@ test('single-file cancellation finishes abort finalization only after execution 
     harness.notifications,
     ['renderer.text_extraction.alerts.cancellation_complete']
   );
+});
+
+test('single-file entry shows the OCR image-upload alert without opening the heavy-PDF modal', async () => {
+  const harness = createHarness({
+    inspectResult: {
+      ok: true,
+      isPdf: false,
+      fileInfo: {
+        fileName: 'scan.png',
+      },
+    },
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: {
+        ok: true,
+        prepareReady: true,
+        prepareFailed: false,
+        prepareId: 'prepare-1',
+        fileInfo: {
+          fileName: 'scan.png',
+          sourceFileSizeBytes: 8 * 1024 * 1024,
+        },
+        routeChoiceOptions: ['ocr'],
+        routeMetadata: {
+          chosenRoute: 'ocr',
+          availableRoutes: ['ocr'],
+          heavySplitEligible: false,
+        },
+      },
+    },
+    executePreparedTextExtractionResult: {
+      ok: true,
+      primaryAlertKey: 'renderer.text_extraction.alerts.ocr.image_upload_too_large',
+      result: {
+        state: 'failure',
+        processingInputFileName: 'scan.png',
+        error: {
+          code: 'ocr_image_upload_too_large',
+          detailsSafeForLogs: {
+            effectiveInputSizeBytes: 10 * 1024 * 1024,
+            providerLimitBytes: 10 * 1024 * 1024,
+          },
+        },
+      },
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\scan.png',
+    source: 'test',
+  });
+
+  assert.deepEqual(
+    harness.notifications,
+    ['renderer.text_extraction.alerts.ocr.image_upload_too_large']
+  );
+  assert.equal(harness.getCapturedSingleFileHeavyOptions(), null);
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 1);
 });

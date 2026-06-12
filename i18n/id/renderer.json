@@ -274,6 +274,7 @@
           "setup_missing_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak ada.",
           "setup_invalid_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak valid.",
           "quota_or_rate_limited": "OCR untuk sementara diblokir oleh kuota/batas laju. Tunggu dan coba lagi.",
+          "image_upload_too_large": "File gambar yang akan diunggah melebihi ukuran yang diterima oleh Google OCR.",
           "runtime_error": "Terjadi kesalahan runtime OCR selama ekstraksi. Periksa konsol dan coba lagi.",
           "cancelled": "Ekstraksi OCR dibatalkan.",
           "cleanup_warning": "OCR selesai, tetapi pembersihan file sementara jarak jauh gagal. Periksa folder Google Drive Anda.",

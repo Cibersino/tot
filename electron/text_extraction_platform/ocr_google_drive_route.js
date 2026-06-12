@@ -19,6 +19,7 @@
 const fs = require('fs');
 const path = require('path');
 const Log = require('../log');
+const { OCR_IMAGE_UPLOAD_LIMIT_MB } = require('../constants_main');
 const { google } = require('googleapis');
 const {
   PROVIDER_API_DISABLED_CODE,
@@ -57,6 +58,7 @@ const INVALID_PERSISTED_TOKEN_CODES = new Set([
 const MAX_RATE_LIMIT_ATTEMPTS = 3;
 const BASE_RETRY_DELAY_MS = 300;
 const MAX_RETRY_DELAY_MS = 1500;
+const OCR_IMAGE_UPLOAD_LIMIT_BYTES = OCR_IMAGE_UPLOAD_LIMIT_MB * 1024 * 1024;
 
 const log = Log.get('text-extraction-ocr-google-drive-route');
 
@@ -210,6 +212,32 @@ function getErrorDetailsSafeForLogs(err) {
     : {};
 }
 
+function buildFailureLogDetails(fileInfo, result) {
+  const safeResult = result && typeof result === 'object' ? result : {};
+  const safeError = safeResult.error && typeof safeResult.error === 'object'
+    ? safeResult.error
+    : {};
+  const safeDetails = safeError.detailsSafeForLogs && typeof safeError.detailsSafeForLogs === 'object'
+    ? safeError.detailsSafeForLogs
+    : {};
+  const safeProvenance = safeResult.provenance && typeof safeResult.provenance === 'object'
+    ? safeResult.provenance
+    : {};
+  const safeMetadata = safeProvenance.metadataSafeForLogs
+    && typeof safeProvenance.metadataSafeForLogs === 'object'
+      ? safeProvenance.metadataSafeForLogs
+      : {};
+
+  return {
+    sourceFileExt: fileInfo.sourceFileExt,
+    sourceFileKind: fileInfo.sourceFileKind,
+    errorCode: String(safeError.code || ''),
+    summary: String(safeResult.summary || ''),
+    ...safeMetadata,
+    ...safeDetails,
+  };
+}
+
 function stripUtf8BomPrefix(text) {
   return String(text || '').replace(/^\uFEFF/, '');
 }
@@ -228,6 +256,38 @@ function readUploadInputStats(uploadInput, fileInfo) {
     fileName: String(candidateName || '').trim(),
     sizeBytes: Number.isFinite(stats.size) ? Math.floor(stats.size) : 0,
   };
+}
+
+function resolveOcrUploadLimit(fileInfo) {
+  if (fileInfo && fileInfo.sourceFileKind === 'image') {
+    return {
+      limitBytes: OCR_IMAGE_UPLOAD_LIMIT_BYTES,
+      limitMB: OCR_IMAGE_UPLOAD_LIMIT_MB,
+      inclusive: true,
+      failureCode: 'ocr_image_upload_too_large',
+      failureReason: 'ocr_image_upload_too_large',
+      summary: 'OCR route blocked before upload: image upload exceeds Google OCR size limit.',
+      message: 'Effective image upload exceeds the size accepted by Google OCR and was not uploaded.',
+    };
+  }
+
+  return {
+    limitBytes: OCR_PROVIDER_LIMIT_BYTES,
+    limitMB: OCR_PROVIDER_LIMIT_MB,
+    inclusive: false,
+    failureCode: 'ocr_input_too_large',
+    failureReason: 'ocr_input_too_large',
+    summary: 'OCR route blocked before upload: OCR input exceeds provider size limit.',
+    message: 'Effective OCR input exceeds the provider size limit and was not uploaded.',
+  };
+}
+
+function exceedsUploadLimit(sizeBytes, uploadLimit) {
+  const safeSizeBytes = Number.isFinite(sizeBytes) ? Math.floor(sizeBytes) : 0;
+  if (!uploadLimit || !Number.isFinite(uploadLimit.limitBytes)) return false;
+  return uploadLimit.inclusive === true
+    ? safeSizeBytes >= uploadLimit.limitBytes
+    : safeSizeBytes > uploadLimit.limitBytes;
 }
 
 function isLeadingSeparatorOnlyLine(lineText) {
@@ -347,6 +407,15 @@ function buildFailureResult({ stage, provenance, parsedFailure, error }) {
         stage,
         errorName: toSafeErrorName(error),
         errorMessage: toSafeErrorMessage(error),
+        statusCode: parsedFailure.statusCode,
+        reasonCode: String(parsedFailure.errorsReason || parsedFailure.errorInfoReason || ''),
+        errorsReason: String(parsedFailure.errorsReason || ''),
+        errorInfoReason: String(parsedFailure.errorInfoReason || ''),
+        providerStatus: String(parsedFailure.providerStatus || ''),
+        providerService: String(parsedFailure.providerService || ''),
+        providerConsumer: String(parsedFailure.providerConsumer || ''),
+        providerMessage: String(parsedFailure.providerMessage || ''),
+        networkErrorCode: parsedFailure.networkErrorCode,
       }
     ),
   });
@@ -519,95 +588,95 @@ async function runGoogleDriveOcrRoute({
     }
 
     const uploadInputStats = readUploadInputStats(uploadInput, fileInfo);
-    if (uploadInputStats.sizeBytes > OCR_PROVIDER_LIMIT_BYTES) {
+    const uploadLimit = resolveOcrUploadLimit(fileInfo);
+    if (exceedsUploadLimit(uploadInputStats.sizeBytes, uploadLimit)) {
       result = buildPreflightResultWithError({
-        summary: 'OCR route blocked before upload: OCR input exceeds provider size limit.',
+        summary: uploadLimit.summary,
         provenance,
-        code: 'ocr_input_too_large',
-        message: 'Effective OCR input exceeds the provider size limit and was not uploaded.',
+        code: uploadLimit.failureCode,
+        message: uploadLimit.message,
         detailsSafeForLogs: {
-          reason: 'ocr_input_too_large',
+          reason: uploadLimit.failureReason,
           effectiveInputFileName: uploadInputStats.fileName,
           effectiveInputSizeBytes: uploadInputStats.sizeBytes,
           effectiveInputSizeMB: bytesToMegabytes(uploadInputStats.sizeBytes),
-          providerLimitBytes: OCR_PROVIDER_LIMIT_BYTES,
-          providerLimitMB: OCR_PROVIDER_LIMIT_MB,
+          providerLimitBytes: uploadLimit.limitBytes,
+          providerLimitMB: uploadLimit.limitMB,
           uploadStatus: 'not_uploaded',
         },
       });
-      return result;
-    }
-
-    const createRequest = {
-      requestBody: {
-        name: uploadInput && uploadInput.uploadFileName
-          ? uploadInput.uploadFileName
-          : fileInfo.sourceFileName,
-        mimeType: 'application/vnd.google-apps.document',
-      },
-      media: {
-        mimeType: uploadInput && uploadInput.uploadMimeType
-          ? uploadInput.uploadMimeType
-          : fileInfo.sourceMimeType,
-        body: fs.createReadStream(
-          uploadInput && uploadInput.uploadFilePath
-            ? uploadInput.uploadFilePath
-            : fileInfo.absoluteFilePath
-        ),
-      },
-      fields: 'id,name',
-    };
-    if (typeof ocrLanguage === 'string' && ocrLanguage.trim()) {
-      createRequest.ocrLanguage = ocrLanguage.trim();
-    }
-
-    const createResponse = await runWithRateLimitRetry({
-      operationName: 'upload_convert',
-      isAborted,
-      fn: async () => drive.files.create(createRequest),
-    });
-
-    tempDocumentId = createResponse && createResponse.data && createResponse.data.id
-      ? String(createResponse.data.id)
-      : '';
-    if (!tempDocumentId) {
-      throw new Error('Missing temporary converted document ID.');
-    }
-
-    ensureNotAborted(isAborted);
-
-    const exportResponse = await runWithRateLimitRetry({
-      operationName: 'export_text',
-      isAborted,
-      fn: async () => drive.files.export(
-        {
-          fileId: tempDocumentId,
-          mimeType: 'text/plain',
+    } else {
+      const createRequest = {
+        requestBody: {
+          name: uploadInput && uploadInput.uploadFileName
+            ? uploadInput.uploadFileName
+            : fileInfo.sourceFileName,
+          mimeType: 'application/vnd.google-apps.document',
         },
-        { responseType: 'arraybuffer' }
-      ),
-    });
+        media: {
+          mimeType: uploadInput && uploadInput.uploadMimeType
+            ? uploadInput.uploadMimeType
+            : fileInfo.sourceMimeType,
+          body: fs.createReadStream(
+            uploadInput && uploadInput.uploadFilePath
+              ? uploadInput.uploadFilePath
+              : fileInfo.absoluteFilePath
+          ),
+        },
+        fields: 'id,name',
+      };
+      if (typeof ocrLanguage === 'string' && ocrLanguage.trim()) {
+        createRequest.ocrLanguage = ocrLanguage.trim();
+      }
 
-    ensureNotAborted(isAborted);
+      const createResponse = await runWithRateLimitRetry({
+        operationName: 'upload_convert',
+        isAborted,
+        fn: async () => drive.files.create(createRequest),
+      });
 
-    const extractedText = Buffer.from(exportResponse.data || '').toString('utf8');
-    const sanitizedExtraction = sanitizeLeadingOcrSeparatorArtifact(extractedText);
-    const warnings = [];
-    if (sanitizedExtraction.strippedLeadingSeparator) {
-      warnings.push('ocr_leading_separator_artifact_stripped');
+      tempDocumentId = createResponse && createResponse.data && createResponse.data.id
+        ? String(createResponse.data.id)
+        : '';
+      if (!tempDocumentId) {
+        throw new Error('Missing temporary converted document ID.');
+      }
+
+      ensureNotAborted(isAborted);
+
+      const exportResponse = await runWithRateLimitRetry({
+        operationName: 'export_text',
+        isAborted,
+        fn: async () => drive.files.export(
+          {
+            fileId: tempDocumentId,
+            mimeType: 'text/plain',
+          },
+          { responseType: 'arraybuffer' }
+        ),
+      });
+
+      ensureNotAborted(isAborted);
+
+      const extractedText = Buffer.from(exportResponse.data || '').toString('utf8');
+      const sanitizedExtraction = sanitizeLeadingOcrSeparatorArtifact(extractedText);
+      const warnings = [];
+      if (sanitizedExtraction.strippedLeadingSeparator) {
+        warnings.push('ocr_leading_separator_artifact_stripped');
+      }
+      if (!sanitizedExtraction.text.trim()) {
+        warnings.push('empty_extraction');
+      }
+
+      result = buildResult({
+        state: 'success',
+        text: sanitizedExtraction.text,
+        warnings,
+        summary: 'OCR route succeeded.',
+        provenance,
+        error: null,
+      });
     }
-    if (!sanitizedExtraction.text.trim()) {
-      warnings.push('empty_extraction');
-    }
-
-    result = buildResult({
-      state: 'success',
-      text: sanitizedExtraction.text,
-      warnings,
-      summary: 'OCR route succeeded.',
-      provenance,
-      error: null,
-    });
   } catch (err) {
     const errorCode = getErrorCode(err);
 
@@ -720,6 +789,10 @@ async function runGoogleDriveOcrRoute({
     if (result.state === 'success') {
       result.summary = 'OCR route succeeded with cleanup warning.';
     }
+  }
+
+  if (result.state !== 'success' && result.state !== 'cancelled') {
+    log.warn('OCR route failed:', buildFailureLogDetails(fileInfo, result));
   }
 
   return result;

@@ -1,0 +1,31 @@
+Vendored JP2 runtime provenance
+================================
+
+Shipped artifact in this app:
+- electron/text_extraction_platform/vendor/openjpeg_wasm_runtime.bundle.js
+
+Vendored source package used to obtain that artifact:
+- npm package: @abasb75/jpeg2000-decoder@2.5.4-f
+- upstream repository URL declared by that package:
+  https://github.com/abasb75/openjpeg
+
+Exact upstream file vendorized into this repo:
+- dist/openjpegjs.js
+
+Local wrapper used by production code:
+- electron/text_extraction_platform/openjpeg_wasm_runtime.js
+
+Production consumer:
+- electron/text_extraction_platform/ocr_jp2_normalization.js
+
+Packaging intent:
+- The packaged app ships the vendored runtime artifact above.
+- The packaged app does not ship @abasb75/jpeg2000-decoder as an installed npm dependency.
+- The packaged app does not ship the tsup/esbuild/rollup dependency chain that was pulled in by
+  the npm package metadata.
+
+License surfaces shipped alongside this provenance note:
+- LICENSE_openjpeg_wasm_runtime.txt
+  BSD-2-Clause text for the OpenJPEG WASM runtime artifact.
+- LICENSE_@abasb75_jpeg2000-decoder_2.5.4-f.txt
+  Source-package MIT license provenance retained for transparency.

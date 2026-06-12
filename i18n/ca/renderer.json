@@ -274,6 +274,7 @@
           "setup_missing_credentials": "L’OCR no està disponible en aquest build de l’app perquè falten les credencials OAuth de Google incloses amb l’app.",
           "setup_invalid_credentials": "L’OCR no està disponible en aquest build de l’app perquè les credencials OAuth de Google incloses amb l’app són invàlides.",
           "quota_or_rate_limited": "L’OCR està bloquejat temporalment per quota/límit de taxa. Espera i torna-ho a provar.",
+          "image_upload_too_large": "El fitxer d’imatge que vols pujar supera la mida acceptada per Google OCR.",
           "runtime_error": "S’ha produït un error d’execució OCR durant extracció. Revisa la consola i torna-ho a provar.",
           "cancelled": "L’extracció OCR s’ha cancel·lat.",
           "cleanup_warning": "L’OCR ha acabat, però ha fallat la neteja temporal remota del fitxer. Revisa la teva carpeta de Google Drive.",

@@ -274,6 +274,7 @@
           "setup_missing_credentials": "OCR không khả dụng trong bản dựng ứng dụng này vì thiếu thông tin xác thực Google OAuth được đóng gói.",
           "setup_invalid_credentials": "OCR không khả dụng trong bản dựng ứng dụng này vì thông tin xác thực Google OAuth được đóng gói không hợp lệ.",
           "quota_or_rate_limited": "OCR tạm thời bị chặn do hạn mức/giới hạn tốc độ. Hãy chờ rồi thử lại.",
+          "image_upload_too_large": "Tệp hình ảnh cần tải lên vượt quá kích thước được Google OCR chấp nhận.",
           "runtime_error": "Đã xảy ra lỗi runtime OCR trong khi trích xuất. Hãy kiểm tra console và thử lại.",
           "cancelled": "Trích xuất OCR đã bị hủy.",
           "cleanup_warning": "OCR đã hoàn tất, nhưng không thể dọn tệp tạm thời từ xa. Hãy kiểm tra thư mục Google Drive của bạn.",

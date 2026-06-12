@@ -274,6 +274,7 @@
           "setup_missing_credentials": "OCR pa disponib nan build app sa a paske kalifikasyon Google OAuth ki enkli yo manke.",
           "setup_invalid_credentials": "OCR pa disponib nan build app sa a paske kalifikasyon Google OAuth ki enkli yo pa valab.",
           "quota_or_rate_limited": "OCR bloke tanporèman akòz kota/limit frekans. Tann epi eseye ankò.",
+          "image_upload_too_large": "Fichye imaj pou voye a depase gwosè Google OCR aksepte a.",
           "runtime_error": "Gen yon erè runtime OCR ki fèt pandan ekstrè. Tcheke konsole a epi eseye ankò.",
           "cancelled": "Ekstrè OCR te anile.",
           "cleanup_warning": "OCR fini, men netwayaj fichye tanporè aleka a echwe. Tcheke katab Google Drive ou.",

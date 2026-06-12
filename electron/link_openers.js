@@ -90,6 +90,38 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     ),
     tempName: 'tot_LICENSE_sharp_0.34.4.txt',
   },
+  'license-text-extraction-jp2-decoder': {
+    relativePath: path.join(
+      'public',
+      'third_party_licenses',
+      'LICENSE_@abasb75_jpeg2000-decoder_2.5.4-f.txt'
+    ),
+    tempName: 'tot_LICENSE_@abasb75_jpeg2000-decoder_2.5.4-f.txt',
+  },
+  'license-text-extraction-jp2-runtime': {
+    relativePath: path.join(
+      'public',
+      'third_party_licenses',
+      'LICENSE_openjpeg_wasm_runtime.txt'
+    ),
+    tempName: 'tot_LICENSE_openjpeg_wasm_runtime.txt',
+  },
+  'license-text-extraction-jp2-vendor-provenance': {
+    relativePath: path.join(
+      'public',
+      'third_party_licenses',
+      'PROVENANCE_openjpeg_wasm_runtime_vendor.txt'
+    ),
+    tempName: 'tot_PROVENANCE_openjpeg_wasm_runtime_vendor.txt',
+  },
+  'license-text-extraction-epub': {
+    relativePath: path.join(
+      'public',
+      'third_party_licenses',
+      'LICENSE_@xmldom_xmldom_0.8.13.txt'
+    ),
+    tempName: 'tot_LICENSE_@xmldom_xmldom_0.8.13.txt',
+  },
   'license-reading-test-zip-import': {
     relativePath: path.join(
       'public',

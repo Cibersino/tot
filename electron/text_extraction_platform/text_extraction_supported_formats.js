@@ -20,6 +20,7 @@ const NATIVE_PARSER_BY_EXT = Object.freeze({
   '.html': 'html_text',
   '.htm': 'html_text',
   '.docx': 'docx_text',
+  '.epub': 'epub_text',
   '.pdf': 'pdf_text_layer',
 });
 
@@ -28,6 +29,7 @@ const OCR_SOURCE_MIME_BY_EXT = Object.freeze({
   '.odt': 'application/vnd.oasis.opendocument.text',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
+  '.jp2': 'image/jp2',
   '.png': 'image/png',
   '.webp': 'image/webp',
   '.bmp': 'image/bmp',
@@ -78,5 +80,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_supported_formats.js
 // =============================================================================
-
-

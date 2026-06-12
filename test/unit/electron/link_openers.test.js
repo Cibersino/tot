@@ -119,3 +119,176 @@ test('open-app-doc copies bundled public docs into the runtime temp root', async
   assert.notEqual(openedPaths[0], sourceLicensePath);
   assert.equal(fs.readFileSync(openedPaths[0], 'utf8'), 'fixture license');
 });
+
+test('open-app-doc resolves the EPUB parser bundled license doc key', async (t) => {
+  const mockedTmpdir = createTestTempDir('link-openers-epub-license-mocked-tmpdir');
+  const appRoot = createTestTempDir('link-openers-epub-license-app-root');
+  t.after(() => fs.rmSync(mockedTmpdir, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(appRoot, { recursive: true, force: true }));
+
+  const { appTempPaths, linkOpeners, restore } = loadLinkOpenersWithMockedTmpdir(mockedTmpdir);
+  t.after(restore);
+
+  const licenseDir = path.join(appRoot, 'public', 'third_party_licenses');
+  const sourceLicensePath = path.join(licenseDir, 'LICENSE_@xmldom_xmldom_0.8.13.txt');
+  fs.mkdirSync(licenseDir, { recursive: true });
+  fs.writeFileSync(sourceLicensePath, 'epub parser license');
+
+  const openedPaths = [];
+  const ipcMain = createIpcMainDouble();
+  linkOpeners.registerLinkIpc({
+    ipcMain,
+    app: {
+      isPackaged: true,
+      getAppPath() {
+        return appRoot;
+      },
+    },
+    shell: {
+      async openPath(filePath) {
+        openedPaths.push(filePath);
+        return '';
+      },
+    },
+  });
+
+  const result = await ipcMain.invoke('open-app-doc', {}, 'license-text-extraction-epub');
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(openedPaths.length, 1);
+  assert.equal(appTempPaths.isInsideRuntimeTempRoot(openedPaths[0]), true);
+  assert.equal(fs.readFileSync(openedPaths[0], 'utf8'), 'epub parser license');
+});
+
+test('open-app-doc resolves the JP2 source-package license provenance doc key', async (t) => {
+  const mockedTmpdir = createTestTempDir('link-openers-jp2-source-license-mocked-tmpdir');
+  const appRoot = createTestTempDir('link-openers-jp2-source-license-app-root');
+  t.after(() => fs.rmSync(mockedTmpdir, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(appRoot, { recursive: true, force: true }));
+
+  const { appTempPaths, linkOpeners, restore } = loadLinkOpenersWithMockedTmpdir(mockedTmpdir);
+  t.after(restore);
+
+  const licenseDir = path.join(appRoot, 'public', 'third_party_licenses');
+  const sourceLicensePath = path.join(
+    licenseDir,
+    'LICENSE_@abasb75_jpeg2000-decoder_2.5.4-f.txt'
+  );
+  fs.mkdirSync(licenseDir, { recursive: true });
+  fs.writeFileSync(sourceLicensePath, 'jp2 source package license');
+
+  const openedPaths = [];
+  const ipcMain = createIpcMainDouble();
+  linkOpeners.registerLinkIpc({
+    ipcMain,
+    app: {
+      isPackaged: true,
+      getAppPath() {
+        return appRoot;
+      },
+    },
+    shell: {
+      async openPath(filePath) {
+        openedPaths.push(filePath);
+        return '';
+      },
+    },
+  });
+
+  const result = await ipcMain.invoke('open-app-doc', {}, 'license-text-extraction-jp2-decoder');
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(openedPaths.length, 1);
+  assert.equal(appTempPaths.isInsideRuntimeTempRoot(openedPaths[0]), true);
+  assert.equal(fs.readFileSync(openedPaths[0], 'utf8'), 'jp2 source package license');
+});
+
+test('open-app-doc resolves the JP2 runtime bundled license doc key', async (t) => {
+  const mockedTmpdir = createTestTempDir('link-openers-jp2-license-mocked-tmpdir');
+  const appRoot = createTestTempDir('link-openers-jp2-license-app-root');
+  t.after(() => fs.rmSync(mockedTmpdir, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(appRoot, { recursive: true, force: true }));
+
+  const { appTempPaths, linkOpeners, restore } = loadLinkOpenersWithMockedTmpdir(mockedTmpdir);
+  t.after(restore);
+
+  const licenseDir = path.join(appRoot, 'public', 'third_party_licenses');
+  const sourceLicensePath = path.join(
+    licenseDir,
+    'LICENSE_openjpeg_wasm_runtime.txt'
+  );
+  fs.mkdirSync(licenseDir, { recursive: true });
+  fs.writeFileSync(sourceLicensePath, 'jp2 runtime license');
+
+  const openedPaths = [];
+  const ipcMain = createIpcMainDouble();
+  linkOpeners.registerLinkIpc({
+    ipcMain,
+    app: {
+      isPackaged: true,
+      getAppPath() {
+        return appRoot;
+      },
+    },
+    shell: {
+      async openPath(filePath) {
+        openedPaths.push(filePath);
+        return '';
+      },
+    },
+  });
+
+  const result = await ipcMain.invoke('open-app-doc', {}, 'license-text-extraction-jp2-runtime');
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(openedPaths.length, 1);
+  assert.equal(appTempPaths.isInsideRuntimeTempRoot(openedPaths[0]), true);
+  assert.equal(fs.readFileSync(openedPaths[0], 'utf8'), 'jp2 runtime license');
+});
+
+test('open-app-doc resolves the JP2 vendored-runtime provenance doc key', async (t) => {
+  const mockedTmpdir = createTestTempDir('link-openers-jp2-provenance-mocked-tmpdir');
+  const appRoot = createTestTempDir('link-openers-jp2-provenance-app-root');
+  t.after(() => fs.rmSync(mockedTmpdir, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(appRoot, { recursive: true, force: true }));
+
+  const { appTempPaths, linkOpeners, restore } = loadLinkOpenersWithMockedTmpdir(mockedTmpdir);
+  t.after(restore);
+
+  const licenseDir = path.join(appRoot, 'public', 'third_party_licenses');
+  const sourceLicensePath = path.join(
+    licenseDir,
+    'PROVENANCE_openjpeg_wasm_runtime_vendor.txt'
+  );
+  fs.mkdirSync(licenseDir, { recursive: true });
+  fs.writeFileSync(sourceLicensePath, 'jp2 runtime provenance');
+
+  const openedPaths = [];
+  const ipcMain = createIpcMainDouble();
+  linkOpeners.registerLinkIpc({
+    ipcMain,
+    app: {
+      isPackaged: true,
+      getAppPath() {
+        return appRoot;
+      },
+    },
+    shell: {
+      async openPath(filePath) {
+        openedPaths.push(filePath);
+        return '';
+      },
+    },
+  });
+
+  const result = await ipcMain.invoke(
+    'open-app-doc',
+    {},
+    'license-text-extraction-jp2-vendor-provenance'
+  );
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(openedPaths.length, 1);
+  assert.equal(appTempPaths.isInsideRuntimeTempRoot(openedPaths[0]), true);
+  assert.equal(fs.readFileSync(openedPaths[0], 'utf8'), 'jp2 runtime provenance');
+});

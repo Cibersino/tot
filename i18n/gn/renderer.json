@@ -274,6 +274,7 @@
           "setup_missing_credentials": "OCR ndojepurukuaái ko app build-pe ofaltágui credencial OAuth Google oúva app ndive.",
           "setup_invalid_credentials": "OCR ndojepurukuaái ko app build-pe credencial OAuth Google oúva app ndive ndoikóigui.",
           "quota_or_rate_limited": "OCR ojejoko sapy’a cuota/límite de uso rehe. Eha’arõ ha eha’ã jey.",
+          "image_upload_too_large": "Ta’anga archivo oñemyenyhẽtava tuichave Google OCR omoneĩvagui.",
           "runtime_error": "Oiko OCR runtime error text extraction aja. Ehecha consola ha eha’ã jey.",
           "cancelled": "OCR extracción ojeheja.",
           "cleanup_warning": "OCR opa, hákatu limpieza temporal remota archivo rehegua ojavy. Ehecha nde Google Drive carpeta.",

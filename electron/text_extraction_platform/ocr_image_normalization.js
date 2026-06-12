@@ -21,6 +21,7 @@ const {
   cleanupRuntimeTempRunDir,
   createRuntimeTempRunDir,
 } = require('../app_temp_paths');
+const { normalizeJp2ForOcrUpload } = require('./ocr_jp2_normalization');
 
 // =============================================================================
 // Error and filesystem helpers
@@ -99,6 +100,10 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
       'OCR image normalizer received invalid file context.',
       { reason: 'invalid_file_info' }
     );
+  }
+
+  if (fileInfo.sourceFileExt === 'jp2') {
+    return normalizeJp2ForOcrUpload({ fileInfo });
   }
 
   if (!PNG_NORMALIZATION_REQUIRED_EXTS.has(fileInfo.sourceFileExt)) {

@@ -23,7 +23,7 @@
 
 ## Funcionalidades
 
-* Importar texto directamente desde `txt`, `md`, `html`, `htm`, `docx` y `pdf` con texto seleccionable; extraer texto mediante la ruta respaldada por Google desde `rtf` y `odt`; aplicar OCR a imágenes (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) y PDF escaneados o aplanados; además de planificar extracción por lotes para múltiples archivos en cola y división automática del PDF completo cuando OCR requiere partir un PDF pesado.
+* Importar texto directamente desde `txt`, `md`, `html`, `htm`, `docx`, `epub` y `pdf` con texto seleccionable; extraer texto mediante la ruta respaldada por Google desde `rtf` y `odt`; aplicar OCR a imágenes (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`, `jp2`) y PDF escaneados o aplanados; además de planificar extracción por lotes para múltiples archivos en cola y división automática del PDF completo cuando OCR requiere partir un PDF pesado.
 * El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.
 * Editor de texto con búsqueda y reemplazo.
 * Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.
@@ -226,7 +226,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 ## Features
 
-* Import text directly from `txt`, `md`, `html`, `htm`, `docx`, and `pdf` with selectable text; extract text through the Google-backed path from `rtf` and `odt`; run OCR on images (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) and scanned or flattened PDFs; and plan batch extraction for multiple queued files plus automatic full-PDF split when OCR needs a heavy PDF to be divided first.
+* Import text directly from `txt`, `md`, `html`, `htm`, `docx`, `epub`, and `pdf` with selectable text; extract text through the Google-backed path from `rtf` and `odt`; run OCR on images (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`, `jp2`) and scanned or flattened PDFs; and plan batch extraction for multiple queued files plus automatic full-PDF split when OCR needs a heavy PDF to be divided first.
 * Text can be entered by pasting it from the clipboard and/or manually.
 * Text editor with find and replace.
 * Reading-time estimation with configurable WPM (words per minute).

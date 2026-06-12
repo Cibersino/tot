@@ -274,6 +274,7 @@
           "setup_missing_credentials": "OCR mew credentials.json faltaley. Düllinge kiñe valid Google OAuth credenciales archivo ka wiño küdaw.",
           "setup_invalid_credentials": "Düllingelu credenciales archivo no küme Google OAuth mew. Düllinge kiñe valid credentials.json ka wiño küdaw.",
           "quota_or_rate_limited": "OCR cuota/rate limit mew pichi antü bloqueadongey. Pichi alünnge ka wiño küdaw.",
+          "image_upload_too_large": "Imajen archivo upload ngeal fey Google OCR ñi yamüwün mew fenten fütra ngey.",
           "runtime_error": "Extracción mew OCR runtime welulkuy. Kintunge consola ka wiño küdaw.",
           "cancelled": "OCR extracción katrüntuy.",
           "cleanup_warning": "OCR afi tañi küdaw, welu pepilay lifeltuam ti chillka kamapu mu. Adkintunge mi carpeta Google Drive mu.",

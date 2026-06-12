@@ -274,6 +274,7 @@
           "setup_missing_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te ngaro o ngā raraunga Google OAuth kua takai ki te taupānga.",
           "setup_invalid_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te muhu o ngā raraunga Google OAuth kua takai ki te taupānga.",
           "quota_or_rate_limited": "Kua āraia rangitahitia te OCR e ngā quota/tepe auau. Tatari ka ngana anō.",
+          "image_upload_too_large": "Kua nui ake te kōnae atahanga hei tuku i te rahi e whakaaetia ana e Google OCR.",
           "runtime_error": "I puta he hapa whakahaere OCR i te tango. Tirohia te papatohu ka ngana anō.",
           "cancelled": "Kua whakakorea te tango OCR.",
           "cleanup_warning": "Kua oti te OCR, engari i rahua te horoi i te kōnae rangitahi mamao. Tirohia tō kōpaki Google Drive.",

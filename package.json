@@ -107,6 +107,7 @@
     }
   },
   "dependencies": {
+    "@xmldom/xmldom": "^0.8.13",
     "adm-zip": "^0.5.16",
     "googleapis": "^171.4.0",
     "mammoth": "^1.11.0",

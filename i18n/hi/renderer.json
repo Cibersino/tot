@@ -274,6 +274,7 @@
           "setup_missing_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अनुपस्थित हैं।",
           "setup_invalid_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अमान्य हैं।",
           "quota_or_rate_limited": "OCR अस्थायी रूप से quota/rate limit के कारण अवरुद्ध है। प्रतीक्षा करें और फिर प्रयास करें।",
+          "image_upload_too_large": "अपलोड की जाने वाली छवि फ़ाइल Google OCR द्वारा स्वीकार किए गए आकार से बड़ी है।",
           "runtime_error": "निकासी के दौरान OCR runtime त्रुटि हुई। कंसोल देखें और फिर प्रयास करें।",
           "cancelled": "OCR निकासी रद्द कर दी गई।",
           "cleanup_warning": "OCR पूरा हुआ, लेकिन अस्थायी remote फ़ाइल cleanup विफल रहा। अपना Google Drive फ़ोल्डर देखें।",
