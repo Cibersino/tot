@@ -19,6 +19,9 @@
 const path = require('path');
 const AdmZip = require('adm-zip');
 const { DOMParser } = require('@xmldom/xmldom');
+const Log = require('../log');
+
+const log = Log.get('text-extraction-epub');
 
 // =============================================================================
 // EPUB structural bounds
@@ -173,14 +176,22 @@ function buildZipEntryMap(zip) {
   }
 
   const entriesByPath = new Map();
+  let duplicateEntryCount = 0;
   entries.forEach((entry) => {
     const safeEntryPath = normalizeArchivePath(entry && entry.entryName ? entry.entryName : '', {
       allowParentSegments: false,
     });
     if (!entriesByPath.has(safeEntryPath)) {
       entriesByPath.set(safeEntryPath, entry);
+      return;
     }
+    duplicateEntryCount += 1;
   });
+  if (duplicateEntryCount > 0) {
+    log.warn('EPUB archive contained duplicate normalized entry paths; later duplicates were ignored.', {
+      duplicateEntryCount,
+    });
+  }
   return entriesByPath;
 }
 
@@ -315,18 +326,27 @@ function resolveRootfilePath(containerDoc) {
     const mediaType = getTrimmedAttribute(rootfileNode, 'media-type').toLowerCase();
     const fullPath = getTrimmedAttribute(rootfileNode, 'full-path');
     return mediaType === 'application/oebps-package+xml' && fullPath;
-  }) || rootfiles.find((rootfileNode) => {
+  });
+  if (preferredRootfile) {
+    return normalizeArchivePath(getTrimmedAttribute(preferredRootfile, 'full-path'), {
+      allowParentSegments: false,
+    });
+  }
+
+  const fallbackRootfile = rootfiles.find((rootfileNode) => {
     const fullPath = getTrimmedAttribute(rootfileNode, 'full-path');
     return !!fullPath;
   });
 
-  if (!preferredRootfile || typeof preferredRootfile.getAttribute !== 'function') {
+  if (!fallbackRootfile || typeof fallbackRootfile.getAttribute !== 'function') {
     throw createEpubError('EPUB_INVALID_CONTAINER_XML', 'EPUB container.xml does not expose a readable rootfile.');
   }
 
-  return normalizeArchivePath(getTrimmedAttribute(preferredRootfile, 'full-path'), {
+  const fallbackRootfilePath = normalizeArchivePath(getTrimmedAttribute(fallbackRootfile, 'full-path'), {
     allowParentSegments: false,
   });
+  log.warn('EPUB container.xml did not declare an application/oebps-package+xml rootfile with a usable path; falling back to the first valid rootfile path.');
+  return fallbackRootfilePath;
 }
 
 function shouldTreatManifestItemAsHtml(manifestItem) {
@@ -352,10 +372,12 @@ function parsePackageDocument(opfDoc, opfPath) {
   }
 
   const manifestById = new Map();
+  let skippedManifestItemCount = 0;
   manifestItems.forEach((manifestItemNode) => {
     const id = getTrimmedAttribute(manifestItemNode, 'id');
     const href = getTrimmedAttribute(manifestItemNode, 'href');
     if (!id || !href) {
+      skippedManifestItemCount += 1;
       return;
     }
     const hrefResolved = resolveArchivePath(opfPath, href);
@@ -366,6 +388,11 @@ function parsePackageDocument(opfDoc, opfPath) {
       mediaType: getTrimmedAttribute(manifestItemNode, 'media-type'),
     });
   });
+  if (skippedManifestItemCount > 0) {
+    log.warn('EPUB manifest items missing id or href were ignored.', {
+      skippedManifestItemCount,
+    });
+  }
 
   const spineItemrefNodes = getElementChildrenByLocalName(spineNode, 'itemref');
   if (!spineItemrefNodes.length) {
