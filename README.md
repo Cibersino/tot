@@ -7,7 +7,7 @@
 
 # toT — de Texto a Tiempo
 
-**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina extracción de texto desde documentos e imágenes, presets de WPM configurables, conteo preciso, snapshots de texto, organizador de tareas, cronómetro con ventana flotante y tests de velocidad de lectura. Te permite medir, organizar y terminar lecturas con menos incertidumbre.
+**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina extracción de texto desde archivos de texto e imagen, presets de WPM configurables, conteo preciso, snapshots de texto, un editor de texto, un editor de tareas, cronómetro y test de velocidad de lectura para que puedas medir, organizar y completar lecturas con menos margen de adivinación.
 
 ![Guía básica animada](public/assets/instrucciones/guia-basica.gif)
 
@@ -23,18 +23,18 @@
 
 ## Funcionalidades
 
-* Importar texto directamente desde `txt`, `md`, `html`, `htm`, `docx`, `epub` y `pdf` con texto seleccionable; extraer texto mediante la ruta respaldada por Google desde `rtf` y `odt`; aplicar OCR a imágenes (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`, `jp2`) y PDF escaneados o aplanados; además de planificar extracción por lotes para múltiples archivos en cola y división automática del PDF completo cuando OCR requiere partir un PDF pesado.
-* El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.
-* Editor de texto con búsqueda y reemplazo.
-* Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.
-* Conteo de palabras y caracteres (con/sin espacios).
-* Segmentación “precisa” de palabras usando `Intl.Segmenter`.
-* Presets de WPM: crear/editar/eliminar + restaurar valores por defecto.
-* Cronómetro con cálculo de WPM real + ventana flotante.
-* Snapshots de texto: guardar/cargar los textos actuales.
-* Test de velocidad de lectura: flujo guiado con texto aleatorio desde pool o con el texto actual, medición de WPM, preguntas opcionales de comprensión y creación asistida de presets.
-* Editor de tareas: organizador de planes de lectura.
-* Interfaz multi-idioma con más de 25 idiomas activos.
+* Extraer texto desde archivos `txt`, `md`, `html`, `htm`, `docx`, `epub`, `rtf`, `odt`, `pdf` e imágenes (`png`, `jpg`, `jpeg`, `jp2`, `webp`, `bmp`, `tif`, `tiff`), con selección de páginas en PDFs, OCR para imágenes y PDFs escaneados, planificación por lotes para múltiples archivos y división automática del PDF completo cuando OCR necesita partir un PDF pesado.
+* Introducir texto pegándolo desde el portapapeles y/o manualmente.
+* Editor de Texto con búsqueda y reemplazo.
+* Estimación de tiempo de lectura con WPM configurable (palabras por minuto).
+* Conteo de palabras y caracteres (con y sin espacios).
+* Segmentación de palabras en “modo preciso” usando `Intl.Segmenter`.
+* Presets de WPM: crear, editar, eliminar y restaurar valores por defecto.
+* Test de velocidad de lectura guiado: usar texto actual o textos del pool, medir WPM, mostrar preguntas opcionales de comprensión y crear presets personalizados.
+* Cronómetro con cálculo de WPM real; ventana flotante opcional.
+* Snapshots de texto: guardar y cargar textos actuales.
+* Editor de Tareas: organizador de planes de lectura.
+* Interfaz multidioma con más de 25 idiomas activos.
 
 ---
 
@@ -102,14 +102,14 @@ Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar
 
 Accesos rápidos visibles en la ventana principal:
 
-* `📥`: extraer texto desde archivo (incluye flujo OCR cuando aplica, planificación por lotes para varios archivos y división automática de PDFs pesados para OCR).
-* `📋↺` / `📋+`: reemplazar o agregar texto desde portapapeles.
-* `⌨`: abrir Editor de Texto.
-* `💾` / `📂`: guardar/cargar snapshot del texto actual.
-* `📝` / `🗃️`: nueva tarea o cargar tarea.
+* **Extracción de texto**: extraer texto desde archivo (incluye OCR cuando aplica, planificación por lotes para varios archivos y división automática del PDF completo cuando OCR necesita partir un PDF pesado).
+* **Portapapeles**: reemplazar o agregar texto desde el portapapeles.
+* **Editor de Texto**: abrir el Editor de Texto.
+* **Snapshots de texto**: guardar o cargar un snapshot de texto.
+* **Tareas**: crear una nueva tarea o cargar una tarea.
 * `Test de velocidad de lectura`: iniciar un test guiado desde un texto del pool o desde el texto actual.
-* `＋` / `✎` / `🗑` / `⟲`: crear, editar, eliminar o restaurar presets de WPM.
-* `▣`: activar o desactivar el Cronómetro Flotante.
+* **Presets de WPM**: crear, editar, eliminar o restaurar presets de WPM.
+* **Cronómetro Flotante**: activar o desactivar el Cronómetro Flotante.
 * `Modo preciso`: activar o desactivar el modo preciso de conteo de palabras y caracteres.
 
 ---
@@ -189,7 +189,7 @@ Esto es solo para desarrollo: en builds empaquetados no se muestra el menú “D
 
 ---
 
-## Reportes de bugs / solicitudes de funcionalidad
+## Reportes de errores / solicitudes de funcionalidad
 
 * Usar GitHub Issues.
 * Planificación y priorización: [toT Roadmap](https://github.com/users/Cibersino/projects/2)
@@ -210,34 +210,34 @@ MIT — ver [`LICENSE`](LICENSE).
 
 # toT — from Text to Time
 
-**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines text extraction from documents and images, configurable WPM presets, precise counting, text snapshots, a task organizer, a stopwatch with floating window, and reading speed tests. It allows you to measure, organize, and complete readings with less guesswork.
+**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines text extraction from text and image files, configurable WPM presets, precise counting, text snapshots, a text editor, a task editor, a stopwatch, and a reading speed test so you can measure, organize, and complete readings with less guesswork.
 
 ![Animated basic guide](public/assets/instrucciones/guia-basica.gif)
 
 *Are you hesitant to start certain readings because you don't know how much work it will really take?*
-*Do you find it hard to finish reading and abandon them in the middle?*
+*Do you find it hard to finish readings and end up abandoning them halfway?*
 *Do you want to overcome your difficulties and develop your reading skills using scientific measurement and organization tools?*
 *Does your browser accumulate a lot of tabs and bookmarks with news and articles of interest that you don't know if you will be able to read?*
-*Do you have to teach a class this semester and must provide your students with a realistic bibliography?*
-*Do you have to prepare a paper for tomorrow to present to an audience for one hour?*
-*Do you need to script an audiovisual capsule with precise timing?*
+*Do you have to teach a class this semester and need to give your students a realistic bibliography?*
+*Do you need to prepare a text by tomorrow for a one-hour presentation?*
+*Do you need to script a short audiovisual piece with precise timing?*
 *Is the pile of books on your bedside table growing mercilessly?*
 *Do you want to do experimental studies related to reading time?*
 
 ## Features
 
-* Import text directly from `txt`, `md`, `html`, `htm`, `docx`, `epub`, and `pdf` with selectable text; extract text through the Google-backed path from `rtf` and `odt`; run OCR on images (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`, `jp2`) and scanned or flattened PDFs; and plan batch extraction for multiple queued files plus automatic full-PDF split when OCR needs a heavy PDF to be divided first.
-* Text can be entered by pasting it from the clipboard and/or manually.
-* Text editor with find and replace.
-* Reading-time estimation with configurable WPM (words per minute).
-* Word and character counting (with/without spaces).
-* “Precise mode” word segmentation using `Intl.Segmenter`.
-* WPM presets: create/edit/delete + restore defaults.
-* Stopwatch with real WPM calculation; optional floating window.
-* Text snapshots: save/load current texts.
-* Reading speed test: guided flow with random pool text or the current text, WPM measurement, optional comprehension questions, and assisted preset creation.
-* Task editor: reading plan organizer.
-* Multi-language UI with 25+ active languages.
+* Extract text from `txt`, `md`, `html`, `htm`, `docx`, `epub`, `rtf`, `odt`, `pdf`, and image files (`png`, `jpg`, `jpeg`, `jp2`, `webp`, `bmp`, `tif`, `tiff`), with PDF page selection, OCR for images and scanned PDFs, batch planning for multiple files, and automatic full-PDF split when OCR needs a heavy PDF to be divided first.
+* Enter text by pasting it from the clipboard and/or typing it manually.
+* Provide a Text Editor with find and replace.
+* Estimate reading time with configurable WPM (words per minute).
+* Count words and characters, with or without spaces.
+* Segment words in Precise mode using `Intl.Segmenter`.
+* Manage WPM presets: create, edit, delete, and restore defaults.
+* Run a guided reading speed test: use the current text or texts from the pool, measure WPM, show optional comprehension questions, and create custom presets.
+* Use a stopwatch with real WPM calculation and an optional floating window.
+* Save and load current texts as text snapshots.
+* Organize reading plans in the Task Editor.
+* Use a multi-language UI with 25+ active languages.
 
 ---
 
@@ -301,19 +301,19 @@ The extension estimates the reading time of text you select on web pages. It is 
 
 ## Usage
 
-Usage instructions are included in the app menu (“How to use?”).
+Usage instructions are included in the app menu (“How to use”).
 
 Quick actions in the main window:
 
-* `📥`: extract text from file (includes OCR when needed, batch planning for multiple files, and automatic heavy-PDF split for OCR).
-* `📋↺` / `📋+`: replace or append clipboard text.
-* `⌨`: open Text Editor.
-* `💾` / `📂`: save/load current-text snapshot.
-* `📝` / `🗃️`: new task or load task.
-* `Reading speed test`: start a guided test from pool text or from the current text.
-* `＋` / `✎` / `🗑` / `⟲`: create, edit, delete, or restore WPM presets.
-* `▣`: enable or disable the Floating Stopwatch.
-* `Precise mode`: enable or disable the precise mode for counting words and characters.
+* **Text extraction**: extract text from a file (includes OCR when needed, batch planning for multiple files, and automatic full-PDF split when OCR needs a heavy PDF to be divided first).
+* **Clipboard**: replace or append text from the clipboard.
+* **Text Editor**: open Text Editor.
+* **Text snapshots**: save or load a text snapshot.
+* **Tasks**: create a new task or load a task.
+* `Reading speed test`: start a guided test from text in the pool or from the current text.
+* **WPM presets**: create, edit, delete, or restore WPM presets.
+* **Floating Stopwatch**: enable or disable the Floating Stopwatch.
+* `Precise mode`: enable or disable Precise mode for counting words and characters.
 
 ---
 

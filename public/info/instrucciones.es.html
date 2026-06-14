@@ -50,13 +50,13 @@
             <ul>
               <li>Toma una buena foto de una página representativa de cualquier libro y guárdala en cualquier carpeta de
                 tu computador.</li>
-              <li>Elige un WPM base usando un preset o el slider/input (un preset por defecto basta para empezar).</li>
-              <li>Pulsa el <strong>botón de extraer texto</strong> o arrastra y suelta esa foto sobre la ventana principal.</li>
+              <li>Elige un WPM base usando un preset o el campo o control deslizante (un preset por defecto basta para empezar).</li>
+              <li>Pulsa el <strong>botón Extraer texto</strong> o arrastra y suelta esa foto sobre la ventana principal.</li>
               <li>Si es tu primera vez usando el OCR de la app (Reconocimiento Óptico de Caracteres) o aún no lo tienes
                 conectado a una cuenta de Google, sigue los pasos para autorizar y conectar el servicio OCR de Google
                 con Google Drive.</li>
-              <li>La extracción de texto desde la imagen comenzará. Cuando termine, en el modal final de aplicación
-                elige <strong>Sobrescribir</strong> y aplica esa página representativa una sola vez.</li>
+              <li>La extracción de texto desde la imagen comenzará. Cuando termine, en la ventana final de extracción de texto
+                elige <strong>Reemplazar</strong> y aplica esa página representativa una sola vez.</li>
               <li>Abre el <strong>Editor de Texto</strong> con su botón para inspeccionar el resultado extraído. Si hace falta,
                 haz ajustes.</li>
               <li>Luego, en la sección de resultados, usa el multiplicador bajo el tiempo estimado con la cantidad total
@@ -68,7 +68,7 @@
             <p><strong>Crea un preset personalizado con el test de velocidad de lectura</strong></p>
             <ul>
               <li>Con el texto actual ya listo, pulsa <strong>Test de velocidad de lectura</strong>.</li>
-              <li>En el modal inicial, elige <strong>Iniciar con texto actual</strong>.</li>
+              <li>En la ventana inicial, elige <strong>Iniciar con texto actual</strong>.</li>
               <li>Lee ese texto en condiciones normales y usa el <strong>Cronómetro Flotante</strong> para pausar al
                 terminar.</li>
               <li>Cuando el flujo termine, guarda el preset sugerido a partir del WPM medido.</li>
@@ -85,7 +85,7 @@
               <li>Desde cualquier fuente: copia el texto y usa <strong>Reemplazar desde el portapapeles</strong>.</li>
               <li>Si estás armando un texto por partes: usa <strong>Agregar desde el portapapeles</strong> tantas veces como necesites.</li>
               <li>Para repetir el texto del portapapeles en un clic, fija el número en <strong>Repeticiones</strong> y
-                luego aplica la acción: <strong>Reemplazar desde el portapapeles</strong> para sobrescribir o <strong>Agregar desde el portapapeles</strong> para anexar.</li>
+                luego aplica la acción: <strong>Reemplazar desde el portapapeles</strong> para reemplazar o <strong>Agregar desde el portapapeles</strong> para agregar.</li>
             </ul>
           </li>
 
@@ -124,7 +124,7 @@
               <li>Usa el multiplicador bajo el tiempo estimado cuando quieras proyectar esa misma estimación
                 <strong>N</strong> veces sin duplicar el texto actual.
               </li>
-              <li>Si el tiempo “no cuadra”, vuelve a (2) y (3), o alterna (4) para comparar.</li>
+              <li>Si el tiempo “no cuadra”, revisa el texto fuente y tu WPM, o compara Simple vs Preciso.</li>
             </ul>
           </li>
 
@@ -231,18 +231,18 @@
         </ul>
 
         <ol>
-          <li>Haz clic en el <strong>botón de extraer texto</strong> y elige el archivo, o arrastra/suelta el archivo sobre la ventana
-            principal (mientras arrastras archivos, se muestra un resaltado visual de drop).</li>
+          <li>Haz clic en el <strong>botón Extraer texto</strong> y elige el archivo, o arrastra y suelta el archivo sobre la ventana
+            principal (mientras arrastras archivos, se muestra un resaltado visual de arrastre).</li>
           <li>Si el archivo es un PDF, primero elige <strong>Todas las páginas</strong> o un
-            <strong>Rango de páginas</strong> continuo. Si eliges rango, también puedes decidir si conservar el PDF
+            <strong>Rango de páginas</strong> contiguo. Si eliges rango, también puedes decidir si conservar el PDF
             local generado con esas páginas al terminar.</li>
           <li>Si se detecta un PDF con texto seleccionable, elige <strong>Usar nativo</strong> o <strong>Usar
               OCR</strong>
             (recomendación: prueba primero el nativo, es más rápido).</li>
-          <li>Cuando el texto esté listo, en el modal final de aplicación elige <strong>Sobrescribir</strong> o
-            <strong>Anexar</strong>.
+          <li>Cuando el texto esté listo, en la ventana final de extracción de texto elige <strong>Reemplazar</strong> o
+            <strong>Agregar</strong>.
           </li>
-          <li>El modal final de aplicación también incluye <strong>Repeticiones</strong> si quieres repetir el texto
+          <li>La ventana final de extracción de texto también incluye <strong>Repeticiones</strong> si quieres repetir el texto
             extraído antes de aplicarlo.</li>
           <li>Si quieres aproximar un libro completo a partir de una página modelo, aplica esa página una sola vez y
             luego usa el multiplicador bajo el tiempo estimado con la cantidad total de páginas del libro.</li>
@@ -388,7 +388,7 @@
           utilizando los botones <strong>Guardar snapshot de texto</strong> y <strong>Cargar snapshot de texto</strong>.</p>
 
         <ul>
-          <li><strong>Guardar snapshot de texto</strong>: primero abre un modal interno donde puedes etiquetar opcionalmente el snapshot por
+          <li><strong>Guardar snapshot de texto</strong>: primero abre una ventana interna donde puedes etiquetar opcionalmente el snapshot por
             <strong>idioma</strong>, <strong>tipo</strong> y <strong>dificultad</strong>. Después de confirmar ahí, la
             app abre un cuadro de diálogo nativo para “guardar archivo”, ubicado en
             <code>config/saved_current_texts/</code>. Puedes guardar en <strong>subcarpetas</strong> (y crear carpetas)
@@ -433,11 +433,11 @@
         <ul>
           <li>Ajustar el WPM manualmente. Puedes:
             <ul>
-              <li>Escribir directamente en el input.</li>
-              <li>Mover el punto en la barra horizontal (slider).</li>
+              <li>Escribir directamente en el campo.</li>
+              <li>Mover el punto en la barra horizontal.</li>
             </ul>
           </li>
-          <li>Elegir un <strong>preset</strong> de la lista dropdown de presets. Aquí puedes tener las siguientes
+          <li>Elegir un <strong>preset</strong> desde la lista desplegable de presets. Aquí puedes tener las siguientes
             opciones:
             <ul>
               <li>Presets por defecto para todos los idiomas y/o para idiomas específicos.</li>
@@ -527,8 +527,7 @@
 Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p>Recuerda que <strong>Repeticiones</strong> duplica texto dentro del texto actual, ya sea desde el selector
-          principal (<strong>Reemplazar desde el portapapeles</strong>/<strong>Agregar desde el portapapeles</strong>) o desde el modal final de aplicación de
-          extracción/OCR. Usa el multiplicador bajo el tiempo estimado cuando quieras proyectar tiempo sin expandir el
+          principal (<strong>Reemplazar desde el portapapeles</strong>/<strong>Agregar desde el portapapeles</strong>) o desde la ventana final de extracción de texto. Usa el multiplicador bajo el tiempo estimado cuando quieras proyectar tiempo sin expandir el
           texto actual.</p>
 
         <p><strong>Qué observar:</strong></p>
@@ -593,10 +592,10 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ol>
           <li>Deja listo el <strong>texto actual</strong> que realmente quieres usar como muestra.</li>
           <li>Haz clic en <strong>Test de velocidad de lectura</strong>.</li>
-          <li>En el modal inicial, elige <strong>Iniciar con texto actual</strong>.</li>
+          <li>En la ventana inicial, elige <strong>Iniciar con texto actual</strong>.</li>
           <li>Se abrirán el <strong>Editor de Texto</strong> y el <strong>Cronómetro Flotante</strong>; lee normalmente.</li>
           <li>Cuando termines, pausa presionando <strong>(⏸)</strong> en el Cronómetro Flotante.</li>
-          <li>La app calculará el WPM y abrirá el modal de preset para que lo guardes como preset personalizado.</li>
+          <li>La app calculará el WPM y abrirá la ventana de preset para que lo guardes como preset personalizado.</li>
         </ol>
 
         <p><strong>Nota:</strong> puedes cancelar el test presionando <strong>(⏹)</strong> en el Cronómetro Flotante. Si cancelas esta ruta, el texto actual se conserva.</p>
@@ -604,14 +603,14 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <h4>6.3 Ruta “texto aleatorio”</h4>
         <ol>
           <li>Haz clic en <strong>Test de velocidad de lectura</strong>.</li>
-          <li>En el modal inicial puedes filtrar por <strong>idioma</strong>, <strong>tipo</strong> y
+          <li>En la ventana inicial puedes filtrar por <strong>idioma</strong>, <strong>tipo</strong> y
             <strong>dificultad</strong>.
           </li>
           <li>Pulsa <strong>⟲</strong> junto a <strong>Archivos elegibles</strong> si quieres volver a marcar como no
             usados todos los textos del pool.</li>
           <li>Pulsa <strong>Iniciar con texto aleatorio</strong> para que la app elija un texto elegible del pool.</li>
           <li>Lee el texto en la sesión guiada y presiona <strong>(⏸)</strong> en el Cronómetro Flotante al terminar.</li>
-          <li>Si ese texto incluye preguntas de comprensión, aparecerán antes del modal de presets.</li>
+          <li>Si ese texto incluye preguntas de comprensión, aparecerán antes de la ventana de presets.</li>
         </ol>
 
         <p><strong>Nota:</strong> puedes cancelar el test presionando <strong>(⏹)</strong> en el Cronómetro Flotante. Si cancelas esta ruta, el texto actual <strong>no</strong> se conserva.</p>
@@ -648,8 +647,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <h4>7.2 Agregar y editar filas en la lista de lecturas</h4>
         <p>
-          Abre el <strong>Editor de Tareas</strong> con <strong>Nueva tarea</strong>. Puedes agregar filas haciendo clic en <strong>“Add
-            row”</strong>. Cada fila representa un elemento de lectura con estas columnas: <strong>Texto</strong>,
+          Abre el <strong>Editor de Tareas</strong> con <strong>Nueva tarea</strong>. Puedes agregar filas haciendo clic en <strong>Agregar fila</strong>. Cada fila representa un elemento de lectura con estas columnas: <strong>Texto</strong>,
           <strong>Tiempo</strong>, <strong>%</strong> (porcentaje completado), <strong>Falta</strong> (tiempo restante),
           <strong>Enlace</strong>, <strong>Comentario</strong>, y <strong>Acciones</strong>.
         </p>
@@ -658,15 +656,15 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             noches y una noche”).</li>
           <li>Pon una estimación en <strong>Tiempo</strong> (por ejemplo, pega el tiempo estimado que obtuviste en el
             Paso 5) </li>
-          <li>Actualiza <strong>%</strong> con tu porcentaje aproximado completado para rastrear el progreso; el tiempo
+          <li>Actualiza <strong>%</strong> con el porcentaje aproximado completado para rastrear el progreso; el tiempo
             restante en <strong>Falta</strong> se actualiza en consecuencia.</li>
-          <li>Use <strong>Enlace</strong> para almacenar una ruta local o una URL HTTPS para el elemento.</li>
+          <li>Usa <strong>Enlace</strong> para almacenar una ruta local o una URL HTTPS para el elemento.</li>
           <li>Usa <strong>Agregar comentario</strong> para cualquier nota que quieras agregar sobre el elemento y/o vincularlo a
-            cualquier <strong>snapshot de texto</strong> guardado (aparecerá un ícono clickeable para cargar ese snapshot).
+            cualquier <strong>snapshot de texto</strong> guardado (aparecerá un ícono clicable para cargar ese snapshot).
           </li>
         </ul>
 
-        <h4>7.3 Links</h4>
+        <h4>7.3 Enlaces</h4>
         <p>
           La columna de <strong>Enlace</strong> puede usarse para almacenar una ruta local o una URL HTTPS para el
           elemento.
@@ -674,12 +672,12 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ul>
           <li>Para rutas locales, pega las rutas absolutas de cada archivo (por ejemplo,
             C:\Users\user\Documents\mybook.txt).</li>
-          <li>Para URLs, asegúrate de incluir el protoclo (por ejemplo, https://).</li>
+          <li>Para URLs, asegúrate de incluir el protocolo (por ejemplo, https://).</li>
           <li>Al hacer clic en <strong>↗️</strong>, se intentará abrirlo con la aplicación predeterminada (por ejemplo,
             un PDF se abrirá en el visor de PDF predeterminado, una URL se abrirá en el navegador web predeterminado).
           </li>
           <li>Cuando haces clic en un enlace URL, la aplicación te puede solicitar confirmación (y puede recordar hosts
-            confiables) antes de abrirla en el navegador predeterminado.</li>>
+            confiables) antes de abrirlo en el navegador predeterminado.</li>
         </ul>
 
         <p><strong>Nota:</strong> Los hosts confiables se recuerdan en una lista que se conserva en la carpeta de
@@ -699,16 +697,15 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p><strong>Nota:</strong> Las tareas guardadas se almacenan en la carpeta de configuración del usuario bajo
           <code>config/tasks/lists/</code>. Puedes administrarlas directamente desde el sistema de archivos si es
-          necesario.
+          necesario.</p>
 
-        <h4>7.5 Biblioteca (lecturas reutilizables)</h4>
+        <h4>7.5 Biblioteca de lecturas (lecturas reutilizables)</h4>
         <p>
-          En la ventana del Editor de Tareas, puedes guardar una lectura en una <strong>Biblioteca</strong> reutilizable.
-          Esto es útil para elementos que leas con frecuencia o utilizas en diferentes tareas. Para guardar una lectura en
-          la biblioteca, haz clic en la acción <strong>guardar en la biblioteca</strong> en la fila correspondiente. 
-          La lectura guardada estará disponible en la lista de la Biblioteca, haciendo clic en 
-          <strong>Cargar biblioteca</strong> en el Editor de Tareas. Desde allí puedes cargar en tu tarea cualquier 
-          lectura que hayas guardado.
+          En la ventana del Editor de Tareas, puedes guardar una lectura en una <strong>biblioteca de lecturas</strong> reutilizable.
+          Esto es útil para lecturas que uses con frecuencia o en distintas tareas. Para guardar una lectura en
+          la biblioteca, haz clic en la acción <strong>guardar en biblioteca</strong> de la fila correspondiente.
+          La lectura guardada estará disponible desde <strong>Abrir biblioteca</strong> en el Editor de Tareas. Desde allí puedes cargar en tu tarea cualquier
+          lectura guardada.
         </p>
 
         <figure class="instrucciones-media">
@@ -796,7 +793,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             de estado de uso.
           </li>
           <li><strong>Estado de ventanas</strong> (por ejemplo: tamaño/posición del Editor de Texto).</li>
-          <li><strong>Tareas</strong>: listas de lecturas, biblioteca de lecturas, lista de enlaces permitidos y estado de
+          <li><strong>Tareas</strong>: filas de lectura, biblioteca de lecturas, lista de enlaces permitidos y estado de
             la interfaz de usuario del Editor de Tareas (geometría de ventana y ancho de columna).</li>
         </ul>
 
@@ -841,7 +838,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <h3>Paso 10 — Límites y textos muy largos</h3>
 
         <ul>
-          <li>Por seguridad y rendimiento, la app impone un límite duro de tamaño para el texto actual, de 10 millones
+          <li>Por seguridad y rendimiento, la app impone un límite duro de tamaño para el texto actual, de 12 millones
             de caracteres. Si intentas excederlo, la app <em>trunca</em> el texto y muestra un aviso.</li>
           <li>Con textos extremadamente largos (o con combinaciones complejas de caracteres) puede haber demoras al
             contar y mayor uso de memoria.</li>
@@ -935,7 +932,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             sesiones). Esto incluye:
             <ul>
               <li><strong>Texto actual</strong> y configuración general (idioma, WPM, modo de conteo, presets).</li>
-              <li><strong>Snapshots de texto guardados</strong> (biblioteca opcional bajo
+              <li><strong>Snapshots de texto guardados</strong> (archivos de snapshot bajo
                 <code>config/saved_current_texts/</code>).
               </li>
               <li><strong>Test de velocidad de lectura</strong>: pool local de textos del test y su archivo local
@@ -947,7 +944,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
                 o si la app divide automáticamente un PDF completo pesado para OCR, puede crear PDFs locales temporales
                 en un área temporal propia de la app. La app intenta limpiarlos durante el procesamiento y al cierre
                 normal de la sesión; las copias retenidas se guardan fuera de esa área.</li>
-              <li><strong>Tareas guardadas</strong> (listas de lecturas, biblioteca de lecturas y lista de enlaces
+              <li><strong>Tareas guardadas</strong> (filas de lectura, biblioteca de lecturas y lista de enlaces
                 permitidos).</li>
             </ul>
           </li>
