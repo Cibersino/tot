@@ -46,17 +46,17 @@
 
         <ol>
           <li>
-            <p><strong>Extract a model page (recommended onboarding flow)</strong></p>
+            <p><strong>Extract a representative page (recommended onboarding flow)</strong></p>
             <ul>
               <li>Take a good photo of a representative page from any book and save it in any folder on your computer.
               </li>
-              <li>Choose a base WPM using a preset or the slider/input (a default preset is fine to start).</li>
-              <li>Press the <strong>extract text button</strong> or drag/drop that photo onto the main window.</li>
+              <li>Choose a base WPM using a preset or the slider/input; a default preset is fine to start.</li>
+              <li>Click the <strong>Extract text</strong> button or drag and drop that photo onto the main window.</li>
               <li>If this is your first time using the app's OCR (Optical Character Recognition) or you don't have it
                 connected to a Google account, follow the steps to authorize and connect the Google OCR service to
                 Google Drive.</li>
-              <li>The text extraction from the image will begin. When it finishes, in the final apply modal choose
-                <strong>Overwrite</strong> and apply that representative page once.
+              <li>The text extraction from the image will begin. When it finishes, choose
+                <strong>Overwrite</strong> in the final text extraction window and apply that representative page once.
               </li>
               <li>Open the <strong>Text Editor</strong> with its button to inspect the extracted result. If necessary, make
                 adjustments.</li>
@@ -70,7 +70,7 @@
             <p><strong>Create a custom preset with the reading speed test</strong></p>
             <ul>
               <li>Once the current text is ready, click <strong>Reading speed test</strong>.</li>
-              <li>In the entry modal, choose <strong>Start with current text</strong>.</li>
+              <li>In the entry window, choose <strong>Start with current text</strong>.</li>
               <li>Read that text under normal conditions and use the <strong>Floating Stopwatch</strong> to pause when
                 you
                 finish.</li>
@@ -97,7 +97,7 @@
             <p><strong>Edit the text (if needed)</strong></p>
             <ul>
               <li>Open <strong>Text Editor</strong> with its button.</li>
-              <li>Correct everything weird: line breaks, hyphenation or “garbage” (menus, ads, repeated headers).
+              <li>Correct everything weird: line breaks, hyphenation, or “garbage” (menus, ads, repeated headers).
               </li>
               <li>You can modify or add whatever you want, by typing or pasting in the Text Editor.</li>
             </ul>
@@ -107,27 +107,27 @@
             <p><strong>Choose your reading speed (WPM)</strong></p>
             <ul>
               <li>If you don't want to think too much, select a <strong>preset</strong> (“Default”, etc.).</li>
-              <li>If the text is dense/technical, lower the WPM; if it is light, turn it up.</li>
+              <li>If the text is dense/technical, lower the WPM; if it is light, increase it.</li>
             </ul>
           </li>
 
           <li>
             <p><strong>Choose the counting mode</strong></p>
             <ul>
-              <li><strong>Precise</strong>: recommended in general, and especially if your text has many signs, mixed
-                scripts or emojis (uses linguistic segmentation and graphemes)</li>
-              <li><strong>Simple</strong>: rudimentary approach based on spaces</li>
+              <li><strong>Precise</strong>: recommended in general, and especially if your text has many punctuation marks,
+                symbols, mixed scripts, or emojis (uses linguistic segmentation and graphemes).</li>
+              <li><strong>Simple</strong>: rudimentary approach based on spaces.</li>
             </ul>
           </li>
 
           <li>
             <p><strong>Read the results</strong></p>
             <ul>
-              <li>Check <strong>words</strong>, <strong>characters</strong> and the <strong>estimated time</strong></li>
+              <li>Check <strong>words</strong>, <strong>characters</strong>, and the <strong>estimated time</strong>.</li>
               <li>Use the multiplier below the estimated time when you want to project that same estimate
                 <strong>N</strong> times without duplicating the current text.
               </li>
-              <li>If the time “doesn't add up”, go back to (2) and (3), or toggle (4) to compare.</li>
+              <li>If the time “doesn't add up”, review the source text and your WPM, or compare Simple vs Precise.</li>
             </ul>
           </li>
 
@@ -170,37 +170,37 @@
         <h2>Full instructions</h2>
 
         <p>Are you hesitant to start certain readings because you don't know how much work it will really take?<br />
-          Do you find it hard to finish reading and abandon them in the middle?<br />
+          Do you find it hard to finish readings and end up abandoning them halfway?<br />
           Do you want to overcome your difficulties and develop your reading skills using scientific measurement and
           organization tools?<br />
           Does your browser accumulate a lot of tabs and bookmarks with news and articles of interest that you don't
           know if you will be able to read?<br />
-          Do you have to teach a class this semester and must provide your students with a realistic bibliography?<br />
-          Do you have to prepare a paper for tomorrow to present to an audience for one hour?<br />
-          Do you need to script an audiovisual capsule with precise timing?<br />
+          Do you have to teach a class this semester and need to give your students a realistic bibliography?<br />
+          Do you need to prepare a text by tomorrow for a one-hour presentation?<br />
+          Do you need to script a short audiovisual piece with precise timing?<br />
           Is the pile of books on your bedside table growing mercilessly?<br />
           Do you want to do experimental studies related to reading time?</p>
 
-        <p>This app is designed for:</p>
+        <p>This app is designed to:</p>
         <ul>
-          <li>Extract text from <code>txt</code>, <code>md</code>, <code>html</code>, <code>htm</code>,
+          <li>extract text from <code>txt</code>, <code>md</code>, <code>html</code>, <code>htm</code>,
             <code>docx</code>, <code>epub</code>, <code>rtf</code>, <code>odt</code>, <code>pdf</code>, and image files
             (<code>png</code>, <code>jpg</code>, <code>jpeg</code>, <code>jp2</code>, <code>webp</code>, <code>bmp</code>,
             <code>tif</code>, <code>tiff</code>), with PDF page selection, OCR for images and scanned PDFs, batch
             planning for multiple files, and automatic full-PDF split when OCR needs a heavy PDF to be divided first.
           </li>
-          <li>Text can be entered by pasting it from the clipboard and/or manually.</li>
-          <li>Text editor with find and replace.</li>
-          <li>Reading-time estimation with configurable WPM (words per minute).</li>
-          <li>Word and character counting (with/without spaces).</li>
-          <li>“Precise mode” word segmentation using <code>Intl.Segmenter</code>.</li>
-          <li>WPM presets: create/edit/delete + restore defaults.</li>
-          <li>Guided reading speed test: use the current text or pool texts, measure WPM, show optional comprehension
+          <li>let you enter text by pasting it from the clipboard and/or typing it manually.</li>
+          <li>provide a <strong>Text Editor</strong> with find and replace.</li>
+          <li>estimate reading time with configurable WPM (words per minute).</li>
+          <li>count words and characters, with or without spaces.</li>
+          <li>segment words in <strong>Precise</strong> mode using <code>Intl.Segmenter</code>.</li>
+          <li>manage WPM presets: create, edit, delete, and restore defaults.</li>
+          <li>run a guided reading speed test: use the current text or pool texts, measure WPM, show optional comprehension
             questions, and create custom presets.</li>
-          <li>Stopwatch with real WPM calculation; optional floating window.</li>
-          <li>Text snapshots: save/load current texts.</li>
-          <li>Task editor: reading plan organizer.</li>
-          <li>Multi-language UI: <code>es</code>, <code>arn</code>, <code>en</code>,
+          <li>use a stopwatch with real WPM calculation and an optional floating window.</li>
+          <li>save and load current texts as text snapshots.</li>
+          <li>organize reading plans in the <strong>Task Editor</strong>.</li>
+          <li>use a multi-language UI: <code>es</code>, <code>arn</code>, <code>en</code>,
             <code>fr</code>, <code>de</code>, <code>it</code>, <code>pt</code>.
           </li>
         </ul>
@@ -219,7 +219,7 @@
 
         <h4>Route 1A — Extract from files (recommended primary route)</h4>
 
-        <p>Use the <strong>extract text button</strong> to extract text directly from files, with automatic routing by
+        <p>Use the <strong>Extract text</strong> button to extract text directly from files, with automatic routing by
           file type. You can also <strong>drag and drop</strong> a file onto the main window: it runs the same
           extraction flow as that button.</p>
 
@@ -239,21 +239,21 @@
         </ul>
 
         <ol>
-          <li>Click the <strong>extract text button</strong> and choose the file, or drag/drop the file onto the main window (while dragging
+          <li>Click the <strong>Extract text</strong> button and choose the file, or drag and drop the file onto the main window (while dragging
             files, a visual drop highlight is shown).</li>
-          <li>If the file is a PDF, first choose <strong>All pages</strong> or a continuous
+          <li>If the file is a PDF, first choose <strong>All pages</strong> or a contiguous
             <strong>Page range</strong>. If you choose a range, you can also decide whether to keep the locally
             generated PDF with those pages after processing.
           </li>
           <li>If a selectable-text PDF is detected, choose <strong>Use native</strong> or
             <strong>Use OCR</strong> (recommendation: try native first, it's faster).
           </li>
-          <li>When text is ready, in the final apply modal choose <strong>Overwrite</strong> or <strong>Append</strong>.
+          <li>When the text is ready, choose <strong>Overwrite</strong> or <strong>Append</strong> in the final text extraction window.
           </li>
-          <li>The final apply modal also includes <strong>Repetitions</strong> if you want to repeat the extracted text
+          <li>That window also includes <strong>Repetitions</strong> if you want to repeat the extracted text
             before applying it.
           </li>
-          <li>If you want to approximate a full book from one model page, apply that page once and then use the
+          <li>If you want to approximate a full book from one representative page, apply that page once and then use the
             multiplier below the estimated time with the book's total page count.
           </li>
         </ol>
@@ -305,7 +305,7 @@
           </li>
 
           <li>
-            <p>Copy. Right click and “Copy” or: Ctrl+C (Windows/Linux); Cmd+C (Mac).</p>
+            <p>Copy. Right-click and “Copy” or: Ctrl+C (Windows/Linux); Cmd+C (Mac).</p>
           </li>
         </ol>
 
@@ -394,7 +394,7 @@
         </p>
 
         <ul>
-          <li><strong>Save text snapshot</strong>: first opens an in-app modal where you can optionally tag the snapshot by
+          <li><strong>Save text snapshot</strong>: first opens an in-app window where you can optionally tag the snapshot by
             <strong>language</strong>, <strong>type</strong>, and <strong>difficulty</strong>. After you confirm there,
             the app opens a native “save file” dialog rooted at <code>config/saved_current_texts/</code>. You can save
             into <strong>subfolders</strong> (and create folders) as long as you stay inside that snapshots tree. The
@@ -532,7 +532,7 @@
 Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p>Remember that <strong>Repetitions</strong> duplicates text in the current text, either from the main selector
-          (<strong>Replace from clipboard</strong>/<strong>Append from clipboard</strong>) or from the import/OCR final apply modal. Use the multiplier below
+          (<strong>Replace from clipboard</strong>/<strong>Append from clipboard</strong>) or from the final text extraction window. Use the multiplier below
           the estimated time when you want to project time without expanding the current text.</p>
 
         <p><strong>What to see:</strong></p>
@@ -596,30 +596,30 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ol>
           <li>Leave the <strong>current text</strong> exactly as the sample you want to use.</li>
           <li>Click <strong>Reading speed test</strong>.</li>
-          <li>In the entry modal, choose <strong>Start with current text</strong>.</li>
+          <li>In the entry window, choose <strong>Start with current text</strong>.</li>
           <li>The <strong>Text Editor</strong> and the <strong>Floating Stopwatch</strong> will open; read normally.
           </li>
-          <li>When you finish, pause pressing <strong>(⏸)</strong> in the Floating Stopwatch.</li>
-          <li>The app will compute the WPM and open the preset modal so you can save it as a custom preset.</li>
+          <li>When you finish, press <strong>(⏸)</strong> in the Floating Stopwatch to pause.</li>
+          <li>The app will compute the WPM and open the preset window so you can save it as a custom preset.</li>
         </ol>
 
-        <p><strong>Note:</strong> you can cancel the test pressing <strong>(⏹)</strong> in the Floating Stopwatch. If
+        <p><strong>Note:</strong> you can cancel the test by pressing <strong>(⏹)</strong> in the Floating Stopwatch. If
           you cancel this path, the current text is preserved.</p>
 
         <h4>6.3 “Random text” path</h4>
         <ol>
           <li>Click <strong>Reading speed test</strong>.</li>
-          <li>In the entry modal you can filter by <strong>language</strong>, <strong>type</strong>, and
+          <li>In the entry window you can filter by <strong>language</strong>, <strong>type</strong>, and
             <strong>difficulty</strong>.
           </li>
           <li>Click <strong>⟲</strong> next to <strong>Eligible files</strong> if you want to mark all pool texts as
             unused again.</li>
           <li>Press <strong>Start with random text</strong> so the app chooses an eligible text from the pool.</li>
           <li>Read that text in the guided session and press <strong>(⏸)</strong> in the Floating Stopwatch when you finish.</li>
-          <li>If that text includes comprehension questions, they will appear before the preset modal.</li>
+          <li>If that text includes comprehension questions, they will appear before the preset window.</li>
         </ol>
 
-        <p><strong>Note:</strong> you can cancel the test pressing <strong>(⏹)</strong> in the Floating Stopwatch. If
+        <p><strong>Note:</strong> you can cancel the test by pressing <strong>(⏹)</strong> in the Floating Stopwatch. If
           you cancel this path, the current text is <strong>not</strong> preserved.</p>
 
         <h4>6.4 Interpretation and warnings</h4>
@@ -664,7 +664,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ul>
           <li>Enter the item title/description in <strong>Text</strong> (e.g. “Las mil noches y una noche”).</li>
           <li>Set an estimate in <strong>Time</strong> (for example, paste the estimate you got in Step 5).</li>
-          <li>Update <strong>%</strong> with your approximately percentage completed to track progress; the remaining
+          <li>Update <strong>%</strong> with your approximate completion percentage to track progress; the remaining
             time in <strong>Left</strong> updates accordingly.</li>
           <li>Use <strong>Link</strong> to store a local path or an HTTPS URL for the item.</li>
           <li>Use <strong>Add comment</strong> for any notes you want to add about the item and/or link it to any
@@ -682,7 +682,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li>Clicking <strong>↗️</strong> will attempt to open it with the default application (e.g. a PDF will open in
             the default PDF viewer, a URL will open in the default web browser).</li>
           <li>When you click on a URL link, the app may ask for confirmation (and may remember trusted hosts) before
-            opening it in the default browser.</li>>
+            opening it in the default browser.</li>
         </ul>
 
         <p><strong>Note:</strong> The trusted hosts are remembered in a list that is persisted in the user configuration
@@ -700,15 +700,14 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         </ul>
 
         <p><strong>Note:</strong> Saved tasks are stored in the user configuration folder under
-          <code>config/tasks/lists/</code>. You can manage them directly from the file system if needed.
+          <code>config/tasks/lists/</code>. You can manage them directly from the file system if needed.</p>
 
-        <h4>7.5 Library (reusable reading items)</h4>
+        <h4>7.5 Reading library (reusable readings)</h4>
         <p>
-          In the Task Editor window you can save a reading item into a <strong>Library</strong>. This is useful for
-          items you read frequently or use in different tasks. To save a reading item to the Library, click the
-          <strong>save to library</strong> action in its row. The saved item will be available in the list of the
-          Library, clicking <strong>Load library</strong> in the Task Editor. From there you can load in your task any
-          reading item you saved.
+          In the Task Editor window you can save a reading into the <strong>reading library</strong>. This is useful for
+          readings you use frequently or reuse in different tasks. To save a reading to the reading library, click the
+          <strong>save to library</strong> action in its row. The saved reading will be available when you click
+          <strong>Load library</strong> in the Task Editor. From there you can load any saved reading into your task.
         </p>
 
         <figure class="instrucciones-media">
@@ -786,7 +785,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p>The app saves data locally to maintain your settings between sessions. In general it includes:</p>
         <ul>
           <li><strong>Current text</strong> (text status).</li>
-          <li><strong>Saved text snapshots</strong> (optional library under <code>config/saved_current_texts/</code>).
+          <li><strong>Saved text snapshots</strong> (snapshot files under <code>config/saved_current_texts/</code>).
           </li>
           <li><strong>Configuration</strong> (e.g. language, current WPM, counting mode).</li>
           <li><strong>Google OCR setup state</strong>: app-managed local Google OAuth credentials and, when OCR is
@@ -798,7 +797,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Presets</strong> (custom and default preset status).</li>
           <li><strong>Reading speed test</strong>: local test-text pool and its external local usage state file.</li>
           <li><strong>Status of windows</strong> (e.g. size/position of the Text Editor).</li>
-          <li><strong>Tasks</strong>: reading item lists, readings library, link allowlist, and Task Editor UI state (window
+          <li><strong>Tasks</strong>: reading rows, reading library, link allowlist, and Task Editor UI state (window
             geometry and column widths).</li>
         </ul>
 
@@ -843,7 +842,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <h3>Step 10 — Limits and very long texts</h3>
 
         <ul>
-          <li>For security and performance, the app imposes a hard limit on the current text size of 10 million
+          <li>For security and performance, the app imposes a hard limit on the current text size of 12 million
             characters. If you try to exceed it, the app <em>truncates</em> the text and displays a warning.</li>
           <li>With extremely long texts (or complex combinations of characters) there may be delays in counting and
             increased memory usage.</li>
@@ -938,7 +937,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             includes:
             <ul>
               <li><strong>Current text</strong> and general configuration (language, WPM, counting mode, presets).</li>
-              <li><strong>Saved text snapshots</strong> (optional library under
+              <li><strong>Saved text snapshots</strong> (snapshot files under
                 <code>config/saved_current_texts/</code>).
               </li>
               <li><strong>Reading speed test</strong>: local test-text pool and its external local usage state file.
@@ -949,7 +948,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
                 the app automatically splits a heavy full PDF for OCR, it may create temporary local PDFs in an
                 app-owned temp area. The app attempts best-effort cleanup during processing and at normal shutdown;
                 retained copies stay outside that temp area.</li>
-              <li><strong>Saved tasks</strong> (reading item lists, readings library and link allowlist).</li>
+              <li><strong>Saved tasks</strong> (reading rows, reading library, and link allowlist).</li>
             </ul>
           </li>
           <li><strong>Internet:</strong> the app may require connection when you execute actions that use external
@@ -989,7 +988,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li>To add a language: it is added to the language manifest and the corresponding translation files are
             created.</li>
         </ul>
-        <p>Operational recommendation: before translating massively, define a minimum glossary (for example:“current
+        <p>Operational recommendation: before translating massively, define a minimum glossary (for example: “current
           text”, “precise/simple mode”, “floating window”, “presets”, “real WPM”).</p>
 
         <hr />
@@ -1091,7 +1090,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <hr />
 
         <h3>“How do I improve my reading skills?”</h3>
-        <p>(Soon here we will develop the theoretical basis and practical utility of this app)</p>
+        <p>(The theoretical basis and practical utility of this app will be developed here later.)</p>
       </div>
     </section>
 

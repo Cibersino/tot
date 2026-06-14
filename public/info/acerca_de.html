@@ -19,7 +19,7 @@
       <h3>Versión</h3>
       <ul>
         <li><strong>Versión:</strong> <span id="appVersion"></span></li>
-        <li><strong>Plataforma:</strong> Desktop (Electron)</li>
+        <li><strong>Plataforma:</strong> Escritorio (Electron)</li>
         <li><strong>Entorno:</strong> <span id="appEnv"></span></li>
         <li><strong>Runtime:</strong> <span id="appRuntimeVersions"></span></li>
       </ul>
@@ -36,7 +36,7 @@
         <li><strong>Repositorio:</strong>
           <code><a href="https://github.com/Cibersino/tot">github.com/Cibersino/tot</a></code>
         </li>
-        <li><strong>Reportar bugs / sugerencias:</strong>
+        <li><strong>Reportar errores o sugerencias:</strong>
           <code><a href="https://github.com/Cibersino/tot/issues">github.com/Cibersino/tot/issues</a></code>
         </li>
         <li><strong>Contacto privado:</strong>
@@ -44,7 +44,7 @@
         </li>
       </ul>
       <p>
-        Incluye la versión y pasos para reproducir en GitHub Issues. Para consultas privadas, usa el correo.
+        Incluye la versión y los pasos para reproducir el problema en GitHub Issues. Para consultas privadas, usa el correo.
       </p>
     </section>
 
@@ -54,27 +54,27 @@
       <h3>Privacidad y datos</h3>
       <ul>
         <li><strong>Telemetría:</strong> no se recopilan métricas ni se envían datos de uso.</li>
-        <li><strong>Texto del usuario:</strong> el contenido que ingresas/pegas en la app no se envía a Internet ni se
-          comparte con servidores de los desarrolladores (se procesa localmente).</li>
+        <li><strong>Texto del usuario:</strong> el contenido que ingresas o pegas en la app no se envía a Internet ni se
+          comparte con servidores del desarrollador (se procesa localmente).</li>
         <li><strong>Almacenamiento:</strong> la configuración y el estado se guardan localmente en el equipo del
           usuario.</li>
-        <li><strong>Actualizaciones:</strong> la app solo consulta información pública de versiones y abre el navegador
-          para descargar; no descarga ni instala actualizaciones automáticamente.</li>
+        <li><strong>Actualizaciones:</strong> la app solo consulta información pública de versiones y puede abrir el navegador externo
+          hacia la página de descarga; no descarga ni instala actualizaciones automáticamente.</li>
         <li><strong>Enlaces externos:</strong> la app también puede abrir enlaces externos por acción explícita del
           usuario (por ejemplo, desde páginas informativas o desde el Editor de Tareas).</li>
-        <li><strong>OCR:</strong> si el usuario decide usar la función OCR para extraer texto de archivos, su activación
+        <li><strong>OCR:</strong> si decides usar la función OCR para extraer texto de archivos, su activación
           abre el navegador del sistema para autorizar Google y los archivos elegidos para OCR se envían a Google solo
-          para esa operación; no se envían a los desarrolladores. El usuario puede revocar la autorización mediante
+          para esa operación; no se envían al desarrollador. Puedes revocar la autorización mediante
           <strong>Menú &gt; Preferencias &gt; Desconectar Google OCR</strong>.</li>
       </ul>
       <p>
         <strong>Conectividad:</strong> la app sigue siendo principalmente local para escribir/pegar/editar texto y
         calcular conteos/estimaciones. La conectividad normal incluye verificación de actualizaciones y apertura de
-        enlaces externos por acción del usuario. Si el usuario decide activar o usar la función OCR, también
-        existe conectividad con Google para autorización y procesamiento OCR de archivos seleccionados por el usuario.
+        enlaces externos por acción del usuario. Si decides activar o usar la función OCR, también
+        existe conectividad con Google para autorización y procesamiento OCR de los archivos que selecciones.
       </p>
       <p>
-        Para más detalles, ver el documento de
+        Para más detalles, consulta el documento de
         <code><a href="appdoc:privacy-policy">PRIVACY.md</a></code>.
       </p>
     </section>
@@ -85,7 +85,7 @@
       <h3>Licencias y avisos</h3>
       <p>
         La app se distribuye bajo licencia MIT. Además, esta distribución incluye componentes y recursos de terceros
-        con sus propias licencias, cuyos textos se entregan junto al build:
+        con sus propias licencias. Sus textos se entregan junto al build:
       </p>
       <ul>
         <li>
@@ -97,11 +97,11 @@
           ver <code><a href="appdoc:license-baskervville">LICENSE_Baskervville_OFL.txt</a></code>.
         </li>
         <li>
-          <strong>Electron runtime del build</strong> — licencia/avisos del runtime empaquetado:
+          <strong>Electron runtime del build</strong> — licencia y avisos del runtime empaquetado:
           ver <code><a href="appdoc:license-electron">LICENSE.electron.txt</a></code>.
         </li>
         <li>
-          <strong>Chromium runtime del build</strong> — avisos/licencias del runtime empaquetado:
+          <strong>Chromium runtime del build</strong> — avisos y licencias del runtime empaquetado:
           <code><a href="appdoc:licenses-chromium">LICENSES.chromium.html</a></code>.
         </li>
         <li>
@@ -125,7 +125,7 @@
           ver <code><a href="appdoc:license-text-extraction-image-processing">LICENSE_sharp_0.34.4.txt</a></code>.
         </li>
         <li>
-          <strong>@abasb75/jpeg2000-decoder@2.5.4-f</strong> — MIT, como licencia del paquete fuente usado para vendorizar el runtime JP2; este paquete npm no se distribuye como dependencia instalada del build:
+          <strong>@abasb75/jpeg2000-decoder@2.5.4-f</strong> — MIT, licencia del paquete fuente usado para vendorizar el runtime JP2; este paquete npm no se distribuye como dependencia instalada del build:
           ver <code><a href="appdoc:license-text-extraction-jp2-decoder">LICENSE_@abasb75_jpeg2000-decoder_2.5.4-f.txt</a></code>.
         </li>
         <li>
@@ -133,7 +133,7 @@
           ver <code><a href="appdoc:license-text-extraction-jp2-runtime">LICENSE_openjpeg_wasm_runtime.txt</a></code>.
         </li>
         <li>
-          <strong>Proveniencia del runtime JP2 vendorado</strong> — origen y mapeo del artefacto empaquetado:
+          <strong>Proveniencia del runtime JP2 vendorizado</strong> — origen y mapeo del artefacto empaquetado:
           ver <code><a href="appdoc:license-text-extraction-jp2-vendor-provenance">PROVENANCE_openjpeg_wasm_runtime_vendor.txt</a></code>.
         </li>
         <li>
@@ -169,7 +169,7 @@
     <section aria-label="Créditos">
       <h3>Créditos</h3>
       <ul>
-        <li><strong>Autor / desarrollador:</strong> <a href="https://github.com/Cibersino">Cibersino</a></li>
+        <li><strong>Autor y desarrollador:</strong> <a href="https://github.com/Cibersino">Cibersino</a></li>
         <li><strong>Runtime:</strong> Electron (Chromium + Node.js).</li>
       </ul>
     </section>
