@@ -111,7 +111,7 @@
   /* Dimensions */
   --control-height-md: 30px;
   --modal-max-height: 85vh;
-  --logo-height: 90px;
+  --logo-height: 98px;
   --logo-links-scale: 0.7;
   --kofi-logo-scale: 0.82;
 
@@ -507,8 +507,8 @@ body {
 
 .selector-text {
   left: 4px;
-  height: 156px;
-  width: 819px;
+  height: 158px;
+  width: 820px;
   background: var(--section-bg);
   border: 1px solid var(--section-border);
   box-sizing: border-box;
@@ -762,10 +762,10 @@ body.text-extraction-drop-active .app-container {
 /* Reading speed section */
 
 .velocity {
-  top: 165px;
+  top: 167px;
   left: 4px;
-  height: 155px;
-  width: 398px;
+  height: 162px;
+  width: 390px;
   background: var(--section-bg);
   border: 1px solid var(--section-border);
   gap: 6px;
@@ -827,10 +827,10 @@ select#presets:focus {
 
 .results {
   position: relative;          /* needed for .help-row absolute to work */
-  top: 165px;
-  left: 407px;
-  height: 155px;
-  width: 416px;
+  top: 167px;
+  left: 399px;
+  height: 162px;
+  width: 425px;
   background: var(--section-bg);
   border: 1px solid var(--section-border);
   padding: 8px 10px;
@@ -941,9 +941,9 @@ select#presets:focus {
 /* Stopwatch section */
 
 .cronometro {
-  top: 325px;
+  top: 334px;
   left: 4px;
-  height: 98px;
+  height: 102px;
   width: 232px;
   background: var(--section-bg);
   border: 1px solid var(--section-border);
