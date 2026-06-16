@@ -95,7 +95,7 @@
     "linux": {
       "artifactName": "toT-${version}-linux-${arch}.${ext}",
       "category": "Utility",
-      "icon": "logo-cibersino.png",
+      "icon": "icons",
       "target": [
         {
           "target": "AppImage",
