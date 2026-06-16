@@ -315,10 +315,10 @@ h1 {
 }
 
 .action-side__icon {
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
   display: block;
-  flex: 0 0 20px;
+  flex: 0 0 32px;
 }
 
 .action-side__title {
@@ -648,6 +648,12 @@ body.download-modal-open {
 
   .action-side__title {
     font-size: 1.08rem;
+  }
+
+  .action-side__icon {
+    width: 20px;
+    height: 20px;
+    flex-basis: 20px;
   }
 
   .action-side--extension {
