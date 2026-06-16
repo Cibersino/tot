@@ -147,12 +147,10 @@ tot/
 ├── node_modules/                  # { }
 ├── public/
 │ ├── assets/
-│ │ ├── extension/                 # { }
+│ │ ├── extension/
 │ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
 │ │ ├── kofi_symbol.png
 │ │ ├── logo-cibersino.svg
-│ │ ├── logo-tot.120x120.png
-│ │ ├── logo-tot.png
 │ │ ├── logo-tot.svg
 │ │ └── SOURCES.md
 │ ├── fonts/
