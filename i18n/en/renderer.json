@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Save text snapshot",
       "message": "You can optionally tag this text snapshot before choosing where to save it.",
+      "search": {
+        "placeholder": "Type to filter options",
+        "no_results": "No matching options"
+      },
       "labels": {
         "language": "Language",
         "type": "Type",

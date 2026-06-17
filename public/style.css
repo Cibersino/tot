@@ -2171,13 +2171,18 @@ select#presets:focus {
 .snapshot-save-tags-field {
   display: grid;
   gap: 4px;
+  position: relative;
 }
 
-.snapshot-save-tags-field label {
+.snapshot-save-tags-field-label {
   font-size: var(--font-size-ui-sm);
 }
 
-.snapshot-save-tags-field select {
+.snapshot-save-tags-combobox {
+  position: relative;
+}
+
+.snapshot-save-tags-input {
   width: 100%;
   min-height: var(--control-height-md);
   padding: var(--control-padding);
@@ -2186,6 +2191,53 @@ select#presets:focus {
   background: var(--snapshot-save-tags-selector-bg);
   color: var(--snapshot-save-tags-selector-text);
   box-sizing: border-box;
+  font: inherit;
+  line-height: inherit;
+}
+
+.snapshot-save-tags-input[aria-expanded="true"] {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.snapshot-save-tags-listbox {
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 0;
+  right: 0;
+  z-index: 2;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--snapshot-save-tags-selector-bg);
+  color: var(--snapshot-save-tags-selector-text);
+  border: 1px solid var(--input-border-strong-color);
+  border-top: none;
+  border-bottom-left-radius: var(--control-radius-sm);
+  border-bottom-right-radius: var(--control-radius-sm);
+  box-sizing: border-box;
+}
+
+.snapshot-save-tags-option {
+  padding: var(--control-padding);
+  font: inherit;
+  line-height: inherit;
+  background: var(--snapshot-save-tags-selector-bg);
+  color: var(--snapshot-save-tags-selector-text);
+  cursor: pointer;
+}
+
+.snapshot-save-tags-option.is-active,
+.snapshot-save-tags-option[aria-selected="true"] {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.snapshot-save-tags-option.is-clear,
+.snapshot-save-tags-option.is-empty {
+  font-style: italic;
+}
+
+.snapshot-save-tags-option.is-disabled {
+  cursor: default;
 }
 
 .snapshot-save-tags-modal-actions {
