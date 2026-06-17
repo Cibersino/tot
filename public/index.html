@@ -463,22 +463,37 @@
             guardarlo.</p>
           <div class="snapshot-save-tags-form">
             <div class="snapshot-save-tags-field">
-              <label id="snapshotSaveTagsLanguageLabel" for="snapshotSaveTagsLanguage">Idioma</label>
-              <select id="snapshotSaveTagsLanguage">
-                <option value="">Sin etiqueta de idioma</option>
-              </select>
+              <span id="snapshotSaveTagsLanguageLabel" class="snapshot-save-tags-field-label">Idioma</span>
+              <div id="snapshotSaveTagsLanguageControl" class="snapshot-save-tags-combobox">
+                <input id="snapshotSaveTagsLanguageInput" class="snapshot-save-tags-input" type="text"
+                  autocomplete="off" role="combobox" aria-autocomplete="list"
+                  aria-labelledby="snapshotSaveTagsLanguageLabel" aria-controls="snapshotSaveTagsLanguageListbox"
+                  aria-expanded="false" />
+                <div id="snapshotSaveTagsLanguageListbox" class="snapshot-save-tags-listbox" role="listbox" hidden
+                  aria-hidden="true"></div>
+              </div>
             </div>
             <div class="snapshot-save-tags-field">
-              <label id="snapshotSaveTagsTypeLabel" for="snapshotSaveTagsType">Tipo</label>
-              <select id="snapshotSaveTagsType">
-                <option value="">Sin etiqueta de tipo</option>
-              </select>
+              <span id="snapshotSaveTagsTypeLabel" class="snapshot-save-tags-field-label">Tipo</span>
+              <div id="snapshotSaveTagsTypeControl" class="snapshot-save-tags-combobox">
+                <input id="snapshotSaveTagsTypeInput" class="snapshot-save-tags-input" type="text"
+                  autocomplete="off" role="combobox" aria-autocomplete="list"
+                  aria-labelledby="snapshotSaveTagsTypeLabel" aria-controls="snapshotSaveTagsTypeListbox"
+                  aria-expanded="false" />
+                <div id="snapshotSaveTagsTypeListbox" class="snapshot-save-tags-listbox" role="listbox" hidden
+                  aria-hidden="true"></div>
+              </div>
             </div>
             <div class="snapshot-save-tags-field">
-              <label id="snapshotSaveTagsDifficultyLabel" for="snapshotSaveTagsDifficulty">Dificultad</label>
-              <select id="snapshotSaveTagsDifficulty">
-                <option value="">Sin etiqueta de dificultad</option>
-              </select>
+              <span id="snapshotSaveTagsDifficultyLabel" class="snapshot-save-tags-field-label">Dificultad</span>
+              <div id="snapshotSaveTagsDifficultyControl" class="snapshot-save-tags-combobox">
+                <input id="snapshotSaveTagsDifficultyInput" class="snapshot-save-tags-input" type="text"
+                  autocomplete="off" role="combobox" aria-autocomplete="list"
+                  aria-labelledby="snapshotSaveTagsDifficultyLabel"
+                  aria-controls="snapshotSaveTagsDifficultyListbox" aria-expanded="false" />
+                <div id="snapshotSaveTagsDifficultyListbox" class="snapshot-save-tags-listbox" role="listbox" hidden
+                  aria-hidden="true"></div>
+              </div>
             </div>
           </div>
           <div class="snapshot-save-tags-modal-actions">
