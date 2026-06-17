@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Qillqa snapshotta waqaychay",
       "message": "Maypi waqaychanaykita akllanaykipaq ñawpaqta kay qillqa snapshotta munaspa etiquetay.",
+      "search": {
+        "placeholder": "Akllanakta filtraypaq qillqay",
+        "no_results": "Mana tinkuq akllanak kanchu"
+      },
       "labels": {
         "language": "Rimay",
         "type": "Laya",

@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Eñongatu jehai snapshot",
       "message": "Eñongatu hag̃ua renda reiporavo mboyve, ikatu emoĩ etiqueta ko jehai snapshot-pe.",
+      "search": {
+        "placeholder": "Ehai embogua hag̃ua opción-kuéra",
+        "no_results": "Ndaipóri opción ojueheguáva"
+      },
       "labels": {
         "language": "Ñe’ẽ",
         "type": "Tipo",

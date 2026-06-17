@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Salvar coso de texto",
       "message": "Etiqueta opcionalmente este coso de texto antes de elegir dónde salvarlo.",
+      "search": {
+        "placeholder": "Escribe para filtrar opciones",
+        "no_results": "No hay opciones coincidentes"
+      },
       "labels": {
         "language": "Idioma",
         "type": "Tipo",

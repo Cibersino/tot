@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "保存文本快照",
       "message": "在选择保存位置前，可选择为此文本快照添加标签。",
+      "search": {
+        "placeholder": "输入以筛选选项",
+        "no_results": "没有匹配的选项"
+      },
       "labels": {
         "language": "语言",
         "type": "类型",

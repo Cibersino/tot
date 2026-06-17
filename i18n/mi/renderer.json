@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Tiaki hopunga kuputuhi",
       "message": "Ki te hiahia koe, tāpirihia he tūtohu ki tēnei hopunga kuputuhi i mua i te kōwhiri i te wāhi tiaki.",
+      "search": {
+        "placeholder": "Patohia hei tātari i ngā kōwhiringa",
+        "no_results": "Kāore he kōwhiringa ōrite"
+      },
       "labels": {
         "language": "Reo",
         "type": "Momo",

@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Elkünun textu snapshot",
       "message": "Münafülchi tañi textu snapshot müley ta küme ngünekan mew ka chumgechi elkünuael.",
+      "search": {
+        "placeholder": "Wirintuku opciones filtrangeal",
+        "no_results": "Ngelay opciones trafkülelu"
+      },
       "labels": {
         "language": "Dungun",
         "type": "Az",

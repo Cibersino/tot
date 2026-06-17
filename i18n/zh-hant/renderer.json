@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "儲存文字快照",
       "message": "在選擇儲存位置前，可選擇為此文字快照新增標籤。",
+      "search": {
+        "placeholder": "輸入以篩選選項",
+        "no_results": "沒有相符的選項"
+      },
       "labels": {
         "language": "語言",
         "type": "類型",

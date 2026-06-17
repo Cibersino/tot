@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Gcina i-snapshot yombhalo",
       "message": "Uma uthanda, faka amathegi kule snapshot yombhalo ngaphambi kokukhetha ukuthi igcinwa kuphi.",
+      "search": {
+        "placeholder": "Thayipha ukuze uhlunge izinketho",
+        "no_results": "Azikho izinketho ezifanayo"
+      },
       "labels": {
         "language": "Ulimi",
         "type": "Uhlobo",

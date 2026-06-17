@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Metin snapshot'ını kaydet",
       "message": "Kaydedilecek konumu seçmeden önce bu metin snapshot'ını isteğe bağlı olarak etiketleyin.",
+      "search": {
+        "placeholder": "Seçenekleri filtrelemek için yazın",
+        "no_results": "Eşleşen seçenek yok"
+      },
       "labels": {
         "language": "Dil",
         "type": "Tür",

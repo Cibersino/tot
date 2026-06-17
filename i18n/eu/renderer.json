@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Gorde testu-snapshota",
       "message": "Nahi baduzu, etiketa ezazu testu-snapshot hau non gorde aukeratu aurretik.",
+      "search": {
+        "placeholder": "Idatzi aukerak iragazteko",
+        "no_results": "Ez dago bat datorren aukerarik"
+      },
       "labels": {
         "language": "Hizkuntza",
         "type": "Mota",

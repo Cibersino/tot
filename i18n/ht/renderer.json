@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Sove snapshot tèks",
       "message": "Ou ka mete etikèt sou snapshot tèks sa a anvan ou chwazi kote pou sove li.",
+      "search": {
+        "placeholder": "Tape pou filtre opsyon yo",
+        "no_results": "Pa gen opsyon ki koresponn"
+      },
       "labels": {
         "language": "Lang",
         "type": "Tip",

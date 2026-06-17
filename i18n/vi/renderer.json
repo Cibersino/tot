@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Lưu bản lưu văn bản",
       "message": "Bạn có thể gắn thẻ tùy chọn cho bản lưu văn bản này trước khi chọn nơi lưu.",
+      "search": {
+        "placeholder": "Nhập để lọc tùy chọn",
+        "no_results": "Không có tùy chọn phù hợp"
+      },
       "labels": {
         "language": "Ngôn ngữ",
         "type": "Loại",

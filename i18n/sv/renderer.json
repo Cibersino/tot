@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Spara textsnapshot",
       "message": "Du kan lägga till valfria taggar för denna textsnapshot innan du väljer var den ska sparas.",
+      "search": {
+        "placeholder": "Skriv för att filtrera alternativ",
+        "no_results": "Inga matchande alternativ"
+      },
       "labels": {
         "language": "Språk",
         "type": "Typ",

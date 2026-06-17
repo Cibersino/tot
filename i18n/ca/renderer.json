@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Desar snapshot de text",
       "message": "Etiqueta opcionalment aquest snapshot de text abans de triar on desar-lo.",
+      "search": {
+        "placeholder": "Escriu per filtrar opcions",
+        "no_results": "No hi ha opcions coincidents"
+      },
       "labels": {
         "language": "Idioma",
         "type": "Tipus",

@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Salva snapshot di testo",
       "message": "Aggiungi facoltativamente tag a questo snapshot di testo prima di scegliere dove salvarlo.",
+      "search": {
+        "placeholder": "Digita per filtrare le opzioni",
+        "no_results": "Nessuna opzione corrispondente"
+      },
       "labels": {
         "language": "Lingua",
         "type": "Tipo",

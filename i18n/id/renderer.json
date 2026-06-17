@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Simpan snapshot teks",
       "message": "Secara opsional, beri tag pada snapshot teks ini sebelum memilih lokasi penyimpanan.",
+      "search": {
+        "placeholder": "Ketik untuk memfilter opsi",
+        "no_results": "Tidak ada opsi yang cocok"
+      },
       "labels": {
         "language": "Bahasa",
         "type": "Jenis",

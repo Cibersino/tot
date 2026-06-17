@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Save text snapshot",
       "message": "You fit tag dis text snapshot before you choose where to save am.",
+      "search": {
+        "placeholder": "Type to filter options",
+        "no_results": "No matching options"
+      },
       "labels": {
         "language": "Language",
         "type": "Type",

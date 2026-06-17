@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Text-Snapshot speichern",
       "message": "Markieren Sie diesen Text-Snapshot optional, bevor Sie auswählen, wo er gespeichert werden soll.",
+      "search": {
+        "placeholder": "Tippen, um Optionen zu filtern",
+        "no_results": "Keine passenden Optionen"
+      },
       "labels": {
         "language": "Sprache",
         "type": "Typ",

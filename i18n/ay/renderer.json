@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Qillqata snapshot imaña",
       "message": "Kawkhansa imañ munta uk ajlliñ nayraqat, aka qillqata snapshot ukar munañaparjam etiqueta ucham.",
+      "search": {
+        "placeholder": "Ajlliñanak chhijllañatak qillqt’am",
+        "no_results": "Janiw kikipa ajlliñanak utjkiti"
+      },
       "labels": {
         "language": "Aru",
         "type": "Kasta",
