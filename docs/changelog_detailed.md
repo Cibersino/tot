@@ -83,6 +83,7 @@ Reglas:
   - modales batch (`planning` y `final`) e info lightbox close control.
 - La acción reveal/open del reporte final batch converge en la semántica visual compartida `open-target`, en lugar de mantener una excepción separada para “reveal folder”.
 - El copy de ayuda, instrucciones e i18n de `es`/`en` para snapshots y `reading speed test` deja de depender exclusivamente de referencias históricas por glyph cuando el control migrado ya se describe mejor por nombre o función.
+- El modal renderer previo al guardado de snapshots reemplaza los `<select>` nativos de `language` / `type` / `difficulty` por selectores buscables, manteniendo el contrato `{ tags } | null`, los valores canónicos del catálogo compartido y una apertura explícita del selector solo por interacción directa del usuario.
 - El contrato compartido de formatos soportados pasa a incluir `.jp2` solo en la familia OCR/imagen; el picker nativo, drag/drop, prepare y route selection lo heredan desde los owners ya existentes en lugar de abrir wiring especial.
 - `ocr_image_normalization.js` conserva el ownership del contrato de normalización OCR, pero delega la decodificación/materialización de `.jp2` a `ocr_jp2_normalization.js` para mantener aislada la dependencia runtime específica.
 - El runtime JP2 empaquetado deja de arrastrar el árbol completo de dependencias de build del paquete npm original (`tsup`/`esbuild`/`rollup`) y pasa a redistribuir solo el artefacto runtime vendorizado más su documentación legal/provenance asociada.
