@@ -337,6 +337,10 @@
     "snapshots": {
       "title": "Salvar snapshot de texto",
       "message": "Você pode adicionar etiquetas opcionais a este snapshot de texto antes de escolher onde salvá-lo.",
+      "search": {
+        "placeholder": "Digite para filtrar opções",
+        "no_results": "Nenhuma opção correspondente"
+      },
       "labels": {
         "language": "Idioma",
         "type": "Tipo",
