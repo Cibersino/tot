@@ -2182,6 +2182,16 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Modal previo a guardar snapshot; permite asignar etiquetas opcionales antes de elegir ubicación.
         // [CONCEPTO_APP] snapshot de texto; etiquetas de snapshot de texto
       },
+      "search": {
+        "placeholder": {
+          "es": "Escribe para filtrar opciones",
+          "en": "Type to filter options"
+        },
+        "no_results": {
+          "es": "No hay opciones coincidentes",
+          "en": "No matching options"
+        }
+      },
       "labels": {
         "language": {
           "es": "Idioma",
