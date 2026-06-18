@@ -114,16 +114,26 @@ function loadNumberFormatDefaults(lang) {
     // Some editors may add a UTF-8 BOM.
     raw = raw.replace(/^\uFEFF/, '');
 
-    const json = JSON.parse(raw);
+    const parsedNumberFormat = JSON.parse(raw);
 
-    const thousands = typeof json.thousands === 'string' ? json.thousands : '';
-    const decimal = typeof json.decimal === 'string' ? json.decimal : '';
+    const thousands = typeof parsedNumberFormat.thousands === 'string'
+      ? parsedNumberFormat.thousands
+      : '';
+    const decimal = typeof parsedNumberFormat.decimal === 'string'
+      ? parsedNumberFormat.decimal
+      : '';
 
     if (!thousands || !decimal) {
       log.warnOnce(
         `settings.loadNumberFormatDefaults.invalidSchema:${langCode}`,
         'numberFormat.json schema invalid (expected non-empty thousands/decimal strings):',
-        { langCode, filePath, keys: json && typeof json === 'object' ? Object.keys(json) : [] }
+        {
+          langCode,
+          filePath,
+          keys: parsedNumberFormat && typeof parsedNumberFormat === 'object'
+            ? Object.keys(parsedNumberFormat)
+            : [],
+        }
       );
       return null;
     }
@@ -155,11 +165,11 @@ function ensureNumberFormattingForBase(settings, base) {
 
   if (settings.numberFormatting[langKey]) return;
 
-  const nf = loadNumberFormatDefaults(langKey);
-  if (nf && nf.thousands && nf.decimal) {
+  const numberFormatDefaults = loadNumberFormatDefaults(langKey);
+  if (numberFormatDefaults && numberFormatDefaults.thousands && numberFormatDefaults.decimal) {
     settings.numberFormatting[langKey] = {
-      separadorMiles: nf.thousands,
-      separadorDecimal: nf.decimal,
+      separadorMiles: numberFormatDefaults.thousands,
+      separadorDecimal: numberFormatDefaults.decimal,
     };
   } else {
     log.warnOnce(
@@ -186,150 +196,171 @@ function ensureNumberFormattingForBase(settings, base) {
  * - Convert invalid shapes to safe defaults (and log once).
  * - Ensure language-dependent buckets exist for the current language base.
  */
-function normalizeSettings(s) {
-  if (!isPlainObjectRecord(s)) {
+function normalizeSettings(settings) {
+  if (!isPlainObjectRecord(settings)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidRoot',
       'Settings root is invalid; using empty object:',
-      { type: typeof s, isArray: Array.isArray(s), isNull: s === null }
+      {
+        type: typeof settings,
+        isArray: Array.isArray(settings),
+        isNull: settings === null,
+      }
     );
-    s = {};
+    settings = {};
   }
 
   // language must be a string; empty string means "unset".
-  if (typeof s.language !== 'string') {
+  if (typeof settings.language !== 'string') {
     log.warnOnce(
       'settings.normalizeSettings.invalidLanguage',
       'Invalid settings.language; forcing empty string:',
-      { type: typeof s.language }
+      { type: typeof settings.language }
     );
-    s.language = '';
+    settings.language = '';
   }
 
   // presets_by_language:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.presets_by_language === 'undefined') {
-    s.presets_by_language = {};
-  } else if (!isPlainObjectRecord(s.presets_by_language)) {
+  if (typeof settings.presets_by_language === 'undefined') {
+    settings.presets_by_language = {};
+  } else if (!isPlainObjectRecord(settings.presets_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidPresetsByLanguage',
       'Invalid presets_by_language; resetting to empty object:',
-      { type: typeof s.presets_by_language, isArray: Array.isArray(s.presets_by_language) }
+      {
+        type: typeof settings.presets_by_language,
+        isArray: Array.isArray(settings.presets_by_language),
+      }
     );
-    s.presets_by_language = {};
+    settings.presets_by_language = {};
   }
 
   // selected_preset_by_language:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.selected_preset_by_language === 'undefined') {
-    s.selected_preset_by_language = {};
-  } else if (!isPlainObjectRecord(s.selected_preset_by_language)) {
+  if (typeof settings.selected_preset_by_language === 'undefined') {
+    settings.selected_preset_by_language = {};
+  } else if (!isPlainObjectRecord(settings.selected_preset_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidSelectedPresetByLanguage',
       'Invalid selected_preset_by_language; resetting to empty object:',
-      { type: typeof s.selected_preset_by_language, isArray: Array.isArray(s.selected_preset_by_language) }
+      {
+        type: typeof settings.selected_preset_by_language,
+        isArray: Array.isArray(settings.selected_preset_by_language),
+      }
     );
-    s.selected_preset_by_language = {};
+    settings.selected_preset_by_language = {};
   }
 
   // numberFormatting must be a plain object (may be missing/null/array/invalid types).
-  if (typeof s.numberFormatting === 'undefined') {
-    s.numberFormatting = {};
-  } else if (!isPlainObjectRecord(s.numberFormatting)) {
+  if (typeof settings.numberFormatting === 'undefined') {
+    settings.numberFormatting = {};
+  } else if (!isPlainObjectRecord(settings.numberFormatting)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidNumberFormatting',
       'Invalid numberFormatting; resetting to empty object:',
-      { type: typeof s.numberFormatting, isArray: Array.isArray(s.numberFormatting) }
+      {
+        type: typeof settings.numberFormatting,
+        isArray: Array.isArray(settings.numberFormatting),
+      }
     );
-    s.numberFormatting = {};
+    settings.numberFormatting = {};
   }
 
   // disabled_default_presets must be a plain object (may be missing/null/array/invalid types).
-  if (typeof s.disabled_default_presets === 'undefined') {
-    s.disabled_default_presets = {};
-  } else if (!isPlainObjectRecord(s.disabled_default_presets)) {
+  if (typeof settings.disabled_default_presets === 'undefined') {
+    settings.disabled_default_presets = {};
+  } else if (!isPlainObjectRecord(settings.disabled_default_presets)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidDisabledDefaultPresets',
       'Invalid disabled_default_presets; resetting to empty object:',
-      { type: typeof s.disabled_default_presets, isArray: Array.isArray(s.disabled_default_presets) }
+      {
+        type: typeof settings.disabled_default_presets,
+        isArray: Array.isArray(settings.disabled_default_presets),
+      }
     );
-    s.disabled_default_presets = {};
+    settings.disabled_default_presets = {};
   }
 
   // snapshotTags must be a plain object rooted in the shared snapshot-tag preferences schema.
-  if (typeof s.snapshotTags === 'undefined') {
-    s.snapshotTags = snapshotTagCatalog.createEmptySnapshotTagPreferences();
-  } else if (!isPlainObjectRecord(s.snapshotTags)) {
+  if (typeof settings.snapshotTags === 'undefined') {
+    settings.snapshotTags = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  } else if (!isPlainObjectRecord(settings.snapshotTags)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidSnapshotTags',
       'Invalid snapshotTags; resetting to empty snapshot-tag preferences:',
-      { type: typeof s.snapshotTags, isArray: Array.isArray(s.snapshotTags) }
+      {
+        type: typeof settings.snapshotTags,
+        isArray: Array.isArray(settings.snapshotTags),
+      }
     );
-    s.snapshotTags = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+    settings.snapshotTags = snapshotTagCatalog.createEmptySnapshotTagPreferences();
   }
-  s.snapshotTags = snapshotTagCatalog.normalizeSnapshotTagPreferences(s.snapshotTags);
+  settings.snapshotTags = snapshotTagCatalog.normalizeSnapshotTagPreferences(
+    settings.snapshotTags
+  );
 
   // modeConteo:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.modeConteo === 'undefined') {
-    s.modeConteo = 'preciso';
-  } else if (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple') {
+  if (typeof settings.modeConteo === 'undefined') {
+    settings.modeConteo = 'preciso';
+  } else if (settings.modeConteo !== 'preciso' && settings.modeConteo !== 'simple') {
     log.warnOnce(
       'settings.normalizeSettings.invalidModeConteo',
       'Invalid modeConteo; forcing default:',
-      { value: s.modeConteo }
+      { value: settings.modeConteo }
     );
-    s.modeConteo = 'preciso';
+    settings.modeConteo = 'preciso';
   }
 
   // spellcheckEnabled:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.spellcheckEnabled === 'undefined') {
-    s.spellcheckEnabled = true;
-  } else if (typeof s.spellcheckEnabled !== 'boolean') {
+  if (typeof settings.spellcheckEnabled === 'undefined') {
+    settings.spellcheckEnabled = true;
+  } else if (typeof settings.spellcheckEnabled !== 'boolean') {
     log.warnOnce(
       'settings.normalizeSettings.invalidSpellcheckEnabled',
       'Invalid spellcheckEnabled; forcing default:',
-      { type: typeof s.spellcheckEnabled }
+      { type: typeof settings.spellcheckEnabled }
     );
-    s.spellcheckEnabled = true;
+    settings.spellcheckEnabled = true;
   }
 
   // editorFontSizePx:
   // - missing -> default (silent)
   // - invalid/out of range -> warnOnce + normalized value
-  if (typeof s.editorFontSizePx === 'undefined') {
-    s.editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
+  if (typeof settings.editorFontSizePx === 'undefined') {
+    settings.editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
   } else {
-    const nextEditorFontSizePx = normalizeEditorFontSizePx(s.editorFontSizePx);
-    if (!Number.isFinite(Number(s.editorFontSizePx))) {
+    const nextEditorFontSizePx = normalizeEditorFontSizePx(settings.editorFontSizePx);
+    if (!Number.isFinite(Number(settings.editorFontSizePx))) {
       log.warnOnce(
         'settings.normalizeSettings.invalidEditorFontSizePx',
         'Invalid editorFontSizePx; forcing default:',
-        { value: s.editorFontSizePx }
+        { value: settings.editorFontSizePx }
       );
-    } else if (nextEditorFontSizePx !== Math.round(Number(s.editorFontSizePx))) {
+    } else if (nextEditorFontSizePx !== Math.round(Number(settings.editorFontSizePx))) {
       log.warnOnce(
         'settings.normalizeSettings.outOfRangeEditorFontSizePx',
         'Out-of-range editorFontSizePx; clamping:',
         {
-          value: s.editorFontSizePx,
+          value: settings.editorFontSizePx,
           min: EDITOR_FONT_SIZE_MIN_PX,
           max: EDITOR_FONT_SIZE_MAX_PX,
         }
       );
     }
-    s.editorFontSizePx = nextEditorFontSizePx;
+    settings.editorFontSizePx = nextEditorFontSizePx;
   }
 
   // Normalize language tag and compute its base (e.g., "en-US" -> "en").
   const langTag =
-    s.language && typeof s.language === 'string' && s.language.trim()
-      ? normalizeLangTag(s.language)
+    settings.language && typeof settings.language === 'string' && settings.language.trim()
+      ? normalizeLangTag(settings.language)
       : '';
 
   if (!langTag) {
@@ -340,27 +371,27 @@ function normalizeSettings(s) {
   }
 
   const langBase = deriveLangKey(langTag);
-  if (langTag) s.language = langTag;
+  if (langTag) settings.language = langTag;
 
   // presets_by_language[langBase]:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.presets_by_language[langBase] === 'undefined') {
-    s.presets_by_language[langBase] = [];
-  } else if (!Array.isArray(s.presets_by_language[langBase])) {
+  if (typeof settings.presets_by_language[langBase] === 'undefined') {
+    settings.presets_by_language[langBase] = [];
+  } else if (!Array.isArray(settings.presets_by_language[langBase])) {
     log.warnOnce(
       'settings.normalizeSettings.invalidPresetsByLanguageEntry',
       'Invalid presets_by_language entry; forcing empty array:',
       {
         langBase,
-        type: typeof s.presets_by_language[langBase],
-        isArray: Array.isArray(s.presets_by_language[langBase]),
+        type: typeof settings.presets_by_language[langBase],
+        isArray: Array.isArray(settings.presets_by_language[langBase]),
       }
     );
-    s.presets_by_language[langBase] = [];
+    settings.presets_by_language[langBase] = [];
   }
 
-  const selectedPreset = s.selected_preset_by_language[langBase];
+  const selectedPreset = settings.selected_preset_by_language[langBase];
   if (typeof selectedPreset !== 'undefined') {
     if (typeof selectedPreset !== 'string') {
       log.warnOnce(
@@ -368,18 +399,18 @@ function normalizeSettings(s) {
         'Invalid selected_preset_by_language entry; removing:',
         { langBase, type: typeof selectedPreset }
       );
-      delete s.selected_preset_by_language[langBase];
+      delete settings.selected_preset_by_language[langBase];
     } else if (!selectedPreset.trim()) {
-      delete s.selected_preset_by_language[langBase];
+      delete settings.selected_preset_by_language[langBase];
     } else {
-      s.selected_preset_by_language[langBase] = selectedPreset.trim();
+      settings.selected_preset_by_language[langBase] = selectedPreset.trim();
     }
   }
 
   // Ensure number formatting exists for the current base language.
-  ensureNumberFormattingForBase(s, langBase);
+  ensureNumberFormattingForBase(settings, langBase);
 
-  return s;
+  return settings;
 }
 
 // =============================================================================
@@ -402,10 +433,10 @@ function init({ loadJson, saveJson, settingsFile }) {
   _saveJson = saveJson;
   _settingsFile = settingsFile;
 
-  const raw = _loadJson(_settingsFile, createDefaultSettings());
+  const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
 
-  const normalized = normalizeSettings(raw);
-  _currentSettings = normalized;
+  const normalizedSettings = normalizeSettings(rawSettings);
+  _currentSettings = normalizedSettings;
 
   try {
     _saveJson(_settingsFile, _currentSettings);
@@ -425,9 +456,9 @@ function getSettings() {
     throw new Error('[settings] getSettings called before init');
   }
 
-  const raw = _loadJson(_settingsFile, createDefaultSettings());
+  const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
 
-  _currentSettings = normalizeSettings(raw);
+  _currentSettings = normalizeSettings(rawSettings);
   return _currentSettings;
 }
 
@@ -441,11 +472,11 @@ function saveSettings(nextSettings) {
     throw new Error('[settings] saveSettings called before init');
   }
 
-  const normalized = normalizeSettings(nextSettings);
-  _currentSettings = normalized;
+  const normalizedSettings = normalizeSettings(nextSettings);
+  _currentSettings = normalizedSettings;
 
   try {
-    _saveJson(_settingsFile, normalized);
+    _saveJson(_settingsFile, normalizedSettings);
   } catch (err) {
     log.errorOnce(
       'settings.saveSettings.persist',
@@ -545,22 +576,6 @@ function registerIpc(
     throw new Error('[settings] registerIpc requires ipcMain');
   }
 
-  function publishSettingsUpdated(settings, windows) {
-    if (typeof onSettingsUpdated !== 'function') {
-      log.warnOnce(
-        'settings.onSettingsUpdated.unavailable',
-        'onSettingsUpdated callback unavailable; settings callback publish skipped.'
-      );
-    } else {
-      try {
-        onSettingsUpdated(settings);
-      } catch (err) {
-        log.warn('onSettingsUpdated callback failed (ignored):', err);
-      }
-    }
-    broadcastSettingsUpdated(decorateSettingsPayload(settings), windows);
-  }
-
   function decorateSettingsPayload(settings) {
     if (typeof decorateSettings !== 'function') return settings;
 
@@ -625,6 +640,22 @@ function registerIpc(
     } catch (err) {
       log.warn('hide window menu failed (ignored):', name, err);
     }
+  }
+
+  function publishSettingsUpdated(settings, windows) {
+    if (typeof onSettingsUpdated !== 'function') {
+      log.warnOnce(
+        'settings.onSettingsUpdated.unavailable',
+        'onSettingsUpdated callback unavailable; settings callback publish skipped.'
+      );
+    } else {
+      try {
+        onSettingsUpdated(settings);
+      } catch (err) {
+        log.warn('onSettingsUpdated callback failed (ignored):', err);
+      }
+    }
+    broadcastSettingsUpdated(decorateSettingsPayload(settings), windows);
   }
 
   // get-settings: returns the current settings object (normalized)
