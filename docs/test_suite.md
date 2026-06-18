@@ -10,12 +10,12 @@
 - PDF inspect/options flow (`All pages` vs contiguous `Page range`) + single-file heavy-PDF OCR guardrails
 - Native extraction routes (`txt`, `md`, `html`, `docx`, `epub`, PDF text layer)
 - Google-backed extraction routes (`rtf`, `odt`, OCR-capable images including `.jp2`, scanned PDFs), including OCR activation/disconnect
-- Text extraction route choice, batch planning/final report, per-unit auto snapshots, generated-PDF retain/reveal path, processing progress, processing lock, and abort flow
+- Text extraction route choice, batch planning/final report, per-unit auto snapshots, shared unit-tag prompt reuse, generated-PDF retain/reveal path, processing progress, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
 - Manual editor window (open/edit/apply semantics, spellcheck, text-size controls, editor-only zoom shortcuts)
-- Text snapshot feature (save, load, persistence)
+- Text snapshot feature (save, load, editable tag catalog, persistence)
 - Reading speed test (pool filters, guided session, optional questions modal, preset handoff, pool reset/persistence)
 - Reading speed test pool acquisition/import (Google Drive link, `.json`/`.zip` import, duplicate handling, picker-state persistence)
 - Task editor window (task lists, library, links, column widths, window geometry).
@@ -120,12 +120,30 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `SM-10B`
   * supports parts of `REG-IMPORT-08B`
   * supports parts of `REG-IMPORT-08C`
+* `public/js/lib/snapshot_tag_catalog.js`
+  * supports parts of `SM-13`
+  * supports parts of `REG-SNAPSHOTS-01`
+  * supports parts of `REG-SNAPSHOTS-02`
+  * supports parts of `REG-SNAPSHOTS-04`
 * `electron/current_text_snapshots_main.js`
   * supports parts of `SM-13`
   * supports parts of `REG-PERSIST-03`
+  * supports parts of `REG-SNAPSHOTS-04`
 * `test/unit/electron/current_text_snapshots_main.test.js`
+  * supports parts of `SM-13`
   * supports parts of `REG-IMPORT-08D`
   * supports parts of `REG-PERSIST-03A`
+  * supports parts of `REG-SNAPSHOTS-04`
+* `test/unit/shared/snapshot_tag_catalog.test.js`
+  * supports parts of `REG-SNAPSHOTS-01`
+  * supports parts of `REG-SNAPSHOTS-02`
+  * supports parts of `REG-SNAPSHOTS-04`
+* `test/unit/shared/snapshot_save_tags_modal.test.js`
+  * supports parts of `SM-13`
+  * supports parts of `REG-SNAPSHOTS-01`
+  * supports parts of `REG-SNAPSHOTS-02`
+* `test/unit/shared/notify.test.js`
+  * supports parts of `REG-SNAPSHOTS-02`
 * `test/unit/shared/text_extraction_status_ui.test.js`
   * supports parts of `SM-09`
   * supports parts of `SM-10`
@@ -140,6 +158,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-IMPORT-02A`
   * supports parts of `REG-IMPORT-08C`
   * supports parts of `REG-IMPORT-08D`
+  * supports parts of `REG-SNAPSHOTS-03`
 * `test/unit/shared/text_extraction_batch_planning_modal.test.js`
   * supports parts of `REG-IMPORT-08C`
 * `test/unit/shared/text_extraction_batch_final_modal.test.js`
@@ -187,6 +206,7 @@ Important limitations:
 * the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool core in `test/unit/electron/reading_test_pool.test.js` and the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
 * OCR network/provider behavior is still primarily validated through the manual suite, even though JP2 normalization, OCR route contracts, and the single-file oversized-image alert path now have unit coverage;
 * even with contract-style unit coverage for the batch planner/final report, single-file heavy-PDF modal, and status-bar progress text, the integrated picker/drag-drop entrypoints, PDF options modal, route-choice modal, apply modal reveal path, batch execution handoff, and real window/focus behavior are still primarily validated through the manual suite;
+* the editable snapshot-tag catalog now has contract coverage for catalog derivation, renderer modal behavior, and permissive snapshot save/load validation, but the native save/load dialogs, real combobox keyboard/focus behavior, and the full cross-window batch-tag flow are still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
 ---
@@ -225,7 +245,7 @@ You must run tests under both:
 ### 2.1 Where user state lives
 
 Config is stored under Electron `app.getPath('userData')/config` and includes:
-- `user_settings.json` (`language`, `modeConteo`, preset selection buckets, `spellcheckEnabled`, `editorFontSizePx`, etc.)
+- `user_settings.json` (`language`, `modeConteo`, preset selection buckets, `spellcheckEnabled`, `editorFontSizePx`, `snapshotTags`, etc.)
 - `current_text.json`
 - `editor_state.json`
 - `text_extraction_state.json` (last picker directory)
@@ -303,7 +323,19 @@ Recommended content for the text-like samples:
 - reuse the “Small text” content from 3.1 so count/preview expectations are easy to compare
 - for PDF/image OCR samples, use content that is visibly legible and easy to recognize after extraction
 
-### 3.4 Reading speed test pool data
+### 3.4 Optional snapshot-tag fixtures
+
+Prepare these only if you plan to run the deeper snapshot-tag compatibility checks:
+- `snapshot_non_catalog_language.json`
+  - `{"text":"Fixture text","tags":{"language":"es-cl"}}`
+- `snapshot_unknown_custom_tag.json`
+  - `{"text":"Fixture text","tags":{"type":"custom:type:short-story"}}`
+
+Notes:
+- the second fixture is most useful when `custom:type:short-story` is not currently visible in the editable catalog;
+- both fixtures should still be stored under `config/saved_current_texts/` so they can be loaded through the normal snapshot picker path.
+
+### 3.5 Reading speed test pool data
 
 Prefer the seeded runtime pool under:
 - `config/saved_current_texts/reading_speed_test_pool/`
@@ -497,19 +529,22 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Updater shows a dialog (up-to-date / update available / failure).
 
 ### SM-13 Current text snapshots (Save/Load)
-**Goal:** save and load a snapshot via native dialogs.
+**Goal:** save and load snapshots, including the editable tag entrypoints.
 1. Set non-empty text (SM-03).
 2. Click **💾** and verify an in-app modal appears before any native save dialog.
-3. Leave all selectors empty, click **Save Text Snapshot**, and save as `smoke_snapshot.json` under `config/saved_current_texts/`.
-4. Repeat **💾**, choose tags such as `es` + `fiction` + `easy`, and save as `smoke_snapshot_tagged.json`.
-5. Change current text (SM-04 or edit in editor).
-6. Click **📂**, select `smoke_snapshot.json`, and confirm overwrite.
-7. Repeat load with `smoke_snapshot_tagged.json` and confirm overwrite.
+3. Confirm the modal exposes a visible **Manage tags** button; open it once and close it with **Done** or the close affordance.
+4. Leave all selectors empty, click **Save Text Snapshot**, and save as `smoke_snapshot.json` under `config/saved_current_texts/`.
+5. Repeat **💾**, type a new `type` label such as `Short story`, choose **Create "Short story"**, and save as `smoke_snapshot_custom.json`.
+6. Change current text (SM-04 or edit in editor).
+7. Click **📂**, select `smoke_snapshot.json`, and confirm overwrite.
+8. Repeat load with `smoke_snapshot_custom.json` and confirm overwrite.
 
 **Expected:**
 - Snapshot save modal appears before the native save dialog.
+- **Manage tags** opens the shared tag manager and returns cleanly to the snapshot-save flow.
+- Inline custom-tag creation works without closing the snapshot-save modal.
 - Snapshot files are created.
-- Tagged snapshot JSON persists the selected tags.
+- Tagged snapshot JSON persists the selected tags, including the custom tag created inline.
 - Current text is overwritten; preview/results update.
 - Tagged snapshot metadata is not transferred into current-text state.
 - Stopwatch behavior follows REG-CRONO-02 semantics (non-empty restore: no reset; empty restore: reset).
@@ -865,6 +900,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Heavy-PDF units remain exclusive planner units, keep their generated-input preview, and do not expose editable page controls.
 - Non-PDF inputs do not show a fake pages summary.
 - Unit tags are available only where unit-level auto-snapshot tagging is meaningful.
+- When the unit tags prompt is opened, it reuses the same effective snapshot-tag catalog, labels, and visible order as the current-text snapshot-save modal.
 - Keep-generated-PDF toggles persist only inside the currently open planner state; reopening the planner starts from the default delete state again.
 
 #### REG-IMPORT-08D Batch execution, final report, and auto snapshots
@@ -1416,6 +1452,73 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ---
 
+### REG-SNAPSHOTS — Snapshot save modal, editable tags, and shared catalog semantics
+
+#### REG-SNAPSHOTS-01 Inline custom-tag creation + normalized duplicate suppression
+**Goal:** the searchable selectors expose inline creation only when no normalized exact match already exists.
+1. Set non-empty text and open **💾**.
+2. In the `Type` selector, type `Short story`.
+3. Confirm the first visible option is **Create "Short story"**.
+4. Activate it and confirm the selector now shows `Short story` as the selected value.
+5. Close and reopen **💾**.
+6. Type variants such as `short story` and ` short   story ` into the same selector.
+7. In a default-tag case, type `ficcion` and inspect the same list.
+
+**Expected:**
+- The create affordance appears first and only when there is no normalized exact match in the current category.
+- Creating the tag selects it immediately and keeps the modal usable.
+- Reopening the modal shows the new custom tag as a normal catalog option.
+- Normalized duplicates are suppressed for existing custom tags and for existing default labels.
+
+#### REG-SNAPSHOTS-02 Tag manager create/hide/restore/order semantics
+**Goal:** the dedicated manager owns tag administration, reversible hiding of defaults, and persisted visible order.
+1. Open **💾** and confirm the main prompt exposes a normal-size localized **Manage tags** button instead of an icon-only affordance.
+2. Open the manager and confirm **New tag**, **Sort A-Z**, and **Restore hidden defaults** are normal-size text buttons.
+3. Click **New tag**, type a draft label, then press `Escape`.
+4. Confirm only the draft is cancelled and the manager remains open.
+5. Reopen **New tag**, create a distinctive custom tag in one category, and confirm it appears at the end of that category.
+6. Hide one default tag and accept the confirmation.
+7. Use **Restore hidden defaults** for that category.
+8. Use **Sort A-Z**, then move one visible tag manually.
+9. Close the manager, reopen **💾**, and inspect the same category order.
+
+**Expected:**
+- The manager opens as a shared renderer modal and moves focus into a manager control on open.
+- `Escape` inside the draft input cancels only the draft, not the whole manager.
+- Hide/delete confirmations are explicit and do not close the surrounding flow unexpectedly.
+- New custom tags append at the end of the visible category order.
+- Restored hidden defaults append at the end of the category; if several are restored at once, they follow that category's baseline default order.
+- `Sort A-Z` is a real persisted reorder, and later manual moves become the authoritative visible order.
+- The snapshot-save selectors reflect the same category order immediately after the manager closes.
+
+#### REG-SNAPSHOTS-03 Shared batch unit-tag prompt reuses the editable catalog
+**Goal:** batch unit tagging reuses the same snapshot-tag prompt, manager access path, labels, and effective catalog as current-text snapshot save.
+1. Ensure at least one distinctive custom snapshot tag exists from REG-SNAPSHOTS-01 or REG-SNAPSHOTS-02.
+2. Enter the batch planner with a multi-unit plan.
+3. Open **Tags** for one eligible unit.
+4. Confirm the same custom tag appears in the matching category and uses the same visible ordering as the current-text snapshot-save modal.
+5. Open **Manage tags** from the batch tag prompt, make one safe catalog change, return to the prompt, and inspect the selector again.
+6. Apply tags and return to the planner summary.
+
+**Expected:**
+- The batch unit-tag flow reuses the same effective snapshot-tag catalog and prompt contract as the current-text snapshot-save flow.
+- Custom labels resolve from the current editable snapshot-tag preferences, not from raw canonical values.
+- Manager changes made from the batch prompt are reflected immediately in the same prompt and in the planner's tag summary.
+
+#### REG-SNAPSHOTS-04 Snapshot load compatibility with custom or non-catalog tags
+**Goal:** loading current-text snapshots remains permissive for otherwise valid snapshot metadata.
+1. Prepare the optional fixtures from 3.4 or equivalent real files under `config/saved_current_texts/`.
+2. Load `snapshot_non_catalog_language.json` through the normal **📂** flow.
+3. Load `snapshot_unknown_custom_tag.json` through the normal **📂** flow.
+4. If the second fixture's custom tag is currently visible in the manager, remove it from the editable catalog, then load the file again.
+
+**Expected:**
+- Snapshot load accepts valid metadata such as `es-cl` or `fr-CA` even though those values are outside the default language catalog.
+- Snapshot load also accepts valid custom tag values even when they are no longer present in the current editable catalog.
+- In all cases, only the snapshot `text` is applied to current-text state; tag metadata is not imported into live UI state.
+
+---
+
 ### REG-READING-TEST — Guided reading speed test flow
 
 #### REG-READING-TEST-01 Entry modal: real combinations, live count, and inline exhaustion reset
@@ -1627,6 +1730,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Repeated runs with the same unit names create deterministic collision-safe filenames, for example by adding a suffix such as `_2`.
 - Existing snapshot files are not overwritten silently.
 - Collision-suffixed snapshots remain loadable after relaunch.
+
+#### REG-PERSIST-03B Snapshot tag catalog persistence
+**Goal:** custom snapshot tags, hidden defaults, and per-category order survive app restart.
+1. Create at least one custom snapshot tag, hide at least one default tag, and reorder one category through **Manage tags**.
+2. Close the app fully.
+3. Relaunch the app and open **💾**, then **Manage tags** again.
+4. Inspect `user_settings.json` if you need on-disk confirmation.
+
+**Expected:**
+- The custom tag still exists after relaunch.
+- Hidden defaults remain hidden until explicitly restored.
+- The saved visible order for each touched category is preserved after relaunch.
+- `user_settings.json`, when inspected, stores the snapshot-tag preferences as part of the persisted user settings rather than in snapshot files or i18n bundles.
 
 #### REG-PERSIST-04 Tasks: config/tasks persistence (lists, library, allowlist, widths, window position)
 **Goal:** task feature state persists under config/tasks and reloads correctly after restart.
