@@ -7,14 +7,12 @@
 // This module owns persisted user settings.
 //
 // Responsibilities:
-// - Load settings from disk (via injected loadJson/saveJson) and normalize shape/types.
-// - Keep language tags consistent (normalize language tag + base language).
-// - Ensure numberFormatting[langBase] exists (from i18n/<lang>/numberFormat.json or safe defaults).
-// - Provide a small state API (init/getSettings/saveSettings) backed by an in-memory cache.
-// - Register IPC handlers (get-settings, set-language, set-mode-conteo, set-selected-preset,
-//   set-spellcheck-enabled, set-editor-font-size-px)
-//   and broadcast settings-updated.
-// - Apply a logged fallback language when the language modal closes without a selection.
+// - Load settings from disk, normalize persisted shape, and keep an in-memory cache in sync.
+// - Canonicalize language tags and maintain language-scoped settings buckets.
+// - Hydrate numberFormatting and snapshotTags defaults when persisted data is missing or invalid.
+// - Expose the state owner API used by main-process modules: init, getSettings, saveSettings.
+// - Register settings IPC handlers, including snapshot-tag preference routes, and broadcast settings-updated.
+// - Persist a logged fallback language when startup closes the language picker without a selection.
 // =============================================================================
 
 // =============================================================================
@@ -57,7 +55,7 @@ const getLangBase = (lang) => {
 const deriveLangKey = (langTag) => getLangBase(langTag);
 
 // =============================================================================
-// Settings defaults
+// Defaults / validators
 // =============================================================================
 const createDefaultSettings = (language = '') => ({
   language,
@@ -84,7 +82,7 @@ function isPlainObjectRecord(value) {
 }
 
 // =============================================================================
-// Injected dependencies + cache
+// Shared state
 // =============================================================================
 // Dependencies injected from main.js (centralized file I/O).
 let _loadJson = null;
@@ -556,7 +554,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
 }
 
 // =============================================================================
-// IPC
+// IPC registration / handlers
 // =============================================================================
 /**
  * Registers IPC handlers related to settings:
