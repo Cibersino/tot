@@ -339,12 +339,38 @@
       "message": "Nahi baduzu, etiketa ezazu testu-snapshot hau non gorde aukeratu aurretik.",
       "search": {
         "placeholder": "Idatzi aukerak iragazteko",
-        "no_results": "Ez dago bat datorren aukerarik"
+        "no_results": "Ez dago bat datorren aukerarik",
+        "create": "Sortu \"{label}\""
       },
       "labels": {
         "language": "Hizkuntza",
         "type": "Mota",
         "difficulty": "Zailtasuna"
+      },
+      "manager": {
+        "title": "Kudeatu testu-snapshoten etiketak",
+        "message": "Kudeatu testu-snapshotetan eta lote-erauzketako unitateetan erabiltzen diren etiketa ikusgaiak.",
+        "done": "Eginda",
+        "close_aria": "Itxi testu-snapshoten etiketa-kudeatzailea",
+        "new_tag": "Etiketa berria",
+        "new_tag_placeholder": "Etiketaren izena",
+        "add_tag": "Gehitu etiketa",
+        "cancel_draft": "Utzi",
+        "sort_alphabetically": "Ordenatu A-Z",
+        "restore_hidden_defaults": "Berrezarri etiketa lehenetsiak ({count})",
+        "empty_category": "Ez dago etiketa ikusgairik kategoria honetan.",
+        "move_up": "Eraman \"{label}\" gora",
+        "move_down": "Eraman \"{label}\" behera",
+        "hide_default": "Ezkutatu \"{label}\" etiketa lehenetsia",
+        "delete_custom": "Ezabatu \"{label}\" etiketa pertsonalizatua",
+        "confirm_hide_default": "Ezkutatu \"{label}\" etiketa lehenetsia? Ikusgai dauden etiketen zerrendatik kenduko da eta gero berrezarri ahal izango da.",
+        "confirm_delete_custom": "Ezabatu betiko \"{label}\" etiketa pertsonalizatua? Dauden testu-snapshotak ez dira berridatziko.",
+        "validation": {
+          "empty": "Etiketaren izena ezin da hutsik egon.",
+          "control_characters": "Etiketaren izenak ezin du tabulaziorik, lerro-jauzirik edo bestelako kontrol-karaktererik izan.",
+          "too_long": "Etiketaren izenak ezin ditu {max} karaktere gainditu.",
+          "duplicate": "Kategoria honetan izen hori duen etiketa bat badago dagoeneko."
+        }
       },
       "empty": {
         "language": "Hizkuntza-etiketarik gabe",
@@ -352,6 +378,7 @@
         "difficulty": "Zailtasun-etiketarik gabe"
       },
       "buttons": {
+        "manage": "Kudeatu etiketak",
         "confirm": "Gorde testu-snapshota",
         "cancel": "Utzi"
       },
@@ -406,7 +433,8 @@
         "load_error": "Ezin izan da snapshota kargatu.",
         "outside": "Snapshotak snapshots karpetaren barruan egon behar du.",
         "truncated": "Snapshotak gehieneko tamaina gainditzen du eta moztu egin da.",
-        "unavailable": "Snapshoten funtzioa ez dago erabilgarri."
+        "unavailable": "Snapshoten funtzioa ez dago erabilgarri.",
+        "catalog_update_error": "Ezin izan dira testu-snapshoten etiketak eguneratu."
       }
     },
     "tasks": {

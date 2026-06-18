@@ -339,12 +339,38 @@
       "message": "Kawkhansa imañ munta uk ajlliñ nayraqat, aka qillqata snapshot ukar munañaparjam etiqueta ucham.",
       "search": {
         "placeholder": "Ajlliñanak chhijllañatak qillqt’am",
-        "no_results": "Janiw kikipa ajlliñanak utjkiti"
+        "no_results": "Janiw kikipa ajlliñanak utjkiti",
+        "create": "\"{label}\" luraña"
       },
       "labels": {
         "language": "Aru",
         "type": "Kasta",
         "difficulty": "Ch’amäwi"
+      },
+      "manager": {
+        "title": "Texto snapshot ukan etiquetas apnaqaña",
+        "message": "Texto snapshot ukat lote extracción unidades ukan uñjkaña etiquetas apnaqam.",
+        "done": "Lurata",
+        "close_aria": "Texto snapshot etiquetas apnaqiri jist’antaña",
+        "new_tag": "Machaq etiqueta",
+        "new_tag_placeholder": "Etiqueta sutipa",
+        "add_tag": "Etiqueta yapxataña",
+        "cancel_draft": "Janiw saña",
+        "sort_alphabetically": "A-Z saraparjama wakichaña",
+        "restore_hidden_defaults": "Nayrïr etiquetas kutt’ayaña ({count})",
+        "empty_category": "Aka categoría ukan janiw uñjkaña etiquetas utjkiti.",
+        "move_up": "\"{label}\" alayaru apaña",
+        "move_down": "\"{label}\" aynacharu apaña",
+        "hide_default": "Nayrïr etiqueta \"{label}\" imantaña",
+        "delete_custom": "Personalizada etiqueta \"{label}\" chhaqtayaña",
+        "confirm_hide_default": "¿Nayrïr etiqueta \"{label}\" imantaña? Uñjkaña etiquetas listat apsusiniwa, qhipat kutt’ayasispa.",
+        "confirm_delete_custom": "¿Personalizada etiqueta \"{label}\" wiñayataki chhaqtayaña? Texto snapshot utjirinakaxa janiw mayampi qillqatäkaniti.",
+        "validation": {
+          "empty": "Etiqueta sutipax janiw ch’usakïkaspati.",
+          "control_characters": "Etiqueta sutipax janiw tabulaciones, línea saltos jan ukax yaqha control caracteres apnaqkaspati.",
+          "too_long": "Etiqueta sutipax janiw {max} caracteres ukat jiläñapäkiti.",
+          "duplicate": "Aka categoría ukan uka sutini etiqueta utjxiwa."
+        }
       },
       "empty": {
         "language": "Jan aru etiqueta",
@@ -352,6 +378,7 @@
         "difficulty": "Jan ch’amäwi etiqueta"
       },
       "buttons": {
+        "manage": "Etiquetas apnaqaña",
         "confirm": "Qillqata snapshot imaña",
         "cancel": "Suyt’ayaña"
       },
@@ -406,7 +433,8 @@
         "load_error": "Snapshot janiw cargaskiti.",
         "outside": "Snapshot ukax imañ carpeta manqhan utjañapawa.",
         "truncated": "Snapshot ukax máximo tamaño sipans jilawa ukat khuchhuratawa.",
-        "unavailable": "Snapshot lurawix janiw utjkiti."
+        "unavailable": "Snapshot lurawix janiw utjkiti.",
+        "catalog_update_error": "Texto snapshot etiquetas janiw machaqar tukuyañjamäkiti."
       }
     },
     "tasks": {

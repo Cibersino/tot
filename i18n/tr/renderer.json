@@ -339,12 +339,38 @@
       "message": "Kaydedilecek konumu seçmeden önce bu metin snapshot'ını isteğe bağlı olarak etiketleyin.",
       "search": {
         "placeholder": "Seçenekleri filtrelemek için yazın",
-        "no_results": "Eşleşen seçenek yok"
+        "no_results": "Eşleşen seçenek yok",
+        "create": "\"{label}\" oluştur"
       },
       "labels": {
         "language": "Dil",
         "type": "Tür",
         "difficulty": "Zorluk"
+      },
+      "manager": {
+        "title": "Metin snapshot etiketlerini yönet",
+        "message": "Metin snapshot’ları ve toplu çıkarma birimleri için kullanılan görünür etiketleri yönetin.",
+        "done": "Bitti",
+        "close_aria": "Metin snapshot etiketi yöneticisini kapat",
+        "new_tag": "Yeni etiket",
+        "new_tag_placeholder": "Etiket adı",
+        "add_tag": "Etiket ekle",
+        "cancel_draft": "İptal",
+        "sort_alphabetically": "A-Z sırala",
+        "restore_hidden_defaults": "Varsayılan etiketleri geri yükle ({count})",
+        "empty_category": "Bu kategoride görünür etiket yok.",
+        "move_up": "\"{label}\" etiketini yukarı taşı",
+        "move_down": "\"{label}\" etiketini aşağı taşı",
+        "hide_default": "Varsayılan etiket \"{label}\" öğesini gizle",
+        "delete_custom": "Özel etiket \"{label}\" öğesini sil",
+        "confirm_hide_default": "Varsayılan etiket \"{label}\" gizlensin mi? Görünür etiket listesinden kaldırılacak ve daha sonra geri yüklenebilecek.",
+        "confirm_delete_custom": "Özel etiket \"{label}\" kalıcı olarak silinsin mi? Mevcut metin snapshot’ları yeniden yazılmayacak.",
+        "validation": {
+          "empty": "Etiket adı boş olamaz.",
+          "control_characters": "Etiket adı sekme, satır sonu veya başka kontrol karakterleri içeremez.",
+          "too_long": "Etiket adı {max} karakteri aşamaz.",
+          "duplicate": "Bu kategoride bu ada sahip bir etiket zaten var."
+        }
       },
       "empty": {
         "language": "Dil etiketi yok",
@@ -352,6 +378,7 @@
         "difficulty": "Zorluk etiketi yok"
       },
       "buttons": {
+        "manage": "Etiketleri yönet",
         "confirm": "Metin Snapshot'ını Kaydet",
         "cancel": "İptal"
       },
@@ -406,7 +433,8 @@
         "load_error": "Snapshot yüklenemedi.",
         "outside": "Snapshot, snapshot klasörünün içinde olmalıdır.",
         "truncated": "Snapshot en büyük boyutu aşıyor ve kesildi.",
-        "unavailable": "Snapshot işlevi kullanılamıyor."
+        "unavailable": "Snapshot işlevi kullanılamıyor.",
+        "catalog_update_error": "Metin snapshot etiketleri güncellenemedi."
       }
     },
     "tasks": {

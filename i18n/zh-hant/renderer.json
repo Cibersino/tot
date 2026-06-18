@@ -339,12 +339,38 @@
       "message": "在選擇儲存位置前，可選擇為此文字快照新增標籤。",
       "search": {
         "placeholder": "輸入以篩選選項",
-        "no_results": "沒有相符的選項"
+        "no_results": "沒有相符的選項",
+        "create": "建立「{label}」"
       },
       "labels": {
         "language": "語言",
         "type": "類型",
         "difficulty": "難度"
+      },
+      "manager": {
+        "title": "管理文字快照標籤",
+        "message": "管理用於文字快照與批次擷取單元的可見標籤。",
+        "done": "完成",
+        "close_aria": "關閉文字快照標籤管理器",
+        "new_tag": "新標籤",
+        "new_tag_placeholder": "標籤名稱",
+        "add_tag": "新增標籤",
+        "cancel_draft": "取消",
+        "sort_alphabetically": "依 A-Z 排序",
+        "restore_hidden_defaults": "還原預設標籤 ({count})",
+        "empty_category": "此類別中沒有可見標籤。",
+        "move_up": "上移「{label}」",
+        "move_down": "下移「{label}」",
+        "hide_default": "隱藏預設標籤「{label}」",
+        "delete_custom": "刪除自訂標籤「{label}」",
+        "confirm_hide_default": "隱藏預設標籤「{label}」？它會從可見標籤清單中移除，之後可再還原。",
+        "confirm_delete_custom": "永久刪除自訂標籤「{label}」？既有文字快照不會被重新寫入。",
+        "validation": {
+          "empty": "標籤名稱不能為空。",
+          "control_characters": "標籤名稱不能包含定位字元、換行或其他控制字元。",
+          "too_long": "標籤名稱不能超過 {max} 個字元。",
+          "duplicate": "此類別中已存在相同名稱的標籤。"
+        }
       },
       "empty": {
         "language": "無語言標籤",
@@ -352,6 +378,7 @@
         "difficulty": "無難度標籤"
       },
       "buttons": {
+        "manage": "管理標籤",
         "confirm": "儲存文字快照",
         "cancel": "取消"
       },
@@ -406,7 +433,8 @@
         "load_error": "無法載入快照。",
         "outside": "快照必須位於快照資料夾內。",
         "truncated": "快照超過最大大小，已被截斷。",
-        "unavailable": "快照功能無法使用。"
+        "unavailable": "快照功能無法使用。",
+        "catalog_update_error": "無法更新文字快照標籤。"
       }
     },
     "tasks": {

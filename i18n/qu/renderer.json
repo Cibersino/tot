@@ -339,12 +339,38 @@
       "message": "Maypi waqaychanaykita akllanaykipaq ñawpaqta kay qillqa snapshotta munaspa etiquetay.",
       "search": {
         "placeholder": "Akllanakta filtraypaq qillqay",
-        "no_results": "Mana tinkuq akllanak kanchu"
+        "no_results": "Mana tinkuq akllanak kanchu",
+        "create": "\"{label}\" kamay"
       },
       "labels": {
         "language": "Rimay",
         "type": "Laya",
         "difficulty": "Sasaynin"
+      },
+      "manager": {
+        "title": "Texto snapshot etiquetankunata kamachiy",
+        "message": "Texto snapshotkunapi chaymanta lote extracción unidadkunapi rikukuq etiquetankunata kamachiy.",
+        "done": "Tukusqa",
+        "close_aria": "Texto snapshot etiqueta kamachiqta wichqay",
+        "new_tag": "Musuq etiqueta",
+        "new_tag_placeholder": "Etiqueta sutin",
+        "add_tag": "Etiqueta yapay",
+        "cancel_draft": "Puchukay",
+        "sort_alphabetically": "A-Z nisqaman kamachiy",
+        "restore_hidden_defaults": "Kikinmanta etiquetankunata kutichiy ({count})",
+        "empty_category": "Kay categoría nisqapi mana rikukuq etiquetankuna kanchu.",
+        "move_up": "\"{label}\" wichayman kuyuchiy",
+        "move_down": "\"{label}\" urayman kuyuchiy",
+        "hide_default": "Kikinmanta etiqueta \"{label}\" pakay",
+        "delete_custom": "Ruwasqa etiqueta \"{label}\" qulluy",
+        "confirm_hide_default": "¿Kikinmanta etiqueta \"{label}\" pakay? Rikukuq etiquetankuna listamanta hurqusqa kanqa, hinaspa qhipaman kutichisqa kanman.",
+        "confirm_delete_custom": "¿Ruwasqa etiqueta \"{label}\" wiñaypaq qulluy? Kachkanña texto snapshotkuna mana wakmanta qillqasqachu kanqaku.",
+        "validation": {
+          "empty": "Etiqueta sutin mana ch’usaqchu kanan.",
+          "control_characters": "Etiqueta sutin mana tabulacionkunata, siqi p’akisqakunata, nitaq huk control caracteres nisqakunata hap’inmanchu.",
+          "too_long": "Etiqueta sutin mana {max} caracteres nisqamanta aswan achka kanmanchu.",
+          "duplicate": "Kay categoría nisqapi chay sutiyuq etiqueta kachkanña."
+        }
       },
       "empty": {
         "language": "Mana rimay etiqueta",
@@ -352,6 +378,7 @@
         "difficulty": "Mana sasa etiqueta"
       },
       "buttons": {
+        "manage": "Etiquetankunata kamachiy",
         "confirm": "Qillqa snapshotta waqaychay",
         "cancel": "Saqiy"
       },
@@ -406,7 +433,8 @@
         "load_error": "Snapshot mana kargakunchu.",
         "outside": "Snapshotqa waqaychana carpetapa ukunpi kanan.",
         "truncated": "Snapshot hatun kayninmanta aswan karqan hinaspa kuchusqa.",
-        "unavailable": "Snapshot ruwana mana kanchu."
+        "unavailable": "Snapshot ruwana mana kanchu.",
+        "catalog_update_error": "Mana atikunchu texto snapshot etiquetankunata musuqyachiy."
       }
     },
     "tasks": {

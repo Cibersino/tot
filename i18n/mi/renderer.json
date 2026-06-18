@@ -339,12 +339,38 @@
       "message": "Ki te hiahia koe, tāpirihia he tūtohu ki tēnei hopunga kuputuhi i mua i te kōwhiri i te wāhi tiaki.",
       "search": {
         "placeholder": "Patohia hei tātari i ngā kōwhiringa",
-        "no_results": "Kāore he kōwhiringa ōrite"
+        "no_results": "Kāore he kōwhiringa ōrite",
+        "create": "Waihanga \"{label}\""
       },
       "labels": {
         "language": "Reo",
         "type": "Momo",
         "difficulty": "Uaua"
+      },
+      "manager": {
+        "title": "Whakahaere tūtohu snapshot kuputuhi",
+        "message": "Whakahaerehia ngā tūtohu kitea e whakamahia ana mō ngā snapshot kuputuhi me ngā wae tango ā-rōpū.",
+        "done": "Kua oti",
+        "close_aria": "Katia te kaiwhakahaere tūtohu snapshot kuputuhi",
+        "new_tag": "Tūtohu hōu",
+        "new_tag_placeholder": "Ingoa tūtohu",
+        "add_tag": "Tāpiri tūtohu",
+        "cancel_draft": "Whakakore",
+        "sort_alphabetically": "Kōmaka A-Z",
+        "restore_hidden_defaults": "Whakaora tūtohu taunoa ({count})",
+        "empty_category": "Kāore he tūtohu kitea i tēnei kāwai.",
+        "move_up": "Nuku \"{label}\" ki runga",
+        "move_down": "Nuku \"{label}\" ki raro",
+        "hide_default": "Hunaia te tūtohu taunoa \"{label}\"",
+        "delete_custom": "Mukua te tūtohu ritenga \"{label}\"",
+        "confirm_hide_default": "Hunaia te tūtohu taunoa \"{label}\"? Ka tangohia i te rārangi tūtohu kitea, ā, ka taea te whakaora ā muri ake.",
+        "confirm_delete_custom": "Mukua pūmau te tūtohu ritenga \"{label}\"? Kāore ngā snapshot kuputuhi o nāianei e tuhia anō.",
+        "validation": {
+          "empty": "Kāore e taea kia noho kau te ingoa tūtohu.",
+          "control_characters": "Kāore e taea kia whai ripa, wehenga rārangi, ētahi atu pūāhua whakahaere rānei te ingoa tūtohu.",
+          "too_long": "Kāore e taea kia neke ake te ingoa tūtohu i te {max} pūāhua.",
+          "duplicate": "Kua tīari kē tētahi tūtohu me taua ingoa i tēnei kāwai."
+        }
       },
       "empty": {
         "language": "Kāore he tūtohu reo",
@@ -352,6 +378,7 @@
         "difficulty": "Kāore he tūtohu uaua"
       },
       "buttons": {
+        "manage": "Whakahaere tūtohu",
         "confirm": "Tiaki hopunga kuputuhi",
         "cancel": "Whakakore"
       },
@@ -406,7 +433,8 @@
         "load_error": "Kāore i taea te uta i te hopunga.",
         "outside": "Me noho te hopunga ki roto i te kōpaki hopunga.",
         "truncated": "I hipa te hopunga i te rahinga mōrahi, ā, i tapahia.",
-        "unavailable": "Kāore te āheinga hopunga e wātea ana."
+        "unavailable": "Kāore te āheinga hopunga e wātea ana.",
+        "catalog_update_error": "Kāore i taea te whakahōu i ngā tūtohu snapshot kuputuhi."
       }
     },
     "tasks": {

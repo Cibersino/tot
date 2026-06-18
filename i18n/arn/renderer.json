@@ -339,12 +339,38 @@
       "message": "Münafülchi tañi textu snapshot müley ta küme ngünekan mew ka chumgechi elkünuael.",
       "search": {
         "placeholder": "Wirintuku opciones filtrangeal",
-        "no_results": "Ngelay opciones trafkülelu"
+        "no_results": "Ngelay opciones trafkülelu",
+        "create": "Dewma \"{label}\""
       },
       "labels": {
         "language": "Dungun",
         "type": "Az",
         "difficulty": "Rume newen"
+      },
+      "manager": {
+        "title": "Ngünen etiquetas snapshot de texto",
+        "message": "Ngünen etiquetas görüngechi pu snapshot de texto ka extracción por lotes ñi unidades mew.",
+        "done": "Dew",
+        "close_aria": "Nütramkawün trariñman etiquetas snapshot de texto",
+        "new_tag": "We etiqueta",
+        "new_tag_placeholder": "Etiqueta ñi üy",
+        "add_tag": "Tuwün etiqueta",
+        "cancel_draft": "Nentun",
+        "sort_alphabetically": "Ordenar A-Z",
+        "restore_hidden_defaults": "Wiñoltun etiquetas por defecto ({count})",
+        "empty_category": "Ngelay görüngechi etiquetas tüfachi categoría mew.",
+        "move_up": "Püram \"{label}\"",
+        "move_down": "Nagüm \"{label}\"",
+        "hide_default": "Elkantu etiqueta por defecto \"{label}\"",
+        "delete_custom": "Ñamüm etiqueta personalizada \"{label}\"",
+        "confirm_hide_default": "¿Elkantu etiqueta por defecto \"{label}\"? Görüngechi lista de etiquetas mew nentungeay ka müleay wiñoltun mew.",
+        "confirm_delete_custom": "¿Ñamüm müten etiqueta personalizada \"{label}\"? Pu snapshot de texto mülelu no reescribiay.",
+        "validation": {
+          "empty": "Etiqueta ñi üy no müley inanchefe.",
+          "control_characters": "Etiqueta ñi üy no pepi nieay tabulaciones, saltos de línea kam ka caracteres de control.",
+          "too_long": "Etiqueta ñi üy no pepi doy fütay {max} caracteres mew.",
+          "duplicate": "Müley kiñe etiqueta feychi üy mew tüfachi categoría mew."
+        }
       },
       "empty": {
         "language": "Dungun tag mülenolu",
@@ -352,6 +378,7 @@
         "difficulty": "Rume newen tag mülenolu"
       },
       "buttons": {
+        "manage": "Ngünen etiquetas",
         "confirm": "Elkünun textu snapshot",
         "cancel": "Ngelay"
       },
@@ -406,7 +433,8 @@
         "load_error": "Chem welulkuy kintunun snapshot mu.",
         "outside": "Snapshot müley snapshot carpeta mew ka.",
         "truncated": "Snapshot afiy ka pichikünutuy.",
-        "unavailable": "Snapshot küzawtuwe chem müley."
+        "unavailable": "Snapshot küzawtuwe chem müley.",
+        "catalog_update_error": "No pepi actualizar etiquetas snapshot de texto."
       }
     },
     "tasks": {

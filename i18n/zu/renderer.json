@@ -339,12 +339,38 @@
       "message": "Uma uthanda, faka amathegi kule snapshot yombhalo ngaphambi kokukhetha ukuthi igcinwa kuphi.",
       "search": {
         "placeholder": "Thayipha ukuze uhlunge izinketho",
-        "no_results": "Azikho izinketho ezifanayo"
+        "no_results": "Azikho izinketho ezifanayo",
+        "create": "Dala \"{label}\""
       },
       "labels": {
         "language": "Ulimi",
         "type": "Uhlobo",
         "difficulty": "Ubunzima"
+      },
+      "manager": {
+        "title": "Phatha amathegi e-snapshot yombhalo",
+        "message": "Phatha amathegi abonakalayo asetshenziswa kuma-snapshot ombhalo namayunithi okukhipha ngobuningi.",
+        "done": "Kuqediwe",
+        "close_aria": "Vala umphathi wamathegi e-snapshot yombhalo",
+        "new_tag": "Ithegi entsha",
+        "new_tag_placeholder": "Igama lethegi",
+        "add_tag": "Engeza ithegi",
+        "cancel_draft": "Khansela",
+        "sort_alphabetically": "Hlunga A-Z",
+        "restore_hidden_defaults": "Buyisela amathegi azenzakalelayo ({count})",
+        "empty_category": "Awekho amathegi abonakalayo kulesi sigaba.",
+        "move_up": "Hambisa \"{label}\" phezulu",
+        "move_down": "Hambisa \"{label}\" phansi",
+        "hide_default": "Fihla ithegi ezenzakalelayo \"{label}\"",
+        "delete_custom": "Susa ithegi yangokwezifiso \"{label}\"",
+        "confirm_hide_default": "Fihla ithegi ezenzakalelayo \"{label}\"? Izosuswa ohlwini lwamathegi abonakalayo futhi ingabuyiselwa kamuva.",
+        "confirm_delete_custom": "Susa unomphela ithegi yangokwezifiso \"{label}\"? Ama-snapshot ombhalo akhona ngeke abhalwe kabusha.",
+        "validation": {
+          "empty": "Igama lethegi alikwazi ukuba lingenalutho.",
+          "control_characters": "Igama lethegi alikwazi ukuqukatha amathebhu, ukweqa imigqa, noma ezinye izinhlamvu zokulawula.",
+          "too_long": "Igama lethegi alikwazi ukudlula izinhlamvu ezingu-{max}.",
+          "duplicate": "Ithegi enalelo gama isivele ikhona kulesi sigaba."
+        }
       },
       "empty": {
         "language": "Alikho ithegi lolimi",
@@ -352,6 +378,7 @@
         "difficulty": "Alikho ithegi lobunzima"
       },
       "buttons": {
+        "manage": "Phatha amathegi",
         "confirm": "Gcina i-snapshot yombhalo",
         "cancel": "Khansela"
       },
@@ -406,7 +433,8 @@
         "load_error": "Ayikwazanga ukulayisha i-snapshot.",
         "outside": "I-snapshot kufanele ibe ngaphakathi kwefolda yokugcina.",
         "truncated": "I-snapshot idlula umkhawulo omkhulu futhi inqanyuliwe.",
-        "unavailable": "Isici sama-snapshot asitholakali."
+        "unavailable": "Isici sama-snapshot asitholakali.",
+        "catalog_update_error": "Ayikwazanga ukubuyekeza amathegi e-snapshot yombhalo."
       }
     },
     "tasks": {

@@ -339,12 +339,38 @@
       "message": "Ajoutez éventuellement des tags à ce snapshot de texte avant de choisir où l'enregistrer.",
       "search": {
         "placeholder": "Tapez pour filtrer les options",
-        "no_results": "Aucune option correspondante"
+        "no_results": "Aucune option correspondante",
+        "create": "Créer « {label} »"
       },
       "labels": {
         "language": "Langue",
         "type": "Type",
         "difficulty": "Difficulté"
+      },
+      "manager": {
+        "title": "Gérer les étiquettes de snapshot de texte",
+        "message": "Gérez les étiquettes visibles utilisées pour les snapshots de texte et les unités d’extraction par lots.",
+        "done": "Terminé",
+        "close_aria": "Fermer le gestionnaire d’étiquettes de snapshot de texte",
+        "new_tag": "Nouvelle étiquette",
+        "new_tag_placeholder": "Nom de l’étiquette",
+        "add_tag": "Ajouter une étiquette",
+        "cancel_draft": "Annuler",
+        "sort_alphabetically": "Trier A-Z",
+        "restore_hidden_defaults": "Restaurer les étiquettes par défaut ({count})",
+        "empty_category": "Aucune étiquette visible dans cette catégorie.",
+        "move_up": "Déplacer « {label} » vers le haut",
+        "move_down": "Déplacer « {label} » vers le bas",
+        "hide_default": "Masquer l’étiquette par défaut « {label} »",
+        "delete_custom": "Supprimer l’étiquette personnalisée « {label} »",
+        "confirm_hide_default": "Masquer l’étiquette par défaut « {label} » ? Elle sera retirée de la liste des étiquettes visibles et pourra être restaurée plus tard.",
+        "confirm_delete_custom": "Supprimer définitivement l’étiquette personnalisée « {label} » ? Les snapshots de texte existants ne seront pas réécrits.",
+        "validation": {
+          "empty": "Le nom de l’étiquette ne peut pas être vide.",
+          "control_characters": "Le nom de l’étiquette ne peut pas contenir de tabulations, de sauts de ligne ni d’autres caractères de contrôle.",
+          "too_long": "Le nom de l’étiquette ne peut pas dépasser {max} caractères.",
+          "duplicate": "Une étiquette portant ce nom existe déjà dans cette catégorie."
+        }
       },
       "empty": {
         "language": "Sans tag de langue",
@@ -352,6 +378,7 @@
         "difficulty": "Sans tag de difficulté"
       },
       "buttons": {
+        "manage": "Gérer les étiquettes",
         "confirm": "Enregistrer le snapshot de texte",
         "cancel": "Annuler"
       },
@@ -406,7 +433,8 @@
         "load_error": "Impossible de charger le snapshot.",
         "outside": "Le snapshot doit être situé dans le dossier des snapshots.",
         "truncated": "Le snapshot dépasse la taille maximale et a été tronqué.",
-        "unavailable": "Fonctionnalité de snapshot indisponible."
+        "unavailable": "Fonctionnalité de snapshot indisponible.",
+        "catalog_update_error": "Impossible de mettre à jour les étiquettes de snapshot de texte."
       }
     },
     "tasks": {
