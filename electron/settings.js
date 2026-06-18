@@ -658,6 +658,13 @@ function registerIpc(
     broadcastSettingsUpdated(decorateSettingsPayload(settings), windows);
   }
 
+  function saveAndPublishSettings(nextSettings) {
+    const savedSettings = saveSettings(nextSettings);
+    const windows = resolveWindows();
+    publishSettingsUpdated(savedSettings, windows);
+    return savedSettings;
+  }
+
   // get-settings: returns the current settings object (normalized)
   ipcMain.handle('get-settings', async () => {
     try {
@@ -717,10 +724,7 @@ function registerIpc(
       }
 
       settings.snapshotTags = nextSnapshotTags;
-      settings = saveSettings(settings);
-
-      const windows = resolveWindows();
-      publishSettingsUpdated(settings, windows);
+      settings = saveAndPublishSettings(settings);
 
       return { ok: true, snapshotTags: settings.snapshotTags };
     } catch (err) {
@@ -787,10 +791,7 @@ function registerIpc(
     try {
       let settings = getSettings();
       settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
-      settings = saveSettings(settings);
-
-      const windows = resolveWindows();
-      publishSettingsUpdated(settings, windows);
+      settings = saveAndPublishSettings(settings);
 
       return { ok: true, mode: settings.modeConteo };
     } catch (err) {
@@ -812,7 +813,7 @@ function registerIpc(
       }
 
       let settings = getSettings();
-      const langTag = settings && typeof settings.language === 'string' ? settings.language : '';
+      const langTag = settings.language;
       if (!langTag) {
         log.warnOnce(
           'settings.set-selected-preset.emptyLanguage',
@@ -820,7 +821,6 @@ function registerIpc(
         );
       }
       const langKey = deriveLangKey(langTag);
-      settings.selected_preset_by_language = settings.selected_preset_by_language || {};
       if (settings.selected_preset_by_language[langKey] === name) {
         return { ok: true, langKey, name };
       }
@@ -850,10 +850,7 @@ function registerIpc(
         return { ok: true, enabled };
       }
       settings.spellcheckEnabled = enabled;
-      settings = saveSettings(settings);
-
-      const windows = resolveWindows();
-      publishSettingsUpdated(settings, windows);
+      settings = saveAndPublishSettings(settings);
 
       return { ok: true, enabled: settings.spellcheckEnabled };
     } catch (err) {
@@ -881,10 +878,7 @@ function registerIpc(
         return { ok: true, editorFontSizePx: nextEditorFontSizePx };
       }
       settings.editorFontSizePx = nextEditorFontSizePx;
-      settings = saveSettings(settings);
-
-      const windows = resolveWindows();
-      publishSettingsUpdated(settings, windows);
+      settings = saveAndPublishSettings(settings);
 
       return { ok: true, editorFontSizePx: settings.editorFontSizePx };
     } catch (err) {
