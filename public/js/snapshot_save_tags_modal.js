@@ -62,11 +62,14 @@
   }
 
   const electronAPI = window.electronAPI || null;
-  if (!electronAPI
-    || typeof electronAPI.getSnapshotTagPreferences !== 'function'
-    || typeof electronAPI.setSnapshotTagPreferences !== 'function') {
-    throw new Error('[snapshot-save-tags-modal] snapshot-tag preference bridge unavailable; cannot continue');
-  }
+  const getSnapshotTagPreferences = electronAPI
+    && typeof electronAPI.getSnapshotTagPreferences === 'function'
+    ? electronAPI.getSnapshotTagPreferences.bind(electronAPI)
+    : null;
+  const setSnapshotTagPreferences = electronAPI
+    && typeof electronAPI.setSnapshotTagPreferences === 'function'
+    ? electronAPI.setSnapshotTagPreferences.bind(electronAPI)
+    : null;
 
   // =============================================================================
   // Constants / config
@@ -85,6 +88,9 @@
   const MANAGE_BUTTON_LABEL_KEY = 'renderer.snapshots.buttons.manage';
   const MANAGE_BUTTON_ARIA_KEY = 'renderer.snapshots.manager.title';
   const MANAGER_UNAVAILABLE_ALERT_KEY = 'renderer.snapshots.alerts.catalog_update_error';
+  const LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.load.unavailable';
+  const SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.save.unavailable';
+  const CUSTOM_LABEL_MAX_LENGTH_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.snapshotTagCatalog.maxCustomLabelLength.unavailable';
 
   const FIELD_DEFS = [
     {
@@ -211,13 +217,33 @@
     return managerModal.getAttribute('aria-hidden') === 'false';
   }
 
+  function getCustomLabelMaxLength() {
+    const maxLength = snapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH;
+    if (Number.isInteger(maxLength) && maxLength > 0) {
+      return maxLength;
+    }
+    log.warnOnce(
+      CUSTOM_LABEL_MAX_LENGTH_UNAVAILABLE_LOG_KEY,
+      'SnapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH unavailable; draft input maxLength hint disabled.'
+    );
+    return null;
+  }
+
   async function loadSnapshotTagPreferences(initialPreferences = null) {
     if (snapshotTagCatalog.isPlainObject(initialPreferences)) {
       return snapshotTagCatalog.normalizeSnapshotTagPreferences(initialPreferences);
     }
 
+    if (!getSnapshotTagPreferences) {
+      log.warnOnce(
+        LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY,
+        'Snapshot-tag preference bridge unavailable; using empty preferences.'
+      );
+      return snapshotTagCatalog.createEmptySnapshotTagPreferences();
+    }
+
     try {
-      const result = await electronAPI.getSnapshotTagPreferences();
+      const result = await getSnapshotTagPreferences();
       if (result && result.ok === true) {
         return snapshotTagCatalog.normalizeSnapshotTagPreferences(result.snapshotTags);
       }
@@ -230,8 +256,17 @@
   }
 
   async function persistSnapshotTagPreferences(nextPreferences) {
+    if (!setSnapshotTagPreferences) {
+      log.warnOnce(
+        SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY,
+        'Snapshot-tag preference bridge unavailable; cannot persist snapshot-tag preferences.'
+      );
+      window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
+      return null;
+    }
+
     try {
-      const result = await electronAPI.setSnapshotTagPreferences(nextPreferences);
+      const result = await setSnapshotTagPreferences(nextPreferences);
       if (result && result.ok === true) {
         return snapshotTagCatalog.normalizeSnapshotTagPreferences(result.snapshotTags);
       }
@@ -806,7 +841,10 @@
             draftInput.className = 'snapshot-tag-manager-draft-input';
             draftInput.type = 'text';
             draftInput.value = draftState.value;
-            draftInput.maxLength = snapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH;
+            const customLabelMaxLength = getCustomLabelMaxLength();
+            if (customLabelMaxLength !== null) {
+              draftInput.maxLength = customLabelMaxLength;
+            }
             draftInput.placeholder = tRenderer('renderer.snapshots.manager.new_tag_placeholder');
             draftInput.setAttribute('aria-label', `${heading.textContent} ${tRenderer('renderer.snapshots.manager.new_tag_placeholder')}`);
             draftInput.addEventListener('input', () => {
