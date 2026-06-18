@@ -497,7 +497,13 @@ function saveSettings(nextSettings) {
  * This may fail during shutdown/races; failures are logged once and ignored.
  */
 function broadcastSettingsUpdated(settings, windows) {
-  if (!windows) return;
+  if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
+    log.warnOnce(
+      'settings.broadcastSettingsUpdated.windows.invalid',
+      'settings-updated broadcast failed (ignored): windows object unavailable.'
+    );
+    return;
+  }
   const targets = [
     { win: windows.mainWin, name: 'mainWin' },
     { win: windows.editorWin, name: 'editorWin' },
@@ -614,7 +620,7 @@ function registerIpc(
 
     try {
       const windows = getWindows();
-      if (!windows || typeof windows !== 'object') {
+      if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
         log.warnOnce(
           'settings.getWindows.invalid',
           'getWindows returned no windows object; window-targeted updates skipped.'
@@ -790,6 +796,12 @@ function registerIpc(
   ipcMain.handle('set-mode-conteo', async (_event, mode) => {
     try {
       let settings = getSettings();
+      if (mode !== 'simple' && mode !== 'preciso') {
+        log.warn(
+          'set-mode-conteo called with invalid value; defaulting to "preciso":',
+          { value: mode }
+        );
+      }
       settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
       settings = saveAndPublishSettings(settings);
 
