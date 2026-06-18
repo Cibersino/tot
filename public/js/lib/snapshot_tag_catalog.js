@@ -165,11 +165,16 @@
   // =============================================================================
   // Value normalization
   // =============================================================================
-  function normalizeDefaultLanguageTag(rawValue) {
+  function normalizeLanguageTagSyntax(rawValue) {
     const source = typeof rawValue === 'string' ? rawValue.trim() : '';
     if (!source) return '';
     const normalized = source.replace(/_/g, '-');
-    if (!LANGUAGE_RE.test(normalized)) return '';
+    return LANGUAGE_RE.test(normalized) ? normalized : '';
+  }
+
+  function normalizeDefaultLanguageTag(rawValue) {
+    const normalized = normalizeLanguageTagSyntax(rawValue);
+    if (!normalized) return '';
     const mapped = LANGUAGE_CANONICAL_MAP[normalized.toLowerCase()];
     return typeof mapped === 'string' ? mapped : '';
   }
@@ -220,10 +225,7 @@
     const customValue = normalizeCustomTagValue(rawValue, 'language');
     if (customValue) return customValue;
 
-    const source = typeof rawValue === 'string' ? rawValue.trim() : '';
-    if (!source) return '';
-    const normalized = source.replace(/_/g, '-');
-    return LANGUAGE_RE.test(normalized) ? normalized : '';
+    return normalizeLanguageTagSyntax(rawValue);
   }
 
   function normalizeTypeTag(rawValue) {
@@ -639,24 +641,24 @@
   // =============================================================================
   // Editable-preferences mutations
   // =============================================================================
+  function cloneCategoryPreferences(categoryPreferences) {
+    return {
+      custom: categoryPreferences.custom.map((entry) => ({ ...entry })),
+      hiddenDefaults: categoryPreferences.hiddenDefaults.slice(),
+      order: categoryPreferences.order.slice(),
+    };
+  }
+
+  function getVisibleOptionValues(resolvedCategory) {
+    return resolvedCategory.visibleOptions.map((option) => option.value);
+  }
+
   function cloneSnapshotTagPreferences(rawPreferences) {
     const preferences = normalizeSnapshotTagPreferences(rawPreferences);
     return {
-      language: {
-        custom: preferences.language.custom.map((entry) => ({ ...entry })),
-        hiddenDefaults: preferences.language.hiddenDefaults.slice(),
-        order: preferences.language.order.slice(),
-      },
-      type: {
-        custom: preferences.type.custom.map((entry) => ({ ...entry })),
-        hiddenDefaults: preferences.type.hiddenDefaults.slice(),
-        order: preferences.type.order.slice(),
-      },
-      difficulty: {
-        custom: preferences.difficulty.custom.map((entry) => ({ ...entry })),
-        hiddenDefaults: preferences.difficulty.hiddenDefaults.slice(),
-        order: preferences.difficulty.order.slice(),
-      },
+      language: cloneCategoryPreferences(preferences.language),
+      type: cloneCategoryPreferences(preferences.type),
+      difficulty: cloneCategoryPreferences(preferences.difficulty),
     };
   }
 
@@ -700,9 +702,7 @@
       value,
       label: labelInfo.label,
     });
-    preferences[normalizedCategory].order = resolvedCategory.visibleOptions
-      .map((option) => option.value)
-      .concat(value);
+    preferences[normalizedCategory].order = getVisibleOptionValues(resolvedCategory).concat(value);
 
     return {
       ok: true,
@@ -731,8 +731,7 @@
 
     const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
     preferences[normalizedCategory].hiddenDefaults.push(normalizedValue);
-    preferences[normalizedCategory].order = resolvedCategory.visibleOptions
-      .map((option) => option.value)
+    preferences[normalizedCategory].order = getVisibleOptionValues(resolvedCategory)
       .filter((candidate) => candidate !== normalizedValue);
 
     return {
@@ -759,9 +758,7 @@
     const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
 
     preferences[normalizedCategory].hiddenDefaults = [];
-    preferences[normalizedCategory].order = resolvedCategory.visibleOptions
-      .map((option) => option.value)
-      .concat(restoredValues);
+    preferences[normalizedCategory].order = getVisibleOptionValues(resolvedCategory).concat(restoredValues);
 
     return {
       ok: true,
@@ -787,8 +784,7 @@
 
     const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
     preferences[normalizedCategory].custom = nextCustom;
-    preferences[normalizedCategory].order = resolvedCategory.visibleOptions
-      .map((option) => option.value)
+    preferences[normalizedCategory].order = getVisibleOptionValues(resolvedCategory)
       .filter((candidate) => candidate !== normalizedValue);
 
     return {
@@ -807,7 +803,7 @@
     }
 
     const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
-    const currentOrder = resolvedCategory.visibleOptions.map((option) => option.value);
+    const currentOrder = getVisibleOptionValues(resolvedCategory);
     if (!currentOrder.includes(normalizedValue)) {
       return { ok: false, code: 'missing_value', preferences: normalizeSnapshotTagPreferences(preferences) };
     }
