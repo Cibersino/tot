@@ -1752,6 +1752,7 @@ function bindSpeedControls() {
   readingSpeedTestUi.configure({
     onLockChange: syncMainInteractionLockUi,
     applyWpm: applyReadingTestWpm,
+    getSettingsCache: () => settingsCache,
   });
   wpmControls.bind({
     guardUserAction,
@@ -1939,6 +1940,7 @@ function configureTextExtractionModules() {
     applyTextViaCanonicalPath,
     getOptionalElectronMethod,
     getOcrLanguage: () => idiomaActual || '',
+    getSettingsCache: () => settingsCache,
     guardUserAction,
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,

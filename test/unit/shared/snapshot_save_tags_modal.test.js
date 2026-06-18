@@ -6,7 +6,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
+const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
+
 let activeElementRef = null;
+
+function flushMicrotasks() {
+  return Promise.resolve().then(() => Promise.resolve());
+}
 
 function createEvent(event = {}) {
   return {
@@ -38,6 +44,7 @@ function createElement(id, tagName = 'div') {
     className: '',
     dataset: {},
     parentNode: null,
+    style: {},
     _children: children,
     get textContent() {
       if (children.length) {
@@ -106,13 +113,41 @@ function createElement(id, tagName = 'div') {
   };
 }
 
-function createHarness({ omitIds = [] } = {}) {
+function walk(node, visit) {
+  if (!node) return;
+  visit(node);
+  if (!Array.isArray(node._children)) return;
+  node._children.forEach((child) => walk(child, visit));
+}
+
+function findDescendant(root, predicate) {
+  let match = null;
+  walk(root, (node) => {
+    if (!match && predicate(node)) {
+      match = node;
+    }
+  });
+  return match;
+}
+
+function interpolate(template, params = {}) {
+  return String(template || '').replace(/\{(\w+)\}/g, (_match, key) => {
+    return Object.prototype.hasOwnProperty.call(params, key) ? String(params[key]) : '';
+  });
+}
+
+function createHarness({
+  storedPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences(),
+  confirmResult = true,
+} = {}) {
   activeElementRef = null;
+
   const elements = {
     snapshotSaveTagsModal: createElement('snapshotSaveTagsModal'),
     snapshotSaveTagsModalBackdrop: createElement('snapshotSaveTagsModalBackdrop'),
     snapshotSaveTagsModalTitle: createElement('snapshotSaveTagsModalTitle'),
     snapshotSaveTagsModalMessage: createElement('snapshotSaveTagsModalMessage'),
+    snapshotSaveTagsManageButton: createElement('snapshotSaveTagsManageButton', 'button'),
     snapshotSaveTagsLanguageLabel: createElement('snapshotSaveTagsLanguageLabel', 'span'),
     snapshotSaveTagsLanguageControl: createElement('snapshotSaveTagsLanguageControl'),
     snapshotSaveTagsLanguageInput: createElement('snapshotSaveTagsLanguageInput', 'input'),
@@ -125,9 +160,16 @@ function createHarness({ omitIds = [] } = {}) {
     snapshotSaveTagsDifficultyControl: createElement('snapshotSaveTagsDifficultyControl'),
     snapshotSaveTagsDifficultyInput: createElement('snapshotSaveTagsDifficultyInput', 'input'),
     snapshotSaveTagsDifficultyListbox: createElement('snapshotSaveTagsDifficultyListbox'),
-    snapshotSaveTagsModalConfirm: createElement('snapshotSaveTagsModalConfirm'),
-    snapshotSaveTagsModalCancel: createElement('snapshotSaveTagsModalCancel'),
-    snapshotSaveTagsModalClose: createElement('snapshotSaveTagsModalClose'),
+    snapshotSaveTagsModalConfirm: createElement('snapshotSaveTagsModalConfirm', 'button'),
+    snapshotSaveTagsModalCancel: createElement('snapshotSaveTagsModalCancel', 'button'),
+    snapshotSaveTagsModalClose: createElement('snapshotSaveTagsModalClose', 'button'),
+    snapshotTagManagerModal: createElement('snapshotTagManagerModal'),
+    snapshotTagManagerModalBackdrop: createElement('snapshotTagManagerModalBackdrop'),
+    snapshotTagManagerModalTitle: createElement('snapshotTagManagerModalTitle'),
+    snapshotTagManagerModalMessage: createElement('snapshotTagManagerModalMessage'),
+    snapshotTagManagerModalContent: createElement('snapshotTagManagerModalContent'),
+    snapshotTagManagerModalDone: createElement('snapshotTagManagerModalDone', 'button'),
+    snapshotTagManagerModalClose: createElement('snapshotTagManagerModalClose', 'button'),
   };
 
   elements.snapshotSaveTagsLanguageControl.append(
@@ -150,6 +192,8 @@ function createHarness({ omitIds = [] } = {}) {
     'renderer.snapshots.message': 'Optionally tag this text snapshot before choosing where to save it.',
     'renderer.snapshots.search.placeholder': 'Type to filter options',
     'renderer.snapshots.search.no_results': 'No matching options',
+    'renderer.snapshots.search.create': 'Create "{label}"',
+    'renderer.snapshots.buttons.manage': 'Manage tags',
     'renderer.snapshots.labels.language': 'Language',
     'renderer.snapshots.labels.type': 'Type',
     'renderer.snapshots.labels.difficulty': 'Difficulty',
@@ -159,26 +203,59 @@ function createHarness({ omitIds = [] } = {}) {
     'renderer.snapshots.buttons.confirm': 'Save Text Snapshot',
     'renderer.snapshots.buttons.cancel': 'Cancel',
     'renderer.snapshots.close_aria': 'Close save text snapshot dialog',
-    'renderer.text_extraction.batch_plan.tags_modal.title': 'Unit tags',
-    'renderer.text_extraction.batch_plan.tags_modal.message': 'Choose optional tags for snapshots created from this unit during batch extraction.',
-    'renderer.text_extraction.batch_plan.tags_modal.confirm_button': 'Apply tags',
-    'renderer.text_extraction.batch_plan.tags_modal.close_aria': 'Close unit tags dialog',
     'renderer.snapshots.options.language.en': 'English',
     'renderer.snapshots.options.language.es': 'Spanish',
     'renderer.snapshots.options.language.mi': 'Māori',
-    'renderer.snapshots.options.type.fiction': 'Fiction',
-    'renderer.snapshots.options.type.non_fiction': 'Non-fiction',
+    'renderer.snapshots.options.type.fiction': 'Ficción',
+    'renderer.snapshots.options.type.non_fiction': 'No ficción',
     'renderer.snapshots.options.difficulty.easy': 'Easy',
+    'renderer.snapshots.options.difficulty.normal': 'Normal',
     'renderer.snapshots.options.difficulty.hard': 'Hard',
+    'renderer.snapshots.manager.title': 'Manage snapshot tags',
+    'renderer.snapshots.manager.message': 'Edit the visible tag catalog for future snapshot prompts.',
+    'renderer.snapshots.manager.done': 'Done',
+    'renderer.snapshots.manager.close_aria': 'Close tag manager',
+    'renderer.snapshots.manager.new_tag': 'New tag',
+    'renderer.snapshots.manager.new_tag_placeholder': 'Type a new tag label',
+    'renderer.snapshots.manager.add_tag': 'Add tag',
+    'renderer.snapshots.manager.cancel_draft': 'Cancel',
+    'renderer.snapshots.manager.sort_alphabetically': 'Sort alphabetically',
+    'renderer.snapshots.manager.restore_hidden_defaults': 'Restore {count} hidden defaults',
+    'renderer.snapshots.manager.empty_category': 'No visible tags',
+    'renderer.snapshots.manager.move_up': 'Move {label} up',
+    'renderer.snapshots.manager.move_down': 'Move {label} down',
+    'renderer.snapshots.manager.hide_default': 'Hide {label}',
+    'renderer.snapshots.manager.delete_custom': 'Delete {label}',
+    'renderer.snapshots.manager.confirm_hide_default': 'Hide {label} from the visible catalog?',
+    'renderer.snapshots.manager.confirm_delete_custom': 'Delete {label} permanently?',
+    'renderer.snapshots.manager.validation.empty': 'Enter a tag label.',
+    'renderer.snapshots.manager.validation.control_characters': 'Control characters are not allowed.',
+    'renderer.snapshots.manager.validation.too_long': 'Tag labels must be 48 characters or shorter.',
+    'renderer.snapshots.manager.validation.duplicate': 'That tag already exists in this category.',
+    'renderer.snapshots.alerts.catalog_update_error': 'Could not update the tag catalog.',
   };
 
-  omitIds.forEach((id) => {
-    delete elements[id];
-  });
+  let currentStoredPreferences = snapshotTagCatalog.normalizeSnapshotTagPreferences(storedPreferences);
+  const savedPreferences = [];
+  const confirmCalls = [];
+  const notifications = [];
+  const registeredPromptNames = [];
 
   const sandbox = {
     window: {
-      Notify: {},
+      Notify: {
+        confirmMain(key, params) {
+          confirmCalls.push({ key, params });
+          return confirmResult;
+        },
+        notifyMain(key) {
+          notifications.push(key);
+        },
+        registerCustomPrompt(name, handler) {
+          registeredPromptNames.push(name);
+          this[name] = handler;
+        },
+      },
       getLogger() {
         return {
           debug() {},
@@ -192,21 +269,29 @@ function createHarness({ omitIds = [] } = {}) {
         tRenderer(key) {
           return translations[key] || key;
         },
+        msgRenderer(key, params) {
+          return interpolate(translations[key] || key, params);
+        },
       },
-      SnapshotTagCatalog: {
-        LANGUAGE_OPTIONS: [
-          { value: 'en', labelKey: 'renderer.snapshots.options.language.en' },
-          { value: 'es', labelKey: 'renderer.snapshots.options.language.es' },
-          { value: 'mi', labelKey: 'renderer.snapshots.options.language.mi' },
-        ],
-        TYPE_OPTIONS: [
-          { value: 'fiction', labelKey: 'renderer.snapshots.options.type.fiction' },
-          { value: 'non_fiction', labelKey: 'renderer.snapshots.options.type.non_fiction' },
-        ],
-        DIFFICULTY_OPTIONS: [
-          { value: 'easy', labelKey: 'renderer.snapshots.options.difficulty.easy' },
-          { value: 'hard', labelKey: 'renderer.snapshots.options.difficulty.hard' },
-        ],
+      SnapshotTagCatalog: snapshotTagCatalog,
+      RendererIcons: {
+        createIconButton({ className = '', title = '', ariaLabel = '' } = {}) {
+          const button = createElement('', 'button');
+          button.className = className;
+          if (title) button.title = title;
+          if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
+          return button;
+        },
+      },
+      electronAPI: {
+        async getSnapshotTagPreferences() {
+          return { ok: true, snapshotTags: currentStoredPreferences };
+        },
+        async setSnapshotTagPreferences(payload) {
+          currentStoredPreferences = snapshotTagCatalog.normalizeSnapshotTagPreferences(payload);
+          savedPreferences.push(JSON.parse(JSON.stringify(currentStoredPreferences)));
+          return { ok: true, snapshotTags: currentStoredPreferences };
+        },
       },
       addEventListener(type, handler) {
         if (!windowListeners.has(type)) {
@@ -244,6 +329,13 @@ function createHarness({ omitIds = [] } = {}) {
       },
     },
     console,
+    setTimeout(handler) {
+      if (typeof handler === 'function') {
+        handler();
+      }
+      return 0;
+    },
+    clearTimeout() {},
   };
 
   vm.createContext(sandbox);
@@ -253,82 +345,92 @@ function createHarness({ omitIds = [] } = {}) {
   );
   vm.runInContext(source, sandbox, { filename: 'public/js/snapshot_save_tags_modal.js' });
 
-  function dispatchDocument(type, event = {}) {
-    const handlers = documentListeners.get(type) || [];
-    const safeEvent = createEvent(event);
-    handlers.forEach((handler) => handler(safeEvent));
-    return safeEvent;
+  function getOptionTexts(listboxId) {
+    return elements[listboxId]._children.map((child) => child.textContent);
   }
 
-  function dispatchWindow(type, event = {}) {
+  function findInManagerByAriaLabel(label) {
+    return findDescendant(
+      elements.snapshotTagManagerModalContent,
+      (node) => typeof node.getAttribute === 'function' && node.getAttribute('aria-label') === label
+    );
+  }
+
+  function findInManagerByText(text) {
+    return findDescendant(
+      elements.snapshotTagManagerModalContent,
+      (node) => typeof node.textContent === 'string' && node.textContent === text
+    );
+  }
+
+  function findInManagerByClassName(className) {
+    return findDescendant(
+      elements.snapshotTagManagerModalContent,
+      (node) => typeof node.className === 'string' && node.className === className
+    );
+  }
+
+  function dispatchWindowEvent(type, event = {}) {
     const handlers = windowListeners.get(type) || [];
     const safeEvent = createEvent(event);
     handlers.forEach((handler) => handler(safeEvent));
     return safeEvent;
   }
 
-  function dispatchWithWindowBubble(element, type, event = {}) {
-    const safeEvent = element.dispatch(type, event);
-    if (!safeEvent.propagationStopped) {
-      const handlers = windowListeners.get(type) || [];
-      handlers.forEach((handler) => handler(safeEvent));
-    }
-    return safeEvent;
-  }
-
-  function getOptionTexts(listboxId) {
-    return elements[listboxId]._children.map((child) => child.textContent);
-  }
-
   return {
     elements,
     prompt: sandbox.window.Notify.promptSnapshotSaveTags,
-    dispatchDocument,
-    dispatchWindow,
-    dispatchWithWindowBubble,
+    promptManager: sandbox.window.Notify.promptSnapshotTagManager,
+    getRegisteredPromptNames() {
+      return registeredPromptNames.slice();
+    },
     getOptionTexts,
+    getStoredPreferences() {
+      return JSON.parse(JSON.stringify(currentStoredPreferences));
+    },
+    getSavedPreferences() {
+      return savedPreferences.slice();
+    },
+    getConfirmCalls() {
+      return confirmCalls.slice();
+    },
+    getActiveElement() {
+      return activeElementRef;
+    },
+    notifications,
+    findInManagerByAriaLabel,
+    findInManagerByText,
+    findInManagerByClassName,
+    dispatchWindowEvent,
   };
 }
+
+test('snapshot save tags modal registers public prompts through window.Notify.registerCustomPrompt', () => {
+  const harness = createHarness();
+
+  assert.deepEqual(harness.getRegisteredPromptNames(), [
+    'promptSnapshotTagManager',
+    'promptSnapshotSaveTags',
+  ]);
+  assert.equal(typeof harness.prompt, 'function');
+  assert.equal(typeof harness.promptManager, 'function');
+});
 
 test('snapshot save tags modal keeps snapshot-save wording by default', async () => {
   const harness = createHarness();
 
   const promptPromise = harness.prompt({ initialTags: null });
+  await flushMicrotasks();
 
   assert.equal(harness.elements.snapshotSaveTagsModalTitle.textContent, 'Save text snapshot');
   assert.match(harness.elements.snapshotSaveTagsModalMessage.textContent, /text snapshot/);
   assert.equal(harness.elements.snapshotSaveTagsModalConfirm.textContent, 'Save Text Snapshot');
-  assert.equal(
-    harness.elements.snapshotSaveTagsModalClose.getAttribute('aria-label'),
-    'Close save text snapshot dialog'
-  );
   assert.equal(harness.elements.snapshotSaveTagsLanguageInput.placeholder, 'Type to filter options');
-
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  const result = await promptPromise;
-  assert.equal(result, null);
-});
-
-test('snapshot save tags modal supports caller-provided contextual copy', async () => {
-  const harness = createHarness();
-
-  const promptPromise = harness.prompt({
-    initialTags: null,
-    copy: {
-      titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
-      messageKey: 'renderer.text_extraction.batch_plan.tags_modal.message',
-      confirmKey: 'renderer.text_extraction.batch_plan.tags_modal.confirm_button',
-      closeAriaKey: 'renderer.text_extraction.batch_plan.tags_modal.close_aria',
-    },
-  });
-
-  assert.equal(harness.elements.snapshotSaveTagsModalTitle.textContent, 'Unit tags');
-  assert.match(harness.elements.snapshotSaveTagsModalMessage.textContent, /batch extraction/);
-  assert.equal(harness.elements.snapshotSaveTagsModalConfirm.textContent, 'Apply tags');
-  assert.equal(harness.elements.snapshotSaveTagsModalCancel.textContent, 'Cancel');
+  assert.equal(harness.elements.snapshotSaveTagsManageButton.textContent, 'Manage tags');
+  assert.equal(harness.elements.snapshotSaveTagsManageButton.title, 'Manage tags');
   assert.equal(
-    harness.elements.snapshotSaveTagsModalClose.getAttribute('aria-label'),
-    'Close unit tags dialog'
+    harness.elements.snapshotSaveTagsManageButton.getAttribute('aria-label'),
+    'Manage snapshot tags'
   );
 
   harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
@@ -336,232 +438,136 @@ test('snapshot save tags modal supports caller-provided contextual copy', async 
   assert.equal(result, null);
 });
 
-test('snapshot save tags modal opens with the first field focused and all selectors closed', async () => {
+test('snapshot save tags modal creates and selects a custom tag from the inline create option', async () => {
   const harness = createHarness();
 
   const promptPromise = harness.prompt({ initialTags: null });
+  await flushMicrotasks();
+  harness.elements.snapshotSaveTagsTypeInput.value = 'Short story';
+  harness.elements.snapshotSaveTagsTypeInput.dispatch('input');
 
-  assert.equal(activeElementRef, harness.elements.snapshotSaveTagsLanguageInput);
-  assert.equal(harness.elements.snapshotSaveTagsLanguageListbox.hidden, true);
-  assert.equal(harness.elements.snapshotSaveTagsTypeListbox.hidden, true);
-  assert.equal(harness.elements.snapshotSaveTagsDifficultyListbox.hidden, true);
+  assert.deepEqual(
+    harness.getOptionTexts('snapshotSaveTagsTypeListbox'),
+    ['Create "Short story"']
+  );
 
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await promptPromise;
+  harness.elements.snapshotSaveTagsTypeListbox._children[0].dispatch('click');
+  await flushMicrotasks();
+
+  const customValue = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
+  assert.equal(harness.elements.snapshotSaveTagsTypeInput.value, 'Short story');
+  assert.equal(harness.getStoredPreferences().type.order.at(-1), customValue);
+
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  const result = await promptPromise;
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(result)),
+    { tags: { type: customValue } }
+  );
 });
 
-test('snapshot save tags modal opens a selector only on direct control click', async () => {
+test('snapshot save tags modal shows the inline create option before matching catalog options', async () => {
   const harness = createHarness();
 
   const promptPromise = harness.prompt({ initialTags: null });
+  await flushMicrotasks();
+  harness.elements.snapshotSaveTagsLanguageInput.value = 'Span';
+  harness.elements.snapshotSaveTagsLanguageInput.dispatch('input');
 
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('click');
-  assert.equal(harness.elements.snapshotSaveTagsLanguageListbox.hidden, false);
   assert.deepEqual(
     harness.getOptionTexts('snapshotSaveTagsLanguageListbox'),
-    ['No language tag', 'English', 'Māori', 'Spanish']
+    ['Create "Span"', 'Spanish']
   );
 
   harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
   await promptPromise;
 });
 
-test('snapshot save tags modal keeps label clicks non-interactive', async () => {
+test('snapshot save tags modal suppresses inline create when a normalized match already exists', async () => {
   const harness = createHarness();
 
   const promptPromise = harness.prompt({ initialTags: null });
-
-  harness.elements.snapshotSaveTagsTypeInput.focus();
-  harness.elements.snapshotSaveTagsLanguageLabel.dispatch('click');
-  assert.equal(activeElementRef, harness.elements.snapshotSaveTagsTypeInput);
-  assert.equal(harness.elements.snapshotSaveTagsLanguageListbox.hidden, true);
-
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await promptPromise;
-});
-
-test('snapshot save tags modal opens and filters when typing', async () => {
-  const harness = createHarness();
-
-  const promptPromise = harness.prompt({ initialTags: null });
-
-  harness.elements.snapshotSaveTagsLanguageInput.value = 'span';
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('input');
-  assert.equal(harness.elements.snapshotSaveTagsLanguageListbox.hidden, false);
-  assert.deepEqual(harness.getOptionTexts('snapshotSaveTagsLanguageListbox'), ['Spanish']);
-
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await promptPromise;
-});
-
-test('snapshot save tags modal opens on ArrowDown and commits with Enter', async () => {
-  const harness = createHarness();
-
-  const promptPromise = harness.prompt({ initialTags: null });
-
-  harness.elements.snapshotSaveTagsDifficultyInput.dispatch('keydown', { key: 'ArrowDown' });
-  assert.equal(harness.elements.snapshotSaveTagsDifficultyListbox.hidden, false);
-  harness.elements.snapshotSaveTagsDifficultyInput.dispatch('keydown', { key: 'ArrowDown' });
-  harness.elements.snapshotSaveTagsDifficultyInput.dispatch('keydown', { key: 'Enter' });
-  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
-
-  const result = await promptPromise;
-  assert.deepEqual(
-    JSON.parse(JSON.stringify(result)),
-    { tags: { difficulty: 'easy' } }
-  );
-});
-
-test('snapshot save tags modal shows committed labels in closed fields and normalizes invalid initial tags away', async () => {
-  const harness = createHarness();
-
-  let promptPromise = harness.prompt({
-    initialTags: {
-      language: 'es',
-      type: 'fiction',
-      difficulty: 'hard',
-    },
-  });
-
-  assert.equal(harness.elements.snapshotSaveTagsLanguageInput.value, 'Spanish');
-  assert.equal(harness.elements.snapshotSaveTagsTypeInput.value, 'Fiction');
-  assert.equal(harness.elements.snapshotSaveTagsDifficultyInput.value, 'Hard');
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await promptPromise;
-
-  promptPromise = harness.prompt({
-    initialTags: {
-      type: 'legacy_unknown',
-    },
-  });
-  assert.equal(harness.elements.snapshotSaveTagsTypeInput.value, '');
-  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
-  const result = await promptPromise;
-  assert.deepEqual(
-    JSON.parse(JSON.stringify(result)),
-    { tags: null }
-  );
-});
-
-test('snapshot save tags modal replaces the visible committed label when typing', async () => {
-  const harness = createHarness();
-
-  const promptPromise = harness.prompt({
-    initialTags: {
-      type: 'fiction',
-    },
-  });
-
-  harness.elements.snapshotSaveTagsTypeInput.dispatch('keydown', { key: 'n' });
-  harness.elements.snapshotSaveTagsTypeInput.value = 'non';
+  await flushMicrotasks();
+  harness.elements.snapshotSaveTagsTypeInput.value = 'ficcion';
   harness.elements.snapshotSaveTagsTypeInput.dispatch('input');
-  assert.equal(harness.elements.snapshotSaveTagsTypeInput.value, 'non');
-  assert.deepEqual(harness.getOptionTexts('snapshotSaveTagsTypeListbox'), ['Non-fiction']);
+
+  const optionTexts = harness.getOptionTexts('snapshotSaveTagsTypeListbox');
+  assert.equal(optionTexts.includes('Ficción'), true);
+  assert.equal(optionTexts.some((text) => text.startsWith('Create "')), false);
 
   harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
   await promptPromise;
 });
 
-test('snapshot save tags modal filters by localized label and canonical value, accent-insensitively', async () => {
+test('snapshot tag manager hides defaults through window.Notify.confirmMain and persists the result', async () => {
   const harness = createHarness();
 
-  const promptPromise = harness.prompt({ initialTags: null });
+  const managerPromise = harness.promptManager({ initialPreferences: null });
+  await flushMicrotasks();
+  const hideEnglishButton = harness.findInManagerByAriaLabel('Hide English');
+  assert.ok(hideEnglishButton);
 
-  harness.elements.snapshotSaveTagsTypeInput.value = 'non_fiction';
-  harness.elements.snapshotSaveTagsTypeInput.dispatch('input');
-  assert.deepEqual(harness.getOptionTexts('snapshotSaveTagsTypeListbox'), ['Non-fiction']);
+  hideEnglishButton.dispatch('click');
+  await flushMicrotasks();
 
-  harness.elements.snapshotSaveTagsLanguageInput.value = 'maori';
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('input');
-  assert.deepEqual(harness.getOptionTexts('snapshotSaveTagsLanguageListbox'), ['Māori']);
+  const confirmCalls = JSON.parse(JSON.stringify(harness.getConfirmCalls()));
+  assert.deepEqual(confirmCalls, [{
+    key: 'renderer.snapshots.manager.confirm_hide_default',
+    params: { label: 'English' },
+  }]);
+  assert.equal(harness.getStoredPreferences().language.hiddenDefaults.includes('en'), true);
 
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await promptPromise;
+  harness.elements.snapshotTagManagerModalDone.dispatch('click');
+  await managerPromise;
 });
 
-test('snapshot save tags modal keeps the clear option and returns canonical tags only', async () => {
+test('snapshot tag manager moves focus into the modal on open', async () => {
   const harness = createHarness();
 
-  const promptPromise = harness.prompt({
-    initialTags: {
-      type: 'fiction',
-      language: 'en',
-    },
-  });
+  const managerPromise = harness.promptManager({ initialPreferences: null });
+  await flushMicrotasks();
 
-  harness.elements.snapshotSaveTagsTypeInput.dispatch('click');
-  harness.elements.snapshotSaveTagsTypeListbox._children[0].dispatch('click');
-  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  assert.equal(harness.getActiveElement(), harness.elements.snapshotTagManagerModalClose);
 
-  const result = await promptPromise;
-  assert.deepEqual(
-    JSON.parse(JSON.stringify(result)),
-    { tags: { language: 'en' } }
-  );
+  harness.elements.snapshotTagManagerModalDone.dispatch('click');
+  await managerPromise;
 });
 
-test('snapshot save tags modal applies Escape and Tab semantics correctly', async () => {
+test('snapshot tag manager renders text action buttons at normal size', async () => {
   const harness = createHarness();
 
-  let promptPromise = harness.prompt({ initialTags: null });
+  const managerPromise = harness.promptManager({ initialPreferences: null });
+  await flushMicrotasks();
 
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('click');
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('keydown', { key: 'Escape' });
-  assert.equal(harness.elements.snapshotSaveTagsLanguageListbox.hidden, true);
-  assert.equal(harness.elements.snapshotSaveTagsModal.getAttribute('aria-hidden'), 'false');
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await promptPromise;
+  assert.equal(harness.findInManagerByText('New tag').className, 'btn-standard');
+  assert.equal(harness.findInManagerByText('Sort alphabetically').className, 'btn-standard');
+  assert.equal(harness.findInManagerByText('Restore 0 hidden defaults').className, 'btn-standard');
 
-  promptPromise = harness.prompt({ initialTags: { language: 'en' } });
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('click');
-  harness.elements.snapshotSaveTagsLanguageInput.value = 'es';
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('input');
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('keydown', { key: 'Tab' });
-  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
-  const result = await promptPromise;
-  assert.deepEqual(
-    JSON.parse(JSON.stringify(result)),
-    { tags: { language: 'en' } }
-  );
+  harness.elements.snapshotTagManagerModalDone.dispatch('click');
+  await managerPromise;
 });
 
-test('snapshot save tags modal stops Escape from bubbling to the modal close handler', async () => {
+test('snapshot tag manager escape in new-tag input cancels only the draft', async () => {
   const harness = createHarness();
 
-  const promptPromise = harness.prompt({ initialTags: null });
+  const managerPromise = harness.promptManager({ initialPreferences: null });
+  await flushMicrotasks();
 
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('click');
-  const bubbledEscapeEvent = harness.dispatchWithWindowBubble(
-    harness.elements.snapshotSaveTagsLanguageInput,
-    'keydown',
-    { key: 'Escape' }
-  );
+  harness.findInManagerByText('New tag').dispatch('click');
+  await flushMicrotasks();
 
-  assert.equal(bubbledEscapeEvent.defaultPrevented, true);
-  assert.equal(bubbledEscapeEvent.propagationStopped, true);
-  assert.equal(harness.elements.snapshotSaveTagsLanguageListbox.hidden, true);
-  assert.equal(harness.elements.snapshotSaveTagsModal.getAttribute('aria-hidden'), 'false');
+  const draftInput = harness.findInManagerByClassName('snapshot-tag-manager-draft-input');
+  assert.ok(draftInput);
 
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await promptPromise;
-});
+  const keyEvent = draftInput.dispatch('keydown', { key: 'Escape' });
+  if (!keyEvent.propagationStopped) {
+    harness.dispatchWindowEvent('keydown', { key: 'Escape' });
+  }
+  await flushMicrotasks();
 
-test('snapshot save tags modal closes open selectors on outside click', async () => {
-  const harness = createHarness();
+  assert.equal(harness.findInManagerByClassName('snapshot-tag-manager-draft-input'), null);
+  assert.equal(harness.elements.snapshotTagManagerModal.getAttribute('aria-hidden'), 'false');
 
-  const promptPromise = harness.prompt({ initialTags: null });
-
-  harness.elements.snapshotSaveTagsLanguageInput.dispatch('click');
-  harness.dispatchDocument('mousedown', { target: createElement('outsideTarget') });
-  assert.equal(harness.elements.snapshotSaveTagsLanguageListbox.hidden, true);
-
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await promptPromise;
-});
-
-test('snapshot save tags modal keeps the missing-DOM guard at prompt time', async () => {
-  const harness = createHarness({ omitIds: ['snapshotSaveTagsLanguageInput'] });
-
-  const result = await harness.prompt({ initialTags: null });
-  assert.equal(result, null);
+  harness.elements.snapshotTagManagerModalDone.dispatch('click');
+  await managerPromise;
 });

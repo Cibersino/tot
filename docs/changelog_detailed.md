@@ -53,6 +53,7 @@ Reglas:
 - El `Text Editor`, la barra de búsqueda/reemplazo, el `Floating Stopwatch`, el `Task Editor` y los modales batch/info migran sus acciones funcionales al mismo modelo de iconos compartidos, reduciendo drift visual y de wiring entre superficies estáticas y controles generados por JS.
 - El modal de entrada del `Reading speed test` corrige la semántica de habilitación de filtros: cada opción vuelve a deshabilitarse cuando no existe ninguna entrada real compatible bajo las otras categorías activas, sin reactivarse por la unión accidental con valores ya marcados de la misma categoría.
 - La documentación y el copy i18n relacionados con estos controles se ajustan para nombrar la acción o el rol del control cuando la referencia histórica por glyph ya no era la guía más precisa.
+- El flujo de tags de snapshots deja de depender de un catálogo fijo: el modal buscable ahora permite crear tags personalizados inline y abre un gestor compartido para administrar `language` / `type` / `difficulty`, reutilizado también por los tags de unidades batch sin cambiar el contrato `{ tags } | null`.
 - La ruta nativa de extracción de texto agrega soporte local para `.epub`, resolviendo el orden de lectura desde `container.xml` + OPF/spine y manteniendo el mismo flujo existente de prepare/execute/apply sin una UI especial.
 - La extracción EPUB promueve `@xmldom/xmldom@0.8.13` a dependencia runtime directa, añade su licencia redistribuida y actualiza manual/QA para incluir `.epub` dentro de los formatos nativos soportados.
 - La extracción OCR agrega soporte para `.jp2` como input solo-imagen dentro del mismo flujo compartido de picker, drag/drop, prepare y ejecución ya existente, sin abrir una ruta ni una UI separadas.
@@ -67,6 +68,11 @@ Reglas:
   - `public/js/generated_icons.js` como artefacto renderer autogenerado;
   - `public/js/renderer_icons.js` como helper común para aplicar iconos a markup estático y a controles creados por JS.
 - Botón iconográfico dedicado de `Reading speed test` en el toolbar de la ventana principal, integrado al mismo sistema compartido de iconos funcionales.
+- Catálogo editable de tags de snapshot persistido en settings, con:
+  - creación de tags personalizados por categoría;
+  - gestor renderer compartido para `language` / `type` / `difficulty`;
+  - soporte para orden visible persistido, `Sort A-Z` como reorder real y `Restore hidden defaults` por categoría;
+  - reutilización del mismo catálogo efectivo desde el modal de save de snapshots y desde el tagging de unidades batch.
 - Soporte OCR para `.jp2` dentro del flujo compartido de text extraction, con normalizador dedicado `ocr_jp2_normalization.js`, wrapper local `openjpeg_wasm_runtime.js` y bundle runtime vendorizado bajo `electron/text_extraction_platform/vendor/`.
 - Superficies legales/provenance de app-doc para el runtime JP2 redistribuido y para el paquete fuente del que se tomó el artefacto vendorizado, reutilizando `public/third_party_licenses/`, `electron/link_openers.js` y `public/info/acerca_de.html`.
 
@@ -83,7 +89,11 @@ Reglas:
   - modales batch (`planning` y `final`) e info lightbox close control.
 - La acción reveal/open del reporte final batch converge en la semántica visual compartida `open-target`, en lugar de mantener una excepción separada para “reveal folder”.
 - El copy de ayuda, instrucciones e i18n de `es`/`en` para snapshots y `reading speed test` deja de depender exclusivamente de referencias históricas por glyph cuando el control migrado ya se describe mejor por nombre o función.
-- El modal renderer previo al guardado de snapshots reemplaza los `<select>` nativos de `language` / `type` / `difficulty` por selectores buscables, manteniendo el contrato `{ tags } | null`, los valores canónicos del catálogo compartido y una apertura explícita del selector solo por interacción directa del usuario.
+- El modal renderer previo al guardado de snapshots reemplaza los `<select>` nativos de `language` / `type` / `difficulty` por selectores buscables con create inline, manteniendo el contrato `{ tags } | null`, los valores canónicos del catálogo compartido, la prevención de duplicados por normalización y una apertura explícita del selector solo por interacción directa del usuario.
+- El catálogo efectivo de tags de snapshot deja de tratar los defaults como una lista cerrada e inmutable:
+  - los tags personalizados pasan a persistirse fuera de i18n y del catálogo base;
+  - ocultar un default lo remueve solo del catálogo visible y `Restore hidden defaults` lo repone al final de la categoría, conservando el orden base cuando se restauran varios;
+  - el orden visible por categoría pasa a ser el mismo entre el modal de save, el gestor de tags y el tagging de unidades batch, sin reshuffles silenciosos al cambiar de idioma más adelante.
 - El contrato compartido de formatos soportados pasa a incluir `.jp2` solo en la familia OCR/imagen; el picker nativo, drag/drop, prepare y route selection lo heredan desde los owners ya existentes en lugar de abrir wiring especial.
 - `ocr_image_normalization.js` conserva el ownership del contrato de normalización OCR, pero delega la decodificación/materialización de `.jp2` a `ocr_jp2_normalization.js` para mantener aislada la dependencia runtime específica.
 - El runtime JP2 empaquetado deja de arrastrar el árbol completo de dependencias de build del paquete npm original (`tsup`/`esbuild`/`rollup`) y pasa a redistribuir solo el artefacto runtime vendorizado más su documentación legal/provenance asociada.
@@ -94,6 +104,9 @@ Reglas:
   - el estado enabled/disabled de cada checkbox deja de evaluarse como suma `OR` dentro de la misma categoría al probar opciones nuevas y pasa a calcularse contra combinaciones reales compatibles con las otras categorías activas;
   - casos como `language=en` + `difficulty=normal` ya no reactivan `difficulty=hard` cuando no existe ninguna entrada `en + hard` en el pool visible;
   - al refrescar el pool o cambiar la visibilidad de bundled entries, la selección renderer deja de conservar valores obsoletos invisibles y pasa a reconciliarse con el universo actual de opciones disponibles.
+- Compatibilidad de tags de snapshot (`public/js/lib/snapshot_tag_catalog.js`, `electron/current_text_snapshots_main.js`):
+  - la normalización de `language` deja de comportarse como catálogo cerrado durante save/load y vuelve a aceptar valores válidos ya existentes fuera del set default, como `es-cl` o `fr-CA`;
+  - la carga de snapshots del texto actual ya no invalida metadata solo porque un tag permitido sea custom, desconocido para la sesión actual o ya no esté visible en el catálogo editable.
 - OCR JP2 (`electron/text_extraction_platform/ocr_jp2_normalization.js`, `electron/text_extraction_platform/ocr_google_drive_route.js`):
   - un `.jp2` válido deja de caer en el fallo provider-side `ocr_conversion_failed` por `413 Request Too Large` causado por una materialización PNG local demasiado pesada para el upload OCR efectivo;
   - la normalización JP2 ahora reduce el output al shape usado realmente por OCR antes del chequeo de tamaño del provider, y la ruta OCR pasa a bloquear antes del upload cualquier imagen efectiva `>= 10 MB`, manteniendo el límite existente de `50 MB` para PDFs y otros inputs no-imagen;

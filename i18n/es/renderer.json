@@ -339,12 +339,38 @@
       "message": "Puedes etiquetar este snapshot de texto antes de elegir dónde guardarlo.",
       "search": {
         "placeholder": "Escribe para filtrar opciones",
-        "no_results": "No hay opciones coincidentes"
+        "no_results": "No hay opciones coincidentes",
+        "create": "Crear \"{label}\""
       },
       "labels": {
         "language": "Idioma",
         "type": "Tipo",
         "difficulty": "Dificultad"
+      },
+      "manager": {
+        "title": "Gestionar etiquetas de snapshot de texto",
+        "message": "Gestiona las etiquetas visibles usadas para snapshots de texto y unidades de extracción por lotes.",
+        "done": "Listo",
+        "close_aria": "Cerrar gestor de etiquetas de snapshot de texto",
+        "new_tag": "Nueva etiqueta",
+        "new_tag_placeholder": "Nombre de etiqueta",
+        "add_tag": "Agregar etiqueta",
+        "cancel_draft": "Cancelar",
+        "sort_alphabetically": "Ordenar A-Z",
+        "restore_hidden_defaults": "Restaurar etiquetas por defecto ({count})",
+        "empty_category": "No hay etiquetas visibles en esta categoría.",
+        "move_up": "Subir \"{label}\"",
+        "move_down": "Bajar \"{label}\"",
+        "hide_default": "Ocultar etiqueta por defecto \"{label}\"",
+        "delete_custom": "Eliminar etiqueta personalizada \"{label}\"",
+        "confirm_hide_default": "¿Ocultar etiqueta por defecto \"{label}\"? Se quitará de la lista visible de etiquetas y podrá restaurarse más adelante.",
+        "confirm_delete_custom": "¿Eliminar etiqueta personalizada \"{label}\" permanentemente? Los snapshots de texto existentes no se reescribirán.",
+        "validation": {
+          "empty": "El nombre de etiqueta no puede estar vacío.",
+          "control_characters": "El nombre de etiqueta no puede contener tabulaciones, saltos de línea ni otros caracteres de control.",
+          "too_long": "El nombre de etiqueta no puede superar los {max} caracteres.",
+          "duplicate": "Ya existe una etiqueta con ese nombre en esta categoría."
+        }
       },
       "empty": {
         "language": "Sin etiqueta de idioma",
@@ -352,6 +378,7 @@
         "difficulty": "Sin etiqueta de dificultad"
       },
       "buttons": {
+        "manage": "Gestionar etiquetas",
         "confirm": "Guardar snapshot de texto",
         "cancel": "Cancelar"
       },
@@ -406,7 +433,8 @@
         "load_error": "No se pudo cargar el snapshot de texto.",
         "outside": "El snapshot de texto debe estar dentro de la carpeta de snapshots.",
         "truncated": "El snapshot de texto excedía el tamaño máximo y fue truncado.",
-        "unavailable": "La función de snapshots de texto no está disponible."
+        "unavailable": "La función de snapshots de texto no está disponible.",
+        "catalog_update_error": "No se pudieron actualizar las etiquetas de snapshot de texto."
       }
     },
     "tasks": {

@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
 const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
@@ -224,6 +225,68 @@ test('startup prune removes stale state entries but leaves existing unmanaged fi
   const state = readingTestPool.loadPoolState({ stateFilePath });
   assert.deepEqual(state.entries[existingCustomRelPath], { used: true });
   assert.equal(Object.prototype.hasOwnProperty.call(state.entries, missingCustomRelPath), false);
+});
+
+test('listPoolEntries accepts permitted custom snapshot tags from pool files', () => {
+  const tempDir = makeTempDir();
+  const snapshotsRootDir = path.join(tempDir, 'snapshots');
+  const bundledSourceDir = path.join(tempDir, 'bundled');
+  const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
+  const poolDir = path.join(snapshotsRootDir, readingTestPool.POOL_DIR_NAME);
+  const customLanguage = snapshotTagCatalog.buildCustomTagValue('language', 'Plain text');
+  const customType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
+
+  writeJson(path.join(poolDir, 'custom_pool.json'), {
+    text: 'Imported custom pool story.',
+    tags: {
+      language: customLanguage,
+      type: customType,
+      difficulty: 'hard',
+    },
+  });
+
+  const listInfo = readingTestPool.listPoolEntries({
+    snapshotsRootDir,
+    bundledSourceDir,
+    stateFilePath,
+  });
+
+  assert.equal(listInfo.ok, true);
+  assert.equal(listInfo.entries.length, 1);
+  assert.deepEqual(listInfo.entries[0].tags, {
+    language: customLanguage,
+    type: customType,
+    difficulty: 'hard',
+  });
+});
+
+test('listPoolEntries accepts valid non-catalog language tags from pool files', () => {
+  const tempDir = makeTempDir();
+  const snapshotsRootDir = path.join(tempDir, 'snapshots');
+  const bundledSourceDir = path.join(tempDir, 'bundled');
+  const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
+  const poolDir = path.join(snapshotsRootDir, readingTestPool.POOL_DIR_NAME);
+
+  writeJson(path.join(poolDir, 'open-language-pool.json'), {
+    text: 'Imported open-language pool story.',
+    tags: {
+      language: 'es-cl',
+      type: 'fiction',
+    },
+  });
+
+  const listInfo = readingTestPool.listPoolEntries({
+    snapshotsRootDir,
+    bundledSourceDir,
+    stateFilePath,
+  });
+
+  assert.equal(listInfo.ok, true);
+  assert.equal(listInfo.entries.length, 1);
+  assert.deepEqual(listInfo.entries[0].tags, {
+    language: 'es-cl',
+    type: 'fiction',
+  });
 });
 
 test('startup prune removes retired managed starter files and their state entries', () => {

@@ -87,6 +87,8 @@ const api = {
 
     // Settings / app info
     getSettings: () => ipcRenderer.invoke('get-settings'),
+    getSnapshotTagPreferences: () => ipcRenderer.invoke('get-snapshot-tag-preferences'),
+    setSnapshotTagPreferences: (payload) => ipcRenderer.invoke('set-snapshot-tag-preferences', payload),
     setModeConteo: (mode) => ipcRenderer.invoke('set-mode-conteo', mode),
     getAppConfig: () => ipcRenderer.invoke('get-app-config'),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),

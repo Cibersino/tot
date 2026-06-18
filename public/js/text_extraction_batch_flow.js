@@ -32,7 +32,9 @@
     throw new Error('[text-extraction-batch-flow] TextExtractionPdfPageSelection dependencies unavailable; cannot continue');
   }
   const snapshotTagCatalog = window.SnapshotTagCatalog || null;
-  if (!snapshotTagCatalog || !Array.isArray(snapshotTagCatalog.LANGUAGE_OPTIONS)) {
+  if (!snapshotTagCatalog
+    || !Array.isArray(snapshotTagCatalog.LANGUAGE_OPTIONS)
+    || typeof snapshotTagCatalog.resolveTagLabel !== 'function') {
     throw new Error('[text-extraction-batch-flow] SnapshotTagCatalog unavailable; cannot continue');
   }
 
@@ -62,6 +64,7 @@
       applyTextViaCanonicalPath: null,
       getOptionalElectronMethod: null,
       getOcrLanguage: null,
+      getSettingsCache: null,
       guardUserAction: null,
       hasBlockingModalOpen: null,
       hasCurrentTextSubscription: null,
@@ -164,23 +167,47 @@
     return groupKey;
   }
 
-  function getTagLabel(options, value) {
-    const option = options.find((candidate) => candidate.value === value);
-    return option ? tRenderer(option.labelKey) : value;
+  function getSnapshotTagPreferences() {
+    const { getSettingsCache } = requireDeps();
+    if (typeof getSettingsCache !== 'function') {
+      return snapshotTagCatalog.createEmptySnapshotTagPreferences
+        ? snapshotTagCatalog.createEmptySnapshotTagPreferences()
+        : {};
+    }
+    const settingsSnapshot = getSettingsCache();
+    return settingsSnapshot && typeof settingsSnapshot === 'object'
+      ? (settingsSnapshot.snapshotTags || {})
+      : {};
   }
 
   function formatTagsSummary(tags) {
     const safeTags = tags && typeof tags === 'object' ? tags : null;
     if (!safeTags) return tRenderer('renderer.text_extraction.batch_plan.tags_none');
+    const snapshotTagPreferences = getSnapshotTagPreferences();
     const parts = [];
     if (safeTags.language) {
-      parts.push(getTagLabel(snapshotTagCatalog.LANGUAGE_OPTIONS, safeTags.language));
+      parts.push(snapshotTagCatalog.resolveTagLabel(
+        'language',
+        safeTags.language,
+        snapshotTagPreferences,
+        { getDefaultLabel: (option) => tRenderer(option.labelKey) }
+      ));
     }
     if (safeTags.type) {
-      parts.push(getTagLabel(snapshotTagCatalog.TYPE_OPTIONS, safeTags.type));
+      parts.push(snapshotTagCatalog.resolveTagLabel(
+        'type',
+        safeTags.type,
+        snapshotTagPreferences,
+        { getDefaultLabel: (option) => tRenderer(option.labelKey) }
+      ));
     }
     if (safeTags.difficulty) {
-      parts.push(getTagLabel(snapshotTagCatalog.DIFFICULTY_OPTIONS, safeTags.difficulty));
+      parts.push(snapshotTagCatalog.resolveTagLabel(
+        'difficulty',
+        safeTags.difficulty,
+        snapshotTagPreferences,
+        { getDefaultLabel: (option) => tRenderer(option.labelKey) }
+      ));
     }
     return parts.length
       ? parts.join(' · ')

@@ -83,3 +83,23 @@ test('computeFilterState prunes stale selected values that no longer exist in th
   });
   assert.equal(state.eligibleCount, 1);
 });
+
+test('computeFilterState derives custom option values directly from pool-entry tags', () => {
+  const customLanguage = 'custom:language:plain-text';
+  const customType = 'custom:type:short-story';
+  const entries = [
+    createEntry({ language: customLanguage, type: customType, difficulty: 'hard' }),
+  ];
+
+  const state = computeFilterState(entries, {});
+
+  assert.deepEqual(
+    state.options.language.map((optionState) => optionState.value),
+    [customLanguage]
+  );
+  assert.deepEqual(
+    state.options.type.map((optionState) => optionState.value),
+    [customType]
+  );
+  assert.equal(state.eligibleCount, 1);
+});

@@ -29,6 +29,7 @@ const {
   EDITOR_FONT_SIZE_MAX_PX,
   EDITOR_FONT_SIZE_DEFAULT_PX,
 } = require('./constants_main');
+const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 
 const log = Log.get('settings');
 log.debug('Settings starting...');
@@ -65,6 +66,7 @@ const createDefaultSettings = (language = '') => ({
   presets_by_language: {},
   selected_preset_by_language: {},
   disabled_default_presets: {},
+  snapshotTags: snapshotTagCatalog.createEmptySnapshotTagPreferences(),
 });
 
 function normalizeEditorFontSizePx(value) {
@@ -255,6 +257,19 @@ function normalizeSettings(s) {
     );
     s.disabled_default_presets = {};
   }
+
+  // snapshotTags must be a plain object rooted in the shared snapshot-tag preferences schema.
+  if (typeof s.snapshotTags === 'undefined') {
+    s.snapshotTags = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  } else if (!isPlainObjectRecord(s.snapshotTags)) {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidSnapshotTags',
+      'Invalid snapshotTags; resetting to empty snapshot-tag preferences:',
+      { type: typeof s.snapshotTags, isArray: Array.isArray(s.snapshotTags) }
+    );
+    s.snapshotTags = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  }
+  s.snapshotTags = snapshotTagCatalog.normalizeSnapshotTagPreferences(s.snapshotTags);
 
   // modeConteo:
   // - missing -> default (silent)
@@ -509,6 +524,8 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
 /**
  * Registers IPC handlers related to settings:
  * - get-settings
+ * - get-snapshot-tag-preferences
+ * - set-snapshot-tag-preferences
  * - set-language
  * - set-mode-conteo
  * - set-selected-preset
@@ -623,6 +640,61 @@ function registerIpc(
       return decorateSettingsPayload(
         normalizeSettings(createDefaultSettings(DEFAULT_LANG))
       );
+    }
+  });
+
+  ipcMain.handle('get-snapshot-tag-preferences', async () => {
+    try {
+      const settings = getSettings();
+      return {
+        ok: true,
+        snapshotTags: snapshotTagCatalog.normalizeSnapshotTagPreferences(settings.snapshotTags),
+      };
+    } catch (err) {
+      log.errorOnce(
+        'settings.ipc.get-snapshot-tag-preferences',
+        'IPC get-snapshot-tag-preferences failed (using safe fallback):',
+        err
+      );
+      return {
+        ok: false,
+        error: String(err),
+        snapshotTags: snapshotTagCatalog.createEmptySnapshotTagPreferences(),
+      };
+    }
+  });
+
+  ipcMain.handle('set-snapshot-tag-preferences', async (_event, rawSnapshotTags) => {
+    try {
+      if (!snapshotTagCatalog.isPlainObject(rawSnapshotTags)) {
+        log.warnOnce(
+          'settings.set-snapshot-tag-preferences.invalid',
+          'set-snapshot-tag-preferences called with invalid payload (ignored).',
+          { type: typeof rawSnapshotTags, isArray: Array.isArray(rawSnapshotTags) }
+        );
+        return { ok: false, error: 'invalid' };
+      }
+
+      let settings = getSettings();
+      const nextSnapshotTags = snapshotTagCatalog.normalizeSnapshotTagPreferences(rawSnapshotTags);
+      const currentSerialized = JSON.stringify(
+        snapshotTagCatalog.normalizeSnapshotTagPreferences(settings.snapshotTags)
+      );
+      const nextSerialized = JSON.stringify(nextSnapshotTags);
+      if (currentSerialized === nextSerialized) {
+        return { ok: true, snapshotTags: nextSnapshotTags };
+      }
+
+      settings.snapshotTags = nextSnapshotTags;
+      settings = saveSettings(settings);
+
+      const windows = resolveWindows();
+      publishSettingsUpdated(settings, windows);
+
+      return { ok: true, snapshotTags: settings.snapshotTags };
+    } catch (err) {
+      log.error('IPC set-snapshot-tag-preferences failed:', err);
+      return { ok: false, error: String(err) };
     }
   });
 

@@ -5,9 +5,10 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Expose one shared snapshot tag catalog for renderer and main-process consumers.
-// - Define the canonical snapshot tag option sets.
-// - Normalize language/type/difficulty tag values.
+// - Expose the shared snapshot tag catalog for renderer and main-process consumers.
+// - Define canonical default tag option sets and custom-tag value generation.
+// - Normalize snapshot tags and editable snapshot-tag preferences.
+// - Resolve visible editable catalogs without duplicating merge logic.
 // - Support both browser-script and CommonJS consumers.
 
 // =============================================================================
@@ -70,7 +71,16 @@
   ]);
 
   const TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
+  const CATEGORY_OPTIONS = Object.freeze({
+    language: LANGUAGE_OPTIONS,
+    type: TYPE_OPTIONS,
+    difficulty: DIFFICULTY_OPTIONS,
+  });
+  const CUSTOM_TAG_PREFIX = 'custom';
+  const MAX_CUSTOM_LABEL_LENGTH = 48;
+  const CONTROL_CHAR_RE = /[\u0000-\u001f\u007f]/;
   const LANGUAGE_RE = /^[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*$/;
+  const CUSTOM_TAG_VALUE_RE = /^custom:(language|type|difficulty):([a-z0-9_-]+)$/i;
   const LANGUAGE_CANONICAL_MAP = Object.freeze(
     Object.fromEntries(
       LANGUAGE_OPTIONS.map((option) => [String(option.value).toLowerCase(), option.value])
@@ -78,35 +88,163 @@
   );
   const TYPE_VALUE_SET = new Set(TYPE_OPTIONS.map((option) => option.value));
   const DIFFICULTY_VALUE_SET = new Set(DIFFICULTY_OPTIONS.map((option) => option.value));
-
   // =============================================================================
-  // Helpers
+  // Generic helpers
   // =============================================================================
   function isPlainObject(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
-  function normalizeLanguageTag(rawValue) {
+  function normalizeOptionalString(value) {
+    return typeof value === 'string' ? value.trim() : '';
+  }
+
+  function collapseInternalWhitespace(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function stripAccents(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function normalizeLabelForComparison(value) {
+    return stripAccents(collapseInternalWhitespace(value)).toLowerCase();
+  }
+
+  function normalizeTagCategory(rawCategory) {
+    const category = normalizeOptionalString(rawCategory).toLowerCase();
+    return TAG_KEYS.includes(category) ? category : '';
+  }
+
+  function getDefaultOptionsForCategory(category) {
+    const normalizedCategory = normalizeTagCategory(category);
+    return normalizedCategory ? CATEGORY_OPTIONS[normalizedCategory].slice() : [];
+  }
+
+  function getDefaultOptionByValue(category, value) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const normalizedValue = normalizeOptionalString(value);
+    if (!normalizedCategory || !normalizedValue) return null;
+    return CATEGORY_OPTIONS[normalizedCategory].find((option) => option.value === normalizedValue) || null;
+  }
+
+  function resolveDefaultOptionLabel(option, getDefaultLabel) {
+    if (!option) return '';
+    if (typeof getDefaultLabel === 'function') {
+      const label = normalizeOptionalString(getDefaultLabel(option));
+      if (label) return label;
+    }
+    if (typeof option.label === 'string' && option.label.trim()) {
+      return option.label.trim();
+    }
+    return String(option.value || '');
+  }
+
+  function compareByLabel(left, right) {
+    const leftLabel = normalizeOptionalString(left && left.label);
+    const rightLabel = normalizeOptionalString(right && right.label);
+    return leftLabel.localeCompare(rightLabel, undefined, { sensitivity: 'base' });
+  }
+
+  function moveArrayValue(values, value, direction) {
+    const source = Array.isArray(values) ? values.slice() : [];
+    const index = source.indexOf(value);
+    if (index < 0) return source;
+    const delta = direction === 'up' ? -1 : 1;
+    const nextIndex = index + delta;
+    if (nextIndex < 0 || nextIndex >= source.length) return source;
+    const nextValues = source.slice();
+    const temp = nextValues[index];
+    nextValues[index] = nextValues[nextIndex];
+    nextValues[nextIndex] = temp;
+    return nextValues;
+  }
+
+  // =============================================================================
+  // Value normalization
+  // =============================================================================
+  function normalizeDefaultLanguageTag(rawValue) {
     const source = typeof rawValue === 'string' ? rawValue.trim() : '';
     if (!source) return '';
     const normalized = source.replace(/_/g, '-');
     if (!LANGUAGE_RE.test(normalized)) return '';
     const mapped = LANGUAGE_CANONICAL_MAP[normalized.toLowerCase()];
-    return typeof mapped === 'string' ? mapped : normalized;
+    return typeof mapped === 'string' ? mapped : '';
   }
 
-  function normalizeTypeTag(rawValue) {
+  function normalizeDefaultTypeTag(rawValue) {
     const source = typeof rawValue === 'string'
       ? rawValue.trim().toLowerCase().replace(/-/g, '_').replace(/\s+/g, '_')
       : '';
     return TYPE_VALUE_SET.has(source) ? source : '';
   }
 
-  function normalizeDifficultyTag(rawValue) {
+  function normalizeDefaultDifficultyTag(rawValue) {
     const source = typeof rawValue === 'string'
       ? rawValue.trim().toLowerCase()
       : '';
     return DIFFICULTY_VALUE_SET.has(source) ? source : '';
+  }
+
+  function normalizeDefaultTagValue(category, rawValue) {
+    switch (normalizeTagCategory(category)) {
+      case 'language':
+        return normalizeDefaultLanguageTag(rawValue);
+      case 'type':
+        return normalizeDefaultTypeTag(rawValue);
+      case 'difficulty':
+        return normalizeDefaultDifficultyTag(rawValue);
+      default:
+        return '';
+    }
+  }
+
+  function normalizeCustomTagValue(rawValue, expectedCategory = '') {
+    const source = normalizeOptionalString(rawValue).toLowerCase();
+    if (!source) return '';
+    const match = source.match(CUSTOM_TAG_VALUE_RE);
+    if (!match) return '';
+    const category = match[1];
+    if (expectedCategory && normalizeTagCategory(expectedCategory) !== category) {
+      return '';
+    }
+    return `${CUSTOM_TAG_PREFIX}:${category}:${match[2]}`;
+  }
+
+  function normalizeLanguageTag(rawValue) {
+    const defaultValue = normalizeDefaultLanguageTag(rawValue);
+    if (defaultValue) return defaultValue;
+
+    const customValue = normalizeCustomTagValue(rawValue, 'language');
+    if (customValue) return customValue;
+
+    const source = typeof rawValue === 'string' ? rawValue.trim() : '';
+    if (!source) return '';
+    const normalized = source.replace(/_/g, '-');
+    return LANGUAGE_RE.test(normalized) ? normalized : '';
+  }
+
+  function normalizeTypeTag(rawValue) {
+    return normalizeDefaultTypeTag(rawValue) || normalizeCustomTagValue(rawValue, 'type');
+  }
+
+  function normalizeDifficultyTag(rawValue) {
+    return normalizeDefaultDifficultyTag(rawValue) || normalizeCustomTagValue(rawValue, 'difficulty');
+  }
+
+  function normalizeTagValue(category, rawValue) {
+    switch (normalizeTagCategory(category)) {
+      case 'language':
+        return normalizeLanguageTag(rawValue);
+      case 'type':
+        return normalizeTypeTag(rawValue);
+      case 'difficulty':
+        return normalizeDifficultyTag(rawValue);
+      default:
+        return '';
+    }
   }
 
   function normalizeTags(rawTags) {
@@ -125,6 +263,584 @@
   }
 
   // =============================================================================
+  // Custom label helpers
+  // =============================================================================
+  function validateCustomLabel(rawLabel) {
+    const source = typeof rawLabel === 'string' ? rawLabel.trim() : '';
+    if (!source) {
+      return {
+        ok: false,
+        code: 'empty',
+        label: '',
+        normalizedLabel: '',
+      };
+    }
+    if (CONTROL_CHAR_RE.test(source)) {
+      return {
+        ok: false,
+        code: 'control_characters',
+        label: '',
+        normalizedLabel: '',
+      };
+    }
+
+    const label = collapseInternalWhitespace(source);
+    if (!label) {
+      return {
+        ok: false,
+        code: 'empty',
+        label: '',
+        normalizedLabel: '',
+      };
+    }
+    if (label.length > MAX_CUSTOM_LABEL_LENGTH) {
+      return {
+        ok: false,
+        code: 'too_long',
+        label,
+        normalizedLabel: '',
+      };
+    }
+
+    const normalizedLabel = normalizeLabelForComparison(label);
+    if (!normalizedLabel) {
+      return {
+        ok: false,
+        code: 'empty',
+        label: '',
+        normalizedLabel: '',
+      };
+    }
+
+    return {
+      ok: true,
+      code: '',
+      label,
+      normalizedLabel,
+    };
+  }
+
+  function encodeCustomSlug(normalizedLabel) {
+    let slug = '';
+    for (const char of String(normalizedLabel || '')) {
+      if (/[a-z0-9]/.test(char)) {
+        slug += char;
+        continue;
+      }
+      if (char === ' ') {
+        slug += '-';
+        continue;
+      }
+      if (char === '_') {
+        slug += '__';
+        continue;
+      }
+      slug += `_${char.codePointAt(0).toString(16)}_`;
+    }
+    return slug || 'tag';
+  }
+
+  function decodeCustomSlug(slug) {
+    const source = normalizeOptionalString(slug).toLowerCase();
+    if (!source) return '';
+    let decoded = '';
+    for (let index = 0; index < source.length; index += 1) {
+      const char = source[index];
+      if (char === '-') {
+        decoded += ' ';
+        continue;
+      }
+      if (char !== '_') {
+        decoded += char;
+        continue;
+      }
+
+      if (source[index + 1] === '_') {
+        decoded += '_';
+        index += 1;
+        continue;
+      }
+
+      const endIndex = source.indexOf('_', index + 1);
+      if (endIndex < 0) {
+        return '';
+      }
+      const hex = source.slice(index + 1, endIndex);
+      if (!/^[0-9a-f]+$/.test(hex)) {
+        return '';
+      }
+      decoded += String.fromCodePoint(parseInt(hex, 16));
+      index = endIndex;
+    }
+    return collapseInternalWhitespace(decoded);
+  }
+
+  function buildCustomTagValueFromNormalizedLabel(category, normalizedLabel) {
+    const normalizedCategory = normalizeTagCategory(category);
+    if (!normalizedCategory || !normalizedLabel) return '';
+    return `${CUSTOM_TAG_PREFIX}:${normalizedCategory}:${encodeCustomSlug(normalizedLabel)}`;
+  }
+
+  function buildCustomTagValue(category, rawLabel) {
+    const labelInfo = validateCustomLabel(rawLabel);
+    if (!labelInfo.ok) return '';
+    return buildCustomTagValueFromNormalizedLabel(category, labelInfo.normalizedLabel);
+  }
+
+  function decodeCustomTagValueToLabel(value) {
+    const normalizedValue = normalizeCustomTagValue(value);
+    if (!normalizedValue) return '';
+    const slug = normalizedValue.split(':')[2] || '';
+    return decodeCustomSlug(slug);
+  }
+
+  // =============================================================================
+  // Editable preferences normalization
+  // =============================================================================
+  function createEmptyCategoryPreferences() {
+    return {
+      custom: [],
+      hiddenDefaults: [],
+      order: [],
+    };
+  }
+
+  function createEmptySnapshotTagPreferences() {
+    return {
+      language: createEmptyCategoryPreferences(),
+      type: createEmptyCategoryPreferences(),
+      difficulty: createEmptyCategoryPreferences(),
+    };
+  }
+
+  function normalizeCategoryPreferences(rawCategoryPreferences, category) {
+    const normalizedCategory = normalizeTagCategory(category);
+    if (!normalizedCategory) {
+      return createEmptyCategoryPreferences();
+    }
+
+    const source = isPlainObject(rawCategoryPreferences) ? rawCategoryPreferences : {};
+    const custom = [];
+    const seenCustomValues = new Set();
+    const seenCustomLabels = new Set();
+    const rawCustom = Array.isArray(source.custom) ? source.custom : [];
+
+    rawCustom.forEach((entry) => {
+      if (!isPlainObject(entry)) return;
+      const labelInfo = validateCustomLabel(entry.label);
+      if (!labelInfo.ok) return;
+
+      const rawValue = normalizeCustomTagValue(entry.value, normalizedCategory);
+      const value = rawValue || buildCustomTagValueFromNormalizedLabel(
+        normalizedCategory,
+        labelInfo.normalizedLabel
+      );
+      if (!value) return;
+      if (seenCustomValues.has(value) || seenCustomLabels.has(labelInfo.normalizedLabel)) return;
+      seenCustomValues.add(value);
+      seenCustomLabels.add(labelInfo.normalizedLabel);
+      custom.push({
+        value,
+        label: labelInfo.label,
+      });
+    });
+
+    const hiddenDefaults = [];
+    const hiddenDefaultSet = new Set();
+    const rawHiddenDefaults = Array.isArray(source.hiddenDefaults) ? source.hiddenDefaults : [];
+    rawHiddenDefaults.forEach((rawValue) => {
+      const value = normalizeDefaultTagValue(normalizedCategory, rawValue);
+      if (!value || hiddenDefaultSet.has(value)) return;
+      hiddenDefaultSet.add(value);
+      hiddenDefaults.push(value);
+    });
+
+    const knownCustomValues = new Set(custom.map((entry) => entry.value));
+    const order = [];
+    const seenOrder = new Set();
+    const rawOrder = Array.isArray(source.order) ? source.order : [];
+    rawOrder.forEach((rawValue) => {
+      const defaultValue = normalizeDefaultTagValue(normalizedCategory, rawValue);
+      if (defaultValue) {
+        if (hiddenDefaultSet.has(defaultValue) || seenOrder.has(defaultValue)) return;
+        seenOrder.add(defaultValue);
+        order.push(defaultValue);
+        return;
+      }
+
+      const customValue = normalizeCustomTagValue(rawValue, normalizedCategory);
+      if (!customValue || !knownCustomValues.has(customValue) || seenOrder.has(customValue)) return;
+      seenOrder.add(customValue);
+      order.push(customValue);
+    });
+
+    return {
+      custom,
+      hiddenDefaults,
+      order,
+    };
+  }
+
+  function normalizeSnapshotTagPreferences(rawPreferences) {
+    const source = isPlainObject(rawPreferences) ? rawPreferences : {};
+    const normalized = createEmptySnapshotTagPreferences();
+
+    TAG_KEYS.forEach((category) => {
+      normalized[category] = normalizeCategoryPreferences(source[category], category);
+    });
+
+    return normalized;
+  }
+
+  // =============================================================================
+  // Catalog resolution
+  // =============================================================================
+  function getSeededDefaultCategoryValues(category, getDefaultLabel) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const options = getDefaultOptionsForCategory(normalizedCategory);
+    if (normalizedCategory !== 'language') {
+      return options.map((option) => option.value);
+    }
+    return options
+      .map((option) => ({
+        value: option.value,
+        label: resolveDefaultOptionLabel(option, getDefaultLabel),
+      }))
+      .sort(compareByLabel)
+      .map((option) => option.value);
+  }
+
+  function resolveCategoryCatalog(category, rawPreferences, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const preferences = normalizeSnapshotTagPreferences(rawPreferences);
+    const categoryPreferences = preferences[normalizedCategory];
+    const hiddenDefaults = new Set(categoryPreferences.hiddenDefaults);
+    const defaultOptions = getDefaultOptionsForCategory(normalizedCategory).map((option) => ({
+      value: option.value,
+      labelKey: option.labelKey,
+      label: resolveDefaultOptionLabel(option, getDefaultLabel),
+      origin: 'default',
+      hidden: hiddenDefaults.has(option.value),
+    }));
+    const customOptions = categoryPreferences.custom.map((option) => ({
+      value: option.value,
+      label: option.label,
+      origin: 'custom',
+      hidden: false,
+    }));
+
+    const visibleByValue = new Map();
+    defaultOptions.forEach((option) => {
+      if (!option.hidden) {
+        visibleByValue.set(option.value, option);
+      }
+    });
+    customOptions.forEach((option) => {
+      visibleByValue.set(option.value, option);
+    });
+
+    const visibleDefaultValues = getSeededDefaultCategoryValues(normalizedCategory, getDefaultLabel)
+      .filter((value) => visibleByValue.has(value));
+    const customValues = customOptions.map((option) => option.value);
+    const seededVisibleValues = [...visibleDefaultValues];
+    customValues.forEach((value) => {
+      if (!seededVisibleValues.includes(value) && visibleByValue.has(value)) {
+        seededVisibleValues.push(value);
+      }
+    });
+
+    const visibleOrder = categoryPreferences.order.length
+      ? categoryPreferences.order
+        .filter((value) => visibleByValue.has(value))
+        .concat(seededVisibleValues.filter((value) => !categoryPreferences.order.includes(value)))
+      : seededVisibleValues;
+
+    const visibleOptions = visibleOrder
+      .map((value) => visibleByValue.get(value) || null)
+      .filter(Boolean)
+      .map((option) => ({
+        value: option.value,
+        label: option.label,
+        labelKey: option.labelKey || '',
+        origin: option.origin,
+      }));
+
+    return {
+      category: normalizedCategory,
+      preferences: categoryPreferences,
+      defaultOptions: defaultOptions.map((option) => ({
+        value: option.value,
+        label: option.label,
+        labelKey: option.labelKey,
+        origin: option.origin,
+        hidden: option.hidden,
+      })),
+      customOptions: customOptions.map((option) => ({
+        value: option.value,
+        label: option.label,
+        origin: option.origin,
+      })),
+      hiddenDefaultValues: categoryPreferences.hiddenDefaults.slice(),
+      visibleOptions,
+      visibleValueSet: new Set(visibleOptions.map((option) => option.value)),
+    };
+  }
+
+  function resolveEditableCatalog(rawPreferences, { getDefaultLabel } = {}) {
+    const preferences = normalizeSnapshotTagPreferences(rawPreferences);
+    const catalog = {};
+    TAG_KEYS.forEach((category) => {
+      catalog[category] = resolveCategoryCatalog(category, preferences, { getDefaultLabel });
+    });
+    return catalog;
+  }
+
+  function normalizeTagsAgainstCatalog(rawTags, rawPreferences, { getDefaultLabel } = {}) {
+    const normalizedTags = normalizeTags(rawTags);
+    if (!normalizedTags) return null;
+    const catalog = resolveEditableCatalog(rawPreferences, { getDefaultLabel });
+    const nextTags = {};
+
+    TAG_KEYS.forEach((category) => {
+      const value = normalizedTags[category];
+      if (!value) return;
+      if (catalog[category].visibleValueSet.has(value)) {
+        nextTags[category] = value;
+      }
+    });
+
+    return Object.keys(nextTags).length ? nextTags : null;
+  }
+
+  function findKnownOptionByNormalizedLabel(category, rawPreferences, normalizedLabel, { getDefaultLabel } = {}) {
+    if (!normalizedLabel) return null;
+    const resolvedCategory = resolveCategoryCatalog(category, rawPreferences, { getDefaultLabel });
+    const allOptions = resolvedCategory.defaultOptions.concat(resolvedCategory.customOptions);
+    return allOptions.find((option) => normalizeLabelForComparison(option.label) === normalizedLabel) || null;
+  }
+
+  function resolveTagLabel(category, value, rawPreferences, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const defaultOption = getDefaultOptionByValue(normalizedCategory, value);
+    if (defaultOption) {
+      return resolveDefaultOptionLabel(defaultOption, getDefaultLabel) || value;
+    }
+
+    const preferences = normalizeSnapshotTagPreferences(rawPreferences);
+    const customOption = preferences[normalizedCategory].custom.find((option) => option.value === value);
+    if (customOption) {
+      return customOption.label;
+    }
+
+    const fallbackCustomLabel = decodeCustomTagValueToLabel(value);
+    return fallbackCustomLabel || normalizeOptionalString(value);
+  }
+
+  // =============================================================================
+  // Editable-preferences mutations
+  // =============================================================================
+  function cloneSnapshotTagPreferences(rawPreferences) {
+    const preferences = normalizeSnapshotTagPreferences(rawPreferences);
+    return {
+      language: {
+        custom: preferences.language.custom.map((entry) => ({ ...entry })),
+        hiddenDefaults: preferences.language.hiddenDefaults.slice(),
+        order: preferences.language.order.slice(),
+      },
+      type: {
+        custom: preferences.type.custom.map((entry) => ({ ...entry })),
+        hiddenDefaults: preferences.type.hiddenDefaults.slice(),
+        order: preferences.type.order.slice(),
+      },
+      difficulty: {
+        custom: preferences.difficulty.custom.map((entry) => ({ ...entry })),
+        hiddenDefaults: preferences.difficulty.hiddenDefaults.slice(),
+        order: preferences.difficulty.order.slice(),
+      },
+    };
+  }
+
+  function createCustomTag(rawPreferences, category, rawLabel, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const labelInfo = validateCustomLabel(rawLabel);
+    if (!normalizedCategory) {
+      return { ok: false, code: 'invalid_category', preferences: normalizeSnapshotTagPreferences(rawPreferences) };
+    }
+    if (!labelInfo.ok) {
+      return {
+        ok: false,
+        code: labelInfo.code,
+        label: labelInfo.label,
+        normalizedLabel: labelInfo.normalizedLabel,
+        preferences: normalizeSnapshotTagPreferences(rawPreferences),
+      };
+    }
+
+    const existingOption = findKnownOptionByNormalizedLabel(
+      normalizedCategory,
+      rawPreferences,
+      labelInfo.normalizedLabel,
+      { getDefaultLabel }
+    );
+    if (existingOption) {
+      return {
+        ok: false,
+        code: 'duplicate',
+        existingOption,
+        label: labelInfo.label,
+        normalizedLabel: labelInfo.normalizedLabel,
+        preferences: normalizeSnapshotTagPreferences(rawPreferences),
+      };
+    }
+
+    const value = buildCustomTagValueFromNormalizedLabel(normalizedCategory, labelInfo.normalizedLabel);
+    const preferences = cloneSnapshotTagPreferences(rawPreferences);
+    const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
+    preferences[normalizedCategory].custom.push({
+      value,
+      label: labelInfo.label,
+    });
+    preferences[normalizedCategory].order = resolvedCategory.visibleOptions
+      .map((option) => option.value)
+      .concat(value);
+
+    return {
+      ok: true,
+      code: '',
+      preferences: normalizeSnapshotTagPreferences(preferences),
+      createdTag: {
+        category: normalizedCategory,
+        value,
+        label: labelInfo.label,
+        origin: 'custom',
+      },
+    };
+  }
+
+  function hideDefaultTag(rawPreferences, category, value, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const normalizedValue = normalizeDefaultTagValue(normalizedCategory, value);
+    const preferences = cloneSnapshotTagPreferences(rawPreferences);
+    if (!normalizedCategory || !normalizedValue) {
+      return { ok: false, code: 'invalid_default', preferences: normalizeSnapshotTagPreferences(preferences) };
+    }
+
+    if (preferences[normalizedCategory].hiddenDefaults.includes(normalizedValue)) {
+      return { ok: true, code: 'noop', preferences: normalizeSnapshotTagPreferences(preferences) };
+    }
+
+    const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
+    preferences[normalizedCategory].hiddenDefaults.push(normalizedValue);
+    preferences[normalizedCategory].order = resolvedCategory.visibleOptions
+      .map((option) => option.value)
+      .filter((candidate) => candidate !== normalizedValue);
+
+    return {
+      ok: true,
+      code: '',
+      preferences: normalizeSnapshotTagPreferences(preferences),
+    };
+  }
+
+  function restoreHiddenDefaultTags(rawPreferences, category, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const preferences = cloneSnapshotTagPreferences(rawPreferences);
+    if (!normalizedCategory) {
+      return { ok: false, code: 'invalid_category', preferences: normalizeSnapshotTagPreferences(preferences) };
+    }
+
+    const hiddenDefaults = preferences[normalizedCategory].hiddenDefaults.slice();
+    if (!hiddenDefaults.length) {
+      return { ok: true, code: 'noop', preferences: normalizeSnapshotTagPreferences(preferences), restoredValues: [] };
+    }
+
+    const seededDefaultValues = getSeededDefaultCategoryValues(normalizedCategory, getDefaultLabel);
+    const restoredValues = seededDefaultValues.filter((value) => hiddenDefaults.includes(value));
+    const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
+
+    preferences[normalizedCategory].hiddenDefaults = [];
+    preferences[normalizedCategory].order = resolvedCategory.visibleOptions
+      .map((option) => option.value)
+      .concat(restoredValues);
+
+    return {
+      ok: true,
+      code: '',
+      preferences: normalizeSnapshotTagPreferences(preferences),
+      restoredValues,
+    };
+  }
+
+  function deleteCustomTag(rawPreferences, category, value, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const normalizedValue = normalizeCustomTagValue(value, normalizedCategory);
+    const preferences = cloneSnapshotTagPreferences(rawPreferences);
+    if (!normalizedCategory || !normalizedValue) {
+      return { ok: false, code: 'invalid_custom', preferences: normalizeSnapshotTagPreferences(preferences) };
+    }
+
+    const nextCustom = preferences[normalizedCategory].custom
+      .filter((entry) => entry.value !== normalizedValue);
+    if (nextCustom.length === preferences[normalizedCategory].custom.length) {
+      return { ok: true, code: 'noop', preferences: normalizeSnapshotTagPreferences(preferences) };
+    }
+
+    const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
+    preferences[normalizedCategory].custom = nextCustom;
+    preferences[normalizedCategory].order = resolvedCategory.visibleOptions
+      .map((option) => option.value)
+      .filter((candidate) => candidate !== normalizedValue);
+
+    return {
+      ok: true,
+      code: '',
+      preferences: normalizeSnapshotTagPreferences(preferences),
+    };
+  }
+
+  function moveVisibleTagValue(rawPreferences, category, value, direction, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const normalizedValue = normalizeTagValue(normalizedCategory, value);
+    const preferences = cloneSnapshotTagPreferences(rawPreferences);
+    if (!normalizedCategory || !normalizedValue || (direction !== 'up' && direction !== 'down')) {
+      return { ok: false, code: 'invalid_move', preferences: normalizeSnapshotTagPreferences(preferences) };
+    }
+
+    const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
+    const currentOrder = resolvedCategory.visibleOptions.map((option) => option.value);
+    if (!currentOrder.includes(normalizedValue)) {
+      return { ok: false, code: 'missing_value', preferences: normalizeSnapshotTagPreferences(preferences) };
+    }
+
+    preferences[normalizedCategory].order = moveArrayValue(currentOrder, normalizedValue, direction);
+    return {
+      ok: true,
+      code: '',
+      preferences: normalizeSnapshotTagPreferences(preferences),
+    };
+  }
+
+  function sortVisibleTagValuesAlphabetically(rawPreferences, category, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const preferences = cloneSnapshotTagPreferences(rawPreferences);
+    if (!normalizedCategory) {
+      return { ok: false, code: 'invalid_category', preferences: normalizeSnapshotTagPreferences(preferences) };
+    }
+
+    const resolvedCategory = resolveCategoryCatalog(normalizedCategory, preferences, { getDefaultLabel });
+    preferences[normalizedCategory].order = resolvedCategory.visibleOptions
+      .slice()
+      .sort(compareByLabel)
+      .map((option) => option.value);
+
+    return {
+      ok: true,
+      code: '',
+      preferences: normalizeSnapshotTagPreferences(preferences),
+    };
+  }
+
+  // =============================================================================
   // Exports / module surface
   // =============================================================================
   return {
@@ -132,11 +848,36 @@
     LANGUAGE_OPTIONS,
     TYPE_OPTIONS,
     DIFFICULTY_OPTIONS,
+    CATEGORY_OPTIONS,
+    CUSTOM_TAG_PREFIX,
+    MAX_CUSTOM_LABEL_LENGTH,
     isPlainObject,
+    normalizeTagCategory,
+    normalizeLabelForComparison,
     normalizeLanguageTag,
     normalizeTypeTag,
     normalizeDifficultyTag,
+    normalizeTagValue,
     normalizeTags,
+    normalizeCustomTagValue,
+    validateCustomLabel,
+    buildCustomTagValue,
+    decodeCustomTagValueToLabel,
+    getDefaultOptionsForCategory,
+    getSeededDefaultCategoryValues,
+    createEmptySnapshotTagPreferences,
+    normalizeSnapshotTagPreferences,
+    resolveCategoryCatalog,
+    resolveEditableCatalog,
+    normalizeTagsAgainstCatalog,
+    resolveTagLabel,
+    findKnownOptionByNormalizedLabel,
+    createCustomTag,
+    hideDefaultTag,
+    restoreHiddenDefaultTags,
+    deleteCustomTag,
+    moveVisibleTagValue,
+    sortVisibleTagValuesAlphabetically,
   };
 });
 
