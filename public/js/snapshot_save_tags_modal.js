@@ -91,6 +91,7 @@
   const LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.load.unavailable';
   const SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.save.unavailable';
   const CUSTOM_LABEL_MAX_LENGTH_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.snapshotTagCatalog.maxCustomLabelLength.unavailable';
+  const FOCUS_PREVENT_SCROLL_FALLBACK_LOG_KEY = 'snapshot-save-tags-modal.focus.preventScroll.fallback';
 
   const FIELD_DEFS = [
     {
@@ -487,6 +488,7 @@
       { getDefaultLabel }
     );
     if (!createInfo.ok) {
+      log.warn('Snapshot tag inline create rejected:', fieldKey, createInfo);
       return;
     }
 
@@ -579,7 +581,12 @@
 
     try {
       element.focus({ preventScroll: true });
-    } catch (_err) {
+    } catch (err) {
+      log.warnOnce(
+        FOCUS_PREVENT_SCROLL_FALLBACK_LOG_KEY,
+        'focus({ preventScroll: true }) failed; falling back to focus().',
+        err
+      );
       element.focus();
     }
   }
@@ -757,8 +764,11 @@
         return true;
       }
 
-      async function applyManagerPreferencesChange(changeInfo) {
-        if (!changeInfo.ok) return false;
+      async function applyManagerPreferencesChange(actionName, changeInfo) {
+        if (!changeInfo.ok) {
+          log.warn('Snapshot tag manager action rejected:', actionName, changeInfo);
+          return false;
+        }
         if (!await commitManagerPreferences(changeInfo.preferences)) {
           return false;
         }
@@ -812,7 +822,7 @@
                 category,
                 { getDefaultLabel }
               );
-              await applyManagerPreferencesChange(sortInfo);
+              await applyManagerPreferencesChange('sort_alphabetically', sortInfo);
             },
             { disabled: categoryInfo.visibleOptions.length < 2 }
           ));
@@ -824,7 +834,7 @@
                 category,
                 { getDefaultLabel }
               );
-              await applyManagerPreferencesChange(restoreInfo);
+              await applyManagerPreferencesChange('restore_hidden_defaults', restoreInfo);
             },
             {
               disabled: categoryInfo.hiddenDefaultValues.length < 1,
@@ -931,7 +941,7 @@
                     'up',
                     { getDefaultLabel }
                   );
-                  await applyManagerPreferencesChange(moveInfo);
+                  await applyManagerPreferencesChange('move_up', moveInfo);
                 },
               }));
               actions.appendChild(createManagerIconButton({
@@ -947,7 +957,7 @@
                     'down',
                     { getDefaultLabel }
                   );
-                  await applyManagerPreferencesChange(moveInfo);
+                  await applyManagerPreferencesChange('move_down', moveInfo);
                 },
               }));
               actions.appendChild(createManagerIconButton({
@@ -969,7 +979,7 @@
                       option.value,
                       { getDefaultLabel }
                     );
-                    await applyManagerPreferencesChange(hideInfo);
+                    await applyManagerPreferencesChange('hide_default', hideInfo);
                     return;
                   }
 
@@ -984,7 +994,7 @@
                     option.value,
                     { getDefaultLabel }
                   );
-                  await applyManagerPreferencesChange(deleteInfo);
+                  await applyManagerPreferencesChange('delete_custom', deleteInfo);
                 },
               }));
               row.appendChild(actions);
