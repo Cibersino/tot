@@ -722,6 +722,21 @@
         return true;
       }
 
+      async function applyManagerPreferencesChange(changeInfo) {
+        if (!changeInfo.ok) return false;
+        if (!await commitManagerPreferences(changeInfo.preferences)) {
+          return false;
+        }
+        renderManagerContent();
+        return true;
+      }
+
+      function resetDraftState(draftState) {
+        draftState.active = false;
+        draftState.value = '';
+        draftState.errorKey = '';
+      }
+
       function renderManagerContent() {
         managerTitle.textContent = tRenderer('renderer.snapshots.manager.title');
         managerMessage.textContent = tRenderer('renderer.snapshots.manager.message');
@@ -762,9 +777,7 @@
                 category,
                 { getDefaultLabel }
               );
-              if (sortInfo.ok && await commitManagerPreferences(sortInfo.preferences)) {
-                renderManagerContent();
-              }
+              await applyManagerPreferencesChange(sortInfo);
             },
             { disabled: categoryInfo.visibleOptions.length < 2 }
           ));
@@ -776,9 +789,7 @@
                 category,
                 { getDefaultLabel }
               );
-              if (restoreInfo.ok && await commitManagerPreferences(restoreInfo.preferences)) {
-                renderManagerContent();
-              }
+              await applyManagerPreferencesChange(restoreInfo);
             },
             {
               disabled: categoryInfo.hiddenDefaultValues.length < 1,
@@ -811,9 +822,7 @@
                 if (typeof event.stopPropagation === 'function') {
                   event.stopPropagation();
                 }
-                draftState.active = false;
-                draftState.value = '';
-                draftState.errorKey = '';
+                resetDraftState(draftState);
                 renderManagerContent();
               }
             });
@@ -829,9 +838,7 @@
             draftActions.appendChild(createManagerActionButton(
               'renderer.snapshots.manager.cancel_draft',
               () => {
-                draftState.active = false;
-                draftState.value = '';
-                draftState.errorKey = '';
+                resetDraftState(draftState);
                 renderManagerContent();
               }
             ));
@@ -886,9 +893,7 @@
                     'up',
                     { getDefaultLabel }
                   );
-                  if (moveInfo.ok && await commitManagerPreferences(moveInfo.preferences)) {
-                    renderManagerContent();
-                  }
+                  await applyManagerPreferencesChange(moveInfo);
                 },
               }));
               actions.appendChild(createManagerIconButton({
@@ -904,9 +909,7 @@
                     'down',
                     { getDefaultLabel }
                   );
-                  if (moveInfo.ok && await commitManagerPreferences(moveInfo.preferences)) {
-                    renderManagerContent();
-                  }
+                  await applyManagerPreferencesChange(moveInfo);
                 },
               }));
               actions.appendChild(createManagerIconButton({
@@ -928,9 +931,7 @@
                       option.value,
                       { getDefaultLabel }
                     );
-                    if (hideInfo.ok && await commitManagerPreferences(hideInfo.preferences)) {
-                      renderManagerContent();
-                    }
+                    await applyManagerPreferencesChange(hideInfo);
                     return;
                   }
 
@@ -945,9 +946,7 @@
                     option.value,
                     { getDefaultLabel }
                   );
-                  if (deleteInfo.ok && await commitManagerPreferences(deleteInfo.preferences)) {
-                    renderManagerContent();
-                  }
+                  await applyManagerPreferencesChange(deleteInfo);
                 },
               }));
               row.appendChild(actions);
@@ -986,9 +985,7 @@
           return;
         }
 
-        draftState.active = false;
-        draftState.value = '';
-        draftState.errorKey = '';
+        resetDraftState(draftState);
         renderManagerContent();
       }
 
