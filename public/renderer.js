@@ -2367,11 +2367,7 @@ function bindPresetActions() {
 
       // Open modal in edit mode and pass preset data.
       const payload = { wpm: wpmControls.getWpm(), mode: 'edit', preset: preset };
-      try {
-        log.debug('openPresetModal payload:', payload);
-      } catch (err) {
-        log.warn('log.debug failed (ignored):', err);
-      }
+      log.debug('openPresetModal payload:', payload);
       await openPresetModalFromMain(payload);
     } catch (err) {
       log.error('Error preparing edit preset modal payload:', err);
