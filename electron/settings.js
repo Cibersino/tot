@@ -618,7 +618,13 @@ function registerIpc(
   }
 
   function decorateSettingsPayload(settings) {
-    if (typeof decorateSettings !== 'function') return settings;
+    if (typeof decorateSettings !== 'function') {
+      log.warnOnce(
+        'settings.decorateSettings.unavailable',
+        'decorateSettings unavailable; using raw settings payload.'
+      );
+      return settings;
+    }
 
     try {
       const decoratedSettings = decorateSettings(settings);
