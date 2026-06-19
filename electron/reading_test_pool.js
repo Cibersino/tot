@@ -489,7 +489,7 @@ function ensurePoolDir() {
       fs.mkdirSync(poolDir, { recursive: true });
     }
   } catch (err) {
-    log.error('ensurePoolDir failed:', poolDir, err);
+    log.warn('ensurePoolDir failed (continuing):', poolDir, err);
   }
   return poolDir;
 }
@@ -510,7 +510,7 @@ function resolvePoolContext(options = {}) {
     fs.mkdirSync(snapshotsRootDir, { recursive: true });
     fs.mkdirSync(poolDir, { recursive: true });
   } catch (err) {
-    log.error('Failed to ensure reading-test pool context directories:', { snapshotsRootDir, poolDir }, err);
+    log.warn('Failed to ensure reading-test pool context directories (continuing):', { snapshotsRootDir, poolDir }, err);
   }
 
   return {
