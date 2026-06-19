@@ -125,11 +125,9 @@
     language = DEFAULT_LANG,
     selectEl
   }) {
-    if (!electronAPI) throw new Error('electronAPI is required to load presets');
-
     const settingsSnapshot = normalizeSettings(settings, language);
     let defaults = { general: [], languagePresets: {} };
-    if (typeof electronAPI.getDefaultPresets !== 'function') {
+    if (!electronAPI || typeof electronAPI.getDefaultPresets !== 'function') {
       log.warn(
         '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
       );
