@@ -4,14 +4,17 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Own persisted editable snapshot-tag preferences under config/snapshot_tags.json.
-// - Load and normalize the persisted preference schema.
-// - Keep the latest normalized snapshot-tag preferences in memory.
-// - Persist normalized preferences through injected JSON helpers:
-//   - best-effort normalization/repair through saveJson(...)
-//   - verified user-triggered mutations through saveJsonStrict(...)
-// - Own the dedicated snapshot-tag IPC contract.
-// - Request a settings publish through the existing settings owner after writes.
+// Snapshot-tag preference owner for config/snapshot_tags.json.
+// Responsibilities:
+// - Load and normalize persisted snapshot-tag preferences.
+// - Keep the latest normalized preferences in memory.
+// - Repair bootstrap persistence through best-effort saveJson(...).
+// - Persist user-triggered mutations through verified saveJsonStrict(...).
+// - Own the snapshot-tag IPC handlers.
+// - Request a follow-up settings publish after confirmed writes.
+
+// =============================================================================
+// Imports / logger
 // =============================================================================
 
 const Log = require('./log');
@@ -20,11 +23,19 @@ const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const log = Log.get('snapshot-tag-settings');
 log.debug('Snapshot tag settings starting...');
 
+// =============================================================================
+// Shared state
+// =============================================================================
+
 let _loadJson = null;
 let _saveJson = null;
 let _saveJsonStrict = null;
 let _snapshotTagsFile = null;
 let _currentSnapshotTagPreferences = null;
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function createDefaultSnapshotTagPreferences() {
   return snapshotTagCatalog.createEmptySnapshotTagPreferences();
@@ -108,10 +119,18 @@ function init({ loadJson, saveJson, saveJsonStrict, snapshotTagsFile }) {
   return snapshotTags;
 }
 
+// =============================================================================
+// Public API
+// =============================================================================
+
 function getSnapshotTagPreferences() {
   assertInitialized('getSnapshotTagPreferences');
   return loadSnapshotTagPreferencesFromDisk();
 }
+
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
 
 function registerIpc(
   ipcMain,
@@ -186,8 +205,16 @@ function registerIpc(
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   init,
   getSnapshotTagPreferences,
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/snapshot_tag_settings.js
+// =============================================================================
