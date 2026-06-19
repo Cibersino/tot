@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "Salva snapshot di testo",
       "message": "Aggiungi facoltativamente tag a questo snapshot di testo prima di scegliere dove salvarlo.",
+      "search": {
+        "placeholder": "Digita per filtrare le opzioni",
+        "no_results": "Nessuna opzione corrispondente",
+        "create": "Crea \"{label}\""
+      },
       "labels": {
         "language": "Lingua",
         "type": "Tipo",
         "difficulty": "Difficoltà"
+      },
+      "manager": {
+        "title": "Gestisci i tag degli snapshot di testo",
+        "message": "Gestisci i tag visibili usati per gli snapshot di testo e le unità di estrazione in batch.",
+        "done": "Fatto",
+        "close_aria": "Chiudi il gestore dei tag degli snapshot di testo",
+        "new_tag": "Nuovo tag",
+        "new_tag_placeholder": "Nome del tag",
+        "add_tag": "Aggiungi tag",
+        "cancel_draft": "Annulla",
+        "sort_alphabetically": "Ordina A-Z",
+        "restore_hidden_defaults": "Ripristina tag predefiniti ({count})",
+        "empty_category": "Nessun tag visibile in questa categoria.",
+        "move_up": "Sposta \"{label}\" in alto",
+        "move_down": "Sposta \"{label}\" in basso",
+        "hide_default": "Nascondi tag predefinito \"{label}\"",
+        "delete_custom": "Elimina tag personalizzato \"{label}\"",
+        "confirm_hide_default": "Nascondere il tag predefinito \"{label}\"? Verrà rimosso dall’elenco dei tag visibili e potrà essere ripristinato in seguito.",
+        "confirm_delete_custom": "Eliminare definitivamente il tag personalizzato \"{label}\"? Gli snapshot di testo esistenti non verranno riscritti.",
+        "validation": {
+          "empty": "Il nome del tag non può essere vuoto.",
+          "control_characters": "Il nome del tag non può contenere tabulazioni, interruzioni di riga o altri caratteri di controllo.",
+          "too_long": "Il nome del tag non può superare {max} caratteri.",
+          "duplicate": "Esiste già un tag con questo nome in questa categoria."
+        }
       },
       "empty": {
         "language": "Nessun tag lingua",
@@ -348,6 +378,7 @@
         "difficulty": "Nessun tag difficoltà"
       },
       "buttons": {
+        "manage": "Gestisci tag",
         "confirm": "Salva snapshot di testo",
         "cancel": "Annulla"
       },
@@ -402,7 +433,8 @@
         "load_error": "Impossibile caricare lo snapshot.",
         "outside": "Lo snapshot deve essere all'interno della cartella degli snapshot.",
         "truncated": "Lo snapshot supera la dimensione massima ed è stato troncato.",
-        "unavailable": "Funzionalità snapshot non disponibile."
+        "unavailable": "Funzionalità snapshot non disponibile.",
+        "catalog_update_error": "Impossibile aggiornare i tag degli snapshot di testo."
       }
     },
     "tasks": {

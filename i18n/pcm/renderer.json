@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "Save text snapshot",
       "message": "You fit tag dis text snapshot before you choose where to save am.",
+      "search": {
+        "placeholder": "Type to filter options",
+        "no_results": "No matching options",
+        "create": "Create \"{label}\""
+      },
       "labels": {
         "language": "Language",
         "type": "Type",
         "difficulty": "Difficulty"
+      },
+      "manager": {
+        "title": "Manage text snapshot tags",
+        "message": "Manage di visible tags we dey use for text snapshots and batch extraction units.",
+        "done": "Done",
+        "close_aria": "Close text snapshot tag manager",
+        "new_tag": "New tag",
+        "new_tag_placeholder": "Tag label",
+        "add_tag": "Add tag",
+        "cancel_draft": "Cancel",
+        "sort_alphabetically": "Sort A-Z",
+        "restore_hidden_defaults": "Restore default tags ({count})",
+        "empty_category": "No visible tags dey for dis category.",
+        "move_up": "Move \"{label}\" up",
+        "move_down": "Move \"{label}\" down",
+        "hide_default": "Hide default tag \"{label}\"",
+        "delete_custom": "Delete custom tag \"{label}\"",
+        "confirm_hide_default": "Hide default tag \"{label}\"? E go comot from di visible tag list and you fit restore am later.",
+        "confirm_delete_custom": "Delete custom tag \"{label}\" forever? Existing text snapshots no go rewrite.",
+        "validation": {
+          "empty": "Tag label no fit empty.",
+          "control_characters": "Tag label no fit contain tabs, line breaks, or oda control characters.",
+          "too_long": "Tag label no fit pass {max} characters.",
+          "duplicate": "Tag with dat label already dey for dis category."
+        }
       },
       "empty": {
         "language": "No language tag",
@@ -348,6 +378,7 @@
         "difficulty": "No difficulty tag"
       },
       "buttons": {
+        "manage": "Manage tags",
         "confirm": "Save Text Snapshot",
         "cancel": "Cancel"
       },
@@ -402,7 +433,8 @@
         "load_error": "Could not load snapshot.",
         "outside": "Snapshot must dey inside di snapshots folder.",
         "truncated": "Snapshot pass maximum size and dem truncate am.",
-        "unavailable": "Snapshot feature no dey available."
+        "unavailable": "Snapshot feature no dey available.",
+        "catalog_update_error": "Could not update text snapshot tags."
       }
     },
     "tasks": {

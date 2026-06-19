@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "Spara textsnapshot",
       "message": "Du kan lägga till valfria taggar för denna textsnapshot innan du väljer var den ska sparas.",
+      "search": {
+        "placeholder": "Skriv för att filtrera alternativ",
+        "no_results": "Inga matchande alternativ",
+        "create": "Skapa \"{label}\""
+      },
       "labels": {
         "language": "Språk",
         "type": "Typ",
         "difficulty": "Svårighetsgrad"
+      },
+      "manager": {
+        "title": "Hantera taggar för text-snapshots",
+        "message": "Hantera de synliga taggar som används för text-snapshots och batchextraheringsenheter.",
+        "done": "Klar",
+        "close_aria": "Stäng tagghanteraren för text-snapshots",
+        "new_tag": "Ny tagg",
+        "new_tag_placeholder": "Taggnamn",
+        "add_tag": "Lägg till tagg",
+        "cancel_draft": "Avbryt",
+        "sort_alphabetically": "Sortera A-Z",
+        "restore_hidden_defaults": "Återställ standardtaggar ({count})",
+        "empty_category": "Inga synliga taggar i den här kategorin.",
+        "move_up": "Flytta \"{label}\" uppåt",
+        "move_down": "Flytta \"{label}\" nedåt",
+        "hide_default": "Dölj standardtaggen \"{label}\"",
+        "delete_custom": "Ta bort den anpassade taggen \"{label}\"",
+        "confirm_hide_default": "Dölj standardtaggen \"{label}\"? Den tas bort från listan med synliga taggar och kan återställas senare.",
+        "confirm_delete_custom": "Ta bort den anpassade taggen \"{label}\" permanent? Befintliga text-snapshots skrivs inte om.",
+        "validation": {
+          "empty": "Taggnamnet får inte vara tomt.",
+          "control_characters": "Taggnamnet får inte innehålla tabbar, radbrytningar eller andra kontrolltecken.",
+          "too_long": "Taggnamnet får inte överstiga {max} tecken.",
+          "duplicate": "Det finns redan en tagg med det namnet i den här kategorin."
+        }
       },
       "empty": {
         "language": "Ingen språktagg",
@@ -348,6 +378,7 @@
         "difficulty": "Ingen svårighetsgradstagg"
       },
       "buttons": {
+        "manage": "Hantera taggar",
         "confirm": "Spara textsnapshot",
         "cancel": "Avbryt"
       },
@@ -402,7 +433,8 @@
         "load_error": "Kunde inte läsa in snapshoten.",
         "outside": "Snapshoten måste ligga i snapshotmappen.",
         "truncated": "Snapshoten överskrider maximal storlek och har kortats.",
-        "unavailable": "Snapshotfunktionen är inte tillgänglig."
+        "unavailable": "Snapshotfunktionen är inte tillgänglig.",
+        "catalog_update_error": "Det gick inte att uppdatera taggar för text-snapshots."
       }
     },
     "tasks": {

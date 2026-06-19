@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "Sove snapshot tèks",
       "message": "Ou ka mete etikèt sou snapshot tèks sa a anvan ou chwazi kote pou sove li.",
+      "search": {
+        "placeholder": "Tape pou filtre opsyon yo",
+        "no_results": "Pa gen opsyon ki koresponn",
+        "create": "Kreye \"{label}\""
+      },
       "labels": {
         "language": "Lang",
         "type": "Tip",
         "difficulty": "Difikilte"
+      },
+      "manager": {
+        "title": "Jere etikèt snapshot tèks yo",
+        "message": "Jere etikèt vizib yo itilize pou snapshot tèks ak inite ekstraksyon an pakèt yo.",
+        "done": "Fini",
+        "close_aria": "Fèmen manadjè etikèt snapshot tèks la",
+        "new_tag": "Nouvo etikèt",
+        "new_tag_placeholder": "Non etikèt la",
+        "add_tag": "Ajoute etikèt",
+        "cancel_draft": "Anile",
+        "sort_alphabetically": "Klase A-Z",
+        "restore_hidden_defaults": "Retabli etikèt pa defo yo ({count})",
+        "empty_category": "Pa gen etikèt vizib nan kategori sa a.",
+        "move_up": "Monte \"{label}\"",
+        "move_down": "Desann \"{label}\"",
+        "hide_default": "Kache etikèt pa defo \"{label}\"",
+        "delete_custom": "Efase etikèt pèsonalize \"{label}\"",
+        "confirm_hide_default": "Kache etikèt pa defo \"{label}\"? Li pral retire nan lis etikèt vizib la epi ou ka retabli li pita.",
+        "confirm_delete_custom": "Efase etikèt pèsonalize \"{label}\" nèt? Snapshot tèks ki deja egziste yo p ap reekri.",
+        "validation": {
+          "empty": "Non etikèt la pa ka vid.",
+          "control_characters": "Non etikèt la pa ka gen tabilasyon, retou liy, oswa lòt karaktè kontwòl.",
+          "too_long": "Non etikèt la pa ka depase {max} karaktè.",
+          "duplicate": "Gen yon etikèt ak non sa a deja nan kategori sa a."
+        }
       },
       "empty": {
         "language": "Pa gen etikèt lang",
@@ -348,6 +378,7 @@
         "difficulty": "Pa gen etikèt difikilte"
       },
       "buttons": {
+        "manage": "Jere etikèt yo",
         "confirm": "Sove snapshot tèks",
         "cancel": "Anile"
       },
@@ -402,7 +433,8 @@
         "load_error": "Pa t kapab chaje snapshot la.",
         "outside": "Snapshot la dwe anndan katab snapshot yo.",
         "truncated": "Snapshot la depase gwosè maksimòm lan epi li te tronke.",
-        "unavailable": "Fonksyon snapshot la pa disponib."
+        "unavailable": "Fonksyon snapshot la pa disponib.",
+        "catalog_update_error": "Pa t kapab mete etikèt snapshot tèks yo ajou."
       }
     },
     "tasks": {

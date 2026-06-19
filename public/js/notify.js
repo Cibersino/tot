@@ -143,6 +143,20 @@
     return confirm(msg);
   }
 
+  function registerCustomPrompt(name, handler) {
+    const promptName = (typeof name === 'string') ? name.trim() : '';
+    if (!/^prompt[A-Za-z0-9_]+$/.test(promptName)) {
+      throw new Error('[notify] registerCustomPrompt requires a prompt* method name');
+    }
+    if (typeof handler !== 'function') {
+      throw new Error('[notify] registerCustomPrompt requires a function handler');
+    }
+    if (Object.prototype.hasOwnProperty.call(notifyApi, promptName)) {
+      throw new Error(`[notify] registerCustomPrompt duplicate name: ${promptName}`);
+    }
+    notifyApi[promptName] = handler;
+  }
+
   function toastMain(key, { type = 'info', duration = 9000, params = {} } = {}) {
     const msg = resolveText(key, params);
     try {
@@ -194,13 +208,15 @@
   // =============================================================================
   // Exports / module surface
   // =============================================================================
-  window.Notify = {
+  const notifyApi = {
     confirmMain,
     notifyMain,
     notifyEditor,
+    registerCustomPrompt,
     toastMain,
     toastEditorText
   };
+  window.Notify = notifyApi;
 })();
 
 // =============================================================================

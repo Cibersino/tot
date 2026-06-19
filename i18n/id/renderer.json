@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "Simpan snapshot teks",
       "message": "Secara opsional, beri tag pada snapshot teks ini sebelum memilih lokasi penyimpanan.",
+      "search": {
+        "placeholder": "Ketik untuk memfilter opsi",
+        "no_results": "Tidak ada opsi yang cocok",
+        "create": "Buat \"{label}\""
+      },
       "labels": {
         "language": "Bahasa",
         "type": "Jenis",
         "difficulty": "Kesulitan"
+      },
+      "manager": {
+        "title": "Kelola tag snapshot teks",
+        "message": "Kelola tag terlihat yang digunakan untuk snapshot teks dan unit ekstraksi batch.",
+        "done": "Selesai",
+        "close_aria": "Tutup pengelola tag snapshot teks",
+        "new_tag": "Tag baru",
+        "new_tag_placeholder": "Nama tag",
+        "add_tag": "Tambahkan tag",
+        "cancel_draft": "Batal",
+        "sort_alphabetically": "Urutkan A-Z",
+        "restore_hidden_defaults": "Pulihkan tag default ({count})",
+        "empty_category": "Tidak ada tag terlihat dalam kategori ini.",
+        "move_up": "Pindahkan \"{label}\" ke atas",
+        "move_down": "Pindahkan \"{label}\" ke bawah",
+        "hide_default": "Sembunyikan tag default \"{label}\"",
+        "delete_custom": "Hapus tag kustom \"{label}\"",
+        "confirm_hide_default": "Sembunyikan tag default \"{label}\"? Tag ini akan dihapus dari daftar tag terlihat dan dapat dipulihkan nanti.",
+        "confirm_delete_custom": "Hapus tag kustom \"{label}\" secara permanen? Snapshot teks yang ada tidak akan ditulis ulang.",
+        "validation": {
+          "empty": "Nama tag tidak boleh kosong.",
+          "control_characters": "Nama tag tidak boleh berisi tab, jeda baris, atau karakter kontrol lainnya.",
+          "too_long": "Nama tag tidak boleh melebihi {max} karakter.",
+          "duplicate": "Tag dengan nama tersebut sudah ada dalam kategori ini."
+        }
       },
       "empty": {
         "language": "Tanpa tag bahasa",
@@ -348,6 +378,7 @@
         "difficulty": "Tanpa tag kesulitan"
       },
       "buttons": {
+        "manage": "Kelola tag",
         "confirm": "Simpan Snapshot Teks",
         "cancel": "Batal"
       },
@@ -402,7 +433,8 @@
         "load_error": "Tidak dapat memuat snapshot.",
         "outside": "Snapshot harus berada di dalam folder snapshots.",
         "truncated": "Snapshot melebihi ukuran maksimum dan dipotong.",
-        "unavailable": "Fungsi snapshot tidak tersedia."
+        "unavailable": "Fungsi snapshot tidak tersedia.",
+        "catalog_update_error": "Tidak dapat memperbarui tag snapshot teks."
       }
     },
     "tasks": {

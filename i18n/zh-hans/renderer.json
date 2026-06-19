@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "保存文本快照",
       "message": "在选择保存位置前，可选择为此文本快照添加标签。",
+      "search": {
+        "placeholder": "输入以筛选选项",
+        "no_results": "没有匹配的选项",
+        "create": "创建“{label}”"
+      },
       "labels": {
         "language": "语言",
         "type": "类型",
         "difficulty": "难度"
+      },
+      "manager": {
+        "title": "管理文本快照标签",
+        "message": "管理用于文本快照和批量提取单元的可见标签。",
+        "done": "完成",
+        "close_aria": "关闭文本快照标签管理器",
+        "new_tag": "新标签",
+        "new_tag_placeholder": "标签名称",
+        "add_tag": "添加标签",
+        "cancel_draft": "取消",
+        "sort_alphabetically": "按 A-Z 排序",
+        "restore_hidden_defaults": "恢复默认标签 ({count})",
+        "empty_category": "此类别中没有可见标签。",
+        "move_up": "上移“{label}”",
+        "move_down": "下移“{label}”",
+        "hide_default": "隐藏默认标签“{label}”",
+        "delete_custom": "删除自定义标签“{label}”",
+        "confirm_hide_default": "隐藏默认标签“{label}”？它将从可见标签列表中移除，之后可以恢复。",
+        "confirm_delete_custom": "永久删除自定义标签“{label}”？现有文本快照不会被重写。",
+        "validation": {
+          "empty": "标签名称不能为空。",
+          "control_characters": "标签名称不能包含制表符、换行符或其他控制字符。",
+          "too_long": "标签名称不能超过 {max} 个字符。",
+          "duplicate": "此类别中已存在同名标签。"
+        }
       },
       "empty": {
         "language": "无语言标签",
@@ -348,6 +378,7 @@
         "difficulty": "无难度标签"
       },
       "buttons": {
+        "manage": "管理标签",
         "confirm": "保存文本快照",
         "cancel": "取消"
       },
@@ -402,7 +433,8 @@
         "load_error": "无法加载快照。",
         "outside": "快照必须位于快照文件夹内。",
         "truncated": "快照超过最大大小，已被截断。",
-        "unavailable": "快照功能不可用。"
+        "unavailable": "快照功能不可用。",
+        "catalog_update_error": "无法更新文本快照标签。"
       }
     },
     "tasks": {

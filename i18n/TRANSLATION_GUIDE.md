@@ -2182,6 +2182,20 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Modal previo a guardar snapshot; permite asignar etiquetas opcionales antes de elegir ubicación.
         // [CONCEPTO_APP] snapshot de texto; etiquetas de snapshot de texto
       },
+      "search": {
+        "placeholder": {
+          "es": "Escribe para filtrar opciones",
+          "en": "Type to filter options"
+        },
+        "no_results": {
+          "es": "No hay opciones coincidentes",
+          "en": "No matching options"
+        },
+        "create": {
+          "es": "Crear \"{label}\"",
+          "en": "Create \"{label}\""
+        }
+      },
       "labels": {
         "language": {
           "es": "Idioma",
@@ -2202,6 +2216,108 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] etiquetas de snapshot de texto
         }
       },
+      "manager": {
+        "title": {
+          "es": "Gestionar etiquetas de snapshot de texto",
+          "en": "Manage text snapshot tags"
+          // [PROPÓSITO] Título del modal que edita el catálogo visible de etiquetas usado por snapshots de texto y unidades de extracción por lotes.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto; unidad de extracción por lotes
+        },
+        "message": {
+          "es": "Gestiona las etiquetas visibles usadas para snapshots de texto y unidades de extracción por lotes.",
+          "en": "Manage the visible tags used for text snapshots and batch extraction units."
+          // [CONCEPTO_APP] etiquetas de snapshot de texto; unidad de extracción por lotes
+        },
+        "done": {
+          "es": "Listo",
+          "en": "Done"
+        },
+        "close_aria": {
+          "es": "Cerrar gestor de etiquetas de snapshot de texto",
+          "en": "Close text snapshot tag manager"
+          // [CONCEPTO_APP] etiquetas de snapshot de texto
+        },
+        "new_tag": {
+          "es": "Nueva etiqueta",
+          "en": "New tag"
+        },
+        "new_tag_placeholder": {
+          "es": "Nombre de etiqueta",
+          "en": "Tag label"
+        },
+        "add_tag": {
+          "es": "Agregar etiqueta",
+          "en": "Add tag"
+        },
+        "cancel_draft": {
+          "es": "Cancelar",
+          "en": "Cancel"
+        },
+        "sort_alphabetically": {
+          "es": "Ordenar A-Z",
+          "en": "Sort A-Z"
+        },
+        "restore_hidden_defaults": {
+          "es": "Restaurar etiquetas por defecto ({count})",
+          "en": "Restore default tags ({count})"
+          // [PROPÓSITO] Restaura al catálogo visible las etiquetas por defecto ocultas dentro de esa categoría.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto
+        },
+        "empty_category": {
+          "es": "No hay etiquetas visibles en esta categoría.",
+          "en": "No visible tags in this category."
+        },
+        "move_up": {
+          "es": "Subir \"{label}\"",
+          "en": "Move \"{label}\" up"
+        },
+        "move_down": {
+          "es": "Bajar \"{label}\"",
+          "en": "Move \"{label}\" down"
+        },
+        "hide_default": {
+          "es": "Ocultar etiqueta por defecto \"{label}\"",
+          "en": "Hide default tag \"{label}\""
+          // [PROPÓSITO] Acción sobre una etiqueta canónica de catálogo; no la borra definitivamente, solo la oculta del catálogo visible.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto
+        },
+        "delete_custom": {
+          "es": "Eliminar etiqueta personalizada \"{label}\"",
+          "en": "Delete custom tag \"{label}\""
+          // [PROPÓSITO] Acción destructiva sobre una etiqueta creada por el usuario.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto
+        },
+        "confirm_hide_default": {
+          "es": "¿Ocultar etiqueta por defecto \"{label}\"? Se quitará de la lista visible de etiquetas y podrá restaurarse más adelante.",
+          "en": "Hide default tag \"{label}\"? It will be removed from the visible tag list and can be restored later."
+          // [PROPÓSITO] Confirmación antes de ocultar una etiqueta canónica sin reescribir snapshots existentes.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto
+        },
+        "confirm_delete_custom": {
+          "es": "¿Eliminar etiqueta personalizada \"{label}\" permanentemente? Los snapshots de texto existentes no se reescribirán.",
+          "en": "Delete custom tag \"{label}\" permanently? Existing text snapshots will not be rewritten."
+          // [PROPÓSITO] Confirmación antes de eliminar una etiqueta personalizada; aclara que los snapshots existentes no se modifican retroactivamente.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto; snapshot de texto
+        },
+        "validation": {
+          "empty": {
+            "es": "El nombre de etiqueta no puede estar vacío.",
+            "en": "Tag label cannot be empty."
+          },
+          "control_characters": {
+            "es": "El nombre de etiqueta no puede contener tabulaciones, saltos de línea ni otros caracteres de control.",
+            "en": "Tag label cannot contain tabs, line breaks, or other control characters."
+          },
+          "too_long": {
+            "es": "El nombre de etiqueta no puede superar los {max} caracteres.",
+            "en": "Tag label cannot exceed {max} characters."
+          },
+          "duplicate": {
+            "es": "Ya existe una etiqueta con ese nombre en esta categoría.",
+            "en": "A tag with that label already exists in this category."
+          }
+        }
+      },
       "empty": {
         "language": {
           "es": "Sin etiqueta de idioma",
@@ -2220,6 +2336,12 @@ Estados de revisión recomendados:
         }
       },
       "buttons": {
+        "manage": {
+          "es": "Gestionar etiquetas",
+          "en": "Manage tags"
+          // [PROPÓSITO] Botón del modal de guardado de snapshot que abre el gestor compartido de etiquetas.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto
+        },
         "confirm": {
           "es": "Guardar snapshot de texto",
           "en": "Save text snapshot"
@@ -2418,6 +2540,12 @@ Estados de revisión recomendados:
           "es": "La función de snapshots de texto no está disponible.",
           "en": "Text snapshot functionality is unavailable."
           // [CONCEPTO_APP] snapshot de texto
+        },
+        "catalog_update_error": {
+          "es": "No se pudieron actualizar las etiquetas de snapshot de texto.",
+          "en": "Could not update text snapshot tags."
+          // [PROPÓSITO] Error al persistir o refrescar el catálogo visible de etiquetas usado por snapshots y unidades de extracción por lotes.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto; unidad de extracción por lotes
         }
       }
     },

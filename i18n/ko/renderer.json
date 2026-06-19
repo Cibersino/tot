@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "텍스트 스냅샷 저장",
       "message": "저장 위치를 선택하기 전에 이 텍스트 스냅샷에 선택적으로 태그를 지정하세요.",
+      "search": {
+        "placeholder": "옵션을 필터링하려면 입력하세요",
+        "no_results": "일치하는 옵션 없음",
+        "create": "\"{label}\" 만들기"
+      },
       "labels": {
         "language": "언어",
         "type": "유형",
         "difficulty": "난이도"
+      },
+      "manager": {
+        "title": "텍스트 스냅샷 태그 관리",
+        "message": "텍스트 스냅샷과 일괄 추출 단위에 사용되는 표시 태그를 관리합니다.",
+        "done": "완료",
+        "close_aria": "텍스트 스냅샷 태그 관리자 닫기",
+        "new_tag": "새 태그",
+        "new_tag_placeholder": "태그 이름",
+        "add_tag": "태그 추가",
+        "cancel_draft": "취소",
+        "sort_alphabetically": "A-Z 정렬",
+        "restore_hidden_defaults": "기본 태그 복원 ({count})",
+        "empty_category": "이 범주에 표시할 태그가 없습니다.",
+        "move_up": "\"{label}\" 위로 이동",
+        "move_down": "\"{label}\" 아래로 이동",
+        "hide_default": "기본 태그 \"{label}\" 숨기기",
+        "delete_custom": "사용자 지정 태그 \"{label}\" 삭제",
+        "confirm_hide_default": "기본 태그 \"{label}\"을 숨길까요? 표시 태그 목록에서 제거되며 나중에 복원할 수 있습니다.",
+        "confirm_delete_custom": "사용자 지정 태그 \"{label}\"을 영구적으로 삭제할까요? 기존 텍스트 스냅샷은 다시 작성되지 않습니다.",
+        "validation": {
+          "empty": "태그 이름은 비워 둘 수 없습니다.",
+          "control_characters": "태그 이름에는 탭, 줄바꿈 또는 기타 제어 문자를 포함할 수 없습니다.",
+          "too_long": "태그 이름은 {max}자를 초과할 수 없습니다.",
+          "duplicate": "이 범주에 같은 이름의 태그가 이미 있습니다."
+        }
       },
       "empty": {
         "language": "언어 태그 없음",
@@ -348,6 +378,7 @@
         "difficulty": "난이도 태그 없음"
       },
       "buttons": {
+        "manage": "태그 관리",
         "confirm": "텍스트 스냅샷 저장",
         "cancel": "취소"
       },
@@ -402,7 +433,8 @@
         "load_error": "스냅샷을 불러올 수 없습니다.",
         "outside": "스냅샷은 저장 폴더 안에 있어야 합니다.",
         "truncated": "스냅샷이 최대 크기를 초과하여 잘렸습니다.",
-        "unavailable": "스냅샷 기능을 사용할 수 없습니다."
+        "unavailable": "스냅샷 기능을 사용할 수 없습니다.",
+        "catalog_update_error": "텍스트 스냅샷 태그를 업데이트할 수 없습니다."
       }
     },
     "tasks": {

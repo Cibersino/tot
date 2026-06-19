@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "Desar snapshot de text",
       "message": "Etiqueta opcionalment aquest snapshot de text abans de triar on desar-lo.",
+      "search": {
+        "placeholder": "Escriu per filtrar opcions",
+        "no_results": "No hi ha opcions coincidents",
+        "create": "Crea \"{label}\""
+      },
       "labels": {
         "language": "Idioma",
         "type": "Tipus",
         "difficulty": "Dificultat"
+      },
+      "manager": {
+        "title": "Gestiona les etiquetes de snapshot de text",
+        "message": "Gestiona les etiquetes visibles que s’utilitzen per als snapshots de text i les unitats d’extracció per lots.",
+        "done": "Fet",
+        "close_aria": "Tanca el gestor d’etiquetes de snapshot de text",
+        "new_tag": "Etiqueta nova",
+        "new_tag_placeholder": "Nom de l’etiqueta",
+        "add_tag": "Afegeix etiqueta",
+        "cancel_draft": "Cancel·la",
+        "sort_alphabetically": "Ordena A-Z",
+        "restore_hidden_defaults": "Restaura les etiquetes predeterminades ({count})",
+        "empty_category": "No hi ha etiquetes visibles en aquesta categoria.",
+        "move_up": "Mou \"{label}\" amunt",
+        "move_down": "Mou \"{label}\" avall",
+        "hide_default": "Amaga l’etiqueta predeterminada \"{label}\"",
+        "delete_custom": "Suprimeix l’etiqueta personalitzada \"{label}\"",
+        "confirm_hide_default": "Vols amagar l’etiqueta predeterminada \"{label}\"? Es traurà de la llista d’etiquetes visibles i es podrà restaurar més endavant.",
+        "confirm_delete_custom": "Vols suprimir permanentment l’etiqueta personalitzada \"{label}\"? Els snapshots de text existents no es reescriuran.",
+        "validation": {
+          "empty": "El nom de l’etiqueta no pot estar buit.",
+          "control_characters": "El nom de l’etiqueta no pot contenir tabulacions, salts de línia ni altres caràcters de control.",
+          "too_long": "El nom de l’etiqueta no pot superar els {max} caràcters.",
+          "duplicate": "Ja existeix una etiqueta amb aquest nom en aquesta categoria."
+        }
       },
       "empty": {
         "language": "Sense etiqueta d’idioma",
@@ -348,6 +378,7 @@
         "difficulty": "Sense etiqueta de dificultat"
       },
       "buttons": {
+        "manage": "Gestiona etiquetes",
         "confirm": "Desar snapshot de text",
         "cancel": "Cancel·lar"
       },
@@ -402,7 +433,8 @@
         "load_error": "No s’ha pogut carregar el snapshot.",
         "outside": "El snapshot ha d’estar dins de la carpeta de desament.",
         "truncated": "El snapshot supera la mida màxima i s’ha truncat.",
-        "unavailable": "La funció de snapshots no està disponible."
+        "unavailable": "La funció de snapshots no està disponible.",
+        "catalog_update_error": "No s’han pogut actualitzar les etiquetes de snapshot de text."
       }
     },
     "tasks": {

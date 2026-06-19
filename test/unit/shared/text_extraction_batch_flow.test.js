@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
 
 function createHarness({
   preparationsByPath,
@@ -15,6 +16,8 @@ function createHarness({
   executionResultsByProcessingInputFileName = {},
   promptBatchFinalReportImpl = null,
   applyTextViaCanonicalPathImpl = null,
+  snapshotTagsPromptResult = { tags: { language: 'en' } },
+  settingsCache = null,
 }) {
   let capturedViewModel = null;
   let capturedController = null;
@@ -72,7 +75,7 @@ function createHarness({
         },
         async promptSnapshotSaveTags(options) {
           snapshotTagsPromptOptions = options;
-          return { tags: { language: 'en' } };
+          return snapshotTagsPromptResult;
         },
         promptTextExtractionBatchFinalReport({ report }) {
           if (typeof promptBatchFinalReportImpl === 'function') {
@@ -128,11 +131,7 @@ function createHarness({
           };
         },
       },
-      SnapshotTagCatalog: {
-        LANGUAGE_OPTIONS: [],
-        TYPE_OPTIONS: [],
-        DIFFICULTY_OPTIONS: [],
-      },
+      SnapshotTagCatalog: snapshotTagCatalog,
       electronAPI: {
         async saveCurrentTextSnapshot(payload) {
           savedSnapshotPayload = payload;
@@ -205,6 +204,9 @@ function createHarness({
     }),
     getOcrLanguage() {
       return 'en';
+    },
+    getSettingsCache() {
+      return settingsCache || {};
     },
     applyTextViaCanonicalPath: async (payload) => {
       if (typeof applyTextViaCanonicalPathImpl === 'function') {
@@ -407,6 +409,51 @@ test('batch flow opens shared tags modal with batch-planning copy overrides', as
         closeAriaKey: 'renderer.text_extraction.batch_plan.tags_modal.close_aria',
       },
     }
+  );
+});
+
+test('batch flow formats planner tag summaries with custom labels from snapshot-tag preferences', async () => {
+  const customLanguage = snapshotTagCatalog.buildCustomTagValue('language', 'Plain text');
+  const preparationsByPath = {
+    'C:\\docs\\ordinary-a.pdf': createPreparation({
+      fileName: 'ordinary-a.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    snapshotTagsPromptResult: { tags: { language: customLanguage } },
+    settingsCache: {
+      snapshotTags: {
+        language: {
+          custom: [{ value: customLanguage, label: 'Plain text' }],
+          hiddenDefaults: [],
+          order: [customLanguage],
+        },
+      },
+    },
+  });
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-custom-tag-summary',
+  });
+
+  const controller = harness.getCapturedController();
+  assert.ok(controller);
+  await controller.editUnitTags('batch-unit-1');
+
+  assert.equal(
+    controller.getViewModel().units[0].tagsSummary,
+    'Plain text'
   );
 });
 

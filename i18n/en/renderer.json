@@ -339,12 +339,38 @@
       "message": "You can optionally tag this text snapshot before choosing where to save it.",
       "search": {
         "placeholder": "Type to filter options",
-        "no_results": "No matching options"
+        "no_results": "No matching options",
+        "create": "Create \"{label}\""
       },
       "labels": {
         "language": "Language",
         "type": "Type",
         "difficulty": "Difficulty"
+      },
+      "manager": {
+        "title": "Manage text snapshot tags",
+        "message": "Manage the visible tags used for text snapshots and batch extraction units.",
+        "done": "Done",
+        "close_aria": "Close text snapshot tag manager",
+        "new_tag": "New tag",
+        "new_tag_placeholder": "Tag label",
+        "add_tag": "Add tag",
+        "cancel_draft": "Cancel",
+        "sort_alphabetically": "Sort A-Z",
+        "restore_hidden_defaults": "Restore default tags ({count})",
+        "empty_category": "No visible tags in this category.",
+        "move_up": "Move \"{label}\" up",
+        "move_down": "Move \"{label}\" down",
+        "hide_default": "Hide default tag \"{label}\"",
+        "delete_custom": "Delete custom tag \"{label}\"",
+        "confirm_hide_default": "Hide default tag \"{label}\"? It will be removed from the visible tag list and can be restored later.",
+        "confirm_delete_custom": "Delete custom tag \"{label}\" permanently? Existing text snapshots will not be rewritten.",
+        "validation": {
+          "empty": "Tag label cannot be empty.",
+          "control_characters": "Tag label cannot contain tabs, line breaks, or other control characters.",
+          "too_long": "Tag label cannot exceed {max} characters.",
+          "duplicate": "A tag with that label already exists in this category."
+        }
       },
       "empty": {
         "language": "No language tag",
@@ -352,6 +378,7 @@
         "difficulty": "No difficulty tag"
       },
       "buttons": {
+        "manage": "Manage tags",
         "confirm": "Save text snapshot",
         "cancel": "Cancel"
       },
@@ -406,7 +433,8 @@
         "load_error": "Could not load the text snapshot.",
         "outside": "The text snapshot must be inside the snapshots folder.",
         "truncated": "Text snapshot exceeded the maximum size and was truncated.",
-        "unavailable": "Text snapshot functionality is unavailable."
+        "unavailable": "Text snapshot functionality is unavailable.",
+        "catalog_update_error": "Could not update text snapshot tags."
       }
     },
     "tasks": {

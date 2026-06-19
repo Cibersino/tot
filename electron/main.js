@@ -35,6 +35,7 @@ const {
   initStorage,
   ensureConfigDir,
   getSettingsFile,
+  getSnapshotTagsFile,
   getCurrentTextFile,
   getBundledOcrGoogleDriveCredentialsFile,
   getOcrGoogleDriveCredentialsFile,
@@ -44,6 +45,7 @@ const {
 } = require('./fs_storage');
 
 const settingsState = require('./settings');
+const snapshotTagSettings = require('./snapshot_tag_settings');
 const textState = require('./text_state');
 const editorState = require('./editor_state');
 const editorWindowLifecycle = require('./editor_window_lifecycle');
@@ -410,6 +412,14 @@ function getSelectedLanguage() {
     log.error(`Failed to read settings language for menu; falling back to "${DEFAULT_LANG}":`, err);
     return DEFAULT_LANG;
   }
+}
+
+function decorateRendererSettings(settingsPayload) {
+  const spellcheckDecorated = spellcheckController.decorateSettings(settingsPayload);
+  return {
+    ...spellcheckDecorated,
+    snapshotTags: snapshotTagSettings.getSnapshotTagPreferences(),
+  };
 }
 
 /**
@@ -1750,6 +1760,7 @@ app.whenReady().then(() => {
   }
 
   const SETTINGS_FILE = getSettingsFile();
+  const SNAPSHOT_TAGS_FILE = getSnapshotTagsFile();
   const CURRENT_TEXT_FILE = getCurrentTextFile();
 
   // Initialize shared text state early (current text file).
@@ -1769,6 +1780,12 @@ app.whenReady().then(() => {
     loadJson,
     saveJson,
     settingsFile: SETTINGS_FILE,
+  });
+
+  snapshotTagSettings.init({
+    loadJson,
+    saveJson,
+    snapshotTagsFile: SNAPSHOT_TAGS_FILE,
   });
 
   spellcheckController.apply(settings);
@@ -1793,13 +1810,17 @@ app.whenReady().then(() => {
 
   editorFindMain.registerIpc(ipcMain);
 
-  settingsState.registerIpc(ipcMain, {
+  const settingsIpc = settingsState.registerIpc(ipcMain, {
     getWindows: () => getSettingsBroadcastWindows(),
     buildAppMenu,
     onSettingsUpdated: (nextSettings) => {
       spellcheckController.apply(nextSettings);
     },
-    decorateSettings: (nextSettings) => spellcheckController.decorateSettings(nextSettings),
+    decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
+  });
+
+  snapshotTagSettings.registerIpc(ipcMain, {
+    publishSettingsUpdate: () => settingsIpc.publishCurrentSettings(),
   });
 
   presetsMain.registerIpc(ipcMain, {

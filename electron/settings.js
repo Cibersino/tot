@@ -7,14 +7,12 @@
 // This module owns persisted user settings.
 //
 // Responsibilities:
-// - Load settings from disk (via injected loadJson/saveJson) and normalize shape/types.
-// - Keep language tags consistent (normalize language tag + base language).
-// - Ensure numberFormatting[langBase] exists (from i18n/<lang>/numberFormat.json or safe defaults).
-// - Provide a small state API (init/getSettings/saveSettings) backed by an in-memory cache.
-// - Register IPC handlers (get-settings, set-language, set-mode-conteo, set-selected-preset,
-//   set-spellcheck-enabled, set-editor-font-size-px)
-//   and broadcast settings-updated.
-// - Apply a logged fallback language when the language modal closes without a selection.
+// - Load settings from disk, normalize persisted shape, and keep an in-memory cache in sync.
+// - Canonicalize language tags and maintain language-scoped settings buckets.
+// - Hydrate numberFormatting defaults when persisted data is missing or invalid.
+// - Expose the state owner API used by main-process modules: init, getSettings, saveSettings.
+// - Register settings IPC handlers and broadcast settings-updated.
+// - Persist a logged fallback language when startup closes the language picker without a selection.
 // =============================================================================
 
 // =============================================================================
@@ -56,7 +54,7 @@ const getLangBase = (lang) => {
 const deriveLangKey = (langTag) => getLangBase(langTag);
 
 // =============================================================================
-// Settings defaults
+// Defaults / validators
 // =============================================================================
 const createDefaultSettings = (language = '') => ({
   language,
@@ -82,7 +80,7 @@ function isPlainObjectRecord(value) {
 }
 
 // =============================================================================
-// Injected dependencies + cache
+// Shared state
 // =============================================================================
 // Dependencies injected from main.js (centralized file I/O).
 let _loadJson = null;
@@ -112,16 +110,26 @@ function loadNumberFormatDefaults(lang) {
     // Some editors may add a UTF-8 BOM.
     raw = raw.replace(/^\uFEFF/, '');
 
-    const json = JSON.parse(raw);
+    const parsedNumberFormat = JSON.parse(raw);
 
-    const thousands = typeof json.thousands === 'string' ? json.thousands : '';
-    const decimal = typeof json.decimal === 'string' ? json.decimal : '';
+    const thousands = typeof parsedNumberFormat.thousands === 'string'
+      ? parsedNumberFormat.thousands
+      : '';
+    const decimal = typeof parsedNumberFormat.decimal === 'string'
+      ? parsedNumberFormat.decimal
+      : '';
 
     if (!thousands || !decimal) {
       log.warnOnce(
         `settings.loadNumberFormatDefaults.invalidSchema:${langCode}`,
         'numberFormat.json schema invalid (expected non-empty thousands/decimal strings):',
-        { langCode, filePath, keys: json && typeof json === 'object' ? Object.keys(json) : [] }
+        {
+          langCode,
+          filePath,
+          keys: parsedNumberFormat && typeof parsedNumberFormat === 'object'
+            ? Object.keys(parsedNumberFormat)
+            : [],
+        }
       );
       return null;
     }
@@ -153,11 +161,11 @@ function ensureNumberFormattingForBase(settings, base) {
 
   if (settings.numberFormatting[langKey]) return;
 
-  const nf = loadNumberFormatDefaults(langKey);
-  if (nf && nf.thousands && nf.decimal) {
+  const numberFormatDefaults = loadNumberFormatDefaults(langKey);
+  if (numberFormatDefaults && numberFormatDefaults.thousands && numberFormatDefaults.decimal) {
     settings.numberFormatting[langKey] = {
-      separadorMiles: nf.thousands,
-      separadorDecimal: nf.decimal,
+      separadorMiles: numberFormatDefaults.thousands,
+      separadorDecimal: numberFormatDefaults.decimal,
     };
   } else {
     log.warnOnce(
@@ -184,137 +192,153 @@ function ensureNumberFormattingForBase(settings, base) {
  * - Convert invalid shapes to safe defaults (and log once).
  * - Ensure language-dependent buckets exist for the current language base.
  */
-function normalizeSettings(s) {
-  if (!isPlainObjectRecord(s)) {
+function normalizeSettings(settings) {
+  if (!isPlainObjectRecord(settings)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidRoot',
       'Settings root is invalid; using empty object:',
-      { type: typeof s, isArray: Array.isArray(s), isNull: s === null }
+      {
+        type: typeof settings,
+        isArray: Array.isArray(settings),
+        isNull: settings === null,
+      }
     );
-    s = {};
+    settings = {};
   }
 
   // language must be a string; empty string means "unset".
-  if (typeof s.language !== 'string') {
+  if (typeof settings.language !== 'string') {
     log.warnOnce(
       'settings.normalizeSettings.invalidLanguage',
       'Invalid settings.language; forcing empty string:',
-      { type: typeof s.language }
+      { type: typeof settings.language }
     );
-    s.language = '';
+    settings.language = '';
   }
 
   // presets_by_language:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.presets_by_language === 'undefined') {
-    s.presets_by_language = {};
-  } else if (!isPlainObjectRecord(s.presets_by_language)) {
+  if (typeof settings.presets_by_language === 'undefined') {
+    settings.presets_by_language = {};
+  } else if (!isPlainObjectRecord(settings.presets_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidPresetsByLanguage',
       'Invalid presets_by_language; resetting to empty object:',
-      { type: typeof s.presets_by_language, isArray: Array.isArray(s.presets_by_language) }
+      {
+        type: typeof settings.presets_by_language,
+        isArray: Array.isArray(settings.presets_by_language),
+      }
     );
-    s.presets_by_language = {};
+    settings.presets_by_language = {};
   }
 
   // selected_preset_by_language:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.selected_preset_by_language === 'undefined') {
-    s.selected_preset_by_language = {};
-  } else if (!isPlainObjectRecord(s.selected_preset_by_language)) {
+  if (typeof settings.selected_preset_by_language === 'undefined') {
+    settings.selected_preset_by_language = {};
+  } else if (!isPlainObjectRecord(settings.selected_preset_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidSelectedPresetByLanguage',
       'Invalid selected_preset_by_language; resetting to empty object:',
-      { type: typeof s.selected_preset_by_language, isArray: Array.isArray(s.selected_preset_by_language) }
+      {
+        type: typeof settings.selected_preset_by_language,
+        isArray: Array.isArray(settings.selected_preset_by_language),
+      }
     );
-    s.selected_preset_by_language = {};
+    settings.selected_preset_by_language = {};
   }
 
   // numberFormatting must be a plain object (may be missing/null/array/invalid types).
-  if (typeof s.numberFormatting === 'undefined') {
-    s.numberFormatting = {};
-  } else if (!isPlainObjectRecord(s.numberFormatting)) {
+  if (typeof settings.numberFormatting === 'undefined') {
+    settings.numberFormatting = {};
+  } else if (!isPlainObjectRecord(settings.numberFormatting)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidNumberFormatting',
       'Invalid numberFormatting; resetting to empty object:',
-      { type: typeof s.numberFormatting, isArray: Array.isArray(s.numberFormatting) }
+      {
+        type: typeof settings.numberFormatting,
+        isArray: Array.isArray(settings.numberFormatting),
+      }
     );
-    s.numberFormatting = {};
+    settings.numberFormatting = {};
   }
 
   // disabled_default_presets must be a plain object (may be missing/null/array/invalid types).
-  if (typeof s.disabled_default_presets === 'undefined') {
-    s.disabled_default_presets = {};
-  } else if (!isPlainObjectRecord(s.disabled_default_presets)) {
+  if (typeof settings.disabled_default_presets === 'undefined') {
+    settings.disabled_default_presets = {};
+  } else if (!isPlainObjectRecord(settings.disabled_default_presets)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidDisabledDefaultPresets',
       'Invalid disabled_default_presets; resetting to empty object:',
-      { type: typeof s.disabled_default_presets, isArray: Array.isArray(s.disabled_default_presets) }
+      {
+        type: typeof settings.disabled_default_presets,
+        isArray: Array.isArray(settings.disabled_default_presets),
+      }
     );
-    s.disabled_default_presets = {};
+    settings.disabled_default_presets = {};
   }
 
   // modeConteo:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.modeConteo === 'undefined') {
-    s.modeConteo = 'preciso';
-  } else if (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple') {
+  if (typeof settings.modeConteo === 'undefined') {
+    settings.modeConteo = 'preciso';
+  } else if (settings.modeConteo !== 'preciso' && settings.modeConteo !== 'simple') {
     log.warnOnce(
       'settings.normalizeSettings.invalidModeConteo',
       'Invalid modeConteo; forcing default:',
-      { value: s.modeConteo }
+      { value: settings.modeConteo }
     );
-    s.modeConteo = 'preciso';
+    settings.modeConteo = 'preciso';
   }
 
   // spellcheckEnabled:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.spellcheckEnabled === 'undefined') {
-    s.spellcheckEnabled = true;
-  } else if (typeof s.spellcheckEnabled !== 'boolean') {
+  if (typeof settings.spellcheckEnabled === 'undefined') {
+    settings.spellcheckEnabled = true;
+  } else if (typeof settings.spellcheckEnabled !== 'boolean') {
     log.warnOnce(
       'settings.normalizeSettings.invalidSpellcheckEnabled',
       'Invalid spellcheckEnabled; forcing default:',
-      { type: typeof s.spellcheckEnabled }
+      { type: typeof settings.spellcheckEnabled }
     );
-    s.spellcheckEnabled = true;
+    settings.spellcheckEnabled = true;
   }
 
   // editorFontSizePx:
   // - missing -> default (silent)
   // - invalid/out of range -> warnOnce + normalized value
-  if (typeof s.editorFontSizePx === 'undefined') {
-    s.editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
+  if (typeof settings.editorFontSizePx === 'undefined') {
+    settings.editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
   } else {
-    const nextEditorFontSizePx = normalizeEditorFontSizePx(s.editorFontSizePx);
-    if (!Number.isFinite(Number(s.editorFontSizePx))) {
+    const nextEditorFontSizePx = normalizeEditorFontSizePx(settings.editorFontSizePx);
+    if (!Number.isFinite(Number(settings.editorFontSizePx))) {
       log.warnOnce(
         'settings.normalizeSettings.invalidEditorFontSizePx',
         'Invalid editorFontSizePx; forcing default:',
-        { value: s.editorFontSizePx }
+        { value: settings.editorFontSizePx }
       );
-    } else if (nextEditorFontSizePx !== Math.round(Number(s.editorFontSizePx))) {
+    } else if (nextEditorFontSizePx !== Math.round(Number(settings.editorFontSizePx))) {
       log.warnOnce(
         'settings.normalizeSettings.outOfRangeEditorFontSizePx',
         'Out-of-range editorFontSizePx; clamping:',
         {
-          value: s.editorFontSizePx,
+          value: settings.editorFontSizePx,
           min: EDITOR_FONT_SIZE_MIN_PX,
           max: EDITOR_FONT_SIZE_MAX_PX,
         }
       );
     }
-    s.editorFontSizePx = nextEditorFontSizePx;
+    settings.editorFontSizePx = nextEditorFontSizePx;
   }
 
   // Normalize language tag and compute its base (e.g., "en-US" -> "en").
   const langTag =
-    s.language && typeof s.language === 'string' && s.language.trim()
-      ? normalizeLangTag(s.language)
+    settings.language && typeof settings.language === 'string' && settings.language.trim()
+      ? normalizeLangTag(settings.language)
       : '';
 
   if (!langTag) {
@@ -325,27 +349,27 @@ function normalizeSettings(s) {
   }
 
   const langBase = deriveLangKey(langTag);
-  if (langTag) s.language = langTag;
+  if (langTag) settings.language = langTag;
 
   // presets_by_language[langBase]:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
-  if (typeof s.presets_by_language[langBase] === 'undefined') {
-    s.presets_by_language[langBase] = [];
-  } else if (!Array.isArray(s.presets_by_language[langBase])) {
+  if (typeof settings.presets_by_language[langBase] === 'undefined') {
+    settings.presets_by_language[langBase] = [];
+  } else if (!Array.isArray(settings.presets_by_language[langBase])) {
     log.warnOnce(
       'settings.normalizeSettings.invalidPresetsByLanguageEntry',
       'Invalid presets_by_language entry; forcing empty array:',
       {
         langBase,
-        type: typeof s.presets_by_language[langBase],
-        isArray: Array.isArray(s.presets_by_language[langBase]),
+        type: typeof settings.presets_by_language[langBase],
+        isArray: Array.isArray(settings.presets_by_language[langBase]),
       }
     );
-    s.presets_by_language[langBase] = [];
+    settings.presets_by_language[langBase] = [];
   }
 
-  const selectedPreset = s.selected_preset_by_language[langBase];
+  const selectedPreset = settings.selected_preset_by_language[langBase];
   if (typeof selectedPreset !== 'undefined') {
     if (typeof selectedPreset !== 'string') {
       log.warnOnce(
@@ -353,18 +377,18 @@ function normalizeSettings(s) {
         'Invalid selected_preset_by_language entry; removing:',
         { langBase, type: typeof selectedPreset }
       );
-      delete s.selected_preset_by_language[langBase];
+      delete settings.selected_preset_by_language[langBase];
     } else if (!selectedPreset.trim()) {
-      delete s.selected_preset_by_language[langBase];
+      delete settings.selected_preset_by_language[langBase];
     } else {
-      s.selected_preset_by_language[langBase] = selectedPreset.trim();
+      settings.selected_preset_by_language[langBase] = selectedPreset.trim();
     }
   }
 
   // Ensure number formatting exists for the current base language.
-  ensureNumberFormattingForBase(s, langBase);
+  ensureNumberFormattingForBase(settings, langBase);
 
-  return s;
+  return settings;
 }
 
 // =============================================================================
@@ -387,10 +411,10 @@ function init({ loadJson, saveJson, settingsFile }) {
   _saveJson = saveJson;
   _settingsFile = settingsFile;
 
-  const raw = _loadJson(_settingsFile, createDefaultSettings());
+  const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
 
-  const normalized = normalizeSettings(raw);
-  _currentSettings = normalized;
+  const normalizedSettings = normalizeSettings(rawSettings);
+  _currentSettings = normalizedSettings;
 
   try {
     _saveJson(_settingsFile, _currentSettings);
@@ -410,9 +434,9 @@ function getSettings() {
     throw new Error('[settings] getSettings called before init');
   }
 
-  const raw = _loadJson(_settingsFile, createDefaultSettings());
+  const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
 
-  _currentSettings = normalizeSettings(raw);
+  _currentSettings = normalizeSettings(rawSettings);
   return _currentSettings;
 }
 
@@ -426,11 +450,11 @@ function saveSettings(nextSettings) {
     throw new Error('[settings] saveSettings called before init');
   }
 
-  const normalized = normalizeSettings(nextSettings);
-  _currentSettings = normalized;
+  const normalizedSettings = normalizeSettings(nextSettings);
+  _currentSettings = normalizedSettings;
 
   try {
-    _saveJson(_settingsFile, normalized);
+    _saveJson(_settingsFile, normalizedSettings);
   } catch (err) {
     log.errorOnce(
       'settings.saveSettings.persist',
@@ -451,7 +475,13 @@ function saveSettings(nextSettings) {
  * This may fail during shutdown/races; failures are logged once and ignored.
  */
 function broadcastSettingsUpdated(settings, windows) {
-  if (!windows) return;
+  if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
+    log.warnOnce(
+      'settings.broadcastSettingsUpdated.windows.invalid',
+      'settings-updated broadcast failed (ignored): windows object unavailable.'
+    );
+    return;
+  }
   const targets = [
     { win: windows.mainWin, name: 'mainWin' },
     { win: windows.editorWin, name: 'editorWin' },
@@ -504,7 +534,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
 }
 
 // =============================================================================
-// IPC
+// IPC registration / handlers
 // =============================================================================
 /**
  * Registers IPC handlers related to settings:
@@ -526,22 +556,6 @@ function registerIpc(
 ) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
-  }
-
-  function publishSettingsUpdated(settings, windows) {
-    if (typeof onSettingsUpdated !== 'function') {
-      log.warnOnce(
-        'settings.onSettingsUpdated.unavailable',
-        'onSettingsUpdated callback unavailable; settings callback publish skipped.'
-      );
-    } else {
-      try {
-        onSettingsUpdated(settings);
-      } catch (err) {
-        log.warn('onSettingsUpdated callback failed (ignored):', err);
-      }
-    }
-    broadcastSettingsUpdated(decorateSettingsPayload(settings), windows);
   }
 
   function decorateSettingsPayload(settings) {
@@ -582,7 +596,7 @@ function registerIpc(
 
     try {
       const windows = getWindows();
-      if (!windows || typeof windows !== 'object') {
+      if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
         log.warnOnce(
           'settings.getWindows.invalid',
           'getWindows returned no windows object; window-targeted updates skipped.'
@@ -608,6 +622,36 @@ function registerIpc(
     } catch (err) {
       log.warn('hide window menu failed (ignored):', name, err);
     }
+  }
+
+  function publishSettingsUpdated(settings, windows) {
+    if (typeof onSettingsUpdated !== 'function') {
+      log.warnOnce(
+        'settings.onSettingsUpdated.unavailable',
+        'onSettingsUpdated callback unavailable; settings callback publish skipped.'
+      );
+    } else {
+      try {
+        onSettingsUpdated(settings);
+      } catch (err) {
+        log.warn('onSettingsUpdated callback failed (ignored):', err);
+      }
+    }
+    broadcastSettingsUpdated(decorateSettingsPayload(settings), windows);
+  }
+
+  function saveAndPublishSettings(nextSettings) {
+    const savedSettings = saveSettings(nextSettings);
+    const windows = resolveWindows();
+    publishSettingsUpdated(savedSettings, windows);
+    return savedSettings;
+  }
+
+  function publishCurrentSettings() {
+    const settings = getSettings();
+    const windows = resolveWindows();
+    publishSettingsUpdated(settings, windows);
+    return settings;
   }
 
   // get-settings: returns the current settings object (normalized)
@@ -683,11 +727,14 @@ function registerIpc(
   ipcMain.handle('set-mode-conteo', async (_event, mode) => {
     try {
       let settings = getSettings();
+      if (mode !== 'simple' && mode !== 'preciso') {
+        log.warn(
+          'set-mode-conteo called with invalid value; defaulting to "preciso":',
+          { value: mode }
+        );
+      }
       settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
-      settings = saveSettings(settings);
-
-      const windows = resolveWindows();
-      publishSettingsUpdated(settings, windows);
+      settings = saveAndPublishSettings(settings);
 
       return { ok: true, mode: settings.modeConteo };
     } catch (err) {
@@ -709,7 +756,7 @@ function registerIpc(
       }
 
       let settings = getSettings();
-      const langTag = settings && typeof settings.language === 'string' ? settings.language : '';
+      const langTag = settings.language;
       if (!langTag) {
         log.warnOnce(
           'settings.set-selected-preset.emptyLanguage',
@@ -717,7 +764,6 @@ function registerIpc(
         );
       }
       const langKey = deriveLangKey(langTag);
-      settings.selected_preset_by_language = settings.selected_preset_by_language || {};
       if (settings.selected_preset_by_language[langKey] === name) {
         return { ok: true, langKey, name };
       }
@@ -747,10 +793,7 @@ function registerIpc(
         return { ok: true, enabled };
       }
       settings.spellcheckEnabled = enabled;
-      settings = saveSettings(settings);
-
-      const windows = resolveWindows();
-      publishSettingsUpdated(settings, windows);
+      settings = saveAndPublishSettings(settings);
 
       return { ok: true, enabled: settings.spellcheckEnabled };
     } catch (err) {
@@ -778,10 +821,7 @@ function registerIpc(
         return { ok: true, editorFontSizePx: nextEditorFontSizePx };
       }
       settings.editorFontSizePx = nextEditorFontSizePx;
-      settings = saveSettings(settings);
-
-      const windows = resolveWindows();
-      publishSettingsUpdated(settings, windows);
+      settings = saveAndPublishSettings(settings);
 
       return { ok: true, editorFontSizePx: settings.editorFontSizePx };
     } catch (err) {
@@ -790,6 +830,9 @@ function registerIpc(
     }
   });
 
+  return {
+    publishCurrentSettings,
+  };
 }
 
 // =============================================================================

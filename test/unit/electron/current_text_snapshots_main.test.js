@@ -6,6 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
 const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
@@ -249,6 +250,92 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
   assert.equal(secondSave.filename, 'Unit_1_2.json');
 });
 
+test('non-interactive snapshot save accepts permitted custom tag values', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-custom-save');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'Custom-tag snapshot text',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const customLanguage = snapshotTagCatalog.buildCustomTagValue('language', 'Plain text');
+  const customType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
+  const saveResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Custom Unit',
+      tags: {
+        language: customLanguage,
+        type: customType,
+      },
+    }
+  );
+
+  assert.equal(saveResult.ok, true);
+  const payload = JSON.parse(fs.readFileSync(path.join(rootDir, saveResult.filename), 'utf8'));
+  assert.deepEqual(payload.tags, {
+    language: customLanguage,
+    type: customType,
+  });
+});
+
+test('non-interactive snapshot save accepts valid non-catalog language tags', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-open-language-save');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'Open-language snapshot text',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const saveResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Open Language Unit',
+      tags: {
+        language: 'es-cl',
+      },
+    }
+  );
+
+  assert.equal(saveResult.ok, true);
+  const payload = JSON.parse(fs.readFileSync(path.join(rootDir, saveResult.filename), 'utf8'));
+  assert.deepEqual(payload.tags, {
+    language: 'es-cl',
+  });
+});
+
 test('open snapshots folder delegates to shell.openPath using the snapshots root', async (t) => {
   const rootDir = createTestTempDir('current-text-snapshots-open');
   t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
@@ -353,4 +440,89 @@ test('snapshot load still asks for overwrite confirmation when current text is n
 
   assert.equal(result.ok, true);
   assert.equal(showMessageBoxCalls.length, 1);
+});
+
+test('snapshot load accepts custom snapshot tags that are unknown to the current editable catalog', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-load-custom');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const customLanguage = snapshotTagCatalog.buildCustomTagValue('language', 'Plain text');
+  const snapshotPath = path.join(rootDir, 'custom-tags.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify({
+    text: 'Loaded custom snapshot text',
+    tags: {
+      language: customLanguage,
+    },
+  }, null, 2));
+
+  const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: '',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/custom-tags.json' }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.filename, 'custom-tags.json');
+  assert.equal(showMessageBoxCalls.length, 0);
+});
+
+test('snapshot load accepts valid non-catalog language tags', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-load-open-language');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const snapshotPath = path.join(rootDir, 'open-language-tags.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify({
+    text: 'Loaded open-language snapshot text',
+    tags: {
+      language: 'fr-CA',
+    },
+  }, null, 2));
+
+  const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: '',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/open-language-tags.json' }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.filename, 'open-language-tags.json');
+  assert.equal(showMessageBoxCalls.length, 0);
 });

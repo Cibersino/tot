@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "テキストスナップショットを保存",
       "message": "保存場所を選ぶ前に、このテキストスナップショットへ任意でタグを付けられます。",
+      "search": {
+        "placeholder": "入力してオプションを絞り込み",
+        "no_results": "一致するオプションはありません",
+        "create": "「{label}」を作成"
+      },
       "labels": {
         "language": "言語",
         "type": "種類",
         "difficulty": "難易度"
+      },
+      "manager": {
+        "title": "テキストスナップショットタグを管理",
+        "message": "テキストスナップショットと一括抽出ユニットで使用する表示タグを管理します。",
+        "done": "完了",
+        "close_aria": "テキストスナップショットタグマネージャーを閉じる",
+        "new_tag": "新しいタグ",
+        "new_tag_placeholder": "タグ名",
+        "add_tag": "タグを追加",
+        "cancel_draft": "キャンセル",
+        "sort_alphabetically": "A-Z 順に並べ替え",
+        "restore_hidden_defaults": "既定のタグを復元 ({count})",
+        "empty_category": "このカテゴリに表示タグはありません。",
+        "move_up": "「{label}」を上へ移動",
+        "move_down": "「{label}」を下へ移動",
+        "hide_default": "既定のタグ「{label}」を非表示",
+        "delete_custom": "カスタムタグ「{label}」を削除",
+        "confirm_hide_default": "既定のタグ「{label}」を非表示にしますか？表示タグ一覧から削除されますが、後で復元できます。",
+        "confirm_delete_custom": "カスタムタグ「{label}」を完全に削除しますか？既存のテキストスナップショットは書き換えられません。",
+        "validation": {
+          "empty": "タグ名を空にすることはできません。",
+          "control_characters": "タグ名にタブ、改行、その他の制御文字を含めることはできません。",
+          "too_long": "タグ名は {max} 文字を超えることはできません。",
+          "duplicate": "このカテゴリには同じ名前のタグが既にあります。"
+        }
       },
       "empty": {
         "language": "言語タグなし",
@@ -348,6 +378,7 @@
         "difficulty": "難易度タグなし"
       },
       "buttons": {
+        "manage": "タグを管理",
         "confirm": "テキストスナップショットを保存",
         "cancel": "キャンセル"
       },
@@ -402,7 +433,8 @@
         "load_error": "スナップショットを読み込めませんでした。",
         "outside": "スナップショットは保存フォルダ内にある必要があります。",
         "truncated": "スナップショットが最大サイズを超えたため、切り詰められました。",
-        "unavailable": "スナップショット機能は利用できません。"
+        "unavailable": "スナップショット機能は利用できません。",
+        "catalog_update_error": "テキストスナップショットタグを更新できませんでした。"
       }
     },
     "tasks": {

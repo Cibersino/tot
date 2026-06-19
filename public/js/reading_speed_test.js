@@ -39,7 +39,8 @@
   if (!snapshotTagCatalog
     || !Array.isArray(snapshotTagCatalog.LANGUAGE_OPTIONS)
     || !Array.isArray(snapshotTagCatalog.TYPE_OPTIONS)
-    || !Array.isArray(snapshotTagCatalog.DIFFICULTY_OPTIONS)) {
+    || !Array.isArray(snapshotTagCatalog.DIFFICULTY_OPTIONS)
+    || typeof snapshotTagCatalog.resolveTagLabel !== 'function') {
     throw new Error('[reading-speed-test] SnapshotTagCatalog unavailable; cannot continue');
   }
 
@@ -111,14 +112,9 @@
   // =============================================================================
   // Shared state
   // =============================================================================
-  const optionValueLookupByCategory = {
-    language: new Map(snapshotTagCatalog.LANGUAGE_OPTIONS.map((option) => [option.value, option])),
-    type: new Map(snapshotTagCatalog.TYPE_OPTIONS.map((option) => [option.value, option])),
-    difficulty: new Map(snapshotTagCatalog.DIFFICULTY_OPTIONS.map((option) => [option.value, option])),
-  };
-
   let onInteractionStateChanged = () => { };
   let onApplyWpm = () => { };
+  let getSettingsCache = () => ({});
   let previousFocus = null;
   let sessionState = { active: false, stage: 'idle', blocked: false };
   let poolEntries = [];
@@ -215,11 +211,16 @@
   }
 
   function getOptionLabel(category, value) {
-    const option = optionValueLookupByCategory[category].get(value);
-    if (option) {
-      return tRenderer(option.labelKey);
-    }
-    return value;
+    const settingsSnapshot = typeof getSettingsCache === 'function' ? getSettingsCache() : null;
+    const snapshotTagPreferences = settingsSnapshot && typeof settingsSnapshot === 'object'
+      ? (settingsSnapshot.snapshotTags || {})
+      : {};
+    return snapshotTagCatalog.resolveTagLabel(
+      category,
+      value,
+      snapshotTagPreferences,
+      { getDefaultLabel: (option) => tRenderer(option.labelKey) }
+    ) || value;
   }
 
   function sortOptionsForDisplay(category, options) {
@@ -921,9 +922,10 @@
   // =============================================================================
   // Public API
   // =============================================================================
-  function configure({ onLockChange, applyWpm } = {}) {
+  function configure({ onLockChange, applyWpm, getSettingsCache: nextGetSettingsCache } = {}) {
     onInteractionStateChanged = typeof onLockChange === 'function' ? onLockChange : () => { };
     onApplyWpm = typeof applyWpm === 'function' ? applyWpm : () => { };
+    getSettingsCache = typeof nextGetSettingsCache === 'function' ? nextGetSettingsCache : () => ({});
 
     if (!initialized) {
       initialized = true;

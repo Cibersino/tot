@@ -77,6 +77,7 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
   assert.equal(normalized.spellcheckEnabled, true);
   assert.equal(normalized.editorFontSizePx, 20);
   assert.deepEqual(normalized.presets_by_language.es, []);
+  assert.equal(Object.prototype.hasOwnProperty.call(normalized, 'snapshotTags'), false);
   assert.deepEqual(normalized.numberFormatting.es, {
     separadorMiles: '.',
     separadorDecimal: ',',
@@ -181,7 +182,7 @@ test('applyFallbackLanguageIfUnset persists a normalized fallback language', () 
   });
 });
 
-test('registerIpc decorates get-settings and settings-updated payloads without mutating persisted settings', async () => {
+test('registerIpc decorates get-settings and published payloads without mutating persisted settings', async () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
     language: 'ar',
@@ -201,7 +202,7 @@ test('registerIpc decorates get-settings and settings-updated payloads without m
     settingsFile: 'C:\\fake\\settings.json',
   });
 
-  settings.registerIpc(ipcMain, {
+  const settingsIpc = settings.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin: {
         isDestroyed() {
@@ -241,4 +242,13 @@ test('registerIpc decorates get-settings and settings-updated payloads without m
   assert.equal(sentPayloads[0].payload.spellcheckAvailable, false);
   assert.equal(settings.getSettings().spellcheckEnabled, false);
   assert.equal(Object.hasOwn(settings.getSettings(), 'spellcheckAvailable'), false);
+  assert.equal(typeof settingsIpc.publishCurrentSettings, 'function');
+
+  settingsIpc.publishCurrentSettings();
+
+  assert.equal(onSettingsUpdatedCalls.length, 2);
+  assert.equal(sentPayloads.length, 2);
+  assert.equal(sentPayloads[1].channel, 'settings-updated');
+  assert.equal(sentPayloads[1].payload.spellcheckEnabled, false);
+  assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
 });

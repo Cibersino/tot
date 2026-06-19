@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "Text-Snapshot speichern",
       "message": "Markieren Sie diesen Text-Snapshot optional, bevor Sie auswählen, wo er gespeichert werden soll.",
+      "search": {
+        "placeholder": "Tippen, um Optionen zu filtern",
+        "no_results": "Keine passenden Optionen",
+        "create": "\"{label}\" erstellen"
+      },
       "labels": {
         "language": "Sprache",
         "type": "Typ",
         "difficulty": "Schwierigkeit"
+      },
+      "manager": {
+        "title": "Text-Snapshot-Tags verwalten",
+        "message": "Verwalte die sichtbaren Tags für Text-Snapshots und Batch-Extraktionseinheiten.",
+        "done": "Fertig",
+        "close_aria": "Verwaltung der Text-Snapshot-Tags schließen",
+        "new_tag": "Neuer Tag",
+        "new_tag_placeholder": "Tag-Name",
+        "add_tag": "Tag hinzufügen",
+        "cancel_draft": "Abbrechen",
+        "sort_alphabetically": "A-Z sortieren",
+        "restore_hidden_defaults": "Standard-Tags wiederherstellen ({count})",
+        "empty_category": "Keine sichtbaren Tags in dieser Kategorie.",
+        "move_up": "\"{label}\" nach oben verschieben",
+        "move_down": "\"{label}\" nach unten verschieben",
+        "hide_default": "Standard-Tag \"{label}\" ausblenden",
+        "delete_custom": "Benutzerdefinierten Tag \"{label}\" löschen",
+        "confirm_hide_default": "Standard-Tag \"{label}\" ausblenden? Er wird aus der sichtbaren Tag-Liste entfernt und kann später wiederhergestellt werden.",
+        "confirm_delete_custom": "Benutzerdefinierten Tag \"{label}\" dauerhaft löschen? Vorhandene Text-Snapshots werden nicht neu geschrieben.",
+        "validation": {
+          "empty": "Der Tag-Name darf nicht leer sein.",
+          "control_characters": "Der Tag-Name darf keine Tabulatoren, Zeilenumbrüche oder andere Steuerzeichen enthalten.",
+          "too_long": "Der Tag-Name darf höchstens {max} Zeichen lang sein.",
+          "duplicate": "In dieser Kategorie gibt es bereits einen Tag mit diesem Namen."
+        }
       },
       "empty": {
         "language": "Kein Sprach-Tag",
@@ -348,6 +378,7 @@
         "difficulty": "Kein Schwierigkeits-Tag"
       },
       "buttons": {
+        "manage": "Tags verwalten",
         "confirm": "Text-Snapshot speichern",
         "cancel": "Abbrechen"
       },
@@ -402,7 +433,8 @@
         "load_error": "Snapshot konnte nicht geladen werden.",
         "outside": "Der Snapshot muss sich innerhalb des Snapshot-Ordners befinden.",
         "truncated": "Der Snapshot überschreitet die maximale Größe und wurde gekürzt.",
-        "unavailable": "Snapshot-Funktionalität nicht verfügbar."
+        "unavailable": "Snapshot-Funktionalität nicht verfügbar.",
+        "catalog_update_error": "Text-Snapshot-Tags konnten nicht aktualisiert werden."
       }
     },
     "tasks": {

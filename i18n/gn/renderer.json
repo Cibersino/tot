@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "Eñongatu jehai snapshot",
       "message": "Eñongatu hag̃ua renda reiporavo mboyve, ikatu emoĩ etiqueta ko jehai snapshot-pe.",
+      "search": {
+        "placeholder": "Ehai embogua hag̃ua opción-kuéra",
+        "no_results": "Ndaipóri opción ojueheguáva",
+        "create": "Ejapo \"{label}\""
+      },
       "labels": {
         "language": "Ñe’ẽ",
         "type": "Tipo",
         "difficulty": "Hasýkue"
+      },
+      "manager": {
+        "title": "Eñangareko snapshot de texto etiqueta-kuérare",
+        "message": "Eñangareko etiqueta ojehechávare ojeporúva snapshot de texto ha extracción por lotes unidad-kuérape.",
+        "done": "Oĩma",
+        "close_aria": "Emboty snapshot de texto etiqueta ñangarekoha",
+        "new_tag": "Etiqueta pyahu",
+        "new_tag_placeholder": "Etiqueta réra",
+        "add_tag": "Emoĩ etiqueta",
+        "cancel_draft": "Heja",
+        "sort_alphabetically": "Ordenar A-Z",
+        "restore_hidden_defaults": "Emyengovia jey etiqueta por defecto ({count})",
+        "empty_category": "Ndaipóri etiqueta ojehecháva ko categoría-pe.",
+        "move_up": "Ehupi \"{label}\"",
+        "move_down": "Emboguejy \"{label}\"",
+        "hide_default": "Emokañy etiqueta por defecto \"{label}\"",
+        "delete_custom": "Embogue etiqueta personalizada \"{label}\"",
+        "confirm_hide_default": "¿Emokañy etiqueta por defecto \"{label}\"? Ojeipe'áta lista de etiquetas ojehechávagui ha ikatúta oñemyengovia jey upe rire.",
+        "confirm_delete_custom": "¿Embogue tapiaite etiqueta personalizada \"{label}\"? Snapshot de texto oĩmava noñemoñe'ẽjeýmo'ãi.",
+        "validation": {
+          "empty": "Etiqueta réra ndaikatúi nandi.",
+          "control_characters": "Etiqueta réra ndaikatúi oguereko tabulación, salto de línea térã ambue control caracteres.",
+          "too_long": "Etiqueta réra ndaikatúi ohasa {max} caracteres.",
+          "duplicate": "Ko categoría-pe oĩma etiqueta upe téra reheve."
+        }
       },
       "empty": {
         "language": "Ñe’ẽ etiqueta’ỹre",
@@ -348,6 +378,7 @@
         "difficulty": "Hasýkue etiqueta’ỹre"
       },
       "buttons": {
+        "manage": "Eñangareko etiqueta-kuérare",
         "confirm": "Eñongatu jehai snapshot",
         "cancel": "Eheja"
       },
@@ -402,7 +433,8 @@
         "load_error": "Ndaikatúi oñemyanyhẽ snapshot.",
         "outside": "Snapshot oĩva’erã snapshots carpeta ryepýpe.",
         "truncated": "Snapshot ohasa tuichakue máximo ha oñekytĩ.",
-        "unavailable": "Snapshot función ndojepurukuaái."
+        "unavailable": "Snapshot función ndojepurukuaái.",
+        "catalog_update_error": "Ndaikatúi oñembopyahu snapshot de texto etiqueta-kuéra."
       }
     },
     "tasks": {

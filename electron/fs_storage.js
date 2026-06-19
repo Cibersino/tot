@@ -94,6 +94,10 @@ function getSettingsFile() {
   return path.join(getConfigDir(), 'user_settings.json');
 }
 
+function getSnapshotTagsFile() {
+  return path.join(getConfigDir(), 'snapshot_tags.json');
+}
+
 function getCurrentTextFile() {
   return path.join(getConfigDir(), 'current_text.json');
 }
@@ -235,6 +239,9 @@ const LOAD_JSON_FILE_METADATA = Object.freeze({
   'user_settings.json': {
     missingNote: ' (note: may be normal on first run; file is created during startup)',
   },
+  'snapshot_tags.json': {
+    missingNote: ' (note: may be normal on first run; file is created during startup)',
+  },
   'editor_state.json': {
     missingNote: ' (note: may be normal on first run; file is created when Text Editor window is opened for the first time)',
   },
@@ -310,6 +317,7 @@ module.exports = {
   getConfigPresetsDir,
   getCurrentTextSnapshotsDir,
   getSettingsFile,
+  getSnapshotTagsFile,
   getCurrentTextFile,
   getEditorStateFile,
 
@@ -341,4 +349,3 @@ module.exports = {
 // =============================================================================
 // End of electron/fs_storage.js
 // =============================================================================
-

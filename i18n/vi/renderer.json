@@ -337,10 +337,40 @@
     "snapshots": {
       "title": "Lưu bản lưu văn bản",
       "message": "Bạn có thể gắn thẻ tùy chọn cho bản lưu văn bản này trước khi chọn nơi lưu.",
+      "search": {
+        "placeholder": "Nhập để lọc tùy chọn",
+        "no_results": "Không có tùy chọn phù hợp",
+        "create": "Tạo \"{label}\""
+      },
       "labels": {
         "language": "Ngôn ngữ",
         "type": "Loại",
         "difficulty": "Độ khó"
+      },
+      "manager": {
+        "title": "Quản lý thẻ snapshot văn bản",
+        "message": "Quản lý các thẻ hiển thị được dùng cho snapshot văn bản và đơn vị trích xuất hàng loạt.",
+        "done": "Xong",
+        "close_aria": "Đóng trình quản lý thẻ snapshot văn bản",
+        "new_tag": "Thẻ mới",
+        "new_tag_placeholder": "Tên thẻ",
+        "add_tag": "Thêm thẻ",
+        "cancel_draft": "Hủy",
+        "sort_alphabetically": "Sắp xếp A-Z",
+        "restore_hidden_defaults": "Khôi phục thẻ mặc định ({count})",
+        "empty_category": "Không có thẻ hiển thị trong danh mục này.",
+        "move_up": "Di chuyển \"{label}\" lên",
+        "move_down": "Di chuyển \"{label}\" xuống",
+        "hide_default": "Ẩn thẻ mặc định \"{label}\"",
+        "delete_custom": "Xóa thẻ tùy chỉnh \"{label}\"",
+        "confirm_hide_default": "Ẩn thẻ mặc định \"{label}\"? Thẻ này sẽ bị xóa khỏi danh sách thẻ hiển thị và có thể được khôi phục sau.",
+        "confirm_delete_custom": "Xóa vĩnh viễn thẻ tùy chỉnh \"{label}\"? Các snapshot văn bản hiện có sẽ không được ghi lại.",
+        "validation": {
+          "empty": "Tên thẻ không được để trống.",
+          "control_characters": "Tên thẻ không được chứa tab, ngắt dòng hoặc ký tự điều khiển khác.",
+          "too_long": "Tên thẻ không được vượt quá {max} ký tự.",
+          "duplicate": "Đã có thẻ với tên đó trong danh mục này."
+        }
       },
       "empty": {
         "language": "Không có thẻ ngôn ngữ",
@@ -348,6 +378,7 @@
         "difficulty": "Không có thẻ độ khó"
       },
       "buttons": {
+        "manage": "Quản lý thẻ",
         "confirm": "Lưu bản lưu văn bản",
         "cancel": "Hủy"
       },
@@ -402,7 +433,8 @@
         "load_error": "Không thể tải bản lưu.",
         "outside": "Bản lưu phải nằm trong thư mục bản lưu.",
         "truncated": "Bản lưu vượt quá kích thước tối đa và đã bị cắt bớt.",
-        "unavailable": "Chức năng bản lưu không khả dụng."
+        "unavailable": "Chức năng bản lưu không khả dụng.",
+        "catalog_update_error": "Không thể cập nhật thẻ snapshot văn bản."
       }
     },
     "tasks": {

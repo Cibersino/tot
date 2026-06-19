@@ -454,9 +454,14 @@
       <div class="snapshot-save-tags-modal-panel" role="document" aria-describedby="snapshotSaveTagsModalMessage">
         <header class="snapshot-save-tags-modal-header">
           <h2 id="snapshotSaveTagsModalTitle">Guardar snapshot de texto</h2>
-          <button id="snapshotSaveTagsModalClose" class="btn-standard" type="button"
-            aria-label="Cerrar diálogo para guardar snapshot de texto" data-tot-icon="close"
-            data-tot-icon-size="sm"></button>
+          <div class="snapshot-save-tags-modal-header-actions">
+            <button id="snapshotSaveTagsManageButton" class="btn-standard" type="button"
+              aria-label="Gestionar etiquetas de snapshots" title="Gestionar etiquetas">Gestionar
+              etiquetas</button>
+            <button id="snapshotSaveTagsModalClose" class="btn-standard" type="button"
+              aria-label="Cerrar diálogo para guardar snapshot de texto" data-tot-icon="close"
+              data-tot-icon-size="sm"></button>
+          </div>
         </header>
         <div class="snapshot-save-tags-modal-body">
           <p id="snapshotSaveTagsModalMessage">Etiqueta opcionalmente este snapshot de texto antes de elegir dónde
@@ -500,6 +505,26 @@
             <button id="snapshotSaveTagsModalConfirm" class="btn-standard" type="button">Guardar snapshot de
               texto</button>
             <button id="snapshotSaveTagsModalCancel" class="btn-standard" type="button">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="snapshotTagManagerModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="snapshotTagManagerModalTitle" aria-modal="true">
+      <div id="snapshotTagManagerModalBackdrop" class="info-modal-backdrop"></div>
+      <div class="snapshot-tag-manager-modal-panel" role="document" aria-describedby="snapshotTagManagerModalMessage">
+        <header class="snapshot-tag-manager-modal-header">
+          <h2 id="snapshotTagManagerModalTitle">Gestionar etiquetas de snapshots</h2>
+          <button id="snapshotTagManagerModalClose" class="btn-standard" type="button"
+            aria-label="Cerrar gestor de etiquetas de snapshots" data-tot-icon="close"
+            data-tot-icon-size="sm"></button>
+        </header>
+        <div class="snapshot-tag-manager-modal-body">
+          <p id="snapshotTagManagerModalMessage">Gestiona las etiquetas visibles para idioma, tipo y dificultad.</p>
+          <div id="snapshotTagManagerModalContent" class="snapshot-tag-manager-modal-content"></div>
+          <div class="snapshot-tag-manager-modal-actions">
+            <button id="snapshotTagManagerModalDone" class="btn-standard" type="button">Listo</button>
           </div>
         </div>
       </div>
