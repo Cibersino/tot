@@ -521,10 +521,7 @@ function maybeUnblockReady() {
   if (startupSplash && typeof startupSplash.remove === 'function') {
     startupSplash.remove();
   } else {
-    log.warnOnce(
-      'BOOTSTRAP:renderer.startup.splash.missing',
-      'Startup splash element missing; proceeding to READY.'
-    );
+    log.warn('BOOTSTRAP: Startup splash element missing; proceeding to READY.');
   }
 
   sendSplashRemoved();
@@ -535,9 +532,8 @@ function maybeUnblockReady() {
 function markRendererInvariantsReady() {
   if (rendererInvariantsReady) return;
   if (!ipcSubscriptionsArmed || !uiListenersArmed) {
-    log.warnOnce(
-      'BOOTSTRAP:renderer.startup.invariants.incomplete',
-      'Renderer invariants marked ready before all listeners/subscriptions were armed.',
+    log.warn(
+      'BOOTSTRAP: Renderer invariants marked ready before all listeners/subscriptions were armed.',
       { ipcSubscriptionsArmed, uiListenersArmed }
     );
   }
@@ -610,18 +606,12 @@ function applyTranslations() {
   if (mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
     mainLogoLinks.applyTranslations({ tRenderer });
   } else {
-    log.warnOnce(
-      'renderer.mainLogoLinks.applyTranslations.unavailable',
-      'MainLogoLinks.applyTranslations unavailable; brand logo labels will use defaults.'
-    );
+    log.warn('MainLogoLinks.applyTranslations unavailable; brand logo labels will use defaults.');
   }
   if (browserExtensionModal && typeof browserExtensionModal.applyTranslations === 'function') {
     browserExtensionModal.applyTranslations();
   } else {
-    log.warnOnce(
-      'renderer.browserExtensionModal.applyTranslations.unavailable',
-      'BrowserExtensionModal.applyTranslations unavailable; browser extension labels will use defaults.'
-    );
+    log.warn('BrowserExtensionModal.applyTranslations unavailable; browser extension labels will use defaults.');
   }
   const infoModalLoading = document.getElementById('infoModalLoading');
   if (infoModalLoading) {
@@ -695,10 +685,7 @@ function applyTranslations() {
 // =============================================================================
 const { saveSnapshot, loadSnapshot } = window.CurrentTextSnapshots || {};
 if (typeof saveSnapshot !== 'function' || typeof loadSnapshot !== 'function') {
-  log.warnOnce(
-    'renderer.bridge.CurrentTextSnapshots.unavailable',
-    'CurrentTextSnapshots bridge unavailable; snapshot actions disabled.'
-  );
+  log.warn('CurrentTextSnapshots bridge unavailable; snapshot actions disabled.');
 }
 
 // =============================================================================
@@ -769,10 +756,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
     }
   });
 } else if (window.electronAPI) {
-  log.warnOnce(
-    'renderer.ipc.onCronoState.unavailable',
-    'onCronoState unavailable; crono state will not sync.'
-  );
+  log.warn('onCronoState unavailable; crono state will not sync.');
 }
 
 // =============================================================================
@@ -815,11 +799,7 @@ const settingsChangeHandler = async (newSettings) => {
       try {
         await loadRendererTranslations(idiomaActual);
       } catch (err) {
-        log.warnOnce(
-          'renderer.loadRendererTranslations',
-          `loadRendererTranslations(${idiomaActual}) failed (ignored):`,
-          err
-        );
+        log.warn(`loadRendererTranslations(${idiomaActual}) failed (ignored):`, err);
       }
       try {
         applyTranslations();
@@ -896,10 +876,7 @@ function armIpcSubscriptions() {
   if (window.electronAPI && typeof window.electronAPI.onPresetCreated === 'function') {
     window.electronAPI.onPresetCreated(async (preset) => {
       if (!isRendererReady()) {
-        log.warnOnce(
-          'BOOTSTRAP:renderer.preReady.presetCreated',
-          'preset-created received pre-READY; ignored.'
-        );
+        log.warn('BOOTSTRAP: preset-created received pre-READY; ignored.');
         return;
       }
       try {
@@ -920,10 +897,7 @@ function armIpcSubscriptions() {
       }
     });
   } else if (window.electronAPI) {
-    log.warnOnce(
-      'renderer.ipc.onPresetCreated.unavailable',
-      'onPresetCreated unavailable; preset updates will not sync.'
-    );
+    log.warn('onPresetCreated unavailable; preset updates will not sync.');
   }
 
   if (window.electronAPI) {
@@ -946,10 +920,7 @@ function armIpcSubscriptions() {
     if (typeof window.electronAPI.onSettingsChanged === 'function') {
       window.electronAPI.onSettingsChanged(settingsChangeHandler);
     } else {
-      log.warnOnce(
-        'renderer.ipc.onSettingsChanged.unavailable',
-        'onSettingsChanged unavailable; settings updates will not sync.'
-      );
+      log.warn('onSettingsChanged unavailable; settings updates will not sync.');
     }
 
     if (typeof window.electronAPI.onTextExtractionProcessingModeChanged === 'function') {
@@ -962,10 +933,7 @@ function armIpcSubscriptions() {
         }
       });
     } else {
-      log.warnOnce(
-        'renderer.ipc.onTextExtractionProcessingModeChanged.unavailable',
-        'onTextExtractionProcessingModeChanged unavailable; processing lock updates will not sync.'
-      );
+      log.warn('onTextExtractionProcessingModeChanged unavailable; processing lock updates will not sync.');
     }
 
     if (typeof window.electronAPI.onCurrentTextProcessingStateChanged === 'function') {
@@ -990,10 +958,7 @@ function armIpcSubscriptions() {
         handleEditorFirstShowState(payload);
       });
     } else {
-      log.warnOnce(
-        'renderer.ipc.onEditorFirstShowState.unavailable',
-        'onEditorFirstShowState unavailable; Text Editor loader may not clear.'
-      );
+      log.warn('onEditorFirstShowState unavailable; Text Editor loader may not clear.');
     }
   } else {
     throw new Error('[renderer] electronAPI unavailable; cannot bootstrap renderer readiness');
@@ -1056,10 +1021,7 @@ function setupToggleModoPreciso() {
             }
           }
         } else if (window.electronAPI) {
-          log.warnOnce(
-            'renderer.ipc.setModeConteo.unavailable',
-            'setModeConteo unavailable; mode persistence skipped.'
-          );
+          log.warn('setModeConteo unavailable; mode persistence skipped.');
           setModoConteo(previousModo);
           toggleModoPreciso.checked = (previousModo === 'preciso');
           toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
@@ -1089,7 +1051,7 @@ function setupToggleModoPreciso() {
     try {
       syncToggleFromSettings(settingsCache || {});
     } catch (err) {
-      log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', 'syncToggleFromSettings failed (ignored):', err);
+      log.warn('BOOTSTRAP: syncToggleFromSettings failed (ignored):', err);
     }
   } catch (err) {
     log.error('Error initializing toggleModoPreciso:', err);
@@ -1262,7 +1224,7 @@ async function runStartupOrchestrator() {
       try {
         syncToggleFromSettings(settingsSnapshot || {});
       } catch (err) {
-        log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', 'syncToggleFromSettings failed (ignored):', err);
+        log.warn('BOOTSTRAP: syncToggleFromSettings failed (ignored):', err);
       }
     }
 
@@ -1368,7 +1330,7 @@ async function hydrateAboutVersion(container) {
   const unavailableText = tRenderer('renderer.info.acerca_de.version.unavailable');
 
   if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
-    log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
+    log.warn('getAppVersion not available for About modal.');
     versionEl.textContent = unavailableText;
     return;
   }
@@ -1377,10 +1339,7 @@ async function hydrateAboutVersion(container) {
     const version = await window.electronAPI.getAppVersion();
     const cleaned = typeof version === 'string' ? version.trim() : '';
     if (!cleaned) {
-      log.warnOnce(
-        'renderer.info.acerca_de.version.empty',
-        'getAppVersion returned empty; About modal shows N/A.'
-      );
+      log.warn('getAppVersion returned empty; About modal shows N/A.');
       versionEl.textContent = unavailableText;
       return;
     }
@@ -1414,7 +1373,7 @@ async function hydrateAboutEnvironment(container) {
   };
 
   if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
-    log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
+    log.warn('getAppRuntimeInfo not available for About modal.');
     applyUnavailableEnvironmentState();
     return;
   }
@@ -1444,10 +1403,7 @@ async function hydrateAboutEnvironment(container) {
       || '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
 
     if (!osLabel || !arch) {
-      log.warnOnce(
-        'renderer.info.acerca_de.env.missing_fields',
-        'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
-      );
+      log.warn('getAppRuntimeInfo missing platform/arch; About modal shows N/A.');
       applyUnavailableEnvironmentState({ includeSharpRuntimeNames: true });
       return;
     }
@@ -1547,11 +1503,7 @@ async function showInfoModal(key) {
     const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
     sectionId = mapping[key] || 'instrucciones';
   } else {
-    log.warnOnce(
-      'renderer.info.unsupportedKey',
-      'showInfoModal received unsupported key:',
-      key
-    );
+    log.warn('showInfoModal received unsupported key:', key);
     return;
   }
 
@@ -1589,10 +1541,7 @@ async function showInfoModal(key) {
   if (typeof bindInfoModalLinks === 'function') {
     bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
   } else {
-    log.warnOnce(
-      'renderer.info.bindInfoModalLinks.unavailable',
-      'InfoModalLinks.bindInfoModalLinks unavailable; modal links will use default behavior.'
-    );
+    log.warn('InfoModalLinks.bindInfoModalLinks unavailable; modal links will use default behavior.');
   }
   if (key === 'acerca_de') {
     await hydrateAboutVersion(infoModalContent);
@@ -1675,10 +1624,7 @@ function registerMenuActions() {
     registerMenuActionGuarded('presets_por_defecto', async () => {
       try {
         if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== 'function') {
-          log.warnOnce(
-            'renderer.ipc.openDefaultPresetsFolder.unavailable',
-            'openDefaultPresetsFolder unavailable at electronAPI; action skipped.'
-          );
+          log.warn('openDefaultPresetsFolder unavailable at electronAPI; action skipped.');
           window.Notify.notifyMain('renderer.presets.alerts.open_folder_unsupported');
           return;
         }
@@ -1702,10 +1648,7 @@ function registerMenuActions() {
     registerMenuActionGuarded('enable_google_ocr', async () => {
       if (!textExtractionOcrActivation
         || typeof textExtractionOcrActivation.startFromPreferencesMenu !== 'function') {
-        log.warnOnce(
-          'renderer.textExtraction.ocrActivation.entrypoint.unavailable',
-          'TextExtractionOcrActivation.startFromPreferencesMenu unavailable; menu action skipped.'
-        );
+        log.warn('TextExtractionOcrActivation.startFromPreferencesMenu unavailable; menu action skipped.');
         window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
         return;
       }
@@ -1715,10 +1658,7 @@ function registerMenuActions() {
     registerMenuActionGuarded('disconnect_google_ocr', async () => {
       if (!textExtractionOcrDisconnect
         || typeof textExtractionOcrDisconnect.startFromPreferencesMenu !== 'function') {
-        log.warnOnce(
-          'renderer.textExtraction.ocrDisconnect.entrypoint.unavailable',
-          'TextExtractionOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.'
-        );
+        log.warn('TextExtractionOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.');
         window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.disconnect_failed');
         return;
       }
@@ -1932,10 +1872,7 @@ function configureTextExtractionModules() {
       getOptionalElectronMethod,
     });
   } else {
-    log.warnOnce(
-      'renderer.textExtraction.ocrActivationFlow.unavailable',
-      'TextExtractionOcrActivationFlow.configure unavailable; OCR activation flows will be disabled.'
-    );
+    log.warn('TextExtractionOcrActivationFlow.configure unavailable; OCR activation flows will be disabled.');
   }
 
   if (textExtractionOcrActivation
@@ -1944,10 +1881,7 @@ function configureTextExtractionModules() {
       ocrActivationFlow: textExtractionOcrActivationFlow,
     });
   } else {
-    log.warnOnce(
-      'renderer.textExtraction.ocrActivation.unavailable',
-      'TextExtractionOcrActivation.configure unavailable; Preferences > Enable Google OCR will be disabled.'
-    );
+    log.warn('TextExtractionOcrActivation.configure unavailable; Preferences > Enable Google OCR will be disabled.');
   }
 
   if (textExtractionOcrActivationRecovery
@@ -1956,10 +1890,7 @@ function configureTextExtractionModules() {
       ocrActivationFlow: textExtractionOcrActivationFlow,
     });
   } else {
-    log.warnOnce(
-      'renderer.textExtraction.ocrActivationRecovery.configure.unavailable',
-      'TextExtractionOcrActivationRecovery.configure unavailable; OCR setup recovery will be disabled.'
-    );
+    log.warn('TextExtractionOcrActivationRecovery.configure unavailable; OCR setup recovery will be disabled.');
   }
 
   textExtractionBatchFlow.configure({
@@ -2004,10 +1935,7 @@ function configureTextExtractionModules() {
       getOptionalElectronMethod,
     });
   } else {
-    log.warnOnce(
-      'renderer.textExtraction.ocrDisconnect.unavailable',
-      'TextExtractionOcrDisconnect.configure unavailable; Preferences > Disconnect Google OCR will be disabled.'
-    );
+    log.warn('TextExtractionOcrDisconnect.configure unavailable; Preferences > Disconnect Google OCR will be disabled.');
   }
 }
 
@@ -2020,10 +1948,7 @@ function initializeDelegatedIntegrations() {
       hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     });
   } else {
-    log.warnOnce(
-      'renderer.browserExtensionModal.configure.unavailable',
-      'BrowserExtensionModal.configure unavailable; browser extension entry disabled.'
-    );
+    log.warn('BrowserExtensionModal.configure unavailable; browser extension entry disabled.');
   }
 
   if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
@@ -2031,10 +1956,7 @@ function initializeDelegatedIntegrations() {
     return;
   }
 
-  log.warnOnce(
-    'renderer.mainLogoLinks.bindBrandLinks.unavailable',
-    'MainLogoLinks.bindBrandLinks unavailable; brand logo links disabled.'
-  );
+  log.warn('MainLogoLinks.bindBrandLinks unavailable; brand logo links disabled.');
 }
 
 // Text Editor launch state mirrors the pending UI while the Text Editor window opens.
@@ -2050,10 +1972,7 @@ function hideEditorLoader() {
 
 function handleEditorFirstShowState(payload) {
   if (!isRendererReady()) {
-    log.warnOnce(
-      'BOOTSTRAP:renderer.preReady.editorFirstShowState',
-      'editor-first-show-state received pre-READY; ignored.'
-    );
+    log.warn('BOOTSTRAP: editor-first-show-state received pre-READY; ignored.');
     return;
   }
 
@@ -2267,10 +2186,7 @@ async function handleClearText() {
 async function handleLoadSnapshot() {
   if (!guardUserAction('snapshot-load')) return;
   if (typeof loadSnapshot !== 'function') {
-    log.warnOnce(
-      'renderer.snapshot.load.unavailable',
-      'loadSnapshot unavailable; snapshot-load action skipped.'
-    );
+    log.warn('loadSnapshot unavailable; snapshot-load action skipped.');
     return;
   }
   try {
@@ -2283,10 +2199,7 @@ async function handleLoadSnapshot() {
 async function handleSaveSnapshot() {
   if (!guardUserAction('snapshot-save')) return;
   if (typeof saveSnapshot !== 'function') {
-    log.warnOnce(
-      'renderer.snapshot.save.unavailable',
-      'saveSnapshot unavailable; snapshot-save action skipped.'
-    );
+    log.warn('saveSnapshot unavailable; snapshot-save action skipped.');
     return;
   }
   try {
@@ -2411,10 +2324,7 @@ async function handleOpenReadingSpeedTest() {
 // dialogs are handled by main.
 async function openPresetModalFromMain(payload) {
   if (!window.electronAPI || typeof window.electronAPI.openPresetModal !== 'function') {
-    log.warnOnce(
-      'renderer.ipc.openPresetModal.unavailable',
-      'openPresetModal unavailable in electronAPI; preset-modal action skipped.'
-    );
+    log.warn('openPresetModal unavailable in electronAPI; preset-modal action skipped.');
     window.Notify.notifyMain('renderer.presets.alerts.unavailable');
     return;
   }
@@ -2460,7 +2370,7 @@ function bindPresetActions() {
       try {
         log.debug('openPresetModal payload:', payload);
       } catch (err) {
-        log.warnOnce('log.debug.openPresetModal', 'log.debug failed (ignored):', err);
+        log.warn('log.debug failed (ignored):', err);
       }
       await openPresetModalFromMain(payload);
     } catch (err) {
