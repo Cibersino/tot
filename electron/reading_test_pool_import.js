@@ -526,7 +526,12 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
           .filter(Boolean);
         const stateUpdate = readingTestPool.clearImportedPoolEntriesState(importedSnapshotRelPaths);
         if (!stateUpdate || stateUpdate.ok !== true) {
-          log.warn('Reading-test import state update failed (ignored):', stateUpdate);
+          log.warn('Reading-test import state update failed after file import:', stateUpdate);
+          return {
+            ...result,
+            partialSuccess: true,
+            warningGuidanceKey: 'renderer.reading_test.alerts.pool_import_state_cleanup_failed',
+          };
         }
       }
 

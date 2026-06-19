@@ -26,6 +26,7 @@ const {
   getReadingTestPoolStateFile,
   loadJson,
   saveJson,
+  saveJsonStrict,
 } = require('./fs_storage');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const readingTestQuestionsCore = require('../public/js/lib/reading_test_questions_core');
@@ -257,6 +258,22 @@ function savePoolState(state, { stateFilePath } = {}) {
   saveJson(targetStateFile, normalizePoolState(state));
 }
 
+function savePoolStateStrict(state, { stateFilePath } = {}) {
+  const targetStateFile = typeof stateFilePath === 'string' && stateFilePath.trim()
+    ? path.resolve(stateFilePath)
+    : path.resolve(getReadingTestPoolStateFile());
+  try {
+    saveJsonStrict(targetStateFile, normalizePoolState(state));
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      code: 'WRITE_FAILED',
+      message: String(err),
+    };
+  }
+}
+
 function getShowBundledEntries(options = {}) {
   return loadPoolState(options).showBundledEntries;
 }
@@ -276,7 +293,7 @@ function setShowBundledEntries(nextValue, options = {}) {
   };
 }
 
-function updatePoolStateEntry(snapshotRelPath, updater, options = {}) {
+function updatePoolStateEntryStrict(snapshotRelPath, updater, options = {}) {
   const normalizedPath = normalizeSnapshotRelPath(snapshotRelPath);
   if (!normalizedPath || typeof updater !== 'function') {
     return { ok: false, code: 'INVALID_STATE_UPDATE' };
@@ -290,7 +307,10 @@ function updatePoolStateEntry(snapshotRelPath, updater, options = {}) {
   }
 
   state.entries[normalizedPath] = normalizePoolStateEntry(nextEntry);
-  savePoolState(state, options);
+  const saveInfo = savePoolStateStrict(state, options);
+  if (!saveInfo.ok) {
+    return saveInfo;
+  }
   return {
     ok: true,
     state,
@@ -299,7 +319,7 @@ function updatePoolStateEntry(snapshotRelPath, updater, options = {}) {
 }
 
 function markPoolEntryUsed(snapshotRelPath, nextValue, options = {}) {
-  return updatePoolStateEntry(snapshotRelPath, (entry) => ({
+  return updatePoolStateEntryStrict(snapshotRelPath, (entry) => ({
     ...entry,
     used: nextValue === true,
   }), options);
@@ -323,7 +343,10 @@ function clearImportedPoolEntriesState(snapshotRelPaths, options = {}) {
     updated += 1;
   }
 
-  savePoolState(state, options);
+  const saveInfo = savePoolStateStrict(state, options);
+  if (!saveInfo.ok) {
+    return saveInfo;
+  }
   return { ok: true, updated };
 }
 
@@ -339,7 +362,10 @@ function resetPoolUsageState(options = {}) {
       used: false,
     };
   }
-  savePoolState(state, options);
+  const saveInfo = savePoolStateStrict(state, options);
+  if (!saveInfo.ok) {
+    return saveInfo;
+  }
   return {
     ok: true,
     updated,

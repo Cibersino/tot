@@ -144,6 +144,7 @@
     settings = {},
     language = DEFAULT_LANG,
     currentPresetName = null,
+    previousPresetName = null,
     selectEl,
     presetDescription,
     electronAPI
@@ -156,6 +157,14 @@
       typeof selectedByLanguage[langBase] === 'string'
         ? selectedByLanguage[langBase].trim()
         : '';
+    const persistedSelection = persisted
+      ? list.find(p => p.name === persisted) || null
+      : null;
+    const rollbackSelection =
+      (typeof previousPresetName === 'string' && previousPresetName.trim()
+        ? list.find(p => p.name === previousPresetName.trim()) || null
+        : null)
+      || persistedSelection;
     const trimmedCurrent = typeof currentPresetName === 'string' ? currentPresetName.trim() : '';
     const selectedName = persisted || trimmedCurrent;
     if (!selectedName) {
@@ -188,14 +197,27 @@
 
     try {
       if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
-        await electronAPI.setSelectedPreset(selected.name);
+        const persistResult = await electronAPI.setSelectedPreset(selected.name);
+        if (
+          persistResult
+          && typeof persistResult.ok === 'boolean'
+          && persistResult.ok !== true
+        ) {
+          throw new Error(
+            persistResult.error
+              ? String(persistResult.error)
+              : 'Selection persistence returned non-ok result.'
+          );
+        }
       } else {
-        log.warn(
-          '[presets] Selection persistence failed (ignored): electronAPI.setSelectedPreset unavailable.'
-        );
+        throw new Error('electronAPI.setSelectedPreset unavailable.');
       }
     } catch (err) {
-      log.warn('Selection persistence failed (ignored):', err);
+      log.warn('Selection persistence failed:', err);
+      if (rollbackSelection && rollbackSelection.name !== selected.name) {
+        applyPresetSelection(rollbackSelection, { selectEl, presetDescription });
+        return rollbackSelection;
+      }
     }
 
     return selected;

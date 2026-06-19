@@ -7,7 +7,9 @@
 // Own persisted editable snapshot-tag preferences under config/snapshot_tags.json.
 // - Load and normalize the persisted preference schema.
 // - Keep the latest normalized snapshot-tag preferences in memory.
-// - Persist normalized preferences through injected JSON helpers.
+// - Persist normalized preferences through injected JSON helpers:
+//   - best-effort normalization/repair through saveJson(...)
+//   - verified user-triggered mutations through saveJsonStrict(...)
 // - Own the dedicated snapshot-tag IPC contract.
 // - Request a settings publish through the existing settings owner after writes.
 // =============================================================================
@@ -20,6 +22,7 @@ log.debug('Snapshot tag settings starting...');
 
 let _loadJson = null;
 let _saveJson = null;
+let _saveJsonStrict = null;
 let _snapshotTagsFile = null;
 let _currentSnapshotTagPreferences = null;
 
@@ -46,6 +49,12 @@ function assertInitialized(apiName) {
   }
 }
 
+function assertStrictInitialized(apiName) {
+  if (!_saveJsonStrict || !_snapshotTagsFile) {
+    throw new Error(`[snapshot-tag-settings] ${apiName} called before init`);
+  }
+}
+
 function loadSnapshotTagPreferencesFromDisk() {
   assertInitialized('loadSnapshotTagPreferencesFromDisk');
 
@@ -57,18 +66,24 @@ function loadSnapshotTagPreferencesFromDisk() {
   return _currentSnapshotTagPreferences;
 }
 
-function saveSnapshotTagPreferences(nextSnapshotTags) {
-  assertInitialized('saveSnapshotTagPreferences');
+function saveSnapshotTagPreferencesStrict(nextSnapshotTags) {
+  assertStrictInitialized('saveSnapshotTagPreferencesStrict');
 
-  _currentSnapshotTagPreferences = normalizeSnapshotTagPreferences(nextSnapshotTags);
-  _saveJson(_snapshotTagsFile, _currentSnapshotTagPreferences);
-
+  const normalizedSnapshotTags = normalizeSnapshotTagPreferences(nextSnapshotTags);
+  _saveJsonStrict(_snapshotTagsFile, normalizedSnapshotTags);
+  _currentSnapshotTagPreferences = normalizedSnapshotTags;
   return _currentSnapshotTagPreferences;
 }
 
-function init({ loadJson, saveJson, snapshotTagsFile }) {
-  if (typeof loadJson !== 'function' || typeof saveJson !== 'function') {
-    throw new Error('[snapshot-tag-settings] init requires loadJson and saveJson');
+function init({ loadJson, saveJson, saveJsonStrict, snapshotTagsFile }) {
+  if (
+    typeof loadJson !== 'function'
+    || typeof saveJson !== 'function'
+    || typeof saveJsonStrict !== 'function'
+  ) {
+    throw new Error(
+      '[snapshot-tag-settings] init requires loadJson, saveJson, and saveJsonStrict'
+    );
   }
   if (!snapshotTagsFile) {
     throw new Error('[snapshot-tag-settings] init requires snapshotTagsFile');
@@ -76,6 +91,7 @@ function init({ loadJson, saveJson, snapshotTagsFile }) {
 
   _loadJson = loadJson;
   _saveJson = saveJson;
+  _saveJsonStrict = saveJsonStrict;
   _snapshotTagsFile = snapshotTagsFile;
 
   const snapshotTags = loadSnapshotTagPreferencesFromDisk();
@@ -136,7 +152,7 @@ function registerIpc(
         return { ok: true, snapshotTags: currentSnapshotTags };
       }
 
-      const savedSnapshotTags = saveSnapshotTagPreferences(nextSnapshotTags);
+      const savedSnapshotTags = saveSnapshotTagPreferencesStrict(nextSnapshotTags);
       if (typeof publishSettingsUpdate === 'function') {
         try {
           publishSettingsUpdate();

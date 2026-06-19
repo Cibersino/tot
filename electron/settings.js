@@ -85,6 +85,7 @@ function isPlainObjectRecord(value) {
 // Dependencies injected from main.js (centralized file I/O).
 let _loadJson = null;
 let _saveJson = null;
+let _saveJsonStrict = null;
 let _settingsFile = null;
 
 // Last normalized settings kept in memory.
@@ -391,6 +392,25 @@ function normalizeSettings(settings) {
   return settings;
 }
 
+function cloneSettingsForMutation(settings) {
+  const source = isPlainObjectRecord(settings) ? settings : createDefaultSettings();
+  return {
+    ...source,
+    presets_by_language: isPlainObjectRecord(source.presets_by_language)
+      ? { ...source.presets_by_language }
+      : {},
+    selected_preset_by_language: isPlainObjectRecord(source.selected_preset_by_language)
+      ? { ...source.selected_preset_by_language }
+      : {},
+    numberFormatting: isPlainObjectRecord(source.numberFormatting)
+      ? { ...source.numberFormatting }
+      : {},
+    disabled_default_presets: isPlainObjectRecord(source.disabled_default_presets)
+      ? { ...source.disabled_default_presets }
+      : {},
+  };
+}
+
 // =============================================================================
 // State API: init / getSettings / saveSettings
 // =============================================================================
@@ -399,9 +419,13 @@ function normalizeSettings(settings) {
  * - Stores injected dependencies and settings file path.
  * - Loads, normalizes, caches, and persists settings once on startup.
  */
-function init({ loadJson, saveJson, settingsFile }) {
-  if (typeof loadJson !== 'function' || typeof saveJson !== 'function') {
-    throw new Error('[settings] init requires loadJson and saveJson');
+function init({ loadJson, saveJson, saveJsonStrict, settingsFile }) {
+  if (
+    typeof loadJson !== 'function'
+    || typeof saveJson !== 'function'
+    || typeof saveJsonStrict !== 'function'
+  ) {
+    throw new Error('[settings] init requires loadJson, saveJson, and saveJsonStrict');
   }
   if (!settingsFile) {
     throw new Error('[settings] init requires settingsFile');
@@ -409,6 +433,7 @@ function init({ loadJson, saveJson, settingsFile }) {
 
   _loadJson = loadJson;
   _saveJson = saveJson;
+  _saveJsonStrict = saveJsonStrict;
   _settingsFile = settingsFile;
 
   const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
@@ -450,7 +475,7 @@ function saveSettings(nextSettings) {
     throw new Error('[settings] saveSettings called before init');
   }
 
-  const normalizedSettings = normalizeSettings(nextSettings);
+  const normalizedSettings = normalizeSettings(cloneSettingsForMutation(nextSettings));
   _currentSettings = normalizedSettings;
 
   try {
@@ -464,6 +489,18 @@ function saveSettings(nextSettings) {
     );
   }
 
+  return _currentSettings;
+}
+
+function saveSettingsStrict(nextSettings) {
+  if (!nextSettings) return getSettings();
+  if (!_saveJsonStrict || !_settingsFile) {
+    throw new Error('[settings] saveSettingsStrict called before init');
+  }
+
+  const normalizedSettings = normalizeSettings(cloneSettingsForMutation(nextSettings));
+  _saveJsonStrict(_settingsFile, normalizedSettings);
+  _currentSettings = normalizedSettings;
   return _currentSettings;
 }
 
@@ -640,8 +677,8 @@ function registerIpc(
     broadcastSettingsUpdated(decorateSettingsPayload(settings), windows);
   }
 
-  function saveAndPublishSettings(nextSettings) {
-    const savedSettings = saveSettings(nextSettings);
+  function saveAndPublishSettingsStrict(nextSettings) {
+    const savedSettings = saveSettingsStrict(nextSettings);
     const windows = resolveWindows();
     publishSettingsUpdated(savedSettings, windows);
     return savedSettings;
@@ -684,8 +721,9 @@ function registerIpc(
 
       let settings = getSettings();
       if (chosen) {
-        settings.language = chosen;
-        settings = saveSettings(settings);
+        const nextSettings = cloneSettingsForMutation(settings);
+        nextSettings.language = chosen;
+        settings = saveSettingsStrict(nextSettings);
       }
 
       const menuLang = settings.language || DEFAULT_LANG;
@@ -719,27 +757,28 @@ function registerIpc(
       return { ok: true, language: chosen };
     } catch (err) {
       log.error('IPC set-language failed:', err);
-      return { ok: false, error: String(err) };
+      throw err;
     }
   });
 
   // set-mode-conteo: updates modeConteo and broadcasts
   ipcMain.handle('set-mode-conteo', async (_event, mode) => {
     try {
-      let settings = getSettings();
+      const settings = getSettings();
       if (mode !== 'simple' && mode !== 'preciso') {
         log.warn(
           'set-mode-conteo called with invalid value; defaulting to "preciso":',
           { value: mode }
         );
       }
-      settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
-      settings = saveAndPublishSettings(settings);
+      const nextSettings = cloneSettingsForMutation(settings);
+      nextSettings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
+      const savedSettings = saveAndPublishSettingsStrict(nextSettings);
 
-      return { ok: true, mode: settings.modeConteo };
+      return { ok: true, mode: savedSettings.modeConteo };
     } catch (err) {
       log.error('IPC set-mode-conteo failed:', err);
-      return { ok: false, error: String(err) };
+      throw err;
     }
   });
 
@@ -755,7 +794,7 @@ function registerIpc(
         return { ok: false, error: 'invalid' };
       }
 
-      let settings = getSettings();
+      const settings = getSettings();
       const langTag = settings.language;
       if (!langTag) {
         log.warnOnce(
@@ -767,12 +806,13 @@ function registerIpc(
       if (settings.selected_preset_by_language[langKey] === name) {
         return { ok: true, langKey, name };
       }
-      settings.selected_preset_by_language[langKey] = name;
-      settings = saveSettings(settings);
+      const nextSettings = cloneSettingsForMutation(settings);
+      nextSettings.selected_preset_by_language[langKey] = name;
+      saveSettingsStrict(nextSettings);
       return { ok: true, langKey, name };
     } catch (err) {
       log.error('IPC set-selected-preset failed:', err);
-      return { ok: false, error: String(err) };
+      throw err;
     }
   });
 
@@ -788,17 +828,18 @@ function registerIpc(
         return { ok: false, error: 'invalid' };
       }
 
-      let settings = getSettings();
+      const settings = getSettings();
       if (settings.spellcheckEnabled === enabled) {
         return { ok: true, enabled };
       }
-      settings.spellcheckEnabled = enabled;
-      settings = saveAndPublishSettings(settings);
+      const nextSettings = cloneSettingsForMutation(settings);
+      nextSettings.spellcheckEnabled = enabled;
+      const savedSettings = saveAndPublishSettingsStrict(nextSettings);
 
-      return { ok: true, enabled: settings.spellcheckEnabled };
+      return { ok: true, enabled: savedSettings.spellcheckEnabled };
     } catch (err) {
       log.error('IPC set-spellcheck-enabled failed:', err);
-      return { ok: false, error: String(err) };
+      throw err;
     }
   });
 
@@ -815,18 +856,19 @@ function registerIpc(
         return { ok: false, error: 'invalid' };
       }
 
-      let settings = getSettings();
+      const settings = getSettings();
       const nextEditorFontSizePx = normalizeEditorFontSizePx(parsed);
       if (settings.editorFontSizePx === nextEditorFontSizePx) {
         return { ok: true, editorFontSizePx: nextEditorFontSizePx };
       }
-      settings.editorFontSizePx = nextEditorFontSizePx;
-      settings = saveAndPublishSettings(settings);
+      const nextSettings = cloneSettingsForMutation(settings);
+      nextSettings.editorFontSizePx = nextEditorFontSizePx;
+      const savedSettings = saveAndPublishSettingsStrict(nextSettings);
 
-      return { ok: true, editorFontSizePx: settings.editorFontSizePx };
+      return { ok: true, editorFontSizePx: savedSettings.editorFontSizePx };
     } catch (err) {
       log.error('IPC set-editor-font-size-px failed:', err);
-      return { ok: false, error: String(err) };
+      throw err;
     }
   });
 

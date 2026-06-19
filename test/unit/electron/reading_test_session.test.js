@@ -27,6 +27,7 @@ function createIpcMainDouble() {
 function createReadingTestPoolMock({
   entries,
   initialShowBundledEntries = true,
+  resetPoolUsageStateImpl = null,
 } = {}) {
   let showBundledEntries = initialShowBundledEntries;
 
@@ -71,6 +72,9 @@ function createReadingTestPoolMock({
     hasHiddenBundledUnusedEntries,
     serializePoolEntryMeta,
     resetPoolUsageState() {
+      if (typeof resetPoolUsageStateImpl === 'function') {
+        return resetPoolUsageStateImpl(entries);
+      }
       for (const entry of entries) {
         entry.used = false;
       }
@@ -119,6 +123,7 @@ function createControllerHarness({
   showBundledEntries = true,
   currentText = '',
   preconditionContext = null,
+  resetPoolUsageStateImpl = null,
 } = {}) {
   const senderWin = {
     isDestroyed() {
@@ -131,6 +136,7 @@ function createControllerHarness({
   const readingTestPoolMock = createReadingTestPoolMock({
     entries,
     initialShowBundledEntries: showBundledEntries,
+    resetPoolUsageStateImpl,
   });
   const { readingTestSession, restore } = loadReadingTestSessionWithMocks(readingTestPoolMock, senderWin);
   const ipcMain = createIpcMainDouble();
@@ -343,6 +349,38 @@ test('reading-test bundled visibility setter updates persisted entry data contra
     assert.equal(result.entries.length, 1);
     assert.equal(result.entries[0].fileName, 'imported.json');
     assert.equal(result.entryEmptyState, 'none');
+  } finally {
+    harness.restore();
+  }
+});
+
+test('reading-test reset reports pool_error when pool usage persistence fails', async () => {
+  const harness = createControllerHarness({
+    entries: [
+      {
+        snapshotRelPath: '/reading_speed_test_pool/imported.json',
+        fileName: 'imported.json',
+        text: 'Imported text.',
+        tags: { language: 'en' },
+        used: true,
+        isBundled: false,
+      },
+    ],
+    resetPoolUsageStateImpl() {
+      return { ok: false, code: 'WRITE_FAILED' };
+    },
+  });
+
+  try {
+    const result = await harness.ipcMain.invoke(
+      'reading-test-reset-pool',
+      harness.senderEvent
+    );
+    assert.deepEqual(result, {
+      ok: false,
+      code: 'WRITE_FAILED',
+      guidanceKey: 'renderer.reading_test.alerts.pool_error',
+    });
   } finally {
     harness.restore();
   }

@@ -12,7 +12,7 @@ function loadFreshSettingsModule() {
   return require(modulePath);
 }
 
-function createSettingsHarness(initialStoredValue) {
+function createSettingsHarness(initialStoredValue, { saveJsonStrictImpl = null } = {}) {
   let storedValue = initialStoredValue;
   const writes = [];
 
@@ -21,6 +21,13 @@ function createSettingsHarness(initialStoredValue) {
       return typeof storedValue === 'undefined' ? fallbackValue : storedValue;
     },
     saveJson(filePath, nextValue) {
+      storedValue = nextValue;
+      writes.push({ filePath, value: nextValue });
+    },
+    saveJsonStrict(filePath, nextValue) {
+      if (typeof saveJsonStrictImpl === 'function') {
+        return saveJsonStrictImpl(filePath, nextValue);
+      }
       storedValue = nextValue;
       writes.push({ filePath, value: nextValue });
     },
@@ -69,6 +76,7 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
   const normalized = settings.init({
     loadJson: harness.loadJson,
     saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
     settingsFile: 'C:\\fake\\settings.json',
   });
 
@@ -95,6 +103,7 @@ test('saveSettings normalizes language-scoped buckets and trims selected preset 
   settings.init({
     loadJson: harness.loadJson,
     saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
     settingsFile: 'C:\\fake\\settings.json',
   });
 
@@ -129,6 +138,7 @@ test('getSettings reloads from the backing store and re-normalizes external edit
   settings.init({
     loadJson: harness.loadJson,
     saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
     settingsFile: 'C:\\fake\\settings.json',
   });
 
@@ -167,6 +177,7 @@ test('applyFallbackLanguageIfUnset persists a normalized fallback language', () 
   settings.init({
     loadJson: harness.loadJson,
     saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
     settingsFile: 'C:\\fake\\settings.json',
   });
 
@@ -199,6 +210,7 @@ test('registerIpc decorates get-settings and published payloads without mutating
   settings.init({
     loadJson: harness.loadJson,
     saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
     settingsFile: 'C:\\fake\\settings.json',
   });
 
@@ -251,4 +263,96 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(sentPayloads[1].channel, 'settings-updated');
   assert.equal(sentPayloads[1].payload.spellcheckEnabled, false);
   assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
+});
+
+test('registerIpc does not publish settings-updated or mutate persisted settings when strict save fails', async () => {
+  const settings = loadFreshSettingsModule();
+  const initialStoredValue = {
+    language: 'en',
+    presets_by_language: {},
+    selected_preset_by_language: {},
+    disabled_default_presets: {},
+    numberFormatting: {},
+    spellcheckEnabled: true,
+    editorFontSizePx: 20,
+    modeConteo: 'preciso',
+  };
+  const harness = createSettingsHarness(initialStoredValue, {
+    saveJsonStrictImpl() {
+      throw new Error('disk full');
+    },
+  });
+  const ipcMain = createIpcMainDouble();
+  const sentPayloads = [];
+  const onSettingsUpdatedCalls = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+
+  settings.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+    }),
+    onSettingsUpdated(nextSettings) {
+      onSettingsUpdatedCalls.push(nextSettings);
+    },
+  });
+
+  await assert.rejects(
+    ipcMain.invoke('set-spellcheck-enabled', false),
+    /disk full/i
+  );
+
+  assert.equal(onSettingsUpdatedCalls.length, 0);
+  assert.equal(sentPayloads.length, 0);
+  assert.equal(harness.getStoredValue().spellcheckEnabled, true);
+  assert.equal(settings.getSettings().spellcheckEnabled, true);
+});
+
+test('set-selected-preset rejects on strict save failure and keeps persisted selection unchanged', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'en',
+    presets_by_language: {},
+    selected_preset_by_language: { en: 'default' },
+    disabled_default_presets: {},
+    numberFormatting: {},
+    spellcheckEnabled: true,
+    editorFontSizePx: 20,
+    modeConteo: 'preciso',
+  }, {
+    saveJsonStrictImpl() {
+      throw new Error('disk full');
+    },
+  });
+  const ipcMain = createIpcMainDouble();
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.registerIpc(ipcMain);
+
+  await assert.rejects(
+    ipcMain.invoke('set-selected-preset', 'fast'),
+    /disk full/i
+  );
+
+  assert.equal(harness.getStoredValue().selected_preset_by_language.en, 'default');
+  assert.equal(settings.getSettings().selected_preset_by_language.en, 'default');
 });

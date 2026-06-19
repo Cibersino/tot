@@ -42,6 +42,7 @@ const {
   getOcrGoogleDriveTokenFile,
   loadJson,
   saveJson,
+  saveJsonStrict,
 } = require('./fs_storage');
 
 const settingsState = require('./settings');
@@ -1779,12 +1780,14 @@ app.whenReady().then(() => {
   const settings = settingsState.init({
     loadJson,
     saveJson,
+    saveJsonStrict,
     settingsFile: SETTINGS_FILE,
   });
 
   snapshotTagSettings.init({
     loadJson,
     saveJson,
+    saveJsonStrict,
     snapshotTagsFile: SNAPSHOT_TAGS_FILE,
   });
 

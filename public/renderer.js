@@ -1016,6 +1016,7 @@ function setupToggleModoPreciso() {
         return;
       }
       try {
+        const previousModo = modoConteo;
         const nuevoModo = toggleModoPreciso.checked ? 'preciso' : 'simple';
 
         // Update state in memory (immediately)
@@ -1032,15 +1033,40 @@ function setupToggleModoPreciso() {
         // Attempt to persist settings via IPC (if preload/main implemented setModeConteo)
         if (window.electronAPI && typeof window.electronAPI.setModeConteo === 'function') {
           try {
-            await window.electronAPI.setModeConteo(nuevoModo);
+            const persistResult = await window.electronAPI.setModeConteo(nuevoModo);
+            if (
+              persistResult
+              && typeof persistResult.ok === 'boolean'
+              && persistResult.ok !== true
+            ) {
+              throw new Error(
+                persistResult.error
+                  ? String(persistResult.error)
+                  : 'setModeConteo returned non-ok result.'
+              );
+            }
           } catch (err) {
             log.error('Error persisting modeConteo using setModeConteo:', err);
+            setModoConteo(previousModo);
+            toggleModoPreciso.checked = (previousModo === 'preciso');
+            toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
+            startPreviewAndResultsUpdate(getCurrentTextValue(), 'mode toggle rollback');
+            if (cronoController && typeof cronoController.handleTextChange === 'function') {
+              cronoController.handleTextChange(null, getCurrentTextValue());
+            }
           }
         } else if (window.electronAPI) {
           log.warnOnce(
             'renderer.ipc.setModeConteo.unavailable',
             'setModeConteo unavailable; mode persistence skipped.'
           );
+          setModoConteo(previousModo);
+          toggleModoPreciso.checked = (previousModo === 'preciso');
+          toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
+          startPreviewAndResultsUpdate(getCurrentTextValue(), 'mode toggle rollback');
+          if (cronoController && typeof cronoController.handleTextChange === 'function') {
+            cronoController.handleTextChange(null, getCurrentTextValue());
+          }
         }
       } catch (err) {
         log.error('Error handling change of toggleModoPreciso:', err);

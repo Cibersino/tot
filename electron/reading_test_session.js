@@ -604,6 +604,7 @@ function createController(options = {}) {
 
       const resetInfo = readingTestPool.resetPoolUsageState();
       if (!resetInfo.ok) {
+        log.error('Reading-test pool reset failed:', resetInfo);
         return { ok: false, code: resetInfo.code || 'POOL_RESET_FAILED', guidanceKey: 'renderer.reading_test.alerts.pool_error' };
       }
 

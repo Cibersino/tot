@@ -337,6 +337,7 @@
           settings: settingsSnapshot,
           language,
           currentPresetName,
+          previousPresetName: previousSelectedPresetName,
           selectEl: presetsSelect,
           presetDescription,
           electronAPI
@@ -387,6 +388,7 @@
           settings: neutralSettings,
           language,
           currentPresetName: preset.name,
+          previousPresetName: previousSelectedPresetName,
           selectEl: presetsSelect,
           presetDescription,
           electronAPI
@@ -426,6 +428,7 @@
           settings: settingsOverride,
           language,
           currentPresetName: preset.name,
+          previousPresetName: currentPresetName,
           selectEl: presetsSelect,
           presetDescription,
           electronAPI

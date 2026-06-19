@@ -186,6 +186,30 @@ test('entry state updates and reset preserve showBundledEntries', () => {
   assert.equal(finalState.entries[snapshotRelPath].used, false);
 });
 
+test('markPoolEntryUsed returns WRITE_FAILED when verified pool-state persistence fails', () => {
+  const tempDir = makeTempDir();
+  const stateFilePath = tempDir;
+  const snapshotRelPath = readingTestPool.buildPoolSnapshotRelPath('starter.json');
+
+  const markInfo = readingTestPool.markPoolEntryUsed(snapshotRelPath, true, { stateFilePath });
+
+  assert.equal(markInfo.ok, false);
+  assert.equal(markInfo.code, 'WRITE_FAILED');
+  assert.match(String(markInfo.message || ''), /directory|eperm|eisdir/i);
+});
+
+test('clearImportedPoolEntriesState returns WRITE_FAILED when imported-entry cleanup persistence fails', () => {
+  const tempDir = makeTempDir();
+  const stateFilePath = tempDir;
+  const snapshotRelPath = readingTestPool.buildPoolSnapshotRelPath('starter.json');
+
+  const clearInfo = readingTestPool.clearImportedPoolEntriesState([snapshotRelPath], { stateFilePath });
+
+  assert.equal(clearInfo.ok, false);
+  assert.equal(clearInfo.code, 'WRITE_FAILED');
+  assert.match(String(clearInfo.message || ''), /directory|eperm|eisdir/i);
+});
+
 test('startup prune removes stale state entries but leaves existing unmanaged files intact', () => {
   const tempDir = makeTempDir();
   const snapshotsRootDir = path.join(tempDir, 'snapshots');

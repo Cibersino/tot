@@ -116,6 +116,54 @@ test('startArmedSession rolls back pool usage if start fails after committing us
   ]);
 });
 
+test('startArmedSession blocks session start when pool usage persistence fails', () => {
+  const calls = [];
+  const state = {
+    active: true,
+    stage: 'arming',
+    armingReady: true,
+    selectedEntry: {
+      sourceMode: 'pool',
+      snapshotRelPath: 'reading_speed_test_pool/sample.json',
+    },
+  };
+
+  readingTestSessionFlow.startArmedSession({
+    state,
+    getActiveSessionWindows: () => ({ editorWin: {}, flotanteWin: {} }),
+    isAliveWindow: () => true,
+    readingTestPool: {
+      markPoolEntryUsed(snapshotRelPath, used) {
+        calls.push(['markPoolEntryUsed', snapshotRelPath, used]);
+        return { ok: false, code: 'WRITE_FAILED' };
+      },
+    },
+    showEditorPrestart() {
+      calls.push(['showEditorPrestart']);
+    },
+    startCrono() {
+      calls.push(['startCrono']);
+    },
+    setStage(stage) {
+      calls.push(['setStage', stage]);
+    },
+    setArmingReady(ready) {
+      calls.push(['setArmingReady', ready]);
+    },
+    failArmingSession(selectedEntry, noticeKey) {
+      calls.push(['failArmingSession', selectedEntry.snapshotRelPath, noticeKey]);
+    },
+    log: createLoggerDouble(),
+  });
+
+  assert.deepEqual(calls, [
+    ['markPoolEntryUsed', 'reading_speed_test_pool/sample.json', true],
+    ['failArmingSession', 'reading_speed_test_pool/sample.json', 'renderer.reading_test.alerts.start_failed'],
+  ]);
+  assert.equal(state.stage, 'arming');
+  assert.equal(state.armingReady, true);
+});
+
 test('handleFlotanteCommand starts the session from arming on toggle', () => {
   const calls = [];
 

@@ -135,7 +135,7 @@ Este glosario fija el alcance de los conceptos marcados con `[CONCEPTO_APP]`. La
 | `PDF fuente` | PDF original seleccionado por el usuario antes de generar subconjuntos, partes o artefactos derivados. |
 | `PDF generado` | PDF local derivado por la app, por ejemplo desde un rango de páginas o una división por partes, usado como insumo de extracción. |
 | `PDF guardado` | PDF generado que el usuario decidió conservar después del procesamiento. |
-| `pool del test` | Conjunto local de archivos disponibles para el test, con estado de uso, filtros y opción de restablecimiento. |
+| `pool del test` | Conjunto local de archivos disponibles para el test, con estado persistido de uso/visibilidad, filtros y opción de restablecimiento. |
 | `preset de velocidad de lectura` | Configuración guardada de WPM para estimar tiempo de lectura; puede crearse, editarse, restaurarse o generarse desde un resultado medido. |
 | `reemplazar texto actual` | Acción `Replace`: sustituye el contenido del texto actual por el contenido entrante en un flujo que ofrece la alternativa reemplazar/agregar. |
 | `repeticiones de pegado` | Cantidad de iteraciones con que se pega el texto del portapapeles en las acciones de reemplazo o agregado. |
@@ -3193,6 +3193,12 @@ Estados de revisión recomendados:
           "es": "No se pudieron importar los archivos del test de velocidad de lectura.",
           "en": "The reading speed test files could not be imported."
           // [CONCEPTO_APP] pool del test; archivos de test
+        },
+        "pool_import_state_cleanup_failed": {
+          "es": "Se importaron los archivos del test de velocidad de lectura, pero no se pudo actualizar por completo el estado del pool.",
+          "en": "The reading speed test files were imported, but the pool state could not be fully updated."
+          // [CONCEPTO_APP] pool del test; archivos de test
+          // [NO_CONFUNDIR] No describe una importación revertida ni un fallo de borrado físico de archivos; se refiere al estado persistido del pool (uso/visibilidad/metadata local).
         },
         "start_failed": {
           "es": "No se pudo iniciar el test de velocidad de lectura.",
