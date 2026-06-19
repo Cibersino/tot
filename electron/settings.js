@@ -79,6 +79,14 @@ function isPlainObjectRecord(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
+function isValidNumberFormattingEntry(value) {
+  return isPlainObjectRecord(value)
+    && typeof value.separadorMiles === 'string'
+    && !!value.separadorMiles
+    && typeof value.separadorDecimal === 'string'
+    && !!value.separadorDecimal;
+}
+
 // =============================================================================
 // Shared state
 // =============================================================================
@@ -159,8 +167,22 @@ function ensureNumberFormattingForBase(settings, base) {
   if (!settings || typeof settings !== 'object') return;
 
   const langKey = deriveLangKey(base);
+  const currentEntry = settings.numberFormatting[langKey];
 
-  if (settings.numberFormatting[langKey]) return;
+  if (typeof currentEntry !== 'undefined') {
+    if (isValidNumberFormattingEntry(currentEntry)) return;
+
+    log.warnOnce(
+      `settings.ensureNumberFormattingForBase.invalidEntry:${langKey}`,
+      'Invalid numberFormatting entry; rebuilding from defaults:',
+      {
+        langKey,
+        type: typeof currentEntry,
+        isArray: Array.isArray(currentEntry),
+        keys: isPlainObjectRecord(currentEntry) ? Object.keys(currentEntry) : [],
+      }
+    );
+  }
 
   const numberFormatDefaults = loadNumberFormatDefaults(langKey);
   if (numberFormatDefaults && numberFormatDefaults.thousands && numberFormatDefaults.decimal) {
