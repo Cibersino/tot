@@ -4,6 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
+// Current-text snapshot owner for save/load flows under config/saved_current_texts.
 // Responsibilities:
 // - Provide save/load snapshot flows for current text via native dialogs.
 // - Persist optional snapshot tag metadata on save.
@@ -69,7 +70,7 @@ function ensureSnapshotsRoot() {
   try {
     ensureCurrentTextSnapshotsDir();
   } catch (err) {
-    log.error('ensureSnapshotsRoot failed:', err);
+    log.warn('ensureSnapshotsRoot failed (continuing):', err);
   }
   const root = getCurrentTextSnapshotsDir();
   return fs.existsSync(root) ? root : null;
@@ -423,7 +424,7 @@ function resolveOwnerWin(event, getWindows) {
 }
 
 // =============================================================================
-// IPC registration
+// IPC registration / handlers
 // =============================================================================
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
