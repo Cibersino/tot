@@ -5,7 +5,6 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
-const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
 
 function loadFreshSettingsModule() {
   const modulePath = path.resolve(__dirname, '../../../electron/settings.js');
@@ -78,10 +77,7 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
   assert.equal(normalized.spellcheckEnabled, true);
   assert.equal(normalized.editorFontSizePx, 20);
   assert.deepEqual(normalized.presets_by_language.es, []);
-  assert.deepEqual(
-    normalized.snapshotTags,
-    snapshotTagCatalog.createEmptySnapshotTagPreferences()
-  );
+  assert.equal(Object.prototype.hasOwnProperty.call(normalized, 'snapshotTags'), false);
   assert.deepEqual(normalized.numberFormatting.es, {
     separadorMiles: '.',
     separadorDecimal: ',',
@@ -186,7 +182,7 @@ test('applyFallbackLanguageIfUnset persists a normalized fallback language', () 
   });
 });
 
-test('registerIpc decorates get-settings and settings-updated payloads without mutating persisted settings', async () => {
+test('registerIpc decorates get-settings and published payloads without mutating persisted settings', async () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
     language: 'ar',
@@ -206,7 +202,7 @@ test('registerIpc decorates get-settings and settings-updated payloads without m
     settingsFile: 'C:\\fake\\settings.json',
   });
 
-  settings.registerIpc(ipcMain, {
+  const settingsIpc = settings.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin: {
         isDestroyed() {
@@ -246,53 +242,13 @@ test('registerIpc decorates get-settings and settings-updated payloads without m
   assert.equal(sentPayloads[0].payload.spellcheckAvailable, false);
   assert.equal(settings.getSettings().spellcheckEnabled, false);
   assert.equal(Object.hasOwn(settings.getSettings(), 'spellcheckAvailable'), false);
-});
+  assert.equal(typeof settingsIpc.publishCurrentSettings, 'function');
 
-test('snapshot tag preference IPC normalizes and persists editable catalog settings', async () => {
-  const settings = loadFreshSettingsModule();
-  const harness = createSettingsHarness({});
-  const ipcMain = createIpcMainDouble();
-  const sentPayloads = [];
+  settingsIpc.publishCurrentSettings();
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
-
-  settings.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin: {
-        isDestroyed() {
-          return false;
-        },
-        webContents: {
-          send(channel, payload) {
-            sentPayloads.push({ channel, payload });
-          },
-        },
-      },
-    }),
-  });
-
-  const customType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
-  const result = await ipcMain.invoke('set-snapshot-tag-preferences', {
-    type: {
-      custom: [{ value: customType, label: '  Short   story  ' }],
-      hiddenDefaults: ['fiction'],
-      order: [customType, 'fiction'],
-    },
-  });
-
-  assert.equal(result.ok, true);
-  assert.deepEqual(result.snapshotTags.type.custom, [{
-    value: customType,
-    label: 'Short story',
-  }]);
-  assert.deepEqual(result.snapshotTags.type.hiddenDefaults, ['fiction']);
-  assert.deepEqual(result.snapshotTags.type.order, [customType]);
-  assert.deepEqual(settings.getSettings().snapshotTags.type.order, [customType]);
-  assert.equal(sentPayloads.length, 1);
-  assert.equal(sentPayloads[0].channel, 'settings-updated');
-  assert.deepEqual(sentPayloads[0].payload.snapshotTags.type.order, [customType]);
+  assert.equal(onSettingsUpdatedCalls.length, 2);
+  assert.equal(sentPayloads.length, 2);
+  assert.equal(sentPayloads[1].channel, 'settings-updated');
+  assert.equal(sentPayloads[1].payload.spellcheckEnabled, false);
+  assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
 });

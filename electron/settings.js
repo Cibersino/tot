@@ -9,9 +9,9 @@
 // Responsibilities:
 // - Load settings from disk, normalize persisted shape, and keep an in-memory cache in sync.
 // - Canonicalize language tags and maintain language-scoped settings buckets.
-// - Hydrate numberFormatting and snapshotTags defaults when persisted data is missing or invalid.
+// - Hydrate numberFormatting defaults when persisted data is missing or invalid.
 // - Expose the state owner API used by main-process modules: init, getSettings, saveSettings.
-// - Register settings IPC handlers, including snapshot-tag preference routes, and broadcast settings-updated.
+// - Register settings IPC handlers and broadcast settings-updated.
 // - Persist a logged fallback language when startup closes the language picker without a selection.
 // =============================================================================
 
@@ -27,7 +27,6 @@ const {
   EDITOR_FONT_SIZE_MAX_PX,
   EDITOR_FONT_SIZE_DEFAULT_PX,
 } = require('./constants_main');
-const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 
 const log = Log.get('settings');
 log.debug('Settings starting...');
@@ -64,7 +63,6 @@ const createDefaultSettings = (language = '') => ({
   presets_by_language: {},
   selected_preset_by_language: {},
   disabled_default_presets: {},
-  snapshotTags: snapshotTagCatalog.createEmptySnapshotTagPreferences(),
 });
 
 function normalizeEditorFontSizePx(value) {
@@ -281,24 +279,6 @@ function normalizeSettings(settings) {
     );
     settings.disabled_default_presets = {};
   }
-
-  // snapshotTags must be a plain object rooted in the shared snapshot-tag preferences schema.
-  if (typeof settings.snapshotTags === 'undefined') {
-    settings.snapshotTags = snapshotTagCatalog.createEmptySnapshotTagPreferences();
-  } else if (!isPlainObjectRecord(settings.snapshotTags)) {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidSnapshotTags',
-      'Invalid snapshotTags; resetting to empty snapshot-tag preferences:',
-      {
-        type: typeof settings.snapshotTags,
-        isArray: Array.isArray(settings.snapshotTags),
-      }
-    );
-    settings.snapshotTags = snapshotTagCatalog.createEmptySnapshotTagPreferences();
-  }
-  settings.snapshotTags = snapshotTagCatalog.normalizeSnapshotTagPreferences(
-    settings.snapshotTags
-  );
 
   // modeConteo:
   // - missing -> default (silent)
@@ -559,8 +539,6 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
 /**
  * Registers IPC handlers related to settings:
  * - get-settings
- * - get-snapshot-tag-preferences
- * - set-snapshot-tag-preferences
  * - set-language
  * - set-mode-conteo
  * - set-selected-preset
@@ -669,6 +647,13 @@ function registerIpc(
     return savedSettings;
   }
 
+  function publishCurrentSettings() {
+    const settings = getSettings();
+    const windows = resolveWindows();
+    publishSettingsUpdated(settings, windows);
+    return settings;
+  }
+
   // get-settings: returns the current settings object (normalized)
   ipcMain.handle('get-settings', async () => {
     try {
@@ -682,58 +667,6 @@ function registerIpc(
       return decorateSettingsPayload(
         normalizeSettings(createDefaultSettings(DEFAULT_LANG))
       );
-    }
-  });
-
-  ipcMain.handle('get-snapshot-tag-preferences', async () => {
-    try {
-      const settings = getSettings();
-      return {
-        ok: true,
-        snapshotTags: snapshotTagCatalog.normalizeSnapshotTagPreferences(settings.snapshotTags),
-      };
-    } catch (err) {
-      log.errorOnce(
-        'settings.ipc.get-snapshot-tag-preferences',
-        'IPC get-snapshot-tag-preferences failed (using safe fallback):',
-        err
-      );
-      return {
-        ok: false,
-        error: String(err),
-        snapshotTags: snapshotTagCatalog.createEmptySnapshotTagPreferences(),
-      };
-    }
-  });
-
-  ipcMain.handle('set-snapshot-tag-preferences', async (_event, rawSnapshotTags) => {
-    try {
-      if (!snapshotTagCatalog.isPlainObject(rawSnapshotTags)) {
-        log.warnOnce(
-          'settings.set-snapshot-tag-preferences.invalid',
-          'set-snapshot-tag-preferences called with invalid payload (ignored).',
-          { type: typeof rawSnapshotTags, isArray: Array.isArray(rawSnapshotTags) }
-        );
-        return { ok: false, error: 'invalid' };
-      }
-
-      let settings = getSettings();
-      const nextSnapshotTags = snapshotTagCatalog.normalizeSnapshotTagPreferences(rawSnapshotTags);
-      const currentSerialized = JSON.stringify(
-        snapshotTagCatalog.normalizeSnapshotTagPreferences(settings.snapshotTags)
-      );
-      const nextSerialized = JSON.stringify(nextSnapshotTags);
-      if (currentSerialized === nextSerialized) {
-        return { ok: true, snapshotTags: nextSnapshotTags };
-      }
-
-      settings.snapshotTags = nextSnapshotTags;
-      settings = saveAndPublishSettings(settings);
-
-      return { ok: true, snapshotTags: settings.snapshotTags };
-    } catch (err) {
-      log.error('IPC set-snapshot-tag-preferences failed:', err);
-      return { ok: false, error: String(err) };
     }
   });
 
@@ -897,6 +830,9 @@ function registerIpc(
     }
   });
 
+  return {
+    publishCurrentSettings,
+  };
 }
 
 // =============================================================================

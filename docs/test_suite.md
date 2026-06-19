@@ -125,6 +125,10 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-SNAPSHOTS-01`
   * supports parts of `REG-SNAPSHOTS-02`
   * supports parts of `REG-SNAPSHOTS-04`
+* `electron/snapshot_tag_settings.js`
+  * supports parts of `SM-13`
+  * supports parts of `REG-PERSIST-03B`
+  * supports parts of `REG-SNAPSHOTS-02`
 * `electron/current_text_snapshots_main.js`
   * supports parts of `SM-13`
   * supports parts of `REG-PERSIST-03`
@@ -141,6 +145,9 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/shared/snapshot_save_tags_modal.test.js`
   * supports parts of `SM-13`
   * supports parts of `REG-SNAPSHOTS-01`
+  * supports parts of `REG-SNAPSHOTS-02`
+* `test/unit/electron/snapshot_tag_settings.test.js`
+  * supports parts of `REG-PERSIST-03B`
   * supports parts of `REG-SNAPSHOTS-02`
 * `test/unit/shared/notify.test.js`
   * supports parts of `REG-SNAPSHOTS-02`
@@ -245,7 +252,8 @@ You must run tests under both:
 ### 2.1 Where user state lives
 
 Config is stored under Electron `app.getPath('userData')/config` and includes:
-- `user_settings.json` (`language`, `modeConteo`, preset selection buckets, `spellcheckEnabled`, `editorFontSizePx`, `snapshotTags`, etc.)
+- `user_settings.json` (`language`, `modeConteo`, preset selection buckets, `spellcheckEnabled`, `editorFontSizePx`, etc.)
+- `snapshot_tags.json` (editable snapshot-tag catalog preferences: custom tags, hidden defaults, visible order)
 - `current_text.json`
 - `editor_state.json`
 - `text_extraction_state.json` (last picker directory)
@@ -1686,7 +1694,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 1. Clean run launch.
 2. Perform: set text, change mode, select a preset, open editor once, toggle editor spellcheck once, change editor text size once, and complete one valid picker-based text extraction selection.
 3. Close app.
-4. Verify config files exist (`user_settings.json`, `current_text.json`, `editor_state.json`, `text_extraction_state.json`).
+4. Verify config files exist (`user_settings.json`, `snapshot_tags.json`, `current_text.json`, `editor_state.json`, `text_extraction_state.json`).
 
 **Expected:**
 - Files exist; JSON is valid; no zero-byte corruption.
@@ -1736,13 +1744,13 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 1. Create at least one custom snapshot tag, hide at least one default tag, and reorder one category through **Manage tags**.
 2. Close the app fully.
 3. Relaunch the app and open **💾**, then **Manage tags** again.
-4. Inspect `user_settings.json` if you need on-disk confirmation.
+4. Inspect `snapshot_tags.json` if you need on-disk confirmation.
 
 **Expected:**
 - The custom tag still exists after relaunch.
 - Hidden defaults remain hidden until explicitly restored.
 - The saved visible order for each touched category is preserved after relaunch.
-- `user_settings.json`, when inspected, stores the snapshot-tag preferences as part of the persisted user settings rather than in snapshot files or i18n bundles.
+- `snapshot_tags.json`, when inspected, stores the snapshot-tag preferences separately from `user_settings.json`, snapshot files, and i18n bundles.
 
 #### REG-PERSIST-04 Tasks: config/tasks persistence (lists, library, allowlist, widths, window position)
 **Goal:** task feature state persists under config/tasks and reloads correctly after restart.

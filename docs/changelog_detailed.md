@@ -68,7 +68,7 @@ Reglas:
   - `public/js/generated_icons.js` como artefacto renderer autogenerado;
   - `public/js/renderer_icons.js` como helper común para aplicar iconos a markup estático y a controles creados por JS.
 - Botón iconográfico dedicado de `Reading speed test` en el toolbar de la ventana principal, integrado al mismo sistema compartido de iconos funcionales.
-- Catálogo editable de tags de snapshot persistido en settings, con:
+- Catálogo editable de tags de snapshot persistido en un archivo dedicado de config, con:
   - creación de tags personalizados por categoría;
   - gestor renderer compartido para `language` / `type` / `difficulty`;
   - soporte para orden visible persistido, `Sort A-Z` como reorder real y `Restore hidden defaults` por categoría;
