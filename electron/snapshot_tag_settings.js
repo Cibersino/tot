@@ -95,7 +95,15 @@ function init({ loadJson, saveJson, saveJsonStrict, snapshotTagsFile }) {
   _snapshotTagsFile = snapshotTagsFile;
 
   const snapshotTags = loadSnapshotTagPreferencesFromDisk();
-  _saveJson(_snapshotTagsFile, snapshotTags);
+  try {
+    _saveJson(_snapshotTagsFile, snapshotTags);
+  } catch (err) {
+    log.warn(
+      'BOOTSTRAP: Snapshot-tag init normalization persist failed (ignored):',
+      _snapshotTagsFile,
+      err
+    );
+  }
 
   return snapshotTags;
 }
