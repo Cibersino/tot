@@ -243,25 +243,25 @@ function normalizePoolState(rawState) {
   };
 }
 
-function loadPoolState({ stateFilePath } = {}) {
-  const targetStateFile = typeof stateFilePath === 'string' && stateFilePath.trim()
+function resolvePoolStateFilePath(stateFilePath) {
+  return typeof stateFilePath === 'string' && stateFilePath.trim()
     ? path.resolve(stateFilePath)
     : path.resolve(getReadingTestPoolStateFile());
+}
+
+function loadPoolState({ stateFilePath } = {}) {
+  const targetStateFile = resolvePoolStateFilePath(stateFilePath);
   const rawState = loadJson(targetStateFile, POOL_STATE_FALLBACK);
   return normalizePoolState(rawState);
 }
 
 function savePoolState(state, { stateFilePath } = {}) {
-  const targetStateFile = typeof stateFilePath === 'string' && stateFilePath.trim()
-    ? path.resolve(stateFilePath)
-    : path.resolve(getReadingTestPoolStateFile());
+  const targetStateFile = resolvePoolStateFilePath(stateFilePath);
   saveJson(targetStateFile, normalizePoolState(state));
 }
 
 function savePoolStateStrict(state, { stateFilePath } = {}) {
-  const targetStateFile = typeof stateFilePath === 'string' && stateFilePath.trim()
-    ? path.resolve(stateFilePath)
-    : path.resolve(getReadingTestPoolStateFile());
+  const targetStateFile = resolvePoolStateFilePath(stateFilePath);
   try {
     saveJsonStrict(targetStateFile, normalizePoolState(state));
     return { ok: true };
@@ -504,9 +504,7 @@ function resolvePoolContext(options = {}) {
   const bundledSourceDir = typeof options.bundledSourceDir === 'string' && options.bundledSourceDir.trim()
     ? path.resolve(options.bundledSourceDir)
     : path.resolve(BUNDLED_POOL_SOURCE_DIR);
-  const stateFilePath = typeof options.stateFilePath === 'string' && options.stateFilePath.trim()
-    ? path.resolve(options.stateFilePath)
-    : path.resolve(getReadingTestPoolStateFile());
+  const stateFilePath = resolvePoolStateFilePath(options.stateFilePath);
 
   try {
     fs.mkdirSync(snapshotsRootDir, { recursive: true });
