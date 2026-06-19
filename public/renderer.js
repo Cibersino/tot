@@ -6,12 +6,12 @@
 // =============================================================================
 // Main renderer entry point for the primary window UI.
 // Responsibilities:
-// - Bootstrap renderer state from main-owned config, settings, and READY signals.
-// - Apply renderer i18n labels, language attributes, and number formatting.
-// - Maintain current-text preview, counts, and reading-time estimates.
-// - Coordinate text extraction, OCR entry, and current-text apply flows.
-// - Wire presets, clipboard actions, Text Editor, Task Editor, and reading-test entry.
-// - Host top-level UI integrations such as the info modal, menu actions, and stopwatch controller.
+// - Bootstrap renderer-owned UI state from main-owned config, settings, and READY signals.
+// - Consume required renderer surfaces that must be loaded before renderer.js runs.
+// - Keep current-text preview, counts, and timing displays in sync with main-owned updates.
+// - Coordinate clipboard, presets, text extraction, Text Editor, Task Editor, and reading-test entry flows.
+// - Host window-level integrations such as the info modal, menu actions, and stopwatch controller.
+
 // =============================================================================
 // Logger and startup constants
 // =============================================================================
@@ -42,7 +42,7 @@ if (!Number.isFinite(AppConstants.MAX_TEXT_CHARS) || AppConstants.MAX_TEXT_CHARS
 }
 
 // =============================================================================
-// DOM references
+// Required renderer surfaces and primary DOM references
 // =============================================================================
 const btnHelp = document.getElementById('btnHelp');
 
@@ -174,13 +174,14 @@ const presetDescription = document.getElementById('presetDescription');
 // =============================================================================
 // Shared state and core controllers
 // =============================================================================
-// Local limit in renderer to prevent concatenations that create excessively large strings
-let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
-let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
-let modoConteo = 'preciso';   // Precise by default; can be `simple`
-let idiomaActual = DEFAULT_LANG; // Initializes on startup
-let settingsCache = null;     // Settings cache (number formatting, language, etc.)
+// Start with renderer-safe defaults until startup loads authoritative config/settings from main.
+let maxTextChars = AppConstants.MAX_TEXT_CHARS;
+let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4;
+let modoConteo = 'preciso';
+let idiomaActual = DEFAULT_LANG;
+let settingsCache = null;
 let cronoController = null;
+// READY stays blocked until both main signals and renderer listeners are fully armed.
 let rendererReadyState = 'PRE_READY';
 let rendererInvariantsReady = false;
 let startupReadyReceived = false;
@@ -1688,7 +1689,7 @@ function registerMenuActions() {
   log.warn('menuActions unavailable - the top bar will not be handled by the renderer.');
 }
 // =============================================================================
-// Preset selection (cache-only)
+// Preset selection wiring
 // =============================================================================
 function bindPresetSelection() {
   presetsSelect.addEventListener('change', async () => {
@@ -1863,8 +1864,8 @@ async function resolveDroppedFilePath(file) {
   return fallbackPath;
 }
 
-// renderer.js owns only app-level feature wiring here.
-// The shared text extraction flow stays in the delegated window modules.
+// renderer.js keeps only app-level wiring here.
+// Shared text extraction behavior stays in delegated window modules.
 function configureTextExtractionModules() {
   if (textExtractionOcrActivationFlow
     && typeof textExtractionOcrActivationFlow.configure === 'function') {
@@ -2210,7 +2211,7 @@ async function handleSaveSnapshot() {
 }
 
 // =============================================================================
-// Task selector (open Task Editor)
+// Task Editor entrypoints
 // =============================================================================
 function handleTaskOpenResult(res, { mode } = {}) {
   if (!res || res.ok === false) {
@@ -2269,7 +2270,7 @@ async function handleLoadTask() {
 }
 
 // =============================================================================
-// Reading tools
+// Help tips and reading test
 // =============================================================================
 // Avoid repeating the same tip twice in a row when multiple tips exist.
 function bindHelpAction() {
@@ -2498,6 +2499,11 @@ const initCronoController = () => {
   }
 };
 
+// =============================================================================
+// Renderer bootstrap entrypoint
+// =============================================================================
+// Listener wiring must happen before runStartupOrchestrator() so READY can unblock
+// only after subscriptions and UI guards are in place.
 function startRendererBootstrap() {
   armIpcSubscriptions();
   setupToggleModoPreciso();
