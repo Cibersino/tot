@@ -58,6 +58,12 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-PERSIST`
   * supports parts of `REG-I18N`
   * supports parts of `REG-EDITOR`
+* `test/unit/electron/settings.test.js`
+  * supports parts of `REG-MODE-01`
+  * supports parts of `REG-MODE-02`
+  * supports parts of `REG-PRESETS-07`
+  * supports parts of `REG-PERSIST-01`
+  * supports parts of `REG-PERSIST-02`
 * `electron/spellcheck.js`
   * supports parts of `REG-EDITOR`
   * supports parts of `REG-I18N`
@@ -133,6 +139,8 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `SM-13`
   * supports parts of `REG-PERSIST-03`
   * supports parts of `REG-SNAPSHOTS-04`
+* `test/unit/electron/fs_storage.test.js`
+  * supports parts of `REG-PERSIST`
 * `test/unit/electron/current_text_snapshots_main.test.js`
   * supports parts of `SM-13`
   * supports parts of `REG-IMPORT-08D`
@@ -205,12 +213,31 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-OCR`
 * `test/unit/electron/link_openers.test.js`
   * supports parts of `REG-MENU-03`
+* `test/unit/electron/tasks_main_task_list_save.test.js`
+  * supports parts of `REG-TASKS-02`
+  * supports parts of `REG-TASKS-04`
+  * supports parts of `REG-PERSIST-04`
+* `test/unit/electron/reading_test_pool.test.js`
+  * supports parts of `SM-15`
+  * supports parts of `REG-READING-TEST-06`
+  * supports parts of `REG-PERSIST-06`
+* `test/unit/electron/reading_test_pool_import.test.js`
+  * supports parts of `SM-15`
+  * supports parts of `REG-READING-TEST-07`
+  * supports parts of `REG-PERSIST-07`
+* `test/unit/electron/reading_test_session.test.js`
+  * supports parts of `SM-14`
+  * supports parts of `REG-READING-TEST-01`
+  * supports parts of `REG-READING-TEST-02`
+  * supports parts of `REG-READING-TEST-06`
+* `test/unit/electron/reading_test_session_flow.test.js`
+  * supports parts of `REG-READING-TEST-03`
 
 Important limitations:
 
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
 * the editor still has no renderer/UI automation for the spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
-* the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool core in `test/unit/electron/reading_test_pool.test.js` and the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
+* the reading speed test still has no renderer/UI automation; current automated coverage now includes pool core, pool import, entry/reset IPC contract handling, and start/rollback flow contracts, but real modal interaction, guided session windows, stopwatch handoff, comprehension UI, and preset handoff are still primarily validated through the manual suite;
 * OCR network/provider behavior is still primarily validated through the manual suite, even though JP2 normalization, OCR route contracts, and the single-file oversized-image alert path now have unit coverage;
 * even with contract-style unit coverage for the batch planner/final report, single-file heavy-PDF modal, and status-bar progress text, the integrated picker/drag-drop entrypoints, PDF options modal, route-choice modal, apply modal reveal path, batch execution handoff, and real window/focus behavior are still primarily validated through the manual suite;
 * the editable snapshot-tag catalog now has contract coverage for catalog derivation, renderer modal behavior, and permissive snapshot save/load validation, but the native save/load dialogs, real combobox keyboard/focus behavior, and the full cross-window batch-tag flow are still primarily validated through the manual suite;
