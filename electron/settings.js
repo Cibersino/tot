@@ -581,8 +581,8 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
       settings.language = lang;
 
       log.warnOnce(
-        `settings.applyFallbackLanguageIfUnset.applied:${base}`,
-        'Language was unset; applying fallback language:',
+        `BOOTSTRAP:settings.applyFallbackLanguageIfUnset.applied:${base}`,
+        'BOOTSTRAP: language was unset; applying fallback language:',
         lang
       );
       saveSettings(settings);
