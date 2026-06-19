@@ -10,9 +10,9 @@
 // - Load settings from disk, normalize persisted shape, and keep an in-memory cache in sync.
 // - Canonicalize language tags and maintain language-scoped settings buckets.
 // - Hydrate numberFormatting defaults when persisted data is missing or invalid.
-// - Expose the state owner API used by main-process modules: init, getSettings, saveSettings.
-// - Register settings IPC handlers and broadcast settings-updated.
-// - Persist a logged fallback language when startup closes the language picker without a selection.
+// - Expose the state owner API consumed by main-process modules.
+// - Register settings IPC handlers and publish settings-updated to open windows.
+// - Persist a logged startup fallback language when the language picker closes without a selection.
 // =============================================================================
 
 // =============================================================================
@@ -414,6 +414,9 @@ function normalizeSettings(settings) {
   return settings;
 }
 
+// =============================================================================
+// Mutation helper
+// =============================================================================
 function cloneSettingsForMutation(settings) {
   const source = isPlainObjectRecord(settings) ? settings : createDefaultSettings();
   return {
@@ -434,7 +437,7 @@ function cloneSettingsForMutation(settings) {
 }
 
 // =============================================================================
-// State API: init / getSettings / saveSettings
+// State API: init / getSettings / saveSettings / saveSettingsStrict
 // =============================================================================
 /**
  * Initializes the module (called from main.js).
@@ -570,6 +573,7 @@ function broadcastSettingsUpdated(settings, windows) {
 // =============================================================================
 /**
  * If the language modal closes without selecting anything, apply a fallback language.
+ * Used by main.js startup flow when language resolution must continue.
  * This is intentionally not silent: it modifies settings.language and persists it.
  */
 function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
