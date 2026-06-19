@@ -582,6 +582,7 @@
         "preset_unavailable": "Modal preset tidak dapat dibuka setelah tes.",
         "questions_unavailable": "Modal pertanyaan pemahaman tidak dapat dibuka. Alur berakhir sebelum pembuatan preset.",
         "pool_import_failed": "File tes kecepatan membaca tidak dapat diimpor.",
+        "pool_import_state_cleanup_failed": "File tes kecepatan membaca telah diimpor, tetapi status pool tidak dapat diperbarui sepenuhnya.",
         "start_failed": "Tes kecepatan membaca tidak dapat dimulai.",
         "cancelled": "Tes kecepatan membaca dibatalkan.",
         "cancelled_window_closed": "Tes kecepatan membaca dibatalkan karena salah satu jendela sesi ditutup."

@@ -582,6 +582,7 @@
         "preset_unavailable": "Der Preset-Dialog konnte nach dem Test nicht geöffnet werden.",
         "questions_unavailable": "Der Dialog mit den Verständnisfragen konnte nicht geöffnet werden. Der Ablauf endete vor der Erstellung des Presets.",
         "pool_import_failed": "Die Dateien für den Lesegeschwindigkeitstest konnten nicht importiert werden.",
+        "pool_import_state_cleanup_failed": "Die Dateien des Lesegeschwindigkeitstests wurden importiert, aber der Pool-Status konnte nicht vollständig aktualisiert werden.",
         "start_failed": "Der Lesegeschwindigkeitstest konnte nicht gestartet werden.",
         "cancelled": "Der Lesegeschwindigkeitstest wurde abgebrochen.",
         "cancelled_window_closed": "Der Lesegeschwindigkeitstest wurde abgebrochen, weil eines seiner Sitzungsfenster geschlossen wurde."

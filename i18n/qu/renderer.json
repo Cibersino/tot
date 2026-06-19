@@ -582,6 +582,7 @@
         "preset_unavailable": "Testmanta qhipa preset modal mana kichakunchu.",
         "questions_unavailable": "Hamut'ay tapukuy modal mana kichakunchu. Flujoqa preset ruwana ñawpaqta tukurqan.",
         "pool_import_failed": "Ñawinchay utqaynin test archivokuna mana apamuy atikurqanchu.",
+        "pool_import_state_cleanup_failed": "Ñawinchay utqay test archivokunaqa apamuchisqañam, ichaqa poolpa kayninqa mana tukuyta musuqyachikuyta atikurqachu.",
         "start_failed": "Ñawinchay utqaynin test mana qallariy atikurqanchu.",
         "cancelled": "Ñawinchay utqaynin test saqisqa.",
         "cancelled_window_closed": "Ñawinchay utqaynin test saqisqa, imaraykuchus sesión ventanakunamanta huk wichq'akusqa."

@@ -582,6 +582,7 @@
         "preset_unavailable": "Không thể mở modal preset sau bài kiểm tra.",
         "questions_unavailable": "Không thể mở modal câu hỏi đọc hiểu. Quy trình đã kết thúc trước khi tạo preset.",
         "pool_import_failed": "Không thể nhập các tệp bài kiểm tra tốc độ đọc.",
+        "pool_import_state_cleanup_failed": "Các tệp kiểm tra tốc độ đọc đã được nhập, nhưng trạng thái pool không thể được cập nhật đầy đủ.",
         "start_failed": "Không thể bắt đầu bài kiểm tra tốc độ đọc.",
         "cancelled": "Bài kiểm tra tốc độ đọc đã bị hủy.",
         "cancelled_window_closed": "Bài kiểm tra tốc độ đọc đã bị hủy vì một trong các cửa sổ phiên đã đóng."

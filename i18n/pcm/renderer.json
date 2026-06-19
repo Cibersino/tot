@@ -582,6 +582,7 @@
         "preset_unavailable": "Could not open preset modal after di test.",
         "questions_unavailable": "Could not open comprehension questions modal. Di flow end before preset creation.",
         "pool_import_failed": "Reading speed test files could not be imported.",
+        "pool_import_state_cleanup_failed": "Di reading speed test files don import, but di pool state no fit update completely.",
         "start_failed": "Reading speed test could not start.",
         "cancelled": "Reading speed test was cancelled.",
         "cancelled_window_closed": "Reading speed test was cancelled because one of its session windows closed."

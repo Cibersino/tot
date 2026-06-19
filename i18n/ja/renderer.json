@@ -582,6 +582,7 @@
         "preset_unavailable": "テスト後にプリセットモーダルを開けませんでした。",
         "questions_unavailable": "読解問題モーダルを開けませんでした。プリセット作成前にフローを終了しました。",
         "pool_import_failed": "読書速度テストファイルをインポートできませんでした。",
+        "pool_import_state_cleanup_failed": "読書速度テストのファイルはインポートされましたが、pool の状態を完全には更新できませんでした。",
         "start_failed": "読書速度テストを開始できませんでした。",
         "cancelled": "読書速度テストはキャンセルされました。",
         "cancelled_window_closed": "セッションウィンドウの1つが閉じられたため、読書速度テストはキャンセルされました。"

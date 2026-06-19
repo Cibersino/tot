@@ -582,6 +582,7 @@
         "preset_unavailable": "Test qhipat preset modal janiw jist’araskiti.",
         "questions_unavailable": "Comprensión jiskt’awinaka modal janiw jist’araskiti. Flujo preset lurañ nayraqat tukuyi.",
         "pool_import_failed": "Ullañ jank’akïwi test archivunak janiw apanitakiti.",
+        "pool_import_state_cleanup_failed": "Lectura velocidad test archivonakax importatäxi, ukampis pool ukan estado janiw taqpach machaqar tukuyañjamäkiti.",
         "start_failed": "Ullañ jank’akïwi test janiw qalltaskiti.",
         "cancelled": "Ullañ jank’akïwi test suyt’ayata.",
         "cancelled_window_closed": "Ullañ jank’akïwi test suyt’ayata, sesión ventananakat mayax jist’antatapat."
