@@ -54,7 +54,7 @@ function resolveDirectionFromText(text, fallbackDirection) {
   return 'ltr';
 }
 
-function createHarness({ languageDirection = 'rtl' } = {}) {
+function createHarness({ languageDirection = 'rtl', setSelectedPresetImpl = null } = {}) {
   const document = {
     documentElement: {
       dataset: { languageDirection },
@@ -130,6 +130,9 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
     },
     async setSelectedPreset(name) {
       selectionPersists.push(String(name));
+      if (typeof setSelectedPresetImpl === 'function') {
+        return setSelectedPresetImpl(name);
+      }
     },
   };
 
@@ -212,4 +215,43 @@ test('wpm controls reset stale preset descriptions on preset reload failure', as
 
   assert.equal(dom.presetDescription.textContent, '');
   assert.equal(dom.presetDescription.getAttribute('dir'), 'rtl');
+});
+
+test('wpm controls roll back to the previous preset when selection persistence fails', async () => {
+  const harness = createHarness({
+    languageDirection: 'rtl',
+    async setSelectedPresetImpl() {
+      throw new Error('disk full');
+    },
+  });
+  const { controller, dom, electronAPI, selectionPersists } = harness;
+
+  await controller.loadPresets({
+    settingsSnapshot: {
+      language: 'ar',
+      selected_preset_by_language: { ar: 'default' },
+      presets_by_language: {},
+    },
+    language: 'ar',
+    electronAPI,
+  });
+
+  dom.presetsSelect.value = 'latin';
+  const selected = await controller.handlePresetSelectionChange({
+    settingsSnapshot: {
+      language: 'ar',
+      selected_preset_by_language: {},
+      presets_by_language: {},
+    },
+    language: 'ar',
+    electronAPI,
+  });
+
+  assert.deepEqual(selectionPersists, ['latin']);
+  assert.equal(selected.name, 'default');
+  assert.equal(dom.presetsSelect.value, 'default');
+  assert.equal(dom.presetDescription.textContent, 'rtl:الوصف الافتراضي');
+  assert.equal(dom.presetDescription.getAttribute('dir'), 'rtl');
+  assert.equal(dom.wpmInput.value, '200');
+  assert.equal(dom.wpmSlider.value, '200');
 });

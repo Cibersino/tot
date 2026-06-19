@@ -582,6 +582,7 @@
         "preset_unavailable": "테스트 후 프리셋 모달을 열 수 없습니다.",
         "questions_unavailable": "독해 질문 모달을 열 수 없습니다. 프리셋 생성 전에 흐름이 종료되었습니다.",
         "pool_import_failed": "읽기 속도 테스트 파일을 가져올 수 없습니다.",
+        "pool_import_state_cleanup_failed": "읽기 속도 테스트 파일을 가져왔지만 pool 상태를 완전히 업데이트할 수 없었습니다.",
         "start_failed": "읽기 속도 테스트를 시작할 수 없습니다.",
         "cancelled": "읽기 속도 테스트가 취소되었습니다.",
         "cancelled_window_closed": "세션 창 중 하나가 닫혀 읽기 속도 테스트가 취소되었습니다."

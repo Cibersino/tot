@@ -582,6 +582,7 @@
         "preset_unavailable": "测试后无法打开预设模态窗口。",
         "questions_unavailable": "无法打开理解题模态窗口。流程在创建预设前结束。",
         "pool_import_failed": "无法导入阅读速度测试文件。",
+        "pool_import_state_cleanup_failed": "阅读速度测试文件已导入，但 pool 状态无法完全更新。",
         "start_failed": "无法启动阅读速度测试。",
         "cancelled": "阅读速度测试已取消。",
         "cancelled_window_closed": "阅读速度测试已取消，因为其中一个会话窗口被关闭。"

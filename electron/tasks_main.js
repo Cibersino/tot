@@ -38,6 +38,7 @@ const {
   getTasksAllowedHostsFile,
   getTasksColumnWidthsFile,
   saveJson,
+  saveJsonStrict,
 } = require('./fs_storage');
 
 const log = Log.get('tasks-main');
@@ -299,7 +300,7 @@ function loadLibraryData() {
 
 function saveLibraryData(items) {
   const file = getTasksLibraryFile();
-  saveJson(file, items);
+  saveJsonStrict(file, items);
   return { ok: true };
 }
 
@@ -549,19 +550,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
       }
 
-      if (!fs.existsSync(parentDir)) {
-        fs.mkdirSync(parentDir, { recursive: true });
-      }
-
       const taskData = {
         meta: metaRes.meta,
         rows: normalizedRows,
       };
-      saveJson(candidateResolved, taskData);
-
-      if (!fs.existsSync(candidateResolved)) {
-        return { ok: false, code: 'WRITE_FAILED', message: 'task list not persisted' };
-      }
+      saveJsonStrict(candidateResolved, taskData);
 
       return { ok: true, path: candidateResolved, meta: taskData.meta };
     } catch (err) {

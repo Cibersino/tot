@@ -582,6 +582,7 @@
         "preset_unavailable": "Testten sonra ön ayar modalı açılamadı.",
         "questions_unavailable": "Anlama soruları modalı açılamadı. Akış, ön ayar oluşturulmadan sona erdi.",
         "pool_import_failed": "Okuma hızı testi dosyaları içe aktarılamadı.",
+        "pool_import_state_cleanup_failed": "Okuma hızı testi dosyaları içe aktarıldı, ancak pool durumu tam olarak güncellenemedi.",
         "start_failed": "Okuma hızı testi başlatılamadı.",
         "cancelled": "Okuma hızı testi iptal edildi.",
         "cancelled_window_closed": "Oturum pencerelerinden biri kapandığı için okuma hızı testi iptal edildi."

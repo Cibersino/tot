@@ -582,6 +582,7 @@
         "preset_unavailable": "Ayikwazanga ukuvula i-modal yephrezethi ngemva kokuhlolwa.",
         "questions_unavailable": "Ayikwazanga ukuvula i-modal yemibuzo yokuqonda. Inqubo iphele ngaphambi kokudala iphrezethi.",
         "pool_import_failed": "Ayikwazanga ukungenisa amafayela okuhlolwa kwejubane lokufunda.",
+        "pool_import_state_cleanup_failed": "Amafayela e-test yesivinini sokufunda angenisiwe, kodwa isimo se-pool asikwazanga ukubuyekezwa ngokuphelele.",
         "start_failed": "Ayikwazanga ukuqala ukuhlolwa kwejubane lokufunda.",
         "cancelled": "Ukuhlolwa kwejubane lokufunda kukhanseliwe.",
         "cancelled_window_closed": "Ukuhlolwa kwejubane lokufunda kukhanseliwe ngoba elinye lamawindi eseshini livaliwe."

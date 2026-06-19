@@ -582,6 +582,7 @@
         "preset_unavailable": "Modalen för förinställningar kunde inte öppnas efter testet.",
         "questions_unavailable": "Modalen med förståelsefrågor kunde inte öppnas. Flödet avslutades före skapande av förinställning.",
         "pool_import_failed": "Filerna för test av läshastighet kunde inte importeras.",
+        "pool_import_state_cleanup_failed": "Filerna för läshastighetstestet importerades, men poolens tillstånd kunde inte uppdateras helt.",
         "start_failed": "Testet av läshastighet kunde inte startas.",
         "cancelled": "Testet av läshastighet avbröts.",
         "cancelled_window_closed": "Testet av läshastighet avbröts eftersom ett av sessionsfönstren stängdes."

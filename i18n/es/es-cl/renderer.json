@@ -582,6 +582,7 @@
         "preset_unavailable": "No se pudo abrir el modal del preset después del test.",
         "questions_unavailable": "No se pudo abrir el modal de preguntas de comprensión lectora. La vuelta terminó antes de crear el preset.",
         "pool_import_failed": "No se pudieron importar los archivos del test de ritmo de lectura.",
+        "pool_import_state_cleanup_failed": "Se importaron los archivos del test de velocidad de lectura, pero no se pudo actualizar por completo el estado del pool.",
         "start_failed": "Cagó el inicio del test de ritmo de lectura.",
         "cancelled": "El test de ritmo de lectura fue cancelado.",
         "cancelled_window_closed": "El test se canceló porque se cerró una de las ventanas necesarias pa' hacerlo."

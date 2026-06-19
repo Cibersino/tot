@@ -9,7 +9,8 @@
 // - Initialize the config root under app.getPath('userData') once Electron is ready.
 // - Resolve stable paths for settings, current text, Text Editor state, presets, current-text snapshots, task files, and text extraction + OCR storage.
 // - Ensure required storage directories exist before reads and writes.
-// - Read and write small JSON files with recoverable fallback handling.
+// - Read small JSON files with recoverable fallback handling.
+// - Write small JSON files through either a best-effort or strict contract.
 // - Stay synchronous because it is used only from the Electron main process.
 
 // =============================================================================
@@ -293,6 +294,10 @@ function loadJson(filePath, fallback = {}) {
   }
 }
 
+// Best-effort JSON persistence for runtime/config state:
+// - attempts a synchronous write;
+// - logs internally on failure;
+// - does not throw or return a success result.
 function saveJson(filePath, obj) {
   try {
     // Ensure the parent folder exists so callers do not depend on init ordering.
@@ -303,6 +308,16 @@ function saveJson(filePath, obj) {
   } catch (err) {
     log.error('saveJson failed:', filePath, err);
   }
+}
+
+// Strict JSON persistence for explicit save flows:
+// - uses the same parent-dir creation and serialization contract as saveJson(...);
+// - does not suppress failures;
+// - callers own catch/log/result mapping at the operation boundary.
+function saveJsonStrict(filePath, obj) {
+  const parentDir = path.dirname(filePath);
+  ensureDirExists(parentDir);
+  fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
 }
 
 // =============================================================================
@@ -344,6 +359,7 @@ module.exports = {
 
   loadJson,
   saveJson,
+  saveJsonStrict,
 };
 
 // =============================================================================

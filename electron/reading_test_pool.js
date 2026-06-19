@@ -4,7 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Reading-test pool helpers.
+// Reading-test pool owner for bundled and runtime pool content under snapshots.
 // Responsibilities:
 // - Resolve and ensure the dedicated runtime pool folder under snapshots.
 // - Track pool usage + bundled starter hashes in an external state file.
@@ -26,6 +26,7 @@ const {
   getReadingTestPoolStateFile,
   loadJson,
   saveJson,
+  saveJsonStrict,
 } = require('./fs_storage');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const readingTestQuestionsCore = require('../public/js/lib/reading_test_questions_core');
@@ -242,19 +243,35 @@ function normalizePoolState(rawState) {
   };
 }
 
-function loadPoolState({ stateFilePath } = {}) {
-  const targetStateFile = typeof stateFilePath === 'string' && stateFilePath.trim()
+function resolvePoolStateFilePath(stateFilePath) {
+  return typeof stateFilePath === 'string' && stateFilePath.trim()
     ? path.resolve(stateFilePath)
     : path.resolve(getReadingTestPoolStateFile());
+}
+
+function loadPoolState({ stateFilePath } = {}) {
+  const targetStateFile = resolvePoolStateFilePath(stateFilePath);
   const rawState = loadJson(targetStateFile, POOL_STATE_FALLBACK);
   return normalizePoolState(rawState);
 }
 
 function savePoolState(state, { stateFilePath } = {}) {
-  const targetStateFile = typeof stateFilePath === 'string' && stateFilePath.trim()
-    ? path.resolve(stateFilePath)
-    : path.resolve(getReadingTestPoolStateFile());
+  const targetStateFile = resolvePoolStateFilePath(stateFilePath);
   saveJson(targetStateFile, normalizePoolState(state));
+}
+
+function savePoolStateStrict(state, { stateFilePath } = {}) {
+  const targetStateFile = resolvePoolStateFilePath(stateFilePath);
+  try {
+    saveJsonStrict(targetStateFile, normalizePoolState(state));
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      code: 'WRITE_FAILED',
+      message: String(err),
+    };
+  }
 }
 
 function getShowBundledEntries(options = {}) {
@@ -276,7 +293,7 @@ function setShowBundledEntries(nextValue, options = {}) {
   };
 }
 
-function updatePoolStateEntry(snapshotRelPath, updater, options = {}) {
+function updatePoolStateEntryStrict(snapshotRelPath, updater, options = {}) {
   const normalizedPath = normalizeSnapshotRelPath(snapshotRelPath);
   if (!normalizedPath || typeof updater !== 'function') {
     return { ok: false, code: 'INVALID_STATE_UPDATE' };
@@ -290,7 +307,10 @@ function updatePoolStateEntry(snapshotRelPath, updater, options = {}) {
   }
 
   state.entries[normalizedPath] = normalizePoolStateEntry(nextEntry);
-  savePoolState(state, options);
+  const saveInfo = savePoolStateStrict(state, options);
+  if (!saveInfo.ok) {
+    return saveInfo;
+  }
   return {
     ok: true,
     state,
@@ -299,7 +319,7 @@ function updatePoolStateEntry(snapshotRelPath, updater, options = {}) {
 }
 
 function markPoolEntryUsed(snapshotRelPath, nextValue, options = {}) {
-  return updatePoolStateEntry(snapshotRelPath, (entry) => ({
+  return updatePoolStateEntryStrict(snapshotRelPath, (entry) => ({
     ...entry,
     used: nextValue === true,
   }), options);
@@ -323,7 +343,10 @@ function clearImportedPoolEntriesState(snapshotRelPaths, options = {}) {
     updated += 1;
   }
 
-  savePoolState(state, options);
+  const saveInfo = savePoolStateStrict(state, options);
+  if (!saveInfo.ok) {
+    return saveInfo;
+  }
   return { ok: true, updated };
 }
 
@@ -339,7 +362,10 @@ function resetPoolUsageState(options = {}) {
       used: false,
     };
   }
-  savePoolState(state, options);
+  const saveInfo = savePoolStateStrict(state, options);
+  if (!saveInfo.ok) {
+    return saveInfo;
+  }
   return {
     ok: true,
     updated,
@@ -463,7 +489,7 @@ function ensurePoolDir() {
       fs.mkdirSync(poolDir, { recursive: true });
     }
   } catch (err) {
-    log.error('ensurePoolDir failed:', poolDir, err);
+    log.warn('ensurePoolDir failed (continuing):', poolDir, err);
   }
   return poolDir;
 }
@@ -478,15 +504,13 @@ function resolvePoolContext(options = {}) {
   const bundledSourceDir = typeof options.bundledSourceDir === 'string' && options.bundledSourceDir.trim()
     ? path.resolve(options.bundledSourceDir)
     : path.resolve(BUNDLED_POOL_SOURCE_DIR);
-  const stateFilePath = typeof options.stateFilePath === 'string' && options.stateFilePath.trim()
-    ? path.resolve(options.stateFilePath)
-    : path.resolve(getReadingTestPoolStateFile());
+  const stateFilePath = resolvePoolStateFilePath(options.stateFilePath);
 
   try {
     fs.mkdirSync(snapshotsRootDir, { recursive: true });
     fs.mkdirSync(poolDir, { recursive: true });
   } catch (err) {
-    log.error('Failed to ensure reading-test pool context directories:', { snapshotsRootDir, poolDir }, err);
+    log.warn('Failed to ensure reading-test pool context directories (continuing):', { snapshotsRootDir, poolDir }, err);
   }
 
   return {

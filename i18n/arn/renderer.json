@@ -582,6 +582,7 @@
         "preset_unavailable": "Ngelay kintual modal preset pepiluwün mu.",
         "questions_unavailable": "Ngelay kintual modal ramtun. Amulelay yalltul preset.",
         "pool_import_failed": "Pepiluwün ñi pürüm chillkatun archivos koneltulay.",
+        "pool_import_state_cleanup_failed": "Pu archivo test de velocidad de lectura konüy, welu pool ñi estado no pepi actualizar kom.",
         "start_failed": "Ngelay yalltuwal pepiluwün ñi pürüm chillkatun.",
         "cancelled": "Pepiluwün ñi pürüm chillkatun katrütungey.",
         "cancelled_window_closed": "Pepiluwün ñi pürüm chillkatun katrütungey ñafün mu kiñe ventana."

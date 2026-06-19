@@ -36,6 +36,7 @@ function loadSnapshotsMainWithMocks({
   currentText = 'Snapshot text',
   shellOpenPathResult = '',
   messageBoxResponse = 0,
+  saveJsonStrictImpl = null,
 }) {
   const snapshotsModulePath = path.resolve(
     __dirname,
@@ -102,7 +103,10 @@ function loadSnapshotsMainWithMocks({
       ensureCurrentTextSnapshotsDir() {
         fs.mkdirSync(rootDir, { recursive: true });
       },
-      saveJson(targetPath, payload) {
+      saveJsonStrict(targetPath, payload) {
+        if (typeof saveJsonStrictImpl === 'function') {
+          return saveJsonStrictImpl(targetPath, payload);
+        }
         fs.mkdirSync(path.dirname(targetPath), { recursive: true });
         fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2));
       },
@@ -334,6 +338,45 @@ test('non-interactive snapshot save accepts valid non-catalog language tags', as
   assert.deepEqual(payload.tags, {
     language: 'es-cl',
   });
+});
+
+test('snapshot save maps saveJsonStrict failures to WRITE_FAILED', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-write-failure');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    saveJsonStrictImpl() {
+      throw new Error('disk full');
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const saveResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Failure Unit',
+      tags: null,
+    }
+  );
+
+  assert.equal(saveResult.ok, false);
+  assert.equal(saveResult.code, 'WRITE_FAILED');
+  assert.match(String(saveResult.message || ''), /disk full/i);
 });
 
 test('open snapshots folder delegates to shell.openPath using the snapshots root', async (t) => {

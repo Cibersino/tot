@@ -582,6 +582,7 @@
         "preset_unavailable": "Ndaikatúi ojepe’a modal preset test rire.",
         "questions_unavailable": "Ndaikatúi ojepe’a modal porandu comprensión rehegua. Flujo opa preset jejapo mboyve.",
         "pool_import_failed": "Ndaikatúi ojegueru archivo moñe’ẽ pya’ekue test rehegua.",
+        "pool_import_state_cleanup_failed": "Ojegueru umi archivo test de velocidad de lectura rehegua, pero pool estado ndaikatúi oñembopyahu porãite.",
         "start_failed": "Ndaikatúi oñepyrũ moñe’ẽ pya’ekue test.",
         "cancelled": "Moñe’ẽ pya’ekue test ojeheja.",
         "cancelled_window_closed": "Moñe’ẽ pya’ekue test ojeheja peteĩ ventana sesión rehegua oñembotýgui."

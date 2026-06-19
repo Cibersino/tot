@@ -582,6 +582,7 @@
         "preset_unavailable": "La boîte de dialogue du preset n'a pas pu être ouverte après le test.",
         "questions_unavailable": "La boîte de dialogue des questions de compréhension n'a pas pu être ouverte. Le flux s'est terminé avant la création du preset.",
         "pool_import_failed": "Les fichiers du test de vitesse de lecture n'ont pas pu être importés.",
+        "pool_import_state_cleanup_failed": "Les fichiers du test de vitesse de lecture ont été importés, mais l’état du pool n’a pas pu être entièrement mis à jour.",
         "start_failed": "Le test de vitesse de lecture n'a pas pu démarrer.",
         "cancelled": "Le test de vitesse de lecture a été annulé.",
         "cancelled_window_closed": "Le test de vitesse de lecture a été annulé parce qu'une de ses fenêtres de session a été fermée."

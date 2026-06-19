@@ -623,6 +623,9 @@
       setStabilizing(false);
       await refreshEntryDataAfterPoolMutation();
       notifyImportSummary(result);
+      if (result.partialSuccess === true && typeof result.warningGuidanceKey === 'string') {
+        window.Notify.notifyMain(result.warningGuidanceKey);
+      }
     } catch (err) {
       setStabilizing(false);
       log.error('Reading-test pool import failed unexpectedly:', err);

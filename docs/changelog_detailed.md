@@ -59,6 +59,7 @@ Reglas:
 - La extracción OCR agrega soporte para `.jp2` como input solo-imagen dentro del mismo flujo compartido de picker, drag/drop, prepare y ejecución ya existente, sin abrir una ruta ni una UI separadas.
 - El soporte JP2 se implementa con normalización local a PNG antes del upload OCR, usando un runtime OpenJPEG WASM vendorizado dentro del árbol `electron/` y documentación explícita de licencia/provenance en las superficies legales ya existentes de la app.
 - La normalización JP2 deja de producir uploads OCR desproporcionados para escaneos válidos pequeños: el input efectivo que llega al provider queda reducido a una materialización PNG más acotada y evita rechazos `413 Request Too Large` en casos representativos que antes fallaban.
+- La persistencia JSON local deja de mezclar operaciones best-effort y verified-write bajo el mismo éxito aparente: el storage compartido explicita `saveJson(...)` como write best-effort y agrega `saveJsonStrict(...)` para owners cuyo `ok: true` ahora sí implica escritura confirmada bajo el contrato del repo.
 
 ### Agregado
 
@@ -67,6 +68,7 @@ Reglas:
   - `tools/generate_renderer_icons.js` para generar el catálogo runtime;
   - `public/js/generated_icons.js` como artefacto renderer autogenerado;
   - `public/js/renderer_icons.js` como helper común para aplicar iconos a markup estático y a controles creados por JS.
+- Helper compartido `saveJsonStrict(...)` en `electron/fs_storage.js` para writes JSON sin suppress/catch interno, reutilizando la serialización y la creación de parent dir del owner de storage ya existente.
 - Botón iconográfico dedicado de `Reading speed test` en el toolbar de la ventana principal, integrado al mismo sistema compartido de iconos funcionales.
 - Catálogo editable de tags de snapshot persistido en un archivo dedicado de config, con:
   - creación de tags personalizados por categoría;
@@ -97,6 +99,20 @@ Reglas:
 - El contrato compartido de formatos soportados pasa a incluir `.jp2` solo en la familia OCR/imagen; el picker nativo, drag/drop, prepare y route selection lo heredan desde los owners ya existentes en lugar de abrir wiring especial.
 - `ocr_image_normalization.js` conserva el ownership del contrato de normalización OCR, pero delega la decodificación/materialización de `.jp2` a `ocr_jp2_normalization.js` para mantener aislada la dependencia runtime específica.
 - El runtime JP2 empaquetado deja de arrastrar el árbol completo de dependencias de build del paquete npm original (`tsup`/`esbuild`/`rollup`) y pasa a redistribuir solo el artefacto runtime vendorizado más su documentación legal/provenance asociada.
+- El contrato de persistencia JSON compartido deja de ser implícito:
+  - `saveJson(...)` queda documentado como write best-effort para runtime/config state que puede seguir ejecutándose con el estado en memoria actualizado;
+  - `saveJsonStrict(...)` pasa a ser la ruta explícita para owners donde el resultado visible debe significar write confirmado o mapping de fallo en el boundary.
+- Los owners persistidos que ya no pueden publicar un falso committed state pasan a verified-write semantics:
+  - `user_settings.json` para `set-language`, `set-mode-conteo`, `set-selected-preset`, `set-spellcheck-enabled` y `set-editor-font-size-px`;
+  - `snapshot_tags.json` para `set-snapshot-tag-preferences`;
+  - snapshots guardados bajo `config/saved_current_texts/*.json`;
+  - task lists bajo `config/tasks/lists/*.json`;
+  - `config/tasks/library.json` para `task-library-save` y `task-library-delete`;
+  - `reading_test_pool_state.json` para `mark used`, reset explícito del pool y cleanup post-import.
+- Los owners confirmados como best-effort quedan explícitos en lugar de seguir ambiguos:
+  - `current_text.json` mantiene semántica restore-only para `set-current-text` / quit persistence, sin re-clasificarse como durable working document;
+  - `tasks/allowed_hosts.json` sigue siendo memoria de conveniencia para `task-open-link`;
+  - `reading-test-set-show-bundled-entries` mantiene semántica reread/revert best-effort: el payload exitoso describe el estado recomputado devuelto al renderer, no una confirmación de durabilidad del toggle.
 
 ### Arreglado
 
@@ -111,6 +127,32 @@ Reglas:
   - un `.jp2` válido deja de caer en el fallo provider-side `ocr_conversion_failed` por `413 Request Too Large` causado por una materialización PNG local demasiado pesada para el upload OCR efectivo;
   - la normalización JP2 ahora reduce el output al shape usado realmente por OCR antes del chequeo de tamaño del provider, y la ruta OCR pasa a bloquear antes del upload cualquier imagen efectiva `>= 10 MB`, manteniendo el límite existente de `50 MB` para PDFs y otros inputs no-imagen;
   - el soporte runtime queda desacoplado del paquete npm original para evitar shipping innecesario de dependencias de build en la app empaquetada.
+- Persistencia JSON local y rollback UI (`electron/settings.js`, `electron/snapshot_tag_settings.js`, `electron/tasks_main.js`, `electron/reading_test_pool*.js`, `public/renderer.js`, `public/js/presets.js`, `public/js/wpm_controls.js`, `public/js/reading_speed_test.js`):
+  - cambios renderer como `modeConteo` y selección de preset dejan de quedarse en estado optimista si falla la persistencia strict y pasan a revertirse al estado visible anterior;
+  - `settings-updated` y el publish derivado de snapshot tags dejan de emitirse después de un write fallido, evitando payloads renderer que aparenten persistencia confirmada cuando el archivo no se escribió;
+  - el `Reading speed test` deja de continuar como si el progreso del pool hubiera quedado comprometido cuando falla `mark used` o el reset explícito del pool;
+  - el import del `Reading speed test` deja de reportar éxito limpio cuando los archivos se escribieron pero falla el cleanup de `reading_test_pool_state.json`, y pasa a devolver `partialSuccess` + `warningGuidanceKey`.
+
+### Contratos tocados
+
+- Helper compartido de storage (`electron/fs_storage.js`):
+  - `saveJson(filePath, obj)` queda definido como write best-effort con logging interno y sin throw/result de éxito;
+  - `saveJsonStrict(filePath, obj)` agrega el contrato complementario de verified write: misma serialización/parent-dir, pero throw en fallo para que el caller haga catch/log/mapping en el boundary correcto.
+- IPC/settings (`electron/settings.js`):
+  - `set-language`, `set-mode-conteo`, `set-selected-preset`, `set-spellcheck-enabled` y `set-editor-font-size-px`: `ok: true` pasa a significar que `user_settings.json` ya fue escrito con éxito;
+  - el publish `settings-updated` para esas mutaciones se emite solo después del save confirmado.
+- IPC/snapshot tags (`electron/snapshot_tag_settings.js`):
+  - `set-snapshot-tag-preferences`: `ok: true` pasa a significar que `snapshot_tags.json` ya fue persistido;
+  - si el save falla, no se ejecuta el publish derivado hacia settings.
+- IPC/tasks (`electron/tasks_main.js`, `electron/current_text_snapshots_main.js`):
+  - `task-list-save`, `task-library-save` y `task-library-delete`: `ok: true` queda atado a write confirmado de `config/tasks/lists/*.json` o `config/tasks/library.json`;
+  - el save de snapshots del texto actual bajo `config/saved_current_texts/*.json` conserva la misma superficie funcional, pero el resultado exitoso ya depende de `saveJsonStrict(...)`.
+- IPC/reading test (`electron/reading_test_pool.js`, `electron/reading_test_pool_import.js`, `electron/reading_test_session.js`):
+  - `reading-test-reset-pool` deja de reportar éxito si falla la persistencia de `reading_test_pool_state.json`;
+  - `reading-test-import-pool-files` puede devolver `{ ok: true, partialSuccess: true, warningGuidanceKey }` cuando los archivos del pool sí se escribieron pero falla el cleanup post-import del state file;
+  - `reading-test-set-show-bundled-entries` mantiene su semántica best-effort y no se reinterpreta como durable toggle confirmation.
+- Storage deliberadamente no endurecido:
+  - `config/tasks/allowed_hosts.json` y `config/current_text.json` permanecen en semántica best-effort por contrato de conveniencia / restore-only, sin cambio de formato ni de ownership visible.
 
 ---
 

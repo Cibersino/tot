@@ -582,6 +582,7 @@
         "preset_unavailable": "Não foi possível abrir o diálogo de preset após o teste.",
         "questions_unavailable": "Não foi possível abrir o diálogo de perguntas de compreensão. O fluxo terminou antes da criação do preset.",
         "pool_import_failed": "Não foi possível importar os arquivos do teste de velocidade de leitura.",
+        "pool_import_state_cleanup_failed": "Os arquivos de teste foram importados, mas o estado do pool do teste não pôde ser totalmente atualizado.",
         "start_failed": "Não foi possível iniciar o teste de velocidade de leitura.",
         "cancelled": "O teste de velocidade de leitura foi cancelado.",
         "cancelled_window_closed": "O teste de velocidade de leitura foi cancelado porque uma das janelas da sessão foi fechada."

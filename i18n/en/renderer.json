@@ -582,6 +582,7 @@
         "preset_unavailable": "The preset window could not be opened after the test.",
         "questions_unavailable": "The comprehension questions window could not be opened. The flow ended before preset creation.",
         "pool_import_failed": "The reading speed test files could not be imported.",
+        "pool_import_state_cleanup_failed": "The reading speed test files were imported, but the pool state could not be fully updated.",
         "start_failed": "The reading speed test could not be started.",
         "cancelled": "The reading speed test was cancelled.",
         "cancelled_window_closed": "The reading speed test was cancelled because one of its session windows closed."

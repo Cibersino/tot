@@ -582,6 +582,7 @@
         "preset_unavailable": "Pa t kapab louvri modal preset la apre tès la.",
         "questions_unavailable": "Pa t kapab louvri modal kesyon konpreyansyon an. Flux la fini anvan kreye preset la.",
         "pool_import_failed": "Fichye tès vitès lekti yo pa t kapab enpòte.",
+        "pool_import_state_cleanup_failed": "Fichye tès vitès lekti yo te enpòte, men eta pool la pa t kapab mete ajou nèt.",
         "start_failed": "Tès vitès lekti a pa t kapab kòmanse.",
         "cancelled": "Tès vitès lekti a te anile.",
         "cancelled_window_closed": "Tès vitès lekti a te anile paske youn nan fenèt sesyon li yo te fèmen."

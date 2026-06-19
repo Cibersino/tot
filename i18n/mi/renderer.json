@@ -582,6 +582,7 @@
         "preset_unavailable": "Kāore i taea te whakatuwhera i te modal preset i muri i te whakamātautau.",
         "questions_unavailable": "Kāore i taea te whakatuwhera i te modal pātai mārama. I mutu te rere i mua i te waihanga preset.",
         "pool_import_failed": "Kāore i taea te kawemai i ngā kōnae whakamātautau tere pānui.",
+        "pool_import_state_cleanup_failed": "Kua kawemai ngā kōnae test tere pānui, engari kāore i taea te whakahōu katoa i te tūnga o te pool.",
         "start_failed": "Kāore i taea te tīmata i te whakamātautau tere pānui.",
         "cancelled": "Kua whakakorea te whakamātautau tere pānui.",
         "cancelled_window_closed": "Kua whakakorea te whakamātautau tere pānui nā te katia o tētahi o ngā matapihi wātū."

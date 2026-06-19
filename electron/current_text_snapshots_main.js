@@ -4,6 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
+// Current-text snapshot owner for save/load flows under config/saved_current_texts.
 // Responsibilities:
 // - Provide save/load snapshot flows for current text via native dialogs.
 // - Persist optional snapshot tag metadata on save.
@@ -25,7 +26,7 @@ const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const {
   getCurrentTextSnapshotsDir,
   ensureCurrentTextSnapshotsDir,
-  saveJson,
+  saveJsonStrict,
 } = require('./fs_storage');
 const textState = require('./text_state');
 const settingsState = require('./settings');
@@ -69,7 +70,7 @@ function ensureSnapshotsRoot() {
   try {
     ensureCurrentTextSnapshotsDir();
   } catch (err) {
-    log.error('ensureSnapshotsRoot failed:', err);
+    log.warn('ensureSnapshotsRoot failed (continuing):', err);
   }
   const root = getCurrentTextSnapshotsDir();
   return fs.existsSync(root) ? root : null;
@@ -423,7 +424,7 @@ function resolveOwnerWin(event, getWindows) {
 }
 
 // =============================================================================
-// IPC registration
+// IPC registration / handlers
 // =============================================================================
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -477,23 +478,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
       }
 
-      if (!fs.existsSync(parentDir)) {
-        fs.mkdirSync(parentDir, { recursive: true });
-      }
-
       const text = textState.getCurrentText() || '';
       const snapshotData = { text: String(text) };
       if (payloadInfo.tags) snapshotData.tags = payloadInfo.tags;
-      saveJson(candidateResolved, snapshotData);
-
-      if (!fs.existsSync(candidateResolved)) {
-        log.error('snapshot save reported success but file missing:', { candidateResolved });
-        return { ok: false, code: 'WRITE_FAILED', message: 'snapshot not persisted' };
-      }
-
-      const stats = fs.existsSync(candidateResolved)
-        ? fs.statSync(candidateResolved)
-        : { size: 0, mtimeMs: Date.now() };
+      saveJsonStrict(candidateResolved, snapshotData);
+      const stats = fs.statSync(candidateResolved);
 
       return {
         ok: true,

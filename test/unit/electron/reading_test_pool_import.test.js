@@ -6,6 +6,9 @@ const fs = require('fs');
 const path = require('path');
 const AdmZip = require('adm-zip');
 const {
+  installElectronModuleMock,
+} = require('../../helpers/electron_module_mock');
+const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
 
@@ -20,6 +23,120 @@ function makeTempDir() {
 
 function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+}
+
+function createIpcMainDouble() {
+  const handlers = new Map();
+  return {
+    handle(channel, handler) {
+      handlers.set(channel, handler);
+    },
+    async invoke(channel, event, ...args) {
+      if (!handlers.has(channel)) {
+        throw new Error(`No ipcMain.handle registered for ${channel}`);
+      }
+      return handlers.get(channel)(event, ...args);
+    },
+  };
+}
+
+function loadFreshReadingTestPoolImportForIpc({
+  statePath,
+  poolDir,
+  senderWin,
+  openDialogResult,
+  clearImportedPoolEntriesStateImpl = null,
+} = {}) {
+  const modulePath = require.resolve('../../../electron/reading_test_pool_import');
+  const poolModulePath = require.resolve('../../../electron/reading_test_pool');
+  const fsStorageModulePath = require.resolve('../../../electron/fs_storage');
+  const originalPoolModule = require.cache[poolModulePath];
+  const originalFsStorageModule = require.cache[fsStorageModulePath];
+  const restoreElectronModule = installElectronModuleMock({
+    dialog: {
+      async showOpenDialog() {
+        return openDialogResult;
+      },
+      async showMessageBox() {
+        return { response: 0 };
+      },
+    },
+    BrowserWindow: {
+      fromWebContents(webContents) {
+        return webContents === senderWin.webContents ? senderWin : null;
+      },
+    },
+    app: {},
+  });
+
+  require.cache[poolModulePath] = {
+    id: poolModulePath,
+    filename: poolModulePath,
+    loaded: true,
+    exports: {
+      sanitizePoolData(rawData) {
+        if (!rawData || typeof rawData.text !== 'string' || !rawData.text.length) {
+          return { ok: false, code: 'INVALID_TEXT' };
+        }
+        return { ok: true, data: rawData };
+      },
+      ensurePoolDir() {
+        fs.mkdirSync(poolDir, { recursive: true });
+        return poolDir;
+      },
+      buildPoolSnapshotRelPath(destinationName) {
+        const normalizedName = String(destinationName || '').trim();
+        return normalizedName ? `/reading_speed_test_pool/${normalizedName}` : '';
+      },
+      clearImportedPoolEntriesState(snapshotRelPaths) {
+        if (typeof clearImportedPoolEntriesStateImpl === 'function') {
+          return clearImportedPoolEntriesStateImpl(snapshotRelPaths);
+        }
+        return { ok: true, updated: Array.isArray(snapshotRelPaths) ? snapshotRelPaths.length : 0 };
+      },
+    },
+  };
+
+  require.cache[fsStorageModulePath] = {
+    id: fsStorageModulePath,
+    filename: fsStorageModulePath,
+    loaded: true,
+    exports: {
+      getReadingTestPoolImportStateFile() {
+        return statePath;
+      },
+      loadJson(filePath, fallbackValue) {
+        if (!fs.existsSync(filePath)) return fallbackValue;
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      },
+      saveJson(filePath, value) {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8');
+      },
+    },
+  };
+
+  delete require.cache[modulePath];
+  const readingTestPoolImport = require(modulePath);
+
+  function restore() {
+    delete require.cache[modulePath];
+    restoreElectronModule();
+
+    if (originalPoolModule) {
+      require.cache[poolModulePath] = originalPoolModule;
+    } else {
+      delete require.cache[poolModulePath];
+    }
+
+    if (originalFsStorageModule) {
+      require.cache[fsStorageModulePath] = originalFsStorageModule;
+    } else {
+      delete require.cache[fsStorageModulePath];
+    }
+  }
+
+  return { readingTestPoolImport, restore };
 }
 
 test('importSelectedFiles imports a valid json file, normalizes pool data, and preserves valid readingTest questions', async () => {
@@ -286,4 +403,61 @@ test('importSelectedFiles rejects imported json that contains unsupported tag ke
   assert.equal(result.imported, 0);
   assert.equal(result.failedValidation, 1);
   assert.equal(fs.existsSync(path.join(poolDir, 'invalid.json')), false);
+});
+
+test('registerIpc returns partial success when imported files are written but pool-state cleanup fails', async (t) => {
+  const tempDir = makeTempDir();
+  const sourcePath = path.join(tempDir, 'sample.json');
+  const poolDir = path.join(tempDir, 'pool');
+  const statePath = path.join(tempDir, 'picker_state.json');
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+
+  writeJson(sourcePath, {
+    text: 'Imported text.',
+    tags: {
+      language: 'en',
+      type: 'fiction',
+      difficulty: 'normal',
+    },
+  });
+
+  const { readingTestPoolImport, restore } = loadFreshReadingTestPoolImportForIpc({
+    statePath,
+    poolDir,
+    senderWin,
+    openDialogResult: {
+      canceled: false,
+      filePaths: [sourcePath],
+    },
+    clearImportedPoolEntriesStateImpl() {
+      return { ok: false, code: 'WRITE_FAILED', message: 'disk full' };
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  readingTestPoolImport.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+    isReadingTestInteractionLocked: () => false,
+  });
+
+  const result = await ipcMain.invoke(
+    'reading-test-import-pool-files',
+    { sender: senderWin.webContents },
+    {}
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.imported, 1);
+  assert.equal(result.partialSuccess, true);
+  assert.equal(
+    result.warningGuidanceKey,
+    'renderer.reading_test.alerts.pool_import_state_cleanup_failed'
+  );
+  assert.equal(fs.existsSync(path.join(poolDir, 'sample.json')), true);
 });

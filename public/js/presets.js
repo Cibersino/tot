@@ -40,7 +40,7 @@
   // Helpers (merge + DOM utilities)
   // =============================================================================
   function normalizeSettings(settings, language) {
-    return (settings && typeof settings === 'object')
+    return (settings && typeof settings === 'object' && !Array.isArray(settings))
       ? settings
       : {
         language,
@@ -48,6 +48,13 @@
         disabled_default_presets: {},
         selected_preset_by_language: {}
       };
+  }
+
+  function findPresetByName(list, presetName) {
+    const normalizedName = typeof presetName === 'string' ? presetName.trim() : '';
+    return normalizedName
+      ? list.find((preset) => preset.name === normalizedName) || null
+      : null;
   }
 
   function combinePresets({ settings = {}, defaults = {} }) {
@@ -118,11 +125,9 @@
     language = DEFAULT_LANG,
     selectEl
   }) {
-    if (!electronAPI) throw new Error('electronAPI is required to load presets');
-
     const settingsSnapshot = normalizeSettings(settings, language);
     let defaults = { general: [], languagePresets: {} };
-    if (typeof electronAPI.getDefaultPresets !== 'function') {
+    if (!electronAPI || typeof electronAPI.getDefaultPresets !== 'function') {
       log.warn(
         '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
       );
@@ -144,6 +149,7 @@
     settings = {},
     language = DEFAULT_LANG,
     currentPresetName = null,
+    previousPresetName = null,
     selectEl,
     presetDescription,
     electronAPI
@@ -156,17 +162,18 @@
       typeof selectedByLanguage[langBase] === 'string'
         ? selectedByLanguage[langBase].trim()
         : '';
-    const trimmedCurrent = typeof currentPresetName === 'string' ? currentPresetName.trim() : '';
-    const selectedName = persisted || trimmedCurrent;
+    const persistedSelection = findPresetByName(list, persisted);
+    const rollbackSelection =
+      findPresetByName(list, previousPresetName)
+      || persistedSelection;
+    const selectedName = persisted || (typeof currentPresetName === 'string' ? currentPresetName.trim() : '');
     if (!selectedName) {
       log.warn(
         'No persisted preset selection for langKey; selecting safe default and persisting (may be normal on first run).',
         { lang: langBase }
       );
     }
-    const namedSelection = selectedName
-      ? list.find(p => p.name === selectedName) || null
-      : null;
+    const namedSelection = findPresetByName(list, selectedName);
     if (selectedName && !namedSelection) {
       log.warn(
         'Selected preset not found; falling back to safe preset:',
@@ -188,14 +195,27 @@
 
     try {
       if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
-        await electronAPI.setSelectedPreset(selected.name);
+        const persistResult = await electronAPI.setSelectedPreset(selected.name);
+        if (
+          persistResult
+          && typeof persistResult.ok === 'boolean'
+          && persistResult.ok !== true
+        ) {
+          throw new Error(
+            persistResult.error
+              ? String(persistResult.error)
+              : 'Selection persistence returned non-ok result.'
+          );
+        }
       } else {
-        log.warn(
-          '[presets] Selection persistence failed (ignored): electronAPI.setSelectedPreset unavailable.'
-        );
+        throw new Error('electronAPI.setSelectedPreset unavailable.');
       }
     } catch (err) {
-      log.warn('Selection persistence failed (ignored):', err);
+      log.warn('Selection persistence failed:', err);
+      if (rollbackSelection && rollbackSelection.name !== selected.name) {
+        applyPresetSelection(rollbackSelection, { selectEl, presetDescription });
+        return rollbackSelection;
+      }
     }
 
     return selected;

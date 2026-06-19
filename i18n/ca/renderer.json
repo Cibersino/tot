@@ -582,6 +582,7 @@
         "preset_unavailable": "No s’ha pogut obrir el modal de preset després del test.",
         "questions_unavailable": "No s’ha pogut obrir el modal de preguntes de comprensió. El flux ha acabat abans de crear el preset.",
         "pool_import_failed": "No s’han pogut importar els fitxers del test de velocitat de lectura.",
+        "pool_import_state_cleanup_failed": "S’han importat els fitxers del test de velocitat de lectura, però l’estat del pool no s’ha pogut actualitzar completament.",
         "start_failed": "No s’ha pogut iniciar el test de velocitat de lectura.",
         "cancelled": "El test de velocitat de lectura s’ha cancel·lat.",
         "cancelled_window_closed": "El test de velocitat de lectura s’ha cancel·lat perquè una de les finestres de sessió s’ha tancat."
