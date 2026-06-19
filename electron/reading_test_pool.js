@@ -4,7 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Reading-test pool helpers.
+// Reading-test pool owner for bundled and runtime pool content under snapshots.
 // Responsibilities:
 // - Resolve and ensure the dedicated runtime pool folder under snapshots.
 // - Track pool usage + bundled starter hashes in an external state file.
