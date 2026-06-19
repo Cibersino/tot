@@ -40,7 +40,7 @@
   // Helpers (merge + DOM utilities)
   // =============================================================================
   function normalizeSettings(settings, language) {
-    return (settings && typeof settings === 'object')
+    return (settings && typeof settings === 'object' && !Array.isArray(settings))
       ? settings
       : {
         language,
@@ -48,6 +48,13 @@
         disabled_default_presets: {},
         selected_preset_by_language: {}
       };
+  }
+
+  function findPresetByName(list, presetName) {
+    const normalizedName = typeof presetName === 'string' ? presetName.trim() : '';
+    return normalizedName
+      ? list.find((preset) => preset.name === normalizedName) || null
+      : null;
   }
 
   function combinePresets({ settings = {}, defaults = {} }) {
@@ -157,25 +164,18 @@
       typeof selectedByLanguage[langBase] === 'string'
         ? selectedByLanguage[langBase].trim()
         : '';
-    const persistedSelection = persisted
-      ? list.find(p => p.name === persisted) || null
-      : null;
+    const persistedSelection = findPresetByName(list, persisted);
     const rollbackSelection =
-      (typeof previousPresetName === 'string' && previousPresetName.trim()
-        ? list.find(p => p.name === previousPresetName.trim()) || null
-        : null)
+      findPresetByName(list, previousPresetName)
       || persistedSelection;
-    const trimmedCurrent = typeof currentPresetName === 'string' ? currentPresetName.trim() : '';
-    const selectedName = persisted || trimmedCurrent;
+    const selectedName = persisted || (typeof currentPresetName === 'string' ? currentPresetName.trim() : '');
     if (!selectedName) {
       log.warn(
         'No persisted preset selection for langKey; selecting safe default and persisting (may be normal on first run).',
         { lang: langBase }
       );
     }
-    const namedSelection = selectedName
-      ? list.find(p => p.name === selectedName) || null
-      : null;
+    const namedSelection = findPresetByName(list, selectedName);
     if (selectedName && !namedSelection) {
       log.warn(
         'Selected preset not found; falling back to safe preset:',
