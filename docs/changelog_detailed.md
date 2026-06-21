@@ -46,6 +46,15 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [1.5.0] toT
+
+### Fecha release y último commit
+
+- Fecha: `2026-06-21`
+- Último commit: `a4ae6c1985403a3024ab9328299193dc531e1720`
+
 ### Resumen de cambios
 
 - La app deja de depender de glyphs Unicode como controles funcionales en sus superficies principales y pasa a un sistema compartido de SVGs canónicos generados para renderer.

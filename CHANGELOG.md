@@ -12,6 +12,24 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
 - **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
 
+## [1.5.0] toT
+- Fecha: `2026-06-21`
+
+### Resumen de cambios
+
+- La app deja de depender de glyphs Unicode como controles funcionales en sus superficies principales y pasa a un sistema compartido de SVGs canónicos generados para renderer.
+- La ventana principal incorpora un botón de icono dedicado para el `Reading speed test` y alinea toolbar, presets, cronómetro y marcador del `Floating Stopwatch` bajo la misma familia visual funcional.
+- El `Text Editor`, la barra de búsqueda/reemplazo, el `Floating Stopwatch`, el `Task Editor` y los modales batch/info migran sus acciones funcionales al mismo modelo de iconos compartidos, reduciendo drift visual y de wiring entre superficies estáticas y controles generados por JS.
+- El modal de entrada del `Reading speed test` corrige la semántica de habilitación de filtros: cada opción vuelve a deshabilitarse cuando no existe ninguna entrada real compatible bajo las otras categorías activas, sin reactivarse por la unión accidental con valores ya marcados de la misma categoría.
+- La documentación y el copy i18n relacionados con estos controles se ajustan para nombrar la acción o el rol del control cuando la referencia histórica por glyph ya no era la guía más precisa.
+- El flujo de tags de snapshots deja de depender de un catálogo fijo: el modal buscable ahora permite crear tags personalizados inline y abre un gestor compartido para administrar `language` / `type` / `difficulty`, reutilizado también por los tags de unidades batch sin cambiar el contrato `{ tags } | null`.
+- La ruta nativa de extracción de texto agrega soporte local para `.epub`, resolviendo el orden de lectura desde `container.xml` + OPF/spine y manteniendo el mismo flujo existente de prepare/execute/apply sin una UI especial.
+- La extracción EPUB promueve `@xmldom/xmldom@0.8.13` a dependencia runtime directa, añade su licencia redistribuida y actualiza manual/QA para incluir `.epub` dentro de los formatos nativos soportados.
+- La extracción OCR agrega soporte para `.jp2` como input solo-imagen dentro del mismo flujo compartido de picker, drag/drop, prepare y ejecución ya existente, sin abrir una ruta ni una UI separadas.
+- El soporte JP2 se implementa con normalización local a PNG antes del upload OCR, usando un runtime OpenJPEG WASM vendorizado dentro del árbol `electron/` y documentación explícita de licencia/provenance en las superficies legales ya existentes de la app.
+- La normalización JP2 deja de producir uploads OCR desproporcionados para escaneos válidos pequeños: el input efectivo que llega al provider queda reducido a una materialización PNG más acotada y evita rechazos `413 Request Too Large` en casos representativos que antes fallaban.
+- La persistencia JSON local deja de mezclar operaciones best-effort y verified-write bajo el mismo éxito aparente: el storage compartido explicita `saveJson(...)` como write best-effort y agrega `saveJsonStrict(...)` para owners cuyo `ok: true` ahora sí implica escritura confirmada bajo el contrato del repo.
+
 ## [1.4.1] toT
 - Fecha: `2026-06-07`
 
