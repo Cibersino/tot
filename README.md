@@ -44,7 +44,7 @@
 
 * **Windows (build portable)**: Windows 10/11 (64-bit).
 * **macOS (DMG arm64)**: Macs con Apple Silicon.
-* **Planificado**: Linux.
+* **Linux (AppImage x86_64)**: distribuciones Linux x86_64 compatibles con AppImage.
 
 ### Desarrolladores (ejecutar desde el código fuente)
 
@@ -77,10 +77,19 @@
 
 `INSTALL.txt` incluido en el DMG explica el primer inicio y el aviso de cuarentena de macOS.
 
+### Linux
+
+1. Descargar el último **`.AppImage` para Linux x86_64** desde [GitHub Releases](https://github.com/Cibersino/tot/releases).
+2. Guardar el archivo en una carpeta local.
+3. Si el sistema no conserva el permiso de ejecución, ejecutar `chmod +x toT-<version>-linux-x86_64.AppImage`.
+4. Ejecutar el AppImage.
+
 ### Notas:
 
 * El build de Windows es portable, sin instalador.
 * El build de macOS se distribuye como DMG.
+* El build de Linux se distribuye como AppImage x86_64.
+* En algunas distribuciones Linux puede ser necesario instalar soporte FUSE 2 para ejecutar AppImage.
 * El estado/configuración se almacena localmente en `app.getPath('userData')/config` (sin dependencia de servicios en la nube).
 * El OCR con Google usa el alcance `drive.file`. Los usuarios requieren una cuenta de Google para usarlo.
 
@@ -247,7 +256,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 * **Windows (portable build)**: Windows 10/11 (64-bit).
 * **macOS (arm64 DMG)**: Apple Silicon Macs.
-* **Planned**: Linux.
+* **Linux (x86_64 AppImage)**: Linux x86_64 distributions compatible with AppImage.
 
 ### Developers (run from source)
 
@@ -280,10 +289,19 @@ The `INSTALL.txt` file included in the artifact explains first-run steps and the
 
 The `INSTALL.txt` file included in the DMG explains first-run steps and the macOS quarantine warning.
 
+### Linux
+
+1. Download the latest **Linux x86_64 `.AppImage`** from [GitHub Releases](https://github.com/Cibersino/tot/releases).
+2. Save the file in a local folder.
+3. If the executable permission is not preserved, run `chmod +x toT-<version>-linux-x86_64.AppImage`.
+4. Run the AppImage.
+
 ### Notes:
 
 * The Windows build is portable, with no installer.
 * The macOS build is distributed as a DMG.
+* The Linux build is distributed as an x86_64 AppImage.
+* Some Linux distributions may require FUSE 2 compatibility support to run AppImages.
 * User settings/state are stored locally in `app.getPath('userData')/config` (no cloud service dependency).
 * Google-based OCR uses the `drive.file` scope. Users need a Google account to use it.
 
