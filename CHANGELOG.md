@@ -17,6 +17,7 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 
 ### Resumen de cambios
 
+- Primer release que incluye artefacto para Linux.
 - La app deja de depender de glyphs Unicode como controles funcionales en sus superficies principales y pasa a un sistema compartido de SVGs canónicos generados para renderer.
 - La ventana principal incorpora un botón de icono dedicado para el `Reading speed test` y alinea toolbar, presets, cronómetro y marcador del `Floating Stopwatch` bajo la misma familia visual funcional.
 - El `Text Editor`, la barra de búsqueda/reemplazo, el `Floating Stopwatch`, el `Task Editor` y los modales batch/info migran sus acciones funcionales al mismo modelo de iconos compartidos, reduciendo drift visual y de wiring entre superficies estáticas y controles generados por JS.
