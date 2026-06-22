@@ -30,8 +30,10 @@
   function detectOs() {
     var source = getPlatformSource();
 
+    if (source.indexOf("android") !== -1) return "unknown";
+    if (source.indexOf("iphone") !== -1 || source.indexOf("ipad") !== -1 || source.indexOf("ipod") !== -1) return "unknown";
     if (source.indexOf("win") !== -1) return "windows";
-    if (source.indexOf("mac") !== -1 && source.indexOf("iphone") === -1 && source.indexOf("ipad") === -1 && source.indexOf("ipod") === -1) return "macos";
+    if (source.indexOf("mac") !== -1) return "macos";
     if (source.indexOf("linux") !== -1 || source.indexOf("x11") !== -1) return "linux";
 
     return "unknown";
