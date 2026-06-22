@@ -30,8 +30,8 @@
   function detectOs() {
     var source = getPlatformSource();
 
-    if (source.indexOf("android") !== -1) return "unknown";
-    if (source.indexOf("iphone") !== -1 || source.indexOf("ipad") !== -1 || source.indexOf("ipod") !== -1) return "unknown";
+    if (source.indexOf("android") !== -1) return "android";
+    if (source.indexOf("iphone") !== -1 || source.indexOf("ipad") !== -1 || source.indexOf("ipod") !== -1) return "ios";
     if (source.indexOf("win") !== -1) return "windows";
     if (source.indexOf("mac") !== -1) return "macos";
     if (source.indexOf("linux") !== -1 || source.indexOf("x11") !== -1) return "linux";
@@ -122,6 +122,19 @@
     setCta(state.ctaEl, state.config.releasesUrl, state.config.labels.fallback);
     setCtaMode(state.ctaEl, "fallback", state.os, "");
     setMessage(state.messageEl, state.config.messages.error[state.os] || state.config.messages.error.unknown);
+  }
+
+  function isUnsupportedOs(os) {
+    return os === "android" || os === "ios";
+  }
+
+  function setUnsupportedOs(state) {
+    var messages = state.config.messages || {};
+    var unsupportedMessages = messages.unsupported || {};
+
+    setCta(state.ctaEl, state.config.releasesUrl, state.config.labels.fallback);
+    setCtaMode(state.ctaEl, "fallback", state.os, "");
+    setMessage(state.messageEl, unsupportedMessages[state.os] || messages.unknown || "");
   }
 
   function buildSupportContent(supportEl, modalConfig) {
@@ -364,6 +377,11 @@
       setCta(state.ctaEl, config.releasesUrl, config.labels.fallback);
       setCtaMode(state.ctaEl, "fallback", state.os, "");
       setMessage(state.messageEl, config.messages.unknown);
+      return;
+    }
+
+    if (isUnsupportedOs(state.os)) {
+      setUnsupportedOs(state);
       return;
     }
 
