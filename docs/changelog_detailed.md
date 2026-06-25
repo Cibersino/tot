@@ -46,6 +46,29 @@ Reglas:
 
 ## Unreleased
 
+### Resumen de cambios
+
+- `window.Notify` recupera ownership único también para los prompts custom pendientes de `text extraction`: los 7 modales renderer que aún publicaban `window.Notify.prompt*` desde su archivo feature pasan a registrarse vía `registerCustomPrompt(...)`, sin cambiar la surface pública consumida por el resto del flujo.
+- `public/js/snapshot_save_tags_modal.js` deja de imponer un guard bootstrap local de `window.Notify` que no existía en ningún otro archivo del repo; el modal vuelve a alinearse con el patrón renderer vigente, donde `notify.js` sigue siendo el owner del contrato y los consumers no duplican checks de disponibilidad.
+
+### Cambiado
+
+- Notificaciones / diálogos renderer (Issue #320):
+  - `public/js/text_extraction_apply_modal.js`, `public/js/text_extraction_batch_final_modal.js`, `public/js/text_extraction_batch_planning_modal.js`, `public/js/text_extraction_ocr_activation_disclosure_modal.js`, `public/js/text_extraction_pdf_options_modal.js`, `public/js/text_extraction_route_choice_modal.js` y `public/js/text_extraction_single_file_heavy_pdf_modal.js` dejan de asignar `window.Notify.prompt* = ...` directamente;
+  - esos owners mantienen la implementación del prompt en el mismo módulo feature, pero delegan el registro público final a `window.Notify.registerCustomPrompt(...)`, alineándose con `public/js/notify.js` y con el criterio del repo para ownership de diálogos renderer.
+
+### Arreglado
+
+- Consistencia de bootstrap renderer:
+  - `public/js/snapshot_save_tags_modal.js` elimina el guard local que abortaba si `window.Notify` no exponía `confirmMain`, `notifyMain` o `registerCustomPrompt`;
+  - el modal deja de introducir un failure-path exclusivo y no reutilizado en el resto de `public/**`, evitando drift respecto del patrón repo de consumo directo de `window.Notify`.
+
+### Contratos tocados
+
+- Surface pública renderer `window.Notify`:
+  - sin cambios de nombres, firma ni consumers para `promptTextExtractionApplyChoice(...)`, `promptTextExtractionBatchFinalReport(...)`, `promptTextExtractionBatchPlan(...)`, `promptTextExtractionOcrActivationDisclosure(...)`, `promptTextExtractionPdfOptions(...)`, `promptTextExtractionRouteChoice(...)` y `promptTextExtractionSingleFileHeavyPdf(...)`;
+  - cambia solo el path interno de registro: la publicación final de esos prompts ahora ocurre a través de `window.Notify.registerCustomPrompt(...)` en vez de asignación directa desde cada módulo feature.
+
 ---
 
 ## [1.5.0] toT
