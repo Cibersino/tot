@@ -134,11 +134,9 @@
   // Exports / module surface
   // =============================================================================
 
-  window.Notify.promptTextExtractionRouteChoice = promptRouteChoice;
+  window.Notify.registerCustomPrompt('promptTextExtractionRouteChoice', promptRouteChoice);
 })();
 
 // =============================================================================
 // End of public/js/text_extraction_route_choice_modal.js
 // =============================================================================
-
-

@@ -322,7 +322,7 @@
   // Exports / module surface
   // =============================================================================
 
-  window.Notify.promptTextExtractionPdfOptions = promptPdfOptions;
+  window.Notify.registerCustomPrompt('promptTextExtractionPdfOptions', promptPdfOptions);
 })();
 
 // =============================================================================

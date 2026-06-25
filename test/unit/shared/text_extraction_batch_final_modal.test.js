@@ -213,6 +213,7 @@ function findDescendantByAttribute(root, attributeName, attributeValue) {
 
 function createHarness() {
   activeElementRef = null;
+  const registeredPromptNames = [];
   const elements = {
     outsideLauncher: createElement('outsideLauncher', 'button'),
     textExtractionBatchFinalModal: createElement('textExtractionBatchFinalModal'),
@@ -262,6 +263,10 @@ function createHarness() {
       Notify: {
         notifyMain(key) {
           notifiedKeys.push(key);
+        },
+        registerCustomPrompt(name, handler) {
+          registeredPromptNames.push(name);
+          this[name] = handler;
         },
       },
       getLogger() {
@@ -333,12 +338,24 @@ function createHarness() {
     elements,
     clipboardWrites,
     notifiedKeys,
+    getRegisteredPromptNames() {
+      return registeredPromptNames.slice();
+    },
     getActiveElement() {
       return activeElementRef;
     },
     prompt: sandbox.window.Notify.promptTextExtractionBatchFinalReport,
   };
 }
+
+test('batch final modal registers its public prompt through window.Notify.registerCustomPrompt', () => {
+  const harness = createHarness();
+
+  assert.deepEqual(harness.getRegisteredPromptNames(), [
+    'promptTextExtractionBatchFinalReport',
+  ]);
+  assert.equal(typeof harness.prompt, 'function');
+});
 
 test('batch final modal renders report rows with explicit DOM and exposes reveal/copy actions', async () => {
   const harness = createHarness();

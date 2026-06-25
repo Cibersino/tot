@@ -54,13 +54,6 @@
     throw new Error('[snapshot-save-tags-modal] RendererIcons unavailable; cannot continue');
   }
 
-  if (!window.Notify
-    || typeof window.Notify.confirmMain !== 'function'
-    || typeof window.Notify.notifyMain !== 'function'
-    || typeof window.Notify.registerCustomPrompt !== 'function') {
-    throw new Error('[snapshot-save-tags-modal] window.Notify unavailable; cannot continue');
-  }
-
   const electronAPI = window.electronAPI || null;
   const getSnapshotTagPreferences = electronAPI
     && typeof electronAPI.getSnapshotTagPreferences === 'function'

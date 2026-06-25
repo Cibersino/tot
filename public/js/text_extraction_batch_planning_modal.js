@@ -1164,7 +1164,7 @@
   // Exports / module surface
   // =============================================================================
 
-  window.Notify.promptTextExtractionBatchPlan = promptBatchPlan;
+  window.Notify.registerCustomPrompt('promptTextExtractionBatchPlan', promptBatchPlan);
 })();
 
 // =============================================================================

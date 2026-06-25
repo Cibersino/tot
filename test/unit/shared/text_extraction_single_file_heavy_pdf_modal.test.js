@@ -107,6 +107,7 @@ function createElement(id) {
 }
 
 function createHarness() {
+  const registeredPromptNames = [];
   const elements = {
     textExtractionSingleFileHeavyPdfModal: createElement('textExtractionSingleFileHeavyPdfModal'),
     textExtractionSingleFileHeavyPdfModalBackdrop: createElement('textExtractionSingleFileHeavyPdfModalBackdrop'),
@@ -148,6 +149,10 @@ function createHarness() {
     window: {
       Notify: {
         notifyMain() {},
+        registerCustomPrompt(name, handler) {
+          registeredPromptNames.push(name);
+          this[name] = handler;
+        },
       },
       getLogger() {
         return {
@@ -207,9 +212,21 @@ function createHarness() {
 
   return {
     elements,
+    getRegisteredPromptNames() {
+      return registeredPromptNames.slice();
+    },
     prompt: sandbox.window.Notify.promptTextExtractionSingleFileHeavyPdf,
   };
 }
+
+test('single-file heavy PDF modal registers its public prompt through window.Notify.registerCustomPrompt', () => {
+  const harness = createHarness();
+
+  assert.deepEqual(harness.getRegisteredPromptNames(), [
+    'promptTextExtractionSingleFileHeavyPdf',
+  ]);
+  assert.equal(typeof harness.prompt, 'function');
+});
 
 test('single-file heavy PDF modal moves provider limit into Case B intro and removes detail noise', async () => {
   const harness = createHarness();
