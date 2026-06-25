@@ -50,18 +50,25 @@ Reglas:
 
 - `window.Notify` recupera ownership único también para los prompts custom pendientes de `text extraction`: los 7 modales renderer que aún publicaban `window.Notify.prompt*` desde su archivo feature pasan a registrarse vía `registerCustomPrompt(...)`, sin cambiar la surface pública consumida por el resto del flujo.
 - `public/js/snapshot_save_tags_modal.js` deja de imponer un guard bootstrap local de `window.Notify` que no existía en ningún otro archivo del repo; el modal vuelve a alinearse con el patrón renderer vigente, donde `notify.js` sigue siendo el owner del contrato y los consumers no duplican checks de disponibilidad.
+- El cronómetro de la ventana principal deja de mezclar tamaños de icono entre `play/pause` y `stop/reset`: los dos botones vuelven a compartir la escala compacta del `Floating Stopwatch`, y el glyph `stop` recupera peso visual suficiente dentro de ese mismo tamaño reducido.
 
 ### Cambiado
 
 - Notificaciones / diálogos renderer (Issue #320):
   - `public/js/text_extraction_apply_modal.js`, `public/js/text_extraction_batch_final_modal.js`, `public/js/text_extraction_batch_planning_modal.js`, `public/js/text_extraction_ocr_activation_disclosure_modal.js`, `public/js/text_extraction_pdf_options_modal.js`, `public/js/text_extraction_route_choice_modal.js` y `public/js/text_extraction_single_file_heavy_pdf_modal.js` dejan de asignar `window.Notify.prompt* = ...` directamente;
   - esos owners mantienen la implementación del prompt en el mismo módulo feature, pero delegan el registro público final a `window.Notify.registerCustomPrompt(...)`, alineándose con `public/js/notify.js` y con el criterio del repo para ownership de diálogos renderer.
+- Cronómetro / iconografía renderer:
+  - la ventana principal deja de publicar los botones `play/pause` y `stop/reset` del cronómetro con el tamaño `xl` heredado del primer barrido de iconos y pasa a alinearlos con la escala compacta `md` que ya usaba el `Floating Stopwatch`;
+  - `public/js/crono.js` deja de reinyectar el toggle del cronómetro con un tamaño hardcodeado ajeno al markup y pasa a respetar `data-tot-icon-size` del botón owner, evitando que futuras reasignaciones de icono vuelvan a romper la coherencia entre `play` y `pause`.
 
 ### Arreglado
 
 - Consistencia de bootstrap renderer:
   - `public/js/snapshot_save_tags_modal.js` elimina el guard local que abortaba si `window.Notify` no exponía `confirmMain`, `notifyMain` o `registerCustomPrompt`;
   - el modal deja de introducir un failure-path exclusivo y no reutilizado en el resto de `public/**`, evitando drift respecto del patrón repo de consumo directo de `window.Notify`.
+- Cronómetro principal:
+  - `play/pause` deja de renderizarse más angosto que `stop/reset` por una mezcla accidental entre re-render runtime en tamaño `md` y markup estático en tamaño `xl`;
+  - el glyph `stop` deja de verse subdimensionado una vez alineados ambos botones al tamaño pequeño, porque su SVG canónico amplía el cuadrado útil dentro del mismo `viewBox` y recupera masa visual comparable con `play`.
 
 ### Contratos tocados
 
