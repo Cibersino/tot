@@ -69,6 +69,7 @@ const taskSummaryTotalValue = document.getElementById('taskSummaryTotalValue');
 const taskSummaryLeftLabel = document.getElementById('taskSummaryLeftLabel');
 const taskSummaryLeftValue = document.getElementById('taskSummaryLeftValue');
 const btnTaskAddRow = document.getElementById('btnTaskAddRow');
+const btnTaskAddFiles = document.getElementById('btnTaskAddFiles');
 const btnTaskLoadLibrary = document.getElementById('btnTaskLoadLibrary');
 const tableBody = document.getElementById('taskTableBody');
 
@@ -384,6 +385,19 @@ function createRow(data = {}) {
     comentario: String(data.comentario || ''),
     snapshotRelPath: normalizeSnapshotRelPath(data.snapshotRelPath || ''),
   };
+}
+
+function deriveRowTextFromPath(filePath) {
+  const raw = String(filePath || '').trim();
+  if (!raw) return '';
+  const segments = raw.split(/[\\/]+/).filter(Boolean);
+  const fileName = segments.length ? segments[segments.length - 1] : raw;
+  const dotIdx = fileName.lastIndexOf('.');
+  const baseName = dotIdx > 0 ? fileName.slice(0, dotIdx) : fileName;
+  const next = (baseName || fileName || raw).trim();
+  return next.length > TASK_ROW_TEXT_MAX_CHARS
+    ? next.slice(0, TASK_ROW_TEXT_MAX_CHARS)
+    : next;
 }
 
 function buildActionButton(iconName, titleKey, onClick, { className = 'icon-btn', size = 'lg' } = {}) {
@@ -736,6 +750,42 @@ function addRow(data = {}) {
   renderTable();
 }
 
+function addRows(items) {
+  if (!Array.isArray(items) || !items.length) return;
+  rows.push(...items.map((item) => createRow(item)));
+  markDirty();
+  renderTable();
+}
+
+async function addRowsFromSelectedFiles() {
+  const api = getTaskEditorApi('selectTaskFiles');
+  if (!api) return;
+  const res = await api.selectTaskFiles();
+  if (!res || res.ok === false) {
+    const code = res && res.code ? res.code : 'READ_FAILED';
+    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+    log.warn('selectTaskFiles failed:', { code, response: res || null });
+    window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
+    return;
+  }
+  const filePaths = Array.isArray(res.filePaths)
+    ? res.filePaths.filter((filePath) => typeof filePath === 'string' && filePath.trim())
+    : [];
+  if (!filePaths.length) {
+    log.warn('selectTaskFiles returned empty filePaths:', res || null);
+    window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
+    return;
+  }
+  addRows(filePaths.map((filePath) => ({
+    texto: deriveRowTextFromPath(filePath),
+    tiempoSeconds: 0,
+    percentComplete: 0,
+    enlace: filePath,
+    comentario: '',
+    snapshotRelPath: '',
+  })));
+}
+
 function deleteRow(id) {
   const idx = rows.findIndex((r) => r.id === id);
   if (idx < 0) return;
@@ -992,6 +1042,7 @@ async function applyTaskEditorTranslations() {
   if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.save_button');
   if (btnTaskDelete) btnTaskDelete.textContent = tr('renderer.tasks.delete_button');
   if (btnTaskAddRow) btnTaskAddRow.textContent = tr('renderer.tasks.add_row_button');
+  if (btnTaskAddFiles) btnTaskAddFiles.textContent = tr('renderer.tasks.add_files_button');
   if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.open_library_button');
 
   if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto');
@@ -1043,6 +1094,12 @@ async function applyTaskEditorTranslations() {
 // =============================================================================
 if (btnTaskAddRow) {
   btnTaskAddRow.addEventListener('click', () => addRow());
+}
+
+if (btnTaskAddFiles) {
+  btnTaskAddFiles.addEventListener('click', () => {
+    addRowsFromSelectedFiles().catch((err) => log.error('addRowsFromSelectedFiles failed:', err));
+  });
 }
 
 if (taskNameInput) {
