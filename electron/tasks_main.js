@@ -109,6 +109,32 @@ function getDialogTexts() {
   }
 }
 
+async function showContinueCancelDialog(ownerWin, {
+  messageKey,
+  messageReplacements,
+} = {}) {
+  const dialogTexts = getDialogTexts();
+  const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+  const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+
+  let message = resolveDialogText(dialogTexts, messageKey);
+  if (messageReplacements && typeof messageReplacements === 'object') {
+    Object.keys(messageReplacements).forEach((key) => {
+      message = message.replace(`{${key}}`, String(messageReplacements[key]));
+    });
+  }
+
+  const dialogOptions = {
+    type: 'none',
+    buttons: [continueLabel, cancelLabel],
+    defaultId: 1,
+    cancelId: 1,
+    message,
+  };
+
+  return dialog.showMessageBox(ownerWin || null, dialogOptions);
+}
+
 function getDefaultTaskFileName(rootDir, taskName) {
   const base = sanitizeTaskBaseName(taskName || '');
   let candidate = `${base}${TASK_EXT}`;
@@ -127,17 +153,10 @@ async function confirmTaskEditorDiscardIfDirty({ mainWin, taskEditorWin }) {
     return true;
   }
 
-  const dialogTexts = getDialogTexts();
-  const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
-  const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
-  const conf = await dialog.showMessageBox(mainWin || taskEditorWin || null, {
-    type: 'none',
-    buttons: [continueLabel, cancelLabel],
-    defaultId: 1,
-    cancelId: 1,
-    message: resolveDialogText(dialogTexts, 'task_discard_changes_confirm'),
+  const dialogRes = await showContinueCancelDialog(mainWin || taskEditorWin || null, {
+    messageKey: 'task_discard_changes_confirm',
   });
-  return conf.response !== 1;
+  return dialogRes.response !== 1;
 }
 
 function normalizeSavePath(filePath) {
@@ -606,20 +625,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
       }
 
-      const dialogTexts = getDialogTexts();
-      const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
-      const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
-      let message = resolveDialogText(dialogTexts, 'task_delete_confirm');
-      message = message.replace('{name}', path.basename(targetReal));
-
-      const res = await dialog.showMessageBox(taskEditorWin || null, {
-        type: 'none',
-        buttons: [continueLabel, cancelLabel],
-        defaultId: 1,
-        cancelId: 1,
-        message,
+      const dialogRes = await showContinueCancelDialog(taskEditorWin, {
+        messageKey: 'task_delete_confirm',
+        messageReplacements: { name: path.basename(targetReal) },
       });
-      if (!res || res.response !== 0) {
+      if (!dialogRes || dialogRes.response !== 0) {
         return { ok: false, code: 'CONFIRM_DENIED' };
       }
 
@@ -695,19 +705,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const existingIdx = items.findIndex((it) => normalizeTexto(it.texto) === norm);
 
       if (existingIdx >= 0) {
-        const dialogTexts = getDialogTexts();
-        const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
-        const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
-        let message = resolveDialogText(dialogTexts, 'task_library_row_save_overwrite');
-        message = message.replace('{name}', resEntry.entry.texto);
-        const resp = await dialog.showMessageBox(taskEditorWin || null, {
-          type: 'none',
-          buttons: [continueLabel, cancelLabel],
-          defaultId: 1,
-          cancelId: 1,
-          message,
+        const dialogRes = await showContinueCancelDialog(taskEditorWin, {
+          messageKey: 'task_library_row_save_overwrite',
+          messageReplacements: { name: resEntry.entry.texto },
         });
-        if (!resp || resp.response !== 0) {
+        if (!dialogRes || dialogRes.response !== 0) {
           return { ok: false, code: 'CONFIRM_DENIED' };
         }
         items.splice(existingIdx, 1, resEntry.entry);
@@ -751,19 +753,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const idx = items.findIndex((it) => normalizeTexto(it.texto) === norm);
       if (idx < 0) return { ok: false, code: 'NOT_FOUND' };
 
-      const dialogTexts = getDialogTexts();
-      const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
-      const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
-      let message = resolveDialogText(dialogTexts, 'task_library_row_delete');
-      message = message.replace('{name}', items[idx].texto || texto);
-      const resp = await dialog.showMessageBox(taskEditorWin || null, {
-        type: 'none',
-        buttons: [continueLabel, cancelLabel],
-        defaultId: 1,
-        cancelId: 1,
-        message,
+      const dialogRes = await showContinueCancelDialog(taskEditorWin, {
+        messageKey: 'task_library_row_delete',
+        messageReplacements: { name: items[idx].texto || texto },
       });
-      if (!resp || resp.response !== 0) {
+      if (!dialogRes || dialogRes.response !== 0) {
         return { ok: false, code: 'CONFIRM_DENIED' };
       }
 
@@ -922,20 +916,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
           return { ok: false, code: 'LINK_BLOCKED' };
         }
 
-        const dialogTexts = getDialogTexts();
-        const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
-        const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
-        let message = resolveDialogText(dialogTexts, 'task_path_confirm');
-        message = message.replace('{path}', raw);
-
-        const resp = await dialog.showMessageBox(taskEditorWin || null, {
-          type: 'none',
-          buttons: [continueLabel, cancelLabel],
-          defaultId: 1,
-          cancelId: 1,
-          message,
+        const dialogRes = await showContinueCancelDialog(taskEditorWin, {
+          messageKey: 'task_path_confirm',
+          messageReplacements: { path: raw },
         });
-        if (!resp || resp.response !== 0) {
+        if (!dialogRes || dialogRes.response !== 0) {
           return { ok: false, code: 'CONFIRM_DENIED' };
         }
 
@@ -965,28 +950,29 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         let trusted = allowlist.has(host);
 
         if (!trusted) {
+          const parsedUrl = parsed.toString();
           const dialogTexts = getDialogTexts();
           const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
           const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
           let message = resolveDialogText(dialogTexts, 'task_link_confirm');
-          message = message.replace('{url}', parsed.toString());
+          message = message.replace('{url}', parsedUrl);
           const checkboxLabel = resolveDialogText(dialogTexts, 'task_link_trust_host');
 
-          const resp = await dialog.showMessageBox(taskEditorWin || null, {
+          const dialogRes = await dialog.showMessageBox(taskEditorWin || null, {
             type: 'none',
             buttons: [continueLabel, cancelLabel],
             defaultId: 1,
             cancelId: 1,
             message,
-            detail: parsed.toString(),
+            detail: parsedUrl,
             checkboxLabel,
             checkboxChecked: false,
           });
-          if (!resp || resp.response !== 0) {
+          if (!dialogRes || dialogRes.response !== 0) {
             return { ok: false, code: 'CONFIRM_DENIED' };
           }
           trusted = true;
-          if (resp.checkboxChecked) {
+          if (dialogRes.checkboxChecked) {
             allowlist.add(host);
             saveAllowedHosts(allowlist);
           }
