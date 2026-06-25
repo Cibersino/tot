@@ -500,7 +500,7 @@
         "task_path_outside": "The file must be inside the tasks folder.",
         "name_required": "Task name is required.",
         "row_text_required": "Row name cannot be empty.",
-        "file_select_error": "Could not add the selected files.",
+        "file_select_error": "Could not complete file selection.",
         "library_load_error": "Could not load the reading to the task.",
         "library_save_error": "Could not save the reading to the library.",
         "library_save_success": "Reading saved to the library.",

@@ -500,7 +500,7 @@
         "task_path_outside": "El archivo debe estar dentro de la carpeta de tareas.",
         "name_required": "El nombre de la tarea es obligatorio.",
         "row_text_required": "El nombre de la fila no puede quedar vacío.",
-        "file_select_error": "No se pudieron agregar los archivos seleccionados.",
+        "file_select_error": "No se pudo completar la selección de archivos.",
         "library_load_error": "No se pudo cargar la lectura en la tarea.",
         "library_save_error": "No se pudo guardar la lectura en la biblioteca.",
         "library_save_success": "Lectura guardada en la biblioteca.",

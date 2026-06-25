@@ -445,6 +445,7 @@
       "summary_total": "Total",
       "summary_left": "Falta",
       "add_row_button": "Adicionar linha",
+      "add_files_button": "Adicionar arquivos",
       "open_library_button": "Abrir biblioteca de leituras",
       "columns": {
         "texto": "Leitura",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Ações",
         "tooltips": {
+          "file_select": "Selecionar arquivo local",
           "link_open": "Abrir link ou caminho local",
           "snapshot_load": "Carregar snapshot de texto como texto atual",
           "comment": "Adicionar ou editar comentário",
@@ -498,6 +500,7 @@
         "task_path_outside": "O arquivo deve estar dentro da pasta de tarefas.",
         "name_required": "O nome da tarefa é obrigatório.",
         "row_text_required": "O nome da linha não pode estar vazio.",
+        "file_select_error": "Não foi possível concluir a seleção de arquivos.",
         "library_load_error": "Não foi possível carregar a leitura na tarefa.",
         "library_save_error": "Não foi possível salvar a leitura na biblioteca.",
         "library_save_success": "Leitura salva na biblioteca de leituras.",
