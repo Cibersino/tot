@@ -445,6 +445,7 @@
       "summary_total": "المجموع",
       "summary_left": "المتبقي",
       "add_row_button": "إضافة صف",
+      "add_files_button": "إضافة ملفات",
       "open_library_button": "فتح المكتبة",
       "columns": {
         "texto": "النص",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "الإجراءات",
         "tooltips": {
+          "file_select": "اختيار ملف محلي",
           "link_open": "فتح الرابط",
           "snapshot_load": "تحميل لقطة نصية لهذا الصف",
           "comment": "إضافة/تعديل تعليق",
@@ -498,6 +500,7 @@
         "task_path_outside": "يجب أن يكون الملف داخل مجلد المهام.",
         "name_required": "اسم المهمة مطلوب.",
         "row_text_required": "لا يمكن أن يكون نص الصف فارغًا.",
+        "file_select_error": "تعذّر إكمال اختيار الملفات.",
         "library_load_error": "تعذّر تحميل المكتبة.",
         "library_save_error": "تعذّر الحفظ في المكتبة.",
         "library_save_success": "تم حفظ الصف في المكتبة.",

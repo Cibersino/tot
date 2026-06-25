@@ -445,6 +445,7 @@
       "summary_total": "Total",
       "summary_left": "Rete",
       "add_row_button": "Ajoute ranje",
+      "add_files_button": "Ajoute fichye",
       "open_library_button": "Louvri bibliyotèk",
       "columns": {
         "texto": "Tèks",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Aksyon",
         "tooltips": {
+          "file_select": "Chwazi fichye lokal",
           "link_open": "Louvri lyen",
           "snapshot_load": "Chaje yon snapshot tèks pou ranje sa a",
           "comment": "Ajoute/modifye kòmantè",
@@ -498,6 +500,7 @@
         "task_path_outside": "Fichye a dwe anndan katab travay yo.",
         "name_required": "Non travay la obligatwa.",
         "row_text_required": "Tèks ranje a pa ka vid.",
+        "file_select_error": "Pa t kapab fini seleksyon fichye yo.",
         "library_load_error": "Pa t kapab chaje bibliyotèk la.",
         "library_save_error": "Pa t kapab sove nan bibliyotèk la.",
         "library_save_success": "Ranje a sove nan bibliyotèk la.",

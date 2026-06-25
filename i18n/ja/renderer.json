@@ -445,6 +445,7 @@
       "summary_total": "合計",
       "summary_left": "残り",
       "add_row_button": "行を追加",
+      "add_files_button": "ファイルを追加",
       "open_library_button": "ライブラリを開く",
       "columns": {
         "texto": "テキスト",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "操作",
         "tooltips": {
+          "file_select": "ローカルファイルを選択",
           "link_open": "リンクを開く",
           "snapshot_load": "この行にテキストスナップショットを読み込む",
           "comment": "コメントを追加/編集",
@@ -498,6 +500,7 @@
         "task_path_outside": "ファイルはタスクフォルダ内にある必要があります。",
         "name_required": "タスク名は必須です。",
         "row_text_required": "行のテキストは空にできません。",
+        "file_select_error": "ファイルの選択を完了できませんでした。",
         "library_load_error": "ライブラリを読み込めませんでした。",
         "library_save_error": "ライブラリに保存できませんでした。",
         "library_save_success": "行をライブラリに保存しました。",

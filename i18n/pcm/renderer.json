@@ -445,6 +445,7 @@
       "summary_total": "Total",
       "summary_left": "Remain",
       "add_row_button": "Add row",
+      "add_files_button": "Add files",
       "open_library_button": "Open library",
       "columns": {
         "texto": "Text",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Actions",
         "tooltips": {
+          "file_select": "Select local file",
           "link_open": "Open link",
           "snapshot_load": "Load text snapshot for dis row",
           "comment": "Add/edit comment",
@@ -498,6 +500,7 @@
         "task_path_outside": "File must dey inside di tasks folder.",
         "name_required": "Task name dey required.",
         "row_text_required": "Row text no fit dey empty.",
+        "file_select_error": "Could not complete file selection.",
         "library_load_error": "Could not load library.",
         "library_save_error": "Could not save to library.",
         "library_save_success": "Row saved to library.",

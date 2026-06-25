@@ -445,6 +445,7 @@
       "summary_total": "Kom",
       "summary_left": "Petu",
       "add_row_button": "Dewman ruka",
+      "add_files_button": "Tuwün archivos",
       "open_library_button": "Nülan biblioteca",
       "columns": {
         "texto": "Wirin",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Küzawtuwe",
         "tooltips": {
+          "file_select": "Dullin archivo local",
           "link_open": "Link nülal",
           "snapshot_load": "Kintun snapshot weyel tati ruka",
           "comment": "Nütram yapeln",
@@ -498,6 +500,7 @@
         "task_path_outside": "Archivo müleyafuy tareas carpeta mew.",
         "name_required": "Üi müleyafuy.",
         "row_text_required": "Ruka wirin welli mülelay.",
+        "file_select_error": "No pepi dewman archivo ñi dullin.",
         "library_load_error": "Chem welulkuy kintun biblioteca mu.",
         "library_save_error": "Chem welulkuy elkünun biblioteca mu.",
         "library_save_success": "Biblioteca elküntuy.",

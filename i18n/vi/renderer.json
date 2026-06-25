@@ -445,6 +445,7 @@
       "summary_total": "Tổng",
       "summary_left": "Còn lại",
       "add_row_button": "Thêm hàng",
+      "add_files_button": "Thêm tệp",
       "open_library_button": "Mở thư viện",
       "columns": {
         "texto": "Văn bản",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Hành động",
         "tooltips": {
+          "file_select": "Chọn tệp cục bộ",
           "link_open": "Mở liên kết",
           "snapshot_load": "Tải bản lưu văn bản cho hàng này",
           "comment": "Thêm/chỉnh sửa bình luận",
@@ -498,6 +500,7 @@
         "task_path_outside": "Tệp phải nằm trong thư mục tác vụ.",
         "name_required": "Tên tác vụ là bắt buộc.",
         "row_text_required": "Văn bản của hàng không được để trống.",
+        "file_select_error": "Không thể hoàn tất việc chọn tệp.",
         "library_load_error": "Không thể tải thư viện.",
         "library_save_error": "Không thể lưu vào thư viện.",
         "library_save_success": "Đã lưu hàng vào thư viện.",

@@ -445,6 +445,7 @@
       "summary_total": "Guztira",
       "summary_left": "Falta",
       "add_row_button": "Gehitu errenkada",
+      "add_files_button": "Gehitu fitxategiak",
       "open_library_button": "Ireki liburutegia",
       "columns": {
         "texto": "Testua",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Ekintzak",
         "tooltips": {
+          "file_select": "Hautatu fitxategi lokala",
           "link_open": "Ireki esteka",
           "snapshot_load": "Kargatu testu-snapshot bat errenkada honetarako",
           "comment": "Gehitu/editatu iruzkina",
@@ -498,6 +500,7 @@
         "task_path_outside": "Fitxategiak atazen karpetaren barruan egon behar du.",
         "name_required": "Atazaren izena nahitaezkoa da.",
         "row_text_required": "Errenkadako testua ezin da hutsik egon.",
+        "file_select_error": "Ezin izan da fitxategien hautaketa osatu.",
         "library_load_error": "Ezin izan da liburutegia kargatu.",
         "library_save_error": "Ezin izan da liburutegian gorde.",
         "library_save_success": "Errenkada liburutegian gordeta.",

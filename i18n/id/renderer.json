@@ -445,6 +445,7 @@
       "summary_total": "Total",
       "summary_left": "Sisa",
       "add_row_button": "Tambah baris",
+      "add_files_button": "Tambahkan file",
       "open_library_button": "Buka pustaka",
       "columns": {
         "texto": "Teks",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Aksi",
         "tooltips": {
+          "file_select": "Pilih file lokal",
           "link_open": "Buka tautan",
           "snapshot_load": "Muat snapshot teks untuk baris ini",
           "comment": "Tambah/edit komentar",
@@ -498,6 +500,7 @@
         "task_path_outside": "File harus berada di dalam folder tugas.",
         "name_required": "Nama tugas wajib diisi.",
         "row_text_required": "Teks baris tidak boleh kosong.",
+        "file_select_error": "Tidak dapat menyelesaikan pemilihan file.",
         "library_load_error": "Tidak dapat memuat pustaka.",
         "library_save_error": "Tidak dapat menyimpan ke pustaka.",
         "library_save_success": "Baris disimpan ke pustaka.",

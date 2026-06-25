@@ -445,6 +445,7 @@
       "summary_total": "Total",
       "summary_left": "Falta",
       "add_row_button": "Añadir fila",
+      "add_files_button": "Agregar archivos",
       "open_library_button": "Abrir biblio",
       "columns": {
         "texto": "Texto",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Acciones",
         "tooltips": {
+          "file_select": "Seleccionar archivo local",
           "link_open": "Abrir ruta",
           "snapshot_load": "Cargar un coso de texto para esta fila",
           "comment": "Añadir/editar opinión",
@@ -498,6 +500,7 @@
         "task_path_outside": "El archivo debe estar aentro de la carpeta de misiones.",
         "name_required": "El mote de misión es obligatorio.",
         "row_text_required": "El texto de fila no puede estar vacío.",
+        "file_select_error": "No se pudo completar la selección de archivos.",
         "library_load_error": "No se pudo cargar la fila de la biblio.",
         "library_save_error": "No se pudo salvar la fila de la biblio.",
         "library_save_success": "Fila de biblio salvada con éxito.",

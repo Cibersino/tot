@@ -445,6 +445,7 @@
       "summary_total": "Итого",
       "summary_left": "Осталось",
       "add_row_button": "Добавить строку",
+      "add_files_button": "Добавить файлы",
       "open_library_button": "Открыть библиотеку",
       "columns": {
         "texto": "Текст",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Действия",
         "tooltips": {
+          "file_select": "Выбрать локальный файл",
           "link_open": "Открыть ссылку",
           "snapshot_load": "Загрузить снапшот текста для этой строки",
           "comment": "Добавить/редактировать комментарий",
@@ -498,6 +500,7 @@
         "task_path_outside": "Файл должен находиться внутри папки задач.",
         "name_required": "Название задачи обязательно.",
         "row_text_required": "Текст строки не может быть пустым.",
+        "file_select_error": "Не удалось завершить выбор файлов.",
         "library_load_error": "Не удалось загрузить библиотеку.",
         "library_save_error": "Не удалось сохранить в библиотеку.",
         "library_save_success": "Строка сохранена в библиотеку.",

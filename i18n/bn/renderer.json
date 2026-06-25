@@ -445,6 +445,7 @@
       "summary_total": "মোট",
       "summary_left": "বাকি",
       "add_row_button": "সারি যোগ করুন",
+      "add_files_button": "ফাইল যোগ করুন",
       "open_library_button": "লাইব্রেরি খুলুন",
       "columns": {
         "texto": "লেখা",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "ক্রিয়া",
         "tooltips": {
+          "file_select": "স্থানীয় ফাইল নির্বাচন করুন",
           "link_open": "লিংক খুলুন",
           "snapshot_load": "এই সারির জন্য লেখার স্ন্যাপশট লোড করুন",
           "comment": "মন্তব্য যোগ/সম্পাদনা করুন",
@@ -498,6 +500,7 @@
         "task_path_outside": "ফাইলটি tasks ফোল্ডারের ভিতরে থাকতে হবে।",
         "name_required": "টাস্কের নাম প্রয়োজন।",
         "row_text_required": "সারির লেখা খালি হতে পারে না।",
+        "file_select_error": "ফাইল নির্বাচন সম্পূর্ণ করা যায়নি।",
         "library_load_error": "লাইব্রেরি লোড করা যায়নি।",
         "library_save_error": "লাইব্রেরিতে সংরক্ষণ করা যায়নি।",
         "library_save_success": "সারি লাইব্রেরিতে সংরক্ষিত হয়েছে।",

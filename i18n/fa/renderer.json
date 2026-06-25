@@ -445,6 +445,7 @@
       "summary_total": "کل",
       "summary_left": "باقی",
       "add_row_button": "افزودن ردیف",
+      "add_files_button": "افزودن فایل‌ها",
       "open_library_button": "باز کردن کتابخانه",
       "columns": {
         "texto": "متن",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "کنش‌ها",
         "tooltips": {
+          "file_select": "انتخاب فایل محلی",
           "link_open": "باز کردن پیوند",
           "snapshot_load": "بارگذاری اسنپ‌شات متن برای این ردیف",
           "comment": "افزودن/ویرایش نظر",
@@ -498,6 +500,7 @@
         "task_path_outside": "فایل باید داخل پوشه کارها باشد.",
         "name_required": "نام کار الزامی است.",
         "row_text_required": "متن ردیف نمی‌تواند خالی باشد.",
+        "file_select_error": "انتخاب فایل‌ها کامل نشد.",
         "library_load_error": "کتابخانه بارگذاری نشد.",
         "library_save_error": "ذخیره در کتابخانه انجام نشد.",
         "library_save_success": "ردیف در کتابخانه ذخیره شد.",
