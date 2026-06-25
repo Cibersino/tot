@@ -65,3 +65,16 @@ test('task editor preload exposes selectTaskFiles through taskEditorAPI', () => 
     },
   ]);
 });
+
+test('task editor preload exposes selectTaskFile through taskEditorAPI', () => {
+  const { exposedApi, invoked } = loadTaskEditorPreload();
+
+  exposedApi.api.selectTaskFile();
+
+  assert.deepEqual(invoked, [
+    {
+      channel: 'task-file-select',
+      payload: undefined,
+    },
+  ]);
+});

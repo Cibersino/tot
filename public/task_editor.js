@@ -366,6 +366,40 @@ async function loadSnapshotForRow(row) {
   }
 }
 
+async function selectFileForRow(row, { textoInput, enlaceInput } = {}) {
+  const api = getTaskEditorApi('selectTaskFile');
+  if (!api) return;
+  const res = await api.selectTaskFile();
+  if (!res || res.ok === false) {
+    const code = res && res.code ? res.code : 'READ_FAILED';
+    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+    log.warn('selectTaskFile failed:', { code, response: res || null });
+    window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
+    return;
+  }
+  const filePath = typeof res.filePath === 'string' ? res.filePath.trim() : '';
+  if (!filePath) {
+    log.warn('selectTaskFile returned empty filePath:', res || null);
+    window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
+    return;
+  }
+  let changed = false;
+  if (filePath !== row.enlace) {
+    row.enlace = filePath;
+    if (enlaceInput) enlaceInput.value = filePath;
+    changed = true;
+  }
+  if (!String(row.texto || '').trim()) {
+    const derivedText = deriveRowTextFromPath(filePath);
+    if (derivedText && derivedText !== row.texto) {
+      row.texto = derivedText;
+      if (textoInput) textoInput.value = derivedText;
+      changed = true;
+    }
+  }
+  if (changed) markDirty();
+}
+
 // =============================================================================
 // Rendering / table
 // =============================================================================
@@ -503,6 +537,17 @@ function renderRow(row) {
       markDirty();
     }
   });
+  const linkBrowseTitle = tr('renderer.tasks.columns.tooltips.file_select');
+  const enlaceSelectBtn = rendererIcons.createIconButton({
+    iconName: 'folder',
+    className: 'icon-btn',
+    size: 'lg',
+    title: linkBrowseTitle,
+    ariaLabel: linkBrowseTitle,
+  });
+  enlaceSelectBtn.addEventListener('click', () => {
+    selectFileForRow(row, { textoInput, enlaceInput }).catch((err) => log.error('selectFileForRow failed:', err));
+  });
   const linkTitle = tr('renderer.tasks.columns.tooltips.link_open');
   const enlaceBtn = rendererIcons.createIconButton({
     iconName: 'open-target',
@@ -532,6 +577,7 @@ function renderRow(row) {
     }
   });
   enlaceWrap.appendChild(enlaceInput);
+  enlaceWrap.appendChild(enlaceSelectBtn);
   enlaceWrap.appendChild(enlaceBtn);
   tdEnlace.appendChild(enlaceWrap);
 

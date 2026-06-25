@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">folder</title>
+  <path d="M4.75 7.4C4.75 6.65 5.35 6.05 6.1 6.05H9.15C9.56 6.05 9.94 6.23 10.2 6.54L11.1 7.59C11.36 7.9 11.74 8.08 12.15 8.08H17.9C18.65 8.08 19.25 8.68 19.25 9.43V17.05C19.25 17.8 18.65 18.4 17.9 18.4H6.1C5.35 18.4 4.75 17.8 4.75 17.05V7.4Z"
+        fill="none"
+        stroke="var(--tot-icon-folder, #5f6f82)"
+        stroke-width="1.5"
+        stroke-linejoin="round"/>
+  <path d="M5.15 10.1H18.85"
+        fill="none"
+        stroke="var(--tot-icon-folder, #5f6f82)"
+        stroke-width="1.5"
+        stroke-linecap="round"/>
+</svg>

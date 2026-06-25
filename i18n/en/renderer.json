@@ -456,6 +456,7 @@
         "comentario": "",
         "acciones": "Actions",
         "tooltips": {
+          "file_select": "Select local file",
           "link_open": "Open link or local path",
           "snapshot_load": "Load text snapshot as current text",
           "comment": "Add or edit comment",

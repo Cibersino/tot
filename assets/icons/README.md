@@ -87,7 +87,7 @@ La existencia de un uso inicial no convierte al ícono en exclusivo de esa super
 
 ## Inventario actual
 
-El set actual contiene 31 SVGs canónicos.
+El set actual contiene 32 SVGs canónicos.
 
 La columna “semántica” describe el significado funcional del asset. No es una lista cerrada de consumidores.
 
@@ -103,6 +103,7 @@ La columna “semántica” describe el significado funcional del asset. No es u
 | `close.svg` | Cerrar, descartar o salir de una superficie sin comunicar eliminación. |
 | `collapse.svg` | Contraer una sección o bloque expandible. |
 | `expand.svg` | Expandir una sección o bloque contraíble. |
+| `folder.svg` | Carpeta. Seleccionar un archivo local desde un picker del sistema. |
 | `floating-stopwatch.svg` | Representar el Cronómetro Flotante. |
 | `open-target.svg` | Abrir o revelar un destino asociado, como una URL, ruta local o salida generada. |
 | `pause.svg` | Pausar una medición o estado en curso. |

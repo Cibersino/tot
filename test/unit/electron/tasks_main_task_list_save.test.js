@@ -486,3 +486,35 @@ test('task-files-select returns selected local file paths for Task Editor sender
     filePaths: [path.resolve(selectedA), path.resolve(selectedB)],
   });
 });
+
+test('task-file-select returns the selected local file path for Task Editor senders', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-single-file-select');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const selectedPath = path.join(tempDir, 'docs', 'chapter-3.pdf');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+    openDialogResponse: {
+      canceled: false,
+      filePaths: [selectedPath],
+    },
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-file-select',
+    { sender: taskEditorWin.webContents }
+  );
+
+  assert.deepEqual(result, {
+    ok: true,
+    filePath: path.resolve(selectedPath),
+  });
+});

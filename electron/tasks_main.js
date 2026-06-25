@@ -353,6 +353,26 @@ function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
   return true;
 }
 
+async function promptForTaskFileSelection(ownerWin, { allowMultiple } = {}) {
+  const properties = allowMultiple
+    ? ['openFile', 'multiSelections']
+    : ['openFile'];
+  const dialogRes = await dialog.showOpenDialog(ownerWin || null, { properties });
+  if (!dialogRes || dialogRes.canceled) {
+    return { ok: false, code: 'CANCELLED' };
+  }
+
+  const filePaths = Array.isArray(dialogRes.filePaths)
+    ? dialogRes.filePaths
+      .filter((filePath) => typeof filePath === 'string' && filePath.trim())
+      .map((filePath) => path.resolve(String(filePath)))
+    : [];
+  if (!filePaths.length) {
+    return { ok: false, code: 'READ_FAILED', message: 'file picker returned empty file paths' };
+  }
+  return { ok: true, filePaths };
+}
+
 // =============================================================================
 // IPC registration
 // =============================================================================
@@ -817,8 +837,34 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   });
 
   // =============================================================================
-  // IPC: select local files to append as task rows
+  // IPC: select local file(s) for task rows
   // =============================================================================
+  ipcMain.handle('task-file-select', async (event) => {
+    try {
+      const taskEditorWin = resolveTaskEditorWin();
+      if (
+        !isAuthorizedSender(
+          event,
+          taskEditorWin,
+          'tasks_main.file.select.unauthorized',
+          'task-file-select unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
+
+      const res = await promptForTaskFileSelection(taskEditorWin, { allowMultiple: false });
+      if (!res.ok) {
+        if (res.code === 'READ_FAILED') {
+          log.warn('task-file-select returned empty filePaths.');
+        }
+        return res;
+      }
+      return { ok: true, filePath: res.filePaths[0] };
+    } catch (err) {
+      log.error('task-file-select failed:', err);
+      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    }
+  });
+
   ipcMain.handle('task-files-select', async (event) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
@@ -831,23 +877,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
-      const dialogRes = await dialog.showOpenDialog(taskEditorWin || null, {
-        properties: ['openFile', 'multiSelections'],
-      });
-      if (!dialogRes || dialogRes.canceled) {
-        return { ok: false, code: 'CANCELLED' };
+      const res = await promptForTaskFileSelection(taskEditorWin, { allowMultiple: true });
+      if (!res.ok) {
+        if (res.code === 'READ_FAILED') {
+          log.warn('task-files-select returned empty filePaths.');
+        }
+        return res;
       }
-
-      const filePaths = Array.isArray(dialogRes.filePaths)
-        ? dialogRes.filePaths
-          .filter((filePath) => typeof filePath === 'string' && filePath.trim())
-          .map((filePath) => path.resolve(String(filePath)))
-        : [];
-      if (!filePaths.length) {
-        log.warn('task-files-select returned empty filePaths.');
-        return { ok: false, code: 'READ_FAILED', message: 'file picker returned empty file paths' };
-      }
-      return { ok: true, filePaths };
+      return res;
     } catch (err) {
       log.error('task-files-select failed:', err);
       return { ok: false, code: 'READ_FAILED', message: String(err) };

@@ -51,6 +51,8 @@ Reglas:
 - `window.Notify` recupera ownership único también para los prompts custom pendientes de `text extraction`: los 7 modales renderer que aún publicaban `window.Notify.prompt*` desde su archivo feature pasan a registrarse vía `registerCustomPrompt(...)`, sin cambiar la surface pública consumida por el resto del flujo.
 - `public/js/snapshot_save_tags_modal.js` deja de imponer un guard bootstrap local de `window.Notify` que no existía en ningún otro archivo del repo; el modal vuelve a alinearse con el patrón renderer vigente, donde `notify.js` sigue siendo el owner del contrato y los consumers no duplican checks de disponibilidad.
 - El cronómetro de la ventana principal deja de mezclar tamaños de icono entre `play/pause` y `stop/reset`: los dos botones vuelven a compartir la escala compacta del `Floating Stopwatch`, y el glyph `stop` recupera peso visual suficiente dentro de ese mismo tamaño reducido.
+- El `Task Editor` deja de depender exclusivamente de tipeo manual para poblar `Link or local path` cuando la fila apunta a archivos locales: la toolbar agrega una entrada batch `Add files` con picker multi-select y cada fila suma un picker local dedicado, sin romper el escape hatch de edición libre para `https:` y rutas pegadas.
+- La nueva acción local por fila del `Task Editor` se integra al mismo sistema compartido de iconos renderer y deja de verse como un control textual aislado: el botón browse converge en el asset canónico `folder.svg` y recupera el mismo lenguaje monocromo/outline ya usado por `open-target`, biblioteca y snapshot dentro de la tabla.
 
 ### Cambiado
 
@@ -60,6 +62,11 @@ Reglas:
 - Cronómetro / iconografía renderer:
   - la ventana principal deja de publicar los botones `play/pause` y `stop/reset` del cronómetro con el tamaño `xl` heredado del primer barrido de iconos y pasa a alinearlos con la escala compacta `md` que ya usaba el `Floating Stopwatch`;
   - `public/js/crono.js` deja de reinyectar el toggle del cronómetro con un tamaño hardcodeado ajeno al markup y pasa a respetar `data-tot-icon-size` del botón owner, evitando que futuras reasignaciones de icono vuelvan a romper la coherencia entre `play` y `pause`.
+- Task Editor / input asistido de rutas locales:
+  - `public/task_editor.html` y `public/task_editor.js` agregan la acción de toolbar `Add files`, que abre un picker nativo multi-select y crea una fila por archivo elegido;
+  - las filas nuevas creadas desde ese flujo siguen persistiendo el mismo campo plano `enlace`, pero ahora se inicializan con la ruta absoluta seleccionada y con `texto` derivado del nombre base del archivo, dejando la fila usable sin tipeo adicional;
+  - la celda `Link or local path` suma un picker local por fila que reutiliza el mismo modelo de storage string-only; si la fila todavía no tenía `texto`, el nombre visible se completa desde el archivo elegido, pero el usuario conserva edición manual libre para URLs `https:` y rutas pegadas;
+  - el control browse por fila deja de renderizarse como botón textual ad hoc y pasa a consumir el icono compartido `folder`, alineado con el helper `RendererIcons` y con el catálogo generado desde `assets/icons/`.
 
 ### Arreglado
 
@@ -69,12 +76,19 @@ Reglas:
 - Cronómetro principal:
   - `play/pause` deja de renderizarse más angosto que `stop/reset` por una mezcla accidental entre re-render runtime en tamaño `md` y markup estático en tamaño `xl`;
   - el glyph `stop` deja de verse subdimensionado una vez alineados ambos botones al tamaño pequeño, porque su SVG canónico amplía el cuadrado útil dentro del mismo `viewBox` y recupera masa visual comparable con `play`.
+- Task Editor / iconografía de acciones locales:
+  - el nuevo botón browse por fila deja de desentonar visualmente con el resto de acciones de la tabla: `assets/icons/folder.svg` abandona el fallback genérico `currentColor` y converge en el mismo contrato outline con `var(--tot-icon-*, #5f6f82)` que ya usaban `open-target`, `task-row-load`, `task-row-save` y `task-text-snapshot-load`;
+  - la semántica visual final deja de mezclar un icono cálido/relleno ajeno al set del `Task Editor` y vuelve a una lectura monocroma coherente con las demás acciones compactas del grid.
 
 ### Contratos tocados
 
 - Surface pública renderer `window.Notify`:
   - sin cambios de nombres, firma ni consumers para `promptTextExtractionApplyChoice(...)`, `promptTextExtractionBatchFinalReport(...)`, `promptTextExtractionBatchPlan(...)`, `promptTextExtractionOcrActivationDisclosure(...)`, `promptTextExtractionPdfOptions(...)`, `promptTextExtractionRouteChoice(...)` y `promptTextExtractionSingleFileHeavyPdf(...)`;
   - cambia solo el path interno de registro: la publicación final de esos prompts ahora ocurre a través de `window.Notify.registerCustomPrompt(...)` en vez de asignación directa desde cada módulo feature.
+- IPC / preload del Task Editor:
+  - nuevo IPC `task-files-select` en `electron/tasks_main.js`, invocado desde `window.taskEditorAPI.selectTaskFiles()`, que devuelve `{ ok: true, filePaths }` para selección multi-file desde la toolbar;
+  - nuevo IPC `task-file-select` en `electron/tasks_main.js`, invocado desde `window.taskEditorAPI.selectTaskFile()`, que devuelve `{ ok: true, filePath }` para selección single-file desde una fila;
+  - ambos canales heredan el mismo ownership main-owned del picker nativo, el mismo sender guard del `Task Editor` y no modifican el schema persistido de las filas: `enlace` sigue siendo string libre y la lista de tareas / biblioteca no cambia de formato.
 
 ---
 

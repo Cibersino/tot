@@ -2592,6 +2592,12 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Agregar una fila nueva a la tabla.
         // [CONCEPTO_APP] fila de lectura
       },
+      "add_files_button": {
+        "es": "Agregar archivos",
+        "en": "Add files"
+        // [PROPÓSITO] Abrir un picker nativo multi-select para crear una fila de lectura por cada archivo local elegido.
+        // [CONCEPTO_APP] fila de lectura
+      },
       "open_library_button": {
         "es": "Abrir biblioteca",
         "en": "Open reading library"
@@ -2641,6 +2647,12 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
         },
         "tooltips": {
+          "file_select": {
+            "es": "Seleccionar archivo local",
+            "en": "Select local file"
+            // [PROPÓSITO] Acción por fila para elegir un archivo local y asociar su ruta a `Link or local path`.
+            // [CONCEPTO_APP] fila de lectura
+          },
           "link_open": {
             "es": "Abrir enlace o ruta local",
             "en": "Open link or local path"
@@ -2823,6 +2835,12 @@ Estados de revisión recomendados:
           "es": "El nombre de la fila no puede quedar vacío.",
           "en": "Row name cannot be empty."
           // [PROPÓSITO] El `nombre` / `name` de la fila se refiere al texto de la fila en la primera columna `Lectura` / `Reading`.
+          // [CONCEPTO_APP] fila de lectura
+        },
+        "file_select_error": {
+          "es": "No se pudieron agregar los archivos seleccionados.",
+          "en": "Could not add the selected files."
+          // [PROPÓSITO] Error del flujo de picker local de archivos para tareas, ya sea desde la toolbar batch o desde la selección por fila.
           // [CONCEPTO_APP] fila de lectura
         },
         "library_load_error": {

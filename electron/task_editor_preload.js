@@ -51,6 +51,7 @@ const api = {
   onInit,
   saveTaskList: (payload) => ipcRenderer.invoke('task-list-save', payload),
   deleteTaskList: (path) => ipcRenderer.invoke('task-list-delete', { path }),
+  selectTaskFile: () => ipcRenderer.invoke('task-file-select'),
   selectTaskFiles: () => ipcRenderer.invoke('task-files-select'),
   selectTaskRowSnapshot: () => ipcRenderer.invoke('current-text-snapshot-select'),
   loadTaskRowSnapshot: (snapshotRelPath) => ipcRenderer.invoke('current-text-snapshot-load', { snapshotRelPath }),
