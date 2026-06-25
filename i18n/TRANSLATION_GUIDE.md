@@ -2838,8 +2838,8 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] fila de lectura
         },
         "file_select_error": {
-          "es": "No se pudieron agregar los archivos seleccionados.",
-          "en": "Could not add the selected files."
+          "es": "No se pudo completar la selección de archivos.",
+          "en": "Could not complete file selection."
           // [PROPÓSITO] Error del flujo de picker local de archivos para tareas, ya sea desde la toolbar batch o desde la selección por fila.
           // [CONCEPTO_APP] fila de lectura
         },
