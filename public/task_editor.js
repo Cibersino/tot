@@ -1136,127 +1136,131 @@ async function applyTaskEditorTranslations() {
 }
 
 // =============================================================================
-// Event wiring
+// Bootstrap / event wiring
 // =============================================================================
-if (btnTaskAddRow) {
-  btnTaskAddRow.addEventListener('click', () => addRow());
-}
-
-if (btnTaskAddFiles) {
-  btnTaskAddFiles.addEventListener('click', () => {
-    addRowsFromSelectedFiles().catch((err) => log.error('addRowsFromSelectedFiles failed:', err));
-  });
-}
-
-if (taskNameInput) {
-  taskNameInput.maxLength = TASK_NAME_MAX_CHARS;
-  taskNameInput.addEventListener('input', () => {
-    const next = clampTaskName(taskNameInput.value);
-    if (taskNameInput.value !== next) taskNameInput.value = next;
-    if (next !== meta.name) {
-      meta.name = next;
-      markDirty();
+function applyCommentChangesAndDismiss() {
+  const row = rows.find((r) => r.id === pendingCommentRowId);
+  if (row) {
+    const nextComment = commentInput.value || '';
+    const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
+    let changed = false;
+    if (row.comentario !== nextComment) {
+      row.comentario = nextComment;
+      changed = true;
     }
-  });
-}
-
-if (btnTaskSave) {
-  btnTaskSave.addEventListener('click', () => {
-    saveTask().catch((err) => log.error('saveTask failed:', err));
-  });
-}
-
-if (btnTaskDelete) {
-  btnTaskDelete.addEventListener('click', () => {
-    deleteTask().catch((err) => log.error('deleteTask failed:', err));
-  });
-}
-
-if (btnTaskLoadLibrary) {
-  btnTaskLoadLibrary.addEventListener('click', () => {
-    if (librarySearchInput) librarySearchInput.value = '';
-    refreshLibraryList().catch((err) => log.error('refreshLibraryList failed:', err));
-    openModal(libraryModal);
-  });
-}
-
-if (commentClose) commentClose.addEventListener('click', () => dismissCommentModal());
-if (commentBackdrop) commentBackdrop.addEventListener('click', () => dismissCommentModal());
-if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentModal());
-if (commentSnapshotSelect) {
-  commentSnapshotSelect.addEventListener('click', () => {
-    selectSnapshotForPendingCommentRow().catch((err) => log.error('selectSnapshotForPendingCommentRow failed:', err));
-  });
-}
-if (commentSnapshotClear) {
-  commentSnapshotClear.addEventListener('click', () => {
-    clearSnapshotForPendingCommentRow();
-  });
-}
-if (commentSave) {
-  commentSave.addEventListener('click', () => {
-    const row = rows.find((r) => r.id === pendingCommentRowId);
-    if (row) {
-      const nextComment = commentInput.value || '';
-      const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
-      let changed = false;
-      if (row.comentario !== nextComment) {
-        row.comentario = nextComment;
-        changed = true;
-      }
-      if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
-        row.snapshotRelPath = nextSnapshotRelPath;
-        changed = true;
-        renderTable();
-      }
-      if (changed) markDirty();
+    if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
+      row.snapshotRelPath = nextSnapshotRelPath;
+      changed = true;
+      renderTable();
     }
-    dismissCommentModal();
-  });
+    if (changed) markDirty();
+  }
+  dismissCommentModal();
 }
 
-wireModalClose(libraryModal, libraryClose, libraryBackdrop);
-if (librarySearchInput) {
-  librarySearchInput.addEventListener('input', () => filterLibraryItems());
+function wireTaskEditorEvents() {
+  if (btnTaskAddRow) {
+    btnTaskAddRow.addEventListener('click', () => addRow());
+  }
+
+  if (btnTaskAddFiles) {
+    btnTaskAddFiles.addEventListener('click', () => {
+      addRowsFromSelectedFiles().catch((err) => log.error('addRowsFromSelectedFiles failed:', err));
+    });
+  }
+
+  if (taskNameInput) {
+    taskNameInput.maxLength = TASK_NAME_MAX_CHARS;
+    taskNameInput.addEventListener('input', () => {
+      const next = clampTaskName(taskNameInput.value);
+      if (taskNameInput.value !== next) taskNameInput.value = next;
+      if (next !== meta.name) {
+        meta.name = next;
+        markDirty();
+      }
+    });
+  }
+
+  if (btnTaskSave) {
+    btnTaskSave.addEventListener('click', () => {
+      saveTask().catch((err) => log.error('saveTask failed:', err));
+    });
+  }
+
+  if (btnTaskDelete) {
+    btnTaskDelete.addEventListener('click', () => {
+      deleteTask().catch((err) => log.error('deleteTask failed:', err));
+    });
+  }
+
+  if (btnTaskLoadLibrary) {
+    btnTaskLoadLibrary.addEventListener('click', () => {
+      if (librarySearchInput) librarySearchInput.value = '';
+      refreshLibraryList().catch((err) => log.error('refreshLibraryList failed:', err));
+      openModal(libraryModal);
+    });
+  }
+
+  if (commentClose) commentClose.addEventListener('click', () => dismissCommentModal());
+  if (commentBackdrop) commentBackdrop.addEventListener('click', () => dismissCommentModal());
+  if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentModal());
+  if (commentSnapshotSelect) {
+    commentSnapshotSelect.addEventListener('click', () => {
+      selectSnapshotForPendingCommentRow().catch((err) => log.error('selectSnapshotForPendingCommentRow failed:', err));
+    });
+  }
+  if (commentSnapshotClear) {
+    commentSnapshotClear.addEventListener('click', () => {
+      clearSnapshotForPendingCommentRow();
+    });
+  }
+  if (commentSave) {
+    commentSave.addEventListener('click', () => {
+      applyCommentChangesAndDismiss();
+    });
+  }
+
+  wireModalClose(libraryModal, libraryClose, libraryBackdrop);
+  if (librarySearchInput) {
+    librarySearchInput.addEventListener('input', () => filterLibraryItems());
+  }
+
+  wireModalClose(includeCommentModal, includeCommentClose, includeCommentBackdrop, includeCommentCancel);
+  if (includeCommentYes) includeCommentYes.addEventListener('click', () => saveRowToLibrary(true));
+  if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowToLibrary(false));
 }
 
-wireModalClose(includeCommentModal, includeCommentClose, includeCommentBackdrop, includeCommentCancel);
-if (includeCommentYes) includeCommentYes.addEventListener('click', () => saveRowToLibrary(true));
-if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowToLibrary(false));
-
-// =============================================================================
-// Task editor init + close guard
-// =============================================================================
-if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
-  window.taskEditorAPI.onInit((payload) => {
-    applyTaskPayload(payload);
-  });
-} else {
+function registerTaskEditorInit() {
+  if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
+    window.taskEditorAPI.onInit((payload) => {
+      applyTaskPayload(payload);
+    });
+    return;
+  }
   log.warnOnce('BOOTSTRAP:task_editor.onInit.missing', 'taskEditorAPI.onInit unavailable; editor init disabled.');
 }
 
-if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
-  window.taskEditorAPI.onRequestClose(() => {
-    if (typeof window.taskEditorAPI.confirmClose !== 'function') {
-      log.warnOnce('task_editor.confirmClose.missing', 'taskEditorAPI.confirmClose unavailable; close request ignored.');
-      return;
-    }
-    if (!dirty) {
-      window.taskEditorAPI.confirmClose();
-      return;
-    }
-    if (window.Notify.confirmMain('renderer.tasks.alerts.close_unsaved')) {
-      window.taskEditorAPI.confirmClose();
-    }
-  });
-} else {
+function registerTaskEditorCloseGuard() {
+  if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
+    window.taskEditorAPI.onRequestClose(() => {
+      if (typeof window.taskEditorAPI.confirmClose !== 'function') {
+        log.warnOnce('task_editor.confirmClose.missing', 'taskEditorAPI.confirmClose unavailable; close request ignored.');
+        return;
+      }
+      if (!dirty) {
+        window.taskEditorAPI.confirmClose();
+        return;
+      }
+      if (window.Notify.confirmMain('renderer.tasks.alerts.close_unsaved')) {
+        window.taskEditorAPI.confirmClose();
+      }
+    });
+    return;
+  }
   log.warnOnce('BOOTSTRAP:task_editor.onRequestClose.missing', 'taskEditorAPI.onRequestClose unavailable; close confirmation disabled.');
 }
 
-// =============================================================================
-// Bootstrap: settings, translations, column widths
-// =============================================================================
-(async () => {
+async function bootstrapTaskEditor() {
   try {
     if (window.taskEditorAPI && typeof window.taskEditorAPI.getSettings === 'function') {
       const settings = await window.taskEditorAPI.getSettings();
@@ -1272,22 +1276,30 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'func
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
   }
-})();
+}
 
-if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'function') {
-  window.taskEditorAPI.onSettingsChanged(async (settings) => {
-    try {
-      const nextLang = settings && settings.language ? settings.language : '';
-      if (!nextLang || nextLang === idiomaActual) return;
-      idiomaActual = nextLang;
-      await applyTaskEditorTranslations();
-    } catch (err) {
-      log.warn('task-editor: settings update failed (ignored):', err);
-    }
-  });
-} else {
+function registerTaskEditorSettingsChanged() {
+  if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'function') {
+    window.taskEditorAPI.onSettingsChanged(async (settings) => {
+      try {
+        const nextLang = settings && settings.language ? settings.language : '';
+        if (!nextLang || nextLang === idiomaActual) return;
+        idiomaActual = nextLang;
+        await applyTaskEditorTranslations();
+      } catch (err) {
+        log.warn('task-editor: settings update failed (ignored):', err);
+      }
+    });
+    return;
+  }
   log.warnOnce('BOOTSTRAP:task_editor.onSettingsChanged.missing', 'taskEditorAPI.onSettingsChanged unavailable; language updates disabled.');
 }
+
+wireTaskEditorEvents();
+registerTaskEditorInit();
+registerTaskEditorCloseGuard();
+bootstrapTaskEditor();
+registerTaskEditorSettingsChanged();
 
 // =============================================================================
 // End of public/task_editor.js
