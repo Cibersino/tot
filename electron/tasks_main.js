@@ -308,10 +308,18 @@ function loadLibraryData() {
       );
       return { ok: true, items: [] };
     }
+    log.warn('Task library JSON invalid; task library actions unavailable.');
     return { ok: false, code: res.code };
   }
-  if (!Array.isArray(res.data)) return { ok: false, code: 'INVALID_SCHEMA' };
+  if (!Array.isArray(res.data)) {
+    log.warn('Task library schema invalid; task library actions unavailable.');
+    return { ok: false, code: 'INVALID_SCHEMA' };
+  }
   if (res.data.length > TASK_LIBRARY_MAX_ITEMS) {
+    log.warn(
+      'Task library exceeds TASK_LIBRARY_MAX_ITEMS; task library actions unavailable.',
+      { count: res.data.length, limit: TASK_LIBRARY_MAX_ITEMS }
+    );
     return { ok: false, code: 'LIBRARY_TOO_LARGE' };
   }
   return { ok: true, items: res.data };
@@ -335,6 +343,10 @@ function loadAllowedHosts() {
     } else {
       log.warnOnce('tasks_main.allowedHosts.invalid', 'allowed_hosts.json invalid; using empty set.');
     }
+    return new Set();
+  }
+  if (!Array.isArray(res.data)) {
+    log.warn('allowed_hosts.json schema invalid; using empty set.');
     return new Set();
   }
   const arr = Array.isArray(res.data) ? res.data : [];
@@ -379,9 +391,9 @@ function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
   }
 }
 
-function sendTaskEditorInit(taskEditorWin, payload, logKey) {
+function sendTaskEditorInit(taskEditorWin, payload) {
   if (!taskEditorWin || taskEditorWin.isDestroyed()) {
-    log.warnOnce(logKey, "taskEditorWin send('task-editor-init') unavailable.");
+    log.warn("taskEditorWin send('task-editor-init') unavailable.");
     return false;
   }
   taskEditorWin.webContents.send('task-editor-init', payload);
@@ -449,7 +461,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
       if (typeof ensureTaskEditorWindow !== 'function') {
-        log.warnOnce('tasks_main.open.noEnsure', 'open-task-editor unavailable: ensureTaskEditorWindow missing.');
+        log.warn('open-task-editor unavailable: ensureTaskEditorWindow missing.');
         return { ok: false, code: 'UNAVAILABLE' };
       }
 
@@ -467,7 +479,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
           mode: 'new',
           task: { meta: { name: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, rows: [] },
           sourcePath: null,
-        }, 'send.task-editor-init.new');
+        });
         if (!didSendInit) {
           return { ok: false, code: 'UNAVAILABLE' };
         }
@@ -525,7 +537,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         mode: 'load',
         task: normalized.task,
         sourcePath: selectedReal,
-      }, 'send.task-editor-init.load');
+      });
       if (!didSendInit) {
         return { ok: false, code: 'UNAVAILABLE' };
       }
@@ -804,9 +816,13 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
           );
           return { ok: true, widths: null };
         }
+        log.warn('Task column widths JSON invalid; load failed.');
         return { ok: false, code: res.code };
       }
       const widths = sanitizeColumnWidths(res.data);
+      if (!widths) {
+        log.warn('Task column widths schema invalid; using null.');
+      }
       return { ok: true, widths };
     } catch (err) {
       log.error('task-columns-load failed:', err);
