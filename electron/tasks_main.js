@@ -364,11 +364,27 @@ function sanitizeColumnWidths(raw) {
 }
 
 function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
-  const senderWin = BrowserWindow.fromWebContents(event.sender);
-  if (expectedWin && senderWin && senderWin !== expectedWin) {
-    log.warnOnce(logKey, logMessage);
+  try {
+    const senderWin = event && event.sender
+      ? BrowserWindow.fromWebContents(event.sender)
+      : null;
+    if (!expectedWin || senderWin !== expectedWin) {
+      log.warnOnce(logKey, logMessage);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    log.warn('tasks_main sender validation failed:', err);
     return false;
   }
+}
+
+function sendTaskEditorInit(taskEditorWin, payload, logKey) {
+  if (!taskEditorWin || taskEditorWin.isDestroyed()) {
+    log.warnOnce(logKey, "taskEditorWin send('task-editor-init') unavailable.");
+    return false;
+  }
+  taskEditorWin.webContents.send('task-editor-init', payload);
   return true;
 }
 
@@ -396,7 +412,7 @@ async function promptForTaskFileSelection(ownerWin, { allowMultiple } = {}) {
 // IPC registration
 // =============================================================================
 function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
-  if (!ipcMain || typeof ipcMain.handle !== 'function') {
+  if (!ipcMain || typeof ipcMain.handle !== 'function' || typeof ipcMain.on !== 'function') {
     throw new Error('[tasks_main] registerIpc requires ipcMain');
   }
 
@@ -406,12 +422,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
 
   ipcMain.on('task-editor-dirty-state', (event, payload) => {
     const taskEditorWin = resolveTaskEditorWin();
-    const senderWin = BrowserWindow.fromWebContents(event.sender);
-    if (!taskEditorWin || !senderWin || senderWin !== taskEditorWin) {
-      log.warnOnce(
-        'tasks_main.dirty_state.unauthorized',
-        'task-editor-dirty-state unauthorized (ignored).'
-      );
+    if (!isAuthorizedSender(
+      event,
+      taskEditorWin,
+      'tasks_main.dirty_state.unauthorized',
+      'task-editor-dirty-state unauthorized (ignored).'
+    )) {
       return;
     }
     taskEditorDirty = !!(payload && payload.dirty);
@@ -447,19 +463,15 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         if (!allowDiscard) return { ok: false, code: 'CONFIRM_DENIED' };
         ensureTaskEditorWindow();
         const taskEditorWin = resolveTaskEditorWin();
-        if (taskEditorWin) {
-          taskEditorWin.webContents.send('task-editor-init', {
-            mode: 'new',
-            task: { meta: { name: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, rows: [] },
-            sourcePath: null,
-          });
-          taskEditorDirty = false;
-        } else {
-          log.warnOnce(
-            'send.task-editor-init.new',
-            "taskEditorWin send('task-editor-init') failed (ignored): window missing."
-          );
+        const didSendInit = sendTaskEditorInit(taskEditorWin, {
+          mode: 'new',
+          task: { meta: { name: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, rows: [] },
+          sourcePath: null,
+        }, 'send.task-editor-init.new');
+        if (!didSendInit) {
+          return { ok: false, code: 'UNAVAILABLE' };
         }
+        taskEditorDirty = false;
         return { ok: true };
       }
 
@@ -509,19 +521,15 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
 
       ensureTaskEditorWindow();
       const taskEditorWin = resolveTaskEditorWin();
-      if (taskEditorWin) {
-        taskEditorWin.webContents.send('task-editor-init', {
-          mode: 'load',
-          task: normalized.task,
-          sourcePath: selectedReal,
-        });
-        taskEditorDirty = false;
-      } else {
-        log.warnOnce(
-          'send.task-editor-init.load',
-          "taskEditorWin send('task-editor-init') failed (ignored): window missing."
-        );
+      const didSendInit = sendTaskEditorInit(taskEditorWin, {
+        mode: 'load',
+        task: normalized.task,
+        sourcePath: selectedReal,
+      }, 'send.task-editor-init.load');
+      if (!didSendInit) {
+        return { ok: false, code: 'UNAVAILABLE' };
       }
+      taskEditorDirty = false;
       return { ok: true };
     } catch (err) {
       log.error('Error processing open-task-editor:', err);
