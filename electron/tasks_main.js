@@ -45,9 +45,10 @@ const log = Log.get('tasks-main');
 log.debug('Tasks main starting...');
 
 // =============================================================================
-// Constants / config
+// Constants / shared state
 // =============================================================================
 const TASK_EXT = '.json';
+// Tracks unsaved Task Editor changes across IPC requests.
 let taskEditorDirty = false;
 
 // =============================================================================
@@ -487,7 +488,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: true };
       }
 
-      // Load existing task list
+      // Load mode only accepts JSON files inside the managed tasks root.
       const root = ensureTasksRoot();
       if (!root) {
         return { ok: false, code: 'READ_FAILED', message: 'tasks root unavailable' };
@@ -956,7 +957,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: true };
       }
 
-      // Try URL parse first
+      // Non-path links are treated as URLs, and only https: is allowed.
       let parsed = null;
       try {
         parsed = new URL(raw);
