@@ -596,6 +596,7 @@ function renderRow(row) {
     if (isFailedTaskEditorResult(res)) {
       const code = getTaskEditorResultCode(res, 'ERROR');
       if (code === 'CONFIRM_DENIED') return;
+      log.warn('openTaskLink failed:', { code, response: res || null });
       if (code === 'LINK_MISSING') {
         window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
         return;
@@ -946,6 +947,7 @@ async function saveTask() {
   if (isFailedTaskEditorResult(res)) {
     const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CANCELLED') return;
+    log.warn('saveTaskList failed:', { code, response: res || null });
     if (code === 'NAME_REQUIRED') {
       window.Notify.notifyEditor('renderer.tasks.alerts.name_required');
       return;
@@ -979,6 +981,7 @@ async function deleteTask() {
   if (isFailedTaskEditorResult(res)) {
     const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CONFIRM_DENIED') return;
+    log.warn('deleteTaskList failed:', { code, response: res || null });
     window.Notify.notifyEditor('renderer.tasks.alerts.task_delete_error');
     return;
   }
@@ -1042,6 +1045,7 @@ function renderLibraryItems(items) {
       if (isFailedTaskEditorResult(delRes)) {
         const code = getTaskEditorResultCode(delRes, 'WRITE_FAILED');
         if (code === 'CONFIRM_DENIED') return;
+        log.warn('deleteLibraryEntry failed:', { code, response: delRes || null });
         window.Notify.notifyEditor('renderer.tasks.alerts.library_delete_error');
         return;
       }
@@ -1080,6 +1084,8 @@ async function refreshLibraryList() {
   if (!api) return;
   const res = await api.listLibrary();
   if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    log.warn('listLibrary failed:', { code, response: res || null });
     window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
@@ -1103,6 +1109,7 @@ async function saveRowToLibrary(includeComment) {
   if (isFailedTaskEditorResult(res)) {
     const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CONFIRM_DENIED') return;
+    log.warn('saveLibraryRow failed:', { code, response: res || null, rowId: row.id });
     window.Notify.notifyEditor('renderer.tasks.alerts.library_save_error');
     return;
   }
