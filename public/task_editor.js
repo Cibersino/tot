@@ -311,6 +311,26 @@ function dismissCommentModal() {
   closeModal(commentModal);
 }
 
+function applyCommentChangesAndDismiss() {
+  const row = rows.find((r) => r.id === pendingCommentRowId);
+  if (row) {
+    const nextComment = commentInput.value || '';
+    const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
+    let changed = false;
+    if (row.comentario !== nextComment) {
+      row.comentario = nextComment;
+      changed = true;
+    }
+    if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
+      row.snapshotRelPath = nextSnapshotRelPath;
+      changed = true;
+      renderTable();
+    }
+    if (changed) markDirty();
+  }
+  dismissCommentModal();
+}
+
 async function selectSnapshotForPendingCommentRow() {
   if (!pendingCommentRowId) return;
   const api = getTaskEditorApi('selectTaskRowSnapshot');
@@ -1138,27 +1158,7 @@ async function applyTaskEditorTranslations() {
 // =============================================================================
 // Bootstrap / event wiring
 // =============================================================================
-function applyCommentChangesAndDismiss() {
-  const row = rows.find((r) => r.id === pendingCommentRowId);
-  if (row) {
-    const nextComment = commentInput.value || '';
-    const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
-    let changed = false;
-    if (row.comentario !== nextComment) {
-      row.comentario = nextComment;
-      changed = true;
-    }
-    if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
-      row.snapshotRelPath = nextSnapshotRelPath;
-      changed = true;
-      renderTable();
-    }
-    if (changed) markDirty();
-  }
-  dismissCommentModal();
-}
-
-function wireTaskEditorEvents() {
+function wirePrimaryTaskEditorEvents() {
   if (btnTaskAddRow) {
     btnTaskAddRow.addEventListener('click', () => addRow());
   }
@@ -1200,7 +1200,9 @@ function wireTaskEditorEvents() {
       openModal(libraryModal);
     });
   }
+}
 
+function wireCommentModalEvents() {
   if (commentClose) commentClose.addEventListener('click', () => dismissCommentModal());
   if (commentBackdrop) commentBackdrop.addEventListener('click', () => dismissCommentModal());
   if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentModal());
@@ -1219,7 +1221,9 @@ function wireTaskEditorEvents() {
       applyCommentChangesAndDismiss();
     });
   }
+}
 
+function wireLibraryModalEvents() {
   wireModalClose(libraryModal, libraryClose, libraryBackdrop);
   if (librarySearchInput) {
     librarySearchInput.addEventListener('input', () => filterLibraryItems());
@@ -1228,6 +1232,12 @@ function wireTaskEditorEvents() {
   wireModalClose(includeCommentModal, includeCommentClose, includeCommentBackdrop, includeCommentCancel);
   if (includeCommentYes) includeCommentYes.addEventListener('click', () => saveRowToLibrary(true));
   if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowToLibrary(false));
+}
+
+function wireTaskEditorEvents() {
+  wirePrimaryTaskEditorEvents();
+  wireCommentModalEvents();
+  wireLibraryModalEvents();
 }
 
 function registerTaskEditorInit() {
