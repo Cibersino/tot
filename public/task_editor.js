@@ -300,6 +300,18 @@ function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.
   return api;
 }
 
+function isFailedTaskEditorResult(result) {
+  return !result || result.ok === false;
+}
+
+function getTaskEditorResultCode(result, fallbackCode) {
+  return result && result.code ? result.code : fallbackCode;
+}
+
+function isCancelledTaskEditorResultCode(code) {
+  return code === 'CANCELLED' || code === 'CONFIRM_DENIED';
+}
+
 function resetPendingCommentDraft() {
   pendingCommentRowId = null;
   pendingCommentSnapshotRelPath = '';
@@ -336,9 +348,9 @@ async function selectSnapshotForPendingCommentRow() {
   const api = getTaskEditorApi('selectTaskRowSnapshot');
   if (!api) return;
   const res = await api.selectTaskRowSnapshot();
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'READ_FAILED';
-    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    if (isCancelledTaskEditorResultCode(code)) return;
     log.warn('selectTaskRowSnapshot failed:', { code, response: res || null });
     if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
       window.Notify.notifyEditor('renderer.tasks.alerts.link_blocked');
@@ -369,9 +381,9 @@ async function loadSnapshotForRow(row) {
   const api = getTaskEditorApi('loadTaskRowSnapshot');
   if (!api) return;
   const res = await api.loadTaskRowSnapshot(snapshotRelPath);
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'READ_FAILED';
-    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    if (isCancelledTaskEditorResultCode(code)) return;
     log.warn('loadTaskRowSnapshot failed:', { code, snapshotRelPath, response: res || null });
     if (code === 'NOT_FOUND') {
       window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
@@ -390,9 +402,9 @@ async function selectFileForRow(row, { textoInput, enlaceInput } = {}) {
   const api = getTaskEditorApi('selectTaskFile');
   if (!api) return;
   const res = await api.selectTaskFile();
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'READ_FAILED';
-    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    if (isCancelledTaskEditorResultCode(code)) return;
     log.warn('selectTaskFile failed:', { code, response: res || null });
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
@@ -581,8 +593,8 @@ function renderRow(row) {
     const api = getTaskEditorApi('openTaskLink');
     if (!api) return;
     const res = await api.openTaskLink(raw);
-    if (!res || res.ok === false) {
-      const code = res && res.code ? res.code : 'ERROR';
+    if (isFailedTaskEditorResult(res)) {
+      const code = getTaskEditorResultCode(res, 'ERROR');
       if (code === 'CONFIRM_DENIED') return;
       if (code === 'LINK_MISSING') {
         window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
@@ -827,9 +839,9 @@ async function addRowsFromSelectedFiles() {
   const api = getTaskEditorApi('selectTaskFiles');
   if (!api) return;
   const res = await api.selectTaskFiles();
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'READ_FAILED';
-    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    if (isCancelledTaskEditorResultCode(code)) return;
     log.warn('selectTaskFiles failed:', { code, response: res || null });
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
@@ -931,8 +943,8 @@ async function saveTask() {
   };
 
   const res = await api.saveTaskList(payload);
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'WRITE_FAILED';
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CANCELLED') return;
     if (code === 'NAME_REQUIRED') {
       window.Notify.notifyEditor('renderer.tasks.alerts.name_required');
@@ -964,8 +976,8 @@ async function deleteTask() {
   const api = getTaskEditorApi('deleteTaskList');
   if (!api) return;
   const res = await api.deleteTaskList(sourcePath);
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'WRITE_FAILED';
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CONFIRM_DENIED') return;
     window.Notify.notifyEditor('renderer.tasks.alerts.task_delete_error');
     return;
@@ -1027,8 +1039,8 @@ function renderLibraryItems(items) {
       const api = getTaskEditorApi('deleteLibraryEntry');
       if (!api) return;
       const delRes = await api.deleteLibraryEntry(entry.texto);
-      if (!delRes || delRes.ok === false) {
-        const code = delRes && delRes.code ? delRes.code : 'WRITE_FAILED';
+      if (isFailedTaskEditorResult(delRes)) {
+        const code = getTaskEditorResultCode(delRes, 'WRITE_FAILED');
         if (code === 'CONFIRM_DENIED') return;
         window.Notify.notifyEditor('renderer.tasks.alerts.library_delete_error');
         return;
@@ -1067,7 +1079,7 @@ async function refreshLibraryList() {
   const api = getTaskEditorApi('listLibrary');
   if (!api) return;
   const res = await api.listLibrary();
-  if (!res || res.ok === false) {
+  if (isFailedTaskEditorResult(res)) {
     window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
@@ -1075,6 +1087,7 @@ async function refreshLibraryList() {
   libraryItemsCache = Array.isArray(res.items) ? res.items : [];
   filterLibraryItems();
 }
+
 async function saveRowToLibrary(includeComment) {
   const row = rows.find((r) => r.id === pendingLibraryRowId);
   pendingLibraryRowId = null;
@@ -1087,8 +1100,8 @@ async function saveRowToLibrary(includeComment) {
   const api = getTaskEditorApi('saveLibraryRow');
   if (!api) return;
   const res = await api.saveLibraryRow(row, includeComment);
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'WRITE_FAILED';
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CONFIRM_DENIED') return;
     window.Notify.notifyEditor('renderer.tasks.alerts.library_save_error');
     return;
