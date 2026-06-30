@@ -445,6 +445,7 @@
       "summary_total": "Total",
       "summary_left": "Reste",
       "add_row_button": "Ajouter une ligne",
+      "add_files_button": "Ajouter des fichiers",
       "open_library_button": "Ouvrir la bibliothèque",
       "columns": {
         "texto": "Texto",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Actions",
         "tooltips": {
+          "file_select": "Sélectionner un fichier local",
           "link_open": "Ouvrir le lien",
           "snapshot_load": "Charger un snapshot de texte pour cette ligne",
           "comment": "Ajouter/modifier un commentaire",
@@ -498,6 +500,7 @@
         "task_path_outside": "Le fichier doit être situé dans le dossier des tâches.",
         "name_required": "Le nom de la tâche est obligatoire.",
         "row_text_required": "Le texte de la ligne ne peut pas être vide.",
+        "file_select_error": "Impossible de terminer la sélection des fichiers.",
         "library_load_error": "Impossible de charger la bibliothèque.",
         "library_save_error": "Impossible de sauvegarder dans la bibliothèque.",
         "library_save_success": "Ligne sauvegardée dans la bibliothèque.",

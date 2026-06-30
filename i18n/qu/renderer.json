@@ -445,6 +445,7 @@
       "summary_total": "Llapan",
       "summary_left": "Puchuq",
       "add_row_button": "Siqita yapay",
+      "add_files_button": "Archivokunata yapay",
       "open_library_button": "Bibliotecata kichay",
       "columns": {
         "texto": "Qillqa",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Ruwanakuna",
         "tooltips": {
+          "file_select": "Local archivota akllay",
           "link_open": "Linkta kichay",
           "snapshot_load": "Kay siqipaq qillqa snapshotta kargay",
           "comment": "Rimayta yapay/allichay",
@@ -498,6 +500,7 @@
         "task_path_outside": "Archivoqa llamk'anakuna carpetapa ukunpi kanan.",
         "name_required": "Llamk'anapa sutinqa kananpunim.",
         "row_text_required": "Siqipa qillqanqa mana ch'usaq kananchu.",
+        "file_select_error": "Mana atikurqachu archivokuna akllayta tukuyta.",
         "library_load_error": "Biblioteca mana kargakunchu.",
         "library_save_error": "Bibliotecapi mana waqaychakunchu.",
         "library_save_success": "Siqi bibliotecapi waqaychasqa.",

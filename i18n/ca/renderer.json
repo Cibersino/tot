@@ -445,6 +445,7 @@
       "summary_total": "Total",
       "summary_left": "Resta",
       "add_row_button": "Afegir fila",
+      "add_files_button": "Afegeix fitxers",
       "open_library_button": "Obrir biblioteca",
       "columns": {
         "texto": "Text",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Accions",
         "tooltips": {
+          "file_select": "Selecciona un fitxer local",
           "link_open": "Obrir enllaç",
           "snapshot_load": "Carregar snapshot de text per a aquesta fila",
           "comment": "Afegir/editar comentari",
@@ -498,6 +500,7 @@
         "task_path_outside": "El fitxer ha d’estar dins de la carpeta de tasques.",
         "name_required": "El nom de la tasca és obligatori.",
         "row_text_required": "El text de la fila no pot estar buit.",
+        "file_select_error": "No s’ha pogut completar la selecció de fitxers.",
         "library_load_error": "No s’ha pogut carregar la biblioteca.",
         "library_save_error": "No s’ha pogut desar a la biblioteca.",
         "library_save_success": "Fila desada a la biblioteca.",

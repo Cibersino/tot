@@ -381,7 +381,7 @@ body {
 
 .link-cell {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 6px;
   align-items: center;
 }

@@ -445,6 +445,7 @@
       "summary_total": "Taqpacha",
       "summary_left": "Jilt'a",
       "add_row_button": "Siqi yapxataña",
+      "add_files_button": "Archivonak yapxataña",
       "open_library_button": "Biblioteca jist’araña",
       "columns": {
         "texto": "Qillqata",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Lurañanaka",
         "tooltips": {
+          "file_select": "Local archivo ajlliña",
           "link_open": "Link jist’araña",
           "snapshot_load": "Aka siqitak qillqata snapshot cargar",
           "comment": "Comentario yapxataña/askichaña",
@@ -498,6 +500,7 @@
         "task_path_outside": "Archivox tareas carpeta manqhan utjañapawa.",
         "name_required": "Tarea suti wakisiwa.",
         "row_text_required": "Siqi qillqatax janiw ch’usañapäkiti.",
+        "file_select_error": "Janiw archivonak ajlliñ tukuyaskänti.",
         "library_load_error": "Biblioteca janiw cargaskiti.",
         "library_save_error": "Biblioteca ukar janiw imaskiti.",
         "library_save_success": "Siqi biblioteca ukar imata.",

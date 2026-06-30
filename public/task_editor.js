@@ -69,6 +69,7 @@ const taskSummaryTotalValue = document.getElementById('taskSummaryTotalValue');
 const taskSummaryLeftLabel = document.getElementById('taskSummaryLeftLabel');
 const taskSummaryLeftValue = document.getElementById('taskSummaryLeftValue');
 const btnTaskAddRow = document.getElementById('btnTaskAddRow');
+const btnTaskAddFiles = document.getElementById('btnTaskAddFiles');
 const btnTaskLoadLibrary = document.getElementById('btnTaskLoadLibrary');
 const tableBody = document.getElementById('taskTableBody');
 
@@ -299,6 +300,18 @@ function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.
   return api;
 }
 
+function isFailedTaskEditorResult(result) {
+  return !result || result.ok === false;
+}
+
+function getTaskEditorResultCode(result, fallbackCode) {
+  return result && result.code ? result.code : fallbackCode;
+}
+
+function isCancelledTaskEditorResultCode(code) {
+  return code === 'CANCELLED' || code === 'CONFIRM_DENIED';
+}
+
 function resetPendingCommentDraft() {
   pendingCommentRowId = null;
   pendingCommentSnapshotRelPath = '';
@@ -310,14 +323,34 @@ function dismissCommentModal() {
   closeModal(commentModal);
 }
 
+function applyCommentChangesAndDismiss() {
+  const row = rows.find((r) => r.id === pendingCommentRowId);
+  if (row) {
+    const nextComment = commentInput.value || '';
+    const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
+    let changed = false;
+    if (row.comentario !== nextComment) {
+      row.comentario = nextComment;
+      changed = true;
+    }
+    if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
+      row.snapshotRelPath = nextSnapshotRelPath;
+      changed = true;
+      renderTable();
+    }
+    if (changed) markDirty();
+  }
+  dismissCommentModal();
+}
+
 async function selectSnapshotForPendingCommentRow() {
   if (!pendingCommentRowId) return;
   const api = getTaskEditorApi('selectTaskRowSnapshot');
   if (!api) return;
   const res = await api.selectTaskRowSnapshot();
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'READ_FAILED';
-    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    if (isCancelledTaskEditorResultCode(code)) return;
     log.warn('selectTaskRowSnapshot failed:', { code, response: res || null });
     if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
       window.Notify.notifyEditor('renderer.tasks.alerts.link_blocked');
@@ -348,9 +381,9 @@ async function loadSnapshotForRow(row) {
   const api = getTaskEditorApi('loadTaskRowSnapshot');
   if (!api) return;
   const res = await api.loadTaskRowSnapshot(snapshotRelPath);
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'READ_FAILED';
-    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    if (isCancelledTaskEditorResultCode(code)) return;
     log.warn('loadTaskRowSnapshot failed:', { code, snapshotRelPath, response: res || null });
     if (code === 'NOT_FOUND') {
       window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
@@ -363,6 +396,40 @@ async function loadSnapshotForRow(row) {
     window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
     return;
   }
+}
+
+async function selectFileForRow(row, { textoInput, enlaceInput } = {}) {
+  const api = getTaskEditorApi('selectTaskFile');
+  if (!api) return;
+  const res = await api.selectTaskFile();
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    if (isCancelledTaskEditorResultCode(code)) return;
+    log.warn('selectTaskFile failed:', { code, response: res || null });
+    window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
+    return;
+  }
+  const filePath = typeof res.filePath === 'string' ? res.filePath.trim() : '';
+  if (!filePath) {
+    log.warn('selectTaskFile returned empty filePath:', res || null);
+    window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
+    return;
+  }
+  let changed = false;
+  if (filePath !== row.enlace) {
+    row.enlace = filePath;
+    if (enlaceInput) enlaceInput.value = filePath;
+    changed = true;
+  }
+  if (!String(row.texto || '').trim()) {
+    const derivedText = deriveRowTextFromPath(filePath);
+    if (derivedText && derivedText !== row.texto) {
+      row.texto = derivedText;
+      if (textoInput) textoInput.value = derivedText;
+      changed = true;
+    }
+  }
+  if (changed) markDirty();
 }
 
 // =============================================================================
@@ -384,6 +451,19 @@ function createRow(data = {}) {
     comentario: String(data.comentario || ''),
     snapshotRelPath: normalizeSnapshotRelPath(data.snapshotRelPath || ''),
   };
+}
+
+function deriveRowTextFromPath(filePath) {
+  const raw = String(filePath || '').trim();
+  if (!raw) return '';
+  const segments = raw.split(/[\\/]+/).filter(Boolean);
+  const fileName = segments.length ? segments[segments.length - 1] : raw;
+  const dotIdx = fileName.lastIndexOf('.');
+  const baseName = dotIdx > 0 ? fileName.slice(0, dotIdx) : fileName;
+  const next = (baseName || fileName || raw).trim();
+  return next.length > TASK_ROW_TEXT_MAX_CHARS
+    ? next.slice(0, TASK_ROW_TEXT_MAX_CHARS)
+    : next;
 }
 
 function buildActionButton(iconName, titleKey, onClick, { className = 'icon-btn', size = 'lg' } = {}) {
@@ -489,6 +569,17 @@ function renderRow(row) {
       markDirty();
     }
   });
+  const linkBrowseTitle = tr('renderer.tasks.columns.tooltips.file_select');
+  const enlaceSelectBtn = rendererIcons.createIconButton({
+    iconName: 'folder',
+    className: 'icon-btn',
+    size: 'lg',
+    title: linkBrowseTitle,
+    ariaLabel: linkBrowseTitle,
+  });
+  enlaceSelectBtn.addEventListener('click', () => {
+    selectFileForRow(row, { textoInput, enlaceInput }).catch((err) => log.error('selectFileForRow failed:', err));
+  });
   const linkTitle = tr('renderer.tasks.columns.tooltips.link_open');
   const enlaceBtn = rendererIcons.createIconButton({
     iconName: 'open-target',
@@ -502,9 +593,10 @@ function renderRow(row) {
     const api = getTaskEditorApi('openTaskLink');
     if (!api) return;
     const res = await api.openTaskLink(raw);
-    if (!res || res.ok === false) {
-      const code = res && res.code ? res.code : 'ERROR';
+    if (isFailedTaskEditorResult(res)) {
+      const code = getTaskEditorResultCode(res, 'ERROR');
       if (code === 'CONFIRM_DENIED') return;
+      log.warn('openTaskLink failed:', { code, response: res || null });
       if (code === 'LINK_MISSING') {
         window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
         return;
@@ -518,6 +610,7 @@ function renderRow(row) {
     }
   });
   enlaceWrap.appendChild(enlaceInput);
+  enlaceWrap.appendChild(enlaceSelectBtn);
   enlaceWrap.appendChild(enlaceBtn);
   tdEnlace.appendChild(enlaceWrap);
 
@@ -736,6 +829,42 @@ function addRow(data = {}) {
   renderTable();
 }
 
+function addRows(items) {
+  if (!Array.isArray(items) || !items.length) return;
+  rows.push(...items.map((item) => createRow(item)));
+  markDirty();
+  renderTable();
+}
+
+async function addRowsFromSelectedFiles() {
+  const api = getTaskEditorApi('selectTaskFiles');
+  if (!api) return;
+  const res = await api.selectTaskFiles();
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    if (isCancelledTaskEditorResultCode(code)) return;
+    log.warn('selectTaskFiles failed:', { code, response: res || null });
+    window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
+    return;
+  }
+  const filePaths = Array.isArray(res.filePaths)
+    ? res.filePaths.filter((filePath) => typeof filePath === 'string' && filePath.trim())
+    : [];
+  if (!filePaths.length) {
+    log.warn('selectTaskFiles returned empty filePaths:', res || null);
+    window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
+    return;
+  }
+  addRows(filePaths.map((filePath) => ({
+    texto: deriveRowTextFromPath(filePath),
+    tiempoSeconds: 0,
+    percentComplete: 0,
+    enlace: filePath,
+    comentario: '',
+    snapshotRelPath: '',
+  })));
+}
+
 function deleteRow(id) {
   const idx = rows.findIndex((r) => r.id === id);
   if (idx < 0) return;
@@ -815,9 +944,10 @@ async function saveTask() {
   };
 
   const res = await api.saveTaskList(payload);
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'WRITE_FAILED';
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CANCELLED') return;
+    log.warn('saveTaskList failed:', { code, response: res || null });
     if (code === 'NAME_REQUIRED') {
       window.Notify.notifyEditor('renderer.tasks.alerts.name_required');
       return;
@@ -848,9 +978,10 @@ async function deleteTask() {
   const api = getTaskEditorApi('deleteTaskList');
   if (!api) return;
   const res = await api.deleteTaskList(sourcePath);
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'WRITE_FAILED';
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CONFIRM_DENIED') return;
+    log.warn('deleteTaskList failed:', { code, response: res || null });
     window.Notify.notifyEditor('renderer.tasks.alerts.task_delete_error');
     return;
   }
@@ -911,9 +1042,10 @@ function renderLibraryItems(items) {
       const api = getTaskEditorApi('deleteLibraryEntry');
       if (!api) return;
       const delRes = await api.deleteLibraryEntry(entry.texto);
-      if (!delRes || delRes.ok === false) {
-        const code = delRes && delRes.code ? delRes.code : 'WRITE_FAILED';
+      if (isFailedTaskEditorResult(delRes)) {
+        const code = getTaskEditorResultCode(delRes, 'WRITE_FAILED');
         if (code === 'CONFIRM_DENIED') return;
+        log.warn('deleteLibraryEntry failed:', { code, response: delRes || null });
         window.Notify.notifyEditor('renderer.tasks.alerts.library_delete_error');
         return;
       }
@@ -951,7 +1083,9 @@ async function refreshLibraryList() {
   const api = getTaskEditorApi('listLibrary');
   if (!api) return;
   const res = await api.listLibrary();
-  if (!res || res.ok === false) {
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'READ_FAILED');
+    log.warn('listLibrary failed:', { code, response: res || null });
     window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
@@ -959,6 +1093,7 @@ async function refreshLibraryList() {
   libraryItemsCache = Array.isArray(res.items) ? res.items : [];
   filterLibraryItems();
 }
+
 async function saveRowToLibrary(includeComment) {
   const row = rows.find((r) => r.id === pendingLibraryRowId);
   pendingLibraryRowId = null;
@@ -971,9 +1106,10 @@ async function saveRowToLibrary(includeComment) {
   const api = getTaskEditorApi('saveLibraryRow');
   if (!api) return;
   const res = await api.saveLibraryRow(row, includeComment);
-  if (!res || res.ok === false) {
-    const code = res && res.code ? res.code : 'WRITE_FAILED';
+  if (isFailedTaskEditorResult(res)) {
+    const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CONFIRM_DENIED') return;
+    log.warn('saveLibraryRow failed:', { code, response: res || null, rowId: row.id });
     window.Notify.notifyEditor('renderer.tasks.alerts.library_save_error');
     return;
   }
@@ -992,6 +1128,7 @@ async function applyTaskEditorTranslations() {
   if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.save_button');
   if (btnTaskDelete) btnTaskDelete.textContent = tr('renderer.tasks.delete_button');
   if (btnTaskAddRow) btnTaskAddRow.textContent = tr('renderer.tasks.add_row_button');
+  if (btnTaskAddFiles) btnTaskAddFiles.textContent = tr('renderer.tasks.add_files_button');
   if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.open_library_button');
 
   if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto');
@@ -1039,121 +1176,121 @@ async function applyTaskEditorTranslations() {
 }
 
 // =============================================================================
-// Event wiring
+// Bootstrap / event wiring
 // =============================================================================
-if (btnTaskAddRow) {
-  btnTaskAddRow.addEventListener('click', () => addRow());
-}
+function wirePrimaryTaskEditorEvents() {
+  if (btnTaskAddRow) {
+    btnTaskAddRow.addEventListener('click', () => addRow());
+  }
 
-if (taskNameInput) {
-  taskNameInput.maxLength = TASK_NAME_MAX_CHARS;
-  taskNameInput.addEventListener('input', () => {
-    const next = clampTaskName(taskNameInput.value);
-    if (taskNameInput.value !== next) taskNameInput.value = next;
-    if (next !== meta.name) {
-      meta.name = next;
-      markDirty();
-    }
-  });
-}
+  if (btnTaskAddFiles) {
+    btnTaskAddFiles.addEventListener('click', () => {
+      addRowsFromSelectedFiles().catch((err) => log.error('addRowsFromSelectedFiles failed:', err));
+    });
+  }
 
-if (btnTaskSave) {
-  btnTaskSave.addEventListener('click', () => {
-    saveTask().catch((err) => log.error('saveTask failed:', err));
-  });
-}
-
-if (btnTaskDelete) {
-  btnTaskDelete.addEventListener('click', () => {
-    deleteTask().catch((err) => log.error('deleteTask failed:', err));
-  });
-}
-
-if (btnTaskLoadLibrary) {
-  btnTaskLoadLibrary.addEventListener('click', () => {
-    if (librarySearchInput) librarySearchInput.value = '';
-    refreshLibraryList().catch((err) => log.error('refreshLibraryList failed:', err));
-    openModal(libraryModal);
-  });
-}
-
-if (commentClose) commentClose.addEventListener('click', () => dismissCommentModal());
-if (commentBackdrop) commentBackdrop.addEventListener('click', () => dismissCommentModal());
-if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentModal());
-if (commentSnapshotSelect) {
-  commentSnapshotSelect.addEventListener('click', () => {
-    selectSnapshotForPendingCommentRow().catch((err) => log.error('selectSnapshotForPendingCommentRow failed:', err));
-  });
-}
-if (commentSnapshotClear) {
-  commentSnapshotClear.addEventListener('click', () => {
-    clearSnapshotForPendingCommentRow();
-  });
-}
-if (commentSave) {
-  commentSave.addEventListener('click', () => {
-    const row = rows.find((r) => r.id === pendingCommentRowId);
-    if (row) {
-      const nextComment = commentInput.value || '';
-      const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
-      let changed = false;
-      if (row.comentario !== nextComment) {
-        row.comentario = nextComment;
-        changed = true;
+  if (taskNameInput) {
+    taskNameInput.maxLength = TASK_NAME_MAX_CHARS;
+    taskNameInput.addEventListener('input', () => {
+      const next = clampTaskName(taskNameInput.value);
+      if (taskNameInput.value !== next) taskNameInput.value = next;
+      if (next !== meta.name) {
+        meta.name = next;
+        markDirty();
       }
-      if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
-        row.snapshotRelPath = nextSnapshotRelPath;
-        changed = true;
-        renderTable();
-      }
-      if (changed) markDirty();
-    }
-    dismissCommentModal();
-  });
+    });
+  }
+
+  if (btnTaskSave) {
+    btnTaskSave.addEventListener('click', () => {
+      saveTask().catch((err) => log.error('saveTask failed:', err));
+    });
+  }
+
+  if (btnTaskDelete) {
+    btnTaskDelete.addEventListener('click', () => {
+      deleteTask().catch((err) => log.error('deleteTask failed:', err));
+    });
+  }
+
+  if (btnTaskLoadLibrary) {
+    btnTaskLoadLibrary.addEventListener('click', () => {
+      if (librarySearchInput) librarySearchInput.value = '';
+      refreshLibraryList().catch((err) => log.error('refreshLibraryList failed:', err));
+      openModal(libraryModal);
+    });
+  }
 }
 
-wireModalClose(libraryModal, libraryClose, libraryBackdrop);
-if (librarySearchInput) {
-  librarySearchInput.addEventListener('input', () => filterLibraryItems());
+function wireCommentModalEvents() {
+  if (commentClose) commentClose.addEventListener('click', () => dismissCommentModal());
+  if (commentBackdrop) commentBackdrop.addEventListener('click', () => dismissCommentModal());
+  if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentModal());
+  if (commentSnapshotSelect) {
+    commentSnapshotSelect.addEventListener('click', () => {
+      selectSnapshotForPendingCommentRow().catch((err) => log.error('selectSnapshotForPendingCommentRow failed:', err));
+    });
+  }
+  if (commentSnapshotClear) {
+    commentSnapshotClear.addEventListener('click', () => {
+      clearSnapshotForPendingCommentRow();
+    });
+  }
+  if (commentSave) {
+    commentSave.addEventListener('click', () => {
+      applyCommentChangesAndDismiss();
+    });
+  }
 }
 
-wireModalClose(includeCommentModal, includeCommentClose, includeCommentBackdrop, includeCommentCancel);
-if (includeCommentYes) includeCommentYes.addEventListener('click', () => saveRowToLibrary(true));
-if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowToLibrary(false));
+function wireLibraryModalEvents() {
+  wireModalClose(libraryModal, libraryClose, libraryBackdrop);
+  if (librarySearchInput) {
+    librarySearchInput.addEventListener('input', () => filterLibraryItems());
+  }
 
-// =============================================================================
-// Task editor init + close guard
-// =============================================================================
-if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
-  window.taskEditorAPI.onInit((payload) => {
-    applyTaskPayload(payload);
-  });
-} else {
+  wireModalClose(includeCommentModal, includeCommentClose, includeCommentBackdrop, includeCommentCancel);
+  if (includeCommentYes) includeCommentYes.addEventListener('click', () => saveRowToLibrary(true));
+  if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowToLibrary(false));
+}
+
+function wireTaskEditorEvents() {
+  wirePrimaryTaskEditorEvents();
+  wireCommentModalEvents();
+  wireLibraryModalEvents();
+}
+
+function registerTaskEditorInit() {
+  if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
+    window.taskEditorAPI.onInit((payload) => {
+      applyTaskPayload(payload);
+    });
+    return;
+  }
   log.warnOnce('BOOTSTRAP:task_editor.onInit.missing', 'taskEditorAPI.onInit unavailable; editor init disabled.');
 }
 
-if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
-  window.taskEditorAPI.onRequestClose(() => {
-    if (typeof window.taskEditorAPI.confirmClose !== 'function') {
-      log.warnOnce('task_editor.confirmClose.missing', 'taskEditorAPI.confirmClose unavailable; close request ignored.');
-      return;
-    }
-    if (!dirty) {
-      window.taskEditorAPI.confirmClose();
-      return;
-    }
-    if (window.Notify.confirmMain('renderer.tasks.alerts.close_unsaved')) {
-      window.taskEditorAPI.confirmClose();
-    }
-  });
-} else {
+function registerTaskEditorCloseGuard() {
+  if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
+    window.taskEditorAPI.onRequestClose(() => {
+      if (typeof window.taskEditorAPI.confirmClose !== 'function') {
+        log.warnOnce('task_editor.confirmClose.missing', 'taskEditorAPI.confirmClose unavailable; close request ignored.');
+        return;
+      }
+      if (!dirty) {
+        window.taskEditorAPI.confirmClose();
+        return;
+      }
+      if (window.Notify.confirmMain('renderer.tasks.alerts.close_unsaved')) {
+        window.taskEditorAPI.confirmClose();
+      }
+    });
+    return;
+  }
   log.warnOnce('BOOTSTRAP:task_editor.onRequestClose.missing', 'taskEditorAPI.onRequestClose unavailable; close confirmation disabled.');
 }
 
-// =============================================================================
-// Bootstrap: settings, translations, column widths
-// =============================================================================
-(async () => {
+async function bootstrapTaskEditor() {
   try {
     if (window.taskEditorAPI && typeof window.taskEditorAPI.getSettings === 'function') {
       const settings = await window.taskEditorAPI.getSettings();
@@ -1169,22 +1306,30 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'func
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
   }
-})();
+}
 
-if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'function') {
-  window.taskEditorAPI.onSettingsChanged(async (settings) => {
-    try {
-      const nextLang = settings && settings.language ? settings.language : '';
-      if (!nextLang || nextLang === idiomaActual) return;
-      idiomaActual = nextLang;
-      await applyTaskEditorTranslations();
-    } catch (err) {
-      log.warn('task-editor: settings update failed (ignored):', err);
-    }
-  });
-} else {
+function registerTaskEditorSettingsChanged() {
+  if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'function') {
+    window.taskEditorAPI.onSettingsChanged(async (settings) => {
+      try {
+        const nextLang = settings && settings.language ? settings.language : '';
+        if (!nextLang || nextLang === idiomaActual) return;
+        idiomaActual = nextLang;
+        await applyTaskEditorTranslations();
+      } catch (err) {
+        log.warn('task-editor: settings update failed (ignored):', err);
+      }
+    });
+    return;
+  }
   log.warnOnce('BOOTSTRAP:task_editor.onSettingsChanged.missing', 'taskEditorAPI.onSettingsChanged unavailable; language updates disabled.');
 }
+
+wireTaskEditorEvents();
+registerTaskEditorInit();
+registerTaskEditorCloseGuard();
+bootstrapTaskEditor();
+registerTaskEditorSettingsChanged();
 
 // =============================================================================
 // End of public/task_editor.js

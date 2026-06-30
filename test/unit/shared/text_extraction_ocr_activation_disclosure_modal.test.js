@@ -48,6 +48,7 @@ function createElement(id) {
 }
 
 function createHarness({ languageDirection = 'rtl' } = {}) {
+  const registeredPromptNames = [];
   const elements = {
     textExtractionOcrActivationDisclosureModal: createElement('textExtractionOcrActivationDisclosureModal'),
     textExtractionOcrActivationDisclosureBackdrop: createElement('textExtractionOcrActivationDisclosureBackdrop'),
@@ -80,7 +81,12 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
 
   const sandbox = {
     window: {
-      Notify: {},
+      Notify: {
+        registerCustomPrompt(name, handler) {
+          registeredPromptNames.push(name);
+          this[name] = handler;
+        },
+      },
       RendererI18n: {
         tRenderer(key) {
           return translations[key] || key;
@@ -128,9 +134,21 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
 
   return {
     elements,
+    getRegisteredPromptNames() {
+      return registeredPromptNames.slice();
+    },
     prompt: sandbox.window.Notify.promptTextExtractionOcrActivationDisclosure,
   };
 }
+
+test('OCR activation disclosure modal registers its public prompt through window.Notify.registerCustomPrompt', () => {
+  const harness = createHarness();
+
+  assert.deepEqual(harness.getRegisteredPromptNames(), [
+    'promptTextExtractionOcrActivationDisclosure',
+  ]);
+  assert.equal(typeof harness.prompt, 'function');
+});
 
 test('OCR activation disclosure modal uses RTL surface direction for RTL locales', async () => {
   const harness = createHarness({ languageDirection: 'rtl' });

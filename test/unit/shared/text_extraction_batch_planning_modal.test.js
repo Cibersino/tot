@@ -243,6 +243,7 @@ function findNodeByAttributes(node, expectedAttributes = {}) {
 
 function createHarness() {
   activeElementRef = null;
+  const registeredPromptNames = [];
   const elements = {
     outsideLauncher: createElement('outsideLauncher'),
     textExtractionBatchPlanModal: createElement('textExtractionBatchPlanModal'),
@@ -332,7 +333,13 @@ function createHarness() {
 
   const sandbox = {
     window: {
-      Notify: {},
+      Notify: {
+        notifyMain() {},
+        registerCustomPrompt(name, handler) {
+          registeredPromptNames.push(name);
+          this[name] = handler;
+        },
+      },
       getLogger() {
         return {
           debug() {},
@@ -470,12 +477,24 @@ function createHarness() {
 
   return {
     elements,
+    getRegisteredPromptNames() {
+      return registeredPromptNames.slice();
+    },
     getActiveElement() {
       return activeElementRef;
     },
     prompt: sandbox.window.Notify.promptTextExtractionBatchPlan,
   };
 }
+
+test('batch planning modal registers its public prompt through window.Notify.registerCustomPrompt', () => {
+  const harness = createHarness();
+
+  assert.deepEqual(harness.getRegisteredPromptNames(), [
+    'promptTextExtractionBatchPlan',
+  ]);
+  assert.equal(typeof harness.prompt, 'function');
+});
 
 test('batch planning modal exposes direct all-pages and range controls for ordinary PDFs', async () => {
   const harness = createHarness();

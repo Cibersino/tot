@@ -175,10 +175,9 @@
   // Exports / module surface
   // =============================================================================
 
-  window.Notify.promptTextExtractionOcrActivationDisclosure = promptDisclosure;
+  window.Notify.registerCustomPrompt('promptTextExtractionOcrActivationDisclosure', promptDisclosure);
 })();
 
 // =============================================================================
 // End of public/js/text_extraction_ocr_activation_disclosure_modal.js
 // =============================================================================
-

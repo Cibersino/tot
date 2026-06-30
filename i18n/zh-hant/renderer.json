@@ -445,6 +445,7 @@
       "summary_total": "總計",
       "summary_left": "剩餘",
       "add_row_button": "新增列",
+      "add_files_button": "新增檔案",
       "open_library_button": "開啟資料庫",
       "columns": {
         "texto": "文字",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "動作",
         "tooltips": {
+          "file_select": "選擇本機檔案",
           "link_open": "開啟連結",
           "snapshot_load": "為此列載入文字快照",
           "comment": "新增／編輯註解",
@@ -498,6 +500,7 @@
         "task_path_outside": "檔案必須位於任務資料夾內。",
         "name_required": "任務名稱為必填項。",
         "row_text_required": "列文字不可為空。",
+        "file_select_error": "無法完成檔案選擇。",
         "library_load_error": "無法載入資料庫。",
         "library_save_error": "無法儲存至資料庫。",
         "library_save_success": "列已儲存至資料庫。",

@@ -445,6 +445,7 @@
       "summary_total": "Totalt",
       "summary_left": "Kvar",
       "add_row_button": "Lägg till rad",
+      "add_files_button": "Lägg till filer",
       "open_library_button": "Öppna bibliotek",
       "columns": {
         "texto": "Text",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Åtgärder",
         "tooltips": {
+          "file_select": "Välj lokal fil",
           "link_open": "Öppna länk",
           "snapshot_load": "Läs in en textsnapshot för denna rad",
           "comment": "Lägg till/redigera kommentar",
@@ -498,6 +500,7 @@
         "task_path_outside": "Filen måste ligga i uppgiftsmappen.",
         "name_required": "Uppgiftsnamn krävs.",
         "row_text_required": "Radtexten får inte vara tom.",
+        "file_select_error": "Det gick inte att slutföra filvalet.",
         "library_load_error": "Kunde inte läsa in biblioteket.",
         "library_save_error": "Kunde inte spara i biblioteket.",
         "library_save_success": "Raden sparades i biblioteket.",

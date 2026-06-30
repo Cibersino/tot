@@ -445,6 +445,7 @@
       "summary_total": "कुल",
       "summary_left": "शेष",
       "add_row_button": "पंक्ति जोड़ें",
+      "add_files_button": "फ़ाइलें जोड़ें",
       "open_library_button": "लाइब्रेरी खोलें",
       "columns": {
         "texto": "पाठ",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "कार्रवाइयाँ",
         "tooltips": {
+          "file_select": "स्थानीय फ़ाइल चुनें",
           "link_open": "लिंक खोलें",
           "snapshot_load": "इस पंक्ति के लिए पाठ स्नैपशॉट लोड करें",
           "comment": "टिप्पणी जोड़ें/संपादित करें",
@@ -498,6 +500,7 @@
         "task_path_outside": "फ़ाइल कार्य फ़ोल्डर के अंदर होनी चाहिए।",
         "name_required": "कार्य का नाम आवश्यक है।",
         "row_text_required": "पंक्ति का पाठ खाली नहीं हो सकता।",
+        "file_select_error": "फ़ाइल चयन पूरा नहीं किया जा सका।",
         "library_load_error": "लाइब्रेरी लोड नहीं हो सकी।",
         "library_save_error": "लाइब्रेरी में सहेजा नहीं जा सका।",
         "library_save_success": "पंक्ति लाइब्रेरी में सहेजी गई।",

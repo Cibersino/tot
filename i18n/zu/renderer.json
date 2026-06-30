@@ -445,6 +445,7 @@
       "summary_total": "Isamba",
       "summary_left": "Okusele",
       "add_row_button": "Engeza umugqa",
+      "add_files_button": "Engeza amafayela",
       "open_library_button": "Vula ilabhulali",
       "columns": {
         "texto": "Umbhalo",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Izenzo",
         "tooltips": {
+          "file_select": "Khetha ifayela lendawo",
           "link_open": "Vula isixhumanisi",
           "snapshot_load": "Layisha i-snapshot yombhalo kulo mugqa",
           "comment": "Engeza/hlela ukuphawula",
@@ -498,6 +500,7 @@
         "task_path_outside": "Ifayela kufanele libe ngaphakathi kwefolda yemisebenzi.",
         "name_required": "Igama lomsebenzi liyadingeka.",
         "row_text_required": "Umbhalo womugqa awukwazi ukuba nalutho.",
+        "file_select_error": "Ayikwazanga ukuqedela ukukhetha amafayela.",
         "library_load_error": "Ayikwazanga ukulayisha ilabhulali.",
         "library_save_error": "Ayikwazanga ukugcina kulabhulali.",
         "library_save_success": "Umugqa ugciniwe kulabhulali.",

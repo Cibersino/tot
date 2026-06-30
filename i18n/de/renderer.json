@@ -445,6 +445,7 @@
       "summary_total": "Gesamt",
       "summary_left": "Rest",
       "add_row_button": "Zeile hinzufügen",
+      "add_files_button": "Dateien hinzufügen",
       "open_library_button": "Bibliothek öffnen",
       "columns": {
         "texto": "Text",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Aktionen",
         "tooltips": {
+          "file_select": "Lokale Datei auswählen",
           "link_open": "Link öffnen",
           "snapshot_load": "Laden Sie einen Text-Snapshot für diese Zeile",
           "comment": "Kommentar hinzufügen/bearbeiten",
@@ -498,6 +500,7 @@
         "task_path_outside": "Die Datei muss sich im Aufgabenordner befinden.",
         "name_required": "Aufgabenname ist erforderlich.",
         "row_text_required": "Zeilentext darf nicht leer sein.",
+        "file_select_error": "Die Dateiauswahl konnte nicht abgeschlossen werden.",
         "library_load_error": "Konnte die Bibliothek nicht laden.",
         "library_save_error": "Konnte nicht in die Bibliothek speichern.",
         "library_save_success": "Zeile in die Bibliothek gespeichert.",

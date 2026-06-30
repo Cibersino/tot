@@ -531,7 +531,7 @@
   // Exports / module surface
   // =============================================================================
 
-  window.Notify.promptTextExtractionBatchFinalReport = promptBatchFinalReport;
+  window.Notify.registerCustomPrompt('promptTextExtractionBatchFinalReport', promptBatchFinalReport);
 })();
 
 // =============================================================================

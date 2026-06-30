@@ -445,6 +445,7 @@
       "summary_total": "总计",
       "summary_left": "剩余",
       "add_row_button": "添加行",
+      "add_files_button": "添加文件",
       "open_library_button": "打开库",
       "columns": {
         "texto": "文本",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "操作",
         "tooltips": {
+          "file_select": "选择本地文件",
           "link_open": "打开链接",
           "snapshot_load": "为此行加载文本快照",
           "comment": "添加/编辑评论",
@@ -498,6 +500,7 @@
         "task_path_outside": "文件必须位于任务文件夹内。",
         "name_required": "任务名称为必填项。",
         "row_text_required": "行文本不能为空。",
+        "file_select_error": "无法完成文件选择。",
         "library_load_error": "无法加载库。",
         "library_save_error": "无法保存到库。",
         "library_save_success": "行已保存到库。",

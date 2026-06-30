@@ -242,7 +242,7 @@
   // Exports / module surface
   // =============================================================================
 
-  window.Notify.promptTextExtractionApplyChoice = promptApplyChoice;
+  window.Notify.registerCustomPrompt('promptTextExtractionApplyChoice', promptApplyChoice);
 })();
 
 // =============================================================================

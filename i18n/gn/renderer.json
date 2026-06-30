@@ -445,6 +445,7 @@
       "summary_total": "Opaite",
       "summary_left": "Hemby",
       "add_row_button": "Embojoapy fila",
+      "add_files_button": "Emoĩ archivo-kuéra",
       "open_library_button": "Eipe’a biblioteca",
       "columns": {
         "texto": "Jehai",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Tembiapo",
         "tooltips": {
+          "file_select": "Eiporavo archivo local",
           "link_open": "Eipe’a link",
           "snapshot_load": "Emyanyhẽ jehai snapshot ko fila-pe g̃uarã",
           "comment": "Embojoapy/emyatyrõ comentario",
@@ -498,6 +500,7 @@
         "task_path_outside": "Archivo oĩva’erã tembiaporã carpeta ryepýpe.",
         "name_required": "Tembiaporã réra tekotevẽ.",
         "row_text_required": "Fila jehai ndaikatúi nandi.",
+        "file_select_error": "Ndaikatúi oñemohu’ã archivo jeporavo.",
         "library_load_error": "Ndaikatúi oñemyanyhẽ biblioteca.",
         "library_save_error": "Ndaikatúi oñeñongatu biblioteca-pe.",
         "library_save_success": "Fila oñeñongatu biblioteca-pe.",

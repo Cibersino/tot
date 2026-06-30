@@ -326,7 +326,7 @@
   // =============================================================================
   // Module Surface
   // =============================================================================
-  window.Notify.promptTextExtractionSingleFileHeavyPdf = promptSingleFileHeavyPdf;
+  window.Notify.registerCustomPrompt('promptTextExtractionSingleFileHeavyPdf', promptSingleFileHeavyPdf);
 })();
 
 // =============================================================================

@@ -445,6 +445,7 @@
       "summary_total": "کل",
       "summary_left": "باقی",
       "add_row_button": "قطار شامل کریں",
+      "add_files_button": "فائلیں شامل کریں",
       "open_library_button": "لائبریری کھولیں",
       "columns": {
         "texto": "متن",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "اعمال",
         "tooltips": {
+          "file_select": "مقامی فائل منتخب کریں",
           "link_open": "لنک کھولیں",
           "snapshot_load": "اس قطار کے لیے متن کا اسنیپ شاٹ لوڈ کریں",
           "comment": "تبصرہ شامل/ترمیم کریں",
@@ -498,6 +500,7 @@
         "task_path_outside": "فائل tasks فولڈر کے اندر ہونی چاہیے۔",
         "name_required": "ٹاسک کا نام ضروری ہے۔",
         "row_text_required": "قطار کا متن خالی نہیں ہو سکتا۔",
+        "file_select_error": "فائل کا انتخاب مکمل نہیں ہو سکا۔",
         "library_load_error": "لائبریری لوڈ نہیں ہو سکی۔",
         "library_save_error": "لائبریری میں محفوظ نہیں ہو سکا۔",
         "library_save_success": "قطار لائبریری میں محفوظ ہو گئی۔",

@@ -445,6 +445,7 @@
       "summary_total": "Totale",
       "summary_left": "Resta",
       "add_row_button": "Aggiungi riga",
+      "add_files_button": "Aggiungi file",
       "open_library_button": "Apri biblioteca",
       "columns": {
         "texto": "Testo",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Azioni",
         "tooltips": {
+          "file_select": "Seleziona file locale",
           "link_open": "Apri link",
           "snapshot_load": "Carica snapshot di testo per questa riga",
           "comment": "Aggiungi/modifica commento",
@@ -498,6 +500,7 @@
         "task_path_outside": "Il file deve essere all'interno della cartella delle attività.",
         "name_required": "Il nome dell'attività è obbligatorio.",
         "row_text_required": "Il testo della riga non può essere vuoto.",
+        "file_select_error": "Impossibile completare la selezione dei file.",
         "library_load_error": "Impossibile caricare la biblioteca.",
         "library_save_error": "Impossibile salvare nella biblioteca.",
         "library_save_success": "Riga salvata nella biblioteca.",

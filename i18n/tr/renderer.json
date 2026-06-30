@@ -445,6 +445,7 @@
       "summary_total": "Toplam",
       "summary_left": "Kalan",
       "add_row_button": "Satır ekle",
+      "add_files_button": "Dosya ekle",
       "open_library_button": "Kütüphaneyi aç",
       "columns": {
         "texto": "Metin",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Eylemler",
         "tooltips": {
+          "file_select": "Yerel dosya seç",
           "link_open": "Bağlantıyı aç",
           "snapshot_load": "Bu satır için metin snapshot'ı yükle",
           "comment": "Yorum ekle/düzenle",
@@ -498,6 +500,7 @@
         "task_path_outside": "Dosya görevler klasörünün içinde olmalıdır.",
         "name_required": "Görev adı zorunludur.",
         "row_text_required": "Satır metni boş olamaz.",
+        "file_select_error": "Dosya seçimi tamamlanamadı.",
         "library_load_error": "Kütüphane yüklenemedi.",
         "library_save_error": "Kütüphaneye kaydedilemedi.",
         "library_save_success": "Satır kütüphaneye kaydedildi.",

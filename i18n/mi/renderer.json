@@ -445,6 +445,7 @@
       "summary_total": "Tapeke",
       "summary_left": "Toe",
       "add_row_button": "Tāpiri rārangi",
+      "add_files_button": "Tāpiri kōnae",
       "open_library_button": "Whakatuwhera pātaka",
       "columns": {
         "texto": "Kuputuhi",
@@ -455,6 +456,7 @@
         "comentario": "",
         "acciones": "Ngā mahi",
         "tooltips": {
+          "file_select": "Tīpakohia he kōnae paetata",
           "link_open": "Whakatuwhera hononga",
           "snapshot_load": "Uta hopunga kuputuhi mō tēnei rārangi",
           "comment": "Tāpiri/whakatika kōrero",
@@ -498,6 +500,7 @@
         "task_path_outside": "Me noho te kōnae ki roto i te kōpaki tūmahi.",
         "name_required": "Me whai ingoa te tūmahi.",
         "row_text_required": "Kāore e āhei kia noho kau te kuputuhi rārangi.",
+        "file_select_error": "Kāore i taea te whakaoti i te tīpakonga kōnae.",
         "library_load_error": "Kāore i taea te uta i te pātaka.",
         "library_save_error": "Kāore i taea te tiaki ki te pātaka.",
         "library_save_success": "Kua tiakina te rārangi ki te pātaka.",
