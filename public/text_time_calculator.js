@@ -9,9 +9,15 @@
 // - Load translations and number-format settings for the current language.
 // - Keep the selected target plus raw editable values synchronized with the UI.
 // - Delegate math and stopwatch parsing/formatting to shared pure helpers.
+// - Keep startup strict for required owners while degrading cleanly for optional settings sync.
 // - Render inline validation without toasts or developer noise for normal input mistakes.
 
 (() => {
+  // =============================================================================
+  // Runtime dependencies and owner surfaces
+  // =============================================================================
+  // This window depends on stable renderer-owned globals for logging, i18n,
+  // formatting, stopwatch parsing, calculator math, and default language.
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text_time_calculator] window.getLogger unavailable; cannot continue');
   }
@@ -80,6 +86,9 @@
     formatInteger: (value) => integerFormatState.format(value),
   });
 
+  // =============================================================================
+  // DOM references and field schema
+  // =============================================================================
   const targetLabel = document.getElementById('textTimeCalculatorTargetLabel');
   const targetSelect = document.getElementById('textTimeCalculatorTarget');
   const formulaValidation = document.getElementById('textTimeCalculatorFormulaValidation');
@@ -132,6 +141,9 @@
     }
   });
 
+  // =============================================================================
+  // Shared state and translation keys
+  // =============================================================================
   let currentLanguage = DEFAULT_LANG;
   let settingsCache = null;
   let translationsLoadedFor = null;
@@ -141,6 +153,9 @@
     wpm: '',
   };
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function getSelectedTarget() {
     const selected = String(targetSelect.value || '').trim();
     return selected === 'words' || selected === 'time' ? selected : 'wpm';
@@ -254,6 +269,9 @@
     renderCalculator();
   }
 
+  // =============================================================================
+  // App lifecycle and bootstrapping
+  // =============================================================================
   async function bootstrap() {
     targetSelect.value = 'wpm';
     fieldNames.forEach(bindFieldInput);
