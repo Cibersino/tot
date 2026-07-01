@@ -64,6 +64,7 @@
         "edit_preset": "Edit selected preset",
         "delete_preset": "Delete selected preset",
         "reset_presets": "Restore default presets",
+        "text_time_calculator": "Open quick calculator",
         "help_button": "Show a useful tip",
         "flotante_window": "Floating Stopwatch"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Abort extraction",
         "browser_extension": "Open browser extension window",
         "clipboard_repeat_count": "Paste repetitions",
+        "text_time_calculator": "Open quick calculator",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words per minute slider",
         "speed_presets": "Speed presets",
@@ -509,6 +511,26 @@
         "link_missing": "File not found.",
         "link_error": "Error opening link or local path.",
         "close_unsaved": "There are unsaved changes. Close without saving?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Quick calculator",
+      "calculate_label": "Calculate",
+      "targets": {
+        "words": "Words",
+        "time": "Time",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Words",
+        "time": "Time",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Enter a non-negative whole number.",
+        "time": "Enter time in H+:MM:SS format.",
+        "wpm": "Enter a positive whole number.",
+        "formula": "WPM cannot be calculated from 00:00:00."
       }
     },
     "reading_test": {

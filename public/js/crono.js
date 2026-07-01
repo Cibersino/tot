@@ -25,25 +25,25 @@
   if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
     throw new Error('[crono] RendererIcons.applyIconToElement unavailable; cannot continue');
   }
+  const stopwatchTimeCore = window.StopwatchTimeCore || null;
+  if (!stopwatchTimeCore || typeof stopwatchTimeCore.createStopwatchTimeUtils !== 'function') {
+    throw new Error('[crono] StopwatchTimeCore.createStopwatchTimeUtils unavailable; cannot continue');
+  }
+  const stopwatchTimeUtils = stopwatchTimeCore.createStopwatchTimeUtils();
+  const {
+    formatStopwatchMs,
+    parseStopwatchInput,
+  } = stopwatchTimeUtils;
 
   // =============================================================================
   // Helpers (format/parse + WPM)
   // =============================================================================
   function formatCrono(ms) {
-    const totalSeconds = Math.floor((ms || 0) / 1000);
-    const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-    const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-    const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
+    return formatStopwatchMs(ms);
   }
 
   function parseCronoInput(input) {
-    const match = String(input || '').match(/^(\d+):([0-5]\d):([0-5]\d)$/);
-    if (!match) return null;
-    const hours = parseInt(match[1], 10);
-    const minutes = parseInt(match[2], 10);
-    const seconds = parseInt(match[3], 10);
-    return (hours * 3600 + minutes * 60 + seconds) * 1000;
+    return parseStopwatchInput(input);
   }
 
   async function actualizarVelocidadRealFromElapsed({

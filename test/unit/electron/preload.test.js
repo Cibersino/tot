@@ -107,3 +107,16 @@ test('main preload forwards setCurrentText canonical payloads unchanged', () => 
     },
   ]);
 });
+
+test('main preload exposes openTextTimeCalculator through electronAPI', () => {
+  const { exposedApi, invoked } = loadMainPreload();
+
+  exposedApi.api.openTextTimeCalculator();
+
+  assert.deepEqual(invoked, [
+    {
+      channel: 'text-time-calculator-open',
+      payload: undefined,
+    },
+  ]);
+});

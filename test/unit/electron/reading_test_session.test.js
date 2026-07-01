@@ -420,3 +420,38 @@ test('reading-test start stays on the existing blocked path when the editor wind
     harness.restore();
   }
 });
+
+test('reading-test start stays blocked when the text time calculator window is already open', async () => {
+  const harness = createControllerHarness({
+    entries: [
+      {
+        snapshotRelPath: '/reading_speed_test_pool/imported.json',
+        fileName: 'imported.json',
+        text: 'Imported text.',
+        tags: { language: 'en' },
+        used: false,
+        isBundled: false,
+      },
+    ],
+    preconditionContext: {
+      openSecondaryWindows: [{ id: 'text_time_calculator', label: 'text_time_calculator', isOpen: true }],
+      stopwatchRunning: false,
+    },
+  });
+
+  try {
+    const result = await harness.ipcMain.invoke(
+      'reading-test-start',
+      harness.senderEvent,
+      { sourceMode: 'pool', selection: {} }
+    );
+    assert.deepEqual(result, {
+      ok: false,
+      code: 'PRECONDITION_BLOCKED',
+      guidanceKey: 'renderer.reading_test.alerts.precondition_blocked',
+    });
+    assert.equal(harness.getEnsureEditorWindowCalls(), 0);
+  } finally {
+    harness.restore();
+  }
+});

@@ -1,0 +1,117 @@
+/* Text/time calculator window styles.
+   Loaded by public/text_time_calculator.html.
+   Owner boundary: quick text/time calculator layout, fields, and inline validation only. */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 12px;
+  background: #f4f6f8;
+  color: #1f2937;
+  font-family: Arial, sans-serif;
+}
+
+.text-time-calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.text-time-calculator__target-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.text-time-calculator__target-label,
+.text-time-calculator__row-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.text-time-calculator__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.text-time-calculator__row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: center;
+}
+
+.text-time-calculator__row-control,
+.text-time-calculator__target-select,
+.text-time-calculator__field {
+  width: 100%;
+}
+
+.text-time-calculator__row-control {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.text-time-calculator__target-select,
+.text-time-calculator__field {
+  height: 32px;
+  border: 1px solid #b7c2ce;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2937;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.text-time-calculator__target-select,
+.text-time-calculator__field {
+  padding: 0 10px;
+}
+
+.text-time-calculator__output {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 2px;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.text-time-calculator__field.is-invalid {
+  border-color: #b00020;
+  background: #fff7f7;
+}
+
+.text-time-calculator__target-select:focus-visible,
+.text-time-calculator__field:focus-visible {
+  outline: 2px solid #2b78ff;
+  outline-offset: 1px;
+}
+
+.text-time-calculator__row-validation,
+.text-time-calculator__formula-validation {
+  color: #b00020;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.text-time-calculator__row-validation {
+  grid-column: 2;
+}

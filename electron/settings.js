@@ -551,6 +551,7 @@ function broadcastSettingsUpdated(settings, windows) {
     { win: windows.presetWin, name: 'presetWin' },
     { win: windows.flotanteWin, name: 'flotanteWin' },
     { win: windows.taskEditorWin, name: 'taskEditorWin' },
+    { win: windows.textTimeCalculatorWin, name: 'textTimeCalculatorWin' },
   ];
 
   targets.forEach(({ win, name }) => {
@@ -611,7 +612,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
 function registerIpc(
   ipcMain,
   {
-    getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin })
+    getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin, taskEditorWin, textTimeCalculatorWin })
     buildAppMenu, // function(lang)
     onSettingsUpdated, // function(settings)
     decorateSettings, // function(settings) => settings payload
@@ -777,12 +778,13 @@ function registerIpc(
       }
 
       // Hide the toolbar/menu in secondary windows (best-effort).
-      const { editorWin, editorFindWin, presetWin, langWin, taskEditorWin } = windows;
+      const { editorWin, editorFindWin, presetWin, langWin, taskEditorWin, textTimeCalculatorWin } = windows;
       hideWindowMenu(editorWin, 'editorWin');
       hideWindowMenu(editorFindWin, 'editorFindWin');
       hideWindowMenu(presetWin, 'presetWin');
       hideWindowMenu(langWin, 'langWin');
       hideWindowMenu(taskEditorWin, 'taskEditorWin');
+      hideWindowMenu(textTimeCalculatorWin, 'textTimeCalculatorWin');
 
       publishSettingsUpdated(settings, windows);
 

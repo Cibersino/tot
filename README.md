@@ -7,7 +7,7 @@
 
 # toT — de Texto a Tiempo
 
-**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina extracción de texto desde archivos de texto e imagen, presets de WPM configurables, conteo preciso, snapshots de texto, un editor de texto, un editor de tareas, cronómetro y test de velocidad de lectura para que puedas medir, organizar y completar lecturas con menos margen de adivinación.
+**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina extracción de texto desde archivos de texto e imagen, presets de WPM configurables, conteo preciso, snapshots de texto, un editor de texto, un editor de tareas, cronómetro, una calculadora auxiliar, y test de velocidad de lectura para que puedas medir, organizar y completar lecturas con menos margen de adivinación.
 
 ![Guía básica animada](public/assets/instrucciones/guia-basica.gif)
 
@@ -32,6 +32,7 @@
 * Presets de WPM: crear, editar, eliminar y restaurar valores por defecto.
 * Test de velocidad de lectura guiado: usar texto actual o textos del pool, medir WPM, mostrar preguntas opcionales de comprensión y crear presets personalizados.
 * Cronómetro con cálculo de WPM real; ventana flotante opcional.
+* Calculadora auxiliar para convertir entre palabras, tiempo y WPM.
 * Snapshots de texto: guardar y cargar textos actuales.
 * Editor de Tareas: organizador de planes de lectura.
 * Interfaz multidioma con más de 25 idiomas activos.
@@ -118,6 +119,7 @@ Accesos rápidos visibles en la ventana principal:
 * **Tareas**: crear una nueva tarea o cargar una tarea.
 * `Test de velocidad de lectura`: iniciar un test guiado desde un texto del pool o desde el texto actual.
 * **Presets de WPM**: crear, editar, eliminar o restaurar presets de WPM.
+* **Calculadora auxiliar**: abrir la calculadora de palabras, tiempo y WPM.
 * **Cronómetro Flotante**: activar o desactivar el Cronómetro Flotante.
 * `Modo preciso`: activar o desactivar el modo preciso de conteo de palabras y caracteres.
 
@@ -219,7 +221,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 # toT — from Text to Time
 
-**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines text extraction from text and image files, configurable WPM presets, precise counting, text snapshots, a text editor, a task editor, a stopwatch, and a reading speed test so you can measure, organize, and complete readings with less guesswork.
+**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines text extraction from text and image files, configurable WPM presets, precise counting, text snapshots, a text editor, a task editor, a stopwatch, an auxiliary calculator, and a reading speed test so you can measure, organize, and complete readings with less guesswork.
 
 ![Animated basic guide](public/assets/instrucciones/guia-basica.gif)
 
@@ -244,6 +246,7 @@ MIT — ver [`LICENSE`](LICENSE).
 * Manage WPM presets: create, edit, delete, and restore defaults.
 * Run a guided reading speed test: use the current text or texts from the pool, measure WPM, show optional comprehension questions, and create custom presets.
 * Use a stopwatch with real WPM calculation and an optional floating window.
+* Use an auxiliary calculator to convert between words, time, and WPM.
 * Save and load current texts as text snapshots.
 * Organize reading plans in the Task Editor.
 * Use a multi-language UI with 25+ active languages.
@@ -330,6 +333,7 @@ Quick actions in the main window:
 * **Tasks**: create a new task or load a task.
 * `Reading speed test`: start a guided test from text in the pool or from the current text.
 * **WPM presets**: create, edit, delete, or restore WPM presets.
+* **Auxiliary calculator**: open the words/time/WPM calculator.
 * **Floating Stopwatch**: enable or disable the Floating Stopwatch.
 * `Precise mode`: enable or disable Precise mode for counting words and characters.
 

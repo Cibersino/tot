@@ -46,6 +46,7 @@ test('collectCanonicalIcons reads the canonical SVG set in deterministic order',
     'text-extraction-wide',
     'text-snapshot-load',
     'text-snapshot-save',
+    'text-time-calculator',
     'trash',
     'unlink',
   ]);

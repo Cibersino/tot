@@ -265,6 +265,34 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
 });
 
+test('broadcastSettingsUpdated includes textTimeCalculatorWin in the fixed target list', () => {
+  const settings = loadFreshSettingsModule();
+  const sentPayloads = [];
+
+  settings.broadcastSettingsUpdated(
+    { language: 'en' },
+    {
+      textTimeCalculatorWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+    }
+  );
+
+  assert.deepEqual(sentPayloads, [
+    {
+      channel: 'settings-updated',
+      payload: { language: 'en' },
+    },
+  ]);
+});
+
 test('registerIpc does not publish settings-updated or mutate persisted settings when strict save fails', async () => {
   const settings = loadFreshSettingsModule();
   const initialStoredValue = {
