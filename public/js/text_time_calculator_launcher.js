@@ -9,8 +9,12 @@
 // - Own the main-window calculator button DOM lookup and translation updates.
 // - Bind the calculator open action exactly once.
 // - Keep disabled and aria-disabled state synchronized with renderer locks.
+// - Expose the stable window.TextTimeCalculatorLauncher surface consumed by renderer.js.
 
 (() => {
+  // =============================================================================
+  // Logger + DOM dependencies
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text_time_calculator_launcher] window.getLogger unavailable; cannot continue');
   }
@@ -19,8 +23,15 @@
   if (!button) {
     throw new Error('[text_time_calculator_launcher] btnTextTimeCalculator missing; cannot continue');
   }
+
+  // =============================================================================
+  // Shared state
+  // =============================================================================
   let actionsBound = false;
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function getTranslator() {
     const rendererI18n = window.RendererI18n || null;
     return rendererI18n && typeof rendererI18n.tRenderer === 'function'
@@ -28,6 +39,9 @@
       : null;
   }
 
+  // =============================================================================
+  // Public API
+  // =============================================================================
   function applyTranslations() {
     const tRenderer = getTranslator();
     if (typeof tRenderer !== 'function') {
@@ -58,6 +72,9 @@
     button.setAttribute('aria-disabled', nextLocked ? 'true' : 'false');
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.TextTimeCalculatorLauncher = {
     applyTranslations,
     bindActions,
