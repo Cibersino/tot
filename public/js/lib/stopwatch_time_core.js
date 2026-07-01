@@ -11,6 +11,9 @@
 // - Format derived second totals using nearest-second rounding.
 // - Support both browser-script and CommonJS consumers.
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 (function initStopwatchTimeCore(root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) {
@@ -20,6 +23,9 @@
     root.StopwatchTimeCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+  // =============================================================================
+  // Helpers (pure stopwatch parsing + formatting)
+  // =============================================================================
   function createStopwatchTimeUtils() {
     function parseStopwatchInput(input) {
       const match = String(input || '').match(/^(\d+):([0-5]\d):([0-5]\d)$/);
@@ -64,6 +70,9 @@
     };
   }
 
+  // =============================================================================
+  // Factory return
+  // =============================================================================
   return {
     createStopwatchTimeUtils,
   };
