@@ -227,9 +227,8 @@
       return null;
     }
 
-    const fallbackLocal = async () => {
-      if (typeof setElapsed === 'function') setElapsed(msRounded);
-      if (cronoDisplay) cronoDisplay.value = formatCrono(msRounded);
+    const syncRoundedElapsedUi = async () => {
+      restoreDisplayValue(cronoDisplay, formatCrono(msRounded));
       await safeRecomputeRealWpm({
         ms: msRounded,
         currentText,
@@ -243,21 +242,15 @@
       if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
     };
 
+    const fallbackLocal = async () => {
+      if (typeof setElapsed === 'function') setElapsed(msRounded);
+      await syncRoundedElapsedUi();
+    };
+
     if (electronAPI && typeof electronAPI.setCronoElapsed === 'function') {
       try {
         await electronAPI.setCronoElapsed(msRounded);
-        if (cronoDisplay) cronoDisplay.value = formatCrono(msRounded);
-        await safeRecomputeRealWpm({
-          ms: msRounded,
-          currentText,
-          contarTexto,
-          obtenerSeparadoresDeNumeros,
-          formatearNumero,
-          idiomaActual,
-          settingsCache,
-          realWpmDisplay
-        });
-        if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
+        await syncRoundedElapsedUi();
         return msRounded;
       } catch (err) {
         log.error('Error sending setCronoElapsed:', err);
@@ -306,7 +299,9 @@
 
     let updatedLast = lastComputedElapsedForWpm;
     const becamePaused = prevRunning === true && newRunning === false;
-    if (becamePaused) {
+    const shouldRefreshStoppedWpm = !newRunning
+      && (becamePaused || updatedLast === null || updatedLast !== newElapsed);
+    if (shouldRefreshStoppedWpm) {
       void safeRecomputeRealWpm({
         ms: newElapsed,
         currentText,
@@ -318,20 +313,6 @@
         realWpmDisplay
       });
       updatedLast = newElapsed;
-    } else if (!newRunning) {
-      if (updatedLast === null || updatedLast !== newElapsed) {
-        void safeRecomputeRealWpm({
-          ms: newElapsed,
-          currentText,
-          contarTexto,
-          obtenerSeparadoresDeNumeros,
-          formatearNumero,
-          idiomaActual,
-          settingsCache,
-          realWpmDisplay
-        });
-        updatedLast = newElapsed;
-      }
     }
 
     if (!newRunning && newElapsed === 0 && !cronoEditing) {
