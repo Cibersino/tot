@@ -424,7 +424,7 @@
             if (electronAPI && typeof electronAPI.sendCronoReset === 'function') {
               electronAPI.sendCronoReset();
             } else {
-              log.warnOnce('crono.sendCronoReset.missing', '[crono] sendCronoReset unavailable; applying local reset only');
+              log.warnOnce('crono.sendCronoReset.missing.textChange', '[crono] sendCronoReset unavailable; applying local reset only');
             }
           } catch (err) {
             log.warn('sendCronoReset failed (ignored):', err);
@@ -507,7 +507,7 @@
               log.error('sendCronoReset failed:', err);
             }
           } else {
-            log.warnOnce('crono.sendCronoReset.missing', '[crono] sendCronoReset unavailable; reset action ignored');
+            log.warnOnce('crono.sendCronoReset.missing.button', '[crono] sendCronoReset unavailable; reset action ignored');
           }
         });
       }
