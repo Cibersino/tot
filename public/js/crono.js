@@ -94,10 +94,22 @@
     });
   }
 
+  function setToggleChecked(toggleVF, isChecked) {
+    if (!toggleVF) return;
+    toggleVF.checked = !!isChecked;
+    toggleVF.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+  }
+
   function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playIconName = 'play' }) {
     if (cronoDisplay) cronoDisplay.value = '00:00:00';
     if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
     applyToggleIcon(tToggle, playIconName);
+  }
+
+  function restoreDisplayValue(cronoDisplay, displayValue) {
+    if (cronoDisplay) {
+      cronoDisplay.value = displayValue;
+    }
   }
 
   async function openFlotante({
@@ -112,15 +124,12 @@
   }) {
     if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function') {
       log.warn('openFlotanteWindow unavailable in electronAPI');
-      if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+      setToggleChecked(toggleVF, false);
       return null;
     }
     try {
       await electronAPI.openFlotanteWindow();
-      if (toggleVF) {
-        toggleVF.checked = true;
-        toggleVF.setAttribute('aria-checked', 'true');
-      }
+      setToggleChecked(toggleVF, true);
 
       if (typeof electronAPI.getCronoState === 'function') {
         try {
@@ -144,7 +153,7 @@
       return null;
     } catch (err) {
       log.error('Error loading  flotante:', err);
-      if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+      setToggleChecked(toggleVF, false);
       return null;
     }
   }
@@ -152,7 +161,7 @@
   async function closeFlotante({ electronAPI, toggleVF }) {
     if (!electronAPI || typeof electronAPI.closeFlotanteWindow !== 'function') {
       log.warn('closeFlotanteWindow unavailable in electronAPI');
-      if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+      setToggleChecked(toggleVF, false);
       return;
     }
     try {
@@ -160,7 +169,7 @@
     } catch (err) {
       log.error('Error closing flotante:', err);
     } finally {
-      if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+      setToggleChecked(toggleVF, false);
     }
   }
 
@@ -190,15 +199,13 @@
 
     // If the stopwatch is running, ignore manual edits and restore the current display
     if (running) {
-      if (cronoDisplay) {
-        cronoDisplay.value = effectiveBaselineDisplay;
-      }
+      restoreDisplayValue(cronoDisplay, effectiveBaselineDisplay);
       return null;
     }
 
     // No change: keep baseline (including fractional ms) untouched
     if (inputValue === effectiveBaselineDisplay) {
-      if (cronoDisplay) cronoDisplay.value = effectiveBaselineDisplay;
+      restoreDisplayValue(cronoDisplay, effectiveBaselineDisplay);
       if (typeof setElapsed === 'function' && typeof effectiveBaselineElapsed === 'number') {
         setElapsed(effectiveBaselineElapsed);
       }
@@ -210,17 +217,13 @@
       : parseCronoInput(value);
 
     if (parsed === null) {
-      if (cronoDisplay) {
-        cronoDisplay.value = effectiveBaselineDisplay;
-      }
+      restoreDisplayValue(cronoDisplay, effectiveBaselineDisplay);
       return null;
     }
 
     const msRounded = Math.floor(parsed / 1000) * 1000;
     if (msRounded < 0) {
-      if (cronoDisplay) {
-        cronoDisplay.value = effectiveBaselineDisplay;
-      }
+      restoreDisplayValue(cronoDisplay, effectiveBaselineDisplay);
       return null;
     }
 
@@ -405,7 +408,7 @@
     };
 
     const handleState = (state) => {
-      const res = handleCronoState({
+      const nextState = handleCronoState({
         state,
         cronoDisplay: elements.cronoDisplay,
         cronoEditing,
@@ -422,11 +425,11 @@
         playIconName,
         pauseIconName
       });
-      if (res) {
-        elapsed = res.elapsed;
-        running = res.running;
-        prevRunning = res.prevRunning;
-        lastComputedElapsedForWpm = res.lastComputedElapsedForWpm;
+      if (nextState) {
+        elapsed = nextState.elapsed;
+        running = nextState.running;
+        prevRunning = nextState.prevRunning;
+        lastComputedElapsedForWpm = nextState.lastComputedElapsedForWpm;
       }
     };
 
@@ -472,7 +475,7 @@
     };
 
     const openFlotanteWindow = async () => {
-      const res = await openFlotante({
+      const openResult = await openFlotante({
         electronAPI,
         toggleVF: elements.toggleVF,
         cronoDisplay: elements.cronoDisplay,
@@ -485,11 +488,11 @@
         playIconName,
         pauseIconName
       });
-      if (res && typeof res.elapsed === 'number') {
-        lastComputedElapsedForWpm = res.elapsed;
+      if (openResult && typeof openResult.elapsed === 'number') {
+        lastComputedElapsedForWpm = openResult.elapsed;
         prevRunning = running;
       }
-      return res;
+      return openResult;
     };
 
     const closeFlotanteWindow = async () => {
@@ -523,7 +526,7 @@
       if (elements.toggleVF) {
         elements.toggleVF.addEventListener('change', async () => {
           const wantOpen = !!elements.toggleVF.checked;
-          elements.toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
+          setToggleChecked(elements.toggleVF, wantOpen);
 
           if (wantOpen) {
             await openFlotanteWindow();
@@ -535,10 +538,7 @@
 
       if (electronAPI && typeof electronAPI.onFlotanteClosed === 'function') {
         electronAPI.onFlotanteClosed(() => {
-          if (elements.toggleVF) {
-            elements.toggleVF.checked = false;
-            elements.toggleVF.setAttribute('aria-checked', 'false');
-          }
+          setToggleChecked(elements.toggleVF, false);
         });
       } else if (electronAPI) {
         log.warnOnce('crono.onFlotanteClosed.missing', '[crono] onFlotanteClosed unavailable; flotante toggle may desync');
