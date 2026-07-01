@@ -64,6 +64,7 @@
         "edit_preset": "Akllasqa presetta allichay",
         "delete_preset": "Akllasqa presetta chinkachiy",
         "reset_presets": "Kikinmanta presets nisqata kutichiy",
+        "text_time_calculator": "Utqay calculadorata kichay",
         "help_button": "Allin yuyaychayta rikuchiy",
         "flotante_window": "Wayraqpi puriq ventana"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Qichuyta sayachiy",
         "browser_extension": "Navegadorpa extensiónnin dialogota kichay",
         "clipboard_repeat_count": "K'askachiy kutiykuna",
+        "text_time_calculator": "Utqay calculadorata kichay",
         "wpm_input": "Sapa minutupi simikuna",
         "wpm_slider": "Sapa minutupi simikuna llusk'achiq",
         "speed_presets": "Utqaylla presets",
@@ -509,6 +511,26 @@
         "link_missing": "Archivo mana tarisqachu.",
         "link_error": "Link kichaypi pantay.",
         "close_unsaved": "Mana waqaychasqa tikraykuna kan. Waqaychay mana ruwaspa wichq'aychu?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Utqay calculadora",
+      "calculate_label": "Yupay",
+      "targets": {
+        "words": "Simikuna",
+        "time": "Pacha",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Simikuna",
+        "time": "Pacha",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Mana negativo entero yupayta qillqay.",
+        "time": "Pachata H+:MM:SS formato nisqapi qillqay.",
+        "wpm": "Positivo entero yupayta qillqay.",
+        "formula": "WPM mana atikun 00:00:00 nisqamanta yupayta."
       }
     },
     "reading_test": {

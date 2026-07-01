@@ -87,7 +87,7 @@ La existencia de un uso inicial no convierte al ícono en exclusivo de esa super
 
 ## Inventario actual
 
-El set actual contiene 32 SVGs canónicos.
+El set actual contiene 33 SVGs canónicos.
 
 La columna “semántica” describe el significado funcional del asset. No es una lista cerrada de consumidores.
 
@@ -123,6 +123,7 @@ La columna “semántica” describe el significado funcional del asset. No es u
 | `text-extraction-wide.svg` | Representar extracción de texto. Es una variante de mayor amplitud visual. |
 | `text-snapshot-load.svg` | Cargar un snapshot de texto. |
 | `text-snapshot-save.svg` | Guardar un snapshot de texto. |
+| `text-time-calculator.svg` | Calcular relaciones entre cantidad de palabras, tiempo de lectura y WPM. |
 | `trash.svg` | Eliminar, vaciar o limpiar cuando la acción debe leerse como borrado. |
 | `unlink.svg` | Quitar una asociación o vínculo sin eliminar el recurso asociado. |
 

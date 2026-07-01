@@ -64,6 +64,7 @@
         "edit_preset": "Bearbeiten Sie das ausgewählte Preset",
         "delete_preset": "Löschen Sie das ausgewählte Preset",
         "reset_presets": "Standard-Presets wiederherstellen",
+        "text_time_calculator": "Schnellrechner öffnen",
         "help_button": "Zeigen Sie einen nützlichen Tipp an",
         "flotante_window": "Schwebendes Fenster"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Extraktion abbrechen",
         "browser_extension": "Dialog der Browser-Erweiterung öffnen",
         "clipboard_repeat_count": "Einfügewiederholungen",
+        "text_time_calculator": "Schnellrechner öffnen",
         "wpm_input": "Wörter pro Minute",
         "wpm_slider": "Regler für Wörter pro Minute",
         "speed_presets": "Geschwindigkeits-Presets",
@@ -509,6 +511,26 @@
         "link_missing": "Datei nicht gefunden.",
         "link_error": "Fehler beim Öffnen des Links.",
         "close_unsaved": "Es gibt ungespeicherte Änderungen. Ohne Speichern schließen?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Schnellrechner",
+      "calculate_label": "Berechnen",
+      "targets": {
+        "words": "Wörter",
+        "time": "Zeit",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Wörter",
+        "time": "Zeit",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Gib eine nicht negative ganze Zahl ein.",
+        "time": "Gib die Zeit im Format H+:MM:SS ein.",
+        "wpm": "Gib eine positive ganze Zahl ein.",
+        "formula": "WPM kann nicht aus 00:00:00 berechnet werden."
       }
     },
     "reading_test": {

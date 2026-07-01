@@ -64,6 +64,7 @@
         "edit_preset": "Editar el preset seleccionat",
         "delete_preset": "Eliminar el preset seleccionat",
         "reset_presets": "Restaurar els presets per defecte",
+        "text_time_calculator": "Obre la calculadora ràpida",
         "help_button": "Mostrar un consell útil",
         "flotante_window": "Finestra flotant"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Avortar l’extracció",
         "browser_extension": "Obre el diàleg de l'extensió del navegador",
         "clipboard_repeat_count": "Repeticions d’enganxada",
+        "text_time_calculator": "Obre la calculadora ràpida",
         "wpm_input": "Paraules per minut",
         "wpm_slider": "Control lliscant de paraules per minut",
         "speed_presets": "Presets de velocitat",
@@ -509,6 +511,26 @@
         "link_missing": "Fitxer no trobat.",
         "link_error": "Error en obrir l’enllaç.",
         "close_unsaved": "Hi ha canvis sense desar. Vols tancar sense desar?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Calculadora ràpida",
+      "calculate_label": "Calcula",
+      "targets": {
+        "words": "Paraules",
+        "time": "Temps",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Paraules",
+        "time": "Temps",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Introdueix un nombre enter no negatiu.",
+        "time": "Introdueix el temps en format H+:MM:SS.",
+        "wpm": "Introdueix un nombre enter positiu.",
+        "formula": "No es pot calcular el WPM amb 00:00:00."
       }
     },
     "reading_test": {

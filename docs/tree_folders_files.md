@@ -137,6 +137,7 @@ tot/
 │ ├── task_editor_state.js
 │ ├── tasks_main.js
 │ ├── text_state.js
+│ ├── text_time_calculator_preload.js
 │ └── updater.js
 ├── extensions/                    # {extensiones de navegadores distribuidas fuera de Electron}
 │ └── reading-time/
@@ -170,7 +171,9 @@ tot/
 │ │ │ ├── format_core.js
 │ │ │ ├── reading_test_filters_core.js
 │ │ │ ├── reading_test_questions_core.js
-│ │ │ └── snapshot_tag_catalog.js
+│ │ │ ├── snapshot_tag_catalog.js
+│ │ │ ├── stopwatch_time_core.js
+│ │ │ └── text_time_calculator_core.js
 │ │ ├── browser_extension_modal.js
 │ │ ├── constants.js
 │ │ ├── count.js
@@ -212,6 +215,7 @@ tot/
 │ │ ├── text_extraction_route_choice_modal.js
 │ │ ├── text_extraction_single_file_heavy_pdf_modal.js
 │ │ ├── text_extraction_status_ui.js
+│ │ ├── text_time_calculator_launcher.js
 │ │ ├── wpm_controls.js
 │ │ └── wpm_curve.js
 │ ├── third_party_licenses/        # {licencias/notices versionados de terceros redistribuidos}
@@ -239,7 +243,8 @@ tot/
 │ ├── style.css
 │ ├── task_editor.css
 │ ├── task_editor.html
-│ └── task_editor.js
+│ ├── task_editor.js
+│ └── text_time_calculator.js
 ├── test/                          # {tests de desarrollo automátizados de la app}
 | └── README.md
 ├── tools/
@@ -274,6 +279,7 @@ tot/
 - `electron/task_editor_preload.js` — Preload del Editor de Tareas (expone `window.taskEditorAPI` y callbacks como `onInit` / `onRequestClose`).
 - `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` (`setLanguage`, `getAvailableLanguages`) para persistir/seleccionar idioma; `setLanguage` invoca `set-language` y luego emite `language-selected` para destrabar el startup.
 - `electron/flotante_preload.js` — Preload del Cronómetro Flotante.
+- `electron/text_time_calculator_preload.js` — Preload de la Calculadora rápida: expone `window.textTimeCalculatorAPI` (`getSettings`, `onSettingsChanged`) hacia `public/text_time_calculator.js`.
 - `electron/reading_test_questions_preload.js` — Preload del modal de preguntas del reading speed test; expone `window.readingTestQuestionsAPI` y bufferiza/reproduce el payload init del cuestionario.
 - `electron/reading_test_result_preload.js` — Preload del modal de resultado del reading speed test; expone `window.readingTestResultAPI` y bufferiza/reproduce el payload init del resultado medido.
 
@@ -284,6 +290,7 @@ tot/
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
 - `public/task_editor.js` — Renderer del Editor de Tareas (UI + tabla + biblioteca + anchos de columnas).
 - `public/flotante.js` — Lógica del Cronómetro Flotante.
+- `public/text_time_calculator.js` — Renderer de la Calculadora rápida: aplica i18n, escucha `settings-updated`, alterna entre dos inputs editables y un valor derivado, y consume los núcleos compartidos de tiempo/cálculo.
 - `public/language_window.js` — Lógica de la ventana de selección de idioma.
 - `public/reading_test_questions.js` — Lógica del modal de preguntas/comprensión del reading speed test.
 - `public/reading_test_result.js` — Lógica del modal compacto de resultado del reading speed test (WPM medidos + resumen breve antes de preguntas/preset).
@@ -366,6 +373,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/lib/reading_test_filters_core.js` — Núcleo puro/importable del selector del reading speed test: semántica de checkboxes (OR dentro de categoría, AND entre categorías activas), cálculo de elegibles y enabled/disabled state desde combinaciones reales.
 - `public/js/lib/reading_test_questions_core.js` — Núcleo puro/importable del reading speed test para validar payloads `readingTest.questions`, puntuar respuestas y calcular el baseline probabilístico de respuesta al azar.
 - `public/js/lib/snapshot_tag_catalog.js` — Catálogo puro/importable compartido de tags de snapshot: define los valores canónicos/opciones de `language` / `type` / `difficulty` y centraliza la normalización reutilizada por renderer y main para evitar drift.
+- `public/js/lib/stopwatch_time_core.js` — Núcleo puro/importable compartido de tiempo estilo cronómetro: parsea `H+:MM:SS`, preserva el formateo por truncado usado por el cronómetro y añade el formateo redondeado requerido por la Calculadora rápida.
+- `public/js/lib/text_time_calculator_core.js` — Núcleo puro/importable de la Calculadora rápida: valida los dos campos editables, detecta invalidez matemática y deriva `palabras`, `tiempo` o `WPM` sin depender del DOM.
 - `public/js/count.js` — Wrapper renderer de conteo: valida dependencias del `window`, construye `window.CountUtils` desde `count_core.js` y conserva la superficie pública existente.
 - `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
 - `public/js/generated_icons.js` — Artefacto runtime autogenerado del renderer: registra el catálogo serializado de SVGs funcionales a partir de `assets/icons/`; no se edita a mano y se regenera con `npm run generate:icons`.
@@ -398,6 +407,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/text_extraction_batch_flow.js` — Owner renderer del batch extraction: reutiliza contratos prepare/execute/apply/snapshot para múltiples archivos, centraliza la planificación por unidades, canonicaliza/summary de `pdfPageSelection` vía el helper renderer compartido y coordina la ejecución secuencial con failure policy compartida + handoff sintético del single-file heavy split.
 - `public/js/text_extraction_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de uno o varios archivos al entry flow compartido, con branch explícito hacia batch planning cuando corresponde.
 - `public/js/text_extraction_single_file_heavy_pdf_modal.js` — Modal blocking del caso heavy PDF en single-file OCR: explica los casos A/B del límite `50 MB`, mantiene explícito el handoff a full-source automatic split y expone reveal del generated PDF retenido cuando existe.
+- `public/js/text_time_calculator_launcher.js` — Owner renderer del botón lanzador de la Calculadora rápida en la ventana principal: aplica tooltip/aria i18n, vincula la acción de apertura y sincroniza el estado disabled con el interaction lock principal.
 - `public/js/current_text_selector_section.js` — Owner UI de la sección “texto actual” en la ventana principal: concentra el título, el preview del texto actual, el toolbar local de esa sección, el lock state específico de sus controles y el toggle `Spoiler`, que permite ocultar el tramo final del preview sin devolver esa lógica a `public/renderer.js`.
 - `public/js/current_text_runtime.js` — Owner renderer del runtime del current text en la ventana principal: conserva el preview/result rendering autoritativo, fusiona recalculaciones derivadas dentro del settle activo, reporta éxito/fallo al lifecycle pendiente main-owned y mantiene explícito el modo degradado cuando una actualización derivada falla.
 - `public/js/current_text_refresh_policy.js` — Política compartida de refresh del current text: clasifica cambios de settings/presets entre `time_only`, `stats_display` y `full`, prioriza el refresh más fuerte y expone un controlador pequeño para despachar la acción correcta sin devolver esa taxonomía a `public/renderer.js`.

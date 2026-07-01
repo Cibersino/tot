@@ -64,6 +64,7 @@
         "edit_preset": "নির্বাচিত প্রিসেট সম্পাদনা করুন",
         "delete_preset": "নির্বাচিত প্রিসেট মুছে ফেলুন",
         "reset_presets": "ডিফল্ট প্রিসেট পুনরুদ্ধার করুন",
+        "text_time_calculator": "দ্রুত ক্যালকুলেটর খুলুন",
         "help_button": "উপযোগী টিপ দেখান",
         "flotante_window": "ভাসমান উইন্ডো"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "নিষ্কাশন বন্ধ করুন",
         "browser_extension": "ব্রাউজার এক্সটেনশন ডায়ালগ খুলুন",
         "clipboard_repeat_count": "পেস্টের পুনরাবৃত্তি",
+        "text_time_calculator": "দ্রুত ক্যালকুলেটর খুলুন",
         "wpm_input": "প্রতি মিনিটে শব্দ",
         "wpm_slider": "প্রতি মিনিটে শব্দের স্লাইডার",
         "speed_presets": "গতির প্রিসেট",
@@ -509,6 +511,26 @@
         "link_missing": "ফাইল পাওয়া যায়নি।",
         "link_error": "লিংক খুলতে ত্রুটি।",
         "close_unsaved": "সংরক্ষণ না করা পরিবর্তন আছে। সংরক্ষণ না করে বন্ধ করবেন?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — দ্রুত ক্যালকুলেটর",
+      "calculate_label": "হিসাব করুন",
+      "targets": {
+        "words": "শব্দ",
+        "time": "সময়",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "শব্দ",
+        "time": "সময়",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "একটি অঋণাত্মক পূর্ণসংখ্যা লিখুন।",
+        "time": "H+:MM:SS ফরম্যাটে সময় লিখুন।",
+        "wpm": "একটি ধনাত্মক পূর্ণসংখ্যা লিখুন।",
+        "formula": "00:00:00 থেকে WPM হিসাব করা যায় না।"
       }
     },
     "reading_test": {

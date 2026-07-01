@@ -74,12 +74,14 @@ const textExtractionPdfInspectIpc = require('./text_extraction_platform/text_ext
 const textExtractionPrepareIpc = require('./text_extraction_platform/text_extraction_prepare_ipc');
 const textExtractionExecutePreparedIpc = require('./text_extraction_platform/text_extraction_execute_prepared_ipc');
 const textExtractionGeneratedPdfRevealIpc = require('./text_extraction_platform/text_extraction_generated_pdf_reveal_ipc');
+const stopwatchTimeCore = require('../public/js/lib/stopwatch_time_core');
 const {
   materializeBundledCredentials,
 } = require('./text_extraction_platform/ocr_google_drive_bundled_credentials');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
+const { formatStopwatchMs } = stopwatchTimeCore.createStopwatchTimeUtils();
 
 const spellcheckController = spellcheck.createController({
   settingsState,
@@ -274,6 +276,7 @@ function getSettingsBroadcastWindows() {
     langWin,
     flotanteWin,
     taskEditorWin,
+    textTimeCalculatorWin,
   };
 }
 
@@ -285,6 +288,7 @@ function getSecondaryWindowOpenStates() {
     { id: 'language_window', label: 'language_window', isOpen: isAliveWindow(langWin) },
     { id: 'floating_stopwatch', label: 'floating_stopwatch', isOpen: isAliveWindow(flotanteWin) },
     { id: 'task_editor', label: 'task_editor', isOpen: isAliveWindow(taskEditorWin) },
+    { id: 'text_time_calculator', label: 'text_time_calculator', isOpen: isAliveWindow(textTimeCalculatorWin) },
   ];
 }
 
@@ -375,6 +379,7 @@ let presetWin = null;   // Preset modal (preset_modal.html) - create/edit preset
 let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating Stopwatch (flotante.html)
 let taskEditorWin = null; // Task Editor window (task_editor.html)
+let textTimeCalculatorWin = null; // Quick text/time calculator window
 let taskEditorForceClose = false;
 let pendingMainWindowCloseAfterProcessingAbort = false;
 let readingTestSessionController = null;
@@ -804,6 +809,58 @@ function createTaskEditorWindow() {
     taskEditorWin = null;
     taskEditorForceClose = false;
   });
+}
+
+/**
+ * Create the quick text/time calculator window (public/text_time_calculator.html).
+ * Reuses a single non-modal secondary window.
+ */
+function createTextTimeCalculatorWindow() {
+  if (isAliveWindow(textTimeCalculatorWin)) {
+    try {
+      textTimeCalculatorWin.show();
+      textTimeCalculatorWin.focus();
+    } catch (err) {
+      log.warn('textTimeCalculatorWin focus/show failed (ignored):', err);
+    }
+    return textTimeCalculatorWin;
+  }
+
+  textTimeCalculatorWin = new BrowserWindow({
+    width: 360,
+    height: 240,
+    useContentSize: true,
+    resizable: false,
+    minimizable: true,
+    maximizable: false,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'text_time_calculator_preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  textTimeCalculatorWin.setMenu(null);
+  textTimeCalculatorWin.setMenuBarVisibility(false);
+  textTimeCalculatorWin.loadFile(path.join(__dirname, '../public/text_time_calculator.html'));
+
+  textTimeCalculatorWin.once('ready-to-show', () => {
+    try {
+      if (isAliveWindow(textTimeCalculatorWin)) {
+        textTimeCalculatorWin.show();
+      }
+    } catch (err) {
+      log.error('Error showing text_time_calculator window:', err);
+    }
+  });
+
+  textTimeCalculatorWin.on('closed', () => {
+    textTimeCalculatorWin = null;
+  });
+
+  return textTimeCalculatorWin;
 }
 
 /**
@@ -1298,11 +1355,7 @@ let cronoInterval = null;
 const CRONO_BROADCAST_MS = 1000;
 
 function formatCronoMs(ms) {
-  const totalSeconds = Math.floor(ms / 1000);
-  const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-  const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
+  return formatStopwatchMs(ms);
 }
 
 function getCronoState() {
@@ -1623,6 +1676,29 @@ ipcMain.on('task-editor-confirm-close', (event) => {
     taskEditorWin.close();
   } catch (err) {
     log.error('Error processing task-editor-confirm-close:', err);
+  }
+});
+
+ipcMain.handle('text-time-calculator-open', (event) => {
+  if (!guardMainUserAction('text-time-calculator-open', 'text-time-calculator-open ignored (pre-READY).')) {
+    return { ok: false, error: 'not ready' };
+  }
+  try {
+    if (!mainWin || mainWin.isDestroyed()) {
+      return { ok: false, error: 'not ready' };
+    }
+
+    const senderWin = BrowserWindow.fromWebContents(event.sender);
+    if (!senderWin || senderWin !== mainWin) {
+      log.warn('text-time-calculator-open unauthorized (ignored).');
+      return { ok: false, error: 'unauthorized' };
+    }
+
+    createTextTimeCalculatorWindow();
+    return { ok: true };
+  } catch (err) {
+    log.error('Error processing text-time-calculator-open:', err);
+    return { ok: false, error: String(err) };
   }
 });
 

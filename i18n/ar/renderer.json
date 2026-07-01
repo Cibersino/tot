@@ -64,6 +64,7 @@
         "edit_preset": "تعديل الإعداد المسبق المحدد",
         "delete_preset": "حذف الإعداد المسبق المحدد",
         "reset_presets": "استعادة الإعدادات المسبقة الافتراضية",
+        "text_time_calculator": "فتح الحاسبة السريعة",
         "help_button": "عرض نصيحة مفيدة",
         "flotante_window": "النافذة العائمة"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "إيقاف الاستخراج",
         "browser_extension": "فتح مربع حوار إضافة المتصفح",
         "clipboard_repeat_count": "عدد مرات اللصق",
+        "text_time_calculator": "فتح الحاسبة السريعة",
         "wpm_input": "كلمات في الدقيقة",
         "wpm_slider": "شريط تمرير الكلمات في الدقيقة",
         "speed_presets": "إعدادات السرعة المسبقة",
@@ -509,6 +511,26 @@
         "link_missing": "الملف غير موجود.",
         "link_error": "خطأ في فتح الرابط.",
         "close_unsaved": "توجد تغييرات غير محفوظة. هل تريد الإغلاق دون حفظ؟"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — الحاسبة السريعة",
+      "calculate_label": "احسب",
+      "targets": {
+        "words": "الكلمات",
+        "time": "الوقت",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "الكلمات",
+        "time": "الوقت",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "أدخل عددًا صحيحًا غير سالب.",
+        "time": "أدخل الوقت بصيغة H+:MM:SS.",
+        "wpm": "أدخل عددًا صحيحًا موجبًا.",
+        "formula": "لا يمكن حساب WPM من 00:00:00."
       }
     },
     "reading_test": {

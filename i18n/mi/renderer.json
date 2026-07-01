@@ -64,6 +64,7 @@
         "edit_preset": "Whakatika i te preset kua tīpakohia",
         "delete_preset": "Muku i te preset kua tīpakohia",
         "reset_presets": "Whakahoki i ngā preset taunoa",
+        "text_time_calculator": "Whakatūwhera i te tātaitai tere",
         "help_button": "Whakaatu i tētahi tīwhiri whaihua",
         "flotante_window": "Matapihi mānu"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Whakakore i te tangohanga",
         "browser_extension": "Whakatuwhera i te kōrero toronga pūtirotiro",
         "clipboard_repeat_count": "Ngā tāruaruatanga whakapiri",
+        "text_time_calculator": "Whakatūwhera i te tātaitai tere",
         "wpm_input": "Kupu ia meneti",
         "wpm_slider": "Rēreti kupu-ia-meneti",
         "speed_presets": "Ngā preset tere",
@@ -509,6 +511,26 @@
         "link_missing": "Kāore i kitea te kōnae.",
         "link_error": "Hapa i te whakatuwhera hononga.",
         "close_unsaved": "He panoni kāore anō kia tiakina. Katia me te kore tiaki?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Tātaitai tere",
+      "calculate_label": "Tātai",
+      "targets": {
+        "words": "Kupu",
+        "time": "Wā",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Kupu",
+        "time": "Wā",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Tāuruhia he tau tōpū kore-kino.",
+        "time": "Tāuruhia te wā ki te hōputu H+:MM:SS.",
+        "wpm": "Tāuruhia he tau tōpū tōrunga.",
+        "formula": "Kāore e taea te tātai WPM mai i 00:00:00."
       }
     },
     "reading_test": {

@@ -14,6 +14,7 @@
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
+- Quick calculator window (launcher, derivation, inline validation, target switching, live i18n/number-format refresh)
 - Manual editor window (open/edit/apply semantics, spellcheck, text-size controls, editor-only zoom shortcuts)
 - Text snapshot feature (save, load, editable tag catalog, persistence)
 - Reading speed test (pool filters, guided session, optional questions modal, preset handoff, pool reset/persistence)
@@ -64,6 +65,29 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-PRESETS-07`
   * supports parts of `REG-PERSIST-01`
   * supports parts of `REG-PERSIST-02`
+* `test/unit/electron/preload.test.js`
+  * supports parts of `SM-07A`
+  * supports parts of `REG-CALCULATOR-01`
+* `test/unit/electron/text_time_calculator_preload.test.js`
+  * supports parts of `REG-CALCULATOR-01`
+  * supports parts of `REG-I18N-02`
+* `test/unit/shared/stopwatch_time_core.test.js`
+  * supports parts of `REG-CALCULATOR-02`
+  * supports parts of `REG-CALCULATOR-03`
+  * supports parts of `REG-CRONO-01`
+* `test/unit/shared/text_time_calculator_core.test.js`
+  * supports parts of `SM-07A`
+  * supports parts of `REG-CALCULATOR-02`
+  * supports parts of `REG-CALCULATOR-03`
+* `test/unit/shared/text_time_calculator_launcher.test.js`
+  * supports parts of `SM-07A`
+  * supports parts of `REG-CALCULATOR-01`
+* `test/unit/shared/text_time_calculator.test.js`
+  * supports parts of `SM-07A`
+  * supports parts of `REG-CALCULATOR-01`
+  * supports parts of `REG-CALCULATOR-02`
+  * supports parts of `REG-CALCULATOR-03`
+  * supports parts of `REG-I18N-02`
 * `electron/spellcheck.js`
   * supports parts of `REG-EDITOR`
   * supports parts of `REG-I18N`
@@ -181,6 +205,8 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/shared/text_extraction_single_file_heavy_pdf_modal.test.js`
   * supports parts of `SM-10B`
   * supports parts of `REG-IMPORT-08B`
+* `test/unit/electron/text_extraction_preconditions_ipc.test.js`
+  * supports parts of `REG-IMPORT-04`
 * `test/unit/electron/native_pdf_selectable_text_probe.test.js`
   * supports parts of `REG-IMPORT-06`
   * supports parts of `REG-IMPORT-07`
@@ -237,6 +263,7 @@ Important limitations:
 
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
 * the editor still has no renderer/UI automation for the spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
+* the quick calculator now has contract-style automation for launcher wiring, preload surfaces, shared stopwatch/calculation rules, renderer invalid-state behavior, and live language/number-format refresh, but real BrowserWindow creation/focus/reuse behavior, launcher placement in the main `RESULTS` area, and native layout/scroll verification are still primarily validated through the manual suite;
 * the reading speed test still has no renderer/UI automation; current automated coverage now includes pool core, pool import, entry/reset IPC contract handling, and start/rollback flow contracts, but real modal interaction, guided session windows, stopwatch handoff, comprehension UI, and preset handoff are still primarily validated through the manual suite;
 * OCR network/provider behavior is still primarily validated through the manual suite, even though JP2 normalization, OCR route contracts, and the single-file oversized-image alert path now have unit coverage;
 * even with contract-style unit coverage for the batch planner/final report, single-file heavy-PDF modal, and status-bar progress text, the integrated picker/drag-drop entrypoints, PDF options modal, route-choice modal, apply modal reveal path, batch execution handoff, and real window/focus behavior are still primarily validated through the manual suite;
@@ -398,7 +425,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - No blocking modal/errors.
-- Main controls exist (Overwrite/Append, Editor, Trash, Load/Save snapshots, Precise toggle, Presets controls, Stopwatch controls).
+- Main controls exist (Overwrite/Append, Editor, Trash, Load/Save snapshots, Precise toggle, Presets controls, Quick calculator, Stopwatch controls).
 
 ### SM-02 First-run language selection reachable (clean run only)
 **Goal:** first-run language path is reachable and applies.
@@ -461,6 +488,21 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - WPM input/slider reflect preset WPM.
 - Time estimate recalculates (same words, different time).
+
+### SM-07A Quick calculator: launch + one derivation
+**Goal:** the quick calculator opens from `RESULTS` and derives one value without blocking the main window.
+1. Confirm the calculator button is visible in the `RESULTS` area immediately left of the help/tips `?` button.
+2. Click the calculator button.
+3. Confirm a separate quick-calculator window opens and the main window remains usable.
+4. Confirm the selector order is `Words`, `Time`, `WPM` and the default selection is `WPM`.
+5. Enter `600` in `Words` and `00:03:00` in `Time`.
+6. Observe the derived result, then close the calculator.
+
+**Expected:**
+- The quick calculator opens as a non-blocking secondary window.
+- Exactly two rows are editable; the selected target row is shown as derived output.
+- The derived WPM is `200`.
+- Closing the calculator returns cleanly to the main window without side effects.
 
 ### SM-08 Editor window open + edit sync
 **Goal:** editor opens, exposes the bottom-bar controls, and changes propagate to main.
@@ -787,7 +829,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Goal:** text extraction refuses to start when a secondary window is open or the stopwatch is running.
 1. Start the stopwatch and try **📥**.
 2. Stop the stopwatch.
-3. Open a secondary window (editor, task editor, or floating window if it counts in the current build) and try **📥** again.
+3. Open a secondary window (editor, task editor, quick calculator, or floating window if it counts in the current build) and try **📥** again.
 
 **Expected:**
 - The flow does not start while blocked.
@@ -1159,6 +1201,60 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Selected preset persisted and reapplied.
+
+---
+
+### REG-CALCULATOR — Quick calculator window
+
+#### REG-CALCULATOR-01 Launcher, single-window reuse, and default layout
+**Goal:** the quick calculator opens from the main `RESULTS` area as one reusable secondary window with the expected default target/layout.
+1. In the main window, confirm the calculator button is immediately left of the help/tips `?` button.
+2. Click the calculator button once.
+3. Confirm the quick calculator opens as a separate non-modal window.
+4. Click the calculator launcher again while that window is still open.
+5. Confirm the existing calculator window is focused/reused instead of spawning a duplicate.
+6. In the calculator, confirm the selector order is `Words`, `Time`, `WPM`.
+7. Confirm the default selection is `WPM`.
+8. Confirm `Words` and `Time` are editable while `WPM` is shown only as the derived row.
+
+**Expected:**
+- The launcher is present in the `RESULTS` area and opens the quick calculator cleanly.
+- The feature reuses a single calculator window.
+- The default target is `WPM`.
+- Exactly two rows are editable at a time; the selected target row is rendered as derived output instead of a duplicate input.
+
+#### REG-CALCULATOR-02 Target switching, derivations, and raw-value preservation
+**Goal:** each target computes correctly and switching targets preserves the raw editable values.
+1. Open the quick calculator.
+2. Select target `Time`, enter `600` in `Words`, and enter `200` in `WPM`.
+3. Confirm the derived time is `00:03:00`.
+4. Switch target to `Words`.
+5. Confirm the existing `WPM` raw value is preserved, then enter `00:03:00` in `Time`.
+6. Confirm the derived words value is `600`.
+7. Switch target to `WPM`.
+8. Confirm the previously entered `Words` and `Time` raw values are still present and the derived WPM is `200`.
+
+**Expected:**
+- `Words + WPM -> Time`, `Time + WPM -> Words`, and `Words + Time -> WPM` all compute correctly.
+- Time derivation is rendered in `HH:MM:SS`.
+- Switching targets preserves the raw editable values and re-evaluates immediately.
+
+#### REG-CALCULATOR-03 Validation, stopwatch grammar, and zero-value semantics
+**Goal:** malformed input shows inline invalid state, while valid zero-value cases remain supported.
+1. Open the quick calculator and select target `Time`.
+2. Enter `-5` in `Words` and a valid integer in `WPM`.
+3. Confirm the `Words` field shows inline invalid state and no derived result appears.
+4. Switch to target `Words`, enter malformed time such as `5:0:00`, and confirm the `Time` field shows inline invalid state.
+5. Switch to target `WPM`, enter `1000` in `Words` and `00:00:00` in `Time`.
+6. Confirm the shared formula message appears and the derived output stays empty.
+7. Switch back to target `Time`, enter `0` in `Words` and `250` in `WPM`, and confirm the derived time is `00:00:00`.
+8. Switch to target `Words`, enter `00:00:00` in `Time` and `250` in `WPM`, and confirm the derived words value is `0`.
+
+**Expected:**
+- Negative or otherwise invalid editable values show field-local inline validation with no derived output.
+- Editable time must follow stopwatch grammar `H+:MM:SS`.
+- Zero time is accepted as editable input, but deriving `WPM` from `00:00:00` produces only the shared formula-invalid message.
+- Valid zero-value derivations remain supported (`0` words can derive `00:00:00`; `00:00:00` plus valid WPM can derive `0` words).
 
 ---
 
@@ -1576,7 +1672,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Goal:** the reading test cannot start from a conflicting app state.
 1. Start the main stopwatch and try to open the reading speed test.
 2. Stop the stopwatch.
-3. Open a conflicting secondary window (for example, the editor, task editor, floating window, or preset modal if reachable), then try to open the reading speed test again.
+3. Open a conflicting secondary window (for example, the editor, task editor, quick calculator, floating window, or preset modal if reachable), then try to open the reading speed test again.
 
 **Expected:**
 - The entry modal does not open while preconditions are blocked.
@@ -1871,13 +1967,15 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Numbers use correct separators per language settings.
 
 #### REG-I18N-02 Cross-window i18n consistency
-**Goal:** editor/preset/flotante reflect language updates.
+**Goal:** editor/preset/flotante/quick-calculator reflect language updates.
 1. Change language.
-2. Open editor, preset modal, floating window, task editor.
+2. Open editor, preset modal, floating window, quick calculator, and task editor.
+3. In the quick calculator, if needed, derive a large integer result (for example, target `Words` with `00:10:00` and `2500` WPM) so the active thousands separator is visible.
 
 **Expected:**
 - Each window applies translations without crash.
 - In the editor, the spellcheck toggle label and text-size control labels/tooltips update with the rest of the window text.
+- In the quick calculator, the window title, selector labels, row labels, and any visible derived integer formatting follow the active language/settings.
 
 ---
 

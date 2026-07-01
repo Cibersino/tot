@@ -64,6 +64,7 @@
         "edit_preset": "Modifye preset chwazi a",
         "delete_preset": "Efase preset chwazi a",
         "reset_presets": "Retabli preset pa defo yo",
+        "text_time_calculator": "Louvri kalkilatris rapid la",
         "help_button": "Montre yon konsèy itil",
         "flotante_window": "Fenèt flòtan"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Anile ekstraksyon",
         "browser_extension": "Louvri dyalòg ekstansyon navigatè a",
         "clipboard_repeat_count": "Repetisyon kole",
+        "text_time_calculator": "Louvri kalkilatris rapid la",
         "wpm_input": "Mo pa minit",
         "wpm_slider": "Koulis mo pa minit",
         "speed_presets": "Preset vitès",
@@ -509,6 +511,26 @@
         "link_missing": "Fichye pa jwenn.",
         "link_error": "Erè pandan ouvèti lyen an.",
         "close_unsaved": "Gen chanjman ki pa sove. Fèmen san sove?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Kalkilatris rapid",
+      "calculate_label": "Kalkile",
+      "targets": {
+        "words": "Mo",
+        "time": "Tan",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Mo",
+        "time": "Tan",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Antre yon nonb antye ki pa negatif.",
+        "time": "Antre tan an nan fòma H+:MM:SS.",
+        "wpm": "Antre yon nonb antye pozitif.",
+        "formula": "WPM pa ka kalkile apati 00:00:00."
       }
     },
     "reading_test": {

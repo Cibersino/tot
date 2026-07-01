@@ -131,6 +131,13 @@ if (!currentTextRefreshPolicyModule
   || typeof currentTextRefreshPolicyModule.createController !== 'function') {
   throw new Error('[renderer] CurrentTextRefreshPolicy unavailable; cannot continue');
 }
+const textTimeCalculatorLauncher = window.TextTimeCalculatorLauncher || null;
+if (!textTimeCalculatorLauncher
+  || typeof textTimeCalculatorLauncher.applyTranslations !== 'function'
+  || typeof textTimeCalculatorLauncher.bindActions !== 'function'
+  || typeof textTimeCalculatorLauncher.setInteractionLocked !== 'function') {
+  throw new Error('[renderer] TextTimeCalculatorLauncher unavailable; cannot continue');
+}
 const readingSpeedTestUi = window.ReadingSpeedTestUi || null;
 if (!readingSpeedTestUi
   || typeof readingSpeedTestUi.applyTranslations !== 'function'
@@ -317,6 +324,7 @@ function syncMainInteractionLockUi() {
     || isReadingTestInteractionLocked();
 
   currentTextSelectorSection.setInteractionLocked(locked);
+  textTimeCalculatorLauncher.setInteractionLocked(locked);
   setControlInteractionLocked(btnHelp, locked);
   setControlInteractionLocked(wpmInput, locked);
   setControlInteractionLocked(wpmSlider, locked);
@@ -604,6 +612,7 @@ function applyTranslations() {
   textExtractionDragDrop.applyTranslations({ tRenderer });
   readingSpeedTestUi.applyTranslations();
   currentTextSelectorSection.applyTranslations({ tRenderer });
+  textTimeCalculatorLauncher.applyTranslations();
   if (mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
     mainLogoLinks.applyTranslations({ tRenderer });
   } else {
@@ -2156,6 +2165,24 @@ async function handleOpenEditor() {
   }
 }
 
+async function handleOpenTextTimeCalculator() {
+  if (!guardUserAction('text-time-calculator')) return;
+  try {
+    const openTextTimeCalculator = getOptionalElectronMethod('openTextTimeCalculator', {
+      dedupeKey: 'renderer.ipc.openTextTimeCalculator.unavailable',
+      unavailableMessage: 'openTextTimeCalculator unavailable; calculator launch skipped.',
+    });
+    if (!openTextTimeCalculator) return;
+
+    const result = await openTextTimeCalculator();
+    if (!result || result.ok !== true) {
+      log.error('text-time-calculator open failed:', result);
+    }
+  } catch (err) {
+    log.error('Error opening text-time calculator:', err);
+  }
+}
+
 async function handleClearText() {
   if (!guardUserAction('clear-text')) return;
   try {
@@ -2519,6 +2546,9 @@ function startRendererBootstrap() {
     onNewTask: handleNewTask,
     onLoadTask: handleLoadTask,
     onReadingSpeedTest: handleOpenReadingSpeedTest,
+  });
+  textTimeCalculatorLauncher.bindActions({
+    onOpenCalculator: handleOpenTextTimeCalculator,
   });
   bindInfoModalUi();
   registerMenuActions();

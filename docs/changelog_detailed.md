@@ -53,6 +53,15 @@ Reglas:
 - El cronómetro de la ventana principal deja de mezclar tamaños de icono entre `play/pause` y `stop/reset`: los dos botones vuelven a compartir la escala compacta del `Floating Stopwatch`, y el glyph `stop` recupera peso visual suficiente dentro de ese mismo tamaño reducido.
 - El `Task Editor` deja de depender exclusivamente de tipeo manual para poblar `Link or local path` cuando la fila apunta a archivos locales: la toolbar agrega una entrada batch `Add files` con picker multi-select y cada fila suma un picker local dedicado, sin romper el escape hatch de edición libre para `https:` y rutas pegadas.
 - La nueva acción local por fila del `Task Editor` se integra al mismo sistema compartido de iconos renderer y deja de verse como un control textual aislado: el botón browse converge en el asset canónico `folder.svg` y recupera el mismo lenguaje monocromo/outline ya usado por `open-target`, biblioteca y snapshot dentro de la tabla.
+- La ventana principal suma una calculadora rápida de lectura como ventana secundaria no modal: un nuevo botón icon-only en `RESULTS` abre una herramienta auxiliar para derivar `words`, `time` o `WPM` a partir de los otros dos valores, reutilizando la gramática `H+:MM:SS` del cronómetro y manteniendo el feature fuera del menú nativo.
+
+### Agregado
+
+- Calculadora rápida de lectura (Issue #325):
+  - `public/index.html`, `public/style.css`, `public/js/text_time_calculator_launcher.js`, `electron/preload.js` y `electron/main.js` agregan un launcher icon-only en `RESULTS`, inmediatamente a la izquierda del `?`, y un nuevo bridge main-window-only `window.electronAPI.openTextTimeCalculator()` / `text-time-calculator-open` para abrir una ventana secundaria reutilizable;
+  - `public/text_time_calculator.html`, `public/text_time_calculator.css`, `public/text_time_calculator.js` y `electron/text_time_calculator_preload.js` agregan la ventana dedicada de cálculo rápido, con selector explícito de target, dos inputs editables + un único resultado derivado, estado inicial en `WPM` y validación inline sin toasts;
+  - `public/js/lib/stopwatch_time_core.js` y `public/js/lib/text_time_calculator_core.js` agregan helpers puros compartidos para parsear `H+:MM:SS`, formatear tiempo derivado y resolver la matemática/validación del cálculo sin acoplarla al DOM o al lifecycle de ventanas;
+  - la cobertura unitaria suma tests enfocados para el core de stopwatch/calculadora, el launcher renderer, la nueva ventana, el preload dedicado y las precondiciones main-owned que ahora tratan la calculadora como ventana secundaria abierta.
 
 ### Cambiado
 
@@ -67,6 +76,10 @@ Reglas:
   - las filas nuevas creadas desde ese flujo siguen persistiendo el mismo campo plano `enlace`, pero ahora se inicializan con la ruta absoluta seleccionada y con `texto` derivado del nombre base del archivo, dejando la fila usable sin tipeo adicional;
   - la celda `Link or local path` suma un picker local por fila que reutiliza el mismo modelo de storage string-only; si la fila todavía no tenía `texto`, el nombre visible se completa desde el archivo elegido, pero el usuario conserva edición manual libre para URLs `https:` y rutas pegadas;
   - el control browse por fila deja de renderizarse como botón textual ad hoc y pasa a consumir el icono compartido `folder`, alineado con el helper `RendererIcons` y con el catálogo generado desde `assets/icons/`.
+- Cronómetro / calculadora rápida de lectura:
+  - `public/js/crono.js` y `electron/main.js` dejan de mantener parse/format duplicados del tiempo de cronómetro y pasan a reutilizar `public/js/lib/stopwatch_time_core.js`, preservando la semántica existente floor-to-seconds para cronómetro principal / `Floating Stopwatch`;
+  - la calculadora rápida consume ese mismo helper para el input editable `H+:MM:SS`, pero usa redondeo al segundo más cercano solo para el tiempo derivado mostrado en su propia ventana;
+  - `electron/settings.js` y las precondiciones main-owned pasan a integrar `textTimeCalculatorWin` / `text_time_calculator` en el broadcast de settings y en el inventario compartido de ventanas secundarias abiertas.
 
 ### Arreglado
 
@@ -79,6 +92,11 @@ Reglas:
 - Task Editor / iconografía de acciones locales:
   - el nuevo botón browse por fila deja de desentonar visualmente con el resto de acciones de la tabla: `assets/icons/folder.svg` abandona el fallback genérico `currentColor` y converge en el mismo contrato outline con `var(--tot-icon-*, #5f6f82)` que ya usaban `open-target`, `task-row-load`, `task-row-save` y `task-text-snapshot-load`;
   - la semántica visual final deja de mezclar un icono cálido/relleno ajeno al set del `Task Editor` y vuelve a una lectura monocroma coherente con las demás acciones compactas del grid.
+- Calculadora rápida de lectura:
+  - la ventana deja de presentar un layout ambiguo donde input y output parecían duplicarse dentro de la misma fila; el resultado derivado ahora se lee como valor único y la composición final converge en la dirección issue-owned de dos inputs + un resultado;
+  - el tamaño fijo de la ventana deja de requerir scroll para el flujo nominal, porque las validaciones inline ocultas ya no reservan altura cuando no hay error y la densidad visual de la superficie se ajusta al contenido real;
+  - `public/js/text_time_calculator_launcher.js` deja de degradar silenciosamente si falta `btnTextTimeCalculator` en la ventana principal y pasa a fail-fast como dependency bootstrap requerida;
+  - renderer y core dejan de divergir cuando el target llega inválido: ambos normalizan el fallback efectivo a `wpm` en vez de mezclar defaults distintos según la capa.
 
 ### Contratos tocados
 
@@ -89,6 +107,10 @@ Reglas:
   - nuevo IPC `task-files-select` en `electron/tasks_main.js`, invocado desde `window.taskEditorAPI.selectTaskFiles()`, que devuelve `{ ok: true, filePaths }` para selección multi-file desde la toolbar;
   - nuevo IPC `task-file-select` en `electron/tasks_main.js`, invocado desde `window.taskEditorAPI.selectTaskFile()`, que devuelve `{ ok: true, filePath }` para selección single-file desde una fila;
   - ambos canales heredan el mismo ownership main-owned del picker nativo, el mismo sender guard del `Task Editor` y no modifican el schema persistido de las filas: `enlace` sigue siendo string libre y la lista de tareas / biblioteca no cambia de formato.
+- Calculadora rápida de lectura:
+  - nuevo bridge de la ventana principal `window.electronAPI.openTextTimeCalculator()`, que invoca `ipcMain.handle('text-time-calculator-open', ...)` y queda autorizado solo para senders de `mainWin`;
+  - nuevo preload surface `window.textTimeCalculatorAPI` en la ventana dedicada, con `getSettings()` y `onSettingsChanged(cb) -> unsubscribe` como contrato requerido de bootstrap;
+  - `getSecondaryWindowOpenStates()` agrega `{ id: 'text_time_calculator', label: 'text_time_calculator', isOpen }`, por lo que las precondiciones main-owned que ya bloqueaban con ventanas secundarias abiertas pasan a incluir también la calculadora rápida.
 
 ---
 

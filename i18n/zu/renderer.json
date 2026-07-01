@@ -64,6 +64,7 @@
         "edit_preset": "Hlela iphrezethi ekhethiwe",
         "delete_preset": "Susa iphrezethi ekhethiwe",
         "reset_presets": "Buyisela amaphrezethi azenzakalelayo",
+        "text_time_calculator": "Vula isibali esisheshayo",
         "help_button": "Bonisa icebiso eliwusizo",
         "flotante_window": "Iwindi elintantayo"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Misa ukukhishwa",
         "browser_extension": "Vula ibhokisi lesandiso sesiphequluli",
         "clipboard_repeat_count": "Ukuphindaphinda kokunamathisela",
+        "text_time_calculator": "Vula isibali esisheshayo",
         "wpm_input": "Amagama ngomzuzu",
         "wpm_slider": "Isilayida samagama ngomzuzu",
         "speed_presets": "Amaphrezethi ejubane",
@@ -509,6 +511,26 @@
         "link_missing": "Ifayela alitholakalanga.",
         "link_error": "Iphutha ekuvuleni isixhumanisi.",
         "close_unsaved": "Kunezinguquko ezingakagcinwa. Uvale ngaphandle kokugcina?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Isibali esisheshayo",
+      "calculate_label": "Bala",
+      "targets": {
+        "words": "Amagama",
+        "time": "Isikhathi",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Amagama",
+        "time": "Isikhathi",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Faka inombolo ephelele engeyona engezansi kuka-zero.",
+        "time": "Faka isikhathi ngefomethi ethi H+:MM:SS.",
+        "wpm": "Faka inombolo ephelele enhle.",
+        "formula": "I-WPM ayikwazi ukubalwa kusukela ku-00:00:00."
       }
     },
     "reading_test": {

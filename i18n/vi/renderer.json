@@ -64,6 +64,7 @@
         "edit_preset": "Chỉnh sửa preset đã chọn",
         "delete_preset": "Xóa preset đã chọn",
         "reset_presets": "Khôi phục preset mặc định",
+        "text_time_calculator": "Mở máy tính nhanh",
         "help_button": "Hiển thị một mẹo hữu ích",
         "flotante_window": "Cửa sổ nổi"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Hủy trích xuất",
         "browser_extension": "Mở hộp thoại tiện ích mở rộng trình duyệt",
         "clipboard_repeat_count": "Số lần dán",
+        "text_time_calculator": "Mở máy tính nhanh",
         "wpm_input": "Số từ mỗi phút",
         "wpm_slider": "Thanh trượt số từ mỗi phút",
         "speed_presets": "Preset tốc độ",
@@ -509,6 +511,26 @@
         "link_missing": "Không tìm thấy tệp.",
         "link_error": "Lỗi khi mở liên kết.",
         "close_unsaved": "Có thay đổi chưa lưu. Đóng mà không lưu?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Máy tính nhanh",
+      "calculate_label": "Tính",
+      "targets": {
+        "words": "Từ",
+        "time": "Thời gian",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Từ",
+        "time": "Thời gian",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Nhập một số nguyên không âm.",
+        "time": "Nhập thời gian theo định dạng H+:MM:SS.",
+        "wpm": "Nhập một số nguyên dương.",
+        "formula": "Không thể tính WPM từ 00:00:00."
       }
     },
     "reading_test": {

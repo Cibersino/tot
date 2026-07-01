@@ -64,6 +64,7 @@
         "edit_preset": "Editatu hautatutako aurrezarpena",
         "delete_preset": "Ezabatu hautatutako aurrezarpena",
         "reset_presets": "Leheneratu aurrezarpen lehenetsiak",
+        "text_time_calculator": "Ireki kalkulagailu azkarra",
         "help_button": "Erakutsi aholku erabilgarria",
         "flotante_window": "Leiho flotatzailea"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Bertan behera utzi erauzketa",
         "browser_extension": "Ireki nabigatzailearen hedapenaren elkarrizketa-koadroa",
         "clipboard_repeat_count": "Itsaste-errepikapenak",
+        "text_time_calculator": "Ireki kalkulagailu azkarra",
         "wpm_input": "Hitzak minutuko",
         "wpm_slider": "Hitzak minutuko balioaren graduatzailea",
         "speed_presets": "Abiadura-aurrezarpenak",
@@ -509,6 +511,26 @@
         "link_missing": "Fitxategia ez da aurkitu.",
         "link_error": "Errorea esteka irekitzean.",
         "close_unsaved": "Gorde gabeko aldaketak daude. Itxi gorde gabe?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Kalkulagailu azkarra",
+      "calculate_label": "Kalkulatu",
+      "targets": {
+        "words": "Hitzak",
+        "time": "Denbora",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Hitzak",
+        "time": "Denbora",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Sartu zenbaki oso ez-negatibo bat.",
+        "time": "Sartu denbora H+:MM:SS formatuan.",
+        "wpm": "Sartu zenbaki oso positibo bat.",
+        "formula": "WPM ezin da kalkulatu 00:00:00 erabilita."
       }
     },
     "reading_test": {

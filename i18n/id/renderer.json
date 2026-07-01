@@ -64,6 +64,7 @@
         "edit_preset": "Edit preset yang dipilih",
         "delete_preset": "Hapus preset yang dipilih",
         "reset_presets": "Pulihkan preset bawaan",
+        "text_time_calculator": "Buka kalkulator cepat",
         "help_button": "Tampilkan tip berguna",
         "flotante_window": "Jendela mengambang"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Batalkan ekstraksi",
         "browser_extension": "Buka dialog ekstensi browser",
         "clipboard_repeat_count": "Pengulangan tempel",
+        "text_time_calculator": "Buka kalkulator cepat",
         "wpm_input": "Kata per menit",
         "wpm_slider": "Slider kata per menit",
         "speed_presets": "Preset kecepatan",
@@ -509,6 +511,26 @@
         "link_missing": "File tidak ditemukan.",
         "link_error": "Kesalahan saat membuka tautan.",
         "close_unsaved": "Ada perubahan yang belum disimpan. Tutup tanpa menyimpan?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Kalkulator cepat",
+      "calculate_label": "Hitung",
+      "targets": {
+        "words": "Kata",
+        "time": "Waktu",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Kata",
+        "time": "Waktu",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Masukkan bilangan bulat tidak negatif.",
+        "time": "Masukkan waktu dalam format H+:MM:SS.",
+        "wpm": "Masukkan bilangan bulat positif.",
+        "formula": "WPM tidak dapat dihitung dari 00:00:00."
       }
     },
     "reading_test": {

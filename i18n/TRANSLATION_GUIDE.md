@@ -118,6 +118,7 @@ Este glosario fija el alcance de los conceptos marcados con `[CONCEPTO_APP]`. La
 | `agregar al texto actual` | Acción `Append`: conserva el texto actual y suma el contenido entrante al final, en vez de reemplazarlo. |
 | `archivos de test` | Archivos que alimentan el pool del test; pueden venir incorporados, importarse desde el dispositivo u obtenerse desde una fuente externa. |
 | `biblioteca de lecturas` | Biblioteca de filas guardadas reutilizables dentro del Editor de Tareas; no equivale a una tarea completa. |
+| `calculadora rápida` | Herramienta secundaria en una ventana no modal para derivar `palabras`, `tiempo` o `WPM` a partir de las otras dos variables. No reemplaza el `tiempo estimado de lectura` de la ventana principal ni depende del `texto actual`. |
 | `credenciales OAuth OCR` | Credenciales OAuth de Google gestionadas por la app para habilitar la integración OCR. No son el estado de sesión del usuario. |
 | `Cronómetro` | Cronómetro de la app usado para medir lectura y calcular velocidad real. Debe estar detenido/restablecido para ciertos flujos. |
 | `Cronómetro Flotante` | Ventana flotante del cronómetro; en el test guiado controla el inicio y término de la medición. |
@@ -157,6 +158,7 @@ Este glosario fija el alcance de los conceptos marcados con `[CONCEPTO_APP]`. La
 Desambiguaciones puntuales del glosario:
 
 - `biblioteca de lecturas`, `fila de lectura` y `tarea`: la tarea agrupa filas de lectura; la biblioteca guarda esas entradas como lecturas reutilizables; una fila/lectura no es una tarea completa.
+- `calculadora rápida`, `tiempo estimado de lectura` y `texto actual`: la calculadora rápida parte de valores ingresados por el usuario y puede derivar cualquiera de las tres variables; el tiempo estimado de lectura es el resultado principal calculado desde el texto actual con la velocidad configurada.
 - `credenciales OAuth OCR` y `token local OCR`: no son lo mismo; las credenciales habilitan la integración, el token representa estado local de autorización/sesión.
 - `PDF fuente`, `PDF generado` y `PDF guardado`: no son intercambiables; el primero es el original, el segundo es un derivado creado por la app y el tercero es un derivado conservado por decisión del usuario.
 - `snapshot de texto`: no es captura de pantalla; refiere a texto guardado/cargable por la app.
@@ -859,6 +861,12 @@ Estados de revisión recomendados:
           "en": "Restore default presets"
           // [CONCEPTO_APP] preset de velocidad de lectura
         },
+        "text_time_calculator": {
+          "es": "Abrir calculadora rápida",
+          "en": "Open quick calculator"
+          // [PROPÓSITO] Acción para abrir la ventana secundaria de la calculadora rápida.
+          // [CONCEPTO_APP] calculadora rápida
+        },
         "help_button": {
           "es": "Mostrar consejo útil",
           "en": "Show a useful tip"
@@ -892,6 +900,12 @@ Estados de revisión recomendados:
           "en": "Paste repetitions"
           // [PROPÓSITO] Número de iteraciones en que se pega el texto del portapapeles en el texto actual, reemplazándolo o agregándolo al final, dependiendo de la acción elegida por el usuario.
           // [CONCEPTO_APP] texto actual; repeticiones de pegado
+        },
+        "text_time_calculator": {
+          "es": "Abrir calculadora rápida",
+          "en": "Open quick calculator"
+          // [PROPÓSITO] Etiqueta accesible para abrir la calculadora rápida.
+          // [CONCEPTO_APP] calculadora rápida
         },
         "wpm_input": {
           "es": "Palabras por minuto",
@@ -2879,6 +2893,67 @@ Estados de revisión recomendados:
           "es": "Hay cambios sin guardar. ¿Cerrar sin guardar?",
           "en": "There are unsaved changes. Close without saving?"
           // [CONCEPTO_APP] tarea
+        }
+      }
+    },
+    "text_time_calculator": {
+      "title": {
+        "es": "toT — Calculadora rápida",
+        "en": "toT — Quick calculator"
+        // [CONCEPTO_APP] calculadora rápida
+        // [PROTEGIDO] `toT`
+      },
+      "calculate_label": {
+        "es": "Calcular",
+        "en": "Calculate"
+        // [CONCEPTO_APP] calculadora rápida
+      },
+      "targets": {
+        "words": {
+          "es": "Palabras",
+          "en": "Words"
+        },
+        "time": {
+          "es": "Tiempo",
+          "en": "Time"
+        },
+        "wpm": {
+          "es": "WPM",
+          "en": "WPM"
+          // [PROTEGIDO] `WPM`
+        }
+      },
+      "labels": {
+        "words": {
+          "es": "Palabras",
+          "en": "Words"
+        },
+        "time": {
+          "es": "Tiempo",
+          "en": "Time"
+        },
+        "wpm": {
+          "es": "WPM",
+          "en": "WPM"
+          // [PROTEGIDO] `WPM`
+        }
+      },
+      "validation": {
+        "words": {
+          "es": "Ingresa un número entero no negativo.",
+          "en": "Enter a non-negative whole number."
+        },
+        "time": {
+          "es": "Ingresa el tiempo con formato H+:MM:SS.",
+          "en": "Enter time in H+:MM:SS format."
+        },
+        "wpm": {
+          "es": "Ingresa un número entero positivo.",
+          "en": "Enter a positive whole number."
+        },
+        "formula": {
+          "es": "No se puede calcular el WPM con 00:00:00.",
+          "en": "WPM cannot be calculated from 00:00:00."
         }
       }
     },

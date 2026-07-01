@@ -47,6 +47,7 @@ const api = {
     // Text / clipboard / Text Editor
     readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
     openEditor: () => ipcRenderer.invoke('open-editor'),
+    openTextTimeCalculator: () => ipcRenderer.invoke('text-time-calculator-open'),
     getCurrentText: () => ipcRenderer.invoke('get-current-text'),
     setCurrentText: (payload) => ipcRenderer.invoke('set-current-text', payload),
     getCurrentTextProcessingState: () => ipcRenderer.invoke('current-text-processing-get-state'),

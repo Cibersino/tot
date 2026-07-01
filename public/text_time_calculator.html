@@ -1,0 +1,76 @@
+<!-- public/text_time_calculator.html -->
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
+  <title>Calculadora rápida</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="text_time_calculator.css" />
+</head>
+<body>
+  <main class="text-time-calculator">
+    <div class="text-time-calculator__target-row">
+      <label id="textTimeCalculatorTargetLabel" class="text-time-calculator__target-label" for="textTimeCalculatorTarget">
+        Calcular
+      </label>
+      <select id="textTimeCalculatorTarget" class="text-time-calculator__target-select">
+        <option value="words">Palabras</option>
+        <option value="time">Tiempo</option>
+        <option value="wpm">WPM</option>
+      </select>
+    </div>
+
+    <div class="text-time-calculator__rows">
+      <div class="text-time-calculator__row">
+        <label id="textTimeCalculatorWordsLabel" class="text-time-calculator__row-label" for="textTimeCalculatorWordsInput">
+          Palabras
+        </label>
+        <div class="text-time-calculator__row-control">
+          <input id="textTimeCalculatorWordsInput" class="text-time-calculator__field" type="text" inputmode="numeric"
+            autocomplete="off" dir="ltr" />
+          <output id="textTimeCalculatorWordsOutput" class="text-time-calculator__output" hidden dir="ltr"
+            aria-live="polite"></output>
+        </div>
+        <div id="textTimeCalculatorWordsValidation" class="text-time-calculator__row-validation" aria-live="polite" hidden></div>
+      </div>
+
+      <div class="text-time-calculator__row">
+        <label id="textTimeCalculatorTimeLabel" class="text-time-calculator__row-label" for="textTimeCalculatorTimeInput">
+          Tiempo
+        </label>
+        <div class="text-time-calculator__row-control">
+          <input id="textTimeCalculatorTimeInput" class="text-time-calculator__field" type="text" inputmode="text"
+            autocomplete="off" dir="ltr" />
+          <output id="textTimeCalculatorTimeOutput" class="text-time-calculator__output" hidden dir="ltr"
+            aria-live="polite"></output>
+        </div>
+        <div id="textTimeCalculatorTimeValidation" class="text-time-calculator__row-validation" aria-live="polite" hidden></div>
+      </div>
+
+      <div class="text-time-calculator__row">
+        <label id="textTimeCalculatorWpmLabel" class="text-time-calculator__row-label" for="textTimeCalculatorWpmInput">
+          WPM
+        </label>
+        <div class="text-time-calculator__row-control">
+          <input id="textTimeCalculatorWpmInput" class="text-time-calculator__field" type="text" inputmode="numeric"
+            autocomplete="off" dir="ltr" />
+          <output id="textTimeCalculatorWpmOutput" class="text-time-calculator__output" hidden dir="ltr"
+            aria-live="polite"></output>
+        </div>
+        <div id="textTimeCalculatorWpmValidation" class="text-time-calculator__row-validation" aria-live="polite" hidden></div>
+      </div>
+    </div>
+
+    <div id="textTimeCalculatorFormulaValidation" class="text-time-calculator__formula-validation" aria-live="polite" hidden></div>
+  </main>
+
+  <script src="js/log.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/lib/format_core.js"></script>
+  <script src="js/lib/stopwatch_time_core.js"></script>
+  <script src="js/lib/text_time_calculator_core.js"></script>
+  <script src="text_time_calculator.js"></script>
+</body>
+</html>

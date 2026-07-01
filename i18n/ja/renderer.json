@@ -64,6 +64,7 @@
         "edit_preset": "選択したプリセットを編集",
         "delete_preset": "選択したプリセットを削除",
         "reset_presets": "デフォルトプリセットを復元",
+        "text_time_calculator": "クイック計算機を開く",
         "help_button": "役立つヒントを表示",
         "flotante_window": "フローティングウィンドウ"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "抽出を中止",
         "browser_extension": "ブラウザー拡張機能のダイアログを開く",
         "clipboard_repeat_count": "貼り付け回数",
+        "text_time_calculator": "クイック計算機を開く",
         "wpm_input": "1分あたりの語数",
         "wpm_slider": "1分あたりの語数スライダー",
         "speed_presets": "速度プリセット",
@@ -509,6 +511,26 @@
         "link_missing": "ファイルが見つかりません。",
         "link_error": "リンクを開く際にエラーが発生しました。",
         "close_unsaved": "未保存の変更があります。保存せずに閉じますか？"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — クイック計算機",
+      "calculate_label": "計算",
+      "targets": {
+        "words": "単語",
+        "time": "時間",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "単語",
+        "time": "時間",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "0 以上の整数を入力してください。",
+        "time": "時間を H+:MM:SS 形式で入力してください。",
+        "wpm": "正の整数を入力してください。",
+        "formula": "00:00:00 から WPM を計算することはできません。"
       }
     },
     "reading_test": {

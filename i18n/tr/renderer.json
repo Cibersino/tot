@@ -64,6 +64,7 @@
         "edit_preset": "Seçili ön ayarı düzenle",
         "delete_preset": "Seçili ön ayarı sil",
         "reset_presets": "Varsayılan ön ayarları geri yükle",
+        "text_time_calculator": "Hızlı hesaplayıcıyı aç",
         "help_button": "Yararlı bir ipucu göster",
         "flotante_window": "Yüzen pencere"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Çıkarmayı durdur",
         "browser_extension": "Tarayıcı uzantısı iletişim kutusunu aç",
         "clipboard_repeat_count": "Yapıştırma yinelemeleri",
+        "text_time_calculator": "Hızlı hesaplayıcıyı aç",
         "wpm_input": "Dakikadaki kelime",
         "wpm_slider": "Dakikadaki kelime kaydırıcısı",
         "speed_presets": "Hız ön ayarları",
@@ -509,6 +511,26 @@
         "link_missing": "Dosya bulunamadı.",
         "link_error": "Bağlantı açılırken hata oluştu.",
         "close_unsaved": "Kaydedilmemiş değişiklikler var. Kaydetmeden kapatılsın mı?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Hızlı hesaplayıcı",
+      "calculate_label": "Hesapla",
+      "targets": {
+        "words": "Kelimeler",
+        "time": "Süre",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Kelimeler",
+        "time": "Süre",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Negatif olmayan bir tam sayı girin.",
+        "time": "Süreyi H+:MM:SS biçiminde girin.",
+        "wpm": "Pozitif bir tam sayı girin.",
+        "formula": "WPM, 00:00:00 değerinden hesaplanamaz."
       }
     },
     "reading_test": {

@@ -64,6 +64,7 @@
         "edit_preset": "चयनित प्रीसेट संपादित करें",
         "delete_preset": "चयनित प्रीसेट हटाएँ",
         "reset_presets": "डिफ़ॉल्ट प्रीसेट पुनर्स्थापित करें",
+        "text_time_calculator": "त्वरित कैलकुलेटर खोलें",
         "help_button": "उपयोगी सुझाव दिखाएँ",
         "flotante_window": "फ़्लोटिंग विंडो"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "निकासी रोकें",
         "browser_extension": "ब्राउज़र एक्सटेंशन संवाद खोलें",
         "clipboard_repeat_count": "चिपकाने की पुनरावृत्तियाँ",
+        "text_time_calculator": "त्वरित कैलकुलेटर खोलें",
         "wpm_input": "प्रति मिनट शब्द",
         "wpm_slider": "प्रति मिनट शब्दों का स्लाइडर",
         "speed_presets": "गति प्रीसेट",
@@ -509,6 +511,26 @@
         "link_missing": "फ़ाइल नहीं मिली।",
         "link_error": "लिंक खोलने में त्रुटि।",
         "close_unsaved": "बिना सहेजे बदलाव हैं। क्या बिना सहेजे बंद करना है?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — त्वरित कैलकुलेटर",
+      "calculate_label": "गणना करें",
+      "targets": {
+        "words": "शब्द",
+        "time": "समय",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "शब्द",
+        "time": "समय",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "एक गैर-ऋणात्मक पूर्ण संख्या दर्ज करें।",
+        "time": "समय H+:MM:SS फ़ॉर्मैट में दर्ज करें।",
+        "wpm": "एक धनात्मक पूर्ण संख्या दर्ज करें।",
+        "formula": "00:00:00 से WPM की गणना नहीं की जा सकती।"
       }
     },
     "reading_test": {

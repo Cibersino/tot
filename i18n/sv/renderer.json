@@ -64,6 +64,7 @@
         "edit_preset": "Redigera vald förinställning",
         "delete_preset": "Ta bort vald förinställning",
         "reset_presets": "Återställ standardförinställningar",
+        "text_time_calculator": "Öppna snabbkalkylatorn",
         "help_button": "Visa ett användbart tips",
         "flotante_window": "Flytande fönster"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Avbryt extrahering",
         "browser_extension": "Öppna dialogrutan för webbläsartillägget",
         "clipboard_repeat_count": "Antal inklistringar",
+        "text_time_calculator": "Öppna snabbkalkylatorn",
         "wpm_input": "Ord per minut",
         "wpm_slider": "Reglage för ord per minut",
         "speed_presets": "Hastighetsförinställningar",
@@ -509,6 +511,26 @@
         "link_missing": "Filen hittades inte.",
         "link_error": "Fel vid öppning av länk.",
         "close_unsaved": "Det finns osparade ändringar. Stäng utan att spara?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Snabbkalkylator",
+      "calculate_label": "Beräkna",
+      "targets": {
+        "words": "Ord",
+        "time": "Tid",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Ord",
+        "time": "Tid",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Ange ett icke-negativt heltal.",
+        "time": "Ange tiden i formatet H+:MM:SS.",
+        "wpm": "Ange ett positivt heltal.",
+        "formula": "WPM kan inte beräknas från 00:00:00."
       }
     },
     "reading_test": {

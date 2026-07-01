@@ -64,6 +64,7 @@
         "edit_preset": "منتخب پری سیٹ میں ترمیم کریں",
         "delete_preset": "منتخب پری سیٹ حذف کریں",
         "reset_presets": "ڈیفالٹ پری سیٹس بحال کریں",
+        "text_time_calculator": "فوری کیلکولیٹر کھولیں",
         "help_button": "ایک مفید ٹپ دکھائیں",
         "flotante_window": "تیرتی ہوئی ونڈو"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "نکالنے کا عمل روکیں",
         "browser_extension": "براؤزر ایکسٹینشن کا ڈائیلاگ کھولیں",
         "clipboard_repeat_count": "پیسٹ کی تکراریں",
+        "text_time_calculator": "فوری کیلکولیٹر کھولیں",
         "wpm_input": "الفاظ فی منٹ",
         "wpm_slider": "الفاظ فی منٹ کا سلائیڈر",
         "speed_presets": "رفتار کے پری سیٹس",
@@ -509,6 +511,26 @@
         "link_missing": "فائل نہیں ملی۔",
         "link_error": "لنک کھولنے میں خرابی۔",
         "close_unsaved": "غیر محفوظ شدہ تبدیلیاں موجود ہیں۔ محفوظ کیے بغیر بند کریں؟"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — فوری کیلکولیٹر",
+      "calculate_label": "حساب کریں",
+      "targets": {
+        "words": "الفاظ",
+        "time": "وقت",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "الفاظ",
+        "time": "وقت",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "ایک غیر منفی صحیح عدد درج کریں۔",
+        "time": "وقت H+:MM:SS فارمیٹ میں درج کریں۔",
+        "wpm": "ایک مثبت صحیح عدد درج کریں۔",
+        "formula": "00:00:00 سے WPM کا حساب نہیں کیا جا سکتا۔"
       }
     },
     "reading_test": {

@@ -64,6 +64,7 @@
         "edit_preset": "선택한 프리셋 편집",
         "delete_preset": "선택한 프리셋 삭제",
         "reset_presets": "기본 프리셋 복원",
+        "text_time_calculator": "빠른 계산기 열기",
         "help_button": "유용한 팁 표시",
         "flotante_window": "플로팅 창"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "추출 중단",
         "browser_extension": "브라우저 확장 프로그램 대화상자 열기",
         "clipboard_repeat_count": "붙여넣기 반복 횟수",
+        "text_time_calculator": "빠른 계산기 열기",
         "wpm_input": "분당 단어 수",
         "wpm_slider": "분당 단어 수 슬라이더",
         "speed_presets": "속도 프리셋",
@@ -509,6 +511,26 @@
         "link_missing": "파일을 찾을 수 없습니다.",
         "link_error": "링크를 여는 중 오류가 발생했습니다.",
         "close_unsaved": "저장되지 않은 변경 사항이 있습니다. 저장하지 않고 닫을까요?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — 빠른 계산기",
+      "calculate_label": "계산",
+      "targets": {
+        "words": "단어",
+        "time": "시간",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "단어",
+        "time": "시간",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "음수가 아닌 정수를 입력하세요.",
+        "time": "시간을 H+:MM:SS 형식으로 입력하세요.",
+        "wpm": "양의 정수를 입력하세요.",
+        "formula": "00:00:00에서는 WPM을 계산할 수 없습니다."
       }
     },
     "reading_test": {
