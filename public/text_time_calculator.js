@@ -17,10 +17,10 @@
   }
   const log = window.getLogger('text-time-calculator');
 
-  const api = window.textTimeCalculatorAPI || null;
-  if (!api
-    || typeof api.getSettings !== 'function'
-    || typeof api.onSettingsChanged !== 'function') {
+  const textTimeCalculatorApi = window.textTimeCalculatorAPI || null;
+  if (!textTimeCalculatorApi
+    || typeof textTimeCalculatorApi.getSettings !== 'function'
+    || typeof textTimeCalculatorApi.onSettingsChanged !== 'function') {
     throw new Error('[text_time_calculator] textTimeCalculatorAPI unavailable; cannot continue');
   }
 
@@ -105,25 +105,7 @@
       validation: document.getElementById('textTimeCalculatorWpmValidation'),
     },
   };
-
-  if (!targetLabel || !targetSelect || !formulaValidation) {
-    throw new Error('[text_time_calculator] Required DOM unavailable; cannot continue');
-  }
-  Object.keys(fields).forEach((field) => {
-    const entry = fields[field];
-    if (!entry.label || !entry.input || !entry.output || !entry.validation) {
-      throw new Error(`[text_time_calculator] Missing DOM for field: ${field}`);
-    }
-  });
-
-  let idiomaActual = DEFAULT_LANG;
-  let settingsCache = null;
-  let translationsLoadedFor = null;
-  const rawValues = {
-    words: '',
-    time: '',
-    wpm: '',
-  };
+  const fieldNames = Object.keys(fields);
 
   const FIELD_LABEL_KEYS = {
     words: 'renderer.text_time_calculator.labels.words',
@@ -141,6 +123,25 @@
     wpm: 'renderer.text_time_calculator.validation.wpm',
   };
 
+  if (!targetLabel || !targetSelect || !formulaValidation) {
+    throw new Error('[text_time_calculator] Required DOM unavailable; cannot continue');
+  }
+  fieldNames.forEach((field) => {
+    const entry = fields[field];
+    if (!entry.label || !entry.input || !entry.output || !entry.validation) {
+      throw new Error(`[text_time_calculator] Missing DOM for field: ${field}`);
+    }
+  });
+
+  let currentLanguage = DEFAULT_LANG;
+  let settingsCache = null;
+  let translationsLoadedFor = null;
+  const rawValues = {
+    words: '',
+    time: '',
+    wpm: '',
+  };
+
   function getSelectedTarget() {
     const selected = String(targetSelect.value || '').trim();
     return selected === 'words' || selected === 'time' ? selected : 'wpm';
@@ -152,9 +153,9 @@
   }
 
   function applyRawValuesToInputs() {
-    fields.words.input.value = rawValues.words;
-    fields.time.input.value = rawValues.time;
-    fields.wpm.input.value = rawValues.wpm;
+    fieldNames.forEach((field) => {
+      fields[field].input.value = rawValues[field];
+    });
   }
 
   async function ensureTranslations(lang) {
@@ -170,19 +171,19 @@
   }
 
   async function refreshIntegerFormatter() {
-    const { separadorMiles, separadorDecimal } = await formatUtils.obtenerSeparadoresDeNumeros(
-      idiomaActual,
+    const { separadorMiles: thousandsSeparator, separadorDecimal: decimalSeparator } = await formatUtils.obtenerSeparadoresDeNumeros(
+      currentLanguage,
       settingsCache
     );
     integerFormatState.format = (value) => formatUtils.formatearNumero(
       Math.round(Number(value) || 0),
-      separadorMiles,
-      separadorDecimal
+      thousandsSeparator,
+      decimalSeparator
     );
   }
 
   async function applyTranslations() {
-    await ensureTranslations(idiomaActual);
+    await ensureTranslations(currentLanguage);
 
     document.title = tRenderer('renderer.text_time_calculator.title');
     targetLabel.textContent = tRenderer('renderer.text_time_calculator.calculate_label');
@@ -194,7 +195,7 @@
       if (key) option.textContent = tRenderer(key);
     });
 
-    Object.keys(fields).forEach((field) => {
+    fieldNames.forEach((field) => {
       const entry = fields[field];
       const labelText = tRenderer(FIELD_LABEL_KEYS[field]);
       entry.label.textContent = labelText;
@@ -214,7 +215,7 @@
       wpmText: rawValues.wpm,
     });
 
-    Object.keys(fields).forEach((field) => {
+    fieldNames.forEach((field) => {
       const entry = fields[field];
       const derived = field === target;
       entry.input.hidden = derived;
@@ -248,7 +249,7 @@
 
   async function applySettings(settings) {
     settingsCache = settings && typeof settings === 'object' ? settings : {};
-    idiomaActual = settingsCache.language || DEFAULT_LANG;
+    currentLanguage = settingsCache.language || DEFAULT_LANG;
     await refreshIntegerFormatter();
     await applyTranslations();
     renderCalculator();
@@ -256,17 +257,15 @@
 
   async function bootstrap() {
     targetSelect.value = 'wpm';
-    bindFieldInput('words');
-    bindFieldInput('time');
-    bindFieldInput('wpm');
+    fieldNames.forEach(bindFieldInput);
     targetSelect.addEventListener('change', () => {
       renderCalculator();
     });
 
-    const initialSettings = await api.getSettings();
+    const initialSettings = await textTimeCalculatorApi.getSettings();
     await applySettings(initialSettings);
 
-    api.onSettingsChanged(async (settings) => {
+    textTimeCalculatorApi.onSettingsChanged(async (settings) => {
       try {
         await applySettings(settings);
       } catch (err) {
