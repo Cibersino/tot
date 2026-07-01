@@ -64,6 +64,7 @@
         "edit_preset": "Emyatyrõ preset ojeporavóva",
         "delete_preset": "Embogue preset ojeporavóva",
         "reset_presets": "Emoĩjey preset ñepyrũrã",
+        "text_time_calculator": "Eipe’a calculadora rápida",
         "help_button": "Ehechauka ñe’ẽporã oipytyvõva",
         "flotante_window": "Ventana ovevýiva"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Eheja extracción",
         "browser_extension": "Eipe'a jepysokue kundahárape g̃uarã ñe'ẽryru",
         "clipboard_repeat_count": "Mboja jey jey",
+        "text_time_calculator": "Eipe’a calculadora rápida",
         "wpm_input": "Ñe’ẽ peteĩ minuto-pe",
         "wpm_slider": "Ñe’ẽ peteĩ minuto-pe slider",
         "speed_presets": "Pya’ekue presets",
@@ -509,6 +511,26 @@
         "link_missing": "Archivo ndojejuhúi.",
         "link_error": "Link jeipe’ápe oiko jejavy.",
         "close_unsaved": "Oĩ ñemoambue oñeñongatu’ỹva. ¿Embotýtapa eñongatu’ỹre?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Calculadora rápida",
+      "calculate_label": "Ecalcula",
+      "targets": {
+        "words": "Ñe’ẽnguéra",
+        "time": "Aravo",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Ñe’ẽnguéra",
+        "time": "Aravo",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Ehai peteĩ entero no negativo.",
+        "time": "Ehai aravo formato H+:MM:SS-pe.",
+        "wpm": "Ehai peteĩ entero positivo.",
+        "formula": "WPM ndaikatúi ojekalkula 00:00:00-gui."
       }
     },
     "reading_test": {

@@ -64,6 +64,7 @@
         "edit_preset": "Editar o preset selecionado",
         "delete_preset": "Excluir o preset selecionado",
         "reset_presets": "Restaurar presets padrão",
+        "text_time_calculator": "Abrir calculadora rápida",
         "help_button": "Mostrar dica útil",
         "flotante_window": "Cronômetro Flutuante"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Abortar extração",
         "browser_extension": "Abrir janela da extensão do navegador",
         "clipboard_repeat_count": "Repetições de colagem",
+        "text_time_calculator": "Abrir calculadora rápida",
         "wpm_input": "Palavras por minuto",
         "wpm_slider": "Controle deslizante de palavras por minuto",
         "speed_presets": "Presets de velocidade",
@@ -509,6 +511,26 @@
         "link_missing": "Arquivo não encontrado.",
         "link_error": "Erro ao abrir link ou caminho local.",
         "close_unsaved": "Existem mudanças não salvas. Deseja fechar sem salvar?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Calculadora rápida",
+      "calculate_label": "Calcular",
+      "targets": {
+        "words": "Palavras",
+        "time": "Tempo",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Palavras",
+        "time": "Tempo",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Insira um número inteiro não negativo.",
+        "time": "Insira o tempo no formato H+:MM:SS.",
+        "wpm": "Insira um número inteiro positivo.",
+        "formula": "Não é possível calcular o WPM com 00:00:00."
       }
     },
     "reading_test": {

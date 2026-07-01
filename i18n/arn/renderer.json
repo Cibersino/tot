@@ -64,6 +64,7 @@
         "edit_preset": "Wirin düllilu preset",
         "delete_preset": "Ñamümün düllilu preset",
         "reset_presets": "Wiño elual presets",
+        "text_time_calculator": "Nülan calculadora rápida",
         "help_button": "Pengelün kellu dungu",
         "flotante_window": "Ventana weñyefe"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Abortar extracción",
         "browser_extension": "Nülan diálogo extensión navegador mew",
         "clipboard_repeat_count": "Pültrün repeticiones",
+        "text_time_calculator": "Nülan calculadora rápida",
         "wpm_input": "Dungu kiñe minuto mu",
         "wpm_slider": "WPM slider",
         "speed_presets": "Lef preset",
@@ -509,6 +511,26 @@
         "link_missing": "Link nielay.",
         "link_error": "Chem welulkuy link nülal mu.",
         "close_unsaved": "Wirintukun petu elkünungelay. ¿Nürüfimi elkünunon?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Calculadora rápida",
+      "calculate_label": "Rakin",
+      "targets": {
+        "words": "Dungu",
+        "time": "Antü",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Dungu",
+        "time": "Antü",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Koneltu kiñe entero no negativo.",
+        "time": "Koneltu tiempo formato H+:MM:SS mew.",
+        "wpm": "Koneltu kiñe entero positivo.",
+        "formula": "WPM no pepi rakiñmawün 00:00:00 mew."
       }
     },
     "reading_test": {

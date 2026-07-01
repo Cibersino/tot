@@ -64,6 +64,7 @@
         "edit_preset": "編輯所選預設值",
         "delete_preset": "刪除所選預設值",
         "reset_presets": "還原預設值",
+        "text_time_calculator": "開啟快速計算器",
         "help_button": "顯示實用提示",
         "flotante_window": "浮動視窗"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "中止擷取",
         "browser_extension": "開啟瀏覽器擴充功能對話框",
         "clipboard_repeat_count": "貼上重複次數",
+        "text_time_calculator": "開啟快速計算器",
         "wpm_input": "每分鐘詞數",
         "wpm_slider": "每分鐘詞數滑桿",
         "speed_presets": "速度預設值",
@@ -509,6 +511,26 @@
         "link_missing": "找不到檔案。",
         "link_error": "開啟連結時發生錯誤。",
         "close_unsaved": "有未儲存的變更。要不儲存就關閉嗎？"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — 快速計算器",
+      "calculate_label": "計算",
+      "targets": {
+        "words": "單字",
+        "time": "時間",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "單字",
+        "time": "時間",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "輸入非負整數。",
+        "time": "以 H+:MM:SS 格式輸入時間。",
+        "wpm": "輸入正整數。",
+        "formula": "無法從 00:00:00 計算 WPM。"
       }
     },
     "reading_test": {

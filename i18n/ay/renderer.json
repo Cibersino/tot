@@ -64,6 +64,7 @@
         "edit_preset": "Ajllita preset askichaña",
         "delete_preset": "Ajllita preset chhaqtayaña",
         "reset_presets": "Nayraqat wakichata presets kutt’ayaña",
+        "text_time_calculator": "Jank’aki calculadora jist’araña",
         "help_button": "Wakiskiri iwxt’a uñachayaña",
         "flotante_window": "Tuyuri ventana"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "Apsuña suyt’ayaña",
         "browser_extension": "Navegador extención diálogo jist'araña",
         "clipboard_repeat_count": "K’askachaña kutinaka",
+        "text_time_calculator": "Jank’aki calculadora jist’araña",
         "wpm_input": "Sapa minutun arunaka",
         "wpm_slider": "Sapa minutun arunaka llusk’achiri",
         "speed_presets": "Jank’aki preset-naka",
@@ -509,6 +511,26 @@
         "link_missing": "Archivo janiw jikiskiti.",
         "link_error": "Link jist’arañan pantjasiwi.",
         "close_unsaved": "Jan imata mayjt’awinakaw utji. Jan imasax jist’antañati?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Jank’aki calculadora",
+      "calculate_label": "Jakhthapiña",
+      "targets": {
+        "words": "Arunaka",
+        "time": "Pacha",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Arunaka",
+        "time": "Pacha",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Jani negativo entero jakhüwi qillqt’am.",
+        "time": "Pacha H+:MM:SS formato ukamp qillqt’am.",
+        "wpm": "Positivo entero jakhüwi qillqt’am.",
+        "formula": "WPM janiw 00:00:00 ukamp jakhsuskaspati."
       }
     },
     "reading_test": {

@@ -64,6 +64,7 @@
         "edit_preset": "编辑所选预设",
         "delete_preset": "删除所选预设",
         "reset_presets": "恢复默认预设",
+        "text_time_calculator": "打开快速计算器",
         "help_button": "显示有用提示",
         "flotante_window": "悬浮窗口"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "中止提取",
         "browser_extension": "打开浏览器扩展对话框",
         "clipboard_repeat_count": "粘贴重复次数",
+        "text_time_calculator": "打开快速计算器",
         "wpm_input": "每分钟词数",
         "wpm_slider": "每分钟词数滑块",
         "speed_presets": "速度预设",
@@ -509,6 +511,26 @@
         "link_missing": "未找到文件。",
         "link_error": "打开链接时出错。",
         "close_unsaved": "存在未保存的更改。要不保存就关闭吗？"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — 快速计算器",
+      "calculate_label": "计算",
+      "targets": {
+        "words": "单词",
+        "time": "时间",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "单词",
+        "time": "时间",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "输入非负整数。",
+        "time": "以 H+:MM:SS 格式输入时间。",
+        "wpm": "输入正整数。",
+        "formula": "无法从 00:00:00 计算 WPM。"
       }
     },
     "reading_test": {

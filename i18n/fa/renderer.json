@@ -64,6 +64,7 @@
         "edit_preset": "ویرایش پیش‌تنظیم انتخاب‌شده",
         "delete_preset": "حذف پیش‌تنظیم انتخاب‌شده",
         "reset_presets": "بازگرداندن پیش‌تنظیم‌های پیش‌فرض",
+        "text_time_calculator": "باز کردن ماشین‌حساب سریع",
         "help_button": "نمایش یک نکته مفید",
         "flotante_window": "پنجره شناور"
       },
@@ -72,6 +73,7 @@
         "text_extraction_abort": "لغو استخراج",
         "browser_extension": "باز کردن پنجره افزونه مرورگر",
         "clipboard_repeat_count": "تکرارهای چسباندن",
+        "text_time_calculator": "باز کردن ماشین‌حساب سریع",
         "wpm_input": "واژه در دقیقه",
         "wpm_slider": "لغزنده واژه در دقیقه",
         "speed_presets": "پیش‌تنظیم‌های سرعت",
@@ -509,6 +511,26 @@
         "link_missing": "فایل یافت نشد.",
         "link_error": "خطا در باز کردن پیوند.",
         "close_unsaved": "تغییرات ذخیره‌نشده وجود دارد. بدون ذخیره بسته شود؟"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — ماشین‌حساب سریع",
+      "calculate_label": "محاسبه",
+      "targets": {
+        "words": "واژه‌ها",
+        "time": "زمان",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "واژه‌ها",
+        "time": "زمان",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "یک عدد صحیح نامنفی وارد کنید.",
+        "time": "زمان را با قالب H+:MM:SS وارد کنید.",
+        "wpm": "یک عدد صحیح مثبت وارد کنید.",
+        "formula": "WPM را نمی‌توان از 00:00:00 محاسبه کرد."
       }
     },
     "reading_test": {
