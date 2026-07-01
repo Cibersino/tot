@@ -11,6 +11,9 @@
 // - Keep calculation and formatting logic separate from window/DOM code.
 // - Support both browser-script and CommonJS consumers.
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 (function initTextTimeCalculatorCore(root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) {
@@ -20,8 +23,14 @@
     root.TextTimeCalculatorCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+  // =============================================================================
+  // Constants / config
+  // =============================================================================
   const VALID_TARGETS = new Set(['words', 'time', 'wpm']);
 
+  // =============================================================================
+  // Helpers (pure calculator validation + derivation)
+  // =============================================================================
   function createTextTimeCalculatorUtils({
     parseStopwatchInput,
     formatRoundedSeconds,
@@ -178,6 +187,9 @@
     };
   }
 
+  // =============================================================================
+  // Factory return
+  // =============================================================================
   return {
     createTextTimeCalculatorUtils,
   };
