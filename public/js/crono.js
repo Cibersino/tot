@@ -253,7 +253,7 @@
         await syncRoundedElapsedUi();
         return msRounded;
       } catch (err) {
-        log.error('Error sending setCronoElapsed:', err);
+        log.warn('setCronoElapsed failed; using local stopwatch state:', err);
         await fallbackLocal();
         return msRounded;
       }
@@ -427,7 +427,7 @@
               log.warnOnce('crono.sendCronoReset.missing', '[crono] sendCronoReset unavailable; applying local reset only');
             }
           } catch (err) {
-            log.error('Error requesting stopwatch reset after empty text:', err);
+            log.warn('sendCronoReset failed (ignored):', err);
           } finally {
             resetLocalState();
           }
@@ -487,7 +487,11 @@
       if (elements.tToggle) {
         elements.tToggle.addEventListener('click', () => {
           if (electronAPI && typeof electronAPI.sendCronoToggle === 'function') {
-            electronAPI.sendCronoToggle();
+            try {
+              electronAPI.sendCronoToggle();
+            } catch (err) {
+              log.error('sendCronoToggle failed:', err);
+            }
           } else {
             log.warnOnce('crono.sendCronoToggle.missing', '[crono] sendCronoToggle unavailable; toggle action ignored');
           }
@@ -497,7 +501,11 @@
       if (elements.tReset) {
         elements.tReset.addEventListener('click', () => {
           if (electronAPI && typeof electronAPI.sendCronoReset === 'function') {
-            electronAPI.sendCronoReset();
+            try {
+              electronAPI.sendCronoReset();
+            } catch (err) {
+              log.error('sendCronoReset failed:', err);
+            }
           } else {
             log.warnOnce('crono.sendCronoReset.missing', '[crono] sendCronoReset unavailable; reset action ignored');
           }
@@ -518,9 +526,13 @@
       }
 
       if (electronAPI && typeof electronAPI.onFlotanteClosed === 'function') {
-        electronAPI.onFlotanteClosed(() => {
-          setToggleChecked(elements.toggleVF, false);
-        });
+        try {
+          electronAPI.onFlotanteClosed(() => {
+            setToggleChecked(elements.toggleVF, false);
+          });
+        } catch (err) {
+          log.warn('onFlotanteClosed registration failed; flotante toggle may desync:', err);
+        }
       } else if (electronAPI) {
         log.warnOnce('crono.onFlotanteClosed.missing', '[crono] onFlotanteClosed unavailable; flotante toggle may desync');
       }
