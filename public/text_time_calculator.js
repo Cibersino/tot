@@ -18,11 +18,10 @@
   const log = window.getLogger('text-time-calculator');
 
   const textTimeCalculatorApi = window.textTimeCalculatorAPI || null;
-  if (!textTimeCalculatorApi
-    || typeof textTimeCalculatorApi.getSettings !== 'function'
-    || typeof textTimeCalculatorApi.onSettingsChanged !== 'function') {
-    throw new Error('[text_time_calculator] textTimeCalculatorAPI unavailable; cannot continue');
-  }
+  const canGetSettings = !!textTimeCalculatorApi
+    && typeof textTimeCalculatorApi.getSettings === 'function';
+  const canWatchSettings = !!textTimeCalculatorApi
+    && typeof textTimeCalculatorApi.onSettingsChanged === 'function';
 
   const rendererI18n = window.RendererI18n || null;
   if (!rendererI18n
@@ -262,16 +261,41 @@
       renderCalculator();
     });
 
-    const initialSettings = await textTimeCalculatorApi.getSettings();
+    let initialSettings = null;
+    if (canGetSettings) {
+      try {
+        initialSettings = await textTimeCalculatorApi.getSettings();
+      } catch (err) {
+        log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings failed; using default language and number formatting:', err);
+      }
+    } else if (!textTimeCalculatorApi) {
+      log.warn('BOOTSTRAP: textTimeCalculatorAPI unavailable; using default language and disabling live settings updates.');
+    } else {
+      log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings missing; using default language and number formatting.');
+    }
+
     await applySettings(initialSettings);
 
-    textTimeCalculatorApi.onSettingsChanged(async (settings) => {
-      try {
-        await applySettings(settings);
-      } catch (err) {
-        log.warn('text-time calculator settings update failed (ignored):', err);
-      }
-    });
+    if (!textTimeCalculatorApi) {
+      return;
+    }
+
+    if (!canWatchSettings) {
+      log.warn('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged missing; live settings updates disabled.');
+      return;
+    }
+
+    try {
+      textTimeCalculatorApi.onSettingsChanged(async (settings) => {
+        try {
+          await applySettings(settings);
+        } catch (err) {
+          log.warn('text-time calculator settings update failed (ignored):', err);
+        }
+      });
+    } catch (err) {
+      log.warn('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged listener setup failed; live settings updates disabled:', err);
+    }
   }
 
   bootstrap().catch((err) => {
