@@ -14,18 +14,17 @@
   --preview-bg: #fafafa;
   --result-highlight-bg: #ffb6c1;
   --button-bg: #fff;
-  --switch-thumb-bg: #fff;
-  --presets-selector-bg: #fff;
+  --selector-bg: #fff;
   --input-bg: #fff;
   --input-disabled-bg: #ece4d2;
   --clipboard-repeat-input-bg: #f8f5ee;
-  --snapshot-save-tags-selector-bg: #fff;
   --button-hover-bg: #f4f4f4;
   --abort-button-bg: #fff1f1;
   --abort-button-hover-bg: #ffe4e4;
   --switch-track-off: #ccc;
   --switch-track-on: #4caf50;
   --control-accent: #0078D4;
+  --switch-thumb-bg: #fff;
   --input-error-bg: #fff2f2;
   --processing-bar-bg: #f5efdf;
   --processing-track-bg: #ded3bc;
@@ -808,7 +807,7 @@ select#presets {
   padding: var(--control-padding);
   border-radius: 5px;
   border: 1px solid var(--presets-selector-border);
-  background: var(--presets-selector-bg);
+  background: var(--selector-bg);
   color: var(--presets-selector-text);
   font-size: 15px;
 }
@@ -2201,7 +2200,7 @@ select#presets:focus {
   padding: var(--control-padding);
   border: 1px solid var(--input-border-strong-color);
   border-radius: var(--control-radius-sm);
-  background: var(--snapshot-save-tags-selector-bg);
+  background: var(--selector-bg);
   color: var(--snapshot-save-tags-selector-text);
   box-sizing: border-box;
   font: inherit;
@@ -2221,7 +2220,7 @@ select#presets:focus {
   z-index: 2;
   max-height: 220px;
   overflow-y: auto;
-  background: var(--snapshot-save-tags-selector-bg);
+  background: var(--selector-bg);
   color: var(--snapshot-save-tags-selector-text);
   border: 1px solid var(--input-border-strong-color);
   border-top: none;
@@ -2234,7 +2233,7 @@ select#presets:focus {
   padding: var(--control-padding);
   font: inherit;
   line-height: inherit;
-  background: var(--snapshot-save-tags-selector-bg);
+  background: var(--selector-bg);
   color: var(--snapshot-save-tags-selector-text);
   cursor: pointer;
 }
@@ -2358,7 +2357,7 @@ select#presets:focus {
   padding: var(--control-padding);
   border: 1px solid var(--input-border-strong-color);
   border-radius: var(--control-radius-sm);
-  background: var(--snapshot-save-tags-selector-bg);
+  background: var(--selector-bg);
   color: var(--snapshot-save-tags-selector-text);
   box-sizing: border-box;
   font: inherit;
