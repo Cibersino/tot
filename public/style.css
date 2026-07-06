@@ -9,14 +9,10 @@
   /* Colors */
 
   /* Backgrounds */
-  --app-shell-bg: #fdf6e3;
-  --section-bg: #f4ecd8;
-  --startup-splash-bg: #f4ecd8;
+  --app-primary-bg: #fdf6e3;
+  --app-secondary-bg: #f4ecd8;
   --preview-bg: #fafafa;
   --result-highlight-bg: #ffb6c1;
-  --modal-panel-bg: #f4ecd8;
-  --info-modal-panel-bg: #fdf6e3;
-  --info-section-bg: #f4ecd8;
   --button-bg: #fff;
   --switch-thumb-bg: #fff;
   --presets-selector-bg: #fff;
@@ -147,7 +143,7 @@ body {
   font-family: var(--font-ui);
   overflow: hidden;
   box-sizing: border-box;
-  background: var(--app-shell-bg);
+  background: var(--app-primary-bg);
 }
 
 /* Main app container */
@@ -226,7 +222,7 @@ body {
   padding: var(--section-padding-vertical) var(--section-padding-horizontal);
   border-radius: var(--section-radius);
   box-shadow: var(--section-shadow);
-  background: var(--section-bg);
+  background: var(--app-secondary-bg);
 }
 
 /* Shared controls */
@@ -387,7 +383,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--startup-splash-bg);
+  background: var(--app-secondary-bg);
   z-index: 50;
   pointer-events: all;
 }
@@ -516,7 +512,7 @@ body {
   left: 4px;
   height: 158px;
   width: 820px;
-  background: var(--section-bg);
+  background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
   box-sizing: border-box;
 }
@@ -773,7 +769,7 @@ body.text-extraction-drop-active .app-container {
   left: 4px;
   height: 166px;
   width: 390px;
-  background: var(--section-bg);
+  background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
   gap: 6px;
   padding: 4px;
@@ -838,7 +834,7 @@ select#presets:focus {
   left: 399px;
   height: 166px;
   width: 425px;
-  background: var(--section-bg);
+  background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
   padding: 8px 10px;
   box-sizing: border-box;
@@ -956,7 +952,7 @@ select#presets:focus {
   left: 4px;
   height: 106px;
   width: 232px;
-  background: var(--section-bg);
+  background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
   padding: 4px;
   gap: 6px;
@@ -1068,7 +1064,7 @@ select#presets:focus {
   width: calc(100% - var(--modal-inline-gutter));
   max-height: var(--info-panel-max-height);
   overflow: auto;
-  background: var(--info-modal-panel-bg);
+  background: var(--app-primary-bg);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   z-index: 1001;
@@ -1122,7 +1118,7 @@ select#presets:focus {
 .browser-extension-modal-panel {
   position: relative;
   width: min(540px, calc(100% - var(--modal-inline-gutter)));
-  background: var(--info-modal-panel-bg);
+  background: var(--app-primary-bg);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   z-index: 1001;
@@ -1217,7 +1213,7 @@ select#presets:focus {
 }
 
 .info-section {
-  background-color: var(--info-section-bg);
+  background-color: var(--app-secondary-bg);
   text-align: left
 }
 
@@ -1316,7 +1312,7 @@ select#presets:focus {
   position: relative;
   z-index: 1001;
   width: min(620px, calc(100% - var(--modal-inline-gutter)));
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -1475,7 +1471,7 @@ select#presets:focus {
   position: relative;
   z-index: 1001;
   width: min(520px, calc(100% - var(--modal-inline-gutter)));
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -1523,7 +1519,7 @@ select#presets:focus {
   position: relative;
   z-index: 1001;
   width: min(560px, calc(100% - var(--modal-inline-gutter)));
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -1625,7 +1621,7 @@ select#presets:focus {
   width: min(920px, calc(100% - var(--modal-inline-gutter)));
   max-height: var(--modal-max-height);
   overflow: auto;
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -1950,7 +1946,7 @@ select#presets:focus {
   width: min(860px, calc(100% - var(--modal-inline-gutter)));
   max-height: var(--modal-max-height);
   overflow: auto;
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -2020,7 +2016,7 @@ select#presets:focus {
   position: relative;
   z-index: 1001;
   width: min(620px, calc(100% - var(--modal-inline-gutter)));
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -2055,7 +2051,7 @@ select#presets:focus {
   position: relative;
   z-index: 1001;
   width: min(640px, calc(100% - var(--modal-inline-gutter)));
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -2142,7 +2138,7 @@ select#presets:focus {
   position: relative;
   z-index: 1001;
   width: min(560px, calc(100% - var(--modal-inline-gutter)));
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -2280,7 +2276,7 @@ select#presets:focus {
   width: min(760px, calc(100% - var(--modal-inline-gutter)));
   max-height: var(--modal-max-height);
   overflow: auto;
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -2418,7 +2414,7 @@ select#presets:focus {
   width: min(720px, calc(100% - var(--modal-inline-gutter)));
   max-height: var(--modal-max-height);
   overflow: auto;
-  background: var(--modal-panel-bg);
+  background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
