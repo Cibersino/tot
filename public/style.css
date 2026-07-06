@@ -98,6 +98,7 @@
   --font-ui: Arial, sans-serif;
   --font-reading: 'Baskervville', serif;
   --font-size-modal-title: 1rem;
+  --font-size-ui-md: 1rem;
   --font-size-ui-sm: 0.95rem;
   --font-size-note: 0.92rem;
 
@@ -1920,7 +1921,7 @@ select#presets:focus {
 .text-extraction-batch-plan-page-scope-input {
   min-height: var(--control-height-md);
   padding: 8px 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border-strong-color);
   border-radius: var(--panel-radius);
   background: var(--input-bg, #fff);
   color: var(--text-color);
