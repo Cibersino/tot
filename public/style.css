@@ -1142,7 +1142,7 @@ select#presets:focus {
   margin: 0;
   padding-right: 44px;
   color: var(--text-color);
-  font-size: 28px;
+  font-size: 24px;
 }
 
 .browser-extension-modal-subtitle {
