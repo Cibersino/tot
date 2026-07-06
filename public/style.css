@@ -42,13 +42,11 @@
 
   /* Text */
   --text-color: #2f2a20;
-  --text-strong: #222;
   --text-secondary: #333;
   --text-muted: #444;
   --text-subtle: #666;
   --text-soft: #6c6049;
   --clipboard-repeat-input-text: #222;
-  --input-text: #2b2b2b;
   --modal-elapsed-text: #5f5135;
   --selector-text: #222;
   --warning-text: #5b4510;
@@ -158,7 +156,7 @@ body {
   font-weight: 600;
   font-size: 14px;
   font-family: inherit;
-  color: var(--text-strong);
+  color: var(--text-color);
   align-self: stretch;
   display: block;
 }
@@ -235,7 +233,7 @@ body {
   border-radius: 5px;
   border: 1px solid var(--button-border);
   background: var(--button-bg);
-  color: var(--text-strong);
+  color: var(--text-color);
   cursor: pointer;
   transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
   box-shadow: none;
@@ -786,7 +784,7 @@ body.text-extraction-drop-active .app-container {
   padding: 4px;
   border: 1px solid var(--input-border);
   background: var(--input-bg);
-  color: var(--input-text);
+  color: var(--text-color);
   font-size: 16px;
   box-sizing: border-box;
 }
@@ -870,7 +868,7 @@ select#presets:focus {
   min-width: 58px;
   border: 1px solid var(--input-border);
   background: var(--input-bg);
-  color: var(--input-text);
+  color: var(--text-color);
 }
 
 .results-multiplier-row output {
@@ -972,7 +970,7 @@ select#presets:focus {
   border: 1px solid var(--input-border);
   font-size: 16px;
   text-align: center;
-  color: var(--input-text);
+  color: var(--text-color);
   background-color: var(--input-bg);
 }
 
@@ -1088,7 +1086,7 @@ select#presets:focus {
 
 .info-modal-content {
   font-size: 16px;
-  color: var(--text-strong);
+  color: var(--text-color);
   line-height: 1.45;
   margin-top: calc(-1 * var(--info-header-height));
 }
@@ -1146,7 +1144,7 @@ select#presets:focus {
 .browser-extension-modal-copy h2 {
   margin: 0;
   padding-right: 44px;
-  color: var(--text-strong);
+  color: var(--text-color);
   font-size: 28px;
 }
 
@@ -1730,7 +1728,7 @@ select#presets:focus {
   border: 1px solid var(--input-border-strong-color);
   border-radius: var(--control-radius-sm);
   background: var(--input-bg);
-  color: var(--input-text);
+  color: var(--text-color);
   box-sizing: border-box;
 }
 
