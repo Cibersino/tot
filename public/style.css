@@ -38,6 +38,11 @@
   --drop-overlay-bg: rgb(79 62 28 / 0.18);
   --drop-zone-bg: rgb(253 246 227 / 0.97);
   --entry-group-bg: rgb(255 255 255 / 0.45);
+  --browser-extension-modal-store-bg: rgb(255 255 255 / 0.55);
+  --text-extraction-batch-plan-input-row-bg: rgb(255 255 255 / 0.5);
+  --snapshot-save-tags-option-active-bg: rgb(0 0 0 / 0.06);
+  --snapshot-tag-manager-category-bg: rgb(255 255 255 / 0.35);
+  --snapshot-tag-manager-row-bg: rgb(255 255 255 / 0.55);
   --modal-backdrop: rgb(0 0 0 / 0.45);
   --lightbox-backdrop: rgb(0 0 0 / 0.82);
 
@@ -55,6 +60,7 @@
   --snapshot-save-tags-selector-text: #222;
   --warning-text: #5b4510;
   --warning-count-text: #4c4028;
+  --snapshot-tag-manager-validation-text: #8b1e1e;
 
   /* Borders and shadows */
   --section-border: #e9e6de;
@@ -86,6 +92,7 @@
   --lightbox-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
   --warning-border-color: rgb(141 107 25 / 0.25);
   --group-border-color: rgb(0 0 0 / 0.1);
+  --snapshot-tag-manager-row-border: rgb(0 0 0 / 0.08);
 
   /* Links */
   --link-primary: #245b89;
@@ -1164,7 +1171,7 @@ select#presets:focus {
   gap: 16px;
   padding: 14px 16px;
   border-radius: 18px;
-  background: rgb(255 255 255 / 0.55);
+  background: var(--browser-extension-modal-store-bg);
 }
 
 .browser-extension-modal-store-link {
@@ -1777,7 +1784,7 @@ select#presets:focus {
   padding: 10px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
-  background: rgb(255 255 255 / 0.5);
+  background: var(--text-extraction-batch-plan-input-row-bg);
 }
 
 .text-extraction-batch-plan-input-row-middle {
@@ -1923,7 +1930,7 @@ select#presets:focus {
   padding: 8px 10px;
   border: 1px solid var(--input-border-strong-color);
   border-radius: var(--panel-radius);
-  background: var(--input-bg, #fff);
+  background: var(--input-bg);
   color: var(--text-color);
   box-sizing: border-box;
 }
@@ -2239,7 +2246,7 @@ select#presets:focus {
 
 .snapshot-save-tags-option.is-active,
 .snapshot-save-tags-option[aria-selected="true"] {
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--snapshot-save-tags-option-active-bg);
 }
 
 .snapshot-save-tags-option.is-clear,
@@ -2317,7 +2324,7 @@ select#presets:focus {
   gap: 10px;
   border: 1px solid var(--modal-panel-border-color);
   border-radius: var(--control-radius-sm);
-  background: rgba(255, 255, 255, 0.35);
+  background: var(--snapshot-tag-manager-category-bg);
   padding: 12px;
 }
 
@@ -2365,7 +2372,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-validation {
   min-height: 1.2em;
-  color: #8b1e1e;
+  color: var(--snapshot-tag-manager-validation-text);
   font-size: var(--font-size-ui-sm);
 }
 
@@ -2384,9 +2391,9 @@ select#presets:focus {
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--snapshot-tag-manager-row-border);
   border-radius: var(--control-radius-sm);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--snapshot-tag-manager-row-bg);
 }
 
 .snapshot-tag-manager-row-label {
