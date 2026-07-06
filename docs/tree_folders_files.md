@@ -229,8 +229,10 @@ tot/
 │ ├── flotante.html
 │ ├── flotante.js
 │ ├── index.html
+│ ├── language_window.css
 │ ├── language_window.html
 │ ├── language_window.js
+│ ├── preset_modal.css
 │ ├── preset_modal.html
 │ ├── preset_modal.js
 │ ├── reading_test_questions.css
@@ -244,6 +246,8 @@ tot/
 │ ├── task_editor.css
 │ ├── task_editor.html
 │ ├── task_editor.js
+│ ├── text_time_calculator.css
+│ ├── text_time_calculator.html
 │ └── text_time_calculator.js
 ├── test/                          # {tests de desarrollo automátizados de la app}
 | └── README.md

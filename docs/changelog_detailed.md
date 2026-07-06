@@ -54,6 +54,7 @@ Reglas:
 - El cronómetro de la ventana principal deja de mezclar tamaños de icono entre `play/pause` y `stop/reset`: los dos botones vuelven a compartir la escala compacta del `Floating Stopwatch`, y el glyph `stop` recupera peso visual suficiente dentro de ese mismo tamaño reducido.
 - El `Task Editor` deja de depender exclusivamente de tipeo manual para poblar `Link or local path` cuando la fila apunta a archivos locales: la toolbar agrega una entrada batch `Add files` con picker multi-select y cada fila suma un picker local dedicado, sin romper el escape hatch de edición libre para `https:` y rutas pegadas.
 - La nueva acción local por fila del `Task Editor` se integra al mismo sistema compartido de iconos renderer y deja de verse como un control textual aislado: el botón browse converge en el asset canónico `folder.svg` y recupera el mismo lenguaje monocromo/outline ya usado por `open-target`, biblioteca y snapshot dentro de la tabla.
+- `language_window` y `preset_modal` dejan de ser excepciones dentro de las ventanas renderer top-level: sus estilos salen del HTML inline, convergen en archivos CSS dedicados con la misma estructura documental del resto del repo y la documentación viva del árbol vuelve a reflejar el layout real de `public/`.
 
 ### Agregado
 
@@ -80,6 +81,11 @@ Reglas:
   - `public/js/crono.js` y `electron/main.js` dejan de mantener parse/format duplicados del tiempo de cronómetro y pasan a reutilizar `public/js/lib/stopwatch_time_core.js`, preservando la semántica existente floor-to-seconds para cronómetro principal / `Floating Stopwatch`;
   - la calculadora rápida consume ese mismo helper para el input editable `H+:MM:SS`, pero usa redondeo al segundo más cercano solo para el tiempo derivado mostrado en su propia ventana;
   - `electron/settings.js` y las precondiciones main-owned pasan a integrar `textTimeCalculatorWin` / `text_time_calculator` en el broadcast de settings y en el inventario compartido de ventanas secundarias abiertas.
+- Ventanas auxiliares / estilos renderer:
+  - `public/language_window.html` y `public/preset_modal.html` dejan de mantener bloques `<style>` inline y pasan a cargar `public/language_window.css` y `public/preset_modal.css`, alineándose con el patrón de stylesheet dedicado que ya usaban las demás ventanas top-level de `public/`;
+  - ambos archivos CSS nuevos adoptan también el mismo header descriptivo y la misma organización por secciones del resto de `public/*.css`, sin cambiar layout, copy ni comportamiento de esas dos ventanas.
+- Documentación viva del repo:
+  - `docs/tree_folders_files.md` se sincroniza con el layout real de `public/`, incorporando `language_window.css`, `preset_modal.css` y la omisión previa de `text_time_calculator.html` / `text_time_calculator.css` en el árbol resumido.
 
 ### Arreglado
 
