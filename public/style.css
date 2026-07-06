@@ -12,6 +12,7 @@
   --app-primary-bg: #fdf6e3;
   --app-secondary-bg: #f4ecd8;
   --app-tertiary-bg: #fcfaf5;
+  --app-warning-bg: #fff2cf;
   --preview-bg: #fafafa;
   --result-highlight-bg: #ffb6c1;
   --selector-bg: #fff;
@@ -31,7 +32,6 @@
   --result-highlight-degraded-bg: #fff2f2;
   --processing-track-bg: #ded3bc;
   --processing-fill-bg: #a9976a;
-  --warning-bg: #fff2cf;
   --drop-overlay-bg: rgb(79 62 28 / 0.18);
   --drop-zone-bg: rgb(253 246 227 / 0.97);
   --entry-group-bg: rgb(255 255 255 / 0.45);
@@ -1815,7 +1815,7 @@ select#presets:focus {
   align-items: center;
   padding: 2px 6px;
   border-radius: 999px;
-  background: var(--warning-bg);
+  background: var(--app-warning-bg);
   color: var(--warning-text);
   font-size: 0.78rem;
   font-weight: 600;
@@ -2487,7 +2487,7 @@ select#presets:focus {
   padding: 10px var(--modal-gap);
   border: 1px solid var(--warning-border-color);
   border-radius: var(--panel-radius);
-  background: var(--warning-bg);
+  background: var(--app-warning-bg);
   color: var(--warning-text);
   line-height: 1.4;
 }
