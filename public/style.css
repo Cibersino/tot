@@ -29,7 +29,6 @@
   --control-accent: #0078D4;
   --preview-degraded-bg: #fff2f2;
   --result-highlight-degraded-bg: #fff2f2;
-  --processing-bar-bg: #f5efdf;
   --processing-track-bg: #ded3bc;
   --processing-fill-bg: #a9976a;
   --warning-bg: #fff2cf;
@@ -635,7 +634,7 @@ pre#textPreview .preview-static {
   border-radius: 5px;
   padding: 0 8px;
   box-sizing: border-box;
-  background: var(--processing-bar-bg);
+  background: var(--app-secondary-bg);
 }
 
 .text-extraction-processing-copy {
