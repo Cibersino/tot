@@ -42,9 +42,6 @@
 
   /* Text */
   --text-color: #2f2a20;
-  --text-secondary: #333;
-  --text-muted: #444;
-  --text-subtle: #666;
   --text-soft: #6c6049;
   --clipboard-repeat-input-text: #222;
   --modal-elapsed-text: #5f5135;
@@ -515,7 +512,7 @@ body {
 /* Text preview */
 pre#textPreview {
   background: var(--preview-bg);
-  color: var(--text-secondary);
+  color: var(--text-soft);
   padding: 6px;
   border: 1px solid var(--preview-border);
   height: 94px;
@@ -817,7 +814,7 @@ select#presets:focus {
 .preset-description {
   margin-top: 6px;
   min-height: 22px;
-  color: var(--text-muted);
+  color: var(--text-soft);
   font-size: 13px;
 }
 
@@ -983,7 +980,7 @@ select#presets:focus {
 
 .cronometro .realwpm {
   font-size: 16px;
-  color: var(--text-secondary);
+  color: var(--text-color);
 }
 
 .cronometro .crono-controls {
@@ -1150,7 +1147,7 @@ select#presets:focus {
 
 .browser-extension-modal-subtitle {
   margin: 0;
-  color: var(--text-soft);
+  color: var(--text-color);
   font-size: 18px;
   font-style: italic;
 }
@@ -1191,7 +1188,7 @@ select#presets:focus {
 
 .browser-extension-modal-availability {
   margin: 0;
-  color: var(--text-muted);
+  color: var(--text-soft);
   font-size: 16px;
   line-height: 1.45;
 }
@@ -1221,7 +1218,7 @@ select#presets:focus {
 }
 
 .info-loading {
-  color: var(--text-subtle);
+  color: var(--text-soft);
   font-style: italic;
   padding: 8px
 }
@@ -2536,7 +2533,7 @@ select#presets:focus {
   align-items: center;
   gap: 6px;
   font-size: var(--font-size-note);
-  color: var(--text-secondary);
+  color: var(--text-soft);
   cursor: pointer;
 }
 
