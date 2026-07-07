@@ -43,9 +43,7 @@
   /* Text */
   --text-color: #2f2a20;
   --text-soft: #6c6049;
-  --clipboard-repeat-input-text: #222;
   --modal-elapsed-text: #5f5135;
-  --selector-text: #222;
   --warning-text: #5b4510;
   --warning-count-text: #4c4028;
   --snapshot-tag-manager-validation-text: #8b1e1e;
@@ -590,7 +588,7 @@ pre#textPreview .preview-static {
   border-radius: var(--control-radius-sm);
   border: 1px solid var(--clipboard-repeat-input-border);
   background: var(--clipboard-repeat-input-bg);
-  color: var(--clipboard-repeat-input-text);
+  color: var(--text-color);
   font-size: 14px;
   text-align: center;
   box-sizing: border-box;
@@ -801,7 +799,7 @@ select#presets {
   border-radius: 5px;
   border: 1px solid var(--presets-selector-border);
   background: var(--selector-bg);
-  color: var(--selector-text);
+  color: var(--text-color);
   font-size: 15px;
 }
 
@@ -2194,7 +2192,7 @@ select#presets:focus {
   border: 1px solid var(--input-border-strong-color);
   border-radius: var(--control-radius-sm);
   background: var(--selector-bg);
-  color: var(--selector-text);
+  color: var(--text-color);
   box-sizing: border-box;
   font: inherit;
   line-height: inherit;
@@ -2214,7 +2212,7 @@ select#presets:focus {
   max-height: 220px;
   overflow-y: auto;
   background: var(--selector-bg);
-  color: var(--selector-text);
+  color: var(--text-color);
   border: 1px solid var(--input-border-strong-color);
   border-top: none;
   border-bottom-left-radius: var(--control-radius-sm);
@@ -2227,7 +2225,7 @@ select#presets:focus {
   font: inherit;
   line-height: inherit;
   background: var(--selector-bg);
-  color: var(--selector-text);
+  color: var(--text-color);
   cursor: pointer;
 }
 
@@ -2351,7 +2349,7 @@ select#presets:focus {
   border: 1px solid var(--input-border-strong-color);
   border-radius: var(--control-radius-sm);
   background: var(--selector-bg);
-  color: var(--selector-text);
+  color: var(--text-color);
   box-sizing: border-box;
   font: inherit;
   line-height: inherit;
