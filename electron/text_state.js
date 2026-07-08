@@ -87,6 +87,7 @@ let currentTextFile = null;
 let settingsFile = null;
 let appRef = null;
 let currentTextProcessingController = null;
+let onCurrentTextDidBecomeEmpty = null;
 
 // Window resolver for best-effort UI notifications.
 let getWindows = () => ({ mainWin: null, editorWin: null });
@@ -179,6 +180,22 @@ function getNormalizedSetCurrentTextAction(incomingMeta) {
   return normalizedAction;
 }
 
+function notifyCurrentTextDidBecomeEmpty({ previousText, nextText, requestId, meta } = {}) {
+  if (typeof onCurrentTextDidBecomeEmpty !== 'function') {
+    return;
+  }
+  try {
+    onCurrentTextDidBecomeEmpty({
+      previousText: String(previousText || ''),
+      nextText: String(nextText || ''),
+      requestId: Number.isInteger(requestId) ? requestId : null,
+      meta: sanitizeMeta(meta),
+    });
+  } catch (err) {
+    log.error('onCurrentTextDidBecomeEmpty callback failed:', err);
+  }
+}
+
 // =============================================================================
 // Text application / bootstrap load
 // =============================================================================
@@ -186,6 +203,7 @@ function applyCurrentText(rawText, rawMeta) {
   const incomingMeta = sanitizeMeta(rawMeta);
   const processingState = beginCurrentTextProcessing(incomingMeta);
   const requestId = getProcessingRequestId(processingState);
+  const previousText = currentText;
   let text = normalizeLineEndings(rawText);
   let truncated = false;
 
@@ -216,6 +234,15 @@ function applyCurrentText(rawText, rawMeta) {
     requestId,
     meta: broadcastMeta,
   });
+
+  if (previousText !== currentText && currentText.length === 0) {
+    notifyCurrentTextDidBecomeEmpty({
+      previousText,
+      nextText: currentText,
+      requestId,
+      meta: broadcastMeta,
+    });
+  }
 
   return {
     ok: true,
@@ -294,6 +321,9 @@ function init(options) {
   settingsFile = opts.settingsFile;
   appRef = opts.app || null;
   currentTextProcessingController = opts.currentTextProcessingController || null;
+  onCurrentTextDidBecomeEmpty = typeof opts.onCurrentTextDidBecomeEmpty === 'function'
+    ? opts.onCurrentTextDidBecomeEmpty
+    : null;
 
   if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
     maxTextChars = opts.maxTextChars;

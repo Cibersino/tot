@@ -420,17 +420,7 @@
         if (previousText === nextText) return;
 
         if (!nextText) {
-          try {
-            if (electronAPI && typeof electronAPI.sendCronoReset === 'function') {
-              electronAPI.sendCronoReset();
-            } else {
-              log.warnOnce('crono.sendCronoReset.missing.textChange', '[crono] sendCronoReset unavailable; applying local reset only');
-            }
-          } catch (err) {
-            log.warn('sendCronoReset failed (ignored):', err);
-          } finally {
-            resetLocalState();
-          }
+          resetLocalState();
           return;
         }
 

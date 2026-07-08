@@ -95,6 +95,8 @@ Reglas:
 - Cronómetro principal:
   - `play/pause` deja de renderizarse más angosto que `stop/reset` por una mezcla accidental entre re-render runtime en tamaño `md` y markup estático en tamaño `xl`;
   - el glyph `stop` deja de verse subdimensionado una vez alineados ambos botones al tamaño pequeño, porque su SVG canónico amplía el cuadrado útil dentro del mismo `viewBox` y recupera masa visual comparable con `play`.
+- Current text / cronómetro:
+  - al vaciar el `current text`, el reset del cronómetro deja de dispararse como side-effect renderer que volvía a entrar a `main` mientras seguía activo el settle `current-text pending`; la transición autoritativa `non-empty -> empty` ahora se resuelve en el mismo pipeline main-owned del texto vigente y desaparece el warning `Main action ignored (current-text pending lock active): crono-reset`.
 - Task Editor / iconografía de acciones locales:
   - el nuevo botón browse por fila deja de desentonar visualmente con el resto de acciones de la tabla: `assets/icons/folder.svg` abandona el fallback genérico `currentColor` y converge en el mismo contrato outline con `var(--tot-icon-*, #5f6f82)` que ya usaban `open-target`, `task-row-load`, `task-row-save` y `task-text-snapshot-load`;
   - la semántica visual final deja de mezclar un icono cálido/relleno ajeno al set del `Task Editor` y vuelve a una lectura monocroma coherente con las demás acciones compactas del grid.
