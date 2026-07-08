@@ -729,7 +729,7 @@ pre#textPreview .preview-static {
   padding: 20px 22px;
   border: 2px dashed var(--drop-zone-border);
   border-radius: 12px;
-  background: var(--app-primary-bg);
+  background: var(--app-secondary-bg);
   box-shadow: var(--drop-zone-shadow);
   text-align: center;
   color: var(--text-color);
@@ -1048,7 +1048,7 @@ select#presets:focus {
   width: calc(100% - var(--modal-inline-gutter));
   max-height: var(--info-panel-max-height);
   overflow: auto;
-  background: var(--app-primary-bg);
+  background: var(--app-secondary-bg);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   z-index: 1001;
@@ -1102,7 +1102,7 @@ select#presets:focus {
 .browser-extension-modal-panel {
   position: relative;
   width: min(540px, calc(100% - var(--modal-inline-gutter)));
-  background: var(--app-primary-bg);
+  background: var(--app-secondary-bg);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   z-index: 1001;
@@ -1150,7 +1150,7 @@ select#presets:focus {
   gap: 16px;
   padding: 14px 16px;
   border-radius: 18px;
-  background: var(--app-tertiary-bg);
+  background: var(--app-primary-bg);
 }
 
 .browser-extension-modal-store-link {
@@ -1197,7 +1197,7 @@ select#presets:focus {
 }
 
 .info-section {
-  background-color: var(--app-secondary-bg);
+  background-color: var(--app-primary-bg);
   text-align: left
 }
 
@@ -1763,7 +1763,7 @@ select#presets:focus {
   padding: 10px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
-  background: var(--app-primary-bg);
+  background: var(--app-tertiary-bg);
 }
 
 .text-extraction-batch-plan-input-row-middle {
@@ -2593,7 +2593,7 @@ select#presets:focus {
   padding: var(--modal-gap);
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
-  background: var(--app-tertiary-bg);
+  background: var(--app-primary-bg);
 }
 
 .reading-test-entry-modal-group h3 {
