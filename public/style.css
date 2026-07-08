@@ -50,7 +50,6 @@
   --processing-bar-border: #b8ae9c;
   --selector-border: #ccc;
   --input-border: #b8ae9c;
-  --input-border-strong-color: rgb(0 0 0 / 0.2);
   --clipboard-repeat-input-border: #9f8f73;
   --button-border: #cfcfcf;
   --abort-button-border: #c45858;
@@ -1402,7 +1401,7 @@ select#presets:focus {
   width: 100%;
   min-height: var(--control-height-md);
   padding: var(--control-padding);
-  border: 1px solid var(--input-border-strong-color);
+  border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   box-sizing: border-box;
 }
@@ -1583,7 +1582,7 @@ select#presets:focus {
 .text-extraction-apply-repeat-row input {
   width: 96px;
   padding: var(--control-padding);
-  border: 1px solid var(--input-border-strong-color);
+  border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
 }
 
@@ -1715,7 +1714,7 @@ select#presets:focus {
 .text-extraction-batch-plan-unit-select {
   min-height: var(--control-height-md);
   padding: var(--control-padding);
-  border: 1px solid var(--input-border-strong-color);
+  border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   background: var(--input-bg);
   color: var(--text-color);
@@ -1908,7 +1907,7 @@ select#presets:focus {
 .text-extraction-batch-plan-page-scope-input {
   min-height: var(--control-height-md);
   padding: 8px 10px;
-  border: 1px solid var(--input-border-strong-color);
+  border: 1px solid var(--input-border);
   border-radius: var(--panel-radius);
   background: var(--input-bg);
   color: var(--text-color);
