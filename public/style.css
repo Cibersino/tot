@@ -48,7 +48,7 @@
   --preview-border: #eee;
   --result-highlight-border: #e6c07a;
   --processing-bar-border: #b8ae9c;
-  --presets-selector-border: #ccc;
+  --selector-border: #ccc;
   --input-border: #b8ae9c;
   --input-border-strong-color: rgb(0 0 0 / 0.2);
   --clipboard-repeat-input-border: #9f8f73;
@@ -792,7 +792,7 @@ select#presets {
   width: 180px;
   padding: var(--control-padding);
   border-radius: 5px;
-  border: 1px solid var(--presets-selector-border);
+  border: 1px solid var(--selector-border);
   background: var(--selector-bg);
   color: var(--text-color);
   font-size: 15px;
@@ -2184,7 +2184,7 @@ select#presets:focus {
   width: 100%;
   min-height: var(--control-height-md);
   padding: var(--control-padding);
-  border: 1px solid var(--input-border-strong-color);
+  border: 1px solid var(--selector-border);
   border-radius: var(--control-radius-sm);
   background: var(--selector-bg);
   color: var(--text-color);
@@ -2208,7 +2208,7 @@ select#presets:focus {
   overflow-y: auto;
   background: var(--selector-bg);
   color: var(--text-color);
-  border: 1px solid var(--input-border-strong-color);
+  border: 1px solid var(--selector-border);
   border-top: none;
   border-bottom-left-radius: var(--control-radius-sm);
   border-bottom-right-radius: var(--control-radius-sm);
@@ -2341,7 +2341,7 @@ select#presets:focus {
   width: 100%;
   min-height: var(--control-height-md);
   padding: var(--control-padding);
-  border: 1px solid var(--input-border-strong-color);
+  border: 1px solid var(--selector-border);
   border-radius: var(--control-radius-sm);
   background: var(--selector-bg);
   color: var(--text-color);
