@@ -15,6 +15,19 @@
   --app-warning-bg: #fff2cf;
   --preview-bg: #fafafa;
   --result-highlight-bg: #ffb6c1;
+  --preview-degraded-bg: #fff2f2;
+  --result-highlight-degraded-bg: #fff2f2;
+  --processing-track-bg: #ded3bc;
+  --processing-fill-bg: #a9976a;
+  --drop-overlay-bg: rgb(79 62 28 / 0.18);
+  --drop-zone-bg: rgb(253 246 227 / 0.97);
+  --entry-group-bg: rgb(255 255 255 / 0.45);
+  --snapshot-save-tags-option-active-bg: rgb(0 0 0 / 0.06);
+  --snapshot-tag-manager-category-bg: rgb(255 255 255 / 0.35);
+  --modal-backdrop: rgb(0 0 0 / 0.45);
+  --lightbox-backdrop: rgb(0 0 0 / 0.82);
+
+  /* Controls */
   --selector-bg: #fff;
   --input-bg: #fff;
   --input-disabled-bg: #ece4d2;
@@ -28,17 +41,6 @@
   --switch-track-on: #4caf50;
   --switch-track-off: #ccc;
   --control-accent: #0078D4;
-  --preview-degraded-bg: #fff2f2;
-  --result-highlight-degraded-bg: #fff2f2;
-  --processing-track-bg: #ded3bc;
-  --processing-fill-bg: #a9976a;
-  --drop-overlay-bg: rgb(79 62 28 / 0.18);
-  --drop-zone-bg: rgb(253 246 227 / 0.97);
-  --entry-group-bg: rgb(255 255 255 / 0.45);
-  --snapshot-save-tags-option-active-bg: rgb(0 0 0 / 0.06);
-  --snapshot-tag-manager-category-bg: rgb(255 255 255 / 0.35);
-  --modal-backdrop: rgb(0 0 0 / 0.45);
-  --lightbox-backdrop: rgb(0 0 0 / 0.82);
 
   /* Text */
   --text-color: #2f2a20;
