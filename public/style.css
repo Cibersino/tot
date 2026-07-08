@@ -19,9 +19,8 @@
   --result-highlight-degraded-bg: #fff2f2;
   --processing-track-bg: #ded3bc;
   --processing-fill-bg: #a9976a;
-  --drop-overlay-bg: rgb(79 62 28 / 0.18);
-  --modal-backdrop: rgb(0 0 0 / 0.45);
-  --lightbox-backdrop: rgb(0 0 0 / 0.82);
+  --backdrop-bg: rgb(0 0 0 / 0.45);
+  --backdrop-strong-bg: rgb(0 0 0 / 0.82);
 
   /* Controls */
   --selector-bg: #fff;
@@ -717,7 +716,7 @@ pre#textPreview .preview-static {
   display: none;
   align-items: center;
   justify-content: center;
-  background: var(--drop-overlay-bg);
+  background: var(--backdrop-bg);
   backdrop-filter: blur(1.5px);
   pointer-events: none;
 }
@@ -1036,7 +1035,7 @@ select#presets:focus {
 .info-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--modal-backdrop);
+  background: var(--backdrop-bg);
   backdrop-filter: blur(1px)
 }
 
@@ -1260,7 +1259,7 @@ select#presets:focus {
 .info-media-lightbox-backdrop {
   position: absolute;
   inset: 0;
-  background: var(--lightbox-backdrop);
+  background: var(--backdrop-strong-bg);
 }
 
 .info-media-lightbox-panel {
