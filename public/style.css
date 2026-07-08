@@ -42,6 +42,7 @@
   --text-color: #2f2a20;
   --text-soft: #6c6049;
   --warning-text: #8b1e1e;
+  --results-degraded-text: #c62828;
 
   /* Borders and shadows */
   --section-border: #e9e6de;
@@ -52,13 +53,13 @@
   --processing-bar-border: #b8ae9c;
   --selector-border: #ccc;
   --input-border: #b8ae9c;
+  --input-invalid-border: #c62828;
   --clipboard-repeat-input-border: #9f8f73;
   --clipboard-repeat-active-border: #c53a3a;
   --drop-zone-border: #8f7c56;
   --button-border: #cfcfcf;
   --abort-button-border: #c45858;
   --separator-color: #d9d2c2;
-  --error-strong: #c62828;
   --modal-panel-border-color: rgb(0 0 0 / 0.12);
   --warning-border-color: rgb(141 107 25 / 0.25);
   --group-border-color: rgb(0 0 0 / 0.1);
@@ -547,7 +548,7 @@ pre#textPreview .preview-static {
 
 .results.current-text-status--degraded .result-list,
 .results.current-text-status--degraded .big-time {
-  color: var(--error-strong);
+  color: var(--results-degraded-text);
 }
 
 /* Text selector controls */
@@ -868,8 +869,8 @@ select#presets:focus {
 }
 
 .results-multiplier-row input.is-invalid {
-  border-color: var(--error-strong);
-  outline-color: var(--error-strong);
+  border-color: var(--input-invalid-border);
+  outline-color: var(--input-invalid-border);
 }
 
 .velocity #wpmInput:disabled,
@@ -1433,7 +1434,7 @@ select#presets:focus {
 }
 
 .text-extraction-pdf-options-modal-validation {
-  color: var(--error-strong);
+  color: var(--warning-text);
   font-size: var(--font-size-note);
 }
 
