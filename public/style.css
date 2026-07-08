@@ -21,14 +21,13 @@
   --processing-fill-bg: #a9976a;
   --drop-overlay-bg: rgb(79 62 28 / 0.18);
   --drop-zone-bg: rgb(253 246 227 / 0.97);
-  --entry-group-bg: rgb(255 255 255 / 0.45);
-  --snapshot-save-tags-option-active-bg: rgb(0 0 0 / 0.06);
   --snapshot-tag-manager-category-bg: rgb(255 255 255 / 0.35);
   --modal-backdrop: rgb(0 0 0 / 0.45);
   --lightbox-backdrop: rgb(0 0 0 / 0.82);
 
   /* Controls */
   --selector-bg: #fff;
+  --selector-active-bg: #f0f0f0;
   --input-bg: #fff;
   --input-disabled-bg: #ece4d2;
   --clipboard-repeat-input-bg: #f8f5ee;
@@ -1553,7 +1552,7 @@ select#presets:focus {
   padding: 10px 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
-  background: var(--entry-group-bg);
+  background: var(--app-primary-bg);
 }
 
 .text-extraction-apply-modal-saved-pdf[hidden] {
@@ -1691,7 +1690,7 @@ select#presets:focus {
   padding: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
-  background: var(--entry-group-bg);
+  background: var(--app-primary-bg);
 }
 
 .text-extraction-batch-plan-unit-header {
@@ -1768,7 +1767,7 @@ select#presets:focus {
   padding: 10px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
-  background: var(--app-tertiary-bg);
+  background: var(--app-primary-bg);
 }
 
 .text-extraction-batch-plan-input-row-middle {
@@ -1955,7 +1954,7 @@ select#presets:focus {
   padding: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
-  background: var(--entry-group-bg);
+  background: var(--app-primary-bg);
 }
 
 .text-extraction-batch-final-unit h3 {
@@ -2020,7 +2019,7 @@ select#presets:focus {
   padding: 10px 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
-  background: var(--entry-group-bg);
+  background: var(--app-primary-bg);
 }
 
 .text-extraction-single-file-heavy-modal-details p {
@@ -2230,7 +2229,7 @@ select#presets:focus {
 
 .snapshot-save-tags-option.is-active,
 .snapshot-save-tags-option[aria-selected="true"] {
-  background: var(--snapshot-save-tags-option-active-bg);
+  background: var(--selector-active-bg);
 }
 
 .snapshot-save-tags-option.is-clear,
@@ -2583,7 +2582,7 @@ select#presets:focus {
   padding: var(--modal-gap);
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
-  background: var(--entry-group-bg);
+  background: var(--app-tertiary-bg);
 }
 
 .reading-test-entry-modal-group h3 {
