@@ -2198,6 +2198,11 @@ select#presets:focus {
   border-bottom-right-radius: 0;
 }
 
+.snapshot-save-tags-input:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .snapshot-save-tags-listbox {
   position: absolute;
   top: calc(100% - 1px);
@@ -2213,6 +2218,11 @@ select#presets:focus {
   border-bottom-left-radius: var(--control-radius-sm);
   border-bottom-right-radius: var(--control-radius-sm);
   box-sizing: border-box;
+}
+
+.snapshot-save-tags-listbox:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .snapshot-save-tags-option {
@@ -2348,6 +2358,11 @@ select#presets:focus {
   box-sizing: border-box;
   font: inherit;
   line-height: inherit;
+}
+
+.snapshot-tag-manager-draft-input:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .snapshot-tag-manager-validation {
