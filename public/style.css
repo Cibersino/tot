@@ -63,7 +63,6 @@
   --group-border-color: rgb(0 0 0 / 0.1);
   --modal-panel-border-color: rgb(0 0 0 / 0.12);
   --warning-border-color: rgb(141 107 25 / 0.25);
-  --snapshot-tag-manager-row-border: rgb(0 0 0 / 0.08);
   --spinner-track: rgb(0 0 0 / 0.15);
   --spinner-head: rgb(0 0 0 / 0.7);
   --focus-ring: rgb(30 130 230 / .12);
@@ -2373,7 +2372,7 @@ select#presets:focus {
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border: 1px solid var(--snapshot-tag-manager-row-border);
+  border: 1px solid var(--group-border-color);
   border-radius: var(--control-radius-sm);
   background: var(--app-tertiary-bg);
 }
