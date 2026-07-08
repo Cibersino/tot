@@ -43,7 +43,6 @@
   /* Text */
   --text-color: #2f2a20;
   --text-soft: #6c6049;
-  --modal-elapsed-text: #5f5135;
   --warning-text: #8b1e1e;
 
   /* Borders and shadows */
@@ -1540,7 +1539,7 @@ select#presets:focus {
 
 .text-extraction-apply-modal-elapsed {
   margin-top: 8px !important;
-  color: var(--modal-elapsed-text);
+  color: var(--text-soft);
   font-size: var(--font-size-note);
   font-variant-numeric: tabular-nums;
 }
@@ -1991,7 +1990,7 @@ select#presets:focus {
 }
 
 .text-extraction-batch-final-modal-elapsed {
-  color: var(--modal-elapsed-text);
+  color: var(--text-soft);
 }
 
 .text-extraction-batch-final-json-line {
