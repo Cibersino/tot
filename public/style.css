@@ -20,7 +20,6 @@
   --processing-track-bg: #ded3bc;
   --processing-fill-bg: #a9976a;
   --drop-overlay-bg: rgb(79 62 28 / 0.18);
-  --drop-zone-bg: rgb(253 246 227 / 0.97);
   --modal-backdrop: rgb(0 0 0 / 0.45);
   --lightbox-backdrop: rgb(0 0 0 / 0.82);
 
@@ -732,7 +731,7 @@ pre#textPreview .preview-static {
   padding: 20px 22px;
   border: 2px dashed var(--drop-zone-border);
   border-radius: 12px;
-  background: var(--drop-zone-bg);
+  background: var(--app-primary-bg);
   box-shadow: var(--drop-zone-shadow);
   text-align: center;
   color: var(--text-color);
