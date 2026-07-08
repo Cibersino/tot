@@ -2304,7 +2304,7 @@ select#presets:focus {
 .snapshot-tag-manager-category {
   display: grid;
   gap: 10px;
-  border: 1px solid var(--modal-panel-border-color);
+  border: 1px solid var(--group-border-color);
   border-radius: var(--control-radius-sm);
   background: var(--app-primary-bg);
   padding: 12px;
