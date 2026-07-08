@@ -21,7 +21,6 @@
   --processing-fill-bg: #a9976a;
   --drop-overlay-bg: rgb(79 62 28 / 0.18);
   --drop-zone-bg: rgb(253 246 227 / 0.97);
-  --snapshot-tag-manager-category-bg: rgb(255 255 255 / 0.35);
   --modal-backdrop: rgb(0 0 0 / 0.45);
   --lightbox-backdrop: rgb(0 0 0 / 0.82);
 
@@ -2307,7 +2306,7 @@ select#presets:focus {
   gap: 10px;
   border: 1px solid var(--modal-panel-border-color);
   border-radius: var(--control-radius-sm);
-  background: var(--snapshot-tag-manager-category-bg);
+  background: var(--app-primary-bg);
   padding: 12px;
 }
 
