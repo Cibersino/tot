@@ -48,6 +48,10 @@
   --text-soft: #6c6049;
   --warning-text: #8b1e1e;
   --results-degraded-text: #c62828;
+  --link-external: #245b89;
+  --link-external-hover: #163b5a;
+  --link-action: #24567a;
+  --link-action-hover: #183d56;
 
   /* Borders */
   --section-border: #e9e6de;
@@ -75,13 +79,6 @@
   --drop-zone-shadow: 0 14px 28px rgb(0 0 0 / 0.18);
   --modal-panel-shadow: 0 12px 24px rgb(0 0 0 / 0.25);
   --lightbox-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
-
-  /* Links */
-  --link-primary: #245b89;
-  --link-primary-hover: #163b5a;
-  --link-secondary: #24567a;
-  --link-secondary-hover: #183d56;
-  --link-secondary-focus: rgb(36 86 122 / 0.35);
 
   /* Typography */
   --font-ui: Arial, sans-serif;
@@ -2092,13 +2089,13 @@ select#presets:focus {
 }
 
 .text-extraction-ocr-activation-disclosure-link {
-  color: var(--link-primary);
+  color: var(--link-external);
   font-size: var(--font-size-ui-sm);
   text-decoration: underline;
 }
 
 .text-extraction-ocr-activation-disclosure-link:hover {
-  color: var(--link-primary-hover);
+  color: var(--link-external-hover);
 }
 
 .text-extraction-ocr-activation-disclosure-link:focus {
@@ -2460,7 +2457,7 @@ select#presets:focus {
   border: 0;
   padding: 0;
   background: transparent;
-  color: var(--link-secondary);
+  color: var(--link-action);
   font: inherit;
   font-size: var(--font-size-note);
   text-decoration: underline;
@@ -2468,11 +2465,11 @@ select#presets:focus {
 }
 
 .reading-test-entry-modal-toggle:hover {
-  color: var(--link-secondary-hover);
+  color: var(--link-action-hover);
 }
 
 .reading-test-entry-modal-toggle:focus {
-  outline: 2px solid var(--link-secondary-focus);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: var(--control-radius-sm);
 }
@@ -2556,18 +2553,18 @@ select#presets:focus {
 }
 
 .reading-test-entry-modal-link {
-  color: var(--link-secondary);
+  color: var(--link-external);
   text-decoration: underline;
   font-size: var(--font-size-note);
   cursor: pointer;
 }
 
 .reading-test-entry-modal-link:hover {
-  color: var(--link-secondary-hover);
+  color: var(--link-external-hover);
 }
 
 .reading-test-entry-modal-link:focus {
-  outline: 2px solid var(--link-secondary-focus);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: var(--control-radius-sm);
 }
