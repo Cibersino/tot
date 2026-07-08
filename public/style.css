@@ -21,6 +21,8 @@
   --processing-fill-bg: #a9976a;
   --backdrop-bg: rgb(0 0 0 / 0.45);
   --backdrop-strong-bg: rgb(0 0 0 / 0.82);
+  --spinner-track: rgb(0 0 0 / 0.15);
+  --spinner-head: rgb(0 0 0 / 0.7);
 
   /* Controls */
   --selector-bg: #fff;
@@ -33,10 +35,13 @@
   --button-hover-bg: #f4f4f4;
   --abort-button-bg: #fff1f1;
   --abort-button-hover-bg: #ffe4e4;
+  --separator-color: #d9d2c2;
   --switch-thumb-bg: #fff;
   --switch-track-on: #4caf50;
   --switch-track-off: #ccc;
   --control-accent: #0078D4;
+  --focus-ring: rgb(30 130 230 / .12);
+  --danger-focus-ring: rgb(197 58 58 / .35);
 
   /* Text */
   --text-color: #2f2a20;
@@ -44,7 +49,7 @@
   --warning-text: #8b1e1e;
   --results-degraded-text: #c62828;
 
-  /* Borders and shadows */
+  /* Borders */
   --section-border: #e9e6de;
   --preview-border: #eee;
   --result-highlight-border: #e6c07a;
@@ -59,14 +64,11 @@
   --drop-zone-border: #8f7c56;
   --button-border: #cfcfcf;
   --abort-button-border: #c45858;
-  --separator-color: #d9d2c2;
   --group-border-color: rgb(0 0 0 / 0.1);
   --warning-border-color: rgb(141 107 25 / 0.25);
   --modal-panel-border-color: rgb(0 0 0 / 0.12);
-  --spinner-track: rgb(0 0 0 / 0.15);
-  --spinner-head: rgb(0 0 0 / 0.7);
-  --focus-ring: rgb(30 130 230 / .12);
-  --danger-focus-ring: rgb(197 58 58 / .35);
+
+  /* Shadows */
   --section-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
   --button-hover-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
   --switch-track-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.02);
