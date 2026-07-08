@@ -60,9 +60,9 @@
   --button-border: #cfcfcf;
   --abort-button-border: #c45858;
   --separator-color: #d9d2c2;
+  --group-border-color: rgb(0 0 0 / 0.1);
   --modal-panel-border-color: rgb(0 0 0 / 0.12);
   --warning-border-color: rgb(141 107 25 / 0.25);
-  --group-border-color: rgb(0 0 0 / 0.1);
   --snapshot-tag-manager-row-border: rgb(0 0 0 / 0.08);
   --spinner-track: rgb(0 0 0 / 0.15);
   --spinner-head: rgb(0 0 0 / 0.7);
