@@ -44,9 +44,7 @@
   --text-color: #2f2a20;
   --text-soft: #6c6049;
   --modal-elapsed-text: #5f5135;
-  --warning-text: #5b4510;
-  --warning-count-text: #4c4028;
-  --snapshot-tag-manager-validation-text: #8b1e1e;
+  --warning-text: #8b1e1e;
 
   /* Borders and shadows */
   --section-border: #e9e6de;
@@ -2357,7 +2355,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-validation {
   min-height: 1.2em;
-  color: var(--snapshot-tag-manager-validation-text);
+  color: var(--warning-text);
   font-size: var(--font-size-ui-sm);
 }
 
@@ -2508,7 +2506,7 @@ select#presets:focus {
   white-space: nowrap;
   font-size: var(--font-size-ui-sm);
   font-weight: 600;
-  color: var(--warning-count-text);
+  color: var(--text-color);
 }
 
 .reading-test-entry-modal-count-number {
