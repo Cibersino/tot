@@ -66,7 +66,6 @@
   --spinner-track: rgb(0 0 0 / 0.15);
   --spinner-head: rgb(0 0 0 / 0.7);
   --focus-ring: rgb(30 130 230 / .12);
-  --focus-ring-strong: rgb(30 130 230 / .22);
   --danger-focus-ring: rgb(197 58 58 / .35);
   --section-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
   --button-hover-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
@@ -596,7 +595,7 @@ pre#textPreview .preview-static {
 }
 
 .clipboard-repeat-input:focus {
-  outline: 2px solid var(--focus-ring-strong);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -800,7 +799,7 @@ select#presets {
 }
 
 select#presets:focus {
-  outline: 2px solid var(--focus-ring-strong);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -986,7 +985,7 @@ select#presets:focus {
 .velocity #wpmInput:focus,
 .results-multiplier-row input:focus,
 .cronometro .crono-box:focus {
-  outline: 2px solid var(--focus-ring-strong);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -1170,7 +1169,7 @@ select#presets:focus {
 }
 
 .browser-extension-modal-store-link:focus {
-  outline: 3px solid var(--focus-ring-strong);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 4px;
 }
 
