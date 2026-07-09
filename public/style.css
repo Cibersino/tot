@@ -1148,7 +1148,7 @@ select#presets:focus {
   gap: 6px;
 }
 
-.browser-extension-modal-copy h2 {
+.browser-extension-modal-copy h1 {
   margin: 0;
   padding-right: 44px;
   color: var(--text-color);
