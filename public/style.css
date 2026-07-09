@@ -865,7 +865,7 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: 100%;
+  font-size: 0.9rem;
 }
 
 .results-multiplier-row output {
@@ -1413,7 +1413,7 @@ select#presets:focus {
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
-  font-size: 100%;
+  font-size: 0.95rem;
   box-sizing: border-box;
 }
 
@@ -1596,7 +1596,7 @@ select#presets:focus {
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
-  font-size: 100%;
+  font-size: 1rem;
 }
 
 .text-extraction-apply-modal-actions {
@@ -1732,7 +1732,7 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: 100%;
+  font-size: 1rem;
   box-sizing: border-box;
 }
 
@@ -1927,7 +1927,7 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: 100%;
+  font-size: 1rem;
   box-sizing: border-box;
 }
 
@@ -2206,7 +2206,7 @@ select#presets:focus {
   color: var(--text-color);
   box-sizing: border-box;
   font-family: inherit;
-  font-size: 100%;
+  font-size: 1rem;
 }
 
 .snapshot-save-tags-input[aria-expanded="true"] {
@@ -2371,7 +2371,7 @@ select#presets:focus {
   color: var(--text-color);
   box-sizing: border-box;
   font-family: inherit;
-  font-size: 100%;
+  font-size: 1rem;
 }
 
 .snapshot-tag-manager-draft-input:focus {
