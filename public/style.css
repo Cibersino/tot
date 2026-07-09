@@ -85,15 +85,16 @@
   --font-reading: 'Baskervville', serif;
   --font-size-root: 16px;
   --font-size-1: 0.46875rem;
-  --font-size-2: 0.8125rem;
-  --font-size-3: 0.875rem;
-  --font-size-4: 0.9rem;
-  --font-size-5: 0.9375rem;
-  --font-size-6: 1rem;
-  --font-size-7: 1.125rem;
-  --font-size-8: 1.25rem;
-  --font-size-9: 1.5rem;
-
+  --font-size-2: 0.75rem;
+  --font-size-3: 0.8125rem;
+  --font-size-4: 0.875rem;
+  --font-size-5: 0.9rem;
+  --font-size-6: 0.9375rem;
+  --font-size-7: 1rem;
+  --font-size-8: 1.125rem;
+  --font-size-9: 1.25rem;
+  --font-size-10: 1.5rem;
+  
   /* Spacing */
   --control-padding: 4px 6px;
   --modal-gap: 12px;
@@ -155,7 +156,7 @@ body {
   padding: 0;
   line-height: 1.08;
   font-weight: 600;
-  font-size: var(--font-size-3);
+  font-size: var(--font-size-4);
   color: var(--text-color);
   align-self: stretch;
   display: block;
@@ -229,7 +230,7 @@ body {
   padding: 6px 8px;
   height: var(--control-height-md);
   line-height: 1;
-  font-size: var(--font-size-5);
+  font-size: var(--font-size-6);
   font-family: inherit;
   border-radius: 5px;
   border: 1px solid var(--button-border);
@@ -347,7 +348,7 @@ body {
   min-height: var(--control-height-md);
   padding: 0 2px;
   color: var(--text-color);
-  font-size: var(--font-size-2);
+  font-size: var(--font-size-3);
   line-height: 1;
   white-space: nowrap;
   user-select: none;
@@ -525,7 +526,7 @@ pre#textPreview {
   overflow-wrap: anywhere;
   word-break: break-word;
   box-sizing: border-box;
-  font-size: var(--font-size-3);
+  font-size: var(--font-size-4);
   line-height: 1.15;
   font-family: var(--font-reading);
   margin-top: 4px;
@@ -595,7 +596,7 @@ pre#textPreview .preview-static {
   border: 1px solid var(--clipboard-repeat-input-border);
   background: var(--clipboard-repeat-input-bg);
   color: var(--text-color);
-  font-size: var(--font-size-3);
+  font-size: var(--font-size-4);
   font-family: inherit;
   text-align: center;
   box-sizing: border-box;
@@ -654,7 +655,7 @@ pre#textPreview .preview-static {
 
 #textExtractionProcessingLabel {
   flex: 0 0 auto;
-  font-size: var(--font-size-2);
+  font-size: var(--font-size-3);
   color: var(--text-color);
   line-height: 1.2;
   white-space: nowrap;
@@ -666,12 +667,12 @@ pre#textPreview .preview-static {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.75rem;
+  font-size: var(--font-size-2);
   color: var(--text-soft);
 }
 
 .text-extraction-processing-elapsed {
-  font-size: 0.75rem;
+  font-size: var(--font-size-2);
   color: var(--text-soft);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -750,7 +751,7 @@ pre#textPreview .preview-static {
 }
 
 .text-extraction-drop-overlay__title {
-  font-size: var(--font-size-8);
+  font-size: var(--font-size-9);
   line-height: 1.2;
   font-weight: 700;
 }
@@ -787,7 +788,7 @@ body.text-extraction-drop-active .app-container {
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-family: inherit;
   box-sizing: border-box;
 }
@@ -808,7 +809,7 @@ select#presets {
   border: 1px solid var(--selector-border);
   background: var(--selector-bg);
   color: var(--text-color);
-  font-size: var(--font-size-5);
+  font-size: var(--font-size-6);
   font-family: inherit;
 }
 
@@ -822,7 +823,7 @@ select#presets:focus {
   margin-top: 6px;
   min-height: 22px;
   color: var(--text-soft);
-  font-size: var(--font-size-2);
+  font-size: var(--font-size-3);
 }
 
 /* Results section */
@@ -851,7 +852,7 @@ select#presets:focus {
 
 .big-time {
   font-weight: 700;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-8);
 }
 
 .results-multiplier-row {
@@ -860,7 +861,7 @@ select#presets:focus {
   gap: 6px;
   margin-top: 6px;
   margin-left: 20px;
-  font-size: var(--font-size-4);
+  font-size: var(--font-size-5);
 }
 
 .results-multiplier-row label {
@@ -874,7 +875,7 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: var(--font-size-4);
+  font-size: var(--font-size-5);
 }
 
 .results-multiplier-row output {
@@ -911,7 +912,7 @@ select#presets:focus {
   flex: 1 1 auto;             /* occupies the available space on the left */
   min-width: 0;               /* avoids overflow in small containers */
   color: var(--text-color);
-  font-size: var(--font-size-4);
+  font-size: var(--font-size-5);
 }
 
 /* Toggle wrapper */
@@ -928,7 +929,7 @@ select#presets:focus {
 
 /* Toggle label */
 .toggle-label {
-  font-size: var(--font-size-4);
+  font-size: var(--font-size-5);
   font-weight: 500;
   line-height: 1.1;
   margin-top: 2px;
@@ -974,7 +975,7 @@ select#presets:focus {
   width: 66px;
   padding: 4px;
   border: 1px solid var(--input-border);
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-family: inherit;
   text-align: center;
   color: var(--text-color);
@@ -989,7 +990,7 @@ select#presets:focus {
 }
 
 .cronometro .realwpm {
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   color: var(--text-color);
 }
 
@@ -1022,7 +1023,7 @@ select#presets:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-4);
+  font-size: var(--font-size-5);
   font-weight: 600;
   color: var(--text-color);
   user-select: none;
@@ -1092,22 +1093,22 @@ select#presets:focus {
 }
 
 .info-modal-content {
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   color: var(--text-color);
   line-height: 1.45;
   margin-top: calc(-1 * var(--info-header-height));
 }
 
 .info-modal-content h1 {
-  font-size: var(--font-size-9);
+  font-size: var(--font-size-10);
 }
 
 .info-modal-content h2 {
-  font-size: var(--font-size-8);
+  font-size: var(--font-size-9);
 }
 
 .info-modal-content h3 {
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-style: italic;
   padding-top: 0
 }
@@ -1152,13 +1153,13 @@ select#presets:focus {
   margin: 0;
   padding-right: 44px;
   color: var(--text-color);
-  font-size: var(--font-size-9);
+  font-size: var(--font-size-10);
 }
 
 .browser-extension-modal-subtitle {
   margin: 0;
   color: var(--text-color);
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-8);
   font-style: italic;
 }
 
@@ -1199,7 +1200,7 @@ select#presets:focus {
 .browser-extension-modal-availability {
   margin: 0;
   color: var(--text-soft);
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   line-height: 1.45;
 }
 
@@ -1332,7 +1333,7 @@ select#presets:focus {
 
 .text-extraction-pdf-options-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-weight: 600;
 }
 
@@ -1493,7 +1494,7 @@ select#presets:focus {
 
 .text-extraction-route-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-weight: 600;
 }
 
@@ -1541,7 +1542,7 @@ select#presets:focus {
 
 .text-extraction-apply-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-weight: 600;
 }
 
@@ -1605,7 +1606,7 @@ select#presets:focus {
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
 }
 
 .text-extraction-apply-modal-actions {
@@ -1649,7 +1650,7 @@ select#presets:focus {
 .text-extraction-batch-final-modal-header h2,
 .text-extraction-single-file-heavy-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-weight: 600;
 }
 
@@ -1741,7 +1742,7 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   box-sizing: border-box;
 }
 
@@ -1936,7 +1937,7 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   box-sizing: border-box;
 }
 
@@ -1981,7 +1982,7 @@ select#presets:focus {
 
 .text-extraction-batch-final-unit h3 {
   margin: 0;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
 }
 
 .text-extraction-batch-final-unit-meta {
@@ -2080,7 +2081,7 @@ select#presets:focus {
 
 .text-extraction-ocr-activation-disclosure-header h2 {
   margin: 0;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-weight: 600;
 }
 
@@ -2172,7 +2173,7 @@ select#presets:focus {
 
 .snapshot-save-tags-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-weight: 600;
 }
 
@@ -2215,7 +2216,7 @@ select#presets:focus {
   color: var(--text-color);
   box-sizing: border-box;
   font-family: inherit;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
 }
 
 .snapshot-save-tags-input[aria-expanded="true"] {
@@ -2312,7 +2313,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-weight: 600;
 }
 
@@ -2351,7 +2352,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-category-header h3 {
   margin: 0;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-weight: 600;
 }
 
@@ -2380,7 +2381,7 @@ select#presets:focus {
   color: var(--text-color);
   box-sizing: border-box;
   font-family: inherit;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
 }
 
 .snapshot-tag-manager-draft-input:focus {
@@ -2463,7 +2464,7 @@ select#presets:focus {
 .reading-test-entry-modal-body h2 {
   margin: 0 0 var(--modal-section-spacing);
   padding-right: 44px;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-weight: 600;
 }
 
