@@ -91,6 +91,8 @@
   --font-size-5: 0.9375rem;
   --font-size-6: 1rem;
   --font-size-7: 1.125rem;
+  --font-size-8: 1.25rem;
+  --font-size-9: 1.5rem;
 
   /* Spacing */
   --control-padding: 4px 6px;
@@ -748,7 +750,7 @@ pre#textPreview .preview-static {
 }
 
 .text-extraction-drop-overlay__title {
-  font-size: 1.25rem;
+  font-size: var(--font-size-8);
   line-height: 1.2;
   font-weight: 700;
 }
@@ -1097,11 +1099,11 @@ select#presets:focus {
 }
 
 .info-modal-content h1 {
-  font-size: 1.5rem;
+  font-size: var(--font-size-9);
 }
 
 .info-modal-content h2 {
-  font-size: 1.25rem;
+  font-size: var(--font-size-8);
 }
 
 .info-modal-content h3 {
@@ -1150,7 +1152,7 @@ select#presets:focus {
   margin: 0;
   padding-right: 44px;
   color: var(--text-color);
-  font-size: 1.5rem;
+  font-size: var(--font-size-9);
 }
 
 .browser-extension-modal-subtitle {
