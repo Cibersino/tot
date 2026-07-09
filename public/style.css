@@ -81,19 +81,25 @@
   --lightbox-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
 
   /* Typography */
+
+  /* Font families */
   --font-ui: Arial, sans-serif;
   --font-reading: 'Baskervville', serif;
+
+  /* Font sizes */
   --font-size-root: 16px;
   --font-size-1: 0.46875rem;
   --font-size-2: 0.75rem;
   --font-size-3: 0.8125rem;
   --font-size-4: 0.875rem;
   --font-size-5: 0.9rem;
-  --font-size-6: 0.9375rem;
-  --font-size-7: 1rem;
-  --font-size-8: 1.125rem;
-  --font-size-9: 1.25rem;
-  --font-size-10: 1.5rem;
+  --font-size-6: 0.92rem;
+  --font-size-7: 0.9375rem;
+  --font-size-8: 0.95rem;
+  --font-size-9: 1rem;
+  --font-size-10: 1.125rem;
+  --font-size-11: 1.25rem;
+  --font-size-12: 1.5rem;
   
   /* Spacing */
   --control-padding: 4px 6px;
@@ -230,7 +236,7 @@ body {
   padding: 6px 8px;
   height: var(--control-height-md);
   line-height: 1;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-family: inherit;
   border-radius: 5px;
   border: 1px solid var(--button-border);
@@ -751,7 +757,7 @@ pre#textPreview .preview-static {
 }
 
 .text-extraction-drop-overlay__title {
-  font-size: var(--font-size-9);
+  font-size: var(--font-size-11);
   line-height: 1.2;
   font-weight: 700;
 }
@@ -788,7 +794,7 @@ body.text-extraction-drop-active .app-container {
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-family: inherit;
   box-sizing: border-box;
 }
@@ -809,7 +815,7 @@ select#presets {
   border: 1px solid var(--selector-border);
   background: var(--selector-bg);
   color: var(--text-color);
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-7);
   font-family: inherit;
 }
 
@@ -852,7 +858,7 @@ select#presets:focus {
 
 .big-time {
   font-weight: 700;
-  font-size: var(--font-size-8);
+  font-size: var(--font-size-10);
 }
 
 .results-multiplier-row {
@@ -975,7 +981,7 @@ select#presets:focus {
   width: 66px;
   padding: 4px;
   border: 1px solid var(--input-border);
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-family: inherit;
   text-align: center;
   color: var(--text-color);
@@ -990,7 +996,7 @@ select#presets:focus {
 }
 
 .cronometro .realwpm {
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   color: var(--text-color);
 }
 
@@ -1093,22 +1099,22 @@ select#presets:focus {
 }
 
 .info-modal-content {
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   color: var(--text-color);
   line-height: 1.45;
   margin-top: calc(-1 * var(--info-header-height));
 }
 
 .info-modal-content h1 {
-  font-size: var(--font-size-10);
+  font-size: var(--font-size-12);
 }
 
 .info-modal-content h2 {
-  font-size: var(--font-size-9);
+  font-size: var(--font-size-11);
 }
 
 .info-modal-content h3 {
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-style: italic;
   padding-top: 0
 }
@@ -1153,13 +1159,13 @@ select#presets:focus {
   margin: 0;
   padding-right: 44px;
   color: var(--text-color);
-  font-size: var(--font-size-10);
+  font-size: var(--font-size-12);
 }
 
 .browser-extension-modal-subtitle {
   margin: 0;
   color: var(--text-color);
-  font-size: var(--font-size-8);
+  font-size: var(--font-size-10);
   font-style: italic;
 }
 
@@ -1200,7 +1206,7 @@ select#presets:focus {
 .browser-extension-modal-availability {
   margin: 0;
   color: var(--text-soft);
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   line-height: 1.45;
 }
 
@@ -1333,7 +1339,7 @@ select#presets:focus {
 
 .text-extraction-pdf-options-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -1351,7 +1357,7 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-summary {
   display: grid;
   gap: 6px;
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
 }
 
 .text-extraction-pdf-options-modal-summary-row {
@@ -1380,7 +1386,7 @@ select#presets:focus {
 
 .text-extraction-pdf-options-modal-selection-legend {
   padding: 0 4px;
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
   font-weight: 600;
 }
 
@@ -1388,7 +1394,7 @@ select#presets:focus {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
 }
 
 .text-extraction-pdf-options-modal-option input[type="radio"] {
@@ -1413,7 +1419,7 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-range-field {
   display: grid;
   gap: 4px;
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
 }
 
 .text-extraction-pdf-options-modal-range-field input {
@@ -1423,13 +1429,13 @@ select#presets:focus {
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
   box-sizing: border-box;
 }
 
 .text-extraction-pdf-options-modal-selected-count {
   color: var(--text-soft);
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
 }
 
 .text-extraction-pdf-options-modal-selected-count[hidden] {
@@ -1440,7 +1446,7 @@ select#presets:focus {
   display: inline-flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
 }
 
 .text-extraction-pdf-options-modal-keep-option[hidden] {
@@ -1453,7 +1459,7 @@ select#presets:focus {
 
 .text-extraction-pdf-options-modal-validation {
   color: var(--warning-text);
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
 }
 
 .text-extraction-pdf-options-modal-validation[hidden] {
@@ -1494,7 +1500,7 @@ select#presets:focus {
 
 .text-extraction-route-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -1542,7 +1548,7 @@ select#presets:focus {
 
 .text-extraction-apply-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -1558,7 +1564,7 @@ select#presets:focus {
 .text-extraction-apply-modal-elapsed {
   margin-top: 8px !important;
   color: var(--text-soft);
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1578,7 +1584,7 @@ select#presets:focus {
 
 .text-extraction-apply-modal-saved-pdf-file {
   color: var(--text-soft);
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   word-break: break-word;
 }
 
@@ -1597,7 +1603,7 @@ select#presets:focus {
 }
 
 .text-extraction-apply-repeat-row label {
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
 }
 
 .text-extraction-apply-repeat-row input {
@@ -1606,7 +1612,7 @@ select#presets:focus {
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
 }
 
 .text-extraction-apply-modal-actions {
@@ -1650,7 +1656,7 @@ select#presets:focus {
 .text-extraction-batch-final-modal-header h2,
 .text-extraction-single-file-heavy-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -1699,7 +1705,7 @@ select#presets:focus {
   display: inline-flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
   line-height: 1.35;
 }
 
@@ -1728,7 +1734,7 @@ select#presets:focus {
 }
 
 .text-extraction-batch-plan-unit-heading-label {
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   color: var(--text-soft);
 }
 
@@ -1742,7 +1748,7 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   box-sizing: border-box;
 }
 
@@ -1768,7 +1774,7 @@ select#presets:focus {
 .text-extraction-batch-plan-unit-tags,
 .text-extraction-batch-plan-heavy-preview-label,
 .text-extraction-batch-plan-input-code {
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   color: var(--text-soft);
 }
 
@@ -1864,7 +1870,7 @@ select#presets:focus {
   display: inline-flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
 }
 
 .text-extraction-batch-plan-unit-tags {
@@ -1884,7 +1890,7 @@ select#presets:focus {
   padding-left: 18px;
   display: grid;
   gap: 4px;
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
 }
 
 .text-extraction-batch-plan-heavy-preview-label {
@@ -1937,13 +1943,13 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   box-sizing: border-box;
 }
 
 .text-extraction-batch-plan-page-scope-count,
 .text-extraction-batch-plan-page-scope-validation {
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
 }
 
 .text-extraction-batch-plan-page-scope-validation {
@@ -1982,11 +1988,11 @@ select#presets:focus {
 
 .text-extraction-batch-final-unit h3 {
   margin: 0;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
 }
 
 .text-extraction-batch-final-unit-meta {
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   color: var(--text-soft);
 }
 
@@ -2018,7 +2024,7 @@ select#presets:focus {
 }
 
 .text-extraction-batch-final-json-line {
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   color: var(--text-soft);
 }
 
@@ -2081,7 +2087,7 @@ select#presets:focus {
 
 .text-extraction-ocr-activation-disclosure-header h2 {
   margin: 0;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -2092,7 +2098,7 @@ select#presets:focus {
 
 .text-extraction-ocr-activation-disclosure-body p {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   line-height: 1.45;
 }
 
@@ -2102,7 +2108,7 @@ select#presets:focus {
   padding-inline-start: 18px;
   display: grid;
   gap: 8px;
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   line-height: 1.4;
 }
 
@@ -2117,7 +2123,7 @@ select#presets:focus {
 
 .text-extraction-ocr-activation-disclosure-link {
   color: var(--link-external);
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
   text-decoration: underline;
 }
 
@@ -2173,7 +2179,7 @@ select#presets:focus {
 
 .snapshot-save-tags-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -2199,7 +2205,7 @@ select#presets:focus {
 }
 
 .snapshot-save-tags-field-label {
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
 }
 
 .snapshot-save-tags-combobox {
@@ -2216,7 +2222,7 @@ select#presets:focus {
   color: var(--text-color);
   box-sizing: border-box;
   font-family: inherit;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
 }
 
 .snapshot-save-tags-input[aria-expanded="true"] {
@@ -2313,7 +2319,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-modal-header h2 {
   margin: 0;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -2352,7 +2358,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-category-header h3 {
   margin: 0;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -2381,7 +2387,7 @@ select#presets:focus {
   color: var(--text-color);
   box-sizing: border-box;
   font-family: inherit;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
 }
 
 .snapshot-tag-manager-draft-input:focus {
@@ -2392,7 +2398,7 @@ select#presets:focus {
 .snapshot-tag-manager-validation {
   min-height: 1.2em;
   color: var(--warning-text);
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
 }
 
 .snapshot-tag-manager-empty {
@@ -2464,7 +2470,7 @@ select#presets:focus {
 .reading-test-entry-modal-body h2 {
   margin: 0 0 var(--modal-section-spacing);
   padding-right: 44px;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -2484,7 +2490,7 @@ select#presets:focus {
   background: transparent;
   color: var(--link-action);
   font-family: inherit;
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -2540,7 +2546,7 @@ select#presets:focus {
   align-items: center;
   gap: 4px;
   white-space: nowrap;
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
   font-weight: 600;
   color: var(--text-color);
 }
@@ -2564,7 +2570,7 @@ select#presets:focus {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   color: var(--text-soft);
   cursor: pointer;
 }
@@ -2580,7 +2586,7 @@ select#presets:focus {
 .reading-test-entry-modal-link {
   color: var(--link-external);
   text-decoration: underline;
-  font-size: 0.92rem;
+  font-size: var(--font-size-6);
   cursor: pointer;
 }
 
@@ -2638,7 +2644,7 @@ select#presets:focus {
   align-items: center;
   gap: 7px;
   min-height: 28px;
-  font-size: 0.95rem;
+  font-size: var(--font-size-8);
 }
 
 .reading-test-entry-modal-option input[type="checkbox"] {
