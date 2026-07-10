@@ -667,6 +667,10 @@ pre#textPreview .preview-static {
   white-space: nowrap;
 }
 
+#textExtractionProcessingFilenameSeparator {
+  font-size: var(--font-size-3);
+}
+
 .text-extraction-processing-filename {
   flex: 0 1 auto;
   min-width: 0;
