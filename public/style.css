@@ -1693,6 +1693,7 @@ select#presets:focus {
 
 .text-extraction-batch-final-modal-body > p {
   margin: 0;
+  font-size: var(--font-size-8);
 }
 
 .text-extraction-batch-plan-modal-toolbar,
@@ -1725,7 +1726,7 @@ select#presets:focus {
 }
 
 .text-extraction-batch-plan-failure-policy legend {
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-8);
 }
 
 .text-extraction-batch-plan-failure-option {
@@ -2058,6 +2059,7 @@ select#presets:focus {
   justify-content: flex-start;
   gap: 8px;
   flex-wrap: wrap;
+  font-size: var(--font-size-7);
 }
 
 .text-extraction-batch-final-generated-list {
@@ -2065,6 +2067,7 @@ select#presets:focus {
 }
 
 .text-extraction-batch-final-modal-elapsed {
+  font-size: var(--font-size-6);
   color: var(--text-soft);
 }
 
@@ -2674,7 +2677,7 @@ select#presets:focus {
 
 .reading-test-entry-modal-group h3 {
   margin: 0;
-  font-size: 0.98rem;
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
