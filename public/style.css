@@ -2389,6 +2389,10 @@ select#presets:focus {
   line-height: 1.45;
 }
 
+#snapshotTagManagerModalMessage {
+  font-size: var(--font-size-8);
+}
+
 .snapshot-tag-manager-modal-content {
   display: grid;
   gap: 12px;
@@ -2413,7 +2417,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-category-header h3 {
   margin: 0;
-  font-size: var(--font-size-9);
+  font-size: var(--font-size-8);
   font-weight: 600;
 }
 
@@ -2442,7 +2446,7 @@ select#presets:focus {
   color: var(--text-color);
   box-sizing: border-box;
   font-family: inherit;
-  font-size: var(--font-size-9);
+  font-size: var(--font-size-7);
 }
 
 .snapshot-tag-manager-draft-input:focus {
@@ -2453,11 +2457,12 @@ select#presets:focus {
 .snapshot-tag-manager-validation {
   min-height: 1.2em;
   color: var(--warning-text);
-  font-size: var(--font-size-8);
+  font-size: var(--font-size-6);
 }
 
 .snapshot-tag-manager-empty {
   font-style: italic;
+  font-size: var(--font-size-7);
 }
 
 .snapshot-tag-manager-list {
@@ -2478,6 +2483,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-row-label {
   min-width: 0;
+  font-size: var(--font-size-7);
   overflow-wrap: anywhere;
 }
 
