@@ -212,7 +212,6 @@ body {
 .app-container>section,
 .app-container>aside {
   position: absolute;
-  padding: 4px 6px;
   border-radius: var(--section-radius);
   box-shadow: var(--section-shadow);
   background: var(--app-secondary-bg);
@@ -336,38 +335,6 @@ body {
 
 .switch input:checked + .slider:before {
   transform: translateX(20px);
-}
-
-.selector-inline-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: var(--control-height-md);
-  padding: 0 2px;
-  color: var(--text-color);
-  font-size: var(--font-size-3);
-  line-height: 1;
-  white-space: nowrap;
-  user-select: none;
-  cursor: pointer;
-}
-
-.selector-inline-checkbox input {
-  margin: 0;
-  accent-color: var(--control-accent);
-  cursor: pointer;
-}
-
-.selector-inline-checkbox input:disabled {
-  cursor: not-allowed;
-}
-
-.selector-inline-checkbox:has(input:disabled) {
-  cursor: not-allowed;
-}
-
-.selector-inline-checkbox input:disabled + span {
-  opacity: 0.55;
 }
 
 /* Startup splash */
@@ -506,6 +473,7 @@ body {
   left: 4px;
   height: 158px;
   width: 820px;
+  padding: 4px 6px;
   background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
   box-sizing: border-box;
@@ -583,6 +551,38 @@ pre#textPreview .preview-static {
   flex: 0 0 auto;
   align-self: center;
   pointer-events: none;
+}
+
+.selector-inline-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--control-height-md);
+  padding: 0 2px;
+  color: var(--text-color);
+  font-size: var(--font-size-3);
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+}
+
+.selector-inline-checkbox input {
+  margin: 0;
+  accent-color: var(--control-accent);
+  cursor: pointer;
+}
+
+.selector-inline-checkbox input:disabled {
+  cursor: not-allowed;
+}
+
+.selector-inline-checkbox:has(input:disabled) {
+  cursor: not-allowed;
+}
+
+.selector-inline-checkbox input:disabled + span {
+  opacity: 0.55;
 }
 
 .clipboard-repeat-input {
