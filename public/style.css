@@ -1787,10 +1787,6 @@ select#presets:focus {
   flex-wrap: wrap;
 }
 
-.text-extraction-batch-plan-icon-button {
-  line-height: 1;
-}
-
 .text-extraction-batch-plan-unit-meta,
 .text-extraction-batch-plan-unit-tags,
 .text-extraction-batch-plan-heavy-preview-label,
