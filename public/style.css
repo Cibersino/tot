@@ -1569,6 +1569,7 @@ select#presets:focus {
 }
 
 .text-extraction-apply-modal-body p {
+  font-size: var(--font-size-8);
   margin: 0;
   line-height: 1.4;
 }
@@ -1615,7 +1616,7 @@ select#presets:focus {
 }
 
 .text-extraction-apply-repeat-row label {
-  font-size: var(--font-size-8);
+  font-size: var(--font-size-6);
 }
 
 .text-extraction-apply-repeat-row input {
@@ -1624,7 +1625,7 @@ select#presets:focus {
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
-  font-size: var(--font-size-9);
+  font-size: var(--font-size-4);
 }
 
 .text-extraction-apply-modal-actions {
