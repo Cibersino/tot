@@ -1520,6 +1520,7 @@ select#presets:focus {
 }
 
 .text-extraction-route-modal-body p {
+  font-size: var(--font-size-8);
   margin: 0;
   line-height: 1.4;
 }
