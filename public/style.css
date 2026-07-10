@@ -787,6 +787,10 @@ body.text-extraction-drop-active .app-container {
   margin-top: 4px;
 }
 
+.velocity .wpm-row span {
+  font-size: var(--font-size-9);
+}
+
 .velocity #wpmInput {
   width: 56px;
   height: 26px;
@@ -1120,6 +1124,7 @@ select#presets:focus {
 }
 
 .info-modal-content pre {
+  font-size: var(--font-size-9);
   white-space: pre-wrap;
   word-break: break-word
 }
@@ -1235,6 +1240,7 @@ select#presets:focus {
 }
 
 .info-loading {
+  font-size: var(--font-size-9);
   color: var(--text-soft);
   font-style: italic;
   padding: 8px
