@@ -102,22 +102,13 @@
   --font-size-12: 1.5rem;
   
   /* Spacing */
-  --control-padding: 4px 6px;
-  --modal-gap: 12px;
-  --modal-section-spacing: 12px;
-  --modal-panel-padding: 14px 16px 16px;
-  --modal-inline-gutter: 32px;
-
+    
   /* Dimensions */
   --control-height-md: 30px;
   --modal-max-height: 85vh;
   --logo-height: 100px;
   --logo-links-scale: 0.7;
   --kofi-logo-scale: 0.82;
-
-  /* Padding */
-  --section-padding-vertical: 4px;
-  --section-padding-horizontal: 6px;
 
   /* Shared styles */
   --section-radius: 6px;
@@ -221,7 +212,7 @@ body {
 .app-container>section,
 .app-container>aside {
   position: absolute;
-  padding: var(--section-padding-vertical) var(--section-padding-horizontal);
+  padding: 4px 6px;
   border-radius: var(--section-radius);
   box-shadow: var(--section-shadow);
   background: var(--app-secondary-bg);
@@ -443,7 +434,7 @@ body {
   height: calc(var(--logo-height) * var(--logo-links-scale));
   display: flex;
   align-items: center;
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 #appLogo {
@@ -597,7 +588,7 @@ pre#textPreview .preview-static {
 .clipboard-repeat-input {
   width: 60px;
   height: var(--control-height-md);
-  padding: var(--control-padding);
+  padding: 4px 6px;
   border-radius: var(--control-radius-sm);
   border: 1px solid var(--clipboard-repeat-input-border);
   background: var(--clipboard-repeat-input-bg);
@@ -818,7 +809,7 @@ body.text-extraction-drop-active .app-container {
 select#presets {
   height: var(--control-height-md);
   width: 180px;
-  padding: var(--control-padding);
+  padding: 4px 6px;
   border-radius: 5px;
   border: 1px solid var(--selector-border);
   background: var(--selector-bg);
@@ -913,7 +904,7 @@ select#presets:focus {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
   margin-bottom: 6px;
   position: relative;
 }
@@ -1078,7 +1069,7 @@ select#presets:focus {
 
   position: relative;
   max-width: 860px;
-  width: calc(100% - var(--modal-inline-gutter));
+  width: calc(100% - 32px);
   max-height: var(--info-panel-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
@@ -1135,7 +1126,7 @@ select#presets:focus {
 
 .browser-extension-modal-panel {
   position: relative;
-  width: min(540px, calc(100% - var(--modal-inline-gutter)));
+  width: min(540px, calc(100% - 32px));
   background: var(--app-secondary-bg);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -1302,8 +1293,8 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: min(1400px, calc(100vw - var(--modal-inline-gutter)));
-  max-height: calc(100vh - var(--modal-inline-gutter));
+  width: min(1400px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
 }
 
 .info-media-lightbox-image {
@@ -1330,13 +1321,13 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(620px, calc(100% - var(--modal-inline-gutter)));
+  width: min(620px, calc(100% - 32px));
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -1344,7 +1335,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 .text-extraction-pdf-options-modal-header h2 {
@@ -1354,7 +1345,7 @@ select#presets:focus {
 }
 
 .text-extraction-pdf-options-modal-body {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
   display: grid;
   gap: 12px;
 }
@@ -1436,7 +1427,7 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-range-field input {
   width: 100%;
   min-height: var(--control-height-md);
-  padding: var(--control-padding);
+  padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
@@ -1497,13 +1488,13 @@ select#presets:focus {
 .text-extraction-route-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(520px, calc(100% - var(--modal-inline-gutter)));
+  width: min(520px, calc(100% - 32px));
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -1511,7 +1502,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 .text-extraction-route-modal-header h2 {
@@ -1521,7 +1512,7 @@ select#presets:focus {
 }
 
 .text-extraction-route-modal-body {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
 }
 
 .text-extraction-route-modal-body p {
@@ -1546,13 +1537,13 @@ select#presets:focus {
 .text-extraction-apply-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(560px, calc(100% - var(--modal-inline-gutter)));
+  width: min(560px, calc(100% - 32px));
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -1560,7 +1551,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 .text-extraction-apply-modal-header h2 {
@@ -1570,7 +1561,7 @@ select#presets:focus {
 }
 
 .text-extraction-apply-modal-body {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
 }
 
 .text-extraction-apply-modal-body p {
@@ -1587,7 +1578,7 @@ select#presets:focus {
 }
 
 .text-extraction-apply-modal-saved-pdf {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
   display: grid;
   gap: 8px;
   padding: 10px 12px;
@@ -1614,7 +1605,7 @@ select#presets:focus {
 }
 
 .text-extraction-apply-repeat-row {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1626,7 +1617,7 @@ select#presets:focus {
 
 .text-extraction-apply-repeat-row input {
   width: 96px;
-  padding: var(--control-padding);
+  padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
@@ -1654,7 +1645,7 @@ select#presets:focus {
 .text-extraction-batch-plan-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(920px, calc(100% - var(--modal-inline-gutter)));
+  width: min(920px, calc(100% - 32px));
   max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
@@ -1662,7 +1653,7 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -1672,7 +1663,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 .text-extraction-batch-plan-modal-header h2,
@@ -1686,7 +1677,7 @@ select#presets:focus {
 .text-extraction-batch-plan-modal-body,
 .text-extraction-batch-final-modal-body,
 .text-extraction-single-file-heavy-modal-body {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
   display: grid;
   gap: 12px;
 }
@@ -1770,7 +1761,7 @@ select#presets:focus {
 .text-extraction-batch-plan-route-select,
 .text-extraction-batch-plan-unit-select {
   min-height: var(--control-height-md);
-  padding: var(--control-padding);
+  padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   background: var(--input-bg);
@@ -2006,7 +1997,7 @@ select#presets:focus {
 .text-extraction-batch-final-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(860px, calc(100% - var(--modal-inline-gutter)));
+  width: min(860px, calc(100% - 32px));
   max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
@@ -2014,7 +2005,7 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -2080,13 +2071,13 @@ select#presets:focus {
 .text-extraction-single-file-heavy-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(620px, calc(100% - var(--modal-inline-gutter)));
+  width: min(620px, calc(100% - 32px));
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -2120,13 +2111,13 @@ select#presets:focus {
 .text-extraction-ocr-activation-disclosure-panel {
   position: relative;
   z-index: 1001;
-  width: min(640px, calc(100% - var(--modal-inline-gutter)));
+  width: min(640px, calc(100% - 32px));
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
   text-align: start;
 }
@@ -2135,7 +2126,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 .text-extraction-ocr-activation-disclosure-header h2 {
@@ -2145,7 +2136,7 @@ select#presets:focus {
 }
 
 .text-extraction-ocr-activation-disclosure-body {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
   text-align: start;
 }
 
@@ -2156,7 +2147,7 @@ select#presets:focus {
 }
 
 .text-extraction-ocr-activation-disclosure-list {
-  margin: var(--modal-section-spacing) 0 0;
+  margin: 12px 0 0;
   padding: 0;
   padding-inline-start: 18px;
   display: grid;
@@ -2170,7 +2161,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -2207,13 +2198,13 @@ select#presets:focus {
 .snapshot-save-tags-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(560px, calc(100% - var(--modal-inline-gutter)));
+  width: min(560px, calc(100% - 32px));
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -2221,7 +2212,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 .snapshot-save-tags-modal-header-actions {
@@ -2237,7 +2228,7 @@ select#presets:focus {
 }
 
 .snapshot-save-tags-modal-body {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
 }
 
 .snapshot-save-tags-modal-body p {
@@ -2247,7 +2238,7 @@ select#presets:focus {
 }
 
 .snapshot-save-tags-form {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
   display: grid;
   gap: 10px;
 }
@@ -2269,7 +2260,7 @@ select#presets:focus {
 .snapshot-save-tags-input {
   width: 100%;
   min-height: var(--control-height-md);
-  padding: var(--control-padding);
+  padding: 4px 6px;
   border: 1px solid var(--selector-border);
   border-radius: var(--control-radius-sm);
   background: var(--selector-bg);
@@ -2312,7 +2303,7 @@ select#presets:focus {
 }
 
 .snapshot-save-tags-option {
-  padding: var(--control-padding);
+  padding: 4px 6px;
   background: var(--selector-bg);
   color: var(--text-color);
   font-size: var(--font-size-7);
@@ -2353,7 +2344,7 @@ select#presets:focus {
 .snapshot-tag-manager-modal-panel {
   position: relative;
   z-index: 1002;
-  width: min(760px, calc(100% - var(--modal-inline-gutter)));
+  width: min(760px, calc(100% - 32px));
   max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
@@ -2361,7 +2352,7 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -2369,7 +2360,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 .snapshot-tag-manager-modal-header h2 {
@@ -2379,7 +2370,7 @@ select#presets:focus {
 }
 
 .snapshot-tag-manager-modal-body {
-  margin-top: var(--modal-section-spacing);
+  margin-top: 12px;
   display: grid;
   gap: 14px;
 }
@@ -2439,7 +2430,7 @@ select#presets:focus {
 .snapshot-tag-manager-draft-input {
   width: 100%;
   min-height: var(--control-height-md);
-  padding: var(--control-padding);
+  padding: 4px 6px;
   border: 1px solid var(--selector-border);
   border-radius: var(--control-radius-sm);
   background: var(--selector-bg);
@@ -2502,7 +2493,7 @@ select#presets:focus {
 .reading-test-entry-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(720px, calc(100% - var(--modal-inline-gutter)));
+  width: min(720px, calc(100% - 32px));
   max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
@@ -2510,7 +2501,7 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: var(--modal-panel-padding);
+  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -2529,7 +2520,7 @@ select#presets:focus {
 }
 
 .reading-test-entry-modal-body h2 {
-  margin: 0 0 var(--modal-section-spacing);
+  margin: 0 0 12px;
   padding-right: 44px;
   font-size: var(--font-size-9);
   font-weight: 600;
@@ -2577,8 +2568,8 @@ select#presets:focus {
 }
 
 .reading-test-entry-modal-warning {
-  margin-top: var(--modal-section-spacing);
-  padding: 10px var(--modal-gap);
+  margin-top: 12px;
+  padding: 10px 12px;
   border: 1px solid var(--warning-border-color);
   border-radius: var(--panel-radius);
   background: var(--app-warning-bg);
@@ -2592,7 +2583,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--modal-gap);
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -2672,19 +2663,19 @@ select#presets:focus {
 .reading-test-entry-modal-groups {
   margin-top: 14px;
   display: grid;
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 .reading-test-entry-modal-group-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--modal-gap);
+  gap: 12px;
 }
 
 .reading-test-entry-modal-group {
   display: grid;
   gap: 8px;
-  padding: var(--modal-gap);
+  padding: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
   background: var(--app-primary-bg);
