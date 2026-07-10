@@ -2099,8 +2099,13 @@ select#presets:focus {
   background: var(--app-primary-bg);
 }
 
+#textExtractionSingleFileHeavyPdfModalMessage {
+  font-size: var(--font-size-8);
+}
+
 .text-extraction-single-file-heavy-modal-details p {
   margin: 0;
+  font-size: var(--font-size-6);
   line-height: 1.4;
 }
 
