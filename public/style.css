@@ -1714,11 +1714,15 @@ select#presets:focus {
   gap: 10px;
 }
 
+.text-extraction-batch-plan-failure-policy legend {
+  font-size: var(--font-size-6);
+}
+
 .text-extraction-batch-plan-failure-option {
   display: inline-flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: var(--font-size-8);
+  font-size: var(--font-size-6);
   line-height: 1.35;
 }
 
@@ -1761,12 +1765,17 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: var(--font-size-9);
   box-sizing: border-box;
 }
 
 .text-extraction-batch-plan-unit-name {
   width: 100%;
+  font-size: var(--font-size-8);
+}
+
+.text-extraction-batch-plan-route-select,
+.text-extraction-batch-plan-unit-select {
+  font-size: var(--font-size-7);
 }
 
 .text-extraction-batch-plan-unit-actions,
@@ -1777,17 +1786,20 @@ select#presets:focus {
 }
 
 .text-extraction-batch-plan-icon-button {
-  font-size: 1.05rem;
   line-height: 1;
 }
 
 .text-extraction-batch-plan-unit-meta,
-.text-extraction-batch-plan-pages-summary,
-.text-extraction-batch-plan-route-fixed,
 .text-extraction-batch-plan-unit-tags,
 .text-extraction-batch-plan-heavy-preview-label,
 .text-extraction-batch-plan-input-code {
   font-size: var(--font-size-6);
+  color: var(--text-soft);
+}
+
+.text-extraction-batch-plan-pages-summary,
+.text-extraction-batch-plan-route-fixed {
+  font-size: var(--font-size-7);
   color: var(--text-soft);
 }
 
@@ -1839,6 +1851,7 @@ select#presets:focus {
   gap: 6px;
   min-width: 0;
   overflow-wrap: anywhere;
+  font-size: var(--font-size-8);
 }
 
 .text-extraction-batch-plan-heavy-badge {
@@ -1848,7 +1861,7 @@ select#presets:focus {
   border-radius: 999px;
   background: var(--app-warning-bg);
   color: var(--warning-text);
-  font-size: 0.78rem;
+  font-size: var(--font-size-8);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1929,6 +1942,7 @@ select#presets:focus {
 .text-extraction-batch-plan-page-scope-field {
   display: grid;
   gap: 6px;
+  font-size: var(--font-size-7);
 }
 
 .text-extraction-batch-plan-page-scope-option {
@@ -1956,7 +1970,7 @@ select#presets:focus {
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: var(--font-size-9);
+  font-size: var(--font-size-7);
   box-sizing: border-box;
 }
 
