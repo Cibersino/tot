@@ -2551,7 +2551,7 @@ select#presets:focus {
   background: transparent;
   color: var(--link-action);
   font-family: inherit;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-8);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -2568,7 +2568,7 @@ select#presets:focus {
 
 #readingTestEntryModalIntro {
   margin-top: 8px;
-  font-size: 0.85rem;
+  font-size: var(--font-size-8);
   white-space: pre-line;
 }
 
@@ -2583,6 +2583,7 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   background: var(--app-warning-bg);
   color: var(--warning-text);
+  font-size: var(--font-size-6);
   line-height: 1.4;
 }
 
@@ -2607,7 +2608,7 @@ select#presets:focus {
   align-items: center;
   gap: 4px;
   white-space: nowrap;
-  font-size: var(--font-size-8);
+  font-size: var(--font-size-6);
   font-weight: 600;
   color: var(--text-color);
 }
@@ -2616,6 +2617,7 @@ select#presets:focus {
   display: inline-block;
   min-inline-size: 3ch;
   text-align: left;
+  font-size: var(--font-size-6);
   font-variant-numeric: tabular-nums;
 }
 
