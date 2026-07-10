@@ -2242,6 +2242,7 @@ select#presets:focus {
 
 .snapshot-save-tags-modal-body p {
   margin: 0;
+  font-size: var(--font-size-8);
   line-height: 1.4;
 }
 
@@ -2275,7 +2276,7 @@ select#presets:focus {
   color: var(--text-color);
   box-sizing: border-box;
   font-family: inherit;
-  font-size: var(--font-size-9);
+  font-size: var(--font-size-7);
 }
 
 .snapshot-save-tags-input[aria-expanded="true"] {
@@ -2314,6 +2315,7 @@ select#presets:focus {
   padding: var(--control-padding);
   background: var(--selector-bg);
   color: var(--text-color);
+  font-size: var(--font-size-7);
   cursor: pointer;
 }
 
