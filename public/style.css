@@ -2474,11 +2474,6 @@ select#presets:focus {
   overflow-wrap: anywhere;
 }
 
-.snapshot-tag-manager-icon-button {
-  min-width: 34px;
-  min-height: 34px;
-}
-
 .snapshot-tag-manager-modal-actions {
   justify-content: flex-end;
 }
