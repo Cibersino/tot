@@ -1444,6 +1444,11 @@ select#presets:focus {
   box-sizing: border-box;
 }
 
+.text-extraction-pdf-options-modal-range-field input:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
 .text-extraction-pdf-options-modal-selected-count {
   color: var(--text-soft);
   font-size: var(--font-size-6);
@@ -1626,6 +1631,11 @@ select#presets:focus {
   border-radius: var(--control-radius-sm);
   font-family: inherit;
   font-size: var(--font-size-4);
+}
+
+.text-extraction-apply-repeat-row input:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
 }
 
 .text-extraction-apply-modal-actions {
@@ -1972,6 +1982,14 @@ select#presets:focus {
   font-family: inherit;
   font-size: var(--font-size-7);
   box-sizing: border-box;
+}
+
+.text-extraction-batch-plan-unit-name:focus,
+.text-extraction-batch-plan-route-select:focus,
+.text-extraction-batch-plan-unit-select:focus,
+.text-extraction-batch-plan-page-scope-input:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
 }
 
 .text-extraction-batch-plan-page-scope-count,
