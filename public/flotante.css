@@ -85,7 +85,6 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   padding: 6px 8px;
   height: var(--control-height-md);
   line-height: 1;
@@ -99,10 +98,6 @@ body {
   transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
   box-shadow: none;
   user-select: none;
-}
-
-.btn-standard[data-tot-icon] {
-  gap: 0;
 }
 
 .btn-standard[hidden] {
