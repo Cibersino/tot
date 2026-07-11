@@ -238,14 +238,12 @@
     disabled = false,
     iconName = '',
     className = 'btn-standard',
-    size = 'sm',
   }) {
     const accessibleLabel = tRenderer(labelKey);
     const button = iconName
       ? rendererIcons.createIconButton({
         iconName,
         className,
-        size,
         title: accessibleLabel,
         ariaLabel: accessibleLabel,
         type: 'button',
@@ -562,8 +560,7 @@
         inputId: input.inputId,
         disabled: input.canMoveUp !== true,
         iconName: 'arrow-up-strong',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
       createActionButton({
         labelKey: 'renderer.text_extraction.batch_plan.move_down',
@@ -571,16 +568,14 @@
         inputId: input.inputId,
         disabled: input.canMoveDown !== true,
         iconName: 'arrow-down-strong',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
       createActionButton({
         labelKey: 'renderer.text_extraction.batch_plan.remove_input',
         action: 'remove-input',
         inputId: input.inputId,
         iconName: 'trash',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
     ]);
 
@@ -629,8 +624,7 @@
         unitKey: unit.unitKey,
         disabled: unit.canMoveUp !== true,
         iconName: 'arrow-up-strong',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
       createActionButton({
         labelKey: 'renderer.text_extraction.batch_plan.move_down',
@@ -638,8 +632,7 @@
         unitKey: unit.unitKey,
         disabled: unit.canMoveDown !== true,
         iconName: 'arrow-down-strong',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
     ]);
     appendChildren(header, [headingWrap, headerActions]);

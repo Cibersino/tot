@@ -87,9 +87,7 @@
   // =============================================================================
   function applyToggleIcon(toggleButton, iconName = 'play') {
     if (!toggleButton) return;
-    const configuredSize = toggleButton.getAttribute('data-tot-icon-size') || 'md';
     rendererIcons.applyIconToElement(toggleButton, iconName, {
-      size: configuredSize,
       preserveContent: false,
     });
   }

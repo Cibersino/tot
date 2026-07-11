@@ -162,7 +162,6 @@
     const button = rendererIcons.createIconButton({
       iconName: 'open-target',
       className: 'btn-standard btn-standard--square-half',
-      size: 'md',
       title: label,
       ariaLabel: label,
       type: 'button',

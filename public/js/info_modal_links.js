@@ -71,8 +71,7 @@
 
     const closeButton = rendererIcons.createIconButton({
       iconName: 'close',
-      className: 'btn-standard info-media-lightbox-close',
-      size: 'sm',
+      className: 'btn-standard btn-standard--square info-media-lightbox-close',
       title: 'Close preview',
       ariaLabel: 'Close preview',
       type: 'button',

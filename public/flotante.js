@@ -110,7 +110,6 @@ function renderState(state) {
   // Button status
   if (btnToggle) {
     rendererIcons.applyIconToElement(btnToggle, state.running ? pauseIconName : playIconName, {
-      size: 'md',
       preserveContent: false,
     });
   }
@@ -154,7 +153,6 @@ async function applyFlotanteTranslations(lang) {
     btnToggle.setAttribute('aria-label', toggleLabel);
     btnToggle.title = toggleLabel;
     rendererIcons.applyIconToElement(btnToggle, lastState.running ? pauseIconName : playIconName, {
-      size: 'md',
       preserveContent: false,
       ariaLabel: toggleLabel,
       title: toggleLabel,
@@ -165,7 +163,6 @@ async function applyFlotanteTranslations(lang) {
     btnReset.setAttribute('aria-label', resetLabel);
     btnReset.title = resetLabel;
     rendererIcons.applyIconToElement(btnReset, 'stop', {
-      size: 'md',
       preserveContent: false,
       ariaLabel: resetLabel,
       title: resetLabel,

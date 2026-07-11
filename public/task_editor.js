@@ -466,12 +466,11 @@ function deriveRowTextFromPath(filePath) {
     : next;
 }
 
-function buildActionButton(iconName, titleKey, onClick, { className = 'icon-btn', size = 'lg' } = {}) {
+function buildActionButton(iconName, titleKey, onClick, { className = 'btn-standard btn-standard--square' } = {}) {
   const title = tr(titleKey);
   const btn = rendererIcons.createIconButton({
     iconName,
     className,
-    size,
     title,
     ariaLabel: title,
   });
@@ -572,8 +571,7 @@ function renderRow(row) {
   const linkBrowseTitle = tr('renderer.tasks.columns.tooltips.file_select');
   const enlaceSelectBtn = rendererIcons.createIconButton({
     iconName: 'folder',
-    className: 'icon-btn',
-    size: 'lg',
+    className: 'btn-standard btn-standard--square',
     title: linkBrowseTitle,
     ariaLabel: linkBrowseTitle,
   });
@@ -583,8 +581,7 @@ function renderRow(row) {
   const linkTitle = tr('renderer.tasks.columns.tooltips.link_open');
   const enlaceBtn = rendererIcons.createIconButton({
     iconName: 'open-target',
-    className: 'icon-btn',
-    size: 'lg',
+    className: 'btn-standard btn-standard--square',
     title: linkTitle,
     ariaLabel: linkTitle,
   });
@@ -635,8 +632,7 @@ function renderRow(row) {
   const commentButtonTitle = tr('renderer.tasks.columns.tooltips.comment');
   const commentBtn = rendererIcons.createIconButton({
     iconName: 'task-comment',
-    className: 'icon-btn',
-    size: 'lg',
+    className: 'btn-standard btn-standard--square',
     title: commentButtonTitle,
     ariaLabel: commentButtonTitle,
   });
@@ -656,10 +652,10 @@ function renderRow(row) {
   actionsWrap.className = 'cell-actions';
 
   const btnUp = buildActionButton('arrow-up', 'renderer.tasks.columns.tooltips.move_up', () => moveRow(row.id, -1), {
-    className: 'icon-btn icon-btn--half',
+    className: 'btn-standard btn-standard--half-width',
   });
   const btnDown = buildActionButton('arrow-down', 'renderer.tasks.columns.tooltips.move_down', () => moveRow(row.id, 1), {
-    className: 'icon-btn icon-btn--half',
+    className: 'btn-standard btn-standard--half-width',
   });
   const btnDelete = buildActionButton('trash', 'renderer.tasks.columns.tooltips.delete_row', () => deleteRow(row.id));
   const btnSaveLib = buildActionButton('task-row-save', 'renderer.tasks.columns.tooltips.library_row_save', () => {
@@ -1151,7 +1147,6 @@ async function applyTaskEditorTranslations() {
     commentSnapshotClear.title = tr('renderer.tasks.comentario_modal.snapshot_clear');
     commentSnapshotClear.setAttribute('aria-label', commentSnapshotClear.title || '');
     rendererIcons.applyIconToElement(commentSnapshotClear, 'unlink', {
-      size: 'md',
       preserveContent: false,
       title: commentSnapshotClear.title,
       ariaLabel: commentSnapshotClear.title,

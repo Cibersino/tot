@@ -733,14 +733,14 @@
         labelKey,
         labelParams = {},
         iconName,
+        className = 'btn-standard btn-standard--square',
         disabled = false,
         onClick,
       }) {
         const text = msgRenderer(labelKey, labelParams);
         const button = rendererIcons.createIconButton({
           iconName,
-          size: 'sm',
-          className: 'btn-standard btn-standard--square snapshot-tag-manager-icon-button',
+          className,
           title: text,
           ariaLabel: text,
         });
@@ -924,7 +924,8 @@
               actions.appendChild(createManagerIconButton({
                 labelKey: 'renderer.snapshots.manager.move_up',
                 labelParams: { label: option.label },
-                iconName: 'arrow-up-strong',
+                iconName: 'arrow-up',
+                className: 'btn-standard btn-standard--half-width',
                 disabled: index < 1,
                 onClick: async () => {
                   const moveInfo = snapshotTagCatalog.moveVisibleTagValue(
@@ -940,7 +941,8 @@
               actions.appendChild(createManagerIconButton({
                 labelKey: 'renderer.snapshots.manager.move_down',
                 labelParams: { label: option.label },
-                iconName: 'arrow-down-strong',
+                iconName: 'arrow-down',
+                className: 'btn-standard btn-standard--half-width',
                 disabled: index >= categoryInfo.visibleOptions.length - 1,
                 onClick: async () => {
                   const moveInfo = snapshotTagCatalog.moveVisibleTagValue(

@@ -3,6 +3,12 @@
    Owner boundary: dedicated find window shell and controls only. */
 
 /* Window shell */
+:root {
+  --control-height-md: 30px;
+  --tot-icon-size-sm: 14px;
+  --tot-icon-size-md: 28px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -29,7 +35,7 @@ body {
 }
 
 .tot-icon-slot {
-  --tot-icon-size: 16px;
+  --tot-icon-size: var(--tot-icon-size-md);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -40,7 +46,11 @@ body {
 }
 
 .tot-icon-slot--sm {
-  --tot-icon-size: 16px;
+  --tot-icon-size: var(--tot-icon-size-sm);
+}
+
+.tot-icon-slot--md {
+  --tot-icon-size: var(--tot-icon-size-md);
 }
 
 .tot-icon-svg {
@@ -97,38 +107,68 @@ body[data-expanded="false"] .replace-row {
   background: rgba(255, 255, 255, 0.48);
 }
 
-.find-btn {
+/* Shared controls */
+.btn-standard {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 30px;
-  padding: 0 10px;
-  border: 1px solid rgba(184, 184, 184, 0.58);
+  gap: 6px;
+  padding: 6px 8px;
+  height: var(--control-height-md);
+  line-height: 1;
+  font-size: 0.9375rem;
+  font-family: inherit;
   border-radius: 5px;
-  font-size: 12px;
-  color: #1d1d1d;
-  background: rgba(255, 255, 255, 0.36);
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  color: #2f2a20;
   cursor: pointer;
-  white-space: nowrap;
+  transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
+  box-shadow: none;
+  user-select: none;
 }
 
-.find-btn[data-tot-icon] {
+.btn-standard[data-tot-icon] {
+  gap: 0;
+}
+
+.btn-standard[hidden] {
+  display: none;
+}
+
+.btn-standard--square {
+  width: var(--control-height-md);
+  flex: 0 0 auto;
+}
+
+.btn-standard--half-width {
+  width: calc(var(--control-height-md) / 2);
   padding: 0;
+  flex: 0 0 auto;
 }
 
-.find-input:focus-visible,
-.find-btn:focus-visible {
+.find-input:focus-visible {
   outline: 2px solid #2b78ff;
   outline-offset: 1px;
 }
 
-.find-btn:hover:enabled {
-  background: #f6f6f6;
+.btn-standard:focus {
+  outline: 3px solid rgb(30 130 230 / 0.12);
+  outline-offset: 2px;
+}
+
+.btn-standard:hover {
+  background: #f4f4f4;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
+}
+
+.btn-standard:active {
+  transform: translateY(1px);
 }
 
 .find-input:disabled,
-.find-btn:disabled {
-  opacity: 0.55;
+.btn-standard:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -142,11 +182,4 @@ body[data-expanded="false"] .replace-row {
   font-size: 12px;
   color: #444;
   white-space: nowrap;
-}
-
-.find-close,
-.find-toggle {
-  width: 30px;
-  min-width: 30px;
-  padding: 0;
 }

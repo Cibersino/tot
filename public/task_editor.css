@@ -13,8 +13,6 @@
   --border-strong: rgb(0 0 0 / 0.12);
   --input-border: #b8ae9c;
   --input-border-strong: rgb(0 0 0 / 0.2);
-  --btn-bg: #fff;
-  --btn-hover-bg: #f4f4f4;
   --text: #2f2a20;
   --text-strong: #222;
   --muted: #6c6049;
@@ -25,10 +23,9 @@
   --modal-backdrop: rgb(0 0 0 / 0.45);
   --font-ui: Arial, sans-serif;
   --gap: 10px;
-  --tot-icon-size-xs: 16px;
-  --tot-icon-size-sm: 20px;
-  --tot-icon-size-md: 24px;
-  --tot-icon-size-lg: 28px;
+  --control-height-md: 30px;
+  --tot-icon-size-sm: 14px;
+  --tot-icon-size-md: 28px;
 }
 
 .tot-icon-host {
@@ -46,20 +43,12 @@
   pointer-events: none;
 }
 
-.tot-icon-slot--xs {
-  --tot-icon-size: var(--tot-icon-size-xs);
-}
-
 .tot-icon-slot--sm {
   --tot-icon-size: var(--tot-icon-size-sm);
 }
 
 .tot-icon-slot--md {
   --tot-icon-size: var(--tot-icon-size-md);
-}
-
-.tot-icon-slot--lg {
-  --tot-icon-size: var(--tot-icon-size-lg);
 }
 
 .tot-icon-svg {
@@ -105,53 +94,59 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 6px 10px;
-  min-height: 30px;
-  border: 1px solid var(--input-border);
-  border-radius: 5px;
-  background: var(--btn-bg);
-  color: var(--text-strong);
-  cursor: pointer;
-  font-size: 14px;
+  padding: 6px 8px;
+  height: var(--control-height-md);
   line-height: 1;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  border: 1px solid #cfcfcf;
+  border-radius: 5px;
+  background: #fff;
+  color: #2f2a20;
+  cursor: pointer;
   transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
   box-shadow: none;
   user-select: none;
 }
 
-.btn-standard[data-tot-icon],
-.icon-btn[data-tot-icon] {
+.btn-standard[data-tot-icon] {
   gap: 0;
 }
 
-.btn-standard--compact {
-  height: 28px;
-  min-width: 28px;
-  padding: 4px 6px;
-  font-size: 12px;
-  line-height: 1;
+.btn-standard[hidden] {
+  display: none;
+}
+
+.btn-standard--square {
+  width: var(--control-height-md);
   flex: 0 0 auto;
 }
 
-.btn-standard--compact[data-tot-icon] {
-  width: 28px;
-  min-width: 28px;
+.btn-standard--half-width {
+  width: calc(var(--control-height-md) / 2);
   padding: 0;
+  flex: 0 0 auto;
 }
 
-.btn-standard:hover,
-.icon-btn:hover {
-  background: var(--btn-hover-bg);
-  box-shadow: var(--section-shadow);
+.btn-standard:hover {
+  background: #f4f4f4;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
 }
 
-.btn-standard:active,
-.icon-btn:active {
+.btn-standard:active {
   transform: translateY(1px);
 }
 
-.btn-standard:focus-visible,
-.icon-btn:focus-visible,
+.btn-standard:focus {
+  outline: 3px solid rgb(30 130 230 / 0.12);
+  outline-offset: 2px;
+}
+
+.btn-standard:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 #taskNameInput:focus-visible,
 .task-table input[type="text"]:focus-visible,
 .task-table input[type="number"]:focus-visible,
@@ -347,36 +342,6 @@ body {
 .task-table .cell-actions {
   display: flex;
   gap: 6px;
-}
-
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3px 5px;
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
-  border: 1px solid var(--input-border);
-  background: var(--surface);
-  color: var(--text-strong);
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 12px;
-  transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
-}
-
-.icon-btn--tiny {
-  width: 28px;
-  height: 28px;
-  flex-basis: 28px;
-  padding: 2px 3px;
-}
-
-.icon-btn--half {
-  width: 15px;
-  flex-basis: 15px;
-  padding-inline: 0;
 }
 
 .link-cell {

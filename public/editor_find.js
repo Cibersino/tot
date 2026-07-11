@@ -167,7 +167,6 @@ function applyUiState() {
   closeEl.disabled = findState.busy;
   statusEl.textContent = resolveStatusText();
   rendererIcons.applyIconToElement(toggleEl, findState.expanded ? 'collapse' : 'expand', {
-    size: 'sm',
     preserveContent: false,
   });
 

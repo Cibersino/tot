@@ -114,12 +114,8 @@
   --section-radius: 6px;
   --panel-radius: 8px;
   --control-radius-sm: 4px;
-  --tot-icon-size-xs: 12px;
-  --tot-icon-size-sm: 15px;
-  --tot-icon-size-md: 19px;
-  --tot-icon-size-lg: 22px;
-  --tot-icon-size-xl: 26px;
-  --tot-icon-size-xxl: 44px;
+  --tot-icon-size-sm: 14px;
+  --tot-icon-size-md: 28px;
 }
 
 /* App shell */
@@ -175,28 +171,12 @@ body {
   pointer-events: none;
 }
 
-.tot-icon-slot--xs {
-  --tot-icon-size: var(--tot-icon-size-xs);
-}
-
 .tot-icon-slot--sm {
   --tot-icon-size: var(--tot-icon-size-sm);
 }
 
 .tot-icon-slot--md {
   --tot-icon-size: var(--tot-icon-size-md);
-}
-
-.tot-icon-slot--lg {
-  --tot-icon-size: var(--tot-icon-size-lg);
-}
-
-.tot-icon-slot--xl {
-  --tot-icon-size: var(--tot-icon-size-xl);
-}
-
-.tot-icon-slot--xxl {
-  --tot-icon-size: var(--tot-icon-size-xxl);
 }
 
 .tot-icon-svg {
@@ -242,26 +222,17 @@ body {
   gap: 0;
 }
 
-.btn-standard--square[data-tot-icon],
-.btn-standard--square-half[data-tot-icon],
-.btn-standard--half[data-tot-icon] {
-  padding: 0;
-}
-
 .btn-standard[hidden] {
   display: none;
 }
 
-.btn-standard--half {
-  height: calc(var(--control-height-md) / 2);
-  padding: 0 4px;
-  gap: 3px;
-  font-size: var(--font-size-1);
-  line-height: 1;
-}
-
 .btn-standard--square {
   width: var(--control-height-md);
+  flex: 0 0 auto;
+}
+
+.btn-standard--half-width {
+  width: calc(var(--control-height-md) / 2);
   padding: 0;
   flex: 0 0 auto;
 }
@@ -273,6 +244,10 @@ body {
   font-size: var(--font-size-1);
   line-height: 1;
   flex: 0 0 auto;
+}
+
+.btn-standard--square-half .tot-icon-slot {
+  --tot-icon-size: var(--tot-icon-size-sm);
 }
 
 .btn-standard:hover {
@@ -1037,6 +1012,10 @@ select#presets:focus {
 
 .vf-label[data-tot-icon] {
   gap: 0;
+}
+
+.vf-label .tot-icon-slot {
+  --tot-icon-size: 44px;
 }
 
 /* Modal surfaces */
