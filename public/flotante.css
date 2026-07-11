@@ -59,7 +59,7 @@ body {
   gap: 8px;
   width: 220px;
   height: 70px;
-  padding: 8px;
+  padding: 14px;
   box-sizing: border-box;
   background: rgba(20, 20, 20, 0.45);
   border-radius: 10px;
@@ -70,8 +70,8 @@ body {
 }
 
 .crono {
-  width: 110px;
-  font-size: 18px;
+  width: 106px;
+  font-size: 24px;
   text-align: left;
 }
 
