@@ -8,6 +8,11 @@ body {
   margin: 12px;
 }
 
+body > h1 {
+  margin: 18px 0;
+  font-size: 18px;
+}
+
 /* Form layout */
 label {
   display: block;

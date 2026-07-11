@@ -38,7 +38,7 @@ body {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
-h3 {
+#lang-title {
   margin: 0;
   font-size: 18px;
   text-align: center;

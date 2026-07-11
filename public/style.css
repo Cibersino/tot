@@ -379,6 +379,12 @@ body {
   gap: 12px;
 }
 
+.app-title {
+  display: flex;
+  height: 100%;
+  margin: 0;
+}
+
 #appLogo {
   width: auto;
   height: 100%;
@@ -1092,9 +1098,22 @@ select#presets:focus {
 }
 
 .info-modal-content h3 {
+  font-size: var(--font-size-10);
+  font-style: normal;
+  font-weight: 700;
+  padding-top: 0
+}
+
+.info-modal-content h4 {
+  font-size: var(--font-size-9);
+  font-weight: 600;
+}
+
+.info-modal-content .info-brand {
   font-size: var(--font-size-9);
   font-style: italic;
-  padding-top: 0
+  font-weight: 700;
+  padding-top: 0;
 }
 
 .info-modal-content pre {

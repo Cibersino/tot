@@ -29,7 +29,7 @@
         <img id="devLogo" src="./assets/logo-cibersino.svg" alt="" aria-hidden="true" />
       </button>
     </div>
-    <img id="appLogo" src="./assets/logo-tot.svg" alt="toT" />
+    <h1 class="app-title"><img id="appLogo" src="./assets/logo-tot.svg" alt="toT" /></h1>
   </div>
 
   <!-- Main container -->
@@ -43,7 +43,7 @@
 
     <!-- 1) TEXT SELECTOR -->
     <section class="selector-text" aria-labelledby="selector-title">
-      <h3 id="selector-title" class="section-title">Primera y última parte del texto actual:</h3>
+      <h2 id="selector-title" class="section-title">Primera y última parte del texto actual:</h2>
       <pre id="textPreview">(vacío)</pre>
       <div class="controls">
         <div id="selectorControlsNormal" class="controls-row">
@@ -104,7 +104,7 @@
 
     <!-- 2) READING SPEED -->
     <aside class="velocity" aria-labelledby="vel-title">
-      <h4 id="vel-title" class="section-title">VELOCIDAD DE LECTURA</h4>
+      <h2 id="vel-title" class="section-title">VELOCIDAD DE LECTURA</h2>
       <div class="wpm-row">
         <input id="wpmInput" type="number" min="10" max="700" value="200" />
         <span>palabras por minuto (WPM)</span>
@@ -127,7 +127,7 @@
 
     <!-- 3) COUNTING RESULTS -->
     <aside class="results" aria-labelledby="results-title">
-      <h4 id="results-title" class="section-title">RESULTADOS DEL CONTEO</h4>
+      <h2 id="results-title" class="section-title">RESULTADOS DEL CONTEO</h2>
       <div class="result-highlight">
         <div class="big-time" id="resTime" role="status" aria-live="polite">⏱ Tiempo estimado de lectura: <bdi dir="ltr">0h 0m 0s</bdi></div>
         <div class="results-multiplier-row">
@@ -160,7 +160,7 @@
 
     <!-- 4) STOPWATCH -->
     <section class="cronometro" aria-labelledby="cron-title">
-      <h4 id="cron-title" class="section-title">CRONÓMETRO</h4>
+      <h2 id="cron-title" class="section-title">CRONÓMETRO</h2>
       <div class="crono-row">
         <input id="cronoDisplay" class="crono-box" type="text" value="00:00:00" />
         <div class="realwpm">Velocidad:<br /><span id="realWpmDisplay">&nbsp;</span></div>
