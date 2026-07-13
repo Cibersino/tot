@@ -196,6 +196,7 @@ body {
 .app-container>section,
 .app-container>aside {
   flex: 0 0 auto;
+  padding: 4px;
   border-radius: var(--section-radius);
   box-shadow: var(--section-shadow);
   background: var(--app-secondary-bg);
@@ -452,7 +453,6 @@ body {
 .selector-text {
   height: 158px;
   width: 820px;
-  padding: 4px 6px;
   background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
   box-sizing: border-box;
@@ -747,7 +747,6 @@ body.text-extraction-drop-active .app-container {
   background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
   gap: 6px;
-  padding: 4px;
   box-sizing: border-box;
 }
 
@@ -814,7 +813,6 @@ select#presets:focus {
   width: 425px;
   background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
-  padding: 8px 10px;
   box-sizing: border-box;
 }
 
@@ -931,7 +929,6 @@ select#presets:focus {
   width: 232px;
   background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
-  padding: 4px;
   gap: 6px;
   box-sizing: border-box;
 }
