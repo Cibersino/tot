@@ -149,7 +149,7 @@ body {
 
 /* Shared primitives */
 .section-title {
-  margin: 0;
+  margin: 0 0 4px;
   padding: 0;
   line-height: 1.08;
   font-weight: 600;
@@ -473,8 +473,7 @@ pre#textPreview {
   font-size: var(--font-size-4);
   line-height: 1.15;
   font-family: var(--font-reading);
-  margin-top: 4px;
-  margin-bottom: 4px;
+  margin: 0 0 4px;
 }
 
 pre#textPreview .preview-fragment,
@@ -756,7 +755,6 @@ body.text-extraction-drop-active .app-container {
   display: flex;
   gap: 6px;
   align-items: center;
-  margin-top: 4px;
 }
 
 .velocity .wpm-row span {
@@ -826,7 +824,6 @@ select#presets:focus {
   border: 1px dashed var(--result-highlight-border);
   padding: 6px;
   border-radius: 6px;
-  margin-top: 4px;
   margin-bottom: 6px;
 }
 
@@ -944,7 +941,6 @@ select#presets:focus {
   gap: 6px;
   align-items: center;
   justify-content: flex-start;
-  margin-top: 4px;
   margin-bottom: 4px;
 }
 
