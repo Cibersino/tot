@@ -141,6 +141,10 @@ body {
   position: relative;
   height: 100vh;
   padding: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-content: flex-start;
 }
 
 /* Shared primitives */
@@ -191,7 +195,7 @@ body {
 /* Shared section surfaces */
 .app-container>section,
 .app-container>aside {
-  position: absolute;
+  flex: 0 0 auto;
   border-radius: var(--section-radius);
   box-shadow: var(--section-shadow);
   background: var(--app-secondary-bg);
@@ -446,7 +450,6 @@ body {
 /* Text selector section */
 
 .selector-text {
-  left: 4px;
   height: 158px;
   width: 820px;
   padding: 4px 6px;
@@ -740,8 +743,6 @@ body.text-extraction-drop-active .app-container {
 /* Reading speed section */
 
 .velocity {
-  top: 167px;
-  left: 4px;
   height: 166px;
   width: 390px;
   background: var(--app-secondary-bg);
@@ -811,8 +812,6 @@ select#presets:focus {
 
 .results {
   position: relative;          /* needed for .help-row absolute to work */
-  top: 167px;
-  left: 399px;
   height: 166px;
   width: 425px;
   background: var(--app-secondary-bg);
@@ -931,8 +930,6 @@ select#presets:focus {
 /* Stopwatch section */
 
 .cronometro {
-  top: 338px;
-  left: 4px;
   height: 106px;
   width: 232px;
   background: var(--app-secondary-bg);
@@ -2736,19 +2733,5 @@ select#presets:focus {
 
   .snapshot-tag-manager-row {
     grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 720px) {
-  .app-container {
-    padding: 8px;
-  }
-
-  .selector-text,
-  .velocity,
-  .results,
-  .cronometro {
-    position: relative;
-    width: 100%;
   }
 }
