@@ -118,18 +118,20 @@
   --tot-icon-size-md: 28px;
 }
 
-/* App shell */
-html {
-  font-size: var(--font-size-root);
-  height: 100%;
+/* Document-root canvas */
+html,
+body {
   margin: 0;
   padding: 0;
 }
 
+html {
+  font-size: var(--font-size-root);
+  height: 100%;
+}
+
 body {
   height: 100%;
-  margin: 0;
-  padding: 0;
   font-family: var(--font-ui);
   overflow: hidden;
   box-sizing: border-box;
