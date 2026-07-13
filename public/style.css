@@ -1303,7 +1303,7 @@ select#presets:focus {
 
 /* Text extraction modals */
 
-/* Standard dialog surface frame */
+/* Standard dialog surface */
 .text-extraction-pdf-options-modal-panel,
 .text-extraction-route-modal-panel,
 .text-extraction-apply-modal-panel,
@@ -1314,20 +1314,20 @@ select#presets:focus {
 .snapshot-save-tags-modal-panel,
 .snapshot-tag-manager-modal-panel,
 .reading-test-entry-modal-panel {
-  padding: 14px 16px 16px;
-}
-
-/* Text extraction PDF options modal */
-.text-extraction-pdf-options-modal-panel {
   position: relative;
   z-index: 1001;
-  width: 620px;
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
   box-sizing: border-box;
+  padding: 14px 16px 16px;
+}
+
+/* Text extraction PDF options modal */
+.text-extraction-pdf-options-modal-panel {
+  width: 620px;
 }
 
 .text-extraction-pdf-options-modal-header {
@@ -1485,15 +1485,7 @@ select#presets:focus {
 
 /* Text extraction route modal */
 .text-extraction-route-modal-panel {
-  position: relative;
-  z-index: 1001;
   width: 520px;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  border-radius: var(--panel-radius);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  box-sizing: border-box;
 }
 
 .text-extraction-route-modal-header {
@@ -1533,15 +1525,7 @@ select#presets:focus {
 
 /* Text extraction apply modal */
 .text-extraction-apply-modal-panel {
-  position: relative;
-  z-index: 1001;
   width: 560px;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  border-radius: var(--panel-radius);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  box-sizing: border-box;
 }
 
 .text-extraction-apply-modal-header {
@@ -1640,17 +1624,9 @@ select#presets:focus {
 
 /* Text extraction batch planning modal */
 .text-extraction-batch-plan-modal-panel {
-  position: relative;
-  z-index: 1001;
   width: 100%;
   max-height: var(--modal-max-height);
   overflow: auto;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  border-radius: var(--panel-radius);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  box-sizing: border-box;
 }
 
 .text-extraction-batch-plan-modal-header,
@@ -1987,17 +1963,9 @@ select#presets:focus {
 
 /* Text extraction batch final modal */
 .text-extraction-batch-final-modal-panel {
-  position: relative;
-  z-index: 1001;
   width: 100%;
   max-height: var(--modal-max-height);
   overflow: auto;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  border-radius: var(--panel-radius);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  box-sizing: border-box;
 }
 
 .text-extraction-batch-final-modal-report {
@@ -2060,15 +2028,7 @@ select#presets:focus {
 
 /* Text extraction single-file heavy modal */
 .text-extraction-single-file-heavy-modal-panel {
-  position: relative;
-  z-index: 1001;
   width: 620px;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  border-radius: var(--panel-radius);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  box-sizing: border-box;
 }
 
 .text-extraction-single-file-heavy-modal-details {
@@ -2099,15 +2059,7 @@ select#presets:focus {
 
 /* OCR activation disclosure modal */
 .text-extraction-ocr-activation-disclosure-panel {
-  position: relative;
-  z-index: 1001;
   width: 640px;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  border-radius: var(--panel-radius);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  box-sizing: border-box;
   text-align: start;
 }
 
@@ -2185,15 +2137,7 @@ select#presets:focus {
 
 /* Snapshot save tags modal */
 .snapshot-save-tags-modal-panel {
-  position: relative;
-  z-index: 1001;
   width: 560px;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  border-radius: var(--panel-radius);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  box-sizing: border-box;
 }
 
 .snapshot-save-tags-modal-header {
@@ -2330,17 +2274,10 @@ select#presets:focus {
 
 /* Snapshot tag manager modal */
 .snapshot-tag-manager-modal-panel {
-  position: relative;
-  z-index: 1002;
+  z-index: 1002; /* Local exception to the shared default. */
   width: 760px;
   max-height: var(--modal-max-height);
   overflow: auto;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  border-radius: var(--panel-radius);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  box-sizing: border-box;
 }
 
 .snapshot-tag-manager-modal-header {
@@ -2473,17 +2410,9 @@ select#presets:focus {
 
 /* Reading test entry modal */
 .reading-test-entry-modal-panel {
-  position: relative;
-  z-index: 1001;
   width: 720px;
   max-height: var(--modal-max-height);
   overflow: auto;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  border-radius: var(--panel-radius);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  box-sizing: border-box;
 }
 
 .reading-test-entry-modal-header {
