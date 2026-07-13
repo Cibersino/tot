@@ -1301,8 +1301,6 @@ select#presets:focus {
   z-index: 2;
 }
 
-/* Text extraction modals */
-
 /* Standard dialog surface */
 .text-extraction-pdf-options-modal-panel,
 .text-extraction-route-modal-panel,
@@ -1324,6 +1322,8 @@ select#presets:focus {
   box-sizing: border-box;
   padding: 14px 16px 16px;
 }
+
+/* Text extraction modals */
 
 /* Text extraction PDF options modal */
 .text-extraction-pdf-options-modal-panel {
