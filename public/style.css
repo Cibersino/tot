@@ -720,7 +720,7 @@ pre#textPreview .preview-static {
 }
 
 .text-extraction-drop-overlay__panel {
-  width: min(420px, calc(100% - 36px));
+  width: 420px;
   padding: 20px 22px;
   border: 2px dashed var(--drop-zone-border);
   border-radius: 12px;
@@ -1020,7 +1020,9 @@ select#presets:focus {
   inset: 0;
   z-index: 1000;
   align-items: center;
-  justify-content: center
+  justify-content: center;
+  padding-inline: 16px;
+  box-sizing: border-box;
 }
 
 .info-modal[aria-hidden="false"] {  
@@ -1040,8 +1042,7 @@ select#presets:focus {
   --info-media-max-height: calc(var(--info-panel-max-height) - var(--info-header-height) - 120px);
 
   position: relative;
-  max-width: 860px;
-  width: calc(100% - 32px);
+  width: 100%;
   max-height: var(--info-panel-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
@@ -1111,7 +1112,7 @@ select#presets:focus {
 
 .browser-extension-modal-panel {
   position: relative;
-  width: min(540px, calc(100% - 32px));
+  width: 540px;
   background: var(--app-secondary-bg);
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
@@ -1278,7 +1279,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: min(1400px, calc(100vw - 32px));
+  width: 100%;
   max-height: calc(100vh - 32px);
 }
 
@@ -1306,7 +1307,7 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(620px, calc(100% - 32px));
+  width: 620px;
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
@@ -1473,7 +1474,7 @@ select#presets:focus {
 .text-extraction-route-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(520px, calc(100% - 32px));
+  width: 520px;
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
@@ -1522,7 +1523,7 @@ select#presets:focus {
 .text-extraction-apply-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(560px, calc(100% - 32px));
+  width: 560px;
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
@@ -1630,7 +1631,7 @@ select#presets:focus {
 .text-extraction-batch-plan-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(920px, calc(100% - 32px));
+  width: 100%;
   max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
@@ -1978,7 +1979,7 @@ select#presets:focus {
 .text-extraction-batch-final-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(860px, calc(100% - 32px));
+  width: 100%;
   max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
@@ -2052,7 +2053,7 @@ select#presets:focus {
 .text-extraction-single-file-heavy-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(620px, calc(100% - 32px));
+  width: 620px;
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
@@ -2092,7 +2093,7 @@ select#presets:focus {
 .text-extraction-ocr-activation-disclosure-panel {
   position: relative;
   z-index: 1001;
-  width: min(640px, calc(100% - 32px));
+  width: 640px;
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
@@ -2179,7 +2180,7 @@ select#presets:focus {
 .snapshot-save-tags-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(560px, calc(100% - 32px));
+  width: 560px;
   background: var(--app-secondary-bg);
   color: var(--text-color);
   border-radius: var(--panel-radius);
@@ -2325,7 +2326,7 @@ select#presets:focus {
 .snapshot-tag-manager-modal-panel {
   position: relative;
   z-index: 1002;
-  width: min(760px, calc(100% - 32px));
+  width: 760px;
   max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
@@ -2469,7 +2470,7 @@ select#presets:focus {
 .reading-test-entry-modal-panel {
   position: relative;
   z-index: 1001;
-  width: min(720px, calc(100% - 32px));
+  width: 720px;
   max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
