@@ -1323,6 +1323,51 @@ select#presets:focus {
   padding: 14px 16px 16px;
 }
 
+/* Standard dialog title region */
+.text-extraction-pdf-options-modal-header,
+.text-extraction-route-modal-header,
+.text-extraction-apply-modal-header,
+.text-extraction-batch-plan-modal-header,
+.text-extraction-batch-final-modal-header,
+.text-extraction-single-file-heavy-modal-header,
+.text-extraction-ocr-activation-disclosure-header,
+.snapshot-save-tags-modal-header,
+.snapshot-tag-manager-modal-header,
+.reading-test-entry-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.text-extraction-pdf-options-modal-header h2,
+.text-extraction-route-modal-header h2,
+.text-extraction-apply-modal-header h2,
+.text-extraction-batch-plan-modal-header h2,
+.text-extraction-batch-final-modal-header h2,
+.text-extraction-single-file-heavy-modal-header h2,
+.text-extraction-ocr-activation-disclosure-header h2,
+.snapshot-save-tags-modal-header h2,
+.snapshot-tag-manager-modal-header h2,
+.reading-test-entry-modal-header h2 {
+  margin: 0;
+  font-size: var(--font-size-9);
+  font-weight: 600;
+}
+
+.text-extraction-pdf-options-modal-body,
+.text-extraction-route-modal-body,
+.text-extraction-apply-modal-body,
+.text-extraction-batch-plan-modal-body,
+.text-extraction-batch-final-modal-body,
+.text-extraction-single-file-heavy-modal-body,
+.text-extraction-ocr-activation-disclosure-body,
+.snapshot-save-tags-modal-body,
+.snapshot-tag-manager-modal-body,
+.reading-test-entry-modal-body {
+  margin-top: 12px;
+}
+
 /* Text extraction modals */
 
 /* Text extraction PDF options modal */
@@ -1330,21 +1375,7 @@ select#presets:focus {
   width: 620px;
 }
 
-.text-extraction-pdf-options-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.text-extraction-pdf-options-modal-header h2 {
-  margin: 0;
-  font-size: var(--font-size-9);
-  font-weight: 600;
-}
-
 .text-extraction-pdf-options-modal-body {
-  margin-top: 12px;
   display: grid;
   gap: 12px;
 }
@@ -1488,23 +1519,6 @@ select#presets:focus {
   width: 520px;
 }
 
-.text-extraction-route-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.text-extraction-route-modal-header h2 {
-  margin: 0;
-  font-size: var(--font-size-9);
-  font-weight: 600;
-}
-
-.text-extraction-route-modal-body {
-  margin-top: 12px;
-}
-
 .text-extraction-route-modal-body p {
   font-size: var(--font-size-8);
   margin: 0;
@@ -1526,23 +1540,6 @@ select#presets:focus {
 /* Text extraction apply modal */
 .text-extraction-apply-modal-panel {
   width: 560px;
-}
-
-.text-extraction-apply-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.text-extraction-apply-modal-header h2 {
-  margin: 0;
-  font-size: var(--font-size-9);
-  font-weight: 600;
-}
-
-.text-extraction-apply-modal-body {
-  margin-top: 12px;
 }
 
 .text-extraction-apply-modal-body p {
@@ -1629,27 +1626,9 @@ select#presets:focus {
   overflow: auto;
 }
 
-.text-extraction-batch-plan-modal-header,
-.text-extraction-batch-final-modal-header,
-.text-extraction-single-file-heavy-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.text-extraction-batch-plan-modal-header h2,
-.text-extraction-batch-final-modal-header h2,
-.text-extraction-single-file-heavy-modal-header h2 {
-  margin: 0;
-  font-size: var(--font-size-9);
-  font-weight: 600;
-}
-
 .text-extraction-batch-plan-modal-body,
 .text-extraction-batch-final-modal-body,
 .text-extraction-single-file-heavy-modal-body {
-  margin-top: 12px;
   display: grid;
   gap: 12px;
 }
@@ -2041,6 +2020,7 @@ select#presets:focus {
 }
 
 #textExtractionSingleFileHeavyPdfModalMessage {
+  margin: 0;
   font-size: var(--font-size-8);
 }
 
@@ -2063,21 +2043,7 @@ select#presets:focus {
   text-align: start;
 }
 
-.text-extraction-ocr-activation-disclosure-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.text-extraction-ocr-activation-disclosure-header h2 {
-  margin: 0;
-  font-size: var(--font-size-9);
-  font-weight: 600;
-}
-
 .text-extraction-ocr-activation-disclosure-body {
-  margin-top: 12px;
   text-align: start;
 }
 
@@ -2140,27 +2106,10 @@ select#presets:focus {
   width: 560px;
 }
 
-.snapshot-save-tags-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .snapshot-save-tags-modal-header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.snapshot-save-tags-modal-header h2 {
-  margin: 0;
-  font-size: var(--font-size-9);
-  font-weight: 600;
-}
-
-.snapshot-save-tags-modal-body {
-  margin-top: 12px;
 }
 
 .snapshot-save-tags-modal-body p {
@@ -2280,21 +2229,7 @@ select#presets:focus {
   overflow: auto;
 }
 
-.snapshot-tag-manager-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.snapshot-tag-manager-modal-header h2 {
-  margin: 0;
-  font-size: var(--font-size-9);
-  font-weight: 600;
-}
-
 .snapshot-tag-manager-modal-body {
-  margin-top: 12px;
   display: grid;
   gap: 14px;
 }
@@ -2415,34 +2350,9 @@ select#presets:focus {
   overflow: auto;
 }
 
-.reading-test-entry-modal-header {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  z-index: 1;
-}
-
-.reading-test-entry-modal-body {
-  margin-top: 0;
-}
-
-.reading-test-entry-modal-body h2 {
-  margin: 0 0 12px;
-  padding-right: 44px;
-  font-size: var(--font-size-9);
-  font-weight: 600;
-}
-
 .reading-test-entry-modal-body p {
   margin: 0;
   line-height: 1.45;
-}
-
-.reading-test-entry-modal-intro-block {
-  margin-top: 4px;
 }
 
 .reading-test-entry-modal-toggle {
