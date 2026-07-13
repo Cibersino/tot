@@ -1303,6 +1303,20 @@ select#presets:focus {
 
 /* Text extraction modals */
 
+/* Standard dialog surface frame */
+.text-extraction-pdf-options-modal-panel,
+.text-extraction-route-modal-panel,
+.text-extraction-apply-modal-panel,
+.text-extraction-batch-plan-modal-panel,
+.text-extraction-batch-final-modal-panel,
+.text-extraction-single-file-heavy-modal-panel,
+.text-extraction-ocr-activation-disclosure-panel,
+.snapshot-save-tags-modal-panel,
+.snapshot-tag-manager-modal-panel,
+.reading-test-entry-modal-panel {
+  padding: 14px 16px 16px;
+}
+
 /* Text extraction PDF options modal */
 .text-extraction-pdf-options-modal-panel {
   position: relative;
@@ -1313,7 +1327,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -1480,7 +1493,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -1529,7 +1541,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -1639,7 +1650,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -1987,7 +1997,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -2059,7 +2068,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -2099,7 +2107,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
   text-align: start;
 }
@@ -2186,7 +2193,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -2334,7 +2340,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
@@ -2478,7 +2483,6 @@ select#presets:focus {
   border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
-  padding: 14px 16px 16px;
   box-sizing: border-box;
 }
 
