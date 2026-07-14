@@ -1133,7 +1133,7 @@ select#presets:focus {
 .browser-extension-modal-body {
   display: grid;
   gap: 18px;
-  padding: 20px 20px 22px;
+  padding: 20px;
 }
 
 .browser-extension-modal-copy {
