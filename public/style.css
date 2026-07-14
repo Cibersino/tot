@@ -1042,6 +1042,7 @@ select#presets:focus {
   --info-media-max-height: calc(var(--info-panel-max-height) - var(--info-header-height) - 120px);
 
   position: relative;
+  display: grid;
   width: 100%;
   max-height: var(--info-panel-max-height);
   overflow: auto;
@@ -1057,9 +1058,11 @@ select#presets:focus {
 .info-modal-header {
   position: sticky;
   top: 0;                         /* stays at the top of the panel */
+  grid-area: 1 / 1;
+  align-self: start;
+  justify-self: end;
   display: flex;
   align-items: center;
-  justify-content: flex-end;      /* "Close" button on the right */
   height: var(--info-header-height);
   padding: 0;                     /* horizontal space for button */
   z-index: 1002;                  /* above the content */
@@ -1071,10 +1074,10 @@ select#presets:focus {
 }
 
 .info-modal-content {
+  grid-area: 1 / 1;
   font-size: var(--font-size-9);
   color: var(--text-color);
   line-height: 1.45;
-  margin-top: calc(-1 * var(--info-header-height));
 }
 
 .info-modal-content h1 {
