@@ -1199,17 +1199,6 @@ select#presets:focus {
   line-height: 1.45;
 }
 
-@media (max-width: 600px) {
-  .browser-extension-modal-store {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .browser-extension-modal-store-link img {
-    width: min(206px, 100%);
-  }
-}
-
 .info-section {
   background-color: var(--app-primary-bg);
   text-align: left
@@ -2542,38 +2531,4 @@ select#presets:focus {
 
 .reading-test-entry-modal-actions .btn-standard {
   min-width: 120px;
-}
-
-/* Responsive layout */
-@media (max-width: 640px) {
-  .text-extraction-pdf-options-modal-range-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .text-extraction-batch-plan-input-row-middle {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .text-extraction-batch-plan-page-scope-range-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .text-extraction-batch-plan-unit-tags,
-  .text-extraction-batch-final-input-main,
-  .text-extraction-batch-final-generated,
-  .text-extraction-batch-plan-modal-toolbar,
-  .text-extraction-batch-plan-modal-actions,
-  .text-extraction-batch-final-modal-actions,
-  .text-extraction-single-file-heavy-modal-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .reading-test-entry-modal-group-row {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .snapshot-tag-manager-row {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
