@@ -32,7 +32,7 @@
   let dragDepth = 0;
   let listenersAttached = false;
   let overlay = null;
-  let overlayTitle = null;
+  let overlayMessage = null;
 
   // =============================================================================
   // Helpers
@@ -52,19 +52,19 @@
     overlay.setAttribute('aria-hidden', 'true');
     overlay.innerHTML = [
       '<div class="text-extraction-drop-overlay__panel" aria-hidden="true">',
-      '  <div class="text-extraction-drop-overlay__title"></div>',
+      '  <div class="text-extraction-drop-overlay__message"></div>',
       '</div>',
     ].join('');
     document.body.appendChild(overlay);
 
-    overlayTitle = overlay.querySelector('.text-extraction-drop-overlay__title');
+    overlayMessage = overlay.querySelector('.text-extraction-drop-overlay__message');
     syncOverlayText();
   }
 
   function syncOverlayText() {
     ensureOverlay();
-    if (overlayTitle) {
-      overlayTitle.textContent = tRenderer('renderer.main.processing.text_extraction_drop_here');
+    if (overlayMessage) {
+      overlayMessage.textContent = tRenderer('renderer.main.processing.text_extraction_drop_here');
     }
   }
 

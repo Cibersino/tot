@@ -721,7 +721,7 @@ pre#textPreview .preview-static {
 
 .text-extraction-drop-overlay__panel {
   width: 420px;
-  padding: 20px 22px;
+  padding: 20px;
   border: 2px dashed var(--drop-zone-border);
   border-radius: 12px;
   background: var(--app-secondary-bg);
@@ -731,7 +731,7 @@ pre#textPreview .preview-static {
   box-sizing: border-box;
 }
 
-.text-extraction-drop-overlay__title {
+.text-extraction-drop-overlay__message {
   font-size: var(--font-size-11);
   line-height: 1.2;
   font-weight: 700;
