@@ -1124,13 +1124,10 @@ select#presets:focus {
 }
 
 .browser-extension-modal-header {
-  position: absolute;
-  top: 14px;
-  right: 16px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  z-index: 1;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .browser-extension-modal-body {
@@ -1144,9 +1141,8 @@ select#presets:focus {
   gap: 6px;
 }
 
-.browser-extension-modal-copy h1 {
+.browser-extension-modal-header h1 {
   margin: 0;
-  padding-right: 44px;
   color: var(--text-color);
   font-size: var(--font-size-12);
 }
