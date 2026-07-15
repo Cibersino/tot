@@ -3443,14 +3443,14 @@ Estados de revisión recomendados:
     },
     "browser_extension": {
       "title": {
-        "es": "Extensión del navegador",
-        "en": "Browser extension"
-        // [CONCEPTO_APP] extensión del navegador
-      },
-      "subtitle": {
         "es": "Tiempo de lectura",
         "en": "Reading time"
         // [PROPÓSITO] Nombre de la extensión de navegador dentro de la ventana informativa. En otros idiomas, a menos que se decida lo contrario se debe usar `Tiempo de lectura`, en español.
+        // [CONCEPTO_APP] extensión del navegador
+      },
+      "subtitle": {
+        "es": "Extensión del navegador",
+        "en": "Browser extension"
         // [CONCEPTO_APP] extensión del navegador
       },
       "availability": {
