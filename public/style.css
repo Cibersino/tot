@@ -1274,7 +1274,7 @@ select#presets:focus {
 .info-media-lightbox-image {
   display: block;
   max-width: 100%;
-  max-height: calc(100vh - 48px);
+  max-height: calc(100vh - 32px);
   width: auto;
   height: auto;
   object-fit: contain;
