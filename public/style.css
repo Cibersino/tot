@@ -365,7 +365,7 @@ body {
 /* Branding */
 .logo-container {
   position: fixed;
-  right: 4px;
+  right: -2px;
   bottom: 8px;
   height: var(--logo-height);
   display: flex;
@@ -392,7 +392,6 @@ body {
   height: 100%;
   object-fit: contain;
   display: block;
-  margin-right: -6px;
 }
 
 .logo-link {
