@@ -1354,6 +1354,8 @@ select#presets:focus {
 .snapshot-tag-manager-modal-body,
 .reading-test-entry-modal-body {
   margin-top: 12px;
+  display: grid;
+  gap: 12px;
 }
 
 /* Text extraction modals */
@@ -1361,11 +1363,6 @@ select#presets:focus {
 /* Text extraction PDF options modal */
 .text-extraction-pdf-options-modal-panel {
   width: 620px;
-}
-
-.text-extraction-pdf-options-modal-body {
-  display: grid;
-  gap: 12px;
 }
 
 .text-extraction-pdf-options-modal-body p {
@@ -1376,14 +1373,14 @@ select#presets:focus {
 
 .text-extraction-pdf-options-modal-summary {
   display: grid;
-  gap: 6px;
+  gap: 12px;
   font-size: var(--font-size-8);
 }
 
 .text-extraction-pdf-options-modal-summary-row {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -1401,7 +1398,7 @@ select#presets:focus {
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .text-extraction-pdf-options-modal-selection-legend {
@@ -1413,7 +1410,7 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-option {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   font-size: var(--font-size-8);
 }
 
@@ -1423,7 +1420,7 @@ select#presets:focus {
 
 .text-extraction-pdf-options-modal-range-fields {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .text-extraction-pdf-options-modal-range-fields[hidden] {
@@ -1433,12 +1430,12 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-range-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .text-extraction-pdf-options-modal-range-field {
   display: grid;
-  gap: 4px;
+  gap: 12px;
   font-size: var(--font-size-8);
 }
 
@@ -1470,7 +1467,7 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-keep-option {
   display: inline-flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 12px;
   font-size: var(--font-size-6);
 }
 
@@ -1494,7 +1491,7 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -1514,10 +1511,9 @@ select#presets:focus {
 }
 
 .text-extraction-route-modal-actions {
-  margin-top: 14px;
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -1537,16 +1533,14 @@ select#presets:focus {
 }
 
 .text-extraction-apply-modal-elapsed {
-  margin-top: 8px !important;
   color: var(--text-soft);
   font-size: var(--font-size-6);
   font-variant-numeric: tabular-nums;
 }
 
 .text-extraction-apply-modal-saved-pdf {
-  margin-top: 12px;
   display: grid;
-  gap: 8px;
+  gap: 12px;
   padding: 10px 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
@@ -1566,15 +1560,14 @@ select#presets:focus {
 .text-extraction-apply-modal-saved-pdf-actions {
   display: flex;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .text-extraction-apply-repeat-row {
-  margin-top: 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .text-extraction-apply-repeat-row label {
@@ -1596,10 +1589,9 @@ select#presets:focus {
 }
 
 .text-extraction-apply-modal-actions {
-  margin-top: 14px;
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -1614,13 +1606,6 @@ select#presets:focus {
   overflow: auto;
 }
 
-.text-extraction-batch-plan-modal-body,
-.text-extraction-batch-final-modal-body,
-.text-extraction-single-file-heavy-modal-body {
-  display: grid;
-  gap: 12px;
-}
-
 .text-extraction-batch-final-modal-body > p {
   margin: 0;
   font-size: var(--font-size-8);
@@ -1631,7 +1616,7 @@ select#presets:focus {
 .text-extraction-batch-final-modal-actions,
 .text-extraction-single-file-heavy-modal-actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -1652,7 +1637,7 @@ select#presets:focus {
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .text-extraction-batch-plan-failure-policy legend {
@@ -1662,14 +1647,14 @@ select#presets:focus {
 .text-extraction-batch-plan-failure-option {
   display: inline-flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 12px;
   font-size: var(--font-size-6);
   line-height: 1.35;
 }
 
 .text-extraction-batch-plan-unit {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   padding: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
@@ -1680,13 +1665,13 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .text-extraction-batch-plan-unit-heading {
   display: grid;
-  gap: 6px;
+  gap: 12px;
   flex: 1 1 260px;
   min-width: 0;
 }
@@ -1722,7 +1707,7 @@ select#presets:focus {
 .text-extraction-batch-plan-unit-actions,
 .text-extraction-batch-plan-input-actions {
   display: flex;
-  gap: 6px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -1742,17 +1727,17 @@ select#presets:focus {
 
 .text-extraction-batch-plan-unit-inputs {
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
 .text-extraction-batch-plan-heavy-preview {
   display: grid;
-  gap: 4px;
+  gap: 12px;
 }
 
 .text-extraction-batch-plan-input-row {
   display: grid;
-  gap: 8px;
+  gap: 12px;
   padding: 10px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
@@ -1762,14 +1747,14 @@ select#presets:focus {
 .text-extraction-batch-plan-input-row-middle {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px 10px;
+  gap: 12px;
   align-items: start;
 }
 
 .text-extraction-batch-plan-input-row-bottom {
   display: flex;
   align-items: start;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -1777,7 +1762,7 @@ select#presets:focus {
   display: flex;
   align-items: start;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   margin-left: auto;
 }
@@ -1785,7 +1770,7 @@ select#presets:focus {
 .text-extraction-batch-plan-input-main {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
   min-width: 0;
   overflow-wrap: anywhere;
   font-size: var(--font-size-8);
@@ -1809,7 +1794,7 @@ select#presets:focus {
 .text-extraction-batch-plan-input-unit {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -1832,7 +1817,7 @@ select#presets:focus {
 .text-extraction-batch-plan-keep-toggle {
   display: inline-flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 12px;
   font-size: var(--font-size-6);
 }
 
@@ -1840,7 +1825,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -1852,7 +1837,7 @@ select#presets:focus {
   margin: 0;
   padding-left: 18px;
   display: grid;
-  gap: 4px;
+  gap: 12px;
   font-size: var(--font-size-6);
 }
 
@@ -1862,7 +1847,7 @@ select#presets:focus {
 
 .text-extraction-batch-plan-page-scope {
   display: grid;
-  gap: 8px;
+  gap: 12px;
   min-width: 0;
   justify-items: end;
 }
@@ -1871,14 +1856,14 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .text-extraction-batch-plan-page-scope-option,
 .text-extraction-batch-plan-page-scope-field {
   display: grid;
-  gap: 6px;
+  gap: 12px;
   font-size: var(--font-size-7);
 }
 
@@ -1896,7 +1881,7 @@ select#presets:focus {
 .text-extraction-batch-plan-page-scope-range-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(120px, 1fr));
-  gap: 8px;
+  gap: 12px;
 }
 
 .text-extraction-batch-plan-page-scope-input {
@@ -1942,7 +1927,7 @@ select#presets:focus {
 
 .text-extraction-batch-final-unit {
   display: grid;
-  gap: 8px;
+  gap: 12px;
   padding: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
@@ -1966,7 +1951,7 @@ select#presets:focus {
 .text-extraction-batch-final-input,
 .text-extraction-batch-final-generated-list {
   display: grid;
-  gap: 6px;
+  gap: 12px;
 }
 
 .text-extraction-batch-final-input-main,
@@ -1974,7 +1959,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
   font-size: var(--font-size-7);
 }
@@ -2000,7 +1985,7 @@ select#presets:focus {
 
 .text-extraction-single-file-heavy-modal-details {
   display: grid;
-  gap: 6px;
+  gap: 12px;
   padding: 10px 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
@@ -2021,7 +2006,7 @@ select#presets:focus {
 .text-extraction-single-file-heavy-modal-details-actions {
   display: flex;
   justify-content: flex-start;
-  gap: 6px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -2042,17 +2027,16 @@ select#presets:focus {
 }
 
 .text-extraction-ocr-activation-disclosure-list {
-  margin: 12px 0 0;
+  margin: 0;
   padding: 0;
   padding-inline-start: 18px;
   display: grid;
-  gap: 8px;
+  gap: 12px;
   font-size: var(--font-size-6);
   line-height: 1.4;
 }
 
 .text-extraction-ocr-activation-disclosure-actions {
-  margin-top: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2078,7 +2062,7 @@ select#presets:focus {
 .text-extraction-ocr-activation-disclosure-buttons {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
   margin-inline-start: auto;
 }
@@ -2097,7 +2081,7 @@ select#presets:focus {
 .snapshot-save-tags-modal-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .snapshot-save-tags-modal-body p {
@@ -2107,14 +2091,13 @@ select#presets:focus {
 }
 
 .snapshot-save-tags-form {
-  margin-top: 12px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .snapshot-save-tags-field {
   display: grid;
-  gap: 4px;
+  gap: 12px;
   position: relative;
 }
 
@@ -2198,10 +2181,9 @@ select#presets:focus {
 }
 
 .snapshot-save-tags-modal-actions {
-  margin-top: 14px;
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -2215,11 +2197,6 @@ select#presets:focus {
   width: 760px;
   max-height: var(--modal-max-height);
   overflow: auto;
-}
-
-.snapshot-tag-manager-modal-body {
-  display: grid;
-  gap: 14px;
 }
 
 .snapshot-tag-manager-modal-body p {
@@ -2238,7 +2215,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-category {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--control-radius-sm);
   background: var(--app-primary-bg);
@@ -2249,7 +2226,7 @@ select#presets:focus {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -2265,13 +2242,13 @@ select#presets:focus {
 .snapshot-tag-manager-modal-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .snapshot-tag-manager-draft {
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
 .snapshot-tag-manager-draft-input {
@@ -2305,14 +2282,14 @@ select#presets:focus {
 
 .snapshot-tag-manager-list {
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
 .snapshot-tag-manager-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 8px 10px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--control-radius-sm);
@@ -2366,17 +2343,16 @@ select#presets:focus {
 }
 
 #readingTestEntryModalIntro {
-  margin-top: 8px;
+  margin-top: 12px;
   font-size: var(--font-size-8);
   white-space: pre-line;
 }
 
 .reading-test-entry-modal-body p + p {
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .reading-test-entry-modal-warning {
-  margin-top: 12px;
   padding: 10px 12px;
   border: 1px solid var(--warning-border-color);
   border-radius: var(--panel-radius);
@@ -2387,7 +2363,6 @@ select#presets:focus {
 }
 
 .reading-test-entry-modal-toolbar {
-  margin-top: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2398,14 +2373,14 @@ select#presets:focus {
 .reading-test-entry-modal-status {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex: 0 0 auto;
 }
 
 .reading-test-entry-modal-count {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
   white-space: nowrap;
   font-size: var(--font-size-6);
   font-weight: 600;
@@ -2424,14 +2399,14 @@ select#presets:focus {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .reading-test-entry-modal-visibility-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
   font-size: var(--font-size-6);
   color: var(--text-soft);
   cursor: pointer;
@@ -2469,7 +2444,6 @@ select#presets:focus {
 }
 
 .reading-test-entry-modal-groups {
-  margin-top: 14px;
   display: grid;
   gap: 12px;
 }
@@ -2482,7 +2456,7 @@ select#presets:focus {
 
 .reading-test-entry-modal-group {
   display: grid;
-  gap: 8px;
+  gap: 12px;
   padding: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: var(--panel-radius);
@@ -2498,13 +2472,13 @@ select#presets:focus {
 .reading-test-entry-modal-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
+  gap: 12px;
 }
 
 .reading-test-entry-modal-option {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 12px;
   min-height: 28px;
   font-size: var(--font-size-8);
 }
@@ -2518,10 +2492,9 @@ select#presets:focus {
 }
 
 .reading-test-entry-modal-actions {
-  margin-top: 16px;
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
