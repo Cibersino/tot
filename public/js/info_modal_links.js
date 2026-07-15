@@ -82,8 +82,11 @@
     image.className = 'info-media-lightbox-image';
     image.alt = '';
 
-    panel.appendChild(closeButton);
-    panel.appendChild(image);
+    const media = document.createElement('div');
+    media.className = 'info-media-lightbox-media';
+    media.appendChild(image);
+    media.appendChild(closeButton);
+    panel.appendChild(media);
     overlay.appendChild(backdrop);
     overlay.appendChild(panel);
 

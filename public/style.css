@@ -1271,6 +1271,20 @@ select#presets:focus {
   max-height: calc(100vh - 32px);
 }
 
+.info-media-lightbox-media {
+  --info-media-lightbox-close-gap: 6px;
+  --info-media-lightbox-close-footprint: calc(
+    var(--control-height-md) + var(--info-media-lightbox-close-gap)
+  );
+
+  position: relative;
+  display: inline-grid;
+  max-width: calc(
+    100% - var(--info-media-lightbox-close-footprint) - var(--info-media-lightbox-close-footprint)
+  );
+  max-height: 100%;
+}
+
 .info-media-lightbox-image {
   display: block;
   max-width: 100%;
@@ -1285,7 +1299,7 @@ select#presets:focus {
 .info-media-lightbox-close {
   position: absolute;
   top: 0;
-  right: 0;
+  left: calc(100% + var(--info-media-lightbox-close-gap));
   z-index: 2;
 }
 
