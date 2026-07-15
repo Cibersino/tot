@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "إضافة المتصفح",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "إضافة المتصفح",
       "availability": "متاحة الآن على Chrome. ستتوفر لمتصفحات أخرى قريبًا.",
       "chrome_store_aria": "فتح صفحة الإضافة في Chrome Web Store",
       "close_aria": "إغلاق مربع حوار إضافة المتصفح",

@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Toronga pūtirotiro",
-      "subtitle": "Reading Time",
+      "title": "Reading Time",
+      "subtitle": "Toronga pūtirotiro",
       "availability": "Kei te wātea i Chrome ināianei. Ka tae mai ētahi atu pūtirotiro ākuanei.",
       "chrome_store_aria": "Whakatuwhera i te whārangi Chrome Web Store o te toronga",
       "close_aria": "Katia te kōrero toronga pūtirotiro",

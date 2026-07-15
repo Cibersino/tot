@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Jepysokue kundahárape g̃uarã",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Jepysokue kundahárape g̃uarã",
       "availability": "Ojeguereko ko'ág̃a Chrome-pe. Oútama kundahára hetave ko'ẽrõitéma.",
       "chrome_store_aria": "Eipe'a jepysokue Chrome Web Store rogue",
       "close_aria": "Emboty jepysokue kundahárape g̃uarã ñe'ẽryru",

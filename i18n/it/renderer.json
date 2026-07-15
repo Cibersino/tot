@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Estensione del browser",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Estensione del browser",
       "availability": "Disponibile ora su Chrome. Altri browser in arrivo a breve.",
       "chrome_store_aria": "Apri la pagina Chrome Web Store dell'estensione",
       "close_aria": "Chiudi la finestra di dialogo dell'estensione del browser",

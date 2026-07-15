@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "ব্রাউজার এক্সটেনশন",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "ব্রাউজার এক্সটেনশন",
       "availability": "এখন Chrome-এ উপলব্ধ। শিগগিরই আরও ব্রাউজারে আসছে।",
       "chrome_store_aria": "এক্সটেনশনের Chrome Web Store পৃষ্ঠা খুলুন",
       "close_aria": "ব্রাউজার এক্সটেনশন ডায়ালগ বন্ধ করুন",

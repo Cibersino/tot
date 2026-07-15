@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Navegador extención",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Navegador extención",
       "availability": "Jichhax Chrome ukan utji. Juk'amp navegaduranakax niya jutaniwa.",
       "chrome_store_aria": "Chrome Web Store ukan extención panka jist'araña",
       "close_aria": "Navegador extención diálogo jist'antaña",

@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Navegadorpa extensiónnin",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Navegadorpa extensiónnin",
       "availability": "Kunanqa Chrome-pi kachkanña. Aswan achka navegadorkunamanqa utqayllam chayanqa.",
       "chrome_store_aria": "Extensiónpa Chrome Web Store p'ankanta kichay",
       "close_aria": "Navegadorpa extensiónnin dialogota wichq'ay",

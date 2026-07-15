@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "ブラウザー拡張機能",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "ブラウザー拡張機能",
       "availability": "現在 Chrome で利用できます。ほかのブラウザーにも近日対応予定です。",
       "chrome_store_aria": "拡張機能の Chrome Web Store ページを開く",
       "close_aria": "ブラウザー拡張機能のダイアログを閉じる",

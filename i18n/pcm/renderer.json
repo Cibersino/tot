@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Browser extension",
-      "subtitle": "Reading time",
+      "title": "Reading time",
+      "subtitle": "Browser extension",
       "availability": "E don dey available for Chrome now. More browsers go come soon.",
       "chrome_store_aria": "Open di extension Chrome Web Store page",
       "close_aria": "Close browser extension dialog",

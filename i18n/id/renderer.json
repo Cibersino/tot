@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Ekstensi browser",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Ekstensi browser",
       "availability": "Tersedia di Chrome sekarang. Browser lain akan segera menyusul.",
       "chrome_store_aria": "Buka halaman Chrome Web Store ekstensi",
       "close_aria": "Tutup dialog ekstensi browser",

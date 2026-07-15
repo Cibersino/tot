@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "瀏覽器擴充功能",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "瀏覽器擴充功能",
       "availability": "現已於 Chrome 提供。更多瀏覽器即將支援。",
       "chrome_store_aria": "開啟擴充功能的 Chrome Web Store 頁面",
       "close_aria": "關閉瀏覽器擴充功能對話框",

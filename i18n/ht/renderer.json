@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Ekstansyon navigatè",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Ekstansyon navigatè",
       "availability": "Disponib kounye a sou Chrome. Lòt navigatè ap vini byento.",
       "chrome_store_aria": "Louvri paj Chrome Web Store ekstansyon an",
       "close_aria": "Fèmen dyalòg ekstansyon navigatè a",

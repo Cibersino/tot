@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "浏览器扩展",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "浏览器扩展",
       "availability": "现已在 Chrome 上提供。更多浏览器即将支持。",
       "chrome_store_aria": "打开扩展的 Chrome Web Store 页面",
       "close_aria": "关闭浏览器扩展对话框",

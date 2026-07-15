@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Webbläsartillägg",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Webbläsartillägg",
       "availability": "Finns i Chrome nu. Fler webbläsare kommer snart.",
       "chrome_store_aria": "Öppna tilläggets sida i Chrome Web Store",
       "close_aria": "Stäng dialogrutan för webbläsartillägget",

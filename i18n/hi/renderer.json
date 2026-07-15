@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "ब्राउज़र एक्सटेंशन",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "ब्राउज़र एक्सटेंशन",
       "availability": "अभी Chrome पर उपलब्ध है। जल्द ही और ब्राउज़रों पर आएगा।",
       "chrome_store_aria": "एक्सटेंशन का Chrome Web Store पेज खोलें",
       "close_aria": "ब्राउज़र एक्सटेंशन संवाद बंद करें",

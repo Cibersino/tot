@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Extensión navegador mew",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Extensión navegador mew",
       "availability": "Chrome mew müley feichi. Püñeñ mew kake navegadores müleay.",
       "chrome_store_aria": "Nülan página extensión Chrome Web Store mew",
       "close_aria": "Nürüfün diálogo extensión navegador mew",

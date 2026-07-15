@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Tarayıcı uzantısı",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Tarayıcı uzantısı",
       "availability": "Şu anda Chrome'da kullanılabilir. Yakında daha fazla tarayıcıya gelecek.",
       "chrome_store_aria": "Uzantının Chrome Web Store sayfasını aç",
       "close_aria": "Tarayıcı uzantısı iletişim kutusunu kapat",

@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "براؤزر ایکسٹینشن",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "براؤزر ایکسٹینشن",
       "availability": "ابھی Chrome پر دستیاب ہے۔ مزید براؤزرز جلد آ رہے ہیں۔",
       "chrome_store_aria": "ایکسٹینشن کا Chrome Web Store صفحہ کھولیں",
       "close_aria": "براؤزر ایکسٹینشن کا ڈائیلاگ بند کریں",

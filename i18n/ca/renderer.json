@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Extensió del navegador",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Extensió del navegador",
       "availability": "Disponible ara a Chrome. Aviat arribarà a més navegadors.",
       "chrome_store_aria": "Obre la pàgina de l'extensió a Chrome Web Store",
       "close_aria": "Tanca el diàleg de l'extensió del navegador",

@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Extensión pal navegador",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Extensión pal navegador",
       "availability": "Disponible al tiro en Chrome. Más navegadores pronto.",
       "chrome_store_aria": "Abrir la página de la extensión en Chrome Web Store",
       "close_aria": "Cerrar diálogo de extensión pal navegador",

@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Nabigatzailearen hedapena",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Nabigatzailearen hedapena",
       "availability": "Orain Chrome-n erabilgarri. Laster nabigatzaile gehiagotan ere bai.",
       "chrome_store_aria": "Ireki hedapenaren Chrome Web Store orria",
       "close_aria": "Itxi nabigatzailearen hedapenaren elkarrizketa-koadroa",

@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Tiện ích mở rộng trình duyệt",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Tiện ích mở rộng trình duyệt",
       "availability": "Hiện đã có trên Chrome. Nhiều trình duyệt khác sẽ sớm được hỗ trợ.",
       "chrome_store_aria": "Mở trang Chrome Web Store của tiện ích",
       "close_aria": "Đóng hộp thoại tiện ích mở rộng trình duyệt",

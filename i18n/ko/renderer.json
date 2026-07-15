@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "브라우저 확장 프로그램",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "브라우저 확장 프로그램",
       "availability": "지금 Chrome에서 사용할 수 있습니다. 더 많은 브라우저가 곧 지원됩니다.",
       "chrome_store_aria": "확장 프로그램의 Chrome Web Store 페이지 열기",
       "close_aria": "브라우저 확장 프로그램 대화상자 닫기",

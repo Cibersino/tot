@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Browser extension",
-      "subtitle": "Reading time",
+      "title": "Reading time",
+      "subtitle": "Browser extension",
       "availability": "Available on Chrome now. More browsers coming soon.",
       "chrome_store_aria": "Open the extension Chrome Web Store page",
       "close_aria": "Close browser extension window",

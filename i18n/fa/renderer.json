@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "افزونه مرورگر",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "افزونه مرورگر",
       "availability": "اکنون در Chrome در دسترس است. به‌زودی مرورگرهای بیشتری اضافه می‌شوند.",
       "chrome_store_aria": "باز کردن صفحه افزونه در Chrome Web Store",
       "close_aria": "بستن پنجره افزونه مرورگر",

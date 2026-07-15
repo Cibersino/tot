@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Browser-Erweiterung",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Browser-Erweiterung",
       "availability": "Jetzt in Chrome verfügbar. Weitere Browser folgen bald.",
       "chrome_store_aria": "Die Chrome Web Store-Seite der Erweiterung öffnen",
       "close_aria": "Dialog der Browser-Erweiterung schließen",

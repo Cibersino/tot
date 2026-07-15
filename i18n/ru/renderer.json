@@ -646,8 +646,8 @@
       }
     },
     "browser_extension": {
-      "title": "Расширение браузера",
-      "subtitle": "Tiempo de lectura",
+      "title": "Tiempo de lectura",
+      "subtitle": "Расширение браузера",
       "availability": "Уже доступно в Chrome. Скоро появится и в других браузерах.",
       "chrome_store_aria": "Открыть страницу расширения в Chrome Web Store",
       "close_aria": "Закрыть диалог расширения браузера",
