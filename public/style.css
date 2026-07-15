@@ -1132,7 +1132,7 @@ select#presets:focus {
 
 .browser-extension-modal-body {
   display: grid;
-  gap: 18px;
+  gap: 12px;
   padding: 20px;
 }
 
@@ -1158,7 +1158,7 @@ select#presets:focus {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 14px 16px;
+  padding: 16px;
   border-radius: 18px;
   background: var(--app-primary-bg);
 }
