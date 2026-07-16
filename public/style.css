@@ -769,7 +769,6 @@ body.text-extraction-drop-active .app-container {
 /* WPM slider */
 .wpm-slider {
   width: 100%;
-  margin-top: 2px;
   accent-color: var(--control-accent);
 }
 
