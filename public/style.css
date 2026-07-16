@@ -619,6 +619,7 @@ pre#textPreview .preview-static {
   flex: 0 1 auto;
   flex-direction: column;
   gap: 2px;
+  line-height: 1.2;
   min-width: 150px;
 }
 
@@ -633,7 +634,6 @@ pre#textPreview .preview-static {
   flex: 0 0 auto;
   font-size: var(--font-size-3);
   color: var(--text-color);
-  line-height: 1.2;
   white-space: nowrap;
 }
 
