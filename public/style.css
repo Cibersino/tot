@@ -133,6 +133,7 @@ html {
 body {
   height: 100%;
   font-family: var(--font-ui);
+  line-height: 1.2;
   overflow: hidden;
   box-sizing: border-box;
   background: var(--app-primary-bg);
@@ -619,7 +620,6 @@ pre#textPreview .preview-static {
   flex: 0 1 auto;
   flex-direction: column;
   gap: 2px;
-  line-height: 1.2;
   min-width: 150px;
 }
 
@@ -731,7 +731,6 @@ pre#textPreview .preview-static {
 
 .text-extraction-drop-overlay__message {
   font-size: var(--font-size-11);
-  line-height: 1.2;
   font-weight: 700;
 }
 
