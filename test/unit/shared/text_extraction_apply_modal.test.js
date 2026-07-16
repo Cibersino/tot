@@ -189,8 +189,9 @@ test('apply modal renders retained PDF details, normalizes repeat count, and res
   assert.equal(harness.elements.textExtractionApplyModalSavedPdf.hidden, false);
   assert.equal(harness.elements.textExtractionApplyModalSavedPdfFile.textContent, 'Generated PDF: output.pdf');
   assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '3');
-  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.focusCount, 1);
-  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.selectCount, 1);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.focusCount, 0);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.selectCount, 0);
+  assert.equal(harness.elements.textExtractionApplyModalOverwrite.focusCount, 1);
 
   harness.elements.textExtractionApplyModalRepeatInput.value = '9';
   harness.elements.textExtractionApplyModalRepeatInput.dispatch('blur');

@@ -233,8 +233,7 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');
-      repeatInput.focus();
-      repeatInput.select();
+      btnOverwrite.focus();
     });
   }
 
