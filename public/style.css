@@ -741,7 +741,6 @@ body.text-extraction-drop-active .app-container {
   width: 390px;
   background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
-  gap: 6px;
   box-sizing: border-box;
 }
 
@@ -923,7 +922,6 @@ select#presets:focus {
   width: 232px;
   background: var(--app-secondary-bg);
   border: 1px solid var(--section-border);
-  gap: 6px;
   box-sizing: border-box;
 }
 
