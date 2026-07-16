@@ -677,7 +677,6 @@ pre#textPreview .preview-static {
 }
 
 .text-extraction-processing-bar #btnTextExtractionAbort {
-  margin-left: auto;
   border-color: var(--abort-button-border);
   background: var(--abort-button-bg);
 }
