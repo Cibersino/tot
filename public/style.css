@@ -100,6 +100,11 @@
   --font-size-10: 1.125rem;
   --font-size-11: 1.25rem;
   --font-size-12: 1.5rem;
+
+  /* Line heights */
+  --line-height-tight: 1.15;
+  --line-height-default: 1.2;
+  --line-height-relaxed: 1.4;
   
   /* Spacing */
     
@@ -133,7 +138,7 @@ html {
 body {
   height: 100%;
   font-family: var(--font-ui);
-  line-height: 1.2;
+  line-height: var(--line-height-default);
   overflow: hidden;
   box-sizing: border-box;
   background: var(--app-primary-bg);
@@ -154,7 +159,6 @@ body {
 .section-title {
   margin: 0 0 4px;
   padding: 0;
-  line-height: 1.08;
   font-weight: 600;
   font-size: var(--font-size-4);
   color: var(--text-color);
@@ -163,10 +167,6 @@ body {
 }
 
 /* Shared runtime icon system */
-.tot-icon-host {
-  line-height: 1;
-}
-
 .tot-icon-slot {
   --tot-icon-size: var(--tot-icon-size-md);
   display: inline-flex;
@@ -174,7 +174,6 @@ body {
   justify-content: center;
   flex: 0 0 auto;
   height: var(--tot-icon-size);
-  line-height: 0;
   pointer-events: none;
 }
 
@@ -212,7 +211,6 @@ body {
   justify-content: center;
   padding: 6px 8px;
   height: var(--control-height-md);
-  line-height: 1;
   font-size: var(--font-size-7);
   font-family: inherit;
   border-radius: 5px;
@@ -245,7 +243,6 @@ body {
   height: calc(var(--control-height-md) / 2);
   padding: 0;
   font-size: var(--font-size-1);
-  line-height: 1;
   flex: 0 0 auto;
 }
 
@@ -473,7 +470,7 @@ pre#textPreview {
   word-break: break-word;
   box-sizing: border-box;
   font-size: var(--font-size-4);
-  line-height: 1.15;
+  line-height: var(--line-height-tight);
   font-family: var(--font-reading);
   margin: 0 0 4px;
 }
@@ -541,7 +538,6 @@ pre#textPreview .preview-static {
   padding: 0 2px;
   color: var(--text-color);
   font-size: var(--font-size-3);
-  line-height: 1;
   white-space: nowrap;
   user-select: none;
   cursor: pointer;
@@ -905,7 +901,6 @@ select#presets:focus {
 .toggle-label {
   font-size: var(--font-size-5);
   font-weight: 500;
-  line-height: 1.1;
   margin-top: 2px;
   color: var(--text-color);
 }
@@ -997,7 +992,6 @@ select#presets:focus {
   font-weight: 600;
   color: var(--text-color);
   user-select: none;
-  line-height: 1;
 }
 
 .vf-label[data-tot-icon] {
@@ -1074,7 +1068,7 @@ select#presets:focus {
   grid-area: 1 / 1;
   font-size: var(--font-size-9);
   color: var(--text-color);
-  line-height: 1.45;
+  line-height: var(--line-height-relaxed);
 }
 
 .info-modal-content h1 {
@@ -1189,7 +1183,6 @@ select#presets:focus {
   margin: 0;
   color: var(--text-soft);
   font-size: var(--font-size-9);
-  line-height: 1.45;
 }
 
 .info-section {
@@ -1379,7 +1372,6 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-body p {
   font-size: var(--font-size-8);
   margin: 0;
-  line-height: 1.4;
 }
 
 .text-extraction-pdf-options-modal-summary {
@@ -1518,7 +1510,6 @@ select#presets:focus {
 .text-extraction-route-modal-body p {
   font-size: var(--font-size-8);
   margin: 0;
-  line-height: 1.4;
 }
 
 .text-extraction-route-modal-actions {
@@ -1540,7 +1531,6 @@ select#presets:focus {
 .text-extraction-apply-modal-body p {
   font-size: var(--font-size-8);
   margin: 0;
-  line-height: 1.4;
 }
 
 .text-extraction-apply-modal-elapsed {
@@ -1660,7 +1650,6 @@ select#presets:focus {
   align-items: flex-start;
   gap: 12px;
   font-size: var(--font-size-6);
-  line-height: 1.35;
 }
 
 .text-extraction-batch-plan-unit {
@@ -2011,7 +2000,6 @@ select#presets:focus {
 .text-extraction-single-file-heavy-modal-details p {
   margin: 0;
   font-size: var(--font-size-6);
-  line-height: 1.4;
 }
 
 .text-extraction-single-file-heavy-modal-details-actions {
@@ -2034,7 +2022,7 @@ select#presets:focus {
 .text-extraction-ocr-activation-disclosure-body p {
   margin: 0;
   font-size: var(--font-size-6);
-  line-height: 1.45;
+  line-height: var(--line-height-relaxed);
 }
 
 .text-extraction-ocr-activation-disclosure-list {
@@ -2044,7 +2032,7 @@ select#presets:focus {
   display: grid;
   gap: 12px;
   font-size: var(--font-size-6);
-  line-height: 1.4;
+  line-height: var(--line-height-relaxed);
 }
 
 .text-extraction-ocr-activation-disclosure-actions {
@@ -2098,7 +2086,6 @@ select#presets:focus {
 .snapshot-save-tags-modal-body p {
   margin: 0;
   font-size: var(--font-size-8);
-  line-height: 1.4;
 }
 
 .snapshot-save-tags-form {
@@ -2212,7 +2199,6 @@ select#presets:focus {
 
 .snapshot-tag-manager-modal-body p {
   margin: 0;
-  line-height: 1.45;
 }
 
 #snapshotTagManagerModalMessage {
@@ -2328,7 +2314,7 @@ select#presets:focus {
 
 .reading-test-entry-modal-body p {
   margin: 0;
-  line-height: 1.45;
+  line-height: var(--line-height-relaxed);
 }
 
 .reading-test-entry-modal-toggle {
@@ -2370,7 +2356,6 @@ select#presets:focus {
   background: var(--app-warning-bg);
   color: var(--warning-text);
   font-size: var(--font-size-6);
-  line-height: 1.4;
 }
 
 .reading-test-entry-modal-toolbar {

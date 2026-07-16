@@ -19,10 +19,6 @@
   --tot-icon-size-md: 28px;
 }
 
-.tot-icon-host {
-  line-height: 1;
-}
-
 .tot-icon-slot {
   --tot-icon-size: var(--tot-icon-size-md);
   display: inline-flex;
