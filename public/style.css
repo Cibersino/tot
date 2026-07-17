@@ -110,6 +110,8 @@
     
   /* Dimensions */
   --control-height-md: 30px;
+  --numeric-value-field-height: 26px;
+  --numeric-value-field-height-compact: 22px;
   --modal-max-height: 85vh;
   --logo-height: 100px;
   --logo-links-scale: 0.7;
@@ -563,7 +565,7 @@ pre#textPreview .preview-static {
 
 .clipboard-repeat-input {
   width: 60px;
-  height: 26px;
+  height: var(--numeric-value-field-height);
   padding: 4px 6px;
   border-radius: var(--control-radius-sm);
   border: 1px solid var(--clipboard-repeat-input-border);
@@ -756,7 +758,7 @@ body.text-extraction-drop-active .app-container {
 
 .velocity #wpmInput {
   width: 56px;
-  height: 26px;
+  height: var(--numeric-value-field-height);
   padding: 4px;
   border: 1px solid var(--input-border);
   background: var(--input-bg);
@@ -839,7 +841,7 @@ select#presets:focus {
 .results-multiplier-row input {
   width: 58px;
   min-width: 58px;
-  height: 22px;
+  height: var(--numeric-value-field-height-compact);
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
@@ -935,7 +937,7 @@ select#presets:focus {
 }
 
 .cronometro .crono-box {
-  height: 26px;
+  height: var(--numeric-value-field-height);
   width: 66px;
   padding: 4px;
   border: 1px solid var(--input-border);
@@ -1446,7 +1448,7 @@ select#presets:focus {
 
 .text-extraction-pdf-options-modal-range-field input {
   width: 80px;
-  height: 26px;
+  height: var(--numeric-value-field-height);
   padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
@@ -1579,7 +1581,7 @@ select#presets:focus {
 
 .text-extraction-apply-repeat-row input {
   width: 96px;
-  height: 22px;
+  height: var(--numeric-value-field-height-compact);
   padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
@@ -1890,7 +1892,7 @@ select#presets:focus {
 
 .text-extraction-batch-plan-page-scope-input {
   width: 80px;
-  height: 26px;
+  height: var(--numeric-value-field-height);
   padding: 8px 10px;
   border: 1px solid var(--input-border);
   border-radius: var(--panel-radius);
