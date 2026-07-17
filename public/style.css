@@ -1429,19 +1429,21 @@ select#presets:focus {
 
 .text-extraction-pdf-options-modal-range-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, max-content);
   gap: 12px;
 }
 
 .text-extraction-pdf-options-modal-range-field {
   display: grid;
+  grid-template-columns: max-content max-content;
   gap: 12px;
+  align-items: center;
   font-size: var(--font-size-8);
 }
 
 .text-extraction-pdf-options-modal-range-field input {
-  width: 100%;
-  min-height: var(--control-height-md);
+  width: 80px;
+  height: 30px;
   padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
