@@ -113,6 +113,8 @@
   --control-height-md: 30px;
   --numeric-value-field-height: 26px;
   --numeric-value-field-height-compact: 22px;
+  --numeric-value-field-width-compact: 60px;
+  --numeric-value-field-width-wide: 88px;
   --modal-max-height: 85vh;
   --logo-height: 100px;
   --logo-links-scale: 0.7;
@@ -565,7 +567,7 @@ pre#textPreview .preview-static {
 }
 
 .clipboard-repeat-input {
-  width: 60px;
+  width: var(--numeric-value-field-width-compact);
   flex: none;
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
@@ -759,7 +761,7 @@ body.text-extraction-drop-active .app-container {
 }
 
 .velocity #wpmInput {
-  width: 60px;
+  width: var(--numeric-value-field-width-compact);
   flex: none;
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
@@ -842,7 +844,7 @@ select#presets:focus {
 }
 
 .results-multiplier-row input {
-  width: 60px;
+  width: var(--numeric-value-field-width-compact);
   flex: none;
   height: var(--numeric-value-field-height-compact);
   padding: var(--numeric-value-field-padding);
@@ -942,7 +944,7 @@ select#presets:focus {
 
 .cronometro .crono-box {
   height: var(--numeric-value-field-height);
-  width: 88px;
+  width: var(--numeric-value-field-width-wide);
   flex: none;
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
@@ -1452,7 +1454,7 @@ select#presets:focus {
 }
 
 .text-extraction-pdf-options-modal-range-field input {
-  width: 88px;
+  width: var(--numeric-value-field-width-wide);
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
@@ -1585,7 +1587,7 @@ select#presets:focus {
 }
 
 .text-extraction-apply-repeat-row input {
-  width: 60px;
+  width: var(--numeric-value-field-width-compact);
   flex: none;
   height: var(--numeric-value-field-height-compact);
   padding: var(--numeric-value-field-padding);
@@ -1897,7 +1899,7 @@ select#presets:focus {
 }
 
 .text-extraction-batch-plan-page-scope-input {
-  width: 88px;
+  width: var(--numeric-value-field-width-wide);
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
