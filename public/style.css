@@ -2303,22 +2303,14 @@ body.text-extraction-drop-active .app-container {
   border-radius: var(--control-radius-sm);
 }
 
-.snapshot-save-tags-combobox .renderer-combobox__input[aria-expanded="true"] {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
 .snapshot-save-tags-combobox .renderer-combobox__listbox {
   inset-inline: 0;
   max-height: 160px;
   overflow-y: auto;
   box-sizing: border-box;
   z-index: 30;
-  top: calc(100% - 1px);
+  top: 100%;
   border-radius: 5px;
-  border-top: none;
-  border-bottom-left-radius: var(--control-radius-sm);
-  border-bottom-right-radius: var(--control-radius-sm);
   box-shadow: none;
 }
 
