@@ -141,7 +141,7 @@ async function createHarness({
   const subscriptions = {};
   const elements = {
     textTimeCalculatorTargetLabel: createElement('textTimeCalculatorTargetLabel', 'label'),
-    textTimeCalculatorTarget: createElement('textTimeCalculatorTarget', 'select'),
+    textTimeCalculatorTarget: createElement('textTimeCalculatorTarget'),
     textTimeCalculatorFormulaValidation: createElement('textTimeCalculatorFormulaValidation'),
     textTimeCalculatorWordsLabel: createElement('textTimeCalculatorWordsLabel', 'label'),
     textTimeCalculatorWordsInput: createElement('textTimeCalculatorWordsInput', 'input'),
@@ -219,6 +219,37 @@ async function createHarness({
       TextTimeCalculatorCore: require('../../../public/js/lib/text_time_calculator_core'),
       AppConstants: {
         DEFAULT_LANG: 'es',
+      },
+      RendererCombobox: {
+        create(config) {
+          const host = config.host;
+          let onChange = typeof config.onChange === 'function' ? config.onChange : null;
+          const controller = {
+            update(nextConfig = {}) {
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'options')) {
+                host.options = nextConfig.options.map((option) => ({ ...option, textContent: option.label }));
+              }
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'value')) {
+                host.value = String(nextConfig.value || '');
+              }
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'onChange')) {
+                onChange = nextConfig.onChange;
+              }
+            },
+            getValue() {
+              return host.value;
+            },
+            open() {},
+            close() {},
+            focus() {},
+            destroy() {},
+          };
+          controller.update(config);
+          host.addEventListener('change', () => {
+            if (onChange) onChange(host.value, host.options.find((option) => option.value === host.value));
+          });
+          return controller;
+        },
       },
     },
     document: {

@@ -7,7 +7,7 @@
 // Renderer presets utilities (browser context).
 // Responsibilities:
 // - Merge default presets with user presets per language.
-// - Populate the presets select element.
+// - Populate the presets combobox.
 // - Apply a resolved preset selection to preset UI elements.
 // - Load defaults from main via electronAPI and build the final list.
 // - Resolve and persist the active preset selection.
@@ -87,14 +87,13 @@
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  function fillPresetsSelect(list = [], selectEl) {
-    if (!selectEl) return;
-    selectEl.innerHTML = '';
-    list.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.name;
-      opt.textContent = p.name;
-      selectEl.appendChild(opt);
+  function setPresetOptions(list = [], combobox) {
+    if (!combobox) return;
+    combobox.update({
+      options: list.map((preset) => ({
+        value: preset.name,
+        label: preset.name,
+      })),
     });
   }
 
@@ -111,19 +110,19 @@
 
   function applyPresetSelection(preset, domRefs = {}) {
     if (!preset) return;
-    const { selectEl, presetDescription } = domRefs;
-    if (selectEl) selectEl.value = preset.name;
+    const { combobox, presetDescription } = domRefs;
+    if (combobox) combobox.update({ value: preset.name });
     applyPresetDescriptionText(presetDescription, preset.description || '');
   }
 
   // =============================================================================
   // Async flows (load + selection resolution)
   // =============================================================================
-  async function loadPresetsIntoDom({
+  async function loadPresetsIntoCombobox({
     electronAPI,
     settings = null,
     language = DEFAULT_LANG,
-    selectEl
+    combobox
   }) {
     const settingsSnapshot = normalizeSettings(settings, language);
     let defaults = { general: [], languagePresets: {} };
@@ -140,7 +139,7 @@
     }
 
     const finalList = combinePresets({ settings: settingsSnapshot, defaults });
-    fillPresetsSelect(finalList, selectEl);
+    setPresetOptions(finalList, combobox);
     return { list: finalList };
   }
 
@@ -150,7 +149,7 @@
     language = DEFAULT_LANG,
     currentPresetName = null,
     previousPresetName = null,
-    selectEl,
+    combobox,
     presetDescription,
     electronAPI
   }) {
@@ -183,12 +182,12 @@
     const selected = namedSelection || list.find(p => p.name === 'default') || list[0] || null;
 
     if (!selected) {
-      if (selectEl) selectEl.selectedIndex = -1;
+      if (combobox) combobox.update({ value: '' });
       applyPresetDescriptionText(presetDescription, '');
       return selected;
     }
 
-    applyPresetSelection(selected, { selectEl, presetDescription });
+    applyPresetSelection(selected, { combobox, presetDescription });
     if (!selected.name || selected.name === persisted) {
       return selected;
     }
@@ -213,7 +212,7 @@
     } catch (err) {
       log.warn('Selection persistence failed:', err);
       if (rollbackSelection && rollbackSelection.name !== selected.name) {
-        applyPresetSelection(rollbackSelection, { selectEl, presetDescription });
+        applyPresetSelection(rollbackSelection, { combobox, presetDescription });
         return rollbackSelection;
       }
     }
@@ -226,10 +225,10 @@
   // =============================================================================
   window.RendererPresets = {
     combinePresets,
-    fillPresetsSelect,
+    setPresetOptions,
     applyPresetDescriptionText,
     applyPresetSelection,
-    loadPresetsIntoDom,
+    loadPresetsIntoCombobox,
     resolvePresetSelection
   };
 })();

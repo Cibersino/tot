@@ -117,14 +117,22 @@ test('shared preset description helper writes both text and direction', () => {
 
 test('preset selection flows use the shared description helper for selected and clear states', async () => {
   const harness = createHarness({ languageDirection: 'rtl' });
-  const selectEl = createElement('select');
+  const combobox = {
+    value: '',
+    update(config) {
+      if (Object.prototype.hasOwnProperty.call(config, 'value')) this.value = config.value;
+    },
+    getValue() {
+      return this.value;
+    },
+  };
   const descriptionEl = createElement();
 
   harness.api.applyPresetSelection(
     { name: 'Arabic', description: 'rtl:وصف' },
-    { selectEl, presetDescription: descriptionEl }
+    { combobox, presetDescription: descriptionEl }
   );
-  assert.equal(selectEl.value, 'Arabic');
+  assert.equal(combobox.getValue(), 'Arabic');
   assert.equal(descriptionEl.getAttribute('dir'), 'rtl');
 
   const selected = await harness.api.resolvePresetSelection({
@@ -139,7 +147,7 @@ test('preset selection flows use the shared description helper for selected and 
     },
     language: 'ar',
     currentPresetName: null,
-    selectEl,
+    combobox,
     presetDescription: descriptionEl,
     electronAPI: harness.createElectronApi(),
   });
@@ -157,12 +165,12 @@ test('preset selection flows use the shared description helper for selected and 
     },
     language: 'ar',
     currentPresetName: null,
-    selectEl,
+    combobox,
     presetDescription: descriptionEl,
     electronAPI: harness.createElectronApi(),
   });
 
-  assert.equal(selectEl.selectedIndex, -1);
+  assert.equal(combobox.getValue(), '');
   assert.equal(descriptionEl.textContent, '');
   assert.equal(descriptionEl.getAttribute('dir'), 'rtl');
 });

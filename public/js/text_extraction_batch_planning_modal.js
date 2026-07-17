@@ -31,6 +31,10 @@
     throw new Error('[text-extraction-batch-planning-modal] RendererI18n.tRenderer unavailable; cannot continue');
   }
   const { tRenderer } = window.RendererI18n;
+  const rendererCombobox = window.RendererCombobox || null;
+  if (!rendererCombobox || typeof rendererCombobox.create !== 'function') {
+    throw new Error('[text-extraction-batch-planning-modal] RendererCombobox unavailable; cannot continue');
+  }
   const pdfPageSelectionHelper = window.TextExtractionPdfPageSelection || null;
   if (!pdfPageSelectionHelper
     || typeof pdfPageSelectionHelper.buildAllPagesSelection !== 'function'
@@ -181,7 +185,7 @@
     const action = element.getAttribute('data-action') || '';
     const inputId = element.getAttribute('data-input-id') || '';
     const unitKey = element.getAttribute('data-unit-key') || '';
-    const id = typeof element.id === 'string' ? element.id : '';
+    const id = action ? '' : (typeof element.id === 'string' ? element.id : '');
     if (!id && !action) {
       return null;
     }
@@ -399,7 +403,14 @@
     return root;
   }
 
-  function createRouteControl(input) {
+  function markComboboxTrigger(host, action, inputId) {
+    const trigger = host && host.firstElementChild;
+    if (!trigger) return;
+    trigger.setAttribute('data-action', action);
+    trigger.setAttribute('data-input-id', inputId);
+  }
+
+  function createRouteControl(input, comboboxContext) {
     const routeOptions = Array.isArray(input.routeOptions) ? input.routeOptions : [];
     if (routeOptions.length <= 1) {
       return createDomElement('span', {
@@ -408,59 +419,53 @@
       });
     }
 
-    const select = createDomElement('select', {
-      className: 'text-extraction-batch-plan-route-select',
+    const host = createDomElement('div', {
+      className: 'text-extraction-batch-plan-route-combobox',
     });
-    select.setAttribute('data-action', 'set-input-route');
-    select.setAttribute('data-input-id', input.inputId);
-    routeOptions.forEach((route) => {
-      const option = createDomElement('option', {
-        textContent: route.toUpperCase(),
-        value: route,
-      });
-      option.value = route;
-      option.selected = route === input.activeRoute;
-      select.appendChild(option);
+    const combobox = rendererCombobox.create({
+      host,
+      mode: 'select',
+      options: routeOptions.map((route) => ({ value: route, label: route.toUpperCase() })),
+      value: input.activeRoute,
+      ariaLabel: input.fileName || input.inputId,
+      onChange: (route) => comboboxContext.onRouteChange(input.inputId, route),
     });
-    return select;
+    comboboxContext.instances.push(combobox);
+    markComboboxTrigger(host, 'set-input-route', input.inputId);
+    return host;
   }
 
-  function populateUnitSelectOptions(select, input) {
-    if (!select) return;
-    if (typeof select.replaceChildren === 'function') {
-      select.replaceChildren();
-    } else {
-      select.innerHTML = '';
-    }
-    (Array.isArray(input.groupOptions) ? input.groupOptions : []).forEach((option) => {
-      const optionEl = createDomElement('option', {
-        textContent: option.label,
-        value: option.unitKey,
-      });
-      optionEl.value = option.unitKey;
-      optionEl.selected = option.unitKey === input.groupKey;
-      select.appendChild(optionEl);
-    });
-    const newUnitOption = createDomElement('option', {
-      textContent: tRenderer('renderer.text_extraction.batch_plan.new_unit_option'),
+  function buildUnitOptions(input) {
+    const options = (Array.isArray(input.groupOptions) ? input.groupOptions : []).map((option) => ({
+      value: option.unitKey,
+      label: option.label,
+    }));
+    options.push({
       value: '__new__',
+      label: tRenderer('renderer.text_extraction.batch_plan.new_unit_option'),
     });
-    newUnitOption.value = '__new__';
-    select.appendChild(newUnitOption);
+    return options;
   }
 
-  function createUnitSelect(unit, input) {
+  function createUnitCombobox(unit, input, comboboxContext) {
     if (unit.exclusiveHeavy) {
       return null;
     }
 
-    const select = createDomElement('select', {
-      className: 'text-extraction-batch-plan-unit-select',
+    const host = createDomElement('div', {
+      className: 'text-extraction-batch-plan-unit-combobox',
     });
-    select.setAttribute('data-action', 'assign-input-group');
-    select.setAttribute('data-input-id', input.inputId);
-    populateUnitSelectOptions(select, input);
-    return select;
+    const combobox = rendererCombobox.create({
+      host,
+      mode: 'select',
+      options: buildUnitOptions(input),
+      value: input.groupKey,
+      ariaLabel: input.fileName || input.inputId,
+      onChange: (groupKey) => comboboxContext.onUnitChange(input.inputId, groupKey),
+    });
+    comboboxContext.instances.push(combobox);
+    markComboboxTrigger(host, 'assign-input-group', input.inputId);
+    return { host, combobox };
   }
 
   function createKeepControl(input) {
@@ -484,7 +489,7 @@
     return label;
   }
 
-  function renderInputRow(unit, input, pageSelectionDraft = null, pageSelectionRoots, keepControlRoots, unitSelectRoots) {
+  function renderInputRow(unit, input, pageSelectionDraft = null, pageSelectionRoots, keepControlRoots, unitSelectRoots, comboboxContext) {
     const row = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-row',
     });
@@ -518,7 +523,7 @@
     const routeWrap = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-route',
     });
-    routeWrap.appendChild(createRouteControl(input));
+    routeWrap.appendChild(createRouteControl(input, comboboxContext));
 
     const pagesWrap = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-pages',
@@ -544,10 +549,10 @@
     const unitWrap = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-unit',
     });
-    const unitSelect = createUnitSelect(unit, input);
-    if (unitSelect) {
-      unitSelectRoots.set(input.inputId, unitSelect);
-      unitWrap.appendChild(unitSelect);
+    const unitControl = createUnitCombobox(unit, input, comboboxContext);
+    if (unitControl) {
+      unitSelectRoots.set(input.inputId, unitControl.combobox);
+      unitWrap.appendChild(unitControl.host);
     }
 
     const actionsWrap = createDomElement('div', {
@@ -586,7 +591,7 @@
     return row;
   }
 
-  function renderUnit(unit, unitIndex, unitCount, pageSelectionDrafts, pageSelectionRoots, keepControlRoots, unitSelectRoots) {
+  function renderUnit(unit, unitIndex, unitCount, pageSelectionDrafts, pageSelectionRoots, keepControlRoots, unitSelectRoots, comboboxContext) {
     const section = createDomElement('section', {
       className: 'text-extraction-batch-plan-unit',
     });
@@ -647,7 +652,8 @@
         pageSelectionDrafts.get(input.inputId) || null,
         pageSelectionRoots,
         keepControlRoots,
-        unitSelectRoots
+        unitSelectRoots,
+        comboboxContext
       ));
     });
 
@@ -698,7 +704,7 @@
     return section;
   }
 
-  function replaceBodyUnits(units, unitCount, pageSelectionDrafts, pageSelectionRoots, keepControlRoots, unitSelectRoots) {
+  function replaceBodyUnits(units, unitCount, pageSelectionDrafts, pageSelectionRoots, keepControlRoots, unitSelectRoots, comboboxContext) {
     const unitNodes = (Array.isArray(units) ? units : []).map((unit, unitIndex) => renderUnit(
       unit,
       unitIndex,
@@ -706,7 +712,8 @@
       pageSelectionDrafts,
       pageSelectionRoots,
       keepControlRoots,
-      unitSelectRoots
+      unitSelectRoots,
+      comboboxContext
     ));
     if (typeof body.replaceChildren === 'function') {
       body.replaceChildren(...unitNodes);
@@ -754,6 +761,7 @@
       const pageSelectionRoots = new Map();
       const keepControlRoots = new Map();
       const unitSelectRoots = new Map();
+      const comboboxInstances = [];
 
       const findInputById = (inputId) => {
         for (const unit of Array.isArray(currentModel.units) ? currentModel.units : []) {
@@ -812,10 +820,13 @@
       };
 
       const refreshAllUnitSelectControls = () => {
-        for (const [inputId, select] of unitSelectRoots.entries()) {
+        for (const [inputId, combobox] of unitSelectRoots.entries()) {
           const input = findInputById(inputId);
-          if (!input || !select) continue;
-          populateUnitSelectOptions(select, input);
+          if (!input || !combobox) continue;
+          combobox.update({
+            options: buildUnitOptions(input),
+            value: input.groupKey,
+          });
         }
       };
 
@@ -878,8 +889,21 @@
         setScrollTop(uiState.scrollTop);
       };
 
+      const comboboxContext = {
+        instances: comboboxInstances,
+        onRouteChange(inputId, route) {
+          controller.applyAction({ type: 'set_input_route', inputId, route });
+          rerender();
+        },
+        onUnitChange(inputId, groupKey) {
+          controller.applyAction({ type: 'assign_input_group', inputId, groupKey });
+          rerender();
+        },
+      };
+
       const rerender = () => {
         const uiState = captureRerenderUiState();
+        comboboxInstances.splice(0).forEach((combobox) => combobox.destroy());
         currentModel = controller.getViewModel();
         syncPageSelectionDrafts();
         renderCopy(currentModel);
@@ -892,7 +916,8 @@
           pageSelectionDrafts,
           pageSelectionRoots,
           keepControlRoots,
-          unitSelectRoots
+          unitSelectRoots,
+          comboboxContext
         );
         failurePolicyDefault.checked = currentModel.failurePolicy !== 'omit_failed_and_continue';
         failurePolicyContinue.checked = currentModel.failurePolicy === 'omit_failed_and_continue';
@@ -926,6 +951,7 @@
       };
 
       const cleanup = () => {
+        comboboxInstances.splice(0).forEach((combobox) => combobox.destroy());
         if (rootListenerBound) {
           body.removeEventListener('click', onBodyClick);
           body.removeEventListener('change', onBodyChange);
@@ -1054,24 +1080,6 @@
         if (!target || !target.getAttribute) return;
         const action = target.getAttribute('data-action') || '';
         const inputId = target.getAttribute('data-input-id') || '';
-        if (action === 'set-input-route') {
-          controller.applyAction({
-            type: 'set_input_route',
-            inputId,
-            route: target.value,
-          });
-          rerender();
-          return;
-        }
-        if (action === 'assign-input-group') {
-          controller.applyAction({
-            type: 'assign_input_group',
-            inputId,
-            groupKey: target.value,
-          });
-          rerender();
-          return;
-        }
         if (action === 'toggle-keep') {
           controller.applyAction({
             type: 'set_generated_pdf_policy',

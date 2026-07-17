@@ -105,6 +105,9 @@ function createElement(id, tagName = 'div') {
     get children() {
       return children;
     },
+    get firstElementChild() {
+      return children[0] || null;
+    },
     get textContent() {
       if (children.length) {
         return children.map((child) => child.textContent).join('');
@@ -359,6 +362,49 @@ function createHarness() {
           if (iconName) button.setAttribute('data-tot-icon', iconName);
           if (size) button.setAttribute('data-tot-icon-size', size);
           return button;
+        },
+      },
+      RendererCombobox: {
+        create(config) {
+          const host = config.host;
+          const trigger = createElement('', 'input');
+          host.appendChild(trigger);
+          let value = '';
+          let options = [];
+          let onChange = null;
+          const combobox = {
+            update(nextConfig = {}) {
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'options')) {
+                options = nextConfig.options.slice();
+              }
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'value')) {
+                value = String(nextConfig.value || '');
+                trigger.value = value;
+              }
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'onChange')) {
+                onChange = nextConfig.onChange;
+              }
+            },
+            getValue() {
+              return value;
+            },
+            open() {},
+            close() {},
+            focus() {
+              trigger.focus();
+            },
+            destroy() {
+              host.replaceChildren();
+            },
+          };
+          combobox.update(config);
+          trigger._comboboxOptions = () => options.slice();
+          trigger.addEventListener('change', () => {
+            value = trigger.value;
+            const selected = options.find((option) => option.value === value) || null;
+            if (onChange) onChange(value, selected);
+          });
+          return combobox;
         },
       },
       RendererI18n: {
@@ -1163,16 +1209,8 @@ test('batch planning modal preserves panel scroll and control focus across reren
   );
   assert.ok(unitSelect);
   unitSelect.focus();
-
-  harness.elements.textExtractionBatchPlanUnits.dispatch('change', {
-    target: createEventTarget(
-      {
-        'data-action': 'assign-input-group',
-        'data-input-id': 'input-1',
-      },
-      { value: '__new__' }
-    ),
-  });
+  unitSelect.value = '__new__';
+  unitSelect.dispatch('change');
 
   assert.equal(harness.elements.textExtractionBatchPlanModalPanel.scrollTop, 135);
   const activeElement = harness.getActiveElement();
@@ -1340,9 +1378,17 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
   renameInput.value = 'Essays';
   harness.elements.textExtractionBatchPlanUnits.dispatch('input', { target: renameInput });
 
-  assert.match(
-    harness.elements.textExtractionBatchPlanUnits.innerHTML,
-    /Unit 1 - Essays/
+  const unitComboboxTrigger = findNodeByAttributes(
+    harness.elements.textExtractionBatchPlanUnits,
+    {
+      'data-action': 'assign-input-group',
+      'data-input-id': 'input-1',
+    }
+  );
+  assert.ok(unitComboboxTrigger);
+  assert.equal(
+    unitComboboxTrigger._comboboxOptions().some((option) => option.label === 'Unit 1 - Essays'),
+    true
   );
   assert.equal(renameInput.maxLength, 60);
 
@@ -1581,11 +1627,17 @@ test('batch planning modal hides the non-editable pages summary for non-PDF inpu
     ],
   };
 
+  const appliedActions = [];
   const controller = {
     getViewModel() {
       return model;
     },
-    applyAction() {},
+    applyAction(action) {
+      appliedActions.push(action);
+      if (action.type === 'set_input_route') {
+        model.units[0].inputs[0].activeRoute = action.route;
+      }
+    },
   };
 
   const promptPromise = harness.prompt({ controller });
@@ -1612,6 +1664,20 @@ test('batch planning modal hides the non-editable pages summary for non-PDF inpu
 
   assert.match(heavyRow.innerHTML, /All pages/);
   assert.doesNotMatch(textRow.innerHTML, /All pages/);
+
+  const routeComboboxTrigger = findNodeByAttributes(
+    harness.elements.textExtractionBatchPlanUnits,
+    {
+      'data-action': 'set-input-route',
+      'data-input-id': 'input-pdf',
+    }
+  );
+  assert.ok(routeComboboxTrigger);
+  routeComboboxTrigger.value = 'native';
+  routeComboboxTrigger.dispatch('change');
+  assert.equal(appliedActions.at(-1).type, 'set_input_route');
+  assert.equal(appliedActions.at(-1).inputId, 'input-pdf');
+  assert.equal(appliedActions.at(-1).route, 'native');
 
   harness.elements.textExtractionBatchPlanCancel.dispatch('click');
   const result = await promptPromise;

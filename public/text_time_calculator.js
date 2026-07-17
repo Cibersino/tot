@@ -60,6 +60,10 @@
   }
 
   const DEFAULT_LANG = AppConstants.DEFAULT_LANG;
+  const rendererCombobox = window.RendererCombobox || null;
+  if (!rendererCombobox || typeof rendererCombobox.create !== 'function') {
+    throw new Error('[text_time_calculator] RendererCombobox unavailable; cannot continue');
+  }
   const {
     applyWindowLanguageAttributes,
     getLangBase,
@@ -90,7 +94,7 @@
   // DOM references and field schema
   // =============================================================================
   const targetLabel = document.getElementById('textTimeCalculatorTargetLabel');
-  const targetSelect = document.getElementById('textTimeCalculatorTarget');
+  const targetHost = document.getElementById('textTimeCalculatorTarget');
   const formulaValidation = document.getElementById('textTimeCalculatorFormulaValidation');
 
   const fields = {
@@ -131,7 +135,7 @@
     wpm: 'renderer.text_time_calculator.validation.wpm',
   };
 
-  if (!targetLabel || !targetSelect || !formulaValidation) {
+  if (!targetLabel || !targetHost || !formulaValidation) {
     throw new Error('[text_time_calculator] Required DOM unavailable; cannot continue');
   }
   fieldNames.forEach((field) => {
@@ -147,6 +151,18 @@
   let currentLanguage = DEFAULT_LANG;
   let settingsCache = null;
   let translationsLoadedFor = null;
+  const targetCombobox = rendererCombobox.create({
+    host: targetHost,
+    mode: 'select',
+    options: [
+      { value: 'words', label: 'Palabras' },
+      { value: 'time', label: 'Tiempo' },
+      { value: 'wpm', label: 'WPM' },
+    ],
+    value: 'wpm',
+    ariaLabelledBy: 'textTimeCalculatorTargetLabel',
+    onChange: () => renderCalculator(),
+  });
   const rawValues = {
     words: '',
     time: '',
@@ -157,7 +173,7 @@
   // Helpers
   // =============================================================================
   function getSelectedTarget() {
-    const selected = String(targetSelect.value || '').trim();
+    const selected = String(targetCombobox.getValue() || '').trim();
     return selected === 'words' || selected === 'time' ? selected : 'wpm';
   }
 
@@ -201,12 +217,12 @@
 
     document.title = tRenderer('renderer.text_time_calculator.title');
     targetLabel.textContent = tRenderer('renderer.text_time_calculator.calculate_label');
-    targetSelect.setAttribute('aria-label', tRenderer('renderer.text_time_calculator.calculate_label'));
-
-    Array.from(targetSelect.options).forEach((option) => {
-      const value = String(option.value || '').trim();
-      const key = TARGET_LABEL_KEYS[value];
-      if (key) option.textContent = tRenderer(key);
+    targetCombobox.update({
+      ariaLabelledBy: 'textTimeCalculatorTargetLabel',
+      options: Object.entries(TARGET_LABEL_KEYS).map(([value, key]) => ({
+        value,
+        label: tRenderer(key),
+      })),
     });
 
     fieldNames.forEach((field) => {
@@ -273,11 +289,7 @@
   // App lifecycle and bootstrapping
   // =============================================================================
   async function bootstrap() {
-    targetSelect.value = 'wpm';
     fieldNames.forEach(bindFieldInput);
-    targetSelect.addEventListener('change', () => {
-      renderCalculator();
-    });
 
     let initialSettings = null;
     if (canGetSettings) {

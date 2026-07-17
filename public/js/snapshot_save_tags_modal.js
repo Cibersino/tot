@@ -53,6 +53,10 @@
   if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
     throw new Error('[snapshot-save-tags-modal] RendererIcons unavailable; cannot continue');
   }
+  const rendererCombobox = window.RendererCombobox || null;
+  if (!rendererCombobox || typeof rendererCombobox.create !== 'function') {
+    throw new Error('[snapshot-save-tags-modal] RendererCombobox unavailable; cannot continue');
+  }
 
   const electronAPI = window.electronAPI || null;
   const getSnapshotTagPreferences = electronAPI
@@ -93,8 +97,6 @@
       emptyKey: 'renderer.snapshots.empty.language',
       labelEl: document.getElementById('snapshotSaveTagsLanguageLabel'),
       controlEl: document.getElementById('snapshotSaveTagsLanguageControl'),
-      inputEl: document.getElementById('snapshotSaveTagsLanguageInput'),
-      listboxEl: document.getElementById('snapshotSaveTagsLanguageListbox'),
     },
     {
       key: 'type',
@@ -102,8 +104,6 @@
       emptyKey: 'renderer.snapshots.empty.type',
       labelEl: document.getElementById('snapshotSaveTagsTypeLabel'),
       controlEl: document.getElementById('snapshotSaveTagsTypeControl'),
-      inputEl: document.getElementById('snapshotSaveTagsTypeInput'),
-      listboxEl: document.getElementById('snapshotSaveTagsTypeListbox'),
     },
     {
       key: 'difficulty',
@@ -111,8 +111,6 @@
       emptyKey: 'renderer.snapshots.empty.difficulty',
       labelEl: document.getElementById('snapshotSaveTagsDifficultyLabel'),
       controlEl: document.getElementById('snapshotSaveTagsDifficultyControl'),
-      inputEl: document.getElementById('snapshotSaveTagsDifficultyInput'),
-      listboxEl: document.getElementById('snapshotSaveTagsDifficultyListbox'),
     },
   ];
 
@@ -155,8 +153,6 @@
     ...FIELD_DEFS.flatMap((field) => [
       field.labelEl,
       field.controlEl,
-      field.inputEl,
-      field.listboxEl,
     ]),
   ];
 
@@ -164,7 +160,7 @@
   // Shared state
   // =============================================================================
   const fieldStateByKey = new Map();
-  let fieldEventsBound = false;
+  let fieldComboboxesCreated = false;
   let currentSnapshotTagPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences();
 
   // =============================================================================
@@ -197,11 +193,9 @@
     if (!fieldStateByKey.has(fieldKey)) {
       fieldStateByKey.set(fieldKey, {
         committedValue: '',
-        queryText: '',
-        isOpen: false,
-        activeIndex: -1,
         allOptions: [],
-        filteredOptions: [],
+        pendingCreateLabel: '',
+        combobox: null,
       });
     }
     return fieldStateByKey.get(fieldKey);
@@ -296,26 +290,6 @@
     return [clearOption, ...visibleOptions];
   }
 
-  function findOptionByValue(options, rawValue) {
-    const normalizedValue = normalizeOptionalString(rawValue);
-    if (!normalizedValue) return null;
-    return options.find((option) => option.value === normalizedValue) || null;
-  }
-
-  function getCommittedOption(fieldState) {
-    return fieldState.allOptions.find((option) => option.value === fieldState.committedValue)
-      || fieldState.allOptions[0]
-      || null;
-  }
-
-  function syncFieldInputFromCommittedValue(fieldKey) {
-    const field = getFieldDef(fieldKey);
-    const fieldState = ensureFieldState(fieldKey);
-    const committedOption = getCommittedOption(fieldState);
-    fieldState.queryText = '';
-    field.inputEl.value = committedOption && committedOption.value ? committedOption.label : '';
-  }
-
   function buildCreateOption(fieldKey, queryText) {
     const labelInfo = snapshotTagCatalog.validateCustomLabel(queryText);
     if (!labelInfo.ok) return null;
@@ -337,140 +311,39 @@
     };
   }
 
-  function updateFilteredOptions(fieldKey) {
+  function resolveFieldOptions(fieldKey, queryText) {
     const fieldState = ensureFieldState(fieldKey);
-    const normalizedQuery = snapshotTagCatalog.normalizeLabelForComparison(fieldState.queryText);
-    fieldState.filteredOptions = normalizedQuery
+    const normalizedQuery = snapshotTagCatalog.normalizeLabelForComparison(queryText);
+    const filteredOptions = normalizedQuery
       ? fieldState.allOptions.filter((option) => option.normalizedSearch.includes(normalizedQuery))
       : fieldState.allOptions.slice();
-
-    const createOption = buildCreateOption(fieldKey, fieldState.queryText);
+    const createOption = buildCreateOption(fieldKey, queryText);
+    fieldState.pendingCreateLabel = createOption ? createOption.createLabel : '';
     if (createOption) {
-      fieldState.filteredOptions.unshift(createOption);
+      filteredOptions.unshift(createOption);
     }
-
-    if (!fieldState.filteredOptions.length) {
-      fieldState.activeIndex = -1;
-      return;
-    }
-
-    const committedIndex = fieldState.filteredOptions.findIndex(
-      (option) => option.value === fieldState.committedValue && option.kind === 'value'
-    );
-    fieldState.activeIndex = committedIndex >= 0 ? committedIndex : 0;
-  }
-
-  function renderField(fieldKey) {
-    const field = getFieldDef(fieldKey);
-    const fieldState = ensureFieldState(fieldKey);
-    if (!field) return;
-
-    field.labelEl.textContent = tRenderer(field.labelKey);
-    field.inputEl.placeholder = tRenderer(SEARCH_PLACEHOLDER_KEY);
-    field.inputEl.setAttribute('aria-expanded', fieldState.isOpen ? 'true' : 'false');
-    field.listboxEl.hidden = !fieldState.isOpen;
-    field.listboxEl.setAttribute('aria-hidden', fieldState.isOpen ? 'false' : 'true');
-    field.listboxEl.innerHTML = '';
-
-    if (!fieldState.isOpen) {
-      field.inputEl.removeAttribute('aria-activedescendant');
-      return;
-    }
-
-    if (!fieldState.filteredOptions.length) {
-      const emptyEl = document.createElement('div');
-      emptyEl.className = 'snapshot-save-tags-option is-empty is-disabled';
-      emptyEl.setAttribute('role', 'option');
-      emptyEl.setAttribute('aria-disabled', 'true');
-      emptyEl.textContent = tRenderer(SEARCH_NO_RESULTS_KEY);
-      field.listboxEl.appendChild(emptyEl);
-      field.inputEl.removeAttribute('aria-activedescendant');
-      return;
-    }
-
-    fieldState.filteredOptions.forEach((option, index) => {
-      const optionEl = document.createElement('div');
-      optionEl.id = `snapshotSaveTags-${fieldKey}-option-${index}`;
-      optionEl.className = `snapshot-save-tags-option${option.kind === 'clear' ? ' is-clear' : ''}${option.kind === 'create' ? ' is-create' : ''}${index === fieldState.activeIndex ? ' is-active' : ''}`;
-      optionEl.setAttribute('role', 'option');
-      optionEl.setAttribute(
-        'aria-selected',
-        option.kind !== 'create' && option.value === fieldState.committedValue ? 'true' : 'false'
-      );
-      optionEl.dataset.index = String(index);
-      optionEl.textContent = option.label;
-      optionEl.addEventListener('mousedown', (event) => {
-        event.preventDefault();
-      });
-      optionEl.addEventListener('click', () => {
-        void commitFieldOption(fieldKey, index);
-      });
-      field.listboxEl.appendChild(optionEl);
-    });
-
-    if (fieldState.activeIndex >= 0) {
-      field.inputEl.setAttribute(
-        'aria-activedescendant',
-        `snapshotSaveTags-${fieldKey}-option-${fieldState.activeIndex}`
-      );
-    } else {
-      field.inputEl.removeAttribute('aria-activedescendant');
-    }
-  }
-
-  function renderAllFields() {
-    FIELD_DEFS.forEach((field) => renderField(field.key));
-  }
-
-  function closeField(fieldKey, { restoreCommittedValue = true } = {}) {
-    const field = getFieldDef(fieldKey);
-    const fieldState = ensureFieldState(fieldKey);
-    if (!field) return;
-
-    fieldState.isOpen = false;
-    if (restoreCommittedValue) {
-      syncFieldInputFromCommittedValue(fieldKey);
-      updateFilteredOptions(fieldKey);
-    }
-    renderField(fieldKey);
+    return filteredOptions.map((option) => (
+      option.kind === 'create'
+        ? { action: 'create', label: option.label, variant: 'create' }
+        : {
+          value: option.value,
+          label: option.label,
+          variant: option.kind === 'clear' ? 'clear' : '',
+        }
+    ));
   }
 
   function closeAllFields() {
-    FIELD_DEFS.forEach((field) => closeField(field.key, { restoreCommittedValue: true }));
-  }
-
-  function closeOtherFields(activeFieldKey) {
     FIELD_DEFS.forEach((field) => {
-      if (field.key !== activeFieldKey) {
-        closeField(field.key, { restoreCommittedValue: true });
-      }
+      const combobox = ensureFieldState(field.key).combobox;
+      if (combobox) combobox.close();
     });
   }
 
-  function openField(fieldKey, { preserveQuery = false } = {}) {
-    const fieldState = ensureFieldState(fieldKey);
-    if (!preserveQuery) {
-      fieldState.queryText = '';
-      syncFieldInputFromCommittedValue(fieldKey);
-    }
-    closeOtherFields(fieldKey);
-    updateFilteredOptions(fieldKey);
-    fieldState.isOpen = true;
-    renderField(fieldKey);
-  }
-
-  function moveActiveIndex(fieldKey, delta) {
-    const fieldState = ensureFieldState(fieldKey);
-    if (!fieldState.filteredOptions.length) {
-      fieldState.activeIndex = -1;
-      return;
-    }
-    if (fieldState.activeIndex < 0) {
-      fieldState.activeIndex = 0;
-      return;
-    }
-    const lastIndex = fieldState.filteredOptions.length - 1;
-    fieldState.activeIndex = Math.max(0, Math.min(fieldState.activeIndex + delta, lastIndex));
+  function isFieldOpen(fieldKey) {
+    const field = getFieldDef(fieldKey);
+    const trigger = field && field.controlEl ? field.controlEl.firstElementChild : null;
+    return !!trigger && trigger.getAttribute('aria-expanded') === 'true';
   }
 
   async function createCustomTagAndCommit(fieldKey, rawLabel) {
@@ -494,32 +367,15 @@
     resetFields(nextTags);
   }
 
-  async function commitFieldOption(fieldKey, explicitIndex = null) {
+  function onFieldValueChanged(fieldKey, value) {
     const fieldState = ensureFieldState(fieldKey);
-    const optionIndex = explicitIndex == null ? fieldState.activeIndex : explicitIndex;
-    if (optionIndex < 0 || optionIndex >= fieldState.filteredOptions.length) return;
-
-    const option = fieldState.filteredOptions[optionIndex];
-    if (option.kind === 'create') {
-      await createCustomTagAndCommit(fieldKey, option.createLabel);
-      return;
-    }
-
-    fieldState.committedValue = option.value;
-    closeField(fieldKey, { restoreCommittedValue: true });
+    fieldState.committedValue = value;
   }
 
-  function isNodeWithin(root, node) {
-    let current = node || null;
-    while (current) {
-      if (current === root) return true;
-      current = current.parentNode || null;
-    }
-    return false;
-  }
-
-  function isPrintableKey(event) {
-    return typeof event.key === 'string' && event.key.length === 1 && !event.ctrlKey && !event.metaKey;
+  function onFieldAction(fieldKey, option) {
+    if (!option || option.action !== 'create') return;
+    const createLabel = ensureFieldState(fieldKey).pendingCreateLabel;
+    if (createLabel) void createCustomTagAndCommit(fieldKey, createLabel);
   }
 
   function resetFields(initialTags) {
@@ -532,17 +388,24 @@
     FIELD_DEFS.forEach((field) => {
       const fieldState = ensureFieldState(field.key);
       fieldState.allOptions = buildFieldOptions(field);
-      const normalizedInitialOption = normalizedInitialTags
-        ? findOptionByValue(fieldState.allOptions, normalizedInitialTags[field.key])
-        : null;
-      fieldState.committedValue = normalizedInitialOption ? normalizedInitialOption.value : '';
-      fieldState.queryText = '';
-      fieldState.isOpen = false;
-      updateFilteredOptions(field.key);
-      syncFieldInputFromCommittedValue(field.key);
+      const normalizedValue = normalizedInitialTags
+        ? normalizeOptionalString(normalizedInitialTags[field.key])
+        : '';
+      fieldState.committedValue = normalizedValue;
+      fieldState.pendingCreateLabel = '';
+      field.labelEl.textContent = tRenderer(field.labelKey);
+      fieldState.combobox.update({
+        options: fieldState.allOptions.map((option) => ({
+          value: option.value,
+          label: option.label,
+          variant: option.kind === 'clear' ? 'clear' : '',
+        })),
+        value: normalizedValue,
+        placeholder: tRenderer(SEARCH_PLACEHOLDER_KEY),
+        noResultsLabel: tRenderer(SEARCH_NO_RESULTS_KEY),
+      });
+      fieldState.combobox.close();
     });
-
-    renderAllFields();
   }
 
   function collectTags() {
@@ -613,77 +476,25 @@
   }
 
   function ensureFieldEventsBound() {
-    if (fieldEventsBound) return;
+    if (fieldComboboxesCreated) return;
 
     FIELD_DEFS.forEach((field) => {
-      field.inputEl.addEventListener('click', () => {
-        if (isManagerModalOpen()) return;
-        if (!ensureFieldState(field.key).isOpen) {
-          openField(field.key);
-        }
-        const fieldState = ensureFieldState(field.key);
-        if (fieldState.committedValue && typeof field.inputEl.select === 'function') {
-          field.inputEl.select();
-        }
-      });
-
-      field.inputEl.addEventListener('input', () => {
-        if (isManagerModalOpen()) return;
-        const fieldState = ensureFieldState(field.key);
-        fieldState.queryText = field.inputEl.value;
-        openField(field.key, { preserveQuery: true });
-      });
-
-      field.inputEl.addEventListener('keydown', (event) => {
-        if (isManagerModalOpen()) return;
-        const fieldState = ensureFieldState(field.key);
-
-        if (event.key === 'ArrowDown') {
-          event.preventDefault();
-          if (!fieldState.isOpen) {
-            openField(field.key);
-            return;
-          }
-          moveActiveIndex(field.key, 1);
-          renderField(field.key);
-          return;
-        }
-
-        if (event.key === 'ArrowUp' && fieldState.isOpen) {
-          event.preventDefault();
-          moveActiveIndex(field.key, -1);
-          renderField(field.key);
-          return;
-        }
-
-        if (event.key === 'Enter' && fieldState.isOpen) {
-          event.preventDefault();
-          void commitFieldOption(field.key);
-          return;
-        }
-
-        if (event.key === 'Escape' && fieldState.isOpen) {
-          event.preventDefault();
-          if (typeof event.stopPropagation === 'function') {
-            event.stopPropagation();
-          }
-          closeField(field.key, { restoreCommittedValue: true });
-          return;
-        }
-
-        if (event.key === 'Tab' && fieldState.isOpen) {
-          closeField(field.key, { restoreCommittedValue: true });
-          return;
-        }
-
-        if (!fieldState.isOpen && isPrintableKey(event) && fieldState.committedValue) {
-          field.inputEl.value = '';
-          fieldState.queryText = '';
-        }
+      const fieldState = ensureFieldState(field.key);
+      fieldState.combobox = rendererCombobox.create({
+        host: field.controlEl,
+        mode: 'editable',
+        options: [],
+        value: '',
+        ariaLabelledBy: field.labelEl.id,
+        placeholder: tRenderer(SEARCH_PLACEHOLDER_KEY),
+        noResultsLabel: tRenderer(SEARCH_NO_RESULTS_KEY),
+        resolveOptions: (query) => resolveFieldOptions(field.key, query),
+        onChange: (value) => onFieldValueChanged(field.key, value),
+        onAction: (option) => onFieldAction(field.key, option),
       });
     });
 
-    fieldEventsBound = true;
+    fieldComboboxesCreated = true;
   }
 
   // =============================================================================
@@ -1100,7 +911,6 @@
         btnCancel.removeEventListener('click', onCancel);
         btnClose.removeEventListener('click', onCancel);
         backdrop.removeEventListener('click', onCancel);
-        document.removeEventListener('mousedown', onDocumentMouseDown);
         window.removeEventListener('keydown', onWindowKeyDown);
         closeAllFields();
         modal.setAttribute('aria-hidden', 'true');
@@ -1137,23 +947,14 @@
         void onManage();
       }
 
-      function onDocumentMouseDown(event) {
-        if (isManagerModalOpen()) return;
-        FIELD_DEFS.forEach((field) => {
-          if (!isNodeWithin(field.controlEl, event.target)) {
-            closeField(field.key, { restoreCommittedValue: true });
-          }
-        });
-      }
-
       function onWindowKeyDown(ev) {
         if (modal.getAttribute('aria-hidden') !== 'false' || isManagerModalOpen()) return;
         if (ev.key !== 'Escape') return;
 
-        const openFieldDef = FIELD_DEFS.find((field) => ensureFieldState(field.key).isOpen);
+        const openFieldDef = FIELD_DEFS.find((field) => isFieldOpen(field.key));
         if (openFieldDef) {
           ev.preventDefault();
-          closeField(openFieldDef.key, { restoreCommittedValue: true });
+          ensureFieldState(openFieldDef.key).combobox.close();
           return;
         }
 
@@ -1166,11 +967,10 @@
       btnCancel.addEventListener('click', onCancel);
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
-      document.addEventListener('mousedown', onDocumentMouseDown);
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');
-      FIELD_DEFS[0].inputEl.focus();
+      ensureFieldState(FIELD_DEFS[0].key).combobox.focus();
     });
   }
 

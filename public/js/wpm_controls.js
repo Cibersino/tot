@@ -7,7 +7,7 @@
 // Main-window WPM controls module.
 // Responsibilities:
 // - Own main-renderer WPM controls state (current WPM + preset selection).
-// - Keep WPM input, slider, preset select, and description in sync.
+// - Keep WPM input, slider, preset combobox, and description in sync.
 // - Apply WPM changes from presets, manual edits, and external feature callbacks.
 // - Delegate preset catalog/selection resolution to RendererPresets.
 
@@ -49,7 +49,7 @@
   function createController({
     wpmInput,
     wpmSlider,
-    presetsSelect,
+    presetsCombobox,
     presetDescription,
     onPresetSelectionChanged,
   } = {}) {
@@ -98,7 +98,7 @@
     // =============================================================================
     function hasRendererPresetsCatalogBridge() {
       const rendererPresets = window.RendererPresets || {};
-      return typeof rendererPresets.loadPresetsIntoDom === 'function';
+      return typeof rendererPresets.loadPresetsIntoCombobox === 'function';
     }
 
     function hasRendererPresetsSelectionBridge() {
@@ -198,8 +198,8 @@
     // Preset state helpers
     // =============================================================================
     function applyPresetUiSelection(preset) {
-      if (presetsSelect && preset && preset.name) {
-        presetsSelect.value = preset.name;
+      if (presetsCombobox && preset && preset.name) {
+        presetsCombobox.update({ value: preset.name });
       }
       applyPresetDescriptionText(preset && preset.description ? preset.description : '');
     }
@@ -226,13 +226,13 @@
 
     function resetPresetSelection() {
       currentPresetName = null;
-      if (presetsSelect) presetsSelect.selectedIndex = -1;
+      if (presetsCombobox) presetsCombobox.update({ value: '' });
       applyPresetDescriptionText('');
       notifyPresetSelectionChanged(null);
     }
 
     function resetPresetsState() {
-      if (presetsSelect) presetsSelect.innerHTML = '';
+      if (presetsCombobox) presetsCombobox.update({ options: [], value: '' });
       applyPresetDescriptionText('');
       allPresetsCache = [];
       currentPresetName = null;
@@ -292,22 +292,22 @@
     async function reloadPresetsList({ settingsSnapshot, language, electronAPI } = {}) {
       if (!hasRendererPresetsCatalogBridge()) {
         log.warn(
-          'Preset list reload skipped because RendererPresets.loadPresetsIntoDom is unavailable.'
+          'Preset list reload skipped because RendererPresets.loadPresetsIntoCombobox is unavailable.'
         );
         return resetPresetsState();
       }
       try {
-        const { loadPresetsIntoDom } = getRendererPresetsBridge();
-        const loadResult = await loadPresetsIntoDom({
+        const { loadPresetsIntoCombobox } = getRendererPresetsBridge();
+        const loadResult = await loadPresetsIntoCombobox({
           electronAPI,
           settings: settingsSnapshot,
           language,
-          selectEl: presetsSelect
+          combobox: presetsCombobox
         });
         allPresetsCache = loadResult && loadResult.list ? loadResult.list.slice() : [];
         return allPresetsCache;
       } catch (err) {
-        log.error('RendererPresets.loadPresetsIntoDom failed:', err);
+        log.error('RendererPresets.loadPresetsIntoCombobox failed:', err);
         return resetPresetsState();
       }
     }
@@ -338,7 +338,7 @@
           language,
           currentPresetName,
           previousPresetName: previousSelectedPresetName,
-          selectEl: presetsSelect,
+          combobox: presetsCombobox,
           presetDescription,
           electronAPI
         });
@@ -389,7 +389,7 @@
           language,
           currentPresetName: preset.name,
           previousPresetName: previousSelectedPresetName,
-          selectEl: presetsSelect,
+          combobox: presetsCombobox,
           presetDescription,
           electronAPI
         });
@@ -413,7 +413,7 @@
         );
         return null;
       }
-      const name = presetsSelect ? presetsSelect.value : '';
+      const name = presetsCombobox ? presetsCombobox.getValue() : '';
       if (!name) return null;
 
       const preset = allPresetsCache.find(item => item.name === name);
@@ -429,7 +429,7 @@
           language,
           currentPresetName: preset.name,
           previousPresetName: currentPresetName,
-          selectEl: presetsSelect,
+          combobox: presetsCombobox,
           presetDescription,
           electronAPI
         });

@@ -6,19 +6,16 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
   <title>Calculadora rápida</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="combobox.css" />
   <link rel="stylesheet" href="text_time_calculator.css" />
 </head>
 <body>
   <main class="text-time-calculator">
     <div class="text-time-calculator__target-row">
-      <label id="textTimeCalculatorTargetLabel" class="text-time-calculator__target-label" for="textTimeCalculatorTarget">
+      <span id="textTimeCalculatorTargetLabel" class="text-time-calculator__target-label">
         Calcular
-      </label>
-      <select id="textTimeCalculatorTarget" class="text-time-calculator__target-select">
-        <option value="words">Palabras</option>
-        <option value="time">Tiempo</option>
-        <option value="wpm">WPM</option>
-      </select>
+      </span>
+      <div id="textTimeCalculatorTarget" class="text-time-calculator__target-combobox"></div>
     </div>
 
     <div class="text-time-calculator__rows">
@@ -66,6 +63,7 @@
   </main>
 
   <script src="js/log.js"></script>
+  <script src="js/combobox.js"></script>
   <script src="js/constants.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/lib/format_core.js"></script>

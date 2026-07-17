@@ -55,7 +55,7 @@ body {
 }
 
 .text-time-calculator__row-control,
-.text-time-calculator__target-select,
+.text-time-calculator__target-combobox,
 .text-time-calculator__field {
   width: 100%;
 }
@@ -66,7 +66,7 @@ body {
   min-height: 32px;
 }
 
-.text-time-calculator__target-select,
+.text-time-calculator__target-combobox .renderer-combobox__input,
 .text-time-calculator__field {
   height: 32px;
   border: 1px solid #b7c2ce;
@@ -77,7 +77,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.text-time-calculator__target-select,
+.text-time-calculator__target-combobox .renderer-combobox__input,
 .text-time-calculator__field {
   padding: 0 10px;
 }
@@ -99,10 +99,20 @@ body {
   background: #fff7f7;
 }
 
-.text-time-calculator__target-select:focus-visible,
 .text-time-calculator__field:focus-visible {
   outline: 2px solid #2b78ff;
   outline-offset: 1px;
+}
+
+.text-time-calculator__target-combobox {
+  --renderer-combobox-border: 1px solid #b7c2ce;
+  --renderer-combobox-radius: 8px;
+  --renderer-combobox-background: #fff;
+  --renderer-combobox-color: #1f2937;
+  --renderer-combobox-focus: #2b78ff;
+  --renderer-combobox-focus-offset: 1px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
 
 .text-time-calculator__row-validation,

@@ -175,6 +175,7 @@ tot/
 │ │ │ ├── stopwatch_time_core.js
 │ │ │ └── text_time_calculator_core.js
 │ │ ├── browser_extension_modal.js
+│ │ ├── combobox.js
 │ │ ├── constants.js
 │ │ ├── count.js
 │ │ ├── crono.js
@@ -219,6 +220,7 @@ tot/
 │ │ ├── wpm_controls.js
 │ │ └── wpm_curve.js
 │ ├── third_party_licenses/        # {licencias/notices versionados de terceros redistribuidos}
+│ ├── combobox.css
 │ ├── editor.css
 │ ├── editor.html
 │ ├── editor.js
@@ -294,7 +296,7 @@ tot/
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
 - `public/task_editor.js` — Renderer del Editor de Tareas (UI + tabla + biblioteca + anchos de columnas).
 - `public/flotante.js` — Lógica del Cronómetro Flotante.
-- `public/text_time_calculator.js` — Renderer de la Calculadora rápida: aplica i18n, escucha `settings-updated`, alterna entre dos inputs editables y un valor derivado, y consume los núcleos compartidos de tiempo/cálculo.
+- `public/text_time_calculator.js` — Renderer de la Calculadora rápida: aplica i18n, escucha `settings-updated`, alterna entre dos inputs editables y un valor derivado, usa `RendererCombobox` para elegir el objetivo y consume los núcleos compartidos de tiempo/cálculo.
 - `public/language_window.js` — Lógica de la ventana de selección de idioma.
 - `public/reading_test_questions.js` — Lógica del modal de preguntas/comprensión del reading speed test.
 - `public/reading_test_result.js` — Lógica del modal compacto de resultado del reading speed test (WPM medidos + resumen breve antes de preguntas/preset).
@@ -368,6 +370,7 @@ tot/
 Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` suele actuar como orquestador.
 
 - `public/js/constants.js` — Constantes compartidas del renderer, incluyendo límites/default/step del tamaño de fuente, ancho de texto maximizado y gutter mínimo del Editor de Texto.
+- `public/js/combobox.js` — Componente compartido production-owned `window.RendererCombobox`: reemplaza los selects nativos mediante los modos `select` y `editable`, y centraliza ARIA, teclado, opción activa, cierre externo, exclusión entre instancias y popups siempre abiertos debajo del trigger; `public/combobox.css` aporta la estructura compartida, el límite fijo de `160px` y el scroll vertical.
 - `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
 - `public/js/wpm_controls.js` — Owner renderer de los controles de velocidad de lectura: centraliza estado WPM, binding slider/input, mapeo vía `wpm_curve`, carga/selección de presets en coordinación con `RendererPresets` y aplicación de cambios externos sin devolver esa lógica a `public/renderer.js`.
 - `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.
@@ -383,12 +386,12 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
 - `public/js/generated_icons.js` — Artefacto runtime autogenerado del renderer: registra el catálogo serializado de SVGs funcionales a partir de `assets/icons/`; no se edita a mano y se regenera con `npm run generate:icons`.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
-- `public/js/presets.js` — Bridge/owner renderer de presets: resuelve catálogo por idioma, rellena el selector en DOM, conserva la descripción visible y persiste la selección activa; deja el ownership de WPM widget sync a `public/js/wpm_controls.js`.
+- `public/js/presets.js` — Bridge/owner renderer de presets: resuelve el catálogo por idioma, carga sus opciones en el combobox compartido, conserva la descripción visible y persiste la selección activa; deja el ownership de WPM widget sync a `public/js/wpm_controls.js`.
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/renderer_icons.js` — Helper compartido de íconos funcionales en renderer: consume `generated_icons.js`, resuelve variantes/tamaños y expone la aplicación común de iconos a markup estático y a controles generados por JS.
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto actual: expone `saveSnapshot()` / `loadSnapshot()`, invoca el modal previo de tags al guardar, normaliza metadata opcional de snapshot vía `snapshot_tag_catalog`, llama `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
-- `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: muestra selects opcionales para `language` / `type` / `difficulty`, admite copy overrides compartidos con batch planning, aplica i18n y devuelve tags normalizados o cancelación.
+- `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: usa tres comboboxes editables para `language` / `type` / `difficulty`, conserva el filtrado, clear e inline-create del catálogo, admite copy overrides compartidos con batch planning, aplica i18n y devuelve tags normalizados o cancelación.
 - `public/js/reading_speed_test.js` — Módulo renderer del reading speed test: gestiona el modal de entrada/configuración, refleja combinaciones reales del pool, ejecuta reset/start IPC, muestra warnings inline y sincroniza el lock state / WPM aplicado.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Ko-fi a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n y mantiene este wiring fuera de `public/renderer.js`.
@@ -397,7 +400,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/results_time_multiplier.js` — Controla el multiplicador de tiempo bajo el resultado estimado: valida el input como numero natural, conserva el estado base recibido desde `public/renderer.js` y renderiza el tiempo multiplicado en la ventana principal.
 - `public/js/text_extraction_pdf_page_selection_ui_model.js` — Owner renderer compartido del modelo `pdfPageSelection` para text extraction: construye drafts de UI, canonicaliza `all/range`, deriva estado visible (`selected count`, `invalid range`, enable/disable de submit) y formatea summaries/range labels para los consumers renderer.
 - `public/js/text_extraction_status_ui.js` — Superficie visual del flujo text extraction en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido, botón abort, progreso por unidad/archivo y nombre seguro del `processingInputFile` (original, subset materializado o child generado por heavy split) sin exponer paths completos.
-- `public/js/text_extraction_batch_planning_modal.js` — Modal/shared planner del batch extraction: renderiza unidades/inputs reordenables, consume el helper compartido de `pdfPageSelection` para page scope por input y disable/focus de ranges inválidos, aplica failure policy común y permite toggle de conservación de generated PDFs + edición de tags sin mover la lógica de negocio a `renderer.js`.
+- `public/js/text_extraction_batch_planning_modal.js` — Modal/shared planner del batch extraction: renderiza unidades/inputs reordenables, usa comboboxes compartidos para ruta y unidad de destino con restauración de foco tras rerender, consume el helper de `pdfPageSelection` para page scope por input y disable/focus de ranges inválidos, aplica failure policy común y permite toggle de conservación de generated PDFs + edición de tags sin mover la lógica de negocio a `renderer.js`.
 - `public/js/text_extraction_batch_final_modal.js` — Modal final compartido de batch/heavy execution: resume resultados por unidad, acciones de copy report / abrir carpeta de snapshots y reveal de artefactos generados retenidos sin crear una segunda superficie de reporte.
 - `public/js/text_extraction_pdf_options_modal.js` — Modal renderer previo a prepare para PDFs: muestra `totalPages`, recoge `All pages` vs `Page range`, usa el helper compartido de `pdfPageSelection` para live validation / selected-count / disable de `Continue`, controla la policy `keep/delete` cuando aplica y resetea el draft de rango al volver a `All pages`.
 - `public/js/text_extraction_route_choice_modal.js` — Modal de elección de ruta (`native` / `ocr`) cuando un PDF soporta ambas.

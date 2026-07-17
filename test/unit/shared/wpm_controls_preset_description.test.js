@@ -46,6 +46,20 @@ function createElement(tagName = 'div') {
   };
 }
 
+function createCombobox() {
+  return {
+    value: '',
+    options: [],
+    update(config = {}) {
+      if (Object.prototype.hasOwnProperty.call(config, 'value')) this.value = String(config.value || '');
+      if (Object.prototype.hasOwnProperty.call(config, 'options')) this.options = config.options.slice();
+    },
+    getValue() {
+      return this.value;
+    },
+  };
+}
+
 function resolveDirectionFromText(text, fallbackDirection) {
   const value = String(text || '');
   if (!value.trim()) return fallbackDirection;
@@ -111,7 +125,7 @@ function createHarness({ languageDirection = 'rtl', setSelectedPresetImpl = null
   const dom = {
     wpmInput: createElement('input'),
     wpmSlider: createElement('input'),
-    presetsSelect: createElement('select'),
+    presetsCombobox: createCombobox(),
     presetDescription: createElement('div'),
   };
   dom.wpmInput.value = '200';
@@ -139,7 +153,7 @@ function createHarness({ languageDirection = 'rtl', setSelectedPresetImpl = null
   const controller = sandbox.window.WpmControls.createController({
     wpmInput: dom.wpmInput,
     wpmSlider: dom.wpmSlider,
-    presetsSelect: dom.presetsSelect,
+    presetsCombobox: dom.presetsCombobox,
     presetDescription: dom.presetDescription,
     onPresetSelectionChanged() {},
   });
@@ -171,7 +185,7 @@ test('wpm controls apply and clear preset descriptions through the shared direct
   assert.equal(dom.presetDescription.textContent, 'rtl:الوصف الافتراضي');
   assert.equal(dom.presetDescription.getAttribute('dir'), 'rtl');
 
-  dom.presetsSelect.value = 'latin';
+  dom.presetsCombobox.update({ value: 'latin' });
   const selected = await controller.handlePresetSelectionChange({
     settingsSnapshot: {
       language: 'ar',
@@ -199,7 +213,7 @@ test('wpm controls reset stale preset descriptions on preset reload failure', as
   dom.presetDescription.textContent = 'stale';
   dom.presetDescription.setAttribute('dir', 'ltr');
 
-  rendererPresets.loadPresetsIntoDom = async () => {
+  rendererPresets.loadPresetsIntoCombobox = async () => {
     throw new Error('boom');
   };
 
@@ -236,7 +250,7 @@ test('wpm controls roll back to the previous preset when selection persistence f
     electronAPI,
   });
 
-  dom.presetsSelect.value = 'latin';
+  dom.presetsCombobox.update({ value: 'latin' });
   const selected = await controller.handlePresetSelectionChange({
     settingsSnapshot: {
       language: 'ar',
@@ -249,7 +263,7 @@ test('wpm controls roll back to the previous preset when selection persistence f
 
   assert.deepEqual(selectionPersists, ['latin']);
   assert.equal(selected.name, 'default');
-  assert.equal(dom.presetsSelect.value, 'default');
+  assert.equal(dom.presetsCombobox.getValue(), 'default');
   assert.equal(dom.presetDescription.textContent, 'rtl:الوصف الافتراضي');
   assert.equal(dom.presetDescription.getAttribute('dir'), 'rtl');
   assert.equal(dom.wpmInput.value, '200');

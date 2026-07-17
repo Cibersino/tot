@@ -46,6 +46,20 @@ function createElement(tagName = 'div') {
   };
 }
 
+function createCombobox() {
+  return {
+    value: '',
+    options: [],
+    update(config = {}) {
+      if (Object.prototype.hasOwnProperty.call(config, 'value')) this.value = String(config.value || '');
+      if (Object.prototype.hasOwnProperty.call(config, 'options')) this.options = config.options.slice();
+    },
+    getValue() {
+      return this.value;
+    },
+  };
+}
+
 function resolveDirectionFromText(text, fallbackDirection) {
   const value = String(text || '');
   if (!value.trim()) return fallbackDirection;
@@ -119,7 +133,7 @@ function createHarness({
   const dom = {
     wpmInput: createElement('input'),
     wpmSlider: createElement('input'),
-    presetsSelect: createElement('select'),
+    presetsCombobox: createCombobox(),
     presetDescription: createElement('div'),
   };
   dom.wpmInput.value = '200';
@@ -147,7 +161,7 @@ function createHarness({
   const controller = sandbox.window.WpmControls.createController({
     wpmInput: dom.wpmInput,
     wpmSlider: dom.wpmSlider,
-    presetsSelect: dom.presetsSelect,
+    presetsCombobox: dom.presetsCombobox,
     presetDescription: dom.presetDescription,
     onPresetSelectionChanged() {},
   });
@@ -250,7 +264,7 @@ test('handlePresetCreated reports effective post-resolution selection and WPM ou
     nextSelectedPresetName: 'custom',
     selectedPresetChanged: true,
   });
-  assert.equal(harness.dom.presetsSelect.value, 'custom');
+  assert.equal(harness.dom.presetsCombobox.getValue(), 'custom');
 });
 
 test('preset selection preserves the existing onWpmChanged time-only callback path', async () => {
@@ -274,7 +288,7 @@ test('preset selection preserves the existing onWpmChanged time-only callback pa
     electronAPI: harness.electronAPI,
   });
 
-  harness.dom.presetsSelect.value = 'latin';
+  harness.dom.presetsCombobox.update({ value: 'latin' });
   const selected = await harness.controller.handlePresetSelectionChange({
     settingsSnapshot: {
       language: 'en',

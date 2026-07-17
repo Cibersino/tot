@@ -55,6 +55,9 @@ Do not update this document for routine test implementation changes unless those
 
 Current automated coverage maps back to this manual suite roughly as follows:
 
+* `test/unit/shared/combobox.test.js`
+  * covers the production `RendererCombobox` contract in `select` and `editable` modes: ARIA/open state, value and action activation, disabled options, one-open behavior, outside click, keyboard navigation/type-ahead, committed-text restoration, updates, focus, and destruction
+  * supports the shared selector behavior exercised by `SM-07`, `SM-07A`, `SM-10A`, `SM-13`, `REG-PRESETS`, `REG-CALCULATOR`, `REG-IMPORT-08C`, and `REG-SNAPSHOTS`
 * `electron/settings.js`
   * supports parts of `REG-PERSIST`
   * supports parts of `REG-I18N`
@@ -267,7 +270,7 @@ Important limitations:
 * the reading speed test still has no renderer/UI automation; current automated coverage now includes pool core, pool import, entry/reset IPC contract handling, and start/rollback flow contracts, but real modal interaction, guided session windows, stopwatch handoff, comprehension UI, and preset handoff are still primarily validated through the manual suite;
 * OCR network/provider behavior is still primarily validated through the manual suite, even though JP2 normalization, OCR route contracts, and the single-file oversized-image alert path now have unit coverage;
 * even with contract-style unit coverage for the batch planner/final report, single-file heavy-PDF modal, and status-bar progress text, the integrated picker/drag-drop entrypoints, PDF options modal, route-choice modal, apply modal reveal path, batch execution handoff, and real window/focus behavior are still primarily validated through the manual suite;
-* the editable snapshot-tag catalog now has contract coverage for catalog derivation, renderer modal behavior, and permissive snapshot save/load validation, but the native save/load dialogs, real combobox keyboard/focus behavior, and the full cross-window batch-tag flow are still primarily validated through the manual suite;
+* the editable snapshot-tag catalog now has contract coverage for catalog derivation, renderer modal behavior, permissive snapshot save/load validation, and the shared combobox keyboard/focus contract, but native save/load dialogs, integrated visual placement, and the full cross-window batch-tag flow are still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
 ---
@@ -1131,6 +1134,23 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Mode is restored from settings and reflected in UI toggle.
+
+---
+
+### REG-COMBOBOX — Shared selector placement, scrolling, and input behavior
+
+#### REG-COMBOBOX-01 Popup placement and fixed height
+**Goal:** every shared selector popup opens below its trigger and long lists scroll internally.
+1. Open the main preset selector with enough presets to exceed the visible popup limit.
+2. Open a batch route selector and destination-unit selector, including the **New unit** option.
+3. Open the quick-calculator target selector.
+4. Open each searchable snapshot-tag selector and enter a query that shows value, clear, create, or no-results states as applicable.
+
+**Expected:**
+- Every popup opens below its trigger; none flips upward or detaches into a portal.
+- Popup content stops at `160px` and scrolls vertically when its options exceed that height.
+- Mouse and keyboard selection, Escape/Tab dismissal, disabled state, active-option visibility, and one-open-at-a-time behavior remain usable.
+- Presentation remains usable in light/dark themes, RTL languages, and existing modal scrolling containers.
 
 ---
 

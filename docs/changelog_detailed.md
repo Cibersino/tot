@@ -49,6 +49,7 @@ Reglas:
 ### Resumen de cambios
 
 - La ventana principal suma una calculadora rápida de lectura como ventana secundaria no modal: un nuevo botón icon-only en `RESULTS` abre una herramienta auxiliar para derivar `words`, `time` o `WPM` a partir de los otros dos valores, reutilizando la gramática `H+:MM:SS` del cronómetro y manteniendo el feature fuera del menú nativo.
+- Los selects nativos de las superficies renderer convergen en un único `RendererCombobox` production-owned con modos fijo y editable: presets, planificación batch, calculadora rápida y tags de snapshots comparten desde ahora la misma semántica ARIA/teclado, apertura siempre debajo del trigger y popup scrolleable con altura máxima fija de `160px`.
 - `window.Notify` recupera ownership único también para los prompts custom pendientes de `text extraction`: los 7 modales renderer que aún publicaban `window.Notify.prompt*` desde su archivo feature pasan a registrarse vía `registerCustomPrompt(...)`, sin cambiar la surface pública consumida por el resto del flujo.
 - `public/js/snapshot_save_tags_modal.js` deja de imponer un guard bootstrap local de `window.Notify` que no existía en ningún otro archivo del repo; el modal vuelve a alinearse con el patrón renderer vigente, donde `notify.js` sigue siendo el owner del contrato y los consumers no duplican checks de disponibilidad.
 - El cronómetro de la ventana principal deja de mezclar tamaños de icono entre `play/pause` y `stop/reset`: los dos botones vuelven a compartir la escala compacta del `Floating Stopwatch`, y el glyph `stop` recupera peso visual suficiente dentro de ese mismo tamaño reducido.
@@ -60,12 +61,22 @@ Reglas:
 
 - Calculadora rápida de lectura (Issue #325):
   - `public/index.html`, `public/style.css`, `public/js/text_time_calculator_launcher.js`, `electron/preload.js` y `electron/main.js` agregan un launcher icon-only en `RESULTS`, inmediatamente a la izquierda del `?`, y un nuevo bridge main-window-only `window.electronAPI.openTextTimeCalculator()` / `text-time-calculator-open` para abrir una ventana secundaria reutilizable;
-  - `public/text_time_calculator.html`, `public/text_time_calculator.css`, `public/text_time_calculator.js` y `electron/text_time_calculator_preload.js` agregan la ventana dedicada de cálculo rápido, con selector explícito de target, dos inputs editables + un único resultado derivado, estado inicial en `WPM` y validación inline sin toasts;
+  - `public/text_time_calculator.html`, `public/text_time_calculator.css`, `public/text_time_calculator.js` y `electron/text_time_calculator_preload.js` agregan la ventana dedicada de cálculo rápido, con combobox explícito de target, dos inputs editables + un único resultado derivado, estado inicial en `WPM` y validación inline sin toasts;
   - `public/js/lib/stopwatch_time_core.js` y `public/js/lib/text_time_calculator_core.js` agregan helpers puros compartidos para parsear `H+:MM:SS`, formatear tiempo derivado y resolver la matemática/validación del cálculo sin acoplarla al DOM o al lifecycle de ventanas;
   - la cobertura unitaria suma tests enfocados para el core de stopwatch/calculadora, el launcher renderer, la nueva ventana, el preload dedicado y las precondiciones main-owned que ahora tratan la calculadora como ventana secundaria abierta.
+- Combobox compartido del renderer:
+  - `public/js/combobox.js` agrega la superficie production-owned `window.RendererCombobox.create(config)` con modos `select` y `editable`, opciones de valor/acción y un controller común para update, lectura, apertura, cierre, foco y teardown;
+  - `public/combobox.css` centraliza la estructura del trigger/listbox, la apertura absoluta debajo del host y el popup con `max-height: 160px` + scroll vertical, mientras cada página conserva su apariencia mediante variables CSS locales;
+  - `test/unit/shared/combobox.test.js` cubre el contrato real de ambos modos, incluyendo ARIA, navegación y activación por teclado, type-ahead, opciones deshabilitadas, acciones no commit, cierre externo, exclusión entre instancias, updates y destrucción.
 
 ### Cambiado
 
+- Migración de selectores renderer al combobox compartido:
+  - el selector de presets de la ventana principal reemplaza el `<select>` nativo por modo `select` sin alterar persistencia, rollback, dirección de la descripción, sincronización WPM ni estado de botones;
+  - los selectores dinámicos de ruta y unidad de destino del batch planner pasan al mismo modo `select`, destruyen sus instancias en cada rerender y restauran el foco sobre el trigger reemplazado;
+  - la Calculadora rápida construye y retraduce sus tres opciones mediante el controller compartido, preservando recálculo inmediato y retención del input raw al cambiar el target;
+  - los tres campos del modal de tags de snapshot pasan a modo `editable`; el componente común absorbe DOM/listbox, ARIA, foco y teclado genéricos, mientras el feature conserva filtrado de catálogo, normalización, clear e inline-create con commit solo después de persistencia exitosa;
+  - `Snapshot Tag Manager` y la ventana especializada de idioma conservan su estructura propia; la migración elimina los sitios productivos restantes de `<select>` nativo sin convertir esas dos superficies en comboboxes.
 - Notificaciones / diálogos renderer (Issue #320):
   - `public/js/text_extraction_apply_modal.js`, `public/js/text_extraction_batch_final_modal.js`, `public/js/text_extraction_batch_planning_modal.js`, `public/js/text_extraction_ocr_activation_disclosure_modal.js`, `public/js/text_extraction_pdf_options_modal.js`, `public/js/text_extraction_route_choice_modal.js` y `public/js/text_extraction_single_file_heavy_pdf_modal.js` dejan de asignar `window.Notify.prompt* = ...` directamente;
   - esos owners mantienen la implementación del prompt en el mismo módulo feature, pero delegan el registro público final a `window.Notify.registerCustomPrompt(...)`, alineándose con `public/js/notify.js` y con el criterio del repo para ownership de diálogos renderer.
@@ -85,7 +96,8 @@ Reglas:
   - `public/language_window.html` y `public/preset_modal.html` dejan de mantener bloques `<style>` inline y pasan a cargar `public/language_window.css` y `public/preset_modal.css`, alineándose con el patrón de stylesheet dedicado que ya usaban las demás ventanas top-level de `public/`;
   - ambos archivos CSS nuevos adoptan también el mismo header descriptivo y la misma organización por secciones del resto de `public/*.css`, sin cambiar layout, copy ni comportamiento de esas dos ventanas.
 - Documentación viva del repo:
-  - `docs/tree_folders_files.md` se sincroniza con el layout real de `public/`, incorporando `language_window.css`, `preset_modal.css` y la omisión previa de `text_time_calculator.html` / `text_time_calculator.css` en el árbol resumido.
+  - `docs/tree_folders_files.md` se sincroniza con el layout real de `public/`, incorporando `language_window.css`, `preset_modal.css`, `combobox.css`, `js/combobox.js` y la omisión previa de `text_time_calculator.html` / `text_time_calculator.css` en el árbol resumido;
+  - `docs/test_suite.md` registra la cobertura automatizada del contrato compartido y agrega smoke manual para apertura debajo del trigger, límite fijo, scroll, teclado, RTL y presentación por tema en los consumers migrados.
 
 ### Arreglado
 
@@ -108,6 +120,10 @@ Reglas:
 
 ### Contratos tocados
 
+- Surface pública renderer `window.RendererCombobox`:
+  - nuevo contrato requerido `window.RendererCombobox.create(config)` para los consumers migrados, con `mode: 'select' | 'editable'`, opciones de valor o acción, resolución editable y callbacks separados `onChange(...)` / `onAction(...)`;
+  - el controller devuelto expone `update(...)`, `getValue()`, `open()`, `close()`, `focus()` y `destroy()`; los updates programáticos no emiten `onChange`;
+  - no se agregan canales IPC, keys de storage, schemas persistidos ni claves i18n como parte de esta migración.
 - Surface pública renderer `window.Notify`:
   - sin cambios de nombres, firma ni consumers para `promptTextExtractionApplyChoice(...)`, `promptTextExtractionBatchFinalReport(...)`, `promptTextExtractionBatchPlan(...)`, `promptTextExtractionOcrActivationDisclosure(...)`, `promptTextExtractionPdfOptions(...)`, `promptTextExtractionRouteChoice(...)` y `promptTextExtractionSingleFileHeavyPdf(...)`;
   - cambia solo el path interno de registro: la publicación final de esos prompts ahora ocurre a través de `window.Notify.registerCustomPrompt(...)` en vez de asignación directa desde cada módulo feature.

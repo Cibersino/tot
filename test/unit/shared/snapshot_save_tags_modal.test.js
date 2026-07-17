@@ -34,7 +34,8 @@ function createElement(id, tagName = 'div') {
   const attributes = {};
   const children = [];
 
-  return {
+  const classValues = new Set();
+  const element = {
     id,
     tagName,
     hidden: false,
@@ -46,6 +47,12 @@ function createElement(id, tagName = 'div') {
     parentNode: null,
     style: {},
     _children: children,
+    get children() {
+      return children;
+    },
+    get firstElementChild() {
+      return children[0] || null;
+    },
     get textContent() {
       if (children.length) {
         return children.map((child) => child.textContent).join('');
@@ -70,6 +77,10 @@ function createElement(id, tagName = 'div') {
       return child;
     },
     append(...nodes) {
+      nodes.forEach((node) => this.appendChild(node));
+    },
+    replaceChildren(...nodes) {
+      children.splice(0, children.length);
       nodes.forEach((node) => this.appendChild(node));
     },
     addEventListener(type, handler) {
@@ -110,7 +121,28 @@ function createElement(id, tagName = 'div') {
     select() {
       this._selected = true;
     },
+    contains(node) {
+      let current = node;
+      while (current) {
+        if (current === this) return true;
+        current = current.parentNode;
+      }
+      return false;
+    },
+    scrollIntoView() {},
   };
+  element.classList = {
+    add(...names) {
+      names.forEach((name) => classValues.add(name));
+    },
+    remove(...names) {
+      names.forEach((name) => classValues.delete(name));
+    },
+    contains(name) {
+      return classValues.has(name);
+    },
+  };
+  return element;
 }
 
 function walk(node, visit) {
@@ -171,19 +203,6 @@ function createHarness({
     snapshotTagManagerModalDone: createElement('snapshotTagManagerModalDone', 'button'),
     snapshotTagManagerModalClose: createElement('snapshotTagManagerModalClose', 'button'),
   };
-
-  elements.snapshotSaveTagsLanguageControl.append(
-    elements.snapshotSaveTagsLanguageInput,
-    elements.snapshotSaveTagsLanguageListbox
-  );
-  elements.snapshotSaveTagsTypeControl.append(
-    elements.snapshotSaveTagsTypeInput,
-    elements.snapshotSaveTagsTypeListbox
-  );
-  elements.snapshotSaveTagsDifficultyControl.append(
-    elements.snapshotSaveTagsDifficultyInput,
-    elements.snapshotSaveTagsDifficultyListbox
-  );
 
   const windowListeners = new Map();
   const documentListeners = new Map();
@@ -303,6 +322,11 @@ function createHarness({
         if (!windowListeners.has(type)) return;
         windowListeners.set(type, windowListeners.get(type).filter((candidate) => candidate !== handler));
       },
+      setTimeout(handler) {
+        if (typeof handler === 'function') handler();
+        return 0;
+      },
+      clearTimeout() {},
     },
     document: {
       get activeElement() {
@@ -339,13 +363,31 @@ function createHarness({
   };
 
   vm.createContext(sandbox);
+  const comboboxSource = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/combobox.js'),
+    'utf8'
+  );
+  vm.runInContext(comboboxSource, sandbox, { filename: 'public/js/combobox.js' });
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/js/snapshot_save_tags_modal.js'),
     'utf8'
   );
   vm.runInContext(source, sandbox, { filename: 'public/js/snapshot_save_tags_modal.js' });
 
+  function syncComboboxElementAliases() {
+    const mappings = [
+      ['Language', elements.snapshotSaveTagsLanguageControl],
+      ['Type', elements.snapshotSaveTagsTypeControl],
+      ['Difficulty', elements.snapshotSaveTagsDifficultyControl],
+    ];
+    mappings.forEach(([name, control]) => {
+      elements[`snapshotSaveTags${name}Input`] = control._children[0];
+      elements[`snapshotSaveTags${name}Listbox`] = control._children[1];
+    });
+  }
+
   function getOptionTexts(listboxId) {
+    syncComboboxElementAliases();
     return elements[listboxId]._children.map((child) => child.textContent);
   }
 
@@ -379,7 +421,11 @@ function createHarness({
 
   return {
     elements,
-    prompt: sandbox.window.Notify.promptSnapshotSaveTags,
+    prompt(...args) {
+      const result = sandbox.window.Notify.promptSnapshotSaveTags(...args);
+      syncComboboxElementAliases();
+      return result;
+    },
     promptManager: sandbox.window.Notify.promptSnapshotTagManager,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();

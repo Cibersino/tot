@@ -9,6 +9,7 @@
   <title>toT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="./fonts/Baskervville.css" />
+  <link rel="stylesheet" href="combobox.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -111,8 +112,7 @@
       </div>
       <input id="wpmSlider" class="wpm-slider" type="range" min="10" max="700" value="200" />
       <div class="presets-row">
-        <select id="presets" aria-label="Presets de velocidad">
-        </select>
+        <div id="presets" class="presets-combobox"></div>
         <button id="btnNewPreset" class="btn-standard btn-standard--square" title="Crear un nuevo preset"
           data-tot-icon="preset-new"></button>
         <button id="btnEditPreset" class="btn-standard btn-standard--square"
@@ -457,36 +457,15 @@
           <div class="snapshot-save-tags-form">
             <div class="snapshot-save-tags-field">
               <span id="snapshotSaveTagsLanguageLabel" class="snapshot-save-tags-field-label">Idioma</span>
-              <div id="snapshotSaveTagsLanguageControl" class="snapshot-save-tags-combobox">
-                <input id="snapshotSaveTagsLanguageInput" class="snapshot-save-tags-input" type="text"
-                  autocomplete="off" role="combobox" aria-autocomplete="list"
-                  aria-labelledby="snapshotSaveTagsLanguageLabel" aria-controls="snapshotSaveTagsLanguageListbox"
-                  aria-expanded="false" />
-                <div id="snapshotSaveTagsLanguageListbox" class="snapshot-save-tags-listbox" role="listbox" hidden
-                  aria-hidden="true"></div>
-              </div>
+              <div id="snapshotSaveTagsLanguageControl" class="snapshot-save-tags-combobox"></div>
             </div>
             <div class="snapshot-save-tags-field">
               <span id="snapshotSaveTagsTypeLabel" class="snapshot-save-tags-field-label">Tipo</span>
-              <div id="snapshotSaveTagsTypeControl" class="snapshot-save-tags-combobox">
-                <input id="snapshotSaveTagsTypeInput" class="snapshot-save-tags-input" type="text"
-                  autocomplete="off" role="combobox" aria-autocomplete="list"
-                  aria-labelledby="snapshotSaveTagsTypeLabel" aria-controls="snapshotSaveTagsTypeListbox"
-                  aria-expanded="false" />
-                <div id="snapshotSaveTagsTypeListbox" class="snapshot-save-tags-listbox" role="listbox" hidden
-                  aria-hidden="true"></div>
-              </div>
+              <div id="snapshotSaveTagsTypeControl" class="snapshot-save-tags-combobox"></div>
             </div>
             <div class="snapshot-save-tags-field">
               <span id="snapshotSaveTagsDifficultyLabel" class="snapshot-save-tags-field-label">Dificultad</span>
-              <div id="snapshotSaveTagsDifficultyControl" class="snapshot-save-tags-combobox">
-                <input id="snapshotSaveTagsDifficultyInput" class="snapshot-save-tags-input" type="text"
-                  autocomplete="off" role="combobox" aria-autocomplete="list"
-                  aria-labelledby="snapshotSaveTagsDifficultyLabel"
-                  aria-controls="snapshotSaveTagsDifficultyListbox" aria-expanded="false" />
-                <div id="snapshotSaveTagsDifficultyListbox" class="snapshot-save-tags-listbox" role="listbox" hidden
-                  aria-hidden="true"></div>
-              </div>
+              <div id="snapshotSaveTagsDifficultyControl" class="snapshot-save-tags-combobox"></div>
             </div>
           </div>
           <div class="snapshot-save-tags-modal-actions">
@@ -627,6 +606,7 @@
   </div>
 
   <script src="./js/log.js"></script>
+  <script src="./js/combobox.js"></script>
   <script src="./js/generated_icons.js"></script>
   <script src="./js/renderer_icons.js"></script>
   <script src="./js/constants.js"></script>

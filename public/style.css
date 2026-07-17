@@ -786,22 +786,22 @@ body.text-extraction-drop-active .app-container {
   gap: 4px;
 }
 
-select#presets {
+.presets-combobox {
+  --renderer-combobox-border: 1px solid var(--selector-border);
+  --renderer-combobox-background: var(--selector-bg);
+  --renderer-combobox-color: var(--text-color);
+  --renderer-combobox-focus: var(--focus-ring);
+  --renderer-combobox-focus-offset: 2px;
+  --renderer-combobox-active-background: var(--selector-active-bg);
   height: var(--control-height-md);
   width: 180px;
-  padding: 4px 6px;
-  box-sizing: border-box;
-  border-radius: 5px;
-  border: 1px solid var(--selector-border);
-  background: var(--selector-bg);
-  color: var(--text-color);
   font-size: var(--font-size-7);
   font-family: inherit;
 }
 
-select#presets:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+.presets-combobox .renderer-combobox__input {
+  height: var(--control-height-md);
+  padding: 4px 6px;
 }
 
 /* Preset description */
@@ -1702,8 +1702,8 @@ select#presets:focus {
 }
 
 .text-extraction-batch-plan-unit-name,
-.text-extraction-batch-plan-route-select,
-.text-extraction-batch-plan-unit-select {
+.text-extraction-batch-plan-route-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
   height: var(--control-height-md);
   padding: 4px 6px;
   border: 1px solid var(--input-border);
@@ -1719,8 +1719,13 @@ select#presets:focus {
   font-size: var(--font-size-8);
 }
 
-.text-extraction-batch-plan-route-select,
-.text-extraction-batch-plan-unit-select {
+.text-extraction-batch-plan-route-combobox,
+.text-extraction-batch-plan-unit-combobox {
+  --renderer-combobox-border: 1px solid var(--input-border);
+  --renderer-combobox-background: var(--input-bg);
+  --renderer-combobox-color: var(--text-color);
+  --renderer-combobox-focus: var(--focus-ring);
+  --renderer-combobox-active-background: var(--selector-active-bg);
   font-size: var(--font-size-7);
 }
 
@@ -1923,8 +1928,6 @@ select#presets:focus {
 }
 
 .text-extraction-batch-plan-unit-name:focus,
-.text-extraction-batch-plan-route-select:focus,
-.text-extraction-batch-plan-unit-select:focus,
 .text-extraction-batch-plan-page-scope-input:focus {
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
@@ -2130,78 +2133,34 @@ select#presets:focus {
 }
 
 .snapshot-save-tags-combobox {
-  position: relative;
-}
-
-.snapshot-save-tags-input {
-  width: 100%;
-  height: var(--control-height-md);
-  padding: 4px 6px;
-  border: 1px solid var(--selector-border);
-  border-radius: var(--control-radius-sm);
-  background: var(--selector-bg);
-  color: var(--text-color);
-  box-sizing: border-box;
-  font-family: inherit;
+  --renderer-combobox-border: 1px solid var(--selector-border);
+  --renderer-combobox-popup-border: 1px solid var(--selector-border);
+  --renderer-combobox-background: var(--selector-bg);
+  --renderer-combobox-color: var(--text-color);
+  --renderer-combobox-focus: var(--focus-ring);
+  --renderer-combobox-focus-offset: 2px;
+  --renderer-combobox-active-background: var(--selector-active-bg);
+  --renderer-combobox-option-padding: 4px 6px;
+  --renderer-combobox-popup-shadow: none;
   font-size: var(--font-size-7);
 }
 
-.snapshot-save-tags-input[aria-expanded="true"] {
+.snapshot-save-tags-combobox .renderer-combobox__input {
+  height: var(--control-height-md);
+  padding: 4px 6px;
+  border-radius: var(--control-radius-sm);
+}
+
+.snapshot-save-tags-combobox .renderer-combobox__input[aria-expanded="true"] {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-.snapshot-save-tags-input:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-.snapshot-save-tags-listbox {
-  position: absolute;
+.snapshot-save-tags-combobox .renderer-combobox__listbox {
   top: calc(100% - 1px);
-  left: 0;
-  right: 0;
-  z-index: 2;
-  max-height: 220px;
-  overflow-y: auto;
-  background: var(--selector-bg);
-  color: var(--text-color);
-  border: 1px solid var(--selector-border);
   border-top: none;
   border-bottom-left-radius: var(--control-radius-sm);
   border-bottom-right-radius: var(--control-radius-sm);
-  box-sizing: border-box;
-}
-
-.snapshot-save-tags-listbox:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-.snapshot-save-tags-option {
-  padding: 4px 6px;
-  background: var(--selector-bg);
-  color: var(--text-color);
-  font-size: var(--font-size-7);
-  cursor: pointer;
-}
-
-.snapshot-save-tags-option.is-active,
-.snapshot-save-tags-option[aria-selected="true"] {
-  background: var(--selector-active-bg);
-}
-
-.snapshot-save-tags-option.is-clear,
-.snapshot-save-tags-option.is-empty {
-  font-style: italic;
-}
-
-.snapshot-save-tags-option.is-create {
-  font-weight: 600;
-}
-
-.snapshot-save-tags-option.is-disabled {
-  cursor: default;
 }
 
 .snapshot-save-tags-modal-actions {

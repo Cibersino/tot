@@ -171,7 +171,7 @@ const cronoDisplayInput = document.getElementById('cronoDisplay');
 const cronoToggleBtnMain = document.getElementById('cronoToggle');
 const cronoResetBtnMain = document.getElementById('cronoReset');
 
-const presetsSelect = document.getElementById('presets');
+const presetsHost = document.getElementById('presets');
 const btnNewPreset = document.getElementById('btnNewPreset');
 const btnEditPreset = document.getElementById('btnEditPreset');
 const btnDeletePreset = document.getElementById('btnDeletePreset');
@@ -204,14 +204,24 @@ let bootstrapCurrentTextProcessingState = null;
 let lastHelpTipIdx = -1;
 let lastProcessingLockNoticeAt = 0;
 
-const { WpmControls } = window;
+const { RendererCombobox, WpmControls } = window;
+if (!RendererCombobox || typeof RendererCombobox.create !== 'function') {
+  throw new Error('[renderer] RendererCombobox unavailable; cannot continue');
+}
+const presetsCombobox = RendererCombobox.create({
+  host: presetsHost,
+  mode: 'select',
+  options: [],
+  value: '',
+  ariaLabel: 'Presets de velocidad',
+});
 if (!WpmControls || typeof WpmControls.createController !== 'function') {
   throw new Error('[renderer] WpmControls unavailable; cannot continue');
 }
 const wpmControls = WpmControls.createController({
   wpmInput,
   wpmSlider,
-  presetsSelect,
+  presetsCombobox,
   presetDescription,
   onPresetSelectionChanged: () => {
     syncPresetActionButtons();
@@ -292,7 +302,7 @@ function setControlInteractionLocked(element, locked) {
 }
 
 function hasSelectedPreset() {
-  return !!(presetsSelect && typeof presetsSelect.value === 'string' && presetsSelect.value.trim());
+  return !!presetsCombobox.getValue().trim();
 }
 
 function syncPresetActionButtons({ interactionLocked } = {}) {
@@ -328,7 +338,7 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(btnHelp, locked);
   setControlInteractionLocked(wpmInput, locked);
   setControlInteractionLocked(wpmSlider, locked);
-  setControlInteractionLocked(presetsSelect, locked);
+  presetsCombobox.update({ disabled: locked });
   setControlInteractionLocked(btnNewPreset, locked);
   syncPresetActionButtons({ interactionLocked: locked });
   setControlInteractionLocked(btnResetDefaultPresets, locked);
@@ -648,7 +658,7 @@ function applyTranslations() {
   if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label');
   applyAriaLabel(wpmInput, 'renderer.main.aria.wpm_input');
   applyAriaLabel(wpmSlider, 'renderer.main.aria.wpm_slider');
-  applyAriaLabel(presetsSelect, 'renderer.main.aria.speed_presets');
+  presetsCombobox.update({ ariaLabel: tRenderer('renderer.main.aria.speed_presets') });
   // Results: precise mode label
   const togglePrecisoLabel = document.querySelector('.toggle-wrapper .toggle-label');
   if (togglePrecisoLabel) {
@@ -1701,7 +1711,7 @@ function registerMenuActions() {
 // Preset selection wiring
 // =============================================================================
 function bindPresetSelection() {
-  presetsSelect.addEventListener('change', async () => {
+  presetsCombobox.update({ onChange: async () => {
     if (!guardUserAction('preset-change')) return;
     try {
       await wpmControls.handlePresetSelectionChange({
@@ -1713,7 +1723,7 @@ function bindPresetSelection() {
     } finally {
       syncPresetActionButtons();
     }
-  });
+  } });
 }
 
 // =============================================================================
@@ -2379,7 +2389,7 @@ function bindPresetActions() {
   btnEditPreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-edit')) return;
     try {
-      const selectedName = presetsSelect.value;
+      const selectedName = presetsCombobox.getValue();
       if (!selectedName) {
         log.warn('Preset edit requested without a selected preset; action skipped.');
         syncPresetActionButtons();
@@ -2407,7 +2417,7 @@ function bindPresetActions() {
   btnDeletePreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-delete')) return;
     try {
-      const name = presetsSelect.value || null;
+      const name = presetsCombobox.getValue() || null;
       if (!name) {
         log.warn('Preset delete requested without a selected preset; action skipped.');
         syncPresetActionButtons();
