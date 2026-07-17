@@ -780,6 +780,12 @@ body.text-extraction-drop-active .app-container {
 }
 
 /* Preset selector */
+.presets-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 select#presets {
   height: var(--control-height-md);
   width: 180px;
