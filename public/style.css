@@ -565,6 +565,7 @@ pre#textPreview .preview-static {
 
 .clipboard-repeat-input {
   width: 60px;
+  flex: none;
   height: var(--numeric-value-field-height);
   padding: 4px 6px;
   border-radius: var(--control-radius-sm);
@@ -758,6 +759,7 @@ body.text-extraction-drop-active .app-container {
 
 .velocity #wpmInput {
   width: 56px;
+  flex: none;
   height: var(--numeric-value-field-height);
   padding: 4px;
   border: 1px solid var(--input-border);
@@ -839,8 +841,8 @@ select#presets:focus {
 }
 
 .results-multiplier-row input {
-  width: 58px;
-  min-width: 58px;
+  width: 56px;
+  flex: none;
   height: var(--numeric-value-field-height-compact);
   border: 1px solid var(--input-border);
   background: var(--input-bg);
@@ -938,7 +940,8 @@ select#presets:focus {
 
 .cronometro .crono-box {
   height: var(--numeric-value-field-height);
-  width: 66px;
+  width: 80px;
+  flex: none;
   padding: 4px;
   border: 1px solid var(--input-border);
   font-size: var(--font-size-9);
@@ -1580,7 +1583,8 @@ select#presets:focus {
 }
 
 .text-extraction-apply-repeat-row input {
-  width: 96px;
+  width: 60px;
+  flex: none;
   height: var(--numeric-value-field-height-compact);
   padding: 4px 6px;
   border: 1px solid var(--input-border);
