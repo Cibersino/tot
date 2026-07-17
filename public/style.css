@@ -2311,7 +2311,7 @@ body.text-extraction-drop-active .app-container {
   z-index: 30;
   top: 100%;
   border-radius: 5px;
-  box-shadow: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 
 .snapshot-save-tags-modal-actions {
