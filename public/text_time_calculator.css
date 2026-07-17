@@ -60,10 +60,20 @@ body {
   width: 100%;
 }
 
+.text-time-calculator__target-combobox {
+  min-width: 0;
+}
+
 .text-time-calculator__row-control {
   display: flex;
   align-items: center;
   min-height: 32px;
+}
+
+.text-time-calculator__target-combobox .renderer-combobox__input {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
 }
 
 .text-time-calculator__target-combobox .renderer-combobox__input,
@@ -82,9 +92,32 @@ body {
   color: #1f2937;
 }
 
+.text-time-calculator__target-combobox .renderer-combobox__listbox {
+  top: 100%;
+  inset-inline: 0;
+  max-height: 160px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  z-index: 30;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
 .text-time-calculator__target-combobox .renderer-combobox__input,
 .text-time-calculator__field {
   padding: 0 10px;
+}
+
+.text-time-calculator__target-combobox[data-mode="select"] .renderer-combobox__input {
+  padding-inline-end: 24px;
+}
+
+.text-time-calculator__target-combobox[data-mode="select"]::after {
+  content: "▾";
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 8px;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .text-time-calculator__output {
@@ -110,13 +143,27 @@ body {
   outline-offset: 1px;
 }
 
+.text-time-calculator__target-combobox .renderer-combobox__input:disabled {
+  opacity: 0.65;
+}
+
+.text-time-calculator__target-combobox .renderer-combobox__option {
+  padding: 7px 9px;
+  border-inline-start: 3px solid transparent;
+}
+
 .text-time-calculator__target-combobox .renderer-combobox__option[aria-selected="true"] {
   border-inline-start-color: #2b78ff;
   background: #d6ebf8;
+  font-weight: 600;
 }
 
 .text-time-calculator__target-combobox .renderer-combobox__option.is-active {
   background: #e8f0fe;
+}
+
+.text-time-calculator__target-combobox .renderer-combobox__option.is-disabled {
+  color: #7a8491;
 }
 
 .text-time-calculator__target-combobox {
