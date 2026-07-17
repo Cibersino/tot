@@ -781,14 +781,15 @@ body.text-extraction-drop-active .app-container {
   accent-color: var(--control-accent);
 }
 
-/* Preset selector */
+/* Selector-style comboboxes */
 .presets-row {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.presets-combobox {
+.presets-combobox,
+.snapshot-save-tags-combobox {
   --renderer-combobox-border: 1px solid var(--selector-border);
   --renderer-combobox-background: var(--selector-bg);
   --renderer-combobox-color: var(--text-color);
@@ -797,6 +798,9 @@ body.text-extraction-drop-active .app-container {
   --renderer-combobox-active-background: var(--selector-active-bg);
   --renderer-combobox-selected-background: var(--selector-selected-bg);
   --renderer-combobox-selected-accent: var(--selector-selected-accent);
+}
+
+.presets-combobox {
   height: var(--control-height-md);
   width: 180px;
   font-size: var(--font-size-7);
@@ -2139,15 +2143,6 @@ body.text-extraction-drop-active .app-container {
 }
 
 .snapshot-save-tags-combobox {
-  --renderer-combobox-border: 1px solid var(--selector-border);
-  --renderer-combobox-popup-border: 1px solid var(--selector-border);
-  --renderer-combobox-background: var(--selector-bg);
-  --renderer-combobox-color: var(--text-color);
-  --renderer-combobox-focus: var(--focus-ring);
-  --renderer-combobox-focus-offset: 2px;
-  --renderer-combobox-active-background: var(--selector-active-bg);
-  --renderer-combobox-selected-background: var(--selector-selected-bg);
-  --renderer-combobox-selected-accent: var(--selector-selected-accent);
   --renderer-combobox-option-padding: 4px 6px;
   --renderer-combobox-popup-shadow: none;
   font-size: var(--font-size-7);

@@ -44,16 +44,16 @@
 
 .renderer-combobox__listbox {
   position: absolute;
-  z-index: var(--renderer-combobox-z-index, 30);
+  z-index: 30;
   top: 100%;
   inset-inline: 0;
   max-height: 160px;
   overflow-y: auto;
   box-sizing: border-box;
-  border: var(--renderer-combobox-popup-border, var(--renderer-combobox-border, 1px solid #b7c2ce));
-  border-radius: var(--renderer-combobox-popup-radius, var(--renderer-combobox-radius, 5px));
-  background: var(--renderer-combobox-popup-background, var(--renderer-combobox-background, #fff));
-  color: var(--renderer-combobox-popup-color, var(--renderer-combobox-color, inherit));
+  border: var(--renderer-combobox-border, 1px solid #b7c2ce);
+  border-radius: var(--renderer-combobox-radius, 5px);
+  background: var(--renderer-combobox-background, #fff);
+  color: var(--renderer-combobox-color, inherit);
   box-shadow: var(--renderer-combobox-popup-shadow, 0 4px 12px rgba(0, 0, 0, 0.16));
 }
 
@@ -63,7 +63,7 @@
 
 .renderer-combobox__option {
   padding: var(--renderer-combobox-option-padding, 7px 9px);
-  border-inline-start: var(--renderer-combobox-selected-indicator-width, 3px) solid transparent;
+  border-inline-start: 3px solid transparent;
   cursor: default;
   white-space: normal;
 }
@@ -71,7 +71,7 @@
 .renderer-combobox__option[aria-selected="true"] {
   border-inline-start-color: var(--renderer-combobox-selected-accent, #2b78ff);
   background: var(--renderer-combobox-selected-background, #d6ebf8);
-  font-weight: var(--renderer-combobox-selected-font-weight, 600);
+  font-weight: 600;
 }
 
 .renderer-combobox__option.is-active {
@@ -79,7 +79,7 @@
 }
 
 .renderer-combobox__option.is-disabled {
-  color: var(--renderer-combobox-disabled-color, #7a8491);
+  color: #7a8491;
   cursor: not-allowed;
 }
 
