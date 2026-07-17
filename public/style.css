@@ -107,6 +107,7 @@
   --line-height-relaxed: 1.4;
   
   /* Spacing */
+  --numeric-value-field-padding: 0 6px;
     
   /* Dimensions */
   --control-height-md: 30px;
@@ -567,7 +568,7 @@ pre#textPreview .preview-static {
   width: 60px;
   flex: none;
   height: var(--numeric-value-field-height);
-  padding: 4px 6px;
+  padding: var(--numeric-value-field-padding);
   border-radius: var(--control-radius-sm);
   border: 1px solid var(--clipboard-repeat-input-border);
   background: var(--clipboard-repeat-input-bg);
@@ -761,7 +762,7 @@ body.text-extraction-drop-active .app-container {
   width: 60px;
   flex: none;
   height: var(--numeric-value-field-height);
-  padding: 4px 6px;
+  padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
@@ -844,7 +845,7 @@ select#presets:focus {
   width: 60px;
   flex: none;
   height: var(--numeric-value-field-height-compact);
-  padding: 4px 6px;
+  padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
@@ -943,7 +944,7 @@ select#presets:focus {
   height: var(--numeric-value-field-height);
   width: 88px;
   flex: none;
-  padding: 4px 6px;
+  padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
   font-size: var(--font-size-9);
   font-family: inherit;
@@ -1453,7 +1454,7 @@ select#presets:focus {
 .text-extraction-pdf-options-modal-range-field input {
   width: 88px;
   height: var(--numeric-value-field-height);
-  padding: 4px 6px;
+  padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
@@ -1587,7 +1588,7 @@ select#presets:focus {
   width: 60px;
   flex: none;
   height: var(--numeric-value-field-height-compact);
-  padding: 4px 6px;
+  padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
@@ -1898,7 +1899,7 @@ select#presets:focus {
 .text-extraction-batch-plan-page-scope-input {
   width: 88px;
   height: var(--numeric-value-field-height);
-  padding: 4px 6px;
+  padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
   border-radius: var(--panel-radius);
   background: var(--input-bg);
