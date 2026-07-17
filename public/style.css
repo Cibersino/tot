@@ -1699,7 +1699,7 @@ select#presets:focus {
 .text-extraction-batch-plan-unit-name,
 .text-extraction-batch-plan-route-select,
 .text-extraction-batch-plan-unit-select {
-  min-height: var(--control-height-md);
+  height: var(--control-height-md);
   padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
@@ -1826,7 +1826,7 @@ select#presets:focus {
 .text-extraction-batch-plan-route-fixed {
   display: inline-flex;
   align-items: center;
-  min-height: var(--control-height-md);
+  height: var(--control-height-md);
 }
 
 .text-extraction-batch-plan-keep-toggle {
@@ -2125,7 +2125,7 @@ select#presets:focus {
 
 .snapshot-save-tags-input {
   width: 100%;
-  min-height: var(--control-height-md);
+  height: var(--control-height-md);
   padding: 4px 6px;
   border: 1px solid var(--selector-border);
   border-radius: var(--control-radius-sm);
@@ -2266,7 +2266,7 @@ select#presets:focus {
 
 .snapshot-tag-manager-draft-input {
   width: 100%;
-  min-height: var(--control-height-md);
+  height: var(--control-height-md);
   padding: 4px 6px;
   border: 1px solid var(--selector-border);
   border-radius: var(--control-radius-sm);
