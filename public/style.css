@@ -784,6 +784,7 @@ select#presets {
   height: var(--control-height-md);
   width: 180px;
   padding: 4px 6px;
+  box-sizing: border-box;
   border-radius: 5px;
   border: 1px solid var(--selector-border);
   background: var(--selector-bg);
