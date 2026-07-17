@@ -758,10 +758,10 @@ body.text-extraction-drop-active .app-container {
 }
 
 .velocity #wpmInput {
-  width: 56px;
+  width: 60px;
   flex: none;
   height: var(--numeric-value-field-height);
-  padding: 4px;
+  padding: 4px 6px;
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
@@ -841,14 +841,15 @@ select#presets:focus {
 }
 
 .results-multiplier-row input {
-  width: 56px;
+  width: 60px;
   flex: none;
   height: var(--numeric-value-field-height-compact);
+  padding: 4px 6px;
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: var(--font-size-5);
+  font-size: var(--font-size-4);
   box-sizing: border-box;
 }
 
@@ -940,9 +941,9 @@ select#presets:focus {
 
 .cronometro .crono-box {
   height: var(--numeric-value-field-height);
-  width: 80px;
+  width: 88px;
   flex: none;
-  padding: 4px;
+  padding: 4px 6px;
   border: 1px solid var(--input-border);
   font-size: var(--font-size-9);
   font-family: inherit;
@@ -1450,7 +1451,7 @@ select#presets:focus {
 }
 
 .text-extraction-pdf-options-modal-range-field input {
-  width: 80px;
+  width: 88px;
   height: var(--numeric-value-field-height);
   padding: 4px 6px;
   border: 1px solid var(--input-border);
@@ -1895,15 +1896,15 @@ select#presets:focus {
 }
 
 .text-extraction-batch-plan-page-scope-input {
-  width: 80px;
+  width: 88px;
   height: var(--numeric-value-field-height);
-  padding: 8px 10px;
+  padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--panel-radius);
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
-  font-size: var(--font-size-7);
+  font-size: var(--font-size-8);
   box-sizing: border-box;
 }
 
