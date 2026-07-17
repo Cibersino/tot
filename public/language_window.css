@@ -88,8 +88,15 @@ body {
 .lang-item,
 .lang-empty {
   padding: 8px 10px;
-  border-radius: 4px;
   font-size: 14px;
+}
+
+.lang-item {
+  border-radius: 4px;
+}
+
+.lang-empty {
+  border-radius: 4px;
 }
 
 .lang-item {

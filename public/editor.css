@@ -260,13 +260,20 @@ body {
   justify-content: center;
   height: 32px;
   box-sizing: border-box;
-  border-radius: 6px;
   border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.55);
   color: #333;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   user-select: none;
+}
+
+.editor-text-size-value {
+  border-radius: 6px;
+}
+
+.editor-read-progress-value {
+  border-radius: 6px;
 }
 
 .editor-text-size-value::before,

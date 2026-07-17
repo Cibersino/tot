@@ -123,9 +123,6 @@
   --kofi-logo-scale: 0.82;
 
   /* Shared styles */
-  --section-radius: 6px;
-  --panel-radius: 8px;
-  --control-radius-sm: 4px;
   --tot-icon-size-sm: 14px;
   --tot-icon-size-md: 28px;
 }
@@ -206,9 +203,16 @@ body {
 .app-container>aside {
   flex: 0 0 auto;
   padding: 4px;
-  border-radius: var(--section-radius);
   box-shadow: var(--section-shadow);
   background: var(--app-secondary-bg);
+}
+
+.app-container>section {
+  border-radius: 6px;
+}
+
+.app-container>aside {
+  border-radius: 6px;
 }
 
 /* Shared controls */
@@ -573,7 +577,7 @@ pre#textPreview .preview-static {
   flex: none;
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
-  border-radius: var(--control-radius-sm);
+  border-radius: 4px;
   border: 1px solid var(--clipboard-repeat-input-border);
   background: var(--clipboard-repeat-input-bg);
   color: var(--text-color);
@@ -804,7 +808,10 @@ body.text-extraction-drop-active .app-container {
   font: inherit;
 }
 
-.presets-combobox .renderer-combobox__input,
+.presets-combobox .renderer-combobox__input {
+  border-radius: 5px;
+}
+
 .presets-combobox .renderer-combobox__listbox {
   border-radius: 5px;
 }
@@ -1128,7 +1135,7 @@ body.text-extraction-drop-active .app-container {
   max-height: var(--info-panel-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
   z-index: 1001;
   padding: 0 18px 18px;
@@ -1198,7 +1205,7 @@ body.text-extraction-drop-active .app-container {
   position: relative;
   width: 540px;
   background: var(--app-secondary-bg);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
   z-index: 1001;
   font-family: var(--font-reading);
@@ -1398,11 +1405,50 @@ body.text-extraction-drop-active .app-container {
   z-index: 1001;
   background: var(--app-secondary-bg);
   color: var(--text-color);
-  border-radius: var(--panel-radius);
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
   box-sizing: border-box;
   padding: 14px 16px 16px;
+}
+
+.text-extraction-pdf-options-modal-panel {
+  border-radius: 8px;
+}
+
+.text-extraction-route-modal-panel {
+  border-radius: 8px;
+}
+
+.text-extraction-apply-modal-panel {
+  border-radius: 8px;
+}
+
+.text-extraction-batch-plan-modal-panel {
+  border-radius: 8px;
+}
+
+.text-extraction-batch-final-modal-panel {
+  border-radius: 8px;
+}
+
+.text-extraction-single-file-heavy-modal-panel {
+  border-radius: 8px;
+}
+
+.text-extraction-ocr-activation-disclosure-panel {
+  border-radius: 8px;
+}
+
+.snapshot-save-tags-modal-panel {
+  border-radius: 8px;
+}
+
+.snapshot-tag-manager-modal-panel {
+  border-radius: 8px;
+}
+
+.reading-test-entry-modal-panel {
+  border-radius: 8px;
 }
 
 /* Standard dialog title region */
@@ -1489,7 +1535,7 @@ body.text-extraction-drop-active .app-container {
   margin: 0;
   padding: 10px 12px 12px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   display: grid;
   gap: 12px;
 }
@@ -1539,7 +1585,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
-  border-radius: var(--control-radius-sm);
+  border-radius: 4px;
   font-family: inherit;
   font-size: var(--font-size-8);
   box-sizing: border-box;
@@ -1636,7 +1682,7 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
   padding: 10px 12px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   background: var(--app-primary-bg);
 }
 
@@ -1673,7 +1719,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height-compact);
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
-  border-radius: var(--control-radius-sm);
+  border-radius: 4px;
   font-family: inherit;
   font-size: var(--font-size-4);
   box-sizing: border-box;
@@ -1731,7 +1777,7 @@ body.text-extraction-drop-active .app-container {
   margin: 0;
   padding: 10px 12px 12px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   display: grid;
   gap: 12px;
 }
@@ -1752,7 +1798,7 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
   padding: 12px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   background: var(--app-primary-bg);
 }
 
@@ -1780,9 +1826,20 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
   height: var(--control-height-md);
   padding: 4px 6px;
-  border-radius: var(--control-radius-sm);
   font-family: inherit;
   box-sizing: border-box;
+}
+
+.text-extraction-batch-plan-unit-name {
+  border-radius: 4px;
+}
+
+.text-extraction-batch-plan-route-combobox .renderer-combobox__input {
+  border-radius: 4px;
+}
+
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
+  border-radius: 4px;
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input,
@@ -1814,8 +1871,15 @@ body.text-extraction-drop-active .app-container {
   overflow-y: auto;
   box-sizing: border-box;
   z-index: 30;
-  border-radius: 5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
+.text-extraction-batch-plan-route-combobox .renderer-combobox__listbox {
+  border-radius: 5px;
+}
+
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox {
+  border-radius: 5px;
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input:disabled,
@@ -1914,7 +1978,7 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
   padding: 10px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   background: var(--app-tertiary-bg);
 }
 
@@ -2063,7 +2127,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
@@ -2103,7 +2167,7 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
   padding: 12px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   background: var(--app-primary-bg);
 }
 
@@ -2161,7 +2225,7 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
   padding: 10px 12px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   background: var(--app-primary-bg);
 }
 
@@ -2300,7 +2364,7 @@ body.text-extraction-drop-active .app-container {
   font: inherit;
   height: var(--control-height-md);
   padding: 4px 6px;
-  border-radius: var(--control-radius-sm);
+  border-radius: 4px;
 }
 
 .snapshot-save-tags-combobox .renderer-combobox__listbox {
@@ -2350,7 +2414,7 @@ body.text-extraction-drop-active .app-container {
   display: grid;
   gap: 12px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--control-radius-sm);
+  border-radius: 4px;
   background: var(--app-primary-bg);
   padding: 12px;
 }
@@ -2389,7 +2453,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--control-height-md);
   padding: 4px 6px;
   border: 1px solid var(--selector-border);
-  border-radius: var(--control-radius-sm);
+  border-radius: 4px;
   background: var(--selector-bg);
   color: var(--text-color);
   box-sizing: border-box;
@@ -2425,7 +2489,7 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
   padding: 8px 10px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--control-radius-sm);
+  border-radius: 4px;
   background: var(--app-tertiary-bg);
 }
 
@@ -2472,7 +2536,7 @@ body.text-extraction-drop-active .app-container {
 .reading-test-entry-modal-toggle:focus {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
-  border-radius: var(--control-radius-sm);
+  border-radius: 4px;
 }
 
 #readingTestEntryModalIntro {
@@ -2488,7 +2552,7 @@ body.text-extraction-drop-active .app-container {
 .reading-test-entry-modal-warning {
   padding: 10px 12px;
   border: 1px solid var(--warning-border-color);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   background: var(--app-warning-bg);
   color: var(--warning-text);
   font-size: var(--font-size-6);
@@ -2566,7 +2630,7 @@ body.text-extraction-drop-active .app-container {
 .reading-test-entry-modal-link:focus {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
-  border-radius: var(--control-radius-sm);
+  border-radius: 4px;
 }
 
 .reading-test-entry-modal-link[aria-disabled="true"] {
@@ -2591,7 +2655,7 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
   padding: 12px;
   border: 1px solid var(--group-border-color);
-  border-radius: var(--panel-radius);
+  border-radius: 8px;
   background: var(--app-primary-bg);
 }
 

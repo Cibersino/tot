@@ -87,9 +87,20 @@ body {
 .text-time-calculator__target-combobox .renderer-combobox__listbox,
 .text-time-calculator__field {
   border: 1px solid #b7c2ce;
-  border-radius: 8px;
   background: #fff;
   color: #1f2937;
+}
+
+.text-time-calculator__target-combobox .renderer-combobox__input {
+  border-radius: 8px;
+}
+
+.text-time-calculator__target-combobox .renderer-combobox__listbox {
+  border-radius: 8px;
+}
+
+.text-time-calculator__field {
+  border-radius: 8px;
 }
 
 .text-time-calculator__target-combobox .renderer-combobox__listbox {
