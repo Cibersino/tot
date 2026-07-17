@@ -1871,18 +1871,19 @@ select#presets:focus {
 }
 
 .text-extraction-batch-plan-page-scope-field {
-  grid-template-columns: auto minmax(80px, 1fr);
+  grid-template-columns: max-content max-content;
   align-items: center;
 }
 
 .text-extraction-batch-plan-page-scope-range-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  grid-template-columns: repeat(2, max-content);
   gap: 12px;
 }
 
 .text-extraction-batch-plan-page-scope-input {
-  min-height: var(--control-height-md);
+  width: 80px;
+  height: 36px;
   padding: 8px 10px;
   border: 1px solid var(--input-border);
   border-radius: var(--panel-radius);
