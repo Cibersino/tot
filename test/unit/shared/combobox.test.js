@@ -161,6 +161,48 @@ test('select mode renders ARIA state, skips disabled options, and commits throug
   assert.deepEqual(changes, [['c', 'Charlie']]);
 });
 
+test('option hover moves active state without committing and ignores disabled options', () => {
+  const harness = createHarness();
+  const host = createElement();
+  const changes = [];
+  const actions = [];
+  const controller = harness.create({
+    host,
+    mode: 'editable',
+    options: [
+      { value: 'a', label: 'Alpha' },
+      { value: 'b', label: 'Beta', disabled: true },
+      { action: 'create', label: 'Create option' },
+      { value: 'c', label: 'Charlie' },
+    ],
+    value: 'a',
+    onChange(value) { changes.push(value); },
+    onAction(option) { actions.push(option.action); },
+  });
+  const [input, listbox] = host.children;
+
+  controller.open();
+  listbox.children[3].dispatch('mouseenter');
+  assert.equal(listbox.children[0].classList.contains('is-active'), false);
+  assert.equal(listbox.children[3].classList.contains('is-active'), true);
+  assert.equal(input.getAttribute('aria-activedescendant').endsWith('-option-3'), true);
+  assert.equal(controller.getValue(), 'a');
+  assert.deepEqual(changes, []);
+
+  listbox.children[1].dispatch('mouseenter');
+  assert.equal(input.getAttribute('aria-activedescendant').endsWith('-option-3'), true);
+  input.dispatch('keydown', { key: 'Enter' });
+  assert.equal(controller.getValue(), 'c');
+  assert.deepEqual(changes, ['c']);
+
+  controller.open();
+  listbox.children[2].dispatch('mouseenter');
+  input.dispatch('keydown', { key: 'Enter' });
+  assert.deepEqual(actions, ['create']);
+  assert.equal(controller.getValue(), 'c');
+  assert.equal(input.getAttribute('aria-expanded'), 'true');
+});
+
 test('select type-ahead, Home/End, updates, focus, and disabled state follow the controller contract', () => {
   const harness = createHarness();
   const host = createElement();

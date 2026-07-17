@@ -56,7 +56,7 @@ Do not update this document for routine test implementation changes unless those
 Current automated coverage maps back to this manual suite roughly as follows:
 
 * `test/unit/shared/combobox.test.js`
-  * covers the production `RendererCombobox` contract in `select` and `editable` modes: ARIA/open state, value and action activation, disabled options, one-open behavior, outside click, keyboard navigation/type-ahead, committed-text restoration, updates, focus, and destruction
+  * covers the production `RendererCombobox` contract in `select` and `editable` modes: ARIA/open state, value and action activation, pointer-hover active state, disabled options, one-open behavior, outside click, keyboard navigation/type-ahead, committed-text restoration, updates, focus, and destruction
   * supports the shared selector behavior exercised by `SM-07`, `SM-07A`, `SM-10A`, `SM-13`, `REG-PRESETS`, `REG-CALCULATOR`, `REG-IMPORT-08C`, and `REG-SNAPSHOTS`
 * `electron/settings.js`
   * supports parts of `REG-PERSIST`
@@ -1149,6 +1149,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Every popup opens below its trigger; none flips upward or detaches into a portal.
 - Popup content stops at `160px` and scrolls vertically when its options exceed that height.
+- Hovering a selectable option moves the active highlight to it without committing; disabled options do not become active, and keyboard navigation can take control again.
 - Mouse and keyboard selection, Escape/Tab dismissal, disabled state, active-option visibility, and one-open-at-a-time behavior remain usable.
 - Presentation remains usable in light/dark themes, RTL languages, and existing modal scrolling containers.
 

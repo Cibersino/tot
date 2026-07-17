@@ -49,7 +49,7 @@ Reglas:
 ### Resumen de cambios
 
 - La ventana principal suma una calculadora rápida de lectura como ventana secundaria no modal: un nuevo botón icon-only en `RESULTS` abre una herramienta auxiliar para derivar `words`, `time` o `WPM` a partir de los otros dos valores, reutilizando la gramática `H+:MM:SS` del cronómetro y manteniendo el feature fuera del menú nativo.
-- Los selects nativos de las superficies renderer convergen en un único `RendererCombobox` production-owned con modos fijo y editable: presets, planificación batch, calculadora rápida y tags de snapshots comparten desde ahora la misma semántica ARIA/teclado, apertura siempre debajo del trigger y popup scrolleable con altura máxima fija de `160px`.
+- Los selects nativos de las superficies renderer convergen en un único `RendererCombobox` production-owned con modos fijo y editable: presets, planificación batch, calculadora rápida y tags de snapshots comparten desde ahora la misma semántica ARIA/teclado/hover, apertura siempre debajo del trigger y popup scrolleable con altura máxima fija de `160px`.
 - `window.Notify` recupera ownership único también para los prompts custom pendientes de `text extraction`: los 7 modales renderer que aún publicaban `window.Notify.prompt*` desde su archivo feature pasan a registrarse vía `registerCustomPrompt(...)`, sin cambiar la surface pública consumida por el resto del flujo.
 - `public/js/snapshot_save_tags_modal.js` deja de imponer un guard bootstrap local de `window.Notify` que no existía en ningún otro archivo del repo; el modal vuelve a alinearse con el patrón renderer vigente, donde `notify.js` sigue siendo el owner del contrato y los consumers no duplican checks de disponibilidad.
 - El cronómetro de la ventana principal deja de mezclar tamaños de icono entre `play/pause` y `stop/reset`: los dos botones vuelven a compartir la escala compacta del `Floating Stopwatch`, y el glyph `stop` recupera peso visual suficiente dentro de ese mismo tamaño reducido.
@@ -67,7 +67,7 @@ Reglas:
 - Combobox compartido del renderer:
   - `public/js/combobox.js` agrega la superficie production-owned `window.RendererCombobox.create(config)` con modos `select` y `editable`, opciones de valor/acción y un controller común para update, lectura, apertura, cierre, foco y teardown;
   - `public/combobox.css` centraliza la estructura del trigger/listbox, la apertura absoluta debajo del host y el popup con `max-height: 160px` + scroll vertical, mientras cada página conserva su apariencia mediante variables CSS locales;
-  - `test/unit/shared/combobox.test.js` cubre el contrato real de ambos modos, incluyendo ARIA, navegación y activación por teclado, type-ahead, opciones deshabilitadas, acciones no commit, cierre externo, exclusión entre instancias, updates y destrucción.
+  - `test/unit/shared/combobox.test.js` cubre el contrato real de ambos modos, incluyendo ARIA, navegación y activación por teclado, active state por hover, type-ahead, opciones deshabilitadas, acciones no commit, cierre externo, exclusión entre instancias, updates y destrucción.
 
 ### Cambiado
 

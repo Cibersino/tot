@@ -162,6 +162,19 @@
       }
     }
 
+    function setHoveredActiveIndex(index) {
+      const option = visibleOptions[index];
+      if (!option || option.disabled || index === activeIndex) return;
+      const previousActiveElement = listbox.children[activeIndex];
+      if (previousActiveElement) previousActiveElement.classList.remove('is-active');
+      activeIndex = index;
+      const activeElement = listbox.children[activeIndex];
+      if (activeElement) {
+        activeElement.classList.add('is-active');
+        input.setAttribute('aria-activedescendant', activeElement.id);
+      }
+    }
+
     function renderOptions() {
       listbox.replaceChildren();
       if (!visibleOptions.length) {
@@ -192,6 +205,7 @@
         );
         optionElement.textContent = option.label;
         optionElement.addEventListener('mousedown', (event) => event.preventDefault());
+        optionElement.addEventListener('mouseenter', () => setHoveredActiveIndex(index));
         optionElement.addEventListener('click', () => activateOption(index));
         listbox.appendChild(optionElement);
       });
