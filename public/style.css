@@ -563,7 +563,7 @@ pre#textPreview .preview-static {
 
 .clipboard-repeat-input {
   width: 60px;
-  height: var(--control-height-md);
+  height: 26px;
   padding: 4px 6px;
   border-radius: var(--control-radius-sm);
   border: 1px solid var(--clipboard-repeat-input-border);
@@ -839,11 +839,13 @@ select#presets:focus {
 .results-multiplier-row input {
   width: 58px;
   min-width: 58px;
+  height: 22px;
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
   font-size: var(--font-size-5);
+  box-sizing: border-box;
 }
 
 .results-multiplier-row output {
@@ -933,7 +935,7 @@ select#presets:focus {
 }
 
 .cronometro .crono-box {
-  height: 16px;
+  height: 26px;
   width: 66px;
   padding: 4px;
   border: 1px solid var(--input-border);
@@ -942,6 +944,7 @@ select#presets:focus {
   text-align: center;
   color: var(--text-color);
   background-color: var(--input-bg);
+  box-sizing: border-box;
 }
 
 .cronometro .crono-box:disabled {
@@ -1443,7 +1446,7 @@ select#presets:focus {
 
 .text-extraction-pdf-options-modal-range-field input {
   width: 80px;
-  height: 30px;
+  height: 26px;
   padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
@@ -1576,11 +1579,13 @@ select#presets:focus {
 
 .text-extraction-apply-repeat-row input {
   width: 96px;
+  height: 22px;
   padding: 4px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
   font-family: inherit;
   font-size: var(--font-size-4);
+  box-sizing: border-box;
 }
 
 .text-extraction-apply-repeat-row input:focus {
@@ -1885,7 +1890,7 @@ select#presets:focus {
 
 .text-extraction-batch-plan-page-scope-input {
   width: 80px;
-  height: 36px;
+  height: 26px;
   padding: 8px 10px;
   border: 1px solid var(--input-border);
   border-radius: var(--panel-radius);
