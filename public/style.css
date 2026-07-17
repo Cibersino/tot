@@ -1683,11 +1683,10 @@ select#presets:focus {
 }
 
 .text-extraction-batch-plan-unit-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .text-extraction-batch-plan-unit-heading {
@@ -1730,6 +1729,11 @@ select#presets:focus {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.text-extraction-batch-plan-unit-actions {
+  align-self: start;
+  flex-wrap: nowrap;
 }
 
 .text-extraction-batch-plan-unit-meta,
