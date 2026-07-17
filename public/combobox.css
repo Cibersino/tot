@@ -63,12 +63,18 @@
 
 .renderer-combobox__option {
   padding: var(--renderer-combobox-option-padding, 7px 9px);
+  border-inline-start: var(--renderer-combobox-selected-indicator-width, 3px) solid transparent;
   cursor: default;
   white-space: normal;
 }
 
-.renderer-combobox__option.is-active,
 .renderer-combobox__option[aria-selected="true"] {
+  border-inline-start-color: var(--renderer-combobox-selected-accent, #2b78ff);
+  background: var(--renderer-combobox-selected-background, #d6ebf8);
+  font-weight: var(--renderer-combobox-selected-font-weight, 600);
+}
+
+.renderer-combobox__option.is-active {
   background: var(--renderer-combobox-active-background, #e8f0fe);
 }
 

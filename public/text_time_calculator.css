@@ -111,6 +111,9 @@ body {
   --renderer-combobox-color: #1f2937;
   --renderer-combobox-focus: #2b78ff;
   --renderer-combobox-focus-offset: 1px;
+  --renderer-combobox-active-background: #e8f0fe;
+  --renderer-combobox-selected-background: #d6ebf8;
+  --renderer-combobox-selected-accent: #2b78ff;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
 }

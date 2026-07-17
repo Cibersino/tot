@@ -1149,7 +1149,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Every popup opens below its trigger; none flips upward or detaches into a portal.
 - Popup content stops at `160px` and scrolls vertically when its options exceed that height.
-- Hovering a selectable option moves the active highlight to it without committing; disabled options do not become active, and keyboard navigation can take control again.
+- Hovering a selectable option moves the active highlight to it without committing; the committed selection remains distinct through its subtle background, weight, and inline accent, disabled options do not become active, and keyboard navigation can take control again.
 - Mouse and keyboard selection, Escape/Tab dismissal, disabled state, active-option visibility, and one-open-at-a-time behavior remain usable.
 - Presentation remains usable in light/dark themes, RTL languages, and existing modal scrolling containers.
 

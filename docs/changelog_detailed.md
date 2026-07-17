@@ -66,7 +66,7 @@ Reglas:
   - la cobertura unitaria suma tests enfocados para el core de stopwatch/calculadora, el launcher renderer, la nueva ventana, el preload dedicado y las precondiciones main-owned que ahora tratan la calculadora como ventana secundaria abierta.
 - Combobox compartido del renderer:
   - `public/js/combobox.js` agrega la superficie production-owned `window.RendererCombobox.create(config)` con modos `select` y `editable`, opciones de valor/acción y un controller común para update, lectura, apertura, cierre, foco y teardown;
-  - `public/combobox.css` centraliza la estructura del trigger/listbox, la apertura absoluta debajo del host y el popup con `max-height: 160px` + scroll vertical, mientras cada página conserva su apariencia mediante variables CSS locales;
+  - `public/combobox.css` centraliza la estructura del trigger/listbox, distingue la selección committed del active state transitorio por hover/teclado mediante fondo sutil, peso y acento lógico, y mantiene la apertura absoluta debajo del host con `max-height: 160px` + scroll vertical, mientras cada página conserva su apariencia mediante variables CSS locales;
   - `test/unit/shared/combobox.test.js` cubre el contrato real de ambos modos, incluyendo ARIA, navegación y activación por teclado, active state por hover, type-ahead, opciones deshabilitadas, acciones no commit, cierre externo, exclusión entre instancias, updates y destrucción.
 
 ### Cambiado
