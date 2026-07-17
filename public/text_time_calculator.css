@@ -1,6 +1,6 @@
 /* Text/time calculator window styles.
    Loaded by public/text_time_calculator.html.
-   Owner boundary: quick text/time calculator layout, fields, and inline validation only. */
+   Owner boundary: quick text/time calculator layout, control presentation, and inline validation only. */
 
 * {
   box-sizing: border-box;
@@ -69,12 +69,17 @@ body {
 .text-time-calculator__target-combobox .renderer-combobox__input,
 .text-time-calculator__field {
   height: 32px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.text-time-calculator__target-combobox .renderer-combobox__input,
+.text-time-calculator__target-combobox .renderer-combobox__listbox,
+.text-time-calculator__field {
   border: 1px solid #b7c2ce;
   border-radius: 8px;
   background: #fff;
   color: #1f2937;
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
 }
 
 .text-time-calculator__target-combobox .renderer-combobox__input,
@@ -99,21 +104,22 @@ body {
   background: #fff7f7;
 }
 
+.text-time-calculator__target-combobox .renderer-combobox__input:focus-visible,
 .text-time-calculator__field:focus-visible {
   outline: 2px solid #2b78ff;
   outline-offset: 1px;
 }
 
+.text-time-calculator__target-combobox .renderer-combobox__option[aria-selected="true"] {
+  border-inline-start-color: #2b78ff;
+  background: #d6ebf8;
+}
+
+.text-time-calculator__target-combobox .renderer-combobox__option.is-active {
+  background: #e8f0fe;
+}
+
 .text-time-calculator__target-combobox {
-  --renderer-combobox-border: 1px solid #b7c2ce;
-  --renderer-combobox-radius: 8px;
-  --renderer-combobox-background: #fff;
-  --renderer-combobox-color: #1f2937;
-  --renderer-combobox-focus: #2b78ff;
-  --renderer-combobox-focus-offset: 1px;
-  --renderer-combobox-active-background: #e8f0fe;
-  --renderer-combobox-selected-background: #d6ebf8;
-  --renderer-combobox-selected-accent: #2b78ff;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
 }

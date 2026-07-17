@@ -788,16 +788,30 @@ body.text-extraction-drop-active .app-container {
   gap: 4px;
 }
 
-.presets-combobox,
-.snapshot-save-tags-combobox {
-  --renderer-combobox-border: 1px solid var(--selector-border);
-  --renderer-combobox-background: var(--selector-bg);
-  --renderer-combobox-color: var(--text-color);
-  --renderer-combobox-focus: var(--focus-ring);
-  --renderer-combobox-focus-offset: 2px;
-  --renderer-combobox-active-background: var(--selector-active-bg);
-  --renderer-combobox-selected-background: var(--selector-selected-bg);
-  --renderer-combobox-selected-accent: var(--selector-selected-accent);
+.presets-combobox .renderer-combobox__input,
+.presets-combobox .renderer-combobox__listbox,
+.snapshot-save-tags-combobox .renderer-combobox__input,
+.snapshot-save-tags-combobox .renderer-combobox__listbox {
+  border: 1px solid var(--selector-border);
+  background: var(--selector-bg);
+  color: var(--text-color);
+}
+
+.presets-combobox .renderer-combobox__input:focus-visible,
+.snapshot-save-tags-combobox .renderer-combobox__input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.presets-combobox .renderer-combobox__option[aria-selected="true"],
+.snapshot-save-tags-combobox .renderer-combobox__option[aria-selected="true"] {
+  border-inline-start-color: var(--selector-selected-accent);
+  background: var(--selector-selected-bg);
+}
+
+.presets-combobox .renderer-combobox__option.is-active,
+.snapshot-save-tags-combobox .renderer-combobox__option.is-active {
+  background: var(--selector-active-bg);
 }
 
 .presets-combobox {
@@ -1714,12 +1728,19 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
   height: var(--control-height-md);
   padding: 4px 6px;
-  border: 1px solid var(--input-border);
   border-radius: var(--control-radius-sm);
-  background: var(--input-bg);
-  color: var(--text-color);
   font-family: inherit;
   box-sizing: border-box;
+}
+
+.text-extraction-batch-plan-unit-name,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox {
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-color);
 }
 
 .text-extraction-batch-plan-unit-name {
@@ -1727,15 +1748,24 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
+.text-extraction-batch-plan-route-combobox .renderer-combobox__input:focus-visible,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+}
+
+.text-extraction-batch-plan-route-combobox .renderer-combobox__option[aria-selected="true"],
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option[aria-selected="true"] {
+  border-inline-start-color: var(--selector-selected-accent);
+  background: var(--selector-selected-bg);
+}
+
+.text-extraction-batch-plan-route-combobox .renderer-combobox__option.is-active,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option.is-active {
+  background: var(--selector-active-bg);
+}
+
 .text-extraction-batch-plan-route-combobox,
 .text-extraction-batch-plan-unit-combobox {
-  --renderer-combobox-border: 1px solid var(--input-border);
-  --renderer-combobox-background: var(--input-bg);
-  --renderer-combobox-color: var(--text-color);
-  --renderer-combobox-focus: var(--focus-ring);
-  --renderer-combobox-active-background: var(--selector-active-bg);
-  --renderer-combobox-selected-background: var(--selector-selected-bg);
-  --renderer-combobox-selected-accent: var(--selector-selected-accent);
   font-size: var(--font-size-7);
 }
 
@@ -2143,9 +2173,11 @@ body.text-extraction-drop-active .app-container {
 }
 
 .snapshot-save-tags-combobox {
-  --renderer-combobox-option-padding: 4px 6px;
-  --renderer-combobox-popup-shadow: none;
   font-size: var(--font-size-7);
+}
+
+.snapshot-save-tags-combobox .renderer-combobox__option {
+  padding: 4px 6px;
 }
 
 .snapshot-save-tags-combobox .renderer-combobox__input {
@@ -2164,6 +2196,7 @@ body.text-extraction-drop-active .app-container {
   border-top: none;
   border-bottom-left-radius: var(--control-radius-sm);
   border-bottom-right-radius: var(--control-radius-sm);
+  box-shadow: none;
 }
 
 .snapshot-save-tags-modal-actions {
