@@ -113,6 +113,7 @@
     
   /* Dimensions */
   --control-height-md: 30px;
+  --combobox-trigger-height: 30px;
   --numeric-value-field-height: 26px;
   --numeric-value-field-height-compact: 22px;
   --numeric-value-field-width-compact: 60px;
@@ -519,7 +520,7 @@ pre#textPreview .preview-static {
 /* Text selector controls */
 .controls {
   position: relative;
-  min-height: var(--control-height-md);
+  height: var(--control-height-md);
 }
 
 .controls-row {
@@ -547,7 +548,7 @@ pre#textPreview .preview-static {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: var(--control-height-md);
+  height: var(--control-height-md);
   padding: 0 2px;
   color: var(--text-color);
   font-size: var(--font-size-3);
@@ -612,7 +613,7 @@ pre#textPreview .preview-static {
   align-items: center;
   gap: 8px;
   width: 100%;
-  min-height: var(--control-height-md);
+  height: var(--control-height-md);
   border: 1px solid var(--processing-bar-border);
   border-radius: 5px;
   padding: 0 8px;
@@ -878,7 +879,7 @@ body.text-extraction-drop-active .app-container {
 }
 
 .presets-combobox .renderer-combobox__input {
-  height: var(--control-height-md);
+  height: var(--combobox-trigger-height);
   padding: 4px 6px;
 }
 
@@ -1082,7 +1083,7 @@ body.text-extraction-drop-active .app-container {
   display: flex;
   align-items: center;
   gap: 4px;
-  height: var(--control-height-md);
+  height: 30px;
   margin-left: auto; /* push the switch to the right edge of the group */
   flex: 0 0 auto;
   overflow: visible;
@@ -1360,7 +1361,7 @@ body.text-extraction-drop-active .app-container {
 .info-media-lightbox-media {
   --info-media-lightbox-close-gap: 6px;
   --info-media-lightbox-close-footprint: calc(
-    var(--control-height-md) + var(--info-media-lightbox-close-gap)
+    30px + var(--info-media-lightbox-close-gap)
   );
 
   position: relative;
@@ -1810,16 +1811,19 @@ body.text-extraction-drop-active .app-container {
   color: var(--text-soft);
 }
 
-.text-extraction-batch-plan-unit-name,
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
-  height: var(--control-height-md);
+  height: var(--combobox-trigger-height);
   padding: 4px 6px;
   font-family: inherit;
   box-sizing: border-box;
 }
 
 .text-extraction-batch-plan-unit-name {
+  height: 30px;
+  padding: 4px 6px;
+  font-family: inherit;
+  box-sizing: border-box;
   border-radius: var(--field-radius);
 }
 
@@ -2000,7 +2004,7 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-route-fixed {
   display: inline-flex;
   align-items: center;
-  height: var(--control-height-md);
+  height: var(--combobox-trigger-height);
 }
 
 .text-extraction-batch-plan-keep-toggle {
@@ -2297,7 +2301,7 @@ body.text-extraction-drop-active .app-container {
   width: 100%;
   box-sizing: border-box;
   font: inherit;
-  height: var(--control-height-md);
+  height: var(--combobox-trigger-height);
   padding: 4px 6px;
   border-radius: var(--field-radius);
 }
@@ -2385,7 +2389,7 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-tag-manager-draft-input {
   width: 100%;
-  height: var(--control-height-md);
+  height: 30px;
   padding: 4px 6px;
   border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
