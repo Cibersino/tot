@@ -25,11 +25,10 @@
   --spinner-head: rgb(0 0 0 / 0.7);
 
   /* Controls */
-  --selector-bg: #fff;
   --selector-active-bg: #f0f0f0;
   --selector-selected-bg: #d6ebf8;
   --selector-selected-accent: var(--control-accent);
-  --input-bg: #fff;
+  --field-bg: #fff;
   --input-disabled-bg: #ece4d2;
   --clipboard-repeat-input-bg: #f8f5ee;
   --clipboard-repeat-active-bg: #fff2f2;
@@ -62,8 +61,7 @@
   --preview-degraded-border: #c53a3a;
   --result-highlight-degraded-border: #c53a3a;
   --processing-bar-border: #b8ae9c;
-  --selector-border: #ccc;
-  --input-border: #b8ae9c;
+  --field-border: #b8ae9c;
   --input-invalid-border: #c62828;
   --clipboard-repeat-input-border: #9f8f73;
   --clipboard-repeat-active-border: #c53a3a;
@@ -776,8 +774,8 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
   border-radius: var(--field-radius);
-  border: 1px solid var(--input-border);
-  background: var(--input-bg);
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
   color: var(--text-color);
   font-size: var(--font-size-9);
   font-family: inherit;
@@ -790,7 +788,7 @@ body.text-extraction-drop-active .app-container {
   accent-color: var(--control-accent);
 }
 
-/* Selector-style comboboxes */
+/* Preset and Snapshot comboboxes */
 .presets-row {
   display: flex;
   align-items: center;
@@ -801,8 +799,8 @@ body.text-extraction-drop-active .app-container {
 .presets-combobox .renderer-combobox__listbox,
 .snapshot-save-tags-combobox .renderer-combobox__input,
 .snapshot-save-tags-combobox .renderer-combobox__listbox {
-  border: 1px solid var(--selector-border);
-  background: var(--selector-bg);
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
   color: var(--text-color);
 }
 
@@ -942,8 +940,8 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height-compact);
   padding: var(--numeric-value-field-padding);
   border-radius: var(--field-radius);
-  border: 1px solid var(--input-border);
-  background: var(--input-bg);
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
   color: var(--text-color);
   font-family: inherit;
   font-size: var(--font-size-4);
@@ -1041,20 +1039,20 @@ body.text-extraction-drop-active .app-container {
   width: var(--numeric-value-field-width-wide);
   flex: none;
   padding: var(--numeric-value-field-padding);
-  border: 1px solid var(--input-border);
+  border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
   font-size: var(--font-size-9);
   font-family: inherit;
   text-align: center;
   color: var(--text-color);
-  background-color: var(--input-bg);
+  background-color: var(--field-bg);
   box-sizing: border-box;
 }
 
 .cronometro .crono-box:disabled {
   opacity: 1;
   color: inherit;
-  background-color: var(--input-bg);
+  background-color: var(--field-bg);
   cursor: text;
 }
 
@@ -1591,7 +1589,7 @@ body.text-extraction-drop-active .app-container {
   width: var(--numeric-value-field-width-wide);
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
-  border: 1px solid var(--input-border);
+  border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
   font-family: inherit;
   font-size: var(--font-size-8);
@@ -1725,7 +1723,7 @@ body.text-extraction-drop-active .app-container {
   flex: none;
   height: var(--numeric-value-field-height-compact);
   padding: var(--numeric-value-field-padding);
-  border: 1px solid var(--input-border);
+  border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
   font-family: inherit;
   font-size: var(--font-size-4);
@@ -1860,8 +1858,8 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox {
-  border: 1px solid var(--input-border);
-  background: var(--input-bg);
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
   color: var(--text-color);
 }
 
@@ -2133,9 +2131,9 @@ body.text-extraction-drop-active .app-container {
   width: var(--numeric-value-field-width-wide);
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
-  border: 1px solid var(--input-border);
+  border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
-  background: var(--input-bg);
+  background: var(--field-bg);
   color: var(--text-color);
   font-family: inherit;
   font-size: var(--font-size-8);
@@ -2459,9 +2457,9 @@ body.text-extraction-drop-active .app-container {
   width: 100%;
   height: var(--control-height-md);
   padding: 4px 6px;
-  border: 1px solid var(--selector-border);
+  border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
-  background: var(--selector-bg);
+  background: var(--field-bg);
   color: var(--text-color);
   box-sizing: border-box;
   font-family: inherit;
