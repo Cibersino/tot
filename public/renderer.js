@@ -1275,10 +1275,8 @@ function closeInfoModal() {
   }
 }
 
-function focusInfoModalContent() {
-  if (infoModalContent && typeof infoModalContent.focus === 'function') {
-    infoModalContent.focus();
-  }
+function focusInfoModalClose() {
+  infoModalClose.focus({ preventScroll: true });
 }
 
 function bindInfoModalUi() {
@@ -1504,7 +1502,10 @@ function getManualFileCandidates(langTag) {
 
 async function showInfoModal(key) {
   // key: 'instrucciones' | 'guia_basica' | 'faq' | 'links_interes' | 'acerca_de'
-  if (!infoModal || !infoModalTitle || !infoModalContent) return;
+  if (!infoModal || !infoModalTitle || !infoModalContent || !infoModalClose) {
+    log.error('Info modal required element unavailable; cannot open.');
+    return;
+  }
 
   // Decide which file to load based on the key.
   // Basic guide, instructions, and FAQ are served from localized manual HTML.
@@ -1536,20 +1537,28 @@ async function showInfoModal(key) {
   infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
   infoModal.setAttribute('aria-hidden', 'false');
 
+  // Every opening starts at the document beginning before the loading state is focused.
+  const panel = infoModal.querySelector('.info-modal-panel');
+  if (!panel) {
+    log.warn('Info modal panel unavailable; retaining Close focus.');
+    focusInfoModalClose();
+    return;
+  }
+  panel.scrollTop = 0;
+  focusInfoModalClose();
+
   // Fetch HTML (manual pages use a language fallback list)
   const tryHtml = Array.isArray(fileToLoad)
     ? (await fetchTextWithFallback(fileToLoad)).html
     : await fetchText(fileToLoad);
   if (tryHtml === null) {
-    // Fallback: show a simple missing-content message
-    const missingContentText = msgRenderer
-      ? msgRenderer(
-        'renderer.info.missing_content',
-        { name: infoDialogLabel }
-      )
-      : `No hay contenido disponible para '${infoDialogLabel}'.`;
+    log.warn('Info modal content unavailable; showing missing-content state:', key);
+    const missingContentText = msgRenderer(
+      'renderer.info.missing_content',
+      { name: infoDialogLabel }
+    );
     infoModalContent.innerHTML = `<p>${missingContentText}</p>`;
-    focusInfoModalContent();
+    focusInfoModalClose();
     return;
   }
 
@@ -1568,10 +1577,6 @@ async function showInfoModal(key) {
     await hydrateAboutEnvironment(infoModalContent);
   }
 
-  // Ensure the panel starts at the top before scrolling
-  const panel = document.querySelector('.info-modal-panel');
-  if (panel) panel.scrollTop = 0;
-
   // If a specific section was requested, scroll so it appears above the panel
   if (sectionId) {
     // Wait for the next frame so the parsed DOM is laid out
@@ -1579,15 +1584,15 @@ async function showInfoModal(key) {
       try {
         const target = infoModalContent.querySelector(`#${sectionId}`);
         if (!target) {
-          // If the ID does not exist, do nothing else
-          focusInfoModalContent();
+          log.warn('Info modal requested section unavailable; retaining Close focus:', sectionId);
+          focusInfoModalClose();
           return;
         }
 
         try {
           target.scrollIntoView({ behavior: 'auto', block: 'start' });
-        } catch {
-          // Defensive fallback: calculate relative top without compensating for header
+        } catch (err) {
+          log.warn('Info modal native section scroll failed; using panel scroll fallback:', sectionId, err);
           const panelRect = panel.getBoundingClientRect();
           const targetRect = target.getBoundingClientRect();
           const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
@@ -1595,16 +1600,18 @@ async function showInfoModal(key) {
           panel.scrollTo({ top: finalTop, behavior: 'auto' });
         }
 
-        // Focus on the content so the reader can use the keyboard
-        focusInfoModalContent();
+        const indexLink = infoModalContent.querySelector(`nav a[href="#${sectionId}"]`);
+        if (!indexLink || typeof indexLink.focus !== 'function') {
+          log.warn('Info modal matching index link unavailable; retaining Close focus:', sectionId);
+          focusInfoModalClose();
+          return;
+        }
+        indexLink.focus({ preventScroll: true });
       } catch (err) {
-        log.warn('Info modal section scroll failed (ignored):', err);
-        focusInfoModalContent();
+        log.warn('Info modal section targeting failed; retaining Close focus:', sectionId, err);
+        focusInfoModalClose();
       }
     });
-  } else {
-    // No section: focus the content for the whole document
-    focusInfoModalContent();
   }
 }
 

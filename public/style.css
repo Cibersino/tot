@@ -150,6 +150,14 @@ body {
   background: var(--app-primary-bg);
 }
 
+/* Main-window normal focus baseline. Hidden switch inputs render it on their visible sliders. */
+:where(button, input, a[href]):focus-visible,
+#toggleModoPreciso:focus-visible + .slider,
+#toggleVF:focus-visible + .slider {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 /* Main app container */
 .app-container {
   position: relative;
@@ -270,11 +278,6 @@ body {
 
 .btn-standard:active {
   transform: translateY(1px);
-}
-
-.btn-standard:focus {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 .btn-standard:disabled {
@@ -420,11 +423,6 @@ body {
 .logo-link:hover {
   opacity: 0.82;
   filter: saturate(1.12) brightness(0.92);
-}
-
-.logo-link:focus {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 .logo-link--dev {
@@ -594,12 +592,7 @@ pre#textPreview .preview-static {
   background: var(--clipboard-repeat-active-bg);
 }
 
-.clipboard-repeat-input:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
-}
-
-.clipboard-repeat-input.is-repeat-active:focus {
+.clipboard-repeat-input.is-repeat-active:focus-visible {
   outline-color: var(--danger-focus-ring);
 }
 
@@ -834,12 +827,6 @@ body.text-extraction-drop-active .app-container {
   opacity: 0.65;
 }
 
-.presets-combobox .renderer-combobox__input:focus-visible,
-.snapshot-save-tags-combobox .renderer-combobox__input:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
 .presets-combobox .renderer-combobox__option {
   padding: 7px 9px;
   border-inline-start: 3px solid transparent;
@@ -955,6 +942,9 @@ body.text-extraction-drop-active .app-container {
 
 .results-multiplier-row input.is-invalid {
   border-color: var(--input-invalid-border);
+}
+
+.results-multiplier-row input.is-invalid:focus-visible {
   outline-color: var(--input-invalid-border);
 }
 
@@ -1065,13 +1055,6 @@ body.text-extraction-drop-active .app-container {
   display: flex;
   gap: 6px;
   align-items: flex-start;
-}
-
-.velocity #wpmInput:focus,
-.results-multiplier-row input:focus,
-.cronometro .crono-box:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
 }
 
 /* VF switch */
@@ -1270,11 +1253,6 @@ body.text-extraction-drop-active .app-container {
   transform: translateY(-1px);
 }
 
-.browser-extension-modal-store-link:focus {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 4px;
-}
-
 .browser-extension-modal-store-link img {
   width: min(206px, 100%);
   height: auto;
@@ -1294,10 +1272,6 @@ body.text-extraction-drop-active .app-container {
 
 .info-section div {
   margin: 10px;
-}
-
-.info-modal-content:focus {
-  outline: none !important;
 }
 
 .info-loading {
@@ -1596,11 +1570,6 @@ body.text-extraction-drop-active .app-container {
   box-sizing: border-box;
 }
 
-.text-extraction-pdf-options-modal-range-field input:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
-}
-
 .text-extraction-pdf-options-modal-selected-count {
   color: var(--text-soft);
   font-size: var(--font-size-6);
@@ -1728,11 +1697,6 @@ body.text-extraction-drop-active .app-container {
   font-family: inherit;
   font-size: var(--font-size-4);
   box-sizing: border-box;
-}
-
-.text-extraction-apply-repeat-row input:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
 }
 
 .text-extraction-apply-modal-actions {
@@ -1890,12 +1854,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input:disabled,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input:disabled {
   opacity: 0.65;
-}
-
-.text-extraction-batch-plan-route-combobox .renderer-combobox__input:focus-visible,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__input:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__option,
@@ -2140,12 +2098,6 @@ body.text-extraction-drop-active .app-container {
   box-sizing: border-box;
 }
 
-.text-extraction-batch-plan-unit-name:focus,
-.text-extraction-batch-plan-page-scope-input:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
-}
-
 .text-extraction-batch-plan-page-scope-count,
 .text-extraction-batch-plan-page-scope-validation {
   font-size: var(--font-size-6);
@@ -2293,11 +2245,6 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-ocr-activation-disclosure-link:hover {
   color: var(--link-external-hover);
-}
-
-.text-extraction-ocr-activation-disclosure-link:focus {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 .text-extraction-ocr-activation-disclosure-buttons {
@@ -2466,11 +2413,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-7);
 }
 
-.snapshot-tag-manager-draft-input:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
 .snapshot-tag-manager-validation {
   min-height: 1.2em;
   color: var(--warning-text);
@@ -2536,12 +2478,6 @@ body.text-extraction-drop-active .app-container {
 
 .reading-test-entry-modal-toggle:hover {
   color: var(--link-action-hover);
-}
-
-.reading-test-entry-modal-toggle:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-  border-radius: 4px;
 }
 
 #readingTestEntryModalIntro {
@@ -2630,12 +2566,6 @@ body.text-extraction-drop-active .app-container {
 
 .reading-test-entry-modal-link:hover {
   color: var(--link-external-hover);
-}
-
-.reading-test-entry-modal-link:focus {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-  border-radius: 4px;
 }
 
 .reading-test-entry-modal-link[aria-disabled="true"] {
