@@ -829,9 +829,13 @@ body.text-extraction-drop-active .app-container {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 
-.presets-combobox .renderer-combobox__input:disabled,
-.snapshot-save-tags-combobox .renderer-combobox__input:disabled {
-  opacity: 0.7;
+.presets-combobox .renderer-combobox__input:disabled {
+  background: var(--input-disabled-bg);
+  color: var(--text-disabled);
+}
+
+.presets-combobox[data-mode="select"]:has(.renderer-combobox__input:disabled)::after {
+  color: var(--text-disabled);
 }
 
 .presets-combobox .renderer-combobox__option,
@@ -1862,11 +1866,6 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox {
   border-radius: var(--field-radius);
-}
-
-.text-extraction-batch-plan-route-combobox .renderer-combobox__input:disabled,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__input:disabled {
-  opacity: 0.7;
 }
 
 .text-extraction-batch-plan-route-combobox,
