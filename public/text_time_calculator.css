@@ -92,15 +92,15 @@ body {
 }
 
 .text-time-calculator__target-combobox .renderer-combobox__input {
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .text-time-calculator__target-combobox .renderer-combobox__listbox {
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .text-time-calculator__field {
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .text-time-calculator__target-combobox .renderer-combobox__listbox {

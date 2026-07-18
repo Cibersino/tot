@@ -227,7 +227,7 @@ body {
   height: 30px;
   padding: 4px 8px;
   border: 1px solid var(--input-border);
-  border-radius: 5px;
+  border-radius: 4px;
   font-size: 14px;
   background: var(--surface);
   color: var(--text);
@@ -485,7 +485,7 @@ body.is-resizing {
   flex: 1 1 auto;
   height: 28px;
   padding: 4px 6px;
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 .library-list {

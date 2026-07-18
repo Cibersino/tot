@@ -34,6 +34,14 @@ textarea {
   height: 64px;
 }
 
+input[type="text"] {
+  border-radius: 4px;
+}
+
+input[type="number"] {
+  border-radius: 4px;
+}
+
 /* Actions and helper copy */
 .buttons {
   margin-top: 12px;

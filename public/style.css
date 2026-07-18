@@ -771,6 +771,7 @@ body.text-extraction-drop-active .app-container {
   flex: none;
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
+  border-radius: 4px;
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
@@ -809,11 +810,11 @@ body.text-extraction-drop-active .app-container {
 }
 
 .presets-combobox .renderer-combobox__input {
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 .presets-combobox .renderer-combobox__listbox {
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 .presets-combobox .renderer-combobox__listbox {
@@ -936,6 +937,7 @@ body.text-extraction-drop-active .app-container {
   flex: none;
   height: var(--numeric-value-field-height-compact);
   padding: var(--numeric-value-field-padding);
+  border-radius: 4px;
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
@@ -1036,6 +1038,7 @@ body.text-extraction-drop-active .app-container {
   flex: none;
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
+  border-radius: 4px;
   font-size: var(--font-size-9);
   font-family: inherit;
   text-align: center;
@@ -1875,11 +1878,11 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__listbox {
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox {
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input:disabled,
@@ -2127,7 +2130,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
-  border-radius: 8px;
+  border-radius: 4px;
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
@@ -2374,7 +2377,7 @@ body.text-extraction-drop-active .app-container {
   box-sizing: border-box;
   z-index: 30;
   top: 100%;
-  border-radius: 5px;
+  border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 
