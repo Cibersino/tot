@@ -423,7 +423,7 @@ body {
 }
 
 .logo-link:hover {
-  opacity: 0.82;
+  opacity: 0.8;
   filter: saturate(1.12) brightness(0.92);
 }
 
@@ -497,7 +497,7 @@ pre#textPreview .preview-static {
 .selector-text.current-text-status--pending #textPreview,
 .results.current-text-status--pending .result-highlight,
 .results.current-text-status--pending .result-list {
-  opacity: 0.72;
+  opacity: 0.7;
   filter: saturate(0.88);
 }
 
@@ -571,7 +571,7 @@ pre#textPreview .preview-static {
 }
 
 .selector-inline-checkbox input:disabled + span {
-  opacity: 0.55;
+  opacity: 0.6;
 }
 
 .clipboard-repeat-input {
@@ -831,7 +831,7 @@ body.text-extraction-drop-active .app-container {
 
 .presets-combobox .renderer-combobox__input:disabled,
 .snapshot-save-tags-combobox .renderer-combobox__input:disabled {
-  opacity: 0.65;
+  opacity: 0.7;
 }
 
 .presets-combobox .renderer-combobox__option,
@@ -1266,7 +1266,7 @@ body.text-extraction-drop-active .app-container {
 }
 
 .browser-extension-modal-store-link:hover {
-  opacity: 0.88;
+  opacity: 0.8;
   transform: translateY(-1px);
 }
 
@@ -1866,7 +1866,7 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input:disabled,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input:disabled {
-  opacity: 0.65;
+  opacity: 0.7;
 }
 
 .text-extraction-batch-plan-route-combobox,
@@ -2555,7 +2555,7 @@ body.text-extraction-drop-active .app-container {
 
 .reading-test-entry-modal-link[aria-disabled="true"] {
   pointer-events: none;
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: default;
 }
 
