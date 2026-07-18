@@ -4,6 +4,8 @@
 
 /* Window shell */
 :root {
+  --field-radius: 4px;
+  --button-radius: 5px;
   --control-height-md: 30px;
   --tot-icon-size-sm: 14px;
   --tot-icon-size-md: 28px;
@@ -97,7 +99,7 @@ body[data-expanded="false"] .replace-row {
   height: 30px;
   padding: 0 8px;
   border: 1px solid rgba(184, 184, 184, 0.62);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   font-size: 13px;
   color: #1d1d1d;
   background: rgba(255, 255, 255, 0.48);
@@ -113,7 +115,7 @@ body[data-expanded="false"] .replace-row {
   line-height: 1;
   font-size: 0.9375rem;
   font-family: inherit;
-  border-radius: 5px;
+  border-radius: var(--button-radius);
   border: 1px solid #cfcfcf;
   background: #fff;
   color: #2f2a20;

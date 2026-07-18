@@ -122,6 +122,10 @@
   --logo-links-scale: 0.7;
   --kofi-logo-scale: 0.82;
 
+  /* Corner radii */
+  --field-radius: 4px;
+  --button-radius: 5px;
+
   /* Shared styles */
   --tot-icon-size-sm: 14px;
   --tot-icon-size-md: 28px;
@@ -224,7 +228,7 @@ body {
   height: var(--control-height-md);
   font-size: var(--font-size-7);
   font-family: inherit;
-  border-radius: 5px;
+  border-radius: var(--button-radius);
   border: 1px solid var(--button-border);
   background: var(--button-bg);
   color: var(--text-color);
@@ -577,7 +581,7 @@ pre#textPreview .preview-static {
   flex: none;
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   border: 1px solid var(--clipboard-repeat-input-border);
   background: var(--clipboard-repeat-input-bg);
   color: var(--text-color);
@@ -771,7 +775,7 @@ body.text-extraction-drop-active .app-container {
   flex: none;
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
@@ -810,11 +814,11 @@ body.text-extraction-drop-active .app-container {
 }
 
 .presets-combobox .renderer-combobox__input {
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .presets-combobox .renderer-combobox__listbox {
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .presets-combobox .renderer-combobox__listbox {
@@ -937,7 +941,7 @@ body.text-extraction-drop-active .app-container {
   flex: none;
   height: var(--numeric-value-field-height-compact);
   padding: var(--numeric-value-field-padding);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-color);
@@ -1038,7 +1042,7 @@ body.text-extraction-drop-active .app-container {
   flex: none;
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   font-size: var(--font-size-9);
   font-family: inherit;
   text-align: center;
@@ -1588,7 +1592,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   font-family: inherit;
   font-size: var(--font-size-8);
   box-sizing: border-box;
@@ -1722,7 +1726,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height-compact);
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   font-family: inherit;
   font-size: var(--font-size-4);
   box-sizing: border-box;
@@ -1834,15 +1838,15 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-plan-unit-name {
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input {
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input,
@@ -1878,11 +1882,11 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__listbox {
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox {
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input:disabled,
@@ -2130,7 +2134,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height);
   padding: var(--numeric-value-field-padding);
   border: 1px solid var(--input-border);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   background: var(--input-bg);
   color: var(--text-color);
   font-family: inherit;
@@ -2367,7 +2371,7 @@ body.text-extraction-drop-active .app-container {
   font: inherit;
   height: var(--control-height-md);
   padding: 4px 6px;
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .snapshot-save-tags-combobox .renderer-combobox__listbox {
@@ -2377,7 +2381,7 @@ body.text-extraction-drop-active .app-container {
   box-sizing: border-box;
   z-index: 30;
   top: 100%;
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 
@@ -2456,7 +2460,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--control-height-md);
   padding: 4px 6px;
   border: 1px solid var(--selector-border);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   background: var(--selector-bg);
   color: var(--text-color);
   box-sizing: border-box;

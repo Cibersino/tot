@@ -15,6 +15,7 @@ body {
 }
 
 :root {
+  --button-radius: 5px;
   --control-height-md: 30px;
   --tot-icon-size-sm: 14px;
   --tot-icon-size-md: 28px;
@@ -86,7 +87,7 @@ body {
   line-height: 1;
   font-size: 0.9375rem;
   font-family: inherit;
-  border-radius: 5px;
+  border-radius: var(--button-radius);
   border: 1px solid #cfcfcf;
   background: #fff;
   color: #2f2a20;

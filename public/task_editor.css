@@ -4,6 +4,8 @@
 
 /* Design tokens */
 :root {
+  --field-radius: 4px;
+  --button-radius: 5px;
   --bg: #fdf6e3;
   --panel: #f4ecd8;
   --panel-strong: #ece4d2;
@@ -95,7 +97,7 @@ body {
   font-size: 0.9375rem;
   font-family: inherit;
   border: 1px solid #cfcfcf;
-  border-radius: 5px;
+  border-radius: var(--button-radius);
   background: #fff;
   color: #2f2a20;
   cursor: pointer;
@@ -227,7 +229,7 @@ body {
   height: 30px;
   padding: 4px 8px;
   border: 1px solid var(--input-border);
-  border-radius: 4px;
+  border-radius: var(--field-radius);
   font-size: 14px;
   background: var(--surface);
   color: var(--text);
@@ -325,11 +327,11 @@ body {
 }
 
 .task-table input[type="text"] {
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .task-table input[type="number"] {
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .task-table td:nth-child(2) input,
@@ -485,7 +487,7 @@ body.is-resizing {
   flex: 1 1 auto;
   height: 28px;
   padding: 4px 6px;
-  border-radius: 4px;
+  border-radius: var(--field-radius);
 }
 
 .library-list {
