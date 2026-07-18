@@ -47,6 +47,7 @@
   /* Text */
   --text-color: #2f2a20;
   --text-soft: #6c6049;
+  --text-disabled: #7a8491;
   --warning-text: #8b1e1e;
   --results-degraded-text: #c62828;
   --link-external: #245b89;
@@ -781,15 +782,20 @@ body.text-extraction-drop-active .app-container {
   accent-color: var(--control-accent);
 }
 
-/* Preset and Snapshot comboboxes */
+/* Preset combobox */
 .presets-row {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
+/* Main-window shared combobox field and option-state treatment */
 .presets-combobox .renderer-combobox__input,
 .presets-combobox .renderer-combobox__listbox,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox,
 .snapshot-save-tags-combobox .renderer-combobox__input,
 .snapshot-save-tags-combobox .renderer-combobox__listbox {
   border: 1px solid var(--field-border);
@@ -829,10 +835,18 @@ body.text-extraction-drop-active .app-container {
 
 .presets-combobox .renderer-combobox__option {
   padding: 7px 9px;
+}
+
+.presets-combobox .renderer-combobox__option,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__option,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option,
+.snapshot-save-tags-combobox .renderer-combobox__option {
   border-inline-start: 3px solid transparent;
 }
 
 .presets-combobox .renderer-combobox__option[aria-selected="true"],
+.text-extraction-batch-plan-route-combobox .renderer-combobox__option[aria-selected="true"],
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option[aria-selected="true"],
 .snapshot-save-tags-combobox .renderer-combobox__option[aria-selected="true"] {
   border-inline-start-color: var(--selector-selected-accent);
   background: var(--selector-selected-bg);
@@ -840,15 +854,20 @@ body.text-extraction-drop-active .app-container {
 }
 
 .presets-combobox .renderer-combobox__option.is-active,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__option.is-active,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option.is-active,
 .snapshot-save-tags-combobox .renderer-combobox__option.is-active {
   background: var(--selector-active-bg);
 }
 
 .presets-combobox .renderer-combobox__option.is-disabled,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__option.is-disabled,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option.is-disabled,
 .snapshot-save-tags-combobox .renderer-combobox__option.is-disabled {
-  color: #7a8491;
+  color: var(--text-disabled);
 }
 
+/* Preset local combobox rules */
 .presets-combobox {
   height: var(--control-height-md);
   width: 180px;
@@ -1817,11 +1836,7 @@ body.text-extraction-drop-active .app-container {
   font: inherit;
 }
 
-.text-extraction-batch-plan-unit-name,
-.text-extraction-batch-plan-route-combobox .renderer-combobox__input,
-.text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox {
+.text-extraction-batch-plan-unit-name {
   border: 1px solid var(--field-border);
   background: var(--field-bg);
   color: var(--text-color);
@@ -1859,24 +1874,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-route-combobox .renderer-combobox__option,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__option {
   padding: 7px 9px;
-  border-inline-start: 3px solid transparent;
-}
-
-.text-extraction-batch-plan-route-combobox .renderer-combobox__option[aria-selected="true"],
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__option[aria-selected="true"] {
-  border-inline-start-color: var(--selector-selected-accent);
-  background: var(--selector-selected-bg);
-  font-weight: 600;
-}
-
-.text-extraction-batch-plan-route-combobox .renderer-combobox__option.is-active,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__option.is-active {
-  background: var(--selector-active-bg);
-}
-
-.text-extraction-batch-plan-route-combobox .renderer-combobox__option.is-disabled,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__option.is-disabled {
-  color: #7a8491;
 }
 
 .text-extraction-batch-plan-route-combobox,
@@ -2299,7 +2296,6 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-save-tags-combobox .renderer-combobox__option {
   padding: 4px 6px;
-  border-inline-start: 3px solid transparent;
 }
 
 .snapshot-save-tags-combobox .renderer-combobox__option[data-variant="clear"] {
