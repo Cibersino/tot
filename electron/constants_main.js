@@ -10,6 +10,7 @@ const MAX_PRESET_STR_CHARS = 65536; // Safety limit for preset name and descript
 const MAX_META_STR_CHARS = 4096; // Safety limit for metadata strings (like title, author) to prevent memory overflow.
 const PRESET_WPM_MIN = 10; // Minimum WPM allowed when persisting presets.
 const PRESET_WPM_MAX = 700; // Maximum WPM allowed when persisting presets.
+const SNAPSHOT_TAG_LABEL_MAX_CHARS = 36; // Max chars for custom snapshot tag labels. Must match public/js/constants.js.
 const TASK_NAME_MAX_CHARS = 50; // Max chars for task list name.
 const TASK_LIST_MAX_ROWS = 200; // Max rows allowed in a persisted task list payload.
 const TASK_LIBRARY_MAX_ITEMS = 12000; // Max items allowed in the persisted task library.
@@ -37,6 +38,7 @@ module.exports = {
   MAX_META_STR_CHARS,
   PRESET_WPM_MIN,
   PRESET_WPM_MAX,
+  SNAPSHOT_TAG_LABEL_MAX_CHARS,
   TASK_NAME_MAX_CHARS,
   TASK_LIST_MAX_ROWS,
   TASK_LIBRARY_MAX_ITEMS,

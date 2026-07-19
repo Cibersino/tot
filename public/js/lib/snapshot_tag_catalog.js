@@ -15,14 +15,17 @@
 // Module bootstrapping
 // =============================================================================
 (function initSnapshotTagCatalog(root, factory) {
-  const api = factory();
+  const appConstants = typeof module === 'object' && module.exports
+    ? require('../../../electron/constants_main')
+    : root && root.AppConstants;
+  const api = factory(appConstants);
   if (typeof module === 'object' && module.exports) {
     module.exports = api;
   }
   if (root && typeof root === 'object') {
     root.SnapshotTagCatalog = api;
   }
-})(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+})(typeof globalThis !== 'undefined' ? globalThis : this, (appConstants) => {
   // =============================================================================
   // Constants / config
   // =============================================================================
@@ -77,7 +80,10 @@
     difficulty: DIFFICULTY_OPTIONS,
   });
   const CUSTOM_TAG_PREFIX = 'custom';
-  const MAX_CUSTOM_LABEL_LENGTH = 48;
+  const MAX_CUSTOM_LABEL_LENGTH = appConstants && appConstants.SNAPSHOT_TAG_LABEL_MAX_CHARS;
+  if (!Number.isInteger(MAX_CUSTOM_LABEL_LENGTH) || MAX_CUSTOM_LABEL_LENGTH < 1) {
+    throw new Error('SNAPSHOT_TAG_LABEL_MAX_CHARS unavailable; cannot continue');
+  }
   const CONTROL_CHAR_RE = /[\u0000-\u001f\u007f]/;
   const LANGUAGE_RE = /^[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*$/;
   const CUSTOM_TAG_VALUE_RE = /^custom:(language|type|difficulty):([a-z0-9_-]+)$/i;

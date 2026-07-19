@@ -26,6 +26,12 @@ test('buildCustomTagValue uses a category namespace and normalized slug', () => 
   );
 });
 
+test('custom tag labels use the shared 36-character cap', () => {
+  assert.equal(snapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH, 36);
+  assert.equal(snapshotTagCatalog.validateCustomLabel('a'.repeat(36)).ok, true);
+  assert.equal(snapshotTagCatalog.validateCustomLabel('a'.repeat(37)).code, 'too_long');
+});
+
 test('normalizeLanguageTag keeps valid non-catalog language tags open', () => {
   const customLanguage = snapshotTagCatalog.buildCustomTagValue('language', 'Plain text');
 

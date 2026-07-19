@@ -28,6 +28,12 @@
     throw new Error('[snapshot-save-tags-modal] RendererI18n unavailable; cannot continue');
   }
   const { tRenderer, msgRenderer } = window.RendererI18n;
+  const { AppConstants } = window;
+  if (!AppConstants || !Number.isInteger(AppConstants.SNAPSHOT_TAG_LABEL_MAX_CHARS)
+    || AppConstants.SNAPSHOT_TAG_LABEL_MAX_CHARS < 1) {
+    throw new Error('[snapshot-save-tags-modal] SNAPSHOT_TAG_LABEL_MAX_CHARS unavailable; verify constants.js load order');
+  }
+  const { SNAPSHOT_TAG_LABEL_MAX_CHARS } = AppConstants;
 
   const snapshotTagCatalog = window.SnapshotTagCatalog || null;
   if (!snapshotTagCatalog
@@ -87,7 +93,6 @@
   const MANAGER_UNAVAILABLE_ALERT_KEY = 'renderer.snapshots.alerts.catalog_update_error';
   const LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.load.unavailable';
   const SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.save.unavailable';
-  const CUSTOM_LABEL_MAX_LENGTH_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.snapshotTagCatalog.maxCustomLabelLength.unavailable';
   const FOCUS_PREVENT_SCROLL_FALLBACK_LOG_KEY = 'snapshot-save-tags-modal.focus.preventScroll.fallback';
 
   const FIELD_DEFS = [
@@ -205,16 +210,12 @@
     return managerModal.getAttribute('aria-hidden') === 'false';
   }
 
-  function getCustomLabelMaxLength() {
-    const maxLength = snapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH;
-    if (Number.isInteger(maxLength) && maxLength > 0) {
-      return maxLength;
+  function getDraftValidationText(errorKey) {
+    if (!errorKey) return '';
+    if (errorKey === 'renderer.snapshots.manager.validation.too_long') {
+      return msgRenderer(errorKey, { max: SNAPSHOT_TAG_LABEL_MAX_CHARS });
     }
-    log.warnOnce(
-      CUSTOM_LABEL_MAX_LENGTH_UNAVAILABLE_LOG_KEY,
-      'SnapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH unavailable; draft input maxLength hint disabled.'
-    );
-    return null;
+    return tRenderer(errorKey);
   }
 
   async function loadSnapshotTagPreferences(initialPreferences = null) {
@@ -665,10 +666,7 @@
             draftInput.className = 'snapshot-tag-manager-draft-input';
             draftInput.type = 'text';
             draftInput.value = draftState.value;
-            const customLabelMaxLength = getCustomLabelMaxLength();
-            if (customLabelMaxLength !== null) {
-              draftInput.maxLength = customLabelMaxLength;
-            }
+            draftInput.maxLength = SNAPSHOT_TAG_LABEL_MAX_CHARS;
             draftInput.placeholder = tRenderer('renderer.snapshots.manager.new_tag_placeholder');
             draftInput.setAttribute('aria-label', `${heading.textContent} ${tRenderer('renderer.snapshots.manager.new_tag_placeholder')}`);
             draftInput.addEventListener('input', () => {
@@ -712,7 +710,7 @@
             const validation = document.createElement('div');
             validation.className = 'snapshot-tag-manager-validation';
             validation.setAttribute('aria-live', 'polite');
-            validation.textContent = draftState.errorKey ? tRenderer(draftState.errorKey) : '';
+            validation.textContent = getDraftValidationText(draftState.errorKey);
             if (!draftState.errorKey) {
               validation.hidden = true;
             }

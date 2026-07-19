@@ -249,7 +249,7 @@ function createHarness({
     'renderer.snapshots.manager.confirm_delete_custom': 'Delete {label} permanently?',
     'renderer.snapshots.manager.validation.empty': 'Enter a tag label.',
     'renderer.snapshots.manager.validation.control_characters': 'Control characters are not allowed.',
-    'renderer.snapshots.manager.validation.too_long': 'Tag labels must be 48 characters or shorter.',
+    'renderer.snapshots.manager.validation.too_long': 'Tag labels must be {max} characters or shorter.',
     'renderer.snapshots.manager.validation.duplicate': 'That tag already exists in this category.',
     'renderer.snapshots.alerts.catalog_update_error': 'Could not update the tag catalog.',
   };
@@ -291,6 +291,9 @@ function createHarness({
         msgRenderer(key, params) {
           return interpolate(translations[key] || key, params);
         },
+      },
+      AppConstants: {
+        SNAPSHOT_TAG_LABEL_MAX_CHARS: 36,
       },
       SnapshotTagCatalog: snapshotTagCatalog,
       RendererIcons: {
@@ -616,6 +619,7 @@ test('snapshot tag manager escape in new-tag input cancels only the draft', asyn
 
   const draftInput = harness.findInManagerByClassName('snapshot-tag-manager-draft-input');
   assert.ok(draftInput);
+  assert.equal(draftInput.maxLength, 36);
 
   const keyEvent = draftInput.dispatch('keydown', { key: 'Escape' });
   if (!keyEvent.propagationStopped) {
@@ -625,6 +629,30 @@ test('snapshot tag manager escape in new-tag input cancels only the draft', asyn
 
   assert.equal(harness.findInManagerByClassName('snapshot-tag-manager-draft-input'), null);
   assert.equal(harness.elements.snapshotTagManagerModal.getAttribute('aria-hidden'), 'false');
+
+  harness.elements.snapshotTagManagerModalDone.dispatch('click');
+  await managerPromise;
+});
+
+test('snapshot tag manager reports the shared custom-label cap', async () => {
+  const harness = createHarness();
+
+  const managerPromise = harness.promptManager({ initialPreferences: null });
+  await flushMicrotasks();
+  harness.findInManagerByText('New tag').dispatch('click');
+  await flushMicrotasks();
+
+  const draftInput = harness.findInManagerByClassName('snapshot-tag-manager-draft-input');
+  assert.ok(draftInput);
+  draftInput.value = 'a'.repeat(37);
+  draftInput.dispatch('input');
+  harness.findInManagerByText('Add tag').dispatch('click');
+  await flushMicrotasks();
+
+  assert.equal(
+    harness.findInManagerByClassName('snapshot-tag-manager-validation').textContent,
+    'Tag labels must be 36 characters or shorter.'
+  );
 
   harness.elements.snapshotTagManagerModalDone.dispatch('click');
   await managerPromise;
