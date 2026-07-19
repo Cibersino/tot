@@ -527,7 +527,7 @@ pre#textPreview .preview-static {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .controls-row[hidden] {
