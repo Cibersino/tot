@@ -338,7 +338,7 @@ body {
   align-items: center;
   justify-content: center;
   background: var(--app-secondary-bg);
-  z-index: 50;
+  z-index: 6666;
   pointer-events: all;
 }
 
@@ -365,7 +365,6 @@ body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
-  z-index: 20;
 }
 
 .editor-loader.visible {
@@ -387,7 +386,6 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  z-index: 30;
 }
 
 .logo-links-group {
@@ -709,7 +707,7 @@ pre#textPreview .preview-static {
 .text-extraction-drop-overlay {
   position: fixed;
   inset: 0;
-  z-index: 950;
+  z-index: 2000;
   display: none;
   align-items: center;
   justify-content: center;
@@ -825,7 +823,7 @@ body.text-extraction-drop-active .app-container {
   max-height: 160px;
   overflow-y: auto;
   box-sizing: border-box;
-  z-index: 30;
+  z-index: 2;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 
@@ -988,7 +986,6 @@ body.text-extraction-drop-active .app-container {
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 1;
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -1109,6 +1106,10 @@ body.text-extraction-drop-active .app-container {
   box-sizing: border-box;
 }
 
+#snapshotTagManagerModal {
+  z-index: 1100;
+}
+
 .info-modal[aria-hidden="false"] {  
   display: flex
 }
@@ -1133,7 +1134,7 @@ body.text-extraction-drop-active .app-container {
   background: var(--app-secondary-bg);
   border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
-  z-index: 1001;
+  z-index: 1;
   padding: 0 18px 18px;
   box-sizing: border-box;
   font-family: var(--font-reading);
@@ -1149,7 +1150,7 @@ body.text-extraction-drop-active .app-container {
   align-items: center;
   height: var(--info-header-height);
   padding: 0;                     /* horizontal space for button */
-  z-index: 1002;                  /* above the content */
+  z-index: 2;                     /* above the content */
   background: transparent;        /* leave the content visible below */
 }
 
@@ -1203,7 +1204,7 @@ body.text-extraction-drop-active .app-container {
   background: var(--app-secondary-bg);
   border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
-  z-index: 1001;
+  z-index: 1;
   font-family: var(--font-reading);
 }
 
@@ -1317,7 +1318,7 @@ body.text-extraction-drop-active .app-container {
 .info-media-lightbox {
   position: fixed;
   inset: 0;
-  z-index: 1100;
+  z-index: 1010;
   display: none;
   align-items: center;
   justify-content: center;
@@ -1389,7 +1390,7 @@ body.text-extraction-drop-active .app-container {
 .snapshot-tag-manager-modal-panel,
 .reading-test-entry-modal-panel {
   position: relative;
-  z-index: 1001;
+  z-index: 1;
   background: var(--app-secondary-bg);
   color: var(--text-color);
   box-shadow: var(--modal-panel-shadow);
@@ -1846,7 +1847,7 @@ body.text-extraction-drop-active .app-container {
   max-height: 160px;
   overflow-y: auto;
   box-sizing: border-box;
-  z-index: 30;
+  z-index: 2;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 
@@ -2309,7 +2310,7 @@ body.text-extraction-drop-active .app-container {
   max-height: 134px;
   overflow-y: auto;
   box-sizing: border-box;
-  z-index: 30;
+  z-index: 2;
   top: 100%;
   border-radius: var(--field-radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
@@ -2328,7 +2329,6 @@ body.text-extraction-drop-active .app-container {
 
 /* Snapshot tag manager modal */
 .snapshot-tag-manager-modal-panel {
-  z-index: 1002; /* Local exception to the shared default. */
   width: 480px;
   max-height: var(--modal-max-height);
   overflow: auto;
