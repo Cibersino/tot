@@ -2280,21 +2280,23 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-save-tags-form {
   display: grid;
+  grid-template-columns: max-content max-content;
+  justify-content: center;
+  align-items: center;
   gap: 12px;
 }
 
 .snapshot-save-tags-field {
-  display: grid;
-  gap: 12px;
-  position: relative;
+  display: contents;
 }
 
 .snapshot-save-tags-field-label {
+  justify-self: end;
   font-size: var(--font-size-8);
 }
 
 .snapshot-save-tags-combobox {
-  min-width: 0;
+  width: 200px;
   font-size: var(--font-size-7);
 }
 
@@ -2328,13 +2330,13 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-save-tags-modal-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
 .snapshot-save-tags-modal-actions .btn-standard {
-  min-width: 140px;
+  min-width: 180px;
 }
 
 /* Snapshot tag manager modal */
