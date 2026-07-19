@@ -596,7 +596,7 @@ test('snapshot tag manager renders the restore action as a reset icon with its h
   const restoreButton = harness.findInManagerByAriaLabel('Restore hidden defaults (1)');
   assert.ok(restoreButton);
   assert.equal(restoreButton.className, 'btn-standard snapshot-tag-manager-restore-button');
-  assert.equal(restoreButton.getAttribute('data-tot-icon'), 'reset');
+  assert.equal(restoreButton.getAttribute('data-tot-icon'), 'reset-small');
   assert.equal(restoreButton.title, 'Restore hidden defaults');
   assert.equal(restoreButton.textContent, '(1)');
 

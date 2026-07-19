@@ -642,7 +642,7 @@
           ));
           categoryActions.appendChild(createManagerIconButton({
             labelKey: 'renderer.snapshots.manager.restore_hidden_defaults',
-            iconName: 'reset',
+            iconName: 'reset-small',
             className: 'btn-standard snapshot-tag-manager-restore-button',
             labelParams: { count: categoryInfo.hiddenDefaultValues.length },
             count: categoryInfo.hiddenDefaultValues.length,

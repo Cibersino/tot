@@ -87,7 +87,7 @@ La existencia de un uso inicial no convierte al ícono en exclusivo de esa super
 
 ## Inventario actual
 
-El set actual contiene 33 SVGs canónicos.
+El set actual contiene 34 SVGs canónicos.
 
 La columna “semántica” describe el significado funcional del asset. No es una lista cerrada de consumidores.
 
@@ -112,6 +112,7 @@ La columna “semántica” describe el significado funcional del asset. No es u
 | `preset-new.svg` | Crear un preset de velocidad de lectura. |
 | `reading-speed-test.svg` | Representar el Test de velocidad de lectura. |
 | `reset.svg` | Restablecer, restaurar o volver a un estado base. |
+| `reset-small.svg` | Variante compacta de `reset.svg`: mantiene el canvas de 24×24 y reduce el dibujo a dos tercios; se usa en el botón de restaurar del Gestor de etiquetas. |
 | `stop.svg` | Detener una medición o estado de cronómetro. |
 | `task-comment.svg` | Representar comentario y snapshot asociado de una fila de tarea. |
 | `task-load.svg` | Cargar una tarea. |
