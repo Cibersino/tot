@@ -31,6 +31,9 @@ function createElement(id) {
     dispatch(type, event = {}) {
       (listeners.get(type) || []).forEach((handler) => handler(event));
     },
+    blur() {
+      this.dispatch('blur');
+    },
     setAttribute(name, value) {
       attributes[name] = String(value);
     },
@@ -107,6 +110,17 @@ test('results multiplier follows the repeat input rules while retaining its own 
   assert.equal(output.textContent, ': 2h 46m 39s');
   input.dispatch('blur');
   assert.equal(input.value, '9999');
+
+  let prevented = false;
+  input.value = '0';
+  input.dispatch('keydown', {
+    key: 'Enter',
+    preventDefault() {
+      prevented = true;
+    },
+  });
+  assert.equal(prevented, true);
+  assert.equal(input.value, '1');
 
   input.value = '1.5';
   input.dispatch('input');

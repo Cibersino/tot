@@ -119,6 +119,12 @@
     renderMultipliedTime();
   }
 
+  function handleKeyDown(event) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    inputEl.blur();
+  }
+
   function bindEvents() {
     if (!ensureElements('bindEvents')) return;
     inputEl.min = '1';
@@ -128,6 +134,7 @@
     inputEl.setAttribute('aria-invalid', 'false');
     inputEl.addEventListener('input', handleInput);
     inputEl.addEventListener('blur', handleBlur);
+    inputEl.addEventListener('keydown', handleKeyDown);
   }
 
   // =============================================================================
