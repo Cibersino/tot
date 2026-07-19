@@ -8,6 +8,7 @@ const vm = require('node:vm');
 
 function createElement(tagName = 'div') {
   const listeners = {};
+  const classes = new Set();
   return {
     tagName,
     value: '',
@@ -18,6 +19,15 @@ function createElement(tagName = 'div') {
     max: '',
     step: '',
     disabled: false,
+    classList: {
+      toggle(name, force) {
+        if (force) classes.add(name);
+        else classes.delete(name);
+      },
+      contains(name) {
+        return classes.has(name);
+      },
+    },
     attributes: {},
     childNodes: [],
     addEventListener(type, listener) {

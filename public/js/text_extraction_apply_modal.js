@@ -78,6 +78,15 @@
     return Math.min(numeric, maxRepeat);
   }
 
+  function updateRepeatInvalidState(rawValue, maxRepeat) {
+    const numericValue = Number(rawValue);
+    const isInvalid = !Number.isInteger(numericValue)
+      || numericValue < 1
+      || numericValue > maxRepeat;
+    repeatInput.classList.toggle('is-invalid', isInvalid);
+    repeatInput.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
+  }
+
   function normalizeRetainedGeneratedPdf(rawValue) {
     if (!rawValue || typeof rawValue !== 'object' || Array.isArray(rawValue)) {
       return null;
@@ -165,6 +174,7 @@
     repeatInput.max = String(safeMaxRepeat);
     repeatInput.step = '1';
     repeatInput.value = String(initialRepeat);
+    updateRepeatInvalidState(repeatInput.value, safeMaxRepeat);
 
     return await new Promise((resolve) => {
       let settled = false;
@@ -177,6 +187,7 @@
         btnClose.removeEventListener('click', onCancel);
         btnRevealSavedPdf.removeEventListener('click', onRevealSavedPdf);
         backdrop.removeEventListener('click', onCancel);
+        repeatInput.removeEventListener('input', onRepeatInput);
         repeatInput.removeEventListener('blur', onRepeatBlur);
         repeatInput.removeEventListener('keydown', onRepeatKeyDown);
         window.removeEventListener('keydown', onWindowKeyDown);
@@ -186,6 +197,7 @@
       const resolveChoice = (mode) => {
         const repetitions = normalizeRepeatForModal(repeatInput.value, safeMaxRepeat);
         repeatInput.value = String(repetitions);
+        updateRepeatInvalidState(repetitions, safeMaxRepeat);
         return { mode, repetitions };
       };
 
@@ -199,8 +211,12 @@
       const onOverwrite = () => finish(resolveChoice('overwrite'));
       const onAppend = () => finish(resolveChoice('append'));
       const onCancel = () => finish(null);
+      const onRepeatInput = () => {
+        updateRepeatInvalidState(repeatInput.value, safeMaxRepeat);
+      };
       const onRepeatBlur = () => {
         repeatInput.value = String(normalizeRepeatForModal(repeatInput.value, safeMaxRepeat));
+        updateRepeatInvalidState(repeatInput.value, safeMaxRepeat);
       };
       const onRepeatKeyDown = (event) => {
         if (event.key !== 'Enter') return;
@@ -235,6 +251,7 @@
       btnClose.addEventListener('click', onCancel);
       btnRevealSavedPdf.addEventListener('click', onRevealSavedPdf);
       backdrop.addEventListener('click', onCancel);
+      repeatInput.addEventListener('input', onRepeatInput);
       repeatInput.addEventListener('blur', onRepeatBlur);
       repeatInput.addEventListener('keydown', onRepeatKeyDown);
       window.addEventListener('keydown', onWindowKeyDown);

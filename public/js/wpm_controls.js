@@ -43,6 +43,13 @@
     return Math.min(Math.max(safe, WPM_MIN), WPM_MAX);
   }
 
+  function isWpmInputInvalid(rawValue) {
+    const numericValue = Number(rawValue);
+    return !Number.isInteger(numericValue)
+      || numericValue < WPM_MIN
+      || numericValue > WPM_MAX;
+  }
+
   // =============================================================================
   // Controller factory
   // =============================================================================
@@ -92,6 +99,12 @@
     let currentPresetName = null;
     let allPresetsCache = [];
     let listenersBound = false;
+
+    function setWpmInputInvalidState(isInvalid) {
+      if (!wpmInput) return;
+      wpmInput.classList.toggle('is-invalid', isInvalid);
+      wpmInput.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
+    }
 
     // =============================================================================
     // RendererPresets helpers
@@ -178,7 +191,10 @@
     // so presets, manual edits, and external updates apply the same bounds.
     function syncWpmControls(rawWpm) {
       const normalizedWpm = clampWpm(rawWpm);
-      if (wpmInput) wpmInput.value = String(normalizedWpm);
+      if (wpmInput) {
+        wpmInput.value = String(normalizedWpm);
+        setWpmInputInvalidState(false);
+      }
       if (wpmSlider) wpmSlider.value = String(sliderControlFromWpm(normalizedWpm));
       return normalizedWpm;
     }
@@ -474,6 +490,9 @@
       }
 
       if (wpmInput) {
+        wpmInput.addEventListener('input', () => {
+          setWpmInputInvalidState(isWpmInputInvalid(wpmInput.value));
+        });
         wpmInput.addEventListener('blur', () => {
           if (!canProceed('wpm-input-blur')) return;
           let requestedWpm = Number(wpmInput.value);

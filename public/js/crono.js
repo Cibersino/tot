@@ -110,6 +110,12 @@
     }
   }
 
+  function setCronoDisplayInvalidState(cronoDisplay, isInvalid) {
+    if (!cronoDisplay) return;
+    cronoDisplay.classList.toggle('is-invalid', isInvalid);
+    cronoDisplay.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
+  }
+
   async function openFlotante({
     electronAPI,
     toggleVF,
@@ -287,6 +293,7 @@
 
     if (cronoDisplay) {
       cronoDisplay.disabled = newRunning;
+      if (newRunning) setCronoDisplayInvalidState(cronoDisplay, false);
     }
 
     if (cronoDisplay && !cronoEditing) {
@@ -532,6 +539,13 @@
           baselineDisplay = elements.cronoDisplay.value;
         });
 
+        elements.cronoDisplay.addEventListener('input', () => {
+          setCronoDisplayInvalidState(
+            elements.cronoDisplay,
+            parseCronoInput(elements.cronoDisplay.value) === null
+          );
+        });
+
         elements.cronoDisplay.addEventListener('blur', () => {
           cronoEditing = false;
           void applyManualTime({
@@ -557,6 +571,7 @@
             baselineElapsed,
             baselineDisplay
           });
+          setCronoDisplayInvalidState(elements.cronoDisplay, false);
           baselineElapsed = null;
           baselineDisplay = null;
         });

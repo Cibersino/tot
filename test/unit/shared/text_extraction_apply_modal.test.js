@@ -14,6 +14,7 @@ async function flushMicrotasks() {
 function createElement(id) {
   const listeners = new Map();
   const attributes = {};
+  const classes = new Set();
 
   return {
     id,
@@ -23,6 +24,15 @@ function createElement(id) {
     textContent: '',
     focusCount: 0,
     selectCount: 0,
+    classList: {
+      toggle(name, force) {
+        if (force) classes.add(name);
+        else classes.delete(name);
+      },
+      contains(name) {
+        return classes.has(name);
+      },
+    },
     addEventListener(type, handler) {
       if (!listeners.has(type)) {
         listeners.set(type, []);
@@ -197,11 +207,18 @@ test('apply modal renders retained PDF details, normalizes repeat count, and res
   assert.equal(harness.elements.textExtractionApplyModalOverwrite.focusCount, 1);
 
   harness.elements.textExtractionApplyModalRepeatInput.value = '9';
+  harness.elements.textExtractionApplyModalRepeatInput.dispatch('input');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.classList.contains('is-invalid'), true);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.getAttribute('aria-invalid'), 'true');
   harness.elements.textExtractionApplyModalRepeatInput.dispatch('blur');
   assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '5');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.classList.contains('is-invalid'), false);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.getAttribute('aria-invalid'), 'false');
 
   let prevented = false;
   harness.elements.textExtractionApplyModalRepeatInput.value = '0';
+  harness.elements.textExtractionApplyModalRepeatInput.dispatch('input');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.classList.contains('is-invalid'), true);
   harness.elements.textExtractionApplyModalRepeatInput.dispatch('keydown', {
     key: 'Enter',
     preventDefault() {
@@ -210,6 +227,7 @@ test('apply modal renders retained PDF details, normalizes repeat count, and res
   });
   assert.equal(prevented, true);
   assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '1');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.classList.contains('is-invalid'), false);
 
   harness.elements.textExtractionApplyModalRevealSavedPdf.dispatch('click');
   await flushMicrotasks();

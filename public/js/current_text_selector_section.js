@@ -106,7 +106,12 @@
     if (!clipboardRepeatInput) return;
     const numericValue = Number(rawValue);
     const isRepeatActive = Number.isFinite(numericValue) && numericValue > 1;
+    const isInvalid = !Number.isInteger(numericValue)
+      || numericValue < 1
+      || numericValue > MAX_CLIPBOARD_REPEAT;
     clipboardRepeatInput.classList.toggle('is-repeat-active', isRepeatActive);
+    clipboardRepeatInput.classList.toggle('is-invalid', isInvalid);
+    clipboardRepeatInput.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
   }
 
   function normalizeClipboardRepeat(rawValue) {

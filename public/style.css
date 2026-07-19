@@ -947,10 +947,18 @@ body.text-extraction-drop-active .app-container {
   min-width: 0;
 }
 
+.clipboard-repeat-input.is-invalid,
+.text-extraction-apply-repeat-row input.is-invalid,
+.velocity #wpmInput.is-invalid,
+.cronometro .crono-box.is-invalid,
 .results-multiplier-row input.is-invalid {
   border-color: var(--input-invalid-border);
 }
 
+.clipboard-repeat-input.is-invalid:focus-visible,
+.text-extraction-apply-repeat-row input.is-invalid:focus-visible,
+.velocity #wpmInput.is-invalid:focus-visible,
+.cronometro .crono-box.is-invalid:focus-visible,
 .results-multiplier-row input.is-invalid:focus-visible {
   outline-color: var(--input-invalid-border);
 }

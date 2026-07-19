@@ -25,6 +25,9 @@ function createClassList() {
       values.add(name);
       return true;
     },
+    contains(name) {
+      return values.has(name);
+    },
   };
 }
 
@@ -225,11 +228,18 @@ test('clipboard repeat commits the canonical value on blur and Enter', () => {
   const input = harness.elements.clipboardRepeatInput;
 
   input.value = '100';
+  input.dispatch('input');
+  assert.equal(input.classList.contains('is-invalid'), true);
+  assert.equal(input.getAttribute('aria-invalid'), 'true');
   input.dispatch('blur');
   assert.equal(input.value, '99');
+  assert.equal(input.classList.contains('is-invalid'), false);
+  assert.equal(input.getAttribute('aria-invalid'), 'false');
 
   let prevented = false;
   input.value = '0';
+  input.dispatch('input');
+  assert.equal(input.classList.contains('is-invalid'), true);
   input.dispatch('keydown', {
     key: 'Enter',
     preventDefault() {
@@ -239,4 +249,5 @@ test('clipboard repeat commits the canonical value on blur and Enter', () => {
 
   assert.equal(prevented, true);
   assert.equal(input.value, '1');
+  assert.equal(input.classList.contains('is-invalid'), false);
 });
