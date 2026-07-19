@@ -76,6 +76,7 @@
   --section-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
   --button-hover-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
   --switch-track-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.02);
+  --combobox-popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
   --drop-zone-shadow: 0 14px 28px rgb(0 0 0 / 0.18);
   --modal-panel-shadow: 0 12px 24px rgb(0 0 0 / 0.25);
   --lightbox-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
@@ -824,7 +825,7 @@ body.text-extraction-drop-active .app-container {
   overflow-y: auto;
   box-sizing: border-box;
   z-index: 2;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+  box-shadow: var(--combobox-popup-shadow);
 }
 
 .presets-combobox .renderer-combobox__input:disabled {
@@ -1848,7 +1849,7 @@ body.text-extraction-drop-active .app-container {
   overflow-y: auto;
   box-sizing: border-box;
   z-index: 2;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+  box-shadow: var(--combobox-popup-shadow);
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__listbox {
@@ -2313,7 +2314,7 @@ body.text-extraction-drop-active .app-container {
   z-index: 2;
   top: 100%;
   border-radius: var(--field-radius);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+  box-shadow: var(--combobox-popup-shadow);
 }
 
 .snapshot-save-tags-modal-actions {
