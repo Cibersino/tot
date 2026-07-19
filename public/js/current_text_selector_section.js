@@ -122,6 +122,14 @@
     return Math.min(numericValue, MAX_CLIPBOARD_REPEAT);
   }
 
+  function commitClipboardRepeatInput() {
+    if (!clipboardRepeatInput) return 1;
+    const normalized = normalizeClipboardRepeat(clipboardRepeatInput.value);
+    clipboardRepeatInput.value = String(normalized);
+    updateClipboardRepeatVisualState(normalized);
+    return normalized;
+  }
+
   // Preview rendering helpers
 
   function normalizePreviewValue(value) {
@@ -270,6 +278,14 @@
     clipboardRepeatInput.addEventListener('input', () => {
       updateClipboardRepeatVisualState(clipboardRepeatInput.value);
     });
+    clipboardRepeatInput.addEventListener('blur', () => {
+      commitClipboardRepeatInput();
+    });
+    clipboardRepeatInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      clipboardRepeatInput.blur();
+    });
   }
 
   function initializePreviewSpoilerToggle() {
@@ -396,10 +412,7 @@
 
   function getClipboardRepeatCount() {
     if (!clipboardRepeatInput) return 1;
-    const normalized = normalizeClipboardRepeat(clipboardRepeatInput.value);
-    clipboardRepeatInput.value = String(normalized);
-    updateClipboardRepeatVisualState(normalized);
-    return normalized;
+    return commitClipboardRepeatInput();
   }
 
   initializeClipboardRepeatInput();

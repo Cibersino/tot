@@ -178,6 +178,7 @@
         btnRevealSavedPdf.removeEventListener('click', onRevealSavedPdf);
         backdrop.removeEventListener('click', onCancel);
         repeatInput.removeEventListener('blur', onRepeatBlur);
+        repeatInput.removeEventListener('keydown', onRepeatKeyDown);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
       };
@@ -200,6 +201,11 @@
       const onCancel = () => finish(null);
       const onRepeatBlur = () => {
         repeatInput.value = String(normalizeRepeatForModal(repeatInput.value, safeMaxRepeat));
+      };
+      const onRepeatKeyDown = (event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        repeatInput.blur();
       };
       const onRevealSavedPdf = async () => {
         if (!canRevealGeneratedPdf || revealPending) return;
@@ -230,6 +236,7 @@
       btnRevealSavedPdf.addEventListener('click', onRevealSavedPdf);
       backdrop.addEventListener('click', onCancel);
       repeatInput.addEventListener('blur', onRepeatBlur);
+      repeatInput.addEventListener('keydown', onRepeatKeyDown);
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');

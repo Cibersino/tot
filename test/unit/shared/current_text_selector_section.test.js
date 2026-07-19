@@ -62,6 +62,9 @@ function createElement(id, tagName = 'div') {
     addEventListener(type, listener) {
       listeners[type] = listener;
     },
+    blur() {
+      if (listeners.blur) listeners.blur({});
+    },
     dispatch(type, event = {}) {
       if (listeners[type]) listeners[type](event);
     },
@@ -215,4 +218,25 @@ test('truncated preview resolves direction from full source text and keeps synth
   assert.equal(endFragment.tagName, 'bdi');
   assert.equal(endFragment.getAttribute('dir'), 'auto');
   assert.equal(endFragment.textContent, 'hij');
+});
+
+test('clipboard repeat commits the canonical value on blur and Enter', () => {
+  const harness = createHarness();
+  const input = harness.elements.clipboardRepeatInput;
+
+  input.value = '100';
+  input.dispatch('blur');
+  assert.equal(input.value, '99');
+
+  let prevented = false;
+  input.value = '0';
+  input.dispatch('keydown', {
+    key: 'Enter',
+    preventDefault() {
+      prevented = true;
+    },
+  });
+
+  assert.equal(prevented, true);
+  assert.equal(input.value, '1');
 });

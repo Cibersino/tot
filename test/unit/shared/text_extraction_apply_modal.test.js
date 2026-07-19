@@ -46,6 +46,9 @@ function createElement(id) {
     focus() {
       this.focusCount += 1;
     },
+    blur() {
+      this.dispatch('blur');
+    },
     select() {
       this.selectCount += 1;
     },
@@ -197,6 +200,17 @@ test('apply modal renders retained PDF details, normalizes repeat count, and res
   harness.elements.textExtractionApplyModalRepeatInput.dispatch('blur');
   assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '5');
 
+  let prevented = false;
+  harness.elements.textExtractionApplyModalRepeatInput.value = '0';
+  harness.elements.textExtractionApplyModalRepeatInput.dispatch('keydown', {
+    key: 'Enter',
+    preventDefault() {
+      prevented = true;
+    },
+  });
+  assert.equal(prevented, true);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '1');
+
   harness.elements.textExtractionApplyModalRevealSavedPdf.dispatch('click');
   await flushMicrotasks();
   assert.equal(revealCount, 1);
@@ -206,7 +220,7 @@ test('apply modal renders retained PDF details, normalizes repeat count, and res
 
   assert.deepEqual(
     JSON.parse(JSON.stringify(result)),
-    { mode: 'overwrite', repetitions: 5 }
+    { mode: 'overwrite', repetitions: 1 }
   );
 });
 
