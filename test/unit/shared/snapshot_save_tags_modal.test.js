@@ -239,7 +239,7 @@ function createHarness({
     'renderer.snapshots.manager.add_tag': 'Add tag',
     'renderer.snapshots.manager.cancel_draft': 'Cancel',
     'renderer.snapshots.manager.sort_alphabetically': 'Sort alphabetically',
-    'renderer.snapshots.manager.restore_hidden_defaults': 'Restore {count} hidden defaults',
+    'renderer.snapshots.manager.restore_hidden_defaults': 'Restore hidden defaults',
     'renderer.snapshots.manager.empty_category': 'No visible tags',
     'renderer.snapshots.manager.move_up': 'Move {label} up',
     'renderer.snapshots.manager.move_down': 'Move {label} down',
@@ -294,9 +294,10 @@ function createHarness({
       },
       SnapshotTagCatalog: snapshotTagCatalog,
       RendererIcons: {
-        createIconButton({ className = '', title = '', ariaLabel = '' } = {}) {
+        createIconButton({ iconName = '', className = '', title = '', ariaLabel = '' } = {}) {
           const button = createElement('', 'button');
           button.className = className;
+          if (iconName) button.setAttribute('data-tot-icon', iconName);
           if (title) button.title = title;
           if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
           return button;
@@ -579,15 +580,26 @@ test('snapshot tag manager moves focus into the modal on open', async () => {
   await managerPromise;
 });
 
-test('snapshot tag manager renders text action buttons at normal size', async () => {
-  const harness = createHarness();
+test('snapshot tag manager renders the restore action as a reset icon with its hidden-default count', async () => {
+  const storedPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  storedPreferences.language.hiddenDefaults = ['en'];
+  const harness = createHarness({ storedPreferences });
 
   const managerPromise = harness.promptManager({ initialPreferences: null });
   await flushMicrotasks();
 
   assert.equal(harness.findInManagerByText('New tag').className, 'btn-standard');
   assert.equal(harness.findInManagerByText('Sort alphabetically').className, 'btn-standard');
-  assert.equal(harness.findInManagerByText('Restore 0 hidden defaults').className, 'btn-standard');
+  const restoreButton = harness.findInManagerByAriaLabel('Restore hidden defaults (1)');
+  assert.ok(restoreButton);
+  assert.equal(restoreButton.className, 'btn-standard snapshot-tag-manager-restore-button');
+  assert.equal(restoreButton.getAttribute('data-tot-icon'), 'reset');
+  assert.equal(restoreButton.title, 'Restore hidden defaults');
+  assert.equal(restoreButton.textContent, '(1)');
+
+  restoreButton.dispatch('click');
+  await flushMicrotasks();
+  assert.equal(harness.getStoredPreferences().language.hiddenDefaults.includes('en'), false);
 
   harness.elements.snapshotTagManagerModalDone.dispatch('click');
   await managerPromise;

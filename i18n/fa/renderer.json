@@ -359,7 +359,7 @@
         "add_tag": "افزودن برچسب",
         "cancel_draft": "لغو",
         "sort_alphabetically": "مرتب‌سازی A-Z",
-        "restore_hidden_defaults": "بازگرداندن برچسب‌های پیش‌فرض ({count})",
+        "restore_hidden_defaults": "بازگرداندن برچسب‌های پیش‌فرض",
         "empty_category": "در این دسته برچسب قابل مشاهده‌ای وجود ندارد.",
         "move_up": "انتقال «{label}» به بالا",
         "move_down": "انتقال «{label}» به پایین",

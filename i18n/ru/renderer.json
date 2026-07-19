@@ -359,7 +359,7 @@
         "add_tag": "Добавить тег",
         "cancel_draft": "Отмена",
         "sort_alphabetically": "Сортировать A-Z",
-        "restore_hidden_defaults": "Восстановить теги по умолчанию ({count})",
+        "restore_hidden_defaults": "Восстановить теги по умолчанию",
         "empty_category": "В этой категории нет видимых тегов.",
         "move_up": "Переместить «{label}» вверх",
         "move_down": "Переместить «{label}» вниз",

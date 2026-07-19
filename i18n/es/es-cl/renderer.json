@@ -359,7 +359,7 @@
         "add_tag": "Agregar etiqueta",
         "cancel_draft": "Cancelar",
         "sort_alphabetically": "Ordenar A-Z",
-        "restore_hidden_defaults": "Restaurar etiquetas por defecto ({count})",
+        "restore_hidden_defaults": "Restaurar etiquetas por defecto",
         "empty_category": "No hay etiquetas visibles en esta categoría.",
         "move_up": "Subir \"{label}\"",
         "move_down": "Bajar \"{label}\"",

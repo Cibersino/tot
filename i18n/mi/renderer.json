@@ -359,7 +359,7 @@
         "add_tag": "Tāpiri tūtohu",
         "cancel_draft": "Whakakore",
         "sort_alphabetically": "Kōmaka A-Z",
-        "restore_hidden_defaults": "Whakaora tūtohu taunoa ({count})",
+        "restore_hidden_defaults": "Whakaora tūtohu taunoa",
         "empty_category": "Kāore he tūtohu kitea i tēnei kāwai.",
         "move_up": "Nuku \"{label}\" ki runga",
         "move_down": "Nuku \"{label}\" ki raro",

@@ -359,7 +359,7 @@
         "add_tag": "Lägg till tagg",
         "cancel_draft": "Avbryt",
         "sort_alphabetically": "Sortera A-Z",
-        "restore_hidden_defaults": "Återställ standardtaggar ({count})",
+        "restore_hidden_defaults": "Återställ standardtaggar",
         "empty_category": "Inga synliga taggar i den här kategorin.",
         "move_up": "Flytta \"{label}\" uppåt",
         "move_down": "Flytta \"{label}\" nedåt",

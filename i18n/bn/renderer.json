@@ -359,7 +359,7 @@
         "add_tag": "ট্যাগ যোগ করুন",
         "cancel_draft": "বাতিল",
         "sort_alphabetically": "A-Z সাজান",
-        "restore_hidden_defaults": "ডিফল্ট ট্যাগ ফিরিয়ে আনুন ({count})",
+        "restore_hidden_defaults": "ডিফল্ট ট্যাগ ফিরিয়ে আনুন",
         "empty_category": "এই বিভাগে কোনো দৃশ্যমান ট্যাগ নেই।",
         "move_up": "\"{label}\" উপরে সরান",
         "move_down": "\"{label}\" নিচে সরান",

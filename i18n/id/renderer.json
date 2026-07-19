@@ -359,7 +359,7 @@
         "add_tag": "Tambahkan tag",
         "cancel_draft": "Batal",
         "sort_alphabetically": "Urutkan A-Z",
-        "restore_hidden_defaults": "Pulihkan tag default ({count})",
+        "restore_hidden_defaults": "Pulihkan tag default",
         "empty_category": "Tidak ada tag terlihat dalam kategori ini.",
         "move_up": "Pindahkan \"{label}\" ke atas",
         "move_down": "Pindahkan \"{label}\" ke bawah",

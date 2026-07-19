@@ -359,7 +359,7 @@
         "add_tag": "태그 추가",
         "cancel_draft": "취소",
         "sort_alphabetically": "A-Z 정렬",
-        "restore_hidden_defaults": "기본 태그 복원 ({count})",
+        "restore_hidden_defaults": "기본 태그 복원",
         "empty_category": "이 범주에 표시할 태그가 없습니다.",
         "move_up": "\"{label}\" 위로 이동",
         "move_down": "\"{label}\" 아래로 이동",

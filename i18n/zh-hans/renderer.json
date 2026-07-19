@@ -359,7 +359,7 @@
         "add_tag": "添加标签",
         "cancel_draft": "取消",
         "sort_alphabetically": "按 A-Z 排序",
-        "restore_hidden_defaults": "恢复默认标签 ({count})",
+        "restore_hidden_defaults": "恢复默认标签",
         "empty_category": "此类别中没有可见标签。",
         "move_up": "上移“{label}”",
         "move_down": "下移“{label}”",

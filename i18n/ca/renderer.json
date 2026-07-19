@@ -359,7 +359,7 @@
         "add_tag": "Afegeix etiqueta",
         "cancel_draft": "Cancel·la",
         "sort_alphabetically": "Ordena A-Z",
-        "restore_hidden_defaults": "Restaura les etiquetes predeterminades ({count})",
+        "restore_hidden_defaults": "Restaura les etiquetes predeterminades",
         "empty_category": "No hi ha etiquetes visibles en aquesta categoria.",
         "move_up": "Mou \"{label}\" amunt",
         "move_down": "Mou \"{label}\" avall",

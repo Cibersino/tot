@@ -359,7 +359,7 @@
         "add_tag": "Etiqueta yapay",
         "cancel_draft": "Puchukay",
         "sort_alphabetically": "A-Z nisqaman kamachiy",
-        "restore_hidden_defaults": "Kikinmanta etiquetankunata kutichiy ({count})",
+        "restore_hidden_defaults": "Kikinmanta etiquetankunata kutichiy",
         "empty_category": "Kay categoría nisqapi mana rikukuq etiquetankuna kanchu.",
         "move_up": "\"{label}\" wichayman kuyuchiy",
         "move_down": "\"{label}\" urayman kuyuchiy",

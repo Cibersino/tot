@@ -359,7 +359,7 @@
         "add_tag": "タグを追加",
         "cancel_draft": "キャンセル",
         "sort_alphabetically": "A-Z 順に並べ替え",
-        "restore_hidden_defaults": "既定のタグを復元 ({count})",
+        "restore_hidden_defaults": "既定のタグを復元",
         "empty_category": "このカテゴリに表示タグはありません。",
         "move_up": "「{label}」を上へ移動",
         "move_down": "「{label}」を下へ移動",

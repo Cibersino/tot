@@ -359,7 +359,7 @@
         "add_tag": "Ajoute etikèt",
         "cancel_draft": "Anile",
         "sort_alphabetically": "Klase A-Z",
-        "restore_hidden_defaults": "Retabli etikèt pa defo yo ({count})",
+        "restore_hidden_defaults": "Retabli etikèt pa defo yo",
         "empty_category": "Pa gen etikèt vizib nan kategori sa a.",
         "move_up": "Monte \"{label}\"",
         "move_down": "Desann \"{label}\"",

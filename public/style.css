@@ -2329,7 +2329,7 @@ body.text-extraction-drop-active .app-container {
 /* Snapshot tag manager modal */
 .snapshot-tag-manager-modal-panel {
   z-index: 1002; /* Local exception to the shared default. */
-  width: 760px;
+  width: 480px;
   max-height: var(--modal-max-height);
   overflow: auto;
 }
@@ -2381,6 +2381,10 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-tag-manager-category-actions {
   gap: 8px;
+}
+
+.snapshot-tag-manager-restore-button {
+  gap: 4px;
 }
 
 .snapshot-tag-manager-draft-actions,

@@ -359,7 +359,7 @@
         "add_tag": "Gehitu etiketa",
         "cancel_draft": "Utzi",
         "sort_alphabetically": "Ordenatu A-Z",
-        "restore_hidden_defaults": "Berrezarri etiketa lehenetsiak ({count})",
+        "restore_hidden_defaults": "Berrezarri etiketa lehenetsiak",
         "empty_category": "Ez dago etiketa ikusgairik kategoria honetan.",
         "move_up": "Eraman \"{label}\" gora",
         "move_down": "Eraman \"{label}\" behera",

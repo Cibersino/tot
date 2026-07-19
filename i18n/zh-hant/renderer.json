@@ -359,7 +359,7 @@
         "add_tag": "新增標籤",
         "cancel_draft": "取消",
         "sort_alphabetically": "依 A-Z 排序",
-        "restore_hidden_defaults": "還原預設標籤 ({count})",
+        "restore_hidden_defaults": "還原預設標籤",
         "empty_category": "此類別中沒有可見標籤。",
         "move_up": "上移「{label}」",
         "move_down": "下移「{label}」",

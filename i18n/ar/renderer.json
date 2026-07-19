@@ -359,7 +359,7 @@
         "add_tag": "إضافة وسم",
         "cancel_draft": "إلغاء",
         "sort_alphabetically": "ترتيب A-Z",
-        "restore_hidden_defaults": "استعادة الوسوم الافتراضية ({count})",
+        "restore_hidden_defaults": "استعادة الوسوم الافتراضية",
         "empty_category": "لا توجد وسوم مرئية في هذه الفئة.",
         "move_up": "نقل \"{label}\" إلى الأعلى",
         "move_down": "نقل \"{label}\" إلى الأسفل",

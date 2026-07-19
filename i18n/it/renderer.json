@@ -359,7 +359,7 @@
         "add_tag": "Aggiungi tag",
         "cancel_draft": "Annulla",
         "sort_alphabetically": "Ordina A-Z",
-        "restore_hidden_defaults": "Ripristina tag predefiniti ({count})",
+        "restore_hidden_defaults": "Ripristina tag predefiniti",
         "empty_category": "Nessun tag visibile in questa categoria.",
         "move_up": "Sposta \"{label}\" in alto",
         "move_down": "Sposta \"{label}\" in basso",

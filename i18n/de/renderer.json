@@ -359,7 +359,7 @@
         "add_tag": "Tag hinzufügen",
         "cancel_draft": "Abbrechen",
         "sort_alphabetically": "A-Z sortieren",
-        "restore_hidden_defaults": "Standard-Tags wiederherstellen ({count})",
+        "restore_hidden_defaults": "Standard-Tags wiederherstellen",
         "empty_category": "Keine sichtbaren Tags in dieser Kategorie.",
         "move_up": "\"{label}\" nach oben verschieben",
         "move_down": "\"{label}\" nach unten verschieben",

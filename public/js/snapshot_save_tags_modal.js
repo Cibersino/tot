@@ -545,16 +545,25 @@
         labelParams = {},
         iconName,
         className = 'btn-standard btn-standard--square',
+        count = null,
         disabled = false,
         onClick,
       }) {
         const text = msgRenderer(labelKey, labelParams);
+        const countText = Number.isInteger(count) ? `(${count})` : '';
         const button = rendererIcons.createIconButton({
           iconName,
           className,
           title: text,
-          ariaLabel: text,
+          ariaLabel: countText && !text.includes(countText) ? `${text} ${countText}` : text,
         });
+        if (countText) {
+          const countLabel = document.createElement('span');
+          countLabel.className = 'snapshot-tag-manager-action-count';
+          countLabel.setAttribute('aria-hidden', 'true');
+          countLabel.textContent = countText;
+          button.appendChild(countLabel);
+        }
         button.disabled = disabled;
         button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
         button.addEventListener('click', onClick);
@@ -630,9 +639,13 @@
             },
             { disabled: categoryInfo.visibleOptions.length < 2 }
           ));
-          categoryActions.appendChild(createManagerActionButton(
-            'renderer.snapshots.manager.restore_hidden_defaults',
-            async () => {
+          categoryActions.appendChild(createManagerIconButton({
+            labelKey: 'renderer.snapshots.manager.restore_hidden_defaults',
+            iconName: 'reset',
+            className: 'btn-standard snapshot-tag-manager-restore-button',
+            labelParams: { count: categoryInfo.hiddenDefaultValues.length },
+            count: categoryInfo.hiddenDefaultValues.length,
+            onClick: async () => {
               const restoreInfo = snapshotTagCatalog.restoreHiddenDefaultTags(
                 managerPreferences,
                 category,
@@ -640,11 +653,8 @@
               );
               await applyManagerPreferencesChange('restore_hidden_defaults', restoreInfo);
             },
-            {
-              disabled: categoryInfo.hiddenDefaultValues.length < 1,
-              textParams: { count: categoryInfo.hiddenDefaultValues.length },
-            }
-          ));
+            disabled: categoryInfo.hiddenDefaultValues.length < 1,
+          }));
           headingRow.appendChild(categoryActions);
           section.appendChild(headingRow);
 

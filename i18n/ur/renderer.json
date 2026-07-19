@@ -359,7 +359,7 @@
         "add_tag": "ٹیگ شامل کریں",
         "cancel_draft": "منسوخ",
         "sort_alphabetically": "A-Z ترتیب دیں",
-        "restore_hidden_defaults": "ڈیفالٹ ٹیگز بحال کریں ({count})",
+        "restore_hidden_defaults": "ڈیفالٹ ٹیگز بحال کریں",
         "empty_category": "اس زمرے میں کوئی نظر آنے والا ٹیگ نہیں۔",
         "move_up": "«{label}» اوپر منتقل کریں",
         "move_down": "«{label}» نیچے منتقل کریں",

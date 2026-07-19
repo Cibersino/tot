@@ -2272,8 +2272,8 @@ Estados de revisión recomendados:
           "en": "Sort A-Z"
         },
         "restore_hidden_defaults": {
-          "es": "Restaurar etiquetas por defecto ({count})",
-          "en": "Restore default tags ({count})"
+          "es": "Restaurar etiquetas por defecto",
+          "en": "Restore default tags"
           // [PROPÓSITO] Restaura al catálogo visible las etiquetas por defecto ocultas dentro de esa categoría.
           // [CONCEPTO_APP] etiquetas de snapshot de texto
         },

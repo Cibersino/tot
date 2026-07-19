@@ -359,7 +359,7 @@
         "add_tag": "Etiket ekle",
         "cancel_draft": "İptal",
         "sort_alphabetically": "A-Z sırala",
-        "restore_hidden_defaults": "Varsayılan etiketleri geri yükle ({count})",
+        "restore_hidden_defaults": "Varsayılan etiketleri geri yükle",
         "empty_category": "Bu kategoride görünür etiket yok.",
         "move_up": "\"{label}\" etiketini yukarı taşı",
         "move_down": "\"{label}\" etiketini aşağı taşı",

@@ -359,7 +359,7 @@
         "add_tag": "टैग जोड़ें",
         "cancel_draft": "रद्द करें",
         "sort_alphabetically": "A-Z क्रम में लगाएँ",
-        "restore_hidden_defaults": "डिफ़ॉल्ट टैग पुनर्स्थापित करें ({count})",
+        "restore_hidden_defaults": "डिफ़ॉल्ट टैग पुनर्स्थापित करें",
         "empty_category": "इस श्रेणी में कोई दिखने वाला टैग नहीं है।",
         "move_up": "\"{label}\" ऊपर ले जाएँ",
         "move_down": "\"{label}\" नीचे ले जाएँ",

@@ -359,7 +359,7 @@
         "add_tag": "Thêm thẻ",
         "cancel_draft": "Hủy",
         "sort_alphabetically": "Sắp xếp A-Z",
-        "restore_hidden_defaults": "Khôi phục thẻ mặc định ({count})",
+        "restore_hidden_defaults": "Khôi phục thẻ mặc định",
         "empty_category": "Không có thẻ hiển thị trong danh mục này.",
         "move_up": "Di chuyển \"{label}\" lên",
         "move_down": "Di chuyển \"{label}\" xuống",
