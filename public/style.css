@@ -1873,8 +1873,17 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-plan-route-combobox,
 .text-extraction-batch-plan-unit-combobox {
-  min-width: 0;
   font-size: var(--font-size-7);
+}
+
+.text-extraction-batch-plan-route-combobox {
+  width: 100px;
+  flex: none;
+}
+
+.text-extraction-batch-plan-unit-combobox {
+  width: 240px;
+  flex: none;
 }
 
 .text-extraction-batch-plan-route-combobox[data-mode="select"] .renderer-combobox__input,
