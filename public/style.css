@@ -2306,7 +2306,7 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-save-tags-combobox .renderer-combobox__listbox {
   inset-inline: 0;
-  max-height: 160px;
+  max-height: 134px;
   overflow-y: auto;
   box-sizing: border-box;
   z-index: 30;
