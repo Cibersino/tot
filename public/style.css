@@ -885,7 +885,6 @@ body.text-extraction-drop-active .app-container {
 /* Preset description */
 .preset-description {
   margin-top: 6px;
-  min-height: 22px;
   color: var(--text-soft);
   font-size: var(--font-size-3);
 }
@@ -2429,7 +2428,6 @@ body.text-extraction-drop-active .app-container {
 }
 
 .snapshot-tag-manager-validation {
-  min-height: 1.2em;
   color: var(--warning-text);
   font-size: var(--font-size-6);
 }
@@ -2626,7 +2624,6 @@ body.text-extraction-drop-active .app-container {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  min-height: 28px;
   font-size: var(--font-size-8);
 }
 
