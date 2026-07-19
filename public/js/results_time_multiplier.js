@@ -56,9 +56,12 @@
     if (!Number.isInteger(numericValue) || numericValue < 1) {
       return { isValid: false, normalizedValue: 1 };
     }
+    if (numericValue > MAX_MULTIPLIER) {
+      return { isValid: false, normalizedValue: MAX_MULTIPLIER };
+    }
     return {
       isValid: true,
-      normalizedValue: Math.min(numericValue, MAX_MULTIPLIER),
+      normalizedValue: numericValue,
     };
   }
 

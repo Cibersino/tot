@@ -91,7 +91,7 @@ function createHarness() {
   };
 }
 
-test('results multiplier follows the repeat input rules while retaining its own cap', () => {
+test('results multiplier marks an over-cap value invalid before committing its local cap', () => {
   const harness = createHarness();
   const input = harness.elements.resultsTimeMultiplierInput;
   const output = harness.elements.resultsTimeMultiplierOutput;
@@ -106,10 +106,14 @@ test('results multiplier follows the repeat input rules while retaining its own 
 
   input.value = '10000';
   input.dispatch('input');
-  assert.equal(input.classList.contains('is-invalid'), false);
-  assert.equal(output.textContent, ': 2h 46m 39s');
+  assert.equal(input.classList.contains('is-invalid'), true);
+  assert.equal(input.getAttribute('aria-invalid'), 'true');
+  assert.equal(output.textContent, '');
   input.dispatch('blur');
   assert.equal(input.value, '9999');
+  assert.equal(input.classList.contains('is-invalid'), false);
+  assert.equal(input.getAttribute('aria-invalid'), 'false');
+  assert.equal(output.textContent, ': 2h 46m 39s');
 
   let prevented = false;
   input.value = '0';
