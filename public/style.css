@@ -108,7 +108,7 @@
   --line-height-relaxed: 1.4;
   
   /* Spacing */
-  --numeric-value-field-padding: 0 6px;
+  --direct-entry-field-padding: 0 6px;
   --combobox-content-padding: 4px 6px;
     
   /* Dimensions */
@@ -577,7 +577,7 @@ pre#textPreview .preview-static {
   width: var(--numeric-value-field-width-compact);
   flex: none;
   height: var(--numeric-value-field-height);
-  padding: var(--numeric-value-field-padding);
+  padding: var(--direct-entry-field-padding);
   border-radius: var(--field-radius);
   border: 1px solid var(--clipboard-repeat-input-border);
   background: var(--clipboard-repeat-input-bg);
@@ -766,7 +766,7 @@ body.text-extraction-drop-active .app-container {
   width: var(--numeric-value-field-width-compact);
   flex: none;
   height: var(--numeric-value-field-height);
-  padding: var(--numeric-value-field-padding);
+  padding: var(--direct-entry-field-padding);
   border-radius: var(--field-radius);
   border: 1px solid var(--field-border);
   background: var(--field-bg);
@@ -932,7 +932,7 @@ body.text-extraction-drop-active .app-container {
   width: var(--numeric-value-field-width-compact);
   flex: none;
   height: var(--numeric-value-field-height-compact);
-  padding: var(--numeric-value-field-padding);
+  padding: var(--direct-entry-field-padding);
   border-radius: var(--field-radius);
   border: 1px solid var(--field-border);
   background: var(--field-bg);
@@ -1042,7 +1042,7 @@ body.text-extraction-drop-active .app-container {
   height: var(--numeric-value-field-height);
   width: var(--numeric-value-field-width-wide);
   flex: none;
-  padding: var(--numeric-value-field-padding);
+  padding: var(--direct-entry-field-padding);
   border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
   font-size: var(--font-size-9);
@@ -1580,7 +1580,7 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-pdf-options-modal-range-field input {
   width: var(--numeric-value-field-width-wide);
   height: var(--numeric-value-field-height);
-  padding: var(--numeric-value-field-padding);
+  padding: var(--direct-entry-field-padding);
   border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
   font-family: inherit;
@@ -1709,7 +1709,7 @@ body.text-extraction-drop-active .app-container {
   width: var(--numeric-value-field-width-compact);
   flex: none;
   height: var(--numeric-value-field-height-compact);
-  padding: var(--numeric-value-field-padding);
+  padding: var(--direct-entry-field-padding);
   border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
   font-family: inherit;
@@ -1818,7 +1818,7 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-plan-unit-name {
   height: 30px;
-  padding: 4px 6px;
+  padding: var(--direct-entry-field-padding);
   font-family: inherit;
   box-sizing: border-box;
   border-radius: var(--field-radius);
@@ -2091,7 +2091,7 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-page-scope-input {
   width: var(--numeric-value-field-width-wide);
   height: var(--numeric-value-field-height);
-  padding: var(--numeric-value-field-padding);
+  padding: var(--direct-entry-field-padding);
   border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
   background: var(--field-bg);
@@ -2418,7 +2418,7 @@ body.text-extraction-drop-active .app-container {
 .snapshot-tag-manager-draft-input {
   width: 100%;
   height: 30px;
-  padding: 4px 6px;
+  padding: var(--direct-entry-field-padding);
   border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
   background: var(--field-bg);
