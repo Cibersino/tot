@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Own the main-window time multiplier UI below the estimated-time result.
-// - Validate multiplier input as a natural number.
+// - Apply the repeat-input validation and normalization rules with its own cap.
 // - Render the multiplied time from canonical exact base seconds.
 // =============================================================================
 
@@ -27,7 +27,7 @@
   const labelEl = document.getElementById('resultsTimeMultiplierLabel');
   const inputEl = document.getElementById('resultsTimeMultiplierInput');
   const outputEl = document.getElementById('resultsTimeMultiplierOutput');
-  const MAX_MULTIPLIER = 9999n;
+  const MAX_MULTIPLIER = 9999;
 
   // =============================================================================
   // Shared state
@@ -51,20 +51,19 @@
     return false;
   }
 
-  function parseNaturalNumber(rawValue) {
-    const text = String(rawValue || '').trim();
-    if (!/^\d+$/.test(text)) return null;
-    try {
-      const value = BigInt(text);
-      return (value > 0n && value <= MAX_MULTIPLIER) ? value : null;
-    } catch {
-      return null;
+  function getMultiplierInputState(rawValue) {
+    const numericValue = Number(rawValue);
+    if (!Number.isInteger(numericValue) || numericValue < 1) {
+      return { isValid: false, normalizedValue: 1 };
     }
+    return {
+      isValid: true,
+      normalizedValue: Math.min(numericValue, MAX_MULTIPLIER),
+    };
   }
 
   function normalizeMultiplierValue(rawValue) {
-    const parsed = parseNaturalNumber(rawValue);
-    return parsed ? parsed.toString() : '1';
+    return String(getMultiplierInputState(rawValue).normalizedValue);
   }
 
   function setInputInvalidState(isInvalid) {
@@ -88,8 +87,8 @@
   function renderMultipliedTime() {
     if (!ensureElements('renderMultipliedTime')) return;
 
-    const multiplierValue = parseNaturalNumber(inputEl.value);
-    if (!multiplierValue) {
+    const multiplierState = getMultiplierInputState(inputEl.value);
+    if (!multiplierState.isValid) {
       setInputInvalidState(true);
       outputEl.textContent = '';
       return;
@@ -102,7 +101,7 @@
       return;
     }
 
-    const multipliedSeconds = baseTotalSeconds * Number(multiplierValue);
+    const multipliedSeconds = baseTotalSeconds * multiplierState.normalizedValue;
     const multipliedTimeParts = getDisplayTimeParts(multipliedSeconds);
     outputEl.textContent = getMultipliedTimeText(multipliedTimeParts);
   }
@@ -123,7 +122,7 @@
   function bindEvents() {
     if (!ensureElements('bindEvents')) return;
     inputEl.min = '1';
-    inputEl.max = MAX_MULTIPLIER.toString();
+    inputEl.max = String(MAX_MULTIPLIER);
     inputEl.step = '1';
     inputEl.value = normalizeMultiplierValue(inputEl.value);
     inputEl.setAttribute('aria-invalid', 'false');
