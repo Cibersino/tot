@@ -872,8 +872,8 @@ body.text-extraction-drop-active .app-container {
 
 /* Preset local combobox rules */
 .presets-combobox {
-  width: 180px;
-  min-width: 0;
+  width: 260px;
+  flex: none;
   font-size: var(--font-size-7);
   font-family: inherit;
 }
