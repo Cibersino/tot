@@ -47,7 +47,6 @@
   /* Text */
   --text-color: #2f2a20;
   --text-soft: #6c6049;
-  --text-disabled: #7a8491;
   --warning-text: #8b1e1e;
   --results-degraded-text: #c62828;
   --link-external: #245b89;
@@ -832,11 +831,6 @@ body.text-extraction-drop-active .app-container {
 
 .presets-combobox .renderer-combobox__input:disabled {
   background: var(--input-disabled-bg);
-  color: var(--text-disabled);
-}
-
-.presets-combobox[data-mode="select"]:has(.renderer-combobox__input:disabled)::after {
-  color: var(--text-disabled);
 }
 
 .presets-combobox .renderer-combobox__option,
@@ -861,13 +855,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__option.is-active,
 .snapshot-save-tags-combobox .renderer-combobox__option.is-active {
   background: var(--selector-active-bg);
-}
-
-.presets-combobox .renderer-combobox__option.is-disabled,
-.text-extraction-batch-plan-route-combobox .renderer-combobox__option.is-disabled,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__option.is-disabled,
-.snapshot-save-tags-combobox .renderer-combobox__option.is-disabled {
-  color: var(--text-disabled);
 }
 
 /* Preset local combobox rules */
