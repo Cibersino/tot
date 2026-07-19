@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Own the main-window time multiplier UI below the estimated-time result.
-// - Apply the repeat-input validation and normalization rules with its own cap.
+// - Apply the repeat-input validation and normalization rules with its configured cap.
 // - Render the multiplied time from canonical exact base seconds.
 // =============================================================================
 
@@ -23,11 +23,16 @@
     throw new Error('[results-time-multiplier] FormatUtils.getDisplayTimeParts unavailable; cannot continue');
   }
   const { getDisplayTimeParts } = window.FormatUtils;
+  const { AppConstants } = window;
+  if (!AppConstants || !Number.isInteger(AppConstants.MAX_RESULTS_TIME_MULTIPLIER)
+    || AppConstants.MAX_RESULTS_TIME_MULTIPLIER < 1) {
+    throw new Error('[results-time-multiplier] AppConstants.MAX_RESULTS_TIME_MULTIPLIER unavailable; cannot continue');
+  }
+  const { MAX_RESULTS_TIME_MULTIPLIER } = AppConstants;
 
   const labelEl = document.getElementById('resultsTimeMultiplierLabel');
   const inputEl = document.getElementById('resultsTimeMultiplierInput');
   const outputEl = document.getElementById('resultsTimeMultiplierOutput');
-  const MAX_MULTIPLIER = 9999;
 
   // =============================================================================
   // Shared state
@@ -56,8 +61,8 @@
     if (!Number.isInteger(numericValue) || numericValue < 1) {
       return { isValid: false, normalizedValue: 1 };
     }
-    if (numericValue > MAX_MULTIPLIER) {
-      return { isValid: false, normalizedValue: MAX_MULTIPLIER };
+    if (numericValue > MAX_RESULTS_TIME_MULTIPLIER) {
+      return { isValid: false, normalizedValue: MAX_RESULTS_TIME_MULTIPLIER };
     }
     return {
       isValid: true,
@@ -131,7 +136,7 @@
   function bindEvents() {
     if (!ensureElements('bindEvents')) return;
     inputEl.min = '1';
-    inputEl.max = String(MAX_MULTIPLIER);
+    inputEl.max = String(MAX_RESULTS_TIME_MULTIPLIER);
     inputEl.step = '1';
     inputEl.value = normalizeMultiplierValue(inputEl.value);
     inputEl.setAttribute('aria-invalid', 'false');

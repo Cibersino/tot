@@ -43,7 +43,7 @@ function createElement(id) {
   };
 }
 
-function createHarness() {
+function createHarness({ maxResultsTimeMultiplier = 9999 } = {}) {
   const elements = {
     resultsTimeMultiplierLabel: createElement('resultsTimeMultiplierLabel'),
     resultsTimeMultiplierInput: createElement('resultsTimeMultiplierInput'),
@@ -53,6 +53,9 @@ function createHarness() {
 
   const sandbox = {
     window: {
+      AppConstants: {
+        MAX_RESULTS_TIME_MULTIPLIER: maxResultsTimeMultiplier,
+      },
       FormatUtils: {
         getDisplayTimeParts(totalSeconds) {
           const total = Number(totalSeconds);
@@ -91,7 +94,7 @@ function createHarness() {
   };
 }
 
-test('results multiplier marks an over-cap value invalid before committing its local cap', () => {
+test('results multiplier marks an over-cap value invalid before committing its configured cap', () => {
   const harness = createHarness();
   const input = harness.elements.resultsTimeMultiplierInput;
   const output = harness.elements.resultsTimeMultiplierOutput;
@@ -133,4 +136,20 @@ test('results multiplier marks an over-cap value invalid before committing its l
   assert.equal(output.textContent, '');
   input.dispatch('blur');
   assert.equal(input.value, '1');
+});
+
+test('results multiplier uses its AppConstants cap', () => {
+  const harness = createHarness({ maxResultsTimeMultiplier: 3 });
+  const input = harness.elements.resultsTimeMultiplierInput;
+  const output = harness.elements.resultsTimeMultiplierOutput;
+  harness.multiplier.setBaseTotalSeconds(1);
+
+  input.value = '4';
+  input.dispatch('input');
+  assert.equal(input.classList.contains('is-invalid'), true);
+  assert.equal(output.textContent, '');
+
+  input.dispatch('blur');
+  assert.equal(input.value, '3');
+  assert.equal(output.textContent, ': 0h 0m 3s');
 });
