@@ -1011,7 +1011,7 @@ body.text-extraction-drop-active .app-container {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
 }
 
 /* Stopwatch section */
@@ -1891,7 +1891,7 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-unit-actions,
 .text-extraction-batch-plan-input-actions {
   display: flex;
-  gap: 12px;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
@@ -2376,8 +2376,20 @@ body.text-extraction-drop-active .app-container {
 .snapshot-tag-manager-modal-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
+}
+
+.snapshot-tag-manager-category-actions {
+  gap: 8px;
+}
+
+.snapshot-tag-manager-draft-actions,
+.snapshot-tag-manager-modal-actions {
+  gap: 12px;
+}
+
+.snapshot-tag-manager-row-actions {
+  gap: 4px;
 }
 
 .snapshot-tag-manager-draft {
