@@ -2445,6 +2445,7 @@ body.text-extraction-drop-active .app-container {
   min-width: 0;
   font-size: var(--font-size-7);
   overflow-wrap: anywhere;
+  text-align: center;
 }
 
 .snapshot-tag-manager-modal-actions {
