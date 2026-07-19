@@ -109,7 +109,7 @@
   
   /* Spacing */
   --numeric-value-field-padding: 0 6px;
-  --combobox-option-padding: 4px 6px;
+  --combobox-content-padding: 4px 6px;
     
   /* Dimensions */
   --control-height-md: 30px;
@@ -836,7 +836,7 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-route-combobox .renderer-combobox__option,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__option,
 .snapshot-save-tags-combobox .renderer-combobox__option {
-  padding: var(--combobox-option-padding);
+  padding: var(--combobox-content-padding);
   border-inline-start: 3px solid transparent;
 }
 
@@ -866,7 +866,7 @@ body.text-extraction-drop-active .app-container {
 
 .presets-combobox .renderer-combobox__input {
   height: var(--combobox-trigger-height);
-  padding: 4px 6px;
+  padding: var(--combobox-content-padding);
 }
 
 .presets-combobox[data-mode="select"] .renderer-combobox__input {
@@ -1803,7 +1803,7 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
   height: var(--combobox-trigger-height);
-  padding: 4px 6px;
+  padding: var(--combobox-content-padding);
   font-family: inherit;
   box-sizing: border-box;
 }
@@ -2302,7 +2302,7 @@ body.text-extraction-drop-active .app-container {
   box-sizing: border-box;
   font: inherit;
   height: var(--combobox-trigger-height);
-  padding: 4px 6px;
+  padding: var(--combobox-content-padding);
   border-radius: var(--field-radius);
 }
 
