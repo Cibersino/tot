@@ -12,7 +12,6 @@
 // =============================================================================
 
 (() => {
-  const UNIT_NAME_MAX_LENGTH = 60;
 
   // =============================================================================
   // Imports / logger
@@ -23,6 +22,11 @@
   }
   const log = window.getLogger('text-extraction-batch-planning-modal');
   log.debug('Text extraction batch planning modal starting...');
+  const { AppConstants } = window;
+  if (!AppConstants) {
+    throw new Error('[text-extraction-batch-planning-modal] AppConstants unavailable; verify constants.js load order');
+  }
+  const { BATCH_UNIT_NAME_MAX } = AppConstants;
   const rendererIcons = window.RendererIcons || null;
   if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
     throw new Error('[text-extraction-batch-planning-modal] RendererIcons unavailable; cannot continue');
@@ -615,7 +619,7 @@
     });
     unitNameInput.setAttribute('data-action', 'rename-unit');
     unitNameInput.setAttribute('data-unit-key', unit.unitKey);
-    unitNameInput.maxLength = UNIT_NAME_MAX_LENGTH;
+    unitNameInput.maxLength = BATCH_UNIT_NAME_MAX;
     unitNameInput.setAttribute('placeholder', tRenderer('renderer.text_extraction.batch_plan.unit_name_placeholder'));
     unitNameInput.setAttribute('aria-label', `${unitHeading.textContent} ${tRenderer('renderer.text_extraction.batch_plan.unit_name_placeholder')}`);
     appendChildren(headingWrap, [unitHeading, unitNameInput]);

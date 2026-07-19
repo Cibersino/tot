@@ -1832,6 +1832,11 @@ body.text-extraction-drop-active .app-container {
   border-radius: var(--field-radius);
 }
 
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option {
+  text-align: center;
+}
+
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
   width: 100%;
@@ -1845,7 +1850,7 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-plan-unit-name {
-  width: 100%;
+  width: 320px;
   font-size: var(--font-size-8);
 }
 
@@ -1879,7 +1884,7 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-plan-unit-combobox {
-  width: 240px;
+  width: 360px;
   flex: none;
 }
 

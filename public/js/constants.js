@@ -16,6 +16,7 @@
     MAX_RESULTS_TIME_MULTIPLIER: 9_999, // Maximum allowed multiplier for the estimated reading time.
     PRESET_NAME_MAX: 20, // Max chars for preset names.
     PRESET_DESC_MAX: 120, // Max chars for preset descriptions.
+    BATCH_UNIT_NAME_MAX: 25, // Max chars for Batch unit names.
     TASK_NAME_MAX_CHARS: 50, // Max chars for task list name. Must match electron/constants_main.js.
     TASK_ROW_TEXT_MAX_CHARS: 200, // Max chars for task row "text" (texto). Must match electron/constants_main.js.
     TASK_ROW_LINK_MAX_CHARS: 1000, // Max chars for task row "link" (enlace). Must match electron/constants_main.js.

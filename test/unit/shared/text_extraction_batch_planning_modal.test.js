@@ -352,6 +352,9 @@ function createHarness() {
           error() {},
         };
       },
+      AppConstants: {
+        BATCH_UNIT_NAME_MAX: 25,
+      },
       RendererIcons: {
         createIconButton({ iconName, className = '', size = 'md', title = '', ariaLabel = '', type = 'button' } = {}) {
           const button = createElement('', 'button');
@@ -1390,7 +1393,7 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
     unitComboboxTrigger._comboboxOptions().some((option) => option.label === 'Unit 1 - Essays'),
     true
   );
-  assert.equal(renameInput.maxLength, 60);
+  assert.equal(renameInput.maxLength, 25);
 
   harness.elements.textExtractionBatchPlanCancel.dispatch('click');
   const result = await promptPromise;
