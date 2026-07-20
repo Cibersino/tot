@@ -142,6 +142,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   padding: 6px 8px;
   height: var(--control-height-md);
   line-height: 1;
