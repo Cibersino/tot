@@ -110,6 +110,7 @@
   /* Spacing */
   --direct-entry-field-padding: 0 6px;
   --combobox-content-padding: 4px 6px;
+  --standard-dialog-panel-padding: 16px;
     
   /* Dimensions */
   --control-height-md: 30px;
@@ -1404,7 +1405,7 @@ body.text-extraction-drop-active .app-container {
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
   box-sizing: border-box;
-  padding: 14px 16px 16px;
+  padding: var(--standard-dialog-panel-padding);
 }
 
 .text-extraction-pdf-options-modal-panel {
