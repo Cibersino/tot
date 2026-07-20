@@ -1557,7 +1557,7 @@ async function showInfoModal(key) {
       'renderer.info.missing_content',
       { name: infoDialogLabel }
     );
-    infoModalContent.innerHTML = `<p>${missingContentText}</p>`;
+    infoModalContent.innerHTML = `<p class="info-modal-message">${missingContentText}</p>`;
     focusInfoModalClose();
     return;
   }

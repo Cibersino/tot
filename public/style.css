@@ -110,7 +110,7 @@
   /* Spacing */
   --direct-entry-field-padding: 0 6px;
   --combobox-content-padding: 4px 6px;
-  --standard-dialog-panel-padding: 16px;
+  --framed-modal-panel-padding: 16px;
     
   /* Dimensions */
   --control-height-md: 30px;
@@ -1132,39 +1132,41 @@ body.text-extraction-drop-active .app-container {
 }
 
 .info-modal-panel {
-  --info-media-control-reserve: 48px;
-  --info-panel-max-height: var(--modal-max-height);
-  --info-media-max-height: calc(var(--info-panel-max-height) - var(--info-media-control-reserve) - 120px);
-
   position: relative;
   display: grid;
   width: 100%;
-  max-height: var(--info-panel-max-height);
+  max-height: var(--modal-max-height);
   overflow: auto;
   background: var(--app-secondary-bg);
+  border: 1px solid var(--modal-panel-border-color);
   border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
   z-index: 1;
-  padding: 0 18px 18px;
+  padding: var(--framed-modal-panel-padding);
   box-sizing: border-box;
   font-family: var(--font-reading);
 }
 
-.info-modal-header {
-  display: contents;
+.info-modal-accessible-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 #infoModalClose {
   position: sticky;
-  top: 16px;
+  top: 0;
   grid-area: 1 / 1;
   align-self: start;
   justify-self: end;
   z-index: 2;
-}
-
-.info-modal-header h2 {
-  display: none
 }
 
 .info-modal-content {
@@ -1176,6 +1178,18 @@ body.text-extraction-drop-active .app-container {
 
 .info-modal-content h1 {
   font-size: var(--font-size-12);
+}
+
+.info-document-header {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding-inline-end: 42px;
+}
+
+.info-document-header > h1,
+.info-document-header > .info-brand {
+  margin: 0;
 }
 
 .info-modal-content h2 {
@@ -1198,7 +1212,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-9);
   font-style: italic;
   font-weight: 700;
-  padding-top: 0;
 }
 
 .info-modal-content pre {
@@ -1296,13 +1309,14 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-9);
   color: var(--text-soft);
   font-style: italic;
-  padding: 8px
+  margin: 0;
 }
 
-/* === Info modal: media sizing (images/GIFs) ===
-   Hard cap so media never exceeds the visible modal area.
-   - Always fits width.
-   - If too tall, it scales down (contain) instead of overflowing. */
+.info-modal-message {
+  margin: 0;
+}
+
+/* Info-modal media stays within the document width. Manual images use their own cap below. */
 .info-modal-content figure {
   max-width: 100%;
   margin: 12px 0;
@@ -1314,7 +1328,6 @@ body.text-extraction-drop-active .app-container {
   max-width: 100%;
   width: auto;
   height: auto;
-  max-height: var(--info-media-max-height);
   object-fit: contain;
   margin: 0 auto;
 }
@@ -1405,7 +1418,7 @@ body.text-extraction-drop-active .app-container {
   box-shadow: var(--modal-panel-shadow);
   border: 1px solid var(--modal-panel-border-color);
   box-sizing: border-box;
-  padding: var(--standard-dialog-panel-padding);
+  padding: var(--framed-modal-panel-padding);
 }
 
 .text-extraction-pdf-options-modal-panel {
