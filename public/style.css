@@ -384,6 +384,7 @@ body {
   position: fixed;
   right: -2px;
   bottom: 8px;
+  z-index: 1;
   height: var(--logo-height);
   display: flex;
   align-items: center;
