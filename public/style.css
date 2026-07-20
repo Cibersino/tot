@@ -975,8 +975,6 @@ body.text-extraction-drop-active .app-container {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 6px;
   position: relative;
 }
 
