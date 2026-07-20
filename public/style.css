@@ -1132,9 +1132,9 @@ body.text-extraction-drop-active .app-container {
 }
 
 .info-modal-panel {
-  --info-header-height: 48px;
+  --info-media-control-reserve: 48px;
   --info-panel-max-height: var(--modal-max-height);
-  --info-media-max-height: calc(var(--info-panel-max-height) - var(--info-header-height) - 120px);
+  --info-media-max-height: calc(var(--info-panel-max-height) - var(--info-media-control-reserve) - 120px);
 
   position: relative;
   display: grid;
@@ -1151,17 +1151,16 @@ body.text-extraction-drop-active .app-container {
 }
 
 .info-modal-header {
+  display: contents;
+}
+
+#infoModalClose {
   position: sticky;
-  top: 0;                         /* stays at the top of the panel */
+  top: 16px;
   grid-area: 1 / 1;
   align-self: start;
   justify-self: end;
-  display: flex;
-  align-items: center;
-  height: var(--info-header-height);
-  padding: 0;                     /* horizontal space for button */
-  z-index: 2;                     /* above the content */
-  background: transparent;        /* leave the content visible below */
+  z-index: 2;
 }
 
 .info-modal-header h2 {
