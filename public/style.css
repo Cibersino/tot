@@ -235,7 +235,7 @@ body {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding: 6px 8px;
+  padding: 0 8px;
   height: var(--control-height-md);
   line-height: 1;
   font-size: var(--font-size-7);
