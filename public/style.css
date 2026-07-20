@@ -629,6 +629,7 @@ pre#textPreview .preview-static {
   flex-direction: column;
   gap: 2px;
   min-width: 150px;
+  line-height: 1;
 }
 
 .text-extraction-processing-row {
