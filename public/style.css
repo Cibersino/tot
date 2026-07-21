@@ -615,6 +615,15 @@ body {
   height: var(--text-entry-field-height);
 }
 
+/* Shared PDF page-range grid.
+   Field rows and their surrounding layouts remain feature-owned. */
+.text-extraction-pdf-options-modal-range-grid,
+.text-extraction-batch-plan-page-scope-range-grid {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 12px;
+}
+
 /* Shared PDF page-selection feedback.
    The standalone selectors include their body owner so compact feedback
    typography wins over the modal's broader paragraph baseline. */
@@ -1648,12 +1657,6 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
 }
 
-.text-extraction-pdf-options-modal-range-grid {
-  display: grid;
-  grid-template-columns: repeat(2, max-content);
-  gap: 12px;
-}
-
 .text-extraction-pdf-options-modal-range-field {
   display: grid;
   grid-template-columns: max-content max-content;
@@ -1982,12 +1985,6 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
   min-width: 0;
   justify-items: end;
-}
-
-.text-extraction-batch-plan-page-scope-range-grid {
-  display: grid;
-  grid-template-columns: repeat(2, max-content);
-  gap: 12px;
 }
 
 .text-extraction-batch-plan-page-scope-options {
