@@ -517,7 +517,7 @@ body {
   box-shadow: var(--combobox-popup-shadow);
 }
 
-/* Preset instance popup-height variant */
+/* Preset popup height is independently sized for preset-option browsing. */
 .presets-combobox .renderer-combobox__listbox {
   max-height: 160px;
 }
@@ -1785,8 +1785,12 @@ body.text-extraction-drop-active .app-container {
   text-align: center;
 }
 
-/* Batch-plan combobox popup-height variants */
-.text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
+/* Route popup height is independently sized for route choices. */
+.text-extraction-batch-plan-route-combobox .renderer-combobox__listbox {
+  max-height: 160px;
+}
+
+/* Unit popup height is independently sized for unit choices. */
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox {
   max-height: 160px;
 }
@@ -2269,7 +2273,7 @@ body.text-extraction-drop-active .app-container {
   font-weight: 700;
 }
 
-/* Snapshot tag combobox popup-height variant */
+/* Snapshot tag popup height is independently sized for editable tag results. */
 .snapshot-save-tags-combobox .renderer-combobox__listbox {
   max-height: 134px;
 }
