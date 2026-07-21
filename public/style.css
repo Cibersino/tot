@@ -615,12 +615,24 @@ body {
   height: var(--text-entry-field-height);
 }
 
-/* Shared PDF page-selection validation message.
-   The standalone and batch controls consume the same page-selection model. */
-.text-extraction-pdf-options-modal-validation,
+/* Shared PDF page-selection feedback.
+   The standalone selectors include their body owner so compact feedback
+   typography wins over the modal's broader paragraph baseline. */
+.text-extraction-pdf-options-modal-body .text-extraction-pdf-options-modal-selected-count,
+.text-extraction-pdf-options-modal-body .text-extraction-pdf-options-modal-validation,
+.text-extraction-batch-plan-page-scope-count,
+.text-extraction-batch-plan-page-scope-validation {
+  font-size: var(--font-size-6);
+}
+
+.text-extraction-pdf-options-modal-body .text-extraction-pdf-options-modal-selected-count,
+.text-extraction-batch-plan-page-scope-count {
+  color: var(--text-soft);
+}
+
+.text-extraction-pdf-options-modal-body .text-extraction-pdf-options-modal-validation,
 .text-extraction-batch-plan-page-scope-validation {
   color: var(--warning-text);
-  font-size: var(--font-size-6);
 }
 
 /* Shared modal layers */
@@ -1632,11 +1644,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
-.text-extraction-pdf-options-modal-selected-count {
-  color: var(--text-soft);
-  font-size: var(--font-size-6);
-}
-
 .text-extraction-pdf-options-modal-keep-option {
   display: inline-flex;
   align-items: flex-start;
@@ -2020,10 +2027,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-page-scope-input {
   width: var(--numeric-value-field-width-wide);
   font-size: var(--font-size-8);
-}
-
-.text-extraction-batch-plan-page-scope-count {
-  font-size: var(--font-size-6);
 }
 
 /* Text extraction batch final modal */
