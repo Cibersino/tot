@@ -265,6 +265,7 @@
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const finish = (value) => {
@@ -314,7 +315,10 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');
-      allPagesRadio.focus();
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnContinue,
+        fallbackFocus: btnClose,
+      });
     });
   }
 

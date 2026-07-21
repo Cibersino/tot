@@ -210,6 +210,7 @@
             await applyPresetTranslations(mode);
             updatePresetDescriptionDirection();
             updateCharCount();
+            btnSave.focus({ preventScroll: true });
           } catch (err) {
             log.error('Preset modal preset-init handling failed:', err);
           }

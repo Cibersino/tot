@@ -214,6 +214,7 @@ function findDescendantByAttribute(root, attributeName, attributeValue) {
 function createHarness() {
   activeElementRef = null;
   const registeredPromptNames = [];
+  const modalOpeners = new Map();
   const elements = {
     outsideLauncher: createElement('outsideLauncher', 'button'),
     textExtractionBatchFinalModal: createElement('textExtractionBatchFinalModal'),
@@ -260,6 +261,15 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(modal, { initialFocus }) {
+          modalOpeners.set(modal, activeElementRef);
+          initialFocus.focus();
+        },
+        deactivateModalFocus(modal) {
+          const opener = modalOpeners.get(modal);
+          modalOpeners.delete(modal);
+          if (opener) opener.focus();
+        },
         notifyMain(key) {
           notifiedKeys.push(key);
         },

@@ -82,6 +82,10 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(_modal, { initialFocus }) {
+          initialFocus.focus();
+        },
+        deactivateModalFocus() {},
         registerCustomPrompt(name, handler) {
           registeredPromptNames.push(name);
           this[name] = handler;

@@ -51,6 +51,7 @@
 
   let lightboxEl = null;
   let lightboxImageEl = null;
+  let lightboxCloseButtonEl = null;
   let modalStateObserver = null;
 
   function ensureLightbox() {
@@ -100,12 +101,14 @@
     document.body.appendChild(overlay);
     lightboxEl = overlay;
     lightboxImageEl = overlay.querySelector('.info-media-lightbox-image');
+    lightboxCloseButtonEl = closeButton;
     return overlay;
   }
 
   function closeLightbox() {
     if (!lightboxEl) return;
     lightboxEl.setAttribute('aria-hidden', 'true');
+    window.Notify.deactivateModalFocus(lightboxEl);
     if (lightboxImageEl) {
       lightboxImageEl.removeAttribute('src');
       lightboxImageEl.alt = '';
@@ -121,6 +124,10 @@
     lightboxImageEl.src = source;
     lightboxImageEl.alt = sourceEl.alt || '';
     overlay.setAttribute('aria-hidden', 'false');
+    window.Notify.activateModalFocus(overlay, {
+      initialFocus: lightboxCloseButtonEl,
+      fallbackFocus: lightboxCloseButtonEl,
+    });
   }
 
   function ensureModalObserver() {
@@ -153,7 +160,20 @@
     container.dataset.externalLinksBound = '1';
     ensureModalObserver();
 
+    const screenshots = container.querySelectorAll('.instrucciones-media img');
+    screenshots.forEach((screenshot) => {
+      screenshot.setAttribute('tabindex', '0');
+      screenshot.setAttribute('role', 'button');
+      screenshot.setAttribute('aria-haspopup', 'dialog');
+    });
+
     const api = electronAPI || window.electronAPI;
+
+    const openScreenshot = (screenshot, event) => {
+      event.preventDefault();
+      screenshot.focus({ preventScroll: true });
+      openLightbox(screenshot);
+    };
 
     container.addEventListener('click', (ev) => {
       try {
@@ -162,8 +182,7 @@
 
         const screenshot = target.closest('.instrucciones-media img');
         if (screenshot && container.contains(screenshot)) {
-          ev.preventDefault();
-          openLightbox(screenshot);
+          openScreenshot(screenshot, ev);
           return;
         }
 
@@ -260,6 +279,15 @@
       } catch (err) {
         log.error('Error handling info modal link click:', err);
       }
+    });
+
+    container.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Enter' && ev.key !== ' ') return;
+      const target = ev.target;
+      if (!target || typeof target.closest !== 'function') return;
+      const screenshot = target.closest('.instrucciones-media img');
+      if (!screenshot || !container.contains(screenshot)) return;
+      openScreenshot(screenshot, ev);
     });
   }
 

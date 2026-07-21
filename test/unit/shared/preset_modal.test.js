@@ -18,6 +18,7 @@ function createElement(id = '', tagName = 'div') {
     min: '',
     max: '',
     maxLength: 0,
+    focusCount: 0,
     childNodes: [{ textContent: '' }],
     attributes: {},
     setAttribute(name, value) {
@@ -35,6 +36,9 @@ function createElement(id = '', tagName = 'div') {
     dispatch(type, event = {}) {
       const entries = listeners[type] || [];
       entries.forEach((listener) => listener(event));
+    },
+    focus() {
+      this.focusCount += 1;
     },
   };
 }
@@ -190,6 +194,7 @@ test('preset modal applies shared direction policy on init, input, and language 
       description: 'rtl:وصف',
     },
   });
+  assert.equal(elements.btnSave.focusCount, 1);
   assert.equal(elements.presetDesc.value, 'rtl:وصف');
   assert.equal(elements.presetDesc.getAttribute('dir'), 'rtl');
 

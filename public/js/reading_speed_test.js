@@ -115,7 +115,6 @@
   let onInteractionStateChanged = () => { };
   let onApplyWpm = () => { };
   let getSettingsCache = () => ({});
-  let previousFocus = null;
   let sessionState = { active: false, stage: 'idle', blocked: false };
   let poolEntries = [];
   let selection = filtersCore.normalizeSelection({});
@@ -170,22 +169,6 @@
     }
   }
 
-  function rememberPreviousFocus() {
-    const activeElement = document.activeElement;
-    previousFocus = activeElement && typeof activeElement.focus === 'function'
-      ? activeElement
-      : null;
-  }
-
-  function restorePreviousFocus() {
-    if (!previousFocus || !document.contains(previousFocus)) return;
-    try {
-      previousFocus.focus();
-    } catch (err) {
-      log.warn('Reading-test focus restore failed (ignored):', err);
-    }
-  }
-
   function setModalVisible(visible) {
     modal.setAttribute('aria-hidden', visible ? 'false' : 'true');
     if (visible) {
@@ -195,14 +178,12 @@
       renderIntroVisibility();
     }
     syncLockState();
-    if (!visible) {
-      restorePreviousFocus();
-    }
   }
 
   function closeModal() {
     if (!isModalOpen()) return;
     setModalVisible(false);
+    window.Notify.deactivateModalFocus(modal);
   }
 
   function getCategoryDisplayLabel(category) {
@@ -501,9 +482,12 @@
 
     selection = filtersCore.normalizeSelection({});
     rebuildFilterState();
-    rememberPreviousFocus();
     render();
     setModalVisible(true);
+    window.Notify.activateModalFocus(modal, {
+      initialFocus: introToggle,
+      fallbackFocus: btnClose,
+    });
   }
 
   async function handleResetPool() {

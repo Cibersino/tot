@@ -136,6 +136,7 @@
         privacyLink.removeEventListener('click', onPrivacyClick);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const finish = (accepted) => {
@@ -167,7 +168,10 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');
-      btnProceed.focus();
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnProceed,
+        fallbackFocus: btnClose,
+      });
     });
   }
 

@@ -1268,6 +1268,7 @@ function closeInfoModal() {
   try {
     if (!infoModal || !infoModalContent) return;
     infoModal.setAttribute('aria-hidden', 'true');
+    window.Notify.deactivateModalFocus(infoModal);
     const loadingText = tRenderer('renderer.info.loading');
     infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
   } catch (err) {
@@ -1536,6 +1537,10 @@ async function showInfoModal(key) {
   const loadingText = tRenderer('renderer.info.loading');
   infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
   infoModal.setAttribute('aria-hidden', 'false');
+  window.Notify.activateModalFocus(infoModal, {
+    initialFocus: infoModalClose,
+    fallbackFocus: infoModalClose,
+  });
 
   // Every opening starts at the document beginning before the loading state is focused.
   const panel = infoModal.querySelector('.info-modal-panel');
@@ -1545,7 +1550,6 @@ async function showInfoModal(key) {
     return;
   }
   panel.scrollTop = 0;
-  focusInfoModalClose();
 
   // Fetch HTML (manual pages use a language fallback list)
   const tryHtml = Array.isArray(fileToLoad)

@@ -227,17 +227,6 @@
     }
   }
 
-  function focusElementWithoutScroll(element) {
-    if (!element || typeof element.focus !== 'function') {
-      return;
-    }
-    try {
-      element.focus({ preventScroll: true });
-    } catch (_err) {
-      element.focus();
-    }
-  }
-
   function createActionButton({
     labelKey,
     action,
@@ -759,7 +748,6 @@
 
     return new Promise((resolve) => {
       let settled = false;
-      const previousActiveElement = document.activeElement || null;
       let currentModel = controller.getViewModel();
       let rootListenerBound = false;
       let startValidationInFlight = false;
@@ -974,9 +962,7 @@
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
-        if (previousActiveElement && previousActiveElement !== document.activeElement) {
-          focusElementWithoutScroll(previousActiveElement);
-        }
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const onPresetAll = () => {
@@ -1162,8 +1148,11 @@
 
       rerender();
       modal.setAttribute('aria-hidden', 'false');
-      focusElementWithoutScroll(btnClose || btnPresetAll || btnStart);
       setScrollTop(0);
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnClose,
+        fallbackFocus: btnClose,
+      });
     });
   }
 

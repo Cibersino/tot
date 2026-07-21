@@ -51,6 +51,7 @@ Reglas:
 - La ventana principal suma una calculadora rápida de lectura como ventana secundaria no modal: un nuevo botón icon-only en `RESULTS` abre una herramienta auxiliar para derivar `words`, `time` o `WPM` a partir de los otros dos valores, reutilizando la gramática `H+:MM:SS` del cronómetro y manteniendo el feature fuera del menú nativo.
 - Los selects nativos de las superficies renderer convergen en un único `RendererCombobox` production-owned con modos fijo y editable: presets, planificación batch, calculadora rápida y tags de snapshots comparten desde ahora la misma semántica ARIA/teclado/hover, apertura siempre debajo del trigger y popup scrolleable con altura máxima fija de `160px`.
 - `window.Notify` recupera ownership único también para los prompts custom pendientes de `text extraction`: los 7 modales renderer que aún publicaban `window.Notify.prompt*` desde su archivo feature pasan a registrarse vía `registerCustomPrompt(...)`, sin cambiar la surface pública consumida por el resto del flujo.
+- Los 19 modales de aplicación convergen en una política de foco accesible y verificable: cada apertura usa un target inicial revisado, `Tab` / `Shift+Tab` permanecen dentro del modal activo, los hijos nested toman precedencia y cada cierre restaura el foco de esa apertura cuando el opener continúa disponible.
 - `public/js/snapshot_save_tags_modal.js` deja de imponer un guard bootstrap local de `window.Notify` que no existía en ningún otro archivo del repo; el modal vuelve a alinearse con el patrón renderer vigente, donde `notify.js` sigue siendo el owner del contrato y los consumers no duplican checks de disponibilidad.
 - El cronómetro de la ventana principal deja de mezclar tamaños de icono entre `play/pause` y `stop/reset`: los dos botones vuelven a compartir la escala compacta del `Floating Stopwatch`, y el glyph `stop` recupera peso visual suficiente dentro de ese mismo tamaño reducido.
 - El `Task Editor` deja de depender exclusivamente de tipeo manual para poblar `Link or local path` cuando la fila apunta a archivos locales: la toolbar agrega una entrada batch `Add files` con picker multi-select y cada fila suma un picker local dedicado, sin romper el escape hatch de edición libre para `https:` y rutas pegadas.
@@ -102,6 +103,12 @@ Reglas:
 
 ### Arreglado
 
+- Accesibilidad de teclado y ownership de foco en modales (Issue #329):
+  - `public/js/notify.js` incorpora un owner stack-aware compartido que recalcula los controles secuenciales en cada pulsación, contiene `Tab` / `Shift+Tab` dentro del modal renderer superior y conserva la precedencia de los nested modals sin absorber `Escape` ni las semánticas feature-owned;
+  - M01–M16 integran ese lifecycle común en sus boundaries reales de apertura/cierre, eliminan restauraciones locales duplicadas y recuperan por apertura el opener válido; `Snapshot Tag Manager` y el lightbox de Info restauran primero dentro de su modal padre antes de reactivar su containment;
+  - los targets iniciales se vuelven explícitos según la acción revisada de cada superficie; en particular, Batch Planning y Batch Final Report conservan el foco en su botón `Close` superior para no desplazar el viewport inicial, mientras Task Comment, Task Library e Include Comment dejan de retener foco fuera del modal;
+  - las capturas del manual dentro de Info pasan a ser activables con `Enter` / `Space`, abren el lightbox sobre `Close preview` y recuperan el foco en la misma captura al cerrarlo;
+  - las ventanas modales nativas Preset, Reading Test Questions y Reading Test Result reciben foco inicial explícito en `Save`, la primera respuesta y `Continue`, respectivamente; la verificación runtime confirmó el wrapping forward/reverse propio de Chromium/Electron, por lo que no se agrega un trap redundante a nivel de documento.
 - Consistencia de bootstrap renderer:
   - `public/js/snapshot_save_tags_modal.js` elimina el guard local que abortaba si `window.Notify` no exponía `confirmMain`, `notifyMain` o `registerCustomPrompt`;
   - el modal deja de introducir un failure-path exclusivo y no reutilizado en el resto de `public/**`, evitando drift respecto del patrón repo de consumo directo de `window.Notify`.
@@ -133,7 +140,9 @@ Reglas:
   - no se agregan canales IPC, keys de storage, schemas persistidos ni claves i18n como parte de esta migración.
 - Surface pública renderer `window.Notify`:
   - sin cambios de nombres, firma ni consumers para `promptTextExtractionApplyChoice(...)`, `promptTextExtractionBatchFinalReport(...)`, `promptTextExtractionBatchPlan(...)`, `promptTextExtractionOcrActivationDisclosure(...)`, `promptTextExtractionPdfOptions(...)`, `promptTextExtractionRouteChoice(...)` y `promptTextExtractionSingleFileHeavyPdf(...)`;
-  - cambia solo el path interno de registro: la publicación final de esos prompts ahora ocurre a través de `window.Notify.registerCustomPrompt(...)` en vez de asignación directa desde cada módulo feature.
+  - cambia solo el path interno de registro: la publicación final de esos prompts ahora ocurre a través de `window.Notify.registerCustomPrompt(...)` en vez de asignación directa desde cada módulo feature;
+  - agrega `activateModalFocus(modal, { initialFocus, fallbackFocus })` y `deactivateModalFocus(modal)` como contrato requerido por los modales renderer M01–M16; la implementación captura el opener por apertura, mantiene un stack in-page y no expone lectores de estado ni seams exclusivos para tests;
+  - no cambia IPC, preload, storage ni claves i18n como parte del ownership de foco.
 - Modelo renderer interno de planificación y reporte batch:
   - `units[].inputs[]` vuelve a representar únicamente inputs fuente lógicos con membresía normal de unidad; los PDFs derivados del split automático no reciben identidad de unidad ni se publican como peers;
   - cada registro fuente de `unitReport.inputs[]` puede incluir `generatedInputs[]` con los estados y artefactos de sus partes, eliminando el workaround de metadata heavy a nivel de unidad y de filas generadas planas;

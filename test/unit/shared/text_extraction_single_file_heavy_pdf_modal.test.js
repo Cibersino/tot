@@ -148,6 +148,10 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(_modal, { initialFocus }) {
+          initialFocus.focus();
+        },
+        deactivateModalFocus() {},
         notifyMain() {},
         registerCustomPrompt(name, handler) {
           registeredPromptNames.push(name);

@@ -192,6 +192,7 @@
         repeatInput.removeEventListener('keydown', onRepeatKeyDown);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const resolveChoice = (mode) => {
@@ -257,7 +258,10 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');
-      btnOverwrite.focus();
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnOverwrite,
+        fallbackFocus: btnClose,
+      });
     });
   }
 

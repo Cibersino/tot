@@ -260,6 +260,7 @@ function findNodesByAttributes(node, expectedAttributes = {}, matches = []) {
 function createHarness() {
   activeElementRef = null;
   const registeredPromptNames = [];
+  const modalOpeners = new Map();
   const elements = {
     outsideLauncher: createElement('outsideLauncher'),
     textExtractionBatchPlanModal: createElement('textExtractionBatchPlanModal'),
@@ -350,6 +351,15 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(modal, { initialFocus }) {
+          modalOpeners.set(modal, activeElementRef);
+          initialFocus.focus();
+        },
+        deactivateModalFocus(modal) {
+          const opener = modalOpeners.get(modal);
+          modalOpeners.delete(modal);
+          if (opener) opener.focus();
+        },
         notifyMain() {},
         registerCustomPrompt(name, handler) {
           registeredPromptNames.push(name);
@@ -1322,7 +1332,7 @@ test('batch planning modal preserves panel scroll and control focus across reren
   assert.equal(result, null);
 });
 
-test('batch planning modal focuses the top close button on open and restores prior focus on close', async () => {
+test('batch planning modal focuses the top Close button and restores prior focus on close', async () => {
   const harness = createHarness();
   const controller = {
     getViewModel() {

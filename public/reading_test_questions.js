@@ -505,6 +505,9 @@
     function handleInitData(payload) {
       enqueueUiSync(async () => {
         applyPayloadState(payload);
+      }).then(() => {
+        const firstAnswer = form.querySelector('input[type="radio"]');
+        (firstAnswer || btnContinue).focus({ preventScroll: true });
       }).catch((err) => {
         handleInitFailure(err);
       });

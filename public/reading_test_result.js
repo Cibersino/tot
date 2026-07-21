@@ -90,6 +90,8 @@
     function handleInitData(payload) {
       enqueueUiSync(async () => {
         applyPayloadState(payload);
+      }).then(() => {
+        elements.btnContinue.focus({ preventScroll: true });
       }).catch((err) => {
         log.error('Reading-test result init failed:', err);
       });

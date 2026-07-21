@@ -104,17 +104,6 @@
     return parent;
   }
 
-  function focusElementWithoutScroll(element) {
-    if (!element || typeof element.focus !== 'function') {
-      return;
-    }
-    try {
-      element.focus({ preventScroll: true });
-    } catch (_err) {
-      element.focus();
-    }
-  }
-
   function setElementVisibility(element, isVisible) {
     element.hidden = isVisible !== true;
     element.setAttribute('aria-hidden', isVisible === true ? 'false' : 'true');
@@ -417,8 +406,6 @@
 
     return new Promise((resolve) => {
       let settled = false;
-      const previousActiveElement = document.activeElement || null;
-
       const cleanup = () => {
         body.removeEventListener('click', onBodyClick);
         btnCopy.removeEventListener('click', onCopy);
@@ -428,9 +415,7 @@
         backdrop.removeEventListener('click', onOk);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
-        if (previousActiveElement && previousActiveElement !== document.activeElement) {
-          focusElementWithoutScroll(previousActiveElement);
-        }
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const finish = () => {
@@ -490,10 +475,13 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');
-      focusElementWithoutScroll(btnClose || btnOk);
       if (typeof panel.scrollTop === 'number') {
         panel.scrollTop = 0;
       }
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnClose,
+        fallbackFocus: btnClose,
+      });
     });
   }
 

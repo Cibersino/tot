@@ -129,6 +129,18 @@ function createElement(id, tagName = 'div') {
       }
       return false;
     },
+    querySelector(selector) {
+      if (typeof selector !== 'string' || !selector.startsWith('.')) return null;
+      const className = selector.slice(1);
+      const pending = children.slice();
+      while (pending.length) {
+        const candidate = pending.shift();
+        const classNames = String(candidate.className || '').split(/\s+/);
+        if (classNames.includes(className)) return candidate;
+        pending.push(...candidate._children);
+      }
+      return null;
+    },
     scrollIntoView() {},
   };
   element.classList = {
@@ -259,10 +271,20 @@ function createHarness({
   const confirmCalls = [];
   const notifications = [];
   const registeredPromptNames = [];
+  const modalOpeners = new Map();
 
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(modal, { initialFocus }) {
+          modalOpeners.set(modal, activeElementRef);
+          initialFocus.focus();
+        },
+        deactivateModalFocus(modal) {
+          const opener = modalOpeners.get(modal);
+          modalOpeners.delete(modal);
+          if (opener) opener.focus();
+        },
         confirmMain(key, params) {
           confirmCalls.push({ key, params });
           return confirmResult;

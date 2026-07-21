@@ -423,16 +423,6 @@
     return Object.keys(tags).length ? tags : null;
   }
 
-  function restorePreviousFocus(previousFocus) {
-    if (!previousFocus || !document.contains(previousFocus)) return;
-
-    try {
-      previousFocus.focus();
-    } catch (err) {
-      log.warn('Snapshot tags focus restore failed (ignored):', err);
-    }
-  }
-
   function focusElementWithoutScroll(element) {
     if (!element || typeof element.focus !== 'function') return;
 
@@ -519,10 +509,6 @@
 
     return await new Promise((resolve) => {
       let settled = false;
-      const previousFocus = document.activeElement && typeof document.activeElement.focus === 'function'
-        ? document.activeElement
-        : null;
-
       function getDraftState(category) {
         return draftStateByCategory.get(category);
       }
@@ -857,7 +843,7 @@
         managerBackdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         managerModal.setAttribute('aria-hidden', 'true');
-        restorePreviousFocus(previousFocus);
+        window.Notify.deactivateModalFocus(managerModal);
       }
 
       function finish(result) {
@@ -889,7 +875,10 @@
 
       renderManagerContent();
       managerModal.setAttribute('aria-hidden', 'false');
-      focusElementWithoutScroll(managerCloseButton || managerDoneButton);
+      window.Notify.activateModalFocus(managerModal, {
+        initialFocus: managerCloseButton,
+        fallbackFocus: managerCloseButton,
+      });
     });
   }
 
@@ -909,10 +898,6 @@
 
     return await new Promise((resolve) => {
       let settled = false;
-      const previousFocus = document.activeElement && typeof document.activeElement.focus === 'function'
-        ? document.activeElement
-        : null;
-
       function cleanup() {
         btnManage.removeEventListener('click', onManageClick);
         btnConfirm.removeEventListener('click', onConfirm);
@@ -922,7 +907,7 @@
         window.removeEventListener('keydown', onWindowKeyDown);
         closeAllFields();
         modal.setAttribute('aria-hidden', 'true');
-        restorePreviousFocus(previousFocus);
+        window.Notify.deactivateModalFocus(modal);
       }
 
       function finish(result) {
@@ -978,7 +963,11 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');
-      ensureFieldState(FIELD_DEFS[0].key).combobox.focus();
+      const initialFocus = FIELD_DEFS[0].controlEl.querySelector('.renderer-combobox__input');
+      window.Notify.activateModalFocus(modal, {
+        initialFocus,
+        fallbackFocus: btnClose,
+      });
     });
   }
 

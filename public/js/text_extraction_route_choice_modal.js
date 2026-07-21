@@ -98,6 +98,7 @@
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const finish = (choice) => {
@@ -126,7 +127,10 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');
-      btnNative.focus();
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnOcr,
+        fallbackFocus: btnClose,
+      });
     });
   }
 

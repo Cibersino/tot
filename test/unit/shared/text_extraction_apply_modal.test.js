@@ -105,6 +105,10 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(_modal, { initialFocus }) {
+          initialFocus.focus();
+        },
+        deactivateModalFocus() {},
         notifyMain(key) {
           notifiedKeys.push(key);
         },

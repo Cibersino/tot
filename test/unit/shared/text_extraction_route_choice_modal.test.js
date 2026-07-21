@@ -66,6 +66,10 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(_modal, { initialFocus }) {
+          initialFocus.focus();
+        },
+        deactivateModalFocus() {},
         registerCustomPrompt(name, handler) {
           registeredPromptNames.push(name);
           this[name] = handler;
@@ -141,7 +145,7 @@ test('route-choice modal returns the selected OCR route when both routes are ava
   assert.equal(harness.elements.textExtractionRouteModal.getAttribute('aria-hidden'), 'false');
   assert.equal(harness.elements.textExtractionRouteModalTitle.textContent, 'Choose extraction route');
   assert.equal(harness.elements.textExtractionRouteModalOcr.textContent, 'Use OCR');
-  assert.equal(harness.elements.textExtractionRouteModalNative.focusCount, 1);
+  assert.equal(harness.elements.textExtractionRouteModalOcr.focusCount, 1);
 
   harness.elements.textExtractionRouteModalOcr.dispatch('click');
   const result = await promptPromise;

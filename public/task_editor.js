@@ -272,14 +272,20 @@ function updateSummary() {
   }
 }
 
-function openModal(modalEl) {
+function openModal(modalEl, initialFocusEl) {
   if (!modalEl) return;
   modalEl.setAttribute('aria-hidden', 'false');
+  const fallbackFocus = modalEl.querySelector('.modal-header button');
+  window.Notify.activateModalFocus(modalEl, {
+    initialFocus: initialFocusEl,
+    fallbackFocus,
+  });
 }
 
 function closeModal(modalEl) {
   if (!modalEl) return;
   modalEl.setAttribute('aria-hidden', 'true');
+  window.Notify.deactivateModalFocus(modalEl);
 }
 
 // Centralized modal close wiring for consistent behavior across dialogs.
@@ -641,7 +647,7 @@ function renderRow(row) {
     pendingCommentSnapshotRelPath = snapshotRelPath;
     commentInput.value = row.comentario || '';
     setCommentSnapshotDisplay(pendingCommentSnapshotRelPath);
-    openModal(commentModal);
+    openModal(commentModal, commentSnapshotSelect);
   });
   commentActions.appendChild(commentBtn);
   tdComentario.appendChild(commentActions);
@@ -660,7 +666,7 @@ function renderRow(row) {
   const btnDelete = buildActionButton('trash', 'renderer.tasks.columns.tooltips.delete_row', () => deleteRow(row.id));
   const btnSaveLib = buildActionButton('task-row-save', 'renderer.tasks.columns.tooltips.library_row_save', () => {
     pendingLibraryRowId = row.id;
-    openModal(includeCommentModal);
+    openModal(includeCommentModal, includeCommentYes);
   });
 
   actionsWrap.appendChild(btnUp);
@@ -1212,7 +1218,7 @@ function wirePrimaryTaskEditorEvents() {
     btnTaskLoadLibrary.addEventListener('click', () => {
       if (librarySearchInput) librarySearchInput.value = '';
       refreshLibraryList().catch((err) => log.error('refreshLibraryList failed:', err));
-      openModal(libraryModal);
+      openModal(libraryModal, librarySearchInput);
     });
   }
 }

@@ -114,6 +114,10 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(_modal, { initialFocus }) {
+          initialFocus.focus();
+        },
+        deactivateModalFocus() {},
         registerCustomPrompt(name, handler) {
           registeredPromptNames.push(name);
           this[name] = handler;
@@ -262,7 +266,7 @@ test('PDF options modal returns range selection and keep intent through the publ
   assert.equal(harness.elements.textExtractionPdfOptionsModalTitle.textContent, 'PDF options');
   assert.equal(harness.elements.textExtractionPdfOptionsModalFileName.textContent, 'book.pdf');
   assert.equal(harness.elements.textExtractionPdfOptionsModalTotalPages.textContent, 'Total pages: 12');
-  assert.equal(harness.elements.textExtractionPdfOptionsModalAllPages.focusCount, 1);
+  assert.equal(harness.elements.textExtractionPdfOptionsModalContinue.focusCount, 1);
 
   harness.elements.textExtractionPdfOptionsModalRange.checked = true;
   harness.elements.textExtractionPdfOptionsModalRange.dispatch('change');
