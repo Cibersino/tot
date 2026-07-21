@@ -117,8 +117,9 @@
   --combobox-trigger-height: 30px;
   --numeric-value-field-height: 26px;
   --numeric-value-field-height-compact: 22px;
-  --numeric-value-field-width-compact: 60px;
-  --numeric-value-field-width-wide: 88px;
+  --text-entry-field-height: 30px;
+  --numeric-value-field-width-compact: 60px; /* Coordinated value only; each feature owns its width selection. */
+  --numeric-value-field-width-wide: 88px; /* Coordinated value only; each feature owns its width selection. */
   --modal-max-height: 85vh;
   --logo-height: 100px;
   --logo-links-scale: 0.7;
@@ -571,6 +572,49 @@ body {
   background: var(--selector-active-bg);
 }
 
+/* Shared native direct-entry field primitive.
+   These main-window text and number inputs share their base field shell,
+   normalization, and standard surface. Shared height variants follow;
+   typography and remaining presentation details stay local to each feature. */
+.clipboard-repeat-input,
+.velocity #wpmInput,
+.results-multiplier-row input,
+.cronometro .crono-box,
+.text-extraction-pdf-options-modal-range-field input,
+.text-extraction-apply-repeat-row input,
+.text-extraction-batch-plan-unit-name,
+.text-extraction-batch-plan-page-scope-input,
+.snapshot-tag-manager-draft-input {
+  padding: var(--direct-entry-field-padding);
+  border: 1px solid var(--field-border);
+  border-radius: var(--field-radius);
+  background: var(--field-bg);
+  color: var(--text-color);
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+/* Shared direct-entry height variants.
+   Heights are coordinated conservatively because changing them displaces
+   surrounding vertical layout. */
+.clipboard-repeat-input,
+.velocity #wpmInput,
+.cronometro .crono-box,
+.text-extraction-pdf-options-modal-range-field input,
+.text-extraction-batch-plan-page-scope-input {
+  height: var(--numeric-value-field-height);
+}
+
+.results-multiplier-row input,
+.text-extraction-apply-repeat-row input {
+  height: var(--numeric-value-field-height-compact);
+}
+
+.text-extraction-batch-plan-unit-name,
+.snapshot-tag-manager-draft-input {
+  height: var(--text-entry-field-height);
+}
+
 /* Shared modal layers */
 
 /* Shared framed-dialog structure */
@@ -768,16 +812,10 @@ pre#textPreview .preview-static {
 .clipboard-repeat-input {
   width: var(--numeric-value-field-width-compact);
   flex: none;
-  height: var(--numeric-value-field-height);
-  padding: var(--direct-entry-field-padding);
-  border-radius: var(--field-radius);
-  border: 1px solid var(--clipboard-repeat-input-border);
-  background: var(--clipboard-repeat-input-bg);
-  color: var(--text-color);
+  border: 1px solid var(--clipboard-repeat-input-border); /* Clipboard-specific override of the shared field border. */
+  background: var(--clipboard-repeat-input-bg); /* Clipboard-specific override of the shared field background. */
   font-size: var(--font-size-4);
-  font-family: inherit;
   text-align: center;
-  box-sizing: border-box;
 }
 
 .clipboard-repeat-input.is-repeat-active {
@@ -912,17 +950,10 @@ pre#textPreview .preview-static {
 .velocity #wpmInput {
   width: var(--numeric-value-field-width-compact);
   flex: none;
-  height: var(--numeric-value-field-height);
-  padding: var(--direct-entry-field-padding);
-  border-radius: var(--field-radius);
-  border: 1px solid var(--field-border);
-  background: var(--field-bg);
-  color: var(--text-color);
   font-size: var(--font-size-9);
-  font-family: inherit;
-  box-sizing: border-box;
 }
 
+/* WPM disabled styling stays local because its availability can change independently. */
 .velocity #wpmInput:disabled {
   background: var(--input-disabled-bg);
   cursor: not-allowed;
@@ -994,15 +1025,7 @@ pre#textPreview .preview-static {
 .results-multiplier-row input {
   width: var(--numeric-value-field-width-compact);
   flex: none;
-  height: var(--numeric-value-field-height-compact);
-  padding: var(--direct-entry-field-padding);
-  border-radius: var(--field-radius);
-  border: 1px solid var(--field-border);
-  background: var(--field-bg);
-  color: var(--text-color);
-  font-family: inherit;
   font-size: var(--font-size-4);
-  box-sizing: border-box;
 }
 
 .results-multiplier-row output {
@@ -1010,6 +1033,7 @@ pre#textPreview .preview-static {
   min-width: 0;
 }
 
+/* Results multiplier disabled styling stays local because its availability can change independently. */
 .results-multiplier-row input:disabled {
   background: var(--input-disabled-bg);
   cursor: not-allowed;
@@ -1080,24 +1104,17 @@ pre#textPreview .preview-static {
 }
 
 .cronometro .crono-box {
-  height: var(--numeric-value-field-height);
   width: var(--numeric-value-field-width-wide);
   flex: none;
-  padding: var(--direct-entry-field-padding);
-  border: 1px solid var(--field-border);
-  border-radius: var(--field-radius);
   font-size: var(--font-size-9);
-  font-family: inherit;
   text-align: center;
-  color: var(--text-color);
-  background-color: var(--field-bg);
-  box-sizing: border-box;
 }
 
 .cronometro .crono-box:disabled {
+  /* The disabled/running state intentionally keeps the shared field background
+     so it looks the same as the stopped state. */
   opacity: 1;
   color: inherit;
-  background-color: var(--field-bg);
   cursor: text;
 }
 
@@ -1572,13 +1589,7 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-pdf-options-modal-range-field input {
   width: var(--numeric-value-field-width-wide);
-  height: var(--numeric-value-field-height);
-  padding: var(--direct-entry-field-padding);
-  border: 1px solid var(--field-border);
-  border-radius: var(--field-radius);
-  font-family: inherit;
   font-size: var(--font-size-8);
-  box-sizing: border-box;
 }
 
 .text-extraction-pdf-options-modal-selected-count {
@@ -1685,13 +1696,7 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-apply-repeat-row input {
   width: var(--numeric-value-field-width-compact);
   flex: none;
-  height: var(--numeric-value-field-height-compact);
-  padding: var(--direct-entry-field-padding);
-  border: 1px solid var(--field-border);
-  border-radius: var(--field-radius);
-  font-family: inherit;
   font-size: var(--font-size-4);
-  box-sizing: border-box;
 }
 
 /* Text extraction batch planning modal */
@@ -1776,15 +1781,7 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-plan-unit-name {
   width: 320px;
-  height: 30px;
-  padding: var(--direct-entry-field-padding);
-  border: 1px solid var(--field-border);
-  border-radius: var(--field-radius);
-  background: var(--field-bg);
-  color: var(--text-color);
-  font-family: inherit;
   font-size: var(--font-size-8);
-  box-sizing: border-box;
 }
 
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
@@ -2014,15 +2011,7 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-plan-page-scope-input {
   width: var(--numeric-value-field-width-wide);
-  height: var(--numeric-value-field-height);
-  padding: var(--direct-entry-field-padding);
-  border: 1px solid var(--field-border);
-  border-radius: var(--field-radius);
-  background: var(--field-bg);
-  color: var(--text-color);
-  font-family: inherit;
   font-size: var(--font-size-8);
-  box-sizing: border-box;
 }
 
 .text-extraction-batch-plan-page-scope-count {
@@ -2360,14 +2349,6 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-tag-manager-draft-input {
   width: 100%;
-  height: 30px;
-  padding: var(--direct-entry-field-padding);
-  border: 1px solid var(--field-border);
-  border-radius: var(--field-radius);
-  background: var(--field-bg);
-  color: var(--text-color);
-  box-sizing: border-box;
-  font-family: inherit;
   font-size: var(--font-size-7);
 }
 
@@ -2587,44 +2568,21 @@ body.text-extraction-drop-active .app-container {
   min-width: 120px;
 }
 
-/* Cascade-safe feature state overrides */
-/* Invalid feedback intentionally wins over field-base and repeat-active border/focus colors. */
-.clipboard-repeat-input.is-invalid {
-  border-color: var(--input-invalid-border);
-}
-
-.text-extraction-apply-repeat-row input.is-invalid {
-  border-color: var(--input-invalid-border);
-}
-
-.velocity #wpmInput.is-invalid {
-  border-color: var(--input-invalid-border);
-}
-
-.cronometro .crono-box.is-invalid {
-  border-color: var(--input-invalid-border);
-}
-
+/* Cascade-safe shared state overrides */
+/* Shared direct-entry invalid state.
+   Kept late so invalid feedback wins over base, feature-variant, and focus colors. */
+.clipboard-repeat-input.is-invalid,
+.text-extraction-apply-repeat-row input.is-invalid,
+.velocity #wpmInput.is-invalid,
+.cronometro .crono-box.is-invalid,
 .results-multiplier-row input.is-invalid {
   border-color: var(--input-invalid-border);
 }
 
-.clipboard-repeat-input.is-invalid:focus-visible {
-  outline-color: var(--input-invalid-border);
-}
-
-.text-extraction-apply-repeat-row input.is-invalid:focus-visible {
-  outline-color: var(--input-invalid-border);
-}
-
-.velocity #wpmInput.is-invalid:focus-visible {
-  outline-color: var(--input-invalid-border);
-}
-
-.cronometro .crono-box.is-invalid:focus-visible {
-  outline-color: var(--input-invalid-border);
-}
-
+.clipboard-repeat-input.is-invalid:focus-visible,
+.text-extraction-apply-repeat-row input.is-invalid:focus-visible,
+.velocity #wpmInput.is-invalid:focus-visible,
+.cronometro .crono-box.is-invalid:focus-visible,
 .results-multiplier-row input.is-invalid:focus-visible {
   outline-color: var(--input-invalid-border);
 }
