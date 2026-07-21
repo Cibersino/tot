@@ -4,58 +4,52 @@
 
 /* Design tokens */
 :root {
-  --field-radius: 4px;
-  --button-radius: 5px;
+
+  /* Colors */
+
+  /* Backgrounds */
   --bg: #fdf6e3;
   --panel: #f4ecd8;
   --panel-strong: #ece4d2;
   --surface: #fff;
   --surface-soft: rgb(255 255 255 / 0.45);
+  --modal-backdrop: rgb(0 0 0 / 0.45);
+
+  /* Text */
+  --text: #2f2a20;
+  --text-strong: #222;
+  --muted: #6c6049;
+
+  /* Borders */
   --border: #e9e6de;
   --border-strong: rgb(0 0 0 / 0.12);
   --input-border: #b8ae9c;
   --input-border-strong: rgb(0 0 0 / 0.2);
-  --text: #2f2a20;
-  --text-strong: #222;
-  --muted: #6c6049;
+
+  /* Focus */
   --focus-ring: rgb(30 130 230 / 0.12);
   --focus-ring-strong: rgb(30 130 230 / 0.22);
+
+  /* Shadows */
   --section-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
   --modal-shadow: 0 12px 24px rgb(0 0 0 / 0.25);
-  --modal-backdrop: rgb(0 0 0 / 0.45);
+
+  /* Typography */
   --font-ui: Arial, sans-serif;
+
+  /* Spacing */
   --gap: 10px;
+
+  /* Dimensions */
   --control-height-md: 30px;
+
+  /* Corner radii */
+  --field-radius: 4px;
+  --button-radius: 5px;
+
+  /* Shared styles */
   --tot-icon-size-sm: 14px;
   --tot-icon-size-md: 28px;
-}
-
-.tot-icon-slot {
-  --tot-icon-size: var(--tot-icon-size-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  height: var(--tot-icon-size);
-  line-height: 0;
-  pointer-events: none;
-}
-
-.tot-icon-slot--sm {
-  --tot-icon-size: var(--tot-icon-size-sm);
-}
-
-.tot-icon-slot--md {
-  --tot-icon-size: var(--tot-icon-size-md);
-}
-
-.tot-icon-svg {
-  display: block;
-  width: auto;
-  height: 100%;
-  max-width: none;
-  color: currentColor;
-  overflow: visible;
 }
 
 /* Window shell */
@@ -84,6 +78,37 @@ body {
   padding: 12px;
   height: 100%;
   box-sizing: border-box;
+}
+
+/* Shared primitives */
+
+/* Runtime icon system */
+.tot-icon-slot {
+  --tot-icon-size: var(--tot-icon-size-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: var(--tot-icon-size);
+  line-height: 0;
+  pointer-events: none;
+}
+
+.tot-icon-slot--sm {
+  --tot-icon-size: var(--tot-icon-size-sm);
+}
+
+.tot-icon-slot--md {
+  --tot-icon-size: var(--tot-icon-size-md);
+}
+
+.tot-icon-svg {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: none;
+  color: currentColor;
+  overflow: visible;
 }
 
 /* Shared controls */
@@ -139,6 +164,18 @@ body {
 .btn-standard:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Shared field chrome used by the task table plus comment/library modal inputs. */
+.task-table input[type="text"],
+.task-table input[type="number"],
+#commentInput,
+.library-search input {
+  border: 1px solid var(--input-border);
+  font-size: 13px;
+  box-sizing: border-box;
+  background: var(--surface);
+  color: var(--text);
 }
 
 #taskNameInput:focus-visible,
@@ -309,29 +346,10 @@ body {
   text-align: right;
 }
 
-/* Shared field chrome used by the task table plus comment/library modal inputs. */
-.task-table input[type="text"],
-.task-table input[type="number"],
-#commentInput,
-.library-search input {
-  border: 1px solid var(--input-border);
-  font-size: 13px;
-  box-sizing: border-box;
-  background: var(--surface);
-  color: var(--text);
-}
-
 .task-table input[type="text"],
 .task-table input[type="number"] {
   width: 100%;
   padding: 4px 6px;
-}
-
-.task-table input[type="text"] {
-  border-radius: var(--field-radius);
-}
-
-.task-table input[type="number"] {
   border-radius: var(--field-radius);
 }
 
@@ -540,3 +558,5 @@ body.is-resizing {
   color: var(--muted);
   font-size: 13px;
 }
+
+/* End of public/task_editor.css */
