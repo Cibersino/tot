@@ -762,6 +762,16 @@ body {
   font-size: var(--font-size-6);
 }
 
+/* Shared generated-PDF reveal action row.
+   The containing result and decision-detail cards remain feature-owned. */
+.text-extraction-apply-modal-saved-pdf-actions,
+.text-extraction-single-file-heavy-modal-details-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 /* Feature-local sections */
 
 /* Text selector section */
@@ -1704,13 +1714,6 @@ body.text-extraction-drop-active .app-container {
   background: var(--app-primary-bg);
 }
 
-.text-extraction-apply-modal-saved-pdf-actions {
-  display: flex;
-  justify-content: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
 .text-extraction-apply-modal-saved-pdf-file {
   color: var(--text-soft);
   font-size: var(--font-size-6);
@@ -2109,13 +2112,6 @@ body.text-extraction-drop-active .app-container {
   border: 1px solid var(--group-border-color);
   border-radius: 8px;
   background: var(--app-primary-bg);
-}
-
-.text-extraction-single-file-heavy-modal-details-actions {
-  display: flex;
-  justify-content: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 #textExtractionSingleFileHeavyPdfModalMessage {
