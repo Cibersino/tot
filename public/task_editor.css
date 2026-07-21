@@ -12,6 +12,7 @@
   --app-secondary-bg: #f4ecd8;
   --app-tertiary-bg: #fef9eb;
   --surface: #fff;
+  --table-row-alt-bg: rgb(255 255 255 / 0.34);
   --surface-soft: rgb(255 255 255 / 0.45);
   --modal-backdrop: rgb(0 0 0 / 0.45);
 
@@ -331,7 +332,7 @@ body {
 }
 
 .task-table tbody tr:nth-child(even) {
-  background: rgb(255 255 255 / 0.34);
+  background: var(--table-row-alt-bg);
 }
 
 #thFalta,
