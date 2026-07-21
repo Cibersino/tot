@@ -15,7 +15,6 @@
   --button-bg: #fff;
   --button-hover-bg: #f4f4f4;
   --table-row-alt-bg: rgb(255 255 255 / 0.34);
-  --surface-soft: rgb(255 255 255 / 0.45);
   --modal-backdrop: rgb(0 0 0 / 0.45);
 
   /* Text */
@@ -528,7 +527,7 @@ body.is-resizing {
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   padding: 6px 8px;
-  background: var(--surface-soft);
+  background: var(--app-primary-bg);
 }
 
 .library-item__text {
