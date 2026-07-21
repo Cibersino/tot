@@ -752,6 +752,16 @@ body {
   gap: 6px;
 }
 
+/* Shared generated-PDF retention choice.
+   PDF Options owns its checkbox alignment adjustment locally. */
+.text-extraction-pdf-options-modal-keep-option,
+.text-extraction-batch-plan-keep-toggle {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: var(--font-size-6);
+}
+
 /* Feature-local sections */
 
 /* Text selector section */
@@ -1647,13 +1657,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
-.text-extraction-pdf-options-modal-keep-option {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: var(--font-size-6);
-}
-
 .text-extraction-pdf-options-modal-keep-option input[type="checkbox"] {
   margin: 2px 0 0;
 }
@@ -1744,13 +1747,6 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-plan-failure-option {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: var(--font-size-6);
-}
-
-.text-extraction-batch-plan-keep-toggle {
   display: inline-flex;
   align-items: flex-start;
   gap: 12px;
