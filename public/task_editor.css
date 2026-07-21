@@ -22,7 +22,6 @@
 
   /* Text */
   --text-color: #2f2a20;
-  --text-strong: #222;
   --text-soft: #6c6049;
 
   /* Borders */
@@ -233,7 +232,7 @@ body {
   font-size: 13px;
   line-height: 1.1;
   font-weight: 600;
-  color: var(--text-strong);
+  color: var(--text-color);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-align: right;
@@ -329,7 +328,7 @@ body {
 
 .task-table th {
   background: var(--app-secondary-bg);
-  color: var(--text-strong);
+  color: var(--text-color);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -446,7 +445,7 @@ body.is-resizing {
 
 .modal-header h2 {
   margin: 0;
-  color: var(--text-strong);
+  color: var(--text-color);
   font-size: 1rem;
   font-weight: 600;
 }
