@@ -502,14 +502,24 @@ body {
   font: inherit;
 }
 
-.presets-combobox .renderer-combobox__listbox {
+/* Shared main-window combobox popup geometry.
+   RendererCombobox listboxes anchor and stack within their feature-owned hosts;
+   maximum heights remain with their local popup variants. */
+.presets-combobox .renderer-combobox__listbox,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox,
+.snapshot-save-tags-combobox .renderer-combobox__listbox {
   top: 100%;
   inset-inline: 0;
-  max-height: 160px;
   overflow-y: auto;
   box-sizing: border-box;
   z-index: 2;
   box-shadow: var(--combobox-popup-shadow);
+}
+
+/* Preset instance popup-height variant */
+.presets-combobox .renderer-combobox__listbox {
+  max-height: 160px;
 }
 
 .presets-combobox .renderer-combobox__input:disabled {
@@ -1775,15 +1785,10 @@ body.text-extraction-drop-active .app-container {
   text-align: center;
 }
 
+/* Batch-plan combobox popup-height variants */
 .text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox {
-  top: 100%;
-  inset-inline: 0;
   max-height: 160px;
-  overflow-y: auto;
-  box-sizing: border-box;
-  z-index: 2;
-  box-shadow: var(--combobox-popup-shadow);
 }
 
 .text-extraction-batch-plan-route-combobox,
@@ -2264,14 +2269,9 @@ body.text-extraction-drop-active .app-container {
   font-weight: 700;
 }
 
+/* Snapshot tag combobox popup-height variant */
 .snapshot-save-tags-combobox .renderer-combobox__listbox {
-  inset-inline: 0;
   max-height: 134px;
-  overflow-y: auto;
-  box-sizing: border-box;
-  z-index: 2;
-  top: 100%;
-  box-shadow: var(--combobox-popup-shadow);
 }
 
 .snapshot-save-tags-modal-actions {
