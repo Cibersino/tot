@@ -15,7 +15,7 @@
   --button-bg: #fff;
   --button-hover-bg: #f4f4f4;
   --table-row-alt-bg: rgb(255 255 255 / 0.34);
-  --modal-backdrop: rgb(0 0 0 / 0.45);
+  --backdrop-bg: rgb(0 0 0 / 0.45);
 
   /* Text */
   --text: #2f2a20;
@@ -408,7 +408,7 @@ body.is-resizing {
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: var(--modal-backdrop);
+  background: var(--backdrop-bg);
   backdrop-filter: blur(1px);
 }
 
