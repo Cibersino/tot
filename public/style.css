@@ -1598,7 +1598,7 @@ body.text-extraction-drop-active .app-container {
   border: 1px solid var(--group-border-color);
   border-radius: 8px;
   display: grid;
-  gap: 12px;
+  gap: 6px;
 }
 
 .text-extraction-pdf-options-modal-selection-legend {
@@ -1746,7 +1746,7 @@ body.text-extraction-drop-active .app-container {
   border: 1px solid var(--group-border-color);
   border-radius: 8px;
   display: grid;
-  gap: 12px;
+  gap: 6px;
 }
 
 .text-extraction-batch-plan-failure-option {
@@ -1877,9 +1877,10 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
 }
 
-.text-extraction-batch-plan-heavy-preview {
+.text-extraction-batch-plan-heavy-preview,
+.text-extraction-batch-plan-heavy-preview-list {
   display: grid;
-  gap: 12px;
+  gap: 6px;
 }
 
 .text-extraction-batch-plan-input-row {
@@ -1976,9 +1977,7 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-heavy-preview-list {
   margin: 0;
   padding-left: 18px;
-  display: grid;
-  gap: 12px;
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-5);
 }
 
 .text-extraction-batch-plan-heavy-preview-label {
@@ -2009,7 +2008,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-page-scope-option,
 .text-extraction-batch-plan-page-scope-field {
   display: grid;
-  gap: 12px;
   font-size: var(--font-size-7);
 }
 
@@ -2017,11 +2015,13 @@ body.text-extraction-drop-active .app-container {
   grid-auto-flow: column;
   align-items: center;
   justify-content: flex-start;
+  gap: 6px;
 }
 
 .text-extraction-batch-plan-page-scope-field {
   grid-template-columns: max-content max-content;
   align-items: center;
+  gap: 12px;
 }
 
 .text-extraction-batch-plan-page-scope-input {
