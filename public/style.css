@@ -1570,6 +1570,8 @@ body.text-extraction-drop-active .app-container {
   font-weight: 600;
 }
 
+/* Page-scope radio labels remain feature-owned because their stacked selection
+   flow can evolve independently of checkbox filters in other dialogs. */
 .text-extraction-pdf-options-modal-option {
   display: inline-flex;
   align-items: center;
@@ -2503,6 +2505,8 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
 }
 
+/* Reading-filter checkbox labels remain feature-owned because their wrapping
+   and disabled-state behavior can evolve independently of other modal choices. */
 .reading-test-entry-modal-option {
   display: inline-flex;
   align-items: center;
