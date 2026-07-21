@@ -182,7 +182,6 @@ body {
   font-weight: 600;
   font-size: var(--font-size-4);
   color: var(--text-color);
-  align-self: stretch;
   display: block;
 }
 
@@ -197,12 +196,9 @@ body {
   pointer-events: none;
 }
 
+/* The base slot is medium-sized; only the non-default size needs an override. */
 .tot-icon-slot--sm {
   --tot-icon-size: var(--tot-icon-size-sm);
-}
-
-.tot-icon-slot--md {
-  --tot-icon-size: var(--tot-icon-size-md);
 }
 
 .tot-icon-svg {
@@ -771,14 +767,11 @@ body {
   font-size: var(--font-size-6);
 }
 
-/* Shared generated-PDF reveal action row.
+/* Shared single-button generated-PDF reveal container.
    The containing result and decision-detail cards remain feature-owned. */
 .text-extraction-apply-modal-saved-pdf-actions,
 .text-extraction-single-file-heavy-modal-details-actions {
   display: flex;
-  justify-content: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 /* Feature-local sections */
@@ -846,7 +839,6 @@ pre#textPreview .preview-static {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-wrap: nowrap;
 }
 
 .controls-sep {
@@ -855,7 +847,6 @@ pre#textPreview .preview-static {
   background: var(--separator-color);
   margin: 0 4px;
   flex: 0 0 auto;
-  align-self: center;
   pointer-events: none;
 }
 
@@ -1147,7 +1138,6 @@ pre#textPreview .preview-static {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin-left: 0;
 }
 
 /* Toggle label */
@@ -1180,7 +1170,6 @@ pre#textPreview .preview-static {
   display: flex;
   gap: 6px;
   align-items: center;
-  justify-content: flex-start;
   margin-bottom: 4px;
 }
 
@@ -1207,7 +1196,6 @@ pre#textPreview .preview-static {
 .cronometro .crono-controls {
   display: flex;
   gap: 6px;
-  align-items: flex-start;
 }
 
 /* VF switch */
@@ -1218,22 +1206,16 @@ pre#textPreview .preview-static {
   height: 30px;
   margin-left: auto;
   flex: 0 0 auto;
-  overflow: visible;
 }
 
 /* VF label */
 .vf-label {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   font-size: var(--font-size-5);
   font-weight: 600;
   color: var(--text-color);
   user-select: none;
-}
-
-.vf-label[data-tot-icon] {
-  gap: 0;
 }
 
 .vf-label .tot-icon-slot {
@@ -1354,9 +1336,7 @@ pre#textPreview .preview-static {
 
 .info-modal-content h3 {
   font-size: var(--font-size-10);
-  font-style: normal;
   font-weight: 700;
-  padding-top: 0;
 }
 
 .info-modal-content h4 {
@@ -1778,7 +1758,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-unit-heading {
   display: grid;
   gap: 12px;
-  flex: 1 1 260px;
   min-width: 0;
 }
 
@@ -1835,7 +1814,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-input-actions {
   display: flex;
   gap: 4px;
-  flex-wrap: nowrap;
 }
 
 .text-extraction-batch-plan-unit-tags {
@@ -1927,14 +1905,13 @@ body.text-extraction-drop-active .app-container {
   white-space: nowrap;
 }
 
+/* These positioning wrappers contain at most one control; their child
+   components own internal alignment and spacing. */
 .text-extraction-batch-plan-input-route,
 .text-extraction-batch-plan-input-pages,
 .text-extraction-batch-plan-input-keep,
 .text-extraction-batch-plan-input-unit {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .text-extraction-batch-plan-input-route {
@@ -1999,7 +1976,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-page-scope-option {
   grid-auto-flow: column;
   align-items: center;
-  justify-content: flex-start;
   gap: 6px;
 }
 
@@ -2065,7 +2041,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-final-generated {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -2119,10 +2094,6 @@ body.text-extraction-drop-active .app-container {
 /* OCR activation disclosure modal */
 .text-extraction-ocr-activation-disclosure-panel {
   width: 640px;
-  text-align: start;
-}
-
-.text-extraction-ocr-activation-disclosure-body {
   text-align: start;
 }
 
@@ -2182,7 +2153,6 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-save-tags-modal-header-actions {
   display: flex;
-  align-items: center;
   gap: 12px;
 }
 
@@ -2281,7 +2251,6 @@ body.text-extraction-drop-active .app-container {
 .snapshot-tag-manager-draft-actions,
 .snapshot-tag-manager-row-actions {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -2421,10 +2390,8 @@ body.text-extraction-drop-active .app-container {
 }
 
 .reading-test-entry-modal-count-number {
-  display: inline-block;
   min-inline-size: 3ch;
   text-align: left;
-  font-size: var(--font-size-6);
   font-variant-numeric: tabular-nums;
 }
 
