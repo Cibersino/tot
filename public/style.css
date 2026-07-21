@@ -49,8 +49,8 @@
   --text-soft: #6c6049;
   --warning-text: #8b1e1e;
   --results-degraded-text: #c62828;
-  --link-external: #245b89;
-  --link-external-hover: #163b5a;
+  --link-resource: #245b89;
+  --link-resource-hover: #163b5a;
   --link-action: #24567a;
   --link-action-hover: #183d56;
 
@@ -2155,13 +2155,13 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-ocr-activation-disclosure-link {
-  color: var(--link-external);
+  color: var(--link-resource);
   font-size: var(--font-size-8);
   text-decoration: underline;
 }
 
 .text-extraction-ocr-activation-disclosure-link:hover {
-  color: var(--link-external-hover);
+  color: var(--link-resource-hover);
 }
 
 .text-extraction-ocr-activation-disclosure-buttons {
@@ -2454,14 +2454,14 @@ body.text-extraction-drop-active .app-container {
 }
 
 .reading-test-entry-modal-link {
-  color: var(--link-external);
+  color: var(--link-resource);
   text-decoration: underline;
   font-size: var(--font-size-6);
   cursor: pointer;
 }
 
 .reading-test-entry-modal-link:hover {
-  color: var(--link-external-hover);
+  color: var(--link-resource-hover);
 }
 
 .reading-test-entry-modal-link[aria-disabled="true"] {
