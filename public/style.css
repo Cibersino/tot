@@ -106,12 +106,12 @@
   --line-height-tight: 1.15;
   --line-height-default: 1.2;
   --line-height-relaxed: 1.4;
-  
+
   /* Spacing */
   --direct-entry-field-padding: 0 6px;
   --combobox-content-padding: 4px 6px;
   --framed-modal-panel-padding: 16px;
-    
+
   /* Dimensions */
   --control-height-md: 30px;
   --combobox-trigger-height: 30px;
@@ -162,7 +162,9 @@ body {
   outline-offset: 2px;
 }
 
-/* Main app container */
+/* Shared primitives and application shell */
+
+/* Application container */
 .app-container {
   position: relative;
   height: 100vh;
@@ -217,199 +219,26 @@ body {
 .app-container>aside {
   flex: 0 0 auto;
   padding: 4px;
+  border: 1px solid var(--section-border);
   box-shadow: var(--section-shadow);
   background: var(--app-secondary-bg);
-}
-
-.app-container>section {
   border-radius: 6px;
-}
-
-.app-container>aside {
-  border-radius: 6px;
-}
-
-/* Shared controls */
-.btn-standard {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   box-sizing: border-box;
-  padding: 0 8px;
-  height: var(--control-height-md);
-  line-height: 1;
-  font-size: var(--font-size-7);
-  font-family: inherit;
-  border-radius: var(--button-radius);
-  border: 1px solid var(--button-border);
-  background: var(--button-bg);
-  color: var(--text-color);
-  cursor: pointer;
-  transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
-  box-shadow: none;
-  user-select: none;
 }
 
-/* Shared hidden-state overrides */
-.btn-standard[hidden],
-.controls-row[hidden],
-.controls-processing[hidden],
-.text-extraction-pdf-options-modal-range-fields[hidden],
-.text-extraction-pdf-options-modal-selected-count[hidden],
-.text-extraction-pdf-options-modal-keep-option[hidden],
-.text-extraction-pdf-options-modal-validation[hidden],
-.text-extraction-apply-modal-saved-pdf[hidden] {
-  display: none;
-}
-
-/* Shared disabled-control label treatment */
-.selector-inline-checkbox input:disabled + span,
-.reading-test-entry-modal-visibility-toggle input[type="checkbox"]:disabled + span,
-.reading-test-entry-modal-option input[type="checkbox"]:disabled + span {
-  opacity: 0.6;
-}
-
-.btn-standard--square {
-  width: var(--control-height-md);
-  flex: 0 0 auto;
-}
-
-.btn-standard--half-width {
-  width: calc(var(--control-height-md) / 2);
-  padding: 0;
-  flex: 0 0 auto;
-}
-
-.btn-standard--square-half {
-  width: calc(var(--control-height-md) / 2);
-  height: calc(var(--control-height-md) / 2);
-  padding: 0;
-  font-size: var(--font-size-1);
-  flex: 0 0 auto;
-}
-
-.btn-standard--square-half .tot-icon-slot {
-  --tot-icon-size: var(--tot-icon-size-sm);
-}
-
-.btn-standard:hover {
-  background: var(--button-hover-bg);
-  box-shadow: var(--button-hover-shadow);
-}
-
-.btn-standard:active {
-  transform: translateY(1px);
-}
-
-.btn-standard:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 20px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background-color: var(--switch-track-off);
-  transition: .18s;
-  border-radius: 24px;
-  box-shadow: var(--switch-track-shadow);
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 14px;
-  width: 14px;
-  left: 3px;
-  bottom: 3px;
-  background-color: var(--switch-thumb-bg);
-  transition: .18s;
+/* Shared shell loading-indicator mechanics.
+   Startup and editor indicators share only this rotating-border primitive;
+   their dimensions and lifecycles remain with their shell-local variants. */
+.startup-splash__spinner,
+.editor-loader {
+  border: 2px solid var(--spinner-track);
+  border-top-color: var(--spinner-head);
   border-radius: 50%;
-}
-
-.switch input:checked + .slider {
-  background-color: var(--switch-track-on);
-}
-
-.switch input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
-/* Shared combobox field and option-state treatment */
-.presets-combobox .renderer-combobox__input,
-.presets-combobox .renderer-combobox__listbox,
-.text-extraction-batch-plan-route-combobox .renderer-combobox__input,
-.text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox,
-.snapshot-save-tags-combobox .renderer-combobox__input,
-.snapshot-save-tags-combobox .renderer-combobox__listbox {
-  border: 1px solid var(--field-border);
-  border-radius: var(--field-radius);
-  background: var(--field-bg);
-  color: var(--text-color);
-}
-
-.presets-combobox .renderer-combobox__input,
-.snapshot-save-tags-combobox .renderer-combobox__input {
-  width: 100%;
-  box-sizing: border-box;
-  font: inherit;
-}
-
-.presets-combobox .renderer-combobox__listbox {
-  top: 100%;
-  inset-inline: 0;
-  max-height: 160px;
-  overflow-y: auto;
-  box-sizing: border-box;
-  z-index: 2;
-  box-shadow: var(--combobox-popup-shadow);
-}
-
-.presets-combobox .renderer-combobox__input:disabled {
-  background: var(--input-disabled-bg);
-}
-
-.presets-combobox .renderer-combobox__option,
-.text-extraction-batch-plan-route-combobox .renderer-combobox__option,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__option,
-.snapshot-save-tags-combobox .renderer-combobox__option {
-  padding: var(--combobox-content-padding);
-  border-inline-start: 3px solid transparent;
-}
-
-.presets-combobox .renderer-combobox__option[aria-selected="true"],
-.text-extraction-batch-plan-route-combobox .renderer-combobox__option[aria-selected="true"],
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__option[aria-selected="true"],
-.snapshot-save-tags-combobox .renderer-combobox__option[aria-selected="true"] {
-  border-inline-start-color: var(--selector-selected-accent);
-  background: var(--selector-selected-bg);
-  font-weight: 600;
-}
-
-.presets-combobox .renderer-combobox__option.is-active,
-.text-extraction-batch-plan-route-combobox .renderer-combobox__option.is-active,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__option.is-active,
-.snapshot-save-tags-combobox .renderer-combobox__option.is-active {
-  background: var(--selector-active-bg);
+  animation: editor-spin 0.9s linear infinite;
 }
 
 /* Startup splash */
+/* The startup gate stays above all interactive UI until readiness. */
 .startup-splash {
   position: fixed;
   inset: 0;
@@ -421,26 +250,19 @@ body {
   pointer-events: all;
 }
 
+/* Startup-gate loading-indicator size */
 .startup-splash__spinner {
   width: 24px;
   height: 24px;
-  border: 2px solid var(--spinner-track);
-  border-top-color: var(--spinner-head);
-  border-radius: 50%;
-  animation: editor-spin 0.9s linear infinite;
 }
 
-/* Loading affordances */
+/* Editor-launch loading-indicator size, placement, and visibility lifecycle */
 .editor-loader {
   position: absolute;
   top: 10px;
   right: 10px;
   width: 16px;
   height: 16px;
-  border: 2px solid var(--spinner-track);
-  border-top-color: var(--spinner-head);
-  border-radius: 50%;
-  animation: editor-spin 0.9s linear infinite;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
@@ -532,14 +354,268 @@ body {
   display: block;
 }
 
+/* Shared component systems */
+
+/* Buttons */
+.btn-standard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 8px;
+  height: var(--control-height-md);
+  line-height: 1;
+  font-size: var(--font-size-7);
+  font-family: inherit;
+  border-radius: var(--button-radius);
+  border: 1px solid var(--button-border);
+  background: var(--button-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
+  box-shadow: none;
+  user-select: none;
+}
+
+/* Shared hidden-state overrides */
+.btn-standard[hidden],
+.controls-row[hidden],
+.controls-processing[hidden],
+.text-extraction-pdf-options-modal-range-fields[hidden],
+.text-extraction-pdf-options-modal-selected-count[hidden],
+.text-extraction-pdf-options-modal-keep-option[hidden],
+.text-extraction-pdf-options-modal-validation[hidden],
+.text-extraction-apply-modal-saved-pdf[hidden] {
+  display: none;
+}
+
+.btn-standard--square {
+  width: var(--control-height-md);
+  flex: 0 0 auto;
+}
+
+.btn-standard--half-width {
+  width: calc(var(--control-height-md) / 2);
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.btn-standard--square-half {
+  width: calc(var(--control-height-md) / 2);
+  height: calc(var(--control-height-md) / 2);
+  padding: 0;
+  font-size: var(--font-size-1);
+  flex: 0 0 auto;
+}
+
+.btn-standard--square-half .tot-icon-slot {
+  --tot-icon-size: var(--tot-icon-size-sm);
+}
+
+.btn-standard:hover {
+  background: var(--button-hover-bg);
+  box-shadow: var(--button-hover-shadow);
+}
+
+.btn-standard:active {
+  transform: translateY(1px);
+}
+
+.btn-standard:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Switches */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--switch-track-off);
+  transition: .18s;
+  border-radius: 24px;
+  box-shadow: var(--switch-track-shadow);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--switch-thumb-bg);
+  transition: .18s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: var(--switch-track-on);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Comboboxes */
+.presets-combobox .renderer-combobox__input,
+.presets-combobox .renderer-combobox__listbox,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__listbox,
+.snapshot-save-tags-combobox .renderer-combobox__input,
+.snapshot-save-tags-combobox .renderer-combobox__listbox {
+  border: 1px solid var(--field-border);
+  border-radius: var(--field-radius);
+  background: var(--field-bg);
+  color: var(--text-color);
+}
+
+.presets-combobox .renderer-combobox__listbox {
+  top: 100%;
+  inset-inline: 0;
+  max-height: 160px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  z-index: 2;
+  box-shadow: var(--combobox-popup-shadow);
+}
+
+.presets-combobox .renderer-combobox__input:disabled {
+  background: var(--input-disabled-bg);
+}
+
+.presets-combobox .renderer-combobox__option,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__option,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option,
+.snapshot-save-tags-combobox .renderer-combobox__option {
+  padding: var(--combobox-content-padding);
+  border-inline-start: 3px solid transparent;
+}
+
+.presets-combobox .renderer-combobox__option[aria-selected="true"],
+.text-extraction-batch-plan-route-combobox .renderer-combobox__option[aria-selected="true"],
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option[aria-selected="true"],
+.snapshot-save-tags-combobox .renderer-combobox__option[aria-selected="true"] {
+  border-inline-start-color: var(--selector-selected-accent);
+  background: var(--selector-selected-bg);
+  font-weight: 600;
+}
+
+/* Active navigation intentionally takes precedence over the selected background. */
+.presets-combobox .renderer-combobox__option.is-active,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__option.is-active,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__option.is-active,
+.snapshot-save-tags-combobox .renderer-combobox__option.is-active {
+  background: var(--selector-active-bg);
+}
+
+/* Shared modal layers */
+
+/* Shared framed-dialog structure */
+.text-extraction-pdf-options-modal-panel,
+.text-extraction-route-modal-panel,
+.text-extraction-apply-modal-panel,
+.text-extraction-batch-plan-modal-panel,
+.text-extraction-batch-final-modal-panel,
+.text-extraction-single-file-heavy-modal-panel,
+.text-extraction-ocr-activation-disclosure-panel,
+.snapshot-save-tags-modal-panel,
+.snapshot-tag-manager-modal-panel,
+.reading-test-entry-modal-panel {
+  position: relative;
+  z-index: 1;
+  background: var(--app-secondary-bg);
+  color: var(--text-color);
+  box-shadow: var(--modal-panel-shadow);
+  border: 1px solid var(--modal-panel-border-color);
+  border-radius: 8px;
+  box-sizing: border-box;
+  padding: var(--framed-modal-panel-padding);
+}
+
+/* Shared framed-dialog title and body regions */
+.text-extraction-pdf-options-modal-header,
+.text-extraction-route-modal-header,
+.text-extraction-apply-modal-header,
+.text-extraction-batch-plan-modal-header,
+.text-extraction-batch-final-modal-header,
+.text-extraction-single-file-heavy-modal-header,
+.text-extraction-ocr-activation-disclosure-header,
+.snapshot-save-tags-modal-header,
+.snapshot-tag-manager-modal-header,
+.reading-test-entry-modal-header {
+  position: relative;
+}
+
+.text-extraction-pdf-options-modal-header h2,
+.text-extraction-route-modal-header h2,
+.text-extraction-apply-modal-header h2,
+.text-extraction-batch-plan-modal-header h2,
+.text-extraction-batch-final-modal-header h2,
+.text-extraction-single-file-heavy-modal-header h2,
+.text-extraction-ocr-activation-disclosure-header h2,
+.snapshot-save-tags-modal-header h2,
+.snapshot-tag-manager-modal-header h2,
+.reading-test-entry-modal-header h2 {
+  margin: 0;
+  padding-inline-end: 42px;
+  font-size: var(--font-size-9);
+  font-weight: 600;
+}
+
+/* Shared framed-dialog header end-action anchors */
+.text-extraction-pdf-options-modal-header > .btn-standard--square,
+.text-extraction-route-modal-header > .btn-standard--square,
+.text-extraction-apply-modal-header > .btn-standard--square,
+.text-extraction-batch-plan-modal-header > .btn-standard--square,
+.text-extraction-batch-final-modal-header > .btn-standard--square,
+.text-extraction-single-file-heavy-modal-header > .btn-standard--square,
+.text-extraction-ocr-activation-disclosure-header > .btn-standard--square,
+.snapshot-tag-manager-modal-header > .btn-standard--square,
+.reading-test-entry-modal-header > .btn-standard--square,
+.snapshot-save-tags-modal-header-actions {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+}
+
+.text-extraction-pdf-options-modal-body,
+.text-extraction-route-modal-body,
+.text-extraction-apply-modal-body,
+.text-extraction-batch-plan-modal-body,
+.text-extraction-batch-final-modal-body,
+.text-extraction-single-file-heavy-modal-body,
+.text-extraction-ocr-activation-disclosure-body,
+.snapshot-save-tags-modal-body,
+.snapshot-tag-manager-modal-body,
+.reading-test-entry-modal-body {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+/* Feature-local sections */
+
 /* Text selector section */
 
 .selector-text {
   height: 158px;
   width: 820px;
-  background: var(--app-secondary-bg);
-  border: 1px solid var(--section-border);
-  box-sizing: border-box;
 }
 
 /* Text preview */
@@ -632,6 +708,10 @@ pre#textPreview .preview-static {
 
 .selector-inline-checkbox input:disabled {
   cursor: not-allowed;
+}
+
+.selector-inline-checkbox input:disabled + span {
+  opacity: 0.6;
 }
 
 .selector-inline-checkbox:has(input:disabled) {
@@ -765,53 +845,11 @@ pre#textPreview .preview-static {
   }
 }
 
-/* Import drop overlay */
-
-.text-extraction-drop-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: var(--backdrop-bg);
-  backdrop-filter: blur(1.5px);
-  pointer-events: none;
-}
-
-.text-extraction-drop-overlay[aria-hidden="false"] {
-  display: flex;
-}
-
-.text-extraction-drop-overlay__panel {
-  width: 420px;
-  padding: 20px;
-  border: 2px dashed var(--drop-zone-border);
-  border-radius: 12px;
-  background: var(--app-secondary-bg);
-  box-shadow: var(--drop-zone-shadow);
-  text-align: center;
-  color: var(--text-color);
-  box-sizing: border-box;
-}
-
-.text-extraction-drop-overlay__message {
-  font-size: var(--font-size-11);
-  font-weight: 700;
-}
-
-body.text-extraction-drop-active .app-container {
-  filter: saturate(0.92);
-}
-
 /* Reading speed section */
 
 .velocity {
   height: 166px;
   width: 390px;
-  background: var(--app-secondary-bg);
-  border: 1px solid var(--section-border);
-  box-sizing: border-box;
 }
 
 .velocity .wpm-row {
@@ -838,6 +876,11 @@ body.text-extraction-drop-active .app-container {
   box-sizing: border-box;
 }
 
+.velocity #wpmInput:disabled {
+  background: var(--input-disabled-bg);
+  cursor: not-allowed;
+}
+
 /* WPM slider */
 .wpm-slider {
   width: 100%;
@@ -860,6 +903,9 @@ body.text-extraction-drop-active .app-container {
 }
 
 .presets-combobox .renderer-combobox__input {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
   height: var(--combobox-trigger-height);
   padding: var(--combobox-content-padding);
 }
@@ -887,12 +933,9 @@ body.text-extraction-drop-active .app-container {
 /* Results section */
 
 .results {
-  position: relative;          /* needed for .help-row absolute to work */
+  position: relative;
   height: 166px;
   width: 425px;
-  background: var(--app-secondary-bg);
-  border: 1px solid var(--section-border);
-  box-sizing: border-box;
 }
 
 /* Result highlight */
@@ -941,24 +984,6 @@ body.text-extraction-drop-active .app-container {
   min-width: 0;
 }
 
-/* Shared invalid-field states stay after the earlier field bases to preserve their cascade. */
-.clipboard-repeat-input.is-invalid,
-.text-extraction-apply-repeat-row input.is-invalid,
-.velocity #wpmInput.is-invalid,
-.cronometro .crono-box.is-invalid,
-.results-multiplier-row input.is-invalid {
-  border-color: var(--input-invalid-border);
-}
-
-.clipboard-repeat-input.is-invalid:focus-visible,
-.text-extraction-apply-repeat-row input.is-invalid:focus-visible,
-.velocity #wpmInput.is-invalid:focus-visible,
-.cronometro .crono-box.is-invalid:focus-visible,
-.results-multiplier-row input.is-invalid:focus-visible {
-  outline-color: var(--input-invalid-border);
-}
-
-.velocity #wpmInput:disabled,
 .results-multiplier-row input:disabled {
   background: var(--input-disabled-bg);
   cursor: not-allowed;
@@ -977,8 +1002,8 @@ body.text-extraction-drop-active .app-container {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1 1 auto;             /* occupies the available space on the left */
-  min-width: 0;               /* avoids overflow in small containers */
+  flex: 1 1 auto;
+  min-width: 0;
   color: var(--text-color);
   font-size: var(--font-size-5);
 }
@@ -1018,9 +1043,6 @@ body.text-extraction-drop-active .app-container {
 .cronometro {
   height: 106px;
   width: 232px;
-  background: var(--app-secondary-bg);
-  border: 1px solid var(--section-border);
-  box-sizing: border-box;
 }
 
 .cronometro .crono-row {
@@ -1070,7 +1092,7 @@ body.text-extraction-drop-active .app-container {
   align-items: center;
   gap: 4px;
   height: 30px;
-  margin-left: auto; /* push the switch to the right edge of the group */
+  margin-left: auto;
   flex: 0 0 auto;
   overflow: visible;
 }
@@ -1094,179 +1116,7 @@ body.text-extraction-drop-active .app-container {
   --tot-icon-size: 44px;
 }
 
-/* Shared modal layers */
-
-/* Shared framed-dialog structure */
-.text-extraction-pdf-options-modal-panel,
-.text-extraction-route-modal-panel,
-.text-extraction-apply-modal-panel,
-.text-extraction-batch-plan-modal-panel,
-.text-extraction-batch-final-modal-panel,
-.text-extraction-single-file-heavy-modal-panel,
-.text-extraction-ocr-activation-disclosure-panel,
-.snapshot-save-tags-modal-panel,
-.snapshot-tag-manager-modal-panel,
-.reading-test-entry-modal-panel {
-  position: relative;
-  z-index: 1;
-  background: var(--app-secondary-bg);
-  color: var(--text-color);
-  box-shadow: var(--modal-panel-shadow);
-  border: 1px solid var(--modal-panel-border-color);
-  border-radius: 8px;
-  box-sizing: border-box;
-  padding: var(--framed-modal-panel-padding);
-}
-
-/* Shared framed-dialog title and body regions */
-.text-extraction-pdf-options-modal-header,
-.text-extraction-route-modal-header,
-.text-extraction-apply-modal-header,
-.text-extraction-batch-plan-modal-header,
-.text-extraction-batch-final-modal-header,
-.text-extraction-single-file-heavy-modal-header,
-.text-extraction-ocr-activation-disclosure-header,
-.snapshot-save-tags-modal-header,
-.snapshot-tag-manager-modal-header,
-.reading-test-entry-modal-header {
-  position: relative;
-}
-
-.text-extraction-pdf-options-modal-header h2,
-.text-extraction-route-modal-header h2,
-.text-extraction-apply-modal-header h2,
-.text-extraction-batch-plan-modal-header h2,
-.text-extraction-batch-final-modal-header h2,
-.text-extraction-single-file-heavy-modal-header h2,
-.text-extraction-ocr-activation-disclosure-header h2,
-.snapshot-save-tags-modal-header h2,
-.snapshot-tag-manager-modal-header h2,
-.reading-test-entry-modal-header h2 {
-  margin: 0;
-  padding-inline-end: 42px;
-  font-size: var(--font-size-9);
-  font-weight: 600;
-}
-
-.text-extraction-pdf-options-modal-header > .btn-standard--square,
-.text-extraction-route-modal-header > .btn-standard--square,
-.text-extraction-apply-modal-header > .btn-standard--square,
-.text-extraction-batch-plan-modal-header > .btn-standard--square,
-.text-extraction-batch-final-modal-header > .btn-standard--square,
-.text-extraction-single-file-heavy-modal-header > .btn-standard--square,
-.text-extraction-ocr-activation-disclosure-header > .btn-standard--square,
-.snapshot-tag-manager-modal-header > .btn-standard--square,
-.reading-test-entry-modal-header > .btn-standard--square,
-.snapshot-save-tags-modal-header-actions {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-end: 0;
-}
-
-.snapshot-save-tags-modal-header h2 {
-  padding-inline-end: 192px;
-}
-
-.text-extraction-pdf-options-modal-body,
-.text-extraction-route-modal-body,
-.text-extraction-apply-modal-body,
-.text-extraction-batch-plan-modal-body,
-.text-extraction-batch-final-modal-body,
-.text-extraction-single-file-heavy-modal-body,
-.text-extraction-ocr-activation-disclosure-body,
-.snapshot-save-tags-modal-body,
-.snapshot-tag-manager-modal-body,
-.reading-test-entry-modal-body {
-  margin-top: 16px;
-  display: grid;
-  gap: 12px;
-}
-
-/* Shared framed-dialog action rows */
-.text-extraction-pdf-options-modal-actions,
-.text-extraction-route-modal-actions,
-.text-extraction-apply-modal-actions,
-.reading-test-entry-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.text-extraction-pdf-options-modal-actions .btn-standard,
-.text-extraction-route-modal-actions .btn-standard,
-.text-extraction-apply-modal-actions .btn-standard {
-  min-width: 110px;
-}
-
-/* Shared framed-dialog introductory copy */
-.text-extraction-pdf-options-modal-body p,
-.text-extraction-route-modal-body p,
-.text-extraction-apply-modal-body p,
-.text-extraction-batch-final-modal-body > p,
-.snapshot-save-tags-modal-body p {
-  margin: 0;
-  font-size: var(--font-size-8);
-}
-
-/* Shared framed-dialog group cards */
-.text-extraction-batch-plan-unit,
-.text-extraction-batch-final-unit,
-.reading-test-entry-modal-group {
-  display: grid;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--group-border-color);
-  border-radius: 8px;
-  background: var(--app-primary-bg);
-}
-
-/* Shared framed-dialog choice fieldsets */
-.text-extraction-pdf-options-modal-selection,
-.text-extraction-batch-plan-failure-policy {
-  margin: 0;
-  padding: 10px 12px 12px;
-  border: 1px solid var(--group-border-color);
-  border-radius: 8px;
-  display: grid;
-  gap: 12px;
-}
-
-/* Shared text-extraction choice controls */
-.text-extraction-pdf-options-modal-keep-option,
-.text-extraction-batch-plan-failure-option,
-.text-extraction-batch-plan-keep-toggle {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: var(--font-size-6);
-}
-
-.text-extraction-pdf-options-modal-range-grid,
-.text-extraction-batch-plan-page-scope-range-grid {
-  display: grid;
-  grid-template-columns: repeat(2, max-content);
-  gap: 12px;
-}
-
-/* Shared text-extraction detail cards */
-.text-extraction-apply-modal-saved-pdf,
-.text-extraction-single-file-heavy-modal-details {
-  display: grid;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--group-border-color);
-  border-radius: 8px;
-  background: var(--app-primary-bg);
-}
-
-.text-extraction-apply-modal-saved-pdf-actions,
-.text-extraction-single-file-heavy-modal-details-actions {
-  display: flex;
-  justify-content: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
-}
+/* Feature-local modal and overlay content */
 
 /* Info modal */
 .info-modal {
@@ -1280,19 +1130,20 @@ body.text-extraction-drop-active .app-container {
   box-sizing: border-box;
 }
 
+/* The tag manager stacks above the still-visible save-tags modal that launches it. */
 #snapshotTagManagerModal {
   z-index: 1100;
 }
 
-.info-modal[aria-hidden="false"] {  
-  display: flex
+.info-modal[aria-hidden="false"] {
+  display: flex;
 }
 
 .info-modal-backdrop {
   position: fixed;
   inset: 0;
   background: var(--backdrop-bg);
-  backdrop-filter: blur(1px)
+  backdrop-filter: blur(1px);
 }
 
 .info-modal-panel {
@@ -1364,7 +1215,7 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-10);
   font-style: normal;
   font-weight: 700;
-  padding-top: 0
+  padding-top: 0;
 }
 
 .info-modal-content h4 {
@@ -1381,7 +1232,7 @@ body.text-extraction-drop-active .app-container {
 .info-modal-content pre {
   font-size: var(--font-size-9);
   white-space: pre-wrap;
-  word-break: break-word
+  word-break: break-word;
 }
 
 .browser-extension-modal-panel {
@@ -1462,7 +1313,7 @@ body.text-extraction-drop-active .app-container {
 
 .info-section {
   background-color: var(--app-primary-bg);
-  text-align: left
+  text-align: left;
 }
 
 .info-section div {
@@ -1501,6 +1352,7 @@ body.text-extraction-drop-active .app-container {
   cursor: zoom-in;
 }
 
+/* The media lightbox stacks above the info modal that launches it. */
 .info-media-lightbox {
   position: fixed;
   inset: 0;
@@ -1564,11 +1416,66 @@ body.text-extraction-drop-active .app-container {
   z-index: 2;
 }
 
+/* Text extraction drop overlay */
+/* Drag feedback stays above modal layers without intercepting pointer input. */
+.text-extraction-drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--backdrop-bg);
+  backdrop-filter: blur(1.5px);
+  pointer-events: none;
+}
+
+.text-extraction-drop-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+.text-extraction-drop-overlay__panel {
+  width: 420px;
+  padding: 20px;
+  border: 2px dashed var(--drop-zone-border);
+  border-radius: 12px;
+  background: var(--app-secondary-bg);
+  box-shadow: var(--drop-zone-shadow);
+  text-align: center;
+  color: var(--text-color);
+  box-sizing: border-box;
+}
+
+.text-extraction-drop-overlay__message {
+  font-size: var(--font-size-11);
+  font-weight: 700;
+}
+
+body.text-extraction-drop-active .app-container {
+  filter: saturate(0.92);
+}
+
 /* Text extraction modals */
 
 /* Text extraction PDF options modal */
 .text-extraction-pdf-options-modal-panel {
   width: 620px;
+}
+
+.text-extraction-pdf-options-modal-body p {
+  margin: 0;
+  font-size: var(--font-size-8);
+}
+
+.text-extraction-pdf-options-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-pdf-options-modal-actions .btn-standard {
+  min-width: 110px;
 }
 
 .text-extraction-pdf-options-modal-summary {
@@ -1592,6 +1499,15 @@ body.text-extraction-drop-active .app-container {
   color: var(--text-soft);
 }
 
+.text-extraction-pdf-options-modal-selection {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+}
+
 .text-extraction-pdf-options-modal-selection-legend {
   padding: 0 4px;
   font-size: var(--font-size-8);
@@ -1611,6 +1527,12 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-pdf-options-modal-range-fields {
   display: grid;
+  gap: 12px;
+}
+
+.text-extraction-pdf-options-modal-range-grid {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
   gap: 12px;
 }
 
@@ -1638,6 +1560,13 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-6);
 }
 
+.text-extraction-pdf-options-modal-keep-option {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: var(--font-size-6);
+}
+
 .text-extraction-pdf-options-modal-keep-option input[type="checkbox"] {
   margin: 2px 0 0;
 }
@@ -1652,15 +1581,63 @@ body.text-extraction-drop-active .app-container {
   width: 520px;
 }
 
+.text-extraction-route-modal-body p {
+  margin: 0;
+  font-size: var(--font-size-8);
+}
+
+.text-extraction-route-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-route-modal-actions .btn-standard {
+  min-width: 110px;
+}
+
 /* Text extraction apply modal */
 .text-extraction-apply-modal-panel {
   width: 560px;
+}
+
+.text-extraction-apply-modal-body p {
+  margin: 0;
+  font-size: var(--font-size-8);
+}
+
+.text-extraction-apply-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-apply-modal-actions .btn-standard {
+  min-width: 110px;
 }
 
 .text-extraction-apply-modal-elapsed {
   color: var(--text-soft);
   font-size: var(--font-size-6);
   font-variant-numeric: tabular-nums;
+}
+
+.text-extraction-apply-modal-saved-pdf {
+  display: grid;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  background: var(--app-primary-bg);
+}
+
+.text-extraction-apply-modal-saved-pdf-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .text-extraction-apply-modal-saved-pdf-file {
@@ -1698,19 +1675,40 @@ body.text-extraction-drop-active .app-container {
   overflow: auto;
 }
 
-.text-extraction-batch-plan-modal-toolbar,
-.text-extraction-batch-plan-modal-actions,
-.text-extraction-batch-final-modal-actions,
-.text-extraction-single-file-heavy-modal-actions {
+.text-extraction-batch-plan-modal-toolbar {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.text-extraction-batch-plan-modal-actions,
-.text-extraction-batch-final-modal-actions,
-.text-extraction-single-file-heavy-modal-actions {
+.text-extraction-batch-plan-modal-actions {
+  display: flex;
   justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-batch-plan-failure-policy {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+}
+
+.text-extraction-batch-plan-failure-option {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: var(--font-size-6);
+}
+
+.text-extraction-batch-plan-keep-toggle {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: var(--font-size-6);
 }
 
 .text-extraction-batch-plan-units {
@@ -1741,6 +1739,15 @@ body.text-extraction-drop-active .app-container {
   color: var(--text-soft);
 }
 
+.text-extraction-batch-plan-unit {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  background: var(--app-primary-bg);
+}
+
 .text-extraction-batch-plan-route-combobox .renderer-combobox__input,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
   height: var(--combobox-trigger-height);
@@ -1750,11 +1757,16 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-plan-unit-name {
+  width: 320px;
   height: 30px;
   padding: var(--direct-entry-field-padding);
-  font-family: inherit;
-  box-sizing: border-box;
+  border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
+  background: var(--field-bg);
+  color: var(--text-color);
+  font-family: inherit;
+  font-size: var(--font-size-8);
+  box-sizing: border-box;
 }
 
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
@@ -1766,17 +1778,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
   width: 100%;
   font: inherit;
-}
-
-.text-extraction-batch-plan-unit-name {
-  border: 1px solid var(--field-border);
-  background: var(--field-bg);
-  color: var(--text-color);
-}
-
-.text-extraction-batch-plan-unit-name {
-  width: 320px;
-  font-size: var(--font-size-8);
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
@@ -1820,30 +1821,44 @@ body.text-extraction-drop-active .app-container {
   pointer-events: none;
 }
 
-.text-extraction-batch-plan-unit-actions,
+.text-extraction-batch-plan-unit-actions {
+  display: flex;
+  gap: 4px;
+  align-self: start;
+  flex-wrap: nowrap;
+}
+
 .text-extraction-batch-plan-input-actions {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
 }
 
-.text-extraction-batch-plan-unit-actions {
-  align-self: start;
-  flex-wrap: nowrap;
-}
-
-.text-extraction-batch-plan-unit-meta,
-.text-extraction-batch-plan-unit-tags,
-.text-extraction-batch-plan-heavy-preview-label,
-.text-extraction-batch-plan-input-code,
-.text-extraction-batch-final-unit-meta,
-.text-extraction-batch-final-modal-elapsed,
-.text-extraction-batch-final-json-line {
+.text-extraction-batch-plan-unit-meta {
   font-size: var(--font-size-6);
   color: var(--text-soft);
 }
 
-.text-extraction-batch-plan-pages-summary,
+.text-extraction-batch-plan-unit-tags {
+  font-size: var(--font-size-6);
+  color: var(--text-soft);
+}
+
+.text-extraction-batch-plan-heavy-preview-label {
+  font-size: var(--font-size-6);
+  color: var(--text-soft);
+}
+
+.text-extraction-batch-plan-input-code {
+  font-size: var(--font-size-6);
+  color: var(--text-soft);
+}
+
+.text-extraction-batch-plan-pages-summary {
+  font-size: var(--font-size-7);
+  color: var(--text-soft);
+}
+
 .text-extraction-batch-plan-route-fixed {
   font-size: var(--font-size-7);
   color: var(--text-soft);
@@ -1969,6 +1984,12 @@ body.text-extraction-drop-active .app-container {
   justify-items: end;
 }
 
+.text-extraction-batch-plan-page-scope-range-grid {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 12px;
+}
+
 .text-extraction-batch-plan-page-scope-options {
   display: flex;
   align-items: center;
@@ -2008,7 +2029,10 @@ body.text-extraction-drop-active .app-container {
   box-sizing: border-box;
 }
 
-.text-extraction-batch-plan-page-scope-count,
+.text-extraction-batch-plan-page-scope-count {
+  font-size: var(--font-size-6);
+}
+
 .text-extraction-batch-plan-page-scope-validation {
   font-size: var(--font-size-6);
 }
@@ -2024,9 +2048,45 @@ body.text-extraction-drop-active .app-container {
   overflow: auto;
 }
 
+.text-extraction-batch-final-modal-body > p {
+  margin: 0;
+  font-size: var(--font-size-8);
+}
+
+.text-extraction-batch-final-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .text-extraction-batch-final-modal-report {
   display: grid;
   gap: 12px;
+}
+
+.text-extraction-batch-final-unit {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  background: var(--app-primary-bg);
+}
+
+.text-extraction-batch-final-unit-meta {
+  font-size: var(--font-size-6);
+  color: var(--text-soft);
+}
+
+.text-extraction-batch-final-modal-elapsed {
+  font-size: var(--font-size-6);
+  color: var(--text-soft);
+}
+
+.text-extraction-batch-final-json-line {
+  font-size: var(--font-size-6);
+  color: var(--text-soft);
 }
 
 .text-extraction-batch-final-unit h3 {
@@ -2038,7 +2098,11 @@ body.text-extraction-drop-active .app-container {
   color: var(--text-color);
 }
 
-.text-extraction-batch-final-input,
+.text-extraction-batch-final-input {
+  display: grid;
+  gap: 12px;
+}
+
 .text-extraction-batch-final-generated-list {
   display: grid;
   gap: 12px;
@@ -2061,6 +2125,29 @@ body.text-extraction-drop-active .app-container {
 /* Text extraction single-file heavy modal */
 .text-extraction-single-file-heavy-modal-panel {
   width: 620px;
+}
+
+.text-extraction-single-file-heavy-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.text-extraction-single-file-heavy-modal-details {
+  display: grid;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  background: var(--app-primary-bg);
+}
+
+.text-extraction-single-file-heavy-modal-details-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 #textExtractionSingleFileHeavyPdfModalMessage {
@@ -2136,10 +2223,20 @@ body.text-extraction-drop-active .app-container {
   width: 560px;
 }
 
+.snapshot-save-tags-modal-body p {
+  margin: 0;
+  font-size: var(--font-size-8);
+}
+
 .snapshot-save-tags-modal-header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+/* Snapshot save-tags header variant: reserve title space for both header actions. */
+.snapshot-save-tags-modal-header h2 {
+  padding-inline-end: 192px;
 }
 
 .snapshot-save-tags-form {
@@ -2261,7 +2358,10 @@ body.text-extraction-drop-active .app-container {
   gap: 4px;
 }
 
-.snapshot-tag-manager-draft-actions,
+.snapshot-tag-manager-draft-actions {
+  gap: 12px;
+}
+
 .snapshot-tag-manager-modal-actions {
   gap: 12px;
 }
@@ -2332,6 +2432,13 @@ body.text-extraction-drop-active .app-container {
   width: 720px;
   max-height: var(--modal-max-height);
   overflow: auto;
+}
+
+.reading-test-entry-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .reading-test-entry-modal-body p {
@@ -2450,6 +2557,15 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
 }
 
+.reading-test-entry-modal-group {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  background: var(--app-primary-bg);
+}
+
 .reading-test-entry-modal-group-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2479,6 +2595,55 @@ body.text-extraction-drop-active .app-container {
   margin: 0;
 }
 
+.reading-test-entry-modal-visibility-toggle input[type="checkbox"]:disabled + span,
+.reading-test-entry-modal-option input[type="checkbox"]:disabled + span {
+  opacity: 0.6;
+}
+
 .reading-test-entry-modal-actions .btn-standard {
   min-width: 120px;
 }
+
+/* Cascade-safe feature state overrides */
+/* Invalid feedback intentionally wins over field-base and repeat-active border/focus colors. */
+.clipboard-repeat-input.is-invalid {
+  border-color: var(--input-invalid-border);
+}
+
+.text-extraction-apply-repeat-row input.is-invalid {
+  border-color: var(--input-invalid-border);
+}
+
+.velocity #wpmInput.is-invalid {
+  border-color: var(--input-invalid-border);
+}
+
+.cronometro .crono-box.is-invalid {
+  border-color: var(--input-invalid-border);
+}
+
+.results-multiplier-row input.is-invalid {
+  border-color: var(--input-invalid-border);
+}
+
+.clipboard-repeat-input.is-invalid:focus-visible {
+  outline-color: var(--input-invalid-border);
+}
+
+.text-extraction-apply-repeat-row input.is-invalid:focus-visible {
+  outline-color: var(--input-invalid-border);
+}
+
+.velocity #wpmInput.is-invalid:focus-visible {
+  outline-color: var(--input-invalid-border);
+}
+
+.cronometro .crono-box.is-invalid:focus-visible {
+  outline-color: var(--input-invalid-border);
+}
+
+.results-multiplier-row input.is-invalid:focus-visible {
+  outline-color: var(--input-invalid-border);
+}
+
+/* End of public/style.css */
