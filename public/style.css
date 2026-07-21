@@ -526,6 +526,26 @@ body {
   background: var(--input-disabled-bg);
 }
 
+/* Shared main-window combobox select-mode affordance.
+   The data-mode contract reserves trigger space for a decorative arrow;
+   editable comboboxes remain arrowless. */
+.presets-combobox[data-mode="select"] .renderer-combobox__input,
+.text-extraction-batch-plan-route-combobox[data-mode="select"] .renderer-combobox__input,
+.text-extraction-batch-plan-unit-combobox[data-mode="select"] .renderer-combobox__input {
+  padding-inline-end: 24px;
+}
+
+.presets-combobox[data-mode="select"]::after,
+.text-extraction-batch-plan-route-combobox[data-mode="select"]::after,
+.text-extraction-batch-plan-unit-combobox[data-mode="select"]::after {
+  content: "▾";
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 8px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
 .presets-combobox .renderer-combobox__option,
 .text-extraction-batch-plan-route-combobox .renderer-combobox__option,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__option,
@@ -927,19 +947,6 @@ pre#textPreview .preview-static {
   flex: none;
   font-size: var(--font-size-7);
   font-family: inherit;
-}
-
-.presets-combobox[data-mode="select"] .renderer-combobox__input {
-  padding-inline-end: 24px;
-}
-
-.presets-combobox[data-mode="select"]::after {
-  content: "▾";
-  position: absolute;
-  top: 50%;
-  inset-inline-end: 8px;
-  transform: translateY(-50%);
-  pointer-events: none;
 }
 
 /* Preset description */
@@ -1808,21 +1815,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-unit-combobox {
   width: 360px;
   flex: none;
-}
-
-.text-extraction-batch-plan-route-combobox[data-mode="select"] .renderer-combobox__input,
-.text-extraction-batch-plan-unit-combobox[data-mode="select"] .renderer-combobox__input {
-  padding-inline-end: 24px;
-}
-
-.text-extraction-batch-plan-route-combobox[data-mode="select"]::after,
-.text-extraction-batch-plan-unit-combobox[data-mode="select"]::after {
-  content: "▾";
-  position: absolute;
-  top: 50%;
-  inset-inline-end: 8px;
-  transform: translateY(-50%);
-  pointer-events: none;
 }
 
 .text-extraction-batch-plan-unit-actions {
