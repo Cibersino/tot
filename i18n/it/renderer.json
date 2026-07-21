@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Apri cartella degli snapshot",
         "ok_button": "OK",
         "close_aria": "Chiudi rapporto finale dell’estrazione per lotti",
-        "split_result_label": "Risultato della divisione:",
         "failed_fallback": "non riuscito",
         "failed_with_code": "non riuscito: {code}",
         "applied_truncated": "applicato con troncamento",

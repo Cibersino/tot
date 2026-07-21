@@ -7,8 +7,8 @@
 // Responsibilities:
 // - Own batch text-extraction planning/execution state in the renderer.
 // - Reuse the existing prepare/execute/apply/snapshot contracts for multi-file work.
-// - Reuse the shared Issue 266 planner/final-report surfaces and the single-file
-//   heavy-PDF synthetic one-unit handoff.
+// - Keep automatic heavy-PDF splitting local to its logical source input while
+//   using the normal unit model for planning and reporting.
 // =============================================================================
 
 (() => {
@@ -269,14 +269,6 @@
     );
   }
 
-  function getHeavyUnitKey(input) {
-    return `heavy:${input.inputId}`;
-  }
-
-  function getInputUnitKey(input) {
-    return isHeavySplitActive(input) ? getHeavyUnitKey(input) : input.groupKey;
-  }
-
   function getInputDefaultRoute(preparation) {
     if (!preparation || preparation.ok !== true) return '';
     const chosenRoute = normalizeRoute(preparation.routeMetadata && preparation.routeMetadata.chosenRoute);
@@ -326,12 +318,9 @@
     return value.slice(0, lastDotIndex);
   }
 
-  function deriveVisibleUnitTitle({ customName, exclusiveHeavy, sourceInput, unitIndex }) {
+  function deriveVisibleUnitTitle({ customName, unitIndex }) {
     if (customName) {
       return customName;
-    }
-    if (exclusiveHeavy && sourceInput) {
-      return sourceInput.fileName;
     }
     return formatSyntheticUnitTitle(unitIndex);
   }
@@ -402,7 +391,7 @@
     const visibleUnitKeys = [];
     state.inputs.forEach((input) => {
       if (isInputRemoved(input)) return;
-      const unitKey = getInputUnitKey(input);
+      const unitKey = input.groupKey;
       if (!unitKey) return;
       if (!visibleUnitKeys.includes(unitKey)) {
         visibleUnitKeys.push(unitKey);
@@ -449,15 +438,15 @@
     };
 
     state.inputs.forEach((input) => {
-      if (isInputRemoved(input) || isHeavySplitActive(input)) return;
+      if (isInputRemoved(input)) return;
       input.groupKey = makeGroupKey();
     });
     syncUnitMetadata(state);
     return state;
   }
 
-  function getOrdinaryInputs(state) {
-    return state.inputs.filter((input) => !isInputRemoved(input) && !isHeavySplitActive(input));
+  function getActiveInputs(state) {
+    return state.inputs.filter((input) => !isInputRemoved(input));
   }
 
   function getPlannedOcrInputs(state) {
@@ -471,16 +460,12 @@
   function getVisibleUnits(state) {
     return state.unitOrder
       .map((unitKey, unitIndex) => {
-        const unitInputs = state.inputs.filter((input) => !isInputRemoved(input) && getInputUnitKey(input) === unitKey);
+        const unitInputs = state.inputs.filter((input) => !isInputRemoved(input) && input.groupKey === unitKey);
         if (!unitInputs.length) return null;
-        const exclusiveHeavy = unitKey.startsWith('heavy:');
         const unitMeta = state.unitMetaByKey[unitKey] || {};
-        const sourceInput = unitInputs[0];
         const customName = normalizeNonEmptyString(unitMeta.customName);
         const title = deriveVisibleUnitTitle({
           customName,
-          exclusiveHeavy,
-          sourceInput,
           unitIndex,
         });
         return {
@@ -492,13 +477,11 @@
             inputs: unitInputs,
             unitIndex,
           }),
-          displayLabel: exclusiveHeavy ? sourceInput.fileName : formatUnitDisplayLabel(unitIndex),
-          optionLabel: exclusiveHeavy ? sourceInput.fileName : formatUnitOptionLabel(unitIndex, customName),
+          displayLabel: formatUnitDisplayLabel(unitIndex),
+          optionLabel: formatUnitOptionLabel(unitIndex, customName),
           tags: cloneTags(unitMeta.tags),
-          exclusiveHeavy,
           inputs: unitInputs,
           canConfigureTags: state.unitOrder.length > 1,
-          generatedInputsPreview: exclusiveHeavy ? deepClone(sourceInput.heavySplitPreview) : [],
         };
       })
       .filter(Boolean);
@@ -517,21 +500,21 @@
   }
 
   function applyPresetAllTogether(state) {
-    const ordinaryInputs = getOrdinaryInputs(state);
-    if (!ordinaryInputs.length) return;
+    const activeInputs = getActiveInputs(state);
+    if (!activeInputs.length) return;
     const nextGroupKey = makeGroupKey();
     state.unitMetaByKey[nextGroupKey] = {
       customName: '',
       tags: null,
     };
-    ordinaryInputs.forEach((input) => {
+    activeInputs.forEach((input) => {
       input.groupKey = nextGroupKey;
     });
     syncUnitMetadata(state);
   }
 
   function applyPresetEachSeparately(state) {
-    getOrdinaryInputs(state).forEach((input) => {
+    getActiveInputs(state).forEach((input) => {
       const groupKey = makeGroupKey();
       input.groupKey = groupKey;
       state.unitMetaByKey[groupKey] = {
@@ -559,9 +542,6 @@
             && input.preparation.routeMetadata.pdfTotalPages)
       );
     }
-    if (!input.groupKey && !isHeavy) {
-      input.groupKey = makeGroupKey();
-    }
     syncUnitMetadata(state);
   }
 
@@ -580,10 +560,10 @@
     const currentIndex = state.inputs.findIndex((candidate) => candidate.inputId === inputId);
     if (currentIndex < 0) return;
     const input = state.inputs[currentIndex];
-    const unitKey = getInputUnitKey(input);
+    const unitKey = input.groupKey;
     const unitIndexes = state.inputs
       .map((candidate, index) => ({ candidate, index }))
-      .filter(({ candidate }) => !isInputRemoved(candidate) && getInputUnitKey(candidate) === unitKey);
+      .filter(({ candidate }) => !isInputRemoved(candidate) && candidate.groupKey === unitKey);
     const unitPosition = unitIndexes.findIndex(({ candidate }) => candidate.inputId === inputId);
     if (unitPosition < 0) return;
     const swapWithPosition = direction === 'up' ? unitPosition - 1 : unitPosition + 1;
@@ -605,7 +585,7 @@
 
   function assignInputGroup(state, inputId, groupKey) {
     const input = state.inputs.find((candidate) => candidate.inputId === inputId);
-    if (!input || isHeavySplitActive(input)) return;
+    if (!input) return;
     let nextGroupKey = groupKey;
     if (groupKey === GROUP_NEW_SENTINEL) {
       nextGroupKey = makeGroupKey();
@@ -658,8 +638,7 @@
   function buildPlannerViewModel(state) {
     syncUnitMetadata(state);
     const units = getVisibleUnits(state);
-    const ordinaryUnitOptions = units
-      .filter((unit) => unit.exclusiveHeavy !== true)
+    const unitOptions = units
       .map((unit) => ({
         unitKey: unit.unitKey,
         label: unit.optionLabel,
@@ -678,11 +657,9 @@
         customName: unit.customName,
         displayLabel: unit.displayLabel,
         tagsSummary: formatTagsSummary(unit.tags),
-        exclusiveHeavy: unit.exclusiveHeavy,
         canConfigureTags: unit.canConfigureTags,
         canMoveUp: unitIndex > 0,
         canMoveDown: unitIndex < (units.length - 1),
-        generatedInputsPreview: unit.generatedInputsPreview,
         inputs: unit.inputs.map((input, inputIndex) => ({
           inputId: input.inputId,
           fileName: input.fileName,
@@ -700,8 +677,11 @@
           groupKey: input.groupKey,
           canMoveUp: inputIndex > 0,
           canMoveDown: inputIndex < (unit.inputs.length - 1),
-          groupOptions: ordinaryUnitOptions,
+          groupOptions: unitOptions,
           heavySplitActive: isHeavySplitActive(input),
+          generatedInputsPreview: isHeavySplitActive(input)
+            ? deepClone(input.heavySplitPreview)
+            : [],
         })),
       })),
     };
@@ -1104,30 +1084,9 @@
       return;
     }
 
-    if (unitReport.exclusiveHeavy === true
-      && Array.isArray(heavyGeneratedInputs)
-      && heavyGeneratedInputs.length) {
-      unitReport.heavyGeneratedInputRows = true;
-      unitReport.sourceFileName = input.fileName;
-      unitReport.overallState = mapExecutionResultStateToReportState(executionResult);
-      unitReport.overallCode = executionResult.error && executionResult.error.code
-        ? executionResult.error.code
-        : '';
-      unitReport.applyTruncated = !!(applyResult && applyResult.truncated);
-      heavyGeneratedInputs.forEach((generatedInput) => {
-        unitReport.inputs.push(buildInputReportRecord({
-          fileName: generatedInput.fileName,
-          state: generatedInput.state,
-          code: generatedInput.code,
-          generatedPdfArtifact: generatedInput.generatedPdfArtifact,
-        }));
-      });
-      return;
-    }
-
-    unitReport.inputs.push(buildInputReportRecord({
-      fileName: input.fileName,
-      displayName: formatReportInputDisplayName(input.fileName, input.pdfPageSelection),
+    // Generated PDFs are execution children of this logical source input; they
+    // never become peer inputs or units in the user-facing report.
+    unitReport.inputs.push(buildOriginalInputReportRecord(input, {
       state: mapExecutionResultStateToReportState(executionResult),
       code: executionResult.error && executionResult.error.code ? executionResult.error.code : '',
       applyTruncated: !!(applyResult && applyResult.truncated),
@@ -1170,11 +1129,6 @@
       const unit = units[unitIndex];
       finalReport.units.push({
         unitTitle: unit.title,
-        exclusiveHeavy: unit.exclusiveHeavy,
-        sourceFileName: unit.exclusiveHeavy && unit.inputs[0] ? unit.inputs[0].fileName : '',
-        overallState: '',
-        overallCode: '',
-        heavyGeneratedInputRows: false,
         inputs: unit.inputs.map((input) => buildOriginalInputReportRecord(input, {
           state: 'omitted',
           code: 'omitted',
@@ -1297,12 +1251,6 @@
         const unit = units[unitIndex];
         const unitReport = {
           unitTitle: unit.title,
-          exclusiveHeavy: unit.exclusiveHeavy,
-          sourceFileName: unit.exclusiveHeavy && unit.inputs[0] ? unit.inputs[0].fileName : '',
-          overallState: '',
-          overallCode: '',
-          applyTruncated: false,
-          heavyGeneratedInputRows: false,
           inputs: [],
           snapshotResult: null,
         };

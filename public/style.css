@@ -2055,11 +2055,6 @@ body.text-extraction-drop-active .app-container {
   background: var(--app-primary-bg);
 }
 
-.text-extraction-batch-final-unit-meta {
-  font-size: var(--font-size-6);
-  color: var(--text-soft);
-}
-
 .text-extraction-batch-final-modal-elapsed {
   font-size: var(--font-size-6);
   color: var(--text-soft);
@@ -2073,10 +2068,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-final-unit h3 {
   margin: 0;
   font-size: var(--font-size-9);
-}
-
-.text-extraction-batch-final-unit-meta--status {
-  color: var(--text-color);
 }
 
 .text-extraction-batch-final-input {

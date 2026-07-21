@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Open text snapshots folder",
         "ok_button": "OK",
         "close_aria": "Close batch extraction final report",
-        "split_result_label": "Split result:",
         "failed_fallback": "failed",
         "failed_with_code": "failed: {code}",
         "applied_truncated": "applied with truncation",

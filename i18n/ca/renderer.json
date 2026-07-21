@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Obrir carpeta de snapshots",
         "ok_button": "D’acord",
         "close_aria": "Tancar l’informe final de l’extracció per lots",
-        "split_result_label": "Resultat de la divisió:",
         "failed_fallback": "Fallada",
         "failed_with_code": "Fallada: {code}",
         "applied_truncated": "aplicat amb truncament",

@@ -218,7 +218,6 @@
         "open_snapshots_folder": "فتح مجلد اللقطات النصية",
         "ok_button": "موافق",
         "close_aria": "إغلاق التقرير النهائي للاستخراج الدفعي",
-        "split_result_label": "نتيجة التقسيم:",
         "failed_fallback": "فشل",
         "failed_with_code": "فشل: {code}",
         "applied_truncated": "طُبّق مع اقتطاع",

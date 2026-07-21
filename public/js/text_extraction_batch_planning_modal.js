@@ -451,11 +451,7 @@
     return options;
   }
 
-  function createUnitCombobox(unit, input, comboboxContext) {
-    if (unit.exclusiveHeavy) {
-      return null;
-    }
-
+  function createUnitCombobox(input, comboboxContext) {
     const host = createDomElement('div', {
       className: 'text-extraction-batch-plan-unit-combobox',
     });
@@ -493,9 +489,36 @@
     return label;
   }
 
-  function renderInputRow(unit, input, pageSelectionDraft = null, pageSelectionRoots, keepControlRoots, unitSelectRoots, comboboxContext) {
+  function createHeavySplitPreview(input) {
+    if (!input.heavySplitActive
+      || !Array.isArray(input.generatedInputsPreview)
+      || !input.generatedInputsPreview.length) {
+      return null;
+    }
+
+    const previewWrap = createDomElement('div', {
+      className: 'text-extraction-batch-plan-heavy-preview',
+    });
+    previewWrap.appendChild(createDomElement('p', {
+      className: 'text-extraction-batch-plan-heavy-preview-label',
+      textContent: tRenderer('renderer.text_extraction.batch_plan.generated_inputs_preview'),
+    }));
+    const previewList = createDomElement('ul', {
+      className: 'text-extraction-batch-plan-heavy-preview-list',
+    });
+    input.generatedInputsPreview.forEach((generatedInput) => {
+      previewList.appendChild(createDomElement('li', {
+        textContent: generatedInput.processingInputFileName,
+      }));
+    });
+    previewWrap.appendChild(previewList);
+    return previewWrap;
+  }
+
+  function renderInputRow(input, pageSelectionDraft = null, pageSelectionRoots, keepControlRoots, unitSelectRoots, comboboxContext) {
     const row = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-row',
+      attributes: { 'data-input-id': input.inputId },
     });
     const middleRow = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-row-middle',
@@ -553,7 +576,7 @@
     const unitWrap = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-unit',
     });
-    const unitControl = createUnitCombobox(unit, input, comboboxContext);
+    const unitControl = createUnitCombobox(input, comboboxContext);
     if (unitControl) {
       unitSelectRoots.set(input.inputId, unitControl.combobox);
       unitWrap.appendChild(unitControl.host);
@@ -591,7 +614,7 @@
     appendChildren(middleRow, [routeWrap, pagesWrap]);
     appendChildren(bottomControls, [unitWrap, actionsWrap]);
     appendChildren(bottomRow, [keepWrap, bottomControls]);
-    appendChildren(row, [main, middleRow, bottomRow]);
+    appendChildren(row, [main, middleRow, bottomRow, createHeavySplitPreview(input)]);
     return row;
   }
 
@@ -651,7 +674,6 @@
     });
     (Array.isArray(unit.inputs) ? unit.inputs : []).forEach((input) => {
       inputsWrap.appendChild(renderInputRow(
-        unit,
         input,
         pageSelectionDrafts.get(input.inputId) || null,
         pageSelectionRoots,
@@ -663,26 +685,6 @@
 
     section.appendChild(header);
     section.appendChild(inputsWrap);
-
-    if (unit.exclusiveHeavy && Array.isArray(unit.generatedInputsPreview) && unit.generatedInputsPreview.length) {
-      const previewWrap = createDomElement('div', {
-        className: 'text-extraction-batch-plan-heavy-preview',
-      });
-      previewWrap.appendChild(createDomElement('p', {
-        className: 'text-extraction-batch-plan-heavy-preview-label',
-        textContent: tRenderer('renderer.text_extraction.batch_plan.generated_inputs_preview'),
-      }));
-      const previewList = createDomElement('ul', {
-        className: 'text-extraction-batch-plan-heavy-preview-list',
-      });
-      unit.generatedInputsPreview.forEach((generatedInput) => {
-        previewList.appendChild(createDomElement('li', {
-          textContent: generatedInput.processingInputFileName,
-        }));
-      });
-      previewWrap.appendChild(previewList);
-      section.appendChild(previewWrap);
-    }
 
     if (unit.canConfigureTags) {
       const tagsRow = createDomElement('div', {

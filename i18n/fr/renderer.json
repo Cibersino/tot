@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Ouvrir le dossier des snapshots",
         "ok_button": "OK",
         "close_aria": "Fermer le rapport final de l’extraction par lots",
-        "split_result_label": "Résultat de la division :",
         "failed_fallback": "échec",
         "failed_with_code": "échec : {code}",
         "applied_truncated": "appliqué avec troncature",

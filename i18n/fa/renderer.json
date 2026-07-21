@@ -218,7 +218,6 @@
         "open_snapshots_folder": "باز کردن پوشه اسنپ‌شات‌ها",
         "ok_button": "تأیید",
         "close_aria": "بستن گزارش نهایی استخراج دسته‌ای",
-        "split_result_label": "نتیجهٔ تقسیم:",
         "failed_fallback": "ناموفق",
         "failed_with_code": "ناموفق: {code}",
         "applied_truncated": "با کوتاه‌سازی اعمال شد",

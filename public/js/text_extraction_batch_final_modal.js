@@ -171,16 +171,6 @@
     return button;
   }
 
-  function isHeavySplitGeneratedRowsUnit(unit) {
-    return !!(
-      unit
-      && unit.exclusiveHeavy === true
-      && unit.heavyGeneratedInputRows === true
-      && Array.isArray(unit.inputs)
-      && unit.inputs.length
-    );
-  }
-
   function normalizeReportState(state) {
     const normalizedState = typeof state === 'string' ? state : '';
     if (normalizedState === 'success') return 'success';
@@ -252,38 +242,6 @@
       : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
   }
 
-  function getHeavySplitOverallStatusText(unit) {
-    if (!unit || !isHeavySplitGeneratedRowsUnit(unit)) {
-      return '';
-    }
-    return formatReportStatusText(unit.overallState, unit.overallCode || '', {
-      applyTruncated: unit.applyTruncated === true,
-    });
-  }
-
-  function renderHeavySplitUnitMetaRows(unit) {
-    if (!isHeavySplitGeneratedRowsUnit(unit)) {
-      return [];
-    }
-
-    const rows = [];
-    if (unit.sourceFileName && unit.unitTitle !== unit.sourceFileName) {
-      rows.push(createDomElement('div', {
-        className: 'text-extraction-batch-final-unit-meta',
-        textContent: `${tRenderer('renderer.text_extraction.single_file_heavy.source_file_label')} ${unit.sourceFileName}`,
-      }));
-    }
-
-    const overallStatusText = getHeavySplitOverallStatusText(unit);
-    if (overallStatusText) {
-      rows.push(createDomElement('div', {
-        className: 'text-extraction-batch-final-unit-meta text-extraction-batch-final-unit-meta--status',
-        textContent: `${tRenderer('renderer.text_extraction.batch_report.split_result_label')} ${overallStatusText}`,
-      }));
-    }
-    return rows;
-  }
-
   function renderGeneratedInputRow(generatedInput, index, unitKey) {
     const label = getReportItemStatusSuffix(generatedInput);
     const row = createDomElement('div', {
@@ -339,7 +297,6 @@
     section.appendChild(createDomElement('h3', {
       textContent: unit.unitTitle,
     }));
-    renderHeavySplitUnitMetaRows(unit).forEach((row) => section.appendChild(row));
     (Array.isArray(unit.inputs) ? unit.inputs : []).forEach((input, inputIndex) => {
       section.appendChild(renderInputRow(input, inputIndex, `unit-${unitIndex}`));
     });
@@ -374,13 +331,6 @@
     lines.push('');
     report.units.forEach((unit) => {
       lines.push(unit.unitTitle);
-      if (isHeavySplitGeneratedRowsUnit(unit) && unit.sourceFileName && unit.unitTitle !== unit.sourceFileName) {
-        lines.push(`${tRenderer('renderer.text_extraction.single_file_heavy.source_file_label')} ${unit.sourceFileName}`);
-      }
-      const overallStatusText = getHeavySplitOverallStatusText(unit);
-      if (overallStatusText) {
-        lines.push(`${tRenderer('renderer.text_extraction.batch_report.split_result_label')} ${overallStatusText}`);
-      }
       unit.inputs.forEach((input) => {
         const label = getReportItemStatusSuffix(input);
         lines.push(`- ${input.displayName || input.fileName}${label ? ` ${label}` : ''}`);

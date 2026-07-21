@@ -218,7 +218,6 @@
         "open_snapshots_folder": "スナップショットフォルダーを開く",
         "ok_button": "OK",
         "close_aria": "一括抽出の最終レポートを閉じる",
-        "split_result_label": "分割結果:",
         "failed_fallback": "失敗",
         "failed_with_code": "失敗: {code}",
         "applied_truncated": "切り詰めて適用済み",

@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Snapshot-Ordner öffnen",
         "ok_button": "OK",
         "close_aria": "Abschlussbericht der Stapelextraktion schließen",
-        "split_result_label": "Split-Ergebnis:",
         "failed_fallback": "fehlgeschlagen",
         "failed_with_code": "fehlgeschlagen: {code}",
         "applied_truncated": "mit Kürzung angewendet",

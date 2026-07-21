@@ -218,7 +218,6 @@
         "open_snapshots_folder": "스냅샷 폴더 열기",
         "ok_button": "확인",
         "close_aria": "일괄 추출 최종 보고서 닫기",
-        "split_result_label": "분할 결과:",
         "failed_fallback": "실패",
         "failed_with_code": "실패: {code}",
         "applied_truncated": "잘라내어 적용됨",

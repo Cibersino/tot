@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Mở thư mục snapshot",
         "ok_button": "OK",
         "close_aria": "Đóng báo cáo cuối cùng của trích xuất theo lô",
-        "split_result_label": "Kết quả tách:",
         "failed_fallback": "thất bại",
         "failed_with_code": "thất bại: {code}",
         "applied_truncated": "đã áp dụng với phần cắt bớt",

@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Snapshot klasörünü aç",
         "ok_button": "Tamam",
         "close_aria": "Toplu çıkarım son raporunu kapat",
-        "split_result_label": "Bölme sonucu:",
         "failed_fallback": "başarısız",
         "failed_with_code": "başarısız: {code}",
         "applied_truncated": "kırpılarak uygulandı",

@@ -218,7 +218,6 @@
         "open_snapshots_folder": "স্ন্যাপশট ফোল্ডার খুলুন",
         "ok_button": "ঠিক আছে",
         "close_aria": "দলগত নিষ্কাশনের চূড়ান্ত রিপোর্ট বন্ধ করুন",
-        "split_result_label": "বিভাজনের ফলাফল:",
         "failed_fallback": "ব্যর্থ",
         "failed_with_code": "ব্যর্থ: {code}",
         "applied_truncated": "ছাঁটাইসহ প্রয়োগ করা হয়েছে",

@@ -218,7 +218,6 @@
         "open_snapshots_folder": "打开快照文件夹",
         "ok_button": "确定",
         "close_aria": "关闭批量提取最终报告",
-        "split_result_label": "拆分结果：",
         "failed_fallback": "失败",
         "failed_with_code": "失败：{code}",
         "applied_truncated": "已截断并应用",

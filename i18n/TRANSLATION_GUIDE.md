@@ -1615,12 +1615,6 @@ Estados de revisión recomendados:
           "es": "Cerrar informe final de extracción por lotes",
           "en": "Close batch extraction final report"
         },
-        "split_result_label": {
-          "es": "Resultado de la división:",
-          "en": "Split result:"
-          // [PROPÓSITO] Label para resultado no exitoso de procesamiento de un PDF pesado en partes.
-          // [CONCEPTO_APP] PDF completo por partes; PDF fuente
-        },
         "failed_fallback": {
           "es": "falló",
           "en": "failed"

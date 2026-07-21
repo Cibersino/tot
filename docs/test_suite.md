@@ -969,15 +969,18 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 6. Use **All together** and **One file per unit** once each.
 7. Rename one unit, move one input, and reassign one input to another unit or to a new unit.
 8. Open **Tags** for a multi-unit plan and apply tags.
-9. For a heavy-PDF unit, confirm pages are fixed to `All pages`, the unit stays isolated, and the planned generated-PDF preview is shown.
-10. Repeat the planner with a non-PDF input included.
-11. Close the planner, reopen the same batch entry flow, and re-check the keep-generated-PDF toggles.
+9. For a heavy-PDF input, confirm pages are fixed to `All pages`, its normal unit-assignment combobox remains available, and its planned generated-PDF preview is shown directly beneath that source input.
+10. Put an ordinary input and a heavy PDF in one unit, then put two heavy PDFs in one unit and confirm each heavy source keeps its own preview.
+11. Confirm generated preview rows cannot be assigned, moved, or regrouped independently.
+12. Repeat the planner with a non-PDF input included.
+13. Close the planner, reopen the same batch entry flow, and re-check the keep-generated-PDF toggles.
 
 **Expected:**
 - Ordinary PDFs expose editable `All pages` / `Page range` controls directly inside the planner.
 - Start is blocked while a visible range draft is invalid.
 - Unit rename, move, and reassignment controls update immediately and stay coherent after rerenders.
-- Heavy-PDF units remain exclusive planner units, keep their generated-input preview, and do not expose editable page controls.
+- Automatic split boundaries and full-source page selection remain fixed while heavy splitting is active, but the heavy source input otherwise participates in normal unit grouping, naming, tags, and ordering.
+- Generated PDF previews remain children of their corresponding heavy source input and never become planner inputs.
 - Non-PDF inputs do not show a fake pages summary.
 - Unit tags are available only where unit-level auto-snapshot tagging is meaningful.
 - When the unit tags prompt is opened, it reuses the same effective snapshot-tag catalog, labels, and visible order as the current-text snapshot-save modal.
@@ -990,8 +993,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 3. Confirm the first copy row can show unit progress, file progress, and route label while the displayed filename remains a basename only.
 4. After completion, review the final report:
    - unit titles
-   - per-input success/failed/omitted states
-   - heavy generated-child rows when applicable
+   - per-input success/failed/cancelled/omitted states
+   - generated-file status rows nested beneath their heavy source input when applicable
    - elapsed time
    - current-text changed/unchanged summary
    - snapshot guidance when auto snapshots were created
@@ -1004,8 +1007,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Batch execution stays inside one shared processing session and the bar shows accurate unit/file progress plus route context.
-- The final report summarizes per-unit/per-input outcomes and includes heavy split child statuses when present.
-- **Copy report** writes a readable text report that includes failure codes when applicable.
+- The final report summarizes per-unit/per-input outcomes, keeps every heavy PDF as its source input row, and nests generated split-child statuses beneath that row without flat duplicates.
+- **Copy report** preserves the same unit/source/generated-child hierarchy with indentation and includes failure codes when applicable.
 - **Open snapshots folder** opens the snapshots root, not a random last-used folder.
 - Multi-unit runs that produced text create per-unit JSON snapshots automatically; single-unit runs do not.
 - Created batch snapshots are loadable through the normal **📂** flow.

@@ -29,6 +29,7 @@ function createHarness({
   const savedSnapshotPayloads = [];
   let finalReportPromptAbortFinalizationActive = null;
   let syncMainInteractionLockUiCallCount = 0;
+  const executionEvents = [];
 
   function buildAllPagesSelection(totalPages) {
     const safeTotalPages = Number(totalPages) || 1;
@@ -134,6 +135,7 @@ function createHarness({
       SnapshotTagCatalog: snapshotTagCatalog,
       electronAPI: {
         async saveCurrentTextSnapshot(payload) {
+          executionEvents.push({ type: 'snapshot', payload });
           savedSnapshotPayload = payload;
           savedSnapshotPayloads.push(payload);
           return { ok: true, filename: 'snapshot.json' };
@@ -209,6 +211,7 @@ function createHarness({
       return settingsCache || {};
     },
     applyTextViaCanonicalPath: async (payload) => {
+      executionEvents.push({ type: 'apply', payload });
       if (typeof applyTextViaCanonicalPathImpl === 'function') {
         return applyTextViaCanonicalPathImpl(payload);
       }
@@ -251,6 +254,9 @@ function createHarness({
     },
     getSyncMainInteractionLockUiCallCount() {
       return syncMainInteractionLockUiCallCount;
+    },
+    getExecutionEvents() {
+      return executionEvents.map((event) => JSON.parse(JSON.stringify(event)));
     },
     textExtractionStatusUi,
     notifications,
@@ -355,9 +361,149 @@ test('batch flow shows generated-PDF keep toggle only for range-selected ordinar
   assert.equal(byFileName['heavy.pdf'].canToggleKeep, true);
   assert.equal(byFileName['heavy.pdf'].heavySplitActive, true);
   assert.equal(byFileName['heavy.pdf'].canEditPages, false);
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(byFileName['heavy.pdf'].generatedInputsPreview)),
+    [{ processingInputFileName: 'heavy.pdf_pages_01_06.pdf' }]
+  );
+  assert.equal(Object.prototype.hasOwnProperty.call(viewModel.units[2], 'generatedInputsPreview'), false);
   assert.equal(viewModel.units[0].displayLabel, 'Unit 1');
   assert.equal(viewModel.units[0].customName, '');
   assert.equal(viewModel.units[0].inputs[0].groupOptions[0].label, 'Unit 1');
+});
+
+test('batch planner keeps heavy inputs in the normal group model across presets, reassignment, and route changes', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\heavy-a.pdf': createPreparation({
+      fileName: 'heavy-a.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+    'C:\\docs\\heavy-b.pdf': createPreparation({
+      fileName: 'heavy-b.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+    'C:\\docs\\notes.txt': createPreparation({
+      fileName: 'notes.txt',
+      chosenRoute: 'native',
+      fileKind: 'txt',
+      pdfPageSelection: null,
+    }),
+  };
+
+  const harness = createHarness({ preparationsByPath });
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-heavy-group-model',
+  });
+
+  const controller = harness.getCapturedController();
+  assert.ok(controller);
+  const flattenInputs = (model) => model.units.flatMap((unit) => unit.inputs);
+  const findInput = (model, fileName) => flattenInputs(model).find((input) => input.fileName === fileName);
+  const toPlain = (value) => JSON.parse(JSON.stringify(value));
+
+  const initialModel = controller.getViewModel();
+  assert.equal(initialModel.units.length, 3);
+  assert.deepEqual(toPlain(initialModel.units.map((unit) => unit.displayLabel)), ['Unit 1', 'Unit 2', 'Unit 3']);
+  assert.equal(new Set(flattenInputs(initialModel).map((input) => input.groupKey)).size, 3);
+  assert.ok(flattenInputs(initialModel).every((input) => typeof input.groupKey === 'string' && input.groupKey));
+
+  controller.applyAction({ type: 'apply_preset_all' });
+  let model = controller.getViewModel();
+  assert.equal(model.units.length, 1);
+  assert.deepEqual(toPlain(model.units[0].inputs.map((input) => input.fileName)), [
+    'heavy-a.pdf',
+    'heavy-b.pdf',
+    'notes.txt',
+  ]);
+  const sharedGroupKey = model.units[0].unitKey;
+  assert.ok(model.units[0].inputs.every((input) => input.groupKey === sharedGroupKey));
+
+  const heavyA = findInput(model, 'heavy-a.pdf');
+  controller.applyAction({
+    type: 'set_pdf_page_selection',
+    inputId: heavyA.inputId,
+    pdfPageSelection: { mode: 'range', fromPage: 2, toPage: 4 },
+  });
+  model = controller.getViewModel();
+  assert.equal(findInput(model, 'heavy-a.pdf').pdfPageSelection.mode, 'all');
+
+  controller.applyAction({
+    type: 'set_input_route',
+    inputId: heavyA.inputId,
+    route: 'native',
+  });
+  model = controller.getViewModel();
+  assert.equal(findInput(model, 'heavy-a.pdf').groupKey, sharedGroupKey);
+  assert.equal(findInput(model, 'heavy-a.pdf').canEditPages, true);
+  assert.equal(findInput(model, 'heavy-a.pdf').generatedInputsPreview.length, 0);
+
+  controller.applyAction({
+    type: 'set_input_route',
+    inputId: heavyA.inputId,
+    route: 'ocr',
+  });
+  model = controller.getViewModel();
+  assert.equal(findInput(model, 'heavy-a.pdf').groupKey, sharedGroupKey);
+  assert.equal(findInput(model, 'heavy-a.pdf').canEditPages, false);
+  assert.equal(findInput(model, 'heavy-a.pdf').generatedInputsPreview.length, 1);
+
+  controller.applyAction({ type: 'apply_preset_separate' });
+  model = controller.getViewModel();
+  assert.equal(model.units.length, 3);
+  assert.equal(new Set(flattenInputs(model).map((input) => input.groupKey)).size, 3);
+
+  const heavyB = findInput(model, 'heavy-b.pdf');
+  const heavyAUnitKey = findInput(model, 'heavy-a.pdf').groupKey;
+  const heavyBUnitKey = heavyB.groupKey;
+  controller.applyAction({ type: 'move_unit', unitKey: heavyBUnitKey, direction: 'up' });
+  model = controller.getViewModel();
+  assert.equal(model.units[0].unitKey, heavyBUnitKey);
+
+  controller.applyAction({
+    type: 'assign_input_group',
+    inputId: heavyB.inputId,
+    groupKey: heavyAUnitKey,
+  });
+  model = controller.getViewModel();
+  assert.equal(model.units.length, 2);
+  assert.deepEqual(
+    toPlain(model.units.find((unit) => unit.unitKey === heavyAUnitKey).inputs.map((input) => input.fileName)),
+    ['heavy-a.pdf', 'heavy-b.pdf']
+  );
+  controller.applyAction({ type: 'move_input', inputId: heavyB.inputId, direction: 'up' });
+  model = controller.getViewModel();
+  assert.deepEqual(
+    toPlain(model.units.find((unit) => unit.unitKey === heavyAUnitKey).inputs.map((input) => input.fileName)),
+    ['heavy-b.pdf', 'heavy-a.pdf']
+  );
+
+  controller.applyAction({
+    type: 'assign_input_group',
+    inputId: heavyB.inputId,
+    groupKey: '__new__',
+  });
+  model = controller.getViewModel();
+  assert.equal(model.units.length, 3);
+  assert.notEqual(findInput(model, 'heavy-b.pdf').groupKey, heavyAUnitKey);
 });
 
 test('batch flow opens shared tags modal with batch-planning copy overrides', async () => {
@@ -688,7 +834,7 @@ test('batch execution autosaves custom-named single-input units from the raw cus
   assert.equal(report.units[1].unitTitle, 'unit_2');
 });
 
-test('batch execution autosaves unnamed heavy single-input units from the source basename while keeping the visible title', async () => {
+test('batch execution autosaves unnamed heavy single-input units with normal unit identity', async () => {
   const preparationsByPath = {
     'C:\\docs\\book.pdf': createPreparation({
       fileName: 'book.pdf',
@@ -733,7 +879,7 @@ test('batch execution autosaves unnamed heavy single-input units from the source
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
   assert.ok(report);
-  assert.equal(report.units[0].unitTitle, 'book.pdf');
+  assert.equal(report.units[0].unitTitle, 'unit_1');
   assert.equal(report.units[1].unitTitle, 'unit_2');
 });
 
@@ -847,7 +993,143 @@ test('batch execution autosaves custom-named multi-input units from the raw cust
   assert.equal(report.units[1].unitTitle, 'unit_2');
 });
 
-test('batch execution final report keeps the canonical title and flattens heavy child rows on split success', async () => {
+test('batch execution processes ordinary and heavy inputs in one unit and snapshots the complete ordered output', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\ordinary.pdf': createPreparation({
+      fileName: 'ordinary.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\heavy.pdf': createPreparation({
+      fileName: 'heavy.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+    }),
+    'C:\\docs\\notes.txt': createPreparation({
+      fileName: 'notes.txt',
+      chosenRoute: 'native',
+      fileKind: 'txt',
+      pdfPageSelection: null,
+    }),
+    'C:\\docs\\tail.txt': createPreparation({
+      fileName: 'tail.txt',
+      chosenRoute: 'native',
+      fileKind: 'txt',
+      pdfPageSelection: null,
+    }),
+  };
+
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    async onPromptBatchPlan(controller) {
+      controller.applyAction({ type: 'apply_preset_all' });
+      const model = controller.getViewModel();
+      const tailInput = model.units[0].inputs.find((input) => input.fileName === 'tail.txt');
+      controller.applyAction({
+        type: 'assign_input_group',
+        inputId: tailInput.inputId,
+        groupKey: '__new__',
+      });
+    },
+    executionResultsByProcessingInputFileName: {
+      'ordinary.pdf': {
+        ok: true,
+        result: { state: 'success', text: 'Ordinary text', error: null, generatedPdfArtifact: null },
+      },
+      'heavy.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Heavy combined text',
+          error: null,
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [
+              {
+                fileName: 'heavy_pages_001_020.pdf',
+                state: 'success',
+                errorCode: '',
+                generatedPdfArtifact: {
+                  retainedArtifactPath: 'C:\\tmp\\heavy_pages_001_020.pdf',
+                },
+              },
+              {
+                fileName: 'heavy_pages_021_040.pdf',
+                state: 'failed',
+                errorCode: 'ocr_conversion_failed',
+                generatedPdfArtifact: {
+                  retainedArtifactPath: 'C:\\tmp\\heavy_pages_021_040.pdf',
+                },
+              },
+            ],
+          },
+        },
+      },
+      'notes.txt': {
+        ok: true,
+        result: { state: 'success', text: 'Notes text', error: null, generatedPdfArtifact: null },
+      },
+      'tail.txt': {
+        ok: true,
+        result: { state: 'success', text: 'Tail text', error: null, generatedPdfArtifact: null },
+      },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-mixed-heavy-unit-execution',
+  });
+
+  const events = harness.getExecutionEvents();
+  assert.deepEqual(
+    events.map((event) => event.type === 'apply'
+      ? `${event.payload.mode}:${event.payload.textToApply}`
+      : `snapshot:${event.payload.autoFileBaseName}`),
+    [
+      'overwrite:Ordinary text',
+      'append:Heavy combined text',
+      'append:Notes text',
+      'snapshot:unit_1',
+      'overwrite:Tail text',
+      'snapshot:tail',
+    ]
+  );
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    report.units[0].inputs.map((input) => input.fileName),
+    ['ordinary.pdf', 'heavy.pdf', 'notes.txt']
+  );
+  assert.equal(report.units[0].inputs[1].state, 'success');
+  assert.deepEqual(
+    report.units[0].inputs[1].generatedInputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+      retainedArtifactPath: input.generatedPdfArtifact.retainedArtifactPath,
+    })),
+    [
+      {
+        fileName: 'heavy_pages_001_020.pdf',
+        state: 'success',
+        code: '',
+        retainedArtifactPath: 'C:\\tmp\\heavy_pages_001_020.pdf',
+      },
+      {
+        fileName: 'heavy_pages_021_040.pdf',
+        state: 'failed',
+        code: 'ocr_conversion_failed',
+        retainedArtifactPath: 'C:\\tmp\\heavy_pages_021_040.pdf',
+      },
+    ]
+  );
+  assert.equal(report.units[0].snapshotResult.state, 'saved');
+});
+
+test('batch execution final report keeps the heavy source parent with nested generated children', async () => {
   const preparationsByPath = {
     'C:\\docs\\book.pdf': createPreparation({
       fileName: 'book.pdf',
@@ -915,25 +1197,42 @@ test('batch execution final report keeps the canonical title and flattens heavy 
   assert.ok(report);
   assert.equal(report.units.length, 1);
   assert.equal(report.units[0].unitTitle, 'Chapter 3 OCR');
-  assert.equal(report.units[0].sourceFileName, 'book.pdf');
-  assert.equal(report.units[0].overallState, 'success');
-  assert.equal(report.units[0].overallCode, '');
-  assert.equal(report.units[0].heavyGeneratedInputRows, true);
+  assert.equal(report.units[0].inputs.length, 1);
   assert.deepEqual(
-    report.units[0].inputs.map((input) => ({
+    {
+      fileName: report.units[0].inputs[0].fileName,
+      displayName: report.units[0].inputs[0].displayName,
+      state: report.units[0].inputs[0].state,
+      code: report.units[0].inputs[0].code,
+    },
+    {
+      fileName: 'book.pdf',
+      displayName: 'book.pdf',
+      state: 'success',
+      code: '',
+    }
+  );
+  assert.deepEqual(
+    report.units[0].inputs[0].generatedInputs.map((input) => ({
       fileName: input.fileName,
-      displayName: input.displayName,
+      retainedArtifactPath: input.generatedPdfArtifact.retainedArtifactPath,
     })),
     [
-      { fileName: 'book_pages_001_020.pdf', displayName: 'book_pages_001_020.pdf' },
-      { fileName: 'book_pages_021_040.pdf', displayName: 'book_pages_021_040.pdf' },
+      {
+        fileName: 'book_pages_001_020.pdf',
+        retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf',
+      },
+      {
+        fileName: 'book_pages_021_040.pdf',
+        retainedArtifactPath: 'C:\\tmp\\book_pages_021_040.pdf',
+      },
     ]
   );
-  assert.equal(report.units[0].inputs.some((input) => input.fileName === 'book.pdf'), false);
+  assert.equal(report.units[0].inputs.some((input) => input.fileName.startsWith('book_pages_')), false);
   assert.equal(harness.getSavedSnapshotPayload(), null);
 });
 
-test('batch execution final report keeps heavy parent outcome metadata when child rows exist', async () => {
+test('batch execution final report keeps cancellation on the heavy parent and nested child outcomes', async () => {
   const preparationsByPath = {
     'C:\\docs\\book.pdf': createPreparation({
       fileName: 'book.pdf',
@@ -990,20 +1289,20 @@ test('batch execution final report keeps heavy parent outcome metadata when chil
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
   assert.ok(report);
-  assert.equal(report.units[0].unitTitle, 'book.pdf');
-  assert.equal(report.units[0].sourceFileName, 'book.pdf');
-  assert.equal(report.units[0].overallState, 'cancelled');
-  assert.equal(report.units[0].overallCode, 'aborted_by_user');
-  assert.equal(report.units[0].heavyGeneratedInputRows, true);
+  assert.equal(report.units[0].unitTitle, 'unit_1');
+  assert.equal(report.units[0].inputs.length, 1);
+  assert.equal(report.units[0].inputs[0].fileName, 'book.pdf');
+  assert.equal(report.units[0].inputs[0].state, 'cancelled');
+  assert.equal(report.units[0].inputs[0].code, 'aborted_by_user');
   assert.deepEqual(
-    report.units[0].inputs.map((input) => ({
+    report.units[0].inputs[0].generatedInputs.map((input) => ({
       fileName: input.fileName,
-      displayName: input.displayName,
       state: input.state,
+      code: input.code,
     })),
     [
-      { fileName: 'book_pages_001_020.pdf', displayName: 'book_pages_001_020.pdf', state: 'success' },
-      { fileName: 'book_pages_021_040.pdf', displayName: 'book_pages_021_040.pdf', state: 'omitted' },
+      { fileName: 'book_pages_001_020.pdf', state: 'success', code: '' },
+      { fileName: 'book_pages_021_040.pdf', state: 'omitted', code: '' },
     ]
   );
 });
@@ -1297,11 +1596,11 @@ test('batch execution final report preserves cancelled heavy child rows when spl
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
   assert.ok(report);
-  assert.equal(report.units[0].overallState, 'cancelled');
-  assert.equal(report.units[0].overallCode, 'aborted_by_user');
-  assert.equal(report.units[0].heavyGeneratedInputRows, true);
+  assert.equal(report.units[0].inputs[0].fileName, 'book.pdf');
+  assert.equal(report.units[0].inputs[0].state, 'cancelled');
+  assert.equal(report.units[0].inputs[0].code, 'aborted_by_user');
   assert.deepEqual(
-    report.units[0].inputs.map((input) => ({
+    report.units[0].inputs[0].generatedInputs.map((input) => ({
       fileName: input.fileName,
       state: input.state,
       code: input.code,
@@ -1357,7 +1656,6 @@ test('batch execution final report keeps the source row when heavy split produce
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
   assert.ok(report);
-  assert.equal(report.units[0].heavyGeneratedInputRows, false);
   assert.deepEqual(
     report.units[0].inputs.map((input) => ({
       fileName: input.fileName,
@@ -1373,6 +1671,104 @@ test('batch execution final report keeps the source row when heavy split produce
         code: 'heavy_split_plan_invalid',
       },
     ]
+  );
+});
+
+test('batch execution applies the configured unit failure policy after a zero-child heavy failure', async () => {
+  const createPolicyHarness = (failurePolicy) => {
+    const preparationsByPath = {
+      'C:\\docs\\book.pdf': createPreparation({
+        fileName: 'book.pdf',
+        chosenRoute: 'ocr',
+        heavySplitEligible: true,
+        routeChoiceOptions: ['native', 'ocr'],
+      }),
+      'C:\\docs\\notes.txt': createPreparation({
+        fileName: 'notes.txt',
+        chosenRoute: 'native',
+        fileKind: 'txt',
+        pdfPageSelection: null,
+      }),
+    };
+    return {
+      preparationsByPath,
+      harness: createHarness({
+        preparationsByPath,
+        promptBatchPlanResult: { action: 'start' },
+        async onPromptBatchPlan(controller) {
+          controller.applyAction({ type: 'apply_preset_all' });
+          if (failurePolicy) {
+            controller.applyAction({ type: 'set_failure_policy', failurePolicy });
+          }
+        },
+        executionResultsByProcessingInputFileName: {
+          'book.pdf': {
+            ok: true,
+            result: {
+              state: 'failure',
+              text: '',
+              error: { code: 'heavy_split_plan_invalid' },
+              generatedPdfArtifact: null,
+              heavySplitExecution: { generatedInputs: [] },
+            },
+          },
+          'notes.txt': {
+            ok: true,
+            result: { state: 'success', text: 'Notes text', error: null, generatedPdfArtifact: null },
+          },
+        },
+      }),
+    };
+  };
+
+  const defaultRun = createPolicyHarness('');
+  await defaultRun.harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(defaultRun.preparationsByPath),
+    actionId: 'test-heavy-failure-default-policy',
+  });
+  const defaultReport = JSON.parse(JSON.stringify(defaultRun.harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    defaultReport.units[0].inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+      generatedInputCount: input.generatedInputs.length,
+    })),
+    [
+      {
+        fileName: 'book.pdf',
+        state: 'failed',
+        code: 'heavy_split_plan_invalid',
+        generatedInputCount: 0,
+      },
+      {
+        fileName: 'notes.txt',
+        state: 'omitted',
+        code: 'omitted',
+        generatedInputCount: 0,
+      },
+    ]
+  );
+  assert.equal(defaultRun.harness.getExecutionEvents().some((event) => event.type === 'apply'), false);
+
+  const continueRun = createPolicyHarness('omit_failed_and_continue');
+  await continueRun.harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(continueRun.preparationsByPath),
+    actionId: 'test-heavy-failure-continue-policy',
+  });
+  const continueReport = JSON.parse(JSON.stringify(continueRun.harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    continueReport.units[0].inputs.map((input) => ({ fileName: input.fileName, state: input.state })),
+    [
+      { fileName: 'book.pdf', state: 'failed' },
+      { fileName: 'notes.txt', state: 'success' },
+    ]
+  );
+  assert.deepEqual(
+    continueRun.harness.getExecutionEvents()
+      .filter((event) => event.type === 'apply')
+      .map((event) => `${event.payload.mode}:${event.payload.textToApply}`),
+    ['overwrite:Notes text']
   );
 });
 
@@ -1491,7 +1887,7 @@ test('batch execution final report preserves apply truncation on ordinary succes
   );
 });
 
-test('batch execution final report preserves apply truncation on heavy split success units', async () => {
+test('batch execution final report preserves apply truncation on the heavy source input', async () => {
   const preparationsByPath = {
     'C:\\docs\\book.pdf': createPreparation({
       fileName: 'book.pdf',
@@ -1541,7 +1937,7 @@ test('batch execution final report preserves apply truncation on heavy split suc
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
   assert.ok(report);
-  assert.equal(report.units[0].overallState, 'success');
-  assert.equal(report.units[0].applyTruncated, true);
-  assert.equal(report.units[0].heavyGeneratedInputRows, true);
+  assert.equal(report.units[0].inputs[0].state, 'success');
+  assert.equal(report.units[0].inputs[0].applyTruncated, true);
+  assert.equal(report.units[0].inputs[0].generatedInputs.length, 1);
 });

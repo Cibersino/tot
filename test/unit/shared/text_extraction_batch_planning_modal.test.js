@@ -244,6 +244,19 @@ function findNodeByAttributes(node, expectedAttributes = {}) {
   return null;
 }
 
+function findNodesByAttributes(node, expectedAttributes = {}, matches = []) {
+  if (!node) return matches;
+  if (typeof node.getAttribute === 'function') {
+    const isMatch = Object.entries(expectedAttributes).every(([name, value]) => node.getAttribute(name) === value);
+    if (isMatch) {
+      matches.push(node);
+    }
+  }
+  const children = Array.isArray(node._children) ? node._children : [];
+  children.forEach((child) => findNodesByAttributes(child, expectedAttributes, matches));
+  return matches;
+}
+
 function createHarness() {
   activeElementRef = null;
   const registeredPromptNames = [];
@@ -545,6 +558,101 @@ test('batch planning modal registers its public prompt through window.Notify.reg
   assert.equal(typeof harness.prompt, 'function');
 });
 
+test('batch planning modal keeps each heavy preview under its groupable source input in a mixed unit', async () => {
+  const harness = createHarness();
+  const groupOptions = [{ unitKey: 'unit-1', label: 'Unit 1' }];
+  const createInput = ({ inputId, fileName, heavySplitActive, generatedInputsPreview = [] }) => ({
+    inputId,
+    fileName,
+    alertCode: '',
+    activeRoute: heavySplitActive ? 'ocr' : 'native',
+    routeOptions: heavySplitActive ? ['native', 'ocr'] : ['native'],
+    pagesSummary: heavySplitActive ? 'All pages' : '',
+    canEditPages: false,
+    pdfPageSelection: heavySplitActive
+      ? { mode: 'all', fromPage: 1, toPage: 12, selectedPageCount: 12, totalPages: 12 }
+      : null,
+    pdfTotalPages: heavySplitActive ? 12 : 1,
+    canToggleKeep: heavySplitActive,
+    keepGeneratedPdf: false,
+    groupKey: 'unit-1',
+    canMoveUp: false,
+    canMoveDown: false,
+    groupOptions,
+    heavySplitActive,
+    generatedInputsPreview,
+  });
+  const model = {
+    flowKind: 'batch',
+    failurePolicy: 'finish_unit_after_last_success',
+    startDisabled: false,
+    unitCount: 1,
+    units: [
+      {
+        unitKey: 'unit-1',
+        title: 'unit_1',
+        displayLabel: 'Unit 1',
+        customName: '',
+        tagsSummary: 'No tags',
+        canConfigureTags: false,
+        canMoveUp: false,
+        canMoveDown: false,
+        inputs: [
+          createInput({ inputId: 'ordinary', fileName: 'ordinary.docx', heavySplitActive: false }),
+          createInput({
+            inputId: 'heavy-a',
+            fileName: 'heavy-a.pdf',
+            heavySplitActive: true,
+            generatedInputsPreview: [
+              { processingInputFileName: 'heavy-a_pages_01_06.pdf' },
+              { processingInputFileName: 'heavy-a_pages_07_12.pdf' },
+            ],
+          }),
+          createInput({
+            inputId: 'heavy-b',
+            fileName: 'heavy-b.pdf',
+            heavySplitActive: true,
+            generatedInputsPreview: [
+              { processingInputFileName: 'heavy-b_pages_01_12.pdf' },
+            ],
+          }),
+        ],
+      },
+    ],
+  };
+  const controller = {
+    getViewModel() {
+      return model;
+    },
+    applyAction() {},
+    async validateStart() {
+      return true;
+    },
+  };
+
+  const promptPromise = harness.prompt({ controller });
+  const body = harness.elements.textExtractionBatchPlanUnits;
+  const ordinaryRow = findNodeByAttributes(body, { 'data-input-id': 'ordinary' });
+  const heavyARow = findNodeByAttributes(body, { 'data-input-id': 'heavy-a' });
+  const heavyBRow = findNodeByAttributes(body, { 'data-input-id': 'heavy-b' });
+
+  assert.ok(ordinaryRow);
+  assert.ok(heavyARow);
+  assert.ok(heavyBRow);
+  assert.doesNotMatch(ordinaryRow.innerHTML, /text-extraction-batch-plan-heavy-preview/);
+  assert.match(heavyARow.innerHTML, /heavy-a_pages_01_06\.pdf/);
+  assert.match(heavyARow.innerHTML, /heavy-a_pages_07_12\.pdf/);
+  assert.doesNotMatch(heavyARow.innerHTML, /heavy-b_pages_01_12\.pdf/);
+  assert.match(heavyBRow.innerHTML, /heavy-b_pages_01_12\.pdf/);
+  assert.doesNotMatch(heavyBRow.innerHTML, /heavy-a_pages_01_06\.pdf/);
+  assert.equal(findNodesByAttributes(heavyARow, { 'data-action': 'assign-input-group' }).length, 1);
+  assert.equal(findNodesByAttributes(heavyBRow, { 'data-action': 'assign-input-group' }).length, 1);
+  assert.equal(findNodesByAttributes(heavyARow, { 'data-input-id': 'heavy-a_pages_01_06.pdf' }).length, 0);
+
+  harness.elements.textExtractionBatchPlanCancel.dispatch('click');
+  await promptPromise;
+});
+
 test('batch planning modal exposes direct all-pages and range controls for ordinary PDFs', async () => {
   const harness = createHarness();
   const applyActionCalls = [];
@@ -559,11 +667,9 @@ test('batch planning modal exposes direct all-pages and range controls for ordin
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: false,
         canMoveUp: false,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -752,11 +858,9 @@ test('batch planning modal shows keep control when page inputs auto-promote sele
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: false,
         canMoveUp: false,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -879,11 +983,9 @@ test('batch planning modal preserves typed invalid to-page drafts while editing'
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: false,
         canMoveUp: false,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -976,11 +1078,9 @@ test('batch planning modal blocks start while a visible page-range draft is inva
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: false,
         canMoveUp: false,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -1095,11 +1195,9 @@ test('batch planning modal preserves panel scroll and control focus across reren
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: false,
         canMoveDown: true,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -1134,11 +1232,9 @@ test('batch planning modal preserves panel scroll and control focus across reren
         unitKey: 'unit-2',
         title: 'unit_2',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: true,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-2',
@@ -1270,11 +1366,9 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
         customName: '',
         displayLabel: 'Unit 1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: false,
         canMoveDown: true,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -1311,11 +1405,9 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
         customName: '',
         displayLabel: 'Unit 2',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: true,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-2',
@@ -1415,11 +1507,9 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
         customName: '',
         displayLabel: 'Unit 1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: false,
         canMoveDown: true,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -1483,11 +1573,9 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
         customName: '',
         displayLabel: 'Unit 2',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: true,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [],
       },
     ],
@@ -1560,11 +1648,9 @@ test('batch planning modal hides the non-editable pages summary for non-PDF inpu
         customName: '',
         displayLabel: 'Unit 1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: false,
         canMoveDown: true,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-pdf',
@@ -1620,11 +1706,9 @@ test('batch planning modal hides the non-editable pages summary for non-PDF inpu
         customName: '',
         displayLabel: 'Unit 2',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: true,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [],
       },
     ],

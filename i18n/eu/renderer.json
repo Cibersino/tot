@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Ireki snapshoten karpeta",
         "ok_button": "Ados",
         "close_aria": "Itxi multzokako erauzketaren azken txostena",
-        "split_result_label": "Zatitzearen emaitza:",
         "failed_fallback": "Huts egin du",
         "failed_with_code": "Huts egin du: {code}",
         "applied_truncated": "moztuta aplikatu da",

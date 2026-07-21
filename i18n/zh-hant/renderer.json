@@ -218,7 +218,6 @@
         "open_snapshots_folder": "開啟快照資料夾",
         "ok_button": "確定",
         "close_aria": "關閉批次擷取最終報告",
-        "split_result_label": "分割結果：",
         "failed_fallback": "失敗",
         "failed_with_code": "失敗：{code}",
         "applied_truncated": "已截斷並套用",

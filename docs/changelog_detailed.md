@@ -56,6 +56,7 @@ Reglas:
 - El `Task Editor` deja de depender exclusivamente de tipeo manual para poblar `Link or local path` cuando la fila apunta a archivos locales: la toolbar agrega una entrada batch `Add files` con picker multi-select y cada fila suma un picker local dedicado, sin romper el escape hatch de edición libre para `https:` y rutas pegadas.
 - La nueva acción local por fila del `Task Editor` se integra al mismo sistema compartido de iconos renderer y deja de verse como un control textual aislado: el botón browse converge en el asset canónico `folder.svg` y recupera el mismo lenguaje monocromo/outline ya usado por `open-target`, biblioteca y snapshot dentro de la tabla.
 - `language_window` y `preset_modal` dejan de ser excepciones dentro de las ventanas renderer top-level: sus estilos salen del HTML inline, convergen en archivos CSS dedicados con la misma estructura documental del resto del repo y la documentación viva del árbol vuelve a reflejar el layout real de `public/`.
+- La planificación batch corrige el modelo lógico de los PDFs pesados: el PDF fuente conserva membresía, nombre y orden de unidad normales junto a inputs ordinarios, mientras sus PDFs generados permanecen hijos internos del source tanto en ejecución como en el reporte final.
 
 ### Agregado
 
@@ -109,6 +110,12 @@ Reglas:
   - el glyph `stop` deja de verse subdimensionado una vez alineados ambos botones al tamaño pequeño, porque su SVG canónico amplía el cuadrado útil dentro del mismo `viewBox` y recupera masa visual comparable con `play`.
 - Current text / cronómetro:
   - al vaciar el `current text`, el reset del cronómetro deja de dispararse como side-effect renderer que volvía a entrar a `main` mientras seguía activo el settle `current-text pending`; la transición autoritativa `non-empty -> empty` ahora se resuelve en el mismo pipeline main-owned del texto vigente y desaparece el warning `Main action ignored (current-text pending lock active): crono-reset`.
+- Text extraction / agrupación batch de PDFs pesados:
+  - cada PDF fuente con split automático recibe y conserva un `groupKey` normal; los presets `All together` y `One file per unit`, el combobox de unidad, el rename, los tags y el reordenamiento operan sobre él con las mismas reglas que sobre cualquier otro input;
+  - cambiar la ruta de extracción ya no reemplaza ni descarta la pertenencia de unidad, mientras la selección de páginas sigue fija al source completo y las partes generadas continúan sin controles de edición o agrupación propios;
+  - el preview de split pasa a renderizarse debajo de su PDF fuente, por lo que una unidad mixta o una unidad con varios PDFs pesados conserva una lista independiente de partes por cada input;
+  - la ejecución mantiene las partes como hijos internos procesados en orden y agrega su texto combinado en la posición del source dentro de la unidad, sin crear unidades sintéticas ni alterar overwrite/append, failure policy, cancelación o snapshots;
+  - el reporte final conserva una fila para cada source y anida sus estados de partes generadas bajo `generatedInputs`, incluidos error codes y artefactos retenidos, sin duplicarlas como inputs peer; la copia textual reproduce la misma jerarquía por indentación.
 - Task Editor / iconografía de acciones locales:
   - el nuevo botón browse por fila deja de desentonar visualmente con el resto de acciones de la tabla: `assets/icons/folder.svg` abandona el fallback genérico `currentColor` y converge en el mismo contrato outline con `var(--tot-icon-*, #5f6f82)` que ya usaban `open-target`, `task-row-load`, `task-row-save` y `task-text-snapshot-load`;
   - la semántica visual final deja de mezclar un icono cálido/relleno ajeno al set del `Task Editor` y vuelve a una lectura monocroma coherente con las demás acciones compactas del grid.
@@ -127,6 +134,10 @@ Reglas:
 - Surface pública renderer `window.Notify`:
   - sin cambios de nombres, firma ni consumers para `promptTextExtractionApplyChoice(...)`, `promptTextExtractionBatchFinalReport(...)`, `promptTextExtractionBatchPlan(...)`, `promptTextExtractionOcrActivationDisclosure(...)`, `promptTextExtractionPdfOptions(...)`, `promptTextExtractionRouteChoice(...)` y `promptTextExtractionSingleFileHeavyPdf(...)`;
   - cambia solo el path interno de registro: la publicación final de esos prompts ahora ocurre a través de `window.Notify.registerCustomPrompt(...)` en vez de asignación directa desde cada módulo feature.
+- Modelo renderer interno de planificación y reporte batch:
+  - `units[].inputs[]` vuelve a representar únicamente inputs fuente lógicos con membresía normal de unidad; los PDFs derivados del split automático no reciben identidad de unidad ni se publican como peers;
+  - cada registro fuente de `unitReport.inputs[]` puede incluir `generatedInputs[]` con los estados y artefactos de sus partes, eliminando el workaround de metadata heavy a nivel de unidad y de filas generadas planas;
+  - no cambian IPC, preload, storage ni el resultado main-owned `heavySplitExecution.generatedInputs[]` consumido por el renderer.
 - IPC / preload del Task Editor:
   - nuevo IPC `task-files-select` en `electron/tasks_main.js`, invocado desde `window.taskEditorAPI.selectTaskFiles()`, que devuelve `{ ok: true, filePaths }` para selección multi-file desde la toolbar;
   - nuevo IPC `task-file-select` en `electron/tasks_main.js`, invocado desde `window.taskEditorAPI.selectTaskFile()`, que devuelve `{ ok: true, filePath }` para selección single-file desde una fila;

@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Öppna snapshots-mapp",
         "ok_button": "OK",
         "close_aria": "Stäng slutrapporten för satsvis extrahering",
-        "split_result_label": "Delningsresultat:",
         "failed_fallback": "misslyckades",
         "failed_with_code": "misslyckades: {code}",
         "applied_truncated": "tillämpad med trunkering",

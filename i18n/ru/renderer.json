@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Открыть папку снапшотов",
         "ok_button": "OK",
         "close_aria": "Закрыть итоговый отчет пакетного извлечения",
-        "split_result_label": "Результат разделения:",
         "failed_fallback": "Ошибка",
         "failed_with_code": "Ошибка: {code}",
         "applied_truncated": "применено с усечением",

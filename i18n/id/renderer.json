@@ -218,7 +218,6 @@
         "open_snapshots_folder": "Buka folder snapshot",
         "ok_button": "OK",
         "close_aria": "Tutup laporan akhir ekstraksi berkelompok",
-        "split_result_label": "Hasil pemisahan:",
         "failed_fallback": "gagal",
         "failed_with_code": "gagal: {code}",
         "applied_truncated": "diterapkan dengan pemotongan",
