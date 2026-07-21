@@ -11,11 +11,14 @@
   --app-primary-bg: #fdf6e3;
   --app-secondary-bg: #f4ecd8;
   --app-tertiary-bg: #fef9eb;
+  --table-row-alt-bg: rgb(255 255 255 / 0.34);
+  --backdrop-bg: rgb(0 0 0 / 0.45);
+
+  /* Controls */
   --field-bg: #fff;
   --button-bg: #fff;
   --button-hover-bg: #f4f4f4;
-  --table-row-alt-bg: rgb(255 255 255 / 0.34);
-  --backdrop-bg: rgb(0 0 0 / 0.45);
+  --column-resizer-hover-bg: rgb(168 151 106 / 0.22);
 
   /* Text */
   --text: #2f2a20;
@@ -383,7 +386,7 @@ body {
 }
 
 .col-resizer:hover {
-  background: rgb(168 151 106 / 0.22);
+  background: var(--column-resizer-hover-bg);
 }
 
 body.is-resizing {
