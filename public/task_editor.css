@@ -12,6 +12,8 @@
   --app-secondary-bg: #f4ecd8;
   --app-tertiary-bg: #fef9eb;
   --field-bg: #fff;
+  --button-bg: #fff;
+  --button-hover-bg: #f4f4f4;
   --table-row-alt-bg: rgb(255 255 255 / 0.34);
   --surface-soft: rgb(255 255 255 / 0.45);
   --modal-backdrop: rgb(0 0 0 / 0.45);
@@ -125,7 +127,7 @@ body {
   font-family: inherit;
   border: 1px solid #cfcfcf;
   border-radius: var(--button-radius);
-  background: #fff;
+  background: var(--button-bg);
   color: #2f2a20;
   cursor: pointer;
   transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
@@ -149,7 +151,7 @@ body {
 }
 
 .btn-standard:hover {
-  background: #f4f4f4;
+  background: var(--button-hover-bg);
   box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
 }
 
