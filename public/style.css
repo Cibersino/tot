@@ -774,6 +774,14 @@ body {
   display: flex;
 }
 
+/* Shared completed-extraction elapsed summary.
+   Body-qualified selectors override each modal's broader paragraph baseline. */
+.text-extraction-apply-modal-body .text-extraction-apply-modal-elapsed,
+.text-extraction-batch-final-modal-body > .text-extraction-batch-final-modal-elapsed {
+  color: var(--text-soft);
+  font-size: var(--font-size-6);
+}
+
 /* Feature-local sections */
 
 /* Text selector section */
@@ -1682,12 +1690,6 @@ body.text-extraction-drop-active .app-container {
   min-width: 110px;
 }
 
-.text-extraction-apply-modal-elapsed {
-  color: var(--text-soft);
-  font-size: var(--font-size-6);
-  font-variant-numeric: tabular-nums;
-}
-
 .text-extraction-apply-modal-saved-pdf {
   display: grid;
   gap: 12px;
@@ -2014,11 +2016,6 @@ body.text-extraction-drop-active .app-container {
   border: 1px solid var(--group-border-color);
   border-radius: 8px;
   background: var(--app-primary-bg);
-}
-
-.text-extraction-batch-final-modal-elapsed {
-  font-size: var(--font-size-6);
-  color: var(--text-soft);
 }
 
 .text-extraction-batch-final-json-line {
