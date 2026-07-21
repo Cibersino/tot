@@ -230,6 +230,33 @@
     );
   }
 
+  function getReportItemStatusKind(item) {
+    const normalizedState = normalizeReportState(item && item.state);
+    if (normalizedState === 'success') {
+      return item && item.applyTruncated === true ? 'truncated' : '';
+    }
+    return normalizedState;
+  }
+
+  function createReportItemLabel(displayName, item) {
+    const label = createDomElement('span', {
+      className: 'text-extraction-batch-final-item-label',
+    });
+    label.appendChild(createDomElement('span', {
+      textContent: displayName,
+    }));
+
+    const statusSuffix = getReportItemStatusSuffix(item);
+    const statusKind = getReportItemStatusKind(item);
+    if (statusSuffix && statusKind) {
+      label.appendChild(createDomElement('span', {
+        className: `text-extraction-batch-final-status text-extraction-batch-final-status--${statusKind}`,
+        textContent: ` ${statusSuffix}`,
+      }));
+    }
+    return label;
+  }
+
   function getRetainedArtifactPath(item) {
     return item
       && item.generatedPdfArtifact
@@ -243,7 +270,6 @@
   }
 
   function renderGeneratedInputRow(generatedInput, index, unitKey) {
-    const label = getReportItemStatusSuffix(generatedInput);
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-generated',
       attributes: {
@@ -251,16 +277,13 @@
         'data-index': index,
       },
     });
-    const labelText = createDomElement('span', {
-      textContent: `${generatedInput.fileName} ${label}`.trim(),
-    });
+    const label = createReportItemLabel(generatedInput.fileName, generatedInput);
     const revealButton = createRevealGeneratedPdfButton(getRetainedArtifactPath(generatedInput));
-    appendChildren(row, [labelText, revealButton]);
+    appendChildren(row, [label, revealButton]);
     return row;
   }
 
   function renderInputRow(input, index, unitKey) {
-    const label = getReportItemStatusSuffix(input);
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-input',
       attributes: {
@@ -270,11 +293,9 @@
     const main = createDomElement('div', {
       className: 'text-extraction-batch-final-input-main',
     });
-    const mainText = createDomElement('span', {
-      textContent: `${(input.displayName || input.fileName)} ${label}`.trim(),
-    });
+    const label = createReportItemLabel(input.displayName || input.fileName, input);
     const revealButton = createRevealGeneratedPdfButton(getRetainedArtifactPath(input));
-    appendChildren(main, [mainText, revealButton]);
+    appendChildren(main, [label, revealButton]);
     row.appendChild(main);
 
     if (Array.isArray(input.generatedInputs) && input.generatedInputs.length) {

@@ -421,7 +421,7 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   assert.match(harness.elements.textExtractionBatchFinalModalBody.innerHTML, /source_pages_1_4\.pdf/);
   assert.match(harness.elements.textExtractionBatchFinalModalBody.innerHTML, /heavy\.pdf/);
   assert.match(
-    harness.elements.textExtractionBatchFinalModalBody.innerHTML,
+    harness.elements.textExtractionBatchFinalModalBody.textContent,
     /heavy_pages_1_2\.pdf \(failed: ocr_input_too_large\)/
   );
   assert.ok(
@@ -561,10 +561,14 @@ test('batch final modal renders ordinary failed, cancelled, and omitted rows con
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /failed\.pdf \(failed: native_extraction_failed\)/);
-  assert.match(renderedHtml, /cancelled\.pdf \(cancelled: aborted_by_user\)/);
-  assert.match(renderedHtml, /omitted\.pdf \(Omitted\)/);
+  const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
+  const renderedHtml = renderedBody.innerHTML;
+  assert.match(renderedBody.textContent, /failed\.pdf \(failed: native_extraction_failed\)/);
+  assert.match(renderedBody.textContent, /cancelled\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(renderedBody.textContent, /omitted\.pdf \(Omitted\)/);
+  assert.match(renderedHtml, /text-extraction-batch-final-status--failed/);
+  assert.match(renderedHtml, /text-extraction-batch-final-status--cancelled/);
+  assert.match(renderedHtml, /text-extraction-batch-final-status--omitted/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
@@ -611,11 +615,11 @@ test('batch final modal renders direct labels for payload-too-large and text-lim
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /too-large\.pdf \(too large to apply\)/);
-  assert.match(renderedHtml, /limit\.pdf \(text limit reached\)/);
-  assert.doesNotMatch(renderedHtml, /failed: too large to apply/);
-  assert.doesNotMatch(renderedHtml, /failed: text limit reached/);
+  const renderedText = harness.elements.textExtractionBatchFinalModalBody.textContent;
+  assert.match(renderedText, /too-large\.pdf \(too large to apply\)/);
+  assert.match(renderedText, /limit\.pdf \(text limit reached\)/);
+  assert.doesNotMatch(renderedText, /failed: too large to apply/);
+  assert.doesNotMatch(renderedText, /failed: text limit reached/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
@@ -658,8 +662,9 @@ test('batch final modal renders truncation labels for successful ordinary rows',
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /truncated\.pdf \(applied with truncation\)/);
+  const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
+  assert.match(renderedBody.textContent, /truncated\.pdf \(applied with truncation\)/);
+  assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--truncated/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
@@ -774,10 +779,12 @@ test('batch final modal distinguishes cancelled heavy parent and generated child
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /book\.pdf \(cancelled: aborted_by_user\)/);
-  assert.match(renderedHtml, /book_pages_001_020\.pdf \(cancelled: aborted_by_user\)/);
-  assert.match(renderedHtml, /book_pages_021_040\.pdf \(Omitted\)/);
+  const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
+  assert.match(renderedBody.textContent, /book\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(renderedBody.textContent, /book_pages_001_020\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(renderedBody.textContent, /book_pages_021_040\.pdf \(Omitted\)/);
+  assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--cancelled/);
+  assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--omitted/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
@@ -827,8 +834,9 @@ test('batch final modal renders heavy split truncation on the source input row',
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /book\.pdf \(applied with truncation\)/);
+  const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
+  assert.match(renderedBody.textContent, /book\.pdf \(applied with truncation\)/);
+  assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--truncated/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();

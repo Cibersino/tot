@@ -2048,7 +2048,7 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-final-unit {
   display: grid;
-  gap: 12px;
+  gap: 6px;
   padding: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: 8px;
@@ -2061,7 +2061,7 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-final-json-line {
-  font-size: var(--font-size-6);
+  font-size: var(--font-size-8);
   color: var(--text-soft);
 }
 
@@ -2070,14 +2070,10 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-9);
 }
 
-.text-extraction-batch-final-input {
-  display: grid;
-  gap: 12px;
-}
-
+.text-extraction-batch-final-input,
 .text-extraction-batch-final-generated-list {
   display: grid;
-  gap: 12px;
+  gap: 4px;
 }
 
 .text-extraction-batch-final-input-main,
@@ -2087,11 +2083,28 @@ body.text-extraction-drop-active .app-container {
   justify-content: flex-start;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.text-extraction-batch-final-input-main {
   font-size: var(--font-size-7);
 }
 
+.text-extraction-batch-final-generated {
+  font-size: var(--font-size-5);
+}
+
+.text-extraction-batch-final-status--failed,
+.text-extraction-batch-final-status--truncated {
+  color: var(--warning-text);
+}
+
+.text-extraction-batch-final-status--cancelled,
+.text-extraction-batch-final-status--omitted {
+  color: var(--text-soft);
+}
+
 .text-extraction-batch-final-generated-list {
-  padding-left: 14px;
+  padding-left: 12px;
 }
 
 /* Text extraction single-file heavy modal */
