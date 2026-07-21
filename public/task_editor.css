@@ -8,9 +8,9 @@
   /* Colors */
 
   /* Backgrounds */
-  --bg: #fdf6e3;
-  --panel: #f4ecd8;
-  --panel-strong: #ece4d2;
+  --app-primary-bg: #fdf6e3;
+  --app-secondary-bg: #f4ecd8;
+  --app-tertiary-bg: #fef9eb;
   --surface: #fff;
   --surface-soft: rgb(255 255 255 / 0.45);
   --modal-backdrop: rgb(0 0 0 / 0.45);
@@ -58,7 +58,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background: var(--app-primary-bg);
   color: var(--text);
   font-family: var(--font-ui);
   box-sizing: border-box;
@@ -67,7 +67,7 @@ body {
 body {
   display: flex;
   flex-direction: column;
-  background: var(--bg);
+  background: var(--app-primary-bg);
   color: var(--text);
 }
 
@@ -201,7 +201,7 @@ body {
   gap: 3px;
   padding: 8px 12px;
   border: 1px solid var(--border);
-  background: var(--panel);
+  background: var(--app-secondary-bg);
   border-radius: 8px;
   box-shadow: var(--section-shadow);
   width: 100px;
@@ -242,7 +242,7 @@ body {
   justify-content: space-between;
   gap: var(--gap);
   padding: 8px 10px;
-  background: var(--panel);
+  background: var(--app-secondary-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: var(--section-shadow);
@@ -299,7 +299,7 @@ body {
   overflow: auto;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--surface);
+  background: var(--app-tertiary-bg);
   box-shadow: var(--section-shadow);
 }
 
@@ -323,7 +323,7 @@ body {
 }
 
 .task-table th {
-  background: var(--panel-strong);
+  background: var(--app-secondary-bg);
   color: var(--text-strong);
   position: sticky;
   top: 0;
@@ -412,7 +412,7 @@ body.is-resizing {
 
 .modal-panel {
   position: relative;
-  background: var(--panel);
+  background: var(--app-secondary-bg);
   color: var(--text);
   border-radius: 8px;
   border: 1px solid var(--border-strong);
