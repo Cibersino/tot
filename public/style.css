@@ -488,6 +488,20 @@ body {
   color: var(--text-color);
 }
 
+/* Shared main-window combobox trigger mechanics.
+   RendererCombobox inputs fill and inherit from their feature-owned hosts;
+   host sizing, alignment, and mode affordances remain local. */
+.presets-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-route-combobox .renderer-combobox__input,
+.text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
+.snapshot-save-tags-combobox .renderer-combobox__input {
+  width: 100%;
+  height: var(--combobox-trigger-height);
+  padding: var(--combobox-content-padding);
+  box-sizing: border-box;
+  font: inherit;
+}
+
 .presets-combobox .renderer-combobox__listbox {
   top: 100%;
   inset-inline: 0;
@@ -903,14 +917,6 @@ pre#textPreview .preview-static {
   flex: none;
   font-size: var(--font-size-7);
   font-family: inherit;
-}
-
-.presets-combobox .renderer-combobox__input {
-  width: 100%;
-  box-sizing: border-box;
-  font: inherit;
-  height: var(--combobox-trigger-height);
-  padding: var(--combobox-content-padding);
 }
 
 .presets-combobox[data-mode="select"] .renderer-combobox__input {
@@ -1751,14 +1757,6 @@ body.text-extraction-drop-active .app-container {
   background: var(--app-primary-bg);
 }
 
-.text-extraction-batch-plan-route-combobox .renderer-combobox__input,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
-  height: var(--combobox-trigger-height);
-  padding: var(--combobox-content-padding);
-  font-family: inherit;
-  box-sizing: border-box;
-}
-
 .text-extraction-batch-plan-unit-name {
   width: 320px;
   height: 30px;
@@ -1775,12 +1773,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__input,
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__option {
   text-align: center;
-}
-
-.text-extraction-batch-plan-route-combobox .renderer-combobox__input,
-.text-extraction-batch-plan-unit-combobox .renderer-combobox__input {
-  width: 100%;
-  font: inherit;
 }
 
 .text-extraction-batch-plan-route-combobox .renderer-combobox__listbox,
@@ -2270,14 +2262,6 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-save-tags-combobox .renderer-combobox__option[data-variant="create"] {
   font-weight: 700;
-}
-
-.snapshot-save-tags-combobox .renderer-combobox__input {
-  width: 100%;
-  box-sizing: border-box;
-  font: inherit;
-  height: var(--combobox-trigger-height);
-  padding: var(--combobox-content-padding);
 }
 
 .snapshot-save-tags-combobox .renderer-combobox__listbox {
