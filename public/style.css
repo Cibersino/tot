@@ -122,7 +122,6 @@
   --modal-max-height: 85vh;
   --logo-height: 100px;
   --logo-links-scale: 0.7;
-  --kofi-logo-scale: 0.82;
 
   /* Corner radii */
   --field-radius: 4px;
@@ -303,11 +302,21 @@ body {
   margin: 0;
 }
 
-#appLogo {
+/* Shared branding-image mechanics.
+   All logo assets use height-driven intrinsic sizing;
+   each brand retains its own height variant below. */
+#appLogo,
+#devLogo,
+#kofiLogo,
+#browserExtensionLogo {
   width: auto;
-  height: 100%;
   object-fit: contain;
   display: block;
+}
+
+/* Primary product-mark height variant */
+#appLogo {
+  height: 100%;
 }
 
 .logo-link {
@@ -333,25 +342,19 @@ body {
   height: 100%;
 }
 
+/* Developer-mark height variant */
 #devLogo {
-  width: auto;
   height: 100%;
-  object-fit: contain;
-  display: block;
 }
 
+/* Ko-fi-mark height variant */
 #kofiLogo {
-  width: auto;
-  height: calc(100% * var(--kofi-logo-scale));
-  object-fit: contain;
-  display: block;
+  height: 82%;
 }
 
+/* Browser-extension-mark height variant */
 #browserExtensionLogo {
-  width: auto;
-  height: calc(100% * 0.72);
-  object-fit: contain;
-  display: block;
+  height: 72%;
 }
 
 /* Shared component systems */
