@@ -1838,11 +1838,6 @@ body.text-extraction-drop-active .app-container {
   flex-wrap: nowrap;
 }
 
-.text-extraction-batch-plan-unit-meta {
-  font-size: var(--font-size-6);
-  color: var(--text-soft);
-}
-
 .text-extraction-batch-plan-unit-tags {
   font-size: var(--font-size-6);
   color: var(--text-soft);
