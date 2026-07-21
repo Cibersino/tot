@@ -700,6 +700,26 @@ body {
   gap: 12px;
 }
 
+/* Shared framed-dialog terminal button groups.
+   Button-only dialogs use their action row directly. OCR Disclosure uses its
+   nested button group because the outer action area also owns the privacy link.
+   Snapshot Save Tags overrides the default end alignment in its feature section. */
+.text-extraction-pdf-options-modal-actions,
+.text-extraction-route-modal-actions,
+.text-extraction-apply-modal-actions,
+.text-extraction-batch-plan-modal-actions,
+.text-extraction-batch-final-modal-actions,
+.text-extraction-single-file-heavy-modal-actions,
+.text-extraction-ocr-activation-disclosure-buttons,
+.snapshot-save-tags-modal-actions,
+.snapshot-tag-manager-modal-actions,
+.reading-test-entry-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 /* Feature-local sections */
 
 /* Text selector section */
@@ -1510,13 +1530,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
-.text-extraction-pdf-options-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
 .text-extraction-pdf-options-modal-actions .btn-standard {
   min-width: 110px;
 }
@@ -1623,13 +1636,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
-.text-extraction-route-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
 .text-extraction-route-modal-actions .btn-standard {
   min-width: 110px;
 }
@@ -1642,13 +1648,6 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-apply-modal-body p {
   margin: 0;
   font-size: var(--font-size-8);
-}
-
-.text-extraction-apply-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .text-extraction-apply-modal-actions .btn-standard {
@@ -1708,13 +1707,6 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-plan-modal-toolbar {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.text-extraction-batch-plan-modal-actions {
-  display: flex;
-  justify-content: flex-end;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -2038,13 +2030,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
-.text-extraction-batch-final-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
 .text-extraction-batch-final-modal-report {
   display: grid;
   gap: 12px;
@@ -2110,13 +2095,6 @@ body.text-extraction-drop-active .app-container {
 /* Text extraction single-file heavy modal */
 .text-extraction-single-file-heavy-modal-panel {
   width: 620px;
-}
-
-.text-extraction-single-file-heavy-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .text-extraction-single-file-heavy-modal-details {
@@ -2190,11 +2168,7 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-ocr-activation-disclosure-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-inline-start: auto;
+  margin-inline-start: auto; /* Places the shared terminal button group after the privacy link. */
 }
 
 .text-extraction-ocr-activation-disclosure-buttons .btn-standard {
@@ -2260,10 +2234,7 @@ body.text-extraction-drop-active .app-container {
 }
 
 .snapshot-save-tags-modal-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  justify-content: center; /* Centered variant of the shared terminal button group. */
 }
 
 .snapshot-save-tags-modal-actions .btn-standard {
@@ -2315,8 +2286,7 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-tag-manager-category-actions,
 .snapshot-tag-manager-draft-actions,
-.snapshot-tag-manager-row-actions,
-.snapshot-tag-manager-modal-actions {
+.snapshot-tag-manager-row-actions {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -2331,10 +2301,6 @@ body.text-extraction-drop-active .app-container {
 }
 
 .snapshot-tag-manager-draft-actions {
-  gap: 12px;
-}
-
-.snapshot-tag-manager-modal-actions {
   gap: 12px;
 }
 
@@ -2385,10 +2351,6 @@ body.text-extraction-drop-active .app-container {
   text-align: center;
 }
 
-.snapshot-tag-manager-modal-actions {
-  justify-content: flex-end;
-}
-
 /* Reading test modal */
 
 /* Reading test entry modal */
@@ -2396,13 +2358,6 @@ body.text-extraction-drop-active .app-container {
   width: 720px;
   max-height: var(--modal-max-height);
   overflow: auto;
-}
-
-.reading-test-entry-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .reading-test-entry-modal-body p {
