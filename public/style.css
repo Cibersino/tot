@@ -590,6 +590,19 @@ body {
   box-sizing: border-box;
 }
 
+/* Shared editable numeric-value typography.
+   The stopwatch is a text input that edits a numeric time value; free-text
+   direct-entry fields remain excluded. */
+.clipboard-repeat-input,
+.velocity #wpmInput,
+.results-multiplier-row input,
+.cronometro .crono-box,
+.text-extraction-pdf-options-modal-range-field input,
+.text-extraction-apply-repeat-row input,
+.text-extraction-batch-plan-page-scope-input {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Shared direct-entry height variants.
    Heights are coordinated conservatively because changing them displaces
    surrounding vertical layout. */
