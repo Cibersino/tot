@@ -740,6 +740,18 @@ body {
   flex-wrap: wrap;
 }
 
+/* Shared text-extraction choice-fieldset shell.
+   Legend and option-row presentation remain feature-owned. */
+.text-extraction-pdf-options-modal-selection,
+.text-extraction-batch-plan-failure-policy {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+}
+
 /* Feature-local sections */
 
 /* Text selector section */
@@ -1592,15 +1604,6 @@ body.text-extraction-drop-active .app-container {
   color: var(--text-soft);
 }
 
-.text-extraction-pdf-options-modal-selection {
-  margin: 0;
-  padding: 10px 12px;
-  border: 1px solid var(--group-border-color);
-  border-radius: 8px;
-  display: grid;
-  gap: 6px;
-}
-
 .text-extraction-pdf-options-modal-selection-legend {
   padding: 0 4px;
   font-size: var(--font-size-8);
@@ -1738,15 +1741,6 @@ body.text-extraction-drop-active .app-container {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.text-extraction-batch-plan-failure-policy {
-  margin: 0;
-  padding: 10px 12px;
-  border: 1px solid var(--group-border-color);
-  border-radius: 8px;
-  display: grid;
-  gap: 6px;
 }
 
 .text-extraction-batch-plan-failure-option {
