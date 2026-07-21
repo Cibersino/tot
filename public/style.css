@@ -1262,6 +1262,23 @@ pre#textPreview .preview-static {
   line-height: var(--line-height-relaxed);
 }
 
+/* Resource links leave the modal; hash links navigate within its content. */
+.info-modal-content a[href]:not([href^="#"]) {
+  color: var(--link-resource);
+}
+
+.info-modal-content a[href]:not([href^="#"]):hover {
+  color: var(--link-resource-hover);
+}
+
+.info-modal-content a[href^="#"] {
+  color: var(--link-action);
+}
+
+.info-modal-content a[href^="#"]:hover {
+  color: var(--link-action-hover);
+}
+
 .info-modal-content h1 {
   font-size: var(--font-size-12);
 }
