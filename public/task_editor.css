@@ -21,9 +21,9 @@
   --column-resizer-hover-bg: rgb(168 151 106 / 0.22);
 
   /* Text */
-  --text: #2f2a20;
+  --text-color: #2f2a20;
   --text-strong: #222;
-  --muted: #6c6049;
+  --text-soft: #6c6049;
 
   /* Borders */
   --border: #e9e6de;
@@ -64,7 +64,7 @@ body {
   margin: 0;
   padding: 0;
   background: var(--app-primary-bg);
-  color: var(--text);
+  color: var(--text-color);
   font-family: var(--font-ui);
   box-sizing: border-box;
 }
@@ -73,7 +73,7 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--app-primary-bg);
-  color: var(--text);
+  color: var(--text-color);
 }
 
 .task-editor {
@@ -130,7 +130,7 @@ body {
   border: 1px solid #cfcfcf;
   border-radius: var(--button-radius);
   background: var(--button-bg);
-  color: #2f2a20;
+  color: var(--text-color);
   cursor: pointer;
   transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
   box-shadow: none;
@@ -180,7 +180,7 @@ body {
   font-size: 13px;
   box-sizing: border-box;
   background: var(--field-bg);
-  color: var(--text);
+  color: var(--text-color);
 }
 
 #taskNameInput:focus-visible,
@@ -225,7 +225,7 @@ body {
 .task-summary__label {
   font-size: 11px;
   line-height: 1.1;
-  color: var(--muted);
+  color: var(--text-soft);
   white-space: nowrap;
 }
 
@@ -264,7 +264,7 @@ body {
 
 #taskNameLabel {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-soft);
 }
 
 #taskNameInput {
@@ -275,7 +275,7 @@ body {
   border-radius: var(--field-radius);
   font-size: 14px;
   background: var(--field-bg);
-  color: var(--text);
+  color: var(--text-color);
   outline: none;
 }
 
@@ -312,7 +312,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  color: var(--text);
+  color: var(--text-color);
 }
 
 .task-table.resizable {
@@ -418,7 +418,7 @@ body.is-resizing {
 .modal-panel {
   position: relative;
   background: var(--app-secondary-bg);
-  color: var(--text);
+  color: var(--text-color);
   border-radius: 8px;
   border: 1px solid var(--border-strong);
   width: 520px;
@@ -480,7 +480,7 @@ body.is-resizing {
 }
 
 .comment-snapshot-path {
-  color: var(--muted);
+  color: var(--text-soft);
   font-size: 12px;
   flex: 1 1 auto;
   min-width: 0;
@@ -504,7 +504,7 @@ body.is-resizing {
 
 .library-search label {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-soft);
 }
 
 .library-search input {
@@ -545,7 +545,7 @@ body.is-resizing {
 }
 
 .library-item__time {
-  color: var(--muted);
+  color: var(--text-soft);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -560,7 +560,7 @@ body.is-resizing {
 }
 
 .library-empty {
-  color: var(--muted);
+  color: var(--text-soft);
   font-size: 13px;
 }
 
