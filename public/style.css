@@ -615,6 +615,14 @@ body {
   height: var(--text-entry-field-height);
 }
 
+/* Shared PDF page-selection validation message.
+   The standalone and batch controls consume the same page-selection model. */
+.text-extraction-pdf-options-modal-validation,
+.text-extraction-batch-plan-page-scope-validation {
+  color: var(--warning-text);
+  font-size: var(--font-size-6);
+}
+
 /* Shared modal layers */
 
 /* Shared framed-dialog structure */
@@ -1623,11 +1631,6 @@ body.text-extraction-drop-active .app-container {
   margin: 2px 0 0;
 }
 
-.text-extraction-pdf-options-modal-validation {
-  color: var(--warning-text);
-  font-size: var(--font-size-6);
-}
-
 /* Text extraction route modal */
 .text-extraction-route-modal-panel {
   width: 520px;
@@ -2012,14 +2015,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-6);
 }
 
-.text-extraction-batch-plan-page-scope-validation {
-  font-size: var(--font-size-6);
-}
-
-.text-extraction-batch-plan-page-scope-validation {
-  color: var(--warning-text);
-}
-
 /* Text extraction batch final modal */
 .text-extraction-batch-final-modal-panel {
   width: 100%;
@@ -2320,6 +2315,8 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-7);
 }
 
+/* Tag-draft validation remains feature-owned; it is a live message with an
+   independent lifecycle from PDF page-selection validation. */
 .snapshot-tag-manager-validation {
   color: var(--warning-text);
   font-size: var(--font-size-6);
