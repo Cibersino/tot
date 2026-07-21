@@ -1828,17 +1828,11 @@ body.text-extraction-drop-active .app-container {
   flex: none;
 }
 
-.text-extraction-batch-plan-unit-actions {
-  display: flex;
-  gap: 4px;
-  align-self: start;
-  flex-wrap: nowrap;
-}
-
+.text-extraction-batch-plan-unit-actions,
 .text-extraction-batch-plan-input-actions {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .text-extraction-batch-plan-unit-meta {
