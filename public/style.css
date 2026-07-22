@@ -1999,7 +1999,7 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-final-unit {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   padding: 12px;
   border: 1px solid var(--group-border-color);
   border-radius: 8px;
@@ -2019,7 +2019,7 @@ body.text-extraction-drop-active .app-container {
 .text-extraction-batch-final-input,
 .text-extraction-batch-final-generated-list {
   display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 
 .text-extraction-batch-final-input-main,
