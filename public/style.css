@@ -1105,7 +1105,7 @@ pre#textPreview .preview-static {
   align-items: center;
   gap: 6px;
   margin-top: 6px;
-  margin-left: 20px;
+  margin-inline-start: 20px;
   font-size: var(--font-size-5);
 }
 
@@ -1219,7 +1219,7 @@ pre#textPreview .preview-static {
   align-items: center;
   gap: 4px;
   height: 30px;
-  margin-left: auto;
+  margin-inline-start: auto;
   flex: 0 0 auto;
 }
 
@@ -1445,7 +1445,7 @@ pre#textPreview .preview-static {
 
 .info-section {
   background: var(--app-primary-bg);
-  text-align: left;
+  text-align: start;
 }
 
 .info-section div {
@@ -1870,7 +1870,7 @@ body.text-extraction-drop-active .app-container {
   justify-content: flex-end;
   gap: 12px;
   flex-wrap: wrap;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .text-extraction-batch-plan-input-main {
@@ -1937,7 +1937,7 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-plan-heavy-preview-list {
   margin: 0;
-  padding-left: 18px;
+  padding-inline-start: 18px;
   font-size: var(--font-size-5);
 }
 
@@ -2054,7 +2054,7 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-final-generated-list {
-  padding-left: 12px;
+  padding-inline-start: 12px;
 }
 
 /* Text extraction single-file heavy modal */
@@ -2381,7 +2381,7 @@ body.text-extraction-drop-active .app-container {
 
 .reading-test-entry-modal-count-number {
   min-inline-size: 3ch;
-  text-align: left;
+  text-align: start;
   font-variant-numeric: tabular-nums;
 }
 
