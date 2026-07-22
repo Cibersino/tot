@@ -1820,27 +1820,12 @@ body.text-extraction-drop-active .app-container {
   gap: 4px;
 }
 
-.text-extraction-batch-plan-unit-tags {
-  font-size: var(--font-size-6);
-  color: var(--text-soft);
-}
-
-.text-extraction-batch-plan-heavy-preview-label {
-  font-size: var(--font-size-6);
-  color: var(--text-soft);
-}
-
 .text-extraction-batch-plan-input-code {
   font-size: var(--font-size-6);
   color: var(--text-soft);
 }
 
 .text-extraction-batch-plan-pages-summary {
-  font-size: var(--font-size-7);
-  color: var(--text-soft);
-}
-
-.text-extraction-batch-plan-route-fixed {
   font-size: var(--font-size-7);
   color: var(--text-soft);
 }
@@ -1932,6 +1917,8 @@ body.text-extraction-drop-active .app-container {
   display: inline-flex;
   align-items: center;
   height: var(--combobox-trigger-height);
+  font-size: var(--font-size-7);
+  color: var(--text-soft);
 }
 
 .text-extraction-batch-plan-unit-tags {
@@ -1940,6 +1927,8 @@ body.text-extraction-drop-active .app-container {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  font-size: var(--font-size-6);
+  color: var(--text-soft);
 }
 
 .text-extraction-batch-plan-unit-tags--disabled {
@@ -1954,6 +1943,8 @@ body.text-extraction-drop-active .app-container {
 
 .text-extraction-batch-plan-heavy-preview-label {
   margin: 0;
+  font-size: var(--font-size-6);
+  color: var(--text-soft);
 }
 
 .text-extraction-batch-plan-page-scope {
