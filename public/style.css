@@ -41,8 +41,8 @@
   --switch-track-on: #4caf50;
   --switch-track-off: #ccc;
   --control-accent: #0078D4;
-  --focus-ring: rgb(30 130 230 / .12);
-  --danger-focus-ring: rgb(197 58 58 / .35);
+  --focus-ring: rgb(30 130 230 / 0.12);
+  --danger-focus-ring: rgb(197 58 58 / 0.35);
 
   /* Text */
   --text-color: #2f2a20;
