@@ -169,6 +169,7 @@ body {
 .app-container {
   position: relative;
   height: 100vh;
+  box-sizing: border-box;
   padding: 4px;
   display: flex;
   flex-wrap: wrap;
