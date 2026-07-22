@@ -129,7 +129,7 @@ body {
   border: 1px solid #cfcfcf;
   border-radius: var(--button-radius);
   background: var(--button-bg);
-  color: var(--text-color);
+  color: inherit;
   cursor: pointer;
   transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
   box-shadow: none;
