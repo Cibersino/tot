@@ -491,7 +491,7 @@ body {
   box-sizing: border-box;
   font-family: inherit;
   font-size: inherit;
-  line-height: inherit;
+  line-height: 1;
   color: inherit;
 }
 
@@ -544,6 +544,7 @@ body {
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__option,
 .snapshot-save-tags-combobox .renderer-combobox__option {
   padding: var(--combobox-content-padding);
+  line-height: 1;
   border-inline-start: 3px solid transparent;
 }
 
@@ -583,7 +584,7 @@ body {
   background: var(--field-bg);
   color: inherit;
   font-family: inherit;
-  line-height: inherit;
+  line-height: 1;
   box-sizing: border-box;
 }
 
