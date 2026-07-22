@@ -197,11 +197,6 @@ body {
   pointer-events: none;
 }
 
-/* The base slot is medium-sized; only the non-default size needs an override. */
-.tot-icon-slot--sm {
-  --tot-icon-size: var(--tot-icon-size-sm);
-}
-
 .tot-icon-svg {
   display: block;
   width: auto;
