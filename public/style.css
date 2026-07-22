@@ -1071,7 +1071,6 @@ pre#textPreview .preview-static {
   width: 260px;
   flex: none;
   font-size: var(--font-size-7);
-  font-family: inherit;
 }
 
 /* Preset description */
