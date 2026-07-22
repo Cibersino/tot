@@ -173,8 +173,7 @@ body {
 }
 
 /* Shared field chrome used by the task table plus comment/library modal inputs. */
-.task-table input[type="text"],
-.task-table input[type="number"],
+.task-table input,
 #commentInput,
 .library-search input {
   border: 1px solid var(--input-border);
@@ -185,8 +184,7 @@ body {
 }
 
 #taskNameInput:focus-visible,
-.task-table input[type="text"]:focus-visible,
-.task-table input[type="number"]:focus-visible,
+.task-table input:focus-visible,
 #commentInput:focus-visible,
 .library-search input:focus-visible {
   outline: 3px solid var(--focus-ring);
@@ -352,8 +350,7 @@ body {
   text-align: right;
 }
 
-.task-table input[type="text"],
-.task-table input[type="number"] {
+.task-table input {
   width: 100%;
   padding: 4px 6px;
   border-radius: var(--field-radius);
