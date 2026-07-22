@@ -206,7 +206,6 @@ body {
   display: block;
   width: auto;
   height: 100%;
-  max-width: none;
   overflow: visible;
 }
 
