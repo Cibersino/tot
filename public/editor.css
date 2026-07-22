@@ -5,6 +5,7 @@
 /* Design tokens */
 :root {
   --button-radius: 5px;
+  --font-ui: Arial, sans-serif;
   --bg: #fff;
   --border: #e6e6e6;
   --toolbar-bg: #f6f6f6;
@@ -145,7 +146,7 @@ body {
   height: var(--control-height-md);
   line-height: 1;
   font-size: 0.9375rem;
-  font-family: inherit;
+  font-family: var(--font-ui);
   border-radius: var(--button-radius);
   border: 1px solid #cfcfcf;
   background: #fff;

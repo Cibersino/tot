@@ -6,6 +6,7 @@
 :root {
   --field-radius: 4px;
   --button-radius: 5px;
+  --font-ui: Arial, sans-serif;
   --control-height-md: 30px;
   --tot-icon-size-sm: 14px;
   --tot-icon-size-md: 28px;
@@ -113,7 +114,7 @@ body[data-expanded="false"] .replace-row {
   height: var(--control-height-md);
   line-height: 1;
   font-size: 0.9375rem;
-  font-family: inherit;
+  font-family: var(--font-ui);
   border-radius: var(--button-radius);
   border: 1px solid #cfcfcf;
   background: #fff;
