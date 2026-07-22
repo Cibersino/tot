@@ -2508,4 +2508,21 @@ body.text-extraction-drop-active .app-container {
   outline-color: var(--input-invalid-border);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .startup-splash__spinner,
+  .editor-loader,
+  .text-extraction-processing-placeholder-fill {
+    animation: none;
+  }
+
+  .btn-standard:active,
+  .browser-extension-modal-store-link:hover {
+    transform: none;
+  }
+
+  .slider:before {
+    transition: none;
+  }
+}
+
 /* End of public/style.css */
