@@ -28,11 +28,9 @@
   --border: #e9e6de;
   --border-strong: rgb(0 0 0 / 0.12);
   --input-border: #b8ae9c;
-  --input-border-strong: rgb(0 0 0 / 0.2);
 
   /* Focus */
   --focus-ring: rgb(30 130 230 / 0.12);
-  --focus-ring-strong: rgb(30 130 230 / 0.22);
 
   /* Shadows */
   --section-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
