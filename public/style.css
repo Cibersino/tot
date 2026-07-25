@@ -133,24 +133,15 @@
   --tot-icon-size-md: 28px;
 }
 
-/* Document-root canvas */
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
-
 html {
   font-size: var(--font-size-root);
-  height: 100%;
 }
 
 body {
-  height: 100%;
+  margin: 0;
   font-family: var(--font-ui); /* Owns the UI family inherited by ordinary text and controls without a local family owner. */
   line-height: var(--line-height-default); /* Owns the line height inherited by ordinary text and controls without a local line-height owner. */
   overflow: hidden;
-  box-sizing: border-box;
   background: var(--app-primary-bg); /* Owns the main-window canvas behind the transparent shell. */
   color: var(--text-color); /* Owns the normal foreground inherited by main-window text. */
 }
