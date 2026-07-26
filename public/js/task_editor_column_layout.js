@@ -9,14 +9,14 @@
 
   const LAYOUT_VERSION = 1;
   const TEXT_COLUMN_KEY = 'texto';
-  const TEXT_MIN_WIDTH_PX = 200;
+  const TEXT_MIN_WIDTH_PX = 174;
   const FITTED_WIDTH_SAFETY_PX = 1;
   const WIDTH_MAX_PX = 100_000;
   const KEYBOARD_STEP_PX = 10;
   const KEYBOARD_FINE_STEP_PX = 1;
   const UTILITY_COLUMNS = Object.freeze([
-    Object.freeze({ key: 'tiempo', minWidth: 70 }),
-    Object.freeze({ key: 'percent', minWidth: 55 }),
+    Object.freeze({ key: 'tiempo', minWidth: 88 }),
+    Object.freeze({ key: 'percent', minWidth: 63 }),
     Object.freeze({ key: 'falta', minWidth: 55 }),
     Object.freeze({ key: 'enlace', minWidth: 200 }),
     Object.freeze({ key: 'comentario', minWidth: 82 }),

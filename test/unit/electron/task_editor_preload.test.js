@@ -84,8 +84,8 @@ test('task editor preload forwards the complete column layout record', () => {
   const record = {
     version: 1,
     widths: {
-      tiempo: 70,
-      percent: 55,
+      tiempo: 88,
+      percent: 63,
       falta: 55,
       enlace: 200,
       comentario: 82,

@@ -13,8 +13,8 @@ const { installElectronModuleMock } = require('../../helpers/electron_module_moc
 const DEFAULT_RECORD = Object.freeze({
   version: 1,
   widths: Object.freeze({
-    tiempo: 70,
-    percent: 55,
+    tiempo: 88,
+    percent: 63,
     falta: 55,
     enlace: 200,
     comentario: 82,
@@ -176,7 +176,7 @@ test('task column layout load signals fresh defaults for missing, malformed, and
     { ...DEFAULT_RECORD, extra: true },
     { version: 0, widths: DEFAULT_RECORD.widths },
     { version: 1, widths: { ...DEFAULT_RECORD.widths, texto: 200 } },
-    { version: 1, widths: { ...DEFAULT_RECORD.widths, tiempo: '70' } },
+    { version: 1, widths: { ...DEFAULT_RECORD.widths, tiempo: '88' } },
     { version: 1, widths: { ...DEFAULT_RECORD.widths, comentario: 81 } },
     { version: 1, widths: { ...DEFAULT_RECORD.widths, acciones: 100_001 } },
   ];
@@ -213,7 +213,7 @@ test('task column layout save validates the complete record and uses strict pers
 
   assert.deepEqual(
     await harness.invoke('task-columns-save', {
-      record: { version: 1, widths: { ...DEFAULT_RECORD.widths, tiempo: 69 } },
+      record: { version: 1, widths: { ...DEFAULT_RECORD.widths, tiempo: 87 } },
     }),
     { ok: false, code: 'INVALID_SCHEMA' }
   );
