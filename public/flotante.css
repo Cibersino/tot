@@ -68,6 +68,7 @@ body {
 .crono {
   width: 106px;
   font-size: 24px;
+  font-variant-numeric: tabular-nums;
   text-align: left;
 }
 

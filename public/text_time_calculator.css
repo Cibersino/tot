@@ -80,7 +80,6 @@ body {
   font: inherit;
 }
 
-.text-time-calculator__target-combobox .renderer-combobox__input,
 .text-time-calculator__field {
   height: 32px;
   font-size: 14px;
@@ -183,7 +182,6 @@ body {
 
 .text-time-calculator__target-combobox {
   font-size: 14px;
-  font-variant-numeric: tabular-nums;
 }
 
 .text-time-calculator__row-validation,

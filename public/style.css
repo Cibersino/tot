@@ -635,6 +635,7 @@ body {
 .text-extraction-pdf-options-modal-body .text-extraction-pdf-options-modal-selected-count,
 .text-extraction-batch-plan-page-scope-count {
   color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
 }
 
 .text-extraction-pdf-options-modal-body .text-extraction-pdf-options-modal-validation,
@@ -781,6 +782,7 @@ body {
 .text-extraction-batch-final-modal-body > .text-extraction-batch-final-modal-elapsed {
   color: var(--text-soft);
   font-size: var(--font-size-6);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Feature-local sections */
@@ -1085,6 +1087,7 @@ pre#textPreview .preview-static {
 .big-time {
   font-weight: 700;
   font-size: var(--font-size-10);
+  font-variant-numeric: tabular-nums;
 }
 
 .results-multiplier-row {
@@ -1109,6 +1112,7 @@ pre#textPreview .preview-static {
 .results-multiplier-row output {
   flex: 1 1 auto;
   min-width: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Results multiplier disabled styling stays local because its availability can change independently. */
@@ -1133,6 +1137,7 @@ pre#textPreview .preview-static {
   flex: 1 1 auto;
   min-width: 0;
   font-size: var(--font-size-5);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Toggle wrapper */
@@ -1193,6 +1198,7 @@ pre#textPreview .preview-static {
 
 .cronometro .realwpm {
   font-size: var(--font-size-9);
+  font-variant-numeric: tabular-nums;
 }
 
 .cronometro .crono-controls {

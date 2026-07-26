@@ -344,6 +344,7 @@ body {
 .task-table td:nth-child(2) input,
 .task-table td:nth-child(3) input {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .task-table .cell-actions {

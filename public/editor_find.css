@@ -173,6 +173,7 @@ body[data-expanded="false"] .replace-row {
   text-overflow: ellipsis;
   text-align: center;
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
   color: #444;
   white-space: nowrap;
 }
