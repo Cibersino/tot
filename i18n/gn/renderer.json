@@ -506,6 +506,7 @@
         "library_save_error": "Ndaikatúi oñeñongatu biblioteca-pe.",
         "library_save_success": "Fila oñeñongatu biblioteca-pe.",
         "library_delete_error": "Ndaikatúi oñembogue biblioteca-gui.",
+        "column_layout_save_error": "Ndaikatúi oñeñongatu umi columna ñemohenda ha ikatu ndojejuhúi jey ambue jey.",
         "link_blocked": "Link ojejokóva.",
         "link_missing": "Archivo ndojejuhúi.",
         "link_error": "Link jeipe’ápe oiko jejavy.",

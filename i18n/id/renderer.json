@@ -506,6 +506,7 @@
         "library_save_error": "Tidak dapat menyimpan ke pustaka.",
         "library_save_success": "Baris disimpan ke pustaka.",
         "library_delete_error": "Tidak dapat menghapus dari pustaka.",
+        "column_layout_save_error": "Tata letak kolom tidak dapat disimpan dan mungkin tidak dipertahankan lain kali.",
         "link_blocked": "Tautan diblokir.",
         "link_missing": "File tidak ditemukan.",
         "link_error": "Kesalahan saat membuka tautan.",

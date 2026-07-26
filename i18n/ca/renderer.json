@@ -506,6 +506,7 @@
         "library_save_error": "No s’ha pogut desar a la biblioteca.",
         "library_save_success": "Fila desada a la biblioteca.",
         "library_delete_error": "No s’ha pogut eliminar de la biblioteca.",
+        "column_layout_save_error": "No s'ha pogut desar la disposició de les columnes i pot ser que no es conservi la propera vegada.",
         "link_blocked": "Enllaç bloquejat.",
         "link_missing": "Fitxer no trobat.",
         "link_error": "Error en obrir l’enllaç.",

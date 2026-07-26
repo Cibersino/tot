@@ -506,6 +506,7 @@
         "library_save_error": "Pa t kapab sove nan bibliyotèk la.",
         "library_save_success": "Ranje a sove nan bibliyotèk la.",
         "library_delete_error": "Pa t kapab efase nan bibliyotèk la.",
+        "column_layout_save_error": "Pa t ka sove aranjman kolòn yo, epi li ka pa rete la pwochen fwa a.",
         "link_blocked": "Lyen bloke.",
         "link_missing": "Fichye pa jwenn.",
         "link_error": "Erè pandan ouvèti lyen an.",

@@ -506,6 +506,7 @@
         "library_save_error": "ذخیره در کتابخانه انجام نشد.",
         "library_save_success": "ردیف در کتابخانه ذخیره شد.",
         "library_delete_error": "حذف از کتابخانه انجام نشد.",
+        "column_layout_save_error": "چیدمان ستون‌ها ذخیره نشد و ممکن است دفعهٔ بعد حفظ نشود.",
         "link_blocked": "پیوند مسدود شد.",
         "link_missing": "فایل یافت نشد.",
         "link_error": "خطا در باز کردن پیوند.",

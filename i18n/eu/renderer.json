@@ -506,6 +506,7 @@
         "library_save_error": "Ezin izan da liburutegian gorde.",
         "library_save_success": "Errenkada liburutegian gordeta.",
         "library_delete_error": "Ezin izan da liburutegitik ezabatu.",
+        "column_layout_save_error": "Ezin izan da zutabeen diseinua gorde, eta baliteke hurrengoan ez mantentzea.",
         "link_blocked": "Esteka blokeatuta.",
         "link_missing": "Fitxategia ez da aurkitu.",
         "link_error": "Errorea esteka irekitzean.",

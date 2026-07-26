@@ -506,6 +506,7 @@
         "library_save_error": "Could not save to library.",
         "library_save_success": "Row saved to library.",
         "library_delete_error": "Could not delete from library.",
+        "column_layout_save_error": "We no fit save di column layout, and e fit no remain next time.",
         "link_blocked": "Link blocked.",
         "link_missing": "File no dey found.",
         "link_error": "Error opening link.",

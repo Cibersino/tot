@@ -506,6 +506,7 @@
         "library_save_error": "Konnte nicht in die Bibliothek speichern.",
         "library_save_success": "Zeile in die Bibliothek gespeichert.",
         "library_delete_error": "Konnte nicht aus der Bibliothek löschen.",
+        "column_layout_save_error": "Das Spaltenlayout konnte nicht gespeichert werden und wird beim nächsten Mal möglicherweise nicht beibehalten.",
         "link_blocked": "Link blockiert.",
         "link_missing": "Datei nicht gefunden.",
         "link_error": "Fehler beim Öffnen des Links.",

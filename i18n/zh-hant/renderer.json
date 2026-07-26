@@ -506,6 +506,7 @@
         "library_save_error": "無法儲存至資料庫。",
         "library_save_success": "列已儲存至資料庫。",
         "library_delete_error": "無法從資料庫刪除。",
+        "column_layout_save_error": "無法儲存欄位版面配置，下次可能不會保留。",
         "link_blocked": "連結已已封鎖。",
         "link_missing": "找不到檔案。",
         "link_error": "開啟連結時發生錯誤。",

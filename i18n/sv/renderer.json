@@ -506,6 +506,7 @@
         "library_save_error": "Kunde inte spara i biblioteket.",
         "library_save_success": "Raden sparades i biblioteket.",
         "library_delete_error": "Kunde inte ta bort från biblioteket.",
+        "column_layout_save_error": "Kolumnlayouten kunde inte sparas och kanske inte behålls nästa gång.",
         "link_blocked": "Länk blockerad.",
         "link_missing": "Filen hittades inte.",
         "link_error": "Fel vid öppning av länk.",

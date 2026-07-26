@@ -506,6 +506,7 @@
         "library_save_error": "Impossibile salvare nella biblioteca.",
         "library_save_success": "Riga salvata nella biblioteca.",
         "library_delete_error": "Impossibile eliminare dalla biblioteca.",
+        "column_layout_save_error": "Non è stato possibile salvare il layout delle colonne e potrebbe non essere mantenuto la prossima volta.",
         "link_blocked": "Link bloccato.",
         "link_missing": "File non trovato.",
         "link_error": "Errore durante l'apertura del link.",

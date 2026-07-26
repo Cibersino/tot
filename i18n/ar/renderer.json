@@ -506,6 +506,7 @@
         "library_save_error": "تعذّر الحفظ في المكتبة.",
         "library_save_success": "تم حفظ الصف في المكتبة.",
         "library_delete_error": "تعذّر الحذف من المكتبة.",
+        "column_layout_save_error": "تعذّر حفظ تخطيط الأعمدة وقد لا يتم الاحتفاظ به في المرة القادمة.",
         "link_blocked": "تم حظر الرابط.",
         "link_missing": "الملف غير موجود.",
         "link_error": "خطأ في فتح الرابط.",

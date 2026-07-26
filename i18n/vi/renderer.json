@@ -506,6 +506,7 @@
         "library_save_error": "Không thể lưu vào thư viện.",
         "library_save_success": "Đã lưu hàng vào thư viện.",
         "library_delete_error": "Không thể xóa khỏi thư viện.",
+        "column_layout_save_error": "Không thể lưu bố cục cột và bố cục này có thể không được giữ lại vào lần sau.",
         "link_blocked": "Liên kết bị chặn.",
         "link_missing": "Không tìm thấy tệp.",
         "link_error": "Lỗi khi mở liên kết.",

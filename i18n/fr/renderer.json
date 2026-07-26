@@ -506,6 +506,7 @@
         "library_save_error": "Impossible de sauvegarder dans la bibliothèque.",
         "library_save_success": "Ligne sauvegardée dans la bibliothèque.",
         "library_delete_error": "Impossible de supprimer la ligne de la bibliothèque.",
+        "column_layout_save_error": "La disposition des colonnes n’a pas pu être enregistrée et pourrait ne pas être conservée la prochaine fois.",
         "link_blocked": "Lien bloqué.",
         "link_missing": "Fichier introuvable.",
         "link_error": "Erreur lors de l'ouverture du lien.",

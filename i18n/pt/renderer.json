@@ -506,6 +506,7 @@
         "library_save_error": "Não foi possível salvar a leitura na biblioteca.",
         "library_save_success": "Leitura salva na biblioteca de leituras.",
         "library_delete_error": "Não foi possível excluir a leitura da biblioteca de leituras.",
+        "column_layout_save_error": "Não foi possível salvar a disposição das colunas e ela talvez não seja mantida na próxima vez.",
         "link_blocked": "Link bloqueado.",
         "link_missing": "Arquivo não encontrado.",
         "link_error": "Erro ao abrir link ou caminho local.",

@@ -506,6 +506,7 @@
         "library_save_error": "Kütüphaneye kaydedilemedi.",
         "library_save_success": "Satır kütüphaneye kaydedildi.",
         "library_delete_error": "Kütüphaneden silinemedi.",
+        "column_layout_save_error": "Sütun düzeni kaydedilemedi ve bir sonraki sefer korunmayabilir.",
         "link_blocked": "Bağlantı engellendi.",
         "link_missing": "Dosya bulunamadı.",
         "link_error": "Bağlantı açılırken hata oluştu.",

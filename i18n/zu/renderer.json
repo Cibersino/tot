@@ -506,6 +506,7 @@
         "library_save_error": "Ayikwazanga ukugcina kulabhulali.",
         "library_save_success": "Umugqa ugciniwe kulabhulali.",
         "library_delete_error": "Ayikwazanga ukususa kulabhulali.",
+        "column_layout_save_error": "Isakhiwo samakholomu asikwazanga ukulondolozwa futhi singase singagcinwa ngokuzayo.",
         "link_blocked": "Isixhumanisi sivinjiwe.",
         "link_missing": "Ifayela alitholakalanga.",
         "link_error": "Iphutha ekuvuleni isixhumanisi.",

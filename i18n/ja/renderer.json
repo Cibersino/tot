@@ -506,6 +506,7 @@
         "library_save_error": "ライブラリに保存できませんでした。",
         "library_save_success": "行をライブラリに保存しました。",
         "library_delete_error": "ライブラリから削除できませんでした。",
+        "column_layout_save_error": "列のレイアウトを保存できなかったため、次回は保持されない可能性があります。",
         "link_blocked": "リンクがブロックされました。",
         "link_missing": "ファイルが見つかりません。",
         "link_error": "リンクを開く際にエラーが発生しました。",
