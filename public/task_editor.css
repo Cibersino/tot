@@ -87,6 +87,12 @@ body {
   color: var(--text-color);
 }
 
+/* Shared focus indicator for native and scripted Task Editor controls. */
+:where(button, input, textarea, [role="separator"][tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .task-editor {
   display: flex;
   flex-direction: column;
@@ -162,11 +168,6 @@ body {
   transform: translateY(1px);
 }
 
-.btn-standard:focus {
-  outline: 3px solid rgb(30 130 230 / 0.12);
-  outline-offset: 2px;
-}
-
 /* Shared UI family inheritance for text-entry controls. */
 #taskNameInput,
 .task-table input,
@@ -185,14 +186,6 @@ body {
   box-sizing: border-box;
   background: var(--field-bg);
   color: var(--text-color);
-}
-
-#taskNameInput:focus-visible,
-.task-table input:focus-visible,
-#commentInput:focus-visible,
-.library-search input:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 /* Top row */
@@ -279,7 +272,6 @@ body {
   font-size: var(--font-size-4);
   background: var(--field-bg);
   color: var(--text-color);
-  outline: none;
 }
 
 .task-actions {
@@ -395,8 +387,6 @@ body {
 
 .col-resizer:focus-visible {
   background: var(--column-resizer-hover-bg);
-  outline: 2px solid var(--focus-ring);
-  outline-offset: -2px;
 }
 
 .col-resizer[aria-disabled="true"] {
