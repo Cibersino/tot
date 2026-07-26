@@ -167,11 +167,6 @@ body {
   outline-offset: 2px;
 }
 
-.btn-standard:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* Shared UI family inheritance for text-entry controls. */
 #taskNameInput,
 .task-table input,
