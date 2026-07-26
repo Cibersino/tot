@@ -103,6 +103,7 @@
   --font-size-12: 1.5rem;
 
   /* Line heights */
+  --line-height-solid: 1;
   --line-height-tight: 1.15;
   --line-height-default: 1.2;
   --line-height-relaxed: 1.4;
@@ -349,7 +350,7 @@ body {
   box-sizing: border-box;
   padding: 0 8px;
   height: var(--control-height-md);
-  line-height: 1;
+  line-height: var(--line-height-solid);
   font-size: var(--font-size-7);
   font-family: var(--font-ui);
   border-radius: var(--button-radius);
@@ -482,7 +483,7 @@ body {
   box-sizing: border-box;
   font-family: inherit;
   font-size: inherit;
-  line-height: 1;
+  line-height: var(--line-height-solid);
   color: inherit;
 }
 
@@ -535,7 +536,7 @@ body {
 .text-extraction-batch-plan-unit-combobox .renderer-combobox__option,
 .snapshot-save-tags-combobox .renderer-combobox__option {
   padding: var(--combobox-content-padding);
-  line-height: 1;
+  line-height: var(--line-height-solid);
   border-inline-start: 3px solid transparent;
 }
 
@@ -575,7 +576,7 @@ body {
   background: var(--field-bg);
   color: inherit;
   font-family: inherit;
-  line-height: 1;
+  line-height: var(--line-height-solid);
   box-sizing: border-box;
 }
 
@@ -933,7 +934,7 @@ pre#textPreview .preview-static {
   flex-direction: column;
   gap: 2px;
   min-width: 150px;
-  line-height: 1;
+  line-height: var(--line-height-solid);
 }
 
 .text-extraction-processing-row {
