@@ -64,6 +64,9 @@
 
   /* Dimensions */
   --control-height-md: 30px;
+  --task-name-field-height: 40px;
+  --task-table-field-height: 26px;
+  --library-search-field-height: 30px;
 
   /* Corner radii */
   --field-radius: 4px;
@@ -264,7 +267,7 @@ body {
 
 #taskNameInput {
   flex: 1 1 auto;
-  height: 40px;
+  height: var(--task-name-field-height);
   box-sizing: border-box;
   padding: 4px 8px;
   border: 1px solid var(--field-border);
@@ -345,7 +348,7 @@ body {
 
 .task-table input {
   width: 100%;
-  height: 26px;
+  height: var(--task-table-field-height);
   padding: 4px 6px;
   border-radius: var(--field-radius);
 }
@@ -511,7 +514,7 @@ body.is-resizing {
 
 .library-search input {
   flex: 1 1 auto;
-  height: 30px;
+  height: var(--library-search-field-height);
   padding: 4px 6px;
   border-radius: var(--field-radius);
 }
