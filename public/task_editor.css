@@ -294,7 +294,6 @@ body {
 }
 
 .task-table {
-  width: 100%;
   border-collapse: collapse;
   font-size: 13px;
   color: var(--text-color);
@@ -362,15 +361,28 @@ body {
 .col-resizer {
   position: absolute;
   top: 0;
-  right: 0;
+  left: -3px;
   width: 6px;
   height: 100%;
   cursor: col-resize;
   user-select: none;
+  touch-action: none;
+  z-index: 2;
 }
 
 .col-resizer:hover {
   background: var(--column-resizer-hover-bg);
+}
+
+.col-resizer:focus-visible {
+  background: var(--column-resizer-hover-bg);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.col-resizer[aria-disabled="true"] {
+  background: transparent;
+  cursor: default;
 }
 
 body.is-resizing {

@@ -246,6 +246,13 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-TASKS-02`
   * supports parts of `REG-TASKS-04`
   * supports parts of `REG-PERSIST-04`
+* `test/unit/electron/tasks_main_column_layout.test.js`
+  * covers the strict versioned Task Editor column-layout persistence contract
+  * supports parts of `REG-TASKS-05`
+  * supports parts of `REG-PERSIST-04`
+* `test/unit/shared/task_editor_column_layout.test.js`
+  * covers responsive width calculation, divider constraints/cancellation, and save-queue ordering
+  * supports parts of `REG-TASKS-05`
 * `test/unit/electron/reading_test_pool.test.js`
   * supports parts of `SM-15`
   * supports parts of `REG-READING-TEST-06`
@@ -1539,13 +1546,27 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Confirmation deny is a no-op.
 
 #### REG-TASKS-05 Column widths persistence
-**Goal:** Resize columns widths.
-1. Resize at least two task editor columns.
-2. Close and reopen the task editor.
-3. Verify the widths persisted.
+**Goal:** Verify exact responsive widths, accessible resizing, and persistence.
+1. Open a fresh Task Editor layout with no `column_widths.json`.
+2. With no vertical scrollbar, inspect the table at a wrapper `clientWidth` of 1093 px.
+3. Add enough rows to create a vertical scrollbar and verify the wrapper changes to 1077 px on the reviewed Windows environment.
+4. Resize at least two utility columns with pointer input; verify only the target utility column and Reading column change.
+5. Focus a divider and exercise Arrow Left, Arrow Right, and Shift+Arrow.
+6. During an active pointer drag, try an Arrow key and, on a touch-capable system, a second pointer on another divider.
+7. Interrupt a pointer drag with window blur or a window-size change.
+8. Narrow the wrapper below the current table minimum, then widen it again.
+9. Close and reopen the Task Editor.
 
 **Expected:**
-- Column widths restore on open.
+- At 1093 px and 1077 px with fresh defaults, Reading is exactly 506 px and 490 px respectively; the utility total is 586 px.
+- The explicit table widths are 1092 px and 1076 px respectively, equal the sum of all seven rendered columns, and leave no horizontal scroll range.
+- Pointer and keyboard resizing respect the 200 px Reading minimum and each utility minimum.
+- An active pointer drag retains sole ownership: Arrow keys and additional pointers do not modify, replace, cancel, or persist its provisional widths.
+- Interrupted pointer resizing restores the pre-drag widths and is not persisted.
+- A narrow wrapper shows horizontal scrolling and disables all six dividers; widening re-enables them.
+- The Comment and Actions controls remain on one row without clipping or intrinsic column expansion.
+- The six utility widths restore on reopen; Reading is recalculated from the current wrapper width.
+- `column_widths.json` contains only `{ "version": 1, "widths": { ...six utility widths... } }`.
 
 #### REG-TASKS-06 Link opening
 **Goal:** link opening respects https + allowlist rules.
@@ -1914,6 +1935,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - `allowed_hosts.json` exists
    - `column_widths.json` exists
    - `task_editor_state.json` exists
+   - `column_widths.json` is a version-1 record containing exactly the six utility widths and no Reading width
 9. Relaunch the app.
 10. Open Tasks editor and verify:
     - Window size/position restored and fully visible.

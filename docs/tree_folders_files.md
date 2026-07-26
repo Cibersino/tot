@@ -199,6 +199,7 @@ tot/
 │ │ ├── renderer_icons.js
 │ │ ├── results_time_multiplier.js
 │ │ ├── snapshot_save_tags_modal.js
+│ │ ├── task_editor_column_layout.js
 │ │ ├── text_apply_canonical.js
 │ │ ├── text_extraction_apply_modal.js
 │ │ ├── text_extraction_batch_final_modal.js
@@ -392,6 +393,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto actual: expone `saveSnapshot()` / `loadSnapshot()`, invoca el modal previo de tags al guardar, normaliza metadata opcional de snapshot vía `snapshot_tag_catalog`, llama `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
 - `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: usa tres comboboxes editables para `language` / `type` / `difficulty`, conserva el filtrado, clear e inline-create del catálogo, admite copy overrides compartidos con batch planning, aplica i18n y devuelve tags normalizados o cancelación.
+- `public/js/task_editor_column_layout.js` — Owner renderer del layout exacto de columnas del Editor de Tareas: calcula `texto` desde el ancho útil del wrapper, aplica el ancho explícito de tabla/`colgroup`, coordina los seis dividers accesibles y persiste de forma serializada solo los anchos de utilidad versionados.
 - `public/js/reading_speed_test.js` — Módulo renderer del reading speed test: gestiona el modal de entrada/configuración, refleja combinaciones reales del pool, ejecuta reset/start IPC, muestra warnings inline y sincroniza el lock state / WPM aplicado.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Ko-fi a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n y mantiene este wiring fuera de `public/renderer.js`.

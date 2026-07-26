@@ -126,6 +126,7 @@ function createHarness() {
   elements.includeCommentModal.setAttribute('aria-hidden', 'true');
 
   const body = createElement('body', 'body');
+  const taskTableWrap = createElement('taskTableWrap');
   const document = {
     body,
     get activeElement() {
@@ -133,6 +134,9 @@ function createHarness() {
     },
     getElementById(id) {
       return elements[id] || null;
+    },
+    querySelector(selector) {
+      return selector === '.task-table-wrap' ? taskTableWrap : null;
     },
     createElement(tagName) {
       return createElement('', tagName);
@@ -186,14 +190,22 @@ function createHarness() {
       confirmMain() { return true; },
       notifyEditor() {},
     },
+    TaskEditorColumnLayout: {
+      createController() {
+        return {
+          async initialize() {},
+          cancelActiveResize() {},
+        };
+      },
+    },
     taskEditorAPI: {
       setDirtyState() {},
       onInit(handler) { onInit = handler; },
       onRequestClose() {},
       onSettingsChanged() {},
       async getSettings() { return { language: 'en' }; },
-      async getColumnWidths() { return { ok: true, widths: {} }; },
-      async saveColumnWidths() { return { ok: true }; },
+      async getColumnLayout() { return { ok: true, record: null }; },
+      async saveColumnLayout() { return { ok: true }; },
       async listLibrary() { return { ok: true, items: [] }; },
     },
   };

@@ -58,6 +58,7 @@ Reglas:
 - La nueva acción local por fila del `Task Editor` se integra al mismo sistema compartido de iconos renderer y deja de verse como un control textual aislado: el botón browse converge en el asset canónico `folder.svg` y recupera el mismo lenguaje monocromo/outline ya usado por `open-target`, biblioteca y snapshot dentro de la tabla.
 - `language_window` y `preset_modal` dejan de ser excepciones dentro de las ventanas renderer top-level: sus estilos salen del HTML inline, convergen en archivos CSS dedicados con la misma estructura documental del resto del repo y la documentación viva del árbol vuelve a reflejar el layout real de `public/`.
 - La planificación batch corrige el modelo lógico de los PDFs pesados: el PDF fuente conserva membresía, nombre y orden de unidad normales junto a inputs ordinarios, mientras sus PDFs generados permanecen hijos internos del source tanto en ejecución como en el reporte final.
+- El `Task Editor` reemplaza el reparto implícito de ancho del navegador por un layout de columnas exacto y responsive: `texto` absorbe el ancho utilizable real, las seis columnas de utilidad conservan un modelo de resize predecible y accesible, y solo esa configuración controlada por el usuario se conserva entre aperturas.
 
 ### Agregado
 
@@ -97,6 +98,12 @@ Reglas:
 - Ventanas auxiliares / estilos renderer:
   - `public/language_window.html` y `public/preset_modal.html` dejan de mantener bloques `<style>` inline y pasan a cargar `public/language_window.css` y `public/preset_modal.css`, alineándose con el patrón de stylesheet dedicado que ya usaban las demás ventanas top-level de `public/`;
   - ambos archivos CSS nuevos adoptan también el mismo header descriptivo y la misma organización por secciones del resto de `public/*.css`, sin cambiar layout, copy ni comportamiento de esas dos ventanas.
+- Task Editor / layout exacto de columnas (Issue #330):
+  - `public/js/task_editor_column_layout.js` pasa a ser el owner del modelo de ancho, del cálculo responsive, de los dividers y de la cola de persistencia; `task_editor.js` queda como bootstrap y boundary de cierre del editor;
+  - la tabla mantiene el `<table>` / `<colgroup>` existente, pero cada `<col>` y la tabla reciben el ancho explícito resultante en lugar de combinar `width: 100%` con un `min-width` redistribuible por Chromium; `texto` se recalcula desde el `clientWidth` vivo del wrapper, incluso al aparecer o desaparecer el scrollbar vertical, con una reserva de seguridad subpíxel de 1 px;
+  - las seis columnas de utilidad adoptan mínimos que también son sus defaults frescos (`70`, `55`, `55`, `200`, `82` y `124` px), mientras `texto` conserva un mínimo de `200` px y absorbe en exclusiva cualquier diferencia de ancho;
+  - seis separadores, uno antes de cada columna de utilidad y ninguno después de `acciones`, usan Pointer Events y teclado (`Arrow` / `Shift+Arrow`), modifican solo su columna objetivo frente a `texto`, se cancelan sin persistir ante interrupciones y se deshabilitan cuando el wrapper ya necesita overflow horizontal;
+  - los commits de resize se persisten inmediatamente mediante snapshots serializados y coalescidos; los cambios causados solo por el tamaño de la ventana no se guardan, y un fallo de escritura conserva el layout de sesión, deja diagnóstico y muestra una advertencia renderer no bloqueante por episodio de fallo.
 - Documentación viva del repo:
   - `docs/tree_folders_files.md` se sincroniza con el layout real de `public/`, incorporando `language_window.css`, `preset_modal.css`, `combobox.css`, `js/combobox.js` y la omisión previa de `text_time_calculator.html` / `text_time_calculator.css` en el árbol resumido;
   - `docs/test_suite.md` registra la cobertura automatizada del contrato compartido y agrega smoke manual para apertura debajo del trigger, límite fijo, scroll, teclado, RTL y presentación por tema en los consumers migrados.
@@ -131,6 +138,13 @@ Reglas:
   - el tamaño fijo de la ventana deja de requerir scroll para el flujo nominal, porque las validaciones inline ocultas ya no reservan altura cuando no hay error y la densidad visual de la superficie se ajusta al contenido real;
   - `public/js/text_time_calculator_launcher.js` deja de degradar silenciosamente si falta `btnTextTimeCalculator` en la ventana principal y pasa a fail-fast como dependency bootstrap requerida;
   - renderer y core dejan de divergir cuando el target llega inválido: ambos normalizan el fallback efectivo a `wpm` en vez de mezclar defaults distintos según la capa.
+- Task Editor / columnas:
+  - las columnas dejan de diferir entre el ancho configurado y el ancho realmente renderizado, eliminando el surplus que Chromium repartía y el scrollbar horizontal inesperado en el layout nominal;
+  - `comentario` y `acciones` recuperan mínimos suficientes para que sus controles sigan en una sola línea sin expansión intrínseca, clipping ni solapamiento.
+
+### Migración
+
+- Task Editor / `column_widths.json`: el modelo anterior de mapa no versionado se corta de forma radical, sin migración ni interpretación de datos heredados; un archivo ausente, antiguo, parcial o inválido se reemplaza por los defaults versionados, mientras un fallo real de lectura conserva esos defaults solo para la sesión y no sobrescribe el archivo existente.
 
 ### Contratos tocados
 
@@ -155,6 +169,10 @@ Reglas:
   - nuevo bridge de la ventana principal `window.electronAPI.openTextTimeCalculator()`, que invoca `ipcMain.handle('text-time-calculator-open', ...)` y queda autorizado solo para senders de `mainWin`;
   - nuevo preload surface `window.textTimeCalculatorAPI` en la ventana dedicada, con `getSettings()` y `onSettingsChanged(cb) -> unsubscribe` como contrato requerido de bootstrap;
   - `getSecondaryWindowOpenStates()` agrega `{ id: 'text_time_calculator', label: 'text_time_calculator', isOpen }`, por lo que las precondiciones main-owned que ya bloqueaban con ventanas secundarias abiertas pasan a incluir también la calculadora rápida.
+- IPC / preload del Task Editor — layout de columnas:
+  - `window.taskEditorAPI.getColumnWidths()` / `saveColumnWidths(widths)` se sustituyen por `getColumnLayout()` / `saveColumnLayout(record)` sobre los canales existentes `task-columns-load` y `task-columns-save`;
+  - `getColumnLayout()` devuelve `{ ok: true, record: null | <record-v1> }` o `{ ok: false, code: 'UNAUTHORIZED' | 'READ_FAILED' }`; `saveColumnLayout(record)` devuelve exactamente `{ ok: true }` o `{ ok: false, code: 'UNAUTHORIZED' | 'INVALID_SCHEMA' | 'WRITE_FAILED' }`;
+  - `config/tasks/column_widths.json` pasa a contener exclusivamente `{ version: 1, widths: { tiempo, percent, falta, enlace, comentario, acciones } }`, con seis enteros seguros dentro de sus mínimos y del máximo de `100000`; `texto` y el ancho del wrapper son estado derivado de runtime y no se persisten.
 
 ---
 

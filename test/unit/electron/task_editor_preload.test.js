@@ -78,3 +78,31 @@ test('task editor preload exposes selectTaskFile through taskEditorAPI', () => {
     },
   ]);
 });
+
+test('task editor preload forwards the complete column layout record', () => {
+  const { exposedApi, invoked } = loadTaskEditorPreload();
+  const record = {
+    version: 1,
+    widths: {
+      tiempo: 70,
+      percent: 55,
+      falta: 55,
+      enlace: 200,
+      comentario: 82,
+      acciones: 124,
+    },
+  };
+
+  exposedApi.api.getColumnLayout();
+  exposedApi.api.saveColumnLayout(record);
+
+  assert.equal(invoked[0].channel, 'task-columns-load');
+  assert.equal(invoked[0].payload, undefined);
+  assert.equal(invoked[1].channel, 'task-columns-save');
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(invoked[1].payload)),
+    { record }
+  );
+  assert.equal('getColumnWidths' in exposedApi.api, false);
+  assert.equal('saveColumnWidths' in exposedApi.api, false);
+});

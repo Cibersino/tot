@@ -2871,6 +2871,11 @@ Estados de revisión recomendados:
           "en": "Could not delete the reading from the library."
           // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
         },
+        "column_layout_save_error": {
+          "es": "No se pudo guardar la disposición de columnas y puede que no se conserve la próxima vez.",
+          "en": "The column layout could not be saved and may not be retained next time."
+          // [CONCEPTO_APP] tarea
+        },
         "link_blocked": {
           "es": "Enlace bloqueado.",
           "en": "Link blocked."

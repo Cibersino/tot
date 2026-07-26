@@ -506,6 +506,7 @@
         "library_save_error": "Could not save the reading to the library.",
         "library_save_success": "Reading saved to the library.",
         "library_delete_error": "Could not delete the reading from the library.",
+        "column_layout_save_error": "The column layout could not be saved and may not be retained next time.",
         "link_blocked": "Link blocked.",
         "link_missing": "File not found.",
         "link_error": "Error opening link or local path.",

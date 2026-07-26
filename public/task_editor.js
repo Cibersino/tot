@@ -83,6 +83,7 @@ const thComentario = document.getElementById('thComentario');
 const thAcciones = document.getElementById('thAcciones');
 const taskTable = document.getElementById('taskTable');
 const taskColGroup = document.getElementById('taskColGroup');
+const taskTableWrap = document.querySelector('.task-table-wrap');
 
 // Modals
 const commentModal = document.getElementById('commentModal');
@@ -127,20 +128,7 @@ let pendingCommentRowId = null;
 let pendingCommentSnapshotRelPath = '';
 let pendingLibraryRowId = null;
 let libraryItemsCache = [];
-let columnWidths = {};
-let activeResize = null;
-
-const COLUMN_KEYS = [
-  { key: 'texto', th: thTexto },
-  { key: 'tiempo', th: thTiempo },
-  { key: 'percent', th: thPercent },
-  { key: 'falta', th: thFalta },
-  { key: 'enlace', th: thEnlace },
-  { key: 'comentario', th: thComentario },
-  { key: 'acciones', th: thAcciones },
-];
-
-const MIN_COL_WIDTH = 10;
+let columnLayoutController = null;
 
 // =============================================================================
 // Helpers
@@ -695,133 +683,6 @@ function renderTable() {
   updateSummary();
 }
 
-function collectDefaultColumnWidths() {
-  const out = {};
-  if (!taskColGroup) return out;
-  const cols = taskColGroup.querySelectorAll('col');
-  cols.forEach((col) => {
-    const key = col.dataset.col;
-    const def = Number(col.dataset.default);
-    if (key && Number.isFinite(def) && def > 0) {
-      out[key] = def;
-    }
-  });
-  return out;
-}
-
-function applyColumnWidths(widths) {
-  if (!taskColGroup) return;
-  const cols = taskColGroup.querySelectorAll('col');
-  let sum = 0;
-  cols.forEach((col) => {
-    const key = col.dataset.col;
-    const w = key && widths && Number.isFinite(widths[key]) ? widths[key] : null;
-    if (w && w > 0) {
-      col.style.width = `${w}px`;
-      sum += w;
-    }
-  });
-  if (taskTable) {
-    taskTable.style.width = '';
-    taskTable.style.minWidth = sum > 0 ? `${sum}px` : '';
-  }
-}
-
-function filterKnownColumnWidths(widths) {
-  if (!widths || typeof widths !== 'object') return {};
-  const knownKeys = new Set(COLUMN_KEYS.map(({ key }) => key));
-  const filtered = {};
-  Object.keys(widths).forEach((key) => {
-    if (!knownKeys.has(key)) return;
-    const width = widths[key];
-    if (Number.isFinite(width) && width > 0) {
-      filtered[key] = width;
-    }
-  });
-  return filtered;
-}
-
-async function saveColumnWidths() {
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveColumnWidths !== 'function') {
-    log.warnOnce('task_editor.columnWidths.save.missingApi', 'task column widths save unavailable (ignored).');
-    return;
-  }
-  try {
-    await window.taskEditorAPI.saveColumnWidths(columnWidths);
-  } catch (err) {
-    log.warnOnce('task_editor.columnWidths.save', 'saveColumnWidths failed (ignored):', err);
-  }
-}
-
-async function loadColumnWidths() {
-  const defaults = collectDefaultColumnWidths();
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.getColumnWidths !== 'function') {
-    log.warnOnce('BOOTSTRAP:task_editor.columnWidths.missingApi', 'task column widths unavailable; using defaults.');
-    columnWidths = { ...defaults };
-    applyColumnWidths(columnWidths);
-    await saveColumnWidths();
-    return;
-  }
-  const res = await window.taskEditorAPI.getColumnWidths();
-  if (!res || res.ok === false || !res.widths) {
-    log.warnOnce('BOOTSTRAP:task_editor.columnWidths.load', 'task column widths load failed; using defaults.', res);
-    columnWidths = { ...defaults };
-    applyColumnWidths(columnWidths);
-    await saveColumnWidths();
-    return;
-  }
-  columnWidths = { ...defaults, ...filterKnownColumnWidths(res.widths) };
-  applyColumnWidths(columnWidths);
-}
-
-function setupColumnResizers() {
-  if (!taskColGroup) return;
-  const cols = taskColGroup.querySelectorAll('col');
-  const colMap = {};
-  cols.forEach((col) => {
-    const key = col.dataset.col;
-    if (key) colMap[key] = col;
-  });
-
-  COLUMN_KEYS.forEach(({ key, th }) => {
-    if (!th || !key) return;
-    const handle = document.createElement('div');
-    handle.className = 'col-resizer';
-    handle.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      const col = colMap[key];
-      const startWidth = col
-        ? col.getBoundingClientRect().width
-        : th.getBoundingClientRect().width;
-      activeResize = {
-        key,
-        startX: e.clientX,
-        startWidth,
-      };
-      document.body.classList.add('is-resizing');
-    });
-    th.appendChild(handle);
-  });
-
-  const onMouseMove = (e) => {
-    if (!activeResize) return;
-    const delta = e.clientX - activeResize.startX;
-    const nextWidth = Math.max(MIN_COL_WIDTH, activeResize.startWidth + delta);
-    columnWidths[activeResize.key] = Math.round(nextWidth);
-    applyColumnWidths(columnWidths);
-  };
-
-  const onMouseUp = () => {
-    if (!activeResize) return;
-    activeResize = null;
-    document.body.classList.remove('is-resizing');
-    saveColumnWidths();
-  };
-
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', onMouseUp);
-}
-
 // =============================================================================
 // Row operations
 // =============================================================================
@@ -1274,6 +1135,7 @@ function registerTaskEditorInit() {
 function registerTaskEditorCloseGuard() {
   if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
     window.taskEditorAPI.onRequestClose(() => {
+      if (columnLayoutController) columnLayoutController.cancelActiveResize();
       if (typeof window.taskEditorAPI.confirmClose !== 'function') {
         log.warnOnce('task_editor.confirmClose.missing', 'taskEditorAPI.confirmClose unavailable; close request ignored.');
         return;
@@ -1302,10 +1164,26 @@ async function bootstrapTaskEditor() {
       log.warnOnce('BOOTSTRAP:task_editor.getSettings.missing', 'taskEditorAPI.getSettings unavailable; using default language.');
     }
     await applyTaskEditorTranslations();
-    await loadColumnWidths();
-    setupColumnResizers();
+    if (!window.TaskEditorColumnLayout
+      || typeof window.TaskEditorColumnLayout.createController !== 'function') {
+      throw new Error('[task-editor] TaskEditorColumnLayout unavailable; cannot continue');
+    }
+    columnLayoutController = window.TaskEditorColumnLayout.createController({
+      wrapper: taskTableWrap,
+      table: taskTable,
+      colGroup: taskColGroup,
+      utilityHeaders: {
+        tiempo: thTiempo,
+        percent: thPercent,
+        falta: thFalta,
+        enlace: thEnlace,
+        comentario: thComentario,
+        acciones: thAcciones,
+      },
+    });
+    await columnLayoutController.initialize();
   } catch (err) {
-    log.warn('BOOTSTRAP: failed to apply initial translations:', err);
+    log.error('BOOTSTRAP: Task Editor initialization failed:', err);
   }
 }
 

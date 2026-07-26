@@ -48,6 +48,16 @@ log.debug('Tasks main starting...');
 // Constants / shared state
 // =============================================================================
 const TASK_EXT = '.json';
+const TASK_COLUMN_LAYOUT_VERSION = 1;
+const TASK_COLUMN_WIDTH_MAX_PX = 100_000;
+const TASK_UTILITY_COLUMN_MIN_WIDTHS = Object.freeze({
+  tiempo: 70,
+  percent: 55,
+  falta: 55,
+  enlace: 200,
+  comentario: 82,
+  acciones: 124,
+});
 // Tracks unsaved Task Editor changes across IPC requests.
 let taskEditorDirty = false;
 
@@ -169,17 +179,26 @@ function normalizeSavePath(filePath) {
 }
 
 function readJsonFile(filePath) {
+  let exists = false;
   try {
-    if (!fs.existsSync(filePath)) {
-      return { ok: false, code: 'NOT_FOUND' };
-    }
-    let raw = fs.readFileSync(filePath, 'utf8');
-    raw = raw.replace(/^\uFEFF/, '');
-    if (!raw.trim()) return { ok: false, code: 'INVALID_JSON', message: 'empty file' };
-    const data = JSON.parse(raw);
-    return { ok: true, data };
+    exists = fs.existsSync(filePath);
   } catch (err) {
-    return { ok: false, code: 'INVALID_JSON', message: String(err) };
+    return { ok: false, code: 'READ_FAILED', error: err };
+  }
+  if (!exists) return { ok: false, code: 'NOT_FOUND' };
+
+  let raw = '';
+  try {
+    raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
+  } catch (err) {
+    return { ok: false, code: 'READ_FAILED', error: err };
+  }
+  if (!raw.trim()) return { ok: false, code: 'INVALID_JSON' };
+
+  try {
+    return { ok: true, data: JSON.parse(raw) };
+  } catch (err) {
+    return { ok: false, code: 'INVALID_JSON', error: err };
   }
 }
 
@@ -364,16 +383,41 @@ function saveAllowedHosts(set) {
   saveJson(file, arr);
 }
 
-function sanitizeColumnWidths(raw) {
-  if (!raw || typeof raw !== 'object') return null;
-  const out = {};
-  Object.keys(raw).forEach((key) => {
-    const n = Number(raw[key]);
-    if (Number.isFinite(n) && n > 0) {
-      out[key] = Math.round(n);
-    }
-  });
-  return Object.keys(out).length ? out : null;
+function isPlainObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function hasExactKeys(value, expectedKeys) {
+  if (!isPlainObject(value)) return false;
+  const actualKeys = Object.keys(value);
+  return actualKeys.length === expectedKeys.length
+    && expectedKeys.every((key) => Object.prototype.hasOwnProperty.call(value, key));
+}
+
+function validateColumnLayoutRecord(raw) {
+  if (!hasExactKeys(raw, ['version', 'widths'])) return null;
+  if (raw.version !== TASK_COLUMN_LAYOUT_VERSION) return null;
+
+  const widthKeys = Object.keys(TASK_UTILITY_COLUMN_MIN_WIDTHS);
+  if (!hasExactKeys(raw.widths, widthKeys)) return null;
+
+  const widths = {};
+  for (const key of widthKeys) {
+    const width = raw.widths[key];
+    if (
+      !Number.isSafeInteger(width)
+      || width < TASK_UTILITY_COLUMN_MIN_WIDTHS[key]
+      || width > TASK_COLUMN_WIDTH_MAX_PX
+    ) return null;
+    widths[key] = width;
+  }
+
+  return {
+    version: TASK_COLUMN_LAYOUT_VERSION,
+    widths,
+  };
 }
 
 function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
@@ -815,19 +859,24 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
             'tasks_main.columns.missing',
             'task column widths missing (returning null; may be normal on first run).'
           );
-          return { ok: true, widths: null };
+          return { ok: true, record: null };
         }
-        log.warn('Task column widths JSON invalid; load failed.');
-        return { ok: false, code: res.code };
+        if (res.code === 'INVALID_JSON') {
+          log.warn('Task column layout JSON invalid; returning fresh-default signal.');
+          return { ok: true, record: null };
+        }
+        log.error('Task column layout read failed:', res.error);
+        return { ok: false, code: 'READ_FAILED' };
       }
-      const widths = sanitizeColumnWidths(res.data);
-      if (!widths) {
-        log.warn('Task column widths schema invalid; using null.');
+      const record = validateColumnLayoutRecord(res.data);
+      if (!record) {
+        log.warn('Task column layout schema invalid; returning fresh-default signal.');
+        return { ok: true, record: null };
       }
-      return { ok: true, widths };
+      return { ok: true, record };
     } catch (err) {
       log.error('task-columns-load failed:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+      return { ok: false, code: 'READ_FAILED' };
     }
   });
 
@@ -844,14 +893,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
-      const widths = sanitizeColumnWidths(payload && payload.widths ? payload.widths : null);
-      if (!widths) return { ok: false, code: 'INVALID_SCHEMA' };
+      const record = validateColumnLayoutRecord(payload && payload.record ? payload.record : null);
+      if (!record) return { ok: false, code: 'INVALID_SCHEMA' };
       const file = getTasksColumnWidthsFile();
-      saveJson(file, widths);
+      saveJsonStrict(file, record);
       return { ok: true };
     } catch (err) {
       log.error('task-columns-save failed:', err);
-      return { ok: false, code: 'WRITE_FAILED', message: String(err) };
+      return { ok: false, code: 'WRITE_FAILED' };
     }
   });
 
