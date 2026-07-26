@@ -28,11 +28,13 @@
   /* Borders */
   --border: #e9e6de;
   --border-strong: rgb(0 0 0 / 0.12);
-  --input-border: #b8ae9c;
+  --field-border: #b8ae9c;
+  --button-border: #cfcfcf;
 
   /* Shadows */
   --section-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
-  --modal-shadow: 0 12px 24px rgb(0 0 0 / 0.25);
+  --button-hover-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
+  --modal-panel-shadow: 0 12px 24px rgb(0 0 0 / 0.25);
 
   /* Typography */
 
@@ -41,6 +43,18 @@
 
   /* Font sizes */
   --font-size-root: 16px;
+  --font-size-1: 0.46875rem;
+  --font-size-2: 0.75rem;
+  --font-size-3: 0.8125rem;
+  --font-size-4: 0.875rem;
+  --font-size-5: 0.9rem;
+  --font-size-6: 0.92rem;
+  --font-size-7: 0.9375rem;
+  --font-size-8: 0.95rem;
+  --font-size-9: 1rem;
+  --font-size-10: 1.125rem;
+  --font-size-11: 1.25rem;
+  --font-size-12: 1.5rem;
 
   /* Line heights */
   --line-height-default: 1.2;
@@ -112,9 +126,9 @@ body {
   padding: 0 8px;
   height: var(--control-height-md);
   line-height: 1;
-  font-size: 0.9375rem;
+  font-size: var(--font-size-7);
   font-family: var(--font-ui);
-  border: 1px solid #cfcfcf;
+  border: 1px solid var(--button-border);
   border-radius: var(--button-radius);
   background: var(--button-bg);
   color: inherit;
@@ -141,7 +155,7 @@ body {
 
 .btn-standard:hover {
   background: var(--button-hover-bg);
-  box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
+  box-shadow: var(--button-hover-shadow);
 }
 
 .btn-standard:active {
@@ -171,8 +185,8 @@ body {
 .task-table input,
 #commentInput,
 .library-search input {
-  border: 1px solid var(--input-border);
-  font-size: 13px;
+  border: 1px solid var(--field-border);
+  font-size: var(--font-size-3);
   box-sizing: border-box;
   background: var(--field-bg);
   color: var(--text-color);
@@ -224,7 +238,7 @@ body {
 }
 
 .task-summary__value {
-  font-size: 13px;
+  font-size: var(--font-size-3);
   line-height: 1.1;
   font-weight: 600;
   color: var(--text-color);
@@ -257,7 +271,7 @@ body {
 }
 
 #taskNameLabel {
-  font-size: 13px;
+  font-size: var(--font-size-3);
   color: var(--text-soft);
 }
 
@@ -265,9 +279,9 @@ body {
   flex: 1 1 auto;
   height: 30px;
   padding: 4px 8px;
-  border: 1px solid var(--input-border);
+  border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
-  font-size: 14px;
+  font-size: var(--font-size-4);
   background: var(--field-bg);
   color: var(--text-color);
   outline: none;
@@ -304,7 +318,7 @@ body {
 
 .task-table {
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--font-size-3);
   color: var(--text-color);
 }
 
@@ -436,7 +450,7 @@ body.is-resizing {
   gap: 12px;
   padding: 14px 16px 16px;
   box-sizing: border-box;
-  box-shadow: var(--modal-shadow);
+  box-shadow: var(--modal-panel-shadow);
 }
 
 .modal-panel--wide {
@@ -453,7 +467,7 @@ body.is-resizing {
 .modal-header h2 {
   margin: 0;
   color: var(--text-color);
-  font-size: 1rem;
+  font-size: var(--font-size-9);
   font-weight: 600;
 }
 
@@ -487,7 +501,7 @@ body.is-resizing {
 
 .comment-snapshot-path {
   color: var(--text-soft);
-  font-size: 12px;
+  font-size: var(--font-size-2);
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -509,7 +523,7 @@ body.is-resizing {
 }
 
 .library-search label {
-  font-size: 13px;
+  font-size: var(--font-size-3);
   color: var(--text-soft);
 }
 
@@ -567,7 +581,7 @@ body.is-resizing {
 
 .library-empty {
   color: var(--text-soft);
-  font-size: 13px;
+  font-size: var(--font-size-3);
 }
 
 /* End of public/task_editor.css */
