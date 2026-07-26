@@ -60,6 +60,7 @@
   --line-height-default: 1.2;
 
   /* Spacing */
+  --direct-entry-field-padding: 0 6px;
   --gap: 10px;
 
   /* Dimensions */
@@ -180,6 +181,13 @@ body {
   line-height: inherit;
 }
 
+/* Shared direct-entry padding for single-line native fields. */
+#taskNameInput,
+.task-table input,
+.library-search input {
+  padding: var(--direct-entry-field-padding);
+}
+
 /* Shared field chrome used by the task table plus comment/library modal inputs. */
 .task-table input,
 #commentInput,
@@ -269,7 +277,6 @@ body {
   flex: 1 1 auto;
   height: var(--task-name-field-height);
   box-sizing: border-box;
-  padding: 4px 8px;
   border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
   font-size: var(--font-size-4);
@@ -349,7 +356,6 @@ body {
 .task-table input {
   width: 100%;
   height: var(--task-table-field-height);
-  padding: 4px 6px;
   border-radius: var(--field-radius);
 }
 
@@ -515,7 +521,6 @@ body.is-resizing {
 .library-search input {
   flex: 1 1 auto;
   height: var(--library-search-field-height);
-  padding: 4px 6px;
   border-radius: var(--field-radius);
 }
 
