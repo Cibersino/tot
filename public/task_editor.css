@@ -158,6 +158,14 @@ body {
   cursor: not-allowed;
 }
 
+/* Shared UI family inheritance for text-entry controls. */
+#taskNameInput,
+.task-table input,
+#commentInput,
+.library-search input {
+  font-family: inherit;
+}
+
 /* Shared field chrome used by the task table plus comment/library modal inputs. */
 .task-table input,
 #commentInput,
