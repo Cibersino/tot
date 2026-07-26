@@ -57,6 +57,7 @@
   --font-size-12: 1.5rem;
 
   /* Line heights */
+  --line-height-solid: 1;
   --line-height-default: 1.2;
 
   /* Spacing */
@@ -135,7 +136,7 @@ body {
   box-sizing: border-box;
   padding: 0 8px;
   height: var(--control-height-md);
-  line-height: 1;
+  line-height: var(--line-height-solid);
   font-size: var(--font-size-7);
   font-family: var(--font-ui);
   border: 1px solid var(--button-border);
@@ -178,14 +179,14 @@ body {
 #commentInput,
 .library-search input {
   font-family: inherit;
-  line-height: inherit;
 }
 
-/* Shared direct-entry padding for single-line native fields. */
+/* Shared direct-entry mechanics for single-line native fields. */
 #taskNameInput,
 .task-table input,
 .library-search input {
   padding: var(--direct-entry-field-padding);
+  line-height: var(--line-height-solid);
 }
 
 /* Shared field chrome used by the task table plus comment/library modal inputs. */
@@ -478,6 +479,7 @@ body.is-resizing {
 #commentInput {
   width: 100%;
   min-height: 132px;
+  line-height: inherit;
   border-radius: 5px;
   padding: 8px 10px;
   resize: vertical;
