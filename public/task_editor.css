@@ -185,7 +185,7 @@ body {
   font-size: var(--font-size-3);
   box-sizing: border-box;
   background: var(--field-bg);
-  color: var(--text-color);
+  color: inherit;
 }
 
 /* Top row */
@@ -229,7 +229,6 @@ body {
   font-size: var(--font-size-3);
   line-height: 1.1;
   font-weight: 600;
-  color: var(--text-color);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-align: right;
@@ -271,7 +270,7 @@ body {
   border-radius: var(--field-radius);
   font-size: var(--font-size-4);
   background: var(--field-bg);
-  color: var(--text-color);
+  color: inherit;
 }
 
 .task-actions {
@@ -306,7 +305,6 @@ body {
 .task-table {
   border-collapse: collapse;
   font-size: var(--font-size-3);
-  color: var(--text-color);
 }
 
 .task-table.resizable {
@@ -323,7 +321,6 @@ body {
 
 .task-table th {
   background: var(--app-secondary-bg);
-  color: var(--text-color);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -423,7 +420,6 @@ body.is-resizing {
 .modal-panel {
   position: relative;
   background: var(--app-secondary-bg);
-  color: var(--text-color);
   border-radius: 8px;
   border: 1px solid var(--border-strong);
   width: 520px;
@@ -451,7 +447,6 @@ body.is-resizing {
 
 .modal-header h2 {
   margin: 0;
-  color: var(--text-color);
   font-size: var(--font-size-9);
   font-weight: 600;
 }
