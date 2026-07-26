@@ -569,4 +569,10 @@ body.is-resizing {
   font-size: var(--font-size-3);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .btn-standard:active {
+    transform: none;
+  }
+}
+
 /* End of public/task_editor.css */
