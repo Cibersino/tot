@@ -264,7 +264,8 @@ body {
 
 #taskNameInput {
   flex: 1 1 auto;
-  height: 30px;
+  height: 40px;
+  box-sizing: border-box;
   padding: 4px 8px;
   border: 1px solid var(--field-border);
   border-radius: var(--field-radius);
