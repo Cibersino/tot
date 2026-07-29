@@ -385,13 +385,13 @@ body {
 
 .task-table .cell-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .link-cell {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
 }
 
@@ -598,7 +598,7 @@ body.is-resizing {
 
 .library-item .cell-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .library-empty {
