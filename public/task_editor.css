@@ -233,7 +233,6 @@ body {
 .task-summary__label {
   font-size: 11px;
   line-height: 1.1;
-  color: var(--text-soft);
   white-space: nowrap;
 }
 
@@ -271,7 +270,6 @@ body {
 
 #taskNameLabel {
   font-size: var(--font-size-3);
-  color: var(--text-soft);
 }
 
 #taskNameInput {
@@ -517,7 +515,6 @@ body.is-resizing {
 
 .library-search label {
   font-size: var(--font-size-3);
-  color: var(--text-soft);
 }
 
 .library-search input {
