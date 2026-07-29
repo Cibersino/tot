@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Yorum",
+        "comment_placeholder": "Yorum...",
         "snapshot_select": "Snapshot seç",
         "snapshot_select_tooltip": "Bu satır için metin snapshot'ı seç",
         "snapshot_clear": "Seçili snapshot'ı bu satırdan kaldır"

@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Bình luận",
+        "comment_placeholder": "Bình luận...",
         "snapshot_select": "Chọn bản lưu",
         "snapshot_select_tooltip": "Chọn bản lưu văn bản cho hàng này",
         "snapshot_clear": "Gỡ bản lưu đã chọn khỏi hàng này"

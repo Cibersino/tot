@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Kōrero",
+        "comment_placeholder": "Kōrero...",
         "snapshot_select": "Tīpako hopunga",
         "snapshot_select_tooltip": "Tīpako hopunga kuputuhi mō tēnei rārangi",
         "snapshot_clear": "Tango i te hopunga kua tīpakohia i tēnei rārangi"

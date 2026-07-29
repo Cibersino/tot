@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "تبصرہ",
+        "comment_placeholder": "تبصرہ...",
         "snapshot_select": "اسنیپ شاٹ منتخب کریں",
         "snapshot_select_tooltip": "اس قطار کے لیے متن کا اسنیپ شاٹ منتخب کریں",
         "snapshot_clear": "اس قطار سے منتخب اسنیپ شاٹ ہٹائیں"

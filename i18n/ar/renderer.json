@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "تعليق",
+        "comment_placeholder": "تعليق...",
         "snapshot_select": "اختيار لقطة نصية",
         "snapshot_select_tooltip": "اختيار لقطة نصية لهذا الصف",
         "snapshot_clear": "إزالة اللقطة النصية المحددة من هذا الصف"

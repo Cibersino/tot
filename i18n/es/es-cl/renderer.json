@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Opinión",
+        "comment_placeholder": "Opinión...",
         "snapshot_select": "Seleccionar coso",
         "snapshot_select_tooltip": "Seleccionar un coso de texto para esta fila",
         "snapshot_clear": "Quitar el coso seleccionado de esta fila"

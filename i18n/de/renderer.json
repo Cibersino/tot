@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Kommentar",
+        "comment_placeholder": "Kommentar...",
         "snapshot_select": "Snapshot auswählen",
         "snapshot_select_tooltip": "Wählen Sie einen Text-Snapshot für diese Zeile aus",
         "snapshot_clear": "Entfernen Sie den ausgewählten Text-Snapshot von dieser Zeile"

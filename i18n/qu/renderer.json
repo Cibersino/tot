@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Rimay",
+        "comment_placeholder": "Rimay...",
         "snapshot_select": "Snapshot akllay",
         "snapshot_select_tooltip": "Kay siqipaq snapshotta akllay",
         "snapshot_clear": "Kay siqimanta akllasqa snapshotta qhichuy"

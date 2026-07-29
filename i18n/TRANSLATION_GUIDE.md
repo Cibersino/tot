@@ -2702,6 +2702,12 @@ Estados de revisión recomendados:
           "es": "Comentario",
           "en": "Comment"
         },
+        "comment_placeholder": {
+          "es": "Escribe un comentario...",
+          "en": "Add a comment..."
+          // [PROPÓSITO] Placeholder del campo de texto libre para añadir o editar el comentario asociado a una fila de lectura.
+          // [CONCEPTO_APP] fila de lectura
+        },
         "snapshot_select": {
           "es": "Seleccionar snapshot",
           "en": "Select text snapshot"

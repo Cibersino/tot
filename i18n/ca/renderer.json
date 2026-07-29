@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Comentari",
+        "comment_placeholder": "Comentari...",
         "snapshot_select": "Seleccionar snapshot",
         "snapshot_select_tooltip": "Seleccionar snapshot per a aquesta fila",
         "snapshot_clear": "Treure el snapshot seleccionat d’aquesta fila"

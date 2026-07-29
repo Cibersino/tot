@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "टिप्पणी",
+        "comment_placeholder": "टिप्पणी...",
         "snapshot_select": "स्नैपशॉट चुनें",
         "snapshot_select_tooltip": "इस पंक्ति के लिए पाठ स्नैपशॉट चुनें",
         "snapshot_clear": "इस पंक्ति से चयनित स्नैपशॉट हटाएँ"

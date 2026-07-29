@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "댓글",
+        "comment_placeholder": "댓글...",
         "snapshot_select": "스냅샷 선택",
         "snapshot_select_tooltip": "이 행에 사용할 텍스트 스냅샷 선택",
         "snapshot_clear": "이 행에서 선택한 스냅샷 제거"

@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "نظر",
+        "comment_placeholder": "نظر...",
         "snapshot_select": "انتخاب اسنپ‌شات",
         "snapshot_select_tooltip": "انتخاب اسنپ‌شات متن برای این ردیف",
         "snapshot_clear": "حذف اسنپ‌شات انتخاب‌شده از این ردیف"

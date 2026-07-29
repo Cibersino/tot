@@ -9,6 +9,10 @@ const vm = require('node:vm');
 function createHarness() {
   let activeElement = null;
   let onInit = null;
+  let resolveTranslationsLoaded = null;
+  const translationsLoaded = new Promise((resolve) => {
+    resolveTranslationsLoaded = resolve;
+  });
   const modalOpeners = new Map();
   const documentListeners = new Map();
 
@@ -160,7 +164,7 @@ function createHarness() {
       TASK_ROW_LINK_MAX_CHARS: 1000,
     },
     RendererI18n: {
-      async loadRendererTranslations() {},
+      async loadRendererTranslations() { resolveTranslationsLoaded(); },
       tRenderer(key) { return key; },
       applyWindowLanguageAttributes() {},
     },
@@ -232,6 +236,12 @@ function createHarness() {
     elements,
     findByIcon,
     getActiveElement() { return activeElement; },
+    async waitForTranslations() {
+      await translationsLoaded;
+      for (let attempt = 0; attempt < 10 && !elements.commentInput.getAttribute('placeholder'); attempt += 1) {
+        await Promise.resolve();
+      }
+    },
     initializeRow() {
       onInit({
         sourcePath: 'task.json',
@@ -250,6 +260,16 @@ function createHarness() {
     },
   };
 }
+
+test('Task Editor localizes the comment field placeholder', async () => {
+  const harness = createHarness();
+  await harness.waitForTranslations();
+
+  assert.equal(
+    harness.elements.commentInput.getAttribute('placeholder'),
+    'renderer.tasks.comentario_modal.comment_placeholder'
+  );
+});
 
 test('task-editor modals use their reviewed initial targets and restore each opener', () => {
   const harness = createHarness();

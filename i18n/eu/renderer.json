@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Iruzkina",
+        "comment_placeholder": "Iruzkina...",
         "snapshot_select": "Hautatu snapshota",
         "snapshot_select_tooltip": "Hautatu testu-snapshot bat errenkada honetarako",
         "snapshot_clear": "Kendu hautatutako snapshota errenkada honetatik"

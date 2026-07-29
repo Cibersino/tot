@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Kommentar",
+        "comment_placeholder": "Kommentar...",
         "snapshot_select": "Välj snapshot",
         "snapshot_select_tooltip": "Välj en textsnapshot för denna rad",
         "snapshot_clear": "Ta bort vald snapshot från denna rad"

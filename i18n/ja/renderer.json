@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "コメント",
+        "comment_placeholder": "コメント...",
         "snapshot_select": "スナップショットを選択",
         "snapshot_select_tooltip": "この行のテキストスナップショットを選択",
         "snapshot_clear": "この行から選択したスナップショットを外す"

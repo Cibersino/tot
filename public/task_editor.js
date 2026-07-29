@@ -1003,6 +1003,9 @@ async function applyTaskEditorTranslations() {
   if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones');
 
   if (commentTitle) commentTitle.textContent = tr('renderer.tasks.comentario_modal.comment_title');
+  if (commentInput) {
+    commentInput.setAttribute('placeholder', tr('renderer.tasks.comentario_modal.comment_placeholder'));
+  }
   if (commentSave) commentSave.textContent = tr('renderer.tasks.save_button');
   if (commentCancel) commentCancel.textContent = tr('renderer.tasks.guardar_lectura_modal.cancel');
   if (commentSnapshotSelect) {

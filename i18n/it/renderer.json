@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Commento",
+        "comment_placeholder": "Commento...",
         "snapshot_select": "Seleziona snapshot",
         "snapshot_select_tooltip": "Seleziona snapshot di testo per questa riga",
         "snapshot_clear": "Rimuovi snapshot di testo per questa riga"

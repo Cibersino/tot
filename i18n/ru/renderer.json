@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Комментарий",
+        "comment_placeholder": "Комментарий...",
         "snapshot_select": "Выбрать снапшот",
         "snapshot_select_tooltip": "Выбрать снапшот текста для этой строки",
         "snapshot_clear": "Убрать выбранный снапшот из этой строки"

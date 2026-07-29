@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "Comment",
+        "comment_placeholder": "Add a comment...",
         "snapshot_select": "Select text snapshot",
         "snapshot_select_tooltip": "Select a text snapshot for this row",
         "snapshot_clear": "Remove selected snapshot from this row"

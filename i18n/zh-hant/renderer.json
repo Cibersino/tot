@@ -469,6 +469,7 @@
       },
       "comentario_modal": {
         "comment_title": "註解",
+        "comment_placeholder": "註解...",
         "snapshot_select": "選擇快照",
         "snapshot_select_tooltip": "為此列選擇文字快照",
         "snapshot_clear": "移除此列所選快照"
