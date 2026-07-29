@@ -580,6 +580,11 @@ body {
   box-sizing: border-box;
 }
 
+/* Native entry prompts keep their existing field typography and color, with a shared visual de-emphasis. */
+:where(input, textarea)::placeholder {
+  opacity: 0.75;
+}
+
 /* Shared editable numeric-value typography.
    The stopwatch is a text input that edits a numeric time value; free-text
    direct-entry fields remain excluded. */
@@ -817,6 +822,10 @@ pre#textPreview .preview-fragment,
 pre#textPreview .preview-cluster,
 pre#textPreview .preview-static {
   unicode-bidi: isolate;
+}
+
+pre#textPreview .preview-fragment--empty {
+  opacity: 0.6;
 }
 
 .selector-text.current-text-status--pending #textPreview,

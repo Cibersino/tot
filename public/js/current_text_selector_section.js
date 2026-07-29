@@ -159,6 +159,7 @@
       return {
         direction: getUiLanguageDirection(),
         kind: 'plain',
+        isEmpty: true,
         text: emptyText,
       };
     }
@@ -196,9 +197,9 @@
     };
   }
 
-  function createPreviewTextFragment(text) {
+  function createPreviewTextFragment(text, { isEmpty = false } = {}) {
     const fragment = document.createElement('bdi');
-    fragment.className = 'preview-fragment';
+    fragment.className = isEmpty ? 'preview-fragment preview-fragment--empty' : 'preview-fragment';
     fragment.setAttribute('dir', 'auto');
     fragment.textContent = text;
     return fragment;
@@ -236,7 +237,7 @@
     textPreview.textContent = '';
 
     if (previewModel.kind === 'plain') {
-      textPreview.appendChild(createPreviewTextFragment(previewModel.text));
+      textPreview.appendChild(createPreviewTextFragment(previewModel.text, { isEmpty: previewModel.isEmpty }));
       return;
     }
 

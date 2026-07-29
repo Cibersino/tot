@@ -188,6 +188,7 @@ test('empty preview direction follows UI fallback instead of placeholder script'
   assert.equal(harness.elements.textPreview.getAttribute('dir'), 'rtl');
   const fragment = harness.elements.textPreview.childNodes[0];
   assert.equal(fragment.tagName, 'bdi');
+  assert.equal(fragment.className, 'preview-fragment preview-fragment--empty');
   assert.equal(fragment.getAttribute('dir'), 'auto');
   assert.equal(fragment.textContent, 'ltr:placeholder');
 });
@@ -199,6 +200,7 @@ test('inline preview direction resolves from normalized source text', () => {
 
   assert.deepEqual(harness.resolveCalls, ['rtl:ab   cd']);
   assert.equal(harness.elements.textPreview.getAttribute('dir'), 'rtl');
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].className, 'preview-fragment');
 });
 
 test('truncated preview resolves direction from full source text and keeps synthetic parts isolated', () => {

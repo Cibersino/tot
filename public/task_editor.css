@@ -201,6 +201,11 @@ body {
   color: inherit;
 }
 
+/* Native entry prompts keep their existing field typography and color, with a shared visual de-emphasis. */
+:where(input, textarea)::placeholder {
+  opacity: 0.7;
+}
+
 /* Top row */
 .task-top-row {
   display: flex;
