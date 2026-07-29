@@ -149,6 +149,21 @@
     return Boolean(target && relatedTarget && target.contains(relatedTarget));
   }
 
+  function clearDetachedTargets() {
+    let targetCleared = false;
+
+    if (hoveredElement && !document.documentElement.contains(hoveredElement)) {
+      hoveredElement = null;
+      targetCleared = true;
+    }
+    if (focusedElement && !document.documentElement.contains(focusedElement)) {
+      focusedElement = null;
+      targetCleared = true;
+    }
+
+    if (targetCleared) refreshTooltip();
+  }
+
   // =============================================================================
   // Event wiring
   // =============================================================================
@@ -187,14 +202,19 @@
   // Bootstrap
   // =============================================================================
   const titleObserver = new MutationObserver((records) => {
+    let childListChanged = false;
+
     records.forEach((record) => {
       if (record.type === 'attributes' && record.attributeName === 'title') {
         captureTitle(record.target);
       }
       if (record.type === 'childList') {
+        childListChanged = true;
         record.addedNodes.forEach(captureTitlesIn);
       }
     });
+
+    if (childListChanged) clearDetachedTargets();
   });
 
   captureTitlesIn(document.documentElement);

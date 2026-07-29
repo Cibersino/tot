@@ -33,6 +33,12 @@ function createHarness({ mutationObserverAvailable = true } = {}) {
         children.push(child);
         return child;
       },
+      removeChild(child) {
+        const index = children.indexOf(child);
+        if (index >= 0) children.splice(index, 1);
+        child.parentNode = null;
+        return child;
+      },
       setAttribute(name, value) {
         attributes[name] = String(value);
       },
@@ -141,6 +147,9 @@ function createHarness({ mutationObserverAvailable = true } = {}) {
     notifyTitleChange() {
       observerCallback([{ type: 'attributes', attributeName: 'title', target: button }]);
     },
+    notifyMutations(records) {
+      observerCallback(records);
+    },
   };
 }
 
@@ -179,6 +188,40 @@ test('repeated hovers retain the same tooltip width', () => {
 
   assert.equal(tooltip.hidden, false);
   assert.deepEqual(harness.tooltipMeasurementWidths, [120, 120]);
+});
+
+test('hides the authored tooltip when its hovered target is removed', () => {
+  const harness = createHarness();
+
+  harness.dispatch('pointerover', { target: harness.button });
+  const tooltip = harness.body._children[1];
+  assert.equal(tooltip.hidden, false);
+
+  harness.body.removeChild(harness.button);
+  harness.notifyMutations([{
+    type: 'childList',
+    addedNodes: [],
+    removedNodes: [harness.button],
+  }]);
+
+  assert.equal(tooltip.hidden, true);
+});
+
+test('hides the authored tooltip when its focused target is removed', () => {
+  const harness = createHarness();
+
+  harness.dispatch('focusin', { target: harness.button });
+  const tooltip = harness.body._children[1];
+  assert.equal(tooltip.hidden, false);
+
+  harness.body.removeChild(harness.button);
+  harness.notifyMutations([{
+    type: 'childList',
+    addedNodes: [],
+    removedNodes: [harness.button],
+  }]);
+
+  assert.equal(tooltip.hidden, true);
 });
 
 test('leaves native titles in place and warns when MutationObserver is unavailable', () => {
