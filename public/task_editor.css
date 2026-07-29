@@ -450,7 +450,6 @@ body.is-resizing {
   background: var(--app-secondary-bg);
   border-radius: 8px;
   border: 1px solid var(--modal-panel-border-color);
-  width: 520px;
   max-width: calc(100% - 24px);
   max-height: calc(100vh - 32px);
   z-index: 1;
@@ -462,8 +461,16 @@ body.is-resizing {
   box-shadow: var(--modal-panel-shadow);
 }
 
+#commentModal .modal-panel {
+  width: 520px;
+}
+
 .modal-panel--wide {
   width: 720px;
+}
+
+#includeCommentModal .modal-panel {
+  width: 420px;
 }
 
 .modal-header {
@@ -489,6 +496,15 @@ body.is-resizing {
   justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+#includeCommentText {
+  font-size: var(--font-size-10);
+  text-align: center;
+}
+
+#includeCommentModal .modal-actions {
+  justify-content: center;
 }
 
 /* Comment modal content */
