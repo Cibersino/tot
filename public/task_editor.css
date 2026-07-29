@@ -455,6 +455,7 @@ body.is-resizing {
   padding: 14px 16px 16px;
   box-sizing: border-box;
   box-shadow: var(--modal-panel-shadow);
+  overflow: auto;
 }
 
 #commentModal .modal-panel {
@@ -483,8 +484,8 @@ body.is-resizing {
 }
 
 .modal-body {
-  overflow: auto;
-  flex: 1 1 auto;
+  overflow: visible;
+  flex: 0 0 auto;
 }
 
 .modal-actions {
@@ -536,11 +537,6 @@ body.is-resizing {
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
-}
-
-#libraryModal .modal-body {
-  padding-inline-end: 10px;
-  box-sizing: border-box;
 }
 
 .library-search label {
