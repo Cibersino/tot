@@ -218,6 +218,7 @@ tot/
 │ │ ├── text_extraction_single_file_heavy_pdf_modal.js
 │ │ ├── text_extraction_status_ui.js
 │ │ ├── text_time_calculator_launcher.js
+│ │ ├── tooltips.js
 │ │ ├── wpm_controls.js
 │ │ └── wpm_curve.js
 │ ├── third_party_licenses/        # {licencias/notices versionados de terceros redistribuidos}
@@ -251,7 +252,8 @@ tot/
 │ ├── task_editor.js
 │ ├── text_time_calculator.css
 │ ├── text_time_calculator.html
-│ └── text_time_calculator.js
+│ ├── text_time_calculator.js
+│ └── tooltips.css
 ├── test/                          # {tests de desarrollo automátizados de la app}
 | └── README.md
 ├── tools/
@@ -372,6 +374,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `public/js/constants.js` — Constantes compartidas del renderer, incluyendo límites/default/step del tamaño de fuente, ancho de texto maximizado y gutter mínimo del Editor de Texto.
 - `public/js/combobox.js` — Componente compartido production-owned `window.RendererCombobox`: reemplaza los selects nativos mediante los modos `select` y `editable`, y centraliza ARIA, teclado, opción activa, cierre externo, exclusión entre instancias y popups siempre abiertos debajo del trigger; `public/combobox.css` aporta la estructura compartida, el límite fijo de `160px` y el scroll vertical.
+- `public/js/tooltips.js` — Owner compartido de los tooltips authored del renderer: convierte atributos `title` en contenido accesible propio, mantiene los cambios dinámicos sincronizados, posiciona el tooltip para puntero y teclado, y conserva el fallback nativo con diagnóstico si falta `MutationObserver`; `public/tooltips.css` define sus tokens de color, superficie y estado oculto.
 - `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
 - `public/js/wpm_controls.js` — Owner renderer de los controles de velocidad de lectura: centraliza estado WPM, binding slider/input, mapeo vía `wpm_curve`, carga/selección de presets en coordinación con `RendererPresets` y aplicación de cambios externos sin devolver esa lógica a `public/renderer.js`.
 - `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.

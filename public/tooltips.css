@@ -1,0 +1,44 @@
+/* Shared renderer tooltip styles.
+   Loaded by renderer window documents.
+   Owner boundary: shared authored-tooltip tokens, surface, and hidden-state behavior only. */
+
+/* Design tokens */
+:root {
+  /* Colors */
+  --tot-tooltip-background: #2f2a20;
+  --tot-tooltip-color: #fffaf0;
+  --tot-tooltip-border: #635942;
+  --tot-tooltip-shadow: rgb(47 42 32 / 0.24);
+
+  /* Typography */
+  --tot-tooltip-font-family: Arial, sans-serif;
+  --tot-tooltip-font-size: 12px;
+
+  /* Spacing */
+  --tot-tooltip-padding: 6px 8px;
+}
+
+/* Shared tooltip surface */
+.tot-tooltip {
+  position: fixed;
+  z-index: 2147483647;
+  box-sizing: border-box;
+  inline-size: max-content;
+  max-inline-size: min(320px, calc(100vw - 16px));
+  padding: var(--tot-tooltip-padding);
+  border: 1px solid var(--tot-tooltip-border);
+  background: var(--tot-tooltip-background);
+  box-shadow: 0 3px 10px var(--tot-tooltip-shadow);
+  color: var(--tot-tooltip-color);
+  font-family: var(--tot-tooltip-font-family);
+  font-size: var(--tot-tooltip-font-size);
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Shared hidden-state behavior */
+.tot-tooltip[hidden] {
+  display: none;
+}
+
+/* End of public/tooltips.css */

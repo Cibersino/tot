@@ -50,6 +50,7 @@ Reglas:
 
 - La ventana principal suma una calculadora rápida de lectura como ventana secundaria no modal: un nuevo botón icon-only en `RESULTS` abre una herramienta auxiliar para derivar `words`, `time` o `WPM` a partir de los otros dos valores, reutilizando la gramática `H+:MM:SS` del cronómetro y manteniendo el feature fuera del menú nativo.
 - Los selects nativos de las superficies renderer convergen en un único `RendererCombobox` production-owned con modos fijo y editable: presets, planificación batch, calculadora rápida y tags de snapshots comparten desde ahora la misma semántica ARIA/teclado/hover, apertura siempre debajo del trigger y popup scrolleable con altura máxima fija de `160px`.
+- Los tooltips nativos basados en `title` de las ventanas renderer convergen en un único tratamiento authored: conserva los labels traducidos y accesibles, usa colores propios de la app y mantiene geometría estable entre hovers repetidos y actualizaciones dinámicas.
 - `window.Notify` recupera ownership único también para los prompts custom pendientes de `text extraction`: los 7 modales renderer que aún publicaban `window.Notify.prompt*` desde su archivo feature pasan a registrarse vía `registerCustomPrompt(...)`, sin cambiar la surface pública consumida por el resto del flujo.
 - Los 19 modales de aplicación convergen en una política de foco accesible y verificable: cada apertura usa un target inicial revisado, `Tab` / `Shift+Tab` permanecen dentro del modal activo, los hijos nested toman precedencia y cada cierre restaura el foco de esa apertura cuando el opener continúa disponible.
 - `public/js/snapshot_save_tags_modal.js` deja de imponer un guard bootstrap local de `window.Notify` que no existía en ningún otro archivo del repo; el modal vuelve a alinearse con el patrón renderer vigente, donde `notify.js` sigue siendo el owner del contrato y los consumers no duplican checks de disponibilidad.
@@ -71,6 +72,11 @@ Reglas:
   - `public/js/combobox.js` agrega la superficie production-owned `window.RendererCombobox.create(config)` con modos `select` y `editable`, opciones de valor/acción y un controller común para update, lectura, apertura, cierre, foco y teardown;
   - `public/combobox.css` centraliza la estructura del trigger/listbox, distingue la selección committed del active state transitorio por hover/teclado mediante fondo sutil, peso y acento lógico, y mantiene la apertura absoluta debajo del host con `max-height: 160px` + scroll vertical, mientras cada página conserva su apariencia mediante variables CSS locales;
   - `test/unit/shared/combobox.test.js` cubre el contrato real de ambos modos, incluyendo ARIA, navegación y activación por teclado, active state por hover, type-ahead, opciones deshabilitadas, acciones no commit, cierre externo, exclusión entre instancias, updates y destrucción.
+- Tooltips authored compartidos del renderer:
+  - `public/tooltips.css` y `public/js/tooltips.js` reemplazan los tooltips nativos de atributos `title` por una única superficie authored para las ventanas renderer, con fondo y texto definidos por tokens CSS propios, soporte por hover y foco de teclado, y posicionamiento contenido dentro del viewport;
+  - el owner conserva o completa el nombre accesible del control, observa los cambios dinámicos de `title` producidos por i18n/runtime y normaliza la geometría antes de medirla para evitar wrapping o posición distintos al volver a pasar por el mismo control;
+  - si `MutationObserver` no está disponible, el enhancement se omite de forma explícita, los `title` nativos permanecen intactos y el renderer registra el fallback;
+  - `test/unit/shared/tooltips.test.js` cubre conversión inicial, actualización dinámica, hovers repetidos, colores authored y el fallback diagnosticado.
 
 ### Cambiado
 
