@@ -101,8 +101,8 @@ test('loadInitialState normalizes invalid task editor state payloads', (t) => {
   assert.deepEqual(normalized.reduced, {
     x: 50,
     y: 61,
-    width: 900,
-    height: 560,
+    width: 756,
+    height: 400,
   });
 });
 

@@ -242,33 +242,33 @@ test('wrapper changes recalculate texto and disable dividers only while overflow
   assert.equal(constrainedDivider.tabIndex, -1);
   constrainedDivider.dispatch('keydown', { key: 'ArrowLeft' });
   constrainedDivider.dispatch('keydown', { key: 'ArrowRight' });
-  assert.equal(harness.columns.texto.style.width, '114px');
+  assert.equal(harness.columns.texto.style.width, '250px');
   assert.equal(harness.columns.tiempo.style.width, '88px');
   assert.equal(harness.saveCalls.length, 0);
 
   harness.wrapper.clientWidth = 700;
   harness.observers[0].trigger();
-  assert.equal(harness.columns.texto.style.width, '114px');
-  assert.equal(harness.table.style.width, '786px');
+  assert.equal(harness.columns.texto.style.width, '250px');
+  assert.equal(harness.table.style.width, '922px');
   Object.keys(harness.headers).forEach((key) => {
     assert.equal(harness.getDivider(key).getAttribute('aria-disabled'), 'true');
     assert.equal(harness.getDivider(key).tabIndex, -1);
   });
 
-  harness.wrapper.clientWidth = 900;
+  harness.wrapper.clientWidth = 923;
   harness.observers[0].trigger();
-  assert.equal(harness.columns.texto.style.width, '227px');
-  assert.equal(harness.table.style.width, '899px');
+  assert.equal(harness.columns.texto.style.width, '250px');
+  assert.equal(harness.table.style.width, '922px');
   assert.equal(harness.getDivider('tiempo').getAttribute('aria-disabled'), 'false');
   assert.equal(harness.getDivider('tiempo').tabIndex, 0);
   assert.equal(harness.saveCalls.length, 0);
 
-  harness.wrapper.clientWidth = 787;
+  harness.wrapper.clientWidth = 922;
   harness.observers[0].trigger();
-  assert.equal(harness.columns.texto.style.width, '114px');
-  assert.equal(harness.table.style.width, '786px');
-  assert.equal(harness.getDivider('tiempo').getAttribute('aria-disabled'), 'false');
-  assert.equal(harness.getDivider('tiempo').tabIndex, 0);
+  assert.equal(harness.columns.texto.style.width, '250px');
+  assert.equal(harness.table.style.width, '922px');
+  assert.equal(harness.getDivider('tiempo').getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.getDivider('tiempo').tabIndex, -1);
 });
 
 test('read failures use session defaults without overwriting the stored layout', async () => {

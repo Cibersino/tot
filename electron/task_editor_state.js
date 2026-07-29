@@ -24,8 +24,8 @@ log.debug('Task Editor state starting...');
 // =============================================================================
 const DEFAULT_REDUCED_WIDTH = 1130;
 const DEFAULT_REDUCED_HEIGHT = 720;
-const MIN_REDUCED_WIDTH = 900;
-const MIN_REDUCED_HEIGHT = 560;
+const MIN_REDUCED_WIDTH = 756;
+const MIN_REDUCED_HEIGHT = 400;
 const MIN_VISIBLE_EDGE_PX = 40;
 
 const DEFAULT_STATE = Object.freeze({

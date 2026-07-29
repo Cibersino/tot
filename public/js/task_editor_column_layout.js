@@ -9,7 +9,7 @@
 
   const LAYOUT_VERSION = 1;
   const TEXT_COLUMN_KEY = 'texto';
-  const TEXT_MIN_WIDTH_PX = 114;
+  const TEXT_MIN_WIDTH_PX = 250;
   const FITTED_WIDTH_SAFETY_PX = 1;
   const WIDTH_MAX_PX = 100_000;
   const KEYBOARD_STEP_PX = 10;

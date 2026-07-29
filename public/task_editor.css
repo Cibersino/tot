@@ -326,9 +326,6 @@ body {
 .task-table {
   border-collapse: collapse;
   font-size: var(--font-size-3);
-}
-
-.task-table.resizable {
   table-layout: fixed;
 }
 
