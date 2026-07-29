@@ -482,7 +482,7 @@ body.is-resizing {
   line-height: inherit;
   border-radius: 5px;
   padding: 8px 10px;
-  resize: vertical;
+  resize: none;
 }
 
 .comment-snapshot-row {
