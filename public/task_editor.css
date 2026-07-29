@@ -249,6 +249,7 @@ body {
 .task-header {
   display: flex;
   align-items: center;
+  min-width: 200px;
   max-width: 600px;
   width: 100%;
   justify-content: space-between;
@@ -259,7 +260,6 @@ body {
   border-radius: 8px;
   box-shadow: var(--section-shadow);
   flex: 1 1 auto;
-  min-width: 0;
 }
 
 .task-name {
