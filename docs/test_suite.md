@@ -1593,6 +1593,32 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Position and reduced size are restored.
 
+#### REG-TASKS-08 Task input validation and radical-cutover persistence
+**Goal:** Task Editor input behavior matches the approved contract and rejects
+nonconforming persisted data without migration or repair.
+1. Open a new Task Editor with one reading row.
+2. In Time, enter `1:2:03`; verify invalid feedback, then blur the field.
+3. Enter `1:02:03` and commit it with Enter.
+4. In %, enter `101%`, then blur; repeat with `25` and commit it.
+5. Clear the task name and the reading text, click Save, then correct each
+   field and save a valid task.
+6. Close the Task Editor and reopen the valid task; verify its Time and %
+   values round trip unchanged.
+7. With a copy of that saved task file, change one persisted row value to a
+   decimal (for example, `"tiempoSeconds": 12.5`) or add an unknown row
+   property. Attempt to load it, then inspect the file again.
+8. With a copy of `tasks/library.json`, make one library entry nonconforming
+   in the same way. Open the reading library and inspect the file again.
+
+**Expected:**
+- `1:2:03` and `101%` show invalid styling and `aria-invalid="true"` while
+  editing; blur restores the prior canonical values.
+- Valid Time uses `HH:MM:SS`; valid Percentage uses `N%` and stores an integer.
+- A failed save marks the required empty field, moves focus to the first
+  failure, and retains the existing user-facing notice.
+- Invalid task or library data is rejected with no migration, compatibility
+  fallback, repair, or rewrite. The original file bytes remain unchanged.
+
 ---
 
 ### REG-CRONO — Stopwatch + floating window

@@ -36,6 +36,15 @@ const {
   TASK_ROW_COMMENT_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 } = AppConstants;
+const stopwatchTimeCore = window.StopwatchTimeCore || null;
+if (!stopwatchTimeCore || typeof stopwatchTimeCore.createStopwatchTimeUtils !== 'function') {
+  throw new Error('[task-editor] StopwatchTimeCore.createStopwatchTimeUtils unavailable; cannot continue');
+}
+const stopwatchTimeUtils = stopwatchTimeCore.createStopwatchTimeUtils();
+const {
+  formatStopwatchMs,
+  parseStopwatchInput,
+} = stopwatchTimeUtils;
 
 // =============================================================================
 // i18n
@@ -130,6 +139,7 @@ let pendingCommentSnapshotRelPath = '';
 let pendingLibraryRowId = null;
 let libraryItemsCache = [];
 let columnLayoutController = null;
+let renderedRowFields = new Map();
 
 // =============================================================================
 // Helpers
@@ -160,6 +170,17 @@ function syncDirtyState() {
 }
 
 syncDirtyState();
+
+function setTaskFieldInvalidState(input, isInvalid) {
+  if (!input) return;
+  input.classList.toggle('is-invalid', isInvalid);
+  input.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
+}
+
+function resetTaskEditorValidationState() {
+  // Table inputs are recreated by renderTable; the task name input persists across sessions.
+  setTaskFieldInvalidState(taskNameInput, false);
+}
 
 function clampTaskName(input) {
   const name = String(input || '');
@@ -198,36 +219,16 @@ function setCommentSnapshotDisplay(snapshotRelPath) {
 }
 
 function formatDuration(totalSeconds) {
-  const sec = Math.max(0, Math.floor(Number(totalSeconds) || 0));
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
-  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  const seconds = Number(totalSeconds);
+  const safeSeconds = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
+  return formatStopwatchMs(safeSeconds * 1000);
 }
 
 function parseDuration(input) {
-  const raw = String(input || '').trim();
-  if (!raw) return null;
-  const parts = raw.split(':');
-  if (parts.length !== 2 && parts.length !== 3) return null;
-
-  const nums = parts.map((p) => (p.trim() === '' ? NaN : Number(p)));
-  if (nums.some((n) => !Number.isFinite(n) || !Number.isInteger(n))) return null;
-
-  let h = 0;
-  let m = 0;
-  let s = 0;
-  if (parts.length === 2) {
-    m = nums[0];
-    s = nums[1];
-  } else {
-    h = nums[0];
-    m = nums[1];
-    s = nums[2];
-  }
-  if (h < 0 || m < 0 || s < 0) return null;
-  if (m > 59 || s > 59) return null;
-  return (h * 3600) + (m * 60) + s;
+  const milliseconds = parseStopwatchInput(input);
+  if (milliseconds === null) return null;
+  const seconds = milliseconds / 1000;
+  return Number.isSafeInteger(seconds) && seconds >= 0 ? seconds : null;
 }
 
 function parsePercent(input) {
@@ -483,9 +484,12 @@ function renderRow(row) {
   const textoInput = document.createElement('input');
   textoInput.type = 'text';
   textoInput.maxLength = TASK_ROW_TEXT_MAX_CHARS;
+  textoInput.setAttribute('aria-labelledby', 'thTexto');
+  textoInput.setAttribute('aria-invalid', 'false');
   textoInput.value = row.texto;
   textoInput.addEventListener('input', () => {
     const next = textoInput.value;
+    if (next.trim()) setTaskFieldInvalidState(textoInput, false);
     if (next !== row.texto) {
       row.texto = next;
       markDirty();
@@ -497,11 +501,14 @@ function renderRow(row) {
   const tdTiempo = document.createElement('td');
   const tiempoInput = document.createElement('input');
   tiempoInput.type = 'text';
+  tiempoInput.setAttribute('aria-labelledby', 'thTiempo');
+  tiempoInput.setAttribute('aria-invalid', 'false');
   tiempoInput.value = formatDuration(row.tiempoSeconds);
   const commitTiempo = () => {
     const parsed = parseDuration(tiempoInput.value);
     if (parsed === null) {
       tiempoInput.value = formatDuration(row.tiempoSeconds);
+      setTaskFieldInvalidState(tiempoInput, false);
       return;
     }
     if (parsed !== row.tiempoSeconds) {
@@ -511,7 +518,11 @@ function renderRow(row) {
       markDirty();
     }
     tiempoInput.value = formatDuration(row.tiempoSeconds);
+    setTaskFieldInvalidState(tiempoInput, false);
   };
+  tiempoInput.addEventListener('input', () => {
+    setTaskFieldInvalidState(tiempoInput, parseDuration(tiempoInput.value) === null);
+  });
   tiempoInput.addEventListener('blur', commitTiempo);
   tiempoInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') tiempoInput.blur();
@@ -522,11 +533,14 @@ function renderRow(row) {
   const tdPercent = document.createElement('td');
   const percentInput = document.createElement('input');
   percentInput.type = 'text';
+  percentInput.setAttribute('aria-labelledby', 'thPercent');
+  percentInput.setAttribute('aria-invalid', 'false');
   percentInput.value = `${row.percentComplete}%`;
   const commitPercent = () => {
     const parsed = parsePercent(percentInput.value);
     if (parsed === null) {
       percentInput.value = `${row.percentComplete}%`;
+      setTaskFieldInvalidState(percentInput, false);
       return;
     }
     if (parsed !== row.percentComplete) {
@@ -536,7 +550,11 @@ function renderRow(row) {
       markDirty();
     }
     percentInput.value = `${row.percentComplete}%`;
+    setTaskFieldInvalidState(percentInput, false);
   };
+  percentInput.addEventListener('input', () => {
+    setTaskFieldInvalidState(percentInput, parsePercent(percentInput.value) === null);
+  });
   percentInput.addEventListener('blur', commitPercent);
   percentInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') percentInput.blur();
@@ -555,6 +573,8 @@ function renderRow(row) {
   const enlaceInput = document.createElement('input');
   enlaceInput.type = 'text';
   enlaceInput.maxLength = TASK_ROW_LINK_MAX_CHARS;
+  enlaceInput.setAttribute('aria-labelledby', 'thEnlace');
+  enlaceInput.setAttribute('aria-invalid', 'false');
   enlaceInput.value = row.enlace;
   enlaceInput.addEventListener('input', () => {
     const next = enlaceInput.value;
@@ -672,12 +692,14 @@ function renderRow(row) {
   trEl.appendChild(tdComentario);
   trEl.appendChild(tdActions);
 
+  renderedRowFields.set(row.id, { textoInput });
   return trEl;
 }
 
 function renderTable() {
   if (!tableBody) return;
   tableBody.innerHTML = '';
+  renderedRowFields = new Map();
   rows.forEach((row) => {
     tableBody.appendChild(renderRow(row));
   });
@@ -758,31 +780,55 @@ function applyTaskPayload(payload) {
     log.warn('task-editor-init payload invalid (ignored):', payload);
     return;
   }
-  const safeName = clampTaskName(task.meta.name || '');
+  const taskName = task.meta.name;
   meta = {
-    name: safeName,
-    createdAt: task.meta.createdAt || new Date().toISOString(),
-    updatedAt: task.meta.updatedAt || new Date().toISOString(),
+    name: taskName,
+    createdAt: task.meta.createdAt,
+    updatedAt: task.meta.updatedAt,
   };
   sourcePath = payload.sourcePath || null;
   rows = task.rows.map((r) => createRow(r));
   resetDirty();
-  taskNameInput.value = safeName;
+  taskNameInput.value = taskName;
   renderTable();
+  resetTaskEditorValidationState();
+}
+
+function normalizeRowTexto(row) {
+  const normalizedTexto = String(row.texto || '').trim();
+  if (row.texto === normalizedTexto) return normalizedTexto;
+  row.texto = normalizedTexto;
+  const renderedFields = renderedRowFields.get(row.id);
+  if (renderedFields && renderedFields.textoInput) {
+    renderedFields.textoInput.value = normalizedTexto;
+  }
+  markDirty();
+  return normalizedTexto;
 }
 
 function validateBeforeSave() {
   const name = clampTaskName(taskNameInput.value).trim();
   if (taskNameInput.value !== name) taskNameInput.value = name;
+  setTaskFieldInvalidState(taskNameInput, !name);
+
+  const invalidRows = [];
+  for (const row of rows) {
+    const normalizedTexto = normalizeRowTexto(row);
+    const renderedFields = renderedRowFields.get(row.id);
+    const isInvalid = !normalizedTexto;
+    setTaskFieldInvalidState(renderedFields && renderedFields.textoInput, isInvalid);
+    if (isInvalid) invalidRows.push(renderedFields && renderedFields.textoInput);
+  }
+
   if (!name) {
+    taskNameInput.focus();
     window.Notify.notifyEditor('renderer.tasks.alerts.name_required');
     return null;
   }
-  for (const row of rows) {
-    if (!String(row.texto || '').trim()) {
-      window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
-      return null;
-    }
+  if (invalidRows.length) {
+    if (invalidRows[0]) invalidRows[0].focus();
+    window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
+    return null;
   }
   return name;
 }
@@ -856,6 +902,7 @@ async function deleteTask() {
   resetDirty();
   taskNameInput.value = '';
   renderTable();
+  resetTaskEditorValidationState();
 }
 
 // =============================================================================
@@ -963,7 +1010,7 @@ async function saveRowToLibrary(includeComment) {
   pendingLibraryRowId = null;
   closeModal(includeCommentModal);
   if (!row) return;
-  if (!String(row.texto || '').trim()) {
+  if (!normalizeRowTexto(row)) {
     window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
     return;
   }
@@ -1006,6 +1053,7 @@ async function applyTaskEditorTranslations() {
   if (commentTitle) commentTitle.textContent = tr('renderer.tasks.comentario_modal.comment_title');
   if (commentInput) {
     commentInput.setAttribute('placeholder', tr('renderer.tasks.comentario_modal.comment_placeholder'));
+    commentInput.setAttribute('aria-label', tr('renderer.tasks.comentario_modal.comment_title'));
   }
   if (commentSave) commentSave.textContent = tr('renderer.tasks.save_button');
   if (commentCancel) commentCancel.textContent = tr('renderer.tasks.guardar_lectura_modal.cancel');
@@ -1057,9 +1105,11 @@ function wirePrimaryTaskEditorEvents() {
 
   if (taskNameInput) {
     taskNameInput.maxLength = TASK_NAME_MAX_CHARS;
+    taskNameInput.setAttribute('aria-invalid', 'false');
     taskNameInput.addEventListener('input', () => {
       const next = clampTaskName(taskNameInput.value);
       if (taskNameInput.value !== next) taskNameInput.value = next;
+      if (next.trim()) setTaskFieldInvalidState(taskNameInput, false);
       if (next !== meta.name) {
         meta.name = next;
         markDirty();

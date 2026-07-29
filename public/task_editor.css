@@ -28,6 +28,7 @@
   /* Borders */
   --structural-border: #e9e6de;
   --field-border: #b8ae9c;
+  --input-invalid-border: #c62828;
   --button-border: #cfcfcf;
   --group-border-color: rgb(0 0 0 / 0.1);
   --modal-panel-border-color: rgb(0 0 0 / 0.12);
@@ -287,6 +288,16 @@ body {
   font-size: var(--font-size-11);
   background: var(--field-bg);
   color: inherit;
+}
+
+#taskNameInput.is-invalid,
+.task-table input.is-invalid {
+  border-color: var(--input-invalid-border);
+}
+
+#taskNameInput.is-invalid:focus-visible,
+.task-table input.is-invalid:focus-visible {
+  outline-color: var(--input-invalid-border);
 }
 
 .task-actions {

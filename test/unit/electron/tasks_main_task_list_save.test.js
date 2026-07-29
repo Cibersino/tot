@@ -13,6 +13,9 @@ const {
 const {
   installElectronModuleMock,
 } = require('../../helpers/electron_module_mock');
+const {
+  normalizeSnapshotRelPath,
+} = require('../../../electron/current_text_snapshots_main');
 
 function createIpcMainMock() {
   const handlers = new Map();
@@ -56,6 +59,26 @@ function getLibraryFilePath(tasksRoot) {
 function writeJsonFile(targetPath, payload) {
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
   fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2), 'utf8');
+}
+
+function createTaskMeta(name = 'Session Plan') {
+  return {
+    name,
+    createdAt: '2026-01-02T03:04:05.000Z',
+    updatedAt: '2026-01-02T03:04:05.000Z',
+  };
+}
+
+function createTaskRow(overrides = {}) {
+  return {
+    texto: 'Read chapter 1',
+    tiempoSeconds: 120,
+    percentComplete: 0,
+    enlace: '',
+    comentario: '',
+    snapshotRelPath: '',
+    ...overrides,
+  };
 }
 
 function loadFreshTasksMainForSave({
@@ -126,9 +149,7 @@ function loadFreshTasksMainForSave({
     filename: snapshotsModulePath,
     loaded: true,
     exports: {
-      normalizeSnapshotRelPath(rawValue) {
-        return typeof rawValue === 'string' ? rawValue.trim() : '';
-      },
+      normalizeSnapshotRelPath,
     },
   };
 
@@ -219,17 +240,8 @@ test('task-list-save persists task data through saveJsonStrict', async (t) => {
     'task-list-save',
     { sender: taskEditorWin.webContents },
     {
-      meta: { name: 'Session Plan' },
-      rows: [
-        {
-          texto: 'Read chapter 1',
-          tiempoSeconds: 120,
-          percentComplete: 25,
-          enlace: '',
-          comentario: '',
-          snapshotRelPath: '',
-        },
-      ],
+      meta: createTaskMeta(),
+      rows: [createTaskRow({ percentComplete: 25 })],
     }
   );
 
@@ -267,23 +279,103 @@ test('task-list-save maps saveJsonStrict failures to WRITE_FAILED', async (t) =>
     'task-list-save',
     { sender: taskEditorWin.webContents },
     {
-      meta: { name: 'Failure Plan' },
-      rows: [
-        {
-          texto: 'Read chapter 2',
-          tiempoSeconds: 240,
-          percentComplete: 0,
-          enlace: '',
-          comentario: '',
-          snapshotRelPath: '',
-        },
-      ],
+      meta: createTaskMeta('Failure Plan'),
+      rows: [createTaskRow({ texto: 'Read chapter 2', tiempoSeconds: 240 })],
     }
   );
 
   assert.equal(result.ok, false);
   assert.equal(result.code, 'WRITE_FAILED');
   assert.match(String(result.message || ''), /disk full/i);
+});
+
+test('task-list-save rejects noncanonical task-row values without writing a file', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-invalid-schema');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const saveDialogPath = path.join(tasksRoot, 'Invalid Plan.json');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath,
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const decimalResult = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    {
+      meta: createTaskMeta('Invalid Plan'),
+      rows: [createTaskRow({ tiempoSeconds: 12.5 })],
+    }
+  );
+
+  assert.deepEqual(decimalResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'INVALID_TIEMPO',
+  });
+  const unknownPropertyResult = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    {
+      meta: createTaskMeta('Invalid Plan'),
+      rows: [createTaskRow({ unexpected: true })],
+    }
+  );
+  assert.deepEqual(unknownPropertyResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'INVALID_ROW',
+  });
+  assert.equal(fs.existsSync(path.join(tasksRoot, 'Invalid_Plan.json')), false);
+});
+
+test('open-task-editor rejects invalid persisted task data without rewriting it', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-load-invalid-schema');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const taskPath = path.join(tasksRoot, 'invalid.json');
+  const invalidTask = {
+    meta: createTaskMeta('Invalid task'),
+    rows: [createTaskRow({ percentComplete: 25.5 })],
+  };
+  writeJsonFile(taskPath, invalidTask);
+  const originalFile = fs.readFileSync(taskPath, 'utf8');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+    openDialogResponse: {
+      canceled: false,
+      filePaths: [taskPath],
+    },
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const mainWin = createWindow('main');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin, taskEditorWin: null }),
+    ensureTaskEditorWindow() {},
+  });
+
+  const result = await ipcMain.invoke(
+    'open-task-editor',
+    { sender: mainWin.webContents },
+    { mode: 'load' }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'INVALID_PERCENT',
+  });
+  assert.equal(fs.readFileSync(taskPath, 'utf8'), originalFile);
 });
 
 test('task-library-save persists library entries through saveJsonStrict', async (t) => {
@@ -307,13 +399,12 @@ test('task-library-save persists library entries through saveJsonStrict', async 
     { sender: taskEditorWin.webContents },
     {
       includeComment: true,
-      row: {
-        texto: 'Read chapter 1',
+      row: createTaskRow({
         tiempoSeconds: 180,
         enlace: 'https://example.com/read',
         comentario: 'Review key ideas',
-        snapshotRelPath: 'snapshots/chapter-1.json',
-      },
+        snapshotRelPath: '/snapshots/chapter-1.json',
+      }),
     }
   );
 
@@ -325,8 +416,40 @@ test('task-library-save persists library entries through saveJsonStrict', async 
     tiempoSeconds: 180,
     enlace: 'https://example.com/read',
     comentario: 'Review key ideas',
-    snapshotRelPath: 'snapshots/chapter-1.json',
+    snapshotRelPath: '/snapshots/chapter-1.json',
   }]);
+});
+
+test('task-library-save rejects noncanonical snapshot paths without writing the library', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-library-invalid-snapshot-path');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-library-save',
+    { sender: taskEditorWin.webContents },
+    {
+      row: createTaskRow({ snapshotRelPath: 'snapshots/chapter-1.json' }),
+    }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'INVALID_SNAPSHOT_PATH',
+  });
+  assert.equal(fs.existsSync(getLibraryFilePath(tasksRoot)), false);
 });
 
 test('task-library-save maps saveJsonStrict failures to WRITE_FAILED', async (t) => {
@@ -352,13 +475,7 @@ test('task-library-save maps saveJsonStrict failures to WRITE_FAILED', async (t)
     'task-library-save',
     { sender: taskEditorWin.webContents },
     {
-      row: {
-        texto: 'Read chapter 2',
-        tiempoSeconds: 240,
-        enlace: '',
-        comentario: '',
-        snapshotRelPath: '',
-      },
+      row: createTaskRow({ texto: 'Read chapter 2', tiempoSeconds: 240 }),
     }
   );
 
@@ -366,6 +483,40 @@ test('task-library-save maps saveJsonStrict failures to WRITE_FAILED', async (t)
   assert.equal(result.code, 'WRITE_FAILED');
   assert.match(String(result.message || ''), /disk full/i);
   assert.equal(fs.existsSync(getLibraryFilePath(tasksRoot)), false);
+});
+
+test('task-library-list rejects invalid persisted entries without rewriting the library', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-library-invalid-schema');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const libraryFile = getLibraryFilePath(tasksRoot);
+  writeJsonFile(libraryFile, [
+    {
+      texto: 'Read chapter 1',
+      tiempoSeconds: 180.5,
+      enlace: '',
+    },
+  ]);
+  const originalFile = fs.readFileSync(libraryFile, 'utf8');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-library-list',
+    { sender: taskEditorWin.webContents }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'INVALID_SCHEMA' });
+  assert.equal(fs.readFileSync(libraryFile, 'utf8'), originalFile);
 });
 
 test('task-library-delete persists library removals through saveJsonStrict', async (t) => {

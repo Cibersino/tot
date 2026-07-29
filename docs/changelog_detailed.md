@@ -60,6 +60,7 @@ Reglas:
 - `language_window` y `preset_modal` dejan de ser excepciones dentro de las ventanas renderer top-level: sus estilos salen del HTML inline, convergen en archivos CSS dedicados con la misma estructura documental del resto del repo y la documentación viva del árbol vuelve a reflejar el layout real de `public/`.
 - La planificación batch corrige el modelo lógico de los PDFs pesados: el PDF fuente conserva membresía, nombre y orden de unidad normales junto a inputs ordinarios, mientras sus PDFs generados permanecen hijos internos del source tanto en ejecución como en el reporte final.
 - El `Task Editor` reemplaza el reparto implícito de ancho del navegador por un layout de columnas exacto y responsive: `texto` absorbe el ancho utilizable real, las seis columnas de utilidad conservan un modelo de resize predecible y accesible, y solo esa configuración controlada por el usuario se conserva entre aperturas.
+- El `Task Editor` unifica la validación de Tiempo y Porcentaje con su presentación accesible, y corta de forma radical la aceptación permisiva de listas y biblioteca: los archivos deben cumplir el schema canónico completo o se rechazan sin reparación, migración ni reescritura.
 
 ### Agregado
 
@@ -97,6 +98,10 @@ Reglas:
   - las filas nuevas creadas desde ese flujo siguen persistiendo el mismo campo plano `enlace`, pero ahora se inicializan con la ruta absoluta seleccionada y con `texto` derivado del nombre base del archivo, dejando la fila usable sin tipeo adicional;
   - la celda `Link or local path` suma un picker local por fila que reutiliza el mismo modelo de storage string-only; si la fila todavía no tenía `texto`, el nombre visible se completa desde el archivo elegido, pero el usuario conserva edición manual libre para URLs `https:` y rutas pegadas;
   - el control browse por fila deja de renderizarse como botón textual ad hoc y pasa a consumir el icono compartido `folder`, alineado con el helper `RendererIcons` y con el catálogo generado desde `assets/icons/`.
+- Task Editor / validación de entradas:
+  - `Tiempo` reutiliza `StopwatchTimeCore` con la gramática `H+:MM:SS`, se presenta de forma canónica como `HH:MM:SS` y se conserva como segundos enteros seguros; `Porcentaje` acepta `N` o `N%`, exige un entero `0..100` y se presenta como `N%`;
+  - Tiempo y Porcentaje muestran `.is-invalid` / `aria-invalid` mientras se edita un valor inválido y, si sigue inválido al salir del campo o pulsar Enter, restauran el valor canónico previo; Nombre y Lectura requeridos se señalan al intentar guardar sin valor;
+  - los inputs editables de cada fila toman su nombre accesible del header de columna traducido mediante `aria-labelledby`; los headers declaran `scope="col"`, sin una key i18n especial para Porcentaje.
 - Cronómetro / calculadora rápida de lectura:
   - `public/js/crono.js` y `electron/main.js` dejan de mantener parse/format duplicados del tiempo de cronómetro y pasan a reutilizar `public/js/lib/stopwatch_time_core.js`, preservando la semántica existente floor-to-seconds para cronómetro principal / `Floating Stopwatch`;
   - la calculadora rápida consume ese mismo helper para el input editable `H+:MM:SS`, pero usa redondeo al segundo más cercano solo para el tiempo derivado mostrado en su propia ventana;
@@ -147,10 +152,13 @@ Reglas:
 - Task Editor / columnas:
   - las columnas dejan de diferir entre el ancho configurado y el ancho realmente renderizado, eliminando el surplus que Chromium repartía y el scrollbar horizontal inesperado en el layout nominal;
   - `comentario` y `acciones` recuperan mínimos suficientes para que sus controles sigan en una sola línea sin expansión intrínseca, clipping ni solapamiento.
+- Task Editor / estado de validación:
+  - al reutilizar la misma ventana para una tarea nueva o cargada, y después de borrar con éxito la tarea actual, Nombre deja de conservar el estado inválido de una sesión anterior; un payload de inicialización inválido continúa sin modificar la sesión activa.
 
 ### Migración
 
 - Task Editor / `column_widths.json`: el modelo anterior de mapa no versionado se corta de forma radical, sin migración ni interpretación de datos heredados; un archivo ausente, antiguo, parcial o inválido se reemplaza por los defaults versionados, mientras un fallo real de lectura conserva esos defaults solo para la sesión y no sobrescribe el archivo existente.
+- Task Editor / listas y biblioteca: la persistencia adopta un cutover radical sin migración, parser legacy, fallback de compatibilidad ni reparación. Una lista o entrada de biblioteca existente que no satisfaga el schema canónico se rechaza y el archivo original permanece intacto; debe corregirse o recrearse fuera de la app antes de poder usarse.
 
 ### Contratos tocados
 
@@ -170,7 +178,11 @@ Reglas:
 - IPC / preload del Task Editor:
   - nuevo IPC `task-files-select` en `electron/tasks_main.js`, invocado desde `window.taskEditorAPI.selectTaskFiles()`, que devuelve `{ ok: true, filePaths }` para selección multi-file desde la toolbar;
   - nuevo IPC `task-file-select` en `electron/tasks_main.js`, invocado desde `window.taskEditorAPI.selectTaskFile()`, que devuelve `{ ok: true, filePath }` para selección single-file desde una fila;
-  - ambos canales heredan el mismo ownership main-owned del picker nativo, el mismo sender guard del `Task Editor` y no modifican el schema persistido de las filas: `enlace` sigue siendo string libre y la lista de tareas / biblioteca no cambia de formato.
+  - ambos canales heredan el mismo ownership main-owned del picker nativo y el mismo sender guard del `Task Editor`; no introducen un cambio adicional del schema de filas más allá del cutover de validación documentado a continuación, y `enlace` sigue siendo string libre.
+- Persistencia del Task Editor / validación radical:
+  - una lista de tareas persistida es exactamente `{ meta, rows }`; `meta` es exactamente `{ name, createdAt, updatedAt }`, con nombre no vacío, timestamps ISO canónicos y sin propiedades adicionales;
+  - cada fila persistida es exactamente `{ texto, tiempoSeconds, percentComplete, enlace, comentario, snapshotRelPath }`, con segundos enteros seguros no negativos, Porcentaje entero `0..100`, texto requerido y ruta de snapshot canónica;
+  - cada entrada de `config/tasks/library.json` es exactamente `{ texto, tiempoSeconds, enlace }`, con `comentario` y `snapshotRelPath` opcionales solo cuando son no vacíos y canónicos. La carga, guardado y borrado de biblioteca validan todas las entradas y no coercen tipos ni descartan propiedades desconocidas.
 - Calculadora rápida de lectura:
   - nuevo bridge de la ventana principal `window.electronAPI.openTextTimeCalculator()`, que invoca `ipcMain.handle('text-time-calculator-open', ...)` y queda autorizado solo para senders de `mainWin`;
   - nuevo preload surface `window.textTimeCalculatorAPI` en la ventana dedicada, con `getSettings()` y `onSettingsChanged(cb) -> unsubscribe` como contrato requerido de bootstrap;

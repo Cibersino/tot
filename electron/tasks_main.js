@@ -217,101 +217,187 @@ function normalizeTexto(raw) {
   return s.toLowerCase();
 }
 
+const TASK_LIST_KEYS = Object.freeze(['meta', 'rows']);
+const TASK_META_KEYS = Object.freeze(['name', 'createdAt', 'updatedAt']);
+const TASK_ROW_KEYS = Object.freeze([
+  'texto',
+  'tiempoSeconds',
+  'percentComplete',
+  'enlace',
+  'comentario',
+  'snapshotRelPath',
+]);
+const TASK_LIBRARY_ENTRY_REQUIRED_KEYS = Object.freeze(['texto', 'tiempoSeconds', 'enlace']);
+const TASK_LIBRARY_ENTRY_OPTIONAL_KEYS = Object.freeze(['comentario', 'snapshotRelPath']);
+
+function isCanonicalIsoTimestamp(value) {
+  if (typeof value !== 'string') return false;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
+}
+
+function isCanonicalSnapshotRelPath(value) {
+  if (typeof value !== 'string') return false;
+  if (!value) return true;
+  return normalizeSnapshotRelPath(value) === value;
+}
+
+function validateCanonicalTaskText(value, maxLength, { required = false, requireTrimmed = false } = {}) {
+  if (typeof value !== 'string') return { ok: false, code: 'INVALID_TEXT_TYPE' };
+  if (value.length > maxLength) return { ok: false, code: 'TEXT_TOO_LONG' };
+  if (requireTrimmed && value !== value.trim()) return { ok: false, code: 'TEXT_NOT_CANONICAL' };
+  if (required && !value) return { ok: false, code: 'EMPTY_TEXT' };
+  return { ok: true, value };
+}
+
 function normalizeRow(raw) {
-  if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_ROW' };
-  const texto = String(raw.texto || '').trim();
-  if (!texto) return { ok: false, code: 'EMPTY_TEXTO' };
-  if (texto.length > TASK_ROW_TEXT_MAX_CHARS) return { ok: false, code: 'TEXTO_TOO_LONG' };
-  const tiempoSeconds = Number(raw.tiempoSeconds);
-  if (!Number.isFinite(tiempoSeconds) || tiempoSeconds < 0) {
+  if (!hasExactKeys(raw, TASK_ROW_KEYS)) return { ok: false, code: 'INVALID_ROW' };
+
+  const textoRes = validateCanonicalTaskText(raw.texto, TASK_ROW_TEXT_MAX_CHARS, {
+    required: true,
+    requireTrimmed: true,
+  });
+  if (!textoRes.ok) return textoRes;
+  if (!Number.isSafeInteger(raw.tiempoSeconds) || raw.tiempoSeconds < 0) {
     return { ok: false, code: 'INVALID_TIEMPO' };
   }
-  const percentComplete = Number(raw.percentComplete);
-  if (!Number.isFinite(percentComplete) || percentComplete < 0 || percentComplete > 100) {
+  if (!Number.isSafeInteger(raw.percentComplete)
+    || raw.percentComplete < 0
+    || raw.percentComplete > 100) {
     return { ok: false, code: 'INVALID_PERCENT' };
   }
-  const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
-  if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
-  const comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
-  if (comentario.length > TASK_ROW_COMMENT_MAX_CHARS) return { ok: false, code: 'COMENTARIO_TOO_LONG' };
-  const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
+  const enlaceRes = validateCanonicalTaskText(raw.enlace, TASK_ROW_LINK_MAX_CHARS);
+  if (!enlaceRes.ok) return enlaceRes;
+  const comentarioRes = validateCanonicalTaskText(raw.comentario, TASK_ROW_COMMENT_MAX_CHARS);
+  if (!comentarioRes.ok) return comentarioRes;
+  if (!isCanonicalSnapshotRelPath(raw.snapshotRelPath)) {
+    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+  }
+
   return {
     ok: true,
-    row: { texto, tiempoSeconds, percentComplete, enlace, comentario, snapshotRelPath },
+    row: {
+      texto: textoRes.value,
+      tiempoSeconds: raw.tiempoSeconds,
+      percentComplete: raw.percentComplete,
+      enlace: enlaceRes.value,
+      comentario: comentarioRes.value,
+      snapshotRelPath: raw.snapshotRelPath,
+    },
   };
 }
 
-function normalizeLibraryEntry(raw, includeComment) {
-  if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_ROW' };
-  const texto = String(raw.texto || '').trim();
-  if (!texto) return { ok: false, code: 'EMPTY_TEXTO' };
-  if (texto.length > TASK_ROW_TEXT_MAX_CHARS) return { ok: false, code: 'TEXTO_TOO_LONG' };
-  const tiempoSeconds = Number(raw.tiempoSeconds);
-  if (!Number.isFinite(tiempoSeconds) || tiempoSeconds < 0) {
+function hasExactLibraryEntryKeys(raw) {
+  if (!isPlainObject(raw)) return false;
+  const keys = Object.keys(raw);
+  if (!TASK_LIBRARY_ENTRY_REQUIRED_KEYS.every((key) => Object.prototype.hasOwnProperty.call(raw, key))) {
+    return false;
+  }
+  return keys.every((key) => TASK_LIBRARY_ENTRY_REQUIRED_KEYS.includes(key)
+    || TASK_LIBRARY_ENTRY_OPTIONAL_KEYS.includes(key));
+}
+
+function normalizeStoredLibraryEntry(raw) {
+  if (!hasExactLibraryEntryKeys(raw)) return { ok: false, code: 'INVALID_LIBRARY_ENTRY' };
+
+  const textoRes = validateCanonicalTaskText(raw.texto, TASK_ROW_TEXT_MAX_CHARS, {
+    required: true,
+    requireTrimmed: true,
+  });
+  if (!textoRes.ok) return textoRes;
+  if (!Number.isSafeInteger(raw.tiempoSeconds) || raw.tiempoSeconds < 0) {
     return { ok: false, code: 'INVALID_TIEMPO' };
   }
-  const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
-  if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
-  let comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
-  if (!includeComment) comentario = '';
-  if (comentario.length > TASK_ROW_COMMENT_MAX_CHARS) return { ok: false, code: 'COMENTARIO_TOO_LONG' };
-  const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
-  const entry = { texto, tiempoSeconds, enlace };
-  if (comentario) entry.comentario = comentario;
-  if (snapshotRelPath) entry.snapshotRelPath = snapshotRelPath;
+  const enlaceRes = validateCanonicalTaskText(raw.enlace, TASK_ROW_LINK_MAX_CHARS);
+  if (!enlaceRes.ok) return enlaceRes;
+
+  const entry = {
+    texto: textoRes.value,
+    tiempoSeconds: raw.tiempoSeconds,
+    enlace: enlaceRes.value,
+  };
+  if (Object.prototype.hasOwnProperty.call(raw, 'comentario')) {
+    const comentarioRes = validateCanonicalTaskText(raw.comentario, TASK_ROW_COMMENT_MAX_CHARS, { required: true });
+    if (!comentarioRes.ok) return comentarioRes;
+    entry.comentario = comentarioRes.value;
+  }
+  if (Object.prototype.hasOwnProperty.call(raw, 'snapshotRelPath')) {
+    if (!isCanonicalSnapshotRelPath(raw.snapshotRelPath) || !raw.snapshotRelPath) {
+      return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+    }
+    entry.snapshotRelPath = raw.snapshotRelPath;
+  }
   return { ok: true, entry };
 }
 
-function normalizeTaskMeta(rawMeta, { preserveCreatedAt, requireName } = {}) {
-  const meta = rawMeta && typeof rawMeta === 'object' ? rawMeta : {};
-  const rawName = String(meta.name || '').trim();
-  const name = rawName.length > TASK_NAME_MAX_CHARS
-    ? rawName.slice(0, TASK_NAME_MAX_CHARS)
-    : rawName;
-  if (requireName && !name) {
-    return { ok: false, code: 'NAME_REQUIRED' };
-  }
+function normalizeLibraryEntry(raw, includeComment) {
+  const rowRes = normalizeRow(raw);
+  if (!rowRes.ok) return rowRes;
 
-  let createdAt = '';
-  if (typeof meta.createdAt === 'string' && meta.createdAt.trim()) {
-    const t = Date.parse(meta.createdAt);
-    if (Number.isFinite(t)) createdAt = new Date(t).toISOString();
-  } else if (typeof meta.createdAt === 'number' && Number.isFinite(meta.createdAt)) {
-    createdAt = new Date(meta.createdAt).toISOString();
-  }
+  const entry = {
+    texto: rowRes.row.texto,
+    tiempoSeconds: rowRes.row.tiempoSeconds,
+    enlace: rowRes.row.enlace,
+  };
+  if (includeComment && rowRes.row.comentario) entry.comentario = rowRes.row.comentario;
+  if (rowRes.row.snapshotRelPath) entry.snapshotRelPath = rowRes.row.snapshotRelPath;
+  return { ok: true, entry };
+}
 
-  if (!createdAt && preserveCreatedAt) {
-    createdAt = preserveCreatedAt;
+function validateTaskMeta(rawMeta) {
+  if (!hasExactKeys(rawMeta, TASK_META_KEYS)) return { ok: false, code: 'INVALID_META' };
+  const nameRes = validateCanonicalTaskText(rawMeta.name, TASK_NAME_MAX_CHARS, {
+    required: true,
+    requireTrimmed: true,
+  });
+  if (!nameRes.ok) {
+    return { ok: false, code: nameRes.code === 'EMPTY_TEXT' ? 'NAME_REQUIRED' : nameRes.code };
   }
-  if (!createdAt) createdAt = new Date().toISOString();
+  if (!isCanonicalIsoTimestamp(rawMeta.createdAt) || !isCanonicalIsoTimestamp(rawMeta.updatedAt)) {
+    return { ok: false, code: 'INVALID_META' };
+  }
+  return {
+    ok: true,
+    meta: {
+      name: nameRes.value,
+      createdAt: rawMeta.createdAt,
+      updatedAt: rawMeta.updatedAt,
+    },
+  };
+}
 
-  const updatedAt = new Date().toISOString();
-  return { ok: true, meta: { name, createdAt, updatedAt } };
+function normalizeTaskMeta(rawMeta) {
+  const metaRes = validateTaskMeta(rawMeta);
+  if (!metaRes.ok) return metaRes;
+  return {
+    ok: true,
+    meta: {
+      name: metaRes.meta.name,
+      createdAt: metaRes.meta.createdAt,
+      updatedAt: new Date().toISOString(),
+    },
+  };
 }
 
 function normalizeTaskList(raw) {
-  if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_SCHEMA' };
-  const rowsRaw = Array.isArray(raw.rows) ? raw.rows : null;
-  if (!rowsRaw) return { ok: false, code: 'INVALID_SCHEMA' };
-  if (rowsRaw.length > TASK_LIST_MAX_ROWS) {
+  if (!hasExactKeys(raw, TASK_LIST_KEYS) || !Array.isArray(raw.rows)) {
+    return { ok: false, code: 'INVALID_SCHEMA' };
+  }
+  if (raw.rows.length > TASK_LIST_MAX_ROWS) {
     return { ok: false, code: 'ROWS_TOO_MANY' };
   }
 
+  const metaRes = validateTaskMeta(raw.meta);
+  if (!metaRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: metaRes.code };
+
   const normalizedRows = [];
-  for (const r of rowsRaw) {
-    const res = normalizeRow(r);
-    if (!res.ok) return { ok: false, code: 'INVALID_SCHEMA', message: res.code };
-    normalizedRows.push(res.row);
+  for (const row of raw.rows) {
+    const rowRes = normalizeRow(row);
+    if (!rowRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: rowRes.code };
+    normalizedRows.push(rowRes.row);
   }
 
-  const metaRaw = raw.meta && typeof raw.meta === 'object' ? raw.meta : {};
-  const meta = {
-    name: String(metaRaw.name || '').trim(),
-    createdAt: metaRaw.createdAt || new Date().toISOString(),
-    updatedAt: metaRaw.updatedAt || new Date().toISOString(),
-  };
-
-  return { ok: true, task: { meta, rows: normalizedRows } };
+  return { ok: true, task: { meta: metaRes.meta, rows: normalizedRows } };
 }
 
 // =============================================================================
@@ -342,7 +428,18 @@ function loadLibraryData() {
     );
     return { ok: false, code: 'LIBRARY_TOO_LARGE' };
   }
-  return { ok: true, items: res.data };
+  const items = [];
+  for (const rawEntry of res.data) {
+    const entryRes = normalizeStoredLibraryEntry(rawEntry);
+    if (!entryRes.ok) {
+      log.warn('Task library entry invalid; task library actions unavailable.', {
+        code: entryRes.code,
+      });
+      return { ok: false, code: 'INVALID_SCHEMA' };
+    }
+    items.push(entryRes.entry);
+  }
+  return { ok: true, items };
 }
 
 function saveLibraryData(items) {
@@ -567,6 +664,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       }
       const normalized = normalizeTaskList(jsonRes.data);
       if (!normalized.ok) {
+        log.warn('Task list schema invalid; loading rejected.', { code: normalized.code });
         return { ok: false, code: normalized.code || 'INVALID_SCHEMA', message: normalized.message };
       }
 
@@ -627,7 +725,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         normalizedRows.push(res.row);
       }
 
-      const metaRes = normalizeTaskMeta(payload.meta || {}, { requireName: true });
+      const metaRes = normalizeTaskMeta(payload.meta);
       if (!metaRes.ok) return { ok: false, code: metaRes.code, message: metaRes.code };
 
       const defaultName = getDefaultTaskFileName(root, metaRes.meta.name);
@@ -726,13 +824,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       if (!res.ok) return { ok: false, code: res.code };
 
       const items = res.items
-        .filter((entry) => entry && typeof entry === 'object' && typeof entry.texto === 'string')
         .map((entry) => ({
-          texto: String(entry.texto || '').trim(),
-          tiempoSeconds: Number(entry.tiempoSeconds) || 0,
-          enlace: typeof entry.enlace === 'string' ? entry.enlace : String(entry.enlace || ''),
-          comentario: typeof entry.comentario === 'string' ? entry.comentario : '',
-          snapshotRelPath: normalizeSnapshotRelPath(entry.snapshotRelPath || ''),
+          texto: entry.texto,
+          tiempoSeconds: entry.tiempoSeconds,
+          enlace: entry.enlace,
+          comentario: entry.comentario || '',
+          snapshotRelPath: entry.snapshotRelPath || '',
           _norm: normalizeTexto(entry.texto),
         }))
         .sort((a, b) => a._norm.localeCompare(b._norm));

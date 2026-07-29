@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { createStopwatchTimeUtils } = require('../../../public/js/lib/stopwatch_time_core');
 
 function createHarness() {
   let activeElement = null;
@@ -15,6 +16,7 @@ function createHarness() {
   });
   const modalOpeners = new Map();
   const documentListeners = new Map();
+  const notifications = [];
 
   function createElement(id = '', tagName = 'div') {
     const attributes = {};
@@ -49,6 +51,10 @@ function createHarness() {
       classList: {
         add(...names) { names.forEach((name) => classes.add(name)); },
         remove(...names) { names.forEach((name) => classes.delete(name)); },
+        toggle(name, force) {
+          if (force) classes.add(name);
+          else classes.delete(name);
+        },
         contains(name) { return classes.has(name); },
       },
       get textContent() {
@@ -164,6 +170,9 @@ function createHarness() {
       TASK_ROW_COMMENT_MAX_CHARS: 1200,
       TASK_ROW_LINK_MAX_CHARS: 1000,
     },
+    StopwatchTimeCore: {
+      createStopwatchTimeUtils,
+    },
     RendererI18n: {
       async loadRendererTranslations() { resolveTranslationsLoaded(); },
       tRenderer(key) { return key; },
@@ -193,7 +202,7 @@ function createHarness() {
         if (opener) opener.focus();
       },
       confirmMain() { return true; },
-      notifyEditor() {},
+      notifyEditor(key) { notifications.push(key); },
     },
     TaskEditorColumnLayout: {
       createController() {
@@ -209,6 +218,8 @@ function createHarness() {
       onRequestClose() {},
       onSettingsChanged() {},
       async getSettings() { return { language: 'en' }; },
+      async saveTaskList() { return { ok: true }; },
+      async deleteTaskList() { return { ok: true }; },
       async getColumnLayout() { return { ok: true, record: null }; },
       async saveColumnLayout() { return { ok: true }; },
       async listLibrary() { return { ok: true, items: [] }; },
@@ -233,15 +244,32 @@ function createHarness() {
     return null;
   }
 
+  function findInputByHeaderId(headerId) {
+    const pending = elements.taskTableBody._children.slice();
+    while (pending.length) {
+      const candidate = pending.shift();
+      if (candidate.tagName === 'input' && candidate.getAttribute('aria-labelledby') === headerId) {
+        return candidate;
+      }
+      pending.push(...candidate._children);
+    }
+    return null;
+  }
+
   return {
     elements,
     findByIcon,
+    findInputByHeaderId,
+    notifications,
     getActiveElement() { return activeElement; },
     async waitForTranslations() {
       await translationsLoaded;
       for (let attempt = 0; attempt < 10 && !elements.commentInput.getAttribute('placeholder'); attempt += 1) {
         await Promise.resolve();
       }
+    },
+    initializeTask(payload) {
+      onInit(payload);
     },
     initializeRow() {
       onInit({
@@ -298,4 +326,100 @@ test('task-editor modals use their reviewed initial targets and restore each ope
   assert.equal(harness.getActiveElement(), harness.elements.librarySearchInput);
   harness.elements.libraryClose.dispatch('click');
   assert.equal(harness.getActiveElement(), harness.elements.btnTaskLoadLibrary);
+});
+
+test('Task Editor time and percentage inputs show invalid chrome while editing and restore canonical values', () => {
+  const harness = createHarness();
+  harness.initializeRow();
+
+  const readingInput = harness.findInputByHeaderId('thTexto');
+  const timeInput = harness.findInputByHeaderId('thTiempo');
+  const linkInput = harness.findInputByHeaderId('thEnlace');
+  assert.ok(readingInput);
+  assert.ok(timeInput);
+  assert.ok(linkInput);
+  assert.equal(readingInput.getAttribute('aria-label'), null);
+  assert.equal(timeInput.getAttribute('aria-label'), null);
+  assert.equal(linkInput.getAttribute('aria-label'), null);
+  timeInput.value = '1:2:03';
+  timeInput.dispatch('input');
+  assert.equal(timeInput.classList.contains('is-invalid'), true);
+  assert.equal(timeInput.getAttribute('aria-invalid'), 'true');
+  timeInput.dispatch('blur');
+  assert.equal(timeInput.value, '00:01:00');
+  assert.equal(timeInput.classList.contains('is-invalid'), false);
+  assert.equal(timeInput.getAttribute('aria-invalid'), 'false');
+
+  timeInput.value = '1:02:03';
+  timeInput.dispatch('input');
+  assert.equal(timeInput.classList.contains('is-invalid'), false);
+  timeInput.dispatch('blur');
+  assert.equal(timeInput.value, '01:02:03');
+
+  const percentInput = harness.findInputByHeaderId('thPercent');
+  assert.ok(percentInput);
+  assert.equal(percentInput.getAttribute('aria-label'), null);
+  percentInput.value = '101%';
+  percentInput.dispatch('input');
+  assert.equal(percentInput.classList.contains('is-invalid'), true);
+  assert.equal(percentInput.getAttribute('aria-invalid'), 'true');
+  percentInput.dispatch('blur');
+  assert.equal(percentInput.value, '0%');
+  assert.equal(percentInput.classList.contains('is-invalid'), false);
+
+  percentInput.value = '25';
+  percentInput.dispatch('input');
+  percentInput.dispatch('blur');
+  assert.equal(percentInput.value, '25%');
+});
+
+test('Task Editor save highlights and focuses the first empty reading field', () => {
+  const harness = createHarness();
+  harness.initializeRow();
+
+  const readingInput = harness.findInputByHeaderId('thTexto');
+  assert.ok(readingInput);
+  readingInput.value = '   ';
+  readingInput.dispatch('input');
+  harness.elements.btnTaskSave.dispatch('click');
+
+  assert.equal(readingInput.classList.contains('is-invalid'), true);
+  assert.equal(readingInput.getAttribute('aria-invalid'), 'true');
+  assert.equal(harness.getActiveElement(), readingInput);
+  assert.deepEqual(harness.notifications, ['renderer.tasks.alerts.row_text_required']);
+});
+
+test('Task Editor resets persistent task-name validation only at successful session boundaries', async () => {
+  const harness = createHarness();
+  harness.initializeRow();
+
+  harness.elements.taskNameInput.value = '   ';
+  harness.elements.taskNameInput.dispatch('input');
+  harness.elements.btnTaskSave.dispatch('click');
+  assert.equal(harness.elements.taskNameInput.classList.contains('is-invalid'), true);
+  assert.equal(harness.elements.taskNameInput.getAttribute('aria-invalid'), 'true');
+
+  harness.initializeTask({
+    sourcePath: 'loaded-task.json',
+    task: {
+      meta: { name: 'Loaded task' },
+      rows: [],
+    },
+  });
+  assert.equal(harness.elements.taskNameInput.value, 'Loaded task');
+  assert.equal(harness.elements.taskNameInput.classList.contains('is-invalid'), false);
+  assert.equal(harness.elements.taskNameInput.getAttribute('aria-invalid'), 'false');
+
+  harness.elements.taskNameInput.value = '   ';
+  harness.elements.taskNameInput.dispatch('input');
+  harness.elements.btnTaskSave.dispatch('click');
+  harness.initializeTask({});
+  assert.equal(harness.elements.taskNameInput.classList.contains('is-invalid'), true);
+  assert.equal(harness.elements.taskNameInput.getAttribute('aria-invalid'), 'true');
+
+  harness.elements.btnTaskDelete.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(harness.elements.taskNameInput.value, '');
+  assert.equal(harness.elements.taskNameInput.classList.contains('is-invalid'), false);
+  assert.equal(harness.elements.taskNameInput.getAttribute('aria-invalid'), 'false');
 });
