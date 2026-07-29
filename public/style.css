@@ -2214,7 +2214,7 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-tag-manager-modal-content {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .snapshot-tag-manager-category {
@@ -2287,7 +2287,7 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-tag-manager-list {
   display: grid;
-  gap: 12px;
+  gap: 6px;
 }
 
 .snapshot-tag-manager-row {
@@ -2295,7 +2295,7 @@ body.text-extraction-drop-active .app-container {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  padding: 8px 10px;
+  padding: 6px 8px;
   border: 1px solid var(--group-border-color);
   border-radius: 4px;
   background: var(--app-tertiary-bg);
