@@ -233,7 +233,6 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-width: 0;
 }
 
 .task-summary__label {
@@ -252,9 +251,7 @@ body {
 .task-header {
   display: flex;
   align-items: center;
-  min-width: 200px;
   max-width: 600px;
-  width: 100%;
   justify-content: space-between;
   gap: 12px;
   padding: 8px 10px;
