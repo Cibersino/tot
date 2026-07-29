@@ -28,7 +28,6 @@
   justify-content: center;
   flex: 0 0 auto;
   height: var(--tot-icon-size);
-  line-height: 0;
   pointer-events: none;
 }
 
