@@ -337,12 +337,16 @@ body {
 .task-table th,
 .task-table td {
   border-bottom: 1px solid var(--structural-border);
-  padding: 6px 8px;
   text-align: left;
   vertical-align: middle;
 }
 
+.task-table td {
+  padding: 6px 8px;
+}
+
 .task-table th {
+  padding: 6px 12px;
   background: var(--app-secondary-bg);
   font-size: var(--font-size-4);
   position: sticky;
