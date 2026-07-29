@@ -64,7 +64,6 @@
 
   /* Spacing */
   --direct-entry-field-padding: 0 6px;
-  --gap: 10px;
 
   /* Dimensions */
   --control-height-md: 30px;
@@ -103,7 +102,7 @@ body {
 .task-editor {
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
+  gap: 12px;
   padding: 12px;
   height: 100vh;
   box-sizing: border-box;
@@ -210,14 +209,14 @@ body {
 .task-top-row {
   display: flex;
   align-items: stretch;
-  gap: var(--gap);
+  gap: 12px;
 }
 
 .task-summary {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   padding: 8px 12px;
   border: 1px solid var(--structural-border);
   background: var(--app-secondary-bg);
@@ -256,7 +255,7 @@ body {
   max-width: 600px;
   width: 100%;
   justify-content: space-between;
-  gap: var(--gap);
+  gap: 12px;
   padding: 8px 10px;
   background: var(--app-secondary-bg);
   border: 1px solid var(--structural-border);
