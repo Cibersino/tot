@@ -656,7 +656,7 @@ function renderRow(row) {
     pendingCommentSnapshotRelPath = snapshotRelPath;
     commentInput.value = row.comentario || '';
     setCommentSnapshotDisplay(pendingCommentSnapshotRelPath);
-    openModal(commentModal, commentSnapshotSelect);
+    openModal(commentModal, commentInput);
   });
   commentActions.appendChild(commentBtn);
   tdComentario.appendChild(commentActions);

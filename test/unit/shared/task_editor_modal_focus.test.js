@@ -357,7 +357,7 @@ test('task-editor modals use their reviewed initial targets and restore each ope
   assert.ok(commentOpener);
   commentOpener.focus();
   commentOpener.dispatch('click');
-  assert.equal(harness.getActiveElement(), harness.elements.commentSnapshotSelect);
+  assert.equal(harness.getActiveElement(), harness.elements.commentInput);
   harness.elements.commentCancel.dispatch('click');
   assert.equal(harness.getActiveElement(), commentOpener);
 
