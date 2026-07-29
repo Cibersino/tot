@@ -516,7 +516,7 @@ body.is-resizing {
 }
 
 .library-search label {
-  font-size: var(--font-size-3);
+  font-size: var(--font-size-6);
 }
 
 .library-search input {
@@ -546,6 +546,7 @@ body.is-resizing {
 
 .library-item__text {
   flex: 1 1 auto;
+  font-size: var(--font-size-3);
   padding-right: 8px;
 }
 
@@ -556,6 +557,7 @@ body.is-resizing {
 }
 
 .library-item__time {
+  font-size: var(--font-size-3);
   color: var(--text-soft);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
