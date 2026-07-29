@@ -26,7 +26,7 @@
   --text-soft: #6c6049;
 
   /* Borders */
-  --border: #e9e6de;
+  --structural-border: #e9e6de;
   --border-strong: rgb(0 0 0 / 0.12);
   --field-border: #b8ae9c;
   --button-border: #cfcfcf;
@@ -213,7 +213,7 @@ body {
   justify-content: center;
   gap: 3px;
   padding: 8px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--structural-border);
   background: var(--app-secondary-bg);
   border-radius: 8px;
   box-shadow: var(--section-shadow);
@@ -254,7 +254,7 @@ body {
   gap: var(--gap);
   padding: 8px 10px;
   background: var(--app-secondary-bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--structural-border);
   border-radius: 8px;
   box-shadow: var(--section-shadow);
   flex: 1 1 auto;
@@ -306,7 +306,7 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  border: 1px solid var(--border);
+  border: 1px solid var(--structural-border);
   border-radius: 8px;
   background: var(--app-tertiary-bg);
   box-shadow: var(--section-shadow);
@@ -323,7 +323,7 @@ body {
 
 .task-table th,
 .task-table td {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--structural-border);
   padding: 6px 8px;
   text-align: left;
   vertical-align: middle;
