@@ -1558,9 +1558,9 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 9. Close and reopen the Task Editor.
 
 **Expected:**
-- At 1093 px and 1077 px with fresh defaults, Reading is exactly 470 px and 454 px respectively; the utility total is 622 px.
+- At 1093 px and 1077 px with fresh defaults, Reading is exactly 420 px and 404 px respectively; the utility total is 672 px.
 - The explicit table widths are 1092 px and 1076 px respectively, equal the sum of all seven rendered columns, and leave no horizontal scroll range.
-- Pointer and keyboard resizing respect the 164 px Reading minimum and each utility minimum.
+- Pointer and keyboard resizing respect the 114 px Reading minimum and each utility minimum.
 - An active pointer drag retains sole ownership: Arrow keys and additional pointers do not modify, replace, cancel, or persist its provisional widths.
 - Interrupted pointer resizing restores the pre-drag widths and is not persisted.
 - A narrow wrapper shows horizontal scrolling and disables all six dividers; widening re-enables them.

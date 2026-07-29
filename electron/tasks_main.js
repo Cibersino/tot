@@ -54,7 +54,7 @@ const TASK_UTILITY_COLUMN_MIN_WIDTHS = Object.freeze({
   tiempo: 88,
   percent: 63,
   falta: 65,
-  enlace: 200,
+  enlace: 250,
   comentario: 82,
   acciones: 124,
 });
