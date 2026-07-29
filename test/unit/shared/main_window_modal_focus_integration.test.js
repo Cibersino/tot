@@ -140,7 +140,7 @@ function createEnvironment(ids) {
   return { document, elements, run, window };
 }
 
-test('browser-extension modal focuses the store link and restores its per-open trigger', () => {
+test('browser-extension modal focuses Close and restores its per-open trigger', () => {
   const env = createEnvironment([
     'browserExtensionLogoLink',
     'browserExtensionModal',
@@ -159,7 +159,7 @@ test('browser-extension modal focuses the store link and restores its per-open t
 
   env.elements.browserExtensionLogoLink.focus();
   env.elements.browserExtensionLogoLink.dispatch('click');
-  assert.equal(env.document.activeElement, env.elements.browserExtensionChromeStoreLink);
+  assert.equal(env.document.activeElement, env.elements.browserExtensionModalClose);
 
   env.elements.browserExtensionModalClose.dispatch('click');
   assert.equal(env.document.activeElement, env.elements.browserExtensionLogoLink);

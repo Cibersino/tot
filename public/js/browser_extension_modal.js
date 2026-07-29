@@ -92,7 +92,7 @@
       const panel = modal.querySelector('.browser-extension-modal-panel');
       if (panel) panel.scrollTop = 0;
       window.Notify.activateModalFocus(modal, {
-        initialFocus: chromeStoreLink,
+        initialFocus: closeButton,
         fallbackFocus: closeButton,
       });
       return;
