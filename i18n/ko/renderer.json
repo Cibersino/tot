@@ -465,7 +465,7 @@
           "file_select": "로컬 파일 선택",
           "link_open": "링크 열기",
           "snapshot_load": "이 행에 사용할 텍스트 스냅샷 불러오기",
-          "comment": "댓글 추가/편집",
+          "comment": "댓글 또는 텍스트 스냅샷 추가",
           "move_up": "위로 이동",
           "move_down": "아래로 이동",
           "library_row_save": "라이브러리에 저장",

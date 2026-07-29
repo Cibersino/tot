@@ -331,6 +331,24 @@ test('every shipped locale defines the Task Editor time header tooltips', () => 
   });
 });
 
+test('every shipped locale defines the Task Editor comment-or-snapshot button tooltip', () => {
+  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const expectedBaseCopy = {
+    en: 'Add a comment or a text snapshot',
+    es: 'Agregar un comentario o un snapshot de texto',
+  };
+
+  languages.forEach(({ tag }) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
+    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+    const tooltip = renderer.renderer.tasks.columns.tooltips.comment;
+
+    assert.equal(typeof tooltip, 'string', `${tag} missing comment-or-snapshot tooltip`);
+    assert.ok(tooltip.trim(), `${tag} has an empty comment-or-snapshot tooltip`);
+    if (expectedBaseCopy[tag]) assert.equal(tooltip, expectedBaseCopy[tag]);
+  });
+});
+
 test('task-editor modals use their reviewed initial targets and restore each opener', () => {
   const harness = createHarness();
   harness.initializeRow();

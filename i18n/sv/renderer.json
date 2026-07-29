@@ -465,7 +465,7 @@
           "file_select": "Välj lokal fil",
           "link_open": "Öppna länk",
           "snapshot_load": "Läs in en textsnapshot för denna rad",
-          "comment": "Lägg till/redigera kommentar",
+          "comment": "Lägg till en kommentar eller en textsnapshot",
           "move_up": "Flytta upp",
           "move_down": "Flytta ned",
           "library_row_save": "Spara i bibliotek",

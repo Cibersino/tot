@@ -465,7 +465,7 @@
           "file_select": "选择本地文件",
           "link_open": "打开链接",
           "snapshot_load": "为此行加载文本快照",
-          "comment": "添加/编辑评论",
+          "comment": "添加评论或文本快照",
           "move_up": "上移行",
           "move_down": "下移行",
           "library_row_save": "保存到库",

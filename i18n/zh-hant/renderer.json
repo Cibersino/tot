@@ -465,7 +465,7 @@
           "file_select": "選擇本機檔案",
           "link_open": "開啟連結",
           "snapshot_load": "為此列載入文字快照",
-          "comment": "新增／編輯註解",
+          "comment": "新增註解或文字快照",
           "move_up": "上移列",
           "move_down": "下移列",
           "library_row_save": "儲存至資料庫",

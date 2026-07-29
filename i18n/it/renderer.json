@@ -465,7 +465,7 @@
           "file_select": "Seleziona file locale",
           "link_open": "Apri link",
           "snapshot_load": "Carica snapshot di testo per questa riga",
-          "comment": "Aggiungi/modifica commento",
+          "comment": "Aggiungi un commento o uno snapshot di testo",
           "move_up": "Sposta la riga su",
           "move_down": "Sposta la riga giù",
           "library_row_save": "Salva nella biblioteca",

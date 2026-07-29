@@ -465,7 +465,7 @@
           "file_select": "Sélectionner un fichier local",
           "link_open": "Ouvrir le lien",
           "snapshot_load": "Charger un snapshot de texte pour cette ligne",
-          "comment": "Ajouter/modifier un commentaire",
+          "comment": "Ajouter un commentaire ou un snapshot de texte",
           "move_up": "Déplacer la ligne vers le haut",
           "move_down": "Déplacer la ligne vers le bas",
           "library_row_save": "Sauvegarder dans la bibliothèque",

@@ -465,7 +465,7 @@
           "file_select": "ローカルファイルを選択",
           "link_open": "リンクを開く",
           "snapshot_load": "この行にテキストスナップショットを読み込む",
-          "comment": "コメントを追加/編集",
+          "comment": "コメントまたはテキストスナップショットを追加",
           "move_up": "行を上へ移動",
           "move_down": "行を下へ移動",
           "library_row_save": "ライブラリに保存",

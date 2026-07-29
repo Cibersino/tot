@@ -2691,8 +2691,10 @@ Estados de revisión recomendados:
             // [CONCEPTO_APP] snapshot de texto; texto actual; fila de lectura
           },
           "comment": {
-            "es": "Agregar o editar comentario",
-            "en": "Add or edit comment"
+            "es": "Agregar un comentario o un snapshot de texto",
+            "en": "Add a comment or a text snapshot"
+            // [PROPÓSITO] Acción por fila para abrir el diálogo que permite agregar o editar un comentario y asociar un snapshot de texto.
+            // [CONCEPTO_APP] fila de lectura; snapshot de texto
           },
           "move_up": {
             "es": "Subir fila",

@@ -465,7 +465,7 @@
           "file_select": "Selecciona un fitxer local",
           "link_open": "Obrir enllaç",
           "snapshot_load": "Carregar snapshot de text per a aquesta fila",
-          "comment": "Afegir/editar comentari",
+          "comment": "Afegir un comentari o una instantània de text",
           "move_up": "Pujar fila",
           "move_down": "Baixar fila",
           "library_row_save": "Desar a la biblioteca",
