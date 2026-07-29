@@ -30,6 +30,7 @@
   --border-strong: rgb(0 0 0 / 0.12);
   --field-border: #b8ae9c;
   --button-border: #cfcfcf;
+  --modal-panel-border-color: rgb(0 0 0 / 0.12);
 
   /* Shadows */
   --section-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
@@ -431,7 +432,7 @@ body.is-resizing {
   position: relative;
   background: var(--app-secondary-bg);
   border-radius: 8px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--modal-panel-border-color);
   width: 520px;
   max-width: calc(100% - 24px);
   max-height: calc(100vh - 32px);
