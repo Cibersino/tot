@@ -86,7 +86,7 @@ test('task editor preload forwards the complete column layout record', () => {
     widths: {
       tiempo: 88,
       percent: 63,
-      falta: 55,
+      falta: 65,
       enlace: 200,
       comentario: 82,
       acciones: 124,

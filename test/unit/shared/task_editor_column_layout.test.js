@@ -11,7 +11,7 @@ const DEFAULT_RECORD = {
   widths: {
     tiempo: 88,
     percent: 63,
-    falta: 55,
+    falta: 65,
     enlace: 200,
     comentario: 82,
     acciones: 124,
@@ -212,7 +212,7 @@ test('fresh layout uses the conservative fitted budget and persists only the uti
   await harness.controller.initialize();
   await waitFor(() => harness.saveCalls.length === 1);
 
-  assert.equal(harness.columns.texto.style.width, '480px');
+  assert.equal(harness.columns.texto.style.width, '470px');
   assert.equal(harness.columns.tiempo.style.width, '88px');
   assert.equal(harness.columns.comentario.style.width, '82px');
   assert.equal(harness.columns.acciones.style.width, '124px');
@@ -232,7 +232,7 @@ test('fresh layout uses the conservative fitted budget and persists only the uti
 test('wrapper changes recalculate texto and disable dividers only while overflowing', async () => {
   const harness = createHarness({ wrapperWidth: 1077 });
   await harness.controller.initialize();
-  assert.equal(harness.columns.texto.style.width, '464px');
+  assert.equal(harness.columns.texto.style.width, '454px');
   assert.equal(harness.table.style.width, '1076px');
 
   harness.wrapper.clientWidth = 786;
@@ -242,13 +242,13 @@ test('wrapper changes recalculate texto and disable dividers only while overflow
   assert.equal(constrainedDivider.tabIndex, -1);
   constrainedDivider.dispatch('keydown', { key: 'ArrowLeft' });
   constrainedDivider.dispatch('keydown', { key: 'ArrowRight' });
-  assert.equal(harness.columns.texto.style.width, '174px');
+  assert.equal(harness.columns.texto.style.width, '164px');
   assert.equal(harness.columns.tiempo.style.width, '88px');
   assert.equal(harness.saveCalls.length, 0);
 
   harness.wrapper.clientWidth = 700;
   harness.observers[0].trigger();
-  assert.equal(harness.columns.texto.style.width, '174px');
+  assert.equal(harness.columns.texto.style.width, '164px');
   assert.equal(harness.table.style.width, '786px');
   Object.keys(harness.headers).forEach((key) => {
     assert.equal(harness.getDivider(key).getAttribute('aria-disabled'), 'true');
@@ -257,7 +257,7 @@ test('wrapper changes recalculate texto and disable dividers only while overflow
 
   harness.wrapper.clientWidth = 900;
   harness.observers[0].trigger();
-  assert.equal(harness.columns.texto.style.width, '287px');
+  assert.equal(harness.columns.texto.style.width, '277px');
   assert.equal(harness.table.style.width, '899px');
   assert.equal(harness.getDivider('tiempo').getAttribute('aria-disabled'), 'false');
   assert.equal(harness.getDivider('tiempo').tabIndex, 0);
@@ -265,7 +265,7 @@ test('wrapper changes recalculate texto and disable dividers only while overflow
 
   harness.wrapper.clientWidth = 787;
   harness.observers[0].trigger();
-  assert.equal(harness.columns.texto.style.width, '174px');
+  assert.equal(harness.columns.texto.style.width, '164px');
   assert.equal(harness.table.style.width, '786px');
   assert.equal(harness.getDivider('tiempo').getAttribute('aria-disabled'), 'false');
   assert.equal(harness.getDivider('tiempo').tabIndex, 0);
@@ -278,7 +278,7 @@ test('read failures use session defaults without overwriting the stored layout',
   await harness.controller.initialize();
   await new Promise((resolve) => setImmediate(resolve));
 
-  assert.equal(harness.columns.texto.style.width, '480px');
+  assert.equal(harness.columns.texto.style.width, '470px');
   assert.equal(harness.table.style.width, '1092px');
   assert.equal(harness.saveCalls.length, 0);
 });
@@ -291,7 +291,7 @@ test('pointer and keyboard resizing preserve the paired-width model and cancella
   divider.dispatch('pointerdown', { clientX: 500, pointerId: 7 });
   divider.dispatch('pointermove', { clientX: 480, pointerId: 7 });
   assert.equal(harness.columns.tiempo.style.width, '108px');
-  assert.equal(harness.columns.texto.style.width, '460px');
+  assert.equal(harness.columns.texto.style.width, '450px');
   assert.equal(harness.columns.percent.style.width, '63px');
   assert.equal(harness.table.style.width, '1092px');
   divider.dispatch('pointerup', { clientX: 480, pointerId: 7 });
@@ -301,26 +301,26 @@ test('pointer and keyboard resizing preserve the paired-width model and cancella
   divider.dispatch('pointermove', { clientX: 470, pointerId: 8 });
   divider.dispatch('pointercancel', { pointerId: 8 });
   assert.equal(harness.columns.tiempo.style.width, '108px');
-  assert.equal(harness.columns.texto.style.width, '460px');
+  assert.equal(harness.columns.texto.style.width, '450px');
   assert.equal(harness.saveCalls.length, 1);
 
   const leftEvent = divider.dispatch('keydown', { key: 'ArrowLeft' });
   await waitFor(() => harness.saveCalls.length === 2);
   assert.equal(leftEvent.defaultPrevented, true);
   assert.equal(harness.columns.tiempo.style.width, '118px');
-  assert.equal(harness.columns.texto.style.width, '450px');
+  assert.equal(harness.columns.texto.style.width, '440px');
 
   divider.dispatch('keydown', { key: 'ArrowRight', shiftKey: true });
   await waitFor(() => harness.saveCalls.length === 3);
   assert.equal(harness.columns.tiempo.style.width, '117px');
-  assert.equal(harness.columns.texto.style.width, '451px');
+  assert.equal(harness.columns.texto.style.width, '441px');
 
   divider.dispatch('pointerdown', { clientX: 500, pointerId: 9 });
   divider.dispatch('pointermove', { clientX: 450, pointerId: 9 });
   harness.wrapper.clientWidth = 1080;
   harness.observers[0].trigger();
   assert.equal(harness.columns.tiempo.style.width, '117px');
-  assert.equal(harness.columns.texto.style.width, '438px');
+  assert.equal(harness.columns.texto.style.width, '428px');
   assert.equal(harness.saveCalls.length, 3);
   assert.equal(harness.body.classList.contains('is-resizing'), false);
 
@@ -385,7 +385,7 @@ test('keyboard resizing cannot commit provisional pointer widths', async () => {
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(harness.columns.tiempo.style.width, '88px');
   assert.equal(harness.columns.percent.style.width, '63px');
-  assert.equal(harness.columns.texto.style.width, '480px');
+  assert.equal(harness.columns.texto.style.width, '470px');
   assert.equal(harness.body.classList.contains('is-resizing'), false);
   assert.equal(harness.saveCalls.length, 0);
 });

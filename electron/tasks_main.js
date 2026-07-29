@@ -53,7 +53,7 @@ const TASK_COLUMN_WIDTH_MAX_PX = 100_000;
 const TASK_UTILITY_COLUMN_MIN_WIDTHS = Object.freeze({
   tiempo: 88,
   percent: 63,
-  falta: 55,
+  falta: 65,
   enlace: 200,
   comentario: 82,
   acciones: 124,
