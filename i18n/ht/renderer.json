@@ -456,6 +456,11 @@
         "enlace": "Lyen",
         "comentario": "",
         "acciones": "Aksyon",
+        "header_tooltips": {
+          "tiempo": "Tan lekti estime",
+          "percent": "Pousantaj fini",
+          "falta": "Tan ki rete estime"
+        },
         "tooltips": {
           "file_select": "Chwazi fichye lokal",
           "link_open": "Louvri lyen",

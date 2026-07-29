@@ -456,6 +456,11 @@
         "enlace": "लिंक",
         "comentario": "",
         "acciones": "कार्रवाइयाँ",
+        "header_tooltips": {
+          "tiempo": "अनुमानित पठन समय",
+          "percent": "पूर्ण प्रतिशत",
+          "falta": "अनुमानित शेष समय"
+        },
         "tooltips": {
           "file_select": "स्थानीय फ़ाइल चुनें",
           "link_open": "लिंक खोलें",

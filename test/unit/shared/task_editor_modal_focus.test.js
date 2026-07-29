@@ -301,6 +301,36 @@ test('Task Editor localizes and limits the comment field', async () => {
   assert.equal(harness.elements.commentInput.maxLength, 1200);
 });
 
+test('Task Editor assigns localized tooltips only to abbreviated time headers', async () => {
+  const harness = createHarness();
+  await harness.waitForTranslations();
+
+  assert.equal(harness.elements.thTexto.title, '');
+  assert.equal(harness.elements.thTiempo.title, 'renderer.tasks.columns.header_tooltips.tiempo');
+  assert.equal(harness.elements.thPercent.title, 'renderer.tasks.columns.header_tooltips.percent');
+  assert.equal(harness.elements.thFalta.title, 'renderer.tasks.columns.header_tooltips.falta');
+  assert.equal(harness.elements.thEnlace.title, '');
+  assert.equal(harness.elements.thComentario.title, '');
+  assert.equal(harness.elements.thAcciones.title, '');
+});
+
+test('every shipped locale defines the Task Editor time header tooltips', () => {
+  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+
+  languages.forEach(({ tag }) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
+    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+    const tooltips = renderer.renderer.tasks.columns.header_tooltips;
+
+    assert.equal(typeof tooltips.tiempo, 'string', `${tag} missing time tooltip`);
+    assert.equal(typeof tooltips.percent, 'string', `${tag} missing percentage tooltip`);
+    assert.equal(typeof tooltips.falta, 'string', `${tag} missing remaining-time tooltip`);
+    assert.ok(tooltips.tiempo.trim(), `${tag} has an empty time tooltip`);
+    assert.ok(tooltips.percent.trim(), `${tag} has an empty percentage tooltip`);
+    assert.ok(tooltips.falta.trim(), `${tag} has an empty remaining-time tooltip`);
+  });
+});
+
 test('task-editor modals use their reviewed initial targets and restore each opener', () => {
   const harness = createHarness();
   harness.initializeRow();

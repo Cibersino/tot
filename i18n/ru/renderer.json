@@ -456,6 +456,11 @@
         "enlace": "Ссылка",
         "comentario": "",
         "acciones": "Действия",
+        "header_tooltips": {
+          "tiempo": "Расчётное время чтения",
+          "percent": "Процент выполнения",
+          "falta": "Расчётное оставшееся время"
+        },
         "tooltips": {
           "file_select": "Выбрать локальный файл",
           "link_open": "Открыть ссылку",

@@ -456,6 +456,11 @@
         "enlace": "Link",
         "comentario": "",
         "acciones": "Ruwanakuna",
+        "header_tooltips": {
+          "tiempo": "Ñawiriy pacha chaninchasqa",
+          "percent": "Paqarisqa pachakmanta",
+          "falta": "Qhipa pacha chaninchasqa"
+        },
         "tooltips": {
           "file_select": "Local archivota akllay",
           "link_open": "Linkta kichay",

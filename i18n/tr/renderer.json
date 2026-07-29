@@ -456,6 +456,11 @@
         "enlace": "Bağlantı",
         "comentario": "",
         "acciones": "Eylemler",
+        "header_tooltips": {
+          "tiempo": "Tahmini okuma süresi",
+          "percent": "Tamamlanma yüzdesi",
+          "falta": "Tahmini kalan süre"
+        },
         "tooltips": {
           "file_select": "Yerel dosya seç",
           "link_open": "Bağlantıyı aç",

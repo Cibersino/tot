@@ -456,6 +456,11 @@
         "enlace": "লিংক",
         "comentario": "",
         "acciones": "ক্রিয়া",
+        "header_tooltips": {
+          "tiempo": "আনুমানিক পড়ার সময়",
+          "percent": "সম্পন্নের শতাংশ",
+          "falta": "আনুমানিক অবশিষ্ট সময়"
+        },
         "tooltips": {
           "file_select": "স্থানীয় ফাইল নির্বাচন করুন",
           "link_open": "লিংক খুলুন",

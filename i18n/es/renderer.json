@@ -456,6 +456,11 @@
         "enlace": "Enlace o ruta local",
         "comentario": "",
         "acciones": "Acciones",
+        "header_tooltips": {
+          "tiempo": "Tiempo estimado de lectura",
+          "percent": "Porcentaje completado",
+          "falta": "Tiempo estimado restante"
+        },
         "tooltips": {
           "file_select": "Seleccionar archivo local",
           "link_open": "Abrir enlace o ruta local",

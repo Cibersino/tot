@@ -456,6 +456,11 @@
         "enlace": "لنک",
         "comentario": "",
         "acciones": "اعمال",
+        "header_tooltips": {
+          "tiempo": "مطالعے کا تخمینی وقت",
+          "percent": "مکمل شدہ فیصد",
+          "falta": "تخمینی باقی وقت"
+        },
         "tooltips": {
           "file_select": "مقامی فائل منتخب کریں",
           "link_open": "لنک کھولیں",

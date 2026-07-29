@@ -456,6 +456,11 @@
         "enlace": "پیوند",
         "comentario": "",
         "acciones": "کنش‌ها",
+        "header_tooltips": {
+          "tiempo": "زمان تقریبی مطالعه",
+          "percent": "درصد تکمیل‌شده",
+          "falta": "زمان باقی‌ماندهٔ تقریبی"
+        },
         "tooltips": {
           "file_select": "انتخاب فایل محلی",
           "link_open": "باز کردن پیوند",

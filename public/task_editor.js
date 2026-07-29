@@ -1043,9 +1043,18 @@ async function applyTaskEditorTranslations() {
   if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.open_library_button');
 
   if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto');
-  if (thTiempo) thTiempo.textContent = tr('renderer.tasks.columns.tiempo');
-  if (thPercent) thPercent.textContent = tr('renderer.tasks.columns.percent');
-  if (thFalta) thFalta.textContent = tr('renderer.tasks.columns.falta');
+  if (thTiempo) {
+    thTiempo.textContent = tr('renderer.tasks.columns.tiempo');
+    thTiempo.title = tr('renderer.tasks.columns.header_tooltips.tiempo');
+  }
+  if (thPercent) {
+    thPercent.textContent = tr('renderer.tasks.columns.percent');
+    thPercent.title = tr('renderer.tasks.columns.header_tooltips.percent');
+  }
+  if (thFalta) {
+    thFalta.textContent = tr('renderer.tasks.columns.falta');
+    thFalta.title = tr('renderer.tasks.columns.header_tooltips.falta');
+  }
   if (thEnlace) thEnlace.textContent = tr('renderer.tasks.columns.enlace');
   if (thComentario) thComentario.textContent = tr('renderer.tasks.columns.comentario');
   if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones');

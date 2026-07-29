@@ -456,6 +456,11 @@
         "enlace": "الرابط",
         "comentario": "",
         "acciones": "الإجراءات",
+        "header_tooltips": {
+          "tiempo": "وقت القراءة المقدر",
+          "percent": "النسبة المئوية المكتملة",
+          "falta": "الوقت المتبقي المقدر"
+        },
         "tooltips": {
           "file_select": "اختيار ملف محلي",
           "link_open": "فتح الرابط",

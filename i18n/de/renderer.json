@@ -456,6 +456,11 @@
         "enlace": "Link",
         "comentario": "",
         "acciones": "Aktionen",
+        "header_tooltips": {
+          "tiempo": "Geschätzte Lesezeit",
+          "percent": "Abgeschlossener Prozentsatz",
+          "falta": "Geschätzte Restzeit"
+        },
         "tooltips": {
           "file_select": "Lokale Datei auswählen",
           "link_open": "Link öffnen",

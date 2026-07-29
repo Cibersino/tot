@@ -456,6 +456,11 @@
         "enlace": "Link",
         "comentario": "",
         "acciones": "Actions",
+        "header_tooltips": {
+          "tiempo": "Estimated time to read",
+          "percent": "Percentage wey don complete",
+          "falta": "Estimated time wey remain"
+        },
         "tooltips": {
           "file_select": "Select local file",
           "link_open": "Open link",

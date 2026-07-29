@@ -456,6 +456,11 @@
         "enlace": "連結",
         "comentario": "",
         "acciones": "動作",
+        "header_tooltips": {
+          "tiempo": "預計閱讀時間",
+          "percent": "已完成百分比",
+          "falta": "預計剩餘時間"
+        },
         "tooltips": {
           "file_select": "選擇本機檔案",
           "link_open": "開啟連結",

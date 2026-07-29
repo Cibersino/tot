@@ -456,6 +456,11 @@
         "enlace": "链接",
         "comentario": "",
         "acciones": "操作",
+        "header_tooltips": {
+          "tiempo": "预计阅读时间",
+          "percent": "已完成百分比",
+          "falta": "预计剩余时间"
+        },
         "tooltips": {
           "file_select": "选择本地文件",
           "link_open": "打开链接",

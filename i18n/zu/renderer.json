@@ -456,6 +456,11 @@
         "enlace": "Isixhumanisi",
         "comentario": "",
         "acciones": "Izenzo",
+        "header_tooltips": {
+          "tiempo": "Isikhathi sokufunda esilinganisiwe",
+          "percent": "Iphesenti eliqediwe",
+          "falta": "Isikhathi esisele esilinganisiwe"
+        },
         "tooltips": {
           "file_select": "Khetha ifayela lendawo",
           "link_open": "Vula isixhumanisi",

@@ -2654,6 +2654,25 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Columna con los botones de cada fila para: subir en la tabla, bajar en la tabla, guardar en biblioteca y eliminar de la tabla.
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
         },
+        "header_tooltips": {
+          "tiempo": {
+            "es": "Tiempo estimado de lectura",
+            "en": "Estimated reading time"
+            // [CONCEPTO_APP] fila de lectura; tiempo estimado de lectura
+          },
+          "percent": {
+            "es": "Porcentaje completado",
+            "en": "Percentage completed"
+            // [PROPÓSITO] Tooltip del encabezado abreviado que muestra el avance de la lectura.
+            // [CONCEPTO_APP] fila de lectura
+          },
+          "falta": {
+            "es": "Tiempo estimado restante",
+            "en": "Estimated time remaining"
+            // [PROPÓSITO] Tooltip del encabezado de la columna de tiempo restante de la lectura.
+            // [CONCEPTO_APP] fila de lectura
+          },
+        },
         "tooltips": {
           "file_select": {
             "es": "Seleccionar archivo local",

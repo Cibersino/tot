@@ -456,6 +456,11 @@
         "enlace": "Hononga",
         "comentario": "",
         "acciones": "Ngā mahi",
+        "header_tooltips": {
+          "tiempo": "Te wā pānui e whakaarotia ana",
+          "percent": "Ōrau kua oti",
+          "falta": "Te wā e toe ana kua whakaarotia"
+        },
         "tooltips": {
           "file_select": "Tīpakohia he kōnae paetata",
           "link_open": "Whakatuwhera hononga",

@@ -456,6 +456,11 @@
         "enlace": "Länk",
         "comentario": "",
         "acciones": "Åtgärder",
+        "header_tooltips": {
+          "tiempo": "Beräknad lästid",
+          "percent": "Slutförd procentandel",
+          "falta": "Beräknad återstående tid"
+        },
         "tooltips": {
           "file_select": "Välj lokal fil",
           "link_open": "Öppna länk",

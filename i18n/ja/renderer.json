@@ -456,6 +456,11 @@
         "enlace": "リンク",
         "comentario": "",
         "acciones": "操作",
+        "header_tooltips": {
+          "tiempo": "推定読書時間",
+          "percent": "完了した割合",
+          "falta": "推定残り時間"
+        },
         "tooltips": {
           "file_select": "ローカルファイルを選択",
           "link_open": "リンクを開く",

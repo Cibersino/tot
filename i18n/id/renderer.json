@@ -456,6 +456,11 @@
         "enlace": "Tautan",
         "comentario": "",
         "acciones": "Aksi",
+        "header_tooltips": {
+          "tiempo": "Perkiraan waktu membaca",
+          "percent": "Persentase selesai",
+          "falta": "Perkiraan waktu tersisa"
+        },
         "tooltips": {
           "file_select": "Pilih file lokal",
           "link_open": "Buka tautan",

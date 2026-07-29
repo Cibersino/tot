@@ -456,6 +456,11 @@
         "enlace": "Esteka",
         "comentario": "",
         "acciones": "Ekintzak",
+        "header_tooltips": {
+          "tiempo": "Irakurketa-denbora estimatua",
+          "percent": "Osatutako ehunekoa",
+          "falta": "Geratzen den denbora estimatua"
+        },
         "tooltips": {
           "file_select": "Hautatu fitxategi lokala",
           "link_open": "Ireki esteka",

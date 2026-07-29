@@ -456,6 +456,11 @@
         "enlace": "Enllaç",
         "comentario": "",
         "acciones": "Accions",
+        "header_tooltips": {
+          "tiempo": "Temps de lectura estimat",
+          "percent": "Percentatge completat",
+          "falta": "Temps estimat restant"
+        },
         "tooltips": {
           "file_select": "Selecciona un fitxer local",
           "link_open": "Obrir enllaç",

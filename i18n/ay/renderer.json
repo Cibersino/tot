@@ -456,6 +456,11 @@
         "enlace": "Link",
         "comentario": "",
         "acciones": "Lurañanaka",
+        "header_tooltips": {
+          "tiempo": "Jakhthapit ullaña pacha",
+          "percent": "Phuqhata porcentaje",
+          "falta": "Jakhthapit qhipa pacha"
+        },
         "tooltips": {
           "file_select": "Local archivo ajlliña",
           "link_open": "Link jist’araña",

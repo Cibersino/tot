@@ -456,6 +456,11 @@
         "enlace": "링크",
         "comentario": "",
         "acciones": "작업",
+        "header_tooltips": {
+          "tiempo": "예상 읽기 시간",
+          "percent": "완료 비율",
+          "falta": "예상 남은 시간"
+        },
         "tooltips": {
           "file_select": "로컬 파일 선택",
           "link_open": "링크 열기",

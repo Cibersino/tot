@@ -456,6 +456,11 @@
         "enlace": "Link",
         "comentario": "",
         "acciones": "Küzawtuwe",
+        "header_tooltips": {
+          "tiempo": "Rakiduam wirin antü",
+          "percent": "Completado porcentaje",
+          "falta": "Rakiduam petu antü"
+        },
         "tooltips": {
           "file_select": "Dullin archivo local",
           "link_open": "Link nülal",

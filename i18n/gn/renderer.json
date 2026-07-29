@@ -456,6 +456,11 @@
         "enlace": "Link",
         "comentario": "",
         "acciones": "Tembiapo",
+        "header_tooltips": {
+          "tiempo": "Aravo jehaipyre hag̃ua",
+          "percent": "Porcentaje oñemohu’ãva",
+          "falta": "Aravo hembýva jepapa hag̃ua"
+        },
         "tooltips": {
           "file_select": "Eiporavo archivo local",
           "link_open": "Eipe’a link",
