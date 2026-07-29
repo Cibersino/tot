@@ -249,7 +249,7 @@ body {
 .task-header {
   display: flex;
   align-items: center;
-  max-width: 680px;
+  max-width: 600px;
   width: 100%;
   justify-content: space-between;
   gap: var(--gap);
