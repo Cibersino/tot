@@ -19,7 +19,7 @@
   --button-bg: #fff;
   --button-hover-bg: #f4f4f4;
   --column-resizer-hover-bg: rgb(168 151 106 / 0.22);
-  --focus-ring: rgb(30 130 230 / 0.50);
+  --focus-ring: rgb(30 130 230 / 0.5);
 
   /* Text */
   --text-color: #2f2a20;
