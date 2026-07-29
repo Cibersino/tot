@@ -64,6 +64,7 @@
 
   /* Spacing */
   --direct-entry-field-padding: 0 6px;
+  --framed-modal-panel-padding: 16px;
 
   /* Dimensions */
   --control-height-md: 30px;
@@ -456,7 +457,7 @@ body.is-resizing {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 14px 16px 16px;
+  padding: var(--framed-modal-panel-padding);
   box-sizing: border-box;
   box-shadow: var(--modal-panel-shadow);
   overflow: auto;
@@ -566,6 +567,7 @@ body.is-resizing {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   border: 1px solid var(--group-border-color);
   border-radius: 8px;
   padding: 6px 8px;
@@ -575,7 +577,6 @@ body.is-resizing {
 .library-item__text {
   flex: 1 1 auto;
   font-size: var(--font-size-3);
-  padding-right: 8px;
 }
 
 .library-item__controls {
