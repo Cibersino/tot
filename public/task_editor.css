@@ -223,8 +223,8 @@ body {
   background: var(--app-secondary-bg);
   border-radius: 8px;
   box-shadow: var(--section-shadow);
-  width: 100px;
-  flex: 0 0 100px;
+  width: 115px;
+  flex: none;
   margin: 0;
 }
 
@@ -238,13 +238,11 @@ body {
 
 .task-summary__label {
   font-size: var(--font-size-6);
-  line-height: 1.1;
   white-space: nowrap;
 }
 
 .task-summary__value {
   font-size: var(--font-size-6);
-  line-height: 1.1;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
