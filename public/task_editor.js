@@ -33,6 +33,7 @@ const {
   DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
+  TASK_ROW_COMMENT_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 } = AppConstants;
 
@@ -1088,6 +1089,7 @@ function wirePrimaryTaskEditorEvents() {
 }
 
 function wireCommentModalEvents() {
+  if (commentInput) commentInput.maxLength = TASK_ROW_COMMENT_MAX_CHARS;
   if (commentClose) commentClose.addEventListener('click', () => dismissCommentModal());
   if (commentBackdrop) commentBackdrop.addEventListener('click', () => dismissCommentModal());
   if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentModal());

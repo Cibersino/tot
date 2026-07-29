@@ -161,6 +161,7 @@ function createHarness() {
       DEFAULT_LANG: 'en',
       TASK_NAME_MAX_CHARS: 100,
       TASK_ROW_TEXT_MAX_CHARS: 1000,
+      TASK_ROW_COMMENT_MAX_CHARS: 1200,
       TASK_ROW_LINK_MAX_CHARS: 1000,
     },
     RendererI18n: {
@@ -261,7 +262,7 @@ function createHarness() {
   };
 }
 
-test('Task Editor localizes the comment field placeholder', async () => {
+test('Task Editor localizes and limits the comment field', async () => {
   const harness = createHarness();
   await harness.waitForTranslations();
 
@@ -269,6 +270,7 @@ test('Task Editor localizes the comment field placeholder', async () => {
     harness.elements.commentInput.getAttribute('placeholder'),
     'renderer.tasks.comentario_modal.comment_placeholder'
   );
+  assert.equal(harness.elements.commentInput.maxLength, 1200);
 });
 
 test('task-editor modals use their reviewed initial targets and restore each opener', () => {
