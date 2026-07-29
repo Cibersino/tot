@@ -597,7 +597,7 @@ body.is-resizing {
 
 .library-item .cell-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .library-empty {
