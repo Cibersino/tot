@@ -254,6 +254,46 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
   assert.equal(secondSave.filename, 'Unit_1_2.json');
 });
 
+test('non-interactive snapshot save rejects an oversized batch unit name without constraining source filenames', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-batch-name-limit');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'source-filename-that-is-intentionally-not-limited-to-the-batch-unit-name-cap',
+      batchUnitName: 'x'.repeat(26),
+      tags: null,
+    }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'BATCH_UNIT_NAME_TOO_LONG',
+    message: 'batch unit name too long',
+  });
+  assert.deepEqual(fs.readdirSync(rootDir), []);
+});
+
 test('non-interactive snapshot save accepts permitted custom tag values', async (t) => {
   const rootDir = createTestTempDir('current-text-snapshots-custom-save');
   t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));

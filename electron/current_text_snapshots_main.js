@@ -21,7 +21,7 @@ const fs = require('fs');
 const path = require('path');
 const { dialog, BrowserWindow, shell } = require('electron');
 const Log = require('./log');
-const { DEFAULT_LANG } = require('./constants_main');
+const { DEFAULT_LANG, BATCH_UNIT_NAME_MAX } = require('./constants_main');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const {
   getCurrentTextSnapshotsDir,
@@ -272,6 +272,14 @@ function sanitizeSnapshotSavePayload(payload) {
     ? payload.autoFileBaseName.trim()
     : '';
   const nonInteractive = payload.nonInteractive === true;
+  if (Object.prototype.hasOwnProperty.call(payload, 'batchUnitName')) {
+    if (typeof payload.batchUnitName !== 'string') {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'batch unit name must be a string' };
+    }
+    if (payload.batchUnitName.trim().length > BATCH_UNIT_NAME_MAX) {
+      return { ok: false, code: 'BATCH_UNIT_NAME_TOO_LONG', message: 'batch unit name too long' };
+    }
+  }
   if (!Object.prototype.hasOwnProperty.call(payload, 'tags')) {
     return { ok: true, tags: null, autoFileBaseName, nonInteractive };
   }

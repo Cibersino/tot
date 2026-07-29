@@ -37,6 +37,11 @@
     || typeof snapshotTagCatalog.resolveTagLabel !== 'function') {
     throw new Error('[text-extraction-batch-flow] SnapshotTagCatalog unavailable; cannot continue');
   }
+  const { AppConstants } = window;
+  if (!AppConstants || !Number.isInteger(AppConstants.BATCH_UNIT_NAME_MAX)
+    || AppConstants.BATCH_UNIT_NAME_MAX < 1) {
+    throw new Error('[text-extraction-batch-flow] BATCH_UNIT_NAME_MAX unavailable; cannot continue');
+  }
 
   // =============================================================================
   // Constants / config
@@ -46,6 +51,7 @@
   const ROUTE_NATIVE = 'native';
   const ROUTE_OCR = 'ocr';
   const GROUP_NEW_SENTINEL = '__new__';
+  const { BATCH_UNIT_NAME_MAX } = AppConstants;
 
   // =============================================================================
   // Shared state
@@ -600,7 +606,10 @@
 
   function renameUnit(state, unitKey, name) {
     if (!state.unitMetaByKey[unitKey]) return;
-    state.unitMetaByKey[unitKey].customName = normalizeNonEmptyString(name);
+    const normalizedName = normalizeNonEmptyString(name);
+    state.unitMetaByKey[unitKey].customName = normalizedName.length > BATCH_UNIT_NAME_MAX
+      ? normalizedName.slice(0, BATCH_UNIT_NAME_MAX)
+      : normalizedName;
   }
 
   function setUnitTags(state, unitKey, tags) {
@@ -927,7 +936,7 @@
     }
   }
 
-  async function autoSaveUnitSnapshot(fileBaseSource, tags) {
+  async function autoSaveUnitSnapshot(fileBaseSource, tags, batchUnitName = '') {
     if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
       log.warnOnce(
         'renderer.ipc.saveCurrentTextSnapshot.unavailable',
@@ -936,11 +945,13 @@
       return { ok: false, code: 'WRITE_FAILED' };
     }
     try {
-      return await window.electronAPI.saveCurrentTextSnapshot({
+      const payload = {
         nonInteractive: true,
         autoFileBaseName: fileBaseSource,
         tags: tags || null,
-      });
+      };
+      if (batchUnitName) payload.batchUnitName = batchUnitName;
+      return await window.electronAPI.saveCurrentTextSnapshot(payload);
     } catch (err) {
       log.warn('saveCurrentTextSnapshot failed (ignored):', err);
       return { ok: false, code: 'WRITE_FAILED' };
@@ -1442,7 +1453,7 @@
 
         const snapshotRequired = units.length > 1 && unitProducedText;
         const snapshotResult = snapshotRequired
-          ? await autoSaveUnitSnapshot(unit.snapshotFileBaseSource, unit.tags)
+          ? await autoSaveUnitSnapshot(unit.snapshotFileBaseSource, unit.tags, unit.customName)
           : null;
         unitReport.snapshotResult = buildUnitResultLine({
           required: snapshotRequired,

@@ -6,10 +6,12 @@ const DEFAULT_LANG = 'es'; // Default language for the app. It must match 'publi
 const MAX_TEXT_CHARS = 12_000_000; // Maximum number of characters allowed in the current text. This is a hard limit to prevent performance issues and memory overflow in the main process. The renderer process can have a lower limit (see constants.js) for better user experience, but this is the absolute maximum.
 const MAX_IPC_MULTIPLIER = 4;
 const MAX_IPC_CHARS = MAX_TEXT_CHARS * MAX_IPC_MULTIPLIER; // Safety limit of characters that can be sent via IPC to prevent memory overflow.
-const MAX_PRESET_STR_CHARS = 65536; // Safety limit for preset name and description strings to prevent memory overflow.
-const MAX_META_STR_CHARS = 4096; // Safety limit for metadata strings (like title, author) to prevent memory overflow.
+const PRESET_NAME_MAX = 20; // Max chars for preset names. Must match public/js/constants.js.
+const PRESET_DESC_MAX = 120; // Max chars for preset descriptions. Must match public/js/constants.js.
+const MAX_META_STR_CHARS = 4096; // Safety limit for current-text change metadata (source, action) and Preset modal launch mode.
 const PRESET_WPM_MIN = 10; // Minimum WPM allowed when persisting presets.
 const PRESET_WPM_MAX = 700; // Maximum WPM allowed when persisting presets.
+const BATCH_UNIT_NAME_MAX = 25; // Max chars for Batch unit names. Must match public/js/constants.js.
 const SNAPSHOT_TAG_LABEL_MAX_CHARS = 36; // Max chars for custom snapshot tag labels. Must match public/js/constants.js.
 const TASK_NAME_MAX_CHARS = 50; // Max chars for task list name.
 const TASK_LIST_MAX_ROWS = 200; // Max rows allowed in a persisted task list payload.
@@ -34,10 +36,12 @@ module.exports = {
   MAX_TEXT_CHARS,
   MAX_IPC_MULTIPLIER,
   MAX_IPC_CHARS,
-  MAX_PRESET_STR_CHARS,
+  PRESET_NAME_MAX,
+  PRESET_DESC_MAX,
   MAX_META_STR_CHARS,
   PRESET_WPM_MIN,
   PRESET_WPM_MAX,
+  BATCH_UNIT_NAME_MAX,
   SNAPSHOT_TAG_LABEL_MAX_CHARS,
   TASK_NAME_MAX_CHARS,
   TASK_LIST_MAX_ROWS,

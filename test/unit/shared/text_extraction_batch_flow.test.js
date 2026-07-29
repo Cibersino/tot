@@ -133,6 +133,9 @@ function createHarness({
         },
       },
       SnapshotTagCatalog: snapshotTagCatalog,
+      AppConstants: {
+        BATCH_UNIT_NAME_MAX: 25,
+      },
       electronAPI: {
         async saveCurrentTextSnapshot(payload) {
           executionEvents.push({ type: 'snapshot', payload });
@@ -827,11 +830,56 @@ test('batch execution autosaves custom-named single-input units from the raw cus
     harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
     ['Chapter 3.pdf', 'appendix']
   );
+  assert.equal(harness.getSavedSnapshotPayloads()[0].batchUnitName, 'Chapter 3.pdf');
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
   assert.ok(report);
   assert.equal(report.units[0].unitTitle, 'Chapter 3.pdf');
   assert.equal(report.units[1].unitTitle, 'unit_2');
+});
+
+test('batch execution clamps custom unit names before snapshot handoff', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\chapter.pdf': createPreparation({
+      fileName: 'chapter.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\appendix.pdf': createPreparation({
+      fileName: 'appendix.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+  const oversizedName = 'x'.repeat(26);
+  const expectedName = 'x'.repeat(25);
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    async onPromptBatchPlan(controller) {
+      const viewModel = controller.getViewModel();
+      controller.applyAction({
+        type: 'rename_unit',
+        unitKey: viewModel.units[0].unitKey,
+        name: oversizedName,
+      });
+    },
+    executionResultsByProcessingInputFileName: {
+      'chapter.pdf': { ok: true, result: { state: 'success', text: 'Chapter text', generatedPdfArtifact: null } },
+      'appendix.pdf': { ok: true, result: { state: 'success', text: 'Appendix text', generatedPdfArtifact: null } },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-clamp-custom-unit-name',
+  });
+
+  assert.deepEqual(harness.getSavedSnapshotPayloads()[0], {
+    nonInteractive: true,
+    autoFileBaseName: expectedName,
+    batchUnitName: expectedName,
+    tags: null,
+  });
 });
 
 test('batch execution autosaves unnamed heavy single-input units with normal unit identity', async () => {

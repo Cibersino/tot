@@ -53,7 +53,7 @@ function resolveDirectionFromText(text, fallbackDirection) {
   return fallbackDirection;
 }
 
-function createHarness({ initialLanguage = 'en', presetDescMax = 120 } = {}) {
+function createHarness({ initialLanguage = 'en', presetNameMax = 20, presetDescMax = 120 } = {}) {
   const subscriptions = {};
   const elements = {
     h3: createElement('', 'h3'),
@@ -116,7 +116,7 @@ function createHarness({ initialLanguage = 'en', presetDescMax = 120 } = {}) {
       AppConstants: {
         DEFAULT_LANG: 'en',
         PRESET_DESC_MAX: presetDescMax,
-        PRESET_NAME_MAX: 60,
+        PRESET_NAME_MAX: presetNameMax,
         WPM_MIN: 10,
         WPM_MAX: 700,
       },
@@ -184,6 +184,8 @@ test('preset modal applies shared direction policy on init, input, and language 
   const harness = createHarness({ initialLanguage: 'ar' });
   const { elements, subscriptions } = harness;
 
+  assert.equal(elements.presetName.maxLength, 20);
+  assert.equal(elements.presetDesc.maxLength, 120);
   assert.equal(elements.presetDesc.getAttribute('dir'), 'rtl');
 
   await subscriptions.onInit({
@@ -228,4 +230,13 @@ test('preset modal keeps direction aligned with the final truncated description 
 
   assert.equal(elements.presetDesc.value, 'rtl:a');
   assert.equal(elements.presetDesc.getAttribute('dir'), 'rtl');
+});
+
+test('preset name HTML fallback matches the shared character limit', () => {
+  const markup = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/preset_modal.html'),
+    'utf8'
+  );
+
+  assert.match(markup, /id="presetName"[^>]*maxlength="20"/);
 });
