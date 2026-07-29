@@ -81,6 +81,15 @@ function createTaskRow(overrides = {}) {
   };
 }
 
+function createLibraryEntry(overrides = {}) {
+  return {
+    texto: 'Read chapter 1',
+    tiempoSeconds: 120,
+    enlace: '',
+    ...overrides,
+  };
+}
+
 function loadFreshTasksMainForSave({
   tasksRoot,
   saveDialogPath,
@@ -398,8 +407,7 @@ test('task-library-save persists library entries through saveJsonStrict', async 
     'task-library-save',
     { sender: taskEditorWin.webContents },
     {
-      includeComment: true,
-      row: createTaskRow({
+      entry: createLibraryEntry({
         tiempoSeconds: 180,
         enlace: 'https://example.com/read',
         comentario: 'Review key ideas',
@@ -418,6 +426,47 @@ test('task-library-save persists library entries through saveJsonStrict', async 
     comentario: 'Review key ideas',
     snapshotRelPath: '/snapshots/chapter-1.json',
   }]);
+});
+
+test('task-library-save rejects payloads that are not exact library entries', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-library-invalid-payload');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const legacyPayloadResult = await ipcMain.invoke(
+    'task-library-save',
+    { sender: taskEditorWin.webContents },
+    { row: createTaskRow(), includeComment: true }
+  );
+  assert.deepEqual(legacyPayloadResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'INVALID_LIBRARY_SAVE_PAYLOAD',
+  });
+
+  const uiFieldResult = await ipcMain.invoke(
+    'task-library-save',
+    { sender: taskEditorWin.webContents },
+    { entry: createLibraryEntry({ percentComplete: 0 }) }
+  );
+  assert.deepEqual(uiFieldResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'INVALID_LIBRARY_ENTRY',
+  });
+  assert.equal(fs.existsSync(tasksRoot), false);
+  assert.equal(fs.existsSync(getLibraryFilePath(tasksRoot)), false);
 });
 
 test('task-library-save rejects noncanonical snapshot paths without writing the library', async (t) => {
@@ -440,7 +489,7 @@ test('task-library-save rejects noncanonical snapshot paths without writing the 
     'task-library-save',
     { sender: taskEditorWin.webContents },
     {
-      row: createTaskRow({ snapshotRelPath: 'snapshots/chapter-1.json' }),
+      entry: createLibraryEntry({ snapshotRelPath: 'snapshots/chapter-1.json' }),
     }
   );
 
@@ -475,7 +524,7 @@ test('task-library-save maps saveJsonStrict failures to WRITE_FAILED', async (t)
     'task-library-save',
     { sender: taskEditorWin.webContents },
     {
-      row: createTaskRow({ texto: 'Read chapter 2', tiempoSeconds: 240 }),
+      entry: createLibraryEntry({ texto: 'Read chapter 2', tiempoSeconds: 240 }),
     }
   );
 

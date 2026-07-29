@@ -1005,6 +1005,18 @@ async function refreshLibraryList() {
   filterLibraryItems();
 }
 
+function createLibraryEntryFromRow(row, includeComment) {
+  const entry = {
+    texto: row.texto,
+    tiempoSeconds: row.tiempoSeconds,
+    enlace: row.enlace,
+  };
+  if (includeComment && row.comentario) entry.comentario = row.comentario;
+  const snapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath);
+  if (snapshotRelPath) entry.snapshotRelPath = snapshotRelPath;
+  return entry;
+}
+
 async function saveRowToLibrary(includeComment) {
   const row = rows.find((r) => r.id === pendingLibraryRowId);
   pendingLibraryRowId = null;
@@ -1014,13 +1026,13 @@ async function saveRowToLibrary(includeComment) {
     window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
     return;
   }
-  const api = getTaskEditorApi('saveLibraryRow');
+  const api = getTaskEditorApi('saveLibraryEntry');
   if (!api) return;
-  const res = await api.saveLibraryRow(row, includeComment);
+  const res = await api.saveLibraryEntry(createLibraryEntryFromRow(row, includeComment));
   if (isFailedTaskEditorResult(res)) {
     const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CONFIRM_DENIED') return;
-    log.warn('saveLibraryRow failed:', { code, response: res || null, rowId: row.id });
+    log.warn('saveLibraryEntry failed:', { code, response: res || null, rowId: row.id });
     window.Notify.notifyEditor('renderer.tasks.alerts.library_save_error');
     return;
   }

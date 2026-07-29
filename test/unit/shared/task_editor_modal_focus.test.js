@@ -17,6 +17,7 @@ function createHarness() {
   const modalOpeners = new Map();
   const documentListeners = new Map();
   const notifications = [];
+  const savedLibraryEntries = [];
 
   function createElement(id = '', tagName = 'div') {
     const attributes = {};
@@ -220,6 +221,10 @@ function createHarness() {
       async getSettings() { return { language: 'en' }; },
       async saveTaskList() { return { ok: true }; },
       async deleteTaskList() { return { ok: true }; },
+      async saveLibraryEntry(entry) {
+        savedLibraryEntries.push(JSON.parse(JSON.stringify(entry)));
+        return { ok: true };
+      },
       async getColumnLayout() { return { ok: true, record: null }; },
       async saveColumnLayout() { return { ok: true }; },
       async listLibrary() { return { ok: true, items: [] }; },
@@ -261,6 +266,7 @@ function createHarness() {
     findByIcon,
     findInputByHeaderId,
     notifications,
+    savedLibraryEntries,
     getActiveElement() { return activeElement; },
     async waitForTranslations() {
       await translationsLoaded;
@@ -374,6 +380,51 @@ test('task-editor modals use their reviewed initial targets and restore each ope
   assert.equal(harness.getActiveElement(), harness.elements.librarySearchInput);
   harness.elements.libraryClose.dispatch('click');
   assert.equal(harness.getActiveElement(), harness.elements.btnTaskLoadLibrary);
+});
+
+test('Task Editor projects a live row into an exact library entry before IPC', async () => {
+  const harness = createHarness();
+  harness.initializeTask({
+    sourcePath: 'task.json',
+    task: {
+      meta: { name: 'Task' },
+      rows: [{
+        texto: 'Text',
+        tiempoSeconds: 60,
+        percentComplete: 25,
+        enlace: 'https://example.com/read',
+        comentario: 'Comment',
+        snapshotRelPath: '/snapshots/selected.json',
+      }],
+    },
+  });
+
+  const librarySaveOpener = harness.findByIcon('task-row-save');
+  assert.ok(librarySaveOpener);
+
+  librarySaveOpener.dispatch('click');
+  harness.elements.includeCommentYes.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  librarySaveOpener.dispatch('click');
+  harness.elements.includeCommentNo.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(harness.savedLibraryEntries, [
+    {
+      texto: 'Text',
+      tiempoSeconds: 60,
+      enlace: 'https://example.com/read',
+      comentario: 'Comment',
+      snapshotRelPath: '/snapshots/selected.json',
+    },
+    {
+      texto: 'Text',
+      tiempoSeconds: 60,
+      enlace: 'https://example.com/read',
+      snapshotRelPath: '/snapshots/selected.json',
+    },
+  ]);
 });
 
 test('Task Editor time and percentage inputs show invalid chrome while editing and restore canonical values', () => {

@@ -229,6 +229,7 @@ const TASK_ROW_KEYS = Object.freeze([
 ]);
 const TASK_LIBRARY_ENTRY_REQUIRED_KEYS = Object.freeze(['texto', 'tiempoSeconds', 'enlace']);
 const TASK_LIBRARY_ENTRY_OPTIONAL_KEYS = Object.freeze(['comentario', 'snapshotRelPath']);
+const TASK_LIBRARY_SAVE_PAYLOAD_KEYS = Object.freeze(['entry']);
 
 function isCanonicalIsoTimestamp(value) {
   if (typeof value !== 'string') return false;
@@ -297,7 +298,7 @@ function hasExactLibraryEntryKeys(raw) {
     || TASK_LIBRARY_ENTRY_OPTIONAL_KEYS.includes(key));
 }
 
-function normalizeStoredLibraryEntry(raw) {
+function validateLibraryEntry(raw) {
   if (!hasExactLibraryEntryKeys(raw)) return { ok: false, code: 'INVALID_LIBRARY_ENTRY' };
 
   const textoRes = validateCanonicalTaskText(raw.texto, TASK_ROW_TEXT_MAX_CHARS, {
@@ -327,20 +328,6 @@ function normalizeStoredLibraryEntry(raw) {
     }
     entry.snapshotRelPath = raw.snapshotRelPath;
   }
-  return { ok: true, entry };
-}
-
-function normalizeLibraryEntry(raw, includeComment) {
-  const rowRes = normalizeRow(raw);
-  if (!rowRes.ok) return rowRes;
-
-  const entry = {
-    texto: rowRes.row.texto,
-    tiempoSeconds: rowRes.row.tiempoSeconds,
-    enlace: rowRes.row.enlace,
-  };
-  if (includeComment && rowRes.row.comentario) entry.comentario = rowRes.row.comentario;
-  if (rowRes.row.snapshotRelPath) entry.snapshotRelPath = rowRes.row.snapshotRelPath;
   return { ok: true, entry };
 }
 
@@ -430,7 +417,7 @@ function loadLibraryData() {
   }
   const items = [];
   for (const rawEntry of res.data) {
-    const entryRes = normalizeStoredLibraryEntry(rawEntry);
+    const entryRes = validateLibraryEntry(rawEntry);
     if (!entryRes.ok) {
       log.warn('Task library entry invalid; task library actions unavailable.', {
         code: entryRes.code,
@@ -854,11 +841,13 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
-      ensureTasksDirs();
-      const includeComment = !!(payload && payload.includeComment);
-      const resEntry = normalizeLibraryEntry(payload && payload.row, includeComment);
+      if (!hasExactKeys(payload, TASK_LIBRARY_SAVE_PAYLOAD_KEYS)) {
+        return { ok: false, code: 'INVALID_SCHEMA', message: 'INVALID_LIBRARY_SAVE_PAYLOAD' };
+      }
+      const resEntry = validateLibraryEntry(payload.entry);
       if (!resEntry.ok) return { ok: false, code: 'INVALID_SCHEMA', message: resEntry.code };
 
+      ensureTasksDirs();
       const res = loadLibraryData();
       if (!res.ok) return { ok: false, code: res.code };
 

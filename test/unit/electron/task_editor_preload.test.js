@@ -79,6 +79,25 @@ test('task editor preload exposes selectTaskFile through taskEditorAPI', () => {
   ]);
 });
 
+test('task editor preload sends an exact library-entry payload', () => {
+  const { exposedApi, invoked } = loadTaskEditorPreload();
+  const entry = {
+    texto: 'Read chapter 1',
+    tiempoSeconds: 120,
+    enlace: 'https://example.com/read',
+  };
+
+  exposedApi.api.saveLibraryEntry(entry);
+
+  assert.deepEqual(JSON.parse(JSON.stringify(invoked)), [
+    {
+      channel: 'task-library-save',
+      payload: { entry },
+    },
+  ]);
+  assert.equal('saveLibraryRow' in exposedApi.api, false);
+});
+
 test('task editor preload forwards the complete column layout record', () => {
   const { exposedApi, invoked } = loadTaskEditorPreload();
   const record = {
