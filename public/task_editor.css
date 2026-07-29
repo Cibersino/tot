@@ -27,9 +27,9 @@
 
   /* Borders */
   --structural-border: #e9e6de;
-  --border-strong: rgb(0 0 0 / 0.12);
   --field-border: #b8ae9c;
   --button-border: #cfcfcf;
+  --group-border-color: rgb(0 0 0 / 0.1);
   --modal-panel-border-color: rgb(0 0 0 / 0.12);
 
   /* Shadows */
@@ -537,7 +537,7 @@ body.is-resizing {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--group-border-color);
   border-radius: 8px;
   padding: 6px 8px;
   background: var(--app-primary-bg);
