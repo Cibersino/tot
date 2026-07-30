@@ -613,10 +613,12 @@ const getCronoIcons = () => ({
 
 function applyTranslations() {
   if (!tRenderer) return;
-  const applyAriaLabel = (el, key) => {
+  const applyAriaLabel = (el, key, { applyTitle = false } = {}) => {
     if (!el) return;
     const aria = tRenderer(key);
-    if (aria) el.setAttribute('aria-label', aria);
+    if (!aria) return;
+    el.setAttribute('aria-label', aria);
+    if (applyTitle) el.title = aria;
   };
   textExtractionStatusUi.applyTranslations({ tRenderer, msgRenderer });
   textExtractionDragDrop.applyTranslations({ tRenderer });
@@ -685,8 +687,8 @@ function applyTranslations() {
   const cronoResetBtn = document.getElementById('cronoReset');
   const vfSwitchWrapper = document.querySelector('.vf-switch-wrapper');
   applyAriaLabel(cronoDisplayEl, 'renderer.main.aria.crono_display');
-  applyAriaLabel(cronoToggleBtn, 'renderer.main.aria.crono_toggle');
-  applyAriaLabel(cronoResetBtn, 'renderer.main.aria.crono_reset');
+  applyAriaLabel(cronoToggleBtn, 'renderer.main.aria.crono_toggle', { applyTitle: true });
+  applyAriaLabel(cronoResetBtn, 'renderer.main.aria.crono_reset', { applyTitle: true });
   applyAriaLabel(toggleVF, 'renderer.main.aria.floating_window_toggle');
   applyAriaLabel(vfSwitchWrapper, 'renderer.main.aria.floating_window_group');
   const iconsCrono = getCronoIcons();
