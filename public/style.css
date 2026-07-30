@@ -3,10 +3,7 @@
    Owner boundary: main-window shell, sections, and feature UI that still lives in this file. */
 
 /* Design tokens */
-
 :root {
-
-  /* Colors */
 
   /* Backgrounds */
   --app-primary-bg: #fdf6e3;
@@ -80,8 +77,6 @@
   --drop-zone-shadow: 0 14px 28px rgb(0 0 0 / 0.18);
   --modal-panel-shadow: 0 12px 24px rgb(0 0 0 / 0.25);
   --lightbox-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
-
-  /* Typography */
 
   /* Font families */
   --font-ui: Arial, sans-serif;

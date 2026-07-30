@@ -5,8 +5,6 @@
 /* Design tokens */
 :root {
 
-  /* Colors */
-
   /* Backgrounds */
   --app-primary-bg: #fdf6e3;
   --app-secondary-bg: #f4ecd8;
@@ -37,8 +35,6 @@
   --section-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
   --button-hover-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
   --modal-panel-shadow: 0 12px 24px rgb(0 0 0 / 0.25);
-
-  /* Typography */
 
   /* Font families */
   --font-ui: Arial, sans-serif;
