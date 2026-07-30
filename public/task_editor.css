@@ -494,6 +494,10 @@ body.is-resizing {
   flex-wrap: wrap;
 }
 
+.modal-actions .btn-standard {
+  min-width: 110px;
+}
+
 #includeCommentText {
   font-size: var(--font-size-10);
   text-align: center;
