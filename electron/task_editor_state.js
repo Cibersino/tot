@@ -148,6 +148,9 @@ function isLiveWindow(taskEditorWin) {
 }
 
 function readCurrentState(loader, stateFile) {
+  // A native first-open move can run before this file exists. Keep the
+  // read-before-write path so every update starts from normalized persisted
+  // state; the second expected missing-file fallback precedes its first save.
   return normalizeState(loader(stateFile, DEFAULT_STATE));
 }
 
