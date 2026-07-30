@@ -109,6 +109,7 @@
   --framed-modal-panel-padding: 16px;
 
   /* Dimensions */
+  --modal-max-height: 85vh;
   --control-height-md: 30px;
   --combobox-trigger-height: 30px;
   --numeric-value-field-height: 26px;
@@ -116,7 +117,6 @@
   --text-entry-field-height: 30px;
   --numeric-value-field-width-compact: 60px; /* Coordinated value only; each feature owns its width selection. */
   --numeric-value-field-width-wide: 88px; /* Coordinated value only; each feature owns its width selection. */
-  --modal-max-height: 85vh;
   --logo-height: 100px;
   --logo-links-scale: 0.7;
 
