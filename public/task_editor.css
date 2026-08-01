@@ -63,6 +63,7 @@
   --framed-modal-panel-padding: 16px;
 
   /* Dimensions */
+  --modal-max-height: 85vh;
   --control-height-md: 30px;
   --task-name-field-height: 40px;
   --task-table-field-height: 26px;
@@ -422,6 +423,8 @@ body.is-resizing {
   display: none;
   align-items: center;
   justify-content: center;
+  padding-inline: 16px;
+  box-sizing: border-box;
   z-index: 9999;
 }
 
@@ -430,7 +433,7 @@ body.is-resizing {
 }
 
 .modal-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: var(--backdrop-bg);
   backdrop-filter: blur(1px);
@@ -441,8 +444,6 @@ body.is-resizing {
   background: var(--app-secondary-bg);
   border-radius: 8px;
   border: 1px solid var(--modal-panel-border-color);
-  max-width: calc(100% - 24px);
-  max-height: calc(100vh - 32px);
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -450,7 +451,6 @@ body.is-resizing {
   padding: var(--framed-modal-panel-padding);
   box-sizing: border-box;
   box-shadow: var(--modal-panel-shadow);
-  overflow: auto;
 }
 
 #commentModal .modal-panel {
@@ -459,6 +459,11 @@ body.is-resizing {
 
 .modal-panel--wide {
   width: 720px;
+}
+
+#libraryModal .modal-panel {
+  max-height: var(--modal-max-height);
+  overflow: auto;
 }
 
 #includeCommentModal .modal-panel {
