@@ -222,7 +222,6 @@ body {
   box-shadow: var(--section-shadow);
   width: 115px;
   flex: none;
-  margin: 0;
 }
 
 .task-summary__row {
@@ -500,6 +499,7 @@ body.is-resizing {
 }
 
 #includeCommentText {
+  margin: 0;
   font-size: var(--font-size-10);
   text-align: center;
 }
