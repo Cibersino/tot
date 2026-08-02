@@ -351,6 +351,11 @@ body {
 #thFalta,
 .task-table td:nth-child(4) {
   white-space: nowrap;
+}
+
+.task-table td:nth-child(2) input,
+.task-table td:nth-child(3) input,
+.task-table td:nth-child(4) {
   font-variant-numeric: tabular-nums;
 }
 
@@ -367,7 +372,6 @@ body {
 .task-table td:nth-child(2) input,
 .task-table td:nth-child(3) input {
   text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 
 .task-table .cell-actions {
