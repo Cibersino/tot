@@ -299,7 +299,7 @@ body {
 .task-table-section {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  flex: 1;
   min-height: 0;
 }
 
@@ -310,8 +310,7 @@ body {
 }
 
 .task-table-wrap {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 1;
   overflow: auto;
   border: 1px solid var(--structural-border);
   border-radius: 8px;
