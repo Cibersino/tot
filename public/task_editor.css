@@ -421,7 +421,7 @@ body.is-resizing {
   justify-content: center;
   padding-inline: 16px;
   box-sizing: border-box;
-  z-index: 9999;
+  z-index: 1000;
 }
 
 .modal[aria-hidden="false"] {
