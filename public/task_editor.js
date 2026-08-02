@@ -285,6 +285,23 @@ function wireModalClose(modalEl, ...closeTriggers) {
   });
 }
 
+function handleTaskEditorModalEscape(event) {
+  if (!event || event.key !== 'Escape' || event.defaultPrevented) return;
+
+  const closeEntries = [
+    { modal: commentModal, close: dismissCommentModal },
+    { modal: libraryModal, close: () => closeModal(libraryModal) },
+    { modal: includeCommentModal, close: () => closeModal(includeCommentModal) },
+  ];
+  const isVisible = ({ modal }) => modal && modal.getAttribute('aria-hidden') === 'false';
+  const focusedEntry = closeEntries.find(({ modal }) => isVisible({ modal }) && modal.contains(document.activeElement));
+  const entry = focusedEntry || closeEntries.slice().reverse().find(isVisible);
+  if (!entry) return;
+
+  event.preventDefault();
+  entry.close();
+}
+
 // Shared guard for taskEditorAPI methods; emits a user notice and warnOnce on missing APIs.
 function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.task_unavailable') {
   const api = window.taskEditorAPI;
@@ -1196,6 +1213,7 @@ function wireTaskEditorEvents() {
   wirePrimaryTaskEditorEvents();
   wireCommentModalEvents();
   wireLibraryModalEvents();
+  window.addEventListener('keydown', handleTaskEditorModalEscape);
 }
 
 function registerTaskEditorInit() {

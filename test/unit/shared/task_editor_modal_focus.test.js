@@ -16,6 +16,7 @@ function createHarness() {
   });
   const modalOpeners = new Map();
   const documentListeners = new Map();
+  const windowListeners = new Map();
   const notifications = [];
   const savedLibraryEntries = [];
 
@@ -102,6 +103,9 @@ function createHarness() {
       querySelectorAll() {
         return [];
       },
+      contains(candidate) {
+        return candidate === this || children.some((child) => child.contains(candidate));
+      },
       focus() {
         activeElement = this;
       },
@@ -132,6 +136,9 @@ function createHarness() {
   elements.commentModal.fallbackFocus = elements.commentClose;
   elements.libraryModal.fallbackFocus = elements.libraryClose;
   elements.includeCommentModal.fallbackFocus = elements.includeCommentClose;
+  elements.commentModal.appendChild(elements.commentInput);
+  elements.libraryModal.appendChild(elements.librarySearchInput);
+  elements.includeCommentModal.appendChild(elements.includeCommentYes);
   elements.commentModal.setAttribute('aria-hidden', 'true');
   elements.libraryModal.setAttribute('aria-hidden', 'true');
   elements.includeCommentModal.setAttribute('aria-hidden', 'true');
@@ -213,6 +220,10 @@ function createHarness() {
         };
       },
     },
+    addEventListener(type, handler) {
+      if (!windowListeners.has(type)) windowListeners.set(type, []);
+      windowListeners.get(type).push(handler);
+    },
     taskEditorAPI: {
       setDirtyState() {},
       onInit(handler) { onInit = handler; },
@@ -268,6 +279,18 @@ function createHarness() {
     notifications,
     savedLibraryEntries,
     getActiveElement() { return activeElement; },
+    dispatchWindow(type, event = {}) {
+      const dispatchedEvent = {
+        key: '',
+        defaultPrevented: false,
+        ...event,
+        preventDefault() {
+          this.defaultPrevented = true;
+        },
+      };
+      (windowListeners.get(type) || []).forEach((handler) => handler(dispatchedEvent));
+      return dispatchedEvent;
+    },
     async waitForTranslations() {
       await translationsLoaded;
       for (let attempt = 0; attempt < 10 && !elements.commentInput.getAttribute('placeholder'); attempt += 1) {
@@ -380,6 +403,42 @@ test('task-editor modals use their reviewed initial targets and restore each ope
   assert.equal(harness.getActiveElement(), harness.elements.librarySearchInput);
   harness.elements.libraryClose.dispatch('click');
   assert.equal(harness.getActiveElement(), harness.elements.btnTaskLoadLibrary);
+});
+
+test('Task Editor Escape closes the focused visible dialog through its existing close path', () => {
+  const harness = createHarness();
+  harness.initializeRow();
+
+  const commentOpener = harness.findByIcon('task-comment');
+  commentOpener.focus();
+  commentOpener.dispatch('click');
+  const commentEscape = harness.dispatchWindow('keydown', { key: 'Escape' });
+  assert.equal(commentEscape.defaultPrevented, true);
+  assert.equal(harness.elements.commentModal.getAttribute('aria-hidden'), 'true');
+  assert.equal(harness.getActiveElement(), commentOpener);
+
+  const librarySaveOpener = harness.findByIcon('task-row-save');
+  librarySaveOpener.focus();
+  librarySaveOpener.dispatch('click');
+  const includeCommentEscape = harness.dispatchWindow('keydown', { key: 'Escape' });
+  assert.equal(includeCommentEscape.defaultPrevented, true);
+  assert.equal(harness.elements.includeCommentModal.getAttribute('aria-hidden'), 'true');
+  assert.equal(harness.getActiveElement(), librarySaveOpener);
+
+  harness.elements.btnTaskLoadLibrary.focus();
+  harness.elements.btnTaskLoadLibrary.dispatch('click');
+  const libraryEscape = harness.dispatchWindow('keydown', { key: 'Escape' });
+  assert.equal(libraryEscape.defaultPrevented, true);
+  assert.equal(harness.elements.libraryModal.getAttribute('aria-hidden'), 'true');
+  assert.equal(harness.getActiveElement(), harness.elements.btnTaskLoadLibrary);
+});
+
+test('Task Editor modal markup gives every dialog an accessible name and describes its confirmation question', () => {
+  const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/task_editor.html'), 'utf8');
+
+  assert.match(markup, /id="commentModal"[^>]*aria-labelledby="commentTitle"/);
+  assert.match(markup, /id="libraryModal"[^>]*aria-labelledby="libraryTitle"/);
+  assert.match(markup, /id="includeCommentModal"[^>]*aria-labelledby="includeCommentTitle"[^>]*aria-describedby="includeCommentText"/);
 });
 
 test('Task Editor projects a live row into an exact library entry before IPC', async () => {
