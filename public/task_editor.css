@@ -375,6 +375,10 @@ body {
   gap: 4px;
 }
 
+.task-table td:nth-child(6) > .cell-actions {
+  justify-content: center;
+}
+
 .link-cell {
   display: grid;
   grid-template-columns: 1fr auto auto;
