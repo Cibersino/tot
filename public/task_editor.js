@@ -596,9 +596,13 @@ function renderRow(row) {
   enlaceInput.addEventListener('input', () => {
     const next = enlaceInput.value;
     if (next !== row.enlace) {
+      setTaskFieldInvalidState(enlaceInput, false);
       row.enlace = next;
       markDirty();
     }
+  });
+  enlaceInput.addEventListener('blur', () => {
+    setTaskFieldInvalidState(enlaceInput, false);
   });
   const linkBrowseTitle = tr('renderer.tasks.columns.tooltips.file_select');
   const enlaceSelectBtn = rendererIcons.createIconButton({
@@ -626,12 +630,14 @@ function renderRow(row) {
       const code = getTaskEditorResultCode(res, 'ERROR');
       if (code === 'CONFIRM_DENIED') return;
       log.warn('openTaskLink failed:', { code, response: res || null });
-      if (code === 'LINK_MISSING') {
-        window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
-        return;
-      }
-      if (code === 'LINK_BLOCKED') {
-        window.Notify.notifyEditor('renderer.tasks.alerts.link_blocked');
+      if (code === 'LINK_MISSING' || code === 'LINK_BLOCKED') {
+        setTaskFieldInvalidState(enlaceInput, true);
+        enlaceInput.focus();
+        window.Notify.notifyEditor(
+          code === 'LINK_MISSING'
+            ? 'renderer.tasks.alerts.link_missing'
+            : 'renderer.tasks.alerts.link_blocked'
+        );
         return;
       }
       window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
@@ -1039,7 +1045,12 @@ async function saveRowToLibrary(includeComment) {
   pendingLibraryRowId = null;
   closeModal(includeCommentModal);
   if (!row) return;
-  if (!normalizeRowTexto(row)) {
+  const normalizedTexto = normalizeRowTexto(row);
+  const renderedFields = renderedRowFields.get(row.id);
+  const textoInput = renderedFields && renderedFields.textoInput;
+  setTaskFieldInvalidState(textoInput, !normalizedTexto);
+  if (!normalizedTexto) {
+    if (textoInput) textoInput.focus();
     window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
     return;
   }

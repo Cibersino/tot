@@ -19,6 +19,8 @@ function createHarness() {
   const windowListeners = new Map();
   const notifications = [];
   const savedLibraryEntries = [];
+  const openTaskLinkCalls = [];
+  let openTaskLinkResult = { ok: true };
 
   function createElement(id = '', tagName = 'div') {
     const attributes = {};
@@ -236,6 +238,10 @@ function createHarness() {
         savedLibraryEntries.push(JSON.parse(JSON.stringify(entry)));
         return { ok: true };
       },
+      async openTaskLink(raw) {
+        openTaskLinkCalls.push(raw);
+        return openTaskLinkResult;
+      },
       async getColumnLayout() { return { ok: true, record: null }; },
       async saveColumnLayout() { return { ok: true }; },
       async listLibrary() { return { ok: true, items: [] }; },
@@ -278,6 +284,10 @@ function createHarness() {
     findInputByHeaderId,
     notifications,
     savedLibraryEntries,
+    openTaskLinkCalls,
+    setOpenTaskLinkResult(result) {
+      openTaskLinkResult = result;
+    },
     getActiveElement() { return activeElement; },
     dispatchWindow(type, event = {}) {
       const dispatchedEvent = {
@@ -483,6 +493,88 @@ test('Task Editor projects a live row into an exact library entry before IPC', a
       enlace: 'https://example.com/read',
       snapshotRelPath: '/snapshots/selected.json',
     },
+  ]);
+});
+
+test('Task Editor library save highlights and focuses an empty reading field', async () => {
+  const harness = createHarness();
+  harness.initializeRow();
+
+  const readingInput = harness.findInputByHeaderId('thTexto');
+  const librarySaveOpener = harness.findByIcon('task-row-save');
+  assert.ok(readingInput);
+  assert.ok(librarySaveOpener);
+
+  readingInput.value = '   ';
+  readingInput.dispatch('input');
+  librarySaveOpener.dispatch('click');
+  harness.elements.includeCommentNo.dispatch('click');
+
+  assert.equal(harness.savedLibraryEntries.length, 0);
+  assert.equal(readingInput.classList.contains('is-invalid'), true);
+  assert.equal(readingInput.getAttribute('aria-invalid'), 'true');
+  assert.equal(harness.getActiveElement(), readingInput);
+  assert.deepEqual(harness.notifications, ['renderer.tasks.alerts.row_text_required']);
+});
+
+test('Task Editor Link failures use invalid state only for correctable link values', async () => {
+  const harness = createHarness();
+  harness.initializeRow();
+
+  const linkInput = harness.findInputByHeaderId('thEnlace');
+  const linkOpenButton = harness.findByIcon('open-target');
+  assert.ok(linkInput);
+  assert.ok(linkOpenButton);
+
+  linkInput.value = 'C:\\missing.txt';
+  linkInput.dispatch('input');
+  harness.setOpenTaskLinkResult({ ok: false, code: 'LINK_MISSING' });
+  linkOpenButton.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(harness.openTaskLinkCalls, ['C:\\missing.txt']);
+  assert.equal(linkInput.classList.contains('is-invalid'), true);
+  assert.equal(linkInput.getAttribute('aria-invalid'), 'true');
+  assert.equal(harness.getActiveElement(), linkInput);
+  assert.deepEqual(harness.notifications, ['renderer.tasks.alerts.link_missing']);
+
+  linkInput.dispatch('blur');
+  assert.equal(linkInput.classList.contains('is-invalid'), false);
+  assert.equal(linkInput.getAttribute('aria-invalid'), 'false');
+
+  linkInput.value = 'https://example.com/read';
+  linkInput.dispatch('input');
+  assert.equal(linkInput.classList.contains('is-invalid'), false);
+  assert.equal(linkInput.getAttribute('aria-invalid'), 'false');
+
+  harness.setOpenTaskLinkResult({ ok: false, code: 'LINK_BLOCKED' });
+  linkOpenButton.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(linkInput.classList.contains('is-invalid'), true);
+  assert.equal(linkInput.getAttribute('aria-invalid'), 'true');
+  assert.equal(harness.getActiveElement(), linkInput);
+  assert.deepEqual(harness.notifications, [
+    'renderer.tasks.alerts.link_missing',
+    'renderer.tasks.alerts.link_blocked',
+  ]);
+
+  linkInput.value = 'https://example.com/other';
+  linkInput.dispatch('input');
+  harness.setOpenTaskLinkResult({ ok: false, code: 'CONFIRM_DENIED' });
+  linkOpenButton.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(linkInput.classList.contains('is-invalid'), false);
+  assert.equal(linkInput.getAttribute('aria-invalid'), 'false');
+
+  harness.setOpenTaskLinkResult({ ok: false, code: 'OPEN_FAILED' });
+  linkOpenButton.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(linkInput.classList.contains('is-invalid'), false);
+  assert.equal(linkInput.getAttribute('aria-invalid'), 'false');
+  assert.deepEqual(harness.notifications, [
+    'renderer.tasks.alerts.link_missing',
+    'renderer.tasks.alerts.link_blocked',
+    'renderer.tasks.alerts.link_error',
   ]);
 });
 
