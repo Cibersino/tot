@@ -1357,9 +1357,12 @@ pre#textPreview .preview-fragment--empty {
   position: relative;
   width: 540px;
   background: var(--app-secondary-bg);
+  border: 1px solid var(--modal-panel-border-color);
   border-radius: 8px;
   box-shadow: var(--modal-panel-shadow);
   z-index: 1;
+  box-sizing: border-box;
+  padding: var(--framed-modal-panel-padding);
   font-family: var(--font-reading);
 }
 
@@ -1373,7 +1376,6 @@ pre#textPreview .preview-fragment--empty {
 .browser-extension-modal-body {
   display: grid;
   gap: 12px;
-  padding: 20px;
 }
 
 .browser-extension-modal-copy {

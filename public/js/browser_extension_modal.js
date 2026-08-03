@@ -89,8 +89,6 @@
   function setModalVisible(visible) {
     modal.setAttribute('aria-hidden', visible ? 'false' : 'true');
     if (visible) {
-      const panel = modal.querySelector('.browser-extension-modal-panel');
-      if (panel) panel.scrollTop = 0;
       window.Notify.activateModalFocus(modal, {
         initialFocus: closeButton,
         fallbackFocus: closeButton,
