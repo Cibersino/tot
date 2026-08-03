@@ -190,6 +190,12 @@ test('open-task-editor sends task-editor-init after dirty Task Editor discard is
     assert.equal(taskEditorWin.sentMessages.length, 1);
     assert.equal(taskEditorWin.sentMessages[0].channel, 'task-editor-init');
     assert.equal(taskEditorWin.sentMessages[0].payload.mode, 'new');
+    assert.equal(taskEditorWin.sentMessages[0].payload.task.type, 'task');
+    assert.equal(taskEditorWin.sentMessages[0].payload.task.meta.savedWith, 'toT (totapp.org)');
+    assert.equal(
+      taskEditorWin.sentMessages[0].payload.task.meta.createdAt,
+      taskEditorWin.sentMessages[0].payload.task.meta.updatedAt
+    );
   } finally {
     restore();
   }

@@ -48,6 +48,8 @@ log.debug('Tasks main starting...');
 // Constants / shared state
 // =============================================================================
 const TASK_EXT = '.json';
+const TASK_TYPE = 'task';
+const TASK_SAVED_WITH = 'toT (totapp.org)';
 const TASK_COLUMN_LAYOUT_VERSION = 1;
 const TASK_COLUMN_WIDTH_MAX_PX = 100_000;
 const TASK_UTILITY_COLUMN_MIN_WIDTHS = Object.freeze({
@@ -217,8 +219,10 @@ function normalizeTexto(raw) {
   return s.toLowerCase();
 }
 
-const TASK_LIST_KEYS = Object.freeze(['meta', 'rows']);
-const TASK_META_KEYS = Object.freeze(['name', 'createdAt', 'updatedAt']);
+const TASK_LIST_KEYS = Object.freeze(['type', 'meta', 'rows']);
+const TASK_LIST_KEYS_WITH_SUMMARY = Object.freeze(['type', 'meta', 'summary', 'rows']);
+const TASK_META_KEYS = Object.freeze(['name', 'createdAt', 'updatedAt', 'savedWith']);
+const TASK_SUMMARY_KEYS = Object.freeze(['estimatedTotalSeconds', 'estimatedRemainingSeconds']);
 const TASK_ROW_KEYS = Object.freeze([
   'texto',
   'tiempoSeconds',
@@ -235,6 +239,53 @@ function isCanonicalIsoTimestamp(value) {
   if (typeof value !== 'string') return false;
   const timestamp = Date.parse(value);
   return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
+}
+
+function deriveTaskSummary(rows) {
+  let totalEstimatedSeconds = 0n;
+  let remainingHundredths = 0n;
+
+  for (const row of rows) {
+    const estimatedSeconds = BigInt(row.tiempoSeconds);
+    totalEstimatedSeconds += estimatedSeconds;
+    remainingHundredths += estimatedSeconds * BigInt(100 - row.percentComplete);
+  }
+
+  const estimatedRemainingSeconds = remainingHundredths / 100n;
+  const maxSafeInteger = BigInt(Number.MAX_SAFE_INTEGER);
+  if (totalEstimatedSeconds > maxSafeInteger || estimatedRemainingSeconds > maxSafeInteger) {
+    return { ok: false, code: 'INVALID_SUMMARY' };
+  }
+
+  const summary = {
+    estimatedTotalSeconds: Number(totalEstimatedSeconds),
+    estimatedRemainingSeconds: Number(estimatedRemainingSeconds),
+  };
+  return { ok: true, summary: summary.estimatedTotalSeconds > 0 ? summary : null };
+}
+
+function validateTaskSummary(rawTask, expectedSummary) {
+  const hasSummary = Object.prototype.hasOwnProperty.call(rawTask, 'summary');
+  if (!expectedSummary) {
+    return hasSummary
+      ? { ok: false, code: 'INVALID_SUMMARY' }
+      : { ok: true, summary: null };
+  }
+  if (!hasSummary || !hasExactKeys(rawTask.summary, TASK_SUMMARY_KEYS)) {
+    return { ok: false, code: 'INVALID_SUMMARY' };
+  }
+
+  const summary = rawTask.summary;
+  if (!Number.isSafeInteger(summary.estimatedTotalSeconds)
+    || !Number.isSafeInteger(summary.estimatedRemainingSeconds)
+    || summary.estimatedTotalSeconds <= 0
+    || summary.estimatedRemainingSeconds < 0
+    || summary.estimatedRemainingSeconds > summary.estimatedTotalSeconds
+    || summary.estimatedTotalSeconds !== expectedSummary.estimatedTotalSeconds
+    || summary.estimatedRemainingSeconds !== expectedSummary.estimatedRemainingSeconds) {
+    return { ok: false, code: 'INVALID_SUMMARY' };
+  }
+  return { ok: true, summary: expectedSummary };
 }
 
 function isCanonicalSnapshotRelPath(value) {
@@ -343,12 +394,16 @@ function validateTaskMeta(rawMeta) {
   if (!isCanonicalIsoTimestamp(rawMeta.createdAt) || !isCanonicalIsoTimestamp(rawMeta.updatedAt)) {
     return { ok: false, code: 'INVALID_META' };
   }
+  if (rawMeta.savedWith !== TASK_SAVED_WITH) {
+    return { ok: false, code: 'INVALID_META' };
+  }
   return {
     ok: true,
     meta: {
       name: nameRes.value,
       createdAt: rawMeta.createdAt,
       updatedAt: rawMeta.updatedAt,
+      savedWith: TASK_SAVED_WITH,
     },
   };
 }
@@ -362,13 +417,21 @@ function normalizeTaskMeta(rawMeta) {
       name: metaRes.meta.name,
       createdAt: metaRes.meta.createdAt,
       updatedAt: new Date().toISOString(),
+      savedWith: TASK_SAVED_WITH,
     },
   };
 }
 
 function normalizeTaskList(raw) {
-  if (!hasExactKeys(raw, TASK_LIST_KEYS) || !Array.isArray(raw.rows)) {
+  if (!isPlainObject(raw) || !Array.isArray(raw.rows)) {
     return { ok: false, code: 'INVALID_SCHEMA' };
+  }
+  const expectedTaskKeys = Object.prototype.hasOwnProperty.call(raw, 'summary')
+    ? TASK_LIST_KEYS_WITH_SUMMARY
+    : TASK_LIST_KEYS;
+  if (!hasExactKeys(raw, expectedTaskKeys)) return { ok: false, code: 'INVALID_SCHEMA' };
+  if (raw.type !== TASK_TYPE) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'INVALID_TASK_TYPE' };
   }
   if (raw.rows.length > TASK_LIST_MAX_ROWS) {
     return { ok: false, code: 'ROWS_TOO_MANY' };
@@ -384,7 +447,20 @@ function normalizeTaskList(raw) {
     normalizedRows.push(rowRes.row);
   }
 
-  return { ok: true, task: { meta: metaRes.meta, rows: normalizedRows } };
+  const summaryRes = deriveTaskSummary(normalizedRows);
+  if (!summaryRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: summaryRes.code };
+  const validatedSummary = validateTaskSummary(raw, summaryRes.summary);
+  if (!validatedSummary.ok) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: validatedSummary.code };
+  }
+
+  const task = {
+    type: TASK_TYPE,
+    meta: metaRes.meta,
+    ...(validatedSummary.summary ? { summary: validatedSummary.summary } : {}),
+    rows: normalizedRows,
+  };
+  return { ok: true, task };
 }
 
 // =============================================================================
@@ -604,9 +680,19 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         if (!allowDiscard) return { ok: false, code: 'CONFIRM_DENIED' };
         ensureTaskEditorWindow();
         const taskEditorWin = resolveTaskEditorWin();
+        const now = new Date().toISOString();
         const didSendInit = sendTaskEditorInit(taskEditorWin, {
           mode: 'new',
-          task: { meta: { name: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, rows: [] },
+          task: {
+            type: TASK_TYPE,
+            meta: {
+              name: '',
+              createdAt: now,
+              updatedAt: now,
+              savedWith: TASK_SAVED_WITH,
+            },
+            rows: [],
+          },
           sourcePath: null,
         });
         if (!didSendInit) {
@@ -715,6 +801,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const metaRes = normalizeTaskMeta(payload.meta);
       if (!metaRes.ok) return { ok: false, code: metaRes.code, message: metaRes.code };
 
+      const summaryRes = deriveTaskSummary(normalizedRows);
+      if (!summaryRes.ok) {
+        return { ok: false, code: 'INVALID_SCHEMA', message: summaryRes.code };
+      }
+
       const defaultName = getDefaultTaskFileName(root, metaRes.meta.name);
       const defaultPath = path.join(root, defaultName);
 
@@ -740,7 +831,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       }
 
       const taskData = {
+        type: TASK_TYPE,
         meta: metaRes.meta,
+        ...(summaryRes.summary ? { summary: summaryRes.summary } : {}),
         rows: normalizedRows,
       };
       saveJsonStrict(candidateResolved, taskData);

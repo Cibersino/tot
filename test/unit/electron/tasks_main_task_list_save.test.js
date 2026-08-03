@@ -38,8 +38,12 @@ function createIpcMainMock() {
 }
 
 function createWindow(name) {
+  const sentMessages = [];
   const webContents = {
     __mockWindow: null,
+    send(channel, payload) {
+      sentMessages.push({ channel, payload });
+    },
   };
   const win = {
     name,
@@ -49,6 +53,7 @@ function createWindow(name) {
     },
   };
   webContents.__mockWindow = win;
+  win.sentMessages = sentMessages;
   return win;
 }
 
@@ -66,6 +71,7 @@ function createTaskMeta(name = 'Session Plan') {
     name,
     createdAt: '2026-01-02T03:04:05.000Z',
     updatedAt: '2026-01-02T03:04:05.000Z',
+    savedWith: 'toT (totapp.org)',
   };
 }
 
@@ -259,9 +265,46 @@ test('task-list-save persists task data through saveJsonStrict', async (t) => {
   assert.equal(result.meta.name, 'Session Plan');
 
   const savedPayload = JSON.parse(fs.readFileSync(result.path, 'utf8'));
+  assert.equal(savedPayload.type, 'task');
   assert.equal(savedPayload.meta.name, 'Session Plan');
+  assert.equal(savedPayload.meta.savedWith, 'toT (totapp.org)');
+  assert.deepEqual(savedPayload.summary, {
+    estimatedTotalSeconds: 120,
+    estimatedRemainingSeconds: 90,
+  });
   assert.equal(savedPayload.rows.length, 1);
   assert.equal(savedPayload.rows[0].texto, 'Read chapter 1');
+});
+
+test('task-list-save omits the summary when the total estimate is zero', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-zero-summary');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const saveDialogPath = path.join(tasksRoot, 'Zero Plan.json');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath,
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    {
+      meta: createTaskMeta('Zero Plan'),
+      rows: [createTaskRow({ tiempoSeconds: 0, percentComplete: 100 })],
+    }
+  );
+
+  assert.equal(result.ok, true);
+  const savedPayload = JSON.parse(fs.readFileSync(result.path, 'utf8'));
+  assert.equal(Object.prototype.hasOwnProperty.call(savedPayload, 'summary'), false);
 });
 
 test('task-list-save maps saveJsonStrict failures to WRITE_FAILED', async (t) => {
@@ -350,6 +393,7 @@ test('open-task-editor rejects invalid persisted task data without rewriting it'
   const tasksRoot = path.join(tempDir, 'lists');
   const taskPath = path.join(tasksRoot, 'invalid.json');
   const invalidTask = {
+    type: 'task',
     meta: createTaskMeta('Invalid task'),
     rows: [createTaskRow({ percentComplete: 25.5 })],
   };
@@ -383,6 +427,192 @@ test('open-task-editor rejects invalid persisted task data without rewriting it'
     ok: false,
     code: 'INVALID_SCHEMA',
     message: 'INVALID_PERCENT',
+  });
+  assert.equal(fs.readFileSync(taskPath, 'utf8'), originalFile);
+});
+
+test('open-task-editor loads a canonical task file with its validated summary', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-load-canonical-summary');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const taskPath = path.join(tasksRoot, 'canonical.json');
+  writeJsonFile(taskPath, {
+    type: 'task',
+    meta: createTaskMeta('Canonical task'),
+    summary: {
+      estimatedTotalSeconds: 120,
+      estimatedRemainingSeconds: 90,
+    },
+    rows: [createTaskRow({ percentComplete: 25 })],
+  });
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+    openDialogResponse: {
+      canceled: false,
+      filePaths: [taskPath],
+    },
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const mainWin = createWindow('main');
+  let taskEditorWin = null;
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin, taskEditorWin }),
+    ensureTaskEditorWindow() {
+      taskEditorWin = createWindow('task-editor');
+    },
+  });
+
+  const result = await ipcMain.invoke(
+    'open-task-editor',
+    { sender: mainWin.webContents },
+    { mode: 'load' }
+  );
+
+  assert.deepEqual(result, { ok: true });
+  assert.deepEqual(taskEditorWin.sentMessages, [{
+    channel: 'task-editor-init',
+    payload: {
+      mode: 'load',
+      task: {
+        type: 'task',
+        meta: createTaskMeta('Canonical task'),
+        summary: {
+          estimatedTotalSeconds: 120,
+          estimatedRemainingSeconds: 90,
+        },
+        rows: [createTaskRow({ percentComplete: 25 })],
+      },
+      sourcePath: path.resolve(taskPath),
+    },
+  }]);
+});
+
+test('open-task-editor rejects task files that omit canonical metadata without rewriting them', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-load-missing-producer');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const taskPath = path.join(tasksRoot, 'missing-producer.json');
+  const meta = createTaskMeta('Missing producer');
+  delete meta.savedWith;
+  writeJsonFile(taskPath, {
+    type: 'task',
+    meta,
+    rows: [createTaskRow()],
+  });
+  const originalFile = fs.readFileSync(taskPath, 'utf8');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+    openDialogResponse: {
+      canceled: false,
+      filePaths: [taskPath],
+    },
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const mainWin = createWindow('main');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin, taskEditorWin: null }),
+    ensureTaskEditorWindow() {},
+  });
+
+  const result = await ipcMain.invoke(
+    'open-task-editor',
+    { sender: mainWin.webContents },
+    { mode: 'load' }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'INVALID_META',
+  });
+  assert.equal(fs.readFileSync(taskPath, 'utf8'), originalFile);
+});
+
+test('open-task-editor rejects task files that omit the task type without rewriting them', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-load-missing-task-type');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const taskPath = path.join(tasksRoot, 'missing-type.json');
+  writeJsonFile(taskPath, {
+    meta: createTaskMeta('Missing task type'),
+    summary: {
+      estimatedTotalSeconds: 120,
+      estimatedRemainingSeconds: 120,
+    },
+    rows: [createTaskRow()],
+  });
+  const originalFile = fs.readFileSync(taskPath, 'utf8');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+    openDialogResponse: {
+      canceled: false,
+      filePaths: [taskPath],
+    },
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const mainWin = createWindow('main');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin, taskEditorWin: null }),
+    ensureTaskEditorWindow() {},
+  });
+
+  const result = await ipcMain.invoke(
+    'open-task-editor',
+    { sender: mainWin.webContents },
+    { mode: 'load' }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'INVALID_SCHEMA', message: undefined });
+  assert.equal(fs.readFileSync(taskPath, 'utf8'), originalFile);
+});
+
+test('open-task-editor rejects task files with a missing required summary without rewriting them', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-load-missing-summary');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const taskPath = path.join(tasksRoot, 'missing-summary.json');
+  writeJsonFile(taskPath, {
+    type: 'task',
+    meta: createTaskMeta('Missing summary'),
+    rows: [createTaskRow()],
+  });
+  const originalFile = fs.readFileSync(taskPath, 'utf8');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+    openDialogResponse: {
+      canceled: false,
+      filePaths: [taskPath],
+    },
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const mainWin = createWindow('main');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin, taskEditorWin: null }),
+    ensureTaskEditorWindow() {},
+  });
+
+  const result = await ipcMain.invoke(
+    'open-task-editor',
+    { sender: mainWin.webContents },
+    { mode: 'load' }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'INVALID_SUMMARY',
   });
   assert.equal(fs.readFileSync(taskPath, 'utf8'), originalFile);
 });

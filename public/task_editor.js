@@ -130,7 +130,7 @@ const includeCommentText = document.getElementById('includeCommentText');
 // =============================================================================
 // Mutable editor session state; reset on load/delete.
 let rows = [];
-let meta = { name: '', createdAt: '', updatedAt: '' };
+let meta = { name: '', createdAt: '', updatedAt: '', savedWith: '' };
 let sourcePath = null;
 let dirty = false;
 let rowIdCounter = 1;
@@ -808,6 +808,7 @@ function applyTaskPayload(payload) {
     name: taskName,
     createdAt: task.meta.createdAt,
     updatedAt: task.meta.updatedAt,
+    savedWith: task.meta.savedWith,
   };
   sourcePath = payload.sourcePath || null;
   rows = task.rows.map((r) => createRow(r));
@@ -919,7 +920,14 @@ async function deleteTask() {
     return;
   }
 
-  meta = { name: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const now = new Date().toISOString();
+  const savedWith = meta.savedWith;
+  meta = {
+    name: '',
+    createdAt: now,
+    updatedAt: now,
+    savedWith,
+  };
   sourcePath = null;
   rows = [];
   resetDirty();

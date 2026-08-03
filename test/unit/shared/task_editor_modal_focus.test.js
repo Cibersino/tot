@@ -7,6 +7,15 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { createStopwatchTimeUtils } = require('../../../public/js/lib/stopwatch_time_core');
 
+function createTaskMeta(name = 'Task') {
+  return {
+    name,
+    createdAt: '2026-01-02T03:04:05.000Z',
+    updatedAt: '2026-01-02T03:04:05.000Z',
+    savedWith: 'toT (totapp.org)',
+  };
+}
+
 function createHarness() {
   let activeElement = null;
   let onInit = null;
@@ -314,7 +323,7 @@ function createHarness() {
       onInit({
         sourcePath: 'task.json',
         task: {
-          meta: { name: 'Task' },
+          meta: createTaskMeta(),
           rows: [{
             texto: 'Text',
             tiempoSeconds: 60,
@@ -460,7 +469,7 @@ test('Task Editor projects a live row into an exact library entry before IPC', a
   harness.initializeTask({
     sourcePath: 'task.json',
     task: {
-      meta: { name: 'Task' },
+      meta: createTaskMeta(),
       rows: [{
         texto: 'Text',
         tiempoSeconds: 60,
@@ -656,7 +665,7 @@ test('Task Editor resets persistent task-name validation only at successful sess
   harness.initializeTask({
     sourcePath: 'loaded-task.json',
     task: {
-      meta: { name: 'Loaded task' },
+      meta: createTaskMeta('Loaded task'),
       rows: [],
     },
   });
