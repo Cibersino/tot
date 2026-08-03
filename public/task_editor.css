@@ -348,7 +348,6 @@ body {
   background: var(--table-row-alt-bg);
 }
 
-#thFalta,
 .task-table td:nth-child(4) {
   white-space: nowrap;
 }
