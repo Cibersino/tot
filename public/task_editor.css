@@ -206,7 +206,6 @@ body {
 /* Top row */
 .task-top-row {
   display: flex;
-  align-items: stretch;
   gap: 12px;
 }
 
@@ -241,14 +240,12 @@ body {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  text-align: right;
 }
 
 .task-header {
   display: flex;
   align-items: center;
   max-width: 600px;
-  justify-content: space-between;
   gap: 12px;
   padding: 8px 10px;
   background: var(--app-secondary-bg);
