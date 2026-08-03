@@ -565,7 +565,6 @@ body.is-resizing {
 .library-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   border: 1px solid var(--group-border-color);
   border-radius: 8px;
@@ -575,6 +574,8 @@ body.is-resizing {
 
 .library-item__text {
   flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: var(--font-size-3);
 }
 
