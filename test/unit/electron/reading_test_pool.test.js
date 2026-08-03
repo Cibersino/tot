@@ -11,6 +11,12 @@ const {
 
 const readingTestPool = require('../../../electron/reading_test_pool');
 
+const BUNDLED_POOL_DIR = path.resolve(__dirname, '../../../electron/reading_test_pool');
+const SNAPSHOT_META = Object.freeze({
+  savedAt: '2026-08-03T00:00:00.000Z',
+  savedWith: 'toT (totapp.org)',
+});
+
 function makeTempDir() {
   return createTestTempDir('reading-test-pool');
 }
@@ -20,13 +26,39 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
+function createSnapshotData({ text, tags = {}, readingTest } = {}) {
+  const snapshot = {
+    type: 'text snapshot',
+    meta: { ...SNAPSHOT_META },
+    text,
+    tags,
+  };
+  if (readingTest !== undefined) {
+    snapshot.readingTest = readingTest;
+  }
+  return snapshot;
+}
+
+test('every built-in reading-test snapshot satisfies the canonical snapshot schema', () => {
+  const fileNames = fs.readdirSync(BUNDLED_POOL_DIR)
+    .filter((fileName) => fileName.endsWith('.json'))
+    .sort((left, right) => left.localeCompare(right));
+
+  assert.equal(fileNames.length, 13);
+  for (const fileName of fileNames) {
+    const payload = JSON.parse(fs.readFileSync(path.join(BUNDLED_POOL_DIR, fileName), 'utf8'));
+    const payloadInfo = readingTestPool.sanitizePoolData(payload);
+    assert.equal(payloadInfo.ok, true, fileName);
+  }
+});
+
 test('bundled sync seeds runtime files and pool state is tracked externally', () => {
   const tempDir = makeTempDir();
   const snapshotsRootDir = path.join(tempDir, 'snapshots');
   const bundledSourceDir = path.join(tempDir, 'bundled');
   const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
 
-  writeJson(path.join(bundledSourceDir, 'starter.json'), {
+  writeJson(path.join(bundledSourceDir, 'starter.json'), createSnapshotData({
     text: 'Bundled starter text.',
     tags: {
       language: 'en',
@@ -46,7 +78,7 @@ test('bundled sync seeds runtime files and pool state is tracked externally', ()
         },
       ],
     },
-  });
+  }));
 
   const syncInfo = readingTestPool.synchronizeBundledPoolContent({
     snapshotsRootDir,
@@ -101,12 +133,12 @@ test('bundled sync refreshes managed starter content when bundled content hash c
   const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
   const bundledFilePath = path.join(bundledSourceDir, 'starter.json');
 
-  writeJson(bundledFilePath, {
+  writeJson(bundledFilePath, createSnapshotData({
     text: 'Version one.',
     tags: {
       language: 'en',
     },
-  });
+  }));
 
   const firstSync = readingTestPool.synchronizeBundledPoolContent({
     snapshotsRootDir,
@@ -120,12 +152,12 @@ test('bundled sync refreshes managed starter content when bundled content hash c
   const markInfo = readingTestPool.markPoolEntryUsed(snapshotRelPath, true, { stateFilePath });
   assert.equal(markInfo.ok, true);
 
-  writeJson(bundledFilePath, {
+  writeJson(bundledFilePath, createSnapshotData({
     text: 'Version two.',
     tags: {
       language: 'en',
     },
-  });
+  }));
 
   const secondSync = readingTestPool.synchronizeBundledPoolContent({
     snapshotsRootDir,
@@ -220,14 +252,14 @@ test('startup prune removes stale state entries but leaves existing unmanaged fi
   const missingCustomRelPath = readingTestPool.buildPoolSnapshotRelPath('missing_story.json');
 
   fs.mkdirSync(bundledSourceDir, { recursive: true });
-  writeJson(path.join(poolDir, 'custom_story.json'), {
+  writeJson(path.join(poolDir, 'custom_story.json'), createSnapshotData({
     text: 'Imported custom story.',
     tags: {
       language: 'en',
       type: 'fiction',
       difficulty: 'normal',
     },
-  });
+  }));
   writeJson(stateFilePath, {
     entries: {
       [existingCustomRelPath]: { used: true },
@@ -260,14 +292,14 @@ test('listPoolEntries accepts permitted custom snapshot tags from pool files', (
   const customLanguage = snapshotTagCatalog.buildCustomTagValue('language', 'Plain text');
   const customType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
 
-  writeJson(path.join(poolDir, 'custom_pool.json'), {
+  writeJson(path.join(poolDir, 'custom_pool.json'), createSnapshotData({
     text: 'Imported custom pool story.',
     tags: {
       language: customLanguage,
       type: customType,
       difficulty: 'hard',
     },
-  });
+  }));
 
   const listInfo = readingTestPool.listPoolEntries({
     snapshotsRootDir,
@@ -291,13 +323,13 @@ test('listPoolEntries accepts valid non-catalog language tags from pool files', 
   const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
   const poolDir = path.join(snapshotsRootDir, readingTestPool.POOL_DIR_NAME);
 
-  writeJson(path.join(poolDir, 'open-language-pool.json'), {
+  writeJson(path.join(poolDir, 'open-language-pool.json'), createSnapshotData({
     text: 'Imported open-language pool story.',
     tags: {
       language: 'es-cl',
       type: 'fiction',
     },
-  });
+  }));
 
   const listInfo = readingTestPool.listPoolEntries({
     snapshotsRootDir,
@@ -320,12 +352,12 @@ test('startup prune removes retired managed starter files and their state entrie
   const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
   const bundledFilePath = path.join(bundledSourceDir, 'starter.json');
 
-  writeJson(bundledFilePath, {
+  writeJson(bundledFilePath, createSnapshotData({
     text: 'Retired starter.',
     tags: {
       language: 'en',
     },
-  });
+  }));
 
   const firstSync = readingTestPool.synchronizeBundledPoolContent({
     snapshotsRootDir,

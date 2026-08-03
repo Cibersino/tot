@@ -60,7 +60,8 @@ Reglas:
 - `language_window` y `preset_modal` dejan de ser excepciones dentro de las ventanas renderer top-level: sus estilos salen del HTML inline, convergen en archivos CSS dedicados con la misma estructura documental del resto del repo y la documentación viva del árbol vuelve a reflejar el layout real de `public/`.
 - La planificación batch corrige el modelo lógico de los PDFs pesados: el PDF fuente conserva membresía, nombre y orden de unidad normales junto a inputs ordinarios, mientras sus PDFs generados permanecen hijos internos del source tanto en ejecución como en el reporte final.
 - El `Task Editor` reemplaza el reparto implícito de ancho del navegador por un layout de columnas exacto y responsive: `texto` absorbe el ancho utilizable real, las seis columnas de utilidad conservan un modelo de resize predecible y accesible, y solo esa configuración controlada por el usuario se conserva entre aperturas.
-- El `Task Editor` unifica la validación de Tiempo y Porcentaje con su presentación accesible, y corta de forma radical la aceptación permisiva de listas y biblioteca: los archivos deben cumplir el schema canónico completo o se rechazan sin reparación, migración ni reescritura.
+- El `Task Editor` unifica la validación de Tiempo y Porcentaje con su presentación accesible, y completa el cutover radical de sus listas: cada documento identifica su tipo, deja trazabilidad de su productor y conserva el resumen derivado de estimación total/restante cuando corresponde; los archivos que no satisfacen el schema canónico completo se rechazan sin reparación, migración ni reescritura.
+- Los snapshots del texto vigente, incluido el pool bundled de Reading Test, convergen en un documento canónico identificado, fechado y trazable; `readingTest` queda como su única extensión opcional validada y desaparece la aceptación de shapes históricos.
 
 ### Agregado
 
@@ -102,6 +103,14 @@ Reglas:
   - `Tiempo` reutiliza `StopwatchTimeCore` con la gramática `H+:MM:SS`, se presenta de forma canónica como `HH:MM:SS` y se conserva como segundos enteros seguros; `Porcentaje` acepta `N` o `N%`, exige un entero `0..100` y se presenta como `N%`;
   - Tiempo y Porcentaje muestran `.is-invalid` / `aria-invalid` mientras se edita un valor inválido y, si sigue inválido al salir del campo o pulsar Enter, restauran el valor canónico previo; Nombre y Lectura requeridos se señalan al intentar guardar sin valor;
   - los inputs editables de cada fila toman su nombre accesible del header de columna traducido mediante `aria-labelledby`; los headers declaran `scope="col"`, sin una key i18n especial para Porcentaje.
+- Task Editor / persistencia canónica de listas:
+  - `task-list-save` escribe documentos con `type: "task"` y un `meta` exacto que incorpora `createdAt`, `updatedAt` y el productor fijo `toT (totapp.org)`; ambos timestamps se siguen generando en ISO 8601 UTC canónico;
+  - cuando el resumen de la lista tiene tiempo total estimado mayor que cero, el mismo documento incorpora `summary.estimatedTotalSeconds` y `summary.estimatedRemainingSeconds`, derivados autoritativamente de las filas; cuando el total es cero, `summary` no se serializa;
+  - la lectura, la biblioteca y los paths de save dejan de reconocer documentos anteriores o parcialmente compatibles: validan el documento completo antes de consumirlo y no lo reinterpretan, migran ni reescriben.
+- Snapshots del texto vigente / schema canónico:
+  - `electron/current_text_snapshot_schema.js` pasa a ser el owner compartido de la validación de snapshots para el guardado/cargado del texto vigente, el descubrimiento e importación del pool de Reading Test y la validación de sus tags;
+  - cada snapshot serializado declara `type: "text snapshot"` y `meta.savedAt` / `meta.savedWith`, con timestamp ISO 8601 UTC y productor fijo `toT (totapp.org)`; los 13 JSON bundled del pool adoptan ese mismo sobre canónico;
+  - el documento solo admite `type`, `meta`, `text`, `tags` y, opcionalmente, `readingTest`; la extensión opcional reutiliza la validación de preguntas existente y cualquier campo extra, ausencia, tipo distinto o payload histórico se rechaza sin normalización.
 - Cronómetro / calculadora rápida de lectura:
   - `public/js/crono.js` y `electron/main.js` dejan de mantener parse/format duplicados del tiempo de cronómetro y pasan a reutilizar `public/js/lib/stopwatch_time_core.js`, preservando la semántica existente floor-to-seconds para cronómetro principal / `Floating Stopwatch`;
   - la calculadora rápida consume ese mismo helper para el input editable `H+:MM:SS`, pero usa redondeo al segundo más cercano solo para el tiempo derivado mostrado en su propia ventana;
@@ -158,7 +167,8 @@ Reglas:
 ### Migración
 
 - Task Editor / `column_widths.json`: el modelo anterior de mapa no versionado se corta de forma radical, sin migración ni interpretación de datos heredados; un archivo ausente, antiguo, parcial o inválido se reemplaza por los defaults versionados, mientras un fallo real de lectura conserva esos defaults solo para la sesión y no sobrescribe el archivo existente.
-- Task Editor / listas y biblioteca: la persistencia adopta un cutover radical sin migración, parser legacy, fallback de compatibilidad ni reparación. Una lista o entrada de biblioteca existente que no satisfaga el schema canónico se rechaza y el archivo original permanece intacto; debe corregirse o recrearse fuera de la app antes de poder usarse.
+- Task Editor / listas y biblioteca: la persistencia adopta un cutover radical sin migración, parser legacy, fallback de compatibilidad ni reparación. Una lista existente que no incluya `type: "task"`, el `meta` trazable y, cuando aplica, el resumen canónico, o una entrada de biblioteca que no satisfaga su schema completo, se rechaza y el archivo original permanece intacto; debe corregirse o recrearse fuera de la app antes de poder usarse.
+- Snapshots del texto vigente y pool de Reading Test: el formato anterior se corta de forma radical. Un snapshot guardado, bundled o importado que no cumpla el documento canónico completo —incluidos tipo, metadata de guardado y, si existe, `readingTest` válido— se rechaza tal como está; no hay parser legacy, fallback, reparación, migración ni reescritura.
 
 ### Contratos tocados
 
@@ -180,9 +190,14 @@ Reglas:
   - nuevo IPC `task-file-select` en `electron/tasks_main.js`, invocado desde `window.taskEditorAPI.selectTaskFile()`, que devuelve `{ ok: true, filePath }` para selección single-file desde una fila;
   - ambos canales heredan el mismo ownership main-owned del picker nativo y el mismo sender guard del `Task Editor`; no introducen un cambio adicional del schema de filas más allá del cutover de validación documentado a continuación, y `enlace` sigue siendo string libre.
 - Persistencia del Task Editor / validación radical:
-  - una lista de tareas persistida es exactamente `{ meta, rows }`; `meta` es exactamente `{ name, createdAt, updatedAt }`, con nombre no vacío, timestamps ISO canónicos y sin propiedades adicionales;
+  - una lista de tareas persistida es exactamente `{ type, meta, rows }` cuando su tiempo estimado total es cero, o `{ type, meta, rows, summary }` cuando es mayor que cero; `type` debe ser `"task"` y `meta` es exactamente `{ name, createdAt, updatedAt, savedWith }`, con nombre no vacío, timestamps ISO canónicos, `savedWith: "toT (totapp.org)"` y sin propiedades adicionales;
+  - el `summary` requerido para listas con total positivo es exactamente `{ estimatedTotalSeconds, estimatedRemainingSeconds }`, ambos enteros seguros no negativos derivados de las filas; no se permite `summary` cuando el total es cero;
   - cada fila persistida es exactamente `{ texto, tiempoSeconds, percentComplete, enlace, comentario, snapshotRelPath }`, con segundos enteros seguros no negativos, Porcentaje entero `0..100`, texto requerido y ruta de snapshot canónica;
   - cada entrada de `config/tasks/library.json` es exactamente `{ texto, tiempoSeconds, enlace }`, con `comentario` y `snapshotRelPath` opcionales solo cuando son no vacíos y canónicos. La carga, guardado y borrado de biblioteca validan todas las entradas y no coercen tipos ni descartan propiedades desconocidas.
+- Persistencia de snapshots del texto vigente / cutover canónico:
+  - un snapshot es exactamente `{ type, meta, text, tags }` o `{ type, meta, text, tags, readingTest }`; `type` debe ser `"text snapshot"`, `meta` es exactamente `{ savedAt, savedWith }` con timestamp ISO 8601 UTC canónico y `savedWith: "toT (totapp.org)"`, y `tags` conserva exclusivamente los tags normalizados de idioma, tipo y dificultad;
+  - `readingTest` es la única extensión permitida y debe ser un payload de preguntas válido; los snapshots ordinarios no la necesitan y, al cargarse como texto vigente, se aplica únicamente su `text` validado;
+  - `current-text-snapshot-*` y el pool de Reading Test comparten ese mismo contrato estricto para guardar, cargar, descubrir e importar; no se publica compatibilidad para documentos preexistentes con otra forma.
 - Calculadora rápida de lectura:
   - nuevo bridge de la ventana principal `window.electronAPI.openTextTimeCalculator()`, que invoca `ipcMain.handle('text-time-calculator-open', ...)` y queda autorizado solo para senders de `mainWin`;
   - nuevo preload surface `window.textTimeCalculatorAPI` en la ventana dedicada, con `getSettings()` y `onSettingsChanged(cb) -> unsubscribe` como contrato requerido de bootstrap;

@@ -23,6 +23,7 @@ const { dialog, BrowserWindow, shell } = require('electron');
 const Log = require('./log');
 const { DEFAULT_LANG, BATCH_UNIT_NAME_MAX } = require('./constants_main');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
+const currentTextSnapshotSchema = require('./current_text_snapshot_schema');
 const {
   getCurrentTextSnapshotsDir,
   ensureCurrentTextSnapshotsDir,
@@ -40,11 +41,7 @@ log.debug('Current text snapshots main starting...');
 // =============================================================================
 
 if (!snapshotTagCatalog
-  || !Array.isArray(snapshotTagCatalog.TAG_KEYS)
-  || typeof snapshotTagCatalog.isPlainObject !== 'function'
-  || typeof snapshotTagCatalog.normalizeLanguageTag !== 'function'
-  || typeof snapshotTagCatalog.normalizeTypeTag !== 'function'
-  || typeof snapshotTagCatalog.normalizeDifficultyTag !== 'function') {
+  || typeof snapshotTagCatalog.isPlainObject !== 'function') {
   throw new Error('[current_text_snapshots] SnapshotTagCatalog unavailable; cannot continue');
 }
 
@@ -52,12 +49,11 @@ if (!snapshotTagCatalog
 // Constants / config
 // =============================================================================
 const SNAPSHOT_EXT = '.json';
-const SNAPSHOT_TYPE = 'text snapshot';
-const SNAPSHOT_SAVED_WITH = 'toT (totapp.org)';
+const {
+  SNAPSHOT_TYPE,
+  SNAPSHOT_SAVED_WITH,
+} = currentTextSnapshotSchema;
 const SNAPSHOT_NAME_RE = /^current_text_(\d+)\.json$/i;
-const { TAG_KEYS: SNAPSHOT_TAG_KEYS } = snapshotTagCatalog;
-const SNAPSHOT_FILE_KEYS = Object.freeze(['type', 'meta', 'text', 'tags']);
-const SNAPSHOT_META_KEYS = Object.freeze(['savedAt', 'savedWith']);
 
 // =============================================================================
 // Helpers (paths)
@@ -223,76 +219,6 @@ async function promptForSnapshotSelection(ownerWin, root, rootReal) {
 // =============================================================================
 // Helpers (schema + payloads)
 // =============================================================================
-function hasExactKeys(value, expectedKeys) {
-  if (!snapshotTagCatalog.isPlainObject(value)) return false;
-  const actualKeys = Object.keys(value);
-  return actualKeys.length === expectedKeys.length
-    && expectedKeys.every((key) => Object.prototype.hasOwnProperty.call(value, key));
-}
-
-function isCanonicalIsoTimestamp(value) {
-  if (typeof value !== 'string') return false;
-  const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
-}
-
-function validateSnapshotMeta(rawMeta) {
-  if (!hasExactKeys(rawMeta, SNAPSHOT_META_KEYS)) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot metadata invalid' };
-  }
-  if (!isCanonicalIsoTimestamp(rawMeta.savedAt)) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot savedAt invalid' };
-  }
-  if (rawMeta.savedWith !== SNAPSHOT_SAVED_WITH) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot savedWith invalid' };
-  }
-  return { ok: true };
-}
-
-function sanitizeSnapshotTags(rawTags, { allowMissing = false } = {}) {
-  if (rawTags == null) {
-    return allowMissing
-      ? { ok: true, tags: null }
-      : { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags missing' };
-  }
-  if (!snapshotTagCatalog.isPlainObject(rawTags)) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags must be an object' };
-  }
-
-  const rawKeys = Object.keys(rawTags);
-  if (rawKeys.some((key) => !SNAPSHOT_TAG_KEYS.includes(key))) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags contain unsupported keys' };
-  }
-
-  const tags = {};
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'language')) {
-    const language = snapshotTagCatalog.normalizeLanguageTag(rawTags.language);
-    if (!language) {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot language tag invalid' };
-    }
-    tags.language = language;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'type')) {
-    const type = snapshotTagCatalog.normalizeTypeTag(rawTags.type);
-    if (!type) {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot type tag invalid' };
-    }
-    tags.type = type;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'difficulty')) {
-    const difficulty = snapshotTagCatalog.normalizeDifficultyTag(rawTags.difficulty);
-    if (!difficulty) {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot difficulty tag invalid' };
-    }
-    tags.difficulty = difficulty;
-  }
-
-  return { ok: true, tags: Object.keys(tags).length ? tags : null };
-}
-
 function sanitizeSnapshotSavePayload(payload) {
   if (payload == null) return { ok: true, tags: null };
   if (!snapshotTagCatalog.isPlainObject(payload)) {
@@ -313,9 +239,12 @@ function sanitizeSnapshotSavePayload(payload) {
   if (!Object.prototype.hasOwnProperty.call(payload, 'tags')) {
     return { ok: true, tags: null, autoFileBaseName, nonInteractive };
   }
-  const tagsInfo = sanitizeSnapshotTags(payload.tags, { allowMissing: true });
+  if (payload.tags == null) {
+    return { ok: true, tags: null, autoFileBaseName, nonInteractive };
+  }
+  const tagsInfo = currentTextSnapshotSchema.validateSnapshotTags(payload.tags);
   if (!tagsInfo.ok) return tagsInfo;
-  const tags = snapshotTagCatalog.isPlainObject(tagsInfo.tags)
+  const tags = Object.keys(tagsInfo.tags).length
     ? { ...tagsInfo.tags }
     : null;
   return { ok: true, tags, autoFileBaseName, nonInteractive };
@@ -337,25 +266,18 @@ function parseSnapshotFile(selectedReal) {
     return { ok: false, code: 'INVALID_JSON', message: String(err) };
   }
 
-  if (!hasExactKeys(parsed, SNAPSHOT_FILE_KEYS) || parsed.type !== SNAPSHOT_TYPE
-    || typeof parsed.text !== 'string') {
-    log.warn('snapshot schema invalid:', { selectedReal });
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'invalid snapshot schema' };
+  const snapshotInfo = currentTextSnapshotSchema.validateSnapshotDocument(parsed);
+  if (!snapshotInfo.ok) {
+    log.warn('snapshot schema invalid:', { selectedReal, message: snapshotInfo.message });
+    return snapshotInfo;
   }
 
-  const metaInfo = validateSnapshotMeta(parsed.meta);
-  if (!metaInfo.ok) {
-    log.warn('snapshot metadata schema invalid:', { selectedReal, message: metaInfo.message });
-    return metaInfo;
-  }
-
-  const tagsInfo = sanitizeSnapshotTags(parsed.tags);
-  if (!tagsInfo.ok) {
-    log.warn('snapshot tags schema invalid:', { selectedReal, message: tagsInfo.message });
-    return { ok: false, code: 'INVALID_SCHEMA', message: tagsInfo.message };
-  }
-
-  return { ok: true, text: parsed.text, tags: tagsInfo.tags };
+  const tags = snapshotInfo.snapshot.tags;
+  return {
+    ok: true,
+    text: snapshotInfo.snapshot.text,
+    tags: Object.keys(tags).length ? tags : null,
+  };
 }
 
 // =============================================================================

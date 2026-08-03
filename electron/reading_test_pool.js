@@ -29,7 +29,7 @@ const {
   saveJsonStrict,
 } = require('./fs_storage');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
-const readingTestQuestionsCore = require('../public/js/lib/reading_test_questions_core');
+const currentTextSnapshotSchema = require('./current_text_snapshot_schema');
 
 const log = Log.get('reading-test-pool');
 log.debug('Reading test pool starting...');
@@ -45,7 +45,6 @@ const POOL_STATE_FALLBACK = Object.freeze({
   showBundledEntries: SHOW_BUNDLED_ENTRIES_DEFAULT,
   entries: {},
 });
-const DESCRIPTIVE_TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
 
 // =============================================================================
 // Helpers: paths, files, and hashing
@@ -377,74 +376,19 @@ function resetPoolUsageState(options = {}) {
 // Helpers: pool entry validation and shaping
 // =============================================================================
 
-function sanitizePoolTags(rawTags) {
-  if (rawTags == null) {
-    return { ok: true, tags: {} };
-  }
-  if (!snapshotTagCatalog.isPlainObject(rawTags)) {
-    return { ok: false, code: 'INVALID_TAGS_SHAPE' };
-  }
-
-  const rawKeys = Object.keys(rawTags);
-  if (rawKeys.some((key) => !DESCRIPTIVE_TAG_KEYS.includes(key))) {
-    return { ok: false, code: 'UNSUPPORTED_TAG_KEY' };
-  }
-
-  const normalizedTags = {};
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'language')) {
-    const language = snapshotTagCatalog.normalizeLanguageTag(rawTags.language);
-    if (!language) return { ok: false, code: 'INVALID_LANGUAGE_TAG' };
-    normalizedTags.language = language;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'type')) {
-    const type = snapshotTagCatalog.normalizeTypeTag(rawTags.type);
-    if (!type) return { ok: false, code: 'INVALID_TYPE_TAG' };
-    normalizedTags.type = type;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'difficulty')) {
-    const difficulty = snapshotTagCatalog.normalizeDifficultyTag(rawTags.difficulty);
-    if (!difficulty) return { ok: false, code: 'INVALID_DIFFICULTY_TAG' };
-    normalizedTags.difficulty = difficulty;
-  }
-
-  return { ok: true, tags: normalizedTags };
-}
-
 function sanitizePoolData(rawData) {
-  if (!rawData || typeof rawData !== 'object' || typeof rawData.text !== 'string' || !rawData.text.length) {
+  const snapshotInfo = currentTextSnapshotSchema.validateSnapshotDocument(rawData);
+  if (!snapshotInfo.ok) return snapshotInfo;
+
+  if (!snapshotInfo.snapshot.text.length) {
     return { ok: false, code: 'INVALID_TEXT' };
-  }
-
-  const tagsInfo = sanitizePoolTags(rawData.tags);
-  if (!tagsInfo.ok) return tagsInfo;
-
-  const hasReadingTestPayload = Object.prototype.hasOwnProperty.call(rawData, 'readingTest');
-  let questions = [];
-  const normalizedData = {
-    text: rawData.text,
-  };
-
-  if (Object.keys(tagsInfo.tags).length > 0) {
-    normalizedData.tags = tagsInfo.tags;
-  }
-
-  if (hasReadingTestPayload) {
-    const questionsInfo = readingTestQuestionsCore.validateQuestionsPayload(rawData.readingTest);
-    if (!questionsInfo.ok) return { ok: false, code: questionsInfo.code };
-    questions = questionsInfo.questions;
-    normalizedData.readingTest = {
-      questions,
-    };
   }
 
   return {
     ok: true,
-    data: normalizedData,
-    hasValidQuestions: questions.length > 0,
-    questions,
+    data: snapshotInfo.snapshot,
+    hasValidQuestions: snapshotInfo.questions.length > 0,
+    questions: snapshotInfo.questions,
   };
 }
 

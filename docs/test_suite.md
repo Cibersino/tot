@@ -399,9 +399,9 @@ Recommended content for the text-like samples:
 
 Prepare these only if you plan to run the deeper snapshot-tag compatibility checks:
 - `snapshot_non_catalog_language.json`
-  - `{"text":"Fixture text","tags":{"language":"es-cl"}}`
+  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"language":"es-cl"}}`
 - `snapshot_unknown_custom_tag.json`
-  - `{"text":"Fixture text","tags":{"type":"custom:type:short-story"}}`
+  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"type":"custom:type:short-story"}}`
 
 Notes:
 - the second fixture is most useful when `custom:type:short-story` is not currently visible in the editable catalog;
@@ -1708,7 +1708,7 @@ nonconforming persisted data without migration or repair.
 - Manager changes made from the batch prompt are reflected immediately in the same prompt and in the planner's tag summary.
 
 #### REG-SNAPSHOTS-04 Snapshot load compatibility with custom or non-catalog tags
-**Goal:** loading current-text snapshots remains permissive for otherwise valid snapshot metadata.
+**Goal:** canonical current-text snapshots accept semantically valid custom or non-catalog tags.
 1. Prepare the optional fixtures from 3.4 or equivalent real files under `config/saved_current_texts/`.
 2. Load `snapshot_non_catalog_language.json` through the normal **📂** flow.
 3. Load `snapshot_unknown_custom_tag.json` through the normal **📂** flow.
@@ -1811,7 +1811,7 @@ nonconforming persisted data without migration or repair.
 **Expected:**
 - Exhaustion is handled inside the entry modal, not by blocking entry with a separate alert.
 - Pool reset clears external `used` state without rewriting the content files in the dedicated pool folder.
-- Pool files remain ordinary snapshot JSON files with optional `readingTest`, but without inline usage state.
+- Pool files use the canonical text-snapshot schema and may include the optional validated `readingTest` field, but never inline usage state.
 - Normal snapshot loading accepts pool files with optional `readingTest` and applies only the `text` to current text.
 
 #### REG-READING-TEST-07 Pool acquisition/import via Drive link and native picker

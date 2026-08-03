@@ -14,6 +14,8 @@ const {
   installElectronModuleMock,
 } = require('../../helpers/electron_module_mock');
 
+const BUNDLED_POOL_DIR = path.resolve(__dirname, '../../../electron/reading_test_pool');
+
 function createIpcMainDouble() {
   const handlers = new Map();
 
@@ -666,4 +668,38 @@ test('snapshot load rejects files without the canonical text-snapshot shape', as
     message: 'invalid snapshot schema',
   });
   assert.equal(fs.readFileSync(snapshotPath, 'utf8'), originalFile);
+});
+
+test('normal snapshot loading accepts every built-in reading-test snapshot', async (t) => {
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir: BUNDLED_POOL_DIR,
+    currentText: '',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const fileNames = fs.readdirSync(BUNDLED_POOL_DIR)
+    .filter((fileName) => fileName.endsWith('.json'))
+    .sort((left, right) => left.localeCompare(right));
+  assert.equal(fileNames.length, 13);
+
+  for (const fileName of fileNames) {
+    const result = await ipcMain.invoke(
+      'current-text-snapshot-load',
+      { sender: senderWin.webContents },
+      { snapshotRelPath: `/${fileName}` }
+    );
+    assert.equal(result.ok, true, fileName);
+  }
 });
