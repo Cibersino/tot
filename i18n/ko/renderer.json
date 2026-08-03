@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — 작업",
       "name": "이름",
+      "name_placeholder": "예: 독서 계획",
       "save_button": "저장",
       "delete_button": "삭제",
       "summary_total": "합계",

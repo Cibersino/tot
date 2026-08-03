@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — 任务",
       "name": "名称",
+      "name_placeholder": "例如：阅读计划",
       "save_button": "保存",
       "delete_button": "删除",
       "summary_total": "总计",

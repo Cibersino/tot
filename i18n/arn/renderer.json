@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Tareas",
       "name": "Üi",
+      "name_placeholder": "Eymi: Chillkatun plan",
       "save_button": "Elkünun",
       "delete_button": "Ñamümün",
       "summary_total": "Kom",

@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Attività",
       "name": "Nome",
+      "name_placeholder": "es.: Piano di lettura",
       "save_button": "Salva",
       "delete_button": "Elimina",
       "summary_total": "Totale",

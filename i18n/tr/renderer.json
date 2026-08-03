@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Görevler",
       "name": "Ad",
+      "name_placeholder": "ör.: Okuma planı",
       "save_button": "Kaydet",
       "delete_button": "Sil",
       "summary_total": "Toplam",

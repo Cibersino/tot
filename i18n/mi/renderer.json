@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Ngā tūmahi",
       "name": "Ingoa",
+      "name_placeholder": "hei tauira: Mahere pānui",
       "save_button": "Tiaki",
       "delete_button": "Muku",
       "summary_total": "Tapeke",

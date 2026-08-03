@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Задачи",
       "name": "Название",
+      "name_placeholder": "напр.: План чтения",
       "save_button": "Сохранить",
       "delete_button": "Удалить",
       "summary_total": "Итого",

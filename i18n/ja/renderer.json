@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — タスク",
       "name": "名前",
+      "name_placeholder": "例：読書計画",
       "save_button": "保存",
       "delete_button": "削除",
       "summary_total": "合計",

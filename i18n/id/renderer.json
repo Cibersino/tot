@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Tugas",
       "name": "Nama",
+      "name_placeholder": "mis.: Rencana membaca",
       "save_button": "Simpan",
       "delete_button": "Hapus",
       "summary_total": "Total",

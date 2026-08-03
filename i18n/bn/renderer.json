@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — টাস্ক",
       "name": "নাম",
+      "name_placeholder": "যেমন: পড়ার পরিকল্পনা",
       "save_button": "সংরক্ষণ",
       "delete_button": "মুছে ফেলুন",
       "summary_total": "মোট",

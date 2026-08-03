@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Llamk'anakuna",
       "name": "Suti",
+      "name_placeholder": "Qhawachiy: Ñawinchay plan",
       "save_button": "Waqaychay",
       "delete_button": "Chinkachiy",
       "summary_total": "Llapan",

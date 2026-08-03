@@ -329,10 +329,14 @@ function createHarness() {
   };
 }
 
-test('Task Editor localizes and limits the comment field', async () => {
+test('Task Editor localizes native field prompts and limits the comment field', async () => {
   const harness = createHarness();
   await harness.waitForTranslations();
 
+  assert.equal(
+    harness.elements.taskNameInput.getAttribute('placeholder'),
+    'renderer.tasks.name_placeholder'
+  );
   assert.equal(
     harness.elements.commentInput.getAttribute('placeholder'),
     'renderer.tasks.comentario_modal.comment_placeholder'

@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — 任務",
       "name": "名稱",
+      "name_placeholder": "例如：閱讀計畫",
       "save_button": "儲存",
       "delete_button": "刪除",
       "summary_total": "總計",

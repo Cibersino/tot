@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Travay",
       "name": "Non",
+      "name_placeholder": "eg.: Plan lekti",
       "save_button": "Sove",
       "delete_button": "Efase",
       "summary_total": "Total",

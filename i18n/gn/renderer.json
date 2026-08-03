@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Tembiaporã",
       "name": "Téra",
+      "name_placeholder": "Techapyrã: Moñe'ẽrã",
       "save_button": "Ñongatu",
       "delete_button": "Mbogue",
       "summary_total": "Opaite",

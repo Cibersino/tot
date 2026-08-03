@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — ٹاسکس",
       "name": "نام",
+      "name_placeholder": "مثلاً: مطالعہ کا منصوبہ",
       "save_button": "محفوظ کریں",
       "delete_button": "حذف کریں",
       "summary_total": "کل",

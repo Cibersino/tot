@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Tareanaka",
       "name": "Suti",
+      "name_placeholder": "Uñacht'äwi: Ullaña amta",
       "save_button": "Imaña",
       "delete_button": "Chhaqtayaña",
       "summary_total": "Taqpacha",

@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — کارها",
       "name": "نام",
+      "name_placeholder": "مثلاً: برنامهٔ مطالعه",
       "save_button": "ذخیره",
       "delete_button": "حذف",
       "summary_total": "کل",

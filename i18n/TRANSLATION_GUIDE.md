@@ -2569,6 +2569,12 @@ Estados de revisión recomendados:
         "en": "Name"
         // [CONCEPTO_APP] tarea
       },
+      "name_placeholder": {
+        "es": "Ej.: Plan de lectura",
+        "en": "e.g., Reading plan"
+        // [PROPÓSITO] Ejemplo breve para el campo Nombre cuando una tarea nueva todavía no tiene nombre. No sustituye el label visible.
+        // [CONCEPTO_APP] tarea
+      },
       "save_button": {
         "es": "Guardar",
         "en": "Save"

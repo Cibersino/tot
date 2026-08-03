@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Imisebenzi",
       "name": "Igama",
+      "name_placeholder": "isb.: Uhlelo lokufunda",
       "save_button": "Gcina",
       "delete_button": "Susa",
       "summary_total": "Isamba",

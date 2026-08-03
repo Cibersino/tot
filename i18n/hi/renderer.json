@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — कार्य",
       "name": "नाम",
+      "name_placeholder": "उदा.: पठन योजना",
       "save_button": "सहेजें",
       "delete_button": "हटाएँ",
       "summary_total": "कुल",

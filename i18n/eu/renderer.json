@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Atazak",
       "name": "Izena",
+      "name_placeholder": "adib.: Irakurketa-plana",
       "save_button": "Gorde",
       "delete_button": "Ezabatu",
       "summary_total": "Guztira",

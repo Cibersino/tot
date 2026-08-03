@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Aufgaben",
       "name": "Name",
+      "name_placeholder": "z. B. Leseplan",
       "save_button": "Speichern",
       "delete_button": "Löschen",
       "summary_total": "Gesamt",

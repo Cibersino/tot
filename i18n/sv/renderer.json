@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Uppgifter",
       "name": "Namn",
+      "name_placeholder": "t.ex. Läsplan",
       "save_button": "Spara",
       "delete_button": "Ta bort",
       "summary_total": "Totalt",

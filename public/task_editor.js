@@ -1074,6 +1074,7 @@ async function applyTaskEditorTranslations() {
   await ensureTaskEditorTranslations(idiomaActual);
   document.title = tr('renderer.tasks.title');
   if (taskNameLabel) taskNameLabel.textContent = tr('renderer.tasks.name');
+  if (taskNameInput) taskNameInput.setAttribute('placeholder', tr('renderer.tasks.name_placeholder'));
   if (taskSummaryTotalLabel) taskSummaryTotalLabel.textContent = tr('renderer.tasks.summary_total');
   if (taskSummaryLeftLabel) taskSummaryLeftLabel.textContent = tr('renderer.tasks.summary_left');
   if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.save_button');

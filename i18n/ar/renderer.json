@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — المهام",
       "name": "الاسم",
+      "name_placeholder": "مثال: خطة قراءة",
       "save_button": "حفظ",
       "delete_button": "حذف",
       "summary_total": "المجموع",

@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Tác vụ",
       "name": "Tên",
+      "name_placeholder": "ví dụ: Kế hoạch đọc",
       "save_button": "Lưu",
       "delete_button": "Xóa",
       "summary_total": "Tổng",

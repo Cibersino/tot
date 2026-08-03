@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Tasks",
       "name": "Name",
+      "name_placeholder": "e.g.: Reading plan",
       "save_button": "Save",
       "delete_button": "Delete",
       "summary_total": "Total",

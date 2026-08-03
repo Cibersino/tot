@@ -441,6 +441,7 @@
     "tasks": {
       "title": "toT — Editor de Tareas",
       "name": "Nombre",
+      "name_placeholder": "Ej.: Plan de lectura",
       "save_button": "Guardar",
       "delete_button": "Eliminar",
       "summary_total": "Total",
