@@ -30,6 +30,18 @@ function createIpcMainDouble() {
   };
 }
 
+function createSnapshotFileData(text, tags = {}) {
+  return {
+    type: 'text snapshot',
+    meta: {
+      savedAt: '2026-01-02T03:04:05.000Z',
+      savedWith: 'toT (totapp.org)',
+    },
+    text,
+    tags,
+  };
+}
+
 function loadSnapshotsMainWithMocks({
   senderWin,
   rootDir,
@@ -237,6 +249,9 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
   assert.equal(firstSave.ok, true);
   assert.equal(firstSave.filename, 'Unit_1.json');
   const firstPayload = JSON.parse(fs.readFileSync(path.join(rootDir, firstSave.filename), 'utf8'));
+  assert.equal(firstPayload.type, 'text snapshot');
+  assert.equal(firstPayload.meta.savedWith, 'toT (totapp.org)');
+  assert.equal(new Date(firstPayload.meta.savedAt).toISOString(), firstPayload.meta.savedAt);
   assert.equal(firstPayload.text, 'Batch snapshot text');
   assert.deepEqual(firstPayload.tags, { language: 'es' });
 
@@ -252,6 +267,8 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
 
   assert.equal(secondSave.ok, true);
   assert.equal(secondSave.filename, 'Unit_1_2.json');
+  const secondPayload = JSON.parse(fs.readFileSync(path.join(rootDir, secondSave.filename), 'utf8'));
+  assert.deepEqual(secondPayload.tags, {});
 });
 
 test('non-interactive snapshot save rejects an oversized batch unit name without constraining source filenames', async (t) => {
@@ -464,7 +481,7 @@ test('snapshot load skips overwrite confirmation when current text is empty', as
   };
   const snapshotPath = path.join(rootDir, 'empty-target.json');
   fs.mkdirSync(rootDir, { recursive: true });
-  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Loaded snapshot text' }, null, 2));
+  fs.writeFileSync(snapshotPath, JSON.stringify(createSnapshotFileData('Loaded snapshot text'), null, 2));
 
   const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
     senderWin,
@@ -501,7 +518,7 @@ test('snapshot load still asks for overwrite confirmation when current text is n
   };
   const snapshotPath = path.join(rootDir, 'confirm-target.json');
   fs.mkdirSync(rootDir, { recursive: true });
-  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Loaded snapshot text' }, null, 2));
+  fs.writeFileSync(snapshotPath, JSON.stringify(createSnapshotFileData('Loaded snapshot text'), null, 2));
 
   const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
     senderWin,
@@ -538,12 +555,12 @@ test('snapshot load accepts custom snapshot tags that are unknown to the current
   const customLanguage = snapshotTagCatalog.buildCustomTagValue('language', 'Plain text');
   const snapshotPath = path.join(rootDir, 'custom-tags.json');
   fs.mkdirSync(rootDir, { recursive: true });
-  fs.writeFileSync(snapshotPath, JSON.stringify({
-    text: 'Loaded custom snapshot text',
-    tags: {
+  fs.writeFileSync(
+    snapshotPath,
+    JSON.stringify(createSnapshotFileData('Loaded custom snapshot text', {
       language: customLanguage,
-    },
-  }, null, 2));
+    }), null, 2)
+  );
 
   const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
     senderWin,
@@ -580,12 +597,12 @@ test('snapshot load accepts valid non-catalog language tags', async (t) => {
   };
   const snapshotPath = path.join(rootDir, 'open-language-tags.json');
   fs.mkdirSync(rootDir, { recursive: true });
-  fs.writeFileSync(snapshotPath, JSON.stringify({
-    text: 'Loaded open-language snapshot text',
-    tags: {
+  fs.writeFileSync(
+    snapshotPath,
+    JSON.stringify(createSnapshotFileData('Loaded open-language snapshot text', {
       language: 'fr-CA',
-    },
-  }, null, 2));
+    }), null, 2)
+  );
 
   const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
     senderWin,
@@ -608,4 +625,45 @@ test('snapshot load accepts valid non-catalog language tags', async (t) => {
   assert.equal(result.ok, true);
   assert.equal(result.filename, 'open-language-tags.json');
   assert.equal(showMessageBoxCalls.length, 0);
+});
+
+test('snapshot load rejects files without the canonical text-snapshot shape', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-load-missing-canonical-fields');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const snapshotPath = path.join(rootDir, 'incomplete.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Incomplete snapshot' }, null, 2));
+  const originalFile = fs.readFileSync(snapshotPath, 'utf8');
+
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: '',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/incomplete.json' }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'invalid snapshot schema',
+  });
+  assert.equal(fs.readFileSync(snapshotPath, 'utf8'), originalFile);
 });

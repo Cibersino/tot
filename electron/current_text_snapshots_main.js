@@ -52,8 +52,12 @@ if (!snapshotTagCatalog
 // Constants / config
 // =============================================================================
 const SNAPSHOT_EXT = '.json';
+const SNAPSHOT_TYPE = 'text snapshot';
+const SNAPSHOT_SAVED_WITH = 'toT (totapp.org)';
 const SNAPSHOT_NAME_RE = /^current_text_(\d+)\.json$/i;
 const { TAG_KEYS: SNAPSHOT_TAG_KEYS } = snapshotTagCatalog;
+const SNAPSHOT_FILE_KEYS = Object.freeze(['type', 'meta', 'text', 'tags']);
+const SNAPSHOT_META_KEYS = Object.freeze(['savedAt', 'savedWith']);
 
 // =============================================================================
 // Helpers (paths)
@@ -219,6 +223,32 @@ async function promptForSnapshotSelection(ownerWin, root, rootReal) {
 // =============================================================================
 // Helpers (schema + payloads)
 // =============================================================================
+function hasExactKeys(value, expectedKeys) {
+  if (!snapshotTagCatalog.isPlainObject(value)) return false;
+  const actualKeys = Object.keys(value);
+  return actualKeys.length === expectedKeys.length
+    && expectedKeys.every((key) => Object.prototype.hasOwnProperty.call(value, key));
+}
+
+function isCanonicalIsoTimestamp(value) {
+  if (typeof value !== 'string') return false;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
+}
+
+function validateSnapshotMeta(rawMeta) {
+  if (!hasExactKeys(rawMeta, SNAPSHOT_META_KEYS)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot metadata invalid' };
+  }
+  if (!isCanonicalIsoTimestamp(rawMeta.savedAt)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot savedAt invalid' };
+  }
+  if (rawMeta.savedWith !== SNAPSHOT_SAVED_WITH) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot savedWith invalid' };
+  }
+  return { ok: true };
+}
+
 function sanitizeSnapshotTags(rawTags, { allowMissing = false } = {}) {
   if (rawTags == null) {
     return allowMissing
@@ -307,12 +337,19 @@ function parseSnapshotFile(selectedReal) {
     return { ok: false, code: 'INVALID_JSON', message: String(err) };
   }
 
-  if (!parsed || typeof parsed !== 'object' || typeof parsed.text !== 'string') {
+  if (!hasExactKeys(parsed, SNAPSHOT_FILE_KEYS) || parsed.type !== SNAPSHOT_TYPE
+    || typeof parsed.text !== 'string') {
     log.warn('snapshot schema invalid:', { selectedReal });
     return { ok: false, code: 'INVALID_SCHEMA', message: 'invalid snapshot schema' };
   }
 
-  const tagsInfo = sanitizeSnapshotTags(parsed.tags, { allowMissing: true });
+  const metaInfo = validateSnapshotMeta(parsed.meta);
+  if (!metaInfo.ok) {
+    log.warn('snapshot metadata schema invalid:', { selectedReal, message: metaInfo.message });
+    return metaInfo;
+  }
+
+  const tagsInfo = sanitizeSnapshotTags(parsed.tags);
   if (!tagsInfo.ok) {
     log.warn('snapshot tags schema invalid:', { selectedReal, message: tagsInfo.message });
     return { ok: false, code: 'INVALID_SCHEMA', message: tagsInfo.message };
@@ -487,8 +524,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const text = textState.getCurrentText() || '';
-      const snapshotData = { text: String(text) };
-      if (payloadInfo.tags) snapshotData.tags = payloadInfo.tags;
+      const snapshotData = {
+        type: SNAPSHOT_TYPE,
+        meta: {
+          savedAt: new Date().toISOString(),
+          savedWith: SNAPSHOT_SAVED_WITH,
+        },
+        text: String(text),
+        tags: payloadInfo.tags || {},
+      };
       saveJsonStrict(candidateResolved, snapshotData);
       const stats = fs.statSync(candidateResolved);
 
