@@ -678,7 +678,10 @@ body {
 .snapshot-save-tags-modal-header,
 .snapshot-tag-manager-modal-header,
 .reading-test-entry-modal-header {
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .text-extraction-pdf-options-modal-header h2,
@@ -692,25 +695,8 @@ body {
 .snapshot-tag-manager-modal-header h2,
 .reading-test-entry-modal-header h2 {
   margin: 0;
-  padding-inline-end: 42px;
   font-size: var(--font-size-9);
   font-weight: 600;
-}
-
-/* Shared framed-dialog header end-action anchors */
-.text-extraction-pdf-options-modal-header > .btn-standard--square,
-.text-extraction-route-modal-header > .btn-standard--square,
-.text-extraction-apply-modal-header > .btn-standard--square,
-.text-extraction-batch-plan-modal-header > .btn-standard--square,
-.text-extraction-batch-final-modal-header > .btn-standard--square,
-.text-extraction-single-file-heavy-modal-header > .btn-standard--square,
-.text-extraction-ocr-activation-disclosure-header > .btn-standard--square,
-.snapshot-tag-manager-modal-header > .btn-standard--square,
-.reading-test-entry-modal-header > .btn-standard--square,
-.snapshot-save-tags-modal-header-actions {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-end: 0;
 }
 
 .text-extraction-pdf-options-modal-body,
@@ -2142,11 +2128,6 @@ body.text-extraction-drop-active .app-container {
 .snapshot-save-tags-modal-header-actions {
   display: flex;
   gap: 12px;
-}
-
-/* Snapshot save-tags header variant: reserve title space for both header actions. */
-.snapshot-save-tags-modal-header h2 {
-  padding-inline-end: 192px;
 }
 
 .snapshot-save-tags-form {
