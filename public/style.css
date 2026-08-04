@@ -24,7 +24,7 @@
   /* Controls */
   --selector-active-bg: #f0f0f0;
   --selector-selected-bg: #d6ebf8;
-  --selector-selected-accent: var(--control-accent);
+  --selector-selected-accent: #0078D4;
   --field-bg: #fff;
   --input-disabled-bg: #ece4d2;
   --clipboard-repeat-input-bg: #f8f5ee;
@@ -148,6 +148,26 @@ body {
 #toggleVF:focus-visible + .slider {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Shared native-checkbox interaction styling. Feature classes own their layout. */
+.native-checkbox-option {
+  cursor: pointer;
+}
+
+.native-checkbox-option > input[type="checkbox"] {
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--control-accent);
+  cursor: inherit;
+}
+
+.native-checkbox-option:has(> input[type="checkbox"]:disabled) {
+  cursor: not-allowed;
+}
+
+.native-checkbox-option > input[type="checkbox"]:disabled + span {
+  opacity: 0.6;
 }
 
 /* Shared primitives and application shell */
@@ -746,12 +766,11 @@ body {
   gap: 6px;
 }
 
-/* Shared generated-PDF retention choice.
-   PDF Options owns its checkbox alignment adjustment locally. */
+/* Shared generated-PDF retention choice. */
 .text-extraction-pdf-options-modal-keep-option,
 .text-extraction-batch-plan-keep-toggle {
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   font-size: var(--font-size-6);
 }
@@ -861,25 +880,6 @@ pre#textPreview .preview-fragment--empty {
   font-size: var(--font-size-3);
   white-space: nowrap;
   user-select: none;
-  cursor: pointer;
-}
-
-.selector-inline-checkbox input {
-  margin: 0;
-  accent-color: var(--control-accent);
-  cursor: pointer;
-}
-
-.selector-inline-checkbox input:disabled {
-  cursor: not-allowed;
-}
-
-.selector-inline-checkbox input:disabled + span {
-  opacity: 0.6;
-}
-
-.selector-inline-checkbox:has(input:disabled) {
-  cursor: not-allowed;
 }
 
 .clipboard-repeat-input {
@@ -1646,10 +1646,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
-.text-extraction-pdf-options-modal-keep-option input[type="checkbox"] {
-  margin: 2px 0 0;
-}
-
 /* Text extraction route modal */
 .text-extraction-route-modal-panel {
   width: 520px;
@@ -2180,10 +2176,6 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
-.snapshot-save-metrics-option input:disabled + span {
-  opacity: 0.6;
-}
-
 .snapshot-save-tags-modal-actions {
   justify-content: center; /* Centered variant of the shared terminal button group. */
 }
@@ -2397,11 +2389,6 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
   font-size: var(--font-size-6);
   color: var(--text-soft);
-  cursor: pointer;
-}
-
-.reading-test-entry-modal-visibility-toggle input[type="checkbox"] {
-  margin: 0;
 }
 
 .reading-test-entry-modal-link {
@@ -2453,22 +2440,12 @@ body.text-extraction-drop-active .app-container {
   gap: 12px;
 }
 
-/* Reading-filter checkbox labels remain feature-owned because their wrapping
-   and disabled-state behavior can evolve independently of other modal choices. */
+/* Reading-filter checkbox labels retain feature-owned wrapping and availability state. */
 .reading-test-entry-modal-option {
   display: inline-flex;
   align-items: center;
   gap: 12px;
   font-size: var(--font-size-8);
-}
-
-.reading-test-entry-modal-option input[type="checkbox"] {
-  margin: 0;
-}
-
-.reading-test-entry-modal-visibility-toggle input[type="checkbox"]:disabled + span,
-.reading-test-entry-modal-option input[type="checkbox"]:disabled + span {
-  opacity: 0.6;
 }
 
 .reading-test-entry-modal-actions .btn-standard {

@@ -255,7 +255,7 @@
 
   function createCheckboxOption(category, optionState) {
     const row = document.createElement('label');
-    row.className = 'reading-test-entry-modal-option';
+    row.className = 'reading-test-entry-modal-option native-checkbox-option';
     row.dataset.category = category;
     row.dataset.value = optionState.value;
 

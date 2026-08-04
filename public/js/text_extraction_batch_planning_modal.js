@@ -463,7 +463,7 @@
     }
 
     const label = createDomElement('label', {
-      className: 'text-extraction-batch-plan-keep-toggle',
+      className: 'text-extraction-batch-plan-keep-toggle native-checkbox-option',
     });
     const checkbox = createDomElement('input', {
       type: 'checkbox',
