@@ -48,6 +48,7 @@ function loadSnapshotsMainWithMocks({
   senderWin,
   rootDir,
   currentText = 'Snapshot text',
+  settings = { language: 'en' },
   shellOpenPathResult = '',
   messageBoxResponse = 0,
   saveJsonStrictImpl = null,
@@ -150,7 +151,7 @@ function loadSnapshotsMainWithMocks({
     loaded: true,
     exports: {
       getSettings() {
-        return { language: 'en' };
+        return settings;
       },
     },
   };
@@ -242,6 +243,8 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
     {
       nonInteractive: true,
       autoFileBaseName: 'Unit 1',
+      includeCount: true,
+      includeReading: false,
       tags: {
         language: 'es',
       },
@@ -256,6 +259,13 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
   assert.equal(new Date(firstPayload.meta.savedAt).toISOString(), firstPayload.meta.savedAt);
   assert.equal(firstPayload.text, 'Batch snapshot text');
   assert.deepEqual(firstPayload.tags, { language: 'es' });
+  assert.deepEqual(firstPayload.metrics, {
+    count: {
+      words: 3,
+      mode: 'preciso',
+      locale: 'en',
+    },
+  });
 
   const secondSave = await ipcMain.invoke(
     'current-text-snapshot-save',
@@ -263,6 +273,8 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
     {
       nonInteractive: true,
       autoFileBaseName: 'Unit 1',
+      includeCount: true,
+      includeReading: false,
       tags: null,
     }
   );
@@ -271,6 +283,125 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
   assert.equal(secondSave.filename, 'Unit_1_2.json');
   const secondPayload = JSON.parse(fs.readFileSync(path.join(rootDir, secondSave.filename), 'utf8'));
   assert.deepEqual(secondPayload.tags, {});
+});
+
+test('snapshot save derives count and reading metrics from exact text and settings', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-metrics');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'uno dos tres',
+    settings: { language: 'es-cl', modeConteo: 'simple' },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Metrics',
+      includeCount: true,
+      includeReading: true,
+      wpm: 180,
+    }
+  );
+
+  assert.equal(result.ok, true);
+  const payload = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
+  assert.deepEqual(payload.metrics, {
+    count: {
+      words: 3,
+      mode: 'simple',
+      locale: 'es-CL',
+    },
+    reading: {
+      estimatedSeconds: 1,
+      wpm: 180,
+    },
+  });
+});
+
+test('snapshot save accepts an intentional no-metrics request and rejects reading without count', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-no-metrics');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({ senderWin, rootDir });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const noMetricsResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'No Metrics',
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+  assert.equal(noMetricsResult.ok, true);
+  const noMetricsPayload = JSON.parse(
+    fs.readFileSync(path.join(rootDir, noMetricsResult.filename), 'utf8')
+  );
+  assert.equal(Object.prototype.hasOwnProperty.call(noMetricsPayload, 'metrics'), false);
+
+  const invalidResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Invalid Metrics',
+      includeCount: false,
+      includeReading: true,
+      wpm: 180,
+    }
+  );
+  assert.deepEqual(invalidResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'snapshot reading requires count',
+  });
+
+  const invalidWpmResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Invalid WPM',
+      includeCount: true,
+      includeReading: true,
+      wpm: 9,
+    }
+  );
+  assert.deepEqual(invalidWpmResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'snapshot WPM invalid',
+  });
 });
 
 test('non-interactive snapshot save rejects an oversized batch unit name without constraining source filenames', async (t) => {
@@ -301,6 +432,8 @@ test('non-interactive snapshot save rejects an oversized batch unit name without
       nonInteractive: true,
       autoFileBaseName: 'source-filename-that-is-intentionally-not-limited-to-the-batch-unit-name-cap',
       batchUnitName: 'x'.repeat(26),
+      includeCount: true,
+      includeReading: false,
       tags: null,
     }
   );
@@ -343,6 +476,8 @@ test('non-interactive snapshot save accepts permitted custom tag values', async 
     {
       nonInteractive: true,
       autoFileBaseName: 'Custom Unit',
+      includeCount: true,
+      includeReading: false,
       tags: {
         language: customLanguage,
         type: customType,
@@ -386,6 +521,8 @@ test('non-interactive snapshot save accepts valid non-catalog language tags', as
     {
       nonInteractive: true,
       autoFileBaseName: 'Open Language Unit',
+      includeCount: true,
+      includeReading: false,
       tags: {
         language: 'es-cl',
       },
@@ -429,6 +566,8 @@ test('snapshot save maps saveJsonStrict failures to WRITE_FAILED', async (t) => 
     {
       nonInteractive: true,
       autoFileBaseName: 'Failure Unit',
+      includeCount: true,
+      includeReading: false,
       tags: null,
     }
   );

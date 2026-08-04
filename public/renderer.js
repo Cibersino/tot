@@ -148,6 +148,16 @@ if (!readingSpeedTestUi
   || typeof readingSpeedTestUi.openEntryFlow !== 'function') {
   throw new Error('[renderer] ReadingSpeedTestUi unavailable; cannot continue');
 }
+const {
+  configure: configureCurrentTextSnapshots,
+  saveSnapshot,
+  loadSnapshot,
+} = window.CurrentTextSnapshots || {};
+if (typeof configureCurrentTextSnapshots !== 'function'
+  || typeof saveSnapshot !== 'function'
+  || typeof loadSnapshot !== 'function') {
+  log.warn('CurrentTextSnapshots bridge unavailable; snapshot actions disabled.');
+}
 
 // =============================================================================
 // UI controls and panels
@@ -236,6 +246,9 @@ if (!wpmControls
   || typeof wpmControls.handlePresetSelectionChange !== 'function'
   || typeof wpmControls.loadPresets !== 'function') {
   throw new Error('[renderer] WpmControls controller unavailable; cannot continue');
+}
+if (typeof configureCurrentTextSnapshots === 'function') {
+  configureCurrentTextSnapshots({ getCurrentWpm: () => wpmControls.getWpm() });
 }
 
 if (!window.electronAPI || typeof window.electronAPI.resolveCurrentTextProcessing !== 'function') {
@@ -700,14 +713,6 @@ function applyTranslations() {
     const helpTitle = tRenderer('renderer.main.tooltips.help_button');
     if (helpTitle) btnHelp.setAttribute('title', helpTitle);
   }
-}
-
-// =============================================================================
-// Snapshot helpers
-// =============================================================================
-const { saveSnapshot, loadSnapshot } = window.CurrentTextSnapshots || {};
-if (typeof saveSnapshot !== 'function' || typeof loadSnapshot !== 'function') {
-  log.warn('CurrentTextSnapshots bridge unavailable; snapshot actions disabled.');
 }
 
 // =============================================================================

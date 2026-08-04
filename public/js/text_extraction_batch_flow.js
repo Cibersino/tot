@@ -949,6 +949,8 @@
         nonInteractive: true,
         autoFileBaseName: fileBaseSource,
         tags: tags || null,
+        includeCount: true,
+        includeReading: false,
       };
       if (batchUnitName) payload.batchUnitName = batchUnitName;
       return await window.electronAPI.saveCurrentTextSnapshot(payload);

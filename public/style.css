@@ -2167,6 +2167,23 @@ body.text-extraction-drop-active .app-container {
   max-height: 134px;
 }
 
+.snapshot-save-metrics-options {
+  display: grid;
+  justify-content: center;
+  gap: 8px;
+}
+
+.snapshot-save-metrics-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-8);
+}
+
+.snapshot-save-metrics-option input:disabled + span {
+  opacity: 0.6;
+}
+
 .snapshot-save-tags-modal-actions {
   justify-content: center; /* Centered variant of the shared terminal button group. */
 }

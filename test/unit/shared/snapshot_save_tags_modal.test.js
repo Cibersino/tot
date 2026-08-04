@@ -40,6 +40,7 @@ function createElement(id, tagName = 'div') {
     tagName,
     hidden: false,
     disabled: false,
+    checked: false,
     value: '',
     placeholder: '',
     className: '',
@@ -207,6 +208,10 @@ function createHarness({
     snapshotSaveTagsModalConfirm: createElement('snapshotSaveTagsModalConfirm', 'button'),
     snapshotSaveTagsModalCancel: createElement('snapshotSaveTagsModalCancel', 'button'),
     snapshotSaveTagsModalClose: createElement('snapshotSaveTagsModalClose', 'button'),
+    snapshotSaveIncludeCount: createElement('snapshotSaveIncludeCount', 'input'),
+    snapshotSaveIncludeCountLabel: createElement('snapshotSaveIncludeCountLabel', 'span'),
+    snapshotSaveIncludeReading: createElement('snapshotSaveIncludeReading', 'input'),
+    snapshotSaveIncludeReadingLabel: createElement('snapshotSaveIncludeReadingLabel', 'span'),
     snapshotTagManagerModal: createElement('snapshotTagManagerModal'),
     snapshotTagManagerModalBackdrop: createElement('snapshotTagManagerModalBackdrop'),
     snapshotTagManagerModalTitle: createElement('snapshotTagManagerModalTitle'),
@@ -228,6 +233,8 @@ function createHarness({
     'renderer.snapshots.labels.language': 'Language',
     'renderer.snapshots.labels.type': 'Type',
     'renderer.snapshots.labels.difficulty': 'Difficulty',
+    'renderer.snapshots.metrics.include_count': 'Include word count',
+    'renderer.snapshots.metrics.include_reading': 'Include reading estimate and WPM',
     'renderer.snapshots.empty.language': 'No language tag',
     'renderer.snapshots.empty.type': 'No type tag',
     'renderer.snapshots.empty.difficulty': 'No difficulty tag',
@@ -504,6 +511,11 @@ test('snapshot save tags modal keeps snapshot-save wording by default', async ()
     harness.elements.snapshotSaveTagsManageButton.getAttribute('aria-label'),
     'Manage snapshot tags'
   );
+  assert.equal(harness.elements.snapshotSaveIncludeCountLabel.textContent, 'Include word count');
+  assert.equal(
+    harness.elements.snapshotSaveIncludeReadingLabel.textContent,
+    'Include reading estimate and WPM'
+  );
 
   harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
   const result = await promptPromise;
@@ -534,8 +546,41 @@ test('snapshot save tags modal creates and selects a custom tag from the inline 
   const result = await promptPromise;
   assert.deepEqual(
     JSON.parse(JSON.stringify(result)),
-    { tags: { type: customValue } }
+    {
+      tags: { type: customValue },
+      includeCount: true,
+      includeReading: true,
+    }
   );
+});
+
+test('snapshot save metrics choices default to both selected and enforce count before reading', async () => {
+  const harness = createHarness();
+
+  const promptPromise = harness.prompt({ initialTags: null });
+  await flushMicrotasks();
+
+  assert.equal(harness.elements.snapshotSaveIncludeCount.checked, true);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.checked, true);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.disabled, false);
+
+  harness.elements.snapshotSaveIncludeCount.checked = false;
+  harness.elements.snapshotSaveIncludeCount.dispatch('change');
+  assert.equal(harness.elements.snapshotSaveIncludeReading.checked, false);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.disabled, true);
+
+  harness.elements.snapshotSaveIncludeCount.checked = true;
+  harness.elements.snapshotSaveIncludeCount.dispatch('change');
+  assert.equal(harness.elements.snapshotSaveIncludeReading.checked, false);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.disabled, false);
+
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  const result = await promptPromise;
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    tags: null,
+    includeCount: true,
+    includeReading: false,
+  });
 });
 
 test('snapshot save tags modal shows the inline create option before matching catalog options', async () => {

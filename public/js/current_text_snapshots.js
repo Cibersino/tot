@@ -7,7 +7,7 @@
 // Renderer helper for current text snapshots.
 // Responsibilities:
 // - Prompt the pre-save snapshot tags modal before saving.
-// - Normalize optional snapshot tag metadata before invoking IPC.
+// - Forward explicit count/reading metadata choices and active WPM to IPC.
 // - Call electronAPI save/load snapshot IPC.
 // - Map { ok, code } responses to Notify toasts (no DOM wiring).
 // =============================================================================
@@ -25,6 +25,7 @@
   if (!snapshotTagCatalog || typeof snapshotTagCatalog.normalizeTags !== 'function') {
     throw new Error('[current-text-snapshots] SnapshotTagCatalog unavailable; cannot continue');
   }
+  let getCurrentWpm = null;
 
   // =============================================================================
   // Constants / config
@@ -73,7 +74,7 @@
     }
   }
 
-  async function saveSnapshot(rawPayload = null) {
+  async function saveSnapshot() {
     try {
       if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
         log.warn('saveCurrentTextSnapshot unavailable in electronAPI');
@@ -81,18 +82,29 @@
         return { ok: false, code: 'WRITE_FAILED' };
       }
 
-      let payload = rawPayload;
+      const payload = await window.Notify.promptSnapshotSaveTags();
       if (!payload) {
-        payload = await window.Notify.promptSnapshotSaveTags();
-        if (!payload) {
-          return { ok: false, code: 'CANCELLED' };
-        }
+        return { ok: false, code: 'CANCELLED' };
       }
 
       const normalizedTags = snapshotTagCatalog.normalizeTags(payload.tags);
-      const saveResult = await window.electronAPI.saveCurrentTextSnapshot(
-        normalizedTags ? { tags: normalizedTags } : {}
-      );
+      const includeCount = payload.includeCount === true;
+      const includeReading = payload.includeReading === true;
+      const savePayload = {
+        includeCount,
+        includeReading,
+        ...(normalizedTags ? { tags: normalizedTags } : {}),
+      };
+      if (includeReading) {
+        if (typeof getCurrentWpm !== 'function') {
+          log.error('Current WPM provider unavailable for snapshot reading metadata.');
+          window.Notify.toastMain(TOAST_KEYS.saveError, { type: 'error' });
+          return { ok: false, code: 'WRITE_FAILED' };
+        }
+        savePayload.wpm = getCurrentWpm();
+      }
+
+      const saveResult = await window.electronAPI.saveCurrentTextSnapshot(savePayload);
       handleSaveResult(saveResult);
       return saveResult;
     } catch (err) {
@@ -122,7 +134,15 @@
   // =============================================================================
   // Exports / module surface
   // =============================================================================
+  function configure({ getCurrentWpm: nextGetCurrentWpm } = {}) {
+    if (typeof nextGetCurrentWpm !== 'function') {
+      throw new Error('[current-text-snapshots] configure requires getCurrentWpm()');
+    }
+    getCurrentWpm = nextGetCurrentWpm;
+  }
+
   window.CurrentTextSnapshots = {
+    configure,
     saveSnapshot,
     loadSnapshot,
   };

@@ -879,6 +879,8 @@ test('batch execution clamps custom unit names before snapshot handoff', async (
     autoFileBaseName: expectedName,
     batchUnitName: expectedName,
     tags: null,
+    includeCount: true,
+    includeReading: false,
   });
 });
 

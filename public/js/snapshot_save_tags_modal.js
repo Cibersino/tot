@@ -90,6 +90,8 @@
   const SEARCH_CREATE_KEY = 'renderer.snapshots.search.create';
   const MANAGE_BUTTON_LABEL_KEY = 'renderer.snapshots.buttons.manage';
   const MANAGE_BUTTON_ARIA_KEY = 'renderer.snapshots.manager.title';
+  const INCLUDE_COUNT_LABEL_KEY = 'renderer.snapshots.metrics.include_count';
+  const INCLUDE_READING_LABEL_KEY = 'renderer.snapshots.metrics.include_reading';
   const MANAGER_UNAVAILABLE_ALERT_KEY = 'renderer.snapshots.alerts.catalog_update_error';
   const LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.load.unavailable';
   const SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.save.unavailable';
@@ -130,6 +132,10 @@
   const btnConfirm = document.getElementById('snapshotSaveTagsModalConfirm');
   const btnCancel = document.getElementById('snapshotSaveTagsModalCancel');
   const btnClose = document.getElementById('snapshotSaveTagsModalClose');
+  const includeCountInput = document.getElementById('snapshotSaveIncludeCount');
+  const includeCountLabel = document.getElementById('snapshotSaveIncludeCountLabel');
+  const includeReadingInput = document.getElementById('snapshotSaveIncludeReading');
+  const includeReadingLabel = document.getElementById('snapshotSaveIncludeReadingLabel');
 
   const managerModal = document.getElementById('snapshotTagManagerModal');
   const managerBackdrop = document.getElementById('snapshotTagManagerModalBackdrop');
@@ -148,6 +154,10 @@
     btnConfirm,
     btnCancel,
     btnClose,
+    includeCountInput,
+    includeCountLabel,
+    includeReadingInput,
+    includeReadingLabel,
     managerModal,
     managerBackdrop,
     managerTitle,
@@ -166,6 +176,7 @@
   // =============================================================================
   const fieldStateByKey = new Map();
   let fieldComboboxesCreated = false;
+  let metricChoiceEventsBound = false;
   let currentSnapshotTagPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences();
 
   // =============================================================================
@@ -464,6 +475,27 @@
     btnManage.textContent = tRenderer(MANAGE_BUTTON_LABEL_KEY);
     btnManage.setAttribute('aria-label', tRenderer(MANAGE_BUTTON_ARIA_KEY));
     btnManage.title = tRenderer(MANAGE_BUTTON_LABEL_KEY);
+    includeCountLabel.textContent = tRenderer(INCLUDE_COUNT_LABEL_KEY);
+    includeReadingLabel.textContent = tRenderer(INCLUDE_READING_LABEL_KEY);
+  }
+
+  function syncMetricChoiceState() {
+    if (!includeCountInput.checked) {
+      includeReadingInput.checked = false;
+    }
+    includeReadingInput.disabled = !includeCountInput.checked;
+  }
+
+  function resetMetricChoices() {
+    includeCountInput.checked = true;
+    includeReadingInput.checked = true;
+    syncMetricChoiceState();
+  }
+
+  function ensureMetricChoiceEventsBound() {
+    if (metricChoiceEventsBound) return;
+    includeCountInput.addEventListener('change', syncMetricChoiceState);
+    metricChoiceEventsBound = true;
   }
 
   function ensureFieldEventsBound() {
@@ -892,9 +924,11 @@
     }
 
     ensureFieldEventsBound();
+    ensureMetricChoiceEventsBound();
     populateCopy(options.copy);
     currentSnapshotTagPreferences = await loadSnapshotTagPreferences();
     resetFields(options.initialTags);
+    resetMetricChoices();
 
     return await new Promise((resolve) => {
       let settled = false;
@@ -918,7 +952,11 @@
       }
 
       function onConfirm() {
-        finish({ tags: collectTags() });
+        finish({
+          tags: collectTags(),
+          includeCount: includeCountInput.checked,
+          includeReading: includeReadingInput.checked,
+        });
       }
 
       function onCancel() {

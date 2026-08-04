@@ -10,13 +10,16 @@
 
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const readingTestQuestionsCore = require('../public/js/lib/reading_test_questions_core');
+const { PRESET_WPM_MIN, PRESET_WPM_MAX } = require('./constants_main');
 
 const SNAPSHOT_TYPE = 'text snapshot';
 const SNAPSHOT_SAVED_WITH = 'toT (totapp.org)';
 const SNAPSHOT_REQUIRED_KEYS = Object.freeze(['type', 'meta', 'text', 'tags']);
-const SNAPSHOT_OPTIONAL_KEYS = Object.freeze(['readingTest']);
+const SNAPSHOT_OPTIONAL_KEYS = Object.freeze(['metrics', 'readingTest']);
 const SNAPSHOT_META_KEYS = Object.freeze(['savedAt', 'savedWith']);
 const SNAPSHOT_TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
+const SNAPSHOT_METRICS_COUNT_KEYS = Object.freeze(['words', 'mode', 'locale']);
+const SNAPSHOT_METRICS_READING_KEYS = Object.freeze(['estimatedSeconds', 'wpm']);
 
 if (!snapshotTagCatalog
   || typeof snapshotTagCatalog.isPlainObject !== 'function'
@@ -109,6 +112,87 @@ function validateSnapshotTags(rawTags) {
   return { ok: true, tags };
 }
 
+function normalizeSnapshotCountLocale(value) {
+  const rawLocale = typeof value === 'string' ? value.trim() : '';
+  if (!rawLocale || typeof Intl === 'undefined' || typeof Intl.getCanonicalLocales !== 'function') {
+    return '';
+  }
+
+  try {
+    const locales = Intl.getCanonicalLocales(rawLocale);
+    return locales.length ? locales[0] : '';
+  } catch {
+    return '';
+  }
+}
+
+function getExpectedEstimatedSeconds(words, wpm) {
+  const exactSeconds = (words / wpm) * 60;
+  const estimatedSeconds = Math.round(exactSeconds);
+  return Number.isSafeInteger(estimatedSeconds) && estimatedSeconds >= 0
+    ? estimatedSeconds
+    : null;
+}
+
+function validateSnapshotMetrics(rawMetrics) {
+  if (!snapshotTagCatalog.isPlainObject(rawMetrics)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot metrics must be an object' };
+  }
+
+  const metricKeys = Object.keys(rawMetrics);
+  const hasCount = Object.prototype.hasOwnProperty.call(rawMetrics, 'count');
+  const hasReading = Object.prototype.hasOwnProperty.call(rawMetrics, 'reading');
+  if (!hasCount
+    || metricKeys.some((key) => key !== 'count' && key !== 'reading')) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot metrics invalid' };
+  }
+
+  if (!hasExactKeys(rawMetrics.count, SNAPSHOT_METRICS_COUNT_KEYS)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot count metrics invalid' };
+  }
+
+  const count = rawMetrics.count;
+  const locale = normalizeSnapshotCountLocale(count.locale);
+  if (!Number.isSafeInteger(count.words)
+    || count.words < 0
+    || (count.mode !== 'simple' && count.mode !== 'preciso')
+    || !locale) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot count metrics invalid' };
+  }
+
+  const metrics = {
+    count: {
+      words: count.words,
+      mode: count.mode,
+      locale,
+    },
+  };
+
+  if (!hasReading) return { ok: true, metrics };
+
+  if (!hasExactKeys(rawMetrics.reading, SNAPSHOT_METRICS_READING_KEYS)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot reading metrics invalid' };
+  }
+
+  const reading = rawMetrics.reading;
+  const expectedEstimatedSeconds = getExpectedEstimatedSeconds(count.words, reading.wpm);
+  if (!Number.isSafeInteger(reading.wpm)
+    || reading.wpm < PRESET_WPM_MIN
+    || reading.wpm > PRESET_WPM_MAX
+    || !Number.isSafeInteger(reading.estimatedSeconds)
+    || reading.estimatedSeconds < 0
+    || expectedEstimatedSeconds === null
+    || reading.estimatedSeconds !== expectedEstimatedSeconds) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot reading metrics invalid' };
+  }
+
+  metrics.reading = {
+    estimatedSeconds: reading.estimatedSeconds,
+    wpm: reading.wpm,
+  };
+  return { ok: true, metrics };
+}
+
 function validateSnapshotDocument(rawSnapshot) {
   if (!hasCanonicalSnapshotKeys(rawSnapshot)
     || rawSnapshot.type !== SNAPSHOT_TYPE
@@ -128,6 +212,11 @@ function validateSnapshotDocument(rawSnapshot) {
     text: rawSnapshot.text,
     tags: tagsInfo.tags,
   };
+  if (Object.prototype.hasOwnProperty.call(rawSnapshot, 'metrics')) {
+    const metricsInfo = validateSnapshotMetrics(rawSnapshot.metrics);
+    if (!metricsInfo.ok) return metricsInfo;
+    snapshot.metrics = metricsInfo.metrics;
+  }
   let questions = [];
 
   if (Object.prototype.hasOwnProperty.call(rawSnapshot, 'readingTest')) {
@@ -149,6 +238,7 @@ function validateSnapshotDocument(rawSnapshot) {
 module.exports = {
   SNAPSHOT_TYPE,
   SNAPSHOT_SAVED_WITH,
+  normalizeSnapshotCountLocale,
   validateSnapshotTags,
   validateSnapshotDocument,
 };

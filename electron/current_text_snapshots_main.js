@@ -21,8 +21,15 @@ const fs = require('fs');
 const path = require('path');
 const { dialog, BrowserWindow, shell } = require('electron');
 const Log = require('./log');
-const { DEFAULT_LANG, BATCH_UNIT_NAME_MAX } = require('./constants_main');
+const {
+  DEFAULT_LANG,
+  BATCH_UNIT_NAME_MAX,
+  PRESET_WPM_MIN,
+  PRESET_WPM_MAX,
+} = require('./constants_main');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
+const countCore = require('../public/js/lib/count_core');
+const formatCore = require('../public/js/lib/format_core');
 const currentTextSnapshotSchema = require('./current_text_snapshot_schema');
 const {
   getCurrentTextSnapshotsDir,
@@ -52,8 +59,24 @@ const SNAPSHOT_EXT = '.json';
 const {
   SNAPSHOT_TYPE,
   SNAPSHOT_SAVED_WITH,
+  normalizeSnapshotCountLocale,
 } = currentTextSnapshotSchema;
 const SNAPSHOT_NAME_RE = /^current_text_(\d+)\.json$/i;
+const SNAPSHOT_SAVE_PAYLOAD_KEYS = Object.freeze([
+  'nonInteractive',
+  'autoFileBaseName',
+  'batchUnitName',
+  'tags',
+  'includeCount',
+  'includeReading',
+  'wpm',
+]);
+const countUtils = countCore.createCountUtils({
+  DEFAULT_LANG,
+  log,
+  intlObject: typeof Intl !== 'undefined' ? Intl : null,
+});
+const formatUtils = formatCore.createFormatUtils({ DEFAULT_LANG, log });
 
 // =============================================================================
 // Helpers (paths)
@@ -220,34 +243,132 @@ async function promptForSnapshotSelection(ownerWin, root, rootReal) {
 // Helpers (schema + payloads)
 // =============================================================================
 function sanitizeSnapshotSavePayload(payload) {
-  if (payload == null) return { ok: true, tags: null };
   if (!snapshotTagCatalog.isPlainObject(payload)) {
     return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot save payload must be an object' };
   }
-  const autoFileBaseName = typeof payload.autoFileBaseName === 'string'
-    ? payload.autoFileBaseName.trim()
-    : '';
+
+  const payloadKeys = Object.keys(payload);
+  if (payloadKeys.some((key) => !SNAPSHOT_SAVE_PAYLOAD_KEYS.includes(key))) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot save payload contains unsupported keys' };
+  }
+  if (typeof payload.includeCount !== 'boolean' || typeof payload.includeReading !== 'boolean') {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot metric flags invalid' };
+  }
+  if (payload.includeReading && !payload.includeCount) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot reading requires count' };
+  }
+
+  const hasNonInteractive = Object.prototype.hasOwnProperty.call(payload, 'nonInteractive');
+  if (hasNonInteractive && typeof payload.nonInteractive !== 'boolean') {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot nonInteractive flag invalid' };
+  }
   const nonInteractive = payload.nonInteractive === true;
+
+  const hasAutoFileBaseName = Object.prototype.hasOwnProperty.call(payload, 'autoFileBaseName');
+  if (hasAutoFileBaseName && typeof payload.autoFileBaseName !== 'string') {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot automatic filename invalid' };
+  }
+  const autoFileBaseName = hasAutoFileBaseName ? payload.autoFileBaseName.trim() : '';
+
   if (Object.prototype.hasOwnProperty.call(payload, 'batchUnitName')) {
-    if (typeof payload.batchUnitName !== 'string') {
+    if (!nonInteractive || typeof payload.batchUnitName !== 'string') {
       return { ok: false, code: 'INVALID_SCHEMA', message: 'batch unit name must be a string' };
     }
     if (payload.batchUnitName.trim().length > BATCH_UNIT_NAME_MAX) {
       return { ok: false, code: 'BATCH_UNIT_NAME_TOO_LONG', message: 'batch unit name too long' };
     }
   }
-  if (!Object.prototype.hasOwnProperty.call(payload, 'tags')) {
-    return { ok: true, tags: null, autoFileBaseName, nonInteractive };
+
+  if ((hasAutoFileBaseName || Object.prototype.hasOwnProperty.call(payload, 'batchUnitName'))
+    && !nonInteractive) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot automatic fields require nonInteractive' };
   }
-  if (payload.tags == null) {
-    return { ok: true, tags: null, autoFileBaseName, nonInteractive };
+
+  const hasWpm = Object.prototype.hasOwnProperty.call(payload, 'wpm');
+  if (payload.includeReading) {
+    if (!hasWpm
+      || !Number.isSafeInteger(payload.wpm)
+      || payload.wpm < PRESET_WPM_MIN
+      || payload.wpm > PRESET_WPM_MAX) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot WPM invalid' };
+    }
+  } else if (hasWpm) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot WPM requires reading' };
   }
-  const tagsInfo = currentTextSnapshotSchema.validateSnapshotTags(payload.tags);
-  if (!tagsInfo.ok) return tagsInfo;
-  const tags = Object.keys(tagsInfo.tags).length
-    ? { ...tagsInfo.tags }
-    : null;
-  return { ok: true, tags, autoFileBaseName, nonInteractive };
+
+  let tags = null;
+  if (Object.prototype.hasOwnProperty.call(payload, 'tags') && payload.tags != null) {
+    const tagsInfo = currentTextSnapshotSchema.validateSnapshotTags(payload.tags);
+    if (!tagsInfo.ok) return tagsInfo;
+    tags = Object.keys(tagsInfo.tags).length ? { ...tagsInfo.tags } : null;
+  }
+
+  return {
+    ok: true,
+    tags,
+    autoFileBaseName,
+    nonInteractive,
+    includeCount: payload.includeCount,
+    includeReading: payload.includeReading,
+    wpm: payload.includeReading ? payload.wpm : null,
+  };
+}
+
+function resolveSnapshotCountContext() {
+  let settings = null;
+  try {
+    settings = settingsState.getSettings();
+  } catch (err) {
+    log.warn('Snapshot count settings read failed; using defaults.', err);
+  }
+
+  const mode = settings && settings.modeConteo === 'simple' ? 'simple' : 'preciso';
+  const requestedLocale = settings && typeof settings.language === 'string'
+    ? settings.language
+    : DEFAULT_LANG;
+  const locale = normalizeSnapshotCountLocale(requestedLocale)
+    || normalizeSnapshotCountLocale(DEFAULT_LANG);
+  if (!locale) {
+    throw new Error('snapshot count locale unavailable');
+  }
+  if (!normalizeSnapshotCountLocale(requestedLocale)) {
+    log.warn('Snapshot count locale invalid; using default locale:', { requestedLocale, locale });
+  }
+  return { mode, locale };
+}
+
+function buildSnapshotMetrics(text, payloadInfo) {
+  if (!payloadInfo.includeCount) return null;
+
+  const countContext = resolveSnapshotCountContext();
+  const stats = countUtils.contarTexto(text, {
+    modoConteo: countContext.mode,
+    idioma: countContext.locale,
+  });
+  const words = stats && stats.palabras;
+  if (!Number.isSafeInteger(words) || words < 0) {
+    throw new Error('snapshot word count invalid');
+  }
+
+  const metrics = {
+    count: {
+      words,
+      mode: countContext.mode,
+      locale: countContext.locale,
+    },
+  };
+  if (!payloadInfo.includeReading) return metrics;
+
+  const exactSeconds = formatUtils.getExactTotalSeconds(words, payloadInfo.wpm);
+  const estimatedSeconds = Math.round(exactSeconds);
+  if (!Number.isSafeInteger(estimatedSeconds) || estimatedSeconds < 0) {
+    throw new Error('snapshot estimated reading duration invalid');
+  }
+  metrics.reading = {
+    estimatedSeconds,
+    wpm: payloadInfo.wpm,
+  };
+  return metrics;
 }
 
 function parseSnapshotFile(selectedReal) {
@@ -445,15 +566,17 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
       }
 
-      const text = textState.getCurrentText() || '';
+      const text = String(textState.getCurrentText() || '');
+      const metrics = buildSnapshotMetrics(text, payloadInfo);
       const snapshotData = {
         type: SNAPSHOT_TYPE,
         meta: {
           savedAt: new Date().toISOString(),
           savedWith: SNAPSHOT_SAVED_WITH,
         },
-        text: String(text),
+        text,
         tags: payloadInfo.tags || {},
+        ...(metrics ? { metrics } : {}),
       };
       saveJsonStrict(candidateResolved, snapshotData);
       const stats = fs.statSync(candidateResolved);
@@ -464,7 +587,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         filename: path.basename(candidateResolved),
         bytes: stats.size,
         mtime: stats.mtimeMs,
-        length: String(text).length,
+        length: text.length,
         tags: payloadInfo.tags,
       };
     } catch (err) {
