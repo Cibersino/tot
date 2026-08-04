@@ -348,6 +348,10 @@
         "type": "Tür",
         "difficulty": "Zorluk"
       },
+      "metrics": {
+        "include_count": "Kelime sayısını dahil et",
+        "include_reading": "Tahmini okuma süresini ve WPM'yi dahil et"
+      },
       "manager": {
         "title": "Metin snapshot etiketlerini yönet",
         "message": "Metin snapshot’ları ve toplu çıkarma birimleri için kullanılan görünür etiketleri yönetin.",

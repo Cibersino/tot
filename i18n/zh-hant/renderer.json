@@ -348,6 +348,10 @@
         "type": "類型",
         "difficulty": "難度"
       },
+      "metrics": {
+        "include_count": "包含字數統計",
+        "include_reading": "包含預估閱讀時間和 WPM"
+      },
       "manager": {
         "title": "管理文字快照標籤",
         "message": "管理用於文字快照與批次擷取單元的可見標籤。",

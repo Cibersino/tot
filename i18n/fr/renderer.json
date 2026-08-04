@@ -348,6 +348,10 @@
         "type": "Type",
         "difficulty": "Difficulté"
       },
+      "metrics": {
+        "include_count": "Inclure le nombre de mots",
+        "include_reading": "Inclure l’estimation du temps de lecture et WPM"
+      },
       "manager": {
         "title": "Gérer les étiquettes de snapshot de texte",
         "message": "Gérez les étiquettes visibles utilisées pour les snapshots de texte et les unités d’extraction par lots.",

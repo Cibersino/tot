@@ -348,6 +348,10 @@
         "type": "種類",
         "difficulty": "難易度"
       },
+      "metrics": {
+        "include_count": "単語数を含める",
+        "include_reading": "推定読書時間とWPMを含める"
+      },
       "manager": {
         "title": "テキストスナップショットタグを管理",
         "message": "テキストスナップショットと一括抽出ユニットで使用する表示タグを管理します。",

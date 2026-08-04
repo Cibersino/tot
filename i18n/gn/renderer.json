@@ -348,6 +348,10 @@
         "type": "Tipo",
         "difficulty": "Hasýkue"
       },
+      "metrics": {
+        "include_count": "Emoinge ñe’ẽnguéra papapy",
+        "include_reading": "Emoinge moñe’ẽ aravo oñeha’ãrõva ha WPM"
+      },
       "manager": {
         "title": "Eñangareko snapshot de texto etiqueta-kuérare",
         "message": "Eñangareko etiqueta ojehechávare ojeporúva snapshot de texto ha extracción por lotes unidad-kuérape.",

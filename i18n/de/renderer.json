@@ -348,6 +348,10 @@
         "type": "Typ",
         "difficulty": "Schwierigkeit"
       },
+      "metrics": {
+        "include_count": "Wortanzahl einbeziehen",
+        "include_reading": "Geschätzte Lesezeit und WPM einbeziehen"
+      },
       "manager": {
         "title": "Text-Snapshot-Tags verwalten",
         "message": "Verwalte die sichtbaren Tags für Text-Snapshots und Batch-Extraktionseinheiten.",

@@ -348,6 +348,10 @@
         "type": "Uhlobo",
         "difficulty": "Ubunzima"
       },
+      "metrics": {
+        "include_count": "Faka ukubalwa kwamagama",
+        "include_reading": "Faka isikhathi sokufunda esilinganisiwe ne-WPM"
+      },
       "manager": {
         "title": "Phatha amathegi e-snapshot yombhalo",
         "message": "Phatha amathegi abonakalayo asetshenziswa kuma-snapshot ombhalo namayunithi okukhipha ngobuningi.",

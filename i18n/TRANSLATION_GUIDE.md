@@ -2224,6 +2224,21 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] etiquetas de snapshot de texto
         }
       },
+      "metrics": {
+        "include_count": {
+          "es": "Incluir recuento de palabras",
+          "en": "Include word count"
+          // [PROPÓSITO] Casilla del modal de guardado manual que controla si el snapshot incluye el recuento de palabras y el modo de conteo utilizado.
+          // [CONCEPTO_APP] snapshot de texto
+        },
+        "include_reading": {
+          "es": "Incluir tiempo estimado de lectura y WPM",
+          "en": "Include reading estimate and WPM"
+          // [PROPÓSITO] Casilla del modal de guardado manual que controla si el snapshot incluye el tiempo estimado de lectura y la velocidad WPM actual.
+          // [CONCEPTO_APP] snapshot de texto; tiempo estimado de lectura; velocidad de lectura
+          // [PROTEGIDO] `WPM`
+        }
+      },
       "manager": {
         "title": {
           "es": "Gestionar etiquetas de snapshot de texto",

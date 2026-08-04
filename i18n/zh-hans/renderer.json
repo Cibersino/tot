@@ -348,6 +348,10 @@
         "type": "类型",
         "difficulty": "难度"
       },
+      "metrics": {
+        "include_count": "包含字数统计",
+        "include_reading": "包含预计阅读时间和 WPM"
+      },
       "manager": {
         "title": "管理文本快照标签",
         "message": "管理用于文本快照和批量提取单元的可见标签。",

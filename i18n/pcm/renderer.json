@@ -348,6 +348,10 @@
         "type": "Type",
         "difficulty": "Difficulty"
       },
+      "metrics": {
+        "include_count": "Put word count",
+        "include_reading": "Put estimated reading time and WPM"
+      },
       "manager": {
         "title": "Manage text snapshot tags",
         "message": "Manage di visible tags we dey use for text snapshots and batch extraction units.",

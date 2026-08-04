@@ -348,6 +348,10 @@
         "type": "Tip",
         "difficulty": "Difikilte"
       },
+      "metrics": {
+        "include_count": "Mete kantite mo",
+        "include_reading": "Mete estimasyon tan lekti ak WPM"
+      },
       "manager": {
         "title": "Jere etikèt snapshot tèks yo",
         "message": "Jere etikèt vizib yo itilize pou snapshot tèks ak inite ekstraksyon an pakèt yo.",

@@ -348,6 +348,10 @@
         "type": "Tipus",
         "difficulty": "Dificultat"
       },
+      "metrics": {
+        "include_count": "Inclou el recompte de paraules",
+        "include_reading": "Inclou el temps estimat de lectura i el WPM"
+      },
       "manager": {
         "title": "Gestiona les etiquetes de snapshot de text",
         "message": "Gestiona les etiquetes visibles que s’utilitzen per als snapshots de text i les unitats d’extracció per lots.",

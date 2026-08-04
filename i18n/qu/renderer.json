@@ -348,6 +348,10 @@
         "type": "Laya",
         "difficulty": "Sasaynin"
       },
+      "metrics": {
+        "include_count": "Simikunapa yupayninta yapay",
+        "include_reading": "Ñawinchaypaq yuyasqa pachata WPM-taq yapay"
+      },
       "manager": {
         "title": "Texto snapshot etiquetankunata kamachiy",
         "message": "Texto snapshotkunapi chaymanta lote extracción unidadkunapi rikukuq etiquetankunata kamachiy.",

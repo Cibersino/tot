@@ -348,6 +348,10 @@
         "type": "Typ",
         "difficulty": "Svårighetsgrad"
       },
+      "metrics": {
+        "include_count": "Inkludera ordantal",
+        "include_reading": "Inkludera beräknad lästid och WPM"
+      },
       "manager": {
         "title": "Hantera taggar för text-snapshots",
         "message": "Hantera de synliga taggar som används för text-snapshots och batchextraheringsenheter.",

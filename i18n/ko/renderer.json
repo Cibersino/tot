@@ -348,6 +348,10 @@
         "type": "유형",
         "difficulty": "난이도"
       },
+      "metrics": {
+        "include_count": "단어 수 포함",
+        "include_reading": "예상 읽기 시간 및 WPM 포함"
+      },
       "manager": {
         "title": "텍스트 스냅샷 태그 관리",
         "message": "텍스트 스냅샷과 일괄 추출 단위에 사용되는 표시 태그를 관리합니다.",

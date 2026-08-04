@@ -348,6 +348,10 @@
         "type": "Mota",
         "difficulty": "Zailtasuna"
       },
+      "metrics": {
+        "include_count": "Sartu hitz kopurua",
+        "include_reading": "Sartu irakurketa-denboraren estimazioa eta WPM"
+      },
       "manager": {
         "title": "Kudeatu testu-snapshoten etiketak",
         "message": "Kudeatu testu-snapshotetan eta lote-erauzketako unitateetan erabiltzen diren etiketa ikusgaiak.",

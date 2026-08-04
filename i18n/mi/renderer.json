@@ -348,6 +348,10 @@
         "type": "Momo",
         "difficulty": "Uaua"
       },
+      "metrics": {
+        "include_count": "Tāpirihia te tatau kupu",
+        "include_reading": "Tāpirihia te wā pānui e whakapaetia ana me te WPM"
+      },
       "manager": {
         "title": "Whakahaere tūtohu snapshot kuputuhi",
         "message": "Whakahaerehia ngā tūtohu kitea e whakamahia ana mō ngā snapshot kuputuhi me ngā wae tango ā-rōpū.",

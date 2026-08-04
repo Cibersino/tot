@@ -348,6 +348,10 @@
         "type": "Jenis",
         "difficulty": "Kesulitan"
       },
+      "metrics": {
+        "include_count": "Sertakan jumlah kata",
+        "include_reading": "Sertakan perkiraan waktu baca dan WPM"
+      },
       "manager": {
         "title": "Kelola tag snapshot teks",
         "message": "Kelola tag terlihat yang digunakan untuk snapshot teks dan unit ekstraksi batch.",

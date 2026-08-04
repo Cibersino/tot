@@ -348,6 +348,10 @@
         "type": "Kasta",
         "difficulty": "Ch’amäwi"
       },
+      "metrics": {
+        "include_count": "Arunaka jakhüwi uñstayaña",
+        "include_reading": "Uñt’ayata ullañ pacha ukat WPM uñstayaña"
+      },
       "manager": {
         "title": "Texto snapshot ukan etiquetas apnaqaña",
         "message": "Texto snapshot ukat lote extracción unidades ukan uñjkaña etiquetas apnaqam.",

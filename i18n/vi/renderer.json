@@ -348,6 +348,10 @@
         "type": "Loại",
         "difficulty": "Độ khó"
       },
+      "metrics": {
+        "include_count": "Bao gồm số lượng từ",
+        "include_reading": "Bao gồm thời gian đọc ước tính và WPM"
+      },
       "manager": {
         "title": "Quản lý thẻ snapshot văn bản",
         "message": "Quản lý các thẻ hiển thị được dùng cho snapshot văn bản và đơn vị trích xuất hàng loạt.",

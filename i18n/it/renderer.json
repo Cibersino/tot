@@ -348,6 +348,10 @@
         "type": "Tipo",
         "difficulty": "Difficoltà"
       },
+      "metrics": {
+        "include_count": "Includi il conteggio delle parole",
+        "include_reading": "Includi la stima del tempo di lettura e WPM"
+      },
       "manager": {
         "title": "Gestisci i tag degli snapshot di testo",
         "message": "Gestisci i tag visibili usati per gli snapshot di testo e le unità di estrazione in batch.",

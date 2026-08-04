@@ -348,6 +348,10 @@
         "type": "Az",
         "difficulty": "Rume newen"
       },
+      "metrics": {
+        "include_count": "Dungu rakiduam müley",
+        "include_reading": "Chillkatun antü ka WPM müley"
+      },
       "manager": {
         "title": "Ngünen etiquetas snapshot de texto",
         "message": "Ngünen etiquetas görüngechi pu snapshot de texto ka extracción por lotes ñi unidades mew.",
