@@ -394,10 +394,51 @@ function parseSnapshotFile(selectedReal) {
   }
 
   const tags = snapshotInfo.snapshot.tags;
+  const reading = snapshotInfo.snapshot.metrics && snapshotInfo.snapshot.metrics.reading;
   return {
     ok: true,
     text: snapshotInfo.snapshot.text,
     tags: Object.keys(tags).length ? tags : null,
+    estimatedSeconds: reading ? reading.estimatedSeconds : null,
+    wpm: reading ? reading.wpm : null,
+  };
+}
+
+function inspectSnapshotAtRelPath(rawSnapshotRelPath) {
+  const suppliedSnapshotRelPath = typeof rawSnapshotRelPath === 'string'
+    ? rawSnapshotRelPath
+    : '';
+  const snapshotRelPath = normalizeSnapshotRelPath(suppliedSnapshotRelPath);
+  if (!snapshotRelPath || snapshotRelPath !== suppliedSnapshotRelPath) {
+    log.warn('snapshot inspection received invalid snapshotRelPath:', {
+      snapshotRelPath: suppliedSnapshotRelPath,
+    });
+    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+  }
+
+  const rootInfo = getSnapshotsRoot('read');
+  if (!rootInfo.ok) return rootInfo;
+  const { rootReal } = rootInfo;
+  const selectedReal = resolveSnapshotFromRelPath(rootReal, snapshotRelPath);
+  if (!selectedReal) {
+    log.warn('snapshot inspection blocked outside root:', { snapshotRelPath });
+    return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
+  }
+  if (!fs.existsSync(selectedReal)) {
+    log.warn('snapshot inspection target not found:', { snapshotRelPath, selectedReal });
+    return { ok: false, code: 'NOT_FOUND' };
+  }
+
+  const selectedInfo = validateSelectedSnapshot(rootReal, selectedReal);
+  if (!selectedInfo.ok) return selectedInfo;
+
+  const parsed = parseSnapshotFile(selectedInfo.selectedReal);
+  if (!parsed.ok) return parsed;
+
+  return {
+    ok: true,
+    estimatedSeconds: parsed.estimatedSeconds,
+    wpm: parsed.wpm,
   };
 }
 
@@ -632,6 +673,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       };
     } catch (err) {
       log.error('snapshot select failed:', err);
+      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    }
+  });
+
+  ipcMain.handle('current-text-snapshot-inspect', async (_event, payload) => {
+    try {
+      return inspectSnapshotAtRelPath(payload && payload.snapshotRelPath);
+    } catch (err) {
+      log.error('snapshot inspection failed:', err);
       return { ok: false, code: 'READ_FAILED', message: String(err) };
     }
   });

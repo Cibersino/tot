@@ -31,6 +31,8 @@ if (!AppConstants) {
 }
 const {
   DEFAULT_LANG,
+  WPM_MIN,
+  WPM_MAX,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_COMMENT_MAX_CHARS,
@@ -107,6 +109,20 @@ const commentSnapshotSelect = document.getElementById('commentSnapshotSelect');
 const commentSnapshotClear = document.getElementById('commentSnapshotClear');
 const commentSnapshotPath = document.getElementById('commentSnapshotPath');
 
+const snapshotTimeConfirmModal = document.getElementById('snapshotTimeConfirmModal');
+const snapshotTimeConfirmBackdrop = document.getElementById('snapshotTimeConfirmBackdrop');
+const snapshotTimeConfirmClose = document.getElementById('snapshotTimeConfirmClose');
+const snapshotTimeConfirmYes = document.getElementById('snapshotTimeConfirmYes');
+const snapshotTimeConfirmNo = document.getElementById('snapshotTimeConfirmNo');
+const snapshotTimeConfirmTitle = document.getElementById('snapshotTimeConfirmTitle');
+const snapshotTimeConfirmText = document.getElementById('snapshotTimeConfirmText');
+const snapshotTimeConfirmCurrentLabel = document.getElementById('snapshotTimeConfirmCurrentLabel');
+const snapshotTimeConfirmCurrentValue = document.getElementById('snapshotTimeConfirmCurrentValue');
+const snapshotTimeConfirmEstimateLabel = document.getElementById('snapshotTimeConfirmEstimateLabel');
+const snapshotTimeConfirmEstimateValue = document.getElementById('snapshotTimeConfirmEstimateValue');
+const snapshotTimeConfirmWpmLabel = document.getElementById('snapshotTimeConfirmWpmLabel');
+const snapshotTimeConfirmWpmValue = document.getElementById('snapshotTimeConfirmWpmValue');
+
 const libraryModal = document.getElementById('libraryModal');
 const libraryBackdrop = document.getElementById('libraryBackdrop');
 const libraryClose = document.getElementById('libraryClose');
@@ -136,6 +152,8 @@ let dirty = false;
 let rowIdCounter = 1;
 let pendingCommentRowId = null;
 let pendingCommentSnapshotRelPath = '';
+let pendingSnapshotTimeConfirmation = null;
+let commentSaveInFlight = false;
 let pendingLibraryRowId = null;
 let libraryItemsCache = [];
 let columnLayoutController = null;
@@ -292,6 +310,7 @@ function handleTaskEditorModalEscape(event) {
     { modal: commentModal, close: dismissCommentModal },
     { modal: libraryModal, close: () => closeModal(libraryModal) },
     { modal: includeCommentModal, close: () => closeModal(includeCommentModal) },
+    { modal: snapshotTimeConfirmModal, close: () => resolveSnapshotTimeConfirmation(false) },
   ];
   const isVisible = ({ modal }) => modal && modal.getAttribute('aria-hidden') === 'false';
   const focusedEntry = closeEntries.find(({ modal }) => isVisible({ modal }) && modal.contains(document.activeElement));
@@ -325,23 +344,74 @@ function isCancelledTaskEditorResultCode(code) {
   return code === 'CANCELLED' || code === 'CONFIRM_DENIED';
 }
 
+function setCommentSaveInFlight(inFlight) {
+  commentSaveInFlight = inFlight;
+  [
+    commentClose,
+    commentCancel,
+    commentSave,
+    commentSnapshotSelect,
+    commentSnapshotClear,
+  ].forEach((control) => {
+    if (control) control.disabled = inFlight;
+  });
+}
+
+function updateSnapshotTimeConfirmationDisplay() {
+  const confirmation = pendingSnapshotTimeConfirmation;
+  const row = confirmation && rows.find((candidate) => candidate.id === confirmation.rowId);
+  if (!confirmation || !row) return false;
+
+  if (snapshotTimeConfirmCurrentValue) {
+    snapshotTimeConfirmCurrentValue.textContent = formatDuration(row.tiempoSeconds);
+  }
+  if (snapshotTimeConfirmEstimateValue) {
+    snapshotTimeConfirmEstimateValue.textContent = formatDuration(confirmation.estimatedSeconds);
+  }
+  if (snapshotTimeConfirmWpmValue) {
+    snapshotTimeConfirmWpmValue.textContent = `${confirmation.wpm} WPM`;
+  }
+  return true;
+}
+
+function openSnapshotTimeConfirmation(row, reading) {
+  pendingSnapshotTimeConfirmation = {
+    rowId: row.id,
+    estimatedSeconds: reading.estimatedSeconds,
+    wpm: reading.wpm,
+  };
+  if (!updateSnapshotTimeConfirmationDisplay()) {
+    pendingSnapshotTimeConfirmation = null;
+    return false;
+  }
+  openModal(snapshotTimeConfirmModal, snapshotTimeConfirmYes);
+  return true;
+}
+
 function resetPendingCommentDraft() {
   pendingCommentRowId = null;
   pendingCommentSnapshotRelPath = '';
+  pendingSnapshotTimeConfirmation = null;
   setCommentSnapshotDisplay('');
 }
 
 function dismissCommentModal() {
+  if (pendingSnapshotTimeConfirmation) {
+    resolveSnapshotTimeConfirmation(false);
+    return;
+  }
+  if (commentSaveInFlight) return;
   resetPendingCommentDraft();
   closeModal(commentModal);
 }
 
-function applyCommentChangesAndDismiss() {
+function commitCommentChangesAndDismiss({ estimatedSeconds = null } = {}) {
   const row = rows.find((r) => r.id === pendingCommentRowId);
   if (row) {
     const nextComment = commentInput.value || '';
     const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
     let changed = false;
+    let needsRender = false;
     if (row.comentario !== nextComment) {
       row.comentario = nextComment;
       changed = true;
@@ -349,11 +419,126 @@ function applyCommentChangesAndDismiss() {
     if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
       row.snapshotRelPath = nextSnapshotRelPath;
       changed = true;
-      renderTable();
+      needsRender = true;
     }
+    if (Number.isSafeInteger(estimatedSeconds)
+      && estimatedSeconds >= 0
+      && row.tiempoSeconds !== estimatedSeconds) {
+      row.tiempoSeconds = estimatedSeconds;
+      changed = true;
+      needsRender = true;
+    }
+    if (needsRender) renderTable();
     if (changed) markDirty();
   }
   dismissCommentModal();
+}
+
+function notifySnapshotInspectionFailure(code) {
+  if (code === 'NOT_FOUND') {
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_missing');
+    return;
+  }
+  if (code === 'INVALID_JSON'
+    || code === 'INVALID_SCHEMA'
+    || code === 'INVALID_SNAPSHOT_PATH'
+    || code === 'PATH_OUTSIDE_SNAPSHOTS') {
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_invalid');
+    return;
+  }
+  window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
+}
+
+function getSnapshotInspectionReading(result) {
+  if (!result
+    || !Object.prototype.hasOwnProperty.call(result, 'estimatedSeconds')
+    || !Object.prototype.hasOwnProperty.call(result, 'wpm')) {
+    return { ok: false };
+  }
+  if (result.estimatedSeconds === null || result.wpm === null) {
+    return result.estimatedSeconds === null && result.wpm === null
+      ? { ok: true, reading: null }
+      : { ok: false };
+  }
+  if (!Number.isSafeInteger(result.estimatedSeconds)
+    || result.estimatedSeconds < 0
+    || !Number.isSafeInteger(result.wpm)
+    || result.wpm < WPM_MIN
+    || result.wpm > WPM_MAX) {
+    return { ok: false };
+  }
+  return {
+    ok: true,
+    reading: {
+      estimatedSeconds: result.estimatedSeconds,
+      wpm: result.wpm,
+    },
+  };
+}
+
+function resolveSnapshotTimeConfirmation(useEstimatedTime) {
+  const confirmation = pendingSnapshotTimeConfirmation;
+  if (!confirmation) return;
+  pendingSnapshotTimeConfirmation = null;
+  closeModal(snapshotTimeConfirmModal);
+  commitCommentChangesAndDismiss({
+    estimatedSeconds: useEstimatedTime ? confirmation.estimatedSeconds : null,
+  });
+}
+
+async function applyCommentChangesAndDismiss() {
+  if (commentSaveInFlight || pendingSnapshotTimeConfirmation) return;
+
+  const row = rows.find((candidate) => candidate.id === pendingCommentRowId);
+  if (!row) {
+    dismissCommentModal();
+    return;
+  }
+
+  const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
+  const currentSnapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath || '');
+  const snapshotChanged = currentSnapshotRelPath !== nextSnapshotRelPath;
+  if (!snapshotChanged || !nextSnapshotRelPath) {
+    commitCommentChangesAndDismiss();
+    return;
+  }
+
+  const api = getTaskEditorApi('inspectTaskRowSnapshot');
+  if (!api) return;
+
+  setCommentSaveInFlight(true);
+  let result = null;
+  try {
+    result = await api.inspectTaskRowSnapshot(nextSnapshotRelPath);
+  } catch (err) {
+    log.warn('inspectTaskRowSnapshot failed:', err);
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
+    return;
+  } finally {
+    setCommentSaveInFlight(false);
+  }
+
+  if (isFailedTaskEditorResult(result)) {
+    const code = getTaskEditorResultCode(result, 'READ_FAILED');
+    log.warn('inspectTaskRowSnapshot returned failure:', { code, response: result || null });
+    notifySnapshotInspectionFailure(code);
+    return;
+  }
+
+  const readingInfo = getSnapshotInspectionReading(result);
+  if (!readingInfo.ok) {
+    log.warn('inspectTaskRowSnapshot returned invalid reading metrics:', result || null);
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
+    return;
+  }
+  if (!readingInfo.reading) {
+    commitCommentChangesAndDismiss();
+    return;
+  }
+  if (!openSnapshotTimeConfirmation(row, readingInfo.reading)) {
+    log.error('Snapshot time confirmation could not be opened.');
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
+  }
 }
 
 async function selectSnapshotForPendingCommentRow() {
@@ -1130,6 +1315,38 @@ async function applyTaskEditorTranslations() {
     });
   }
 
+  if (snapshotTimeConfirmTitle) {
+    snapshotTimeConfirmTitle.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.title');
+  }
+  if (snapshotTimeConfirmText) {
+    snapshotTimeConfirmText.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.message');
+  }
+  if (snapshotTimeConfirmCurrentLabel) {
+    snapshotTimeConfirmCurrentLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.current_time');
+  }
+  if (snapshotTimeConfirmEstimateLabel) {
+    snapshotTimeConfirmEstimateLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.snapshot_estimate');
+  }
+  if (snapshotTimeConfirmWpmLabel) {
+    snapshotTimeConfirmWpmLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.reading_speed');
+  }
+  if (snapshotTimeConfirmYes) {
+    snapshotTimeConfirmYes.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.yes');
+  }
+  if (snapshotTimeConfirmNo) {
+    snapshotTimeConfirmNo.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.no');
+  }
+  if (snapshotTimeConfirmClose) {
+    snapshotTimeConfirmClose.title = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.close_aria');
+    snapshotTimeConfirmClose.setAttribute('aria-label', snapshotTimeConfirmClose.title || '');
+    rendererIcons.applyIconToElement(snapshotTimeConfirmClose, 'close', {
+      preserveContent: false,
+      title: snapshotTimeConfirmClose.title,
+      ariaLabel: snapshotTimeConfirmClose.title,
+    });
+  }
+  updateSnapshotTimeConfirmationDisplay();
+
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.biblioteca.library_title');
   if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.biblioteca.search');
   if (librarySearchInput) {
@@ -1213,8 +1430,23 @@ function wireCommentModalEvents() {
   }
   if (commentSave) {
     commentSave.addEventListener('click', () => {
-      applyCommentChangesAndDismiss();
+      applyCommentChangesAndDismiss().catch((err) => log.error('applyCommentChangesAndDismiss failed:', err));
     });
+  }
+}
+
+function wireSnapshotTimeConfirmModalEvents() {
+  if (snapshotTimeConfirmClose) {
+    snapshotTimeConfirmClose.addEventListener('click', () => resolveSnapshotTimeConfirmation(false));
+  }
+  if (snapshotTimeConfirmBackdrop) {
+    snapshotTimeConfirmBackdrop.addEventListener('click', () => resolveSnapshotTimeConfirmation(false));
+  }
+  if (snapshotTimeConfirmYes) {
+    snapshotTimeConfirmYes.addEventListener('click', () => resolveSnapshotTimeConfirmation(true));
+  }
+  if (snapshotTimeConfirmNo) {
+    snapshotTimeConfirmNo.addEventListener('click', () => resolveSnapshotTimeConfirmation(false));
   }
 }
 
@@ -1232,6 +1464,7 @@ function wireLibraryModalEvents() {
 function wireTaskEditorEvents() {
   wirePrimaryTaskEditorEvents();
   wireCommentModalEvents();
+  wireSnapshotTimeConfirmModalEvents();
   wireLibraryModalEvents();
   window.addEventListener('keydown', handleTaskEditorModalEscape);
 }

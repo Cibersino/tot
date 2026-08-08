@@ -44,6 +44,23 @@ function createSnapshotFileData(text, tags = {}) {
   };
 }
 
+function createSnapshotWithReadingEstimate(text) {
+  return {
+    ...createSnapshotFileData(text),
+    metrics: {
+      count: {
+        words: 100,
+        mode: 'preciso',
+        locale: 'en',
+      },
+      reading: {
+        estimatedSeconds: 30,
+        wpm: 200,
+      },
+    },
+  };
+}
+
 function loadSnapshotsMainWithMocks({
   senderWin,
   rootDir,
@@ -214,6 +231,82 @@ function loadSnapshotsMainWithMocks({
     showMessageBoxCalls,
   };
 }
+
+test('task-row snapshot inspection returns the canonical reading metrics', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-inspect');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({ senderWin, rootDir });
+  t.after(restore);
+
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(rootDir, 'with-estimate.json'),
+    JSON.stringify(createSnapshotWithReadingEstimate('Estimated snapshot'), null, 2)
+  );
+  fs.writeFileSync(
+    path.join(rootDir, 'without-estimate.json'),
+    JSON.stringify(createSnapshotFileData('Unestimated snapshot'), null, 2)
+  );
+  fs.writeFileSync(
+    path.join(rootDir, 'legacy.json'),
+    JSON.stringify({ text: 'Legacy snapshot', tags: {} }, null, 2)
+  );
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const withEstimate = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/with-estimate.json' }
+  );
+  assert.deepEqual(withEstimate, {
+    ok: true,
+    estimatedSeconds: 30,
+    wpm: 200,
+  });
+
+  const withoutEstimate = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/without-estimate.json' }
+  );
+  assert.deepEqual(withoutEstimate, {
+    ok: true,
+    estimatedSeconds: null,
+    wpm: null,
+  });
+
+  const legacy = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/legacy.json' }
+  );
+  assert.deepEqual(legacy, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'invalid snapshot schema',
+  });
+
+  const noncanonicalPath = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: 'with-estimate.json' }
+  );
+  assert.deepEqual(noncanonicalPath, {
+    ok: false,
+    code: 'INVALID_SNAPSHOT_PATH',
+  });
+});
 
 test('non-interactive snapshot save creates deterministic collision-safe files and preserves tags', async (t) => {
   const rootDir = createTestTempDir('current-text-snapshots');

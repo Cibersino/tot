@@ -54,6 +54,10 @@ const api = {
   selectTaskFile: () => ipcRenderer.invoke('task-file-select'),
   selectTaskFiles: () => ipcRenderer.invoke('task-files-select'),
   selectTaskRowSnapshot: () => ipcRenderer.invoke('current-text-snapshot-select'),
+  inspectTaskRowSnapshot: (snapshotRelPath) => ipcRenderer.invoke(
+    'current-text-snapshot-inspect',
+    { snapshotRelPath }
+  ),
   loadTaskRowSnapshot: (snapshotRelPath) => ipcRenderer.invoke('current-text-snapshot-load', { snapshotRelPath }),
   listLibrary: () => ipcRenderer.invoke('task-library-list'),
   saveLibraryEntry: (entry) => ipcRenderer.invoke('task-library-save', { entry }),

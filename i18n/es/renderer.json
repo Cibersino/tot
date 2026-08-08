@@ -482,7 +482,17 @@
         "comment_placeholder": "Escribe un comentario...",
         "snapshot_select": "Seleccionar snapshot",
         "snapshot_select_tooltip": "Seleccionar snapshot para esta fila",
-        "snapshot_clear": "Quitar snapshot seleccionado de esta fila"
+        "snapshot_clear": "Quitar snapshot seleccionado de esta fila",
+        "snapshot_time_confirm": {
+          "title": "¿Usar el tiempo estimado del snapshot de texto?",
+          "message": "¿Reemplazar el tiempo actual de esta lectura por la estimación del snapshot de texto seleccionado?",
+          "current_time": "Tiempo actual",
+          "snapshot_estimate": "Estimación del snapshot",
+          "reading_speed": "Velocidad de lectura",
+          "yes": "Sí",
+          "no": "No",
+          "close_aria": "Cerrar la confirmación de tiempo estimado"
+        }
       },
       "biblioteca": {
         "library_title": "Biblioteca de lecturas",
@@ -518,6 +528,9 @@
         "library_save_success": "Lectura guardada en la biblioteca.",
         "library_delete_error": "No se pudo eliminar la lectura de la biblioteca.",
         "column_layout_save_error": "No se pudo guardar la disposición de columnas y puede que no se conserve la próxima vez.",
+        "snapshot_missing": "El snapshot de texto seleccionado ya no existe.",
+        "snapshot_invalid": "El snapshot de texto seleccionado no es válido.",
+        "snapshot_read_error": "No se pudo leer el snapshot de texto seleccionado.",
         "link_blocked": "Enlace bloqueado.",
         "link_missing": "Archivo no encontrado.",
         "link_error": "Error al abrir enlace o ruta local.",

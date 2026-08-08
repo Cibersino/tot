@@ -470,6 +470,10 @@ body.is-resizing {
   width: 420px;
 }
 
+#snapshotTimeConfirmModal .modal-panel {
+  width: 420px;
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -505,6 +509,31 @@ body.is-resizing {
 }
 
 #includeCommentModal .modal-actions {
+  justify-content: center;
+}
+
+.snapshot-time-confirm-values {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.snapshot-time-confirm-values > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.snapshot-time-confirm-values dt,
+.snapshot-time-confirm-values dd {
+  margin: 0;
+}
+
+.snapshot-time-confirm-values dd {
+  font-variant-numeric: tabular-nums;
+}
+
+#snapshotTimeConfirmModal .modal-actions {
   justify-content: center;
 }
 

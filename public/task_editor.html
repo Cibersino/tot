@@ -94,6 +94,40 @@
     </div>
   </div>
 
+  <!-- Snapshot estimated-time confirmation modal -->
+  <div id="snapshotTimeConfirmModal" class="modal" aria-hidden="true" role="dialog"
+    aria-labelledby="snapshotTimeConfirmTitle" aria-describedby="snapshotTimeConfirmText" aria-modal="true">
+    <div class="modal-backdrop" id="snapshotTimeConfirmBackdrop"></div>
+    <div class="modal-panel">
+      <header class="modal-header">
+        <h2 id="snapshotTimeConfirmTitle">¿Usar el tiempo estimado del snapshot de texto?</h2>
+        <button id="snapshotTimeConfirmClose" class="btn-standard btn-standard--square" aria-label="Cerrar"
+          data-tot-icon="close"></button>
+      </header>
+      <main class="modal-body">
+        <p id="snapshotTimeConfirmText">¿Reemplazar el tiempo actual de esta lectura por la estimación del snapshot seleccionado?</p>
+        <dl class="snapshot-time-confirm-values">
+          <div>
+            <dt id="snapshotTimeConfirmCurrentLabel">Tiempo actual</dt>
+            <dd id="snapshotTimeConfirmCurrentValue"></dd>
+          </div>
+          <div>
+            <dt id="snapshotTimeConfirmEstimateLabel">Estimación del snapshot</dt>
+            <dd id="snapshotTimeConfirmEstimateValue"></dd>
+          </div>
+          <div>
+            <dt id="snapshotTimeConfirmWpmLabel">Velocidad de lectura</dt>
+            <dd id="snapshotTimeConfirmWpmValue" dir="ltr"></dd>
+          </div>
+        </dl>
+      </main>
+      <footer class="modal-actions">
+        <button id="snapshotTimeConfirmYes" class="btn-standard">Sí</button>
+        <button id="snapshotTimeConfirmNo" class="btn-standard">No</button>
+      </footer>
+    </div>
+  </div>
+
   <!-- Library modal -->
   <div id="libraryModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="libraryTitle" aria-modal="true">
     <div class="modal-backdrop" id="libraryBackdrop"></div>

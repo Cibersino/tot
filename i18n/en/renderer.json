@@ -482,7 +482,17 @@
         "comment_placeholder": "Add a comment...",
         "snapshot_select": "Select text snapshot",
         "snapshot_select_tooltip": "Select a text snapshot for this row",
-        "snapshot_clear": "Remove selected snapshot from this row"
+        "snapshot_clear": "Remove selected snapshot from this row",
+        "snapshot_time_confirm": {
+          "title": "Use text snapshot estimated time?",
+          "message": "Replace this reading's current time with the estimate in the selected text snapshot?",
+          "current_time": "Current time",
+          "snapshot_estimate": "Snapshot estimate",
+          "reading_speed": "Reading speed",
+          "yes": "Yes",
+          "no": "No",
+          "close_aria": "Close estimated time confirmation"
+        }
       },
       "biblioteca": {
         "library_title": "Reading library",
@@ -518,6 +528,9 @@
         "library_save_success": "Reading saved to the library.",
         "library_delete_error": "Could not delete the reading from the library.",
         "column_layout_save_error": "The column layout could not be saved and may not be retained next time.",
+        "snapshot_missing": "The selected text snapshot no longer exists.",
+        "snapshot_invalid": "The selected text snapshot is invalid.",
+        "snapshot_read_error": "Could not read the selected text snapshot.",
         "link_blocked": "Link blocked.",
         "link_missing": "File not found.",
         "link_error": "Error opening link or local path.",

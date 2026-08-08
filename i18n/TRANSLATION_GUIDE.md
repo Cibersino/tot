@@ -2769,6 +2769,51 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Acción para quitar de la fila la asociación con un snapshot seleccionado.
           // [CONCEPTO_APP] snapshot de texto; fila de lectura
           // [NO_CONFUNDIR] Quitar el snapshot de la fila no elimina el snapshot guardado; elimina solo la asociación con esa fila.
+        },
+        "snapshot_time_confirm": {
+          "title": {
+            "es": "¿Usar el tiempo estimado del snapshot de texto?",
+            "en": "Use text snapshot estimated time?"
+            // [PROPÓSITO] Título de la confirmación mostrada al guardar el Comentario cuando el snapshot seleccionado aporta un tiempo estimado de lectura.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura; tiempo estimado de lectura
+          },
+          "message": {
+            "es": "¿Reemplazar el tiempo actual de esta lectura por la estimación del snapshot de texto seleccionado?",
+            "en": "Replace this reading's current time with the estimate in the selected text snapshot?"
+            // [PROPÓSITO] Explica que aceptar reemplaza el valor Time/Tiempo de la fila por la estimación del snapshot durante el guardado de la asociación.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura; tiempo estimado de lectura
+          },
+          "current_time": {
+            "es": "Tiempo actual",
+            "en": "Current time"
+            // [PROPÓSITO] Label del valor de tiempo ya presente en la fila de lectura antes de decidir si se reemplaza.
+            // [CONCEPTO_APP] fila de lectura; tiempo estimado de lectura
+          },
+          "snapshot_estimate": {
+            "es": "Estimación del snapshot",
+            "en": "Snapshot estimate"
+            // [PROPÓSITO] Label del tiempo estimado calculado y guardado en el snapshot de texto seleccionado.
+            // [CONCEPTO_APP] snapshot de texto; tiempo estimado de lectura
+          },
+          "reading_speed": {
+            "es": "Velocidad de lectura",
+            "en": "Reading speed"
+            // [PROPÓSITO] Label del WPM con que se calculó la estimación mostrada del snapshot.
+            // [CONCEPTO_APP] snapshot de texto; velocidad de lectura; tiempo estimado de lectura
+            // [PROTEGIDO] `WPM`
+          },
+          "yes": {
+            "es": "Sí",
+            "en": "Yes"
+          },
+          "no": {
+            "es": "No",
+            "en": "No"
+          },
+          "close_aria": {
+            "es": "Cerrar la confirmación de tiempo estimado",
+            "en": "Close estimated time confirmation"
+          }
         }
       },
       "biblioteca": {
@@ -2923,6 +2968,21 @@ Estados de revisión recomendados:
           "es": "No se pudo guardar la disposición de columnas y puede que no se conserve la próxima vez.",
           "en": "The column layout could not be saved and may not be retained next time."
           // [CONCEPTO_APP] tarea
+        },
+        "snapshot_missing": {
+          "es": "El snapshot de texto seleccionado ya no existe.",
+          "en": "The selected text snapshot no longer exists."
+          // [CONCEPTO_APP] snapshot de texto; fila de lectura
+        },
+        "snapshot_invalid": {
+          "es": "El snapshot de texto seleccionado no es válido.",
+          "en": "The selected text snapshot is invalid."
+          // [CONCEPTO_APP] snapshot de texto; fila de lectura
+        },
+        "snapshot_read_error": {
+          "es": "No se pudo leer el snapshot de texto seleccionado.",
+          "en": "Could not read the selected text snapshot."
+          // [CONCEPTO_APP] snapshot de texto; fila de lectura
         },
         "link_blocked": {
           "es": "Enlace bloqueado.",
