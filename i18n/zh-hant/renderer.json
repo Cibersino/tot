@@ -482,7 +482,17 @@
         "comment_placeholder": "註解...",
         "snapshot_select": "選擇快照",
         "snapshot_select_tooltip": "為此列選擇文字快照",
-        "snapshot_clear": "移除此列所選快照"
+        "snapshot_clear": "移除此列所選快照",
+        "snapshot_time_confirm": {
+          "title": "使用文字快照的預估時間？",
+          "message": "要以所選文字快照中的預估時間取代此閱讀項目的目前時間嗎？",
+          "current_time": "目前時間",
+          "snapshot_estimate": "快照預估時間",
+          "reading_speed": "閱讀速度",
+          "yes": "是",
+          "no": "否",
+          "close_aria": "關閉預估時間確認"
+        }
       },
       "biblioteca": {
         "library_title": "資料庫",

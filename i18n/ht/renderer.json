@@ -482,7 +482,17 @@
         "comment_placeholder": "Kòmantè...",
         "snapshot_select": "Chwazi snapshot",
         "snapshot_select_tooltip": "Chwazi yon snapshot tèks pou ranje sa a",
-        "snapshot_clear": "Retire snapshot chwazi a nan ranje sa a"
+        "snapshot_clear": "Retire snapshot chwazi a nan ranje sa a",
+        "snapshot_time_confirm": {
+          "title": "Itilize tan estime snapshot tèks la?",
+          "message": "Ranplase tan aktyèl lekti sa a ak estimasyon ki nan snapshot tèks yo chwazi a?",
+          "current_time": "Tan aktyèl",
+          "snapshot_estimate": "Estimasyon snapshot",
+          "reading_speed": "Vitès lekti",
+          "yes": "Wi",
+          "no": "Non",
+          "close_aria": "Fèmen konfimasyon tan estime"
+        }
       },
       "biblioteca": {
         "library_title": "Bibliyotèk",

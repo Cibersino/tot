@@ -482,7 +482,17 @@
         "comment_placeholder": "コメント...",
         "snapshot_select": "スナップショットを選択",
         "snapshot_select_tooltip": "この行のテキストスナップショットを選択",
-        "snapshot_clear": "この行から選択したスナップショットを外す"
+        "snapshot_clear": "この行から選択したスナップショットを外す",
+        "snapshot_time_confirm": {
+          "title": "テキストスナップショットの推定時間を使用しますか？",
+          "message": "この読書の現在の時間を、選択したテキストスナップショットの推定値に置き換えますか？",
+          "current_time": "現在の時間",
+          "snapshot_estimate": "スナップショットの推定値",
+          "reading_speed": "読書速度",
+          "yes": "はい",
+          "no": "いいえ",
+          "close_aria": "推定時間の確認を閉じる"
+        }
       },
       "biblioteca": {
         "library_title": "ライブラリ",

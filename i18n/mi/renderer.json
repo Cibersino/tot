@@ -482,7 +482,17 @@
         "comment_placeholder": "Kōrero...",
         "snapshot_select": "Tīpako hopunga",
         "snapshot_select_tooltip": "Tīpako hopunga kuputuhi mō tēnei rārangi",
-        "snapshot_clear": "Tango i te hopunga kua tīpakohia i tēnei rārangi"
+        "snapshot_clear": "Tango i te hopunga kua tīpakohia i tēnei rārangi",
+        "snapshot_time_confirm": {
+          "title": "Whakamahia te wā e whakaarotia ana o te hopunga kuputuhi?",
+          "message": "Whakakapia te wā o nāianei o tēnei pānuitanga ki te whakatau i te hopunga kuputuhi kua tīpakohia?",
+          "current_time": "Wā o nāianei",
+          "snapshot_estimate": "Whakatau hopunga",
+          "reading_speed": "Tere pānui",
+          "yes": "Āe",
+          "no": "Kāo",
+          "close_aria": "Katia te whakaū wā whakaarotia"
+        }
       },
       "biblioteca": {
         "library_title": "Pātaka",

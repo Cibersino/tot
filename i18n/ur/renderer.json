@@ -482,7 +482,17 @@
         "comment_placeholder": "تبصرہ...",
         "snapshot_select": "اسنیپ شاٹ منتخب کریں",
         "snapshot_select_tooltip": "اس قطار کے لیے متن کا اسنیپ شاٹ منتخب کریں",
-        "snapshot_clear": "اس قطار سے منتخب اسنیپ شاٹ ہٹائیں"
+        "snapshot_clear": "اس قطار سے منتخب اسنیپ شاٹ ہٹائیں",
+        "snapshot_time_confirm": {
+          "title": "متن اسنیپ شاٹ کا تخمینی وقت استعمال کریں؟",
+          "message": "کیا اس پڑھنے کے موجودہ وقت کو منتخب متن اسنیپ شاٹ کے تخمینے سے بدلنا ہے؟",
+          "current_time": "موجودہ وقت",
+          "snapshot_estimate": "اسنیپ شاٹ کا تخمینہ",
+          "reading_speed": "پڑھنے کی رفتار",
+          "yes": "ہاں",
+          "no": "نہیں",
+          "close_aria": "تخمینی وقت کی تصدیق بند کریں"
+        }
       },
       "biblioteca": {
         "library_title": "لائبریری",

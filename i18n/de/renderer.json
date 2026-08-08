@@ -482,7 +482,17 @@
         "comment_placeholder": "Kommentar...",
         "snapshot_select": "Snapshot auswählen",
         "snapshot_select_tooltip": "Wählen Sie einen Text-Snapshot für diese Zeile aus",
-        "snapshot_clear": "Entfernen Sie den ausgewählten Text-Snapshot von dieser Zeile"
+        "snapshot_clear": "Entfernen Sie den ausgewählten Text-Snapshot von dieser Zeile",
+        "snapshot_time_confirm": {
+          "title": "Geschätzte Zeit des Text-Snapshots verwenden?",
+          "message": "Die aktuelle Zeit dieses Leseeintrags durch die Schätzung im ausgewählten Text-Snapshot ersetzen?",
+          "current_time": "Aktuelle Zeit",
+          "snapshot_estimate": "Snapshot-Schätzung",
+          "reading_speed": "Lesegeschwindigkeit",
+          "yes": "Ja",
+          "no": "Nein",
+          "close_aria": "Bestätigung der geschätzten Zeit schließen"
+        }
       },
       "biblioteca": {
         "library_title": "Bibliothek",

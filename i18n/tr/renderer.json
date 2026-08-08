@@ -482,7 +482,17 @@
         "comment_placeholder": "Yorum...",
         "snapshot_select": "Snapshot seç",
         "snapshot_select_tooltip": "Bu satır için metin snapshot'ı seç",
-        "snapshot_clear": "Seçili snapshot'ı bu satırdan kaldır"
+        "snapshot_clear": "Seçili snapshot'ı bu satırdan kaldır",
+        "snapshot_time_confirm": {
+          "title": "Metin snapshot'ının tahmini süresi kullanılsın mı?",
+          "message": "Bu okumanın mevcut süresi, seçili metin snapshot'ındaki tahminle değiştirilsin mi?",
+          "current_time": "Mevcut süre",
+          "snapshot_estimate": "Snapshot tahmini",
+          "reading_speed": "Okuma hızı",
+          "yes": "Evet",
+          "no": "Hayır",
+          "close_aria": "Tahmini süre onayını kapat"
+        }
       },
       "biblioteca": {
         "library_title": "Kütüphane",

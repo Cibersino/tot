@@ -482,7 +482,17 @@
         "comment_placeholder": "Kommentar...",
         "snapshot_select": "Välj snapshot",
         "snapshot_select_tooltip": "Välj en textsnapshot för denna rad",
-        "snapshot_clear": "Ta bort vald snapshot från denna rad"
+        "snapshot_clear": "Ta bort vald snapshot från denna rad",
+        "snapshot_time_confirm": {
+          "title": "Använd den beräknade tiden från textsnapshoten?",
+          "message": "Ersätt den aktuella tiden för denna läsning med uppskattningen i den valda textsnapshoten?",
+          "current_time": "Aktuell tid",
+          "snapshot_estimate": "Snapshot-uppskattning",
+          "reading_speed": "Läshastighet",
+          "yes": "Ja",
+          "no": "Nej",
+          "close_aria": "Stäng bekräftelsen av beräknad tid"
+        }
       },
       "biblioteca": {
         "library_title": "Bibliotek",

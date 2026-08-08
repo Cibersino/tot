@@ -482,7 +482,17 @@
         "comment_placeholder": "Comentario...",
         "snapshot_select": "Snapshot ajlliña",
         "snapshot_select_tooltip": "Aka siqitak snapshot ajlliña",
-        "snapshot_clear": "Aka siqit ajllita snapshot apsuña"
+        "snapshot_clear": "Aka siqit ajllita snapshot apsuña",
+        "snapshot_time_confirm": {
+          "title": "¿Texto snapshot ukan jakhthapita pachap apnaqañati?",
+          "message": "¿Aka ullañan jichha pachapxa ajllita texto snapshot ukan jakhthapita pachamp lantintañati?",
+          "current_time": "Jichha pacha",
+          "snapshot_estimate": "Snapshot jakhthapiwi",
+          "reading_speed": "Ullañ jank’akïwi",
+          "yes": "Jïsa",
+          "no": "Janiwa",
+          "close_aria": "Jakhthapita pacha chiqanchäwi jist’antaña"
+        }
       },
       "biblioteca": {
         "library_title": "Biblioteca",

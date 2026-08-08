@@ -482,7 +482,17 @@
         "comment_placeholder": "Nütram...",
         "snapshot_select": "Kintun snapshot",
         "snapshot_select_tooltip": "Kintun snapshot weyel tati ruka",
-        "snapshot_clear": "Ñamümün snapshot weyel tati ruka"
+        "snapshot_clear": "Ñamümün snapshot weyel tati ruka",
+        "snapshot_time_confirm": {
+          "title": "¿Eymi küpayal snapshot ñi rakiduam antü?",
+          "message": "¿Fachi chillkatun ñi antü, snapshot ajllin ñi rakiduam antü mew weyeltuaymi?",
+          "current_time": "Fachi antü",
+          "snapshot_estimate": "Snapshot ñi rakiduam",
+          "reading_speed": "Lef chillkatun",
+          "yes": "May",
+          "no": "No",
+          "close_aria": "Rakiduam antü rüpüntukun nürüfün"
+        }
       },
       "biblioteca": {
         "library_title": "Biblioteca",

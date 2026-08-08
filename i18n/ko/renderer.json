@@ -482,7 +482,17 @@
         "comment_placeholder": "댓글...",
         "snapshot_select": "스냅샷 선택",
         "snapshot_select_tooltip": "이 행에 사용할 텍스트 스냅샷 선택",
-        "snapshot_clear": "이 행에서 선택한 스냅샷 제거"
+        "snapshot_clear": "이 행에서 선택한 스냅샷 제거",
+        "snapshot_time_confirm": {
+          "title": "텍스트 스냅샷의 예상 시간을 사용하시겠습니까?",
+          "message": "이 읽기의 현재 시간을 선택한 텍스트 스냅샷의 예상 시간으로 바꾸시겠습니까?",
+          "current_time": "현재 시간",
+          "snapshot_estimate": "스냅샷 예상 시간",
+          "reading_speed": "읽기 속도",
+          "yes": "예",
+          "no": "아니요",
+          "close_aria": "예상 시간 확인 닫기"
+        }
       },
       "biblioteca": {
         "library_title": "라이브러리",

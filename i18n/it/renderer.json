@@ -482,7 +482,17 @@
         "comment_placeholder": "Commento...",
         "snapshot_select": "Seleziona snapshot",
         "snapshot_select_tooltip": "Seleziona snapshot di testo per questa riga",
-        "snapshot_clear": "Rimuovi snapshot di testo per questa riga"
+        "snapshot_clear": "Rimuovi snapshot di testo per questa riga",
+        "snapshot_time_confirm": {
+          "title": "Usare il tempo stimato dello snapshot di testo?",
+          "message": "Sostituire il tempo attuale di questa lettura con la stima nello snapshot di testo selezionato?",
+          "current_time": "Tempo attuale",
+          "snapshot_estimate": "Stima dello snapshot",
+          "reading_speed": "Velocità di lettura",
+          "yes": "Sì",
+          "no": "No",
+          "close_aria": "Chiudi conferma del tempo stimato"
+        }
       },
       "biblioteca": {
         "library_title": "Biblioteca",

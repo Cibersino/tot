@@ -482,7 +482,17 @@
         "comment_placeholder": "تعليق...",
         "snapshot_select": "اختيار لقطة نصية",
         "snapshot_select_tooltip": "اختيار لقطة نصية لهذا الصف",
-        "snapshot_clear": "إزالة اللقطة النصية المحددة من هذا الصف"
+        "snapshot_clear": "إزالة اللقطة النصية المحددة من هذا الصف",
+        "snapshot_time_confirm": {
+          "title": "استخدام الوقت المقدَّر للّقطة النصية؟",
+          "message": "هل تريد استبدال الوقت الحالي لهذه القراءة بالتقدير الموجود في اللقطة النصية المحددة؟",
+          "current_time": "الوقت الحالي",
+          "snapshot_estimate": "تقدير اللقطة",
+          "reading_speed": "سرعة القراءة",
+          "yes": "نعم",
+          "no": "لا",
+          "close_aria": "إغلاق تأكيد الوقت المقدَّر"
+        }
       },
       "biblioteca": {
         "library_title": "المكتبة",

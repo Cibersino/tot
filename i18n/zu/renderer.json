@@ -482,7 +482,17 @@
         "comment_placeholder": "Ukuphawula...",
         "snapshot_select": "Khetha i-snapshot",
         "snapshot_select_tooltip": "Khetha i-snapshot yombhalo kulo mugqa",
-        "snapshot_clear": "Susa i-snapshot ekhethiwe kulo mugqa"
+        "snapshot_clear": "Susa i-snapshot ekhethiwe kulo mugqa",
+        "snapshot_time_confirm": {
+          "title": "Sebenzisa isikhathi esilinganisiwe se-snapshot yombhalo?",
+          "message": "Faka esikhundleni sesikhathi samanje salokhu kufunda ngesilinganiso esiku-snapshot yombhalo ekhethiwe?",
+          "current_time": "Isikhathi samanje",
+          "snapshot_estimate": "Isilinganiso se-snapshot",
+          "reading_speed": "Ijubane lokufunda",
+          "yes": "Yebo",
+          "no": "Cha",
+          "close_aria": "Vala ukuqinisekiswa kwesikhathi esilinganisiwe"
+        }
       },
       "biblioteca": {
         "library_title": "Ilabhulali",

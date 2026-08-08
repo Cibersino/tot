@@ -429,6 +429,32 @@ test('every shipped locale defines the Task Editor comment-or-snapshot button to
   });
 });
 
+test('every shipped locale defines the Task Editor snapshot-time confirmation copy', () => {
+  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const expectedKeys = [
+    'title',
+    'message',
+    'current_time',
+    'snapshot_estimate',
+    'reading_speed',
+    'yes',
+    'no',
+    'close_aria',
+  ];
+
+  languages.forEach(({ tag }) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
+    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+    const confirmation = renderer.renderer.tasks.comentario_modal.snapshot_time_confirm;
+
+    assert.deepEqual(Object.keys(confirmation).sort(), expectedKeys.slice().sort(), `${tag} confirmation keys drifted`);
+    expectedKeys.forEach((key) => {
+      assert.equal(typeof confirmation[key], 'string', `${tag} missing ${key}`);
+      assert.ok(confirmation[key].trim(), `${tag} has empty ${key}`);
+    });
+  });
+});
+
 test('task-editor modals use their reviewed initial targets and restore each opener', () => {
   const harness = createHarness();
   harness.initializeRow();

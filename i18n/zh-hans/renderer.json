@@ -482,7 +482,17 @@
         "comment_placeholder": "评论...",
         "snapshot_select": "选择快照",
         "snapshot_select_tooltip": "为此行选择文本快照",
-        "snapshot_clear": "移除此行所选快照"
+        "snapshot_clear": "移除此行所选快照",
+        "snapshot_time_confirm": {
+          "title": "使用文本快照的预计时间？",
+          "message": "要用所选文本快照中的预计时间替换此阅读项的当前时间吗？",
+          "current_time": "当前时间",
+          "snapshot_estimate": "快照预计时间",
+          "reading_speed": "阅读速度",
+          "yes": "是",
+          "no": "否",
+          "close_aria": "关闭预计时间确认"
+        }
       },
       "biblioteca": {
         "library_title": "库",

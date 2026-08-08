@@ -482,7 +482,17 @@
         "comment_placeholder": "टिप्पणी...",
         "snapshot_select": "स्नैपशॉट चुनें",
         "snapshot_select_tooltip": "इस पंक्ति के लिए पाठ स्नैपशॉट चुनें",
-        "snapshot_clear": "इस पंक्ति से चयनित स्नैपशॉट हटाएँ"
+        "snapshot_clear": "इस पंक्ति से चयनित स्नैपशॉट हटाएँ",
+        "snapshot_time_confirm": {
+          "title": "टेक्स्ट स्नैपशॉट के अनुमानित समय का उपयोग करें?",
+          "message": "इस पठन के वर्तमान समय को चुने गए टेक्स्ट स्नैपशॉट के अनुमान से बदलें?",
+          "current_time": "वर्तमान समय",
+          "snapshot_estimate": "स्नैपशॉट का अनुमान",
+          "reading_speed": "पठन गति",
+          "yes": "हाँ",
+          "no": "नहीं",
+          "close_aria": "अनुमानित समय की पुष्टि बंद करें"
+        }
       },
       "biblioteca": {
         "library_title": "लाइब्रेरी",

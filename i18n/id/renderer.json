@@ -482,7 +482,17 @@
         "comment_placeholder": "Komentar...",
         "snapshot_select": "Pilih snapshot",
         "snapshot_select_tooltip": "Pilih snapshot teks untuk baris ini",
-        "snapshot_clear": "Hapus snapshot yang dipilih dari baris ini"
+        "snapshot_clear": "Hapus snapshot yang dipilih dari baris ini",
+        "snapshot_time_confirm": {
+          "title": "Gunakan perkiraan waktu snapshot teks?",
+          "message": "Ganti waktu saat ini untuk bacaan ini dengan perkiraan dalam snapshot teks yang dipilih?",
+          "current_time": "Waktu saat ini",
+          "snapshot_estimate": "Perkiraan snapshot",
+          "reading_speed": "Kecepatan membaca",
+          "yes": "Ya",
+          "no": "Tidak",
+          "close_aria": "Tutup konfirmasi perkiraan waktu"
+        }
       },
       "biblioteca": {
         "library_title": "Pustaka",

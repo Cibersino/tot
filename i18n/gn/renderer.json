@@ -482,7 +482,17 @@
         "comment_placeholder": "Comentario...",
         "snapshot_select": "Eiporavo snapshot",
         "snapshot_select_tooltip": "Eiporavo snapshot ko fila-pe g̃uarã",
-        "snapshot_clear": "Eipe’a snapshot ojeporavóva ko fila-gui"
+        "snapshot_clear": "Eipe’a snapshot ojeporavóva ko fila-gui",
+        "snapshot_time_confirm": {
+          "title": "¿Eiporúta pe aravo oñeha’ãva oĩva texto snapshot-pe?",
+          "message": "¿Emyengoviáta ko moñe’ẽ aravo ko’ág̃agua pe aravo oñeha’ãva oĩva texto snapshot ojeporavóvape?",
+          "current_time": "Aravo ko’ág̃agua",
+          "snapshot_estimate": "Snapshot aravo oñeha’ãva",
+          "reading_speed": "Moñe’ẽ pya’ekue",
+          "yes": "Hẽe",
+          "no": "Nahániri",
+          "close_aria": "Emboty aravo oñeha’ãva ñemoneĩ"
+        }
       },
       "biblioteca": {
         "library_title": "Biblioteca",
