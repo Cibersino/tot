@@ -354,6 +354,10 @@
         "name": "Lectura",
         "source_comment": "capítulo-1.pdf, Unidad 1 o texto importado"
       },
+      "metrics": {
+        "include_count": "Incluir recuento de palabras",
+        "include_reading": "Incluir tiempo estimado de lectura y WPM"
+      },
       "manager": {
         "title": "Gestionar etiquetas de snapshot de texto",
         "message": "Gestiona las etiquetas visibles usadas para snapshots de texto y unidades de extracción por lotes.",
@@ -447,6 +451,7 @@
     "tasks": {
       "title": "toT — Misiones",
       "name": "Mote",
+      "name_placeholder": "Ej.: Plan de lectura",
       "save_button": "Salvar",
       "delete_button": "Pitiarse",
       "summary_total": "Total",
@@ -462,6 +467,11 @@
         "enlace": "Ruta",
         "comentario": "",
         "acciones": "Acciones",
+        "header_tooltips": {
+          "tiempo": "Tiempo estimado de lectura",
+          "percent": "Porcentaje completado",
+          "falta": "Tiempo estimado que falta"
+        },
         "tooltips": {
           "file_select": "Seleccionar archivo local",
           "link_open": "Abrir ruta",
@@ -478,7 +488,17 @@
         "comment_placeholder": "Opinión...",
         "snapshot_select": "Seleccionar coso",
         "snapshot_select_tooltip": "Seleccionar un coso de texto para esta fila",
-        "snapshot_clear": "Quitar el coso seleccionado de esta fila"
+        "snapshot_clear": "Quitar el coso seleccionado de esta fila",
+        "snapshot_time_confirm": {
+          "title": "¿Usar el tiempo estimado del coso de texto?",
+          "message": "¿Querís reemplazar el tiempo actual de esta lectura por la estimación del coso seleccionado?",
+          "current_time": "Tiempo actual",
+          "snapshot_estimate": "Estimación del coso",
+          "reading_speed": "Ritmo de lectura",
+          "yes": "Sí",
+          "no": "No",
+          "close_aria": "Cerrar confirmación de tiempo estimado"
+        }
       },
       "biblioteca": {
         "library_title": "Biblio",
@@ -517,6 +537,9 @@
         "link_blocked": "Ruta bloqueada.",
         "link_missing": "Ruta extraviada.",
         "link_error": "Error al abrir la ruta.",
+        "snapshot_invalid": "El coso seleccionado no es válido.",
+        "snapshot_missing": "El coso seleccionado ya no existe.",
+        "snapshot_read_error": "No se pudo leer el coso seleccionado.",
         "close_unsaved": "Hay modificaciones sin salvar. ¿Querís cerrar igual?"
       }
     },
