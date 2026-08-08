@@ -10,12 +10,22 @@
 
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const readingTestQuestionsCore = require('../public/js/lib/reading_test_questions_core');
-const { PRESET_WPM_MIN, PRESET_WPM_MAX } = require('./constants_main');
+const {
+  PRESET_WPM_MIN,
+  PRESET_WPM_MAX,
+  SNAPSHOT_NAME_MAX_CHARS,
+  SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
+} = require('./constants_main');
 
 const SNAPSHOT_TYPE = 'text snapshot';
 const SNAPSHOT_SAVED_WITH = 'toT (totapp.org)';
 const SNAPSHOT_REQUIRED_KEYS = Object.freeze(['type', 'meta', 'text', 'tags']);
-const SNAPSHOT_OPTIONAL_KEYS = Object.freeze(['metrics', 'readingTest']);
+const SNAPSHOT_OPTIONAL_KEYS = Object.freeze([
+  'name',
+  'sourceComment',
+  'metrics',
+  'readingTest',
+]);
 const SNAPSHOT_META_KEYS = Object.freeze(['savedAt', 'savedWith']);
 const SNAPSHOT_TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
 const SNAPSHOT_METRICS_COUNT_KEYS = Object.freeze(['words', 'mode', 'locale']);
@@ -110,6 +120,28 @@ function validateSnapshotTags(rawTags) {
   }
 
   return { ok: true, tags };
+}
+
+function validateOptionalSnapshotText(value, maxChars, fieldName) {
+  if (typeof value !== 'string'
+    || !value.trim()
+    || value.length > maxChars
+    || /[\r\n]/.test(value)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: `snapshot ${fieldName} invalid` };
+  }
+  return { ok: true, value };
+}
+
+function validateSnapshotName(value) {
+  return validateOptionalSnapshotText(value, SNAPSHOT_NAME_MAX_CHARS, 'name');
+}
+
+function validateSnapshotSourceComment(value) {
+  return validateOptionalSnapshotText(
+    value,
+    SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
+    'source comment'
+  );
 }
 
 function normalizeSnapshotCountLocale(value) {
@@ -212,6 +244,16 @@ function validateSnapshotDocument(rawSnapshot) {
     text: rawSnapshot.text,
     tags: tagsInfo.tags,
   };
+  if (Object.prototype.hasOwnProperty.call(rawSnapshot, 'name')) {
+    const nameInfo = validateSnapshotName(rawSnapshot.name);
+    if (!nameInfo.ok) return nameInfo;
+    snapshot.name = nameInfo.value;
+  }
+  if (Object.prototype.hasOwnProperty.call(rawSnapshot, 'sourceComment')) {
+    const sourceCommentInfo = validateSnapshotSourceComment(rawSnapshot.sourceComment);
+    if (!sourceCommentInfo.ok) return sourceCommentInfo;
+    snapshot.sourceComment = sourceCommentInfo.value;
+  }
   if (Object.prototype.hasOwnProperty.call(rawSnapshot, 'metrics')) {
     const metricsInfo = validateSnapshotMetrics(rawSnapshot.metrics);
     if (!metricsInfo.ok) return metricsInfo;
@@ -239,6 +281,8 @@ module.exports = {
   SNAPSHOT_TYPE,
   SNAPSHOT_SAVED_WITH,
   normalizeSnapshotCountLocale,
+  validateSnapshotName,
+  validateSnapshotSourceComment,
   validateSnapshotTags,
   validateSnapshotDocument,
 };

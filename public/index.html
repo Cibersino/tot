@@ -453,21 +453,34 @@
         <div class="snapshot-save-tags-modal-body">
           <p id="snapshotSaveTagsModalMessage">Etiqueta opcionalmente este snapshot de texto antes de elegir dónde
             guardarlo.</p>
+          <div id="snapshotSaveMetadataFields" class="snapshot-save-metadata-form">
+            <label id="snapshotSaveNameLabel" for="snapshotSaveName" class="snapshot-save-field-label">
+              Nombre (opcional)
+            </label>
+            <input id="snapshotSaveName" class="snapshot-save-metadata-input" type="text"
+              placeholder="Lectura">
+            <label id="snapshotSaveSourceCommentLabel" for="snapshotSaveSourceComment"
+              class="snapshot-save-field-label">
+              Origen (opcional)
+            </label>
+            <input id="snapshotSaveSourceComment" class="snapshot-save-metadata-input" type="text"
+              placeholder="capítulo-1.pdf, Unidad 1 o texto importado">
+          </div>
           <div class="snapshot-save-tags-form">
             <div class="snapshot-save-tags-field">
-              <span id="snapshotSaveTagsLanguageLabel" class="snapshot-save-tags-field-label">Idioma</span>
+              <span id="snapshotSaveTagsLanguageLabel" class="snapshot-save-field-label">Idioma</span>
               <div id="snapshotSaveTagsLanguageControl" class="snapshot-save-tags-combobox"></div>
             </div>
             <div class="snapshot-save-tags-field">
-              <span id="snapshotSaveTagsTypeLabel" class="snapshot-save-tags-field-label">Tipo</span>
+              <span id="snapshotSaveTagsTypeLabel" class="snapshot-save-field-label">Tipo</span>
               <div id="snapshotSaveTagsTypeControl" class="snapshot-save-tags-combobox"></div>
             </div>
             <div class="snapshot-save-tags-field">
-              <span id="snapshotSaveTagsDifficultyLabel" class="snapshot-save-tags-field-label">Dificultad</span>
+              <span id="snapshotSaveTagsDifficultyLabel" class="snapshot-save-field-label">Dificultad</span>
               <div id="snapshotSaveTagsDifficultyControl" class="snapshot-save-tags-combobox"></div>
             </div>
           </div>
-          <div class="snapshot-save-metrics-options">
+          <div id="snapshotSaveMetricsOptions" class="snapshot-save-metrics-options">
             <label class="snapshot-save-metrics-option native-checkbox-option">
               <input id="snapshotSaveIncludeCount" type="checkbox" checked>
               <span id="snapshotSaveIncludeCountLabel">Incluir recuento de palabras</span>

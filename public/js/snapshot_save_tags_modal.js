@@ -30,10 +30,18 @@
   const { tRenderer, msgRenderer } = window.RendererI18n;
   const { AppConstants } = window;
   if (!AppConstants || !Number.isInteger(AppConstants.SNAPSHOT_TAG_LABEL_MAX_CHARS)
-    || AppConstants.SNAPSHOT_TAG_LABEL_MAX_CHARS < 1) {
-    throw new Error('[snapshot-save-tags-modal] SNAPSHOT_TAG_LABEL_MAX_CHARS unavailable; verify constants.js load order');
+    || AppConstants.SNAPSHOT_TAG_LABEL_MAX_CHARS < 1
+    || !Number.isInteger(AppConstants.SNAPSHOT_NAME_MAX_CHARS)
+    || AppConstants.SNAPSHOT_NAME_MAX_CHARS < 1
+    || !Number.isInteger(AppConstants.SNAPSHOT_SOURCE_COMMENT_MAX_CHARS)
+    || AppConstants.SNAPSHOT_SOURCE_COMMENT_MAX_CHARS < 1) {
+    throw new Error('[snapshot-save-tags-modal] Snapshot field limits unavailable; verify constants.js load order');
   }
-  const { SNAPSHOT_TAG_LABEL_MAX_CHARS } = AppConstants;
+  const {
+    SNAPSHOT_TAG_LABEL_MAX_CHARS,
+    SNAPSHOT_NAME_MAX_CHARS,
+    SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
+  } = AppConstants;
 
   const snapshotTagCatalog = window.SnapshotTagCatalog || null;
   if (!snapshotTagCatalog
@@ -92,6 +100,10 @@
   const MANAGE_BUTTON_ARIA_KEY = 'renderer.snapshots.manager.title';
   const INCLUDE_COUNT_LABEL_KEY = 'renderer.snapshots.metrics.include_count';
   const INCLUDE_READING_LABEL_KEY = 'renderer.snapshots.metrics.include_reading';
+  const SNAPSHOT_NAME_LABEL_KEY = 'renderer.snapshots.labels.name';
+  const SNAPSHOT_SOURCE_COMMENT_LABEL_KEY = 'renderer.snapshots.labels.source_comment';
+  const SNAPSHOT_NAME_PLACEHOLDER_KEY = 'renderer.snapshots.placeholders.name';
+  const SNAPSHOT_SOURCE_COMMENT_PLACEHOLDER_KEY = 'renderer.snapshots.placeholders.source_comment';
   const MANAGER_UNAVAILABLE_ALERT_KEY = 'renderer.snapshots.alerts.catalog_update_error';
   const LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.load.unavailable';
   const SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.save.unavailable';
@@ -132,6 +144,12 @@
   const btnConfirm = document.getElementById('snapshotSaveTagsModalConfirm');
   const btnCancel = document.getElementById('snapshotSaveTagsModalCancel');
   const btnClose = document.getElementById('snapshotSaveTagsModalClose');
+  const snapshotMetadataFields = document.getElementById('snapshotSaveMetadataFields');
+  const snapshotNameInput = document.getElementById('snapshotSaveName');
+  const snapshotNameLabel = document.getElementById('snapshotSaveNameLabel');
+  const snapshotSourceCommentInput = document.getElementById('snapshotSaveSourceComment');
+  const snapshotSourceCommentLabel = document.getElementById('snapshotSaveSourceCommentLabel');
+  const metricsOptions = document.getElementById('snapshotSaveMetricsOptions');
   const includeCountInput = document.getElementById('snapshotSaveIncludeCount');
   const includeCountLabel = document.getElementById('snapshotSaveIncludeCountLabel');
   const includeReadingInput = document.getElementById('snapshotSaveIncludeReading');
@@ -154,6 +172,12 @@
     btnConfirm,
     btnCancel,
     btnClose,
+    snapshotMetadataFields,
+    snapshotNameInput,
+    snapshotNameLabel,
+    snapshotSourceCommentInput,
+    snapshotSourceCommentLabel,
+    metricsOptions,
     includeCountInput,
     includeCountLabel,
     includeReadingInput,
@@ -477,6 +501,30 @@
     btnManage.title = tRenderer(MANAGE_BUTTON_LABEL_KEY);
     includeCountLabel.textContent = tRenderer(INCLUDE_COUNT_LABEL_KEY);
     includeReadingLabel.textContent = tRenderer(INCLUDE_READING_LABEL_KEY);
+    snapshotNameLabel.textContent = tRenderer(SNAPSHOT_NAME_LABEL_KEY);
+    snapshotNameInput.placeholder = tRenderer(SNAPSHOT_NAME_PLACEHOLDER_KEY);
+    snapshotNameInput.maxLength = SNAPSHOT_NAME_MAX_CHARS;
+    snapshotSourceCommentLabel.textContent = tRenderer(SNAPSHOT_SOURCE_COMMENT_LABEL_KEY);
+    snapshotSourceCommentInput.placeholder = tRenderer(SNAPSHOT_SOURCE_COMMENT_PLACEHOLDER_KEY);
+    snapshotSourceCommentInput.maxLength = SNAPSHOT_SOURCE_COMMENT_MAX_CHARS;
+  }
+
+  function setSnapshotSaveFieldVisibility(showSaveFields) {
+    snapshotMetadataFields.hidden = !showSaveFields;
+    snapshotMetadataFields.setAttribute('aria-hidden', showSaveFields ? 'false' : 'true');
+    metricsOptions.hidden = !showSaveFields;
+    metricsOptions.setAttribute('aria-hidden', showSaveFields ? 'false' : 'true');
+  }
+
+  function resetSnapshotSaveFields() {
+    snapshotNameInput.value = '';
+    snapshotSourceCommentInput.value = '';
+  }
+
+  function collectOptionalInputValue(input) {
+    return input && typeof input.value === 'string' && input.value.trim()
+      ? input.value
+      : '';
   }
 
   function syncMetricChoiceState() {
@@ -915,20 +963,22 @@
   }
 
   // =============================================================================
-  // Snapshot-save prompt
+  // Snapshot prompts
   // =============================================================================
-  async function promptSnapshotSaveTags(options = {}) {
+  async function promptSnapshot(options = {}, { includeSaveFields } = {}) {
     if (!hasRequiredElements()) {
-      log.error('Snapshot save tags modal DOM elements missing.');
+      log.error('Snapshot prompt DOM elements missing.');
       return null;
     }
 
     ensureFieldEventsBound();
     ensureMetricChoiceEventsBound();
     populateCopy(options.copy);
+    setSnapshotSaveFieldVisibility(includeSaveFields);
     currentSnapshotTagPreferences = await loadSnapshotTagPreferences();
     resetFields(options.initialTags);
     resetMetricChoices();
+    resetSnapshotSaveFields();
 
     return await new Promise((resolve) => {
       let settled = false;
@@ -952,11 +1002,18 @@
       }
 
       function onConfirm() {
-        finish({
+        const result = {
           tags: collectTags(),
-          includeCount: includeCountInput.checked,
-          includeReading: includeReadingInput.checked,
-        });
+        };
+        if (includeSaveFields) {
+          result.includeCount = includeCountInput.checked;
+          result.includeReading = includeReadingInput.checked;
+          const name = collectOptionalInputValue(snapshotNameInput);
+          const sourceComment = collectOptionalInputValue(snapshotSourceCommentInput);
+          if (name) result.name = name;
+          if (sourceComment) result.sourceComment = sourceComment;
+        }
+        finish(result);
       }
 
       function onCancel() {
@@ -1001,7 +1058,9 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       modal.setAttribute('aria-hidden', 'false');
-      const initialFocus = FIELD_DEFS[0].controlEl.querySelector('.renderer-combobox__input');
+      const initialFocus = includeSaveFields
+        ? snapshotNameInput
+        : FIELD_DEFS[0].controlEl.querySelector('.renderer-combobox__input');
       window.Notify.activateModalFocus(modal, {
         initialFocus,
         fallbackFocus: btnClose,
@@ -1009,11 +1068,20 @@
     });
   }
 
+  function promptSnapshotSave(options = {}) {
+    return promptSnapshot(options, { includeSaveFields: true });
+  }
+
+  function promptSnapshotTags(options = {}) {
+    return promptSnapshot(options, { includeSaveFields: false });
+  }
+
   // =============================================================================
   // Exports / module surface
   // =============================================================================
   window.Notify.registerCustomPrompt('promptSnapshotTagManager', promptSnapshotTagManager);
-  window.Notify.registerCustomPrompt('promptSnapshotSaveTags', promptSnapshotSaveTags);
+  window.Notify.registerCustomPrompt('promptSnapshotSave', promptSnapshotSave);
+  window.Notify.registerCustomPrompt('promptSnapshotTags', promptSnapshotTags);
 })();
 
 // =============================================================================

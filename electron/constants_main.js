@@ -13,6 +13,8 @@ const PRESET_WPM_MIN = 10; // Minimum WPM allowed when persisting presets.
 const PRESET_WPM_MAX = 700; // Maximum WPM allowed when persisting presets.
 const BATCH_UNIT_NAME_MAX = 25; // Max chars for Batch unit names. Must match public/js/constants.js.
 const SNAPSHOT_TAG_LABEL_MAX_CHARS = 36; // Max chars for custom snapshot tag labels. Must match public/js/constants.js.
+const SNAPSHOT_NAME_MAX_CHARS = 120; // Max chars for optional text snapshot names. Must match public/js/constants.js.
+const SNAPSHOT_SOURCE_COMMENT_MAX_CHARS = 65_536; // Max chars for optional text snapshot source comments. Must match public/js/constants.js.
 const TASK_NAME_MAX_CHARS = 50; // Max chars for task list name.
 const TASK_LIST_MAX_ROWS = 200; // Max rows allowed in a persisted task list payload.
 const TASK_LIBRARY_MAX_ITEMS = 12000; // Max items allowed in the persisted task library.
@@ -43,6 +45,8 @@ module.exports = {
   PRESET_WPM_MAX,
   BATCH_UNIT_NAME_MAX,
   SNAPSHOT_TAG_LABEL_MAX_CHARS,
+  SNAPSHOT_NAME_MAX_CHARS,
+  SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
   TASK_NAME_MAX_CHARS,
   TASK_LIST_MAX_ROWS,
   TASK_LIBRARY_MAX_ITEMS,

@@ -2185,9 +2185,9 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] snapshot de texto; etiquetas de snapshot de texto
       },
       "message": {
-        "es": "Puedes etiquetar este snapshot de texto antes de elegir dónde guardarlo.",
-        "en": "You can optionally tag this text snapshot before choosing where to save it."
-        // [PROPÓSITO] Modal previo a guardar snapshot; permite asignar etiquetas opcionales antes de elegir ubicación.
+        "es": "Puedes nombrar, describir el origen y etiquetar este snapshot de texto antes de elegir dónde guardarlo.",
+        "en": "You can optionally name, describe the source of, and tag this text snapshot before choosing where to save it."
+        // [PROPÓSITO] Modal previo a guardar snapshot; permite asignar un nombre, un comentario sobre el origen y etiquetas opcionales antes de elegir ubicación.
         // [CONCEPTO_APP] snapshot de texto; etiquetas de snapshot de texto
       },
       "search": {
@@ -2205,6 +2205,19 @@ Estados de revisión recomendados:
         }
       },
       "labels": {
+        "name": {
+          "es": "Nombre (opcional)",
+          "en": "Name (optional)"
+          // [PROPÓSITO] Nombre libre del snapshot de texto; puede orientar el nombre de archivo predeterminado sin sustituir la ruta elegida por la persona.
+          // [CONCEPTO_APP] snapshot de texto
+        },
+        "source_comment": {
+          "es": "Origen (opcional)",
+          "en": "Origin (optional)"
+          // [PROPÓSITO] Comentario libre que registra de dónde proviene o cómo se creó el snapshot de texto.
+          // [CONCEPTO_APP] snapshot de texto
+          // [NO_CONFUNDIR] No es el comentario de una fila de lectura del Editor de Tareas.
+        },
         "language": {
           "es": "Idioma",
           "en": "Language"
@@ -2222,6 +2235,21 @@ Estados de revisión recomendados:
           "en": "Difficulty"
           // [PROPÓSITO] Etiqueta opcional del snapshot de texto; clasifica la dificultad del texto guardado.
           // [CONCEPTO_APP] etiquetas de snapshot de texto
+        }
+      },
+      "placeholders": {
+        "name": {
+          "es": "Lectura",
+          "en": "Reading"
+          // [PROPÓSITO] Ejemplo breve para el nombre libre de un snapshot de texto.
+          // [CONCEPTO_APP] snapshot de texto
+        },
+        "source_comment": {
+          "es": "capítulo-1.pdf, Unidad 1 o texto importado",
+          "en": "chapter-1.pdf, Unit 1, or imported text"
+          // [PROPÓSITO] Ejemplos de procedencia para el comentario libre del snapshot.
+          // [CONCEPTO_APP] snapshot de texto
+          // [PROTEGIDO] Las extensiones y nombres de archivo se tratan como valores técnicos.
         }
       },
       "metrics": {

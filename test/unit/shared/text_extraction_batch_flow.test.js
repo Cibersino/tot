@@ -74,7 +74,7 @@ function createHarness({
           }
           return promptBatchPlanResult;
         },
-        async promptSnapshotSaveTags(options) {
+        async promptSnapshotTags(options) {
           snapshotTagsPromptOptions = options;
           return snapshotTagsPromptResult;
         },
@@ -780,6 +780,18 @@ test('batch execution autosaves unnamed ordinary single-input units from source 
     harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
     ['book', 'notes.v2', 'README', '.env']
   );
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => ({
+      name: payload.name,
+      sourceComment: payload.sourceComment,
+    })),
+    [
+      { name: 'unit_1', sourceComment: 'book.pdf' },
+      { name: 'unit_2', sourceComment: 'notes.v2.txt' },
+      { name: 'unit_3', sourceComment: 'README' },
+      { name: 'unit_4', sourceComment: '.env' },
+    ]
+  );
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
   assert.ok(report);
@@ -789,6 +801,49 @@ test('batch execution autosaves unnamed ordinary single-input units from source 
   );
   assert.ok(report.units.every((unit) => unit.snapshotResult.state === 'saved'));
   assert.ok(report.units.every((unit) => /snapshot\.json/.test(unit.snapshotResult.text)));
+});
+
+test('single-unit full-PDF split execution does not create an automatic snapshot', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\book.pdf': createPreparation({
+      fileName: 'book.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['native', 'ocr'],
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'book.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Book text',
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [{
+              fileName: 'book_pages_001_020.pdf',
+              state: 'success',
+              errorCode: '',
+              generatedPdfArtifact: null,
+            }],
+          },
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-single-unit-no-snapshot',
+  });
+
+  assert.deepEqual(harness.getSavedSnapshotPayloads(), []);
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.equal(report.units[0].snapshotResult.state, 'not_created');
 });
 
 test('batch execution autosaves custom-named single-input units from the raw custom name while preserving the visible title', async () => {
@@ -830,7 +885,16 @@ test('batch execution autosaves custom-named single-input units from the raw cus
     harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
     ['Chapter 3.pdf', 'appendix']
   );
-  assert.equal(harness.getSavedSnapshotPayloads()[0].batchUnitName, 'Chapter 3.pdf');
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => ({
+      name: payload.name,
+      sourceComment: payload.sourceComment,
+    })),
+    [
+      { name: 'Chapter 3.pdf', sourceComment: 'chapter.pdf' },
+      { name: 'unit_2', sourceComment: 'appendix.pdf' },
+    ]
+  );
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
   assert.ok(report);
@@ -877,7 +941,8 @@ test('batch execution clamps custom unit names before snapshot handoff', async (
   assert.deepEqual(harness.getSavedSnapshotPayloads()[0], {
     nonInteractive: true,
     autoFileBaseName: expectedName,
-    batchUnitName: expectedName,
+    name: expectedName,
+    sourceComment: 'chapter.pdf',
     tags: null,
     includeCount: true,
     includeReading: false,
@@ -911,7 +976,22 @@ test('batch execution autosaves unnamed heavy single-input units with normal uni
     preparationsByPath,
     promptBatchPlanResult: { action: 'start' },
     executionResultsByProcessingInputFileName: {
-      'book.pdf': { ok: true, result: { state: 'success', text: 'Book OCR text', generatedPdfArtifact: null } },
+      'book.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Book OCR text',
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [{
+              fileName: 'book_pages_001_020.pdf',
+              state: 'success',
+              errorCode: '',
+              generatedPdfArtifact: null,
+            }],
+          },
+        },
+      },
       'notes.txt': { ok: true, result: { state: 'success', text: 'Notes text', generatedPdfArtifact: null } },
     },
   });
@@ -925,6 +1005,16 @@ test('batch execution autosaves unnamed heavy single-input units with normal uni
   assert.deepEqual(
     harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
     ['book', 'notes']
+  );
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => ({
+      name: payload.name,
+      sourceComment: payload.sourceComment,
+    })),
+    [
+      { name: 'unit_1', sourceComment: 'book.pdf' },
+      { name: 'unit_2', sourceComment: 'notes.txt' },
+    ]
   );
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
@@ -977,6 +1067,16 @@ test('batch execution autosaves unnamed multi-input units with the synthetic uni
   assert.deepEqual(
     harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
     ['unit_1', 'part-3']
+  );
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => ({
+      name: payload.name,
+      sourceComment: payload.sourceComment,
+    })),
+    [
+      { name: 'unit_1', sourceComment: 'part-1.pdf, part-2.pdf' },
+      { name: 'unit_2', sourceComment: 'part-3.pdf' },
+    ]
   );
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
@@ -1035,6 +1135,16 @@ test('batch execution autosaves custom-named multi-input units from the raw cust
   assert.deepEqual(
     harness.getSavedSnapshotPayloads().map((payload) => payload.autoFileBaseName),
     ['Batch.v1', 'part-3']
+  );
+  assert.deepEqual(
+    harness.getSavedSnapshotPayloads().map((payload) => ({
+      name: payload.name,
+      sourceComment: payload.sourceComment,
+    })),
+    [
+      { name: 'Batch.v1', sourceComment: 'part-1.pdf, part-2.pdf' },
+      { name: 'unit_2', sourceComment: 'part-3.pdf' },
+    ]
   );
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));

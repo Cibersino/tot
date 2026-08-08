@@ -6,8 +6,8 @@
 // =============================================================================
 // Renderer helper for current text snapshots.
 // Responsibilities:
-// - Prompt the pre-save snapshot tags modal before saving.
-// - Forward explicit count/reading metadata choices and active WPM to IPC.
+// - Prompt the pre-save snapshot metadata modal before saving.
+// - Forward optional name/source metadata, metrics choices, and active WPM to IPC.
 // - Call electronAPI save/load snapshot IPC.
 // - Map { ok, code } responses to Notify toasts (no DOM wiring).
 // =============================================================================
@@ -82,7 +82,7 @@
         return { ok: false, code: 'WRITE_FAILED' };
       }
 
-      const payload = await window.Notify.promptSnapshotSaveTags();
+      const payload = await window.Notify.promptSnapshotSave();
       if (!payload) {
         return { ok: false, code: 'CANCELLED' };
       }
@@ -95,6 +95,12 @@
         includeReading,
         ...(normalizedTags ? { tags: normalizedTags } : {}),
       };
+      if (typeof payload.name === 'string' && payload.name.trim()) {
+        savePayload.name = payload.name;
+      }
+      if (typeof payload.sourceComment === 'string' && payload.sourceComment.trim()) {
+        savePayload.sourceComment = payload.sourceComment;
+      }
       if (includeReading) {
         if (typeof getCurrentWpm !== 'function') {
           log.error('Current WPM provider unavailable for snapshot reading metadata.');

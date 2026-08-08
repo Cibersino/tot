@@ -584,6 +584,7 @@ body {
 .text-extraction-apply-repeat-row input,
 .text-extraction-batch-plan-unit-name,
 .text-extraction-batch-plan-page-scope-input,
+.snapshot-save-metadata-input,
 .snapshot-tag-manager-draft-input {
   padding: var(--direct-entry-field-padding);
   border: 1px solid var(--field-border);
@@ -630,6 +631,7 @@ body {
 }
 
 .text-extraction-batch-plan-unit-name,
+.snapshot-save-metadata-input,
 .snapshot-tag-manager-draft-input {
   height: var(--text-entry-field-height);
 }
@@ -2123,6 +2125,24 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
+.snapshot-save-metadata-form {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.snapshot-save-field-label {
+  justify-self: end;
+  font-size: var(--font-size-8);
+}
+
+.snapshot-save-metadata-input {
+  min-width: 0;
+  width: 100%;
+  font-size: var(--font-size-7);
+}
+
 .snapshot-save-tags-modal-header-actions {
   display: flex;
   gap: 12px;
@@ -2138,11 +2158,6 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-save-tags-field {
   display: contents;
-}
-
-.snapshot-save-tags-field-label {
-  justify-self: end;
-  font-size: var(--font-size-8);
 }
 
 .snapshot-save-tags-combobox {

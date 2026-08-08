@@ -91,6 +91,34 @@ test('canonical text snapshots accept count-only and count-plus-reading metrics'
   });
 });
 
+test('canonical text snapshots accept optional name and single-line source comments', () => {
+  const info = snapshotSchema.validateSnapshotDocument(createSnapshot({
+    name: 'Reading',
+    sourceComment: 'chapter-1.pdf, Unit 1',
+  }));
+
+  assert.equal(info.ok, true);
+  assert.equal(info.snapshot.name, 'Reading');
+  assert.equal(info.snapshot.sourceComment, 'chapter-1.pdf, Unit 1');
+});
+
+test('canonical text snapshots reject invalid name and source-comment values', () => {
+  const invalidOverrides = [
+    { name: '' },
+    { name: 'x'.repeat(121) },
+    { name: 'Reading\nnotes' },
+    { sourceComment: '' },
+    { sourceComment: 'source\nnotes' },
+    { sourceComment: 'x'.repeat(65_537) },
+  ];
+
+  invalidOverrides.forEach((overrides) => {
+    const info = snapshotSchema.validateSnapshotDocument(createSnapshot(overrides));
+    assert.equal(info.ok, false);
+    assert.equal(info.code, 'INVALID_SCHEMA');
+  });
+});
+
 test('canonical text snapshots reject incomplete or inconsistent metrics', () => {
   const invalidMetrics = [
     {},

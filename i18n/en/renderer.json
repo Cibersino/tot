@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Save text snapshot",
-      "message": "You can optionally tag this text snapshot before choosing where to save it.",
+      "message": "You can optionally name, describe the source of, and tag this text snapshot before choosing where to save it.",
       "search": {
         "placeholder": "Type to filter options",
         "no_results": "No matching options",
         "create": "Create \"{label}\""
       },
       "labels": {
+        "name": "Name (optional)",
+        "source_comment": "Origin (optional)",
         "language": "Language",
         "type": "Type",
         "difficulty": "Difficulty"
+      },
+      "placeholders": {
+        "name": "Reading",
+        "source_comment": "chapter-1.pdf, Unit 1, or imported text"
       },
       "metrics": {
         "include_count": "Include word count",

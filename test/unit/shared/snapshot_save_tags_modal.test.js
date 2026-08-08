@@ -208,6 +208,12 @@ function createHarness({
     snapshotSaveTagsModalConfirm: createElement('snapshotSaveTagsModalConfirm', 'button'),
     snapshotSaveTagsModalCancel: createElement('snapshotSaveTagsModalCancel', 'button'),
     snapshotSaveTagsModalClose: createElement('snapshotSaveTagsModalClose', 'button'),
+    snapshotSaveMetadataFields: createElement('snapshotSaveMetadataFields'),
+    snapshotSaveName: createElement('snapshotSaveName', 'input'),
+    snapshotSaveNameLabel: createElement('snapshotSaveNameLabel', 'span'),
+    snapshotSaveSourceComment: createElement('snapshotSaveSourceComment', 'input'),
+    snapshotSaveSourceCommentLabel: createElement('snapshotSaveSourceCommentLabel', 'span'),
+    snapshotSaveMetricsOptions: createElement('snapshotSaveMetricsOptions'),
     snapshotSaveIncludeCount: createElement('snapshotSaveIncludeCount', 'input'),
     snapshotSaveIncludeCountLabel: createElement('snapshotSaveIncludeCountLabel', 'span'),
     snapshotSaveIncludeReading: createElement('snapshotSaveIncludeReading', 'input'),
@@ -225,16 +231,20 @@ function createHarness({
   const documentListeners = new Map();
   const translations = {
     'renderer.snapshots.title': 'Save text snapshot',
-    'renderer.snapshots.message': 'Optionally tag this text snapshot before choosing where to save it.',
+    'renderer.snapshots.message': 'Optionally name, describe the source of, and tag this text snapshot before choosing where to save it.',
     'renderer.snapshots.search.placeholder': 'Type to filter options',
     'renderer.snapshots.search.no_results': 'No matching options',
     'renderer.snapshots.search.create': 'Create "{label}"',
     'renderer.snapshots.buttons.manage': 'Manage tags',
     'renderer.snapshots.labels.language': 'Language',
+    'renderer.snapshots.labels.name': 'Name (optional)',
+    'renderer.snapshots.labels.source_comment': 'Origin (optional)',
     'renderer.snapshots.labels.type': 'Type',
     'renderer.snapshots.labels.difficulty': 'Difficulty',
     'renderer.snapshots.metrics.include_count': 'Include word count',
     'renderer.snapshots.metrics.include_reading': 'Include reading estimate and WPM',
+    'renderer.snapshots.placeholders.name': 'Reading',
+    'renderer.snapshots.placeholders.source_comment': 'chapter-1.pdf, Unit 1, or imported text',
     'renderer.snapshots.empty.language': 'No language tag',
     'renderer.snapshots.empty.type': 'No type tag',
     'renderer.snapshots.empty.difficulty': 'No difficulty tag',
@@ -323,6 +333,8 @@ function createHarness({
       },
       AppConstants: {
         SNAPSHOT_TAG_LABEL_MAX_CHARS: 36,
+        SNAPSHOT_NAME_MAX_CHARS: 120,
+        SNAPSHOT_SOURCE_COMMENT_MAX_CHARS: 65_536,
       },
       SnapshotTagCatalog: snapshotTagCatalog,
       RendererIcons: {
@@ -455,7 +467,12 @@ function createHarness({
   return {
     elements,
     prompt(...args) {
-      const result = sandbox.window.Notify.promptSnapshotSaveTags(...args);
+      const result = sandbox.window.Notify.promptSnapshotSave(...args);
+      syncComboboxElementAliases();
+      return result;
+    },
+    promptTags(...args) {
+      const result = sandbox.window.Notify.promptSnapshotTags(...args);
       syncComboboxElementAliases();
       return result;
     },
@@ -489,7 +506,8 @@ test('snapshot save tags modal registers public prompts through window.Notify.re
 
   assert.deepEqual(harness.getRegisteredPromptNames(), [
     'promptSnapshotTagManager',
-    'promptSnapshotSaveTags',
+    'promptSnapshotSave',
+    'promptSnapshotTags',
   ]);
   assert.equal(typeof harness.prompt, 'function');
   assert.equal(typeof harness.promptManager, 'function');
@@ -505,6 +523,12 @@ test('snapshot save tags modal keeps snapshot-save wording by default', async ()
   assert.match(harness.elements.snapshotSaveTagsModalMessage.textContent, /text snapshot/);
   assert.equal(harness.elements.snapshotSaveTagsModalConfirm.textContent, 'Save Text Snapshot');
   assert.equal(harness.elements.snapshotSaveTagsLanguageInput.placeholder, 'Type to filter options');
+  assert.equal(harness.elements.snapshotSaveSourceCommentLabel.textContent, 'Origin (optional)');
+  assert.equal(harness.elements.snapshotSaveName.placeholder, 'Reading');
+  assert.equal(
+    harness.elements.snapshotSaveSourceComment.placeholder,
+    'chapter-1.pdf, Unit 1, or imported text'
+  );
   assert.equal(harness.elements.snapshotSaveTagsManageButton.textContent, 'Manage tags');
   assert.equal(harness.elements.snapshotSaveTagsManageButton.title, 'Manage tags');
   assert.equal(
@@ -520,6 +544,45 @@ test('snapshot save tags modal keeps snapshot-save wording by default', async ()
   harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, null);
+});
+
+test('snapshot save modal returns optional name and source-comment fields', async () => {
+  const harness = createHarness();
+
+  const promptPromise = harness.prompt({ initialTags: null });
+  await flushMicrotasks();
+
+  assert.equal(harness.elements.snapshotSaveMetadataFields.hidden, false);
+  assert.equal(harness.elements.snapshotSaveMetricsOptions.hidden, false);
+  assert.equal(harness.elements.snapshotSaveName.maxLength, 120);
+  assert.equal(harness.elements.snapshotSaveSourceComment.maxLength, 65_536);
+
+  harness.elements.snapshotSaveName.value = 'Reading';
+  harness.elements.snapshotSaveSourceComment.value = 'chapter-1.pdf, Unit 1';
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+
+  const result = await promptPromise;
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    tags: null,
+    includeCount: true,
+    includeReading: true,
+    name: 'Reading',
+    sourceComment: 'chapter-1.pdf, Unit 1',
+  });
+});
+
+test('snapshot tags prompt hides save-only metadata and metric controls', async () => {
+  const harness = createHarness();
+
+  const promptPromise = harness.promptTags({ initialTags: null });
+  await flushMicrotasks();
+
+  assert.equal(harness.elements.snapshotSaveMetadataFields.hidden, true);
+  assert.equal(harness.elements.snapshotSaveMetricsOptions.hidden, true);
+
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  const result = await promptPromise;
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), { tags: null });
 });
 
 test('snapshot save tags modal creates and selects a custom tag from the inline create option', async () => {

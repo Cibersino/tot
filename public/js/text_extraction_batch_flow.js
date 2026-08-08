@@ -740,7 +740,7 @@
         const currentTags = state.unitMetaByKey[unitKey] ? state.unitMetaByKey[unitKey].tags : null;
         let nextTags = null;
         try {
-          nextTags = await window.Notify.promptSnapshotSaveTags({
+          nextTags = await window.Notify.promptSnapshotTags({
             initialTags: currentTags || null,
             copy: {
               titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
@@ -936,7 +936,15 @@
     }
   }
 
-  async function autoSaveUnitSnapshot(fileBaseSource, tags, batchUnitName = '') {
+  function buildUnitSnapshotSourceComment(inputs) {
+    if (!Array.isArray(inputs)) return '';
+    return inputs
+      .map((input) => normalizeNonEmptyString(input && input.fileName))
+      .filter(Boolean)
+      .join(', ');
+  }
+
+  async function autoSaveUnitSnapshot(fileBaseSource, tags, name, sourceComment) {
     if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
       log.warnOnce(
         'renderer.ipc.saveCurrentTextSnapshot.unavailable',
@@ -952,7 +960,8 @@
         includeCount: true,
         includeReading: false,
       };
-      if (batchUnitName) payload.batchUnitName = batchUnitName;
+      if (name) payload.name = name;
+      if (sourceComment) payload.sourceComment = sourceComment;
       return await window.electronAPI.saveCurrentTextSnapshot(payload);
     } catch (err) {
       log.warn('saveCurrentTextSnapshot failed (ignored):', err);
@@ -1455,7 +1464,12 @@
 
         const snapshotRequired = units.length > 1 && unitProducedText;
         const snapshotResult = snapshotRequired
-          ? await autoSaveUnitSnapshot(unit.snapshotFileBaseSource, unit.tags, unit.customName)
+          ? await autoSaveUnitSnapshot(
+            unit.snapshotFileBaseSource,
+            unit.tags,
+            unit.title,
+            buildUnitSnapshotSourceComment(unit.inputs)
+          )
           : null;
         unitReport.snapshotResult = buildUnitResultLine({
           required: snapshotRequired,

@@ -22,7 +22,7 @@ function loadSnapshotsModule({ promptResult, getCurrentWpm = null } = {}) {
       },
       SnapshotTagCatalog: snapshotTagCatalog,
       Notify: {
-        async promptSnapshotSaveTags() {
+        async promptSnapshotSave() {
           return promptResult;
         },
         toastMain(key, options) {
@@ -90,6 +90,28 @@ test('manual snapshot save forwards an intentional no-metrics selection without 
 
   assert.deepEqual(result, { ok: true });
   assert.deepEqual(JSON.parse(JSON.stringify(saveCalls)), [{
+    includeCount: false,
+    includeReading: false,
+  }]);
+});
+
+test('manual snapshot save forwards optional snapshot name and source comment', async () => {
+  const { snapshots, saveCalls } = loadSnapshotsModule({
+    promptResult: {
+      name: 'Reading',
+      sourceComment: 'chapter-1.pdf, Unit 1',
+      tags: null,
+      includeCount: false,
+      includeReading: false,
+    },
+  });
+
+  const result = await snapshots.saveSnapshot();
+
+  assert.deepEqual(result, { ok: true });
+  assert.deepEqual(JSON.parse(JSON.stringify(saveCalls)), [{
+    name: 'Reading',
+    sourceComment: 'chapter-1.pdf, Unit 1',
     includeCount: false,
     includeReading: false,
   }]);

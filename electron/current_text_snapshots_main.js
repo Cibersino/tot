@@ -23,7 +23,6 @@ const { dialog, BrowserWindow, shell } = require('electron');
 const Log = require('./log');
 const {
   DEFAULT_LANG,
-  BATCH_UNIT_NAME_MAX,
   PRESET_WPM_MIN,
   PRESET_WPM_MAX,
 } = require('./constants_main');
@@ -65,7 +64,8 @@ const SNAPSHOT_NAME_RE = /^current_text_(\d+)\.json$/i;
 const SNAPSHOT_SAVE_PAYLOAD_KEYS = Object.freeze([
   'nonInteractive',
   'autoFileBaseName',
-  'batchUnitName',
+  'name',
+  'sourceComment',
   'tags',
   'includeCount',
   'includeReading',
@@ -147,6 +147,17 @@ function getDefaultSnapshotName(rootDir) {
 }
 
 function sanitizeSnapshotBaseName(base) {
+  let next = String(base || '').trim().normalize('NFC');
+  next = next.replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ');
+  next = next.replace(/\s+/g, ' ').trim();
+  next = next.replace(/[. ]+$/g, '');
+  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(next)) {
+    next = `_${next}`;
+  }
+  return next || 'current_text';
+}
+
+function sanitizeAutomaticSnapshotBaseName(base) {
   let next = String(base || '');
   next = next.replace(/\s+/g, '_');
   next = next.replace(/[^A-Za-z0-9_-]/g, '');
@@ -164,7 +175,7 @@ function normalizeSavePath(filePath) {
 }
 
 function resolveDeterministicAutoSnapshotPath(rootDir, rawBaseName) {
-  const safeBaseName = sanitizeSnapshotBaseName(rawBaseName);
+  const safeBaseName = sanitizeAutomaticSnapshotBaseName(rawBaseName);
   let candidateName = `${safeBaseName}${SNAPSHOT_EXT}`;
   let candidatePath = path.join(rootDir, candidateName);
   let collisionIndex = 2;
@@ -270,17 +281,21 @@ function sanitizeSnapshotSavePayload(payload) {
   }
   const autoFileBaseName = hasAutoFileBaseName ? payload.autoFileBaseName.trim() : '';
 
-  if (Object.prototype.hasOwnProperty.call(payload, 'batchUnitName')) {
-    if (!nonInteractive || typeof payload.batchUnitName !== 'string') {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'batch unit name must be a string' };
-    }
-    if (payload.batchUnitName.trim().length > BATCH_UNIT_NAME_MAX) {
-      return { ok: false, code: 'BATCH_UNIT_NAME_TOO_LONG', message: 'batch unit name too long' };
-    }
+  let name = '';
+  if (Object.prototype.hasOwnProperty.call(payload, 'name')) {
+    const nameInfo = currentTextSnapshotSchema.validateSnapshotName(payload.name);
+    if (!nameInfo.ok) return nameInfo;
+    name = nameInfo.value;
   }
 
-  if ((hasAutoFileBaseName || Object.prototype.hasOwnProperty.call(payload, 'batchUnitName'))
-    && !nonInteractive) {
+  let sourceComment = '';
+  if (Object.prototype.hasOwnProperty.call(payload, 'sourceComment')) {
+    const sourceCommentInfo = currentTextSnapshotSchema.validateSnapshotSourceComment(payload.sourceComment);
+    if (!sourceCommentInfo.ok) return sourceCommentInfo;
+    sourceComment = sourceCommentInfo.value;
+  }
+
+  if (hasAutoFileBaseName && !nonInteractive) {
     return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot automatic fields require nonInteractive' };
   }
 
@@ -307,6 +322,8 @@ function sanitizeSnapshotSavePayload(payload) {
     ok: true,
     tags,
     autoFileBaseName,
+    name,
+    sourceComment,
     nonInteractive,
     includeCount: payload.includeCount,
     includeReading: payload.includeReading,
@@ -579,7 +596,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         );
         normalizedPath = normalizeSavePath(autoPath.candidatePath);
       } else {
-        const defaultName = getDefaultSnapshotName(root);
+        const defaultName = payloadInfo.name
+          ? `${sanitizeSnapshotBaseName(payloadInfo.name)}${SNAPSHOT_EXT}`
+          : getDefaultSnapshotName(root);
         const defaultPath = path.join(root, defaultName);
 
         const dialogRes = await dialog.showSaveDialog(resolveOwnerWin(event, getWindows), {
@@ -615,6 +634,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           savedAt: new Date().toISOString(),
           savedWith: SNAPSHOT_SAVED_WITH,
         },
+        ...(payloadInfo.name ? { name: payloadInfo.name } : {}),
+        ...(payloadInfo.sourceComment ? { sourceComment: payloadInfo.sourceComment } : {}),
         text,
         tags: payloadInfo.tags || {},
         ...(metrics ? { metrics } : {}),
