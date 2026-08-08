@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Metin snapshot'ını kaydet",
-      "message": "Kaydedilecek konumu seçmeden önce bu metin snapshot'ını isteğe bağlı olarak etiketleyin.",
+      "message": "Kaydedilecek konumu seçmeden önce bu metin snapshot'ına isteğe bağlı olarak ad verebilir, kökenini açıklayabilir ve etiket ekleyebilirsiniz.",
       "search": {
         "placeholder": "Seçenekleri filtrelemek için yazın",
         "no_results": "Eşleşen seçenek yok",
         "create": "\"{label}\" oluştur"
       },
       "labels": {
+        "name": "Ad (isteğe bağlı)",
+        "source_comment": "Köken (isteğe bağlı)",
         "language": "Dil",
         "type": "Tür",
         "difficulty": "Zorluk"
+      },
+      "placeholders": {
+        "name": "Okuma",
+        "source_comment": "chapter-1.pdf, Ünite 1 veya içe aktarılan metin"
       },
       "metrics": {
         "include_count": "Kelime sayısını dahil et",

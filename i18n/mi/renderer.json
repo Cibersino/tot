@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Tiaki hopunga kuputuhi",
-      "message": "Ki te hiahia koe, tāpirihia he tūtohu ki tēnei hopunga kuputuhi i mua i te kōwhiri i te wāhi tiaki.",
+      "message": "I mua i te kōwhiri i te wāhi tiaki, ka taea e koe te whakaingoa i tēnei hopunga kuputuhi, te whakamārama i tōna takenga, me te tāpiri tūtohu.",
       "search": {
         "placeholder": "Patohia hei tātari i ngā kōwhiringa",
         "no_results": "Kāore he kōwhiringa ōrite",
         "create": "Waihanga \"{label}\""
       },
       "labels": {
+        "name": "Ingoa (kōwhiringa)",
+        "source_comment": "Takenga (kōwhiringa)",
         "language": "Reo",
         "type": "Momo",
         "difficulty": "Uaua"
+      },
+      "placeholders": {
+        "name": "Pānui",
+        "source_comment": "chapter-1.pdf, Waeine 1, kuputuhi kawemai rānei"
       },
       "metrics": {
         "include_count": "Tāpirihia te tatau kupu",

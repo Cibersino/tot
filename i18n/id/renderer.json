@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Simpan snapshot teks",
-      "message": "Secara opsional, beri tag pada snapshot teks ini sebelum memilih lokasi penyimpanan.",
+      "message": "Anda dapat secara opsional memberi nama, menjelaskan asal, dan memberi tag pada snapshot teks ini sebelum memilih tempat menyimpannya.",
       "search": {
         "placeholder": "Ketik untuk memfilter opsi",
         "no_results": "Tidak ada opsi yang cocok",
         "create": "Buat \"{label}\""
       },
       "labels": {
+        "name": "Nama (opsional)",
+        "source_comment": "Asal (opsional)",
         "language": "Bahasa",
         "type": "Jenis",
         "difficulty": "Kesulitan"
+      },
+      "placeholders": {
+        "name": "Bacaan",
+        "source_comment": "chapter-1.pdf, Unit 1, atau teks yang diimpor"
       },
       "metrics": {
         "include_count": "Sertakan jumlah kata",

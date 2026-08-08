@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Desar snapshot de text",
-      "message": "Etiqueta opcionalment aquest snapshot de text abans de triar on desar-lo.",
+      "message": "Podeu posar un nom, descriure'n l'origen i etiquetar opcionalment aquest snapshot de text abans de triar on desar-lo.",
       "search": {
         "placeholder": "Escriu per filtrar opcions",
         "no_results": "No hi ha opcions coincidents",
         "create": "Crea \"{label}\""
       },
       "labels": {
+        "name": "Nom (opcional)",
+        "source_comment": "Origen (opcional)",
         "language": "Idioma",
         "type": "Tipus",
         "difficulty": "Dificultat"
+      },
+      "placeholders": {
+        "name": "Lectura",
+        "source_comment": "chapter-1.pdf, Unitat 1 o text importat"
       },
       "metrics": {
         "include_count": "Inclou el recompte de paraules",

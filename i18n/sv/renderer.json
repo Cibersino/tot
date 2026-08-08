@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Spara textsnapshot",
-      "message": "Du kan lägga till valfria taggar för denna textsnapshot innan du väljer var den ska sparas.",
+      "message": "Du kan valfritt namnge denna textsnapshot, beskriva dess ursprung och lägga till taggar innan du väljer var den ska sparas.",
       "search": {
         "placeholder": "Skriv för att filtrera alternativ",
         "no_results": "Inga matchande alternativ",
         "create": "Skapa \"{label}\""
       },
       "labels": {
+        "name": "Namn (valfritt)",
+        "source_comment": "Ursprung (valfritt)",
         "language": "Språk",
         "type": "Typ",
         "difficulty": "Svårighetsgrad"
+      },
+      "placeholders": {
+        "name": "Läsning",
+        "source_comment": "chapter-1.pdf, Enhet 1 eller importerad text"
       },
       "metrics": {
         "include_count": "Inkludera ordantal",

@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Gcina i-snapshot yombhalo",
-      "message": "Uma uthanda, faka amathegi kule snapshot yombhalo ngaphambi kokukhetha ukuthi igcinwa kuphi.",
+      "message": "Ngaphambi kokukhetha ukuthi igcinwa kuphi, ungayiqamba, uchaze umsuka wayo, bese ufaka amathegi kule snapshot yombhalo.",
       "search": {
         "placeholder": "Thayipha ukuze uhlunge izinketho",
         "no_results": "Azikho izinketho ezifanayo",
         "create": "Dala \"{label}\""
       },
       "labels": {
+        "name": "Igama (uma uthanda)",
+        "source_comment": "Umsuka (uma uthanda)",
         "language": "Ulimi",
         "type": "Uhlobo",
         "difficulty": "Ubunzima"
+      },
+      "placeholders": {
+        "name": "Ukufunda",
+        "source_comment": "chapter-1.pdf, Iyunithi 1, noma umbhalo ongenisiwe"
       },
       "metrics": {
         "include_count": "Faka ukubalwa kwamagama",

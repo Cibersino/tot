@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "保存文本快照",
-      "message": "在选择保存位置前，可选择为此文本快照添加标签。",
+      "message": "在选择保存位置前，您可以为此文本快照命名、描述其来源并添加标签。",
       "search": {
         "placeholder": "输入以筛选选项",
         "no_results": "没有匹配的选项",
         "create": "创建“{label}”"
       },
       "labels": {
+        "name": "名称（可选）",
+        "source_comment": "来源（可选）",
         "language": "语言",
         "type": "类型",
         "difficulty": "难度"
+      },
+      "placeholders": {
+        "name": "阅读",
+        "source_comment": "chapter-1.pdf、单元 1 或导入的文本"
       },
       "metrics": {
         "include_count": "包含字数统计",

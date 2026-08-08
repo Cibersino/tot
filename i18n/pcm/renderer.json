@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Save text snapshot",
-      "message": "You fit tag dis text snapshot before you choose where to save am.",
+      "message": "Before you choose where to save am, you fit name dis text snapshot, talk where e come from, and tag am.",
       "search": {
         "placeholder": "Type to filter options",
         "no_results": "No matching options",
         "create": "Create \"{label}\""
       },
       "labels": {
+        "name": "Name (if you want)",
+        "source_comment": "Where e come from (if you want)",
         "language": "Language",
         "type": "Type",
         "difficulty": "Difficulty"
+      },
+      "placeholders": {
+        "name": "Reading",
+        "source_comment": "chapter-1.pdf, Unit 1, or text wey you import"
       },
       "metrics": {
         "include_count": "Put word count",

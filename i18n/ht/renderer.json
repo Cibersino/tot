@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Sove snapshot tèks",
-      "message": "Ou ka mete etikèt sou snapshot tèks sa a anvan ou chwazi kote pou sove li.",
+      "message": "Ou ka bay snapshot tèks sa a yon non, dekri orijin li, epi mete etikèt sou li anvan ou chwazi kote pou sove li.",
       "search": {
         "placeholder": "Tape pou filtre opsyon yo",
         "no_results": "Pa gen opsyon ki koresponn",
         "create": "Kreye \"{label}\""
       },
       "labels": {
+        "name": "Non (opsyonèl)",
+        "source_comment": "Orijin (opsyonèl)",
         "language": "Lang",
         "type": "Tip",
         "difficulty": "Difikilte"
+      },
+      "placeholders": {
+        "name": "Lekti",
+        "source_comment": "chapter-1.pdf, Inite 1 oswa tèks enpòte"
       },
       "metrics": {
         "include_count": "Mete kantite mo",

@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Qillqa snapshotta waqaychay",
-      "message": "Maypi waqaychanaykita akllanaykipaq ñawpaqta kay qillqa snapshotta munaspa etiquetay.",
+      "message": "Maypi waqaychanaykita akllanaykipaq ñawpaqta kay qillqa snapshotta sutichay, maymantam hamun nispa willay, hinaspa munaspa etiquetay.",
       "search": {
         "placeholder": "Akllanakta filtraypaq qillqay",
         "no_results": "Mana tinkuq akllanak kanchu",
         "create": "\"{label}\" kamay"
       },
       "labels": {
+        "name": "Suti (munaspa)",
+        "source_comment": "Maymanta (munaspa)",
         "language": "Rimay",
         "type": "Laya",
         "difficulty": "Sasaynin"
+      },
+      "placeholders": {
+        "name": "Ñawiriy",
+        "source_comment": "chapter-1.pdf, Unidad 1, icha apamushqa qillqa"
       },
       "metrics": {
         "include_count": "Simikunapa yupayninta yapay",

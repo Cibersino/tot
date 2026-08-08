@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Qillqata snapshot imaña",
-      "message": "Kawkhansa imañ munta uk ajlliñ nayraqat, aka qillqata snapshot ukar munañaparjam etiqueta ucham.",
+      "message": "Kawkhansa imañ munta uk ajlliñ nayraqat, aka qillqata snapshot ukar suti churaña, kawkhata juti uk qhanañchaña ukat etiqueta uchuña munaspa luram.",
       "search": {
         "placeholder": "Ajlliñanak chhijllañatak qillqt’am",
         "no_results": "Janiw kikipa ajlliñanak utjkiti",
         "create": "\"{label}\" luraña"
       },
       "labels": {
+        "name": "Suti (munata)",
+        "source_comment": "Kawkhata juti (munata)",
         "language": "Aru",
         "type": "Kasta",
         "difficulty": "Ch’amäwi"
+      },
+      "placeholders": {
+        "name": "Ullaña",
+        "source_comment": "chapter-1.pdf, Unidad 1, jan ukaxa apanit qillqata"
       },
       "metrics": {
         "include_count": "Arunaka jakhüwi uñstayaña",

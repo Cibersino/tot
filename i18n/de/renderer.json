@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Text-Snapshot speichern",
-      "message": "Markieren Sie diesen Text-Snapshot optional, bevor Sie auswählen, wo er gespeichert werden soll.",
+      "message": "Sie können diesen Text-Snapshot optional benennen, seine Herkunft beschreiben und mit Tags versehen, bevor Sie auswählen, wo er gespeichert werden soll.",
       "search": {
         "placeholder": "Tippen, um Optionen zu filtern",
         "no_results": "Keine passenden Optionen",
         "create": "\"{label}\" erstellen"
       },
       "labels": {
+        "name": "Name (optional)",
+        "source_comment": "Herkunft (optional)",
         "language": "Sprache",
         "type": "Typ",
         "difficulty": "Schwierigkeit"
+      },
+      "placeholders": {
+        "name": "Lektüre",
+        "source_comment": "chapter-1.pdf, Einheit 1 oder importierter Text"
       },
       "metrics": {
         "include_count": "Wortanzahl einbeziehen",

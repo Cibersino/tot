@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Salvar snapshot de texto",
-      "message": "Você pode adicionar etiquetas opcionais a este snapshot de texto antes de escolher onde salvá-lo.",
+      "message": "Você pode nomear, descrever a origem e adicionar etiquetas a este snapshot de texto antes de escolher onde salvá-lo.",
       "search": {
         "placeholder": "Digite para filtrar opções",
         "no_results": "Nenhuma opção correspondente",
         "create": "Criar \"{label}\""
       },
       "labels": {
+        "name": "Nome (opcional)",
+        "source_comment": "Origem (opcional)",
         "language": "Idioma",
         "type": "Tipo",
         "difficulty": "Dificuldade"
+      },
+      "placeholders": {
+        "name": "Leitura",
+        "source_comment": "chapter-1.pdf, Unidade 1 ou texto importado"
       },
       "metrics": {
         "include_count": "Incluir contagem de palavras",

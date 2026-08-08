@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Lưu bản lưu văn bản",
-      "message": "Bạn có thể gắn thẻ tùy chọn cho bản lưu văn bản này trước khi chọn nơi lưu.",
+      "message": "Trước khi chọn nơi lưu, bạn có thể đặt tên, mô tả nguồn gốc và gắn thẻ cho bản lưu văn bản này.",
       "search": {
         "placeholder": "Nhập để lọc tùy chọn",
         "no_results": "Không có tùy chọn phù hợp",
         "create": "Tạo \"{label}\""
       },
       "labels": {
+        "name": "Tên (không bắt buộc)",
+        "source_comment": "Nguồn gốc (không bắt buộc)",
         "language": "Ngôn ngữ",
         "type": "Loại",
         "difficulty": "Độ khó"
+      },
+      "placeholders": {
+        "name": "Bài đọc",
+        "source_comment": "chapter-1.pdf, Bài 1 hoặc văn bản đã nhập"
       },
       "metrics": {
         "include_count": "Bao gồm số lượng từ",

@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "儲存文字快照",
-      "message": "在選擇儲存位置前，可選擇為此文字快照新增標籤。",
+      "message": "在選擇儲存位置前，您可以為此文字快照命名、描述其來源並新增標籤。",
       "search": {
         "placeholder": "輸入以篩選選項",
         "no_results": "沒有相符的選項",
         "create": "建立「{label}」"
       },
       "labels": {
+        "name": "名稱（選填）",
+        "source_comment": "來源（選填）",
         "language": "語言",
         "type": "類型",
         "difficulty": "難度"
+      },
+      "placeholders": {
+        "name": "閱讀",
+        "source_comment": "chapter-1.pdf、單元 1 或匯入的文字"
       },
       "metrics": {
         "include_count": "包含字數統計",

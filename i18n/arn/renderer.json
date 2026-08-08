@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Elkünun textu snapshot",
-      "message": "Münafülchi tañi textu snapshot müley ta küme ngünekan mew ka chumgechi elkünuael.",
+      "message": "Münafülchi textu snapshot mew üy elukefal, ñi mülewe kimeltukefal ka etiketa elkünukefal, chumgechi elkünuael mew.",
       "search": {
         "placeholder": "Wirintuku opciones filtrangeal",
         "no_results": "Ngelay opciones trafkülelu",
         "create": "Dewma \"{label}\""
       },
       "labels": {
+        "name": "Üy (münafülchi)",
+        "source_comment": "Mülewe (münafülchi)",
         "language": "Dungun",
         "type": "Az",
         "difficulty": "Rume newen"
+      },
+      "placeholders": {
+        "name": "Chillka",
+        "source_comment": "chapter-1.pdf, Unidad 1 ka apolngechi textu"
       },
       "metrics": {
         "include_count": "Dungu rakiduam müley",

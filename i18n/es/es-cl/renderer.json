@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Salvar coso de texto",
-      "message": "Etiqueta opcionalmente este coso de texto antes de elegir dónde salvarlo.",
+      "message": "Puedes nombrar, describir el origen y etiquetar este coso de texto antes de elegir dónde salvarlo.",
       "search": {
         "placeholder": "Escribe para filtrar opciones",
         "no_results": "No hay opciones coincidentes",
         "create": "Crear \"{label}\""
       },
       "labels": {
+        "name": "Nombre (opcional)",
+        "source_comment": "Origen (opcional)",
         "language": "Idioma",
         "type": "Tipo",
         "difficulty": "Dificultad"
+      },
+      "placeholders": {
+        "name": "Lectura",
+        "source_comment": "capítulo-1.pdf, Unidad 1 o texto importado"
       },
       "manager": {
         "title": "Gestionar etiquetas de snapshot de texto",

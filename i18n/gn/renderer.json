@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Eñongatu jehai snapshot",
-      "message": "Eñongatu hag̃ua renda reiporavo mboyve, ikatu emoĩ etiqueta ko jehai snapshot-pe.",
+      "message": "Eñongatu hag̃ua renda reiporavo mboyve, ikatu embohéra, emombe'u moõguipa ou ha emoĩ etiqueta ko jehai snapshot-pe.",
       "search": {
         "placeholder": "Ehai embogua hag̃ua opción-kuéra",
         "no_results": "Ndaipóri opción ojueheguáva",
         "create": "Ejapo \"{label}\""
       },
       "labels": {
-        "language": "Ñe’ẽ",
+        "name": "Téra (ojeporavóva)",
+        "source_comment": "Moõguipa ou (ojeporavóva)",
+        "language": "Ñe'ẽ",
         "type": "Tipo",
         "difficulty": "Hasýkue"
+      },
+      "placeholders": {
+        "name": "Moñe'ẽrã",
+        "source_comment": "chapter-1.pdf, Unidad 1 térã jehai ojeguerúva"
       },
       "metrics": {
         "include_count": "Emoinge ñe’ẽnguéra papapy",

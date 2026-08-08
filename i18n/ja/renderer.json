@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "テキストスナップショットを保存",
-      "message": "保存場所を選ぶ前に、このテキストスナップショットへ任意でタグを付けられます。",
+      "message": "保存場所を選ぶ前に、このテキストスナップショットに任意で名前を付け、由来を記述し、タグを付けることができます。",
       "search": {
         "placeholder": "入力してオプションを絞り込み",
         "no_results": "一致するオプションはありません",
         "create": "「{label}」を作成"
       },
       "labels": {
+        "name": "名前（任意）",
+        "source_comment": "由来（任意）",
         "language": "言語",
         "type": "種類",
         "difficulty": "難易度"
+      },
+      "placeholders": {
+        "name": "読書",
+        "source_comment": "chapter-1.pdf、ユニット1、またはインポートしたテキスト"
       },
       "metrics": {
         "include_count": "単語数を含める",

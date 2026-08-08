@@ -337,16 +337,22 @@
     },
     "snapshots": {
       "title": "Gorde testu-snapshota",
-      "message": "Nahi baduzu, etiketa ezazu testu-snapshot hau non gorde aukeratu aurretik.",
+      "message": "Testu-snapshot honi izena eman, haren jatorria deskribatu eta etiketak jar diezazkiokezu aukeran, non gorde hautatu aurretik.",
       "search": {
         "placeholder": "Idatzi aukerak iragazteko",
         "no_results": "Ez dago bat datorren aukerarik",
         "create": "Sortu \"{label}\""
       },
       "labels": {
+        "name": "Izena (aukerakoa)",
+        "source_comment": "Jatorria (aukerakoa)",
         "language": "Hizkuntza",
         "type": "Mota",
         "difficulty": "Zailtasuna"
+      },
+      "placeholders": {
+        "name": "Irakurketa",
+        "source_comment": "chapter-1.pdf, 1. unitatea edo inportatutako testua"
       },
       "metrics": {
         "include_count": "Sartu hitz kopurua",
