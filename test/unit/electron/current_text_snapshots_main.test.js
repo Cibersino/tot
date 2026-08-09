@@ -340,7 +340,7 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
     { sender: senderWin.webContents },
     {
       nonInteractive: true,
-      autoFileBaseName: 'Unit 1',
+      autoFileBaseName: 'Lección ñ / Unit 1',
       name: 'Reading',
       sourceComment: 'chapter-1.pdf, Unit 1',
       includeCount: true,
@@ -352,7 +352,7 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
   );
 
   assert.equal(firstSave.ok, true);
-  assert.equal(firstSave.filename, 'Unit_1.json');
+  assert.equal(firstSave.filename, 'Lección_ñ_Unit_1.json');
   const firstPayload = JSON.parse(fs.readFileSync(path.join(rootDir, firstSave.filename), 'utf8'));
   assert.equal(firstPayload.type, 'text snapshot');
   assert.equal(firstPayload.meta.savedWith, 'toT (totapp.org)');
@@ -374,7 +374,7 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
     { sender: senderWin.webContents },
     {
       nonInteractive: true,
-      autoFileBaseName: 'Unit 1',
+      autoFileBaseName: 'Lección ñ / Unit 1',
       includeCount: true,
       includeReading: false,
       tags: null,
@@ -382,9 +382,83 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
   );
 
   assert.equal(secondSave.ok, true);
-  assert.equal(secondSave.filename, 'Unit_1_2.json');
+  assert.equal(secondSave.filename, 'Lección_ñ_Unit_1_2.json');
   const secondPayload = JSON.parse(fs.readFileSync(path.join(rootDir, secondSave.filename), 'utf8'));
   assert.deepEqual(secondPayload.tags, {});
+});
+
+test('non-interactive snapshot save normalizes reserved and fallback filename stems', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-derived-filenames');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({ senderWin, rootDir });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const reservedResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'COM1',
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+  assert.equal(reservedResult.filename, '_COM1.json');
+
+  const fallbackResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: '///',
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+  assert.equal(fallbackResult.filename, 'current_text.json');
+});
+
+test('non-interactive snapshot save keeps the default sequence when no filename stem is supplied', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-default-filename');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({ senderWin, rootDir });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+
+  assert.equal(result.filename, 'current_text_1.json');
 });
 
 test('snapshot save derives count and reading metrics from exact text and settings', async (t) => {
@@ -532,7 +606,7 @@ test('manual snapshot save uses the optional name as its default filename and pe
     'current-text-snapshot-save',
     { sender: senderWin.webContents },
     {
-      name: 'Lectura ñ',
+      name: 'Lectura ñ / Unit 1',
       sourceComment: 'texto importado',
       includeCount: false,
       includeReading: false,
@@ -541,9 +615,12 @@ test('manual snapshot save uses the optional name as its default filename and pe
 
   assert.equal(result.ok, true);
   assert.equal(showSaveDialogCalls.length, 1);
-  assert.equal(showSaveDialogCalls[0].options.defaultPath, path.join(rootDir, 'Lectura ñ.json'));
+  assert.equal(
+    showSaveDialogCalls[0].options.defaultPath,
+    path.join(rootDir, 'Lectura_ñ_Unit_1.json')
+  );
   const saved = JSON.parse(fs.readFileSync(path.join(rootDir, 'selected.json'), 'utf8'));
-  assert.equal(saved.name, 'Lectura ñ');
+  assert.equal(saved.name, 'Lectura ñ / Unit 1');
   assert.equal(saved.sourceComment, 'texto importado');
 });
 

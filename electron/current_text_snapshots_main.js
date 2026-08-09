@@ -157,12 +157,14 @@ function sanitizeSnapshotBaseName(base) {
   return next || 'current_text';
 }
 
-function sanitizeAutomaticSnapshotBaseName(base) {
-  let next = String(base || '');
-  next = next.replace(/\s+/g, '_');
-  next = next.replace(/[^A-Za-z0-9_-]/g, '');
+function normalizeDerivedSnapshotBaseName(base) {
+  let next = String(base || '').trim().normalize('NFC');
+  next = next.replace(/[^\p{L}\p{N}\p{M}_-]+/gu, '_');
   next = next.replace(/_+/g, '_').replace(/-+/g, '-');
   next = next.replace(/^[_-]+|[_-]+$/g, '');
+  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(next)) {
+    next = `_${next}`;
+  }
   return next || 'current_text';
 }
 
@@ -175,7 +177,7 @@ function normalizeSavePath(filePath) {
 }
 
 function resolveDeterministicAutoSnapshotPath(rootDir, rawBaseName) {
-  const safeBaseName = sanitizeAutomaticSnapshotBaseName(rawBaseName);
+  const safeBaseName = normalizeDerivedSnapshotBaseName(rawBaseName);
   let candidateName = `${safeBaseName}${SNAPSHOT_EXT}`;
   let candidatePath = path.join(rootDir, candidateName);
   let collisionIndex = 2;
@@ -590,14 +592,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { root, rootReal } = rootInfo;
       let normalizedPath = '';
       if (payloadInfo.nonInteractive) {
+        const defaultBaseName = path.basename(getDefaultSnapshotName(root), SNAPSHOT_EXT);
         const autoPath = resolveDeterministicAutoSnapshotPath(
           root,
-          payloadInfo.autoFileBaseName || getDefaultSnapshotName(root)
+          payloadInfo.autoFileBaseName || defaultBaseName
         );
         normalizedPath = normalizeSavePath(autoPath.candidatePath);
       } else {
         const defaultName = payloadInfo.name
-          ? `${sanitizeSnapshotBaseName(payloadInfo.name)}${SNAPSHOT_EXT}`
+          ? `${normalizeDerivedSnapshotBaseName(payloadInfo.name)}${SNAPSHOT_EXT}`
           : getDefaultSnapshotName(root);
         const defaultPath = path.join(root, defaultName);
 
