@@ -32,7 +32,12 @@ function createHarness() {
   const snapshotInspectionCalls = [];
   let openTaskLinkResult = { ok: true };
   let selectedTaskRowSnapshotResult = { ok: false, code: 'CANCELLED' };
-  let taskRowSnapshotInspectionResult = { ok: true, estimatedSeconds: null, wpm: null };
+  let taskRowSnapshotInspectionResult = {
+    ok: true,
+    name: null,
+    estimatedSeconds: null,
+    wpm: null,
+  };
 
   function createElement(id = '', tagName = 'div') {
     const attributes = {};
@@ -140,12 +145,17 @@ function createHarness() {
     'thComentario', 'thAcciones', 'taskTable', 'taskColGroup',
     'commentModal', 'commentBackdrop', 'commentClose', 'commentCancel', 'commentSave',
     'commentInput', 'commentTitle', 'commentSnapshotSelect', 'commentSnapshotClear',
-    'commentSnapshotPath', 'snapshotTimeConfirmModal', 'snapshotTimeConfirmBackdrop',
-    'snapshotTimeConfirmClose', 'snapshotTimeConfirmYes', 'snapshotTimeConfirmNo',
-    'snapshotTimeConfirmTitle', 'snapshotTimeConfirmText', 'snapshotTimeConfirmCurrentLabel',
-    'snapshotTimeConfirmCurrentValue', 'snapshotTimeConfirmEstimateLabel',
-    'snapshotTimeConfirmEstimateValue', 'snapshotTimeConfirmWpmLabel',
-    'snapshotTimeConfirmWpmValue', 'libraryModal', 'libraryBackdrop', 'libraryClose',
+    'commentSnapshotPath', 'snapshotDetailsConfirmModal', 'snapshotDetailsConfirmBackdrop',
+    'snapshotDetailsConfirmClose', 'snapshotDetailsConfirmApply', 'snapshotDetailsConfirmKeep',
+    'snapshotDetailsConfirmTitle', 'snapshotDetailsConfirmText', 'snapshotDetailsConfirmTextSection',
+    'snapshotDetailsConfirmTextChoice', 'snapshotDetailsConfirmApplyText', 'snapshotDetailsConfirmApplyTextLabel',
+    'snapshotDetailsConfirmCurrentTextLabel', 'snapshotDetailsConfirmCurrentTextValue',
+    'snapshotDetailsConfirmSnapshotNameLabel', 'snapshotDetailsConfirmSnapshotNameValue',
+    'snapshotDetailsConfirmTimeSection', 'snapshotDetailsConfirmTimeChoice', 'snapshotDetailsConfirmApplyTime',
+    'snapshotDetailsConfirmApplyTimeLabel', 'snapshotDetailsConfirmCurrentTimeLabel',
+    'snapshotDetailsConfirmCurrentTimeValue', 'snapshotDetailsConfirmEstimateLabel',
+    'snapshotDetailsConfirmEstimateValue', 'snapshotDetailsConfirmWpmLabel',
+    'snapshotDetailsConfirmWpmValue', 'libraryModal', 'libraryBackdrop', 'libraryClose',
     'libraryList', 'libraryEmpty', 'libraryTitle', 'librarySearchLabel',
     'librarySearchInput', 'includeCommentModal', 'includeCommentBackdrop',
     'includeCommentClose', 'includeCommentYes', 'includeCommentNo',
@@ -153,16 +163,16 @@ function createHarness() {
   ];
   const elements = Object.fromEntries(ids.map((id) => [id, createElement(id)]));
   elements.commentModal.fallbackFocus = elements.commentClose;
-  elements.snapshotTimeConfirmModal.fallbackFocus = elements.snapshotTimeConfirmClose;
+  elements.snapshotDetailsConfirmModal.fallbackFocus = elements.snapshotDetailsConfirmClose;
   elements.libraryModal.fallbackFocus = elements.libraryClose;
   elements.includeCommentModal.fallbackFocus = elements.includeCommentClose;
   elements.commentModal.appendChild(elements.commentInput);
-  elements.snapshotTimeConfirmModal.appendChild(elements.snapshotTimeConfirmYes);
-  elements.snapshotTimeConfirmModal.appendChild(elements.snapshotTimeConfirmNo);
+  elements.snapshotDetailsConfirmModal.appendChild(elements.snapshotDetailsConfirmApply);
+  elements.snapshotDetailsConfirmModal.appendChild(elements.snapshotDetailsConfirmKeep);
   elements.libraryModal.appendChild(elements.librarySearchInput);
   elements.includeCommentModal.appendChild(elements.includeCommentYes);
   elements.commentModal.setAttribute('aria-hidden', 'true');
-  elements.snapshotTimeConfirmModal.setAttribute('aria-hidden', 'true');
+  elements.snapshotDetailsConfirmModal.setAttribute('aria-hidden', 'true');
   elements.libraryModal.setAttribute('aria-hidden', 'true');
   elements.includeCommentModal.setAttribute('aria-hidden', 'true');
 
@@ -347,7 +357,7 @@ function createHarness() {
     initializeTask(payload) {
       onInit(payload);
     },
-    initializeRow() {
+    initializeRow(overrides = {}) {
       onInit({
         sourcePath: 'task.json',
         task: {
@@ -359,6 +369,7 @@ function createHarness() {
             enlace: '',
             comentario: 'Comment',
             snapshotRelPath: '',
+            ...overrides,
           }],
         },
       });
@@ -429,29 +440,47 @@ test('every shipped locale defines the Task Editor comment-or-snapshot button to
   });
 });
 
-test('every shipped locale defines the Task Editor snapshot-time confirmation copy', () => {
-  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+test('English and Spanish define the Task Editor snapshot-details confirmation copy', () => {
   const expectedKeys = [
     'title',
     'message',
+    'replace_reading_name',
+    'set_reading_name',
+    'current_name',
+    'snapshot_name',
+    'empty',
+    'replace_time',
     'current_time',
     'snapshot_estimate',
     'reading_speed',
-    'yes',
-    'no',
+    'apply',
+    'apply_selected',
+    'keep',
     'close_aria',
   ];
 
-  languages.forEach(({ tag }) => {
-    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
+  ['en', 'es'].forEach((tag) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag}/renderer.json`);
     const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
-    const confirmation = renderer.renderer.tasks.comentario_modal.snapshot_time_confirm;
+    const confirmation = renderer.renderer.tasks.comentario_modal.snapshot_details_confirm;
 
     assert.deepEqual(Object.keys(confirmation).sort(), expectedKeys.slice().sort(), `${tag} confirmation keys drifted`);
     expectedKeys.forEach((key) => {
       assert.equal(typeof confirmation[key], 'string', `${tag} missing ${key}`);
       assert.ok(confirmation[key].trim(), `${tag} has empty ${key}`);
     });
+    assert.equal(
+      confirmation.title,
+      tag === 'es'
+        ? '¿Usar la información del snapshot de texto seleccionado?'
+        : 'Use data from selected text snapshot?'
+    );
+    assert.equal(
+      confirmation.message,
+      tag === 'es'
+        ? 'Revisa los datos disponibles del snapshot de texto seleccionado antes de aplicarlos a esta lectura.'
+        : 'Review the available data from the selected text snapshot before applying it to this reading.'
+    );
   });
 });
 
@@ -510,46 +539,180 @@ test('Task Editor Escape closes the focused visible dialog through its existing 
   assert.equal(harness.getActiveElement(), harness.elements.btnTaskLoadLibrary);
 });
 
-test('Task Editor applies the selected snapshot estimate only after confirmation', async () => {
+test('Task Editor applies the changed snapshot estimate only after confirmation', async () => {
   const harness = createHarness();
   harness.initializeRow();
   harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/estimated.json' });
-  harness.setTaskRowSnapshotInspectionResult({ ok: true, estimatedSeconds: 120, wpm: 200 });
+  harness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: null,
+    estimatedSeconds: 120,
+    wpm: 200,
+  });
 
-  const commentOpener = harness.findByIcon('task-comment');
-  commentOpener.dispatch('click');
+  harness.findByIcon('task-comment').dispatch('click');
   harness.elements.commentSnapshotSelect.dispatch('click');
   await new Promise((resolve) => setImmediate(resolve));
   harness.elements.commentSave.dispatch('click');
   await new Promise((resolve) => setImmediate(resolve));
 
   assert.deepEqual(harness.snapshotInspectionCalls, ['/estimated.json']);
-  assert.equal(harness.elements.snapshotTimeConfirmModal.getAttribute('aria-hidden'), 'false');
-  assert.equal(harness.elements.snapshotTimeConfirmCurrentValue.textContent, '00:01:00');
-  assert.equal(harness.elements.snapshotTimeConfirmEstimateValue.textContent, '00:02:00');
-  assert.equal(harness.elements.snapshotTimeConfirmWpmValue.textContent, '200 WPM');
+  assert.equal(harness.elements.snapshotDetailsConfirmModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.snapshotDetailsConfirmTextSection.hidden, true);
+  assert.equal(harness.elements.snapshotDetailsConfirmTimeSection.hidden, false);
+  assert.equal(harness.elements.snapshotDetailsConfirmTextChoice.hidden, true);
+  assert.equal(harness.elements.snapshotDetailsConfirmTimeChoice.hidden, true);
+  assert.equal(harness.elements.snapshotDetailsConfirmApplyTime.checked, true);
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.textContent, 'renderer.tasks.comentario_modal.snapshot_details_confirm.apply');
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.disabled, false);
+  assert.equal(harness.getActiveElement(), harness.elements.snapshotDetailsConfirmApply);
+  assert.equal(harness.elements.snapshotDetailsConfirmCurrentTimeValue.textContent, '00:01:00');
+  assert.equal(harness.elements.snapshotDetailsConfirmEstimateValue.textContent, '00:02:00');
+  assert.equal(harness.elements.snapshotDetailsConfirmWpmValue.textContent, '200 WPM');
 
-  harness.elements.snapshotTimeConfirmYes.dispatch('click');
+  harness.elements.snapshotDetailsConfirmApplyTime.checked = false;
+  harness.elements.snapshotDetailsConfirmApplyTime.dispatch('change');
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.disabled, false);
+  harness.elements.snapshotDetailsConfirmApply.dispatch('click');
 
   const timeInput = harness.findInputByHeaderId('thTiempo');
   assert.equal(harness.elements.commentModal.getAttribute('aria-hidden'), 'true');
-  assert.equal(harness.elements.snapshotTimeConfirmModal.getAttribute('aria-hidden'), 'true');
+  assert.equal(harness.elements.snapshotDetailsConfirmModal.getAttribute('aria-hidden'), 'true');
   assert.equal(timeInput.value, '00:02:00');
   assert.ok(harness.findByIcon('task-text-snapshot-load'));
 });
 
-test('Task Editor treats No and confirmation dismissal as keeping the existing time', async () => {
+test('Task Editor applies changed snapshot text and time independently', async () => {
+  const harness = createHarness();
+  harness.initializeRow();
+  harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/named-estimated.json' });
+  harness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: 'Snapshot title',
+    estimatedSeconds: 120,
+    wpm: 200,
+  });
+
+  harness.findByIcon('task-comment').dispatch('click');
+  harness.elements.commentSnapshotSelect.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  harness.elements.commentSave.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(harness.elements.snapshotDetailsConfirmTextSection.hidden, false);
+  assert.equal(harness.elements.snapshotDetailsConfirmTimeSection.hidden, false);
+  assert.equal(harness.elements.snapshotDetailsConfirmTextChoice.hidden, false);
+  assert.equal(harness.elements.snapshotDetailsConfirmTimeChoice.hidden, false);
+  assert.equal(harness.elements.snapshotDetailsConfirmApplyText.checked, true);
+  assert.equal(harness.elements.snapshotDetailsConfirmApplyTime.checked, true);
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.disabled, false);
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.textContent, 'renderer.tasks.comentario_modal.snapshot_details_confirm.apply_selected');
+  assert.equal(harness.getActiveElement(), harness.elements.snapshotDetailsConfirmApplyText);
+  assert.equal(
+    harness.elements.snapshotDetailsConfirmApplyTextLabel.textContent,
+    'renderer.tasks.comentario_modal.snapshot_details_confirm.replace_reading_name'
+  );
+  assert.equal(harness.elements.snapshotDetailsConfirmCurrentTextValue.textContent, 'Text');
+  assert.equal(harness.elements.snapshotDetailsConfirmCurrentTextValue.classList.contains('is-empty'), false);
+  assert.equal(harness.elements.snapshotDetailsConfirmSnapshotNameValue.textContent, 'Snapshot title');
+
+  harness.elements.snapshotDetailsConfirmApplyTime.checked = false;
+  harness.elements.snapshotDetailsConfirmApplyTime.dispatch('change');
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.disabled, false);
+  harness.elements.snapshotDetailsConfirmApplyText.checked = false;
+  harness.elements.snapshotDetailsConfirmApplyText.dispatch('change');
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.disabled, true);
+  harness.elements.snapshotDetailsConfirmApplyText.checked = true;
+  harness.elements.snapshotDetailsConfirmApplyText.dispatch('change');
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.disabled, false);
+  harness.elements.snapshotDetailsConfirmApply.dispatch('click');
+
+  assert.equal(harness.findInputByHeaderId('thTexto').value, 'Snapshot title');
+  assert.equal(harness.findInputByHeaderId('thTiempo').value, '00:01:00');
+  assert.ok(harness.findByIcon('task-text-snapshot-load'));
+});
+
+test('Task Editor offers a changed snapshot name without a reading estimate', async () => {
+  const harness = createHarness();
+  harness.initializeRow();
+  harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/named.json' });
+  harness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: 'Snapshot title',
+    estimatedSeconds: null,
+    wpm: null,
+  });
+
+  harness.findByIcon('task-comment').dispatch('click');
+  harness.elements.commentSnapshotSelect.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  harness.elements.commentSave.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(harness.elements.snapshotDetailsConfirmModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.snapshotDetailsConfirmTextSection.hidden, false);
+  assert.equal(harness.elements.snapshotDetailsConfirmTimeSection.hidden, true);
+  assert.equal(harness.elements.snapshotDetailsConfirmTextChoice.hidden, true);
+  assert.equal(harness.elements.snapshotDetailsConfirmTimeChoice.hidden, true);
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.textContent, 'renderer.tasks.comentario_modal.snapshot_details_confirm.apply');
+  assert.equal(harness.elements.snapshotDetailsConfirmApply.disabled, false);
+  assert.equal(harness.getActiveElement(), harness.elements.snapshotDetailsConfirmApply);
+
+  harness.elements.snapshotDetailsConfirmApply.dispatch('click');
+  assert.equal(harness.findInputByHeaderId('thTexto').value, 'Snapshot title');
+  assert.equal(harness.findInputByHeaderId('thTiempo').value, '00:01:00');
+});
+
+test('Task Editor presents an empty current name explicitly and in muted style', async () => {
+  const harness = createHarness();
+  await harness.waitForTranslations();
+  harness.initializeRow({ texto: '' });
+  harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/named.json' });
+  harness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: 'Snapshot title',
+    estimatedSeconds: null,
+    wpm: null,
+  });
+
+  harness.findByIcon('task-comment').dispatch('click');
+  harness.elements.commentSnapshotSelect.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  harness.elements.commentSave.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(
+    harness.elements.snapshotDetailsConfirmApplyTextLabel.textContent,
+    'renderer.tasks.comentario_modal.snapshot_details_confirm.set_reading_name'
+  );
+  assert.equal(
+    harness.elements.snapshotDetailsConfirmCurrentTextLabel.textContent,
+    'renderer.tasks.comentario_modal.snapshot_details_confirm.current_name'
+  );
+  assert.equal(
+    harness.elements.snapshotDetailsConfirmCurrentTextValue.textContent,
+    'renderer.tasks.comentario_modal.snapshot_details_confirm.empty'
+  );
+  assert.equal(harness.elements.snapshotDetailsConfirmCurrentTextValue.classList.contains('is-empty'), true);
+});
+
+test('Task Editor treats Keep and confirmation dismissal as keeping current values', async () => {
   const noHarness = createHarness();
   noHarness.initializeRow();
   noHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/estimated.json' });
-  noHarness.setTaskRowSnapshotInspectionResult({ ok: true, estimatedSeconds: 120, wpm: 200 });
+  noHarness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: null,
+    estimatedSeconds: 120,
+    wpm: 200,
+  });
 
   noHarness.findByIcon('task-comment').dispatch('click');
   noHarness.elements.commentSnapshotSelect.dispatch('click');
   await new Promise((resolve) => setImmediate(resolve));
   noHarness.elements.commentSave.dispatch('click');
   await new Promise((resolve) => setImmediate(resolve));
-  noHarness.elements.snapshotTimeConfirmNo.dispatch('click');
+  noHarness.elements.snapshotDetailsConfirmKeep.dispatch('click');
 
   assert.equal(noHarness.findInputByHeaderId('thTiempo').value, '00:01:00');
   assert.ok(noHarness.findByIcon('task-text-snapshot-load'));
@@ -557,7 +720,12 @@ test('Task Editor treats No and confirmation dismissal as keeping the existing t
   const dismissHarness = createHarness();
   dismissHarness.initializeRow();
   dismissHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/estimated.json' });
-  dismissHarness.setTaskRowSnapshotInspectionResult({ ok: true, estimatedSeconds: 120, wpm: 200 });
+  dismissHarness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: null,
+    estimatedSeconds: 120,
+    wpm: 200,
+  });
 
   dismissHarness.findByIcon('task-comment').dispatch('click');
   dismissHarness.elements.commentSnapshotSelect.dispatch('click');
@@ -572,22 +740,48 @@ test('Task Editor treats No and confirmation dismissal as keeping the existing t
   assert.ok(dismissHarness.findByIcon('task-text-snapshot-load'));
 });
 
-test('Task Editor skips confirmation without an estimate and retains an invalid snapshot draft', async () => {
-  const noEstimateHarness = createHarness();
-  noEstimateHarness.initializeRow();
-  noEstimateHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/without-estimate.json' });
-  noEstimateHarness.setTaskRowSnapshotInspectionResult({ ok: true, estimatedSeconds: null, wpm: null });
+test('Task Editor skips confirmation without changed details and retains an invalid snapshot draft', async () => {
+  const noDetailsHarness = createHarness();
+  noDetailsHarness.initializeRow();
+  noDetailsHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/without-details.json' });
+  noDetailsHarness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: null,
+    estimatedSeconds: null,
+    wpm: null,
+  });
 
-  noEstimateHarness.findByIcon('task-comment').dispatch('click');
-  noEstimateHarness.elements.commentSnapshotSelect.dispatch('click');
+  noDetailsHarness.findByIcon('task-comment').dispatch('click');
+  noDetailsHarness.elements.commentSnapshotSelect.dispatch('click');
   await new Promise((resolve) => setImmediate(resolve));
-  noEstimateHarness.elements.commentSave.dispatch('click');
+  noDetailsHarness.elements.commentSave.dispatch('click');
   await new Promise((resolve) => setImmediate(resolve));
 
-  assert.equal(noEstimateHarness.elements.snapshotTimeConfirmModal.getAttribute('aria-hidden'), 'true');
-  assert.equal(noEstimateHarness.elements.commentModal.getAttribute('aria-hidden'), 'true');
-  assert.equal(noEstimateHarness.findInputByHeaderId('thTiempo').value, '00:01:00');
-  assert.ok(noEstimateHarness.findByIcon('task-text-snapshot-load'));
+  assert.equal(noDetailsHarness.elements.snapshotDetailsConfirmModal.getAttribute('aria-hidden'), 'true');
+  assert.equal(noDetailsHarness.elements.commentModal.getAttribute('aria-hidden'), 'true');
+  assert.ok(noDetailsHarness.findByIcon('task-text-snapshot-load'));
+
+  const noChangeHarness = createHarness();
+  noChangeHarness.initializeRow();
+  noChangeHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/unchanged.json' });
+  noChangeHarness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: 'Text',
+    estimatedSeconds: 60,
+    wpm: 200,
+  });
+
+  noChangeHarness.findByIcon('task-comment').dispatch('click');
+  noChangeHarness.elements.commentSnapshotSelect.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  noChangeHarness.elements.commentSave.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(noChangeHarness.elements.snapshotDetailsConfirmModal.getAttribute('aria-hidden'), 'true');
+  assert.equal(noChangeHarness.elements.commentModal.getAttribute('aria-hidden'), 'true');
+  assert.equal(noChangeHarness.findInputByHeaderId('thTexto').value, 'Text');
+  assert.equal(noChangeHarness.findInputByHeaderId('thTiempo').value, '00:01:00');
+  assert.ok(noChangeHarness.findByIcon('task-text-snapshot-load'));
 
   const invalidHarness = createHarness();
   invalidHarness.initializeRow();
@@ -608,13 +802,22 @@ test('Task Editor skips confirmation without an estimate and retains an invalid 
 
 test('Task Editor modal markup gives every dialog an accessible name and describes its confirmation question', () => {
   const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/task_editor.html'), 'utf8');
+  const styles = fs.readFileSync(path.resolve(__dirname, '../../../public/task_editor.css'), 'utf8');
 
   assert.match(markup, /id="commentModal"[^>]*aria-labelledby="commentTitle"/);
   assert.match(markup, /id="libraryModal"[^>]*aria-labelledby="libraryTitle"/);
   assert.match(markup, /id="includeCommentModal"[^>]*aria-labelledby="includeCommentTitle"[^>]*aria-describedby="includeCommentText"/);
-  assert.match(markup, /id="snapshotTimeConfirmModal"[^>]*aria-labelledby="snapshotTimeConfirmTitle"[^>]*aria-describedby="snapshotTimeConfirmText"/);
-  assert.match(markup, /id="snapshotTimeConfirmWpmLabel">Velocidad de lectura<\/dt>/);
-  assert.match(markup, /id="snapshotTimeConfirmWpmValue" dir="ltr"><\/dd>/);
+  assert.match(markup, /id="snapshotDetailsConfirmModal"[^>]*aria-labelledby="snapshotDetailsConfirmTitle"[^>]*aria-describedby="snapshotDetailsConfirmText"/);
+  assert.match(markup, /<legend id="snapshotDetailsConfirmTextChoice">/);
+  assert.match(markup, /<legend id="snapshotDetailsConfirmTimeChoice">/);
+  assert.match(markup, /id="snapshotDetailsConfirmApplyText" type="checkbox" checked/);
+  assert.match(markup, /id="snapshotDetailsConfirmApplyTime" type="checkbox" checked/);
+  assert.match(markup, /id="snapshotDetailsConfirmWpmLabel">Velocidad de lectura<\/dt>/);
+  assert.match(markup, /id="snapshotDetailsConfirmWpmValue" dir="ltr"><\/dd>/);
+  assert.match(styles, /\.modal-actions\s*\{\s*display: flex;\s*justify-content: flex-end;\s*gap: 12px;\s*flex-wrap: wrap;\s*\}/);
+  assert.match(styles, /\.btn-standard:disabled\s*\{\s*opacity: 0\.5;\s*cursor: not-allowed;\s*\}/);
+  assert.match(styles, /\.snapshot-details-confirm-section legend\[hidden\]\s*\{\s*display: none;\s*\}/);
+  assert.match(styles, /\.snapshot-details-confirm-values dd\.is-empty\s*\{\s*color: var\(--text-soft\);/);
 });
 
 test('Task Editor projects a live row into an exact library entry before IPC', async () => {

@@ -237,7 +237,7 @@ function loadSnapshotsMainWithMocks({
   };
 }
 
-test('task-row snapshot inspection returns the canonical reading metrics', async (t) => {
+test('task-row snapshot inspection returns the canonical name and reading metrics', async (t) => {
   const rootDir = createTestTempDir('current-text-snapshots-inspect');
   t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
 
@@ -251,9 +251,11 @@ test('task-row snapshot inspection returns the canonical reading metrics', async
   t.after(restore);
 
   fs.mkdirSync(rootDir, { recursive: true });
+  const estimatedSnapshot = createSnapshotWithReadingEstimate('Estimated snapshot');
+  estimatedSnapshot.name = 'Estimated reading';
   fs.writeFileSync(
     path.join(rootDir, 'with-estimate.json'),
-    JSON.stringify(createSnapshotWithReadingEstimate('Estimated snapshot'), null, 2)
+    JSON.stringify(estimatedSnapshot, null, 2)
   );
   fs.writeFileSync(
     path.join(rootDir, 'without-estimate.json'),
@@ -276,6 +278,7 @@ test('task-row snapshot inspection returns the canonical reading metrics', async
   );
   assert.deepEqual(withEstimate, {
     ok: true,
+    name: 'Estimated reading',
     estimatedSeconds: 30,
     wpm: 200,
   });
@@ -287,6 +290,7 @@ test('task-row snapshot inspection returns the canonical reading metrics', async
   );
   assert.deepEqual(withoutEstimate, {
     ok: true,
+    name: null,
     estimatedSeconds: null,
     wpm: null,
   });

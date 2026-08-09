@@ -489,15 +489,22 @@
         "snapshot_select": "Select text snapshot",
         "snapshot_select_tooltip": "Select a text snapshot for this row",
         "snapshot_clear": "Remove selected snapshot from this row",
-        "snapshot_time_confirm": {
-          "title": "Use text snapshot estimated time?",
-          "message": "Replace this reading's current time with the estimate in the selected text snapshot?",
+        "snapshot_details_confirm": {
+          "title": "Use data from selected text snapshot?",
+          "message": "Review the available data from the selected text snapshot before applying it to this reading.",
+          "replace_reading_name": "Replace reading name",
+          "set_reading_name": "Set reading name",
+          "current_name": "Current name",
+          "snapshot_name": "Snapshot name",
+          "empty": "(empty)",
+          "replace_time": "Replace estimated time",
           "current_time": "Current time",
           "snapshot_estimate": "Snapshot estimate",
           "reading_speed": "Reading speed",
-          "yes": "Yes",
-          "no": "No",
-          "close_aria": "Close estimated time confirmation"
+          "apply": "Apply",
+          "apply_selected": "Apply selected",
+          "keep": "Keep current values",
+          "close_aria": "Close snapshot details confirmation"
         }
       },
       "biblioteca": {

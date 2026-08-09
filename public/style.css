@@ -669,16 +669,7 @@ body {
 /* Shared modal layers */
 
 /* Shared framed-dialog structure */
-.text-extraction-pdf-options-modal-panel,
-.text-extraction-route-modal-panel,
-.text-extraction-apply-modal-panel,
-.text-extraction-batch-plan-modal-panel,
-.text-extraction-batch-final-modal-panel,
-.text-extraction-single-file-heavy-modal-panel,
-.text-extraction-ocr-activation-disclosure-panel,
-.snapshot-save-tags-modal-panel,
-.snapshot-tag-manager-modal-panel,
-.reading-test-entry-modal-panel {
+.framed-dialog__panel {
   position: relative;
   z-index: 1;
   background: var(--app-secondary-bg);
@@ -690,47 +681,20 @@ body {
 }
 
 /* Shared framed-dialog title and body regions */
-.text-extraction-pdf-options-modal-header,
-.text-extraction-route-modal-header,
-.text-extraction-apply-modal-header,
-.text-extraction-batch-plan-modal-header,
-.text-extraction-batch-final-modal-header,
-.text-extraction-single-file-heavy-modal-header,
-.text-extraction-ocr-activation-disclosure-header,
-.snapshot-save-tags-modal-header,
-.snapshot-tag-manager-modal-header,
-.reading-test-entry-modal-header {
+.framed-dialog__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.text-extraction-pdf-options-modal-header h2,
-.text-extraction-route-modal-header h2,
-.text-extraction-apply-modal-header h2,
-.text-extraction-batch-plan-modal-header h2,
-.text-extraction-batch-final-modal-header h2,
-.text-extraction-single-file-heavy-modal-header h2,
-.text-extraction-ocr-activation-disclosure-header h2,
-.snapshot-save-tags-modal-header h2,
-.snapshot-tag-manager-modal-header h2,
-.reading-test-entry-modal-header h2 {
+.framed-dialog__header h2 {
   margin: 0;
   font-size: var(--font-size-9);
   font-weight: 600;
 }
 
-.text-extraction-pdf-options-modal-body,
-.text-extraction-route-modal-body,
-.text-extraction-apply-modal-body,
-.text-extraction-batch-plan-modal-body,
-.text-extraction-batch-final-modal-body,
-.text-extraction-single-file-heavy-modal-body,
-.text-extraction-ocr-activation-disclosure-body,
-.snapshot-save-tags-modal-body,
-.snapshot-tag-manager-modal-body,
-.reading-test-entry-modal-body {
+.framed-dialog__body {
   margin-top: 16px;
   display: grid;
   gap: 12px;
@@ -740,16 +704,7 @@ body {
    Button-only dialogs use their action row directly. OCR Disclosure uses its
    nested button group because the outer action area also owns the privacy link.
    Snapshot Save Tags overrides the default end alignment in its feature section. */
-.text-extraction-pdf-options-modal-actions,
-.text-extraction-route-modal-actions,
-.text-extraction-apply-modal-actions,
-.text-extraction-batch-plan-modal-actions,
-.text-extraction-batch-final-modal-actions,
-.text-extraction-single-file-heavy-modal-actions,
-.text-extraction-ocr-activation-disclosure-buttons,
-.snapshot-save-tags-modal-actions,
-.snapshot-tag-manager-modal-actions,
-.reading-test-entry-modal-actions {
+.framed-dialog__actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;

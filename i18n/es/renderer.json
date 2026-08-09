@@ -489,15 +489,22 @@
         "snapshot_select": "Seleccionar snapshot",
         "snapshot_select_tooltip": "Seleccionar snapshot para esta fila",
         "snapshot_clear": "Quitar snapshot seleccionado de esta fila",
-        "snapshot_time_confirm": {
-          "title": "¿Usar el tiempo estimado del snapshot de texto?",
-          "message": "¿Reemplazar el tiempo actual de esta lectura por la estimación del snapshot de texto seleccionado?",
+        "snapshot_details_confirm": {
+          "title": "¿Usar la información del snapshot de texto seleccionado?",
+          "message": "Revisa los datos disponibles del snapshot de texto seleccionado antes de aplicarlos a esta lectura.",
+          "replace_reading_name": "Reemplazar nombre de lectura",
+          "set_reading_name": "Establecer nombre de lectura",
+          "current_name": "Nombre actual",
+          "snapshot_name": "Nombre del snapshot",
+          "empty": "(vacío)",
+          "replace_time": "Reemplazar tiempo estimado",
           "current_time": "Tiempo actual",
           "snapshot_estimate": "Estimación del snapshot",
           "reading_speed": "Velocidad de lectura",
-          "yes": "Sí",
-          "no": "No",
-          "close_aria": "Cerrar la confirmación de tiempo estimado"
+          "apply": "Aplicar",
+          "apply_selected": "Aplicar selección",
+          "keep": "Conservar valores actuales",
+          "close_aria": "Cerrar la confirmación de datos del snapshot"
         }
       },
       "biblioteca": {

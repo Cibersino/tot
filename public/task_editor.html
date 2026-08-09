@@ -86,45 +86,71 @@
           <span id="commentSnapshotPath" class="comment-snapshot-path" hidden></span>
         </div>
         <textarea id="commentInput"></textarea>
+        <footer class="modal-actions">
+          <button id="commentCancel" class="btn-standard">Cancelar</button>
+          <button id="commentSave" class="btn-standard">Guardar</button>
+        </footer>
       </main>
-      <footer class="modal-actions">
-        <button id="commentCancel" class="btn-standard">Cancelar</button>
-        <button id="commentSave" class="btn-standard">Guardar</button>
-      </footer>
     </div>
   </div>
 
-  <!-- Snapshot estimated-time confirmation modal -->
-  <div id="snapshotTimeConfirmModal" class="modal" aria-hidden="true" role="dialog"
-    aria-labelledby="snapshotTimeConfirmTitle" aria-describedby="snapshotTimeConfirmText" aria-modal="true">
-    <div class="modal-backdrop" id="snapshotTimeConfirmBackdrop"></div>
+  <!-- Snapshot details confirmation modal -->
+  <div id="snapshotDetailsConfirmModal" class="modal" aria-hidden="true" role="dialog"
+    aria-labelledby="snapshotDetailsConfirmTitle" aria-describedby="snapshotDetailsConfirmText" aria-modal="true">
+    <div class="modal-backdrop" id="snapshotDetailsConfirmBackdrop"></div>
     <div class="modal-panel">
       <header class="modal-header">
-        <h2 id="snapshotTimeConfirmTitle">¿Usar el tiempo estimado del snapshot de texto?</h2>
-        <button id="snapshotTimeConfirmClose" class="btn-standard btn-standard--square" aria-label="Cerrar"
+        <h2 id="snapshotDetailsConfirmTitle">¿Usar la información del snapshot de texto seleccionado?</h2>
+        <button id="snapshotDetailsConfirmClose" class="btn-standard btn-standard--square" aria-label="Cerrar"
           data-tot-icon="close"></button>
       </header>
       <main class="modal-body">
-        <p id="snapshotTimeConfirmText">¿Reemplazar el tiempo actual de esta lectura por la estimación del snapshot seleccionado?</p>
-        <dl class="snapshot-time-confirm-values">
-          <div>
-            <dt id="snapshotTimeConfirmCurrentLabel">Tiempo actual</dt>
-            <dd id="snapshotTimeConfirmCurrentValue"></dd>
-          </div>
-          <div>
-            <dt id="snapshotTimeConfirmEstimateLabel">Estimación del snapshot</dt>
-            <dd id="snapshotTimeConfirmEstimateValue"></dd>
-          </div>
-          <div>
-            <dt id="snapshotTimeConfirmWpmLabel">Velocidad de lectura</dt>
-            <dd id="snapshotTimeConfirmWpmValue" dir="ltr"></dd>
-          </div>
-        </dl>
+        <p id="snapshotDetailsConfirmText">Revisa los datos disponibles del snapshot de texto seleccionado antes de aplicarlos a esta lectura.</p>
+        <fieldset id="snapshotDetailsConfirmTextSection" class="snapshot-details-confirm-section" hidden>
+          <legend id="snapshotDetailsConfirmTextChoice">
+            <label class="snapshot-details-confirm-toggle">
+              <input id="snapshotDetailsConfirmApplyText" type="checkbox" checked />
+              <span id="snapshotDetailsConfirmApplyTextLabel">Reemplazar nombre de lectura</span>
+            </label>
+          </legend>
+          <dl class="snapshot-details-confirm-values">
+            <div>
+              <dt id="snapshotDetailsConfirmCurrentTextLabel">Nombre actual</dt>
+              <dd id="snapshotDetailsConfirmCurrentTextValue"></dd>
+            </div>
+            <div>
+              <dt id="snapshotDetailsConfirmSnapshotNameLabel">Nombre del snapshot</dt>
+              <dd id="snapshotDetailsConfirmSnapshotNameValue"></dd>
+            </div>
+          </dl>
+        </fieldset>
+        <fieldset id="snapshotDetailsConfirmTimeSection" class="snapshot-details-confirm-section" hidden>
+          <legend id="snapshotDetailsConfirmTimeChoice">
+            <label class="snapshot-details-confirm-toggle">
+              <input id="snapshotDetailsConfirmApplyTime" type="checkbox" checked />
+              <span id="snapshotDetailsConfirmApplyTimeLabel">Reemplazar tiempo estimado</span>
+            </label>
+          </legend>
+          <dl class="snapshot-details-confirm-values">
+            <div>
+              <dt id="snapshotDetailsConfirmCurrentTimeLabel">Tiempo actual</dt>
+              <dd id="snapshotDetailsConfirmCurrentTimeValue"></dd>
+            </div>
+            <div>
+              <dt id="snapshotDetailsConfirmEstimateLabel">Estimación del snapshot</dt>
+              <dd id="snapshotDetailsConfirmEstimateValue"></dd>
+            </div>
+            <div>
+              <dt id="snapshotDetailsConfirmWpmLabel">Velocidad de lectura</dt>
+              <dd id="snapshotDetailsConfirmWpmValue" dir="ltr"></dd>
+            </div>
+          </dl>
+        </fieldset>
+        <footer class="modal-actions">
+          <button id="snapshotDetailsConfirmKeep" class="btn-standard">Conservar valores actuales</button>
+          <button id="snapshotDetailsConfirmApply" class="btn-standard">Aplicar</button>
+        </footer>
       </main>
-      <footer class="modal-actions">
-        <button id="snapshotTimeConfirmYes" class="btn-standard">Sí</button>
-        <button id="snapshotTimeConfirmNo" class="btn-standard">No</button>
-      </footer>
     </div>
   </div>
 
@@ -159,12 +185,12 @@
       </header>
       <main class="modal-body">
         <p id="includeCommentText">¿Incluir comentario?</p>
+        <footer class="modal-actions">
+          <button id="includeCommentYes" class="btn-standard">Sí</button>
+          <button id="includeCommentNo" class="btn-standard">No</button>
+          <button id="includeCommentCancel" class="btn-standard">Cancelar</button>
+        </footer>
       </main>
-      <footer class="modal-actions">
-        <button id="includeCommentYes" class="btn-standard">Sí</button>
-        <button id="includeCommentNo" class="btn-standard">No</button>
-        <button id="includeCommentCancel" class="btn-standard">Cancelar</button>
-      </footer>
     </div>
   </div>
 

@@ -2798,17 +2798,53 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] snapshot de texto; fila de lectura
           // [NO_CONFUNDIR] Quitar el snapshot de la fila no elimina el snapshot guardado; elimina solo la asociación con esa fila.
         },
-        "snapshot_time_confirm": {
+        "snapshot_details_confirm": {
           "title": {
-            "es": "¿Usar el tiempo estimado del snapshot de texto?",
-            "en": "Use text snapshot estimated time?"
-            // [PROPÓSITO] Título de la confirmación mostrada al guardar el Comentario cuando el snapshot seleccionado aporta un tiempo estimado de lectura.
-            // [CONCEPTO_APP] snapshot de texto; fila de lectura; tiempo estimado de lectura
+            "es": "¿Usar la información del snapshot de texto seleccionado?",
+            "en": "Use data from selected text snapshot?"
+            // [PROPÓSITO] Título de la confirmación mostrada al guardar el Comentario cuando el snapshot seleccionado aporta un nombre, una estimación de lectura, o ambos, que pueden aplicar a la fila.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura; texto; tiempo estimado de lectura
           },
           "message": {
-            "es": "¿Reemplazar el tiempo actual de esta lectura por la estimación del snapshot de texto seleccionado?",
-            "en": "Replace this reading's current time with the estimate in the selected text snapshot?"
-            // [PROPÓSITO] Explica que aceptar reemplaza el valor Time/Tiempo de la fila por la estimación del snapshot durante el guardado de la asociación.
+            "es": "Revisa los datos disponibles del snapshot de texto seleccionado antes de aplicarlos a esta lectura.",
+            "en": "Review the available data from the selected text snapshot before applying it to this reading."
+            // [PROPÓSITO] Explica los datos disponibles del snapshot antes de aplicar uno o ambos a la fila.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          },
+          "replace_reading_name": {
+            "es": "Reemplazar nombre de lectura",
+            "en": "Replace reading name"
+            // [PROPÓSITO] Etiqueta de la casilla que reemplaza el nombre no vacío de la fila por el nombre guardado del snapshot.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          },
+          "set_reading_name": {
+            "es": "Establecer nombre de lectura",
+            "en": "Set reading name"
+            // [PROPÓSITO] Etiqueta de la casilla que establece el nombre de una fila vacía con el nombre guardado del snapshot.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          },
+          "current_name": {
+            "es": "Nombre actual",
+            "en": "Current name"
+            // [PROPÓSITO] Label del nombre ya presente en la fila de lectura antes de decidir si se reemplaza.
+            // [CONCEPTO_APP] fila de lectura
+          },
+          "snapshot_name": {
+            "es": "Nombre del snapshot",
+            "en": "Snapshot name"
+            // [PROPÓSITO] Label del nombre guardado en el snapshot de texto seleccionado que se puede copiar a la fila.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          },
+          "empty": {
+            "es": "(vacío)",
+            "en": "(empty)"
+            // [PROPÓSITO] Valor atenuado que indica que el nombre actual de la fila está vacío.
+            // [CONCEPTO_APP] fila de lectura
+          },
+          "replace_time": {
+            "es": "Reemplazar tiempo estimado",
+            "en": "Replace estimated time"
+            // [PROPÓSITO] Etiqueta de la casilla que reemplaza el tiempo estimado de la fila por la estimación del snapshot.
             // [CONCEPTO_APP] snapshot de texto; fila de lectura; tiempo estimado de lectura
           },
           "current_time": {
@@ -2830,17 +2866,24 @@ Estados de revisión recomendados:
             // [CONCEPTO_APP] snapshot de texto; velocidad de lectura; tiempo estimado de lectura
             // [PROTEGIDO] `WPM`
           },
-          "yes": {
-            "es": "Sí",
-            "en": "Yes"
+          "apply": {
+            "es": "Aplicar",
+            "en": "Apply"
+            // [PROPÓSITO] Acción que aplica el único dato disponible de la confirmación.
           },
-          "no": {
-            "es": "No",
-            "en": "No"
+          "apply_selected": {
+            "es": "Aplicar selección",
+            "en": "Apply selected"
+            // [PROPÓSITO] Acción que aplica solo las casillas seleccionadas cuando hay más de un dato disponible.
+          },
+          "keep": {
+            "es": "Conservar valores actuales",
+            "en": "Keep current values"
+            // [PROPÓSITO] Acción que guarda la asociación con el snapshot sin aplicar ninguno de sus datos a la fila.
           },
           "close_aria": {
-            "es": "Cerrar la confirmación de tiempo estimado",
-            "en": "Close estimated time confirmation"
+            "es": "Cerrar la confirmación de datos del snapshot",
+            "en": "Close snapshot details confirmation"
           }
         }
       },

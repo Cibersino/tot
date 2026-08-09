@@ -226,13 +226,13 @@
       aria-labelledby="textExtractionPdfOptionsModalTitle" aria-describedby="textExtractionPdfOptionsModalMessage"
       aria-modal="true">
       <div id="textExtractionPdfOptionsModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="text-extraction-pdf-options-modal-panel" role="document">
-        <header class="text-extraction-pdf-options-modal-header">
+      <div class="text-extraction-pdf-options-modal-panel framed-dialog__panel" role="document">
+        <header class="text-extraction-pdf-options-modal-header framed-dialog__header">
           <h2 id="textExtractionPdfOptionsModalTitle">Opciones de extracción PDF</h2>
           <button id="textExtractionPdfOptionsModalClose" class="btn-standard btn-standard--square" type="button"
             aria-label="Cerrar diálogo de opciones de extracción PDF" data-tot-icon="close"></button>
         </header>
-        <div class="text-extraction-pdf-options-modal-body">
+        <div class="text-extraction-pdf-options-modal-body framed-dialog__body">
           <p id="textExtractionPdfOptionsModalMessage">Elige cuántas páginas del PDF procesar antes de la extracción.</p>
           <div class="text-extraction-pdf-options-modal-summary">
             <div class="text-extraction-pdf-options-modal-summary-row">
@@ -277,7 +277,7 @@
               <span id="textExtractionPdfOptionsModalKeepLabel">Conservar el PDF generado después del procesamiento</span>
             </label>
           </div>
-          <div class="text-extraction-pdf-options-modal-actions">
+          <div class="text-extraction-pdf-options-modal-actions framed-dialog__actions">
             <button id="textExtractionPdfOptionsModalContinue" class="btn-standard" type="button">Continuar</button>
             <button id="textExtractionPdfOptionsModalCancel" class="btn-standard" type="button">Cancelar</button>
           </div>
@@ -288,16 +288,16 @@
     <div id="textExtractionRouteModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="textExtractionRouteModalTitle" aria-modal="true">
       <div id="textExtractionRouteModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="text-extraction-route-modal-panel" role="document" aria-describedby="textExtractionRouteModalMessage">
-        <header class="text-extraction-route-modal-header">
+      <div class="text-extraction-route-modal-panel framed-dialog__panel" role="document" aria-describedby="textExtractionRouteModalMessage">
+        <header class="text-extraction-route-modal-header framed-dialog__header">
           <h2 id="textExtractionRouteModalTitle">Elegir ruta de extracción</h2>
           <button id="textExtractionRouteModalClose" class="btn-standard btn-standard--square"
             aria-label="Cerrar diálogo de ruta de extracción" data-tot-icon="close"></button>
         </header>
-        <div class="text-extraction-route-modal-body">
+        <div class="text-extraction-route-modal-body framed-dialog__body">
           <p id="textExtractionRouteModalMessage">Este PDF tiene disponibles ambas rutas de extracción. Elige una para
             continuar.</p>
-          <div class="text-extraction-route-modal-actions">
+          <div class="text-extraction-route-modal-actions framed-dialog__actions">
             <button id="textExtractionRouteModalNative" class="btn-standard">Usar nativa</button>
             <button id="textExtractionRouteModalOcr" class="btn-standard">Usar OCR</button>
             <button id="textExtractionRouteModalCancel" class="btn-standard">Cancelar</button>
@@ -309,13 +309,13 @@
     <div id="textExtractionApplyModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="textExtractionApplyModalTitle" aria-modal="true">
       <div id="textExtractionApplyModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="text-extraction-apply-modal-panel" role="document" aria-describedby="textExtractionApplyModalMessage">
-        <header class="text-extraction-apply-modal-header">
+      <div class="text-extraction-apply-modal-panel framed-dialog__panel" role="document" aria-describedby="textExtractionApplyModalMessage">
+        <header class="text-extraction-apply-modal-header framed-dialog__header">
           <h2 id="textExtractionApplyModalTitle">Aplicar texto extraído</h2>
           <button id="textExtractionApplyModalClose" class="btn-standard btn-standard--square"
             aria-label="Cerrar diálogo para aplicar texto extraído" data-tot-icon="close"></button>
         </header>
-        <div class="text-extraction-apply-modal-body">
+        <div class="text-extraction-apply-modal-body framed-dialog__body">
           <p id="textExtractionApplyModalMessage">Elige cómo aplicar el texto extraído.</p>
           <p id="textExtractionApplyModalElapsed" class="text-extraction-apply-modal-elapsed" hidden aria-hidden="true">
           </p>
@@ -332,7 +332,7 @@
             <label id="textExtractionApplyModalRepeatLabel" for="textExtractionApplyModalRepeatInput">Repeticiones</label>
             <input id="textExtractionApplyModalRepeatInput" type="number" min="1" step="1" value="1" />
           </div>
-          <div class="text-extraction-apply-modal-actions">
+          <div class="text-extraction-apply-modal-actions framed-dialog__actions">
             <button id="textExtractionApplyModalOverwrite" class="btn-standard">Sobrescribir</button>
             <button id="textExtractionApplyModalAppend" class="btn-standard">Agregar</button>
             <button id="textExtractionApplyModalCancel" class="btn-standard">Cancelar</button>
@@ -344,13 +344,13 @@
     <div id="textExtractionBatchPlanModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="textExtractionBatchPlanModalTitle" aria-modal="true">
       <div id="textExtractionBatchPlanModalBackdrop" class="info-modal-backdrop"></div>
-      <div id="textExtractionBatchPlanModalPanel" class="text-extraction-batch-plan-modal-panel" role="document">
-        <header class="text-extraction-batch-plan-modal-header">
+      <div id="textExtractionBatchPlanModalPanel" class="text-extraction-batch-plan-modal-panel framed-dialog__panel" role="document">
+        <header class="text-extraction-batch-plan-modal-header framed-dialog__header">
           <h2 id="textExtractionBatchPlanModalTitle">Extracción por lotes</h2>
           <button id="textExtractionBatchPlanClose" class="btn-standard btn-standard--square" type="button"
             aria-label="Cerrar planificación de extracción por lotes" data-tot-icon="close"></button>
         </header>
-        <div class="text-extraction-batch-plan-modal-body">
+        <div class="text-extraction-batch-plan-modal-body framed-dialog__body">
           <div class="text-extraction-batch-plan-modal-toolbar">
             <button id="textExtractionBatchPlanPresetAll" class="btn-standard" type="button">Todo junto</button>
             <button id="textExtractionBatchPlanPresetSeparate" class="btn-standard" type="button">Cada archivo por
@@ -372,7 +372,7 @@
                 unidad</span>
             </label>
           </fieldset>
-          <div class="text-extraction-batch-plan-modal-actions">
+          <div class="text-extraction-batch-plan-modal-actions framed-dialog__actions">
             <button id="textExtractionBatchPlanStart" class="btn-standard" type="button">Iniciar extracción</button>
             <button id="textExtractionBatchPlanCancel" class="btn-standard" type="button">Cancelar</button>
           </div>
@@ -383,18 +383,18 @@
     <div id="textExtractionBatchFinalModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="textExtractionBatchFinalModalTitle" aria-modal="true">
       <div id="textExtractionBatchFinalModalBackdrop" class="info-modal-backdrop"></div>
-      <div id="textExtractionBatchFinalModalPanel" class="text-extraction-batch-final-modal-panel" role="document">
-        <header class="text-extraction-batch-final-modal-header">
+      <div id="textExtractionBatchFinalModalPanel" class="text-extraction-batch-final-modal-panel framed-dialog__panel" role="document">
+        <header class="text-extraction-batch-final-modal-header framed-dialog__header">
           <h2 id="textExtractionBatchFinalModalTitle">Extracción por lotes completada</h2>
           <button id="textExtractionBatchFinalModalClose" class="btn-standard btn-standard--square" type="button"
             aria-label="Cerrar informe final de extracción por lotes" data-tot-icon="close"></button>
         </header>
-        <div class="text-extraction-batch-final-modal-body">
+        <div class="text-extraction-batch-final-modal-body framed-dialog__body">
           <p id="textExtractionBatchFinalModalSummary"></p>
           <p id="textExtractionBatchFinalModalElapsed" class="text-extraction-batch-final-modal-elapsed" hidden
             aria-hidden="true"></p>
           <div id="textExtractionBatchFinalModalBody" class="text-extraction-batch-final-modal-report"></div>
-          <div class="text-extraction-batch-final-modal-actions">
+          <div class="text-extraction-batch-final-modal-actions framed-dialog__actions">
             <button id="textExtractionBatchFinalModalCopy" class="btn-standard" type="button">Copiar informe</button>
             <button id="textExtractionBatchFinalModalOpenSnapshots" class="btn-standard" type="button">Abrir carpeta de
               snapshots</button>
@@ -407,13 +407,13 @@
     <div id="textExtractionSingleFileHeavyPdfModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="textExtractionSingleFileHeavyPdfModalTitle" aria-modal="true">
       <div id="textExtractionSingleFileHeavyPdfModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="text-extraction-single-file-heavy-modal-panel" role="document">
-        <header class="text-extraction-single-file-heavy-modal-header">
+      <div class="text-extraction-single-file-heavy-modal-panel framed-dialog__panel" role="document">
+        <header class="text-extraction-single-file-heavy-modal-header framed-dialog__header">
           <h2 id="textExtractionSingleFileHeavyPdfModalTitle">PDF pesado para OCR</h2>
           <button id="textExtractionSingleFileHeavyPdfModalClose" class="btn-standard btn-standard--square" type="button"
             aria-label="Cerrar diálogo de PDF pesado para OCR" data-tot-icon="close"></button>
         </header>
-        <div class="text-extraction-single-file-heavy-modal-body">
+        <div class="text-extraction-single-file-heavy-modal-body framed-dialog__body">
           <p id="textExtractionSingleFileHeavyPdfModalMessage"></p>
           <div id="textExtractionSingleFileHeavyPdfModalDetails" class="text-extraction-single-file-heavy-modal-details">
             <div id="textExtractionSingleFileHeavyPdfModalDetailsRows"></div>
@@ -423,7 +423,7 @@
                 generado</button>
             </div>
           </div>
-          <div class="text-extraction-single-file-heavy-modal-actions">
+          <div class="text-extraction-single-file-heavy-modal-actions framed-dialog__actions">
             <button id="textExtractionSingleFileHeavyPdfModalSplit" class="btn-standard" type="button">Procesar el PDF 
               por partes</button>
             <button id="textExtractionSingleFileHeavyPdfModalReturnToPages" class="btn-standard" type="button">Volver a
@@ -439,8 +439,8 @@
     <div id="snapshotSaveTagsModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="snapshotSaveTagsModalTitle" aria-modal="true">
       <div id="snapshotSaveTagsModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="snapshot-save-tags-modal-panel" role="document" aria-describedby="snapshotSaveTagsModalMessage">
-        <header class="snapshot-save-tags-modal-header">
+      <div class="snapshot-save-tags-modal-panel framed-dialog__panel" role="document" aria-describedby="snapshotSaveTagsModalMessage">
+        <header class="snapshot-save-tags-modal-header framed-dialog__header">
           <h2 id="snapshotSaveTagsModalTitle">Guardar snapshot de texto</h2>
           <div class="snapshot-save-tags-modal-header-actions">
             <button id="snapshotSaveTagsManageButton" class="btn-standard" type="button"
@@ -450,7 +450,7 @@
               aria-label="Cerrar diálogo para guardar snapshot de texto" data-tot-icon="close"></button>
           </div>
         </header>
-        <div class="snapshot-save-tags-modal-body">
+        <div class="snapshot-save-tags-modal-body framed-dialog__body">
           <p id="snapshotSaveTagsModalMessage">Etiqueta opcionalmente este snapshot de texto antes de elegir dónde
             guardarlo.</p>
           <div id="snapshotSaveMetadataFields" class="snapshot-save-metadata-form">
@@ -490,7 +490,7 @@
               <span id="snapshotSaveIncludeReadingLabel">Incluir tiempo estimado de lectura y WPM</span>
             </label>
           </div>
-          <div class="snapshot-save-tags-modal-actions">
+          <div class="snapshot-save-tags-modal-actions framed-dialog__actions">
             <button id="snapshotSaveTagsModalCancel" class="btn-standard" type="button">Cancelar</button>
             <button id="snapshotSaveTagsModalConfirm" class="btn-standard" type="button">Guardar snapshot de
               texto</button>
@@ -502,16 +502,16 @@
     <div id="snapshotTagManagerModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="snapshotTagManagerModalTitle" aria-modal="true">
       <div id="snapshotTagManagerModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="snapshot-tag-manager-modal-panel" role="document" aria-describedby="snapshotTagManagerModalMessage">
-        <header class="snapshot-tag-manager-modal-header">
+      <div class="snapshot-tag-manager-modal-panel framed-dialog__panel" role="document" aria-describedby="snapshotTagManagerModalMessage">
+        <header class="snapshot-tag-manager-modal-header framed-dialog__header">
           <h2 id="snapshotTagManagerModalTitle">Gestionar etiquetas de snapshots</h2>
           <button id="snapshotTagManagerModalClose" class="btn-standard btn-standard--square" type="button"
             aria-label="Cerrar gestor de etiquetas de snapshots" data-tot-icon="close"></button>
         </header>
-        <div class="snapshot-tag-manager-modal-body">
+        <div class="snapshot-tag-manager-modal-body framed-dialog__body">
           <p id="snapshotTagManagerModalMessage">Gestiona las etiquetas visibles para idioma, tipo y dificultad.</p>
           <div id="snapshotTagManagerModalContent" class="snapshot-tag-manager-modal-content"></div>
-          <div class="snapshot-tag-manager-modal-actions">
+          <div class="snapshot-tag-manager-modal-actions framed-dialog__actions">
             <button id="snapshotTagManagerModalDone" class="btn-standard" type="button">Listo</button>
           </div>
         </div>
@@ -521,13 +521,13 @@
     <div id="readingTestEntryModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="readingTestEntryModalTitle" aria-modal="true">
       <div id="readingTestEntryModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="reading-test-entry-modal-panel" role="document">
-        <header class="reading-test-entry-modal-header">
+      <div class="reading-test-entry-modal-panel framed-dialog__panel" role="document">
+        <header class="reading-test-entry-modal-header framed-dialog__header">
           <h2 id="readingTestEntryModalTitle">Test de velocidad de lectura</h2>
           <button id="readingTestEntryModalClose" class="btn-standard btn-standard--square" type="button"
             aria-label="Cerrar diálogo de test de velocidad de lectura" data-tot-icon="close"></button>
         </header>
-        <div class="reading-test-entry-modal-body">
+        <div class="reading-test-entry-modal-body framed-dialog__body">
           <div class="reading-test-entry-modal-intro-block">
             <button id="readingTestEntryModalIntroToggle" class="reading-test-entry-modal-toggle" type="button"
               aria-controls="readingTestEntryModalIntro" aria-expanded="false">Mostrar instrucciones</button>
@@ -578,7 +578,7 @@
               <button id="readingTestEntryModalImport" class="btn-standard" type="button">Importar archivos...</button>
             </div>
           </div>
-          <div class="reading-test-entry-modal-actions">
+          <div class="reading-test-entry-modal-actions framed-dialog__actions">
             <button id="readingTestEntryModalStart" class="btn-standard" type="button">Iniciar con texto
               aleatorio</button>
             <button id="readingTestEntryModalStartCurrentText" class="btn-standard" type="button">Iniciar con texto
@@ -592,13 +592,13 @@
       aria-labelledby="textExtractionOcrActivationDisclosureTitle"
       aria-describedby="textExtractionOcrActivationDisclosureBody" aria-modal="true">
       <div id="textExtractionOcrActivationDisclosureBackdrop" class="info-modal-backdrop"></div>
-      <div id="textExtractionOcrActivationDisclosurePanel" class="text-extraction-ocr-activation-disclosure-panel" role="document">
-        <header class="text-extraction-ocr-activation-disclosure-header">
+      <div id="textExtractionOcrActivationDisclosurePanel" class="text-extraction-ocr-activation-disclosure-panel framed-dialog__panel" role="document">
+        <header class="text-extraction-ocr-activation-disclosure-header framed-dialog__header">
           <h2 id="textExtractionOcrActivationDisclosureTitle">Revisar activación de Google OCR</h2>
           <button id="textExtractionOcrActivationDisclosureClose" class="btn-standard btn-standard--square" type="button"
             aria-label="Cerrar diálogo de activación de Google OCR" data-tot-icon="close"></button>
         </header>
-        <div id="textExtractionOcrActivationDisclosureBody" class="text-extraction-ocr-activation-disclosure-body">
+        <div id="textExtractionOcrActivationDisclosureBody" class="text-extraction-ocr-activation-disclosure-body framed-dialog__body">
           <p id="textExtractionOcrActivationDisclosureIntro">toT usa servicios de Google para OCR. Si continúas, se
             abrirá el navegador para que autorices esta app.</p>
           <ul class="text-extraction-ocr-activation-disclosure-list">
@@ -614,7 +614,7 @@
           <div class="text-extraction-ocr-activation-disclosure-actions">
             <a id="textExtractionOcrActivationDisclosurePrivacy" class="text-extraction-ocr-activation-disclosure-link"
               href="#">Abrir política de privacidad</a>
-            <div class="text-extraction-ocr-activation-disclosure-buttons">
+            <div class="text-extraction-ocr-activation-disclosure-buttons framed-dialog__actions">
               <button id="textExtractionOcrActivationDisclosureProceed" class="btn-standard" type="button">Continuar con
                 Google</button>
               <button id="textExtractionOcrActivationDisclosureCancel" class="btn-standard"

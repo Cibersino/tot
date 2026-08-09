@@ -171,6 +171,11 @@ body {
   transform: translateY(1px);
 }
 
+.btn-standard:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Shared UI family inheritance for text-entry controls. */
 #taskNameInput,
 .task-table input,
@@ -445,9 +450,6 @@ body.is-resizing {
   border-radius: 8px;
   border: 1px solid var(--modal-panel-border-color);
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   padding: var(--framed-modal-panel-padding);
   box-sizing: border-box;
   box-shadow: var(--modal-panel-shadow);
@@ -470,7 +472,7 @@ body.is-resizing {
   width: 420px;
 }
 
-#snapshotTimeConfirmModal .modal-panel {
+#snapshotDetailsConfirmModal .modal-panel {
   width: 420px;
 }
 
@@ -488,13 +490,19 @@ body.is-resizing {
 }
 
 .modal-body {
-  flex: 0 0 auto;
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.modal-body > p {
+  margin: 0;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -512,28 +520,60 @@ body.is-resizing {
   justify-content: center;
 }
 
-.snapshot-time-confirm-values {
-  display: grid;
-  gap: 8px;
-  margin: 14px 0 0;
+.snapshot-details-confirm-section {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--structural-border);
+  border-radius: var(--field-radius);
 }
 
-.snapshot-time-confirm-values > div {
+.snapshot-details-confirm-section[hidden] {
+  display: none;
+}
+
+.snapshot-details-confirm-section legend {
+  padding: 0 4px;
+}
+
+.snapshot-details-confirm-section legend[hidden] {
+  display: none;
+}
+
+.snapshot-details-confirm-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.snapshot-details-confirm-values {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.snapshot-details-confirm-values > div {
   display: flex;
   justify-content: space-between;
   gap: 16px;
 }
 
-.snapshot-time-confirm-values dt,
-.snapshot-time-confirm-values dd {
+.snapshot-details-confirm-values dt,
+.snapshot-details-confirm-values dd {
   margin: 0;
 }
 
-.snapshot-time-confirm-values dd {
+.snapshot-details-confirm-values dd {
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  text-align: end;
 }
 
-#snapshotTimeConfirmModal .modal-actions {
+.snapshot-details-confirm-values dd.is-empty {
+  color: var(--text-soft);
+}
+
+#snapshotDetailsConfirmModal .modal-actions {
   justify-content: center;
 }
 
@@ -551,7 +591,6 @@ body.is-resizing {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
 }
 
 .comment-snapshot-path {
@@ -569,7 +608,6 @@ body.is-resizing {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
 }
 
 .library-search label {
@@ -589,6 +627,10 @@ body.is-resizing {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.library-list:empty {
+  display: none;
 }
 
 .library-item {

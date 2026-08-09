@@ -33,6 +33,7 @@ const {
   DEFAULT_LANG,
   WPM_MIN,
   WPM_MAX,
+  SNAPSHOT_NAME_MAX_CHARS,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_COMMENT_MAX_CHARS,
@@ -109,19 +110,31 @@ const commentSnapshotSelect = document.getElementById('commentSnapshotSelect');
 const commentSnapshotClear = document.getElementById('commentSnapshotClear');
 const commentSnapshotPath = document.getElementById('commentSnapshotPath');
 
-const snapshotTimeConfirmModal = document.getElementById('snapshotTimeConfirmModal');
-const snapshotTimeConfirmBackdrop = document.getElementById('snapshotTimeConfirmBackdrop');
-const snapshotTimeConfirmClose = document.getElementById('snapshotTimeConfirmClose');
-const snapshotTimeConfirmYes = document.getElementById('snapshotTimeConfirmYes');
-const snapshotTimeConfirmNo = document.getElementById('snapshotTimeConfirmNo');
-const snapshotTimeConfirmTitle = document.getElementById('snapshotTimeConfirmTitle');
-const snapshotTimeConfirmText = document.getElementById('snapshotTimeConfirmText');
-const snapshotTimeConfirmCurrentLabel = document.getElementById('snapshotTimeConfirmCurrentLabel');
-const snapshotTimeConfirmCurrentValue = document.getElementById('snapshotTimeConfirmCurrentValue');
-const snapshotTimeConfirmEstimateLabel = document.getElementById('snapshotTimeConfirmEstimateLabel');
-const snapshotTimeConfirmEstimateValue = document.getElementById('snapshotTimeConfirmEstimateValue');
-const snapshotTimeConfirmWpmLabel = document.getElementById('snapshotTimeConfirmWpmLabel');
-const snapshotTimeConfirmWpmValue = document.getElementById('snapshotTimeConfirmWpmValue');
+const snapshotDetailsConfirmModal = document.getElementById('snapshotDetailsConfirmModal');
+const snapshotDetailsConfirmBackdrop = document.getElementById('snapshotDetailsConfirmBackdrop');
+const snapshotDetailsConfirmClose = document.getElementById('snapshotDetailsConfirmClose');
+const snapshotDetailsConfirmApply = document.getElementById('snapshotDetailsConfirmApply');
+const snapshotDetailsConfirmKeep = document.getElementById('snapshotDetailsConfirmKeep');
+const snapshotDetailsConfirmTitle = document.getElementById('snapshotDetailsConfirmTitle');
+const snapshotDetailsConfirmText = document.getElementById('snapshotDetailsConfirmText');
+const snapshotDetailsConfirmTextSection = document.getElementById('snapshotDetailsConfirmTextSection');
+const snapshotDetailsConfirmTextChoice = document.getElementById('snapshotDetailsConfirmTextChoice');
+const snapshotDetailsConfirmApplyText = document.getElementById('snapshotDetailsConfirmApplyText');
+const snapshotDetailsConfirmApplyTextLabel = document.getElementById('snapshotDetailsConfirmApplyTextLabel');
+const snapshotDetailsConfirmCurrentTextLabel = document.getElementById('snapshotDetailsConfirmCurrentTextLabel');
+const snapshotDetailsConfirmCurrentTextValue = document.getElementById('snapshotDetailsConfirmCurrentTextValue');
+const snapshotDetailsConfirmSnapshotNameLabel = document.getElementById('snapshotDetailsConfirmSnapshotNameLabel');
+const snapshotDetailsConfirmSnapshotNameValue = document.getElementById('snapshotDetailsConfirmSnapshotNameValue');
+const snapshotDetailsConfirmTimeSection = document.getElementById('snapshotDetailsConfirmTimeSection');
+const snapshotDetailsConfirmTimeChoice = document.getElementById('snapshotDetailsConfirmTimeChoice');
+const snapshotDetailsConfirmApplyTime = document.getElementById('snapshotDetailsConfirmApplyTime');
+const snapshotDetailsConfirmApplyTimeLabel = document.getElementById('snapshotDetailsConfirmApplyTimeLabel');
+const snapshotDetailsConfirmCurrentTimeLabel = document.getElementById('snapshotDetailsConfirmCurrentTimeLabel');
+const snapshotDetailsConfirmCurrentTimeValue = document.getElementById('snapshotDetailsConfirmCurrentTimeValue');
+const snapshotDetailsConfirmEstimateLabel = document.getElementById('snapshotDetailsConfirmEstimateLabel');
+const snapshotDetailsConfirmEstimateValue = document.getElementById('snapshotDetailsConfirmEstimateValue');
+const snapshotDetailsConfirmWpmLabel = document.getElementById('snapshotDetailsConfirmWpmLabel');
+const snapshotDetailsConfirmWpmValue = document.getElementById('snapshotDetailsConfirmWpmValue');
 
 const libraryModal = document.getElementById('libraryModal');
 const libraryBackdrop = document.getElementById('libraryBackdrop');
@@ -152,7 +165,7 @@ let dirty = false;
 let rowIdCounter = 1;
 let pendingCommentRowId = null;
 let pendingCommentSnapshotRelPath = '';
-let pendingSnapshotTimeConfirmation = null;
+let pendingSnapshotDetailsConfirmation = null;
 let commentSaveInFlight = false;
 let pendingLibraryRowId = null;
 let libraryItemsCache = [];
@@ -310,7 +323,7 @@ function handleTaskEditorModalEscape(event) {
     { modal: commentModal, close: dismissCommentModal },
     { modal: libraryModal, close: () => closeModal(libraryModal) },
     { modal: includeCommentModal, close: () => closeModal(includeCommentModal) },
-    { modal: snapshotTimeConfirmModal, close: () => resolveSnapshotTimeConfirmation(false) },
+    { modal: snapshotDetailsConfirmModal, close: () => resolveSnapshotDetailsConfirmation(false) },
   ];
   const isVisible = ({ modal }) => modal && modal.getAttribute('aria-hidden') === 'false';
   const focusedEntry = closeEntries.find(({ modal }) => isVisible({ modal }) && modal.contains(document.activeElement));
@@ -357,47 +370,131 @@ function setCommentSaveInFlight(inFlight) {
   });
 }
 
-function updateSnapshotTimeConfirmationDisplay() {
-  const confirmation = pendingSnapshotTimeConfirmation;
+function getSnapshotDetailsConfirmationState(confirmation) {
+  const hasTextChange = !!confirmation && typeof confirmation.texto === 'string';
+  const hasTimeChange = !!(confirmation && confirmation.reading);
+  return {
+    hasTextChange,
+    hasTimeChange,
+    allowsIndividualSelection: hasTextChange && hasTimeChange,
+  };
+}
+
+function updateSnapshotDetailsConfirmationDisplay() {
+  const confirmation = pendingSnapshotDetailsConfirmation;
   const row = confirmation && rows.find((candidate) => candidate.id === confirmation.rowId);
   if (!confirmation || !row) return false;
 
-  if (snapshotTimeConfirmCurrentValue) {
-    snapshotTimeConfirmCurrentValue.textContent = formatDuration(row.tiempoSeconds);
+  const {
+    hasTextChange,
+    hasTimeChange,
+    allowsIndividualSelection,
+  } = getSnapshotDetailsConfirmationState(confirmation);
+  if (snapshotDetailsConfirmTextSection) {
+    snapshotDetailsConfirmTextSection.hidden = !hasTextChange;
   }
-  if (snapshotTimeConfirmEstimateValue) {
-    snapshotTimeConfirmEstimateValue.textContent = formatDuration(confirmation.estimatedSeconds);
+  if (snapshotDetailsConfirmTimeSection) {
+    snapshotDetailsConfirmTimeSection.hidden = !hasTimeChange;
   }
-  if (snapshotTimeConfirmWpmValue) {
-    snapshotTimeConfirmWpmValue.textContent = `${confirmation.wpm} WPM`;
+  if (snapshotDetailsConfirmTextChoice) {
+    snapshotDetailsConfirmTextChoice.hidden = !allowsIndividualSelection;
   }
-  return true;
+  if (snapshotDetailsConfirmTimeChoice) {
+    snapshotDetailsConfirmTimeChoice.hidden = !allowsIndividualSelection;
+  }
+
+  if (hasTextChange) {
+    const hasCurrentName = typeof row.texto === 'string' && !!row.texto.trim();
+    if (snapshotDetailsConfirmApplyTextLabel) {
+      snapshotDetailsConfirmApplyTextLabel.textContent = tr(
+        hasCurrentName
+          ? 'renderer.tasks.comentario_modal.snapshot_details_confirm.replace_reading_name'
+          : 'renderer.tasks.comentario_modal.snapshot_details_confirm.set_reading_name'
+      );
+    }
+    if (snapshotDetailsConfirmCurrentTextValue) {
+      snapshotDetailsConfirmCurrentTextValue.textContent = hasCurrentName
+        ? row.texto
+        : tr('renderer.tasks.comentario_modal.snapshot_details_confirm.empty');
+      snapshotDetailsConfirmCurrentTextValue.classList.toggle('is-empty', !hasCurrentName);
+    }
+    if (snapshotDetailsConfirmSnapshotNameValue) {
+      snapshotDetailsConfirmSnapshotNameValue.textContent = confirmation.texto;
+    }
+  }
+
+  if (hasTimeChange) {
+    if (snapshotDetailsConfirmCurrentTimeValue) {
+      snapshotDetailsConfirmCurrentTimeValue.textContent = formatDuration(row.tiempoSeconds);
+    }
+    if (snapshotDetailsConfirmEstimateValue) {
+      snapshotDetailsConfirmEstimateValue.textContent = formatDuration(confirmation.reading.estimatedSeconds);
+    }
+    if (snapshotDetailsConfirmWpmValue) {
+      snapshotDetailsConfirmWpmValue.textContent = `${confirmation.reading.wpm} WPM`;
+    }
+  }
+  return hasTextChange || hasTimeChange;
 }
 
-function openSnapshotTimeConfirmation(row, reading) {
-  pendingSnapshotTimeConfirmation = {
+function updateSnapshotDetailsConfirmationApplyState() {
+  const confirmation = pendingSnapshotDetailsConfirmation;
+  if (!snapshotDetailsConfirmApply || !confirmation) return;
+
+  const {
+    hasTextChange,
+    hasTimeChange,
+    allowsIndividualSelection,
+  } = getSnapshotDetailsConfirmationState(confirmation);
+  const textSelected = hasTextChange
+    && (!allowsIndividualSelection || !!(snapshotDetailsConfirmApplyText && snapshotDetailsConfirmApplyText.checked));
+  const timeSelected = hasTimeChange
+    && (!allowsIndividualSelection || !!(snapshotDetailsConfirmApplyTime && snapshotDetailsConfirmApplyTime.checked));
+  snapshotDetailsConfirmApply.textContent = tr(
+    allowsIndividualSelection
+      ? 'renderer.tasks.comentario_modal.snapshot_details_confirm.apply_selected'
+      : 'renderer.tasks.comentario_modal.snapshot_details_confirm.apply'
+  );
+  snapshotDetailsConfirmApply.disabled = !textSelected && !timeSelected;
+}
+
+function openSnapshotDetailsConfirmation(row, changes) {
+  pendingSnapshotDetailsConfirmation = {
     rowId: row.id,
-    estimatedSeconds: reading.estimatedSeconds,
-    wpm: reading.wpm,
+    texto: changes.texto,
+    reading: changes.reading,
   };
-  if (!updateSnapshotTimeConfirmationDisplay()) {
-    pendingSnapshotTimeConfirmation = null;
+  if (!updateSnapshotDetailsConfirmationDisplay()) {
+    pendingSnapshotDetailsConfirmation = null;
     return false;
   }
-  openModal(snapshotTimeConfirmModal, snapshotTimeConfirmYes);
+  if (snapshotDetailsConfirmApplyText) {
+    snapshotDetailsConfirmApplyText.checked = typeof changes.texto === 'string';
+  }
+  if (snapshotDetailsConfirmApplyTime) {
+    snapshotDetailsConfirmApplyTime.checked = !!changes.reading;
+  }
+  updateSnapshotDetailsConfirmationApplyState();
+  const { allowsIndividualSelection } = getSnapshotDetailsConfirmationState(
+    pendingSnapshotDetailsConfirmation
+  );
+  const initialFocus = allowsIndividualSelection
+    ? snapshotDetailsConfirmApplyText || snapshotDetailsConfirmApply
+    : snapshotDetailsConfirmApply;
+  openModal(snapshotDetailsConfirmModal, initialFocus);
   return true;
 }
 
 function resetPendingCommentDraft() {
   pendingCommentRowId = null;
   pendingCommentSnapshotRelPath = '';
-  pendingSnapshotTimeConfirmation = null;
+  pendingSnapshotDetailsConfirmation = null;
   setCommentSnapshotDisplay('');
 }
 
 function dismissCommentModal() {
-  if (pendingSnapshotTimeConfirmation) {
-    resolveSnapshotTimeConfirmation(false);
+  if (pendingSnapshotDetailsConfirmation) {
+    resolveSnapshotDetailsConfirmation(false);
     return;
   }
   if (commentSaveInFlight) return;
@@ -405,7 +502,7 @@ function dismissCommentModal() {
   closeModal(commentModal);
 }
 
-function commitCommentChangesAndDismiss({ estimatedSeconds = null } = {}) {
+function commitCommentChangesAndDismiss({ texto = null, estimatedSeconds = null } = {}) {
   const row = rows.find((r) => r.id === pendingCommentRowId);
   if (row) {
     const nextComment = commentInput.value || '';
@@ -418,6 +515,11 @@ function commitCommentChangesAndDismiss({ estimatedSeconds = null } = {}) {
     }
     if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
       row.snapshotRelPath = nextSnapshotRelPath;
+      changed = true;
+      needsRender = true;
+    }
+    if (typeof texto === 'string' && row.texto !== texto) {
+      row.texto = texto;
       changed = true;
       needsRender = true;
     }
@@ -476,18 +578,64 @@ function getSnapshotInspectionReading(result) {
   };
 }
 
-function resolveSnapshotTimeConfirmation(useEstimatedTime) {
-  const confirmation = pendingSnapshotTimeConfirmation;
+function getSnapshotInspectionDetails(result) {
+  if (!result || !Object.prototype.hasOwnProperty.call(result, 'name')) {
+    return { ok: false };
+  }
+  const name = result.name;
+  if (name !== null
+    && (typeof name !== 'string'
+      || !name.trim()
+      || name.length > SNAPSHOT_NAME_MAX_CHARS
+      || /[\r\n]/.test(name))) {
+    return { ok: false };
+  }
+
+  const readingInfo = getSnapshotInspectionReading(result);
+  if (!readingInfo.ok) return { ok: false };
+  return {
+    ok: true,
+    name,
+    reading: readingInfo.reading,
+  };
+}
+
+function getSnapshotDetailsChanges(row, details) {
+  const texto = details.name !== null && details.name !== row.texto
+    ? details.name
+    : null;
+  const reading = details.reading && details.reading.estimatedSeconds !== row.tiempoSeconds
+    ? details.reading
+    : null;
+  return { texto, reading };
+}
+
+function resolveSnapshotDetailsConfirmation(applySelectedDetails) {
+  const confirmation = pendingSnapshotDetailsConfirmation;
   if (!confirmation) return;
-  pendingSnapshotTimeConfirmation = null;
-  closeModal(snapshotTimeConfirmModal);
+  const {
+    hasTextChange,
+    hasTimeChange,
+    allowsIndividualSelection,
+  } = getSnapshotDetailsConfirmationState(confirmation);
+  pendingSnapshotDetailsConfirmation = null;
+  closeModal(snapshotDetailsConfirmModal);
   commitCommentChangesAndDismiss({
-    estimatedSeconds: useEstimatedTime ? confirmation.estimatedSeconds : null,
+    texto: applySelectedDetails
+      && hasTextChange
+      && (!allowsIndividualSelection || !!(snapshotDetailsConfirmApplyText && snapshotDetailsConfirmApplyText.checked))
+      ? confirmation.texto
+      : null,
+    estimatedSeconds: applySelectedDetails
+      && hasTimeChange
+      && (!allowsIndividualSelection || !!(snapshotDetailsConfirmApplyTime && snapshotDetailsConfirmApplyTime.checked))
+      ? confirmation.reading.estimatedSeconds
+      : null,
   });
 }
 
 async function applyCommentChangesAndDismiss() {
-  if (commentSaveInFlight || pendingSnapshotTimeConfirmation) return;
+  if (commentSaveInFlight || pendingSnapshotDetailsConfirmation) return;
 
   const row = rows.find((candidate) => candidate.id === pendingCommentRowId);
   if (!row) {
@@ -525,18 +673,19 @@ async function applyCommentChangesAndDismiss() {
     return;
   }
 
-  const readingInfo = getSnapshotInspectionReading(result);
-  if (!readingInfo.ok) {
-    log.warn('inspectTaskRowSnapshot returned invalid reading metrics:', result || null);
+  const details = getSnapshotInspectionDetails(result);
+  if (!details.ok) {
+    log.warn('inspectTaskRowSnapshot returned invalid snapshot details:', result || null);
     window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
     return;
   }
-  if (!readingInfo.reading) {
+  const changes = getSnapshotDetailsChanges(row, details);
+  if (!changes.texto && !changes.reading) {
     commitCommentChangesAndDismiss();
     return;
   }
-  if (!openSnapshotTimeConfirmation(row, readingInfo.reading)) {
-    log.error('Snapshot time confirmation could not be opened.');
+  if (!openSnapshotDetailsConfirmation(row, changes)) {
+    log.error('Snapshot details confirmation could not be opened.');
     window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
   }
 }
@@ -1315,37 +1464,47 @@ async function applyTaskEditorTranslations() {
     });
   }
 
-  if (snapshotTimeConfirmTitle) {
-    snapshotTimeConfirmTitle.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.title');
+  if (snapshotDetailsConfirmTitle) {
+    snapshotDetailsConfirmTitle.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.title');
   }
-  if (snapshotTimeConfirmText) {
-    snapshotTimeConfirmText.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.message');
+  if (snapshotDetailsConfirmText) {
+    snapshotDetailsConfirmText.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.message');
   }
-  if (snapshotTimeConfirmCurrentLabel) {
-    snapshotTimeConfirmCurrentLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.current_time');
+  if (snapshotDetailsConfirmCurrentTextLabel) {
+    snapshotDetailsConfirmCurrentTextLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.current_name');
   }
-  if (snapshotTimeConfirmEstimateLabel) {
-    snapshotTimeConfirmEstimateLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.snapshot_estimate');
+  if (snapshotDetailsConfirmSnapshotNameLabel) {
+    snapshotDetailsConfirmSnapshotNameLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.snapshot_name');
   }
-  if (snapshotTimeConfirmWpmLabel) {
-    snapshotTimeConfirmWpmLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.reading_speed');
+  if (snapshotDetailsConfirmApplyTimeLabel) {
+    snapshotDetailsConfirmApplyTimeLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.replace_time');
   }
-  if (snapshotTimeConfirmYes) {
-    snapshotTimeConfirmYes.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.yes');
+  if (snapshotDetailsConfirmCurrentTimeLabel) {
+    snapshotDetailsConfirmCurrentTimeLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.current_time');
   }
-  if (snapshotTimeConfirmNo) {
-    snapshotTimeConfirmNo.textContent = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.no');
+  if (snapshotDetailsConfirmEstimateLabel) {
+    snapshotDetailsConfirmEstimateLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.snapshot_estimate');
   }
-  if (snapshotTimeConfirmClose) {
-    snapshotTimeConfirmClose.title = tr('renderer.tasks.comentario_modal.snapshot_time_confirm.close_aria');
-    snapshotTimeConfirmClose.setAttribute('aria-label', snapshotTimeConfirmClose.title || '');
-    rendererIcons.applyIconToElement(snapshotTimeConfirmClose, 'close', {
+  if (snapshotDetailsConfirmWpmLabel) {
+    snapshotDetailsConfirmWpmLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.reading_speed');
+  }
+  if (snapshotDetailsConfirmApply) {
+    snapshotDetailsConfirmApply.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.apply');
+  }
+  if (snapshotDetailsConfirmKeep) {
+    snapshotDetailsConfirmKeep.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.keep');
+  }
+  if (snapshotDetailsConfirmClose) {
+    snapshotDetailsConfirmClose.title = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.close_aria');
+    snapshotDetailsConfirmClose.setAttribute('aria-label', snapshotDetailsConfirmClose.title || '');
+    rendererIcons.applyIconToElement(snapshotDetailsConfirmClose, 'close', {
       preserveContent: false,
-      title: snapshotTimeConfirmClose.title,
-      ariaLabel: snapshotTimeConfirmClose.title,
+      title: snapshotDetailsConfirmClose.title,
+      ariaLabel: snapshotDetailsConfirmClose.title,
     });
   }
-  updateSnapshotTimeConfirmationDisplay();
+  updateSnapshotDetailsConfirmationDisplay();
+  updateSnapshotDetailsConfirmationApplyState();
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.biblioteca.library_title');
   if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.biblioteca.search');
@@ -1435,18 +1594,24 @@ function wireCommentModalEvents() {
   }
 }
 
-function wireSnapshotTimeConfirmModalEvents() {
-  if (snapshotTimeConfirmClose) {
-    snapshotTimeConfirmClose.addEventListener('click', () => resolveSnapshotTimeConfirmation(false));
+function wireSnapshotDetailsConfirmModalEvents() {
+  if (snapshotDetailsConfirmClose) {
+    snapshotDetailsConfirmClose.addEventListener('click', () => resolveSnapshotDetailsConfirmation(false));
   }
-  if (snapshotTimeConfirmBackdrop) {
-    snapshotTimeConfirmBackdrop.addEventListener('click', () => resolveSnapshotTimeConfirmation(false));
+  if (snapshotDetailsConfirmBackdrop) {
+    snapshotDetailsConfirmBackdrop.addEventListener('click', () => resolveSnapshotDetailsConfirmation(false));
   }
-  if (snapshotTimeConfirmYes) {
-    snapshotTimeConfirmYes.addEventListener('click', () => resolveSnapshotTimeConfirmation(true));
+  if (snapshotDetailsConfirmApply) {
+    snapshotDetailsConfirmApply.addEventListener('click', () => resolveSnapshotDetailsConfirmation(true));
   }
-  if (snapshotTimeConfirmNo) {
-    snapshotTimeConfirmNo.addEventListener('click', () => resolveSnapshotTimeConfirmation(false));
+  if (snapshotDetailsConfirmApplyText) {
+    snapshotDetailsConfirmApplyText.addEventListener('change', updateSnapshotDetailsConfirmationApplyState);
+  }
+  if (snapshotDetailsConfirmApplyTime) {
+    snapshotDetailsConfirmApplyTime.addEventListener('change', updateSnapshotDetailsConfirmationApplyState);
+  }
+  if (snapshotDetailsConfirmKeep) {
+    snapshotDetailsConfirmKeep.addEventListener('click', () => resolveSnapshotDetailsConfirmation(false));
   }
 }
 
@@ -1464,7 +1629,7 @@ function wireLibraryModalEvents() {
 function wireTaskEditorEvents() {
   wirePrimaryTaskEditorEvents();
   wireCommentModalEvents();
-  wireSnapshotTimeConfirmModalEvents();
+  wireSnapshotDetailsConfirmModalEvents();
   wireLibraryModalEvents();
   window.addEventListener('keydown', handleTaskEditorModalEscape);
 }
