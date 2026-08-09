@@ -489,15 +489,22 @@
         "snapshot_select": "Eiporavo snapshot",
         "snapshot_select_tooltip": "Eiporavo snapshot ko fila-pe g̃uarã",
         "snapshot_clear": "Eipe’a snapshot ojeporavóva ko fila-gui",
-        "snapshot_time_confirm": {
-          "title": "¿Eiporúta pe aravo oñeha’ãva oĩva texto snapshot-pe?",
-          "message": "¿Emyengoviáta ko moñe’ẽ aravo ko’ág̃agua pe aravo oñeha’ãva oĩva texto snapshot ojeporavóvape?",
+        "snapshot_details_confirm": {
+          "title": "¿Eiporúta umi dato oĩva texto snapshot ojeporavóvape?",
+          "message": "Ehecha umi dato ojeguerekóva texto snapshot ojeporavóvape emoĩ hag̃ua ko moñe’ẽme.",
+          "replace_reading_name": "Emyengovia moñe’ẽ réra",
+          "set_reading_name": "Emoĩ moñe’ẽ réra",
+          "current_name": "Téra ko’ág̃agua",
+          "snapshot_name": "Snapshot réra",
+          "empty": "(nandi)",
+          "replace_time": "Emyengovia aravo oñeha’ãva",
           "current_time": "Aravo ko’ág̃agua",
           "snapshot_estimate": "Snapshot aravo oñeha’ãva",
           "reading_speed": "Moñe’ẽ pya’ekue",
-          "yes": "Hẽe",
-          "no": "Nahániri",
-          "close_aria": "Emboty aravo oñeha’ãva ñemoneĩ"
+          "apply": "Emoĩ",
+          "apply_selected": "Emoĩ ojeporavóva",
+          "keep": "Eheja umi valor ko’ág̃agua",
+          "close_aria": "Emboty snapshot dato ñemoneĩ"
         }
       },
       "biblioteca": {

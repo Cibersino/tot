@@ -489,15 +489,22 @@
         "snapshot_select": "选择快照",
         "snapshot_select_tooltip": "为此行选择文本快照",
         "snapshot_clear": "移除此行所选快照",
-        "snapshot_time_confirm": {
-          "title": "使用文本快照的预计时间？",
-          "message": "要用所选文本快照中的预计时间替换此阅读项的当前时间吗？",
+        "snapshot_details_confirm": {
+          "title": "使用所选文本快照中的数据？",
+          "message": "在将数据应用到此阅读项之前，请查看所选文本快照中可用的数据。",
+          "replace_reading_name": "替换阅读名称",
+          "set_reading_name": "设置阅读名称",
+          "current_name": "当前名称",
+          "snapshot_name": "快照名称",
+          "empty": "（空）",
+          "replace_time": "替换预计时间",
           "current_time": "当前时间",
           "snapshot_estimate": "快照预计时间",
           "reading_speed": "阅读速度",
-          "yes": "是",
-          "no": "否",
-          "close_aria": "关闭预计时间确认"
+          "apply": "应用",
+          "apply_selected": "应用所选项",
+          "keep": "保留当前值",
+          "close_aria": "关闭快照数据确认"
         }
       },
       "biblioteca": {

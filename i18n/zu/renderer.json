@@ -489,15 +489,22 @@
         "snapshot_select": "Khetha i-snapshot",
         "snapshot_select_tooltip": "Khetha i-snapshot yombhalo kulo mugqa",
         "snapshot_clear": "Susa i-snapshot ekhethiwe kulo mugqa",
-        "snapshot_time_confirm": {
-          "title": "Sebenzisa isikhathi esilinganisiwe se-snapshot yombhalo?",
-          "message": "Faka esikhundleni sesikhathi samanje salokhu kufunda ngesilinganiso esiku-snapshot yombhalo ekhethiwe?",
+        "snapshot_details_confirm": {
+          "title": "Sebenzisa idatha ye-snapshot yombhalo ekhethiwe?",
+          "message": "Buyekeza idatha etholakalayo ye-snapshot yombhalo ekhethiwe ngaphambi kokuyisebenzisa kulokhu kufunda.",
+          "replace_reading_name": "Buyisela igama lokufunda",
+          "set_reading_name": "Setha igama lokufunda",
+          "current_name": "Igama lamanje",
+          "snapshot_name": "Igama le-snapshot",
+          "empty": "(akunalutho)",
+          "replace_time": "Buyisela isikhathi esilinganisiwe",
           "current_time": "Isikhathi samanje",
           "snapshot_estimate": "Isilinganiso se-snapshot",
           "reading_speed": "Ijubane lokufunda",
-          "yes": "Yebo",
-          "no": "Cha",
-          "close_aria": "Vala ukuqinisekiswa kwesikhathi esilinganisiwe"
+          "apply": "Sebenzisa",
+          "apply_selected": "Sebenzisa okukhethiwe",
+          "keep": "Gcina amanani amanje",
+          "close_aria": "Vala ukuqinisekiswa kwedatha ye-snapshot"
         }
       },
       "biblioteca": {

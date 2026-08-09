@@ -489,15 +489,22 @@
         "snapshot_select": "Välj snapshot",
         "snapshot_select_tooltip": "Välj en textsnapshot för denna rad",
         "snapshot_clear": "Ta bort vald snapshot från denna rad",
-        "snapshot_time_confirm": {
-          "title": "Använd den beräknade tiden från textsnapshoten?",
-          "message": "Ersätt den aktuella tiden för denna läsning med uppskattningen i den valda textsnapshoten?",
+        "snapshot_details_confirm": {
+          "title": "Använd data från vald textsnapshot?",
+          "message": "Granska tillgängliga data från den valda textsnapshoten innan de tillämpas på denna läsning.",
+          "replace_reading_name": "Ersätt läsningens namn",
+          "set_reading_name": "Ange läsningens namn",
+          "current_name": "Aktuellt namn",
+          "snapshot_name": "Snapshotnamn",
+          "empty": "(tom)",
+          "replace_time": "Ersätt beräknad tid",
           "current_time": "Aktuell tid",
           "snapshot_estimate": "Snapshot-uppskattning",
           "reading_speed": "Läshastighet",
-          "yes": "Ja",
-          "no": "Nej",
-          "close_aria": "Stäng bekräftelsen av beräknad tid"
+          "apply": "Tillämpa",
+          "apply_selected": "Tillämpa valda",
+          "keep": "Behåll aktuella värden",
+          "close_aria": "Stäng bekräftelsen av snapshotdata"
         }
       },
       "biblioteca": {

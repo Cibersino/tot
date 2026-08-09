@@ -489,15 +489,22 @@
         "snapshot_select": "Chọn bản lưu",
         "snapshot_select_tooltip": "Chọn bản lưu văn bản cho hàng này",
         "snapshot_clear": "Gỡ bản lưu đã chọn khỏi hàng này",
-        "snapshot_time_confirm": {
-          "title": "Dùng thời gian ước tính của bản lưu văn bản?",
-          "message": "Thay thời gian hiện tại của mục đọc này bằng thời gian ước tính trong bản lưu văn bản đã chọn?",
+        "snapshot_details_confirm": {
+          "title": "Dùng dữ liệu từ bản lưu văn bản đã chọn?",
+          "message": "Xem lại dữ liệu có sẵn từ bản lưu văn bản đã chọn trước khi áp dụng cho mục đọc này.",
+          "replace_reading_name": "Thay tên mục đọc",
+          "set_reading_name": "Đặt tên mục đọc",
+          "current_name": "Tên hiện tại",
+          "snapshot_name": "Tên bản lưu",
+          "empty": "(trống)",
+          "replace_time": "Thay thời gian ước tính",
           "current_time": "Thời gian hiện tại",
           "snapshot_estimate": "Ước tính của bản lưu",
           "reading_speed": "Tốc độ đọc",
-          "yes": "Có",
-          "no": "Không",
-          "close_aria": "Đóng xác nhận thời gian ước tính"
+          "apply": "Áp dụng",
+          "apply_selected": "Áp dụng mục đã chọn",
+          "keep": "Giữ các giá trị hiện tại",
+          "close_aria": "Đóng xác nhận dữ liệu bản lưu"
         }
       },
       "biblioteca": {

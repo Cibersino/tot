@@ -489,15 +489,22 @@
         "snapshot_select": "Seleccionar coso",
         "snapshot_select_tooltip": "Seleccionar un coso de texto para esta fila",
         "snapshot_clear": "Quitar el coso seleccionado de esta fila",
-        "snapshot_time_confirm": {
-          "title": "¿Usar el tiempo estimado del coso de texto?",
-          "message": "¿Querís reemplazar el tiempo actual de esta lectura por la estimación del coso seleccionado?",
+        "snapshot_details_confirm": {
+          "title": "¿Usar los datos del coso de texto seleccionado?",
+          "message": "Revisa los datos disponibles del coso seleccionado antes de aplicarlos a esta lectura.",
+          "replace_reading_name": "Reemplazar nombre de lectura",
+          "set_reading_name": "Poner nombre de lectura",
+          "current_name": "Nombre actual",
+          "snapshot_name": "Nombre del coso",
+          "empty": "(vacío)",
+          "replace_time": "Reemplazar tiempo estimado",
           "current_time": "Tiempo actual",
           "snapshot_estimate": "Estimación del coso",
           "reading_speed": "Ritmo de lectura",
-          "yes": "Sí",
-          "no": "No",
-          "close_aria": "Cerrar confirmación de tiempo estimado"
+          "apply": "Aplicar",
+          "apply_selected": "Aplicar selección",
+          "keep": "Conservar valores actuales",
+          "close_aria": "Cerrar confirmación de datos del coso"
         }
       },
       "biblioteca": {

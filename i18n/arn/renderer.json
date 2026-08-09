@@ -489,15 +489,22 @@
         "snapshot_select": "Kintun snapshot",
         "snapshot_select_tooltip": "Kintun snapshot weyel tati ruka",
         "snapshot_clear": "Ñamümün snapshot weyel tati ruka",
-        "snapshot_time_confirm": {
-          "title": "¿Eymi küpayal snapshot ñi rakiduam antü?",
-          "message": "¿Fachi chillkatun ñi antü, snapshot ajllin ñi rakiduam antü mew weyeltuaymi?",
+        "snapshot_details_confirm": {
+          "title": "¿Eiporúaymi snapshot texto ajllin ñi kimün?",
+          "message": "Fachi chillkatun mew eiporual, snapshot texto ajllin ñi kimün küme azümnge.",
+          "replace_reading_name": "Kaxün chillkatun ñi üi",
+          "set_reading_name": "Elu chillkatun ñi üi",
+          "current_name": "Fachi üi",
+          "snapshot_name": "Snapshot ñi üi",
+          "empty": "(welli)",
+          "replace_time": "Kaxün rakiduam antü",
           "current_time": "Fachi antü",
           "snapshot_estimate": "Snapshot ñi rakiduam",
           "reading_speed": "Lef chillkatun",
-          "yes": "May",
-          "no": "No",
-          "close_aria": "Rakiduam antü rüpüntukun nürüfün"
+          "apply": "Eiporu",
+          "apply_selected": "Eiporu ajllin",
+          "keep": "Fachi valores müley",
+          "close_aria": "Snapshot ñi kimün rüpüntukun nürüfün"
         }
       },
       "biblioteca": {

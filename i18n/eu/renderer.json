@@ -489,15 +489,22 @@
         "snapshot_select": "Hautatu snapshota",
         "snapshot_select_tooltip": "Hautatu testu-snapshot bat errenkada honetarako",
         "snapshot_clear": "Kendu hautatutako snapshota errenkada honetatik",
-        "snapshot_time_confirm": {
-          "title": "Erabili testu-snapshotaren zenbatetsitako denbora?",
-          "message": "Ordeztu irakurketa honen uneko denbora hautatutako testu-snapshotaren zenbatespenarekin?",
+        "snapshot_details_confirm": {
+          "title": "Erabili hautatutako testu-snapshotaren datuak?",
+          "message": "Berrikusi hautatutako testu-snapshotaren eskuragarri dauden datuak irakurketa honetan aplikatu aurretik.",
+          "replace_reading_name": "Ordeztu irakurketaren izena",
+          "set_reading_name": "Ezarri irakurketaren izena",
+          "current_name": "Uneko izena",
+          "snapshot_name": "Snapshotaren izena",
+          "empty": "(hutsik)",
+          "replace_time": "Ordeztu zenbatetsitako denbora",
           "current_time": "Uneko denbora",
           "snapshot_estimate": "Snapshotaren zenbatespena",
           "reading_speed": "Irakurketa-abiadura",
-          "yes": "Bai",
-          "no": "Ez",
-          "close_aria": "Itxi zenbatetsitako denboraren baieztapena"
+          "apply": "Aplikatu",
+          "apply_selected": "Aplikatu hautatutakoa",
+          "keep": "Gorde uneko balioak",
+          "close_aria": "Itxi snapshotaren datuen baieztapena"
         }
       },
       "biblioteca": {

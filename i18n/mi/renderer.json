@@ -489,15 +489,22 @@
         "snapshot_select": "Tīpako hopunga",
         "snapshot_select_tooltip": "Tīpako hopunga kuputuhi mō tēnei rārangi",
         "snapshot_clear": "Tango i te hopunga kua tīpakohia i tēnei rārangi",
-        "snapshot_time_confirm": {
-          "title": "Whakamahia te wā e whakaarotia ana o te hopunga kuputuhi?",
-          "message": "Whakakapia te wā o nāianei o tēnei pānuitanga ki te whakatau i te hopunga kuputuhi kua tīpakohia?",
+        "snapshot_details_confirm": {
+          "title": "Whakamahia ngā raraunga o te hopunga kuputuhi kua tīpakohia?",
+          "message": "Arotakehia ngā raraunga e wātea ana i te hopunga kuputuhi kua tīpakohia i mua i te hoatu ki tēnei pānuitanga.",
+          "replace_reading_name": "Whakakapia te ingoa pānui",
+          "set_reading_name": "Tautuhia te ingoa pānui",
+          "current_name": "Ingoa o nāianei",
+          "snapshot_name": "Ingoa hopunga",
+          "empty": "(kāore he mea)",
+          "replace_time": "Whakakapia te wā whakaarotia",
           "current_time": "Wā o nāianei",
           "snapshot_estimate": "Whakatau hopunga",
           "reading_speed": "Tere pānui",
-          "yes": "Āe",
-          "no": "Kāo",
-          "close_aria": "Katia te whakaū wā whakaarotia"
+          "apply": "Hoatu",
+          "apply_selected": "Hoatu ngā mea kua tīpakohia",
+          "keep": "Puritia ngā uara o nāianei",
+          "close_aria": "Katia te whakaū raraunga hopunga"
         }
       },
       "biblioteca": {

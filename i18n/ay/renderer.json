@@ -489,15 +489,22 @@
         "snapshot_select": "Snapshot ajlliña",
         "snapshot_select_tooltip": "Aka siqitak snapshot ajlliña",
         "snapshot_clear": "Aka siqit ajllita snapshot apsuña",
-        "snapshot_time_confirm": {
-          "title": "¿Texto snapshot ukan jakhthapita pachap apnaqañati?",
-          "message": "¿Aka ullañan jichha pachapxa ajllita texto snapshot ukan jakhthapita pachamp lantintañati?",
+        "snapshot_details_confirm": {
+          "title": "¿Ajllita texto snapshot ukan yatiyawinakap apnaqañati?",
+          "message": "Ajllita texto snapshot ukan utjiri yatiyawinakxa aka ullañaru apnaqañataki uñakipam.",
+          "replace_reading_name": "Ullaña suti lantintaña",
+          "set_reading_name": "Ullaña suti uchachaña",
+          "current_name": "Jichha suti",
+          "snapshot_name": "Snapshot suti",
+          "empty": "(ch’usa)",
+          "replace_time": "Jakhthapita pacha lantintaña",
           "current_time": "Jichha pacha",
           "snapshot_estimate": "Snapshot jakhthapiwi",
           "reading_speed": "Ullañ jank’akïwi",
-          "yes": "Jïsa",
-          "no": "Janiwa",
-          "close_aria": "Jakhthapita pacha chiqanchäwi jist’antaña"
+          "apply": "Apnaqaña",
+          "apply_selected": "Ajllit apnaqaña",
+          "keep": "Jichha chaninakanak imaña",
+          "close_aria": "Snapshot yatiyawinak chiqanchäwi jist’antaña"
         }
       },
       "biblioteca": {

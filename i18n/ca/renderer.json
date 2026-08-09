@@ -489,15 +489,22 @@
         "snapshot_select": "Seleccionar snapshot",
         "snapshot_select_tooltip": "Seleccionar snapshot per a aquesta fila",
         "snapshot_clear": "Treure el snapshot seleccionat d’aquesta fila",
-        "snapshot_time_confirm": {
-          "title": "Voleu utilitzar el temps estimat del snapshot de text?",
-          "message": "Voleu substituir el temps actual d’aquesta lectura per l’estimació del snapshot de text seleccionat?",
+        "snapshot_details_confirm": {
+          "title": "Utilitzar les dades del snapshot de text seleccionat?",
+          "message": "Reviseu les dades disponibles del snapshot de text seleccionat abans d’aplicar-les a aquesta lectura.",
+          "replace_reading_name": "Substituir el nom de la lectura",
+          "set_reading_name": "Establir el nom de la lectura",
+          "current_name": "Nom actual",
+          "snapshot_name": "Nom del snapshot",
+          "empty": "(buit)",
+          "replace_time": "Substituir el temps estimat",
           "current_time": "Temps actual",
           "snapshot_estimate": "Estimació del snapshot",
           "reading_speed": "Velocitat de lectura",
-          "yes": "Sí",
-          "no": "No",
-          "close_aria": "Tanca la confirmació del temps estimat"
+          "apply": "Aplicar",
+          "apply_selected": "Aplicar la selecció",
+          "keep": "Conservar els valors actuals",
+          "close_aria": "Tanca la confirmació de les dades del snapshot"
         }
       },
       "biblioteca": {

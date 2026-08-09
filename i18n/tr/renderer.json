@@ -489,15 +489,22 @@
         "snapshot_select": "Snapshot seç",
         "snapshot_select_tooltip": "Bu satır için metin snapshot'ı seç",
         "snapshot_clear": "Seçili snapshot'ı bu satırdan kaldır",
-        "snapshot_time_confirm": {
-          "title": "Metin snapshot'ının tahmini süresi kullanılsın mı?",
-          "message": "Bu okumanın mevcut süresi, seçili metin snapshot'ındaki tahminle değiştirilsin mi?",
+        "snapshot_details_confirm": {
+          "title": "Seçili metin snapshot’ındaki veriler kullanılsın mı?",
+          "message": "Bu okumaya uygulamadan önce seçili metin snapshot’ındaki kullanılabilir verileri gözden geçirin.",
+          "replace_reading_name": "Okuma adını değiştir",
+          "set_reading_name": "Okuma adını ayarla",
+          "current_name": "Geçerli ad",
+          "snapshot_name": "Snapshot adı",
+          "empty": "(boş)",
+          "replace_time": "Tahmini süreyi değiştir",
           "current_time": "Mevcut süre",
           "snapshot_estimate": "Snapshot tahmini",
           "reading_speed": "Okuma hızı",
-          "yes": "Evet",
-          "no": "Hayır",
-          "close_aria": "Tahmini süre onayını kapat"
+          "apply": "Uygula",
+          "apply_selected": "Seçileni uygula",
+          "keep": "Geçerli değerleri koru",
+          "close_aria": "Snapshot verileri onayını kapat"
         }
       },
       "biblioteca": {

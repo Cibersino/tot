@@ -489,15 +489,22 @@
         "snapshot_select": "Pilih snapshot",
         "snapshot_select_tooltip": "Pilih snapshot teks untuk baris ini",
         "snapshot_clear": "Hapus snapshot yang dipilih dari baris ini",
-        "snapshot_time_confirm": {
-          "title": "Gunakan perkiraan waktu snapshot teks?",
-          "message": "Ganti waktu saat ini untuk bacaan ini dengan perkiraan dalam snapshot teks yang dipilih?",
+        "snapshot_details_confirm": {
+          "title": "Gunakan data dari snapshot teks yang dipilih?",
+          "message": "Tinjau data yang tersedia dari snapshot teks yang dipilih sebelum menerapkannya ke bacaan ini.",
+          "replace_reading_name": "Ganti nama bacaan",
+          "set_reading_name": "Tetapkan nama bacaan",
+          "current_name": "Nama saat ini",
+          "snapshot_name": "Nama snapshot",
+          "empty": "(kosong)",
+          "replace_time": "Ganti waktu perkiraan",
           "current_time": "Waktu saat ini",
           "snapshot_estimate": "Perkiraan snapshot",
           "reading_speed": "Kecepatan membaca",
-          "yes": "Ya",
-          "no": "Tidak",
-          "close_aria": "Tutup konfirmasi perkiraan waktu"
+          "apply": "Terapkan",
+          "apply_selected": "Terapkan pilihan",
+          "keep": "Pertahankan nilai saat ini",
+          "close_aria": "Tutup konfirmasi data snapshot"
         }
       },
       "biblioteca": {

@@ -489,15 +489,22 @@
         "snapshot_select": "Snapshot auswählen",
         "snapshot_select_tooltip": "Wählen Sie einen Text-Snapshot für diese Zeile aus",
         "snapshot_clear": "Entfernen Sie den ausgewählten Text-Snapshot von dieser Zeile",
-        "snapshot_time_confirm": {
-          "title": "Geschätzte Zeit des Text-Snapshots verwenden?",
-          "message": "Die aktuelle Zeit dieses Leseeintrags durch die Schätzung im ausgewählten Text-Snapshot ersetzen?",
+        "snapshot_details_confirm": {
+          "title": "Daten des ausgewählten Text-Snapshots verwenden?",
+          "message": "Prüfen Sie die verfügbaren Daten des ausgewählten Text-Snapshots, bevor Sie sie auf diesen Leseeintrag anwenden.",
+          "replace_reading_name": "Namen des Leseeintrags ersetzen",
+          "set_reading_name": "Namen des Leseeintrags festlegen",
+          "current_name": "Aktueller Name",
+          "snapshot_name": "Snapshot-Name",
+          "empty": "(leer)",
+          "replace_time": "Geschätzte Zeit ersetzen",
           "current_time": "Aktuelle Zeit",
           "snapshot_estimate": "Snapshot-Schätzung",
           "reading_speed": "Lesegeschwindigkeit",
-          "yes": "Ja",
-          "no": "Nein",
-          "close_aria": "Bestätigung der geschätzten Zeit schließen"
+          "apply": "Anwenden",
+          "apply_selected": "Auswahl anwenden",
+          "keep": "Aktuelle Werte beibehalten",
+          "close_aria": "Bestätigung der Snapshot-Daten schließen"
         }
       },
       "biblioteca": {

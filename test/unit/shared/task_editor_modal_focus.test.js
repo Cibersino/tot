@@ -440,7 +440,8 @@ test('every shipped locale defines the Task Editor comment-or-snapshot button to
   });
 });
 
-test('English and Spanish define the Task Editor snapshot-details confirmation copy', () => {
+test('every shipped locale and the overriding es-cl bundle define the Task Editor snapshot-details confirmation copy', () => {
+  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
   const expectedKeys = [
     'title',
     'message',
@@ -459,7 +460,7 @@ test('English and Spanish define the Task Editor snapshot-details confirmation c
     'close_aria',
   ];
 
-  ['en', 'es'].forEach((tag) => {
+  languages.forEach(({ tag }) => {
     const rendererPath = path.resolve(__dirname, `../../../i18n/${tag}/renderer.json`);
     const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
     const confirmation = renderer.renderer.tasks.comentario_modal.snapshot_details_confirm;
@@ -469,18 +470,31 @@ test('English and Spanish define the Task Editor snapshot-details confirmation c
       assert.equal(typeof confirmation[key], 'string', `${tag} missing ${key}`);
       assert.ok(confirmation[key].trim(), `${tag} has empty ${key}`);
     });
-    assert.equal(
-      confirmation.title,
-      tag === 'es'
-        ? '¿Usar la información del snapshot de texto seleccionado?'
-        : 'Use data from selected text snapshot?'
-    );
-    assert.equal(
-      confirmation.message,
-      tag === 'es'
-        ? 'Revisa los datos disponibles del snapshot de texto seleccionado antes de aplicarlos a esta lectura.'
-        : 'Review the available data from the selected text snapshot before applying it to this reading.'
-    );
+    if (tag === 'en' || tag === 'es') {
+      assert.equal(
+        confirmation.title,
+        tag === 'es'
+          ? '¿Usar la información del snapshot de texto seleccionado?'
+          : 'Use data from selected text snapshot?'
+      );
+      assert.equal(
+        confirmation.message,
+        tag === 'es'
+          ? 'Revisa los datos disponibles del snapshot de texto seleccionado antes de aplicarlos a esta lectura.'
+          : 'Review the available data from the selected text snapshot before applying it to this reading.'
+      );
+    }
+  });
+
+  const esClRenderer = JSON.parse(fs.readFileSync(
+    path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json'),
+    'utf8'
+  ));
+  const esClConfirmation = esClRenderer.renderer.tasks.comentario_modal.snapshot_details_confirm;
+  assert.deepEqual(Object.keys(esClConfirmation).sort(), expectedKeys.slice().sort(), 'es-cl confirmation keys drifted');
+  expectedKeys.forEach((key) => {
+    assert.equal(typeof esClConfirmation[key], 'string', `es-cl missing ${key}`);
+    assert.ok(esClConfirmation[key].trim(), `es-cl has empty ${key}`);
   });
 });
 

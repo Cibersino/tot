@@ -489,15 +489,22 @@
         "snapshot_select": "スナップショットを選択",
         "snapshot_select_tooltip": "この行のテキストスナップショットを選択",
         "snapshot_clear": "この行から選択したスナップショットを外す",
-        "snapshot_time_confirm": {
-          "title": "テキストスナップショットの推定時間を使用しますか？",
-          "message": "この読書の現在の時間を、選択したテキストスナップショットの推定値に置き換えますか？",
+        "snapshot_details_confirm": {
+          "title": "選択したテキストスナップショットのデータを使用しますか？",
+          "message": "この読書に適用する前に、選択したテキストスナップショットで利用できるデータを確認してください。",
+          "replace_reading_name": "読書名を置換",
+          "set_reading_name": "読書名を設定",
+          "current_name": "現在の名前",
+          "snapshot_name": "スナップショット名",
+          "empty": "（空）",
+          "replace_time": "推定時間を置換",
           "current_time": "現在の時間",
           "snapshot_estimate": "スナップショットの推定値",
           "reading_speed": "読書速度",
-          "yes": "はい",
-          "no": "いいえ",
-          "close_aria": "推定時間の確認を閉じる"
+          "apply": "適用",
+          "apply_selected": "選択項目を適用",
+          "keep": "現在の値を保持",
+          "close_aria": "スナップショットのデータ確認を閉じる"
         }
       },
       "biblioteca": {
