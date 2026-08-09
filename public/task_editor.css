@@ -474,6 +474,9 @@ body.is-resizing {
 
 #snapshotDetailsConfirmModal .modal-panel {
   width: 420px;
+  max-width: 100%;
+  max-height: var(--modal-max-height);
+  overflow: auto;
 }
 
 .modal-header {
@@ -546,30 +549,44 @@ body.is-resizing {
   font-weight: 600;
 }
 
-.snapshot-details-confirm-values {
+.snapshot-details-confirm-name-values,
+.snapshot-details-confirm-time-values {
   display: grid;
   gap: 8px;
   margin: 0;
 }
 
-.snapshot-details-confirm-values > div {
+.snapshot-details-confirm-name-values > div {
+  display: grid;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.snapshot-details-confirm-time-values > div {
   display: flex;
   justify-content: space-between;
   gap: 16px;
 }
 
-.snapshot-details-confirm-values dt,
-.snapshot-details-confirm-values dd {
+.snapshot-details-confirm-name-values dt,
+.snapshot-details-confirm-name-values dd,
+.snapshot-details-confirm-time-values dt,
+.snapshot-details-confirm-time-values dd {
   margin: 0;
 }
 
-.snapshot-details-confirm-values dd {
+.snapshot-details-confirm-name-values dd {
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+
+.snapshot-details-confirm-time-values dd {
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
   text-align: end;
 }
 
-.snapshot-details-confirm-values dd.is-empty {
+.snapshot-details-confirm-name-values dd.is-empty {
   color: var(--text-soft);
 }
 

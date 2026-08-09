@@ -828,10 +828,12 @@ test('Task Editor modal markup gives every dialog an accessible name and describ
   assert.match(markup, /id="snapshotDetailsConfirmApplyTime" type="checkbox" checked/);
   assert.match(markup, /id="snapshotDetailsConfirmWpmLabel">Velocidad de lectura<\/dt>/);
   assert.match(markup, /id="snapshotDetailsConfirmWpmValue" dir="ltr"><\/dd>/);
+  assert.match(markup, /<dl class="snapshot-details-confirm-name-values">/);
+  assert.match(markup, /<dl class="snapshot-details-confirm-time-values">/);
   assert.match(styles, /\.modal-actions\s*\{\s*display: flex;\s*justify-content: flex-end;\s*gap: 12px;\s*flex-wrap: wrap;\s*\}/);
   assert.match(styles, /\.btn-standard:disabled\s*\{\s*opacity: 0\.5;\s*cursor: not-allowed;\s*\}/);
   assert.match(styles, /\.snapshot-details-confirm-section legend\[hidden\]\s*\{\s*display: none;\s*\}/);
-  assert.match(styles, /\.snapshot-details-confirm-values dd\.is-empty\s*\{\s*color: var\(--text-soft\);/);
+  assert.match(styles, /\.snapshot-details-confirm-name-values dd\.is-empty\s*\{\s*color: var\(--text-soft\);/);
 });
 
 test('Task Editor projects a live row into an exact library entry before IPC', async () => {
