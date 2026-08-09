@@ -576,6 +576,7 @@ body.is-resizing {
 }
 
 .snapshot-details-confirm-name-values dd {
+  font-size: var(--font-size-7);
   overflow-wrap: anywhere;
   text-align: start;
 }
