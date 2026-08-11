@@ -53,11 +53,11 @@ const TASK_SAVED_WITH = 'toT (totapp.org)';
 const TASK_COLUMN_LAYOUT_VERSION = 1;
 const TASK_COLUMN_WIDTH_MAX_PX = 100_000;
 const TASK_UTILITY_COLUMN_MIN_WIDTHS = Object.freeze({
+  comentario: 82,
   tiempo: 88,
   percent: 63,
   falta: 65,
   enlace: 250,
-  comentario: 82,
   acciones: 124,
 });
 // Tracks unsaved Task Editor changes across IPC requests.

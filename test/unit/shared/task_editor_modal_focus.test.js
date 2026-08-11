@@ -410,6 +410,39 @@ test('Task Editor localizes native field prompts and limits the comment field', 
   assert.equal(harness.elements.commentInput.maxLength, 1200);
 });
 
+test('Task Editor places comment and snapshot controls in the second table column', () => {
+  const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/task_editor.html'), 'utf8');
+  const styles = fs.readFileSync(path.resolve(__dirname, '../../../public/task_editor.css'), 'utf8');
+  const colGroup = markup.match(/<colgroup id="taskColGroup">([\s\S]*?)<\/colgroup>/);
+  const tableHeader = markup.match(/<thead>([\s\S]*?)<\/thead>/);
+
+  assert.ok(colGroup);
+  assert.ok(tableHeader);
+  assert.deepEqual(
+    [...colGroup[1].matchAll(/<col data-col="([^"]+)"/g)].map((match) => match[1]),
+    ['texto', 'comentario', 'tiempo', 'percent', 'falta', 'enlace', 'acciones']
+  );
+  assert.deepEqual(
+    [...tableHeader[1].matchAll(/<th id="([^"]+)"/g)].map((match) => match[1]),
+    ['thTexto', 'thComentario', 'thTiempo', 'thPercent', 'thFalta', 'thEnlace', 'thAcciones']
+  );
+
+  const harness = createHarness();
+  harness.initializeRow({ snapshotRelPath: '/chapter.json' });
+  const cells = harness.elements.taskTableBody._children[0]._children;
+
+  assert.equal(cells[1].className, 'task-cell--comment');
+  assert.equal(cells[2].className, 'task-cell--time');
+  assert.deepEqual(
+    cells[1]._children[0]._children.map((button) => button.getAttribute('data-tot-icon')),
+    ['task-text-snapshot-load', 'task-comment']
+  );
+  assert.equal(cells[2]._children[0].getAttribute('aria-labelledby'), 'thTiempo');
+  assert.match(styles, /\.task-table \.task-cell--comment > \.cell-actions\s*\{\s*justify-content: center;\s*\}/);
+  assert.match(styles, /\.task-table \.task-cell--remaining\s*\{\s*white-space: nowrap;\s*text-align: right;\s*\}/);
+  assert.doesNotMatch(styles, /\.task-table td:nth-child\(/);
+});
+
 test('Task Editor assigns localized tooltips only to abbreviated time headers', async () => {
   const harness = createHarness();
   await harness.waitForTranslations();

@@ -229,7 +229,7 @@ Reglas:
 - IPC / preload del Task Editor — layout de columnas:
   - `window.taskEditorAPI.getColumnWidths()` / `saveColumnWidths(widths)` se sustituyen por `getColumnLayout()` / `saveColumnLayout(record)` sobre los canales existentes `task-columns-load` y `task-columns-save`;
   - `getColumnLayout()` devuelve `{ ok: true, record: null | <record-v1> }` o `{ ok: false, code: 'UNAUTHORIZED' | 'READ_FAILED' }`; `saveColumnLayout(record)` devuelve exactamente `{ ok: true }` o `{ ok: false, code: 'UNAUTHORIZED' | 'INVALID_SCHEMA' | 'WRITE_FAILED' }`;
-  - `config/tasks/column_widths.json` pasa a contener exclusivamente `{ version: 1, widths: { tiempo, percent, falta, enlace, comentario, acciones } }`, con seis enteros seguros dentro de sus mínimos y del máximo de `100000`; `texto` y el ancho del wrapper son estado derivado de runtime y no se persisten.
+  - `config/tasks/column_widths.json` pasa a contener exclusivamente `{ version: 1, widths: { comentario, tiempo, percent, falta, enlace, acciones } }`, con seis enteros seguros dentro de sus mínimos y del máximo de `100000`; `texto` y el ancho del wrapper son estado derivado de runtime y no se persisten.
 
 ---
 

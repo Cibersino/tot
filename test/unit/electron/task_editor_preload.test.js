@@ -116,11 +116,11 @@ test('task editor preload forwards the complete column layout record', () => {
   const record = {
     version: 1,
     widths: {
+      comentario: 82,
       tiempo: 88,
       percent: 63,
       falta: 65,
       enlace: 250,
-      comentario: 82,
       acciones: 124,
     },
   };

@@ -946,6 +946,7 @@ function renderRow(row) {
 
   // Duration
   const tdTiempo = document.createElement('td');
+  tdTiempo.className = 'task-cell--time';
   const tiempoInput = document.createElement('input');
   tiempoInput.type = 'text';
   tiempoInput.setAttribute('aria-labelledby', 'thTiempo');
@@ -978,6 +979,7 @@ function renderRow(row) {
 
   // Percent complete
   const tdPercent = document.createElement('td');
+  tdPercent.className = 'task-cell--percent';
   const percentInput = document.createElement('input');
   percentInput.type = 'text';
   percentInput.setAttribute('aria-labelledby', 'thPercent');
@@ -1010,6 +1012,7 @@ function renderRow(row) {
 
   // Remaining
   const tdFalta = document.createElement('td');
+  tdFalta.className = 'task-cell--remaining';
   tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
   tdFalta.appendChild(tdFaltaValue);
 
@@ -1081,6 +1084,7 @@ function renderRow(row) {
 
   // Comment
   const tdComentario = document.createElement('td');
+  tdComentario.className = 'task-cell--comment';
   const commentActions = document.createElement('div');
   commentActions.className = 'cell-actions';
   const snapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath || '');
@@ -1138,11 +1142,11 @@ function renderRow(row) {
   tdActions.appendChild(actionsWrap);
 
   trEl.appendChild(tdTexto);
+  trEl.appendChild(tdComentario);
   trEl.appendChild(tdTiempo);
   trEl.appendChild(tdPercent);
   trEl.appendChild(tdFalta);
   trEl.appendChild(tdEnlace);
-  trEl.appendChild(tdComentario);
   trEl.appendChild(tdActions);
 
   renderedRowFields.set(row.id, { textoInput });
@@ -1826,11 +1830,11 @@ async function bootstrapTaskEditor() {
       table: taskTable,
       colGroup: taskColGroup,
       utilityHeaders: {
+        comentario: thComentario,
         tiempo: thTiempo,
         percent: thPercent,
         falta: thFalta,
         enlace: thEnlace,
-        comentario: thComentario,
         acciones: thAcciones,
       },
     });

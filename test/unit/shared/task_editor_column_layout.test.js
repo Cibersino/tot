@@ -9,11 +9,11 @@ const vm = require('node:vm');
 const DEFAULT_RECORD = {
   version: 1,
   widths: {
+    comentario: 82,
     tiempo: 88,
     percent: 63,
     falta: 65,
     enlace: 250,
-    comentario: 82,
     acciones: 124,
   },
 };
@@ -97,7 +97,7 @@ function createElement({ id = '', columnKey = '' } = {}) {
 }
 
 function createHarness({ wrapperWidth = 1093, loadResult, saveColumnLayout } = {}) {
-  const columnKeys = ['texto', 'tiempo', 'percent', 'falta', 'enlace', 'comentario', 'acciones'];
+  const columnKeys = ['texto', 'comentario', 'tiempo', 'percent', 'falta', 'enlace', 'acciones'];
   const columns = Object.fromEntries(
     columnKeys.map((key) => [key, createElement({ columnKey: key })])
   );
@@ -219,6 +219,9 @@ test('fresh layout uses the conservative fitted budget and persists only the uti
   assert.equal(harness.table.style.width, '1092px');
   assert.equal(harness.table.style.minWidth, '');
   assert.deepEqual(JSON.parse(JSON.stringify(harness.saveCalls[0])), DEFAULT_RECORD);
+  assert.deepEqual(Object.keys(harness.saveCalls[0].widths), [
+    'comentario', 'tiempo', 'percent', 'falta', 'enlace', 'acciones',
+  ]);
   assert.equal(Object.hasOwn(harness.saveCalls[0].widths, 'texto'), false);
 
   assert.equal(Object.values(harness.headers).reduce((sum, header) => sum + header.children.length, 0), 6);

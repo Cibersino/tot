@@ -1565,8 +1565,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Interrupted pointer resizing restores the pre-drag widths and is not persisted.
 - A narrow wrapper shows horizontal scrolling and disables all six dividers; widening re-enables them.
 - The Comment and Actions controls remain on one row without clipping or intrinsic column expansion.
-- The six utility widths restore on reopen; Reading is recalculated from the current wrapper width.
-- `column_widths.json` contains only `{ "version": 1, "widths": { ...six utility widths... } }`.
+- The table order is Text, Comment, Time, %, Left, Link, Actions; the Text width is recalculated from the current wrapper width.
+- The six utility widths restore on reopen; `column_widths.json` contains only `{ "version": 1, "widths": { comentario, tiempo, percent, falta, enlace, acciones } }` in that canonical order.
 
 #### REG-TASKS-06 Link opening
 **Goal:** link opening respects https + allowlist rules.
@@ -1961,7 +1961,7 @@ nonconforming persisted data without migration or repair.
    - `allowed_hosts.json` exists
    - `column_widths.json` exists
    - `task_editor_state.json` exists
-   - `column_widths.json` is a version-1 record containing exactly the six utility widths and no Reading width
+   - `column_widths.json` is a version-1 record containing exactly `comentario`, `tiempo`, `percent`, `falta`, `enlace`, and `acciones`, in that order, and no Text width
 9. Relaunch the app.
 10. Open Tasks editor and verify:
     - Window size/position restored and fully visible.

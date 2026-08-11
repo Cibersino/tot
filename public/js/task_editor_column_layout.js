@@ -15,11 +15,11 @@
   const KEYBOARD_STEP_PX = 10;
   const KEYBOARD_FINE_STEP_PX = 1;
   const UTILITY_COLUMNS = Object.freeze([
+    Object.freeze({ key: 'comentario', minWidth: 82 }),
     Object.freeze({ key: 'tiempo', minWidth: 88 }),
     Object.freeze({ key: 'percent', minWidth: 63 }),
     Object.freeze({ key: 'falta', minWidth: 65 }),
     Object.freeze({ key: 'enlace', minWidth: 250 }),
-    Object.freeze({ key: 'comentario', minWidth: 82 }),
     Object.freeze({ key: 'acciones', minWidth: 124 }),
   ]);
 

@@ -13,11 +13,11 @@ const { installElectronModuleMock } = require('../../helpers/electron_module_moc
 const DEFAULT_RECORD = Object.freeze({
   version: 1,
   widths: Object.freeze({
+    comentario: 82,
     tiempo: 88,
     percent: 63,
     falta: 65,
     enlace: 250,
-    comentario: 82,
     acciones: 124,
   }),
 });
