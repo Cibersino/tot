@@ -530,7 +530,7 @@ test('snapshot save tags modal keeps snapshot-save wording by default', async ()
     'chapter-1.pdf, Unit 1, or imported text'
   );
   assert.equal(harness.elements.snapshotSaveTagsManageButton.textContent, 'Manage tags');
-  assert.equal(harness.elements.snapshotSaveTagsManageButton.title, 'Manage tags');
+  assert.equal(harness.elements.snapshotSaveTagsManageButton.title, undefined);
   assert.equal(
     harness.elements.snapshotSaveTagsManageButton.getAttribute('aria-label'),
     'Manage snapshot tags'

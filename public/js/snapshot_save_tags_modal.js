@@ -498,7 +498,6 @@
     btnClose.setAttribute('aria-label', tRenderer(resolvedCopy.closeAriaKey));
     btnManage.textContent = tRenderer(MANAGE_BUTTON_LABEL_KEY);
     btnManage.setAttribute('aria-label', tRenderer(MANAGE_BUTTON_ARIA_KEY));
-    btnManage.title = tRenderer(MANAGE_BUTTON_LABEL_KEY);
     includeCountLabel.textContent = tRenderer(INCLUDE_COUNT_LABEL_KEY);
     includeReadingLabel.textContent = tRenderer(INCLUDE_READING_LABEL_KEY);
     snapshotNameLabel.textContent = tRenderer(SNAPSHOT_NAME_LABEL_KEY);

@@ -251,7 +251,6 @@
         type: 'button',
       });
     button.disabled = disabled === true;
-    button.title = accessibleLabel;
     button.setAttribute('data-action', action);
     if (inputId) {
       button.setAttribute('data-input-id', inputId);

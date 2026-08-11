@@ -1635,7 +1635,7 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
   );
   assert.ok(tagsButton);
   assert.equal(tagsButton.textContent, 'Tags');
-  assert.equal(tagsButton.title, 'Tags');
+  assert.equal(tagsButton.title, '');
   assert.doesNotMatch(tagsButton.className, /btn-standard--square/);
 
   harness.elements.textExtractionBatchPlanCancel.dispatch('click');
