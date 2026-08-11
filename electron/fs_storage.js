@@ -135,6 +135,10 @@ function getTaskEditorStateFile() {
   return path.join(getTasksDir(), 'task_editor_state.json');
 }
 
+function getTaskFilePickerStateFile() {
+  return path.join(getTasksDir(), 'task_file_picker_state.json');
+}
+
 // =============================================================================
 // Path helpers: text extraction + OCR
 // =============================================================================
@@ -342,6 +346,7 @@ module.exports = {
   getTasksAllowedHostsFile,
   getTasksColumnWidthsFile,
   getTaskEditorStateFile,
+  getTaskFilePickerStateFile,
 
   getTextExtractionStateFile,
   getReadingTestPoolImportStateFile,

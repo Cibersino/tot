@@ -101,6 +101,8 @@ function loadFreshTasksMainForSave({
   saveDialogPath,
   saveJsonStrictImpl = null,
   openDialogResponse = null,
+  openDialogResponses = null,
+  appPaths = {},
 } = {}) {
   const modulePath = path.resolve(__dirname, '../../../electron/tasks_main.js');
   const menuBuilderModulePath = path.resolve(__dirname, '../../../electron/menu_builder.js');
@@ -112,10 +114,21 @@ function loadFreshTasksMainForSave({
   const originalSettingsModule = require.cache[settingsModulePath];
   const originalSnapshotsModule = require.cache[snapshotsModulePath];
   const originalFsStorageModule = require.cache[fsStorageModulePath];
+  const taskFilePickerStatePath = path.join(tasksRoot, '..', 'task_file_picker_state.json');
+  const openDialogCalls = [];
+  const saveJsonCalls = [];
+  const pendingOpenDialogResponses = Array.isArray(openDialogResponses)
+    ? [...openDialogResponses]
+    : null;
+  let persistedTaskFilePickerState = null;
 
   const restoreElectronModule = installElectronModuleMock({
     dialog: {
-      async showOpenDialog() {
+      async showOpenDialog(owner, options) {
+        openDialogCalls.push({ owner, options });
+        if (pendingOpenDialogResponses && pendingOpenDialogResponses.length) {
+          return pendingOpenDialogResponses.shift();
+        }
         if (openDialogResponse) return openDialogResponse;
         return { canceled: true, filePaths: [] };
       },
@@ -127,6 +140,11 @@ function loadFreshTasksMainForSave({
       },
     },
     shell: {},
+    app: {
+      getPath(key) {
+        return appPaths[key] || '';
+      },
+    },
     BrowserWindow: {
       fromWebContents(webContents) {
         return webContents && webContents.__mockWindow ? webContents.__mockWindow : null;
@@ -188,7 +206,22 @@ function loadFreshTasksMainForSave({
       getTasksColumnWidthsFile() {
         return path.join(tasksRoot, '..', 'column_widths.json');
       },
-      saveJson() {},
+      getTaskFilePickerStateFile() {
+        return taskFilePickerStatePath;
+      },
+      loadJson(targetPath, fallback) {
+        if (path.resolve(targetPath) === path.resolve(taskFilePickerStatePath)
+          && persistedTaskFilePickerState) {
+          return persistedTaskFilePickerState;
+        }
+        return fallback;
+      },
+      saveJson(targetPath, payload) {
+        saveJsonCalls.push({ targetPath, payload });
+        if (path.resolve(targetPath) === path.resolve(taskFilePickerStatePath)) {
+          persistedTaskFilePickerState = payload;
+        }
+      },
       saveJsonStrict(targetPath, payload) {
         if (typeof saveJsonStrictImpl === 'function') {
           return saveJsonStrictImpl(targetPath, payload);
@@ -231,7 +264,7 @@ function loadFreshTasksMainForSave({
     }
   }
 
-  return { tasksMain, restore };
+  return { tasksMain, restore, openDialogCalls, saveJsonCalls };
 }
 
 test('task-list-save persists task data through saveJsonStrict', async (t) => {
@@ -947,4 +980,58 @@ test('task-file-select returns the selected local file path for Task Editor send
     ok: true,
     filePath: path.resolve(selectedPath),
   });
+});
+
+test('Task Editor local-file pickers use the first-use folder and share their persisted directory', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-file-picker-state');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const documentsDir = path.join(tempDir, 'Documents');
+  const firstSelectionDir = path.join(tempDir, 'course-materials');
+  const secondSelectionDir = path.join(tempDir, 'reference-files');
+  fs.mkdirSync(documentsDir, { recursive: true });
+  fs.mkdirSync(firstSelectionDir, { recursive: true });
+  fs.mkdirSync(secondSelectionDir, { recursive: true });
+
+  const firstSelection = path.join(firstSelectionDir, 'chapter-1.pdf');
+  const secondSelection = path.join(secondSelectionDir, 'chapter-2.pdf');
+  const { tasksMain, restore, openDialogCalls, saveJsonCalls } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+    appPaths: { documents: documentsDir },
+    openDialogResponses: [
+      { canceled: false, filePaths: [firstSelection] },
+      { canceled: false, filePaths: [secondSelection] },
+    ],
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const firstResult = await ipcMain.invoke(
+    'task-file-select',
+    { sender: taskEditorWin.webContents }
+  );
+  assert.deepEqual(firstResult, { ok: true, filePath: path.resolve(firstSelection) });
+  assert.equal(openDialogCalls[0].options.defaultPath, documentsDir);
+  assert.deepEqual(openDialogCalls[0].options.properties, ['openFile']);
+  assert.equal(saveJsonCalls[0].targetPath, path.join(tempDir, 'task_file_picker_state.json'));
+  assert.deepEqual(saveJsonCalls[0].payload, { lastDirectory: firstSelectionDir });
+
+  openDialogCalls.length = 0;
+  saveJsonCalls.length = 0;
+
+  const secondResult = await ipcMain.invoke(
+    'task-files-select',
+    { sender: taskEditorWin.webContents }
+  );
+  assert.deepEqual(secondResult, { ok: true, filePaths: [path.resolve(secondSelection)] });
+  assert.equal(openDialogCalls[0].options.defaultPath, firstSelectionDir);
+  assert.deepEqual(openDialogCalls[0].options.properties, ['openFile', 'multiSelections']);
+  assert.equal(saveJsonCalls[0].targetPath, path.join(tempDir, 'task_file_picker_state.json'));
+  assert.deepEqual(saveJsonCalls[0].payload, { lastDirectory: secondSelectionDir });
 });

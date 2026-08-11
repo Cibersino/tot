@@ -18,7 +18,7 @@
 // =============================================================================
 const fs = require('fs');
 const path = require('path');
-const { dialog, shell, BrowserWindow } = require('electron');
+const { dialog, shell, BrowserWindow, app } = require('electron');
 const Log = require('./log');
 const menuBuilder = require('./menu_builder');
 const { normalizeSnapshotRelPath } = require('./current_text_snapshots_main');
@@ -37,9 +37,12 @@ const {
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
   getTasksColumnWidthsFile,
+  getTaskFilePickerStateFile,
+  loadJson,
   saveJson,
   saveJsonStrict,
 } = require('./fs_storage');
+const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform/text_extraction_platform_adapter');
 
 const log = Log.get('tasks-main');
 log.debug('Tasks main starting...');
@@ -60,6 +63,10 @@ const TASK_UTILITY_COLUMN_MIN_WIDTHS = Object.freeze({
   enlace: 250,
   acciones: 124,
 });
+const TASK_FILE_PICKER_STATE_FALLBACK = Object.freeze({
+  lastDirectory: '',
+});
+const platformAdapter = getTextExtractionPlatformAdapter(process.platform);
 // Tracks unsaved Task Editor changes across IPC requests.
 let taskEditorDirty = false;
 
@@ -605,11 +612,57 @@ function sendTaskEditorInit(taskEditorWin, payload) {
   return true;
 }
 
+function normalizeTaskFilePickerState(rawState) {
+  const state = rawState && typeof rawState === 'object' ? rawState : {};
+  return {
+    lastDirectory: typeof state.lastDirectory === 'string'
+      ? state.lastDirectory.trim()
+      : '',
+  };
+}
+
+function readTaskFilePickerState() {
+  try {
+    const statePath = getTaskFilePickerStateFile();
+    return {
+      statePath,
+      state: normalizeTaskFilePickerState(loadJson(statePath, TASK_FILE_PICKER_STATE_FALLBACK)),
+    };
+  } catch (err) {
+    log.warn('Failed to read Task Editor file picker state (using defaults):', err);
+    return {
+      statePath: null,
+      state: { ...TASK_FILE_PICKER_STATE_FALLBACK },
+    };
+  }
+}
+
+function persistTaskFilePickerState(statePath, nextState) {
+  if (!statePath) return;
+  try {
+    saveJson(statePath, nextState);
+  } catch (err) {
+    log.warn('Failed to persist Task Editor file picker state (ignored):', err);
+  }
+}
+
+function resolveTaskFilePickerDefaultPath(pickerState) {
+  const persisted = platformAdapter.normalizePersistedDirectory(pickerState.lastDirectory);
+  if (persisted) return persisted;
+  return platformAdapter.resolveDefaultPickerPath({
+    app,
+    cwd: process.cwd(),
+    log,
+  });
+}
+
 async function promptForTaskFileSelection(ownerWin, { allowMultiple } = {}) {
   const properties = allowMultiple
     ? ['openFile', 'multiSelections']
     : ['openFile'];
-  const dialogRes = await dialog.showOpenDialog(ownerWin || null, { properties });
+  const stateInfo = readTaskFilePickerState();
+  const defaultPath = resolveTaskFilePickerDefaultPath(stateInfo.state);
+  const dialogRes = await dialog.showOpenDialog(ownerWin || null, { defaultPath, properties });
   if (!dialogRes || dialogRes.canceled) {
     return { ok: false, code: 'CANCELLED' };
   }
@@ -622,6 +675,12 @@ async function promptForTaskFileSelection(ownerWin, { allowMultiple } = {}) {
   if (!filePaths.length) {
     return { ok: false, code: 'READ_FAILED', message: 'file picker returned empty file paths' };
   }
+
+  const selectedDirectory = platformAdapter.normalizeSelectedDirectory(filePaths[0]);
+  if (selectedDirectory) {
+    persistTaskFilePickerState(stateInfo.statePath, { lastDirectory: selectedDirectory });
+  }
+
   return { ok: true, filePaths };
 }
 
