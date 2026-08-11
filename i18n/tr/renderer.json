@@ -50,6 +50,7 @@
         "text_extraction_abort": "Çıkarmayı durdur",
         "overwrite_clipboard": "Geçerli metni panoyla değiştir",
         "append_clipboard": "Pano metnini geçerli metnin sonuna ekle (yeni satır)",
+        "preview_spoiler": "Önizlemenin sonunu göster veya gizle",
         "clipboard_repeat_count": "Pano yinelemeleri",
         "edit": "Geçerli metnin tam penceresini aç",
         "clear": "Geçerli metni temizle",

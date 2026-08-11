@@ -274,3 +274,25 @@ test('Spoiler uses its label as the sole tooltip target', () => {
   assert.equal(harness.elements.previewSpoilerToggle.title, undefined);
   assert.equal(harness.elements.previewSpoilerToggle.getAttribute('aria-label'), 'Spoiler');
 });
+
+test('every shipped root locale and the es-cl overlay define the Spoiler tooltip', () => {
+  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const expectedBaseCopy = {
+    en: 'Show or hide the end of the preview',
+    es: 'Mostrar u ocultar el final de la vista previa',
+  };
+
+  languages.forEach(({ tag }) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
+    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+    const tooltip = renderer.renderer.main.tooltips.preview_spoiler;
+
+    assert.equal(typeof tooltip, 'string', `${tag} missing Spoiler tooltip`);
+    assert.ok(tooltip.trim(), `${tag} has an empty Spoiler tooltip`);
+    if (expectedBaseCopy[tag]) assert.equal(tooltip, expectedBaseCopy[tag]);
+  });
+
+  const chilePath = path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json');
+  const chile = JSON.parse(fs.readFileSync(chilePath, 'utf8'));
+  assert.equal(chile.renderer.main.tooltips.preview_spoiler, expectedBaseCopy.es);
+});

@@ -50,6 +50,7 @@
         "text_extraction_abort": "抽出を中止",
         "overwrite_clipboard": "クリップボードの内容で現在のテキストを置き換える",
         "append_clipboard": "クリップボードの内容を現在のテキストの末尾に追加（改行）",
+        "preview_spoiler": "プレビューの末尾を表示または非表示にする",
         "clipboard_repeat_count": "貼り付け回数",
         "edit": "現在の全文テキストウィンドウを開く",
         "clear": "現在のテキストを空にする",

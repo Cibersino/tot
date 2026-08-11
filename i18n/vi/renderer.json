@@ -50,6 +50,7 @@
         "text_extraction_abort": "Hủy trích xuất",
         "overwrite_clipboard": "Thay thế văn bản hiện tại bằng clipboard",
         "append_clipboard": "Thêm clipboard vào cuối văn bản hiện tại (dòng mới)",
+        "preview_spoiler": "Hiện hoặc ẩn phần cuối của bản xem trước",
         "clipboard_repeat_count": "Số lần lặp clipboard",
         "edit": "Mở cửa sổ toàn bộ văn bản hiện tại",
         "clear": "Xóa văn bản hiện tại",

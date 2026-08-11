@@ -50,6 +50,7 @@
         "text_extraction_abort": "Interrompi estrazione",
         "overwrite_clipboard": "Sostituire il testo corrente con gli appunti",
         "append_clipboard": "Aggiungi il testo degli appunti alla fine del testo corrente (nuova riga)",
+        "preview_spoiler": "Mostra o nascondi la fine dell'anteprima",
         "clipboard_repeat_count": "Numero di ripetizioni dell'incolla",
         "edit": "Apri la finestra del testo corrente completo",
         "clear": "Svuota il testo corrente",

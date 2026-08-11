@@ -50,6 +50,7 @@
         "text_extraction_abort": "Abortar extração",
         "overwrite_clipboard": "Substituir o texto atual pelo conteúdo da área de transferência",
         "append_clipboard": "Adicionar o conteúdo da área de transferência ao final do texto atual",
+        "preview_spoiler": "Mostrar ou ocultar o final da prévia",
         "clipboard_repeat_count": "Repetições de colagem",
         "edit": "Abrir Editor de Texto",
         "clear": "Limpar o texto atual",

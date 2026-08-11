@@ -50,6 +50,7 @@
         "text_extraction_abort": "Annuler l'extraction",
         "overwrite_clipboard": "Remplacer le texte actuel par le presse-papier",
         "append_clipboard": "Coller le presse-papier à la fin du texte actuel (nouvelle ligne)",
+        "preview_spoiler": "Afficher ou masquer la fin de l’aperçu",
         "clipboard_repeat_count": "Nombre de répétitions du collage",
         "edit": "Ouvrir la fenêtre du texte actuel complet",
         "clear": "Vider le texte actuel",

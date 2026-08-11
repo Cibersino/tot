@@ -50,6 +50,7 @@
         "text_extraction_abort": "Batalkan ekstraksi",
         "overwrite_clipboard": "Ganti teks saat ini dengan clipboard",
         "append_clipboard": "Tambahkan clipboard ke akhir teks saat ini (baris baru)",
+        "preview_spoiler": "Tampilkan atau sembunyikan akhir pratinjau",
         "clipboard_repeat_count": "Pengulangan clipboard",
         "edit": "Buka jendela teks saat ini lengkap",
         "clear": "Kosongkan teks saat ini",

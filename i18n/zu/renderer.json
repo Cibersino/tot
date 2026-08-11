@@ -50,6 +50,7 @@
         "text_extraction_abort": "Misa ukukhishwa",
         "overwrite_clipboard": "Buyisela umbhalo wamanje ngowasebhodini lokunamathisela",
         "append_clipboard": "Namathisela okusebhodini lokunamathisela ekugcineni kombhalo wamanje (umugqa omusha)",
+        "preview_spoiler": "Bonisa noma fihla ingxenye yokugcina yombhalo",
         "clipboard_repeat_count": "Ukuphindaphinda kokunamathisela",
         "edit": "Vula iwindi lombhalo wamanje ophelele",
         "clear": "Sula umbhalo wamanje",

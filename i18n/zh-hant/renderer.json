@@ -50,6 +50,7 @@
         "text_extraction_abort": "中止擷取",
         "overwrite_clipboard": "用剪貼簿內容取代目前文字",
         "append_clipboard": "將剪貼簿內容附加到目前文字結尾（換行）",
+        "preview_spoiler": "顯示或隱藏預覽結尾",
         "clipboard_repeat_count": "貼上重複次數",
         "edit": "開啟完整目前文字視窗",
         "clear": "清除目前文字",
