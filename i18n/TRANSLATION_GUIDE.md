@@ -2798,6 +2798,41 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] snapshot de texto; fila de lectura
           // [NO_CONFUNDIR] Quitar el snapshot de la fila no elimina el snapshot guardado; elimina solo la asociación con esa fila.
         },
+        "snapshot_source_reminder": {
+          "title": {
+            "es": "Recordatorio del origen del snapshot",
+            "en": "Snapshot source reminder"
+            // [PROPÓSITO] Título del recordatorio mostrado antes del picker nativo de archivo local cuando el snapshot asociado a la fila tiene comentario de origen.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          },
+          "message": {
+            "es": "Esta fila está asociada a un snapshot de texto. Revisa su comentario de origen antes de seleccionar un archivo local.",
+            "en": "This row is associated with a text snapshot. Check its source comment before selecting a local file."
+            // [PROPÓSITO] Explica que el comentario de origen sirve como referencia para elegir el archivo local deseado; no solicita aplicar datos del snapshot ni cambiar la fila.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura
+          },
+          "source_comment": {
+            "es": "Comentario de origen del snapshot:",
+            "en": "Snapshot source comment:"
+            // [PROPÓSITO] Label del comentario de origen guardado en el snapshot asociado, mostrado como valor de solo lectura dentro del recordatorio.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura
+            // [NO_CONFUNDIR] No es el comentario editable de la fila de lectura ni una instrucción para crear o modificar el snapshot.
+          },
+          "select_file": {
+            "es": "Seleccionar archivo local",
+            "en": "Select local file"
+            // [PROPÓSITO] Confirma el recordatorio y continúa hacia el picker nativo de un archivo local para la fila.
+            // [CONCEPTO_APP] fila de lectura
+          },
+          "cancel": {
+            "es": "Cancelar",
+            "en": "Cancel"
+          },
+          "close_aria": {
+            "es": "Cerrar el recordatorio del origen del snapshot",
+            "en": "Close snapshot source reminder"
+          }
+        },
         "snapshot_details_confirm": {
           "title": {
             "es": "¿Usar la información del snapshot de texto seleccionado?",
