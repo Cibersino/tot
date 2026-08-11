@@ -39,20 +39,15 @@
     return txt || key;
   }
 
-  function applyToastPosition(container, position) {
-    const pos = position || 'top-right';
-    const positions = {
-      'top-right': { top: '16px', right: '16px', bottom: 'auto', left: 'auto', align: 'flex-end' },
-      'bottom-right': { top: 'auto', right: '16px', bottom: '16px', left: 'auto', align: 'flex-end' },
-      'top-left': { top: '16px', right: 'auto', bottom: 'auto', left: '16px', align: 'flex-start' },
-      'bottom-left': { top: 'auto', right: 'auto', bottom: '16px', left: '16px', align: 'flex-start' }
-    };
-    const cfg = positions[pos] || positions['top-right'];
-    container.style.top = cfg.top;
-    container.style.right = cfg.right;
-    container.style.bottom = cfg.bottom;
-    container.style.left = cfg.left;
-    container.style.alignItems = cfg.align;
+  const TOAST_POSITIONS = new Set([
+    'top-right',
+    'bottom-right',
+    'top-left',
+    'bottom-left'
+  ]);
+
+  function normalizeToastPosition(position) {
+    return TOAST_POSITIONS.has(position) ? position : 'top-right';
   }
 
   function ensureToastContainer(containerId, position) {
@@ -60,18 +55,10 @@
     if (!container) {
       container = document.createElement('div');
       container.id = containerId;
-      Object.assign(container.style, {
-        position: 'fixed',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        maxWidth: 'calc(100% - 32px)',
-        pointerEvents: 'none',
-        zIndex: '990'
-      });
+      container.className = 'tot-toast-container';
       document.body.appendChild(container);
     }
-    applyToastPosition(container, position);
+    container.dataset.position = normalizeToastPosition(position);
     return container;
   }
 
@@ -85,29 +72,13 @@
     const toast = document.createElement('div');
     toast.className = 'tot-toast';
     toast.dataset.type = type;
+    toast.dataset.state = 'entering';
     toast.textContent = msg;
-    Object.assign(toast.style, {
-      margin: '0',
-      maxWidth: '320px',
-      padding: '10px 12px',
-      border: '1px solid rgba(0, 0, 0, 0.15)',
-      borderRadius: '8px',
-      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.18)',
-      background: '#ffffff',
-      color: '#111111',
-      font: '13px/1.35 "Segoe UI", Tahoma, sans-serif',
-      opacity: '0',
-      transform: 'translateY(6px)',
-      transition: 'opacity 0.2s ease, transform 0.2s ease',
-      pointerEvents: 'none',
-      wordBreak: 'break-word'
-    });
 
     container.appendChild(toast);
 
     const showToast = () => {
-      toast.style.opacity = '1';
-      toast.style.transform = 'translateY(0)';
+      toast.dataset.state = 'visible';
     };
     if (typeof window.requestAnimationFrame === 'function') {
       window.requestAnimationFrame(showToast);
@@ -117,8 +88,7 @@
 
     const safeDuration = Number.isFinite(duration) ? Math.max(0, duration) : 4500;
     const removeToast = () => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(6px)';
+      toast.dataset.state = 'closing';
       setTimeout(() => {
         if (toast.parentNode) toast.parentNode.removeChild(toast);
       }, 250);

@@ -254,6 +254,7 @@ tot/
 │ ├── text_time_calculator.css
 │ ├── text_time_calculator.html
 │ ├── text_time_calculator.js
+│ ├── toasts.css
 │ └── tooltips.css
 ├── test/                          # {tests de desarrollo automátizados de la app}
 | └── README.md
@@ -428,7 +429,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/editor_startup_presentation.js` — Núcleo renderer del startup presentation del Editor de Texto: parsea los query params de arranque inyectados por main (`initialPresentationMode`, `firstShowGeneration`), conserva estable la intención inicial de presentación hasta que el estado real/nativo esté listo y bufferiza updates de window state mientras el lock de startup sigue activo.
 - `public/js/editor_ui.js` — Módulo UI del Editor de Texto: i18n del editor, `spellcheck`, tamaño de texto, layout maximizado con gutters simétricos y persistencia de `maximizedTextWidthPx`, progreso de lectura, restauración de foco y overlay prestart del reading speed test.
 - `public/js/editor_engine.js` — Módulo de lógica/sync del Editor de Texto: helpers de selección e inserción, `replace current/all`, sincronización con main, truncation handling, paste/drop y aplicación de updates externos.
-- `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
+- `public/js/notify.js` — Owner compartido de la API renderer `window.Notify`: resuelve copy i18n, gestiona alert/confirm, toasts y foco/restauración de modals; `public/toasts.css` define los tokens, posicionamiento, superficie y estados visuales de los toasts authored.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 
 ### 4) i18n (estructura y responsabilidades)

@@ -6,7 +6,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-function loadNotify({ document: documentOverride = {}, logger = null, windowOverrides = {} } = {}) {
+function loadNotify({
+  document: documentOverride = {},
+  logger = null,
+  setTimeoutHandler = (handler) => {
+    if (typeof handler === 'function') handler();
+    return 0;
+  },
+  windowOverrides = {},
+} = {}) {
   const sandbox = {
     window: {
       getLogger() {
@@ -31,12 +39,7 @@ function loadNotify({ document: documentOverride = {}, logger = null, windowOver
     confirm() {
       return true;
     },
-    setTimeout(handler) {
-      if (typeof handler === 'function') {
-        handler();
-      }
-      return 0;
-    },
+    setTimeout: setTimeoutHandler,
     clearTimeout() {},
   };
 
@@ -47,6 +50,59 @@ function loadNotify({ document: documentOverride = {}, logger = null, windowOver
   );
   vm.runInContext(source, sandbox, { filename: 'public/js/notify.js' });
   return sandbox.window.Notify;
+}
+
+function createToastHarness() {
+  const elementsById = new Map();
+  const pendingTimers = [];
+
+  function createElement() {
+    const children = [];
+    return {
+      children,
+      className: '',
+      dataset: {},
+      id: '',
+      parentNode: null,
+      style: {},
+      textContent: '',
+      appendChild(child) {
+        child.parentNode = this;
+        children.push(child);
+        if (child.id) elementsById.set(child.id, child);
+        return child;
+      },
+      removeChild(child) {
+        const index = children.indexOf(child);
+        if (index >= 0) children.splice(index, 1);
+        child.parentNode = null;
+        return child;
+      },
+    };
+  }
+
+  const body = createElement();
+  const document = {
+    body,
+    createElement,
+    getElementById(id) {
+      return elementsById.get(id) || null;
+    },
+  };
+  const notify = loadNotify({
+    document,
+    setTimeoutHandler(handler) {
+      pendingTimers.push(handler);
+      return pendingTimers.length;
+    },
+    windowOverrides: {
+      requestAnimationFrame(handler) {
+        handler();
+      },
+    },
+  });
+
+  return { body, notify, pendingTimers };
 }
 
 function createModalFocusHarness() {
@@ -206,6 +262,65 @@ test('notify registerCustomPrompt validates prompt names and handlers', () => {
     () => notify.registerCustomPrompt('promptExample', null),
     /function handler/
   );
+});
+
+test('notify toasts expose semantic state without inline presentation', () => {
+  const harness = createToastHarness();
+
+  harness.notify.toastEditorText('Saved', { type: 'info', duration: 4500 });
+
+  const container = harness.body.children[0];
+  const toast = container.children[0];
+  assert.equal(container.id, 'totEditorToastContainer');
+  assert.equal(container.className, 'tot-toast-container');
+  assert.equal(container.dataset.position, 'top-right');
+  assert.equal(toast.className, 'tot-toast');
+  assert.equal(toast.dataset.type, 'info');
+  assert.equal(toast.dataset.state, 'visible');
+  assert.deepEqual(toast.style, {});
+  assert.equal(harness.pendingTimers.length, 1);
+});
+
+test('toast stylesheet owns the agreed visual contract and the Arial font change', () => {
+  const stylesheet = fs.readFileSync(path.resolve(__dirname, '../../../public/toasts.css'), 'utf8');
+
+  assert.match(stylesheet, /--tot-toast-background:\s*#fff2cf/);
+  assert.match(stylesheet, /--tot-toast-color:\s*#111111/);
+  assert.match(stylesheet, /--tot-toast-border:\s*1px solid rgba\(0, 0, 0, 0\.15\)/);
+  assert.match(stylesheet, /--tot-toast-shadow:\s*0 6px 16px rgba\(0, 0, 0, 0\.18\)/);
+  assert.match(stylesheet, /--tot-toast-font:\s*13px\/1\.35 Arial, sans-serif/);
+  assert.match(stylesheet, /--tot-toast-offset:\s*16px/);
+  assert.match(stylesheet, /--tot-toast-gap:\s*8px/);
+  assert.match(stylesheet, /--tot-toast-max-width:\s*320px/);
+  assert.match(stylesheet, /--tot-toast-padding:\s*10px 12px/);
+  assert.match(stylesheet, /--tot-toast-radius:\s*8px/);
+  assert.match(stylesheet, /--tot-toast-transition:\s*0\.2s/);
+  assert.match(stylesheet, /--tot-toast-translate-y:\s*6px/);
+  assert.match(stylesheet, /--tot-toast-z-index:\s*990/);
+  assert.doesNotMatch(stylesheet, /Segoe UI|Tahoma/);
+  assert.match(stylesheet, /\.tot-toast\[data-state="visible"\]/);
+});
+
+test('toast stylesheet loads only in the current toast-rendering windows', () => {
+  const toastRenderingPages = [
+    'index.html',
+    'editor.html',
+    'editor_find.html',
+    'task_editor.html',
+  ];
+  const nonToastPages = [
+    'preset_modal.html',
+    'reading_test_questions.html',
+  ];
+
+  toastRenderingPages.forEach((page) => {
+    const html = fs.readFileSync(path.resolve(__dirname, '../../../public', page), 'utf8');
+    assert.match(html, /<link rel="stylesheet" href="toasts\.css" \/>/);
+  });
+  nonToastPages.forEach((page) => {
+    const html = fs.readFileSync(path.resolve(__dirname, '../../../public', page), 'utf8');
+    assert.doesNotMatch(html, /<link rel="stylesheet" href="toasts\.css" \/>/);
+  });
 });
 
 test('notify modal focus wraps forward and backward and re-enters from outside', () => {

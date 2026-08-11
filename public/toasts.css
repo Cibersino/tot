@@ -1,0 +1,101 @@
+/* Shared renderer toast styles.
+   Loaded by renderer window documents that render Notify toasts.
+   Owner boundary: shared authored-toast tokens, positioning, surface, and lifecycle-state behavior only. */
+
+/* Design tokens */
+:root {
+  /* Colors */
+  --tot-toast-background: #fff2cf;
+  --tot-toast-color: #111111;
+  --tot-toast-border: 1px solid rgba(0, 0, 0, 0.15);
+  --tot-toast-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+
+  /* Typography */
+  --tot-toast-font: 13px/1.35 Arial, sans-serif;
+
+  /* Spacing and dimensions */
+  --tot-toast-offset: 16px;
+  --tot-toast-gap: 8px;
+  --tot-toast-max-width: 320px;
+  --tot-toast-padding: 10px 12px;
+  --tot-toast-radius: 8px;
+
+  /* Motion and layering */
+  --tot-toast-transition: 0.2s;
+  --tot-toast-translate-y: 6px;
+  --tot-toast-z-index: 990;
+}
+
+/* Shared toast container */
+.tot-toast-container {
+  position: fixed;
+  z-index: var(--tot-toast-z-index);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tot-toast-gap);
+  max-width: calc(100% - 32px);
+  pointer-events: none;
+}
+
+.tot-toast-container[data-position="top-right"] {
+  top: var(--tot-toast-offset);
+  right: var(--tot-toast-offset);
+  bottom: auto;
+  left: auto;
+  align-items: flex-end;
+}
+
+.tot-toast-container[data-position="bottom-right"] {
+  top: auto;
+  right: var(--tot-toast-offset);
+  bottom: var(--tot-toast-offset);
+  left: auto;
+  align-items: flex-end;
+}
+
+.tot-toast-container[data-position="top-left"] {
+  top: var(--tot-toast-offset);
+  right: auto;
+  bottom: auto;
+  left: var(--tot-toast-offset);
+  align-items: flex-start;
+}
+
+.tot-toast-container[data-position="bottom-left"] {
+  top: auto;
+  right: auto;
+  bottom: var(--tot-toast-offset);
+  left: var(--tot-toast-offset);
+  align-items: flex-start;
+}
+
+/* Shared toast surface */
+.tot-toast {
+  max-width: var(--tot-toast-max-width);
+  margin: 0;
+  padding: var(--tot-toast-padding);
+  border: var(--tot-toast-border);
+  border-radius: var(--tot-toast-radius);
+  box-shadow: var(--tot-toast-shadow);
+  background: var(--tot-toast-background);
+  color: var(--tot-toast-color);
+  font: var(--tot-toast-font);
+  opacity: 0;
+  transform: translateY(var(--tot-toast-translate-y));
+  transition: opacity var(--tot-toast-transition) ease, transform var(--tot-toast-transition) ease;
+  pointer-events: none;
+  word-break: break-word;
+}
+
+/* Shared toast lifecycle states */
+.tot-toast[data-state="visible"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tot-toast[data-state="closing"] {
+  opacity: 0;
+  transform: translateY(var(--tot-toast-translate-y));
+}
+
+/* End of public/toasts.css */
