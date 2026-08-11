@@ -1433,6 +1433,7 @@ pre#textPreview .preview-fragment--empty {
   inset: 0;
   z-index: 1010;
   display: none;
+  font-size: var(--font-size-9);
   align-items: center;
   justify-content: center;
   padding: 16px;
