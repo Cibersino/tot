@@ -786,12 +786,6 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Agrega el texto del portapapeles al final del texto actual desde un nuevo párrafo.
           // [CONCEPTO_APP] texto actual; agregar al texto actual
         },
-        "preview_spoiler": {
-          "es": "Mostrar u ocultar el final de la vista previa",
-          "en": "Show or hide the end of the preview"
-          // [PROPÓSITO] Ayuda contextual del control Spoiler; explica que alterna la visibilidad del segmento final de la vista previa del texto actual.
-          // [CONCEPTO_APP] texto actual; vista previa
-        },
         "clipboard_repeat_count": {
           "es": "Repeticiones de pegado",
           "en": "Paste repetitions"
@@ -830,6 +824,12 @@ Estados de revisión recomendados:
           "es": "Cargar tarea",
           "en": "Load task"
           // [CONCEPTO_APP] tarea
+        },
+        "preview_spoiler": {
+          "es": "Mostrar u ocultar el final de la vista previa",
+          "en": "Show or hide the end of the preview"
+          // [PROPÓSITO] Ayuda contextual del control Spoiler; explica que alterna la visibilidad del segmento final de la vista previa del texto actual.
+          // [CONCEPTO_APP] texto actual; vista previa
         },
         "browser_extension": {
           "es": "Extensión del navegador",

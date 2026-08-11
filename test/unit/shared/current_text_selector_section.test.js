@@ -281,18 +281,27 @@ test('every shipped root locale and the es-cl overlay define the Spoiler tooltip
     en: 'Show or hide the end of the preview',
     es: 'Mostrar u ocultar el final de la vista previa',
   };
-
-  languages.forEach(({ tag }) => {
-    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
-    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
-    const tooltip = renderer.renderer.main.tooltips.preview_spoiler;
+  const assertTooltip = (renderer, tag) => {
+    const tooltips = renderer.renderer.main.tooltips;
+    const tooltip = tooltips.preview_spoiler;
 
     assert.equal(typeof tooltip, 'string', `${tag} missing Spoiler tooltip`);
     assert.ok(tooltip.trim(), `${tag} has an empty Spoiler tooltip`);
     if (expectedBaseCopy[tag]) assert.equal(tooltip, expectedBaseCopy[tag]);
+    assert.equal(
+      Object.keys(tooltips)[Object.keys(tooltips).indexOf('task_load') + 1],
+      'preview_spoiler',
+      `${tag} must place the Spoiler tooltip after task_load`,
+    );
+  };
+
+  languages.forEach(({ tag }) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
+    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+    assertTooltip(renderer, tag);
   });
 
   const chilePath = path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json');
   const chile = JSON.parse(fs.readFileSync(chilePath, 'utf8'));
-  assert.equal(chile.renderer.main.tooltips.preview_spoiler, expectedBaseCopy.es);
+  assertTooltip(chile, 'es-cl');
 });
