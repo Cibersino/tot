@@ -2971,10 +2971,10 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
         },
         "library_save_question": {
-          "es": "¿Incluir comentario?",
-          "en": "Include comment?"
-          // [PROPÓSITO] Pregunta si el comentario de la fila debe incluirse al guardar en biblioteca.
-          // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
+          "es": "¿Incluir el comentario? Si esta lectura tiene un snapshot de texto seleccionado, su asociación se guardará de todos modos.",
+          "en": "Include the comment? If this reading has a selected text snapshot, its association will be saved either way."
+          // [PROPÓSITO] Pregunta si el comentario de la fila debe incluirse al guardar en biblioteca y aclara que la asociación con un snapshot de texto seleccionado se guarda de todos modos.
+          // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura; snapshot de texto
         },
         "yes": {
           "es": "Sí",

@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Save to library",
-        "library_save_question": "Include comment?",
+        "library_save_question": "Include comment? If text snapshot dey selected for dis reading, e link go save whether you include am or not.",
         "yes": "Yes",
         "no": "No",
         "cancel": "Cancel"

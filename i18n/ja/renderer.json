@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "ライブラリに保存",
-        "library_save_question": "コメントを含めますか？",
+        "library_save_question": "コメントを含めますか？この読書項目にテキストスナップショットが選択されている場合、その関連付けはどちらの場合も保存されます。",
         "yes": "はい",
         "no": "いいえ",
         "cancel": "キャンセル"

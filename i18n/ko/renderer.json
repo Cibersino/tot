@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "라이브러리에 저장",
-        "library_save_question": "댓글을 포함할까요?",
+        "library_save_question": "댓글을 포함할까요? 이 읽기 항목에 텍스트 스냅샷이 선택되어 있으면, 어느 쪽을 선택해도 연결 정보가 저장됩니다.",
         "yes": "예",
         "no": "아니요",
         "cancel": "취소"

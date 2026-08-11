@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Desar a la biblioteca",
-        "library_save_question": "Incloure comentari?",
+        "library_save_question": "Incloure el comentari? Si aquesta lectura té un snapshot de text seleccionat, la seva associació es desarà en qualsevol cas.",
         "yes": "Sí",
         "no": "No",
         "cancel": "Cancel·lar"

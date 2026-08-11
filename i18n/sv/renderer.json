@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Spara i bibliotek",
-        "library_save_question": "Inkludera kommentar?",
+        "library_save_question": "Inkludera kommentar? Om en textsnapshot är vald för den här läsningen sparas kopplingen oavsett vilket alternativ du väljer.",
         "yes": "Ja",
         "no": "Nej",
         "cancel": "Avbryt"

@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "儲存至資料庫",
-        "library_save_question": "包含註解？",
+        "library_save_question": "包含註解？如果此閱讀項目已選取文字快照，無論選擇哪一項，關聯都會儲存。",
         "yes": "是",
         "no": "否",
         "cancel": "取消"

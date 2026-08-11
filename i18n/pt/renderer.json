@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Salvar leitura na biblioteca",
-        "library_save_question": "Incluir um comentário?",
+        "library_save_question": "Incluir o comentário? Se houver um snapshot de texto selecionado para esta leitura, a associação será salva de qualquer forma.",
         "yes": "Sim",
         "no": "Não",
         "cancel": "Cancelar"

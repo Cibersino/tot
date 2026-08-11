@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "保存到库",
-        "library_save_question": "包含评论？",
+        "library_save_question": "包含评论？如果此阅读条目已选择文本快照，无论选择哪一项，关联都会保存。",
         "yes": "是",
         "no": "否",
         "cancel": "取消"

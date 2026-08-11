@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "ذخیره در کتابخانه",
-        "library_save_question": "نظر هم ذخیره شود؟",
+        "library_save_question": "نظر هم ذخیره شود؟ اگر برای این خواندنی یک اسنپ‌شات متن انتخاب شده باشد، پیوند آن در هر صورت ذخیره می‌شود.",
         "yes": "بله",
         "no": "نه",
         "cancel": "لغو"

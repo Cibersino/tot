@@ -1025,6 +1025,7 @@ test('Task Editor modal markup gives every dialog an accessible name and describ
   assert.match(markup, /id="commentModal"[^>]*aria-labelledby="commentTitle"/);
   assert.match(markup, /id="libraryModal"[^>]*aria-labelledby="libraryTitle"/);
   assert.match(markup, /id="includeCommentModal"[^>]*aria-labelledby="includeCommentTitle"[^>]*aria-describedby="includeCommentText"/);
+  assert.match(markup, /<p id="includeCommentText">¿Incluir el comentario\? Si esta lectura tiene un snapshot de texto seleccionado, su asociación se guardará de todos modos\.<\/p>/);
   assert.match(markup, /id="snapshotSourceReminderModal"[^>]*aria-labelledby="snapshotSourceReminderTitle"[^>]*aria-describedby="snapshotSourceReminderText"/);
   assert.match(markup, /<dl class="snapshot-source-reminder-values">\s*<dt id="snapshotSourceReminderCommentLabel">Comentario de origen del snapshot:<\/dt>\s*<dd id="snapshotSourceReminderCommentValue" dir="auto"><\/dd>\s*<\/dl>/);
   assert.match(markup, /id="snapshotDetailsConfirmModal"[^>]*aria-labelledby="snapshotDetailsConfirmTitle"[^>]*aria-describedby="snapshotDetailsConfirmText"/);
@@ -1053,6 +1054,67 @@ test('Task Editor modal markup gives every dialog an accessible name and describ
   assert.match(styles, /\.native-checkbox-option > input\[type="checkbox"\]\s*\{\s*flex: 0 0 auto;\s*margin: 0;\s*accent-color: var\(--control-accent\);\s*cursor: inherit;\s*\}/);
   assert.match(styles, /\.snapshot-details-confirm-section legend\[hidden\]\s*\{\s*display: none;\s*\}/);
   assert.match(styles, /\.snapshot-details-confirm-name-values dd\.is-empty\s*\{\s*color: var\(--text-soft\);/);
+});
+
+test('every shipped locale explains that a selected text snapshot association is always saved', () => {
+  const expectedRootCopy = {
+    ar: 'هل تريد تضمين التعليق؟ إذا كانت لهذه القراءة لقطة نصية محددة، فسيُحفظ ارتباطها في كلتا الحالتين.',
+    arn: '¿Müleael nütram? Tüfa chi ruka mew snapshot texto mülelu, ñi asociación rume elkünuay.',
+    ay: 'Comentario uchañati? Aka siqitaki texto snapshot ajllitächi ukhaxa, ukamp chikt’atapaxa kunjamäkipansa imatäniwa.',
+    bn: 'মন্তব্য অন্তর্ভুক্ত করবেন? এই পাঠের জন্য কোনো টেক্সট স্ন্যাপশট নির্বাচিত থাকলে, তার সংযোগ উভয় ক্ষেত্রেই সংরক্ষিত হবে।',
+    ca: 'Incloure el comentari? Si aquesta lectura té un snapshot de text seleccionat, la seva associació es desarà en qualsevol cas.',
+    de: 'Kommentar einbeziehen? Wenn für diese Lektüre ein Text-Snapshot ausgewählt ist, wird die Verknüpfung in jedem Fall gespeichert.',
+    en: 'Include the comment? If this reading has a selected text snapshot, its association will be saved either way.',
+    es: '¿Incluir el comentario? Si esta lectura tiene un snapshot de texto seleccionado, su asociación se guardará de todos modos.',
+    eu: 'Iruzkina sartu? Irakurketa honek testu-snapshot bat hautatuta badu, haren lotura edonola ere gordeko da.',
+    fa: 'نظر هم ذخیره شود؟ اگر برای این خواندنی یک اسنپ‌شات متن انتخاب شده باشد، پیوند آن در هر صورت ذخیره می‌شود.',
+    fr: 'Inclure le commentaire ? Si cette lecture a un snapshot de texte sélectionné, son association sera enregistrée dans tous les cas.',
+    gn: '¿Emoĩ comentario? Ko fila oguerekóramo peteĩ snapshot texto ojeporavóva, upe ojoajuha oñeñongatúta taha\'e ha\'éva.',
+    hi: 'क्या टिप्पणी शामिल करनी है? अगर इस पठन के लिए टेक्स्ट स्नैपशॉट चुना गया है, तो उसका संबंध हर स्थिति में सहेजा जाएगा।',
+    ht: 'Mete kòmantè a ladan? Si lekti sa a gen yon snapshot tèks ki chwazi, lyen li ap toujou sove.',
+    id: 'Sertakan komentar? Jika ada snapshot teks yang dipilih untuk bacaan ini, kaitannya akan tetap disimpan.',
+    it: 'Includere il commento? Se per questa lettura è selezionato uno snapshot di testo, la relativa associazione verrà salvata comunque.',
+    ja: 'コメントを含めますか？この読書項目にテキストスナップショットが選択されている場合、その関連付けはどちらの場合も保存されます。',
+    ko: '댓글을 포함할까요? 이 읽기 항목에 텍스트 스냅샷이 선택되어 있으면, 어느 쪽을 선택해도 연결 정보가 저장됩니다.',
+    mi: 'Whakaurua te kōrero? Mēnā he hopunga kuputuhi kua tīpakohia mō tēnei pānuitanga, ka tiakina tōna hononga ahakoa te kōwhiringa.',
+    pcm: 'Include comment? If text snapshot dey selected for dis reading, e link go save whether you include am or not.',
+    pt: 'Incluir o comentário? Se houver um snapshot de texto selecionado para esta leitura, a associação será salva de qualquer forma.',
+    qu: 'Rimayta churaychu? Kay siqipi qillqa snapshot akllasqa kaptinqa, tinkisqan imayna kaptinpas waqaychasqa kanqa.',
+    ru: 'Включить комментарий? Если для этой записи выбран текстовый снапшот, его связь будет сохранена в любом случае.',
+    sv: 'Inkludera kommentar? Om en textsnapshot är vald för den här läsningen sparas kopplingen oavsett vilket alternativ du väljer.',
+    tr: 'Yorum dahil edilsin mi? Bu okuma için bir metin snapshot\'ı seçilmişse, bağlantısı her durumda kaydedilir.',
+    ur: 'تبصرہ شامل کریں؟ اگر اس مطالعے کے لیے متن کا اسنیپ شاٹ منتخب ہے تو اس کا تعلق ہر صورت محفوظ ہو جائے گا۔',
+    vi: 'Bao gồm bình luận? Nếu có bản lưu văn bản được chọn cho mục đọc này, liên kết của bản đó vẫn sẽ được lưu trong mọi trường hợp.',
+    'zh-Hans': '包含评论？如果此阅读条目已选择文本快照，无论选择哪一项，关联都会保存。',
+    'zh-Hant': '包含註解？如果此閱讀項目已選取文字快照，無論選擇哪一項，關聯都會儲存。',
+    zu: 'Faka ukuphawula? Uma kukhethwe i-snapshot yombhalo yalokhu kufunda, ukuxhumana kwayo kuzolondolozwa noma ngabe ukhetha ini.',
+  };
+  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+
+  assert.deepEqual(
+    Object.keys(expectedRootCopy).sort(),
+    languages.map(({ tag }) => tag).sort(),
+    'snapshot-persistence copy must cover every shipped root locale'
+  );
+
+  Object.entries(expectedRootCopy).forEach(([tag, expected]) => {
+    const rendererPath = path.resolve(__dirname, '../../../i18n/' + tag.toLowerCase() + '/renderer.json');
+    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+    assert.equal(
+      renderer.renderer.tasks.guardar_lectura_modal.library_save_question,
+      expected,
+      tag + ' snapshot-persistence copy mismatch'
+    );
+  });
+
+  const chile = JSON.parse(fs.readFileSync(
+    path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json'),
+    'utf8'
+  ));
+  assert.equal(
+    chile.renderer.tasks.guardar_lectura_modal.library_save_question,
+    '¿Incluir opinión? Si esta lectura tiene un coso de texto seleccionado, su asociación se guarda igual.'
+  );
 });
 
 test('Task Editor projects a live row into an exact library entry before IPC', async () => {

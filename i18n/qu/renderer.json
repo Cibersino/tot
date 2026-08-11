@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Bibliotecapi waqaychay",
-        "library_save_question": "Rimayta churaychu?",
+        "library_save_question": "Rimayta churaychu? Kay siqipi qillqa snapshot akllasqa kaptinqa, tinkisqan imayna kaptinpas waqaychasqa kanqa.",
         "yes": "Arí",
         "no": "Mana",
         "cancel": "Saqiy"

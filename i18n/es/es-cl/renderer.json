@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Salvar en biblio",
-        "library_save_question": "¿Incluir opinión?",
+        "library_save_question": "¿Incluir opinión? Si esta lectura tiene un coso de texto seleccionado, su asociación se guarda igual.",
         "yes": "Sí",
         "no": "No",
         "cancel": "Cancelar"

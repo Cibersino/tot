@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "حفظ في المكتبة",
-        "library_save_question": "هل تريد تضمين التعليق؟",
+        "library_save_question": "هل تريد تضمين التعليق؟ إذا كانت لهذه القراءة لقطة نصية محددة، فسيُحفظ ارتباطها في كلتا الحالتين.",
         "yes": "نعم",
         "no": "لا",
         "cancel": "إلغاء"

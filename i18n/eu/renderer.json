@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Gorde liburutegian",
-        "library_save_question": "Iruzkina sartu?",
+        "library_save_question": "Iruzkina sartu? Irakurketa honek testu-snapshot bat hautatuta badu, haren lotura edonola ere gordeko da.",
         "yes": "Bai",
         "no": "Ez",
         "cancel": "Utzi"

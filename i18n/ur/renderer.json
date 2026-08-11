@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "لائبریری میں محفوظ کریں",
-        "library_save_question": "تبصرہ شامل کریں؟",
+        "library_save_question": "تبصرہ شامل کریں؟ اگر اس مطالعے کے لیے متن کا اسنیپ شاٹ منتخب ہے تو اس کا تعلق ہر صورت محفوظ ہو جائے گا۔",
         "yes": "ہاں",
         "no": "نہیں",
         "cancel": "منسوخ"

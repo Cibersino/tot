@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "In Bibliothek speichern",
-        "library_save_question": "Kommentar einbeziehen?",
+        "library_save_question": "Kommentar einbeziehen? Wenn für diese Lektüre ein Text-Snapshot ausgewählt ist, wird die Verknüpfung in jedem Fall gespeichert.",
         "yes": "Ja",
         "no": "Nein",
         "cancel": "Abbrechen"

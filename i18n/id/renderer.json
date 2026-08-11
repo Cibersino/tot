@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Simpan ke pustaka",
-        "library_save_question": "Sertakan komentar?",
+        "library_save_question": "Sertakan komentar? Jika ada snapshot teks yang dipilih untuk bacaan ini, kaitannya akan tetap disimpan.",
         "yes": "Ya",
         "no": "Tidak",
         "cancel": "Batal"

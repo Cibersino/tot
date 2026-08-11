@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Lưu vào thư viện",
-        "library_save_question": "Bao gồm bình luận?",
+        "library_save_question": "Bao gồm bình luận? Nếu có bản lưu văn bản được chọn cho mục đọc này, liên kết của bản đó vẫn sẽ được lưu trong mọi trường hợp.",
         "yes": "Có",
         "no": "Không",
         "cancel": "Hủy"

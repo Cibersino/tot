@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Kütüphaneye kaydet",
-        "library_save_question": "Yorum dahil edilsin mi?",
+        "library_save_question": "Yorum dahil edilsin mi? Bu okuma için bir metin snapshot'ı seçilmişse, bağlantısı her durumda kaydedilir.",
         "yes": "Evet",
         "no": "Hayır",
         "cancel": "İptal"

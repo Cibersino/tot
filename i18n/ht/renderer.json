@@ -526,7 +526,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Sove nan bibliyotèk",
-        "library_save_question": "Mete kòmantè a ladan?",
+        "library_save_question": "Mete kòmantè a ladan? Si lekti sa a gen yon snapshot tèks ki chwazi, lyen li ap toujou sove.",
         "yes": "Wi",
         "no": "Non",
         "cancel": "Anile"
