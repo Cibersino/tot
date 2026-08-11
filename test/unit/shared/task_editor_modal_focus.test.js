@@ -824,6 +824,10 @@ test('Task Editor modal markup gives every dialog an accessible name and describ
   assert.match(markup, /id="snapshotDetailsConfirmModal"[^>]*aria-labelledby="snapshotDetailsConfirmTitle"[^>]*aria-describedby="snapshotDetailsConfirmText"/);
   assert.match(markup, /<legend id="snapshotDetailsConfirmTextChoice">/);
   assert.match(markup, /<legend id="snapshotDetailsConfirmTimeChoice">/);
+  assert.equal(
+    (markup.match(/class="snapshot-details-confirm-toggle native-checkbox-option"/g) || []).length,
+    2
+  );
   assert.match(markup, /id="snapshotDetailsConfirmApplyText" type="checkbox" checked/);
   assert.match(markup, /id="snapshotDetailsConfirmApplyTime" type="checkbox" checked/);
   assert.match(markup, /id="snapshotDetailsConfirmWpmLabel">Velocidad de lectura<\/dt>/);
@@ -832,6 +836,9 @@ test('Task Editor modal markup gives every dialog an accessible name and describ
   assert.match(markup, /<dl class="snapshot-details-confirm-time-values">/);
   assert.match(styles, /\.modal-actions\s*\{\s*display: flex;\s*justify-content: flex-end;\s*gap: 12px;\s*flex-wrap: wrap;\s*\}/);
   assert.match(styles, /\.btn-standard:disabled\s*\{\s*opacity: 0\.5;\s*cursor: not-allowed;\s*\}/);
+  assert.match(styles, /#snapshotDetailsConfirmText\s*\{\s*font-size: var\(--font-size-9\);\s*\}/);
+  assert.match(styles, /\.snapshot-details-confirm-section\s*\{[^}]*font-size: var\(--font-size-9\);/);
+  assert.match(styles, /\.native-checkbox-option > input\[type="checkbox"\]\s*\{\s*flex: 0 0 auto;\s*margin: 0;\s*accent-color: var\(--control-accent\);\s*cursor: inherit;\s*\}/);
   assert.match(styles, /\.snapshot-details-confirm-section legend\[hidden\]\s*\{\s*display: none;\s*\}/);
   assert.match(styles, /\.snapshot-details-confirm-name-values dd\.is-empty\s*\{\s*color: var\(--text-soft\);/);
 });

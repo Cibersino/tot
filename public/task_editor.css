@@ -17,6 +17,7 @@
   --button-bg: #fff;
   --button-hover-bg: #f4f4f4;
   --column-resizer-hover-bg: rgb(168 151 106 / 0.22);
+  --control-accent: #0078D4;
   --focus-ring: rgb(30 130 230 / 0.5);
 
   /* Text */
@@ -95,6 +96,26 @@ body {
 :where(button, input, textarea, [role="separator"][tabindex]):focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Shared native-checkbox interaction styling. Feature classes own their layout. */
+.native-checkbox-option {
+  cursor: pointer;
+}
+
+.native-checkbox-option > input[type="checkbox"] {
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--control-accent);
+  cursor: inherit;
+}
+
+.native-checkbox-option:has(> input[type="checkbox"]:disabled) {
+  cursor: not-allowed;
+}
+
+.native-checkbox-option > input[type="checkbox"]:disabled + span {
+  opacity: 0.6;
 }
 
 .task-editor {
@@ -502,6 +523,10 @@ body.is-resizing {
   margin: 0;
 }
 
+#snapshotDetailsConfirmText {
+  font-size: var(--font-size-9);
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -528,6 +553,7 @@ body.is-resizing {
   padding: 10px;
   border: 1px solid var(--structural-border);
   border-radius: var(--field-radius);
+  font-size: var(--font-size-9);
 }
 
 .snapshot-details-confirm-section[hidden] {
@@ -569,8 +595,11 @@ body.is-resizing {
 }
 
 .snapshot-details-confirm-name-values dt,
+.snapshot-details-confirm-time-values dt {
+  margin: 0;
+}
+
 .snapshot-details-confirm-name-values dd,
-.snapshot-details-confirm-time-values dt,
 .snapshot-details-confirm-time-values dd {
   margin: 0;
 }
