@@ -443,17 +443,54 @@ test('Task Editor places comment and snapshot controls in the second table colum
   assert.doesNotMatch(styles, /\.task-table td:nth-child\(/);
 });
 
-test('Task Editor assigns localized tooltips only to abbreviated time headers', async () => {
+test('Task Editor assigns localized tooltips to abbreviated headers', async () => {
   const harness = createHarness();
   await harness.waitForTranslations();
 
   assert.equal(harness.elements.thTexto.title, '');
+  assert.equal(harness.elements.thComentario.textContent, 'renderer.tasks.columns.comentario');
+  assert.equal(harness.elements.thComentario.title, 'renderer.tasks.columns.header_tooltips.comentario');
   assert.equal(harness.elements.thTiempo.title, 'renderer.tasks.columns.header_tooltips.tiempo');
   assert.equal(harness.elements.thPercent.title, 'renderer.tasks.columns.header_tooltips.percent');
   assert.equal(harness.elements.thFalta.title, 'renderer.tasks.columns.header_tooltips.falta');
   assert.equal(harness.elements.thEnlace.title, '');
-  assert.equal(harness.elements.thComentario.title, '');
   assert.equal(harness.elements.thAcciones.title, '');
+});
+
+test('English and Spanish define the Task Editor C+S header and its descriptive tooltip', () => {
+  const expectedCopy = {
+    en: {
+      label: 'C+S',
+      tooltip: 'Comment and text snapshot',
+    },
+    es: {
+      label: 'C+S',
+      tooltip: 'Comentario y snapshot de texto',
+    },
+  };
+
+  Object.entries(expectedCopy).forEach(([tag, copy]) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag}/renderer.json`);
+    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+    const columns = renderer.renderer.tasks.columns;
+
+    assert.equal(columns.comentario, copy.label, `${tag} C+S header label mismatch`);
+    assert.equal(columns.header_tooltips.comentario, copy.tooltip, `${tag} C+S header tooltip mismatch`);
+  });
+
+  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  languages
+    .filter(({ tag }) => !Object.prototype.hasOwnProperty.call(expectedCopy, tag))
+    .forEach(({ tag }) => {
+      const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
+      const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+
+      assert.notEqual(
+        renderer.renderer.tasks.columns.comentario,
+        'C+S',
+        `${tag} must not copy the ES/EN C+S abbreviation without locale review`
+      );
+    });
 });
 
 test('every shipped locale defines the Task Editor time header tooltips', () => {

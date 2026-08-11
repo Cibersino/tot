@@ -1526,6 +1526,10 @@ async function applyTaskEditorTranslations() {
   if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.open_library_button');
 
   if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto');
+  if (thComentario) {
+    thComentario.textContent = tr('renderer.tasks.columns.comentario');
+    thComentario.title = tr('renderer.tasks.columns.header_tooltips.comentario');
+  }
   if (thTiempo) {
     thTiempo.textContent = tr('renderer.tasks.columns.tiempo');
     thTiempo.title = tr('renderer.tasks.columns.header_tooltips.tiempo');
@@ -1539,7 +1543,6 @@ async function applyTaskEditorTranslations() {
     thFalta.title = tr('renderer.tasks.columns.header_tooltips.falta');
   }
   if (thEnlace) thEnlace.textContent = tr('renderer.tasks.columns.enlace');
-  if (thComentario) thComentario.textContent = tr('renderer.tasks.columns.comentario');
   if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones');
 
   if (commentTitle) commentTitle.textContent = tr('renderer.tasks.comentario_modal.comment_title');

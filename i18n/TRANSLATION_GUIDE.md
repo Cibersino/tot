@@ -2692,9 +2692,9 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] fila de lectura
         },
         "comentario": {
-          "es": "",
-          "en": ""
-          // [PROPÓSITO] Columna estrecha para acciones opcionales de comentario y snapshot asociadas a la fila. ES/EN la dejan sin label visible, pero otros idiomas pueden optar por un label breve si resulta más claro.
+          "es": "C+S",
+          "en": "C+S"
+          // [PROPÓSITO] Columna estrecha para acciones opcionales de comentario y snapshot asociadas a la fila. `C+S` es un rótulo compacto decidido para ES/EN porque sus iniciales corresponden a los conceptos visibles. Otros idiomas deben decidir su propio rótulo breve y no copiar `C+S` sin revisión lingüística.
           // [CONCEPTO_APP] fila de lectura; snapshot de texto
         },
         "acciones": {
@@ -2720,6 +2720,12 @@ Estados de revisión recomendados:
             "en": "Estimated time remaining"
             // [PROPÓSITO] Tooltip del encabezado de la columna de tiempo restante de la lectura.
             // [CONCEPTO_APP] fila de lectura
+          },
+          "comentario": {
+            "es": "Comentario y snapshot de texto",
+            "en": "Comment and text snapshot"
+            // [PROPÓSITO] Tooltip del encabezado compacto `C+S`; describe la columna, no la acción de su botón de comentario.
+            // [CONCEPTO_APP] fila de lectura; snapshot de texto
           },
         },
         "tooltips": {
