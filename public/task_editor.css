@@ -495,7 +495,12 @@ body.is-resizing {
 
 #snapshotDetailsConfirmModal .modal-panel {
   width: 420px;
-  max-width: 100%;
+  max-height: var(--modal-max-height);
+  overflow: auto;
+}
+
+#snapshotSourceReminderModal .modal-panel {
+  width: 420px;
   max-height: var(--modal-max-height);
   overflow: auto;
 }
@@ -550,9 +555,11 @@ body.is-resizing {
 
 .snapshot-details-confirm-section {
   margin: 0;
-  padding: 10px;
-  border: 1px solid var(--structural-border);
-  border-radius: var(--field-radius);
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
   font-size: var(--font-size-9);
 }
 
@@ -585,7 +592,6 @@ body.is-resizing {
 .snapshot-details-confirm-name-values > div {
   display: grid;
   gap: 4px;
-  min-inline-size: 0;
 }
 
 .snapshot-details-confirm-time-values > div {
@@ -630,6 +636,32 @@ body.is-resizing {
 }
 
 #snapshotDetailsConfirmModal .modal-actions {
+  justify-content: center;
+}
+
+.snapshot-source-reminder-values {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.snapshot-source-reminder-values dt,
+.snapshot-source-reminder-values dd {
+  margin: 0;
+}
+
+.snapshot-source-reminder-values dd {
+  max-height: 132px;
+  box-sizing: border-box;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  padding: 10px 12px;
+  border: 1px solid var(--group-border-color);
+  border-radius: 8px;
+  background: var(--app-primary-bg);
+}
+
+#snapshotSourceReminderModal .modal-actions {
   justify-content: center;
 }
 

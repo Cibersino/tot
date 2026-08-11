@@ -34,6 +34,7 @@ const {
   WPM_MIN,
   WPM_MAX,
   SNAPSHOT_NAME_MAX_CHARS,
+  SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_COMMENT_MAX_CHARS,
@@ -110,6 +111,16 @@ const commentSnapshotSelect = document.getElementById('commentSnapshotSelect');
 const commentSnapshotClear = document.getElementById('commentSnapshotClear');
 const commentSnapshotPath = document.getElementById('commentSnapshotPath');
 
+const snapshotSourceReminderModal = document.getElementById('snapshotSourceReminderModal');
+const snapshotSourceReminderBackdrop = document.getElementById('snapshotSourceReminderBackdrop');
+const snapshotSourceReminderClose = document.getElementById('snapshotSourceReminderClose');
+const snapshotSourceReminderCancel = document.getElementById('snapshotSourceReminderCancel');
+const snapshotSourceReminderSelectFile = document.getElementById('snapshotSourceReminderSelectFile');
+const snapshotSourceReminderTitle = document.getElementById('snapshotSourceReminderTitle');
+const snapshotSourceReminderText = document.getElementById('snapshotSourceReminderText');
+const snapshotSourceReminderCommentLabel = document.getElementById('snapshotSourceReminderCommentLabel');
+const snapshotSourceReminderCommentValue = document.getElementById('snapshotSourceReminderCommentValue');
+
 const snapshotDetailsConfirmModal = document.getElementById('snapshotDetailsConfirmModal');
 const snapshotDetailsConfirmBackdrop = document.getElementById('snapshotDetailsConfirmBackdrop');
 const snapshotDetailsConfirmClose = document.getElementById('snapshotDetailsConfirmClose');
@@ -166,6 +177,7 @@ let rowIdCounter = 1;
 let pendingCommentRowId = null;
 let pendingCommentSnapshotRelPath = '';
 let pendingSnapshotDetailsConfirmation = null;
+let pendingSnapshotSourceReminderFileSelection = null;
 let commentSaveInFlight = false;
 let pendingLibraryRowId = null;
 let libraryItemsCache = [];
@@ -323,6 +335,7 @@ function handleTaskEditorModalEscape(event) {
     { modal: commentModal, close: dismissCommentModal },
     { modal: libraryModal, close: () => closeModal(libraryModal) },
     { modal: includeCommentModal, close: () => closeModal(includeCommentModal) },
+    { modal: snapshotSourceReminderModal, close: () => resolveSnapshotSourceReminder(false) },
     { modal: snapshotDetailsConfirmModal, close: () => resolveSnapshotDetailsConfirmation(false) },
   ];
   const isVisible = ({ modal }) => modal && modal.getAttribute('aria-hidden') === 'false';
@@ -485,6 +498,32 @@ function openSnapshotDetailsConfirmation(row, changes) {
   return true;
 }
 
+function openSnapshotSourceReminder(row, fields, sourceComment) {
+  if (!snapshotSourceReminderCommentValue || !snapshotSourceReminderSelectFile) return false;
+  pendingSnapshotSourceReminderFileSelection = { row, fields };
+  snapshotSourceReminderCommentValue.textContent = sourceComment;
+  openModal(snapshotSourceReminderModal, snapshotSourceReminderSelectFile);
+  return true;
+}
+
+function dismissSnapshotSourceReminder() {
+  pendingSnapshotSourceReminderFileSelection = null;
+  if (snapshotSourceReminderCommentValue) snapshotSourceReminderCommentValue.textContent = '';
+  closeModal(snapshotSourceReminderModal);
+}
+
+async function resolveSnapshotSourceReminder(shouldSelectFile) {
+  const selection = pendingSnapshotSourceReminderFileSelection;
+  dismissSnapshotSourceReminder();
+  if (!shouldSelectFile || !selection) return;
+
+  try {
+    await selectTaskFileForRow(selection.row, selection.fields);
+  } catch (err) {
+    log.error('selectTaskFileForRow failed after snapshot source reminder:', err);
+  }
+}
+
 function resetPendingCommentDraft() {
   pendingCommentRowId = null;
   pendingCommentSnapshotRelPath = '';
@@ -591,11 +630,23 @@ function getSnapshotInspectionDetails(result) {
     return { ok: false };
   }
 
+  const sourceComment = Object.prototype.hasOwnProperty.call(result, 'sourceComment')
+    ? result.sourceComment
+    : null;
+  if (sourceComment !== null
+    && (typeof sourceComment !== 'string'
+      || !sourceComment.trim()
+      || sourceComment.length > SNAPSHOT_SOURCE_COMMENT_MAX_CHARS
+      || /[\r\n]/.test(sourceComment))) {
+    return { ok: false };
+  }
+
   const readingInfo = getSnapshotInspectionReading(result);
   if (!readingInfo.ok) return { ok: false };
   return {
     ok: true,
     name,
+    sourceComment,
     reading: readingInfo.reading,
   };
 }
@@ -608,6 +659,39 @@ function getSnapshotDetailsChanges(row, details) {
     ? details.reading
     : null;
   return { texto, reading };
+}
+
+async function getSnapshotSourceReminderComment(row) {
+  const snapshotRelPath = normalizeSnapshotRelPath(row && row.snapshotRelPath ? row.snapshotRelPath : '');
+  if (!snapshotRelPath) return '';
+
+  const api = getTaskEditorApi('inspectTaskRowSnapshot', null);
+  if (!api) return '';
+
+  let result = null;
+  try {
+    result = await api.inspectTaskRowSnapshot(snapshotRelPath);
+  } catch (err) {
+    log.warn('Snapshot source reminder inspection failed (ignored):', err);
+    return '';
+  }
+
+  if (isFailedTaskEditorResult(result)) {
+    const code = getTaskEditorResultCode(result, 'READ_FAILED');
+    log.warn('Snapshot source reminder inspection failed (ignored):', {
+      code,
+      snapshotRelPath,
+      response: result || null,
+    });
+    return '';
+  }
+
+  const details = getSnapshotInspectionDetails(result);
+  if (!details.ok) {
+    log.warn('Snapshot source reminder inspection returned invalid details (ignored):', result || null);
+    return '';
+  }
+  return details.sourceComment || '';
 }
 
 function resolveSnapshotDetailsConfirmation(applySelectedDetails) {
@@ -745,7 +829,19 @@ async function loadSnapshotForRow(row) {
   }
 }
 
-async function selectFileForRow(row, { textoInput, enlaceInput } = {}) {
+async function selectFileForRow(row, fields = {}) {
+  if (pendingSnapshotSourceReminderFileSelection) return;
+
+  const sourceComment = await getSnapshotSourceReminderComment(row);
+  if (sourceComment) {
+    if (openSnapshotSourceReminder(row, fields, sourceComment)) return;
+    log.error('Snapshot source reminder could not be opened; file selection will continue.');
+  }
+
+  await selectTaskFileForRow(row, fields);
+}
+
+async function selectTaskFileForRow(row, { textoInput, enlaceInput } = {}) {
   const api = getTaskEditorApi('selectTaskFile');
   if (!api) return;
   const res = await api.selectTaskFile();
@@ -1464,6 +1560,35 @@ async function applyTaskEditorTranslations() {
     });
   }
 
+  if (snapshotSourceReminderTitle) {
+    snapshotSourceReminderTitle.textContent = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.title');
+  }
+  if (snapshotSourceReminderText) {
+    snapshotSourceReminderText.textContent = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.message');
+  }
+  if (snapshotSourceReminderCommentLabel) {
+    snapshotSourceReminderCommentLabel.textContent = tr(
+      'renderer.tasks.comentario_modal.snapshot_source_reminder.source_comment'
+    );
+  }
+  if (snapshotSourceReminderCancel) {
+    snapshotSourceReminderCancel.textContent = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.cancel');
+  }
+  if (snapshotSourceReminderSelectFile) {
+    snapshotSourceReminderSelectFile.textContent = tr(
+      'renderer.tasks.comentario_modal.snapshot_source_reminder.select_file'
+    );
+  }
+  if (snapshotSourceReminderClose) {
+    snapshotSourceReminderClose.title = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.close_aria');
+    snapshotSourceReminderClose.setAttribute('aria-label', snapshotSourceReminderClose.title || '');
+    rendererIcons.applyIconToElement(snapshotSourceReminderClose, 'close', {
+      preserveContent: false,
+      title: snapshotSourceReminderClose.title,
+      ariaLabel: snapshotSourceReminderClose.title,
+    });
+  }
+
   if (snapshotDetailsConfirmTitle) {
     snapshotDetailsConfirmTitle.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.title');
   }
@@ -1615,6 +1740,21 @@ function wireSnapshotDetailsConfirmModalEvents() {
   }
 }
 
+function wireSnapshotSourceReminderModalEvents() {
+  if (snapshotSourceReminderClose) {
+    snapshotSourceReminderClose.addEventListener('click', () => resolveSnapshotSourceReminder(false));
+  }
+  if (snapshotSourceReminderBackdrop) {
+    snapshotSourceReminderBackdrop.addEventListener('click', () => resolveSnapshotSourceReminder(false));
+  }
+  if (snapshotSourceReminderCancel) {
+    snapshotSourceReminderCancel.addEventListener('click', () => resolveSnapshotSourceReminder(false));
+  }
+  if (snapshotSourceReminderSelectFile) {
+    snapshotSourceReminderSelectFile.addEventListener('click', () => resolveSnapshotSourceReminder(true));
+  }
+}
+
 function wireLibraryModalEvents() {
   wireModalClose(libraryModal, libraryClose, libraryBackdrop);
   if (librarySearchInput) {
@@ -1630,6 +1770,7 @@ function wireTaskEditorEvents() {
   wirePrimaryTaskEditorEvents();
   wireCommentModalEvents();
   wireSnapshotDetailsConfirmModalEvents();
+  wireSnapshotSourceReminderModalEvents();
   wireLibraryModalEvents();
   window.addEventListener('keydown', handleTaskEditorModalEscape);
 }

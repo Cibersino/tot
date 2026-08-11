@@ -30,8 +30,10 @@ function createHarness() {
   const savedLibraryEntries = [];
   const openTaskLinkCalls = [];
   const snapshotInspectionCalls = [];
+  const taskFileSelectionCalls = [];
   let openTaskLinkResult = { ok: true };
   let selectedTaskRowSnapshotResult = { ok: false, code: 'CANCELLED' };
+  let taskFileSelectionResult = { ok: false, code: 'CANCELLED' };
   let taskRowSnapshotInspectionResult = {
     ok: true,
     name: null,
@@ -145,7 +147,10 @@ function createHarness() {
     'thComentario', 'thAcciones', 'taskTable', 'taskColGroup',
     'commentModal', 'commentBackdrop', 'commentClose', 'commentCancel', 'commentSave',
     'commentInput', 'commentTitle', 'commentSnapshotSelect', 'commentSnapshotClear',
-    'commentSnapshotPath', 'snapshotDetailsConfirmModal', 'snapshotDetailsConfirmBackdrop',
+    'commentSnapshotPath', 'snapshotSourceReminderModal', 'snapshotSourceReminderBackdrop',
+    'snapshotSourceReminderClose', 'snapshotSourceReminderCancel', 'snapshotSourceReminderSelectFile',
+    'snapshotSourceReminderTitle', 'snapshotSourceReminderText', 'snapshotSourceReminderCommentLabel',
+    'snapshotSourceReminderCommentValue', 'snapshotDetailsConfirmModal', 'snapshotDetailsConfirmBackdrop',
     'snapshotDetailsConfirmClose', 'snapshotDetailsConfirmApply', 'snapshotDetailsConfirmKeep',
     'snapshotDetailsConfirmTitle', 'snapshotDetailsConfirmText', 'snapshotDetailsConfirmTextSection',
     'snapshotDetailsConfirmTextChoice', 'snapshotDetailsConfirmApplyText', 'snapshotDetailsConfirmApplyTextLabel',
@@ -163,15 +168,19 @@ function createHarness() {
   ];
   const elements = Object.fromEntries(ids.map((id) => [id, createElement(id)]));
   elements.commentModal.fallbackFocus = elements.commentClose;
+  elements.snapshotSourceReminderModal.fallbackFocus = elements.snapshotSourceReminderClose;
   elements.snapshotDetailsConfirmModal.fallbackFocus = elements.snapshotDetailsConfirmClose;
   elements.libraryModal.fallbackFocus = elements.libraryClose;
   elements.includeCommentModal.fallbackFocus = elements.includeCommentClose;
   elements.commentModal.appendChild(elements.commentInput);
+  elements.snapshotSourceReminderModal.appendChild(elements.snapshotSourceReminderCancel);
+  elements.snapshotSourceReminderModal.appendChild(elements.snapshotSourceReminderSelectFile);
   elements.snapshotDetailsConfirmModal.appendChild(elements.snapshotDetailsConfirmApply);
   elements.snapshotDetailsConfirmModal.appendChild(elements.snapshotDetailsConfirmKeep);
   elements.libraryModal.appendChild(elements.librarySearchInput);
   elements.includeCommentModal.appendChild(elements.includeCommentYes);
   elements.commentModal.setAttribute('aria-hidden', 'true');
+  elements.snapshotSourceReminderModal.setAttribute('aria-hidden', 'true');
   elements.snapshotDetailsConfirmModal.setAttribute('aria-hidden', 'true');
   elements.libraryModal.setAttribute('aria-hidden', 'true');
   elements.includeCommentModal.setAttribute('aria-hidden', 'true');
@@ -208,6 +217,7 @@ function createHarness() {
       DEFAULT_LANG: 'en',
       WPM_MIN: 10,
       WPM_MAX: 700,
+      SNAPSHOT_SOURCE_COMMENT_MAX_CHARS: 65_536,
       TASK_NAME_MAX_CHARS: 100,
       TASK_ROW_TEXT_MAX_CHARS: 1000,
       TASK_ROW_COMMENT_MAX_CHARS: 1200,
@@ -275,6 +285,10 @@ function createHarness() {
         openTaskLinkCalls.push(raw);
         return openTaskLinkResult;
       },
+      async selectTaskFile() {
+        taskFileSelectionCalls.push(true);
+        return taskFileSelectionResult;
+      },
       async selectTaskRowSnapshot() {
         return selectedTaskRowSnapshotResult;
       },
@@ -326,11 +340,15 @@ function createHarness() {
     savedLibraryEntries,
     openTaskLinkCalls,
     snapshotInspectionCalls,
+    taskFileSelectionCalls,
     setOpenTaskLinkResult(result) {
       openTaskLinkResult = result;
     },
     setSelectedTaskRowSnapshotResult(result) {
       selectedTaskRowSnapshotResult = result;
+    },
+    setTaskFileSelectionResult(result) {
+      taskFileSelectionResult = result;
     },
     setTaskRowSnapshotInspectionResult(result) {
       taskRowSnapshotInspectionResult = result;
@@ -498,6 +516,35 @@ test('every shipped locale and the overriding es-cl bundle define the Task Edito
   });
 });
 
+test('English and Spanish define the Task Editor snapshot-source reminder copy', () => {
+  const expectedCopy = {
+    en: {
+      title: 'Snapshot source reminder',
+      message: 'This row is associated with a text snapshot. Check its source comment before selecting a local file.',
+      source_comment: 'Snapshot source comment:',
+      select_file: 'Select local file',
+      cancel: 'Cancel',
+      close_aria: 'Close snapshot source reminder',
+    },
+    es: {
+      title: 'Recordatorio del origen del snapshot',
+      message: 'Esta fila está asociada a un snapshot de texto. Revisa su comentario de origen antes de seleccionar un archivo local.',
+      source_comment: 'Comentario de origen del snapshot:',
+      select_file: 'Seleccionar archivo local',
+      cancel: 'Cancelar',
+      close_aria: 'Cerrar el recordatorio del origen del snapshot',
+    },
+  };
+
+  Object.entries(expectedCopy).forEach(([tag, expected]) => {
+    const renderer = JSON.parse(fs.readFileSync(
+      path.resolve(__dirname, `../../../i18n/${tag}/renderer.json`),
+      'utf8'
+    ));
+    assert.deepEqual(renderer.renderer.tasks.comentario_modal.snapshot_source_reminder, expected);
+  });
+});
+
 test('task-editor modals use their reviewed initial targets and restore each opener', () => {
   const harness = createHarness();
   harness.initializeRow();
@@ -551,6 +598,81 @@ test('Task Editor Escape closes the focused visible dialog through its existing 
   assert.equal(libraryEscape.defaultPrevented, true);
   assert.equal(harness.elements.libraryModal.getAttribute('aria-hidden'), 'true');
   assert.equal(harness.getActiveElement(), harness.elements.btnTaskLoadLibrary);
+});
+
+test('Task Editor shows a selected snapshot source comment before local-file selection', async () => {
+  const harness = createHarness();
+  harness.initializeRow({ snapshotRelPath: '/chapter-1.json' });
+  harness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: null,
+    sourceComment: 'chapter-1.pdf',
+    estimatedSeconds: null,
+    wpm: null,
+  });
+  harness.setTaskFileSelectionResult({ ok: true, filePath: 'C:\\Books\\chapter-1.pdf' });
+
+  const fileSelectOpener = harness.findByIcon('folder');
+  const linkInput = harness.findInputByHeaderId('thEnlace');
+  assert.ok(fileSelectOpener);
+  assert.ok(linkInput);
+  fileSelectOpener.focus();
+  fileSelectOpener.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(harness.snapshotInspectionCalls, ['/chapter-1.json']);
+  assert.equal(harness.elements.snapshotSourceReminderModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.snapshotSourceReminderCommentValue.textContent, 'chapter-1.pdf');
+  assert.equal(harness.getActiveElement(), harness.elements.snapshotSourceReminderSelectFile);
+  assert.deepEqual(harness.taskFileSelectionCalls, []);
+
+  harness.elements.snapshotSourceReminderCancel.dispatch('click');
+  assert.equal(harness.elements.snapshotSourceReminderModal.getAttribute('aria-hidden'), 'true');
+  assert.equal(harness.getActiveElement(), fileSelectOpener);
+  assert.deepEqual(harness.taskFileSelectionCalls, []);
+
+  fileSelectOpener.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  harness.elements.snapshotSourceReminderSelectFile.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(harness.elements.snapshotSourceReminderModal.getAttribute('aria-hidden'), 'true');
+  assert.deepEqual(harness.taskFileSelectionCalls, [true]);
+  assert.equal(linkInput.value, 'C:\\Books\\chapter-1.pdf');
+});
+
+test('Task Editor selects a local file directly when snapshot-source inspection has no usable comment', async () => {
+  const noCommentHarness = createHarness();
+  noCommentHarness.initializeRow({ snapshotRelPath: '/no-comment.json' });
+  noCommentHarness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: null,
+    sourceComment: null,
+    estimatedSeconds: null,
+    wpm: null,
+  });
+  noCommentHarness.setTaskFileSelectionResult({ ok: true, filePath: 'C:\\Books\\no-comment.pdf' });
+
+  const noCommentLinkInput = noCommentHarness.findInputByHeaderId('thEnlace');
+  noCommentHarness.findByIcon('folder').dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(noCommentHarness.elements.snapshotSourceReminderModal.getAttribute('aria-hidden'), 'true');
+  assert.deepEqual(noCommentHarness.taskFileSelectionCalls, [true]);
+  assert.equal(noCommentLinkInput.value, 'C:\\Books\\no-comment.pdf');
+
+  const invalidSnapshotHarness = createHarness();
+  invalidSnapshotHarness.initializeRow({ snapshotRelPath: '/invalid.json' });
+  invalidSnapshotHarness.setTaskRowSnapshotInspectionResult({ ok: false, code: 'INVALID_SCHEMA' });
+  invalidSnapshotHarness.setTaskFileSelectionResult({ ok: true, filePath: 'C:\\Books\\replacement.pdf' });
+
+  const invalidSnapshotLinkInput = invalidSnapshotHarness.findInputByHeaderId('thEnlace');
+  invalidSnapshotHarness.findByIcon('folder').dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(invalidSnapshotHarness.elements.snapshotSourceReminderModal.getAttribute('aria-hidden'), 'true');
+  assert.deepEqual(invalidSnapshotHarness.taskFileSelectionCalls, [true]);
+  assert.equal(invalidSnapshotLinkInput.value, 'C:\\Books\\replacement.pdf');
 });
 
 test('Task Editor applies the changed snapshot estimate only after confirmation', async () => {
@@ -821,7 +943,10 @@ test('Task Editor modal markup gives every dialog an accessible name and describ
   assert.match(markup, /id="commentModal"[^>]*aria-labelledby="commentTitle"/);
   assert.match(markup, /id="libraryModal"[^>]*aria-labelledby="libraryTitle"/);
   assert.match(markup, /id="includeCommentModal"[^>]*aria-labelledby="includeCommentTitle"[^>]*aria-describedby="includeCommentText"/);
+  assert.match(markup, /id="snapshotSourceReminderModal"[^>]*aria-labelledby="snapshotSourceReminderTitle"[^>]*aria-describedby="snapshotSourceReminderText"/);
+  assert.match(markup, /<dl class="snapshot-source-reminder-values">\s*<dt id="snapshotSourceReminderCommentLabel">Comentario de origen del snapshot:<\/dt>\s*<dd id="snapshotSourceReminderCommentValue" dir="auto"><\/dd>\s*<\/dl>/);
   assert.match(markup, /id="snapshotDetailsConfirmModal"[^>]*aria-labelledby="snapshotDetailsConfirmTitle"[^>]*aria-describedby="snapshotDetailsConfirmText"/);
+  assert.match(markup, /id="snapshotSourceReminderCommentValue" dir="auto"><\/dd>/);
   assert.match(markup, /<legend id="snapshotDetailsConfirmTextChoice">/);
   assert.match(markup, /<legend id="snapshotDetailsConfirmTimeChoice">/);
   assert.equal(
@@ -837,6 +962,8 @@ test('Task Editor modal markup gives every dialog an accessible name and describ
   assert.match(styles, /\.modal-actions\s*\{\s*display: flex;\s*justify-content: flex-end;\s*gap: 12px;\s*flex-wrap: wrap;\s*\}/);
   assert.match(styles, /\.btn-standard:disabled\s*\{\s*opacity: 0\.5;\s*cursor: not-allowed;\s*\}/);
   assert.match(styles, /#snapshotDetailsConfirmText\s*\{\s*font-size: var\(--font-size-9\);\s*\}/);
+  assert.match(styles, /\.snapshot-source-reminder-values\s*\{\s*display: grid;\s*gap: 4px;\s*margin: 0;\s*\}/);
+  assert.match(styles, /\.snapshot-source-reminder-values dd\s*\{\s*max-height: 132px;\s*box-sizing: border-box;\s*overflow: auto;\s*overflow-wrap: anywhere;\s*padding: 10px 12px;\s*border: 1px solid var\(--group-border-color\);\s*border-radius: 8px;\s*background: var\(--app-primary-bg\);\s*\}/);
   assert.match(styles, /\.snapshot-details-confirm-section\s*\{[^}]*font-size: var\(--font-size-9\);/);
   assert.match(styles, /\.snapshot-details-confirm-time-values > div\s*\{\s*display: contents;\s*\}/);
   assert.match(styles, /\.snapshot-details-confirm-time-values\s*\{\s*grid-template-columns: max-content max-content;\s*justify-content: center;\s*align-items: baseline;\s*column-gap: 12px;\s*\}/);

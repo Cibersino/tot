@@ -94,6 +94,30 @@
     </div>
   </div>
 
+  <!-- Snapshot source reminder modal -->
+  <div id="snapshotSourceReminderModal" class="modal" aria-hidden="true" role="dialog"
+    aria-labelledby="snapshotSourceReminderTitle" aria-describedby="snapshotSourceReminderText" aria-modal="true">
+    <div class="modal-backdrop" id="snapshotSourceReminderBackdrop"></div>
+    <div class="modal-panel">
+      <header class="modal-header">
+        <h2 id="snapshotSourceReminderTitle">Recordatorio del origen del snapshot</h2>
+        <button id="snapshotSourceReminderClose" class="btn-standard btn-standard--square" aria-label="Cerrar"
+          data-tot-icon="close"></button>
+      </header>
+      <main class="modal-body">
+        <p id="snapshotSourceReminderText">Esta fila está asociada a un snapshot de texto. Revisa su comentario de origen antes de seleccionar un archivo local.</p>
+        <dl class="snapshot-source-reminder-values">
+          <dt id="snapshotSourceReminderCommentLabel">Comentario de origen del snapshot:</dt>
+          <dd id="snapshotSourceReminderCommentValue" dir="auto"></dd>
+        </dl>
+        <footer class="modal-actions">
+          <button id="snapshotSourceReminderCancel" class="btn-standard">Cancelar</button>
+          <button id="snapshotSourceReminderSelectFile" class="btn-standard">Seleccionar archivo local</button>
+        </footer>
+      </main>
+    </div>
+  </div>
+
   <!-- Snapshot details confirmation modal -->
   <div id="snapshotDetailsConfirmModal" class="modal" aria-hidden="true" role="dialog"
     aria-labelledby="snapshotDetailsConfirmTitle" aria-describedby="snapshotDetailsConfirmText" aria-modal="true">

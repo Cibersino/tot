@@ -421,6 +421,9 @@ function parseSnapshotFile(selectedReal) {
     name: Object.prototype.hasOwnProperty.call(snapshotInfo.snapshot, 'name')
       ? snapshotInfo.snapshot.name
       : null,
+    sourceComment: Object.prototype.hasOwnProperty.call(snapshotInfo.snapshot, 'sourceComment')
+      ? snapshotInfo.snapshot.sourceComment
+      : null,
     estimatedSeconds: reading ? reading.estimatedSeconds : null,
     wpm: reading ? reading.wpm : null,
   };
@@ -460,6 +463,7 @@ function inspectSnapshotAtRelPath(rawSnapshotRelPath) {
   return {
     ok: true,
     name: parsed.name,
+    sourceComment: parsed.sourceComment,
     estimatedSeconds: parsed.estimatedSeconds,
     wpm: parsed.wpm,
   };
