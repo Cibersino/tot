@@ -489,6 +489,14 @@
         "snapshot_select": "Snapshot seç",
         "snapshot_select_tooltip": "Bu satır için metin snapshot'ı seç",
         "snapshot_clear": "Seçili snapshot'ı bu satırdan kaldır",
+        "snapshot_source_reminder": {
+          "title": "Snapshot kaynağı hatırlatıcısı",
+          "message": "Bu satır bir metin snapshot’ıyla ilişkilidir. Yerel bir dosya seçmeden önce kaynak yorumunu kontrol edin.",
+          "source_comment": "Snapshot kaynak yorumu:",
+          "select_file": "Yerel dosya seç",
+          "cancel": "İptal",
+          "close_aria": "Snapshot kaynağı hatırlatıcısını kapat"
+        },
         "snapshot_details_confirm": {
           "title": "Seçili metin snapshot’ındaki veriler kullanılsın mı?",
           "message": "Bu okumaya uygulamadan önce seçili metin snapshot’ındaki kullanılabilir verileri gözden geçirin.",

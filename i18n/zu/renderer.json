@@ -489,6 +489,14 @@
         "snapshot_select": "Khetha i-snapshot",
         "snapshot_select_tooltip": "Khetha i-snapshot yombhalo kulo mugqa",
         "snapshot_clear": "Susa i-snapshot ekhethiwe kulo mugqa",
+        "snapshot_source_reminder": {
+          "title": "Isikhumbuzo somthombo we-snapshot",
+          "message": "Lo mugqa uhlotshaniswa ne-snapshot yombhalo. Hlola ukuphawula komthombo wayo ngaphambi kokukhetha ifayela lendawo.",
+          "source_comment": "Ukuphawula komthombo we-snapshot:",
+          "select_file": "Khetha ifayela lendawo",
+          "cancel": "Khansela",
+          "close_aria": "Vala isikhumbuzo somthombo we-snapshot"
+        },
         "snapshot_details_confirm": {
           "title": "Sebenzisa idatha ye-snapshot yombhalo ekhethiwe?",
           "message": "Buyekeza idatha etholakalayo ye-snapshot yombhalo ekhethiwe ngaphambi kokuyisebenzisa kulokhu kufunda.",

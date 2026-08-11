@@ -489,6 +489,14 @@
         "snapshot_select": "Seleccionar snapshot",
         "snapshot_select_tooltip": "Seleccionar snapshot per a aquesta fila",
         "snapshot_clear": "Treure el snapshot seleccionat d’aquesta fila",
+        "snapshot_source_reminder": {
+          "title": "Recordatori de l'origen de l'snapshot",
+          "message": "Aquesta fila està associada a un snapshot de text. Reviseu-ne el comentari d'origen abans de seleccionar un fitxer local.",
+          "source_comment": "Comentari d'origen de l'snapshot:",
+          "select_file": "Selecciona un fitxer local",
+          "cancel": "Cancel·lar",
+          "close_aria": "Tanca el recordatori de l'origen de l'snapshot"
+        },
         "snapshot_details_confirm": {
           "title": "Utilitzar les dades del snapshot de text seleccionat?",
           "message": "Reviseu les dades disponibles del snapshot de text seleccionat abans d’aplicar-les a aquesta lectura.",

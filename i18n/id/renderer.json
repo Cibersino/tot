@@ -489,6 +489,14 @@
         "snapshot_select": "Pilih snapshot",
         "snapshot_select_tooltip": "Pilih snapshot teks untuk baris ini",
         "snapshot_clear": "Hapus snapshot yang dipilih dari baris ini",
+        "snapshot_source_reminder": {
+          "title": "Pengingat sumber snapshot",
+          "message": "Baris ini terkait dengan snapshot teks. Periksa komentar sumbernya sebelum memilih file lokal.",
+          "source_comment": "Komentar sumber snapshot:",
+          "select_file": "Pilih file lokal",
+          "cancel": "Batal",
+          "close_aria": "Tutup pengingat sumber snapshot"
+        },
         "snapshot_details_confirm": {
           "title": "Gunakan data dari snapshot teks yang dipilih?",
           "message": "Tinjau data yang tersedia dari snapshot teks yang dipilih sebelum menerapkannya ke bacaan ini.",

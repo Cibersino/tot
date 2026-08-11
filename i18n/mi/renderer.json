@@ -489,6 +489,14 @@
         "snapshot_select": "Tīpako hopunga",
         "snapshot_select_tooltip": "Tīpako hopunga kuputuhi mō tēnei rārangi",
         "snapshot_clear": "Tango i te hopunga kua tīpakohia i tēnei rārangi",
+        "snapshot_source_reminder": {
+          "title": "Whakamaharatanga pūtake hopunga",
+          "message": "Kua hono tēnei rārangi ki tētahi hopunga kuputuhi. Tirohia tōna kōrero pūtake i mua i te tīpako kōnae paetata.",
+          "source_comment": "Kōrero pūtake hopunga:",
+          "select_file": "Tīpakohia he kōnae paetata",
+          "cancel": "Whakakore",
+          "close_aria": "Katia te whakamaharatanga pūtake hopunga"
+        },
         "snapshot_details_confirm": {
           "title": "Whakamahia ngā raraunga o te hopunga kuputuhi kua tīpakohia?",
           "message": "Arotakehia ngā raraunga e wātea ana i te hopunga kuputuhi kua tīpakohia i mua i te hoatu ki tēnei pānuitanga.",

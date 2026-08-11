@@ -489,6 +489,14 @@
         "snapshot_select": "Snapshot akllay",
         "snapshot_select_tooltip": "Kay siqipaq snapshotta akllay",
         "snapshot_clear": "Kay siqimanta akllasqa snapshotta qhichuy",
+        "snapshot_source_reminder": {
+          "title": "Snapshotpa qallariyninmanta yuyarichiy",
+          "message": "Kay siqiqa qillqa snapshotwan tinkisqami. Local archivota akllanaykipaq, qallariynin rimayninta ñawpaqta qhawariy.",
+          "source_comment": "Snapshotpa qallariynin rimaynin:",
+          "select_file": "Local archivota akllay",
+          "cancel": "Saqiy",
+          "close_aria": "Snapshotpa qallariyninmanta yuyarichiyta wichq’ay"
+        },
         "snapshot_details_confirm": {
           "title": "¿Akllasqa qillqa snapshotpa willakuyninkunata llamk’achiychu?",
           "message": "Kay ñawinchayman churanaykipaq, akllasqa qillqa snapshotpa willakuyninkunata qhawariy.",

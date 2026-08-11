@@ -489,6 +489,14 @@
         "snapshot_select": "Select snapshot",
         "snapshot_select_tooltip": "Select text snapshot for dis row",
         "snapshot_clear": "Remove selected snapshot from dis row",
+        "snapshot_source_reminder": {
+          "title": "Reminder about snapshot source",
+          "message": "Dis row dey linked to text snapshot. Check di source comment before you select local file.",
+          "source_comment": "Snapshot source comment:",
+          "select_file": "Select local file",
+          "cancel": "Cancel",
+          "close_aria": "Close snapshot source reminder"
+        },
         "snapshot_details_confirm": {
           "title": "Use data from di selected text snapshot?",
           "message": "Check di data wey dey inside di selected text snapshot before you apply am to dis reading.",

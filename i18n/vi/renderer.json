@@ -489,6 +489,14 @@
         "snapshot_select": "Chọn bản lưu",
         "snapshot_select_tooltip": "Chọn bản lưu văn bản cho hàng này",
         "snapshot_clear": "Gỡ bản lưu đã chọn khỏi hàng này",
+        "snapshot_source_reminder": {
+          "title": "Nhắc về nguồn của bản lưu",
+          "message": "Hàng này được liên kết với một bản lưu văn bản. Hãy xem bình luận về nguồn của nó trước khi chọn tệp cục bộ.",
+          "source_comment": "Bình luận về nguồn của bản lưu:",
+          "select_file": "Chọn tệp cục bộ",
+          "cancel": "Hủy",
+          "close_aria": "Đóng lời nhắc về nguồn của bản lưu"
+        },
         "snapshot_details_confirm": {
           "title": "Dùng dữ liệu từ bản lưu văn bản đã chọn?",
           "message": "Xem lại dữ liệu có sẵn từ bản lưu văn bản đã chọn trước khi áp dụng cho mục đọc này.",

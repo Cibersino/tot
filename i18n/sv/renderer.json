@@ -489,6 +489,14 @@
         "snapshot_select": "Välj snapshot",
         "snapshot_select_tooltip": "Välj en textsnapshot för denna rad",
         "snapshot_clear": "Ta bort vald snapshot från denna rad",
+        "snapshot_source_reminder": {
+          "title": "Påminnelse om snapshotets källa",
+          "message": "Den här raden är kopplad till en textsnapshot. Kontrollera dess källkommentar innan du väljer en lokal fil.",
+          "source_comment": "Snapshotets källkommentar:",
+          "select_file": "Välj lokal fil",
+          "cancel": "Avbryt",
+          "close_aria": "Stäng påminnelsen om snapshotets källa"
+        },
         "snapshot_details_confirm": {
           "title": "Använd data från vald textsnapshot?",
           "message": "Granska tillgängliga data från den valda textsnapshoten innan de tillämpas på denna läsning.",

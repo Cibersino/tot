@@ -489,6 +489,14 @@
         "snapshot_select": "Sélectionner un snapshot",
         "snapshot_select_tooltip": "Sélectionner un snapshot de texte pour cette ligne",
         "snapshot_clear": "Supprimer le snapshot de texte de cette ligne",
+        "snapshot_source_reminder": {
+          "title": "Rappel de la source du snapshot",
+          "message": "Cette ligne est associée à un snapshot de texte. Consultez son commentaire de source avant de sélectionner un fichier local.",
+          "source_comment": "Commentaire de source du snapshot :",
+          "select_file": "Sélectionner un fichier local",
+          "cancel": "Annuler",
+          "close_aria": "Fermer le rappel de la source du snapshot"
+        },
         "snapshot_details_confirm": {
           "title": "Utiliser les données du snapshot de texte sélectionné ?",
           "message": "Examinez les données disponibles du snapshot de texte sélectionné avant de les appliquer à cette lecture.",

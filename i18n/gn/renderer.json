@@ -489,6 +489,14 @@
         "snapshot_select": "Eiporavo snapshot",
         "snapshot_select_tooltip": "Eiporavo snapshot ko fila-pe g̃uarã",
         "snapshot_clear": "Eipe’a snapshot ojeporavóva ko fila-gui",
+        "snapshot_source_reminder": {
+          "title": "Snapshot origen rehegua momandu’a",
+          "message": "Ko fila ojoaju peteĩ snapshot texto ndive. Eiporavo hag̃ua archivo local, ehecha raẽ comentario de origen.",
+          "source_comment": "Snapshot origen comentario:",
+          "select_file": "Eiporavo archivo local",
+          "cancel": "Eheja",
+          "close_aria": "Emboty snapshot origen momandu’a"
+        },
         "snapshot_details_confirm": {
           "title": "¿Eiporúta umi dato oĩva texto snapshot ojeporavóvape?",
           "message": "Ehecha umi dato ojeguerekóva texto snapshot ojeporavóvape emoĩ hag̃ua ko moñe’ẽme.",

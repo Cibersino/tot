@@ -489,6 +489,14 @@
         "snapshot_select": "Kintun snapshot",
         "snapshot_select_tooltip": "Kintun snapshot weyel tati ruka",
         "snapshot_clear": "Ñamümün snapshot weyel tati ruka",
+        "snapshot_source_reminder": {
+          "title": "Snapshot tüwün nütram mew ramtun",
+          "message": "Tüfa chi ruka snapshot texto mew müley. Local archivo kintual, tüwün nütram küme azümnge.",
+          "source_comment": "Snapshot tüwün nütram:",
+          "select_file": "Dullin archivo local",
+          "cancel": "Ngelay",
+          "close_aria": "Snapshot tüwün nütram mew ramtun nürüfün"
+        },
         "snapshot_details_confirm": {
           "title": "¿Eiporúaymi snapshot texto ajllin ñi kimün?",
           "message": "Fachi chillkatun mew eiporual, snapshot texto ajllin ñi kimün küme azümnge.",

@@ -489,6 +489,14 @@
         "snapshot_select": "Snapshot auswählen",
         "snapshot_select_tooltip": "Wählen Sie einen Text-Snapshot für diese Zeile aus",
         "snapshot_clear": "Entfernen Sie den ausgewählten Text-Snapshot von dieser Zeile",
+        "snapshot_source_reminder": {
+          "title": "Hinweis zur Snapshot-Quelle",
+          "message": "Diese Zeile ist mit einem Text-Snapshot verknüpft. Prüfen Sie dessen Quellenkommentar, bevor Sie eine lokale Datei auswählen.",
+          "source_comment": "Quellenkommentar des Snapshots:",
+          "select_file": "Lokale Datei auswählen",
+          "cancel": "Abbrechen",
+          "close_aria": "Hinweis zur Snapshot-Quelle schließen"
+        },
         "snapshot_details_confirm": {
           "title": "Daten des ausgewählten Text-Snapshots verwenden?",
           "message": "Prüfen Sie die verfügbaren Daten des ausgewählten Text-Snapshots, bevor Sie sie auf diesen Leseeintrag anwenden.",

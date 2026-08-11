@@ -489,6 +489,14 @@
         "snapshot_select": "選擇快照",
         "snapshot_select_tooltip": "為此列選擇文字快照",
         "snapshot_clear": "移除此列所選快照",
+        "snapshot_source_reminder": {
+          "title": "快照來源提示",
+          "message": "此列已關聯文字快照。選擇本機檔案前，請查看其來源註解。",
+          "source_comment": "快照來源註解：",
+          "select_file": "選擇本機檔案",
+          "cancel": "取消",
+          "close_aria": "關閉快照來源提示"
+        },
         "snapshot_details_confirm": {
           "title": "使用所選文字快照中的資料？",
           "message": "在將資料套用至此閱讀項目之前，請查看所選文字快照中可用的資料。",

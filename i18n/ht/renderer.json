@@ -489,6 +489,14 @@
         "snapshot_select": "Chwazi snapshot",
         "snapshot_select_tooltip": "Chwazi yon snapshot tèks pou ranje sa a",
         "snapshot_clear": "Retire snapshot chwazi a nan ranje sa a",
+        "snapshot_source_reminder": {
+          "title": "Rapèl sou sous snapshot la",
+          "message": "Ranje sa a asosye ak yon snapshot tèks. Tcheke kòmantè sous li anvan ou chwazi yon fichye lokal.",
+          "source_comment": "Kòmantè sou sous snapshot la:",
+          "select_file": "Chwazi fichye lokal",
+          "cancel": "Anile",
+          "close_aria": "Fèmen rapèl sou sous snapshot la"
+        },
         "snapshot_details_confirm": {
           "title": "Sèvi ak done snapshot tèks yo chwazi a?",
           "message": "Revize done ki disponib nan snapshot tèks yo chwazi a anvan ou aplike yo sou lekti sa a.",

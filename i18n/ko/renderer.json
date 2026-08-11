@@ -489,6 +489,14 @@
         "snapshot_select": "스냅샷 선택",
         "snapshot_select_tooltip": "이 행에 사용할 텍스트 스냅샷 선택",
         "snapshot_clear": "이 행에서 선택한 스냅샷 제거",
+        "snapshot_source_reminder": {
+          "title": "스냅샷 출처 알림",
+          "message": "이 행은 텍스트 스냅샷과 연결되어 있습니다. 로컬 파일을 선택하기 전에 출처 댓글을 확인하세요.",
+          "source_comment": "스냅샷 출처 댓글:",
+          "select_file": "로컬 파일 선택",
+          "cancel": "취소",
+          "close_aria": "스냅샷 출처 알림 닫기"
+        },
         "snapshot_details_confirm": {
           "title": "선택한 텍스트 스냅샷의 데이터를 사용하시겠습니까?",
           "message": "이 읽기에 적용하기 전에 선택한 텍스트 스냅샷에서 사용할 수 있는 데이터를 검토하세요.",

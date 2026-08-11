@@ -489,6 +489,14 @@
         "snapshot_select": "Seleccionar coso",
         "snapshot_select_tooltip": "Seleccionar un coso de texto para esta fila",
         "snapshot_clear": "Quitar el coso seleccionado de esta fila",
+        "snapshot_source_reminder": {
+          "title": "Recordatorio del origen del coso",
+          "message": "Esta fila está asociada a un coso de texto. Revisa su comentario de origen antes de seleccionar un archivo local.",
+          "source_comment": "Comentario de origen del coso:",
+          "select_file": "Seleccionar archivo local",
+          "cancel": "Cancelar",
+          "close_aria": "Cerrar el recordatorio del origen del coso"
+        },
         "snapshot_details_confirm": {
           "title": "¿Usar los datos del coso de texto seleccionado?",
           "message": "Revisa los datos disponibles del coso seleccionado antes de aplicarlos a esta lectura.",

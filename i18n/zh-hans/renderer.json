@@ -489,6 +489,14 @@
         "snapshot_select": "选择快照",
         "snapshot_select_tooltip": "为此行选择文本快照",
         "snapshot_clear": "移除此行所选快照",
+        "snapshot_source_reminder": {
+          "title": "快照来源提示",
+          "message": "此行关联了一个文本快照。选择本地文件前，请查看其来源评论。",
+          "source_comment": "快照来源评论：",
+          "select_file": "选择本地文件",
+          "cancel": "取消",
+          "close_aria": "关闭快照来源提示"
+        },
         "snapshot_details_confirm": {
           "title": "使用所选文本快照中的数据？",
           "message": "在将数据应用到此阅读项之前，请查看所选文本快照中可用的数据。",
