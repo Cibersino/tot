@@ -589,14 +589,23 @@ body.is-resizing {
 }
 
 .snapshot-details-confirm-time-values > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  display: contents;
+}
+
+.snapshot-details-confirm-time-values {
+  grid-template-columns: max-content max-content;
+  justify-content: center;
+  align-items: baseline;
+  column-gap: 12px;
 }
 
 .snapshot-details-confirm-name-values dt,
 .snapshot-details-confirm-time-values dt {
   margin: 0;
+}
+
+.snapshot-details-confirm-time-values dt {
+  justify-self: end;
 }
 
 .snapshot-details-confirm-name-values dd,
@@ -613,7 +622,7 @@ body.is-resizing {
 .snapshot-details-confirm-time-values dd {
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
-  text-align: end;
+  text-align: start;
 }
 
 .snapshot-details-confirm-name-values dd.is-empty {
