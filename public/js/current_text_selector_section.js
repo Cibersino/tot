@@ -354,7 +354,9 @@
     if (previewSpoilerText) {
       const label = tRenderer('renderer.main.reading_tools.preview_spoiler');
       previewSpoilerText.textContent = label;
-      if (previewSpoilerToggleLabel) previewSpoilerToggleLabel.title = label;
+      if (previewSpoilerToggleLabel) {
+        previewSpoilerToggleLabel.title = tRenderer('renderer.main.tooltips.preview_spoiler');
+      }
       if (previewSpoilerToggle) {
         previewSpoilerToggle.setAttribute('aria-label', label);
       }

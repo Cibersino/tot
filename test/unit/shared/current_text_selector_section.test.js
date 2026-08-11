@@ -259,11 +259,18 @@ test('Spoiler uses its label as the sole tooltip target', () => {
 
   harness.api.applyTranslations({
     tRenderer(key) {
-      return key === 'renderer.main.reading_tools.preview_spoiler' ? 'Spoiler' : key;
+      if (key === 'renderer.main.reading_tools.preview_spoiler') return 'Spoiler';
+      if (key === 'renderer.main.tooltips.preview_spoiler') {
+        return 'Show or hide the end of the preview';
+      }
+      return key;
     },
   });
 
-  assert.equal(harness.elements.previewSpoilerToggleLabel.title, 'Spoiler');
+  assert.equal(
+    harness.elements.previewSpoilerToggleLabel.title,
+    'Show or hide the end of the preview',
+  );
   assert.equal(harness.elements.previewSpoilerToggle.title, undefined);
   assert.equal(harness.elements.previewSpoilerToggle.getAttribute('aria-label'), 'Spoiler');
 });

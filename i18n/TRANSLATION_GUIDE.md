@@ -557,13 +557,13 @@ Estados de revisión recomendados:
       "selector_title": {
         "es": "Primera y última parte del texto actual:",
         "en": "First and last part of the current text:"
-        // [PROPÓSITO] Encabezado del preview compacto del texto actual; muestra inicio y final, no el texto completo.
+        // [PROPÓSITO] Encabezado de la vista previa compacta del texto actual; muestra inicio y final, no el texto completo.
         // [CONCEPTO_APP] texto actual
       },
       "selector_empty": {
         "es": "(vacío)",
         "en": "(empty)"
-        // [PROPÓSITO] El preview compacto del texto actual no tiene texto que mostrar. En otras palabras, no hay texto actual cargado en la app.
+        // [PROPÓSITO] La vista previa compacta del texto actual no tiene texto que mostrar. En otras palabras, no hay texto actual cargado en la app.
         // [CONCEPTO_APP] texto actual
       },
       "reading_tools": {
@@ -576,7 +576,7 @@ Estados de revisión recomendados:
         "preview_spoiler": {
           "es": "Spoiler",
           "en": "Spoiler"
-          // [PROPÓSITO] Control para ocultar el segmento final del preview del texto actual y evitar revelar contenido. Layout estrecho.
+          // [PROPÓSITO] Control para ocultar el segmento final de la vista previa del texto actual y evitar revelar contenido. Layout estrecho.
           // [CONCEPTO_APP] texto actual
         }
       },
@@ -785,6 +785,12 @@ Estados de revisión recomendados:
           "en": "Append clipboard text to the end of the current text"
           // [PROPÓSITO] Agrega el texto del portapapeles al final del texto actual desde un nuevo párrafo.
           // [CONCEPTO_APP] texto actual; agregar al texto actual
+        },
+        "preview_spoiler": {
+          "es": "Mostrar u ocultar el final de la vista previa",
+          "en": "Show or hide the end of the preview"
+          // [PROPÓSITO] Ayuda contextual del control Spoiler; explica que alterna la visibilidad del segmento final de la vista previa del texto actual.
+          // [CONCEPTO_APP] texto actual; vista previa
         },
         "clipboard_repeat_count": {
           "es": "Repeticiones de pegado",

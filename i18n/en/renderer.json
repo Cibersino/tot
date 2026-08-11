@@ -50,6 +50,7 @@
         "text_extraction_abort": "Abort extraction",
         "overwrite_clipboard": "Replace the current text with clipboard text",
         "append_clipboard": "Append clipboard text to the end of the current text",
+        "preview_spoiler": "Show or hide the end of the preview",
         "clipboard_repeat_count": "Paste repetitions",
         "edit": "Open Text Editor",
         "clear": "Clear current text",
