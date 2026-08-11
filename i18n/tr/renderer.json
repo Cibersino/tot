@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Kalan",
         "enlace": "Bağlantı",
-        "comentario": "",
+        "comentario": "Y+S",
         "acciones": "Eylemler",
         "header_tooltips": {
           "tiempo": "Tahmini okuma süresi",
           "percent": "Tamamlanma yüzdesi",
-          "falta": "Tahmini kalan süre"
+          "falta": "Tahmini kalan süre",
+          "comentario": "Yorum ve metin snapshot'ı"
         },
         "tooltips": {
           "file_select": "Yerel dosya seç",

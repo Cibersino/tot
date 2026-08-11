@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Qhipa",
         "enlace": "Link",
-        "comentario": "",
+        "comentario": "R+S",
         "acciones": "Ruwanakuna",
         "header_tooltips": {
           "tiempo": "Ñawiriy pacha chaninchasqa",
           "percent": "Paqarisqa pachakmanta",
-          "falta": "Qhipa pacha chaninchasqa"
+          "falta": "Qhipa pacha chaninchasqa",
+          "comentario": "Rimay y qillqa snapshot"
         },
         "tooltips": {
           "file_select": "Local archivota akllay",

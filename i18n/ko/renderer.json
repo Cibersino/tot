@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "남음",
         "enlace": "링크",
-        "comentario": "",
+        "comentario": "댓+스",
         "acciones": "작업",
         "header_tooltips": {
           "tiempo": "예상 읽기 시간",
           "percent": "완료 비율",
-          "falta": "예상 남은 시간"
+          "falta": "예상 남은 시간",
+          "comentario": "댓글 및 텍스트 스냅샷"
         },
         "tooltips": {
           "file_select": "로컬 파일 선택",

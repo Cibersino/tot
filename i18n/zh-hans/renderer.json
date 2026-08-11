@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "剩余",
         "enlace": "链接",
-        "comentario": "",
+        "comentario": "评+快",
         "acciones": "操作",
         "header_tooltips": {
           "tiempo": "预计阅读时间",
           "percent": "已完成百分比",
-          "falta": "预计剩余时间"
+          "falta": "预计剩余时间",
+          "comentario": "评论和文本快照"
         },
         "tooltips": {
           "file_select": "选择本地文件",

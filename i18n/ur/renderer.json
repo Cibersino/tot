@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "باقی",
         "enlace": "لنک",
-        "comentario": "",
+        "comentario": "ت+ا",
         "acciones": "اعمال",
         "header_tooltips": {
           "tiempo": "مطالعے کا تخمینی وقت",
           "percent": "مکمل شدہ فیصد",
-          "falta": "تخمینی باقی وقت"
+          "falta": "تخمینی باقی وقت",
+          "comentario": "تبصرہ اور متن کا اسنیپ شاٹ"
         },
         "tooltips": {
           "file_select": "مقامی فائل منتخب کریں",

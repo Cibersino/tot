@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Falta",
         "enlace": "Link ou caminho local",
-        "comentario": "",
+        "comentario": "C+S",
         "acciones": "Ações",
         "header_tooltips": {
           "tiempo": "Tempo estimado de leitura",
           "percent": "Percentagem concluída",
-          "falta": "Tempo restante estimado"
+          "falta": "Tempo restante estimado",
+          "comentario": "Comentário e snapshot de texto"
         },
         "tooltips": {
           "file_select": "Selecionar arquivo local",

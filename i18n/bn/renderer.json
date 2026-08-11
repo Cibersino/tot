@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "বাকি",
         "enlace": "লিংক",
-        "comentario": "",
+        "comentario": "ম+স",
         "acciones": "ক্রিয়া",
         "header_tooltips": {
           "tiempo": "আনুমানিক পড়ার সময়",
           "percent": "সম্পন্নের শতাংশ",
-          "falta": "আনুমানিক অবশিষ্ট সময়"
+          "falta": "আনুমানিক অবশিষ্ট সময়",
+          "comentario": "মন্তব্য ও টেক্সট স্ন্যাপশট"
         },
         "tooltips": {
           "file_select": "স্থানীয় ফাইল নির্বাচন করুন",

@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Tan rete",
         "enlace": "Lyen",
-        "comentario": "",
+        "comentario": "K+S",
         "acciones": "Aksyon",
         "header_tooltips": {
           "tiempo": "Tan lekti estime",
           "percent": "Pousantaj fini",
-          "falta": "Tan ki rete estime"
+          "falta": "Tan ki rete estime",
+          "comentario": "Kòmantè ak snapshot tèks"
         },
         "tooltips": {
           "file_select": "Chwazi fichye lokal",

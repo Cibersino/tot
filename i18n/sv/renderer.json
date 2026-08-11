@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Kvar",
         "enlace": "Länk",
-        "comentario": "",
+        "comentario": "K+T",
         "acciones": "Åtgärder",
         "header_tooltips": {
           "tiempo": "Beräknad lästid",
           "percent": "Slutförd procentandel",
-          "falta": "Beräknad återstående tid"
+          "falta": "Beräknad återstående tid",
+          "comentario": "Kommentar och textsnapshot"
         },
         "tooltips": {
           "file_select": "Välj lokal fil",

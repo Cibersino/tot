@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Geratzen",
         "enlace": "Esteka",
-        "comentario": "",
+        "comentario": "I+S",
         "acciones": "Ekintzak",
         "header_tooltips": {
           "tiempo": "Irakurketa-denbora estimatua",
           "percent": "Osatutako ehunekoa",
-          "falta": "Geratzen den denbora estimatua"
+          "falta": "Geratzen den denbora estimatua",
+          "comentario": "Iruzkina eta testu-snapshot"
         },
         "tooltips": {
           "file_select": "Hautatu fitxategi lokala",

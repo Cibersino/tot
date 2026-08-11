@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Sisa",
         "enlace": "Tautan",
-        "comentario": "",
+        "comentario": "K+S",
         "acciones": "Aksi",
         "header_tooltips": {
           "tiempo": "Perkiraan waktu membaca",
           "percent": "Persentase selesai",
-          "falta": "Perkiraan waktu tersisa"
+          "falta": "Perkiraan waktu tersisa",
+          "comentario": "Komentar dan snapshot teks"
         },
         "tooltips": {
           "file_select": "Pilih file lokal",

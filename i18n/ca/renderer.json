@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Queda",
         "enlace": "Enllaç",
-        "comentario": "",
+        "comentario": "C+I",
         "acciones": "Accions",
         "header_tooltips": {
           "tiempo": "Temps de lectura estimat",
           "percent": "Percentatge completat",
-          "falta": "Temps estimat restant"
+          "falta": "Temps estimat restant",
+          "comentario": "Comentari i instantània de text"
         },
         "tooltips": {
           "file_select": "Selecciona un fitxer local",

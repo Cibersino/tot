@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Còn lại",
         "enlace": "Liên kết",
-        "comentario": "",
+        "comentario": "B+L",
         "acciones": "Hành động",
         "header_tooltips": {
           "tiempo": "Thời gian đọc ước tính",
           "percent": "Phần trăm đã hoàn thành",
-          "falta": "Thời gian còn lại ước tính"
+          "falta": "Thời gian còn lại ước tính",
+          "comentario": "Bình luận và bản lưu văn bản"
         },
         "tooltips": {
           "file_select": "Chọn tệp cục bộ",

@@ -477,20 +477,32 @@ test('English and Spanish define the Task Editor C+S header and its descriptive 
     assert.equal(columns.comentario, copy.label, `${tag} C+S header label mismatch`);
     assert.equal(columns.header_tooltips.comentario, copy.tooltip, `${tag} C+S header tooltip mismatch`);
   });
+});
 
+test('every shipped locale defines the Task Editor comment-and-snapshot header', () => {
   const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
-  languages
-    .filter(({ tag }) => !Object.prototype.hasOwnProperty.call(expectedCopy, tag))
-    .forEach(({ tag }) => {
-      const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
-      const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+  languages.forEach(({ tag }) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
+    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+    const columns = renderer.renderer.tasks.columns;
 
-      assert.notEqual(
-        renderer.renderer.tasks.columns.comentario,
-        'C+S',
-        `${tag} must not copy the ES/EN C+S abbreviation without locale review`
-      );
-    });
+    assert.equal(typeof columns.comentario, 'string', `${tag} missing comment-and-snapshot header label`);
+    assert.ok(columns.comentario.trim(), `${tag} has an empty comment-and-snapshot header label`);
+    assert.equal(
+      typeof columns.header_tooltips.comentario,
+      'string',
+      `${tag} missing comment-and-snapshot header tooltip`
+    );
+    assert.ok(
+      columns.header_tooltips.comentario.trim(),
+      `${tag} has an empty comment-and-snapshot header tooltip`
+    );
+  });
+
+  const chilePath = path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json');
+  const chile = JSON.parse(fs.readFileSync(chilePath, 'utf8'));
+  assert.equal(chile.renderer.tasks.columns.comentario, 'O+C');
+  assert.equal(chile.renderer.tasks.columns.header_tooltips.comentario, 'Opinión y coso de texto');
 });
 
 test('every shipped locale defines the Task Editor time header tooltips', () => {

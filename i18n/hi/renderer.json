@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "शेष",
         "enlace": "लिंक",
-        "comentario": "",
+        "comentario": "टि+स",
         "acciones": "कार्रवाइयाँ",
         "header_tooltips": {
           "tiempo": "अनुमानित पठन समय",
           "percent": "पूर्ण प्रतिशत",
-          "falta": "अनुमानित शेष समय"
+          "falta": "अनुमानित शेष समय",
+          "comentario": "टिप्पणी और टेक्स्ट स्नैपशॉट"
         },
         "tooltips": {
           "file_select": "स्थानीय फ़ाइल चुनें",

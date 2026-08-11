@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Petu",
         "enlace": "Link",
-        "comentario": "",
+        "comentario": "N+S",
         "acciones": "Küzawtuwe",
         "header_tooltips": {
           "tiempo": "Rakiduam wirin antü",
           "percent": "Completado porcentaje",
-          "falta": "Rakiduam petu antü"
+          "falta": "Rakiduam petu antü",
+          "comentario": "Nütram ka snapshot"
         },
         "tooltips": {
           "file_select": "Dullin archivo local",

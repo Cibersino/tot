@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "باقي",
         "enlace": "الرابط",
-        "comentario": "",
+        "comentario": "ت+ل",
         "acciones": "الإجراءات",
         "header_tooltips": {
           "tiempo": "وقت القراءة المقدر",
           "percent": "النسبة المئوية المكتملة",
-          "falta": "الوقت المتبقي المقدر"
+          "falta": "الوقت المتبقي المقدر",
+          "comentario": "تعليق ولقطة نصية"
         },
         "tooltips": {
           "file_select": "اختيار ملف محلي",

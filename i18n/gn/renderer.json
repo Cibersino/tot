@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Hembýva",
         "enlace": "Link",
-        "comentario": "",
+        "comentario": "C+S",
         "acciones": "Tembiapo",
         "header_tooltips": {
           "tiempo": "Aravo jehaipyre hag̃ua",
           "percent": "Porcentaje oñemohu’ãva",
-          "falta": "Aravo hembýva jepapa hag̃ua"
+          "falta": "Aravo hembýva jepapa hag̃ua",
+          "comentario": "Comentario ha texto snapshot"
         },
         "tooltips": {
           "file_select": "Eiporavo archivo local",

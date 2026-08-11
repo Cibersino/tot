@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "باقی",
         "enlace": "پیوند",
-        "comentario": "",
+        "comentario": "ن+ا",
         "acciones": "کنش‌ها",
         "header_tooltips": {
           "tiempo": "زمان تقریبی مطالعه",
           "percent": "درصد تکمیل‌شده",
-          "falta": "زمان باقی‌ماندهٔ تقریبی"
+          "falta": "زمان باقی‌ماندهٔ تقریبی",
+          "comentario": "نظر و اسنپ‌شات متن"
         },
         "tooltips": {
           "file_select": "انتخاب فایل محلی",

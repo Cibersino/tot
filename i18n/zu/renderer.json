@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Esele",
         "enlace": "Isixhumanisi",
-        "comentario": "",
+        "comentario": "P+S",
         "acciones": "Izenzo",
         "header_tooltips": {
           "tiempo": "Isikhathi sokufunda esilinganisiwe",
           "percent": "Iphesenti eliqediwe",
-          "falta": "Isikhathi esisele esilinganisiwe"
+          "falta": "Isikhathi esisele esilinganisiwe",
+          "comentario": "Ukuphawula ne-snapshot yombhalo"
         },
         "tooltips": {
           "file_select": "Khetha ifayela lendawo",

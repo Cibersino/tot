@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Restzeit",
         "enlace": "Link",
-        "comentario": "",
+        "comentario": "K+S",
         "acciones": "Aktionen",
         "header_tooltips": {
           "tiempo": "Geschätzte Lesezeit",
           "percent": "Abgeschlossener Prozentsatz",
-          "falta": "Geschätzte Restzeit"
+          "falta": "Geschätzte Restzeit",
+          "comentario": "Kommentar und Text-Snapshot"
         },
         "tooltips": {
           "file_select": "Lokale Datei auswählen",

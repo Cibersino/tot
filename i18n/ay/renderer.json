@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Qhipa",
         "enlace": "Link",
-        "comentario": "",
+        "comentario": "C+S",
         "acciones": "Lurañanaka",
         "header_tooltips": {
           "tiempo": "Jakhthapit ullaña pacha",
           "percent": "Phuqhata porcentaje",
-          "falta": "Jakhthapit qhipa pacha"
+          "falta": "Jakhthapit qhipa pacha",
+          "comentario": "Comentario ukat texto snapshot"
         },
         "tooltips": {
           "file_select": "Local archivo ajlliña",

@@ -465,12 +465,13 @@
         "percent": "%",
         "falta": "Toe",
         "enlace": "Hononga",
-        "comentario": "",
+        "comentario": "K+H",
         "acciones": "Ngā mahi",
         "header_tooltips": {
           "tiempo": "Te wā pānui e whakaarotia ana",
           "percent": "Ōrau kua oti",
-          "falta": "Te wā e toe ana kua whakaarotia"
+          "falta": "Te wā e toe ana kua whakaarotia",
+          "comentario": "Kōrero me te hopunga kuputuhi"
         },
         "tooltips": {
           "file_select": "Tīpakohia he kōnae paetata",
