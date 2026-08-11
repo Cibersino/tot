@@ -356,7 +356,6 @@
       previewSpoilerText.textContent = label;
       if (previewSpoilerToggleLabel) previewSpoilerToggleLabel.title = label;
       if (previewSpoilerToggle) {
-        previewSpoilerToggle.title = label;
         previewSpoilerToggle.setAttribute('aria-label', label);
       }
     }

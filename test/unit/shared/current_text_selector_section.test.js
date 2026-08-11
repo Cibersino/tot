@@ -253,3 +253,17 @@ test('clipboard repeat commits the canonical value on blur and Enter', () => {
   assert.equal(input.value, '1');
   assert.equal(input.classList.contains('is-invalid'), false);
 });
+
+test('Spoiler uses its label as the sole tooltip target', () => {
+  const harness = createHarness();
+
+  harness.api.applyTranslations({
+    tRenderer(key) {
+      return key === 'renderer.main.reading_tools.preview_spoiler' ? 'Spoiler' : key;
+    },
+  });
+
+  assert.equal(harness.elements.previewSpoilerToggleLabel.title, 'Spoiler');
+  assert.equal(harness.elements.previewSpoilerToggle.title, undefined);
+  assert.equal(harness.elements.previewSpoilerToggle.getAttribute('aria-label'), 'Spoiler');
+});

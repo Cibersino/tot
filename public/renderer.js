@@ -661,9 +661,6 @@ function applyTranslations() {
   applyAriaLabel(btnEditPreset, 'renderer.main.tooltips.edit_preset');
   applyAriaLabel(btnDeletePreset, 'renderer.main.tooltips.delete_preset');
   applyAriaLabel(btnResetDefaultPresets, 'renderer.main.tooltips.reset_presets');
-  // Floating Stopwatch toggle
-  const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
-  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window');
   // Section titles
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title');
   if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title');
@@ -678,7 +675,6 @@ function applyTranslations() {
   const togglePrecisoLabel = document.querySelector('.toggle-wrapper .toggle-label');
   if (togglePrecisoLabel) {
     togglePrecisoLabel.textContent = tRenderer('renderer.main.results.precise_mode');
-    togglePrecisoLabel.title = tRenderer('renderer.main.results.precise_tooltip');
     const toggleWrapper = togglePrecisoLabel.closest('.toggle-wrapper');
     if (toggleWrapper) {
       toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip');
@@ -704,6 +700,7 @@ function applyTranslations() {
   applyAriaLabel(cronoResetBtn, 'renderer.main.aria.crono_reset', { applyTitle: true });
   applyAriaLabel(toggleVF, 'renderer.main.aria.floating_window_toggle');
   applyAriaLabel(vfSwitchWrapper, 'renderer.main.aria.floating_window_group');
+  if (vfSwitchWrapper) vfSwitchWrapper.title = tRenderer('renderer.main.tooltips.flotante_window');
   const iconsCrono = getCronoIcons();
   if (cronoController && typeof cronoController.updateIcons === 'function') {
     cronoController.updateIcons(iconsCrono);
