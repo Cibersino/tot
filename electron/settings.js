@@ -59,6 +59,7 @@ const deriveLangKey = (langTag) => getLangBase(langTag);
 const createDefaultSettings = (language = '') => ({
   language,
   spellcheckEnabled: true,
+  previewSpoilerEnabled: true,
   editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
   presets_by_language: {},
   selected_preset_by_language: {},
@@ -606,6 +607,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - set-language
  * - set-mode-conteo
  * - set-selected-preset
+ * - set-preview-spoiler-enabled
  * - set-spellcheck-enabled
  * - set-editor-font-size-px
  */
@@ -846,6 +848,32 @@ function registerIpc(
       return { ok: true, langKey, name };
     } catch (err) {
       log.error('IPC set-selected-preset failed:', err);
+      throw err;
+    }
+  });
+
+  // set-preview-spoiler-enabled: persists the main-window preview preference
+  ipcMain.handle('set-preview-spoiler-enabled', async (_event, enabled) => {
+    try {
+      if (typeof enabled !== 'boolean') {
+        log.warnOnce(
+          'settings.set-preview-spoiler-enabled.invalid',
+          'set-preview-spoiler-enabled called with non-boolean value (ignored).',
+          { type: typeof enabled }
+        );
+        return { ok: false, error: 'invalid' };
+      }
+
+      const settings = getSettings();
+      if (settings.previewSpoilerEnabled === enabled) {
+        return { ok: true, enabled };
+      }
+      const nextSettings = cloneSettingsForMutation(settings);
+      nextSettings.previewSpoilerEnabled = enabled;
+      saveSettingsStrict(nextSettings);
+      return { ok: true, enabled };
+    } catch (err) {
+      log.error('IPC set-preview-spoiler-enabled failed:', err);
       throw err;
     }
   });

@@ -69,7 +69,8 @@ function createElement(id, tagName = 'div') {
       if (listeners.blur) listeners.blur({});
     },
     dispatch(type, event = {}) {
-      if (listeners[type]) listeners[type](event);
+      if (listeners[type]) return listeners[type](event);
+      return undefined;
     },
     setAttribute(name, value) {
       attributes[name] = String(value);
@@ -179,6 +180,24 @@ function createHarness({ languageDirection = 'ltr' } = {}) {
   };
 }
 
+function bindSelectorActions(api, onPreviewSpoilerEnabledChange) {
+  const noop = () => {};
+  api.bindActions({
+    onTextExtraction: noop,
+    onTextExtractionAbort: noop,
+    onOverwriteClipboard: noop,
+    onAppendClipboard: noop,
+    onOpenEditor: noop,
+    onClearText: noop,
+    onLoadSnapshot: noop,
+    onSaveSnapshot: noop,
+    onNewTask: noop,
+    onLoadTask: noop,
+    onReadingSpeedTest: noop,
+    onPreviewSpoilerEnabledChange,
+  });
+}
+
 test('empty preview direction follows UI fallback instead of placeholder script', () => {
   const harness = createHarness({ languageDirection: 'rtl' });
 
@@ -273,6 +292,35 @@ test('Spoiler uses its label as the sole tooltip target', () => {
   );
   assert.equal(harness.elements.previewSpoilerToggle.title, undefined);
   assert.equal(harness.elements.previewSpoilerToggle.getAttribute('aria-label'), 'Spoiler');
+});
+
+test('Spoiler applies saved state and restores the saved state when persistence fails', async () => {
+  const harness = createHarness();
+  const toggle = harness.elements.previewSpoilerToggle;
+
+  harness.api.renderPreview('abcdefghij');
+  harness.api.setPreviewSpoilerEnabled(false);
+  assert.equal(toggle.checked, false);
+  assert.equal(harness.elements.textPreview.childNodes.length, 1);
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
+
+  let rejectSave;
+  bindSelectorActions(harness.api, () => new Promise((_resolve, reject) => {
+    rejectSave = reject;
+  }));
+
+  toggle.checked = true;
+  const pendingChange = toggle.dispatch('change');
+  assert.equal(toggle.disabled, true);
+  rejectSave(new Error('disk full'));
+  await pendingChange;
+
+  assert.equal(toggle.checked, false);
+  assert.equal(toggle.disabled, false);
+  assert.equal(harness.elements.textPreview.childNodes.length, 1);
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
 });
 
 test('every shipped root locale and the es-cl overlay define the Spoiler tooltip', () => {

@@ -81,6 +81,7 @@
   let editorLaunchPending = false;
   let lastPreviewText = '';
   let lastPreviewEmptyText = '';
+  let previewSpoilerSavePending = false;
 
   // =============================================================================
   // Helpers
@@ -98,6 +99,13 @@
     if (!btnEdit) return;
     const locked = selectorInteractionLocked || editorLaunchPending;
     setControlInteractionLocked(btnEdit, locked);
+  }
+
+  function applyPreviewSpoilerToggleControlState() {
+    setControlInteractionLocked(
+      previewSpoilerToggle,
+      selectorInteractionLocked || previewSpoilerSavePending
+    );
   }
 
   // Clipboard repeat helpers
@@ -274,6 +282,14 @@
     element.addEventListener('click', handler);
   }
 
+  function bindRequiredChangeAction(element, actionName, handler) {
+    if (!element) return;
+    if (typeof handler !== 'function') {
+      throw new Error(`[current-text-selector-section] Invalid handler for ${actionName}`);
+    }
+    element.addEventListener('change', handler);
+  }
+
   // Initialization helpers
 
   function initializeClipboardRepeatInput() {
@@ -294,12 +310,10 @@
     });
   }
 
-  function initializePreviewSpoilerToggle() {
-    if (!previewSpoilerToggle) return;
-    previewSpoilerToggle.checked = true;
-    previewSpoilerToggle.addEventListener('change', () => {
-      renderPreviewFromState();
-    });
+  function setPreviewSpoilerEnabled(enabled) {
+    if (!previewSpoilerToggle || typeof enabled !== 'boolean') return;
+    previewSpoilerToggle.checked = enabled;
+    renderPreviewFromState();
   }
 
   // =============================================================================
@@ -375,6 +389,7 @@
     onNewTask,
     onLoadTask,
     onReadingSpeedTest,
+    onPreviewSpoilerEnabledChange,
   } = {}) {
     if (actionsBound) return;
 
@@ -394,16 +409,39 @@
       bindRequiredAction(element, actionName, handler);
     });
 
+    bindRequiredChangeAction(
+      previewSpoilerToggle,
+      'preview-spoiler',
+      async () => {
+        const nextEnabled = previewSpoilerToggle.checked;
+        const previousEnabled = !nextEnabled;
+        renderPreviewFromState();
+        previewSpoilerSavePending = true;
+        applyPreviewSpoilerToggleControlState();
+        try {
+          await onPreviewSpoilerEnabledChange(nextEnabled);
+        } catch (err) {
+          log.error('Preview spoiler setting persistence failed; restoring previous value:', err);
+          previewSpoilerToggle.checked = previousEnabled;
+          renderPreviewFromState();
+        } finally {
+          previewSpoilerSavePending = false;
+          applyPreviewSpoilerToggleControlState();
+        }
+      }
+    );
+
     actionsBound = true;
   }
 
   function setInteractionLocked(locked) {
     selectorInteractionLocked = !!locked;
     selectorControls.forEach((control) => {
-      if (control === btnEdit) return;
+      if (control === btnEdit || control === previewSpoilerToggle) return;
       setControlInteractionLocked(control, selectorInteractionLocked);
     });
     applyEditControlState();
+    applyPreviewSpoilerToggleControlState();
   }
 
   function setEditorLaunchPending(pending) {
@@ -423,7 +461,6 @@
   }
 
   initializeClipboardRepeatInput();
-  initializePreviewSpoilerToggle();
 
   window.CurrentTextSelectorSection = {
     applyTranslations,
@@ -432,6 +469,7 @@
     renderPreview,
     setEditorLaunchPending,
     setInteractionLocked,
+    setPreviewSpoilerEnabled,
   };
 })();
 

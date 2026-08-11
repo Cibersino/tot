@@ -96,6 +96,21 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
   assert.deepEqual(writes[0].value, normalized);
 });
 
+test('fresh settings include an enabled preview Spoiler preference', () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness();
+
+  const normalized = settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+
+  assert.equal(normalized.previewSpoilerEnabled, true);
+  assert.equal(harness.getStoredValue().previewSpoilerEnabled, true);
+});
+
 test('saveSettings normalizes language-scoped buckets and trims selected preset names', () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({});
@@ -291,6 +306,45 @@ test('broadcastSettingsUpdated includes textTimeCalculatorWin in the fixed targe
       payload: { language: 'en' },
     },
   ]);
+});
+
+test('set-preview-spoiler-enabled strictly saves the main-window preference without broadcasting', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness();
+  const ipcMain = createIpcMainDouble();
+  const sentPayloads = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+    }),
+  });
+
+  const result = await ipcMain.invoke('set-preview-spoiler-enabled', false);
+
+  assert.deepEqual(result, { ok: true, enabled: false });
+  assert.equal(settings.getSettings().previewSpoilerEnabled, false);
+  assert.equal(harness.getStoredValue().previewSpoilerEnabled, false);
+  assert.deepEqual(sentPayloads, []);
+
+  const invalidResult = await ipcMain.invoke('set-preview-spoiler-enabled', 'false');
+  assert.deepEqual(invalidResult, { ok: false, error: 'invalid' });
+  assert.equal(harness.getStoredValue().previewSpoilerEnabled, false);
 });
 
 test('registerIpc does not publish settings-updated or mutate persisted settings when strict save fails', async () => {

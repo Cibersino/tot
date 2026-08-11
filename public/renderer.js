@@ -103,7 +103,8 @@ if (!currentTextSelectorSection
   || typeof currentTextSelectorSection.getClipboardRepeatCount !== 'function'
   || typeof currentTextSelectorSection.renderPreview !== 'function'
   || typeof currentTextSelectorSection.setEditorLaunchPending !== 'function'
-  || typeof currentTextSelectorSection.setInteractionLocked !== 'function') {
+  || typeof currentTextSelectorSection.setInteractionLocked !== 'function'
+  || typeof currentTextSelectorSection.setPreviewSpoilerEnabled !== 'function') {
   throw new Error('[renderer] CurrentTextSelectorSection unavailable; cannot continue');
 }
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
@@ -1128,6 +1129,7 @@ async function runStartupOrchestrator() {
       settingsCache = {};
       settingsSnapshot = settingsCache;
     }
+    currentTextSelectorSection.setPreviewSpoilerEnabled(settingsCache.previewSpoilerEnabled);
 
     // Load and apply renderer translations
     try {
@@ -2571,6 +2573,12 @@ function startRendererBootstrap() {
     onNewTask: handleNewTask,
     onLoadTask: handleLoadTask,
     onReadingSpeedTest: handleOpenReadingSpeedTest,
+    onPreviewSpoilerEnabledChange: async (enabled) => {
+      const result = await window.electronAPI.setPreviewSpoilerEnabled(enabled);
+      if (!result || result.ok !== true) {
+        throw new Error('setPreviewSpoilerEnabled failed.');
+      }
+    },
   });
   textTimeCalculatorLauncher.bindActions({
     onOpenCalculator: handleOpenTextTimeCalculator,
