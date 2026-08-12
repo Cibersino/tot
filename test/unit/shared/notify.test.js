@@ -281,7 +281,7 @@ test('notify toasts expose semantic state without inline presentation', () => {
   assert.equal(harness.pendingTimers.length, 1);
 });
 
-test('toast stylesheet owns the agreed visual contract and the Arial font change', () => {
+test('toast stylesheet owns the modal-safe visual contract and the Arial font change', () => {
   const stylesheet = fs.readFileSync(path.resolve(__dirname, '../../../public/toasts.css'), 'utf8');
 
   assert.match(stylesheet, /--tot-toast-background:\s*#fff2cf/);
@@ -296,7 +296,7 @@ test('toast stylesheet owns the agreed visual contract and the Arial font change
   assert.match(stylesheet, /--tot-toast-radius:\s*8px/);
   assert.match(stylesheet, /--tot-toast-transition:\s*0\.2s/);
   assert.match(stylesheet, /--tot-toast-translate-y:\s*6px/);
-  assert.match(stylesheet, /--tot-toast-z-index:\s*990/);
+  assert.match(stylesheet, /--tot-toast-z-index:\s*1111/);
   assert.doesNotMatch(stylesheet, /Segoe UI|Tahoma/);
   assert.match(stylesheet, /\.tot-toast\[data-state="visible"\]/);
 });

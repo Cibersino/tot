@@ -23,7 +23,7 @@
   /* Motion and layering */
   --tot-toast-transition: 0.2s;
   --tot-toast-translate-y: 6px;
-  --tot-toast-z-index: 990;
+  --tot-toast-z-index: 1111;
 }
 
 /* Shared toast container */
