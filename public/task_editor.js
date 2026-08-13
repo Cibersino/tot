@@ -56,8 +56,13 @@ const {
 let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
 
-const { loadRendererTranslations, tRenderer, applyWindowLanguageAttributes } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer || !applyWindowLanguageAttributes) {
+const {
+  loadRendererTranslations,
+  tRenderer,
+  msgRenderer,
+  applyWindowLanguageAttributes,
+} = window.RendererI18n || {};
+if (!loadRendererTranslations || !tRenderer || !msgRenderer || !applyWindowLanguageAttributes) {
   throw new Error('[task-editor] RendererI18n unavailable; cannot continue');
 }
 
@@ -88,13 +93,19 @@ const btnTaskLoadLibrary = document.getElementById('btnTaskLoadLibrary');
 const tableBody = document.getElementById('taskTableBody');
 
 // Table columns
-const thTexto = document.getElementById('thTexto');
 const thTiempo = document.getElementById('thTiempo');
 const thPercent = document.getElementById('thPercent');
 const thFalta = document.getElementById('thFalta');
 const thEnlace = document.getElementById('thEnlace');
 const thComentario = document.getElementById('thComentario');
 const thAcciones = document.getElementById('thAcciones');
+const thTextoLabel = document.getElementById('thTextoLabel');
+const thTiempoLabel = document.getElementById('thTiempoLabel');
+const thPercentLabel = document.getElementById('thPercentLabel');
+const thFaltaLabel = document.getElementById('thFaltaLabel');
+const thEnlaceLabel = document.getElementById('thEnlaceLabel');
+const thComentarioLabel = document.getElementById('thComentarioLabel');
+const thAccionesLabel = document.getElementById('thAccionesLabel');
 const taskTable = document.getElementById('taskTable');
 const taskColGroup = document.getElementById('taskColGroup');
 const taskTableWrap = document.querySelector('.task-table-wrap');
@@ -909,16 +920,35 @@ function deriveRowTextFromPath(filePath) {
     : next;
 }
 
-function buildActionButton(iconName, titleKey, onClick, { className = 'btn-standard btn-standard--square' } = {}) {
-  const title = tr(titleKey);
+function buildActionButton(iconName, nameKey, onClick, { className = 'btn-standard btn-standard--square' } = {}) {
+  const name = tr(nameKey);
   const btn = rendererIcons.createIconButton({
     iconName,
     className,
-    title,
-    ariaLabel: title,
+    ariaLabel: name,
   });
+  btn.setAttribute('data-tot-tooltip', name);
   btn.addEventListener('click', onClick);
   return btn;
+}
+
+function renderTechnicalValueDescription(container, template, token, value) {
+  const placeholder = `{${token}}`;
+  const placeholderIndex = template.indexOf(placeholder);
+  const prefix = document.createElement('span');
+  const technicalValue = document.createElement('bdi');
+  const suffix = document.createElement('span');
+
+  container.textContent = '';
+  prefix.textContent = placeholderIndex >= 0 ? template.slice(0, placeholderIndex) : template;
+  technicalValue.setAttribute('dir', 'ltr');
+  technicalValue.textContent = value;
+  suffix.textContent = placeholderIndex >= 0
+    ? template.slice(placeholderIndex + placeholder.length)
+    : '';
+  container.appendChild(prefix);
+  container.appendChild(technicalValue);
+  container.appendChild(suffix);
 }
 
 function renderRow(row) {
@@ -1037,23 +1067,23 @@ function renderRow(row) {
   enlaceInput.addEventListener('blur', () => {
     setTaskFieldInvalidState(enlaceInput, false);
   });
-  const linkBrowseTitle = tr('renderer.tasks.columns.tooltips.file_select');
+  const linkBrowseName = tr('renderer.tasks.columns.names.file_select');
   const enlaceSelectBtn = rendererIcons.createIconButton({
     iconName: 'folder',
     className: 'btn-standard btn-standard--square',
-    title: linkBrowseTitle,
-    ariaLabel: linkBrowseTitle,
+    ariaLabel: linkBrowseName,
   });
+  enlaceSelectBtn.setAttribute('data-tot-tooltip', linkBrowseName);
   enlaceSelectBtn.addEventListener('click', () => {
     selectFileForRow(row, { textoInput, enlaceInput }).catch((err) => log.error('selectFileForRow failed:', err));
   });
-  const linkTitle = tr('renderer.tasks.columns.tooltips.link_open');
+  const linkName = tr('renderer.tasks.columns.names.link_open');
   const enlaceBtn = rendererIcons.createIconButton({
     iconName: 'open-target',
     className: 'btn-standard btn-standard--square',
-    title: linkTitle,
-    ariaLabel: linkTitle,
+    ariaLabel: linkName,
   });
+  enlaceBtn.setAttribute('data-tot-tooltip', linkName);
   enlaceBtn.addEventListener('click', async () => {
     const raw = enlaceInput.value;
     const api = getTaskEditorApi('openTaskLink');
@@ -1089,25 +1119,41 @@ function renderRow(row) {
   commentActions.className = 'cell-actions';
   const snapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath || '');
   if (snapshotRelPath) {
-    const snapshotBtn = buildActionButton(
-      'task-text-snapshot-load',
-      'renderer.tasks.columns.tooltips.snapshot_load',
-      () => {
-        loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
-      }
+    const snapshotName = tr('renderer.tasks.columns.names.snapshot_load');
+    const snapshotBtn = rendererIcons.createIconButton({
+      iconName: 'task-text-snapshot-load',
+      className: 'btn-standard btn-standard--square',
+      ariaLabel: snapshotName,
+    });
+    const snapshotDescription = document.createElement('span');
+    snapshotDescription.id = `taskSnapshotDescription-${row.id}`;
+    snapshotDescription.className = 'task-editor-accessible-description';
+    renderTechnicalValueDescription(
+      snapshotDescription,
+      tr('renderer.tasks.columns.descriptions.snapshot_path'),
+      'path',
+      snapshotRelPath
     );
-    const snapshotTitle = tr('renderer.tasks.columns.tooltips.snapshot_load');
-    snapshotBtn.title = `${snapshotTitle} ${snapshotRelPath}`.trim();
-    snapshotBtn.setAttribute('aria-label', snapshotBtn.title);
+    snapshotBtn.setAttribute('aria-describedby', snapshotDescription.id);
+    snapshotBtn.setAttribute(
+      'data-tot-tooltip',
+      msgRenderer('renderer.tasks.columns.tooltips.snapshot_load_with_path', {
+        path: `\u2068${snapshotRelPath}\u2069`,
+      })
+    );
+    snapshotBtn.addEventListener('click', () => {
+      loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
+    });
     commentActions.appendChild(snapshotBtn);
+    commentActions.appendChild(snapshotDescription);
   }
-  const commentButtonTitle = tr('renderer.tasks.columns.tooltips.comment');
+  const commentButtonName = tr('renderer.tasks.columns.names.comment');
   const commentBtn = rendererIcons.createIconButton({
     iconName: 'task-comment',
     className: 'btn-standard btn-standard--square',
-    title: commentButtonTitle,
-    ariaLabel: commentButtonTitle,
+    ariaLabel: commentButtonName,
   });
+  commentBtn.setAttribute('data-tot-tooltip', commentButtonName);
   commentBtn.addEventListener('click', () => {
     pendingCommentRowId = row.id;
     pendingCommentSnapshotRelPath = snapshotRelPath;
@@ -1123,14 +1169,14 @@ function renderRow(row) {
   const actionsWrap = document.createElement('div');
   actionsWrap.className = 'cell-actions';
 
-  const btnUp = buildActionButton('arrow-up', 'renderer.tasks.columns.tooltips.move_up', () => moveRow(row.id, -1), {
+  const btnUp = buildActionButton('arrow-up', 'renderer.tasks.columns.names.move_up', () => moveRow(row.id, -1), {
     className: 'btn-standard btn-standard--half-width',
   });
-  const btnDown = buildActionButton('arrow-down', 'renderer.tasks.columns.tooltips.move_down', () => moveRow(row.id, 1), {
+  const btnDown = buildActionButton('arrow-down', 'renderer.tasks.columns.names.move_down', () => moveRow(row.id, 1), {
     className: 'btn-standard btn-standard--half-width',
   });
-  const btnDelete = buildActionButton('trash', 'renderer.tasks.columns.tooltips.delete_row', () => deleteRow(row.id));
-  const btnSaveLib = buildActionButton('task-row-save', 'renderer.tasks.columns.tooltips.library_row_save', () => {
+  const btnDelete = buildActionButton('trash', 'renderer.tasks.columns.names.delete_row', () => deleteRow(row.id));
+  const btnSaveLib = buildActionButton('task-row-save', 'renderer.tasks.columns.names.library_row_save', () => {
     pendingLibraryRowId = row.id;
     openModal(includeCommentModal, includeCommentYes);
   });
@@ -1525,27 +1571,26 @@ async function applyTaskEditorTranslations() {
   if (btnTaskAddFiles) btnTaskAddFiles.textContent = tr('renderer.tasks.add_files_button');
   if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.open_library_button');
 
-  if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto');
-  if (thComentario) {
-    thComentario.textContent = tr('renderer.tasks.columns.comentario');
-    thComentario.title = tr('renderer.tasks.columns.header_tooltips.comentario');
-  }
-  if (thTiempo) {
-    thTiempo.textContent = tr('renderer.tasks.columns.tiempo');
-    thTiempo.title = tr('renderer.tasks.columns.header_tooltips.tiempo');
-  }
-  if (thPercent) {
-    thPercent.textContent = tr('renderer.tasks.columns.percent');
-    thPercent.title = tr('renderer.tasks.columns.header_tooltips.percent');
-  }
-  if (thFalta) {
-    thFalta.textContent = tr('renderer.tasks.columns.falta');
-    thFalta.title = tr('renderer.tasks.columns.header_tooltips.falta');
-  }
-  if (thEnlace) thEnlace.textContent = tr('renderer.tasks.columns.enlace');
-  if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones');
+  if (thTextoLabel) thTextoLabel.textContent = tr('renderer.tasks.columns.texto');
+  if (thEnlaceLabel) thEnlaceLabel.textContent = tr('renderer.tasks.columns.enlace');
+  if (thAccionesLabel) thAccionesLabel.textContent = tr('renderer.tasks.columns.acciones');
+  [
+    [thComentario, thComentarioLabel, 'comentario'],
+    [thTiempo, thTiempoLabel, 'tiempo'],
+    [thPercent, thPercentLabel, 'percent'],
+    [thFalta, thFaltaLabel, 'falta'],
+  ].forEach(([header, label, key]) => {
+    if (!header || !label) return;
+    label.textContent = tr(`renderer.tasks.columns.${key}`);
+    const expandedName = tr(`renderer.tasks.columns.header_names.${key}`);
+    header.setAttribute('aria-label', expandedName);
+    header.setAttribute('data-tot-tooltip', expandedName);
+  });
 
   if (commentTitle) commentTitle.textContent = tr('renderer.tasks.comentario_modal.comment_title');
+  if (commentClose) {
+    commentClose.setAttribute('aria-label', tr('renderer.tasks.comentario_modal.close_aria'));
+  }
   if (commentInput) {
     commentInput.setAttribute('placeholder', tr('renderer.tasks.comentario_modal.comment_placeholder'));
     commentInput.setAttribute('aria-label', tr('renderer.tasks.comentario_modal.comment_title'));
@@ -1554,16 +1599,15 @@ async function applyTaskEditorTranslations() {
   if (commentCancel) commentCancel.textContent = tr('renderer.tasks.guardar_lectura_modal.cancel');
   if (commentSnapshotSelect) {
     commentSnapshotSelect.textContent = tr('renderer.tasks.comentario_modal.snapshot_select');
-    commentSnapshotSelect.title = tr('renderer.tasks.comentario_modal.snapshot_select_tooltip');
-    commentSnapshotSelect.setAttribute('aria-label', commentSnapshotSelect.title || commentSnapshotSelect.textContent || '');
+    commentSnapshotSelect.removeAttribute('aria-label');
   }
   if (commentSnapshotClear) {
-    commentSnapshotClear.title = tr('renderer.tasks.comentario_modal.snapshot_clear');
-    commentSnapshotClear.setAttribute('aria-label', commentSnapshotClear.title || '');
+    const snapshotClearName = tr('renderer.tasks.comentario_modal.snapshot_clear');
+    commentSnapshotClear.setAttribute('aria-label', snapshotClearName);
+    commentSnapshotClear.setAttribute('data-tot-tooltip', snapshotClearName);
     rendererIcons.applyIconToElement(commentSnapshotClear, 'unlink', {
       preserveContent: false,
-      title: commentSnapshotClear.title,
-      ariaLabel: commentSnapshotClear.title,
+      ariaLabel: snapshotClearName,
     });
   }
 
@@ -1587,12 +1631,11 @@ async function applyTaskEditorTranslations() {
     );
   }
   if (snapshotSourceReminderClose) {
-    snapshotSourceReminderClose.title = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.close_aria');
-    snapshotSourceReminderClose.setAttribute('aria-label', snapshotSourceReminderClose.title || '');
+    const closeName = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.close_aria');
+    snapshotSourceReminderClose.setAttribute('aria-label', closeName);
     rendererIcons.applyIconToElement(snapshotSourceReminderClose, 'close', {
       preserveContent: false,
-      title: snapshotSourceReminderClose.title,
-      ariaLabel: snapshotSourceReminderClose.title,
+      ariaLabel: closeName,
     });
   }
 
@@ -1627,24 +1670,30 @@ async function applyTaskEditorTranslations() {
     snapshotDetailsConfirmKeep.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.keep');
   }
   if (snapshotDetailsConfirmClose) {
-    snapshotDetailsConfirmClose.title = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.close_aria');
-    snapshotDetailsConfirmClose.setAttribute('aria-label', snapshotDetailsConfirmClose.title || '');
+    const closeName = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.close_aria');
+    snapshotDetailsConfirmClose.setAttribute('aria-label', closeName);
     rendererIcons.applyIconToElement(snapshotDetailsConfirmClose, 'close', {
       preserveContent: false,
-      title: snapshotDetailsConfirmClose.title,
-      ariaLabel: snapshotDetailsConfirmClose.title,
+      ariaLabel: closeName,
     });
   }
   updateSnapshotDetailsConfirmationDisplay();
   updateSnapshotDetailsConfirmationApplyState();
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.biblioteca.library_title');
+  if (libraryClose) libraryClose.setAttribute('aria-label', tr('renderer.tasks.biblioteca.close_aria'));
   if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.biblioteca.search');
   if (librarySearchInput) {
     librarySearchInput.setAttribute('placeholder', tr('renderer.tasks.biblioteca.search_placeholder'));
   }
 
   if (includeCommentTitle) includeCommentTitle.textContent = tr('renderer.tasks.guardar_lectura_modal.library_save_title');
+  if (includeCommentClose) {
+    includeCommentClose.setAttribute(
+      'aria-label',
+      tr('renderer.tasks.guardar_lectura_modal.close_aria')
+    );
+  }
   if (includeCommentText) includeCommentText.textContent = tr('renderer.tasks.guardar_lectura_modal.library_save_question');
   if (includeCommentYes) includeCommentYes.textContent = tr('renderer.tasks.guardar_lectura_modal.yes');
   if (includeCommentNo) includeCommentNo.textContent = tr('renderer.tasks.guardar_lectura_modal.no');

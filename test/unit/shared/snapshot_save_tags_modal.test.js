@@ -338,11 +338,10 @@ function createHarness({
       },
       SnapshotTagCatalog: snapshotTagCatalog,
       RendererIcons: {
-        createIconButton({ iconName = '', className = '', title = '', ariaLabel = '' } = {}) {
+        createIconButton({ iconName = '', className = '', ariaLabel = '' } = {}) {
           const button = createElement('', 'button');
           button.className = className;
           if (iconName) button.setAttribute('data-tot-icon', iconName);
-          if (title) button.title = title;
           if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
           return button;
         },
@@ -533,7 +532,7 @@ test('snapshot save tags modal keeps snapshot-save wording by default', async ()
   assert.equal(harness.elements.snapshotSaveTagsManageButton.title, undefined);
   assert.equal(
     harness.elements.snapshotSaveTagsManageButton.getAttribute('aria-label'),
-    'Manage snapshot tags'
+    null
   );
   assert.equal(harness.elements.snapshotSaveIncludeCountLabel.textContent, 'Include word count');
   assert.equal(
@@ -727,7 +726,11 @@ test('snapshot tag manager renders the restore action as a reset icon with its h
   assert.ok(restoreButton);
   assert.equal(restoreButton.className, 'btn-standard snapshot-tag-manager-restore-button');
   assert.equal(restoreButton.getAttribute('data-tot-icon'), 'reset-small');
-  assert.equal(restoreButton.title, 'Restore hidden defaults');
+  assert.equal(
+    restoreButton.getAttribute('data-tot-tooltip'),
+    'Restore hidden defaults'
+  );
+  assert.equal(restoreButton.title, undefined);
   assert.equal(restoreButton.textContent, '(1)');
 
   restoreButton.dispatch('click');

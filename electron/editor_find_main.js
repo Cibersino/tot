@@ -656,11 +656,6 @@ function handleFindBeforeInput(event, input) {
     runEditorShortcutAction('onResetTextSize');
     return;
   }
-
-  if (isEscape(input)) {
-    event.preventDefault();
-    closeFindUi({ restoreFocus: true });
-  }
 }
 
 function onEditorWindowWillClose() {

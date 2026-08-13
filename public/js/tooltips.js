@@ -5,10 +5,9 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Convert native title attributes into the shared authored tooltip treatment.
-// - Preserve accessible names while replacing native tooltip rendering.
-// - Keep dynamic title updates synchronized with authored tooltip content.
-// - Position the shared tooltip for pointer and keyboard interactions.
+// - Display explicit, already-localized visual-tooltip values.
+// - Position the shared visual bubble for pointer and keyboard interactions.
+// - Dismiss and clean up the bubble without changing control semantics.
 // =============================================================================
 
 (() => {
@@ -25,18 +24,17 @@
     throw new Error('[tooltips] document root unavailable');
   }
 
-  if (typeof MutationObserver !== 'function') {
-    log.warn('Authored tooltip enhancement unavailable: MutationObserver missing; native title tooltips remain.');
-    return;
-  }
-
   // =============================================================================
   // Constants
   // =============================================================================
   const TOOLTIP_ATTRIBUTE = 'data-tot-tooltip';
   const TOOLTIP_ID = 'tot-authored-tooltip';
+  const PRESENTER_STATE_KEY = Symbol.for('tot.visual-tooltip-presenter');
   const VIEWPORT_MARGIN = 8;
   const TOOLTIP_GAP = 8;
+
+  if (document[PRESENTER_STATE_KEY]) return;
+  document[PRESENTER_STATE_KEY] = true;
 
   // =============================================================================
   // Shared state
@@ -44,6 +42,7 @@
   let tooltip = null;
   let hoveredElement = null;
   let focusedElement = null;
+  let dismissedElement = null;
 
   // =============================================================================
   // Helpers
@@ -70,7 +69,7 @@
     tooltip = document.createElement('div');
     tooltip.id = TOOLTIP_ID;
     tooltip.className = 'tot-tooltip';
-    tooltip.setAttribute('role', 'tooltip');
+    tooltip.setAttribute('aria-hidden', 'true');
     tooltip.hidden = true;
     document.body.appendChild(tooltip);
     return tooltip;
@@ -96,12 +95,14 @@
   }
 
   function currentTarget() {
-    return focusedElement || hoveredElement;
+    if (isTooltipTarget(focusedElement)) return focusedElement;
+    if (isTooltipTarget(hoveredElement)) return hoveredElement;
+    return null;
   }
 
   function refreshTooltip() {
     const target = currentTarget();
-    if (!target) {
+    if (!target || target === dismissedElement) {
       if (tooltip) tooltip.hidden = true;
       return;
     }
@@ -120,33 +121,14 @@
     positionTooltip(target);
   }
 
-  function captureTitle(element) {
-    if (!element || typeof element.getAttribute !== 'function' || !element.hasAttribute('title')) return;
-
-    const text = normalizeText(element.getAttribute('title'));
-    element.removeAttribute('title');
-
-    if (!text) {
-      element.removeAttribute(TOOLTIP_ATTRIBUTE);
-      if (element === hoveredElement || element === focusedElement) refreshTooltip();
-      return;
-    }
-
-    element.setAttribute(TOOLTIP_ATTRIBUTE, text);
-    if (!element.hasAttribute('aria-label') && !element.hasAttribute('aria-labelledby')) {
-      element.setAttribute('aria-label', text);
-    }
-    if (element === hoveredElement || element === focusedElement) refreshTooltip();
-  }
-
-  function captureTitlesIn(node) {
-    if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
-    captureTitle(node);
-    node.querySelectorAll?.('[title]').forEach(captureTitle);
-  }
-
   function isWithinTarget(target, relatedTarget) {
     return Boolean(target && relatedTarget && target.contains(relatedTarget));
+  }
+
+  function clearDismissalWhenInactive(target) {
+    if (dismissedElement === target && hoveredElement !== target && focusedElement !== target) {
+      dismissedElement = null;
+    }
   }
 
   function clearDetachedTargets() {
@@ -160,6 +142,9 @@
       focusedElement = null;
       targetCleared = true;
     }
+    if (dismissedElement && !document.documentElement.contains(dismissedElement)) {
+      dismissedElement = null;
+    }
 
     if (targetCleared) refreshTooltip();
   }
@@ -170,6 +155,7 @@
   document.addEventListener('pointerover', (event) => {
     const target = findTooltipTarget(event.target);
     if (!target || target === hoveredElement) return;
+    if (dismissedElement && dismissedElement !== target) dismissedElement = null;
     hoveredElement = target;
     refreshTooltip();
   });
@@ -178,12 +164,14 @@
     const target = findTooltipTarget(event.target);
     if (!target || target !== hoveredElement || isWithinTarget(target, event.relatedTarget)) return;
     hoveredElement = null;
+    clearDismissalWhenInactive(target);
     refreshTooltip();
   });
 
   document.addEventListener('focusin', (event) => {
     const target = findTooltipTarget(event.target);
     if (!target) return;
+    if (target !== focusedElement) dismissedElement = null;
     focusedElement = target;
     refreshTooltip();
   });
@@ -192,8 +180,21 @@
     const target = findTooltipTarget(event.target);
     if (!target || target !== focusedElement || isWithinTarget(target, event.relatedTarget)) return;
     focusedElement = null;
+    clearDismissalWhenInactive(target);
     refreshTooltip();
   });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !tooltip || tooltip.hidden) return;
+
+    const target = currentTarget();
+    if (!target) return;
+
+    dismissedElement = target;
+    tooltip.hidden = true;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
 
   window.addEventListener('resize', () => positionTooltip(currentTarget()));
   document.addEventListener('scroll', () => positionTooltip(currentTarget()), true);
@@ -201,29 +202,33 @@
   // =============================================================================
   // Bootstrap
   // =============================================================================
-  const titleObserver = new MutationObserver((records) => {
-    let childListChanged = false;
+  if (typeof MutationObserver === 'function') {
+    const tooltipObserver = new MutationObserver((records) => {
+      let activeValueChanged = false;
+      let childListChanged = false;
 
-    records.forEach((record) => {
-      if (record.type === 'attributes' && record.attributeName === 'title') {
-        captureTitle(record.target);
-      }
-      if (record.type === 'childList') {
-        childListChanged = true;
-        record.addedNodes.forEach(captureTitlesIn);
-      }
+      records.forEach((record) => {
+        if (record.type === 'attributes'
+          && record.attributeName === TOOLTIP_ATTRIBUTE
+          && (record.target === hoveredElement || record.target === focusedElement)) {
+          activeValueChanged = true;
+        }
+        if (record.type === 'childList') childListChanged = true;
+      });
+
+      if (childListChanged) clearDetachedTargets();
+      if (activeValueChanged) refreshTooltip();
     });
 
-    if (childListChanged) clearDetachedTargets();
-  });
-
-  captureTitlesIn(document.documentElement);
-  titleObserver.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['title'],
-    childList: true,
-    subtree: true,
-  });
+    tooltipObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: [TOOLTIP_ATTRIBUTE],
+      childList: true,
+      subtree: true,
+    });
+  } else {
+    log.warn('Visual tooltip mutation refresh and detached-target cleanup unavailable: MutationObserver missing.');
+  }
 })();
 
 // =============================================================================

@@ -310,6 +310,9 @@ function createHarness() {
     'renderer.text_extraction.pdf_options.to_page_label': 'To page',
     'renderer.text_extraction.pdf_options.selected_page_count_label': 'Selected pages: ',
     'renderer.text_extraction.pdf_options.invalid_range': 'Enter a contiguous page range between 1 and {totalPages}.',
+    'renderer.text_extraction.batch_plan.aria.route': 'Extraction route for {file}',
+    'renderer.text_extraction.batch_plan.aria.unit_assignment': 'Unit assignment for {file}',
+    'renderer.text_extraction.batch_plan.aria.unit_name': 'Optional name for unit {index}/{count}',
   };
 
   function toPositiveIntegerOrNull(rawValue) {
@@ -379,11 +382,10 @@ function createHarness() {
         BATCH_UNIT_NAME_MAX: 25,
       },
       RendererIcons: {
-        createIconButton({ iconName, className = '', size = 'md', title = '', ariaLabel = '', type = 'button' } = {}) {
+        createIconButton({ iconName, className = '', size = 'md', ariaLabel = '', type = 'button' } = {}) {
           const button = createElement('', 'button');
           button.type = type;
           button.className = className;
-          if (title) button.title = title;
           if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
           if (iconName) button.setAttribute('data-tot-icon', iconName);
           if (size) button.setAttribute('data-tot-icon-size', size);
@@ -409,6 +411,9 @@ function createHarness() {
               }
               if (Object.prototype.hasOwnProperty.call(nextConfig, 'onChange')) {
                 onChange = nextConfig.onChange;
+              }
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'ariaLabel')) {
+                trigger.setAttribute('aria-label', nextConfig.ariaLabel);
               }
             },
             getValue() {
@@ -436,6 +441,12 @@ function createHarness() {
       RendererI18n: {
         tRenderer(key) {
           return translations[key] || key;
+        },
+        msgRenderer(key, params = {}) {
+          return Object.entries(params).reduce(
+            (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+            translations[key] || key
+          );
         },
       },
       TextExtractionPdfPageSelection: {
@@ -656,6 +667,27 @@ test('batch planning modal keeps each heavy preview under its groupable source i
   assert.match(heavyBRow.innerHTML, /heavy-b_pages_01_12\.pdf/);
   assert.doesNotMatch(heavyBRow.innerHTML, /heavy-a_pages_01_06\.pdf/);
   assert.equal(findNodesByAttributes(heavyARow, { 'data-action': 'assign-input-group' }).length, 1);
+  const routeTrigger = findNodeByAttributes(heavyARow, {
+    'data-action': 'set-input-route',
+    'data-input-id': 'heavy-a',
+  });
+  const unitTrigger = findNodeByAttributes(heavyARow, {
+    'data-action': 'assign-input-group',
+    'data-input-id': 'heavy-a',
+  });
+  const unitNameInput = findNodeByAttributes(body, {
+    'data-action': 'rename-unit',
+    'data-unit-key': 'unit-1',
+  });
+  assert.equal(
+    routeTrigger.getAttribute('aria-label'),
+    'Extraction route for \u2068heavy-a.pdf\u2069'
+  );
+  assert.equal(
+    unitTrigger.getAttribute('aria-label'),
+    'Unit assignment for \u2068heavy-a.pdf\u2069'
+  );
+  assert.equal(unitNameInput.getAttribute('aria-label'), 'Optional name for unit 1/1');
   assert.equal(findNodesByAttributes(heavyBRow, { 'data-action': 'assign-input-group' }).length, 1);
   assert.equal(findNodesByAttributes(heavyARow, { 'data-input-id': 'heavy-a_pages_01_06.pdf' }).length, 0);
 
@@ -1609,8 +1641,9 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
   );
   assert.ok(moveUpButton);
   assert.equal(moveUpButton.getAttribute('data-tot-icon'), 'arrow-up-strong');
-  assert.equal(moveUpButton.title, 'Move up');
   assert.equal(moveUpButton.getAttribute('aria-label'), 'Move up');
+  assert.equal(moveUpButton.getAttribute('data-tot-tooltip'), 'Move up');
+  assert.equal(moveUpButton.title, '');
   assert.match(moveUpButton.className, /btn-standard--square/);
 
   const removeButton = findNodeByAttributes(
@@ -1622,8 +1655,9 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
   );
   assert.ok(removeButton);
   assert.equal(removeButton.getAttribute('data-tot-icon'), 'trash');
-  assert.equal(removeButton.title, 'Remove');
   assert.equal(removeButton.getAttribute('aria-label'), 'Remove');
+  assert.equal(removeButton.getAttribute('data-tot-tooltip'), 'Remove');
+  assert.equal(removeButton.title, '');
   assert.match(removeButton.className, /btn-standard--square/);
 
   const tagsButton = findNodeByAttributes(
@@ -1635,6 +1669,8 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
   );
   assert.ok(tagsButton);
   assert.equal(tagsButton.textContent, 'Tags');
+  assert.equal(tagsButton.getAttribute('aria-label'), null);
+  assert.equal(tagsButton.getAttribute('data-tot-tooltip'), null);
   assert.equal(tagsButton.title, '');
   assert.doesNotMatch(tagsButton.className, /btn-standard--square/);
 

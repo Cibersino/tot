@@ -24,6 +24,10 @@
   if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
     throw new Error('[info-modal-links] RendererIcons unavailable; cannot continue');
   }
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
+    throw new Error('[info-modal-links] RendererI18n.tRenderer unavailable; cannot continue');
+  }
+  const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
   // Helpers
@@ -68,13 +72,12 @@
     panel.className = 'info-media-lightbox-panel';
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
-    panel.setAttribute('aria-label', 'Expanded screenshot preview');
+    panel.setAttribute('aria-label', tRenderer('renderer.info.media_lightbox.title'));
 
     const closeButton = rendererIcons.createIconButton({
       iconName: 'close',
       className: 'btn-standard btn-standard--square info-media-lightbox-close',
-      title: 'Close preview',
-      ariaLabel: 'Close preview',
+      ariaLabel: tRenderer('renderer.info.media_lightbox.close_aria'),
       type: 'button',
     });
     closeButton.setAttribute('data-info-lightbox-close', '1');
@@ -112,6 +115,18 @@
     if (lightboxImageEl) {
       lightboxImageEl.removeAttribute('src');
       lightboxImageEl.alt = '';
+    }
+  }
+
+  function applyTranslations() {
+    if (!lightboxEl) return;
+    const panel = lightboxEl.querySelector('.info-media-lightbox-panel');
+    if (panel) panel.setAttribute('aria-label', tRenderer('renderer.info.media_lightbox.title'));
+    if (lightboxCloseButtonEl) {
+      lightboxCloseButtonEl.setAttribute(
+        'aria-label',
+        tRenderer('renderer.info.media_lightbox.close_aria')
+      );
     }
   }
 
@@ -299,7 +314,8 @@
   }, true);
 
   window.InfoModalLinks = {
-    bindInfoModalLinks
+    applyTranslations,
+    bindInfoModalLinks,
   };
 })();
 

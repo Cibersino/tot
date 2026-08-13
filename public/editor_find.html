@@ -13,7 +13,7 @@
 <body data-expanded="false">
   <div id="findWrap" class="find-wrap" role="search" aria-label="Buscar en el texto">
     <div class="find-row">
-      <button id="findToggle" class="btn-standard btn-standard--square" type="button" title="Mostrar reemplazo"
+      <button id="findToggle" class="btn-standard btn-standard--square" type="button"
         aria-label="Mostrar reemplazo" data-tot-icon="expand"></button>
       <input
         id="findQuery"
@@ -24,12 +24,12 @@
         placeholder="Buscar..."
         aria-label="Buscar en el texto"
       />
-      <button id="findPrev" class="btn-standard btn-standard--half-width" type="button" title="Coincidencia anterior"
+      <button id="findPrev" class="btn-standard btn-standard--half-width" type="button"
         data-tot-icon="arrow-up"></button>
-      <button id="findNext" class="btn-standard btn-standard--half-width" type="button" title="Coincidencia siguiente"
+      <button id="findNext" class="btn-standard btn-standard--half-width" type="button"
         data-tot-icon="arrow-down"></button>
       <span id="findStatus" class="find-status" role="status" aria-live="polite">Escribe para buscar</span>
-      <button id="findClose" class="btn-standard btn-standard--square" type="button" title="Cerrar barra de busqueda"
+      <button id="findClose" class="btn-standard btn-standard--square" type="button"
         data-tot-icon="close"></button>
     </div>
     <div id="replaceRow" class="replace-row" hidden>
@@ -42,8 +42,12 @@
         placeholder="Reemplazar..."
         aria-label="Texto de reemplazo"
       />
-      <button id="findReplaceOne" class="btn-standard" type="button" title="Reemplazar coincidencia actual" disabled>Reemplazar</button>
-      <button id="findReplaceAll" class="btn-standard" type="button" title="Reemplazar todas las coincidencias" disabled>Reemplazar todo</button>
+      <button id="findReplaceOne" class="btn-standard" type="button"
+        aria-describedby="findReplaceOneDescription" disabled>Reemplazar</button>
+      <span id="findReplaceOneDescription" class="editor-find-accessible-description"></span>
+      <button id="findReplaceAll" class="btn-standard" type="button"
+        aria-describedby="findReplaceAllDescription" disabled>Reemplazar todo</button>
+      <span id="findReplaceAllDescription" class="editor-find-accessible-description"></span>
     </div>
   </div>
 

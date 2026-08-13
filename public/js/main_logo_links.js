@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Own main-window brand-logo external link bindings.
 // - Route fixed brand links through the shared electronAPI.openExternalUrl bridge.
-// - Apply translated tooltip/accessibility labels for the clickable brand logos.
+// - Apply translated names and visual-tooltip labels for the clickable brand logos.
 // =============================================================================
 
 (() => {
@@ -26,11 +26,11 @@
   const LOGO_LINK_CONFIG = Object.freeze({
     devLogoLink: Object.freeze({
       url: 'https://totapp.org/',
-      tooltipKey: 'renderer.main.tooltips.cibersino_website',
+      nameKey: 'renderer.main.names.cibersino_website',
     }),
     kofiLogoLink: Object.freeze({
       url: 'https://ko-fi.com/cibersino/',
-      tooltipKey: 'renderer.main.tooltips.cibersino_kofi',
+      nameKey: 'renderer.main.names.cibersino_kofi',
     }),
   });
 
@@ -49,8 +49,8 @@
   function setControlLabel(element, label) {
     if (!element || typeof label !== 'string' || !label.trim()) return;
     const normalizedLabel = label.trim();
-    element.title = normalizedLabel;
     element.setAttribute('aria-label', normalizedLabel);
+    element.setAttribute('data-tot-tooltip', normalizedLabel);
   }
 
   // =============================================================================
@@ -68,7 +68,7 @@
     Object.entries(LOGO_LINK_CONFIG).forEach(([id, config]) => {
       const element = getLogoControl(id);
       if (!element) return;
-      const translatedLabel = tRenderer(config.tooltipKey);
+      const translatedLabel = tRenderer(config.nameKey);
       setControlLabel(element, translatedLabel);
     });
   }

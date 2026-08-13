@@ -117,6 +117,9 @@ function createHarness() {
           ? attributes[name]
           : null;
       },
+      removeAttribute(name) {
+        delete attributes[name];
+      },
       querySelector(selector) {
         if (selector === '.modal-header button') return this.fallbackFocus;
         return null;
@@ -144,7 +147,9 @@ function createHarness() {
     'taskSummaryTotalLabel', 'taskSummaryTotalValue', 'taskSummaryLeftLabel',
     'taskSummaryLeftValue', 'btnTaskAddRow', 'btnTaskAddFiles', 'btnTaskLoadLibrary',
     'taskTableBody', 'thTexto', 'thTiempo', 'thPercent', 'thFalta', 'thEnlace',
-    'thComentario', 'thAcciones', 'taskTable', 'taskColGroup',
+    'thComentario', 'thAcciones', 'thTextoLabel', 'thTiempoLabel', 'thPercentLabel',
+    'thFaltaLabel', 'thEnlaceLabel', 'thComentarioLabel', 'thAccionesLabel',
+    'taskTable', 'taskColGroup',
     'commentModal', 'commentBackdrop', 'commentClose', 'commentCancel', 'commentSave',
     'commentInput', 'commentTitle', 'commentSnapshotSelect', 'commentSnapshotClear',
     'commentSnapshotPath', 'snapshotSourceReminderModal', 'snapshotSourceReminderBackdrop',
@@ -167,6 +172,15 @@ function createHarness() {
     'includeCommentCancel', 'includeCommentTitle', 'includeCommentText',
   ];
   const elements = Object.fromEntries(ids.map((id) => [id, createElement(id)]));
+  [
+    ['thTexto', 'thTextoLabel'],
+    ['thTiempo', 'thTiempoLabel'],
+    ['thPercent', 'thPercentLabel'],
+    ['thFalta', 'thFaltaLabel'],
+    ['thEnlace', 'thEnlaceLabel'],
+    ['thComentario', 'thComentarioLabel'],
+    ['thAcciones', 'thAccionesLabel'],
+  ].forEach(([headerId, labelId]) => elements[headerId].appendChild(elements[labelId]));
   elements.commentModal.fallbackFocus = elements.commentClose;
   elements.snapshotSourceReminderModal.fallbackFocus = elements.snapshotSourceReminderClose;
   elements.snapshotDetailsConfirmModal.fallbackFocus = elements.snapshotDetailsConfirmClose;
@@ -228,15 +242,28 @@ function createHarness() {
     },
     RendererI18n: {
       async loadRendererTranslations() { resolveTranslationsLoaded(); },
-      tRenderer(key) { return key; },
+      tRenderer(key) {
+        if (key === 'renderer.tasks.columns.descriptions.snapshot_path') {
+          return 'Associated text snapshot path: {path}';
+        }
+        return key;
+      },
+      msgRenderer(key, params = {}) {
+        const template = key === 'renderer.tasks.columns.tooltips.snapshot_load_with_path'
+          ? 'Load text snapshot as current text · Associated path: {path}'
+          : key;
+        return Object.entries(params).reduce(
+          (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+          template
+        );
+      },
       applyWindowLanguageAttributes() {},
     },
     RendererIcons: {
-      createIconButton({ iconName = '', className = '', title = '', ariaLabel = '' } = {}) {
+      createIconButton({ iconName = '', className = '', ariaLabel = '' } = {}) {
         const button = createElement('', 'button');
         button.className = className;
-        button.title = title;
-        button.setAttribute('aria-label', ariaLabel);
+        if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
         button.setAttribute('data-tot-icon', iconName);
         return button;
       },
@@ -433,9 +460,21 @@ test('Task Editor places comment and snapshot controls in the second table colum
 
   assert.equal(cells[1].className, 'task-cell--comment');
   assert.equal(cells[2].className, 'task-cell--time');
+  const commentControls = cells[1]._children[0]._children;
   assert.deepEqual(
-    cells[1]._children[0]._children.map((button) => button.getAttribute('data-tot-icon')),
+    commentControls.map((element) => element.getAttribute('data-tot-icon')).filter(Boolean),
     ['task-text-snapshot-load', 'task-comment']
+  );
+  const snapshotButton = commentControls[0];
+  const snapshotDescription = commentControls[1];
+  assert.equal(snapshotButton.getAttribute('aria-describedby'), snapshotDescription.id);
+  assert.equal(snapshotDescription.className, 'task-editor-accessible-description');
+  assert.equal(snapshotDescription._children[1].tagName, 'bdi');
+  assert.equal(snapshotDescription._children[1].getAttribute('dir'), 'ltr');
+  assert.equal(snapshotDescription._children[1].textContent, '/chapter.json');
+  assert.equal(
+    snapshotButton.getAttribute('data-tot-tooltip'),
+    'Load text snapshot as current text · Associated path: \u2068/chapter.json\u2069'
   );
   assert.equal(cells[2]._children[0].getAttribute('aria-labelledby'), 'thTiempo');
   assert.match(styles, /\.task-table \.task-cell--comment > \.cell-actions\s*\{\s*justify-content: center;\s*\}/);
@@ -443,29 +482,44 @@ test('Task Editor places comment and snapshot controls in the second table colum
   assert.doesNotMatch(styles, /\.task-table td:nth-child\(/);
 });
 
-test('Task Editor assigns localized tooltips to abbreviated headers', async () => {
+test('Task Editor assigns expanded names and visual tooltips to abbreviated headers', async () => {
   const harness = createHarness();
   await harness.waitForTranslations();
 
   assert.equal(harness.elements.thTexto.title, '');
   assert.equal(harness.elements.thComentario.textContent, 'renderer.tasks.columns.comentario');
-  assert.equal(harness.elements.thComentario.title, 'renderer.tasks.columns.header_tooltips.comentario');
-  assert.equal(harness.elements.thTiempo.title, 'renderer.tasks.columns.header_tooltips.tiempo');
-  assert.equal(harness.elements.thPercent.title, 'renderer.tasks.columns.header_tooltips.percent');
-  assert.equal(harness.elements.thFalta.title, 'renderer.tasks.columns.header_tooltips.falta');
+  ['comentario', 'tiempo', 'percent', 'falta'].forEach((column) => {
+    const headerId = {
+      comentario: 'thComentario',
+      tiempo: 'thTiempo',
+      percent: 'thPercent',
+      falta: 'thFalta',
+    }[column];
+    const header = harness.elements[headerId];
+    const expandedNameKey = `renderer.tasks.columns.header_names.${column}`;
+    assert.equal(header.getAttribute('aria-label'), expandedNameKey);
+    assert.equal(header.getAttribute('data-tot-tooltip'), expandedNameKey);
+    assert.equal(header.title, '');
+  });
+  assert.equal(harness.elements.thTexto.getAttribute('aria-label'), null);
+  assert.equal(harness.elements.thTexto.getAttribute('data-tot-tooltip'), null);
   assert.equal(harness.elements.thEnlace.title, '');
+  assert.equal(harness.elements.thEnlace.getAttribute('aria-label'), null);
   assert.equal(harness.elements.thAcciones.title, '');
+  assert.equal(harness.elements.thAcciones.getAttribute('aria-label'), null);
 });
 
-test('English and Spanish define the Task Editor C+S header and its descriptive tooltip', () => {
+test('English and Spanish define Task Editor expanded header names and icon-control names', () => {
   const expectedCopy = {
     en: {
       label: 'C+S',
-      tooltip: 'Comment and text snapshot',
+      headerName: 'Comment and text snapshot',
+      commentName: 'Add a comment or a text snapshot',
     },
     es: {
       label: 'C+S',
-      tooltip: 'Comentario y snapshot de texto',
+      headerName: 'Comentario y snapshot de texto',
+      commentName: 'Agregar un comentario o un snapshot de texto',
     },
   };
 
@@ -475,68 +529,10 @@ test('English and Spanish define the Task Editor C+S header and its descriptive 
     const columns = renderer.renderer.tasks.columns;
 
     assert.equal(columns.comentario, copy.label, `${tag} C+S header label mismatch`);
-    assert.equal(columns.header_tooltips.comentario, copy.tooltip, `${tag} C+S header tooltip mismatch`);
-  });
-});
-
-test('every shipped locale defines the Task Editor comment-and-snapshot header', () => {
-  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
-  languages.forEach(({ tag }) => {
-    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
-    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
-    const columns = renderer.renderer.tasks.columns;
-
-    assert.equal(typeof columns.comentario, 'string', `${tag} missing comment-and-snapshot header label`);
-    assert.ok(columns.comentario.trim(), `${tag} has an empty comment-and-snapshot header label`);
-    assert.equal(
-      typeof columns.header_tooltips.comentario,
-      'string',
-      `${tag} missing comment-and-snapshot header tooltip`
-    );
-    assert.ok(
-      columns.header_tooltips.comentario.trim(),
-      `${tag} has an empty comment-and-snapshot header tooltip`
-    );
-  });
-
-  const chilePath = path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json');
-  const chile = JSON.parse(fs.readFileSync(chilePath, 'utf8'));
-  assert.equal(chile.renderer.tasks.columns.comentario, 'O+C');
-  assert.equal(chile.renderer.tasks.columns.header_tooltips.comentario, 'Opinión y coso de texto');
-});
-
-test('every shipped locale defines the Task Editor time header tooltips', () => {
-  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
-
-  languages.forEach(({ tag }) => {
-    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
-    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
-    const tooltips = renderer.renderer.tasks.columns.header_tooltips;
-
-    assert.equal(typeof tooltips.tiempo, 'string', `${tag} missing time tooltip`);
-    assert.equal(typeof tooltips.percent, 'string', `${tag} missing percentage tooltip`);
-    assert.equal(typeof tooltips.falta, 'string', `${tag} missing remaining-time tooltip`);
-    assert.ok(tooltips.tiempo.trim(), `${tag} has an empty time tooltip`);
-    assert.ok(tooltips.percent.trim(), `${tag} has an empty percentage tooltip`);
-    assert.ok(tooltips.falta.trim(), `${tag} has an empty remaining-time tooltip`);
-  });
-});
-
-test('every shipped locale defines the Task Editor comment-or-snapshot button tooltip', () => {
-  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
-  const expectedBaseCopy = {
-    en: 'Add a comment or a text snapshot',
-    es: 'Agregar un comentario o un snapshot de texto',
-  };
-
-  languages.forEach(({ tag }) => {
-    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
-    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
-    const tooltip = renderer.renderer.tasks.columns.tooltips.comment;
-
-    assert.equal(typeof tooltip, 'string', `${tag} missing comment-or-snapshot tooltip`);
-    assert.ok(tooltip.trim(), `${tag} has an empty comment-or-snapshot tooltip`);
-    if (expectedBaseCopy[tag]) assert.equal(tooltip, expectedBaseCopy[tag]);
+    assert.equal(columns.header_names.comentario, copy.headerName, `${tag} expanded header mismatch`);
+    assert.equal(columns.names.comment, copy.commentName, `${tag} comment-control name mismatch`);
+    assert.match(columns.descriptions.snapshot_path, /\{path\}/);
+    assert.match(columns.tooltips.snapshot_load_with_path, /\{path\}/);
   });
 });
 

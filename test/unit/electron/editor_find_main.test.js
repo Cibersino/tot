@@ -221,6 +221,30 @@ test('editor-find-replace-current rejects unauthorized find-window senders', asy
   }
 });
 
+test('find-window Escape is left for renderer tooltip dismissal or window closure', async () => {
+  const { editorFindMain, findWin, restore } = await setupFindHarness();
+
+  try {
+    let prevented = false;
+    findWin.webContents.emit('before-input-event', {
+      preventDefault() { prevented = true; },
+    }, {
+      type: 'keyDown',
+      control: false,
+      meta: false,
+      alt: false,
+      key: 'Escape',
+      code: 'Escape',
+    });
+
+    assert.equal(prevented, false);
+    assert.equal(findWin.isDestroyed(), false);
+    assert.equal(editorFindMain.getFindWindow(), findWin);
+  } finally {
+    restore();
+  }
+});
+
 test('find window focus reruns the current query on current editor text', async () => {
   const {
     ipcMain,

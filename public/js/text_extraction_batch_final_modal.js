@@ -151,10 +151,10 @@
     const button = rendererIcons.createIconButton({
       iconName: 'open-target',
       className: 'btn-standard btn-standard--square-half',
-      title: label,
       ariaLabel: label,
       type: 'button',
     });
+    button.setAttribute('data-tot-tooltip', label);
     button.setAttribute('data-action', 'reveal-generated-pdf');
     button.setAttribute('data-artifact-path', artifactPath);
     return button;

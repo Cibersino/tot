@@ -31,10 +31,12 @@
   if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
     throw new Error('[text-extraction-batch-planning-modal] RendererIcons unavailable; cannot continue');
   }
-  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
-    throw new Error('[text-extraction-batch-planning-modal] RendererI18n.tRenderer unavailable; cannot continue');
+  if (!window.RendererI18n
+    || typeof window.RendererI18n.tRenderer !== 'function'
+    || typeof window.RendererI18n.msgRenderer !== 'function') {
+    throw new Error('[text-extraction-batch-planning-modal] RendererI18n unavailable; cannot continue');
   }
-  const { tRenderer } = window.RendererI18n;
+  const { tRenderer, msgRenderer } = window.RendererI18n;
   const rendererCombobox = window.RendererCombobox || null;
   if (!rendererCombobox || typeof rendererCombobox.create !== 'function') {
     throw new Error('[text-extraction-batch-planning-modal] RendererCombobox unavailable; cannot continue');
@@ -241,7 +243,6 @@
       ? rendererIcons.createIconButton({
         iconName,
         className,
-        title: accessibleLabel,
         ariaLabel: accessibleLabel,
         type: 'button',
       })
@@ -250,6 +251,7 @@
         textContent: accessibleLabel,
         type: 'button',
       });
+    if (iconName) button.setAttribute('data-tot-tooltip', accessibleLabel);
     button.disabled = disabled === true;
     button.setAttribute('data-action', action);
     if (inputId) {
@@ -419,7 +421,9 @@
       mode: 'select',
       options: routeOptions.map((route) => ({ value: route, label: route.toUpperCase() })),
       value: input.activeRoute,
-      ariaLabel: input.fileName || input.inputId,
+      ariaLabel: msgRenderer('renderer.text_extraction.batch_plan.aria.route', {
+        file: `\u2068${input.fileName}\u2069`,
+      }),
       onChange: (route) => comboboxContext.onRouteChange(input.inputId, route),
     });
     comboboxContext.instances.push(combobox);
@@ -448,7 +452,9 @@
       mode: 'select',
       options: buildUnitOptions(input),
       value: input.groupKey,
-      ariaLabel: input.fileName || input.inputId,
+      ariaLabel: msgRenderer('renderer.text_extraction.batch_plan.aria.unit_assignment', {
+        file: `\u2068${input.fileName}\u2069`,
+      }),
       onChange: (groupKey) => comboboxContext.onUnitChange(input.inputId, groupKey),
     });
     comboboxContext.instances.push(combobox);
@@ -632,7 +638,10 @@
     unitNameInput.setAttribute('data-unit-key', unit.unitKey);
     unitNameInput.maxLength = BATCH_UNIT_NAME_MAX;
     unitNameInput.setAttribute('placeholder', tRenderer('renderer.text_extraction.batch_plan.unit_name_placeholder'));
-    unitNameInput.setAttribute('aria-label', `${unitHeading.textContent} ${tRenderer('renderer.text_extraction.batch_plan.unit_name_placeholder')}`);
+    unitNameInput.setAttribute('aria-label', msgRenderer(
+      'renderer.text_extraction.batch_plan.aria.unit_name',
+      { index: unitIndex + 1, count: unitCount }
+    ));
     appendChildren(headingWrap, [unitHeading, unitNameInput]);
     const headerActions = createDomElement('div', {
       className: 'text-extraction-batch-plan-unit-actions',

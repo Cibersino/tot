@@ -265,6 +265,11 @@ test('PDF options modal returns range selection and keep intent through the publ
   assert.equal(harness.elements.textExtractionPdfOptionsModal.getAttribute('aria-hidden'), 'false');
   assert.equal(harness.elements.textExtractionPdfOptionsModalTitle.textContent, 'PDF options');
   assert.equal(harness.elements.textExtractionPdfOptionsModalFileName.textContent, 'book.pdf');
+  assert.equal(
+    harness.elements.textExtractionPdfOptionsModalFileName.getAttribute('data-tot-tooltip'),
+    'book.pdf'
+  );
+  assert.equal(harness.elements.textExtractionPdfOptionsModalFileName.title, '');
   assert.equal(harness.elements.textExtractionPdfOptionsModalTotalPages.textContent, 'Total pages: 12');
   assert.equal(harness.elements.textExtractionPdfOptionsModalContinue.focusCount, 1);
 
@@ -297,5 +302,14 @@ test('PDF options modal returns range selection and keep intent through the publ
         mode: 'keep',
       },
     }
+  );
+});
+
+test('PDF options markup makes the ellipsized technical filename keyboard reachable', () => {
+  const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/index.html'), 'utf8');
+
+  assert.match(
+    markup,
+    /id="textExtractionPdfOptionsModalFileName"[^>]*tabindex="0"/
   );
 });

@@ -97,7 +97,6 @@
   const SEARCH_NO_RESULTS_KEY = 'renderer.snapshots.search.no_results';
   const SEARCH_CREATE_KEY = 'renderer.snapshots.search.create';
   const MANAGE_BUTTON_LABEL_KEY = 'renderer.snapshots.buttons.manage';
-  const MANAGE_BUTTON_ARIA_KEY = 'renderer.snapshots.manager.title';
   const INCLUDE_COUNT_LABEL_KEY = 'renderer.snapshots.metrics.include_count';
   const INCLUDE_READING_LABEL_KEY = 'renderer.snapshots.metrics.include_reading';
   const SNAPSHOT_NAME_LABEL_KEY = 'renderer.snapshots.labels.name';
@@ -497,7 +496,7 @@
     btnCancel.textContent = tRenderer(resolvedCopy.cancelKey);
     btnClose.setAttribute('aria-label', tRenderer(resolvedCopy.closeAriaKey));
     btnManage.textContent = tRenderer(MANAGE_BUTTON_LABEL_KEY);
-    btnManage.setAttribute('aria-label', tRenderer(MANAGE_BUTTON_ARIA_KEY));
+    btnManage.removeAttribute('aria-label');
     includeCountLabel.textContent = tRenderer(INCLUDE_COUNT_LABEL_KEY);
     includeReadingLabel.textContent = tRenderer(INCLUDE_READING_LABEL_KEY);
     snapshotNameLabel.textContent = tRenderer(SNAPSHOT_NAME_LABEL_KEY);
@@ -620,9 +619,9 @@
         const button = rendererIcons.createIconButton({
           iconName,
           className,
-          title: text,
           ariaLabel: countText && !text.includes(countText) ? `${text} ${countText}` : text,
         });
+        button.setAttribute('data-tot-tooltip', text);
         if (countText) {
           const countLabel = document.createElement('span');
           countLabel.className = 'snapshot-tag-manager-action-count';
@@ -733,7 +732,10 @@
             draftInput.value = draftState.value;
             draftInput.maxLength = SNAPSHOT_TAG_LABEL_MAX_CHARS;
             draftInput.placeholder = tRenderer('renderer.snapshots.manager.new_tag_placeholder');
-            draftInput.setAttribute('aria-label', `${heading.textContent} ${tRenderer('renderer.snapshots.manager.new_tag_placeholder')}`);
+            draftInput.setAttribute(
+              'aria-label',
+              tRenderer('renderer.snapshots.manager.new_tag_input_aria')
+            );
             draftInput.addEventListener('input', () => {
               draftState.value = draftInput.value;
               draftState.errorKey = '';

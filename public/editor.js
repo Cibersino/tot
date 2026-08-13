@@ -123,6 +123,9 @@ const spellcheckToggle = document.getElementById('spellcheckToggle');
 const btnCalc = document.getElementById('btnCalc');
 const calcLabel = document.querySelector('.calc-label');
 const spellcheckLabel = document.querySelector('.spellcheck-label');
+const applyDescription = document.getElementById('editorApplyDescription');
+const autoApplyDescription = document.getElementById('editorAutoApplyDescription');
+const spellcheckDescription = document.getElementById('editorSpellcheckDescription');
 const textSizeControls = document.getElementById('editorTextSizeControls');
 const textSizeLabel = document.getElementById('editorTextSizeLabel');
 const btnTextSizeDecrease = document.getElementById('btnTextSizeDecrease');
@@ -172,6 +175,9 @@ const ctx = {
     btnCalc,
     calcLabel,
     spellcheckLabel,
+    applyDescription,
+    autoApplyDescription,
+    spellcheckDescription,
     textSizeControls,
     textSizeLabel,
     btnTextSizeDecrease,

@@ -229,7 +229,6 @@
       const entry = fields[field];
       const labelText = tRenderer(FIELD_LABEL_KEYS[field]);
       entry.label.textContent = labelText;
-      entry.input.setAttribute('aria-label', labelText);
       entry.output.setAttribute('aria-label', labelText);
     });
   }

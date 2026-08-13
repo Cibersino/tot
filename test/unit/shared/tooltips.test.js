@@ -6,12 +6,17 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
+const tooltipSource = fs.readFileSync(
+  path.resolve(__dirname, '../../../public/js/tooltips.js'),
+  'utf8'
+);
+
 function createHarness({ mutationObserverAvailable = true } = {}) {
   const documentListeners = new Map();
   const windowListeners = new Map();
   const tooltipMeasurementWidths = [];
   const warningCalls = [];
-  let observerCallback = null;
+  const observerCallbacks = [];
 
   function createElement(tagName = 'div') {
     const attributes = {};
@@ -63,18 +68,6 @@ function createHarness({ mutationObserverAvailable = true } = {}) {
         }
         return null;
       },
-      querySelectorAll(selector) {
-        const attribute = /^\[([^\]]+)\]$/.exec(selector)?.[1];
-        const result = [];
-        const visit = (node) => {
-          node._children.forEach((child) => {
-            if (attribute && child.hasAttribute(attribute)) result.push(child);
-            visit(child);
-          });
-        };
-        visit(this);
-        return result;
-      },
       getBoundingClientRect() {
         if (this.id === 'tot-authored-tooltip') {
           const width = this.style.left ? 70 : 120;
@@ -92,7 +85,10 @@ function createHarness({ mutationObserverAvailable = true } = {}) {
   const body = createElement('body');
   documentElement.appendChild(body);
   const button = createElement('button');
-  button.setAttribute('title', 'Open editor');
+  button.setAttribute('aria-label', 'Edit text');
+  button.setAttribute('aria-describedby', 'edit-description');
+  button.setAttribute('data-tot-tooltip', 'Open editor');
+  button.setAttribute('title', 'Unrelated native title');
   body.appendChild(button);
 
   const document = {
@@ -100,7 +96,8 @@ function createHarness({ mutationObserverAvailable = true } = {}) {
     body,
     createElement,
     addEventListener(type, listener) {
-      documentListeners.set(type, listener);
+      if (!documentListeners.has(type)) documentListeners.set(type, []);
+      documentListeners.get(type).push(listener);
     },
   };
   const window = {
@@ -115,12 +112,13 @@ function createHarness({ mutationObserverAvailable = true } = {}) {
       };
     },
     addEventListener(type, listener) {
-      windowListeners.set(type, listener);
+      if (!windowListeners.has(type)) windowListeners.set(type, []);
+      windowListeners.get(type).push(listener);
     },
   };
   class MutationObserver {
     constructor(callback) {
-      observerCallback = callback;
+      observerCallbacks.push(callback);
     }
 
     observe() {}
@@ -130,49 +128,109 @@ function createHarness({ mutationObserverAvailable = true } = {}) {
     window,
     document,
     MutationObserver: mutationObserverAvailable ? MutationObserver : undefined,
-    Node: { ELEMENT_NODE: 1 },
   };
   vm.createContext(sandbox);
-  const source = fs.readFileSync(path.resolve(__dirname, '../../../public/js/tooltips.js'), 'utf8');
-  vm.runInContext(source, sandbox, { filename: 'public/js/tooltips.js' });
+
+  function runPresenter() {
+    vm.runInContext(tooltipSource, sandbox, { filename: 'public/js/tooltips.js' });
+  }
+
+  runPresenter();
 
   return {
     button,
     body,
     tooltipMeasurementWidths,
     warningCalls,
+    createElement,
     dispatch(type, event) {
-      documentListeners.get(type)(event);
+      (documentListeners.get(type) || []).forEach((listener) => listener(event));
     },
-    notifyTitleChange() {
-      observerCallback([{ type: 'attributes', attributeName: 'title', target: button }]);
+    listenerCount(type) {
+      return (documentListeners.get(type) || []).length;
+    },
+    notifyTooltipChange(target = button) {
+      observerCallbacks.forEach((callback) => callback([{
+        type: 'attributes',
+        attributeName: 'data-tot-tooltip',
+        target,
+      }]));
     },
     notifyMutations(records) {
-      observerCallback(records);
+      observerCallbacks.forEach((callback) => callback(records));
     },
+    runPresenter,
   };
 }
 
-test('authored tooltips replace native titles and follow dynamic title changes', () => {
+test('visual tooltip values stay independent from name, description, and native title state', () => {
   const harness = createHarness();
-
-  assert.equal(harness.button.getAttribute('title'), null);
-  assert.equal(harness.button.getAttribute('data-tot-tooltip'), 'Open editor');
-  assert.equal(harness.button.getAttribute('aria-label'), 'Open editor');
 
   harness.dispatch('pointerover', { target: harness.button });
   const tooltip = harness.body._children[1];
   assert.equal(tooltip.hidden, false);
   assert.equal(tooltip.textContent, 'Open editor');
+  assert.equal(tooltip.getAttribute('aria-hidden'), 'true');
+  assert.equal(tooltip.getAttribute('role'), null);
+  assert.equal(harness.button.getAttribute('aria-label'), 'Edit text');
+  assert.equal(harness.button.getAttribute('aria-describedby'), 'edit-description');
+  assert.equal(harness.button.getAttribute('title'), 'Unrelated native title');
 
-  harness.button.setAttribute('title', 'Close editor');
-  harness.notifyTitleChange();
-  assert.equal(harness.button.getAttribute('title'), null);
-  assert.equal(harness.button.getAttribute('data-tot-tooltip'), 'Close editor');
-  assert.equal(tooltip.textContent, 'Close editor');
+  harness.button.setAttribute('data-tot-tooltip', 'Open full editor');
+  harness.notifyTooltipChange();
+  assert.equal(tooltip.textContent, 'Open full editor');
+  assert.equal(harness.button.getAttribute('aria-label'), 'Edit text');
+  assert.equal(harness.button.getAttribute('aria-describedby'), 'edit-description');
+  assert.equal(harness.button.getAttribute('title'), 'Unrelated native title');
+});
 
+test('pointer and keyboard focus independently show and hide the visual bubble', () => {
+  const harness = createHarness();
+
+  harness.dispatch('pointerover', { target: harness.button });
+  const tooltip = harness.body._children[1];
+  assert.equal(tooltip.hidden, false);
   harness.dispatch('pointerout', { target: harness.button, relatedTarget: null });
   assert.equal(tooltip.hidden, true);
+
+  harness.dispatch('focusin', { target: harness.button });
+  assert.equal(tooltip.hidden, false);
+  harness.dispatch('focusout', { target: harness.button, relatedTarget: null });
+  assert.equal(tooltip.hidden, true);
+});
+
+test('first Escape dismisses a visible bubble and a second Escape remains unconsumed', () => {
+  const harness = createHarness();
+  let prevented = false;
+  let propagationStopped = false;
+
+  harness.dispatch('focusin', { target: harness.button });
+  const tooltip = harness.body._children[1];
+  harness.dispatch('keydown', {
+    key: 'Escape',
+    preventDefault() { prevented = true; },
+    stopImmediatePropagation() { propagationStopped = true; },
+  });
+
+  assert.equal(tooltip.hidden, true);
+  assert.equal(prevented, true);
+  assert.equal(propagationStopped, true);
+  assert.equal(harness.button.getAttribute('aria-label'), 'Edit text');
+  assert.equal(harness.button.getAttribute('aria-describedby'), 'edit-description');
+
+  prevented = false;
+  propagationStopped = false;
+  harness.dispatch('keydown', {
+    key: 'Escape',
+    preventDefault() { prevented = true; },
+    stopImmediatePropagation() { propagationStopped = true; },
+  });
+  assert.equal(prevented, false);
+  assert.equal(propagationStopped, false);
+
+  harness.dispatch('focusout', { target: harness.button, relatedTarget: null });
+  harness.dispatch('focusin', { target: harness.button });
+  assert.equal(tooltip.hidden, false);
 });
 
 test('repeated hovers retain the same tooltip width', () => {
@@ -190,47 +248,56 @@ test('repeated hovers retain the same tooltip width', () => {
   assert.deepEqual(harness.tooltipMeasurementWidths, [120, 120]);
 });
 
-test('hides the authored tooltip when its hovered target is removed', () => {
+test('delegated events support dynamically added explicit targets', () => {
   const harness = createHarness();
+  const dynamicButton = harness.createElement('button');
+  dynamicButton.setAttribute('data-tot-tooltip', 'Dynamic action');
+  harness.body.appendChild(dynamicButton);
+
+  harness.dispatch('pointerover', { target: dynamicButton });
+  const tooltip = harness.body._children[2];
+  assert.equal(tooltip.hidden, false);
+  assert.equal(tooltip.textContent, 'Dynamic action');
+});
+
+test('removing a hovered or focused target hides the visual bubble', () => {
+  ['pointerover', 'focusin'].forEach((activationType) => {
+    const harness = createHarness();
+    harness.dispatch(activationType, { target: harness.button });
+    const tooltip = harness.body._children[1];
+    assert.equal(tooltip.hidden, false);
+
+    harness.body.removeChild(harness.button);
+    harness.notifyMutations([{
+      type: 'childList',
+      addedNodes: [],
+      removedNodes: [harness.button],
+    }]);
+
+    assert.equal(tooltip.hidden, true);
+  });
+});
+
+test('repeated initialization does not duplicate presenter listeners or bubbles', () => {
+  const harness = createHarness();
+  const initialPointerListeners = harness.listenerCount('pointerover');
+
+  harness.runPresenter();
+  harness.dispatch('pointerover', { target: harness.button });
+
+  assert.equal(harness.listenerCount('pointerover'), initialPointerListeners);
+  assert.equal(harness.body._children.filter((element) => element.id === 'tot-authored-tooltip').length, 1);
+});
+
+test('pointer and focus presentation remain available without MutationObserver', () => {
+  const harness = createHarness({ mutationObserverAvailable: false });
 
   harness.dispatch('pointerover', { target: harness.button });
   const tooltip = harness.body._children[1];
   assert.equal(tooltip.hidden, false);
-
-  harness.body.removeChild(harness.button);
-  harness.notifyMutations([{
-    type: 'childList',
-    addedNodes: [],
-    removedNodes: [harness.button],
-  }]);
-
-  assert.equal(tooltip.hidden, true);
-});
-
-test('hides the authored tooltip when its focused target is removed', () => {
-  const harness = createHarness();
-
-  harness.dispatch('focusin', { target: harness.button });
-  const tooltip = harness.body._children[1];
-  assert.equal(tooltip.hidden, false);
-
-  harness.body.removeChild(harness.button);
-  harness.notifyMutations([{
-    type: 'childList',
-    addedNodes: [],
-    removedNodes: [harness.button],
-  }]);
-
-  assert.equal(tooltip.hidden, true);
-});
-
-test('leaves native titles in place and warns when MutationObserver is unavailable', () => {
-  const harness = createHarness({ mutationObserverAvailable: false });
-
-  assert.equal(harness.button.getAttribute('title'), 'Open editor');
-  assert.equal(harness.button.getAttribute('data-tot-tooltip'), null);
+  assert.equal(tooltip.textContent, 'Open editor');
   assert.deepEqual(harness.warningCalls, [[
-    'Authored tooltip enhancement unavailable: MutationObserver missing; native title tooltips remain.',
+    'Visual tooltip mutation refresh and detached-target cleanup unavailable: MutationObserver missing.',
   ]]);
 });
 

@@ -439,10 +439,10 @@
 
   function syncAbortButtonUi() {
     if (!btnTextExtractionAbort) return;
-    btnTextExtractionAbort.title = tRenderer('renderer.main.tooltips.text_extraction_abort');
-    const abortAria = tRenderer('renderer.main.aria.text_extraction_abort');
-    if (abortAria) {
-      btnTextExtractionAbort.setAttribute('aria-label', abortAria);
+    const abortName = tRenderer('renderer.main.names.text_extraction_abort');
+    if (abortName) {
+      btnTextExtractionAbort.setAttribute('aria-label', abortName);
+      btnTextExtractionAbort.setAttribute('data-tot-tooltip', abortName);
     }
   }
 
@@ -489,13 +489,14 @@
     if (!textExtractionProcessingFilename) return;
 
     textExtractionProcessingFilename.hidden = !hasFileName;
-    textExtractionProcessingFilename.setAttribute('aria-hidden', hasFileName ? 'false' : 'true');
     const nextFileNameText = hasFileName ? displayedFileName : '';
     if (textExtractionProcessingFilename.textContent !== nextFileNameText) {
       textExtractionProcessingFilename.textContent = nextFileNameText;
     }
-    if (textExtractionProcessingFilename.title !== nextFileNameText) {
-      textExtractionProcessingFilename.title = nextFileNameText;
+    if (hasFileName) {
+      textExtractionProcessingFilename.setAttribute('data-tot-tooltip', nextFileNameText);
+    } else {
+      textExtractionProcessingFilename.removeAttribute('data-tot-tooltip');
     }
   }
 

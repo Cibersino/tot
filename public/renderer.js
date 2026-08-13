@@ -177,6 +177,7 @@ const cronTitle = document.getElementById('cron-title');
 
 const toggleVF = document.getElementById('toggleVF');
 const editorLoader = document.getElementById('editorLoader');
+const editorLoaderStatus = document.getElementById('editorLoaderStatus');
 const startupSplash = document.getElementById('startupSplash');
 const cronoDisplayInput = document.getElementById('cronoDisplay');
 const cronoToggleBtnMain = document.getElementById('cronoToggle');
@@ -627,12 +628,11 @@ const getCronoIcons = () => ({
 
 function applyTranslations() {
   if (!tRenderer) return;
-  const applyAriaLabel = (el, key, { applyTitle = false } = {}) => {
+  const applyAriaLabel = (el, key) => {
     if (!el) return;
     const aria = tRenderer(key);
     if (!aria) return;
     el.setAttribute('aria-label', aria);
-    if (applyTitle) el.title = aria;
   };
   textExtractionStatusUi.applyTranslations({ tRenderer, msgRenderer });
   textExtractionDragDrop.applyTranslations({ tRenderer });
@@ -653,15 +653,27 @@ function applyTranslations() {
   if (infoModalLoading) {
     infoModalLoading.textContent = tRenderer('renderer.info.loading');
   }
+  if (infoModalClose) {
+    infoModalClose.setAttribute('aria-label', tRenderer('renderer.info.close_aria'));
+  }
+  if (window.InfoModalLinks && typeof window.InfoModalLinks.applyTranslations === 'function') {
+    window.InfoModalLinks.applyTranslations();
+  }
+  if (editorLoaderStatus && editorLoader?.classList.contains('visible')) {
+    editorLoaderStatus.textContent = tRenderer('renderer.main.processing.editor_loading');
+  }
   // Presets
-  if (btnNewPreset) btnNewPreset.title = tRenderer('renderer.main.tooltips.new_preset');
-  if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset');
-  if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset');
-  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets');
-  applyAriaLabel(btnNewPreset, 'renderer.main.tooltips.new_preset');
-  applyAriaLabel(btnEditPreset, 'renderer.main.tooltips.edit_preset');
-  applyAriaLabel(btnDeletePreset, 'renderer.main.tooltips.delete_preset');
-  applyAriaLabel(btnResetDefaultPresets, 'renderer.main.tooltips.reset_presets');
+  [
+    [btnNewPreset, 'renderer.main.names.new_preset'],
+    [btnEditPreset, 'renderer.main.names.edit_preset'],
+    [btnDeletePreset, 'renderer.main.names.delete_preset'],
+    [btnResetDefaultPresets, 'renderer.main.names.reset_presets'],
+  ].forEach(([element, key]) => {
+    if (!element) return;
+    const name = tRenderer(key);
+    element.setAttribute('aria-label', name);
+    element.setAttribute('data-tot-tooltip', name);
+  });
   // Section titles
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title');
   if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title');
@@ -678,10 +690,13 @@ function applyTranslations() {
     togglePrecisoLabel.textContent = tRenderer('renderer.main.results.precise_mode');
     const toggleWrapper = togglePrecisoLabel.closest('.toggle-wrapper');
     if (toggleWrapper) {
-      toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip');
+      toggleWrapper.setAttribute('data-tot-tooltip', tRenderer('renderer.main.help.precise_mode'));
     }
   }
-  applyAriaLabel(toggleModoPreciso, 'renderer.main.aria.precise_mode_toggle');
+  const preciseModeDescription = document.getElementById('preciseModeDescription');
+  if (preciseModeDescription) {
+    preciseModeDescription.textContent = tRenderer('renderer.main.help.precise_mode');
+  }
   // Stopwatch: speed label and controls aria-label
   const realWpmLabel = document.querySelector('.realwpm');
   if (realWpmLabel && realWpmLabel.firstChild) {
@@ -697,19 +712,31 @@ function applyTranslations() {
   const cronoResetBtn = document.getElementById('cronoReset');
   const vfSwitchWrapper = document.querySelector('.vf-switch-wrapper');
   applyAriaLabel(cronoDisplayEl, 'renderer.main.aria.crono_display');
-  applyAriaLabel(cronoToggleBtn, 'renderer.main.aria.crono_toggle', { applyTitle: true });
-  applyAriaLabel(cronoResetBtn, 'renderer.main.aria.crono_reset', { applyTitle: true });
-  applyAriaLabel(toggleVF, 'renderer.main.aria.floating_window_toggle');
+  [
+    [cronoToggleBtn, 'renderer.main.names.crono_toggle'],
+    [cronoResetBtn, 'renderer.main.names.crono_reset'],
+  ].forEach(([element, key]) => {
+    if (!element) return;
+    const name = tRenderer(key);
+    element.setAttribute('aria-label', name);
+    element.setAttribute('data-tot-tooltip', name);
+  });
+  applyAriaLabel(toggleVF, 'renderer.main.names.floating_window');
   applyAriaLabel(vfSwitchWrapper, 'renderer.main.aria.floating_window_group');
-  if (vfSwitchWrapper) vfSwitchWrapper.title = tRenderer('renderer.main.tooltips.flotante_window');
+  if (vfSwitchWrapper) {
+    vfSwitchWrapper.setAttribute('data-tot-tooltip', tRenderer('renderer.main.names.floating_window'));
+  }
   const iconsCrono = getCronoIcons();
   if (cronoController && typeof cronoController.updateIcons === 'function') {
     cronoController.updateIcons(iconsCrono);
   }
-  // Help button title
+  // Help button name and visual identification
   if (btnHelp) {
-    const helpTitle = tRenderer('renderer.main.tooltips.help_button');
-    if (helpTitle) btnHelp.setAttribute('title', helpTitle);
+    const helpName = tRenderer('renderer.main.names.help_button');
+    if (helpName) {
+      btnHelp.setAttribute('aria-label', helpName);
+      btnHelp.setAttribute('data-tot-tooltip', helpName);
+    }
   }
 }
 
@@ -1998,12 +2025,20 @@ function initializeDelegatedIntegrations() {
 
 // Text Editor launch state mirrors the pending UI while the Text Editor window opens.
 function showEditorLoader() {
-  if (editorLoader) editorLoader.classList.add('visible');
+  if (editorLoader) {
+    if (editorLoaderStatus) {
+      editorLoaderStatus.textContent = tRenderer('renderer.main.processing.editor_loading');
+    }
+    editorLoader.classList.add('visible');
+  }
   currentTextSelectorSection.setEditorLaunchPending(true);
 }
 
 function hideEditorLoader() {
-  if (editorLoader) editorLoader.classList.remove('visible');
+  if (editorLoader) {
+    editorLoader.classList.remove('visible');
+    if (editorLoaderStatus) editorLoaderStatus.textContent = '';
+  }
   currentTextSelectorSection.setEditorLaunchPending(false);
 }
 

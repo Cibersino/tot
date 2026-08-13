@@ -1223,7 +1223,8 @@ pre#textPreview .preview-fragment--empty {
   font-family: var(--font-reading);
 }
 
-.info-modal-accessible-title {
+.info-modal-accessible-title,
+.main-accessible-description {
   position: absolute;
   width: 1px;
   height: 1px;

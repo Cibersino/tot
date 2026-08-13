@@ -49,8 +49,9 @@
       return;
     }
 
-    button.setAttribute('title', tRenderer('renderer.main.tooltips.text_time_calculator'));
-    button.setAttribute('aria-label', tRenderer('renderer.main.aria.text_time_calculator'));
+    const name = tRenderer('renderer.main.names.text_time_calculator');
+    button.setAttribute('aria-label', name);
+    button.setAttribute('data-tot-tooltip', name);
   }
 
   function bindActions({ onOpenCalculator } = {}) {

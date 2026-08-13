@@ -71,7 +71,9 @@ const statusEl = document.getElementById('findStatus');
 const replaceRowEl = document.getElementById('replaceRow');
 const replaceInputEl = document.getElementById('findReplace');
 const replaceOneEl = document.getElementById('findReplaceOne');
+const replaceOneDescriptionEl = document.getElementById('findReplaceOneDescription');
 const replaceAllEl = document.getElementById('findReplaceAll');
+const replaceAllDescriptionEl = document.getElementById('findReplaceAllDescription');
 
 if (
   !wrapEl ||
@@ -84,7 +86,9 @@ if (
   !replaceRowEl ||
   !replaceInputEl ||
   !replaceOneEl ||
-  !replaceAllEl
+  !replaceOneDescriptionEl ||
+  !replaceAllEl ||
+  !replaceAllDescriptionEl
 ) {
   throw new Error('[editor-find] Missing required DOM elements');
 }
@@ -170,12 +174,12 @@ function applyUiState() {
     preserveContent: false,
   });
 
-  const toggleTitleKey = findState.expanded
-    ? 'renderer.editor.editor_find.collapse_title'
-    : 'renderer.editor.editor_find.expand_title';
-  const toggleTitle = tr(toggleTitleKey);
-  toggleEl.title = toggleTitle;
-  toggleEl.setAttribute('aria-label', toggleTitle);
+  const toggleNameKey = findState.expanded
+    ? 'renderer.editor.editor_find.names.hide_replace'
+    : 'renderer.editor.editor_find.names.show_replace';
+  const toggleName = tr(toggleNameKey);
+  toggleEl.setAttribute('aria-label', toggleName);
+  toggleEl.setAttribute('data-tot-tooltip', toggleName);
 }
 
 async function applyTranslations() {
@@ -193,14 +197,21 @@ async function applyTranslations() {
   replaceOneEl.textContent = tr('renderer.editor.editor_find.replace');
   replaceAllEl.textContent = tr('renderer.editor.editor_find.replace_all');
 
-  prevEl.title = tr('renderer.editor.editor_find.prev_title');
-  nextEl.title = tr('renderer.editor.editor_find.next_title');
-  closeEl.title = tr('renderer.editor.editor_find.close_title');
-  prevEl.setAttribute('aria-label', prevEl.title);
-  nextEl.setAttribute('aria-label', nextEl.title);
-  closeEl.setAttribute('aria-label', closeEl.title);
-  replaceOneEl.title = tr('renderer.editor.editor_find.replace_title');
-  replaceAllEl.title = tr('renderer.editor.editor_find.replace_all_title');
+  [
+    [prevEl, 'renderer.editor.editor_find.names.previous_match'],
+    [nextEl, 'renderer.editor.editor_find.names.next_match'],
+    [closeEl, 'renderer.editor.editor_find.names.close'],
+  ].forEach(([element, key]) => {
+    const name = tr(key);
+    element.setAttribute('aria-label', name);
+    element.setAttribute('data-tot-tooltip', name);
+  });
+  const replaceCurrentHelp = tr('renderer.editor.editor_find.help.replace_current');
+  replaceOneDescriptionEl.textContent = replaceCurrentHelp;
+  replaceOneEl.setAttribute('data-tot-tooltip', replaceCurrentHelp);
+  const replaceAllHelp = tr('renderer.editor.editor_find.help.replace_all');
+  replaceAllDescriptionEl.textContent = replaceAllHelp;
+  replaceAllEl.setAttribute('data-tot-tooltip', replaceAllHelp);
 
   applyUiState();
 }
@@ -354,6 +365,12 @@ replaceAllEl.addEventListener('click', () => {
 });
 
 closeEl.addEventListener('click', () => {
+  findApi.close().catch((err) => log.error('Error closing find window:', err));
+});
+
+window.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  event.preventDefault();
   findApi.close().catch((err) => log.error('Error closing find window:', err));
 });
 

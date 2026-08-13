@@ -56,6 +56,7 @@
   const previewSpoilerToggle = document.getElementById('previewSpoilerToggle');
   const previewSpoilerToggleLabel = document.getElementById('previewSpoilerToggleLabel');
   const previewSpoilerText = document.getElementById('previewSpoilerText');
+  const previewSpoilerDescription = document.getElementById('previewSpoilerDescription');
   const btnTextExtractionAbort = document.getElementById('btnTextExtractionAbort');
 
   const selectorControls = [
@@ -327,53 +328,47 @@
 
     if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title');
     [
-      [btnTextExtraction, 'renderer.main.tooltips.text_extraction'],
-      [btnOverwriteClipboard, 'renderer.main.tooltips.overwrite_clipboard'],
-      [btnAppendClipboard, 'renderer.main.tooltips.append_clipboard'],
-      [btnEdit, 'renderer.main.tooltips.edit'],
-      [btnEmptyMain, 'renderer.main.tooltips.clear'],
-      [btnLoadSnapshot, 'renderer.main.tooltips.snapshot_load'],
-      [btnSaveSnapshot, 'renderer.main.tooltips.snapshot_save'],
-      [btnNewTask, 'renderer.main.tooltips.task_new'],
-      [btnLoadTask, 'renderer.main.tooltips.task_load'],
+      [btnOverwriteClipboard, 'renderer.main.names.overwrite_clipboard'],
+      [btnAppendClipboard, 'renderer.main.names.append_clipboard'],
+      [btnEdit, 'renderer.main.names.edit'],
+      [btnEmptyMain, 'renderer.main.names.clear'],
+      [btnLoadSnapshot, 'renderer.main.names.snapshot_load'],
+      [btnSaveSnapshot, 'renderer.main.names.snapshot_save'],
+      [btnNewTask, 'renderer.main.names.task_new'],
+      [btnLoadTask, 'renderer.main.names.task_load'],
     ].forEach(([element, key]) => {
-      if (element) element.title = tRenderer(key);
+      if (!element) return;
+      const name = tRenderer(key);
+      element.setAttribute('aria-label', name);
+      element.setAttribute('data-tot-tooltip', name);
     });
 
-    [
-      [btnTextExtraction, 'renderer.main.aria.text_extraction'],
-      [btnOverwriteClipboard, 'renderer.main.tooltips.overwrite_clipboard'],
-      [btnAppendClipboard, 'renderer.main.tooltips.append_clipboard'],
-      [btnEdit, 'renderer.main.tooltips.edit'],
-      [btnEmptyMain, 'renderer.main.tooltips.clear'],
-      [btnLoadSnapshot, 'renderer.main.tooltips.snapshot_load'],
-      [btnSaveSnapshot, 'renderer.main.tooltips.snapshot_save'],
-      [btnNewTask, 'renderer.main.tooltips.task_new'],
-      [btnLoadTask, 'renderer.main.tooltips.task_load'],
-    ].forEach(([element, key]) => {
-      if (element) element.setAttribute('aria-label', tRenderer(key));
-    });
+    if (btnTextExtraction) {
+      btnTextExtraction.setAttribute('aria-label', tRenderer('renderer.main.aria.text_extraction'));
+      btnTextExtraction.setAttribute(
+        'data-tot-tooltip',
+        tRenderer('renderer.main.tooltips.text_extraction')
+      );
+    }
 
     if (clipboardRepeatInput) {
-      clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count');
-      clipboardRepeatInput.setAttribute('aria-label', tRenderer('renderer.main.aria.clipboard_repeat_count'));
+      const name = tRenderer('renderer.main.names.clipboard_repeat_count');
+      clipboardRepeatInput.setAttribute('aria-label', name);
+      clipboardRepeatInput.setAttribute('data-tot-tooltip', name);
     }
     if (btnReadingSpeedTest) {
       const label = tRenderer('renderer.main.reading_tools.reading_speed_test');
       if (label) {
-        btnReadingSpeedTest.title = label;
         btnReadingSpeedTest.setAttribute('aria-label', label);
+        btnReadingSpeedTest.setAttribute('data-tot-tooltip', label);
       }
     }
     if (previewSpoilerText) {
       const label = tRenderer('renderer.main.reading_tools.preview_spoiler');
       previewSpoilerText.textContent = label;
-      if (previewSpoilerToggleLabel) {
-        previewSpoilerToggleLabel.title = tRenderer('renderer.main.tooltips.preview_spoiler');
-      }
-      if (previewSpoilerToggle) {
-        previewSpoilerToggle.setAttribute('aria-label', label);
-      }
+      const help = tRenderer('renderer.main.help.preview_spoiler');
+      if (previewSpoilerToggleLabel) previewSpoilerToggleLabel.setAttribute('data-tot-tooltip', help);
+      if (previewSpoilerDescription) previewSpoilerDescription.textContent = help;
     }
   }
 

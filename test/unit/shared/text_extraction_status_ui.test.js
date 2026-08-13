@@ -27,6 +27,14 @@ function createElement(id) {
     setAttribute(name, value) {
       this.attributes[name] = String(value);
     },
+    getAttribute(name) {
+      return Object.prototype.hasOwnProperty.call(this.attributes, name)
+        ? this.attributes[name]
+        : null;
+    },
+    removeAttribute(name) {
+      delete this.attributes[name];
+    },
   };
 }
 
@@ -59,8 +67,7 @@ function createHarness() {
     'renderer.main.processing.current_text_waiting': 'Updating current text...',
     'renderer.main.processing.current_text_recount_waiting': 'Recalculating current-text results...',
     'renderer.main.processing.text_extraction_elapsed': 'Elapsed: ',
-    'renderer.main.tooltips.text_extraction_abort': 'Abort extraction',
-    'renderer.main.aria.text_extraction_abort': 'Abort text extraction',
+    'renderer.main.names.text_extraction_abort': 'Abort extraction',
   };
 
   const sandbox = {
@@ -134,6 +141,22 @@ function createHarness() {
   };
 }
 
+test('translation updates apply the abort control name and visual tooltip explicitly', () => {
+  const harness = createHarness();
+
+  harness.api.applyTranslations();
+
+  assert.equal(
+    harness.elements.btnTextExtractionAbort.getAttribute('aria-label'),
+    'Abort extraction'
+  );
+  assert.equal(
+    harness.elements.btnTextExtractionAbort.getAttribute('data-tot-tooltip'),
+    'Abort extraction'
+  );
+  assert.equal(harness.elements.btnTextExtractionAbort.title, '');
+});
+
 test('prepare state shows row 1 status plus filename and hides elapsed row', () => {
   const harness = createHarness();
 
@@ -154,7 +177,7 @@ test('prepare state shows row 1 status plus filename and hides elapsed row', () 
     'quarterly report.pdf'
   );
   assert.equal(
-    harness.elements.textExtractionProcessingFilename.title,
+    harness.elements.textExtractionProcessingFilename.getAttribute('data-tot-tooltip'),
     'quarterly report.pdf'
   );
   assert.equal(harness.elements.textExtractionProcessingElapsed.hidden, true);
@@ -269,7 +292,7 @@ test('explicit fileName path-like input is constrained to basename before displa
     'mixed-name.docx'
   );
   assert.equal(
-    harness.elements.textExtractionProcessingFilename.title,
+    harness.elements.textExtractionProcessingFilename.getAttribute('data-tot-tooltip'),
     'mixed-name.docx'
   );
 });

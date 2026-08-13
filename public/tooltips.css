@@ -1,6 +1,6 @@
-/* Shared renderer tooltip styles.
+/* Shared renderer visual-tooltip styles.
    Loaded by renderer window documents.
-   Owner boundary: shared authored-tooltip tokens, surface, and hidden-state behavior only. */
+   Owner boundary: presentation tokens, surface, and hidden-state behavior only. */
 
 /* Design tokens */
 :root {

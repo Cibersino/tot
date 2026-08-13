@@ -175,13 +175,12 @@
     const triggerAria = tRenderer('renderer.main.aria.browser_extension');
     const chromeStoreAria = tRenderer('renderer.browser_extension.chrome_store_aria');
 
-    trigger.title = triggerTooltip;
+    trigger.setAttribute('data-tot-tooltip', triggerTooltip);
     trigger.setAttribute('aria-label', triggerAria);
     title.textContent = tRenderer('renderer.browser_extension.title');
     subtitle.textContent = tRenderer('renderer.browser_extension.subtitle');
     availability.textContent = tRenderer('renderer.browser_extension.availability');
     closeButton.setAttribute('aria-label', tRenderer('renderer.browser_extension.close_aria'));
-    chromeStoreLink.title = chromeStoreAria;
     chromeStoreLink.setAttribute('aria-label', chromeStoreAria);
   }
 

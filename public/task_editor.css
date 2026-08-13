@@ -92,6 +92,19 @@ body {
   color: var(--text-color);
 }
 
+.task-editor-accessible-description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Shared focus indicator for native and scripted Task Editor controls. */
 :where(button, input, textarea, [role="separator"][tabindex]):focus-visible {
   outline: 2px solid var(--focus-ring);

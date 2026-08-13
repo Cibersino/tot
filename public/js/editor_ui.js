@@ -41,6 +41,9 @@
       btnCalc,
       calcLabel,
       spellcheckLabel,
+      applyDescription,
+      autoApplyDescription,
+      spellcheckDescription,
       textSizeControls,
       textSizeLabel,
       btnTextSizeDecrease,
@@ -100,15 +103,24 @@
         const calcText = tr('renderer.editor.calc_button');
         btnCalc.setAttribute('data-label', calcText);
         btnCalc.setAttribute('aria-label', calcText);
+        const applyHelp = tr('renderer.editor.help.apply');
+        btnCalc.setAttribute('data-tot-tooltip', applyHelp);
+        if (applyDescription) applyDescription.textContent = applyHelp;
       }
       if (calcLabel) {
         const calcWhileTypingText = tr('renderer.editor.calc_while_typing');
         calcLabel.setAttribute('data-label', calcWhileTypingText);
+        const autoApplyHelp = tr('renderer.editor.help.auto_apply');
+        calcLabel.setAttribute('data-tot-tooltip', autoApplyHelp);
+        if (autoApplyDescription) autoApplyDescription.textContent = autoApplyHelp;
         if (calcWhileTyping) calcWhileTyping.setAttribute('aria-label', calcWhileTypingText);
       }
       if (spellcheckLabel) {
         const spellcheckText = tr('renderer.editor.spellcheck');
         spellcheckLabel.setAttribute('data-label', spellcheckText);
+        const spellcheckHelp = tr('renderer.editor.help.spellcheck');
+        spellcheckLabel.setAttribute('data-tot-tooltip', spellcheckHelp);
+        if (spellcheckDescription) spellcheckDescription.textContent = spellcheckHelp;
         if (spellcheckToggle) spellcheckToggle.setAttribute('aria-label', spellcheckText);
       }
       if (textSizeControls) {
@@ -127,22 +139,22 @@
       if (btnTextSizeDecrease) {
         const decreaseText = tr('renderer.editor.decrease_text_size');
         btnTextSizeDecrease.setAttribute('aria-label', decreaseText);
-        btnTextSizeDecrease.title = decreaseText;
+        btnTextSizeDecrease.setAttribute('data-tot-tooltip', decreaseText);
       }
       if (btnTextSizeIncrease) {
         const increaseText = tr('renderer.editor.increase_text_size');
         btnTextSizeIncrease.setAttribute('aria-label', increaseText);
-        btnTextSizeIncrease.title = increaseText;
+        btnTextSizeIncrease.setAttribute('data-tot-tooltip', increaseText);
       }
       if (btnTextSizeReset) {
         const resetText = tr('renderer.editor.reset_text_size');
         btnTextSizeReset.setAttribute('aria-label', resetText);
-        btnTextSizeReset.title = resetText;
+        btnTextSizeReset.setAttribute('data-tot-tooltip', resetText);
       }
       if (btnTrash) {
-        const clearTitle = tr('renderer.editor.clear_title');
-        btnTrash.setAttribute('aria-label', clearTitle);
-        btnTrash.title = clearTitle;
+        const clearName = tr('renderer.editor.clear');
+        btnTrash.setAttribute('aria-label', clearName);
+        btnTrash.setAttribute('data-tot-tooltip', clearName);
       }
       if (bottomBar) {
         bottomBar.setAttribute('aria-label', tr('renderer.editor.title'));

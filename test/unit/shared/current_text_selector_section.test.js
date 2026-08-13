@@ -115,6 +115,7 @@ function createHarness({ languageDirection = 'ltr' } = {}) {
     previewSpoilerToggle: createElement('previewSpoilerToggle', 'input'),
     previewSpoilerToggleLabel: createElement('previewSpoilerToggleLabel', 'label'),
     previewSpoilerText: createElement('previewSpoilerText'),
+    previewSpoilerDescription: createElement('previewSpoilerDescription'),
     btnTextExtractionAbort: createElement('btnTextExtractionAbort'),
   };
 
@@ -273,13 +274,13 @@ test('clipboard repeat commits the canonical value on blur and Enter', () => {
   assert.equal(input.classList.contains('is-invalid'), false);
 });
 
-test('Spoiler uses its label as the sole tooltip target', () => {
+test('Spoiler updates its visible name and shared description/visual-tooltip source', () => {
   const harness = createHarness();
 
   harness.api.applyTranslations({
     tRenderer(key) {
       if (key === 'renderer.main.reading_tools.preview_spoiler') return 'Spoiler';
-      if (key === 'renderer.main.tooltips.preview_spoiler') {
+      if (key === 'renderer.main.help.preview_spoiler') {
         return 'Show or hide the end of the preview';
       }
       return key;
@@ -287,11 +288,15 @@ test('Spoiler uses its label as the sole tooltip target', () => {
   });
 
   assert.equal(
-    harness.elements.previewSpoilerToggleLabel.title,
+    harness.elements.previewSpoilerToggleLabel.getAttribute('data-tot-tooltip'),
     'Show or hide the end of the preview',
   );
-  assert.equal(harness.elements.previewSpoilerToggle.title, undefined);
-  assert.equal(harness.elements.previewSpoilerToggle.getAttribute('aria-label'), 'Spoiler');
+  assert.equal(
+    harness.elements.previewSpoilerDescription.textContent,
+    'Show or hide the end of the preview',
+  );
+  assert.equal(harness.elements.previewSpoilerText.textContent, 'Spoiler');
+  assert.equal(harness.elements.previewSpoilerToggle.getAttribute('aria-label'), null);
 });
 
 test('Spoiler applies saved state and restores the saved state when persistence fails', async () => {
@@ -323,33 +328,16 @@ test('Spoiler applies saved state and restores the saved state when persistence 
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
 });
 
-test('every shipped root locale and the es-cl overlay define the Spoiler tooltip', () => {
-  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+test('Spanish and English define the Spoiler shared help source', () => {
   const expectedBaseCopy = {
     en: 'Show or hide the end of the preview',
     es: 'Mostrar u ocultar el final de la vista previa',
   };
-  const assertTooltip = (renderer, tag) => {
-    const tooltips = renderer.renderer.main.tooltips;
-    const tooltip = tooltips.preview_spoiler;
-
-    assert.equal(typeof tooltip, 'string', `${tag} missing Spoiler tooltip`);
-    assert.ok(tooltip.trim(), `${tag} has an empty Spoiler tooltip`);
-    if (expectedBaseCopy[tag]) assert.equal(tooltip, expectedBaseCopy[tag]);
-    assert.equal(
-      Object.keys(tooltips)[Object.keys(tooltips).indexOf('task_load') + 1],
-      'preview_spoiler',
-      `${tag} must place the Spoiler tooltip after task_load`,
-    );
-  };
-
-  languages.forEach(({ tag }) => {
+  Object.entries(expectedBaseCopy).forEach(([tag, expected]) => {
     const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
     const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
-    assertTooltip(renderer, tag);
-  });
+    const help = renderer.renderer.main.help.preview_spoiler;
 
-  const chilePath = path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json');
-  const chile = JSON.parse(fs.readFileSync(chilePath, 'utf8'));
-  assertTooltip(chile, 'es-cl');
+    assert.equal(help, expected, `${tag} has unexpected Spoiler help`);
+  });
 });

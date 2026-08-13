@@ -122,12 +122,20 @@ function createHarness() {
       };
     },
     RendererIcons: {
-      createIconButton({ className = '', title = '', ariaLabel = '' } = {}) {
+      createIconButton({ className = '', ariaLabel = '' } = {}) {
         const button = createElement('button');
         button.className = className;
-        button.title = title;
         button.setAttribute('aria-label', ariaLabel);
         return button;
+      },
+    },
+    RendererI18n: {
+      tRenderer(key) {
+        const translations = {
+          'renderer.info.media_lightbox.title': 'Expanded screenshot',
+          'renderer.info.media_lightbox.close_aria': 'Close expanded screenshot',
+        };
+        return translations[key] || key;
       },
     },
     Notify: {
@@ -201,8 +209,12 @@ test('Info screenshot lightbox is keyboard-openable, focuses Close, and restores
   });
 
   const lightbox = harness.body._children[0];
+  const panel = lightbox.querySelector('.info-media-lightbox-panel');
   const closeButton = lightbox.querySelector('.info-media-lightbox-close');
   assert.equal(lightbox.getAttribute('aria-hidden'), 'false');
+  assert.equal(panel.getAttribute('aria-label'), 'Expanded screenshot');
+  assert.equal(closeButton.getAttribute('aria-label'), 'Close expanded screenshot');
+  assert.equal(closeButton.getAttribute('data-tot-tooltip'), null);
   assert.equal(harness.getActiveElement(), closeButton);
 
   harness.pressEscape();

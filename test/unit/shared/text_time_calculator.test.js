@@ -297,6 +297,13 @@ test('text_time_calculator defaults to WPM and keeps two editable rows plus one 
   assert.equal(elements.textTimeCalculatorWpmValidation.hidden, true);
   assert.equal(elements.textTimeCalculatorFormulaValidation.hidden, true);
   assert.equal(elements.textTimeCalculatorFormulaValidation.textContent, '');
+  ['Words', 'Time', 'Wpm'].forEach((elementStem) => {
+    const input = elements[`textTimeCalculator${elementStem}Input`];
+    const output = elements[`textTimeCalculator${elementStem}Output`];
+    const label = elements[`textTimeCalculator${elementStem}Label`];
+    assert.equal(input.getAttribute('aria-label'), null);
+    assert.equal(output.getAttribute('aria-label'), label.textContent);
+  });
 });
 
 test('text_time_calculator preserves raw values across target switching and re-evaluates immediately', async () => {

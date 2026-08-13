@@ -149,23 +149,21 @@ async function applyFlotanteTranslations(lang) {
   playIconName = 'play';
   pauseIconName = 'pause';
   if (btnToggle) {
-    const toggleLabel = tRenderer('renderer.main.aria.crono_toggle');
+    const toggleLabel = tRenderer('renderer.main.names.crono_toggle');
     btnToggle.setAttribute('aria-label', toggleLabel);
-    btnToggle.title = toggleLabel;
+    btnToggle.setAttribute('data-tot-tooltip', toggleLabel);
     rendererIcons.applyIconToElement(btnToggle, lastState.running ? pauseIconName : playIconName, {
       preserveContent: false,
       ariaLabel: toggleLabel,
-      title: toggleLabel,
     });
   }
   if (btnReset) {
-    const resetLabel = tRenderer('renderer.main.aria.crono_reset');
+    const resetLabel = tRenderer('renderer.main.names.crono_reset');
     btnReset.setAttribute('aria-label', resetLabel);
-    btnReset.title = resetLabel;
+    btnReset.setAttribute('data-tot-tooltip', resetLabel);
     rendererIcons.applyIconToElement(btnReset, 'stop', {
       preserveContent: false,
       ariaLabel: resetLabel,
-      title: resetLabel,
     });
   }
 }

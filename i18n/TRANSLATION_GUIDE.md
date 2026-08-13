@@ -639,13 +639,6 @@ Estados de revisión recomendados:
           "es": "Modo preciso",
           "en": "Precise mode"
           // [CONCEPTO_APP] modo preciso
-        },
-        "precise_tooltip": {
-          "es": "Basado en Intl.Segmenter",
-          "en": "Based on Intl.Segmenter"
-          // [PROPÓSITO] Tooltip técnico del modo preciso de conteo; describe la base de segmentación usada para calcular la cantidad de palabras y caracteres.
-          // [CONCEPTO_APP] modo preciso
-          // [PROTEGIDO] `Intl.Segmenter`
         }
       },
       "crono": {
@@ -666,6 +659,12 @@ Estados de revisión recomendados:
         }
       },
       "processing": {
+        "editor_loading": {
+          "es": "Cargando Editor de Texto...",
+          "en": "Loading Text Editor..."
+          // [PROPÓSITO] Estado vivo mostrado mientras se abre el Editor de Texto; debe ser contenido real del estado, no texto auxiliar nativo.
+          // [CONCEPTO_APP] Editor de Texto
+        },
         "current_text_waiting": {
           "es": "Actualizando el texto actual...",
           "en": "Updating current text..."
@@ -770,26 +769,36 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Acción de entrada a la extracción de texto desde archivos; puede derivar en ruta nativa, OCR, opciones PDF o lote.
           // [CONCEPTO_APP] extracción de texto
         },
+        "browser_extension": {
+          "es": "Extensión del navegador",
+          "en": "Browser extension"
+          // [PROPÓSITO] Ayuda visual para abrir la ventana informativa de la extensión; es deliberadamente distinta del nombre accesible de la acción.
+          // [CONCEPTO_APP] extensión del navegador
+        }
+      },
+      "names": {
         "text_extraction_abort": {
           "es": "Abortar extracción",
           "en": "Abort extraction"
+          // [PROPÓSITO] Nombre accesible y tooltip visual compartido deliberadamente por el botón iconográfico de aborto.
           // [CONCEPTO_APP] extracción de texto
         },
         "overwrite_clipboard": {
           "es": "Reemplazar el texto actual con el texto del portapapeles",
           "en": "Replace the current text with clipboard text"
+          // [PROPÓSITO] Nombre accesible y tooltip visual compartido deliberadamente por una acción iconográfica.
           // [CONCEPTO_APP] texto actual; reemplazar texto actual
         },
         "append_clipboard": {
           "es": "Agregar el texto del portapapeles al final del texto actual",
           "en": "Append clipboard text to the end of the current text"
-          // [PROPÓSITO] Agrega el texto del portapapeles al final del texto actual desde un nuevo párrafo.
+          // [PROPÓSITO] Nombre accesible y tooltip visual de la acción que agrega el portapapeles desde un nuevo párrafo.
           // [CONCEPTO_APP] texto actual; agregar al texto actual
         },
         "clipboard_repeat_count": {
           "es": "Repeticiones de pegado",
           "en": "Paste repetitions"
-          // [PROPÓSITO] Número de iteraciones en que se pega el texto del portapapeles en el texto actual, reemplazándolo o agregándolo al final, dependiendo de la acción elegida por el usuario.
+          // [PROPÓSITO] Nombre accesible y tooltip visual del número de iteraciones de pegado.
           // [CONCEPTO_APP] texto actual; repeticiones de pegado
         },
         "edit": {
@@ -824,18 +833,6 @@ Estados de revisión recomendados:
           "es": "Cargar tarea",
           "en": "Load task"
           // [CONCEPTO_APP] tarea
-        },
-        "preview_spoiler": {
-          "es": "Mostrar u ocultar el final de la vista previa",
-          "en": "Show or hide the end of the preview"
-          // [PROPÓSITO] Ayuda contextual del control Spoiler; explica que alterna la visibilidad del segmento final de la vista previa del texto actual.
-          // [CONCEPTO_APP] texto actual; vista previa
-        },
-        "browser_extension": {
-          "es": "Extensión del navegador",
-          "en": "Browser extension"
-          // [PROPÓSITO] Abre la ventana informativa de la extensión de navegador, no una función de extracción de la app de escritorio.
-          // [CONCEPTO_APP] extensión del navegador
         },
         "cibersino_website": {
           "es": "Sitio de Cibersino",
@@ -878,10 +875,37 @@ Estados de revisión recomendados:
           "en": "Show a useful tip"
           // [PROPÓSITO] Muestra un toast en el idioma por defecto de la app: consejos, información, citas relacionadas con la app, datos curiosos relacionados.
         },
-        "flotante_window": {
+        "crono_toggle": {
+          "es": "Iniciar o pausar cronómetro",
+          "en": "Start or pause stopwatch"
+          // [PROPÓSITO] Nombre accesible y tooltip visual compartido por el control iconográfico.
+          // [CONCEPTO_APP] Cronómetro
+        },
+        "crono_reset": {
+          "es": "Detener y restablecer cronómetro",
+          "en": "Stop and reset stopwatch"
+          // [PROPÓSITO] Nombre accesible y tooltip visual compartido por el control iconográfico; la acción detiene y vuelve a 0.
+          // [CONCEPTO_APP] Cronómetro
+        },
+        "floating_window": {
           "es": "Cronómetro Flotante",
           "en": "Floating Stopwatch"
           // [CONCEPTO_APP] Cronómetro Flotante
+        }
+      },
+      "help": {
+        "preview_spoiler": {
+          "es": "Mostrar u ocultar el final de la vista previa",
+          "en": "Show or hide the end of the preview"
+          // [PROPÓSITO] Fuente compartida deliberadamente por la descripción accesible del checkbox Spoiler y su tooltip visual; explica que alterna el segmento final.
+          // [CONCEPTO_APP] texto actual; vista previa
+        },
+        "precise_mode": {
+          "es": "Basado en Intl.Segmenter",
+          "en": "Based on Intl.Segmenter"
+          // [PROPÓSITO] Fuente compartida deliberadamente por la descripción accesible del modo preciso y su tooltip visual; describe la base técnica del conteo.
+          // [CONCEPTO_APP] modo preciso
+          // [PROTEGIDO] `Intl.Segmenter`
         }
       },
       "aria": {
@@ -890,28 +914,11 @@ Estados de revisión recomendados:
           "en": "Select files to extract text from"
           // [CONCEPTO_APP] extracción de texto
         },
-        "text_extraction_abort": {
-          "es": "Abortar extracción",
-          "en": "Abort extraction"
-          // [CONCEPTO_APP] extracción de texto
-        },
         "browser_extension": {
           "es": "Abrir ventana de extensión del navegador",
           "en": "Open browser extension window"
           // [PROPÓSITO] Etiqueta accesible para abrir la ventana informativa de la extensión de navegador.
           // [CONCEPTO_APP] extensión del navegador
-        },
-        "clipboard_repeat_count": {
-          "es": "Repeticiones de pegado",
-          "en": "Paste repetitions"
-          // [PROPÓSITO] Número de iteraciones en que se pega el texto del portapapeles en el texto actual, reemplazándolo o agregándolo al final, dependiendo de la acción elegida por el usuario.
-          // [CONCEPTO_APP] texto actual; repeticiones de pegado
-        },
-        "text_time_calculator": {
-          "es": "Abrir calculadora rápida",
-          "en": "Open quick calculator"
-          // [PROPÓSITO] Etiqueta accesible para abrir la calculadora rápida.
-          // [CONCEPTO_APP] calculadora rápida
         },
         "wpm_input": {
           "es": "Palabras por minuto",
@@ -930,12 +937,6 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Etiqueta accesible del selector de presets de WPM/velocidad de lectura.
           // [CONCEPTO_APP] preset de velocidad de lectura
         },
-        "precise_mode_toggle": {
-          "es": "Activar/desactivar el modo preciso",
-          "en": "Precise mode toggle"
-          // [PROPÓSITO] Label accesible de toggle del modo preciso.
-          // [CONCEPTO_APP] modo preciso
-        },
         "crono_controls": {
           "es": "Controles del cronómetro",
           "en": "Stopwatch controls"
@@ -946,22 +947,6 @@ Estados de revisión recomendados:
           "en": "Stopwatch display"
           // [PROPÓSITO] Visualización del cronómetro.
           // [CONCEPTO_APP] Cronómetro
-        },
-        "crono_toggle": {
-          "es": "Iniciar o pausar cronómetro",
-          "en": "Start or pause stopwatch"
-          // [CONCEPTO_APP] Cronómetro
-        },
-        "crono_reset": {
-          "es": "Detener y restablecer cronómetro",
-          "en": "Stop and reset stopwatch"
-          // [PROPÓSITO] El cronómetro se detiene y vuelve a 0.
-          // [CONCEPTO_APP] Cronómetro
-        },
-        "floating_window_toggle": {
-          "es": "Cronómetro Flotante",
-          "en": "Floating Stopwatch"
-          // [CONCEPTO_APP] Cronómetro Flotante
         },
         "floating_window_group": {
           "es": "Controles del Cronómetro Flotante",
@@ -1449,6 +1434,29 @@ Estados de revisión recomendados:
           "en": "Optional unit name"
           // [PROPÓSITO] Campo opcional para nombrar una unidad de extracción por lotes.
           // [CONCEPTO_APP] unidad de extracción por lotes
+        },
+        "aria": {
+          "route": {
+            "es": "Ruta de extracción para {file}",
+            "en": "Extraction route for {file}"
+            // [PROPÓSITO] Nombre accesible parametrizado del selector de ruta de un ítem. `{file}` es un nombre técnico aislado con FSI/PDI por el consumidor.
+            // [CONCEPTO_APP] extracción por lotes; ruta de extracción; ítem de extracción por lotes
+            // [PROTEGIDO] `{file}`
+          },
+          "unit_assignment": {
+            "es": "Unidad de destino para {file}",
+            "en": "Destination unit for {file}"
+            // [PROPÓSITO] Nombre accesible parametrizado del selector que asigna un ítem a una unidad. `{file}` es un nombre técnico aislado con FSI/PDI.
+            // [CONCEPTO_APP] extracción por lotes; unidad de extracción por lotes; ítem de extracción por lotes
+            // [PROTEGIDO] `{file}`
+          },
+          "unit_name": {
+            "es": "Nombre opcional de la unidad {index} de {count}",
+            "en": "Optional name for unit {index} of {count}"
+            // [PROPÓSITO] Nombre accesible directo del campo de nombre opcional; no se deriva del encabezado visible ni del placeholder.
+            // [CONCEPTO_APP] unidad de extracción por lotes
+            // [PROTEGIDO] `{index}`; `{count}`
+          }
         },
         "new_unit_option": {
           "es": "Crear nueva unidad",
@@ -2017,6 +2025,26 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Checkbox para activar/desactivar el corrector ortográfico del Editor de Texto. Layout estrecho.
         // [CONCEPTO_APP] Editor de Texto
       },
+      "help": {
+        "apply": {
+          "es": "Aplicar el texto del editor como texto actual",
+          "en": "Apply the editor text as the current text"
+          // [PROPÓSITO] Fuente compartida por la descripción accesible y el tooltip visual del botón compacto Aplicar; su nombre visible sigue siendo `Aplicar` / `Apply`.
+          // [CONCEPTO_APP] Editor de Texto; texto actual
+        },
+        "auto_apply": {
+          "es": "Aplicar automáticamente los cambios del editor al texto actual mientras escribes",
+          "en": "Automatically apply editor changes to the current text while typing"
+          // [PROPÓSITO] Fuente compartida por la descripción accesible y el tooltip visual del checkbox Auto.
+          // [CONCEPTO_APP] Editor de Texto; texto actual
+        },
+        "spellcheck": {
+          "es": "Activar o desactivar el corrector ortográfico en el texto del editor",
+          "en": "Turn spellcheck on or off for the editor text"
+          // [PROPÓSITO] Fuente compartida por la descripción accesible y el tooltip visual del checkbox Ortografía / Spellcheck.
+          // [CONCEPTO_APP] Editor de Texto
+        }
+      },
       "text_size_label": {
         "es": "Tamaño",
         "en": "Size"
@@ -2040,10 +2068,10 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] Editor de Texto
         // [NO_CONFUNDIR] `Read` aquí es participio/progreso ya leído, no una acción o imperativo de leer.
       },
-      "clear_title": {
+      "clear": {
         "es": "Vaciar",
         "en": "Clear"
-        // [PROPÓSITO] Borrar todo el texto del Editor de Texto.
+        // [PROPÓSITO] Nombre accesible y tooltip visual compartido por el botón iconográfico que borra el Editor de Texto.
         // [CONCEPTO_APP] Editor de Texto
       },
       "editor_find": {
@@ -2054,14 +2082,6 @@ Estados de revisión recomendados:
         "input_aria": {
           "es": "Buscar en el texto",
           "en": "Find in text"
-        },
-        "expand_title": {
-          "es": "Mostrar reemplazo",
-          "en": "Show replace controls"
-        },
-        "collapse_title": {
-          "es": "Ocultar reemplazo",
-          "en": "Hide replace controls"
         },
         "replace_placeholder": {
           "es": "Reemplazar...",
@@ -2081,25 +2101,40 @@ Estados de revisión recomendados:
           "en": "Replace all"
           // [NO_CONFUNDIR] Aquí `Replace all` reemplaza coincidencias de búsqueda dentro del Editor de Texto, no el texto actual completo.
         },
-        "prev_title": {
-          "es": "Coincidencia anterior",
-          "en": "Previous match"
+        "names": {
+          "show_replace": {
+            "es": "Mostrar reemplazo",
+            "en": "Show replace controls"
+          },
+          "hide_replace": {
+            "es": "Ocultar reemplazo",
+            "en": "Hide replace controls"
+          },
+          "previous_match": {
+            "es": "Coincidencia anterior",
+            "en": "Previous match"
+          },
+          "next_match": {
+            "es": "Coincidencia siguiente",
+            "en": "Next match"
+          },
+          "close": {
+            "es": "Cerrar barra de búsqueda",
+            "en": "Close find bar"
+          }
+          // [PROPÓSITO] Nombres accesibles y tooltips visuales compartidos deliberadamente por controles iconográficos de Buscar.
         },
-        "next_title": {
-          "es": "Coincidencia siguiente",
-          "en": "Next match"
-        },
-        "close_title": {
-          "es": "Cerrar barra de búsqueda",
-          "en": "Close find bar"
-        },
-        "replace_title": {
-          "es": "Reemplazar coincidencia actual",
-          "en": "Replace current match"
-        },
-        "replace_all_title": {
-          "es": "Reemplazar todas las coincidencias",
-          "en": "Replace all matches"
+        "help": {
+          "replace_current": {
+            "es": "Reemplazar coincidencia actual",
+            "en": "Replace current match"
+            // [PROPÓSITO] Fuente compartida por descripción accesible y tooltip visual del botón visible `Reemplazar` / `Replace`.
+          },
+          "replace_all": {
+            "es": "Reemplazar todas las coincidencias",
+            "en": "Replace all matches"
+            // [PROPÓSITO] Fuente compartida por descripción accesible y tooltip visual del botón visible `Reemplazar todo` / `Replace all`.
+          }
         },
         "replace_timeout": {
           "es": "El reemplazo tardó demasiado. Inténtalo de nuevo.",
@@ -2301,6 +2336,12 @@ Estados de revisión recomendados:
         "new_tag_placeholder": {
           "es": "Nombre de etiqueta",
           "en": "Tag label"
+        },
+        "new_tag_input_aria": {
+          "es": "Nombre de etiqueta nueva",
+          "en": "New tag label"
+          // [PROPÓSITO] Nombre accesible directo del campo dinámico para crear una etiqueta; no se deriva del placeholder.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto
         },
         "add_tag": {
           "es": "Agregar etiqueta",
@@ -2709,36 +2750,37 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Columna con los botones de cada fila para: subir en la tabla, bajar en la tabla, guardar en biblioteca y eliminar de la tabla.
           // [CONCEPTO_APP] fila de lectura; biblioteca de lecturas
         },
-        "header_tooltips": {
+        "header_names": {
           "tiempo": {
             "es": "Tiempo estimado de lectura",
             "en": "Estimated reading time"
+            // [PROPÓSITO] Nombre accesible expandido y tooltip visual del encabezado abreviado.
             // [CONCEPTO_APP] fila de lectura; tiempo estimado de lectura
           },
           "percent": {
             "es": "Porcentaje completado",
             "en": "Percentage completed"
-            // [PROPÓSITO] Tooltip del encabezado abreviado que muestra el avance de la lectura.
+            // [PROPÓSITO] Nombre accesible expandido y tooltip visual del encabezado abreviado que muestra el avance.
             // [CONCEPTO_APP] fila de lectura
           },
           "falta": {
             "es": "Tiempo estimado restante",
             "en": "Estimated time remaining"
-            // [PROPÓSITO] Tooltip del encabezado de la columna de tiempo restante de la lectura.
+            // [PROPÓSITO] Nombre accesible expandido y tooltip visual del encabezado de tiempo restante.
             // [CONCEPTO_APP] fila de lectura
           },
           "comentario": {
             "es": "Comentario y snapshot de texto",
             "en": "Comment and text snapshot"
-            // [PROPÓSITO] Tooltip del encabezado compacto `C+S`; describe la columna, no la acción de su botón de comentario.
+            // [PROPÓSITO] Nombre accesible expandido y tooltip visual del encabezado compacto `C+S`; describe la columna, no su botón.
             // [CONCEPTO_APP] fila de lectura; snapshot de texto
-          },
+          }
         },
-        "tooltips": {
+        "names": {
           "file_select": {
             "es": "Seleccionar archivo local",
             "en": "Select local file"
-            // [PROPÓSITO] Acción por fila para elegir un archivo local y asociar su ruta a `Link or local path`.
+            // [PROPÓSITO] Nombre accesible y tooltip visual de la acción iconográfica que asocia un archivo local.
             // [CONCEPTO_APP] fila de lectura
           },
           "link_open": {
@@ -2748,13 +2790,13 @@ Estados de revisión recomendados:
           "snapshot_load": {
             "es": "Cargar snapshot como texto actual",
             "en": "Load text snapshot as current text"
-            // [PROPÓSITO] Acción para cargar el snapshot de texto asociado a la fila como texto actual de la app.
+            // [PROPÓSITO] Nombre accesible base de la acción iconográfica; su descripción y tooltip con ruta tienen fuentes separadas abajo.
             // [CONCEPTO_APP] snapshot de texto; texto actual; fila de lectura
           },
           "comment": {
             "es": "Agregar un comentario o un snapshot de texto",
             "en": "Add a comment or a text snapshot"
-            // [PROPÓSITO] Acción por fila para abrir el diálogo que permite agregar o editar un comentario y asociar un snapshot de texto.
+            // [PROPÓSITO] Nombre accesible y tooltip visual de la acción por fila para comentario/snapshot.
             // [CONCEPTO_APP] fila de lectura; snapshot de texto
           },
           "move_up": {
@@ -2777,9 +2819,33 @@ Estados de revisión recomendados:
             "en": "Delete row"
             // [CONCEPTO_APP] fila de lectura
           }
+        },
+        "descriptions": {
+          "snapshot_path": {
+            "es": "Ruta del snapshot asociado: {path}",
+            "en": "Associated text snapshot path: {path}"
+            // [PROPÓSITO] Descripción accesible estable del botón de cargar snapshot. `{path}` es una ruta técnica renderizada estructuralmente dentro de `<bdi dir="ltr">`; no añadas comillas ni cambies el placeholder.
+            // [CONCEPTO_APP] snapshot de texto; fila de lectura
+            // [PROTEGIDO] `{path}`
+          }
+        },
+        "tooltips": {
+          "snapshot_load_with_path": {
+            "es": "Cargar snapshot como texto actual · Ruta asociada: {path}",
+            "en": "Load text snapshot as current text · Associated path: {path}"
+            // [PROPÓSITO] Tooltip visual combinado del botón iconográfico de carga. `{path}` se entrega aislado con FSI/PDI para conservar la dirección de la ruta en texto plano.
+            // [CONCEPTO_APP] snapshot de texto; texto actual; fila de lectura
+            // [PROTEGIDO] `{path}`; `·`
+          }
         }
       },
       "comentario_modal": {
+        "close_aria": {
+          "es": "Cerrar comentario",
+          "en": "Close comment"
+          // [PROPÓSITO] Nombre accesible del botón iconográfico que cierra el diálogo de comentario; no lleva tooltip visual redundante.
+          // [CONCEPTO_APP] fila de lectura
+        },
         "comment_title": {
           "es": "Comentario",
           "en": "Comment"
@@ -2795,13 +2861,6 @@ Estados de revisión recomendados:
           "en": "Select text snapshot"
           // [PROPÓSITO] Acción para asociar un snapshot de texto a una fila de lectura.
           // [CONCEPTO_APP] snapshot de texto; fila de lectura
-        },
-        "snapshot_select_tooltip": {
-          "es": "Seleccionar snapshot para esta fila",
-          "en": "Select a text snapshot for this row"
-          // [PROPÓSITO] Acción para seleccionar un snapshot de texto guardado y asociarlo a la fila.
-          // [CONCEPTO_APP] snapshot de texto; fila de lectura
-          // [NO_CONFUNDIR] Seleccionar un snapshot para la fila no lo carga como texto actual; solo lo asocia a esa fila.
         },
         "snapshot_clear": {
           "es": "Quitar snapshot seleccionado de esta fila",
@@ -2935,6 +2994,12 @@ Estados de revisión recomendados:
         }
       },
       "biblioteca": {
+        "close_aria": {
+          "es": "Cerrar biblioteca de lecturas",
+          "en": "Close reading library"
+          // [PROPÓSITO] Nombre accesible del botón iconográfico que cierra la biblioteca; no lleva tooltip visual redundante.
+          // [CONCEPTO_APP] biblioteca de lecturas
+        },
         "library_title": {
           "es": "Biblioteca de lecturas",
           "en": "Reading library"
@@ -2971,6 +3036,12 @@ Estados de revisión recomendados:
         }
       },
       "guardar_lectura_modal": {
+        "close_aria": {
+          "es": "Cerrar guardado en biblioteca",
+          "en": "Close save-to-library dialog"
+          // [PROPÓSITO] Nombre accesible del botón iconográfico que cierra este diálogo; no lleva tooltip visual redundante.
+          // [CONCEPTO_APP] biblioteca de lecturas; fila de lectura
+        },
         "library_save_title": {
           "es": "Guardar lectura en la biblioteca",
           "en": "Save reading to the library"
@@ -3271,7 +3342,7 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Confirmación para restablecer el estado de uso de todo el pool del test.
           // [CONCEPTO_APP] pool del test; archivos de test
         },
-        "tooltips": {
+        "help": {
           "show_bundled_entries": {
             "es": "Incluir en el pool los archivos de test iniciales incorporados en la app",
             "en": "Include the app's bundled starter test files in the pool"
@@ -3288,21 +3359,24 @@ Estados de revisión recomendados:
             "en": "Import test files from your device"
             // [CONCEPTO_APP] archivos de test; pool del test
           },
-          "reset_pool": {
-            "es": "Restablecer pool del test",
-            "en": "Reset test pool"
-            // [PROPÓSITO] Acción para restablecer el estado de uso de todos los archivos del pool del test.
-            // [CONCEPTO_APP] pool del test; archivos de test
-          },
           "start_random_text": {
             "es": "Iniciar el test con un texto aleatorio elegible del pool",
             "en": "Start the test with a random eligible text from the pool"
             // [CONCEPTO_APP] Test de velocidad de lectura; pool del test
           },
           "start_current_text": {
-            "es": "Iniciar el test con el texto actual",
-            "en": "Start the test with the current text"
-            // [CONCEPTO_APP] Test de velocidad de lectura; texto actual
+            "es": "Usar el texto actual sin reemplazarlo ni consumir un archivo del pool",
+            "en": "Use the current text without replacing it or consuming a pool file"
+            // [PROPÓSITO] Fuente compartida por descripción accesible y tooltip visual; aclara explícitamente que esta variante no reemplaza el texto actual ni consume el pool.
+            // [CONCEPTO_APP] Test de velocidad de lectura; texto actual; pool del test
+          }
+        },
+        "names": {
+          "reset_pool": {
+            "es": "Restablecer pool del test",
+            "en": "Reset test pool"
+            // [PROPÓSITO] Nombre accesible y tooltip visual compartido deliberadamente por el botón iconográfico de restablecimiento.
+            // [CONCEPTO_APP] pool del test; archivos de test
           }
         },
         "import": {
@@ -3711,6 +3785,23 @@ Estados de revisión recomendados:
       "missing_content": {
         "es": "No hay contenido disponible para \"{name}\".",
         "en": "No content is available for \"{name}\"."
+      },
+      "close_aria": {
+        "es": "Cerrar información",
+        "en": "Close information"
+        // [PROPÓSITO] Nombre accesible del botón iconográfico que cierra el modal de información; no lleva tooltip visual redundante.
+      },
+      "media_lightbox": {
+        "title": {
+          "es": "Vista previa ampliada de captura de pantalla",
+          "en": "Expanded screenshot preview"
+          // [PROPÓSITO] Nombre accesible del diálogo que amplía una captura de pantalla de la documentación.
+        },
+        "close_aria": {
+          "es": "Cerrar vista previa",
+          "en": "Close preview"
+          // [PROPÓSITO] Nombre accesible del botón iconográfico de cierre; no lleva tooltip visual redundante.
+        }
       },
       "external": {
         "blocked": {

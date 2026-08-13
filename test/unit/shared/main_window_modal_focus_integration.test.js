@@ -156,6 +156,22 @@ test('browser-extension modal focuses Close and restores its per-open trigger', 
   env.elements.browserExtensionModal.panel.ownerDocument = env.document;
   env.run('../../../public/js/browser_extension_modal.js');
   env.window.BrowserExtensionModal.configure({ hasBlockingModalOpen: () => false });
+  env.window.BrowserExtensionModal.applyTranslations();
+
+  assert.equal(
+    env.elements.browserExtensionLogoLink.getAttribute('aria-label'),
+    'renderer.main.aria.browser_extension'
+  );
+  assert.equal(
+    env.elements.browserExtensionLogoLink.getAttribute('data-tot-tooltip'),
+    'renderer.main.tooltips.browser_extension'
+  );
+  assert.equal(env.elements.browserExtensionLogoLink.title, '');
+  assert.equal(
+    env.elements.browserExtensionChromeStoreLink.getAttribute('aria-label'),
+    'renderer.browser_extension.chrome_store_aria'
+  );
+  assert.equal(env.elements.browserExtensionChromeStoreLink.getAttribute('data-tot-tooltip'), null);
 
   env.elements.browserExtensionLogoLink.focus();
   env.elements.browserExtensionLogoLink.dispatch('click');
@@ -179,11 +195,16 @@ test('reading-test entry modal focuses Show instructions and restores its opener
     'readingTestEntryModalShowBundledLabel',
     'readingTestEntryModalShowBundled',
     'readingTestEntryModalShowBundledText',
+    'readingTestEntryModalShowBundledDescription',
     'readingTestEntryModalGetMoreFiles',
+    'readingTestEntryModalGetMoreFilesDescription',
     'readingTestEntryModalImport',
+    'readingTestEntryModalImportDescription',
     'readingTestEntryModalReset',
     'readingTestEntryModalStart',
+    'readingTestEntryModalStartDescription',
     'readingTestEntryModalStartCurrentText',
+    'readingTestEntryModalStartCurrentTextDescription',
     'readingTestEntryModalClose',
     'readingTestEntryLanguageSection',
     'readingTestEntryLanguageHeading',
@@ -238,8 +259,48 @@ test('reading-test entry modal focuses Show instructions and restores its opener
   env.elements.readingTestOpener.focus();
   await env.window.ReadingSpeedTestUi.openEntryFlow();
   assert.equal(env.document.activeElement, env.elements.readingTestEntryModalIntroToggle);
+  [
+    ['readingTestEntryModalShowBundledLabel', 'readingTestEntryModalShowBundledDescription',
+      'renderer.reading_test.entry.help.show_bundled_entries'],
+    ['readingTestEntryModalGetMoreFiles', 'readingTestEntryModalGetMoreFilesDescription',
+      'renderer.reading_test.entry.help.get_more_files'],
+    ['readingTestEntryModalImport', 'readingTestEntryModalImportDescription',
+      'renderer.reading_test.entry.help.import_files'],
+    ['readingTestEntryModalStart', 'readingTestEntryModalStartDescription',
+      'renderer.reading_test.entry.help.start_random_text'],
+    ['readingTestEntryModalStartCurrentText', 'readingTestEntryModalStartCurrentTextDescription',
+      'renderer.reading_test.entry.help.start_current_text'],
+  ].forEach(([visualTargetId, descriptionId, key]) => {
+    assert.equal(env.elements[visualTargetId].getAttribute('data-tot-tooltip'), key);
+    assert.equal(env.elements[descriptionId].textContent, key);
+  });
+  assert.equal(
+    env.elements.readingTestEntryModalReset.getAttribute('aria-label'),
+    'renderer.reading_test.entry.names.reset_pool'
+  );
+  assert.equal(
+    env.elements.readingTestEntryModalReset.getAttribute('data-tot-tooltip'),
+    'renderer.reading_test.entry.names.reset_pool'
+  );
 
   env.window.ReadingSpeedTestUi.configure();
   env.elements.readingTestEntryModalClose.dispatch('click');
   assert.equal(env.document.activeElement, env.elements.readingTestOpener);
+});
+
+test('reading-test entry markup relates material help to each actual control', () => {
+  const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/index.html'), 'utf8');
+  [
+    ['readingTestEntryModalShowBundled', 'readingTestEntryModalShowBundledDescription'],
+    ['readingTestEntryModalGetMoreFiles', 'readingTestEntryModalGetMoreFilesDescription'],
+    ['readingTestEntryModalImport', 'readingTestEntryModalImportDescription'],
+    ['readingTestEntryModalStart', 'readingTestEntryModalStartDescription'],
+    ['readingTestEntryModalStartCurrentText', 'readingTestEntryModalStartCurrentTextDescription'],
+  ].forEach(([controlId, descriptionId]) => {
+    assert.match(
+      markup,
+      new RegExp(`id="${controlId}"[^>]*aria-describedby="${descriptionId}"`)
+    );
+    assert.match(markup, new RegExp(`id="${descriptionId}" class="main-accessible-description"`));
+  });
 });

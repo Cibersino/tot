@@ -59,11 +59,18 @@
   const showBundledLabel = document.getElementById('readingTestEntryModalShowBundledLabel');
   const showBundledCheckbox = document.getElementById('readingTestEntryModalShowBundled');
   const showBundledText = document.getElementById('readingTestEntryModalShowBundledText');
+  const showBundledDescription = document.getElementById('readingTestEntryModalShowBundledDescription');
   const getMoreFilesLink = document.getElementById('readingTestEntryModalGetMoreFiles');
+  const getMoreFilesDescription = document.getElementById('readingTestEntryModalGetMoreFilesDescription');
   const importButton = document.getElementById('readingTestEntryModalImport');
+  const importDescription = document.getElementById('readingTestEntryModalImportDescription');
   const resetButton = document.getElementById('readingTestEntryModalReset');
   const btnStart = document.getElementById('readingTestEntryModalStart');
+  const btnStartDescription = document.getElementById('readingTestEntryModalStartDescription');
   const btnStartCurrentText = document.getElementById('readingTestEntryModalStartCurrentText');
+  const btnStartCurrentTextDescription = document.getElementById(
+    'readingTestEntryModalStartCurrentTextDescription'
+  );
   const btnClose = document.getElementById('readingTestEntryModalClose');
   const languageSection = document.getElementById('readingTestEntryLanguageSection');
   const languageHeading = document.getElementById('readingTestEntryLanguageHeading');
@@ -88,11 +95,16 @@
       && showBundledLabel
       && showBundledCheckbox
       && showBundledText
+      && showBundledDescription
       && getMoreFilesLink
+      && getMoreFilesDescription
       && importButton
+      && importDescription
       && resetButton
       && btnStart
+      && btnStartDescription
       && btnStartCurrentText
+      && btnStartCurrentTextDescription
       && btnClose
       && languageSection
       && languageHeading
@@ -263,7 +275,6 @@
     checkbox.type = 'checkbox';
     checkbox.checked = !!optionState.checked;
     checkbox.disabled = stabilizing || !optionState.enabled || isSessionActive();
-    checkbox.setAttribute('aria-label', getOptionLabel(category, optionState.value));
     checkbox.addEventListener('change', () => {
       if (stabilizing || isSessionActive()) return;
       const nextSelection = collectNextSelection(category, optionState.value, checkbox.checked);
@@ -337,19 +348,29 @@
       tRenderer('renderer.reading_test.entry.close_aria')
     );
     showBundledText.textContent = tRenderer('renderer.reading_test.entry.show_bundled_entries');
-    showBundledLabel.title = tRenderer('renderer.reading_test.entry.tooltips.show_bundled_entries');
+    const showBundledHelp = tRenderer('renderer.reading_test.entry.help.show_bundled_entries');
+    showBundledDescription.textContent = showBundledHelp;
+    showBundledLabel.setAttribute('data-tot-tooltip', showBundledHelp);
     showBundledCheckbox.checked = showBundledEntries;
-    showBundledCheckbox.setAttribute('aria-label', showBundledText.textContent);
     getMoreFilesLink.textContent = tRenderer('renderer.reading_test.entry.get_more_files');
-    getMoreFilesLink.title = tRenderer('renderer.reading_test.entry.tooltips.get_more_files');
+    const getMoreFilesHelp = tRenderer('renderer.reading_test.entry.help.get_more_files');
+    getMoreFilesDescription.textContent = getMoreFilesHelp;
+    getMoreFilesLink.setAttribute('data-tot-tooltip', getMoreFilesHelp);
     importButton.textContent = tRenderer('renderer.reading_test.entry.import_files_button');
-    importButton.title = tRenderer('renderer.reading_test.entry.tooltips.import_files');
-    resetButton.title = tRenderer('renderer.reading_test.entry.tooltips.reset_pool');
-    resetButton.setAttribute('aria-label', resetButton.title);
+    const importHelp = tRenderer('renderer.reading_test.entry.help.import_files');
+    importDescription.textContent = importHelp;
+    importButton.setAttribute('data-tot-tooltip', importHelp);
+    const resetName = tRenderer('renderer.reading_test.entry.names.reset_pool');
+    resetButton.setAttribute('aria-label', resetName);
+    resetButton.setAttribute('data-tot-tooltip', resetName);
     btnStart.textContent = tRenderer('renderer.reading_test.entry.start_random_text_button');
-    btnStart.title = tRenderer('renderer.reading_test.entry.tooltips.start_random_text');
+    const startHelp = tRenderer('renderer.reading_test.entry.help.start_random_text');
+    btnStartDescription.textContent = startHelp;
+    btnStart.setAttribute('data-tot-tooltip', startHelp);
     btnStartCurrentText.textContent = tRenderer('renderer.reading_test.entry.start_current_text_button');
-    btnStartCurrentText.title = tRenderer('renderer.reading_test.entry.tooltips.start_current_text');
+    const startCurrentTextHelp = tRenderer('renderer.reading_test.entry.help.start_current_text');
+    btnStartCurrentTextDescription.textContent = startCurrentTextHelp;
+    btnStartCurrentText.setAttribute('data-tot-tooltip', startCurrentTextHelp);
 
     renderEligibleCount();
     renderWarningBox();

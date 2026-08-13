@@ -172,7 +172,7 @@
     message.textContent = tRenderer('renderer.text_extraction.pdf_options.message');
     fileLabel.textContent = tRenderer('renderer.text_extraction.pdf_options.file_label');
     fileName.textContent = inspectedFileName;
-    fileName.title = inspectedFileName;
+    fileName.setAttribute('data-tot-tooltip', inspectedFileName);
     renderSummaryValue(
       totalPagesSummary,
       'renderer.text_extraction.pdf_options.total_pages_label',
