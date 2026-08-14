@@ -58,6 +58,9 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/shared/combobox.test.js`
   * covers the production `RendererCombobox` contract in `select` and `editable` modes: ARIA/open state, value and action activation, pointer-hover active state, disabled options, one-open behavior, outside click, keyboard navigation/type-ahead, committed-text restoration, updates, focus, and destruction
   * supports the shared selector behavior exercised by `SM-07`, `SM-07A`, `SM-10A`, `SM-13`, `REG-PRESETS`, `REG-CALCULATOR`, `REG-IMPORT-08C`, and `REG-SNAPSHOTS`
+* `test/unit/shared/language_window.test.js`
+  * covers fixed-bilingual markup/status ownership, the unchanged visible filter/layout contract, first-run empty selection, persisted selection vs roving focus, keyboard activation, filtering, bootstrap fallback, and selection failure
+  * supports parts of `REG-FR-01` and `REG-I18N-01`; it does not replace the documented screen-reader or real-window checks
 * `electron/settings.js`
   * supports parts of `REG-PERSIST`
   * supports parts of `REG-I18N`
@@ -68,6 +71,10 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-PRESETS-07`
   * supports parts of `REG-PERSIST-01`
   * supports parts of `REG-PERSIST-02`
+  * supports the narrow current-language read used by `REG-FR-01` and `REG-I18N-01`
+* `test/unit/electron/language_preload.test.js`
+  * covers the Language Window's narrow available/current-language reads and normalized selection forwarding
+  * supports parts of `REG-FR-01` and `REG-I18N-01`
 * `test/unit/electron/preload.test.js`
   * supports parts of `SM-07A`
   * supports parts of `REG-CALCULATOR-01`
@@ -690,13 +697,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### REG-FR — First-run & language selection
 
 #### REG-FR-01 Clean run: language picker behavior
-**Goal:** first-run supports language selection.
+**Goal:** first-run supports fixed-bilingual, accessible language selection without depending on an active application language.
 1. Remove config (2.2).
 2. Launch app.
-3. Use search box to filter language list; select language.
+3. Confirm keyboard focus starts in the existing `Buscar / Search` filter and that no new visible filter label or compressed layout appears.
+4. With a screen reader, confirm the dialog heading and filter name announce both their Spanish and English fragments and respect each fragment's language metadata.
+5. Enter a query with no matches and confirm the bilingual no-match status is announced outside an otherwise empty listbox; clear the query.
+6. Press Arrow Down to enter the language list. Use Arrow Up/Down and Home/End to move focus, then Enter or Space to select a language.
 
 **Expected:**
-- Filtering works; selection applies; window closes.
+- The existing visible layout and `Buscar / Search` placeholder remain unchanged; no tooltip appears.
+- First run does not expose any option as selected.
+- Filtering and keyboard navigation work; moving focus does not change selected state.
+- Selection applies and the window closes.
 
 #### REG-FR-02 Existing state: no first-run surprises
 **Goal:** existing config loads without resets.
@@ -2031,11 +2044,15 @@ nonconforming persisted data without migration or repair.
 #### REG-I18N-01 Switch language via Preferences menu
 **Goal:** language selection window is reachable and applies.
 1. Menu → Preferences → Language.
-2. Select a different language.
-3. Confirm UI text changes and number formatting remains consistent.
+2. Confirm the existing filter has focus and, with a screen reader or accessibility inspector, that the exact persisted current-language option is selected.
+3. Move keyboard focus to another option and confirm focus movement does not change the selected state.
+4. Select a different language with Enter or Space.
+5. Confirm UI text changes and number formatting remains consistent.
 
 **Expected:**
-- Language window works; UI strings update.
+- Language Window shell remains fixed Spanish/English and does not depend on the active renderer language.
+- Current selection is exposed through `aria-selected` without a new visual selection style.
+- Language selection works and UI strings update.
 - Numbers use correct separators per language settings.
 
 #### REG-I18N-02 Cross-window i18n consistency

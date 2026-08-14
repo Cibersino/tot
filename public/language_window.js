@@ -23,42 +23,63 @@ log.debug('Language window starting...');
 const langFilter = document.getElementById('langFilter');
 const langList = document.getElementById('langList');
 const statusLine = document.getElementById('statusLine');
+const statusNodes = Object.freeze({
+  noMatches: document.getElementById('languageStatusNoMatches'),
+  applying: document.getElementById('languageStatusApplying'),
+  selectionError: document.getElementById('languageStatusSelectionError'),
+});
 
 // =============================================================================
 // Constants and shared state
 // =============================================================================
 // Local fallback duplicates the manifest list in case IPC fails.
-const fallbackLanguages = [
-  { tag: 'es', label: 'Español' },
-  { tag: 'en', label: 'English' },
-];
+const FALLBACK_LANGUAGES = Object.freeze([
+  Object.freeze({ tag: 'es', label: 'Español' }),
+  Object.freeze({ tag: 'en', label: 'English' }),
+]);
+const STATUS_IDS = Object.freeze({
+  NONE: '',
+  NO_MATCHES: 'noMatches',
+  APPLYING: 'applying',
+  SELECTION_ERROR: 'selectionError',
+});
 
 let languages = [];
 let filteredLanguages = [];
 let focusedIndex = -1;
 let isBusy = false;
+let selectedLanguageTag = '';
 
 // =============================================================================
 // Helpers
 // =============================================================================
 const getItems = () => Array.from(langList.querySelectorAll('.lang-item'));
 
-const setStatus = (message, isError = false) => {
-  statusLine.textContent = message || '';
+const normalizeLanguageTag = (value) => {
+  return String(value || '').trim().toLowerCase().replace(/_/g, '-');
+};
+
+const setStatus = (statusId = STATUS_IDS.NONE, isError = false) => {
+  if (statusId && !Object.prototype.hasOwnProperty.call(statusNodes, statusId)) {
+    throw new Error(`[language] Unknown status identifier: ${statusId}`);
+  }
+  Object.entries(statusNodes).forEach(([id, node]) => {
+    node.hidden = id !== statusId;
+  });
   statusLine.classList.toggle('is-error', isError);
 };
 
-const setBusy = (busy, message) => {
+const setBusy = (busy, statusId) => {
   isBusy = busy;
   langFilter.disabled = busy;
   langList.classList.toggle('is-disabled', busy);
   langList.setAttribute('aria-disabled', busy ? 'true' : 'false');
-  if (message !== undefined) {
-    setStatus(message, false);
+  if (statusId !== undefined) {
+    setStatus(statusId, false);
   }
 };
 
-const setFocusedIndex = (index, shouldFocus = true) => {
+const setRovingIndex = (index, shouldFocus = true) => {
   const items = getItems();
   if (!items.length) {
     focusedIndex = -1;
@@ -66,9 +87,7 @@ const setFocusedIndex = (index, shouldFocus = true) => {
   }
   const bounded = Math.max(0, Math.min(index, items.length - 1));
   items.forEach((item, i) => {
-    const selected = i === bounded;
-    item.setAttribute('tabindex', selected ? '0' : '-1');
-    item.setAttribute('aria-selected', selected ? 'true' : 'false');
+    item.setAttribute('tabindex', i === bounded ? '0' : '-1');
   });
   focusedIndex = bounded;
   if (shouldFocus) {
@@ -86,12 +105,7 @@ const renderList = () => {
   focusedIndex = -1;
 
   if (!filteredLanguages.length) {
-    const empty = document.createElement('div');
-    empty.className = 'lang-empty';
-    empty.setAttribute('role', 'option');
-    empty.setAttribute('aria-disabled', 'true');
-    empty.textContent = 'No matches';
-    langList.appendChild(empty);
+    setStatus(STATUS_IDS.NO_MATCHES);
     return;
   }
 
@@ -100,39 +114,50 @@ const renderList = () => {
     item.className = 'lang-item';
     item.setAttribute('role', 'option');
     item.setAttribute('tabindex', '-1');
-    item.setAttribute('aria-selected', 'false');
+    item.setAttribute(
+      'aria-selected',
+      normalizeLanguageTag(lang.tag) === selectedLanguageTag ? 'true' : 'false'
+    );
     item.dataset.tag = lang.tag;
     item.dataset.index = String(index);
 
     const label = document.createElement('span');
     label.className = 'lang-label';
+    label.setAttribute('lang', lang.tag);
+    label.setAttribute('dir', 'auto');
     label.textContent = lang.label;
 
-    const tag = document.createElement('span');
+    const tag = document.createElement('bdi');
     tag.className = 'lang-tag';
+    tag.setAttribute('dir', 'ltr');
     tag.textContent = lang.tag;
 
     item.append(label, tag);
     langList.appendChild(item);
   });
+
+  const selectedIndex = filteredLanguages.findIndex((lang) => {
+    return normalizeLanguageTag(lang.tag) === selectedLanguageTag;
+  });
+  setRovingIndex(selectedIndex >= 0 ? selectedIndex : 0, false);
 };
 
 const selectLanguage = async (lang) => {
   if (!lang || isBusy) return;
   if (!window.languageAPI || typeof window.languageAPI.setLanguage !== 'function') {
     log.warnOnce('language_window.api.setLanguage.unavailable', 'setLanguage unavailable; language selection ignored.');
-    setStatus('Unable to set language. Try again.', true);
+    setStatus(STATUS_IDS.SELECTION_ERROR, true);
     return;
   }
 
-  setBusy(true, 'Applying language...');
+  setBusy(true, STATUS_IDS.APPLYING);
   try {
     await window.languageAPI.setLanguage(lang);
     window.close();
   } catch (e) {
     log.error('Error setLanguage:', e);
     setBusy(false);
-    setStatus('Unable to set language. Try again.', true);
+    setStatus(STATUS_IDS.SELECTION_ERROR, true);
   }
 };
 
@@ -141,7 +166,7 @@ const selectLanguage = async (lang) => {
 // =============================================================================
 langFilter.addEventListener('input', () => {
   if (isBusy) return;
-  setStatus('');
+  setStatus(STATUS_IDS.NONE);
   renderList();
 });
 
@@ -150,7 +175,7 @@ langFilter.addEventListener('keydown', (event) => {
     const items = getItems();
     if (!items.length || isBusy) return;
     event.preventDefault();
-    setFocusedIndex(0);
+    setRovingIndex(focusedIndex >= 0 ? focusedIndex : 0);
   }
 });
 
@@ -159,7 +184,7 @@ langList.addEventListener('click', (event) => {
   const item = event.target.closest('.lang-item');
   if (!item) return;
   const index = Number(item.dataset.index);
-  setFocusedIndex(index, false);
+  setRovingIndex(index, false);
   selectLanguage(item.dataset.tag);
 });
 
@@ -174,12 +199,18 @@ langList.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowDown') {
     event.preventDefault();
     nextIndex = Math.min((currentIndex >= 0 ? currentIndex + 1 : 0), items.length - 1);
-    setFocusedIndex(nextIndex);
+    setRovingIndex(nextIndex);
   } else if (event.key === 'ArrowUp') {
     event.preventDefault();
     nextIndex = Math.max((currentIndex >= 0 ? currentIndex - 1 : 0), 0);
-    setFocusedIndex(nextIndex);
-  } else if (event.key === 'Enter') {
+    setRovingIndex(nextIndex);
+  } else if (event.key === 'Home') {
+    event.preventDefault();
+    setRovingIndex(0);
+  } else if (event.key === 'End') {
+    event.preventDefault();
+    setRovingIndex(items.length - 1);
+  } else if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault();
     if (currentIndex >= 0 && items[currentIndex]) {
       selectLanguage(items[currentIndex].dataset.tag);
@@ -192,7 +223,7 @@ langList.addEventListener('focusin', (event) => {
   if (!item) return;
   const index = Number(item.dataset.index);
   if (!Number.isNaN(index)) {
-    focusedIndex = index;
+    setRovingIndex(index, false);
   }
 });
 
@@ -220,21 +251,48 @@ const loadLanguages = async () => {
     if (!fallbackLogged) {
       log.warn('BOOTSTRAP: getAvailableLanguages returned empty/invalid; falling back to local list.');
     }
-    languages = fallbackLanguages.slice();
+    languages = FALLBACK_LANGUAGES.slice();
+  }
+
+  if (selectedLanguageTag && !languages.some((lang) => {
+    return normalizeLanguageTag(lang.tag) === selectedLanguageTag;
+  })) {
+    log.warn(
+      'BOOTSTRAP: current language is not present in the available list; no option will be identified as selected:',
+      selectedLanguageTag
+    );
   }
 
   filteredLanguages = languages.slice();
   renderList();
 };
 
+const loadCurrentLanguage = async () => {
+  if (!window.languageAPI || typeof window.languageAPI.getCurrentLanguage !== 'function') {
+    log.warn('BOOTSTRAP: getCurrentLanguage unavailable; current selection will not be identified.');
+    return '';
+  }
+
+  try {
+    return normalizeLanguageTag(await window.languageAPI.getCurrentLanguage());
+  } catch (e) {
+    log.warn('BOOTSTRAP: getCurrentLanguage failed; current selection will not be identified:', e);
+    return '';
+  }
+};
+
 (async () => {
   try {
+    selectedLanguageTag = await loadCurrentLanguage();
     await loadLanguages();
+    langFilter.focus();
   } catch (e) {
     log.error('BOOTSTRAP: loadLanguages failed; falling back to local list:', e);
-    languages = fallbackLanguages.slice();
+    languages = FALLBACK_LANGUAGES.slice();
+    selectedLanguageTag = '';
     filteredLanguages = languages.slice();
     renderList();
+    langFilter.focus();
   }
 })();
 // Note: If the user closes the window without selecting anything, main applies fallback only if settings.language is empty.

@@ -8,30 +8,48 @@
 
   <title>Seleccione idioma / Select language</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="tooltips.css" />
   <link rel="stylesheet" href="language_window.css" />
 </head>
 
 <body>
   <div class="center" role="dialog" aria-labelledby="lang-title">
-    <h1 id="lang-title">Seleccione idioma / Select language</h1>
+    <h1 id="lang-title"><span lang="es">Seleccione idioma</span> / <span lang="en">Select language</span></h1>
 
     <div class="langs">
+      <div id="lang-filter-label" class="language-visually-hidden">
+        <span lang="es">Buscar idioma</span> / <span lang="en">Search language</span>
+      </div>
       <input id="langFilter" type="text" placeholder="Buscar / Search"
-        aria-label="Buscar idioma / Search language" autocomplete="off" />
+        aria-labelledby="lang-filter-label" aria-controls="langList" autocomplete="off" />
+      <div id="lang-list-label" class="language-visually-hidden">
+        <span lang="es">Idiomas disponibles</span> / <span lang="en">Available languages</span>
+      </div>
       <div id="langList" class="lang-list" role="listbox"
-        aria-label="Idiomas disponibles / Available languages"></div>
+        aria-labelledby="lang-list-label"></div>
     </div>
 
     <div class="note">
-      <div>¿Viste un error? ¡Únete para corregir o sumar más idiomas!<br />Found an error? Join us to fix or add more languages!</div>
-      <div id="statusLine" class="status" role="status" aria-live="polite"></div>
+      <div>
+        <span lang="es">¿Viste un error? ¡Únete para corregir o sumar más idiomas!</span><br />
+        <span lang="en">Found an error? Join us to fix or add more languages!</span>
+      </div>
+      <div id="statusLine" class="status" role="status" aria-live="polite" aria-atomic="true">
+        <span id="languageStatusNoMatches" hidden>
+          <span lang="es">Sin coincidencias</span> / <span lang="en">No matches</span>
+        </span>
+        <span id="languageStatusApplying" hidden>
+          <span lang="es">Aplicando idioma…</span> / <span lang="en">Applying language…</span>
+        </span>
+        <span id="languageStatusSelectionError" hidden>
+          <span lang="es">No se pudo cambiar el idioma. Inténtalo de nuevo.</span> /
+          <span lang="en">Unable to change language. Try again.</span>
+        </span>
+      </div>
     </div>
   </div>
 
   <script src="js/log.js"></script>
   <script src="language_window.js"></script>
-  <script src="js/tooltips.js"></script>
 </body>
 
 </html>

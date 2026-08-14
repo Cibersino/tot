@@ -604,6 +604,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
 /**
  * Registers IPC handlers related to settings:
  * - get-settings
+ * - get-current-language
  * - set-language
  * - set-mode-conteo
  * - set-selected-preset
@@ -739,6 +740,16 @@ function registerIpc(
       return decorateSettingsPayload(
         normalizeSettings(createDefaultSettings(DEFAULT_LANG))
       );
+    }
+  });
+
+  // get-current-language: returns only the persisted language needed by the language window
+  ipcMain.handle('get-current-language', async () => {
+    try {
+      return getSettings().language;
+    } catch (err) {
+      log.error('IPC get-current-language failed:', err);
+      throw err;
     }
   });
 

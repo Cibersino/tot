@@ -13,6 +13,7 @@ const api = {
     return res;
   },
   getAvailableLanguages: () => ipcRenderer.invoke('get-available-languages'),
+  getCurrentLanguage: () => ipcRenderer.invoke('get-current-language'),
 };
 
 contextBridge.exposeInMainWorld('languageAPI', api);

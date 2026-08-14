@@ -258,6 +258,9 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(initialSettings.spellcheckEnabled, true);
   assert.equal(initialSettings.spellcheckAvailable, false);
 
+  const currentLanguage = await ipcMain.invoke('get-current-language');
+  assert.equal(currentLanguage, 'ar');
+
   const result = await ipcMain.invoke('set-spellcheck-enabled', false);
   assert.deepEqual(result, { ok: true, enabled: false });
   assert.equal(onSettingsUpdatedCalls.length, 1);
