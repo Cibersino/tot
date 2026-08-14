@@ -95,6 +95,7 @@
   }
 
   function currentTarget() {
+    // Focus intentionally takes precedence over hover for a focused control.
     if (isTooltipTarget(focusedElement)) return focusedElement;
     if (isTooltipTarget(hoveredElement)) return hoveredElement;
     return null;
@@ -155,7 +156,12 @@
   document.addEventListener('pointerover', (event) => {
     const target = findTooltipTarget(event.target);
     if (!target || target === hoveredElement) return;
-    if (dismissedElement && dismissedElement !== target) dismissedElement = null;
+    // Subordinate hover activity must not revive an Escape-dismissed dominant focus target.
+    if (dismissedElement
+      && dismissedElement !== target
+      && dismissedElement !== focusedElement) {
+      dismissedElement = null;
+    }
     hoveredElement = target;
     refreshTooltip();
   });

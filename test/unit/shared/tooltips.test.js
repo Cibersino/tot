@@ -163,6 +163,17 @@ function createHarness({ mutationObserverAvailable = true } = {}) {
   };
 }
 
+function appendTooltipTarget(harness, text) {
+  const target = harness.createElement('button');
+  target.setAttribute('data-tot-tooltip', text);
+  harness.body.appendChild(target);
+  return target;
+}
+
+function getTooltip(harness) {
+  return harness.body._children.find((element) => element.id === 'tot-authored-tooltip');
+}
+
 test('visual tooltip values stay independent from name, description, and native title state', () => {
   const harness = createHarness();
 
@@ -197,6 +208,69 @@ test('pointer and keyboard focus independently show and hide the visual bubble',
   assert.equal(tooltip.hidden, false);
   harness.dispatch('focusout', { target: harness.button, relatedTarget: null });
   assert.equal(tooltip.hidden, true);
+});
+
+test('focused tooltip dismissal survives hover activity on subordinate targets', () => {
+  const harness = createHarness();
+  const hoverB = appendTooltipTarget(harness, 'Hover B');
+  const hoverC = appendTooltipTarget(harness, 'Hover C');
+
+  harness.dispatch('focusin', { target: harness.button });
+  const tooltip = getTooltip(harness);
+  harness.dispatch('pointerover', { target: hoverB });
+  assert.equal(tooltip.hidden, false);
+  assert.equal(tooltip.textContent, 'Open editor');
+
+  harness.dispatch('keydown', {
+    key: 'Escape',
+    preventDefault() {},
+    stopImmediatePropagation() {},
+  });
+  assert.equal(tooltip.hidden, true);
+
+  harness.dispatch('pointerout', { target: hoverB, relatedTarget: null });
+  harness.dispatch('pointerover', { target: hoverB });
+  assert.equal(tooltip.hidden, true);
+
+  harness.dispatch('pointerout', { target: hoverB, relatedTarget: hoverC });
+  harness.dispatch('pointerover', { target: hoverC });
+  assert.equal(tooltip.hidden, true);
+});
+
+test('focused tooltip dismissal ends when focus leaves for a still-hovered target', () => {
+  const harness = createHarness();
+  const hoverB = appendTooltipTarget(harness, 'Hover B');
+
+  harness.dispatch('focusin', { target: harness.button });
+  harness.dispatch('pointerover', { target: hoverB });
+  const tooltip = getTooltip(harness);
+  harness.dispatch('keydown', {
+    key: 'Escape',
+    preventDefault() {},
+    stopImmediatePropagation() {},
+  });
+
+  harness.dispatch('focusout', { target: harness.button, relatedTarget: null });
+  assert.equal(tooltip.hidden, false);
+  assert.equal(tooltip.textContent, 'Hover B');
+});
+
+test('focused tooltip dismissal ends when focus moves to another target', () => {
+  const harness = createHarness();
+  const focusC = appendTooltipTarget(harness, 'Focus C');
+
+  harness.dispatch('focusin', { target: harness.button });
+  const tooltip = getTooltip(harness);
+  harness.dispatch('keydown', {
+    key: 'Escape',
+    preventDefault() {},
+    stopImmediatePropagation() {},
+  });
+
+  harness.dispatch('focusout', { target: harness.button, relatedTarget: focusC });
+  harness.dispatch('focusin', { target: focusC });
+  assert.equal(tooltip.hidden, false);
+  assert.equal(tooltip.textContent, 'Focus C');
 });
 
 test('first Escape dismisses a visible bubble and a second Escape remains unconsumed', () => {
