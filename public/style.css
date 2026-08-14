@@ -1224,6 +1224,7 @@ pre#textPreview .preview-fragment--empty {
 }
 
 .info-modal-accessible-title,
+.main-accessible-title,
 .main-accessible-description {
   position: absolute;
   width: 1px;

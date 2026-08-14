@@ -296,6 +296,27 @@ test('main markup exposes precise-mode help only through the explicit descriptio
   assert.match(markup, /id="preciseModeDescription" class="main-accessible-description"/);
 });
 
+test('main markup reaches primary controls before the fixed brand-link actions', () => {
+  const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/index.html'), 'utf8');
+  const bodyStart = markup.indexOf('<body>');
+  const appTitle = markup.indexOf('<h1 class="main-accessible-title">toT</h1>');
+  const textExtractionAction = markup.indexOf('id="btnTextExtraction"');
+  const textExtractionButtonStart = markup.lastIndexOf('<button', textExtractionAction);
+  const browserExtensionLink = markup.indexOf('id="browserExtensionLogoLink"');
+
+  assert.ok(bodyStart >= 0);
+  assert.ok(appTitle > bodyStart);
+  assert.ok(textExtractionAction > bodyStart);
+  assert.ok(textExtractionButtonStart > bodyStart);
+  assert.ok(browserExtensionLink > textExtractionAction);
+  assert.match(markup, /<div class="app-title" aria-hidden="true">\s*<img id="appLogo"[^>]*alt=""/);
+  assert.doesNotMatch(
+    markup.slice(bodyStart, textExtractionButtonStart),
+    /<(?:a|button|input|select|textarea)\b/i
+  );
+  assert.doesNotMatch(markup.slice(bodyStart, textExtractionButtonStart), /\btabindex\s*=/i);
+});
+
 test('Editor launch lifecycle exposes, retranslates, and clears real live-region status text', async () => {
   const harness = await createRendererHarness();
   const editorLoader = harness.getElement('editorLoader');
