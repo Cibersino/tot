@@ -19,8 +19,7 @@
         "chars": "Karakter: {n}",
         "value_pending": "tertunda...",
         "value_unavailable": "tidak tersedia",
-        "precise_mode": "Mode presisi",
-        "precise_tooltip": "Berdasarkan Intl.Segmenter"
+        "precise_mode": "Mode presisi"
       },
       "crono": {
         "title": "STOPWATCH",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Menghitung ulang hasil teks saat ini...",
         "current_text_waiting_startup": "Menstabilkan teks saat ini...",
         "current_text_waiting_editor": "Menyinkronkan perubahan Text Editor...",
+        "editor_loading": "Memuat Text Editor...",
         "text_extraction_placeholder": "Mengekstrak teks...",
         "text_extraction_preparing": "Menyiapkan rute ekstraksi...",
         "text_extraction_cancellation_pending": "Pembatalan diminta. Harap tunggu...",
@@ -47,18 +47,19 @@
       },
       "tooltips": {
         "text_extraction": "Ekstrak teks dari file",
+        "browser_extension": "Ekstensi browser"
+      },
+      "names": {
         "text_extraction_abort": "Batalkan ekstraksi",
         "overwrite_clipboard": "Ganti teks saat ini dengan clipboard",
         "append_clipboard": "Tambahkan clipboard ke akhir teks saat ini (baris baru)",
-        "clipboard_repeat_count": "Pengulangan clipboard",
+        "clipboard_repeat_count": "Pengulangan tempel",
         "edit": "Buka jendela teks saat ini lengkap",
         "clear": "Kosongkan teks saat ini",
         "snapshot_load": "Muat snapshot teks",
         "snapshot_save": "Simpan teks saat ini ke snapshot",
         "task_new": "Tugas baru",
         "task_load": "Muat tugas",
-        "preview_spoiler": "Tampilkan atau sembunyikan akhir pratinjau",
-        "browser_extension": "Ekstensi browser",
         "cibersino_website": "Situs web Cibersino",
         "cibersino_kofi": "Dukung saya di Ko-fi",
         "new_preset": "Buat preset baru",
@@ -67,23 +68,22 @@
         "reset_presets": "Pulihkan preset bawaan",
         "text_time_calculator": "Buka kalkulator cepat",
         "help_button": "Tampilkan tip berguna",
-        "flotante_window": "Jendela mengambang"
+        "crono_toggle": "Mulai atau jeda stopwatch",
+        "crono_reset": "Reset stopwatch",
+        "floating_window": "Jendela mengambang"
+      },
+      "help": {
+        "preview_spoiler": "Tampilkan atau sembunyikan akhir pratinjau",
+        "precise_mode": "Berdasarkan Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "Ekstrak teks dari file",
-        "text_extraction_abort": "Batalkan ekstraksi",
         "browser_extension": "Buka dialog ekstensi browser",
-        "clipboard_repeat_count": "Pengulangan tempel",
-        "text_time_calculator": "Buka kalkulator cepat",
         "wpm_input": "Kata per menit",
         "wpm_slider": "Slider kata per menit",
         "speed_presets": "Preset kecepatan",
-        "precise_mode_toggle": "Mode presisi",
         "crono_controls": "Kontrol stopwatch",
         "crono_display": "Tampilan stopwatch",
-        "crono_toggle": "Mulai atau jeda stopwatch",
-        "crono_reset": "Reset stopwatch",
-        "floating_window_toggle": "Jendela mengambang",
         "floating_window_group": "Kontrol jendela mengambang"
       },
       "alerts": {
@@ -184,6 +184,11 @@
         "unit_label": "Unit {index}",
         "unit_counter": "Unit {index}/{count}",
         "unit_name_placeholder": "Nama unit opsional",
+        "aria": {
+          "route": "Rute ekstraksi untuk {file}",
+          "unit_assignment": "Unit tujuan untuk {file}",
+          "unit_name": "Nama opsional untuk unit {index} dari {count}"
+        },
         "new_unit_option": "Buat unit baru",
         "move_up": "Pindah ke atas",
         "move_down": "Pindah ke bawah",
@@ -301,21 +306,30 @@
       "increase_text_size": "Perbesar ukuran teks",
       "reset_text_size": "Reset ukuran teks",
       "read_progress_label": "Dibaca",
-      "clear_title": "Kosongkan",
+      "clear": "Kosongkan",
+      "help": {
+        "apply": "Terapkan teks editor sebagai teks saat ini",
+        "auto_apply": "Terapkan perubahan editor secara otomatis ke teks saat ini saat mengetik",
+        "spellcheck": "Aktifkan atau nonaktifkan pemeriksa ejaan untuk teks editor"
+      },
       "editor_find": {
         "input_placeholder": "Cari...",
         "input_aria": "Cari dalam teks",
-        "expand_title": "Tampilkan kontrol ganti",
-        "collapse_title": "Sembunyikan kontrol ganti",
         "replace_placeholder": "Ganti...",
         "replace_aria": "Teks pengganti",
         "replace": "Ganti",
         "replace_all": "Ganti semua",
-        "prev_title": "Kecocokan sebelumnya",
-        "next_title": "Kecocokan berikutnya",
-        "close_title": "Tutup bilah pencarian",
-        "replace_title": "Ganti kecocokan saat ini",
-        "replace_all_title": "Ganti semua kecocokan",
+        "names": {
+          "show_replace": "Tampilkan kontrol ganti",
+          "hide_replace": "Sembunyikan kontrol ganti",
+          "previous_match": "Kecocokan sebelumnya",
+          "next_match": "Kecocokan berikutnya",
+          "close": "Tutup bilah pencarian"
+        },
+        "help": {
+          "replace_current": "Ganti kecocokan saat ini",
+          "replace_all": "Ganti semua kecocokan"
+        },
         "replace_timeout": "Penggantian kehabisan waktu. Coba lagi.",
         "status_no_matches": "Tidak ada kecocokan",
         "status_empty_query": "Ketik untuk mencari"
@@ -366,6 +380,7 @@
         "close_aria": "Tutup pengelola tag snapshot teks",
         "new_tag": "Tag baru",
         "new_tag_placeholder": "Nama tag",
+        "new_tag_input_aria": "Nama tag baru",
         "add_tag": "Tambahkan tag",
         "cancel_draft": "Batal",
         "sort_alphabetically": "Urutkan A-Z",
@@ -468,29 +483,35 @@
         "enlace": "Tautan",
         "comentario": "K+S",
         "acciones": "Aksi",
-        "header_tooltips": {
-          "tiempo": "Perkiraan waktu membaca",
+        "header_names": {
+          "tiempo": "Estimasi waktu membaca",
           "percent": "Persentase selesai",
-          "falta": "Perkiraan waktu tersisa",
+          "falta": "Estimasi waktu tersisa",
           "comentario": "Komentar dan snapshot teks"
         },
-        "tooltips": {
+        "names": {
           "file_select": "Pilih file lokal",
           "link_open": "Buka tautan",
           "snapshot_load": "Muat snapshot teks untuk baris ini",
-          "comment": "Tambah komentar atau snapshot teks",
+          "comment": "Tambahkan komentar atau snapshot teks",
           "move_up": "Pindahkan ke atas",
           "move_down": "Pindahkan ke bawah",
           "library_row_save": "Simpan ke pustaka",
           "delete_row": "Hapus baris"
+        },
+        "descriptions": {
+          "snapshot_path": "Jalur snapshot teks terkait: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Muat snapshot teks sebagai teks saat ini · Jalur terkait: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Komentar",
         "comment_placeholder": "Komentar...",
         "snapshot_select": "Pilih snapshot",
-        "snapshot_select_tooltip": "Pilih snapshot teks untuk baris ini",
         "snapshot_clear": "Hapus snapshot yang dipilih dari baris ini",
+        "close_aria": "Tutup komentar",
         "snapshot_source_reminder": {
           "title": "Pengingat sumber snapshot",
           "message": "Baris ini terkait dengan snapshot teks. Periksa komentar sumbernya sebelum memilih file lokal.",
@@ -519,6 +540,7 @@
       },
       "biblioteca": {
         "library_title": "Pustaka",
+        "close_aria": "Tutup perpustakaan bacaan",
         "search": "Cari",
         "search_placeholder": "Cari pustaka...",
         "empty": "(kosong)",
@@ -527,6 +549,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Simpan ke pustaka",
+        "close_aria": "Tutup dialog simpan ke perpustakaan",
         "library_save_question": "Sertakan komentar? Jika ada snapshot teks yang dipilih untuk bacaan ini, kaitannya akan tetap disimpan.",
         "yes": "Ya",
         "no": "Tidak",
@@ -585,7 +608,7 @@
         "title": "Tes kecepatan membaca",
         "show_instructions": "Tampilkan instruksi",
         "hide_instructions": "Sembunyikan instruksi",
-        "intro": "Tes ini dimaksudkan untuk memperkirakan kecepatan membaca nyata Anda melalui sesi terpandu. Aplikasi akan membuka teks dan menunggu Anda menekan Play (▶) di Jendela Mengambang saat siap mulai. Setelah tes dimulai, jangan tekan Pause (⏸) sebelum selesai membaca: Pause mengakhiri tes; bukan menjeda timer. Gunakan Stop/Reset (⏹) hanya jika ingin membatalkan tes. Setelah itu, Anda dapat meninjau pertanyaan pemahaman jika teks menyertakannya dan, pada akhir proses, membuat preset dari hasilnya.\nSebelum mulai, ingat bahwa teks tes ini biasanya memerlukan 5 hingga 15 menit konsentrasi tanpa gangguan.\nPool ini menggunakan teks pendek, jadi perlakukan hasilnya dengan hati-hati. Hasil tersebut tidak boleh langsung diekstrapolasi ke teks panjang, yang biasanya melibatkan faktor positif seperti alur dan pembentukan konteks, serta faktor negatif seperti rekapitulasi mental dan kelelahan.",
+        "intro": "Tes ini dimaksudkan untuk memperkirakan kecepatan membaca nyata Anda melalui sesi terpandu. Aplikasi akan membuka teks dan menunggu Anda menekan Play (▶) di Stopwatch Mengambang saat siap mulai. Setelah tes dimulai, jangan tekan Pause (⏸) sebelum selesai membaca: Pause mengakhiri tes; bukan menjeda stopwatch. Gunakan Stop/Reset (⏹) hanya jika ingin membatalkan tes. Setelah itu, Anda dapat meninjau pertanyaan pemahaman jika teks menyertakannya dan, pada akhir proses, membuat preset dari hasilnya.\nSebelum mulai, ingat bahwa teks tes ini biasanya memerlukan 5 hingga 15 menit konsentrasi tanpa gangguan.\nPool ini menggunakan teks pendek, jadi perlakukan hasilnya dengan hati-hati. Hasil tersebut tidak boleh langsung diekstrapolasi ke teks panjang, yang biasanya melibatkan faktor positif seperti alur dan pembentukan konteks, serta faktor negatif seperti rekapitulasi mental dan kelelahan.",
         "eligible_count": "File memenuhi syarat:",
         "show_bundled_entries": "Tes dasar",
         "get_more_files": "Ambil file lain",
@@ -597,13 +620,15 @@
         "close_aria": "Tutup dialog tes kecepatan membaca",
         "start_random_confirm": "Ini akan menimpa teks saat ini dengan teks acak yang memenuhi syarat dari pool. Anda ingin melanjutkan?",
         "reset_confirm": "Ini akan mereset seluruh pool tes dan menandai semua filenya sebagai belum digunakan lagi. Anda ingin melanjutkan?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Sertakan file tes awal bawaan aplikasi dalam pool",
           "get_more_files": "Ambil file tes lain dari folder Google Drive",
           "import_files": "Impor file tes dari perangkat Anda",
-          "reset_pool": "Reset pool tes",
           "start_random_text": "Mulai tes dengan teks acak yang memenuhi syarat dari pool",
-          "start_current_text": "Mulai tes dengan teks saat ini"
+          "start_current_text": "Gunakan teks saat ini tanpa menggantinya atau memakai file dari pool"
+        },
+        "names": {
+          "reset_pool": "Reset pool tes"
         },
         "import": {
           "import_summary": "Impor selesai. Diimpor: {imported}. Duplikat dilewati: {skippedDuplicates}. Validasi gagal: {failedValidation}. Entri arsip gagal: {failedArchiveEntries}. Penulisan gagal: {failedWrites}.",
@@ -618,7 +643,7 @@
         }
       },
       "prestart": {
-        "reminder": "Tekan Play (▶) di Jendela Mengambang saat Anda siap mulai. Setelah tes dimulai, jangan tekan Pause (⏸) sebelum selesai membaca: Pause mengakhiri tes; bukan menjeda timer. Tekan Stop/Reset (⏹) hanya jika ingin membatalkan tes."
+        "reminder": "Tekan Play (▶) di Stopwatch Mengambang saat Anda siap mulai. Setelah tes dimulai, jangan tekan Pause (⏸) sebelum selesai membaca: Pause mengakhiri tes; bukan menjeda stopwatch. Tekan Stop/Reset (⏹) hanya jika ingin membatalkan tes."
       },
       "questions": {
         "title": "Pertanyaan Pemahaman Bacaan",
@@ -693,7 +718,7 @@
       }
     },
     "browser_extension": {
-      "title": "Tiempo de lectura",
+      "title": "Waktu membaca",
       "subtitle": "Ekstensi browser",
       "availability": "Tersedia di Chrome sekarang. Browser lain akan segera menyusul.",
       "chrome_store_aria": "Buka halaman Chrome Web Store ekstensi",
@@ -705,6 +730,11 @@
     "info": {
       "loading": "Memuat...",
       "missing_content": "Tidak ada konten yang tersedia untuk '{name}'.",
+      "close_aria": "Tutup informasi",
+      "media_lightbox": {
+        "title": "Pratinjau tangkapan layar yang diperbesar",
+        "close_aria": "Tutup pratinjau"
+      },
       "external": {
         "blocked": "Tautan diblokir",
         "error": "Kesalahan saat membuka tautan"

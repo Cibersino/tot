@@ -19,8 +19,7 @@
         "chars": "字元數：{n}",
         "value_pending": "待處理...",
         "value_unavailable": "無法使用",
-        "precise_mode": "精確模式",
-        "precise_tooltip": "基於 Intl.Segmenter"
+        "precise_mode": "精確模式"
       },
       "crono": {
         "title": "碼錶",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "正在重新計算目前文字結果...",
         "current_text_waiting_startup": "正在穩定目前文字...",
         "current_text_waiting_editor": "正在同步 Text Editor 變更...",
+        "editor_loading": "正在載入 Text Editor...",
         "text_extraction_placeholder": "正在處理擷取...",
         "text_extraction_preparing": "正在準備擷取路徑...",
         "text_extraction_cancellation_pending": "已要求取消。請稍候...",
@@ -47,6 +47,9 @@
       },
       "tooltips": {
         "text_extraction": "從檔案擷取文字",
+        "browser_extension": "瀏覽器擴充功能"
+      },
+      "names": {
         "text_extraction_abort": "中止擷取",
         "overwrite_clipboard": "用剪貼簿內容取代目前文字",
         "append_clipboard": "將剪貼簿內容附加到目前文字結尾（換行）",
@@ -57,8 +60,6 @@
         "snapshot_save": "將目前文字儲存為快照",
         "task_new": "新增任務",
         "task_load": "載入任務",
-        "preview_spoiler": "顯示或隱藏預覽結尾",
-        "browser_extension": "瀏覽器擴充功能",
         "cibersino_website": "Cibersino 網站",
         "cibersino_kofi": "在 Ko-fi 支持我",
         "new_preset": "建立新預設值",
@@ -67,23 +68,22 @@
         "reset_presets": "還原預設值",
         "text_time_calculator": "開啟快速計算器",
         "help_button": "顯示實用提示",
-        "flotante_window": "浮動視窗"
+        "crono_toggle": "啟動或暫停碼錶",
+        "crono_reset": "重設碼錶",
+        "floating_window": "浮動視窗"
+      },
+      "help": {
+        "preview_spoiler": "顯示或隱藏預覽結尾",
+        "precise_mode": "基於 Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "從檔案擷取文字",
-        "text_extraction_abort": "中止擷取",
         "browser_extension": "開啟瀏覽器擴充功能對話框",
-        "clipboard_repeat_count": "貼上重複次數",
-        "text_time_calculator": "開啟快速計算器",
         "wpm_input": "每分鐘詞數",
         "wpm_slider": "每分鐘詞數滑桿",
         "speed_presets": "速度預設值",
-        "precise_mode_toggle": "精確模式",
         "crono_controls": "碼錶控制項",
         "crono_display": "碼錶顯示",
-        "crono_toggle": "啟動或暫停碼錶",
-        "crono_reset": "重設碼錶",
-        "floating_window_toggle": "浮動視窗",
         "floating_window_group": "浮動視窗控制項"
       },
       "alerts": {
@@ -184,6 +184,11 @@
         "unit_label": "單元 {index}",
         "unit_counter": "單元 {index}/{count}",
         "unit_name_placeholder": "選填單元名稱",
+        "aria": {
+          "route": "{file} 的擷取路線",
+          "unit_assignment": "{file} 的目的地單元",
+          "unit_name": "第 {index}/{count} 個單元的選用名稱"
+        },
         "new_unit_option": "建立新單元",
         "move_up": "上移",
         "move_down": "下移",
@@ -301,21 +306,30 @@
       "increase_text_size": "放大文字大小",
       "reset_text_size": "重設文字大小",
       "read_progress_label": "已讀",
-      "clear_title": "清除",
+      "clear": "清除",
+      "help": {
+        "apply": "將編輯器文字套用為目前文字",
+        "auto_apply": "輸入時自動將編輯器變更套用到目前文字",
+        "spellcheck": "開啟或關閉編輯器文字的拼字檢查"
+      },
       "editor_find": {
         "input_placeholder": "尋找...",
         "input_aria": "在文字中尋找",
-        "expand_title": "顯示取代控制項",
-        "collapse_title": "隱藏取代控制項",
         "replace_placeholder": "取代...",
         "replace_aria": "取代文字",
         "replace": "取代",
         "replace_all": "全部取代",
-        "prev_title": "上一個相符項",
-        "next_title": "下一個相符項",
-        "close_title": "關閉尋找欄",
-        "replace_title": "取代目前相符項",
-        "replace_all_title": "取代所有相符項",
+        "names": {
+          "show_replace": "顯示取代控制項",
+          "hide_replace": "隱藏取代控制項",
+          "previous_match": "上一個相符項",
+          "next_match": "下一個相符項",
+          "close": "關閉尋找欄"
+        },
+        "help": {
+          "replace_current": "取代目前相符項",
+          "replace_all": "取代所有相符項"
+        },
         "replace_timeout": "取代超時。請重試。",
         "status_no_matches": "沒有相符項",
         "status_empty_query": "輸入內容以搜尋"
@@ -366,6 +380,7 @@
         "close_aria": "關閉文字快照標籤管理器",
         "new_tag": "新標籤",
         "new_tag_placeholder": "標籤名稱",
+        "new_tag_input_aria": "新標籤名稱",
         "add_tag": "新增標籤",
         "cancel_draft": "取消",
         "sort_alphabetically": "依 A-Z 排序",
@@ -468,14 +483,14 @@
         "enlace": "連結",
         "comentario": "註+快",
         "acciones": "動作",
-        "header_tooltips": {
-          "tiempo": "預計閱讀時間",
-          "percent": "已完成百分比",
-          "falta": "預計剩餘時間",
+        "header_names": {
+          "tiempo": "預估閱讀時間",
+          "percent": "完成百分比",
+          "falta": "預估剩餘時間",
           "comentario": "註解和文字快照"
         },
-        "tooltips": {
-          "file_select": "選擇本機檔案",
+        "names": {
+          "file_select": "選取本機檔案",
           "link_open": "開啟連結",
           "snapshot_load": "為此列載入文字快照",
           "comment": "新增註解或文字快照",
@@ -483,14 +498,20 @@
           "move_down": "下移列",
           "library_row_save": "儲存至資料庫",
           "delete_row": "刪除列"
+        },
+        "descriptions": {
+          "snapshot_path": "關聯的文字快照路徑：{path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "將文字快照載入為目前文字 · 關聯路徑：{path}"
         }
       },
       "comentario_modal": {
         "comment_title": "註解",
         "comment_placeholder": "註解...",
         "snapshot_select": "選擇快照",
-        "snapshot_select_tooltip": "為此列選擇文字快照",
         "snapshot_clear": "移除此列所選快照",
+        "close_aria": "關閉註解",
         "snapshot_source_reminder": {
           "title": "快照來源提示",
           "message": "此列已關聯文字快照。選擇本機檔案前，請查看其來源註解。",
@@ -519,6 +540,7 @@
       },
       "biblioteca": {
         "library_title": "資料庫",
+        "close_aria": "關閉閱讀庫",
         "search": "搜尋",
         "search_placeholder": "在資料庫中搜尋...",
         "empty": "（空）",
@@ -527,6 +549,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "儲存至資料庫",
+        "close_aria": "關閉儲存到資料庫對話框",
         "library_save_question": "包含註解？如果此閱讀項目已選取文字快照，無論選擇哪一項，關聯都會儲存。",
         "yes": "是",
         "no": "否",
@@ -585,7 +608,7 @@
         "title": "閱讀速度測試",
         "show_instructions": "顯示說明",
         "hide_instructions": "隱藏說明",
-        "intro": "此測試用於透過引導式工作階段估計你的實際閱讀速度。應用程式會開啟文字，並等待你準備好後在浮動視窗中按 Play（▶）。測試開始後，在讀完之前不要按 Pause（⏸）：Pause 會結束測試，而不是暫停計時。只有在想取消測試時才使用 Stop/Reset（⏹）。之後，如果文字包含理解問題，你可以查看這些問題；最後，可以根據結果建立一個預設值。\n開始前請注意，這些測試文字通常需要 5 到 15 分鐘的連續專注，期間不要中斷。\n此文字池使用短文字，因此請審慎解讀結果。它不應直接外推至長文字，因為長文字通常會涉及正向因素，例如流暢度和脈絡累積，也會涉及負向因素，例如心理回顧和疲勞。",
+        "intro": "此測試用於透過引導式工作階段估計你的實際閱讀速度。應用程式會開啟文字，並等待你準備好後在浮動碼表中按 Play（▶）。測試開始後，在讀完之前不要按 Pause（⏸）：Pause 會結束測試，而不是暫停碼表。只有在想取消測試時才使用 Stop/Reset（⏹）。之後，如果文字包含理解問題，你可以查看這些問題；最後，可以根據結果建立一個預設值。\n開始前請注意，這些測試文字通常需要 5 到 15 分鐘的連續專注，期間不要中斷。\n此文字池使用短文字，因此請審慎解讀結果。它不應直接外推至長文字，因為長文字通常會涉及正向因素，例如流暢度和脈絡累積，也會涉及負向因素，例如心理回顧和疲勞。",
         "eligible_count": "符合條件的檔案：",
         "show_bundled_entries": "基礎測試",
         "get_more_files": "取得更多檔案",
@@ -597,13 +620,15 @@
         "close_aria": "關閉閱讀速度測試對話框",
         "start_random_confirm": "這會用文字池中一個符合條件的隨機文字覆蓋目前文字。要繼續嗎？",
         "reset_confirm": "這會重設整個測試文字池，並將其中所有檔案重新標記為未使用。要繼續嗎？",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "將應用程式內建的初始測試檔案包含到池中",
           "get_more_files": "從 Google Drive 資料夾取得更多測試檔案",
           "import_files": "從你的裝置匯入測試檔案",
-          "reset_pool": "重設測試文字池",
           "start_random_text": "用文字池中符合條件的隨機文字開始測試",
-          "start_current_text": "以目前文字開始測試"
+          "start_current_text": "使用目前文字，不取代它，也不消耗池中的檔案"
+        },
+        "names": {
+          "reset_pool": "重設測試文字池"
         },
         "import": {
           "import_summary": "匯入完成。已匯入：{imported}。略過的重複項：{skippedDuplicates}。驗證失敗：{failedValidation}。壓縮檔項目失敗：{failedArchiveEntries}。寫入失敗：{failedWrites}。",
@@ -618,7 +643,7 @@
         }
       },
       "prestart": {
-        "reminder": "準備開始時，請在浮動視窗中按 Play（▶）。測試開始後，在讀完之前不要按 Pause（⏸）：Pause 會結束測試，而不是暫停計時。只有在想取消測試時才按 Stop/Reset（⏹）。"
+        "reminder": "準備開始時，請在浮動碼表中按 Play（▶）。測試開始後，在讀完之前不要按 Pause（⏸）：Pause 會結束測試，而不是暫停碼表。只有在想取消測試時才按 Stop/Reset（⏹）。"
       },
       "questions": {
         "title": "閱讀理解問題",
@@ -693,7 +718,7 @@
       }
     },
     "browser_extension": {
-      "title": "Tiempo de lectura",
+      "title": "閱讀時間",
       "subtitle": "瀏覽器擴充功能",
       "availability": "現已於 Chrome 提供。更多瀏覽器即將支援。",
       "chrome_store_aria": "開啟擴充功能的 Chrome Web Store 頁面",
@@ -705,6 +730,11 @@
     "info": {
       "loading": "正在載入...",
       "missing_content": "沒有可用於“{name}”的內容。",
+      "close_aria": "關閉資訊",
+      "media_lightbox": {
+        "title": "放大的螢幕截圖預覽",
+        "close_aria": "關閉預覽"
+      },
       "external": {
         "blocked": "連結已已封鎖",
         "error": "開啟連結時發生錯誤"

@@ -19,8 +19,7 @@
         "chars": "Caratteri: {n}",
         "value_pending": "in sospeso...",
         "value_unavailable": "non disponibile",
-        "precise_mode": "Modalità precisa",
-        "precise_tooltip": "Basato su Intl.Segmenter"
+        "precise_mode": "Modalità precisa"
       },
       "crono": {
         "title": "CRONOMETRO",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Ricalcolo dei risultati del testo corrente...",
         "current_text_waiting_startup": "Stabilizzazione del testo corrente...",
         "current_text_waiting_editor": "Sincronizzazione delle modifiche dell’Editor di Testo...",
+        "editor_loading": "Caricamento di Text Editor...",
         "text_extraction_placeholder": "Estrazione del testo...",
         "text_extraction_preparing": "Preparazione del percorso di estrazione...",
         "text_extraction_cancellation_pending": "Annullamento richiesto. Attendi...",
@@ -47,18 +47,19 @@
       },
       "tooltips": {
         "text_extraction": "Estrai testo da file",
+        "browser_extension": "Estensione del browser"
+      },
+      "names": {
         "text_extraction_abort": "Interrompi estrazione",
         "overwrite_clipboard": "Sostituire il testo corrente con gli appunti",
         "append_clipboard": "Aggiungi il testo degli appunti alla fine del testo corrente (nuova riga)",
-        "clipboard_repeat_count": "Numero di ripetizioni dell'incolla",
+        "clipboard_repeat_count": "Ripetizioni dell'incolla",
         "edit": "Apri la finestra del testo corrente completo",
         "clear": "Svuota il testo corrente",
         "snapshot_load": "Carica un snapshot di testo",
         "snapshot_save": "Salva il testo corrente in uno snapshot",
         "task_new": "Crea una nuova attività",
         "task_load": "Carica un'attività",
-        "preview_spoiler": "Mostra o nascondi la fine dell'anteprima",
-        "browser_extension": "Estensione del browser",
         "cibersino_website": "Il sito di Cibersino",
         "cibersino_kofi": "Sostienimi su Ko-fi",
         "new_preset": "Crea un nuovo preset",
@@ -67,23 +68,22 @@
         "reset_presets": "Ripristina i preset predefiniti",
         "text_time_calculator": "Apri calcolatrice rapida",
         "help_button": "Aiuto",
-        "flotante_window": "Finestra fluttuante"
+        "crono_toggle": "Avvia o metti in pausa il cronometro",
+        "crono_reset": "Reimposta cronometro",
+        "floating_window": "Finestra fluttuante"
+      },
+      "help": {
+        "preview_spoiler": "Mostra o nascondi la fine dell’anteprima",
+        "precise_mode": "Basato su Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "Estrai testo da file",
-        "text_extraction_abort": "Interrompi estrazione",
         "browser_extension": "Apri la finestra di dialogo dell'estensione del browser",
-        "clipboard_repeat_count": "Ripetizioni dell'incolla",
-        "text_time_calculator": "Apri calcolatrice rapida",
         "wpm_input": "Parole al minuto",
         "wpm_slider": "Cursore parole al minuto",
         "speed_presets": "Preset di velocità",
-        "precise_mode_toggle": "Modalità precisa",
         "crono_controls": "Controlli del cronometro",
         "crono_display": "Display del cronometro",
-        "crono_toggle": "Avvia o metti in pausa il cronometro",
-        "crono_reset": "Reimposta cronometro",
-        "floating_window_toggle": "Finestra fluttuante",
         "floating_window_group": "Controlli della finestra fluttuante"
       },
       "alerts": {
@@ -184,6 +184,11 @@
         "unit_label": "Unità {index}",
         "unit_counter": "Unità {index}/{count}",
         "unit_name_placeholder": "Nome unità opzionale",
+        "aria": {
+          "route": "Percorso di estrazione per {file}",
+          "unit_assignment": "Unità di destinazione per {file}",
+          "unit_name": "Nome opzionale per l’unità {index} di {count}"
+        },
         "new_unit_option": "Crea nuova unità",
         "move_up": "Sposta su",
         "move_down": "Sposta giù",
@@ -301,21 +306,30 @@
       "increase_text_size": "Aumenta dimensione del testo",
       "reset_text_size": "Reimposta dimensione del testo",
       "read_progress_label": "Letto",
-      "clear_title": "Svuota",
+      "clear": "Svuota",
+      "help": {
+        "apply": "Applica il testo dell’editor come testo attuale",
+        "auto_apply": "Applica automaticamente le modifiche dell’editor al testo attuale mentre digiti",
+        "spellcheck": "Attiva o disattiva il controllo ortografico nel testo dell’editor"
+      },
       "editor_find": {
         "input_placeholder": "Trova...",
         "input_aria": "Trova nel testo",
-        "expand_title": "Mostra sostituzione",
-        "collapse_title": "Nascondi sostituzione",
         "replace_placeholder": "Sostituisci...",
         "replace_aria": "Testo sostitutivo",
         "replace": "Sostituisci",
         "replace_all": "Sostituisci tutto",
-        "prev_title": "Occorrenza precedente",
-        "next_title": "Occorrenza successiva",
-        "close_title": "Chiudi la barra di ricerca",
-        "replace_title": "Sostituisci la corrispondenza corrente",
-        "replace_all_title": "Sostituisci tutte le corrispondenze",
+        "names": {
+          "show_replace": "Mostra sostituzione",
+          "hide_replace": "Nascondi sostituzione",
+          "previous_match": "Occorrenza precedente",
+          "next_match": "Occorrenza successiva",
+          "close": "Chiudi la barra di ricerca"
+        },
+        "help": {
+          "replace_current": "Sostituisci la corrispondenza corrente",
+          "replace_all": "Sostituisci tutte le corrispondenze"
+        },
         "replace_timeout": "La sostituzione ha richiesto troppo tempo. Riprova.",
         "status_no_matches": "Nessuna corrispondenza",
         "status_empty_query": "Digita per cercare"
@@ -366,6 +380,7 @@
         "close_aria": "Chiudi il gestore dei tag degli snapshot di testo",
         "new_tag": "Nuovo tag",
         "new_tag_placeholder": "Nome del tag",
+        "new_tag_input_aria": "Nome della nuova etichetta",
         "add_tag": "Aggiungi tag",
         "cancel_draft": "Annulla",
         "sort_alphabetically": "Ordina A-Z",
@@ -468,13 +483,13 @@
         "enlace": "Link",
         "comentario": "C+S",
         "acciones": "Azioni",
-        "header_tooltips": {
+        "header_names": {
           "tiempo": "Tempo di lettura stimato",
           "percent": "Percentuale completata",
-          "falta": "Tempo rimanente stimato",
+          "falta": "Tempo restante stimato",
           "comentario": "Commento e snapshot di testo"
         },
-        "tooltips": {
+        "names": {
           "file_select": "Seleziona file locale",
           "link_open": "Apri link",
           "snapshot_load": "Carica snapshot di testo per questa riga",
@@ -483,14 +498,20 @@
           "move_down": "Sposta la riga giù",
           "library_row_save": "Salva nella biblioteca",
           "delete_row": "Elimina questa riga"
+        },
+        "descriptions": {
+          "snapshot_path": "Percorso dello snapshot di testo associato: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Carica snapshot di testo come testo attuale · Percorso associato: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Commento",
         "comment_placeholder": "Commento...",
         "snapshot_select": "Seleziona snapshot",
-        "snapshot_select_tooltip": "Seleziona snapshot di testo per questa riga",
         "snapshot_clear": "Rimuovi snapshot di testo per questa riga",
+        "close_aria": "Chiudi commento",
         "snapshot_source_reminder": {
           "title": "Promemoria sull'origine dello snapshot",
           "message": "Questa riga è associata a uno snapshot di testo. Controlla il relativo commento sull'origine prima di selezionare un file locale.",
@@ -519,6 +540,7 @@
       },
       "biblioteca": {
         "library_title": "Biblioteca",
+        "close_aria": "Chiudi biblioteca di lettura",
         "search": "Cerca",
         "search_placeholder": "Cerca nella biblioteca...",
         "empty": "(vuoto)",
@@ -527,6 +549,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Salva nella biblioteca",
+        "close_aria": "Chiudi finestra di salvataggio nella biblioteca",
         "library_save_question": "Includere il commento? Se per questa lettura è selezionato uno snapshot di testo, la relativa associazione verrà salvata comunque.",
         "yes": "Sì",
         "no": "No",
@@ -585,7 +608,7 @@
         "title": "Test di velocità di lettura",
         "show_instructions": "Mostra istruzioni",
         "hide_instructions": "Nascondi istruzioni",
-        "intro": "Questo test serve a stimare la tua velocità reale di lettura tramite una sessione guidata. L'app aprirà il testo e aspetterà che tu prema Play (▶) nella Finestra flottante quando sei pronto per iniziare. Dopo l'avvio del test, non premere Pausa (⏸) finché non hai finito di leggere: Pausa termina il test; non mette in pausa il timer. Usa Stop/Reimposta (⏹) solo se vuoi annullare il test. In seguito potrai rivedere eventuali domande di comprensione, se il testo le include, e alla fine creare un preset dal risultato.\nPrima di iniziare, tieni presente che questi testi di prova richiedono di solito tra 5 e 15 minuti di concentrazione ininterrotta.\nQuesto pool usa testi brevi, quindi interpreta il risultato con cautela. Non dovrebbe essere estrapolato direttamente ai testi lunghi, dove di solito entrano in gioco fattori positivi, come l'acquisizione di fluidità e di contesto, e fattori negativi, come la ricapitolazione mentale e la fatica.",
+        "intro": "Questo test serve a stimare la tua velocità reale di lettura tramite una sessione guidata. L'app aprirà il testo e aspetterà che tu prema Play (▶) nel Cronometro flottante quando sei pronto per iniziare. Dopo l'avvio del test, non premere Pausa (⏸) finché non hai finito di leggere: Pausa termina il test; non mette in pausa il cronometro. Usa Stop/Reimposta (⏹) solo se vuoi annullare il test. In seguito potrai rivedere eventuali domande di comprensione, se il testo le include, e alla fine creare un preset dal risultato.\nPrima di iniziare, tieni presente che questi testi di prova richiedono di solito tra 5 e 15 minuti di concentrazione ininterrotta.\nQuesto pool usa testi brevi, quindi interpreta il risultato con cautela. Non dovrebbe essere estrapolato direttamente ai testi lunghi, dove di solito entrano in gioco fattori positivi, come l'acquisizione di fluidità e di contesto, e fattori negativi, come la ricapitolazione mentale e la fatica.",
         "eligible_count": "File idonei:",
         "show_bundled_entries": "Test base",
         "get_more_files": "Ottieni altri file",
@@ -597,13 +620,15 @@
         "close_aria": "Chiudi la finestra di dialogo del test di velocità di lettura",
         "start_random_confirm": "Questo sovrascriverà il testo attuale con un testo casuale idoneo dal pool. Vuoi continuare?",
         "reset_confirm": "Questo reimposterà l'intero pool del test e contrassegnerà di nuovo tutti i suoi file come non usati. Vuoi continuare?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Includi nel pool i file di test iniziali forniti con l'app",
           "get_more_files": "Ottieni altri file di test dalla cartella di Google Drive",
           "import_files": "Importa file di test dal tuo dispositivo",
-          "reset_pool": "Reimposta il pool del test",
           "start_random_text": "Avvia il test con un testo casuale idoneo dal pool",
-          "start_current_text": "Avvia il test con il testo attuale"
+          "start_current_text": "Usa il testo attuale senza sostituirlo né consumare un file del pool"
+        },
+        "names": {
+          "reset_pool": "Reimposta il pool del test"
         },
         "import": {
           "import_summary": "Importazione completata. Importati: {imported}. Duplicati saltati: {skippedDuplicates}. Validazioni fallite: {failedValidation}. Voci di archivio fallite: {failedArchiveEntries}. Scritture fallite: {failedWrites}.",
@@ -618,7 +643,7 @@
         }
       },
       "prestart": {
-        "reminder": "Premi Play (▶) nella Finestra flottante quando sei pronto per iniziare. Dopo l'avvio del test, non premere Pausa (⏸) finché non hai finito di leggere: Pausa termina il test; non mette in pausa il timer. Premi Stop/Reimposta (⏹) solo se vuoi annullare il test."
+        "reminder": "Premi Play (▶) nel Cronometro flottante quando sei pronto per iniziare. Dopo l'avvio del test, non premere Pausa (⏸) finché non hai finito di leggere: Pausa termina il test; non mette in pausa il cronometro. Premi Stop/Reimposta (⏹) solo se vuoi annullare il test."
       },
       "questions": {
         "title": "Domande di comprensione del testo",
@@ -693,7 +718,7 @@
       }
     },
     "browser_extension": {
-      "title": "Tiempo de lectura",
+      "title": "Tempo di lettura",
       "subtitle": "Estensione del browser",
       "availability": "Disponibile ora su Chrome. Altri browser in arrivo a breve.",
       "chrome_store_aria": "Apri la pagina Chrome Web Store dell'estensione",
@@ -705,6 +730,11 @@
     "info": {
       "loading": "Caricamento...",
       "missing_content": "Nessun contenuto disponibile per '{name}'.",
+      "close_aria": "Chiudi informazioni",
+      "media_lightbox": {
+        "title": "Anteprima ingrandita dello screenshot",
+        "close_aria": "Chiudi anteprima"
+      },
       "external": {
         "blocked": "Link bloccato",
         "error": "Errore durante l'apertura del link"

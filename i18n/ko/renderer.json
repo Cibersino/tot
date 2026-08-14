@@ -19,8 +19,7 @@
         "chars": "문자: {n}",
         "value_pending": "대기 중...",
         "value_unavailable": "사용할 수 없음",
-        "precise_mode": "정밀 모드",
-        "precise_tooltip": "Intl.Segmenter 기반"
+        "precise_mode": "정밀 모드"
       },
       "crono": {
         "title": "스톱워치",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "현재 텍스트 결과를 다시 계산하는 중...",
         "current_text_waiting_startup": "현재 텍스트를 안정화하는 중...",
         "current_text_waiting_editor": "Text Editor 변경 사항을 동기화하는 중...",
+        "editor_loading": "Text Editor 로드 중...",
         "text_extraction_placeholder": "텍스트 추출 중...",
         "text_extraction_preparing": "추출 경로 준비 중...",
         "text_extraction_cancellation_pending": "취소가 요청되었습니다. 잠시 기다려 주세요...",
@@ -47,6 +47,9 @@
       },
       "tooltips": {
         "text_extraction": "파일에서 텍스트 추출",
+        "browser_extension": "브라우저 확장 프로그램"
+      },
+      "names": {
         "text_extraction_abort": "추출 중단",
         "overwrite_clipboard": "클립보드 내용으로 현재 텍스트 교체",
         "append_clipboard": "현재 텍스트 끝에 클립보드 내용 추가(새 줄)",
@@ -57,8 +60,6 @@
         "snapshot_save": "현재 텍스트를 스냅샷으로 저장",
         "task_new": "새 작업",
         "task_load": "작업 불러오기",
-        "preview_spoiler": "미리 보기의 끝부분 표시 또는 숨기기",
-        "browser_extension": "브라우저 확장 프로그램",
         "cibersino_website": "Cibersino 웹사이트",
         "cibersino_kofi": "Ko-fi에서 후원하기",
         "new_preset": "새 프리셋 만들기",
@@ -67,23 +68,22 @@
         "reset_presets": "기본 프리셋 복원",
         "text_time_calculator": "빠른 계산기 열기",
         "help_button": "유용한 팁 표시",
-        "flotante_window": "플로팅 창"
+        "crono_toggle": "스톱워치 시작 또는 일시정지",
+        "crono_reset": "스톱워치 재설정",
+        "floating_window": "플로팅 창"
+      },
+      "help": {
+        "preview_spoiler": "미리보기 끝부분 보이기 또는 숨기기",
+        "precise_mode": "Intl.Segmenter 기반"
       },
       "aria": {
         "text_extraction": "파일에서 텍스트 추출",
-        "text_extraction_abort": "추출 중단",
         "browser_extension": "브라우저 확장 프로그램 대화상자 열기",
-        "clipboard_repeat_count": "붙여넣기 반복 횟수",
-        "text_time_calculator": "빠른 계산기 열기",
         "wpm_input": "분당 단어 수",
         "wpm_slider": "분당 단어 수 슬라이더",
         "speed_presets": "속도 프리셋",
-        "precise_mode_toggle": "정밀 모드",
         "crono_controls": "스톱워치 컨트롤",
         "crono_display": "스톱워치 표시",
-        "crono_toggle": "스톱워치 시작 또는 일시정지",
-        "crono_reset": "스톱워치 재설정",
-        "floating_window_toggle": "플로팅 창",
         "floating_window_group": "플로팅 창 컨트롤"
       },
       "alerts": {
@@ -184,6 +184,11 @@
         "unit_label": "단위 {index}",
         "unit_counter": "단위 {index}/{count}",
         "unit_name_placeholder": "선택적 단위 이름",
+        "aria": {
+          "route": "{file}의 추출 경로",
+          "unit_assignment": "{file}의 대상 유닛",
+          "unit_name": "{count}개 중 {index}번 유닛의 선택적 이름"
+        },
         "new_unit_option": "새 단위 만들기",
         "move_up": "위로 이동",
         "move_down": "아래로 이동",
@@ -301,21 +306,30 @@
       "increase_text_size": "텍스트 크기 늘리기",
       "reset_text_size": "텍스트 크기 재설정",
       "read_progress_label": "읽음",
-      "clear_title": "비우기",
+      "clear": "비우기",
+      "help": {
+        "apply": "편집기 텍스트를 현재 텍스트로 적용",
+        "auto_apply": "입력하는 동안 편집기 변경 사항을 현재 텍스트에 자동으로 적용",
+        "spellcheck": "편집기 텍스트의 맞춤법 검사를 켜거나 끄기"
+      },
       "editor_find": {
         "input_placeholder": "찾기...",
         "input_aria": "텍스트에서 찾기",
-        "expand_title": "바꾸기 컨트롤 표시",
-        "collapse_title": "바꾸기 컨트롤 숨기기",
         "replace_placeholder": "바꾸기...",
         "replace_aria": "바꿀 텍스트",
         "replace": "바꾸기",
         "replace_all": "모두 바꾸기",
-        "prev_title": "이전 일치 항목",
-        "next_title": "다음 일치 항목",
-        "close_title": "찾기 표시줄 닫기",
-        "replace_title": "현재 일치 항목 바꾸기",
-        "replace_all_title": "모든 일치 항목 바꾸기",
+        "names": {
+          "show_replace": "바꾸기 컨트롤 표시",
+          "hide_replace": "바꾸기 컨트롤 숨기기",
+          "previous_match": "이전 일치 항목",
+          "next_match": "다음 일치 항목",
+          "close": "찾기 표시줄 닫기"
+        },
+        "help": {
+          "replace_current": "현재 일치 항목 바꾸기",
+          "replace_all": "모든 일치 항목 바꾸기"
+        },
         "replace_timeout": "바꾸기 시간이 초과되었습니다. 다시 시도하세요.",
         "status_no_matches": "일치 항목 없음",
         "status_empty_query": "검색어를 입력하세요"
@@ -366,6 +380,7 @@
         "close_aria": "텍스트 스냅샷 태그 관리자 닫기",
         "new_tag": "새 태그",
         "new_tag_placeholder": "태그 이름",
+        "new_tag_input_aria": "새 태그 이름",
         "add_tag": "태그 추가",
         "cancel_draft": "취소",
         "sort_alphabetically": "A-Z 정렬",
@@ -468,13 +483,13 @@
         "enlace": "링크",
         "comentario": "댓+스",
         "acciones": "작업",
-        "header_tooltips": {
+        "header_names": {
           "tiempo": "예상 읽기 시간",
-          "percent": "완료 비율",
+          "percent": "완료율",
           "falta": "예상 남은 시간",
           "comentario": "댓글 및 텍스트 스냅샷"
         },
-        "tooltips": {
+        "names": {
           "file_select": "로컬 파일 선택",
           "link_open": "링크 열기",
           "snapshot_load": "이 행에 사용할 텍스트 스냅샷 불러오기",
@@ -483,14 +498,20 @@
           "move_down": "아래로 이동",
           "library_row_save": "라이브러리에 저장",
           "delete_row": "행 삭제"
+        },
+        "descriptions": {
+          "snapshot_path": "연결된 텍스트 스냅샷 경로: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "텍스트 스냅샷을 현재 텍스트로 로드 · 연결된 경로: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "댓글",
         "comment_placeholder": "댓글...",
         "snapshot_select": "스냅샷 선택",
-        "snapshot_select_tooltip": "이 행에 사용할 텍스트 스냅샷 선택",
         "snapshot_clear": "이 행에서 선택한 스냅샷 제거",
+        "close_aria": "댓글 닫기",
         "snapshot_source_reminder": {
           "title": "스냅샷 출처 알림",
           "message": "이 행은 텍스트 스냅샷과 연결되어 있습니다. 로컬 파일을 선택하기 전에 출처 댓글을 확인하세요.",
@@ -519,6 +540,7 @@
       },
       "biblioteca": {
         "library_title": "라이브러리",
+        "close_aria": "읽기 라이브러리 닫기",
         "search": "검색",
         "search_placeholder": "라이브러리 검색...",
         "empty": "(비어 있음)",
@@ -527,6 +549,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "라이브러리에 저장",
+        "close_aria": "라이브러리에 저장 대화상자 닫기",
         "library_save_question": "댓글을 포함할까요? 이 읽기 항목에 텍스트 스냅샷이 선택되어 있으면, 어느 쪽을 선택해도 연결 정보가 저장됩니다.",
         "yes": "예",
         "no": "아니요",
@@ -585,7 +608,7 @@
         "title": "읽기 속도 테스트",
         "show_instructions": "설명 표시",
         "hide_instructions": "설명 숨기기",
-        "intro": "이 테스트는 안내식 세션을 통해 실제 읽기 속도를 추정하기 위한 것입니다. 앱이 텍스트를 열고, 준비가 되면 플로팅 창에서 재생(▶)을 누를 때까지 기다립니다. 테스트가 시작된 뒤에는 읽기를 끝낼 때까지 일시정지(⏸)를 누르지 마세요. 일시정지는 타이머를 멈추는 것이 아니라 테스트를 종료합니다. 테스트를 취소하려는 경우에만 정지/재설정(⏹)을 사용하세요. 이후 텍스트에 포함된 경우 독해 질문을 검토할 수 있으며, 마지막에는 결과로 프리셋을 만들 수 있습니다.\n시작하기 전에, 이 테스트 텍스트들은 보통 방해 없는 5분에서 15분 정도의 집중을 요구한다는 점을 고려하세요.\n이 풀은 짧은 텍스트를 사용하므로 결과는 신중하게 해석해야 합니다. 흐름과 맥락 형성 같은 긍정적 요인, 정신적 되짚기와 피로 같은 부정적 요인이 작용하는 긴 텍스트에 그대로 외삽해서는 안 됩니다.",
+        "intro": "이 테스트는 안내식 세션을 통해 실제 읽기 속도를 추정하기 위한 것입니다. 앱이 텍스트를 열고, 준비가 되면 플로팅 스톱워치에서 재생(▶)을 누를 때까지 기다립니다. 테스트가 시작된 뒤에는 읽기를 끝낼 때까지 일시정지(⏸)를 누르지 마세요. 일시정지는 스톱워치를 멈추는 것이 아니라 테스트를 종료합니다. 테스트를 취소하려는 경우에만 정지/재설정(⏹)을 사용하세요. 이후 텍스트에 포함된 경우 독해 질문을 검토할 수 있으며, 마지막에는 결과로 프리셋을 만들 수 있습니다.\n시작하기 전에, 이 테스트 텍스트들은 보통 방해 없는 5분에서 15분 정도의 집중을 요구한다는 점을 고려하세요.\n이 풀은 짧은 텍스트를 사용하므로 결과는 신중하게 해석해야 합니다. 흐름과 맥락 형성 같은 긍정적 요인, 정신적 되짚기와 피로 같은 부정적 요인이 작용하는 긴 텍스트에 그대로 외삽해서는 안 됩니다.",
         "eligible_count": "사용 가능한 파일:",
         "show_bundled_entries": "기본 테스트",
         "get_more_files": "파일 더 받기",
@@ -597,13 +620,15 @@
         "close_aria": "읽기 속도 테스트 대화상자 닫기",
         "start_random_confirm": "현재 텍스트가 풀의 무작위 사용 가능 텍스트로 덮어써집니다. 계속할까요?",
         "reset_confirm": "전체 테스트 풀을 재설정하고 모든 파일을 다시 미사용 상태로 표시합니다. 계속할까요?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "앱에 포함된 기본 테스트 파일을 풀에 포함합니다",
           "get_more_files": "Google Drive 폴더에서 테스트 파일 더 받기",
           "import_files": "기기에서 테스트 파일 가져오기",
-          "reset_pool": "테스트 풀 재설정",
           "start_random_text": "풀의 무작위 사용 가능 텍스트로 테스트 시작",
-          "start_current_text": "현재 텍스트로 테스트 시작"
+          "start_current_text": "현재 텍스트를 바꾸거나 풀 파일을 소비하지 않고 사용"
+        },
+        "names": {
+          "reset_pool": "테스트 풀 재설정"
         },
         "import": {
           "import_summary": "가져오기가 완료되었습니다. 가져옴: {imported}. 건너뛴 중복: {skippedDuplicates}. 유효성 검사 실패: {failedValidation}. 압축 파일 항목 실패: {failedArchiveEntries}. 쓰기 실패: {failedWrites}.",
@@ -618,7 +643,7 @@
         }
       },
       "prestart": {
-        "reminder": "시작할 준비가 되면 플로팅 창에서 재생(▶)을 누르세요. 테스트가 시작된 뒤에는 읽기를 끝낼 때까지 일시정지(⏸)를 누르지 마세요. 일시정지는 타이머를 멈추는 것이 아니라 테스트를 종료합니다. 테스트를 취소하려는 경우에만 정지/재설정(⏹)을 누르세요."
+        "reminder": "시작할 준비가 되면 플로팅 스톱워치에서 재생(▶)을 누르세요. 테스트가 시작된 뒤에는 읽기를 끝낼 때까지 일시정지(⏸)를 누르지 마세요. 일시정지는 스톱워치를 멈추는 것이 아니라 테스트를 종료합니다. 테스트를 취소하려는 경우에만 정지/재설정(⏹)을 누르세요."
       },
       "questions": {
         "title": "독해 질문",
@@ -693,7 +718,7 @@
       }
     },
     "browser_extension": {
-      "title": "Tiempo de lectura",
+      "title": "읽기 시간",
       "subtitle": "브라우저 확장 프로그램",
       "availability": "지금 Chrome에서 사용할 수 있습니다. 더 많은 브라우저가 곧 지원됩니다.",
       "chrome_store_aria": "확장 프로그램의 Chrome Web Store 페이지 열기",
@@ -705,6 +730,11 @@
     "info": {
       "loading": "불러오는 중...",
       "missing_content": "'{name}'에 사용할 수 있는 콘텐츠가 없습니다.",
+      "close_aria": "정보 닫기",
+      "media_lightbox": {
+        "title": "확대된 스크린샷 미리보기",
+        "close_aria": "미리보기 닫기"
+      },
       "external": {
         "blocked": "링크 차단됨",
         "error": "링크 열기 오류"

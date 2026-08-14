@@ -19,8 +19,7 @@
         "chars": "文字数: {n}",
         "value_pending": "保留中...",
         "value_unavailable": "利用不可",
-        "precise_mode": "精密モード",
-        "precise_tooltip": "Intl.Segmenter に基づく"
+        "precise_mode": "精密モード"
       },
       "crono": {
         "title": "ストップウォッチ",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "現在のテキストの結果を再計算しています...",
         "current_text_waiting_startup": "現在のテキストを安定化しています...",
         "current_text_waiting_editor": "Text Editor の変更を同期しています...",
+        "editor_loading": "Text Editor を読み込み中...",
         "text_extraction_placeholder": "テキストを抽出中...",
         "text_extraction_preparing": "抽出ルートを準備中...",
         "text_extraction_cancellation_pending": "キャンセルを要求しました。お待ちください...",
@@ -47,6 +47,9 @@
       },
       "tooltips": {
         "text_extraction": "ファイルからテキストを抽出",
+        "browser_extension": "ブラウザー拡張機能"
+      },
+      "names": {
         "text_extraction_abort": "抽出を中止",
         "overwrite_clipboard": "クリップボードの内容で現在のテキストを置き換える",
         "append_clipboard": "クリップボードの内容を現在のテキストの末尾に追加（改行）",
@@ -57,8 +60,6 @@
         "snapshot_save": "現在のテキストをスナップショットに保存",
         "task_new": "新しいタスク",
         "task_load": "タスクを読み込む",
-        "preview_spoiler": "プレビューの末尾を表示または非表示にする",
-        "browser_extension": "ブラウザー拡張機能",
         "cibersino_website": "Cibersino のサイト",
         "cibersino_kofi": "Ko-fi で支援する",
         "new_preset": "新しいプリセットを作成",
@@ -67,23 +68,22 @@
         "reset_presets": "デフォルトプリセットを復元",
         "text_time_calculator": "クイック計算機を開く",
         "help_button": "役立つヒントを表示",
-        "flotante_window": "フローティングウィンドウ"
+        "crono_toggle": "ストップウォッチを開始または一時停止",
+        "crono_reset": "ストップウォッチをリセット",
+        "floating_window": "フローティングウィンドウ"
+      },
+      "help": {
+        "preview_spoiler": "プレビューの末尾を表示または非表示にする",
+        "precise_mode": "Intl.Segmenter に基づく"
       },
       "aria": {
         "text_extraction": "ファイルからテキストを抽出",
-        "text_extraction_abort": "抽出を中止",
         "browser_extension": "ブラウザー拡張機能のダイアログを開く",
-        "clipboard_repeat_count": "貼り付け回数",
-        "text_time_calculator": "クイック計算機を開く",
         "wpm_input": "1分あたりの語数",
         "wpm_slider": "1分あたりの語数スライダー",
         "speed_presets": "速度プリセット",
-        "precise_mode_toggle": "精密モード",
         "crono_controls": "ストップウォッチ操作",
         "crono_display": "ストップウォッチ表示",
-        "crono_toggle": "ストップウォッチを開始または一時停止",
-        "crono_reset": "ストップウォッチをリセット",
-        "floating_window_toggle": "フローティングウィンドウ",
         "floating_window_group": "フローティングウィンドウ操作"
       },
       "alerts": {
@@ -184,6 +184,11 @@
         "unit_label": "ユニット {index}",
         "unit_counter": "ユニット {index}/{count}",
         "unit_name_placeholder": "任意のユニット名",
+        "aria": {
+          "route": "{file} の抽出ルート",
+          "unit_assignment": "{file} の出力先ユニット",
+          "unit_name": "{count} 個中 {index} 番目のユニットの任意名"
+        },
         "new_unit_option": "新しいユニットを作成",
         "move_up": "上へ移動",
         "move_down": "下へ移動",
@@ -301,21 +306,30 @@
       "increase_text_size": "文字サイズを大きくする",
       "reset_text_size": "文字サイズをリセット",
       "read_progress_label": "読了",
-      "clear_title": "空にする",
+      "clear": "空にする",
+      "help": {
+        "apply": "エディターのテキストを現在のテキストとして適用",
+        "auto_apply": "入力中にエディターの変更を現在のテキストへ自動適用",
+        "spellcheck": "エディターのテキストのスペルチェックをオンまたはオフにする"
+      },
       "editor_find": {
         "input_placeholder": "検索...",
         "input_aria": "テキスト内を検索",
-        "expand_title": "置換を表示",
-        "collapse_title": "置換を非表示",
         "replace_placeholder": "置換...",
         "replace_aria": "置換テキスト",
         "replace": "置換",
         "replace_all": "すべて置換",
-        "prev_title": "前の一致",
-        "next_title": "次の一致",
-        "close_title": "検索バーを閉じる",
-        "replace_title": "現在の一致を置換",
-        "replace_all_title": "すべての一致を置換",
+        "names": {
+          "show_replace": "置換を表示",
+          "hide_replace": "置換を非表示",
+          "previous_match": "前の一致",
+          "next_match": "次の一致",
+          "close": "検索バーを閉じる"
+        },
+        "help": {
+          "replace_current": "現在の一致を置換",
+          "replace_all": "すべての一致を置換"
+        },
         "replace_timeout": "置換に時間がかかりすぎました。もう一度お試しください。",
         "status_no_matches": "一致なし",
         "status_empty_query": "検索語を入力してください"
@@ -366,6 +380,7 @@
         "close_aria": "テキストスナップショットタグマネージャーを閉じる",
         "new_tag": "新しいタグ",
         "new_tag_placeholder": "タグ名",
+        "new_tag_input_aria": "新しいタグ名",
         "add_tag": "タグを追加",
         "cancel_draft": "キャンセル",
         "sort_alphabetically": "A-Z 順に並べ替え",
@@ -468,13 +483,13 @@
         "enlace": "リンク",
         "comentario": "コ+ス",
         "acciones": "操作",
-        "header_tooltips": {
+        "header_names": {
           "tiempo": "推定読書時間",
-          "percent": "完了した割合",
+          "percent": "完了率",
           "falta": "推定残り時間",
           "comentario": "コメントとテキストスナップショット"
         },
-        "tooltips": {
+        "names": {
           "file_select": "ローカルファイルを選択",
           "link_open": "リンクを開く",
           "snapshot_load": "この行にテキストスナップショットを読み込む",
@@ -483,14 +498,20 @@
           "move_down": "行を下へ移動",
           "library_row_save": "ライブラリに保存",
           "delete_row": "行を削除"
+        },
+        "descriptions": {
+          "snapshot_path": "関連付けられたテキストスナップショットのパス: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "テキストスナップショットを現在のテキストとして読み込む · 関連パス: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "コメント",
         "comment_placeholder": "コメント...",
         "snapshot_select": "スナップショットを選択",
-        "snapshot_select_tooltip": "この行のテキストスナップショットを選択",
         "snapshot_clear": "この行から選択したスナップショットを外す",
+        "close_aria": "コメントを閉じる",
         "snapshot_source_reminder": {
           "title": "スナップショットの元データに関する注意",
           "message": "この行にはテキストスナップショットが関連付けられています。ローカルファイルを選択する前に、元データに関するコメントを確認してください。",
@@ -519,6 +540,7 @@
       },
       "biblioteca": {
         "library_title": "ライブラリ",
+        "close_aria": "読書ライブラリを閉じる",
         "search": "検索",
         "search_placeholder": "ライブラリを検索...",
         "empty": "（空）",
@@ -527,6 +549,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "ライブラリに保存",
+        "close_aria": "ライブラリに保存するダイアログを閉じる",
         "library_save_question": "コメントを含めますか？この読書項目にテキストスナップショットが選択されている場合、その関連付けはどちらの場合も保存されます。",
         "yes": "はい",
         "no": "いいえ",
@@ -585,7 +608,7 @@
         "title": "読書速度テスト",
         "show_instructions": "説明を表示",
         "hide_instructions": "説明を非表示",
-        "intro": "このテストは、ガイド付きセッションで実際の読書速度を推定するためのものです。アプリがテキストを開き、開始する準備ができたらフローティングウィンドウで Play（▶）を押すまで待機します。テスト開始後は、読み終わるまで Pause（⏸）を押さないでください。Pause はテストを終了するもので、タイマーを一時停止するものではありません。キャンセルしたい場合のみ Stop/Reset（⏹）を使用してください。その後、テキストに理解度問題が含まれていれば確認でき、最後に結果からプリセットを作成できます。\n始める前に、これらのテスト用テキストは通常、5〜15分ほど中断なしの集中を必要とすることを考慮してください。\nこのプールは短いテキストを使用するため、結果は慎重に解釈してください。長文読書にそのまま外挿すべきではありません。長文では、流れや文脈の蓄積といった正の要因と、頭の中での再整理や疲労といった負の要因が働くことが多いためです。",
+        "intro": "このテストは、ガイド付きセッションで実際の読書速度を推定するためのものです。アプリがテキストを開き、開始する準備ができたらフローティングストップウォッチで Play（▶）を押すまで待機します。テスト開始後は、読み終わるまで Pause（⏸）を押さないでください。Pause はテストを終了するもので、ストップウォッチを一時停止するものではありません。キャンセルしたい場合のみ Stop/Reset（⏹）を使用してください。その後、テキストに理解度問題が含まれていれば確認でき、最後に結果からプリセットを作成できます。\n始める前に、これらのテスト用テキストは通常、5〜15分ほど中断なしの集中を必要とすることを考慮してください。\nこのプールは短いテキストを使用するため、結果は慎重に解釈してください。長文読書にそのまま外挿すべきではありません。長文では、流れや文脈の蓄積といった正の要因と、頭の中での再整理や疲労といった負の要因が働くことが多いためです。",
         "eligible_count": "対象ファイル:",
         "show_bundled_entries": "基本テスト",
         "get_more_files": "ファイルを追加取得",
@@ -597,13 +620,15 @@
         "close_aria": "読書速度テストダイアログを閉じる",
         "start_random_confirm": "現在のテキストは、プール内の対象ランダムテキストで上書きされます。続行しますか？",
         "reset_confirm": "テストプール全体をリセットし、すべてのファイルを未使用として再マークします。続行しますか？",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "アプリに同梱されている初期テストファイルをプールに含めます",
           "get_more_files": "Google Drive フォルダから追加のテストファイルを取得",
           "import_files": "デバイスからテストファイルをインポート",
-          "reset_pool": "テストプールをリセット",
           "start_random_text": "プール内の対象ランダムテキストでテストを開始",
-          "start_current_text": "現在のテキストでテストを開始"
+          "start_current_text": "現在のテキストを置き換えず、プールのファイルも消費せずに使用"
+        },
+        "names": {
+          "reset_pool": "テストプールをリセット"
         },
         "import": {
           "import_summary": "インポート完了。インポート: {imported}。重複スキップ: {skippedDuplicates}。検証失敗: {failedValidation}。圧縮ファイル内エントリ失敗: {failedArchiveEntries}。書き込み失敗: {failedWrites}。",
@@ -618,7 +643,7 @@
         }
       },
       "prestart": {
-        "reminder": "開始する準備ができたら、フローティングウィンドウで Play（▶）を押してください。テスト開始後は、読み終わるまで Pause（⏸）を押さないでください。Pause はテストを終了するもので、タイマーを一時停止するものではありません。テストをキャンセルする場合のみ Stop/Reset（⏹）を押してください。"
+        "reminder": "開始する準備ができたら、フローティングストップウォッチで Play（▶）を押してください。テスト開始後は、読み終わるまで Pause（⏸）を押さないでください。Pause はテストを終了するもので、ストップウォッチを一時停止するものではありません。テストをキャンセルする場合のみ Stop/Reset（⏹）を押してください。"
       },
       "questions": {
         "title": "読解問題",
@@ -693,7 +718,7 @@
       }
     },
     "browser_extension": {
-      "title": "Tiempo de lectura",
+      "title": "読書時間",
       "subtitle": "ブラウザー拡張機能",
       "availability": "現在 Chrome で利用できます。ほかのブラウザーにも近日対応予定です。",
       "chrome_store_aria": "拡張機能の Chrome Web Store ページを開く",
@@ -705,6 +730,11 @@
     "info": {
       "loading": "読み込み中...",
       "missing_content": "「{name}」の内容は利用できません。",
+      "close_aria": "情報を閉じる",
+      "media_lightbox": {
+        "title": "スクリーンショットの拡大プレビュー",
+        "close_aria": "プレビューを閉じる"
+      },
       "external": {
         "blocked": "リンクがブロックされました",
         "error": "リンクを開く際にエラーが発生しました"

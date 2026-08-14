@@ -19,8 +19,7 @@
         "chars": "Letras totales: {n}",
         "value_pending": "pendiente...",
         "value_unavailable": "no disponible",
-        "precise_mode": "Modo fino",
-        "precise_tooltip": "Contar de forma pulenta y elegante"
+        "precise_mode": "Modo fino"
       },
       "crono": {
         "title": "CRONÓMETRO DE LUJO",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Recalculando los resultados del texto actual...",
         "current_text_waiting_startup": "Asentando el texto actual...",
         "current_text_waiting_editor": "Sincronizando cambios del Editor de Texto...",
+        "editor_loading": "Cargando el Editor de Texto...",
         "text_extraction_placeholder": "Sacando texto...",
         "text_extraction_preparing": "Preparando la extracción...",
         "text_extraction_cancellation_pending": "Cancelación pedida. Aguanta un poquito...",
@@ -47,6 +47,9 @@
       },
       "tooltips": {
         "text_extraction": "Sacarle texto a un archivo",
+        "browser_extension": "Extensión pal navegador"
+      },
+      "names": {
         "text_extraction_abort": "Parar la sacadera",
         "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
         "append_clipboard": "Pegar lo copiao en la línea de abajo",
@@ -57,33 +60,30 @@
         "snapshot_save": "Salvar el texto actual en un coso",
         "task_new": "Armar nueva misión",
         "task_load": "Cargar misión",
-        "preview_spoiler": "Mostrar u ocultar el final de la vista previa",
-        "browser_extension": "Extensión pal navegador",
         "cibersino_website": "Sitio de Cibersino",
         "cibersino_kofi": "Apóyame en Ko-fi",
         "new_preset": "Armar nuevo preset",
         "edit_preset": "Arreglar el preset",
         "delete_preset": "Pitiarse el preset",
         "reset_presets": "Dejar los presets como venían",
-        "text_time_calculator": "Abrir calculadora rápida",
+        "text_time_calculator": "Abrir la calculadora rápida",
         "help_button": "Informeishon",
-        "flotante_window": "Cronómetro Porfiado"
+        "crono_toggle": "Partir o pausar el reloj",
+        "crono_reset": "Reiniciar el reloj",
+        "floating_window": "Cronómetro Porfiado"
+      },
+      "help": {
+        "preview_spoiler": "Mostrar u ocultar el remate de la vista previa",
+        "precise_mode": "Contar de forma pulenta y elegante"
       },
       "aria": {
         "text_extraction": "Sacarle texto a un archivo",
-        "text_extraction_abort": "Abortar extracción",
         "browser_extension": "Abrir diálogo de extensión pal navegador",
-        "clipboard_repeat_count": "Repeticiones del portapapeles",
-        "text_time_calculator": "Abrir calculadora rápida",
         "wpm_input": "Palabras por minuto",
         "wpm_slider": "Deslizador de palabras por minuto",
         "speed_presets": "Presets de velocidad",
-        "precise_mode_toggle": "Modo preciso",
         "crono_controls": "Controles del cronómetro",
         "crono_display": "Display del cronómetro",
-        "crono_toggle": "Iniciar o pausar cronómetro",
-        "crono_reset": "Reiniciar cronómetro",
-        "floating_window_toggle": "Cronómetro Porfiado",
         "floating_window_group": "Grupo de controles del Cronómetro Porfiado"
       },
       "alerts": {
@@ -184,6 +184,11 @@
         "unit_label": "Unidad {index}",
         "unit_counter": "Unidad {index}/{count}",
         "unit_name_placeholder": "Mote opcional de la unidad",
+        "aria": {
+          "route": "Ruta de extracción pa' {file}",
+          "unit_assignment": "Unidad de destino pa' {file}",
+          "unit_name": "Mote opcional de la unidad {index} de {count}"
+        },
         "new_unit_option": "Armar unidad nueva",
         "move_up": "Subir",
         "move_down": "Bajar",
@@ -301,21 +306,30 @@
       "increase_text_size": "Agrandar el texto",
       "reset_text_size": "Dejar el tamaño como estaba",
       "read_progress_label": "Leído",
-      "clear_title": "Pitiarse too",
+      "clear": "Pitiarse too",
+      "help": {
+        "apply": "Usar el texto del editor como texto actual",
+        "auto_apply": "Aplicar solitos los cambios del editor al texto actual mientras escribís",
+        "spellcheck": "Prender o apagar el corrector ortográfico en el texto del editor"
+      },
       "editor_find": {
         "input_placeholder": "Pilla algo...",
         "input_aria": "Pillar palabras en la custión",
-        "expand_title": "Mostrar reemplazo",
-        "collapse_title": "Ocultar reemplazo",
         "replace_placeholder": "Reemplazar...",
         "replace_aria": "Texto de reemplazo",
         "replace": "Reemplazar",
         "replace_all": "Reemplazar todo",
-        "prev_title": "La de atrás",
-        "next_title": "La que sigue",
-        "close_title": "Pitiarse la barra de búsqueda",
-        "replace_title": "Reemplazar coincidencia actual",
-        "replace_all_title": "Reemplazar todas las coincidencias",
+        "names": {
+          "show_replace": "Mostrar reemplazo",
+          "hide_replace": "Esconder reemplazo",
+          "previous_match": "La de atrás",
+          "next_match": "La que sigue",
+          "close": "Pitiarse la barra de búsqueda"
+        },
+        "help": {
+          "replace_current": "Cambiar esta coincidencia",
+          "replace_all": "Cambiar toas las coincidencias"
+        },
         "replace_timeout": "La custión de reemplazo se demoró mucho. Inténtalo de nuevo.",
         "status_no_matches": "No pillamos niuna custión",
         "status_empty_query": "Escribe algo po"
@@ -345,8 +359,8 @@
         "create": "Crear \"{label}\""
       },
       "labels": {
-        "name": "Nombre (opcional)",
-        "source_comment": "Origen (opcional)",
+        "name": "Mote (si querís)",
+        "source_comment": "Origen (si querís)",
         "language": "Idioma",
         "type": "Tipo",
         "difficulty": "Dificultad"
@@ -356,8 +370,8 @@
         "source_comment": "capítulo-1.pdf, Unidad 1 o texto importado"
       },
       "metrics": {
-        "include_count": "Incluir recuento de palabras",
-        "include_reading": "Incluir tiempo estimado de lectura y WPM"
+        "include_count": "Meter recuento de palabras",
+        "include_reading": "Meter tiempo estimado de lectura y WPM"
       },
       "manager": {
         "title": "Gestionar etiquetas de snapshot de texto",
@@ -366,10 +380,11 @@
         "close_aria": "Cerrar gestor de etiquetas de snapshot de texto",
         "new_tag": "Nueva etiqueta",
         "new_tag_placeholder": "Nombre de etiqueta",
+        "new_tag_input_aria": "Mote de etiqueta nueva",
         "add_tag": "Agregar etiqueta",
         "cancel_draft": "Cancelar",
         "sort_alphabetically": "Ordenar A-Z",
-        "restore_hidden_defaults": "Restaurar etiquetas por defecto",
+        "restore_hidden_defaults": "Traer de vuelta las etiquetas por defecto",
         "empty_category": "No hay etiquetas visibles en esta categoría.",
         "move_up": "Subir \"{label}\"",
         "move_down": "Bajar \"{label}\"",
@@ -468,57 +483,64 @@
         "enlace": "Ruta",
         "comentario": "O+C",
         "acciones": "Acciones",
-        "header_tooltips": {
-          "tiempo": "Tiempo estimado de lectura",
-          "percent": "Porcentaje completado",
-          "falta": "Tiempo estimado que falta",
+        "header_names": {
+          "tiempo": "Tiempo que te vai a demorar leyendo",
+          "percent": "Porcentaje listo",
+          "falta": "Tiempo que falta",
           "comentario": "Opinión y coso de texto"
         },
-        "tooltips": {
-          "file_select": "Seleccionar archivo local",
+        "names": {
+          "file_select": "Elegir archivo local",
           "link_open": "Abrir ruta",
-          "snapshot_load": "Cargar un coso de texto para esta fila",
-          "comment": "Añadir/editar opinión",
+          "snapshot_load": "Cargar un coso de texto pa' esta fila",
+          "comment": "Agregar opinión o coso de texto",
           "move_up": "Subir fila",
           "move_down": "Bajar fila",
           "library_row_save": "Guardar en biblio",
           "delete_row": "Pitiarse la fila"
+        },
+        "descriptions": {
+          "snapshot_path": "Ruta del coso asociado: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Cargar coso de texto como texto actual · Ruta asociada: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Opinión",
         "comment_placeholder": "Opinión...",
         "snapshot_select": "Seleccionar coso",
-        "snapshot_select_tooltip": "Seleccionar un coso de texto para esta fila",
-        "snapshot_clear": "Quitar el coso seleccionado de esta fila",
+        "snapshot_clear": "Quitar el coso de esta fila",
+        "close_aria": "Cerrar opinión",
         "snapshot_source_reminder": {
           "title": "Recordatorio del origen del coso",
-          "message": "Esta fila está asociada a un coso de texto. Revisa su comentario de origen antes de seleccionar un archivo local.",
+          "message": "Esta fila anda amarrada a un coso de texto. Revisa su comentario de origen antes de elegir un archivo local.",
           "source_comment": "Comentario de origen del coso:",
-          "select_file": "Seleccionar archivo local",
+          "select_file": "Elegir archivo local",
           "cancel": "Cancelar",
           "close_aria": "Cerrar el recordatorio del origen del coso"
         },
         "snapshot_details_confirm": {
-          "title": "¿Usar los datos del coso de texto seleccionado?",
-          "message": "Revisa los datos disponibles del coso seleccionado antes de aplicarlos a esta lectura.",
-          "replace_reading_name": "Reemplazar nombre de lectura",
-          "set_reading_name": "Poner nombre de lectura",
-          "current_name": "Nombre actual",
+          "title": "¿Usar los datos del coso seleccionado?",
+          "message": "Revísale los datos al coso seleccionado antes de meterlos en esta lectura.",
+          "replace_reading_name": "Cambiar mote de lectura",
+          "set_reading_name": "Poner mote de lectura",
+          "current_name": "Mote actual",
           "snapshot_name": "Nombre del coso",
           "empty": "(vacío)",
-          "replace_time": "Reemplazar tiempo estimado",
+          "replace_time": "Cambiar tiempo estimado",
           "current_time": "Tiempo actual",
           "snapshot_estimate": "Estimación del coso",
           "reading_speed": "Ritmo de lectura",
           "apply": "Aplicar",
           "apply_selected": "Aplicar selección",
-          "keep": "Conservar valores actuales",
+          "keep": "Dejar los valores como están",
           "close_aria": "Cerrar confirmación de datos del coso"
         }
       },
       "biblioteca": {
         "library_title": "Biblio",
+        "close_aria": "Cerrar biblio",
         "search": "Rastrear",
         "search_placeholder": "Rastrear en la biblio...",
         "empty": "(pelao)",
@@ -527,7 +549,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Salvar en biblio",
-        "library_save_question": "¿Incluir opinión? Si esta lectura tiene un coso de texto seleccionado, su asociación se guarda igual.",
+        "close_aria": "Cerrar guardado en biblio",
+        "library_save_question": "¿Incluir opinión? Si esta lectura tiene un coso de texto seleccionado, la asociación se salva igual.",
         "yes": "Sí",
         "no": "No",
         "cancel": "Cancelar"
@@ -545,18 +568,18 @@
         "task_path_outside": "El archivo debe estar aentro de la carpeta de misiones.",
         "name_required": "El mote de misión es obligatorio.",
         "row_text_required": "El texto de fila no puede estar vacío.",
-        "file_select_error": "No se pudo completar la selección de archivos.",
+        "file_select_error": "Cagó la selección de archivos.",
         "library_load_error": "No se pudo cargar la fila de la biblio.",
         "library_save_error": "No se pudo salvar la fila de la biblio.",
         "library_save_success": "Fila de biblio salvada con éxito.",
         "library_delete_error": "No se pudo pitiarse la fila de la biblio.",
         "column_layout_save_error": "No se pudo guardar la disposición de columnas y puede que no se conserve la próxima vez.",
+        "snapshot_missing": "El coso seleccionado ya no existe.",
+        "snapshot_invalid": "El coso seleccionado no es válido.",
+        "snapshot_read_error": "No se pudo leer el coso seleccionado.",
         "link_blocked": "Ruta bloqueada.",
         "link_missing": "Ruta extraviada.",
         "link_error": "Error al abrir la ruta.",
-        "snapshot_invalid": "El coso seleccionado no es válido.",
-        "snapshot_missing": "El coso seleccionado ya no existe.",
-        "snapshot_read_error": "No se pudo leer el coso seleccionado.",
         "close_unsaved": "Hay modificaciones sin salvar. ¿Querís cerrar igual?"
       }
     },
@@ -574,10 +597,10 @@
         "wpm": "WPM"
       },
       "validation": {
-        "words": "Ingresa un número entero no negativo.",
-        "time": "Ingresa el tiempo con formato H+:MM:SS.",
-        "wpm": "Ingresa un número entero positivo.",
-        "formula": "No se puede calcular el WPM con 00:00:00."
+        "words": "Mete un número entero no negativo.",
+        "time": "Mete el tiempo con formato H+:MM:SS.",
+        "wpm": "Mete un número entero positivo.",
+        "formula": "No podís calcular el WPM con 00:00:00."
       }
     },
     "reading_test": {
@@ -597,13 +620,15 @@
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",
         "start_random_confirm": "Esto va a pitiarse el texto actual y lo va a cambiar por un texto random elegible del pool. ¿Querís seguir?",
         "reset_confirm": "¿Querís restablecer el pool de archivos elegibles? Esto va a recargar los archivos disponibles pa' iniciar el test, incluyendo los que ya usaste.",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Meter al pool los archivos de test base que vienen con la app",
           "get_more_files": "Traer más archivos de prueba del directorio de Google Drive",
           "import_files": "Importar archivos de prueba desde tu dispositivo",
-          "reset_pool": "Restablecer el pool de archivos de prueba",
-          "start_random_text": "Iniciar la prueba con un texto aleatorio elegible del pool",
-          "start_current_text": "Iniciar la prueba con el texto actual"
+          "start_random_text": "Partir la prueba con un texto random elegible del pool",
+          "start_current_text": "Usar el texto actual sin reemplazarlo ni comerse un archivo del pool"
+        },
+        "names": {
+          "reset_pool": "Rearmar el pool de archivos de prueba"
         },
         "import": {
           "import_summary": "Terminó la importación. Entraron: {imported}. Duplicados saltados: {skippedDuplicates}. Validaciones fallidas: {failedValidation}. Entradas fallidas del comprimido: {failedArchiveEntries}. Escrituras fallidas: {failedWrites}.",
@@ -699,12 +724,17 @@
       "chrome_store_aria": "Abrir la página de la extensión en Chrome Web Store",
       "close_aria": "Cerrar diálogo de extensión pal navegador",
       "alerts": {
-        "modal_open_blocked": "La ventanita de la extensión del navegador no se puede abrir ahora mismo."
+        "modal_open_blocked": "La ventanita de la extensión pal navegador no se puede abrir ahora mismo."
       }
     },
     "info": {
       "loading": "Cargando...",
       "missing_content": "No hay contenido pa '{name}'.",
+      "close_aria": "Cerrar info",
+      "media_lightbox": {
+        "title": "Vista grande de la captura de pantalla",
+        "close_aria": "Cerrar vista previa grande"
+      },
       "external": {
         "blocked": "Enlace bloqueado",
         "error": "Error al abrir el enlace"

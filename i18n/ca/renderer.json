@@ -19,8 +19,7 @@
         "chars": "Caràcters: {n}",
         "value_pending": "pendent...",
         "value_unavailable": "no disponible",
-        "precise_mode": "Mode precís",
-        "precise_tooltip": "Basat en Intl.Segmenter"
+        "precise_mode": "Mode precís"
       },
       "crono": {
         "title": "CRONÒMETRE",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "S’estan recalculant els resultats del text actual...",
         "current_text_waiting_startup": "S’està estabilitzant el text actual...",
         "current_text_waiting_editor": "S’estan sincronitzant els canvis de l’Editor de Text...",
+        "editor_loading": "S’està carregant l’Editor de Text...",
         "text_extraction_placeholder": "Processant l’extracció...",
         "text_extraction_preparing": "Preparant la ruta d’extracció...",
         "text_extraction_cancellation_pending": "Cancel·lació sol·licitada. Espera...",
@@ -47,6 +47,9 @@
       },
       "tooltips": {
         "text_extraction": "Extreure text des d’un fitxer",
+        "browser_extension": "Extensió del navegador"
+      },
+      "names": {
         "text_extraction_abort": "Avortar l’extracció",
         "overwrite_clipboard": "Substituir el text actual pel porta-retalls",
         "append_clipboard": "Afegir el porta-retalls al final del text actual (línia nova)",
@@ -57,8 +60,6 @@
         "snapshot_save": "Desar el text actual en un snapshot",
         "task_new": "Nova tasca",
         "task_load": "Carregar tasca",
-        "preview_spoiler": "Mostra o amaga el final de la previsualització",
-        "browser_extension": "Extensió del navegador",
         "cibersino_website": "Web de Cibersino",
         "cibersino_kofi": "Dona’m suport a Ko-fi",
         "new_preset": "Crear un preset nou",
@@ -67,23 +68,22 @@
         "reset_presets": "Restaurar els presets per defecte",
         "text_time_calculator": "Obre la calculadora ràpida",
         "help_button": "Mostrar un consell útil",
-        "flotante_window": "Finestra flotant"
+        "crono_toggle": "Iniciar o pausar el cronòmetre",
+        "crono_reset": "Reiniciar el cronòmetre",
+        "floating_window": "Finestra flotant"
+      },
+      "help": {
+        "preview_spoiler": "Mostra o amaga el final de la vista prèvia",
+        "precise_mode": "Basat en Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "Extreure text des d’un fitxer",
-        "text_extraction_abort": "Avortar l’extracció",
         "browser_extension": "Obre el diàleg de l'extensió del navegador",
-        "clipboard_repeat_count": "Repeticions d’enganxada",
-        "text_time_calculator": "Obre la calculadora ràpida",
         "wpm_input": "Paraules per minut",
         "wpm_slider": "Control lliscant de paraules per minut",
         "speed_presets": "Presets de velocitat",
-        "precise_mode_toggle": "Mode precís",
         "crono_controls": "Controls del cronòmetre",
         "crono_display": "Pantalla del cronòmetre",
-        "crono_toggle": "Iniciar o pausar el cronòmetre",
-        "crono_reset": "Reiniciar el cronòmetre",
-        "floating_window_toggle": "Finestra flotant",
         "floating_window_group": "Control de finestra flotant"
       },
       "alerts": {
@@ -184,6 +184,11 @@
         "unit_label": "Unitat {index}",
         "unit_counter": "Unitat {index}/{count}",
         "unit_name_placeholder": "Nom d’unitat opcional",
+        "aria": {
+          "route": "Ruta d’extracció de {file}",
+          "unit_assignment": "Unitat de destinació de {file}",
+          "unit_name": "Nom opcional de la unitat {index} de {count}"
+        },
         "new_unit_option": "Crear unitat nova",
         "move_up": "Moure amunt",
         "move_down": "Moure avall",
@@ -301,21 +306,30 @@
       "increase_text_size": "Augmentar la mida del text",
       "reset_text_size": "Restablir la mida del text",
       "read_progress_label": "Llegit",
-      "clear_title": "Buidar",
+      "clear": "Buidar",
+      "help": {
+        "apply": "Aplica el text de l’editor com a text actual",
+        "auto_apply": "Aplica automàticament els canvis de l’editor al text actual mentre escrius",
+        "spellcheck": "Activa o desactiva el corrector ortogràfic al text de l’editor"
+      },
       "editor_find": {
         "input_placeholder": "Cercar...",
         "input_aria": "Cercar al text",
-        "expand_title": "Mostrar substitució",
-        "collapse_title": "Amagar substitució",
         "replace_placeholder": "Substituir...",
         "replace_aria": "Text de substitució",
         "replace": "Substituir",
         "replace_all": "Substituir-ho tot",
-        "prev_title": "Coincidència anterior",
-        "next_title": "Coincidència següent",
-        "close_title": "Tancar la barra de cerca",
-        "replace_title": "Substituir la coincidència actual",
-        "replace_all_title": "Substituir totes les coincidències",
+        "names": {
+          "show_replace": "Mostrar substitució",
+          "hide_replace": "Amagar substitució",
+          "previous_match": "Coincidència anterior",
+          "next_match": "Coincidència següent",
+          "close": "Tancar la barra de cerca"
+        },
+        "help": {
+          "replace_current": "Substituir la coincidència actual",
+          "replace_all": "Substituir totes les coincidències"
+        },
         "replace_timeout": "La substitució ha trigat massa. Torna-ho a provar.",
         "status_no_matches": "Sense coincidències",
         "status_empty_query": "Escriu per cercar"
@@ -366,6 +380,7 @@
         "close_aria": "Tanca el gestor d’etiquetes de snapshot de text",
         "new_tag": "Etiqueta nova",
         "new_tag_placeholder": "Nom de l’etiqueta",
+        "new_tag_input_aria": "Nom de l’etiqueta nova",
         "add_tag": "Afegeix etiqueta",
         "cancel_draft": "Cancel·la",
         "sort_alphabetically": "Ordena A-Z",
@@ -468,29 +483,35 @@
         "enlace": "Enllaç",
         "comentario": "C+I",
         "acciones": "Accions",
-        "header_tooltips": {
+        "header_names": {
           "tiempo": "Temps de lectura estimat",
           "percent": "Percentatge completat",
-          "falta": "Temps estimat restant",
-          "comentario": "Comentari i instantània de text"
+          "falta": "Temps restant estimat",
+          "comentario": "Comentari i snapshot de text"
         },
-        "tooltips": {
+        "names": {
           "file_select": "Selecciona un fitxer local",
           "link_open": "Obrir enllaç",
           "snapshot_load": "Carregar snapshot de text per a aquesta fila",
-          "comment": "Afegir un comentari o una instantània de text",
+          "comment": "Afegeix un comentari o un snapshot de text",
           "move_up": "Pujar fila",
           "move_down": "Baixar fila",
           "library_row_save": "Desar a la biblioteca",
           "delete_row": "Eliminar fila"
+        },
+        "descriptions": {
+          "snapshot_path": "Ruta del snapshot de text associat: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Carrega el snapshot de text com a text actual · Ruta associada: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Comentari",
         "comment_placeholder": "Comentari...",
         "snapshot_select": "Seleccionar snapshot",
-        "snapshot_select_tooltip": "Seleccionar snapshot per a aquesta fila",
         "snapshot_clear": "Treure el snapshot seleccionat d’aquesta fila",
+        "close_aria": "Tanca el comentari",
         "snapshot_source_reminder": {
           "title": "Recordatori de l'origen de l'snapshot",
           "message": "Aquesta fila està associada a un snapshot de text. Reviseu-ne el comentari d'origen abans de seleccionar un fitxer local.",
@@ -519,6 +540,7 @@
       },
       "biblioteca": {
         "library_title": "Biblioteca",
+        "close_aria": "Tanca la biblioteca de lectures",
         "search": "Cercar",
         "search_placeholder": "Cercar a la biblioteca...",
         "empty": "(buit)",
@@ -527,6 +549,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Desar a la biblioteca",
+        "close_aria": "Tanca el diàleg de desar a la biblioteca",
         "library_save_question": "Incloure el comentari? Si aquesta lectura té un snapshot de text seleccionat, la seva associació es desarà en qualsevol cas.",
         "yes": "Sí",
         "no": "No",
@@ -597,13 +620,15 @@
         "close_aria": "Tancar el diàleg del test de velocitat de lectura",
         "start_random_confirm": "Això sobreescriurà el text actual amb un text aleatori elegible del pool. Vols continuar?",
         "reset_confirm": "Això restablirà tot el pool del test i tornarà a marcar tots els seus fitxers com a no usats. Vols continuar?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Inclou al pool els fitxers de prova inicials integrats a l'app",
           "get_more_files": "Obtenir més fitxers de test des de la carpeta de Google Drive",
           "import_files": "Importar fitxers de test des del teu dispositiu",
-          "reset_pool": "Restablir el pool del test",
           "start_random_text": "Iniciar el test amb un text aleatori elegible del pool",
-          "start_current_text": "Iniciar el test amb el text actual"
+          "start_current_text": "Usa el text actual sense substituir-lo ni consumir cap fitxer del pool"
+        },
+        "names": {
+          "reset_pool": "Restablir el pool del test"
         },
         "import": {
           "import_summary": "Importació finalitzada. Importats: {imported}. Duplicats omesos: {skippedDuplicates}. Validacions fallides: {failedValidation}. Entrades de fitxer comprimit fallides: {failedArchiveEntries}. Escriptures fallides: {failedWrites}.",
@@ -693,7 +718,7 @@
       }
     },
     "browser_extension": {
-      "title": "Tiempo de lectura",
+      "title": "Temps de lectura",
       "subtitle": "Extensió del navegador",
       "availability": "Disponible ara a Chrome. Aviat arribarà a més navegadors.",
       "chrome_store_aria": "Obre la pàgina de l'extensió a Chrome Web Store",
@@ -705,6 +730,11 @@
     "info": {
       "loading": "Carregant...",
       "missing_content": "No hi ha contingut disponible per a '{name}'.",
+      "close_aria": "Tanca la informació",
+      "media_lightbox": {
+        "title": "Vista prèvia ampliada de captura de pantalla",
+        "close_aria": "Tanca la vista prèvia"
+      },
       "external": {
         "blocked": "Enllaç bloquejat",
         "error": "Error en obrir l’enllaç"

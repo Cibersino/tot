@@ -19,8 +19,7 @@
         "chars": "Caractères : {n}",
         "value_pending": "en attente...",
         "value_unavailable": "indisponible",
-        "precise_mode": "Mode précis",
-        "precise_tooltip": "Basé sur Intl.Segmenter"
+        "precise_mode": "Mode précis"
       },
       "crono": {
         "title": "CHRONOMÈTRE",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Recalcul des résultats du texte actuel...",
         "current_text_waiting_startup": "Stabilisation du texte actuel...",
         "current_text_waiting_editor": "Synchronisation des modifications de l’Éditeur de Texte...",
+        "editor_loading": "Chargement de l’Éditeur de Texte...",
         "text_extraction_placeholder": "Extraction du texte...",
         "text_extraction_preparing": "Préparation de la route d'extraction...",
         "text_extraction_cancellation_pending": "Annulation demandée. Veuillez patienter...",
@@ -47,18 +47,19 @@
       },
       "tooltips": {
         "text_extraction": "Extraire le texte d'un fichier",
+        "browser_extension": "Extension du navigateur"
+      },
+      "names": {
         "text_extraction_abort": "Annuler l'extraction",
         "overwrite_clipboard": "Remplacer le texte actuel par le presse-papier",
         "append_clipboard": "Coller le presse-papier à la fin du texte actuel (nouvelle ligne)",
-        "clipboard_repeat_count": "Nombre de répétitions du collage",
+        "clipboard_repeat_count": "Répétitions du collage",
         "edit": "Ouvrir la fenêtre du texte actuel complet",
         "clear": "Vider le texte actuel",
         "snapshot_load": "Charger un snapshot de texte",
         "snapshot_save": "Sauvegarder le texte actuel dans un snapshot",
         "task_new": "Créer une nouvelle tâche",
         "task_load": "Charger une tâche",
-        "preview_spoiler": "Afficher ou masquer la fin de l’aperçu",
-        "browser_extension": "Extension du navigateur",
         "cibersino_website": "Le site de Cibersino",
         "cibersino_kofi": "Soutenez-moi sur Ko-fi",
         "new_preset": "Créer un nouveau preset",
@@ -67,23 +68,22 @@
         "reset_presets": "Restaurer les presets par défaut",
         "text_time_calculator": "Ouvrir la calculatrice rapide",
         "help_button": "Afficher une astuce",
-        "flotante_window": "Fenêtre flottante"
+        "crono_toggle": "Démarrer ou mettre en pause le chronomètre",
+        "crono_reset": "Réinitialiser le chronomètre",
+        "floating_window": "Fenêtre flottante"
+      },
+      "help": {
+        "preview_spoiler": "Afficher ou masquer la fin de l’aperçu",
+        "precise_mode": "Basé sur Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "Extraire le texte d'un fichier",
-        "text_extraction_abort": "Annuler l'extraction",
         "browser_extension": "Ouvrir la boîte de dialogue de l'extension du navigateur",
-        "clipboard_repeat_count": "Répétitions du collage",
-        "text_time_calculator": "Ouvrir la calculatrice rapide",
         "wpm_input": "Mots par minute",
         "wpm_slider": "Curseur de mots par minute",
         "speed_presets": "Préréglages de vitesse",
-        "precise_mode_toggle": "Mode précis",
         "crono_controls": "Contrôles du chronomètre",
         "crono_display": "Affichage du chronomètre",
-        "crono_toggle": "Démarrer ou mettre en pause le chronomètre",
-        "crono_reset": "Réinitialiser le chronomètre",
-        "floating_window_toggle": "Fenêtre flottante",
         "floating_window_group": "Contrôles de la fenêtre flottante"
       },
       "alerts": {
@@ -184,6 +184,11 @@
         "unit_label": "Unité {index}",
         "unit_counter": "Unité {index}/{count}",
         "unit_name_placeholder": "Nom d’unité facultatif",
+        "aria": {
+          "route": "Route d’extraction pour {file}",
+          "unit_assignment": "Unité de destination pour {file}",
+          "unit_name": "Nom facultatif pour l’unité {index} sur {count}"
+        },
         "new_unit_option": "Créer une nouvelle unité",
         "move_up": "Monter",
         "move_down": "Descendre",
@@ -301,21 +306,30 @@
       "increase_text_size": "Augmenter la taille du texte",
       "reset_text_size": "Réinitialiser la taille du texte",
       "read_progress_label": "Lu",
-      "clear_title": "Vider",
+      "clear": "Vider",
+      "help": {
+        "apply": "Appliquer le texte de l’éditeur comme texte actuel",
+        "auto_apply": "Appliquer automatiquement les changements de l’éditeur au texte actuel pendant la saisie",
+        "spellcheck": "Activer ou désactiver le correcteur orthographique pour le texte de l’éditeur"
+      },
       "editor_find": {
         "input_placeholder": "Rechercher...",
         "input_aria": "Rechercher dans le texte",
-        "expand_title": "Afficher le remplacement",
-        "collapse_title": "Masquer le remplacement",
         "replace_placeholder": "Remplacer...",
         "replace_aria": "Texte de remplacement",
         "replace": "Remplacer",
         "replace_all": "Tout remplacer",
-        "prev_title": "Correspondance precedente",
-        "next_title": "Correspondance suivante",
-        "close_title": "Fermer la barre de recherche",
-        "replace_title": "Remplacer l'occurrence actuelle",
-        "replace_all_title": "Remplacer toutes les occurrences",
+        "names": {
+          "show_replace": "Afficher le remplacement",
+          "hide_replace": "Masquer le remplacement",
+          "previous_match": "Correspondance precedente",
+          "next_match": "Correspondance suivante",
+          "close": "Fermer la barre de recherche"
+        },
+        "help": {
+          "replace_current": "Remplacer l'occurrence actuelle",
+          "replace_all": "Remplacer toutes les occurrences"
+        },
         "replace_timeout": "Le remplacement a expiré. Réessayez.",
         "status_no_matches": "Aucune correspondance",
         "status_empty_query": "Saisir pour rechercher"
@@ -366,6 +380,7 @@
         "close_aria": "Fermer le gestionnaire d’étiquettes de snapshot de texte",
         "new_tag": "Nouvelle étiquette",
         "new_tag_placeholder": "Nom de l’étiquette",
+        "new_tag_input_aria": "Nom du nouveau tag",
         "add_tag": "Ajouter une étiquette",
         "cancel_draft": "Annuler",
         "sort_alphabetically": "Trier A-Z",
@@ -468,13 +483,13 @@
         "enlace": "Lien",
         "comentario": "C+S",
         "acciones": "Actions",
-        "header_tooltips": {
+        "header_names": {
           "tiempo": "Temps de lecture estimé",
           "percent": "Pourcentage terminé",
           "falta": "Temps restant estimé",
           "comentario": "Commentaire et snapshot de texte"
         },
-        "tooltips": {
+        "names": {
           "file_select": "Sélectionner un fichier local",
           "link_open": "Ouvrir le lien",
           "snapshot_load": "Charger un snapshot de texte pour cette ligne",
@@ -483,14 +498,20 @@
           "move_down": "Déplacer la ligne vers le bas",
           "library_row_save": "Sauvegarder dans la bibliothèque",
           "delete_row": "Supprimer la ligne"
+        },
+        "descriptions": {
+          "snapshot_path": "Chemin du snapshot de texte associé : {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Charger le snapshot de texte comme texte actuel · Chemin associé : {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Commentaire",
         "comment_placeholder": "Commentaire...",
         "snapshot_select": "Sélectionner un snapshot",
-        "snapshot_select_tooltip": "Sélectionner un snapshot de texte pour cette ligne",
         "snapshot_clear": "Supprimer le snapshot de texte de cette ligne",
+        "close_aria": "Fermer le commentaire",
         "snapshot_source_reminder": {
           "title": "Rappel de la source du snapshot",
           "message": "Cette ligne est associée à un snapshot de texte. Consultez son commentaire de source avant de sélectionner un fichier local.",
@@ -519,6 +540,7 @@
       },
       "biblioteca": {
         "library_title": "Bibliothèque",
+        "close_aria": "Fermer la bibliothèque de lectures",
         "search": "Rechercher",
         "search_placeholder": "Rechercher dans la bibliothèque...",
         "empty": "(vide)",
@@ -527,6 +549,7 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Sauvegarder dans la bibliothèque",
+        "close_aria": "Fermer le dialogue d’enregistrement dans la bibliothèque",
         "library_save_question": "Inclure le commentaire ? Si cette lecture a un snapshot de texte sélectionné, son association sera enregistrée dans tous les cas.",
         "yes": "Oui",
         "no": "Non",
@@ -585,7 +608,7 @@
         "title": "Test de vitesse de lecture",
         "show_instructions": "Afficher les instructions",
         "hide_instructions": "Masquer les instructions",
-        "intro": "Ce test sert à estimer votre vitesse réelle de lecture au moyen d'une session guidée. L'application ouvrira le texte et attendra que vous appuyiez sur Play (▶) dans la Fenêtre flottante lorsque vous serez prêt à commencer. Une fois le test démarré, n'appuyez pas sur Pause (⏸) avant d'avoir terminé votre lecture : Pause met fin au test ; elle ne met pas le minuteur en pause. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test. Ensuite, vous pourrez consulter des questions de compréhension si le texte en contient et, à la fin, créer un preset à partir du résultat.\nAvant de commencer, gardez à l'esprit que ces textes de test demandent généralement entre 5 et 15 minutes de concentration ininterrompue.\nCe pool utilise des textes courts ; interprétez donc le résultat avec prudence. Il ne devrait pas être extrapolé directement à des textes longs, où entrent habituellement en jeu des facteurs positifs, comme l'acquisition de fluidité et de contexte, et des facteurs négatifs, comme la récapitulation mentale et la fatigue.",
+        "intro": "Ce test sert à estimer votre vitesse réelle de lecture au moyen d'une session guidée. L'application ouvrira le texte et attendra que vous appuyiez sur Play (▶) dans le Chronomètre flottant lorsque vous serez prêt à commencer. Une fois le test démarré, n'appuyez pas sur Pause (⏸) avant d'avoir terminé votre lecture : Pause met fin au test ; elle ne met pas le chronomètre en pause. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test. Ensuite, vous pourrez consulter des questions de compréhension si le texte en contient et, à la fin, créer un preset à partir du résultat.\nAvant de commencer, gardez à l'esprit que ces textes de test demandent généralement entre 5 et 15 minutes de concentration ininterrompue.\nCe pool utilise des textes courts ; interprétez donc le résultat avec prudence. Il ne devrait pas être extrapolé directement à des textes longs, où entrent habituellement en jeu des facteurs positifs, comme l'acquisition de fluidité et de contexte, et des facteurs négatifs, comme la récapitulation mentale et la fatigue.",
         "eligible_count": "Fichiers éligibles :",
         "show_bundled_entries": "Tests de base",
         "get_more_files": "Obtenir plus de fichiers",
@@ -597,13 +620,15 @@
         "close_aria": "Fermer la boîte de dialogue du test de vitesse de lecture",
         "start_random_confirm": "Cela remplacera le texte actuel par un texte aléatoire éligible du pool. Voulez-vous continuer ?",
         "reset_confirm": "Cela réinitialisera tout le pool du test et re-marquerra tous ses fichiers comme non utilisés. Voulez-vous continuer ?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Inclure dans le pool les fichiers de test initiaux fournis avec l'application",
           "get_more_files": "Obtenir plus de fichiers de test depuis le dossier Google Drive",
           "import_files": "Importer des fichiers de test depuis votre appareil",
-          "reset_pool": "Réinitialiser le pool de test",
           "start_random_text": "Démarrer le test avec un texte aléatoire éligible du pool",
-          "start_current_text": "Démarrer le test avec le texte actuel"
+          "start_current_text": "Utiliser le texte actuel sans le remplacer ni consommer un fichier du pool"
+        },
+        "names": {
+          "reset_pool": "Réinitialiser le pool de test"
         },
         "import": {
           "import_summary": "Import terminé. Importés : {imported}. Doublons ignorés : {skippedDuplicates}. Échecs de validation : {failedValidation}. Échecs d'entrées d'archive : {failedArchiveEntries}. Échecs d'écriture : {failedWrites}.",
@@ -618,7 +643,7 @@
         }
       },
       "prestart": {
-        "reminder": "Appuyez sur Play (▶) dans la Fenêtre flottante lorsque vous êtes prêt à commencer. Une fois le test démarré, n'appuyez pas sur Pause (⏸) avant d'avoir terminé votre lecture : Pause met fin au test ; elle ne met pas le minuteur en pause. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test."
+        "reminder": "Appuyez sur Play (▶) dans le Chronomètre flottant lorsque vous êtes prêt à commencer. Une fois le test démarré, n'appuyez pas sur Pause (⏸) avant d'avoir terminé votre lecture : Pause met fin au test ; elle ne met pas le chronomètre en pause. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test."
       },
       "questions": {
         "title": "Questions de compréhension de lecture",
@@ -693,7 +718,7 @@
       }
     },
     "browser_extension": {
-      "title": "Tiempo de lectura",
+      "title": "Temps de lecture",
       "subtitle": "Extension du navigateur",
       "availability": "Disponible dès maintenant sur Chrome. D'autres navigateurs arrivent bientôt.",
       "chrome_store_aria": "Ouvrir la page Chrome Web Store de l'extension",
@@ -705,6 +730,11 @@
     "info": {
       "loading": "Chargement...",
       "missing_content": "Aucun contenu n'est disponible pour '{name}'.",
+      "close_aria": "Fermer les informations",
+      "media_lightbox": {
+        "title": "Aperçu agrandi de la capture d’écran",
+        "close_aria": "Fermer l’aperçu"
+      },
       "external": {
         "blocked": "Lien bloqué",
         "error": "Erreur lors de l'ouverture du lien"
