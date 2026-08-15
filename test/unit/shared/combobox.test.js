@@ -228,10 +228,17 @@ test('select type-ahead, Home/End, updates, focus, and disabled state follow the
   assert.equal(controller.getValue(), 'c');
 
   controller.open();
-  input.dispatch('keydown', { key: 'Home' });
+  const homeEvent = input.dispatch('keydown', { key: 'Home' });
+  assert.equal(homeEvent.defaultPrevented, true);
   assert.equal(input.getAttribute('aria-activedescendant').endsWith('-option-0'), true);
-  input.dispatch('keydown', { key: 'End' });
+  const endEvent = input.dispatch('keydown', { key: 'End' });
+  assert.equal(endEvent.defaultPrevented, true);
   assert.equal(input.getAttribute('aria-activedescendant').endsWith('-option-2'), true);
+  controller.close();
+  const closedHomeEvent = input.dispatch('keydown', { key: 'Home' });
+  assert.equal(closedHomeEvent.defaultPrevented, true);
+  assert.equal(input.getAttribute('aria-expanded'), 'true');
+  assert.equal(input.getAttribute('aria-activedescendant').endsWith('-option-0'), true);
   controller.close();
   controller.focus();
   assert.equal(input.focused, true);
@@ -239,6 +246,48 @@ test('select type-ahead, Home/End, updates, focus, and disabled state follow the
   assert.equal(input.disabled, true);
   controller.open();
   assert.equal(input.getAttribute('aria-expanded'), 'false');
+});
+
+test('editable mode leaves Home/End navigation to the native input', () => {
+  const harness = createHarness();
+  const host = createElement();
+  const controller = harness.create({
+    host,
+    mode: 'editable',
+    options: [
+      { value: 'a', label: 'Alpha' },
+      { value: 'b', label: 'Bravo' },
+      { value: 'c', label: 'Charlie' },
+    ],
+    value: 'b',
+  });
+  const input = host.children[0];
+
+  function assertInputNavigationIsUnintercepted(eventInit, expectedExpanded, expectedActiveOptionId) {
+    input.value = 'Bravx';
+    input.selectionStart = 2;
+    input.selectionEnd = 2;
+    const keyEvent = input.dispatch('keydown', eventInit);
+    assert.equal(keyEvent.defaultPrevented, false);
+    assert.equal(input.getAttribute('aria-expanded'), expectedExpanded);
+    assert.equal(input.getAttribute('aria-activedescendant'), expectedActiveOptionId);
+    assert.equal(input.value, 'Bravx');
+    assert.equal(input.selectionStart, 2);
+    assert.equal(input.selectionEnd, 2);
+  }
+
+  for (const key of ['Home', 'End']) {
+    assertInputNavigationIsUnintercepted({ key }, 'false', null);
+  }
+
+  controller.open();
+  const activeOptionId = input.getAttribute('aria-activedescendant');
+  const modifierCases = [{}, { ctrlKey: true }, { metaKey: true }, { altKey: true }, { shiftKey: true }];
+  for (const key of ['Home', 'End']) {
+    for (const modifiers of modifierCases) {
+      assertInputNavigationIsUnintercepted({ key, ...modifiers }, 'true', activeOptionId);
+    }
+  }
 });
 
 test('editable mode filters, restores committed text, and leaves actions non-committing and open', () => {

@@ -331,7 +331,7 @@
         else moveActive(event.key === 'ArrowDown' ? 1 : -1);
         return;
       }
-      if (event.key === 'Home' || event.key === 'End') {
+      if (mode === 'select' && (event.key === 'Home' || event.key === 'End')) {
         event.preventDefault();
         if (!isOpen) open();
         moveActive(event.key === 'Home' ? 'first' : 'last');
