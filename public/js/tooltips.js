@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Display explicit, already-localized visual-tooltip values.
 // - Position the shared visual bubble for pointer and keyboard interactions.
-// - Dismiss and clean up the bubble without changing control semantics.
+// - Own tooltip dismissal semantics, including Escape priority while a tooltip is visible.
 // =============================================================================
 
 (() => {
