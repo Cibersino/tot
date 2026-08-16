@@ -4,8 +4,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
   <title>toT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="./fonts/Baskervville.css" />
@@ -21,105 +20,294 @@
   <!-- Main container -->
   <div class="app-container">
     <!-- Startup splash overlay (blocks interaction until READY) -->
-    <div id="startupSplash" class="startup-splash" aria-hidden="true">
-      <div class="startup-splash__spinner" aria-hidden="true"></div>
+    <div
+      id="startupSplash"
+      class="startup-splash"
+      aria-hidden="true"
+    >
+      <div
+        class="startup-splash__spinner"
+        aria-hidden="true"
+      ></div>
     </div>
     <!-- Text Editor Loader (top right corner) -->
-    <div id="editorLoader" class="editor-loader" aria-live="polite">
-      <span id="editorLoaderStatus" class="main-accessible-description"></span>
+    <div
+      id="editorLoader"
+      class="editor-loader"
+      aria-live="polite"
+    >
+      <span
+        id="editorLoaderStatus"
+        class="main-accessible-description"
+      ></span>
     </div>
 
     <!-- 1) TEXT SELECTOR -->
-    <section class="selector-text" aria-labelledby="selector-title">
-      <h2 id="selector-title" class="section-title">Primera y última parte del texto actual:</h2>
+    <section
+      class="selector-text"
+      aria-labelledby="selector-title"
+    >
+      <h2
+        id="selector-title"
+        class="section-title"
+      >Primera y última parte del texto actual:</h2>
       <pre id="textPreview">(vacío)</pre>
       <div class="controls">
-        <div id="selectorControlsNormal" class="controls-row">
-          <button id="btnTextExtraction" class="btn-standard"
-            data-tot-icon="text-extraction-wide"></button>
-          <span class="controls-sep" aria-hidden="true"></span>
-          <button id="btnOverwriteClipboard" class="btn-standard" data-tot-icon="clipboard-overwrite"></button>
-          <button id="btnAppendClipboard" class="btn-standard" data-tot-icon="clipboard-append"></button>
-          <input id="clipboardRepeatInput" class="clipboard-repeat-input" type="number" min="1" max="9999" step="1"
-            value="1" aria-label="Repeticiones de pegado" />
-          <button id="btnEdit" class="btn-standard"
-            data-tot-icon="text-editor"></button>
-          <button id="btnEmptyMain" class="btn-standard"
-            data-tot-icon="trash"></button>
-          <span class="controls-sep" aria-hidden="true"></span>
-          <button id="btnLoadSnapshot" class="btn-standard"
-            data-tot-icon="text-snapshot-load"></button>
-          <button id="btnSaveSnapshot" class="btn-standard"
-            data-tot-icon="text-snapshot-save"></button>
-          <span class="controls-sep" aria-hidden="true"></span>
-          <button id="btnNewTask" class="btn-standard" data-tot-icon="task-new"></button>
-          <button id="btnLoadTask" class="btn-standard" data-tot-icon="task-load"></button>
-          <span class="controls-sep" aria-hidden="true"></span>
-          <button id="btnReadingSpeedTest" class="btn-standard" type="button" aria-label="Test de velocidad de lectura"
-            data-tot-icon="reading-speed-test"></button>
-          <span class="controls-sep" aria-hidden="true"></span>
-          <label id="previewSpoilerToggleLabel" class="selector-inline-checkbox native-checkbox-option" for="previewSpoilerToggle">
-            <input id="previewSpoilerToggle" type="checkbox" checked
-              aria-describedby="previewSpoilerDescription" />
+        <div
+          id="selectorControlsNormal"
+          class="controls-row"
+        >
+          <button
+            id="btnTextExtraction"
+            class="btn-standard"
+            data-tot-icon="text-extraction-wide"
+          ></button>
+          <span
+            class="controls-sep"
+            aria-hidden="true"
+          ></span>
+          <button
+            id="btnOverwriteClipboard"
+            class="btn-standard"
+            data-tot-icon="clipboard-overwrite"
+          ></button>
+          <button
+            id="btnAppendClipboard"
+            class="btn-standard"
+            data-tot-icon="clipboard-append"
+          ></button>
+          <input
+            id="clipboardRepeatInput"
+            class="clipboard-repeat-input"
+            type="number"
+            min="1"
+            max="9999"
+            step="1"
+            value="1"
+            aria-label="Repeticiones de pegado"
+          />
+          <button
+            id="btnEdit"
+            class="btn-standard"
+            data-tot-icon="text-editor"
+          ></button>
+          <button
+            id="btnEmptyMain"
+            class="btn-standard"
+            data-tot-icon="trash"
+          ></button>
+          <span
+            class="controls-sep"
+            aria-hidden="true"
+          ></span>
+          <button
+            id="btnLoadSnapshot"
+            class="btn-standard"
+            data-tot-icon="text-snapshot-load"
+          ></button>
+          <button
+            id="btnSaveSnapshot"
+            class="btn-standard"
+            data-tot-icon="text-snapshot-save"
+          ></button>
+          <span
+            class="controls-sep"
+            aria-hidden="true"
+          ></span>
+          <button
+            id="btnNewTask"
+            class="btn-standard"
+            data-tot-icon="task-new"
+          ></button>
+          <button
+            id="btnLoadTask"
+            class="btn-standard"
+            data-tot-icon="task-load"
+          ></button>
+          <span
+            class="controls-sep"
+            aria-hidden="true"
+          ></span>
+          <button
+            id="btnReadingSpeedTest"
+            class="btn-standard"
+            type="button"
+            aria-label="Test de velocidad de lectura"
+            data-tot-icon="reading-speed-test"
+          ></button>
+          <span
+            class="controls-sep"
+            aria-hidden="true"
+          ></span>
+          <label
+            id="previewSpoilerToggleLabel"
+            class="selector-inline-checkbox native-checkbox-option"
+            for="previewSpoilerToggle"
+          >
+            <input
+              id="previewSpoilerToggle"
+              type="checkbox"
+              checked
+              aria-describedby="previewSpoilerDescription"
+            />
             <span id="previewSpoilerText"></span>
           </label>
-          <span id="previewSpoilerDescription" class="main-accessible-description"></span>
+          <span
+            id="previewSpoilerDescription"
+            class="main-accessible-description"
+          ></span>
         </div>
-        <div id="selectorControlsProcessing" class="controls-processing" hidden aria-hidden="true">
-          <div class="text-extraction-processing-bar" role="status" aria-live="polite">
+        <div
+          id="selectorControlsProcessing"
+          class="controls-processing"
+          hidden
+          aria-hidden="true"
+        >
+          <div
+            class="text-extraction-processing-bar"
+            role="status"
+            aria-live="polite"
+          >
             <div class="text-extraction-processing-copy">
               <div class="text-extraction-processing-row">
                 <span id="textExtractionProcessingLabel">Procesando extracción...</span>
-                <span id="textExtractionProcessingFilenameSeparator" aria-hidden="true" hidden>·</span>
-                <bdi id="textExtractionProcessingFilename" class="text-extraction-processing-filename" hidden
-                  tabindex="0"></bdi>
+                <span
+                  id="textExtractionProcessingFilenameSeparator"
+                  aria-hidden="true"
+                  hidden
+                >·</span>
+                <bdi
+                  id="textExtractionProcessingFilename"
+                  class="text-extraction-processing-filename"
+                  hidden
+                  tabindex="0"
+                ></bdi>
               </div>
               <div class="text-extraction-processing-row">
-                <span id="textExtractionProcessingElapsed" class="text-extraction-processing-elapsed" hidden
-                  aria-hidden="true"></span>
+                <span
+                  id="textExtractionProcessingElapsed"
+                  class="text-extraction-processing-elapsed"
+                  hidden
+                  aria-hidden="true"
+                ></span>
               </div>
             </div>
-            <span class="text-extraction-processing-placeholder-track" aria-hidden="true">
+            <span
+              class="text-extraction-processing-placeholder-track"
+              aria-hidden="true"
+            >
               <span class="text-extraction-processing-placeholder-fill"></span>
             </span>
-            <button id="btnTextExtractionAbort" class="btn-standard" hidden disabled
-              aria-label="Abortar extracción" data-tot-icon="abort-extraction"></button>
+            <button
+              id="btnTextExtractionAbort"
+              class="btn-standard"
+              hidden
+              disabled
+              aria-label="Abortar extracción"
+              data-tot-icon="abort-extraction"
+            ></button>
           </div>
         </div>
       </div>
     </section>
 
     <!-- 2) READING SPEED -->
-    <aside class="velocity" aria-labelledby="vel-title">
-      <h2 id="vel-title" class="section-title">VELOCIDAD DE LECTURA</h2>
+    <aside
+      class="velocity"
+      aria-labelledby="vel-title"
+    >
+      <h2
+        id="vel-title"
+        class="section-title"
+      >VELOCIDAD DE LECTURA</h2>
       <div class="wpm-row">
-        <input id="wpmInput" type="number" min="10" max="700" value="200" />
+        <input
+          id="wpmInput"
+          type="number"
+          min="10"
+          max="700"
+          value="200"
+        />
         <span>palabras por minuto (WPM)</span>
       </div>
-      <input id="wpmSlider" class="wpm-slider" type="range" min="10" max="700" value="200" />
+      <input
+        id="wpmSlider"
+        class="wpm-slider"
+        type="range"
+        min="10"
+        max="700"
+        value="200"
+      />
       <div class="presets-row">
-        <div id="presets" class="presets-combobox"></div>
-        <button id="btnNewPreset" class="btn-standard btn-standard--square"
-          data-tot-icon="preset-new"></button>
-        <button id="btnEditPreset" class="btn-standard btn-standard--square" disabled aria-disabled="true"
-          data-tot-icon="preset-edit"></button>
-        <button id="btnDeletePreset" class="btn-standard btn-standard--square" disabled aria-disabled="true"
-          data-tot-icon="trash"></button>
-        <button id="btnResetDefaultPresets" class="btn-standard btn-standard--square-half"
-          data-tot-icon="reset"></button>
+        <div
+          id="presets"
+          class="presets-combobox"
+        ></div>
+        <button
+          id="btnNewPreset"
+          class="btn-standard btn-standard--square"
+          data-tot-icon="preset-new"
+        ></button>
+        <button
+          id="btnEditPreset"
+          class="btn-standard btn-standard--square"
+          disabled
+          aria-disabled="true"
+          data-tot-icon="preset-edit"
+        ></button>
+        <button
+          id="btnDeletePreset"
+          class="btn-standard btn-standard--square"
+          disabled
+          aria-disabled="true"
+          data-tot-icon="trash"
+        ></button>
+        <button
+          id="btnResetDefaultPresets"
+          class="btn-standard btn-standard--square-half"
+          data-tot-icon="reset"
+        ></button>
       </div>
-      <div id="presetDescription" class="preset-description" aria-live="polite"></div>
+      <div
+        id="presetDescription"
+        class="preset-description"
+        aria-live="polite"
+      ></div>
     </aside>
 
     <!-- 3) COUNTING RESULTS -->
-    <aside class="results" aria-labelledby="results-title">
-      <h2 id="results-title" class="section-title">RESULTADOS DEL CONTEO</h2>
+    <aside
+      class="results"
+      aria-labelledby="results-title"
+    >
+      <h2
+        id="results-title"
+        class="section-title"
+      >RESULTADOS DEL CONTEO</h2>
       <div class="result-highlight">
-        <div class="big-time" id="resTime" role="status" aria-live="polite">⏱ Tiempo estimado de lectura: <bdi dir="ltr">0h 0m 0s</bdi></div>
+        <div
+          class="big-time"
+          id="resTime"
+          role="status"
+          aria-live="polite"
+        >⏱ Tiempo estimado de lectura: <bdi dir="ltr">0h 0m 0s</bdi></div>
         <div class="results-multiplier-row">
-          <label id="resultsTimeMultiplierLabel" for="resultsTimeMultiplierInput">x</label>
-          <input id="resultsTimeMultiplierInput" type="number" min="1" max="9999" step="1" value="1" />
-          <output id="resultsTimeMultiplierOutput" aria-live="polite">: 0h 0m 0s</output>
+          <label
+            id="resultsTimeMultiplierLabel"
+            for="resultsTimeMultiplierInput"
+          >x</label>
+          <input
+            id="resultsTimeMultiplierInput"
+            type="number"
+            min="1"
+            max="9999"
+            step="1"
+            value="1"
+          />
+          <output
+            id="resultsTimeMultiplierOutput"
+            aria-live="polite"
+          >: 0h 0m 0s</output>
         </div>
       </div>
       <!-- Row: results (left) + toggle (right) -->
@@ -129,493 +317,1078 @@
           <div id="resChars">Caracteres: 0</div>
           <div id="resCharsNoSpace">Caracteres (sin espacios): 0</div>
         </div>
-        <div class="toggle-wrapper" aria-hidden="false">
-          <label class="toggle-label" for="toggleModoPreciso">Modo preciso</label>
+        <div
+          class="toggle-wrapper"
+          aria-hidden="false"
+        >
+          <label
+            class="toggle-label"
+            for="toggleModoPreciso"
+          >Modo preciso</label>
           <label class="switch">
-            <input type="checkbox" id="toggleModoPreciso" role="switch" aria-checked="true"
-              aria-describedby="preciseModeDescription" />
-            <span class="slider round" aria-hidden="true"></span>
+            <input
+              type="checkbox"
+              id="toggleModoPreciso"
+              role="switch"
+              aria-checked="true"
+              aria-describedby="preciseModeDescription"
+            />
+            <span
+              class="slider round"
+              aria-hidden="true"
+            ></span>
           </label>
         </div>
       </div>
-      <span id="preciseModeDescription" class="main-accessible-description"></span>
+      <span
+        id="preciseModeDescription"
+        class="main-accessible-description"
+      ></span>
       <div class="help-row">
-        <button id="btnTextTimeCalculator" class="btn-standard btn-standard--square" type="button"
-          data-tot-icon="text-time-calculator"></button>
-        <button id="btnHelp" class="btn-standard btn-standard--square-half">?</button>
+        <button
+          id="btnTextTimeCalculator"
+          class="btn-standard btn-standard--square"
+          type="button"
+          data-tot-icon="text-time-calculator"
+        ></button>
+        <button
+          id="btnHelp"
+          class="btn-standard btn-standard--square-half"
+        >?</button>
       </div>
     </aside>
 
     <!-- 4) STOPWATCH -->
-    <section class="cronometro" aria-labelledby="cron-title">
-      <h2 id="cron-title" class="section-title">CRONÓMETRO</h2>
+    <section
+      class="cronometro"
+      aria-labelledby="cron-title"
+    >
+      <h2
+        id="cron-title"
+        class="section-title"
+      >CRONÓMETRO</h2>
       <div class="crono-row">
-        <input id="cronoDisplay" class="crono-box" type="text" value="00:00:00" />
+        <input
+          id="cronoDisplay"
+          class="crono-box"
+          type="text"
+          value="00:00:00"
+        />
         <div class="realwpm">Velocidad:<br /><span id="realWpmDisplay">&nbsp;</span></div>
       </div>
-      <div class="crono-controls" role="group" aria-label="Controles del cronómetro">
-        <button id="cronoToggle" class="btn-standard"
-          aria-label="Iniciar o pausar cronómetro" data-tot-icon="play"></button>
-        <button id="cronoReset" class="btn-standard"
-          aria-label="Detener y restablecer cronómetro" data-tot-icon="stop"></button>
-        <div class="vf-switch-wrapper" aria-label="Cronómetro Flotante">
-          <span class="vf-label" aria-hidden="true" data-tot-icon="floating-stopwatch"></span>
+      <div
+        class="crono-controls"
+        role="group"
+        aria-label="Controles del cronómetro"
+      >
+        <button
+          id="cronoToggle"
+          class="btn-standard"
+          aria-label="Iniciar o pausar cronómetro"
+          data-tot-icon="play"
+        ></button>
+        <button
+          id="cronoReset"
+          class="btn-standard"
+          aria-label="Detener y restablecer cronómetro"
+          data-tot-icon="stop"
+        ></button>
+        <div
+          class="vf-switch-wrapper"
+          aria-label="Cronómetro Flotante"
+        >
+          <span
+            class="vf-label"
+            aria-hidden="true"
+            data-tot-icon="floating-stopwatch"
+          ></span>
           <label class="switch">
-            <input type="checkbox" id="toggleVF" role="switch" aria-checked="false" />
-            <span class="slider round" aria-hidden="true"></span>
+            <input
+              type="checkbox"
+              id="toggleVF"
+              role="switch"
+              aria-checked="false"
+            />
+            <span
+              class="slider round"
+              aria-hidden="true"
+            ></span>
           </label>
         </div>
       </div>
     </section>
 
     <!-- MENU INFO MODAL -->
-    <div id="infoModal" class="info-modal" aria-hidden="true" role="dialog" aria-labelledby="infoModalTitle"
-      aria-modal="true">
-      <div class="info-modal-backdrop" id="infoModalBackdrop"></div>
-      <div class="info-modal-panel" role="document">
-        <h2 id="infoModalTitle" class="info-modal-accessible-title">Info</h2>
-        <button id="infoModalClose" class="btn-standard btn-standard--square"
-          data-tot-icon="close"></button>
-        <main id="infoModalContent" class="info-modal-content">
+    <div
+      id="infoModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="infoModalTitle"
+      aria-modal="true"
+    >
+      <div
+        class="info-modal-backdrop"
+        id="infoModalBackdrop"
+      ></div>
+      <div
+        class="info-modal-panel"
+        role="document"
+      >
+        <h2
+          id="infoModalTitle"
+          class="info-modal-accessible-title"
+        >Info</h2>
+        <button
+          id="infoModalClose"
+          class="btn-standard btn-standard--square"
+          data-tot-icon="close"
+        ></button>
+        <main
+          id="infoModalContent"
+          class="info-modal-content"
+        >
           <!-- Dynamically loaded content -->
-          <div id="infoModalLoading" class="info-loading">Cargando...</div>
+          <div
+            id="infoModalLoading"
+            class="info-loading"
+          >Cargando...</div>
         </main>
       </div>
     </div>
 
-    <div id="browserExtensionModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="browserExtensionModalTitle" aria-describedby="browserExtensionModalAvailability"
-      aria-modal="true">
-      <div id="browserExtensionModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="browser-extension-modal-panel" role="document">
+    <div
+      id="browserExtensionModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="browserExtensionModalTitle"
+      aria-describedby="browserExtensionModalAvailability"
+      aria-modal="true"
+    >
+      <div
+        id="browserExtensionModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        class="browser-extension-modal-panel"
+        role="document"
+      >
         <div class="browser-extension-modal-body">
           <div class="browser-extension-modal-copy">
             <header class="browser-extension-modal-header">
               <h1 id="browserExtensionModalTitle">Tiempo de lectura</h1>
-              <button id="browserExtensionModalClose" class="btn-standard btn-standard--square" type="button"
-                data-tot-icon="close"></button>
+              <button
+                id="browserExtensionModalClose"
+                class="btn-standard btn-standard--square"
+                type="button"
+                data-tot-icon="close"
+              ></button>
             </header>
-            <p id="browserExtensionModalSubtitle" class="browser-extension-modal-subtitle">Extensión del navegador</p>
+            <p
+              id="browserExtensionModalSubtitle"
+              class="browser-extension-modal-subtitle"
+            >Extensión del navegador</p>
           </div>
           <div class="browser-extension-modal-store">
-            <a id="browserExtensionChromeStoreLink" class="browser-extension-modal-store-link" href="">
-              <img src="./assets/extension/chrome-web-store-badge.png" alt="" aria-hidden="true" />
+            <a
+              id="browserExtensionChromeStoreLink"
+              class="browser-extension-modal-store-link"
+              href=""
+            >
+              <img
+                src="./assets/extension/chrome-web-store-badge.png"
+                alt=""
+                aria-hidden="true"
+              />
             </a>
-            <p id="browserExtensionModalAvailability" class="browser-extension-modal-availability">
-              Disponible ahora en Chrome. Más navegadores pronto.
-            </p>
+            <p
+              id="browserExtensionModalAvailability"
+              class="browser-extension-modal-availability"
+            >Disponible ahora en Chrome. Más navegadores pronto.</p>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="textExtractionPdfOptionsModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="textExtractionPdfOptionsModalTitle" aria-describedby="textExtractionPdfOptionsModalMessage"
-      aria-modal="true">
-      <div id="textExtractionPdfOptionsModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="text-extraction-pdf-options-modal-panel framed-dialog__panel" role="document">
+    <div
+      id="textExtractionPdfOptionsModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="textExtractionPdfOptionsModalTitle"
+      aria-describedby="textExtractionPdfOptionsModalMessage"
+      aria-modal="true"
+    >
+      <div
+        id="textExtractionPdfOptionsModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        class="text-extraction-pdf-options-modal-panel framed-dialog__panel"
+        role="document"
+      >
         <header class="text-extraction-pdf-options-modal-header framed-dialog__header">
           <h2 id="textExtractionPdfOptionsModalTitle">Opciones de extracción PDF</h2>
-          <button id="textExtractionPdfOptionsModalClose" class="btn-standard btn-standard--square" type="button"
-            data-tot-icon="close"></button>
+          <button
+            id="textExtractionPdfOptionsModalClose"
+            class="btn-standard btn-standard--square"
+            type="button"
+            data-tot-icon="close"
+          ></button>
         </header>
         <div class="text-extraction-pdf-options-modal-body framed-dialog__body">
           <p id="textExtractionPdfOptionsModalMessage">Elige cuántas páginas del PDF procesar antes de la extracción.</p>
           <div class="text-extraction-pdf-options-modal-summary">
             <div class="text-extraction-pdf-options-modal-summary-row">
               <span id="textExtractionPdfOptionsModalFileLabel">Archivo:</span>
-              <bdi id="textExtractionPdfOptionsModalFileName" class="text-extraction-pdf-options-modal-file-name"
-                tabindex="0"></bdi>
+              <bdi
+                id="textExtractionPdfOptionsModalFileName"
+                class="text-extraction-pdf-options-modal-file-name"
+                tabindex="0"
+              ></bdi>
             </div>
-            <div id="textExtractionPdfOptionsModalTotalPages"
-              class="text-extraction-pdf-options-modal-summary-row"></div>
+            <div
+              id="textExtractionPdfOptionsModalTotalPages"
+              class="text-extraction-pdf-options-modal-summary-row"
+            ></div>
           </div>
           <fieldset class="text-extraction-pdf-options-modal-selection">
-            <legend id="textExtractionPdfOptionsModalSelectionLegend"
-              class="text-extraction-pdf-options-modal-selection-legend">Selección de páginas</legend>
+            <legend
+              id="textExtractionPdfOptionsModalSelectionLegend"
+              class="text-extraction-pdf-options-modal-selection-legend"
+            >Selección de páginas</legend>
             <label class="text-extraction-pdf-options-modal-option">
-              <input id="textExtractionPdfOptionsModalAllPages" type="radio" name="textExtractionPdfPageSelection"
-                checked />
+              <input
+                id="textExtractionPdfOptionsModalAllPages"
+                type="radio"
+                name="textExtractionPdfPageSelection"
+                checked
+              />
               <span id="textExtractionPdfOptionsModalAllPagesLabel">Todas las páginas</span>
             </label>
             <label class="text-extraction-pdf-options-modal-option">
-              <input id="textExtractionPdfOptionsModalRange" type="radio" name="textExtractionPdfPageSelection" />
+              <input
+                id="textExtractionPdfOptionsModalRange"
+                type="radio"
+                name="textExtractionPdfPageSelection"
+              />
               <span id="textExtractionPdfOptionsModalRangeLabel">Rango de páginas</span>
             </label>
           </fieldset>
-          <div id="textExtractionPdfOptionsModalRangeFields" class="text-extraction-pdf-options-modal-range-fields"
-            hidden aria-hidden="true">
+          <div
+            id="textExtractionPdfOptionsModalRangeFields"
+            class="text-extraction-pdf-options-modal-range-fields"
+            hidden
+            aria-hidden="true"
+          >
             <div class="text-extraction-pdf-options-modal-range-grid">
-              <label class="text-extraction-pdf-options-modal-range-field" for="textExtractionPdfOptionsModalFromInput">
+              <label
+                class="text-extraction-pdf-options-modal-range-field"
+                for="textExtractionPdfOptionsModalFromInput"
+              >
                 <span id="textExtractionPdfOptionsModalFromLabel">Desde la página</span>
-                <input id="textExtractionPdfOptionsModalFromInput" type="number" min="1" step="1" value="1" />
+                <input
+                  id="textExtractionPdfOptionsModalFromInput"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value="1"
+                />
               </label>
-              <label class="text-extraction-pdf-options-modal-range-field" for="textExtractionPdfOptionsModalToInput">
+              <label
+                class="text-extraction-pdf-options-modal-range-field"
+                for="textExtractionPdfOptionsModalToInput"
+              >
                 <span id="textExtractionPdfOptionsModalToLabel">Hasta la página</span>
-                <input id="textExtractionPdfOptionsModalToInput" type="number" min="1" step="1" value="1" />
+                <input
+                  id="textExtractionPdfOptionsModalToInput"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value="1"
+                />
               </label>
             </div>
-            <p id="textExtractionPdfOptionsModalSelectedCount" class="text-extraction-pdf-options-modal-selected-count"
-              hidden aria-hidden="true"></p>
-            <p id="textExtractionPdfOptionsModalValidation" class="text-extraction-pdf-options-modal-validation" hidden
-              aria-hidden="true"></p>
-            <label id="textExtractionPdfOptionsModalKeepWrap" class="text-extraction-pdf-options-modal-keep-option native-checkbox-option"
-              hidden aria-hidden="true">
-              <input id="textExtractionPdfOptionsModalKeepGeneratedPdf" type="checkbox" />
+            <p
+              id="textExtractionPdfOptionsModalSelectedCount"
+              class="text-extraction-pdf-options-modal-selected-count"
+              hidden
+              aria-hidden="true"
+            ></p>
+            <p
+              id="textExtractionPdfOptionsModalValidation"
+              class="text-extraction-pdf-options-modal-validation"
+              hidden
+              aria-hidden="true"
+            ></p>
+            <label
+              id="textExtractionPdfOptionsModalKeepWrap"
+              class="text-extraction-pdf-options-modal-keep-option native-checkbox-option"
+              hidden
+              aria-hidden="true"
+            >
+              <input
+                id="textExtractionPdfOptionsModalKeepGeneratedPdf"
+                type="checkbox"
+              />
               <span id="textExtractionPdfOptionsModalKeepLabel">Conservar el PDF generado después del procesamiento</span>
             </label>
           </div>
           <div class="text-extraction-pdf-options-modal-actions framed-dialog__actions">
-            <button id="textExtractionPdfOptionsModalContinue" class="btn-standard" type="button">Continuar</button>
-            <button id="textExtractionPdfOptionsModalCancel" class="btn-standard" type="button">Cancelar</button>
+            <button
+              id="textExtractionPdfOptionsModalContinue"
+              class="btn-standard"
+              type="button"
+            >Continuar</button>
+            <button
+              id="textExtractionPdfOptionsModalCancel"
+              class="btn-standard"
+              type="button"
+            >Cancelar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="textExtractionRouteModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="textExtractionRouteModalTitle" aria-modal="true">
-      <div id="textExtractionRouteModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="text-extraction-route-modal-panel framed-dialog__panel" role="document" aria-describedby="textExtractionRouteModalMessage">
+    <div
+      id="textExtractionRouteModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="textExtractionRouteModalTitle"
+      aria-modal="true"
+    >
+      <div
+        id="textExtractionRouteModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        class="text-extraction-route-modal-panel framed-dialog__panel"
+        role="document"
+        aria-describedby="textExtractionRouteModalMessage"
+      >
         <header class="text-extraction-route-modal-header framed-dialog__header">
           <h2 id="textExtractionRouteModalTitle">Elegir ruta de extracción</h2>
-          <button id="textExtractionRouteModalClose" class="btn-standard btn-standard--square"
-            data-tot-icon="close"></button>
+          <button
+            id="textExtractionRouteModalClose"
+            class="btn-standard btn-standard--square"
+            data-tot-icon="close"
+          ></button>
         </header>
         <div class="text-extraction-route-modal-body framed-dialog__body">
-          <p id="textExtractionRouteModalMessage">Este PDF tiene disponibles ambas rutas de extracción. Elige una para
-            continuar.</p>
+          <p id="textExtractionRouteModalMessage">Este PDF tiene disponibles ambas rutas de extracción. Elige una para continuar.</p>
           <div class="text-extraction-route-modal-actions framed-dialog__actions">
-            <button id="textExtractionRouteModalNative" class="btn-standard">Usar nativa</button>
-            <button id="textExtractionRouteModalOcr" class="btn-standard">Usar OCR</button>
-            <button id="textExtractionRouteModalCancel" class="btn-standard">Cancelar</button>
+            <button
+              id="textExtractionRouteModalNative"
+              class="btn-standard"
+            >Usar nativa</button>
+            <button
+              id="textExtractionRouteModalOcr"
+              class="btn-standard"
+            >Usar OCR</button>
+            <button
+              id="textExtractionRouteModalCancel"
+              class="btn-standard"
+            >Cancelar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="textExtractionApplyModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="textExtractionApplyModalTitle" aria-modal="true">
-      <div id="textExtractionApplyModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="text-extraction-apply-modal-panel framed-dialog__panel" role="document" aria-describedby="textExtractionApplyModalMessage">
+    <div
+      id="textExtractionApplyModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="textExtractionApplyModalTitle"
+      aria-modal="true"
+    >
+      <div
+        id="textExtractionApplyModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        class="text-extraction-apply-modal-panel framed-dialog__panel"
+        role="document"
+        aria-describedby="textExtractionApplyModalMessage"
+      >
         <header class="text-extraction-apply-modal-header framed-dialog__header">
           <h2 id="textExtractionApplyModalTitle">Aplicar texto extraído</h2>
-          <button id="textExtractionApplyModalClose" class="btn-standard btn-standard--square"
-            data-tot-icon="close"></button>
+          <button
+            id="textExtractionApplyModalClose"
+            class="btn-standard btn-standard--square"
+            data-tot-icon="close"
+          ></button>
         </header>
         <div class="text-extraction-apply-modal-body framed-dialog__body">
           <p id="textExtractionApplyModalMessage">Elige cómo aplicar el texto extraído.</p>
-          <p id="textExtractionApplyModalElapsed" class="text-extraction-apply-modal-elapsed" hidden aria-hidden="true">
-          </p>
-          <div id="textExtractionApplyModalSavedPdf" class="text-extraction-apply-modal-saved-pdf" hidden
-            aria-hidden="true">
+          <p
+            id="textExtractionApplyModalElapsed"
+            class="text-extraction-apply-modal-elapsed"
+            hidden
+            aria-hidden="true"
+          ></p>
+          <div
+            id="textExtractionApplyModalSavedPdf"
+            class="text-extraction-apply-modal-saved-pdf"
+            hidden
+            aria-hidden="true"
+          >
             <p id="textExtractionApplyModalSavedPdfMessage"></p>
-            <div id="textExtractionApplyModalSavedPdfFile" class="text-extraction-apply-modal-saved-pdf-file"></div>
+            <div
+              id="textExtractionApplyModalSavedPdfFile"
+              class="text-extraction-apply-modal-saved-pdf-file"
+            ></div>
             <div class="text-extraction-apply-modal-saved-pdf-actions">
-              <button id="textExtractionApplyModalRevealSavedPdf" class="btn-standard" type="button">Mostrar PDF
-                guardado</button>
+              <button
+                id="textExtractionApplyModalRevealSavedPdf"
+                class="btn-standard"
+                type="button"
+              >Mostrar PDF guardado</button>
             </div>
           </div>
           <div class="text-extraction-apply-repeat-row">
-            <label id="textExtractionApplyModalRepeatLabel" for="textExtractionApplyModalRepeatInput">Repeticiones</label>
-            <input id="textExtractionApplyModalRepeatInput" type="number" min="1" step="1" value="1" />
+            <label
+              id="textExtractionApplyModalRepeatLabel"
+              for="textExtractionApplyModalRepeatInput"
+            >Repeticiones</label>
+            <input
+              id="textExtractionApplyModalRepeatInput"
+              type="number"
+              min="1"
+              step="1"
+              value="1"
+            />
           </div>
           <div class="text-extraction-apply-modal-actions framed-dialog__actions">
-            <button id="textExtractionApplyModalOverwrite" class="btn-standard">Sobrescribir</button>
-            <button id="textExtractionApplyModalAppend" class="btn-standard">Agregar</button>
-            <button id="textExtractionApplyModalCancel" class="btn-standard">Cancelar</button>
+            <button
+              id="textExtractionApplyModalOverwrite"
+              class="btn-standard"
+            >Sobrescribir</button>
+            <button
+              id="textExtractionApplyModalAppend"
+              class="btn-standard"
+            >Agregar</button>
+            <button
+              id="textExtractionApplyModalCancel"
+              class="btn-standard"
+            >Cancelar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="textExtractionBatchPlanModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="textExtractionBatchPlanModalTitle" aria-modal="true">
-      <div id="textExtractionBatchPlanModalBackdrop" class="info-modal-backdrop"></div>
-      <div id="textExtractionBatchPlanModalPanel" class="text-extraction-batch-plan-modal-panel framed-dialog__panel" role="document">
+    <div
+      id="textExtractionBatchPlanModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="textExtractionBatchPlanModalTitle"
+      aria-modal="true"
+    >
+      <div
+        id="textExtractionBatchPlanModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        id="textExtractionBatchPlanModalPanel"
+        class="text-extraction-batch-plan-modal-panel framed-dialog__panel"
+        role="document"
+      >
         <header class="text-extraction-batch-plan-modal-header framed-dialog__header">
           <h2 id="textExtractionBatchPlanModalTitle">Extracción por lotes</h2>
-          <button id="textExtractionBatchPlanClose" class="btn-standard btn-standard--square" type="button"
-            data-tot-icon="close"></button>
+          <button
+            id="textExtractionBatchPlanClose"
+            class="btn-standard btn-standard--square"
+            type="button"
+            data-tot-icon="close"
+          ></button>
         </header>
         <div class="text-extraction-batch-plan-modal-body framed-dialog__body">
           <div class="text-extraction-batch-plan-modal-toolbar">
-            <button id="textExtractionBatchPlanPresetAll" class="btn-standard" type="button">Todo junto</button>
-            <button id="textExtractionBatchPlanPresetSeparate" class="btn-standard" type="button">Cada archivo por
-              separado</button>
+            <button
+              id="textExtractionBatchPlanPresetAll"
+              class="btn-standard"
+              type="button"
+            >Todo junto</button>
+            <button
+              id="textExtractionBatchPlanPresetSeparate"
+              class="btn-standard"
+              type="button"
+            >Cada archivo por separado</button>
           </div>
-          <div id="textExtractionBatchPlanUnits" class="text-extraction-batch-plan-units"></div>
+          <div
+            id="textExtractionBatchPlanUnits"
+            class="text-extraction-batch-plan-units"
+          ></div>
           <fieldset class="text-extraction-batch-plan-failure-policy">
             <legend id="textExtractionBatchPlanFailureLegend">Comportamiento ante fallos</legend>
             <label class="text-extraction-batch-plan-failure-option">
-              <input id="textExtractionBatchPlanFailureDefault" type="radio" name="textExtractionBatchPlanFailurePolicy"
-                value="finish_unit_after_last_success" checked />
-              <span id="textExtractionBatchPlanFailureDefaultLabel">Finalizar la unidad con el último éxito y seguir
-                con la siguiente</span>
+              <input
+                id="textExtractionBatchPlanFailureDefault"
+                type="radio"
+                name="textExtractionBatchPlanFailurePolicy"
+                value="finish_unit_after_last_success"
+                checked
+              />
+              <span id="textExtractionBatchPlanFailureDefaultLabel">Finalizar la unidad con el último éxito y seguir con la siguiente</span>
             </label>
             <label class="text-extraction-batch-plan-failure-option">
-              <input id="textExtractionBatchPlanFailureContinue" type="radio" name="textExtractionBatchPlanFailurePolicy"
-                value="omit_failed_and_continue" />
-              <span id="textExtractionBatchPlanFailureContinueLabel">Omitir el fallo y seguir dentro de la misma
-                unidad</span>
+              <input
+                id="textExtractionBatchPlanFailureContinue"
+                type="radio"
+                name="textExtractionBatchPlanFailurePolicy"
+                value="omit_failed_and_continue"
+              />
+              <span id="textExtractionBatchPlanFailureContinueLabel">Omitir el fallo y seguir dentro de la misma unidad</span>
             </label>
           </fieldset>
           <div class="text-extraction-batch-plan-modal-actions framed-dialog__actions">
-            <button id="textExtractionBatchPlanStart" class="btn-standard" type="button">Iniciar extracción</button>
-            <button id="textExtractionBatchPlanCancel" class="btn-standard" type="button">Cancelar</button>
+            <button
+              id="textExtractionBatchPlanStart"
+              class="btn-standard"
+              type="button"
+            >Iniciar extracción</button>
+            <button
+              id="textExtractionBatchPlanCancel"
+              class="btn-standard"
+              type="button"
+            >Cancelar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="textExtractionBatchFinalModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="textExtractionBatchFinalModalTitle" aria-modal="true">
-      <div id="textExtractionBatchFinalModalBackdrop" class="info-modal-backdrop"></div>
-      <div id="textExtractionBatchFinalModalPanel" class="text-extraction-batch-final-modal-panel framed-dialog__panel" role="document">
+    <div
+      id="textExtractionBatchFinalModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="textExtractionBatchFinalModalTitle"
+      aria-modal="true"
+    >
+      <div
+        id="textExtractionBatchFinalModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        id="textExtractionBatchFinalModalPanel"
+        class="text-extraction-batch-final-modal-panel framed-dialog__panel"
+        role="document"
+      >
         <header class="text-extraction-batch-final-modal-header framed-dialog__header">
           <h2 id="textExtractionBatchFinalModalTitle">Extracción por lotes completada</h2>
-          <button id="textExtractionBatchFinalModalClose" class="btn-standard btn-standard--square" type="button"
-            data-tot-icon="close"></button>
+          <button
+            id="textExtractionBatchFinalModalClose"
+            class="btn-standard btn-standard--square"
+            type="button"
+            data-tot-icon="close"
+          ></button>
         </header>
         <div class="text-extraction-batch-final-modal-body framed-dialog__body">
           <p id="textExtractionBatchFinalModalSummary"></p>
-          <p id="textExtractionBatchFinalModalElapsed" class="text-extraction-batch-final-modal-elapsed" hidden
-            aria-hidden="true"></p>
-          <div id="textExtractionBatchFinalModalBody" class="text-extraction-batch-final-modal-report"></div>
+          <p
+            id="textExtractionBatchFinalModalElapsed"
+            class="text-extraction-batch-final-modal-elapsed"
+            hidden
+            aria-hidden="true"
+          ></p>
+          <div
+            id="textExtractionBatchFinalModalBody"
+            class="text-extraction-batch-final-modal-report"
+          ></div>
           <div class="text-extraction-batch-final-modal-actions framed-dialog__actions">
-            <button id="textExtractionBatchFinalModalCopy" class="btn-standard" type="button">Copiar informe</button>
-            <button id="textExtractionBatchFinalModalOpenSnapshots" class="btn-standard" type="button">Abrir carpeta de
-              snapshots</button>
-            <button id="textExtractionBatchFinalModalOk" class="btn-standard" type="button">Aceptar</button>
+            <button
+              id="textExtractionBatchFinalModalCopy"
+              class="btn-standard"
+              type="button"
+            >Copiar informe</button>
+            <button
+              id="textExtractionBatchFinalModalOpenSnapshots"
+              class="btn-standard"
+              type="button"
+            >Abrir carpeta de snapshots</button>
+            <button
+              id="textExtractionBatchFinalModalOk"
+              class="btn-standard"
+              type="button"
+            >Aceptar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="textExtractionSingleFileHeavyPdfModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="textExtractionSingleFileHeavyPdfModalTitle" aria-modal="true">
-      <div id="textExtractionSingleFileHeavyPdfModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="text-extraction-single-file-heavy-modal-panel framed-dialog__panel" role="document">
+    <div
+      id="textExtractionSingleFileHeavyPdfModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="textExtractionSingleFileHeavyPdfModalTitle"
+      aria-modal="true"
+    >
+      <div
+        id="textExtractionSingleFileHeavyPdfModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        class="text-extraction-single-file-heavy-modal-panel framed-dialog__panel"
+        role="document"
+      >
         <header class="text-extraction-single-file-heavy-modal-header framed-dialog__header">
           <h2 id="textExtractionSingleFileHeavyPdfModalTitle">PDF pesado para OCR</h2>
-          <button id="textExtractionSingleFileHeavyPdfModalClose" class="btn-standard btn-standard--square" type="button"
-            data-tot-icon="close"></button>
+          <button
+            id="textExtractionSingleFileHeavyPdfModalClose"
+            class="btn-standard btn-standard--square"
+            type="button"
+            data-tot-icon="close"
+          ></button>
         </header>
         <div class="text-extraction-single-file-heavy-modal-body framed-dialog__body">
           <p id="textExtractionSingleFileHeavyPdfModalMessage"></p>
-          <div id="textExtractionSingleFileHeavyPdfModalDetails" class="text-extraction-single-file-heavy-modal-details">
+          <div
+            id="textExtractionSingleFileHeavyPdfModalDetails"
+            class="text-extraction-single-file-heavy-modal-details"
+          >
             <div id="textExtractionSingleFileHeavyPdfModalDetailsRows"></div>
-            <div id="textExtractionSingleFileHeavyPdfModalRevealActions"
-              class="text-extraction-single-file-heavy-modal-details-actions" hidden aria-hidden="true">
-              <button id="textExtractionSingleFileHeavyPdfModalReveal" class="btn-standard" type="button">Mostrar PDF
-                generado</button>
+            <div
+              id="textExtractionSingleFileHeavyPdfModalRevealActions"
+              class="text-extraction-single-file-heavy-modal-details-actions"
+              hidden
+              aria-hidden="true"
+            >
+              <button
+                id="textExtractionSingleFileHeavyPdfModalReveal"
+                class="btn-standard"
+                type="button"
+              >Mostrar PDF generado</button>
             </div>
           </div>
           <div class="text-extraction-single-file-heavy-modal-actions framed-dialog__actions">
-            <button id="textExtractionSingleFileHeavyPdfModalSplit" class="btn-standard" type="button">Procesar el PDF 
-              por partes</button>
-            <button id="textExtractionSingleFileHeavyPdfModalReturnToPages" class="btn-standard" type="button">Volver a
-              páginas</button>
-            <button id="textExtractionSingleFileHeavyPdfModalUseNative" class="btn-standard" type="button">Usar
-              nativa</button>
-            <button id="textExtractionSingleFileHeavyPdfModalCancel" class="btn-standard" type="button">Cancelar</button>
+            <button
+              id="textExtractionSingleFileHeavyPdfModalSplit"
+              class="btn-standard"
+              type="button"
+            >Procesar el PDF por partes</button>
+            <button
+              id="textExtractionSingleFileHeavyPdfModalReturnToPages"
+              class="btn-standard"
+              type="button"
+            >Volver a páginas</button>
+            <button
+              id="textExtractionSingleFileHeavyPdfModalUseNative"
+              class="btn-standard"
+              type="button"
+            >Usar nativa</button>
+            <button
+              id="textExtractionSingleFileHeavyPdfModalCancel"
+              class="btn-standard"
+              type="button"
+            >Cancelar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="snapshotSaveTagsModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="snapshotSaveTagsModalTitle" aria-modal="true">
-      <div id="snapshotSaveTagsModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="snapshot-save-tags-modal-panel framed-dialog__panel" role="document" aria-describedby="snapshotSaveTagsModalMessage">
+    <div
+      id="snapshotSaveTagsModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="snapshotSaveTagsModalTitle"
+      aria-modal="true"
+    >
+      <div
+        id="snapshotSaveTagsModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        class="snapshot-save-tags-modal-panel framed-dialog__panel"
+        role="document"
+        aria-describedby="snapshotSaveTagsModalMessage"
+      >
         <header class="snapshot-save-tags-modal-header framed-dialog__header">
           <h2 id="snapshotSaveTagsModalTitle">Guardar snapshot de texto</h2>
           <div class="snapshot-save-tags-modal-header-actions">
-            <button id="snapshotSaveTagsManageButton" class="btn-standard" type="button">Gestionar
-              etiquetas</button>
-            <button id="snapshotSaveTagsModalClose" class="btn-standard btn-standard--square" type="button"
-              data-tot-icon="close"></button>
+            <button
+              id="snapshotSaveTagsManageButton"
+              class="btn-standard"
+              type="button"
+            >Gestionar etiquetas</button>
+            <button
+              id="snapshotSaveTagsModalClose"
+              class="btn-standard btn-standard--square"
+              type="button"
+              data-tot-icon="close"
+            ></button>
           </div>
         </header>
         <div class="snapshot-save-tags-modal-body framed-dialog__body">
-          <p id="snapshotSaveTagsModalMessage">Etiqueta opcionalmente este snapshot de texto antes de elegir dónde
-            guardarlo.</p>
-          <div id="snapshotSaveMetadataFields" class="snapshot-save-metadata-form">
-            <label id="snapshotSaveNameLabel" for="snapshotSaveName" class="snapshot-save-field-label">
-              Nombre (opcional)
-            </label>
-            <input id="snapshotSaveName" class="snapshot-save-metadata-input" type="text"
-              placeholder="Lectura">
-            <label id="snapshotSaveSourceCommentLabel" for="snapshotSaveSourceComment"
-              class="snapshot-save-field-label">
-              Origen (opcional)
-            </label>
-            <input id="snapshotSaveSourceComment" class="snapshot-save-metadata-input" type="text"
-              placeholder="capítulo-1.pdf, Unidad 1 o texto importado">
+          <p id="snapshotSaveTagsModalMessage">Etiqueta opcionalmente este snapshot de texto antes de elegir dónde guardarlo.</p>
+          <div
+            id="snapshotSaveMetadataFields"
+            class="snapshot-save-metadata-form"
+          >
+            <label
+              id="snapshotSaveNameLabel"
+              for="snapshotSaveName"
+              class="snapshot-save-field-label"
+            >Nombre (opcional)</label>
+            <input
+              id="snapshotSaveName"
+              class="snapshot-save-metadata-input"
+              type="text"
+              placeholder="Lectura"
+            >
+            <label
+              id="snapshotSaveSourceCommentLabel"
+              for="snapshotSaveSourceComment"
+              class="snapshot-save-field-label"
+            >Origen (opcional)</label>
+            <input
+              id="snapshotSaveSourceComment"
+              class="snapshot-save-metadata-input"
+              type="text"
+              placeholder="capítulo-1.pdf, Unidad 1 o texto importado"
+            >
           </div>
           <div class="snapshot-save-tags-form">
             <div class="snapshot-save-tags-field">
-              <span id="snapshotSaveTagsLanguageLabel" class="snapshot-save-field-label">Idioma</span>
-              <div id="snapshotSaveTagsLanguageControl" class="snapshot-save-tags-combobox"></div>
+              <span
+                id="snapshotSaveTagsLanguageLabel"
+                class="snapshot-save-field-label"
+              >Idioma</span>
+              <div
+                id="snapshotSaveTagsLanguageControl"
+                class="snapshot-save-tags-combobox"
+              ></div>
             </div>
             <div class="snapshot-save-tags-field">
-              <span id="snapshotSaveTagsTypeLabel" class="snapshot-save-field-label">Tipo</span>
-              <div id="snapshotSaveTagsTypeControl" class="snapshot-save-tags-combobox"></div>
+              <span
+                id="snapshotSaveTagsTypeLabel"
+                class="snapshot-save-field-label"
+              >Tipo</span>
+              <div
+                id="snapshotSaveTagsTypeControl"
+                class="snapshot-save-tags-combobox"
+              ></div>
             </div>
             <div class="snapshot-save-tags-field">
-              <span id="snapshotSaveTagsDifficultyLabel" class="snapshot-save-field-label">Dificultad</span>
-              <div id="snapshotSaveTagsDifficultyControl" class="snapshot-save-tags-combobox"></div>
+              <span
+                id="snapshotSaveTagsDifficultyLabel"
+                class="snapshot-save-field-label"
+              >Dificultad</span>
+              <div
+                id="snapshotSaveTagsDifficultyControl"
+                class="snapshot-save-tags-combobox"
+              ></div>
             </div>
           </div>
-          <div id="snapshotSaveMetricsOptions" class="snapshot-save-metrics-options">
+          <div
+            id="snapshotSaveMetricsOptions"
+            class="snapshot-save-metrics-options"
+          >
             <label class="snapshot-save-metrics-option native-checkbox-option">
-              <input id="snapshotSaveIncludeCount" type="checkbox" checked>
+              <input
+                id="snapshotSaveIncludeCount"
+                type="checkbox"
+                checked
+              >
               <span id="snapshotSaveIncludeCountLabel">Incluir recuento de palabras</span>
             </label>
             <label class="snapshot-save-metrics-option native-checkbox-option">
-              <input id="snapshotSaveIncludeReading" type="checkbox" checked>
+              <input
+                id="snapshotSaveIncludeReading"
+                type="checkbox"
+                checked
+              >
               <span id="snapshotSaveIncludeReadingLabel">Incluir tiempo estimado de lectura y WPM</span>
             </label>
           </div>
           <div class="snapshot-save-tags-modal-actions framed-dialog__actions">
-            <button id="snapshotSaveTagsModalCancel" class="btn-standard" type="button">Cancelar</button>
-            <button id="snapshotSaveTagsModalConfirm" class="btn-standard" type="button">Guardar snapshot de
-              texto</button>
+            <button
+              id="snapshotSaveTagsModalCancel"
+              class="btn-standard"
+              type="button"
+            >Cancelar</button>
+            <button
+              id="snapshotSaveTagsModalConfirm"
+              class="btn-standard"
+              type="button"
+            >Guardar snapshot de texto</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="snapshotTagManagerModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="snapshotTagManagerModalTitle" aria-modal="true">
-      <div id="snapshotTagManagerModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="snapshot-tag-manager-modal-panel framed-dialog__panel" role="document" aria-describedby="snapshotTagManagerModalMessage">
+    <div
+      id="snapshotTagManagerModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="snapshotTagManagerModalTitle"
+      aria-modal="true"
+    >
+      <div
+        id="snapshotTagManagerModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        class="snapshot-tag-manager-modal-panel framed-dialog__panel"
+        role="document"
+        aria-describedby="snapshotTagManagerModalMessage"
+      >
         <header class="snapshot-tag-manager-modal-header framed-dialog__header">
           <h2 id="snapshotTagManagerModalTitle">Gestionar etiquetas de snapshots</h2>
-          <button id="snapshotTagManagerModalClose" class="btn-standard btn-standard--square" type="button"
-            data-tot-icon="close"></button>
+          <button
+            id="snapshotTagManagerModalClose"
+            class="btn-standard btn-standard--square"
+            type="button"
+            data-tot-icon="close"
+          ></button>
         </header>
         <div class="snapshot-tag-manager-modal-body framed-dialog__body">
           <p id="snapshotTagManagerModalMessage">Gestiona las etiquetas visibles para idioma, tipo y dificultad.</p>
-          <div id="snapshotTagManagerModalContent" class="snapshot-tag-manager-modal-content"></div>
+          <div
+            id="snapshotTagManagerModalContent"
+            class="snapshot-tag-manager-modal-content"
+          ></div>
           <div class="snapshot-tag-manager-modal-actions framed-dialog__actions">
-            <button id="snapshotTagManagerModalDone" class="btn-standard" type="button">Listo</button>
+            <button
+              id="snapshotTagManagerModalDone"
+              class="btn-standard"
+              type="button"
+            >Listo</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="readingTestEntryModal" class="info-modal" aria-hidden="true" role="dialog"
-      aria-labelledby="readingTestEntryModalTitle" aria-modal="true">
-      <div id="readingTestEntryModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="reading-test-entry-modal-panel framed-dialog__panel" role="document">
+    <div
+      id="readingTestEntryModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="readingTestEntryModalTitle"
+      aria-modal="true"
+    >
+      <div
+        id="readingTestEntryModalBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        class="reading-test-entry-modal-panel framed-dialog__panel"
+        role="document"
+      >
         <header class="reading-test-entry-modal-header framed-dialog__header">
           <h2 id="readingTestEntryModalTitle">Test de velocidad de lectura</h2>
-          <button id="readingTestEntryModalClose" class="btn-standard btn-standard--square" type="button"
-            data-tot-icon="close"></button>
+          <button
+            id="readingTestEntryModalClose"
+            class="btn-standard btn-standard--square"
+            type="button"
+            data-tot-icon="close"
+          ></button>
         </header>
         <div class="reading-test-entry-modal-body framed-dialog__body">
           <div class="reading-test-entry-modal-intro-block">
-            <button id="readingTestEntryModalIntroToggle" class="reading-test-entry-modal-toggle" type="button"
-              aria-controls="readingTestEntryModalIntro" aria-expanded="false">Mostrar instrucciones</button>
-            <p id="readingTestEntryModalIntro" hidden>Este test sirve para estimar tu velocidad real de lectura con una
-              sesión guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando
-              termines, pulsa Pausa (⏸) en el Cronómetro Flotante. Usa Detener/Restablecer (⏹) solo si quieres cancelar el
-              test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset
-              con el resultado.</p>
+            <button
+              id="readingTestEntryModalIntroToggle"
+              class="reading-test-entry-modal-toggle"
+              type="button"
+              aria-controls="readingTestEntryModalIntro"
+              aria-expanded="false"
+            >Mostrar instrucciones</button>
+            <p
+              id="readingTestEntryModalIntro"
+              hidden
+            >Este test sirve para estimar tu velocidad real de lectura con una sesión guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando termines, pulsa Pausa (⏸) en el Cronómetro Flotante. Usa Detener/Restablecer (⏹) solo si quieres cancelar el test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.</p>
           </div>
-          <div id="readingTestEntryModalWarning" class="reading-test-entry-modal-warning" aria-live="polite" hidden>
-          </div>
+          <div
+            id="readingTestEntryModalWarning"
+            class="reading-test-entry-modal-warning"
+            aria-live="polite"
+            hidden
+          ></div>
           <div class="reading-test-entry-modal-groups">
-            <section id="readingTestEntryLanguageSection" class="reading-test-entry-modal-group" aria-hidden="true"
-              hidden>
+            <section
+              id="readingTestEntryLanguageSection"
+              class="reading-test-entry-modal-group"
+              aria-hidden="true"
+              hidden
+            >
               <h3 id="readingTestEntryLanguageHeading">Idioma</h3>
-              <div id="readingTestEntryLanguageOptions" class="reading-test-entry-modal-options"></div>
+              <div
+                id="readingTestEntryLanguageOptions"
+                class="reading-test-entry-modal-options"
+              ></div>
             </section>
             <div class="reading-test-entry-modal-group-row">
-              <section id="readingTestEntryTypeSection" class="reading-test-entry-modal-group" aria-hidden="true"
-                hidden>
+              <section
+                id="readingTestEntryTypeSection"
+                class="reading-test-entry-modal-group"
+                aria-hidden="true"
+                hidden
+              >
                 <h3 id="readingTestEntryTypeHeading">Tipo</h3>
-                <div id="readingTestEntryTypeOptions" class="reading-test-entry-modal-options"></div>
+                <div
+                  id="readingTestEntryTypeOptions"
+                  class="reading-test-entry-modal-options"
+                ></div>
               </section>
-              <section id="readingTestEntryDifficultySection" class="reading-test-entry-modal-group" aria-hidden="true"
-                hidden>
+              <section
+                id="readingTestEntryDifficultySection"
+                class="reading-test-entry-modal-group"
+                aria-hidden="true"
+                hidden
+              >
                 <h3 id="readingTestEntryDifficultyHeading">Dificultad</h3>
-                <div id="readingTestEntryDifficultyOptions" class="reading-test-entry-modal-options"></div>
+                <div
+                  id="readingTestEntryDifficultyOptions"
+                  class="reading-test-entry-modal-options"
+                ></div>
               </section>
             </div>
           </div>
           <div class="reading-test-entry-modal-toolbar">
             <div class="reading-test-entry-modal-status">
-              <div id="readingTestEntryModalEligibleCount" class="reading-test-entry-modal-count" aria-live="polite">
+              <div
+                id="readingTestEntryModalEligibleCount"
+                class="reading-test-entry-modal-count"
+                aria-live="polite"
+              >
                 <span id="readingTestEntryModalEligibleCountLabel">Archivos elegibles:</span>
-                <span id="readingTestEntryModalEligibleCountNumber"
-                  class="reading-test-entry-modal-count-number">0</span>
+                <span
+                  id="readingTestEntryModalEligibleCountNumber"
+                  class="reading-test-entry-modal-count-number"
+                >0</span>
               </div>
-              <button id="readingTestEntryModalReset" class="btn-standard btn-standard--square-half" type="button"
-                data-tot-icon="reset"></button>
+              <button
+                id="readingTestEntryModalReset"
+                class="btn-standard btn-standard--square-half"
+                type="button"
+                data-tot-icon="reset"
+              ></button>
             </div>
             <div class="reading-test-entry-modal-management">
-              <label id="readingTestEntryModalShowBundledLabel" class="reading-test-entry-modal-visibility-toggle native-checkbox-option">
-                <input id="readingTestEntryModalShowBundled" type="checkbox" checked
-                  aria-describedby="readingTestEntryModalShowBundledDescription">
+              <label
+                id="readingTestEntryModalShowBundledLabel"
+                class="reading-test-entry-modal-visibility-toggle native-checkbox-option"
+              >
+                <input
+                  id="readingTestEntryModalShowBundled"
+                  type="checkbox"
+                  checked
+                  aria-describedby="readingTestEntryModalShowBundledDescription"
+                >
                 <span id="readingTestEntryModalShowBundledText">Mostrar archivos de test integrados</span>
               </label>
-              <span id="readingTestEntryModalShowBundledDescription" class="main-accessible-description"></span>
-              <a id="readingTestEntryModalGetMoreFiles" class="reading-test-entry-modal-link" href="#"
-                aria-describedby="readingTestEntryModalGetMoreFilesDescription">Obtener más
-                archivos</a>
-              <span id="readingTestEntryModalGetMoreFilesDescription" class="main-accessible-description"></span>
-              <button id="readingTestEntryModalImport" class="btn-standard" type="button"
-                aria-describedby="readingTestEntryModalImportDescription">Importar archivos...</button>
-              <span id="readingTestEntryModalImportDescription" class="main-accessible-description"></span>
+              <span
+                id="readingTestEntryModalShowBundledDescription"
+                class="main-accessible-description"
+              ></span>
+              <a
+                id="readingTestEntryModalGetMoreFiles"
+                class="reading-test-entry-modal-link"
+                href="#"
+                aria-describedby="readingTestEntryModalGetMoreFilesDescription"
+              >Obtener más archivos</a>
+              <span
+                id="readingTestEntryModalGetMoreFilesDescription"
+                class="main-accessible-description"
+              ></span>
+              <button
+                id="readingTestEntryModalImport"
+                class="btn-standard"
+                type="button"
+                aria-describedby="readingTestEntryModalImportDescription"
+              >Importar archivos...</button>
+              <span
+                id="readingTestEntryModalImportDescription"
+                class="main-accessible-description"
+              ></span>
             </div>
           </div>
           <div class="reading-test-entry-modal-actions framed-dialog__actions">
-            <button id="readingTestEntryModalStart" class="btn-standard" type="button"
-              aria-describedby="readingTestEntryModalStartDescription">Iniciar con texto
-              aleatorio</button>
-            <span id="readingTestEntryModalStartDescription" class="main-accessible-description"></span>
-            <button id="readingTestEntryModalStartCurrentText" class="btn-standard" type="button"
-              aria-describedby="readingTestEntryModalStartCurrentTextDescription">Iniciar con texto
-              actual</button>
-            <span id="readingTestEntryModalStartCurrentTextDescription" class="main-accessible-description"></span>
+            <button
+              id="readingTestEntryModalStart"
+              class="btn-standard"
+              type="button"
+              aria-describedby="readingTestEntryModalStartDescription"
+            >Iniciar con texto aleatorio</button>
+            <span
+              id="readingTestEntryModalStartDescription"
+              class="main-accessible-description"
+            ></span>
+            <button
+              id="readingTestEntryModalStartCurrentText"
+              class="btn-standard"
+              type="button"
+              aria-describedby="readingTestEntryModalStartCurrentTextDescription"
+            >Iniciar con texto actual</button>
+            <span
+              id="readingTestEntryModalStartCurrentTextDescription"
+              class="main-accessible-description"
+            ></span>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="textExtractionOcrActivationDisclosureModal" class="info-modal" aria-hidden="true" role="dialog"
+    <div
+      id="textExtractionOcrActivationDisclosureModal"
+      class="info-modal"
+      aria-hidden="true"
+      role="dialog"
       aria-labelledby="textExtractionOcrActivationDisclosureTitle"
-      aria-describedby="textExtractionOcrActivationDisclosureBody" aria-modal="true">
-      <div id="textExtractionOcrActivationDisclosureBackdrop" class="info-modal-backdrop"></div>
-      <div id="textExtractionOcrActivationDisclosurePanel" class="text-extraction-ocr-activation-disclosure-panel framed-dialog__panel" role="document">
+      aria-describedby="textExtractionOcrActivationDisclosureBody"
+      aria-modal="true"
+    >
+      <div
+        id="textExtractionOcrActivationDisclosureBackdrop"
+        class="info-modal-backdrop"
+      ></div>
+      <div
+        id="textExtractionOcrActivationDisclosurePanel"
+        class="text-extraction-ocr-activation-disclosure-panel framed-dialog__panel"
+        role="document"
+      >
         <header class="text-extraction-ocr-activation-disclosure-header framed-dialog__header">
           <h2 id="textExtractionOcrActivationDisclosureTitle">Revisar activación de Google OCR</h2>
-          <button id="textExtractionOcrActivationDisclosureClose" class="btn-standard btn-standard--square" type="button"
-            data-tot-icon="close"></button>
+          <button
+            id="textExtractionOcrActivationDisclosureClose"
+            class="btn-standard btn-standard--square"
+            type="button"
+            data-tot-icon="close"
+          ></button>
         </header>
-        <div id="textExtractionOcrActivationDisclosureBody" class="text-extraction-ocr-activation-disclosure-body framed-dialog__body">
-          <p id="textExtractionOcrActivationDisclosureIntro">toT usa servicios de Google para OCR. Si continúas, se
-            abrirá el navegador para que autorices esta app.</p>
+        <div
+          id="textExtractionOcrActivationDisclosureBody"
+          class="text-extraction-ocr-activation-disclosure-body framed-dialog__body"
+        >
+          <p id="textExtractionOcrActivationDisclosureIntro">toT usa servicios de Google para OCR. Si continúas, se abrirá el navegador para que autorices esta app.</p>
           <ul class="text-extraction-ocr-activation-disclosure-list">
-            <li id="textExtractionOcrActivationDisclosureSelectedFiles">Solo se envían a Google los archivos que eliges
-              para OCR.</li>
-            <li id="textExtractionOcrActivationDisclosureLocalStorage">Esta app guarda un archivo local credentials.json
-              y el estado local del token de Google en esta instancia.</li>
-            <li id="textExtractionOcrActivationDisclosureRemoteCleanup">Después de exportar, la app intenta eliminar el
-              documento temporal de Google de tu Google Drive.</li>
-            <li id="textExtractionOcrActivationDisclosureDisconnect">Más tarde puedes desconectar esta conexión desde
-              Preferencias &gt; Desconectar Google OCR.</li>
+            <li id="textExtractionOcrActivationDisclosureSelectedFiles">Solo se envían a Google los archivos que eliges para OCR.</li>
+            <li id="textExtractionOcrActivationDisclosureLocalStorage">Esta app guarda un archivo local credentials.json y el estado local del token de Google en esta instancia.</li>
+            <li id="textExtractionOcrActivationDisclosureRemoteCleanup">Después de exportar, la app intenta eliminar el documento temporal de Google de tu Google Drive.</li>
+            <li id="textExtractionOcrActivationDisclosureDisconnect">Más tarde puedes desconectar esta conexión desde Preferencias &gt; Desconectar Google OCR.</li>
           </ul>
           <div class="text-extraction-ocr-activation-disclosure-actions">
-            <a id="textExtractionOcrActivationDisclosurePrivacy" class="text-extraction-ocr-activation-disclosure-link"
-              href="#">Abrir política de privacidad</a>
+            <a
+              id="textExtractionOcrActivationDisclosurePrivacy"
+              class="text-extraction-ocr-activation-disclosure-link"
+              href="#"
+            >Abrir política de privacidad</a>
             <div class="text-extraction-ocr-activation-disclosure-buttons framed-dialog__actions">
-              <button id="textExtractionOcrActivationDisclosureProceed" class="btn-standard" type="button">Continuar con
-                Google</button>
-              <button id="textExtractionOcrActivationDisclosureCancel" class="btn-standard"
-                type="button">Cancelar</button>
+              <button
+                id="textExtractionOcrActivationDisclosureProceed"
+                class="btn-standard"
+                type="button"
+              >Continuar con Google</button>
+              <button
+                id="textExtractionOcrActivationDisclosureCancel"
+                class="btn-standard"
+                type="button"
+              >Cancelar</button>
             </div>
           </div>
         </div>
@@ -627,21 +1400,55 @@
   <!-- Brand links and app title -->
   <div class="logo-container">
     <div class="logo-links-group">
-      <button id="browserExtensionLogoLink" class="logo-link logo-link--extension" type="button"
-        aria-label="Abrir ventana de extensión del navegador">
-        <img id="browserExtensionLogo" src="./assets/extension/tot-symbols.svg" alt="" aria-hidden="true" />
+      <button
+        id="browserExtensionLogoLink"
+        class="logo-link logo-link--extension"
+        type="button"
+        aria-label="Abrir ventana de extensión del navegador"
+      >
+        <img
+          id="browserExtensionLogo"
+          src="./assets/extension/tot-symbols.svg"
+          alt=""
+          aria-hidden="true"
+        />
       </button>
-      <button id="kofiLogoLink" class="logo-link logo-link--kofi" type="button"
-        aria-label="Apóyame en Ko-fi">
-        <img id="kofiLogo" src="./assets/kofi_symbol.png" alt="" aria-hidden="true" />
+      <button
+        id="kofiLogoLink"
+        class="logo-link logo-link--kofi"
+        type="button"
+        aria-label="Apóyame en Ko-fi"
+      >
+        <img
+          id="kofiLogo"
+          src="./assets/kofi_symbol.png"
+          alt=""
+          aria-hidden="true"
+        />
       </button>
-      <button id="devLogoLink" class="logo-link logo-link--dev" type="button"
-        aria-label="Abrir sitio de Cibersino">
-        <img id="devLogo" src="./assets/logo-cibersino.svg" alt="" aria-hidden="true" />
+      <button
+        id="devLogoLink"
+        class="logo-link logo-link--dev"
+        type="button"
+        aria-label="Abrir sitio de Cibersino"
+      >
+        <img
+          id="devLogo"
+          src="./assets/logo-cibersino.svg"
+          alt=""
+          aria-hidden="true"
+        />
       </button>
     </div>
-    <div class="app-title" aria-hidden="true">
-      <img id="appLogo" src="./assets/logo-tot.svg" alt="" />
+    <div
+      class="app-title"
+      aria-hidden="true"
+    >
+      <img
+        id="appLogo"
+        src="./assets/logo-tot.svg"
+        alt=""
+      />
     </div>
   </div>
 
@@ -695,5 +1502,4 @@
   <script src="renderer.js"></script>
   <script src="./js/tooltips.js"></script>
 </body>
-
 </html>

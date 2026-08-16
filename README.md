@@ -152,23 +152,17 @@ El artefacto se genera en `build-output/`.
 
 ### Notas para desarrolladores (DevTools, logs y menú Development)
 
-**DevTools es por ventana.** Los logs del renderer se ven en la consola de DevTools de *cada* ventana (principal, presets, etc.).
-DevTools solo decide si *muestra* mensajes (Verbose/Info/etc.). El logger de la app además filtra por nivel, así que para ver `debug`/`info`
-debes subir el nivel del logger.
+**DevTools es por ventana.** Los logs del renderer se ven en la consola de DevTools de *cada* ventana (principal, presets, etc.). DevTools solo decide si *muestra* mensajes (Verbose/Info/etc.). El logger de la app además filtra por nivel, así que para ver `debug`/`info` debes subir el nivel del logger.
 
 En la consola de DevTools (de la ventana que estás mirando):
 
 * Ver nivel actual:
-
   * `Log.getLevel()`
 * Activar `info`:
-
   * `Log.setLevel('info')`
 * Activar `debug`:
-
   * `Log.setLevel('debug')`
 * Volver al modo normal (default = `warn`):
-
   * `Log.setLevel('warn')`
 
 Importante: si quieres ver logs de inicio (arranque), cambia el nivel y luego reinicia/recarga la app/ventana.
@@ -176,13 +170,10 @@ Importante: si quieres ver logs de inicio (arranque), cambia el nivel y luego re
 **Menú “Development” (opcional).** En modo desarrollo está oculto por defecto. Para habilitarlo, define `SHOW_DEV_MENU=1`:
 
 * Windows (PowerShell):
-
   * `$env:SHOW_DEV_MENU = '1' ; npm start`
 * Windows (cmd.exe):
-
   * `set SHOW_DEV_MENU=1 && npm start`
 * Linux/macOS (bash/zsh):
-
   * `SHOW_DEV_MENU=1 npm start`
 
 Esto es solo para desarrollo: en builds empaquetados no se muestra el menú “Development” y los atajos dev (DevTools/Reload) no están activos.
@@ -366,23 +357,17 @@ The artifact is generated in `build-output/`.
 
 ### Developer notes (DevTools, logs, and the Development menu)
 
-**DevTools is per-window.** Renderer logs live in the DevTools Console of *each* window (main, presets, etc.).
-DevTools only decides whether messages are *shown* (Verbose/Info/etc.). The app logger also filters by level, so to see `debug`/`info`
-you must raise the logger level.
+**DevTools is per-window.** Renderer logs live in the DevTools Console of *each* window (main, presets, etc.). DevTools only decides whether messages are *shown* (Verbose/Info/etc.). The app logger also filters by level, so to see `debug`/`info` you must raise the logger level.
 
 In the DevTools Console (of the window you are inspecting):
 
 * Check current level:
-
   * `Log.getLevel()`
 * Enable `info`:
-
   * `Log.setLevel('info')`
 * Enable `debug`:
-
   * `Log.setLevel('debug')`
 * Back to normal (default = `warn`):
-
   * `Log.setLevel('warn')`
 
 Important: if you want to see early startup logs, change the level and then restart/reload the app/window.
@@ -390,13 +375,10 @@ Important: if you want to see early startup logs, change the level and then rest
 **“Development” menu (optional).** In development, the **Development** menu is hidden by default. To enable it, set `SHOW_DEV_MENU=1`:
 
 * Windows (PowerShell):
-
   * `$env:SHOW_DEV_MENU = '1' ; npm start`
 * Windows (cmd.exe):
-
   * `set SHOW_DEV_MENU=1 && npm start`
 * Linux/macOS (bash/zsh):
-
   * `SHOW_DEV_MENU=1 npm start`
 
 This is development-only: in packaged builds the “Development” menu is hidden and the dev shortcuts (DevTools/Reload) are inactive.
