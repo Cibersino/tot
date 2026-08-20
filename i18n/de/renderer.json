@@ -631,15 +631,7 @@
           "reset_pool": "Test-Pool zurücksetzen"
         },
         "import": {
-          "import_summary": "Import abgeschlossen. Importiert: {imported}. Doppelte übersprungen: {skippedDuplicates}. Fehlgeschlagene Validierungen: {failedValidation}. Fehlgeschlagene Archiv-Einträge: {failedArchiveEntries}. Fehlgeschlagene Schreibvorgänge: {failedWrites}.",
-          "import_conflict": {
-            "title": "Dateien importieren",
-            "message": "Einige importierte Dateien existieren bereits im Pool. Wie sollen Duplikate behandelt werden?",
-            "detail": "{count} Zieldateiname(n) existieren bereits im Pool.",
-            "skip_button": "Duplikate überspringen",
-            "replace_button": "Duplikate ersetzen",
-            "cancel_button": "Import abbrechen"
-          }
+          "import_summary": "Import abgeschlossen. Importiert: {imported}. Doppelte übersprungen: {skippedDuplicates}. Fehlgeschlagene Validierungen: {failedValidation}. Fehlgeschlagene Archiv-Einträge: {failedArchiveEntries}. Fehlgeschlagene Schreibvorgänge: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Erwartete Punktzahl bei zufälligem Raten: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Für Beschwerden:",
+        "summary_aria": "Testzusammenfassung",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Sie müssen alle Fragen beantworten, bevor Sie auswerten.",
         "result_summary": "{correct} von {total} richtig ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "Gemessene WPM",
         "elapsed_time": "Zeit",
         "word_count": "Wörter",
+        "summary_aria": "Testzusammenfassung",
         "continue_button": "Weiter"
       },
       "alerts": {

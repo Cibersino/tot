@@ -631,15 +631,7 @@
           "reset_pool": "Emoñepyrũjey ñeha’ã aty"
         },
         "import": {
-          "import_summary": "Importación opa. Oñeguerúva: {imported}. Duplicado ojehejava’ekue: {skippedDuplicates}. Validación ojavyva’ekue: {failedValidation}. Archivo comprimido ryepypegua ojavyva’ekue: {failedArchiveEntries}. Escritura ojavyva’ekue: {failedWrites}.",
-          "import_conflict": {
-            "title": "Archivo jegueru",
-            "message": "Oĩ archivo oñeguerúva oĩmava pool-pe. ¿Mba’éichapa remboguatase duplicado?",
-            "detail": "{count} archivo destino réra oĩmava pool-pe.",
-            "skip_button": "Eheja duplicado",
-            "replace_button": "Emyengovia duplicado",
-            "cancel_button": "Eheja importación"
-          }
+          "import_summary": "Importación opa. Oñeguerúva: {imported}. Duplicado ojehejava’ekue: {skippedDuplicates}. Validación ojavyva’ekue: {failedValidation}. Archivo comprimido ryepypegua ojavyva’ekue: {failedArchiveEntries}. Escritura ojavyva’ekue: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Puntaje oñeha’arõva reiporavóramo aleatoriamente: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Reclamo-pe g̃uarã:",
+        "summary_aria": "Test mombyky",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Embohovái va’erã opaite porandu rehecha mboyve resultado.",
         "result_summary": "{correct} {total}-gui hekopete ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM oñemediáva",
         "elapsed_time": "Aravo",
         "word_count": "Ñe’ẽ",
+        "summary_aria": "Test mombyky",
         "continue_button": "Esegí"
       },
       "alerts": {

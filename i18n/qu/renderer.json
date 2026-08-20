@@ -631,15 +631,7 @@
           "reset_pool": "Yant’ay huñuta kutichiy"
         },
         "import": {
-          "import_summary": "Apamuy tukusqa. Apamusqa: {imported}. Iskay kuti kaqkuna saqisqa: {skippedDuplicates}. Validación pantasqa: {failedValidation}. Archivo comprimido yaykuna pantasqa: {failedArchiveEntries}. Qillqay pantasqa: {failedWrites}.",
-          "import_conflict": {
-            "title": "Archivokunata apamuy",
-            "message": "Wakin apamusqa archivokunaqa ña poolpi kachkan. Iskay kuti kaqkunata imaynata ruwanki?",
-            "detail": "{count} destino archivo sutikuna ña poolpi kachkan.",
-            "skip_button": "Iskay kuti kaqkunata saqiy",
-            "replace_button": "Iskay kuti kaqkunata tikray",
-            "cancel_button": "Apamuyta saqiy"
-          }
+          "import_summary": "Apamuy tukusqa. Apamusqa: {imported}. Iskay kuti kaqkuna saqisqa: {skippedDuplicates}. Validación pantasqa: {failedValidation}. Archivo comprimido yaykuna pantasqa: {failedArchiveEntries}. Qillqay pantasqa: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Mayqinpas kutichispa suyakuq puntaje: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Reclamopaq:",
+        "summary_aria": "Testpa pisichaynin",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Chaninchanaykipaq ñawpaqta llapan tapukuykunata kutichinayki.",
         "result_summary": "{correct} / {total} allin ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "Tupusqa WPM",
         "elapsed_time": "Pacha",
         "word_count": "Simikuna",
+        "summary_aria": "Testpa pisichaynin",
         "continue_button": "Hinalla riy"
       },
       "alerts": {

@@ -631,15 +631,7 @@
           "reset_pool": "परीक्षण पूल रीसेट करें"
         },
         "import": {
-          "import_summary": "आयात पूरा हुआ। आयातित: {imported}। छोड़े गए डुप्लिकेट: {skippedDuplicates}। सत्यापन विफल: {failedValidation}। संपीड़ित फ़ाइल प्रविष्टियाँ विफल: {failedArchiveEntries}। लेखन विफल: {failedWrites}।",
-          "import_conflict": {
-            "title": "फ़ाइलें आयात करें",
-            "message": "कुछ आयातित फ़ाइलें पूल में पहले से मौजूद हैं। डुप्लिकेट को कैसे संभालना है?",
-            "detail": "{count} गंतव्य फ़ाइल-नाम पहले से पूल में मौजूद हैं।",
-            "skip_button": "डुप्लिकेट छोड़ें",
-            "replace_button": "डुप्लिकेट बदलें",
-            "cancel_button": "आयात रद्द करें"
-          }
+          "import_summary": "आयात पूरा हुआ। आयातित: {imported}। छोड़े गए डुप्लिकेट: {skippedDuplicates}। सत्यापन विफल: {failedValidation}। संपीड़ित फ़ाइल प्रविष्टियाँ विफल: {failedArchiveEntries}। लेखन विफल: {failedWrites}।"
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "यादृच्छिक उत्तर देने पर अपेक्षित स्कोर: {percentage}",
         "feedback_title": "फ़ीडबैक",
         "feedback_prefix": "शिकायतों के लिए:",
+        "summary_aria": "टेस्ट सारांश",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "मूल्यांकन से पहले सभी प्रश्नों का उत्तर देना आवश्यक है।",
         "result_summary": "{total} में से {correct} सही ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "मापे गए WPM",
         "elapsed_time": "समय",
         "word_count": "शब्द",
+        "summary_aria": "टेस्ट सारांश",
         "continue_button": "जारी रखें"
       },
       "alerts": {

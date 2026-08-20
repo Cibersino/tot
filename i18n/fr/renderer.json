@@ -631,15 +631,7 @@
           "reset_pool": "Réinitialiser le pool de test"
         },
         "import": {
-          "import_summary": "Import terminé. Importés : {imported}. Doublons ignorés : {skippedDuplicates}. Échecs de validation : {failedValidation}. Échecs d'entrées d'archive : {failedArchiveEntries}. Échecs d'écriture : {failedWrites}.",
-          "import_conflict": {
-            "title": "Importer des fichiers",
-            "message": "Certains fichiers importés existent déjà dans le pool. Comment voulez-vous gérer les doublons ?",
-            "detail": "{count} nom(s) de fichier de destination existent déjà dans le pool.",
-            "skip_button": "Ignorer les doublons",
-            "replace_button": "Remplacer les doublons",
-            "cancel_button": "Annuler l'import"
-          }
+          "import_summary": "Import terminé. Importés : {imported}. Doublons ignorés : {skippedDuplicates}. Échecs de validation : {failedValidation}. Échecs d'entrées d'archive : {failedArchiveEntries}. Échecs d'écriture : {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Score attendu en répondant au hasard : {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Pour les réclamations :",
+        "summary_aria": "Résumé du test",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Vous devez répondre à toutes les questions avant d'évaluer.",
         "result_summary": "{correct} sur {total} correctes ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM mesurés",
         "elapsed_time": "Temps",
         "word_count": "Mots",
+        "summary_aria": "Résumé du test",
         "continue_button": "Continuer"
       },
       "alerts": {

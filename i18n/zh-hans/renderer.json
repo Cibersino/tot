@@ -631,15 +631,7 @@
           "reset_pool": "重置测试文本池"
         },
         "import": {
-          "import_summary": "导入完成。已导入：{imported}。跳过的重复项：{skippedDuplicates}。验证失败：{failedValidation}。压缩包条目失败：{failedArchiveEntries}。写入失败：{failedWrites}。",
-          "import_conflict": {
-            "title": "导入文件",
-            "message": "一些导入的文件已存在于文本池中。要如何处理重复项？",
-            "detail": "{count} 个目标文件名已存在于文本池中。",
-            "skip_button": "跳过重复项",
-            "replace_button": "替换重复项",
-            "cancel_button": "取消导入"
-          }
+          "import_summary": "导入完成。已导入：{imported}。跳过的重复项：{skippedDuplicates}。验证失败：{failedValidation}。压缩包条目失败：{failedArchiveEntries}。写入失败：{failedWrites}。"
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "随机作答的期望分数：{percentage}",
         "feedback_title": "反馈",
         "feedback_prefix": "投诉联系：",
+        "summary_aria": "测试摘要",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "评估前必须回答所有问题。",
         "result_summary": "{total} 题中答对 {correct} 题（{percentage}）",
@@ -665,6 +658,7 @@
         "measured_wpm": "测得 WPM",
         "elapsed_time": "时间",
         "word_count": "词数",
+        "summary_aria": "测试摘要",
         "continue_button": "继续"
       },
       "alerts": {

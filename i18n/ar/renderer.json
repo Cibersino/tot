@@ -631,15 +631,7 @@
           "reset_pool": "إعادة ضبط مخزون الاختبار"
         },
         "import": {
-          "import_summary": "انتهى الاستيراد. المستوردة: {imported}. المكررات المتروكة: {skippedDuplicates}. فشل التحقق: {failedValidation}. إدخالات الأرشيف الفاشلة: {failedArchiveEntries}. عمليات الكتابة الفاشلة: {failedWrites}.",
-          "import_conflict": {
-            "title": "استيراد ملفات",
-            "message": "بعض الملفات المستوردة موجودة مسبقًا في المخزون. كيف يجب التعامل مع المكررات؟",
-            "detail": "{count} اسم/أسماء ملفات وجهة موجودة مسبقًا في المخزون.",
-            "skip_button": "تجاوز المكررات",
-            "replace_button": "استبدال المكررات",
-            "cancel_button": "إلغاء الاستيراد"
-          }
+          "import_summary": "انتهى الاستيراد. المستوردة: {imported}. المكررات المتروكة: {skippedDuplicates}. فشل التحقق: {failedValidation}. إدخالات الأرشيف الفاشلة: {failedArchiveEntries}. عمليات الكتابة الفاشلة: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "النتيجة المتوقعة عند التخمين العشوائي: {percentage}",
         "feedback_title": "ملاحظات",
         "feedback_prefix": "للشكاوى:",
+        "summary_aria": "ملخص الاختبار",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "يجب الإجابة عن كل الأسئلة قبل التقييم.",
         "result_summary": "{correct} من أصل {total} صحيحة ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM المقاسة",
         "elapsed_time": "الوقت",
         "word_count": "الكلمات",
+        "summary_aria": "ملخص الاختبار",
         "continue_button": "متابعة"
       },
       "alerts": {

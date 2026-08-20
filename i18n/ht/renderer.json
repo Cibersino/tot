@@ -631,15 +631,7 @@
           "reset_pool": "Reyajiste pool tès la"
         },
         "import": {
-          "import_summary": "Enpòtasyon fini. Enpòte: {imported}. Duplicata sote: {skippedDuplicates}. Validasyon echwe: {failedValidation}. Antre achiv echwe: {failedArchiveEntries}. Ekriti echwe: {failedWrites}.",
-          "import_conflict": {
-            "title": "Enpòte fichye",
-            "message": "Kèk fichye enpòte deja egziste nan pool la. Kijan pou jere duplicata yo?",
-            "detail": "{count} non fichye destinasyon deja egziste nan pool la.",
-            "skip_button": "Sote duplicata yo",
-            "replace_button": "Ranplase duplicata yo",
-            "cancel_button": "Anile enpòtasyon"
-          }
+          "import_summary": "Enpòtasyon fini. Enpòte: {imported}. Duplicata sote: {skippedDuplicates}. Validasyon echwe: {failedValidation}. Antre achiv echwe: {failedArchiveEntries}. Ekriti echwe: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Nòt espere si ou reponn o aza: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Pou plent:",
+        "summary_aria": "Rezime tès la",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Ou dwe reponn tout kesyon yo anvan evalyasyon.",
         "result_summary": "{correct} sou {total} kòrèk ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM mezire",
         "elapsed_time": "Tan",
         "word_count": "Mo",
+        "summary_aria": "Rezime tès la",
         "continue_button": "Kontinye"
       },
       "alerts": {

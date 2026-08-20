@@ -631,15 +631,7 @@
           "reset_pool": "重設測試文字池"
         },
         "import": {
-          "import_summary": "匯入完成。已匯入：{imported}。略過的重複項：{skippedDuplicates}。驗證失敗：{failedValidation}。壓縮檔項目失敗：{failedArchiveEntries}。寫入失敗：{failedWrites}。",
-          "import_conflict": {
-            "title": "匯入檔案",
-            "message": "一些匯入的檔案已存在於文字池中。要如何處理重複項？",
-            "detail": "{count} 個目標檔名已存在於文字池中。",
-            "skip_button": "略過重複項",
-            "replace_button": "取代重複項",
-            "cancel_button": "取消匯入"
-          }
+          "import_summary": "匯入完成。已匯入：{imported}。略過的重複項：{skippedDuplicates}。驗證失敗：{failedValidation}。壓縮檔項目失敗：{failedArchiveEntries}。寫入失敗：{failedWrites}。"
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "隨機作答的期望分數：{percentage}",
         "feedback_title": "回饋",
         "feedback_prefix": "申訴：",
+        "summary_aria": "測試摘要",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "評估前必須回答所有問題。",
         "result_summary": "{total} 題中答對 {correct} 題（{percentage}）",
@@ -665,6 +658,7 @@
         "measured_wpm": "測得 WPM",
         "elapsed_time": "時間",
         "word_count": "詞數",
+        "summary_aria": "測試摘要",
         "continue_button": "繼續"
       },
       "alerts": {

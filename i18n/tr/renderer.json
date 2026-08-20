@@ -631,15 +631,7 @@
           "reset_pool": "Test havuzunu sıfırla"
         },
         "import": {
-          "import_summary": "İçe aktarma tamamlandı. İçe aktarılan: {imported}. Atlanan yinelenenler: {skippedDuplicates}. Doğrulama başarısız: {failedValidation}. Arşiv girdisi hataları: {failedArchiveEntries}. Yazma hataları: {failedWrites}.",
-          "import_conflict": {
-            "title": "Dosyaları içe aktar",
-            "message": "İçe aktarılan bazı dosyalar havuzda zaten var. Yinelenenler nasıl ele alınsın?",
-            "detail": "{count} hedef dosya adı havuzda zaten var.",
-            "skip_button": "Yinelenenleri atla",
-            "replace_button": "Yinelenenleri değiştir",
-            "cancel_button": "İçe aktarmayı iptal et"
-          }
+          "import_summary": "İçe aktarma tamamlandı. İçe aktarılan: {imported}. Atlanan yinelenenler: {skippedDuplicates}. Doğrulama başarısız: {failedValidation}. Arşiv girdisi hataları: {failedArchiveEntries}. Yazma hataları: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Rastgele tahmin altında beklenen puan: {percentage}",
         "feedback_title": "Geri bildirim",
         "feedback_prefix": "İtirazlar için:",
+        "summary_aria": "Test özeti",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Değerlendirmeden önce tüm sorular yanıtlanmalıdır.",
         "result_summary": "{total} sorudan {correct} doğru ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "Ölçülen WPM",
         "elapsed_time": "Süre",
         "word_count": "Kelimeler",
+        "summary_aria": "Test özeti",
         "continue_button": "Devam et"
       },
       "alerts": {

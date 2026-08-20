@@ -631,15 +631,7 @@
           "reset_pool": "Wiño llowün pepiükantun trañmawün"
         },
         "import": {
-          "import_summary": "Importación afmatuy. Koneltuy: {imported}. Duplicados no koneltuy: {skippedDuplicates}. Validación no müley: {failedValidation}. Archivo comprimido mu entradas no müley: {failedArchiveEntries}. Escrituras no müley: {failedWrites}.",
-          "import_conflict": {
-            "title": "Importar archivos",
-            "message": "Kiñeke archivos koneltulu müley trawün mew. ¿Chumgechi küdawaimi duplicados engün?",
-            "detail": "{count} destino archivo üi müley trawün mew.",
-            "skip_button": "Rupan duplicados",
-            "replace_button": "Wiño püne duplicados",
-            "cancel_button": "Katrüntun importación"
-          }
+          "import_summary": "Importación afmatuy. Koneltuy: {imported}. Duplicados no koneltuy: {skippedDuplicates}. Validación no müley: {failedValidation}. Archivo comprimido mu entradas no müley: {failedArchiveEntries}. Escrituras no müley: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "{percentage} küme llowün tripayafuy kisu",
         "feedback_title": "Feedback",
         "feedback_prefix": "Düngual:",
+        "summary_aria": "Chillkatun test ñi resumen",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Llowkeaymi kom ramtun petu kintual chumngechi tripay.",
         "result_summary": "{correct} ñi {total} küme tripachi ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM tripachi",
         "elapsed_time": "Antü",
         "word_count": "Dungu",
+        "summary_aria": "Chillkatun test ñi resumen",
         "continue_button": "Amuleal"
       },
       "alerts": {

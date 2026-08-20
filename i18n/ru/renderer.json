@@ -631,15 +631,7 @@
           "reset_pool": "Сбросить пул теста"
         },
         "import": {
-          "import_summary": "Импорт завершен. Импортировано: {imported}. Пропущено дубликатов: {skippedDuplicates}. Ошибок проверки: {failedValidation}. Ошибок элементов архива: {failedArchiveEntries}. Ошибок записи: {failedWrites}.",
-          "import_conflict": {
-            "title": "Импорт файлов",
-            "message": "Некоторые импортируемые файлы уже есть в пуле. Как обработать дубликаты?",
-            "detail": "{count} целевых имен файлов уже есть в пуле.",
-            "skip_button": "Пропустить дубликаты",
-            "replace_button": "Заменить дубликаты",
-            "cancel_button": "Отменить импорт"
-          }
+          "import_summary": "Импорт завершен. Импортировано: {imported}. Пропущено дубликатов: {skippedDuplicates}. Ошибок проверки: {failedValidation}. Ошибок элементов архива: {failedArchiveEntries}. Ошибок записи: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Ожидаемый результат при случайном угадывании: {percentage}",
         "feedback_title": "Обратная связь",
         "feedback_prefix": "Для жалоб:",
+        "summary_aria": "Сводка теста",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Перед оценкой нужно ответить на все вопросы.",
         "result_summary": "{correct} из {total} правильных ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "Измеренный WPM",
         "elapsed_time": "Время",
         "word_count": "Слова",
+        "summary_aria": "Сводка теста",
         "continue_button": "Продолжить"
       },
       "alerts": {

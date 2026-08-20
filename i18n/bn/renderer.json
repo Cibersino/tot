@@ -631,15 +631,7 @@
           "reset_pool": "পরীক্ষার পুল রিসেট করুন"
         },
         "import": {
-          "import_summary": "আমদানি শেষ। আমদানি হয়েছে: {imported}। বাদ দেওয়া ডুপ্লিকেট: {skippedDuplicates}। যাচাই ব্যর্থ: {failedValidation}। আর্কাইভ এন্ট্রি ব্যর্থ: {failedArchiveEntries}। লেখা ব্যর্থ: {failedWrites}।",
-          "import_conflict": {
-            "title": "ফাইল আমদানি করুন",
-            "message": "কিছু আমদানি করা ফাইল পুলে আগে থেকেই আছে। ডুপ্লিকেট কীভাবে সামলানো হবে?",
-            "detail": "{count}টি গন্তব্য ফাইলনাম পুলে আগে থেকেই আছে।",
-            "skip_button": "ডুপ্লিকেট বাদ দিন",
-            "replace_button": "ডুপ্লিকেট প্রতিস্থাপন করুন",
-            "cancel_button": "আমদানি বাতিল করুন"
-          }
+          "import_summary": "আমদানি শেষ। আমদানি হয়েছে: {imported}। বাদ দেওয়া ডুপ্লিকেট: {skippedDuplicates}। যাচাই ব্যর্থ: {failedValidation}। আর্কাইভ এন্ট্রি ব্যর্থ: {failedArchiveEntries}। লেখা ব্যর্থ: {failedWrites}।"
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "এলোমেলো অনুমানে প্রত্যাশিত স্কোর: {percentage}",
         "feedback_title": "প্রতিক্রিয়া",
         "feedback_prefix": "অভিযোগের জন্য:",
+        "summary_aria": "টেস্টের সারাংশ",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "মূল্যায়নের আগে সব প্রশ্নের উত্তর দিতে হবে।",
         "result_summary": "{total}টির মধ্যে {correct}টি সঠিক ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "পরিমাপিত WPM",
         "elapsed_time": "সময়",
         "word_count": "শব্দ",
+        "summary_aria": "টেস্টের সারাংশ",
         "continue_button": "চালিয়ে যান"
       },
       "alerts": {

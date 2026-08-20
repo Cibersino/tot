@@ -631,15 +631,7 @@
           "reset_pool": "Test pool wasitat qalltaña"
         },
         "import": {
-          "import_summary": "Apaniñax tukuyata. Apanitaka: {imported}. Duplicados jaytatanaka: {skippedDuplicates}. Validación pantjatanaka: {failedValidation}. Archivo comprimido mantañan pantjatanaka: {failedArchiveEntries}. Qillqañ pantjatanaka: {failedWrites}.",
-          "import_conflict": {
-            "title": "Archivunaka apaniña",
-            "message": "Yaqhip apanit archivunakax pool ukan niy utji. Duplicados kunjam apnaqañ munta?",
-            "detail": "{count} destino archivo sutinakax pool ukan niy utji.",
-            "skip_button": "Duplicados jaytaña",
-            "replace_button": "Duplicados lantintaña",
-            "cancel_button": "Apaniña suyt’ayaña"
-          }
+          "import_summary": "Apaniñax tukuyata. Apanitaka: {imported}. Duplicados jaytatanaka: {skippedDuplicates}. Validación pantjatanaka: {failedValidation}. Archivo comprimido mantañan pantjatanaka: {failedArchiveEntries}. Qillqañ pantjatanaka: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Kawkïr jaysasax suyata puntaje: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Reclamos ukataki:",
+        "summary_aria": "Test jisk’a aruskipäwi",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Uñakipañ nayraqatax taqi jiskt’awinakar jaysañamawa.",
         "result_summary": "{correct} / {total} chiqapa ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "Tupata WPM",
         "elapsed_time": "Pacha",
         "word_count": "Arunaka",
+        "summary_aria": "Test jisk’a aruskipäwi",
         "continue_button": "Sarantaskakiña"
       },
       "alerts": {

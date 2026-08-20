@@ -631,15 +631,7 @@
           "reset_pool": "Redefinir pool do teste"
         },
         "import": {
-          "import_summary": "Importação concluída. Importados: {imported}. Duplicados ignorados: {skippedDuplicates}. Validações com falha: {failedValidation}. Entradas de arquivo compactado com falha: {failedArchiveEntries}. Escritas com falha: {failedWrites}.",
-          "import_conflict": {
-            "title": "Importar arquivos",
-            "message": "Alguns arquivos importados já existem no pool. Como você quer lidar com os duplicados?",
-            "detail": "O pool já contém {count} dos nomes de arquivo de destino.",
-            "skip_button": "Ignorar duplicados",
-            "replace_button": "Substituir duplicados",
-            "cancel_button": "Cancelar importação"
-          }
+          "import_summary": "Importação concluída. Importados: {imported}. Duplicados ignorados: {skippedDuplicates}. Validações com falha: {failedValidation}. Entradas de arquivo compactado com falha: {failedArchiveEntries}. Escritas com falha: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Pontuação esperada ao responder ao acaso: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Para reclamações:",
+        "summary_aria": "Resumo do teste",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Você precisa responder todas as perguntas antes de avaliar.",
         "result_summary": "{correct} de {total} corretas ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM medidos",
         "elapsed_time": "Tempo",
         "word_count": "Palavras",
+        "summary_aria": "Resumo do teste",
         "continue_button": "Continuar"
       },
       "alerts": {

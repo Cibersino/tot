@@ -631,15 +631,7 @@
           "reset_pool": "Restablir el pool del test"
         },
         "import": {
-          "import_summary": "Importació finalitzada. Importats: {imported}. Duplicats omesos: {skippedDuplicates}. Validacions fallides: {failedValidation}. Entrades de fitxer comprimit fallides: {failedArchiveEntries}. Escriptures fallides: {failedWrites}.",
-          "import_conflict": {
-            "title": "Importar fitxers",
-            "message": "Alguns fitxers importats ja existeixen al pool. Com vols gestionar els duplicats?",
-            "detail": "{count} nom(s) de fitxer de destinació ja existeixen al pool.",
-            "skip_button": "Ometre duplicats",
-            "replace_button": "Substituir duplicats",
-            "cancel_button": "Cancel·lar la importació"
-          }
+          "import_summary": "Importació finalitzada. Importats: {imported}. Duplicats omesos: {skippedDuplicates}. Validacions fallides: {failedValidation}. Entrades de fitxer comprimit fallides: {failedArchiveEntries}. Escriptures fallides: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Puntuació esperada responent a l’atzar: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Per a reclamacions:",
+        "summary_aria": "Resum del test",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Has de respondre totes les preguntes abans d’avaluar.",
         "result_summary": "{correct} de {total} correctes ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM mesurats",
         "elapsed_time": "Temps",
         "word_count": "Paraules",
+        "summary_aria": "Resum del test",
         "continue_button": "Continuar"
       },
       "alerts": {

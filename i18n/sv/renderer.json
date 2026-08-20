@@ -631,15 +631,7 @@
           "reset_pool": "Återställ testpool"
         },
         "import": {
-          "import_summary": "Importen är klar. Importerade: {imported}. Överhoppade dubbletter: {skippedDuplicates}. Misslyckad validering: {failedValidation}. Misslyckade arkivposter: {failedArchiveEntries}. Misslyckade skrivningar: {failedWrites}.",
-          "import_conflict": {
-            "title": "Importera filer",
-            "message": "Vissa importerade filer finns redan i poolen. Hur ska dubbletter hanteras?",
-            "detail": "{count} målfilnamn finns redan i poolen.",
-            "skip_button": "Hoppa över dubbletter",
-            "replace_button": "Ersätt dubbletter",
-            "cancel_button": "Avbryt import"
-          }
+          "import_summary": "Importen är klar. Importerade: {imported}. Överhoppade dubbletter: {skippedDuplicates}. Misslyckad validering: {failedValidation}. Misslyckade arkivposter: {failedArchiveEntries}. Misslyckade skrivningar: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Förväntat resultat vid slumpgissning: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "För klagomål:",
+        "summary_aria": "Testsammanfattning",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Alla frågor måste besvaras innan utvärdering.",
         "result_summary": "{correct} av {total} rätt ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "Uppmätt WPM",
         "elapsed_time": "Tid",
         "word_count": "Ord",
+        "summary_aria": "Testsammanfattning",
         "continue_button": "Fortsätt"
       },
       "alerts": {

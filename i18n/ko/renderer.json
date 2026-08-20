@@ -631,15 +631,7 @@
           "reset_pool": "테스트 풀 재설정"
         },
         "import": {
-          "import_summary": "가져오기가 완료되었습니다. 가져옴: {imported}. 건너뛴 중복: {skippedDuplicates}. 유효성 검사 실패: {failedValidation}. 압축 파일 항목 실패: {failedArchiveEntries}. 쓰기 실패: {failedWrites}.",
-          "import_conflict": {
-            "title": "파일 가져오기",
-            "message": "가져온 일부 파일이 풀에 이미 있습니다. 중복을 어떻게 처리할까요?",
-            "detail": "{count}개의 대상 파일명이 이미 풀에 있습니다.",
-            "skip_button": "중복 건너뛰기",
-            "replace_button": "중복 교체",
-            "cancel_button": "가져오기 취소"
-          }
+          "import_summary": "가져오기가 완료되었습니다. 가져옴: {imported}. 건너뛴 중복: {skippedDuplicates}. 유효성 검사 실패: {failedValidation}. 압축 파일 항목 실패: {failedArchiveEntries}. 쓰기 실패: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "무작위로 답할 때의 예상 점수: {percentage}",
         "feedback_title": "피드백",
         "feedback_prefix": "불만 제기:",
+        "summary_aria": "테스트 요약",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "평가하기 전에 모든 질문에 답해야 합니다.",
         "result_summary": "{total}개 중 {correct}개 정답({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "측정된 WPM",
         "elapsed_time": "시간",
         "word_count": "단어",
+        "summary_aria": "테스트 요약",
         "continue_button": "계속"
       },
       "alerts": {

@@ -631,15 +631,7 @@
           "reset_pool": "テストプールをリセット"
         },
         "import": {
-          "import_summary": "インポート完了。インポート: {imported}。重複スキップ: {skippedDuplicates}。検証失敗: {failedValidation}。圧縮ファイル内エントリ失敗: {failedArchiveEntries}。書き込み失敗: {failedWrites}。",
-          "import_conflict": {
-            "title": "ファイルをインポート",
-            "message": "インポートしたファイルの一部はすでにプールに存在します。重複をどのように処理しますか？",
-            "detail": "{count} 個の保存先ファイル名がすでにプールに存在します。",
-            "skip_button": "重複をスキップ",
-            "replace_button": "重複を置換",
-            "cancel_button": "インポートをキャンセル"
-          }
+          "import_summary": "インポート完了。インポート: {imported}。重複スキップ: {skippedDuplicates}。検証失敗: {failedValidation}。圧縮ファイル内エントリ失敗: {failedArchiveEntries}。書き込み失敗: {failedWrites}。"
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "ランダムに回答した場合の期待スコア: {percentage}",
         "feedback_title": "フィードバック",
         "feedback_prefix": "問い合わせ先:",
+        "summary_aria": "テストの概要",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "評価する前にすべての問題に回答してください。",
         "result_summary": "{total} 問中 {correct} 問正解（{percentage}）",
@@ -665,6 +658,7 @@
         "measured_wpm": "測定 WPM",
         "elapsed_time": "時間",
         "word_count": "語数",
+        "summary_aria": "テストの概要",
         "continue_button": "続行"
       },
       "alerts": {

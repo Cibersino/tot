@@ -631,15 +631,7 @@
           "reset_pool": "Reset pool tes"
         },
         "import": {
-          "import_summary": "Impor selesai. Diimpor: {imported}. Duplikat dilewati: {skippedDuplicates}. Validasi gagal: {failedValidation}. Entri arsip gagal: {failedArchiveEntries}. Penulisan gagal: {failedWrites}.",
-          "import_conflict": {
-            "title": "Impor file",
-            "message": "Beberapa file yang diimpor sudah ada di pool. Bagaimana duplikat harus ditangani?",
-            "detail": "{count} nama file tujuan sudah ada di pool.",
-            "skip_button": "Lewati duplikat",
-            "replace_button": "Ganti duplikat",
-            "cancel_button": "Batalkan impor"
-          }
+          "import_summary": "Impor selesai. Diimpor: {imported}. Duplikat dilewati: {skippedDuplicates}. Validasi gagal: {failedValidation}. Entri arsip gagal: {failedArchiveEntries}. Penulisan gagal: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Skor yang diharapkan dengan tebakan acak: {percentage}",
         "feedback_title": "Umpan balik",
         "feedback_prefix": "Untuk keluhan:",
+        "summary_aria": "Ringkasan tes",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Semua pertanyaan harus dijawab sebelum evaluasi.",
         "result_summary": "{correct} dari {total} benar ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM terukur",
         "elapsed_time": "Waktu",
         "word_count": "Kata",
+        "summary_aria": "Ringkasan tes",
         "continue_button": "Lanjutkan"
       },
       "alerts": {

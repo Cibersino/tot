@@ -631,15 +631,7 @@
           "reset_pool": "ٹیسٹ پول ری سیٹ کریں"
         },
         "import": {
-          "import_summary": "درآمد مکمل۔ درآمد شدہ: {imported}۔ چھوڑے گئے ڈپلیکیٹس: {skippedDuplicates}۔ توثیق ناکام: {failedValidation}۔ ناکام آرکائیو اندراجات: {failedArchiveEntries}۔ ناکام لکھائیاں: {failedWrites}۔",
-          "import_conflict": {
-            "title": "فائلیں درآمد کریں",
-            "message": "کچھ درآمد شدہ فائلیں پول میں پہلے سے موجود ہیں۔ ڈپلیکیٹس کے ساتھ کیا کیا جائے؟",
-            "detail": "{count} منزل فائل نام پہلے سے پول میں موجود ہیں۔",
-            "skip_button": "ڈپلیکیٹس چھوڑ دیں",
-            "replace_button": "ڈپلیکیٹس بدل دیں",
-            "cancel_button": "درآمد منسوخ کریں"
-          }
+          "import_summary": "درآمد مکمل۔ درآمد شدہ: {imported}۔ چھوڑے گئے ڈپلیکیٹس: {skippedDuplicates}۔ توثیق ناکام: {failedValidation}۔ ناکام آرکائیو اندراجات: {failedArchiveEntries}۔ ناکام لکھائیاں: {failedWrites}۔"
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "بے ترتیب اندازے کے تحت متوقع اسکور: {percentage}",
         "feedback_title": "فیڈ بیک",
         "feedback_prefix": "شکایات کے لیے:",
+        "summary_aria": "ٹیسٹ کا خلاصہ",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "جانچ سے پہلے تمام سوالات کے جواب دینا ضروری ہے۔",
         "result_summary": "{total} میں سے {correct} درست ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "ناپا گیا WPM",
         "elapsed_time": "وقت",
         "word_count": "الفاظ",
+        "summary_aria": "ٹیسٹ کا خلاصہ",
         "continue_button": "جاری رکھیں"
       },
       "alerts": {

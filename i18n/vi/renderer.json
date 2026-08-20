@@ -631,15 +631,7 @@
           "reset_pool": "Đặt lại pool kiểm tra"
         },
         "import": {
-          "import_summary": "Nhập xong. Đã nhập: {imported}. Bỏ qua trùng lặp: {skippedDuplicates}. Không đạt xác thực: {failedValidation}. Mục trong gói nén lỗi: {failedArchiveEntries}. Ghi lỗi: {failedWrites}.",
-          "import_conflict": {
-            "title": "Nhập tệp",
-            "message": "Một số tệp được nhập đã tồn tại trong pool. Xử lý tệp trùng như thế nào?",
-            "detail": "{count} tên tệp đích đã tồn tại trong pool.",
-            "skip_button": "Bỏ qua tệp trùng",
-            "replace_button": "Thay thế tệp trùng",
-            "cancel_button": "Hủy nhập"
-          }
+          "import_summary": "Nhập xong. Đã nhập: {imported}. Bỏ qua trùng lặp: {skippedDuplicates}. Không đạt xác thực: {failedValidation}. Mục trong gói nén lỗi: {failedArchiveEntries}. Ghi lỗi: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Điểm kỳ vọng khi đoán ngẫu nhiên: {percentage}",
         "feedback_title": "Phản hồi",
         "feedback_prefix": "Khiếu nại:",
+        "summary_aria": "Tóm tắt bài test",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Phải trả lời tất cả câu hỏi trước khi đánh giá.",
         "result_summary": "Đúng {correct} trên {total} ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM đo được",
         "elapsed_time": "Thời gian",
         "word_count": "Từ",
+        "summary_aria": "Tóm tắt bài test",
         "continue_button": "Tiếp tục"
       },
       "alerts": {

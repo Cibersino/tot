@@ -631,15 +631,7 @@
           "reset_pool": "Tautuhi anō i te pool whakamātautau"
         },
         "import": {
-          "import_summary": "Kua oti te kawemai. Kua kawemai: {imported}. Kua peke i ngā tārua: {skippedDuplicates}. I rahua te manatoko: {failedValidation}. I rahua ngā tāurunga pūranga: {failedArchiveEntries}. I rahua ngā tuhinga: {failedWrites}.",
-          "import_conflict": {
-            "title": "Kawemai kōnae",
-            "message": "Kua tīariari kē ētahi kōnae kawemai i te pool. Me pēhea te whakahaere i ngā tārua?",
-            "detail": "Kua tīariari kē ngā ingoa kōnae ūnga e {count} i te pool.",
-            "skip_button": "Peke i ngā tārua",
-            "replace_button": "Whakakapi i ngā tārua",
-            "cancel_button": "Whakakore kawemai"
-          }
+          "import_summary": "Kua oti te kawemai. Kua kawemai: {imported}. Kua peke i ngā tārua: {skippedDuplicates}. I rahua te manatoko: {failedValidation}. I rahua ngā tāurunga pūranga: {failedArchiveEntries}. I rahua ngā tuhinga: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Kaute tūmanako i raro i te matapae matapōkere: {percentage}",
         "feedback_title": "Urupare",
         "feedback_prefix": "Mō ngā amuamu:",
+        "summary_aria": "Whakarāpopoto whakamātautau",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Me whakautu ngā pātai katoa i mua i te aromatawai.",
         "result_summary": "{correct} o te {total} i tika ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM kua ine",
         "elapsed_time": "Wā",
         "word_count": "Kupu",
+        "summary_aria": "Whakarāpopoto whakamātautau",
         "continue_button": "Haere tonu"
       },
       "alerts": {

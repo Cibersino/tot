@@ -631,15 +631,7 @@
           "reset_pool": "بازنشانی مجموعه آزمون"
         },
         "import": {
-          "import_summary": "وارد کردن پایان یافت. واردشده: {imported}. موارد تکراری ردشده: {skippedDuplicates}. اعتبارسنجی ناموفق: {failedValidation}. ورودی‌های آرشیو ناموفق: {failedArchiveEntries}. نوشتن‌های ناموفق: {failedWrites}.",
-          "import_conflict": {
-            "title": "وارد کردن فایل‌ها",
-            "message": "برخی فایل‌های واردشده از قبل در مجموعه وجود دارند. با موارد تکراری چه شود؟",
-            "detail": "{count} نام فایل مقصد از قبل در مجموعه وجود دارد.",
-            "skip_button": "رد کردن موارد تکراری",
-            "replace_button": "جایگزینی موارد تکراری",
-            "cancel_button": "لغو وارد کردن"
-          }
+          "import_summary": "وارد کردن پایان یافت. واردشده: {imported}. موارد تکراری ردشده: {skippedDuplicates}. اعتبارسنجی ناموفق: {failedValidation}. ورودی‌های آرشیو ناموفق: {failedArchiveEntries}. نوشتن‌های ناموفق: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "امتیاز مورد انتظار در حالت حدس تصادفی: {percentage}",
         "feedback_title": "بازخورد",
         "feedback_prefix": "برای شکایت‌ها:",
+        "summary_aria": "خلاصه آزمون",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "پیش از ارزیابی باید به همه پرسش‌ها پاسخ داده شود.",
         "result_summary": "{correct} از {total} پاسخ درست ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "WPM اندازه‌گیری‌شده",
         "elapsed_time": "زمان",
         "word_count": "واژه‌ها",
+        "summary_aria": "خلاصه آزمون",
         "continue_button": "ادامه"
       },
       "alerts": {

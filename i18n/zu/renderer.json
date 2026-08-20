@@ -631,15 +631,7 @@
           "reset_pool": "Setha kabusha i-pool yokuhlola"
         },
         "import": {
-          "import_summary": "Ukungenisa kuqediwe. Okungenisiwe: {imported}. Okuyizimpinda okweqiwe: {skippedDuplicates}. Ukuqinisekisa okuhlulekile: {failedValidation}. Okufakiwe efayeleni elicindezelwe okuhlulekile: {failedArchiveEntries}. Ukubhala okuhlulekile: {failedWrites}.",
-          "import_conflict": {
-            "title": "Ngenisa amafayela",
-            "message": "Amanye amafayela angenisiwe asevele ekhona ku-pool. Kufanele kuphathwe kanjani izimpinda?",
-            "detail": "{count} amagama efayela lendawo okuya kuyo asevele ekhona ku-pool.",
-            "skip_button": "Yeqa izimpinda",
-            "replace_button": "Buyisela izimpinda",
-            "cancel_button": "Khansela ukungenisa"
-          }
+          "import_summary": "Ukungenisa kuqediwe. Okungenisiwe: {imported}. Okuyizimpinda okweqiwe: {skippedDuplicates}. Ukuqinisekisa okuhlulekile: {failedValidation}. Okufakiwe efayeleni elicindezelwe okuhlulekile: {failedArchiveEntries}. Ukubhala okuhlulekile: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Umphumela olindelekile uma uphendula ngokuqagela: {percentage}",
         "feedback_title": "Impendulo",
         "feedback_prefix": "Ngezimangalo:",
+        "summary_aria": "Isifinyezo sokuhlolwa",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Kufanele uphendule yonke imibuzo ngaphambi kokuhlola.",
         "result_summary": "{correct} kokungu-{total} okulungile ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "I-WPM elinganisiwe",
         "elapsed_time": "Isikhathi",
         "word_count": "Amagama",
+        "summary_aria": "Isifinyezo sokuhlolwa",
         "continue_button": "Qhubeka"
       },
       "alerts": {

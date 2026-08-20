@@ -631,15 +631,7 @@
           "reset_pool": "Berrezarri testaren poola"
         },
         "import": {
-          "import_summary": "Inportazioa amaituta. Inportatuak: {imported}. Bikoiztuak saltatuta: {skippedDuplicates}. Balidazio hutsak: {failedValidation}. Konprimitutako artxiboko sarrera hutsak: {failedArchiveEntries}. Idazketa hutsak: {failedWrites}.",
-          "import_conflict": {
-            "title": "Inportatu fitxategiak",
-            "message": "Inportatutako fitxategi batzuk dagoeneko badaude poolean. Nola kudeatu nahi dituzu bikoiztuak?",
-            "detail": "{count} helburuko fitxategi-izen badago/badaude dagoeneko poolean.",
-            "skip_button": "Saltatu bikoiztuak",
-            "replace_button": "Ordeztu bikoiztuak",
-            "cancel_button": "Utzi inportazioa"
-          }
+          "import_summary": "Inportazioa amaituta. Inportatuak: {imported}. Bikoiztuak saltatuta: {skippedDuplicates}. Balidazio hutsak: {failedValidation}. Konprimitutako artxiboko sarrera hutsak: {failedArchiveEntries}. Idazketa hutsak: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Ausaz erantzunda espero den puntuazioa: {percentage}",
         "feedback_title": "Feedbacka",
         "feedback_prefix": "Kexetarako:",
+        "summary_aria": "Testaren laburpena",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Galdera guztiei erantzun behar diezu ebaluatu aurretik.",
         "result_summary": "{correct} zuzen {total}-tik ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "Neurtutako WPM",
         "elapsed_time": "Denbora",
         "word_count": "Hitzak",
+        "summary_aria": "Testaren laburpena",
         "continue_button": "Jarraitu"
       },
       "alerts": {
