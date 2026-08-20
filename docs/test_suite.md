@@ -105,6 +105,11 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/shared/editor_find_replace_core.test.js`
   * supports parts of `REG-EDITOR-05C`
   * supports parts of `REG-EDITOR-05D`
+* `test/unit/shared/editor_find_renderer.test.js`
+  * supports parts of `REG-EDITOR-05`
+  * supports parts of `REG-EDITOR-05B`
+  * supports parts of `REG-EDITOR-05C`
+  * supports parts of `REG-EDITOR-05D`
 * `test/unit/shared/editor_engine_commit_policy.test.js`
   * supports parts of `REG-EDITOR-05D`
 * `test/unit/electron/editor_find_main.test.js`
@@ -1356,6 +1361,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - Match highlight must be visible even when focus is in the find input.
    - Use Next/Prev to jump to matches that are off-screen; verify internal textarea scroll moves to the match.
 7. Scroll the textarea manually (mouse wheel / scrollbar) while Find remains open.
+8. Hover and keyboard-focus the expand/collapse, Previous, Next, Close, Replace, and Replace All controls. With a screen reader or accessibility inspector, verify the icon-only controls retain their action names and the two replacement actions retain their descriptions.
 
 **Expected:**
 - Find opens as a dedicated secondary window and focuses the find input.
@@ -1364,6 +1370,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The editor is not forced into `readOnly`; if focus returns to the textarea, normal editing/paste/drop behavior remains available.
 - The find input itself remains a plain search control; it must not show spellcheck underlines.
 - Match highlight remains visible while focus stays in the find input.
+- No visual tooltip appears from any Editor Find control on hover or focus.
+- The icon-only controls keep their translated accessible names, and Replace / Replace All keep their translated accessible descriptions.
 - **Esc** closes Find and restores focus to the editor.
 
 #### REG-EDITOR-05A Find re-sync on find-window refocus

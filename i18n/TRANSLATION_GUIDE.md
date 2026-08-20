@@ -2122,18 +2122,18 @@ Estados de revisión recomendados:
             "es": "Cerrar barra de búsqueda",
             "en": "Close find bar"
           }
-          // [PROPÓSITO] Nombres accesibles y tooltips visuales compartidos deliberadamente por controles iconográficos de Buscar.
+          // [PROPÓSITO] Nombres accesibles de los controles iconográficos de Buscar; esta ventana no presenta tooltips visuales.
         },
         "help": {
           "replace_current": {
             "es": "Reemplazar coincidencia actual",
             "en": "Replace current match"
-            // [PROPÓSITO] Fuente compartida por descripción accesible y tooltip visual del botón visible `Reemplazar` / `Replace`.
+            // [PROPÓSITO] Descripción accesible estable del botón visible `Reemplazar` / `Replace`.
           },
           "replace_all": {
             "es": "Reemplazar todas las coincidencias",
             "en": "Replace all matches"
-            // [PROPÓSITO] Fuente compartida por descripción accesible y tooltip visual del botón visible `Reemplazar todo` / `Replace all`.
+            // [PROPÓSITO] Descripción accesible estable del botón visible `Reemplazar todo` / `Replace all`.
           }
         },
         "replace_timeout": {

@@ -221,7 +221,7 @@ test('editor-find-replace-current rejects unauthorized find-window senders', asy
   }
 });
 
-test('find-window Escape is left for renderer tooltip dismissal or window closure', async () => {
+test('find-window Escape is left for renderer-owned window closure', async () => {
   const { editorFindMain, findWin, restore } = await setupFindHarness();
 
   try {

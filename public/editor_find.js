@@ -179,7 +179,6 @@ function applyUiState() {
     : 'renderer.editor.editor_find.names.show_replace';
   const toggleName = tr(toggleNameKey);
   toggleEl.setAttribute('aria-label', toggleName);
-  toggleEl.setAttribute('data-tot-tooltip', toggleName);
 }
 
 async function applyTranslations() {
@@ -204,14 +203,11 @@ async function applyTranslations() {
   ].forEach(([element, key]) => {
     const name = tr(key);
     element.setAttribute('aria-label', name);
-    element.setAttribute('data-tot-tooltip', name);
   });
   const replaceCurrentHelp = tr('renderer.editor.editor_find.help.replace_current');
   replaceOneDescriptionEl.textContent = replaceCurrentHelp;
-  replaceOneEl.setAttribute('data-tot-tooltip', replaceCurrentHelp);
   const replaceAllHelp = tr('renderer.editor.editor_find.help.replace_all');
   replaceAllDescriptionEl.textContent = replaceAllHelp;
-  replaceAllEl.setAttribute('data-tot-tooltip', replaceAllHelp);
 
   applyUiState();
 }

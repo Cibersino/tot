@@ -17,7 +17,6 @@ function createElement(id) {
     disabled: false,
     hidden: false,
     textContent: '',
-    title: '',
     placeholder: '',
     maxLength: 0,
     attributes: {},
@@ -188,38 +187,55 @@ async function bootstrapReady() {
   await tick();
 }
 
-test('find controls apply explicit names and replace descriptions/visual tooltips', async () => {
+test('find controls apply explicit names and replace descriptions without visual-tooltip data', async () => {
   const harness = createHarness();
 
   await bootstrapReady();
 
   [
+    ['findToggle', 'renderer.editor.editor_find.names.show_replace'],
     ['findPrev', 'renderer.editor.editor_find.names.previous_match'],
     ['findNext', 'renderer.editor.editor_find.names.next_match'],
     ['findClose', 'renderer.editor.editor_find.names.close'],
   ].forEach(([id, key]) => {
     assert.equal(harness.elements[id].getAttribute('aria-label'), key);
-    assert.equal(harness.elements[id].getAttribute('data-tot-tooltip'), key);
   });
   assert.equal(
     harness.elements.findReplaceOneDescription.textContent,
     'renderer.editor.editor_find.help.replace_current'
   );
   assert.equal(
-    harness.elements.findReplaceOne.getAttribute('data-tot-tooltip'),
-    'renderer.editor.editor_find.help.replace_current'
-  );
-  assert.equal(
     harness.elements.findReplaceAllDescription.textContent,
     'renderer.editor.editor_find.help.replace_all'
   );
+
+  [
+    'findToggle',
+    'findPrev',
+    'findNext',
+    'findClose',
+    'findReplaceOne',
+    'findReplaceAll',
+  ].forEach((id) => {
+    assert.equal(harness.elements[id].getAttribute('data-tot-tooltip'), null);
+  });
+
+  harness.subscriptions.state({
+    query: 'demo',
+    matches: 1,
+    activeMatchOrdinal: 1,
+    finalUpdate: true,
+    expanded: true,
+    busy: false,
+  });
   assert.equal(
-    harness.elements.findReplaceAll.getAttribute('data-tot-tooltip'),
-    'renderer.editor.editor_find.help.replace_all'
+    harness.elements.findToggle.getAttribute('aria-label'),
+    'renderer.editor.editor_find.names.hide_replace'
   );
+  assert.equal(harness.elements.findToggle.getAttribute('data-tot-tooltip'), null);
 });
 
-test('Escape requests Find-window closure when no visual tooltip consumes it', async () => {
+test('Escape requests Find-window closure', async () => {
   const harness = createHarness();
   let prevented = false;
 
@@ -232,6 +248,25 @@ test('Escape requests Find-window closure when no visual tooltip consumes it', a
 
   assert.equal(prevented, true);
   assert.deepEqual(harness.closeCalls, [true]);
+});
+
+test('find window does not load or declare visual-tooltip integration', () => {
+  const html = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/editor_find.html'),
+    'utf8'
+  );
+
+  assert.doesNotMatch(html, /tooltips\.(?:css|js)/);
+  assert.doesNotMatch(html, /data-tot-tooltip/);
+  assert.doesNotMatch(html, /\s+title\s*=/);
+  assert.match(
+    html,
+    /id="findReplaceOne"[\s\S]*?aria-describedby="findReplaceOneDescription"/
+  );
+  assert.match(
+    html,
+    /id="findReplaceAll"[\s\S]*?aria-describedby="findReplaceAllDescription"/
+  );
 });
 
 test('replace-current timeout shows a toast in the find window', async () => {
