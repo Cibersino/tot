@@ -332,6 +332,20 @@ function normalizeSettings(settings) {
     settings.spellcheckEnabled = true;
   }
 
+  // previewSpoilerEnabled:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof settings.previewSpoilerEnabled === 'undefined') {
+    settings.previewSpoilerEnabled = true;
+  } else if (typeof settings.previewSpoilerEnabled !== 'boolean') {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidPreviewSpoilerEnabled',
+      'Invalid previewSpoilerEnabled; forcing default:',
+      { type: typeof settings.previewSpoilerEnabled }
+    );
+    settings.previewSpoilerEnabled = true;
+  }
+
   // editorFontSizePx:
   // - missing -> default (silent)
   // - invalid/out of range -> warnOnce + normalized value
