@@ -465,6 +465,8 @@ function createHarness({
 
   return {
     elements,
+    translations,
+    applyTranslations: sandbox.window.SnapshotSaveTagsModal.applyTranslations,
     prompt(...args) {
       const result = sandbox.window.Notify.promptSnapshotSave(...args);
       syncComboboxElementAliases();
@@ -567,6 +569,41 @@ test('snapshot save modal returns optional name and source-comment fields', asyn
     includeReading: true,
     name: 'Reading',
     sourceComment: 'chapter-1.pdf, Unit 1',
+  });
+});
+
+test('snapshot save translation refresh preserves the active metadata, metrics, and tag draft', async () => {
+  const harness = createHarness();
+
+  const promptPromise = harness.prompt({ initialTags: { language: 'es' } });
+  await flushMicrotasks();
+  harness.elements.snapshotSaveName.value = 'Lectura';
+  harness.elements.snapshotSaveSourceComment.value = 'capitulo-1.pdf';
+  harness.elements.snapshotSaveIncludeCount.checked = false;
+  harness.elements.snapshotSaveIncludeCount.dispatch('change');
+  harness.translations['renderer.snapshots.title'] = 'Guardar instantánea de texto';
+  harness.translations['renderer.snapshots.labels.name'] = 'Nombre opcional';
+
+  harness.applyTranslations();
+  harness.getOptionTexts('snapshotSaveTagsLanguageListbox');
+
+  assert.equal(harness.elements.snapshotSaveTagsModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.snapshotSaveTagsModalTitle.textContent, 'Guardar instantánea de texto');
+  assert.equal(harness.elements.snapshotSaveNameLabel.textContent, 'Nombre opcional');
+  assert.equal(harness.elements.snapshotSaveName.value, 'Lectura');
+  assert.equal(harness.elements.snapshotSaveSourceComment.value, 'capitulo-1.pdf');
+  assert.equal(harness.elements.snapshotSaveIncludeCount.checked, false);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.checked, false);
+  assert.equal(harness.elements.snapshotSaveTagsLanguageInput.value, 'Spanish');
+
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  const result = await promptPromise;
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    tags: { language: 'es' },
+    includeCount: false,
+    includeReading: false,
+    name: 'Lectura',
+    sourceComment: 'capitulo-1.pdf',
   });
 });
 
@@ -706,6 +743,36 @@ test('snapshot tag manager moves focus into the modal on open', async () => {
   const managerPromise = harness.promptManager({ initialPreferences: null });
   await flushMicrotasks();
 
+  assert.equal(harness.getActiveElement(), harness.elements.snapshotTagManagerModalClose);
+
+  harness.elements.snapshotTagManagerModalDone.dispatch('click');
+  await managerPromise;
+});
+
+test('snapshot tag manager translation refresh retains its draft and uses the modal fallback only for replaced focus', async () => {
+  const harness = createHarness();
+
+  const managerPromise = harness.promptManager({ initialPreferences: null });
+  await flushMicrotasks();
+  harness.findInManagerByText('New tag').dispatch('click');
+  await flushMicrotasks();
+  let draftInput = harness.findInManagerByClassName('snapshot-tag-manager-draft-input');
+  assert.ok(draftInput);
+  draftInput.value = 'Whodunit';
+  draftInput.dispatch('input');
+  harness.elements.snapshotTagManagerModalDone.focus();
+  harness.translations['renderer.snapshots.manager.new_tag_placeholder'] = 'Escribe una etiqueta nueva';
+
+  harness.applyTranslations();
+  draftInput = harness.findInManagerByClassName('snapshot-tag-manager-draft-input');
+
+  assert.equal(harness.elements.snapshotTagManagerModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(draftInput.value, 'Whodunit');
+  assert.equal(draftInput.placeholder, 'Escribe una etiqueta nueva');
+  assert.equal(harness.getActiveElement(), harness.elements.snapshotTagManagerModalDone);
+
+  draftInput.focus();
+  harness.applyTranslations();
   assert.equal(harness.getActiveElement(), harness.elements.snapshotTagManagerModalClose);
 
   harness.elements.snapshotTagManagerModalDone.dispatch('click');

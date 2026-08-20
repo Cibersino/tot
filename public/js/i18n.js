@@ -28,6 +28,9 @@
   const { DEFAULT_LANG } = AppConstants;
   const RTL_LANGUAGE_BASES = new Set(['ar', 'fa', 'he', 'ur']);
   const FIXED_DOCUMENT_DIRECTION = 'ltr';
+  const LOCALIZED_DOCUMENT_RESOURCES = Object.freeze({
+    'renderer.info.instructions': './info/instrucciones.{lang}.html',
+  });
 
   // =============================================================================
   // Shared state
@@ -271,6 +274,76 @@
   }
 
   // =============================================================================
+  // Localized full-document resources
+  // =============================================================================
+  function getLocalizedDocumentCandidates(documentId, lang) {
+    const pathTemplate = LOCALIZED_DOCUMENT_RESOURCES[documentId];
+    if (typeof pathTemplate !== 'string' || !pathTemplate.includes('{lang}')) {
+      throw new Error(`[i18n] Unknown localized document resource: ${documentId}`);
+    }
+
+    const candidates = [];
+    const requested = normalizeLangTag(lang);
+    const base = getLangBase(requested);
+    const defaultLang = normalizeLangTag(DEFAULT_LANG);
+    if (requested) candidates.push(requested);
+    if (base && base !== requested) candidates.push(base);
+    if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
+
+    return candidates.map((language) => ({
+      language,
+      path: pathTemplate.replace('{lang}', language),
+    }));
+  }
+
+  async function loadLocalizedDocument(documentId, lang) {
+    const candidates = getLocalizedDocumentCandidates(documentId, lang);
+
+    for (const candidate of candidates) {
+      try {
+        const response = await fetch(candidate.path, { cache: 'no-store' });
+        if (!response || !response.ok) {
+          log.warnOnce(
+            `i18n.localizedDocument.unavailable:${documentId}:${candidate.language}`,
+            'Localized document unavailable (trying fallback):',
+            { documentId, language: candidate.language, path: candidate.path }
+          );
+          continue;
+        }
+
+        const html = await response.text();
+        if (!html.trim()) {
+          log.warnOnce(
+            `i18n.localizedDocument.empty:${documentId}:${candidate.language}`,
+            'Localized document is empty (trying fallback):',
+            { documentId, language: candidate.language, path: candidate.path }
+          );
+          continue;
+        }
+
+        return {
+          html,
+          language: candidate.language,
+        };
+      } catch (err) {
+        log.warnOnce(
+          `i18n.localizedDocument.fetch:${documentId}:${candidate.language}`,
+          'Localized document fetch failed (trying fallback):',
+          { documentId, language: candidate.language, path: candidate.path },
+          err
+        );
+      }
+    }
+
+    log.errorOnce(
+      `i18n.localizedDocument.requiredMissing:${documentId}`,
+      'Required localized document missing or invalid:',
+      { documentId, candidates }
+    );
+    return { html: null, language: '' };
+  }
+
+  // =============================================================================
   // Translation helpers
   // =============================================================================
   function tRenderer(path, fallback = path) {
@@ -326,6 +399,7 @@
   // =============================================================================
   window.RendererI18n = {
     loadRendererTranslations,
+    loadLocalizedDocument,
     tRenderer,
     msgRenderer,
     getRendererValue,

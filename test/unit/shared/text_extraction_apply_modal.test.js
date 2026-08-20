@@ -170,6 +170,8 @@ function createHarness() {
   return {
     elements,
     notifiedKeys,
+    translations,
+    applyTranslations: sandbox.window.TextExtractionApplyModal.applyTranslations,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
@@ -266,4 +268,26 @@ test('apply modal reports retained PDF reveal failures through window.Notify.not
   harness.elements.textExtractionApplyModalCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, null);
+});
+
+test('apply modal refreshes active copy through its canonical render path without resetting prompt state', async () => {
+  const harness = createHarness();
+  const promptPromise = harness.prompt({
+    elapsedValueText: '00:42',
+    defaultRepeat: 3,
+    maxRepeat: 5,
+  });
+
+  harness.elements.textExtractionApplyModalRepeatInput.value = '4';
+  harness.translations['renderer.text_extraction.apply_modal.title'] = 'Aplicar texto extraído';
+  harness.translations['renderer.text_extraction.apply_modal.repeat_label'] = 'Repeticiones';
+  harness.applyTranslations();
+
+  assert.equal(harness.elements.textExtractionApplyModalTitle.textContent, 'Aplicar texto extraído');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatLabel.textContent, 'Repeticiones');
+  assert.equal(harness.elements.textExtractionApplyModalElapsed.textContent, 'Elapsed: 00:42');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '4');
+
+  harness.elements.textExtractionApplyModalCancel.dispatch('click');
+  assert.equal(await promptPromise, null);
 });

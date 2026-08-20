@@ -61,19 +61,25 @@ function loadFreshReadingTestPoolImportForIpc({
   poolDir,
   senderWin,
   openDialogResult,
+  dialogOptions = null,
   clearImportedPoolEntriesStateImpl = null,
+  settingsGet = null,
 } = {}) {
   const modulePath = require.resolve('../../../electron/reading_test_pool_import');
   const poolModulePath = require.resolve('../../../electron/reading_test_pool');
   const fsStorageModulePath = require.resolve('../../../electron/fs_storage');
+  const settingsModulePath = require.resolve('../../../electron/settings');
   const originalPoolModule = require.cache[poolModulePath];
   const originalFsStorageModule = require.cache[fsStorageModulePath];
+  const originalSettingsModule = require.cache[settingsModulePath];
   const restoreElectronModule = installElectronModuleMock({
     dialog: {
-      async showOpenDialog() {
+      async showOpenDialog(_mainWin, options) {
+        if (Array.isArray(dialogOptions)) dialogOptions.push(options);
         return openDialogResult;
       },
-      async showMessageBox() {
+      async showMessageBox(_mainWin, options) {
+        if (Array.isArray(dialogOptions)) dialogOptions.push(options);
         return { response: 0 };
       },
     },
@@ -132,6 +138,17 @@ function loadFreshReadingTestPoolImportForIpc({
     },
   };
 
+  if (typeof settingsGet === 'function') {
+    require.cache[settingsModulePath] = {
+      id: settingsModulePath,
+      filename: settingsModulePath,
+      loaded: true,
+      exports: {
+        getSettings: settingsGet,
+      },
+    };
+  }
+
   delete require.cache[modulePath];
   const readingTestPoolImport = require(modulePath);
 
@@ -149,6 +166,12 @@ function loadFreshReadingTestPoolImportForIpc({
       require.cache[fsStorageModulePath] = originalFsStorageModule;
     } else {
       delete require.cache[fsStorageModulePath];
+    }
+
+    if (originalSettingsModule) {
+      require.cache[settingsModulePath] = originalSettingsModule;
+    } else {
+      delete require.cache[settingsModulePath];
     }
   }
 
@@ -501,4 +524,110 @@ test('registerIpc returns partial success when imported files are written but po
     'renderer.reading_test.alerts.pool_import_state_cleanup_failed'
   );
   assert.equal(fs.existsSync(path.join(poolDir, 'sample.json')), true);
+});
+
+test('registerIpc resolves reading-test picker and conflict copy from main dialog translations', async (t) => {
+  const tempDir = makeTempDir();
+  const sourcePath = path.join(tempDir, 'duplicate.json');
+  const poolDir = path.join(tempDir, 'pool');
+  const statePath = path.join(tempDir, 'picker_state.json');
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const dialogOptions = [];
+
+  fs.mkdirSync(poolDir, { recursive: true });
+  writeJson(sourcePath, createSnapshotData({
+    text: 'Replacement text.',
+    tags: { language: 'en', type: 'fiction', difficulty: 'normal' },
+  }));
+  writeJson(path.join(poolDir, 'duplicate.json'), createSnapshotData({
+    text: 'Existing text.',
+    tags: { language: 'en', type: 'fiction', difficulty: 'normal' },
+  }));
+
+  const { readingTestPoolImport, restore } = loadFreshReadingTestPoolImportForIpc({
+    statePath,
+    poolDir,
+    senderWin,
+    dialogOptions,
+    openDialogResult: {
+      canceled: false,
+      filePaths: [sourcePath],
+    },
+    settingsGet() {
+      return { language: 'en' };
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  readingTestPoolImport.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+    isReadingTestInteractionLocked: () => false,
+  });
+
+  const result = await ipcMain.invoke(
+    'reading-test-import-pool-files',
+    { sender: senderWin.webContents }
+  );
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(dialogOptions[0].filters.map((filter) => filter.name), [
+    'Reading test files',
+    'JSON',
+    'ZIP',
+    'All files',
+  ]);
+  assert.equal(dialogOptions[1].title, 'Import files');
+  assert.equal(dialogOptions[1].message, 'Some imported files already exist in the pool. How should duplicates be handled?');
+  assert.deepEqual(dialogOptions[1].buttons, [
+    'Skip duplicates',
+    'Replace duplicates',
+    'Cancel import',
+  ]);
+});
+
+test('registerIpc resolves reading-test picker copy through DEFAULT_LANG when settings are unavailable', async (t) => {
+  const tempDir = makeTempDir();
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const dialogOptions = [];
+  const { readingTestPoolImport, restore } = loadFreshReadingTestPoolImportForIpc({
+    statePath: path.join(tempDir, 'picker_state.json'),
+    poolDir: path.join(tempDir, 'pool'),
+    senderWin,
+    dialogOptions,
+    openDialogResult: { canceled: true, filePaths: [] },
+    settingsGet() {
+      throw new Error('settings unavailable');
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  readingTestPoolImport.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+    isReadingTestInteractionLocked: () => false,
+  });
+
+  const result = await ipcMain.invoke(
+    'reading-test-import-pool-files',
+    { sender: senderWin.webContents }
+  );
+
+  assert.deepEqual(result, { ok: true, canceled: true });
+  assert.deepEqual(dialogOptions[0].filters.map((filter) => filter.name), [
+    'Archivos de test de lectura',
+    'JSON',
+    'ZIP',
+    'Todos los archivos',
+  ]);
 });

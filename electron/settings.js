@@ -567,6 +567,8 @@ function broadcastSettingsUpdated(settings, windows) {
     { win: windows.flotanteWin, name: 'flotanteWin' },
     { win: windows.taskEditorWin, name: 'taskEditorWin' },
     { win: windows.textTimeCalculatorWin, name: 'textTimeCalculatorWin' },
+    { win: windows.readingTestQuestionsWin, name: 'readingTestQuestionsWin' },
+    { win: windows.readingTestResultWin, name: 'readingTestResultWin' },
   ];
 
   targets.forEach(({ win, name }) => {

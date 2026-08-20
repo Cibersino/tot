@@ -110,13 +110,12 @@
       const titleKey = isEdit ? 'renderer.presets.preset_modal.title_edit' : 'renderer.presets.preset_modal.title_new';
       document.title = tr(titleKey);
       if (h3El) h3El.textContent = tr(headingKey);
-      const labels = document.querySelectorAll('label');
-      labels.forEach((lbl) => {
-        const text = (lbl.textContent || '').trim();
-        if (text.startsWith('Nombre') || text.startsWith('Name')) lbl.childNodes[0].textContent = tr('renderer.presets.preset_modal.name');
-        if (text.startsWith('WPM')) lbl.childNodes[0].textContent = tr('renderer.presets.preset_modal.wpm');
-        if (text.startsWith('Descripcion') || text.startsWith('Descripci') || text.startsWith('Description')) lbl.childNodes[0].textContent = tr('renderer.presets.preset_modal.description');
-      });
+      const nameLabel = document.getElementById('presetNameLabel');
+      const wpmLabel = document.getElementById('presetWpmLabel');
+      const descriptionLabel = document.getElementById('presetDescriptionLabel');
+      if (nameLabel && nameLabel.firstChild) nameLabel.firstChild.textContent = tr('renderer.presets.preset_modal.name');
+      if (wpmLabel && wpmLabel.firstChild) wpmLabel.firstChild.textContent = tr('renderer.presets.preset_modal.wpm');
+      if (descriptionLabel && descriptionLabel.firstChild) descriptionLabel.firstChild.textContent = tr('renderer.presets.preset_modal.description');
       if (nameEl && nameEl.placeholder) nameEl.placeholder = tr('renderer.presets.preset_modal.name_placeholder');
       if (descEl && descEl.placeholder) descEl.placeholder = tr('renderer.presets.preset_modal.description_placeholder');
       if (charCountEl) charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining: descMaxLength });

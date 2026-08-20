@@ -19,6 +19,27 @@ ipcRenderer.on('reading-test-result-init', (_event, payload) => {
 
 contextBridge.exposeInMainWorld('readingTestResultAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
+  onSettingsChanged: (cb) => {
+    if (typeof cb !== 'function') {
+      console.error('readingTestResultAPI.onSettingsChanged called with non-function callback:', cb);
+      return () => {};
+    }
+    const listener = (_event, settings) => {
+      try {
+        cb(settings);
+      } catch (err) {
+        console.error('reading-test-result settings callback error:', err);
+      }
+    };
+    ipcRenderer.on('settings-updated', listener);
+    return () => {
+      try {
+        ipcRenderer.removeListener('settings-updated', listener);
+      } catch (err) {
+        console.error('removeListener error (reading-test-result settings-updated):', err);
+      }
+    };
+  },
   onInitData: (cb) => {
     if (typeof cb !== 'function') {
       console.error('readingTestResultAPI.onInitData called with non-function callback:', cb);

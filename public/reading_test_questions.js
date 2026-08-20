@@ -26,7 +26,8 @@
   const questionsApi = window.readingTestQuestionsAPI || null;
   if (!questionsApi
     || typeof questionsApi.getSettings !== 'function'
-    || typeof questionsApi.onInitData !== 'function') {
+    || typeof questionsApi.onInitData !== 'function'
+    || typeof questionsApi.onSettingsChanged !== 'function') {
     throw new Error('[reading-test-questions] readingTestQuestionsAPI unavailable; cannot continue');
   }
 
@@ -77,6 +78,7 @@
         feedbackTitle: document.getElementById('readingTestQuestionsFeedbackTitle'),
         feedbackPrefix: document.getElementById('readingTestQuestionsFeedbackPrefix'),
         feedbackLink: document.getElementById('readingTestQuestionsFeedbackLink'),
+        summaryRegion: document.querySelector('.reading-test-questions__meta'),
         incompleteMessage: document.getElementById('readingTestQuestionsIncomplete'),
         resultMessage: document.getElementById('readingTestQuestionsResult'),
         chanceMessage: document.getElementById('readingTestQuestionsChance'),
@@ -106,6 +108,7 @@
       feedbackTitle,
       feedbackPrefix,
       feedbackLink,
+      summaryRegion,
       incompleteMessage,
       resultMessage,
       chanceMessage,
@@ -281,6 +284,7 @@
       randomTitle.textContent = tr('renderer.reading_test.questions.random_title');
       feedbackTitle.textContent = tr('renderer.reading_test.questions.feedback_title');
       feedbackPrefix.textContent = tr('renderer.reading_test.questions.feedback_prefix');
+      summaryRegion.setAttribute('aria-label', tr('renderer.reading_test.questions.summary_aria'));
       btnCheck.textContent = tr('renderer.reading_test.questions.check_button');
       btnContinue.textContent = tr('renderer.reading_test.questions.continue_button');
     }
@@ -431,6 +435,21 @@
       });
     }
 
+    function rebuildQuestionsWithSafeFocus() {
+      // This check intentionally occurs immediately before form replacement:
+      // an async translation load may have allowed focus to move meanwhile.
+      const focusedNode = document.activeElement;
+      const replacingFocusedQuestionControl = !!(
+        focusedNode
+        && focusedNode !== form
+        && form.contains(focusedNode)
+      );
+      renderQuestions();
+      if (replacingFocusedQuestionControl) {
+        btnContinue.focus({ preventScroll: true });
+      }
+    }
+
     function renderControls() {
       btnCheck.disabled = !!state.fatalKey;
     }
@@ -439,7 +458,7 @@
       renderStaticText();
       renderFeedbackLink();
       await renderRandomSummary();
-      renderQuestions();
+      rebuildQuestionsWithSafeFocus();
       await renderStatusMessages();
       renderControls();
     }
@@ -461,10 +480,10 @@
     }
 
     function enqueueUiSync(updateFn) {
-      // Funnel bootstrap and init-data updates through one queue so translation
-      // readiness and DOM rendering observe the same ordering.
+      // Funnel bootstrap, init-data, and settings updates through one queue so
+      // translation readiness and DOM rendering observe the same ordering.
       const runUpdate = async () => {
-        await updateFn();
+        if (await updateFn() === false) return;
         await ensureTranslationsLoaded();
         await renderUi();
       };
@@ -531,6 +550,22 @@
       });
     }
 
+    function handleSettingsChanged(settings) {
+      enqueueUiSync(async () => {
+        const nextSettings = settings || {};
+        const nextLanguage = normalizeLanguage(readSettingsLanguage(nextSettings));
+        const languageChanged = nextLanguage !== state.currentLanguage;
+        const needsTranslationRetry = state.translationsLoadedFor !== nextLanguage;
+        state.settingsCache = nextSettings;
+        if (!languageChanged && !needsTranslationRetry) {
+          return false;
+        }
+        state.currentLanguage = nextLanguage;
+      }).catch((err) => {
+        log.error('Reading-test questions settings update failed:', err);
+      });
+    }
+
     // =============================================================================
     // Event wiring / startup
     // =============================================================================
@@ -556,6 +591,7 @@
     });
 
     questionsApi.onInitData(handleInitData);
+    questionsApi.onSettingsChanged(handleSettingsChanged);
     loadInitialSettings();
   }
 })();

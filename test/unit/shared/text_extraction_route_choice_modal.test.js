@@ -120,7 +120,13 @@ function createHarness() {
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
+    applyTranslations() {
+      sandbox.window.TextExtractionRouteChoiceModal.applyTranslations();
+    },
     prompt: sandbox.window.Notify.promptTextExtractionRouteChoice,
+    replaceTranslations(nextTranslations) {
+      Object.assign(translations, nextTranslations);
+    },
   };
 }
 
@@ -151,6 +157,33 @@ test('route-choice modal returns the selected OCR route when both routes are ava
   const result = await promptPromise;
 
   assert.equal(result, 'ocr');
+});
+
+test('route-choice modal refreshes an active prompt in place when its feature translation owner is invoked', async () => {
+  const harness = createHarness();
+  const promptPromise = harness.prompt({
+    preparation: {
+      routeChoiceOptions: ['native', 'ocr'],
+    },
+  });
+
+  harness.replaceTranslations({
+    'renderer.text_extraction.route_choice.title': 'Elegir ruta de extracción',
+    'renderer.text_extraction.route_choice.message': 'Selecciona la ruta de extracción.',
+    'renderer.text_extraction.route_choice.native_button': 'Usar nativo',
+    'renderer.text_extraction.route_choice.ocr_button': 'Usar OCR',
+    'renderer.text_extraction.route_choice.cancel_button': 'Cancelar',
+    'renderer.text_extraction.route_choice.close_aria': 'Cerrar selección de ruta',
+  });
+  harness.applyTranslations();
+
+  assert.equal(harness.elements.textExtractionRouteModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.textExtractionRouteModalTitle.textContent, 'Elegir ruta de extracción');
+  assert.equal(harness.elements.textExtractionRouteModalOcr.textContent, 'Usar OCR');
+  assert.equal(harness.elements.textExtractionRouteModalClose.getAttribute('aria-label'), 'Cerrar selección de ruta');
+
+  harness.elements.textExtractionRouteModalOcr.dispatch('click');
+  assert.equal(await promptPromise, 'ocr');
 });
 
 test('route-choice modal skips prompting when there is no real route choice', async () => {

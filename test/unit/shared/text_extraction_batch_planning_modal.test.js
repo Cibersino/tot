@@ -193,6 +193,14 @@ function createElement(id, tagName = 'div') {
       }
       return null;
     },
+    contains(node) {
+      let current = node;
+      while (current) {
+        if (current === this) return true;
+        current = current.parentNode;
+      }
+      return false;
+    },
     focus() {
       activeElementRef = this;
     },
@@ -560,6 +568,8 @@ function createHarness() {
 
   return {
     elements,
+    translations,
+    applyTranslations: sandbox.window.TextExtractionBatchPlanningModal.applyTranslations,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
@@ -1100,6 +1110,23 @@ test('batch planning modal preserves typed invalid to-page drafts while editing'
 
   const pageSelectionActions = applyActionCalls.filter((action) => action.type === 'set_pdf_page_selection');
   assert.equal(pageSelectionActions.length, 0);
+
+  harness.elements.textExtractionBatchPlanModalPanel.scrollTop = 89;
+  toInput.focus();
+  harness.translations['renderer.text_extraction.batch_plan.title'] = 'Planificar extracción por lotes';
+  harness.applyTranslations();
+
+  const refreshedToInput = findNodeByAttribute(
+    harness.elements.textExtractionBatchPlanUnits,
+    'data-action',
+    'set-page-to'
+  );
+  assert.equal(harness.elements.textExtractionBatchPlanModalTitle.textContent, 'Planificar extracción por lotes');
+  assert.equal(harness.elements.textExtractionBatchPlanModalPanel.scrollTop, 89);
+  assert.ok(refreshedToInput);
+  assert.equal(refreshedToInput.value, '');
+  assert.equal(harness.elements.textExtractionBatchPlanStart.disabled, true);
+  assert.equal(harness.getActiveElement(), harness.elements.textExtractionBatchPlanClose);
 
   harness.elements.textExtractionBatchPlanCancel.dispatch('click');
   const result = await promptPromise;

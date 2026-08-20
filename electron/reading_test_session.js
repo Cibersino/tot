@@ -114,6 +114,10 @@ function createController(options = {}) {
     editorWin: null,
     flotanteWin: null,
   };
+  const readingTestModalWindows = {
+    questionsWin: null,
+    resultWin: null,
+  };
 
   // =============================================================================
   // Helpers
@@ -199,6 +203,33 @@ function createController(options = {}) {
     return {
       editorWin: activeSessionWindows.editorWin,
       flotanteWin: activeSessionWindows.flotanteWin,
+    };
+  }
+
+  function setReadingTestModalWindow(kind, win) {
+    if (kind === 'questions') {
+      readingTestModalWindows.questionsWin = win;
+      return;
+    }
+    if (kind === 'result') {
+      readingTestModalWindows.resultWin = win;
+    }
+  }
+
+  function clearReadingTestModalWindow(kind, win) {
+    if (kind === 'questions' && readingTestModalWindows.questionsWin === win) {
+      readingTestModalWindows.questionsWin = null;
+      return;
+    }
+    if (kind === 'result' && readingTestModalWindows.resultWin === win) {
+      readingTestModalWindows.resultWin = null;
+    }
+  }
+
+  function getSettingsWindows() {
+    return {
+      readingTestQuestionsWin: readingTestModalWindows.questionsWin,
+      readingTestResultWin: readingTestModalWindows.resultWin,
     };
   }
 
@@ -394,6 +425,8 @@ function createController(options = {}) {
       questionsWindowPreload: QUESTIONS_WINDOW_PRELOAD,
       questionsWindowHtml: QUESTIONS_WINDOW_HTML,
       developerEmail: DEVELOPER_EMAIL,
+      onWindowCreated: (win) => setReadingTestModalWindow('questions', win),
+      onWindowClosed: (win) => clearReadingTestModalWindow('questions', win),
     });
   }
 
@@ -403,6 +436,8 @@ function createController(options = {}) {
       log,
       resultWindowPreload: RESULT_WINDOW_PRELOAD,
       resultWindowHtml: RESULT_WINDOW_HTML,
+      onWindowCreated: (win) => setReadingTestModalWindow('result', win),
+      onWindowClosed: (win) => clearReadingTestModalWindow('result', win),
     });
   }
 
@@ -657,6 +692,7 @@ function createController(options = {}) {
     getState,
     isInteractionLocked,
     getInteractionBlockReason,
+    getSettingsWindows,
     handleFlotanteCommand,
     handleEditorClosed,
     handleFlotanteClosed,

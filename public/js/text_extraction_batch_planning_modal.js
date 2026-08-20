@@ -68,6 +68,7 @@
   const btnStart = document.getElementById('textExtractionBatchPlanStart');
   const btnCancel = document.getElementById('textExtractionBatchPlanCancel');
   const btnClose = document.getElementById('textExtractionBatchPlanClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Helpers
@@ -278,8 +279,10 @@
     root._fromInput.max = String(root._totalPages || 1);
     root._toInput.max = String(root._totalPages || 1);
     if (!preserveTypedValues) {
-      root._fromInput.value = String(safeDraft.fromPage || 1);
-      root._toInput.value = String(safeDraft.toPage || root._totalPages || 1);
+      root._fromInput.value = safeDraft.fromPage == null ? '1' : String(safeDraft.fromPage);
+      root._toInput.value = safeDraft.toPage == null
+        ? String(root._totalPages || 1)
+        : String(safeDraft.toPage);
     }
     setElementVisibility(root._rangeGrid, uiState.showRange === true);
     root._countEl.textContent = uiState.selectedCountText;
@@ -740,6 +743,10 @@
     btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.batch_plan.close_aria'));
   }
 
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
+  }
+
   // =============================================================================
   // Public prompt
   // =============================================================================
@@ -884,10 +891,12 @@
         }
       };
 
-      const restoreRerenderUiState = (uiState) => {
+      const restoreRerenderUiState = (uiState, { restoreFocusedElement = true } = {}) => {
         if (!uiState) return;
-        setScrollTop(uiState.scrollTop);
-        restoreFocusFromDescriptor(uiState.focusedElement);
+        if (restoreFocusedElement) {
+          setScrollTop(uiState.scrollTop);
+          restoreFocusFromDescriptor(uiState.focusedElement);
+        }
         setScrollTop(uiState.scrollTop);
       };
 
@@ -903,8 +912,10 @@
         },
       };
 
-      const rerender = () => {
+      const rerender = ({ restoreFocusedElement = true } = {}) => {
         const uiState = captureRerenderUiState();
+        const focusedNodeWillBeReplaced = !restoreFocusedElement
+          && !!(document.activeElement && body.contains(document.activeElement));
         comboboxInstances.splice(0).forEach((combobox) => combobox.destroy());
         currentModel = controller.getViewModel();
         syncPageSelectionDrafts();
@@ -924,7 +935,10 @@
         failurePolicyDefault.checked = currentModel.failurePolicy !== 'omit_failed_and_continue';
         failurePolicyContinue.checked = currentModel.failurePolicy === 'omit_failed_and_continue';
         syncStartButtonState();
-        restoreRerenderUiState(uiState);
+        restoreRerenderUiState(uiState, { restoreFocusedElement });
+        if (focusedNodeWillBeReplaced) {
+          btnClose.focus({ preventScroll: true });
+        }
       };
 
       const applyResolvedPageSelection = (inputId, pdfPageSelection) => {
@@ -953,6 +967,7 @@
       };
 
       const cleanup = () => {
+        activePromptTranslations = null;
         comboboxInstances.splice(0).forEach((combobox) => combobox.destroy());
         if (rootListenerBound) {
           body.removeEventListener('click', onBodyClick);
@@ -1155,6 +1170,7 @@
       rootListenerBound = true;
 
       rerender();
+      activePromptTranslations = () => rerender({ restoreFocusedElement: false });
       modal.setAttribute('aria-hidden', 'false');
       setScrollTop(0);
       window.Notify.activateModalFocus(modal, {
@@ -1169,6 +1185,7 @@
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionBatchPlan', promptBatchPlan);
+  window.TextExtractionBatchPlanningModal = { applyTranslations };
 })();
 
 // =============================================================================

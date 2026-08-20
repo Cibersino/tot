@@ -51,6 +51,10 @@ function createDomHarness(requiredIds, queryElements = {}) {
         children.push(child);
         return child;
       },
+      contains(node) {
+        if (node === this) return true;
+        return children.some((child) => child.contains(node));
+      },
       addEventListener(type, handler) {
         if (!listeners.has(type)) listeners.set(type, []);
         listeners.get(type).push(handler);
@@ -132,6 +136,10 @@ function createDomHarness(requiredIds, queryElements = {}) {
 }
 
 function createBaseWindow() {
+  const translations = {
+    'renderer.reading_test.questions.summary_aria': 'Question summary',
+    'renderer.reading_test.result.summary_aria': 'Result summary',
+  };
   return {
     getLogger() {
       return {
@@ -146,7 +154,7 @@ function createBaseWindow() {
     AppConstants: { DEFAULT_LANG: 'en' },
     RendererI18n: {
       async loadRendererTranslations() {},
-      tRenderer(key) { return key; },
+      tRenderer(key) { return translations[key] || key; },
       msgRenderer(key) {
         if (key === 'renderer.reading_test.questions.random_value') {
           return 'Random probability: {percentage}';
@@ -190,8 +198,9 @@ function runRendererScript(relativePath, window, document) {
 }
 
 async function flushAsyncWork() {
-  await new Promise((resolve) => setImmediate(resolve));
-  await new Promise((resolve) => setImmediate(resolve));
+  for (let index = 0; index < 5; index += 1) {
+    await new Promise((resolve) => setImmediate(resolve));
+  }
 }
 
 test('reading-test questions focuses the first answer and uses Continue when no answer exists', async () => {
@@ -211,8 +220,10 @@ test('reading-test questions focuses the first answer and uses Continue when no 
     'readingTestQuestionsCheck',
     'readingTestQuestionsContinue',
     'readingTestQuestionsActions',
+    'readingTestQuestionsSummary',
   ], {
     '.reading-test-questions__actions': 'readingTestQuestionsActions',
+    '.reading-test-questions__meta': 'readingTestQuestionsSummary',
   });
   let onInitData = null;
   const window = {
@@ -224,6 +235,9 @@ test('reading-test questions focuses the first answer and uses Continue when no 
       },
       onInitData(handler) {
         onInitData = handler;
+      },
+      onSettingsChanged() {
+        return () => {};
       },
     },
   };
@@ -247,6 +261,10 @@ test('reading-test questions focuses the first answer and uses Continue when no 
   assert.ok(firstAnswer);
   assert.equal(firstAnswer.checked, false);
   assert.equal(dom.getActiveElement(), firstAnswer);
+  assert.equal(
+    dom.elements.readingTestQuestionsSummary.getAttribute('aria-label'),
+    'Question summary'
+  );
 
   onInitData({ questions: [] });
   await flushAsyncWork();
@@ -260,8 +278,12 @@ test('reading-test result focuses Continue after result data renders', async () 
     'readingTestResultWpmValue',
     'readingTestResultSummary',
     'readingTestResultContinue',
-  ]);
+    'readingTestResultSummaryRegion',
+  ], {
+    '.reading-test-result__meta': 'readingTestResultSummaryRegion',
+  });
   let onInitData = null;
+  let onSettingsChanged = null;
   const window = {
     ...createBaseWindow(),
     readingTestResultAPI: {
@@ -270,6 +292,10 @@ test('reading-test result focuses Continue after result data renders', async () 
       },
       onInitData(handler) {
         onInitData = handler;
+      },
+      onSettingsChanged(handler) {
+        onSettingsChanged = handler;
+        return () => {};
       },
     },
   };
@@ -280,5 +306,16 @@ test('reading-test result focuses Continue after result data renders', async () 
   await flushAsyncWork();
 
   assert.equal(dom.elements.readingTestResultWpmValue.textContent, '240');
+  assert.equal(dom.getActiveElement(), dom.elements.readingTestResultContinue);
+  assert.equal(
+    dom.elements.readingTestResultSummaryRegion.getAttribute('aria-label'),
+    'Result summary'
+  );
+
+  const originalSummaryRow = dom.elements.readingTestResultSummary._children[0];
+  onSettingsChanged({ language: 'en', modeConteo: 'simple' });
+  await flushAsyncWork();
+
+  assert.equal(dom.elements.readingTestResultSummary._children[0], originalSummaryRow);
   assert.equal(dom.getActiveElement(), dom.elements.readingTestResultContinue);
 });

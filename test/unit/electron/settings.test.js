@@ -288,7 +288,7 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
 });
 
-test('broadcastSettingsUpdated includes textTimeCalculatorWin in the fixed target list', () => {
+test('broadcastSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
   const settings = loadFreshSettingsModule();
   const sentPayloads = [];
 
@@ -305,10 +305,38 @@ test('broadcastSettingsUpdated includes textTimeCalculatorWin in the fixed targe
           },
         },
       },
+      readingTestQuestionsWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+      readingTestResultWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
     }
   );
 
   assert.deepEqual(sentPayloads, [
+    {
+      channel: 'settings-updated',
+      payload: { language: 'en' },
+    },
+    {
+      channel: 'settings-updated',
+      payload: { language: 'en' },
+    },
     {
       channel: 'settings-updated',
       payload: { language: 'en' },

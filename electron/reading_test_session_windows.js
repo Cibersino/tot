@@ -195,6 +195,8 @@ function openQuestionsWindow(questions, options = {}) {
     questionsWindowPreload,
     questionsWindowHtml,
     developerEmail,
+    onWindowCreated,
+    onWindowClosed,
   } = options;
 
   return new Promise((resolve) => {
@@ -249,6 +251,13 @@ function openQuestionsWindow(questions, options = {}) {
     }
 
     win.setMenu(null);
+    if (typeof onWindowCreated === 'function') {
+      try {
+        onWindowCreated(win);
+      } catch (err) {
+        log.warn('Reading-test questions window registration failed (ignored):', err);
+      }
+    }
     win.once('ready-to-show', () => {
       if (settled || win.isDestroyed()) return;
       win.show();
@@ -266,6 +275,13 @@ function openQuestionsWindow(questions, options = {}) {
     });
 
     win.on('closed', () => {
+      if (typeof onWindowClosed === 'function') {
+        try {
+          onWindowClosed(win);
+        } catch (err) {
+          log.warn('Reading-test questions window close registration failed (ignored):', err);
+        }
+      }
       if (settled) return;
       settle({ ok: true });
     });
@@ -285,6 +301,8 @@ function openResultWindow(resultInfo, options = {}) {
     log,
     resultWindowPreload,
     resultWindowHtml,
+    onWindowCreated,
+    onWindowClosed,
   } = options;
 
   return new Promise((resolve) => {
@@ -339,6 +357,13 @@ function openResultWindow(resultInfo, options = {}) {
     }
 
     win.setMenu(null);
+    if (typeof onWindowCreated === 'function') {
+      try {
+        onWindowCreated(win);
+      } catch (err) {
+        log.warn('Reading-test result window registration failed (ignored):', err);
+      }
+    }
     win.once('ready-to-show', () => {
       if (settled || win.isDestroyed()) return;
       win.show();
@@ -353,6 +378,13 @@ function openResultWindow(resultInfo, options = {}) {
     });
 
     win.on('closed', () => {
+      if (typeof onWindowClosed === 'function') {
+        try {
+          onWindowClosed(win);
+        } catch (err) {
+          log.warn('Reading-test result window close registration failed (ignored):', err);
+        }
+      }
       if (settled) return;
       settle({ ok: true });
     });

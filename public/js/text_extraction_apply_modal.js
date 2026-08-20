@@ -46,6 +46,7 @@
   const btnAppend = document.getElementById('textExtractionApplyModalAppend');
   const btnCancel = document.getElementById('textExtractionApplyModalCancel');
   const btnClose = document.getElementById('textExtractionApplyModalClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Helpers
@@ -96,6 +97,10 @@
     return { fileName };
   }
 
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
+  }
+
   // =============================================================================
   // Public entrypoints
   // =============================================================================
@@ -120,55 +125,53 @@
     }
     const initialRepeat = normalizeRepeatForModal(defaultRepeat, safeMaxRepeat);
 
-    const titleText = tRenderer('renderer.text_extraction.apply_modal.title');
-    const messageText = tRenderer('renderer.text_extraction.apply_modal.message');
-    const repeatLabelText = tRenderer('renderer.text_extraction.apply_modal.repeat_label');
-    const overwriteText = tRenderer('renderer.text_extraction.apply_modal.overwrite_button');
-    const appendText = tRenderer('renderer.text_extraction.apply_modal.append_button');
-    const cancelText = tRenderer('renderer.text_extraction.apply_modal.cancel_button');
-    const closeAriaText = tRenderer('renderer.text_extraction.apply_modal.close_aria');
     const safeRetainedGeneratedPdf = normalizeRetainedGeneratedPdf(retainedGeneratedPdf);
     const canRevealGeneratedPdf = !!(
       safeRetainedGeneratedPdf
       && typeof onRevealGeneratedPdf === 'function'
     );
-
-    title.textContent = titleText;
-    message.textContent = messageText;
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
-    elapsed.hidden = !normalizedElapsedValueText;
-    elapsed.setAttribute('aria-hidden', elapsed.hidden ? 'true' : 'false');
-    if (normalizedElapsedValueText) {
-      renderLocalizedLabelWithInvariantValue(elapsed, {
-        labelText: tRenderer('renderer.text_extraction.apply_modal.elapsed'),
-        valueText: normalizedElapsedValueText,
-        valueDirection: 'ltr',
-      });
-    } else {
-      elapsed.textContent = '';
+    let revealPending = false;
+
+    function renderModalCopy() {
+      title.textContent = tRenderer('renderer.text_extraction.apply_modal.title');
+      message.textContent = tRenderer('renderer.text_extraction.apply_modal.message');
+      elapsed.hidden = !normalizedElapsedValueText;
+      elapsed.setAttribute('aria-hidden', elapsed.hidden ? 'true' : 'false');
+      if (normalizedElapsedValueText) {
+        renderLocalizedLabelWithInvariantValue(elapsed, {
+          labelText: tRenderer('renderer.text_extraction.apply_modal.elapsed'),
+          valueText: normalizedElapsedValueText,
+          valueDirection: 'ltr',
+        });
+      } else {
+        elapsed.textContent = '';
+      }
+      repeatLabel.textContent = tRenderer('renderer.text_extraction.apply_modal.repeat_label');
+      btnOverwrite.textContent = tRenderer('renderer.text_extraction.apply_modal.overwrite_button');
+      btnAppend.textContent = tRenderer('renderer.text_extraction.apply_modal.append_button');
+      btnCancel.textContent = tRenderer('renderer.text_extraction.apply_modal.cancel_button');
+      btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.apply_modal.close_aria'));
+      savedPdf.hidden = !canRevealGeneratedPdf;
+      savedPdf.setAttribute('aria-hidden', savedPdf.hidden ? 'true' : 'false');
+      if (canRevealGeneratedPdf) {
+        savedPdfMessage.textContent = tRenderer('renderer.text_extraction.apply_modal.saved_pdf_message');
+        renderLocalizedLabelWithInvariantValue(savedPdfFile, {
+          labelText: tRenderer('renderer.text_extraction.apply_modal.saved_pdf_label'),
+          valueText: safeRetainedGeneratedPdf.fileName,
+          valueDirection: 'ltr',
+        });
+        btnRevealSavedPdf.textContent = tRenderer('renderer.text_extraction.apply_modal.reveal_saved_pdf_button');
+        btnRevealSavedPdf.disabled = revealPending;
+      } else {
+        savedPdfMessage.textContent = '';
+        savedPdfFile.textContent = '';
+        btnRevealSavedPdf.textContent = '';
+        btnRevealSavedPdf.disabled = true;
+      }
     }
-    repeatLabel.textContent = repeatLabelText;
-    btnOverwrite.textContent = overwriteText;
-    btnAppend.textContent = appendText;
-    btnCancel.textContent = cancelText;
-    btnClose.setAttribute('aria-label', closeAriaText);
-    savedPdf.hidden = !canRevealGeneratedPdf;
-    savedPdf.setAttribute('aria-hidden', savedPdf.hidden ? 'true' : 'false');
-    if (canRevealGeneratedPdf) {
-      savedPdfMessage.textContent = tRenderer('renderer.text_extraction.apply_modal.saved_pdf_message');
-      renderLocalizedLabelWithInvariantValue(savedPdfFile, {
-        labelText: tRenderer('renderer.text_extraction.apply_modal.saved_pdf_label'),
-        valueText: safeRetainedGeneratedPdf.fileName,
-        valueDirection: 'ltr',
-      });
-      btnRevealSavedPdf.textContent = tRenderer('renderer.text_extraction.apply_modal.reveal_saved_pdf_button');
-      btnRevealSavedPdf.disabled = false;
-    } else {
-      savedPdfMessage.textContent = '';
-      savedPdfFile.textContent = '';
-      btnRevealSavedPdf.textContent = '';
-      btnRevealSavedPdf.disabled = true;
-    }
+
+    renderModalCopy();
 
     repeatInput.min = '1';
     repeatInput.max = String(safeMaxRepeat);
@@ -178,9 +181,9 @@
 
     return await new Promise((resolve) => {
       let settled = false;
-      let revealPending = false;
 
       const cleanup = () => {
+        activePromptTranslations = null;
         btnOverwrite.removeEventListener('click', onOverwrite);
         btnAppend.removeEventListener('click', onAppend);
         btnCancel.removeEventListener('click', onCancel);
@@ -256,6 +259,7 @@
       repeatInput.addEventListener('blur', onRepeatBlur);
       repeatInput.addEventListener('keydown', onRepeatKeyDown);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslations = renderModalCopy;
 
       modal.setAttribute('aria-hidden', 'false');
       window.Notify.activateModalFocus(modal, {
@@ -270,6 +274,7 @@
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionApplyChoice', promptApplyChoice);
+  window.TextExtractionApplyModal = { applyTranslations };
 })();
 
 // =============================================================================

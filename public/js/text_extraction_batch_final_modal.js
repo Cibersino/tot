@@ -45,6 +45,7 @@
   const btnOpenSnapshots = document.getElementById('textExtractionBatchFinalModalOpenSnapshots');
   const btnOk = document.getElementById('textExtractionBatchFinalModalOk');
   const btnClose = document.getElementById('textExtractionBatchFinalModalClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Helpers
@@ -367,6 +368,10 @@
     await navigator.clipboard.writeText(reportText);
   }
 
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
+  }
+
   // =============================================================================
   // Public prompt
   // =============================================================================
@@ -386,27 +391,38 @@
     }
     const safeReport = normalizeReport(report);
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
-    const reportText = buildReportText(safeReport, normalizedElapsedValueText);
-
-    title.textContent = safeReport.flowKind === 'single_file_split'
-      ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
-      : tRenderer('renderer.text_extraction.batch_report.title');
-    summary.textContent = buildSummaryText(safeReport);
-    if (normalizedElapsedValueText) {
-      elapsed.textContent = `${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`;
-    } else {
-      elapsed.textContent = '';
-    }
-    setElementVisibility(elapsed, !!normalizedElapsedValueText);
-    replaceReportBody(safeReport.units);
-    btnCopy.textContent = tRenderer('renderer.text_extraction.batch_report.copy_report');
-    btnOpenSnapshots.textContent = tRenderer('renderer.text_extraction.batch_report.open_snapshots_folder');
-    btnOk.textContent = tRenderer('renderer.text_extraction.batch_report.ok_button');
-    btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.batch_report.close_aria'));
+    let reportText = '';
+    const renderModalCopy = () => {
+      reportText = buildReportText(safeReport, normalizedElapsedValueText);
+      title.textContent = safeReport.flowKind === 'single_file_split'
+        ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
+        : tRenderer('renderer.text_extraction.batch_report.title');
+      summary.textContent = buildSummaryText(safeReport);
+      if (normalizedElapsedValueText) {
+        elapsed.textContent = `${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`;
+      } else {
+        elapsed.textContent = '';
+      }
+      setElementVisibility(elapsed, !!normalizedElapsedValueText);
+      replaceReportBody(safeReport.units);
+      btnCopy.textContent = tRenderer('renderer.text_extraction.batch_report.copy_report');
+      btnOpenSnapshots.textContent = tRenderer('renderer.text_extraction.batch_report.open_snapshots_folder');
+      btnOk.textContent = tRenderer('renderer.text_extraction.batch_report.ok_button');
+      btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.batch_report.close_aria'));
+    };
+    renderModalCopy();
 
     return new Promise((resolve) => {
       let settled = false;
+      const refreshModalTranslations = () => {
+        const scrollTop = typeof panel.scrollTop === 'number' ? panel.scrollTop : 0;
+        const hadBodyFocus = !!(document.activeElement && body.contains(document.activeElement));
+        renderModalCopy();
+        if (typeof panel.scrollTop === 'number') panel.scrollTop = scrollTop;
+        if (hadBodyFocus) btnClose.focus({ preventScroll: true });
+      };
       const cleanup = () => {
+        activePromptTranslations = null;
         body.removeEventListener('click', onBodyClick);
         btnCopy.removeEventListener('click', onCopy);
         btnOpenSnapshots.removeEventListener('click', onOpenSnapshots);
@@ -473,6 +489,7 @@
       btnClose.addEventListener('click', onOk);
       backdrop.addEventListener('click', onOk);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslations = refreshModalTranslations;
 
       modal.setAttribute('aria-hidden', 'false');
       if (typeof panel.scrollTop === 'number') {
@@ -490,6 +507,7 @@
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionBatchFinalReport', promptBatchFinalReport);
+  window.TextExtractionBatchFinalModal = { applyTranslations };
 })();
 
 // =============================================================================

@@ -26,7 +26,8 @@
   const resultApi = window.readingTestResultAPI || null;
   if (!resultApi
     || typeof resultApi.getSettings !== 'function'
-    || typeof resultApi.onInitData !== 'function') {
+    || typeof resultApi.onInitData !== 'function'
+    || typeof resultApi.onSettingsChanged !== 'function') {
     throw new Error('[reading-test-result] readingTestResultAPI unavailable; cannot continue');
   }
 
@@ -71,6 +72,7 @@
         wpmLabel: document.getElementById('readingTestResultWpmLabel'),
         wpmValue: document.getElementById('readingTestResultWpmValue'),
         summary: document.getElementById('readingTestResultSummary'),
+        summaryRegion: document.querySelector('.reading-test-result__meta'),
         btnContinue: document.getElementById('readingTestResultContinue'),
       };
 
@@ -112,6 +114,22 @@
         }
       }).catch((err) => {
         log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
+      });
+    }
+
+    function handleSettingsChanged(settings) {
+      enqueueUiSync(async () => {
+        const nextSettings = settings || {};
+        const nextLanguage = normalizeLanguage(nextSettings.language);
+        const languageChanged = nextLanguage !== state.currentLanguage;
+        const needsTranslationRetry = state.translationsLoadedFor !== nextLanguage;
+        state.settingsCache = nextSettings;
+        if (!languageChanged && !needsTranslationRetry) {
+          return false;
+        }
+        state.currentLanguage = nextLanguage;
+      }).catch((err) => {
+        log.error('Reading-test result settings update failed:', err);
       });
     }
 
@@ -215,6 +233,7 @@
       document.title = tRenderer('renderer.reading_test.result.title');
       elements.title.textContent = tRenderer('renderer.reading_test.result.title');
       elements.wpmLabel.textContent = tRenderer('renderer.reading_test.result.measured_wpm');
+      elements.summaryRegion.setAttribute('aria-label', tRenderer('renderer.reading_test.result.summary_aria'));
       elements.btnContinue.textContent = tRenderer('renderer.reading_test.result.continue_button');
       const measuredWpmText = await formatInteger(state.measuredWpm);
       const wordCountText = await formatInteger(state.wordCount);
@@ -246,7 +265,7 @@
     // readiness and DOM rendering observe the same ordering.
     function enqueueUiSync(updateFn) {
       const runUpdate = async () => {
-        await updateFn();
+        if (await updateFn() === false) return;
         await ensureTranslationsLoaded();
         await renderUi();
       };
@@ -262,6 +281,7 @@
     });
 
     resultApi.onInitData(handleInitData);
+    resultApi.onSettingsChanged(handleSettingsChanged);
     loadInitialSettings();
   }
 })();

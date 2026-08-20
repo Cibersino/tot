@@ -83,12 +83,30 @@ function createNoopSurface(overrides = {}) {
   });
 }
 
-async function createRendererHarness() {
+async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
   let activeLanguage = 'en';
   const errors = [];
   const pendingStates = [];
   const subscriptions = {};
   let selectorActions = null;
+  const activeCustomPromptTranslationRefreshCounts = new Map([
+    'SnapshotSaveTagsModal',
+    'TextExtractionApplyModal',
+    'TextExtractionBatchFinalModal',
+    'TextExtractionBatchPlanningModal',
+    'TextExtractionOcrActivationDisclosureModal',
+    'TextExtractionPdfOptionsModal',
+    'TextExtractionRouteChoiceModal',
+    'TextExtractionSingleFileHeavyPdfModal',
+  ].map((owner) => [owner, 0]));
+  const menuActionHandlers = new Map();
+
+  const recordActiveCustomPromptTranslationRefresh = (owner) => {
+    activeCustomPromptTranslationRefreshCounts.set(
+      owner,
+      activeCustomPromptTranslationRefreshCounts.get(owner) + 1
+    );
+  };
 
   const elements = new Map();
   const getElement = (id) => {
@@ -110,9 +128,24 @@ async function createRendererHarness() {
   const document = {
     body: createElement('body'),
     documentElement: createElement('documentElement'),
+    activeElement: null,
     createElement,
     getElementById: getElement,
     querySelector(selector) { return queryElements.get(selector) || null; },
+  };
+  document.activeElement = document.body;
+
+  const infoModal = getElement('infoModal');
+  const infoModalContent = getElement('infoModalContent');
+  const infoModalClose = getElement('infoModalClose');
+  const infoModalPanel = createElement('infoModalPanel');
+  const infoContentFocusTarget = createElement('infoContentFocusTarget');
+  infoModalPanel.scrollTop = 0;
+  infoModal.querySelector = (selector) => (selector === '.info-modal-panel' ? infoModalPanel : null);
+  infoModalContent.contains = (node) => node === infoContentFocusTarget;
+  infoModalClose.focus = () => {
+    infoModalClose.focusCount = (infoModalClose.focusCount || 0) + 1;
+    document.activeElement = infoModalClose;
   };
 
   const logger = {
@@ -139,8 +172,15 @@ async function createRendererHarness() {
     isInteractionLocked() { return false; },
     isSessionActive() { return false; },
   });
+  const presetComboboxUpdates = [];
   const presetsCombobox = createNoopSurface({
     getValue() { return ''; },
+    update(options) {
+      presetComboboxUpdates.push({
+        hostHidden: getElement('presets').hidden,
+        options,
+      });
+    },
   });
   const wpmControls = createNoopSurface({
     getAllPresets() { return []; },
@@ -176,7 +216,14 @@ async function createRendererHarness() {
 
   const rendererI18n = {
     applyWindowLanguageAttributes() {},
+    getLanguageDirection(language) { return String(language || '').startsWith('ar') ? 'rtl' : 'ltr'; },
     getRendererValue(key) { return readRendererValue(activeLanguage, key); },
+    async loadLocalizedDocument(documentId, language) {
+      if (typeof loadLocalizedDocument === 'function') {
+        return loadLocalizedDocument(documentId, language);
+      }
+      return { html: null, language: '' };
+    },
     async loadRendererTranslations(language) { activeLanguage = language; },
     msgRenderer(key, params = {}) {
       return Object.entries(params).reduce(
@@ -208,27 +255,60 @@ async function createRendererHarness() {
     },
     InfoModalLinks: createNoopSurface(),
     MainLogoLinks: createNoopSurface(),
-    Notify: createNoopSurface(),
+    Notify: createNoopSurface({
+      activateModalFocus(_modal, { initialFocus }) {
+        initialFocus.focus({ preventScroll: true });
+      },
+      deactivateModalFocus() {},
+    }),
     ReadingSpeedTestUi: readingSpeedTestUi,
     RendererCombobox: { create() { return presetsCombobox; } },
     RendererCrono: { createController() { return null; } },
     RendererI18n: rendererI18n,
     ResultsTimeMultiplier: createNoopSurface(),
+    SnapshotSaveTagsModal: {
+      applyTranslations() { recordActiveCustomPromptTranslationRefresh('SnapshotSaveTagsModal'); },
+    },
     TextApplyCanonical: createNoopSurface(),
+    TextExtractionApplyModal: {
+      applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionApplyModal'); },
+    },
+    TextExtractionBatchFinalModal: {
+      applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionBatchFinalModal'); },
+    },
     TextExtractionBatchFlow: createNoopSurface(),
+    TextExtractionBatchPlanningModal: {
+      applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionBatchPlanningModal'); },
+    },
     TextExtractionDragDrop: createNoopSurface(),
     TextExtractionEntry: createNoopSurface(),
+    TextExtractionOcrActivationDisclosureModal: {
+      applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionOcrActivationDisclosureModal'); },
+    },
     TextExtractionOcrActivation: createNoopSurface(),
     TextExtractionOcrActivationFlow: createNoopSurface(),
     TextExtractionOcrActivationRecovery: createNoopSurface(),
     TextExtractionOcrDisconnect: createNoopSurface(),
+    TextExtractionPdfOptionsModal: {
+      applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionPdfOptionsModal'); },
+    },
+    TextExtractionRouteChoiceModal: {
+      applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionRouteChoiceModal'); },
+    },
+    TextExtractionSingleFileHeavyPdfModal: {
+      applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionSingleFileHeavyPdfModal'); },
+    },
     TextExtractionStatusUi: statusUi,
     TextTimeCalculatorLauncher: createNoopSurface(),
     WpmControls: { createController() { return wpmControls; } },
     addEventListener() {},
     electronAPI,
     getLogger() { return logger; },
-    menuActions: createNoopSurface(),
+    menuActions: {
+      registerMenuAction(actionId, handler) {
+        menuActionHandlers.set(actionId, handler);
+      },
+    },
     requestAnimationFrame(callback) { callback(); },
   };
 
@@ -258,10 +338,23 @@ async function createRendererHarness() {
   return {
     elements,
     errors,
+    getActiveCustomPromptTranslationRefreshCounts() {
+      return Object.fromEntries(activeCustomPromptTranslationRefreshCounts);
+    },
+    infoModalPanel,
+    invokeMenuAction(actionId) {
+      const handler = menuActionHandlers.get(actionId);
+      assert.ok(handler, `main renderer did not register ${actionId}`);
+      return handler();
+    },
     pendingStates,
+    presetComboboxUpdates,
     preciseLabel,
     preciseWrapper,
     selectorActions,
+    setInfoContentFocus() {
+      document.activeElement = infoContentFocusTarget;
+    },
     subscriptions,
     getElement,
   };
@@ -285,6 +378,102 @@ test('main renderer settings lifecycle updates precise-mode description and visu
   assert.equal(harness.errors.length, 0);
 });
 
+test('speed presets become visible with their localized accessible name after startup translation', async () => {
+  const harness = await createRendererHarness();
+  const ariaUpdate = harness.presetComboboxUpdates.find(
+    (update) => Object.prototype.hasOwnProperty.call(update.options, 'ariaLabel')
+  );
+
+  assert.equal(ariaUpdate && ariaUpdate.hostHidden, true);
+  assert.equal(harness.getElement('presets').hidden, false);
+  assert.equal(
+    ariaUpdate && ariaUpdate.options.ariaLabel,
+    readRendererValue('en', 'renderer.main.aria.speed_presets')
+  );
+});
+
+test('main renderer delegates language refresh to each feature-owned active custom prompt', async () => {
+  const harness = await createRendererHarness();
+  const before = harness.getActiveCustomPromptTranslationRefreshCounts();
+
+  await harness.subscriptions.settingsChanged({ language: 'es', modeConteo: 'preciso' });
+
+  const after = harness.getActiveCustomPromptTranslationRefreshCounts();
+  assert.deepEqual(
+    Object.fromEntries(Object.keys(before).map((owner) => [owner, after[owner] - before[owner]])),
+    Object.fromEntries(Object.keys(before).map((owner) => [owner, 1]))
+  );
+  assert.equal(harness.errors.length, 0);
+});
+
+test('open Info Modal refresh uses the effective document language and preserves modal state safely', async () => {
+  const documentRequests = [];
+  const harness = await createRendererHarness({
+    async loadLocalizedDocument(_documentId, language) {
+      documentRequests.push(language);
+      if (language === 'es') {
+        return { html: '<article>Fallback English instructions</article>', language: 'en' };
+      }
+      return { html: '<article>English instructions</article>', language: 'en' };
+    },
+  });
+
+  harness.invokeMenuAction('instrucciones_completas');
+  for (let index = 0; index < 3; index += 1) await flushAsyncWork();
+
+  const infoModal = harness.getElement('infoModal');
+  const infoModalContent = harness.getElement('infoModalContent');
+  const infoModalClose = harness.getElement('infoModalClose');
+  assert.equal(infoModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(infoModalContent.getAttribute('lang'), 'en');
+
+  harness.infoModalPanel.scrollTop = 37;
+  harness.setInfoContentFocus();
+  const focusBeforeRefresh = infoModalClose.focusCount;
+  await harness.subscriptions.settingsChanged({ language: 'es', modeConteo: 'preciso' });
+  for (let index = 0; index < 3; index += 1) await flushAsyncWork();
+
+  assert.deepEqual(documentRequests, ['en', 'es']);
+  assert.equal(infoModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(infoModalContent.innerHTML, '<article>Fallback English instructions</article>');
+  assert.equal(infoModalContent.getAttribute('lang'), 'en');
+  assert.equal(infoModalContent.getAttribute('dir'), 'ltr');
+  assert.equal(harness.infoModalPanel.scrollTop, 37);
+  assert.equal(infoModalClose.focusCount, focusBeforeRefresh + 1);
+  assert.equal(harness.errors.length, 0);
+});
+
+test('open Info Modal discards a stale localized-document refresh after a later language change', async () => {
+  let resolveSpanishDocument;
+  const harness = await createRendererHarness({
+    async loadLocalizedDocument(_documentId, language) {
+      if (language === 'es') {
+        return new Promise((resolve) => {
+          resolveSpanishDocument = resolve;
+        });
+      }
+      return { html: `<article>${language} instructions</article>`, language };
+    },
+  });
+
+  harness.invokeMenuAction('instrucciones_completas');
+  for (let index = 0; index < 3; index += 1) await flushAsyncWork();
+
+  await harness.subscriptions.settingsChanged({ language: 'es', modeConteo: 'preciso' });
+  await flushAsyncWork();
+  assert.equal(typeof resolveSpanishDocument, 'function');
+
+  await harness.subscriptions.settingsChanged({ language: 'en', modeConteo: 'preciso' });
+  for (let index = 0; index < 3; index += 1) await flushAsyncWork();
+  resolveSpanishDocument({ html: '<article>stale Spanish instructions</article>', language: 'es' });
+  for (let index = 0; index < 3; index += 1) await flushAsyncWork();
+
+  const infoModalContent = harness.getElement('infoModalContent');
+  assert.equal(infoModalContent.innerHTML, '<article>en instructions</article>');
+  assert.equal(infoModalContent.getAttribute('lang'), 'en');
+  assert.equal(harness.errors.length, 0);
+});
+
 test('main markup exposes precise-mode help only through the explicit description relationship', () => {
   const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/index.html'), 'utf8');
 
@@ -293,7 +482,7 @@ test('main markup exposes precise-mode help only through the explicit descriptio
     /id="toggleModoPreciso"[^>]*aria-describedby="preciseModeDescription"/
   );
   assert.doesNotMatch(markup, /id="toggleModoPreciso"[^>]*\stitle=/);
-  assert.match(markup, /id="preciseModeDescription" class="main-accessible-description"/);
+  assert.match(markup, /id="preciseModeDescription"\s+class="main-accessible-description"/);
 });
 
 test('main markup reaches primary controls before the fixed brand-link actions', () => {
@@ -309,7 +498,7 @@ test('main markup reaches primary controls before the fixed brand-link actions',
   assert.ok(textExtractionAction > bodyStart);
   assert.ok(textExtractionButtonStart > bodyStart);
   assert.ok(browserExtensionLink > textExtractionAction);
-  assert.match(markup, /<div class="app-title" aria-hidden="true">\s*<img id="appLogo"[^>]*alt=""/);
+  assert.match(markup, /<div\s+class="app-title"\s+aria-hidden="true"\s*>\s*<img\s+id="appLogo"[^>]*alt=""/);
   assert.doesNotMatch(
     markup.slice(bodyStart, textExtractionButtonStart),
     /<(?:a|button|input|select|textarea)\b/i
@@ -338,5 +527,5 @@ test('Editor launch lifecycle exposes, retranslates, and clears real live-region
 
   const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/index.html'), 'utf8');
   assert.match(markup, /id="editorLoader"[^>]*aria-live="polite"/);
-  assert.match(markup, /id="editorLoaderStatus" class="main-accessible-description"/);
+  assert.match(markup, /id="editorLoaderStatus"\s+class="main-accessible-description"/);
 });

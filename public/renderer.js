@@ -96,6 +96,16 @@ const textExtractionOcrActivationRecovery = window.TextExtractionOcrActivationRe
 const textExtractionOcrDisconnect = window.TextExtractionOcrDisconnect || null;
 const browserExtensionModal = window.BrowserExtensionModal || null;
 const mainLogoLinks = window.MainLogoLinks || null;
+const activeCustomPromptTranslationOwners = [
+  window.SnapshotSaveTagsModal,
+  window.TextExtractionPdfOptionsModal,
+  window.TextExtractionRouteChoiceModal,
+  window.TextExtractionApplyModal,
+  window.TextExtractionBatchPlanningModal,
+  window.TextExtractionBatchFinalModal,
+  window.TextExtractionSingleFileHeavyPdfModal,
+  window.TextExtractionOcrActivationDisclosureModal,
+];
 const currentTextSelectorSection = window.CurrentTextSelectorSection || null;
 if (!currentTextSelectorSection
   || typeof currentTextSelectorSection.applyTranslations !== 'function'
@@ -188,6 +198,10 @@ const btnNewPreset = document.getElementById('btnNewPreset');
 const btnEditPreset = document.getElementById('btnEditPreset');
 const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
+
+// The custom combobox must not be exposed before its localized accessible name
+// is applied during the initial translation pass.
+if (presetsHost) presetsHost.hidden = true;
 const presetDescription = document.getElementById('presetDescription');
 
 // =============================================================================
@@ -225,7 +239,6 @@ const presetsCombobox = RendererCombobox.create({
   mode: 'select',
   options: [],
   value: '',
-  ariaLabel: 'Presets de velocidad',
 });
 if (!WpmControls || typeof WpmControls.createController !== 'function') {
   throw new Error('[renderer] WpmControls unavailable; cannot continue');
@@ -593,15 +606,19 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
 // =============================================================================
 const {
   loadRendererTranslations,
+  loadLocalizedDocument,
   tRenderer,
   msgRenderer,
   getRendererValue,
+  getLanguageDirection,
   applyWindowLanguageAttributes,
 } = window.RendererI18n || {};
 if (!loadRendererTranslations
+  || !loadLocalizedDocument
   || !tRenderer
   || !msgRenderer
   || !getRendererValue
+  || !getLanguageDirection
   || !applyWindowLanguageAttributes) {
   throw new Error('[renderer] RendererI18n unavailable; cannot continue');
 }
@@ -659,6 +676,18 @@ function applyTranslations() {
   if (window.InfoModalLinks && typeof window.InfoModalLinks.applyTranslations === 'function') {
     window.InfoModalLinks.applyTranslations();
   }
+  activeCustomPromptTranslationOwners.forEach((owner) => {
+    if (owner && typeof owner.applyTranslations === 'function') {
+      try {
+        owner.applyTranslations();
+      } catch (err) {
+        log.warn('Active custom prompt translation refresh failed (ignored):', err);
+      }
+    }
+  });
+  void refreshOpenInfoModal().catch((err) => {
+    log.warn('Open Info modal language refresh failed (ignored):', err);
+  });
   if (editorLoaderStatus && editorLoader?.classList.contains('visible')) {
     editorLoaderStatus.textContent = tRenderer('renderer.main.processing.editor_loading');
   }
@@ -684,6 +713,7 @@ function applyTranslations() {
   applyAriaLabel(wpmInput, 'renderer.main.aria.wpm_input');
   applyAriaLabel(wpmSlider, 'renderer.main.aria.wpm_slider');
   presetsCombobox.update({ ariaLabel: tRenderer('renderer.main.aria.speed_presets') });
+  if (presetsHost) presetsHost.hidden = false;
   // Results: precise mode label
   const togglePrecisoLabel = document.querySelector('.toggle-wrapper .toggle-label');
   if (togglePrecisoLabel) {
@@ -1296,10 +1326,14 @@ const infoModalClose = document.getElementById('infoModalClose');
 const infoModalTitle = document.getElementById('infoModalTitle');
 const infoModalContent = document.getElementById('infoModalContent');
 const { bindInfoModalLinks } = window.InfoModalLinks || {};
+let openInfoModalKey = '';
+let infoModalRenderVersion = 0;
 
 function closeInfoModal() {
   try {
     if (!infoModal || !infoModalContent) return;
+    openInfoModalKey = '';
+    infoModalRenderVersion += 1;
     infoModal.setAttribute('aria-hidden', 'true');
     window.Notify.deactivateModalFocus(infoModal);
     const loadingText = tRenderer('renderer.info.loading');
@@ -1334,14 +1368,6 @@ async function fetchText(path) {
     log.warn('fetchText failed; info modal will fallback:', path, err);
     return null;
   }
-}
-
-async function fetchTextWithFallback(paths) {
-  for (const path of paths) {
-    const html = await fetchText(path);
-    if (html !== null) return { html, path };
-  }
-  return { html: null, path: null };
 }
 
 // Translate HTML fragments using data-i18n and renderer.info.<key>.*
@@ -1498,97 +1524,113 @@ async function hydrateAboutEnvironment(container) {
   }
 }
 
-const normalizeLangTagSafe = (lang) => {
-  if (window.RendererI18n && typeof window.RendererI18n.normalizeLangTag === 'function') {
-    return window.RendererI18n.normalizeLangTag(lang);
+function getInfoModalDescriptor(key) {
+  if (key === 'acerca_de') {
+    return { fileToLoad: './info/acerca_de.html', isManual: false, sectionId: '' };
   }
-  log.warnOnce(
-    'renderer.info.normalizeLangTag.fallback',
-    'RendererI18n.normalizeLangTag unavailable; using local fallback normalization.'
-  );
-  return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
-};
-
-const getLangBaseSafe = (lang) => {
-  if (window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function') {
-    return window.RendererI18n.getLangBase(lang);
+  if (key === 'links_interes') {
+    return { fileToLoad: './info/links_interes.html', isManual: false, sectionId: '' };
   }
-  log.warnOnce(
-    'renderer.info.getLangBase.fallback',
-    'RendererI18n.getLangBase unavailable; using local fallback language base.'
-  );
-  const normalized = normalizeLangTagSafe(lang);
-  if (!normalized) return '';
-  const idx = normalized.indexOf('-');
-  return idx > 0 ? normalized.slice(0, idx) : normalized;
-};
 
-function getManualFileCandidates(langTag) {
-  const candidates = [];
-  const normalized = normalizeLangTagSafe(langTag);
-  const base = getLangBaseSafe(normalized);
-  if (normalized) candidates.push(normalized);
-  if (base && base !== normalized) candidates.push(base);
-  const defaultLang = normalizeLangTagSafe(DEFAULT_LANG);
-  if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
-  return candidates.map(tag => `./info/instrucciones.${tag}.html`);
+  const sectionByKey = {
+    guia_basica: 'guia-basica',
+    instrucciones: 'instrucciones',
+    faq: 'faq',
+  };
+  if (Object.prototype.hasOwnProperty.call(sectionByKey, key)) {
+    return {
+      documentId: 'renderer.info.instructions',
+      isManual: true,
+      sectionId: sectionByKey[key],
+    };
+  }
+  return null;
 }
 
-async function showInfoModal(key) {
-  // key: 'instrucciones' | 'guia_basica' | 'faq' | 'links_interes' | 'acerca_de'
+function scrollInfoModalToSection(panel, sectionId) {
+  requestAnimationFrame(() => {
+    try {
+      const target = infoModalContent.querySelector(`#${sectionId}`);
+      if (!target) {
+        log.warn('Info modal requested section unavailable; retaining Close focus:', sectionId);
+        focusInfoModalClose();
+        return;
+      }
+
+      try {
+        target.scrollIntoView({ behavior: 'auto', block: 'start' });
+      } catch (err) {
+        log.warn('Info modal native section scroll failed; using panel scroll fallback:', sectionId, err);
+        const panelRect = panel.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
+        const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
+        panel.scrollTo({ top: finalTop, behavior: 'auto' });
+      }
+
+      const indexLink = infoModalContent.querySelector(`nav a[href="#${sectionId}"]`);
+      if (!indexLink || typeof indexLink.focus !== 'function') {
+        log.warn('Info modal matching index link unavailable; retaining Close focus:', sectionId);
+        focusInfoModalClose();
+        return;
+      }
+      indexLink.focus({ preventScroll: true });
+    } catch (err) {
+      log.warn('Info modal section targeting failed; retaining Close focus:', sectionId, err);
+      focusInfoModalClose();
+    }
+  });
+}
+
+async function renderInfoModal(key, { open = false, preservedUiState = null } = {}) {
   if (!infoModal || !infoModalTitle || !infoModalContent || !infoModalClose) {
-    log.error('Info modal required element unavailable; cannot open.');
+    log.error('Info modal required element unavailable; cannot render.');
     return;
   }
 
-  // Decide which file to load based on the key.
-  // Basic guide, instructions, and FAQ are served from localized manual HTML.
-  let fileToLoad = null;
-  let sectionId = null;
-  const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
-
-  if (key === 'acerca_de') {
-    fileToLoad = './info/acerca_de.html';
-  } else if (key === 'links_interes') {
-    fileToLoad = './info/links_interes.html';
-  } else if (isManual) {
-    const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
-    fileToLoad = getManualFileCandidates(langTag);
-    // Map key to block ID within instructions.html
-    const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
-    sectionId = mapping[key] || 'instrucciones';
-  } else {
+  const descriptor = getInfoModalDescriptor(key);
+  if (!descriptor) {
     log.warn('showInfoModal received unsupported key:', key);
     return;
   }
 
+  const renderVersion = ++infoModalRenderVersion;
   const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
   const infoDialogLabel = tRenderer(`renderer.info.${translationKey}.title`);
+  infoModalContent.removeAttribute('lang');
+  infoModalContent.removeAttribute('dir');
   infoModalTitle.textContent = infoDialogLabel;
+  infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${tRenderer('renderer.info.loading')}</div>`;
 
-  // Open modal early so loading state is visible during fetch
-  const loadingText = tRenderer('renderer.info.loading');
-  infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
-  infoModal.setAttribute('aria-hidden', 'false');
-  window.Notify.activateModalFocus(infoModal, {
-    initialFocus: infoModalClose,
-    fallbackFocus: infoModalClose,
-  });
+  if (open) {
+    infoModal.setAttribute('aria-hidden', 'false');
+    window.Notify.activateModalFocus(infoModal, {
+      initialFocus: infoModalClose,
+      fallbackFocus: infoModalClose,
+    });
+  }
 
-  // Every opening starts at the document beginning before the loading state is focused.
   const panel = infoModal.querySelector('.info-modal-panel');
   if (!panel) {
     log.warn('Info modal panel unavailable; retaining Close focus.');
     focusInfoModalClose();
     return;
   }
-  panel.scrollTop = 0;
+  if (preservedUiState) {
+    panel.scrollTop = preservedUiState.scrollTop;
+  } else {
+    panel.scrollTop = 0;
+  }
 
-  // Fetch HTML (manual pages use a language fallback list)
-  const tryHtml = Array.isArray(fileToLoad)
-    ? (await fetchTextWithFallback(fileToLoad)).html
-    : await fetchText(fileToLoad);
-  if (tryHtml === null) {
+  const documentResult = descriptor.isManual
+    ? await loadLocalizedDocument(
+      descriptor.documentId,
+      (settingsCache && settingsCache.language) || idiomaActual || DEFAULT_LANG
+    )
+    : { html: await fetchText(descriptor.fileToLoad) };
+  if (renderVersion !== infoModalRenderVersion || openInfoModalKey !== key) return;
+
+  if (!documentResult || documentResult.html === null) {
     log.warn('Info modal content unavailable; showing missing-content state:', key);
     const missingContentText = msgRenderer(
       'renderer.info.missing_content',
@@ -1599,11 +1641,15 @@ async function showInfoModal(key) {
     return;
   }
 
-  // Translate non-manual pages; manual HTML is loaded as-is.
-  const renderedHtml = isManual
-    ? extractInfoBodyHtml(tryHtml)
-    : translateInfoHtml(tryHtml, translationKey);
+  const renderedHtml = descriptor.isManual
+    ? extractInfoBodyHtml(documentResult.html)
+    : translateInfoHtml(documentResult.html, translationKey);
   infoModalContent.innerHTML = renderedHtml;
+  if (descriptor.isManual && typeof documentResult.language === 'string' && documentResult.language.trim()) {
+    const effectiveDocumentLanguage = documentResult.language.trim();
+    infoModalContent.setAttribute('lang', effectiveDocumentLanguage);
+    infoModalContent.setAttribute('dir', getLanguageDirection(effectiveDocumentLanguage));
+  }
   if (typeof bindInfoModalLinks === 'function') {
     bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
   } else {
@@ -1612,44 +1658,44 @@ async function showInfoModal(key) {
   if (key === 'acerca_de') {
     await hydrateAboutVersion(infoModalContent);
     await hydrateAboutEnvironment(infoModalContent);
+    if (renderVersion !== infoModalRenderVersion || openInfoModalKey !== key) return;
   }
 
-  // If a specific section was requested, scroll so it appears above the panel
-  if (sectionId) {
-    // Wait for the next frame so the parsed DOM is laid out
-    requestAnimationFrame(() => {
-      try {
-        const target = infoModalContent.querySelector(`#${sectionId}`);
-        if (!target) {
-          log.warn('Info modal requested section unavailable; retaining Close focus:', sectionId);
-          focusInfoModalClose();
-          return;
-        }
-
-        try {
-          target.scrollIntoView({ behavior: 'auto', block: 'start' });
-        } catch (err) {
-          log.warn('Info modal native section scroll failed; using panel scroll fallback:', sectionId, err);
-          const panelRect = panel.getBoundingClientRect();
-          const targetRect = target.getBoundingClientRect();
-          const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
-          const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
-          panel.scrollTo({ top: finalTop, behavior: 'auto' });
-        }
-
-        const indexLink = infoModalContent.querySelector(`nav a[href="#${sectionId}"]`);
-        if (!indexLink || typeof indexLink.focus !== 'function') {
-          log.warn('Info modal matching index link unavailable; retaining Close focus:', sectionId);
-          focusInfoModalClose();
-          return;
-        }
-        indexLink.focus({ preventScroll: true });
-      } catch (err) {
-        log.warn('Info modal section targeting failed; retaining Close focus:', sectionId, err);
-        focusInfoModalClose();
-      }
-    });
+  if (preservedUiState) {
+    panel.scrollTop = preservedUiState.scrollTop;
+    if (preservedUiState.hadReplacedContentFocus) {
+      focusInfoModalClose();
+    }
+    return;
   }
+  if (descriptor.sectionId) {
+    scrollInfoModalToSection(panel, descriptor.sectionId);
+  }
+}
+
+async function refreshOpenInfoModal() {
+  if (!openInfoModalKey || !infoModal || infoModal.getAttribute('aria-hidden') !== 'false') return;
+  const panel = infoModal.querySelector('.info-modal-panel');
+  const hadReplacedContentFocus = !!(
+    document.activeElement
+    && infoModalContent
+    && infoModalContent.contains(document.activeElement)
+  );
+  await renderInfoModal(openInfoModalKey, {
+    preservedUiState: {
+      scrollTop: panel && typeof panel.scrollTop === 'number' ? panel.scrollTop : 0,
+      hadReplacedContentFocus,
+    },
+  });
+}
+
+function showInfoModal(key) {
+  if (!getInfoModalDescriptor(key)) {
+    log.warn('showInfoModal received unsupported key:', key);
+    return Promise.resolve();
+  }
+  openInfoModalKey = key;
+  return renderInfoModal(key, { open: true });
 }
 
 // =============================================================================

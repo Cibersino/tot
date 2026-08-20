@@ -193,6 +193,14 @@ function createElement(id, tagName = 'div') {
       }
       return null;
     },
+    contains(node) {
+      let current = node;
+      while (current) {
+        if (current === this) return true;
+        current = current.parentNode;
+      }
+      return false;
+    },
     focus() {
       activeElementRef = this;
     },
@@ -346,6 +354,8 @@ function createHarness() {
     elements,
     clipboardWrites,
     notifiedKeys,
+    translations,
+    applyTranslations: sandbox.window.TextExtractionBatchFinalModal.applyTranslations,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
@@ -363,6 +373,48 @@ test('batch final modal registers its public prompt through window.Notify.regist
     'promptTextExtractionBatchFinalReport',
   ]);
   assert.equal(typeof harness.prompt, 'function');
+});
+
+test('batch final translation refresh updates copied report text, retains scroll, and falls back from replaced report focus', async () => {
+  const harness = createHarness();
+  const promptPromise = harness.prompt({
+    report: {
+      flowKind: 'batch',
+      hadOutput: false,
+      units: [
+        {
+          unitTitle: 'unit_1',
+          snapshotResult: { state: 'not_created', text: 'Snapshot not created' },
+          inputs: [{
+            fileName: 'source.pdf',
+            state: 'success',
+            generatedPdfArtifact: { retainedArtifactPath: 'C:\\tmp\\source.pdf' },
+          }],
+        },
+      ],
+    },
+  });
+  const reportRow = findDescendantByAttribute(
+    harness.elements.textExtractionBatchFinalModalBody,
+    'data-action',
+    'reveal-generated-pdf'
+  );
+  assert.ok(reportRow);
+  reportRow.focus();
+  harness.elements.textExtractionBatchFinalModalPanel.scrollTop = 146;
+  harness.translations['renderer.text_extraction.batch_report.title'] = 'Informe de extracción por lotes';
+
+  harness.applyTranslations();
+
+  assert.equal(harness.elements.textExtractionBatchFinalModalTitle.textContent, 'Informe de extracción por lotes');
+  assert.equal(harness.elements.textExtractionBatchFinalModalPanel.scrollTop, 146);
+  assert.equal(harness.getActiveElement(), harness.elements.textExtractionBatchFinalModalClose);
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.match(harness.clipboardWrites.at(-1), /Informe de extracción por lotes/u);
+
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
 });
 
 test('batch final modal renders report rows with explicit DOM and exposes reveal/copy actions', async () => {

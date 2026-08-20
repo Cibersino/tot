@@ -201,6 +201,7 @@
   let fieldComboboxesCreated = false;
   let metricChoiceEventsBound = false;
   let currentSnapshotTagPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  const activePromptTranslationRefreshers = new Set();
 
   // =============================================================================
   // Generic helpers
@@ -507,6 +508,31 @@
     snapshotSourceCommentInput.maxLength = SNAPSHOT_SOURCE_COMMENT_MAX_CHARS;
   }
 
+  function refreshFieldTranslations() {
+    FIELD_DEFS.forEach((field) => {
+      const fieldState = ensureFieldState(field.key);
+      const preservedValue = fieldState.combobox && typeof fieldState.combobox.getValue === 'function'
+        ? fieldState.combobox.getValue()
+        : fieldState.committedValue;
+      fieldState.allOptions = buildFieldOptions(field);
+      field.labelEl.textContent = tRenderer(field.labelKey);
+      fieldState.combobox.update({
+        options: fieldState.allOptions.map((option) => ({
+          value: option.value,
+          label: option.label,
+          variant: option.kind === 'clear' ? 'clear' : '',
+        })),
+        value: preservedValue,
+        placeholder: tRenderer(SEARCH_PLACEHOLDER_KEY),
+        noResultsLabel: tRenderer(SEARCH_NO_RESULTS_KEY),
+      });
+    });
+  }
+
+  function applyTranslations() {
+    Array.from(activePromptTranslationRefreshers).forEach((refresh) => refresh());
+  }
+
   function setSnapshotSaveFieldVisibility(showSaveFields) {
     snapshotMetadataFields.hidden = !showSaveFields;
     snapshotMetadataFields.setAttribute('aria-hidden', showSaveFields ? 'false' : 'true');
@@ -587,6 +613,18 @@
 
     return await new Promise((resolve) => {
       let settled = false;
+      const refreshManagerTranslations = () => {
+        const focusedNode = document.activeElement;
+        const focusedNodeWillBeReplaced = !!(
+          focusedNode
+          && typeof managerContent.contains === 'function'
+          && managerContent.contains(focusedNode)
+        );
+        renderManagerContent({ focusNewDraft: false });
+        if (focusedNodeWillBeReplaced) {
+          focusElementWithoutScroll(managerCloseButton);
+        }
+      };
       function getDraftState(category) {
         return draftStateByCategory.get(category);
       }
@@ -660,7 +698,7 @@
         draftState.errorKey = '';
       }
 
-      function renderManagerContent() {
+      function renderManagerContent({ focusNewDraft = true } = {}) {
         managerTitle.textContent = tRenderer('renderer.snapshots.manager.title');
         managerMessage.textContent = tRenderer('renderer.snapshots.manager.message');
         managerDoneButton.textContent = tRenderer('renderer.snapshots.manager.done');
@@ -783,9 +821,11 @@
             }
             section.appendChild(validation);
 
-            setTimeout(() => {
-              focusElementWithoutScroll(draftInput);
-            }, 0);
+            if (focusNewDraft) {
+              setTimeout(() => {
+                focusElementWithoutScroll(draftInput);
+              }, 0);
+            }
           }
 
           if (!categoryInfo.visibleOptions.length) {
@@ -919,6 +959,7 @@
       }
 
       function cleanup() {
+        activePromptTranslationRefreshers.delete(refreshManagerTranslations);
         managerDoneButton.removeEventListener('click', onDone);
         managerCloseButton.removeEventListener('click', onCancel);
         managerBackdrop.removeEventListener('click', onCancel);
@@ -955,6 +996,7 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       renderManagerContent();
+      activePromptTranslationRefreshers.add(refreshManagerTranslations);
       managerModal.setAttribute('aria-hidden', 'false');
       window.Notify.activateModalFocus(managerModal, {
         initialFocus: managerCloseButton,
@@ -983,7 +1025,12 @@
 
     return await new Promise((resolve) => {
       let settled = false;
+      const refreshSnapshotTranslations = () => {
+        populateCopy(options.copy);
+        refreshFieldTranslations();
+      };
       function cleanup() {
+        activePromptTranslationRefreshers.delete(refreshSnapshotTranslations);
         btnManage.removeEventListener('click', onManageClick);
         btnConfirm.removeEventListener('click', onConfirm);
         btnCancel.removeEventListener('click', onCancel);
@@ -1057,6 +1104,7 @@
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslationRefreshers.add(refreshSnapshotTranslations);
 
       modal.setAttribute('aria-hidden', 'false');
       const initialFocus = includeSaveFields
@@ -1083,6 +1131,7 @@
   window.Notify.registerCustomPrompt('promptSnapshotTagManager', promptSnapshotTagManager);
   window.Notify.registerCustomPrompt('promptSnapshotSave', promptSnapshotSave);
   window.Notify.registerCustomPrompt('promptSnapshotTags', promptSnapshotTags);
+  window.SnapshotSaveTagsModal = { applyTranslations };
 })();
 
 // =============================================================================

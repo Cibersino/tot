@@ -18,6 +18,9 @@
 
 const { dialog, app, BrowserWindow } = require('electron');
 const Log = require('../log');
+const menuBuilder = require('../menu_builder');
+const settingsState = require('../settings');
+const { DEFAULT_LANG } = require('../constants_main');
 const { getTextExtractionStateFile, loadJson, saveJson } = require('../fs_storage');
 const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform_adapter');
 const {
@@ -117,6 +120,30 @@ function getSupportedPickerExtensions() {
   return ordered.filter((extension, index) => ordered.indexOf(extension) === index);
 }
 
+function getDialogTexts() {
+  let language = DEFAULT_LANG;
+  try {
+    const settings = settingsState.getSettings();
+    if (settings && typeof settings.language === 'string' && settings.language.trim()) {
+      language = settings.language;
+    }
+  } catch (err) {
+    log.warnOnce(
+      'text_extraction_picker.dialogTexts',
+      'Text-extraction picker settings unavailable; using DEFAULT_LANG dialog texts:',
+      err
+    );
+  }
+  return menuBuilder.getDialogTexts(language);
+}
+
+function resolveDialogText(dialogTexts, key) {
+  return menuBuilder.resolveDialogText(dialogTexts, key, undefined, {
+    log,
+    warnPrefix: 'text_extraction_picker.dialog.missing',
+  });
+}
+
 // =============================================================================
 // IPC registration / handlers
 // =============================================================================
@@ -143,15 +170,16 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       const stateInfo = readPickerState();
       const defaultPath = resolvePickerDefaultPath(stateInfo.state);
+      const dialogTexts = getDialogTexts();
 
       const dialogResult = await dialog.showOpenDialog(mainWin, {
         defaultPath,
         filters: [
           {
-            name: 'Supported files',
+            name: resolveDialogText(dialogTexts, 'text_extraction_picker_supported_files'),
             extensions: getSupportedPickerExtensions(),
           },
-          { name: 'All files', extensions: ['*'] },
+          { name: resolveDialogText(dialogTexts, 'all_files'), extensions: ['*'] },
         ],
         properties: ['openFile', 'multiSelections'],
       });
@@ -202,4 +230,3 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_file_picker_ipc.js
 // =============================================================================
-

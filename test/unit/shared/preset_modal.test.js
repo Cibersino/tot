@@ -57,6 +57,9 @@ function createHarness({ initialLanguage = 'en', presetNameMax = 20, presetDescM
   const subscriptions = {};
   const elements = {
     h3: createElement('', 'h3'),
+    presetNameLabel: createElement('presetNameLabel', 'label'),
+    presetWpmLabel: createElement('presetWpmLabel', 'label'),
+    presetDescriptionLabel: createElement('presetDescriptionLabel', 'label'),
     presetName: createElement('presetName', 'input'),
     presetWpm: createElement('presetWpm', 'input'),
     presetDesc: createElement('presetDesc', 'textarea'),
@@ -92,14 +95,7 @@ function createHarness({ initialLanguage = 'en', presetNameMax = 20, presetDescM
       if (selector === '.hint') return elements.hint;
       return null;
     },
-    querySelectorAll(selector) {
-      if (selector !== 'label') return [];
-      return [
-        { childNodes: [{ textContent: 'Name' }], textContent: 'Name' },
-        { childNodes: [{ textContent: 'WPM' }], textContent: 'WPM' },
-        { childNodes: [{ textContent: 'Description' }], textContent: 'Description' },
-      ];
-    },
+    querySelectorAll() { return []; },
   };
 
   const sandbox = {
@@ -239,4 +235,7 @@ test('preset name HTML fallback matches the shared character limit', () => {
   );
 
   assert.match(markup, /id="presetName"[^>]*maxlength="20"/);
+  assert.match(markup, /<label id="presetNameLabel">/);
+  assert.match(markup, /<label id="presetWpmLabel">/);
+  assert.match(markup, /<label id="presetDescriptionLabel">/);
 });

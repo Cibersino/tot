@@ -52,12 +52,13 @@ function detectDirection(text, fallbackDirection) {
   return fallbackDirection === 'rtl' ? 'rtl' : 'ltr';
 }
 
-function createHarness(uiDirection = 'ltr') {
+function createHarness(uiDirection = 'ltr', { fetchImpl = null, defaultLang = 'en' } = {}) {
   const body = createElement('body');
   const documentElement = {
     dataset: { languageDirection: uiDirection },
   };
 
+  const effectiveFetch = fetchImpl || (async () => ({ ok: false, text: async () => '' }));
   const sandbox = {
     window: {
       getLogger() {
@@ -70,7 +71,7 @@ function createHarness(uiDirection = 'ltr') {
         };
       },
       AppConstants: {
-        DEFAULT_LANG: 'en',
+        DEFAULT_LANG: defaultLang,
       },
       getComputedStyle(node) {
         const fallbackDirection = node && node.parentNode
@@ -80,13 +81,14 @@ function createHarness(uiDirection = 'ltr') {
           direction: detectDirection(node && node.textContent, fallbackDirection),
         };
       },
-      fetch: async () => ({ ok: false, text: async () => '' }),
+      fetch: effectiveFetch,
     },
     document: {
       body,
       documentElement,
       createElement,
     },
+    fetch: effectiveFetch,
     console,
   };
 
@@ -122,4 +124,28 @@ test('resolveUserTextDirection follows first-strong behavior for mixed text', ()
 
   assert.equal(i18n.resolveUserTextDirection('שלום Google OCR'), 'rtl');
   assert.equal(i18n.resolveUserTextDirection('Google OCR שלום'), 'ltr');
+});
+
+test('localized document resources resolve requested tag, base tag, then DEFAULT_LANG in RendererI18n', async () => {
+  const requestedPaths = [];
+  const i18n = createHarness('ltr', {
+    defaultLang: 'es',
+    async fetchImpl(pathname) {
+      requestedPaths.push(pathname);
+      if (pathname === './info/instrucciones.es.html') {
+        return { ok: true, text: async () => '<main>Instrucciones en español</main>' };
+      }
+      return { ok: false, text: async () => '' };
+    },
+  });
+
+  const result = await i18n.loadLocalizedDocument('renderer.info.instructions', 'fr-CA');
+
+  assert.deepEqual(requestedPaths, [
+    './info/instrucciones.fr-ca.html',
+    './info/instrucciones.fr.html',
+    './info/instrucciones.es.html',
+  ]);
+  assert.equal(result.html, '<main>Instrucciones en español</main>');
+  assert.equal(result.language, 'es');
 });

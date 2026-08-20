@@ -631,15 +631,7 @@
           "reset_pool": "Reset test pool"
         },
         "import": {
-          "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}.",
-          "import_conflict": {
-            "title": "Import files",
-            "message": "Some imported files already exist in the pool. How should duplicates be handled?",
-            "detail": "The pool already contains {count} of the destination filenames.",
-            "skip_button": "Skip duplicates",
-            "replace_button": "Replace duplicates",
-            "cancel_button": "Cancel import"
-          }
+          "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}."
         }
       },
       "prestart": {
@@ -652,6 +644,7 @@
         "random_value": "Expected score under random guessing: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "For complaints:",
+        "summary_aria": "Test summary",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "All questions must be answered before evaluating.",
         "result_summary": "{correct} out of {total} correct ({percentage})",
@@ -665,6 +658,7 @@
         "measured_wpm": "Measured WPM",
         "elapsed_time": "Time",
         "word_count": "Words",
+        "summary_aria": "Test summary",
         "continue_button": "Continue"
       },
       "alerts": {

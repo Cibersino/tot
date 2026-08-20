@@ -65,6 +65,8 @@ Reglas:
 - Los snapshots del texto vigente, incluido el pool bundled de Reading Test, convergen en un documento canónico identificado, fechado y trazable; `name`, `sourceComment`, `readingTest` y las métricas opcionales de recuento/lectura son extensiones validadas, y desaparece la aceptación de shapes históricos.
 - El `Task Editor` incorpora una decisión explícita al asociar un snapshot de texto: al guardar `Comentario`, compara el `name` y la estimación de lectura canónicos del snapshot con `Lectura` y `Tiempo` de la fila, muestra solo los valores que cambiarían y permite aplicar uno o ambos sin impedir la asociación; conservar, cerrar o pulsar Escape mantiene los valores actuales.
 - El picker local por fila del `Task Editor` ahora puede mostrar el `sourceComment` del snapshot asociado antes de abrir el diálogo nativo, para recordar el origen del texto y facilitar la selección del archivo correcto sin alterar la edición libre de `Link or local path`.
+- La internacionalización deja de resolverse solo al abrir cada superficie: los recursos HTML localizados completos pasan a pertenecer a infraestructura i18n, los diálogos nativos toman su copy desde main y las ventanas/prompt activos actualizan idioma, dirección, semántica y valores formateados sin cerrar ni reiniciar la sesión del usuario.
+- Reading Test mantiene Questions y Result como consumers vivos de `settings-updated` durante toda la vida real de sus `BrowserWindow`; el cambio de idioma conserva respuestas, resultado y estado de sesión.
 
 ### Agregado
 
@@ -101,8 +103,26 @@ Reglas:
   - el presenter delegado no escanea, observa, copia ni elimina `title`, no resuelve i18n y no crea o modifica `aria-label`, `aria-labelledby` ni `aria-describedby`; su burbuja es no interactiva, queda `aria-hidden="true"`, no recibe `role="tooltip"` y conserva refresh del valor activo, cleanup de targets desconectados e inicialización idempotente;
   - las ayudas materiales agregan nodos de descripción estables y visualmente ocultos en los stylesheets existentes de la ventana principal, Editor, Find y Task Editor; cada control real los referencia mediante `aria-describedby`, mientras el tooltip visual recibe el mismo texto solo cuando el inventario declara expresamente ese uso compartido; Find conserva sus descripciones, pero queda excluida por completo del presenter visual;
   - la cobertura enfocada ejecuta los contratos reales del presenter, `RendererIcons`, ventanas principal/Editor/Find/Task Editor, modales y controles dinámicos, además de la ventana de idioma; `docs/test_suite.md` incorpora las comprobaciones manuales de teclado, lector de pantalla, idioma y dirección pendientes de sign-off.
+- Recursos i18n de documento completo:
+  - `public/js/i18n.js` agrega el resolver production-owned `loadLocalizedDocument(...)` para recursos HTML completos; intenta el tag solicitado, su base y `DEFAULT_LANG`, registra los fallos por candidato y devuelve el idioma efectivo junto con el HTML resuelto;
+  - `renderer.info.instructions` formaliza el manual localizado como recurso HTML por idioma, sin convertirlo en fragmentos de claves renderer ni trasladar la cadena de fallback al modal consumidor;
+  - `tools_local/coding_rules/i18n_language_policy.md` incorpora los recursos de documento completo localizados como categoría legítima, con ownership, fallback y semántica de idioma explícitos.
 
 ### Cambiado
+
+- Internacionalización runtime, ownership de texto y actualización viva:
+  - `Info Modal` deja de mantener una cadena local de filenames para el manual: conserva el modal abierto ante `settings-updated`, vuelve a cargar el documento equivalente desde el resolver i18n, conserva scroll cuando corresponde y aplica `lang` + dirección del recurso efectivamente servido; si el contenido enfocado se reemplaza, usa el fallback normal `Close` sin reconstruir el target exacto;
+  - la ventana principal invoca el refresco feature-owned de los prompts custom aún activos. Snapshot Save/Tag Manager, PDF Options, Route Choice, Apply, Batch Planning, Batch Final, PDF pesado y OCR Disclosure actualizan solo su copy y mantienen su promise, elecciones, borradores, valores tipeados y scroll según la superficie;
+  - los selectores nativos de archivo para importación del pool Reading Test y text extraction toman título, filtros, confirmaciones y decisiones de conflicto desde `menu_builder` + catálogos `main` localizados. Renderer deja de enviar copy de conflicto al main process, de modo que el owner real del diálogo también es owner de su idioma y fallback;
+  - las nuevas claves de diálogo nativo se alojan en `i18n/*/main.json`; `summary_aria` de Questions y Result permanece renderer-owned porque nombra regiones HTML renderer, no diálogo nativo.
+- Reading Test / ventanas vivas y render incremental:
+  - el controller registra Questions y Result al crearse la `BrowserWindow` y los desregistra solo desde `closed`; el broadcast de settings las incluye mientras sigan vivas, incluso si `clearSession()` ya liberó el estado de la sesión;
+  - Questions serializa bootstrap, init y settings en la misma cola. Un cambio de idioma reconstruye copy y formulario conservando respuestas; los snapshots de settings que no afectan esa superficie no reconstruyen sus controles interactivos;
+  - Result se vuelve consumer vivo de settings y re-renderiza sus valores con el estado de resultado ya recibido. Ambas ventanas mantienen la semántica de región localizada después de cada actualización.
+- Semántica renderer de ownership preciso:
+  - el resumen de Reading Test sustituye los `aria-label` iniciales hardcodeados por `summary_aria` renderer-owned; la región se nombra explícitamente porque no existe un heading visible correcto que pueda convertirse en `aria-labelledby`;
+  - `preset_modal` deja de localizar labels por heurística de texto y actualiza sus nodos label identificados, preservando inputs y estructura; la ventana principal mantiene oculto el combobox de presets hasta que recibe su nombre accesible localizado;
+  - los prompts que reconstruyen contenido aplican la regla común de foco: no mueven un nodo que sobrevive a la traducción y, si el nodo enfocado se reemplaza, usan el fallback seguro existente. Batch Planning conserva su restauración previa solo para sus rerenders de acción, no para el refresh de idioma.
 
 - Migración de selectores renderer al combobox compartido:
   - el selector de presets de la ventana principal reemplaza el `<select>` nativo por modo `select` sin alterar persistencia, rollback, dirección de la descripción, sincronización WPM ni estado de botones;
@@ -165,6 +185,12 @@ Reglas:
 
 ### Arreglado
 
+- Fallbacks y continuidad durante actualización de idioma:
+  - una falla al leer settings antes de abrir los diálogos nativos ya no degrada el texto a nombres técnicos de clave: Reading Test import y el picker de text extraction resuelven mediante `DEFAULT_LANG` en main;
+  - Batch Planning ya no convierte un límite de página vacío e inválido en el máximo al retransmitir idioma; el borrador local conserva tanto entradas válidas como incompletas, mantiene scroll y cae a `Close` solo si destruye el control enfocado;
+  - Snapshot Tag Manager ya no vuelve a enfocar de forma incondicional el input de nueva etiqueta al cambiar idioma: conserva el borrador y el foco de `Done`/`Close` si sobreviven, o usa `Close` cuando el input reconstruido era el foco activo;
+  - Batch Final recompone también el texto que se copiará y conserva scroll al actualizar idioma; PDF Options conserva rango, checkbox y valores de página tipeados. Las pruebas enfocadas cubren esos contratos observables, además de la propagación de settings a Questions/Result y del porcentaje probabilístico normalizado.
+
 - Semántica accesible renderer (Issue #332):
   - el indicador de apertura del Editor deja de ser una región live vacía cuyo `title` podía convertirse accidentalmente en nombre y pasa a publicar y limpiar texto de estado traducido sin alterar el spinner visible;
   - los filenames técnicos elididos de text extraction dejan de depender de `title`: conservan el valor íntegro, se vuelven alcanzables por teclado cuando necesitan mostrarlo y aíslan filenames/paths de dirección mixta sin traducirlos ni reordenarlos;
@@ -211,6 +237,14 @@ Reglas:
 - Snapshots del texto vigente y pool de Reading Test: el formato anterior se corta de forma radical. Un snapshot guardado, bundled o importado que no cumpla el documento canónico completo —incluidos tipo, metadata de guardado y, si existen, `name`, `sourceComment`, `readingTest` y `metrics` válidos— se rechaza tal como está; no hay parser legacy, fallback, reparación, migración ni reescritura. Los snapshots canónicos sin los campos opcionales siguen siendo válidos, sin un path especial de compatibilidad.
 
 ### Contratos tocados
+
+- Recursos i18n y superficies vivas de Reading Test:
+  - `window.RendererI18n.loadLocalizedDocument(documentId, language)` es el resolver de recursos HTML completos permitidos por el catálogo i18n. Devuelve `{ html, language, path }`, donde `language` es el idioma efectivo tras intentar tag exacto, idioma base y `DEFAULT_LANG`; si ningún candidato sirve, devuelve `{ html: null, language: '', path: '' }`.
+  - `window.readingTestQuestionsAPI.onSettingsChanged(cb)` y `window.readingTestResultAPI.onSettingsChanged(cb)` escuchan `settings-updated`, entregan el snapshot de settings y devuelven `unsubscribe`. Questions y Result pasan a ser targets del broadcast mientras su `BrowserWindow` siga abierta; no cambia ningún schema persistido de Reading Test.
+  - `reading-test-import-pool-files` conserva su resultado y autorización main-owned, pero ya no acepta copy renderer como parte de su payload: main resuelve títulos, filtros y confirmaciones con `menu_builder`. El picker de text extraction conserva su IPC existente y adopta el mismo ownership de copy main-owned.
+- Refresco de prompts custom activos:
+  - `window.SnapshotSaveTagsModal`, `window.TextExtractionPdfOptionsModal`, `window.TextExtractionRouteChoiceModal`, `window.TextExtractionApplyModal`, `window.TextExtractionBatchPlanningModal`, `window.TextExtractionBatchFinalModal`, `window.TextExtractionSingleFileHeavyPdfModal` y `window.TextExtractionOcrActivationDisclosureModal` exponen `applyTranslations()` para la ventana principal; no cambia ningún nombre, firma ni resultado de los `window.Notify.prompt*` públicos.
+  - el refresh es feature-owned: no se agrega un retranslator DOM genérico ni storage/IPC nuevos. Cada owner retiene su estado de prompt y cleanup propios hasta que la promise activa se resuelve.
 
 - Surface pública renderer `window.RendererCombobox`:
   - nuevo contrato requerido `window.RendererCombobox.create(config)` para los consumers migrados, con `mode: 'select' | 'editable'`, opciones de valor o acción, resolución editable y callbacks separados `onChange(...)` / `onAction(...)`;

@@ -234,6 +234,8 @@ function createHarness() {
 
   return {
     elements,
+    translations,
+    applyTranslations: sandbox.window.TextExtractionPdfOptionsModal.applyTranslations,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
@@ -284,6 +286,20 @@ test('PDF options modal returns range selection and keep intent through the publ
   assert.equal(harness.elements.textExtractionPdfOptionsModalSelectedCount.textContent, 'Selected pages: 3');
   assert.equal(harness.elements.textExtractionPdfOptionsModalValidation.textContent, '');
   assert.equal(harness.elements.textExtractionPdfOptionsModalContinue.disabled, false);
+
+  harness.translations['renderer.text_extraction.pdf_options.title'] = 'Opciones de PDF';
+  harness.translations['renderer.text_extraction.pdf_options.range_label'] = 'Rango de páginas';
+  harness.translations['renderer.text_extraction.pdf_options.selected_page_count_label'] = 'Páginas seleccionadas: ';
+  harness.applyTranslations();
+
+  assert.equal(harness.elements.textExtractionPdfOptionsModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.textExtractionPdfOptionsModalTitle.textContent, 'Opciones de PDF');
+  assert.equal(harness.elements.textExtractionPdfOptionsModalRangeLabel.textContent, 'Rango de páginas');
+  assert.equal(harness.elements.textExtractionPdfOptionsModalFromInput.value, '3');
+  assert.equal(harness.elements.textExtractionPdfOptionsModalToInput.value, '5');
+  assert.equal(harness.elements.textExtractionPdfOptionsModalKeepGeneratedPdf.checked, true);
+  assert.equal(harness.elements.textExtractionPdfOptionsModalSelectedCount.textContent, 'Páginas seleccionadas: 3');
+  assert.equal(harness.elements.textExtractionPdfOptionsModalContinue.focusCount, 1);
 
   harness.elements.textExtractionPdfOptionsModalContinue.dispatch('click');
   const result = await promptPromise;

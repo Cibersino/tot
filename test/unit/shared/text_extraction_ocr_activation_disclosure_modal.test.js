@@ -49,6 +49,7 @@ function createElement(id) {
 
 function createHarness({ languageDirection = 'rtl' } = {}) {
   const registeredPromptNames = [];
+  let currentLanguageDirection = languageDirection;
   const elements = {
     textExtractionOcrActivationDisclosureModal: createElement('textExtractionOcrActivationDisclosureModal'),
     textExtractionOcrActivationDisclosureBackdrop: createElement('textExtractionOcrActivationDisclosureBackdrop'),
@@ -119,7 +120,9 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
     document: {
       documentElement: {
         dataset: {
-          languageDirection,
+          get languageDirection() {
+            return currentLanguageDirection;
+          },
         },
       },
       getElementById(id) {
@@ -137,11 +140,18 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
   vm.runInContext(source, sandbox, { filename: 'public/js/text_extraction_ocr_activation_disclosure_modal.js' });
 
   return {
+    applyTranslations: sandbox.window.TextExtractionOcrActivationDisclosureModal.applyTranslations,
     elements,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
     prompt: sandbox.window.Notify.promptTextExtractionOcrActivationDisclosure,
+    setLanguageDirection(direction) {
+      currentLanguageDirection = direction;
+    },
+    setTranslation(key, value) {
+      translations[key] = value;
+    },
   };
 }
 
@@ -209,4 +219,32 @@ test('OCR activation disclosure modal falls back to LTR when the window locale i
     harness.elements.textExtractionOcrActivationDisclosureModal.getAttribute('aria-hidden'),
     'true'
   );
+});
+
+test('OCR activation disclosure live translation preserves its pending prompt and focused control', async () => {
+  const harness = createHarness({ languageDirection: 'rtl' });
+  const promptPromise = harness.prompt();
+  const { elements } = harness;
+  const proceedFocusCount = elements.textExtractionOcrActivationDisclosureProceed.focusCount;
+
+  harness.setLanguageDirection('ltr');
+  harness.setTranslation(
+    'renderer.text_extraction.ocr_activation_disclosure.title',
+    'Revisar activación de OCR de Google'
+  );
+  harness.setTranslation(
+    'renderer.text_extraction.ocr_activation_disclosure.proceed_button',
+    'Continuar con Google'
+  );
+  harness.applyTranslations();
+
+  assert.equal(elements.textExtractionOcrActivationDisclosureModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(elements.textExtractionOcrActivationDisclosureModal.dir, 'ltr');
+  assert.equal(elements.textExtractionOcrActivationDisclosurePanel.dir, 'ltr');
+  assert.equal(elements.textExtractionOcrActivationDisclosureTitle.textContent, 'Revisar activación de OCR de Google');
+  assert.equal(elements.textExtractionOcrActivationDisclosureProceed.textContent, 'Continuar con Google');
+  assert.equal(elements.textExtractionOcrActivationDisclosureProceed.focusCount, proceedFocusCount);
+
+  elements.textExtractionOcrActivationDisclosureCancel.dispatch('click');
+  assert.equal(await promptPromise, false);
 });

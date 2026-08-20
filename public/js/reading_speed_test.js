@@ -21,12 +21,10 @@
   const log = window.getLogger('reading-speed-test');
   log.debug('Reading speed test main-renderer module starting...');
 
-  if (!window.RendererI18n
-    || typeof window.RendererI18n.tRenderer !== 'function'
-    || typeof window.RendererI18n.msgRenderer !== 'function') {
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[reading-speed-test] RendererI18n unavailable; cannot continue');
   }
-  const { tRenderer, msgRenderer } = window.RendererI18n;
+  const { tRenderer } = window.RendererI18n;
 
   const filtersCore = window.ReadingTestFiltersCore || null;
   if (!filtersCore
@@ -568,24 +566,6 @@
     });
   }
 
-  function buildImportDialogPayload() {
-    return {
-      conflictDialog: {
-        conflictTitle: tRenderer('renderer.reading_test.entry.import.import_conflict.title'),
-        conflictMessage: tRenderer('renderer.reading_test.entry.import.import_conflict.message'),
-        conflictDetail: msgRenderer(
-          'renderer.reading_test.entry.import.import_conflict.detail',
-          { count: '{count}' }
-        ),
-        buttons: {
-          skip: tRenderer('renderer.reading_test.entry.import.import_conflict.skip_button'),
-          replace: tRenderer('renderer.reading_test.entry.import.import_conflict.replace_button'),
-          cancel: tRenderer('renderer.reading_test.entry.import.import_conflict.cancel_button'),
-        },
-      },
-    };
-  }
-
   async function handleImportFiles() {
     if (stabilizing || isSessionActive()) return;
 
@@ -602,7 +582,7 @@
     setStabilizing(true);
 
     try {
-      const result = await importReadingTestPoolFiles(buildImportDialogPayload());
+      const result = await importReadingTestPoolFiles();
       if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
         setStabilizing(false);
         log.error('Reading-test pool import result invalid:', result);

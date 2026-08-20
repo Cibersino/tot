@@ -268,6 +268,9 @@ function showEditorWindow(options = {}) {
 }
 
 function getSettingsBroadcastWindows() {
+  const readingTestWindows = readingTestSessionController
+    ? readingTestSessionController.getSettingsWindows()
+    : {};
   return {
     mainWin,
     editorWin,
@@ -277,6 +280,7 @@ function getSettingsBroadcastWindows() {
     flotanteWin,
     taskEditorWin,
     textTimeCalculatorWin,
+    ...readingTestWindows,
   };
 }
 

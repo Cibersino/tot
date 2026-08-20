@@ -426,6 +426,47 @@ Estados de revisión recomendados:
         "es": "No, cancelar",
         "en": "No, cancel"
       },
+      "all_files": {
+        "es": "Todos los archivos",
+        "en": "All files"
+        // [PROPÓSITO] Filtro genérico para mostrar todos los formatos en selectores nativos de archivo.
+      },
+      "text_extraction_picker_supported_files": {
+        "es": "Archivos compatibles",
+        "en": "Supported files"
+        // [PROPÓSITO] Filtro del selector nativo de archivos para formatos admitidos por extracción de texto.
+      },
+      "reading_test_import_picker_files": {
+        "es": "Archivos de test de lectura",
+        "en": "Reading test files"
+        // [PROPÓSITO] Filtro del selector nativo de importación del pool de test de lectura.
+      },
+      "reading_test_import_conflict_title": {
+        "es": "Importar archivos",
+        "en": "Import files"
+        // [PROPÓSITO] Título del diálogo nativo para duplicados al importar al pool del test.
+      },
+      "reading_test_import_conflict_message": {
+        "es": "Algunos archivos importados ya existen en el pool. ¿Cómo quieres manejar los duplicados?",
+        "en": "Some imported files already exist in the pool. How should duplicates be handled?"
+      },
+      "reading_test_import_conflict_detail": {
+        "es": "El pool ya contiene {count} de los nombres de archivo de destino.",
+        "en": "The pool already contains {count} of the destination filenames."
+        // [CONCEPTO_APP] pool del test; archivos de test
+      },
+      "reading_test_import_conflict_skip": {
+        "es": "Omitir duplicados",
+        "en": "Skip duplicates"
+      },
+      "reading_test_import_conflict_replace": {
+        "es": "Reemplazar duplicados",
+        "en": "Replace duplicates"
+      },
+      "reading_test_import_conflict_cancel": {
+        "es": "Cancelar importación",
+        "en": "Cancel import"
+      },
       "snapshot_overwrite_save": {
         "es": "¿Sobrescribir el snapshot existente?",
         "en": "Overwrite existing text snapshot?"
@@ -3385,40 +3426,6 @@ Estados de revisión recomendados:
             "en": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}."
             // [PROPÓSITO] Resumen posterior a importar archivos de test al pool.
             // [CONCEPTO_APP] pool del test; archivos de test
-          },
-          "import_conflict": {
-            "title": {
-              "es": "Importar archivos",
-              "en": "Import files"
-              // [PROPÓSITO] Título de la ventana modal de importación de archivos cuando hay archivos conflictivos.
-              // [CONCEPTO_APP] archivos de test; pool del test
-            },
-            "message": {
-              "es": "Algunos archivos importados ya existen en el pool. ¿Cómo quieres manejar los duplicados?",
-              "en": "Some imported files already exist in the pool. How should duplicates be handled?"
-              // [PROPÓSITO] Decisión de manejo de duplicados al importar archivos al pool del test.
-              // [CONCEPTO_APP] archivos de test; pool del test
-            },
-            "detail": {
-              "es": "El pool ya contiene {count} de los nombres de archivo de destino.",
-              "en": "The pool already contains {count} of the destination filenames."
-              // [CONCEPTO_APP] archivos de test; pool del test
-            },
-            "skip_button": {
-              "es": "Omitir duplicados",
-              "en": "Skip duplicates"
-              // [CONCEPTO_APP] archivos de test; pool del test
-            },
-            "replace_button": {
-              "es": "Reemplazar duplicados",
-              "en": "Replace duplicates"
-              // [CONCEPTO_APP] archivos de test; pool del test
-            },
-            "cancel_button": {
-              "es": "Cancelar importación",
-              "en": "Cancel import"
-              // [CONCEPTO_APP] archivos de test; pool del test
-            }
           }
         }
       },
@@ -3462,6 +3469,12 @@ Estados de revisión recomendados:
         "feedback_prefix": {
           "es": "Para reclamos:",
           "en": "For complaints:"
+        },
+        "summary_aria": {
+          "es": "Resumen del test",
+          "en": "Test summary"
+          // [PROPÓSITO] Nombre accesible de la región de resumen de preguntas; no hay un encabezado visible equivalente que pueda nombrarla.
+          // [CATEGORÍA_SEMÁNTICA] name; consumidor: región `.reading-test-questions__meta`.
         },
         "question_heading": {
           "es": "{number}. {prompt}",
@@ -3518,6 +3531,12 @@ Estados de revisión recomendados:
           "en": "Words"
           // [PROPÓSITO] Label de la cantidad de palabras del texto del test.
           // [CONCEPTO_APP] Test de velocidad de lectura
+        },
+        "summary_aria": {
+          "es": "Resumen del test",
+          "en": "Test summary"
+          // [PROPÓSITO] Nombre accesible de la región de resumen del resultado; no hay un encabezado visible equivalente que pueda nombrarla.
+          // [CATEGORÍA_SEMÁNTICA] name; consumidor: región `.reading-test-result__meta`.
         },
         "continue_button": {
           "es": "Continuar",

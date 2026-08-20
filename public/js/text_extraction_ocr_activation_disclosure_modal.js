@@ -43,6 +43,7 @@
   const btnProceed = document.getElementById('textExtractionOcrActivationDisclosureProceed');
   const btnCancel = document.getElementById('textExtractionOcrActivationDisclosureCancel');
   const btnClose = document.getElementById('textExtractionOcrActivationDisclosureClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Helpers
@@ -113,6 +114,10 @@
     );
   }
 
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
+  }
+
   // =============================================================================
   // Public entrypoints
   // =============================================================================
@@ -129,6 +134,7 @@
       let settled = false;
 
       const cleanup = () => {
+        activePromptTranslations = null;
         btnProceed.removeEventListener('click', onProceed);
         btnCancel.removeEventListener('click', onCancel);
         btnClose.removeEventListener('click', onCancel);
@@ -166,6 +172,10 @@
       backdrop.addEventListener('click', onCancel);
       privacyLink.addEventListener('click', onPrivacyClick);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslations = () => {
+        applyModalDirection();
+        applyModalCopy();
+      };
 
       modal.setAttribute('aria-hidden', 'false');
       window.Notify.activateModalFocus(modal, {
@@ -180,6 +190,7 @@
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionOcrActivationDisclosure', promptDisclosure);
+  window.TextExtractionOcrActivationDisclosureModal = { applyTranslations };
 })();
 
 // =============================================================================
