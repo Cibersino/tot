@@ -146,12 +146,16 @@ function getDefaultSnapshotName(rootDir) {
   return `current_text_${maxNum + 1}.json`;
 }
 
+function isWindowsReservedDeviceName(baseName) {
+  return /^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(baseName);
+}
+
 function sanitizeSnapshotBaseName(base) {
   let next = String(base || '').trim().normalize('NFC');
   next = next.replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ');
   next = next.replace(/\s+/g, ' ').trim();
   next = next.replace(/[. ]+$/g, '');
-  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(next)) {
+  if (isWindowsReservedDeviceName(next)) {
     next = `_${next}`;
   }
   return next || 'current_text';
@@ -162,7 +166,7 @@ function normalizeDerivedSnapshotBaseName(base) {
   next = next.replace(/[^\p{L}\p{N}\p{M}_-]+/gu, '_');
   next = next.replace(/_+/g, '_').replace(/-+/g, '-');
   next = next.replace(/^[_-]+|[_-]+$/g, '');
-  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(next)) {
+  if (isWindowsReservedDeviceName(next)) {
     next = `_${next}`;
   }
   return next || 'current_text';

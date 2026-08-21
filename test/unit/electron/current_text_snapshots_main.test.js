@@ -104,6 +104,9 @@ function loadSnapshotsMainWithMocks({
     dialog: {
       async showSaveDialog(ownerWin, options) {
         showSaveDialogCalls.push({ ownerWin, options });
+        if (typeof saveDialogResult === 'function') {
+          return saveDialogResult(ownerWin, options);
+        }
         if (saveDialogResult) return saveDialogResult;
         throw new Error('showSaveDialog should not be used in non-interactive snapshot tests');
       },
@@ -629,6 +632,67 @@ test('manual snapshot save uses the optional name as its default filename and pe
   const saved = JSON.parse(fs.readFileSync(path.join(rootDir, 'selected.json'), 'utf8'));
   assert.equal(saved.name, 'Lectura ñ / Unit 1');
   assert.equal(saved.sourceComment, 'texto importado');
+});
+
+test('manual snapshot save escapes Windows device basenames before extensions', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-windows-device-names');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const selectedCases = [
+    { inputBaseName: 'CON', selectedFileName: 'CON.json', expectedFileName: '_CON.json' },
+    { inputBaseName: 'con', selectedFileName: 'con.json', expectedFileName: '_con.json' },
+    { inputBaseName: 'CON.txt', selectedFileName: 'CON.txt.json', expectedFileName: '_CON.txt.json' },
+    { inputBaseName: 'PRN.foo.bar', selectedFileName: 'PRN.foo.bar.json', expectedFileName: '_PRN.foo.bar.json' },
+    { inputBaseName: 'COM1', selectedFileName: 'COM1.json', expectedFileName: '_COM1.json' },
+    { inputBaseName: 'COM1.json', selectedFileName: 'COM1.json.json', expectedFileName: '_COM1.json.json' },
+    { inputBaseName: 'LPT9.test', selectedFileName: 'LPT9.test.json', expectedFileName: '_LPT9.test.json' },
+    { inputBaseName: 'COM¹.foo', selectedFileName: 'COM¹.foo.json', expectedFileName: '_COM¹.foo.json' },
+    { inputBaseName: 'LPT³', selectedFileName: 'LPT³.json', expectedFileName: '_LPT³.json' },
+    { inputBaseName: 'COM10', selectedFileName: 'COM10.json', expectedFileName: 'COM10.json' },
+    { inputBaseName: 'LPT10', selectedFileName: 'LPT10.json', expectedFileName: 'LPT10.json' },
+    { inputBaseName: 'report-CON.txt', selectedFileName: 'report-CON.txt.json', expectedFileName: 'report-CON.txt.json' },
+    { inputBaseName: 'CONSOLE', selectedFileName: 'CONSOLE.json', expectedFileName: 'CONSOLE.json' },
+    { inputBaseName: 'Lección, №1', selectedFileName: 'Lección, №1.json', expectedFileName: 'Lección, №1.json' },
+  ];
+  let selectedCaseIndex = 0;
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    saveDialogResult() {
+      const selectedCase = selectedCases[selectedCaseIndex];
+      return {
+        canceled: false,
+        filePath: path.join(rootDir, `case-${selectedCaseIndex}`, selectedCase.selectedFileName),
+      };
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  for (const selectedCase of selectedCases) {
+    const result = await ipcMain.invoke(
+      'current-text-snapshot-save',
+      { sender: senderWin.webContents },
+      {
+        includeCount: false,
+        includeReading: false,
+      }
+    );
+
+    assert.equal(result.ok, true, selectedCase.inputBaseName);
+    assert.equal(result.filename, selectedCase.expectedFileName, selectedCase.inputBaseName);
+    selectedCaseIndex += 1;
+  }
 });
 
 test('snapshot save rejects invalid optional name and source-comment values', async (t) => {
