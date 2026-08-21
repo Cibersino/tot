@@ -32,7 +32,7 @@ const statusNodes = Object.freeze({
 // =============================================================================
 // Constants and shared state
 // =============================================================================
-// Local fallback duplicates the manifest list in case IPC fails.
+// Minimal local Spanish/English autonym fallback used when the manifest cannot provide a valid language list.
 const FALLBACK_LANGUAGES = Object.freeze([
   Object.freeze({ tag: 'es', label: 'Español' }),
   Object.freeze({ tag: 'en', label: 'English' }),
