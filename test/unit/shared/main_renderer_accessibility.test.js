@@ -338,6 +338,11 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
     window,
   };
   vm.createContext(sandbox);
+  const infoModalSource = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/info_modal.js'),
+    'utf8'
+  );
+  vm.runInContext(infoModalSource, sandbox, { filename: 'public/js/info_modal.js' });
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/renderer.js'),
     'utf8'
@@ -524,6 +529,25 @@ test('open Info Modal discards a stale localized-document refresh after a later 
   const infoModalContent = harness.getElement('infoModalContent');
   assert.equal(infoModalContent.innerHTML, '<article>en instructions</article>');
   assert.equal(infoModalContent.getAttribute('lang'), 'en');
+  assert.equal(harness.errors.length, 0);
+});
+
+test('main renderer delegates every supported Info menu action to the Info modal owner', async () => {
+  const manualRequests = [];
+  const harness = await createRendererHarness({
+    async loadLocalizedDocument(_documentId, language) {
+      manualRequests.push(language);
+      return { html: `<article>${language} instructions</article>`, language };
+    },
+  });
+
+  ['guia_basica', 'instrucciones_completas', 'faq', 'links_interes', 'acerca_de'].forEach((actionId) => {
+    harness.invokeMenuAction(actionId);
+  });
+  for (let index = 0; index < 4; index += 1) await flushAsyncWork();
+
+  assert.deepEqual(manualRequests, ['en', 'en', 'en']);
+  assert.equal(harness.getElement('infoModal').getAttribute('aria-hidden'), 'false');
   assert.equal(harness.errors.length, 0);
 });
 
