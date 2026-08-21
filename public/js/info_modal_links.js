@@ -5,6 +5,7 @@
 // Overview
 // =============================================================================
 // Responsibilities:
+// - Enhance current info-modal screenshots with keyboard/lightbox semantics.
 // - Bind a single click handler for info modal link containers.
 // - Route hash links to in-modal scroll with a manual fallback.
 // - Route appdoc: links via electronAPI.openAppDoc.
@@ -170,10 +171,8 @@
   // =============================================================================
   // Main handler
   // =============================================================================
-  function bindInfoModalLinks(container, { electronAPI } = {}) {
-    if (!container || container.dataset.externalLinksBound === '1') return;
-    container.dataset.externalLinksBound = '1';
-    ensureModalObserver();
+  function enhanceInfoModalScreenshots(container) {
+    if (!container) return;
 
     const screenshots = container.querySelectorAll('.instrucciones-media img');
     screenshots.forEach((screenshot) => {
@@ -181,6 +180,12 @@
       screenshot.setAttribute('role', 'button');
       screenshot.setAttribute('aria-haspopup', 'dialog');
     });
+  }
+
+  function bindInfoModalLinks(container, { electronAPI } = {}) {
+    if (!container || container.dataset.externalLinksBound === '1') return;
+    container.dataset.externalLinksBound = '1';
+    ensureModalObserver();
 
     const api = electronAPI || window.electronAPI;
 
@@ -316,6 +321,7 @@
   window.InfoModalLinks = {
     applyTranslations,
     bindInfoModalLinks,
+    enhanceInfoModalScreenshots,
   };
 })();
 

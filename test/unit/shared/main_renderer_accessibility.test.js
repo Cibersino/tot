@@ -55,6 +55,10 @@ function createElement(id = '') {
       if (!listeners.has(type)) listeners.set(type, []);
       listeners.get(type).push(listener);
     },
+    dispatch(type, event = {}) {
+      const safeEvent = { target: this, ...event };
+      (listeners.get(type) || []).forEach((listener) => listener(safeEvent));
+    },
     appendChild(child) {
       child.parentNode = this;
       children.push(child);
@@ -99,6 +103,10 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
     'TextExtractionRouteChoiceModal',
     'TextExtractionSingleFileHeavyPdfModal',
   ].map((owner) => [owner, 0]));
+  const infoModalLinkCalls = {
+    boundContents: [],
+    enhancedContents: [],
+  };
   const menuActionHandlers = new Map();
 
   const recordActiveCustomPromptTranslationRefresh = (owner) => {
@@ -187,6 +195,14 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
     getWpm() { return 200; },
     async loadPresets() { return { selectionOutcome: null }; },
   });
+  const infoModalLinks = createNoopSurface({
+    bindInfoModalLinks(container) {
+      infoModalLinkCalls.boundContents.push(container.innerHTML);
+    },
+    enhanceInfoModalScreenshots(container) {
+      infoModalLinkCalls.enhancedContents.push(container.innerHTML);
+    },
+  });
 
   const electronMethods = {
     async getAppConfig() { return {}; },
@@ -253,7 +269,7 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
       formatearNumero(value) { return String(value); },
       obtenerSeparadoresDeNumeros() { return { decimal: '.', group: ',' }; },
     },
-    InfoModalLinks: createNoopSurface(),
+    InfoModalLinks: infoModalLinks,
     MainLogoLinks: createNoopSurface(),
     Notify: createNoopSurface({
       activateModalFocus(_modal, { initialFocus }) {
@@ -340,6 +356,12 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
     errors,
     getActiveCustomPromptTranslationRefreshCounts() {
       return Object.fromEntries(activeCustomPromptTranslationRefreshCounts);
+    },
+    getInfoModalLinkCalls() {
+      return {
+        boundContents: infoModalLinkCalls.boundContents.slice(),
+        enhancedContents: infoModalLinkCalls.enhancedContents.slice(),
+      };
     },
     infoModalPanel,
     invokeMenuAction(actionId) {
@@ -440,6 +462,37 @@ test('open Info Modal refresh uses the effective document language and preserves
   assert.equal(infoModalContent.getAttribute('dir'), 'ltr');
   assert.equal(harness.infoModalPanel.scrollTop, 37);
   assert.equal(infoModalClose.focusCount, focusBeforeRefresh + 1);
+  assert.equal(harness.errors.length, 0);
+});
+
+test('main renderer enhances and binds Info Modal content after each completed render', async () => {
+  const harness = await createRendererHarness({
+    async loadLocalizedDocument(_documentId, language) {
+      return {
+        html: `<article><figure class="instrucciones-media"><img src="${language}.png"></figure></article>`,
+        language,
+      };
+    },
+  });
+
+  harness.invokeMenuAction('instrucciones_completas');
+  for (let index = 0; index < 3; index += 1) await flushAsyncWork();
+
+  await harness.subscriptions.settingsChanged({ language: 'es', modeConteo: 'preciso' });
+  for (let index = 0; index < 3; index += 1) await flushAsyncWork();
+
+  harness.getElement('infoModalClose').dispatch('click');
+  harness.invokeMenuAction('instrucciones_completas');
+  for (let index = 0; index < 3; index += 1) await flushAsyncWork();
+
+  const renderedContents = [
+    '<article><figure class="instrucciones-media"><img src="en.png"></figure></article>',
+    '<article><figure class="instrucciones-media"><img src="es.png"></figure></article>',
+    '<article><figure class="instrucciones-media"><img src="es.png"></figure></article>',
+  ];
+  const infoModalLinkCalls = harness.getInfoModalLinkCalls();
+  assert.deepEqual(infoModalLinkCalls.enhancedContents, renderedContents);
+  assert.deepEqual(infoModalLinkCalls.boundContents, renderedContents);
   assert.equal(harness.errors.length, 0);
 });
 

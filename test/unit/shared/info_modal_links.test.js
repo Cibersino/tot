@@ -8,6 +8,7 @@ const vm = require('node:vm');
 
 function createHarness() {
   let activeElement = null;
+  let screenshots = [];
   const windowListeners = new Map();
   const modalOpeners = new Map();
 
@@ -36,6 +37,9 @@ function createHarness() {
         if (!listeners.has(type)) listeners.set(type, []);
         listeners.get(type).push(handler);
       },
+      getListenerCount(type) {
+        return (listeners.get(type) || []).length;
+      },
       dispatch(type, event = {}) {
         const safeEvent = {
           target: this,
@@ -63,7 +67,7 @@ function createHarness() {
       closest(selector) {
         let current = this;
         while (current) {
-          if (selector === '.instrucciones-media img' && current === screenshot) return current;
+          if (selector === '.instrucciones-media img' && screenshots.includes(current)) return current;
           current = current.parentNode;
         }
         return null;
@@ -81,7 +85,7 @@ function createHarness() {
         return null;
       },
       querySelectorAll(selector) {
-        return selector === '.instrucciones-media img' ? [screenshot] : [];
+        return selector === '.instrucciones-media img' ? screenshots.slice() : [];
       },
       focus() {
         activeElement = this;
@@ -94,10 +98,14 @@ function createHarness() {
   const infoModal = createElement();
   infoModal.setAttribute('aria-hidden', 'false');
   const container = createElement();
-  const screenshot = createElement('img');
-  screenshot.currentSrc = './example.png';
-  screenshot.alt = 'Example screenshot';
-  container.appendChild(screenshot);
+  const createScreenshot = () => {
+    const screenshot = createElement('img');
+    screenshot.currentSrc = './example.png';
+    screenshot.alt = 'Example screenshot';
+    return screenshot;
+  };
+  screenshots = [createScreenshot()];
+  container.appendChild(screenshots[0]);
 
   const document = {
     body,
@@ -179,9 +187,24 @@ function createHarness() {
     getActiveElement() {
       return activeElement;
     },
-    screenshot,
+    getScreenshot() {
+      return screenshots[0];
+    },
+    replaceScreenshot() {
+      const replacement = createScreenshot();
+      container._children.splice(0, container._children.length, replacement);
+      replacement.parentNode = container;
+      screenshots = [replacement];
+      return replacement;
+    },
+    enhance() {
+      window.InfoModalLinks.enhanceInfoModalScreenshots(container);
+    },
     bind() {
       window.InfoModalLinks.bindInfoModalLinks(container);
+    },
+    getContainerListenerCount(type) {
+      return container.getListenerCount(type);
     },
     pressEscape() {
       const event = {
@@ -194,17 +217,23 @@ function createHarness() {
   };
 }
 
-test('Info screenshot lightbox is keyboard-openable, focuses Close, and restores its screenshot opener', () => {
+test('Info screenshot enhancements survive content replacement without duplicating delegated listeners', () => {
   const harness = createHarness();
+  const firstScreenshot = harness.getScreenshot();
+  harness.enhance();
   harness.bind();
 
-  assert.equal(harness.screenshot.getAttribute('tabindex'), '0');
-  assert.equal(harness.screenshot.getAttribute('role'), 'button');
-  assert.equal(harness.screenshot.getAttribute('aria-haspopup'), 'dialog');
+  assert.equal(firstScreenshot.getAttribute('tabindex'), '0');
+  assert.equal(firstScreenshot.getAttribute('role'), 'button');
+  assert.equal(firstScreenshot.getAttribute('aria-haspopup'), 'dialog');
+
+  harness.bind();
+  assert.equal(harness.getContainerListenerCount('click'), 1);
+  assert.equal(harness.getContainerListenerCount('keydown'), 1);
 
   harness.container.dispatch('keydown', {
     key: 'Enter',
-    target: harness.screenshot,
+    target: firstScreenshot,
     preventDefault() {},
   });
 
@@ -219,5 +248,28 @@ test('Info screenshot lightbox is keyboard-openable, focuses Close, and restores
 
   harness.pressEscape();
   assert.equal(lightbox.getAttribute('aria-hidden'), 'true');
-  assert.equal(harness.getActiveElement(), harness.screenshot);
+  assert.equal(harness.getActiveElement(), firstScreenshot);
+
+  const replacementScreenshot = harness.replaceScreenshot();
+  harness.enhance();
+  harness.bind();
+
+  assert.equal(replacementScreenshot.getAttribute('tabindex'), '0');
+  assert.equal(replacementScreenshot.getAttribute('role'), 'button');
+  assert.equal(replacementScreenshot.getAttribute('aria-haspopup'), 'dialog');
+  assert.equal(harness.getContainerListenerCount('click'), 1);
+  assert.equal(harness.getContainerListenerCount('keydown'), 1);
+
+  harness.container.dispatch('keydown', {
+    key: ' ',
+    target: replacementScreenshot,
+    preventDefault() {},
+  });
+
+  assert.equal(lightbox.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.getActiveElement(), closeButton);
+
+  harness.pressEscape();
+  assert.equal(lightbox.getAttribute('aria-hidden'), 'true');
+  assert.equal(harness.getActiveElement(), replacementScreenshot);
 });

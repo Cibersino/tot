@@ -1325,7 +1325,10 @@ const infoModalBackdrop = document.getElementById('infoModalBackdrop');
 const infoModalClose = document.getElementById('infoModalClose');
 const infoModalTitle = document.getElementById('infoModalTitle');
 const infoModalContent = document.getElementById('infoModalContent');
-const { bindInfoModalLinks } = window.InfoModalLinks || {};
+const {
+  bindInfoModalLinks,
+  enhanceInfoModalScreenshots,
+} = window.InfoModalLinks || {};
 let openInfoModalKey = '';
 let infoModalRenderVersion = 0;
 
@@ -1650,10 +1653,16 @@ async function renderInfoModal(key, { open = false, preservedUiState = null } = 
     infoModalContent.setAttribute('lang', effectiveDocumentLanguage);
     infoModalContent.setAttribute('dir', getLanguageDirection(effectiveDocumentLanguage));
   }
-  if (typeof bindInfoModalLinks === 'function') {
+  if (
+    typeof bindInfoModalLinks === 'function'
+    && typeof enhanceInfoModalScreenshots === 'function'
+  ) {
+    enhanceInfoModalScreenshots(infoModalContent);
     bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
   } else {
-    log.warn('InfoModalLinks.bindInfoModalLinks unavailable; modal links will use default behavior.');
+    log.warn(
+      'InfoModalLinks lifecycle helpers unavailable; modal links and screenshot keyboard support will use default behavior.'
+    );
   }
   if (key === 'acerca_de') {
     await hydrateAboutVersion(infoModalContent);
