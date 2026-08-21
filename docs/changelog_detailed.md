@@ -48,6 +48,7 @@ Reglas:
 
 ### Resumen de cambios
 
+- El `Info Modal` de la ventana principal deja de concentrar estado, DOM, render asíncrono, foco, carga de documentos y presentación de About en `public/renderer.js`: `public/js/info_modal.js` pasa a ser su owner renderer dedicado, mientras el entrypoint conserva únicamente inicialización, coordinación de bloqueo, delegación de menú y notificación de idioma sin cambiar la ruta de fallback de `RendererI18n`, los enlaces/capturas de `InfoModalLinks` ni el comportamiento observable del modal.
 - La ventana principal suma una calculadora rápida de lectura como ventana secundaria no modal: un nuevo botón icon-only en `RESULTS` abre una herramienta auxiliar para derivar `words`, `time` o `WPM` a partir de los otros dos valores, reutilizando la gramática `H+:MM:SS` del cronómetro y manteniendo el feature fuera del menú nativo.
 - Los selects nativos de las superficies renderer convergen en un único `RendererCombobox` production-owned con modos fijo y editable: presets, planificación batch, calculadora rápida y tags de snapshots comparten desde ahora la misma semántica ARIA/teclado/hover, apertura siempre debajo del trigger y popup scrolleable con altura máxima fija de `160px`.
 - La migración integral de semántica accesible y tooltips renderer (Issue #332) separa nombre, descripción y ayuda visual como contratos explícitos: retira `title` como transporte de controles, conserva solo las ayudas visuales justificadas y deja sus nombres y descripciones bajo ownership directo de cada feature.

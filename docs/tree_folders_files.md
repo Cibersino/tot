@@ -190,6 +190,7 @@ tot/
 │ │ ├── format.js
 │ │ ├── generated_icons.js
 │ │ ├── i18n.js
+│ │ ├── info_modal.js
 │ │ ├── info_modal_links.js
 │ │ ├── log.js
 │ │ ├── main_logo_links.js
@@ -393,6 +394,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
 - `public/js/generated_icons.js` — Artefacto runtime autogenerado del renderer: registra el catálogo serializado de SVGs funcionales a partir de `assets/icons/`; no se edita a mano y se regenera con `npm run generate:icons`.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
+- `public/js/info_modal.js` — Owner renderer del `Info Modal`: expone `window.InfoModal.init/open/isOpen/applyTranslations`, conserva estado, DOM, ciclo asíncrono y foco del modal, carga/parsea documentos localizados mediante `RendererI18n`, preserva la protección contra renders stale y refresca el contenido abierto al cambiar idioma; también hidrata la presentación de About sin devolver ese ownership a `public/renderer.js`.
 - `public/js/presets.js` — Bridge/owner renderer de presets: resuelve el catálogo por idioma, carga sus opciones en el combobox compartido, conserva la descripción visible y persiste la selección activa; deja el ownership de WPM widget sync a `public/js/wpm_controls.js`.
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/renderer_icons.js` — Helper compartido de íconos funcionales en renderer: consume `generated_icons.js`, resuelve variantes/tamaños y expone la aplicación común de iconos a markup estático y a controles generados por JS.

@@ -1,8 +1,21 @@
 // public/js/info_modal.js
 'use strict';
 
-// Owns Info modal state, DOM lifecycle, document rendering, and About hydration.
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Own the Info modal DOM, state, open/close lifecycle, and modal focus.
+// - Load and render static Info documents and localized manual documents.
+// - Invalidate stale asynchronous renders and preserve state during language refresh.
+// - Hydrate About version, runtime, and document-availability details.
+// - Expose the narrow Info-modal integration surface consumed by public/renderer.js.
+// =============================================================================
+
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[info-modal] window.getLogger unavailable; cannot continue');
   }
@@ -29,6 +42,10 @@
   const { DEFAULT_LANG } = AppConstants;
   const { getLanguageDirection, loadLocalizedDocument, msgRenderer, tRenderer } = RendererI18n;
   const { bindInfoModalLinks, enhanceInfoModalScreenshots } = window.InfoModalLinks || {};
+
+  // =============================================================================
+  // Shared state
+  // =============================================================================
   let infoModal = null;
   let infoModalBackdrop = null;
   let infoModalClose = null;
@@ -39,6 +56,9 @@
   let infoModalRenderVersion = 0;
   let uiBound = false;
 
+  // =============================================================================
+  // Document rendering
+  // =============================================================================
   async function fetchText(path) {
     try {
       const res = await fetch(path, { cache: 'no-store' });
@@ -83,6 +103,9 @@
     return { documentId: 'renderer.info.instructions', isManual: true, sectionId: sectionByKey[key] };
   }
 
+  // =============================================================================
+  // Focus and section targeting
+  // =============================================================================
   function focusClose() {
     infoModalClose.focus({ preventScroll: true });
   }
@@ -119,6 +142,9 @@
     });
   }
 
+  // =============================================================================
+  // About hydration
+  // =============================================================================
   async function hydrateAboutVersion(container) {
     const versionEl = container ? container.querySelector('#appVersion') : null;
     if (!versionEl) return;
@@ -224,6 +250,9 @@
     }
   }
 
+  // =============================================================================
+  // Modal lifecycle
+  // =============================================================================
   function close() {
     try {
       if (!infoModal || !infoModalContent) return;
@@ -325,6 +354,9 @@
     return !!infoModal && infoModal.getAttribute('aria-hidden') === 'false';
   }
 
+  // =============================================================================
+  // Public API
+  // =============================================================================
   function applyTranslations() {
     const loading = document.getElementById('infoModalLoading');
     if (loading) loading.textContent = tRenderer('renderer.info.loading');
@@ -358,3 +390,7 @@
 
   window.InfoModal = { init, open, isOpen, applyTranslations };
 })();
+
+// =============================================================================
+// End of public/js/info_modal.js
+// =============================================================================
