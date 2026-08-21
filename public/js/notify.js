@@ -203,7 +203,12 @@
     if (!element || typeof element.focus !== 'function') return false;
     try {
       element.focus({ preventScroll: true });
-    } catch (_err) {
+    } catch (err) {
+      log.warnOnce(
+        'notify.focus.preventScroll.failed',
+        'focus({ preventScroll: true }) failed; falling back to focus().',
+        err
+      );
       element.focus();
     }
     return document.activeElement === element;

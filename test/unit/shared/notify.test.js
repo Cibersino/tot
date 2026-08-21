@@ -52,6 +52,39 @@ function loadNotify({
   return sandbox.window.Notify;
 }
 
+function createRendererLoggerHarness() {
+  const warnings = [];
+  const sandbox = {
+    window: {},
+    localStorage: {
+      getItem() {
+        return 'warn';
+      },
+      setItem() {},
+    },
+    console: {
+      debug() {},
+      error() {},
+      info() {},
+      warn(...args) {
+        warnings.push(args);
+      },
+    },
+  };
+
+  vm.createContext(sandbox);
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/log.js'),
+    'utf8'
+  );
+  vm.runInContext(source, sandbox, { filename: 'public/js/log.js' });
+
+  return {
+    logger: sandbox.window.getLogger('notify'),
+    warnings,
+  };
+}
+
 function createToastHarness() {
   const elementsById = new Map();
   const pendingTimers = [];
@@ -105,7 +138,7 @@ function createToastHarness() {
   return { body, notify, pendingTimers };
 }
 
-function createModalFocusHarness() {
+function createModalFocusHarness({ logger = null } = {}) {
   const documentListeners = new Map();
   const document = {
     activeElement: null,
@@ -207,7 +240,7 @@ function createModalFocusHarness() {
 
   const warnings = [];
   const errors = [];
-  const logger = {
+  const defaultLogger = {
     debug() {},
     info() {},
     warn(...args) { warnings.push(args); },
@@ -217,7 +250,7 @@ function createModalFocusHarness() {
   };
   const notify = loadNotify({
     document,
-    logger,
+    logger: logger || defaultLogger,
     windowOverrides: {
       getComputedStyle(element) {
         return element.styleState;
@@ -321,6 +354,39 @@ test('toast stylesheet loads only in the current toast-rendering windows', () =>
     const html = fs.readFileSync(path.resolve(__dirname, '../../../public', page), 'utf8');
     assert.doesNotMatch(html, /<link rel="stylesheet" href="toasts\.css" \/>/);
   });
+});
+
+test('notify modal focus falls back to plain focus and lets warnOnce deduplicate the diagnostic', () => {
+  const rendererLogger = createRendererLoggerHarness();
+  const harness = createModalFocusHarness({ logger: rendererLogger.logger });
+  const modal = harness.createElement('modal');
+  const only = harness.createElement('only', { tabIndex: 0 });
+  const focusFailure = new Error('preventScroll is unsupported');
+  const focusCalls = [];
+  only.focus = (options) => {
+    focusCalls.push(options);
+    if (options) throw focusFailure;
+    harness.document.activeElement = only;
+  };
+  modal.appendChild(only);
+
+  harness.notify.activateModalFocus(modal, { initialFocus: only, fallbackFocus: modal });
+  assert.equal(harness.document.activeElement, only);
+  assert.equal(focusCalls.length, 2);
+  assert.equal(focusCalls[0].preventScroll, true);
+  assert.equal(focusCalls[1], undefined);
+
+  assert.equal(harness.dispatchTab().defaultPrevented, true);
+  assert.equal(focusCalls.length, 4);
+  assert.equal(focusCalls[2].preventScroll, true);
+  assert.equal(focusCalls[3], undefined);
+  assert.equal(rendererLogger.warnings.length, 1);
+  assert.equal(rendererLogger.warnings[0][0], '[WARN][notify]');
+  assert.equal(
+    rendererLogger.warnings[0][1],
+    'focus({ preventScroll: true }) failed; falling back to focus().'
+  );
+  assert.equal(rendererLogger.warnings[0][2], focusFailure);
 });
 
 test('notify modal focus wraps forward and backward and re-enters from outside', () => {
