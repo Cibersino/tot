@@ -16,7 +16,8 @@ function createTaskMeta(name = 'Task') {
   };
 }
 
-function createHarness() {
+function createHarness(options = {}) {
+  const bootstrapProbe = options.bootstrapProbe || null;
   let activeElement = null;
   let onInit = null;
   let resolveTranslationsLoaded = null;
@@ -98,6 +99,7 @@ function createHarness() {
         return child;
       },
       addEventListener(type, handler) {
+        if (bootstrapProbe) bootstrapProbe.elementListeners.push({ id, type });
         if (!listeners.has(type)) listeners.set(type, []);
         listeners.get(type).push(handler);
       },
@@ -284,23 +286,36 @@ function createHarness() {
       confirmMain() { return true; },
       notifyEditor(key) { notifications.push(key); },
     },
-    TaskEditorColumnLayout: {
-      createController() {
-        return {
-          async initialize() {},
-          cancelActiveResize() {},
-        };
-      },
-    },
+    TaskEditorColumnLayout: options.taskEditorColumnLayout === undefined
+      ? {
+        createController() {
+          if (bootstrapProbe) bootstrapProbe.columnLayoutCreateCalls += 1;
+          return {
+            async initialize() {
+              if (bootstrapProbe) bootstrapProbe.columnLayoutInitializeCalls += 1;
+            },
+            cancelActiveResize() {},
+          };
+        },
+      }
+      : options.taskEditorColumnLayout,
     addEventListener(type, handler) {
+      if (bootstrapProbe) bootstrapProbe.windowListeners.push(type);
       if (!windowListeners.has(type)) windowListeners.set(type, []);
       windowListeners.get(type).push(handler);
     },
     taskEditorAPI: {
       setDirtyState() {},
-      onInit(handler) { onInit = handler; },
-      onRequestClose() {},
-      onSettingsChanged() {},
+      onInit(handler) {
+        if (bootstrapProbe) bootstrapProbe.bridgeSubscriptions.push('onInit');
+        onInit = handler;
+      },
+      onRequestClose() {
+        if (bootstrapProbe) bootstrapProbe.bridgeSubscriptions.push('onRequestClose');
+      },
+      onSettingsChanged() {
+        if (bootstrapProbe) bootstrapProbe.bridgeSubscriptions.push('onSettingsChanged');
+      },
       async getSettings() { return { language: 'en' }; },
       async saveTaskList() { return { ok: true }; },
       async deleteTaskList() { return { ok: true }; },
@@ -395,7 +410,14 @@ function createHarness() {
     },
     async waitForTranslations() {
       await translationsLoaded;
-      for (let attempt = 0; attempt < 10 && !elements.commentInput.getAttribute('placeholder'); attempt += 1) {
+      for (
+        let attempt = 0;
+        attempt < 10 && (
+          !elements.commentInput.getAttribute('placeholder')
+          || (bootstrapProbe && bootstrapProbe.columnLayoutInitializeCalls === 0)
+        );
+        attempt += 1
+      ) {
         await Promise.resolve();
       }
     },
@@ -421,6 +443,81 @@ function createHarness() {
     },
   };
 }
+
+test('Task Editor fails fast before wiring when TaskEditorColumnLayout is unavailable or invalid', () => {
+  const scenarios = [
+    {
+      name: 'unavailable',
+      taskEditorColumnLayout: null,
+      error: /TaskEditorColumnLayout unavailable; cannot continue/,
+    },
+    {
+      name: 'missing createController',
+      taskEditorColumnLayout: {},
+      error: /TaskEditorColumnLayout unavailable; cannot continue/,
+    },
+    {
+      name: 'invalid controller',
+      taskEditorColumnLayout: {
+        createController() {
+          return {};
+        },
+      },
+      error: /TaskEditorColumnLayout controller unavailable; cannot continue/,
+    },
+    {
+      name: 'controller construction failure',
+      taskEditorColumnLayout: {
+        createController() {
+          throw new Error('TaskEditorColumnLayout controller construction failed');
+        },
+      },
+      error: /TaskEditorColumnLayout controller construction failed/,
+    },
+  ];
+
+  scenarios.forEach(({ name, taskEditorColumnLayout, error }) => {
+    const bootstrapProbe = {
+      bridgeSubscriptions: [],
+      columnLayoutCreateCalls: 0,
+      columnLayoutInitializeCalls: 0,
+      elementListeners: [],
+      windowListeners: [],
+    };
+
+    assert.throws(
+      () => createHarness({ taskEditorColumnLayout, bootstrapProbe }),
+      error,
+      name
+    );
+    assert.deepEqual(bootstrapProbe.elementListeners, [], `${name} must not wire element listeners`);
+    assert.deepEqual(bootstrapProbe.windowListeners, [], `${name} must not wire window listeners`);
+    assert.deepEqual(bootstrapProbe.bridgeSubscriptions, [], `${name} must not subscribe to taskEditorAPI`);
+    assert.equal(bootstrapProbe.columnLayoutInitializeCalls, 0, `${name} must not initialize a controller`);
+  });
+});
+
+test('Task Editor initializes its validated TaskEditorColumnLayout controller on the normal path', async () => {
+  const bootstrapProbe = {
+    bridgeSubscriptions: [],
+    columnLayoutCreateCalls: 0,
+    columnLayoutInitializeCalls: 0,
+    elementListeners: [],
+    windowListeners: [],
+  };
+  const harness = createHarness({ bootstrapProbe });
+
+  await harness.waitForTranslations();
+
+  assert.equal(bootstrapProbe.columnLayoutCreateCalls, 1);
+  assert.equal(bootstrapProbe.columnLayoutInitializeCalls, 1);
+  assert.deepEqual(
+    bootstrapProbe.bridgeSubscriptions,
+    ['onInit', 'onRequestClose', 'onSettingsChanged']
+  );
+  assert.ok(bootstrapProbe.elementListeners.length > 0);
+  assert.deepEqual(bootstrapProbe.windowListeners, ['keydown']);
+});
 
 test('Task Editor localizes native field prompts and limits the comment field', async () => {
   const harness = createHarness();

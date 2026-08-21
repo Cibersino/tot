@@ -65,6 +65,10 @@ const {
 if (!loadRendererTranslations || !tRenderer || !msgRenderer || !applyWindowLanguageAttributes) {
   throw new Error('[task-editor] RendererI18n unavailable; cannot continue');
 }
+const taskEditorColumnLayout = window.TaskEditorColumnLayout || null;
+if (!taskEditorColumnLayout || typeof taskEditorColumnLayout.createController !== 'function') {
+  throw new Error('[task-editor] TaskEditorColumnLayout unavailable; cannot continue');
+}
 
 const tr = (path) => tRenderer(path);
 
@@ -192,8 +196,26 @@ let pendingSnapshotSourceReminderFileSelection = null;
 let commentSaveInFlight = false;
 let pendingLibraryRowId = null;
 let libraryItemsCache = [];
-let columnLayoutController = null;
 let renderedRowFields = new Map();
+
+const columnLayoutController = taskEditorColumnLayout.createController({
+  wrapper: taskTableWrap,
+  table: taskTable,
+  colGroup: taskColGroup,
+  utilityHeaders: {
+    comentario: thComentario,
+    tiempo: thTiempo,
+    percent: thPercent,
+    falta: thFalta,
+    enlace: thEnlace,
+    acciones: thAcciones,
+  },
+});
+if (!columnLayoutController
+  || typeof columnLayoutController.initialize !== 'function'
+  || typeof columnLayoutController.cancelActiveResize !== 'function') {
+  throw new Error('[task-editor] TaskEditorColumnLayout controller unavailable; cannot continue');
+}
 
 // =============================================================================
 // Helpers
@@ -1844,7 +1866,7 @@ function registerTaskEditorInit() {
 function registerTaskEditorCloseGuard() {
   if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
     window.taskEditorAPI.onRequestClose(() => {
-      if (columnLayoutController) columnLayoutController.cancelActiveResize();
+      columnLayoutController.cancelActiveResize();
       if (typeof window.taskEditorAPI.confirmClose !== 'function') {
         log.warnOnce('task_editor.confirmClose.missing', 'taskEditorAPI.confirmClose unavailable; close request ignored.');
         return;
@@ -1873,27 +1895,11 @@ async function bootstrapTaskEditor() {
       log.warnOnce('BOOTSTRAP:task_editor.getSettings.missing', 'taskEditorAPI.getSettings unavailable; using default language.');
     }
     await applyTaskEditorTranslations();
-    if (!window.TaskEditorColumnLayout
-      || typeof window.TaskEditorColumnLayout.createController !== 'function') {
-      throw new Error('[task-editor] TaskEditorColumnLayout unavailable; cannot continue');
-    }
-    columnLayoutController = window.TaskEditorColumnLayout.createController({
-      wrapper: taskTableWrap,
-      table: taskTable,
-      colGroup: taskColGroup,
-      utilityHeaders: {
-        comentario: thComentario,
-        tiempo: thTiempo,
-        percent: thPercent,
-        falta: thFalta,
-        enlace: thEnlace,
-        acciones: thAcciones,
-      },
-    });
-    await columnLayoutController.initialize();
   } catch (err) {
-    log.error('BOOTSTRAP: Task Editor initialization failed:', err);
+    log.error('BOOTSTRAP: Task Editor settings or translations initialization failed; continuing:', err);
   }
+
+  await columnLayoutController.initialize();
 }
 
 function registerTaskEditorSettingsChanged() {
@@ -1916,8 +1922,11 @@ function registerTaskEditorSettingsChanged() {
 wireTaskEditorEvents();
 registerTaskEditorInit();
 registerTaskEditorCloseGuard();
-bootstrapTaskEditor();
 registerTaskEditorSettingsChanged();
+bootstrapTaskEditor().catch((err) => {
+  log.error('Task Editor required initialization failed:', err);
+  throw err;
+});
 
 // =============================================================================
 // End of public/task_editor.js
