@@ -151,18 +151,7 @@
   let currentLanguage = DEFAULT_LANG;
   let settingsCache = null;
   let translationsLoadedFor = null;
-  const targetCombobox = rendererCombobox.create({
-    host: targetHost,
-    mode: 'select',
-    options: [
-      { value: 'words', label: 'Palabras' },
-      { value: 'time', label: 'Tiempo' },
-      { value: 'wpm', label: 'WPM' },
-    ],
-    value: 'wpm',
-    ariaLabelledBy: 'textTimeCalculatorTargetLabel',
-    onChange: () => renderCalculator(),
-  });
+  let targetCombobox = null;
   const rawValues = {
     words: '',
     time: '',
@@ -173,8 +162,16 @@
   // Helpers
   // =============================================================================
   function getSelectedTarget() {
+    if (!targetCombobox) return 'wpm';
     const selected = String(targetCombobox.getValue() || '').trim();
     return selected === 'words' || selected === 'time' ? selected : 'wpm';
+  }
+
+  function getTargetOptions() {
+    return Object.entries(TARGET_LABEL_KEYS).map(([value, key]) => ({
+      value,
+      label: tRenderer(key),
+    }));
   }
 
   function setFieldInvalidState(input, isInvalid) {
@@ -217,13 +214,22 @@
 
     document.title = tRenderer('renderer.text_time_calculator.title');
     targetLabel.textContent = tRenderer('renderer.text_time_calculator.calculate_label');
-    targetCombobox.update({
-      ariaLabelledBy: 'textTimeCalculatorTargetLabel',
-      options: Object.entries(TARGET_LABEL_KEYS).map(([value, key]) => ({
-        value,
-        label: tRenderer(key),
-      })),
-    });
+    const targetOptions = getTargetOptions();
+    if (!targetCombobox) {
+      targetCombobox = rendererCombobox.create({
+        host: targetHost,
+        mode: 'select',
+        options: targetOptions,
+        value: 'wpm',
+        ariaLabelledBy: 'textTimeCalculatorTargetLabel',
+        onChange: () => renderCalculator(),
+      });
+    } else {
+      targetCombobox.update({
+        ariaLabelledBy: 'textTimeCalculatorTargetLabel',
+        options: targetOptions,
+      });
+    }
 
     fieldNames.forEach((field) => {
       const entry = fields[field];

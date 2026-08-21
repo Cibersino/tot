@@ -139,6 +139,7 @@ async function createHarness({
   const translations = getTranslationMap();
   let activeLanguage = initialLanguage;
   const subscriptions = {};
+  const comboboxCreateConfigs = [];
   const elements = {
     textTimeCalculatorTargetLabel: createElement('textTimeCalculatorTargetLabel', 'label'),
     textTimeCalculatorTarget: createElement('textTimeCalculatorTarget'),
@@ -222,6 +223,10 @@ async function createHarness({
       },
       RendererCombobox: {
         create(config) {
+          comboboxCreateConfigs.push({
+            options: Array.isArray(config.options) ? config.options.map((option) => ({ ...option })) : [],
+            value: config.value,
+          });
           const host = config.host;
           let onChange = typeof config.onChange === 'function' ? config.onChange : null;
           const controller = {
@@ -280,8 +285,22 @@ async function createHarness({
     elements,
     document: sandbox.document,
     subscriptions,
+    comboboxCreateConfigs,
   };
 }
+
+test('text_time_calculator creates target options from the active translations', async () => {
+  const { comboboxCreateConfigs } = await createHarness({ initialLanguage: 'en' });
+
+  assert.deepEqual(JSON.parse(JSON.stringify(comboboxCreateConfigs)), [{
+    options: [
+      { value: 'words', label: 'Words' },
+      { value: 'time', label: 'Time' },
+      { value: 'wpm', label: 'WPM' },
+    ],
+    value: 'wpm',
+  }]);
+});
 
 test('text_time_calculator defaults to WPM and keeps two editable rows plus one derived row', async () => {
   const harness = await createHarness();
