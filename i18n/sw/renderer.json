@@ -1,0 +1,761 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Sehemu ya kwanza na ya mwisho ya maandishi ya sasa:",
+      "selector_empty": "(tupu)",
+      "reading_tools": {
+        "reading_speed_test": "Jaribio la kasi ya kusoma",
+        "preview_spoiler": "Ufichuzi"
+      },
+      "speed": {
+        "title": "KASI YA KUSOMA",
+        "wpm_label": "maneno kwa dakika (WPM)"
+      },
+      "results": {
+        "title": "MATOKEO YA HESABU",
+        "time_label": "⏱ Muda wa kusoma uliokadiriwa: ",
+        "words": "Maneno: {n}",
+        "chars_no_space": "Vibambo (bila nafasi): {n}",
+        "chars": "Vibambo: {n}",
+        "value_pending": "inasubiri...",
+        "value_unavailable": "haipatikani",
+        "precise_mode": "Hali ya usahihi"
+      },
+      "crono": {
+        "title": "KIPIMA MUDA",
+        "speed": "Kasi:",
+        "controls_label": "Vidhibiti vya kipima muda"
+      },
+      "processing": {
+        "current_text_waiting": "Inasasisha maandishi ya sasa...",
+        "current_text_recount_waiting": "Inakokotoa upya matokeo ya maandishi ya sasa...",
+        "current_text_waiting_startup": "Inakamilisha maandishi ya sasa...",
+        "current_text_waiting_editor": "Inasawazisha mabadiliko ya Kihariri cha Maandishi...",
+        "editor_loading": "Inapakia Kihariri cha Maandishi...",
+        "text_extraction_placeholder": "Inatoa maandishi...",
+        "text_extraction_preparing": "Inaandaa njia ya utoaji...",
+        "text_extraction_cancellation_pending": "Kughairi kumeombwa. Tafadhali subiri...",
+        "text_extraction_waiting_native": "Inatoa maandishi kutoka kwenye faili...",
+        "text_extraction_waiting_ocr": "Inaendesha utoaji kwa OCR...",
+        "text_extraction_waiting_ocr_delayed": "OCR inaendelea. Baadhi ya faili huchukua muda zaidi. Tafadhali subiri...",
+        "text_extraction_unit_progress": "Kitengo {index}/{count}",
+        "text_extraction_input_progress": "Kipengee {index}/{count}",
+        "text_extraction_route_native": "Asilia",
+        "text_extraction_route_ocr": "OCR",
+        "text_extraction_elapsed": "Muda uliopita: ",
+        "text_extraction_drop_here": "Dondosha hapa ili kutoa maandishi"
+      },
+      "tooltips": {
+        "text_extraction": "Toa maandishi kutoka kwenye faili",
+        "browser_extension": "Kiendelezi cha kivinjari"
+      },
+      "names": {
+        "text_extraction_abort": "Sitisha utoaji",
+        "overwrite_clipboard": "Badilisha maandishi ya sasa kwa maandishi ya ubao wa kunakili",
+        "append_clipboard": "Ongeza maandishi ya ubao wa kunakili mwishoni mwa maandishi ya sasa",
+        "clipboard_repeat_count": "Marudio ya kubandika",
+        "edit": "Fungua Kihariri cha Maandishi",
+        "clear": "Futa maandishi ya sasa",
+        "snapshot_load": "Pakia snapshot ya maandishi",
+        "snapshot_save": "Hifadhi maandishi ya sasa kama snapshot ya maandishi",
+        "task_new": "Jukumu jipya",
+        "task_load": "Pakia jukumu",
+        "cibersino_website": "Tovuti ya Cibersino",
+        "cibersino_kofi": "Niunge mkono kwenye Ko-fi",
+        "new_preset": "Unda preseti mpya",
+        "edit_preset": "Hariri preseti iliyochaguliwa",
+        "delete_preset": "Futa preseti iliyochaguliwa",
+        "reset_presets": "Rejesha preseti chaguo-msingi",
+        "text_time_calculator": "Fungua kikokotoo cha haraka",
+        "help_button": "Onyesha kidokezo muhimu",
+        "crono_toggle": "Anzisha au simamisha kwa muda kipima muda",
+        "crono_reset": "Simamisha na weka upya kipima muda",
+        "floating_window": "Kipima Muda Kinachoelea"
+      },
+      "help": {
+        "preview_spoiler": "Onyesha au ficha mwisho wa onyesho la awali",
+        "precise_mode": "Inategemea Intl.Segmenter"
+      },
+      "aria": {
+        "text_extraction": "Chagua faili za kutoa maandishi",
+        "browser_extension": "Fungua dirisha la kiendelezi cha kivinjari",
+        "wpm_input": "Maneno kwa dakika",
+        "wpm_slider": "Kitelezi cha maneno kwa dakika",
+        "speed_presets": "Preseti za kasi",
+        "crono_controls": "Vidhibiti vya kipima muda",
+        "crono_display": "Onyesho la kipima muda",
+        "floating_window_group": "Vidhibiti vya Kipima Muda Kinachoelea"
+      },
+      "alerts": {
+        "clipboard_too_large": "Maandishi ya ubao wa kunakili ni makubwa mno kutumika. Yafupishe kisha ujaribu tena.",
+        "apply_too_large": "Maandishi yangekuwa makubwa mno kutumika. Yapunguze kisha ujaribu tena.",
+        "apply_truncated": "Maandishi yalikatwa ili yatoshee kikomo cha programu.",
+        "append_text_limit": "Haiwezekani kuongeza maandishi: ukubwa wa juu umefikiwa.",
+        "overwrite_clipboard_error": "Hitilafu ilitokea wakati wa kubadilisha maandishi ya sasa kwa maandishi ya ubao wa kunakili.",
+        "append_clipboard_error": "Hitilafu ilitokea wakati wa kuongeza maandishi ya ubao wa kunakili kwenye maandishi ya sasa.",
+        "clear_error": "Hitilafu ilitokea wakati wa kufuta maandishi ya sasa.",
+        "current_text_processing_locked": "Maandishi ya sasa bado yanasasishwa. Matendo katika dirisha kuu yamezuiwa hadi maandishi ya hivi karibuni yakamilike.",
+        "current_text_recount_locked": "Matokeo ya maandishi ya sasa bado yanakokotolewa upya. Matendo katika dirisha kuu yamezuiwa hadi hesabu ya hivi karibuni ikamilike.",
+        "wip": {
+          "design_skins": "WIP: Kiteuzi cha mionekano kitafunguka hapa katika toleo la baadaye.",
+          "floating_stopwatch": "WIP: Mipangilio ya Kipima Muda Kinachoelea itafunguka hapa katika toleo la baadaye.",
+          "fonts": "WIP: Kiteuzi cha fonti kitafunguka hapa katika toleo la baadaye.",
+          "colors": "WIP: Kiteuzi cha rangi kitafunguka hapa katika toleo la baadaye.",
+          "shortcuts": "WIP: Kiteuzi cha njia za mkato za kibodi kitafunguka hapa katika toleo la baadaye."
+        }
+      }
+    },
+    "text_extraction": {
+      "pdf_options": {
+        "title": "Chaguo za utoaji wa PDF",
+        "message": "Chagua kama uchakate PDF nzima au masafa moja ya kurasa zinazofuatana kabla ya utoaji.",
+        "file_label": "Faili:",
+        "total_pages_label": "Jumla ya kurasa: ",
+        "selection_legend": "Uteuzi wa kurasa",
+        "all_pages_label": "Kurasa zote",
+        "range_label": "Masafa ya kurasa",
+        "from_page_label": "Kuanzia ukurasa",
+        "to_page_label": "Hadi ukurasa",
+        "selected_page_count_label": "Kurasa zilizochaguliwa: ",
+        "keep_generated_pdf_label": "Hifadhi PDF iliyozalishwa yenye kurasa zilizochaguliwa baada ya uchakataji",
+        "continue_button": "Endelea",
+        "cancel_button": "Ghairi",
+        "close_aria": "Funga dirisha la chaguo za utoaji wa PDF",
+        "invalid_range": "Weka masafa ya kurasa zinazofuatana kati ya 1 na {totalPages}."
+      },
+      "route_choice": {
+        "title": "Chagua njia ya utoaji",
+        "message": "Njia zote mbili za utoaji zinapatikana kwa PDF hii. Chagua moja ili kuendelea.",
+        "native_button": "Tumia njia asilia",
+        "ocr_button": "Tumia OCR",
+        "cancel_button": "Ghairi",
+        "close_aria": "Funga dirisha la njia ya utoaji"
+      },
+      "ocr_activation_disclosure": {
+        "title": "Kagua uanzishaji wa Google OCR",
+        "intro": "toT hutumia huduma za Google kwa OCR. Ukiendelea, kivinjari chako kitafunguka ili uidhinishe programu hii.",
+        "selected_files": "Ni faili unazochagua kwa OCR pekee zinazotumwa kwa Google.",
+        "local_storage": "Programu hii huhifadhi vitambulisho vya Google OCR OAuth vinavyosimamiwa na programu pamoja na hali ya ndani ya tokeni ya Google katika usakinishaji huu.",
+        "remote_cleanup": "Baada ya kuhamisha, programu hujaribu kuondoa hati ya muda ya Google kutoka Google Drive yako.",
+        "disconnect": "Baadaye unaweza kutenganisha kupitia Mapendeleo > Tenganisha Google OCR.",
+        "proceed_button": "Endelea kwenda Google",
+        "cancel_button": "Ghairi",
+        "privacy_link": "Fungua sera ya faragha",
+        "close_aria": "Funga dirisha la taarifa ya uanzishaji wa OCR"
+      },
+      "apply_modal": {
+        "title": "Tumia maandishi yaliyotolewa",
+        "message": "Chagua jinsi ya kutumia maandishi yaliyotolewa.",
+        "elapsed": "Muda wa utoaji: ",
+        "repeat_label": "Marudio",
+        "overwrite_button": "Badilisha",
+        "append_button": "Ongeza",
+        "cancel_button": "Ghairi",
+        "close_aria": "Funga dirisha la kutumia maandishi yaliyotolewa",
+        "saved_pdf_message": "PDF iliyozalishwa ilihifadhiwa baada ya utoaji.",
+        "saved_pdf_label": "PDF iliyohifadhiwa: ",
+        "reveal_saved_pdf_button": "Onyesha mahali PDF ilipohifadhiwa"
+      },
+      "single_file_heavy": {
+        "case_a_title": "PDF nzima ni kubwa mno kwa OCR",
+        "case_a_message": "PDF nzima inazidi kikomo cha mtoa huduma wa OCR ({providerLimitMb} MB). Unaweza kuichakata kiotomatiki kwa sehemu huku ukihifadhi faili asili. Vinginevyo, unaweza kutumia njia asilia ya utoaji.",
+        "case_b_title": "PDF iliyozalishwa ni kubwa mno kwa OCR",
+        "case_b_message": "PDF iliyozalishwa kwa masafa yaliyochaguliwa inazidi kikomo cha mtoa huduma wa OCR ({providerLimitMb} MB). Haikupakiwa. Unaweza kurudi kwenye uteuzi wa kurasa, kutumia njia asilia, au kuchakata PDF nzima kwa sehemu.",
+        "source_file_label": "PDF chanzo:",
+        "selected_range_label": "Masafa yaliyochaguliwa:",
+        "generated_pdf_label": "PDF iliyozalishwa:",
+        "generated_pdf_size_label": "Ukubwa wa PDF iliyozalishwa:",
+        "source_size_label": "Ukubwa wa PDF chanzo:",
+        "total_pages_label": "Jumla ya kurasa:",
+        "split_button": "Chakata PDF kwa sehemu",
+        "return_to_pages_button": "Rudi kwenye kurasa",
+        "use_native_button": "Tumia njia asilia",
+        "reveal_generated_pdf_button": "Onyesha mahali PDF ilipohifadhiwa",
+        "cancel_button": "Ghairi",
+        "close_aria": "Funga dirisha la PDF kubwa kwa OCR"
+      },
+      "batch_plan": {
+        "title": "Panga utoaji wa kundi",
+        "single_file_title": "Chakata PDF nzima kwa sehemu",
+        "pages_all": "Kurasa zote",
+        "tags_none": "Hakuna lebo",
+        "heavy_pdf_badge": "PDF kubwa",
+        "generated_inputs_preview": "Sehemu zilizopangwa kwa utoaji:",
+        "unit_label": "Kitengo {index}",
+        "unit_counter": "Kitengo {index}/{count}",
+        "unit_name_placeholder": "Jina la hiari la kitengo",
+        "aria": {
+          "route": "Njia ya utoaji kwa {file}",
+          "unit_assignment": "Kitengo lengwa kwa {file}",
+          "unit_name": "Jina la hiari la kitengo {index} kati ya {count}"
+        },
+        "new_unit_option": "Unda kitengo kipya",
+        "move_up": "Sogeza juu",
+        "move_down": "Sogeza chini",
+        "remove_input": "Ondoa",
+        "keep_generated_pdf": "Hifadhi PDF zozote zilizozalishwa",
+        "edit_tags": "Lebo",
+        "tags_modal": {
+          "title": "Lebo za kitengo",
+          "message": "Chagua lebo za hiari kwa snapshot za maandishi zitakazoundwa kutoka kitengo hiki wakati wa utoaji wa kundi.",
+          "confirm_button": "Tumia lebo",
+          "close_aria": "Funga dirisha la lebo za kitengo"
+        },
+        "single_unit_no_snapshot": "Kitengo kimoja: hakuna snapshot ya maandishi ya kiotomatiki itakayoundwa.",
+        "preset_all": "Zote pamoja",
+        "preset_separate": "Faili moja kwa kila kitengo",
+        "failure_legend": "Tabia wakati wa hitilafu",
+        "failure_default": "Maliza kitengo baada ya kipengee cha mwisho kilichofanikiwa kisha endelea na kinachofuata",
+        "failure_continue": "Acha kipengee kilichoshindwa na uendelee ndani ya kitengo hicho",
+        "start_button": "Anzisha utoaji",
+        "cancel_button": "Ghairi",
+        "close_aria": "Funga upangaji wa utoaji wa kundi"
+      },
+      "batch_report": {
+        "title": "Ripoti ya mwisho ya utoaji wa kundi",
+        "single_file_title": "Ripoti ya mwisho ya utoaji wa PDF kubwa",
+        "omitted": "imeachwa",
+        "reveal_generated_pdf": "Onyesha mahali PDF ilipohifadhiwa",
+        "current_text_has_output": "Maandishi ya sasa yalibadilishwa.",
+        "current_text_unchanged": "Maandishi ya sasa hayakubadilika.",
+        "snapshot_load_guidance": "Snapshot za maandishi zilizoundwa zinaweza kupakiwa kutoka dirisha kuu kwa kitufe cha Pakia snapshot ya maandishi.",
+        "elapsed": "Jumla ya muda wa utoaji: ",
+        "copy_report": "Nakili ripoti",
+        "open_snapshots_folder": "Fungua folda ya snapshot za maandishi",
+        "ok_button": "Sawa",
+        "close_aria": "Funga ripoti ya mwisho ya utoaji wa kundi",
+        "failed_fallback": "imeshindwa",
+        "failed_with_code": "imeshindwa: {code}",
+        "applied_truncated": "imetumika ikiwa imekatwa",
+        "payload_too_large": "kubwa mno kutumika",
+        "text_limit": "kikomo cha maandishi kimefikiwa",
+        "cancelled_fallback": "imeghairiwa",
+        "cancelled_with_code": "imeghairiwa: {code}",
+        "snapshot_not_created": "(hakuna snapshot ya maandishi iliyoundwa)",
+        "snapshot_created": "{filename} imeundwa",
+        "snapshot_creation_failed": "(uundaji wa snapshot ya maandishi umeshindwa: {code})"
+      },
+      "alerts": {
+        "overwrite_confirm": "Hii itabadilisha maandishi ya sasa utoaji unapoanza. Unataka kuendelea?",
+        "start_error": "Hitilafu ilitokea wakati wa kuanzisha utoaji.",
+        "precondition_blocked": "Ili kuanzisha utoaji wa maandishi, funga madirisha yote ya ziada na usimamishe kipima muda.",
+        "precondition_error": "Hitilafu ilitokea wakati wa kukagua masharti ya awali ya utoaji wa maandishi.",
+        "processing_locked": "Utoaji unaendelea. Matendo katika dirisha kuu yamezuiwa hadi utoaji ukamilike au ughairiwe.",
+        "abort_error": "Hitilafu ilitokea wakati wa kuomba kughairi.",
+        "cancellation_requested": "Kughairi kumeombwa. Tafadhali subiri kukamilike.",
+        "cancellation_complete": "Kughairi kumekamilika.",
+        "drop_invalid_file": "Kipengee kilichodondoshwa si faili halali ya ndani.",
+        "generated_pdf_cleanup_warning": "Utoaji umekamilika, lakini PDF ya ndani iliyozalishwa haikuweza kuondolewa kiotomatiki.",
+        "route_choice_error": "Hitilafu ilitokea wakati wa kuchagua njia ya utoaji.",
+        "generated_pdf_reveal_failed": "Mahali PDF ilipohifadhiwa hakukuweza kuonyeshwa. Kagua kama faili bado ipo.",
+        "apply_error": "Hitilafu ilitokea wakati wa kutumia maandishi yaliyotolewa.",
+        "prepare_invalid": "Ombi la utoaji lililoandaliwa si halali tena. Anzisha mchakato upya.",
+        "unsupported_format": "Utoaji wa maandishi hauauni umbizo hili la faili.",
+        "pdf": {
+          "unreadable_or_corrupt": "PDF hii haisomeki au imeharibika. Kagua faili kisha ujaribu tena.",
+          "encrypted_or_password_protected": "PDF hii imesimbwa kwa njia fiche au inalindwa kwa nenosiri. Ifungue ulinzi kisha ujaribu tena.",
+          "page_count_unavailable": "Idadi ya kurasa katika PDF hii haikuweza kubainishwa.",
+          "page_selection_invalid": "Masafa ya kurasa za PDF yaliyochaguliwa si halali. Rekebisha masafa kisha ujaribu tena.",
+          "subset_creation_failed": "PDF yenye kurasa zilizochaguliwa haikuweza kuundwa kwa ajili ya utoaji. Kagua faili kisha ujaribu tena."
+        },
+        "native": {
+          "runtime_error": "Hitilafu ya utekelezaji wa utoaji asilia imetokea.",
+          "unreadable_or_corrupt": "Faili iliyochaguliwa haisomeki au imeharibika kwa utoaji asilia.",
+          "encrypted_or_password_protected": "PDF iliyochaguliwa imesimbwa kwa njia fiche au inalindwa kwa nenosiri na haiwezi kutolewa kwa njia asilia.",
+          "cancelled": "Utoaji asilia ulighairiwa."
+        },
+        "ocr": {
+          "unavailable": "OCR haipatikani. Kagua hali ya usanidi/uthibitishaji kisha ujaribu tena.",
+          "activation_required": "Uanzishaji wa OCR unahitajika. Ingia kwenye Google OCR kisha ujaribu tena.",
+          "activation_success": "Uanzishaji wa OCR umekamilika. Utoaji unajaribiwa tena.",
+          "activation_cancelled": "Uanzishaji wa OCR ulighairiwa. Utoaji haukuendelea.",
+          "token_state_invalid": "Hali ya kuingia ya Google OCR iliyohifadhiwa si halali. Unganisha tena Google OCR kisha ujaribu tena.",
+          "activation_failed": "Uanzishaji wa OCR umeshindwa. Kagua hali ya usanidi/uthibitishaji kisha ujaribu tena.",
+          "enable_success": "Google OCR sasa imewashwa.",
+          "enable_cancelled": "Uanzishaji wa Google OCR ulighairiwa.",
+          "enable_failed": "Google OCR haikuweza kuwashwa. Kagua hali ya usanidi/uthibitishaji kisha ujaribu tena.",
+          "disconnect_success": "Google OCR imetenganishwa. Tokeni ya Google iliyohifadhiwa imebatilishwa na hali ya ndani ya kuingia imeondolewa.",
+          "disconnect_not_connected": "Google OCR haijaunganishwa kwa sasa katika usakinishaji huu wa programu.",
+          "disconnect_failed": "Utenganishaji wa Google OCR umeshindwa. Hali ya kuingia iliyohifadhiwa haikuondolewa.",
+          "connectivity_failed": "OCR inahitaji muunganisho wa intaneti. Kagua muunganisho wako kisha ujaribu tena.",
+          "setup_missing_credentials": "OCR haipatikani katika toleo hili la programu kwa sababu vitambulisho vya Google OAuth vilivyofungashwa havipo.",
+          "setup_invalid_credentials": "OCR haipatikani katika toleo hili la programu kwa sababu vitambulisho vya Google OAuth vilivyofungashwa si halali.",
+          "quota_or_rate_limited": "OCR imezuiwa kwa muda na mipaka ya mgao/kasi. Subiri kisha ujaribu tena.",
+          "image_upload_too_large": "Faili ya picha ya kupakiwa inazidi ukubwa unaokubaliwa na Google OCR.",
+          "runtime_error": "Hitilafu ya utekelezaji wa OCR imetokea wakati wa utoaji.",
+          "cancelled": "Utoaji wa maandishi kwa OCR ulighairiwa.",
+          "cleanup_warning": "OCR imekamilika, lakini kuondoa faili ya muda ya mbali kumeshindwa. Kagua folda yako ya Google Drive.",
+          "batch_ocr": {
+            "activation_required": "Kundi hili lina vipengee vya OCR, lakini Google OCR haijawashwa. Tumia Mapendeleo > Washa Google OCR, kisha anzisha utoaji tena.",
+            "token_state_invalid": "Kundi hili lina vipengee vya OCR, lakini hali ya kuingia ya Google OCR iliyohifadhiwa si halali. Tumia Mapendeleo > Washa Google OCR tena, kisha anzisha utoaji tena.",
+            "connectivity_failed": "Kundi hili lina vipengee vya OCR, lakini OCR inahitaji muunganisho wa intaneti. Kagua muunganisho wako kisha ujaribu tena kabla ya kuanzisha utoaji.",
+            "quota_or_rate_limited": "Kundi hili lina vipengee vya OCR, lakini OCR imezuiwa kwa muda na mipaka ya mgao/kasi. Subiri kisha ujaribu tena kabla ya kuanzisha utoaji.",
+            "unavailable": "Kundi hili lina vipengee vya OCR, lakini Google OCR haipatikani kwa sasa. Ikiwa OCR bado haijawashwa, tumia Mapendeleo > Washa Google OCR. Vinginevyo, kagua usanidi/hali ya OCR kisha ujaribu tena kabla ya kuanzisha utoaji."
+          }
+        }
+      }
+    },
+    "editor": {
+      "title": "toT — Kihariri cha Maandishi",
+      "placeholder": "Andika au bandika hapa...",
+      "calc_button": "Tumia",
+      "calc_while_typing": "Otomatiki",
+      "spellcheck": "Ukaguzi wa tahajia",
+      "text_size_label": "Ukubwa",
+      "decrease_text_size": "Punguza ukubwa wa maandishi",
+      "increase_text_size": "Ongeza ukubwa wa maandishi",
+      "reset_text_size": "Rejesha ukubwa wa maandishi",
+      "read_progress_label": "Imesomwa",
+      "clear": "Futa",
+      "help": {
+        "apply": "Tumia maandishi ya kihariri kama maandishi ya sasa",
+        "auto_apply": "Tumia kiotomatiki mabadiliko ya kihariri kwenye maandishi ya sasa wakati wa kuandika",
+        "spellcheck": "Washa au zima ukaguzi wa tahajia kwa maandishi ya kihariri"
+      },
+      "editor_find": {
+        "input_placeholder": "Tafuta...",
+        "input_aria": "Tafuta ndani ya maandishi",
+        "replace_placeholder": "Badilisha...",
+        "replace_aria": "Maandishi ya kubadilishia",
+        "replace": "Badilisha",
+        "replace_all": "Badilisha yote",
+        "names": {
+          "show_replace": "Onyesha vidhibiti vya kubadilisha",
+          "hide_replace": "Ficha vidhibiti vya kubadilisha",
+          "previous_match": "Ulinganifu uliotangulia",
+          "next_match": "Ulinganifu unaofuata",
+          "close": "Funga upau wa kutafuta"
+        },
+        "help": {
+          "replace_current": "Badilisha ulinganifu wa sasa",
+          "replace_all": "Badilisha ulinganifu wote"
+        },
+        "replace_timeout": "Muda wa kubadilisha umeisha. Jaribu tena.",
+        "status_no_matches": "Hakuna ulinganifu",
+        "status_empty_query": "Andika ili kutafuta"
+      },
+      "alerts": {
+        "start_failed": "Kihariri cha Maandishi hakikuweza kuanzishwa.",
+        "start_timeout": "Kihariri cha Maandishi kilichukua muda mrefu kuanza na kilifungwa.",
+        "paste_too_big": "Maandishi ni makubwa mno kubandikwa moja kwa moja. Tumia vitufe vya dirisha kuu.",
+        "drop_too_big": "Maandishi yaliyodondoshwa ni makubwa mno. Tumia vitufe vya dirisha kuu kuongeza maandishi makubwa.",
+        "paste_no_text": "Ubao wa kunakili hauna maandishi yasiyo na umbizo.",
+        "drop_no_text": "Buruta na udondoshe: hakuna maandishi yasiyo na umbizo yaliyotambuliwa.",
+        "type_limit": "Haiwezekani kuandika maandishi zaidi: ukubwa wa juu umefikiwa.",
+        "paste_limit": "Haiwezekani kubandika maandishi zaidi: ukubwa wa juu umefikiwa.",
+        "drop_limit": "Haiwezekani kudondosha maandishi zaidi: ukubwa wa juu umefikiwa.",
+        "paste_truncated": "Maandishi yaliyobandikwa yalikatwa ili yasizidi kiwango cha juu.",
+        "drop_truncated": "Maandishi yaliyoburutwa yalizidi nafasi iliyopo na yalikatwa.",
+        "text_truncated": "Maandishi yalikatwa ili yatoshee kikomo cha programu.",
+        "calc_error": "Hitilafu ilitokea wakati wa kuhifadhi maandishi kama maandishi ya sasa."
+      }
+    },
+    "snapshots": {
+      "title": "Hifadhi snapshot ya maandishi",
+      "message": "Unaweza kwa hiari kutaja jina, kueleza chanzo na kuweka lebo kwenye snapshot hii ya maandishi kabla ya kuchagua mahali pa kuihifadhi.",
+      "search": {
+        "placeholder": "Andika ili kuchuja chaguo",
+        "no_results": "Hakuna chaguo zinazolingana",
+        "create": "Unda \"{label}\""
+      },
+      "labels": {
+        "name": "Jina (hiari)",
+        "source_comment": "Chanzo (hiari)",
+        "language": "Lugha",
+        "type": "Aina",
+        "difficulty": "Ugumu"
+      },
+      "placeholders": {
+        "name": "Somo",
+        "source_comment": "chapter-1.pdf, Kitengo 1, au maandishi yaliyoletwa"
+      },
+      "metrics": {
+        "include_count": "Jumuisha idadi ya maneno",
+        "include_reading": "Jumuisha makadirio ya kusoma na WPM"
+      },
+      "manager": {
+        "title": "Dhibiti lebo za snapshot za maandishi",
+        "message": "Dhibiti lebo zinazoonekana zinazotumika kwa snapshot za maandishi na vitengo vya utoaji wa kundi.",
+        "done": "Imekamilika",
+        "close_aria": "Funga kidhibiti cha lebo za snapshot za maandishi",
+        "new_tag": "Lebo mpya",
+        "new_tag_placeholder": "Jina la lebo",
+        "new_tag_input_aria": "Jina la lebo mpya",
+        "add_tag": "Ongeza lebo",
+        "cancel_draft": "Ghairi",
+        "sort_alphabetically": "Panga A-Z",
+        "restore_hidden_defaults": "Rejesha lebo chaguo-msingi",
+        "empty_category": "Hakuna lebo zinazoonekana katika kategoria hii.",
+        "move_up": "Sogeza \"{label}\" juu",
+        "move_down": "Sogeza \"{label}\" chini",
+        "hide_default": "Ficha lebo chaguo-msingi \"{label}\"",
+        "delete_custom": "Futa lebo maalum \"{label}\"",
+        "confirm_hide_default": "Ficha lebo chaguo-msingi \"{label}\"? Itaondolewa kwenye orodha ya lebo zinazoonekana na inaweza kurejeshwa baadaye.",
+        "confirm_delete_custom": "Futa kabisa lebo maalum \"{label}\"? Snapshot za maandishi zilizopo hazitaandikwa upya.",
+        "validation": {
+          "empty": "Jina la lebo haliwezi kuwa tupu.",
+          "control_characters": "Jina la lebo haliwezi kuwa na vibambo vya tabo, mistari mipya au vibambo vingine vya udhibiti.",
+          "too_long": "Jina la lebo haliwezi kuzidi vibambo {max}.",
+          "duplicate": "Lebo yenye jina hilo tayari ipo katika kategoria hii."
+        }
+      },
+      "empty": {
+        "language": "Hakuna lebo ya lugha",
+        "type": "Hakuna lebo ya aina",
+        "difficulty": "Hakuna lebo ya ugumu"
+      },
+      "buttons": {
+        "manage": "Dhibiti lebo",
+        "confirm": "Hifadhi snapshot ya maandishi",
+        "cancel": "Ghairi"
+      },
+      "close_aria": "Funga dirisha la kuhifadhi snapshot ya maandishi",
+      "options": {
+        "language": {
+          "ar": "Kiarabu",
+          "arn": "Kimapuche",
+          "ay": "Kiaymara",
+          "bn": "Kibengali",
+          "ca": "Kikatalani",
+          "de": "Kijerumani",
+          "en": "Kiingereza",
+          "es": "Kihispania",
+          "eu": "Kibaski",
+          "fa": "Kiajemi",
+          "fr": "Kifaransa",
+          "gn": "Kiguarani",
+          "hi": "Kihindi",
+          "ht": "Kihaiti",
+          "id": "Kiindonesia",
+          "it": "Kiitaliano",
+          "ja": "Kijapani",
+          "ko": "Kikorea",
+          "mi": "Kimaori",
+          "pcm": "Pijini ya Nigeria",
+          "pt": "Kireno",
+          "qu": "Kikechua",
+          "ru": "Kirusi",
+          "sv": "Kiswidi",
+          "sw": "Kiswahili",
+          "tr": "Kituruki",
+          "ur": "Kiurdu",
+          "vi": "Kivietinamu",
+          "zh_hans": "Kichina (Kilichorahisishwa)",
+          "zh_hant": "Kichina cha Jadi",
+          "zu": "Kizulu"
+        },
+        "type": {
+          "fiction": "Ya kubuni",
+          "non_fiction": "Isiyo ya kubuni"
+        },
+        "difficulty": {
+          "easy": "Rahisi",
+          "normal": "Wastani",
+          "hard": "Ngumu"
+        }
+      },
+      "alerts": {
+        "save_success": "Snapshot ya maandishi imehifadhiwa.",
+        "save_error": "Snapshot ya maandishi haikuweza kuhifadhiwa.",
+        "load_success": "Snapshot ya maandishi imepakiwa.",
+        "load_error": "Snapshot ya maandishi haikuweza kupakiwa.",
+        "outside": "Snapshot ya maandishi lazima iwe ndani ya folda ya snapshot.",
+        "truncated": "Snapshot ya maandishi ilizidi ukubwa wa juu na ikakatwa.",
+        "unavailable": "Utendaji wa snapshot za maandishi haupatikani.",
+        "catalog_update_error": "Lebo za snapshot za maandishi hazikuweza kusasishwa."
+      }
+    },
+    "tasks": {
+      "title": "toT — Kihariri cha Majukumu",
+      "name": "Jina",
+      "name_placeholder": "mf., Mpango wa kusoma",
+      "save_button": "Hifadhi",
+      "delete_button": "Futa",
+      "summary_total": "Jumla",
+      "summary_left": "Iliyobaki",
+      "add_row_button": "Ongeza safu",
+      "add_files_button": "Ongeza faili",
+      "open_library_button": "Fungua maktaba ya masomo",
+      "columns": {
+        "texto": "Somo",
+        "tiempo": "Muda",
+        "percent": "%",
+        "falta": "Iliyobaki",
+        "enlace": "Kiungo au njia ya ndani",
+        "comentario": "M+S",
+        "acciones": "Vitendo",
+        "header_names": {
+          "tiempo": "Muda wa kusoma uliokadiriwa",
+          "percent": "Asilimia iliyokamilika",
+          "falta": "Muda uliobaki uliokadiriwa",
+          "comentario": "Maoni na snapshot ya maandishi"
+        },
+        "names": {
+          "file_select": "Chagua faili ya ndani",
+          "link_open": "Fungua kiungo au njia ya ndani",
+          "snapshot_load": "Pakia snapshot ya maandishi kama maandishi ya sasa",
+          "comment": "Ongeza maoni au snapshot ya maandishi",
+          "move_up": "Sogeza juu",
+          "move_down": "Sogeza chini",
+          "library_row_save": "Hifadhi somo kwenye maktaba",
+          "delete_row": "Futa safu"
+        },
+        "descriptions": {
+          "snapshot_path": "Njia ya snapshot ya maandishi inayohusishwa: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Pakia snapshot ya maandishi kama maandishi ya sasa · Njia inayohusishwa: {path}"
+        }
+      },
+      "comentario_modal": {
+        "comment_title": "Maoni",
+        "comment_placeholder": "Ongeza maoni...",
+        "snapshot_select": "Chagua snapshot ya maandishi",
+        "snapshot_clear": "Ondoa snapshot iliyochaguliwa kutoka safu hii",
+        "close_aria": "Funga maoni",
+        "snapshot_source_reminder": {
+          "title": "Kikumbusho cha chanzo cha snapshot",
+          "message": "Safu hii inahusishwa na snapshot ya maandishi. Kagua maoni yake ya chanzo kabla ya kuchagua faili ya ndani.",
+          "source_comment": "Maoni ya chanzo cha snapshot:",
+          "select_file": "Chagua faili ya ndani",
+          "cancel": "Ghairi",
+          "close_aria": "Funga kikumbusho cha chanzo cha snapshot"
+        },
+        "snapshot_details_confirm": {
+          "title": "Tumia data kutoka snapshot ya maandishi iliyochaguliwa?",
+          "message": "Kagua data inayopatikana kutoka snapshot ya maandishi iliyochaguliwa kabla ya kuitumia kwenye somo hili.",
+          "replace_reading_name": "Badilisha jina la somo",
+          "set_reading_name": "Weka jina la somo",
+          "current_name": "Jina la sasa",
+          "snapshot_name": "Jina la snapshot",
+          "empty": "(tupu)",
+          "replace_time": "Badilisha muda uliokadiriwa",
+          "current_time": "Muda wa sasa",
+          "snapshot_estimate": "Makadirio ya snapshot",
+          "reading_speed": "Kasi ya kusoma",
+          "apply": "Tumia",
+          "apply_selected": "Tumia vilivyochaguliwa",
+          "keep": "Weka thamani za sasa",
+          "close_aria": "Funga uthibitisho wa maelezo ya snapshot"
+        }
+      },
+      "biblioteca": {
+        "library_title": "Maktaba ya masomo",
+        "close_aria": "Funga maktaba ya masomo",
+        "search": "Tafuta",
+        "search_placeholder": "Tafuta kwenye maktaba...",
+        "empty": "(tupu)",
+        "library_row_load": "Pakia somo kwenye jukumu",
+        "library_row_delete": "Futa somo kutoka kwenye maktaba"
+      },
+      "guardar_lectura_modal": {
+        "library_save_title": "Hifadhi somo kwenye maktaba",
+        "close_aria": "Funga dirisha la kuhifadhi kwenye maktaba",
+        "library_save_question": "Jumuisha maoni? Ikiwa somo hili lina snapshot ya maandishi iliyochaguliwa, uhusiano wake utahifadhiwa kwa vyovyote.",
+        "yes": "Ndiyo",
+        "no": "Hapana",
+        "cancel": "Ghairi"
+      },
+      "alerts": {
+        "task_unavailable": "Utendaji wa majukumu haupatikani.",
+        "task_open_error": "Kihariri cha Majukumu hakikuweza kufunguliwa.",
+        "task_load_error": "Jukumu halikuweza kupakiwa.",
+        "task_save_error": "Jukumu halikuweza kuhifadhiwa.",
+        "task_save_success": "Jukumu limehifadhiwa.",
+        "task_delete_error": "Jukumu halikuweza kufutwa.",
+        "task_delete_unavailable": "Hakuna jukumu lililohifadhiwa la kufuta.",
+        "task_invalid_file": "Faili ya jukumu si halali.",
+        "task_invalid_rows": "Kuna safu zisizo halali katika jukumu.",
+        "task_duration_too_large": "Jumla ya muda uliokadiriwa wa jukumu ni mkubwa mno.",
+        "task_path_outside": "Faili lazima iwe ndani ya folda ya majukumu.",
+        "name_required": "Jina la jukumu linahitajika.",
+        "row_text_required": "Jina la safu haliwezi kuwa tupu.",
+        "file_select_error": "Uteuzi wa faili haukuweza kukamilishwa.",
+        "library_load_error": "Somo halikuweza kupakiwa kwenye jukumu.",
+        "library_save_error": "Somo halikuweza kuhifadhiwa kwenye maktaba.",
+        "library_save_success": "Somo limehifadhiwa kwenye maktaba.",
+        "library_delete_error": "Somo halikuweza kufutwa kutoka kwenye maktaba.",
+        "column_layout_save_error": "Mpangilio wa safu wima haukuweza kuhifadhiwa na huenda usibaki mara ijayo.",
+        "snapshot_missing": "Snapshot ya maandishi iliyochaguliwa haipo tena.",
+        "snapshot_invalid": "Snapshot ya maandishi iliyochaguliwa si halali.",
+        "snapshot_read_error": "Snapshot ya maandishi iliyochaguliwa haikuweza kusomwa.",
+        "link_blocked": "Kiungo kimezuiwa.",
+        "link_missing": "Faili haikupatikana.",
+        "link_error": "Hitilafu wakati wa kufungua kiungo au njia ya ndani.",
+        "close_unsaved": "Kuna mabadiliko ambayo hayajahifadhiwa. Funga bila kuhifadhi?"
+      }
+    },
+    "text_time_calculator": {
+      "title": "toT — Kikokotoo cha haraka",
+      "calculate_label": "Kokotoa",
+      "targets": {
+        "words": "Maneno",
+        "time": "Muda",
+        "wpm": "WPM"
+      },
+      "labels": {
+        "words": "Maneno",
+        "time": "Muda",
+        "wpm": "WPM"
+      },
+      "validation": {
+        "words": "Weka namba kamili isiyo hasi.",
+        "time": "Weka muda katika umbizo H+:MM:SS.",
+        "wpm": "Weka namba kamili chanya.",
+        "formula": "WPM haiwezi kukokotolewa kutoka 00:00:00."
+      }
+    },
+    "reading_test": {
+      "entry": {
+        "title": "Jaribio la kasi ya kusoma",
+        "show_instructions": "Onyesha maelekezo",
+        "hide_instructions": "Ficha maelekezo",
+        "intro": "Jaribio hili linalenga kukadiria kasi yako halisi ya kusoma kupitia kipindi kinachoongozwa. Programu itafungua maandishi na kusubiri ubonyeze Anza (▶) kwenye Kipima Muda Kinachoelea ukiwa tayari kuanza. Baada ya jaribio kuanza, usibonyeze Sitisha kwa muda (⏸) hadi umalize kusoma: Sitisha kwa muda humaliza jaribio; hakisitishi kipima muda kwa muda. Tumia Simamisha/Weka upya (⏹) tu ikiwa unataka kughairi jaribio. Baadaye unaweza kupitia maswali ya ufahamu ikiwa maandishi yana maswali hayo na, mwishoni, kuunda preseti kutokana na matokeo.\nKabla ya kuanza, kumbuka kwamba maandishi haya ya jaribio kwa kawaida huhitaji dakika 5 hadi 15 za umakini usiokatizwa.\nMkusanyiko huu hutumia maandishi mafupi, kwa hiyo tafsiri matokeo kwa tahadhari. Hayapaswi kutumiwa moja kwa moja kutabiri matokeo ya maandishi marefu, ambako mambo chanya kama mtiririko na kujengeka kwa muktadha, na mambo hasi kama kurejea kiakili yaliyosomwa na uchovu, kwa kawaida hujitokeza.",
+        "eligible_count": "Faili zinazostahiki:",
+        "show_bundled_entries": "Majaribio yaliyojumuishwa",
+        "get_more_files": "Pata faili zaidi",
+        "import_files_button": "Leta faili",
+        "start_random_text_button": "Anza na maandishi ya nasibu",
+        "start_current_text_button": "Anza na maandishi ya sasa",
+        "pool_exhausted_message": "Hakuna faili za jaribio ambazo hazijatumika zilizobaki. Weka upya mkusanyiko au ongeza faili zaidi.",
+        "visible_empty_bundled_hidden_message": "Faili za jaribio zilizojumuishwa zimezimwa na hakuna faili ambazo hazijatumika zilizobaki. Ziwashe tena au leta faili zaidi ili kuendelea.",
+        "close_aria": "Funga dirisha la jaribio la kasi ya kusoma",
+        "start_random_confirm": "Hii itabadilisha maandishi ya sasa kwa maandishi ya nasibu yanayostahiki kutoka kwenye mkusanyiko. Unataka kuendelea?",
+        "reset_confirm": "Hii itaweka upya mkusanyiko wote wa jaribio na kuashiria faili zake zote kuwa hazijatumika tena. Unataka kuendelea?",
+        "help": {
+          "show_bundled_entries": "Jumuisha kwenye mkusanyiko faili za mwanzo za jaribio zilizofungashwa na programu",
+          "get_more_files": "Pata faili zaidi za jaribio kutoka folda ya Google Drive",
+          "import_files": "Leta faili za jaribio kutoka kwenye kifaa chako",
+          "start_random_text": "Anzisha jaribio kwa maandishi ya nasibu yanayostahiki kutoka kwenye mkusanyiko",
+          "start_current_text": "Tumia maandishi ya sasa bila kuyabadilisha au kutumia faili ya mkusanyiko"
+        },
+        "names": {
+          "reset_pool": "Weka upya mkusanyiko wa jaribio"
+        },
+        "import": {
+          "import_summary": "Uletaji umekamilika. Zilizoletwa: {imported}. Nakala rudufu zilizorukwa: {skippedDuplicates}. Zilizoshindwa uthibitishaji: {failedValidation}. Vipengee vya arkivu vilivyoshindwa: {failedArchiveEntries}. Uandishi wa faili ulioshindwa: {failedWrites}."
+        }
+      },
+      "prestart": {
+        "reminder": "Bonyeza Anza (▶) kwenye Kipima Muda Kinachoelea ukiwa tayari kuanza. Baada ya jaribio kuanza, usibonyeze Sitisha kwa muda (⏸) hadi umalize kusoma: Sitisha kwa muda humaliza jaribio; hakisitishi kipima muda kwa muda. Bonyeza Simamisha/Weka upya (⏹) tu ikiwa unataka kughairi jaribio."
+      },
+      "questions": {
+        "title": "Maswali ya ufahamu wa kusoma",
+        "intro": "Kujibu maswali haya ya ufahamu wa kusoma ni hiari na hakuathiri alama yako ya mwisho. Yanalenga tu kukusaidia kutathmini ugumu wa maandishi na kama kasi na mtindo wako wa kusoma vilikuruhusu kufikia kiwango cha msingi cha ufahamu. Majibu yako hayahifadhiwi wala kutumwa kwa wasanidi programu au mtu mwingine yeyote.",
+        "random_title": "Msingi wa kubahatisha bila mpangilio",
+        "random_value": "Alama inayotarajiwa kwa kubahatisha bila mpangilio: {percentage}",
+        "feedback_title": "Maoni",
+        "feedback_prefix": "Kwa malalamiko:",
+        "summary_aria": "Muhtasari wa jaribio",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Maswali yote lazima yajibiwe kabla ya kutathmini.",
+        "result_summary": "{correct} kati ya {total} sahihi ({percentage})",
+        "chance_at_least_observed": "Uwezekano wa kupata angalau alama hii kwa kubahatisha bila mpangilio: {percentage}",
+        "fatal_invalid": "Data ya maswali si halali.",
+        "check_button": "Kagua matokeo",
+        "continue_button": "Endelea"
+      },
+      "result": {
+        "title": "Matokeo ya kasi ya kusoma",
+        "measured_wpm": "WPM iliyopimwa",
+        "elapsed_time": "Muda",
+        "word_count": "Maneno",
+        "summary_aria": "Muhtasari wa jaribio",
+        "continue_button": "Endelea"
+      },
+      "alerts": {
+        "unavailable": "Kipengele cha jaribio la kasi ya kusoma hakipatikani.",
+        "precondition_blocked": "Jaribio la kasi ya kusoma linaweza kuanza tu wakati programu iko katika hali thabiti. Funga madirisha ya ziada na hakikisha kipima muda kimesimama.",
+        "pool_error": "Hitilafu ilitokea wakati wa kukagua mkusanyiko wa jaribio la kasi ya kusoma.",
+        "no_matching_files": "Hakuna faili za jaribio ambazo hazijatumika zilizobaki zinazolingana na uteuzi wa sasa.",
+        "visible_empty_bundled_hidden": "Faili za jaribio zilizojumuishwa zimezimwa na hakuna faili ambazo hazijatumika zilizobaki. Ziwashe tena au leta faili zaidi ili kuendelea.",
+        "current_text_empty": "Maandishi ya sasa ni tupu. Pakia au andika maandishi kabla ya kuanzisha jaribio kwa maandishi ya sasa.",
+        "result_invalid": "Matokeo ya jaribio hayakuweza kubadilishwa kuwa WPM halali. Mchakato uliisha bila kufungua dirisha la preseti.",
+        "result_unavailable": "Matokeo ya kasi ya kusoma hayakuweza kuonyeshwa. Mchakato uliendelea.",
+        "preset_unavailable": "Dirisha la preseti halikuweza kufunguliwa baada ya jaribio.",
+        "questions_unavailable": "Dirisha la maswali ya ufahamu halikuweza kufunguliwa. Mchakato uliisha kabla ya kuunda preseti.",
+        "pool_import_failed": "Faili za jaribio la kasi ya kusoma hazikuweza kuletwa.",
+        "pool_import_state_cleanup_failed": "Faili za jaribio la kasi ya kusoma zililetwa, lakini hali ya mkusanyiko haikuweza kusasishwa kikamilifu.",
+        "start_failed": "Jaribio la kasi ya kusoma halikuweza kuanzishwa.",
+        "cancelled": "Jaribio la kasi ya kusoma lilighairiwa.",
+        "cancelled_window_closed": "Jaribio la kasi ya kusoma lilighairiwa kwa sababu moja ya madirisha ya kipindi chake lilifungwa."
+      }
+    },
+    "presets": {
+      "preset_modal": {
+        "title_new": "Preseti mpya",
+        "title_edit": "Hariri preseti",
+        "heading_new": "Unda preseti mpya",
+        "heading_edit": "Hariri preseti iliyochaguliwa",
+        "name": "Jina:",
+        "name_placeholder": "Jina la preseti",
+        "wpm": "WPM:",
+        "description": "Maelezo:",
+        "description_placeholder": "Maelezo mafupi...",
+        "char_count": "Vibambo vilivyobaki: {remaining}",
+        "hint": "Preseti maalum huhifadhiwa katika mipangilio ya mtumiaji.",
+        "cancel": "Ghairi",
+        "save": "Hifadhi"
+      },
+      "alerts": {
+        "not_found": "Preseti iliyochaguliwa haikupatikana.",
+        "delete_error": "Hitilafu ilitokea wakati wa kufuta preseti.",
+        "restore_error": "Hitilafu ilitokea wakati wa kurejesha preseti.",
+        "open_folder_unsupported": "Haiwezekani kufungua folda ya preseti katika mazingira haya.",
+        "open_folder_error": "Hitilafu ilitokea wakati wa kujaribu kufungua folda ya preseti.",
+        "open_default_folder_failed": "Folda ya preseti chaguo-msingi haikuweza kufunguliwa.",
+        "unavailable": "Dirisha la preseti halipatikani katika toleo hili la programu.",
+        "open_error": "Hitilafu ilitokea wakati wa kufungua dirisha la preseti.",
+        "name_empty": "Jina haliwezi kuwa tupu.",
+        "wpm_invalid": "WPM lazima iwe namba kati ya {min} na {max}.",
+        "create_error": "Hitilafu ilitokea wakati wa kuunda preseti.",
+        "edit_error": "Hitilafu ilitokea wakati wa kuhariri preseti.",
+        "process_error": "Hitilafu ilitokea wakati wa kuchakata preseti."
+      }
+    },
+    "browser_extension": {
+      "title": "Tiempo de lectura",
+      "subtitle": "Kiendelezi cha kivinjari",
+      "availability": "Kinapatikana sasa kwenye Chrome. Vivinjari zaidi vinakuja hivi karibuni.",
+      "chrome_store_aria": "Fungua ukurasa wa Chrome Web Store wa kiendelezi",
+      "close_aria": "Funga dirisha la kiendelezi cha kivinjari",
+      "alerts": {
+        "modal_open_blocked": "Dirisha la kiendelezi cha kivinjari haliwezi kufunguliwa kwa sasa."
+      }
+    },
+    "info": {
+      "loading": "Inapakia...",
+      "missing_content": "Hakuna maudhui yanayopatikana kwa \"{name}\".",
+      "close_aria": "Funga taarifa",
+      "media_lightbox": {
+        "title": "Onyesho lililopanuliwa la picha ya skrini",
+        "close_aria": "Funga onyesho la awali"
+      },
+      "external": {
+        "blocked": "Kiungo kimezuiwa",
+        "error": "Hitilafu wakati wa kufungua kiungo"
+      },
+      "appdoc": {
+        "blocked": "Hati imezuiwa",
+        "missing": "Hati haikupatikana",
+        "error": "Hitilafu wakati wa kufungua hati"
+      },
+      "acerca_de": {
+        "title": "Kuhusu",
+        "version": {
+          "unavailable": "Haipatikani"
+        },
+        "env": {
+          "unavailable": "Haipatikani"
+        }
+      },
+      "instrucciones": {
+        "title": "Jinsi ya kutumia programu"
+      },
+      "links_interes": {
+        "title": "Viungo muhimu",
+        "section_biblio_label": "Marejeleo ya bibliografia"
+      }
+    }
+  }
+}

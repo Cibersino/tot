@@ -54,6 +54,7 @@
     Object.freeze({ value: 'qu', labelKey: 'renderer.snapshots.options.language.qu' }),
     Object.freeze({ value: 'ru', labelKey: 'renderer.snapshots.options.language.ru' }),
     Object.freeze({ value: 'sv', labelKey: 'renderer.snapshots.options.language.sv' }),
+    Object.freeze({ value: 'sw', labelKey: 'renderer.snapshots.options.language.sw' }),
     Object.freeze({ value: 'tr', labelKey: 'renderer.snapshots.options.language.tr' }),
     Object.freeze({ value: 'ur', labelKey: 'renderer.snapshots.options.language.ur' }),
     Object.freeze({ value: 'vi', labelKey: 'renderer.snapshots.options.language.vi' }),

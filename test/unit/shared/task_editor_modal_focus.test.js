@@ -1356,6 +1356,7 @@ test('every shipped locale explains that a selected text snapshot association is
     qu: 'Rimayta churaychu? Kay siqipi qillqa snapshot akllasqa kaptinqa, tinkisqan imayna kaptinpas waqaychasqa kanqa.',
     ru: 'Включить комментарий? Если для этой записи выбран текстовый снапшот, его связь будет сохранена в любом случае.',
     sv: 'Inkludera kommentar? Om en textsnapshot är vald för den här läsningen sparas kopplingen oavsett vilket alternativ du väljer.',
+    sw: 'Jumuisha maoni? Ikiwa somo hili lina snapshot ya maandishi iliyochaguliwa, uhusiano wake utahifadhiwa kwa vyovyote.',
     tr: 'Yorum dahil edilsin mi? Bu okuma için bir metin snapshot\'ı seçilmişse, bağlantısı her durumda kaydedilir.',
     ur: 'تبصرہ شامل کریں؟ اگر اس مطالعے کے لیے متن کا اسنیپ شاٹ منتخب ہے تو اس کا تعلق ہر صورت محفوظ ہو جائے گا۔',
     vi: 'Bao gồm bình luận? Nếu có bản lưu văn bản được chọn cho mục đọc này, liên kết của bản đó vẫn sẽ được lưu trong mọi trường hợp.',
