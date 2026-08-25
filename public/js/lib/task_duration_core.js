@@ -13,10 +13,11 @@
 
 (function initTaskDurationCore(root, factory) {
   const api = factory();
-  if (typeof module === 'object' && module.exports) {
+  const isCommonJs = typeof module === 'object' && module.exports;
+  if (isCommonJs) {
     module.exports = api;
   }
-  if (root && typeof root === 'object') {
+  if (!isCommonJs && root && typeof root === 'object') {
     root.TaskDurationCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {

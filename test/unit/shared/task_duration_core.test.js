@@ -2,10 +2,30 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
 
 const {
   createTaskDurationUtils,
 } = require('../../../public/js/lib/task_duration_core');
+
+test('task_duration_core exposes its API to CommonJS without a global side effect', () => {
+  assert.equal(typeof createTaskDurationUtils, 'function');
+  assert.equal(globalThis.TaskDurationCore, undefined);
+});
+
+test('task_duration_core exposes its API as a browser global', () => {
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/lib/task_duration_core.js'),
+    'utf8'
+  );
+  const sandbox = {};
+  vm.createContext(sandbox);
+  vm.runInContext(source, sandbox, { filename: 'public/js/lib/task_duration_core.js' });
+
+  assert.equal(typeof sandbox.TaskDurationCore.createTaskDurationUtils, 'function');
+});
 
 test('task_duration_core derives per-row remaining seconds with exact hundredths', () => {
   const utils = createTaskDurationUtils();
