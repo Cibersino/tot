@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Chinkachinapaq mana waqaychasqa llamk'anachu.",
         "task_invalid_file": "Llamk'ana archivo mana allinchu.",
         "task_invalid_rows": "Llamk'anapi mana allin siqikuna kan.",
+        "task_duration_too_large": "Tareapa llapan yuyasqa pachanqa anchata hatunmi.",
         "task_path_outside": "Archivoqa llamk'anakuna carpetapa ukunpi kanan.",
         "name_required": "Llamk'anapa sutinqa kananpunim.",
         "row_text_required": "Siqipa qillqanqa mana ch'usaq kananchu.",

@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Ngelay tarea elkünutulu ñamümael.",
         "task_invalid_file": "Archivo de tareas no küme.",
         "task_invalid_rows": "Tarea mew müley ruka no küme.",
+        "task_duration_too_large": "Küdaw ñi kom rakiduam antü fütra rume.",
         "task_path_outside": "Archivo müleyafuy tareas carpeta mew.",
         "name_required": "Üi müleyafuy.",
         "row_text_required": "Ruka wirin welli mülelay.",

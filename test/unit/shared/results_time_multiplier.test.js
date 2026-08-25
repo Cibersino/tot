@@ -5,6 +5,12 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const {
+  createReadingDurationUtils,
+} = require('../../../public/js/lib/reading_duration_core');
+const {
+  createStopwatchTimeUtils,
+} = require('../../../public/js/lib/stopwatch_time_core');
 
 function createElement(id) {
   const listeners = new Map();
@@ -43,7 +49,11 @@ function createElement(id) {
   };
 }
 
-function createHarness({ maxResultsTimeMultiplier = 9999 } = {}) {
+function createHarness({
+  maxResultsTimeMultiplier = 9999,
+  readingDurationUtils = createReadingDurationUtils(),
+} = {}) {
+  const stopwatchTimeUtils = createStopwatchTimeUtils();
   const elements = {
     resultsTimeMultiplierLabel: createElement('resultsTimeMultiplierLabel'),
     resultsTimeMultiplierInput: createElement('resultsTimeMultiplierInput'),
@@ -56,14 +66,10 @@ function createHarness({ maxResultsTimeMultiplier = 9999 } = {}) {
       AppConstants: {
         MAX_RESULTS_TIME_MULTIPLIER: maxResultsTimeMultiplier,
       },
-      FormatUtils: {
-        getDisplayTimeParts(totalSeconds) {
-          const total = Number(totalSeconds);
-          return {
-            hours: Math.floor(total / 3600),
-            minutes: Math.floor((total % 3600) / 60),
-            seconds: total % 60,
-          };
+      ReadingDurationUtils: readingDurationUtils,
+      StopwatchTimeCore: {
+        createStopwatchTimeUtils() {
+          return stopwatchTimeUtils;
         },
       },
       getLogger() {
@@ -91,6 +97,7 @@ function createHarness({ maxResultsTimeMultiplier = 9999 } = {}) {
   return {
     elements,
     multiplier: sandbox.window.ResultsTimeMultiplier,
+    readingDurationUtils,
   };
 }
 
@@ -98,7 +105,9 @@ test('results multiplier marks an over-cap value invalid before committing its c
   const harness = createHarness();
   const input = harness.elements.resultsTimeMultiplierInput;
   const output = harness.elements.resultsTimeMultiplierOutput;
-  harness.multiplier.setBaseTotalSeconds(1);
+  harness.multiplier.setBaseReadingDuration(
+    harness.readingDurationUtils.createEstimatedReadingDuration(1, 60)
+  );
 
   input.value = '2e0';
   input.dispatch('input');
@@ -142,7 +151,9 @@ test('results multiplier uses its AppConstants cap', () => {
   const harness = createHarness({ maxResultsTimeMultiplier: 3 });
   const input = harness.elements.resultsTimeMultiplierInput;
   const output = harness.elements.resultsTimeMultiplierOutput;
-  harness.multiplier.setBaseTotalSeconds(1);
+  harness.multiplier.setBaseReadingDuration(
+    harness.readingDurationUtils.createEstimatedReadingDuration(1, 60)
+  );
 
   input.value = '4';
   input.dispatch('input');
@@ -152,4 +163,39 @@ test('results multiplier uses its AppConstants cap', () => {
   input.dispatch('blur');
   assert.equal(input.value, '3');
   assert.equal(output.textContent, ': 0h 0m 3s');
+});
+
+test('results multiplier scales the exact reading estimate before rounding for display', () => {
+  const harness = createHarness();
+  const input = harness.elements.resultsTimeMultiplierInput;
+  const output = harness.elements.resultsTimeMultiplierOutput;
+
+  harness.multiplier.setBaseReadingDuration(
+    harness.readingDurationUtils.createEstimatedReadingDuration(1, 40)
+  );
+  assert.equal(output.textContent, ': 0h 0m 2s');
+
+  input.value = '2';
+  input.dispatch('input');
+  assert.equal(output.textContent, ': 0h 0m 3s');
+});
+
+test('results multiplier treats a failed reading-duration calculation as an invariant violation', () => {
+  const exactReadingDurationUtils = createReadingDurationUtils();
+  const harness = createHarness({
+    readingDurationUtils: {
+      ...exactReadingDurationUtils,
+      getRoundedReadingSeconds() {
+        return null;
+      },
+    },
+  });
+
+  assert.throws(
+    () => harness.multiplier.setBaseReadingDuration(
+      exactReadingDurationUtils.createEstimatedReadingDuration(1, 60)
+    ),
+    /multiplied reading duration unavailable/
+  );
+  assert.equal(harness.elements.resultsTimeMultiplierOutput.textContent, '');
 });

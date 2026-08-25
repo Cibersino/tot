@@ -565,6 +565,7 @@
         "task_delete_unavailable": "没有可删除的已保存任务。",
         "task_invalid_file": "任务文件无效。",
         "task_invalid_rows": "任务中存在无效行。",
+        "task_duration_too_large": "任务的总预计时长过大。",
         "task_path_outside": "文件必须位于任务文件夹内。",
         "name_required": "任务名称为必填项。",
         "row_text_required": "行文本不能为空。",

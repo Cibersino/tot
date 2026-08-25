@@ -216,6 +216,8 @@ async function createHarness({
         },
       },
       FormatCore: require('../../../public/js/lib/format_core'),
+      ReadingDurationUtils: require('../../../public/js/lib/reading_duration_core')
+        .createReadingDurationUtils(),
       StopwatchTimeCore: require('../../../public/js/lib/stopwatch_time_core'),
       TextTimeCalculatorCore: require('../../../public/js/lib/text_time_calculator_core'),
       AppConstants: {

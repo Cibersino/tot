@@ -309,6 +309,43 @@ test('task-list-save persists task data through saveJsonStrict', async (t) => {
   assert.equal(savedPayload.rows[0].texto, 'Read chapter 1');
 });
 
+test('task-list-save aggregates exact Task Editor remaining hundredths before flooring', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-exact-remaining');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const saveDialogPath = path.join(tasksRoot, 'Exact remaining.json');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath,
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    {
+      meta: createTaskMeta('Exact remaining'),
+      rows: [
+        createTaskRow({ tiempoSeconds: 1, percentComplete: 1 }),
+        createTaskRow({ texto: 'Read chapter 2', tiempoSeconds: 29, percentComplete: 31 }),
+      ],
+    }
+  );
+
+  assert.equal(result.ok, true);
+  const savedPayload = JSON.parse(fs.readFileSync(result.path, 'utf8'));
+  assert.deepEqual(savedPayload.summary, {
+    estimatedTotalSeconds: 30,
+    estimatedRemainingSeconds: 21,
+  });
+});
+
 test('task-list-save omits the summary when the total estimate is zero', async (t) => {
   const tempDir = createTestTempDir('tasks-main-save-zero-summary');
   const tasksRoot = path.join(tempDir, 'lists');
@@ -419,6 +456,43 @@ test('task-list-save rejects noncanonical task-row values without writing a file
     message: 'INVALID_ROW',
   });
   assert.equal(fs.existsSync(path.join(tasksRoot, 'Invalid_Plan.json')), false);
+});
+
+test('task-list-save rejects a valid-row aggregate outside the canonical summary range', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-invalid-summary');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const saveDialogPath = path.join(tasksRoot, 'Invalid summary.json');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath,
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    {
+      meta: createTaskMeta('Invalid summary'),
+      rows: [
+        createTaskRow({ tiempoSeconds: Number.MAX_SAFE_INTEGER }),
+        createTaskRow({ texto: 'Read chapter 2', tiempoSeconds: 1 }),
+      ],
+    }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'INVALID_SUMMARY',
+  });
+  assert.equal(fs.existsSync(path.join(tasksRoot, 'Invalid_summary.json')), false);
 });
 
 test('open-task-editor rejects invalid persisted task data without rewriting it', async (t) => {
@@ -691,6 +765,54 @@ test('task-library-save persists library entries through saveJsonStrict', async 
   }]);
 });
 
+test('task-library-list returns canonical library entries without materializing absent optional fields', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-library-list-canonical-shape');
+  const tasksRoot = path.join(tempDir, 'lists');
+  writeJsonFile(getLibraryFilePath(tasksRoot), [{
+    texto: 'Read chapter 1',
+    tiempoSeconds: 180,
+    enlace: '',
+  }, {
+    texto: 'Read chapter 2',
+    tiempoSeconds: 240,
+    enlace: 'https://example.com/read',
+    comentario: 'Review key ideas',
+    snapshotRelPath: '/snapshots/chapter-2.json',
+  }]);
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-library-list',
+    { sender: taskEditorWin.webContents }
+  );
+
+  assert.deepEqual(result, {
+    ok: true,
+    items: [{
+      texto: 'Read chapter 1',
+      tiempoSeconds: 180,
+      enlace: '',
+    }, {
+      texto: 'Read chapter 2',
+      tiempoSeconds: 240,
+      enlace: 'https://example.com/read',
+      comentario: 'Review key ideas',
+      snapshotRelPath: '/snapshots/chapter-2.json',
+    }],
+  });
+});
+
 test('task-library-save rejects payloads that are not exact library entries', async (t) => {
   const tempDir = createTestTempDir('tasks-main-library-invalid-payload');
   const tasksRoot = path.join(tempDir, 'lists');
@@ -831,6 +953,35 @@ test('task-library-list rejects invalid persisted entries without rewriting the 
   assert.equal(fs.readFileSync(libraryFile, 'utf8'), originalFile);
 });
 
+test('task-library-delete rejects a malformed texto request without changing the library', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-library-delete-invalid-request');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const libraryFile = getLibraryFilePath(tasksRoot);
+  writeJsonFile(libraryFile, [createLibraryEntry()]);
+  const originalFile = fs.readFileSync(libraryFile, 'utf8');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-library-delete',
+    { sender: taskEditorWin.webContents },
+    { texto: false }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'INVALID_REQUEST' });
+  assert.equal(fs.readFileSync(libraryFile, 'utf8'), originalFile);
+});
+
 test('task-library-delete persists library removals through saveJsonStrict', async (t) => {
   const tempDir = createTestTempDir('tasks-main-library-delete');
   const tasksRoot = path.join(tempDir, 'lists');
@@ -948,6 +1099,37 @@ test('task-files-select returns selected local file paths for Task Editor sender
     ok: true,
     filePaths: [path.resolve(selectedA), path.resolve(selectedB)],
   });
+});
+
+test('task-files-select rejects a malformed native selection instead of discarding invalid paths', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-file-select-invalid-path');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const selectedPath = path.join(tempDir, 'docs', 'chapter-1.pdf');
+  const { tasksMain, restore, saveJsonCalls } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+    openDialogResponse: {
+      canceled: false,
+      filePaths: [selectedPath, false],
+    },
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-files-select',
+    { sender: taskEditorWin.webContents }
+  );
+
+  assert.equal(result.ok, false);
+  assert.equal(result.code, 'READ_FAILED');
+  assert.equal(saveJsonCalls.length, 0);
 });
 
 test('task-file-select returns the selected local file path for Task Editor senders', async (t) => {

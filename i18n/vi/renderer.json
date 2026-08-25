@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Không có tác vụ đã lưu để xóa.",
         "task_invalid_file": "Tệp tác vụ không hợp lệ.",
         "task_invalid_rows": "Có hàng không hợp lệ trong tác vụ.",
+        "task_duration_too_large": "Tổng thời lượng ước tính của tác vụ quá lớn.",
         "task_path_outside": "Tệp phải nằm trong thư mục tác vụ.",
         "name_required": "Tên tác vụ là bắt buộc.",
         "row_text_required": "Văn bản của hàng không được để trống.",

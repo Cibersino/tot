@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Não há nenhuma tarefa salva para excluir.",
         "task_invalid_file": "Arquivo de tarefa inválido.",
         "task_invalid_rows": "A tarefa contém linhas inválidas.",
+        "task_duration_too_large": "A duração total estimada da tarefa é grande demais.",
         "task_path_outside": "O arquivo deve estar dentro da pasta de tarefas.",
         "name_required": "O nome da tarefa é obrigatório.",
         "row_text_required": "O nome da linha não pode estar vazio.",

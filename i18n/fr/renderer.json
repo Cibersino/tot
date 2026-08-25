@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Il n'y a pas de tâche à supprimer.",
         "task_invalid_file": "Fichier de tâche invalide.",
         "task_invalid_rows": "Il y a des lignes invalides dans la tâche.",
+        "task_duration_too_large": "La durée totale estimée de la tâche est trop grande.",
         "task_path_outside": "Le fichier doit être situé dans le dossier des tâches.",
         "name_required": "Le nom de la tâche est obligatoire.",
         "row_text_required": "Le texte de la ligne ne peut pas être vide.",

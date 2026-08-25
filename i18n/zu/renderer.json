@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Awukho umsebenzi ogciniwe ozosuswa.",
         "task_invalid_file": "Ifayela lomsebenzi alivumelekile.",
         "task_invalid_rows": "Kunemigqa engavumelekile emsebenzini.",
+        "task_duration_too_large": "Isikhathi esiphelele esilinganiselwe somsebenzi sikhulu kakhulu.",
         "task_path_outside": "Ifayela kufanele libe ngaphakathi kwefolda yemisebenzi.",
         "name_required": "Igama lomsebenzi liyadingeka.",
         "row_text_required": "Umbhalo womugqa awukwazi ukuba nalutho.",

@@ -321,6 +321,26 @@ test('task-row snapshot inspection returns canonical optional metadata and readi
     ok: false,
     code: 'INVALID_SNAPSHOT_PATH',
   });
+
+  const malformedPath = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: false }
+  );
+  assert.deepEqual(malformedPath, {
+    ok: false,
+    code: 'INVALID_SNAPSHOT_PATH',
+  });
+
+  const malformedLoadPath = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: false }
+  );
+  assert.deepEqual(malformedLoadPath, {
+    ok: false,
+    code: 'INVALID_SNAPSHOT_PATH',
+  });
 });
 
 test('non-interactive snapshot save creates deterministic collision-safe files and preserves tags', async (t) => {
@@ -518,6 +538,49 @@ test('snapshot save derives count and reading metrics from exact text and settin
       estimatedSeconds: 1,
       wpm: 180,
     },
+  });
+});
+
+test('snapshot save rounds exact half-second reading estimates upward', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-half-second-metrics');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: Array.from({ length: 123 }, () => 'word').join(' '),
+    settings: { language: 'en', modeConteo: 'simple' },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Half second metrics',
+      includeCount: true,
+      includeReading: true,
+      wpm: 120,
+    }
+  );
+
+  assert.equal(result.ok, true);
+  const payload = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
+  assert.deepEqual(payload.metrics.reading, {
+    estimatedSeconds: 62,
+    wpm: 120,
   });
 });
 
@@ -884,6 +947,43 @@ test('snapshot save maps saveJsonStrict failures to WRITE_FAILED', async (t) => 
   assert.equal(saveResult.ok, false);
   assert.equal(saveResult.code, 'WRITE_FAILED');
   assert.match(String(saveResult.message || ''), /disk full/i);
+});
+
+test('snapshot save rejects a non-string current-text state instead of saving an empty snapshot', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-invalid-current-text');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: false,
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+
+  assert.equal(result.ok, false);
+  assert.equal(result.code, 'WRITE_FAILED');
+  assert.deepEqual(fs.readdirSync(rootDir), []);
 });
 
 test('open snapshots folder delegates to shell.openPath using the snapshots root', async (t) => {

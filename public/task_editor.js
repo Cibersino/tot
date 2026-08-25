@@ -46,9 +46,22 @@ if (!stopwatchTimeCore || typeof stopwatchTimeCore.createStopwatchTimeUtils !== 
 }
 const stopwatchTimeUtils = stopwatchTimeCore.createStopwatchTimeUtils();
 const {
-  formatStopwatchMs,
-  parseStopwatchInput,
+  formatClockSeconds,
+  parseClockSeconds,
 } = stopwatchTimeUtils;
+const taskDurationCore = window.TaskDurationCore || null;
+if (!taskDurationCore || typeof taskDurationCore.createTaskDurationUtils !== 'function') {
+  throw new Error('[task-editor] TaskDurationCore.createTaskDurationUtils unavailable; cannot continue');
+}
+const taskDurationUtils = taskDurationCore.createTaskDurationUtils();
+const EMPTY_TASK_ROW = Object.freeze({
+  texto: '',
+  tiempoSeconds: 0,
+  percentComplete: 0,
+  enlace: '',
+  comentario: '',
+  snapshotRelPath: '',
+});
 
 // =============================================================================
 // i18n
@@ -259,14 +272,13 @@ function resetTaskEditorValidationState() {
 }
 
 function clampTaskName(input) {
-  const name = String(input || '');
-  return name.length > TASK_NAME_MAX_CHARS
-    ? name.slice(0, TASK_NAME_MAX_CHARS)
-    : name;
+  return input.length > TASK_NAME_MAX_CHARS
+    ? input.slice(0, TASK_NAME_MAX_CHARS)
+    : input;
 }
 
 function normalizeSnapshotRelPath(input) {
-  const raw = String(input || '').trim();
+  const raw = input.trim();
   if (!raw) return '';
   const normalizedSlashes = raw.replace(/\\/g, '/');
   const withoutLeading = normalizedSlashes.startsWith('/')
@@ -280,62 +292,90 @@ function normalizeSnapshotRelPath(input) {
   return rel;
 }
 
+function isCanonicalSnapshotRelPath(value) {
+  return typeof value === 'string' && normalizeSnapshotRelPath(value) === value;
+}
+
 function setCommentSnapshotDisplay(snapshotRelPath) {
   if (!commentSnapshotPath) return;
-  const safeRel = normalizeSnapshotRelPath(snapshotRelPath);
-  if (!safeRel) {
+  if (!isCanonicalSnapshotRelPath(snapshotRelPath)) {
+    throw new Error('[task-editor] setCommentSnapshotDisplay requires canonical snapshotRelPath');
+  }
+  if (!snapshotRelPath) {
     commentSnapshotPath.textContent = '';
     commentSnapshotPath.hidden = true;
     if (commentSnapshotClear) commentSnapshotClear.hidden = true;
     return;
   }
-  commentSnapshotPath.textContent = safeRel;
+  commentSnapshotPath.textContent = snapshotRelPath;
   commentSnapshotPath.hidden = false;
   if (commentSnapshotClear) commentSnapshotClear.hidden = false;
 }
 
 function formatDuration(totalSeconds) {
-  const seconds = Number(totalSeconds);
-  const safeSeconds = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
-  return formatStopwatchMs(safeSeconds * 1000);
+  if (!taskDurationUtils.isWholeDurationSeconds(totalSeconds)) {
+    throw new Error('[task-editor] formatDuration requires canonical whole seconds');
+  }
+  const formattedDuration = formatClockSeconds(totalSeconds);
+  if (formattedDuration === null) {
+    throw new Error('[task-editor] formatClockSeconds rejected canonical duration');
+  }
+  return formattedDuration;
 }
 
 function parseDuration(input) {
-  const milliseconds = parseStopwatchInput(input);
-  if (milliseconds === null) return null;
-  const seconds = milliseconds / 1000;
-  return Number.isSafeInteger(seconds) && seconds >= 0 ? seconds : null;
+  return parseClockSeconds(input);
 }
 
 function parsePercent(input) {
-  const raw = String(input || '').trim();
+  const raw = input.trim();
   if (!raw) return null;
   const cleaned = raw.endsWith('%') ? raw.slice(0, -1).trim() : raw;
   if (!/^\d+$/.test(cleaned)) return null;
   const n = Number(cleaned);
-  if (!Number.isFinite(n) || n < 0 || n > 100) return null;
-  return n;
+  return taskDurationUtils.isPercentComplete(n) ? n : null;
 }
 
 function getFaltaSeconds(row) {
-  const tiempo = Number(row.tiempoSeconds) || 0;
-  const pct = Number(row.percentComplete) || 0;
-  return tiempo * (1 - pct / 100);
+  const remainingSeconds = taskDurationUtils.getRowRemainingSeconds(
+    row.tiempoSeconds,
+    row.percentComplete
+  );
+  if (remainingSeconds === null) {
+    throw new Error('[task-editor] getRowRemainingSeconds rejected canonical row');
+  }
+  return remainingSeconds;
+}
+
+function renderTaskSummary(summary) {
+  const estimatedTotalSeconds = summary === null ? 0 : summary.estimatedTotalSeconds;
+  const estimatedRemainingSeconds = summary === null ? 0 : summary.estimatedRemainingSeconds;
+
+  if (taskSummaryTotalValue) {
+    taskSummaryTotalValue.textContent = formatDuration(estimatedTotalSeconds);
+  }
+  if (taskSummaryLeftValue) {
+    taskSummaryLeftValue.textContent = formatDuration(estimatedRemainingSeconds);
+  }
 }
 
 function updateSummary() {
-  const summary = rows.reduce((acc, row) => {
-    acc.totalSeconds += Number(row.tiempoSeconds) || 0;
-    acc.leftSeconds += getFaltaSeconds(row);
-    return acc;
-  }, { totalSeconds: 0, leftSeconds: 0 });
+  const summaryResult = taskDurationUtils.deriveTaskSummary(rows);
+  if (!summaryResult.ok) {
+    throw new Error(`[task-editor] deriveTaskSummary failed: ${summaryResult.code}`);
+  }
+  renderTaskSummary(summaryResult.summary);
+}
 
-  if (taskSummaryTotalValue) {
-    taskSummaryTotalValue.textContent = formatDuration(summary.totalSeconds);
+function validateCandidateTaskRows(candidateRows) {
+  const summaryResult = taskDurationUtils.deriveTaskSummary(candidateRows);
+  if (summaryResult.ok) return summaryResult;
+  if (summaryResult.code === 'INVALID_SUMMARY') {
+    log.warn('Task Editor duration change rejected because the aggregate summary exceeds the safe range.');
+    window.Notify.notifyEditor('renderer.tasks.alerts.task_duration_too_large');
+    return summaryResult;
   }
-  if (taskSummaryLeftValue) {
-    taskSummaryLeftValue.textContent = formatDuration(summary.leftSeconds);
-  }
+  throw new Error(`[task-editor] candidate deriveTaskSummary failed: ${summaryResult.code}`);
 }
 
 function openModal(modalEl, initialFocusEl) {
@@ -392,11 +432,13 @@ function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.
 }
 
 function isFailedTaskEditorResult(result) {
-  return !result || result.ok === false;
+  return !result || result.ok !== true;
 }
 
 function getTaskEditorResultCode(result, fallbackCode) {
-  return result && result.code ? result.code : fallbackCode;
+  return result && typeof result.code === 'string' && result.code
+    ? result.code
+    : fallbackCode;
 }
 
 function isCancelledTaskEditorResultCode(code) {
@@ -576,36 +618,42 @@ function dismissCommentModal() {
 
 function commitCommentChangesAndDismiss({ texto = null, estimatedSeconds = null } = {}) {
   const row = rows.find((r) => r.id === pendingCommentRowId);
-  if (row) {
-    const nextComment = commentInput.value || '';
-    const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
-    let changed = false;
-    let needsRender = false;
-    if (row.comentario !== nextComment) {
-      row.comentario = nextComment;
-      changed = true;
-    }
-    if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
-      row.snapshotRelPath = nextSnapshotRelPath;
-      changed = true;
-      needsRender = true;
-    }
-    if (typeof texto === 'string' && row.texto !== texto) {
-      row.texto = texto;
-      changed = true;
-      needsRender = true;
-    }
-    if (Number.isSafeInteger(estimatedSeconds)
-      && estimatedSeconds >= 0
-      && row.tiempoSeconds !== estimatedSeconds) {
-      row.tiempoSeconds = estimatedSeconds;
-      changed = true;
-      needsRender = true;
-    }
-    if (needsRender) renderTable();
-    if (changed) markDirty();
+  if (!row) {
+    dismissCommentModal();
+    return true;
   }
+  if (texto !== null && typeof texto !== 'string') {
+    throw new Error('[task-editor] commitCommentChangesAndDismiss requires texto to be a string or null');
+  }
+  if (estimatedSeconds !== null && !taskDurationUtils.isWholeDurationSeconds(estimatedSeconds)) {
+    throw new Error('[task-editor] commitCommentChangesAndDismiss requires canonical estimatedSeconds or null');
+  }
+
+  const nextRow = {
+    ...row,
+    comentario: commentInput.value,
+    snapshotRelPath: pendingCommentSnapshotRelPath,
+  };
+  if (texto !== null) nextRow.texto = texto;
+  if (estimatedSeconds !== null) nextRow.tiempoSeconds = estimatedSeconds;
+
+  const summaryResult = validateCandidateTaskRows(rows.map((candidate) => (
+    candidate === row ? nextRow : candidate
+  )));
+  if (!summaryResult.ok) return false;
+
+  const changed = row.comentario !== nextRow.comentario
+    || row.snapshotRelPath !== nextRow.snapshotRelPath
+    || row.texto !== nextRow.texto
+    || row.tiempoSeconds !== nextRow.tiempoSeconds;
+  const needsRender = row.snapshotRelPath !== nextRow.snapshotRelPath
+    || row.texto !== nextRow.texto
+    || row.tiempoSeconds !== nextRow.tiempoSeconds;
+  Object.assign(row, nextRow);
+  if (needsRender) renderTable();
+  if (changed) markDirty();
   dismissCommentModal();
+  return true;
 }
 
 function notifySnapshotInspectionFailure(code) {
@@ -651,7 +699,9 @@ function getSnapshotInspectionReading(result) {
 }
 
 function getSnapshotInspectionDetails(result) {
-  if (!result || !Object.prototype.hasOwnProperty.call(result, 'name')) {
+  if (!result
+    || !Object.prototype.hasOwnProperty.call(result, 'name')
+    || !Object.prototype.hasOwnProperty.call(result, 'sourceComment')) {
     return { ok: false };
   }
   const name = result.name;
@@ -663,9 +713,7 @@ function getSnapshotInspectionDetails(result) {
     return { ok: false };
   }
 
-  const sourceComment = Object.prototype.hasOwnProperty.call(result, 'sourceComment')
-    ? result.sourceComment
-    : null;
+  const sourceComment = result.sourceComment;
   if (sourceComment !== null
     && (typeof sourceComment !== 'string'
       || !sourceComment.trim()
@@ -695,7 +743,8 @@ function getSnapshotDetailsChanges(row, details) {
 }
 
 async function getSnapshotSourceReminderComment(row) {
-  const snapshotRelPath = normalizeSnapshotRelPath(row && row.snapshotRelPath ? row.snapshotRelPath : '');
+  if (!row) return '';
+  const snapshotRelPath = row.snapshotRelPath;
   if (!snapshotRelPath) return '';
 
   const api = getTaskEditorApi('inspectTaskRowSnapshot', null);
@@ -724,7 +773,7 @@ async function getSnapshotSourceReminderComment(row) {
     log.warn('Snapshot source reminder inspection returned invalid details (ignored):', result || null);
     return '';
   }
-  return details.sourceComment || '';
+  return details.sourceComment === null ? '' : details.sourceComment;
 }
 
 function resolveSnapshotDetailsConfirmation(applySelectedDetails) {
@@ -736,8 +785,7 @@ function resolveSnapshotDetailsConfirmation(applySelectedDetails) {
     allowsIndividualSelection,
   } = getSnapshotDetailsConfirmationState(confirmation);
   pendingSnapshotDetailsConfirmation = null;
-  closeModal(snapshotDetailsConfirmModal);
-  commitCommentChangesAndDismiss({
+  const committed = commitCommentChangesAndDismiss({
     texto: applySelectedDetails
       && hasTextChange
       && (!allowsIndividualSelection || !!(snapshotDetailsConfirmApplyText && snapshotDetailsConfirmApplyText.checked))
@@ -749,6 +797,11 @@ function resolveSnapshotDetailsConfirmation(applySelectedDetails) {
       ? confirmation.reading.estimatedSeconds
       : null,
   });
+  if (!committed) {
+    pendingSnapshotDetailsConfirmation = confirmation;
+    return;
+  }
+  closeModal(snapshotDetailsConfirmModal);
 }
 
 async function applyCommentChangesAndDismiss() {
@@ -760,8 +813,8 @@ async function applyCommentChangesAndDismiss() {
     return;
   }
 
-  const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
-  const currentSnapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath || '');
+  const nextSnapshotRelPath = pendingCommentSnapshotRelPath;
+  const currentSnapshotRelPath = row.snapshotRelPath;
   const snapshotChanged = currentSnapshotRelPath !== nextSnapshotRelPath;
   if (!snapshotChanged || !nextSnapshotRelPath) {
     commitCommentChangesAndDismiss();
@@ -823,9 +876,9 @@ async function selectSnapshotForPendingCommentRow() {
     window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
-  const safeRel = normalizeSnapshotRelPath(res.snapshotRelPath || '');
-  if (!safeRel) {
-    log.warn('selectTaskRowSnapshot returned invalid snapshotRelPath:', { snapshotRelPath: res.snapshotRelPath || '' });
+  const safeRel = res.snapshotRelPath;
+  if (!safeRel || !isCanonicalSnapshotRelPath(safeRel)) {
+    log.warn('selectTaskRowSnapshot returned invalid snapshotRelPath:', { snapshotRelPath: res.snapshotRelPath });
     window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
@@ -840,7 +893,8 @@ function clearSnapshotForPendingCommentRow() {
 }
 
 async function loadSnapshotForRow(row) {
-  const snapshotRelPath = normalizeSnapshotRelPath(row && row.snapshotRelPath ? row.snapshotRelPath : '');
+  if (!row) return;
+  const snapshotRelPath = row.snapshotRelPath;
   if (!snapshotRelPath) return;
   const api = getTaskEditorApi('loadTaskRowSnapshot');
   if (!api) return;
@@ -885,9 +939,9 @@ async function selectTaskFileForRow(row, { textoInput, enlaceInput } = {}) {
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
   }
-  const filePath = typeof res.filePath === 'string' ? res.filePath.trim() : '';
-  if (!filePath) {
-    log.warn('selectTaskFile returned empty filePath:', res || null);
+  const filePath = res.filePath;
+  if (typeof filePath !== 'string' || !filePath.trim()) {
+    log.warn('selectTaskFile returned invalid filePath:', res || null);
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
   }
@@ -897,7 +951,7 @@ async function selectTaskFileForRow(row, { textoInput, enlaceInput } = {}) {
     if (enlaceInput) enlaceInput.value = filePath;
     changed = true;
   }
-  if (!String(row.texto || '').trim()) {
+  if (!row.texto.trim()) {
     const derivedText = deriveRowTextFromPath(filePath);
     if (derivedText && derivedText !== row.texto) {
       row.texto = derivedText;
@@ -911,26 +965,148 @@ async function selectTaskFileForRow(row, { textoInput, enlaceInput } = {}) {
 // =============================================================================
 // Rendering / table
 // =============================================================================
-function makeRowId() {
-  const id = rowIdCounter;
-  rowIdCounter += 1;
-  return id;
+function hasOwn(value, key) {
+  return Object.prototype.hasOwnProperty.call(value, key);
 }
 
-function createRow(data = {}) {
+function copyTaskRowData(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('[task-editor] copyTaskRowData requires a row object');
+  }
+  if (!taskDurationUtils.isWholeDurationSeconds(data.tiempoSeconds)) {
+    throw new Error('[task-editor] copyTaskRowData requires canonical tiempoSeconds');
+  }
+  if (!taskDurationUtils.isPercentComplete(data.percentComplete)) {
+    throw new Error('[task-editor] copyTaskRowData requires canonical percentComplete');
+  }
+  if (typeof data.texto !== 'string'
+    || typeof data.enlace !== 'string'
+    || typeof data.comentario !== 'string'
+    || typeof data.snapshotRelPath !== 'string') {
+    throw new Error('[task-editor] copyTaskRowData requires string task fields');
+  }
+  if (!isCanonicalSnapshotRelPath(data.snapshotRelPath)) {
+    throw new Error('[task-editor] copyTaskRowData requires canonical snapshotRelPath');
+  }
   return {
-    id: makeRowId(),
-    texto: String(data.texto || ''),
-    tiempoSeconds: Number.isFinite(data.tiempoSeconds) ? data.tiempoSeconds : 0,
-    percentComplete: Number.isFinite(data.percentComplete) ? data.percentComplete : 0,
-    enlace: String(data.enlace || ''),
-    comentario: String(data.comentario || ''),
-    snapshotRelPath: normalizeSnapshotRelPath(data.snapshotRelPath || ''),
+    texto: data.texto,
+    tiempoSeconds: data.tiempoSeconds,
+    percentComplete: data.percentComplete,
+    enlace: data.enlace,
+    comentario: data.comentario,
+    snapshotRelPath: data.snapshotRelPath,
+  };
+}
+
+function copyTaskMeta(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)
+    || typeof data.name !== 'string'
+    || typeof data.createdAt !== 'string'
+    || typeof data.updatedAt !== 'string'
+    || typeof data.savedWith !== 'string') {
+    throw new Error('[task-editor] task metadata requires string operational fields');
+  }
+  return {
+    name: data.name,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+    savedWith: data.savedWith,
+  };
+}
+
+function copyTaskInitPayload(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)
+    || !payload.task || typeof payload.task !== 'object' || Array.isArray(payload.task)
+    || !Array.isArray(payload.task.rows)
+    || !hasOwn(payload, 'sourcePath')) {
+    throw new Error('[task-editor] task-editor-init payload missing operational task state');
+  }
+
+  const sourcePath = payload.sourcePath;
+  if (sourcePath !== null && (typeof sourcePath !== 'string' || !sourcePath)) {
+    throw new Error('[task-editor] task-editor-init payload has invalid sourcePath');
+  }
+
+  return {
+    meta: copyTaskMeta(payload.task.meta),
+    rows: payload.task.rows.map((row) => copyTaskRowData(row)),
+    sourcePath,
+  };
+}
+
+function copyLibraryEntryData(entry) {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+    throw new Error('[task-editor] library entry requires an object');
+  }
+  if (typeof entry.texto !== 'string' || !entry.texto || entry.texto !== entry.texto.trim()) {
+    throw new Error('[task-editor] library entry requires canonical nonempty texto');
+  }
+  if (!taskDurationUtils.isWholeDurationSeconds(entry.tiempoSeconds)) {
+    throw new Error('[task-editor] library entry requires whole-second tiempoSeconds');
+  }
+  if (typeof entry.enlace !== 'string') {
+    throw new Error('[task-editor] library entry enlace must be a string');
+  }
+
+  const libraryEntry = {
+    texto: entry.texto,
+    tiempoSeconds: entry.tiempoSeconds,
+    enlace: entry.enlace,
+  };
+  if (hasOwn(entry, 'comentario')) {
+    if (typeof entry.comentario !== 'string') {
+      throw new Error('[task-editor] library entry comentario must be a string when supplied');
+    }
+    libraryEntry.comentario = entry.comentario;
+  }
+  if (hasOwn(entry, 'snapshotRelPath')) {
+    if (typeof entry.snapshotRelPath !== 'string'
+      || !entry.snapshotRelPath
+      || !isCanonicalSnapshotRelPath(entry.snapshotRelPath)) {
+      throw new Error('[task-editor] library entry snapshotRelPath must be canonical when supplied');
+    }
+    libraryEntry.snapshotRelPath = entry.snapshotRelPath;
+  }
+  return libraryEntry;
+}
+
+function copyLibraryEntryAsTaskRow(entry) {
+  const libraryEntry = copyLibraryEntryData(entry);
+  return copyTaskRowData({
+    texto: libraryEntry.texto,
+    tiempoSeconds: libraryEntry.tiempoSeconds,
+    percentComplete: 0,
+    enlace: libraryEntry.enlace,
+    comentario: hasOwn(libraryEntry, 'comentario') ? libraryEntry.comentario : '',
+    snapshotRelPath: hasOwn(libraryEntry, 'snapshotRelPath') ? libraryEntry.snapshotRelPath : '',
+  });
+}
+
+function copySavedTaskResult(result) {
+  if (!result || result.ok !== true
+    || typeof result.path !== 'string' || !result.path
+    || !hasOwn(result, 'meta')) {
+    throw new Error('[task-editor] saveTaskList returned an invalid successful result');
+  }
+  return {
+    path: result.path,
+    meta: copyTaskMeta(result.meta),
+  };
+}
+
+function materializeTaskRows(canonicalRows) {
+  const nextRowIdCounter = rowIdCounter + canonicalRows.length;
+  return {
+    rows: canonicalRows.map((canonicalData, index) => ({
+      id: rowIdCounter + index,
+      ...canonicalData,
+    })),
+    nextRowIdCounter,
   };
 }
 
 function deriveRowTextFromPath(filePath) {
-  const raw = String(filePath || '').trim();
+  const raw = filePath.trim();
   if (!raw) return '';
   const segments = raw.split(/[\\/]+/).filter(Boolean);
   const fileName = segments.length ? segments[segments.length - 1] : raw;
@@ -1012,9 +1188,17 @@ function renderRow(row) {
       return;
     }
     if (parsed !== row.tiempoSeconds) {
+      const summaryResult = validateCandidateTaskRows(rows.map((candidate) => (
+        candidate === row ? { ...candidate, tiempoSeconds: parsed } : candidate
+      )));
+      if (!summaryResult.ok) {
+        tiempoInput.value = formatDuration(row.tiempoSeconds);
+        setTaskFieldInvalidState(tiempoInput, false);
+        return;
+      }
       row.tiempoSeconds = parsed;
       tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
-      updateSummary();
+      renderTaskSummary(summaryResult.summary);
       markDirty();
     }
     tiempoInput.value = formatDuration(row.tiempoSeconds);
@@ -1045,9 +1229,17 @@ function renderRow(row) {
       return;
     }
     if (parsed !== row.percentComplete) {
+      const summaryResult = validateCandidateTaskRows(rows.map((candidate) => (
+        candidate === row ? { ...candidate, percentComplete: parsed } : candidate
+      )));
+      if (!summaryResult.ok) {
+        percentInput.value = `${row.percentComplete}%`;
+        setTaskFieldInvalidState(percentInput, false);
+        return;
+      }
       row.percentComplete = parsed;
       tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
-      updateSummary();
+      renderTaskSummary(summaryResult.summary);
       markDirty();
     }
     percentInput.value = `${row.percentComplete}%`;
@@ -1139,7 +1331,7 @@ function renderRow(row) {
   tdComentario.className = 'task-cell--comment';
   const commentActions = document.createElement('div');
   commentActions.className = 'cell-actions';
-  const snapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath || '');
+  const snapshotRelPath = row.snapshotRelPath;
   if (snapshotRelPath) {
     const snapshotName = tr('renderer.tasks.columns.names.snapshot_load');
     const snapshotBtn = rendererIcons.createIconButton({
@@ -1179,7 +1371,7 @@ function renderRow(row) {
   commentBtn.addEventListener('click', () => {
     pendingCommentRowId = row.id;
     pendingCommentSnapshotRelPath = snapshotRelPath;
-    commentInput.value = row.comentario || '';
+    commentInput.value = row.comentario;
     setCommentSnapshotDisplay(pendingCommentSnapshotRelPath);
     openModal(commentModal, commentInput);
   });
@@ -1234,17 +1426,22 @@ function renderTable() {
 // =============================================================================
 // Row operations
 // =============================================================================
-function addRow(data = {}) {
-  rows.push(createRow(data));
-  markDirty();
-  renderTable();
+function addRow(data = EMPTY_TASK_ROW) {
+  return addRows([data]);
 }
 
 function addRows(items) {
-  if (!Array.isArray(items) || !items.length) return;
-  rows.push(...items.map((item) => createRow(item)));
+  if (!Array.isArray(items) || !items.length) return false;
+  const addedRowData = items.map((item) => copyTaskRowData(item));
+  const summaryResult = validateCandidateTaskRows([...rows, ...addedRowData]);
+  if (!summaryResult.ok) return false;
+
+  const addedRows = materializeTaskRows(addedRowData);
+  rows = [...rows, ...addedRows.rows];
+  rowIdCounter = addedRows.nextRowIdCounter;
   markDirty();
   renderTable();
+  return true;
 }
 
 async function addRowsFromSelectedFiles() {
@@ -1259,10 +1456,11 @@ async function addRowsFromSelectedFiles() {
     return;
   }
   const filePaths = Array.isArray(res.filePaths)
-    ? res.filePaths.filter((filePath) => typeof filePath === 'string' && filePath.trim())
-    : [];
-  if (!filePaths.length) {
-    log.warn('selectTaskFiles returned empty filePaths:', res || null);
+    ? res.filePaths
+    : null;
+  if (!filePaths || !filePaths.length
+    || filePaths.some((filePath) => typeof filePath !== 'string' || !filePath.trim())) {
+    log.warn('selectTaskFiles returned invalid filePaths:', res || null);
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
   }
@@ -1300,28 +1498,27 @@ function moveRow(id, delta) {
 // Task lifecycle (load/save/delete)
 // =============================================================================
 function applyTaskPayload(payload) {
-  const task = payload && payload.task ? payload.task : null;
-  if (!task || !task.meta || !Array.isArray(task.rows)) {
-    log.warn('task-editor-init payload invalid (ignored):', payload);
-    return;
+  // tasks_main owns persisted-task schema validation. The renderer validates only
+  // the operational fields it will materialize and use for Task Editor state.
+  const nextTask = copyTaskInitPayload(payload);
+  const summaryResult = taskDurationUtils.deriveTaskSummary(nextTask.rows);
+  if (!summaryResult.ok) {
+    throw new Error(`[task-editor] task-editor-init summary invalid: ${summaryResult.code}`);
   }
-  const taskName = task.meta.name;
-  meta = {
-    name: taskName,
-    createdAt: task.meta.createdAt,
-    updatedAt: task.meta.updatedAt,
-    savedWith: task.meta.savedWith,
-  };
-  sourcePath = payload.sourcePath || null;
-  rows = task.rows.map((r) => createRow(r));
+  const nextRows = materializeTaskRows(nextTask.rows);
+
+  meta = nextTask.meta;
+  sourcePath = nextTask.sourcePath;
+  rows = nextRows.rows;
+  rowIdCounter = nextRows.nextRowIdCounter;
   resetDirty();
-  taskNameInput.value = taskName;
+  taskNameInput.value = nextTask.meta.name;
   renderTable();
   resetTaskEditorValidationState();
 }
 
 function normalizeRowTexto(row) {
-  const normalizedTexto = String(row.texto || '').trim();
+  const normalizedTexto = row.texto.trim();
   if (row.texto === normalizedTexto) return normalizedTexto;
   row.texto = normalizedTexto;
   const renderedFields = renderedRowFields.get(row.id);
@@ -1374,7 +1571,7 @@ async function saveTask() {
       percentComplete: r.percentComplete,
       enlace: r.enlace,
       comentario: r.comentario,
-      snapshotRelPath: normalizeSnapshotRelPath(r.snapshotRelPath || ''),
+      snapshotRelPath: r.snapshotRelPath,
     })),
     sourcePath,
   };
@@ -1400,8 +1597,9 @@ async function saveTask() {
     return;
   }
 
-  if (res.meta) meta = res.meta;
-  if (res.path) sourcePath = res.path;
+  const savedTask = copySavedTaskResult(res);
+  meta = savedTask.meta;
+  sourcePath = savedTask.path;
   resetDirty();
   window.Notify.notifyEditor('renderer.tasks.alerts.task_save_success');
 }
@@ -1456,9 +1654,9 @@ function renderLibraryItems(items) {
     li.className = 'library-item';
     const text = document.createElement('div');
     text.className = 'library-item__text';
-    text.textContent = `${entry.texto}`;
+    text.textContent = entry.texto;
 
-    const durationSeconds = Math.max(0, Number(entry.tiempoSeconds) || 0);
+    const durationSeconds = entry.tiempoSeconds;
     const controls = document.createElement('div');
     controls.className = 'library-item__controls';
     const time = document.createElement('span');
@@ -1472,15 +1670,8 @@ function renderLibraryItems(items) {
     actions.className = 'cell-actions';
 
     const btnLoad = buildActionButton('task-row-load', 'renderer.tasks.biblioteca.library_row_load', () => {
-      addRow({
-        texto: entry.texto,
-        tiempoSeconds: Number(entry.tiempoSeconds) || 0,
-        percentComplete: 0,
-        enlace: entry.enlace || '',
-        comentario: entry.comentario || '',
-        snapshotRelPath: entry.snapshotRelPath || '',
-      });
-      closeModal(libraryModal);
+      const didAdd = addRow(copyLibraryEntryAsTaskRow(entry));
+      if (didAdd) closeModal(libraryModal);
     });
     const btnDelete = buildActionButton('trash', 'renderer.tasks.biblioteca.library_row_delete', async () => {
       const api = getTaskEditorApi('deleteLibraryEntry');
@@ -1513,16 +1704,13 @@ function filterLibraryItems() {
     return;
   }
   const filtered = libraryItemsCache.filter((entry) => {
-    const texto = String(entry.texto || '').toLowerCase();
-    return texto.includes(term);
+    return entry.texto.toLowerCase().includes(term);
   });
   renderLibraryItems(filtered);
 }
 
 async function refreshLibraryList() {
   if (!libraryList) return;
-  libraryList.innerHTML = '';
-  libraryEmpty.hidden = true;
 
   const api = getTaskEditorApi('listLibrary');
   if (!api) return;
@@ -1534,7 +1722,22 @@ async function refreshLibraryList() {
     return;
   }
 
-  libraryItemsCache = Array.isArray(res.items) ? res.items : [];
+  if (!Array.isArray(res.items)) {
+    log.warn('listLibrary returned invalid items:', { response: res || null });
+    window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
+    return;
+  }
+
+  let nextLibraryItems = null;
+  try {
+    nextLibraryItems = res.items.map((entry) => copyLibraryEntryData(entry));
+  } catch (err) {
+    log.warn('listLibrary returned invalid library entries:', err);
+    window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
+    return;
+  }
+
+  libraryItemsCache = nextLibraryItems;
   filterLibraryItems();
 }
 
@@ -1545,8 +1748,7 @@ function createLibraryEntryFromRow(row, includeComment) {
     enlace: row.enlace,
   };
   if (includeComment && row.comentario) entry.comentario = row.comentario;
-  const snapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath);
-  if (snapshotRelPath) entry.snapshotRelPath = snapshotRelPath;
+  if (row.snapshotRelPath) entry.snapshotRelPath = row.snapshotRelPath;
   return entry;
 }
 

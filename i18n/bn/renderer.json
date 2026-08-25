@@ -565,6 +565,7 @@
         "task_delete_unavailable": "মুছে ফেলার মতো কোনও সংরক্ষিত টাস্ক নেই।",
         "task_invalid_file": "টাস্ক ফাইল অকার্যকর।",
         "task_invalid_rows": "টাস্কে অকার্যকর সারি আছে।",
+        "task_duration_too_large": "টাস্কের মোট আনুমানিক সময় খুব বড়।",
         "task_path_outside": "ফাইলটি tasks ফোল্ডারের ভিতরে থাকতে হবে।",
         "name_required": "টাস্কের নাম প্রয়োজন।",
         "row_text_required": "সারির লেখা খালি হতে পারে না।",

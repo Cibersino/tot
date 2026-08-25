@@ -4,10 +4,8 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Shared formatting core for renderer-facing FormatUtils.
+// Shared number-formatting core for renderer-facing FormatUtils.
 // Responsibilities:
-// - Convert word counts to exact duration values.
-// - Convert exact duration values to rounded display time parts.
 // - Resolve number-format separators from settings and language fallbacks.
 // - Support both browser-script and CommonJS consumers.
 
@@ -36,26 +34,6 @@
     const resolveLangBase = typeof getLangBase === 'function'
       ? getLangBase
       : (lang) => String(lang || '').trim().toLowerCase().split(/[-_]/)[0] || defaultLang;
-
-    function getExactTotalSeconds(words, wpm) {
-      const numericWords = Number(words);
-      const numericWpm = Number(wpm);
-      if (!Number.isFinite(numericWords) || numericWords <= 0) return 0;
-      if (!Number.isFinite(numericWpm) || numericWpm <= 0) return 0;
-      return (numericWords / numericWpm) * 60;
-    }
-
-    function getDisplayTimeParts(totalSeconds) {
-      const numericTotalSeconds = Number(totalSeconds);
-      const roundedTotalSeconds = Number.isFinite(numericTotalSeconds) && numericTotalSeconds > 0
-        ? Math.round(numericTotalSeconds)
-        : 0;
-      return {
-        hours: Math.floor(roundedTotalSeconds / 3600),
-        minutes: Math.floor((roundedTotalSeconds % 3600) / 60),
-        seconds: roundedTotalSeconds % 60,
-      };
-    }
 
     async function obtenerSeparadoresDeNumeros(idioma, settingsCache) {
       if (settingsCache === null) {
@@ -98,8 +76,6 @@
     }
 
     return {
-      getExactTotalSeconds,
-      getDisplayTimeParts,
       obtenerSeparadoresDeNumeros,
       formatearNumero,
     };

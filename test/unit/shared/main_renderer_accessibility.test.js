@@ -87,11 +87,25 @@ function createNoopSurface(overrides = {}) {
   });
 }
 
-async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
+async function createRendererHarness({
+  beforeStartupReady = null,
+  currentTextRuntimeOverrides = {},
+  electronMethodOverrides = {},
+  expectStartupError = false,
+  loadLocalizedDocument = null,
+} = {}) {
   let activeLanguage = 'en';
   const errors = [];
+  const notifications = [];
   const pendingStates = [];
   const subscriptions = {};
+  const currentTextRuntimeCalls = {
+    bootstrapStates: [],
+    copiedProcessingStates: [],
+    copiedUpdates: [],
+    installedTexts: [],
+  };
+  const textApplyCalls = [];
   let selectorActions = null;
   const activeCustomPromptTranslationRefreshCounts = new Map([
     'SnapshotSaveTagsModal',
@@ -195,6 +209,38 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
     getWpm() { return 200; },
     async loadPresets() { return { selectionOutcome: null }; },
   });
+  const currentTextRuntime = createNoopSurface({
+    copyCurrentTextProcessingState(state) {
+      currentTextRuntimeCalls.copiedProcessingStates.push(state);
+      return { ...state };
+    },
+    copyCurrentTextUpdatedPayload(payload) {
+      currentTextRuntimeCalls.copiedUpdates.push(payload);
+      return {
+        text: payload.text,
+        requestId: payload.requestId === null || typeof payload.requestId === 'undefined'
+          ? 0
+          : payload.requestId,
+      };
+    },
+    getCurrentText() { return ''; },
+    installCurrentTextState(text) {
+      currentTextRuntimeCalls.installedTexts.push(text);
+    },
+    syncBootstrapState(state) {
+      currentTextRuntimeCalls.bootstrapStates.push({
+        initialText: state.initialText,
+        processingState: { ...state.processingState },
+      });
+    },
+    ...currentTextRuntimeOverrides,
+  });
+  const textApplyCanonical = createNoopSurface({
+    async applyTextWithMode(payload) {
+      textApplyCalls.push(payload);
+      return { ok: true, truncated: false };
+    },
+  });
   const infoModalLinks = createNoopSurface({
     bindInfoModalLinks(container) {
       infoModalLinkCalls.boundContents.push(container.innerHTML);
@@ -216,12 +262,17 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
     async getSettings() { return { language: 'en', modeConteo: 'preciso' }; },
     async getTextExtractionProcessingMode() { return { ok: true, state: { active: false } }; },
     onEditorFirstShowState(callback) { subscriptions.editorFirstShowState = callback; },
+    onCurrentTextProcessingStateChanged(callback) {
+      subscriptions.currentTextProcessingStateChanged = callback;
+    },
+    onCurrentTextUpdated(callback) { subscriptions.currentTextUpdated = callback; },
     onSettingsChanged(callback) { subscriptions.settingsChanged = callback; },
     onStartupReady(callback) { subscriptions.startupReady = callback; },
     async openEditor() { return { ok: true, launchDisposition: 'first-show-pending' }; },
     resolveCurrentTextProcessing() {},
     sendStartupRendererCoreReady() {},
     sendStartupSplashRemoved() {},
+    ...electronMethodOverrides,
   };
   const electronAPI = new Proxy(electronMethods, {
     get(target, property) {
@@ -262,7 +313,7 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
     CurrentTextRefreshPolicy: {
       createController() { return createNoopSurface(); },
     },
-    CurrentTextRuntime: createNoopSurface({ getCurrentText() { return ''; } }),
+    CurrentTextRuntime: currentTextRuntime,
     CurrentTextSelectorSection: currentTextSelectorSection,
     CurrentTextSnapshots: createNoopSurface(),
     FormatUtils: {
@@ -276,6 +327,7 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
         initialFocus.focus({ preventScroll: true });
       },
       deactivateModalFocus() {},
+      notifyMain(key) { notifications.push(key); },
     }),
     ReadingSpeedTestUi: readingSpeedTestUi,
     RendererCombobox: { create() { return presetsCombobox; } },
@@ -285,7 +337,7 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
     SnapshotSaveTagsModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('SnapshotSaveTagsModal'); },
     },
-    TextApplyCanonical: createNoopSurface(),
+    TextApplyCanonical: textApplyCanonical,
     TextExtractionApplyModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionApplyModal'); },
     },
@@ -350,13 +402,22 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
   vm.runInContext(source, sandbox, { filename: 'public/renderer.js' });
 
   assert.equal(typeof subscriptions.startupReady, 'function');
+  if (typeof beforeStartupReady === 'function') {
+    await beforeStartupReady({
+      currentTextRuntimeCalls,
+      subscriptions,
+    });
+  }
   subscriptions.startupReady();
   for (let index = 0; index < 4; index += 1) await flushAsyncWork();
 
-  assert.ok(selectorActions, 'main renderer did not register selector actions');
-  assert.equal(errors.length, 0, `main renderer logged initialization errors: ${String(errors[0] || '')}`);
+  if (!expectStartupError) {
+    assert.ok(selectorActions, 'main renderer did not register selector actions');
+    assert.equal(errors.length, 0, `main renderer logged initialization errors: ${String(errors[0] || '')}`);
+  }
 
   return {
+    currentTextRuntimeCalls,
     elements,
     errors,
     getActiveCustomPromptTranslationRefreshCounts() {
@@ -383,6 +444,8 @@ async function createRendererHarness({ loadLocalizedDocument = null } = {}) {
       document.activeElement = infoContentFocusTarget;
     },
     subscriptions,
+    notifications,
+    textApplyCalls,
     getElement,
   };
 }
@@ -605,4 +668,189 @@ test('Editor launch lifecycle exposes, retranslates, and clears real live-region
   const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/index.html'), 'utf8');
   assert.match(markup, /id="editorLoader"[^>]*aria-live="polite"/);
   assert.match(markup, /id="editorLoaderStatus"\s+class="main-accessible-description"/);
+});
+
+test('main renderer materializes a pre-READY current-text update before retaining it for bootstrap arbitration', async () => {
+  const harness = await createRendererHarness({
+    beforeStartupReady({ subscriptions }) {
+      assert.equal(typeof subscriptions.currentTextUpdated, 'function');
+      subscriptions.currentTextUpdated({ text: 'pre-ready text', requestId: 7 });
+    },
+  });
+
+  assert.deepEqual(harness.currentTextRuntimeCalls.copiedUpdates, [
+    { text: 'pre-ready text', requestId: 7 },
+  ]);
+  assert.deepEqual(harness.currentTextRuntimeCalls.installedTexts, ['pre-ready text']);
+  assert.deepEqual(harness.currentTextRuntimeCalls.bootstrapStates, [{
+    initialText: 'pre-ready text',
+    processingState: { active: false, requestId: 0, sinceEpochMs: null, source: '', action: '' },
+  }]);
+  assert.equal(harness.errors.length, 0);
+});
+
+test('main renderer aborts bootstrap instead of synthesizing current-text or processing state after required-query failures', async (t) => {
+  const canonicalProcessingState = {
+    active: false,
+    requestId: 0,
+    sinceEpochMs: null,
+    source: '',
+    action: '',
+  };
+  const cases = [
+    {
+      name: 'getCurrentText is unavailable',
+      electronMethodOverrides: { getCurrentText: undefined },
+    },
+    {
+      name: 'getCurrentText rejects',
+      electronMethodOverrides: {
+        async getCurrentText() {
+          throw new Error('current text unavailable');
+        },
+      },
+    },
+    {
+      name: 'getCurrentText returns a non-string',
+      electronMethodOverrides: {
+        async getCurrentText() { return false; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns documented failure',
+      expectedDiagnostic: 'getCurrentTextProcessingState failed: STATE_READ_FAILED',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() { return { ok: false, code: 'STATE_READ_FAILED' }; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState rejects',
+      expectedDiagnostic: 'current text processing state unavailable',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() {
+          throw new Error('current text processing state unavailable');
+        },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns a malformed envelope',
+      expectedDiagnostic: 'getCurrentTextProcessingState returned an invalid result envelope',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() { return null; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns an array result',
+      expectedDiagnostic: 'getCurrentTextProcessingState returned an invalid result envelope',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() { return []; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns an envelope without ok',
+      expectedDiagnostic: 'getCurrentTextProcessingState returned an invalid result envelope',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() { return {}; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns an envelope with a non-boolean ok',
+      expectedDiagnostic: 'getCurrentTextProcessingState returned an invalid result envelope',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() { return { ok: 'true' }; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns a failed result without code',
+      expectedDiagnostic: 'getCurrentTextProcessingState returned an invalid failed result',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() { return { ok: false }; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns a failed result with an invalid code',
+      expectedDiagnostic: 'getCurrentTextProcessingState returned an invalid failed result',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() { return { ok: false, code: 0 }; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns a failed result with an empty code',
+      expectedDiagnostic: 'getCurrentTextProcessingState returned an invalid failed result',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() { return { ok: false, code: '' }; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns a successful result without state',
+      expectedDiagnostic: 'getCurrentTextProcessingState returned an invalid successful result',
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() { return { ok: true }; },
+      },
+    },
+    {
+      name: 'getCurrentTextProcessingState returns an invalid state',
+      currentTextRuntimeOverrides: {
+        copyCurrentTextProcessingState() {
+          throw new Error('processing state invalid');
+        },
+      },
+      electronMethodOverrides: {
+        async getCurrentText() { return 'authoritative text'; },
+        async getCurrentTextProcessingState() {
+          return { ok: true, state: canonicalProcessingState };
+        },
+      },
+    },
+  ];
+
+  for (const testCase of cases) {
+    await t.test(testCase.name, async () => {
+      const harness = await createRendererHarness({
+        ...testCase,
+        expectStartupError: true,
+      });
+
+      assert.equal(harness.currentTextRuntimeCalls.bootstrapStates.length, 0);
+      assert.equal(harness.errors.length > 0, true);
+      if (testCase.expectedDiagnostic) {
+        assert.equal(harness.errors[0][1].message, testCase.expectedDiagnostic);
+      }
+    });
+  }
+});
+
+test('main renderer accepts clipboard text only from an explicit successful envelope', async () => {
+  const malformedHarness = await createRendererHarness({
+    electronMethodOverrides: {
+      async readClipboard() { return { ok: null, text: '' }; },
+    },
+  });
+
+  await malformedHarness.selectorActions.onOverwriteClipboard();
+  assert.equal(malformedHarness.textApplyCalls.length, 0);
+  assert.deepEqual(malformedHarness.notifications, ['renderer.main.alerts.overwrite_clipboard_error']);
+  assert.equal(malformedHarness.errors.length, 1);
+
+  const canonicalHarness = await createRendererHarness({
+    electronMethodOverrides: {
+      async readClipboard() { return { ok: true, text: 'clipboard text' }; },
+    },
+  });
+
+  await canonicalHarness.selectorActions.onOverwriteClipboard();
+  assert.equal(canonicalHarness.textApplyCalls.length, 1);
+  assert.equal(canonicalHarness.textApplyCalls[0].textToApply, 'clipboard text');
+  assert.deepEqual(canonicalHarness.notifications, []);
+  assert.equal(canonicalHarness.errors.length, 0);
 });

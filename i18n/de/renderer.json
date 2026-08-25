@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Keine gespeicherte Aufgabe zum Löschen.",
         "task_invalid_file": "Ungültige Aufgabendatei.",
         "task_invalid_rows": "Es gibt ungültige Zeilen in der Aufgabe.",
+        "task_duration_too_large": "Die geschätzte Gesamtdauer der Aufgabe ist zu groß.",
         "task_path_outside": "Die Datei muss sich im Aufgabenordner befinden.",
         "name_required": "Aufgabenname ist erforderlich.",
         "row_text_required": "Zeilentext darf nicht leer sein.",

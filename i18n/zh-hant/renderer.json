@@ -565,6 +565,7 @@
         "task_delete_unavailable": "沒有可刪除的已儲存任務。",
         "task_invalid_file": "任務檔案無效。",
         "task_invalid_rows": "任務中存在無效列。",
+        "task_duration_too_large": "任務的總預估時長過大。",
         "task_path_outside": "檔案必須位於任務資料夾內。",
         "name_required": "任務名稱為必填項。",
         "row_text_required": "列文字不可為空。",

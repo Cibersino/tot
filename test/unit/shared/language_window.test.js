@@ -368,7 +368,7 @@ test('markup owns bilingual semantics without adding a visible filter label or c
 
   assert.match(html, /<html lang="es">/);
   assert.match(html, /id="lang-title"[^>]*><span lang="es">Seleccione idioma<\/span> \/ <span lang="en">Select language<\/span>/);
-  assert.match(html, /id="lang-filter-label" class="language-visually-hidden"/);
+  assert.match(html, /id="lang-filter-label"[^>]*class="language-visually-hidden"/);
   assert.match(html, /id="langFilter"[^>]*placeholder="Buscar \/ Search"[\s\S]*?aria-labelledby="lang-filter-label"[^>]*aria-controls="langList"/);
   assert.match(html, /id="langList"[^>]*role="listbox"[\s\S]*?aria-labelledby="lang-list-label"/);
   assert.match(html, /id="statusLine"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"/);

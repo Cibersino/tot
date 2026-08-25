@@ -91,6 +91,28 @@ test('canonical text snapshots accept count-only and count-plus-reading metrics'
   });
 });
 
+test('canonical text snapshots use exact nearest-second reading estimates', () => {
+  const baseMetrics = {
+    count: {
+      words: 123,
+      mode: 'simple',
+      locale: 'en',
+    },
+    reading: {
+      estimatedSeconds: 62,
+      wpm: 120,
+    },
+  };
+
+  assert.equal(snapshotSchema.validateSnapshotDocument(createSnapshot({ metrics: baseMetrics })).ok, true);
+  assert.equal(snapshotSchema.validateSnapshotDocument(createSnapshot({
+    metrics: {
+      ...baseMetrics,
+      reading: { estimatedSeconds: 61, wpm: 120 },
+    },
+  })).ok, false);
+});
+
 test('canonical text snapshots accept optional name and single-line source comments', () => {
   const info = snapshotSchema.validateSnapshotDocument(createSnapshot({
     name: 'Reading',

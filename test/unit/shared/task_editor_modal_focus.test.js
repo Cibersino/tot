@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const { createStopwatchTimeUtils } = require('../../../public/js/lib/stopwatch_time_core');
+const { createTaskDurationUtils } = require('../../../public/js/lib/task_duration_core');
 
 function createTaskMeta(name = 'Task') {
   return {
@@ -28,6 +29,7 @@ function createHarness(options = {}) {
   const documentListeners = new Map();
   const windowListeners = new Map();
   const notifications = [];
+  const dirtyStateCalls = [];
   const savedLibraryEntries = [];
   const openTaskLinkCalls = [];
   const snapshotInspectionCalls = [];
@@ -35,9 +37,11 @@ function createHarness(options = {}) {
   let openTaskLinkResult = { ok: true };
   let selectedTaskRowSnapshotResult = { ok: false, code: 'CANCELLED' };
   let taskFileSelectionResult = { ok: false, code: 'CANCELLED' };
+  let libraryListResult = { ok: true, items: [] };
   let taskRowSnapshotInspectionResult = {
     ok: true,
     name: null,
+    sourceComment: null,
     estimatedSeconds: null,
     wpm: null,
   };
@@ -200,6 +204,7 @@ function createHarness(options = {}) {
   elements.snapshotDetailsConfirmModal.setAttribute('aria-hidden', 'true');
   elements.libraryModal.setAttribute('aria-hidden', 'true');
   elements.includeCommentModal.setAttribute('aria-hidden', 'true');
+  elements.libraryEmpty.hidden = true;
 
   const body = createElement('body', 'body');
   const taskTableWrap = createElement('taskTableWrap');
@@ -241,6 +246,9 @@ function createHarness(options = {}) {
     },
     StopwatchTimeCore: {
       createStopwatchTimeUtils,
+    },
+    TaskDurationCore: {
+      createTaskDurationUtils,
     },
     RendererI18n: {
       async loadRendererTranslations() { resolveTranslationsLoaded(); },
@@ -305,7 +313,7 @@ function createHarness(options = {}) {
       windowListeners.get(type).push(handler);
     },
     taskEditorAPI: {
-      setDirtyState() {},
+      setDirtyState(value) { dirtyStateCalls.push(value); },
       onInit(handler) {
         if (bootstrapProbe) bootstrapProbe.bridgeSubscriptions.push('onInit');
         onInit = handler;
@@ -317,7 +325,13 @@ function createHarness(options = {}) {
         if (bootstrapProbe) bootstrapProbe.bridgeSubscriptions.push('onSettingsChanged');
       },
       async getSettings() { return { language: 'en' }; },
-      async saveTaskList() { return { ok: true }; },
+      async saveTaskList() {
+        return {
+          ok: true,
+          path: 'saved-task.json',
+          meta: createTaskMeta(),
+        };
+      },
       async deleteTaskList() { return { ok: true }; },
       async saveLibraryEntry(entry) {
         savedLibraryEntries.push(JSON.parse(JSON.stringify(entry)));
@@ -340,7 +354,7 @@ function createHarness(options = {}) {
       },
       async getColumnLayout() { return { ok: true, record: null }; },
       async saveColumnLayout() { return { ok: true }; },
-      async listLibrary() { return { ok: true, items: [] }; },
+      async listLibrary() { return libraryListResult; },
     },
   };
 
@@ -352,14 +366,18 @@ function createHarness(options = {}) {
   );
   vm.runInContext(source, sandbox, { filename: 'public/task_editor.js' });
 
-  function findByIcon(iconName) {
-    const pending = elements.taskTableBody._children.slice();
+  function findByIconIn(container, iconName) {
+    const pending = container._children.slice();
     while (pending.length) {
       const candidate = pending.shift();
       if (candidate.getAttribute('data-tot-icon') === iconName) return candidate;
       pending.push(...candidate._children);
     }
     return null;
+  }
+
+  function findByIcon(iconName) {
+    return findByIconIn(elements.taskTableBody, iconName);
   }
 
   function findInputByHeaderId(headerId) {
@@ -376,7 +394,9 @@ function createHarness(options = {}) {
 
   return {
     elements,
+    dirtyStateCalls,
     findByIcon,
+    findByIconIn,
     findInputByHeaderId,
     notifications,
     savedLibraryEntries,
@@ -391,6 +411,9 @@ function createHarness(options = {}) {
     },
     setTaskFileSelectionResult(result) {
       taskFileSelectionResult = result;
+    },
+    setLibraryListResult(result) {
+      libraryListResult = result;
     },
     setTaskRowSnapshotInspectionResult(result) {
       taskRowSnapshotInspectionResult = result;
@@ -519,6 +542,133 @@ test('Task Editor initializes its validated TaskEditorColumnLayout controller on
   assert.deepEqual(bootstrapProbe.windowListeners, ['keydown']);
 });
 
+test('Task Editor rejects noncanonical initialized row data instead of coercing it', () => {
+  const invalidDurationHarness = createHarness();
+
+  assert.throws(
+    () => invalidDurationHarness.initializeRow({ tiempoSeconds: 12.5 }),
+    /copyTaskRowData requires canonical tiempoSeconds/
+  );
+  assert.equal(invalidDurationHarness.elements.taskTableBody._children.length, 0);
+
+  const malformedTextHarness = createHarness();
+  assert.throws(
+    () => malformedTextHarness.initializeRow({ texto: 42 }),
+    /copyTaskRowData requires string task fields/
+  );
+  assert.equal(malformedTextHarness.elements.taskTableBody._children.length, 0);
+});
+
+test('Task Editor does not replace a rendered task when a successful init payload breaks the main-process summary contract', () => {
+  const harness = createHarness();
+  harness.initializeRow();
+
+  assert.throws(
+    () => harness.initializeTask({
+      sourcePath: 'overflow.json',
+      task: {
+        meta: createTaskMeta('Overflow'),
+        rows: [
+          {
+            texto: 'Long reading',
+            tiempoSeconds: Number.MAX_SAFE_INTEGER,
+            percentComplete: 0,
+            enlace: '',
+            comentario: '',
+            snapshotRelPath: '',
+          },
+          {
+            texto: 'One second reading',
+            tiempoSeconds: 1,
+            percentComplete: 0,
+            enlace: '',
+            comentario: '',
+            snapshotRelPath: '',
+          },
+        ],
+      },
+    }),
+    /task-editor-init summary invalid: INVALID_SUMMARY/
+  );
+
+  assert.equal(harness.elements.taskNameInput.value, 'Task');
+  assert.equal(harness.findInputByHeaderId('thTiempo').value, '00:01:00');
+  assert.equal(harness.elements.taskSummaryTotalValue.textContent, '00:01:00');
+});
+
+test('Task Editor rejects a malformed init source path before committing candidate state', () => {
+  const harness = createHarness();
+  harness.initializeRow();
+
+  assert.throws(
+    () => harness.initializeTask({
+      sourcePath: false,
+      task: {
+        meta: createTaskMeta('Replacement'),
+        rows: [],
+      },
+    }),
+    /task-editor-init payload has invalid sourcePath/
+  );
+
+  assert.equal(harness.elements.taskNameInput.value, 'Task');
+  assert.equal(harness.elements.taskTableBody._children.length, 1);
+  assert.equal(harness.elements.taskSummaryTotalValue.textContent, '00:01:00');
+});
+
+test('Task Editor reports a malformed successful library response instead of rendering an empty library', async () => {
+  const harness = createHarness();
+  harness.setLibraryListResult({ ok: true, items: null });
+
+  harness.elements.btnTaskLoadLibrary.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(harness.notifications, ['renderer.tasks.alerts.library_load_error']);
+  assert.equal(harness.elements.libraryEmpty.hidden, true);
+});
+
+test('Task Editor materializes absent optional library fields only at the library-to-row boundary', async () => {
+  const harness = createHarness();
+  harness.setLibraryListResult({
+    ok: true,
+    items: [{
+      texto: 'Read chapter',
+      tiempoSeconds: 60,
+      enlace: '',
+    }],
+  });
+
+  harness.elements.btnTaskLoadLibrary.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  const libraryLoadButton = harness.findByIconIn(harness.elements.libraryList, 'task-row-load');
+  assert.ok(libraryLoadButton);
+  libraryLoadButton.dispatch('click');
+
+  assert.equal(harness.elements.taskTableBody._children.length, 1);
+  assert.equal(harness.elements.libraryModal.getAttribute('aria-hidden'), 'true');
+});
+
+test('Task Editor rejects malformed optional library fields before they can become task-row defaults', async () => {
+  const harness = createHarness();
+  harness.setLibraryListResult({
+    ok: true,
+    items: [{
+      texto: 'Read chapter',
+      tiempoSeconds: 60,
+      enlace: '',
+      comentario: false,
+    }],
+  });
+
+  harness.elements.btnTaskLoadLibrary.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(harness.notifications, ['renderer.tasks.alerts.library_load_error']);
+  assert.equal(harness.elements.taskTableBody._children.length, 0);
+  assert.equal(harness.findByIconIn(harness.elements.libraryList, 'task-row-load'), null);
+});
+
 test('Task Editor localizes native field prompts and limits the comment field', async () => {
   const harness = createHarness();
   await harness.waitForTranslations();
@@ -547,7 +697,7 @@ test('Task Editor places comment and snapshot controls in the second table colum
     ['texto', 'comentario', 'tiempo', 'percent', 'falta', 'enlace', 'acciones']
   );
   assert.deepEqual(
-    [...tableHeader[1].matchAll(/<th id="([^"]+)"/g)].map((match) => match[1]),
+    [...tableHeader[1].matchAll(/<th\b[^>]*\bid="([^"]+)"/g)].map((match) => match[1]),
     ['thTexto', 'thComentario', 'thTiempo', 'thPercent', 'thFalta', 'thEnlace', 'thAcciones']
   );
 
@@ -689,6 +839,29 @@ test('every shipped locale and the overriding es-cl bundle define the Task Edito
     assert.equal(typeof esClConfirmation[key], 'string', `es-cl missing ${key}`);
     assert.ok(esClConfirmation[key].trim(), `es-cl has empty ${key}`);
   });
+});
+
+test('every shipped locale and the overriding es-cl bundle define the Task Editor duration-overflow notice', () => {
+  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const getNotice = (renderer) => renderer.renderer.tasks.alerts.task_duration_too_large;
+
+  languages.forEach(({ tag }) => {
+    const renderer = JSON.parse(fs.readFileSync(
+      path.resolve(__dirname, `../../../i18n/${tag}/renderer.json`),
+      'utf8'
+    ));
+    const notice = getNotice(renderer);
+    assert.equal(typeof notice, 'string', `${tag} duration-overflow notice missing`);
+    assert.ok(notice.trim(), `${tag} duration-overflow notice empty`);
+  });
+
+  const esClRenderer = JSON.parse(fs.readFileSync(
+    path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json'),
+    'utf8'
+  ));
+  const esClNotice = getNotice(esClRenderer);
+  assert.equal(typeof esClNotice, 'string', 'es-cl duration-overflow notice missing');
+  assert.ok(esClNotice.trim(), 'es-cl duration-overflow notice empty');
 });
 
 test('English and Spanish define the Task Editor snapshot-source reminder copy', () => {
@@ -857,6 +1030,7 @@ test('Task Editor applies the changed snapshot estimate only after confirmation'
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: null,
+    sourceComment: null,
     estimatedSeconds: 120,
     wpm: 200,
   });
@@ -900,6 +1074,7 @@ test('Task Editor applies changed snapshot text and time independently', async (
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: 'Snapshot title',
+    sourceComment: null,
     estimatedSeconds: 120,
     wpm: 200,
   });
@@ -950,6 +1125,7 @@ test('Task Editor offers a changed snapshot name without a reading estimate', as
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: 'Snapshot title',
+    sourceComment: null,
     estimatedSeconds: null,
     wpm: null,
   });
@@ -982,6 +1158,7 @@ test('Task Editor presents an empty current name explicitly and in muted style',
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: 'Snapshot title',
+    sourceComment: null,
     estimatedSeconds: null,
     wpm: null,
   });
@@ -1014,6 +1191,7 @@ test('Task Editor treats Keep and confirmation dismissal as keeping current valu
   noHarness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: null,
+    sourceComment: null,
     estimatedSeconds: 120,
     wpm: 200,
   });
@@ -1034,6 +1212,7 @@ test('Task Editor treats Keep and confirmation dismissal as keeping current valu
   dismissHarness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: null,
+    sourceComment: null,
     estimatedSeconds: 120,
     wpm: 200,
   });
@@ -1058,6 +1237,7 @@ test('Task Editor skips confirmation without changed details and retains an inva
   noDetailsHarness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: null,
+    sourceComment: null,
     estimatedSeconds: null,
     wpm: null,
   });
@@ -1078,6 +1258,7 @@ test('Task Editor skips confirmation without changed details and retains an inva
   noChangeHarness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: 'Text',
+    sourceComment: null,
     estimatedSeconds: 60,
     wpm: 200,
   });
@@ -1120,19 +1301,19 @@ test('Task Editor modal markup gives every dialog an accessible name and describ
   assert.match(markup, /id="includeCommentModal"[^>]*aria-labelledby="includeCommentTitle"[^>]*aria-describedby="includeCommentText"/);
   assert.match(markup, /<p id="includeCommentText">¿Incluir el comentario\? Si esta lectura tiene un snapshot de texto seleccionado, su asociación se guardará de todos modos\.<\/p>/);
   assert.match(markup, /id="snapshotSourceReminderModal"[^>]*aria-labelledby="snapshotSourceReminderTitle"[^>]*aria-describedby="snapshotSourceReminderText"/);
-  assert.match(markup, /<dl class="snapshot-source-reminder-values">\s*<dt id="snapshotSourceReminderCommentLabel">Comentario de origen del snapshot:<\/dt>\s*<dd id="snapshotSourceReminderCommentValue" dir="auto"><\/dd>\s*<\/dl>/);
+  assert.match(markup, /<dl class="snapshot-source-reminder-values">\s*<dt\b[^>]*\bid="snapshotSourceReminderCommentLabel"[^>]*>Comentario de origen del snapshot:<\/dt>\s*<dd\b[^>]*\bid="snapshotSourceReminderCommentValue"[^>]*\bdir="auto"[^>]*><\/dd>\s*<\/dl>/);
   assert.match(markup, /id="snapshotDetailsConfirmModal"[^>]*aria-labelledby="snapshotDetailsConfirmTitle"[^>]*aria-describedby="snapshotDetailsConfirmText"/);
-  assert.match(markup, /id="snapshotSourceReminderCommentValue" dir="auto"><\/dd>/);
+  assert.match(markup, /<dd\b[^>]*\bid="snapshotSourceReminderCommentValue"[^>]*\bdir="auto"[^>]*><\/dd>/);
   assert.match(markup, /<legend id="snapshotDetailsConfirmTextChoice">/);
   assert.match(markup, /<legend id="snapshotDetailsConfirmTimeChoice">/);
   assert.equal(
     (markup.match(/class="snapshot-details-confirm-toggle native-checkbox-option"/g) || []).length,
     2
   );
-  assert.match(markup, /id="snapshotDetailsConfirmApplyText" type="checkbox" checked/);
-  assert.match(markup, /id="snapshotDetailsConfirmApplyTime" type="checkbox" checked/);
-  assert.match(markup, /id="snapshotDetailsConfirmWpmLabel">Velocidad de lectura<\/dt>/);
-  assert.match(markup, /id="snapshotDetailsConfirmWpmValue" dir="ltr"><\/dd>/);
+  assert.match(markup, /<input\b[^>]*\bid="snapshotDetailsConfirmApplyText"[^>]*\btype="checkbox"[^>]*\bchecked\b[^>]*\/>/);
+  assert.match(markup, /<input\b[^>]*\bid="snapshotDetailsConfirmApplyTime"[^>]*\btype="checkbox"[^>]*\bchecked\b[^>]*\/>/);
+  assert.match(markup, /<dt\b[^>]*\bid="snapshotDetailsConfirmWpmLabel"[^>]*>Velocidad de lectura<\/dt>/);
+  assert.match(markup, /<dd\b[^>]*\bid="snapshotDetailsConfirmWpmValue"[^>]*\bdir="ltr"[^>]*><\/dd>/);
   assert.match(markup, /<dl class="snapshot-details-confirm-name-values">/);
   assert.match(markup, /<dl class="snapshot-details-confirm-time-values">/);
   assert.match(styles, /\.modal-actions\s*\{\s*display: flex;\s*justify-content: flex-end;\s*gap: 12px;\s*flex-wrap: wrap;\s*\}/);
@@ -1152,8 +1333,8 @@ test('Task Editor modal markup gives every dialog an accessible name and describ
 test('every shipped locale explains that a selected text snapshot association is always saved', () => {
   const expectedRootCopy = {
     ar: 'هل تريد تضمين التعليق؟ إذا كانت لهذه القراءة لقطة نصية محددة، فسيُحفظ ارتباطها في كلتا الحالتين.',
-    arn: '¿Müleael nütram? Tüfa chi ruka mew snapshot texto mülelu, ñi asociación rume elkünuay.',
-    ay: 'Comentario uchañati? Aka siqitaki texto snapshot ajllitächi ukhaxa, ukamp chikt’atapaxa kunjamäkipansa imatäniwa.',
+    arn: '¿Müleael nütram? Tüfa chi ruka mew textu snapshot mülelu, ñi trawün rume elkünuay.',
+    ay: 'Comentario uchañati? Aka siqitaki qillqata snapshot ajllitächi ukhaxa, ukamp chikt’atapaxa kunjamäkipansa imatäniwa.',
     bn: 'মন্তব্য অন্তর্ভুক্ত করবেন? এই পাঠের জন্য কোনো টেক্সট স্ন্যাপশট নির্বাচিত থাকলে, তার সংযোগ উভয় ক্ষেত্রেই সংরক্ষিত হবে।',
     ca: 'Incloure el comentari? Si aquesta lectura té un snapshot de text seleccionat, la seva associació es desarà en qualsevol cas.',
     de: 'Kommentar einbeziehen? Wenn für diese Lektüre ein Text-Snapshot ausgewählt ist, wird die Verknüpfung in jedem Fall gespeichert.',
@@ -1162,7 +1343,7 @@ test('every shipped locale explains that a selected text snapshot association is
     eu: 'Iruzkina sartu? Irakurketa honek testu-snapshot bat hautatuta badu, haren lotura edonola ere gordeko da.',
     fa: 'نظر هم ذخیره شود؟ اگر برای این خواندنی یک اسنپ‌شات متن انتخاب شده باشد، پیوند آن در هر صورت ذخیره می‌شود.',
     fr: 'Inclure le commentaire ? Si cette lecture a un snapshot de texte sélectionné, son association sera enregistrée dans tous les cas.',
-    gn: '¿Emoĩ comentario? Ko fila oguerekóramo peteĩ snapshot texto ojeporavóva, upe ojoajuha oñeñongatúta taha\'e ha\'éva.',
+    gn: '¿Emoĩ ñe’ẽjoapy? Ko tysýi oguerekóramo peteĩ jehai ra’ãnga ñongatupy ojeporavóva, upe ojoajuha oñeñongatúta taha’e ha’éva.',
     hi: 'क्या टिप्पणी शामिल करनी है? अगर इस पठन के लिए टेक्स्ट स्नैपशॉट चुना गया है, तो उसका संबंध हर स्थिति में सहेजा जाएगा।',
     ht: 'Mete kòmantè a ladan? Si lekti sa a gen yon snapshot tèks ki chwazi, lyen li ap toujou sove.',
     id: 'Sertakan komentar? Jika ada snapshot teks yang dipilih untuk bacaan ini, kaitannya akan tetap disimpan.',
@@ -1170,7 +1351,7 @@ test('every shipped locale explains that a selected text snapshot association is
     ja: 'コメントを含めますか？この読書項目にテキストスナップショットが選択されている場合、その関連付けはどちらの場合も保存されます。',
     ko: '댓글을 포함할까요? 이 읽기 항목에 텍스트 스냅샷이 선택되어 있으면, 어느 쪽을 선택해도 연결 정보가 저장됩니다.',
     mi: 'Whakaurua te kōrero? Mēnā he hopunga kuputuhi kua tīpakohia mō tēnei pānuitanga, ka tiakina tōna hononga ahakoa te kōwhiringa.',
-    pcm: 'Include comment? If text snapshot dey selected for dis reading, e link go save whether you include am or not.',
+    pcm: 'Include comment? If dis reading get selected text snapshot, di link go save whether you include am or not.',
     pt: 'Incluir o comentário? Se houver um snapshot de texto selecionado para esta leitura, a associação será salva de qualquer forma.',
     qu: 'Rimayta churaychu? Kay siqipi qillqa snapshot akllasqa kaptinqa, tinkisqan imayna kaptinpas waqaychasqa kanqa.',
     ru: 'Включить комментарий? Если для этой записи выбран текстовый снапшот, его связь будет сохранена в любом случае.',
@@ -1206,7 +1387,7 @@ test('every shipped locale explains that a selected text snapshot association is
   ));
   assert.equal(
     chile.renderer.tasks.guardar_lectura_modal.library_save_question,
-    '¿Incluir opinión? Si esta lectura tiene un coso de texto seleccionado, su asociación se guarda igual.'
+    '¿Incluir opinión? Si esta lectura tiene un coso de texto seleccionado, la asociación se salva igual.'
   );
 });
 
@@ -1382,6 +1563,162 @@ test('Task Editor time and percentage inputs show invalid chrome while editing a
   assert.equal(percentInput.value, '25%');
 });
 
+test('Task Editor displays exact row and aggregate remaining whole seconds', () => {
+  const harness = createHarness();
+  harness.initializeRow({ tiempoSeconds: 5, percentComplete: 80 });
+
+  const cells = harness.elements.taskTableBody._children[0]._children;
+  const remainingCell = cells.find((cell) => cell.className === 'task-cell--remaining');
+  assert.ok(remainingCell);
+  assert.equal(remainingCell._children[0].textContent, '00:00:01');
+  assert.equal(harness.elements.taskSummaryTotalValue.textContent, '00:00:05');
+  assert.equal(harness.elements.taskSummaryLeftValue.textContent, '00:00:01');
+});
+
+test('Task Editor rejects a manual duration edit that would overflow the aggregate summary atomically', () => {
+  const harness = createHarness();
+  const stopwatchUtils = createStopwatchTimeUtils();
+  const previousSeconds = Number.MAX_SAFE_INTEGER - 1;
+  harness.initializeTask({
+    sourcePath: 'task.json',
+    task: {
+      meta: createTaskMeta(),
+      rows: [
+        {
+          texto: 'Long reading',
+          tiempoSeconds: previousSeconds,
+          percentComplete: 0,
+          enlace: '',
+          comentario: '',
+          snapshotRelPath: '',
+        },
+        {
+          texto: 'One second reading',
+          tiempoSeconds: 1,
+          percentComplete: 0,
+          enlace: '',
+          comentario: '',
+          snapshotRelPath: '',
+        },
+      ],
+    },
+  });
+
+  const timeInput = harness.findInputByHeaderId('thTiempo');
+  const previousDirtyStateCalls = harness.dirtyStateCalls.slice();
+  const expectedSummary = stopwatchUtils.formatClockSeconds(Number.MAX_SAFE_INTEGER);
+  assert.ok(timeInput);
+  assert.equal(harness.elements.taskSummaryTotalValue.textContent, expectedSummary);
+
+  timeInput.value = expectedSummary;
+  timeInput.dispatch('input');
+  timeInput.dispatch('blur');
+
+  assert.equal(timeInput.value, stopwatchUtils.formatClockSeconds(previousSeconds));
+  assert.equal(harness.elements.taskSummaryTotalValue.textContent, expectedSummary);
+  assert.deepEqual(harness.notifications, ['renderer.tasks.alerts.task_duration_too_large']);
+  assert.deepEqual(harness.dirtyStateCalls, previousDirtyStateCalls);
+});
+
+test('Task Editor keeps a snapshot confirmation open when its selected estimate would overflow the aggregate summary', async () => {
+  const harness = createHarness();
+  const stopwatchUtils = createStopwatchTimeUtils();
+  const previousSeconds = Number.MAX_SAFE_INTEGER - 1;
+  harness.initializeTask({
+    sourcePath: 'task.json',
+    task: {
+      meta: createTaskMeta(),
+      rows: [
+        {
+          texto: 'Long reading',
+          tiempoSeconds: previousSeconds,
+          percentComplete: 0,
+          enlace: '',
+          comentario: '',
+          snapshotRelPath: '',
+        },
+        {
+          texto: 'One second reading',
+          tiempoSeconds: 1,
+          percentComplete: 0,
+          enlace: '',
+          comentario: '',
+          snapshotRelPath: '',
+        },
+      ],
+    },
+  });
+  harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/overflow.json' });
+  harness.setTaskRowSnapshotInspectionResult({
+    ok: true,
+    name: null,
+    sourceComment: null,
+    estimatedSeconds: Number.MAX_SAFE_INTEGER,
+    wpm: 200,
+  });
+
+  harness.findByIcon('task-comment').dispatch('click');
+  harness.elements.commentSnapshotSelect.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  harness.elements.commentSave.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  harness.elements.snapshotDetailsConfirmApply.dispatch('click');
+
+  assert.equal(harness.elements.snapshotDetailsConfirmModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.commentModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(
+    harness.findInputByHeaderId('thTiempo').value,
+    stopwatchUtils.formatClockSeconds(previousSeconds)
+  );
+  assert.equal(
+    harness.elements.taskSummaryTotalValue.textContent,
+    stopwatchUtils.formatClockSeconds(Number.MAX_SAFE_INTEGER)
+  );
+  assert.equal(harness.findByIcon('task-text-snapshot-load'), null);
+  assert.deepEqual(harness.notifications, ['renderer.tasks.alerts.task_duration_too_large']);
+});
+
+test('Task Editor keeps the library open when loading its row would overflow the aggregate summary', async () => {
+  const harness = createHarness();
+  const stopwatchUtils = createStopwatchTimeUtils();
+  harness.initializeTask({
+    sourcePath: 'task.json',
+    task: {
+      meta: createTaskMeta(),
+      rows: [{
+        texto: 'Long reading',
+        tiempoSeconds: Number.MAX_SAFE_INTEGER,
+        percentComplete: 0,
+        enlace: '',
+        comentario: '',
+        snapshotRelPath: '',
+      }],
+    },
+  });
+  harness.setLibraryListResult({
+    ok: true,
+    items: [{
+      texto: 'One second reading',
+      tiempoSeconds: 1,
+      enlace: '',
+    }],
+  });
+
+  harness.elements.btnTaskLoadLibrary.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+  const libraryLoadButton = harness.findByIconIn(harness.elements.libraryList, 'task-row-load');
+  assert.ok(libraryLoadButton);
+  libraryLoadButton.dispatch('click');
+
+  assert.equal(harness.elements.libraryModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.taskTableBody._children.length, 1);
+  assert.equal(
+    harness.elements.taskSummaryTotalValue.textContent,
+    stopwatchUtils.formatClockSeconds(Number.MAX_SAFE_INTEGER)
+  );
+  assert.deepEqual(harness.notifications, ['renderer.tasks.alerts.task_duration_too_large']);
+});
+
 test('Task Editor save highlights and focuses the first empty reading field', () => {
   const harness = createHarness();
   harness.initializeRow();
@@ -1422,7 +1759,10 @@ test('Task Editor resets persistent task-name validation only at successful sess
   harness.elements.taskNameInput.value = '   ';
   harness.elements.taskNameInput.dispatch('input');
   harness.elements.btnTaskSave.dispatch('click');
-  harness.initializeTask({});
+  assert.throws(
+    () => harness.initializeTask({}),
+    /task-editor-init payload missing operational task state/
+  );
   assert.equal(harness.elements.taskNameInput.classList.contains('is-invalid'), true);
   assert.equal(harness.elements.taskNameInput.getAttribute('aria-invalid'), 'true');
 

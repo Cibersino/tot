@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Nessuna attività salvata da eliminare.",
         "task_invalid_file": "File di attività non valido.",
         "task_invalid_rows": "Ci sono righe non valide nell'attività.",
+        "task_duration_too_large": "La durata totale stimata dell'attività è troppo grande.",
         "task_path_outside": "Il file deve essere all'interno della cartella delle attività.",
         "name_required": "Il nome dell'attività è obbligatorio.",
         "row_text_required": "Il testo della riga non può essere vuoto.",

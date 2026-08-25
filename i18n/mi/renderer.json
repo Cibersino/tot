@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Kāore he tūmahi kua tiakina hei muku.",
         "task_invalid_file": "He kōnae tūmahi muhu.",
         "task_invalid_rows": "He rārangi muhu kei roto i te tūmahi.",
+        "task_duration_too_large": "He nui rawa te roanga whakatau tata katoa o te tūmahi.",
         "task_path_outside": "Me noho te kōnae ki roto i te kōpaki tūmahi.",
         "name_required": "Me whai ingoa te tūmahi.",
         "row_text_required": "Kāore e āhei kia noho kau te kuputuhi rārangi.",

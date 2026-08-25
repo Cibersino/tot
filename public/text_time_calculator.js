@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Load translations and number-format settings for the current language.
 // - Keep the selected target plus raw editable values synchronized with the UI.
-// - Delegate math and stopwatch parsing/formatting to shared pure helpers.
+// - Delegate reading math and whole-second clock parsing/formatting to shared pure helpers.
 // - Keep startup strict for required owners while degrading cleanly for optional settings sync.
 // - Render inline validation without toasts or developer noise for normal input mistakes.
 
@@ -17,7 +17,7 @@
   // Runtime dependencies and owner surfaces
   // =============================================================================
   // This window depends on stable renderer-owned globals for logging, i18n,
-  // formatting, stopwatch parsing, calculator math, and default language.
+  // formatting, reading duration, clock parsing, calculator math, and default language.
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text_time_calculator] window.getLogger unavailable; cannot continue');
   }
@@ -47,6 +47,14 @@
   const stopwatchTimeCore = window.StopwatchTimeCore || null;
   if (!stopwatchTimeCore || typeof stopwatchTimeCore.createStopwatchTimeUtils !== 'function') {
     throw new Error('[text_time_calculator] StopwatchTimeCore.createStopwatchTimeUtils unavailable; cannot continue');
+  }
+
+  const readingDurationUtils = window.ReadingDurationUtils || null;
+  if (!readingDurationUtils
+    || typeof readingDurationUtils.getEstimatedReadingSeconds !== 'function'
+    || typeof readingDurationUtils.getWordsForDurationSeconds !== 'function'
+    || typeof readingDurationUtils.getWpmForDurationSeconds !== 'function') {
+    throw new Error('[text_time_calculator] ReadingDurationUtils unavailable; cannot continue');
   }
 
   const calculatorCore = window.TextTimeCalculatorCore || null;
@@ -81,12 +89,15 @@
   const stopwatchUtils = stopwatchTimeCore.createStopwatchTimeUtils();
   const integerFormatState = {
     format(value) {
-      return String(Math.round(Number(value) || 0));
+      return String(value);
     },
   };
   const calculatorUtils = calculatorCore.createTextTimeCalculatorUtils({
-    parseStopwatchInput: stopwatchUtils.parseStopwatchInput,
-    formatRoundedSeconds: stopwatchUtils.formatRoundedSeconds,
+    getEstimatedReadingSeconds: readingDurationUtils.getEstimatedReadingSeconds,
+    getWordsForDurationSeconds: readingDurationUtils.getWordsForDurationSeconds,
+    getWpmForDurationSeconds: readingDurationUtils.getWpmForDurationSeconds,
+    formatClockSeconds: stopwatchUtils.formatClockSeconds,
+    parseClockSeconds: stopwatchUtils.parseClockSeconds,
     formatInteger: (value) => integerFormatState.format(value),
   });
 
@@ -163,7 +174,7 @@
   // =============================================================================
   function getSelectedTarget() {
     if (!targetCombobox) return 'wpm';
-    const selected = String(targetCombobox.getValue() || '').trim();
+    const selected = targetCombobox.getValue();
     return selected === 'words' || selected === 'time' ? selected : 'wpm';
   }
 
@@ -203,7 +214,7 @@
       settingsCache
     );
     integerFormatState.format = (value) => formatUtils.formatearNumero(
-      Math.round(Number(value) || 0),
+      value,
       thousandsSeparator,
       decimalSeparator
     );

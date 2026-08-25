@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Own the main-window time multiplier UI below the estimated-time result.
 // - Apply the repeat-input validation and normalization rules with its configured cap.
-// - Render the multiplied time from canonical exact base seconds.
+// - Render the multiplied time from a canonical exact reading-duration descriptor.
 // =============================================================================
 
 (() => {
@@ -19,10 +19,18 @@
   }
   const log = window.getLogger('results-time-multiplier');
   log.debug('Results time multiplier starting...');
-  if (!window.FormatUtils || typeof window.FormatUtils.getDisplayTimeParts !== 'function') {
-    throw new Error('[results-time-multiplier] FormatUtils.getDisplayTimeParts unavailable; cannot continue');
+  const {
+    getRoundedReadingSeconds,
+    isEstimatedReadingDuration,
+  } = window.ReadingDurationUtils || {};
+  if (!getRoundedReadingSeconds || !isEstimatedReadingDuration) {
+    throw new Error('[results-time-multiplier] ReadingDurationUtils unavailable; cannot continue');
   }
-  const { getDisplayTimeParts } = window.FormatUtils;
+  const stopwatchTimeCore = window.StopwatchTimeCore || null;
+  if (!stopwatchTimeCore || typeof stopwatchTimeCore.createStopwatchTimeUtils !== 'function') {
+    throw new Error('[results-time-multiplier] StopwatchTimeCore.createStopwatchTimeUtils unavailable; cannot continue');
+  }
+  const { getClockTimeParts } = stopwatchTimeCore.createStopwatchTimeUtils();
   const { AppConstants } = window;
   if (!AppConstants || !Number.isInteger(AppConstants.MAX_RESULTS_TIME_MULTIPLIER)
     || AppConstants.MAX_RESULTS_TIME_MULTIPLIER < 1) {
@@ -37,7 +45,7 @@
   // =============================================================================
   // Shared state
   // =============================================================================
-  let baseTotalSeconds = null;
+  let baseReadingDuration = null;
 
   // =============================================================================
   // Helpers
@@ -80,11 +88,6 @@
     inputEl.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
   }
 
-  function hasValidBaseTotalSeconds(value) {
-    const numericValue = Number(value);
-    return Number.isFinite(numericValue) && numericValue >= 0;
-  }
-
   function getMultipliedTimeText(timeParts) {
     return `: ${timeParts.hours}h ${timeParts.minutes}m ${timeParts.seconds}s`;
   }
@@ -104,13 +107,22 @@
 
     setInputInvalidState(false);
 
-    if (baseTotalSeconds === null) {
+    if (baseReadingDuration === null) {
       outputEl.textContent = '';
       return;
     }
 
-    const multipliedSeconds = baseTotalSeconds * multiplierState.normalizedValue;
-    const multipliedTimeParts = getDisplayTimeParts(multipliedSeconds);
+    const multipliedSeconds = getRoundedReadingSeconds(
+      baseReadingDuration,
+      multiplierState.normalizedValue
+    );
+    if (multipliedSeconds === null) {
+      throw new Error('[results-time-multiplier] multiplied reading duration unavailable');
+    }
+    const multipliedTimeParts = getClockTimeParts(multipliedSeconds);
+    if (multipliedTimeParts === null) {
+      throw new Error('[results-time-multiplier] multiplied reading duration clock conversion failed');
+    }
     outputEl.textContent = getMultipliedTimeText(multipliedTimeParts);
   }
 
@@ -148,31 +160,26 @@
   // =============================================================================
   // Exports / module surface
   // =============================================================================
-  function setBaseTotalSeconds(nextBaseTotalSeconds) {
-    if (!ensureElements('setBaseTotalSeconds')) return;
-    if (!hasValidBaseTotalSeconds(nextBaseTotalSeconds)) {
-      log.errorOnce(
-        'results-time-multiplier.baseTotalSeconds.invalid',
-        'Invalid base total seconds received for results time multiplier:',
-        nextBaseTotalSeconds
-      );
-      return;
+  function setBaseReadingDuration(nextBaseReadingDuration) {
+    if (!isEstimatedReadingDuration(nextBaseReadingDuration)) {
+      throw new Error('[results-time-multiplier] setBaseReadingDuration requires an estimated reading duration');
     }
-    baseTotalSeconds = Number(nextBaseTotalSeconds);
+    if (!ensureElements('setBaseReadingDuration')) return;
+    baseReadingDuration = nextBaseReadingDuration;
     renderMultipliedTime();
   }
 
-  function clearBaseTotalSeconds() {
-    if (!ensureElements('clearBaseTotalSeconds')) return;
-    baseTotalSeconds = null;
+  function clearBaseReadingDuration() {
+    if (!ensureElements('clearBaseReadingDuration')) return;
+    baseReadingDuration = null;
     renderMultipliedTime();
   }
 
   bindEvents();
 
   window.ResultsTimeMultiplier = {
-    clearBaseTotalSeconds,
-    setBaseTotalSeconds,
+    clearBaseReadingDuration,
+    setBaseReadingDuration,
   };
 })();
 

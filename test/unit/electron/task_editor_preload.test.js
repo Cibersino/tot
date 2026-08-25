@@ -8,13 +8,16 @@ const vm = require('node:vm');
 
 function loadTaskEditorPreload() {
   const invoked = [];
+  const sent = [];
   let exposedApi = null;
 
   const ipcRenderer = {
     invoke(channel, payload) {
       invoked.push({ channel, payload });
     },
-    send() {},
+    send(channel, payload) {
+      sent.push({ channel, payload });
+    },
     on() {},
     removeListener() {},
   };
@@ -50,6 +53,7 @@ function loadTaskEditorPreload() {
   return {
     exposedApi,
     invoked,
+    sent,
   };
 }
 
@@ -137,4 +141,22 @@ test('task editor preload forwards the complete column layout record', () => {
   );
   assert.equal('getColumnWidths' in exposedApi.api, false);
   assert.equal('saveColumnWidths' in exposedApi.api, false);
+});
+
+test('task editor preload forwards only canonical boolean dirty-state values', () => {
+  const { exposedApi, sent } = loadTaskEditorPreload();
+
+  exposedApi.api.setDirtyState(true);
+  assert.deepEqual(JSON.parse(JSON.stringify(sent)), [
+    {
+      channel: 'task-editor-dirty-state',
+      payload: { dirty: true },
+    },
+  ]);
+
+  assert.throws(
+    () => exposedApi.api.setDirtyState(1),
+    /setDirtyState requires a boolean/
+  );
+  assert.equal(sent.length, 1);
 });

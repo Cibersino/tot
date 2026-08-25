@@ -565,6 +565,7 @@
         "task_delete_unavailable": "No saved task to delete.",
         "task_invalid_file": "Invalid task file.",
         "task_invalid_rows": "There are invalid rows in the task.",
+        "task_duration_too_large": "The task's total estimated duration is too large.",
         "task_path_outside": "The file must be inside the tasks folder.",
         "name_required": "Task name is required.",
         "row_text_required": "Row name cannot be empty.",

@@ -10,12 +10,15 @@
 
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const readingTestQuestionsCore = require('../public/js/lib/reading_test_questions_core');
+const readingDurationCore = require('../public/js/lib/reading_duration_core');
 const {
   PRESET_WPM_MIN,
   PRESET_WPM_MAX,
   SNAPSHOT_NAME_MAX_CHARS,
   SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
 } = require('./constants_main');
+
+const readingDurationUtils = readingDurationCore.createReadingDurationUtils();
 
 const SNAPSHOT_TYPE = 'text snapshot';
 const SNAPSHOT_SAVED_WITH = 'toT (totapp.org)';
@@ -159,11 +162,8 @@ function normalizeSnapshotCountLocale(value) {
 }
 
 function getExpectedEstimatedSeconds(words, wpm) {
-  const exactSeconds = (words / wpm) * 60;
-  const estimatedSeconds = Math.round(exactSeconds);
-  return Number.isSafeInteger(estimatedSeconds) && estimatedSeconds >= 0
-    ? estimatedSeconds
-    : null;
+  const estimatedSeconds = readingDurationUtils.getEstimatedReadingSeconds(words, wpm);
+  return Number.isSafeInteger(estimatedSeconds) ? estimatedSeconds : null;
 }
 
 function validateSnapshotMetrics(rawMetrics) {

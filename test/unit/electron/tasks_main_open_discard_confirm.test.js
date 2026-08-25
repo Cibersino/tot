@@ -200,3 +200,60 @@ test('open-task-editor sends task-editor-init after dirty Task Editor discard is
     restore();
   }
 });
+
+test('task-editor-dirty-state ignores malformed values instead of clearing dirty state', async () => {
+  const { tasksMain, dialogCalls, restore } = loadFreshTasksMain({ dialogResponse: 1 });
+  const ipcMain = createIpcMainMock();
+  const mainWin = createWindow('main');
+  const taskEditorWin = createWindow('task-editor');
+
+  try {
+    tasksMain.registerIpc(ipcMain, {
+      getWindows: () => ({ mainWin, taskEditorWin }),
+      ensureTaskEditorWindow() {},
+    });
+
+    ipcMain.emitChannel('task-editor-dirty-state', { sender: taskEditorWin.webContents }, { dirty: true });
+    ipcMain.emitChannel('task-editor-dirty-state', { sender: taskEditorWin.webContents }, { dirty: 0 });
+
+    const result = await ipcMain.invoke(
+      'open-task-editor',
+      { sender: mainWin.webContents },
+      { mode: 'new' }
+    );
+
+    assert.deepEqual(result, { ok: false, code: 'CONFIRM_DENIED' });
+    assert.equal(dialogCalls.length, 1);
+  } finally {
+    restore();
+  }
+});
+
+test('open-task-editor rejects an invalid mode instead of treating it as a new task', async () => {
+  const { tasksMain, restore } = loadFreshTasksMain({ dialogResponse: 0 });
+  const ipcMain = createIpcMainMock();
+  const mainWin = createWindow('main');
+  const taskEditorWin = createWindow('task-editor');
+  let ensureCalls = 0;
+
+  try {
+    tasksMain.registerIpc(ipcMain, {
+      getWindows: () => ({ mainWin, taskEditorWin }),
+      ensureTaskEditorWindow() {
+        ensureCalls += 1;
+      },
+    });
+
+    const result = await ipcMain.invoke(
+      'open-task-editor',
+      { sender: mainWin.webContents },
+      { mode: false }
+    );
+
+    assert.deepEqual(result, { ok: false, code: 'INVALID_REQUEST' });
+    assert.equal(ensureCalls, 0);
+    assert.equal(taskEditorWin.sentMessages.length, 0);
+  } finally {
+    restore();
+  }
+});

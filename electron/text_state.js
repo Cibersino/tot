@@ -65,9 +65,11 @@ const ALLOWED_SET_CURRENT_TEXT_ACTIONS = new Set([
 ]);
 
 function normalizeLineEndings(text) {
-  const value = String(text || '');
-  if (!value.includes('\r')) return value;
-  return value.replace(/\r\n?/g, '\n');
+  if (typeof text !== 'string') {
+    throw new Error('normalizeLineEndings requires a string');
+  }
+  if (!text.includes('\r')) return text;
+  return text.replace(/\r\n?/g, '\n');
 }
 
 // =============================================================================
@@ -116,7 +118,7 @@ function safeSend(win, channel, payload) {
 function persistCurrentTextOnQuit() {
   try {
     if (saveJson && currentTextFile) {
-      saveJson(currentTextFile, { text: currentText || '' });
+      saveJson(currentTextFile, { text: currentText });
     }
 
     // Maintain previous behavior: ensure settings file exists.
@@ -186,8 +188,8 @@ function notifyCurrentTextDidBecomeEmpty({ previousText, nextText, requestId, me
   }
   try {
     onCurrentTextDidBecomeEmpty({
-      previousText: String(previousText || ''),
-      nextText: String(nextText || ''),
+      previousText,
+      nextText,
       requestId: Number.isInteger(requestId) ? requestId : null,
       meta: sanitizeMeta(meta),
     });
@@ -362,9 +364,9 @@ function registerIpc(ipcMain, windowsResolver) {
     getWindows = () => windowsResolver;
   }
 
-  // Keep the simple string return shape for existing consumers.
+  // The main-owned current-text value is always a canonical string.
   ipcMain.handle('get-current-text', async () => {
-    return currentText || '';
+    return currentText;
   });
   ipcMain.handle('clipboard-read-text', (event) => {
     const { mainWin } = getWindows() || {};
@@ -376,7 +378,11 @@ function registerIpc(ipcMain, windowsResolver) {
       );
       return { ok: false, error: 'unauthorized', text: '', length: 0 };
     }
-    const text = String(clipboard.readText() || '');
+    const text = clipboard.readText();
+    if (typeof text !== 'string') {
+      log.warn('clipboard-read-text returned a non-string value.');
+      return { ok: false, error: 'clipboard read returned a non-string value' };
+    }
     if (text.length > maxIpcChars) {
       log.warnOnce(
         'text_state.clipboardRead.tooLarge',
@@ -418,7 +424,14 @@ function registerIpc(ipcMain, windowsResolver) {
         );
         return { ok: false, error: 'invalid payload' };
       }
-      const text = String(payload.text || '');
+      if (typeof payload.text !== 'string') {
+        log.warnOnce(
+          'text_state.setCurrentText.invalid_text',
+          'set-current-text payload text must be a string; rejecting.'
+        );
+        return { ok: false, error: 'invalid payload' };
+      }
+      const text = payload.text;
 
       if (text.length > maxIpcChars) {
         log.warnOnce(
@@ -446,7 +459,7 @@ function registerIpc(ipcMain, windowsResolver) {
 }
 
 function getCurrentText() {
-  return currentText || '';
+  return currentText;
 }
 
 // =============================================================================

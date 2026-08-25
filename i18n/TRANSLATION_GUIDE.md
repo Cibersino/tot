@@ -3152,6 +3152,12 @@ Estados de revisión recomendados:
           "en": "There are invalid rows in the task."
           // [CONCEPTO_APP] tarea; fila de lectura
         },
+        "task_duration_too_large": {
+          "es": "El tiempo estimado total de la tarea es demasiado grande.",
+          "en": "The task's total estimated duration is too large."
+          // [PROPÓSITO] Rechazo recuperable de una edición que excede el rango seguro del resumen temporal agregado.
+          // [CONCEPTO_APP] tarea
+        },
         "task_path_outside": {
           "es": "El archivo debe estar dentro de la carpeta de tareas.",
           "en": "The file must be inside the tasks folder."

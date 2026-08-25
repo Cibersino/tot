@@ -565,6 +565,7 @@
         "task_delete_unavailable": "削除できる保存済みタスクがありません。",
         "task_invalid_file": "タスクファイルが無効です。",
         "task_invalid_rows": "タスクに無効な行があります。",
+        "task_duration_too_large": "タスクの合計推定時間が大きすぎます。",
         "task_path_outside": "ファイルはタスクフォルダ内にある必要があります。",
         "name_required": "タスク名は必須です。",
         "row_text_required": "行のテキストは空にできません。",

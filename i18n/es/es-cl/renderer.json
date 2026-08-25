@@ -565,6 +565,7 @@
         "task_delete_unavailable": "No hay niuna misión guardá pa' pitiarse.",
         "task_invalid_file": "Archivo de misión inválido.",
         "task_invalid_rows": "Hay filas inválidas en la misión.",
+        "task_duration_too_large": "El tiempo total estimado de la tarea es demasiado grande.",
         "task_path_outside": "El archivo debe estar aentro de la carpeta de misiones.",
         "name_required": "El mote de misión es obligatorio.",
         "row_text_required": "El texto de fila no puede estar vacío.",

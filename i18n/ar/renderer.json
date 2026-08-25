@@ -565,6 +565,7 @@
         "task_delete_unavailable": "لا توجد مهمة محفوظة لحذفها.",
         "task_invalid_file": "ملف المهمة غير صالح.",
         "task_invalid_rows": "توجد صفوف غير صالحة في المهمة.",
+        "task_duration_too_large": "مدة المهمة الإجمالية المقدّرة كبيرة جدًا.",
         "task_path_outside": "يجب أن يكون الملف داخل مجلد المهام.",
         "name_required": "اسم المهمة مطلوب.",
         "row_text_required": "لا يمكن أن يكون نص الصف فارغًا.",

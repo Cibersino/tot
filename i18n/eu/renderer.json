@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Ez dago ezabatzeko gordetako atazarik.",
         "task_invalid_file": "Ataza-fitxategi baliogabea.",
         "task_invalid_rows": "Errenkada baliogabeak daude atazan.",
+        "task_duration_too_large": "Atazaren guztizko iraupen estimatua handiegia da.",
         "task_path_outside": "Fitxategiak atazen karpetaren barruan egon behar du.",
         "name_required": "Atazaren izena nahitaezkoa da.",
         "row_text_required": "Errenkadako testua ezin da hutsik egon.",

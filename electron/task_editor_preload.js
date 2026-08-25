@@ -65,7 +65,12 @@ const api = {
   openTaskLink: (raw) => ipcRenderer.invoke('task-open-link', { raw }),
   getColumnLayout: () => ipcRenderer.invoke('task-columns-load'),
   saveColumnLayout: (record) => ipcRenderer.invoke('task-columns-save', { record }),
-  setDirtyState: (dirty) => ipcRenderer.send('task-editor-dirty-state', { dirty: !!dirty }),
+  setDirtyState: (dirty) => {
+    if (typeof dirty !== 'boolean') {
+      throw new Error('taskEditorAPI.setDirtyState requires a boolean');
+    }
+    ipcRenderer.send('task-editor-dirty-state', { dirty });
+  },
   getSettings: () => ipcRenderer.invoke('get-settings'),
   onSettingsChanged: (cb) => {
     const listener = (_e, settings) => {

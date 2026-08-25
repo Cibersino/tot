@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Ingen sparad uppgift att ta bort.",
         "task_invalid_file": "Ogiltig uppgiftsfil.",
         "task_invalid_rows": "Det finns ogiltiga rader i uppgiften.",
+        "task_duration_too_large": "Uppgiftens totala uppskattade tidsåtgång är för stor.",
         "task_path_outside": "Filen måste ligga i uppgiftsmappen.",
         "name_required": "Uppgiftsnamn krävs.",
         "row_text_required": "Radtexten får inte vara tom.",

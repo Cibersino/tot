@@ -170,10 +170,12 @@ tot/
 │ │ │ ├── editor_find_replace_core.js
 │ │ │ ├── editor_maximized_layout_core.js
 │ │ │ ├── format_core.js
+│ │ │ ├── reading_duration_core.js
 │ │ │ ├── reading_test_filters_core.js
 │ │ │ ├── reading_test_questions_core.js
 │ │ │ ├── snapshot_tag_catalog.js
 │ │ │ ├── stopwatch_time_core.js
+│ │ │ ├── task_duration_core.js
 │ │ │ └── text_time_calculator_core.js
 │ │ ├── browser_extension_modal.js
 │ │ ├── combobox.js
@@ -384,14 +386,16 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.
 - `public/js/lib/editor_find_replace_core.js` — Núcleo puro/importable del find/replace del Editor de Texto: matching literal sobre selección, cómputo determinista de `Replace All` y chequeo puro de elegibilidad por longitud; reutilizado por `public/editor.js` y por la suite automatizada.
 - `public/js/lib/editor_maximized_layout_core.js` — Núcleo puro/importable del layout maximizado del Editor de Texto: clamp del ancho preferido/renderizado de la columna centrada y cálculo del resize simétrico desde cualquiera de los gutters; reutilizado por `public/editor.js` y por la suite automatizada.
-- `public/js/lib/format_core.js` — Núcleo puro/importable de formateo (tiempo estimado, partes de tiempo y separadores numéricos) reutilizado por el wrapper renderer y por la suite automatizada.
+- `public/js/lib/format_core.js` — Núcleo puro/importable de formateo numérico y resolución de separadores, reutilizado por el wrapper renderer y por la suite automatizada.
+- `public/js/lib/reading_duration_core.js` — Núcleo puro/importable de duración estimada de lectura: representa exactamente la relación palabras/WPM y convierte entre palabras, WPM y segundos enteros con redondeo al más cercano (mitades hacia arriba); lo reutilizan ventana principal, snapshots y calculadora rápida.
 - `public/js/lib/reading_test_filters_core.js` — Núcleo puro/importable del selector del reading speed test: semántica de checkboxes (OR dentro de categoría, AND entre categorías activas), cálculo de elegibles y enabled/disabled state desde combinaciones reales.
+- `public/js/lib/task_duration_core.js` — Núcleo puro/importable del dominio temporal del Task Editor: valida segundos enteros/porcentaje y deriva faltante por fila y resumen agregado con aritmética exacta.
 - `public/js/lib/reading_test_questions_core.js` — Núcleo puro/importable del reading speed test para validar payloads `readingTest.questions`, puntuar respuestas y calcular el baseline probabilístico de respuesta al azar.
 - `public/js/lib/snapshot_tag_catalog.js` — Catálogo puro/importable compartido de tags de snapshot: define los valores canónicos/opciones de `language` / `type` / `difficulty` y centraliza la normalización reutilizada por renderer y main para evitar drift.
-- `public/js/lib/stopwatch_time_core.js` — Núcleo puro/importable compartido de tiempo estilo cronómetro: parsea `H+:MM:SS`, preserva el formateo por truncado usado por el cronómetro y añade el formateo redondeado requerido por la Calculadora rápida.
+- `public/js/lib/stopwatch_time_core.js` — Núcleo puro/importable compartido de tiempo estilo cronómetro: parsea `H+:MM:SS`, formatea directamente duraciones enteras en segundos para los dominios que las usan y preserva las conversiones en milisegundos del cronómetro.
 - `public/js/lib/text_time_calculator_core.js` — Núcleo puro/importable de la Calculadora rápida: valida los dos campos editables, detecta invalidez matemática y deriva `palabras`, `tiempo` o `WPM` sin depender del DOM.
 - `public/js/count.js` — Wrapper renderer de conteo: valida dependencias del `window`, construye `window.CountUtils` desde `count_core.js` y conserva la superficie pública existente.
-- `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
+- `public/js/format.js` — Wrapper renderer de formateo numérico: valida dependencias del `window` y construye `window.FormatUtils` desde `format_core.js`.
 - `public/js/generated_icons.js` — Artefacto runtime autogenerado del renderer: registra el catálogo serializado de SVGs funcionales a partir de `assets/icons/`; no se edita a mano y se regenera con `npm run generate:icons`.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
 - `public/js/info_modal.js` — Owner renderer del `Info Modal`: expone `window.InfoModal.init/open/isOpen/applyTranslations`, conserva estado, DOM, ciclo asíncrono y foco del modal, carga/parsea documentos localizados mediante `RendererI18n`, preserva la protección contra renders stale y refresca el contenido abierto al cambiar idioma; también hidrata la presentación de About sin devolver ese ownership a `public/renderer.js`.

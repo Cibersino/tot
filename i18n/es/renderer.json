@@ -565,6 +565,7 @@
         "task_delete_unavailable": "No hay una tarea guardada para eliminar.",
         "task_invalid_file": "Archivo de tarea inválido.",
         "task_invalid_rows": "Hay filas inválidas en la tarea.",
+        "task_duration_too_large": "El tiempo estimado total de la tarea es demasiado grande.",
         "task_path_outside": "El archivo debe estar dentro de la carpeta de tareas.",
         "name_required": "El nombre de la tarea es obligatorio.",
         "row_text_required": "El nombre de la fila no puede quedar vacío.",

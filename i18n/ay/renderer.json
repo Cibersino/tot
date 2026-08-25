@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Chhaqtayañatakix janiw imata tareax utjkiti.",
         "task_invalid_file": "Tarea archivo janiw walikiti.",
         "task_invalid_rows": "Tarean jan wali siqinakaw utji.",
+        "task_duration_too_large": "Tarea taqpach amuyt’ata pachapax sinti jach’awa.",
         "task_path_outside": "Archivox tareas carpeta manqhan utjañapawa.",
         "name_required": "Tarea suti wakisiwa.",
         "row_text_required": "Siqi qillqatax janiw ch’usañapäkiti.",

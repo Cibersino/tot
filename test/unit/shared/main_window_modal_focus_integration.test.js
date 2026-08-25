@@ -301,6 +301,9 @@ test('reading-test entry markup relates material help to each actual control', (
       markup,
       new RegExp(`id="${controlId}"[^>]*aria-describedby="${descriptionId}"`)
     );
-    assert.match(markup, new RegExp(`id="${descriptionId}" class="main-accessible-description"`));
+    assert.match(
+      markup,
+      new RegExp(`id="${descriptionId}"[^>]*class="main-accessible-description"`)
+    );
   });
 });

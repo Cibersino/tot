@@ -565,6 +565,7 @@
         "task_delete_unavailable": "هیچ کار ذخیره‌شده‌ای برای حذف وجود ندارد.",
         "task_invalid_file": "فایل کار نامعتبر است.",
         "task_invalid_rows": "در کار ردیف‌های نامعتبر وجود دارد.",
+        "task_duration_too_large": "مدت‌زمان کلِ برآوردشدهٔ کار بیش از حد زیاد است.",
         "task_path_outside": "فایل باید داخل پوشه کارها باشد.",
         "name_required": "نام کار الزامی است.",
         "row_text_required": "متن ردیف نمی‌تواند خالی باشد.",

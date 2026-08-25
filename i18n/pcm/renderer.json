@@ -565,6 +565,7 @@
         "task_delete_unavailable": "No saved task to delete.",
         "task_invalid_file": "Invalid task file.",
         "task_invalid_rows": "Some task rows no valid.",
+        "task_duration_too_large": "Di total estimated time for di task too big.",
         "task_path_outside": "File must dey inside di tasks folder.",
         "name_required": "Task name dey required.",
         "row_text_required": "Row text no fit dey empty.",

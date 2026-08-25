@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Silinecek kayıtlı görev yok.",
         "task_invalid_file": "Geçersiz görev dosyası.",
         "task_invalid_rows": "Görevde geçersiz satırlar var.",
+        "task_duration_too_large": "Görevin toplam tahmini süresi çok büyük.",
         "task_path_outside": "Dosya görevler klasörünün içinde olmalıdır.",
         "name_required": "Görev adı zorunludur.",
         "row_text_required": "Satır metni boş olamaz.",

@@ -565,6 +565,7 @@
         "task_delete_unavailable": "حذف کرنے کے لیے کوئی محفوظ ٹاسک نہیں۔",
         "task_invalid_file": "ٹاسک فائل درست نہیں۔",
         "task_invalid_rows": "ٹاسک میں غلط قطاریں موجود ہیں۔",
+        "task_duration_too_large": "ٹاسک کا کل تخمینی دورانیہ بہت زیادہ ہے۔",
         "task_path_outside": "فائل tasks فولڈر کے اندر ہونی چاہیے۔",
         "name_required": "ٹاسک کا نام ضروری ہے۔",
         "row_text_required": "قطار کا متن خالی نہیں ہو سکتا۔",

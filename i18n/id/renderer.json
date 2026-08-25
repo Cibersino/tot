@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Tidak ada tugas tersimpan untuk dihapus.",
         "task_invalid_file": "File tugas tidak valid.",
         "task_invalid_rows": "Ada baris yang tidak valid dalam tugas.",
+        "task_duration_too_large": "Total durasi estimasi tugas terlalu besar.",
         "task_path_outside": "File harus berada di dalam folder tugas.",
         "name_required": "Nama tugas wajib diisi.",
         "row_text_required": "Teks baris tidak boleh kosong.",

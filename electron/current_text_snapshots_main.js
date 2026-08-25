@@ -28,7 +28,7 @@ const {
 } = require('./constants_main');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const countCore = require('../public/js/lib/count_core');
-const formatCore = require('../public/js/lib/format_core');
+const readingDurationCore = require('../public/js/lib/reading_duration_core');
 const currentTextSnapshotSchema = require('./current_text_snapshot_schema');
 const {
   getCurrentTextSnapshotsDir,
@@ -76,7 +76,7 @@ const countUtils = countCore.createCountUtils({
   log,
   intlObject: typeof Intl !== 'undefined' ? Intl : null,
 });
-const formatUtils = formatCore.createFormatUtils({ DEFAULT_LANG, log });
+const readingDurationUtils = readingDurationCore.createReadingDurationUtils();
 
 // =============================================================================
 // Helpers (paths)
@@ -121,6 +121,29 @@ function normalizeSnapshotRelPath(raw) {
   return rel;
 }
 
+function getRequestedSnapshotRelPath(payload, { allowOmitted = false } = {}) {
+  if (typeof payload === 'undefined') {
+    if (allowOmitted) return { ok: true, snapshotRelPath: null };
+    log.warn('snapshot request omitted snapshotRelPath payload.');
+    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+  }
+  if (!snapshotTagCatalog.isPlainObject(payload)
+    || !Object.prototype.hasOwnProperty.call(payload, 'snapshotRelPath')
+    || typeof payload.snapshotRelPath !== 'string') {
+    log.warn('snapshot request received invalid snapshotRelPath payload:', payload);
+    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+  }
+
+  const snapshotRelPath = normalizeSnapshotRelPath(payload.snapshotRelPath);
+  if (!snapshotRelPath || snapshotRelPath !== payload.snapshotRelPath) {
+    log.warn('snapshot request received invalid snapshotRelPath:', {
+      snapshotRelPath: payload.snapshotRelPath,
+    });
+    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+  }
+  return { ok: true, snapshotRelPath };
+}
+
 function resolveSnapshotFromRelPath(rootReal, snapshotRelPath) {
   const rel = normalizeSnapshotRelPath(snapshotRelPath);
   if (!rootReal || !rel) return null;
@@ -151,7 +174,7 @@ function isWindowsReservedDeviceName(baseName) {
 }
 
 function sanitizeSnapshotBaseName(base) {
-  let next = String(base || '').trim().normalize('NFC');
+  let next = base.trim().normalize('NFC');
   next = next.replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ');
   next = next.replace(/\s+/g, ' ').trim();
   next = next.replace(/[. ]+$/g, '');
@@ -162,7 +185,7 @@ function sanitizeSnapshotBaseName(base) {
 }
 
 function normalizeDerivedSnapshotBaseName(base) {
-  let next = String(base || '').trim().normalize('NFC');
+  let next = base.trim().normalize('NFC');
   next = next.replace(/[^\p{L}\p{N}\p{M}_-]+/gu, '_');
   next = next.replace(/_+/g, '_').replace(/-+/g, '-');
   next = next.replace(/^[_-]+|[_-]+$/g, '');
@@ -173,7 +196,7 @@ function normalizeDerivedSnapshotBaseName(base) {
 }
 
 function normalizeSavePath(filePath) {
-  const resolved = path.resolve(String(filePath || ''));
+  const resolved = path.resolve(filePath);
   const dir = path.dirname(resolved);
   const base = path.basename(resolved, path.extname(resolved));
   const safeBase = sanitizeSnapshotBaseName(base);
@@ -252,7 +275,11 @@ async function promptForSnapshotSelection(ownerWin, root, rootReal) {
     return { ok: false, code: 'CANCELLED' };
   }
 
-  const selectedPath = String(dialogResult.filePaths[0] || '');
+  const selectedPath = dialogResult.filePaths[0];
+  if (typeof selectedPath !== 'string' || !selectedPath.trim()) {
+    log.warn('snapshot file picker returned invalid file path:', dialogResult);
+    return { ok: false, code: 'READ_FAILED', message: 'snapshot file picker returned invalid file path' };
+  }
   return validateSelectedSnapshot(rootReal, selectedPath);
 }
 
@@ -382,8 +409,7 @@ function buildSnapshotMetrics(text, payloadInfo) {
   };
   if (!payloadInfo.includeReading) return metrics;
 
-  const exactSeconds = formatUtils.getExactTotalSeconds(words, payloadInfo.wpm);
-  const estimatedSeconds = Math.round(exactSeconds);
+  const estimatedSeconds = readingDurationUtils.getEstimatedReadingSeconds(words, payloadInfo.wpm);
   if (!Number.isSafeInteger(estimatedSeconds) || estimatedSeconds < 0) {
     throw new Error('snapshot estimated reading duration invalid');
   }
@@ -433,18 +459,7 @@ function parseSnapshotFile(selectedReal) {
   };
 }
 
-function inspectSnapshotAtRelPath(rawSnapshotRelPath) {
-  const suppliedSnapshotRelPath = typeof rawSnapshotRelPath === 'string'
-    ? rawSnapshotRelPath
-    : '';
-  const snapshotRelPath = normalizeSnapshotRelPath(suppliedSnapshotRelPath);
-  if (!snapshotRelPath || snapshotRelPath !== suppliedSnapshotRelPath) {
-    log.warn('snapshot inspection received invalid snapshotRelPath:', {
-      snapshotRelPath: suppliedSnapshotRelPath,
-    });
-    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
-  }
-
+function inspectSnapshotAtRelPath(snapshotRelPath) {
   const rootInfo = getSnapshotsRoot('read');
   if (!rootInfo.ok) return rootInfo;
   const { rootReal } = rootInfo;
@@ -514,7 +529,11 @@ async function confirmLoadOverwrite(ownerWin, name = '') {
 }
 
 function hasCurrentTextToOverwrite() {
-  return String(textState.getCurrentText() || '').length > 0;
+  const currentText = textState.getCurrentText();
+  if (typeof currentText !== 'string') {
+    throw new Error('textState.getCurrentText returned a non-string value');
+  }
+  return currentText.length > 0;
 }
 
 function resolveMainWin(getWindows) {
@@ -607,7 +626,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         const defaultBaseName = path.basename(getDefaultSnapshotName(root), SNAPSHOT_EXT);
         const autoPath = resolveDeterministicAutoSnapshotPath(
           root,
-          payloadInfo.autoFileBaseName || defaultBaseName
+          payloadInfo.autoFileBaseName === ''
+            ? defaultBaseName
+            : payloadInfo.autoFileBaseName
         );
         normalizedPath = normalizeSavePath(autoPath.candidatePath);
       } else {
@@ -621,8 +642,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           filters: [{ name: 'JSON', extensions: ['json'] }],
         });
 
-        if (!dialogRes || dialogRes.canceled || !dialogRes.filePath) {
+        if (!dialogRes || dialogRes.canceled) {
           return { ok: false, code: 'CANCELLED' };
+        }
+        if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
+          log.warn('snapshot save file picker returned invalid file path:', dialogRes);
+          return { ok: false, code: 'WRITE_FAILED', message: 'snapshot save file picker returned invalid file path' };
         }
 
         normalizedPath = normalizeSavePath(dialogRes.filePath);
@@ -641,7 +666,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
       }
 
-      const text = String(textState.getCurrentText() || '');
+      const text = textState.getCurrentText();
+      if (typeof text !== 'string') {
+        throw new Error('textState.getCurrentText returned a non-string value');
+      }
       const metrics = buildSnapshotMetrics(text, payloadInfo);
       const snapshotData = {
         type: SNAPSHOT_TYPE,
@@ -652,7 +680,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         ...(payloadInfo.name ? { name: payloadInfo.name } : {}),
         ...(payloadInfo.sourceComment ? { sourceComment: payloadInfo.sourceComment } : {}),
         text,
-        tags: payloadInfo.tags || {},
+        tags: payloadInfo.tags === null ? {} : payloadInfo.tags,
         ...(metrics ? { metrics } : {}),
       };
       saveJsonStrict(candidateResolved, snapshotData);
@@ -715,7 +743,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
   ipcMain.handle('current-text-snapshot-inspect', async (_event, payload) => {
     try {
-      return inspectSnapshotAtRelPath(payload && payload.snapshotRelPath);
+      const request = getRequestedSnapshotRelPath(payload);
+      if (!request.ok) return request;
+      return inspectSnapshotAtRelPath(request.snapshotRelPath);
     } catch (err) {
       log.error('snapshot inspection failed:', err);
       return { ok: false, code: 'READ_FAILED', message: String(err) };
@@ -731,15 +761,16 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       let selectedReal = '';
       let snapshotRelPath = '';
       let stats = null;
-      const requestedRelPath = normalizeSnapshotRelPath(payload && payload.snapshotRelPath ? payload.snapshotRelPath : '');
-      if (requestedRelPath) {
-        selectedReal = resolveSnapshotFromRelPath(rootReal, requestedRelPath);
+      const request = getRequestedSnapshotRelPath(payload, { allowOmitted: true });
+      if (!request.ok) return request;
+      if (request.snapshotRelPath !== null) {
+        selectedReal = resolveSnapshotFromRelPath(rootReal, request.snapshotRelPath);
         if (!selectedReal) {
-          log.warn('snapshot load blocked outside root from rel path:', { requestedRelPath });
+          log.warn('snapshot load blocked outside root from rel path:', { snapshotRelPath: request.snapshotRelPath });
           return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
         }
         if (!fs.existsSync(selectedReal)) {
-          log.warn('snapshot load target not found:', { requestedRelPath, selectedReal });
+          log.warn('snapshot load target not found:', { snapshotRelPath: request.snapshotRelPath, selectedReal });
           return { ok: false, code: 'NOT_FOUND' };
         }
         const selectedInfo = validateSelectedSnapshot(rootReal, selectedReal);

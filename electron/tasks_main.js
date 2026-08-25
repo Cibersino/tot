@@ -22,6 +22,7 @@ const { dialog, shell, BrowserWindow, app } = require('electron');
 const Log = require('./log');
 const menuBuilder = require('./menu_builder');
 const { normalizeSnapshotRelPath } = require('./current_text_snapshots_main');
+const taskDurationCore = require('../public/js/lib/task_duration_core');
 const {
   DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
@@ -67,6 +68,7 @@ const TASK_FILE_PICKER_STATE_FALLBACK = Object.freeze({
   lastDirectory: '',
 });
 const platformAdapter = getTextExtractionPlatformAdapter(process.platform);
+const taskDurationUtils = taskDurationCore.createTaskDurationUtils();
 // Tracks unsaved Task Editor changes across IPC requests.
 let taskEditorDirty = false;
 
@@ -103,7 +105,7 @@ function isPathInsideRoot(rootReal, candidatePath) {
 }
 
 function sanitizeTaskBaseName(base) {
-  let next = String(base || '');
+  let next = base;
   next = next.replace(/\s+/g, '_');
   next = next.replace(/[^A-Za-z0-9_-]/g, '');
   next = next.replace(/_+/g, '_').replace(/-+/g, '-');
@@ -156,7 +158,7 @@ async function showContinueCancelDialog(ownerWin, {
 }
 
 function getDefaultTaskFileName(rootDir, taskName) {
-  const base = sanitizeTaskBaseName(taskName || '');
+  const base = sanitizeTaskBaseName(taskName);
   let candidate = `${base}${TASK_EXT}`;
   if (!fs.existsSync(path.join(rootDir, candidate))) return candidate;
   let idx = 2;
@@ -180,7 +182,7 @@ async function confirmTaskEditorDiscardIfDirty({ mainWin, taskEditorWin }) {
 }
 
 function normalizeSavePath(filePath) {
-  const resolved = path.resolve(String(filePath || ''));
+  const resolved = path.resolve(filePath);
   const dir = path.dirname(resolved);
   const base = path.basename(resolved, path.extname(resolved));
   const safeBase = sanitizeTaskBaseName(base);
@@ -215,7 +217,7 @@ function readJsonFile(filePath) {
 // Helpers (normalization / validation)
 // =============================================================================
 function normalizeTexto(raw) {
-  let s = String(raw || '');
+  let s = raw;
   s = s.trim().replace(/\s+/g, ' ');
   if (!s) return '';
   try {
@@ -246,29 +248,6 @@ function isCanonicalIsoTimestamp(value) {
   if (typeof value !== 'string') return false;
   const timestamp = Date.parse(value);
   return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
-}
-
-function deriveTaskSummary(rows) {
-  let totalEstimatedSeconds = 0n;
-  let remainingHundredths = 0n;
-
-  for (const row of rows) {
-    const estimatedSeconds = BigInt(row.tiempoSeconds);
-    totalEstimatedSeconds += estimatedSeconds;
-    remainingHundredths += estimatedSeconds * BigInt(100 - row.percentComplete);
-  }
-
-  const estimatedRemainingSeconds = remainingHundredths / 100n;
-  const maxSafeInteger = BigInt(Number.MAX_SAFE_INTEGER);
-  if (totalEstimatedSeconds > maxSafeInteger || estimatedRemainingSeconds > maxSafeInteger) {
-    return { ok: false, code: 'INVALID_SUMMARY' };
-  }
-
-  const summary = {
-    estimatedTotalSeconds: Number(totalEstimatedSeconds),
-    estimatedRemainingSeconds: Number(estimatedRemainingSeconds),
-  };
-  return { ok: true, summary: summary.estimatedTotalSeconds > 0 ? summary : null };
 }
 
 function validateTaskSummary(rawTask, expectedSummary) {
@@ -317,12 +296,10 @@ function normalizeRow(raw) {
     requireTrimmed: true,
   });
   if (!textoRes.ok) return textoRes;
-  if (!Number.isSafeInteger(raw.tiempoSeconds) || raw.tiempoSeconds < 0) {
+  if (!taskDurationUtils.isWholeDurationSeconds(raw.tiempoSeconds)) {
     return { ok: false, code: 'INVALID_TIEMPO' };
   }
-  if (!Number.isSafeInteger(raw.percentComplete)
-    || raw.percentComplete < 0
-    || raw.percentComplete > 100) {
+  if (!taskDurationUtils.isPercentComplete(raw.percentComplete)) {
     return { ok: false, code: 'INVALID_PERCENT' };
   }
   const enlaceRes = validateCanonicalTaskText(raw.enlace, TASK_ROW_LINK_MAX_CHARS);
@@ -364,7 +341,7 @@ function validateLibraryEntry(raw) {
     requireTrimmed: true,
   });
   if (!textoRes.ok) return textoRes;
-  if (!Number.isSafeInteger(raw.tiempoSeconds) || raw.tiempoSeconds < 0) {
+  if (!taskDurationUtils.isWholeDurationSeconds(raw.tiempoSeconds)) {
     return { ok: false, code: 'INVALID_TIEMPO' };
   }
   const enlaceRes = validateCanonicalTaskText(raw.enlace, TASK_ROW_LINK_MAX_CHARS);
@@ -454,7 +431,7 @@ function normalizeTaskList(raw) {
     normalizedRows.push(rowRes.row);
   }
 
-  const summaryRes = deriveTaskSummary(normalizedRows);
+  const summaryRes = taskDurationUtils.deriveTaskSummary(normalizedRows);
   if (!summaryRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: summaryRes.code };
   const validatedSummary = validateTaskSummary(raw, summaryRes.summary);
   if (!validatedSummary.ok) {
@@ -667,14 +644,11 @@ async function promptForTaskFileSelection(ownerWin, { allowMultiple } = {}) {
     return { ok: false, code: 'CANCELLED' };
   }
 
-  const filePaths = Array.isArray(dialogRes.filePaths)
-    ? dialogRes.filePaths
-      .filter((filePath) => typeof filePath === 'string' && filePath.trim())
-      .map((filePath) => path.resolve(String(filePath)))
-    : [];
-  if (!filePaths.length) {
-    return { ok: false, code: 'READ_FAILED', message: 'file picker returned empty file paths' };
+  if (!Array.isArray(dialogRes.filePaths) || !dialogRes.filePaths.length
+    || dialogRes.filePaths.some((filePath) => typeof filePath !== 'string' || !filePath.trim())) {
+    return { ok: false, code: 'READ_FAILED', message: 'file picker returned invalid file paths' };
   }
+  const filePaths = dialogRes.filePaths.map((filePath) => path.resolve(filePath));
 
   const selectedDirectory = platformAdapter.normalizeSelectedDirectory(filePaths[0]);
   if (selectedDirectory) {
@@ -706,7 +680,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
     )) {
       return;
     }
-    taskEditorDirty = !!(payload && payload.dirty);
+    if (!isPlainObject(payload) || typeof payload.dirty !== 'boolean') {
+      log.warn('task-editor-dirty-state received invalid payload (ignored):', payload);
+      return;
+    }
+    taskEditorDirty = payload.dirty;
   });
 
   // =============================================================================
@@ -729,7 +707,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: false, code: 'UNAVAILABLE' };
       }
 
-      const mode = payload && payload.mode === 'load' ? 'load' : 'new';
+      if (!isPlainObject(payload) || (payload.mode !== 'new' && payload.mode !== 'load')) {
+        log.warn('open-task-editor received invalid mode payload:', payload);
+        return { ok: false, code: 'INVALID_REQUEST' };
+      }
+      const { mode } = payload;
 
       if (mode === 'new') {
         const allowDiscard = await confirmTaskEditorDiscardIfDirty({
@@ -781,7 +763,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: false, code: 'CANCELLED' };
       }
 
-      const selectedPath = String(dialogRes.filePaths[0] || '');
+      const selectedPath = dialogRes.filePaths[0];
+      if (typeof selectedPath !== 'string' || !selectedPath.trim()) {
+        log.warn('open-task-editor file picker returned invalid file path:', dialogRes);
+        return { ok: false, code: 'READ_FAILED', message: 'task list file picker returned invalid file path' };
+      }
       const selectedReal = safeRealpath(selectedPath);
       if (!selectedReal) {
         return { ok: false, code: 'READ_FAILED', message: 'task list realpath failed' };
@@ -860,7 +846,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const metaRes = normalizeTaskMeta(payload.meta);
       if (!metaRes.ok) return { ok: false, code: metaRes.code, message: metaRes.code };
 
-      const summaryRes = deriveTaskSummary(normalizedRows);
+      const summaryRes = taskDurationUtils.deriveTaskSummary(normalizedRows);
       if (!summaryRes.ok) {
         return { ok: false, code: 'INVALID_SCHEMA', message: summaryRes.code };
       }
@@ -873,8 +859,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
 
-      if (!dialogRes || dialogRes.canceled || !dialogRes.filePath) {
+      if (!dialogRes || dialogRes.canceled) {
         return { ok: false, code: 'CANCELLED' };
+      }
+      if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
+        log.warn('task-list-save file picker returned invalid file path:', dialogRes);
+        return { ok: false, code: 'WRITE_FAILED', message: 'task list file picker returned invalid file path' };
       }
 
       const normalizedPath = normalizeSavePath(dialogRes.filePath);
@@ -916,8 +906,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
-      const target = payload && payload.path ? String(payload.path) : '';
-      if (!target) return { ok: false, code: 'INVALID_REQUEST' };
+      if (!isPlainObject(payload) || typeof payload.path !== 'string' || !payload.path) {
+        log.warn('task-list-delete received invalid path payload:', payload);
+        return { ok: false, code: 'INVALID_REQUEST' };
+      }
+      const target = payload.path;
 
       const root = ensureTasksRoot();
       if (!root) return { ok: false, code: 'WRITE_FAILED' };
@@ -962,18 +955,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const res = loadLibraryData();
       if (!res.ok) return { ok: false, code: res.code };
 
-      const items = res.items
-        .map((entry) => ({
-          texto: entry.texto,
-          tiempoSeconds: entry.tiempoSeconds,
-          enlace: entry.enlace,
-          comentario: entry.comentario || '',
-          snapshotRelPath: entry.snapshotRelPath || '',
-          _norm: normalizeTexto(entry.texto),
-        }))
-        .sort((a, b) => a._norm.localeCompare(b._norm));
-
-      items.forEach((x) => delete x._norm);
+      const items = res.items.slice().sort((a, b) => (
+        normalizeTexto(a.texto).localeCompare(normalizeTexto(b.texto))
+      ));
       return { ok: true, items };
     } catch (err) {
       log.error('task-library-list failed:', err);
@@ -1003,7 +987,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const res = loadLibraryData();
       if (!res.ok) return { ok: false, code: res.code };
 
-      const items = res.items || [];
+      const items = res.items;
       const norm = normalizeTexto(resEntry.entry.texto);
       const existingIdx = items.findIndex((it) => normalizeTexto(it.texto) === norm);
 
@@ -1045,20 +1029,26 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
-      const texto = payload && typeof payload.texto === 'string' ? payload.texto.trim() : '';
-      if (!texto) return { ok: false, code: 'INVALID_REQUEST' };
+      if (!isPlainObject(payload)
+        || typeof payload.texto !== 'string'
+        || !payload.texto
+        || payload.texto !== payload.texto.trim()) {
+        log.warn('task-library-delete received invalid texto payload:', payload);
+        return { ok: false, code: 'INVALID_REQUEST' };
+      }
+      const texto = payload.texto;
 
       const res = loadLibraryData();
       if (!res.ok) return { ok: false, code: res.code };
 
-      const items = res.items || [];
+      const items = res.items;
       const norm = normalizeTexto(texto);
       const idx = items.findIndex((it) => normalizeTexto(it.texto) === norm);
       if (idx < 0) return { ok: false, code: 'NOT_FOUND' };
 
       const dialogRes = await showContinueCancelDialog(taskEditorWin, {
         messageKey: 'task_library_row_delete',
-        messageReplacements: { name: items[idx].texto || texto },
+        messageReplacements: { name: items[idx].texto },
       });
       if (!dialogRes || dialogRes.response !== 0) {
         return { ok: false, code: 'CONFIRM_DENIED' };

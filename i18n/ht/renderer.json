@@ -565,6 +565,7 @@
         "task_delete_unavailable": "Pa gen travay sove pou efase.",
         "task_invalid_file": "Fichye travay la pa valab.",
         "task_invalid_rows": "Gen ranje ki pa valab nan travay la.",
+        "task_duration_too_large": "Dire total estime travay la twò gwo.",
         "task_path_outside": "Fichye a dwe anndan katab travay yo.",
         "name_required": "Non travay la obligatwa.",
         "row_text_required": "Tèks ranje a pa ka vid.",

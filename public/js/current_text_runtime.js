@@ -28,14 +28,26 @@
   }
 
   const {
-    getExactTotalSeconds,
-    getDisplayTimeParts,
     obtenerSeparadoresDeNumeros,
     formatearNumero,
   } = window.FormatUtils || {};
-  if (!getExactTotalSeconds || !getDisplayTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
+  if (!obtenerSeparadoresDeNumeros || !formatearNumero) {
     throw new Error('[current-text-runtime] FormatUtils unavailable; cannot continue');
   }
+
+  const {
+    createEstimatedReadingDuration,
+    getRoundedReadingSeconds,
+  } = window.ReadingDurationUtils || {};
+  if (!createEstimatedReadingDuration || !getRoundedReadingSeconds) {
+    throw new Error('[current-text-runtime] ReadingDurationUtils unavailable; cannot continue');
+  }
+
+  const stopwatchTimeCore = window.StopwatchTimeCore || null;
+  if (!stopwatchTimeCore || typeof stopwatchTimeCore.createStopwatchTimeUtils !== 'function') {
+    throw new Error('[current-text-runtime] StopwatchTimeCore.createStopwatchTimeUtils unavailable; cannot continue');
+  }
+  const { getClockTimeParts } = stopwatchTimeCore.createStopwatchTimeUtils();
 
   const {
     tRenderer,
@@ -126,8 +138,8 @@
       throw new Error('[current-text-runtime] currentTextSelectorSection dependency incomplete');
     }
     if (!resultsTimeMultiplier
-      || typeof resultsTimeMultiplier.clearBaseTotalSeconds !== 'function'
-      || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function') {
+      || typeof resultsTimeMultiplier.clearBaseReadingDuration !== 'function'
+      || typeof resultsTimeMultiplier.setBaseReadingDuration !== 'function') {
       throw new Error('[current-text-runtime] resultsTimeMultiplier dependency incomplete');
     }
     if (typeof getCountContext !== 'function') {
@@ -154,12 +166,6 @@
     return deps;
   }
 
-  function normalizeText(value) {
-    if (typeof value === 'string') return value;
-    if (value === null || typeof value === 'undefined') return '';
-    return String(value);
-  }
-
   function normalizePositiveInteger(rawValue) {
     const value = Number(rawValue);
     if (!Number.isInteger(value) || value < 1) return 0;
@@ -174,21 +180,55 @@
     };
   }
 
-  function normalizeCurrentTextProcessingState(rawState) {
-    const state = rawState && typeof rawState === 'object' ? rawState : {};
+  function copyCurrentTextUpdatedPayload(rawPayload) {
+    if (!rawPayload || typeof rawPayload !== 'object' || Array.isArray(rawPayload)
+      || typeof rawPayload.text !== 'string') {
+      throw new Error('[current-text-runtime] current-text-updated requires an object with string text');
+    }
+    if (rawPayload.requestId !== null
+      && typeof rawPayload.requestId !== 'undefined'
+      && (!Number.isSafeInteger(rawPayload.requestId) || rawPayload.requestId < 1)) {
+      throw new Error('[current-text-runtime] current-text-updated requestId must be a positive safe integer when supplied');
+    }
     return {
-      active: state.active === true,
-      requestId: normalizePositiveInteger(state.requestId),
-      sinceEpochMs: Number.isFinite(Number(state.sinceEpochMs)) && Number(state.sinceEpochMs) > 0
-        ? Math.floor(Number(state.sinceEpochMs))
-        : null,
-      source: typeof state.source === 'string' ? state.source.trim() : '',
-      action: typeof state.action === 'string' ? state.action.trim() : '',
+      text: rawPayload.text,
+      requestId: rawPayload.requestId === null || typeof rawPayload.requestId === 'undefined'
+        ? 0
+        : rawPayload.requestId,
+    };
+  }
+
+  function copyCurrentTextProcessingState(rawState) {
+    if (!rawState || typeof rawState !== 'object' || Array.isArray(rawState)
+      || typeof rawState.active !== 'boolean'
+      || !Number.isSafeInteger(rawState.requestId) || rawState.requestId < 0
+      || typeof rawState.source !== 'string'
+      || typeof rawState.action !== 'string') {
+      throw new Error('[current-text-runtime] current-text processing state is invalid');
+    }
+    if (rawState.active) {
+      if (rawState.requestId < 1
+        || !Number.isSafeInteger(rawState.sinceEpochMs)
+        || rawState.sinceEpochMs < 1) {
+        throw new Error('[current-text-runtime] active current-text processing state is invalid');
+      }
+    } else if (rawState.sinceEpochMs !== null || rawState.source || rawState.action) {
+      throw new Error('[current-text-runtime] inactive current-text processing state is invalid');
+    }
+    return {
+      active: rawState.active,
+      requestId: rawState.requestId,
+      sinceEpochMs: rawState.sinceEpochMs,
+      source: rawState.source,
+      action: rawState.action,
     };
   }
 
   function setCurrentTextInternal(nextText, { requestId = 0 } = {}) {
-    currentText = normalizeText(nextText);
+    if (typeof nextText !== 'string') {
+      throw new Error('[current-text-runtime] current text must be a string');
+    }
+    currentText = nextText;
     if (requestId > 0) {
       currentTextAppliedRequestId = requestId;
       latestAuthoritativeRequestIdSeen = Math.max(latestAuthoritativeRequestIdSeen, requestId);
@@ -339,7 +379,7 @@
     const valueText = tRenderer(valueKey);
     renderPreview();
     currentTextStats = null;
-    resultsTimeMultiplier.clearBaseTotalSeconds();
+    resultsTimeMultiplier.clearBaseReadingDuration();
     if (resWords) {
       resWords.textContent = msgRenderer('renderer.main.results.words', { n: valueText });
     }
@@ -410,6 +450,25 @@
     return `${hours}h ${minutes}m ${seconds}s`;
   }
 
+  function getReadingDurationDisplay(words, wpm) {
+    const readingDuration = createEstimatedReadingDuration(words, wpm);
+    if (readingDuration === null) {
+      throw new Error('[current-text-runtime] estimated reading duration inputs invalid');
+    }
+    const estimatedSeconds = getRoundedReadingSeconds(readingDuration);
+    if (estimatedSeconds === null) {
+      throw new Error('[current-text-runtime] estimated reading duration unavailable');
+    }
+    const timeParts = getClockTimeParts(estimatedSeconds);
+    if (timeParts === null) {
+      throw new Error('[current-text-runtime] estimated reading duration clock conversion failed');
+    }
+    return {
+      readingDuration,
+      timeText: formatInvariantEstimatedDuration(timeParts.hours, timeParts.minutes, timeParts.seconds),
+    };
+  }
+
   function applyDisplayDerivedState(derivedState, {
     previewMode = 'always',
     persistStats = false,
@@ -436,7 +495,7 @@
       resWords.textContent = msgRenderer('renderer.main.results.words', { n: derived.wordsText });
     }
     renderTimeValue(derived.timeText);
-    resultsTimeMultiplier.setBaseTotalSeconds(derived.totalSeconds);
+    resultsTimeMultiplier.setBaseReadingDuration(derived.readingDuration);
     syncStatusClasses();
   }
 
@@ -468,22 +527,20 @@
     const charsText = formatearNumero(stats.conEspacios, separadorMiles, separadorDecimal);
     const charsNoSpaceText = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
     const wordsText = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
-    const totalSeconds = getExactTotalSeconds(stats.palabras, getWpm());
-    const timeParts = getDisplayTimeParts(totalSeconds);
+    const readingDisplay = getReadingDurationDisplay(stats.palabras, getWpm());
     return {
       stats,
       charsText,
       charsNoSpaceText,
       wordsText,
-      totalSeconds,
-      timeText: formatInvariantEstimatedDuration(timeParts.hours, timeParts.minutes, timeParts.seconds),
+      readingDuration: readingDisplay.readingDuration,
+      timeText: readingDisplay.timeText,
     };
   }
 
   async function buildSettledDerivedState() {
-    const normalizedText = normalizeText(currentText);
     const countArgs = getCountArgs();
-    const stats = contarTextoModulo(normalizedText, countArgs);
+    const stats = contarTextoModulo(currentText, countArgs);
     return buildDisplayDerivedStateFromNormalizedStats(stats, countArgs);
   }
 
@@ -624,10 +681,9 @@
       return;
     }
     const { getWpm, resultsTimeMultiplier } = requireDeps();
-    const totalSeconds = getExactTotalSeconds(currentTextStats.palabras, getWpm());
-    const timeParts = getDisplayTimeParts(totalSeconds);
-    renderTimeValue(formatInvariantEstimatedDuration(timeParts.hours, timeParts.minutes, timeParts.seconds));
-    resultsTimeMultiplier.setBaseTotalSeconds(totalSeconds);
+    const readingDisplay = getReadingDurationDisplay(currentTextStats.palabras, getWpm());
+    renderTimeValue(readingDisplay.timeText);
+    resultsTimeMultiplier.setBaseReadingDuration(readingDisplay.readingDuration);
   }
 
   function runStandaloneStatsDisplayRefresh(reason, refreshSequence = bumpRenderAuthoritySequence()) {
@@ -765,17 +821,18 @@
   }
 
   function syncBootstrapState({ initialText, processingState } = {}) {
-    const normalizedState = normalizeCurrentTextProcessingState(processingState);
+    const nextProcessingState = copyCurrentTextProcessingState(processingState);
     setCurrentTextInternal(initialText, {
-      requestId: normalizedState.active ? normalizedState.requestId : 0,
+      requestId: nextProcessingState.active ? nextProcessingState.requestId : 0,
     });
     bumpRenderAuthoritySequence();
-    currentTextProcessingState = normalizedState;
-    if (normalizedState.active) {
+    currentTextProcessingState = nextProcessingState;
+    if (nextProcessingState.active) {
       degradedRequestId = 0;
       standaloneDerivedDegraded = false;
       clearQueuedStandaloneFollowup();
-      armDeferredBootstrapSettle(normalizedState.requestId);
+      // Bootstrap may expose current text as pending before READY, but its derived settle is intentionally armed here and kicked off only after the startup unlock.
+      armDeferredBootstrapSettle(nextProcessingState.requestId);
       renderPendingDerivedValues();
       return;
     }
@@ -785,7 +842,7 @@
   }
 
   function applyCurrentTextProcessingState(rawState, { source = 'unknown' } = {}) {
-    const nextState = normalizeCurrentTextProcessingState(rawState);
+    const nextState = copyCurrentTextProcessingState(rawState);
     currentTextProcessingState = nextState;
     if (!nextState.active) {
       clearDeferredBootstrapSettle({ force: true });
@@ -832,10 +889,8 @@
   }
 
   function handleCurrentTextUpdated(payload, { onAuthoritativeTextChanged = null } = {}) {
-    const normalizedPayload = payload && typeof payload === 'object' && !Array.isArray(payload)
-      ? payload
-      : { text: payload };
-    const requestId = normalizePositiveInteger(normalizedPayload.requestId);
+    const currentTextUpdate = copyCurrentTextUpdatedPayload(payload);
+    const { requestId } = currentTextUpdate;
     if (requestId > 0 && requestId < latestAuthoritativeRequestIdSeen) {
       log.info('Stale current-text-updated payload ignored:', {
         requestId,
@@ -845,7 +900,7 @@
     }
 
     const previousText = currentText;
-    setCurrentTextInternal(normalizedPayload.text, { requestId });
+    setCurrentTextInternal(currentTextUpdate.text, { requestId });
     const refreshSequence = bumpRenderAuthoritySequence();
     if (typeof onAuthoritativeTextChanged === 'function' && previousText !== currentText) {
       onAuthoritativeTextChanged(previousText, currentText);
@@ -895,6 +950,8 @@
 
   window.CurrentTextRuntime = {
     applyCurrentTextProcessingState,
+    copyCurrentTextProcessingState,
+    copyCurrentTextUpdatedPayload,
     configure,
     getCurrentText,
     handleCurrentTextUpdated,

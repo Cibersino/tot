@@ -119,13 +119,15 @@ if (!currentTextSelectorSection
 }
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
-  || typeof resultsTimeMultiplier.clearBaseTotalSeconds !== 'function'
-  || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function') {
+  || typeof resultsTimeMultiplier.clearBaseReadingDuration !== 'function'
+  || typeof resultsTimeMultiplier.setBaseReadingDuration !== 'function') {
   throw new Error('[renderer] ResultsTimeMultiplier unavailable; cannot continue');
 }
 const currentTextRuntime = window.CurrentTextRuntime || null;
 if (!currentTextRuntime
   || typeof currentTextRuntime.applyCurrentTextProcessingState !== 'function'
+  || typeof currentTextRuntime.copyCurrentTextProcessingState !== 'function'
+  || typeof currentTextRuntime.copyCurrentTextUpdatedPayload !== 'function'
   || typeof currentTextRuntime.configure !== 'function'
   || typeof currentTextRuntime.getCurrentText !== 'function'
   || typeof currentTextRuntime.handleCurrentTextUpdated !== 'function'
@@ -234,7 +236,6 @@ let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
 let bootstrapCurrentTextPayload = null;
 let textExtractionPrepareAttemptId = 0;
-let bootstrapCurrentTextProcessingState = null;
 let lastHelpTipIdx = -1;
 let lastProcessingLockNoticeAt = 0;
 
@@ -581,6 +582,8 @@ function maybeUnblockReady() {
 
   sendSplashRemoved();
   syncMainInteractionLockUi();
+  // Keep the bootstrap current-text settle behind the READY/splash unlock because its synchronous recount work can delay the first useful paint.
+  // Current-text derived results may remain pending at READY and settle immediately afterward.
   scheduleDeferredBootstrapSettleAfterUnlock();
 }
 
@@ -605,6 +608,14 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
       unavailableMessage || `${methodName} unavailable; optional action skipped.`
     );
     return null;
+  }
+  return api[methodName].bind(api);
+}
+
+function getRequiredElectronMethod(methodName) {
+  const api = window.electronAPI;
+  if (!api || typeof api[methodName] !== 'function') {
+    throw new Error(`[renderer] electronAPI.${methodName} unavailable; cannot continue bootstrap`);
   }
   return api[methodName].bind(api);
 }
@@ -926,18 +937,16 @@ function armIpcSubscriptions() {
     window.electronAPI.onCurrentTextUpdated((payload) => {
       try {
         if (!isRendererReady()) {
-          bootstrapCurrentTextPayload = payload;
-          const bootstrapText = payload && typeof payload === 'object' && !Array.isArray(payload)
-            ? payload.text
-            : payload;
-          installCurrentTextState(bootstrapText || '');
+          const bootstrapPayload = currentTextRuntime.copyCurrentTextUpdatedPayload(payload);
+          installCurrentTextState(bootstrapPayload.text);
+          bootstrapCurrentTextPayload = bootstrapPayload;
           log.warnOnce(
             'BOOTSTRAP:renderer.preReady.currentTextUpdated',
             'current-text-updated received pre-READY; state updated only.'
           );
           return;
         }
-        setCurrentTextAndUpdateUI(payload || '', { applyRules: true });
+        setCurrentTextAndUpdateUI(payload, { applyRules: true });
       } catch (err) {
         log.error('Error handling current-text-updated:', err);
       }
@@ -1013,11 +1022,8 @@ function armIpcSubscriptions() {
     if (typeof window.electronAPI.onCurrentTextProcessingStateChanged === 'function') {
       window.electronAPI.onCurrentTextProcessingStateChanged((state) => {
         try {
-          if (!isRendererReady()) {
-            bootstrapCurrentTextProcessingState = state;
-          }
-          textExtractionStatusUi.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
           currentTextRuntime.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
+          textExtractionStatusUi.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
           syncMainInteractionLockUi();
         } catch (err) {
           log.error('Error handling current-text-processing-state-changed:', err);
@@ -1193,67 +1199,43 @@ async function runStartupOrchestrator() {
       log.warn('BOOTSTRAP: applyTranslations failed (ignored):', err);
     }
 
-    let initialText = '';
-    const getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getCurrentText.unavailable',
-      unavailableMessage: 'getCurrentText unavailable; bootstrap will use empty text.'
-    });
-    if (getCurrentText) {
-      try {
-        initialText = String(await getCurrentText() || '');
-      } catch (err) {
-        log.warn('BOOTSTRAP: getCurrentText failed; bootstrap will use empty text:', err);
-        initialText = '';
-      }
+    const getCurrentText = getRequiredElectronMethod('getCurrentText');
+    let initialText = await getCurrentText();
+    if (typeof initialText !== 'string') {
+      throw new Error('getCurrentText returned a non-string value');
     }
 
-    const getCurrentTextProcessingState = getOptionalElectronMethod('getCurrentTextProcessingState', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getCurrentTextProcessingState.unavailable',
-      unavailableMessage: 'getCurrentTextProcessingState unavailable; current-text pending bootstrap cannot continue.'
-    });
-    if (!getCurrentTextProcessingState) {
-      throw new Error('[renderer] electronAPI.getCurrentTextProcessingState unavailable; cannot bootstrap current-text pending state');
+    const getCurrentTextProcessingState = getRequiredElectronMethod('getCurrentTextProcessingState');
+    const currentTextProcessingResult = await getCurrentTextProcessingState();
+    if (!currentTextProcessingResult
+      || typeof currentTextProcessingResult !== 'object'
+      || Array.isArray(currentTextProcessingResult)
+      || typeof currentTextProcessingResult.ok !== 'boolean') {
+      throw new Error('getCurrentTextProcessingState returned an invalid result envelope');
     }
-
-    let startupCurrentTextProcessingState = bootstrapCurrentTextProcessingState || {
-      active: false,
-      requestId: 0,
-      sinceEpochMs: null,
-      source: '',
-      action: '',
-    };
-    try {
-      const currentTextProcessingResult = await getCurrentTextProcessingState();
-      if (currentTextProcessingResult && currentTextProcessingResult.ok === true) {
-        startupCurrentTextProcessingState = currentTextProcessingResult.state || startupCurrentTextProcessingState;
-      } else {
-        log.warn(
-          'BOOTSTRAP: getCurrentTextProcessingState returned non-ok result; keeping current-text pending inactive:',
-          currentTextProcessingResult
-        );
+    if (currentTextProcessingResult.ok === false) {
+      if (typeof currentTextProcessingResult.code !== 'string' || !currentTextProcessingResult.code) {
+        throw new Error('getCurrentTextProcessingState returned an invalid failed result');
       }
-    } catch (err) {
-      log.warn('BOOTSTRAP: getCurrentTextProcessingState failed; keeping current-text pending inactive:', err);
+      throw new Error(`getCurrentTextProcessingState failed: ${currentTextProcessingResult.code}`);
     }
+    if (!Object.prototype.hasOwnProperty.call(currentTextProcessingResult, 'state')) {
+      throw new Error('getCurrentTextProcessingState returned an invalid successful result');
+    }
+    const startupCurrentTextProcessingState = currentTextRuntime.copyCurrentTextProcessingState(
+      currentTextProcessingResult.state
+    );
 
     if (bootstrapCurrentTextPayload) {
-      const bootstrapPayload = (
-        bootstrapCurrentTextPayload
-        && typeof bootstrapCurrentTextPayload === 'object'
-        && !Array.isArray(bootstrapCurrentTextPayload)
-      )
-        ? bootstrapCurrentTextPayload
-        : { text: bootstrapCurrentTextPayload };
-      const bootstrapRequestId = Number(bootstrapPayload.requestId);
-      const startupRequestId = Number(
-        startupCurrentTextProcessingState && startupCurrentTextProcessingState.requestId
-      );
-      if (Number.isInteger(bootstrapRequestId) && bootstrapRequestId > 0) {
-        if (!Number.isInteger(startupRequestId) || bootstrapRequestId >= startupRequestId) {
-          initialText = String(bootstrapPayload.text || '');
+      const bootstrapPayload = bootstrapCurrentTextPayload;
+      const bootstrapRequestId = bootstrapPayload.requestId;
+      const startupRequestId = startupCurrentTextProcessingState.requestId;
+      if (bootstrapRequestId > 0) {
+        if (bootstrapRequestId >= startupRequestId) {
+          initialText = bootstrapPayload.text;
         }
       } else if (!startupCurrentTextProcessingState.active) {
-        initialText = String(bootstrapPayload.text || '');
+        initialText = bootstrapPayload.text;
       }
     }
 
@@ -1461,15 +1443,23 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
   }
 
   const res = await readClipboard();
-  if (res && res.ok === false) {
+  if (!res || typeof res !== 'object' || Array.isArray(res) || typeof res.ok !== 'boolean') {
+    throw new Error('clipboard read returned an invalid result envelope');
+  }
+  if (res.ok === false) {
     if (res.tooLarge === true) {
       window.Notify.notifyMain(tooLargeKey);
       return { ok: false, tooLarge: true };
     }
-    throw new Error(res.error || 'clipboard read failed');
+    if (typeof res.error !== 'string') {
+      throw new Error('clipboard read returned an invalid failed result');
+    }
+    throw new Error(res.error);
   }
-  const text = (res && typeof res === 'object') ? (res.text || '') : (res || '');
-  return { ok: true, text };
+  if (typeof res.text !== 'string') {
+    throw new Error('clipboard read returned an invalid successful result');
+  }
+  return { ok: true, text: res.text };
 }
 
 function getTextApplyCanonicalApi() {

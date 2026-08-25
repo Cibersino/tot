@@ -565,6 +565,7 @@
         "task_delete_unavailable": "No hi ha cap tasca desada per eliminar.",
         "task_invalid_file": "Fitxer de tasques invàlid.",
         "task_invalid_rows": "Hi ha files invàlides a la tasca.",
+        "task_duration_too_large": "La durada total estimada de la tasca és massa gran.",
         "task_path_outside": "El fitxer ha d’estar dins de la carpeta de tasques.",
         "name_required": "El nom de la tasca és obligatori.",
         "row_text_required": "El text de la fila no pot estar buit.",
