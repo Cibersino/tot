@@ -47,6 +47,14 @@
     return options.find((option) => !isActionOption(option) && option.value === normalizedValue) || null;
   }
 
+  function isUnmodifiedCharacterKey(event) {
+    return typeof event.key === 'string'
+      && event.key.length === 1
+      && !event.ctrlKey
+      && !event.metaKey
+      && !event.altKey;
+  }
+
   function create(config = {}) {
     const host = config.host;
     if (!host || typeof host.appendChild !== 'function') {
@@ -357,12 +365,7 @@
         close();
         return;
       }
-      if (mode === 'select'
-        && typeof event.key === 'string'
-        && event.key.length === 1
-        && !event.ctrlKey
-        && !event.metaKey
-        && !event.altKey) {
+      if (mode === 'select' && isUnmodifiedCharacterKey(event)) {
         if (!isOpen) open();
         applyTypeAhead(event.key);
         return;
@@ -370,11 +373,7 @@
       if (mode === 'editable'
         && !isOpen
         && value
-        && typeof event.key === 'string'
-        && event.key.length === 1
-        && !event.ctrlKey
-        && !event.metaKey
-        && !event.altKey) {
+        && isUnmodifiedCharacterKey(event)) {
         input.value = '';
       }
     }
