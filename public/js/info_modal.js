@@ -215,6 +215,9 @@
             sharpRuntimePackage,
           };
         }
+        if (!electronVersion || !chromeVersion || !nodeVersion) {
+          log.warn('getAppRuntimeInfo missing runtime version fields; About modal shows unavailable fields.');
+        }
         let licenseAvailable = false;
         let noticeAvailable = false;
         if (typeof window.electronAPI.getAppDocAvailability === 'function') {
