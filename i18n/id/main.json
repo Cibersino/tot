@@ -54,6 +54,13 @@
       "snapshot_overwrite_load": "Ganti teks saat ini dengan snapshot yang dipilih \"{name}\"?",
       "task_delete_confirm": "Hapus daftar tugas \"{name}\"?",
       "task_discard_changes_confirm": "Ada perubahan yang belum disimpan. Buang perubahan?",
+      "task_discard_changes_title": "Buang perubahan tugas",
+      "task_terminal_title": "Editor Tugas tidak tersedia",
+      "task_terminal_startup_message": "Editor Tugas tidak dapat dimulai dan akan ditutup.",
+      "task_terminal_clean_message": "Editor Tugas tidak tersedia. Tidak ada perubahan yang belum disimpan terdeteksi, jadi akan ditutup.",
+      "task_terminal_dirty_message": "Editor Tugas tidak tersedia dan mungkin memiliki perubahan yang belum disimpan. Buang perubahan tersebut dan tutup?",
+      "task_discard_and_close": "Buang dan tutup",
+      "task_keep_open": "Tetap buka",
       "task_library_row_save_overwrite": "Entri bernama \"{name}\" sudah ada di pustaka. Timpa?",
       "task_library_row_delete": "Hapus \"{name}\" dari pustaka?",
       "task_link_confirm": "Buka tautan ini?",
@@ -72,7 +79,13 @@
       "update_up_to_date_title": "Anda sudah menggunakan versi terbaru.",
       "update_up_to_date_message": "Anda sudah memiliki versi terbaru ({local}).",
       "update_failed_title": "Pemeriksaan pembaruan gagal.",
-      "update_failed_message": "Periksa koneksi Anda dan coba lagi."
+      "update_failed_message": "Periksa koneksi Anda dan coba lagi.",
+      "renderer_i18n_failure_title": "Antarmuka tidak dapat dimulai",
+      "renderer_i18n_failure_message": "Antarmuka tidak dapat memuat sumber daya bahasa yang diperlukan. Jendela akan ditutup.",
+      "editor_startup_failed_title": "Editor Teks tidak dapat dimulai",
+      "editor_startup_failed_message": "Editor Teks tidak dapat menyelesaikan startup dan akan ditutup.",
+      "editor_startup_timeout_title": "Editor Teks terlalu lama untuk dimulai",
+      "editor_startup_timeout_message": "Editor Teks tidak menyelesaikan startup tepat waktu dan akan ditutup."
     }
   }
 }

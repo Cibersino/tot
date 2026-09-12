@@ -335,8 +335,6 @@
         "status_empty_query": "Aramak için yazın"
       },
       "alerts": {
-        "start_failed": "Text Editor başlatılamadı.",
-        "start_timeout": "Text Editor başlamak için çok uzun sürdü ve kapatıldı.",
         "paste_too_big": "Metin doğrudan yapıştırılamayacak kadar büyük. Ana pencere düğmelerini kullanın.",
         "drop_too_big": "Bırakılan metin çok büyük. Büyük metin eklemek için ana pencere düğmelerini kullanın.",
         "paste_no_text": "Pano düz metin içermiyor.",

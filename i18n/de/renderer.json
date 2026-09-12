@@ -335,8 +335,6 @@
         "status_empty_query": "Zum Suchen tippen"
       },
       "alerts": {
-        "start_failed": "Der Texteditor konnte nicht gestartet werden.",
-        "start_timeout": "Der Texteditor brauchte zu lange zum Starten und wurde geschlossen.",
         "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",
         "drop_too_big": "Abgelegter Text ist zu groß. Verwenden Sie die Schaltflächen im Hauptfenster, um großen Text hinzuzufügen.",
         "paste_no_text": "Die Zwischenablage enthält keinen reinen Text.",

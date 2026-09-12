@@ -335,8 +335,6 @@
         "status_empty_query": "Ekri pou chèche"
       },
       "alerts": {
-        "start_failed": "Text Editor pa t kapab demare.",
-        "start_timeout": "Text Editor te pran twòp tan pou demare epi li te fèmen.",
         "paste_too_big": "Tèks la twò gwo pou kole dirèkteman. Sèvi ak bouton fenèt prensipal yo.",
         "drop_too_big": "Tèks lage a twò gwo. Sèvi ak bouton fenèt prensipal yo pou ajoute gwo tèks.",
         "paste_no_text": "Clipboard la pa gen tèks plenn.",

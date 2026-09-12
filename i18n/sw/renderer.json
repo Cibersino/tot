@@ -335,8 +335,6 @@
         "status_empty_query": "Andika ili kutafuta"
       },
       "alerts": {
-        "start_failed": "Kihariri cha Maandishi hakikuweza kuanzishwa.",
-        "start_timeout": "Kihariri cha Maandishi kilichukua muda mrefu kuanza na kilifungwa.",
         "paste_too_big": "Maandishi ni makubwa mno kubandikwa moja kwa moja. Tumia vitufe vya dirisha kuu.",
         "drop_too_big": "Maandishi yaliyodondoshwa ni makubwa mno. Tumia vitufe vya dirisha kuu kuongeza maandishi makubwa.",
         "paste_no_text": "Ubao wa kunakili hauna maandishi yasiyo na umbizo.",

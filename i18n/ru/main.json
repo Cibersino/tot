@@ -54,6 +54,13 @@
       "snapshot_overwrite_load": "Заменить текущий текст выбранным снапшотом \"{name}\"?",
       "task_delete_confirm": "Удалить список задач \"{name}\"?",
       "task_discard_changes_confirm": "Есть несохраненные изменения. Отменить их?",
+      "task_discard_changes_title": "Отменить изменения задачи",
+      "task_terminal_title": "Редактор задач недоступен",
+      "task_terminal_startup_message": "Редактор задач не удалось запустить, он будет закрыт.",
+      "task_terminal_clean_message": "Редактор задач недоступен. Несохранённые изменения не обнаружены, поэтому он будет закрыт.",
+      "task_terminal_dirty_message": "Редактор задач недоступен и может содержать несохранённые изменения. Отменить эти изменения и закрыть его?",
+      "task_discard_and_close": "Отменить и закрыть",
+      "task_keep_open": "Оставить открытым",
       "task_library_row_save_overwrite": "Запись \"{name}\" уже есть в библиотеке. Перезаписать?",
       "task_library_row_delete": "Удалить \"{name}\" из библиотеки?",
       "task_link_confirm": "Открыть эту ссылку?",
@@ -72,7 +79,13 @@
       "update_up_to_date_title": "У вас актуальная версия.",
       "update_up_to_date_message": "У вас уже установлена последняя версия ({local}).",
       "update_failed_title": "Не удалось проверить обновления.",
-      "update_failed_message": "Проверьте подключение и попробуйте снова."
+      "update_failed_message": "Проверьте подключение и попробуйте снова.",
+      "renderer_i18n_failure_title": "Интерфейс не удалось запустить",
+      "renderer_i18n_failure_message": "Интерфейс не смог загрузить необходимые языковые ресурсы. Окно будет закрыто.",
+      "editor_startup_failed_title": "Текстовый редактор не удалось запустить",
+      "editor_startup_failed_message": "Текстовый редактор не смог завершить запуск и будет закрыт.",
+      "editor_startup_timeout_title": "Текстовый редактор запускался слишком долго",
+      "editor_startup_timeout_message": "Текстовый редактор не завершил запуск вовремя и будет закрыт."
     }
   }
 }

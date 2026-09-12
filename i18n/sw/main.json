@@ -54,6 +54,13 @@
       "snapshot_overwrite_load": "Badilisha maandishi ya sasa kwa snapshot ya maandishi iliyochaguliwa \"{name}\"?",
       "task_delete_confirm": "Futa jukumu \"{name}\"?",
       "task_discard_changes_confirm": "Kuna jukumu lililofunguliwa lenye mabadiliko ambayo hayajahifadhiwa. Tupilia mbali mabadiliko?",
+      "task_discard_changes_title": "Tupilia mbali mabadiliko ya kazi",
+      "task_terminal_title": "Kihariri cha Kazi hakipatikani",
+      "task_terminal_startup_message": "Kihariri cha Kazi hakikuweza kuanza na kitafungwa.",
+      "task_terminal_clean_message": "Kihariri cha Kazi hakipatikani. Hakuna mabadiliko ambayo hayajahifadhiwa yaliyotambuliwa, kwa hiyo kitafungwa.",
+      "task_terminal_dirty_message": "Kihariri cha Kazi hakipatikani na huenda kina mabadiliko ambayo hayajahifadhiwa. Yatupilie mbali mabadiliko hayo na ukifunge?",
+      "task_discard_and_close": "Tupilia mbali na funga",
+      "task_keep_open": "Acha wazi",
       "task_library_row_save_overwrite": "\"{name}\" tayari ipo kwenye maktaba. Ibadilishwe?",
       "task_library_row_delete": "Futa \"{name}\" kutoka kwenye maktaba?",
       "task_link_confirm": "Fungua kiungo hiki?",
@@ -72,7 +79,13 @@
       "update_up_to_date_title": "Uko kwenye toleo la sasa.",
       "update_up_to_date_message": "Tayari una toleo la hivi karibuni ({local}).",
       "update_failed_title": "Ukaguzi wa sasisho umeshindwa.",
-      "update_failed_message": "Kagua muunganisho wako kisha ujaribu tena."
+      "update_failed_message": "Kagua muunganisho wako kisha ujaribu tena.",
+      "renderer_i18n_failure_title": "Kiolesura hakikuweza kuanza",
+      "renderer_i18n_failure_message": "Kiolesura hakikuweza kupakia rasilimali za lugha zinazohitajika. Dirisha litafungwa.",
+      "editor_startup_failed_title": "Kihariri cha Maandishi hakikuweza kuanza",
+      "editor_startup_failed_message": "Kihariri cha Maandishi hakikuweza kukamilisha kuanza na kitafungwa.",
+      "editor_startup_timeout_title": "Kihariri cha Maandishi kilichukua muda mrefu sana kuanza",
+      "editor_startup_timeout_message": "Kihariri cha Maandishi hakikukamilisha kuanza kwa wakati na kitafungwa."
     }
   }
 }

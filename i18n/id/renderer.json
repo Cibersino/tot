@@ -335,8 +335,6 @@
         "status_empty_query": "Ketik untuk mencari"
       },
       "alerts": {
-        "start_failed": "Text Editor tidak dapat dimulai.",
-        "start_timeout": "Text Editor terlalu lama dimulai dan ditutup.",
         "paste_too_big": "Teks terlalu besar untuk ditempel langsung. Gunakan tombol di jendela utama.",
         "drop_too_big": "Teks yang dijatuhkan terlalu besar. Gunakan tombol di jendela utama untuk menambahkan teks besar.",
         "paste_no_text": "Clipboard tidak berisi teks biasa.",

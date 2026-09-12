@@ -335,8 +335,6 @@
         "status_empty_query": "Maskanapaq qillqay"
       },
       "alerts": {
-        "start_failed": "Text Editor mana qallariyta atirqachu.",
-        "start_timeout": "Text Editor qallariynin ancha unay karqan, chaymi wisqasqa karqan.",
         "paste_too_big": "Qillqa ancha hatunmi chiqapta k'askachinapaq. Hatun ventanapa botonkuna llamk'achiy.",
         "drop_too_big": "Aysasqa qillqa ancha hatunmi. Hatun ventanapa botonkuna llamk'achiy.",
         "paste_no_text": "Portapapeles mana llamp'u qillqayuqchu.",

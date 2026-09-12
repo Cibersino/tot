@@ -335,8 +335,6 @@
         "status_empty_query": "Patohia hei kimi"
       },
       "alerts": {
-        "start_failed": "Kāore i taea te tīmata i te Text Editor.",
-        "start_timeout": "I roa rawa te tīmata o te Text Editor, ā, i katia.",
         "paste_too_big": "He nui rawa te kuputuhi hei whakapiri tika. Whakamahia ngā pātene o te matapihi matua.",
         "drop_too_big": "He nui rawa te kuputuhi kua tukuna. Whakamahia ngā pātene o te matapihi matua hei tāpiri kuputuhi nui.",
         "paste_no_text": "Kāore he kuputuhi noa i te papatopenga.",

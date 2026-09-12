@@ -335,8 +335,6 @@
         "status_empty_query": "Escribe algo po"
       },
       "alerts": {
-        "start_failed": "No se pudo iniciar el Editor de Texto.",
-        "start_timeout": "El Editor de Texto se demoró demasiado en partir y se cerró.",
         "paste_too_big": "La custión es muy grande. Usa los botones de afuera.",
         "drop_too_big": "Tiraste mucha info. Usa los botones de afuera.",
         "paste_no_text": "No tenís nada de texto copiao, está pelao.",

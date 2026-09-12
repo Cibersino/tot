@@ -335,8 +335,6 @@
         "status_empty_query": "Bhala ukuze useshe"
       },
       "alerts": {
-        "start_failed": "I-Text Editor ayikwazanga ukuqaliswa.",
-        "start_timeout": "I-Text Editor ithathe isikhathi eside kakhulu ukuqala futhi yavalwa.",
         "paste_too_big": "Umbhalo mkhulu kakhulu ukuthi unamathiselwe ngqo. Sebenzisa izinkinobho zewindi elikhulu.",
         "drop_too_big": "Umbhalo odedeliwe mkhulu kakhulu. Sebenzisa izinkinobho zewindi elikhulu ukwengeza umbhalo omkhulu.",
         "paste_no_text": "Ibhodi lokunamathisela alinawo umbhalo ocacile.",

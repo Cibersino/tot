@@ -335,8 +335,6 @@
         "status_empty_query": "Escriu per cercar"
       },
       "alerts": {
-        "start_failed": "No s’ha pogut iniciar l’Editor de Text.",
-        "start_timeout": "L’Editor de Text ha trigat massa a iniciar-se i s’ha tancat.",
         "paste_too_big": "Text massa gran per enganxar-lo directament. Fes servir els botons de la finestra principal.",
         "drop_too_big": "Text arrossegat massa gran. Fes servir els botons de la finestra principal.",
         "paste_no_text": "El porta-retalls no conté text pla.",

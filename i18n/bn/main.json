@@ -54,6 +54,13 @@
       "snapshot_overwrite_load": "নির্বাচিত স্ন্যাপশট \"{name}\" দিয়ে বর্তমান লেখা প্রতিস্থাপন করবেন?",
       "task_delete_confirm": "টাস্ক তালিকা \"{name}\" মুছে ফেলবেন?",
       "task_discard_changes_confirm": "সংরক্ষণ না করা পরিবর্তন আছে। সেগুলো বাতিল করবেন?",
+      "task_discard_changes_title": "টাস্কের পরিবর্তন বাতিল করুন",
+      "task_terminal_title": "টাস্ক এডিটর উপলভ্য নয়",
+      "task_terminal_startup_message": "টাস্ক এডিটর শুরু করা যায়নি এবং বন্ধ হবে।",
+      "task_terminal_clean_message": "টাস্ক এডিটর উপলভ্য নয়। কোনো অসংরক্ষিত পরিবর্তন পাওয়া যায়নি, তাই এটি বন্ধ হবে।",
+      "task_terminal_dirty_message": "টাস্ক এডিটর উপলভ্য নয় এবং অসংরক্ষিত পরিবর্তন থাকতে পারে। সেই পরিবর্তনগুলো বাতিল করে বন্ধ করবেন?",
+      "task_discard_and_close": "বাতিল করে বন্ধ করুন",
+      "task_keep_open": "খোলা রাখুন",
       "task_library_row_save_overwrite": "লাইব্রেরিতে \"{name}\" নামে একটি এন্ট্রি আগে থেকেই আছে। ওভাররাইট করবেন?",
       "task_library_row_delete": "লাইব্রেরি থেকে \"{name}\" মুছে ফেলবেন?",
       "task_link_confirm": "এই লিংকটি খুলবেন?",
@@ -72,7 +79,13 @@
       "update_up_to_date_title": "আপনার সংস্করণ সর্বশেষ।",
       "update_up_to_date_message": "আপনার কাছে ইতিমধ্যেই সর্বশেষ সংস্করণ ({local}) আছে।",
       "update_failed_title": "আপডেট পরীক্ষা ব্যর্থ হয়েছে।",
-      "update_failed_message": "আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।"
+      "update_failed_message": "আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।",
+      "renderer_i18n_failure_title": "ইন্টারফেস শুরু করা যায়নি",
+      "renderer_i18n_failure_message": "ইন্টারফেস তার প্রয়োজনীয় ভাষা রিসোর্স লোড করতে পারেনি। উইন্ডোটি বন্ধ হবে।",
+      "editor_startup_failed_title": "টেক্সট এডিটর শুরু করা যায়নি",
+      "editor_startup_failed_message": "টেক্সট এডিটর স্টার্টআপ সম্পূর্ণ করতে পারেনি এবং বন্ধ হবে।",
+      "editor_startup_timeout_title": "টেক্সট এডিটর শুরু হতে অতিরিক্ত সময় নিয়েছে",
+      "editor_startup_timeout_message": "টেক্সট এডিটর সময়মতো স্টার্টআপ সম্পূর্ণ করেনি এবং বন্ধ হবে।"
     }
   }
 }

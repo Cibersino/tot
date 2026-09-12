@@ -335,8 +335,6 @@
         "status_empty_query": "Ehai eheka hag̃ua"
       },
       "alerts": {
-        "start_failed": "Text Editor ndaikatúi oñepyrũ.",
-        "start_timeout": "Text Editor oñepyrũ hag̃ua ipukueterei ha oñemboty.",
         "paste_too_big": "Jehai tuichaiterei oñemboja hag̃ua directamente. Eipuru ventana principal botón.",
         "drop_too_big": "Jehai ojeityva’ekue tuichaiterei. Eipuru ventana principal botón.",
         "paste_no_text": "Portapapeles ndoguerekói jehai plano.",

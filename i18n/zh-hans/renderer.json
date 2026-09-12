@@ -335,8 +335,6 @@
         "status_empty_query": "输入内容以搜索"
       },
       "alerts": {
-        "start_failed": "无法启动 Text Editor。",
-        "start_timeout": "Text Editor 启动时间过长，已被关闭。",
         "paste_too_big": "文本过大，无法直接粘贴。请使用主窗口按钮。",
         "drop_too_big": "拖放的文本过大。请使用主窗口按钮。",
         "paste_no_text": "剪贴板不包含纯文本。",

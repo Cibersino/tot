@@ -54,6 +54,13 @@
       "snapshot_overwrite_load": "Vols substituir el text actual pel snapshot seleccionat \"{name}\"?",
       "task_delete_confirm": "Vols eliminar la llista de tasques \"{name}\"?",
       "task_discard_changes_confirm": "Hi ha canvis sense desar. Vols descartar-los?",
+      "task_discard_changes_title": "Descarta els canvis de la tasca",
+      "task_terminal_title": "L’Editor de tasques no està disponible",
+      "task_terminal_startup_message": "L’Editor de tasques no s’ha pogut iniciar i es tancarà.",
+      "task_terminal_clean_message": "L’Editor de tasques no està disponible. No s’han detectat canvis sense desar, així que es tancarà.",
+      "task_terminal_dirty_message": "L’Editor de tasques no està disponible i pot tenir canvis sense desar. Vols descartar aquests canvis i tancar-lo?",
+      "task_discard_and_close": "Descarta i tanca",
+      "task_keep_open": "Mantén-lo obert",
       "task_library_row_save_overwrite": "Ja existeix \"{name}\" a la biblioteca. Vols sobreescriure’l?",
       "task_library_row_delete": "Vols eliminar \"{name}\" de la biblioteca?",
       "task_link_confirm": "Vols obrir aquest enllaç?",
@@ -72,7 +79,13 @@
       "update_up_to_date_title": "Estàs al dia.",
       "update_up_to_date_message": "Ja tens l’última versió ({local}).",
       "update_failed_title": "La comprovació d’actualitzacions ha fallat.",
-      "update_failed_message": "Revisa la connexió i torna-ho a provar."
+      "update_failed_message": "Revisa la connexió i torna-ho a provar.",
+      "renderer_i18n_failure_title": "La interfície no s’ha pogut iniciar",
+      "renderer_i18n_failure_message": "La interfície no ha pogut carregar els recursos d’idioma necessaris. La finestra es tancarà.",
+      "editor_startup_failed_title": "L’Editor de text no s’ha pogut iniciar",
+      "editor_startup_failed_message": "L’Editor de text no ha pogut completar l’inici i es tancarà.",
+      "editor_startup_timeout_title": "L’Editor de text ha trigat massa a iniciar-se",
+      "editor_startup_timeout_message": "L’Editor de text no ha completat l’inici a temps i es tancarà."
     }
   }
 }

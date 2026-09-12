@@ -335,8 +335,6 @@
         "status_empty_query": "Type to search"
       },
       "alerts": {
-        "start_failed": "Text Editor no fit start.",
-        "start_timeout": "Text Editor take too long to start, so e close.",
         "paste_too_big": "Text too large to paste directly. Use di main window buttons.",
         "drop_too_big": "Dropped text too large. Use di main window buttons to add large text.",
         "paste_no_text": "Clipboard no contain plain text.",

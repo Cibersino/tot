@@ -335,8 +335,6 @@
         "status_empty_query": "검색어를 입력하세요"
       },
       "alerts": {
-        "start_failed": "Text Editor를 시작할 수 없습니다.",
-        "start_timeout": "Text Editor 시작 시간이 너무 오래 걸려 닫혔습니다.",
         "paste_too_big": "텍스트가 너무 커서 직접 붙여넣을 수 없습니다. 메인 창 버튼을 사용하세요.",
         "drop_too_big": "드롭한 텍스트가 너무 큽니다. 큰 텍스트를 추가하려면 메인 창 버튼을 사용하세요.",
         "paste_no_text": "클립보드에 일반 텍스트가 없습니다.",

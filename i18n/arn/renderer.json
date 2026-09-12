@@ -335,8 +335,6 @@
         "status_empty_query": "Wiringe kintuael"
       },
       "alerts": {
-        "start_failed": "Text Editor no pudo iniciar.",
-        "start_timeout": "Text Editor fütrañmaw iniciar mew ka nürüfüngey.",
         "paste_too_big": "Wirin rume fütra pültrüal. Püne tati botones ventana mu.",
         "drop_too_big": "Wirin küpalyelu rume fütra. Püne tati botones ventana mu.",
         "paste_no_text": "Portapapeles nielay wirin.",

@@ -54,6 +54,13 @@
       "snapshot_overwrite_load": "Aktuellen Text durch ausgewähltes Snapshot \"{name}\" ersetzen?",
       "task_delete_confirm": "Aufgabenliste \"{name}\" löschen?",
       "task_discard_changes_confirm": "Es gibt ungespeicherte Änderungen. Diese verwerfen?",
+      "task_discard_changes_title": "Aufgabenänderungen verwerfen",
+      "task_terminal_title": "Der Aufgabeneditor ist nicht verfügbar",
+      "task_terminal_startup_message": "Der Aufgabeneditor konnte nicht gestartet werden und wird geschlossen.",
+      "task_terminal_clean_message": "Der Aufgabeneditor ist nicht verfügbar. Es wurden keine ungespeicherten Änderungen erkannt, daher wird er geschlossen.",
+      "task_terminal_dirty_message": "Der Aufgabeneditor ist nicht verfügbar und enthält möglicherweise ungespeicherte Änderungen. Diese Änderungen verwerfen und schließen?",
+      "task_discard_and_close": "Verwerfen und schließen",
+      "task_keep_open": "Offen lassen",
       "task_library_row_save_overwrite": "Ein Eintrag namens \"{name}\" existiert bereits in der Bibliothek. Überschreiben?",
       "task_library_row_delete": "\"{name}\" aus der Bibliothek löschen?",
       "task_link_confirm": "Diesen Link öffnen?",
@@ -72,7 +79,13 @@
       "update_up_to_date_title": "Sie sind auf dem neuesten Stand.",
       "update_up_to_date_message": "Sie haben bereits die neueste Version ({local}).",
       "update_failed_title": "Aktualisierungsprüfung fehlgeschlagen.",
-      "update_failed_message": "Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+      "update_failed_message": "Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "renderer_i18n_failure_title": "Die Oberfläche konnte nicht gestartet werden",
+      "renderer_i18n_failure_message": "Die Oberfläche konnte die erforderlichen Sprachressourcen nicht laden. Das Fenster wird geschlossen.",
+      "editor_startup_failed_title": "Der Texteditor konnte nicht gestartet werden",
+      "editor_startup_failed_message": "Der Texteditor konnte den Start nicht abschließen und wird geschlossen.",
+      "editor_startup_timeout_title": "Der Texteditor brauchte zu lange zum Starten",
+      "editor_startup_timeout_message": "Der Texteditor hat den Start nicht rechtzeitig abgeschlossen und wird geschlossen."
     }
   }
 }

@@ -335,8 +335,6 @@
         "status_empty_query": "Nhập để tìm kiếm"
       },
       "alerts": {
-        "start_failed": "Không thể khởi động Text Editor.",
-        "start_timeout": "Text Editor khởi động quá lâu và đã bị đóng.",
         "paste_too_big": "Văn bản quá lớn để dán trực tiếp. Hãy dùng các nút ở cửa sổ chính.",
         "drop_too_big": "Văn bản được thả quá lớn. Hãy dùng các nút ở cửa sổ chính để thêm văn bản lớn.",
         "paste_no_text": "Clipboard không chứa văn bản thuần.",

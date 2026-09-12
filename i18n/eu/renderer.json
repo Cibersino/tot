@@ -335,8 +335,6 @@
         "status_empty_query": "Idatzi bilatzeko"
       },
       "alerts": {
-        "start_failed": "Ezin izan da Text Editor abiarazi.",
-        "start_timeout": "Text Editor-ek denbora gehiegi behar izan du abiarazteko eta itxi egin da.",
         "paste_too_big": "Testua handiegia da zuzenean itsasteko. Erabili leiho nagusiko botoiak.",
         "drop_too_big": "Jaregindako testua handiegia da. Erabili leiho nagusiko botoiak testu handia gehitzeko.",
         "paste_no_text": "Arbelean ez dago testu arruntik.",

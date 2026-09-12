@@ -335,8 +335,6 @@
         "status_empty_query": "Saisir pour rechercher"
       },
       "alerts": {
-        "start_failed": "L’Éditeur de Texte n’a pas pu démarrer.",
-        "start_timeout": "L’Éditeur de Texte a mis trop de temps à démarrer et a été fermé.",
         "paste_too_big": "Le texte est trop volumineux pour être collé directement. Utilisez les boutons de la fenêtre principale.",
         "drop_too_big": "Le texte déposé est trop volumineux. Utilisez les boutons de la fenêtre principale pour ajouter du texte volumineux.",
         "paste_no_text": "Le presse-papier ne contient pas de texte brut.",

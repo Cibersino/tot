@@ -335,8 +335,6 @@
         "status_empty_query": "Thaqañatak qillqt’am"
       },
       "alerts": {
-        "start_failed": "Text Editor janiw qalltañjamäkänti.",
-        "start_timeout": "Text Editor qalltaw sinti jayaräna ukat jist’antatäna.",
         "paste_too_big": "Qillqatax chiqak k’askachañatak sinti jach’awa. Principal ventana botonanak apnaqam.",
         "drop_too_big": "Jaquntata qillqatax sinti jach’awa. Jach’a qillqata yapxatañatak principal ventana botonanak apnaqam.",
         "paste_no_text": "Portapapeles ukax llamp’u qillqata janiw utjkiti.",

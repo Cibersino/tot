@@ -335,8 +335,6 @@
         "status_empty_query": "Digita per cercare"
       },
       "alerts": {
-        "start_failed": "L’Editor di Testo non è riuscito ad avviarsi.",
-        "start_timeout": "L’Editor di Testo ha impiegato troppo tempo ad avviarsi ed è stato chiuso.",
         "paste_too_big": "Il testo è troppo grande per essere incollato direttamente. Usa i pulsanti della finestra principale.",
         "drop_too_big": "Il testo trascinato è troppo grande. Usa i pulsanti della finestra principale per aggiungere grandi quantità di testo.",
         "paste_no_text": "Gli appunti non contengono testo semplice.",

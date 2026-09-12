@@ -335,8 +335,6 @@
         "status_empty_query": "Skriv för att söka"
       },
       "alerts": {
-        "start_failed": "Text Editor kunde inte startas.",
-        "start_timeout": "Text Editor tog för lång tid att starta och stängdes.",
         "paste_too_big": "Texten är för stor för att klistras in direkt. Använd knapparna i huvudfönstret.",
         "drop_too_big": "Den släppta texten är för stor. Använd knapparna i huvudfönstret för att lägga till stor text.",
         "paste_no_text": "Urklippet innehåller ingen oformaterad text.",

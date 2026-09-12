@@ -335,8 +335,6 @@
         "status_empty_query": "輸入內容以搜尋"
       },
       "alerts": {
-        "start_failed": "無法啟動 Text Editor。",
-        "start_timeout": "Text Editor 啟動時間過長，已被關閉。",
         "paste_too_big": "文字過大，無法直接貼上。請使用主視窗按鈕。",
         "drop_too_big": "拖放的文字過大。請使用主視窗按鈕。",
         "paste_no_text": "剪貼簿不包含純文字。",

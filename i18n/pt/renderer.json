@@ -335,8 +335,6 @@
         "status_empty_query": "Digite para buscar"
       },
       "alerts": {
-        "start_failed": "O Editor de Texto não pôde ser iniciado.",
-        "start_timeout": "O Editor de Texto demorou demais para iniciar e foi fechado.",
         "paste_too_big": "Texto muito grande para colar diretamente. Use os botões da janela principal.",
         "drop_too_big": "Texto arrastado muito grande. Use os botões da janela principal.",
         "paste_no_text": "A área de transferência não contém texto simples.",
