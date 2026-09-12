@@ -10,10 +10,19 @@
 // - Keep one combobox popup open at a time.
 // - Normalize pointer and keyboard activation for value and action options.
 // - Restore committed display text when editable queries are dismissed.
+// - Expose a per-instance controller for updates, focus, and cleanup.
 
 (() => {
+  // =============================================================================
+  // Module state
+  // =============================================================================
+
   let nextComboboxId = 1;
   let openController = null;
+
+  // =============================================================================
+  // Option normalization helpers
+  // =============================================================================
 
   function isActionOption(option) {
     return !!option && typeof option === 'object' && typeof option.action === 'string';
@@ -55,7 +64,15 @@
       && !event.altKey;
   }
 
+  // =============================================================================
+  // Combobox instance factory
+  // =============================================================================
+
   function create(config = {}) {
+    // =============================================================================
+    // Instance setup and DOM creation
+    // =============================================================================
+
     const host = config.host;
     if (!host || typeof host.appendChild !== 'function') {
       throw new Error('[combobox] host unavailable; cannot create combobox');
@@ -109,6 +126,10 @@
 
     host.appendChild(input);
     host.appendChild(listbox);
+
+    // =============================================================================
+    // Rendering and state helpers
+    // =============================================================================
 
     function applyAccessibleName(nextConfig) {
       if (typeof nextConfig.ariaLabelledBy === 'string' && nextConfig.ariaLabelledBy.trim()) {
@@ -236,6 +257,10 @@
         input.removeAttribute('aria-activedescendant');
       }
     }
+
+    // =============================================================================
+    // Interaction and lifecycle handlers
+    // =============================================================================
 
     function open() {
       if (destroyed || disabled || isOpen) return;
@@ -450,6 +475,10 @@
       delete host.dataset.mode;
     }
 
+    // =============================================================================
+    // Controller surface and event wiring
+    // =============================================================================
+
     const controller = {
       update,
       getValue: () => value,
@@ -469,6 +498,10 @@
 
     return controller;
   }
+
+  // =============================================================================
+  // Public module surface
+  // =============================================================================
 
   window.RendererCombobox = { create };
 })();
